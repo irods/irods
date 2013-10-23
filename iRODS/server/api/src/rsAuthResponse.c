@@ -12,6 +12,7 @@
 #include "eirods_auth_manager.h"
 #include "eirods_auth_constants.h"
 #include "eirods_kvp_string_parser.h"
+#include "eirods_pluggable_auth_scheme.h"
 
 // =-=-=-=-=-=-=-
 // irods includes
@@ -35,38 +36,26 @@ int rsAuthResponse(
     }
 
     // =-=-=-=-=-=-=-
-    // auth scheme should be in the username buffer as a
-    // key-value pair
-    std::string auth_scheme = eirods::AUTH_NATIVE_SCHEME;
-     
-    // =-=-=-=-=-=-=-
-    // parse the response string, if it has the keys
-    // and values then we set the scheme and repave
-    // the response string
-    eirods::kvp_map_t kvp;
-    eirods::error ret = eirods::parse_kvp_string( 
-                            _resp->username,
-                            kvp );
-    if( ( kvp.find( eirods::AUTH_USER_KEY )   != kvp.end() ) &&
-        ( kvp.find( eirods::AUTH_SCHEME_KEY ) != kvp.end() ) ) {
-        // =-=-=-=-=-=-=-
-        // keys are found so cache them and repave
-        // the username
-        auth_scheme          = kvp[ eirods::AUTH_SCHEME_KEY ];
-        std::string username = kvp[ eirods::AUTH_USER_KEY ];
-        strncpy( 
-            _resp->username,
-            username.c_str(),
-            LONG_NAME_LEN ); 
+    // get the auth scheme from the singleton cache and 
+    // if it is not empty use that as our auth scheme
+    // native is the default scheme otherwise
+    eirods::pluggable_auth_scheme& plug_a = eirods::pluggable_auth_scheme::get_instance();
+    std::string auth_scheme = plug_a.get( );
+    if( auth_scheme.empty() ) {
+        auth_scheme = eirods::AUTH_NATIVE_SCHEME;
     }
+   
+    // =-=-=-=-=-=-=-
+    // empty out the scheme for good measure
+    plug_a.set( "" ); 
 
     // =-=-=-=-=-=-=-
     // construct an auth object given the scheme
     eirods::auth_object_ptr auth_obj;
-    ret = eirods::auth_factory( 
-              auth_scheme, 
-              &_comm->rError,
-              auth_obj );
+    eirods::error ret = eirods::auth_factory( 
+                            auth_scheme,
+                            &_comm->rError,
+                            auth_obj );
     if( !ret.ok() ){
         eirods::log( PASS( ret ) );
         return ret.code();

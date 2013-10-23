@@ -15,15 +15,7 @@ namespace eirods {
        rError_t*          _r_error,
        auth_object_ptr&   _ptr ) {
        // =-=-=-=-=-=-=-
-       // param check 
-       if( !_r_error ) {
-           return ERROR(
-                      SYS_INVALID_INPUT_PARAM, 
-                      "null error object" );
-       }
-
-       // =-=-=-=-=-=-=-
-       // 
+       // currently just support the native scheme
        if( _scheme.empty() ||
            AUTH_NATIVE_SCHEME == _scheme ) {
            native_auth_object* nat_obj = new native_auth_object( _r_error );

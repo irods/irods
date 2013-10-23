@@ -1,44 +1,62 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
 
-/* See authRequest.h for a description of this API call.*/
+
 
 // =-=-=-=-=-=-=-
 // eirods includes
+#include "authPluginRequest.h"
 #include "eirods_native_auth_object.h"
 #include "eirods_auth_object.h"
 #include "eirods_auth_factory.h"
 #include "eirods_auth_plugin.h"
 #include "eirods_auth_manager.h"
 #include "eirods_auth_constants.h"
+#include "eirods_pluggable_auth_scheme.h"
 
-// =-=-=-=-=-=-=-
-// irods includes
-#include "authRequest.h"
+void _rsSetAuthRequestGetChallenge( const char* );
 
-int get64RandomBytes(char *buf);
-static char buf[CHALLENGE_LEN+MAX_PASSWORD_LEN+1];
-
-int rsAuthRequest(
-    rsComm_t*          _comm, 
-    authRequestOut_t** _req ) {
+/// =-=-=-=-=-=-=-
+/// @brief auth request api call which will delegate the
+///        request to the correct plugin given the requested
+///        auth scheme in the input struct
+int rsAuthPluginRequest(
+    rsComm_t*           _comm,
+    authPluginReqInp_t* _req_inp,
+    authRequestOut_t**  _req_out ) {
     // =-=-=-=-=-=-=-
     // check our incoming params
     if( !_comm ) {
-        rodsLog( LOG_ERROR, "rsAuthRequest - null comm pointer" );
+        rodsLog( LOG_ERROR, "rsAuthPluginRequest - null comm pointer" );
         return SYS_INVALID_INPUT_PARAM;
+
+    } else if( !_req_inp ) {
+        rodsLog( LOG_ERROR, "rsAuthPluginRequest - null input pointer" );
+        return SYS_INVALID_INPUT_PARAM;
+
     }
- 
+
+    // =-=-=-=-=-=-=-
+    // check the auth scheme
+    std::string auth_scheme = eirods::AUTH_NATIVE_SCHEME;
+    if( _req_inp->auth_scheme_ &&
+        strlen( _req_inp->auth_scheme_ ) > 0 ) {
+        auth_scheme = _req_inp->auth_scheme_;
+    }
+
+    // =-=-=-=-=-=-=-
+    // store the scheme in a singleton for use in the following rsAuthResponse call
+    eirods::pluggable_auth_scheme& plug_a = eirods::pluggable_auth_scheme::get_instance();
+    plug_a.set( auth_scheme );
+
     // =-=-=-=-=-=-=-
     // handle old school memory allocation
-    (*_req) = (authRequestOut_t*)malloc( sizeof( authRequestOut_t ) );
-    (*_req)->challenge = (char*)malloc( CHALLENGE_LEN+2 );
+    (*_req_out) = (authRequestOut_t*)malloc( sizeof( authRequestOut_t ) );
+    (*_req_out)->challenge = (char*)malloc( CHALLENGE_LEN+2 );
    
     // =-=-=-=-=-=-=-
     // construct an auth object given the native scheme
     eirods::auth_object_ptr auth_obj;
     eirods::error ret = eirods::auth_factory( 
-                            eirods::AUTH_NATIVE_SCHEME, 
+                            auth_scheme,
                             &_comm->rError,
                             auth_obj );
     if( !ret.ok() ){
@@ -64,7 +82,7 @@ int rsAuthRequest(
               authRequestOut_t* >( 
                   eirods::AUTH_AGENT_AUTH_REQUEST,
                   auth_obj,
-                  (*_req) );
+                  (*_req_out) );
     if( !ret.ok() ){
         eirods::log( PASS( ret ) );
         return ret.code();
@@ -73,33 +91,13 @@ int rsAuthRequest(
     // =-=-=-=-=-=-=-
     // cache the challenge so the below function can
     // access it
-    strncpy( 
-        buf, 
-        (*_req)->challenge, 
-        CHALLENGE_LEN+1 );
+    _rsSetAuthRequestGetChallenge( (*_req_out)->challenge );
 
     // =-=-=-=-=-=-=-
     // win!
     return 0;
 
-} // rsAuthRequest 
-
-// =-=-=-=-=-=-=-
-// accessor for static challenge buf variable
-char* _rsAuthRequestGetChallenge() {
-   return ((char *)&buf);
-}
-
-// =-=-=-=-=-=-=-
-// mutator for static challenge buf variable
-void _rsSetAuthRequestGetChallenge( const char* _c ) {
-    if( _c ) {
-        strncpy( 
-            buf, 
-            _c,
-            CHALLENGE_LEN+1 );
-    }
-}
+} // rsAuthPluginRequest 
 
 
 

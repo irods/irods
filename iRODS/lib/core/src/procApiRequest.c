@@ -128,7 +128,6 @@ sendApiRequest (rcComm_t *conn, int apiInx, void *inputStruct,
         }
         status = packStruct ((void *) inputStruct, &inputStructBBuf,
                              RcApiTable[apiInx].inPackInstruct, RodsPackTable, 0, conn->irodsProt);
-
         if (status < 0) {
             rodsLogError (LOG_ERROR, status,
                           "sendApiRequest: packStruct error, status = %d", status);

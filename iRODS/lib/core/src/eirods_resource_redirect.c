@@ -174,7 +174,6 @@ namespace eirods {
         eirods::file_object_ptr  _file_obj,
         const char*              _key_word,
         std::string&             _out_hier ) {
-rodsLog( LOG_NOTICE, "XXXX - resolve_hier_for_open :: key word [%s]", _key_word );
             // =-=-=-=-=-=-=-
             // regardless we need to resolve the appropriate resource
             // to do the voting so search the repls for the proper resc
@@ -444,7 +443,6 @@ rodsLog( LOG_NOTICE, "XXXX - resolve_hier_for_open :: key word [%s]", _key_word 
         } else if( back_up_resc_name ) {
              key_word = back_up_resc_name;
         }
-rodsLog( LOG_NOTICE, "XXXX - resolve_resource_hierarchy :: key word [%s] - op [%s]", key_word, _oper.c_str() );
 
         // =-=-=-=-=-=-=-
         // call factory for given obj inp, get a file_object

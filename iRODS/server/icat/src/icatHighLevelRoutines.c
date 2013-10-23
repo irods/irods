@@ -1227,10 +1227,6 @@ int chlUnregDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     char *theVal;
     char checkPath[MAX_NAME_LEN];
 
-eirods::stacktrace st;
-st.trace();
-st.dump();
-
     dataObjNumber[0]='\0';
     if (logSQL!=0) rodsLog(LOG_SQL, "chlUnregDataObj");
 

@@ -383,4 +383,6 @@ LIB_API_OBJS += $(libApiObjDir)/rcFileTruncate.o
 SVR_API_OBJS += $(svrApiObjDir)/rsSubStructFileTruncate.o
 LIB_API_OBJS += $(libApiObjDir)/rcSubStructFileTruncate.o
 
+SVR_API_OBJS += $(svrApiObjDir)/rsAuthPluginRequest.o
+LIB_API_OBJS += $(libApiObjDir)/rcAuthPluginRequest.o
 

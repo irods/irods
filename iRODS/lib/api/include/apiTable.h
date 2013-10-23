@@ -141,7 +141,7 @@ apidef_t RcApiTable[] = {
        Need to set it to NO_USER_AUTH for cross zone auth to prevent ping-pong
        effect */
     {AUTH_CHECK_AN, RODS_API_VERSION, NO_USER_AUTH, NO_USER_AUTH, 
-       "authCheckInp_PI", 0,  "authCheckOut_PI", 0, (funcPtr) RS_AUTH_CHECK},
+       NULL, 0,  "authCheckOut_PI", 0, (funcPtr) RS_AUTH_CHECK},
     {GSI_AUTH_REQUEST_AN, RODS_API_VERSION, NO_USER_AUTH|XMSG_SVR_ALSO, 
       NO_USER_AUTH|XMSG_SVR_ALSO,
       NULL, 0,  "gsiAuthRequestOut_PI", 0, (funcPtr) RS_GSI_AUTH_REQUEST},
@@ -373,7 +373,8 @@ apidef_t RcApiTable[] = {
     {SSL_END_AN, RODS_API_VERSION,
        NO_USER_AUTH|XMSG_SVR_ALSO, NO_USER_AUTH|XMSG_SVR_ALSO, 
        "sslEndInp_PI", 0, NULL, 0, (funcPtr) RS_SSL_END},
-
+    {AUTH_PLUG_REQ_AN, RODS_API_VERSION, NO_USER_AUTH, NO_USER_AUTH,
+       "authPlugReqInp_PI", 0, "authRequestOut_PI", 0, (funcPtr) RS_AUTH_PLUG_REQ},
 };
 
 #ifdef RODS_SERVER	/* depends on client lib for NumOfApi */

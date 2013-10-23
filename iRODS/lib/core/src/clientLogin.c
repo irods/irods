@@ -20,7 +20,7 @@
 #include "eirods_auth_plugin.h"
 #include "eirods_auth_manager.h"
 #include "eirods_auth_constants.h"
-#include "eirods_kvp_string_parser.h"
+#include "authPluginRequest.h"
 
 static char prevChallengeSignitureClient[200];
 
@@ -250,9 +250,8 @@ int clientLoginPam( rcComm_t* Conn,
 ///        plugins as well as defining the protocol or template
 ///        authenticaion will follow
 int clientLogin(
-    rcComm_t* _conn ) {
-printf( "XXXX - clientLogin :: START" );
-fflush( stdout );
+    rcComm_t*   _conn,
+    const char* _scheme_override ) {
     // =-=-=-=-=-=-=-
     // check out conn pointer
     if( !_conn ) {
@@ -264,33 +263,35 @@ fflush( stdout );
     // flavor of authenticaiton desired by the user -
     // check the environment vairable first then the rods
     // env if that was null
-    std::string auth_scheme=eirods::AUTH_NATIVE_SCHEME;
+    std::string auth_scheme = eirods::AUTH_NATIVE_SCHEME;
     if( ProcessType == CLIENT_PT ) {
         // =-=-=-=-=-=-=-
-        // check the environment variable first
-        char* auth_env_var = getenv("irodsAuthScheme");
-        if( !auth_env_var ) {
-            rodsEnv rods_env;
-            int status = getRodsEnv( &rods_env );
-            if( !status ) {
-                printf( "failed to acquire rods environment" );
-                return SYS_INVALID_INPUT_PARAM;
-            }
+        // the caller may want to override the env var
+        // or irods env file configuration ( PAM )
+        if( _scheme_override ) {
+            auth_scheme = _scheme_override;
 
-            if( strlen( rods_env.rodsAuthScheme ) > 0 ) {
-                auth_scheme = rods_env.rodsAuthScheme;
-           
-            }
-             
         } else {
-            auth_scheme = auth_env_var;
-        
-        }
+            // =-=-=-=-=-=-=-
+            // check the environment variable first
+            char* auth_env_var = getenv("irodsAuthScheme");
+            if( !auth_env_var ) {
+                rodsEnv rods_env;
+                if( getRodsEnv( &rods_env ) ) {
+                    if( strlen( rods_env.rodsAuthScheme ) > 0 ) {
+                        auth_scheme = rods_env.rodsAuthScheme;
+                   
+                    }
+                }
+                 
+            } else {
+                auth_scheme = auth_env_var;
+            
+            }
+       
+        } // if _scheme_override
          
     } // if client side auth
-
-printf( "XXXX - clientLogin :: auth scheme [%s]\n", auth_scheme.c_str() );
-fflush( stdout );
 
     // =-=-=-=-=-=-=-
     // construct an auth object given the scheme
@@ -304,8 +305,6 @@ fflush( stdout );
         return ret.code();
     }
 
-printf( "XXXX - clientLogin :: created auth object\n" );
-fflush( stdout );
     // =-=-=-=-=-=-=-
     // resolve an auth plugin given the auth object
     eirods::plugin_ptr ptr;
@@ -317,9 +316,6 @@ fflush( stdout );
         return ret.code();
     }
     eirods::auth_ptr auth_plugin = boost::dynamic_pointer_cast< eirods::auth >( ptr );
-
-printf( "XXXX - clientLogin :: resolved auth plugin\n" );
-fflush( stdout );
 
     // =-=-=-=-=-=-=-
     // call client side init - 'establish creds'
@@ -333,22 +329,28 @@ fflush( stdout );
     
     // =-=-=-=-=-=-=-
     // send an authentication request to the server
-    // we overload the challenge variable in order
-    // to not change the interface which would break
-    // federation.  we will check the scheme if the
-    // challenge is not null on the server side to 
-    // load the correct plugin
-    authRequestOut_t* auth_request = new authRequestOut_t;
-    auth_request->challenge = new char[ CHALLENGE_LEN+2 ];
-    strncpy( 
-        auth_request->challenge, 
-        auth_scheme.c_str(), 
-        CHALLENGE_LEN );
-printf( "XXXX - clientLogin :: auth challenge ( scheme ) [%s]\n", auth_request->challenge );
-fflush( stdout );
-    int status = rcAuthRequest(
-                 _conn, 
-                 &auth_request );
+    // if this is a server process we need to default
+    // to the native rcAuthRequest to maintain federation
+    // capability with legacy deployments, otherwise
+    // use the new api request which handles plugins
+    // client side
+    authRequestOut_t* auth_request = 0;
+    int status = -1;
+    if( ProcessType != CLIENT_PT ) {
+        status = rcAuthRequest(
+                     _conn, 
+                     &auth_request );
+    } else {
+        authPluginReqInp_t req_in;
+        strncpy( 
+            req_in.auth_scheme_,
+            auth_scheme.c_str(),
+            NAME_LEN );
+        status = rcAuthPluginRequest( 
+                     _conn,
+                     &req_in,
+                     &auth_request );
+    }
     if( status ) {
         printError( 
             _conn, 
@@ -359,14 +361,13 @@ fflush( stdout );
         return status;
     }
 
-
     // =-=-=-=-=-=-=-
     // establish auth context client side
-printf( "XXXX - clientLogin :: calling est ctx" );
-fflush( stdout );
+    char response[ RESPONSE_LEN+2 ];
+    char username[ NAME_LEN * 2   ];
     authResponseInp_t auth_response;
-    auth_response.response = new char[ RESPONSE_LEN+2 ];
-    auth_response.username = new char[ LONG_NAME_LEN ];
+    auth_response.response = response;
+    auth_response.username = username;
     ret = auth_plugin->call< 
               const char*,
               const char*,
@@ -382,14 +383,10 @@ fflush( stdout );
                   prevChallengeSignitureClient );
     if( !ret.ok() ){
         eirods::log( PASS( ret ) );
-        delete [] auth_response.response;
-        delete [] auth_response.username; 
-        delete [] auth_request->challenge;
-        delete auth_request;
+        free( auth_request->challenge );
+        free( auth_request );
         return ret.code();
     }
-printf( "XXXX - clientLogin :: calling auth response - username [%s]", auth_response.username );
-fflush( stdout );
 
     // =-=-=-=-=-=-=-
     // send the auth response to the agent
@@ -401,10 +398,8 @@ fflush( stdout );
             _conn, 
             status, 
             "rcAuthResponse" );
-        delete [] auth_response.response;
-        delete [] auth_response.username; 
-        delete [] auth_request->challenge;
-        delete auth_request;
+        free( auth_request->challenge );
+        free( auth_request );
         return status;
     }
 
@@ -414,180 +409,11 @@ fflush( stdout );
 
     // =-=-=-=-=-=-=-
     // win!
-    delete [] auth_response.response;
-    delete [] auth_response.username; 
-    delete [] auth_request->challenge;
-    delete auth_request;
+    free( auth_request->challenge );
+    free( auth_request );
     return 0;
 
 } // clientLogin
-
-static 
-int OLD_clientLogin(rcComm_t *Conn) 
-{   
-    int status, len, i;
-    authRequestOut_t *authReqOut;
-    authResponseInp_t authRespIn;
-    char md5Buf[CHALLENGE_LEN+MAX_PASSWORD_LEN+2];
-    char digest[RESPONSE_LEN+2];
-    char userNameAndZone[NAME_LEN*2];
-    MD5_CTX context;
-#ifdef OS_AUTH
-    int doOsAuthentication = 0;
-#endif
-
-    if (Conn->loggedIn == 1) {
-        /* already logged in */
-        return (0);
-    }
-
-#ifdef GSI_AUTH
-    if (ProcessType==CLIENT_PT) {
-        char *getVar;
-        getVar = getenv("irodsAuthScheme");
-        if (getVar != NULL && strncmp("GSI",getVar,3)==0) {
-            status = clientLoginGsi(Conn);
-            return(status);
-        }
-    }
-#endif
-
-#ifdef KRB_AUTH
-    if (ProcessType==CLIENT_PT) {
-        char *getVar;
-        getVar = getenv("irodsAuthScheme");
-        if (getVar != NULL) {
-            if (strncmp("Kerberos",getVar,8)==0 ||
-                    strncmp("kerberos",getVar,8)==0 ||
-                    strncmp("KRB",getVar,3)==0) {
-                status = clientLoginKrb(Conn);
-                return(status);
-            }
-        }
-    }
-#endif
-
-#ifdef PAM_AUTH
-    /* Even in PAM mode, we do the regular login here using the
-       generated iRODS password that has been set up */
-#endif
-
-#ifdef OS_AUTH
-    if (ProcessType==CLIENT_PT) {
-        char *getVar;
-        getVar = getenv("irodsAuthScheme");
-        if (getVar != NULL) {
-            if (strncmp("OS",getVar,2)==0 ||
-                    strncmp("os",getVar,2)==0) {
-                doOsAuthentication = 1;
-            }
-        }
-    }
-#endif
-
-    status = rcAuthRequest(Conn, &authReqOut);
-    if (status || NULL == authReqOut ) { // JMC cppcheck - nullptr
-        printError(Conn, status, "rcAuthRequest");
-        return(status);
-    }
-
-    memset(md5Buf, 0, sizeof(md5Buf));
-    strncpy(md5Buf, authReqOut->challenge, CHALLENGE_LEN);
-
-    /* Save a representation of some of the challenge string for use
-       as a session signiture */
-    snprintf(prevChallengeSignitureClient,200,"%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x",
-            (unsigned char)md5Buf[0], 
-            (unsigned char)md5Buf[1], 
-            (unsigned char)md5Buf[2], 
-            (unsigned char)md5Buf[3],
-            (unsigned char)md5Buf[4], 
-            (unsigned char)md5Buf[5], 
-            (unsigned char)md5Buf[6], 
-            (unsigned char)md5Buf[7],
-            (unsigned char)md5Buf[8], 
-            (unsigned char)md5Buf[9], 
-            (unsigned char)md5Buf[10], 
-            (unsigned char)md5Buf[11],
-            (unsigned char)md5Buf[12], 
-            (unsigned char)md5Buf[13], 
-            (unsigned char)md5Buf[14], 
-            (unsigned char)md5Buf[15]);
-
-
-    if (strncmp(ANONYMOUS_USER, Conn->proxyUser.userName, NAME_LEN) == 0) {
-        md5Buf[CHALLENGE_LEN+1]='\0';
-        i = 0;
-    }
-#ifdef OS_AUTH
-    else if (doOsAuthentication) {
-        i = osauthGetAuth(authReqOut->challenge, Conn->proxyUser.userName, 
-                md5Buf+CHALLENGE_LEN, MAX_PASSWORD_LEN);
-    }
-#endif
-    else {
-        i = obfGetPw(md5Buf+CHALLENGE_LEN);
-    }
-
-    if (i != 0) {
-        int doStty=0;
-
-#ifdef windows_platform
-        if (ProcessType != CLIENT_PT)
-            return i;
-#endif
-
-        path p ("/bin/stty");
-        if (exists(p)) {
-            system("/bin/stty -echo 2> /dev/null");
-            doStty=1;
-        }
-        printf("Enter your current iRODS password:");
-        fgets(md5Buf+CHALLENGE_LEN, MAX_PASSWORD_LEN, stdin);
-        if (doStty) {
-            system("/bin/stty echo 2> /dev/null");
-            printf("\n");
-        }
-        len = strlen(md5Buf);
-        md5Buf[len-1]='\0'; /* remove trailing \n */
-    }
-    MD5Init (&context);
-    MD5Update (&context, (unsigned char*)md5Buf, CHALLENGE_LEN+MAX_PASSWORD_LEN);
-    MD5Final ((unsigned char*)digest, &context);
-    for (i=0;i<RESPONSE_LEN;i++) {
-        if (digest[i]=='\0') digest[i]++;  /* make sure 'string' doesn't
-                                              end early*/
-    }
-
-    /* free the array and structure allocated by the rcAuthRequest */
-    if (authReqOut->challenge != NULL) {
-        free(authReqOut->challenge);
-        free(authReqOut);
-    }
-
-    authRespIn.response=digest;
-    /* the authentication is always for the proxyUser. */
-    strncpy(userNameAndZone, Conn->proxyUser.userName, NAME_LEN);
-    strncat(userNameAndZone, "#", NAME_LEN);
-    strncat(userNameAndZone, Conn->proxyUser.rodsZone, NAME_LEN*2);
-#ifdef OS_AUTH
-    /* here we attach a special string to the username
-       so that the server knows to do OS authentication */
-    if (doOsAuthentication) {
-        strncat(userNameAndZone, OS_AUTH_FLAG, NAME_LEN);
-    }
-#endif
-    authRespIn.username = userNameAndZone;
-    status = rcAuthResponse(Conn, &authRespIn);
-
-    if (status) {
-        printError(Conn, status, "rcAuthResponse");
-        return(status);
-    }
-    Conn->loggedIn = 1;
-
-    return(0);
-}
 
 int 
 clientLoginWithPassword(rcComm_t *Conn, char* password) 
