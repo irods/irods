@@ -118,6 +118,9 @@ d 755 root root /var/lib/eirods/plugins -
 d 755 root root /var/lib/eirods/plugins/network -
 f 755 root root /var/lib/eirods/plugins/network/ ./plugins/network/*.so
 
+d 755 root root /var/lib/eirods/plugins/auth -
+f 755 root root /var/lib/eirods/plugins/auth/ ./plugins/auth/*.so
+
 f 755 root root /usr/bin/genOSAuth            ./iRODS/clients/icommands/bin/genOSAuth
 f 755 root root /usr/bin/iadmin               ./iRODS/clients/icommands/bin/iadmin
 f 755 root root /usr/bin/ibun                 ./iRODS/clients/icommands/bin/ibun
