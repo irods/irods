@@ -180,6 +180,12 @@ if [ "$1" == "clean" ] ; then
     rm -f eirods-manual*.pdf
     rm -f examples/microservices/*.pdf
     rm -f libeirods.a
+    echo "Cleaning Authenticaiton plugins..."
+    cd plugins/auth
+    set +e
+    make clean > /dev/null 2>&1
+    set -e
+    cd ../..
     echo "Cleaning Network plugins..."
     cd plugins/network
     set +e
@@ -1024,6 +1030,11 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     sed -e s,EIRODSNETWORKPATH,$irods_network_home, ./lib/core/include/eirods_network_home.h.src > /tmp/eirods_network_home.h
     mv /tmp/eirods_network_home.h ./lib/core/include/
     # =-=-=-=-=-=-=-
+    # modify the eirods_network_home.h file with the proper path to the binary directory
+    irods_auth_home="$detected_irods_home/plugins/auth/"
+    sed -e s,EIRODSAUTHPATH,$irods_auth_home, ./lib/core/include/eirods_auth_home.h.src > /tmp/eirods_auth_home.h
+    mv /tmp/eirods_network_home.h ./lib/core/include/
+    # =-=-=-=-=-=-=-
     # modify the eirods_resources_home.h file with the proper path to the binary directory
     irods_resources_home="$detected_irods_home/plugins/resources/"
     sed -e s,EIRODSRESOURCESPATH,$irods_resources_home, ./lib/core/include/eirods_resources_home.h.src > /tmp/eirods_resources_home.h
@@ -1064,19 +1075,25 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     # =-=-=-=-=-=-=-
     # build fuse bindary
 	cd $BUILDDIR/iRODS/clients/fuse/
-	make
+	make -j$CPUCOUNT
 	cd $BUILDDIR
 
     # =-=-=-=-=-=-=-
     # build resource plugins
 	cd $BUILDDIR/plugins/resources/
-	make
+	make -j$CPUCOUNT
 	cd $BUILDDIR
 
     # =-=-=-=-=-=-=-
     # build network plugins
 	cd $BUILDDIR/plugins/network/
-	make
+	make -j$CPUCOUNT
+	cd $BUILDDIR
+
+    # =-=-=-=-=-=-=-
+    # build auth plugins
+	cd $BUILDDIR/plugins/auth/
+	make -j$CPUCOUNT
 	cd $BUILDDIR
 
     # =-=-=-=-=-=-=-
