@@ -166,7 +166,7 @@ class ResourceSuite(ResourceBase):
         f.close()
 
         # assertions
-        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",filename) # should not be listed
+        assertiCmd(s.adminsession,"ils -L "+filename,"ERROR","does not exist") # should not be listed
         assertiCmd(s.adminsession,"iput "+filename) # put file
         assertiCmd(s.adminsession,"iget -f --purgec "+filename) # get file
         assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 0 ",filename]) # should be listed once
@@ -206,6 +206,56 @@ class ResourceSuite(ResourceBase):
     ###################
     # iput
     ###################
+
+    def test_ssl_iput_small_and_large_files(self):
+        # set up client and server side for ssl handshake
+
+        # server side certificate setup
+        os.system("openssl genrsa -out server.key")
+        os.system("openssl req -batch -new -key server.key -out server.csr")
+        os.system("openssl req -batch -new -x509 -key server.key -out server.crt -days 365")
+        os.system("mv server.crt chain.pem")
+        os.system("openssl dhparam -2 -out dhparams.pem 100") # normally 2048, but smaller size here for speed
+
+        # server side environment variables
+        os.environ['irodsSSLCertificateChainFile'] = "/var/lib/eirods/tests/pydevtest/chain.pem"
+        os.environ['irodsSSLCertificateKeyFile'] = "/var/lib/eirods/tests/pydevtest/server.key"
+        os.environ['irodsSSLDHParamsFile'] = "/var/lib/eirods/tests/pydevtest/dhparams.pem"
+
+        # client side environment variables
+        os.environ['irodsSSLVerifyServer'] = "none"
+
+        # add client irodsEnv settings
+        clientEnvFile = s.adminsession.sessionDir+"/.irodsEnv"
+        os.system("cp %s %sOrig" % (clientEnvFile, clientEnvFile))
+        os.system("echo \"irodsClientServerPolicy 'CS_NEG_REQUIRE'\" >> %s" % clientEnvFile)
+
+        # server reboot to pick up new irodsEnv settings
+        os.system("/var/lib/eirods/iRODS/irodsctl stop")
+        os.system("/var/lib/eirods/iRODS/irodsctl start")
+
+        # do the encrypted put
+        filename = "encryptedfile.txt"
+        filepath = create_local_testfile(filename)
+        assertiCmd(s.adminsession,"iinit rods") # reinitialize
+        # small file
+        assertiCmd(s.adminsession,"iput "+filename) # encrypted put - small file
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",filename) # should be listed
+        # large file
+        largefilename = "BIGencryptedfile.txt"
+        output = commands.getstatusoutput( 'dd if=/dev/zero of='+largefilename+' bs=1M count=60' )
+        assert output[0] == 0, "dd did not successfully exit"
+        os.system("ls -al "+largefilename)
+        assertiCmd(s.adminsession,"iput "+largefilename) # encrypted put - large file
+        assertiCmd(s.adminsession,"ils -L "+largefilename,"LIST",largefilename) # should be listed
+
+        # reset client environment to not require SSL
+        os.system("mv %sOrig %s" % (clientEnvFile, clientEnvFile))
+
+        # clean up
+        os.system("rm server.key server.csr chain.pem dhparams.pem")
+        os.remove(filename)
+        os.remove(largefilename)
 
     @unittest.skipIf( psutil.disk_usage('/').free < 20000000000 , "not enough free space for 5 x 2.3GB file ( local + iput + 3 repl children )" )
     def test_local_iput_with_really_big_file__ticket_1623(self):

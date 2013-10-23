@@ -67,8 +67,8 @@ namespace eirods {
         if( !err.ok() || 0.0 == vote ) {
             std::stringstream msg;
             msg << "failed in call to redirect";
-            msg << "host [" << host_name      << "] ";
-            msg << "hier [" << _out_hier << "]";
+            msg << "\thost [" << host_name      << "] ";
+            msg << "\thier [" << _out_hier << "]";
             err.status( false );
             if( err.code() == 0 ) {
                 err.code( -1 );
@@ -461,7 +461,7 @@ namespace eirods {
             }
 
             // =-=-=-=-=-=-=-
-            // consider fore flag - we need to consider the default resc if -f 
+            // consider force flag - we need to consider the default resc if -f 
             // is specified
             char* force_flag = getValByKey( &_data_obj_inp->condInput, FORCE_FLAG_KW );
             if( force_flag &&
