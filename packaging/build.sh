@@ -1030,10 +1030,10 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     sed -e s,EIRODSNETWORKPATH,$irods_network_home, ./lib/core/include/eirods_network_home.h.src > /tmp/eirods_network_home.h
     mv /tmp/eirods_network_home.h ./lib/core/include/
     # =-=-=-=-=-=-=-
-    # modify the eirods_network_home.h file with the proper path to the binary directory
+    # modify the eirods_auth_home.h file with the proper path to the binary directory
     irods_auth_home="$detected_irods_home/plugins/auth/"
     sed -e s,EIRODSAUTHPATH,$irods_auth_home, ./lib/core/include/eirods_auth_home.h.src > /tmp/eirods_auth_home.h
-    mv /tmp/eirods_network_home.h ./lib/core/include/
+    mv /tmp/eirods_auth_home.h ./lib/core/include/
     # =-=-=-=-=-=-=-
     # modify the eirods_resources_home.h file with the proper path to the binary directory
     irods_resources_home="$detected_irods_home/plugins/resources/"
