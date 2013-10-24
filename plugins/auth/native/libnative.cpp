@@ -9,6 +9,7 @@
 #include "authResponse.h"
 #include "authCheck.h"
 #include "miscServerFunct.h"
+#include "authPluginRequest.h"
 
 // =-=-=-=-=-=-=-
 // eirods includes
@@ -25,6 +26,7 @@
 #include <iostream>
 
 int get64RandomBytes(char *buf);
+void setSessionSignitureClientside( char* _sig );
 
 static
 int check_proxy_user_privelges(
@@ -87,7 +89,7 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // set the zone name from the conn
-        ptr->user_name( _comm->proxyUser.rodsZone );
+        ptr->zone_name( _comm->proxyUser.rodsZone );
 
         return SUCCESS();
 
@@ -98,29 +100,14 @@ extern "C" {
     // for the auth response call
     eirods::error native_auth_establish_context(
         eirods::auth_plugin_context& _ctx,
-        const char*                  _user,
-        const char*                  _zone,
-        const char*                  _password,
-        int                          _ttl,
         authRequestOut_t*            _req,
-        authResponseInp_t*           _resp,
-        char*                        _prev_sig ) {
+        authResponseInp_t*           _resp ) {
         // =-=-=-=-=-=-=-
         // validate incoming parameters
         if( !_ctx.valid< eirods::native_auth_object >().ok() ) {
             return ERROR( 
                        SYS_INVALID_INPUT_PARAM,
                        "invalid plugin context" );
-        
-        } else if( !_user ) {
-            return ERROR( 
-                       SYS_INVALID_INPUT_PARAM,
-                       "null user ptr" );
-            
-        } else if( !_zone ) {
-            return ERROR( 
-                       SYS_INVALID_INPUT_PARAM,
-                       "null zone ptr" );
             
         } else if( !_req ) {
             return ERROR( 
@@ -131,11 +118,7 @@ extern "C" {
             return ERROR( 
                        SYS_INVALID_INPUT_PARAM,
                        "null authResponseInp_t ptr" );
-        } else if( !_prev_sig ) {
-            return ERROR( 
-                       SYS_INVALID_INPUT_PARAM,
-                       "null previous signature ptr" );
-        }
+        } 
         
         // =-=-=-=-=-=-=-
         // build a buffer for the challenge hash
@@ -152,27 +135,11 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // Save a representation of some of the challenge string for use
         // as a session signiture 
-        snprintf(
-            _prev_sig,
-            200,
-            "%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x",
-            (unsigned char)md5_buf[0], 
-            (unsigned char)md5_buf[1], 
-            (unsigned char)md5_buf[2], 
-            (unsigned char)md5_buf[3],
-            (unsigned char)md5_buf[4], 
-            (unsigned char)md5_buf[5], 
-            (unsigned char)md5_buf[6], 
-            (unsigned char)md5_buf[7],
-            (unsigned char)md5_buf[8], 
-            (unsigned char)md5_buf[9], 
-            (unsigned char)md5_buf[10], 
-            (unsigned char)md5_buf[11],
-            (unsigned char)md5_buf[12], 
-            (unsigned char)md5_buf[13], 
-            (unsigned char)md5_buf[14], 
-            (unsigned char)md5_buf[15] );
-
+        setSessionSignitureClientside( md5_buf );
+ 
+        // =-=-=-=-=-=-=-
+        // get the native auth object
+        eirods::native_auth_object_ptr ptr = boost::dynamic_pointer_cast< eirods::native_auth_object >( _ctx.fco() );
 
         // =-=-=-=-=-=-=-
         // determine if a password challenge is needed,
@@ -180,7 +147,7 @@ extern "C" {
         int need_password = 0;
         if( strncmp(
                 ANONYMOUS_USER, 
-                _user,
+                ptr->user_name().c_str(),
                 NAME_LEN ) == 0 ) {
             // =-=-=-=-=-=-=-
             // its an anonymous user - set the flag
@@ -249,11 +216,7 @@ extern "C" {
             _resp->response,
             digest,
             RESPONSE_LEN+2 );
-        
-        // =-=-=-=-=-=-=-
-        // get the native auth object
-        eirods::native_auth_object_ptr ptr = boost::dynamic_pointer_cast< eirods::native_auth_object >( _ctx.fco() );
-        
+               
         // =-=-=-=-=-=-=-
         // build the username#zonename string
         std::string user_name = ptr->user_name() +
@@ -274,19 +237,15 @@ extern "C" {
         eirods::auth_plugin_context& _ctx,
         rcComm_t*                    _comm,
         authPluginReqInp_t*          _req_in,
-        authRequestOut_t*            _req_out ) {
+        authRequestOut_t**           _req_out ) {
         // =-=-=-=-=-=-=-
         // validate incoming parameters
         if( !_ctx.valid().ok() ) {
             return ERROR( 
                        SYS_INVALID_INPUT_PARAM,
                        "invalid plugin context" );
-        } else if( !_req_out ) {
-            return ERROR( 
-                       SYS_INVALID_INPUT_PARAM,
-                       "null authRequestOut_t ptr" );
-        }
-        
+        }  
+               
         // =-=-=-=-=-=-=-
         // make the call to our auth request
         int status = rcAuthRequest( 
@@ -327,7 +286,7 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // generate a random buffer and copy it to the challenge
-        char buf[ CHALLENGE_LEN+MAX_PASSWORD_LEN+1 ];
+        char buf[ CHALLENGE_LEN+2 ];
         get64RandomBytes( buf );
         strncpy( _req->challenge, buf, CHALLENGE_LEN+2 );
 
@@ -337,7 +296,7 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // handle a client-side auth request call 
-    eirods::error native_auth_agent_response(
+    eirods::error native_auth_client_response(
         eirods::auth_plugin_context& _ctx,
         rcComm_t*                    _comm,
         authResponseInp_t*           _resp ) {
@@ -354,11 +313,22 @@ extern "C" {
         } else if( !_comm ) {
             return ERROR( 
                     SYS_INVALID_INPUT_PARAM,
-                    "null rsComm_t ptr" );
+                    "null rcComm_t ptr" );
         }
         // =-=-=-=-=-=-=-
         // make the call to the client response api
-   
+        int status = rcAuthResponse(
+                         _comm,
+                         _resp );
+        if( status < 0 ) {
+            return ERROR(
+                       status,
+                       "call to rcAuthResponse failed." );
+        } else {
+            return SUCCESS();
+
+        }
+           
     } // native_auth_client_response
 
     // =-=-=-=-=-=-=-
@@ -630,7 +600,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // fill in the operation table mapping call 
         // names to function names
-        nat->add_operation( eirods::AUTH_CLIENT_START,         "native_client_start" );
+        nat->add_operation( eirods::AUTH_CLIENT_START,         "native_auth_client_start" );
         nat->add_operation( eirods::AUTH_AGENT_START,          "native_auth_success_stub" );
         nat->add_operation( eirods::AUTH_ESTABLISH_CONTEXT,    "native_auth_establish_context" );
         nat->add_operation( eirods::AUTH_CLIENT_AUTH_REQUEST,  "native_auth_client_request" );
