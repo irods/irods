@@ -15,6 +15,12 @@ namespace eirods {
         // TODO - stub
     }
 
+    auth_object::auth_object(
+        const auth_object& _rhs)
+    {
+        r_error_ = _rhs.r_error();
+    }
+
     auth_object& auth_object::operator=(
         const auth_object& _rhs)
     {

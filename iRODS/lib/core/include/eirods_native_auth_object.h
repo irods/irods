@@ -25,6 +25,7 @@ namespace eirods {
         /// =-=-=-=-=-=-=-
         /// @brief Ctor
         native_auth_object(rError_t* _r_error);
+        native_auth_object(const native_auth_object&);
         virtual ~native_auth_object();
 
         /// =-=-=-=-=-=-=-
@@ -46,13 +47,23 @@ namespace eirods {
         virtual error get_re_vars(keyValPair_t&); 
 
         /// =-=-=-=-=-=-=-
-        /// @brief auth results accessor
-        std::string auth_results() const { return auth_results_; }
-         
+        /// @brief accessors
+        std::string user_name() const { return user_name_; }
+        std::string zone_name() const { return zone_name_; }
+ 
+        /// =-=-=-=-=-=-=-
+        /// @brief mutators
+        void user_name( const std::string& _un ) { user_name_ = _un; }
+        void zone_name( const std::string& _zn ) { zone_name_ = _zn; }
+        
         private:
         /// =-=-=-=-=-=-=-
-        /// @brief results from the auth request
-        std::string auth_results_;
+        /// @brief user name - from rcConn
+        std::string user_name_;
+        
+        /// =-=-=-=-=-=-=-
+        /// @brief zone name - from rcConn
+        std::string zone_name_;
             
     }; // class native_auth_object
 

@@ -24,6 +24,7 @@ namespace eirods {
     public:
         /// @brief Ctor
         auth_object(rError_t* _r_error);
+        auth_object( const auth_object& );
         virtual ~auth_object();
 
         /// @brief assignment operator

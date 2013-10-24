@@ -25,10 +25,21 @@ namespace eirods {
     } // dtor
 
     // =-=-=-=-=-=-=-
+    // public - cctor
+    native_auth_object::native_auth_object(
+        const native_auth_object& _rhs ) :
+        auth_object( _rhs ) {
+        user_name_ = _rhs.user_name_;
+        zone_name_ = _rhs.zone_name_;
+    } // cctor
+
+    // =-=-=-=-=-=-=-
     // public - assignment operator
     native_auth_object& native_auth_object::operator=(
-        const native_auth_object& _rhs) {
-        r_error_ = _rhs.r_error();
+        const native_auth_object& _rhs ) {
+        auth_object::operator=( _rhs );
+        user_name_ = _rhs.user_name_;
+        zone_name_ = _rhs.zone_name_;
         return *this;
     }
 
@@ -101,11 +112,12 @@ namespace eirods {
               keyValPair_t& _kvp ) {
         // =-=-=-=-=-=-=-
         // all we have in this object is the auth results
+#if 0
         addKeyVal( 
             &_kvp, 
             "auth_results", 
             auth_results_.c_str() );
-
+#endif
         return SUCCESS();
 
     } // get_re_vars

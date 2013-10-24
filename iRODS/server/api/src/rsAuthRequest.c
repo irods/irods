@@ -18,6 +18,23 @@
 
 int get64RandomBytes(char *buf);
 static char buf[CHALLENGE_LEN+MAX_PASSWORD_LEN+1];
+// =-=-=-=-=-=-=-
+// accessor for static challenge buf variable
+char* _rsAuthRequestGetChallenge() {
+   return ((char *)&buf);
+}
+
+// =-=-=-=-=-=-=-
+// mutator for static challenge buf variable
+void _rsSetAuthRequestGetChallenge( const char* _c ) {
+    if( _c ) {
+        strncpy( 
+            buf, 
+            _c,
+            CHALLENGE_LEN+1 );
+    }
+}
+
 
 int rsAuthRequest(
     rsComm_t*          _comm, 
@@ -28,7 +45,9 @@ int rsAuthRequest(
         rodsLog( LOG_ERROR, "rsAuthRequest - null comm pointer" );
         return SYS_INVALID_INPUT_PARAM;
     }
- 
+printf( "XXXX - rsAuthRequest :: START\n" );
+fflush( stdout );
+
     // =-=-=-=-=-=-=-
     // handle old school memory allocation
     (*_req) = (authRequestOut_t*)malloc( sizeof( authRequestOut_t ) );
@@ -60,46 +79,33 @@ int rsAuthRequest(
 
     // =-=-=-=-=-=-=-
     // call client side init - 'establish creds'
+printf( "XXXX - rsAuthRequest :: plugin call\n" );
+fflush( stdout );
     ret = auth_plugin->call< 
               authRequestOut_t* >( 
                   eirods::AUTH_AGENT_AUTH_REQUEST,
                   auth_obj,
                   (*_req) );
+printf( "XXXX - rsAuthRequest :: plugin done\n" );
+fflush( stdout );
     if( !ret.ok() ){
         eirods::log( PASS( ret ) );
         return ret.code();
     }
 
+printf( "XXXX - rsAuthRequest :: make the copy\n" );
+fflush( stdout );
     // =-=-=-=-=-=-=-
     // cache the challenge so the below function can
     // access it
-    strncpy( 
-        buf, 
-        (*_req)->challenge, 
-        CHALLENGE_LEN+1 );
+    _rsSetAuthRequestGetChallenge( (*_req)->challenge );
 
+printf( "XXXX - rsAuthRequest :: make the copy. done.\n" );
+fflush( stdout );
     // =-=-=-=-=-=-=-
     // win!
     return 0;
 
 } // rsAuthRequest 
-
-// =-=-=-=-=-=-=-
-// accessor for static challenge buf variable
-char* _rsAuthRequestGetChallenge() {
-   return ((char *)&buf);
-}
-
-// =-=-=-=-=-=-=-
-// mutator for static challenge buf variable
-void _rsSetAuthRequestGetChallenge( const char* _c ) {
-    if( _c ) {
-        strncpy( 
-            buf, 
-            _c,
-            CHALLENGE_LEN+1 );
-    }
-}
-
 
 

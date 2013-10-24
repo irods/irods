@@ -28,6 +28,31 @@ char *getSessionSignitureClientside() {
     return(prevChallengeSignitureClient);
 }
 
+void setSessionSignitureClientside( char* _sig ) {
+    snprintf(
+        prevChallengeSignitureClient,
+        200,
+        "%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x",
+        (unsigned char)_sig[0], 
+        (unsigned char)_sig[1], 
+        (unsigned char)_sig[2], 
+        (unsigned char)_sig[3],
+        (unsigned char)_sig[4], 
+        (unsigned char)_sig[5], 
+        (unsigned char)_sig[6], 
+        (unsigned char)_sig[7],
+        (unsigned char)_sig[8], 
+        (unsigned char)_sig[9], 
+        (unsigned char)_sig[10], 
+        (unsigned char)_sig[11],
+        (unsigned char)_sig[12], 
+        (unsigned char)_sig[13], 
+        (unsigned char)_sig[14], 
+        (unsigned char)_sig[15] );
+
+} // setSessionSignitureClientside
+
+
 
 int printError(rcComm_t *Conn, int status, char *routineName) {
     char *mySubName;
@@ -250,11 +275,12 @@ int clientLoginPam( rcComm_t* Conn,
 ///        plugins as well as defining the protocol or template
 ///        authenticaion will follow
 int clientLogin(
-    rcComm_t*   _conn,
+    rcComm_t*   _comm,
+    const char* _context,
     const char* _scheme_override ) {
     // =-=-=-=-=-=-=-
     // check out conn pointer
-    if( !_conn ) {
+    if( !_comm ) {
         return SYS_INVALID_INPUT_PARAM;
     }
 
@@ -298,7 +324,7 @@ int clientLogin(
     eirods::auth_object_ptr auth_obj;
     eirods::error ret = eirods::auth_factory( 
                             auth_scheme, 
-                            _conn->rError,
+                            _comm->rError,
                             auth_obj );
     if( !ret.ok() ){
         eirods::log( PASS( ret ) );
@@ -316,12 +342,16 @@ int clientLogin(
         return ret.code();
     }
     eirods::auth_ptr auth_plugin = boost::dynamic_pointer_cast< eirods::auth >( ptr );
-
+    
     // =-=-=-=-=-=-=-
-    // call client side init - 'establish creds'
-    ret = auth_plugin->call( 
-              eirods::AUTH_CLIENT_START, 
-              auth_obj );
+    // call client side init 
+    ret = auth_plugin->call<
+              rcComm_t*,
+              const char* >( 
+                  eirods::AUTH_CLIENT_START, 
+                  auth_obj,
+                  _comm,
+                  _context );
     if( !ret.ok() ){
         eirods::log( PASS( ret ) );
         return ret.code();
@@ -329,58 +359,41 @@ int clientLogin(
     
     // =-=-=-=-=-=-=-
     // send an authentication request to the server
-    // if this is a server process we need to default
-    // to the native rcAuthRequest to maintain federation
-    // capability with legacy deployments, otherwise
-    // use the new api request which handles plugins
-    // client side
-    authRequestOut_t* auth_request = 0;
-    int status = -1;
-    if( ProcessType != CLIENT_PT ) {
-        status = rcAuthRequest(
-                     _conn, 
-                     &auth_request );
-    } else {
-        authPluginReqInp_t req_in;
-        strncpy( 
-            req_in.auth_scheme_,
-            auth_scheme.c_str(),
-            NAME_LEN );
-        status = rcAuthPluginRequest( 
-                     _conn,
-                     &req_in,
-                     &auth_request );
-    }
-    if( status ) {
+    authRequestOut_t*  auth_request = 0;
+    authPluginReqInp_t req_in;
+    ret = auth_plugin->call<
+              rcComm_t*,
+              authPluginReqInp_t*,
+              authRequestOut_t** >(
+                  eirods::AUTH_CLIENT_AUTH_REQUEST,
+                  auth_obj,
+                  _comm,
+                  &req_in,
+                  &auth_request );
+    if( !ret.ok() ) {
         printError( 
-            _conn, 
-            status, 
-            "rcAuthRequest" );
+            _comm, 
+            ret.code(), 
+            (char*)ret.result().c_str() );
         delete [] auth_request->challenge;
         delete [] auth_request;
-        return status;
+        ret.code();
     }
 
     // =-=-=-=-=-=-=-
     // establish auth context client side
-    char response[ RESPONSE_LEN+2 ];
-    char username[ NAME_LEN * 2   ];
     authResponseInp_t auth_response;
+    char response[ RESPONSE_LEN+2 ];
     auth_response.response = response;
+    char username[ MAX_NAME_LEN   ];
     auth_response.username = username;
     ret = auth_plugin->call< 
-              const char*,
-              const char*,
               authRequestOut_t*,
-              authResponseInp_t*,
-              char* >( 
+              authResponseInp_t* >( 
                   eirods::AUTH_ESTABLISH_CONTEXT, 
                   auth_obj,
-                  _conn->proxyUser.userName,
-                  _conn->proxyUser.rodsZone,
                   auth_request,
-                  &auth_response,
-                  prevChallengeSignitureClient );
+                  &auth_response );
     if( !ret.ok() ){
         eirods::log( PASS( ret ) );
         free( auth_request->challenge );
@@ -390,22 +403,26 @@ int clientLogin(
 
     // =-=-=-=-=-=-=-
     // send the auth response to the agent
-    status = rcAuthResponse( 
-                 _conn, 
-                 &auth_response );
-    if( status ) {
+    ret = auth_plugin->call<
+              rcComm_t*,
+              authResponseInp_t* >(
+                  eirods::AUTH_CLIENT_AUTH_RESPONSE,
+                  auth_obj,
+                  _comm, 
+                  &auth_response );
+    if( !ret.ok() ) {
         printError( 
-            _conn, 
-            status, 
-            "rcAuthResponse" );
+            _comm, 
+            ret.code(), 
+            (char*)ret.result().c_str() );
         free( auth_request->challenge );
         free( auth_request );
-        return status;
+        return ret.code();
     }
 
     // =-=-=-=-=-=-=-
     // set the flag stating we are logged in
-    _conn->loggedIn = 1;
+    _comm->loggedIn = 1;
 
     // =-=-=-=-=-=-=-
     // win!
