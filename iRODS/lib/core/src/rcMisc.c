@@ -36,6 +36,9 @@
 #include "eirods_hierarchy_parser.h"
 #include "eirods_stacktrace.h"
 
+// =-=-=-=-=-=-=-
+// boost includes
+#include "boost/filesystem.hpp"
 
 /* check with the input path is a valid path -
  * 1 - valid
@@ -2562,20 +2565,23 @@ getNextRepeatTime(char *currTime, char *delayStr, char *nextTime)
                             addKeyVal (&dataObjInp.condInput, FORCE_FLAG_KW, "");
                             rstrcpy (dataObjInp.objPath, restartPath, MAX_NAME_LEN);
                             int status = rcDataObjUnlink (conn,& dataObjInp);
-                            if(status < 0)
-                            {
-                              eirods::log( ERROR ( status, "rcDataObjUnlink failed.")); 
-                            }
+//                            if(status < 0)
+//                            {
+// FIXME                         eirods::log( ERROR ( status, "rcDataObjUnlink failed."));
+//                            }
                             clearKeyVal (&dataObjInp.condInput);
                         }
                     } else if (objType == LOCAL_FILE_T) {
                         if (conn->fileRestart.info.status != FILE_RESTARTED ||
                             strcmp (conn->fileRestart.info.fileName, restartPath) != 0) {
-                            int status = unlink (restartPath);
-                            if(status < 0)
-                            {
-                              eirods::log( ERROR ( status, "unlink failed.")); 
-                            }
+                            boost::filesystem::path path(restartPath);
+                            if (boost::filesystem::exists(path)){
+                                int status = boost::filesystem::remove(path);
+                                if(status < 0)
+                                {
+                                  eirods::log( ERROR ( status, "boost:filesystem::remove() failed."));
+                                }
+                           }
                         }
                     } else {
                         rodsLog (LOG_ERROR,
