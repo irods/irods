@@ -85,7 +85,8 @@ namespace eirods {
     }; // class error
 
     error assert_error(bool expr_, long long code_, const std::string& file_, const std::string& function_, int line_, const std::string& format_, ...);
-    error assert_pass(bool expr_, const error& , const std::string& file_, const std::string& function_, int line_, const std::string& format_, ...);
+    error assert_pass(bool expr_, const error& _error, const std::string& _file, const std::string& _function, int _line, const std::string& _format, ...);
+    error assert_pass_msg(bool expr_, const error& _error, const std::string& _file, const std::string& _function, int _line, const std::string& _format, ...);
     
 }; // namespace eirods
 
@@ -99,6 +100,7 @@ namespace eirods {
 
 #define ASSERT_ERROR(expr_, code_, format_, ...)  (eirods::assert_error(expr_, code_, __FILE__, __FUNCTION__, __LINE__, format_, ##__VA_ARGS__))
 #define ASSERT_PASS(prev_error_, format_, ...) (eirods::assert_pass(prev_error_.ok(), prev_error_, __FILE__, __FUNCTION__, __LINE__, format_, ##__VA_ARGS__))
+#define ASSERT_PASS_MSG(prev_error_, format_, ...) (eirods::assert_pass_msg(prev_error_.ok(), prev_error_, __FILE__, __FUNCTION__, __LINE__, format_, ##__VA_ARGS__))
 
 #endif // __EIRODS_ERROR_H__
 

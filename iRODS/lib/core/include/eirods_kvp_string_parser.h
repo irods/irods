@@ -21,9 +21,23 @@
 namespace eirods {
     /// =-=-=-=-=-=-=-
     /// @brief default delimiter and key-value association
-    const std::string KVP_DEF_DELIM(";");
-    const std::string KVP_DEF_ASSOC("=");
+    static const std::string KVP_DEF_DELIM(";");
+    static const std::string KVP_DEF_ASSOC("=");
     typedef std::map< std::string, std::string > kvp_map_t;
+    
+    /// =-=-=-=-=-=-=-
+    /// @brief function to return defined delimiter
+    static
+    std::string kvp_delimiter() {
+        return KVP_DEF_DELIM;
+    }
+ 
+    /// =-=-=-=-=-=-=-
+    /// @brief function to return defined delimiter
+    static
+    std::string kvp_association() {
+        return KVP_DEF_ASSOC;
+    }
 
     /// =-=-=-=-=-=-=-
     /// @brief given a string, break the string along the kvp association and then

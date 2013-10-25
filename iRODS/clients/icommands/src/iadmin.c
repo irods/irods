@@ -1459,7 +1459,7 @@ void usageMain()
         " mkdir Name [username] (make directory(collection))",
         " rmdir Name (remove directory) ",
         " mkresc Name Type [Host:Path] [ContextString] (make Resource)",
-        " modresc Name [name, type, host, path, status, comment, info, freespace] Value (mod Resc)",
+        " modresc Name [name, type, host, path, status, comment, info, freespace, rebalance] Value (mod Resc)",
         " modrescdatapaths Name oldpath newpath [user] (update data-object paths,",
         "      sometimes needed after modresc path)",
         " rmresc Name (remove resource)",
@@ -1681,7 +1681,7 @@ usage(char *subOpt)
         ""};
 
     char *modrescMsgs[]={
-        " modresc Name [name, type, host, path, status, comment, info, freespace, or rebalance] Value",
+        " modresc Name [name, type, host, path, status, comment, info, freespace, rebalance] Value",
         "         (modify Resource)",
         "Change some attribute of a resource.  For example:",
         "    modresc demoResc comment 'test resource'",
@@ -1696,7 +1696,8 @@ usage(char *subOpt)
         " ",
         "The freespace value can be simply specified, or if it starts with + or -",
         "the freespace amount will be incremented or decremented by the value.",
-        "rebalance will trigger the rebalancing operation on a coordinating node.",
+        " ",
+        "'rebalance' will trigger the rebalancing operation on a coordinating resource node.",
         ""};
 
     char *modrescDataPathsMsgs[]={

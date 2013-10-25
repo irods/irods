@@ -98,8 +98,8 @@ namespace eirods {
         if( !ret.ok() ) {
             // =-=-=-=-=-=-=-
             // attempt to load the plugin, in this case the type,
-            // instance name, key etc are all tcp as there is only
-            // the need for one instance of a tcp object, etc.
+            // instance name, key etc are all ssl as there is only
+            // the need for one instance of a ssl object, etc.
             std::string empty_context( "" );
             ret = netwk_mgr.init_from_type( 
                       SSL_NETWORK_PLUGIN,

@@ -103,8 +103,11 @@ namespace eirods {
         };
 
         // =-=-=-=-=-=-=-
-        /// @brief delegate the call to the operation in question to the operation wrapper, with 1 param
-        error call( rsComm_t* _comm, const std::string& _op, eirods::first_class_object_ptr _obj ) {
+        /// @brief delegate the call to the operation in question to the operation wrapper, with 0 param
+        error call( 
+            rsComm_t* _comm, 
+            const std::string& _op, 
+            eirods::first_class_object_ptr _obj ) {
             resource_plugin_context ctx( properties_, _obj, "", _comm, children_ );
             return operations_[ _op ].call( ctx );
         

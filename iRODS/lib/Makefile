@@ -69,6 +69,7 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/fsckUtil.o \
 		$(libCoreObjDir)/osauth.o \
 		$(libCoreObjDir)/sslSockComm.o \
+		$(libCoreObjDir)/eirods_auth_factory.o \
 		$(libCoreObjDir)/eirods_operation_wrapper.o \
 		$(libCoreObjDir)/eirods_string_tokenize.o \
 		$(libCoreObjDir)/eirods_plugin_base.o \
@@ -88,8 +89,13 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/eirods_tcp_object.o \
 		$(libCoreObjDir)/eirods_network_factory.o \
 		$(libCoreObjDir)/eirods_network_manager.o \
-        $(libCoreObjDir)/eirods_buffer_encryption.o \
-        $(libCoreObjDir)/eirods_virtual_path.o 
+	    $(libCoreObjDir)/eirods_buffer_encryption.o \
+		$(libCoreObjDir)/eirods_auth_object.o \
+		$(libCoreObjDir)/eirods_auth_plugin.o \
+		$(libCoreObjDir)/eirods_auth_manager.o \
+		$(libCoreObjDir)/eirods_virtual_path.o \
+		$(libCoreObjDir)/eirods_native_auth_object.o \
+		$(libCoreObjDir)/eirods_pluggable_auth_scheme.o
 
 ifdef GSI_AUTH
 LIB_CORE_OBJS += $(libCoreObjDir)/igsi.o

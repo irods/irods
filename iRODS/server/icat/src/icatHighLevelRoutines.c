@@ -1227,10 +1227,6 @@ int chlUnregDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     char *theVal;
     char checkPath[MAX_NAME_LEN];
 
-eirods::stacktrace st;
-st.trace();
-st.dump();
-
     dataObjNumber[0]='\0';
     if (logSQL!=0) rodsLog(LOG_SQL, "chlUnregDataObj");
 
@@ -1999,10 +1995,10 @@ chlAddChildResc(
                 	    // =-=-=-=-=-=-=-
                 	    // Resolve resource hierarchy
 
-                	    status = chlResolveResourceHierarchy(rescInfo->rescName, localZone, hierarchy);
+                	    status = chlGetHierarchyForResc(rescInfo->rescName, localZone, hierarchy);
                 	    if (status < 0) {
                    			std::stringstream ss;
-                    		ss << func_name << ": chlResolveResourceHierarchy failed, status = " << status;
+                    		ss << func_name << ": chlGetHierarchyForResc failed, status = " << status;
                     		eirods::log(LOG_NOTICE, ss.str());
                     		_rollback(func_name);
                 	    	return status;
@@ -2423,10 +2419,10 @@ chlDelChildResc(
             	    // =-=-=-=-=-=-=-
             	    // Resolve resource hierarchy (of parent)
 
-            	    status = chlResolveResourceHierarchy(rescInfo->rescName, localZone, hierarchy);
+            	    status = chlGetHierarchyForResc(rescInfo->rescName, localZone, hierarchy);
             	    if (status < 0) {
                			std::stringstream ss;
-                		ss << "chlDelChildResc: chlResolveResourceHierarchy failed, status = " << status;
+                		ss << "chlDelChildResc: chlGetHierarchyForResc failed, status = " << status;
                 		eirods::log(LOG_NOTICE, ss.str());
                 		_rollback("chlDelChildResc");
             	    	return status;
@@ -10988,13 +10984,13 @@ int chlGetDistinctDataObjsMissingFromChildGivenParent(
 /*
  * @brief Given a resource, resolves the hierarchy down to said resource
  */
-int chlResolveResourceHierarchy(const std::string& resc_name, const std::string& zone_name, std::string& hierarchy) {
+int chlGetHierarchyForResc(const std::string& resc_name, const std::string& zone_name, std::string& hierarchy) {
 	char *current_node;
 	char parent[MAX_NAME_LEN];
 	int status;
 
 
-    eirods::sql_logger logger("chlResolveResourceHierarchy", logSQL);
+    eirods::sql_logger logger("chlGetHierarchyForResc", logSQL);
     logger.log();
 
 	if (!icss.status) {

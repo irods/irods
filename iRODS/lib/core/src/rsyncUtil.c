@@ -1030,8 +1030,8 @@ dataObjCopyInp_t *dataObjCopyInp)
               "initCondForRepl: NULL resourceString error");
             return (USER__NULL_INPUT_ERR);
         } else {
-            addKeyVal(&dataObjCopyInp->destDataObjInp.condInput, 
-	                  DEST_RESC_NAME_KW, rodsArgs->resourceString);
+            addKeyVal (&dataObjCopyInp->destDataObjInp.condInput, 
+	      DEST_RESC_NAME_KW, rodsArgs->resourceString);
         }
     } else if (myRodsEnv != NULL && strlen (myRodsEnv->rodsDefResource) > 0) {
         addKeyVal (&dataObjCopyInp->destDataObjInp.condInput, 

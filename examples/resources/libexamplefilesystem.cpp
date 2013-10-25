@@ -1147,6 +1147,8 @@ extern "C" {
             // if the status is down, vote no.
             if( INT_RESC_STATUS_DOWN == resc_status ) {
                 _out_vote = 0.0;
+                result.code( SYS_RESC_IS_DOWN );
+                // result = PASS( result );
             }
             else {
                 
@@ -1275,8 +1277,12 @@ extern "C" {
 
                     } // for itr
                 }
+            } else {
+                result.code( SYS_RESC_IS_DOWN );
+                result = PASS( result );
             }
         }                             
+        
         return result;
 
     } // example_file_redirect_open
@@ -1301,7 +1307,6 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // check incoming parameters
             if((result = ASSERT_ERROR(_opr && _curr_host && _out_parser && _out_vote, SYS_INVALID_INPUT_PARAM, "Invalid input parameter.")).ok()) {
-        
                 // =-=-=-=-=-=-=-
                 // cast down the chain to our understood object type
                 eirods::file_object_ptr file_obj = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
@@ -1311,7 +1316,6 @@ extern "C" {
                 std::string resc_name;
                 ret = _ctx.prop_map().get< std::string >( eirods::RESOURCE_NAME, resc_name );
                 if((result = ASSERT_PASS(ret, "Failed in get property for name." )).ok()) {
-
                     // =-=-=-=-=-=-=-
                     // add ourselves to the hierarchy parser by default
                     _out_parser->add_child( resc_name );
@@ -1322,13 +1326,13 @@ extern "C" {
                         // =-=-=-=-=-=-=-
                         // call redirect determination for 'get' operation
                         ret = example_file_redirect_open( _ctx.prop_map(), file_obj, resc_name, (*_curr_host), (*_out_vote) );
-                        result = ASSERT_PASS(ret, "Failed redirecting for open.");
+                        result = ASSERT_PASS_MSG(ret, "Failed redirecting for open.");
 
                     } else if( eirods::EIRODS_CREATE_OPERATION == (*_opr) ) {
                         // =-=-=-=-=-=-=-
                         // call redirect determination for 'create' operation
                         ret = example_file_redirect_create( _ctx.prop_map(), file_obj, resc_name, (*_curr_host), (*_out_vote)  );
-                        result = ASSERT_PASS(ret, "Failed redirecting for create.");
+                        result = ASSERT_PASS_MSG(ret, "Failed redirecting for create.");
                     }
 
                     else {

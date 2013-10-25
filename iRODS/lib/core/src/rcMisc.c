@@ -2549,7 +2549,6 @@ getNextRepeatTime(char *currTime, char *delayStr, char *nextTime)
                     char *restartPath, objType_t objType, keyValPair_t *condInput,
                     int deleteFlag)
             {
-
                 if (restartPath != NULL && deleteFlag > 0) {
                     if (objType == DATA_OBJ_T) {
                         if ((condInput == NULL ||
@@ -2571,7 +2570,7 @@ getNextRepeatTime(char *currTime, char *delayStr, char *nextTime)
                         }
                     } else if (objType == LOCAL_FILE_T) {
                         if (conn->fileRestart.info.status != FILE_RESTARTED ||
-                                strcmp (conn->fileRestart.info.fileName, restartPath) != 0) {
+                            strcmp (conn->fileRestart.info.fileName, restartPath) != 0) {
                             int status = unlink (restartPath);
                             if(status < 0)
                             {
@@ -4240,18 +4239,18 @@ getNextRepeatTime(char *currTime, char *delayStr, char *nextTime)
 
             int
                 writeFromByteBuf (int fd, bytesBuf_t *bytesBuf)
-                {
-                    int toWrite, nbytes;
-                    char *bufptr;
+            {
+                int toWrite, nbytes;
+                char *bufptr;
 
-                    bufptr = (char *)bytesBuf->buf;
-                    toWrite = bytesBuf->len;
-                    while ((nbytes = myWrite (fd, bufptr, toWrite, SOCK_TYPE, NULL)) >= 0) {
-                        toWrite -= nbytes;
-                        bufptr += nbytes;
-                        if (toWrite <= 0) break;
-                    }
-                    close (fd);
+                bufptr = (char *)bytesBuf->buf;
+                toWrite = bytesBuf->len;
+                while ((nbytes = myWrite (fd, bufptr, toWrite, SOCK_TYPE, NULL)) >= 0) {
+                    toWrite -= nbytes;
+                    bufptr += nbytes;
+                    if (toWrite <= 0) break;
+                }
+                close (fd);
 
                     if (toWrite != 0) {
                         return (SYS_COPY_LEN_ERR - errno);

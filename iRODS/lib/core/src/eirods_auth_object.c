@@ -1,0 +1,38 @@
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
+
+
+#include "eirods_auth_object.h"
+
+namespace eirods {
+
+    auth_object::auth_object(
+        rError_t* _r_error) : r_error_(_r_error)
+    {
+        // TODO - stub
+    }
+
+    auth_object::~auth_object() {
+        // TODO - stub
+    }
+
+    auth_object::auth_object(
+        const auth_object& _rhs)
+    {
+        r_error_ = _rhs.r_error();
+    }
+
+    auth_object& auth_object::operator=(
+        const auth_object& _rhs)
+    {
+        r_error_ = _rhs.r_error();
+        return *this;
+    }
+
+    bool auth_object::operator==(
+        const auth_object& _rhs) const
+    {
+        // For the base class just always return true
+        return r_error_ == _rhs.r_error();
+    }
+
+}; // namespace eirods
