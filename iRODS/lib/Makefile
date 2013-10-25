@@ -95,6 +95,7 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/eirods_auth_manager.o \
 		$(libCoreObjDir)/eirods_virtual_path.o \
 		$(libCoreObjDir)/eirods_native_auth_object.o \
+		$(libCoreObjDir)/eirods_pam_auth_object.o \
 		$(libCoreObjDir)/eirods_pluggable_auth_scheme.o
 
 ifdef GSI_AUTH

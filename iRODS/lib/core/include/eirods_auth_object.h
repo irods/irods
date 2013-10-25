@@ -32,7 +32,11 @@ namespace eirods {
 
         /// @brief Accessor for the rError pointer
         virtual rError_t* r_error(void) const { return r_error_; }
-        
+        virtual std::string request_result() const { return request_result_; }
+        virtual void request_result( const std::string& _r ) { request_result_ = _r; }
+        virtual std::string context() const { return context_; }
+        virtual void context( const std::string& _c ) { context_ = _c; }
+         
         /// @brief Comparison operator
         virtual bool operator==(const auth_object& _rhs) const;
 
@@ -42,6 +46,12 @@ namespace eirods {
         
     protected:
         rError_t*   r_error_;
+
+        // result passed to outgoing auth request 
+        // struct back to client - challenge for native, 
+        // password for pam etc
+        std::string request_result_; 
+        std::string context_; 
     };
 
     /// @brief Helpful typedef

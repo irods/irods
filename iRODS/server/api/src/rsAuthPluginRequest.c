@@ -19,9 +19,9 @@ void _rsSetAuthRequestGetChallenge( const char* );
 ///        request to the correct plugin given the requested
 ///        auth scheme in the input struct
 int rsAuthPluginRequest(
-    rsComm_t*           _comm,
-    authPluginReqInp_t* _req_inp,
-    authRequestOut_t**  _req_out ) {
+    rsComm_t*             _comm,
+    authPluginReqInp_t*   _req_inp,
+    authPluginReqOut_t**  _req_out ) {
     // =-=-=-=-=-=-=-
     // check our incoming params
     if( !_comm ) {
@@ -49,8 +49,7 @@ int rsAuthPluginRequest(
 
     // =-=-=-=-=-=-=-
     // handle old school memory allocation
-    (*_req_out) = (authRequestOut_t*)malloc( sizeof( authRequestOut_t ) );
-    (*_req_out)->challenge = (char*)malloc( CHALLENGE_LEN+2 );
+    (*_req_out) = (authPluginReqOut_t*)malloc( sizeof( authPluginReqOut_t ) );
    
     // =-=-=-=-=-=-=-
     // construct an auth object given the native scheme
@@ -65,6 +64,13 @@ int rsAuthPluginRequest(
     }
 
     // =-=-=-=-=-=-=-
+    // set the context of the auth object for communication
+    // to the plugin itself
+    if( _req_inp->context_ ) {
+        auth_obj->context( _req_inp->context_ );
+    }
+
+    // =-=-=-=-=-=-=-
     // resolve an auth plugin given the auth object
     eirods::plugin_ptr ptr;
     ret = auth_obj->resolve( 
@@ -74,24 +80,27 @@ int rsAuthPluginRequest(
         eirods::log( PASS( ret ) );
         return ret.code();
     }
-    eirods::auth_ptr auth_plugin = boost::dynamic_pointer_cast< eirods::auth >( ptr );
+    eirods::auth_ptr auth_plugin = boost::dynamic_pointer_cast< 
+                                       eirods::auth >( ptr );
 
     // =-=-=-=-=-=-=-
     // call client side init - 'establish creds'
-    ret = auth_plugin->call< 
-              authRequestOut_t* >( 
-                  eirods::AUTH_AGENT_AUTH_REQUEST,
-                  auth_obj,
-                  (*_req_out) );
+    ret = auth_plugin->call<
+                  rsComm_t* >( 
+                      eirods::AUTH_AGENT_AUTH_REQUEST,
+                      auth_obj,
+                      _comm );
     if( !ret.ok() ){
         eirods::log( PASS( ret ) );
         return ret.code();
     }
-
+    
     // =-=-=-=-=-=-=-
-    // cache the challenge so the below function can
-    // access it
-    _rsSetAuthRequestGetChallenge( (*_req_out)->challenge );
+    // send back the results
+    strncpy(
+        (*_req_out)->result_,
+        auth_obj->request_result().c_str(),
+        auth_obj->request_result().size()+1 );
 
     // =-=-=-=-=-=-=-
     // win!
