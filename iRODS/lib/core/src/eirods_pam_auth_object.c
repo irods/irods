@@ -2,7 +2,7 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_native_auth_object.h"
+#include "eirods_pam_auth_object.h"
 #include "eirods_auth_manager.h"
 #include "eirods_auth_plugin.h"
 
@@ -14,47 +14,46 @@ namespace eirods {
 
     // =-=-=-=-=-=-=-
     // public - ctor
-    native_auth_object::native_auth_object(
+    pam_auth_object::pam_auth_object(
         rError_t* _r_error) : 
             auth_object(_r_error) {
     } // ctor
 
     // =-=-=-=-=-=-=-
     // public - dtor
-    native_auth_object::~native_auth_object() {
+    pam_auth_object::~pam_auth_object() {
     } // dtor
 
     // =-=-=-=-=-=-=-
-    // public - cctor
-    native_auth_object::native_auth_object(
-        const native_auth_object& _rhs ) :
-        auth_object( _rhs ) {
-        user_name_ = _rhs.user_name_;
-        zone_name_ = _rhs.zone_name_;
-        digest_    = _rhs.digest_;
-    } // cctor
+    // public - assignment operator
+    pam_auth_object::pam_auth_object(
+        const pam_auth_object& _rhs) :
+            auth_object(_rhs) {
+        user_name_   = _rhs.user_name_;
+        zone_name_   = _rhs.zone_name_;
+        context_     = _rhs.context_;
+    }
 
     // =-=-=-=-=-=-=-
     // public - assignment operator
-    native_auth_object& native_auth_object::operator=(
-        const native_auth_object& _rhs ) {
-        auth_object::operator=( _rhs );
-        user_name_ = _rhs.user_name_;
-        zone_name_ = _rhs.zone_name_;
-        digest_    = _rhs.digest_;
+    pam_auth_object& pam_auth_object::operator=(
+        const pam_auth_object& _rhs) {
+        auth_object::operator=(_rhs);
+        user_name_   = _rhs.user_name_;
+        zone_name_   = _rhs.zone_name_;
         return *this;
     }
 
     // =-=-=-=-=-=-=-
     // public - equality operator
-    bool native_auth_object::operator==(
-        const native_auth_object& _rhs) const {
+    bool pam_auth_object::operator==(
+        const pam_auth_object& _rhs) const {
         return false;
     }
         
     // =-=-=-=-=-=-=-
     // public - resolve a plugin given an interface
-    error native_auth_object::resolve(
+    error pam_auth_object::resolve(
         const std::string& _interface, 
         plugin_ptr&        _ptr ) {
         // =-=-=-=-=-=-=-
@@ -62,7 +61,7 @@ namespace eirods {
         // isnt a auth interface
         if( AUTH_INTERFACE != _interface ) {
             std::stringstream msg;
-            msg << "native_auth_object does not support a [";
+            msg << "pam_auth_object does not support a [";
             msg << _interface;
             msg << "] plugin interface";
             return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
@@ -73,7 +72,7 @@ namespace eirods {
         // ask the auth manager for a native auth plugin
         auth_ptr a_ptr;
         error ret = auth_mgr.resolve( 
-                        AUTH_NATIVE_SCHEME, 
+                        AUTH_PAM_SCHEME, 
                         a_ptr );
         if( !ret.ok() ) {
             // =-=-=-=-=-=-=-
@@ -82,9 +81,9 @@ namespace eirods {
             // the need for one instance of a native object, etc.
             std::string empty_context( "" );
             ret = auth_mgr.init_from_type( 
-                      AUTH_NATIVE_SCHEME,
-                      AUTH_NATIVE_SCHEME,
-                      AUTH_NATIVE_SCHEME,
+                      AUTH_PAM_SCHEME,
+                      AUTH_PAM_SCHEME,
+                      AUTH_PAM_SCHEME,
                       empty_context,
                       a_ptr );
             if( !ret.ok() ) {
@@ -110,7 +109,7 @@ namespace eirods {
 
     // =-=-=-=-=-=-=-
     // public - serialize object to kvp
-    error native_auth_object::get_re_vars(
+    error pam_auth_object::get_re_vars(
               keyValPair_t& _kvp ) {
         // =-=-=-=-=-=-=-
         // all we have in this object is the auth results
@@ -122,10 +121,6 @@ namespace eirods {
             &_kvp, 
             "user_name", 
             user_name_.c_str() );
-        addKeyVal( 
-            &_kvp, 
-            "digest", 
-            digest_.c_str() );
 
         return SUCCESS();
 

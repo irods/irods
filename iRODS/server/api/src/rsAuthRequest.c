@@ -45,8 +45,6 @@ int rsAuthRequest(
         rodsLog( LOG_ERROR, "rsAuthRequest - null comm pointer" );
         return SYS_INVALID_INPUT_PARAM;
     }
-printf( "XXXX - rsAuthRequest :: START\n" );
-fflush( stdout );
 
     // =-=-=-=-=-=-=-
     // handle old school memory allocation
@@ -79,29 +77,23 @@ fflush( stdout );
 
     // =-=-=-=-=-=-=-
     // call client side init - 'establish creds'
-printf( "XXXX - rsAuthRequest :: plugin call\n" );
-fflush( stdout );
     ret = auth_plugin->call< 
-              authRequestOut_t* >( 
+              rsComm_t* >( 
                   eirods::AUTH_AGENT_AUTH_REQUEST,
                   auth_obj,
-                  (*_req) );
-printf( "XXXX - rsAuthRequest :: plugin done\n" );
-fflush( stdout );
+                  _comm );
     if( !ret.ok() ){
         eirods::log( PASS( ret ) );
         return ret.code();
     }
 
-printf( "XXXX - rsAuthRequest :: make the copy\n" );
-fflush( stdout );
     // =-=-=-=-=-=-=-
-    // cache the challenge so the below function can
-    // access it
-    _rsSetAuthRequestGetChallenge( (*_req)->challenge );
+    // send back the results
+    strncpy(
+        (*_req)->challenge,
+        auth_obj->request_result().c_str(),
+        auth_obj->request_result().size()+1 );
 
-printf( "XXXX - rsAuthRequest :: make the copy. done.\n" );
-fflush( stdout );
     // =-=-=-=-=-=-=-
     // win!
     return 0;

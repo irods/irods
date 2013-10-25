@@ -58,139 +58,153 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
 
    /* handle the long options first */
    if (includeLong) {
-      for (i=0;i<argc;i++) {
-         if (strcmp("--link", argv[i])==0) {
-            rodsArgs->link=True;
-            argv[i]="-Z";  /* ignore symlink */
-         }
+       for (i=0;i<argc;i++) {
+           if (strcmp("--link", argv[i])==0) {
+               rodsArgs->link=True;
+               argv[i]="-Z";  /* ignore symlink */
+           }
 
-	 if (strcmp("--parallel", argv[i])==0) {
-	    rodsArgs->parallel=True;
-	    argv[i]="-Z";  /* place holder so the getopt will parse */
-	 }
-	 if (strcmp("--serial", argv[i])==0) {
-	    rodsArgs->serial=True;
-	    argv[i]="-Z";
-	 }
-         if (strcmp("--master-icat", argv[i])==0) {
-	    rodsArgs->masterIcat=True;
-	    argv[i]="-Z";
-	 }
-         if (strcmp("--silent", argv[i])==0) {  /* also -W */
-            rodsArgs->silent=True;
-            argv[i]="-Z";
-         }
-         if (strcmp("--test", argv[i])==0) {
-	    rodsArgs->test=True;
-	    argv[i]="-Z";
-	 }
-	 if (strcmp("--verify", argv[i])==0) {  /* also -x */
-	    rodsArgs->verify=True;
-	    argv[i]="-Z";
-	 }
-	 if (strcmp("--version", argv[i])==0) {  /* also -W */
-	    rodsArgs->version=True;
-	    argv[i]="-Z";
-	 }
-	 if (strcmp("--retries", argv[i])==0) {  /* also -Y */
-	    rodsArgs->retries=True;
-	    argv[i]="-Z";
-            if (i + 2 <= argc) {
-               if (*argv[i+1] == '-') {
-                   rodsLog (LOG_ERROR,
-                    "--retries option needs an iput file");
-                    return USER_INPUT_OPTION_ERR;
+           if (strcmp("--parallel", argv[i])==0) {
+               rodsArgs->parallel=True;
+               argv[i]="-Z";  /* place holder so the getopt will parse */
+           }
+           if (strcmp("--serial", argv[i])==0) {
+               rodsArgs->serial=True;
+               argv[i]="-Z";
+           }
+           if (strcmp("--master-icat", argv[i])==0) {
+               rodsArgs->masterIcat=True;
+               argv[i]="-Z";
+           }
+           if (strcmp("--silent", argv[i])==0) {  /* also -W */
+               rodsArgs->silent=True;
+               argv[i]="-Z";
+           }
+           if (strcmp("--test", argv[i])==0) {
+               rodsArgs->test=True;
+               argv[i]="-Z";
+           }
+           if (strcmp("--ttl", argv[i])==0) {
+               rodsArgs->ttl=True;
+               argv[i]="-Z";
+               if (i + 2 <= argc) {
+                   if (*argv[i+1] == '-') {
+                       rodsLog (LOG_ERROR,
+                               "--ttl option needs a time to live number");
+                       return USER_INPUT_OPTION_ERR;
+                   }
+                   rodsArgs->ttlValue=atoi(argv[i+1]);
+                   argv[i+1]="-Z";
                }
-	       rodsArgs->retriesValue=atoi(argv[i+1]);
-               argv[i+1]="-Z";
-            }
-	 }
-	 if (strcmp("--no-page", argv[i])==0) {
-	    rodsArgs->noPage=True;
-	    argv[i]="-Z";
-	 }
-         if (strcmp("--repl", argv[i])==0) {
-            rodsArgs->regRepl=True;
-            argv[i]="-Z";
-         }
-         if (strcmp("--sql", argv[i])==0) {
-            rodsArgs->sql=True;
-            argv[i]="-Z";
-         }
-         if (strcmp("--lfrestart", argv[i])==0) {
-            rodsArgs->lfrestart=True;
-            argv[i]="-Z";
-            if (i + 2 <= argc) {
-	       if (*argv[i+1] == '-') {
-                   rodsLog (LOG_ERROR,
-                    "--lfrestart option needs an iput file");
-		    return USER_INPUT_OPTION_ERR;
+           }
+           if (strcmp("--verify", argv[i])==0) {  /* also -x */
+               rodsArgs->verify=True;
+               argv[i]="-Z";
+           }
+           if (strcmp("--version", argv[i])==0) {  /* also -W */
+               rodsArgs->version=True;
+               argv[i]="-Z";
+           }
+           if (strcmp("--retries", argv[i])==0) {  /* also -Y */
+               rodsArgs->retries=True;
+               argv[i]="-Z";
+               if (i + 2 <= argc) {
+                   if (*argv[i+1] == '-') {
+                       rodsLog (LOG_ERROR,
+                               "--retries option needs an iput file");
+                       return USER_INPUT_OPTION_ERR;
+                   }
+                   rodsArgs->retriesValue=atoi(argv[i+1]);
+                   argv[i+1]="-Z";
                }
-               rodsArgs->lfrestartFileString=strdup(argv[i+1]);
-               argv[i+1]="-Z";
-            }
-         }
-         if (strcmp("--orphan", argv[i])==0) {
-            rodsArgs->orphan=True;
-            argv[i]="-Z";
-         }
-         if (strcmp("--purgec", argv[i])==0) { // JMC - backport 4537
-            rodsArgs->purgeCache=True;
-            argv[i]="-Z";
-         }
-         if (strcmp("--bundle", argv[i])==0) { // JMC - backport 4536
-            rodsArgs->bundle=True;
-            argv[i]="-Z";
-         }
-         if (strcmp("--empty", argv[i])==0) { // JMC - backport 4552
-            rodsArgs->empty=True;
-            argv[i]="-Z";
-         }
-         if (strcmp("--age", argv[i])==0) {  /* also -Y */
-            rodsArgs->age=True;
-            argv[i]="-Z";
-            if ( argc >= i + 2 ) {
-               if (*argv[i+1] == '-') {
-                   rodsLog (LOG_ERROR,
-                    "--age option needs an iput number");
-                    return USER_INPUT_OPTION_ERR;
+           }
+           if (strcmp("--no-page", argv[i])==0) {
+               rodsArgs->noPage=True;
+               argv[i]="-Z";
+           }
+           if (strcmp("--repl", argv[i])==0) {
+               rodsArgs->regRepl=True;
+               argv[i]="-Z";
+           }
+           if (strcmp("--sql", argv[i])==0) {
+               rodsArgs->sql=True;
+               argv[i]="-Z";
+           }
+           if (strcmp("--lfrestart", argv[i])==0) {
+               rodsArgs->lfrestart=True;
+               argv[i]="-Z";
+               if (i + 2 <= argc) {
+                   if (*argv[i+1] == '-') {
+                       rodsLog (LOG_ERROR,
+                               "--lfrestart option needs an iput file");
+                       return USER_INPUT_OPTION_ERR;
+                   }
+                   rodsArgs->lfrestartFileString=strdup(argv[i+1]);
+                   argv[i+1]="-Z";
                }
-               rodsArgs->agevalue=atoi(argv[i+1]);
-               argv[i+1]="-Z";
-            }
-         }
-         if (strcmp("--dryrun", argv[i])==0) {
-            rodsArgs->dryrun=True;
-            argv[i]="-Z";
-         }
+           }
+           if (strcmp("--orphan", argv[i])==0) {
+               rodsArgs->orphan=True;
+               argv[i]="-Z";
+           }
+           if (strcmp("--purgec", argv[i])==0) { // JMC - backport 4537
+               rodsArgs->purgeCache=True;
+               argv[i]="-Z";
+           }
+           if (strcmp("--bundle", argv[i])==0) { // JMC - backport 4536
+               rodsArgs->bundle=True;
+               argv[i]="-Z";
+           }
+           if (strcmp("--empty", argv[i])==0) { // JMC - backport 4552
+               rodsArgs->empty=True;
+               argv[i]="-Z";
+           }
 
-         if (strcmp("--rlock", argv[i])==0) { // JMC - backport 4604
-            rodsArgs->rlock=True;
-            argv[i]="-Z";
-         }
-         if (strcmp("--wlock", argv[i])==0) { // JMC - backport 4604
-            rodsArgs->wlock=True;
-            argv[i]="-Z";
-         }
-         if (strcmp("--add", argv[i])==0) { // JMC - backport 4643
-            rodsArgs->add=True;
-            argv[i]="-Z";
-         }
-      
-         if (strcmp("--exclude-from", argv[i])==0) {
-            rodsArgs->excludeFile=True;
-            argv[i]="-Z";
-            if (i + 2 < argc) {
-               if (*argv[i+1] == '-') {
-                   rodsLog (LOG_ERROR,
-                    "--exclude-from option takes a file argument");
-                   return USER_INPUT_OPTION_ERR;
+           if (strcmp("--age", argv[i])==0) {  /* also -Y */
+               rodsArgs->age=True;
+               argv[i]="-Z";
+               if ( argc >= i + 2 ) {
+                   if (*argv[i+1] == '-') {
+                       rodsLog (LOG_ERROR,
+                               "--age option needs an iput number");
+                       return USER_INPUT_OPTION_ERR;
+                   }
+                   rodsArgs->agevalue=atoi(argv[i+1]);
+                   argv[i+1]="-Z";
                }
-               rodsArgs->excludeFileString=strdup(argv[i+1]);
-               argv[i+1]="-Z";
-            }
-         }
-      }
+           }
+           if (strcmp("--dryrun", argv[i])==0) {
+               rodsArgs->dryrun=True;
+               argv[i]="-Z";
+           }
+
+           if (strcmp("--rlock", argv[i])==0) { // JMC - backport 4604
+               rodsArgs->rlock=True;
+               argv[i]="-Z";
+           }
+           if (strcmp("--wlock", argv[i])==0) { // JMC - backport 4604
+               rodsArgs->wlock=True;
+               argv[i]="-Z";
+           }
+           if (strcmp("--add", argv[i])==0) { // JMC - backport 4643
+               rodsArgs->add=True;
+               argv[i]="-Z";
+           }
+
+           if (strcmp("--exclude-from", argv[i])==0) {
+               rodsArgs->excludeFile=True;
+               argv[i]="-Z";
+               if (i + 2 < argc) {
+                   if (*argv[i+1] == '-') {
+                       rodsLog (LOG_ERROR,
+                               "--exclude-from option takes a file argument");
+                       return USER_INPUT_OPTION_ERR;
+                   }
+                   rodsArgs->excludeFileString=strdup(argv[i+1]);
+                   argv[i+1]="-Z";
+               }
+           }
+       }
    }
 
    /* handle the short options */

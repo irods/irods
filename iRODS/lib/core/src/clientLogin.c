@@ -20,6 +20,7 @@
 #include "eirods_auth_plugin.h"
 #include "eirods_auth_manager.h"
 #include "eirods_auth_constants.h"
+#include "eirods_pam_auth_object.h"
 #include "authPluginRequest.h"
 
 static char prevChallengeSignitureClient[200];
@@ -314,6 +315,14 @@ int clientLogin(
                 auth_scheme = auth_env_var;
             
             }
+
+            // =-=-=-=-=-=-=-
+            // filter out the pam auth as it is an extra special
+            // case and only sent in as an override. 
+            // everyone other scheme behaves as normal
+            if( eirods::AUTH_PAM_SCHEME == auth_scheme ) {
+                auth_scheme = eirods::AUTH_NATIVE_SCHEME;
+            }
        
         } // if _scheme_override
          
@@ -359,64 +368,41 @@ int clientLogin(
     
     // =-=-=-=-=-=-=-
     // send an authentication request to the server
-    authRequestOut_t*  auth_request = 0;
-    authPluginReqInp_t req_in;
     ret = auth_plugin->call<
-              rcComm_t*,
-              authPluginReqInp_t*,
-              authRequestOut_t** >(
+              rcComm_t* >(
                   eirods::AUTH_CLIENT_AUTH_REQUEST,
                   auth_obj,
-                  _comm,
-                  &req_in,
-                  &auth_request );
+                  _comm );
     if( !ret.ok() ) {
         printError( 
             _comm, 
             ret.code(), 
             (char*)ret.result().c_str() );
-        delete [] auth_request->challenge;
-        delete [] auth_request;
-        ret.code();
+        return ret.code();
     }
 
     // =-=-=-=-=-=-=-
     // establish auth context client side
-    authResponseInp_t auth_response;
-    char response[ RESPONSE_LEN+2 ];
-    auth_response.response = response;
-    char username[ MAX_NAME_LEN   ];
-    auth_response.username = username;
-    ret = auth_plugin->call< 
-              authRequestOut_t*,
-              authResponseInp_t* >( 
-                  eirods::AUTH_ESTABLISH_CONTEXT, 
-                  auth_obj,
-                  auth_request,
-                  &auth_response );
+    ret = auth_plugin->call( 
+              eirods::AUTH_ESTABLISH_CONTEXT, 
+              auth_obj );
     if( !ret.ok() ){
         eirods::log( PASS( ret ) );
-        free( auth_request->challenge );
-        free( auth_request );
         return ret.code();
     }
 
     // =-=-=-=-=-=-=-
     // send the auth response to the agent
     ret = auth_plugin->call<
-              rcComm_t*,
-              authResponseInp_t* >(
+              rcComm_t* >(
                   eirods::AUTH_CLIENT_AUTH_RESPONSE,
                   auth_obj,
-                  _comm, 
-                  &auth_response );
+                  _comm );
     if( !ret.ok() ) {
         printError( 
             _comm, 
             ret.code(), 
             (char*)ret.result().c_str() );
-        free( auth_request->challenge );
-        free( auth_request );
         return ret.code();
     }
 
@@ -426,8 +412,6 @@ int clientLogin(
 
     // =-=-=-=-=-=-=-
     // win!
-    free( auth_request->challenge );
-    free( auth_request );
     return 0;
 
 } // clientLogin

@@ -27,7 +27,7 @@
 
 int get64RandomBytes(char *buf);
 void setSessionSignitureClientside( char* _sig );
-
+void _rsSetAuthRequestGetChallenge( const char* _c );
 static
 int check_proxy_user_privelges(
     rsComm_t *rsComm, 
@@ -81,8 +81,11 @@ extern "C" {
             
         }
 
-        eirods::native_auth_object_ptr ptr = boost::dynamic_pointer_cast< eirods::native_auth_object >( _ctx.fco() );
-
+        // =-=-=-=-=-=-=-
+        // get the native auth object
+        eirods::native_auth_object_ptr ptr = boost::dynamic_pointer_cast< 
+                                                 eirods::native_auth_object >( 
+                                                     _ctx.fco() );
         // =-=-=-=-=-=-=-
         // set the user name from the conn
         ptr->user_name( _comm->proxyUser.userName );
@@ -99,9 +102,7 @@ extern "C" {
     // establish context - take the auth request results and massage them
     // for the auth response call
     eirods::error native_auth_establish_context(
-        eirods::auth_plugin_context& _ctx,
-        authRequestOut_t*            _req,
-        authResponseInp_t*           _resp ) {
+        eirods::auth_plugin_context& _ctx ) {
         // =-=-=-=-=-=-=-
         // validate incoming parameters
         if( !_ctx.valid< eirods::native_auth_object >().ok() ) {
@@ -109,17 +110,8 @@ extern "C" {
                        SYS_INVALID_INPUT_PARAM,
                        "invalid plugin context" );
             
-        } else if( !_req ) {
-            return ERROR( 
-                       SYS_INVALID_INPUT_PARAM,
-                       "null authRequestOut_t ptr" );
-            
-        } else if( !_resp ) {
-            return ERROR( 
-                       SYS_INVALID_INPUT_PARAM,
-                       "null authResponseInp_t ptr" );
-        } 
-        
+        }
+               
         // =-=-=-=-=-=-=-
         // build a buffer for the challenge hash
         char md5_buf[ CHALLENGE_LEN+MAX_PASSWORD_LEN+2 ];
@@ -127,19 +119,23 @@ extern "C" {
             md5_buf, 
             0, 
             sizeof( md5_buf ) );
+ 
+        // =-=-=-=-=-=-=-
+        // get the native auth object
+        eirods::native_auth_object_ptr ptr = boost::dynamic_pointer_cast< 
+                                                 eirods::native_auth_object >( 
+                                                     _ctx.fco() );
+        // =-=-=-=-=-=-=-
+        // copy the challenge into the md5 buffer
         strncpy( 
-            md5_buf, 
-            _req->challenge, 
+            md5_buf,
+            ptr->request_result().c_str(),
             CHALLENGE_LEN );
 
         // =-=-=-=-=-=-=-
         // Save a representation of some of the challenge string for use
         // as a session signiture 
         setSessionSignitureClientside( md5_buf );
- 
-        // =-=-=-=-=-=-=-
-        // get the native auth object
-        eirods::native_auth_object_ptr ptr = boost::dynamic_pointer_cast< eirods::native_auth_object >( _ctx.fco() );
 
         // =-=-=-=-=-=-=-
         // determine if a password challenge is needed,
@@ -211,52 +207,50 @@ extern "C" {
         }
 
         // =-=-=-=-=-=-=-
-        // set up the auth reponse structure for the next call
-        strncpy( 
-            _resp->response,
-            digest,
-            RESPONSE_LEN+2 );
-               
-        // =-=-=-=-=-=-=-
-        // build the username#zonename string
-        std::string user_name = ptr->user_name() +
-                                "#"              +
-                                ptr->zone_name();
-        strncpy(
-            _resp->username, 
-            user_name.c_str(),
-            LONG_NAME_LEN );
+        // cache the digest for the response
+        ptr->digest( digest );
 
         return SUCCESS();
 
     } // native_auth_establish_context
 
     // =-=-=-=-=-=-=-
-    // handle an agent-side auth request call 
+    // handle an client-side auth request call 
     eirods::error native_auth_client_request(
         eirods::auth_plugin_context& _ctx,
-        rcComm_t*                    _comm,
-        authPluginReqInp_t*          _req_in,
-        authRequestOut_t**           _req_out ) {
+        rcComm_t*                    _comm ) {
         // =-=-=-=-=-=-=-
         // validate incoming parameters
-        if( !_ctx.valid().ok() ) {
+        if( !_ctx.valid< eirods::native_auth_object >().ok() ) {
             return ERROR( 
                        SYS_INVALID_INPUT_PARAM,
                        "invalid plugin context" );
         }  
-               
+        
         // =-=-=-=-=-=-=-
         // make the call to our auth request
+        authRequestOut_t* auth_request = 0;
         int status = rcAuthRequest( 
                          _comm,
-                         _req_out );
+                         &auth_request );
         if( status < 0 ) {
+            free( auth_request->challenge );
+            free( auth_request );
             return ERROR( 
                        status,
                        "call to rcAuthRequest failed." );
         
-        } else {
+        } else { 
+            // =-=-=-=-=-=-=-
+            // get the auth object
+            eirods::native_auth_object_ptr ptr = boost::dynamic_pointer_cast< 
+                                                  eirods::native_auth_object >( _ctx.fco() );
+            // =-=-=-=-=-=-=-
+            // cache the challenge
+            ptr->request_result( auth_request->challenge );
+
+            free( auth_request->challenge );
+            free( auth_request );
             return SUCCESS();
         
         }
@@ -267,29 +261,38 @@ extern "C" {
     // handle an agent-side auth request call 
     eirods::error native_auth_agent_request(
         eirods::auth_plugin_context& _ctx,
-        authRequestOut_t*            _req ) {
+        rsComm_t*                    _comm ) {
         // =-=-=-=-=-=-=-
         // validate incoming parameters
-        if( !_ctx.valid().ok() ) {
+        if( !_ctx.valid< eirods::native_auth_object >().ok() ) {
             return ERROR( 
                        SYS_INVALID_INPUT_PARAM,
                        "invalid plugin context" );
-        } else if( !_req ) {
+        } else if( !_comm ) {
             return ERROR( 
                        SYS_INVALID_INPUT_PARAM,
-                       "null authRequestOut_t ptr" );
-        } else if( !_req->challenge ) {
-            return ERROR( 
-                       SYS_INVALID_INPUT_PARAM,
-                       "null authRequestOut_t->challenge ptr" );
-        }
+                       "null comm ptr" );
+        } 
         
         // =-=-=-=-=-=-=-
         // generate a random buffer and copy it to the challenge
         char buf[ CHALLENGE_LEN+2 ];
         get64RandomBytes( buf );
-        strncpy( _req->challenge, buf, CHALLENGE_LEN+2 );
+        
+        // =-=-=-=-=-=-=-
+        // get the auth object
+        eirods::native_auth_object_ptr ptr = boost::dynamic_pointer_cast< 
+                                              eirods::native_auth_object >( _ctx.fco() );
+        // =-=-=-=-=-=-=-
+        // cache the challenge
+        ptr->request_result( buf );
 
+        // =-=-=-=-=-=-=-
+        // cache the challenge in the server for later usage
+        _rsSetAuthRequestGetChallenge( buf );
+        
+        // =-=-=-=-=-=-=-
+        // win!
         return SUCCESS(); 
          
     } // native_auth_agent_request
@@ -298,28 +301,49 @@ extern "C" {
     // handle a client-side auth request call 
     eirods::error native_auth_client_response(
         eirods::auth_plugin_context& _ctx,
-        rcComm_t*                    _comm,
-        authResponseInp_t*           _resp ) {
+        rcComm_t*                    _comm ) {
         // =-=-=-=-=-=-=-
         // validate incoming parameters
-        if( !_ctx.valid().ok() ) {
+        if( !_ctx.valid< eirods::native_auth_object >().ok() ) {
             return ERROR( 
                     SYS_INVALID_INPUT_PARAM,
                     "invalid plugin context" );
-        } else if( !_resp ) {
-            return ERROR( 
-                    SYS_INVALID_INPUT_PARAM,
-                    "null authResponseInp_t ptr" );
-        } else if( !_comm ) {
+        } else if( !_comm ) { 
             return ERROR( 
                     SYS_INVALID_INPUT_PARAM,
                     "null rcComm_t ptr" );
         }
+        
         // =-=-=-=-=-=-=-
-        // make the call to the client response api
+        // get the auth object
+        eirods::native_auth_object_ptr ptr = boost::dynamic_pointer_cast< 
+                                                 eirods::native_auth_object >( 
+                                                     _ctx.fco() );
+        // =-=-=-=-=-=-=-
+        // build the response string
+        char response[ RESPONSE_LEN+2 ];
+        strncpy( 
+            response,
+            ptr->digest().c_str(),
+            RESPONSE_LEN+2 );
+               
+        // =-=-=-=-=-=-=-
+        // build the username#zonename string
+        std::string user_name = ptr->user_name() +
+                                "#"              +
+                                ptr->zone_name();
+        char username[ MAX_NAME_LEN ];
+        strncpy(
+            username, 
+            user_name.c_str(),
+            MAX_NAME_LEN );
+
+        authResponseInp_t auth_response;
+        auth_response.response = response;
+        auth_response.username = username;
         int status = rcAuthResponse(
                          _comm,
-                         _resp );
+                         &auth_response );
         if( status < 0 ) {
             return ERROR(
                        status,

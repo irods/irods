@@ -5,6 +5,7 @@
 // eirods includes
 #include "eirods_auth_factory.h"
 #include "eirods_native_auth_object.h"
+#include "eirods_pam_auth_object.h"
 
 namespace eirods {
    /// =-=-=-=-=-=-=-
@@ -30,6 +31,23 @@ namespace eirods {
                return ERROR( 
                           SYS_INVALID_INPUT_PARAM, 
                           "native auth dynamic cast failed" );
+           }
+           
+           _ptr.reset( auth_obj );
+
+       } else if( AUTH_PAM_SCHEME == _scheme ) {
+           pam_auth_object* pam_obj = new pam_auth_object( _r_error );
+           if( !pam_obj ) {
+               return ERROR( 
+                          SYS_INVALID_INPUT_PARAM, 
+                          "pam auth allocation failed" );
+           }
+
+           auth_object* auth_obj = dynamic_cast< auth_object* >( pam_obj );
+           if( !auth_obj ) {
+               return ERROR( 
+                          SYS_INVALID_INPUT_PARAM, 
+                          "pam auth dynamic cast failed" );
            }
            
            _ptr.reset( auth_obj );

@@ -18,13 +18,17 @@ namespace eirods {
     auth_object::auth_object(
         const auth_object& _rhs)
     {
-        r_error_ = _rhs.r_error();
+        r_error_        = _rhs.r_error();
+        request_result_ = _rhs.request_result();
+        context_        = _rhs.context();
     }
 
     auth_object& auth_object::operator=(
         const auth_object& _rhs)
     {
-        r_error_ = _rhs.r_error();
+        r_error_        = _rhs.r_error();
+        request_result_ = _rhs.request_result();
+        context_        = _rhs.context();
         return *this;
     }
 
@@ -32,7 +36,9 @@ namespace eirods {
         const auth_object& _rhs) const
     {
         // For the base class just always return true
-        return r_error_ == _rhs.r_error();
+        return ( r_error_        == _rhs.r_error()        &&
+                 request_result_ == _rhs.request_result() &&
+                 context_        == _rhs.context() );
     }
 
 }; // namespace eirods
