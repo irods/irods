@@ -25,7 +25,7 @@
 |
 
 :Author: Renaissance Computing Institute (RENCI)
-:Version: 3.0.1
+:Version: 3.0.1b1
 :Date: |todaysdate|
 
 
@@ -332,9 +332,9 @@ The planned plugin interfaces and their status are listed here:
  ========================   ==========    ========
  Pluggable Microservices    Complete      3.0b2
  Composable Resources       Complete      3.0b3
- Pluggable Authentication   Planned
+ Pluggable Authentication   Complete      3.0.1b1
+ Pluggable Network          Complete      3.0.1b1
  Pluggable Database         Planned
- Pluggable Messaging        Planned
  Pluggable RPC API          Planned
  Pluggable Rule Engine      Requested
  ========================   ==========    ========
@@ -385,9 +385,9 @@ Read more at `http://eirods.org/release/e-irods-composable-resources/`__:
 Coordinating Resources
 ----------------------
 
-Coordinating resources contain the flow control logic which determines both how its child resources will be allocated copies of data as well as which copy is returned when a data object is requested.  These include:
+Coordinating resources contain the flow control logic which determines both how its child resources will be allocated copies of data as well as which copy is returned when a Data Object is requested.  These include:
 
-- legacy compound
+- compound
 - random
 - replication
 - round robin
@@ -462,6 +462,13 @@ A replicating coordinating resource with three unix file system storage resource
  eirods@hostname:~/ $ iadmin addchildtoresc example1 repl_resc2
  eirods@hostname:~/ $ iadmin addchildtoresc example1 repl_resc3
 
+
+Rebalancing
+-----------
+
+A new subcommand for iadmin allows an administrator to rebalance a coordinating resource.  The coordinating resource can be the root of a tree, or anywhere in the middle of a tree.  The rebalance operation will rebalance for all decendents.  For example, the iadmin command ``iadmin modresc myReplResc rebalance`` would fire the rebalance operation for the replication resource instance named myReplResc.  Any Data Objects on myReplResc that did not exist on all its children would be replicated as expected.
+
+For other coordinating resource types, rebalance can be defined as appropriate.  For coordinating resources with no concept of "balanced", the rebalance operation is a "no op" and performs no work.
 
 -------------------
 Users & Permissions
@@ -942,6 +949,11 @@ History of Releases
 ==========   =======    =====================================================
 Date         Version    Description
 ==========   =======    =====================================================
+2013-10-25   3.0.1b1    Second Release.
+                          This is the second open source release from RENCI.
+                          It includes pluggable network and authentication
+                          support as well as a rebalance option and migration
+                          support for the composable resources.
 2013-06-05   3.0        First Release.
                           This is the first open source release from RENCI.
                           It includes all the features mentioned below and
