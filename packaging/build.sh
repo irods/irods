@@ -180,7 +180,7 @@ if [ "$1" == "clean" ] ; then
     rm -f eirods-manual*.pdf
     rm -f examples/microservices/*.pdf
     rm -f libeirods.a
-    echo "Cleaning Authenticaiton plugins..."
+    echo "Cleaning Authentication plugins..."
     cd plugins/auth
     set +e
     make clean > /dev/null 2>&1
@@ -566,7 +566,7 @@ if [[ "$?" != "0" || `echo $YACC | awk '{print $1}'` == "no" ]] ; then
     if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
         PREFLIGHT="$PREFLIGHT bison"
     elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-        PREFLIGHT="$PREFLIGHT bison"
+        PREFLIGHT="$PREFLIGHT byacc bison"
     elif [ "$DETECTEDOS" == "SuSE" ] ; then
         PREFLIGHT="$PREFLIGHT bison"
     elif [ "$DETECTEDOS" == "Solaris" ] ; then
