@@ -180,7 +180,7 @@ if [ "$1" == "clean" ] ; then
     rm -f eirods-manual*.pdf
     rm -f examples/microservices/*.pdf
     rm -f libeirods.a
-    echo "Cleaning Authenticaiton plugins..."
+    echo "Cleaning Authentication plugins..."
     cd plugins/auth
     set +e
     make clean > /dev/null 2>&1
