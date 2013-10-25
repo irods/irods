@@ -121,11 +121,10 @@ namespace eirods {
         unsigned char* init_vec = new unsigned char[ _key.size() ];
         unsigned char* key_hash = new unsigned char[ _key.size() ];
         unsigned char* key_buff = new unsigned char[ _key.size() ];
-        strncpy( 
-            key_buf, 
-            reinterpret_cast< unsigned char* >( 
-                const_cast< char* >( _key.c_str() ) ),
-            _key.size() );
+        memcpy( 
+            key_buff, 
+            _key.c_str(),
+            _key.size()*sizeof(unsigned char) );
         size_t sz = EVP_BytesToKey( 
                         EVP_get_cipherbyname( algorithm_.c_str() ),
                         EVP_sha1(), 
