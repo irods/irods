@@ -326,6 +326,7 @@ rcPartialDataPut (rcPortalTransferInp_t *myInput)
     int                  iv_size = 0;
     std::string          iv;
     std::string          hash_key;
+    std::string          shared_secret( myInput->shared_secret );
     eirods::buffer_crypt crypt( 
                              rods_env.rodsEncryptionKeySize,
                              rods_env.rodsEncryptionSaltSize,
@@ -397,7 +398,7 @@ rcPartialDataPut (rcPortalTransferInp_t *myInput)
             int new_size = bytesRead;
             if( use_encryption_flg ) {
                 eirods::error ret = crypt.initialization_vector( 
-                    myInput->shared_secret,
+                    shared_secret,
                     hash_key,
                     iv );
                 if( !ret.ok() ) {
@@ -412,7 +413,7 @@ rcPartialDataPut (rcPortalTransferInp_t *myInput)
                 std::string in_buf;
                 in_buf.assign( (char*)buf, bytesRead );
 
-                ret = crypt.encrypt( myInput->shared_secret, iv, in_buf, cipher );
+                ret = crypt.encrypt( shared_secret, iv, in_buf, cipher );
                 if( !ret.ok() ) {
                     ret = PASS( ret );
                     printf( "%s", ret.result().c_str() );

@@ -120,8 +120,12 @@ namespace eirods {
         int num_rounds = 2;
         unsigned char* init_vec = new unsigned char[ _key.size() ];
         unsigned char* key_hash = new unsigned char[ _key.size() ];
-        unsigned char* key_buff = reinterpret_cast< unsigned char* >( 
-                                      const_cast< char* >( _key.c_str() ) );
+        unsigned char* key_buff = new unsigned char[ _key.size() ];
+        strncpy( 
+            key_buf, 
+            reinterpret_cast< unsigned char* >( 
+                const_cast< char* >( _key.c_str() ) ),
+            _key.size() );
         size_t sz = EVP_BytesToKey( 
                         EVP_get_cipherbyname( algorithm_.c_str() ),
                         EVP_sha1(), 
@@ -132,6 +136,7 @@ namespace eirods {
                         key_hash, 
                         init_vec );
         if( _key.size() != sz ) {
+            delete [] key_buff;
             delete [] salty;
             delete [] init_vec;
             delete [] key_hash;
@@ -146,6 +151,7 @@ namespace eirods {
         _out_key.assign( reinterpret_cast< const char* >( key_hash ), _key.size() );
         _out_iv.assign( reinterpret_cast< const char* >( init_vec ), _key.size() );
             
+        delete [] key_buff;
         delete [] salty;
         delete [] init_vec;
         delete [] key_hash;
