@@ -11,6 +11,9 @@ fi
 if [ "$ODBC" == "" ]; then
     ODBC=`find /usr -name "libodbcpsql.so" 2> /dev/null`
 fi
+if [ "$ODBC" == "" ]; then
+    ODBC=`find /usr -name "psqlodbc*.so" 2> /dev/null`
+fi
 
 
 NONEWLINES=`echo $ODBC | perl -ne 'chomp and print'`

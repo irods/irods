@@ -8,6 +8,7 @@ FULLPATHSCRIPTNAME=$SCRIPTPATH/$SCRIPTNAME
 COVERAGE="0"
 RELEASE="0"
 BUILDEIRODS="1"
+PORTABLE="0"
 COVERAGEBUILDDIR="/var/lib/eirods"
 PREFLIGHT=""
 PREFLIGHTDOWNLOAD=""
@@ -24,6 +25,7 @@ Options:
 -h      Show this help
 -r      Build a release package (no debugging information, optimized)
 -s      Skip compilation of E-iRODS source
+-p      Portable option, ignores OS and builds a tar.gz
 
 Examples:
 $SCRIPTNAME icat postgres
@@ -72,6 +74,7 @@ do
         --help) args="${args}-h ";;
         --release) args="${args}-r ";;
         --skip) args="${args}-s ";;
+        --portable) args="${args}-p ";;
         # pass through anything else
         *) [[ "${arg:0:1}" == "-" ]] || delim="\""
         args="${args}${delim}${arg}${delim} ";;
@@ -80,7 +83,7 @@ done
 # reset the translated args
 eval set -- $args
 # now we can process with getopts
-while getopts ":chrs" opt; do
+while getopts ":chrsp" opt; do
     case $opt in
         c)
         COVERAGE="1"
@@ -96,6 +99,10 @@ while getopts ":chrs" opt; do
         s)
         BUILDEIRODS="0"
         echo "-s detected -- Skipping E-iRODS compilation"
+        ;;
+        p)
+        PORTABLE="1"
+        echo "-p detected -- Building portable package"
         ;;
         \?)
         echo "Invalid option: -$OPTARG" >&2
@@ -236,6 +243,9 @@ echo "Detected E-iRODS Version to Build [$EIRODSVERSION]"
 echo "Detected EPM E-iRODS Version String [$EPMEIRODSVERSION]"
 # detect operating system
 DETECTEDOS=`../packaging/find_os.sh`
+if [ "$PORTABLE" == "1" ] ; then
+  DETECTEDOS="Portable"
+fi
 echo "Detected OS [$DETECTEDOS]"
 DETECTEDOSVERSION=`../packaging/find_os_version.sh`
 echo "Detected OS Version [$DETECTEDOSVERSION]"
@@ -802,6 +812,7 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     fi
     echo "${text_green}${text_bold}Building [$EIRODS_BUILD_BOOSTVERSION]${text_reset}"
     cd $BUILDDIR/external/$EIRODS_BUILD_BOOSTVERSION
+    sed -i "s/defined(__GLIBC_HAVE_LONG_LONG)/(defined(__GLIBC_HAVE_LONG_LONG) || (defined(__GLIBC__) \&\& ((__GLIBC__ > 2) || ((__GLIBC__ == 2) \&\& (__GLIBC_MINOR__ >= 17)))))/" ./boost/cstdint.hpp
     ./bootstrap.sh --with-libraries=filesystem,system,thread,regex
     ./bjam link=static threading=multi cxxflags="-fPIC" -j$CPUCOUNT
 
@@ -1363,6 +1374,16 @@ elif [ "$DETECTEDOS" == "MacOSX" ] ; then  # MacOSX
     if [ "$RELEASE" == "1" ] ; then
         ./epm/epm $EPMOPTS -f osx eirods-icommands $epmvar=true ./packaging/eirods-icommands.list
     fi
+elif [ "$DETECTEDOS" == "Portable" ] ; then  # Portable
+    echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS TGZs${text_reset}"
+    epmvar="PORTABLE$SERVER_TYPE"
+    ./epm/epm $EPMOPTS -f portable eirods $epmvar=true ./packaging/eirods.list
+    if [ "$1" == "icat" ] ; then
+        ./epm/epm $EPMOPTS -f portable eirods-dev $epmvar=true ./packaging/eirods-dev.list
+    fi
+    if [ "$RELEASE" == "1" ] ; then
+        ./epm/epm $EPMOPTS -f portable eirods-icommands $epmvar=true ./packaging/eirods-icommands.list
+    fi
 else
     echo "${text_red}#######################################################" 1>&2
     echo "ERROR :: Unknown OS, cannot generate packages with EPM" 1>&2
@@ -1389,6 +1410,8 @@ elif [ "$DETECTEDOS" == "Solaris" ] ; then
     EXTENSION="pkg"
 elif [ "$DETECTEDOS" == "MacOSX" ] ; then
     EXTENSION="dmg"
+elif [ "$DETECTEDOS" == "Portable" ] ; then
+    EXTENSION="tar.gz"
 fi
 RENAME_SOURCE="./linux*/eirods-*$EIRODSVERSION*.$EXTENSION"
 RENAME_SOURCE_DEV=${RENAME_SOURCE/eirods-/eirods-dev-}
