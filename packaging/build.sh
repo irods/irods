@@ -566,7 +566,7 @@ if [[ "$?" != "0" || `echo $YACC | awk '{print $1}'` == "no" ]] ; then
     if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
         PREFLIGHT="$PREFLIGHT bison"
     elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-        PREFLIGHT="$PREFLIGHT bison"
+        PREFLIGHT="$PREFLIGHT byacc bison"
     elif [ "$DETECTEDOS" == "SuSE" ] ; then
         PREFLIGHT="$PREFLIGHT bison"
     elif [ "$DETECTEDOS" == "Solaris" ] ; then
