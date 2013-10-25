@@ -29,7 +29,7 @@ namespace eirods {
     // public - copy constructor
     plugin_base::plugin_base( 
         const plugin_base& _rhs ) :
-        context_( context_ ),
+        context_( _rhs.context_ ),
         instance_name_( _rhs.instance_name_ ),
         interface_version_( _rhs.interface_version_ ) {
     } // cctor

@@ -104,7 +104,6 @@ int
 initCondForPhymv (rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, 
 dataObjInp_t *dataObjInp)
 {
-    char *myResc = NULL;
 
     if (dataObjInp == NULL) {
        rodsLog (LOG_ERROR,
@@ -138,12 +137,10 @@ dataObjInp_t *dataObjInp)
               "initCondForPhymv: NULL resourceString error");
             return (USER__NULL_INPUT_ERR);
         } else {
-	    myResc = rodsArgs->resourceString;
             addKeyVal (&dataObjInp->condInput, DEST_RESC_NAME_KW,
               rodsArgs->resourceString);
         }
     } else if (myRodsEnv != NULL && strlen (myRodsEnv->rodsDefResource) > 0) {
-	myResc = myRodsEnv->rodsDefResource;
         addKeyVal (&dataObjInp->condInput, DEST_RESC_NAME_KW,
           myRodsEnv->rodsDefResource);
     }

@@ -127,7 +127,7 @@ namespace eirods {
                // =-=-=-=-=-=-=-
                // call the actual operation
                _ctx.rule_results( pre_results );
-		       error op_err = (*operation_)( _ctx, _t1 ); 
+               error op_err = (*operation_)( _ctx, _t1 ); 
                
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
@@ -437,8 +437,8 @@ namespace eirods {
                // =-=-=-=-=-=-=-
                // call the actual operation	
                _ctx.rule_results( pre_results );
-			   error op_err = (*operation_)( _ctx, _t1, _t2, _t3, _t4, _t5, _t6, _t7, _t8 );  
-                                                
+               error op_err = (*operation_)( _ctx, _t1, _t2, _t3, _t4, _t5, _t6, _t7, _t8 );  
+               
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
                std::string rule_results =  _ctx.rule_results();
@@ -450,28 +450,25 @@ namespace eirods {
 
                return op_err;
 
-		   } else {
-			  return ERROR( NULL_VALUE_ERR, "null resource operation." );
-		   }
+      } else {
+        return ERROR( NULL_VALUE_ERR, "null resource operation." );
+      }
 
-		} // operator() - T1, T2, T3, T4, T5, T6, T7, T8
+    } // operator() - T1, T2, T3, T4, T5, T6, T7, T8
 
     private:
-		/// =-=-=-=-=-=-=-
-		/// @brief function pointer to actual operation
-		plugin_operation operation_;
-		
-        /// =-=-=-=-=-=-=-
-		/// @brief instance name used for calling rules
-	    std::string instance_name_;
-        
-        /// =-=-=-=-=-=-=-
-		/// @brief name of this operation, use for calling rules
-	    std::string operation_name_;
-        	
-        /// =-=-=-=-=-=-=-
-		/// @brief rule execution context
+    /// @brief rule execution context
         oper_rule_exec_mgr_ptr rule_exec_mgr_;
+    /// =-=-=-=-=-=-=-
+    /// @brief function pointer to actual operation
+        plugin_operation operation_;
+    /// =-=-=-=-=-=-=-
+    /// @brief instance name used for calling rules
+        std::string instance_name_;
+    /// =-=-=-=-=-=-=-
+    /// @brief name of this operation, use for calling rules
+        std::string operation_name_;
+    /// =-=-=-=-=-=-=-
 
 	}; // class operation_wrapper 
 

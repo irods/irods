@@ -142,9 +142,7 @@ msParamArray_t *outMsParamArray)
 
     outMsParamArray->len = msParamArray->len;
     for (i = 0; i < msParamArray->len; i++) {
-	msParam_t *outMsParam;
-
-	outMsParam = outMsParamArray->msParam[i] = 
+	outMsParamArray->msParam[i] = 
 	  (msParam_t *) malloc (sizeof (msParam_t));
 	memset (outMsParamArray->msParam[i], 0, sizeof (msParam_t));
 	status = replMsParam (msParamArray->msParam[i], 
