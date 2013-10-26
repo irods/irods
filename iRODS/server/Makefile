@@ -60,6 +60,7 @@ SVR_CORE_OBJS =	\
 
 INCLUDES +=	-I$(svrCoreIncDir)
 
+CFLAGS += `../../packaging/compiler_check.sh 4 2`
 
 # Servers
 CFLAGS +=	-DRODS_SERVER

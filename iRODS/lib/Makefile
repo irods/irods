@@ -21,6 +21,7 @@ include $(buildDir)/config/common.mk
 
 extendedICAT.h =	$(buildDir)/modules/extendedICAT/extendedICAT.h
 
+CFLAGS += `../../packaging/compiler_check.sh 4 2`
 
 
 #

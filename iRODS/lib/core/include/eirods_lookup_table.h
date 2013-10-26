@@ -20,14 +20,18 @@ namespace eirods {
     // =-=-=-=-=-=-=-
     // class to manage tables of plugins.  employing a class in order to use
     // RAII for adding entries to the table now that it is not a static array
-    template< typename ValueType, typename KeyType=std::string, typename HashType=eirods_string_hash >
+    template< typename ValueType, 
+              typename KeyType=std::string, 
+              typename HashType=eirods_string_hash >
     class lookup_table {
     protected:
-        hash_map< KeyType, ValueType, HashType > table_;
+        typedef EIRODS_HASH_TYPE< KeyType, ValueType, HashType > eirods_hash_map;
+        
+        eirods_hash_map table_;
 			
     public:
-        typedef typename hash_map< KeyType, ValueType, HashType >::iterator       iterator;
-        typedef typename hash_map< KeyType, ValueType, HashType >::const_iterator const_iterator;
+        typedef typename eirods_hash_map::iterator       iterator;
+        typedef typename eirods_hash_map::const_iterator const_iterator;
         lookup_table(){};
         virtual ~lookup_table() {}
         ValueType& operator[]( KeyType _k ) {
@@ -83,10 +87,11 @@ namespace eirods {
     template< typename KeyType, typename HashType >
     class lookup_table < boost::any, KeyType, HashType > {
     protected:
-        hash_map< KeyType, boost::any, HashType > table_;
+        typedef EIRODS_HASH_TYPE< KeyType, boost::any, HashType > eirods_hash_map;
+        eirods_hash_map table_;
 			
     public:
-        typedef typename hash_map< KeyType, boost::any, HashType >::iterator iterator;
+        typedef typename eirods_hash_map::iterator iterator;
         lookup_table(){};
         virtual ~lookup_table() {}
         boost::any& operator[]( KeyType _k ) {
