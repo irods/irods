@@ -55,7 +55,6 @@ _rsGenQuery (rsComm_t *rsComm, genQueryInp_t *genQueryInp,
 
     static int ruleExecuted=0;
     ruleExecInfo_t rei;
-    static int ruleResult=0;
 
 
     static int PrePostProcForGenQueryFlag = -2;    
@@ -83,9 +82,6 @@ _rsGenQuery (rsComm_t *rsComm, genQueryInp_t *genQueryInp,
     memset((char *)*genQueryOut, 0, sizeof(genQueryOut_t));
 
     if (ruleExecuted==0) {
-#if 0
-       msParam_t *outMsParam;
-#endif
        memset((char*)&rei,0,sizeof(rei));
        rei.rsComm = rsComm;
        if (rsComm != NULL) {
@@ -115,7 +111,6 @@ _rsGenQuery (rsComm_t *rsComm, genQueryInp_t *genQueryInp,
        else 
        {
           status = applyRule ("acAclPolicy", NULL, &rei, NO_SAVE_REI);
-          ruleResult = rei.status;
        }
        if (status==0) {
 	  ruleExecuted=1; /* No need to retry next time since it
@@ -124,35 +119,13 @@ _rsGenQuery (rsComm_t *rsComm, genQueryInp_t *genQueryInp,
                              initialized yet, in which case the
                              default setting is fine and we should
                              retry next time. */
-#if 0
-	  /* No longer need this as msiAclPolicy calls
-	     chlGenQueryAccessControlSetup to set the flag.  Leaving
-	     it in the code for now in case needed later. */
-	  outMsParam = getMsParamByLabel(&rei.inOutMsParamArray, "STRICT");
-	  printf("outMsParam=%x\n",(int)outMsParam);
-	  if (outMsParam != NULL) {
-	     ruleResult=1;
-	  }
-#endif
        }
-#if 0
-       printf("rsGenQuery rule status=%d ruleResult=%d\n",status,ruleResult);
-#endif
     }
 
     chlGenQueryAccessControlSetup(rsComm->clientUser.userName, 
 			      rsComm->clientUser.rodsZone,
 	 		      rsComm->clientUser.authInfo.authFlag,
 			      -1);
-#if 0
-    rodsLog (LOG_NOTICE, 
-	     "_rsGenQuery debug: client %s %d proxy %s %d", 
-	     rsComm->clientUser.userName, 
-	     rsComm->clientUser.authInfo.authFlag,
-	     rsComm->proxyUser.userName, 
-	     rsComm->proxyUser.authInfo.authFlag);
-#endif
-    /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
     if (PrePostProcForGenQueryFlag == 1) {
       args[0] = (char *) malloc(300);
       sprintf(args[0],"%ld",(long) genQueryInp);

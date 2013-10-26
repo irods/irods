@@ -211,8 +211,6 @@ _rsDataObjUnlink (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
     } // if strcmp
     // =-=-=-=-=-=-=-
 
-    char* rescHier = getValByKey(&dataObjUnlinkInp->condInput, RESC_HIER_STR_KW);
-    
     tmpDataObjInfo = *dataObjInfoHead;
     while (tmpDataObjInfo != NULL) {
         status = dataObjUnlinkS (rsComm, dataObjUnlinkInp, tmpDataObjInfo);

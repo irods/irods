@@ -78,11 +78,8 @@ print_uoi(userInfo_t *uoi)
 int msiAW1(msParam_t* mPIn, msParam_t* mPOut2, ruleExecInfo_t *rei)
 {
   char *In;
-  char  *Out2;
 
   In  = (char *) mPIn->inOutStruct;
-
-  Out2 = (char *) mPOut2->inOutStruct;
 
   rodsLog (LOG_NOTICE,"ALPHA: ------>  In:%s\n", In);
   mPOut2->type = strdup(STR_MS_T);

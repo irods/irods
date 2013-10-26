@@ -577,18 +577,18 @@ Res *parseAndComputeExpression(char *expr, Env *env, ruleExecInfo_t *rei, int re
         Token *token;
         token = nextTokenRuleGen(e, pc, 0, 0);
         if(strcmp(token->text, "|")==0) {
-        	recoNode = parseActionsRuleGen(e, rulegen, 1, pc);
-            if(node==NULL) {
-				addRErrorMsg(errmsg, RE_OUT_OF_MEMORY, "error: out of memory.");
-				res = newErrorRes(r, RE_OUT_OF_MEMORY);
-				RETURN;
-            } else if (getNodeType(node) == N_ERROR) {
-				generateErrMsg("error: syntax error",NODE_EXPR_POS(node), node->base, buf);
-				addRErrorMsg(errmsg, RE_PARSER_ERROR, buf);
-				res = newErrorRes(r, RE_PARSER_ERROR);
-				RETURN;
-            }
-            token = nextTokenRuleGen(e, pc, 0, 0);
+          recoNode = parseActionsRuleGen(e, rulegen, 1, pc);
+          if(recoNode==NULL) {
+            addRErrorMsg(errmsg, RE_OUT_OF_MEMORY, "error: out of memory.");
+            res = newErrorRes(r, RE_OUT_OF_MEMORY);
+            RETURN;
+          } else if (getNodeType(recoNode) == N_ERROR) {
+            generateErrMsg("error: syntax error",NODE_EXPR_POS(recoNode), recoNode->base, buf);
+            addRErrorMsg(errmsg, RE_PARSER_ERROR, buf);
+            res = newErrorRes(r, RE_PARSER_ERROR);
+            RETURN;
+          } 
+          token = nextTokenRuleGen(e, pc, 0, 0);
         }
         if(token->type!=TK_EOS) {
             Label pos;

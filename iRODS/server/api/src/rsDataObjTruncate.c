@@ -135,7 +135,6 @@ int
 l3Truncate (rsComm_t *rsComm, dataObjInp_t *dataObjTruncateInp,
 dataObjInfo_t *dataObjInfo)
 {
-    int rescTypeInx;
     fileOpenInp_t fileTruncateInp;
     int status;
 
@@ -159,7 +158,7 @@ dataObjInfo_t *dataObjInfo)
         status = rsSubStructFileTruncate (rsComm, &subFile);
     } else {
             memset (&fileTruncateInp, 0, sizeof (fileTruncateInp));
-            fileTruncateInp.fileType = static_cast<fileDriverType_t>(-1);//RescTypeDef[rescTypeInx].driverType;
+            fileTruncateInp.fileType = static_cast<fileDriverType_t>(-1);
             rstrcpy (fileTruncateInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
             rstrcpy (fileTruncateInp.resc_hier_, dataObjInfo->rescHier, MAX_NAME_LEN);
             rstrcpy (fileTruncateInp.addr.hostAddr, location.c_str(), NAME_LEN);

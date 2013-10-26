@@ -475,13 +475,11 @@ Res *evaluateFunctionApplication(Node *func, Node *arg, int applyAll, Node *node
 Res* evaluateFunction3(Node *appRes, int applyAll, Node *node, Env *env, ruleExecInfo_t* rei, int reiSaveFlag, rError_t *errmsg, Region *r) {
     unsigned int i;
 	unsigned int n;
-	Node* subtrees0[MAX_FUNC_PARAMS];
 	Node* args[MAX_FUNC_PARAMS];
 	i = 0;
 	Node *appFuncRes = appRes;
     while(getNodeType(appFuncRes) == N_PARTIAL_APPLICATION) {
         i++;
-        subtrees0[MAX_FUNC_PARAMS - i] = appFuncRes->subtrees[1];
         appFuncRes = appFuncRes->subtrees[0];
     }
     /* app can only be N_FUNC_SYM_LINK */

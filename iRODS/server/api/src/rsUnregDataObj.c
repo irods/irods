@@ -18,9 +18,7 @@ rsUnregDataObj (rsComm_t *rsComm, unregDataObj_t *unregDataObjInp)
     int status;
     rodsServerHost_t *rodsServerHost = NULL;
     dataObjInfo_t *dataObjInfo;
-    keyValPair_t *condInput; 
 
-    condInput = unregDataObjInp->condInput;
     dataObjInfo = unregDataObjInp->dataObjInfo;
 
     status = getAndConnRcatHost (rsComm, MASTER_RCAT, dataObjInfo->objPath,

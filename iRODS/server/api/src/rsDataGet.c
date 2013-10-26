@@ -51,8 +51,6 @@ int
 _rsDataGet (rsComm_t *rsComm, dataOprInp_t *dataOprInp,
 portalOprOut_t **portalOprOut)
 {
-    int status;
-
     return setupSrvPortalForParaOpr(
                rsComm, 
                dataOprInp, 

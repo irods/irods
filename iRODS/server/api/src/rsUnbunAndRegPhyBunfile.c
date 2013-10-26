@@ -434,7 +434,11 @@ rmLinkedFilesInUnixDir (char *phyBunDir)
             }
         } else {        /* a directory */
             status = rmLinkedFilesInUnixDir (subfilePath);
-            /* rm subfilePath but not phyBunDir */
+            if(status < 0)
+            {
+              eirods::log( ERROR (status, "rmLinkedFilesInUnixDir failed") );
+            }
+                /* rm subfilePath but not phyBunDir */
             rmdir (subfilePath);
         }
     }

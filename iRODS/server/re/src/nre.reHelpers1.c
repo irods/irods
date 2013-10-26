@@ -717,6 +717,10 @@ reDebug(RuleEngineEvent label, int flag, RuleEngineEventParam *param, Node *node
     /* Write audit trail */
 	if (GlobalREAuditFlag == 3) {
 		i = _writeXMsg(GlobalREAuditFlag, hdr, seActionStr);
+    if (i < 0)
+    {
+      eirods::log( ERROR (i, "_writeXMsg failed."));
+    }
 	}
   
 
@@ -736,7 +740,11 @@ reDebug(RuleEngineEvent label, int flag, RuleEngineEventParam *param, Node *node
 		if (curStat != REDEBUG_CONTINUE) {
 			snprintf(hdr, HEADER_TYPE_LEN - 1,   "idbug:%s",param->actionName);
 			i = _writeXMsg(GlobalREDebugFlag, hdr, buf);
-		}
+      if (i < 0)
+      {
+        eirods::log( ERROR (i, "_writeXMsg failed."));
+      }
+    }
 
 		while ( GlobalREDebugFlag > 5 ) {
 			s = sNum;

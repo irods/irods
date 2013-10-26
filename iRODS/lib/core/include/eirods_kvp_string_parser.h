@@ -27,14 +27,14 @@ namespace eirods {
     
     /// =-=-=-=-=-=-=-
     /// @brief function to return defined delimiter
-    static
+    extern
     std::string kvp_delimiter() {
         return KVP_DEF_DELIM;
     }
  
     /// =-=-=-=-=-=-=-
     /// @brief function to return defined delimiter
-    static
+    extern
     std::string kvp_association() {
         return KVP_DEF_ASSOC;
     }
@@ -42,7 +42,7 @@ namespace eirods {
     /// =-=-=-=-=-=-=-
     /// @brief given a string, break the string along the kvp association and then
     ///        place the pair into the map
-    static
+    extern
     error parse_token_into_kvp(
         const std::string& _token,
         kvp_map_t&         _kvp,
@@ -70,7 +70,7 @@ namespace eirods {
     /// =-=-=-=-=-=-=-
     /// @brief given a string, break the string along the delimiter and then
     ///        break the tokens along the assignment for key-value pairs
-    static
+    extern
     error parse_kvp_string( 
         const std::string& _string,
         kvp_map_t&         _kvp,
