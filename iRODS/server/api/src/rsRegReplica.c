@@ -16,10 +16,8 @@ rsRegReplica (rsComm_t *rsComm, regReplica_t *regReplicaInp)
     int status;
     rodsServerHost_t *rodsServerHost = NULL;
     dataObjInfo_t *srcDataObjInfo;
-    dataObjInfo_t *destDataObjInfo;
 
     srcDataObjInfo = regReplicaInp->srcDataObjInfo;
-    destDataObjInfo = regReplicaInp->destDataObjInfo;
 
     status = getAndConnRcatHost (rsComm, MASTER_RCAT, srcDataObjInfo->objPath,
       &rodsServerHost);
@@ -52,14 +50,6 @@ _rsRegReplica (rsComm_t *rsComm, regReplica_t *regReplicaInp)
 
     srcDataObjInfo = regReplicaInp->srcDataObjInfo;
     destDataObjInfo = regReplicaInp->destDataObjInfo;
-#if 0 // JMC - backport 4608
-    // JMC - backport 4487
-    status = checkDupReplica (rsComm, srcDataObjInfo->dataId, destDataObjInfo->rescName, destDataObjInfo->filePath);
-    if (status >= 0) {
-	    destDataObjInfo->replNum = status;
-	    return status;
-	}
-#endif
     if (getValByKey (&regReplicaInp->condInput, SU_CLIENT_USER_KW) != NULL) {
 	savedClientAuthFlag = rsComm->clientUser.authInfo.authFlag;
 	rsComm->clientUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;

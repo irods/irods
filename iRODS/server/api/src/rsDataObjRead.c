@@ -92,7 +92,6 @@ bytesBuf_t *dataObjReadOutBBuf)
         int i;
         bytesRead = l3Read (rsComm, l1descInx, dataObjReadInp->len,
           dataObjReadOutBBuf);
-	/** RAJA ADDED Dec 1 2010 for pre-post processing rule hooks **/
 	i = applyRuleForPostProcForRead(rsComm, dataObjReadOutBBuf, 
           L1desc[l1descInx].dataObjInfo->objPath);
 	if (i < 0)
@@ -102,7 +101,6 @@ bytesBuf_t *dataObjReadOutBBuf)
 	 * it out for now */
 	bytesRead = dataObjReadOutBBuf->len;
 #endif
-	/** RAJA ADDED Dec 1 2010 for pre-post processing rule hooks **/
     }
 
     return (bytesRead);
@@ -112,7 +110,6 @@ int
 l3Read (rsComm_t *rsComm, int l1descInx, int len,
 bytesBuf_t *dataObjReadOutBBuf)
 {
-    int rescTypeInx;
     int bytesRead;
 
     dataObjInfo_t *dataObjInfo;
@@ -138,11 +135,7 @@ bytesBuf_t *dataObjReadOutBBuf)
         bytesRead = rsSubStructFileRead (rsComm, &subStructFileReadInp, dataObjReadOutBBuf);
     } else {
         fileReadInp_t fileReadInp;
-
-        rescTypeInx = L1desc[l1descInx].dataObjInfo->rescInfo->rescTypeInx;
-       
         int category = FILE_CAT;  // do not support DB type
-        // JMC - legacy resource - switch (RescTypeDef[rescTypeInx].rescCat) {
         switch( category ) {
           case FILE_CAT:
             memset (&fileReadInp, 0, sizeof (fileReadInp));
@@ -154,7 +147,6 @@ bytesBuf_t *dataObjReadOutBBuf)
           default:
             rodsLog (LOG_NOTICE,
               "l3Read: rescCat type %d is not recognized", category );
-              // JMC - legacy resource - RescTypeDef[rescTypeInx].rescCat);
             bytesRead = SYS_INVALID_RESC_TYPE;
             break;
 	}
@@ -172,25 +164,11 @@ _l3Read (rsComm_t *rsComm, int rescTypeInx, int l3descInx, void *buf, int len ) 
     dataObjReadInpBBuf.buf = buf;
 
 
-#if 0 // JMC - legacy resource   
-    switch (RescTypeDef[rescTypeInx].rescCat) {
-      case FILE_CAT:
-#endif // JMC - legacy resource   
         memset (&fileReadInp, 0, sizeof (fileReadInp));
         fileReadInp.fileInx = l3descInx;
         fileReadInp.len = len;
         bytesRead = rsFileRead( rsComm, &fileReadInp, &dataObjReadInpBBuf );
           
-#if 0 // JMC - legacy resource   
-        break;
-      default:
-        rodsLog (LOG_NOTICE,
-          "_l3Read: rescCat type %d is not recognized", category );
-          // JMC - legacy resource - RescTypeDef[rescTypeInx].rescCat);
-        bytesRead = SYS_INVALID_RESC_TYPE;
-        break;
-    }
-#endif // JMC - legacy resource   
     return (bytesRead);
 }
 

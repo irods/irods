@@ -459,15 +459,15 @@ namespace eirods {
     /// @brief rule execution context
         oper_rule_exec_mgr_ptr rule_exec_mgr_;
     /// =-=-=-=-=-=-=-
-    /// @brief function pointer to actual operation
-        plugin_operation operation_;
-    /// =-=-=-=-=-=-=-
     /// @brief instance name used for calling rules
         std::string instance_name_;
     /// =-=-=-=-=-=-=-
     /// @brief name of this operation, use for calling rules
         std::string operation_name_;
-    /// =-=-=-=-=-=-=-
+    /// =-=-=-=-=-=-=-=-=-=-=-=-=-=-
+    /// @brief function pointer to actual operation
+        plugin_operation operation_;
+    /// 
 
     }; // class operation_wrapper 
 

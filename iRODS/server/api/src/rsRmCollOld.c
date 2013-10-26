@@ -54,11 +54,6 @@ _rsRmCollOld (rsComm_t *rsComm, collInp_t *rmCollInp)
     int status;
     dataObjInfo_t *dataObjInfo = NULL;
 
-#if 0
-    dataObjInp_t dataObjInp;
-    memset (&dataObjInp, 0, sizeof (dataObjInp));
-    rstrcpy (dataObjInp.objPath, rmCollInp->collName, MAX_NAME_LEN);
-#endif
     status = resolvePathInSpecColl (rsComm, rmCollInp->collName, 
       WRITE_COLL_PERM, 0, &dataObjInfo);
 
@@ -431,14 +426,6 @@ rsMvCollToTrash (rsComm_t *rsComm, collInp_t *rmCollInp)
     while (status == CAT_NAME_EXISTS_AS_COLLECTION) {
         appendRandomToPath (dataObjRenameInp.destDataObjInp.objPath);
         status = rsDataObjRename (rsComm, &dataObjRenameInp);
-#if 0
-        if (status < 0) {
-            rodsLog (LOG_ERROR,
-              "mvCollToTrash: rcDataObjRename error for %s",
-              dataObjRenameInp.destDataObjInp.objPath);
-            return (status);
-	}
-#endif
     }
 
     if (status < 0) {
@@ -547,7 +534,6 @@ dataObjInfo_t *dataObjInfo)
 int
 l3Rmdir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
 {
-    int rescTypeInx;
     fileRmdirInp_t fileRmdirInp;
     int status;
 
@@ -568,29 +554,12 @@ l3Rmdir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
         subFile.specColl = dataObjInfo->specColl;
         status = rsSubStructFileRmdir (rsComm, &subFile);
     } else {
-       #if 0 // JMC legacy resource 
-        rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
-
-        switch (RescTypeDef[rescTypeInx].rescCat) {
-          case FILE_CAT:
-       #endif // JMC legacy resource 
             memset (&fileRmdirInp, 0, sizeof (fileRmdirInp));
-            fileRmdirInp.fileType = static_cast<fileDriverType_t>(-1);//RescTypeDef[rescTypeInx].driverType;
+            fileRmdirInp.fileType = static_cast<fileDriverType_t>(-1);
             rstrcpy (fileRmdirInp.dirName, dataObjInfo->filePath, MAX_NAME_LEN);
             rstrcpy (fileRmdirInp.addr.hostAddr, location.c_str(), NAME_LEN);
 	    rstrcpy (fileRmdirInp.rescHier, dataObjInfo->rescHier, MAX_NAME_LEN);
             status = rsFileRmdir (rsComm, &fileRmdirInp);
-       #if 0 // JMC legacy resource 
-            break;
-
-          default:
-            rodsLog (LOG_NOTICE,
-              "l3Rmdir: rescCat type %d is not recognized",
-              RescTypeDef[rescTypeInx].rescCat);
-            status = SYS_INVALID_RESC_TYPE;
-            break;
-        }
-       #endif // JMC legacy resource 
     }
     return (status);
 }
