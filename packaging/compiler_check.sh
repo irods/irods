@@ -23,5 +23,5 @@ fi
 if [ "$major_good"  == "YES" ] &&
    [ "$middle_good" == "YES" ]; 
    then
-       echo "-std=c++11"
+       echo "-std=c++0x"
 fi
