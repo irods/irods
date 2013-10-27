@@ -44,7 +44,7 @@ int rsAuthResponse(
     if( auth_scheme.empty() ) {
         auth_scheme = eirods::AUTH_NATIVE_SCHEME;
     }
-   
+
     // =-=-=-=-=-=-=-
     // empty out the scheme for good measure
     plug_a.set( "" ); 

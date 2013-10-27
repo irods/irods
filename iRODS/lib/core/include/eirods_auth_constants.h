@@ -19,6 +19,15 @@ namespace eirods {
     const std::string AUTH_AGENT_AUTH_REQUEST( "auth_agent_auth_request" );
     const std::string AUTH_CLIENT_AUTH_RESPONSE( "auth_agent_client_response" );
     const std::string AUTH_AGENT_AUTH_RESPONSE( "auth_agent_auth_response" );
+    const std::string AUTH_AGENT_AUTH_VERIFY( "auth_agent_auth_verify" );
+
+    /// =-=-=-=-=-=-=-
+    /// @brief keys for key-value association
+    const std::string AUTH_USER_KEY( "a_user" );
+    const std::string AUTH_SCHEME_KEY( "a_scheme" );
+    const std::string AUTH_TTL_KEY( "a_ttl" );
+    const std::string AUTH_PASSWORD_KEY( "a_pw" );
+    const std::string AUTH_RESPONSE_KEY( "a_resp" );
 
 }; // namespace eirods
 

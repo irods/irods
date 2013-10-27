@@ -58,24 +58,7 @@ namespace eirods {
         /// @brief serialize object to key-value pairs
         virtual error get_re_vars(keyValPair_t&); 
 
-        /// =-=-=-=-=-=-=-
-        /// @brief accessors
-        std::string user_name() const { return user_name_; }
-        std::string zone_name() const { return zone_name_; }
-        
-        /// =-=-=-=-=-=-=-
-        /// @brief mutators
-        void user_name( const std::string& _un ) { user_name_ = _un; }
-        void zone_name( const std::string& _zn ) { zone_name_ = _zn; }
-
         private:
-        /// =-=-=-=-=-=-=-
-        /// @brief user name - from rcConn
-        std::string user_name_;
-        
-        /// =-=-=-=-=-=-=-
-        /// @brief zone name - from rcConn
-        std::string zone_name_;
 
     }; // class pam_auth_object
 

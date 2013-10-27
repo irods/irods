@@ -416,7 +416,7 @@ endif
 # of authentication uses a shared secret and the genOSAuth command to
 # generate a credential that the user presents to the iRODS server. 
 # You can use this instead of using password authentication.
-# OS_AUTH = 1
+OS_AUTH = 1
 ifdef OS_AUTH
 OS_AUTH_KEYFILE = /etc/irods.key
 # Some environments don't have a uniform username/uid

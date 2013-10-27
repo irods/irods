@@ -15,7 +15,7 @@
 // eirods includes
 #include "eirods_auth_plugin.h"
 #include "eirods_auth_constants.h"
-#include "eirods_native_auth_object.h"
+#include "eirods_osauth_auth_object.h"
 #include "eirods_stacktrace.h"
 #include "eirods_kvp_string_parser.h"
 
@@ -24,6 +24,11 @@
 #include <sstream>
 #include <string>
 #include <iostream>
+
+// =-=-=-=-=-=-=-
+// local includes
+#define OS_AUTH 1
+#include "osauth.h"
 
 int get64RandomBytes(char *buf);
 void setSessionSignitureClientside( char* _sig );
@@ -63,13 +68,13 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // given the client connection and context string, set up the
     // native auth object with relevant informaiton: user, zone, etc
-    eirods::error native_auth_client_start(
+    eirods::error osauth_auth_client_start(
         eirods::auth_plugin_context& _ctx,
         rcComm_t*                    _comm, 
         const char*                  _context ) {
         // =-=-=-=-=-=-=-
         // validate incoming parameters
-        if( !_ctx.valid< eirods::native_auth_object >().ok() ) {
+        if( !_ctx.valid< eirods::osauth_auth_object >().ok() ) {
             return ERROR( 
                        SYS_INVALID_INPUT_PARAM,
                        "invalid plugin context" );
@@ -83,8 +88,8 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get the native auth object
-        eirods::native_auth_object_ptr ptr = boost::dynamic_pointer_cast< 
-                                                 eirods::native_auth_object >( 
+        eirods::osauth_auth_object_ptr ptr = boost::dynamic_pointer_cast< 
+                                                 eirods::osauth_auth_object >( 
                                                      _ctx.fco() );
         // =-=-=-=-=-=-=-
         // set the user name from the conn
@@ -96,16 +101,16 @@ extern "C" {
 
         return SUCCESS();
 
-    } // native_auth_client_start
+    } // osauth_auth_client_start
  
     // =-=-=-=-=-=-=-
     // establish context - take the auth request results and massage them
     // for the auth response call
-    eirods::error native_auth_establish_context(
+    eirods::error osauth_auth_establish_context(
         eirods::auth_plugin_context& _ctx ) {
         // =-=-=-=-=-=-=-
         // validate incoming parameters
-        if( !_ctx.valid< eirods::native_auth_object >().ok() ) {
+        if( !_ctx.valid< eirods::osauth_auth_object >().ok() ) {
             return ERROR( 
                        SYS_INVALID_INPUT_PARAM,
                        "invalid plugin context" );
@@ -122,8 +127,8 @@ extern "C" {
  
         // =-=-=-=-=-=-=-
         // get the native auth object
-        eirods::native_auth_object_ptr ptr = boost::dynamic_pointer_cast< 
-                                                 eirods::native_auth_object >( 
+        eirods::osauth_auth_object_ptr ptr = boost::dynamic_pointer_cast< 
+                                                 eirods::osauth_auth_object >( 
                                                      _ctx.fco() );
         // =-=-=-=-=-=-=-
         // copy the challenge into the md5 buffer
@@ -152,9 +157,12 @@ extern "C" {
 
         } else {
             // =-=-=-=-=-=-=-
-            // determine if a password is already in place
-            need_password = obfGetPw( md5_buf+CHALLENGE_LEN );
-
+            // do os authenticaiton
+            need_password = osauthGetAuth(
+                                const_cast< char* >( ptr->request_result().c_str() ),
+                                const_cast< char* >( ptr->user_name().c_str() ),
+                                md5_buf + CHALLENGE_LEN, 
+                                MAX_PASSWORD_LEN );
         }
 
         // =-=-=-=-=-=-=-
@@ -212,30 +220,38 @@ extern "C" {
 
         return SUCCESS();
 
-    } // native_auth_establish_context
+    } // osauth_auth_establish_context
 
     // =-=-=-=-=-=-=-
     // handle an client-side auth request call 
-    eirods::error native_auth_client_request(
+    eirods::error osauth_auth_client_request(
         eirods::auth_plugin_context& _ctx,
         rcComm_t*                    _comm ) {
         // =-=-=-=-=-=-=-
         // validate incoming parameters
-        if( !_ctx.valid< eirods::native_auth_object >().ok() ) {
+        if( !_ctx.valid< eirods::osauth_auth_object >().ok() ) {
             return ERROR( 
                        SYS_INVALID_INPUT_PARAM,
                        "invalid plugin context" );
         }  
-        
+             
+        // =-=-=-=-=-=-=-
+        // copy the auth scheme to the req in struct
+        authPluginReqInp_t req_in;
+        strncpy( 
+            req_in.auth_scheme_,
+            eirods::AUTH_OSAUTH_SCHEME.c_str(),
+            eirods::AUTH_OSAUTH_SCHEME.size()+1 );
+   
         // =-=-=-=-=-=-=-
         // make the call to our auth request
-        authRequestOut_t* auth_request = 0;
-        int status = rcAuthRequest( 
+        authPluginReqOut_t* req_out = 0;
+        int status = rcAuthPluginRequest( 
                          _comm,
-                         &auth_request );
+                         &req_in,
+                         &req_out );
         if( status < 0 ) {
-            free( auth_request->challenge );
-            free( auth_request );
+            free( req_out );
             return ERROR( 
                        status,
                        "call to rcAuthRequest failed." );
@@ -243,28 +259,26 @@ extern "C" {
         } else { 
             // =-=-=-=-=-=-=-
             // get the auth object
-            eirods::native_auth_object_ptr ptr = boost::dynamic_pointer_cast< 
-                                                  eirods::native_auth_object >( _ctx.fco() );
+            eirods::osauth_auth_object_ptr ptr = boost::dynamic_pointer_cast< 
+                                                  eirods::osauth_auth_object >( _ctx.fco() );
             // =-=-=-=-=-=-=-
             // cache the challenge
-            ptr->request_result( auth_request->challenge );
-
-            free( auth_request->challenge );
-            free( auth_request );
+            ptr->request_result( req_out->result_ );
+            free( req_out );
             return SUCCESS();
         
         }
 
-    } // native_auth_client_request
+    } // osauth_auth_client_request
 
     // =-=-=-=-=-=-=-
     // handle an agent-side auth request call 
-    eirods::error native_auth_agent_request(
+    eirods::error osauth_auth_agent_request(
         eirods::auth_plugin_context& _ctx,
         rsComm_t*                    _comm ) {
         // =-=-=-=-=-=-=-
         // validate incoming parameters
-        if( !_ctx.valid< eirods::native_auth_object >().ok() ) {
+        if( !_ctx.valid< eirods::osauth_auth_object >().ok() ) {
             return ERROR( 
                        SYS_INVALID_INPUT_PARAM,
                        "invalid plugin context" );
@@ -281,8 +295,8 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // get the auth object
-        eirods::native_auth_object_ptr ptr = boost::dynamic_pointer_cast< 
-                                              eirods::native_auth_object >( _ctx.fco() );
+        eirods::osauth_auth_object_ptr ptr = boost::dynamic_pointer_cast< 
+                                              eirods::osauth_auth_object >( _ctx.fco() );
         // =-=-=-=-=-=-=-
         // cache the challenge
         ptr->request_result( buf );
@@ -295,16 +309,16 @@ extern "C" {
         // win!
         return SUCCESS(); 
          
-    } // native_auth_agent_request
+    } // osauth_auth_agent_request
 
     // =-=-=-=-=-=-=-
     // handle a client-side auth request call 
-    eirods::error native_auth_client_response(
+    eirods::error osauth_auth_client_response(
         eirods::auth_plugin_context& _ctx,
         rcComm_t*                    _comm ) {
         // =-=-=-=-=-=-=-
         // validate incoming parameters
-        if( !_ctx.valid< eirods::native_auth_object >().ok() ) {
+        if( !_ctx.valid< eirods::osauth_auth_object >().ok() ) {
             return ERROR( 
                     SYS_INVALID_INPUT_PARAM,
                     "invalid plugin context" );
@@ -316,11 +330,9 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // get the auth object
-        eirods::native_auth_object_ptr ptr = boost::dynamic_pointer_cast< 
-                                                 eirods::native_auth_object >( 
+        eirods::osauth_auth_object_ptr ptr = boost::dynamic_pointer_cast< 
+                                                 eirods::osauth_auth_object >( 
                                                      _ctx.fco() );
-        // =-=-=-=-=-=-=-
-        // build the response string
         char response[ RESPONSE_LEN+2 ];
         strncpy( 
             response,
@@ -353,11 +365,11 @@ extern "C" {
 
         }
            
-    } // native_auth_client_response
+    } // osauth_auth_client_response
 
     // =-=-=-=-=-=-=-
     // handle an agent-side auth request call 
-    eirods::error native_auth_agent_response(
+    eirods::error osauth_auth_agent_response(
         eirods::auth_plugin_context& _ctx,
         rsComm_t*                    _comm,
         authResponseInp_t*           _resp ) {
@@ -376,7 +388,7 @@ extern "C" {
                     SYS_INVALID_INPUT_PARAM,
                     "null rsComm_t ptr" );
         }
-
+        
         int status;
         char *bufp;
         authCheckInp_t authCheckInp;
@@ -390,11 +402,14 @@ extern "C" {
 
         bufp = _rsAuthRequestGetChallenge();
 
-        /* need to do NoLogin because it could get into inf loop for cross 
-         * zone auth */
-
-        status = getAndConnRcatHostNoLogin ( _comm, MASTER_RCAT, 
-                _comm->proxyUser.rodsZone, &rodsServerHost);
+        // =-=-=-=-=-=-=-
+        // need to do NoLogin because it could get into inf loop for cross 
+        // zone auth 
+        status = getAndConnRcatHostNoLogin( 
+                     _comm, 
+                     MASTER_RCAT, 
+                     _comm->proxyUser.rodsZone, 
+                     &rodsServerHost );
         if (status < 0) {
             return ERROR(
                        status,
@@ -403,8 +418,16 @@ extern "C" {
 
         memset (&authCheckInp, 0, sizeof (authCheckInp)); 
         authCheckInp.challenge = bufp;
-        authCheckInp.response = _resp->response;
         authCheckInp.username = _resp->username;
+        
+        std::string resp_str = eirods::AUTH_SCHEME_KEY    +
+                               eirods::kvp_association()  +
+                               eirods::AUTH_OSAUTH_SCHEME +
+                               eirods::kvp_delimiter()    +
+                               eirods::AUTH_RESPONSE_KEY  +
+                               eirods::kvp_association()  +
+                               _resp->response;
+        authCheckInp.response = const_cast<char*>( resp_str.c_str() );
 
         if (rodsServerHost->localFlag == LOCAL_HOST) {
             status = rsAuthCheck ( _comm, &authCheckInp, &authCheckOut);
@@ -576,24 +599,49 @@ extern "C" {
 
         return SUCCESS();
 
-    } // native_auth_agent_response
+    } // osauth_auth_agent_response
+
+    // =-=-=-=-=-=-=-
+    // operation to verify the response on the agent side
+    eirods::error osauth_auth_agent_auth_verify( 
+        eirods::auth_plugin_context& _ctx,
+        const char*                  _challenge,
+        const char*                  _user_name,
+        const char*                  _response ) {
+        // =-=-=-=-=-=-=-
+        // delegate auth verify to osauth lib
+        int status = osauthVerifyResponse( 
+                         const_cast< char* >( _challenge ), 
+                         const_cast< char* >( _user_name ), 
+                         const_cast< char* >( _response  ) );
+        if( status ) {
+            return ERROR( 
+                       status,
+                       "osauthVerifyResponse failed" );
+        } else {
+            return SUCCESS();
+
+        }
+
+    } // osauth_auth_agent_auth_verify
+
 
     // =-=-=-=-=-=-=-
     // stub for ops that the native plug does 
     // not need to support 
-    eirods::error native_auth_success_stub( 
+    eirods::error osauth_auth_success_stub( 
         eirods::auth_plugin_context& _ctx ) {
         return SUCCESS();
 
-    } // native_auth_success_stub
+    } // osauth_auth_success_stub
 
     // =-=-=-=-=-=-=-
-    // derive a new native_auth auth plugin from
+    // derive a new osauth_auth auth plugin from
     // the auth plugin base class for handling
     // native authentication
-    class native_auth_plugin : public eirods::auth {
+    class osauth_auth_plugin : public eirods::auth {
     public:
-        native_auth_plugin( 
+        osauth_auth_plugin( 
            const std::string& _nm, 
            const std::string& _ctx ) :
                eirods::auth( 
@@ -601,10 +649,10 @@ extern "C" {
                    _ctx ) {
         } // ctor
 
-        ~native_auth_plugin() {
+        ~osauth_auth_plugin() {
         }
 
-    }; // class native_auth_plugin
+    }; // class osauth_auth_plugin
 
     // =-=-=-=-=-=-=-
     // factory function to provide instance of the plugin
@@ -613,25 +661,25 @@ extern "C" {
         const std::string& _context ) {
         // =-=-=-=-=-=-=-
         // create an auth object
-        native_auth_plugin* nat = new native_auth_plugin( 
+        osauth_auth_plugin* nat = new osauth_auth_plugin( 
                                           _inst_name,
                                           _context );
         if( !nat ) {
-            rodsLog( LOG_ERROR, "plugin_factory - failed to alloc native_auth_plugin" );
+            rodsLog( LOG_ERROR, "plugin_factory - failed to alloc osauth_auth_plugin" );
             return 0;
         }
         
         // =-=-=-=-=-=-=-
         // fill in the operation table mapping call 
         // names to function names
-        nat->add_operation( eirods::AUTH_CLIENT_START,         "native_auth_client_start" );
-        nat->add_operation( eirods::AUTH_AGENT_START,          "native_auth_success_stub" );
-        nat->add_operation( eirods::AUTH_ESTABLISH_CONTEXT,    "native_auth_establish_context" );
-        nat->add_operation( eirods::AUTH_CLIENT_AUTH_REQUEST,  "native_auth_client_request" );
-        nat->add_operation( eirods::AUTH_AGENT_AUTH_REQUEST,   "native_auth_agent_request" );
-        nat->add_operation( eirods::AUTH_CLIENT_AUTH_RESPONSE, "native_auth_client_response" );
-        nat->add_operation( eirods::AUTH_AGENT_AUTH_RESPONSE,  "native_auth_agent_response" );
-        nat->add_operation( eirods::AUTH_AGENT_AUTH_VERIFY,    "native_auth_success_stub" );
+        nat->add_operation( eirods::AUTH_CLIENT_START,         "osauth_auth_client_start"      );
+        nat->add_operation( eirods::AUTH_AGENT_START,          "osauth_auth_success_stub"      );
+        nat->add_operation( eirods::AUTH_ESTABLISH_CONTEXT,    "osauth_auth_establish_context" );
+        nat->add_operation( eirods::AUTH_CLIENT_AUTH_REQUEST,  "osauth_auth_client_request"    );
+        nat->add_operation( eirods::AUTH_AGENT_AUTH_REQUEST,   "osauth_auth_agent_request"     );
+        nat->add_operation( eirods::AUTH_CLIENT_AUTH_RESPONSE, "osauth_auth_client_response"   );
+        nat->add_operation( eirods::AUTH_AGENT_AUTH_RESPONSE,  "osauth_auth_agent_response"    );
+        nat->add_operation( eirods::AUTH_AGENT_AUTH_VERIFY,    "osauth_auth_agent_auth_verify" );
 
         eirods::auth* auth = dynamic_cast< eirods::auth* >( nat );
         if( !auth ) {

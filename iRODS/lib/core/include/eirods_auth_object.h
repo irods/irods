@@ -12,11 +12,6 @@
 #include <boost/shared_ptr.hpp>
 
 namespace eirods {
-
-    // =-=-=-=-=-=-=-
-    // constants for kvp string encoding
-    const std::string AUTH_USER_KEY( "auth_user" );
-    const std::string AUTH_SCHEME_KEY( "auth_scheme" );
 /**
  * @brief Class for representing authorization scheme objects
  */
@@ -36,7 +31,11 @@ namespace eirods {
         virtual void request_result( const std::string& _r ) { request_result_ = _r; }
         virtual std::string context() const { return context_; }
         virtual void context( const std::string& _c ) { context_ = _c; }
-         
+        virtual std::string user_name() const { return user_name_; }
+        virtual std::string zone_name() const { return zone_name_; }
+        virtual void user_name( const std::string& _un ) { user_name_ = _un; }
+        virtual void zone_name( const std::string& _zn ) { zone_name_ = _zn; }
+
         /// @brief Comparison operator
         virtual bool operator==(const auth_object& _rhs) const;
 
@@ -47,10 +46,23 @@ namespace eirods {
     protected:
         rError_t*   r_error_;
 
+        /// =-=-=-=-=-=-=-
         // result passed to outgoing auth request 
         // struct back to client - challenge for native, 
         // password for pam etc
         std::string request_result_; 
+
+        /// =-=-=-=-=-=-=-
+        /// @brief user name - from rcConn
+        std::string user_name_;
+        
+        /// =-=-=-=-=-=-=-
+        /// @brief zone name - from rcConn
+        std::string zone_name_;
+        
+        /// =-=-=-=-=-=-=-
+        /// @brief context string which might hold anything 
+        ///        coming from a client call
         std::string context_; 
     };
 

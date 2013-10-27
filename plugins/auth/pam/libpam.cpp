@@ -91,8 +91,8 @@ extern "C" {
             return PASS( ret );
         }
 
-        std::string password = kvp[ eirods::PAM_PASSWORD_KEY ];
-        std::string ttl_str  = kvp[ eirods::PAM_TTL_KEY ];
+        std::string password = kvp[ eirods::AUTH_PASSWORD_KEY ];
+        std::string ttl_str  = kvp[ eirods::AUTH_TTL_KEY ];
 
         // =-=-=-=-=-=-=-
         // prompt for a password if necessary
@@ -116,11 +116,11 @@ extern "C" {
 
             // =-=-=-=-=-=-=-
             // rebuilt and reset context string
-            std::string context = eirods::PAM_TTL_KEY        + 
+            std::string context = eirods::AUTH_TTL_KEY        + 
                                       eirods::kvp_association()  +
                                       ttl_str                    +
                                       eirods::kvp_delimiter()    +
-                                      eirods::PAM_PASSWORD_KEY   +
+                                      eirods::AUTH_PASSWORD_KEY   +
                                       eirods::kvp_association()  +
                                       new_password;
             ptr->context( context );
@@ -175,7 +175,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // append the auth scheme and user name
         context += eirods::kvp_delimiter()   +
-                   eirods::PAM_USER_KEY      +
+                   eirods::AUTH_USER_KEY      +
                    eirods::kvp_association() + 
                    ptr->user_name();
                     
@@ -240,6 +240,7 @@ extern "C" {
             // and cache the result in our auth object
             ptr->request_result( req_out->result_ );
             status = obfSavePw( 0, 0, 0, req_out->result_ );
+            free( req_out );
             return SUCCESS();
         
         }
@@ -395,17 +396,17 @@ extern "C" {
             return PASS( ret );
         }
 
-        if( kvp.find( eirods::PAM_USER_KEY     ) == kvp.end() ||
-            kvp.find( eirods::PAM_TTL_KEY      ) == kvp.end() ||
-            kvp.find( eirods::PAM_PASSWORD_KEY ) == kvp.end() ) {
+        if( kvp.find( eirods::AUTH_USER_KEY     ) == kvp.end() ||
+            kvp.find( eirods::AUTH_TTL_KEY      ) == kvp.end() ||
+            kvp.find( eirods::AUTH_PASSWORD_KEY ) == kvp.end() ) {
             return ERROR( 
                        SYS_INVALID_INPUT_PARAM,
                        "user or ttl or password key missing" );
         }
 
-        std::string user_name = kvp[ eirods::PAM_USER_KEY     ];
-        std::string password  = kvp[ eirods::PAM_PASSWORD_KEY ];
-        std::string ttl_str   = kvp[ eirods::PAM_TTL_KEY      ];
+        std::string user_name = kvp[ eirods::AUTH_USER_KEY     ];
+        std::string password  = kvp[ eirods::AUTH_PASSWORD_KEY ];
+        std::string ttl_str   = kvp[ eirods::AUTH_TTL_KEY      ];
         int ttl = 0;
         if( !ttl_str.empty() ) {
             ttl = boost::lexical_cast<int>( ttl_str );
@@ -511,13 +512,14 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // fill in the operation table mapping call 
         // names to function names
-        pam->add_operation( eirods::AUTH_CLIENT_START,         "pam_auth_client_start" );
-        pam->add_operation( eirods::AUTH_AGENT_START,          "pam_auth_success_stub" );
-        pam->add_operation( eirods::AUTH_ESTABLISH_CONTEXT,    "pam_auth_success_stub" );
+        pam->add_operation( eirods::AUTH_CLIENT_START,         "pam_auth_client_start"   );
+        pam->add_operation( eirods::AUTH_AGENT_START,          "pam_auth_success_stub"   );
+        pam->add_operation( eirods::AUTH_ESTABLISH_CONTEXT,    "pam_auth_success_stub"   );
         pam->add_operation( eirods::AUTH_CLIENT_AUTH_REQUEST,  "pam_auth_client_request" );
-        pam->add_operation( eirods::AUTH_AGENT_AUTH_REQUEST,   "pam_auth_agent_request" );
-        pam->add_operation( eirods::AUTH_CLIENT_AUTH_RESPONSE, "pam_auth_success_stub" );
-        pam->add_operation( eirods::AUTH_AGENT_AUTH_RESPONSE,  "pam_auth_success_stub" );
+        pam->add_operation( eirods::AUTH_AGENT_AUTH_REQUEST,   "pam_auth_agent_request"  );
+        pam->add_operation( eirods::AUTH_CLIENT_AUTH_RESPONSE, "pam_auth_success_stub"   );
+        pam->add_operation( eirods::AUTH_AGENT_AUTH_RESPONSE,  "pam_auth_success_stub"   );
+        pam->add_operation( eirods::AUTH_AGENT_AUTH_VERIFY,    "pam_auth_success_stub"   );
 
         eirods::auth* auth = dynamic_cast< eirods::auth* >( pam );
         if( !auth ) {

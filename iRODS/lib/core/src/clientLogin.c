@@ -20,6 +20,7 @@
 #include "eirods_auth_plugin.h"
 #include "eirods_auth_manager.h"
 #include "eirods_auth_constants.h"
+#include "eirods_native_auth_object.h"
 #include "eirods_pam_auth_object.h"
 #include "authPluginRequest.h"
 

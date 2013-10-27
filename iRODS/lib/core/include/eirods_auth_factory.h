@@ -6,8 +6,8 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_native_auth_object.h"
 #include "eirods_stacktrace.h"
+#include "eirods_auth_object.h"
 
 // =-=-=-=-=-=-=-
 // boost includes

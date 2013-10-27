@@ -1,7 +1,7 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
-#ifndef __NATIVE_AUTH_OBJECT_H__
-#define __NATIVE_AUTH_OBJECT_H__
+#ifndef __OSAUTH_AUTH_OBJECT_H__
+#define __OSAUTH_AUTH_OBJECT_H__
 
 #include "eirods_error.h"
 #include "eirods_auth_object.h"
@@ -16,25 +16,25 @@ namespace eirods {
 
     /// =-=-=-=-=-=-=-
     /// @brief constant defining the native auth scheme string
-    const std::string AUTH_NATIVE_SCHEME( "native" );
+    const std::string AUTH_OSAUTH_SCHEME( "osauth" );
 
     /// =-=-=-=-=-=-=-
     /// @brief object for a native irods authenticaion sceheme
-    class native_auth_object : public auth_object {
+    class osauth_auth_object : public auth_object {
     public:
         /// =-=-=-=-=-=-=-
         /// @brief Ctor
-        native_auth_object(rError_t* _r_error);
-        native_auth_object(const native_auth_object&);
-        virtual ~native_auth_object();
+        osauth_auth_object(rError_t* _r_error);
+        osauth_auth_object(const osauth_auth_object&);
+        virtual ~osauth_auth_object();
 
         /// =-=-=-=-=-=-=-
         /// @brief assignment operator
-        virtual native_auth_object&  operator=(const native_auth_object& );
+        virtual osauth_auth_object&  operator=(const osauth_auth_object& );
 
         /// =-=-=-=-=-=-=-
         /// @brief Comparison operator
-        virtual bool operator==(const native_auth_object& ) const;
+        virtual bool operator==(const osauth_auth_object& ) const;
 
         /// =-=-=-=-=-=-=-
         /// @brief Plugin resolution operation
@@ -48,22 +48,34 @@ namespace eirods {
 
         /// =-=-=-=-=-=-=-
         /// @brief accessors
+        std::string user_name() const { return user_name_; }
+        std::string zone_name() const { return zone_name_; }
         std::string digest   () const { return digest_;    }
  
         /// =-=-=-=-=-=-=-
         /// @brief mutators
-        void digest   ( const std::string& _dd ) { digest_ = _dd; }
+        void user_name( const std::string& _un ) { user_name_ = _un; }
+        void zone_name( const std::string& _zn ) { zone_name_ = _zn; }
+        void digest   ( const std::string& _dd ) { digest_    = _dd; }
         
         private:
+        /// =-=-=-=-=-=-=-
+        /// @brief user name - from rcConn
+        std::string user_name_;
+        
+        /// =-=-=-=-=-=-=-
+        /// @brief zone name - from rcConn
+        std::string zone_name_;
+        
         /// =-=-=-=-=-=-=-
         /// @brief md5 digest computed
         std::string digest_;
             
-    }; // class native_auth_object
+    }; // class osauth_auth_object
 
     /// @brief Helpful typedef
-    typedef boost::shared_ptr<native_auth_object> native_auth_object_ptr;
+    typedef boost::shared_ptr<osauth_auth_object> osauth_auth_object_ptr;
     
 }; // namespace eirods
 
-#endif // __NATIVE_AUTH_OBJECT_H__
+#endif // __OSAUTH_AUTH_OBJECT_H__

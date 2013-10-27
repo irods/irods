@@ -1,5 +1,6 @@
-BASEDIRS = native \
-           pam
+BASEDIRS = osauth \
+           pam \
+           native
            
 
 ######################################################################
