@@ -354,7 +354,7 @@ f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/irodsXmsgServer .
 #f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/ ./external/libarchive*/.libs/libarchive*.so*
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/list.pl ./iRODS/server/bin/list.pl
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/irodsAgent ./iRODS/server/bin/irodsAgent
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/PamAuthCheck ./iRODS/server/bin/PamAuthCheck
+f 4755 root root ${IRODS_HOME}/server/bin/PamAuthCheck ./iRODS/server/bin/PamAuthCheck
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/re -
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/re/include -
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/re/include/reAction.h ./iRODS/server/re/include/reAction.h
@@ -470,7 +470,7 @@ f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/showCo
 # igetwild.sh - shouldn't have a binary with an extension, lintian complained it's not as future-proof
 f 755 root root /usr/bin/igetwild             ./iRODS/clients/icommands/bin/igetwild
 
-f 755 root root /usr/bin/genOSAuth            ./iRODS/clients/icommands/bin/genOSAuth
+f 4755 root root /usr/bin/genOSAuth           ./iRODS/clients/icommands/bin/genOSAuth
 f 755 root root /usr/bin/iadmin               ./iRODS/clients/icommands/bin/iadmin
 f 755 root root /usr/bin/ibun                 ./iRODS/clients/icommands/bin/ibun
 f 755 root root /usr/bin/icd                  ./iRODS/clients/icommands/bin/icd
