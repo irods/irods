@@ -20,7 +20,7 @@
         // #include <unordered_map>
         //#define EIRODS_HASH_TYPE std::unordered_map
         #include <backward/hash_map>
-        #define EIRODS_HASH_TYPE hash_map
+        #define EIRODS_HASH_TYPE __gnu_cxx::hash_map
     #else
         #include <ext/hash_map>
         #define EIRODS_HASH_TYPE __gnu_cxx::hash_map
