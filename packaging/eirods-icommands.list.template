@@ -84,6 +84,19 @@ irodsCwd '/tempZone/home/USERNAME'
 irodsUserName 'USERNAME'
 # Zone:
 irodsZone 'tempZone'
+# Enable Advanced Client-Server negotation:
+irodsClientServerNegotiation 'request_server_negotiation'
+# Client-Server connection policy:
+irodsClientServerPolicy 'CS_NEG_REFUSE'
+# Client-Server Encryption Key Size In Bytes:
+irodsEncryptionKeySize '32'
+# Client-Server Encryption Salt Size In Bytes:
+irodsEncryptionSaltSize '8'
+# Client-Server Encryption Number of Hash Rounds:
+irodsEncryptionNumHashRounds '16'
+# Client-Server Encryption Algorithm:
+irodsEncryptionAlgorithm 'AES-256-CBC'
+
 
 EOF
 
