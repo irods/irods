@@ -219,6 +219,18 @@ The Zone has been renamed, but now you will need to update your .irodsEnv file t
  irodsUserName 'rods'
  # Zone:
  irodsZone '<newzonename>'
+ # Enable Advanced Client-Server negotation:
+ irodsClientServerNegotiation 'request_server_negotiation'
+ # Client-Server connection policy:
+ irodsClientServerPolicy 'CS_NEG_REFUSE'
+ # Client-Server Encryption Key Size In Bytes:
+ irodsEncryptionKeySize '32'
+ # Client-Server Encryption Salt Size In Bytes:
+ irodsEncryptionSaltSize '8'
+ # Client-Server Encryption Number of Hash Rounds:
+ irodsEncryptionNumHashRounds '16'
+ # Client-Server Encryption Algorithm:
+ irodsEncryptionAlgorithm 'AES-256-CBC'
 
 Now, the connection should be reset and you should be able to list your empty iRODS collection again::
 
@@ -397,6 +409,7 @@ Coordinating resources contain the flow control logic which determines both how 
 - storage balanced (bytes) (expected)
 - tiered (expected)
 
+
 Storage Resources
 -----------------
 
@@ -409,6 +422,7 @@ Storage resources represent storage interfaces and include the file driver infor
 - HPSS (expected)
 - S3 (expected)
 - WOS (expected)
+
 
 Managing Child Resources
 ------------------------
@@ -462,13 +476,59 @@ A replicating coordinating resource with three unix file system storage resource
  eirods@hostname:~/ $ iadmin addchildtoresc example1 repl_resc2
  eirods@hostname:~/ $ iadmin addchildtoresc example1 repl_resc3
 
-
 Rebalancing
 -----------
 
 A new subcommand for iadmin allows an administrator to rebalance a coordinating resource.  The coordinating resource can be the root of a tree, or anywhere in the middle of a tree.  The rebalance operation will rebalance for all decendents.  For example, the iadmin command ``iadmin modresc myReplResc rebalance`` would fire the rebalance operation for the replication resource instance named myReplResc.  Any Data Objects on myReplResc that did not exist on all its children would be replicated as expected.
 
 For other coordinating resource types, rebalance can be defined as appropriate.  For coordinating resources with no concept of "balanced", the rebalance operation is a "no op" and performs no work.
+
+------------------------
+Pluggable Authentication
+------------------------
+
+The authentication methods are now contained in plugins.  By default, similar to iRODS 3.3 and prior, E-iRODS comes with native iRODS challenge/response (password) enabled.  However, enabling an additional authentication mechanism is as simple as adding a file to the proper directory.  The server does not need to be restarted.
+
+Available authentication mechanisms include:
+
+- Native iRODS password
+- OSAuth
+- GSI (Grid Security Infrastructure)
+- PAM (Pluggable Authentication Module)
+- Kerberos
+- LDAP (via PAM)
+
+-----------------
+Pluggable Network
+-----------------
+
+E-iRODS now ships with both TCP and SSL network plugins enabled.  The SSL mechanism is provided via OpenSSL and wraps the activity from the TCP plugin.
+
+The SSL parameters are tunable via the following .irodsEnv variables::
+
+ # Enable Advanced Client-Server negotation:
+ irodsClientServerNegotiation 'request_server_negotiation'
+ # Client-Server connection policy:
+ irodsClientServerPolicy 'CS_NEG_REFUSE'
+ # Client-Server Encryption Key Size In Bytes:
+ irodsEncryptionKeySize '32'
+ # Client-Server Encryption Salt Size In Bytes:
+ irodsEncryptionSaltSize '8'
+ # Client-Server Encryption Number of Hash Rounds:
+ irodsEncryptionNumHashRounds '16'
+ # Client-Server Encryption Algorithm:
+ irodsEncryptionAlgorithm 'AES-256-CBC'
+
+The possible values for irodsClientServerPolicy include:
+
+- CS_NEG_REQUIRE: This side of the connection requires an SSL connection
+- CS_NEG_DONT_CARE: This side of the connection will connect either with or without SSL
+- CS_NEG_REFUSE: (default) This side of the connection refuses to connect via SSL
+
+
+In order for a connection to be made, the client and server have to agree on the type of connection they will share.  When both sides choose ``CS_NEG_DONT_CARE``, E-iRODS shows an affinity for security by connecting via SSL.
+
+Other parameters ..........  EVP library included with OpenSSL
 
 -------------------
 Users & Permissions
@@ -949,7 +1009,7 @@ History of Releases
 ==========   =======    =====================================================
 Date         Version    Description
 ==========   =======    =====================================================
-2013-10-25   3.0.1b1    Second Release.
+2013-10-28   3.0.1b1    Second Release.
                           This is the second open source release from RENCI.
                           It includes pluggable network and authentication
                           support as well as a rebalance option and migration
