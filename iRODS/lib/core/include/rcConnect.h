@@ -26,10 +26,11 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition.hpp>
 
-
-#ifdef USE_SSL
+// =-=-=-=-=-=-=-
+// ssl includes
 #include <openssl/ssl.h>
-#endif
+#include <openssl/x509v3.h>
+#include <openssl/err.h>
 
 #ifdef  __cplusplus
 extern "C" {
@@ -115,20 +116,22 @@ typedef struct {
     procState_t                clientState;
     procState_t                reconnThrState;
     operProgress_t             operProgress;
-    fileRestart_t              fileRestart;
-#ifdef USE_SSL
-    int                        ssl_on;
-    SSL_CTX*                   ssl_ctx;
-    SSL*                       ssl;
-#endif
-
-    char negotiation_results[ MAX_NAME_LEN ];
-    char shared_secret      [ NAME_LEN ];
     
     int  key_size;
     int  salt_size;
     int  num_hash_rounds;
     char encryption_algorithm[ NAME_LEN ];
+    char negotiation_results[ MAX_NAME_LEN ];
+    char shared_secret      [ NAME_LEN ];
+
+    int                        ssl_on;
+    SSL_CTX*                   ssl_ctx;
+    SSL*                       ssl;
+    
+    // =-=-=-=-=-=-=-
+    // this struct needs to stay at the bottom of
+    // rcComm_t
+    fileRestart_t              fileRestart;
 
 } rcComm_t;
 
