@@ -1510,7 +1510,7 @@ extern "C" {
                 return PASS( kvp_err );
             }
 
-            std::string limit_str = kvp[ REPL_LIMIT_KEY ];
+            std::string limit_str = kvp[ eirods::REPL_LIMIT_KEY ];
             if( !limit_str.empty() ) {
                 try {
                     limit = boost::lexical_cast<int>( limit_str );
