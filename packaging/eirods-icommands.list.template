@@ -84,6 +84,19 @@ irodsCwd '/tempZone/home/USERNAME'
 irodsUserName 'USERNAME'
 # Zone:
 irodsZone 'tempZone'
+# Enable Advanced Client-Server negotation:
+irodsClientServerNegotiation 'request_server_negotiation'
+# Client-Server connection policy:
+irodsClientServerPolicy 'CS_NEG_REFUSE'
+# Client-Server Encryption Key Size In Bytes:
+irodsEncryptionKeySize '32'
+# Client-Server Encryption Salt Size In Bytes:
+irodsEncryptionSaltSize '8'
+# Client-Server Encryption Number of Hash Rounds:
+irodsEncryptionNumHashRounds '16'
+# Client-Server Encryption Algorithm:
+irodsEncryptionAlgorithm 'AES-256-CBC'
+
 
 EOF
 
@@ -121,7 +134,7 @@ f 755 root root /var/lib/eirods/plugins/network/ ./plugins/network/*.so
 d 755 root root /var/lib/eirods/plugins/auth -
 f 755 root root /var/lib/eirods/plugins/auth/ ./plugins/auth/*.so
 
-f 755 root root /usr/bin/genOSAuth            ./iRODS/clients/icommands/bin/genOSAuth
+f 4755 root root /usr/bin/genOSAuth           ./iRODS/clients/icommands/bin/genOSAuth
 f 755 root root /usr/bin/iadmin               ./iRODS/clients/icommands/bin/iadmin
 f 755 root root /usr/bin/ibun                 ./iRODS/clients/icommands/bin/ibun
 f 755 root root /usr/bin/icd                  ./iRODS/clients/icommands/bin/icd

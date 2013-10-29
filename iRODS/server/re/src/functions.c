@@ -2649,9 +2649,6 @@ Res *smsiCollectionSpider(Node **subtrees, int n, Node *node, ruleExecInfo_t *re
     }
     char* varname = subtrees[0]->text;
 
-    /* Allocate memory for dataObjInp. Needs to be persistent since will be freed later along with other msParams */
-    dataObjInp = (dataObjInp_t *)malloc(sizeof(dataObjInp_t));
-
 	/* Open collection in recursive mode */
 	collInp->flags = RECUR_QUERY_FG;
 	handleInx = rsOpenCollection (rei->rsComm, collInp);
@@ -2666,6 +2663,9 @@ Res *smsiCollectionSpider(Node **subtrees, int n, Node *node, ruleExecInfo_t *re
 	GC_BEGIN
 	/* save the old value of variable with name varname in the current env only */
 	Res *oldVal = (Res *) lookupFromHashTable(env->current, varname);
+
+    /* Allocate memory for dataObjInp. Needs to be persistent since will be freed later along with other msParams */
+    dataObjInp = (dataObjInp_t *)malloc(sizeof(dataObjInp_t));
 
     /* Read our collection one object at a time */
 	while ((rei->status = rsReadCollection (rei->rsComm, &handleInx, &collEnt)) >= 0)
@@ -2832,9 +2832,8 @@ char *wildCardToRegex(char *buf) {
 
 Res *smsi_segfault(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
 
-	char *a = NULL;
-	putchar(*a);
-    return NULL;
+  raise(SIGSEGV);
+  return NULL;
 }
 
 void getSystemFunctions(Hashtable *ft, Region *r) {

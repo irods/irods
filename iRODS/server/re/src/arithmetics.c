@@ -1375,7 +1375,7 @@ Res* matchPattern(Node *pattern, Node *val, Env *env, ruleExecInfo_t *rei, int r
 					updateInEnv(env, varName, res2);
 				} else {
 					if(insertIntoHashTable(env->current, varName, res2) == 0) {
-						snprintf(localErrorMsg, ERR_MSG_LEN, "error: unable to write to local variable \"%s\".",varName);
+						snprintf(errbuf, ERR_MSG_LEN, "error: unable to write to local variable \"%s\".",varName);
 						generateErrMsg(errbuf,NODE_EXPR_POS(N_APP_ARG(pattern, 0)), N_APP_ARG(pattern, 0)->base, errbuf);
 						addRErrorMsg(errmsg, RE_UNABLE_TO_WRITE_LOCAL_VAR, errbuf);
 						return newErrorRes(r, RE_UNABLE_TO_WRITE_LOCAL_VAR);
@@ -1416,7 +1416,7 @@ Res* matchPattern(Node *pattern, Node *val, Env *env, ruleExecInfo_t *rei, int r
         	if(lookupFromEnv(env, varName)==NULL) {
         		/* new variable */
 				if(insertIntoHashTable(env->current, varName, val) == 0) {
-					snprintf(localErrorMsg, ERR_MSG_LEN, "error: unable to write to local variable \"%s\".",varName);
+					snprintf(errbuf, ERR_MSG_LEN, "error: unable to write to local variable \"%s\".",varName);
         				generateErrMsg(errbuf,NODE_EXPR_POS(pattern), pattern->base, errbuf);
 					addRErrorMsg(errmsg, RE_UNABLE_TO_WRITE_LOCAL_VAR, errbuf);
 					return newErrorRes(r, RE_UNABLE_TO_WRITE_LOCAL_VAR);

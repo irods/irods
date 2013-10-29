@@ -14,6 +14,14 @@ namespace eirods {
     /// @brief delimiter used for parsing resource context strings
     const std::string RESOURCE_DELIMITER(";");
 
+
+    // =-=-=-=-=-=-=-
+    /// @brief key for the replicating resource node which defines the
+    ///        maximum number of data objects to rebalance per iteration
+    ///        (defaults to 500)
+    ///        used in the "resource_rebalance" operation below
+    const std::string REPL_LIMIT_KEY( "replication_rebalance_limit" );
+
     // =-=-=-=-=-=-=-
     /// @brief key for compound resource cache staging policy
     const std::string RESOURCE_STAGE_TO_CACHE_POLICY("compound_resource_cache_refresh_policy");

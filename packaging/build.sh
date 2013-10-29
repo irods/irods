@@ -763,7 +763,7 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     echo "${text_green}${text_bold}Building [$EIRODS_BUILD_CMAKEVERSION]${text_reset}"
     cd $BUILDDIR/external/$EIRODS_BUILD_CMAKEVERSION
     if [[ ( ! -e "Makefile" ) || ( "$FULLPATHSCRIPTNAME" -nt "Makefile" ) ]] ; then
-        ./bootstrap
+        ./bootstrap -- -DBUILD_TESTING=FALSE
         $MAKEJCMD
     else
         echo "Nothing to build - all files up to date."
