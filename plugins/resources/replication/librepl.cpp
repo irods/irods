@@ -95,9 +95,8 @@ eirods::error replCheckParams(
 
 extern "C" {
     /// =-=-=-=-=-=-=-
-    /// @brief limit of the number of repls to operation upon during rebalance
+    /// @brief limit of the number of repls to operate upon during rebalance
     const int DEFAULT_LIMIT = 500;
-    const std::string REPL_LIMIT_KEY( "replication_rebalance_limit" );
 
     // =-=-=-=-=-=-=-
     // 2. Define operations which will be called by the file*

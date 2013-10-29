@@ -4,7 +4,8 @@ E-iRODS is developed under the auspices of the iRODS Consortium.  This release w
 
 Development of this release has focused on the following features and efforts:
 
-- API Compatibility with Community iRODS 3.X (Federation)
+- API Compatibility with Community iRODS for purposes of Federation
+- Met all US Export Control requirements for distribution
 - Introduced pluggable interface for networks
 
   - TCP
@@ -15,7 +16,7 @@ Development of this release has focused on the following features and efforts:
   - OSAuth
   - GSI
   - PAM
-  - Kerberos (via PAM)
+  - Kerberos
   - LDAP (via PAM)
 - Additional coordinating resource plugins
 
