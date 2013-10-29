@@ -5,12 +5,16 @@
 #define __EIRODS_BUFFER_ENCRYPTION_H__
 
 // =-=-=-=-=-=-=-
+// irods includes
+#include "rodsDef.h"
+
+// =-=-=-=-=-=-=-
 // eirods includes
 #include "eirods_error.h"
 
 // =-=-=-=-=-=-=-
-// stl includes
-#include <string>
+// boost includes
+#include <boost/numeric/ublas/storage.hpp>
 
 // =-=-=-=-=-=-=-
 // ssl includes
@@ -25,6 +29,10 @@ namespace eirods {
     class buffer_crypt {
     public:
         // =-=-=-=-=-=-=-
+        // typedef for bounded array
+        typedef std::vector< unsigned char > array_t;
+
+        // =-=-=-=-=-=-=-
         // con/de structors
         buffer_crypt();
         buffer_crypt( 
@@ -37,30 +45,28 @@ namespace eirods {
         /// =-=-=-=-=-=-=-
         /// @brief given a string, encrypt it
         eirods::error encrypt( 
-            const std::string&, // key
-            const std::string&, // initialization vector
-            const std::string&, // plaintext buffer
-            std::string& );     // encrypted buffer
+            const array_t&, // key
+            const array_t&, // initialization vector
+            const array_t&, // plaintext buffer
+            array_t& );     // encrypted buffer
 
         /// =-=-=-=-=-=-=-
         /// @brief given a string, decrypt it
         eirods::error decrypt( 
-            const std::string&, // key
-            const std::string&, // initialization vector
-            const std::string&, // encrypted buffer
-            std::string& );     // plaintext buffer
+            const array_t&, // key
+            const array_t&, // initialization vector
+            const array_t&, // encrypted buffer
+            array_t& );     // plaintext buffer
 
         /// =-=-=-=-=-=-=-
         /// @brief given a key, create a hashed key and IV
         eirods::error initialization_vector(
-            const std::string&, // plain text key
-            std::string&,       // hashed key
-            std::string& );     // intialization vector
+            array_t& );     // intialization vector
 
         /// =-=-=-=-=-=-=-
         /// @brief generate a random byte key
         eirods::error generate_key(
-            std::string& ); // random byte key
+            array_t& ); // random byte key
         
         /// =-=-=-=-=-=-=-
         /// @brief accessors for attributes

@@ -68,7 +68,7 @@ namespace eirods {
     // =-=-=-=-=-=-=-
     // public - generate a random 32 byte key
     eirods::error buffer_crypt::generate_key( 
-        std::string& _out_key ) {
+        array_t& _out_key ) {
         // =-=-=-=-=-=-=-
         // generate 32 random bytes
         unsigned char* key = new unsigned char[ key_size_ ];
@@ -84,10 +84,10 @@ namespace eirods {
         }
 
         // =-=-=-=-=-=-=-
-        // assign the key to the out variable
+        // copy the key to the out variable
         _out_key.assign( 
-            reinterpret_cast< const char* >( key ), 
-            key_size_ );
+            &key[0], 
+            &key[ key_size_ ] );
 
         delete [] key;
 
@@ -98,15 +98,14 @@ namespace eirods {
     // =-=-=-=-=-=-=-
     // public - create a hashed key and initialization vector
     eirods::error buffer_crypt::initialization_vector( 
-        const std::string& _key,
-        std::string&       _out_key,
-        std::string&       _out_iv ) {
+        array_t& _out_iv ) {
         // =-=-=-=-=-=-=-
-        // generate a random salt
-        unsigned char* salty = new unsigned char[ salt_size_ ];
-        int rnd_err = RAND_bytes( salty, salt_size_ );
+        // generate a random initialization vector
+        unsigned char* iv = new unsigned char[ key_size_ ];
+        int rnd_err = RAND_bytes( 
+                          iv,
+                          key_size_ );
         if( 1 != rnd_err ) {
-            delete [] salty;
             char err[ 256 ];
             ERR_error_string_n( ERR_get_error(), err, 256 );
             std::string msg( "failed in RAND_bytes - " );
@@ -116,44 +115,14 @@ namespace eirods {
         }
 
         // =-=-=-=-=-=-=-
-        // build the initialization vector
-        int num_rounds = 2;
-        unsigned char* init_vec = new unsigned char[ _key.size() ];
-        unsigned char* key_hash = new unsigned char[ _key.size() ];
-        unsigned char* key_buff = new unsigned char[ _key.size() ];
-        memcpy( 
-            key_buff, 
-            _key.c_str(),
-            _key.size()*sizeof(unsigned char) );
-        size_t sz = EVP_BytesToKey( 
-                        EVP_get_cipherbyname( algorithm_.c_str() ),
-                        EVP_sha1(), 
-                        salty, 
-                        key_buff,
-                        _key.size(), 
-                        num_rounds, 
-                        key_hash, 
-                        init_vec );
-        if( _key.size() != sz ) {
-            delete [] key_buff;
-            delete [] salty;
-            delete [] init_vec;
-            delete [] key_hash;
-            
-            char err[ 256 ];
-            ERR_error_string_n( ERR_get_error(), err, 256 );
-            std::string msg( "failed in EVP_BytesToKey - " );
-            msg += err;
-            return ERROR( ERR_get_error(), msg );
-        }
-
-        _out_key.assign( reinterpret_cast< const char* >( key_hash ), _key.size() );
-        _out_iv.assign( reinterpret_cast< const char* >( init_vec ), _key.size() );
-            
-        delete [] key_buff;
-        delete [] salty;
-        delete [] init_vec;
-        delete [] key_hash;
+        // copy the iv to the out variable
+        _out_iv.assign( 
+            &iv[0], 
+            &iv[ key_size_ ] );
+        
+        // =-=-=-=-=-=-=-
+        // clean up
+        delete [] iv;
 
         return SUCCESS();
 
@@ -162,24 +131,20 @@ namespace eirods {
     // =-=-=-=-=-=-=-
     // public - encryptor
     eirods::error buffer_crypt::encrypt( 
-        const std::string& _key,
-        const std::string& _iv,
-        const std::string& _in_buf,
-        std::string&       _out_buf ) {
+        const array_t& _key,
+        const array_t& _iv,
+        const array_t& _in_buf,
+        array_t&       _out_buf ) {
         // =-=-=-=-=-=-=-
         // create an encryption context
-        unsigned char* key_buff = reinterpret_cast< unsigned char* >( 
-                                      const_cast< char* >( _key.c_str() ) );
-        unsigned char* init_vec = reinterpret_cast< unsigned char* >( 
-                                      const_cast< char* >( _iv.c_str() ) );
         EVP_CIPHER_CTX context;
         EVP_CIPHER_CTX_init( &context );
         int ret = EVP_EncryptInit_ex(
                     &context, 
                     EVP_get_cipherbyname( algorithm_.c_str() ),
                     NULL, 
-                    key_buff, 
-                    init_vec );
+                    &_key[0],
+                    &_iv[0] );
          if( 0 == ret ) {
             char err[ 256 ];
             ERR_error_string_n( ERR_get_error(), err, 256 );
@@ -193,16 +158,13 @@ namespace eirods {
         // max ciphertext len for a n bytes of plaintext is n + AES_BLOCK_SIZE -1 bytes 
         int            cipher_len  = _in_buf.size() + AES_BLOCK_SIZE;
         unsigned char* cipher_text = new unsigned char[ cipher_len ] ;
-        unsigned char* txt_buff    = reinterpret_cast< unsigned char* >( 
-                                      const_cast< char* >( _in_buf.c_str() ) );
-
         // =-=-=-=-=-=-=-
         // update ciphertext, cipher_len is filled with the length of ciphertext generated,
         ret = EVP_EncryptUpdate( 
                       &context, 
                       cipher_text, 
                       &cipher_len, 
-                      txt_buff,
+                      &_in_buf[0],
                       _in_buf.size() );
         if( 0 == ret ) {
             char err[ 256 ];
@@ -229,9 +191,13 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         // clean up and assign out variables before exit
+        _out_buf.resize( cipher_len+final_len );
+        
+        // =-=-=-=-=-=-=-
+        // copy the iv to the out variable
         _out_buf.assign( 
-            reinterpret_cast< const char* >( cipher_text ), 
-            cipher_len+final_len );
+            &cipher_text[0], 
+            &cipher_text[ cipher_len+final_len ] );
 
         delete [] cipher_text;
  
@@ -242,24 +208,20 @@ namespace eirods {
     // =-=-=-=-=-=-=-
     // public - decryptor
     eirods::error buffer_crypt::decrypt( 
-        const std::string& _key,
-        const std::string& _iv,
-        const std::string& _in_buf,
-        std::string&       _out_buf ) {
+        const array_t& _key,
+        const array_t& _iv,
+        const array_t& _in_buf,
+        array_t&       _out_buf ) {
         // =-=-=-=-=-=-=-
         // create an decryption context
-        unsigned char* key_buff = reinterpret_cast< unsigned char* >( 
-                                      const_cast< char* >( _key.c_str() ) );
-        unsigned char* iv_buff  = reinterpret_cast< unsigned char* >( 
-                                      const_cast< char* >( _iv.c_str() ) );
         EVP_CIPHER_CTX context;
         EVP_CIPHER_CTX_init( &context );
         int ret = EVP_DecryptInit_ex( 
                     &context, 
                     EVP_get_cipherbyname( algorithm_.c_str() ),
                     NULL, 
-                    key_buff,
-                    iv_buff );
+                    &_key[0],
+                    &_iv [0] );
          if( 0 == ret ) {
             char err[ 256 ];
             ERR_error_string_n( ERR_get_error(), err, 256 );
@@ -273,15 +235,14 @@ namespace eirods {
         // because we have padding ON, we must allocate an extra cipher block size of memory 
         int            plain_len  = 0;
         unsigned char* plain_text = new unsigned char[ _in_buf.size() + AES_BLOCK_SIZE ];
-        unsigned char* txt_buff   = reinterpret_cast< unsigned char* >( 
-                                        const_cast< char* >( _in_buf.c_str() ) );
+        
         // =-=-=-=-=-=-=-
         // update the plain text, plain_len is filled with the length of the plain text
         ret = EVP_DecryptUpdate(
                       &context, 
                       plain_text, 
                       &plain_len, 
-                      txt_buff, 
+                      &_in_buf[0],
                       _in_buf.size() );
          if( 0 == ret ) {
             char err[ 256 ];
@@ -308,9 +269,13 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         // assign the plain text to the outvariable and clean up 
+        _out_buf.resize( plain_len+final_len );
+        
+        // =-=-=-=-=-=-=-
+        // copy the iv to the out variable
         _out_buf.assign( 
-            reinterpret_cast< const char* >( plain_text ), 
-            plain_len+final_len );
+            &plain_text[0], 
+            &plain_text[ plain_len+final_len ] );
 
         delete [] plain_text;
 
