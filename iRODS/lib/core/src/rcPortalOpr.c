@@ -15,6 +15,7 @@
 // eirods includes
 #include "eirods_stacktrace.h"
 #include "eirods_buffer_encryption.h"
+#include "eirods_client_server_negotiation.h"
 
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
@@ -266,7 +267,7 @@ int destFd, int srcFd, int threadNum)
     myInput->destFd = destFd;
     myInput->srcFd = srcFd;
     myInput->threadNum = threadNum;
-    strncpy( myInput->shared_secret, conn->shared_secret, NAME_LEN );
+    memcpy( myInput->shared_secret, conn->shared_secret, NAME_LEN );
 
     return (0);
 }
@@ -310,7 +311,9 @@ rcPartialDataPut (rcPortalTransferInp_t *myInput)
 
     // =-=-=-=-=-=-=-
     // flag to determine if we need to use encryption
-    bool use_encryption_flg = ( strlen( myInput->shared_secret ) != 0 );
+    bool use_encryption_flg = 
+             ( myInput->conn->negotiation_results == 
+               eirods::CS_NEG_USE_SSL );
     
     // =-=-=-=-=-=-=-
     // get the client side Env to determine
@@ -432,9 +435,14 @@ rcPartialDataPut (rcPortalTransferInp_t *myInput)
                 // =-=-=-=-=-=-=-
                 // capture the iv with the cipher text
                 bzero( buf, sizeof( buf ) );
-                memcpy( buf, &iv[0], iv_size );
-
-                memcpy( buf+iv_size, &cipher[0], cipher.size() );
+                std::copy( 
+                    iv.begin(), 
+                    iv.end(), 
+                    &buf[0] );
+                std::copy( 
+                    cipher.begin(), 
+                    cipher.end(), 
+                    &buf[iv_size] );
            
                 new_size = iv_size + cipher.size();
 
@@ -964,8 +972,10 @@ rcPartialDataGet (rcPortalTransferInp_t *myInput)
 
     // =-=-=-=-=-=-=-
     // flag to determine if we need to use encryption
-    bool use_encryption_flg = ( strlen( myInput->shared_secret ) != 0 );
-    
+    bool use_encryption_flg = 
+             ( myInput->conn->negotiation_results == 
+               eirods::CS_NEG_USE_SSL );
+
     // =-=-=-=-=-=-=-
     // get the client side Env to determine
     // encryption parameters
@@ -1100,7 +1110,11 @@ rcPartialDataGet (rcPortalTransferInp_t *myInput)
                     break;
                 }
 
-                memcpy( buf, &plain[0], plain.size() );
+                bzero( buf, sizeof( buf ) );
+                std::copy( 
+                    plain.begin(), 
+                    plain.end(), 
+                    &buf[0] );
                 plain_size = plain.size();
                 
             }
@@ -1162,34 +1176,20 @@ rcPartialDataGet (rcPortalTransferInp_t *myInput)
  * try to set it based on env and default.
  */
 int putFileToPortalRbudp( 
-    portalOprOut_t* portalOprOut, 
-    char*           locFilePath, 
-    char*           objPath, 
-    int             locFd, 
-    rodsLong_t      dataSize, 
-    int             veryVerbose,
-    int             sendRate, 
-    int             packetSize,
-    const char*     shared_secret ) {
+    portalOprOut_t*      portalOprOut, 
+    char*                locFilePath, 
+    char*                objPath, 
+    int                  locFd, 
+    rodsLong_t           dataSize, 
+    int                  veryVerbose,
+    int                  sendRate, 
+    int                  packetSize ) {
 
     portList_t *myPortList;
     int status;
     rbudpSender_t rbudpSender;
     int mysendRate, mypacketSize;
     char *tmpStr;
-
-    // =-=-=-=-=-=-=-
-    // if a secret has been negotiated then we must be using
-    // encryption.  given that RBUDP is not supported in an
-    // encrypted capacity this is considered an error
-    if( 0 != strlen( shared_secret ) ) {
-        rodsLog( 
-            LOG_ERROR,
-            "putFileToPortal: Encryption is not supported with RBUDP" );
-        return SYS_INVALID_PORTAL_OPR;
-
-    }
-
 
     if (portalOprOut == NULL || portalOprOut->numThreads != 1) {
         rodsLog (LOG_ERROR,
@@ -1261,26 +1261,14 @@ int getFileToPortalRbudp(
     int             locFd, 
     rodsLong_t      dataSize, 
     int             veryVerbose,
-    int             packetSize,
-    const char*     shared_secret ) {
+    int             packetSize ) {
+    
 
     portList_t *myPortList;
     int status;
     rbudpReceiver_t rbudpReceiver;
     int mypacketSize;
     char *tmpStr;
-
-    // =-=-=-=-=-=-=-
-    // if a secret has been negotiated then we must be using
-    // encryption.  given that RBUDP is not supported in an
-    // encrypted capacity this is considered an error
-    if( 0 != strlen( shared_secret ) ) {
-        rodsLog( 
-            LOG_ERROR,
-            "getFileToPortal: Encryption is not supported with RBUDP" );
-        return SYS_INVALID_PORTAL_OPR;
-
-    }
 
     if (portalOprOut == NULL || portalOprOut->numThreads != 1) {
         rodsLog (LOG_ERROR,

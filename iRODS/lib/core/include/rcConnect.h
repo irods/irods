@@ -122,7 +122,7 @@ typedef struct {
     int  num_hash_rounds;
     char encryption_algorithm[ NAME_LEN ];
     char negotiation_results[ MAX_NAME_LEN ];
-    char shared_secret      [ NAME_LEN ];
+    unsigned char shared_secret[ NAME_LEN ];
 
     int                        ssl_on;
     SSL_CTX*                   ssl_ctx;
@@ -184,7 +184,7 @@ typedef struct {
 #endif
     
     char negotiation_results[ MAX_NAME_LEN ];
-    char shared_secret      [ NAME_LEN ];
+    unsigned char shared_secret[ NAME_LEN ];
 
     int  key_size;
     int  salt_size;

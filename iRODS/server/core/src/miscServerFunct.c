@@ -489,7 +489,7 @@ int fillPortalTransferInp(
     // =-=-=-=-=-=-=-
     // copy the encryption key over to the
     // portal input
-    strncpy( 
+    memcpy( 
         myInput->shared_secret, 
         rsComm->shared_secret, 
         NAME_LEN );
@@ -524,7 +524,9 @@ partialDataPut (portalTransferInp_t *myInput)
 
     // =-=-=-=-=-=-=-
     // flag to determine if we need to use encryption
-    bool use_encryption_flg = ( strlen( myInput->shared_secret ) != 0 );
+    bool use_encryption_flg = 
+             ( myInput->rsComm->negotiation_results == 
+               eirods::CS_NEG_USE_SSL );
 
 #ifdef PARA_TIMING
     time_t startTime, afterSeek, afterTransfer,
@@ -676,7 +678,10 @@ partialDataPut (portalTransferInp_t *myInput)
                         break;
                     }
 
-                    memcpy( buf, &plain[0], plain.size() );
+                    std::copy( 
+                        plain.begin(), 
+                        plain.end(), 
+                        &buf[0] );
                     plain_size = plain.size();
                     
                 }
@@ -784,7 +789,9 @@ void partialDataGet(
 
     // =-=-=-=-=-=-=-
     // flag to determine if we need to use encryption
-    bool use_encryption_flg = ( strlen( myInput->shared_secret ) != 0 );
+    bool use_encryption_flg = 
+             ( myInput->rsComm->negotiation_results == 
+               eirods::CS_NEG_USE_SSL );
     
     // =-=-=-=-=-=-=-
     // create an encryption context
@@ -893,8 +900,14 @@ void partialDataGet(
                     // =-=-=-=-=-=-=-
                     // capture the iv with the cipher text
                     bzero( buf, sizeof( buf ) );
-                    memcpy( buf, &iv[0], iv_size );
-                    memcpy( buf+iv_size, &cipher[0], cipher.size() );
+                    std::copy( 
+                        iv.begin(), 
+                        iv.end(), 
+                        &buf[0] );
+                    std::copy( 
+                        cipher.begin(), 
+                        cipher.end(), 
+                        &buf[iv_size] );
                
                     new_size = iv_size + cipher.size();
                     
@@ -1005,7 +1018,9 @@ remToLocPartialCopy (portalTransferInp_t *myInput)
 
     // =-=-=-=-=-=-=-
     // flag to determine if we need to use encryption
-    bool use_encryption_flg = ( strlen( myInput->shared_secret ) != 0 );
+    bool use_encryption_flg = 
+             ( myInput->rsComm->negotiation_results == 
+               eirods::CS_NEG_USE_SSL );
 
     // =-=-=-=-=-=-=-
     // create an encryption context, initialization vector
@@ -1126,7 +1141,10 @@ remToLocPartialCopy (portalTransferInp_t *myInput)
                     break;
                 }
 
-                memcpy( buf, &plain[0], plain.size() );
+                std::copy( 
+                    plain.begin(), 
+                    plain.end(), 
+                    &buf[0] );
                 plain_size = plain.size();
                 
             }
@@ -1206,8 +1224,8 @@ rbudpRemLocCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
 
         status = getFileToPortalRbudp (portalOprOut, NULL, 
                 FileDesc[destL3descInx].fd, dataSize, 
-                veryVerbose, packetSize,
-                rsComm->shared_secret );
+                veryVerbose, packetSize );
+                
     } else {
         int srcL3descInx = dataOprInp->srcL3descInx;
 
@@ -1219,8 +1237,7 @@ rbudpRemLocCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
         }
         status = putFileToPortalRbudp (portalOprOut, NULL, NULL,
                 FileDesc[srcL3descInx].fd, dataSize, 
-                veryVerbose, sendRate, packetSize,
-                rsComm->shared_secret );
+                veryVerbose, sendRate, packetSize );
     }
     return (status);
 }
@@ -1683,8 +1700,10 @@ locToRemPartialCopy (portalTransferInp_t *myInput)
 
     // =-=-=-=-=-=-=-
     // flag to determine if we need to use encryption
-    bool use_encryption_flg = ( strlen( myInput->shared_secret ) != 0 );
-    
+    bool use_encryption_flg = 
+             ( myInput->rsComm->negotiation_results == 
+               eirods::CS_NEG_USE_SSL );
+
     // =-=-=-=-=-=-=-
     // create an encryption context
     int iv_size = 0;
@@ -1802,8 +1821,14 @@ locToRemPartialCopy (portalTransferInp_t *myInput)
 
                 // =-=-=-=-=-=-=-
                 // capture the iv with the cipher text
-                memcpy( buf, &iv[0], iv_size );
-                memcpy( buf+iv_size, &cipher[0], cipher.size() );
+                std::copy( 
+                    iv.begin(), 
+                    iv.end(), 
+                    &buf[0] );
+                std::copy( 
+                    cipher.begin(), 
+                    cipher.end(), 
+                    &buf[iv_size] );
            
                 new_size = iv.size() + cipher.size();
                 

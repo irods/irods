@@ -135,7 +135,20 @@ namespace eirods {
         network_object::get_re_vars( _kvp );
 
         addKeyVal( &_kvp, SSL_HOST_KW, host_.c_str() );
-        addKeyVal( &_kvp, SSL_SHARED_SECRET_KW, shared_secret_.c_str() );
+ 
+        // =-=-=-=-=-=-=-
+        // since the shared secret is random and unsigned it needs
+        // a bit of sanitizaiton until we can copy it to the kvp
+        if( shared_secret_.size() > 0 ) {
+            char* secret = new char[ key_size_+1 ];
+            secret[ key_size_ ] = '\0';
+            std::copy( 
+                shared_secret_.begin(), 
+                shared_secret_.end(), 
+                &secret[0] );
+            addKeyVal( &_kvp, SSL_SHARED_SECRET_KW, secret );
+            delete [] secret;
+        }
 
         std::stringstream key_sz;
         key_sz << key_size_;
@@ -166,7 +179,10 @@ namespace eirods {
 
         _comm->ssl     = ssl_;
         _comm->ssl_ctx = ssl_ctx_;
-        strncpy( _comm->shared_secret, shared_secret_.c_str(), NAME_LEN );
+        memcpy( 
+            _comm->shared_secret, 
+            &shared_secret_[0], 
+            shared_secret_.size() );
 
         _comm->key_size        = key_size_;
         _comm->salt_size       = salt_size_;
@@ -188,12 +204,18 @@ namespace eirods {
 
         _comm->ssl     = ssl_;
         _comm->ssl_ctx = ssl_ctx_;
-        strncpy( _comm->shared_secret, shared_secret_.c_str(), NAME_LEN );
+        memcpy( 
+           _comm->shared_secret, 
+           &shared_secret_[0], 
+           shared_secret_.size() );
  
         _comm->key_size        = key_size_;
         _comm->salt_size       = salt_size_;
         _comm->num_hash_rounds = num_hash_rounds_;
-        strncpy( _comm->encryption_algorithm, encryption_algorithm_.c_str(), NAME_LEN );
+        strncpy( 
+            _comm->encryption_algorithm, 
+            encryption_algorithm_.c_str(), 
+            NAME_LEN );
 
        
         return SUCCESS();

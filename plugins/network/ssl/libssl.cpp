@@ -755,8 +755,8 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // check to see if a key has already been placed
         // in the property map
-        std::string key;
-        ret = _ctx.prop_map().get< std::string >( SHARED_KEY, key );
+        eirods::buffer_crypt::array_t key;
+        ret = _ctx.prop_map().get< eirods::buffer_crypt::array_t >( SHARED_KEY, key );
         if( !ret.ok() ) {
             // =-=-=-=-=-=-=-
             // if no key exists then ship a new key and set the
@@ -767,7 +767,7 @@ extern "C" {
                                      _env->rodsEncryptionNumHashRounds,
                                      _env->rodsEncryptionAlgorithm );
             crypt.generate_key( key );
-            ret = _ctx.prop_map().set< std::string >( SHARED_KEY, key );
+            ret = _ctx.prop_map().set< eirods::buffer_crypt::array_t >( SHARED_KEY, key );
             if( !ret.ok() ) {
                 eirods::log( PASS( ret ) );
             }
@@ -778,8 +778,10 @@ extern "C" {
         msgHeader_t msg_header;
         memset( &msg_header, 0, sizeof( msg_header ) ); 
         msg_header.msgLen = key.size();
-        memcpy( msg_header.type, key.c_str(), key.size() );  
- 
+        std::copy( 
+            key.begin(), 
+            key.end(),
+            &msg_header.type[0] );
         // =-=-=-=-=-=-=-
         // use a message header to contain the key
         ret = writeMsgHeader( 
@@ -927,10 +929,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // set the incoming shared secret
-        std::string key;
-        key.assign( msg_header.type, msg_header.msgLen );
+        eirods::buffer_crypt::array_t key;
+        key.assign( 
+            &msg_header.type[0], 
+            &msg_header.type[ msg_header.msgLen ] );
         ssl_obj->shared_secret( key );
-        ret = _ctx.prop_map().set< std::string >( SHARED_KEY, key );
+        ret = _ctx.prop_map().set< eirods::buffer_crypt::array_t >( SHARED_KEY, key );
         if( !ret.ok() ) {
             return PASS( ret );
         }
