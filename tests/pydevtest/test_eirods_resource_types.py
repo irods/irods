@@ -721,7 +721,7 @@ class Test_Compound_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
 
         # restart the server to reread the new core.re
         os.system("/var/lib/eirods/iRODS/irodsctl stop")
-        os.system("sleep 2")
+        os.system("/var/lib/eirods/tests/zombiereaper.sh")
         os.system("/var/lib/eirods/iRODS/irodsctl start")
 
         # manually update the replica in archive vault
@@ -1325,7 +1325,9 @@ class Test_Replication_to_two_Compound_Resources(unittest.TestCase, ResourceSuit
         myfile.close()
 
         # restart the server to reread the new core.re
-        os.system("/var/lib/eirods/iRODS/irodsctl restart")
+        os.system("/var/lib/eirods/iRODS/irodsctl stop")
+        os.system("/var/lib/eirods/tests/zombiereaper.sh")
+        os.system("/var/lib/eirods/iRODS/irodsctl start")
 
         # manually update the replicas in archive vaults
         output = getiCmdOutput(s.adminsession,"ils -L "+filename)
