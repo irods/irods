@@ -296,7 +296,7 @@ int clientLogin(
         // =-=-=-=-=-=-=-
         // the caller may want to override the env var
         // or irods env file configuration ( PAM )
-        if( _scheme_override ) {
+        if( _scheme_override && strlen( _scheme_override ) > 0 ) {
             auth_scheme = _scheme_override;
 
         } else {
