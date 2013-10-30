@@ -8,7 +8,7 @@ using namespace std;
 
 #DEFINE EXPECTED_COMMAND_LINE_ARGS 2
 
-static char * g_argv[2];
+static char * g_argv[EXPECTED_COMMAND_LINE_ARGS];
 
 /*
 Tests the most basic cll calls.
@@ -129,11 +129,17 @@ TEST_F(TestCllFunctions, HandlesSQL) {
 }
 
 int main(int argc, char **argv) {
-    int i = 0;
-    g_argv[0] = g_argv[1] = NULL;
-    while((i < argc - 1) && (i < EXPECTED_COMMAND_LINE_ARGS))
+    int i;
+    for(i = 0; i < EXPECTED_COMMAND_LINE_ARGS; i++)
     {
-      g_argv[i] = argv[i+1];
+      if(i < argc - 1)
+      {
+        g_argv[i] = argv[i+1];
+      }
+      else
+      {
+        g_argv[i] = NULL;
+      }
     }
     ::testing::GTEST_FLAG(output) = "xml:icatLowLevelOdbc.xml";
     ::testing::InitGoogleTest(&argc, argv);
