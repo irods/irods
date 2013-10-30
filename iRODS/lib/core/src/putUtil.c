@@ -215,7 +215,6 @@ putFileUtil (rcComm_t *conn, char *srcPath, char *targPath, rodsLong_t srcSize,
     if (strlen(targPath)>=MAX_PATH_ALLOWED-1) return(USER_PATH_EXCEEDS_MAX);
     rstrcpy (dataObjOprInp->objPath, targPath, MAX_NAME_LEN);
     dataObjOprInp->dataSize = srcSize;
-
     status = rcDataObjPut (conn, dataObjOprInp, srcPath);
 
     if (status >= 0) {

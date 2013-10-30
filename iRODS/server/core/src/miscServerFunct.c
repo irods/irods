@@ -584,7 +584,7 @@ partialDataPut (portalTransferInp_t *myInput)
             &myInput->shared_secret[iv_size] );
     } 
        
-    buf = (unsigned char*)malloc ( ( TRANS_BUF_SZ + iv_size ) * sizeof( unsigned char ) );
+    buf = (unsigned char*)malloc ( ( 2*TRANS_BUF_SZ ) * sizeof( unsigned char ) );
 
     while (bytesToGet > 0) {
         int toread0;
@@ -815,7 +815,7 @@ void partialDataGet(
             &myInput->shared_secret[iv_size] );
     }  
            
-    buf = (unsigned char*)malloc ( ( TRANS_BUF_SZ + iv_size ) * sizeof( unsigned char ) );
+    buf = (unsigned char*)malloc ( ( 2*TRANS_BUF_SZ ) * sizeof( unsigned char ) );
 
 #ifdef PARA_TIMING
     afterSeek=time(0);
@@ -1046,7 +1046,7 @@ remToLocPartialCopy (portalTransferInp_t *myInput)
             &myInput->shared_secret[iv_size] );
     } 
 
-    buf = (unsigned char*)malloc( (TRANS_BUF_SZ + iv_size)*sizeof(unsigned char) );
+    buf = (unsigned char*)malloc( ( 2*TRANS_BUF_SZ )*sizeof(unsigned char) );
 
     while (myInput->status >= 0) {
         rodsLong_t toGet;
@@ -1677,11 +1677,11 @@ void
 locToRemPartialCopy (portalTransferInp_t *myInput)
 {
     transferHeader_t myHeader;
-    int srcL3descInx, destFd, srcRescTypeInx;
-    char *buf;
+    int srcL3descInx = 0, destFd = 0, srcRescTypeInx = 0;
+    unsigned char *buf = 0;
     rodsLong_t curOffset = 0;
     rodsLong_t myOffset = 0;
-    int toRead, bytesRead, bytesWritten;
+    int toRead = 0, bytesRead = 0, bytesWritten = 0;
 
     if (myInput == NULL) {
         rodsLog (LOG_NOTICE,
@@ -1727,7 +1727,7 @@ locToRemPartialCopy (portalTransferInp_t *myInput)
 
     }
 
-    buf = (char*)malloc( TRANS_BUF_SZ + iv_size );
+    buf = (unsigned char*)malloc( 2*TRANS_BUF_SZ * sizeof( unsigned char ) );
 
     while (myInput->status >= 0) {
         rodsLong_t toGet;

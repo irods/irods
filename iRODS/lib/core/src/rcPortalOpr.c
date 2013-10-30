@@ -277,14 +277,14 @@ void
 rcPartialDataPut (rcPortalTransferInp_t *myInput)
 {
     transferHeader_t myHeader;
-    int destFd;
-    int srcFd;
-    char *buf;
-    transferStat_t *myTransStat;
+    int destFd = 0;
+    int srcFd = 0;
+    unsigned char *buf = 0;
+    transferStat_t *myTransStat = 0;
     rodsLong_t curOffset = 0;
-    rcComm_t *conn;
-    fileRestartInfo_t *info;
-    int threadNum;
+    rcComm_t *conn = 0;
+    fileRestartInfo_t* info = 0;
+    int threadNum = 0;
 
     if (myInput == NULL) {
         rodsLog (LOG_ERROR,
@@ -347,7 +347,7 @@ rcPartialDataPut (rcPortalTransferInp_t *myInput)
             &myInput->shared_secret[iv_size] );
     }  
            
-    buf = (char*)malloc ( TRANS_BUF_SZ + iv_size );
+    buf = (unsigned char*)malloc ( 2*TRANS_BUF_SZ * sizeof( unsigned char ) );
 
     while (myInput->status >= 0) {
         rodsLong_t toPut;
@@ -1009,7 +1009,7 @@ rcPartialDataGet (rcPortalTransferInp_t *myInput)
             &myInput->shared_secret[iv_size] );
     }  
     
-    buf = (unsigned char*)malloc( (TRANS_BUF_SZ + iv_size)*sizeof(unsigned char) );
+    buf = (unsigned char*)malloc( ( 2 * TRANS_BUF_SZ )*sizeof(unsigned char) );
 
     while (myInput->status >= 0) {
         rodsLong_t toGet;
@@ -1064,7 +1064,7 @@ rcPartialDataGet (rcPortalTransferInp_t *myInput)
                 if( bytesRead != sizeof( int ) ) {
                     rodsLog( 
                         LOG_ERROR, 
-                        "_partialDataPut:Bytes Read != %d", 
+                        "_partialDataGet:Bytes Read != %d", 
                         sizeof( int ) );
                     break;
                 }
