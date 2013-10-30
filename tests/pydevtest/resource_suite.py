@@ -207,7 +207,7 @@ class ResourceSuite(ResourceBase):
     # iput
     ###################
 
-    @unittest.skip("TEMPORARY: Too Hard for Tiny VMs")
+    # Now with more working.... @unittest.skip("TEMPORARY: Too Hard for Tiny VMs")
     def test_ssl_iput_small_and_large_files(self):
         # set up client and server side for ssl handshake
 
