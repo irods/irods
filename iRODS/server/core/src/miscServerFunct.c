@@ -584,7 +584,7 @@ partialDataPut (portalTransferInp_t *myInput)
             &myInput->shared_secret[iv_size] );
     } 
        
-    buf = (unsigned char*)malloc ( ( 2*TRANS_BUF_SZ ) * sizeof( unsigned char ) );
+    buf = (unsigned char*)malloc ( ( 2*TRANS_BUF_SZ ) + sizeof( unsigned char ) );
 
     while (bytesToGet > 0) {
         int toread0;
@@ -671,6 +671,21 @@ partialDataPut (portalTransferInp_t *myInput)
                                             this_iv, 
                                             cipher, 
                                             plain );
+#if 0
+std::string sec_hash    = crypt.gen_hash( &shared_secret[0], shared_secret.size() );
+std::string iv_hash     = crypt.gen_hash( &this_iv[0], this_iv.size() );
+std::string cipher_hash = crypt.gen_hash( &cipher[0], cipher.size() );
+std::string buf_hash    = crypt.gen_hash( buf, new_size );
+
+printf( "XXXX - %d - shared_secret [%s]\n", myInput->threadNum, sec_hash.c_str() );
+fflush( stdout );
+printf( "XXXX - %d - iv            [%s]\n", myInput->threadNum, iv_hash.c_str() );
+fflush( stdout );
+printf( "XXXX - %d - cipher        [%s]\n", myInput->threadNum, cipher_hash.c_str() );
+fflush( stdout );
+printf( "XXXX - %d - buf           [%s]\n", myInput->threadNum, buf_hash.c_str() );
+fflush( stdout );
+#endif
 
                     if( !ret.ok() ) {
                         eirods::log( PASS( ret ) );

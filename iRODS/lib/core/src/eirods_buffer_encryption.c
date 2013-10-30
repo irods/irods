@@ -12,8 +12,31 @@
 #include <openssl/aes.h>
 
 #include <iostream>
+#include <sstream>
+#include <iomanip>
+
+
+#include "global.h"
+#include "md5.h"
 
 namespace eirods {
+
+    std::string buffer_crypt::gen_hash(
+            unsigned char* _buf,
+            int            _sz ) {
+        MD5_CTX ctx;
+        MD5Init( &ctx );
+        MD5Update( &ctx, _buf, _sz );
+        unsigned char hash[16];
+        MD5Final( hash, &ctx );
+
+        std::stringstream ss;
+        for( int i=0; i<16; ++i ) {
+            ss << std::setfill('0') << std::setw(2) << std::hex << (int)hash[i];
+        }
+
+        return ss.str();
+    }
 
     // =-=-=-=-=-=-=-
     // public - constructor

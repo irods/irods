@@ -75,6 +75,8 @@ namespace eirods {
         int         num_hash_rounds() { return num_hash_rounds_; };
         std::string algorithm()       { return algorithm_;       };
 
+        static std::string gen_hash( unsigned char*, int );
+
     private:
         // =-=-=-=-=-=-=-
         // attributes

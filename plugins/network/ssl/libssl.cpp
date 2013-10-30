@@ -767,6 +767,10 @@ extern "C" {
                                      _env->rodsEncryptionNumHashRounds,
                                      _env->rodsEncryptionAlgorithm );
             crypt.generate_key( key );
+            std::string key_hash = eirods::buffer_crypt::gen_hash( &key[0], key.size() );
+//            printf( "XXXX - ssl_client_start :: key hash [%s]\n", key_hash.c_str() );
+//            fflush( stdout );
+
             ret = _ctx.prop_map().set< eirods::buffer_crypt::array_t >( SHARED_KEY, key );
             if( !ret.ok() ) {
                 eirods::log( PASS( ret ) );
@@ -831,7 +835,8 @@ extern "C" {
         if( !ret.ok() ) {
            return PASSMSG( "writeMsgHeader failed", ret ); 
         }
-        
+       
+         
         // =-=-=-=-=-=-=-
         // set the key and env for this ssl object
         ssl_obj->shared_secret( key );
@@ -938,6 +943,10 @@ extern "C" {
         if( !ret.ok() ) {
             return PASS( ret );
         }
+
+    std::string key_hash = eirods::buffer_crypt::gen_hash( &key[0], key.size() );
+//    printf( "XXXX - ssl_agent_start :: key hash [%s]\n", key_hash.c_str() );
+//    fflush( stdout );
 
         // =-=-=-=-=-=-=-
         // wait for a message header containing the encryption environment
