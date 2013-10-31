@@ -671,7 +671,7 @@ partialDataPut (portalTransferInp_t *myInput)
                                             this_iv, 
                                             cipher, 
                                             plain );
-#if 1
+#if 0
 std::string sec_hash    = crypt.gen_hash( &shared_secret[0], shared_secret.size() );
 std::string iv_hash     = crypt.gen_hash( &this_iv[0], this_iv.size() );
 std::string cipher_hash = crypt.gen_hash( &cipher[0], cipher.size() );
