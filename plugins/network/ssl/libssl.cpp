@@ -767,10 +767,6 @@ extern "C" {
                                      _env->rodsEncryptionNumHashRounds,
                                      _env->rodsEncryptionAlgorithm );
             crypt.generate_key( key );
-std::string key_hash = eirods::buffer_crypt::gen_hash( &key[0], key.size() );
-printf( "XXXX - ssl_client_start :: key hash [%s]\n", key_hash.c_str() );
-fflush( stdout );
-
             ret = _ctx.prop_map().set< eirods::buffer_crypt::array_t >( SHARED_KEY, key );
             if( !ret.ok() ) {
                 eirods::log( PASS( ret ) );
@@ -926,8 +922,6 @@ fflush( stdout );
         ssl_obj->salt_size( msg_header.errorLen );
         ssl_obj->num_hash_rounds( msg_header.bsLen );
         ssl_obj->encryption_algorithm( msg_header.type );
-    printf( "XXXX - ssl_agent_start :: encrytption type [%s]\n", msg_header.type );
-    fflush( stdout );
 
         // =-=-=-=-=-=-=-
         // wait for a message header containing a shared secret
@@ -950,9 +944,6 @@ fflush( stdout );
             return PASS( ret );
         }
 
-std::string msg_hash = eirods::buffer_crypt::gen_hash( (unsigned char*)msg_buf.buf, msg_buf.len );
-printf( "XXXX - ssl_agent_start :: msg hash [%s]\n", msg_hash.c_str() );
-fflush( stdout );
         // =-=-=-=-=-=-=-
         // we cannot check to see if the key property has been set, 
         // as the resource servers connect to the icat and init the
@@ -978,10 +969,6 @@ fflush( stdout );
         if( !ret.ok() ) {
             return PASS( ret );
         }
-
-    std::string key_hash = eirods::buffer_crypt::gen_hash( &key[0], key.size() );
-    printf( "XXXX - ssl_agent_start :: key hash [%s]\n", key_hash.c_str() );
-    fflush( stdout );
 
         return SUCCESS();
 
