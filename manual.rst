@@ -1238,7 +1238,7 @@ History of Releases
 ==========   =======    =====================================================
 Date         Version    Description
 ==========   =======    =====================================================
-2013-10-29   3.0.1b1    Second Release.
+2013-10-31   3.0.1b1    Second Release.
                           This is the second open source release from RENCI.
                           It includes pluggable network and authentication
                           support as well as a rebalance option and migration
