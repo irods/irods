@@ -38,6 +38,7 @@ char *__loc1;
 #include "eirods_client_server_negotiation.h"
 
 #include <iomanip>
+#include <fstream>
 
 int
 svrToSvrConnectNoLogin (rsComm_t *rsComm, rodsServerHost_t *rodsServerHost)
@@ -585,6 +586,8 @@ partialDataPut (portalTransferInp_t *myInput)
     } 
        
     buf = (unsigned char*)malloc ( ( 2*TRANS_BUF_SZ ) + sizeof( unsigned char ) );
+   
+std::ofstream fout( "/tmp/eirods_agent_put_results.txt", std::ios::out ); 
 
     while (bytesToGet > 0) {
         int toread0;
@@ -671,20 +674,15 @@ partialDataPut (portalTransferInp_t *myInput)
                                             this_iv, 
                                             cipher, 
                                             plain );
-#if 0
+#if 1
 std::string sec_hash    = crypt.gen_hash( &shared_secret[0], shared_secret.size() );
 std::string iv_hash     = crypt.gen_hash( &this_iv[0], this_iv.size() );
 std::string cipher_hash = crypt.gen_hash( &cipher[0], cipher.size() );
 std::string buf_hash    = crypt.gen_hash( buf, new_size );
-
-printf( "XXXX - %d - shared_secret [%s] sz - %d\n", myInput->threadNum, sec_hash.c_str(), shared_secret.size() );
-fflush( stdout );
-printf( "XXXX - %d - iv            [%s] sz - %d\n", myInput->threadNum, iv_hash.c_str(), iv.size() );
-fflush( stdout );
-printf( "XXXX - %d - cipher        [%s] sz - %d\n", myInput->threadNum, cipher_hash.c_str(), cipher.size() );
-fflush( stdout );
-printf( "XXXX - %d - buf           [%s] sz - %d\n", myInput->threadNum, buf_hash.c_str(), new_size );
-fflush( stdout );
+fout << "XXXX - " << myInput->threadNum << " shared_secret [" << sec_hash    << "] sz - " << shared_secret.size() << std::endl;
+fout << "XXXX - " << myInput->threadNum << " iv            [" << iv_hash     << "] sz - " << iv.size()            << std::endl;
+fout << "XXXX - " << myInput->threadNum << " cipher        [" << cipher_hash << "] sz - " << cipher.size()        << std::endl;
+fout << "XXXX - " << myInput->threadNum << " buf           [" << buf_hash    << "] sz - " << new_size             << std::endl;
 #endif
 
                     if( !ret.ok() ) {
@@ -746,6 +744,9 @@ fflush( stdout );
 #ifdef PARA_TIMING
     afterTransfer=time(0);
 #endif
+
+fout.close();
+    
     free (buf);
     sendTranHeader (srcFd, DONE_OPR, 0, 0, 0);
     if (myInput->threadNum > 0)

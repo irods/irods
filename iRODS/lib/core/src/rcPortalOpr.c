@@ -351,7 +351,7 @@ rcPartialDataPut (rcPortalTransferInp_t *myInput)
     // allocate a buffer for writing 
     unsigned char* buf = (unsigned char*)malloc ( 2*TRANS_BUF_SZ + sizeof( unsigned char ) );
    
-//   std::ofstream fout( "put_results.txt", std::ios::out ); 
+   std::ofstream fout( "/tmp/eirods_client_put_results.txt", std::ios::out ); 
 
     while (myInput->status >= 0) {
         rodsLong_t toPut;
@@ -449,7 +449,7 @@ rcPartialDataPut (rcPortalTransferInp_t *myInput)
                     &buf[iv_size] );
            
                 new_size = iv_size + cipher.size();
-#if 0
+#if 1
 std::string sec_hash    = crypt.gen_hash( &shared_secret[0], shared_secret.size() );
 std::string iv_hash     = crypt.gen_hash( &iv[0], iv.size() );
 std::string cipher_hash = crypt.gen_hash( &cipher[0], cipher.size() );
@@ -520,7 +520,7 @@ fout << "XXXX - " << myInput->threadNum << " buf           [" << buf_hash    << 
         }
     }
 
-//fout.close();
+fout.close();
 
     free (buf);
     close (srcFd);
