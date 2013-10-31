@@ -32,6 +32,7 @@ To create a new release:
     $ git checkout automated_release
     $ git rebase TAGNAME
 4 - Push the updates to the agreed upon remote
+    $ git push
     $ git push --tags
 
 
