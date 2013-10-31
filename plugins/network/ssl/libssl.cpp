@@ -767,9 +767,9 @@ extern "C" {
                                      _env->rodsEncryptionNumHashRounds,
                                      _env->rodsEncryptionAlgorithm );
             crypt.generate_key( key );
-            std::string key_hash = eirods::buffer_crypt::gen_hash( &key[0], key.size() );
-//            printf( "XXXX - ssl_client_start :: key hash [%s]\n", key_hash.c_str() );
-//            fflush( stdout );
+std::string key_hash = eirods::buffer_crypt::gen_hash( &key[0], key.size() );
+printf( "XXXX - ssl_client_start :: key hash [%s]\n", key_hash.c_str() );
+fflush( stdout );
 
             ret = _ctx.prop_map().set< eirods::buffer_crypt::array_t >( SHARED_KEY, key );
             if( !ret.ok() ) {
@@ -778,26 +778,9 @@ extern "C" {
         }
 
         // =-=-=-=-=-=-=-
-        // send a message to the agent containing the shared secret
-        msgHeader_t msg_header;
-        memset( &msg_header, 0, sizeof( msg_header ) ); 
-        msg_header.msgLen = key.size();
-        std::copy( 
-            key.begin(), 
-            key.end(),
-            &msg_header.type[0] );
-        // =-=-=-=-=-=-=-
-        // use a message header to contain the key
-        ret = writeMsgHeader( 
-                  ssl_obj,
-                  &msg_header ); 
-        if( !ret.ok() ) {
-           return PASSMSG( "writeMsgHeader failed", ret ); 
-        }
-
-        // =-=-=-=-=-=-=-
         // send a message to the agent containing the client
         // size encryption environment variables
+        msgHeader_t msg_header;
         memset( &msg_header, 0, sizeof( msg_header ) ); 
         memcpy( msg_header.type, _env->rodsEncryptionAlgorithm, HEADER_TYPE_LEN );
         msg_header.msgLen   = _env->rodsEncryptionKeySize;
@@ -828,14 +811,29 @@ extern "C" {
         }
  
         // =-=-=-=-=-=-=-
-        // use a message header to contain the key
+        // use a message header to contain the encryption environment
         ret = writeMsgHeader( 
                   ssl_obj,
                   &msg_header ); 
         if( !ret.ok() ) {
            return PASSMSG( "writeMsgHeader failed", ret ); 
         }
-       
+
+        // =-=-=-=-=-=-=-
+        // send a message to the agent containing the shared secret
+        bytesBuf_t key_bbuf;
+        key_bbuf.len = key.size();
+        key_bbuf.buf = &key[0];
+        char msg_type[] { "SHARED_SECRET" };
+        ret = sendRodsMsg(
+                  ssl_obj,
+                  msg_type,
+                  &key_bbuf,
+                  0, 0, 0,
+                  XML_PROT ); 
+        if( !ret.ok() ) {
+           return PASSMSG( "writeMsgHeader failed", ret ); 
+        }
          
         // =-=-=-=-=-=-=-
         // set the key and env for this ssl object
@@ -908,18 +906,53 @@ extern "C" {
         rodsLog(LOG_DEBUG, "sslAccept: accepted SSL connection");
 
         // =-=-=-=-=-=-=-
-        // wait for a message header containing a shared secret
+        // message header variables
         struct timeval tv;
         tv.tv_sec = READ_VERSION_TOUT_SEC;
         tv.tv_usec = 0;
-
         msgHeader_t msg_header;
+
+        // =-=-=-=-=-=-=-
+        // wait for a message header containing the encryption environment
         bzero( &msg_header, sizeof( msg_header ) );
         ret = readMsgHeader( ssl_obj, &msg_header, &tv );
         if( !ret.ok() ) {
             return PASSMSG( "read message header failed", ret );
         }
 
+        // =-=-=-=-=-=-=-
+        // set encryption parameters
+        ssl_obj->key_size( msg_header.msgLen );
+        ssl_obj->salt_size( msg_header.errorLen );
+        ssl_obj->num_hash_rounds( msg_header.bsLen );
+        ssl_obj->encryption_algorithm( msg_header.type );
+    printf( "XXXX - ssl_agent_start :: encrytption type [%s]\n", msg_header.type );
+    fflush( stdout );
+
+        // =-=-=-=-=-=-=-
+        // wait for a message header containing a shared secret
+        bzero( &msg_header, sizeof( msg_header ) );
+        ret = readMsgHeader( ssl_obj, &msg_header, &tv );
+        if( !ret.ok() ) {
+            return PASSMSG( "read message header failed", ret );
+        }
+
+        // =-=-=-=-=-=-=-
+        // call inteface to read message body
+        bytesBuf_t msg_buf;
+        ret = readMsgBody( 
+                  ssl_obj, 
+                  &msg_header, 
+                  &msg_buf, 0, 0,
+                  XML_PROT, 
+                  NULL );
+        if( !ret.ok() ) {
+            return PASS( ret );
+        }
+
+std::string msg_hash = eirods::buffer_crypt::gen_hash( (unsigned char*)msg_buf.buf, msg_buf.len );
+printf( "XXXX - ssl_agent_start :: msg hash [%s]\n", msg_hash.c_str() );
+fflush( stdout );
         // =-=-=-=-=-=-=-
         // we cannot check to see if the key property has been set, 
         // as the resource servers connect to the icat and init the
@@ -934,10 +967,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // set the incoming shared secret
+        unsigned char* secret_ptr = static_cast< unsigned char* >( msg_buf.buf );
         eirods::buffer_crypt::array_t key;
         key.assign( 
-            &msg_header.type[0], 
-            &msg_header.type[ msg_header.msgLen ] );
+            secret_ptr,
+            &secret_ptr[ msg_buf.len ] );
+        
         ssl_obj->shared_secret( key );
         ret = _ctx.prop_map().set< eirods::buffer_crypt::array_t >( SHARED_KEY, key );
         if( !ret.ok() ) {
@@ -945,21 +980,8 @@ extern "C" {
         }
 
     std::string key_hash = eirods::buffer_crypt::gen_hash( &key[0], key.size() );
-//    printf( "XXXX - ssl_agent_start :: key hash [%s]\n", key_hash.c_str() );
-//    fflush( stdout );
-
-        // =-=-=-=-=-=-=-
-        // wait for a message header containing the encryption environment
-        bzero( &msg_header, sizeof( msg_header ) );
-        ret = readMsgHeader( ssl_obj, &msg_header, &tv );
-        if( !ret.ok() ) {
-            return PASSMSG( "read message header failed", ret );
-        }
-
-        ssl_obj->key_size( msg_header.msgLen );
-        ssl_obj->salt_size( msg_header.errorLen );
-        ssl_obj->num_hash_rounds( msg_header.bsLen );
-        ssl_obj->encryption_algorithm( msg_header.type );
+    printf( "XXXX - ssl_agent_start :: key hash [%s]\n", key_hash.c_str() );
+    fflush( stdout );
 
         return SUCCESS();
 
