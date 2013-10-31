@@ -671,19 +671,19 @@ partialDataPut (portalTransferInp_t *myInput)
                                             this_iv, 
                                             cipher, 
                                             plain );
-#if 0
+#if 1
 std::string sec_hash    = crypt.gen_hash( &shared_secret[0], shared_secret.size() );
 std::string iv_hash     = crypt.gen_hash( &this_iv[0], this_iv.size() );
 std::string cipher_hash = crypt.gen_hash( &cipher[0], cipher.size() );
 std::string buf_hash    = crypt.gen_hash( buf, new_size );
 
-printf( "XXXX - %d - shared_secret [%s]\n", myInput->threadNum, sec_hash.c_str() );
+printf( "XXXX - %d - shared_secret [%s] sz - %d\n", myInput->threadNum, sec_hash.c_str(), shared_secret.size() );
 fflush( stdout );
-printf( "XXXX - %d - iv            [%s]\n", myInput->threadNum, iv_hash.c_str() );
+printf( "XXXX - %d - iv            [%s] sz - %d\n", myInput->threadNum, iv_hash.c_str(), iv.size() );
 fflush( stdout );
-printf( "XXXX - %d - cipher        [%s]\n", myInput->threadNum, cipher_hash.c_str() );
+printf( "XXXX - %d - cipher        [%s] sz - %d\n", myInput->threadNum, cipher_hash.c_str(), cipher.size() );
 fflush( stdout );
-printf( "XXXX - %d - buf           [%s]\n", myInput->threadNum, buf_hash.c_str() );
+printf( "XXXX - %d - buf           [%s] sz - %d\n", myInput->threadNum, buf_hash.c_str(), new_size );
 fflush( stdout );
 #endif
 

@@ -21,6 +21,7 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition.hpp>
 #include <iomanip>
+#include <fstream>
 int
 sendTranHeader (int sock, int oprType, int flags, rodsLong_t offset,
 rodsLong_t length)
@@ -279,7 +280,6 @@ rcPartialDataPut (rcPortalTransferInp_t *myInput)
     transferHeader_t myHeader;
     int destFd = 0;
     int srcFd = 0;
-    unsigned char *buf = 0;
     transferStat_t *myTransStat = 0;
     rodsLong_t curOffset = 0;
     rcComm_t *conn = 0;
@@ -346,8 +346,12 @@ rcPartialDataPut (rcPortalTransferInp_t *myInput)
             &myInput->shared_secret[0],
             &myInput->shared_secret[iv_size] );
     }  
-           
-    buf = (unsigned char*)malloc ( 2*TRANS_BUF_SZ + sizeof( unsigned char ) );
+          
+    // =-=-=-=-=-=-=-
+    // allocate a buffer for writing 
+    unsigned char* buf = (unsigned char*)malloc ( 2*TRANS_BUF_SZ + sizeof( unsigned char ) );
+   
+   std::ofstream fout( "put_results.txt", std::ios::out ); 
 
     while (myInput->status >= 0) {
         rodsLong_t toPut;
@@ -445,12 +449,15 @@ rcPartialDataPut (rcPortalTransferInp_t *myInput)
                     &buf[iv_size] );
            
                 new_size = iv_size + cipher.size();
-#if 0
 std::string sec_hash    = crypt.gen_hash( &shared_secret[0], shared_secret.size() );
 std::string iv_hash     = crypt.gen_hash( &iv[0], iv.size() );
 std::string cipher_hash = crypt.gen_hash( &cipher[0], cipher.size() );
 std::string buf_hash    = crypt.gen_hash( buf, new_size );
-
+fout << "XXXX - " << myInput->threadNum << " shared_secret [" << sec_hash    << "] sz - " << shared_secret.size() << std::endl;
+fout << "XXXX - " << myInput->threadNum << " iv            [" << iv_hash     << "] sz - " << iv.size()            << std::endl;
+fout << "XXXX - " << myInput->threadNum << " cipher        [" << cipher_hash << "] sz - " << cipher.size()        << std::endl;
+fout << "XXXX - " << myInput->threadNum << " buf           [" << buf_hash    << "] sz - " << new_size             << std::endl;
+#if 0
 printf( "XXXX - %d - shared_secret [%s]\n", myInput->threadNum, sec_hash.c_str() );
 fflush( stdout );
 printf( "XXXX - %d - iv            [%s]\n", myInput->threadNum, iv_hash.c_str() );
@@ -520,6 +527,8 @@ fflush( stdout );
             if (myInput->threadNum == 0) gGuiProgressCB (&conn->operProgress);
         }
     }
+
+fout.close();
 
     free (buf);
     close (srcFd);
