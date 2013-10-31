@@ -824,7 +824,7 @@ fflush( stdout );
         bytesBuf_t key_bbuf;
         key_bbuf.len = key.size();
         key_bbuf.buf = &key[0];
-        char msg_type[] { "SHARED_SECRET" };
+        char msg_type[] = { "SHARED_SECRET" };
         ret = sendRodsMsg(
                   ssl_obj,
                   msg_type,
