@@ -233,6 +233,7 @@ class ResourceSuite(ResourceBase):
 
         # server reboot to pick up new irodsEnv settings
         os.system("/var/lib/eirods/iRODS/irodsctl stop")
+        os.system("/var/lib/eirods/tests/zombiereaper.sh")
         os.system("/var/lib/eirods/iRODS/irodsctl start")
 
         # do the encrypted put
