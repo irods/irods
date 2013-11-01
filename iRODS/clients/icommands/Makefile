@@ -157,36 +157,48 @@ LDFLAGS +=	$(LIBRARY) $(MODULE_LDFLAGS) $(CL_LDADD)
 
 ifdef GSI_AUTH
 
+ifeq ($(ADDR_64BITS), 1)
+GSI_LIB_DIR=lib64
+else
+GSI_LIB_DIR=lib
+endif
+
+ifeq ($(GSI_INSTALL_TYPE),)
+GSI_INSTALL_TYPE2=
+else
+GSI_INSTALL_TYPE2=_$(GSI_INSTALL_TYPE)
+endif
+
 # GSI_SSL is set to ssl to use the system's SSL library, else use
 # regular Globus version.
 ifndef GSI_SSL
-GSI_SSL = ssl_$(GSI_INSTALL_TYPE)
+GSI_SSL = ssl_$(GSI_INSTALL_TYPE2)
 endif
 
 # GSI_CRYPTO is set to crypto to use the system's Crypto library, else use
 # regular Globus version.
 ifndef GSI_CRYPTO
-GSI_CRYPTO = crypto_$(GSI_INSTALL_TYPE)
+GSI_CRYPTO = crypto$(GSI_INSTALL_TYPE2)
 endif
 
 LIB_GSI_AUTH = \
-        -L$(GLOBUS_LOCATION)/lib \
-        -lglobus_gss_assist_$(GSI_INSTALL_TYPE) \
-      -lglobus_gssapi_gsi_$(GSI_INSTALL_TYPE) \
-        -lglobus_gsi_credential_$(GSI_INSTALL_TYPE) \
-        -lglobus_gsi_proxy_core_$(GSI_INSTALL_TYPE) \
-      -lglobus_gsi_callback_$(GSI_INSTALL_TYPE) \
-      -lglobus_oldgaa_$(GSI_INSTALL_TYPE) \
-      -lglobus_gsi_sysconfig_$(GSI_INSTALL_TYPE) \
-      -lglobus_gsi_cert_utils_$(GSI_INSTALL_TYPE) \
-      -lglobus_openssl_error_$(GSI_INSTALL_TYPE) \
-      -lglobus_openssl_$(GSI_INSTALL_TYPE) \
-      -lglobus_proxy_ssl_$(GSI_INSTALL_TYPE) \
+      -L$(GLOBUS_LOCATION)/$(GSI_LIB_DIR) \
+      -lglobus_gss_assist$(GSI_INSTALL_TYPE2) \
+      -lglobus_gssapi_gsi$(GSI_INSTALL_TYPE2) \
+      -lglobus_gsi_credential$(GSI_INSTALL_TYPE2) \
+      -lglobus_gsi_proxy_core$(GSI_INSTALL_TYPE2) \
+      -lglobus_gsi_callback$(GSI_INSTALL_TYPE2) \
+      -lglobus_oldgaa$(GSI_INSTALL_TYPE2) \
+      -lglobus_gsi_sysconfig$(GSI_INSTALL_TYPE2) \
+      -lglobus_gsi_cert_utils$(GSI_INSTALL_TYPE2) \
+      -lglobus_openssl_error$(GSI_INSTALL_TYPE2) \
+      -lglobus_openssl$(GSI_INSTALL_TYPE2) \
+      -lglobus_proxy_ssl$(GSI_INSTALL_TYPE2) \
       -l$(GSI_SSL) \
       -l$(GSI_CRYPTO) \
-      -lglobus_common_$(GSI_INSTALL_TYPE) \
-      -lglobus_callout_$(GSI_INSTALL_TYPE) \
-      -lltdl_$(GSI_INSTALL_TYPE)
+      -lglobus_common$(GSI_INSTALL_TYPE2) \
+      -lglobus_callout$(GSI_INSTALL_TYPE2) \
+      -lltdl$(GSI_INSTALL_TYPE2)
 LDFLAGS += $(LIB_GSI_AUTH)
 endif
 

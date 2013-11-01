@@ -23,7 +23,7 @@ include config/common.mk
 
 
 #
-# Varibles
+# Variables
 #
 # The name of temporary files containing LDFLAGS assembled from
 # the installed modules.
