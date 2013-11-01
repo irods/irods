@@ -216,6 +216,8 @@ if [ "$1" == "clean" ] ; then
     rm -rf epm*
     echo "Cleaning external residuals..."
     cd $DETECTEDDIR/../external
+    rm -rf __MACOSX
+    rm -rf cJSON*
     rm -rf cmake*
     rm -rf libarchive*
     rm -rf boost*
@@ -742,6 +744,24 @@ sleep 1
 
 # LOCAL COMPILATIONS - in ./external
 if [ "$BUILDEIRODS" == "1" ] ; then
+
+    # get a copy of cjson
+    EIRODS_BUILD_CJSONVERSIONNUMBER="58"
+    EIRODS_BUILD_CJSONVERSION="cJSONFiles-r$EIRODS_BUILD_CJSONVERSIONNUMBER"
+    cd $BUILDDIR/external/
+    if [ -d "cJSON" ] ; then
+        echo "${text_green}${text_bold}Detected copy of [$EIRODS_BUILD_CJSONVERSION]${text_reset}"
+    else
+        echo "${text_green}${text_bold}Downloading [$EIRODS_BUILD_CJSONVERSION] from ftp.renci.org${text_reset}"
+        if [ -e "$EIRODS_BUILD_CJSONVERSION.zip" ] ; then
+            echo "Using existing copy"
+        else
+#            wget http://sourceforge.net/projects/cjson/files/cJSONFiles.zip/download
+            wget ftp://ftp.renci.org/pub/eirods/external/$EIRODS_BUILD_CJSONVERSION.zip
+        fi
+        echo "${text_green}${text_bold}Unzipping [$EIRODS_BUILD_CJSONVERSION]${text_reset}"
+        unzip -o $EIRODS_BUILD_CJSONVERSION.zip
+    fi
 
     # build a copy of cmake
     EIRODS_BUILD_CMAKEVERSIONNUMBER="2.8.11.2"
