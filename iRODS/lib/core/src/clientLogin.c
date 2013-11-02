@@ -9,12 +9,12 @@
  */
 
 // =-=-=-=-=-=-=-
-// irods includs
+// irods includes
 #include "rodsClient.h"
 #include "sslSockComm.h"
 
 // =-=-=-=-=-=-=-
-// eirods includs
+// eirods includes
 #include "eirods_auth_object.h"
 #include "eirods_auth_factory.h"
 #include "eirods_auth_plugin.h"
