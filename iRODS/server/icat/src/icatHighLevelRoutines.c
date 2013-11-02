@@ -28,6 +28,12 @@
 #include "eirods_stacktrace.h"
 #include "eirods_hierarchy_parser.h"
 #include "eirods_catalog_properties.h"
+#include "eirods_kvp_string_parser.h"
+#include "eirods_auth_object.h"
+#include "eirods_auth_factory.h"
+#include "eirods_auth_plugin.h"
+#include "eirods_auth_manager.h"
+#include "eirods_auth_constants.h"
 
 // =-=-=-=-=-=-=-
 // irods includes
@@ -1226,10 +1232,6 @@ int chlUnregDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     int trashMode;
     char *theVal;
     char checkPath[MAX_NAME_LEN];
-
-eirods::stacktrace st;
-st.trace();
-st.dump();
 
     dataObjNumber[0]='\0';
     if (logSQL!=0) rodsLog(LOG_SQL, "chlUnregDataObj");
@@ -4429,6 +4431,76 @@ static int _modRescInChildren(const std::string& old_resc, const std::string& ne
 	return status;
 }
 
+// =-=-=-=-=-=-=-
+// local function to delegate the reponse
+// verification to an authentication plugin
+static 
+eirods::error verify_auth_response(
+    const char* _scheme,
+    const char* _challenge,
+    const char* _user_name,
+    const char* _response ) {
+    // =-=-=-=-=-=-=-
+    // validate incoming parameters
+    if( !_scheme ) {
+        return ERROR( 
+                   SYS_INVALID_INPUT_PARAM,
+                   "null _scheme ptr" );
+    } else if( !_challenge ) {
+        return ERROR( 
+                   SYS_INVALID_INPUT_PARAM,
+                   "null _challenge ptr" );
+    } else if( !_user_name ) {
+        return ERROR( 
+                   SYS_INVALID_INPUT_PARAM,
+                   "null _user_name ptr" );
+    } else if( !_response ) {
+        return ERROR( 
+                   SYS_INVALID_INPUT_PARAM,
+                   "null _response ptr" );
+    }
+
+    // =-=-=-=-=-=-=-
+    // construct an auth object given the scheme
+    eirods::auth_object_ptr auth_obj;
+    eirods::error ret = eirods::auth_factory( 
+                            _scheme, 
+                            0,
+                            auth_obj );
+    if( !ret.ok() ){
+        return ret;
+    }
+
+    // =-=-=-=-=-=-=-
+    // resolve an auth plugin given the auth object
+    eirods::plugin_ptr ptr;
+    ret = auth_obj->resolve( 
+              eirods::AUTH_INTERFACE,
+              ptr );
+    if( !ret.ok() ){
+        return ret;
+    }
+    eirods::auth_ptr auth_plugin = boost::dynamic_pointer_cast< eirods::auth >( ptr );
+ 
+    // =-=-=-=-=-=-=-
+    // call auth verify on plugin
+    ret = auth_plugin->call<
+              const char*,
+              const char*,
+              const char* >( 
+                  eirods::AUTH_AGENT_AUTH_VERIFY, 
+                  auth_obj,
+                  _challenge,
+                  _user_name,
+                  _response );
+    if( !ret.ok() ){
+        eirods::log( PASS( ret ) );
+        return ret;
+    }
+
+    return SUCCESS();
+
+} // verify_auth_response
 
 /* Check an authentication response.
  
@@ -4442,10 +4514,16 @@ static int _modRescInChildren(const std::string& old_resc, const std::string& ne
 
    Called from rsAuthCheck.
 */
-int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
-                 char *username, 
-                 int *userPrivLevel, int *clientPrivLevel) {
-
+int chlCheckAuth(
+    rsComm_t*   rsComm, 
+    const char* scheme,
+    char*       challenge, 
+    char*       response,
+    char*       username, 
+    int*        userPrivLevel, 
+    int*        clientPrivLevel ) {
+    // =-=-=-=-=-=-=-
+    // All The Variable
     int status;
     char md5Buf[CHALLENGE_LEN+MAX_PASSWORD_LEN+2];
     char digest[RESPONSE_LEN+2];
@@ -4471,13 +4549,8 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
     char myUserZone[MAX_NAME_LEN];
     char userName2[NAME_LEN+2];
     char userZone[NAME_LEN+2];
-   rodsLong_t pamMinTime;
-   rodsLong_t pamMaxTime;
-
-#if defined(OS_AUTH)
-    int doOsAuthentication = 0;
-    char *os_auth_flag;
-#endif
+    rodsLong_t pamMinTime;
+    rodsLong_t pamMaxTime;
 
     if (logSQL!=0) rodsLog(LOG_SQL, "chlCheckAuth");
 
@@ -4492,27 +4565,15 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
     memset(md5Buf, 0, sizeof(md5Buf));
     strncpy(md5Buf, challenge, CHALLENGE_LEN);
     snprintf(prevChalSig,sizeof prevChalSig,
-             "%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x",
-             (unsigned char)md5Buf[0], (unsigned char)md5Buf[1], 
-             (unsigned char)md5Buf[2], (unsigned char)md5Buf[3],
-             (unsigned char)md5Buf[4], (unsigned char)md5Buf[5], 
-             (unsigned char)md5Buf[6], (unsigned char)md5Buf[7],
-             (unsigned char)md5Buf[8], (unsigned char)md5Buf[9], 
-             (unsigned char)md5Buf[10],(unsigned char)md5Buf[11],
-             (unsigned char)md5Buf[12],(unsigned char)md5Buf[13], 
-             (unsigned char)md5Buf[14],(unsigned char)md5Buf[15]);
-#if defined(OS_AUTH)
-    /* check for the OS_AUTH_FLAG token in the username to see if
-     * we should run the OS level authentication. Make sure and
-     * strip it from the username string so other operations 
-     * don't fail parsing the format.
-     */
-    os_auth_flag = strstr(username, OS_AUTH_FLAG);
-    if (os_auth_flag) {
-        *os_auth_flag = 0;
-        doOsAuthentication = 1;
-    }
-#endif
+            "%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x",
+            (unsigned char)md5Buf[0], (unsigned char)md5Buf[1], 
+            (unsigned char)md5Buf[2], (unsigned char)md5Buf[3],
+            (unsigned char)md5Buf[4], (unsigned char)md5Buf[5], 
+            (unsigned char)md5Buf[6], (unsigned char)md5Buf[7],
+            (unsigned char)md5Buf[8], (unsigned char)md5Buf[9], 
+            (unsigned char)md5Buf[10],(unsigned char)md5Buf[11],
+            (unsigned char)md5Buf[12],(unsigned char)md5Buf[13], 
+            (unsigned char)md5Buf[14],(unsigned char)md5Buf[15]);
 
     status = parseUserName(username, userName2, userZone);
     if (userZone[0]=='\0') {
@@ -4524,23 +4585,29 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
         strncpy(myUserZone, userZone, MAX_NAME_LEN);
     }
 
-#if defined(OS_AUTH)
-    if (doOsAuthentication) {
-        if ((status = osauthVerifyResponse(challenge, userName2, response))) {
-            return status;
+
+    if( scheme && strlen( scheme ) > 0 ) {
+        eirods::error ret = verify_auth_response(
+                               scheme,
+                               challenge,
+                               userName2,
+                               response );
+        if( !ret.ok() ) {
+            eirods::log( PASS( ret ) );
+            return ret.code();
         }
         goto checkLevel;
     }
-#endif
+
 
     if (logSQL!=0) rodsLog(LOG_SQL, "chlCheckAuth SQL 1 ");
-    
+
     status = cmlGetMultiRowStringValuesFromSql(
-           "select rcat_password, pass_expiry_ts, R_USER_PASSWORD.create_ts, R_USER_PASSWORD.modify_ts from R_USER_PASSWORD, R_USER_MAIN where user_name=? and zone_name=? and R_USER_MAIN.user_id = R_USER_PASSWORD.user_id",
-           pwInfoArray, MAX_PASSWORD_LEN,
-           MAX_PASSWORDS*4,  /* four strings per password returned */
-           userName2, myUserZone, &icss);
-        
+            "select rcat_password, pass_expiry_ts, R_USER_PASSWORD.create_ts, R_USER_PASSWORD.modify_ts from R_USER_PASSWORD, R_USER_MAIN where user_name=? and zone_name=? and R_USER_MAIN.user_id = R_USER_PASSWORD.user_id",
+            pwInfoArray, MAX_PASSWORD_LEN,
+            MAX_PASSWORDS*4,  /* four strings per password returned */
+            userName2, myUserZone, &icss);
+
     if (status < 4) {
         if (status == CAT_NO_ROWS_FOUND) {
             status = CAT_INVALID_USER; /* Be a little more specific */
@@ -4608,8 +4675,8 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
     pamMinTime=atoll(IRODS_PAM_PASSWORD_MIN_TIME);
 
     if( ( strncmp(goodPwExpiry, "9999",4)!=0) &&
-        expireTime >=  pamMinTime &&
-        expireTime <= pamMaxTime) {
+            expireTime >=  pamMinTime &&
+            expireTime <= pamMaxTime) {
         time_t modTime;
         /* The used pw is an iRODS-PAM type, so now check if it's expired */
         getNowStr(myTime);
@@ -4629,15 +4696,15 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
             memset(lastPw, 0, sizeof(lastPw));
             if (status != 0) {
                 rodsLog(LOG_NOTICE,
-                "chlCheckAuth cmlExecuteNoAnswerSql delete expired password failure %d",
-                status);
+                        "chlCheckAuth cmlExecuteNoAnswerSql delete expired password failure %d",
+                        status);
                 return(status);
             }
             status =  cmlExecuteNoAnswerSql("commit", &icss);
             if (status != 0) {
                 rodsLog(LOG_NOTICE,
-                "chlCheckAuth cmlExecuteNoAnswerSql commit failure %d",
-                status);
+                        "chlCheckAuth cmlExecuteNoAnswerSql commit failure %d",
+                        status);
                 return(status);
             }
             return(CAT_PASSWORD_EXPIRED);
@@ -4667,8 +4734,8 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
         cllBindVars[cllBindVarCount++]=goodPw;
         if (logSQL!=0) rodsLog(LOG_SQL, "chlCheckAuth SQL 2");
         status =  cmlExecuteNoAnswerSql(
-            "delete from R_USER_PASSWORD where rcat_password=?",
-            &icss);
+                "delete from R_USER_PASSWORD where rcat_password=?",
+                &icss);
         if (status !=0) {
             rodsLog(LOG_NOTICE,
                     "chlCheckAuth cmlExecuteNoAnswerSql delete failure %d",
@@ -4686,12 +4753,12 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
         pwExpireMaxCreateTime = nowTime-TEMP_PASSWORD_TIME;
         /* Not sure if casting to int is correct but seems OK & avoids warning:*/
         snprintf(expireStrCreate, sizeof expireStrCreate, "%011d", 
-                 (int)pwExpireMaxCreateTime); 
+                (int)pwExpireMaxCreateTime); 
         cllBindVars[cllBindVarCount++]=expireStrCreate;
 
         status =  cmlExecuteNoAnswerSql(
-            "delete from R_USER_PASSWORD where pass_expiry_ts = ? and create_ts < ?",
-            &icss);
+                "delete from R_USER_PASSWORD where pass_expiry_ts = ? and create_ts < ?",
+                &icss);
         if (status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
             rodsLog(LOG_NOTICE,
                     "chlCheckAuth cmlExecuteNoAnswerSql delete2 failure %d",
@@ -4720,8 +4787,8 @@ checkLevel:
 
     if (logSQL!=0) rodsLog(LOG_SQL, "chlCheckAuth SQL 5");
     status = cmlGetStringValueFromSql(
-        "select user_type_name from R_USER_MAIN where user_name=? and zone_name=?",
-        userType, MAX_NAME_LEN, userName2, myUserZone, 0, &icss);
+            "select user_type_name from R_USER_MAIN where user_name=? and zone_name=?",
+            userType, MAX_NAME_LEN, userName2, myUserZone, 0, &icss);
     if (status !=0) {
         if (status == CAT_NO_ROWS_FOUND) {
             status = CAT_INVALID_USER; /* Be a little more specific */
@@ -4737,7 +4804,7 @@ checkLevel:
 
         /* Since the user is admin, also get the client privilege level */
         if (strcmp( rsComm->clientUser.userName, userName2)==0 &&
-            strcmp( rsComm->clientUser.rodsZone, userZone)==0) {
+                strcmp( rsComm->clientUser.rodsZone, userZone)==0) {
             *clientPrivLevel = LOCAL_PRIV_USER_AUTH; /* same user, no query req */
         }
         else {
@@ -4753,7 +4820,7 @@ checkLevel:
                    some other queries are still exclued.  The non-IES will
                    reconnect once the rodsUserName is determined.  In
                    iRODS 2.3 this would return an error.
-                */
+                 */
                 *clientPrivLevel = REMOTE_USER_AUTH;
                 prevFailure=0;
                 return(0);
@@ -4761,9 +4828,9 @@ checkLevel:
             else {
                 if (logSQL!=0) rodsLog(LOG_SQL, "chlCheckAuth SQL 6");
                 status = cmlGetStringValueFromSql(
-                    "select user_type_name from R_USER_MAIN where user_name=? and zone_name=?",
-                    userType, MAX_NAME_LEN, rsComm->clientUser.userName,
-                    rsComm->clientUser.rodsZone, 0, &icss);
+                        "select user_type_name from R_USER_MAIN where user_name=? and zone_name=?",
+                        userType, MAX_NAME_LEN, rsComm->clientUser.userName,
+                        rsComm->clientUser.rodsZone, 0, &icss);
                 if (status !=0) {
                     if (status == CAT_NO_ROWS_FOUND) {
                         status = CAT_INVALID_CLIENT_USER; /* more specific */

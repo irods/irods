@@ -688,7 +688,6 @@ createPhyBundleDataObj (rsComm_t *rsComm, char *collection,
     int myRanNum;
     int l1descInx;
     int status;
-    int rescTypeInx = rescGrpInfo->rescInfo->rescTypeInx;
 
     /* XXXXXX We do bundle only with UNIX_FILE_TYPE for now */
 

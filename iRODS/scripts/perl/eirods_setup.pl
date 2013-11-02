@@ -1773,19 +1773,19 @@ sub configureIrodsUser
 			"# Account name:\n" .
 			"irodsUserName '$IRODS_ADMIN_NAME'\n" .
 			"# Zone:\n" .
-			"irodsZone '$ZONE_NAME'\n\n" .
+			"irodsZone '$ZONE_NAME'\n" .
 			"# Enable Advanced Client-Server negotation:\n" .
-			"irodsClientServerNegotiation 'request_server_negotiation'\n\n" .
+			"irodsClientServerNegotiation 'request_server_negotiation'\n" .
 			"# Client-Server connection policy:\n" .
-			"irodsClientServerPolicy 'CS_NEG_REFUSE'\n\n" .
+			"irodsClientServerPolicy 'CS_NEG_REFUSE'\n" .
 			"# Client-Server Encryption Key Size In Bytes:\n" .
-			"irodsEncryptionKeySize '32'\n\n" .
+			"irodsEncryptionKeySize '32'\n" .
 			"# Client-Server Encryption Salt Size In Bytes:\n" .
-			"irodsEncryptionSaltSize '8'\n\n" .
+			"irodsEncryptionSaltSize '8'\n" .
 			"# Client-Server Encryption Number of Hash Rounds:\n" .
-			"irodsEncryptionNumHashRounds '16'\n\n" .
+			"irodsEncryptionNumHashRounds '16'\n" .
 			"# Client-Server Encryption Algorithm:\n" .
-			"irodsEncryptionAlgorithm 'AES-256-CBC'\n\n" 
+			"irodsEncryptionAlgorithm 'AES-256-CBC'\n\n"
              );
 
 	} else {
@@ -1813,7 +1813,19 @@ sub configureIrodsUser
 			"# Account name:\n" .
 			"irodsUserName '$IRODS_ADMIN_NAME'\n" .
 			"# Zone:\n" .
-			"irodsZone '$ZONE_NAME'\n" );
+                         "irodsZone '$ZONE_NAME'\n" );
+                         "# Enable Advanced Client-Server negotation:\n" .
+                         "irodsClientServerNegotiation 'request_server_negotiation'\n" .
+                         "# Client-Server connection policy:\n" .
+                         "irodsClientServerPolicy 'CS_NEG_REFUSE'\n" .
+                         "# Client-Server Encryption Key Size In Bytes:\n" .
+                         "irodsEncryptionKeySize '32'\n" .
+                         "# Client-Server Encryption Salt Size In Bytes:\n" .
+                         "irodsEncryptionSaltSize '8'\n" .
+                         "# Client-Server Encryption Number of Hash Rounds:\n" .
+                         "irodsEncryptionNumHashRounds '16'\n" .
+                         "# Client-Server Encryption Algorithm:\n" .
+                         "irodsEncryptionAlgorithm 'AES-256-CBC'\n\n"
 	}
 
 

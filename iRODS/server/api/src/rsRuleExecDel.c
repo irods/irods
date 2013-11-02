@@ -48,7 +48,7 @@ int
 _rsRuleExecDel (rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp)
 {
     genQueryOut_t *genQueryOut = NULL;
-    int status, unlinkStatus, unlinkErrno;
+    int status, unlinkStatus;
     sqlResult_t *reiFilePath;
     sqlResult_t *ruleUserName;
 
@@ -126,7 +126,10 @@ _rsRuleExecDel (rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp)
         snprintf(errMsg, sizeof errMsg, "Rule was removed but reiPath was invalid: %s", 
 		 reiFilePath->value);	       
         i = addRErrorMsg (&rsComm->rError, 0, errMsg);
-
+        if(i < 0)
+        {
+          eirods::log( ERROR (i, "addRErrorMsg failed") );
+        }
         freeGenQueryOut (&genQueryOut);
 
 	return (SYS_INVALID_FILE_PATH);
@@ -139,7 +142,6 @@ _rsRuleExecDel (rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp)
 
     status = unlink (reiFilePath->value);
     if (status < 0) {
-        unlinkErrno = errno;
         status = UNIX_FILE_UNLINK_ERR - errno;
         rodsLog (LOG_ERROR, 
 	  "_rsRuleExecDel: unlink of %s error, status = %d",
@@ -148,8 +150,6 @@ _rsRuleExecDel (rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp)
             freeGenQueryOut (&genQueryOut);
             return (status);
 	}
-    } else {
-	unlinkErrno = 0;
     }
     unlinkStatus = status;
 
@@ -169,6 +169,10 @@ _rsRuleExecDel (rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp)
         snprintf(errMsg, sizeof errMsg, 
                  "Rule was removed but unlink of rei file failed");
         i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+        if(i < 0)
+        {
+          eirods::log( ERROR (i, "addRErrorMsg failed") );
+        }
         snprintf(errMsg, sizeof errMsg, 
                  "rei file: %s", 
 		 reiFilePath->value);

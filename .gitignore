@@ -17,6 +17,8 @@ iRODS/server/re/include/reAction.h
 packaging/eirods.list
 packaging/eirods-dev.list
 packaging/eirods-icommands.list
+plugins/auth/*/.deps
+plugins/auth/*/.objs
 plugins/network/*/.deps
 plugins/network/*/.objs
 plugins/resources/Makefile

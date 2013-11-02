@@ -25,7 +25,7 @@
 |
 
 :Author: Renaissance Computing Institute (RENCI)
-:Version: 3.0.1
+:Version: 3.0.1b1
 :Date: |todaysdate|
 
 
@@ -219,6 +219,18 @@ The Zone has been renamed, but now you will need to update your .irodsEnv file t
  irodsUserName 'rods'
  # Zone:
  irodsZone '<newzonename>'
+ # Enable Advanced Client-Server negotation:
+ irodsClientServerNegotiation 'request_server_negotiation'
+ # Client-Server connection policy:
+ irodsClientServerPolicy 'CS_NEG_REFUSE'
+ # Client-Server Encryption Key Size In Bytes:
+ irodsEncryptionKeySize '32'
+ # Client-Server Encryption Salt Size In Bytes:
+ irodsEncryptionSaltSize '8'
+ # Client-Server Encryption Number of Hash Rounds:
+ irodsEncryptionNumHashRounds '16'
+ # Client-Server Encryption Algorithm:
+ irodsEncryptionAlgorithm 'AES-256-CBC'
 
 Now, the connection should be reset and you should be able to list your empty iRODS collection again::
 
@@ -254,7 +266,7 @@ Add additional user(s)
 
 The default installation of E-iRODS comes with a single user 'rods' which is a designated 'rodsadmin' type user account.  You will want to create additional 'rodsuser' type user accounts and set their passwords before allowing connections to your new grid::
 
- eirods@hostname:~/ $ iadmin mkuser <newusername> rodsuser 
+ eirods@hostname:~/ $ iadmin mkuser <newusername> rodsuser
 
  eirods@hostname:~/ $ iadmin lu
  rods#tempZone
@@ -332,12 +344,146 @@ The planned plugin interfaces and their status are listed here:
  ========================   ==========    ========
  Pluggable Microservices    Complete      3.0b2
  Composable Resources       Complete      3.0b3
- Pluggable Authentication   Planned
+ Pluggable Authentication   Complete      3.0.1b1
+ Pluggable Network          Complete      3.0.1b1
  Pluggable Database         Planned
- Pluggable Messaging        Planned
  Pluggable RPC API          Planned
  Pluggable Rule Engine      Requested
  ========================   ==========    ========
+
+Dynamic Policy Enforcement Points
+---------------------------------
+
+E-iRODS has introduced the capability for dynamic policy enforcement points (PEP).  For every operation that is called, two policy enforcement points are constructed (both a pre and post variety), and if it has been defined in core.re or any other loaded rulebase file they will be executed by the rule engine.
+
+The PEP will be constructed of the form "pep_PLUGINOPERATION_pre" and "pep_PLUGINOPERATION_post".
+
+For example, for "resource_create", the two PEPs that are dynamically evaluated are pep_resource_create_pre(\*OUT) and pep_resource_create_post(\*OUT).  If either or both have been defined in a loaded rulebase file (core.re), they will be fired as appropriate.
+
+The flow of information from the pre PEP to the plugin operation to the post PEP works as follows:
+
+- pep_PLUGINOPERATION_pre(\*OUT) - Should produce an \*OUT variable that will be passed to the calling plugin operation
+- PLUGINOPERATION - Will receive any \*OUT defined by pep_PLUGINOPERATION_pre(\*OUT) above and will pass its own \*OUT variable to pep_PLUGINOPERATION_post()
+- pep_PLUGINOPERATION_post() - Will receive any \*OUT from PLUGINOPERATION
+
+
+
+Available Plugin Operations
+***************************
+
+ The following operations are available for dynamic PEP evaluation.  At this time, only very few operations themselves consider the output (\*OUT) of its associated pre PEP.
+
+ +-------------------------+-----------------------------------+
+ | Plugin Type             | Plugin Operation                  |
+ +=========================+===================================+
+ | Resource                | | resource_create                 |
+ |                         | | resource_open                   |
+ |                         | | resource_read                   |
+ |                         | | resource_write                  |
+ |                         | | resource_close                  |
+ |                         | | resource_unlink                 |
+ |                         | | resource_stat                   |
+ |                         | | resource_fstat                  |
+ |                         | | resource_fsync                  |
+ |                         | | resource_mkdir                  |
+ |                         | | resource_chmod                  |
+ |                         | | resource_opendir                |
+ |                         | | resource_readdir                |
+ |                         |                                   |
+ |                         | | resource_stage                  |
+ |                         | | resource_rename                 |
+ |                         | | resource_freespace              |
+ |                         | | resource_lseek                  |
+ |                         | | resource_rmdir                  |
+ |                         | | resource_closedir               |
+ |                         | | resource_truncate               |
+ |                         | | resource_stagetocache           |
+ |                         | | resource_synctoarch             |
+ |                         | | resource_registered             |
+ |                         | | resource_unregistered           |
+ |                         | | resource_modified               |
+ |                         | | resource_resolve_hierarchy      |
+ |                         | | resource_rebalance              |
+ +-------------------------+-----------------------------------+
+ | Authentication          | | auth_client_start               |
+ |                         | | auth_agent_start                |
+ |                         | | auth_establish_context          |
+ |                         | | auth_agent_client_request       |
+ |                         | | auth_agent_auth_request         |
+ |                         | | auth_agent_client_response      |
+ |                         | | auth_agent_auth_response        |
+ |                         | | auth_agent_auth_verify          |
+ +-------------------------+-----------------------------------+
+ | Network                 | | network_client_start            |
+ |                         | | network_client_stop             |
+ |                         | | network_agent_start             |
+ |                         | | network_agent_stop              |
+ |                         | | network_read_header             |
+ |                         | | network_read_body               |
+ |                         | | network_write_header            |
+ |                         | | network_write_body              |
+ +-------------------------+-----------------------------------+
+
+
+Available Values within Dynamic PEPs
+************************************
+
+The following Key-Value Pairs are made available within the running context of each dynamic policy enforcement point (PEP) based both on the plugin type as well as the first class object of interest.  They are available via the rule engine in the form of ``$KVPairs.VARIABLE_NAME`` and are originally defined in ``iRODS/lib/core/include/rodsKeyWdDef.h``.
+
+
+ +----------------+---------------------+-------------------------+
+ | Plugin Type    | First Class Object  | Variable Name           |
+ +================+=====================+=========================+
+ | Resource       | Data Object         | | physical_path         |
+ |                |                     | | mode_kw               |
+ |                |                     | | flags_kw              |
+ |                |                     | | resc_hier             |
+ |                +---------------------+-------------------------+
+ |                | File Object         | | logical_path          |
+ |                |                     | | file_descriptor       |
+ |                |                     | | l1_desc_idx           |
+ |                |                     | | file_size             |
+ |                |                     | | repl_requested        |
+ |                |                     | | in_pdmo               |
+ |                +---------------------+-------------------------+
+ |                | Structured Object   | | host_addr             |
+ |                |                     | | zone_name             |
+ |                |                     | | port_num              |
+ |                |                     | | sub_file_path         |
+ |                |                     | | offset                |
+ |                |                     | | dataType              |
+ |                |                     | | oprType               |
+ |                +---------------------+-------------------------+
+ |                | Special Collection  | | spec_coll_class       |
+ |                |                     | | spec_coll_type        |
+ |                |                     | | spec_coll_obj_path    |
+ |                |                     | | spec_coll_resource    |
+ |                |                     | | spec_coll_resc_hier   |
+ |                |                     | | spec_coll_phy_path    |
+ |                |                     | | spec_coll_cache_dir   |
+ |                |                     | | spec_coll_cache_dirty |
+ |                |                     | | spec_coll_repl_num    |
+ +----------------+---------------------+-------------------------+
+ | Authentication | | Native Password   | | zone_name             |
+ |                | | OS Auth           | | user_name             |
+ |                | | PAM               | | digest                |
+ +----------------+---------------------+-------------------------+
+ | Network        | TCP                 | | tcp_socket_handle     |
+ |                +---------------------+-------------------------+
+ |                | SSL                 | | ssl_host              |
+ |                |                     | | ssl_shared_secret     |
+ |                |                     | | ssl_key_size          |
+ |                |                     | | ssl_salt_size         |
+ |                |                     | | ssl_num_hash_rounds   |
+ |                |                     | | ssl_algorithm         |
+ +----------------+---------------------+-------------------------+
+
+
+For example, within a PEP, you could reference $KVPairs.file_size and get the size of the file currently in context.  Likewise, $KVPairs.ssl_host would provide the current hostname involved in an SSL connection.
+
+Also, $pluginInstanceName is an additional available session variable that gives the instance name of the plugin from which the call is made.
+
+For example, when running ``iput -R myOtherResc newfile.txt``, a ``fileCreate()`` operation is called on "myOtherResc" which delegates the call to the myOtherResc plugin instance which is a "resource_create" operation.  When the pep_resource_create_pre() rule is evaluated, the value of $pluginInstanceName will be "myOtherResc".  This allows rule authors to make decisions at a per-resource basis for this type of operation.
 
 -----------------------
 Pluggable Microservices
@@ -385,30 +531,126 @@ Read more at `http://eirods.org/release/e-irods-composable-resources/`__:
 Coordinating Resources
 ----------------------
 
-Coordinating resources contain the flow control logic which determines both how its child resources will be allocated copies of data as well as which copy is returned when a data object is requested.  These include:
+Coordinating resources contain the flow control logic which determines both how its child resources will be allocated copies of data as well as which copy is returned when a Data Object is requested.
 
-- legacy compound
-- random
-- replication
-- round robin
-- passthru (for testing)
-- load balanced (expected)
-- storage balanced (%-full) (expected)
-- storage balanced (bytes) (expected)
-- tiered (expected)
+Compound
+********
+
+The compound resource is a continuation of the legacy compound resource type from Community iRODS.
+
+A compound resource has two and only two children.  One must be designated the 'cache' resource and the other must be designated the 'archive' resource.  This designation is made in the "context string" of the ``addchildtoresc`` command.
+
+An Example::
+
+ eirods@hostname:~/ $ iadmin addchildtoresc parentResc newChildResc1 cache
+ eirods@hostname:~/ $ iadmin addchildtoresc parentResc newChildResc2 archive
+
+Putting files into the compound resource will create a replica on the cache resource and then create a second replica on the archive resource.
+
+Getting files from the compound resource will behave similar to the Community iRODS version.  By default, the replica from the cache resource will always be returned.  If the cache resource does not have a copy, then a replica is created on the cache resource before being returned.
+
+This compound resource staging policy can be controlled with the policy key-value pair whose keyword is "compound_resource_cache_refresh_policy" and whose values are either "when_necessary" (default), or "always".
+
+From the example near the bottom of the core.re rulebase::
+
+ # =-=-=-=-=-=-=-
+ # policy controlling when a dataObject is staged to cache from archive in a compound coordinating resource
+ #  - the default is to stage when cache is not present ("when_necessary")
+ # =-=-=-=-=-=-=-
+ # pep_resource_resolve_hierarchy_pre(*OUT){*OUT="compound_resource_cache_refresh_policy=when_necessary";}  # default
+ # pep_resource_resolve_hierarchy_pre(*OUT){*OUT="compound_resource_cache_refresh_policy=always";}
+
+Replicas within a compound resource can be trimmed.  There is no rebalance activity defined for a compound resource.  When the cache fills up, the administrator will need to take action as they see fit.
+
+The "--purgec" option for ``iput``, ``iget``, and ``irepl`` is honored and will always purge the first replica (usually with replica number of 0) for that Data Object (which may or may not be held within this compound resource).  This is not an optimal use of the compound resource as the behavior will become somewhat nondeterministic with complex resource compositions.
+
+Random
+******
+
+The random resource provides logic to put a file onto one of its children on a random basis.  A random resource can have one or more children.
+
+If the selected target child resource of a put operation is currently marked "down" in the iCAT, the random resource will move on to another random child and try again.  Currently, the random resource will try 10 times the number of its children, and if still not succeeding, throw an error.
+
+Replication
+***********
+
+The replication resource provides logic to automatically manage replicas to all its children.
+
+`Rebalancing`_ of the replication node is made available via the "rebalance" subcommand of ``iadmin``.  For the replication resource, all Data Objects on all children will be replicated to all other children.  The amount of work done in each iteration as the looping mechanism completes is controlled with the session variable ``replication_rebalance_limit``.  The default value is set at 500 Data Objects per loop.
+
+Getting files from the replication resource will show a preference for locality.  If the client is connected to one of the child resource servers, then that replica of the file will be returned, minimizing network traffic.
+
+Round Robin
+***********
+
+The round robin resource provides logic to put a file onto one of its children on a rotating basis.  A round robin resource can have one or more children.
+
+If the selected target child resource of a put operation is currently marked "down" in the iCAT, the round robin resource will move onto the next child and try again.  If all the children are down, then the round robin resource will throw an error.
+
+Passthru
+********
+
+The passthru resource was originally designed as a testing mechanism to exercise the new composable resource hierarchies.
+
+A passthru resource can have one and only one child.
+
+Expected
+********
+
+A few other coordinating resource types have been brainstormed but are not functional at this time:
+
+ - Load Balanced (expected)
+ - Storage Balanced (%-full) (expected)
+ - Storage Balanced (bytes) (expected)
+ - Tiered (expected)
 
 Storage Resources
 -----------------
 
-Storage resources represent storage interfaces and include the file driver information to talk with different types of storage. These include:
+Storage resources represent storage interfaces and include the file driver information to talk with different types of storage.
 
-- unix file system
-- structured file type (tar, zip, gzip, bzip)
-- non-blocking
-- Universal Mass Storage
-- HPSS (expected)
-- S3 (expected)
-- WOS (expected)
+Unix File System
+****************
+
+The unix file system storage resource is the default resource type that can communicate with a device through the standard POSIX interface.
+
+Structured File Type (tar, zip, gzip, bzip)
+*******************************************
+
+The structured file type storage resource is used to interface with files that have a known format.  By default these are used "under the covers" and are not expected to be used directly by users (or administrators).
+
+These are used mainly for mounted collections.
+
+Non-Blocking
+************
+
+The non-blocking storage resource behaves exactly like the standard unix file system storage resource except that the "read" and "write" operations do not block (they return immediately while the read and write happen independently).
+
+Mock Archive
+************
+
+The mock archive storage resource was created mainly for testing purposes to emulate the behavior of object stores (e.g. WOS).  It creates a hash of the file path as the physical name of the Data Object.
+
+Universal Mass Storage Service
+******************************
+
+The univMSS storage resource delegates stage_to_cache and sync_to_arch operations to an external script which is located in the iRODS/server/bin/cmd directory.  It currently writes to the Vault path of that resource instance, treating it as a unix file system.
+
+When creating a "univmss" resource, the context string provides the location of the Universal MSS script.
+
+Example::
+
+ eirods@hostname:~$ iadmin mkresc myArchiveResc univmss HOSTNAME:/full/path/to/Vault univMSSInterface.sh
+
+
+Expected
+********
+
+A few other storage resource types have been brainstormed but are not included at this time:
+
+ - HPSS (expected)
+ - S3 (expected)
+ - WOS (expected)
 
 Managing Child Resources
 ------------------------
@@ -462,6 +704,60 @@ A replicating coordinating resource with three unix file system storage resource
  eirods@hostname:~/ $ iadmin addchildtoresc example1 repl_resc2
  eirods@hostname:~/ $ iadmin addchildtoresc example1 repl_resc3
 
+Rebalancing
+-----------
+
+A new subcommand for iadmin allows an administrator to rebalance a coordinating resource.  The coordinating resource can be the root of a tree, or anywhere in the middle of a tree.  The rebalance operation will rebalance for all decendents.  For example, the iadmin command ``iadmin modresc myReplResc rebalance`` would fire the rebalance operation for the replication resource instance named myReplResc.  Any Data Objects on myReplResc that did not exist on all its children would be replicated as expected.
+
+For other coordinating resource types, rebalance can be defined as appropriate.  For coordinating resources with no concept of "balanced", the rebalance operation is a "no op" and performs no work.
+
+------------------------
+Pluggable Authentication
+------------------------
+
+The authentication methods are now contained in plugins.  By default, similar to iRODS 3.3 and prior, E-iRODS comes with native iRODS challenge/response (password) enabled.  However, enabling an additional authentication mechanism is as simple as adding a file to the proper directory.  The server does not need to be restarted.
+
+Available authentication mechanisms include:
+
+- Native iRODS password
+- OSAuth
+- GSI (Grid Security Infrastructure)
+- PAM (Pluggable Authentication Module)
+- Kerberos
+- LDAP (via PAM)
+
+-----------------
+Pluggable Network
+-----------------
+
+E-iRODS now ships with both TCP and SSL network plugins enabled.  The SSL mechanism is provided via OpenSSL and wraps the activity from the TCP plugin.
+
+The SSL parameters are tunable via the following .irodsEnv variables::
+
+ # Enable Advanced Client-Server negotation:
+ irodsClientServerNegotiation 'request_server_negotiation'
+ # Client-Server connection policy:
+ irodsClientServerPolicy 'CS_NEG_REFUSE'
+ # Client-Server Encryption Key Size In Bytes:
+ irodsEncryptionKeySize '32'
+ # Client-Server Encryption Salt Size In Bytes:
+ irodsEncryptionSaltSize '8'
+ # Client-Server Encryption Number of Hash Rounds:
+ irodsEncryptionNumHashRounds '16'
+ # Client-Server Encryption Algorithm:
+ irodsEncryptionAlgorithm 'AES-256-CBC'
+
+The only valid value for irodsClientServerNegotiation at this time is 'request_server_negotiation'.  Anything else will not begin the negotiation stage and default to using a TCP connection.
+ 
+The possible values for irodsClientServerPolicy include:
+
+- CS_NEG_REQUIRE: This side of the connection requires an SSL connection
+- CS_NEG_DONT_CARE: This side of the connection will connect either with or without SSL
+- CS_NEG_REFUSE: (default) This side of the connection refuses to connect via SSL
+
+In order for a connection to be made, the client and server have to agree on the type of connection they will share.  When both sides choose ``CS_NEG_DONT_CARE``, E-iRODS shows an affinity for security by connecting via SSL.
+
+The remaining parameters are standard SSL parameters and made available through the EVP library included with OpenSSL.  You can read more about these remaining parameters at https://www.openssl.org/docs/crypto/evp.html.
 
 -------------------
 Users & Permissions
@@ -942,6 +1238,11 @@ History of Releases
 ==========   =======    =====================================================
 Date         Version    Description
 ==========   =======    =====================================================
+2013-10-31   3.0.1b1    Second Release.
+                          This is the second open source release from RENCI.
+                          It includes pluggable network and authentication
+                          support as well as a rebalance option and migration
+                          support for the composable resources.
 2013-06-05   3.0        First Release.
                           This is the first open source release from RENCI.
                           It includes all the features mentioned below and

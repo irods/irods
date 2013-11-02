@@ -209,7 +209,7 @@
 #define AGE_KW                      "age"  /* age of the file for itrim */
 
 // =-=-=-=-=-=-=-
-// eirods keywords definitions
+// eirods general keywords definitions
 #define RESC_HIER_STR_KW             "resc_hier"
 #define DEST_RESC_HIER_STR_KW        "dest_resc_hier"
 #define IN_PDMO_KW                   "in_pdmo"
@@ -253,8 +253,8 @@
 #define PORT_NUM_KW                  "port_num"
 #define SUB_FILE_PATH_KW             "sub_file_path"
 // borrowed OFFSET_KW
-// borrowed DATA_TYPE_KW 
-// borrowed OPR_TYPE_KW      
+// borrowed DATA_TYPE_KW
+// borrowed OPR_TYPE_KW
 
 // =-=-=-=-=-=-=-
 // eirods spec coll keyword definitions

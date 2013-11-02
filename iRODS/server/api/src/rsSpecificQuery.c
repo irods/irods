@@ -60,6 +60,10 @@ _rsSpecificQuery (rsComm_t *rsComm, specificQueryInp_t *specificQueryInp,
     if (status == CAT_UNKNOWN_SPECIFIC_QUERY) {
        int i;
        i = addRErrorMsg (&rsComm->rError, 0, "The SQL is not pre-defined.\n  See 'iadmin h asq' (add specific query)");
+       if (i < 0)
+       {
+         eirods::log ( i, "addErrorMsg failed");
+       }
     }
     
     if (status < 0) {

@@ -6,6 +6,8 @@ if [ -f "/etc/redhat-release" ]; then       # CentOS and RHEL and Fedora
     DETECTEDOS="RedHatCompatible"
 elif [ -f "/etc/SuSE-release" ]; then       # SuSE
     DETECTEDOS="SuSE"
+elif [ -f "/etc/arch-release" ]; then       # Arch
+    DETECTEDOS="Arch"
 elif [ -f "/etc/lsb-release" ]; then        # Ubuntu
     DETECTEDOS="Ubuntu"
 elif [ -f "/etc/debian_version" ]; then     # Debian

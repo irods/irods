@@ -3684,6 +3684,10 @@ msiTarFileExtract (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPar
         modDataObjMetaInp.dataObjInfo = rei->doi;
         modDataObjMetaInp.regParam = &regParam;
         rc1 = rsModDataObjMeta(rsComm, &modDataObjMetaInp);
+        if (rc1 < 0)
+        {
+          eirods::log( ERROR (rc1, "rsModDataObjMeta failed."));
+        }
     }
 
     /* tar file extraction */
@@ -3695,6 +3699,10 @@ msiTarFileExtract (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPar
         memset(&regParam, 0, sizeof(regParam));
         addKeyVal(&regParam, DATA_TYPE_KW, origDataType);
         rc1 = rsModDataObjMeta(rsComm, &modDataObjMetaInp);
+        if (rc1 < 0)
+        {
+          eirods::log( ERROR (rc1, "rsModDataObjMeta failed."));
+        }
     }
 
     fillIntInMsParam (outParam, rei->status);

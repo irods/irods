@@ -11,10 +11,19 @@
 	#include <windows.h>
 	using namespace stdext;
 #else
-    #if __GNUC__ == 4 && __GNUC_MINOR__ > 2
-	    #include <backward/hash_map>
+    #define GCC_VERSION (__GNUC__ * 10000 \
+                         + __GNUC_MINOR__ * 100 \
+                         + __GNUC_PATCHLEVEL__)
+    #if GCC_VERSION > 40200
+        // JMC - older compilers do not handle -std=c++0X very well so
+        // using unordered_map will require more effort 
+        // #include <unordered_map>
+        //#define EIRODS_HASH_TYPE std::unordered_map
+        #include <backward/hash_map>
+        #define EIRODS_HASH_TYPE __gnu_cxx::hash_map
     #else
         #include <ext/hash_map>
+        #define EIRODS_HASH_TYPE __gnu_cxx::hash_map
     #endif
 	using namespace __gnu_cxx;
 #endif

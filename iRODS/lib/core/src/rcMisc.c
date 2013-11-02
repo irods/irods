@@ -36,6 +36,9 @@
 #include "eirods_hierarchy_parser.h"
 #include "eirods_stacktrace.h"
 
+// =-=-=-=-=-=-=-
+// boost includes
+#include "boost/filesystem.hpp"
 
 /* check with the input path is a valid path -
  * 1 - valid
@@ -1737,13 +1740,11 @@ updateOffsetTimeStr(char *timeStr, int offset)
 getNextRepeatTime(char *currTime, char *delayStr, char *nextTime)
 {
 
-    rodsLong_t  it, dt, ct;
+    rodsLong_t  it, dt;
     char *t, *s;
     char u;
     char tstr[200];
     int n;
-
-    ct = atol(currTime); 
 
     t = delayStr;
     while (isdigit(*t)) t++;
@@ -2551,8 +2552,6 @@ getNextRepeatTime(char *currTime, char *delayStr, char *nextTime)
                     char *restartPath, objType_t objType, keyValPair_t *condInput,
                     int deleteFlag)
             {
-                int status;
-
                 if (restartPath != NULL && deleteFlag > 0) {
                     if (objType == DATA_OBJ_T) {
                         if ((condInput == NULL ||
@@ -2565,13 +2564,24 @@ getNextRepeatTime(char *currTime, char *delayStr, char *nextTime)
                             memset (&dataObjInp, 0, sizeof (dataObjInp));
                             addKeyVal (&dataObjInp.condInput, FORCE_FLAG_KW, "");
                             rstrcpy (dataObjInp.objPath, restartPath, MAX_NAME_LEN);
-                            status = rcDataObjUnlink (conn,& dataObjInp);
+                            int status = rcDataObjUnlink (conn,& dataObjInp);
+//                            if(status < 0)
+//                            {
+// FIXME                         eirods::log( ERROR ( status, "rcDataObjUnlink failed."));
+//                            }
                             clearKeyVal (&dataObjInp.condInput);
                         }
                     } else if (objType == LOCAL_FILE_T) {
                         if (conn->fileRestart.info.status != FILE_RESTARTED ||
-                                strcmp (conn->fileRestart.info.fileName, restartPath) != 0) {
-                            status = unlink (restartPath);
+                            strcmp (conn->fileRestart.info.fileName, restartPath) != 0) {
+                            boost::filesystem::path path(restartPath);
+                            if (boost::filesystem::exists(path)){
+                                int status = boost::filesystem::remove(path);
+                                if(status < 0)
+                                {
+                                  eirods::log( ERROR ( status, "boost:filesystem::remove() failed."));
+                                }
+                           }
                         }
                     } else {
                         rodsLog (LOG_ERROR,
@@ -3572,7 +3582,7 @@ getNextRepeatTime(char *currTime, char *delayStr, char *nextTime)
                     char tmp[40];
                     strncpy(tmp, RODS_REL_VERSION, 40);   /* to skip over the 'rods' part 
                                                              of the string */
-                    printf("\niRODS Version %s                  %s                      %s\n",
+                    printf("\nE-iRODS Version %s                %s                      %s\n",
                             (char*)&tmp[4], RODS_RELEASE_DATE, cmdName);
                     return;
                 }
@@ -4235,18 +4245,18 @@ getNextRepeatTime(char *currTime, char *delayStr, char *nextTime)
 
             int
                 writeFromByteBuf (int fd, bytesBuf_t *bytesBuf)
-                {
-                    int toWrite, buflen, nbytes;
-                    char *bufptr;
+            {
+                int toWrite, nbytes;
+                char *bufptr;
 
-                    bufptr = (char *)bytesBuf->buf;
-                    buflen = toWrite = bytesBuf->len;
-                    while ((nbytes = myWrite (fd, bufptr, toWrite, SOCK_TYPE, NULL)) >= 0) {
-                        toWrite -= nbytes;
-                        bufptr += nbytes;
-                        if (toWrite <= 0) break;
-                    }
-                    close (fd);
+                bufptr = (char *)bytesBuf->buf;
+                toWrite = bytesBuf->len;
+                while ((nbytes = myWrite (fd, bufptr, toWrite, SOCK_TYPE, NULL)) >= 0) {
+                    toWrite -= nbytes;
+                    bufptr += nbytes;
+                    if (toWrite <= 0) break;
+                }
+                close (fd);
 
                     if (toWrite != 0) {
                         return (SYS_COPY_LEN_ERR - errno);

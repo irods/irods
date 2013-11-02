@@ -102,6 +102,7 @@
 #define MAX_SZ_FOR_EXECMD_BUF     (1*1024*1024)
 #define MIN_SZ_FOR_PARA_TRAN     (1*1024*1024)
 #define TRANS_BUF_SZ    (4*1024*1024)
+#define CRYPT_BUF_SZ    2*TRANS_BUF_SZ
 #define TRANS_SZ        (40*1024*1024)
 #define LARGE_SPACE     1000000000
 #define UNKNOWN_FILE_SZ	-99	/* value to indicate the file sz is unknown */

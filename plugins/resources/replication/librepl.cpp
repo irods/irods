@@ -95,9 +95,8 @@ eirods::error replCheckParams(
 
 extern "C" {
     /// =-=-=-=-=-=-=-
-    /// @brief limit of the number of repls to operation upon during rebalance
+    /// @brief limit of the number of repls to operate upon during rebalance
     const int DEFAULT_LIMIT = 500;
-    const std::string REPL_LIMIT_KEY( "replication_rebalance_limit" );
 
     // =-=-=-=-=-=-=-
     // 2. Define operations which will be called by the file*
@@ -1511,7 +1510,7 @@ extern "C" {
                 return PASS( kvp_err );
             }
 
-            std::string limit_str = kvp[ REPL_LIMIT_KEY ];
+            std::string limit_str = kvp[ eirods::REPL_LIMIT_KEY ];
             if( !limit_str.empty() ) {
                 try {
                     limit = boost::lexical_cast<int>( limit_str );

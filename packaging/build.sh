@@ -8,6 +8,7 @@ FULLPATHSCRIPTNAME=$SCRIPTPATH/$SCRIPTNAME
 COVERAGE="0"
 RELEASE="0"
 BUILDEIRODS="1"
+PORTABLE="0"
 COVERAGEBUILDDIR="/var/lib/eirods"
 PREFLIGHT=""
 PREFLIGHTDOWNLOAD=""
@@ -24,6 +25,7 @@ Options:
 -h      Show this help
 -r      Build a release package (no debugging information, optimized)
 -s      Skip compilation of E-iRODS source
+-p      Portable option, ignores OS and builds a tar.gz
 
 Examples:
 $SCRIPTNAME icat postgres
@@ -72,6 +74,7 @@ do
         --help) args="${args}-h ";;
         --release) args="${args}-r ";;
         --skip) args="${args}-s ";;
+        --portable) args="${args}-p ";;
         # pass through anything else
         *) [[ "${arg:0:1}" == "-" ]] || delim="\""
         args="${args}${delim}${arg}${delim} ";;
@@ -80,7 +83,7 @@ done
 # reset the translated args
 eval set -- $args
 # now we can process with getopts
-while getopts ":chrs" opt; do
+while getopts ":chrsp" opt; do
     case $opt in
         c)
         COVERAGE="1"
@@ -96,6 +99,10 @@ while getopts ":chrs" opt; do
         s)
         BUILDEIRODS="0"
         echo "-s detected -- Skipping E-iRODS compilation"
+        ;;
+        p)
+        PORTABLE="1"
+        echo "-p detected -- Building portable package"
         ;;
         \?)
         echo "Invalid option: -$OPTARG" >&2
@@ -180,6 +187,12 @@ if [ "$1" == "clean" ] ; then
     rm -f eirods-manual*.pdf
     rm -f examples/microservices/*.pdf
     rm -f libeirods.a
+    echo "Cleaning Authentication plugins..."
+    cd plugins/auth
+    set +e
+    make clean > /dev/null 2>&1
+    set -e
+    cd ../..
     echo "Cleaning Network plugins..."
     cd plugins/network
     set +e
@@ -203,6 +216,8 @@ if [ "$1" == "clean" ] ; then
     rm -rf epm*
     echo "Cleaning external residuals..."
     cd $DETECTEDDIR/../external
+    rm -rf __MACOSX
+    rm -rf cJSON*
     rm -rf cmake*
     rm -rf libarchive*
     rm -rf boost*
@@ -236,6 +251,9 @@ echo "Detected E-iRODS Version to Build [$EIRODSVERSION]"
 echo "Detected EPM E-iRODS Version String [$EPMEIRODSVERSION]"
 # detect operating system
 DETECTEDOS=`../packaging/find_os.sh`
+if [ "$PORTABLE" == "1" ] ; then
+  DETECTEDOS="Portable"
+fi
 echo "Detected OS [$DETECTEDOS]"
 DETECTEDOSVERSION=`../packaging/find_os_version.sh`
 echo "Detected OS Version [$DETECTEDOSVERSION]"
@@ -560,7 +578,7 @@ if [[ "$?" != "0" || `echo $YACC | awk '{print $1}'` == "no" ]] ; then
     if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
         PREFLIGHT="$PREFLIGHT bison"
     elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-        PREFLIGHT="$PREFLIGHT bison"
+        PREFLIGHT="$PREFLIGHT byacc bison"
     elif [ "$DETECTEDOS" == "SuSE" ] ; then
         PREFLIGHT="$PREFLIGHT bison"
     elif [ "$DETECTEDOS" == "Solaris" ] ; then
@@ -727,6 +745,24 @@ sleep 1
 # LOCAL COMPILATIONS - in ./external
 if [ "$BUILDEIRODS" == "1" ] ; then
 
+    # get a copy of cjson
+    EIRODS_BUILD_CJSONVERSIONNUMBER="58"
+    EIRODS_BUILD_CJSONVERSION="cJSONFiles-r$EIRODS_BUILD_CJSONVERSIONNUMBER"
+    cd $BUILDDIR/external/
+    if [ -d "cJSON" ] ; then
+        echo "${text_green}${text_bold}Detected copy of [$EIRODS_BUILD_CJSONVERSION]${text_reset}"
+    else
+        echo "${text_green}${text_bold}Downloading [$EIRODS_BUILD_CJSONVERSION] from ftp.renci.org${text_reset}"
+        if [ -e "$EIRODS_BUILD_CJSONVERSION.zip" ] ; then
+            echo "Using existing copy"
+        else
+#            wget http://sourceforge.net/projects/cjson/files/cJSONFiles.zip/download
+            wget ftp://ftp.renci.org/pub/eirods/external/$EIRODS_BUILD_CJSONVERSION.zip
+        fi
+        echo "${text_green}${text_bold}Unzipping [$EIRODS_BUILD_CJSONVERSION]${text_reset}"
+        unzip -o $EIRODS_BUILD_CJSONVERSION.zip
+    fi
+
     # build a copy of cmake
     EIRODS_BUILD_CMAKEVERSIONNUMBER="2.8.11.2"
     EIRODS_BUILD_CMAKEVERSION="cmake-$EIRODS_BUILD_CMAKEVERSIONNUMBER"
@@ -747,7 +783,7 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     echo "${text_green}${text_bold}Building [$EIRODS_BUILD_CMAKEVERSION]${text_reset}"
     cd $BUILDDIR/external/$EIRODS_BUILD_CMAKEVERSION
     if [[ ( ! -e "Makefile" ) || ( "$FULLPATHSCRIPTNAME" -nt "Makefile" ) ]] ; then
-        ./bootstrap
+        ./bootstrap -- -DBUILD_TESTING=FALSE
         $MAKEJCMD
     else
         echo "Nothing to build - all files up to date."
@@ -802,6 +838,7 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     fi
     echo "${text_green}${text_bold}Building [$EIRODS_BUILD_BOOSTVERSION]${text_reset}"
     cd $BUILDDIR/external/$EIRODS_BUILD_BOOSTVERSION
+    sed -i "s/defined(__GLIBC_HAVE_LONG_LONG)/(defined(__GLIBC_HAVE_LONG_LONG) || (defined(__GLIBC__) \&\& ((__GLIBC__ > 2) || ((__GLIBC__ == 2) \&\& (__GLIBC_MINOR__ >= 17)))))/" ./boost/cstdint.hpp
     ./bootstrap.sh --with-libraries=filesystem,system,thread,regex
     ./bjam link=static threading=multi cxxflags="-fPIC" -j$CPUCOUNT
 
@@ -1024,6 +1061,11 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     sed -e s,EIRODSNETWORKPATH,$irods_network_home, ./lib/core/include/eirods_network_home.h.src > /tmp/eirods_network_home.h
     mv /tmp/eirods_network_home.h ./lib/core/include/
     # =-=-=-=-=-=-=-
+    # modify the eirods_auth_home.h file with the proper path to the binary directory
+    irods_auth_home="$detected_irods_home/plugins/auth/"
+    sed -e s,EIRODSAUTHPATH,$irods_auth_home, ./lib/core/include/eirods_auth_home.h.src > /tmp/eirods_auth_home.h
+    mv /tmp/eirods_auth_home.h ./lib/core/include/
+    # =-=-=-=-=-=-=-
     # modify the eirods_resources_home.h file with the proper path to the binary directory
     irods_resources_home="$detected_irods_home/plugins/resources/"
     sed -e s,EIRODSRESOURCESPATH,$irods_resources_home, ./lib/core/include/eirods_resources_home.h.src > /tmp/eirods_resources_home.h
@@ -1064,19 +1106,25 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     # =-=-=-=-=-=-=-
     # build fuse bindary
 	cd $BUILDDIR/iRODS/clients/fuse/
-	make
+	make -j$CPUCOUNT
 	cd $BUILDDIR
 
     # =-=-=-=-=-=-=-
     # build resource plugins
 	cd $BUILDDIR/plugins/resources/
-	make
+	make -j$CPUCOUNT
 	cd $BUILDDIR
 
     # =-=-=-=-=-=-=-
     # build network plugins
 	cd $BUILDDIR/plugins/network/
-	make
+	make -j$CPUCOUNT
+	cd $BUILDDIR
+
+    # =-=-=-=-=-=-=-
+    # build auth plugins
+	cd $BUILDDIR/plugins/auth/
+	make -j$CPUCOUNT
 	cd $BUILDDIR
 
     # =-=-=-=-=-=-=-
@@ -1363,6 +1411,16 @@ elif [ "$DETECTEDOS" == "MacOSX" ] ; then  # MacOSX
     if [ "$RELEASE" == "1" ] ; then
         ./epm/epm $EPMOPTS -f osx eirods-icommands $epmvar=true ./packaging/eirods-icommands.list
     fi
+elif [ "$DETECTEDOS" == "Portable" ] ; then  # Portable
+    echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS TGZs${text_reset}"
+    epmvar="PORTABLE$SERVER_TYPE"
+    ./epm/epm $EPMOPTS -f portable eirods $epmvar=true ./packaging/eirods.list
+    if [ "$1" == "icat" ] ; then
+        ./epm/epm $EPMOPTS -f portable eirods-dev $epmvar=true ./packaging/eirods-dev.list
+    fi
+    if [ "$RELEASE" == "1" ] ; then
+        ./epm/epm $EPMOPTS -f portable eirods-icommands $epmvar=true ./packaging/eirods-icommands.list
+    fi
 else
     echo "${text_red}#######################################################" 1>&2
     echo "ERROR :: Unknown OS, cannot generate packages with EPM" 1>&2
@@ -1389,6 +1447,8 @@ elif [ "$DETECTEDOS" == "Solaris" ] ; then
     EXTENSION="pkg"
 elif [ "$DETECTEDOS" == "MacOSX" ] ; then
     EXTENSION="dmg"
+elif [ "$DETECTEDOS" == "Portable" ] ; then
+    EXTENSION="tar.gz"
 fi
 RENAME_SOURCE="./linux*/eirods-*$EIRODSVERSION*.$EXTENSION"
 RENAME_SOURCE_DEV=${RENAME_SOURCE/eirods-/eirods-dev-}

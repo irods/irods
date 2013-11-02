@@ -13,6 +13,9 @@
 #include "eirods_file_object.h"
 #include "eirods_stacktrace.h"
 
+int _call_file_modified_for_modification(
+    rsComm_t*         rsComm, 
+    modDataObjMeta_t* modDataObjMetaInp );
 int
 rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)
 {
@@ -37,6 +40,8 @@ rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)
         status = rcModDataObjMeta (rodsServerHost->conn, modDataObjMetaInp);
     }
 
+    status = _call_file_modified_for_modification( rsComm, modDataObjMetaInp );
+        
     return (status);
 }
 
@@ -44,7 +49,7 @@ int
 _rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)
 {
 #ifdef RODS_CAT
-    int status;
+    int status = 0;
     dataObjInfo_t *dataObjInfo;
     keyValPair_t *regParam;
     int i;
@@ -192,4 +197,99 @@ _rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)
 
 }
 
+int _call_file_modified_for_modification(
+    rsComm_t*         rsComm, 
+    modDataObjMeta_t* modDataObjMetaInp ) {
+    int status = 0;
+    dataObjInfo_t *dataObjInfo;
+    keyValPair_t *regParam;
+    ruleExecInfo_t rei2;
+
+    memset ((char*)&rei2, 0, sizeof (ruleExecInfo_t));
+    rei2.rsComm = rsComm;
+    if (rsComm != NULL) {
+        rei2.uoic = &rsComm->clientUser;
+        rei2.uoip = &rsComm->proxyUser;
+    }
+    rei2.doi = modDataObjMetaInp->dataObjInfo;
+    rei2.condInputData = modDataObjMetaInp->regParam;
+    regParam = modDataObjMetaInp->regParam;
+    dataObjInfo = modDataObjMetaInp->dataObjInfo;
+
+    if (regParam->len == 0) {
+        return (0);
+    }
+
+    if (getValByKey (regParam, ALL_KW) != NULL) {
+        /* all copies */
+        dataObjInfo_t *dataObjInfoHead = NULL;
+        dataObjInfo_t *tmpDataObjInfo;
+        dataObjInp_t dataObjInp;
+
+        bzero (&dataObjInp, sizeof (dataObjInp));
+        rstrcpy (dataObjInp.objPath, dataObjInfo->objPath, MAX_NAME_LEN);
+        status = getDataObjInfoIncSpecColl (rsComm, &dataObjInp,&dataObjInfoHead);
+              
+        if (status < 0)  {
+            rodsLog(LOG_NOTICE, "%s - Failed to get data objects.", __FUNCTION__);
+            return status;
+        }
+        tmpDataObjInfo = dataObjInfoHead;
+        while (tmpDataObjInfo != NULL) {
+            if (tmpDataObjInfo->specColl != NULL)
+                break;
+        
+            eirods::file_object_ptr file_obj(
+                                        new eirods::file_object( 
+                                            rsComm, 
+                                            tmpDataObjInfo ) );
+
+            char* pdmo_kw = getValByKey(regParam, IN_PDMO_KW);
+            if(pdmo_kw != NULL) {
+                file_obj->in_pdmo(pdmo_kw);
+
+            }
+
+            eirods::error ret = fileModified(rsComm, file_obj);
+            if(!ret.ok()) {
+                std::stringstream msg;
+                msg << __FUNCTION__;
+                msg << " - Failed to signal resource that the data object \"";
+                msg << tmpDataObjInfo->objPath;
+                msg << " was modified.";
+                ret = PASSMSG(msg.str(), ret);
+                eirods::log(ret);
+                status = ret.code();
+            }
+        
+            tmpDataObjInfo = tmpDataObjInfo->next;
+        }
+        freeAllDataObjInfo (dataObjInfoHead);
+    } else {
+        eirods::file_object_ptr file_obj(
+                                    new eirods::file_object( 
+                                        rsComm, 
+                                        dataObjInfo ) );
+
+        char* pdmo_kw = getValByKey(regParam, IN_PDMO_KW);
+        if(pdmo_kw != NULL) {
+            file_obj->in_pdmo(pdmo_kw);
+        }
+        eirods::error ret = fileModified(rsComm, file_obj);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " - Failed to signal the resource that the data object \"";
+            msg << dataObjInfo->objPath;
+            msg << "\" was modified.";
+            ret = PASSMSG(msg.str(), ret);
+            eirods::log(ret);
+            status = ret.code();
+        }
+    
+    }
+
+    return status;
+
+}
 

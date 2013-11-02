@@ -373,7 +373,8 @@ apidef_t RcApiTable[] = {
     {SSL_END_AN, RODS_API_VERSION,
        NO_USER_AUTH|XMSG_SVR_ALSO, NO_USER_AUTH|XMSG_SVR_ALSO, 
        "sslEndInp_PI", 0, NULL, 0, (funcPtr) RS_SSL_END},
-
+    {AUTH_PLUG_REQ_AN, RODS_API_VERSION, NO_USER_AUTH, NO_USER_AUTH,
+       "authPlugReqInp_PI", 0, "authPlugReqOut_PI", 0, (funcPtr) RS_AUTH_PLUG_REQ},
 };
 
 #ifdef RODS_SERVER	/* depends on client lib for NumOfApi */

@@ -248,7 +248,7 @@ int testCheckAuth(rsComm_t *rsComm, char *testAdminUser,  char *testUser,
     strncat(userNameAndZone, "#", sizeof userNameAndZone);
     strncat(userNameAndZone, testUserZone, sizeof userNameAndZone);
 
-    status = chlCheckAuth(rsComm, challenge, response,
+    status = chlCheckAuth(rsComm, 0, challenge, response,
                           userNameAndZone,
                           &userPrivLevel, &clientPrivLevel);
 

@@ -228,65 +228,63 @@ char *getDBHomeDir()
  */
 int getDefaultLocalRescInfo(rescInfo_t **rescInfo)
 {
-	char configFilePath[MAX_PATH_ALLOWED + 1];
-	char buf[LONG_NAME_LEN * 5];
-	char *rescName = NULL;
-	FILE *configFile;
-	int status;
+  char configFilePath[MAX_PATH_ALLOWED + 1];
+  char buf[LONG_NAME_LEN * 5];
+  char *rescName = NULL;
+  FILE *configFile;
 
+  /* Open server configuration file */
+  snprintf (configFilePath, MAX_PATH_ALLOWED, "%s/config/%s", getenv("irodsHomeDir"), "irods.config");
+  configFile = fopen(configFilePath, "r");
+  if (configFile == NULL)
+  {
+    rodsLog (LOG_ERROR, "getDefaultLocalRescInfo: Cannot open configuration file %s",
+        configFilePath);
+    return FILE_OPEN_ERR;
+  }
 
-	/* Open server configuration file */
-	snprintf (configFilePath, MAX_PATH_ALLOWED, "%s/config/%s", getenv("irodsHomeDir"), "irods.config");
-    configFile = fopen(configFilePath, "r");
-    if (configFile == NULL)
+  /* Read one line at a time */
+  while (fgets (buf, LONG_NAME_LEN * 5, configFile) != NULL)
+  {
+    /* Find line that starts with $RESOURCE_NAME */
+    if (strstr(buf,"$RESOURCE_NAME") == buf)
     {
-    	rodsLog (LOG_ERROR, "getDefaultLocalRescInfo: Cannot open configuration file %s",
-    			configFilePath);
-    	return FILE_OPEN_ERR;
+      /* Resource name starts after the first single quote */
+      rescName = strchr(buf,'\'') + 1;
+
+      /* Replace 2d single quote with null char */
+      strchr(rescName,'\'')[0] = '\0';
+
+      break;
     }
+  }
 
-    /* Read one line at a time */
-    while (fgets (buf, LONG_NAME_LEN * 5, configFile) != NULL)
-    {
-    	/* Find line that starts with $RESOURCE_NAME */
-    	if (strstr(buf,"$RESOURCE_NAME") == buf)
-    	{
-    		/* Resource name starts after the first single quote */
-    		rescName = strchr(buf,'\'') + 1;
+  fclose(configFile);
 
-    		/* Replace 2d single quote with null char */
-    		strchr(rescName,'\'')[0] = '\0';
+  if (rescName == NULL)
+  {
+    rodsLog (LOG_ERROR,
+        "getDefaultLocalRescInfo: Local resource not found in configuration file.");
+    return SYS_CONFIG_FILE_ERR;
+  }
 
-    		break;
-    	}
-    }
+  /* Resolve resource if resource name was found */
 
-    fclose(configFile);
+  if( !(*rescInfo ) ) {
+    *rescInfo = new rescInfo_t;
+  }
 
-    /* Resolve resource if resource name was found */
-    if (rescName != NULL)
-    {
-    	// JMC - status = resolveResc (rescName, rescInfo);
-        if( !(*rescInfo ) ) {
-            *rescInfo = new rescInfo_t;
-        }
-        eirods::resource_ptr resc;
-        eirods::error err = eirods::get_resc_info( rescName, **rescInfo );
-        if( !err.ok() ) {
-            std::stringstream msg;
-            msg << "failed to resolve resource [";
-            msg << rescName << "]";
-            eirods::log( PASSMSG( msg.str(), err ) );
-        }
-    }
-    else
-    {
-    	rodsLog (LOG_ERROR,
-    			"getDefaultLocalRescInfo: Local resource not found in configuration file.");
-    	status = SYS_CONFIG_FILE_ERR;
-    }
+  eirods::resource_ptr resc;
+  eirods::error err = eirods::get_resc_info( rescName, **rescInfo );
+  if( !err.ok() ) {
+    std::stringstream msg;
+    msg << "failed to resolve resource [";
+    msg << rescName << "]";
+    eirods::log( PASSMSG( msg.str(), err ) );
+    return err.code();
+  }
 
-	return status;
+  return 0;
 }
 
 

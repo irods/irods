@@ -15,11 +15,13 @@
 // eirods includes
 #include "eirods_stacktrace.h"
 #include "eirods_buffer_encryption.h"
+#include "eirods_client_server_negotiation.h"
 
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition.hpp>
 #include <iomanip>
+#include <fstream>
 int
 sendTranHeader (int sock, int oprType, int flags, rodsLong_t offset,
 rodsLong_t length)
@@ -266,23 +268,23 @@ int destFd, int srcFd, int threadNum)
     myInput->destFd = destFd;
     myInput->srcFd = srcFd;
     myInput->threadNum = threadNum;
-    strncpy( myInput->shared_secret, conn->shared_secret, NAME_LEN );
+    memcpy( myInput->shared_secret, conn->shared_secret, NAME_LEN );
 
     return (0);
 }
+
 
 void
 rcPartialDataPut (rcPortalTransferInp_t *myInput)
 {
     transferHeader_t myHeader;
-    int destFd;
-    int srcFd;
-    char *buf;
-    transferStat_t *myTransStat;
+    int destFd = 0;
+    int srcFd = 0;
+    transferStat_t *myTransStat = 0;
     rodsLong_t curOffset = 0;
-    rcComm_t *conn;
-    fileRestartInfo_t *info;
-    int threadNum;
+    rcComm_t *conn = 0;
+    fileRestartInfo_t* info = 0;
+    int threadNum = 0;
 
     if (myInput == NULL) {
         rodsLog (LOG_ERROR,
@@ -309,7 +311,9 @@ rcPartialDataPut (rcPortalTransferInp_t *myInput)
 
     // =-=-=-=-=-=-=-
     // flag to determine if we need to use encryption
-    bool use_encryption_flg = ( strlen( myInput->shared_secret ) != 0 );
+    bool use_encryption_flg = 
+             ( myInput->conn->negotiation_results == 
+               eirods::CS_NEG_USE_SSL );
     
     // =-=-=-=-=-=-=-
     // get the client side Env to determine
@@ -323,22 +327,31 @@ rcPartialDataPut (rcPortalTransferInp_t *myInput)
 
     // =-=-=-=-=-=-=-
     // create an encryption context
-    int                  iv_size = 0;
-    std::string          iv;
-    std::string          hash_key;
+    int iv_size = 0;
+    eirods::buffer_crypt::array_t iv;
+    eirods::buffer_crypt::array_t cipher;
+    eirods::buffer_crypt::array_t in_buf;
+    eirods::buffer_crypt::array_t shared_secret;
     eirods::buffer_crypt crypt( 
-                             rods_env.rodsEncryptionKeySize,
-                             rods_env.rodsEncryptionSaltSize,
-                             rods_env.rodsEncryptionNumHashRounds,
-                             rods_env.rodsEncryptionAlgorithm );
+                               rods_env.rodsEncryptionKeySize,
+                               rods_env.rodsEncryptionSaltSize,
+                               rods_env.rodsEncryptionNumHashRounds,
+                               rods_env.rodsEncryptionAlgorithm );
 
     // =-=-=-=-=-=-=-
     // set iv size
     if( use_encryption_flg ) {
         iv_size = crypt.key_size(); 
+        shared_secret.assign( 
+            &myInput->shared_secret[0],
+            &myInput->shared_secret[iv_size] );
     }  
-           
-    buf = (char*)malloc ( TRANS_BUF_SZ + iv_size );
+          
+    // =-=-=-=-=-=-=-
+    // allocate a buffer for writing 
+    unsigned char* buf = (unsigned char*)malloc ( 2*TRANS_BUF_SZ + sizeof( unsigned char ) );
+   
+   std::ofstream fout( "/tmp/eirods_client_put_results.txt", std::ios::out ); 
 
     while (myInput->status >= 0) {
         rodsLong_t toPut;
@@ -380,9 +393,13 @@ rcPartialDataPut (rcPortalTransferInp_t *myInput)
                 toRead = toPut;
             } 
 
-            bytesRead = myRead (srcFd, buf, toRead, FILE_DESC_TYPE, 
-                    &bytesRead, NULL);
-
+            bytesRead = myRead(
+                            srcFd, 
+                            buf, 
+                            toRead, 
+                            FILE_DESC_TYPE, 
+                            &bytesRead, 
+                            NULL);
             if (bytesRead != toRead) {
                 myInput->status = SYS_COPY_LEN_ERR - errno;
                 rodsLogError (LOG_ERROR, myInput->status,
@@ -396,10 +413,7 @@ rcPartialDataPut (rcPortalTransferInp_t *myInput)
             // it to encrypt this buffer
             int new_size = bytesRead;
             if( use_encryption_flg ) {
-                eirods::error ret = crypt.initialization_vector( 
-                    myInput->shared_secret,
-                    hash_key,
-                    iv );
+                eirods::error ret = crypt.initialization_vector( iv );
                 if( !ret.ok() ) {
                     ret = PASS( ret );
                     printf( "%s", ret.result().c_str() );
@@ -408,11 +422,14 @@ rcPartialDataPut (rcPortalTransferInp_t *myInput)
 
                 // =-=-=-=-=-=-=-
                 // encrypt
-                std::string cipher;
-                std::string in_buf;
-                in_buf.assign( (char*)buf, bytesRead );
-
-                ret = crypt.encrypt( myInput->shared_secret, iv, in_buf, cipher );
+                in_buf.assign(
+                    &buf[0], 
+                    &buf[ bytesRead ] );
+                ret = crypt.encrypt( 
+                          shared_secret, 
+                          iv, 
+                          in_buf, 
+                          cipher );
                 if( !ret.ok() ) {
                     ret = PASS( ret );
                     printf( "%s", ret.result().c_str() );
@@ -421,11 +438,27 @@ rcPartialDataPut (rcPortalTransferInp_t *myInput)
 
                 // =-=-=-=-=-=-=-
                 // capture the iv with the cipher text
-                memcpy( buf, iv.c_str(), iv.size() );
-                memcpy( buf+iv.size(), cipher.c_str(), cipher.size() );
+                bzero( buf, sizeof( buf ) );
+                std::copy( 
+                    iv.begin(), 
+                    iv.end(), 
+                    &buf[0] );
+                std::copy( 
+                    cipher.begin(), 
+                    cipher.end(), 
+                    &buf[iv_size] );
            
-                new_size = iv.size() + cipher.size();
-
+                new_size = iv_size + cipher.size();
+#if 1
+std::string sec_hash    = crypt.gen_hash( &shared_secret[0], shared_secret.size() );
+std::string iv_hash     = crypt.gen_hash( &iv[0], iv.size() );
+std::string cipher_hash = crypt.gen_hash( &cipher[0], cipher.size() );
+std::string buf_hash    = crypt.gen_hash( buf, new_size );
+fout << "XXXX - " << myInput->threadNum << " shared_secret [" << sec_hash    << "] sz - " << shared_secret.size() << std::endl;
+fout << "XXXX - " << myInput->threadNum << " iv            [" << iv_hash     << "] sz - " << iv.size()            << std::endl;
+fout << "XXXX - " << myInput->threadNum << " cipher        [" << cipher_hash << "] sz - " << cipher.size()        << std::endl;
+fout << "XXXX - " << myInput->threadNum << " buf           [" << buf_hash    << "] sz - " << new_size             << std::endl;
+#endif
                 // =-=-=-=-=-=-=-
                 // need to send the incoming size as encryption might change
                 // the size of the data from the writen values
@@ -486,6 +519,8 @@ rcPartialDataPut (rcPortalTransferInp_t *myInput)
             if (myInput->threadNum == 0) gGuiProgressCB (&conn->operProgress);
         }
     }
+
+fout.close();
 
     free (buf);
     close (srcFd);
@@ -918,7 +953,7 @@ rcPartialDataGet (rcPortalTransferInp_t *myInput)
     transferHeader_t myHeader;
     int destFd;
     int srcFd;
-    void *buf;
+    unsigned char *buf;
     transferStat_t *myTransStat;
     rodsLong_t curOffset = 0;
     rcComm_t *conn;
@@ -952,8 +987,10 @@ rcPartialDataGet (rcPortalTransferInp_t *myInput)
 
     // =-=-=-=-=-=-=-
     // flag to determine if we need to use encryption
-    bool use_encryption_flg = ( strlen( myInput->shared_secret ) != 0 );
-    
+    bool use_encryption_flg = 
+             ( myInput->conn->negotiation_results == 
+               eirods::CS_NEG_USE_SSL );
+
     // =-=-=-=-=-=-=-
     // get the client side Env to determine
     // encryption parameters
@@ -966,9 +1003,12 @@ rcPartialDataGet (rcPortalTransferInp_t *myInput)
 
     // =-=-=-=-=-=-=-
     // create an encryption context
-    int                  iv_size = 0;
-    std::string          iv;
-    std::string          hash_key;
+    int iv_size = 0;
+    eirods::buffer_crypt::array_t iv;
+    eirods::buffer_crypt::array_t this_iv;
+    eirods::buffer_crypt::array_t cipher;
+    eirods::buffer_crypt::array_t plain;
+    eirods::buffer_crypt::array_t shared_secret;
     eirods::buffer_crypt crypt( 
                              rods_env.rodsEncryptionKeySize,
                              rods_env.rodsEncryptionSaltSize,
@@ -979,9 +1019,12 @@ rcPartialDataGet (rcPortalTransferInp_t *myInput)
     // set iv size
     if( use_encryption_flg ) {
         iv_size = crypt.key_size(); 
+        shared_secret.assign( 
+            &myInput->shared_secret[0],
+            &myInput->shared_secret[iv_size] );
     }  
     
-    buf = malloc( TRANS_BUF_SZ + iv_size );
+    buf = (unsigned char*)malloc( ( 2 * TRANS_BUF_SZ )*sizeof(unsigned char) );
 
     while (myInput->status >= 0) {
         rodsLong_t toGet;
@@ -1027,16 +1070,31 @@ rcPartialDataGet (rcPortalTransferInp_t *myInput)
             // read the incoming size as it might differ due to encryption
             int new_size = toRead;
             if( use_encryption_flg ) {
-                bytesRead = myRead( srcFd, &new_size, sizeof( int ), SOCK_TYPE, NULL, NULL );
+                bytesRead = myRead( 
+                                srcFd, 
+                                &new_size, 
+                                sizeof( int ), 
+                                SOCK_TYPE, 
+                                NULL, NULL );
                 if( bytesRead != sizeof( int ) ) {
-                    rodsLog( LOG_ERROR, "_partialDataPut:Bytes Read != %d", sizeof( int ) );
+                    rodsLog( 
+                        LOG_ERROR, 
+                        "_partialDataGet:Bytes Read != %d", 
+                        sizeof( int ) );
                     break;
                 }
             }
 
             // =-=-=-=-=-=-=-
-            // now read the provided number of bytes as suggested by the incoming size
-            bytesRead = myRead( srcFd, buf, new_size, SOCK_TYPE, &bytesRead, NULL );
+            // now read the provided number of bytes as suggested by 
+            // the incoming size
+            bytesRead = myRead( 
+                            srcFd, 
+                            buf, 
+                            new_size, 
+                            SOCK_TYPE, 
+                            &bytesRead, 
+                            NULL );
             if( bytesRead != new_size ) {
                 myInput->status = SYS_COPY_LEN_ERR - errno;
                 rodsLogError (LOG_ERROR, myInput->status,
@@ -1050,25 +1108,38 @@ rcPartialDataGet (rcPortalTransferInp_t *myInput)
             // and decrypt before writing
             int plain_size = bytesRead;
             if( use_encryption_flg ) {
-                std::string new_buf, this_iv, cipher, plain;
-                new_buf.assign( (char*)buf, new_size );
-
-                this_iv = new_buf.substr( 0, iv_size );
-                cipher  = new_buf.substr( iv_size, new_size-iv_size ); 
-
-                eirods::error ret = crypt.decrypt( myInput->shared_secret, this_iv, cipher, plain );
+                this_iv.assign( 
+                    &buf[ 0 ],
+                    &buf[ iv_size ] );
+                cipher.assign( 
+                    &buf[ iv_size ], 
+                    &buf[ new_size ] ); 
+                eirods::error ret = crypt.decrypt( 
+                                        shared_secret, 
+                                        this_iv, 
+                                        cipher, 
+                                        plain );
                 if( !ret.ok() ) {
                     eirods::log( PASS( ret ) );
                     myInput->status = SYS_COPY_LEN_ERR;
                     break;
                 }
 
-                memcpy( buf, plain.c_str(), plain.size() );
+                bzero( buf, sizeof( buf ) );
+                std::copy( 
+                    plain.begin(), 
+                    plain.end(), 
+                    &buf[0] );
                 plain_size = plain.size();
                 
             }
 
-            bytesWritten = myWrite( destFd, buf, plain_size, FILE_DESC_TYPE, &bytesWritten );
+            bytesWritten = myWrite( 
+                               destFd, 
+                               buf, 
+                               plain_size, 
+                               FILE_DESC_TYPE, 
+                               &bytesWritten );
             if (bytesWritten != plain_size) {
                 myInput->status = SYS_COPY_LEN_ERR - errno;
                 rodsLogError (LOG_ERROR, myInput->status,
@@ -1120,34 +1191,20 @@ rcPartialDataGet (rcPortalTransferInp_t *myInput)
  * try to set it based on env and default.
  */
 int putFileToPortalRbudp( 
-    portalOprOut_t* portalOprOut, 
-    char*           locFilePath, 
-    char*           objPath, 
-    int             locFd, 
-    rodsLong_t      dataSize, 
-    int             veryVerbose,
-    int             sendRate, 
-    int             packetSize,
-    const char*     shared_secret ) {
+    portalOprOut_t*      portalOprOut, 
+    char*                locFilePath, 
+    char*                objPath, 
+    int                  locFd, 
+    rodsLong_t           dataSize, 
+    int                  veryVerbose,
+    int                  sendRate, 
+    int                  packetSize ) {
 
     portList_t *myPortList;
     int status;
     rbudpSender_t rbudpSender;
     int mysendRate, mypacketSize;
     char *tmpStr;
-
-    // =-=-=-=-=-=-=-
-    // if a secret has been negotiated then we must be using
-    // encryption.  given that RBUDP is not supported in an
-    // encrypted capacity this is considered an error
-    if( 0 != strlen( shared_secret ) ) {
-        rodsLog( 
-            LOG_ERROR,
-            "putFileToPortal: Encryption is not supported with RBUDP" );
-        return SYS_INVALID_PORTAL_OPR;
-
-    }
-
 
     if (portalOprOut == NULL || portalOprOut->numThreads != 1) {
         rodsLog (LOG_ERROR,
@@ -1219,26 +1276,14 @@ int getFileToPortalRbudp(
     int             locFd, 
     rodsLong_t      dataSize, 
     int             veryVerbose,
-    int             packetSize,
-    const char*     shared_secret ) {
+    int             packetSize ) {
+    
 
     portList_t *myPortList;
     int status;
     rbudpReceiver_t rbudpReceiver;
     int mypacketSize;
     char *tmpStr;
-
-    // =-=-=-=-=-=-=-
-    // if a secret has been negotiated then we must be using
-    // encryption.  given that RBUDP is not supported in an
-    // encrypted capacity this is considered an error
-    if( 0 != strlen( shared_secret ) ) {
-        rodsLog( 
-            LOG_ERROR,
-            "getFileToPortal: Encryption is not supported with RBUDP" );
-        return SYS_INVALID_PORTAL_OPR;
-
-    }
 
     if (portalOprOut == NULL || portalOprOut->numThreads != 1) {
         rodsLog (LOG_ERROR,

@@ -67,8 +67,8 @@ namespace eirods {
         if( !err.ok() || 0.0 == vote ) {
             std::stringstream msg;
             msg << "failed in call to redirect";
-            msg << "host [" << host_name      << "] ";
-            msg << "hier [" << _out_hier << "]";
+            msg << "\thost [" << host_name      << "] ";
+            msg << "\thier [" << _out_hier << "]";
             err.status( false );
             if( err.code() == 0 ) {
                 err.code( -1 );
@@ -458,6 +458,15 @@ namespace eirods {
                 std::stringstream msg;
                 msg << "resolve_resource_hierarchy :: failed in file_object_factory";
                 return PASSMSG( msg.str(), fac_err );
+            }
+
+            // =-=-=-=-=-=-=-
+            // consider force flag - we need to consider the default resc if -f 
+            // is specified
+            char* force_flag = getValByKey( &_data_obj_inp->condInput, FORCE_FLAG_KW );
+            if( force_flag &&
+                !key_word ) {
+                key_word = default_resc_name;
             }
 
             // =-=-=-=-=-=-=-

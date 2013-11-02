@@ -172,6 +172,10 @@ class Test_Compound_with_MockArchive_Resource(unittest.TestCase, ResourceSuite, 
         trashpath = "/"+s.adminsession.getZoneName()+"/trash/home/"+s.adminsession.getUserName()+"/"+s.adminsession.sessionId
         assertiCmdFail(s.adminsession,"ils -L "+trashpath+"/"+self.testfile,"LIST",["0 "+s.adminsession.getDefResource(),self.testfile]) # replica should not be in trash
 
+    @unittest.skip("--wlock has possible race condition due to Compound/Replication PDMO")
+    def test_local_iput_collision_with_wlock(self):
+        pass
+
     @unittest.skip("NOTSURE / FIXME ... -K not supported, perhaps")
     def test_local_iput_checksum(self):
         pass
@@ -255,6 +259,7 @@ class Test_Compound_with_MockArchive_Resource(unittest.TestCase, ResourceSuite, 
         # local cleanup
         os.remove(filepath)
         os.remove(doublefile)
+
     def test_irepl_over_existing_second_replica__ticket_1705(self):
         # local setup
         filename = "secondreplicatest.txt"
@@ -420,6 +425,10 @@ class Test_Compound_with_UniversalMSS_Resource(unittest.TestCase, ResourceSuite,
         assertiCmdFail(s.adminsession,"ils -L "+self.testfile,"LIST",["0 "+s.adminsession.getDefResource(),self.testfile]) # replica 0 should be gone
         trashpath = "/"+s.adminsession.getZoneName()+"/trash/home/"+s.adminsession.getUserName()+"/"+s.adminsession.sessionId
         assertiCmdFail(s.adminsession,"ils -L "+trashpath+"/"+self.testfile,"LIST",["0 "+s.adminsession.getDefResource(),self.testfile]) # replica should not be in trash
+
+    @unittest.skip("--wlock has possible race condition due to Compound/Replication PDMO")
+    def test_local_iput_collision_with_wlock(self):
+        pass
 
     @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
     def test_ireg_as_rodsuser_in_vault(self):
@@ -666,6 +675,10 @@ class Test_Compound_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
         trashpath = "/"+s.adminsession.getZoneName()+"/trash/home/"+s.adminsession.getUserName()+"/"+s.adminsession.sessionId
         assertiCmdFail(s.adminsession,"ils -L "+trashpath+"/"+self.testfile,"LIST",["0 "+s.adminsession.getDefResource(),self.testfile]) # replica should not be in trash
 
+    @unittest.skip("--wlock has possible race condition due to Compound/Replication PDMO")
+    def test_local_iput_collision_with_wlock(self):
+        pass
+
     @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
     def test_ireg_as_rodsuser_in_vault(self):
         pass
@@ -707,7 +720,9 @@ class Test_Compound_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
         myfile.close()
 
         # restart the server to reread the new core.re
-        os.system("/var/lib/eirods/iRODS/irodsctl restart")
+        os.system("/var/lib/eirods/iRODS/irodsctl stop")
+        os.system("/var/lib/eirods/tests/zombiereaper.sh")
+        os.system("/var/lib/eirods/iRODS/irodsctl start")
 
         # manually update the replica in archive vault
         output = getiCmdOutput(s.adminsession,"ils -L "+filename)
@@ -1034,6 +1049,10 @@ class Test_Replication_within_Replication_Resource(unittest.TestCase, ResourceSu
         # local cleanup
         output = commands.getstatusoutput( 'rm '+filepath )
 
+    @unittest.skip("--wlock has possible race condition due to Compound/Replication PDMO")
+    def test_local_iput_collision_with_wlock(self):
+        pass
+
     @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
     def test_ireg_as_rodsuser_in_vault(self):
         pass
@@ -1256,6 +1275,10 @@ class Test_Replication_to_two_Compound_Resources(unittest.TestCase, ResourceSuit
         trashpath = "/"+s.adminsession.getZoneName()+"/trash/home/"+s.adminsession.getUserName()+"/"+s.adminsession.sessionId
         assertiCmdFail(s.adminsession,"ils -L "+trashpath+"/"+self.testfile,"LIST",["0 "+s.adminsession.getDefResource(),self.testfile]) # replica should not be in trash
 
+    @unittest.skip("--wlock has possible race condition due to Compound/Replication PDMO")
+    def test_local_iput_collision_with_wlock(self):
+        pass
+
     @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
     def test_ireg_as_rodsuser_in_vault(self):
         pass
@@ -1302,7 +1325,9 @@ class Test_Replication_to_two_Compound_Resources(unittest.TestCase, ResourceSuit
         myfile.close()
 
         # restart the server to reread the new core.re
-        os.system("/var/lib/eirods/iRODS/irodsctl restart")
+        os.system("/var/lib/eirods/iRODS/irodsctl stop")
+        os.system("/var/lib/eirods/tests/zombiereaper.sh")
+        os.system("/var/lib/eirods/iRODS/irodsctl start")
 
         # manually update the replicas in archive vaults
         output = getiCmdOutput(s.adminsession,"ils -L "+filename)
@@ -1649,6 +1674,10 @@ class Test_Replication_to_two_Compound_Resources_with_Prefer_Archive(unittest.Te
         trashpath = "/"+s.adminsession.getZoneName()+"/trash/home/"+s.adminsession.getUserName()+"/"+s.adminsession.sessionId
         assertiCmdFail(s.adminsession,"ils -L "+trashpath+"/"+self.testfile,"LIST",["0 "+s.adminsession.getDefResource(),self.testfile]) # replica should not be in trash
 
+    @unittest.skip("--wlock has possible race condition due to Compound/Replication PDMO")
+    def test_local_iput_collision_with_wlock(self):
+        pass
+
     @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
     def test_ireg_as_rodsuser_in_vault(self):
         pass
@@ -1962,6 +1991,10 @@ class Test_Replication_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest)
         assertiCmd(s.adminsession,"ils -L "+self.testfile,"LIST",[" 0 "," & "+self.testfile]) # should be listed 2x
         assertiCmdFail(s.adminsession,"ils -L "+self.testfile,"LIST",[" 1 "," & "+self.testfile]) # should not be listed
         assertiCmd(s.adminsession,"ils -L "+self.testfile,"LIST",[" 2 "," & "+self.testfile]) # should be listed 2x
+
+    @unittest.skip("--wlock has possible race condition due to Compound/Replication PDMO")
+    def test_local_iput_collision_with_wlock(self):
+        pass
 
     @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
     def test_ireg_as_rodsuser_in_vault(self):

@@ -124,7 +124,6 @@ unbunBulkBuf (
     addKeyVal(&dataObjInp->condInput, DATA_INCLUDED_KW, "");
     for (i = 0; i < attriArray->rowCnt; i++) {
         int size;
-        int out_fd;
         bytesBuf_t buffer;
         tmpObjPath = &objPath->value[objPath->len * i];
         if (i == 0) {
@@ -169,19 +168,13 @@ _rsBulkDataObjPut (rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
         bytesBuf_t *bulkOprInpBBuf)
 {
     int status;
-    int remoteFlag;
-    rodsServerHost_t *rodsServerHost;
     rescInfo_t *rescInfo;
-    char *inpRescGrpName;
     char phyBunDir[MAX_NAME_LEN];
     rescGrpInfo_t *myRescGrpInfo = new rescGrpInfo_t;
     myRescGrpInfo->rescInfo = new rescInfo_t;
-    int flags = 0;
     dataObjInp_t dataObjInp;
-    fileDriverType_t fileType;
     rodsObjStat_t *myRodsObjStat = NULL;
 
-    inpRescGrpName = getValByKey (&bulkOprInp->condInput, RESC_GROUP_NAME_KW);
 
     status = chkCollForExtAndReg (rsComm, bulkOprInp->objPath, &myRodsObjStat);
     if (status < 0 || myRodsObjStat == NULL ) {
@@ -669,6 +662,10 @@ postProcRenamedPhyFiles (renamedPhyFiles_t *renamedPhyFiles, int regStatus)
         for (i = 0; i < renamedPhyFiles->count; i++) {
             status = rename (&renamedPhyFiles->newFilePath[i][0],
                     &renamedPhyFiles->origFilePath[i][0]);
+            if ( status < 0)
+            {
+              eirods::log(status, "rename failed.");
+            }
             savedStatus = UNIX_FILE_RENAME_ERR - errno;
             rodsLog (LOG_ERROR,
                     "postProcRenamedPhyFiles: rename error from %s to %s, status=%d",
@@ -723,9 +720,8 @@ postProcBulkPut (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
     sqlResult_t *objPath, *dataType, *dataSize, *rescName, *filePath,
                 *dataMode, *oprType, *rescGroupName, *replNum, *chksum;
     char *tmpObjPath, *tmpDataType, *tmpDataSize, *tmpFilePath,
-         *tmpDataMode, *tmpOprType, *tmpReplNum, *tmpChksum;
+         *tmpDataMode, *tmpReplNum, *tmpChksum;
     sqlResult_t *objId;
-    char *tmpObjId;
     int status, i;
     dataObjInp_t dataObjInp;
     ruleExecInfo_t rei;
@@ -852,9 +848,7 @@ postProcBulkPut (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
         tmpDataSize = &dataSize->value[dataSize->len * i];
         tmpFilePath = &filePath->value[filePath->len * i];
         tmpDataMode = &dataMode->value[dataMode->len * i];
-        tmpOprType = &oprType->value[oprType->len * i];
         tmpReplNum =  &replNum->value[replNum->len * i];
-        tmpObjId = &objId->value[objId->len * i];
 
         rstrcpy (tmpDataObjInfo->objPath, tmpObjPath, MAX_NAME_LEN);
         rstrcpy (dataObjInp.objPath, tmpObjPath, MAX_NAME_LEN);

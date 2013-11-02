@@ -58,7 +58,7 @@ namespace eirods {
 
     error stacktrace::dump(void) {
         error result = SUCCESS();
-        int max_function_length = 0;
+        unsigned int max_function_length = 0;
         for(stacklist::const_iterator it = stack_.begin(); it != stack_.end(); ++it) {
             stack_entry_t entry = *it;
             if(entry.function.length() > max_function_length) {
