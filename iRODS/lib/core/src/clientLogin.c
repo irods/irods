@@ -273,9 +273,9 @@ int clientLoginPam( rcComm_t* Conn,
     }
 
 /// =-=-=-=-=-=-=-
-/// @brief clientLogin provides the interface for authenticaion
+/// @brief clientLogin provides the interface for authentication
 ///        plugins as well as defining the protocol or template
-///        authenticaion will follow
+///        Authentication will follow
 int clientLogin(
     rcComm_t*   _comm,
     const char* _context,
