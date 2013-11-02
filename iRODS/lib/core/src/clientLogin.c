@@ -288,8 +288,8 @@ int clientLogin(
 
     // =-=-=-=-=-=-=-
     // get the rods environment so we can determine the
-    // flavor of authenticaiton desired by the user -
-    // check the environment vairable first then the rods
+    // flavor of authentication desired by the user -
+    // check the environment variable first then the rods
     // env if that was null
     std::string auth_scheme = eirods::AUTH_NATIVE_SCHEME;
     if( ProcessType == CLIENT_PT ) {
