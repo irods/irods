@@ -172,7 +172,7 @@ endif
 # GSI_SSL is set to ssl to use the system's SSL library, else use
 # regular Globus version.
 ifndef GSI_SSL
-GSI_SSL = ssl_$(GSI_INSTALL_TYPE2)
+GSI_SSL = ssl$(GSI_INSTALL_TYPE2)
 endif
 
 # GSI_CRYPTO is set to crypto to use the system's Crypto library, else use

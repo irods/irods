@@ -273,9 +273,9 @@ int clientLoginPam( rcComm_t* Conn,
     }
 
 /// =-=-=-=-=-=-=-
-/// @brief clientLogin provides the interface for authenticaion
+/// @brief clientLogin provides the interface for authentication
 ///        plugins as well as defining the protocol or template
-///        authenticaion will follow
+///        Authentication will follow
 int clientLogin(
     rcComm_t*   _comm,
     const char* _context,
@@ -288,8 +288,8 @@ int clientLogin(
 
     // =-=-=-=-=-=-=-
     // get the rods environment so we can determine the
-    // flavor of authenticaiton desired by the user -
-    // check the environment vairable first then the rods
+    // flavor of authentication desired by the user -
+    // check the environment variable first then the rods
     // env if that was null
     std::string auth_scheme = eirods::AUTH_NATIVE_SCHEME;
     if( ProcessType == CLIENT_PT ) {

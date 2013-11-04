@@ -1205,7 +1205,7 @@ rsMkOrphanPath (rsComm_t *rsComm, char *objPath, char *orphanPath)
     int status;
     char *tmpStr;
     char *orphanPathPtr;
-    int len;
+    int len = 0;
     char parentColl[MAX_NAME_LEN], childName[MAX_NAME_LEN];
     collInp_t collCreateInp;
 
