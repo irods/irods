@@ -316,6 +316,15 @@ int clientLogin(
                 auth_scheme = auth_env_var;
             
             }
+           
+           // =-=-=-=-=-=-=-
+           // ensure scheme is lower case for comparison
+           std::string lower_scheme = auth_scheme;
+           std::transform( 
+               auth_scheme.begin(), 
+               auth_scheme.end(), 
+               auth_scheme.begin(), 
+               ::tolower );
 
             // =-=-=-=-=-=-=-
             // filter out the pam auth as it is an extra special
@@ -328,6 +337,7 @@ int clientLogin(
         } // if _scheme_override
          
     } // if client side auth
+
 
     // =-=-=-=-=-=-=-
     // construct an auth object given the scheme

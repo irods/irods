@@ -68,10 +68,6 @@ extern "C" {
             return ERROR( 
                        SYS_INVALID_INPUT_PARAM,
                        "null rcComm_t ptr" );
-        } else if( !_context ) {
-            return ERROR( 
-                       SYS_INVALID_INPUT_PARAM,
-                       "null context ptr" );
         }
         
         // =-=-=-=-=-=-=-
@@ -79,8 +75,11 @@ extern "C" {
         // or to pass to the auth client call later.
         eirods::pam_auth_object_ptr ptr = boost::dynamic_pointer_cast< 
                                               eirods::pam_auth_object >( _ctx.fco() );
-        ptr->context( _context );
- 
+        if( _context ) {
+            ptr->context( _context );
+        
+        }
+         
         // =-=-=-=-=-=-=-
         // parse the kvp out of the _resp->username string
         eirods::kvp_map_t kvp;
@@ -104,7 +103,7 @@ extern "C" {
                 system("/bin/stty -echo 2> /dev/null");
                 doStty=1;
             }
-            printf("Enter your current iRODS password:");
+            printf("Enter your current PAM password:");
             fgets( new_password, sizeof( new_password ), stdin );
             if( doStty ) {
                 system("/bin/stty echo 2> /dev/null");
