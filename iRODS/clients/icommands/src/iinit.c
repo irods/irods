@@ -11,6 +11,7 @@
 #include "eirods_native_auth_object.h"
 #include "eirods_pam_auth_object.h"
 #include "eirods_kvp_string_parser.h"
+#include "eirods_auth_constants.h"
 
 void usage (char *prog);
 void usageTTL ();
@@ -270,11 +271,11 @@ main(int argc, char **argv)
         // =-=-=-=-=-=-=-
         // build a context string which includes the ttl and password
         std::stringstream ttl_str;  ttl_str << ttl;
-        std::string context = eirods::PAM_TTL_KEY       +
+        std::string context = eirods::AUTH_TTL_KEY      +
                               eirods::kvp_association() + 
                               ttl_str.str()             +
                               eirods::kvp_delimiter()   +
-                              eirods::PAM_PASSWORD_KEY  +
+                              eirods::AUTH_PASSWORD_KEY +
                               eirods::kvp_association() + 
                               password;
         // =-=-=-=-=-=-=-
