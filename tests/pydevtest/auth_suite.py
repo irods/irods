@@ -9,6 +9,54 @@ import pydevtest_sessions as s
 import commands
 import os
 
+class Test_OSAuth_Only(unittest.TestCase, ResourceBase):
+
+    my_test_resource = {"setup":[],"teardown":[]}
+
+    def setUp(self):
+        ResourceBase.__init__(self)
+        s.twousers_up()
+        self.run_resource_setup()
+
+    def tearDown(self):
+        self.run_resource_teardown()
+        s.twousers_down()
+
+    def test_authentication_OSAuth(self):
+        # add auth test user
+        authTestUser = "eirods"
+        authTestPass = "temporarypasswordforci"
+        assertiCmd(s.adminsession,"iadmin mkuser %s rodsuser" % authTestUser)
+
+        # add client irodsEnv settings
+        clientEnvFile = s.adminsession.sessionDir+"/.irodsEnv"
+        os.system("cp %s %sOrig" % (clientEnvFile, clientEnvFile))
+        os.system("echo \"irodsAuthScheme 'OSAuth'\" >> %s" % clientEnvFile)
+        os.system("echo \"irodsUserName '%s'\" >> %s" % (authTestUser, clientEnvFile))
+        os.system("echo \"irodsHome '/tempZone/home/%s'\" >> %s" % (authTestUser, clientEnvFile))
+        os.system("echo \"irodsCwd '/tempZone/home/%s'\" >> %s" % (authTestUser, clientEnvFile))
+
+        # setup the irods.key file necessary for OSAuth
+        keyfile = "/var/lib/eirods/iRODS/config/irods.key"
+        os.system("echo \"gibberish\" > %s" % keyfile)
+
+        # do the reauth
+        assertiCmd(s.adminsession,"iinit %s" % authTestPass) # reinitialize
+        # connect and list some files
+        assertiCmd(s.adminsession,"icd") # home directory
+        assertiCmd(s.adminsession,"ils -L","LIST","home") # should be listed
+
+        # reset client environment to original
+        os.system("mv %sOrig %s" % (clientEnvFile, clientEnvFile))
+        # reconnect as admin
+        assertiCmd(s.adminsession,"iinit %s" % s.users[0]['passwd']) # reinitialize
+
+        # remove auth test user
+        assertiCmd(s.adminsession,"iadmin rmuser %s" % authTestUser)
+
+        # clean up keyfile
+        os.system("rm %s" % keyfile)
+
 class Test_Auth_Suite(unittest.TestCase, ResourceBase):
 
     my_test_resource = {"setup":[],"teardown":[]}
