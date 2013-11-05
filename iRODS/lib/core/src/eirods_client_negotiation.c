@@ -192,7 +192,7 @@ namespace eirods {
         }
 
         // =-=-=-=-=-=-=-
-        // perform the negotation
+        // perform the negotiation
         client_server_negotiations_context negotiate;
         std::string result;
         error neg_err = negotiate( cli_policy, svr_policy, result );
@@ -201,7 +201,7 @@ namespace eirods {
         // aggregate the error stack if necessary
         error ret = SUCCESS();
         if( !neg_err.ok() ) {
-           ret = PASSMSG( "failed in negotation context", neg_err ); 
+           ret = PASSMSG( "failed in negotiation context", neg_err );
         }
 
         // =-=-=-=-=-=-=-
@@ -324,7 +324,7 @@ namespace eirods {
 
             // =-=-=-=-=-=-=-
             // trap potential case where server does not support
-            // advanced negotation.  a version msg would be sent
+            // advanced negotiation.  a version msg would be sent
             // back instead.
             if( strcmp( msg_header.type, RODS_VERSION_T ) == 0 ) {
                 // =-=-=-=-=-=-=-
