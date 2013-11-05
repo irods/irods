@@ -301,29 +301,12 @@ fi
 chown -R $OS_EIRODS_ACCT:$OS_EIRODS_ACCT $EIRODS_HOME_DIR
 
 # =-=-=-=-=-=-=-
+# set permissions on iRODS authentication mechanisms
+chown root:root $IRODS_HOME/server/bin/PamAuthCheck
+chmod 4755 $IRODS_HOME/server/bin/PamAuthCheck
+chmod 4755 /usr/bin/genOSAuth
+
+# =-=-=-=-=-=-=-
 # exit with success
 exit 0
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
