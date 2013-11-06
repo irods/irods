@@ -22,44 +22,44 @@ connectRcat (rsComm_t *rsComm)
     rodsServerConfig_t serverConfig;
 
     if (IcatConnState == INITIAL_DONE) {
-	return (0);
+        return (0);
     }
 
     /* zone has not been initialized yet. can't use getRcatHost */
     tmpRodsServerHost = ServerHostHead;
 
     while (tmpRodsServerHost != NULL) {
-	if (tmpRodsServerHost->rcatEnabled == LOCAL_ICAT ||
-	  tmpRodsServerHost->rcatEnabled == LOCAL_SLAVE_ICAT) {
-	    if (tmpRodsServerHost->localFlag == LOCAL_HOST) {
-	        memset(&serverConfig, 0, sizeof(serverConfig));
-		status = readServerConfig(&serverConfig);
-	        status = chlOpen (serverConfig.DBUsername,
-				  serverConfig.DBPassword);
-	        memset(&serverConfig, 0, sizeof(serverConfig));
-		if (status < 0) {
-        	    rodsLog (LOG_NOTICE,
-         	    "connectRcat: chlOpen Error. Status = %d", status);
-		} else {
-		    IcatConnState = INITIAL_DONE;
-		    gotRcatHost ++;
-		}
-    	    } else {
-		gotRcatHost ++;
-	    }
-	}
+        if (tmpRodsServerHost->rcatEnabled == LOCAL_ICAT ||
+                tmpRodsServerHost->rcatEnabled == LOCAL_SLAVE_ICAT) {
+            if (tmpRodsServerHost->localFlag == LOCAL_HOST) {
+                memset(&serverConfig, 0, sizeof(serverConfig));
+                status = readServerConfig(&serverConfig);
+                status = chlOpen( &serverConfig );
+
+                memset(&serverConfig, 0, sizeof(serverConfig));
+                if (status < 0) {
+                    rodsLog (LOG_NOTICE,
+                            "connectRcat: chlOpen Error. Status = %d", status);
+                } else {
+                    IcatConnState = INITIAL_DONE;
+                    gotRcatHost ++;
+                }
+            } else {
+                gotRcatHost ++;
+            }
+        }
         tmpRodsServerHost = tmpRodsServerHost->next;
     }
 
     if (gotRcatHost == 0) {
-	if (status >= 0) {
-	    status = SYS_NO_ICAT_SERVER_ERR;
-	}
+        if (status >= 0) {
+            status = SYS_NO_ICAT_SERVER_ERR;
+        }
         rodsLog (LOG_SYS_FATAL,
-          "initServerInfo: no rcatHost error, status = %d",
-          status);
+                "initServerInfo: no rcatHost error, status = %d",
+                status);
     } else {
-	status = 0;
+        status = 0;
     }
 
     return (status);

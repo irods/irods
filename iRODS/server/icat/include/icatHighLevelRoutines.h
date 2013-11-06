@@ -15,6 +15,7 @@
 #include "rodsGeneralUpdate.h"
 #include "specificQuery.h" 
 #include "phyBundleColl.h"
+#include "readServerConfig.h"
 
 #include <string>
 #include <vector>
@@ -24,7 +25,7 @@
 
 extern icatSessionStruct icss;
 
-int chlOpen(char *DBUser, char *DBpasswd);
+int chlOpen( rodsServerConfig* );
 int chlClose();
 int chlIsConnected();
 int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
