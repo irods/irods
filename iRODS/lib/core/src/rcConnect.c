@@ -29,8 +29,6 @@ int reconnFlag, rErrMsg_t *errMsg)
        st.dump();
    }
 
-
-
     rcComm_t *conn;
 
 #ifdef windows_platform
@@ -60,6 +58,14 @@ char *proxyUserName, char *proxyRodsZone,
 char *clientUserName, char *clientRodsZone, rErrMsg_t *errMsg, int connectCnt,
 int reconnFlag)
 {
+
+       eirods::stacktrace st;
+       st.trace();
+       st.dump();
+
+
+
+
     rcComm_t *conn;
     int status;
     char *tmpStr;

@@ -84,10 +84,25 @@ if [ "$PYTHONVERSION" \< "2.7" ] ; then
 fi
 # run OSAuth test by itself first
 if [ "$EIRODSDEVTESTCI" == "true" ] ; then
+    set +e
     passwd <<EOF
 temporarypasswordforci
 temporarypasswordforci
 EOF
+    PASSWDRESULT=`echo $?`
+    if [ "$PASSWDRESULT" != 0 ] ; then
+            # known suse11 behavior
+            passwd <<EOF
+
+temporarypasswordforci
+temporarypasswordforci
+EOF
+    fi
+    PASSWDRESULT=`echo $?`
+    if [ "$PASSWDRESULT" != 0 ] ; then
+        exit $PASSWDRESULT
+    fi
+    set -e
     $PYTHONCMD $OPTS auth_suite.Test_OSAuth_Only
     ################################################
     # side effect:
