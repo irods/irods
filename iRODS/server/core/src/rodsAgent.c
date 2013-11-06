@@ -119,6 +119,7 @@ main(int argc, char *argv[])
     status = getRodsEnv (&rsComm.myEnv);
 
     if (status < 0) {
+        rodsLog( LOG_ERROR, "agentMain :: getRodsEnv failed" );
         sendVersion ( net_obj, SYS_AGENT_INIT_ERR, 0, NULL, 0);
         unregister_handlers();
         cleanupAndExit (status);
@@ -137,6 +138,7 @@ main(int argc, char *argv[])
 #endif
 
     if (status < 0) {
+        rodsLog( LOG_ERROR, "agentMain :: initAgent failed: %d", status );
         sendVersion ( net_obj, SYS_AGENT_INIT_ERR, 0, NULL, 0);
         unregister_handlers();
         cleanupAndExit (status);
@@ -166,6 +168,7 @@ main(int argc, char *argv[])
         // =-=-=-=-=-=-=-
         // send a 'we failed to negotiate' message here??
         // or use the error stack rule engine thingie
+        eirods::log( PASS( ret ) );
         sendVersion( net_obj, SYS_AGENT_INIT_ERR, 0, NULL, 0 );
         unregister_handlers();
         cleanupAndExit( ret.code() );
@@ -184,6 +187,7 @@ main(int argc, char *argv[])
                           rsComm.reconnAddr, rsComm.cookie);
 
     if( !ret.ok() ) {
+        eirods::log( PASS( ret ) );
         sendVersion (net_obj, SYS_AGENT_INIT_ERR, 0, NULL, 0);
         unregister_handlers();
         cleanupAndExit (status);

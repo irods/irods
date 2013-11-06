@@ -4,6 +4,7 @@
 // =-=-=-=-=-=-=-
 // eirods includes
 #include "eirods_client_server_negotiation.h"
+#include "eirods_stacktrace.h"
 
 // =-=-=-=-=-=-=-
 // irods includes
@@ -241,6 +242,7 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // set the out variable and return 
         _result = result;
+        
         return SUCCESS();
 
     } // client_server_negotiation_for_client
@@ -315,30 +317,52 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // check that we did in fact get the right type of message
         if( strcmp( msg_header.type, RODS_CS_NEG_T ) != 0 ) {
-            if( struct_buf.buf )
-                free( struct_buf.buf );
-            if( data_buf.buf )
-                free( data_buf.buf );
-            if( error_buf.buf )
-                free( error_buf.buf );
-
             // =-=-=-=-=-=-=-
             // trap potential case where server does not support
             // advanced negotiation.  a version msg would be sent
             // back instead.
             if( strcmp( msg_header.type, RODS_VERSION_T ) == 0 ) {
-                // =-=-=-=-=-=-=-
-                // if no negoation is allowed then provide a readable
-                // error for the client
-                std::stringstream msg;
-                msg << "received [" << msg_header.type << "] ";
-                msg << "but expected [" << RODS_CS_NEG_T << "]\n\n";
-                msg << "\t*** Advanced negotiation is enabled in this E-iRODS environment ***\n"; 
-                msg << "\t*** which is most likely not supported by the server.           ***\n";
-                msg << "\t*** Comment out irodsClientServerNegotiation in the irodsEnv    ***\n";
-                msg << "\t*** file to disable.                                            ***\n"; 
-                return ERROR( EIRODS_ADVANCED_NEGOTIATION_NOT_SUPPORTED, msg.str() );
-               
+		// =-=-=-=-=-=-=-
+		// unpack the version struct to check the status 
+		version_t* version = 0;
+		int status = unpackStruct( 
+                                 struct_buf.buf, 
+				 (void **) &version,
+				 "Version_PI", 
+				 RodsPackTable, 
+				 XML_PROT );
+
+                if( struct_buf.buf )
+                    free( struct_buf.buf );
+                if( data_buf.buf )
+                    free( data_buf.buf );
+                if( error_buf.buf )
+                    free( error_buf.buf );
+
+		if( status < 0 ) {
+		    rodsLog( LOG_ERROR, "read_client_server_negotiation_message :: unpackStruct FAILED" );
+		    return ERROR( status, "unpackStruct failed" );
+
+		} 
+		
+                if( version->status < 0 ) {
+                    rodsLog( LOG_ERROR, "read_client_server_negotiation_message :: received error message %d", version->status );
+                    return ERROR( version->status, "negotiation failed" );
+
+                } else {
+			// =-=-=-=-=-=-=-
+			// if no negoation is allowed then provide a readable
+			// error for the client
+			std::stringstream msg;
+			msg << "received [" << msg_header.type << "] ";
+			msg << "but expected [" << RODS_CS_NEG_T << "]\n\n";
+			msg << "\t*** Advanced negotiation is enabled in this E-iRODS environment ***\n"; 
+			msg << "\t*** which is most likely not supported by the server.           ***\n";
+			msg << "\t*** Comment out irodsClientServerNegotiation in the irodsEnv    ***\n";
+			msg << "\t*** file to disable.                                            ***\n"; 
+			return ERROR( EIRODS_ADVANCED_NEGOTIATION_NOT_SUPPORTED, msg.str() );
+                }
+ 
             } else {
                 // =-=-=-=-=-=-=-
                 // something entirely unexpected happened

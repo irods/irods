@@ -587,8 +587,6 @@ partialDataPut (portalTransferInp_t *myInput)
        
     buf = (unsigned char*)malloc ( ( 2*TRANS_BUF_SZ ) + sizeof( unsigned char ) );
    
-std::ofstream fout( "/tmp/eirods_agent_put_results.txt", std::ios::out ); 
-
     while (bytesToGet > 0) {
         int toread0;
         int bytesRead;
@@ -674,17 +672,6 @@ std::ofstream fout( "/tmp/eirods_agent_put_results.txt", std::ios::out );
                                             this_iv, 
                                             cipher, 
                                             plain );
-#if 1
-std::string sec_hash    = crypt.gen_hash( &shared_secret[0], shared_secret.size() );
-std::string iv_hash     = crypt.gen_hash( &this_iv[0], this_iv.size() );
-std::string cipher_hash = crypt.gen_hash( &cipher[0], cipher.size() );
-std::string buf_hash    = crypt.gen_hash( buf, new_size );
-fout << "XXXX - " << myInput->threadNum << " shared_secret [" << sec_hash    << "] sz - " << shared_secret.size() << std::endl;
-fout << "XXXX - " << myInput->threadNum << " iv            [" << iv_hash     << "] sz - " << iv.size()            << std::endl;
-fout << "XXXX - " << myInput->threadNum << " cipher        [" << cipher_hash << "] sz - " << cipher.size()        << std::endl;
-fout << "XXXX - " << myInput->threadNum << " buf           [" << buf_hash    << "] sz - " << new_size             << std::endl;
-#endif
-
                     if( !ret.ok() ) {
                         eirods::log( PASS( ret ) );
                         myInput->status = SYS_COPY_LEN_ERR;
@@ -745,8 +732,6 @@ fout << "XXXX - " << myInput->threadNum << " buf           [" << buf_hash    << 
     afterTransfer=time(0);
 #endif
 
-fout.close();
-    
     free (buf);
     sendTranHeader (srcFd, DONE_OPR, 0, 0, 0);
     if (myInput->threadNum > 0)
