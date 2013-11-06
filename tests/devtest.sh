@@ -37,13 +37,19 @@ fi
 OPTS=" -v -b -f "
 
 # check for continuous integration parameter
-if [ "$1" != "ci" ] ; then
+if [ "$1" == "ci" ] ; then
+    EIRODSDEVTESTCI="true"
+fi
+
+# if running as a human
+if [ "$EIRODSDEVTESTCI" != "true" ] ; then
     # human user, allows keyboard interrupt to clean up
     OPTS="$OPTS -c "
 fi
 
 # pass any other parameters to the test framework
-if [ "$1" == "ci" ] ; then
+if [ "$EIRODSDEVTESTCI" == "true" ] ; then
+    # trim the ci parameter
     shift
     PYTESTS=$@
 else
@@ -76,6 +82,21 @@ if [ "$PYTHONVERSION" \< "2.7" ] ; then
     cp -r ../$UNITTEST2VERSION/unittest2 .
     cp ../$UNITTEST2VERSION/unit2 .
 fi
+# run OSAuth test by itself first
+if [ "$EIRODSDEVTESTCI" == "true" ] ; then
+    passwd <<EOF
+temporarypasswordforci
+temporarypasswordforci
+EOF
+    $PYTHONCMD $OPTS auth_suite.Test_OSAuth_Only
+    ################################################
+    # side effect:
+    #   unix eirods user now has a set password
+    # to remove, run:
+    #   sudo passwd -d eirods
+    ################################################
+fi
+# run the suite
 if [ "$PYTESTS" != "" ] ; then
     $PYTHONCMD $OPTS $PYTESTS
 else

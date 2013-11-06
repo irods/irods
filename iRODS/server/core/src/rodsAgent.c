@@ -172,7 +172,7 @@ main(int argc, char *argv[])
     
     } else {
         // =-=-=-=-=-=-=-
-        // copy negotation results to comm for action by network objects
+        // copy negotiation results to comm for action by network objects
         strncpy( rsComm.negotiation_results, neg_results.c_str(), MAX_NAME_LEN );
         //rsComm.ssl_do_accept = 1;
     

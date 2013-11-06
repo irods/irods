@@ -1675,8 +1675,8 @@ usage(char *subOpt)
         "ContextString is any contextual information relevant to this resource.",
         "  (semi-colon separated key=value pairs e.g. \"a=b;c=d\")",
         " ",
-        "A ContextString can be added to a coordinating resource (where there is"
-        "no hostname or vault path to be set) by explicitly setting the Host:Path"
+        "A ContextString can be added to a coordinating resource (where there is",
+        "no hostname or vault path to be set) by explicitly setting the Host:Path",
         "to an empty string ('').",
         ""};
 
