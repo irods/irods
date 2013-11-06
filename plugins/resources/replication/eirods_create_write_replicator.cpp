@@ -25,6 +25,7 @@ namespace eirods {
         const child_list_t& _siblings,
         const object_oper& _object_oper)
     {
+rodsLog( LOG_NOTICE, "XXXX - create_write_replicator::replicate :: oper [%s] - token [%s]", _object_oper.operation().c_str(), eirods::EIRODS_CREATE_OPERATION.c_str() );
         error result = SUCCESS();
         if((result = ASSERT_ERROR(_object_oper.operation() == create_oper || _object_oper.operation() == write_oper,
                                    EIRODS_INVALID_OPERATION, "Performing create/write replication but objects operation is: \"%s\".",

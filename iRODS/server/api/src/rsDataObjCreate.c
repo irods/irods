@@ -165,7 +165,7 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
             // =-=-=-=-=-=-=-
             // re-determine the resource hierarchy since this is an open instead of a create
             std::string       hier;
-            eirods::error ret = eirods::resolve_resource_hierarchy( eirods::EIRODS_OPEN_OPERATION, 
+            eirods::error ret = eirods::resolve_resource_hierarchy( eirods::EIRODS_WRITE_OPERATION, 
                                                                     rsComm, dataObjInp, hier );
             if( !ret.ok() ) { 
                 std::stringstream msg;

@@ -58,14 +58,6 @@ char *proxyUserName, char *proxyRodsZone,
 char *clientUserName, char *clientRodsZone, rErrMsg_t *errMsg, int connectCnt,
 int reconnFlag)
 {
-
-       eirods::stacktrace st;
-       st.trace();
-       st.dump();
-
-
-
-
     rcComm_t *conn;
     int status;
     char *tmpStr;

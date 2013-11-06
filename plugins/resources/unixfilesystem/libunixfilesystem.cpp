@@ -1328,7 +1328,8 @@ extern "C" {
                         ret = unix_file_redirect_open( _ctx.prop_map(), file_obj, resc_name, (*_curr_host), (*_out_vote) );
                         result = ASSERT_PASS_MSG(ret, "Failed redirecting for open.");
 
-                    } else if( eirods::EIRODS_CREATE_OPERATION == (*_opr) ) {
+                    } else if( eirods::EIRODS_CREATE_OPERATION == (*_opr) ||
+                               eirods::EIRODS_WRITE_OPERATION  == (*_opr) ) {
                         // =-=-=-=-=-=-=-
                         // call redirect determination for 'create' operation
                         ret = unix_file_redirect_create( _ctx.prop_map(), file_obj, resc_name, (*_curr_host), (*_out_vote)  );

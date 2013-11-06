@@ -1424,7 +1424,8 @@ extern "C" {
             // call redirect determination for 'get' operation
             return compound_file_redirect_open( _ctx, _curr_host, _out_parser, _out_vote );
 
-        } else if( eirods::EIRODS_CREATE_OPERATION == (*_opr) ) {
+        } else if( eirods::EIRODS_CREATE_OPERATION == (*_opr) ||
+                   eirods::EIRODS_WRITE_OPERATION  == (*_opr) ) {
             // =-=-=-=-=-=-=-
             // call redirect determination for 'create' operation
             return compound_file_redirect_create( _ctx, resc_name, _curr_host, _out_parser, _out_vote );

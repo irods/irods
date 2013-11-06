@@ -115,7 +115,7 @@ namespace eirods {
         } // for i
         
         // =-=-=-=-=-=-=-
-        // grid throught the map and get a vote for each root
+        // grind throught the map and get a vote for each root
         // cache that and keep track of the max
         std::string max_hier;
         float       max_vote = -1.0; 
@@ -344,7 +344,7 @@ namespace eirods {
                     float vote = 0.0;
                     error ret = request_vote_for_file_object( 
                                     _comm,
-                                    EIRODS_OPEN_OPERATION,
+                                    EIRODS_WRITE_OPERATION,
                                     _key_word,
                                     _file_obj, 
                                     _out_hier,
@@ -479,7 +479,8 @@ namespace eirods {
                        _out_hier );
             return ret; 
 
-        } else if( EIRODS_CREATE_OPERATION == oper ) {
+        } else if( EIRODS_CREATE_OPERATION == oper ||
+                   EIRODS_WRITE_OPERATION  == oper ) {
             // =-=-=-=-=-=-=-
             // include the default resc name if it applies
             if( !key_word && default_resc_name ) {

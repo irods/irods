@@ -43,6 +43,7 @@
 #include "eirods_resource_backport.h"
 #include "eirods_stacktrace.h"
 #include "eirods_hierarchy_parser.h"
+#include "eirods_file_object.h"
 
 
 int
@@ -50,7 +51,14 @@ rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
 {
     int status;
 
-    status = irsDataObjClose (rsComm, dataObjCloseInp, NULL);
+    dataObjInfo_t* data_obj = 0;
+    status = irsDataObjClose( rsComm, dataObjCloseInp, &data_obj );
+
+    if( !data_obj ) {
+        rodsLog( LOG_ERROR, "rsDataObjClose data_obj is null" );
+        return status;
+    }
+
     return status;
 }
 
