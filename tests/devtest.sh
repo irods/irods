@@ -82,7 +82,17 @@ if [ "$PYTHONVERSION" \< "2.7" ] ; then
     cp -r ../$UNITTEST2VERSION/unittest2 .
     cp ../$UNITTEST2VERSION/unit2 .
 fi
-# run OSAuth test by itself first
+# run the suite
+if [ "$PYTESTS" != "" ] ; then
+    $PYTHONCMD $OPTS $PYTESTS
+else
+    $PYTHONCMD $OPTS test_eirods_resource_types iadmin_suite catalog_suite
+    nosetests -v test_allrules.py
+    # run DICE developed perl-based devtest suite
+    cd $EIRODSROOT
+    $EIRODSROOT/iRODS/irodsctl devtesty
+fi
+# run OSAuth test by itself
 if [ "$EIRODSDEVTESTCI" == "true" ] ; then
     set +e
     passwd <<EOF
@@ -92,6 +102,7 @@ EOF
     PASSWDRESULT=`echo $?`
     if [ "$PASSWDRESULT" != 0 ] ; then
             # known suse11 behavior
+            # needs an empty line for 'old password' prompt
             passwd <<EOF
 
 temporarypasswordforci
@@ -105,21 +116,14 @@ EOF
     set -e
     $PYTHONCMD $OPTS auth_suite.Test_OSAuth_Only
     ################################################
+    # note:
+    #   this test is run last to minimize the
+    #   window of the following...
     # side effect:
     #   unix eirods user now has a set password
     # to remove, run:
     #   sudo passwd -d eirods
     ################################################
-fi
-# run the suite
-if [ "$PYTESTS" != "" ] ; then
-    $PYTHONCMD $OPTS $PYTESTS
-else
-    $PYTHONCMD $OPTS test_eirods_resource_types iadmin_suite catalog_suite
-    nosetests -v test_allrules.py
-    # run DICE developed perl-based devtest suite
-    cd $EIRODSROOT
-    $EIRODSROOT/iRODS/irodsctl devtesty
 fi
 
 # clean up /tmp
