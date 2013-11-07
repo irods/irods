@@ -256,7 +256,21 @@ extern "C" {
         // NOOP
         return result;
     }
-    
+  
+    /// =-=-=-=-=-=-=-
+    /// @brief interface to notify of a file operation
+    eirods::error example_file_notify_plugin(
+        eirods::resource_plugin_context& _ctx,
+        const std::string*               _opr ) {
+        eirods::error result = SUCCESS();
+        // Check the operation parameters and update the physical path
+        eirods::error ret = example_check_params_and_path(_ctx);
+        result = ASSERT_PASS(ret, "Invalid parameters or physical path.");
+
+        // NOOP
+        return result;
+    }
+   
     // =-=-=-=-=-=-=-
     // interface to determine free space on a device given a path
     eirods::error example_file_get_fsfreespace_plugin( 
@@ -526,7 +540,6 @@ extern "C" {
             int err_status = UNIX_FILE_WRITE_ERR - errno;
             if (!(result = ASSERT_ERROR(status >= 0, err_status, "Write file: \"%s\", errno = \"%s\", status = %d.",
                                         fco->physical_path().c_str(), strerror(errno), err_status)).ok()) {
-                        
                 result.code(err_status);
             } else {
                 result.code(status);
@@ -1328,7 +1341,8 @@ extern "C" {
                         ret = example_file_redirect_open( _ctx.prop_map(), file_obj, resc_name, (*_curr_host), (*_out_vote) );
                         result = ASSERT_PASS_MSG(ret, "Failed redirecting for open.");
 
-                    } else if( eirods::EIRODS_CREATE_OPERATION == (*_opr) ) {
+                    } else if( eirods::EIRODS_CREATE_OPERATION == (*_opr) ||
+                               eirods::EIRODS_WRITE_OPERATION  == (*_opr) ) {
                         // =-=-=-=-=-=-=-
                         // call redirect determination for 'create' operation
                         ret = example_file_redirect_create( _ctx.prop_map(), file_obj, resc_name, (*_curr_host), (*_out_vote)  );
@@ -1464,6 +1478,7 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_REGISTERED,   "example_file_registered_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_UNREGISTERED, "example_file_unregistered_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_MODIFIED,     "example_file_modified_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_NOTIFY,       "example_file_notify_plugin" );
         
         resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER,     "example_file_redirect_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_REBALANCE,             "example_file_rebalance" );

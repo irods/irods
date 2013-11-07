@@ -124,33 +124,52 @@ $DB_USER=$OS_EIRODS_ACCT
 # preinstall
 # =-=-=-=-=-=-=-
 %preinstall << END_PREINSTALL
-echo "Creating Service Group and Account: $OS_EIRODS_ACCT at $EIRODS_HOME_DIR "
 
-set +e
-CHECKGROUP=`getent group $OS_EIRODS_ACCT `
-CHECKACCT=`getent passwd $OS_EIRODS_ACCT `
-set -e
-if [ "$$CHECKGROUP" = "" ]; then
-  /usr/sbin/groupadd -r $OS_EIRODS_ACCT
-else
-  echo "ERROR :: Please delete the existing Service Group $OS_EIRODS_ACCT before proceeding."
-  if [ "$$CHECKACCT" = "" ]; then
-    echo "      :: The $OS_EIRODS_ACCT Service Account must be deleted prior to deleting the $OS_EIRODS_ACCT Service Group."
+if [ $(echo $$1 | grep -x "[0-9]\+") -eq 0 ] ; then
+  if [ $$1 -gt 1 ] ; then
+    PACKAGEUPGRADE="true"
+  else
+    PACKAGEUPGRADE="false"
   fi
-  exit 1
-fi
-
-if [ "$$CHECKACCT" = "" ]; then
-  useradd -r -d $EIRODS_HOME_DIR -M -s /bin/bash -g $OS_EIRODS_ACCT -c "E-iRODS Administrator" $OS_EIRODS_ACCT
 else
-  echo "ERROR :: Please delete the existing Service Account $OS_EIRODS_ACCT before proceeding."
-  exit 1
+  if [ "$$1" = "upgrade" ] ; then
+    PACKAGEUPGRADE="true"
+  else
+    PACKAGEUPGRADE="false"
+  fi
 fi
 
-ACCT=$OS_EIRODS_ACCT
-mkdir -p $EIRODS_HOME_DIR
-chown $$ACCT:$$ACCT $EIRODS_HOME_DIR
+if [ "$PACKAGEUPGRADE" = "true" ] ; then
+  echo "Upgrading Existing E-iRODS Installation"
+  touch $EIRODS_HOME_DIR/upgrade.tmp
+else
+  echo "Creating Service Group and Account: $OS_EIRODS_ACCT at $EIRODS_HOME_DIR "
 
+  set +e
+  CHECKGROUP=`getent group $OS_EIRODS_ACCT `
+  CHECKACCT=`getent passwd $OS_EIRODS_ACCT `
+  set -e
+  if [ "$$CHECKGROUP" = "" ]; then
+    /usr/sbin/groupadd -r $OS_EIRODS_ACCT
+  else
+    echo "ERROR :: Please delete the existing Service Group $OS_EIRODS_ACCT before proceeding."
+    if [ "$$CHECKACCT" = "" ]; then
+      echo "      :: The $OS_EIRODS_ACCT Service Account must be deleted prior to deleting the $OS_EIRODS_ACCT Service Group."
+    fi
+    exit 1
+  fi
+
+  if [ "$$CHECKACCT" = "" ]; then
+    useradd -r -d $EIRODS_HOME_DIR -M -s /bin/bash -g $OS_EIRODS_ACCT -c "E-iRODS Administrator" $OS_EIRODS_ACCT
+  else
+    echo "ERROR :: Please delete the existing Service Account $OS_EIRODS_ACCT before proceeding."
+    exit 1
+  fi
+
+  ACCT=$OS_EIRODS_ACCT
+  mkdir -p $EIRODS_HOME_DIR
+  chown $$ACCT:$$ACCT $EIRODS_HOME_DIR
+fi
 END_PREINSTALL
 
 
@@ -321,23 +340,22 @@ d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/log -
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config -
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/lockFileDir -
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/connectControl.config.template ./iRODS/server/config/connectControl.config.template
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/dbr.config ./iRODS/server/config/dbr.config
+c 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/dbr.config ./iRODS/server/config/dbr.config
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/hpssCosConfig.template ./iRODS/server/config/hpssCosConfig.template
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/HostAccessControl ./iRODS/server/config/HostAccessControl
-d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/lockFileDir -
+c 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/HostAccessControl ./iRODS/server/config/HostAccessControl
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs -
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core.dvm ./iRODS/server/config/reConfigs/core.dvm
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core.fnm ./iRODS/server/config/reConfigs/core.fnm
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core.re ./iRODS/server/config/reConfigs/core.re
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/rda.config ./iRODS/server/config/rda.config
+c 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core.dvm ./iRODS/server/config/reConfigs/core.dvm
+c 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core.fnm ./iRODS/server/config/reConfigs/core.fnm
+c 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core.re ./iRODS/server/config/reConfigs/core.re
+c 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/rda.config ./iRODS/server/config/rda.config
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/irodsMonPerf.config.in ./iRODS/server/config/irodsMonPerf.config.in
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/server.config.in ./iRODS/server/config/server.config.in
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/irodsHost.in ./iRODS/server/config/irodsHost.in
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/hpssAuth.template ./iRODS/server/config/hpssAuth.template
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/packedRei -
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/irodsHost ./iRODS/server/config/irodsHost
+c 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/irodsHost ./iRODS/server/config/irodsHost
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/s3Auth.template ./iRODS/server/config/s3Auth.template
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/server.config ./iRODS/server/config/server.config
+c 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/server.config ./iRODS/server/config/server.config
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/README.txt ./iRODS/server/config/README.txt
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin -
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/cmd -
@@ -355,7 +373,7 @@ f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/irodsXmsgServer .
 #f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/ ./external/libarchive*/.libs/libarchive*.so*
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/list.pl ./iRODS/server/bin/list.pl
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/irodsAgent ./iRODS/server/bin/irodsAgent
-f 4755 root root ${IRODS_HOME}/server/bin/PamAuthCheck ./iRODS/server/bin/PamAuthCheck
+f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/PamAuthCheck ./iRODS/server/bin/PamAuthCheck
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/re -
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/re/include -
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/re/include/reAction.h ./iRODS/server/re/include/reAction.h
@@ -441,7 +459,11 @@ f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/icatGeneralQ
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/convertSql.pl ./iRODS/server/icat/src/convertSql.pl
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/config -
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/config/platform.mk ./iRODS/config/platform.mk
+%if DEB
+c 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/config/irods.config ./iRODS/config/irods.config
+%else
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/config/irods.config ./iRODS/config/irods.config
+%endif
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/config/doxygen-msi.config ./iRODS/config/doxygen-msi.config
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/config/irodsEnv.boot ./iRODS/config/irodsEnv.boot
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/config/installPostgres.config.template ./iRODS/config/installPostgres.config.template
@@ -471,7 +493,7 @@ f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/showCo
 # igetwild.sh - shouldn't have a binary with an extension, lintian complained it's not as future-proof
 f 755 root root /usr/bin/igetwild             ./iRODS/clients/icommands/bin/igetwild
 
-f 4755 root root /usr/bin/genOSAuth           ./iRODS/clients/icommands/bin/genOSAuth
+f 755 root root /usr/bin/genOSAuth            ./iRODS/clients/icommands/bin/genOSAuth
 f 755 root root /usr/bin/iadmin               ./iRODS/clients/icommands/bin/iadmin
 f 755 root root /usr/bin/ibun                 ./iRODS/clients/icommands/bin/ibun
 f 755 root root /usr/bin/icd                  ./iRODS/clients/icommands/bin/icd
