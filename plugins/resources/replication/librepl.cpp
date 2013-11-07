@@ -199,6 +199,7 @@ rodsLog( LOG_NOTICE, "XXXX - replUpdateObjectAndOperProperties :: START" );
                     mismatched = true;
                 }
             }*/
+rodsLog( LOG_NOTICE, "XXXX - replUpdateObjectAndOperProperties :: opr [%s] obj opr [%s]", _oper.c_str(), oper.operation().c_str() );
             result = ASSERT_ERROR(!mismatched, EIRODS_INVALID_OPERATION,
                                   "Existing object operation: \"%s\" does not match current operation: \"%s\".",
                                   oper.operation().c_str(), _oper.c_str());
@@ -478,7 +479,7 @@ rodsLog( LOG_NOTICE, "XXXX - replUpdateObjectAndOperProperties :: DONE" );
                         if(!sub_parser.resc_in_hier(name)) {
 
                             std::string operation;
-                            if( !( ret = _ctx.prop_map().get< std::string >( operation_type_prop, operation ) ).ok() ) {
+                            if( ( ret = _ctx.prop_map().get< std::string >( operation_type_prop, operation ) ).ok() ) {
                                 if( !( ret = replUpdateObjectAndOperProperties( _ctx, operation ) ).ok() ) {
                                     std::stringstream msg;
                                     msg << "Failed to select an appropriate child.";
