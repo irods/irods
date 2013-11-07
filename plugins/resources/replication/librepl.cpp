@@ -209,6 +209,10 @@ extern "C" {
             result = ASSERT_PASS(ret, "Failed to set the object list property on the resource.");
         }
 
+        if( !result.ok() ) {
+            eirods::log( result );
+        }
+
         return result;
     }
 
@@ -474,6 +478,16 @@ extern "C" {
                     ret = _ctx.prop_map().get<std::string>( eirods::RESOURCE_NAME, name);
                     if((result = ASSERT_PASS(ret, "Failed to get the resource name.")).ok()) {
                         if(!sub_parser.resc_in_hier(name)) {
+
+                            std::string operation;
+                            if( !( ret = _ctx.prop_map().get< std::string >( operation_type_prop, operation ) ).ok() ) {
+                                if( !( ret = replUpdateObjectAndOperProperties( _ctx, operation ) ).ok() ) {
+                                    std::stringstream msg;
+                                    msg << "Failed to select an appropriate child.";
+                                    result = PASSMSG(msg.str(), ret);
+                                }
+                            }
+
                             ret = replReplicateCreateWrite(_ctx);
                             result = ASSERT_PASS(ret, "Failed to replicate create/write operation for object: \"%s\".",
                                                  file_obj->logical_path().c_str());
@@ -1482,11 +1496,15 @@ extern "C" {
 
         else if( eirods::EIRODS_WRITE_OPERATION  == (*_operation) ||
                  eirods::EIRODS_CREATE_OPERATION == (*_operation ) ) {
+#if 0
             if( !( ret = replUpdateObjectAndOperProperties( _ctx, *_operation ) ).ok() ) {
                 std::stringstream msg;
                 msg << "Failed to select an appropriate child.";
                 result = PASSMSG(msg.str(), ret);
             }
+#else
+            result = ASSERT_PASS( _ctx.prop_map().set< std::string >( operation_type_prop, *_operation ), "failed to set opetion_type property" );
+#endif
         }
         
         return result;

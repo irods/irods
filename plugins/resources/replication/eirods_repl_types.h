@@ -28,6 +28,7 @@ const std::string child_list_prop = "child_list";
 const std::string object_list_prop = "object_list";
 const std::string need_pdmo_prop = "Need_PDMO";
 const std::string hierarchy_prop = "hierarchy";
+const std::string operation_type_prop = "operation_type";
 
 const std::string write_oper  = eirods::EIRODS_WRITE_OPERATION;
 const std::string unlink_oper = eirods::RESOURCE_OP_UNLINK;
