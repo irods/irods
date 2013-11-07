@@ -177,7 +177,7 @@ usage ()
 "       decides the number of threads to use.",
 " --purgec  Purge the staged cache copy after uploading an object to a", // JMC - backport 4537
 "     COMPOUND resource",
-" -p  physicalPath - the physical path of the uploaded file on the server ",
+" -p  physicalPath - the absolute physical path of the uploaded file on the server ",
 " -P  output the progress of the upload.",
 " -Q  use RBUDP (datagram) protocol for the data transfer",
 " -R  resource - specifies the resource to store to. This can also be specified",
