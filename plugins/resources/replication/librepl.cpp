@@ -1480,10 +1480,13 @@ extern "C" {
             result = PASSMSG(msg.str(), ret);
         }
 
-        else if( !( ret = replUpdateObjectAndOperProperties( _ctx, *_operation ) ).ok() ) {
-            std::stringstream msg;
-            msg << "Failed to select an appropriate child.";
-            result = PASSMSG(msg.str(), ret);
+        else if( eirods::EIRODS_WRITE_OPERATION  == (*_operation) ||
+                 eirods::EIRODS_CREATE_OPERATION == (*_operation ) ) {
+            if( !( ret = replUpdateObjectAndOperProperties( _ctx, *_operation ) ).ok() ) {
+                std::stringstream msg;
+                msg << "Failed to select an appropriate child.";
+                result = PASSMSG(msg.str(), ret);
+            }
         }
         
         return result;
@@ -1620,6 +1623,41 @@ extern "C" {
 
     } // replRebalance
 
+    // Called when a files entry is modified in the ICAT
+    eirods::error replFileNotify(
+        eirods::resource_plugin_context& _ctx,
+        const std::string*               _opr )
+    {
+        eirods::error result = SUCCESS();
+        eirods::error ret;
+        ret = replCheckParams< eirods::file_object >(_ctx);
+        if((result = ASSERT_PASS(ret, "Error checking passed parameters.")).ok()) {
+            eirods::file_object_ptr file_obj = boost::dynamic_pointer_cast< 
+                                                   eirods::file_object >(
+                                                       _ctx.fco());
+            eirods::hierarchy_parser parser;
+            parser.set_string(file_obj->resc_hier());
+            eirods::resource_ptr child;
+            ret =replGetNextRescInHier(parser, _ctx, child);
+            if((result = ASSERT_PASS(ret, "Failed to get the next resource in hierarchy.")).ok()) {
+                ret = child->call(_ctx.comm(), eirods::RESOURCE_OP_NOTIFY, _ctx.fco(), _opr);
+                if( (result = ASSERT_PASS(ret, "Failed while calling child notify operation.")).ok()) {
+                    if( eirods::EIRODS_WRITE_OPERATION  == (*_opr) ||
+                        eirods::EIRODS_CREATE_OPERATION == (*_opr) ) {
+                        if( !( ret = replUpdateObjectAndOperProperties( _ctx, (*_opr) ) ).ok() ) {
+                            std::stringstream msg;
+                            msg << "Failed to add an operation ["
+                                << (*_opr)
+                                << "]";
+                            result = PASSMSG(msg.str(), ret);
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
     // =-=-=-=-=-=-=-
     // 3. create derived class to handle unix file system resources
     //    necessary to do custom parsing of the context string to place
@@ -1692,6 +1730,7 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_UNREGISTERED,      "replFileUnregistered" );
         resc->add_operation( eirods::RESOURCE_OP_MODIFIED,          "replFileModified" );
         resc->add_operation( eirods::RESOURCE_OP_REBALANCE,         "replRebalance" );
+        resc->add_operation( eirods::RESOURCE_OP_NOTIFY,            "replFileNotify" );
         
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code

@@ -78,6 +78,7 @@ namespace eirods {
     const std::string RESOURCE_OP_MODIFIED( "resource_modified" );
     const std::string RESOURCE_OP_RESOLVE_RESC_HIER( "resource_resolve_hierarchy" );
     const std::string RESOURCE_OP_REBALANCE( "resource_rebalance" );
+    const std::string RESOURCE_OP_NOTIFY( "resource_notify" );
 
     // =-=-=-=-=-=-=-
     /// @brief constants for icat resource properties

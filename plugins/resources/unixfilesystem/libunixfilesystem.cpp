@@ -256,7 +256,21 @@ extern "C" {
         // NOOP
         return result;
     }
-    
+  
+    /// =-=-=-=-=-=-=-
+    /// @brief interface to notify of a file operation
+    eirods::error unix_file_notify_plugin(
+        eirods::resource_plugin_context& _ctx,
+        const std::string*               _opr ) {
+        eirods::error result = SUCCESS();
+        // Check the operation parameters and update the physical path
+        eirods::error ret = unix_check_params_and_path(_ctx);
+        result = ASSERT_PASS(ret, "Invalid parameters or physical path.");
+
+        // NOOP
+        return result;
+    }
+   
     // =-=-=-=-=-=-=-
     // interface to determine free space on a device given a path
     eirods::error unix_file_get_fsfreespace_plugin( 
@@ -1464,6 +1478,7 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_REGISTERED,   "unix_file_registered_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_UNREGISTERED, "unix_file_unregistered_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_MODIFIED,     "unix_file_modified_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_NOTIFY,       "unix_file_notify_plugin" );
         
         resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER,     "unix_file_redirect_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_REBALANCE,             "unix_file_rebalance" );
