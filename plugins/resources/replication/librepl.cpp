@@ -653,11 +653,13 @@ extern "C" {
                     msg << __FUNCTION__;
                     msg << " - Failed while calling child operation.";
                     result = PASSMSG(msg.str(), ret);
+                } else {
+                    result = CODE(ret.code());
+                
                 }
 #if 0
                 else {
                     // Have to return the actual code value here because it contains the bytes written
-                    result = CODE(ret.code());
                     ret = replUpdateObjectAndOperProperties(_ctx, write_oper);
                     if(!ret.ok()) {
                         std::stringstream msg;
@@ -665,8 +667,8 @@ extern "C" {
                         msg << " - Failed to update the object and operation properties.";
                         result = PASSMSG(msg.str(), ret);
                     }
-#endif
                 }
+#endif
             }
         }
         return result;
@@ -733,10 +735,12 @@ extern "C" {
                     msg << __FUNCTION__;
                     msg << " - Failed while calling child operation.";
                     result = PASSMSG(msg.str(), ret);
+                } else {
+                    result = CODE(ret.code());
+
                 }
 #if 0
                  else {
-                    result = CODE(ret.code());
                     if(false) { // dont replicate unlink as it automagically deletes everything
                         ret = replUpdateObjectAndOperProperties(_ctx, unlink_oper);
                         if(!ret.ok()) {

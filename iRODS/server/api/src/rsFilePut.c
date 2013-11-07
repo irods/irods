@@ -164,7 +164,8 @@ int _rsFilePut(
             msg << _put_inp->fileName;
             msg << "] towrite [";
             msg << _put_bbuf->len;
-            msg << "]";
+            msg << "] written [";
+            msg << write_code << "]";
             eirods::error err = PASSMSG( msg.str(), write_err );
             eirods::log ( err );
             write_code = SYS_COPY_LEN_ERR;

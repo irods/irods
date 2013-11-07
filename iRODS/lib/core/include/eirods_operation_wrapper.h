@@ -177,7 +177,7 @@ namespace eirods {
                 // =-=-=-=-=-=-=-
                 // clean up kvp struct
                 clearKeyVal( &kvp );
-
+                
                 return op_err;
 
             } else {

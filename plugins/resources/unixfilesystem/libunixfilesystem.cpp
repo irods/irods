@@ -526,7 +526,6 @@ extern "C" {
             int err_status = UNIX_FILE_WRITE_ERR - errno;
             if (!(result = ASSERT_ERROR(status >= 0, err_status, "Write file: \"%s\", errno = \"%s\", status = %d.",
                                         fco->physical_path().c_str(), strerror(errno), err_status)).ok()) {
-                        
                 result.code(err_status);
             } else {
                 result.code(status);

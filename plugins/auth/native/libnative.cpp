@@ -219,7 +219,6 @@ extern "C" {
     eirods::error native_auth_client_request(
         eirods::auth_plugin_context& _ctx,
         rcComm_t*                    _comm ) {
-rodsLog( LOG_NOTICE, "XXXX - native_auth_client_request :: START" );
         // =-=-=-=-=-=-=-
         // validate incoming parameters
         if( !_ctx.valid< eirods::native_auth_object >().ok() ) {
@@ -231,16 +230,12 @@ rodsLog( LOG_NOTICE, "XXXX - native_auth_client_request :: START" );
         // =-=-=-=-=-=-=-
         // make the call to our auth request
         authRequestOut_t* auth_request = 0;
-rodsLog( LOG_NOTICE, "XXXX - native_auth_client_request :: make the request" );
         int status = rcAuthRequest( 
                          _comm,
                          &auth_request );
-rodsLog( LOG_NOTICE, "XXXX - native_auth_client_request :: make the request. done %d", status );
         if( status < 0 ) {
-rodsLog( LOG_NOTICE, "XXXX - native_auth_client_request :: fail, free some stuff" );
             free( auth_request->challenge );
             free( auth_request );
-rodsLog( LOG_NOTICE, "XXXX - native_auth_client_request :: fail, return" );
             return ERROR( 
                        status,
                        "call to rcAuthRequest failed." );
@@ -248,12 +243,10 @@ rodsLog( LOG_NOTICE, "XXXX - native_auth_client_request :: fail, return" );
         } else { 
             // =-=-=-=-=-=-=-
             // get the auth object
-rodsLog( LOG_NOTICE, "XXXX - native_auth_client_request :: dynamic cast" );
             eirods::native_auth_object_ptr ptr = boost::dynamic_pointer_cast< 
                                                   eirods::native_auth_object >( _ctx.fco() );
             // =-=-=-=-=-=-=-
             // cache the challenge
-rodsLog( LOG_NOTICE, "XXXX - native_auth_client_request :: set request_result with challenge: %d", auth_request->challenge );
             if( auth_request->challenge ) {
                 ptr->request_result( auth_request->challenge );
 
@@ -264,10 +257,9 @@ rodsLog( LOG_NOTICE, "XXXX - native_auth_client_request :: set request_result wi
                     __FILE__, __LINE__ );
             }
 
-rodsLog( LOG_NOTICE, "XXXX - native_auth_client_request :: free some stuff" );
             free( auth_request->challenge );
             free( auth_request );
-rodsLog( LOG_NOTICE, "XXXX - native_auth_client_request :: return WIN" );
+            
             return SUCCESS();
         
         }
