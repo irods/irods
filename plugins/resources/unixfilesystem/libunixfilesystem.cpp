@@ -111,7 +111,6 @@ eirods::error unix_check_path(
     // try dynamic cast on ptr, throw error otherwise 
     eirods::data_object_ptr data_obj = boost::dynamic_pointer_cast< eirods::data_object >( _ctx.fco() );
     if((result = ASSERT_ERROR(data_obj.get(), SYS_INVALID_INPUT_PARAM, "Failed to cast fco to data_object." )).ok()) {
-
         // =-=-=-=-=-=-=-
         // NOTE: Must do this for all storage resources
         std::string full_path;

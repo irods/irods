@@ -986,7 +986,7 @@ extern "C" {
         eirods::resource_plugin_context& _ctx )
     {
        eirods::error result = SUCCESS();
-        
+
         // =-=-=-=-=-=-=- 
         // Check the operation parameters and update the physical path
         eirods::error ret = compound_check_param< eirods::file_object >( _ctx );
