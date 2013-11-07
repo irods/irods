@@ -40,8 +40,10 @@ rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)
         status = rcModDataObjMeta (rodsServerHost->conn, modDataObjMetaInp);
     }
 
-    status = _call_file_modified_for_modification( rsComm, modDataObjMetaInp );
-        
+    if( status >= 0 ) {
+        status = _call_file_modified_for_modification( rsComm, modDataObjMetaInp );
+    }
+     
     return (status);
 }
 

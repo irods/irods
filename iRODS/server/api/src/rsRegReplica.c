@@ -39,7 +39,9 @@ rsRegReplica (rsComm_t *rsComm, regReplica_t *regReplicaInp)
 
     }
 
-    status = _call_file_modified_for_replica( rsComm, regReplicaInp );
+    if( status >= 0 ) {
+        status = _call_file_modified_for_replica( rsComm, regReplicaInp );
+    }
 
     return (status);
 }

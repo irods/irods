@@ -259,7 +259,7 @@ extern "C" {
 
             free( auth_request->challenge );
             free( auth_request );
-            
+
             return SUCCESS();
         
         }
