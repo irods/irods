@@ -168,6 +168,7 @@ extern "C" {
         eirods::resource_plugin_context& _ctx,
         const std::string& _oper)
     {
+rodsLog( LOG_NOTICE, "XXXX - replUpdateObjectAndOperProperties :: START" );
         eirods::error result = SUCCESS();
         eirods::error ret;
         object_list_t object_list;
@@ -202,6 +203,7 @@ extern "C" {
                                   "Existing object operation: \"%s\" does not match current operation: \"%s\".",
                                   oper.operation().c_str(), _oper.c_str());
         } else {
+rodsLog( LOG_NOTICE, "XXXX - replUpdateObjectAndOperProperties :: creating object list" );
             oper.object() = *(file_obj.get());
             oper.operation() = _oper;
             object_list.push_back(oper);
@@ -213,6 +215,7 @@ extern "C" {
             eirods::log( result );
         }
 
+rodsLog( LOG_NOTICE, "XXXX - replUpdateObjectAndOperProperties :: DONE" );
         return result;
     }
 
@@ -268,12 +271,7 @@ extern "C" {
             // get the child list
             child_list_t child_list;
             ret = _ctx.prop_map().get<child_list_t>(child_list_prop, child_list);
-            if(!ret.ok()) {
-                std::stringstream msg;
-                msg << __FUNCTION__;
-                msg << " - Failed to retrieve child list from repl resource.";
-                result = PASSMSG(msg.str(), ret);
-            } else {
+            if(ret.ok()) {
                 // get the root resource name as well as the child hierarchy string
                 std::string root_resc;
                 std::string child;
