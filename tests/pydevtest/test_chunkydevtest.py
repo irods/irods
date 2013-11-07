@@ -132,7 +132,7 @@ class ChunkyDevTest(ResourceBase):
     
         assertiCmd(s.adminsession,"irepl -B -R "+self.testresc+" "+irodshome+"/icmdtest/foo1" )
         phypath = dir_w+"/"+"foo1."+str(random.randrange(10000000))
-        assertiCmd(s.adminsession,"iput -kfR "+irodsdefresource+" -p "+phypath+" "+sfile2+" "+irodshome+"/icmdtest/foo1" )
+        assertiCmd(s.adminsession,"iput -kfR "+irodsdefresource+" "+sfile2+" "+irodshome+"/icmdtest/foo1" )
         # show have 2 different copies
         assertiCmd(s.adminsession,"ils -l "+irodshome+"/icmdtest/foo1", "LIST", ["foo1",myssize] )
         assertiCmd(s.adminsession,"ils -l "+irodshome+"/icmdtest/foo1", "LIST", ["foo1",str(os.stat(sfile2).st_size)] )
