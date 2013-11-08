@@ -37,7 +37,7 @@ reVariableMapSet  core
 # KerberosName irods/zuri.unc.edu@UNC.EDU
 
 # PAM authentication configuration - as seen in icatHighLevelRoutines
-#pam_password_length 20
-#pam_no_extend true
-#pam_password_min_time 121
-#pam_password_max_time 1209600
+# pam_password_length 20
+# pam_no_extend false
+# pam_password_min_time 121
+# pam_password_max_time 1209600
