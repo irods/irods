@@ -709,7 +709,7 @@ extern "C" {
             return SUCCESS();
         
         } else {
-            return ERROR( EIRODS_NEXT_RESC_FOUND, "no valid child found" );
+            return ERROR( EIRODS_NO_NEXT_RESC_FOUND, "no valid child found" );
         
         }
 
