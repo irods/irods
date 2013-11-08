@@ -36,8 +36,8 @@ reVariableMapSet  core
 # For example, for host zuri.unc.edu in the Kerberos domain UNC.EDU:
 # KerberosName irods/zuri.unc.edu@UNC.EDU
 
-pam authentication configuration - as seen in icatHighLevelRoutines
-pam_password_length 20
-pam_no_extend true
-pam_password_min_time 121
-pam_password_max_time 1209600
+# PAM authentication configuration - as seen in icatHighLevelRoutines
+#pam_password_length 20
+#pam_no_extend true
+#pam_password_min_time 121
+#pam_password_max_time 1209600
