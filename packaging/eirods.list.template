@@ -125,6 +125,7 @@ $DB_USER=$OS_EIRODS_ACCT
 # =-=-=-=-=-=-=-
 %preinstall << END_PREINSTALL
 
+# determine whether this is an upgrade
 if [ "$$1" -eq "$$1" ] 2>/dev/null ; then
   # integer, therefore rpm
   if [ $$1 -gt 1 ] ; then
@@ -143,6 +144,7 @@ fi
 
 if [ "$$PACKAGEUPGRADE" = "true" ] ; then
   echo "Upgrading Existing E-iRODS Installation"
+  mkdir -p $EIRODS_HOME_DIR
   touch $EIRODS_HOME_DIR/upgrade.tmp
 else
   echo "Creating Service Group and Account: $OS_EIRODS_ACCT at $EIRODS_HOME_DIR "
@@ -211,21 +213,28 @@ END_PREINSTALL
 # =-=-=-=-=-=-=-
 # post remove
 # =-=-=-=-=-=-=-
-%if RPM
-%postremove rm -r $EIRODS_HOME_DIR  
-%elseif DEB
 %postremove << END_POSTREMOVE
-# =-=-=-=-=-=-=-
-# remove the install directory if necessary
-if [ -d $EIRODS_HOME_DIR -a "$$1" = 'remove' ]; then
+# determine whether this is an upgrade
+if [ "$$1" -eq "$$1" ] 2>/dev/null ; then
+  # integer, therefore rpm
+  if [ $$1 -gt 0 ] ; then
+    PACKAGEUPGRADE="true"
+  else
+    PACKAGEUPGRADE="false"
+  fi
+else
+  # string, therefore deb
+  if [ "$$1" = "upgrade" ] ; then
+    PACKAGEUPGRADE="true"
+  else
+    PACKAGEUPGRADE="false"
+  fi
+fi
+# on remove or purge
+if [ "$$PACKAGEUPGRADE" = "false" ] ; then
   rm -rf $EIRODS_HOME_DIR
-fi 
+fi
 END_POSTREMOVE
-%endif
-
-
-
-
 
 
 

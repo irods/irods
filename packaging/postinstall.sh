@@ -294,7 +294,9 @@ if [ "$UPGRADE_FLAG" == "true" ] ; then
     # =-=-=-=-=-=-=-
     # start the upgraded server
     # (instead of running eirods_setup.pl which would have started it)
-    su --shell=/bin/bash -c "$IRODS_HOME/irodsctl start" $OS_EIRODS_ACCT
+    set +e
+    su --shell=/bin/bash -c "cd $IRODS_HOME; ./irodsctl start" $OS_EIRODS_ACCT
+    set -e
 else
     # =-=-=-=-=-=-=-
     # run setup script to configure an ICAT server
@@ -336,6 +338,64 @@ if [ "$UPGRADE_FLAG" == "false" ] ; then
         cat $EIRODS_HOME_DIR/packaging/user_resource.txt
     fi
 fi
+
+
+
+
+# =-=-=-=-=-=-=-
+# RPM runs old 3.0 uninstall script last, which removed everything
+# Detect this case and protect the existing data
+if [ "$UPGRADE_FLAG" == "true" -a ! -f $EIRODS_HOME_DIR/packaging/VERSION ] ; then
+    # Check for RPM-based systems
+    if [ "$DETECTEDOS" == "RedHatCompatible" -o "$DETECTEDOS" == "SuSE" ] ; then
+        # stop the running server
+        su --shell=/bin/bash -c "cd $IRODS_HOME; ./irodsctl stop" $OS_EIRODS_ACCT
+        # detect whether eirods home directory is a mount point
+        set +e
+        mountpoint $EIRODS_HOME_DIR > /dev/null
+        ISMOUNTPOINT=$?
+        set -e
+        # if a mount point
+        if [ $ISMOUNTPOINT -eq 0 ] ; then
+            # detect current mounted device
+            MOUNTED_DEVICE=`df | grep " $EIRODS_HOME_DIR$" | awk '{print $1}'`
+            # unmount eirods home directory
+            set +e
+            umount $EIRODS_HOME_DIR
+            set -e
+            # report to the admin what happened
+            echo "$EIRODS_HOME_DIR has been unmounted from $MOUNTED_DEVICE"
+            echo "Once $EIRODS_HOME_DIR is mounted again, start the server:"
+            echo "  sudo su - eirods -c 'cd $IRODS_HOME; ./irodsctl start'"
+        else
+            # if not, move it aside
+            mv $EIRODS_HOME_DIR ${EIRODS_HOME_DIR}_new
+            # create a passable directory in its place, which will be deleted by existing 3.0 postun script
+            mkdir -p $EIRODS_HOME_DIR
+            cp -r ${EIRODS_HOME_DIR}_new/packaging $EIRODS_HOME_DIR/packaging
+            mkdir $EIRODS_HOME_DIR/iRODS
+            cp -r ${EIRODS_HOME_DIR}_new/iRODS/irodsctl $EIRODS_HOME_DIR/iRODS/irodsctl
+            cp -r ${EIRODS_HOME_DIR}_new/iRODS/scripts $EIRODS_HOME_DIR/iRODS/scripts
+            mkdir -p $EIRODS_HOME_DIR/iRODS/clients/icommands
+            cp -r ${EIRODS_HOME_DIR}_new/iRODS/clients/icommands/bin $EIRODS_HOME_DIR/iRODS/clients/icommands/bin
+            # report to the admin what happened
+#            echo "$EIRODS_HOME_DIR has been moved to ${EIRODS_HOME_DIR}_new"
+#            echo "Please replace it and start the server:"
+#            echo "  sudo mv ${EIRODS_HOME_DIR}_new $EIRODS_HOME_DIR"
+#            echo "  sudo su - eirods -c 'cd $IRODS_HOME; ./irodsctl start'"
+            echo "#########################################################"
+            echo "#"
+            echo "#  Please run the recovery script:"
+            echo "#    sudo ${EIRODS_HOME_DIR}_new/packaging/post30upgrade.sh newfile.rpm"
+            echo "#"
+            echo "#########################################################"
+
+        fi
+    fi
+fi
+
+
+
 
 # =-=-=-=-=-=-=-
 # exit with success
