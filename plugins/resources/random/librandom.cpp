@@ -727,7 +727,8 @@ extern "C" {
      
         // =-=-=-=-=-=-=-
         // test the operation to determine which choices to make
-        if( eirods::EIRODS_OPEN_OPERATION == (*_opr) ) {
+        if( eirods::EIRODS_OPEN_OPERATION   == (*_opr)  || 
+            eirods::EIRODS_WRITE_OPERATION  == (*_opr) ) {
             // =-=-=-=-=-=-=-
             // get the next child pointer in the hierarchy, given our name and the hier string
             eirods::resource_ptr resc; 
@@ -742,8 +743,7 @@ extern "C" {
             return resc->call< const std::string*, const std::string*, eirods::hierarchy_parser*, float* >( 
                                _ctx.comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(), _opr, _curr_host, _out_parser, _out_vote );
 
-        } else if( eirods::EIRODS_CREATE_OPERATION == (*_opr) ||
-                   eirods::EIRODS_WRITE_OPERATION  == (*_opr) ) {
+        } else if( eirods::EIRODS_CREATE_OPERATION == (*_opr) ) {
             // =-=-=-=-=-=-=-
             // get the next_child resource for create 
             eirods::resource_ptr resc; 
