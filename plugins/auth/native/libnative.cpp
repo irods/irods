@@ -414,6 +414,11 @@ extern "C" {
         authCheckInp.challenge = bufp;
         authCheckInp.response = _resp->response;
         authCheckInp.username = _resp->username;
+if( _resp->username ) {
+rodsLog( LOG_NOTICE, "XXXX - native_auth_agent_response :: username [%s]", _resp->username );
+} else {
+rodsLog( LOG_NOTICE, "XXXX - native_auth_agent_response :: username is null" );
+}
 
         if (rodsServerHost->localFlag == LOCAL_HOST) {
             status = rsAuthCheck ( _comm, &authCheckInp, &authCheckOut);
@@ -590,6 +595,19 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // stub for ops that the native plug does 
     // not need to support 
+    eirods::error native_auth_agent_verify(
+        eirods::auth_plugin_context& _ctx,
+        const char* _a,
+	const char* _b,
+	const char* _c ) {
+        return SUCCESS();
+
+    } // native_auth_agent_verify
+
+
+    // =-=-=-=-=-=-=-
+    // stub for ops that the native plug does 
+    // not need to support 
     eirods::error native_auth_success_stub( 
         eirods::auth_plugin_context& _ctx ) {
         return SUCCESS();
@@ -640,7 +658,7 @@ extern "C" {
         nat->add_operation( eirods::AUTH_AGENT_AUTH_REQUEST,   "native_auth_agent_request" );
         nat->add_operation( eirods::AUTH_CLIENT_AUTH_RESPONSE, "native_auth_client_response" );
         nat->add_operation( eirods::AUTH_AGENT_AUTH_RESPONSE,  "native_auth_agent_response" );
-        nat->add_operation( eirods::AUTH_AGENT_AUTH_VERIFY,    "native_auth_success_stub" );
+        nat->add_operation( eirods::AUTH_AGENT_AUTH_VERIFY,    "native_auth_agent_verify" );
 
         eirods::auth* auth = dynamic_cast< eirods::auth* >( nat );
         if( !auth ) {

@@ -29,7 +29,6 @@ namespace eirods {
         if((result = ASSERT_ERROR(_object_oper.operation() == create_oper || _object_oper.operation() == write_oper,
                                    EIRODS_INVALID_OPERATION, "Performing create/write replication but objects operation is: \"%s\".",
                                   _object_oper.operation().c_str())).ok()) {
-
             // Generate a resource hierarchy string up to and including this resource
             hierarchy_parser child_parser;
             child_parser.set_string(child_);
@@ -45,7 +44,6 @@ namespace eirods {
                 std::string hierarchy_string;
                 error ret = sibling.str(hierarchy_string);
                 if((result = ASSERT_PASS(ret, "Failed to get the hierarchy string from the sibling hierarchy parser.")).ok()) {
-
                     dataObjInp_t dataObjInp;
                     bzero(&dataObjInp, sizeof(dataObjInp));
                     rstrcpy(dataObjInp.objPath, object.logical_path().c_str(), MAX_NAME_LEN);
@@ -55,9 +53,7 @@ namespace eirods {
                     addKeyVal(&dataObjInp.condInput, RESC_NAME_KW, root_resource_.c_str());
                     addKeyVal(&dataObjInp.condInput, DEST_RESC_NAME_KW, root_resource_.c_str());
                     addKeyVal(&dataObjInp.condInput, IN_PDMO_KW, sub_hier.c_str());
-                    if(_object_oper.operation() == write_oper) {
-                        addKeyVal(&dataObjInp.condInput, UPDATE_REPL_KW, "");
-                    }
+                    
                     transferStat_t* trans_stat = NULL;
                     int status = rsDataObjRepl(_ctx.comm(), &dataObjInp, &trans_stat);
                     char* sys_error;

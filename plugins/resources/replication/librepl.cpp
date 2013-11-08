@@ -168,7 +168,6 @@ extern "C" {
         eirods::resource_plugin_context& _ctx,
         const std::string& _oper)
     {
-rodsLog( LOG_NOTICE, "XXXX - replUpdateObjectAndOperProperties :: START" );
         eirods::error result = SUCCESS();
         eirods::error ret;
         object_list_t object_list;
@@ -199,12 +198,11 @@ rodsLog( LOG_NOTICE, "XXXX - replUpdateObjectAndOperProperties :: START" );
                     mismatched = true;
                 }
             }*/
-rodsLog( LOG_NOTICE, "XXXX - replUpdateObjectAndOperProperties :: opr [%s] obj opr [%s]", _oper.c_str(), oper.operation().c_str() );
+            
             result = ASSERT_ERROR(!mismatched, EIRODS_INVALID_OPERATION,
                                   "Existing object operation: \"%s\" does not match current operation: \"%s\".",
                                   oper.operation().c_str(), _oper.c_str());
         } else {
-rodsLog( LOG_NOTICE, "XXXX - replUpdateObjectAndOperProperties :: creating object list" );
             oper.object() = *(file_obj.get());
             oper.operation() = _oper;
             object_list.push_back(oper);
@@ -216,7 +214,6 @@ rodsLog( LOG_NOTICE, "XXXX - replUpdateObjectAndOperProperties :: creating objec
             eirods::log( result );
         }
 
-rodsLog( LOG_NOTICE, "XXXX - replUpdateObjectAndOperProperties :: DONE" );
         return result;
     }
 
@@ -259,7 +256,6 @@ rodsLog( LOG_NOTICE, "XXXX - replUpdateObjectAndOperProperties :: DONE" );
     {
         eirods::error result = SUCCESS();
         eirods::error ret;
-
         // get the list of objects that need to be replicated
         object_list_t object_list;
         ret = _ctx.prop_map().get<object_list_t>(object_list_prop, object_list);
@@ -286,7 +282,6 @@ rodsLog( LOG_NOTICE, "XXXX - replUpdateObjectAndOperProperties :: DONE" );
                     std::string name;
                     ret = _ctx.prop_map().get<std::string>(eirods::RESOURCE_NAME, name);
                     if((result = ASSERT_PASS(ret, "Could not determine resource name.")).ok()) {
-                        
                         // create a create/write replicator
                         eirods::create_write_replicator oper_repl(root_resc, name, child);
                     
@@ -1645,33 +1640,7 @@ rodsLog( LOG_NOTICE, "XXXX - replUpdateObjectAndOperProperties :: DONE" );
         eirods::resource_plugin_context& _ctx,
         const std::string*               _opr )
     {
-        eirods::error result = SUCCESS();
-        eirods::error ret;
-        ret = replCheckParams< eirods::file_object >(_ctx);
-        if((result = ASSERT_PASS(ret, "Error checking passed parameters.")).ok()) {
-            eirods::file_object_ptr file_obj = boost::dynamic_pointer_cast< 
-                                                   eirods::file_object >(
-                                                       _ctx.fco());
-            eirods::hierarchy_parser parser;
-            parser.set_string(file_obj->resc_hier());
-            eirods::resource_ptr child;
-            ret =replGetNextRescInHier(parser, _ctx, child);
-            if((result = ASSERT_PASS(ret, "Failed to get the next resource in hierarchy.")).ok()) {
-                ret = child->call(_ctx.comm(), eirods::RESOURCE_OP_NOTIFY, _ctx.fco(), _opr);
-                if( (result = ASSERT_PASS(ret, "Failed while calling child notify operation.")).ok()) {
-                    if( eirods::EIRODS_WRITE_OPERATION  == (*_opr) ||
-                        eirods::EIRODS_CREATE_OPERATION == (*_opr) ) {
-                        if( !( ret = replUpdateObjectAndOperProperties( _ctx, (*_opr) ) ).ok() ) {
-                            std::stringstream msg;
-                            msg << "Failed to add an operation ["
-                                << (*_opr)
-                                << "]";
-                            result = PASSMSG(msg.str(), ret);
-                        }
-                    }
-                }
-            }
-        }
+        eirods::error result = ASSERT_PASS( _ctx.prop_map().set< std::string >( operation_type_prop, *_opr), "failed to set opetion_type property" );
         return result;
     }
 
