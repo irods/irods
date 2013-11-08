@@ -1640,7 +1640,43 @@ extern "C" {
         eirods::resource_plugin_context& _ctx,
         const std::string*               _opr )
     {
-        eirods::error result = ASSERT_PASS( _ctx.prop_map().set< std::string >( operation_type_prop, *_opr), "failed to set opetion_type property" );
+        eirods::error result = SUCCESS();
+        if( eirods::EIRODS_CREATE_OPERATION == (*_opr) ||
+            eirods::EIRODS_WRITE_OPERATION  == (*_opr) ) {
+            result = ASSERT_PASS( _ctx.prop_map().set< std::string >( operation_type_prop, *_opr), "failed to set opetion_type property" );
+        }
+
+        eirods::error ret = replCheckParams< eirods::file_object >(_ctx);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " - bad params.";
+            result = PASSMSG(msg.str(), ret);
+        } else {
+            eirods::file_object_ptr file_obj = boost::dynamic_pointer_cast<eirods::file_object >((_ctx.fco()));
+            eirods::hierarchy_parser parser;
+            parser.set_string(file_obj->resc_hier());
+            eirods::resource_ptr child;
+            ret =replGetNextRescInHier(parser, _ctx, child);
+            if(!ret.ok()) {
+                std::stringstream msg;
+                msg << __FUNCTION__;
+                msg << " - Failed to get the next resource in hierarchy.";
+                result = PASSMSG(msg.str(), ret);
+            } else {
+                ret = child->call(_ctx.comm(), eirods::RESOURCE_OP_NOTIFY, _ctx.fco(), _opr );
+                if(!ret.ok()) {
+                    std::stringstream msg;
+                    msg << __FUNCTION__;
+                    msg << " - Failed while calling child operation.";
+                    result = PASSMSG(msg.str(), ret);
+                }
+            }
+        }
+        return result;
+
+
+
         return result;
     }
 
