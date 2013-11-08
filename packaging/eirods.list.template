@@ -125,13 +125,15 @@ $DB_USER=$OS_EIRODS_ACCT
 # =-=-=-=-=-=-=-
 %preinstall << END_PREINSTALL
 
-if [ $(echo $$1 | grep -x "[0-9]\+") -eq 0 ] ; then
+if [ "$$1" -eq "$$1" ] 2>/dev/null ; then
+  # integer, therefore rpm
   if [ $$1 -gt 1 ] ; then
     PACKAGEUPGRADE="true"
   else
     PACKAGEUPGRADE="false"
   fi
 else
+  # string, therefore deb
   if [ "$$1" = "upgrade" ] ; then
     PACKAGEUPGRADE="true"
   else
@@ -139,7 +141,7 @@ else
   fi
 fi
 
-if [ "$PACKAGEUPGRADE" = "true" ] ; then
+if [ "$$PACKAGEUPGRADE" = "true" ] ; then
   echo "Upgrading Existing E-iRODS Installation"
   touch $EIRODS_HOME_DIR/upgrade.tmp
 else

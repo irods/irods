@@ -159,17 +159,15 @@ if [ "$SERVER_TYPE" == "icat" ] ; then
         # update config/irods.config with new generated password
         sed -e "s,TEMPLATE_DB_PASS,$DB_PASS," $IRODS_HOME/config/irods.config > /tmp/irods.config.tmp
         mv /tmp/irods.config.tmp $IRODS_HOME/config/irods.config
-    fi
 
-    # =-=-=-=-=-=-=-
-    # determine if the database role already exists
-    ROLE=$( su --shell=/bin/bash -c "$PSQL $DB_ADMIN_ROLE -tAc \"SELECT 1 FROM pg_roles WHERE rolname='$DB_USER'\"" $DB_ADMIN_ROLE )
-    if [ $ROLE -a "$UPGRADE_FLAG" == "false" ]; then
-        echo "ERROR :: Role $DB_USER Already Exists in Database, Aborting."
-        exit 1
-    fi
+        # =-=-=-=-=-=-=-
+        # determine if the database role already exists
+        ROLE=$( su --shell=/bin/bash -c "$PSQL $DB_ADMIN_ROLE -tAc \"SELECT 1 FROM pg_roles WHERE rolname='$DB_USER'\"" $DB_ADMIN_ROLE )
+        if [ $ROLE ]; then
+            echo "ERROR :: Role $DB_USER Already Exists in Database, Aborting."
+            exit 1
+        fi
 
-    if [ "$UPGRADE_FLAG" == "false" ] ; then
         # =-=-=-=-=-=-=-
         # create the database role
         echo "Creating Database Role: $DB_USER as $DB_ADMIN_ROLE"
