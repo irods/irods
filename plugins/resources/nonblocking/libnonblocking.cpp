@@ -258,7 +258,21 @@ extern "C" {
         // NOOP
         return result;
     }
-    
+  
+    /// =-=-=-=-=-=-=-
+    /// @brief interface to notify of a file operation
+    eirods::error non_blocking_file_notify_plugin(
+        eirods::resource_plugin_context& _ctx,
+        const std::string*               _opr ) {
+        eirods::error result = SUCCESS();
+        // Check the operation parameters and update the physical path
+        eirods::error ret = non_blocking_check_params_and_path(_ctx);
+        result = ASSERT_PASS(ret, "Invalid parameters or physical path.");
+
+        // NOOP
+        return result;
+    }
+   
     // =-=-=-=-=-=-=-
     // interface to determine free space on a device given a path
     eirods::error non_blocking_file_get_fsfreespace_plugin( 
@@ -1552,6 +1566,7 @@ extern "C" {
         
         resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER,     "non_blocking_file_redirect_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_REBALANCE,             "non_blocking_file_rebalance" );
+        resc->add_operation( eirods::RESOURCE_OP_NOTIFY,       "non_blocking_file_notify_plugin" );
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code

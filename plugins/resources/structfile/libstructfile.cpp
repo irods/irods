@@ -2355,6 +2355,16 @@ extern "C" {
     } // tar_file_rebalance
 
     // =-=-=-=-=-=-=-
+    // tar_file_notify - code which would notify the subtree of a change
+    eirods::error tar_file_notify(
+        eirods::resource_plugin_context& _ctx,
+        const std::string*               _opr  ) {
+        return SUCCESS();
+
+    } // tar_file_rebalance
+
+
+    // =-=-=-=-=-=-=-
     // 3. create derived class to handle tar file system resources
     //    necessary to do custom parsing of the context string to place
     //    any useful values into the property map for reference in later
@@ -2411,6 +2421,7 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_UNREGISTERED, "tar_file_unregistered_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_MODIFIED,     "tar_file_modified_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_REBALANCE,    "tar_file_rebalance" );
+        resc->add_operation( eirods::RESOURCE_OP_NOTIFY,       "tar_file_notify" );
         
         // =-=-=-=-=-=-=-
         // struct file specific operations 

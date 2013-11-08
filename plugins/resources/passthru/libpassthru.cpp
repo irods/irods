@@ -710,6 +710,32 @@ extern "C" {
     } // pass_thru_file_rebalancec
 
     // =-=-=-=-=-=-=-
+    // pass_thru_file_rebalance - code which would notify the subtree of a change
+    eirods::error pass_thru_file_notify(
+        eirods::resource_plugin_context& _ctx,
+        const std::string*               _opr ) {
+        // =-=-=-=-=-=-=-
+        // forward request for notify to children
+        eirods::error result = SUCCESS();
+        eirods::resource_child_map::iterator itr = _ctx.child_map().begin();
+        for( ; itr != _ctx.child_map().end(); ++itr ) {
+            eirods::error ret = itr->second.second->call( 
+                                    _ctx.comm(), 
+                                    eirods::RESOURCE_OP_NOTIFY, 
+                                    _ctx.fco(),
+                                    _opr );
+            if( !ret.ok() ) {
+                eirods::log( PASS( ret ) );
+                result = ret;
+            }
+        }
+
+        return result;
+
+    } // pass_thru_file_notify
+
+
+    // =-=-=-=-=-=-=-
     // 3. create derived class to handle pass_thru file system resources
     //    necessary to do custom parsing of the context string to place
     //    any useful values into the property map for reference in later
@@ -766,6 +792,7 @@ extern "C" {
         
         resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER,     "pass_thru_redirect_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_REBALANCE,             "pass_thru_file_rebalance" );
+        resc->add_operation( eirods::RESOURCE_OP_NOTIFY,             "pass_thru_file_notify" );
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code
