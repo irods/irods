@@ -650,28 +650,33 @@ extern "C" {
         eirods::resource_child_map&  _cmap,
         eirods::resource_ptr&        _resc ) {
         // =-=-=-=-=-=-=-
-        // counter and flag
-        size_t child_ctr   = 0;
+        // flag
         bool   child_found = false;
+
+        // =-=-=-=-=-=-=-
+        // the pool of resources (children) to try
+        std::vector<eirods::resource_ptr> candidate_resources;
+
+        // =-=-=-=-=-=-=-
+        // copy children from _cmap
+        eirods::resource_child_map::iterator itr = _cmap.begin();
+        for( ; itr != _cmap.end(); ++itr ) {
+        	candidate_resources.push_back(itr->second.second);
+        }
  
         // =-=-=-=-=-=-=-
-        // while we have not found a child and have not
-        // exhausted possibly all the children in the map
-        while( !child_found &&
-               child_ctr < ( 10 * _cmap.size() ) ) {
-            // =-=-=-=-=-=-=-
-            // increment child counter
-            child_ctr++;
+        // while we have not found a child still have candidates
+        while( !child_found && !candidate_resources.empty() ) {
 
             // =-=-=-=-=-=-=-
-            // pick a child at random
-            std::string child_name;
-            random_get_next_child_resource( _cmap, child_name );
+            // generate random index
+            double rand_number  = static_cast<double>( rand() );
+            rand_number /= static_cast<double>( RAND_MAX );
+            size_t rand_index = round( ( candidate_resources.size() - 1 ) * rand_number );
             
             // =-=-=-=-=-=-=-
-            // get the child resource pointer
-            eirods::resource_ptr resc;
-            resc = _cmap[ child_name ].second;
+            // pick resource in pool at random index
+            eirods::resource_ptr resc = candidate_resources[rand_index];
 
             // =-=-=-=-=-=-=-
             // get the resource's status
@@ -690,7 +695,11 @@ extern "C" {
                 _resc = resc;
                 child_found = true;
 
-           } 
+           } else {
+               // =-=-=-=-=-=-=-
+               // remove child from pool of candidates
+        	   candidate_resources.erase(candidate_resources.begin()+rand_index);
+           }
 
         } // while
 
