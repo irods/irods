@@ -414,11 +414,6 @@ extern "C" {
         authCheckInp.challenge = bufp;
         authCheckInp.response = _resp->response;
         authCheckInp.username = _resp->username;
-if( _resp->username ) {
-rodsLog( LOG_NOTICE, "XXXX - native_auth_agent_response :: username [%s]", _resp->username );
-} else {
-rodsLog( LOG_NOTICE, "XXXX - native_auth_agent_response :: username is null" );
-}
 
         if (rodsServerHost->localFlag == LOCAL_HOST) {
             status = rsAuthCheck ( _comm, &authCheckInp, &authCheckOut);
