@@ -118,7 +118,7 @@ readServerConfig(rodsServerConfig_t *rodsServerConfig) {
 
         key = strstr( buf, PAM_NO_EXTEND_KW );
         if( key != NULL ) {
-            len = strlen( PAM_PW_LEN_KW );
+            len = strlen( PAM_NO_EXTEND_KW );
             char val[ NAME_LEN ];
             rstrcpy( 
                val,
@@ -147,7 +147,7 @@ readServerConfig(rodsServerConfig_t *rodsServerConfig) {
 
         key = strstr( buf, PAM_PW_MIN_TIME_KW );
         if( key != NULL ) {
-            len = strlen( PAM_PW_LEN_KW );
+            len = strlen( PAM_PW_MIN_TIME_KW );
             rstrcpy( 
                rodsServerConfig->eirods_pam_password_min_time,
                findNextTokenAndTerm( key + len ), 
@@ -162,7 +162,7 @@ readServerConfig(rodsServerConfig_t *rodsServerConfig) {
 
         key = strstr( buf, PAM_PW_MAX_TIME_KW );
         if( key != NULL ) {
-            len = strlen( PAM_PW_LEN_KW );
+            len = strlen( PAM_PW_MAX_TIME_KW );
             rstrcpy( 
                rodsServerConfig->eirods_pam_password_min_time,
                findNextTokenAndTerm( key + len ), 

@@ -269,7 +269,7 @@ main(int argc, char **argv)
     if( eirods::AUTH_PAM_SCHEME == lower_scheme ) {
         // =-=-=-=-=-=-=-
         // set a flag stating that we have done pam and the auth
-        // scheme needs overriden
+        // scheme needs overridden
         pam_flg = true;
 
         // =-=-=-=-=-=-=-
