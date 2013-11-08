@@ -619,6 +619,32 @@ extern "C" {
     } // random_file_modified
  
     /// =-=-=-=-=-=-=-
+    /// @brief interface to notify a resource of an operation
+    eirods::error random_file_notify(
+        eirods::resource_plugin_context& _ctx,
+        const std::string*               _opr ) {
+        // =-=-=-=-=-=-=-
+        // get the child resc to call
+        eirods::resource_ptr resc; 
+        eirods::error err = random_get_resc_for_call< eirods::file_object >( _ctx, resc );
+        if( !err.ok() ) {
+            std::stringstream msg;
+            msg <<  __FUNCTION__;
+            msg << " - failed.";
+            return PASSMSG( msg.str(), err );
+        }
+
+        // =-=-=-=-=-=-=-
+        // call rename on the child 
+        return resc->call( 
+                   _ctx.comm(), 
+                   eirods::RESOURCE_OP_NOTIFY, 
+                   _ctx.fco(), 
+                   _opr );
+
+    } // random_file_notify
+ 
+    /// =-=-=-=-=-=-=-
     /// @brief find the next valid child resource for create operation
     eirods::error get_next_valid_child_resource( 
         eirods::resource_child_map&  _cmap,
@@ -729,6 +755,7 @@ extern "C" {
         // test the operation to determine which choices to make
         if( eirods::EIRODS_OPEN_OPERATION   == (*_opr)  || 
             eirods::EIRODS_WRITE_OPERATION  == (*_opr) ) {
+rodsLog( LOG_NOTICE, "XXXX - random :: open or write [%s]", _opr->c_str() );
             // =-=-=-=-=-=-=-
             // get the next child pointer in the hierarchy, given our name and the hier string
             eirods::resource_ptr resc; 
@@ -744,6 +771,7 @@ extern "C" {
                                _ctx.comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(), _opr, _curr_host, _out_parser, _out_vote );
 
         } else if( eirods::EIRODS_CREATE_OPERATION == (*_opr) ) {
+rodsLog( LOG_NOTICE, "XXXX - random :: create [%s]", _opr->c_str() );
             // =-=-=-=-=-=-=-
             // get the next_child resource for create 
             eirods::resource_ptr resc; 
@@ -879,6 +907,7 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_REGISTERED,   "random_file_registered" );
         resc->add_operation( eirods::RESOURCE_OP_UNREGISTERED, "random_file_unregistered" );
         resc->add_operation( eirods::RESOURCE_OP_MODIFIED,     "random_file_modified" );
+        resc->add_operation( eirods::RESOURCE_OP_NOTIFY,       "random_file_notify" );
         
         resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER,     "random_redirect" );
         resc->add_operation( eirods::RESOURCE_OP_REBALANCE,             "random_file_rebalance" );
