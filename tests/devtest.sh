@@ -114,6 +114,7 @@ EOF
         exit $PASSWDRESULT
     fi
     set -e
+    cd $EIRODSROOT/tests/pydevtest
     $PYTHONCMD $OPTS auth_suite.Test_OSAuth_Only
     ################################################
     # note:
