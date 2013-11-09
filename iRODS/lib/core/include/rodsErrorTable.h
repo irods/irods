@@ -609,7 +609,7 @@
 #define EIRODS_CHILD_EXISTS               -1802000
 #define EIRODS_HIERARCHY_ERROR            -1803000
 #define EIRODS_CHILD_NOT_FOUND            -1804000
-#define EIRODS_NEXT_RESC_FOUND            -1805000
+#define EIRODS_NO_NEXT_RESC_FOUND         -1805000
 #define EIRODS_NO_PDMO_DEFINED            -1806000
 #define EIRODS_INVALID_LOCATION           -1807000
 #define EIRODS_PLUGIN_ERROR               -1808000

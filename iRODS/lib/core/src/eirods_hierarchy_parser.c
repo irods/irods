@@ -112,7 +112,7 @@ namespace eirods {
                     std::stringstream msg;
                     msg << "there is no next resource. [" << _current;
                     msg << "] is a leaf resource.";
-                    result = ERROR(EIRODS_NEXT_RESC_FOUND, msg.str());
+                    result = ERROR(EIRODS_NO_NEXT_RESC_FOUND, msg.str());
                 }
             }
         }
