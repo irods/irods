@@ -450,7 +450,8 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         // perform an open operation if create is not specificied ( thats all we have for now ) 
-        if( EIRODS_OPEN_OPERATION == oper ) {
+        if( EIRODS_OPEN_OPERATION  == oper || 
+            EIRODS_WRITE_OPERATION == oper ) {
             // =-=-=-=-=-=-=-
             // factory has already been called, test for 
             // success before proceeding
@@ -479,8 +480,7 @@ namespace eirods {
                        _out_hier );
             return ret; 
 
-        } else if( EIRODS_CREATE_OPERATION == oper ||
-                   EIRODS_WRITE_OPERATION  == oper ) {
+        } else if( EIRODS_CREATE_OPERATION == oper ) {
             // =-=-=-=-=-=-=-
             // include the default resc name if it applies
             if( !key_word && default_resc_name ) {
