@@ -5,6 +5,14 @@
 
 #include "rodsErrorTable.h"
 
+#ifndef BOOST_ASSERT_MSG
+#define BOOST_ASSERT_MSG( cond, msg ) do \
+{ if (!(cond)) { std::ostringstream str; str << msg; std::cerr << str.str(); std::abort(); } \
+} while(0)
+#endif
+#include <boost/assert.hpp>
+
+
 #include <boost/filesystem.hpp>
 
 namespace eirods {

@@ -9,13 +9,15 @@ import sys
 
 '''Originally written by Antoine de Torcy'''
 
+RODSLOGDIR = "/var/lib/eirods/iRODS/server/log"
+
 class RodsEnv(object):
     '''Contains Env/Auth variables.
 
     Used as argument for RodsSession.createEnvFiles().
     '''
 
-    def __init__(self, host, port, defRes, homeColl, cwd, username, zone, auth):
+    def __init__(self, host, port, defRes, homeColl, cwd, username, zone, auth, csnegotiation, cspolicy, enckeysize, encsaltsize, encnumhashrounds, encalgorithm):
         self.host = host
         self.port = port
         self.defRes = defRes
@@ -24,8 +26,12 @@ class RodsEnv(object):
         self.username = username
         self.zone = zone
         self.auth = auth
-
-
+        self.csnegotiation = csnegotiation
+        self.cspolicy = cspolicy
+        self.enckeysize = enckeysize
+        self.encsaltsize = encsaltsize
+        self.encnumhashrounds = encnumhashrounds
+        self.encalgorithm = encalgorithm
 
 class RodsSession(object):
     '''A set of methods to start, close and manage multiple
@@ -37,6 +43,30 @@ class RodsSession(object):
         self.icommandsDir = icommandsDir  # where the icommand binaries are
         self.sessionId = sessionId
         self.sessionDir = "%s/%s" % (self.topDir, self.sessionId)
+
+    def __terminate(self, process):
+        '''
+        Kills a process.  Made available here for backwards compatibility
+        with Python2.5 which does not include Popen.terminate().
+        '''
+
+        def terminate_win(process):
+            import win32process
+            return win32process.TerminateProcess(process._handle, -1)
+
+        def terminate_nix(process):
+            import os
+            import signal
+            return os.kill(process.pid, signal.SIGTERM)
+
+        terminate_default = terminate_nix
+
+        handlers = {
+            "win32": terminate_win, 
+            "linux2": terminate_nix
+        }
+
+        return handlers.get(sys.platform, terminate_default)(process)
 
     def createEnvFiles(self, myEnv):
         '''Creates session files in temporary directory.
@@ -58,6 +88,12 @@ class RodsSession(object):
         ENVFILE.write("irodsCwd '%s'\n" % myEnv.cwd)
         ENVFILE.write("irodsUserName '%s'\n" % myEnv.username)
         ENVFILE.write("irodsZone '%s'\n" % myEnv.zone)
+        ENVFILE.write("irodsClientServerNegotiation '%s'\n" % myEnv.csnegotiation)
+        ENVFILE.write("irodsClientServerPolicy '%s'\n" % myEnv.cspolicy)
+        ENVFILE.write("irodsEncryptionKeySize '%s'\n" % myEnv.enckeysize)
+        ENVFILE.write("irodsEncryptionSaltSize '%s'\n" % myEnv.encsaltsize)
+        ENVFILE.write("irodsEncryptionNumHashRounds '%s'\n" % myEnv.encnumhashrounds)
+        ENVFILE.write("irodsEncryptionAlgorithm '%s'\n" % myEnv.encalgorithm)
         ENVFILE.close()
 
     def deleteEnvFiles(self):
@@ -150,7 +186,8 @@ class RodsSession(object):
         cmdStr = "%s/%s" % (self.icommandsDir, icommand)
         argList = [cmdStr] + argList
 
-        proc = subprocess.Popen('ls -t /var/lib/eirods/iRODS/server/log/rodsLog* | head -n1', stdout=subprocess.PIPE, shell=True)
+        global RODSLOGDIR
+        proc = subprocess.Popen('ls -t '+RODSLOGDIR+'/rodsLog* | head -n1', stdout=subprocess.PIPE, shell=True)
         (myrodslogfile, err) = proc.communicate()
         with open(myrodslogfile.rstrip(),"a") as myrodslog:
             myrodslog.write(" --- interrupt icommand ["+' '.join(argList)+"] --- \n")
@@ -175,7 +212,12 @@ class RodsSession(object):
             returncode = -2
         # else if subprocess did not complete by filesize threshold, we kill it
         elif p.poll() is None:
-            p.terminate()
+            if (sys.version_info >= (2,6)):
+                # use native p.terminate() available in 2.6+
+                p.terminate()
+            else:
+                # use private version of __terminate (uses os.kill())
+                self.__terminate(p)
             # expected, so return 0
             returncode = 0
         # else the process finished before the filesize threshold was met
@@ -204,7 +246,8 @@ class RodsSession(object):
         cmdStr = "%s/%s" % (self.icommandsDir, icommand)
         argList = [cmdStr] + argList
 
-        proc = subprocess.Popen('ls -t /var/lib/eirods/iRODS/server/log/rodsLog* | head -n1', stdout=subprocess.PIPE, shell=True)
+        global RODSLOGDIR
+        proc = subprocess.Popen('ls -t '+RODSLOGDIR+'/rodsLog* | head -n1', stdout=subprocess.PIPE, shell=True)
         (myrodslogfile, err) = proc.communicate()
         with open(myrodslogfile.rstrip(),"a") as myrodslog:
             myrodslog.write(" --- interrupt icommand delay("+str(delay)+") ["+' '.join(argList)+"] --- \n")
@@ -276,6 +319,8 @@ class RodsSession(object):
                         # added for test_allrules.py
                         'irule',
                         'iqdel',
+                        # added for ticket_suite.py
+                        'iticket',
                      ]
 
         if icommand not in valid_cmds:
@@ -291,7 +336,8 @@ class RodsSession(object):
         cmdStr = "%s/%s" % (self.icommandsDir, icommand)
         argList = [cmdStr] + argList
 
-        proc = subprocess.Popen('ls -t /var/lib/eirods/iRODS/server/log/rodsLog* | head -n1', stdout=subprocess.PIPE, shell=True)
+        global RODSLOGDIR
+        proc = subprocess.Popen('ls -t '+RODSLOGDIR+'/rodsLog* | head -n1', stdout=subprocess.PIPE, shell=True)
         (myrodslogfile, err) = proc.communicate()
         with open(myrodslogfile.rstrip(),"a") as myrodslog:
             myrodslog.write(" --- icommand ["+' '.join(argList)+"] --- \n")
@@ -327,7 +373,8 @@ class RodsSession(object):
         cmdStr = "%s/%s" % (self.icommandsDir, icommand)
         argList = [cmdStr] + argList
 
-        proc = subprocess.Popen('ls -t /var/lib/eirods/iRODS/server/log/rodsLog* | head -n1', stdout=subprocess.PIPE, shell=True)
+        global RODSLOGDIR
+        proc = subprocess.Popen('ls -t '+RODSLOGDIR+'/rodsLog* | head -n1', stdout=subprocess.PIPE, shell=True)
         (myrodslogfile, err) = proc.communicate()
         with open(myrodslogfile.rstrip(),"a") as myrodslog:
            myrodslog.write(" --- iadmin ["+' '.join(argList)+"] --- \n")

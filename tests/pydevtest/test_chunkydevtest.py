@@ -132,7 +132,7 @@ class ChunkyDevTest(ResourceBase):
     
         assertiCmd(s.adminsession,"irepl -B -R "+self.testresc+" "+irodshome+"/icmdtest/foo1" )
         phypath = dir_w+"/"+"foo1."+str(random.randrange(10000000))
-        assertiCmd(s.adminsession,"iput -kfR "+irodsdefresource+" -p "+phypath+" "+sfile2+" "+irodshome+"/icmdtest/foo1" )
+        assertiCmd(s.adminsession,"iput -kfR "+irodsdefresource+" "+sfile2+" "+irodshome+"/icmdtest/foo1" )
         # show have 2 different copies
         assertiCmd(s.adminsession,"ils -l "+irodshome+"/icmdtest/foo1", "LIST", ["foo1",myssize] )
         assertiCmd(s.adminsession,"ils -l "+irodshome+"/icmdtest/foo1", "LIST", ["foo1",str(os.stat(sfile2).st_size)] )
@@ -215,6 +215,10 @@ class ChunkyDevTest(ResourceBase):
         assertiCmd(s.adminsession,"irm -f --empty "+bunfile )
     
         # cleanup
+        os.unlink( dir_w+"/testx1.tar" )
+        os.unlink( dir_w+"/testx.tar" )
+        shutil.rmtree( dir_w+"/testx1" )
+        shutil.rmtree( dir_w+"/testx" )
         os.unlink( sfile2 )
         if os.path.exists( myldir ):
             shutil.rmtree( myldir )
@@ -225,11 +229,7 @@ class ChunkyDevTest(ResourceBase):
     
     
     
-    @unittest.skip("FIXME - sortObjInfoForOpen - No resource hierarchy specified in keywords")
     def test_ireg_from_devtest(self):
-        # SKIPPING UNTIL THIS ERROR IS FIXED
-        #[-]     iRODS/server/core/src/dataObjOpr.c:517:sortObjInfoForOpen :  status [SYS_INVALID_INPUT_PARAM]  errno [] -- message [sortObjInfoForOpen - No resource hierarchy specified in keywords.]
-
         # build expected variables with similar devtest names
         progname = __file__
         myssize = str(os.stat(progname).st_size)
@@ -284,10 +284,7 @@ class ChunkyDevTest(ResourceBase):
         # cleanup
         os.unlink( "/tmp/sfile2c" )
         os.unlink( dir_w+"/foo5" )
-        os.unlink( dir_w+"/testx1.tar" )
-        os.unlink( dir_w+"/testx.tar" )
-        shutil.rmtree( dir_w+"/testx1" )
-        shutil.rmtree( dir_w+"/testx" )
+
         if os.path.exists( myldir ):
             shutil.rmtree( myldir )
         if os.path.exists( mysdir ):
@@ -376,27 +373,27 @@ class ChunkyDevTest(ResourceBase):
         assertiCmd(s.adminsession,"imcoll -U "+irodshome+"/icmdtestm" )
         assertiCmd(s.adminsession,"irm -rf "+irodshome+"/icmdtestm" )
         shutil.rmtree( dir_w+"/testm" )
-        assertiCmd(s.adminsession,"imkdir "+irodshome+"/icmdtestt" )
+        assertiCmd(s.adminsession,"imkdir "+irodshome+"/icmdtestt_mcol" )
         assertiCmd(s.adminsession,"ibun -c "+irodshome+"/icmdtestx.tar "+irodshome+"/icmdtest" ) # added so icmdtestx.tar exists
-        assertiCmd(s.adminsession,"imcoll -m tar "+irodshome+"/icmdtestx.tar "+irodshome+"/icmdtestt" )
-        assertiCmd(s.adminsession,"ils -lr "+irodshome+"/icmdtestt", "LIST", ["foo2"] )
-        assertiCmd(s.adminsession,"ils -lr "+irodshome+"/icmdtestt", "LIST", ["foo1"] )
+        assertiCmd(s.adminsession,"imcoll -m tar "+irodshome+"/icmdtestx.tar "+irodshome+"/icmdtestt_mcol" )
+        assertiCmd(s.adminsession,"ils -lr "+irodshome+"/icmdtestt_mcol", "LIST", ["foo2"] )
+        assertiCmd(s.adminsession,"ils -lr "+irodshome+"/icmdtestt_mcol", "LIST", ["foo1"] )
         if os.path.exists(dir_w+"/testt"):
             shutil.rmtree( dir_w+"/testt" )
         if os.path.exists(dir_w+"/testx"):
             shutil.rmtree( dir_w+"/testx" )
         assertiCmd(s.adminsession,"iget -vr "+irodshome+"/icmdtest  "+dir_w+"/testx", "LIST", "testx" )
-        assertiCmd(s.adminsession,"iget -vr "+irodshome+"/icmdtestt/icmdtest  "+dir_w+"/testt", "LIST", "testt" )
+        assertiCmd(s.adminsession,"iget -vr "+irodshome+"/icmdtestt_mcol/icmdtest  "+dir_w+"/testt", "LIST", "testt" )
         output = commands.getstatusoutput("diff -r  "+dir_w+"/testx "+dir_w+"/testt" )
         print "output is ["+str(output)+"]"
         assert output[0] == 0
         assert output[1] == "", "diff output was not empty..."
-        assertiCmd(s.adminsession,"imkdir "+irodshome+"/icmdtestt/mydirtt" )
-        assertiCmd(s.adminsession,"iput "+progname+" "+irodshome+"/icmdtestt/mydirtt/foo1mt" )
-        assertiCmd(s.adminsession,"imv "+irodshome+"/icmdtestt/mydirtt/foo1mt "+irodshome+"/icmdtestt/mydirtt/foo1mtx" )
+        assertiCmd(s.adminsession,"imkdir "+irodshome+"/icmdtestt_mcol/mydirtt" )
+        assertiCmd(s.adminsession,"iput "+progname+" "+irodshome+"/icmdtestt_mcol/mydirtt/foo1mt" )
+        assertiCmd(s.adminsession,"imv "+irodshome+"/icmdtestt_mcol/mydirtt/foo1mt "+irodshome+"/icmdtestt_mcol/mydirtt/foo1mtx" )
     
         # unlink
-        assertiCmd(s.adminsession,"imcoll -U "+irodshome+"/icmdtestt" )
+        assertiCmd(s.adminsession,"imcoll -U "+irodshome+"/icmdtestt_mcol" )
     
     
         # cleanup
@@ -439,9 +436,9 @@ class ChunkyDevTest(ResourceBase):
         assertiCmd(s.adminsession,"icp -K -R "+self.testresc+" "+irodshome+"/icmdtest/foo1 "+irodshome+"/icmdtest/foo2" )
     
         assertiCmd(s.adminsession,"ibun -c "+irodshome+"/icmdtestx.tar "+irodshome+"/icmdtest" ) # added so icmdtestx.tar exists
-        assertiCmd(s.adminsession,"imkdir "+irodshome+"/icmdtestt" )
-        assertiCmd(s.adminsession,"imcoll -m tar "+irodshome+"/icmdtestx.tar "+irodshome+"/icmdtestt" )
-        assertiCmd(s.adminsession,"imkdir "+irodshome+"/icmdtestt/mydirtt" )
+        assertiCmd(s.adminsession,"imkdir "+irodshome+"/icmdtestt_large" )
+        assertiCmd(s.adminsession,"imcoll -m tar "+irodshome+"/icmdtestx.tar "+irodshome+"/icmdtestt_large" )
+        assertiCmd(s.adminsession,"imkdir "+irodshome+"/icmdtestt_large/mydirtt" )
     
     
         # make a directory of 2 large files and 2 small files
@@ -462,13 +459,13 @@ class ChunkyDevTest(ResourceBase):
             shutil.copyfile( progname, mysfile )
     
         # test adding a large file to a mounted collection
-        assertiCmd(s.adminsession,"iput "+myldir+"/lfile1 "+irodshome+"/icmdtestt/mydirtt" )
-        assertiCmd(s.adminsession,"iget "+irodshome+"/icmdtestt/mydirtt/lfile1 "+dir_w+"/testt" )
-        assertiCmd(s.adminsession,"irm -rf "+irodshome+"/icmdtestt/mydirtt" )
-        assertiCmd(s.adminsession,"imcoll -s "+irodshome+"/icmdtestt" )
-        assertiCmd(s.adminsession,"imcoll -p "+irodshome+"/icmdtestt" )
-        assertiCmd(s.adminsession,"imcoll -U "+irodshome+"/icmdtestt" )
-        assertiCmd(s.adminsession,"irm -rf "+irodshome+"/icmdtestt" )
+        assertiCmd(s.adminsession,"iput "+myldir+"/lfile1 "+irodshome+"/icmdtestt_large/mydirtt" )
+        assertiCmd(s.adminsession,"iget "+irodshome+"/icmdtestt_large/mydirtt/lfile1 "+dir_w+"/testt" )
+        assertiCmd(s.adminsession,"irm -rf "+irodshome+"/icmdtestt_large/mydirtt" )
+        assertiCmd(s.adminsession,"imcoll -s "+irodshome+"/icmdtestt_large" )
+        assertiCmd(s.adminsession,"imcoll -p "+irodshome+"/icmdtestt_large" )
+        assertiCmd(s.adminsession,"imcoll -U "+irodshome+"/icmdtestt_large" )
+        assertiCmd(s.adminsession,"irm -rf "+irodshome+"/icmdtestt_large" )
         os.unlink( dir_w+"/testt" )
     
         # cleanup
@@ -554,11 +551,7 @@ class ChunkyDevTest(ResourceBase):
     
     
 
-    @unittest.skip("FIXME - sortObjInfoForOpen - No resource hierarchy specified in keywords")
     def test_irsync_from_devtest(self):
-        # SKIPPING UNTIL THIS ERROR IS FIXED
-        #[-]     iRODS/server/core/src/dataObjOpr.c:517:sortObjInfoForOpen :  status [SYS_INVALID_INPUT_PARAM]  errno [] -- message [sortObjInfoForOpen - No resource hierarchy specified in keywords.]
-
         # build expected variables with similar devtest names
         progname = __file__
         myssize = str(os.stat(progname).st_size)
@@ -578,7 +571,7 @@ class ChunkyDevTest(ResourceBase):
     
         # testing irsync
         assertiCmd(s.adminsession,"irsync "+progname+" i:"+irodshome+"/icmdtest/foo100" )
-        assertiCmd(s.adminsession,"irsync i:"+irodshome+"/icmdtest/foo100 "+dir_w+"/foo100" )  # <-- FAILING - REASON FOR SKIPPING
+        assertiCmd(s.adminsession,"irsync i:"+irodshome+"/icmdtest/foo100 "+dir_w+"/foo100" )
         assertiCmd(s.adminsession,"irsync i:"+irodshome+"/icmdtest/foo100 i:"+irodshome+"/icmdtest/foo200" )
         assertiCmd(s.adminsession,"irm -f "+irodshome+"/icmdtest/foo100 "+irodshome+"/icmdtest/foo200")
         assertiCmd(s.adminsession,"iput -R "+self.testresc+" "+progname+" "+irodshome+"/icmdtest/foo100")

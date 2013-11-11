@@ -5,7 +5,7 @@ and run by the accompanying rule file and write out some text to
 the screen.
 
 To install this example plugin:
- $ make
+ $ make msvc_test
  $ cp libeirods_msvc_test.so /var/lib/eirods/plugins/microservices
  $ chown eirods:eirods /var/lib/eirods/plugins/microservices/libeirods_msvc_test.so
 

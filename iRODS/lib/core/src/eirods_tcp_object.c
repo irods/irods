@@ -62,45 +62,54 @@ namespace eirods {
     } // operator=
 
     // =-=-=-=-=-=-=-
-    // public - resolver for resource_manager
-    error tcp_object::resolve( 
-        resource_manager&, 
-        resource_ptr& ) {
-        return ERROR( 
-                   SYS_INVALID_INPUT_PARAM, 
-                   "object does not support resource_manager" );     
-    } // resolve
-    
-    // =-=-=-=-=-=-=-
     // public - resolver for tcp_manager
     error tcp_object::resolve( 
-        network_manager& _mgr,  
-        network_ptr&     _ptr ) {
+        const std::string& _interface,
+        plugin_ptr&        _ptr ) {
+        // =-=-=-=-=-=-=-
+        // check the interface type and error out if it
+        // isnt a network interface
+        if( NETWORK_INTERFACE != _interface ) {
+            std::stringstream msg;
+            msg << "tcp_object does not support a [";
+            msg << _interface;
+            msg << "] plugin interface";
+            return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
+
+        }
+
         // =-=-=-=-=-=-=-
         // ask the network manager for a tcp resource
-        error ret = _mgr.resolve( TCP_NETWORK_PLUGIN, _ptr );
+        network_ptr net_ptr;
+        error ret = netwk_mgr.resolve( TCP_NETWORK_PLUGIN, net_ptr );
         if( !ret.ok() ) {
             // =-=-=-=-=-=-=-
             // attempt to load the plugin, in this case the type,
             // instance name, key etc are all tcp as there is only
             // the need for one instance of a tcp object, etc.
             std::string empty_context( "" );
-            ret = _mgr.init_from_type( 
+            ret = netwk_mgr.init_from_type( 
                       TCP_NETWORK_PLUGIN,
                       TCP_NETWORK_PLUGIN,
                       TCP_NETWORK_PLUGIN,
                       empty_context,
-                      _ptr );
+                      net_ptr );
             if( !ret.ok() ) {
                 return PASS( ret );
 
             } else {
+                // =-=-=-=-=-=-=-
+                // upcast for out variable
+                _ptr = boost::dynamic_pointer_cast< plugin_base >( net_ptr );
                 return SUCCESS();
 
             }
 
         } // if !ok
 
+        // =-=-=-=-=-=-=-
+        // upcast for out variable
+        _ptr = boost::dynamic_pointer_cast< plugin_base >( net_ptr );
         return SUCCESS();
 
     } // resolve

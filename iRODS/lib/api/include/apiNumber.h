@@ -172,4 +172,7 @@
 #define SSL_START_AN 			1100
 #define SSL_END_AN 			1101
 
+#define AUTH_PLUG_REQ_AN	1201
+#define AUTH_PLUG_RESP_AN	1202
+
 #endif	/* API_NUMBER_H */

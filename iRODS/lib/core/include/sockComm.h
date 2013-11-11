@@ -95,8 +95,12 @@ eirods::error sendReconnMsg(
 // =-=-=-=-=-=-=-
 // additional interfaces for network plugin support
 // start and stop the network interface, client side
-eirods::error sockClientStart( eirods::network_object_ptr );
-eirods::error sockClientStop( eirods::network_object_ptr );
+eirods::error sockClientStart( 
+    eirods::network_object_ptr,
+    rodsEnv* );
+eirods::error sockClientStop( 
+    eirods::network_object_ptr,
+    rodsEnv* );
 
 // =-=-=-=-=-=-=-
 // start and stop the network interface, agent side

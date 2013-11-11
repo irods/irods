@@ -56,7 +56,6 @@
 
 #include "eirods_log.h"
 
-
 #define HEADER_TYPE_LEN 128 /* changed by Raja to 128 from 16 */
 #define TIME_LEN        32
 #define NAME_LEN        64
@@ -103,6 +102,7 @@
 #define MAX_SZ_FOR_EXECMD_BUF     (1*1024*1024)
 #define MIN_SZ_FOR_PARA_TRAN     (1*1024*1024)
 #define TRANS_BUF_SZ    (4*1024*1024)
+#define CRYPT_BUF_SZ    2*TRANS_BUF_SZ
 #define TRANS_SZ        (40*1024*1024)
 #define LARGE_SPACE     1000000000
 #define UNKNOWN_FILE_SZ	-99	/* value to indicate the file sz is unknown */
@@ -287,7 +287,7 @@ typedef struct startupPack {
 // =-=-=-=-=-=-=-
 // magic token to assign to startup pack option variable
 // in order to request a client-server negotiation
-#define REQ_SVR_NEG	"request_server_negotation"
+#define REQ_SVR_NEG	"request_server_negotiation"
 
 /* Definition for resource status. If it is empty (strlen == 0), it is
  * assumed to be up */

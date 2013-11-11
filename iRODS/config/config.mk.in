@@ -260,9 +260,9 @@ endif
 
 # IRODS_FS - specify that irodsFuse should be built
 # The latest version is 26 for release 2.7. It default to 21 if not defined
-# IRODS_FS = 1
+ IRODS_FS = 1
 ifdef IRODS_FS
-fuseHomeDir=/home/mwan/adil/fuse-2.7.0
+fuseHomeDir=/usr/local/fuse
 endif
 
 # PHP_LIB - specify whether php library will be loaded into irodsAgent.
@@ -403,7 +403,7 @@ endif
 # the directory where the BOOST directory is located, which is normally
 # the .../iRODS/boost_irods directory.  First run 'buildboost.sh' in the
 # iRODS directory to create boost_irods.
-# USE_BOOST=1
+USE_BOOST=1
 ifdef USE_BOOST
 ifndef BOOST_DIR
 #BOOST_DIR=/home/mwan/myapps/boost/install
@@ -416,9 +416,9 @@ endif
 # of authentication uses a shared secret and the genOSAuth command to
 # generate a credential that the user presents to the iRODS server. 
 # You can use this instead of using password authentication.
-# OS_AUTH = 1
+OS_AUTH = 1
 ifdef OS_AUTH
-OS_AUTH_KEYFILE = /etc/irods.key
+OS_AUTH_KEYFILE = /var/lib/eirods/iRODS/config/irods.key
 # Some environments don't have a uniform username/uid
 # space between the IES and the clients. Uncomment
 # OS_AUTH_NO_UID if this is the case, so the uid will

@@ -26,9 +26,13 @@ icommands_bin  = "/usr/bin"
 ######################################################
 
 def admin_up():
+    # restart server because overkill
+#    os.system("/var/lib/eirods/iRODS/irodsctl restart")
+
     # set up admin session
     admin = users[0]
-    sessionid      = "session-"+datetime.datetime.now().strftime("%Y%m%dT%H%M%S.%f")
+    rightnow       = datetime.datetime.now()
+    sessionid      = "session-"+rightnow.strftime("%Y%m%dT%H%M%S.")+str(rightnow.microsecond)
     myenv          = icommands.RodsEnv( admin['host'],
                                         admin['port'],
                                         admin['resc'],
@@ -36,7 +40,13 @@ def admin_up():
                                         '/'+admin['zone']+'/home/'+admin['name'],
                                         admin['name'],
                                         admin['zone'],
-                                        admin['passwd']
+                                        admin['passwd'],
+                                        "request_server_negotiation",
+                                        "CS_NEG_REFUSE",
+                                        "32",
+                                        "8",
+                                        "16",
+                                        "AES-256-CBC",
                                         )
     global adminsession
     adminsession = icommands.RodsSession(mycwd, icommands_bin, sessionid)
@@ -53,7 +63,7 @@ def admin_up():
 
     # users, passwords, and groups
     global testgroup
-    testgroup = "pydevtestUserGroup"
+    testgroup = "pydevtest_user_group"
     adminsession.runAdminCmd('iadmin',["mkgroup",testgroup])
     for u in users[1:]:
         adminsession.runAdminCmd('iadmin',["mkuser",u['name'],"rodsuser"])
@@ -95,7 +105,13 @@ def user_up(user):
                                         '/'+user['zone']+'/home/'+user['name'],
                                         user['name'],
                                         user['zone'],
-                                        user['passwd']
+                                        user['passwd'],
+                                        "request_server_negotiation",
+                                        "CS_NEG_REFUSE",
+                                        "32",
+                                        "8",
+                                        "16",
+                                        "AES-256-CBC",
                                         )
     new = icommands.RodsSession(mycwd, icommands_bin, sessionid)
     new.createEnvFiles(myenv)

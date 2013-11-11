@@ -250,7 +250,7 @@ int msiGetTaggedValueFromString(msParam_t *inTagParam, msParam_t *inStrParam,
   regmatch_t pm[2];
   char errbuff[100];
   char *pstr[2];
-  char *t1, *t2, *t3, *t4;
+  char *t1, *t2, *t3;
   char c;
   
   t1 = (char *) inStrParam->inOutStruct;
@@ -276,12 +276,11 @@ int msiGetTaggedValueFromString(msParam_t *inTagParam, msParam_t *inStrParam,
       if (regexec(&preg[1],t2,1,&pm[1],0) != 0)
 	fillMsParam( outValueParam, NULL, STR_MS_T, 0, NULL );
       else {
-	t4 = t2+ pm[1].rm_so;                       /* t4 ends value */
-	t3 = t2+ pm[1].rm_eo;
-	c = *t4;
-	*t4 = '\0';
+	t3 = t2+ pm[1].rm_so;                       /* t3 ends value */
+	c = *t3;
+	*t3 = '\0';
 	fillMsParam( outValueParam, NULL, STR_MS_T, t2, NULL );
-	*t4 = c;
+	*t3 = c;
       }
     }
     else

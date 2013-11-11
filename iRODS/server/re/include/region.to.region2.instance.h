@@ -31,7 +31,7 @@
 
 #define TRAVERSE_ARRAY_END(type, size, f)
 
-#define TRAVERSE_PTR_GENERIC(fn, f, cpfn) \
+#define TRAVERSE_PTR_TAPP(fn, f, cpfn) \
 	CASCADE_NULL(ptr->f = fn(ptr->f, oldr, r, cpfn));
 
 #define GET_VAR_ARRAY_LEN(type, len, f) \

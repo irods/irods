@@ -18,26 +18,13 @@
 #include "rcGlobalExtern.h"
 
 #include "eirods_resource_backport.h"
+#include "eirods_resource_redirect.h"
 
-#ifdef USE_BOOST
 #include <boost/thread/mutex.hpp>
 boost::mutex ExecCmdMutex;
 int initExecCmdMutex () {
     return (0);
 }
-#else
-#ifndef windows_platform
-#include <pthread.h>
-pthread_mutex_t ExecCmdMutex;
-
-int
-initExecCmdMutex ()
-{
-    pthread_mutex_init (&ExecCmdMutex, NULL);
-    return (0);
-}
-#endif	/* windows_platform */
-#endif
 
 int
 rsExecCmd241 (rsComm_t *rsComm, execCmd241_t *execCmd241Inp, 
@@ -69,74 +56,99 @@ rsExecCmd (rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut)
 
     /* some sanity check on the cmd path */
     if (strchr (execCmdInp->cmd, '/') != NULL) {
-	rodsLog (LOG_ERROR,
-	  "rsExecCmd: bad cmd path %s", execCmdInp->cmd);
-	return (BAD_EXEC_CMD_PATH);
+        rodsLog (LOG_ERROR,
+                "rsExecCmd: bad cmd path %s", execCmdInp->cmd);
+        return (BAD_EXEC_CMD_PATH);
     }
 
     memset (&addr, 0, sizeof (addr));
     if (*execCmdInp->hintPath != '\0') {
-	dataObjInp_t dataObjInp;
-	memset (&dataObjInp, 0, sizeof (dataObjInp));
-	rstrcpy (dataObjInp.objPath, execCmdInp->hintPath, MAX_NAME_LEN);
-        status = getDataObjInfo (rsComm, &dataObjInp, &dataObjInfoHead,
-          ACCESS_READ_OBJECT, 0);
+        dataObjInp_t dataObjInp;
+        memset (&dataObjInp, 0, sizeof (dataObjInp));
+        rstrcpy (dataObjInp.objPath, execCmdInp->hintPath, MAX_NAME_LEN);
 
+        // =-=-=-=-=-=-=-
+        // determine the resource hierarchy if one is not provided
+        std::string resc_hier;
+        char*       resc_hier_ptr = getValByKey( &dataObjInp.condInput, RESC_HIER_STR_KW );
+        if( resc_hier_ptr == NULL ) {
+            eirods::error ret = eirods::resolve_resource_hierarchy( eirods::EIRODS_OPEN_OPERATION, 
+                                                                    rsComm, &dataObjInp, resc_hier );
+            if( !ret.ok() ) { 
+                std::stringstream msg;
+                msg << "failed in eirods::resolve_resource_hierarchy for [";
+                msg << dataObjInp.objPath << "]";
+                eirods::log( PASSMSG( msg.str(), ret ) );
+                return ret.code();
+            }
+           
+            // =-=-=-=-=-=-=-
+            // we resolved the redirect and have a host, set the hier str for subsequent
+            // api calls, etc.
+            addKeyVal( &dataObjInp.condInput, RESC_HIER_STR_KW, resc_hier.c_str() );
+            addKeyVal( &execCmdInp->condInput, RESC_HIER_STR_KW, resc_hier.c_str() );
+        } else {
+            resc_hier = resc_hier_ptr;
+
+        }
+
+        status = getDataObjInfo (rsComm, &dataObjInp, &dataObjInfoHead,ACCESS_READ_OBJECT, 0 );
         if (status < 0) {
-	    rodsLog (LOG_ERROR,
-              "rsExecCmd: getDataObjInfo error for hintPath %s", 
-	      execCmdInp->hintPath);  
+            rodsLog (LOG_ERROR,
+                    "rsExecCmd: getDataObjInfo error for hintPath %s", 
+                    execCmdInp->hintPath);  
             return (status);
-	}
-        status = sortObjInfoForOpen (rsComm, &dataObjInfoHead, 
-	  &execCmdInp->condInput, 0);
-	if (status < 0 || NULL == dataObjInfoHead ) return status; // JMC cppcheck nullptr
+        }
 
-	if (execCmdInp->addPathToArgv > 0) {
-	    char tmpArgv[LONG_NAME_LEN];
-	    rstrcpy (tmpArgv, execCmdInp->cmdArgv, HUGE_NAME_LEN);
-	    snprintf (execCmdInp->cmdArgv, HUGE_NAME_LEN, "%s %s",
-	      dataObjInfoHead->filePath, tmpArgv);
-	}
+        status = sortObjInfoForOpen (rsComm, &dataObjInfoHead, &execCmdInp->condInput, 0 );
+                
+        if (status < 0 || NULL == dataObjInfoHead ) return status; // JMC cppcheck nullptr
 
-    // =-=-=-=-=-=-=-
-    // extract the host location from the resource hierarchy
-    std::string location;
-    eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfoHead->rescHier, location );
-    if( !ret.ok() ) {
-        eirods::log( PASSMSG( "rsGetHostForGet - failed in get_loc_for_hier_String", ret ) );
-        return -1;
-    }
+        if (execCmdInp->addPathToArgv > 0) {
+            char tmpArgv[LONG_NAME_LEN];
+            rstrcpy (tmpArgv, execCmdInp->cmdArgv, HUGE_NAME_LEN);
+            snprintf (execCmdInp->cmdArgv, HUGE_NAME_LEN, "%s %s",
+                    dataObjInfoHead->filePath, tmpArgv);
+        }
 
-	rstrcpy (addr.zoneName, dataObjInfoHead->rescInfo->zoneName, NAME_LEN);
-	rstrcpy (addr.hostAddr, location.c_str(), LONG_NAME_LEN );
-	  
-	/* just in case we have to do it remote */
-	*execCmdInp->hintPath = '\0';	/* no need for hint */
+        // =-=-=-=-=-=-=-
+        // extract the host location from the resource hierarchy
+        std::string location;
+        eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfoHead->rescHier, location );
+        if( !ret.ok() ) {
+            eirods::log( PASSMSG( "rsGetHostForGet - failed in get_loc_for_hier_String", ret ) );
+            return -1;
+        }
+
+        rstrcpy (addr.zoneName, dataObjInfoHead->rescInfo->zoneName, NAME_LEN);
+        rstrcpy (addr.hostAddr, location.c_str(), LONG_NAME_LEN );
+
+        /* just in case we have to do it remote */
+        *execCmdInp->hintPath = '\0';	/* no need for hint */
         rstrcpy (execCmdInp->execAddr, dataObjInfoHead->rescInfo->rescLoc,
-          LONG_NAME_LEN);
-	freeAllDataObjInfo (dataObjInfoHead);
+                LONG_NAME_LEN);
+        freeAllDataObjInfo (dataObjInfoHead);
         remoteFlag = resolveHost (&addr, &rodsServerHost);
     } else if (*execCmdInp->execAddr  != '\0') {
-	rstrcpy (addr.hostAddr, execCmdInp->execAddr, LONG_NAME_LEN);
+        rstrcpy (addr.hostAddr, execCmdInp->execAddr, LONG_NAME_LEN);
         remoteFlag = resolveHost (&addr, &rodsServerHost);
     } else {
-	rodsServerHost = LocalServerHost;
-	remoteFlag = LOCAL_HOST;
+        rodsServerHost = LocalServerHost;
+        remoteFlag = LOCAL_HOST;
     }
-    
+
     if (remoteFlag == LOCAL_HOST) {
-	status = _rsExecCmd (rsComm, execCmdInp, execCmdOut);
+        status = _rsExecCmd (rsComm, execCmdInp, execCmdOut);
     } else if (remoteFlag == REMOTE_HOST) {
-	status = remoteExecCmd (rsComm, execCmdInp, execCmdOut, 
-	  rodsServerHost);
+        status = remoteExecCmd (rsComm, execCmdInp, execCmdOut, 
+                rodsServerHost);
     } else {
-       rodsLog (LOG_NOTICE,
-         "rsFileOpenByHost: resolveHost of %s error, status = %d",
-          addr.hostAddr, remoteFlag);
+        rodsLog (LOG_NOTICE,
+                "rsFileOpenByHost: resolveHost of %s error, status = %d",
+                addr.hostAddr, remoteFlag);
         status = SYS_UNRECOGNIZED_REMOTE_FLAG;
     }
-     
+
     return (status);
 }
 
@@ -197,11 +209,7 @@ _rsExecCmd (rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut)
 #endif
     
 #ifndef windows_platform    /* UNIX */
-    #ifdef USE_BOOST
     ExecCmdMutex.lock();
-    #else
-    pthread_mutex_lock (&ExecCmdMutex);
-    #endif
     if (pipe (stdoutFd) < 0) 
 #else
 	if(_pipe(stdoutFd, pipe_buf_size, O_BINARY) < 0)
@@ -238,11 +246,7 @@ _rsExecCmd (rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut)
     /* use fork instead of vfork to handle mylti-thread */
     childPid = fork ();
 
-    #ifdef USE_BOOST
     ExecCmdMutex.unlock();
-    #else
-    pthread_mutex_unlock (&ExecCmdMutex);
-    #endif
     if (childPid == 0) {
 	char *tmpStr;
 	/* Indicate that the call came from internal rule */

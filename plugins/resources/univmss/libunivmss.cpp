@@ -268,15 +268,6 @@ extern "C" {
     } // univ_mss_file_stat
 
     /// =-=-=-=-=-=-=-
-    /// @brief interface for POSIX Fstat
-    eirods::error univ_mss_file_fstat(
-        eirods::resource_plugin_context& _ctx,
-        struct stat*                        _statbuf ) {
-        return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
- 
-    } // univ_mss_file_fstat
-
-    /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX lseek
     eirods::error univ_mss_file_lseek(
         eirods::resource_plugin_context& _ctx,
@@ -285,14 +276,6 @@ extern "C" {
         return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
  
     } // univ_mss_file_lseek
-
-    /// =-=-=-=-=-=-=-
-    /// @brief interface for POSIX fsync
-    eirods::error univ_mss_file_fsync(
-        eirods::resource_plugin_context& _ctx ) { 
-        return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
- 
-    } // univ_mss_file_fsync
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX chmod
@@ -455,7 +438,7 @@ extern "C" {
     /// @brief interface for POSIX rename
     eirods::error univ_mss_file_rename(
         eirods::resource_plugin_context& _ctx,
-        const char*                         _new_file_name ) {
+        const char*                      _new_file_name ) {
         // =-=-=-=-=-=-=-
         // check context
         eirods::error err = univ_mss_check_param< eirods::file_object >( _ctx );
@@ -534,6 +517,14 @@ extern "C" {
         return CODE(status);
 
     } // univ_mss_file_rename
+
+    /// =-=-=-=-=-=-=-
+    /// @brief interface for POSIX truncate
+    eirods::error univ_mss_file_truncate(
+        eirods::resource_plugin_context& _ctx ) { 
+        return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
+
+    } // univ_mss_file_truncate
 
     /// =-=-=-=-=-=-=-
     /// @brief interface to determine free space on a device given a path
@@ -954,6 +945,15 @@ extern "C" {
 
     } // univ_mss_file_redirect
 
+
+    // =-=-=-=-=-=-=-
+    // univ_mss__file_rebalance - code which would rebalance the subtree
+    eirods::error univ_mss__file_rebalance(
+        eirods::resource_plugin_context& _ctx ) {
+        return SUCCESS();
+    
+    } // univ_mss__file_rebalancec
+
     // =-=-=-=-=-=-=-
     // 3. create derived class to handle universal mss resources
     //    context string will hold the script to be called.
@@ -1017,12 +1017,11 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_CLOSE,             "univ_mss_file_close" );
         resc->add_operation( eirods::RESOURCE_OP_UNLINK,            "univ_mss_file_unlink" );
         resc->add_operation( eirods::RESOURCE_OP_STAT,              "univ_mss_file_stat" );
-        resc->add_operation( eirods::RESOURCE_OP_FSTAT,             "univ_mss_file_fstat" );
-        resc->add_operation( eirods::RESOURCE_OP_FSYNC,             "univ_mss_file_fsync" );
         resc->add_operation( eirods::RESOURCE_OP_MKDIR,             "univ_mss_file_mkdir" );
         resc->add_operation( eirods::RESOURCE_OP_OPENDIR,           "univ_mss_file_opendir" );
         resc->add_operation( eirods::RESOURCE_OP_READDIR,           "univ_mss_file_readdir" );
         resc->add_operation( eirods::RESOURCE_OP_RENAME,            "univ_mss_file_rename" );
+        resc->add_operation( eirods::RESOURCE_OP_TRUNCATE,          "univ_mss_file_truncate" );
         resc->add_operation( eirods::RESOURCE_OP_FREESPACE,         "univ_mss_file_getfs_freespace" );
         resc->add_operation( eirods::RESOURCE_OP_LSEEK,             "univ_mss_file_lseek" );
         resc->add_operation( eirods::RESOURCE_OP_RMDIR,             "univ_mss_file_rmdir" );
@@ -1032,7 +1031,9 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_REGISTERED,        "univ_mss_file_registered" );
         resc->add_operation( eirods::RESOURCE_OP_UNREGISTERED,      "univ_mss_file_unregistered" );
         resc->add_operation( eirods::RESOURCE_OP_MODIFIED,          "univ_mss_file_modified" );
+
         resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER, "univ_mss_file_redirect" );
+        resc->add_operation( eirods::RESOURCE_OP_REBALANCE,         "univ_mss__file_rebalance" );
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code

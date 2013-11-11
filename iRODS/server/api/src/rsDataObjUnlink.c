@@ -211,8 +211,6 @@ _rsDataObjUnlink (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
     } // if strcmp
     // =-=-=-=-=-=-=-
 
-    char* rescHier = getValByKey(&dataObjUnlinkInp->condInput, RESC_HIER_STR_KW);
-    
     tmpDataObjInfo = *dataObjInfoHead;
     while (tmpDataObjInfo != NULL) {
         status = dataObjUnlinkS (rsComm, dataObjUnlinkInp, tmpDataObjInfo);
@@ -345,9 +343,9 @@ dataObjUnlinkS (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
         // Set the in_pdmo flag
         char* in_pdmo = getValByKey(&dataObjUnlinkInp->condInput, IN_PDMO_KW);
         if(in_pdmo != NULL) {
-            dataObjInfo->in_pdmo = 1;
+            rstrcpy(dataObjInfo->in_pdmo, in_pdmo, MAX_NAME_LEN);
         } else {
-            dataObjInfo->in_pdmo = 0;
+            dataObjInfo->in_pdmo[0] = '\0';
         }
         
         status = l3Unlink (rsComm, dataObjInfo);
@@ -452,7 +450,7 @@ l3Unlink (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
             rstrcpy (fileUnlinkInp.rescHier, dataObjInfo->rescHier, MAX_NAME_LEN);
             rstrcpy (fileUnlinkInp.addr.hostAddr, location.c_str(), NAME_LEN);
             rstrcpy (fileUnlinkInp.objPath, dataObjInfo->objPath, MAX_NAME_LEN);
-            fileUnlinkInp.in_pdmo = dataObjInfo->in_pdmo;
+            rstrcpy (fileUnlinkInp.in_pdmo, dataObjInfo->in_pdmo, MAX_NAME_LEN);
             status = rsFileUnlink (rsComm, &fileUnlinkInp);
 #if 0 // JMC - legacy resource 
             break;

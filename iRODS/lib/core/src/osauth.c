@@ -18,6 +18,7 @@
 
 #include "rods.h"
 #include "rcGlobalExtern.h"
+extern "C" {
 
 int 
 osauthVerifyResponse(char *challenge, char *username, char *response)
@@ -212,7 +213,6 @@ osauthGetKey(char **key, int *key_len)
         rodsLog(LOG_ERROR,
                 "%s: couldn't open %s for reading. errno = %d", 
                 fname, keyfile, errno);
-		free( keybuf ); // JMC cppcheck - leak
         return FILE_OPEN_ERR;
     }
     nb = read(key_fd, keybuf, buflen);
@@ -220,8 +220,6 @@ osauthGetKey(char **key, int *key_len)
         rodsLog(LOG_ERROR,
                 "%s: couldn't read key from %s. errno = %d", 
                 fname, keyfile, errno);
-		close( key_fd ); // JMC cppcheck - resource
-		free( keybuf ); // JMC cppcheck - leak
         return FILE_READ_ERR;
     }
     close(key_fd);
@@ -229,7 +227,6 @@ osauthGetKey(char **key, int *key_len)
     *key_len = buflen;
     *key = keybuf;
 
-	free( keybuf ); // JMC cppcheck - leak
     return 0;
 #else /* defined OS_AUTH */
     if (ProcessType==CLIENT_PT) {
@@ -452,4 +449,4 @@ osauthGetUsername(char *username, int username_len)
     return uid;
 }
     
-
+} // extern "C"

@@ -33,3 +33,18 @@ Mar  6 09:47:34 pid:21588 NOTICE: rsGeneralRowInsert: rcGeneralRowInsert failed
 Mar  6 09:47:34 pid:21588 ERROR: executeRuleAction Failed for msiAdmInsertRulesFromStructIntoDB status = -806000 
 CAT_SQL_ERR
 
+
+
+
+
+
+Ticket Item:  [#1763] encrypted parallel transfer causing intermittent crash in CI VMs
+--------------------------------------------------------------------------------------
+
+CI VMs are throwing a stacktrace on the client side in the call to initialization_vector()
+
+
+
+repeatable occasionally on memory-thin machines with the following test
+
+python -m unittest -b test_eirods_resource_types.Test_Compound_Resource.test_ssl_iput_small_and_large_files

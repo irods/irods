@@ -248,7 +248,7 @@ int testCheckAuth(rsComm_t *rsComm, char *testAdminUser,  char *testUser,
     strncat(userNameAndZone, "#", sizeof userNameAndZone);
     strncat(userNameAndZone, testUserZone, sizeof userNameAndZone);
 
-    status = chlCheckAuth(rsComm, challenge, response,
+    status = chlCheckAuth(rsComm, 0, challenge, response,
                           userNameAndZone,
                           &userPrivLevel, &clientPrivLevel);
 
@@ -894,8 +894,8 @@ main(int argc, char **argv) {
       char userName[NAME_LEN];
       char rodsZone[NAME_LEN];
     */
-    if ((status = chlOpen(serverConfig.DBUsername,
-                          serverConfig.DBPassword)) != 0) {
+    if ((status = chlOpen( &serverConfig ) ) != 0) {
+                          
         rodsLog (LOG_SYS_FATAL,
                  "initInfoWithRcat: chlopen Error. Status = %d",
                  status);
@@ -1081,8 +1081,8 @@ main(int argc, char **argv) {
                 printf ("close %d error", i);
             }
       
-            if ((status = chlOpen(serverConfig.DBUsername,
-                                  serverConfig.DBPassword)) != 0) {
+            if ((status = chlOpen( &serverConfig)) != 0) {
+                                  
                 rodsLog (LOG_SYS_FATAL,
                          "initInfoWithRcat: chlopen %d Error. Status = %d",
                          i, status);

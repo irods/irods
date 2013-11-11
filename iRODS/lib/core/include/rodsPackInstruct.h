@@ -72,7 +72,7 @@
 
 #define GenQueryOut_PI "int rowCnt; int attriCnt; int continueInx; int totalRowCount; struct SqlResult_PI[MAX_SQL_ATTR];"
 #define GenArraysInp_PI "int rowCnt; int attriCnt; int continueInx; int totalRowCount; struct KeyValPair_PI; struct SqlResult_PI[MAX_SQL_ATTR];"
-#define DataObjInfo_PI "str objPath[MAX_NAME_LEN]; str rescName[NAME_LEN]; str rescHier[MAX_NAME_LEN]; str rescGroupName[NAME_LEN]; str dataType[NAME_LEN]; double dataSize; str chksum[NAME_LEN]; str version[NAME_LEN]; str filePath[MAX_NAME_LEN]; str *rescInfo; str dataOwnerName[NAME_LEN]; str dataOwnerZone[NAME_LEN]; int  replNum; int  replStatus; str statusString[NAME_LEN]; double  dataId; double collId; int  dataMapId; int flags; str dataComments[LONG_NAME_LEN]; str dataMode[SHORT_STR_LEN]; str dataExpiry[TIME_LEN]; str dataCreate[TIME_LEN]; str dataModify[TIME_LEN]; str dataAccess[NAME_LEN]; int  dataAccessInx; int writeFlag; str destRescName[NAME_LEN]; str backupRescName[NAME_LEN]; str subPath[MAX_NAME_LEN]; int *specColl;  int regUid; int otherFlags; int in_pdmo; int *next;"
+#define DataObjInfo_PI "str objPath[MAX_NAME_LEN]; str rescName[NAME_LEN]; str rescHier[MAX_NAME_LEN]; str rescGroupName[NAME_LEN]; str dataType[NAME_LEN]; double dataSize; str chksum[NAME_LEN]; str version[NAME_LEN]; str filePath[MAX_NAME_LEN]; str *rescInfo; str dataOwnerName[NAME_LEN]; str dataOwnerZone[NAME_LEN]; int  replNum; int  replStatus; str statusString[NAME_LEN]; double  dataId; double collId; int  dataMapId; int flags; str dataComments[LONG_NAME_LEN]; str dataMode[SHORT_STR_LEN]; str dataExpiry[TIME_LEN]; str dataCreate[TIME_LEN]; str dataModify[TIME_LEN]; str dataAccess[NAME_LEN]; int  dataAccessInx; int writeFlag; str destRescName[NAME_LEN]; str backupRescName[NAME_LEN]; str subPath[MAX_NAME_LEN]; int *specColl;  int regUid; int otherFlags; str in_pdmo[MAX_NAME_LEN]; int *next;"
 
 /* transStat_t is being replaced by transferStat_t because of the 64 bits
  * padding */
@@ -100,12 +100,24 @@
  
 #define TagStruct_PI "int ssLen; str *preTag[ssLen]; str *postTag[ssLen]; str *keyWord[ssLen];" 
 
+
+
+
 #define RodsObjStat_PI "double objSize; int objType; int dataMode; str dataId[NAME_LEN]; str chksum[NAME_LEN]; str ownerName[NAME_LEN]; str ownerZone[NAME_LEN]; str createTime[TIME_LEN]; str modifyTime[TIME_LEN]; struct *SpecColl_PI;" 
+
+
+
+
+
 #define ReconnMsg_PI "int status; int cookie; int procState; int flag;"
 #define VaultPathPolicy_PI "int scheme; int addUserName; int trimDirCnt;"
 #define StrArray_PI "int len; int size; str *value(len)(size);" 
 #define IntArray_PI "int len; int *value(len);" 
-#define SpecColl_PI "int collClass; int type; str collection[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN]; str resource[NAME_LEN]; str phyPath[MAX_NAME_LEN]; str cacheDir[MAX_NAME_LEN]; int cacheDirty; int replNum;"
+
+
+#define SpecColl_PI "int collClass; int type; str collection[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN]; str resource[NAME_LEN]; str rescHier[MAX_NAME_LEN]; str phyPath[MAX_NAME_LEN]; str cacheDir[MAX_NAME_LEN]; int cacheDirty; int replNum;"
+
+
 #define SubFile_PI "struct RHostAddr_PI; str subFilePath[MAX_NAME_LEN]; int mode; int flags; double offset; struct *SpecColl_PI;" 
 #define XmsgTicketInfo_PI "int sendTicket; int rcvTicket; int expireTime; int flag;"
 #define SendXmsgInfo_PI "int msgNumber; str msgType[HEADER_TYPE_LEN]; int numRcv; int flag; str *msg; int numDel; str *delAddress[numDel]; int *delPort(numDel); str *miscInfo;"

@@ -209,12 +209,79 @@
 #define AGE_KW                      "age"  /* age of the file for itrim */
 
 // =-=-=-=-=-=-=-
-// eirods keywords definitions
+// eirods general keywords definitions
 #define RESC_HIER_STR_KW             "resc_hier"
 #define DEST_RESC_HIER_STR_KW        "dest_resc_hier"
 #define IN_PDMO_KW                   "in_pdmo"
 #define STAGE_OBJ_KW                 "stage_object"
 #define SYNC_OBJ_KW                  "sync_object"
 #define IN_REPL_KW                   "in_repl"
+
+// =-=-=-=-=-=-=-
+// eirods tcp keyword definitions
+#define SOCKET_HANDLE_KW             "tcp_socket_handle"
+
+// =-=-=-=-=-=-=-
+// eirods ssl keyword definitions
+#define SSL_HOST_KW                  "ssl_host"
+#define SSL_SHARED_SECRET_KW         "ssl_shared_secret"
+#define SSL_KEY_SIZE_KW              "ssl_key_size"
+#define SSL_SALT_SIZE_KW             "ssl_salt_size"
+#define SSL_NUM_HASH_ROUNDS_KW       "ssl_num_hash_rounds"
+#define SSL_ALGORITHM_KW             "ssl_algorithm"
+
+// =-=-=-=-=-=-=-
+// eirods data_object keyword definitions
+#define PHYSICAL_PATH_KW             "physical_path"
+#define MODE_KW                      "mode_kw"
+#define FLAGS_KW                     "flags_kw"
+// borrowed RESC_HIER_STR_KW
+
+// =-=-=-=-=-=-=-
+// eirods file_object keyword definitions
+#define LOGICAL_PATH_KW              "logical_path"
+#define FILE_DESCRIPTOR_KW           "file_descriptor"
+#define L1_DESC_IDX_KW               "l1_desc_idx"
+#define SIZE_KW                      "file_size"
+#define REPL_REQUESTED_KW            "repl_requested"
+// borrowed IN_PDMO_KW
+
+// =-=-=-=-=-=-=-
+// eirods structured_object keyword definitions
+#define HOST_ADDR_KW                 "host_addr"
+#define ZONE_NAME_KW                 "zone_name"
+#define PORT_NUM_KW                  "port_num"
+#define SUB_FILE_PATH_KW             "sub_file_path"
+// borrowed OFFSET_KW
+// borrowed DATA_TYPE_KW
+// borrowed OPR_TYPE_KW
+
+// =-=-=-=-=-=-=-
+// eirods spec coll keyword definitions
+#define SPEC_COLL_CLASS_KW           "spec_coll_class"
+#define SPEC_COLL_TYPE_KW            "spec_coll_type"
+#define SPEC_COLL_OBJ_PATH_KW        "spec_coll_obj_path"
+#define SPEC_COLL_RESOURCE_KW        "spec_coll_resource"
+#define SPEC_COLL_RESC_HIER_KW       "spec_coll_resc_hier"
+#define SPEC_COLL_PHY_PATH_KW        "spec_coll_phy_path"
+#define SPEC_COLL_CACHE_DIR_KW       "spec_coll_cache_dir"
+#define SPEC_COLL_CACHE_DIRTY        "spec_coll_cache_dirty"
+#define SPEC_COLL_REPL_NUM           "spec_coll_repl_num"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #endif	/* RODS_KEYWD_DEF */

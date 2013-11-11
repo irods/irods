@@ -379,8 +379,6 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // make the call to stat
-rodsLog( LOG_NOTICE, "XXXX - mock_archive_stat_plugin :: calling stat on [%s]", 
-         fco->physical_path().c_str() );
         int status = stat( fco->physical_path().c_str(), _statbuf );
 
         // =-=-=-=-=-=-=-
@@ -415,17 +413,6 @@ rodsLog( LOG_NOTICE, "XXXX - mock_archive_stat_plugin :: calling stat on [%s]",
     } // mock_archive_stat_plugin
 
     // =-=-=-=-=-=-=-
-    // interface for POSIX Fstat
-    eirods::error mock_archive_fstat_plugin( 
-        eirods::resource_plugin_context& _ctx,
-        struct stat*                        _statbuf ) {
-        // =-=-=-=-=-=-=-
-        // operation not supported
-        return ERROR( SYS_NOT_SUPPORTED, "fstat not supported" );
-
-    } // mock_archive_fstat_plugin
-
-    // =-=-=-=-=-=-=-
     // interface for POSIX lseek
     eirods::error mock_archive_lseek_plugin( 
         eirods::resource_plugin_context& _ctx,
@@ -436,16 +423,6 @@ rodsLog( LOG_NOTICE, "XXXX - mock_archive_stat_plugin :: calling stat on [%s]",
         return ERROR( SYS_NOT_SUPPORTED, "lseek not supported" );
 
     } // mock_archive_lseek_plugin
-
-    // =-=-=-=-=-=-=-
-    // interface for POSIX fsync
-    eirods::error mock_archive_fsync_plugin( 
-        eirods::resource_plugin_context& _ctx ) { 
-        // =-=-=-=-=-=-=-
-        // operation not supported
-        return ERROR( SYS_NOT_SUPPORTED, "fsync not supported" );
-
-    } // mock_archive_fsync_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX mkdir
@@ -611,6 +588,16 @@ rodsLog( LOG_NOTICE, "XXXX - mock_archive_stat_plugin :: calling stat on [%s]",
     } // mock_archive_rename_plugin
 
     // =-=-=-=-=-=-=-
+    // interface to truncate a given data object
+    eirods::error mock_archive_truncate_plugin( 
+        eirods::resource_plugin_context& _ctx ) { 
+        // =-=-=-=-=-=-=-
+        // operation not supported
+        return ERROR( SYS_NOT_SUPPORTED, "truncate not supported" );
+
+    } // mock_archive_truncate_plugin
+
+    // =-=-=-=-=-=-=-
     // interface to determine free space on a device given a path
     eirods::error mock_archive_get_fsfreespace_plugin( 
         eirods::resource_plugin_context& _ctx ) { 
@@ -624,10 +611,7 @@ rodsLog( LOG_NOTICE, "XXXX - mock_archive_stat_plugin :: calling stat on [%s]",
     mockArchiveCopyPlugin(
         int         mode, 
         const char* srcFileName, 
-        const char* destFileName )
-    {
-        rodsLog( LOG_NOTICE, "XXXX - mockArchiveCopyPlugin copy from src [%s] to dst [%s]", srcFileName, destFileName );
-
+        const char* destFileName ) {
         int inFd, outFd;
         char myBuf[TRANS_BUF_SZ];
         rodsLong_t bytesCopied = 0;
@@ -778,9 +762,6 @@ rodsLog( LOG_NOTICE, "XXXX - mock_archive_stat_plugin :: calling stat on [%s]",
         for(int i = 0; i < 16; ++i) {
             ins << std::setfill('0') << std::setw(2) << std::hex << (int)hash[i];
         }
-
-        rodsLog( LOG_NOTICE, "XXXX - mock_archive :: buf [%s]   hash [%s]", md5Buf, ins.str().c_str() );
-
 
         // =-=-=-=-=-=-=-
         // get the vault path for the resource
@@ -1016,7 +997,15 @@ rodsLog( LOG_NOTICE, "XXXX - mock_archive_stat_plugin :: calling stat on [%s]",
     } // mock_archive_redirect_plugin
 
     // =-=-=-=-=-=-=-
-    // 3. create derived class to handle unix file system resources
+    // mock_archive_file_rebalance - code which would rebalance the subtree
+    eirods::error mock_archive_file_rebalance(
+        eirods::resource_plugin_context& _ctx ) {
+        return SUCCESS();
+
+    } // mock_archive_file_rebalancec
+
+    // =-=-=-=-=-=-=-
+    // 3. create derived class to handle mock_archive file system resources
     //    necessary to do custom parsing of the context string to place
     //    any useful values into the property map for reference in later
     //    operations.  semicolon is the preferred delimiter
@@ -1053,39 +1042,6 @@ rodsLog( LOG_NOTICE, "XXXX - mock_archive_stat_plugin :: calling stat on [%s]",
         mockarchive_resource( const std::string& _inst_name, 
                               const std::string& _context ) : 
             eirods::resource( _inst_name, _context ) {
-
-            if( !context_.empty() ) {
-                // =-=-=-=-=-=-=-
-                // tokenize context string into key/val pairs assuming a ; as a separator
-                std::vector< std::string > key_vals;
-                eirods::string_tokenize( _context, ";", key_vals );
-
-                // =-=-=-=-=-=-=-
-                // tokenize each key/val pair using = as a separator and
-                // add them to the property list
-                std::vector< std::string >::iterator itr = key_vals.begin();
-                for( ; itr != key_vals.end(); ++itr ) {
-
-                    if( !itr->empty() ) {
-                        // =-=-=-=-=-=-=-
-                        // break up key and value into two strings
-                        std::vector< std::string > vals;
-                        eirods::string_tokenize( *itr, "=", vals );
-                        
-                        // =-=-=-=-=-=-=-
-                        // break up key and value into two strings
-                        if( vals.size() == 2 ) {
-                            properties_[ vals[0] ] = vals[1];
-                        } else {
-                            // this would be an error case  
-                        }
-
-                    } // if key_val not empty
-                
-                } // for itr 
-            
-            } // if context not empty
-
         } // ctor
 
 
@@ -1139,15 +1095,14 @@ rodsLog( LOG_NOTICE, "XXXX - mock_archive_stat_plugin :: calling stat on [%s]",
         resc->add_operation( eirods::RESOURCE_OP_CLOSE,        "mock_archive_close_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_UNLINK,       "mock_archive_unlink_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_STAT,         "mock_archive_stat_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_FSTAT,        "mock_archive_fstat_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_LSEEK,        "mock_archive_lseek_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_FSYNC,        "mock_archive_fsync_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_MKDIR,        "mock_archive_mkdir_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_RMDIR,        "mock_archive_rmdir_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_OPENDIR,      "mock_archive_opendir_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_CLOSEDIR,     "mock_archive_closedir_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_READDIR,      "mock_archive_readdir_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_RENAME,       "mock_archive_rename_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_TRUNCATE,     "mock_archive_truncate_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_FREESPACE,    "mock_archive_get_fsfreespace_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_STAGETOCACHE, "mock_archive_stagetocache_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_SYNCTOARCH,   "mock_archive_synctoarch_plugin" );
@@ -1156,6 +1111,7 @@ rodsLog( LOG_NOTICE, "XXXX - mock_archive_stat_plugin :: calling stat on [%s]",
         resc->add_operation( eirods::RESOURCE_OP_MODIFIED,     "mock_archive_modified_plugin" );
         
         resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER,     "mock_archive_redirect_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_REBALANCE,             "mock_archive_file_rebalance" );
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code

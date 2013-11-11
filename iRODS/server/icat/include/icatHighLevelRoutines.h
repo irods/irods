@@ -11,11 +11,21 @@
 #include "objInfo.h"
 #include "ruleExecSubmit.h"
 #include "rcConnect.h"
+#include "icatStructs.h"
 #include "rodsGeneralUpdate.h"
 #include "specificQuery.h" 
 #include "phyBundleColl.h"
+#include "readServerConfig.h"
 
-int chlOpen(char *DBUser, char *DBpasswd);
+#include <string>
+#include <vector>
+#include <map>
+
+#include <boost/tuple/tuple.hpp>
+
+extern icatSessionStruct icss;
+
+int chlOpen( rodsServerConfig* );
 int chlClose();
 int chlIsConnected();
 int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
@@ -53,7 +63,7 @@ int chlGeneralUpdate(generalUpdateInp_t generalUpdateInp);
 
 int chlDelCollByAdmin(rsComm_t *rsComm, collInfo_t *collInfo);
 int chlDelColl(rsComm_t *rsComm, collInfo_t *collInfo);
-int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
+int chlCheckAuth(rsComm_t *rsComm, const char* scheme, char *challenge, char *response,
                  char *username, int *userPrivLevel, int *clientPrivLevel);
 int chlMakeTempPw(rsComm_t *rsComm, char *pwValueToHash);
 int decodePw(rsComm_t *rsComm, char *in, char *out);
@@ -175,5 +185,32 @@ int chlUpdateIrodsPamPassword(rsComm_t *rsComm, char *userName,
 
 
 eirods::error chlRescObjCount(const std::string& _resc_name, int& _rtn_obj_count);
+
+int chlSubstituteResourceHierarchies(rsComm_t *rsComm, const char *old_hier, const char *new_hier);
+
+/// =-=-=-=-=-=-=-
+/// @brief typedefs and prototype for query used for rebalancing operation
+typedef std::vector< int > dist_child_result_t;
+
+/// =-=-=-=-=-=-=-
+/// @brief query which distinct data objects do not existin on a
+///        given child resource which do exist on the parent
+int chlGetDistinctDataObjsMissingFromChildGivenParent( 
+    const std::string&   _parent,
+    const std::string&   _child,
+    int                  _limit,
+    dist_child_result_t& _results );
+
+/// =-=-=-=-=-=-=-
+/// @brief the the distinct data object count for a resource
+int chlGetDistinctDataObjCountOnResource( 
+    const std::string&   _resc_name,
+    long long&           _count );
+
+int chlGetHierarchyForResc(
+		const std::string&	resc_name,
+		const std::string&	zone_name,
+		std::string& hierarchy);
+
 
 #endif /* ICAT_HIGHLEVEL_ROUTINES_H */

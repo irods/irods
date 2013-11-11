@@ -23,6 +23,8 @@ int msiGetSystemTime(msParam_t* outParam,  msParam_t* inpParam, ruleExecInfo_t *
 int msiGetFormattedSystemTime( msParam_t* outParam, msParam_t* inpParam, msParam_t* inpFormatParam, ruleExecInfo_t *rei );
 int msiHumanToSystemTime(msParam_t* inpParam, msParam_t* outParam, ruleExecInfo_t *rei);
 int msiStrToBytesBuf(msParam_t* str_msp, msParam_t* buf_msp, ruleExecInfo_t *rei);
+int msiBytesBufToStr(msParam_t* buf_msp, msParam_t* str_msp, ruleExecInfo_t *rei);
+
 int msiApplyDCMetadataTemplate(msParam_t* inpParam, msParam_t* outParam, ruleExecInfo_t *rei);
 int msiListEnabledMS(msParam_t *outKVPairs, ruleExecInfo_t *rei);
 int msiServerBackup(msParam_t *options, msParam_t *keyValOut, ruleExecInfo_t *rei);
@@ -40,7 +42,7 @@ int msiMakeQuery(msParam_t* selectListParam, msParam_t* conditionsParam,
 		 msParam_t* queryOutParam, ruleExecInfo_t *rei);
 int msiMakeGenQuery(msParam_t* selectListStr, msParam_t* condStr, msParam_t* genQueryInpParam, ruleExecInfo_t *rei);
 int msiGetMoreRows(msParam_t *genQueryInp_msp, msParam_t *genQueryOut_msp, msParam_t *continueInx, ruleExecInfo_t *rei);
-int msiCloseGenQuery(msParam_t *genQueryInp_msp, msParam_t *genQueryOut_msp, ruleExecInfo_t *rei); // JMC - backport 4713
+int msiCloseGenQuery(msParam_t *genQueryInp_msp, msParam_t *genQueryOut_msp, ruleExecInfo_t *rei);
 int msiAddSelectFieldToGenQuery(msParam_t *select, msParam_t *function, msParam_t *queryInput, ruleExecInfo_t *rei);
 int msiAddConditionToGenQuery(msParam_t *attribute, msParam_t *coperator, msParam_t *value, msParam_t *queryInput, ruleExecInfo_t *rei);
 int msiPrintGenQueryOutToBuffer(msParam_t *queryOut, msParam_t *format, msParam_t *buffer, ruleExecInfo_t *rei);
@@ -153,6 +155,11 @@ int msiDataObjPutWithOptions (msParam_t *inpParam1,
 int
 msiPrintGenQueryInp( msParam_t *where, msParam_t* genQueryInpParam, ruleExecInfo_t *rei);
 
+int msiExecStrCondQueryWithOptionsNew(msParam_t* queryParam,
+                                  msParam_t* zeroResultsIsOK,
+                                  msParam_t* maxReturnedRowsParam,
+                                  msParam_t* genQueryOutParam,
+                                  ruleExecInfo_t *rei);
 int msiExecStrCondQueryWithOptions(msParam_t* queryParam,
                                   msParam_t* zeroResultsIsOK,
                                   msParam_t* maxReturnedRowsParam,
@@ -201,6 +208,14 @@ int
 msiSetBulkPutPostProcPolicy (msParam_t *xflag, ruleExecInfo_t *rei);
 int msiCutBufferInHalf(msParam_t* mPIn, ruleExecInfo_t *rei);
 int msiDoSomething(msParam_t *inParam, msParam_t *outParam, ruleExecInfo_t *rei);
+int msiDboExec(msParam_t *dbrName, msParam_t *dboName, msParam_t *dborName, 
+               msParam_t *options, 
+               msParam_t *inpParam1, msParam_t *inpParam2, 
+               msParam_t *inpParam3, msParam_t *inpParam4, 
+               msParam_t *inpParam5, msParam_t *inpParam6, 
+               ruleExecInfo_t *rei);
+int msiDbrCommit(msParam_t *dbrName, ruleExecInfo_t *rei);
+int msiDbrRollback(msParam_t *dbrName, ruleExecInfo_t *rei);
 int msiString2StrArray(msParam_t *inBufferP, msParam_t* outStrArrayP, ruleExecInfo_t *rei);
 
 #ifdef USE_EIRODS
@@ -471,8 +486,10 @@ microsdef_t MicrosTable[] = {
   {"writeKeyValPairs",3,(funcPtr) writeKeyValPairs},
   {"msiGetDiffTime", 4, (funcPtr) msiGetDiffTime},
   {"msiGetSystemTime", 2, (funcPtr) msiGetSystemTime},
+  {"msiGetFormattedSystemTime", 3, (funcPtr) msiGetFormattedSystemTime},
   {"msiHumanToSystemTime", 2, (funcPtr) msiHumanToSystemTime},
   {"msiStrToBytesBuf", 2, (funcPtr) msiStrToBytesBuf},
+  {"msiBytesBufToStr", 2, (funcPtr) msiBytesBufToStr},
   {"msiApplyDCMetadataTemplate", 2, (funcPtr) msiApplyDCMetadataTemplate},
   {"msiListEnabledMS", 1, (funcPtr) msiListEnabledMS},
   {"msiServerBackup", 2, (funcPtr) msiServerBackup},
@@ -482,7 +499,8 @@ microsdef_t MicrosTable[] = {
   {"msiAddKeyVal",3,(funcPtr) msiAddKeyVal},
   {"applyAllRules",3,(funcPtr) msiApplyAllRules},
   {"msiExecStrCondQuery",2,(funcPtr) msiExecStrCondQuery},
-  {"msiExecStrCondQueryWithOptions",4,(funcPtr) msiExecStrCondQueryWithOptions},
+  {"msiExecStrCondQueryWithOptionsNew",4,(funcPtr) msiExecStrCondQueryWithOptionsNew},
+  {"msiExecStrCondQueryWithOptions",4,(funcPtr) msiExecStrCondQueryWithOptions},  
   {"msiExecGenQuery",2,(funcPtr) msiExecGenQuery},
   {"msiMakeQuery",3,(funcPtr) msiMakeQuery},
   {"msiMakeGenQuery",3,(funcPtr) msiMakeGenQuery},
@@ -534,6 +552,7 @@ microsdef_t MicrosTable[] = {
   {"msiFlushMonStat",2,(funcPtr) msiFlushMonStat},
   {"msiDigestMonStat",7,(funcPtr) msiDigestMonStat},
   {"msiSplitPath",3,(funcPtr) msiSplitPath},
+  {"msiSplitPathByKey",4,(funcPtr) msiSplitPathByKey},
   {"msiGetSessionVarValue",2,(funcPtr) msiGetSessionVarValue},
   {"msiAutoReplicateService", 5, (funcPtr)msiAutoReplicateService},
   {"msiDataObjAutoMove", 5, (funcPtr)msiDataObjAutoMove},
@@ -561,6 +580,50 @@ microsdef_t MicrosTable[] = {
   {"msiSubstr",4,(funcPtr) msiSubstr},
   {"msiCutBufferInHalf",1,(funcPtr) msiCutBufferInHalf},
   {"msiDoSomething", 2, (funcPtr) msiDoSomething},  
+  {"msiDbrCommit", 1, (funcPtr) msiDbrCommit},
+  {"msiDbrRollback", 1, (funcPtr) msiDbrRollback},
+  {"msiDboExec",10,(funcPtr) msiDboExec},
   {"msiExit",2,(funcPtr) msiExit},
+  {"msiStrCat",2,(funcPtr) msiStrCat},
   {"msiSysMetaModify",2,(funcPtr) msiSysMetaModify},
+#ifdef NETCDF_API
+  {"msiNcOpen",3,(funcPtr) msiNcOpen},
+  {"msiNcCreate",3,(funcPtr) msiNcCreate},
+  {"msiNcClose",1,(funcPtr) msiNcClose},
+  {"msiNcInqId",4,(funcPtr) msiNcInqId},
+  {"msiNcInqWithId",4,(funcPtr) msiNcInqWithId},
+  {"msiNcGetVarsByType",8,(funcPtr) msiNcGetVarsByType},
+  {"msiNcGetArrayLen",2,(funcPtr) msiNcGetArrayLen},
+  {"msiNcGetNumDim",2,(funcPtr) msiNcGetNumDim},
+  {"msiNcGetDataType",2,(funcPtr) msiNcGetDataType},
+  {"msiNcGetElementInArray",3,(funcPtr) msiNcGetElementInArray},
+  {"msiFloatToString",2,(funcPtr) msiFloatToString},
+  {"msiNcInq",2,(funcPtr) msiNcInq},
+  {"msiNcGetNdimsInInqOut",3,(funcPtr) msiNcGetNdimsInInqOut},
+  {"msiNcGetNattsInInqOut",3,(funcPtr) msiNcGetNattsInInqOut},
+  {"msiNcGetNvarsInInqOut",2,(funcPtr) msiNcGetNvarsInInqOut},
+  {"msiNcGetFormatInInqOut",2,(funcPtr) msiNcGetFormatInInqOut},
+  {"msiNcGetVarNameInInqOut",3,(funcPtr) msiNcGetVarNameInInqOut},
+  {"msiNcGetDimNameInInqOut",4,(funcPtr) msiNcGetDimNameInInqOut},
+  {"msiNcGetAttNameInInqOut",4,(funcPtr) msiNcGetAttNameInInqOut},
+  {"msiNcGetVarTypeInInqOut",3,(funcPtr) msiNcGetVarTypeInInqOut},
+  {"msiNcIntDataTypeToStr",2,(funcPtr) msiNcIntDataTypeToStr},
+  {"msiNcGetAttValStrInInqOut",4,(funcPtr) msiNcGetAttValStrInInqOut},
+  {"msiAddToNcArray",3,(funcPtr) msiAddToNcArray},
+  {"msiNcGetDimLenInInqOut",4,(funcPtr) msiNcGetDimLenInInqOut},
+  {"msiNcGetVarIdInInqOut",3,(funcPtr) msiNcGetVarIdInInqOut},
+  {"msiFreeNcStruct",1,(funcPtr) msiFreeNcStruct},
+#ifdef NETCDF4_API
+  {"msiNcOpenGroup",3,(funcPtr) msiNcOpenGroup},
+  {"msiNcInqGrps",2,(funcPtr) msiNcInqGrps},
+#endif
+  {"msiNcGetNGrpsInInqOut",2,(funcPtr) msiNcGetNGrpsInInqOut},
+  {"msiNcGetGrpInInqOut",3,(funcPtr) msiNcGetGrpInInqOut},
+  {"msiNcRegGlobalAttr",3,(funcPtr) msiNcRegGlobalAttr},
+  {"msiNcSubsetVar",5,(funcPtr) msiNcSubsetVar},
+  {"msiNcVarStat",2,(funcPtr) msiNcVarStat},
+#ifdef LIB_CF
+  {"msiNccfGetVara",10,(funcPtr) msiNccfGetVara},
+#endif
+#endif
 #endif

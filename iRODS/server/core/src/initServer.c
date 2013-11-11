@@ -6,13 +6,6 @@
 /* initServer.c - Server initialization routines
  */
 
-#ifdef USE_BOOST
-#else
-#ifndef windows_platform
-#include <pthread.h>
-#endif
-#endif
-
 #include "initServer.h"
 #include "resource.h"
 #include "rsGlobalExtern.h"
@@ -89,6 +82,9 @@ resolveHost (rodsHostAddr_t *addr, rodsServerHost_t **rodsServerHost)
     }
 
     int status = queRodsServerHost (&ServerHostHead, tmpRodsServerHost);
+    if( status < 0 ) {
+        rodsLog( LOG_ERROR, "resolveHost - queRodsServerHost failed." );
+    }
     *rodsServerHost = tmpRodsServerHost;
 
     return (tmpRodsServerHost->localFlag);
@@ -1070,7 +1066,7 @@ initZone (rsComm_t *rsComm)
     genQueryOut_t *genQueryOut = NULL;
     int status, i;
     sqlResult_t *zoneName, *zoneType, *zoneConn, *zoneComment;
-    char *tmpZoneName, *tmpZoneType, *tmpZoneConn, *tmpZoneComment;
+    char *tmpZoneName, *tmpZoneType, *tmpZoneConn;//, *tmpZoneComment;
 
     /* configure the local zone first or rsGenQuery would not work */
 
@@ -1139,7 +1135,7 @@ initZone (rsComm_t *rsComm)
         tmpZoneName = &zoneName->value[zoneName->len * i];
         tmpZoneType = &zoneType->value[zoneType->len * i];
         tmpZoneConn = &zoneConn->value[zoneConn->len * i];
-        tmpZoneComment = &zoneComment->value[zoneComment->len * i];
+        //tmpZoneComment = &zoneComment->value[zoneComment->len * i];
         if (strcmp (tmpZoneType, "local") == 0) {
             if (strcmp (myEnv->rodsZone, tmpZoneName) != 0) {
                 rodsLog (LOG_ERROR,
@@ -1369,17 +1365,9 @@ initAgent (int processType, rsComm_t *rsComm)
         } else {
             rsComm->cookie = random ();
         }
-#ifdef USE_BOOST
         rsComm->lock = new boost::mutex;
         rsComm->cond = new boost::condition_variable;
         rsComm->reconnThr = new boost::thread( reconnManager, rsComm );
-#else
-        pthread_mutex_init (&rsComm->lock, NULL);
-        pthread_cond_init (&rsComm->cond, NULL);
-        status = pthread_create  (&rsComm->reconnThr, pthread_attr_default,
-                                  (void *(*)(void *)) reconnManager,
-                                  (void *) rsComm);
-#endif
         if (status < 0) {
             rodsLog (LOG_ERROR, "initAgent: pthread_create failed, stat=%d",
                      status);
@@ -1514,8 +1502,6 @@ initHostConfigByFile (rsComm_t *rsComm)
     char hostBuf[LONG_NAME_LEN];
     rodsServerHost_t *tmpRodsServerHost;
     int lineLen, bytesCopied;
-    int status;
-
     hostCongFile =  (char *) malloc((strlen (getConfigDir()) +
                                      strlen(HOST_CONFIG_FILE) + 24));
 
@@ -1550,14 +1536,15 @@ initHostConfigByFile (rsComm_t *rsComm)
                 tmpRodsServerHost->localFlag = REMOTE_HOST;
                 /* local zone */
                 tmpRodsServerHost->zoneInfo = ZoneInfoHead;
-                status = queRodsServerHost (&HostConfigHead, tmpRodsServerHost);
-
+                int status = queRodsServerHost (&HostConfigHead, tmpRodsServerHost);
+                if( status < 0 ) {}
             }
             cnt ++;
             if (strcmp (hostBuf, "localhost") == 0) {
                 tmpRodsServerHost->localFlag = LOCAL_HOST;
             } else {
-                status = queHostName (tmpRodsServerHost, hostBuf, 0);
+                int status = queHostName (tmpRodsServerHost, hostBuf, 0);
+                if( status < 0 ) {}
             }
         }
     }

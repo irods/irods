@@ -113,7 +113,6 @@ int _rsFileStat(
     fileStatInp_t* _stat_inp, 
     rodsStat_t**   _stat_out ) {
     struct stat myFileStat;
-
     if(_stat_inp->objPath[0] == '\0') {
         std::stringstream msg;
         msg << "Empty logical path.";

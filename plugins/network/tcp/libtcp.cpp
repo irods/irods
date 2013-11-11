@@ -18,14 +18,9 @@
 // stl includes
 #include <sstream>
 #include <string>
+#include <iostream>
 
 extern "C" {
-    // =-=-=-=-=-=-=-
-    // 1. Define plugin Version Variable, used in plugin
-    //    creation when the factory function is called.
-    //    -- currently only 1.0 is supported.
-    double EIRODS_PLUGIN_INTERFACE_VERSION=1.0;
-    
     // =-=-=-=-=-=-=-
     // local function to read a buffer from a socket
     eirods::error tcp_socket_read(

@@ -163,7 +163,7 @@ int getListOfResc(rsComm_t *rsComm, char serverList[MAX_VALUE][MAX_NAME_LEN], in
  * their associated server. If config file exist, restrict *
  * the list to serverList                                  *
  ***********************************************************/
-    int i, j, k, index[MAX_NSERVERS], l;
+  int i, j, k, index[MAX_NSERVERS], l, status;
     genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut;
   
@@ -177,7 +177,11 @@ int getListOfResc(rsComm_t *rsComm, char serverList[MAX_VALUE][MAX_NAME_LEN], in
     addInxIval(&genQueryInp.selectInp, COL_R_TYPE_NAME, 1);
     addInxIval(&genQueryInp.selectInp, COL_R_VAULT_PATH, 1);
 
-    rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
+    status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
+    if( status < 0)
+    {
+      eirods::log(ERROR (status, "rsGenQuery failed.")); 
+    }
     if ( genQueryOut->rowCnt > 0 ) {
         l = 0;
         for (i=0; i<genQueryOut->attriCnt; i++) {
@@ -473,6 +477,7 @@ int msiCheckHostAccessControl (ruleExecInfo_t *rei) {
     rc = checkHostAccessControl(username, hostclient, group);
     if ( rc < 0 ) {
         rodsLog (LOG_NOTICE, "Access to user %s from host %s has been refused.\n", username, hostclient);
+    rei->status = rc;
     }
   
     return (rei->status);

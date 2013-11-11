@@ -51,10 +51,16 @@ SVR_CORE_OBJS =	\
 		$(svrCoreObjDir)/physPath.o \
 		$(svrCoreObjDir)/eirods_resource_manager.o \
 		$(svrCoreObjDir)/eirods_resource_backport.o \
-		$(svrCoreObjDir)/eirods_server_negotiation.o 
+		$(svrCoreObjDir)/eirods_server_negotiation.o \
+		$(svrCoreObjDir)/eirods_collection_object.o \
+		$(svrCoreObjDir)/eirods_structured_object.o \
+		$(svrCoreObjDir)/eirods_physical_object.o \
+		$(svrCoreObjDir)/eirods_data_object.o \
+		$(svrCoreObjDir)/eirods_file_object.o 
 
 INCLUDES +=	-I$(svrCoreIncDir)
 
+CFLAGS += `../../packaging/compiler_check.sh 4 2`
 
 # Servers
 CFLAGS +=	-DRODS_SERVER
@@ -97,6 +103,7 @@ INCLUDES +=	-I$(svrIcatIncDir)
 ifdef RODS_CAT
 CFLAGS +=	-DRODS_CAT
 SVR_ICAT_OBJS =	\
+		$(svrIcatObjDir)/eirods_catalog_properties.o \
 		$(svrIcatObjDir)/icatMidLevelHelpers.o \
 		$(svrIcatObjDir)/icatMidLevelRoutines.o \
 		$(svrIcatObjDir)/icatHighLevelRoutines.o \
@@ -225,6 +232,7 @@ SVR_RE_OBJS =	\
 		$(svrReObjDir)/typing.o \
 		$(svrReObjDir)/utils.o \
 		$(svrReObjDir)/locks.o \
+		$(svrReObjDir)/list.o \
 		$(svrReObjDir)/restructs.o \
 		$(svrReObjDir)/sharedmemory.o \
 		$(svrReObjDir)/filesystem.o \
@@ -235,6 +243,7 @@ SVR_RE_OBJS =	\
 		$(svrReObjDir)/reStruct.o \
 		$(svrReObjDir)/reSysDataObjOpr.o \
 		$(svrReObjDir)/reVariableMap.o \
+		$(svrReObjDir)/reVariableMap.gen.o \
 		$(svrReObjDir)/nre.ruleAdminMS.o \
 		$(svrReObjDir)/nre.systemMS.o \
 		$(svrReObjDir)/xmsgMS.o \
@@ -306,45 +315,44 @@ CFLAGS =	$(CFLAGS_OPTIONS) $(INCLUDES) $(LIB_INCLUDES) $(MODULE_CFLAGS)
 # MODULE_LDFLAGS string.
 LDFLAGS +=	$(LIBRARY) $(LDADD) 
 
-# Boost libraries. Commented out and added to LIBRARY further down
-#LDFLAGS+=$(BOOST_DIR)/stage/lib/libboost_thread.a
-#LDFLAGS+=$(BOOST_DIR)/stage/lib/libboost_filesystem.a
-#LDFLAGS+=$(BOOST_DIR)/stage/lib/libboost_regex.a
-#LDFLAGS+=$(BOOST_DIR)/stage/lib/libboost_system.a
-
-
 ifdef GSI_AUTH
+
+ifeq ($(GSI_INSTALL_TYPE),)
+GSI_INSTALL_TYPE2=
+else
+GSI_INSTALL_TYPE2=_$(GSI_INSTALL_TYPE)
+endif
 
 # GSI_SSL is set to ssl to use the system's SSL library, else use
 # regular Globus version.
 ifndef GSI_SSL
-GSI_SSL = ssl_$(GSI_INSTALL_TYPE)
+GSI_SSL = ssl$(GSI_INSTALL_TYPE2)
 endif
 
 # GSI_CRYPTO is set to crypto to use the system's Crypto library, else
 # use regular Globus version.
 ifndef GSI_CRYPTO
-GSI_CRYPTO = crypto_$(GSI_INSTALL_TYPE)
+GSI_CRYPTO = crypto$(GSI_INSTALL_TYPE2)
 endif
 
 LIB_GSI_AUTH = \
-        -L$(GLOBUS_LOCATION)/lib \
-        -lglobus_gss_assist_$(GSI_INSTALL_TYPE) \
-	-lglobus_gssapi_gsi_$(GSI_INSTALL_TYPE) \
-        -lglobus_gsi_credential_$(GSI_INSTALL_TYPE) \
-        -lglobus_gsi_proxy_core_$(GSI_INSTALL_TYPE) \
-	-lglobus_gsi_callback_$(GSI_INSTALL_TYPE) \
-	-lglobus_oldgaa_$(GSI_INSTALL_TYPE) \
-	-lglobus_gsi_sysconfig_$(GSI_INSTALL_TYPE) \
-	-lglobus_gsi_cert_utils_$(GSI_INSTALL_TYPE) \
-	-lglobus_openssl_error_$(GSI_INSTALL_TYPE) \
-	-lglobus_openssl_$(GSI_INSTALL_TYPE) \
-	-lglobus_proxy_ssl_$(GSI_INSTALL_TYPE) \
+        -L$(GLOBUS_LOCATION)/$(GSI_LIB_DIR) \
+        -lglobus_gss_assist$(GSI_INSTALL_TYPE2) \
+	-lglobus_gssapi_gsi$(GSI_INSTALL_TYPE2) \
+        -lglobus_gsi_credential$(GSI_INSTALL_TYPE2) \
+        -lglobus_gsi_proxy_core$(GSI_INSTALL_TYPE2) \
+	-lglobus_gsi_callback$(GSI_INSTALL_TYPE2) \
+	-lglobus_oldgaa$(GSI_INSTALL_TYPE2) \
+	-lglobus_gsi_sysconfig$(GSI_INSTALL_TYPE2) \
+	-lglobus_gsi_cert_utils$(GSI_INSTALL_TYPE2) \
+	-lglobus_openssl_error$(GSI_INSTALL_TYPE2) \
+	-lglobus_openssl$(GSI_INSTALL_TYPE2) \
+	-lglobus_proxy_ssl$(GSI_INSTALL_TYPE2) \
 	-l$(GSI_SSL) \
 	-l$(GSI_CRYPTO) \
-	-lglobus_common_$(GSI_INSTALL_TYPE) \
-	-lglobus_callout_$(GSI_INSTALL_TYPE) \
-	-lltdl_$(GSI_INSTALL_TYPE) 
+	-lglobus_common$(GSI_INSTALL_TYPE2) \
+	-lglobus_callout$(GSI_INSTALL_TYPE2) \
+	-lltdl$(GSI_INSTALL_TYPE2) 
 
 LDFLAGS += $(LIB_GSI_AUTH)
 endif
@@ -448,19 +456,20 @@ clean:
 	@rm -f $(svrCoreObjDir)/ruleAdmin.o $(serverBinDir)/ruleAdmin
 
 
-# Not needed
-# LDFLAGS += /home/jasonc/dev/lib/boost/boost_1_45_0/stage/lib/libboost_thread.a
+BOOST_LIBS = $(BOOST_DIR)/stage/lib/libboost_system.a \
+             $(BOOST_DIR)/stage/lib/libboost_filesystem.a \
+             $(BOOST_DIR)/stage/lib/libboost_regex.a \
+             $(BOOST_DIR)/stage/lib/libboost_thread.a 
 
-#
 # Compilation Targets
 #
 # Build server API
-$(SVR_API_OBJS):	$(svrApiObjDir)/%.o: $(svrApiSrcDir)/%.c $(DEPEND)
+$(SVR_API_OBJS):	$(svrApiObjDir)/%.o: $(svrApiSrcDir)/%.c $(DEPEND) $(BOOST_LIBS)
 	@echo "Compile api `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
 # Build server core
-$(SVR_CORE_OBJS):	$(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.c $(DEPEND)
+$(SVR_CORE_OBJS):	$(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.c $(DEPEND) $(BOOST_LIBS)
 	@echo "Compile core `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
@@ -468,59 +477,57 @@ $(svrDriversObjDir)/wosFunctPP.o:	$(svrDriversSrcDir)/wosFunctPP.cpp
 	g++ $(CPPFLAGS) -o $(svrDriversObjDir)/wosFunctPP.o $(svrDriversSrcDir)/wosFunctPP.cpp
 
 # Build server drivers
-$(SVR_DRIVERS_OBJS):	$(svrDriversObjDir)/%.o: $(svrDriversSrcDir)/%.c $(DEPEND)
+$(SVR_DRIVERS_OBJS):	$(svrDriversObjDir)/%.o: $(svrDriversSrcDir)/%.c $(DEPEND) $(BOOST_LIBS)
 	@echo "Compile drivers `basename $@`..."
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 # Build server ICAT
-$(SVR_ICAT_OBJS):	$(svrIcatObjDir)/%.o: $(svrIcatSrcDir)/%.c $(extendedICAT.h) $(DEPEND)
+$(SVR_ICAT_OBJS):	$(svrIcatObjDir)/%.o: $(svrIcatSrcDir)/%.c $(extendedICAT.h) $(DEPEND) $(BOOST_LIBS)
 	@echo "Compile icat `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 $(extendedICAT.h): 
 	@touch $(extendedICAT.h)
 
 # Build server ICAT
-$(SVR_DBR_OBJS):	$(svrIcatObjDir)/%.o: $(svrIcatSrcDir)/%.c
+$(SVR_DBR_OBJS):	$(svrIcatObjDir)/%.o: $(svrIcatSrcDir)/%.c $(BOOST_LIBS)
 	@echo "Compile icat `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
 # Builder server rule engine
-$(SVR_RE_OBJS):		$(svrReObjDir)/%.o: $(svrReSrcDir)/%.c $(DEPEND)
+$(SVR_RE_OBJS):		$(svrReObjDir)/%.o: $(svrReSrcDir)/%.c $(DEPEND) $(BOOST_LIBS)
 	@echo "Compile re `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
-
-LIBRARY += $(BOOST_DIR)/stage/lib/libboost_system.a $(BOOST_DIR)/stage/lib/libboost_filesystem.a $(BOOST_DIR)/stage/lib/libboost_regex.a
 
 #
 # Servers
 #
 # Agent
-$(svrCoreObjDir)/rodsAgent.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.c $(LIBRARY) $(OBJS)
+$(svrCoreObjDir)/rodsAgent.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.c $(LIBRARY) $(OBJS) $(BOOST_LIBS)
 	@echo "Compile agent server `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
-$(serverBinDir)/irodsAgent: $(svrCoreObjDir)/rodsAgent.o $(LIBRARY) $(OBJS) $(MODULE_OBJS)
+$(serverBinDir)/irodsAgent: $(svrCoreObjDir)/rodsAgent.o $(LIBRARY) $(OBJS) $(MODULE_OBJS) $(BOOST_LIBS)
 	@echo "Link agent server `basename $@`..."
-	@$(LDR) -o $@ $(svrCoreObjDir)/rodsAgent.o $(LIBRARY) $(MODULE_LDFLAGS) $(OBJS) $(LDFLAGS) $(AG_LDADD)
+	@$(LDR) -o $@ $(svrCoreObjDir)/rodsAgent.o $(LIBRARY) $(MODULE_LDFLAGS) $(OBJS) $(BOOST_LIBS) $(LDFLAGS) $(AG_LDADD)
 
 # Rule engine
 $(svrCoreObjDir)/irodsReServer.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.c $(LIBRARY) $(OBJS)
 	@echo "Compile rule engine server `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
-$(serverBinDir)/irodsReServer: $(svrCoreObjDir)/irodsReServer.o $(LIBRARY) $(OBJS) $(MODULE_OBJS)
+$(serverBinDir)/irodsReServer: $(svrCoreObjDir)/irodsReServer.o $(LIBRARY) $(OBJS) $(MODULE_OBJS) $(BOOST_LIBS)
 	@echo "Link rule engine server `basename $@`..."
-	@$(LDR) -o $@ $(svrCoreObjDir)/irodsReServer.o $(LIBRARY) $(MODULE_LDFLAGS) $(OBJS) $(LDFLAGS)
+	@$(LDR) -o $@ $(svrCoreObjDir)/irodsReServer.o $(LIBRARY) $(MODULE_LDFLAGS) $(OBJS) $(BOOST_LIBS) $(LDFLAGS)
 
 # RODS
-$(svrCoreObjDir)/rodsServer.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.c $(LIBRARY) $(OBJS)
+$(svrCoreObjDir)/rodsServer.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.c $(LIBRARY) $(OBJS) $(BOOST_LIBS)
 	@echo "Compile rods server `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
-$(serverBinDir)/irodsServer: $(svrCoreObjDir)/rodsServer.o $(LIBRARY) $(OBJS) $(MODULE_OBJS)
+$(serverBinDir)/irodsServer: $(svrCoreObjDir)/rodsServer.o $(LIBRARY) $(OBJS) $(MODULE_OBJS) $(BOOST_LIBS)
 	@echo "Link rods server `basename $@`..."
-	@$(LDR) -o $@ $(svrCoreObjDir)/rodsServer.o $(LIBRARY) $(OBJS) $(MODULE_LDFLAGS) $(LDFLAGS)
+	@$(LDR) -o $@ $(svrCoreObjDir)/rodsServer.o $(LIBRARY) $(OBJS) $(BOOST_LIBS) $(MODULE_LDFLAGS) $(LDFLAGS)
 
 
 # xmsg server
@@ -528,9 +535,9 @@ $(svrCoreObjDir)/irodsXmsgServer.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.c $
 	@echo "Compile xmsg server `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
-$(serverBinDir)/irodsXmsgServer: $(svrCoreObjDir)/irodsXmsgServer.o $(LIBRARY) $(OBJS) $(MODULE_OBJS)
+$(serverBinDir)/irodsXmsgServer: $(svrCoreObjDir)/irodsXmsgServer.o $(LIBRARY) $(OBJS) $(MODULE_OBJS) $(BOOST_LIBS)
 	@echo "Link xmsg server `basename $@`..."
-	@$(LDR) -o $@ $(svrCoreObjDir)/irodsXmsgServer.o $(LIBRARY) $(OBJS) $(MODULE_LDFLAGS) $(LDFLAGS)
+	@$(LDR) -o $@ $(svrCoreObjDir)/irodsXmsgServer.o $(LIBRARY) $(OBJS) $(BOOST_LIBS) $(MODULE_LDFLAGS) $(LDFLAGS)
 
 
 #
@@ -547,36 +554,36 @@ $(serverBinDir)/PamAuthCheck: $(svrAuthObjDir)/PamAuthCheck.o
 #
 # Tests
 #
-$(TEST_OBJS):	$(svrTestObjDir)/%.o: $(svrTestSrcDir)/%.c $(DEPEND)
+$(TEST_OBJS):	$(svrTestObjDir)/%.o: $(svrTestSrcDir)/%.c $(DEPEND) $(BOOST_LIBS)
 	@echo "Compile server test `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
 # reTest
-$(svrTestBinDir)/reTest: $(svrTestObjDir)/reTest.o $(OBJS)
+$(svrTestBinDir)/reTest: $(svrTestObjDir)/reTest.o $(OBJS) $(BOOST_LIBS) $(BOOST_LIBS)
 	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $^ $(LDFLAGS)
+	@$(LDR) -o $@ $^ $(LDFLAGS) $(BOOST_LIBS) -lrt
 
 # cll and chl
-$(svrTestBinDir)/test_cll: $(svrTestObjDir)/test_cll.o $(SVR_ICAT_OBJS)
+$(svrTestBinDir)/test_cll: $(svrTestObjDir)/test_cll.o $(SVR_ICAT_OBJS) $(BOOST_LIBS)
 	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $^ $(LDFLAGS)
+	@$(LDR) -o $@ $^ $(LDFLAGS) $(BOOST_LIBS) -lrt
 
-$(svrTestBinDir)/test_chl: $(svrTestObjDir)/test_chl.o $(SVR_ICAT_OBJS) $(svrCoreObjDir)/readServerConfig.o
+$(svrTestBinDir)/test_chl: $(svrTestObjDir)/test_chl.o $(SVR_ICAT_OBJS) $(svrCoreObjDir)/readServerConfig.o $(BOOST_LIBS)
 	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $^ $(LDFLAGS)
+	@$(LDR) -o $@ $^ $(LDFLAGS) $(BOOST_LIBS) -lrt
 
 # genq and genu
-$(svrTestBinDir)/test_genq: $(svrTestObjDir)/test_genq.o $(SVR_ICAT_OBJS) $(svrCoreObjDir)/readServerConfig.o
+$(svrTestBinDir)/test_genq: $(svrTestObjDir)/test_genq.o $(SVR_ICAT_OBJS) $(svrCoreObjDir)/readServerConfig.o $(BOOST_LIBS)
 	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $^ $(LDFLAGS)
+	@$(LDR) -o $@ $^ $(LDFLAGS) $(BOOST_LIBS) -lrt
 
-$(svrTestBinDir)/test_genu: $(svrTestObjDir)/test_genu.o $(SVR_ICAT_OBJS) $(svrCoreObjDir)/readServerConfig.o
+$(svrTestBinDir)/test_genu: $(svrTestObjDir)/test_genu.o $(SVR_ICAT_OBJS) $(svrCoreObjDir)/readServerConfig.o $(BOOST_LIBS)
 	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $^ $(LDFLAGS)
+	@$(LDR) -o $@ $^ $(LDFLAGS) $(BOOST_LIBS) -lrt
 
-$(svrTestBinDir)/test_rda: $(svrTestObjDir)/test_rda.o $(SVR_ICAT_OBJS)
+$(svrTestBinDir)/test_rda: $(svrTestObjDir)/test_rda.o $(SVR_ICAT_OBJS) $(BOOST_LIBS)
 	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $^ $(LDFLAGS)
+	@$(LDR) -o $@ $^ $(LDFLAGS) $(BOOST_LIBS) -lrt
 
 
 

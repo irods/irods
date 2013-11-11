@@ -1213,6 +1213,9 @@ intGetDataObjChksumsTimeStampsFromAVUVol2 (collInp_t * ptrInpColl,
   genQueryOut_t *genQueryOut;
 
   chrPtr1 = strrchr (ptrInpColl->collName, '/');
+  if(!chrPtr1) { // cppcheck - Possible null pointer dereference: chrPtr1
+	  return SYS_INVALID_FILE_PATH;
+  }
   printf
     ("GJK-P P.21.0.1. in intGetDataObjChksumsTimeStampsFromAVUVol2(), chrPtr1=(%s), ptrInpColl->collName=(%s)\n",
      chrPtr1, ptrInpColl->collName);

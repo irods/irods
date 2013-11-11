@@ -16,6 +16,8 @@
 // eirods includes
 #include "eirods_resource_backport.h"
 #include "eirods_hierarchy_parser.h" 
+#include "eirods_file_object.h" 
+#include "eirods_resource_redirect.h"
 
 
 int
@@ -66,38 +68,73 @@ applyRuleForPostProcForWrite(rsComm_t *rsComm, bytesBuf_t *dataObjWriteInpBBuf, 
 
 }
 
-int
-rsDataObjWrite (rsComm_t *rsComm, openedDataObjInp_t *dataObjWriteInp, 
-bytesBuf_t *dataObjWriteInpBBuf)
-{
-    int bytesWritten;
+int rsDataObjWrite( 
+    rsComm_t*           rsComm, 
+    openedDataObjInp_t* dataObjWriteInp, 
+    bytesBuf_t*         dataObjWriteInpBBuf ) {
+    int bytesWritten = 0;
+    int l1descInx    = dataObjWriteInp->l1descInx;
 
-    int l1descInx = dataObjWriteInp->l1descInx;
-
-    if (l1descInx < 2 || l1descInx >= NUM_L1_DESC) {
-	rodsLog (LOG_NOTICE,
-	  "rsDataObjWrite: l1descInx %d out of range",
-	  l1descInx);
-	return (SYS_FILE_DESC_OUT_OF_RANGE);
+    if( l1descInx < 2 || l1descInx >= NUM_L1_DESC ) {
+        rodsLog(
+            LOG_NOTICE,
+            "rsDataObjWrite: l1descInx %d out of range",
+            l1descInx );
+        return (SYS_FILE_DESC_OUT_OF_RANGE);
     }
-    if (L1desc[l1descInx].inuseFlag != FD_INUSE) return BAD_INPUT_DESC_INDEX;
+
+    if( L1desc[l1descInx].inuseFlag != FD_INUSE ) {
+         return BAD_INPUT_DESC_INDEX;
+    }
+
     if (L1desc[l1descInx].remoteZoneHost != NULL) {
-        /* cross zone operation */
+        // =-=-=-=-=-=-=-
+        // cross zone operation 
         dataObjWriteInp->l1descInx = L1desc[l1descInx].remoteL1descInx;
-        bytesWritten = rcDataObjWrite (L1desc[l1descInx].remoteZoneHost->conn,
-          dataObjWriteInp, dataObjWriteInpBBuf);
+        bytesWritten = rcDataObjWrite(
+                           L1desc[l1descInx].remoteZoneHost->conn,
+                           dataObjWriteInp, 
+                           dataObjWriteInpBBuf );
         dataObjWriteInp->l1descInx = l1descInx;
     } else {
-	/** RAJA ADDED Dec 1 2010 for pre-post processing rule hooks **/
-        int i;
-        i = applyRuleForPostProcForWrite(rsComm, dataObjWriteInpBBuf, 
-           L1desc[l1descInx].dataObjInfo->objPath);
-	if (i < 0)   
-	  return(i);  
-	dataObjWriteInp->len = dataObjWriteInpBBuf->len;
-	/** RAJA ADDED Dec 1 2010 for pre-post processing rule hooks **/
-	bytesWritten = l3Write (rsComm, l1descInx, dataObjWriteInp->len,
-			      dataObjWriteInpBBuf);
+        int i = applyRuleForPostProcForWrite(
+                    rsComm, 
+                    dataObjWriteInpBBuf, 
+                    L1desc[l1descInx].dataObjInfo->objPath );
+        if (i < 0) {
+            return(i);
+        }
+
+        // =-=-=-=-=-=-=-
+        // notify the resource hierarchy that something is afoot
+        eirods::file_object_ptr file_obj(
+                                new eirods::file_object( 
+                                    rsComm, 
+                                    L1desc[l1descInx].dataObjInfo ) );
+        char* pdmo_kw = getValByKey( &dataObjWriteInp->condInput, IN_PDMO_KW);
+        if(pdmo_kw != NULL) {
+            file_obj->in_pdmo(pdmo_kw);
+        }
+        eirods::error ret = fileNotify(
+                                rsComm, 
+                                file_obj,
+                                eirods::EIRODS_WRITE_OPERATION );
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << "Failed to signal the resource that the data object \"";
+            msg << L1desc[l1descInx].dataObjInfo->objPath;
+            msg << "\" was modified.";
+            ret = PASSMSG( msg.str(), ret );
+            eirods::log( ret );
+            return ret.code();
+        }
+ 
+        dataObjWriteInp->len = dataObjWriteInpBBuf->len;
+        bytesWritten = l3Write(
+                           rsComm, 
+                           l1descInx, 
+                           dataObjWriteInp->len,
+                           dataObjWriteInpBBuf );
     }
 
     return (bytesWritten);
@@ -107,7 +144,6 @@ int
 l3Write (rsComm_t *rsComm, int l1descInx, int len,
 bytesBuf_t *dataObjWriteInpBBuf)
 {
-    int rescTypeInx;
     fileWriteInp_t fileWriteInp;
     int bytesWritten;
 
@@ -131,12 +167,6 @@ bytesBuf_t *dataObjWriteInpBBuf)
         bytesWritten = rsSubStructFileWrite( rsComm, &subStructFileWriteInp, dataObjWriteInpBBuf );
 	  
     } else {
-       #if 0 // JMC legacy resource 
-        rescTypeInx = L1desc[l1descInx].dataObjInfo->rescInfo->rescTypeInx;
-
-        switch (RescTypeDef[rescTypeInx].rescCat) {
-          case FILE_CAT:
-       #endif // JMC legacy resource 
 	    memset (&fileWriteInp, 0, sizeof (fileWriteInp));
 	    fileWriteInp.fileInx = L1desc[l1descInx].l3descInx;
 	    fileWriteInp.len = len;
@@ -145,17 +175,6 @@ bytesBuf_t *dataObjWriteInpBBuf)
 	    if (bytesWritten > 0) {
 	        L1desc[l1descInx].bytesWritten+=bytesWritten;
 	    }
-       #if 0 // JMC legacy resource 
-	    break;
-
-          default:
-            rodsLog (LOG_NOTICE,
-              "l3Write: rescCat type %d is not recognized",
-              RescTypeDef[rescTypeInx].rescCat);
-            bytesWritten = SYS_INVALID_RESC_TYPE;
-            break;
-	}
-       #endif // JMC legacy resource 
     }
     return (bytesWritten);
 }
@@ -170,26 +189,11 @@ void *buf, int len)
 
     dataObjWriteInpBBuf.len = len;
     dataObjWriteInpBBuf.buf = buf;
-
-       #if 0 // JMC legacy resource 
-    switch (RescTypeDef[rescTypeInx].rescCat) {
-      case FILE_CAT:
-       #endif // JMC legacy resource 
-	memset (&fileWriteInp, 0, sizeof (fileWriteInp));
+  memset (&fileWriteInp, 0, sizeof (fileWriteInp));
 	fileWriteInp.fileInx = l3descInx;
 	fileWriteInp.len = len;
 	bytesWritten = rsFileWrite (rsComm, &fileWriteInp, 
 	  &dataObjWriteInpBBuf);
-       #if 0 // JMC legacy resource 
-	break;
-      default:
-        rodsLog (LOG_NOTICE,
-          "_l3Write: rescCat type %d is not recognized",
-          RescTypeDef[rescTypeInx].rescCat);
-        bytesWritten = SYS_INVALID_RESC_TYPE;
-        break;
-    }
-       #endif // JMC legacy resource 
     return (bytesWritten);
 }
 

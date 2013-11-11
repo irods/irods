@@ -42,22 +42,26 @@ namespace eirods {
 
         /// =-=-=-=-=-=-=-
         /// @brief execute rule for pre operation
-        error exec_pre_op( 
+        virtual error exec_pre_op( 
+            keyValPair_t&,      // vars from fco
             std::string& ); // results of call to rule
 
         /// =-=-=-=-=-=-=-
         /// @brief execute rule for post operation
-        error exec_post_op( 
+        virtual error exec_post_op( 
+            keyValPair_t&,      // vars from fco
             std::string& ); // results of call to rule
 
-    private:
+    protected:
+
         /// =-=-=-=-=-=-=-
         /// @brief name of the rule minus the _pre or _post
         std::string rule_name_;
 
         /// =-=-=-=-=-=-=-
         /// @brief execute rule for post operation
-        error exec_op( 
+        virtual error exec_op( 
+            keyValPair_t&,      // vars from fco
             const std::string&, // rule name 
             std::string& );     // results of call to rule
 

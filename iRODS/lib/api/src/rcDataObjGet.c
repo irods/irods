@@ -10,10 +10,15 @@
 /* This is script-generated code.  */ 
 /* See dataObjGet.h for a description of this API call.*/
 
+// =-=-=-=-=-=-=-
+// irods includes
 #include "dataObjGet.h"
 #include "rcPortalOpr.h"
 #include "apiHeaderAll.h"
 
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_client_server_negotiation.h"
 #include "eirods_stacktrace.h"
 
 /**
@@ -150,11 +155,29 @@ rcDataObjGet (rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath)
         } else {
             veryVerbose = 0;
         }
-        status = getFileToPortalRbudp (portalOprOut, locFilePath, 0,
-                                       dataObjInp->dataSize, veryVerbose, 0);
+
+        // =-=-=-=-=-=-=-
+        // if a secret has been negotiated then we must be using
+        // encryption.  given that RBUDP is not supported in an
+        // encrypted capacity this is considered an error
+        if( eirods::CS_NEG_USE_SSL == conn->negotiation_results ) {
+            rodsLog( 
+                LOG_ERROR,
+                "getFileToPortal: Encryption is not supported with RBUDP" );
+            return SYS_INVALID_PORTAL_OPR;
+
+        }
+
+        status = getFileToPortalRbudp( 
+                     portalOprOut, 
+                     locFilePath, 0,
+                     dataObjInp->dataSize, 
+                     veryVerbose, 0 );
+                     
         /* just send a complete msg */
         if (status < 0) {
             rcOprComplete (conn, status);
+
         } else {
             status = rcOprComplete (conn, portalOprOut->l1descInx);
         }

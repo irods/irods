@@ -4,6 +4,7 @@
 // =-=-=-=-=-=-=-
 // eirods includes
 #include "eirods_client_server_negotiation.h"
+#include "eirods_stacktrace.h"
 
 // =-=-=-=-=-=-=-
 // irods includes
@@ -32,15 +33,15 @@ namespace eirods {
 
             // =-=-=-=-=-=-=-
             // table is indexed as[ CLIENT ][ SERVER ] 
-            client_server_negotiations_table[ 0 ][ 0 ] = CS_NEG_USE_SSL;      // REQ, REQ
-            client_server_negotiations_table[ 0 ][ 1 ] = CS_NEG_USE_SSL;      // REQ, DC
-            client_server_negotiations_table[ 0 ][ 2 ] = CS_NEG_FAILURE;      // REQ, REF
-            client_server_negotiations_table[ 1 ][ 0 ] = CS_NEG_USE_SSL;      // DC,  REQ
-            client_server_negotiations_table[ 1 ][ 1 ] = CS_NEG_USE_SSL;      // DC,  DC
-            client_server_negotiations_table[ 1 ][ 2 ] = CS_NEG_DONT_USE_SSL; // DC,  REF
-            client_server_negotiations_table[ 2 ][ 0 ] = CS_NEG_FAILURE;      // REF, REQ
-            client_server_negotiations_table[ 2 ][ 1 ] = CS_NEG_DONT_USE_SSL; // REF, DC
-            client_server_negotiations_table[ 2 ][ 2 ] = CS_NEG_DONT_USE_SSL; // REF, REF
+            client_server_negotiations_table[ 0 ][ 0 ] = CS_NEG_USE_SSL; // REQ, REQ
+            client_server_negotiations_table[ 0 ][ 1 ] = CS_NEG_USE_SSL; // REQ, DC
+            client_server_negotiations_table[ 0 ][ 2 ] = CS_NEG_FAILURE; // REQ, REF
+            client_server_negotiations_table[ 1 ][ 0 ] = CS_NEG_USE_SSL; // DC,  REQ
+            client_server_negotiations_table[ 1 ][ 1 ] = CS_NEG_USE_SSL; // DC,  DC
+            client_server_negotiations_table[ 1 ][ 2 ] = CS_NEG_USE_TCP; // DC,  REF
+            client_server_negotiations_table[ 2 ][ 0 ] = CS_NEG_FAILURE; // REF, REQ
+            client_server_negotiations_table[ 2 ][ 1 ] = CS_NEG_USE_TCP; // REF, DC
+            client_server_negotiations_table[ 2 ][ 2 ] = CS_NEG_USE_TCP; // REF, REF
            
         } // ctor
 
@@ -71,7 +72,7 @@ namespace eirods {
             // =-=-=-=-=-=-=-
             // politely ask for the SSL usage results
             _result = client_server_negotiations_table[ cli_idx ][ svr_idx ];
-std::cout << "client_server_negotiations_context - result [" << _result << "]" << std::endl;
+
             return SUCCESS();
 
         } // operator()
@@ -89,7 +90,41 @@ std::cout << "client_server_negotiations_context - result [" << _result << "]" <
 
     /// =-=-=-=-=-=-=-
     /// @brief function which determines if a client/server negotiation is needed
-    bool do_client_server_negotiation(  ) {
+    ///        on the client side
+    bool do_client_server_negotiation_for_client(  ) {
+        // =-=-=-=-=-=-=-
+        // get the irods environment so we can compare the 
+        // flag for negotiation of policy 
+        rodsEnv rods_env;
+        int status = getRodsEnv( &rods_env );
+        if( status < 0 ) {
+            return false;
+        }
+
+        // =-=-=-=-=-=-=-
+        // if it is not set then move on
+        std::string neg_policy( rods_env.rodsClientServerNegotiation );
+        if( neg_policy.empty() ) {
+            return false;
+        }
+
+        // =-=-=-=-=-=-=-
+        // if it is set then check for our magic token which requests 
+        // the negotiation, if its not there then return success
+        if( std::string::npos == neg_policy.find( REQ_SVR_NEG ) ) { 
+            return false;
+        }
+
+        // =-=-=-=-=-=-=-
+        // otherwise, its a failure.
+        return true;
+
+    } // do_client_server_negotiation_for_client
+ 
+    /// =-=-=-=-=-=-=-
+    /// @brief function which determines if a client/server negotiation is needed
+    ///        on the server side
+    bool do_client_server_negotiation_for_server(  ) {
         // =-=-=-=-=-=-=-
         // check the SP_OPTION for the string stating a negotiation is requested
         char* opt_ptr = getenv( RODS_CS_NEG );
@@ -99,7 +134,7 @@ std::cout << "client_server_negotiations_context - result [" << _result << "]" <
         if( !opt_ptr || strlen( opt_ptr ) == 0 ) {
             return false;
         }
-
+        
         // =-=-=-=-=-=-=-
         // if it is set then check for our magic token which requests 
         // the negotiation, if its not there then return success
@@ -112,8 +147,8 @@ std::cout << "client_server_negotiations_context - result [" << _result << "]" <
         // otherwise, its a go.
         return true;
 
-    } // do_client_server_negotiation
- 
+    } // do_client_server_negotiation_for_server
+
     /// =-=-=-=-=-=-=-
     /// @brief function which manages the TLS and Auth negotiations with the client
     error client_server_negotiation_for_client( 
@@ -158,7 +193,7 @@ std::cout << "client_server_negotiations_context - result [" << _result << "]" <
         }
 
         // =-=-=-=-=-=-=-
-        // perform the negotation
+        // perform the negotiation
         client_server_negotiations_context negotiate;
         std::string result;
         error neg_err = negotiate( cli_policy, svr_policy, result );
@@ -167,7 +202,7 @@ std::cout << "client_server_negotiations_context - result [" << _result << "]" <
         // aggregate the error stack if necessary
         error ret = SUCCESS();
         if( !neg_err.ok() ) {
-           ret = PASSMSG( "failed in negotation context", neg_err ); 
+           ret = PASSMSG( "failed in negotiation context", neg_err );
         }
 
         // =-=-=-=-=-=-=-
@@ -177,8 +212,7 @@ std::cout << "client_server_negotiations_context - result [" << _result << "]" <
             // send CS_NEG_CLI_1_MSG, failure message to the server
             cs_neg_t send_cs_neg;
             send_cs_neg.status_ = CS_NEG_STATUS_FAILURE;
-            strncpy( send_cs_neg.result_, CS_NEG_FAILURE.c_str(), CS_NEG_FAILURE.size() );
-            
+            strncpy( send_cs_neg.result_, CS_NEG_FAILURE.c_str(), MAX_NAME_LEN );
             error send_err = send_client_server_negotiation_message( 
                                  _ptr, 
                                  send_cs_neg );
@@ -197,7 +231,7 @@ std::cout << "client_server_negotiations_context - result [" << _result << "]" <
         // send CS_NEG_CLI_1_MSG, success message to the server with our choice 
         cs_neg_t send_cs_neg;
         send_cs_neg.status_ = CS_NEG_STATUS_SUCCESS;
-        strncpy( send_cs_neg.result_, result.c_str(), result.size() );
+        strncpy( send_cs_neg.result_, result.c_str(), MAX_NAME_LEN );
         err = send_client_server_negotiation_message( 
                   _ptr, 
                   send_cs_neg );
@@ -208,7 +242,7 @@ std::cout << "client_server_negotiations_context - result [" << _result << "]" <
         // =-=-=-=-=-=-=-
         // set the out variable and return 
         _result = result;
-
+        
         return SUCCESS();
 
     } // client_server_negotiation_for_client
@@ -283,16 +317,60 @@ std::cout << "client_server_negotiations_context - result [" << _result << "]" <
         // =-=-=-=-=-=-=-
         // check that we did in fact get the right type of message
         if( strcmp( msg_header.type, RODS_CS_NEG_T ) != 0 ) {
-            if( struct_buf.buf )
-                free( struct_buf.buf );
-            if( data_buf.buf )
-                free( data_buf.buf );
-            if( error_buf.buf )
-                free( error_buf.buf );
-            std::stringstream msg;
-            msg << "wrong message type [" << msg_header.type << "] ";
-            msg << "expected [" << RODS_CS_NEG_T << "]";
-            return ERROR( SYS_HEADER_TYPE_LEN_ERR, msg.str() );
+            // =-=-=-=-=-=-=-
+            // trap potential case where server does not support
+            // advanced negotiation.  a version msg would be sent
+            // back instead.
+            if( strcmp( msg_header.type, RODS_VERSION_T ) == 0 ) {
+		// =-=-=-=-=-=-=-
+		// unpack the version struct to check the status 
+		version_t* version = 0;
+		int status = unpackStruct( 
+                                 struct_buf.buf, 
+				 (void **) &version,
+				 "Version_PI", 
+				 RodsPackTable, 
+				 XML_PROT );
+
+                if( struct_buf.buf )
+                    free( struct_buf.buf );
+                if( data_buf.buf )
+                    free( data_buf.buf );
+                if( error_buf.buf )
+                    free( error_buf.buf );
+
+		if( status < 0 ) {
+		    rodsLog( LOG_ERROR, "read_client_server_negotiation_message :: unpackStruct FAILED" );
+		    return ERROR( status, "unpackStruct failed" );
+
+		} 
+		
+                if( version->status < 0 ) {
+                    rodsLog( LOG_ERROR, "read_client_server_negotiation_message :: received error message %d", version->status );
+                    return ERROR( version->status, "negotiation failed" );
+
+                } else {
+			// =-=-=-=-=-=-=-
+			// if no negoation is allowed then provide a readable
+			// error for the client
+			std::stringstream msg;
+			msg << "received [" << msg_header.type << "] ";
+			msg << "but expected [" << RODS_CS_NEG_T << "]\n\n";
+			msg << "\t*** Advanced negotiation is enabled in this E-iRODS environment ***\n"; 
+			msg << "\t*** which is most likely not supported by the server.           ***\n";
+			msg << "\t*** Comment out irodsClientServerNegotiation in the irodsEnv    ***\n";
+			msg << "\t*** file to disable.                                            ***\n"; 
+			return ERROR( EIRODS_ADVANCED_NEGOTIATION_NOT_SUPPORTED, msg.str() );
+                }
+ 
+            } else {
+                // =-=-=-=-=-=-=-
+                // something entirely unexpected happened
+                std::stringstream msg;
+                msg << "wrong message type [" << msg_header.type << "] ";
+                msg << "expected [" << RODS_CS_NEG_T << "]";
+                return ERROR( SYS_HEADER_TYPE_LEN_ERR, msg.str() );
+            }
         }
      
         // =-=-=-=-=-=-=-
@@ -340,8 +418,8 @@ std::cout << "client_server_negotiations_context - result [" << _result << "]" <
             return ERROR( status, "unpackStruct failed" );
                           
         } 
-
-         _cs_neg_msg.reset( tmp_cs_neg );
+        
+        _cs_neg_msg.reset( tmp_cs_neg );
 
         // =-=-=-=-=-=-=-
         // win!!!111one

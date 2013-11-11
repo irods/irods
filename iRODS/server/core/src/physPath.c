@@ -84,6 +84,7 @@ getFilePathName (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
         && strlen (filePath) > 0) {
         rstrcpy (dataObjInfo->filePath, filePath, MAX_NAME_LEN);
         return (0);
+    } else {
     }
 
     /* Make up a physical path */ 
@@ -392,7 +393,10 @@ getSizeInVault (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
 }
 
 int 
-_dataObjChksum ( rsComm_t *rsComm, dataObjInfo_t *inpDataObjInfo, char **chksumStr) // JMC - backport 4527
+_dataObjChksum (
+    rsComm_t *rsComm,
+    dataObjInfo_t *inpDataObjInfo,
+    char **chksumStr) // JMC - backport 4527
 {
     fileChksumInp_t fileChksumInp;
     int rescClass = 0;
@@ -474,7 +478,7 @@ _dataObjChksum ( rsComm_t *rsComm, dataObjInfo_t *inpDataObjInfo, char **chksumS
         rstrcpy (fileChksumInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
         rstrcpy (fileChksumInp.rescHier, dataObjInfo->rescHier, MAX_NAME_LEN);
         rstrcpy (fileChksumInp.objPath, dataObjInfo->objPath, MAX_NAME_LEN);
-        fileChksumInp.in_pdmo = dataObjInfo->in_pdmo;
+        rstrcpy (fileChksumInp.in_pdmo, dataObjInfo->in_pdmo, MAX_NAME_LEN);
         status = rsFileChksum (rsComm, &fileChksumInp, chksumStr);
         if(status == EIRODS_DIRECT_ARCHIVE_ACCESS) {
             std::stringstream msg;
@@ -482,6 +486,7 @@ _dataObjChksum ( rsComm_t *rsComm, dataObjInfo_t *inpDataObjInfo, char **chksumS
             msg << dataObjInfo->filePath;
             msg << "\" is located in an archive resource. Ignoring its checksum.";
             eirods::log(LOG_NOTICE, msg.str());
+
         }
         break;
     default:
@@ -521,7 +526,7 @@ dataObjChksumAndReg (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     addKeyVal (&regParam, CHKSUM_KW, *chksumStr);
 
     // always set pdmo flag here... total hack - harry
-    addKeyVal(&regParam, IN_PDMO_KW, "");
+    addKeyVal(&regParam, IN_PDMO_KW, dataObjInfo->rescHier);
     
     modDataObjMetaInp.dataObjInfo = dataObjInfo;
     modDataObjMetaInp.regParam = &regParam;
@@ -1201,7 +1206,7 @@ rsMkOrphanPath (rsComm_t *rsComm, char *objPath, char *orphanPath)
     int status;
     char *tmpStr;
     char *orphanPathPtr;
-    int len;
+    int len = 0;
     char parentColl[MAX_NAME_LEN], childName[MAX_NAME_LEN];
     collInp_t collCreateInp;
 

@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
 
     static char password[500];
 
-    static char *username="nobody";
+    static const char *username="nobody";
     static struct pam_conv conv = { null_conv, NULL };
  
     if(argc == 2) {

@@ -23,6 +23,15 @@ typedef struct {
    char rodsAuthFileName[LONG_NAME_LEN];
    char rodsDebug[NAME_LEN];
    char rodsClientServerPolicy[ LONG_NAME_LEN ];
+   char rodsClientServerNegotiation[ LONG_NAME_LEN ];
+
+   // =-=-=-=-=-=-=-
+   // client side options for encryption
+   int  rodsEncryptionKeySize;
+   int  rodsEncryptionSaltSize;
+   int  rodsEncryptionNumHashRounds;
+   char rodsEncryptionAlgorithm[ HEADER_TYPE_LEN ];
+   
 } rodsEnv;
 
 int getRodsEnv(rodsEnv *myRodsEnv);

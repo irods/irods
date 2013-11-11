@@ -64,8 +64,40 @@ namespace eirods {
     // public - get rule engine kvp
     error network_object::get_re_vars(
         keyValPair_t& _kvp ) {
+        
+        std::stringstream ss;
+        ss << socket_handle_; 
+        addKeyVal( &_kvp, SOCKET_HANDLE_KW, ss.str().c_str() ); 
+        
         return SUCCESS();
     } // get_re_vars
+
+    // =-=-=-=-=-=-=-
+    // convertion to client comm ptr
+    error network_object::to_client( rcComm_t* _comm ) {
+        if( !_comm ) {
+            return ERROR( SYS_INVALID_INPUT_PARAM, "null comm ptr" );
+        }
+
+        _comm->sock = socket_handle_;
+        
+        return SUCCESS();
+
+    } // to_client
+     
+    // =-=-=-=-=-=-=-
+    // convertion to client comm ptr
+    error network_object::to_server( rsComm_t* _comm ) {
+        if( !_comm ) {
+            return ERROR( SYS_INVALID_INPUT_PARAM, "null comm ptr" );
+        }
+
+        _comm->sock = socket_handle_;
+        
+        return SUCCESS();
+
+    } // to_server
+
 
 }; // namespace eirods
 

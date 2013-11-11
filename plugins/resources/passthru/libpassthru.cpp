@@ -287,30 +287,6 @@ extern "C" {
     } // pass_thru_file_stat_plugin
 
     // =-=-=-=-=-=-=-
-    // interface for POSIX Fstat
-    eirods::error pass_thru_file_fstat_plugin(  
-        eirods::resource_plugin_context& _ctx,
-        struct stat*                        _statbuf ) {
-        eirods::error result = SUCCESS();
-        eirods::error ret;
-        
-        ret = pass_thru_check_params( _ctx );
-        if(!ret.ok()) {
-            result = PASSMSG( "pass_thru_file_fstat_plugin - bad params.", ret);
-        } else {
-            eirods::resource_ptr resc;
-            ret = pass_thru_get_first_chid_resc(_ctx.child_map(), resc);
-            if(!ret.ok()) {
-                result = PASSMSG( "pass_thru_file_fstat_plugin - failed getting the first child resource pointer.", ret);
-            } else {
-                ret = resc->call<struct stat*>( _ctx.comm(), eirods::RESOURCE_OP_FSTAT, _ctx.fco(), _statbuf);
-                result = PASSMSG("pass_thru_file_fstat_plugin - failed calling child fstat.", ret);
-            }
-        }
-        return result;
-    } // pass_thru_file_fstat_plugin
-
-    // =-=-=-=-=-=-=-
     // interface for POSIX lseek
     eirods::error pass_thru_file_lseek_plugin(
         eirods::resource_plugin_context& _ctx,
@@ -334,29 +310,6 @@ extern "C" {
         }
         return result;
     } // pass_thru_file_lseek_plugin
-
-    // =-=-=-=-=-=-=-
-    // interface for POSIX fsync
-    eirods::error pass_thru_file_fsync_plugin(  
-        eirods::resource_plugin_context& _ctx ) {
-        eirods::error result = SUCCESS();
-        eirods::error ret;
-        
-        ret = pass_thru_check_params( _ctx );
-        if(!ret.ok()) {
-            result = PASSMSG( "pass_thru_file_fsync_plugin - bad params.", ret);
-        } else {
-            eirods::resource_ptr resc;
-            ret = pass_thru_get_first_chid_resc(_ctx.child_map(), resc);
-            if(!ret.ok()) {
-                result = PASSMSG( "pass_thru_file_fsync_plugin - failed getting the first child resource pointer.", ret);
-            } else {
-                ret = resc->call( _ctx.comm(), eirods::RESOURCE_OP_FSYNC, _ctx.fco());
-                result = PASSMSG("pass_thru_file_fsync_plugin - failed calling child fsync.", ret);
-            }
-        }
-        return result;
-    } // pass_thru_file_fsync_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX mkdir
@@ -497,6 +450,30 @@ extern "C" {
         }
         return result;
     } // pass_thru_file_rename_plugin
+    
+    // =-=-=-=-=-=-=-
+    // interface for POSIX truncate
+    eirods::error pass_thru_file_truncate_plugin(  
+        eirods::resource_plugin_context& _ctx ) {
+        // =-=-=-=-=-=-=-
+        eirods::error result = SUCCESS();
+        eirods::error ret;
+        
+        ret = pass_thru_check_params( _ctx );
+        if(!ret.ok()) {
+            result = PASSMSG( "pass_thru_file_truncate_plugin - bad params.", ret);
+        } else {
+            eirods::resource_ptr resc;
+            ret = pass_thru_get_first_chid_resc(_ctx.child_map(), resc);
+            if(!ret.ok()) {
+                result = PASSMSG( "pass_thru_file_truncate_plugin - failed getting the first child resource pointer.", ret);
+            } else {
+                ret = resc->call( _ctx.comm(), eirods::RESOURCE_OP_TRUNCATE, _ctx.fco());
+                result = PASSMSG("pass_thru_file_truncate_plugin - failed calling child truncate.", ret);
+            }
+        }
+        return result;
+    } // pass_thru_file_truncate_plugin
 
     // =-=-=-=-=-=-=-
     // interface to determine free space on a device given a path
@@ -695,48 +672,82 @@ extern "C" {
             return PASSMSG( "pass_thru_redirect_plugin - failed getting the first child resource pointer.", ret);
         } 
 
-        return resc->call< const std::string*, const std::string*, eirods::hierarchy_parser*, float* >( 
-                         _ctx.comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(), _opr, _curr_host, _out_parser, _out_vote );
+        return resc->call< const std::string*, 
+                           const std::string*, 
+                           eirods::hierarchy_parser*, 
+                           float* >( 
+                   _ctx.comm(), 
+                   eirods::RESOURCE_OP_RESOLVE_RESC_HIER, 
+                   _ctx.fco(), 
+                   _opr, 
+                   _curr_host, 
+                   _out_parser, 
+                   _out_vote );
 
     } // pass_thru_redirect_plugin
 
+    // =-=-=-=-=-=-=-
+    // pass_thru_file_rebalance - code which would rebalance the subtree
+    eirods::error pass_thru_file_rebalance(
+        eirods::resource_plugin_context& _ctx ) {
+        // =-=-=-=-=-=-=-
+        // forward request for rebalance to children
+        eirods::error result = SUCCESS();
+        eirods::resource_child_map::iterator itr = _ctx.child_map().begin();
+        for( ; itr != _ctx.child_map().end(); ++itr ) {
+            eirods::error ret = itr->second.second->call( 
+                                    _ctx.comm(), 
+                                    eirods::RESOURCE_OP_REBALANCE, 
+                                    _ctx.fco() );
+            if( !ret.ok() ) {
+                eirods::log( PASS( ret ) );
+                result = ret;
+            }
+        }
 
+        return result;
 
+    } // pass_thru_file_rebalancec
 
+    // =-=-=-=-=-=-=-
+    // pass_thru_file_rebalance - code which would notify the subtree of a change
+    eirods::error pass_thru_file_notify(
+        eirods::resource_plugin_context& _ctx,
+        const std::string*               _opr ) {
+        // =-=-=-=-=-=-=-
+        // forward request for notify to children
+        eirods::error result = SUCCESS();
+        eirods::resource_child_map::iterator itr = _ctx.child_map().begin();
+        for( ; itr != _ctx.child_map().end(); ++itr ) {
+            eirods::error ret = itr->second.second->call( 
+                                    _ctx.comm(), 
+                                    eirods::RESOURCE_OP_NOTIFY, 
+                                    _ctx.fco(),
+                                    _opr );
+            if( !ret.ok() ) {
+                eirods::log( PASS( ret ) );
+                result = ret;
+            }
+        }
 
+        return result;
 
+    } // pass_thru_file_notify
 
 
     // =-=-=-=-=-=-=-
-    // 3. create derived class to handle unix file system resources
+    // 3. create derived class to handle pass_thru file system resources
     //    necessary to do custom parsing of the context string to place
     //    any useful values into the property map for reference in later
     //    operations.  semicolon is the preferred delimiter
     class passthru_resource : public eirods::resource {
     public:
-        passthru_resource( const std::string _inst_name, const std::string& _context ) : 
-            eirods::resource( _inst_name, _context ) {
-            // =-=-=-=-=-=-=-
-            // parse context string into property pairs assuming a ; as a separator
-            std::vector< std::string > props;
-            eirods::string_tokenize( _context, ";", props );
-
-            // =-=-=-=-=-=-=-
-            // parse key/property pairs using = as a separator and
-            // add them to the property list
-            std::vector< std::string >::iterator itr = props.begin();
-            for( ; itr != props.end(); ++itr ) {
-                // =-=-=-=-=-=-=-
-                // break up key and value into two strings
-                std::vector< std::string > vals;
-                eirods::string_tokenize( *itr, "=", vals );
-                                
-                // =-=-=-=-=-=-=-
-                // break up key and value into two strings
-                properties_[ vals[0] ] = vals[1];
-                        
-            } // for itr 
-
+        passthru_resource( 
+            const std::string& _inst_name, 
+            const std::string& _context ) : 
+                eirods::resource( 
+                    _inst_name, 
+                    _context ) {
         } // ctor
 
     }; // class passthru_resource
@@ -765,8 +776,6 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_CLOSE,        "pass_thru_file_close_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_UNLINK,       "pass_thru_file_unlink_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_STAT,         "pass_thru_file_stat_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_FSTAT,        "pass_thru_file_fstat_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_FSYNC,        "pass_thru_file_fsync_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_MKDIR,        "pass_thru_file_mkdir_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_OPENDIR,      "pass_thru_file_opendir_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_READDIR,      "pass_thru_file_readdir_plugin" );
@@ -782,6 +791,8 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_MODIFIED,     "pass_thru_file_modified" );
         
         resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER,     "pass_thru_redirect_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_REBALANCE,             "pass_thru_file_rebalance" );
+        resc->add_operation( eirods::RESOURCE_OP_NOTIFY,             "pass_thru_file_notify" );
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code

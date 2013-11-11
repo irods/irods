@@ -743,8 +743,8 @@ cllExecSqlWithResult(icatSessionStruct *icss, int *stmtNum, char *sql) {
     if (bindTheVariables(hstmt, sql) != 0) return(-1);
 
     rodsLogSql(sql);
-
     stat = SQLExecDirect(hstmt, (unsigned char *)sql, SQL_NTS);
+
     status = "UNKNOWN";
     if (stat == SQL_SUCCESS) status= "SUCCESS";
     if (stat == SQL_SUCCESS_WITH_INFO) status="SUCCESS_WITH_INFO";
@@ -774,7 +774,6 @@ cllExecSqlWithResult(icatSessionStruct *icss, int *stmtNum, char *sql) {
         return(-2);
     }
     myStatement->numOfCols=numColumns;
-
     for (i = 0; i<numColumns; i++) {
         stat = SQLDescribeCol(hstmt, i+1, colName, sizeof(colName),
                               &colNameLen, &colType, &precision, &scale, NULL);

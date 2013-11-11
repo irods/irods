@@ -70,6 +70,8 @@ getValByInx (inxValPair_t *inxValPair, int inx);
 int
 replKeyVal (const keyValPair_t *srcCondInput, keyValPair_t *destCondInput);
 int
+copyKeyVal (const keyValPair_t *srcCondInput, keyValPair_t *destCondInput);
+int
 replDataObjInp (dataObjInp_t *srcDataObjInp, dataObjInp_t *destDataObjInp);
 int
 replSpecColl (specColl_t *inSpecColl, specColl_t **outSpecColl);
@@ -78,7 +80,7 @@ addKeyVal (keyValPair_t *condInput, const char *keyWord, const char *value);
 int
 addInxIval (inxIvalPair_t *inxIvalPair, int inx, int value);
 int
-addInxVal (inxValPair_t *inxValPair, int inx, char *value);
+addInxVal (inxValPair_t *inxValPair, int inx, const char *value);
 int
 addStrArray (strArray_t *strArray, char *value);
 int
@@ -295,11 +297,10 @@ hasSymlinkInPartialPath (char *myPath, int pos);
 
 // Special status that supresses reError header printing
 static const int STDOUT_STATUS = 1000000;
-    
-#ifdef USE_BOOST_FS
+
 int
 getPathStMode (path & p);
-#endif
+
 #ifdef  __cplusplus
 }
 #endif

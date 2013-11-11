@@ -70,9 +70,6 @@ int replaceArgVar( char *start, int size,
 
 int replaceSessionVar(char *action,  char *start, int size,  ruleExecInfo_t *rei);
 
-int getVarMap(char *action, char *varName, char **varMap, int index);
-
-int getVarValue(char *varMap, ruleExecInfo_t *rei, char **varValue);
 
 int replaceDataVar( char *start, int size,  dataObjInfo_t *doi);
 
@@ -129,41 +126,10 @@ int freeRescGrpInfo(rescGrpInfo_t *rs);
 int copyKeyValPairStruct(keyValPair_t *from, keyValPair_t *to);
 
 int freeKeyValPairStruct(keyValPair_t *rs);
-
+/*
 int reREMatch(char *pat, char *str);
-
+*/
 int trimWS (char *s);
-
-int getValFromRuleExecInfo(char *varMap, ruleExecInfo_t *rei, char **varValue);
-
-int getValFromRsComm(char *varMap, rsComm_t *ptr, char **varValue);
-
-int getValFromDataObjInfo(char *varMap, dataObjInfo_t *ptr, char **varValue);
-
-int getValFromRescInfo(char *varMap, rescInfo_t *ptr, char **varValue);
-
-int getValFromUserInfo(char *varMap, userInfo_t *ptr, char **varValue);
-
-int getValFromCollInfo(char *varMap, collInfo_t *ptr, char **varValue);
-
-int getValFromKeyValPair(char *varMap, keyValPair_t *ptr, char **varValue);
-
-int getValFromVersion(char *varMap, version_t *ptr, char **varValue);
-
-int getValFromAuthInfo(char *varMap, authInfo_t *ptr, char **varValue);
-
-int getValFromUserOtherInfo(char *varMap, userOtherInfo_t *ptr, char **varValue);
-
-int getValFromDataObjInp(char *varMap, dataObjInp_t *ptr, char **varValue);
-
-int getValFromDataOprInp(char *varMap, dataOprInp_t *ptr, char **varValue);
-
-int getValFromFileOpenInp(char *varMap, fileOpenInp_t *ptr, char **varValue);
-
-int getValFromRescGrpInfo(char *varMap, rescGrpInfo_t *ptr, char **varValue);
-
-int getValFromRodsHostAddr(char *varMap, rodsHostAddr_t *ptr, char **varValue);
-
 int mapExternalFuncToInternalProc( char *funcName);
 
 int zeroRuleExecInfoStruct(ruleExecInfo_t *rei);
@@ -207,6 +173,8 @@ int applyRuleArgPA(char *action, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc
 		      msParamArray_t *inMsParamArray, ruleExecInfo_t *rei, int reiSaveFlag);
 int applyRule(char *inAction, msParamArray_t *inMsParamArray,
 	  ruleExecInfo_t *rei, int reiSaveFlag);
+int applyRuleBase(char *inAction, msParamArray_t *inMsParamArray, int update,
+	  ruleExecInfo_t *rei, int reiSaveFlag);
 int applyRuleUpdateParams(char *inAction, msParamArray_t *inMsParamArray,
          ruleExecInfo_t *rei, int reiSaveFlag); // JMC - backport 4538
 int applyRuleUpdateParams(char *inAction, msParamArray_t *inMsParamArray, ruleExecInfo_t *rei, int reiSaveFlag); // JMC - backport 4539
@@ -246,26 +214,7 @@ int applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
 int splitActions(char *expr, char *expr1, char **expr2);
 int isStarVariable(char *str);
 
-int setVarValue(char *varMap, ruleExecInfo_t *rei, void *newVarValue);
-int getSetLeafValue(char **varValue, void *leafPtr, void **leafPtrVal, char *newVarValue, int setType);
 int mapExternalFuncToInternalProc( char *funcName);
-int getVarNameFromVarMap(char *varMap, char *varName, char **varMapCPtr);
-int getSetValFromRuleExecInfo(char *varMap, ruleExecInfo_t **inrei, 
-			      char **varValue, void *newVarValue);
-int getSetValFromRsComm(char *varMap, rsComm_t **inptr, char **varValue, void *newVarValue);
-int getSetValFromDataObjInfo(char *varMap, dataObjInfo_t **inptr, char **varValue, void *newVarValue);
-int getSetValFromDataObjInp(char *varMap, dataObjInp_t  **inptr, char **varValue, void *newVarValue);
-int getSetValFromDataOprInp(char *varMap, dataOprInp_t  **inptr, char **varValue, void *newVarValue);
-int getSetValFromRescInfo(char *varMap, rescInfo_t **inptr, char **varValue, void *newVarValue);
-int getSetValFromRescGrpInfo(char *varMap, rescGrpInfo_t **inptr, char **varValue, void *newVarValue);
-int getSetValFromUserInfo(char *varMap, userInfo_t **inptr, char **varValue, void *newVarValue);
-int getSetValFromCollInfo(char *varMap, collInfo_t **inptr, char **varValue, void *newVarValue);
-int getSetValFromKeyValPair(char *varMap, keyValPair_t **inptr, char **varValue, void *newVarValue);
-int getSetValFromVersion(char *varMap, version_t **inptr, char **varValue, void *newVarValue);
-int getSetValFromAuthInfo(char *varMap, authInfo_t **inptr, char **varValue, void *newVarValue);
-int getSetValFromUserOtherInfo(char *varMap, userOtherInfo_t **inptr, char **varValue, void *newVarValue);
-int getSetValFromFileOpenInp(char *varMap, fileOpenInp_t **inptr, char **varValue, void *newVarValue);
-int getSetValFromRodsHostAddr(char *varMap, rodsHostAddr_t **inptr, char **varValue, void *newVarValue);
 
 int _admShowDVM(msParam_t *bufParam, ruleExecInfo_t *rei, rulevardef_t *inRuleVarDef, int inx);
 int _admShowFNM(msParam_t *bufParam, ruleExecInfo_t *rei, rulefmapdef_t *inRuleFuncMapDef, int inx);
@@ -312,10 +261,6 @@ int writeMSrvcsIntoFile(char * inFileName, msrvcStruct_t *myMsrvcStruct,
 
 int _writeXMsg(int streamId, char *hdr, char *msg);
 int _readXMsg(int streamId, char *contRead, int *msgNum, int *seqNum, char **hdr, char **msg,char **user, char **addr);
-int reDebug(char *callLabel, int flag, char *action, char *actionStr, Node *node, Env *env, ruleExecInfo_t *rei);
-void disableReDebugger(int state[2]);
-void enableReDebugger(int state[2]);
-int initializeReDebug(rsComm_t *svrComm, int flag);
 
 
 int _applyRule(char *inAction, msParamArray_t *inMsParamArray, ruleExecInfo_t *rei, int reiSaveFlag);
@@ -323,5 +268,9 @@ int _applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
 		   ruleExecInfo_t *rei, int reiSaveFlag, int allRuleExecFlag);
 int _execMyRuleWithSaveFlag(char * ruleDef, msParamArray_t *inMsParamArray, ruleExecInfo_t *rei,int reiSaveFlag);
 
+int computeHostAddress(rsComm_t *rsComm, char *inStr, rodsHostAddr_t *addr);
+
+void disableReDebugger(int state[2]);
+void enableReDebugger(int state[2]);
 
 #endif  /* RE_FUNCDEFS_H */

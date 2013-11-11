@@ -12,6 +12,7 @@ ar d  $ar_file dummy
 rm dummy
 
 ar r $ar_file iRODS/lib/core/obj/eirods_plugin_base.o
+ar r $ar_file iRODS/lib/core/obj/eirods_kvp_string_parser.o
 
 
 #for ff in `find iRODS/ -name "*.o"`

@@ -929,19 +929,12 @@ char *userName, char *exeAddress, char *exeFrequency, char *priority,
 char *estimateExeTime, char *notificationAddr)
 {
     int status;
-#ifndef USE_BOOST_FS
-    struct stat statbuf;
-#endif
     int fd;
     rodsLong_t st_size;
 
     rstrcpy (ruleExecSubmitInp->reiFilePath, reiFilePath, MAX_NAME_LEN);
-#ifdef USE_BOOST_FS
     path p (ruleExecSubmitInp->reiFilePath);
     if (!exists (p)) {
-#else
-    if (stat (ruleExecSubmitInp->reiFilePath, &statbuf) < 0) {
-#endif
         status = UNIX_FILE_STAT_ERR - errno;
         rodsLogError (LOG_ERROR, status, // JMC - backport 4557
          "fillExecSubmitInp: stat error for rei file %s, id %s rule %s",
@@ -950,11 +943,7 @@ char *estimateExeTime, char *notificationAddr)
         return status;
     }
 
-#ifdef USE_BOOST_FS
     st_size = file_size (p);
-#else
-    st_size = statbuf.st_size;
-#endif
     if (st_size > ruleExecSubmitInp->packedReiAndArgBBuf->len) {
 	if (ruleExecSubmitInp->packedReiAndArgBBuf->buf != NULL)
             free (ruleExecSubmitInp->packedReiAndArgBBuf->buf);

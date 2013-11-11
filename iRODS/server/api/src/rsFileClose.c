@@ -82,6 +82,16 @@ int _rsFileClose(
     rsComm_t*       _comm, 
     fileCloseInp_t* _close_inp ) {
     // =-=-=-=-=-=-=-
+    // trap bound stream case and close directly
+    // this is a weird case from rsExecCmd using
+    // the FD table
+    if( 0 == strcmp( 
+        STREAM_FILE_NAME, 
+        FileDesc[ _close_inp->fileInx ].fileName ) ) {
+        return close( FileDesc[ _close_inp->fileInx ].fd ); 
+    }
+
+    // =-=-=-=-=-=-=-
     // trap for invalid objects
     if( FileDesc[ _close_inp->fileInx ].objPath == NULL ||
         FileDesc[ _close_inp->fileInx ].objPath[0] == '\0') {
@@ -101,11 +111,7 @@ int _rsFileClose(
                                     FileDesc[ _close_inp->fileInx ].rescHier, 
                                     FileDesc[ _close_inp->fileInx ].fd,
                                     0, 0 ) );
-    if(_close_inp->in_pdmo != 0) {
-        file_obj->in_pdmo(true);
-    } else {
-        file_obj->in_pdmo(false);
-    }
+    file_obj->in_pdmo(_close_inp->in_pdmo);
     
     eirods::error close_err = fileClose( _comm, file_obj );
     // =-=-=-=-=-=-=-

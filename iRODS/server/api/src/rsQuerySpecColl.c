@@ -462,7 +462,6 @@ l3Opendir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
 {
     fileOpendirInp_t fileOpendirInp;
     int status;
-    int rescTypeInx;
 
     if (dataObjInfo == NULL) return (SYS_INTERNAL_NULL_INPUT_ERR);
 
@@ -487,12 +486,6 @@ l3Opendir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
         subStructFileOpendirInp.specColl = dataObjInfo->specColl;
         status = rsSubStructFileOpendir (rsComm, &subStructFileOpendirInp);
     } else {
-#if 0 // JMC legacy resource 
-        rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
-
-        switch (RescTypeDef[rescTypeInx].rescCat) {
-        case FILE_CAT:
-#endif // JMC legacy resource 
             memset (&fileOpendirInp, 0, sizeof (fileOpendirInp));
             rstrcpy (fileOpendirInp.dirName, dataObjInfo->filePath, MAX_NAME_LEN);
             rstrcpy( fileOpendirInp.resc_name_, dataObjInfo->rescInfo->rescName, MAX_NAME_LEN );
@@ -506,16 +499,6 @@ l3Opendir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
                          "l3Opendir: rsFileOpendir for %s error, status = %d",
                          dataObjInfo->filePath, status);
             }
-#if 0 // JMC legacy resource 
-            break;
-        default:
-            rodsLog (LOG_NOTICE,
-                     "l3Opendir: rescCat type %d is not recognized",
-                     RescTypeDef[rescTypeInx].rescCat);
-            status = SYS_INVALID_RESC_TYPE;
-            break;
-        }
-#endif // JMC legacy resource 
     }
     return (status);
 }

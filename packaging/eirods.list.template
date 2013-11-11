@@ -115,7 +115,6 @@ $DB_TYPE=TEMPLATE_DB_TYPE
 $DB_HOST=TEMPLATE_DB_HOST
 $DB_PORT=TEMPLATE_DB_PORT
 $DB_USER=$OS_EIRODS_ACCT
-$DB_PASS=TEMPLATE_DB_PASS
 
 
 
@@ -125,33 +124,56 @@ $DB_PASS=TEMPLATE_DB_PASS
 # preinstall
 # =-=-=-=-=-=-=-
 %preinstall << END_PREINSTALL
-echo "Creating Service Group and Account: $OS_EIRODS_ACCT at $EIRODS_HOME_DIR "
 
-set +e
-CHECKGROUP=`getent group $OS_EIRODS_ACCT `
-CHECKACCT=`getent passwd $OS_EIRODS_ACCT `
-set -e
-if [ "$$CHECKGROUP" = "" ]; then
-  /usr/sbin/groupadd -r $OS_EIRODS_ACCT
-else
-  echo "ERROR :: Please delete the existing Service Group $OS_EIRODS_ACCT before proceeding."
-  if [ "$$CHECKACCT" = "" ]; then
-    echo "      :: The $OS_EIRODS_ACCT Service Account must be deleted prior to deleting the $OS_EIRODS_ACCT Service Group."
+# determine whether this is an upgrade
+if [ "$$1" -eq "$$1" ] 2>/dev/null ; then
+  # integer, therefore rpm
+  if [ $$1 -gt 1 ] ; then
+    PACKAGEUPGRADE="true"
+  else
+    PACKAGEUPGRADE="false"
   fi
-  exit 1
-fi
-
-if [ "$$CHECKACCT" = "" ]; then
-  useradd -r -d $EIRODS_HOME_DIR -M -s /bin/bash -g $OS_EIRODS_ACCT -c "E-iRODS Administrator" $OS_EIRODS_ACCT
 else
-  echo "ERROR :: Please delete the existing Service Account $OS_EIRODS_ACCT before proceeding."
-  exit 1
+  # string, therefore deb
+  if [ "$$1" = "upgrade" ] ; then
+    PACKAGEUPGRADE="true"
+  else
+    PACKAGEUPGRADE="false"
+  fi
 fi
 
-ACCT=$OS_EIRODS_ACCT
-mkdir -p $EIRODS_HOME_DIR
-chown $$ACCT:$$ACCT $EIRODS_HOME_DIR
+if [ "$$PACKAGEUPGRADE" = "true" ] ; then
+  echo "Upgrading Existing E-iRODS Installation"
+  mkdir -p $EIRODS_HOME_DIR
+  touch $EIRODS_HOME_DIR/upgrade.tmp
+else
+  echo "Creating Service Group and Account: $OS_EIRODS_ACCT at $EIRODS_HOME_DIR "
 
+  set +e
+  CHECKGROUP=`getent group $OS_EIRODS_ACCT `
+  CHECKACCT=`getent passwd $OS_EIRODS_ACCT `
+  set -e
+  if [ "$$CHECKGROUP" = "" ]; then
+    /usr/sbin/groupadd -r $OS_EIRODS_ACCT
+  else
+    echo "ERROR :: Please delete the existing Service Group $OS_EIRODS_ACCT before proceeding."
+    if [ "$$CHECKACCT" = "" ]; then
+      echo "      :: The $OS_EIRODS_ACCT Service Account must be deleted prior to deleting the $OS_EIRODS_ACCT Service Group."
+    fi
+    exit 1
+  fi
+
+  if [ "$$CHECKACCT" = "" ]; then
+    useradd -r -d $EIRODS_HOME_DIR -M -s /bin/bash -g $OS_EIRODS_ACCT -c "E-iRODS Administrator" $OS_EIRODS_ACCT
+  else
+    echo "ERROR :: Please delete the existing Service Account $OS_EIRODS_ACCT before proceeding."
+    exit 1
+  fi
+
+  ACCT=$OS_EIRODS_ACCT
+  mkdir -p $EIRODS_HOME_DIR
+  chown $$ACCT:$$ACCT $EIRODS_HOME_DIR
+fi
 END_PREINSTALL
 
 
@@ -164,7 +186,7 @@ END_PREINSTALL
 # post install
 # =-=-=-=-=-=-=-
 %if ICAT
-%postinstall $EIRODS_HOME_DIR/packaging/postinstall.sh $EIRODS_HOME_DIR $OS_EIRODS_ACCT icat $DB_TYPE $DB_ADMIN_ROLE $DB_NAME $DB_HOST $DB_PORT $DB_USER $DB_PASS
+%postinstall $EIRODS_HOME_DIR/packaging/postinstall.sh $EIRODS_HOME_DIR $OS_EIRODS_ACCT icat $DB_TYPE $DB_ADMIN_ROLE $DB_NAME $DB_HOST $DB_PORT $DB_USER
 %else
 %postinstall $EIRODS_HOME_DIR/packaging/postinstall.sh $EIRODS_HOME_DIR $OS_EIRODS_ACCT resource
 %endif
@@ -191,21 +213,28 @@ END_PREINSTALL
 # =-=-=-=-=-=-=-
 # post remove
 # =-=-=-=-=-=-=-
-%if RPM
-%postremove rm -r $EIRODS_HOME_DIR  
-%elseif DEB
 %postremove << END_POSTREMOVE
-# =-=-=-=-=-=-=-
-# remove the install directory if necessary
-if [ -d $EIRODS_HOME_DIR -a "$$1" = 'remove' ]; then
+# determine whether this is an upgrade
+if [ "$$1" -eq "$$1" ] 2>/dev/null ; then
+  # integer, therefore rpm
+  if [ $$1 -gt 0 ] ; then
+    PACKAGEUPGRADE="true"
+  else
+    PACKAGEUPGRADE="false"
+  fi
+else
+  # string, therefore deb
+  if [ "$$1" = "upgrade" ] ; then
+    PACKAGEUPGRADE="true"
+  else
+    PACKAGEUPGRADE="false"
+  fi
+fi
+# on remove or purge
+if [ "$$PACKAGEUPGRADE" = "false" ] ; then
   rm -rf $EIRODS_HOME_DIR
-fi 
+fi
 END_POSTREMOVE
-%endif
-
-
-
-
 
 
 
@@ -222,6 +251,7 @@ d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/tests/pydevtest -
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/tests/pydevtest ./tests/pydevtest/*.py
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/tests/pydevtest/README ./tests/pydevtest/README
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/tests/devtest.sh ./tests/devtest.sh
+f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/tests/zombiereaper.sh ./tests/zombiereaper.sh
 
 %if COVERAGE
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/gcovfiles.tgz ./gcovfiles.tgz
@@ -234,6 +264,7 @@ d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/packaging -
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/packaging/find_os.sh ./packaging/find_os.sh
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/packaging/find_postgres_bin.sh ./packaging/find_postgres_bin.sh
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/packaging/find_psqlodbc.sh ./packaging/find_psqlodbc.sh
+f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/packaging/post30upgrade.sh ./packaging/post30upgrade.sh
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/packaging/postinstall.sh ./packaging/postinstall.sh
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/packaging/preremove.sh ./packaging/preremove.sh
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/packaging/user_irodsenv.txt ./packaging/user_irodsenv.txt
@@ -256,6 +287,8 @@ d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/plugins/resources -
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/plugins/resources/ ./plugins/resources/*.so
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/plugins/network -
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/plugins/network/ ./plugins/network/*.so
+d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/plugins/auth -
+f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/plugins/auth/ ./plugins/auth/*.so
 
 
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/doc -
@@ -319,57 +352,22 @@ d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/log -
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config -
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/lockFileDir -
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/connectControl.config.template ./iRODS/server/config/connectControl.config.template
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/dbr.config ./iRODS/server/config/dbr.config
+c 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/dbr.config ./iRODS/server/config/dbr.config
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/hpssCosConfig.template ./iRODS/server/config/hpssCosConfig.template
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/HostAccessControl ./iRODS/server/config/HostAccessControl
-d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/lockFileDir -
+c 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/HostAccessControl ./iRODS/server/config/HostAccessControl
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs -
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/demo.irb ./iRODS/server/config/reConfigs/demo.irb
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/reRules.re ./iRODS/server/config/reConfigs/reRules.re
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core-new-rule.re ./iRODS/server/config/reConfigs/core-new-rule.re
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/rajatest.irb ./iRODS/server/config/reConfigs/rajatest.irb
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core.irb ./iRODS/server/config/reConfigs/core.irb
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/misc.re ./iRODS/server/config/reConfigs/misc.re
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core2.fnm ./iRODS/server/config/reConfigs/core2.fnm
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core2.re ./iRODS/server/config/reConfigs/core2.re
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core2.irb ./iRODS/server/config/reConfigs/core2.irb
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core.dvm ./iRODS/server/config/reConfigs/core.dvm
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core3.irb ./iRODS/server/config/reConfigs/core3.irb
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core-3.re ./iRODS/server/config/reConfigs/core-3.re
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/raja.irb ./iRODS/server/config/reConfigs/raja.irb
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core-2.re ./iRODS/server/config/reConfigs/core-2.re
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/nsfdemo.re ./iRODS/server/config/reConfigs/nsfdemo.re
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/raja2.irb ./iRODS/server/config/reConfigs/raja2.irb
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/demo.re ./iRODS/server/config/reConfigs/demo.re
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core.fnm ./iRODS/server/config/reConfigs/core.fnm
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/rajatest.re ./iRODS/server/config/reConfigs/rajatest.re
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/misc.irb ./iRODS/server/config/reConfigs/misc.irb
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core3.re ./iRODS/server/config/reConfigs/core3.re
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/nvo.irb ./iRODS/server/config/reConfigs/nvo.irb
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core4.irb ./iRODS/server/config/reConfigs/core4.irb
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/raja2.re ./iRODS/server/config/reConfigs/raja2.re
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core-1.re ./iRODS/server/config/reConfigs/core-1.re
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/raja.re ./iRODS/server/config/reConfigs/raja.re
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core.irb.2 ./iRODS/server/config/reConfigs/core.irb.2
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core.irb.3 ./iRODS/server/config/reConfigs/core.irb.3
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core.re ./iRODS/server/config/reConfigs/core.re
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core.irb.1 ./iRODS/server/config/reConfigs/core.irb.1
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/reRules ./iRODS/server/config/reConfigs/reRules
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core2.dvm ./iRODS/server/config/reConfigs/core2.dvm
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/nara.re ./iRODS/server/config/reConfigs/nara.re
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/nara.irb ./iRODS/server/config/reConfigs/nara.irb
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/nvo.re ./iRODS/server/config/reConfigs/nvo.re
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core4.re ./iRODS/server/config/reConfigs/core4.re
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/nsfdemo.irb ./iRODS/server/config/reConfigs/nsfdemo.irb
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/rda.config ./iRODS/server/config/rda.config
+c 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core.dvm ./iRODS/server/config/reConfigs/core.dvm
+c 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core.fnm ./iRODS/server/config/reConfigs/core.fnm
+c 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core.re ./iRODS/server/config/reConfigs/core.re
+c 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/rda.config ./iRODS/server/config/rda.config
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/irodsMonPerf.config.in ./iRODS/server/config/irodsMonPerf.config.in
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/server.config.in ./iRODS/server/config/server.config.in
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/irodsHost.in ./iRODS/server/config/irodsHost.in
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/hpssAuth.template ./iRODS/server/config/hpssAuth.template
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/packedRei -
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/irodsHost ./iRODS/server/config/irodsHost
+c 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/irodsHost ./iRODS/server/config/irodsHost
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/s3Auth.template ./iRODS/server/config/s3Auth.template
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/server.config ./iRODS/server/config/server.config
+c 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/server.config ./iRODS/server/config/server.config
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/README.txt ./iRODS/server/config/README.txt
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin -
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/cmd -
@@ -377,7 +375,6 @@ f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/cmd/irodsServerMo
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/cmd/test_execstream.py ./iRODS/server/bin/cmd/test_execstream.py
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/cmd/hello ./iRODS/server/bin/cmd/hello
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/cmd/univMSSInterface.sh ./iRODS/server/bin/cmd/univMSSInterface.sh
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/cmd/getErrorStr ./iRODS/server/bin/cmd/getErrorStr
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/vacuumdb.pl ./iRODS/server/bin/vacuumdb.pl
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/irodsServer ./iRODS/server/bin/irodsServer
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/irodsReServer ./iRODS/server/bin/irodsReServer
@@ -474,7 +471,11 @@ f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/icatGeneralQ
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/convertSql.pl ./iRODS/server/icat/src/convertSql.pl
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/config -
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/config/platform.mk ./iRODS/config/platform.mk
+%if DEB
+c 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/config/irods.config ./iRODS/config/irods.config
+%else
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/config/irods.config ./iRODS/config/irods.config
+%endif
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/config/doxygen-msi.config ./iRODS/config/doxygen-msi.config
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/config/irodsEnv.boot ./iRODS/config/irodsEnv.boot
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/config/installPostgres.config.template ./iRODS/config/installPostgres.config.template
@@ -551,6 +552,8 @@ f 755 root root /usr/bin/isysmeta             ./iRODS/clients/icommands/bin/isys
 f 755 root root /usr/bin/itrim                ./iRODS/clients/icommands/bin/itrim
 f 755 root root /usr/bin/iuserinfo            ./iRODS/clients/icommands/bin/iuserinfo
 f 755 root root /usr/bin/ixmsg                ./iRODS/clients/icommands/bin/ixmsg
+
+f 755 root root /usr/bin/irodsFs               ./iRODS/clients/fuse/bin/irodsFs
 
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test -
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/testallrules.pl ./iRODS/clients/icommands/test/testallrules.pl

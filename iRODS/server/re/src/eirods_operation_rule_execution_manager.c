@@ -25,36 +25,46 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // public - execute rule for pre operation
         error operation_rule_execution_manager::exec_pre_op( 
-            std::string& _res ) {
+            keyValPair_t& _kvp,
+            std::string&  _res ) {
             // =-=-=-=-=-=-=-
             // manufacture pre rule name
             std::string pre_name = rule_name_ + "_pre";
 
             // =-=-=-=-=-=-=-
             // execute the rule
-            return exec_op( pre_name, _res ); 
+            return exec_op( _kvp, pre_name, _res ); 
 
         } // exec_post_op
 
         // =-=-=-=-=-=-=-
         // public - execute rule for post operation
         error operation_rule_execution_manager::exec_post_op( 
-            std::string& _res ) {
+            keyValPair_t& _kvp,
+            std::string&  _res ) {
             // =-=-=-=-=-=-=-
             // manufacture pre rule name
             std::string post_name = rule_name_ + "_post";
 
             // =-=-=-=-=-=-=-
             // execute the rule
-            return exec_op( post_name, _res ); 
+            return exec_op( _kvp, post_name, _res ); 
 
         } // exec_post_op
 
         // =-=-=-=-=-=-=-
         // private - execute rule for pre operation
         error operation_rule_execution_manager::exec_op( 
+            keyValPair_t&      _kvp,
             const std::string& _name,
             std::string&       _res ) {
+            // =-=-=-=-=-=-=-
+            // debug message for creating dynPEP rules
+            rodsLog( 
+                LOG_DEBUG, 
+                "operation_rule_execution_manager exec_op [%s]", 
+                _name.c_str() );
+
             // =-=-=-=-=-=-=-
             // determine if rule exists
             RuleIndexListNode* re_node = 0;
@@ -66,8 +76,9 @@ namespace eirods {
             // manufacture an rei for the applyRule
             ruleExecInfo_t rei;
             memset ((char*)&rei, 0, sizeof (ruleExecInfo_t));
+            rei.condInputData = &_kvp; // give rule scope to our key value pairs
             rstrcpy( rei.pluginInstanceName, instance_.c_str(), MAX_NAME_LEN );
-
+            
             // =-=-=-=-=-=-=-
             // add the output parameter     
             msParamArray_t params;
@@ -78,7 +89,11 @@ namespace eirods {
             // =-=-=-=-=-=-=-
             // rule exists, param array is build.  call the rule.
             std::string arg_name = _name + "(*OUT)";
-            int ret = applyRuleUpdateParams( const_cast<char*>( arg_name.c_str() ), &params, &rei, NO_SAVE_REI );
+            int ret = applyRuleUpdateParams( 
+                          const_cast<char*>( arg_name.c_str() ), 
+                          &params, 
+                          &rei, 
+                          NO_SAVE_REI );
             if( 0 != ret ) {
                 return ERROR( ret, "failed in call to applyRuleUpdateParams" );
             }

@@ -15,5 +15,8 @@
 #include "reDataObjOpr.h"
 #include "reNaraMetaData.h"
 #include "reIn2p3SysRule.h"
+#ifdef NETCDF_API
+#include "reNetcdf.h"
+#endif
 
 

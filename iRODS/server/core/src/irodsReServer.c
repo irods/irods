@@ -266,54 +266,41 @@ chkAndResetRule (rsComm_t *rsComm)
 {
     char *configDir;
     char rulesFileName[MAX_NAME_LEN];
-#ifndef USE_BOOST_FS
-    struct stat statbuf;
-#endif
     int status;
     uint mtime;
 
     configDir = getConfigDir ();
     snprintf (rulesFileName, MAX_NAME_LEN, "%s/reConfigs/core.re",
-      configDir);
-#ifdef USE_BOOST_FS
-        path p (rulesFileName);
-        if (!exists (p)) {
-#else
-    status = stat (rulesFileName, &statbuf);
-
-    if (status != 0) {
-#endif
-	status = UNIX_FILE_STAT_ERR - errno;
+            configDir);
+    path p (rulesFileName);
+    if (!exists (p)) {
+        status = UNIX_FILE_STAT_ERR - errno;
         rodsLog (LOG_ERROR,
-          "chkAndResetRule: unable to read rule config file %s, status = %d",
-	  rulesFileName, status);
-	return (status);
+                "chkAndResetRule: unable to read rule config file %s, status = %d",
+                rulesFileName, status);
+        return (status);
     }
 
-#ifdef USE_BOOST_FS
     mtime = (uint) last_write_time (p);
-#else
-    mtime = (uint) statbuf.st_mtime;
-#endif
 
     if (CoreIrbTimeStamp == 0) {
-	/* first time */
-	CoreIrbTimeStamp = mtime;
-	return (0);
+        /* first time */
+        CoreIrbTimeStamp = mtime;
+        return (0);
     }
 
     if (mtime > CoreIrbTimeStamp) {
-	/* file has been changed */
+        /* file has been changed */
         rodsLog (LOG_NOTICE,
-          "chkAndResetRule: reconf file %s has been changed. re-initializing",
-	  rulesFileName);
-	CoreIrbTimeStamp = mtime;
-	clearCoreRule();
-	/* The shared memory cache may have already been updated, do not force reload */
-	status = initRuleEngine(RULE_ENGINE_TRY_CACHE, NULL, reRuleStr, reFuncMapStr, reVariableMapStr);
+                "chkAndResetRule: reconf file %s has been changed. re-initializing",
+                rulesFileName);
+        CoreIrbTimeStamp = mtime;
+        clearCoreRule();
+        /* The shared memory cache may have already been updated, do not force reload */
+        status = initRuleEngine(RULE_ENGINE_TRY_CACHE, NULL, reRuleStr, reFuncMapStr, reVariableMapStr);
         if (status < 0) {
             rodsLog (LOG_ERROR,
-              "chkAndResetRule: initRuleEngine error, status = %d", status);
+                    "chkAndResetRule: initRuleEngine error, status = %d", status);
         }
     }
     return status;

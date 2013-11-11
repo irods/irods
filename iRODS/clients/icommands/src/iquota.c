@@ -103,7 +103,7 @@ showQuotas(char *userName, int userOrGroup, int rescOrGlobal)
    char v1b[BIG_STR];
    char v2[BIG_STR];
    char v3[BIG_STR];
-   int i, j, k, status;
+   int i, j, status;
    int  localiTime=0;
    int printCount;
    static int printedTime=0;
@@ -256,7 +256,6 @@ showQuotas(char *userName, int userOrGroup, int rescOrGlobal)
 	       printf("\n");
 	    }
 	    else {
-	       k = strlen(tResult);
 	       printf("%s\n",tResult);
 	    }
 	    printCount++;

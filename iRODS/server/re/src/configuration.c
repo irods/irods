@@ -11,6 +11,11 @@
 #include "functions.h"
 #include "filesystem.h"
 #include "sharedmemory.h"
+#include "icatHighLevelRoutines.h"
+#include "modAVUMetadata.h"
+#ifdef DEBUG
+#include "re.h"
+#endif
 Cache ruleEngineConfig = {
     NULL, /* unsigned char *address */
     NULL, /* unsigned char *pointers */
@@ -45,23 +50,9 @@ Cache ruleEngineConfig = {
     time_type_initializer, /* time_type timestamp */
     time_type_initializer, /* time_type updateTS */
     0, /* int version */
+    0, /* int logging */
+    "", /* char ruleBase[RULE_SET_DEF_LENGTH] */
 };
-
-#ifdef DEBUG
-
-int rSplitStr(char *all, char *head, int headLen, char *tail, int tailLen, char sep) {
-    char *i = strchr(all, sep);
-    if(i==NULL) {
-        tail[0] = '\0';
-        strcpy(head, all);
-    } else {
-        strcpy(tail, i+1);
-        strncpy(head, all, i-all);
-        head[i-all] = '\0';
-    }
-    return 0;
-}
-#endif
 
 void removeRuleFromExtIndex(char *ruleName, int i) {
 	if(isComponentInitialized(ruleEngineConfig.extFuncDescIndexStatus)) {
@@ -166,10 +157,10 @@ int clearResources(int resources) {
 	}
 	return 0;
 }
-List hashtablesToClear = {NULL, NULL};
-List envToClear = {NULL, NULL};
-List regionsToClear = {NULL, NULL};
-List memoryToFree = {NULL, NULL};
+List hashtablesToClear = {0, NULL, NULL};
+List envToClear = {0, NULL, NULL};
+List regionsToClear = {0, NULL, NULL};
+List memoryToFree = {0, NULL, NULL};
 
 void delayClearResources(int resources) {
 	/*if((resources & RESC_RULE_INDEX) && ruleEngineConfig.ruleIndexStatus == INITIALIZED) {
@@ -304,9 +295,10 @@ int createRuleIndex(ruleStruct_t *inRuleStruct) {
 	return 0;
 
 }
+
 int loadRuleFromCacheOrFile(int processType, char *irbSet, ruleStruct_t *inRuleStruct) {
     char r1[NAME_LEN], r2[RULE_SET_DEF_LENGTH], r3[RULE_SET_DEF_LENGTH];
-    strcpy(r2,irbSet);
+    rstrcpy(r2, irbSet, RULE_SET_DEF_LENGTH);
     int res = 0;
 
 #ifdef DEBUG
@@ -346,25 +338,32 @@ int loadRuleFromCacheOrFile(int processType, char *irbSet, ruleStruct_t *inRuleS
 
 	        if(cache == NULL) {
 	        	rodsLog(LOG_ERROR, "Failed to restore cache.");
-	        } else if(time_type_gt(timestamp, cache->timestamp)) {
-	        	 update = 1;
-	        	 free(cache->address);
-	        	 rodsLog(LOG_DEBUG, "Rule file modified, force refresh.");
 	        } else {
+	        	int diffIrbSet = strcmp(cache->ruleBase, irbSet) != 0;
+				if(diffIrbSet) {
+					rodsLog(LOG_DEBUG, "Rule base set changed, old value is %s", cache->ruleBase);
+				}
 
-	        cache->cacheStatus = INITIALIZED;
-            ruleEngineConfig = *cache;
-            /* generate extRuleSet */
-        	generateRegions();
-        	generateRuleSets();
-        	generateFunctionDescriptionTables();
-        	if(inRuleStruct == &coreRuleStrct && ruleEngineConfig.ruleEngineStatus == UNINITIALIZED) {
-        		getSystemFunctions(ruleEngineConfig.sysFuncDescIndex->current, ruleEngineConfig.sysRegion);
-        	}
-            /* ruleEngineConfig.extRuleSetStatus = LOCAL;
-            ruleEngineConfig.extFuncDescIndexStatus = LOCAL; */
-            /* createRuleIndex(inRuleStruct); */
-            RETURN;
+	        	if(diffIrbSet || time_type_gt(timestamp, cache->timestamp)) {
+					 update = 1;
+					 free(cache->address);
+					 rodsLog(LOG_DEBUG, "Rule base set or rule files modified, force refresh.");
+				} else {
+
+					cache->cacheStatus = INITIALIZED;
+					ruleEngineConfig = *cache;
+					/* generate extRuleSet */
+					generateRegions();
+					generateRuleSets();
+					generateFunctionDescriptionTables();
+					if(inRuleStruct == &coreRuleStrct && ruleEngineConfig.ruleEngineStatus == UNINITIALIZED) {
+						getSystemFunctions(ruleEngineConfig.sysFuncDescIndex->current, ruleEngineConfig.sysRegion);
+					}
+					/* ruleEngineConfig.extRuleSetStatus = LOCAL;
+					ruleEngineConfig.extFuncDescIndexStatus = LOCAL; */
+					/* createRuleIndex(inRuleStruct); */
+					RETURN;
+				}
 	        }
     	} else {
     		rodsLog(LOG_DEBUG, "Cannot open shared memory.");
@@ -403,6 +402,7 @@ int loadRuleFromCacheOrFile(int processType, char *irbSet, ruleStruct_t *inRuleS
 	createRuleIndex(inRuleStruct);
 	/* set max timestamp */
 	time_type_set(ruleEngineConfig.timestamp, timestamp);
+	rstrcpy(ruleEngineConfig.ruleBase, irbSet, RULE_SET_DEF_LENGTH);
 
 #ifdef CACHE_ENABLE
 	if((processType == RULE_ENGINE_INIT_CACHE || update) && inRuleStruct == &coreRuleStrct) {
@@ -427,7 +427,7 @@ ret:
 }
 int readRuleStructAndRuleSetFromFile(char *ruleBaseName, ruleStruct_t *inRuleStrct)
 {
-
+/*  int i; */
 /*  char l0[MAX_RULE_LENGTH]; */
 /*  char l1[MAX_RULE_LENGTH]; */
 /*  char l2[MAX_RULE_LENGTH]; */
@@ -437,7 +437,7 @@ int readRuleStructAndRuleSetFromFile(char *ruleBaseName, ruleStruct_t *inRuleStr
 /*   char buf[MAX_RULE_LENGTH]; */
    char *configDir;
 /*   char *t; */
-   /* inRuleStrct->MaxNumOfRules; What was the intent here? - hcj */
+/*   i = inRuleStrct->MaxNumOfRules; */
 
    if (ruleBaseName[0] == '/' || ruleBaseName[0] == '\\' ||
        ruleBaseName[1] == ':') {
@@ -508,6 +508,71 @@ int readRuleStructAndRuleSetFromFile(char *ruleBaseName, ruleStruct_t *inRuleStr
 
 int availableRules() {
 	return (isComponentInitialized(ruleEngineConfig.appRuleSetStatus) ? ruleEngineConfig.coreRuleSet->len : 0) + (isComponentInitialized(ruleEngineConfig.appRuleSetStatus) == INITIALIZED? ruleEngineConfig.appRuleSet->len : 0);
+}
+
+
+int readICatUserInfo(char *userName, char *attr, char userInfo[MAX_NAME_LEN], rsComm_t *rsComm) {
+	int status;
+	genQueryInp_t genQueryInp;
+	genQueryOut_t *genQueryOut = NULL;
+	char condstr[MAX_NAME_LEN];
+	sqlResult_t *r;
+	memset(&genQueryInp, 0, sizeof(genQueryInp));
+	genQueryInp.maxRows = MAX_SQL_ROWS;
+
+	snprintf(condstr, MAX_NAME_LEN, "= '%s'", userName);
+	addInxVal(&genQueryInp.sqlCondInp, COL_USER_NAME, condstr);
+	snprintf(condstr, MAX_NAME_LEN, "= '%s'", attr);
+	addInxVal(&genQueryInp.sqlCondInp, COL_META_USER_ATTR_NAME, condstr);
+
+	addInxIval(&genQueryInp.selectInp, COL_META_USER_ATTR_VALUE, 1);
+
+	status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
+	if ( status >= 0 && genQueryOut->rowCnt > 0 ) {
+		r = getSqlResultByInx (genQueryOut, COL_META_USER_ATTR_VALUE);
+		rstrcpy(userInfo, &r->value[0], MAX_NAME_LEN);
+		genQueryInp.continueInx =  genQueryOut->continueInx;
+	} else {
+		userInfo[0] = '\0';
+	}
+	clearGenQueryInp (&genQueryInp);
+	freeGenQueryOut (&genQueryOut);
+	return status;
+
+}
+
+int writeICatUserInfo(char *userName, char *attr, char *value, rsComm_t *rsComm) {
+	modAVUMetadataInp_t modAVUMetadataInp;
+
+        modAVUMetadataInp.arg0 = "set";
+        modAVUMetadataInp.arg1 = "-u";
+        modAVUMetadataInp.arg2 = userName;
+        modAVUMetadataInp.arg3 = attr;
+        modAVUMetadataInp.arg4 = value;
+        modAVUMetadataInp.arg5 = "";
+
+	return rsModAVUMetadata(rsComm, &modAVUMetadataInp);
+}
+
+int readICatUserLogging(char *userName, int *logging, rsComm_t *rsComm) {
+	char userInfo[MAX_NAME_LEN];
+	int i = readICatUserInfo(userName, RE_LOGGING_ATTR, userInfo, rsComm);
+	if(i<0) {
+		return i;
+	}
+			if(strcmp(userInfo, "true") == 0) {
+				*logging = 1;
+			} else if (strcmp(userInfo, "false") == 0){
+				*logging = 0;
+			} else {
+				return RE_RUNTIME_ERROR; /* todo change this to a more specific error code */
+			}
+	return 0;
+}
+int writeICatUserLogging(char *userName, int logging, rsComm_t *rsComm) {
+	char value[MAX_NAME_LEN];
+	rstrcpy(value, (char *)(logging?"true":"false"), MAX_NAME_LEN);
+	return writeICatUserInfo(userName, RE_LOGGING_ATTR, value, rsComm);
 }
 
 

@@ -30,12 +30,11 @@
 #define IRODS_INUSE	1 
 
 
-#ifdef USE_BOOST
+// =-=-=-=-=-=-=-
+// boost includes
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition_variable.hpp>
-#endif
-// =-=-=-=-=-=-=-
 
 typedef struct BufCache {
     rodsLong_t beginOffset;
@@ -50,13 +49,8 @@ typedef enum {
 } readCacheState_t;
 
 typedef struct ConnReqWait {
-#ifdef USE_BOOST
     boost::mutex* mutex;
     boost::condition_variable cond;
-#else
-    pthread_mutex_t mutex;
-    pthread_cond_t cond;
-#endif
     int state;
     struct ConnReqWait *next;
 } connReqWait_t;
@@ -74,11 +68,7 @@ typedef struct IFuseDesc {
     char *objPath;
     char *localPath;
     readCacheState_t locCacheState;
-#ifdef USE_BOOST
     boost::mutex* mutex;
-#else
-    pthread_mutex_t lock;
-#endif
 } iFuseDesc_t;
 
 #define NUM_PATH_HASH_SLOT	201

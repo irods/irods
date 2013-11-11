@@ -22,7 +22,7 @@
 #define TRAVERSE_PTR(fn, f) \
 	CASCADE_NULL(ptr->f = fn(ptr->f, r, objectMap));
 
-#define TRAVERSE_PTR_GENERIC(fn, f, cpfn) \
+#define TRAVERSE_PTR_TAPP(fn, f, cpfn) \
 	CASCADE_NULL(ptr->f = fn(ptr->f, r, cpfn, objectMap));
 
 #define TRAVERSE_ARRAY_BEGIN(T, size, f) \

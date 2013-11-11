@@ -5,6 +5,15 @@
 #Test Rules
 printHello { print_hello; }
 
+###########
+# E-iRODS specific indicator rule
+#   Clients can check for this and know that they are communicating with
+#   an E-iRODS instance (useful to distinguish between E-iRODS 3.0.1 and
+#   Community iRODS 3.0, both of which report release version "rods3.0").
+#   Initially included for the Jargon library.
+############
+isEiRODS {}
+
 # 
 #
 # These are sys admin rules for creating and deleting users and renaming
@@ -672,9 +681,15 @@ acConvertToInt(*R) {assign(*A,$sysUidClient); assign($sysUidClient,*R); assign(*
 
 # =-=-=-=-=-=-=-
 # examples of dynamically called rules via the operation_wrapper
-#pep_open_pre(*OUT)  { writeLine('serverLog','RULECALL :: pep_open_pre  [$pluginInstanceName] [*OUT]'); *OUT="CHANGED_VALUE"; }
-#pep_open_post(*OUT) { writeLine('serverLog','RULECALL :: pep_open_post [$pluginInstanceName] [*OUT]'); *OUT="CHANGED_VALUE"; }
-#pep_read_pre(*OUT)  { writeLine('serverLog','RULECALL :: pep_read_pre  [$pluginInstanceName] [*OUT]'); *OUT="CHANGED_VALUE"; }
-#pep_read_post(*OUT) { writeLine('serverLog','RULECALL :: pep_read_post [$pluginInstanceName] [*OUT]'); *OUT="CHANGED_VALUE"; }
+#pep_resource_open_pre(*OUT)  { writeLine('serverLog','RULECALL :: pep_open_pre  [$pluginInstanceName] [*OUT]'); *OUT="CHANGED_VALUE"; }
+#pep_resource_open_post(*OUT) { writeLine('serverLog','RULECALL :: pep_open_post [$pluginInstanceName] [*OUT]'); *OUT="CHANGED_VALUE"; }
+#pep_resource_read_pre(*OUT)  { writeLine('serverLog','RULECALL :: pep_read_pre  [$pluginInstanceName] [*OUT]'); *OUT="CHANGED_VALUE"; }
+#pep_resource_read_post(*OUT) { writeLine('serverLog','RULECALL :: pep_read_post [$pluginInstanceName] [*OUT]'); *OUT="CHANGED_VALUE"; }
 
 
+# =-=-=-=-=-=-=-
+# policy controlling when a dataObject is staged to cache from archive in a compound coordinating resource
+#  - the default is to stage when cache is not present ("when_necessary")
+# =-=-=-=-=-=-=-
+# pep_resource_resolve_hierarchy_pre(*OUT){*OUT="compound_resource_cache_refresh_policy=when_necessary";}  # default
+# pep_resource_resolve_hierarchy_pre(*OUT){*OUT="compound_resource_cache_refresh_policy=always";}

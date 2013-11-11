@@ -2,11 +2,13 @@
  */
 #ifndef INDEX_H
 #define INDEX_H
-#include "debug.h"
+//#include "debug.h"
 #include "hashtable.h"
 #include "rules.h"
 #ifndef DEBUG
 #include "reGlobalsExtern.h"
+#else
+#include "re.h"
 #endif
 
 #define COND_INDEX_THRESHOLD 2

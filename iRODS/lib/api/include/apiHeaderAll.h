@@ -17,8 +17,6 @@
 #include "fileMkdir.h"
 #include "fileRmdir.h"
 #include "fileStat.h"
-#include "fileFstat.h"
-#include "fileFsync.h"
 #include "dataObjLock.h" // JMC - backport 4599
 #include "fileGetFsFreeSpace.h"
 #include "fileOpendir.h"
@@ -78,7 +76,6 @@
 #include "subStructFileClose.h"
 #include "subStructFileUnlink.h"
 #include "subStructFileStat.h"
-#include "subStructFileFstat.h"
 #include "subStructFileLseek.h"
 #include "subStructFileRename.h"
 #include "querySpecColl.h"
@@ -130,8 +127,19 @@
 #include "specificQuery.h"
 #include "streamClose.h"
 #include "getHostForGet.h"
-#include "dataObjFsync.h"
 #include "pamAuthRequest.h"
 #include "sslStart.h"
 #include "sslEnd.h"
+
+// =-=-=-=-=-=-=-
+// necessary for FUSE
+#include "dataObjTruncate.h"
+#include "fileTruncate.h"
+#include "subStructFileTruncate.h"
+
+// =-=-=-=-=-=-=-
+// pluggable authentication
+#include "authPluginRequest.h"
+
+
 #endif	/* API_HEADER_ALL_H */

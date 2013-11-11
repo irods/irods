@@ -1,12 +1,36 @@
-This is the first release of the Enterprise integrated Rule-Oriented Data System (E-iRODS).
+This is the second release of the Enterprise integrated Rule-Oriented Data System (E-iRODS).
 
 E-iRODS is developed under the auspices of the iRODS Consortium.  This release was prepared by the Renaissance Computing Institute (RENCI) and released under the New BSD (BSD-3) License.
 
-Development has focused on the following features and efforts:
- 
-- Introduced pluggable interfaces for microservices and resources
-- Fixed an estimated 200 static analysis errors identified by cppcheck
-- Fixed an estimated 20 memory leaks identified by valgrind
-- Increased code coverage from 20% to over 56%
+Development of this release has focused on the following features and efforts:
+
+- API Compatibility with Community iRODS for purposes of Federation
+- Met all US Export Control requirements for distribution
+- Introduced pluggable interface for networks
+
+  - TCP
+  - SSL
+- Introduced pluggable interface for authentication
+
+  - Native iRODS password
+  - OSAuth
+  - GSI
+  - PAM
+  - Kerberos
+  - LDAP (via PAM)
+- Additional coordinating resource plugins
+
+  - Compound
+  - Replication
+- Migration support for composable resources
+
+  - Rebalance mechanism
+  - Adding/removing child resources with existing data
+  - itrim from child resources of replication resources
+- Full python-based testing framework
+- Certified against full Jargon test suite
+- Continuous integration testing via hudson
+- Continuous static analysis via cppcheck
+- Increased code coverage from ~50% to over 56%
 - Continuously built and tested across 3 major linux distributions
 - Packaged for 3 major linux distributions

@@ -4,15 +4,17 @@ SRCS = librepl.cpp \
        eirods_replicator.cpp \
        eirods_create_write_replicator.cpp \
        eirods_unlink_replicator.cpp \
-       eirods_object_oper.cpp
+       eirods_object_oper.cpp \
+       eirods_repl_rebalance.cpp
 
 HEADERS = eirods_create_write_replicator.h \
           eirods_object_oper.h \
           eirods_oper_replicator.h \
           eirods_replicator.h \
-	  eirods_repl_types.h \
-          eirods_unlink_replicator.h
+          eirods_repl_types.h \
+          eirods_unlink_replicator.h \
+          eirods_repl_rebalance.h
 
-EXTRALIBS = 
+EXTRALIBS = ../../../iRODS/lib/core/obj/eirods_virtual_path.o
 
 include ../Makefile.base

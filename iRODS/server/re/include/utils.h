@@ -8,16 +8,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "debug.h"
 #ifndef DEBUG
 #include "objInfo.h"
 #include "reHelpers1.h"
 #include "rodsType.h"
 #endif
-
 #include "restructs.h"
 #include "region.h"
 #include "hashtable.h"
+
 
 #define CASCASE_NON_ZERO(x) {int ret = x; if(ret != 0) { return ret;} }
 #define CASCADE_NULL(x) if((x)==NULL) return NULL;
@@ -27,8 +26,7 @@
 
 #define IS_TVAR_NAME(x) ((x)[0] == '?')
 
-#define PRINT(p, s, f, d)      snprintf(*p, *s, f, d);*s -= strlen(*p); *p += strlen(*p);
-
+#define PRINT(p, s, f, d) 	snprintf(*p, *s, f, d);*s -= strlen(*p); *p += strlen(*p);
 int newTVarId();
 
 char* getTVarName(int vid, char name[128]);
@@ -65,7 +63,6 @@ char *cpString2(char *res, Region *oldr, Region *newr);
 void cpHashtable2(Hashtable *env, Region *oldr, Region *newr);
 void cpEnv2(Env *env, Region *oldr, Region *newr);
 
-Res *setVariableValue(char *varName, Res *val, ruleExecInfo_t *rei, Env *env, rError_t *errmsg, Region *r);
 int occursIn(ExprType *var, ExprType *type);
 ExprType* unifyWith(ExprType *type, ExprType* expected, Hashtable *varTypes, Region *r);
 ExprType* unifyNonTvars(ExprType *type, ExprType *expected, Hashtable *varTypes, Region *r);

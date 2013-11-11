@@ -752,7 +752,8 @@ int remoteExec(msParam_t *mPD, msParam_t *mPA, msParam_t *mPB, msParam_t *mPC, r
   i = evaluateExpression(tmpStr, tmpStr1, rei);
   if (i < 0)
     return(i);
-  parseHostAddrStr (tmpStr1, &execMyRuleInp.addr);
+    parseHostAddrStr (tmpStr1, &execMyRuleInp.addr);
+
 #endif
   if(strlen((char*)mPC->inOutStruct)!=0) {
 	  snprintf(execMyRuleInp.myRule, META_STR_LEN, "remExec||%s|%s",  (char*)mPB->inOutStruct,(char*)mPC->inOutStruct);
@@ -1456,6 +1457,72 @@ msiStrToBytesBuf(msParam_t* str_msp, msParam_t* buf_msp, ruleExecInfo_t *rei)
 	return 0;
 }
 
+/**
+ *\fn msiBytesBufToStr(msParam_t* buf_msp,  msParam_t* str_msp, ruleExecInfo_t *rei)
+ *
+ * \brief Writes  a bytesBuf_t into a character string 
+ *
+ * \module core
+ *
+ * \since 3.3
+ *
+ * \author  Arcot Rajasekar
+ * \date    2013-06-10
+ *
+ * \remark This may blow up if the buffer is not a character string. so be careful 
+ *
+ * \note The string can have length up to BUF_LEN_MS_T
+ *
+ * \usage
+ * 
+ * testrule||msiBytesBufToStr(*Buff, *St)##writeLine(stdout,*St)|nop
+ * ruleExecOut
+ *
+ * \param[in] buf_msp - a BUF_LEN_MS_T
+ * \param[out] str_msp - a STR_MS_T
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre none
+ * \post none
+ * \sa none
+ * \bug  no known bugs
+**/
+int
+msiBytesBufToStr(msParam_t* buf_msp, msParam_t* str_msp, ruleExecInfo_t *rei)
+{
+	char *outStr;
+	bytesBuf_t *inBuf;
+
+	/*check buf_msp */
+	if ( buf_msp == NULL && buf_msp->inOutStruct == NULL)  
+	{
+	  rodsLog (LOG_ERROR, "msiBytesBufToStr: input buf_msp is NULL.");
+	  return (USER__NULL_INPUT_ERR);
+	}
+	inBuf = buf_msp->inpOutBuf;
+	if (inBuf->len < 0 || inBuf->len > (MAX_SZ_FOR_SINGLE_BUF-10))  {
+	  rodsLog (LOG_ERROR, "msiBytesBufToStr: input buf_msp is NULL.");
+	  return (USER_INPUT_FORMAT_ERR);
+	}
+	outStr = (char *) malloc((inBuf->len + 1));
+	outStr[inBuf->len] = '\0';
+	strncpy(outStr, (char *) inBuf->buf, inBuf->len);
+	fillStrInMsParam(str_msp, outStr);
+	free(outStr);
+	
+	return 0;
+}
+
 
 
 /**
@@ -1588,13 +1655,11 @@ msiListEnabledMS(msParam_t *outKVPairs, ruleExecInfo_t *rei)
 }
 
 
-
-
 /**
  * \fn msiGetFormattedSystemTime(msParam_t* outParam, msParam_t* inpParam,
  *          msParam_t* inpFormatParam, ruleExecInfo_t *rei)
  *
- * \brief Returns the local system time
+ * \brief Returns the local system time, formatted
  *
  * \module core
  *
@@ -1627,8 +1692,9 @@ msiListEnabledMS(msParam_t *outKVPairs, ruleExecInfo_t *rei)
  * \post none
  * \sa none
 **/
-int // JMC - backport 4581
-msiGetFormattedSystemTime( msParam_t* outParam, msParam_t* inpParam, msParam_t* inpFormatParam, ruleExecInfo_t *rei )
+int
+msiGetFormattedSystemTime(msParam_t* outParam, msParam_t* inpParam,
+        msParam_t* inpFormatParam, ruleExecInfo_t *rei)
 {
   char *format;
   char *dateFormat;
@@ -1643,7 +1709,7 @@ msiGetFormattedSystemTime( msParam_t* outParam, msParam_t* inpParam, msParam_t* 
 
   if (rei == NULL || rei->rsComm == NULL) {
     rodsLog (LOG_ERROR,
-            "msiGetFormattedSystemTime: input rei or rsComm is NULL");
+	     "msiGetFormattedSystemTime: input rei or rsComm is NULL");
     return (SYS_INTERNAL_NULL_INPUT_ERR);
   }
   format = (char*)inpParam->inOutStruct;
@@ -1657,13 +1723,12 @@ msiGetFormattedSystemTime( msParam_t* outParam, msParam_t* inpParam, msParam_t* 
     mytm = localtime(&myTime);
 
     snprintf (tStr, TIME_LEN, dateFormat,
-               mytm->tm_year + 1900, mytm->tm_mon + 1, mytm->tm_mday,
-               mytm->tm_hour, mytm->tm_min, mytm->tm_sec);
+    		mytm->tm_year + 1900, mytm->tm_mon + 1, mytm->tm_mday,
+    		mytm->tm_hour, mytm->tm_min, mytm->tm_sec);
   }
   status = fillStrInMsParam (outParam,tStr);
   return(status);
 }
-
 
 
 

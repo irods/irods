@@ -14,6 +14,10 @@
 #include "rcPortalOpr.h"
 #include "oprComplete.h"
 
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_client_server_negotiation.h"
+
 /**
  * \fn rcDataObjPut (rcComm_t *conn, dataObjInp_t *dataObjInp, 
  *   char *locFilePath)
@@ -173,8 +177,26 @@ rcDataObjPut (rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath)
         } else {
             veryVerbose = 0;
         }
-        status = putFileToPortalRbudp (portalOprOut, locFilePath, 
-                                       dataObjInp->objPath, -1, dataObjInp->dataSize, veryVerbose, 0, 0);
+
+        if( eirods::CS_NEG_USE_SSL == conn->negotiation_results ) {
+            // =-=-=-=-=-=-=-
+            // if a secret has been negotiated then we must be using
+            // encryption.  given that RBUDP is not supported in an
+            // encrypted capacity this is considered an error
+            rodsLog( 
+                LOG_ERROR,
+                "putFileToPortal: Encryption is not supported with RBUDP" );
+            return SYS_INVALID_PORTAL_OPR;
+            
+        } else {
+            status = putFileToPortalRbudp( 
+                         portalOprOut, 
+                         locFilePath, 
+                         dataObjInp->objPath, 
+                         -1, dataObjInp->dataSize, 
+                         veryVerbose, 
+                         0, 0 ); 
+        }
 #endif  /* RBUDP_TRANSFER */
     } else {
         if (getValByKey (&dataObjInp->condInput, VERY_VERBOSE_KW) != NULL) {

@@ -48,6 +48,7 @@ msiExtractNaraMetadata (ruleExecInfo_t *rei)
   char attr[100];
   char value[500];
   modAVUMetadataInp_t modAVUMetadataInp;
+  int status;
   /* specify the location of the metadata file here */
   char metafile[MAX_NAME_LEN];
 
@@ -79,12 +80,16 @@ msiExtractNaraMetadata (ruleExecInfo_t *rei)
          if(flag == 2 && counter == 2){
            strcpy( value, substring );
            /*Call the function to insert metadata here.*/
-	   modAVUMetadataInp.arg1 = "-d";
-	   modAVUMetadataInp.arg2 = rei->doi->objPath;
-	   modAVUMetadataInp.arg3 = attr;
-	   modAVUMetadataInp.arg4 = value;
-	   modAVUMetadataInp.arg5 = "";
-           rsModAVUMetadata (rei->rsComm, &modAVUMetadataInp);
+            modAVUMetadataInp.arg1 = "-d";
+            modAVUMetadataInp.arg2 = rei->doi->objPath;
+            modAVUMetadataInp.arg3 = attr;
+            modAVUMetadataInp.arg4 = value;
+            modAVUMetadataInp.arg5 = "";
+           status = rsModAVUMetadata (rei->rsComm, &modAVUMetadataInp);
+           if(status < 0)
+           {
+              eirods::log( ERROR (status, "rsModAVUMetadata failed." ) );
+           }
            rodsLog (LOG_DEBUG, "msiExtractNaraMetadata: %s:%s",attr, value);
          }
          substring = strtok (NULL, "|");

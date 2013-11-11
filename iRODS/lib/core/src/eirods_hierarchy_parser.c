@@ -39,19 +39,25 @@ namespace eirods {
     }
     
     error hierarchy_parser::str(
-        std::string& _ret_string) {
+        std::string& _ret_string,
+        const std::string& _term_resc) const
+    {
 
         error result = SUCCESS();
         _ret_string.clear();
         bool first = true;
+        bool done = false;
         for(resc_list_t::const_iterator itr = resc_list_.begin();
-            itr != resc_list_.end(); ++itr) {
+            !done && itr != resc_list_.end(); ++itr) {
             if(first) {
                 first = false;
             } else {
                 _ret_string += DELIM;
             }
             _ret_string += *itr;
+            if(*itr == _term_resc) {
+                done = true;
+            }
         }
         return result;
     }
@@ -106,7 +112,7 @@ namespace eirods {
                     std::stringstream msg;
                     msg << "there is no next resource. [" << _current;
                     msg << "] is a leaf resource.";
-                    result = ERROR(EIRODS_NEXT_RESC_FOUND, msg.str());
+                    result = ERROR(EIRODS_NO_NEXT_RESC_FOUND, msg.str());
                 }
             }
         }
@@ -138,6 +144,22 @@ namespace eirods {
     {
         resc_list_ = rhs.resc_list_;
         return *this;
+    }
+
+    const std::string& hierarchy_parser::delimiter(void) {
+        return DELIM;
+    }
+
+    bool hierarchy_parser::resc_in_hier(
+        const std::string& _resc) const
+    {
+        bool result = false;
+        for(resc_list_t::const_iterator itr = resc_list_.begin(); !result && itr != resc_list_.end(); ++itr) {
+            if( *itr == _resc ) {
+                result = true;
+            }
+        }
+        return result;
     }
 
 }; // namespace eirods

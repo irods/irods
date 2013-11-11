@@ -9,6 +9,9 @@
 #include "eirods_first_class_object.h"
 
 namespace eirods {
+    // =-=-=-=-=-=-=-
+    /// @brief definition of the resource interface
+    const std::string RESOURCE_INTERFACE( "eirods_resource_interface" );
 
     // =-=-=-=-=-=-=-
     /// @brief special resource for local file system operations only
@@ -53,6 +56,10 @@ namespace eirods {
                               std::string,     // instance name
                               std::string,     // resource context
                               resource_ptr& ); // resource out variable
+
+        // =-=-=-=-=-=-=-
+        /// @brief create a list of resources who do not have parents ( roots )
+        error get_root_resources( std::vector< std::string >& );
 
         // =-=-=-=-=-=-=-
         /// @brief print the list of local resources out to stderr

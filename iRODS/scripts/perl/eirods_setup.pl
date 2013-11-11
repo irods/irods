@@ -31,7 +31,7 @@ use Cwd;
 use Cwd "abs_path";
 use Config;
 
-$version{"eirods_setup.pl"} = "Jan 2012";
+$version{"eirods_setup.pl"} = "Nov 2013";
 
 
 # =-=-=-=-=-=-=-
@@ -1774,8 +1774,19 @@ sub configureIrodsUser
 			"irodsUserName '$IRODS_ADMIN_NAME'\n" .
 			"# Zone:\n" .
 			"irodsZone '$ZONE_NAME'\n" .
+			"# Enable Advanced Client-Server negotiation:\n" .
+			"irodsClientServerNegotiation 'request_server_negotiation'\n" .
 			"# Client-Server connection policy:\n" .
-			"irodsClientServerPolicy 'CS_NEG_DONT_CARE'\n" );
+			"irodsClientServerPolicy 'CS_NEG_REFUSE'\n" .
+			"# Client-Server Encryption Key Size In Bytes:\n" .
+			"irodsEncryptionKeySize '32'\n" .
+			"# Client-Server Encryption Salt Size In Bytes:\n" .
+			"irodsEncryptionSaltSize '8'\n" .
+			"# Client-Server Encryption Number of Hash Rounds:\n" .
+			"irodsEncryptionNumHashRounds '16'\n" .
+			"# Client-Server Encryption Algorithm:\n" .
+			"irodsEncryptionAlgorithm 'AES-256-CBC'\n\n"
+             );
 
 	} else {
 		# this is an instance of a Resource Server installation as
@@ -1802,7 +1813,20 @@ sub configureIrodsUser
 			"# Account name:\n" .
 			"irodsUserName '$IRODS_ADMIN_NAME'\n" .
 			"# Zone:\n" .
-			"irodsZone '$ZONE_NAME'\n" );
+			"irodsZone '$ZONE_NAME'\n".
+			"# Enable Advanced Client-Server negotiation:\n" .
+			"irodsClientServerNegotiation 'request_server_negotiation'\n" .
+			"# Client-Server connection policy:\n" .
+			"irodsClientServerPolicy 'CS_NEG_REFUSE'\n" .
+			"# Client-Server Encryption Key Size In Bytes:\n" .
+			"irodsEncryptionKeySize '32'\n" .
+			"# Client-Server Encryption Salt Size In Bytes:\n" .
+			"irodsEncryptionSaltSize '8'\n" .
+			"# Client-Server Encryption Number of Hash Rounds:\n" .
+			"irodsEncryptionNumHashRounds '16'\n" .
+			"# Client-Server Encryption Algorithm:\n" .
+			"irodsEncryptionAlgorithm 'AES-256-CBC'\n\n"
+		);
 	}
 
 

@@ -16,8 +16,8 @@
 
 **************************************************************************/
 
-#include "rods.h"
-#include "rcMisc.h"
+// =-=-=-=-=-=-=-
+// eirods includes
 #include "eirods_error.h"
 #include "eirods_zone_info.h"
 #include "eirods_sql_logger.h"
@@ -27,12 +27,25 @@
 #include "eirods_children_parser.h"
 #include "eirods_stacktrace.h"
 #include "eirods_hierarchy_parser.h"
+#include "eirods_catalog_properties.h"
+#include "eirods_kvp_string_parser.h"
+#include "eirods_auth_object.h"
+#include "eirods_auth_factory.h"
+#include "eirods_auth_plugin.h"
+#include "eirods_auth_manager.h"
+#include "eirods_auth_constants.h"
 
+// =-=-=-=-=-=-=-
+// irods includes
+#include "rods.h"
+#include "rcMisc.h"
 #include "icatMidLevelRoutines.h"
 #include "icatMidLevelHelpers.h"
 #include "icatHighLevelRoutines.h"
 #include "icatLowLevel.h"
 
+// =-=-=-=-=-=-=-
+// stl includes
 #include <string>
 #include <iostream>
 #include <sstream>
@@ -41,7 +54,7 @@
 
 extern int get64RandomBytes(char *buf);
 
-static char prevChalSig[200]; /* a 'signiture' of the previous
+static char prevChalSig[200]; /* a 'signature' of the previous
                                  challenge.  This is used as a sessionSigniture on the ICAT server
                                  side.  Also see getSessionSignitureClientside function. */
 
@@ -85,6 +98,8 @@ static char prevChalSig[200]; /* a 'signiture' of the previous
 #define TEMP_PASSWORD_TIME 120
 #define TEMP_PASSWORD_MAX_TIME 1000
 
+
+#if 0
 /* IRODS_PAM_PASSWORD_DEFAULT_TIME (the default iRODS-PAM password
    lifetime) IRODS_PAM_PASSWORD_MIN_TIME must be greater than
    TEMP_PASSWORD_TIME to avoid the possibility that the logic for
@@ -105,12 +120,23 @@ static char prevChalSig[200]; /* a 'signiture' of the previous
 #else
 #define IRODS_PAM_PASSWORD_DEFAULT_TIME "1209600" /* two weeks in seconds */
 #endif
- 
+#endif
+    
 #define PASSWORD_SCRAMBLE_PREFIX ".E_"
 #define PASSWORD_KEY_ENV_VAR "irodsPKey"
 #define PASSWORD_DEFAULT_KEY "a9_3fker"
 
 #define MAX_HOST_STR 2700
+
+// =-=-=-=-=-=-=-
+// local variables externed for config file setting in
+bool eirods_pam_auth_no_extend = false;
+size_t eirods_pam_password_len = 20;
+char eirods_pam_password_min_time[ NAME_LEN ]     = { "121" };
+char eirods_pam_password_max_time[ NAME_LEN ]     = { "1209600" };
+char eirods_pam_password_default_time[ NAME_LEN ] = { "1209600" };
+
+
 
 int logSQL=0;
 
@@ -121,6 +147,8 @@ icatSessionStruct icss={0};
 char localZone[MAX_NAME_LEN]={""};
 
 int creatingUserByGroupAdmin=0; // JMC - backport 4772
+
+
 
 /*
   Enable or disable some debug logging.
@@ -205,18 +233,43 @@ icatScramble(char *pw) {
   Open a connection to the database.  This has to be called first.  The
   server/agent and Rule-Engine Server call this when initializing.
 */
-int chlOpen(char *DBUser, char *DBpasswd) {
+int chlOpen( 
+    rodsServerConfig* _config ) {
+    
     int i;
     if (logSQL!=0) rodsLog(LOG_SQL, "chlOpen");
-    strncpy(icss.databaseUsername, DBUser, DB_USERNAME_LEN);
-    strncpy(icss.databasePassword, DBpasswd, DB_PASSWORD_LEN);
+    strncpy( icss.databaseUsername, _config->DBUsername, DB_USERNAME_LEN );
+    strncpy( icss.databasePassword, _config->DBPassword, DB_PASSWORD_LEN );
     i = cmlOpen(&icss);
     if (i != 0) {
         rodsLog(LOG_NOTICE, "chlOpen cmlOpen failure %d",i);
     }
     else {
         icss.status=1;
+
+        // Capture ICAT properties
+        eirods::catalog_properties::getInstance().capture();
     }
+
+    // =-=-=-=-=-=-=-
+    // set pam properties
+    eirods_pam_auth_no_extend    = _config->eirods_pam_auth_no_extend;
+    eirods_pam_password_len      = _config->eirods_pam_password_len;
+    strncpy( 
+        eirods_pam_password_min_time,
+        _config->eirods_pam_password_min_time,
+        NAME_LEN );
+    strncpy( 
+        eirods_pam_password_max_time,
+        _config->eirods_pam_password_max_time,
+        NAME_LEN );
+    if( eirods_pam_auth_no_extend ) {
+        strncpy( 
+            eirods_pam_password_default_time,
+            "28800",
+            NAME_LEN );
+    }
+
     return(i);
 }
 
@@ -1868,7 +1921,6 @@ eirods::error chlRescObjCount(
 {
     eirods::error result = SUCCESS();
     rodsLong_t obj_count = 0;
-    char obj_count_string[MAX_NAME_LEN];
     int status;
     
     if((status = cmlGetIntegerValueFromSql("select resc_objcount from R_RESC_MAIN where resc_name=?",
@@ -1894,7 +1946,6 @@ _rescHasData(
     bool result = false;
     eirods::sql_logger logger("_rescHasData", logSQL);
     int status;
-    char obj_count_string[MAX_NAME_LEN];
     static const char* func_name = "_rescHasData";
     rodsLong_t obj_count;
     
@@ -1940,8 +1991,13 @@ chlAddChildResc(
     static const char* func_name = "chlAddChildResc";
     eirods::sql_logger logger(func_name, logSQL);
     std::string new_child_string(rescInfo->rescChildren);
+    std::string hierarchy, child_resc, root_resc;
+    eirods::children_parser parser;
+    eirods::hierarchy_parser hier_parser;
+    rodsLong_t obj_count;
     char resc_id[MAX_NAME_LEN];
-    
+
+
     logger.log();
 
     if(!(result = _canConnectToCatalog(rsComm))) {
@@ -1954,13 +2010,6 @@ chlAddChildResc(
                           "Currently, resources must be in the local zone");
             result = CAT_INVALID_ZONE;
 
-        } else if(_childHasData(new_child_string)) {
-            char errMsg[105];
-            snprintf(errMsg, 100, 
-                     "resource '%s' contains one or more dataObjects",
-                     rescInfo->rescName);
-            addRErrorMsg (&rsComm->rError, 0, errMsg);
-            result = CAT_RESOURCE_NOT_EMPTY;
         } else {
 
             logger.log();
@@ -1978,10 +2027,84 @@ chlAddChildResc(
             } else if((status =_childIsValid(new_child_string)) == 0) {
                 if((status = _updateRescChildren(resc_id, new_child_string)) != 0) {
                     result = status;
-                } else if((status = _updateChildParent(new_child_string, std::string(rescInfo->rescName))) != 0) {
+                } else if((status = _updateChildParent(new_child_string, rescInfo->rescName)) != 0) {
                     result = status;
                 } else {
-                    
+
+                	// IF CHILD HAZ DATA
+                	if(_childHasData(new_child_string)) {
+
+                	    // =-=-=-=-=-=-=-
+                	    // Resolve resource hierarchy
+
+                	    status = chlGetHierarchyForResc(rescInfo->rescName, localZone, hierarchy);
+                	    if (status < 0) {
+                   			std::stringstream ss;
+                    		ss << func_name << ": chlGetHierarchyForResc failed, status = " << status;
+                    		eirods::log(LOG_NOTICE, ss.str());
+                    		_rollback(func_name);
+                	    	return status;
+                	    }
+
+
+                	    // =-=-=-=-=-=-=-
+                	    // Update object count for resources up the tree
+
+                	    // Get the resource name from the child string
+                	    parser.set_string(new_child_string);
+                	    parser.first_child(child_resc);
+
+                		if (chlRescObjCount(child_resc, obj_count).ok()) {
+                			status = _updateObjCountOfResources(hierarchy, localZone, obj_count);
+                		} else {
+                			status = CAT_INVALID_OBJ_COUNT;
+                		}
+
+                		if (status < 0) {
+                			// rollback
+                			std::stringstream ss;
+                			ss << func_name << " aborted. Object count update error, status = " << status;
+                			eirods::log(LOG_NOTICE, ss.str());
+                			_rollback(func_name);
+                			return status;
+                		}
+
+
+                	    // =-=-=-=-=-=-=-
+                	    // Update resource hierarchy for objects down the tree
+
+                	    // Add child resource to hierarchy for substitution
+            			hierarchy += eirods::hierarchy_parser::delimiter() + child_resc;
+
+            			// Substitute 'child' with '...;parent;child'
+                		status = chlSubstituteResourceHierarchies(rsComm, child_resc.c_str(), hierarchy.c_str());
+
+
+                	    // =-=-=-=-=-=-=-
+                	    // Update resource name for objects in child
+                		// All objects formerly in child resource must now be in hierarchy's root resource
+
+                		// get root resource
+                		hier_parser.set_string(hierarchy);
+                		hier_parser.first_resc(root_resc);
+
+                		cllBindVars[cllBindVarCount++]=(char*)root_resc.c_str();
+                		cllBindVars[cllBindVarCount++]=(char*)root_resc.c_str();
+                		cllBindVars[cllBindVarCount++]=(char*)child_resc.c_str();
+                		status = cmlExecuteNoAnswerSql("update R_DATA_MAIN set resc_name = ?, resc_group_name = ? where resc_name = ?", &icss);
+
+                		if (status < 0) {
+                			// rollback
+                			std::stringstream ss;
+                			ss << func_name << " aborted. Resource update error, status = " << status;
+                			eirods::log(LOG_NOTICE, ss.str());
+                			_rollback(func_name);
+                			return status;
+                		}
+
+                	}  // IF CHILD HAZ DATA
+
+
                     /* Audit */
                     char commentStr[1024]; // this prolly should be better sized
                     snprintf(commentStr, sizeof commentStr, "%s %s", rescInfo->rescName, new_child_string.c_str()); 
@@ -2015,6 +2138,28 @@ chlAddChildResc(
     }
     return result;
 }
+
+
+/// @brief function for validating a resource name
+eirods::error validate_resource_name(std::string _resc_name) {
+
+	// Must be between 1 and NAME_LEN-1 characters.
+	// Must start and end with a word character.
+	// May contain non consecutive dashes.
+	boost::regex re("^(?=.{1,63}$)\\w(\\w*(-\\w+)?)*$");
+
+	if (!boost::regex_match(_resc_name, re)) {
+        std::stringstream msg;
+        msg << "validate_resource_name failed for resource [";
+        msg << _resc_name;
+        msg << "]";
+        return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
+    }
+
+    return SUCCESS();
+
+} // validate_user_name
+
 
 /* register a Resource */
 int chlRegResc(rsComm_t *rsComm, 
@@ -2051,6 +2196,17 @@ int chlRegResc(rsComm_t *rsComm,
     if (rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
         return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
     }
+
+
+    // =-=-=-=-=-=-=-
+    // Validate user name format
+    eirods::error ret = validate_resource_name(rescInfo->rescName);
+    if(!ret.ok()) {
+        eirods::log(ret);
+        return SYS_INVALID_INPUT_PARAM;
+    }
+    // =-=-=-=-=-=-=-
+
 
     if (logSQL!=0) rodsLog(LOG_SQL, "chlRegResc SQL 1 ");
     seqNum = cmlGetNextSeqVal(&icss);
@@ -2232,6 +2388,7 @@ _removeRescChild(
 /**
  * @brief Returns true if the specified resource already has children
  */
+#if 0 // currently unused
 static bool
 _rescHasChildren(
     const std::string _resc_name) {
@@ -2253,6 +2410,7 @@ _rescHasChildren(
     }
     return result;
 }
+#endif
 
 /**
  * @brief Remove a child from its parent
@@ -2265,23 +2423,18 @@ chlDelChildResc(
     eirods::sql_logger logger("chlDelChildResc", logSQL);
     int result = 0;
     int status;
+    rodsLong_t obj_count;
     char resc_id[MAX_NAME_LEN];
     std::string child_string(rescInfo->rescChildren);
-    std::string child;
+    std::string child, hierarchy, partial_hier;
     eirods::children_parser parser;
+
     parser.set_string(child_string);
     parser.first_child(child);
     
     if(!(result = _canConnectToCatalog(rsComm))) {
         if((status = getLocalZone())) {
             result = status;
-        } else if(_rescHasData(child) || _rescHasChildren(child)) {
-            char errMsg[105];
-            snprintf(errMsg, 100, 
-                     "resource '%s' contains one or more dataObjects",
-                     child.c_str());
-            addRErrorMsg (&rsComm->rError, 0, errMsg);
-            result = CAT_RESOURCE_NOT_EMPTY;
         } else {
             logger.log();
 
@@ -2295,11 +2448,80 @@ chlDelChildResc(
                     _rollback("chlDelChildResc");
                     result = status;
                 }
+
             } else if((status = _updateChildParent(child, std::string(""))) != 0) {
                 result = status;
             } else if((status = _removeRescChild(resc_id, child)) != 0) {
                 result = status;
             } else {
+
+            	// IF CHILD HAZ DATA
+            	if(_childHasData(child_string)) {
+
+            	    // =-=-=-=-=-=-=-
+            	    // Resolve resource hierarchy (of parent)
+
+            	    status = chlGetHierarchyForResc(rescInfo->rescName, localZone, hierarchy);
+            	    if (status < 0) {
+               			std::stringstream ss;
+                		ss << "chlDelChildResc: chlGetHierarchyForResc failed, status = " << status;
+                		eirods::log(LOG_NOTICE, ss.str());
+                		_rollback("chlDelChildResc");
+            	    	return status;
+            	    }
+
+            	    // =-=-=-=-=-=-=-
+            	    // Update object count for resources up the tree
+
+            		if (chlRescObjCount(child, obj_count).ok()) {
+            			status = _updateObjCountOfResources(hierarchy, localZone, -obj_count);
+            		} else {
+            			status = CAT_INVALID_OBJ_COUNT;
+            		}
+
+            		if (status < 0) {
+            			// rollback
+            			std::stringstream ss;
+            			ss << "chlDelChildResc aborted. Object count update error, status = " << status;
+            			eirods::log(LOG_NOTICE, ss.str());
+            			_rollback("chlDelChildResc");
+            			return status;
+            		}
+
+
+            	    // =-=-=-=-=-=-=-
+            	    // Update resource hierarchy for objects down the tree
+
+            	    // Add child resource to hierarchy for substitution
+        			hierarchy += eirods::hierarchy_parser::delimiter() + child;
+
+        			// Substitute '...;parent;child' with 'child
+            		status = chlSubstituteResourceHierarchies(rsComm, hierarchy.c_str(), child.c_str());
+
+            	    // =-=-=-=-=-=-=-
+            	    // Update resource name for objects in child
+            		// If B is removed from A, all files whose resc_hier starts with B are now on B
+            		partial_hier = child + eirods::hierarchy_parser::delimiter() + "%";
+
+            		cllBindVars[cllBindVarCount++]=(char*)child.c_str();
+            		cllBindVars[cllBindVarCount++]=(char*)child.c_str();
+            		cllBindVars[cllBindVarCount++]=(char*)child.c_str();
+            		cllBindVars[cllBindVarCount++]=(char*)partial_hier.c_str();
+            		status = cmlExecuteNoAnswerSql("update R_DATA_MAIN set resc_name = ?, resc_group_name = ? where resc_hier = ? or resc_hier like ?", &icss);
+
+            		if (status < 0) {
+            			// rollback
+            			std::stringstream ss;
+            			ss << "chlDelChildResc" << " aborted. Resource update error, status = " << status;
+            			eirods::log(LOG_NOTICE, ss.str());
+            			_rollback("chlDelChildResc");
+            			return status;
+            		}
+
+            	}  // IF CHILD HAZ DATA
+
+
+
 
                 /* Audit */
                 char commentStr[1024]; // this prolly should be better sized
@@ -3006,7 +3228,7 @@ int chlRegColl(rsComm_t *rsComm, collInfo_t *collInfo) {
 
             if (status > 0) {
                 /* And then use it in the where clause for the update */
-                snprintf(newCollectionID, MAX_SQL_SIZE, "%lld", status);
+                snprintf(newCollectionID, MAX_NAME_LEN, "%lld", status);
                 cllBindVars[cllBindVarCount++]="1";
                 cllBindVars[cllBindVarCount++]=myTime;
                 cllBindVars[cllBindVarCount++]=newCollectionID;
@@ -4134,6 +4356,188 @@ static int _delColl(rsComm_t *rsComm, collInfo_t *collInfo) {
     return(status);
 }
 
+
+// Modifies a given resource name in all resource hierarchies (i.e for all objects)
+// gets called after a resource has been modified (iadmin modresc <oldname> name <newname>)
+static int _modRescInHierarchies(const std::string& old_resc, const std::string& new_resc) {
+	char update_sql[MAX_SQL_SIZE];
+	int status;
+	const char *sep = eirods::hierarchy_parser::delimiter().c_str();
+	std::string std_conf_str;	// to store value of STANDARD_CONFORMING_STRINGS
+
+#if ORA_ICAT
+	// Should have regexp_update. check syntax
+	return SYS_NOT_IMPLEMENTED;
+#elif MY_ICAT
+	return SYS_NOT_IMPLEMENTED;
+#endif
+
+
+	// Get STANDARD_CONFORMING_STRINGS setting to determine if backslashes in regex must be escaped
+	eirods::catalog_properties::getInstance().get_property<std::string>(eirods::STANDARD_CONFORMING_STRINGS, std_conf_str);
+
+
+	// Regex will look in r_data_main.resc_hier
+	// for occurrences of old_resc with either nothing or the separator (and some stuff) on each side
+	// and replace them with new_resc, e.g:
+	// regexp_replace(resc_hier, '(^|(.+;))OLD_RESC($|(;.+))', '\1NEW_RESC\3')
+	// Backslashes must be escaped in older versions of Postgres
+
+	if (std_conf_str == "on") {
+		// Default since Postgres 9.1
+		snprintf(update_sql, MAX_SQL_SIZE,
+				"update r_data_main set resc_hier = regexp_replace(resc_hier, '(^|(.+%s))%s($|(%s.+))', '\\1%s\\3');",
+				sep, old_resc.c_str(), sep, new_resc.c_str());
+	} else {
+		// Older versions
+		snprintf(update_sql, MAX_SQL_SIZE,
+				"update r_data_main set resc_hier = regexp_replace(resc_hier, '(^|(.+%s))%s($|(%s.+))', '\\\\1%s\\\\3');",
+				sep, old_resc.c_str(), sep, new_resc.c_str());
+	}
+
+	// =-=-=-=-=-=-=-
+	// SQL update
+	status = cmlExecuteNoAnswerSql(update_sql, &icss);
+
+	// =-=-=-=-=-=-=-
+	// Log error. Rollback is done in calling function
+	if (status < 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
+		std::stringstream ss;
+		ss << "_modRescInHierarchies: cmlExecuteNoAnswerSql update failure, status = " << status;
+		eirods::log(LOG_NOTICE, ss.str());
+		// _rollback("_modRescInHierarchies");
+	}
+
+	return status;
+}
+
+
+// Modifies a given resource name in all children lists (i.e for all resources)
+// gets called after a resource has been modified (iadmin modresc <oldname> name <newname>)
+static int _modRescInChildren(const std::string& old_resc, const std::string& new_resc) {
+	char update_sql[MAX_SQL_SIZE];
+	int status;
+	char sep[] = ";";	// might later get it from children parser
+	std::string std_conf_str;	// to store value of STANDARD_CONFORMING_STRINGS
+
+#if ORA_ICAT
+	// Should have regexp_update. check syntax
+	return SYS_NOT_IMPLEMENTED;
+#elif MY_ICAT
+	return SYS_NOT_IMPLEMENTED;
+#endif
+
+
+	// Get STANDARD_CONFORMING_STRINGS setting to determine if backslashes in regex must be escaped
+	eirods::catalog_properties::getInstance().get_property<std::string>(eirods::STANDARD_CONFORMING_STRINGS, std_conf_str);
+
+
+	// Regex will look in r_resc_main.resc_children
+	// for occurrences of old_resc preceded by either nothing or the separator and followed with '{}'
+	// and replace them with new_resc, e.g:
+	// regexp_replace(resc_hier, '(^|(.+;))OLD_RESC{}(.+)', '\1NEW_RESC{}\3')
+	// This assumes that '{}' are not valid characters in resource name
+	// Backslashes must be escaped in older versions of Postgres
+
+	if (std_conf_str == "on") {
+		// Default since Postgres 9.1
+		snprintf(update_sql, MAX_SQL_SIZE,
+				"update r_resc_main set resc_children = regexp_replace(resc_children, '(^|(.+%s))%s{}(.*)', '\\1%s{}\\3');",
+				sep, old_resc.c_str(), new_resc.c_str());
+	} else {
+		// Older Postgres
+		snprintf(update_sql, MAX_SQL_SIZE,
+				"update r_resc_main set resc_children = regexp_replace(resc_children, '(^|(.+%s))%s{}(.*)', '\\\\1%s{}\\\\3');",
+				sep, old_resc.c_str(), new_resc.c_str());
+	}
+
+	// =-=-=-=-=-=-=-
+	// SQL update
+	status = cmlExecuteNoAnswerSql(update_sql, &icss);
+
+	// =-=-=-=-=-=-=-
+	// Log error. Rollback is done in calling function
+	if (status < 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
+		std::stringstream ss;
+		ss << "_modRescInChildren: cmlExecuteNoAnswerSql update failure, status = " << status;
+		eirods::log(LOG_NOTICE, ss.str());
+		// _rollback("_modRescInChildren");
+	}
+
+	return status;
+}
+
+// =-=-=-=-=-=-=-
+// local function to delegate the reponse
+// verification to an authentication plugin
+static 
+eirods::error verify_auth_response(
+    const char* _scheme,
+    const char* _challenge,
+    const char* _user_name,
+    const char* _response ) {
+    // =-=-=-=-=-=-=-
+    // validate incoming parameters
+    if( !_scheme ) {
+        return ERROR( 
+                   SYS_INVALID_INPUT_PARAM,
+                   "null _scheme ptr" );
+    } else if( !_challenge ) {
+        return ERROR( 
+                   SYS_INVALID_INPUT_PARAM,
+                   "null _challenge ptr" );
+    } else if( !_user_name ) {
+        return ERROR( 
+                   SYS_INVALID_INPUT_PARAM,
+                   "null _user_name ptr" );
+    } else if( !_response ) {
+        return ERROR( 
+                   SYS_INVALID_INPUT_PARAM,
+                   "null _response ptr" );
+    }
+
+    // =-=-=-=-=-=-=-
+    // construct an auth object given the scheme
+    eirods::auth_object_ptr auth_obj;
+    eirods::error ret = eirods::auth_factory( 
+                            _scheme, 
+                            0,
+                            auth_obj );
+    if( !ret.ok() ){
+        return ret;
+    }
+
+    // =-=-=-=-=-=-=-
+    // resolve an auth plugin given the auth object
+    eirods::plugin_ptr ptr;
+    ret = auth_obj->resolve( 
+              eirods::AUTH_INTERFACE,
+              ptr );
+    if( !ret.ok() ){
+        return ret;
+    }
+    eirods::auth_ptr auth_plugin = boost::dynamic_pointer_cast< eirods::auth >( ptr );
+ 
+    // =-=-=-=-=-=-=-
+    // call auth verify on plugin
+    ret = auth_plugin->call<
+              const char*,
+              const char*,
+              const char* >( 
+                  eirods::AUTH_AGENT_AUTH_VERIFY, 
+                  auth_obj,
+                  _challenge,
+                  _user_name,
+                  _response );
+    if( !ret.ok() ){
+        eirods::log( PASS( ret ) );
+        return ret;
+    }
+
+    return SUCCESS();
+
+} // verify_auth_response
+
 /* Check an authentication response.
  
    Input is the challange, response, and username; the response is checked
@@ -4146,10 +4550,16 @@ static int _delColl(rsComm_t *rsComm, collInfo_t *collInfo) {
 
    Called from rsAuthCheck.
 */
-int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
-                 char *username, 
-                 int *userPrivLevel, int *clientPrivLevel) {
-
+int chlCheckAuth(
+    rsComm_t*   rsComm, 
+    const char* scheme,
+    char*       challenge, 
+    char*       response,
+    char*       username, 
+    int*        userPrivLevel, 
+    int*        clientPrivLevel ) {
+    // =-=-=-=-=-=-=-
+    // All The Variable
     int status;
     char md5Buf[CHALLENGE_LEN+MAX_PASSWORD_LEN+2];
     char digest[RESPONSE_LEN+2];
@@ -4175,13 +4585,8 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
     char myUserZone[MAX_NAME_LEN];
     char userName2[NAME_LEN+2];
     char userZone[NAME_LEN+2];
-   rodsLong_t pamMinTime;
-   rodsLong_t pamMaxTime;
-
-#if defined(OS_AUTH)
-    int doOsAuthentication = 0;
-    char *os_auth_flag;
-#endif
+    rodsLong_t pamMinTime;
+    rodsLong_t pamMaxTime;
 
     if (logSQL!=0) rodsLog(LOG_SQL, "chlCheckAuth");
 
@@ -4196,27 +4601,15 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
     memset(md5Buf, 0, sizeof(md5Buf));
     strncpy(md5Buf, challenge, CHALLENGE_LEN);
     snprintf(prevChalSig,sizeof prevChalSig,
-             "%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x",
-             (unsigned char)md5Buf[0], (unsigned char)md5Buf[1], 
-             (unsigned char)md5Buf[2], (unsigned char)md5Buf[3],
-             (unsigned char)md5Buf[4], (unsigned char)md5Buf[5], 
-             (unsigned char)md5Buf[6], (unsigned char)md5Buf[7],
-             (unsigned char)md5Buf[8], (unsigned char)md5Buf[9], 
-             (unsigned char)md5Buf[10],(unsigned char)md5Buf[11],
-             (unsigned char)md5Buf[12],(unsigned char)md5Buf[13], 
-             (unsigned char)md5Buf[14],(unsigned char)md5Buf[15]);
-#if defined(OS_AUTH)
-    /* check for the OS_AUTH_FLAG token in the username to see if
-     * we should run the OS level authentication. Make sure and
-     * strip it from the username string so other operations 
-     * don't fail parsing the format.
-     */
-    os_auth_flag = strstr(username, OS_AUTH_FLAG);
-    if (os_auth_flag) {
-        *os_auth_flag = 0;
-        doOsAuthentication = 1;
-    }
-#endif
+            "%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x",
+            (unsigned char)md5Buf[0], (unsigned char)md5Buf[1], 
+            (unsigned char)md5Buf[2], (unsigned char)md5Buf[3],
+            (unsigned char)md5Buf[4], (unsigned char)md5Buf[5], 
+            (unsigned char)md5Buf[6], (unsigned char)md5Buf[7],
+            (unsigned char)md5Buf[8], (unsigned char)md5Buf[9], 
+            (unsigned char)md5Buf[10],(unsigned char)md5Buf[11],
+            (unsigned char)md5Buf[12],(unsigned char)md5Buf[13], 
+            (unsigned char)md5Buf[14],(unsigned char)md5Buf[15]);
 
     status = parseUserName(username, userName2, userZone);
     if (userZone[0]=='\0') {
@@ -4228,23 +4621,29 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
         strncpy(myUserZone, userZone, MAX_NAME_LEN);
     }
 
-#if defined(OS_AUTH)
-    if (doOsAuthentication) {
-        if ((status = osauthVerifyResponse(challenge, userName2, response))) {
-            return status;
+
+    if( scheme && strlen( scheme ) > 0 ) {
+        eirods::error ret = verify_auth_response(
+                               scheme,
+                               challenge,
+                               userName2,
+                               response );
+        if( !ret.ok() ) {
+            eirods::log( PASS( ret ) );
+            return ret.code();
         }
         goto checkLevel;
     }
-#endif
+
 
     if (logSQL!=0) rodsLog(LOG_SQL, "chlCheckAuth SQL 1 ");
-    
+
     status = cmlGetMultiRowStringValuesFromSql(
-           "select rcat_password, pass_expiry_ts, R_USER_PASSWORD.create_ts, R_USER_PASSWORD.modify_ts from R_USER_PASSWORD, R_USER_MAIN where user_name=? and zone_name=? and R_USER_MAIN.user_id = R_USER_PASSWORD.user_id",
-           pwInfoArray, MAX_PASSWORD_LEN,
-           MAX_PASSWORDS*4,  /* four strings per password returned */
-           userName2, myUserZone, &icss);
-        
+            "select rcat_password, pass_expiry_ts, R_USER_PASSWORD.create_ts, R_USER_PASSWORD.modify_ts from R_USER_PASSWORD, R_USER_MAIN where user_name=? and zone_name=? and R_USER_MAIN.user_id = R_USER_PASSWORD.user_id",
+            pwInfoArray, MAX_PASSWORD_LEN,
+            MAX_PASSWORDS*4,  /* four strings per password returned */
+            userName2, myUserZone, &icss);
+
     if (status < 4) {
         if (status == CAT_NO_ROWS_FOUND) {
             status = CAT_INVALID_USER; /* Be a little more specific */
@@ -4308,12 +4707,12 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
     nowTime=atoll(myTime);
 
     /* Check for PAM_AUTH type passwords */
-    pamMaxTime=atoll(IRODS_PAM_PASSWORD_MAX_TIME);
-    pamMinTime=atoll(IRODS_PAM_PASSWORD_MIN_TIME);
+    pamMaxTime=atoll(eirods_pam_password_max_time);
+    pamMinTime=atoll(eirods_pam_password_min_time);
 
     if( ( strncmp(goodPwExpiry, "9999",4)!=0) &&
-        expireTime >=  pamMinTime &&
-        expireTime <= pamMaxTime) {
+            expireTime >=  pamMinTime &&
+            expireTime <= pamMaxTime) {
         time_t modTime;
         /* The used pw is an iRODS-PAM type, so now check if it's expired */
         getNowStr(myTime);
@@ -4333,15 +4732,15 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
             memset(lastPw, 0, sizeof(lastPw));
             if (status != 0) {
                 rodsLog(LOG_NOTICE,
-                "chlCheckAuth cmlExecuteNoAnswerSql delete expired password failure %d",
-                status);
+                        "chlCheckAuth cmlExecuteNoAnswerSql delete expired password failure %d",
+                        status);
                 return(status);
             }
             status =  cmlExecuteNoAnswerSql("commit", &icss);
             if (status != 0) {
                 rodsLog(LOG_NOTICE,
-                "chlCheckAuth cmlExecuteNoAnswerSql commit failure %d",
-                status);
+                        "chlCheckAuth cmlExecuteNoAnswerSql commit failure %d",
+                        status);
                 return(status);
             }
             return(CAT_PASSWORD_EXPIRED);
@@ -4371,8 +4770,8 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
         cllBindVars[cllBindVarCount++]=goodPw;
         if (logSQL!=0) rodsLog(LOG_SQL, "chlCheckAuth SQL 2");
         status =  cmlExecuteNoAnswerSql(
-            "delete from R_USER_PASSWORD where rcat_password=?",
-            &icss);
+                "delete from R_USER_PASSWORD where rcat_password=?",
+                &icss);
         if (status !=0) {
             rodsLog(LOG_NOTICE,
                     "chlCheckAuth cmlExecuteNoAnswerSql delete failure %d",
@@ -4390,12 +4789,12 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
         pwExpireMaxCreateTime = nowTime-TEMP_PASSWORD_TIME;
         /* Not sure if casting to int is correct but seems OK & avoids warning:*/
         snprintf(expireStrCreate, sizeof expireStrCreate, "%011d", 
-                 (int)pwExpireMaxCreateTime); 
+                (int)pwExpireMaxCreateTime); 
         cllBindVars[cllBindVarCount++]=expireStrCreate;
 
         status =  cmlExecuteNoAnswerSql(
-            "delete from R_USER_PASSWORD where pass_expiry_ts = ? and create_ts < ?",
-            &icss);
+                "delete from R_USER_PASSWORD where pass_expiry_ts = ? and create_ts < ?",
+                &icss);
         if (status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
             rodsLog(LOG_NOTICE,
                     "chlCheckAuth cmlExecuteNoAnswerSql delete2 failure %d",
@@ -4424,8 +4823,8 @@ checkLevel:
 
     if (logSQL!=0) rodsLog(LOG_SQL, "chlCheckAuth SQL 5");
     status = cmlGetStringValueFromSql(
-        "select user_type_name from R_USER_MAIN where user_name=? and zone_name=?",
-        userType, MAX_NAME_LEN, userName2, myUserZone, 0, &icss);
+            "select user_type_name from R_USER_MAIN where user_name=? and zone_name=?",
+            userType, MAX_NAME_LEN, userName2, myUserZone, 0, &icss);
     if (status !=0) {
         if (status == CAT_NO_ROWS_FOUND) {
             status = CAT_INVALID_USER; /* Be a little more specific */
@@ -4441,7 +4840,7 @@ checkLevel:
 
         /* Since the user is admin, also get the client privilege level */
         if (strcmp( rsComm->clientUser.userName, userName2)==0 &&
-            strcmp( rsComm->clientUser.rodsZone, userZone)==0) {
+                strcmp( rsComm->clientUser.rodsZone, userZone)==0) {
             *clientPrivLevel = LOCAL_PRIV_USER_AUTH; /* same user, no query req */
         }
         else {
@@ -4457,7 +4856,7 @@ checkLevel:
                    some other queries are still exclued.  The non-IES will
                    reconnect once the rodsUserName is determined.  In
                    iRODS 2.3 this would return an error.
-                */
+                 */
                 *clientPrivLevel = REMOTE_USER_AUTH;
                 prevFailure=0;
                 return(0);
@@ -4465,9 +4864,9 @@ checkLevel:
             else {
                 if (logSQL!=0) rodsLog(LOG_SQL, "chlCheckAuth SQL 6");
                 status = cmlGetStringValueFromSql(
-                    "select user_type_name from R_USER_MAIN where user_name=? and zone_name=?",
-                    userType, MAX_NAME_LEN, rsComm->clientUser.userName,
-                    rsComm->clientUser.rodsZone, 0, &icss);
+                        "select user_type_name from R_USER_MAIN where user_name=? and zone_name=?",
+                        userType, MAX_NAME_LEN, rsComm->clientUser.userName,
+                        rsComm->clientUser.rodsZone, 0, &icss);
                 if (status !=0) {
                     if (status == CAT_NO_ROWS_FOUND) {
                         status = CAT_INVALID_CLIENT_USER; /* more specific */
@@ -4692,13 +5091,13 @@ int chlUpdateIrodsPamPassword(rsComm_t *rsComm,
 
    /* if ttl is unset, use the default */
    if (timeToLive == 0) {
-     rstrcpy(expTime, IRODS_PAM_PASSWORD_DEFAULT_TIME, sizeof expTime);
+     rstrcpy(expTime, eirods_pam_password_default_time, sizeof expTime);
    }
    else {
      /* convert ttl to seconds and make sure ttl is within the limits */
      rodsLong_t pamMinTime, pamMaxTime;
-     pamMinTime=atoll(IRODS_PAM_PASSWORD_MIN_TIME);
-     pamMaxTime=atoll(IRODS_PAM_PASSWORD_MAX_TIME);
+     pamMinTime=atoll(eirods_pam_password_min_time);
+     pamMaxTime=atoll(eirods_pam_password_max_time);
      timeToLive = timeToLive * 3600;
      if (timeToLive < pamMinTime || 
 	 timeToLive > pamMaxTime) {
@@ -4717,8 +5116,8 @@ int chlUpdateIrodsPamPassword(rsComm_t *rsComm,
 
    /* first delete any that are expired */
    if (logSQL!=0) rodsLog(LOG_SQL, "chlUpdateIrodsPamPassword SQL 2");
-   cllBindVars[cllBindVarCount++]=IRODS_PAM_PASSWORD_MIN_TIME;
-   cllBindVars[cllBindVarCount++]=IRODS_PAM_PASSWORD_MAX_TIME;
+   cllBindVars[cllBindVarCount++]=eirods_pam_password_min_time;
+   cllBindVars[cllBindVarCount++]=eirods_pam_password_max_time;
    cllBindVars[cllBindVarCount++]=myTime;
 #if MY_ICAT
    status =  cmlExecuteNoAnswerSql("delete from R_USER_PASSWORD where pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as signed integer)>=? and cast(pass_expiry_ts as signed integer)<=? and (cast(pass_expiry_ts as signed integer) + cast(modify_ts as signed integer) < ?)",
@@ -4739,31 +5138,32 @@ int chlUpdateIrodsPamPassword(rsComm_t *rsComm,
 #endif
 	    cVal, iVal, 2,
 	    selUserId, 
-            IRODS_PAM_PASSWORD_MIN_TIME,
-            IRODS_PAM_PASSWORD_MAX_TIME, &icss);
+            eirods_pam_password_min_time,
+            eirods_pam_password_max_time, &icss);
 
    if (status==0) {
-#ifndef PAM_AUTH_NO_EXTEND
-      if (logSQL!=0) rodsLog(LOG_SQL, "chlUpdateIrodsPamPassword SQL 4");
-      cllBindVars[cllBindVarCount++]=myTime;
-      cllBindVars[cllBindVarCount++]=expTime;
-      cllBindVars[cllBindVarCount++]=selUserId;
-      cllBindVars[cllBindVarCount++]=passwordInIcat;
-      status =  cmlExecuteNoAnswerSql("update R_USER_PASSWORD set modify_ts=?, pass_expiry_ts=? where user_id = ? and rcat_password = ?",
-				      &icss);
-      if (status) return(status);
+       if( !eirods_pam_auth_no_extend ) {
+           if (logSQL!=0) rodsLog(LOG_SQL, "chlUpdateIrodsPamPassword SQL 4");
+           cllBindVars[cllBindVarCount++]=myTime;
+           cllBindVars[cllBindVarCount++]=expTime;
+           cllBindVars[cllBindVarCount++]=selUserId;
+           cllBindVars[cllBindVarCount++]=passwordInIcat;
+           status =  cmlExecuteNoAnswerSql("update R_USER_PASSWORD set modify_ts=?, pass_expiry_ts=? where user_id = ? and rcat_password = ?",
+                   &icss);
+           if (status) return(status);
 
-      status =  cmlExecuteNoAnswerSql("commit", &icss);
-      if (status != 0) {
-	 rodsLog(LOG_NOTICE,
-		 "chlUpdateIrodsPamPassword cmlExecuteNoAnswerSql commit failure %d",
-		 status);
-	 return(status);
-      }
-#endif
-      icatDescramble(passwordInIcat);
-      strncpy(*irodsPassword, passwordInIcat, IRODS_PAM_PASSWORD_LEN);
-      return(0);
+           status =  cmlExecuteNoAnswerSql("commit", &icss);
+           if (status != 0) {
+               rodsLog(LOG_NOTICE,
+                       "chlUpdateIrodsPamPassword cmlExecuteNoAnswerSql commit failure %d",
+                       status);
+               return(status);
+           }
+       } // if !eirods_pam_auth_no_extend
+
+       icatDescramble(passwordInIcat);
+       strncpy( *irodsPassword, passwordInIcat, eirods_pam_password_len );
+       return(0);
    }
 
 
@@ -4777,7 +5177,7 @@ int chlUpdateIrodsPamPassword(rsComm_t *rsComm,
 
        j=0;
        get64RandomBytes(rBuf);
-       for (i=0;i<50 && j<IRODS_PAM_PASSWORD_LEN-1;i++) {
+       for (i=0;i<50 && j<eirods_pam_password_len-1;i++) {
           char c;
           c = rBuf[i] & 0x7f;
           if (c < '0') c+='0';
@@ -4822,7 +5222,7 @@ int chlUpdateIrodsPamPassword(rsComm_t *rsComm,
       return(status);
    }
 
-   strncpy(*irodsPassword, randomPw, IRODS_PAM_PASSWORD_LEN);
+   strncpy(*irodsPassword, randomPw, eirods_pam_password_len);
    return(0);
 }
 
@@ -4988,8 +5388,8 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
 
     if (strncmp(option, "rmPamPw", 9)==0) {
         rstrcpy(tSQL, form7, MAX_SQL_SIZE);
-        cllBindVars[cllBindVarCount++]=IRODS_PAM_PASSWORD_MIN_TIME;
-        cllBindVars[cllBindVarCount++]=IRODS_PAM_PASSWORD_MAX_TIME;
+        cllBindVars[cllBindVarCount++]=eirods_pam_password_min_time;
+        cllBindVars[cllBindVarCount++]=eirods_pam_password_max_time;
         cllBindVars[cllBindVarCount++]=userName2;
         cllBindVars[cllBindVarCount++]=zoneName;
         if (logSQL!=0) rodsLog(LOG_SQL, "chlModUser SQL 6");
@@ -5266,9 +5666,11 @@ int chlModGroup(rsComm_t *rsComm, char *groupName, char *option,
 }
 
 /* Modify a Resource (certain fields) */
-int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
-               char *optionValue) {
-
+int chlModResc(
+    rsComm_t* rsComm, 
+    char*     rescName, 
+    char*     option,
+    char*     optionValue ) {
     int status, OK;
     char myTime[50];
     char rescId[MAX_NAME_LEN];
@@ -5299,8 +5701,8 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
     if (strncmp(rescName, BUNDLE_RESC, strlen(BUNDLE_RESC))==0) {
         char errMsg[155];
         snprintf(errMsg, 150, 
-                 "%s is a built-in resource needed for bundle operations.", 
-                 BUNDLE_RESC);
+                "%s is a built-in resource needed for bundle operations.", 
+                BUNDLE_RESC);
         addRErrorMsg (&rsComm->rError, 0, errMsg);
         return(CAT_PSEUDO_RESC_MODIFY_DISALLOWED);
     }
@@ -5311,8 +5713,8 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
     rescId[0]='\0';
     if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 1 ");
     status = cmlGetStringValueFromSql(
-        "select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
-        rescId, MAX_NAME_LEN, rescName, localZone, 0, &icss);
+            "select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
+            rescId, MAX_NAME_LEN, rescName, localZone, 0, &icss);
     if (status != 0) {
         if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_RESOURCE);
         _rollback("chlModResc");
@@ -5327,8 +5729,8 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
         cllBindVars[cllBindVarCount++]=rescId;
         if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 2");
         status =  cmlExecuteNoAnswerSql(
-            "update R_RESC_MAIN set resc_info=?, modify_ts=? where resc_id=?",
-            &icss);
+                "update R_RESC_MAIN set resc_info=?, modify_ts=? where resc_id=?",
+                &icss);
         if (status != 0) {
             rodsLog(LOG_NOTICE,
                     "chlModResc cmlExecuteNoAnswerSql update failure %d",
@@ -5344,8 +5746,8 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
         cllBindVars[cllBindVarCount++]=rescId;
         if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 3");
         status =  cmlExecuteNoAnswerSql(
-            "update R_RESC_MAIN set r_comment = ?, modify_ts=? where resc_id=?",
-            &icss);
+                "update R_RESC_MAIN set r_comment = ?, modify_ts=? where resc_id=?",
+                &icss);
         if (status != 0) {
             rodsLog(LOG_NOTICE,
                     "chlModResc cmlExecuteNoAnswerSql update failure %d",
@@ -5372,39 +5774,39 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
         if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 4");
         if (inType==0) {
             status =  cmlExecuteNoAnswerSql(
-                "update R_RESC_MAIN set free_space = ?, free_space_ts = ?, modify_ts=? where resc_id=?",
-                &icss);
+                    "update R_RESC_MAIN set free_space = ?, free_space_ts = ?, modify_ts=? where resc_id=?",
+                    &icss);
         }
         if (inType==1) {
 #if ORA_ICAT
             /* For Oracle cast is to integer, for Postgres to bigint,for MySQL no cast*/
             status =  cmlExecuteNoAnswerSql(
-                "update R_RESC_MAIN set free_space = cast(free_space as integer) + cast(? as integer), free_space_ts = ?, modify_ts=? where resc_id=?",
-                &icss);
+                    "update R_RESC_MAIN set free_space = cast(free_space as integer) + cast(? as integer), free_space_ts = ?, modify_ts=? where resc_id=?",
+                    &icss);
 #elif MY_ICAT
             status =  cmlExecuteNoAnswerSql(
-                "update R_RESC_MAIN set free_space = free_space + ?, free_space_ts = ?, modify_ts=? where resc_id=?",
-                &icss);
+                    "update R_RESC_MAIN set free_space = free_space + ?, free_space_ts = ?, modify_ts=? where resc_id=?",
+                    &icss);
 #else
             status =  cmlExecuteNoAnswerSql(
-                "update R_RESC_MAIN set free_space = cast(free_space as bigint) + cast(? as bigint), free_space_ts = ?, modify_ts=? where resc_id=?",
-                &icss);
+                    "update R_RESC_MAIN set free_space = cast(free_space as bigint) + cast(? as bigint), free_space_ts = ?, modify_ts=? where resc_id=?",
+                    &icss);
 #endif
         }
         if (inType==2) {
 #if ORA_ICAT
             /* For Oracle cast is to integer, for Postgres to bigint,for MySQL no cast*/
             status =  cmlExecuteNoAnswerSql(
-                "update R_RESC_MAIN set free_space = cast(free_space as integer) - cast(? as integer), free_space_ts = ?, modify_ts=? where resc_id=?",
-                &icss);
+                    "update R_RESC_MAIN set free_space = cast(free_space as integer) - cast(? as integer), free_space_ts = ?, modify_ts=? where resc_id=?",
+                    &icss);
 #elif MY_ICAT
             status =  cmlExecuteNoAnswerSql(
-                "update R_RESC_MAIN set free_space = free_space - ?, free_space_ts = ?, modify_ts=? where resc_id=?",
-                &icss);
+                    "update R_RESC_MAIN set free_space = free_space - ?, free_space_ts = ?, modify_ts=? where resc_id=?",
+                    &icss);
 #else
             status =  cmlExecuteNoAnswerSql(
-                "update R_RESC_MAIN set free_space = cast(free_space as bigint) - cast(? as bigint), free_space_ts = ?, modify_ts=? where resc_id=?",
-                &icss);
+                    "update R_RESC_MAIN set free_space = cast(free_space as bigint) - cast(? as bigint), free_space_ts = ?, modify_ts=? where resc_id=?",
+                    &icss);
 #endif
         }
         if (status != 0) {
@@ -5423,13 +5825,13 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
         if (myHostEnt <= 0) {
             char errMsg[155];
             snprintf(errMsg, 150, 
-                     "Warning, resource host address '%s' is not a valid DNS entry, gethostbyname failed.", 
-                     optionValue);
+                    "Warning, resource host address '%s' is not a valid DNS entry, gethostbyname failed.", 
+                    optionValue);
             addRErrorMsg (&rsComm->rError, 0, errMsg);
         }
         if (strcmp(optionValue, "localhost") == 0) { // JMC - backport 4650
             addRErrorMsg (&rsComm->rError, 0, 
-                          "Warning, resource host address 'localhost' will not work properly as it maps to the local host from each client.");
+                    "Warning, resource host address 'localhost' will not work properly as it maps to the local host from each client.");
         }
 
         // =-=-=-=-=-=-=-
@@ -5438,8 +5840,8 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
         cllBindVars[cllBindVarCount++]=rescId;
         if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 5");
         status =  cmlExecuteNoAnswerSql(
-            "update R_RESC_MAIN set resc_net = ?, modify_ts=? where resc_id=?",
-            &icss);
+                "update R_RESC_MAIN set resc_net = ?, modify_ts=? where resc_id=?",
+                &icss);
         if (status != 0) {
             rodsLog(LOG_NOTICE,
                     "chlModResc cmlExecuteNoAnswerSql update failure %d",
@@ -5451,23 +5853,23 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
     }
     if (strcmp(option, "type")==0) {
         if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 6");
-        #if 0 // JMC :: resource type is now dynamic
+#if 0 // JMC :: resource type is now dynamic
         status = cmlCheckNameToken("resc_type", optionValue, &icss);
         if (status !=0 ) {
             char errMsg[105];
             snprintf(errMsg, 100, "resource_type '%s' is not valid", 
-                     optionValue);
+                    optionValue);
             addRErrorMsg (&rsComm->rError, 0, errMsg);
             return(CAT_INVALID_RESOURCE_TYPE);
         }
-        #endif
+#endif
         cllBindVars[cllBindVarCount++]=optionValue;
         cllBindVars[cllBindVarCount++]=myTime;
         cllBindVars[cllBindVarCount++]=rescId;
         if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 7");
         status =  cmlExecuteNoAnswerSql(
-            "update R_RESC_MAIN set resc_type_name = ?, modify_ts=? where resc_id=?",
-            &icss);
+                "update R_RESC_MAIN set resc_type_name = ?, modify_ts=? where resc_id=?",
+                &icss);
         if (status != 0) {
             rodsLog(LOG_NOTICE,
                     "chlModResc cmlExecuteNoAnswerSql update failure %d",
@@ -5485,7 +5887,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
         if (status !=0 ) {
             char errMsg[105];
             snprintf(errMsg, 100, "resource_class '%s' is not valid", 
-                     optionValue);
+                    optionValue);
             addRErrorMsg (&rsComm->rError, 0, errMsg);
             return(CAT_INVALID_RESOURCE_CLASS);
         }
@@ -5495,8 +5897,8 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
         cllBindVars[cllBindVarCount++]=rescId;
         if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc S---Q---L 9");
         status =  cmlExecuteNoAnswerSql(
-            "update R_RESC_MAIN set resc_class_name = ?, modify_ts=? where resc_id=?",
-            &icss);
+                "update R_RESC_MAIN set resc_class_name = ?, modify_ts=? where resc_id=?",
+                &icss);
         if (status != 0) {
             rodsLog(LOG_NOTICE,
                     "chlModResc cmlExecuteNoAnswerSql update failure %d",
@@ -5509,25 +5911,25 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
 #endif
     if (strcmp(option, "path")==0) {
         if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 10");
-      status = cmlGetStringValueFromSql(
-         "select resc_def_path from R_RESC_MAIN where resc_id=?",
-        rescPath, MAX_NAME_LEN, rescId, 0, 0, &icss);
-      if (status != 0) {
-        rodsLog(LOG_NOTICE,
-                "chlModResc cmlGetStringValueFromSql query failure %d",
-                status);
-        _rollback("chlModResc");
-        return(status);
-      }
+        status = cmlGetStringValueFromSql(
+                "select resc_def_path from R_RESC_MAIN where resc_id=?",
+                rescPath, MAX_NAME_LEN, rescId, 0, 0, &icss);
+        if (status != 0) {
+            rodsLog(LOG_NOTICE,
+                    "chlModResc cmlGetStringValueFromSql query failure %d",
+                    status);
+            _rollback("chlModResc");
+            return(status);
+        }
 
-      if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 11");
+        if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 11");
 
         cllBindVars[cllBindVarCount++]=optionValue;
         cllBindVars[cllBindVarCount++]=myTime;
         cllBindVars[cllBindVarCount++]=rescId;
         status =  cmlExecuteNoAnswerSql(
-            "update R_RESC_MAIN set resc_def_path=?, modify_ts=? where resc_id=?",
-            &icss);
+                "update R_RESC_MAIN set resc_def_path=?, modify_ts=? where resc_id=?",
+                &icss);
         if (status != 0) {
             rodsLog(LOG_NOTICE,
                     "chlModResc cmlExecuteNoAnswerSql update failure %d",
@@ -5544,8 +5946,8 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
         cllBindVars[cllBindVarCount++]=myTime;
         cllBindVars[cllBindVarCount++]=rescId;
         status =  cmlExecuteNoAnswerSql(
-            "update R_RESC_MAIN set resc_status=?, modify_ts=? where resc_id=?",
-            &icss);
+                "update R_RESC_MAIN set resc_status=?, modify_ts=? where resc_id=?",
+                &icss);
         if (status != 0) {
             rodsLog(LOG_NOTICE,
                     "chlModResc cmlExecuteNoAnswerSql update failure %d",
@@ -5561,10 +5963,10 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
         cllBindVars[cllBindVarCount++]=optionValue;
         cllBindVars[cllBindVarCount++]=myTime;
         cllBindVars[cllBindVarCount++]=rescId;
-/*    If the new name is not unique, this will return an error */
+        /*    If the new name is not unique, this will return an error */
         status =  cmlExecuteNoAnswerSql(
-            "update R_RESC_MAIN set resc_name=?, modify_ts=? where resc_id=?",
-            &icss);
+                "update R_RESC_MAIN set resc_name=?, modify_ts=? where resc_id=?",
+                &icss);
         if (status != 0) {
             rodsLog(LOG_NOTICE,
                     "chlModResc cmlExecuteNoAnswerSql update failure %d",
@@ -5577,8 +5979,8 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
         cllBindVars[cllBindVarCount++]=optionValue;
         cllBindVars[cllBindVarCount++]=rescName;
         status =  cmlExecuteNoAnswerSql(
-            "update R_DATA_MAIN set resc_name=? where resc_name=?",
-            &icss);
+                "update R_DATA_MAIN set resc_name=? where resc_name=?",
+                &icss);
         if (status==CAT_SUCCESS_BUT_WITH_NO_INFO) status=0;
         if (status != 0) {
             rodsLog(LOG_NOTICE,
@@ -5592,8 +5994,8 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
         cllBindVars[cllBindVarCount++]=optionValue;
         cllBindVars[cllBindVarCount++]=rescName;
         status =  cmlExecuteNoAnswerSql(
-            "update R_SERVER_LOAD set resc_name=? where resc_name=?",
-            &icss);
+                "update R_SERVER_LOAD set resc_name=? where resc_name=?",
+                &icss);
         if (status==CAT_SUCCESS_BUT_WITH_NO_INFO) status=0;
         if (status != 0) {
             rodsLog(LOG_NOTICE,
@@ -5607,8 +6009,8 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
         cllBindVars[cllBindVarCount++]=optionValue;
         cllBindVars[cllBindVarCount++]=rescName;
         status =  cmlExecuteNoAnswerSql(
-            "update R_SERVER_LOAD_DIGEST set resc_name=? where resc_name=?",
-            &icss);
+                "update R_SERVER_LOAD_DIGEST set resc_name=? where resc_name=?",
+                &icss);
         if (status==CAT_SUCCESS_BUT_WITH_NO_INFO) status=0;
         if (status != 0) {
             rodsLog(LOG_NOTICE,
@@ -5617,7 +6019,47 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
             _rollback("chlModResc");
             return(status);
         }
-      
+
+        // Update resource parent strings that are rescName
+        if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 17");
+        cllBindVars[cllBindVarCount++]=optionValue;
+        cllBindVars[cllBindVarCount++]=rescName;
+        status =  cmlExecuteNoAnswerSql(
+                "update R_RESC_MAIN  set resc_parent=? where resc_parent=?",
+                &icss);
+        if (status==CAT_SUCCESS_BUT_WITH_NO_INFO) status=0;
+        if (status != 0) {
+            rodsLog(LOG_NOTICE,
+                    "chlModResc cmlExecuteNoAnswerSql update failure %d",
+                    status);
+            _rollback("chlModResc");
+            return(status);
+        }
+
+        // Update resource hierarchies that contain rescName
+        if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 18");
+        status = _modRescInHierarchies(rescName, optionValue);
+        if (status==CAT_SUCCESS_BUT_WITH_NO_INFO) status=0;
+        if (status != 0) {
+            rodsLog(LOG_NOTICE,
+                    "chlModResc: _modRescInHierarchies error, status = %d",
+                    status);
+            _rollback("chlModResc");
+            return(status);
+        }
+
+        // Update resource children lists that contain rescName
+        if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 19");
+        status = _modRescInChildren(rescName, optionValue);
+        if (status==CAT_SUCCESS_BUT_WITH_NO_INFO) status=0;
+        if (status != 0) {
+            rodsLog(LOG_NOTICE,
+                    "chlModResc: _modRescInChildren error, status = %d",
+                    status);
+            _rollback("chlModResc");
+            return(status);
+        }
+
         OK=1;
     }
 
@@ -5626,8 +6068,8 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
         cllBindVars[cllBindVarCount++]=myTime;
         cllBindVars[cllBindVarCount++]=rescId;
         status =  cmlExecuteNoAnswerSql(
-            "update R_RESC_MAIN set resc_context=?, modify_ts=? where resc_id=?",
-            &icss);
+                "update R_RESC_MAIN set resc_context=?, modify_ts=? where resc_id=?",
+                &icss);
         if (status != 0) {
             rodsLog(LOG_NOTICE,
                     "chlModResc cmlExecuteNoAnswerSql update failure for resc context %d",
@@ -5645,11 +6087,11 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
     /* Audit */
     snprintf(commentStr, sizeof commentStr, "%s %s", option, optionValue);
     status = cmlAudit3(AU_MOD_RESC,  
-                       rescId,
-                       rsComm->clientUser.userName,
-                       rsComm->clientUser.rodsZone,
-                       commentStr,
-                       &icss);
+            rescId,
+            rsComm->clientUser.userName,
+            rsComm->clientUser.rodsZone,
+            commentStr,
+            &icss);
     if (status != 0) {
         rodsLog(LOG_NOTICE,
                 "chlModResc cmlAudit3 failure %d",
@@ -5666,13 +6108,13 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
         return(status);
     }
 
-   if (rescPath[0]!='\0') {
-      /* if the path was gotten, return it */
+    if (rescPath[0]!='\0') {
+        /* if the path was gotten, return it */
 
-       snprintf(rescPathMsg, sizeof(rescPathMsg), "Previous resource path: %s", 
-              rescPath);
-      addRErrorMsg (&rsComm->rError, 0, rescPathMsg);
-   }
+        snprintf(rescPathMsg, sizeof(rescPathMsg), "Previous resource path: %s", 
+                rescPath);
+        addRErrorMsg (&rsComm->rError, 0, rescPathMsg);
+    }
 
     return(0);
 }
@@ -6035,7 +6477,10 @@ eirods::error validate_user_name(std::string _user_name) {
 	// Must be between 3 and NAME_LEN-1 characters.
 	// Must start and end with a word character.
 	// May contain non consecutive dashes and dots.
-	boost::regex re("^(?=.{3,63}$)\\w(\\w*([.-]\\w+)?)*$");
+        boost::regex re("^(?=.{3,63}$)\\w(\\w*([.-]\\w+)?)*$");
+
+	// No upper case letters. (TODO: more discussion, group names also affected by this change)
+	// boost::regex re("^(?=.{3,63}$)[a-z_0-9]([a-z_0-9]*([.-][a-z_0-9]+)?)*$");
 
 	if (!boost::regex_match(_user_name, re)) {
         std::stringstream msg;
@@ -10494,3 +10939,213 @@ chlSpecificQuery(specificQueryInp_t specificQueryInp, genQueryOut_t *result) {
     return(0);
 
 }
+
+
+/*
+ * chlSubstituteResourceHierarchies - Given an old resource hierarchy string and a new one,
+ * replaces all r_data_main.resc_hier rows that match the old string with the new one.
+ *
+ */
+int chlSubstituteResourceHierarchies(rsComm_t *rsComm, const char *old_hier, const char *new_hier) {
+	int status = 0;
+	char old_hier_partial[MAX_NAME_LEN];
+    eirods::sql_logger logger("chlSubstituteResourceHierarchies", logSQL);
+
+    logger.log();
+
+    // =-=-=-=-=-=-=-
+    // Sanity and permission checks
+	if (!icss.status) {
+		return(CATALOG_NOT_CONNECTED);
+	}
+    if (!rsComm || !old_hier || !new_hier) {
+    	return(SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+	if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH || rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+		return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+	}
+
+	// =-=-=-=-=-=-=-
+	// String to match partial hierarchies
+	snprintf(old_hier_partial, MAX_NAME_LEN, "%s%s%%", old_hier, eirods::hierarchy_parser::delimiter().c_str());
+
+	// =-=-=-=-=-=-=-
+	// Update r_data_main
+	cllBindVars[cllBindVarCount++]=(char*)new_hier;
+	cllBindVars[cllBindVarCount++]=(char*)old_hier;
+	cllBindVars[cllBindVarCount++]=(char*)old_hier;
+	cllBindVars[cllBindVarCount++]=old_hier_partial;
+#if ORA_ICAT // Oracle
+	status = cmlExecuteNoAnswerSql("update R_DATA_MAIN set resc_hier = ? || substr(resc_hier, (length(?)+1)) where resc_hier = ? or resc_hier like ?", &icss);
+#else // Postgres and MySQL
+	status = cmlExecuteNoAnswerSql("update R_DATA_MAIN set resc_hier = ? || substring(resc_hier from (char_length(?)+1)) where resc_hier = ? or resc_hier like ?", &icss);
+#endif
+
+	// Nothing was modified
+	if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) {
+		return 0;
+	}
+
+	// =-=-=-=-=-=-=-
+	// Roll back if error
+	if (status < 0) {
+		std::stringstream ss;
+		ss << "chlSubstituteResourceHierarchies: cmlExecuteNoAnswerSql update failure " << status;
+		eirods::log(LOG_NOTICE, ss.str());
+		_rollback("chlSubstituteResourceHierarchies");
+	}
+
+	return status;
+}
+
+
+/// =-=-=-=-=-=-=-
+/// @brief return the distinct object count of a resource in a hierarchy
+int chlGetDistinctDataObjCountOnResource( 
+    const std::string&   _resc_name,
+    long long&           _count ) {
+    // =-=-=-=-=-=-=-
+    // the basic query string
+    char query[ MAX_NAME_LEN ];
+    std::string base_query = "select count(distinct data_id) from r_data_main where resc_hier like '%s;%s' or resc_hier like '%s;%s;%s' or resc_hier like '%s;%s';";
+    sprintf( 
+        query, 
+        base_query.c_str(), 
+        _resc_name.c_str(), "%",      // root node
+        "%", _resc_name.c_str(), "%", // mid node
+        "%", _resc_name.c_str() );    // leaf node
+
+     // =-=-=-=-=-=-=-
+     // invoke the query
+     int statement_num = 0;
+     int status = cmlGetFirstRowFromSql( 
+                         query, 
+                         &statement_num, 
+                         0, &icss );
+     if( status != 0 ) {
+         return status;
+     }
+
+     _count = atol( icss.stmtPtr[ statement_num ]->resultValue[0] ); 
+
+     return 0;
+
+} // chlGetDistinctDataObjCountOnResource
+
+/// =-=-=-=-=-=-=-
+/// @brief return a map of data object who do not
+///        appear on a given child resource but who are a
+///        member of a given parent resource node
+int chlGetDistinctDataObjsMissingFromChildGivenParent( 
+    const std::string&   _parent,
+    const std::string&   _child,
+    int                  _limit,
+    dist_child_result_t& _results ) {
+    // =-=-=-=-=-=-=-
+    // the basic query string
+    char query[ MAX_NAME_LEN ];
+    std::string base_query = "select distinct data_id from r_data_main where resc_hier like '%s;%s' or resc_hier like '%s;%s;%s' or resc_hier like '%s;%s' except ( select distinct data_id from r_data_main where resc_hier like '%s;%s' or resc_hier like '%s;%s;%s' or resc_hier like '%s;%s' ) limit %d;";
+    sprintf( 
+        query, 
+        base_query.c_str(), 
+        _parent.c_str(), "%",      // root
+        "%", _parent.c_str(), "%", // mid tier
+        "%", _parent.c_str(),      // leaf
+        _child.c_str(), "%",       // root
+        "%", _child.c_str(), "%",  // mid tier
+        "%", _child.c_str(),       // leaf
+        _limit );
+
+    // =-=-=-=-=-=-=-
+    // snag the first row from the resulting query
+    int statement_num = 0;
+
+    // =-=-=-=-=-=-=-
+    // iterate over resulting rows
+    for( int i = 0; ; i++ ) {
+        // =-=-=-=-=-=-=-
+        // extract either the first or next row
+        int status = 0;
+        if( 0 == i ) {
+            status = cmlGetFirstRowFromSql( 
+                             query, 
+                             &statement_num, 
+                             0, &icss );
+        } else {
+            status = cmlGetNextRowFromStatement( statement_num, &icss );
+        }
+
+        if ( status != 0 ) {
+            return status; 
+        }
+        
+        _results.push_back( atoi( icss.stmtPtr[ statement_num ]->resultValue[0] ) );
+
+    } // for i
+               
+    cmlFreeStatement( statement_num, &icss );
+     
+    return 0;
+     
+} // chlGetDistinctDataObjsMissingFromChildGivenParent
+
+/*
+ * @brief Given a resource, resolves the hierarchy down to said resource
+ */
+int chlGetHierarchyForResc(const std::string& resc_name, const std::string& zone_name, std::string& hierarchy) {
+	char *current_node;
+	char parent[MAX_NAME_LEN];
+	int status;
+
+
+    eirods::sql_logger logger("chlGetHierarchyForResc", logSQL);
+    logger.log();
+
+	if (!icss.status) {
+		return(CATALOG_NOT_CONNECTED);
+	}
+
+	hierarchy = resc_name; // Initialize hierarchy string with resource
+
+	current_node = (char *)resc_name.c_str();
+	while (current_node) {
+		// Ask for parent of current node
+		status = cmlGetStringValueFromSql("select resc_parent from R_RESC_MAIN where resc_name=? and zone_name=?",
+				parent, MAX_NAME_LEN, current_node, zone_name.c_str(), NULL, &icss);
+
+		if (status == CAT_NO_ROWS_FOUND) { // Resource doesn't exist
+			return CAT_UNKNOWN_RESOURCE;
+		}
+
+		if (status < 0) { // Other error
+			return status;
+		}
+
+		if (strlen(parent)) {
+			hierarchy = parent + eirods::hierarchy_parser::delimiter() + hierarchy;	// Add parent to hierarchy string
+			current_node = parent;
+		}
+		else {
+			current_node = NULL;
+		}
+	}
+
+	return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

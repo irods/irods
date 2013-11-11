@@ -53,7 +53,7 @@ requeDataObjInfoByResc (dataObjInfo_t **dataObjInfoHead, char *preferedResc,
 int
 requeDataObjInfoByReplNum (dataObjInfo_t **dataObjInfoHead, int replNum);
 dataObjInfo_t *
-chkCopyInResc (dataObjInfo_t *dataObjInfoHead, rescGrpInfo_t *myRescGrpInfo, const char* destRescHier);
+chkCopyInResc (dataObjInfo_t *&dataObjInfoHead, rescGrpInfo_t *myRescGrpInfo, const char* destRescHier);
 int
 chkAndTrimCopyInRescGrp (dataObjInfo_t **dataObjInfoHead, 
                          rescGrpInfo_t **rescGrpInfoHead, int trimDataObjFlag);

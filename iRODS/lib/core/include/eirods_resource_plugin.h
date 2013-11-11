@@ -71,7 +71,8 @@ namespace eirods {
         /// @brief interface to add and remove children using the zone_name::resource_name
         virtual error add_child( const std::string&, const std::string&, resource_ptr );
         virtual error remove_child( const std::string& );
-       
+        virtual int   num_children() { return children_.size(); }
+         
         // =-=-=-=-=-=-=-
         /// @brief interface to get and set a resource's parent pointer
         virtual error set_parent( const resource_ptr& );
@@ -102,8 +103,11 @@ namespace eirods {
         };
 
         // =-=-=-=-=-=-=-
-        /// @brief delegate the call to the operation in question to the operation wrapper, with 1 param
-        error call( rsComm_t* _comm, const std::string& _op, eirods::first_class_object_ptr _obj ) {
+        /// @brief delegate the call to the operation in question to the operation wrapper, with 0 param
+        error call( 
+            rsComm_t* _comm, 
+            const std::string& _op, 
+            eirods::first_class_object_ptr _obj ) {
             resource_plugin_context ctx( properties_, _obj, "", _comm, children_ );
             return operations_[ _op ].call( ctx );
         
@@ -132,7 +136,7 @@ namespace eirods {
             T1 _t1, 
             T2 _t2 ) {
             resource_plugin_context ctx( properties_, _obj, "", _comm, children_ );
-                return operations_[ _op ].call< T1, T2 >( ctx, _t1, _t2 );
+            return operations_[ _op ].call< T1, T2 >( ctx, _t1, _t2 );
         
         } // call - T1, T2
 

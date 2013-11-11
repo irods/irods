@@ -75,7 +75,9 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         // cache message on message stack
-        result_stack_.push_back( build_result_string( _file, _line, _fcn ) ); 
+        if(!_msg.empty()) {
+            result_stack_.push_back( build_result_string( _file, _line, _fcn ) );
+        }
 
     } // ctor
 
@@ -128,14 +130,14 @@ namespace eirods {
 
     // =-=-=-=-=-=-=-
     // public - return the status of this error object
-    bool error::status(  ) {
+    bool error::status(  ) const {
         return status_;
 
     } // status
 
     // =-=-=-=-=-=-=-
     // public - return the code of this error object
-    long long error::code(  ) {
+    long long error::code(  ) const {
         return code_;
 
     } // code
@@ -187,6 +189,77 @@ namespace eirods {
 
     } // ok
 
+
+    error assert_error(
+        bool expr_,
+        long long code_,
+        const std::string& file_,
+        const std::string& function_,
+        int line_,
+        const std::string& format_,
+        ...)
+    {
+        error result = SUCCESS();
+        if(!expr_) {
+            va_list ap;
+            va_start(ap, format_);
+            const int buffer_size = 4096;
+            char buffer[buffer_size];
+            vsnprintf(buffer, buffer_size, format_.c_str(), ap);
+            va_end(ap);
+            std::stringstream msg;
+            msg << buffer;
+            result = error(false, code_, msg.str(), file_, line_, function_);
+        }
+        return result;
+    }
+
+    error assert_pass(
+        bool _expr,
+        const error& _prev_error,
+        const std::string& _file,
+        const std::string& _function,
+        int _line,
+        const std::string& _format,
+        ...)
+    {
+        error result = SUCCESS();
+        if(!_expr) {
+            va_list ap;
+            va_start(ap, _format);
+            const int buffer_size = 4096;
+            char buffer[buffer_size];
+            vsnprintf(buffer, buffer_size, _format.c_str(), ap);
+            va_end(ap);
+            std::stringstream msg;
+            msg << buffer;
+            result = error(_prev_error.status(), _prev_error.code(), msg.str(), _file, _line, _function, _prev_error);
+        }
+        return result;
+    }
+    
+    error assert_pass_msg(
+        bool expr_,
+        const error& prev_error_,
+        const std::string& file_,
+        const std::string& function_,
+        int line_,
+        const std::string& format_,
+        ...)
+    {
+        error result = SUCCESS();
+        va_list ap;
+        va_start(ap, format_);
+        const int buffer_size = 4096;
+        char buffer[buffer_size];
+        vsnprintf(buffer, buffer_size, format_.c_str(), ap);
+        va_end(ap);
+        std::stringstream msg;
+        msg << buffer;
+        result = error(prev_error_.status(), prev_error_.code(), msg.str(), file_, line_, function_, prev_error_);
+        return result;
+    }
+    
 }; // namespace eirods
 
 

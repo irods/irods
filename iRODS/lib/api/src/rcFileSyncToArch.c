@@ -4,7 +4,7 @@
 #include "fileSyncToArch.h"
 
 int
-rcFileSyncToArch (rcComm_t *conn, fileStageSyncInp_t *fileSyncToArchInp)
+rcFileSyncToArch (rcComm_t *conn, fileStageSyncInp_t *fileSyncToArchInp )
 {
     int status;
     status = procApiRequest (conn, FILE_SYNC_TO_ARCH_AN, 

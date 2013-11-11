@@ -4,6 +4,7 @@
 #include "restructs.h"
 #include "conversion.h"
 #include "configuration.h"
+#include "reVariableMap.gen.h"
 /* make a new type by substituting tvars with fresh tvars */
 ExprType *dupType(ExprType *ty, Region *r) {
     Hashtable *varTable = newHashTable2(100, r);
@@ -463,41 +464,36 @@ void cpEnv2(Env *env, Region *oldr, Region *r) {
     }
 }
 
-Res *setVariableValue(char *varName, Res *val, ruleExecInfo_t *rei, Env *env, rError_t *errmsg, Region *r) {
-    int i;
-    char *varMap;
-    char errbuf[ERR_MSG_LEN];
-    if (varName[0] == '$') {
-        if(TYPE(val)!=T_STRING) {
-            snprintf(errbuf, ERR_MSG_LEN, "error: assign a nonstring value to session variable %s.", varName);
-            addRErrorMsg(errmsg, RE_UNSUPPORTED_OP_OR_TYPE, errbuf);
-            return newErrorRes(r, RE_UNSUPPORTED_OP_OR_TYPE);
-        }
-        i = getVarMap("", varName, &varMap, 0);
-        if (i < 0) {
-            snprintf(errbuf, ERR_MSG_LEN, "error: unsupported session variable \"%s\".",varName);
-            addRErrorMsg(errmsg, RE_UNSUPPORTED_SESSION_VAR, errbuf);
-            return newErrorRes(r, RE_UNSUPPORTED_SESSION_VAR);
-        }
-        setVarValue(varMap, rei, strdup(val->text));
-        return newIntRes(r, 0);
-    }
-    else if(varName[0] == '*') {
-        if(lookupFromEnv(env, varName)==NULL) {
-            /* new variable */
-            if(insertIntoHashTable(env->current, varName, val) == 0) {
-                snprintf(errbuf, ERR_MSG_LEN, "error: unable to write to local variable \"%s\".",varName);
-                addRErrorMsg(errmsg, RE_UNABLE_TO_WRITE_LOCAL_VAR, errbuf);
-                return newErrorRes(r, RE_UNABLE_TO_WRITE_LOCAL_VAR);
-            }
-        } else {
-                updateInEnv(env, varName, val);
-        }
-        return newIntRes(r, 0);
-    }
-    return newIntRes(r, 0);
+
+void printIndent(int n) {
+	int i;
+	for(i=0;i<n;i++) {
+		printf("\t");
+	}
 }
 
+
+void printEnvIndent(Env *env) {
+	Env *e = env->lower;
+	int i =0;
+		while(e!=NULL) {
+			i++;
+			e=e->lower;
+		}
+		printIndent(i);
+}
+
+void printTreeDeref(Node *n, int indent, Hashtable *var_types, Region *r) {
+	printIndent(indent);
+	printf("%s:%d->",n->text, getNodeType(n));
+        printType(n->coercionType, var_types);
+        printf("\n");
+	int i;
+	for(i=0;i<n->degree;i++) {
+		printTreeDeref(n->subtrees[i],indent+1, var_types, r);
+	}
+
+}
 void printType(ExprType *type, Hashtable *var_types) {
     char buf[1024];
     typeToString(type, var_types, buf, 1024);
@@ -732,73 +728,6 @@ Env* globalEnv(Env *env) {
 }
 
 
-void listAppendNoRegion(List *list, void *value) {
-    ListNode *ln = newListNodeNoRegion(value);
-    if(list->head != NULL) {
-        list->tail = list->tail->next = ln;
-    } else {
-        list->head = list->tail = ln;
-    }
-}
-void listAppend(List *list, void *value, Region *r) {
-    ListNode *ln = newListNode(value, r);
-    if(list->head != NULL) {
-        list->tail = list->tail->next = ln;
-    } else {
-        list->head = list->tail = ln;
-    }
-}
-
-void listAppendToNode(List *list, ListNode *node, void *value, Region *r) {
-    ListNode *ln = newListNode(value, r);
-    if(node->next != NULL) {
-        ln->next = node->next;
-        node->next = ln;
-    } else {
-        node->next = list->tail = ln;
-    }
-}
-
-void listRemove(List *list, ListNode *node) {
-    ListNode *prev = NULL, *curr = list->head;
-    while(curr != NULL) {
-        if(curr == node) {
-            if(prev == NULL) {
-                list->head = node->next;
-            } else {
-                prev->next = node->next;
-            }
-            /*free(node); */
-            break;
-        }
-        prev = curr;
-        curr = curr->next;
-    }
-    if(list->tail == node) {
-        list->tail = prev;
-    }
-
-}
-void listRemoveNoRegion(List *list, ListNode *node) {
-    ListNode *prev = NULL, *curr = list->head;
-    while(curr != NULL) {
-        if(curr == node) {
-            if(prev == NULL) {
-                list->head = node->next;
-            } else {
-                prev->next = node->next;
-            }
-            free(node);
-            break;
-        }
-        prev = curr;
-        curr = curr->next;
-    }
-    if(list->tail == node) {
-        list->tail = prev;
-    }
-
-}
 
 int appendToByteBufNew(bytesBuf_t *bytesBuf, char *str) {
   int i,j;
@@ -838,13 +767,13 @@ void logErrMsg(rError_t *errmsg, rError_t *system) {
     writeToTmp("err.log", "end errlog\n");
 #endif
     if(system!=NULL) {
-    	rodsLogAndErrorMsg(LOG_ERROR, system, RE_UNKNOWN_ERROR, "%s", errbuf);
+    	rodsLogAndErrorMsg(LOG_ERROR, system,RE_UNKNOWN_ERROR, "%s", errbuf);
     } else {
     	rodsLog (LOG_ERROR, "%s", errbuf);
     }
 }
 
-char *errMsgToString(rError_t *errmsg, char *errbuf, int buflen ) {
+char *errMsgToString(rError_t *errmsg, char *errbuf, int buflen /* = 0 */) {
     errbuf[0] = '\0';
     int p = 0;
     int i;
@@ -1056,8 +985,9 @@ void keyNode(Node *node, char *keyBuf) {
 }
 void keyBuf(unsigned char *buf, int size, char *keyBuf) {
 	if(size * 2 + 1 <= KEY_SIZE) {
+		int i;
 		char *p = keyBuf;
-		for(int i=0;i<size;i++) {
+		for(i=0;i<size;i++) {
 			*(p++) = 'A' + (buf[i] & (unsigned char) 0xf);
 			*(p++) = 'A' + (buf[i] & (unsigned char) 0xf0);
 		}
@@ -1084,3 +1014,16 @@ void keyBuf(unsigned char *buf, int size, char *keyBuf) {
 #include "to.memory.instance.h"
 #include "restruct.templates.h"
 #include "end.instance.h"
+
+#ifdef RE_CACHE_CHECK
+#include "cache.check.instance.h"
+#include "restruct.templates.h"
+#include "end.instance.h"
+#endif
+
+#ifdef RE_REGION_CHECK
+#include "region.check.instance.h"
+#include "restruct.templates.h"
+#include "end.instance.h"
+#endif
+

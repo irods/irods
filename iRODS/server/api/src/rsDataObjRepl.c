@@ -106,15 +106,27 @@ rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                                  transStat);
         return status;
     }
+   
+    // =-=-=-=-=-=-=-
+    // if the dest resc name key is set then we will resolve that key as our hier
+    // if a resc name key word is not also set in which case we inadvertently resolve
+    // the DESTINATION resource, not a valid source.  unset it before resolve hier
+    // and replace it afterwards to get intended behavior 
+    char* dest_resc_ptr = getValByKey( &dataObjInp->condInput, DEST_RESC_NAME_KW );
+    std::string tmp_dest_resc;
+    if( dest_resc_ptr ) {
+        tmp_dest_resc = dest_resc_ptr;
+        rmKeyVal( &dataObjInp->condInput, DEST_RESC_NAME_KW );
+    }
 
     // =-=-=-=-=-=-=-
     // call redirect for our operation of choice to request the hier string appropriately 
     std::string hier;
-    char*       tmp_hier = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
+    char*       tmp_hier  = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
+
     if( 0 == tmp_hier ) {
         // set a repl keyword here so resources can respond accordingly
         addKeyVal(&dataObjInp->condInput, IN_REPL_KW, "");
-        
         eirods::error ret = eirods::resolve_resource_hierarchy( eirods::EIRODS_OPEN_OPERATION, 
                                                                 rsComm, dataObjInp, hier );
         if( !ret.ok() ) { 
@@ -126,8 +138,15 @@ rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         }
         
         addKeyVal( &dataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
+
     } else {
         hier = tmp_hier;
+    }
+        
+    // =-=-=-=-=-=-=-
+    // reset dest resc name if it was set to begin with
+    if( !tmp_dest_resc.empty() ) {
+        addKeyVal( &dataObjInp->condInput, DEST_RESC_NAME_KW, tmp_dest_resc.c_str() );
     }
 
     // =-=-=-=-=-=-=-
@@ -152,13 +171,20 @@ rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     // =-=-=-=-=-=-=-
 
     status = _rsDataObjRepl (rsComm, dataObjInp, *transStat, NULL); 
-    if(status < 0) {
+    if( status < 0 && status != EIRODS_DIRECT_ARCHIVE_ACCESS ) {
         rodsLog(LOG_NOTICE, "%s - Failed to replicate data object.", __FUNCTION__);
     }
     
     if (lockFd > 0) rsDataObjUnlock (rsComm, dataObjInp, lockFd); // JMC - backport 4609
 
-    return (status);
+    // =-=-=-=-=-=-=-
+    // specifically ignore this error as it should not cause
+    // any issues with replication.   
+    if( status == EIRODS_DIRECT_ARCHIVE_ACCESS ) {
+        return 0;
+    } else {
+        return (status);
+    }
 }
     
 int
@@ -215,11 +241,19 @@ _rsDataObjRepl (
         return (status);
     }
     
-    if (getValByKey (&dataObjInp->condInput, UPDATE_REPL_KW) != NULL) {
-        char* resc_hier = getValByKey(&dataObjInp->condInput, RESC_HIER_STR_KW);
-        char* dest_hier = getValByKey(&dataObjInp->condInput, DEST_RESC_HIER_STR_KW);
-        status = sortObjInfoForRepl( &dataObjInfoHead, &oldDataObjInfoHead, 0, resc_hier, dest_hier );
+    char* resc_hier = getValByKey(&dataObjInp->condInput, RESC_HIER_STR_KW);
+    char* dest_hier = getValByKey(&dataObjInp->condInput, DEST_RESC_HIER_STR_KW);
 
+    status = sortObjInfoForRepl( &dataObjInfoHead, &oldDataObjInfoHead, 0, resc_hier, dest_hier );
+    if (status < 0) {
+        rodsLog(LOG_NOTICE, "%s - Failed to sort objects for replication.", __FUNCTION__);
+        return status;
+    }
+
+    // =-=-=-=-=-=-=-
+    // if a resc is specified and it has a stale copy then we should just treat this as an update
+    // also consider the 'update' keyword as that might also have some bearing on updates
+    if( ( !multiCopyFlag && oldDataObjInfoHead ) || getValByKey (&dataObjInp->condInput, UPDATE_REPL_KW) != NULL) {
         if (status < 0) {
             rodsLog(LOG_NOTICE, "%s - Failed to sort objects for replication update.", __FUNCTION__);
             return status;
@@ -232,7 +266,7 @@ _rsDataObjRepl (
             *outDataObjInfo = *oldDataObjInfoHead; // JMC - possible double free situation
             outDataObjInfo->next = NULL;
         } else {
-            if(status < 0) {
+            if( status < 0 && status != EIRODS_DIRECT_ARCHIVE_ACCESS ) {
                 rodsLog(LOG_NOTICE, "%s - Failed to update replica.", __FUNCTION__);
             }
         }
@@ -241,12 +275,11 @@ _rsDataObjRepl (
         freeAllDataObjInfo (oldDataObjInfoHead);
         
         return status;
-    }
+    
+    } // repl update
 
     /* if multiCopy allowed, remove old so they won't be overwritten */
-    // char* resc_hier = getValByKey(&dataObjInp->condInput, DEST_RESC_HIER_STR_KW);
-    status = sortObjInfoForRepl( &dataObjInfoHead, &oldDataObjInfoHead, multiCopyFlag, NULL, NULL );
- 
+    status = sortObjInfoForRepl( &dataObjInfoHead, &oldDataObjInfoHead, multiCopyFlag, resc_hier, dest_hier );
     if (status < 0) {
         rodsLog(LOG_NOTICE, "%s - Failed to sort objects for replication.", __FUNCTION__);
         return status;
@@ -416,7 +449,7 @@ int _rsDataObjReplUpdate(
     int allFlag = 0;
     int savedStatus = 0;
     int replCnt = 0;
-
+    
     // =-=-=-=-=-=-=-
     // set all or single flag
     if (getValByKey (&dataObjInp->condInput, ALL_KW) != NULL) {
@@ -424,17 +457,16 @@ int _rsDataObjReplUpdate(
     } else {
         allFlag = 0;
     }
-
+    
     // =-=-=-=-=-=-=-
     // cache a copy of the dest resc hier if there is one
-
     std::string dst_resc_hier;
     char* dst_resc_hier_ptr = getValByKey( &dataObjInp->condInput, DEST_RESC_HIER_STR_KW );
     if( dst_resc_hier_ptr ) {
-        dst_resc_hier = dst_resc_hier;
+        dst_resc_hier = dst_resc_hier_ptr;
             
     }    
-
+    
     // =-=-=-=-=-=-=-
     // loop over all the dest data obj info structs
     transStat->bytesWritten = srcDataObjInfoHead->dataSize;
@@ -455,7 +487,6 @@ int _rsDataObjReplUpdate(
             // if the dst hier kw is not set, then set the dest resc hier kw from the dest obj info 
             // as it is already known and we do not want the resc hier making this decision again
             addKeyVal( &dataObjInp->condInput, DEST_RESC_HIER_STR_KW, destDataObjInfo->rescHier );
-
             status = _rsDataObjReplS( rsComm, dataObjInp, srcDataObjInfo, NULL, "", destDataObjInfo, 1 );
               
             if (status >= 0) {
@@ -634,7 +665,7 @@ _rsDataObjReplNewCopy (
         if (l1descInx < 0) {
             return (l1descInx);
         }
-
+        
         if (L1desc[l1descInx].stageFlag != NO_STAGING) {
             status = l3DataStageSync (rsComm, l1descInx);
         } else if( L1desc[l1descInx].dataObjInp->numThreads == 0 && 
@@ -657,8 +688,7 @@ _rsDataObjReplNewCopy (
         char* pdmo_kw = getValByKey(&dataObjInp->condInput, IN_PDMO_KW);
         if(pdmo_kw != NULL) {
             addKeyVal(&dataObjCloseInp.condInput, IN_PDMO_KW, pdmo_kw);
-        }
-
+        } 
 
         status1 = irsDataObjClose (rsComm, &dataObjCloseInp, &myDestDataObjInfo);
 
@@ -759,7 +789,7 @@ _rsDataObjReplNewCopy (
         } else {
             srcDataObjInfo = cacheDataObjInfo;
         }
-
+        
         if( NULL == srcDataObjInfo ) { // JMC cppcheck - nullptr
             rodsLog( LOG_ERROR, "dataObjOpenForRepl - srcDataObjInfo is NULL" );
             return -1;      
@@ -785,7 +815,7 @@ _rsDataObjReplNewCopy (
         if (updateFlag > 0) {
             // =-=-=-=-=-=-=-
             // set a open operation 
-            op_name = eirods::EIRODS_OPEN_OPERATION;
+            op_name = eirods::EIRODS_WRITE_OPERATION;
 
             /* update an existing copy */
             if(inpDestDataObjInfo == NULL || inpDestDataObjInfo->dataId <= 0) {
@@ -831,14 +861,17 @@ _rsDataObjReplNewCopy (
             addKeyVal( &dataObjInp->condInput, DEST_RESC_HIER_STR_KW, hier.c_str() );
        
         } else {
-            hier = dst_hier_str;  
-        }
+            hier = dst_hier_str;
 
+        }
         // =-=-=-=-=-=-=- 
         // expected by fillL1desc 
-//        rstrcpy(myDestDataObjInfo->filePath, srcDataObjInfo->filePath, MAX_NAME_LEN);
+        //rstrcpy(myDestDataObjInfo->filePath, srcDataObjInfo->filePath, MAX_NAME_LEN);
         rstrcpy(myDestDataObjInfo->rescHier, hier.c_str(), MAX_NAME_LEN);
-        addKeyVal( &(myDataObjInp.condInput), RESC_HIER_STR_KW, hier.c_str() );
+        // =-=-=-=-=-=-=-
+        // JMC :: [ ticket 1746 ] this should always be set - this was overwriting the KW 
+        //     :: in the incoming dataObjInp leaving this here for future consideration if issues arise 
+        // addKeyVal( &(myDataObjInp.condInput), RESC_HIER_STR_KW, hier.c_str() ); // <===============
         fillL1desc (destL1descInx, &myDataObjInp, myDestDataObjInfo, replStatus, srcDataObjInfo->dataSize);
 
         l1DataObjInp = L1desc[destL1descInx].dataObjInp;
@@ -849,15 +882,6 @@ _rsDataObjReplNewCopy (
         } else {
             L1desc[destL1descInx].oprType = REPLICATE_DEST;
         }
-
-#if 0 // JMC - legacy resource
-        if (destRescClass == COMPOUND_CL) {
-            L1desc[destL1descInx].stageFlag = SYNC_DEST;
-        }
-        else if (srcRescClass == COMPOUND_CL) {
-            L1desc[destL1descInx].stageFlag = STAGE_SRC;
-        }
-#else // JMC - legacy resource
 
         // =-=-=-=-=-=-=-
         // reproduce the stage / sync behavior using keywords rather
@@ -872,10 +896,6 @@ _rsDataObjReplNewCopy (
 
 
         }
-
-#endif // JMC - legacy resource
-
-
 
         char* src_hier_str = 0;
         if (srcDataObjInfo != NULL && srcDataObjInfo->rescHier != NULL) {
@@ -917,8 +937,30 @@ _rsDataObjReplNewCopy (
             inpDestDataObjInfo->next = NULL;
         }
 
+
+        // =-=-=-=-=-=-=-
+        // notify the dest resource hierarchy that something is afoot
+        eirods::file_object_ptr file_obj(
+                                new eirods::file_object( 
+                                    rsComm, 
+                                    myDestDataObjInfo ) );
+        eirods::error ret = fileNotify(
+                                rsComm, 
+                                file_obj,
+                                eirods::EIRODS_WRITE_OPERATION );
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << "Failed to signal the resource that the data object \"";
+            msg << myDestDataObjInfo->objPath;
+            msg << "\" was modified.";
+            ret = PASSMSG( msg.str(), ret );
+            eirods::log( ret );
+            return ret.code();
+        }
+
         /* open the src */
         rstrcpy(srcDataObjInfo->rescHier, inpSrcDataObjInfo->rescHier, MAX_NAME_LEN);
+
         srcL1descInx = allocL1desc ();
         if (srcL1descInx < 0) return srcL1descInx;
         fillL1desc (srcL1descInx, &myDataObjInp, srcDataObjInfo, srcDataObjInfo->replStatus, srcDataObjInfo->dataSize);
@@ -930,11 +972,9 @@ _rsDataObjReplNewCopy (
             L1desc[srcL1descInx].oprType = REPLICATE_SRC;
         }
 
-        if( L1desc[destL1descInx].stageFlag == SYNC_DEST && // JMC - backport 4549
-            getValByKey (&dataObjInp->condInput, PURGE_CACHE_KW) != NULL) {
+        if( getValByKey (&dataObjInp->condInput, PURGE_CACHE_KW) != NULL ) {
             L1desc[srcL1descInx].purgeCacheFlag = 1;
         }
-
 
         if( l1DataObjInp->numThreads > 0 &&
             L1desc[destL1descInx].stageFlag == NO_STAGING) {

@@ -22,6 +22,11 @@
 #include "eirods_string_tokenize.h"
 #include "eirods_plugin_name_generator.h"
 #include "eirods_resources_home.h"
+#include "eirods_resource_manager.h"
+#include "eirods_file_object.h"
+extern eirods::resource_manager resc_mgr;
+
+
 
 int
 rsGeneralAdmin (rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
@@ -568,9 +573,37 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
                 return i;
             }
             /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
+            // =-=-=-=-=-=-=-
+            // addition of 'rebalance' as an option to iadmin modresc.  not in icat code
+            // due to dependency on resc_mgr, etc.
+            if( 0 == strcmp( args[1], "rebalance" ) ) {
+                status = 0;
 
-            status = chlModResc(rsComm, generalAdminInp->arg2, 
-                                generalAdminInp->arg3, generalAdminInp->arg4);
+                // =-=-=-=-=-=-=-
+                // resolve the plugin we wish to rebalance
+                eirods::resource_ptr resc;
+                eirods::error ret = resc_mgr.resolve( args[0], resc );
+                if( !ret.ok() ) {
+                    eirods::log( PASSMSG( "failed to resolve resource", ret ) );
+                    status = -1;
+                } else {
+                    // =-=-=-=-=-=-=-
+                    // call the rebalance operation on the resource
+                    eirods::file_object_ptr obj( new eirods::file_object() );
+                    ret = resc->call( rsComm, eirods::RESOURCE_OP_REBALANCE, obj );
+                    if( !ret.ok() ) {
+                        eirods::log( PASSMSG( "failed to rebalance resource", ret ) );
+                        status = -1;
+              
+                    } 
+               
+                }
+                
+            } else {
+                status = chlModResc(rsComm, generalAdminInp->arg2, 
+                                    generalAdminInp->arg3, generalAdminInp->arg4);
+
+            }
 
             /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
             if (status == 0) {

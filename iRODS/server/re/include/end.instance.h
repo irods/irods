@@ -9,31 +9,31 @@
 
 #undef MK_PTR
 
-#undef MK_PTR_ARRAY_PTR
+#undef MK_PTR_TVAR
 
-#undef MK_ARRAY_PTR
-
-#undef MK_PTR_ARRAY
+#undef MK_PTR_TAPP
 
 #undef MK_ARRAY
 
-#undef MK_PTR_VAR_ARRAY_PTR
-
-#undef MK_VAR_ARRAY_PTR
-
-#undef MK_PTR_VAR_ARRAY
+#undef MK_ARRAY_IN_STRUCT
 
 #undef MK_VAR_ARRAY
 
-#undef MK_PTR_GENERIC
+#undef MK_VAR_ARRAY_IN_STRUCT
 
-#undef GENERIC
+#undef MK_PTR_ARRAY
 
-#undef MK_PTR_ARRAY_PTR_GENERIC
+#undef MK_PTR_ARRAY_IN_STRUCT
 
-#undef MK_PTR_ARRAY_GENERIC
+#undef MK_PTR_VAR_ARRAY
 
-#undef MK_GENERIC_PTR
+#undef MK_PTR_VAR_ARRAY_IN_STRUCT
+
+#undef MK_PTR_TAPP_ARRAY
+
+#undef MK_PTR_TAPP_ARRAY_IN_STRUCT
+
+#undef PARAM
 
 #undef RE_STRUCT_BEGIN
 
@@ -71,8 +71,8 @@
 #undef TRAVERSE_PTR
 #endif
 
-#ifdef TRAVERSE_PTR_GENERIC
-#undef TRAVERSE_PTR_GENERIC
+#ifdef TRAVERSE_PTR_TAPP
+#undef TRAVERSE_PTR_TAPP
 #endif
 
 #ifdef TRAVERSE_ARRAY_BEGIN

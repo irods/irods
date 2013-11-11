@@ -1,6 +1,12 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
 #include "debug.h"
+#ifdef DEBUG
+#include "re.h"
+#else
+#include "reGlobalsExtern.h"
+#include "reHelpers1.h"
+#endif
 #include "rules.h"
 #include "index.h"
 #include "functions.h"
@@ -13,22 +19,6 @@
 #define RE_ERROR(cond) if(cond) { goto error; }
 
 extern int GlobalAllRuleExecFlag;
-
-#ifdef USE_EIRODS
-	#include "reAction.h"
-#else
-	#ifndef DEBUG
-		#include "reGlobalsExtern.h"
-		#include "reHelpers1.h"
-		typedef struct {
-		  char action[MAX_ACTION_SIZE];
-		  int numberOfStringArgs;
-		  funcPtr callAction;
-		} microsdef_t;
-		extern int NumOfAction;
-		extern microsdef_t MicrosTable[];
-	#endif
-#endif // ifdef USE_EIRODS
 
 /**
  * Read a set of rules from files.
@@ -587,18 +577,18 @@ Res *parseAndComputeExpression(char *expr, Env *env, ruleExecInfo_t *rei, int re
         Token *token;
         token = nextTokenRuleGen(e, pc, 0, 0);
         if(strcmp(token->text, "|")==0) {
-        	recoNode = parseActionsRuleGen(e, rulegen, 1, pc);
-            if(node==NULL) {
-				addRErrorMsg(errmsg, RE_OUT_OF_MEMORY, "error: out of memory.");
-				res = newErrorRes(r, RE_OUT_OF_MEMORY);
-				RETURN;
-            } else if (getNodeType(node) == N_ERROR) {
-				generateErrMsg("error: syntax error",NODE_EXPR_POS(node), node->base, buf);
-				addRErrorMsg(errmsg, RE_PARSER_ERROR, buf);
-				res = newErrorRes(r, RE_PARSER_ERROR);
-				RETURN;
-            }
-            token = nextTokenRuleGen(e, pc, 0, 0);
+          recoNode = parseActionsRuleGen(e, rulegen, 1, pc);
+          if(recoNode==NULL) {
+            addRErrorMsg(errmsg, RE_OUT_OF_MEMORY, "error: out of memory.");
+            res = newErrorRes(r, RE_OUT_OF_MEMORY);
+            RETURN;
+          } else if (getNodeType(recoNode) == N_ERROR) {
+            generateErrMsg("error: syntax error",NODE_EXPR_POS(recoNode), recoNode->base, buf);
+            addRErrorMsg(errmsg, RE_PARSER_ERROR, buf);
+            res = newErrorRes(r, RE_PARSER_ERROR);
+            RETURN;
+          } 
+          token = nextTokenRuleGen(e, pc, 0, 0);
         }
         if(token->type!=TK_EOS) {
             Label pos;

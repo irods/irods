@@ -48,6 +48,13 @@ typedef struct PortalTransferInp {
     int flags;
     int status;
     dataOprInp_t *dataOprInp;
+    
+    int  key_size;
+    int  salt_size;
+    int  num_hash_rounds;
+    char encryption_algorithm[ NAME_LEN ]; 
+    char shared_secret[ NAME_LEN ]; // JMC - shared secret for each portal thread
+
 } portalTransferInp_t;
 
 int

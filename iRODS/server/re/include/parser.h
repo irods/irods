@@ -9,11 +9,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "debug.h"
-
-#ifdef DEBUG
-#include "re.h"
-#endif
 
 
 #ifndef DEBUG
@@ -23,9 +18,9 @@
 
 #include "reconstants.h"
 #include "restructs.h"
+#include "utils.h"
 #include "region.h"
 #include "hashtable.h"
-#include "utils.h"
 
 
 typedef struct op {

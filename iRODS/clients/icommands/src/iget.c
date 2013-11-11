@@ -133,7 +133,7 @@ usage () {
 "variables - rbudpSendRate and rbudpPackSize are used to tune the RBUDP",
 "data transfer. rbudpSendRate is used to throttle the send rate in ",
 "kbits/sec. The default rbudpSendRate is 600,000. rbudpPackSize is used",
-"to set the packet size. The dafault rbudpPackSize is 8192. The -V option",
+"to set the packet size. The default rbudpPackSize is 8192. The -V option",
 "can be used to show the loss rate of the transfer. If the lost rate is",
 "more than a few %, the sendrate should be reduced.",
 " ",

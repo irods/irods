@@ -33,7 +33,7 @@
 #define TRAVERSE_ARRAY_END(T, size, f) \
 	} \
 
-#define TRAVERSE_PTR_GENERIC(fn, f, cpfn) \
+#define TRAVERSE_PTR_TAPP(fn, f, cpfn) \
 	CASCADE_NULL(ptr->f = fn(ptr->f, cpfn, objectMap));
 
 /*#define COPY_PTR_ARRAY_COPIER(T, size, f, cpfn) \
