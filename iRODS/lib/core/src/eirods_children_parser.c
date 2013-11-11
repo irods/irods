@@ -90,6 +90,9 @@ namespace eirods {
     {
         error result = SUCCESS();
 
+        // clear existing map
+        children_list_.clear();
+
         // check if the string is empty
         if(!str.empty()) {
             
@@ -135,6 +138,15 @@ namespace eirods {
         }
         
         return result;
+    }
+
+
+    children_parser::const_iterator children_parser::begin(void) const {
+        return children_list_.begin();
+    }
+
+    children_parser::const_iterator children_parser::end(void) const {
+        return children_list_.end();
     }
 
 }; // namespace eirods
