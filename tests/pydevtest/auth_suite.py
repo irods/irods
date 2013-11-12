@@ -22,6 +22,7 @@ class Test_OSAuth_Only(unittest.TestCase, ResourceBase):
         self.run_resource_teardown()
         s.twousers_down()
 
+    @unittest.skip("TODO: Seeing inconsistent behavior in CI")
     def test_authentication_OSAuth(self):
         # add auth test user
         authTestUser = "eirods"

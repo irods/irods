@@ -92,6 +92,11 @@ else
     cd $EIRODSROOT
     $EIRODSROOT/iRODS/irodsctl devtesty
 fi
+
+# run authentication tests
+cd $EIRODSROOT/tests/pydevtest
+$PYTHONCMD $OPTS auth_suite.Test_Auth_Suite
+
 # run OSAuth test by itself
 if [ "$EIRODSDEVTESTCI" == "true" ] ; then
     set +e
