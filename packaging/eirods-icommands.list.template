@@ -127,6 +127,8 @@ END_POSTINSTALL
 
 f 644 root root /usr/share/man/man1 ./man/*.gz
 
+d 644 root root /var/lib/eirods/VERSION ./VERSION
+
 d 755 root root /var/lib/eirods/plugins -
 d 755 root root /var/lib/eirods/plugins/network -
 f 755 root root /var/lib/eirods/plugins/network/ ./plugins/network/*.so

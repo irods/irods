@@ -246,7 +246,7 @@ BUILDDIR=$GITDIR  # we'll manipulate this later, depending on the coverage flag
 cd $BUILDDIR/iRODS
 echo "Build Directory set to [$BUILDDIR]"
 # read E-iRODS Version from file
-source ../packaging/VERSION
+source ../VERSION
 echo "Detected E-iRODS Version to Build [$EIRODSVERSION]"
 echo "Detected EPM E-iRODS Version String [$EPMEIRODSVERSION]"
 # detect operating system

@@ -345,7 +345,7 @@ fi
 # =-=-=-=-=-=-=-
 # RPM runs old 3.0 uninstall script last, which removed everything
 # Detect this case and protect the existing data
-if [ "$UPGRADE_FLAG" == "true" -a ! -f $EIRODS_HOME_DIR/packaging/VERSION ] ; then
+if [ "$UPGRADE_FLAG" == "true" -a ! -f $EIRODS_HOME_DIR/VERSION ] ; then
     # Check for RPM-based systems
     if [ "$DETECTEDOS" == "RedHatCompatible" -o "$DETECTEDOS" == "SuSE" ] ; then
         # stop the running server
