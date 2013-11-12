@@ -2,10 +2,12 @@
 
 #######################################################################
 #
-# This script should be run after upgrading from an E-iRODS 3.0 RPM
+# This script should be run after upgrading from an E-iRODS 3.0 RPM.
 #
 # It takes one parameter:
 #    newfile.rpm - the path to the new RPM
+#
+# Requires being run as root.
 #
 #######################################################################
 
@@ -13,6 +15,7 @@ set -e
 
 if [ $# -ne 1 ] ; then
    echo "Usage: $0 newfile.rpm"
+   exit 1
 fi
 
 # repave all the files
@@ -27,7 +30,14 @@ fi
 # restart the server
 su - eirods -c "cd iRODS; ./irodsctl restart"
 
-# explain
+# report to the admin
 echo ""
-echo "  E-iRODS RPM installation has been upgraded from 3.0"
+echo "#########################################################"
+echo "#"
+echo "#  E-iRODS RPM installation has been upgraded from 3.0"
+echo "#"
+echo "#########################################################"
 echo ""
+
+# done
+exit 0

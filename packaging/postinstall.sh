@@ -20,7 +20,6 @@ if [ -f "$UPGRADE_FLAG_FILE" ] ; then
 else
     UPGRADE_FLAG="false"
 fi
-rm -f $UPGRADE_FLAG_FILE
 
 # =-=-=-=-=-=-=-
 # database password
@@ -32,18 +31,17 @@ else
     # generate new database password
     DB_PASS=`cat /dev/urandom | base64 | head -c16`
 fi
-#echo "DB_PASS=[$DB_PASS]"
 #echo "UPGRADE_FLAG=[$UPGRADE_FLAG]"
-#echo "EIRODS_HOME_DIR=$EIRODS_HOME_DIR"
-#echo "OS_EIRODS_ACCT=$OS_EIRODS_ACCT"
-#echo "SERVER_TYPE=$SERVER_TYPE"
-#echo "DB_TYPE=$DB_TYPE"
-#echo "DB_ADMIN_ROLE=$DB_ADMIN_ROLE"
-#echo "DB_NAME=$DB_NAME"
-#echo "DB_HOST=$DB_HOST"
-#echo "DB_PORT=$DB_PORT"
-#echo "DB_USER=$DB_USER"
-#echo "DB_PASS=$DB_PASS"
+#echo "EIRODS_HOME_DIR=[$EIRODS_HOME_DIR]"
+#echo "OS_EIRODS_ACCT=[$OS_EIRODS_ACCT]"
+#echo "SERVER_TYPE=[$SERVER_TYPE]"
+#echo "DB_TYPE=[$DB_TYPE]"
+#echo "DB_ADMIN_ROLE=[$DB_ADMIN_ROLE]"
+#echo "DB_NAME=[$DB_NAME]"
+#echo "DB_HOST=[$DB_HOST]"
+#echo "DB_PORT=[$DB_PORT]"
+#echo "DB_USER=[$DB_USER]"
+#echo "DB_PASS=[$DB_PASS]"
 
 
 # =-=-=-=-=-=-=-
@@ -324,7 +322,7 @@ chmod 4755 /usr/bin/genOSAuth
 
 # =-=-=-=-=-=-=-
 # remove the password from the service account
-passwd -d $OS_EIRODS_ACCT
+passwd -d $OS_EIRODS_ACCT > /dev/null
 
 
 if [ "$UPGRADE_FLAG" == "false" ] ; then
@@ -345,56 +343,78 @@ fi
 # =-=-=-=-=-=-=-
 # RPM runs old 3.0 uninstall script last, which removed everything
 # Detect this case and protect the existing data
-if [ "$UPGRADE_FLAG" == "true" -a ! -f $EIRODS_HOME_DIR/VERSION ] ; then
-    # Check for RPM-based systems
-    if [ "$DETECTEDOS" == "RedHatCompatible" -o "$DETECTEDOS" == "SuSE" ] ; then
-        # stop the running server
-        su --shell=/bin/bash -c "cd $IRODS_HOME; ./irodsctl stop" $OS_EIRODS_ACCT
-        # detect whether eirods home directory is a mount point
-        set +e
-        mountpoint $EIRODS_HOME_DIR > /dev/null
-        ISMOUNTPOINT=$?
-        set -e
-        # if a mount point
-        if [ $ISMOUNTPOINT -eq 0 ] ; then
-            # detect current mounted device
-            MOUNTED_DEVICE=`df | grep " $EIRODS_HOME_DIR$" | awk '{print $1}'`
-            # unmount eirods home directory
+if [ "$UPGRADE_FLAG" == "true" ] ; then
+    EIRODSVERSIONINT=`grep EIRODSVERSIONINT $UPGRADE_FLAG_FILE | awk -F\= '{print $2}' | tr -d ' '`
+    # delete temp file
+    rm -f $UPGRADE_FLAG_FILE
+    # check against version integer
+    if [ $EIRODSVERSIONINT -lt 301002 ] ; then
+        # Check for RPM-based systems
+        if [ "$DETECTEDOS" == "RedHatCompatible" -o "$DETECTEDOS" == "SuSE" ] ; then
+            # stop the running server
+            su --shell=/bin/bash -c "cd $IRODS_HOME; ./irodsctl stop" $OS_EIRODS_ACCT
+            # detect whether eirods home directory is a mount point
             set +e
-            umount $EIRODS_HOME_DIR
+            mountpoint $EIRODS_HOME_DIR > /dev/null
+            ISMOUNTPOINT=$?
             set -e
-            # report to the admin what happened
-            echo "$EIRODS_HOME_DIR has been unmounted from $MOUNTED_DEVICE"
-            echo "Once $EIRODS_HOME_DIR is mounted again, start the server:"
-            echo "  sudo su - eirods -c 'cd $IRODS_HOME; ./irodsctl start'"
-        else
-            # if not, move it aside
-            mv $EIRODS_HOME_DIR ${EIRODS_HOME_DIR}_new
-            # create a passable directory in its place, which will be deleted by existing 3.0 postun script
-            mkdir -p $EIRODS_HOME_DIR
-            cp -r ${EIRODS_HOME_DIR}_new/packaging $EIRODS_HOME_DIR/packaging
-            mkdir $EIRODS_HOME_DIR/iRODS
-            cp -r ${EIRODS_HOME_DIR}_new/iRODS/irodsctl $EIRODS_HOME_DIR/iRODS/irodsctl
-            cp -r ${EIRODS_HOME_DIR}_new/iRODS/scripts $EIRODS_HOME_DIR/iRODS/scripts
-            mkdir -p $EIRODS_HOME_DIR/iRODS/clients/icommands
-            cp -r ${EIRODS_HOME_DIR}_new/iRODS/clients/icommands/bin $EIRODS_HOME_DIR/iRODS/clients/icommands/bin
-            # report to the admin what happened
-#            echo "$EIRODS_HOME_DIR has been moved to ${EIRODS_HOME_DIR}_new"
-#            echo "Please replace it and start the server:"
-#            echo "  sudo mv ${EIRODS_HOME_DIR}_new $EIRODS_HOME_DIR"
-#            echo "  sudo su - eirods -c 'cd $IRODS_HOME; ./irodsctl start'"
-            echo "#########################################################"
-            echo "#"
-            echo "#  Please run the recovery script:"
-            echo "#    sudo ${EIRODS_HOME_DIR}_new/packaging/post30upgrade.sh newfile.rpm"
-            echo "#"
-            echo "#########################################################"
-
+            # if a mount point
+            if [ $ISMOUNTPOINT -eq 0 ] ; then
+                # detect current mounted device
+                MOUNTED_DEVICE=`df | grep " $EIRODS_HOME_DIR$" | awk '{print $1}'`
+                # unmount eirods home directory
+                set +e
+                umount $EIRODS_HOME_DIR
+                set -e
+                # report to the admin what happened
+                echo "$EIRODS_HOME_DIR has been unmounted from $MOUNTED_DEVICE"
+                echo "#########################################################"
+                echo "#"
+                echo "#  E-iRODS PostInstall Script"
+                echo "#"
+                echo "#  $EIRODS_HOME_DIR has been unmounted from $MOUNTED_DEVICE"
+                echo "#"
+                echo "#  Due to upgrading from E-iRODS 3.0, your upgrade is"
+                echo "#  not yet fully complete.  Your files and database are"
+                echo "#  safe and awaiting the remounting of $EIRODS_HOME_DIR."
+                echo "#"
+                echo "#  Once $EIRODS_HOME_DIR is mounted again,"
+                echo "#  start the server:"
+                echo "#"
+                echo "#    sudo su - eirods -c 'cd $IRODS_HOME; ./irodsctl start'"
+                echo "#"
+                echo "#########################################################"
+            else
+                # if not, move it aside
+                mv $EIRODS_HOME_DIR ${EIRODS_HOME_DIR}_new
+                # create a passable directory in its place, which will be deleted by existing 3.0 postun script
+                mkdir -p $EIRODS_HOME_DIR
+                cp -r ${EIRODS_HOME_DIR}_new/packaging $EIRODS_HOME_DIR/packaging
+                mkdir $EIRODS_HOME_DIR/iRODS
+                cp -r ${EIRODS_HOME_DIR}_new/iRODS/irodsctl $EIRODS_HOME_DIR/iRODS/irodsctl
+                cp -r ${EIRODS_HOME_DIR}_new/iRODS/scripts $EIRODS_HOME_DIR/iRODS/scripts
+                mkdir -p $EIRODS_HOME_DIR/iRODS/clients/icommands
+                cp -r ${EIRODS_HOME_DIR}_new/iRODS/clients/icommands/bin $EIRODS_HOME_DIR/iRODS/clients/icommands/bin
+                # report to the admin what happened
+                echo "#########################################################"
+                echo "#"
+                echo "#  E-iRODS PostInstall Script"
+                echo "#"
+                echo "#  Due to upgrading from E-iRODS 3.0, your upgrade is"
+                echo "#  not yet fully complete.  Your files and database are"
+                echo "#  safely awaiting the run of the recovery script which"
+                echo "#  will place everything back into the correct locations."
+                echo "#"
+                echo "#  Please run the recovery script with the RPM file you"
+                echo "#  just used to upgrade:"
+                echo "#"
+                echo "#    sudo ${EIRODS_HOME_DIR}_new/packaging/post30upgrade.sh newfile.rpm"
+                echo "#"
+                echo "#########################################################"
+            fi
         fi
     fi
 fi
-
-
 
 
 # =-=-=-=-=-=-=-

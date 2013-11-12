@@ -7,7 +7,7 @@
 %license LICENSE
 %readme README
 %description Enterprise edition of the Integrated Rule Oriented Data System
-%version TEMPLATE_EIRODSVERSION TEMPLATE_EPMEIRODSVERSION
+%version TEMPLATE_EIRODSVERSION TEMPLATE_EIRODSVERSIONINT
 
 
 
@@ -143,10 +143,21 @@ else
 fi
 
 if [ "$$PACKAGEUPGRADE" = "true" ] ; then
+  # Upgrade
   echo "Upgrading Existing E-iRODS Installation"
   mkdir -p $EIRODS_HOME_DIR
-  touch $EIRODS_HOME_DIR/upgrade.tmp
+  # write version information down for postinstall
+  UPGRADE_TEMP_FILE="$EIRODS_HOME_DIR/upgrade.tmp"
+  if [ -f $EIRODS_HOME_DIR/VERSION ] ; then
+    cp $EIRODS_HOME_DIR/VERSION $$UPGRADE_TEMP_FILE
+  else
+    touch $$UPGRADE_TEMP_FILE
+    echo "EIRODSVERSION=3.0" >> $$UPGRADE_TEMP_FILE
+    echo "EIRODSVERSIONINT=300005" >> $$UPGRADE_TEMP_FILE
+  fi
+  
 else
+  # New Install
   echo "Creating Service Group and Account: $OS_EIRODS_ACCT at $EIRODS_HOME_DIR "
 
   set +e
@@ -200,9 +211,9 @@ END_PREINSTALL
 # preremove
 # =-=-=-=-=-=-=-
 %if ICAT
-%preremove $EIRODS_HOME_DIR/packaging/preremove.sh $EIRODS_HOME_DIR $OS_EIRODS_ACCT icat $DB_TYPE $DB_ADMIN_ROLE $DB_NAME $DB_USER
+%preremove $EIRODS_HOME_DIR/packaging/preremove.sh $$1 $EIRODS_HOME_DIR $OS_EIRODS_ACCT icat $DB_TYPE $DB_ADMIN_ROLE $DB_NAME $DB_USER
 %else
-%preremove $EIRODS_HOME_DIR/packaging/preremove.sh $EIRODS_HOME_DIR $OS_EIRODS_ACCT resource
+%preremove $EIRODS_HOME_DIR/packaging/preremove.sh $$1 $EIRODS_HOME_DIR $OS_EIRODS_ACCT resource
 %endif
 
 
@@ -214,6 +225,7 @@ END_PREINSTALL
 # post remove
 # =-=-=-=-=-=-=-
 %postremove << END_POSTREMOVE
+
 # determine whether this is an upgrade
 if [ "$$1" -eq "$$1" ] 2>/dev/null ; then
   # integer, therefore rpm
@@ -230,10 +242,12 @@ else
     PACKAGEUPGRADE="false"
   fi
 fi
+
 # on remove or purge
 if [ "$$PACKAGEUPGRADE" = "false" ] ; then
   rm -rf $EIRODS_HOME_DIR
 fi
+
 END_POSTREMOVE
 
 
@@ -473,11 +487,7 @@ f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/icatGeneralQ
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/convertSql.pl ./iRODS/server/icat/src/convertSql.pl
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/config -
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/config/platform.mk ./iRODS/config/platform.mk
-%if DEB
 c 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/config/irods.config ./iRODS/config/irods.config
-%else
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/config/irods.config ./iRODS/config/irods.config
-%endif
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/config/doxygen-msi.config ./iRODS/config/doxygen-msi.config
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/config/irodsEnv.boot ./iRODS/config/irodsEnv.boot
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/config/installPostgres.config.template ./iRODS/config/installPostgres.config.template

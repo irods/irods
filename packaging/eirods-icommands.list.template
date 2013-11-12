@@ -7,7 +7,7 @@
 %license LICENSE
 %readme README
 %description Enterprise edition of the Integrated Rule Oriented Data System
-%version TEMPLATE_EIRODSVERSION TEMPLATE_EPMEIRODSVERSION
+%version TEMPLATE_EIRODSVERSION TEMPLATE_EIRODSVERSIONINT
 
 
 

@@ -248,7 +248,7 @@ echo "Build Directory set to [$BUILDDIR]"
 # read E-iRODS Version from file
 source ../VERSION
 echo "Detected E-iRODS Version to Build [$EIRODSVERSION]"
-echo "Detected EPM E-iRODS Version String [$EPMEIRODSVERSION]"
+echo "Detected E-iRODS Version Integer [$EIRODSVERSIONINT]"
 # detect operating system
 DETECTEDOS=`../packaging/find_os.sh`
 if [ "$PORTABLE" == "1" ] ; then
@@ -1149,20 +1149,20 @@ if [ "$BUILDEIRODS" == "1" ] ; then
 
 
     # =-=-=-=-=-=-=-
-    # populate EPMEIRODSVERSION and EIRODSVERSION in all EPM list files
+    # populate EIRODSVERSIONINT and EIRODSVERSION in all EPM list files
 
     # eirods main package
-    sed -e "s,TEMPLATE_EPMEIRODSVERSION,$EPMEIRODSVERSION," ./packaging/eirods.list > /tmp/eirodslist.tmp
+    sed -e "s,TEMPLATE_EIRODSVERSIONINT,$EIRODSVERSIONINT," ./packaging/eirods.list > /tmp/eirodslist.tmp
     mv /tmp/eirodslist.tmp ./packaging/eirods.list
     sed -e "s,TEMPLATE_EIRODSVERSION,$EIRODSVERSION," ./packaging/eirods.list > /tmp/eirodslist.tmp
     mv /tmp/eirodslist.tmp ./packaging/eirods.list
     # eirods-dev package
-    sed -e "s,TEMPLATE_EPMEIRODSVERSION,$EPMEIRODSVERSION," ./packaging/eirods-dev.list.template > /tmp/eirodsdevlist.tmp
+    sed -e "s,TEMPLATE_EIRODSVERSIONINT,$EIRODSVERSIONINT," ./packaging/eirods-dev.list.template > /tmp/eirodsdevlist.tmp
     mv /tmp/eirodsdevlist.tmp ./packaging/eirods-dev.list
     sed -e "s,TEMPLATE_EIRODSVERSION,$EIRODSVERSION," ./packaging/eirods-dev.list > /tmp/eirodsdevlist.tmp
     mv /tmp/eirodsdevlist.tmp ./packaging/eirods-dev.list
     # eirods-icommands package
-    sed -e "s,TEMPLATE_EPMEIRODSVERSION,$EPMEIRODSVERSION," ./packaging/eirods-icommands.list.template > /tmp/eirodsicommandslist.tmp
+    sed -e "s,TEMPLATE_EIRODSVERSIONINT,$EIRODSVERSIONINT," ./packaging/eirods-icommands.list.template > /tmp/eirodsicommandslist.tmp
     mv /tmp/eirodsicommandslist.tmp ./packaging/eirods-icommands.list
     sed -e "s,TEMPLATE_EIRODSVERSION,$EIRODSVERSION," ./packaging/eirods-icommands.list > /tmp/eirodsicommandslist.tmp
     mv /tmp/eirodsicommandslist.tmp ./packaging/eirods-icommands.list

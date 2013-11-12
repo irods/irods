@@ -1763,7 +1763,6 @@ sub configureIrodsUser
 			"irodsHost '$thisHost'\n" .
 			"# iRODS server port number:\n" .
 			"irodsPort $IRODS_PORT\n" .
-			"\n" .
 			"# Default storage resource name:\n" .
 			"irodsDefResource '$RESOURCE_NAME'\n" .
 			"# Home directory in iRODS:\n" .
@@ -1803,7 +1802,6 @@ sub configureIrodsUser
 			"irodsHost '$thisHost'\n" .
 			"# iRODS server port number:\n" .
 			"irodsPort $IRODS_PORT\n" .
-			"\n" .
 			"# Default storage resource name:\n" .
 			"irodsDefResource '$RESOURCE_NAME'\n" .
 			"# Home directory in iRODS:\n" .
