@@ -34,3 +34,4 @@ Development of this release has focused on the following features and efforts:
 - Increased code coverage from ~50% to over 56%
 - Continuously built and tested across 3 major linux distributions
 - Packaged for 3 major linux distributions
+- Support for package upgrade via package manager

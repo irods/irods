@@ -25,7 +25,7 @@
 |
 
 :Author: Renaissance Computing Institute (RENCI)
-:Version: 3.0.1b1
+:Version: 3.0.1b2
 :Date: |todaysdate|
 
 
@@ -1238,8 +1238,14 @@ History of Releases
 ==========   =======    =====================================================
 Date         Version    Description
 ==========   =======    =====================================================
-2013-10-31   3.0.1b1    Second Release.
-                          This is the second open source release from RENCI.
+2013-11-12   3.0.1b2    Second Beta of Second Release.
+                          This is the second beta of the second open source
+                          release from RENCI.  It includes certification
+                          work with the Jargon library, more CI testing,
+                          and minor fixes.
+2013-10-31   3.0.1b1    First Beta of Second Release.
+                          This is the first beta of the second open source
+                          release from RENCI.
                           It includes pluggable network and authentication
                           support as well as a rebalance option and migration
                           support for the composable resources.
