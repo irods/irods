@@ -39,9 +39,9 @@ static eirods::error check_proxy_user_privileges(
 
         /* remote privileged user can only do things on behalf of users from
 	 * the same zone */
-	result = ASSERT_ERROR(proxyUserPriv < LOCAL_PRIV_USER_AUTH &&
-			      (proxyUserPriv < REMOTE_PRIV_USER_AUTH ||
-			       strcmp (rsComm->proxyUser.rodsZone,rsComm->clientUser.rodsZone) != 0),
+	result = ASSERT_ERROR(proxyUserPriv >= LOCAL_PRIV_USER_AUTH ||
+			      (proxyUserPriv >= REMOTE_PRIV_USER_AUTH &&
+			       strcmp (rsComm->proxyUser.rodsZone,rsComm->clientUser.rodsZone) == 0),
 			      SYS_PROXYUSER_NO_PRIV,
 			      "Proxyuser: \"%s\" with %d no priv to auth clientUser: \"%s\".",
 			      rsComm->proxyUser.userName, proxyUserPriv, rsComm->clientUser.userName);
