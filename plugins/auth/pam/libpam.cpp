@@ -200,10 +200,14 @@ extern "C" {
             req_in.auth_scheme_,
             eirods::AUTH_PAM_SCHEME.c_str(),
             eirods::AUTH_PAM_SCHEME.size()+1 );
+        
+        // =-=-=-=-=-=-=-
+        // check to see if SSL is currently in place
+        bool using_ssl = ( eirods::CS_NEG_USE_SSL == _comm->negotiation_results );
             
         // =-=-=-=-=-=-=-
         // warm up SSL if it is not already in use
-        if( eirods::CS_NEG_USE_SSL != _comm->negotiation_results ) {
+        if( !using_ssl ) {
             int err = sslStart( _comm );
             if( err ) {
                 return ERROR( 
@@ -222,7 +226,7 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // shut down SSL if it was not already in use
-        if( eirods::CS_NEG_USE_SSL != _comm->negotiation_results ) {
+        if( !using_ssl )  {
             sslEnd( _comm );
         }
 
