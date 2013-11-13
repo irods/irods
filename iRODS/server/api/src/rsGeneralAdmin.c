@@ -197,7 +197,7 @@ _addResource(
     }
     
     // =-=-=-=-=-=-=-
-    // apply preproc policy enforcement point for creating a resourca, handle errors
+    // apply preproc policy enforcement point for creating a resource, handle errors
     else if((result =  applyRuleArg("acPreProcForCreateResource", args, argc, &_rei2, NO_SAVE_REI)) < 0) {
         if (_rei2.status < 0) {
             result = _rei2.status;
