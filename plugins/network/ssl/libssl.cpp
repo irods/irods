@@ -390,102 +390,96 @@ extern "C" {
         int             _length, 
         int&            _bytes_read, 
         struct timeval* _time_value,
-        SSL*            _ssl ) {
-        // =-=-=-=-=-=-=-
-        // check incoming pointers
-        if( !_buffer ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "null buffer ptr" );
-        }
-
-        if( !_ssl ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "null ssl ptr" );
-        }
-
-        // =-=-=-=-=-=-=-
-        // Initialize the file descriptor set
-        fd_set set;
-        FD_ZERO( &set );
-        FD_SET( _socket, &set );
+        SSL*            _ssl )
+    {
+        eirods::error result = SUCCESS();
         
         // =-=-=-=-=-=-=-
-        // local copy of time value? 
-        struct timeval timeout;
-        if( _time_value != NULL ) { 
-            timeout = (*_time_value);
-        }
-
-        // =-=-=-=-=-=-=-
-        // local working variables 
-        int   len_to_read = _length;
-        char* read_ptr    = static_cast<char*>( _buffer );
-
-        // =-=-=-=-=-=-=-
-        // reset bytes read 
-        _bytes_read = 0;
-
-        // =-=-=-=-=-=-=-
-        // loop while there is data to read
-        while( len_to_read > 0 ) {
-            // =-=-=-=-=-=-=-
-            // do a time out managed select of the socket fd
-            if( SSL_pending( _ssl ) &&
-                0 != _time_value ) {
-                int status = select( _socket + 1, &set, NULL, NULL, &timeout );
-                if( status == 0 ) {
-                    // =-=-=-=-=-=-=-
-                    // the select has timed out 
-                    if( ( _length - len_to_read ) > 0 ) {
-                        return ERROR( _length - len_to_read, 
-                                      "failed to read requested number of bytes" );
-                    } else {
-                        return ERROR( SYS_SOCK_READ_TIMEDOUT, 
-                                      "socket timeout error" );
-                    }
-
-                } else if( status < 0 ) {
-                    // =-=-=-=-=-=-=-
-                    // keep trying on interrupt or just error out
-                    if ( errno == EINTR ) {
-                        continue;
-
-                    } else {
-                        return ERROR( SYS_SOCK_READ_ERR - errno, 
-                                      "error on select" );
-
-                    }
-
-                } // else
-
-            } // if tv
+        // check incoming pointers
+        if((result = ASSERT_ERROR(_buffer && _ssl, SYS_INVALID_INPUT_PARAM, "Null buffer or ssl pointer.")).ok()) {
 
             // =-=-=-=-=-=-=-
-            // select has been done, finally do the read
-            int num_bytes = SSL_read( _ssl, (void *) read_ptr, len_to_read );
-           
+            // Initialize the file descriptor set
+            fd_set set;
+            FD_ZERO( &set );
+            FD_SET( _socket, &set );
+        
             // =-=-=-=-=-=-=-
-            // error trapping the read
-            if( SSL_get_error( _ssl, num_bytes ) != SSL_ERROR_NONE ) {
-                // =-=-=-=-=-=-=-
-                // gracefully handle an interrupt
-                if( EINTR == errno ) {
-                    errno     = 0;
-                    num_bytes = 0;
-                } else {
-                    break;
-                }
+            // local copy of time value? 
+            struct timeval timeout;
+            if( _time_value != NULL ) { 
+                timeout = (*_time_value);
             }
 
             // =-=-=-=-=-=-=-
-            // all has gone well, do byte book keeping
-            len_to_read -= num_bytes;
-            read_ptr    += num_bytes;
-            _bytes_read += num_bytes;
-             
-        } // while
+            // local working variables 
+            int   len_to_read = _length;
+            char* read_ptr    = static_cast<char*>( _buffer );
 
+            // =-=-=-=-=-=-=-
+            // reset bytes read 
+            _bytes_read = 0;
+
+            // =-=-=-=-=-=-=-
+            // loop while there is data to read
+            while( result.ok() && len_to_read > 0 ) {
+                
+                // =-=-=-=-=-=-=-
+                // do a time out managed select of the socket fd
+                if( SSL_pending( _ssl ) && 0 != _time_value ) {
+                    int status = select( _socket + 1, &set, NULL, NULL, &timeout );
+                    if( status == 0 ) {
+                        // =-=-=-=-=-=-=-
+                        // the select has timed out 
+                        if( ( _length - len_to_read ) > 0 ) {
+                            result = ERROR( _length - len_to_read, "failed to read requested number of bytes" );
+                        } else {
+                            result =  ERROR( SYS_SOCK_READ_TIMEDOUT, "socket timeout error" );
+                        }
+
+                    }
+                    else if(status < 0) {
+                        
+                        // =-=-=-=-=-=-=-
+                        // keep trying on interrupt or just error out
+                        int err_status = SYS_SOCK_READ_ERR - errno;
+                        result = ASSERT_ERROR(errno != EINTR, err_status, "Error on select.");
+
+                    } // else
+
+                    else {
+                        // =-=-=-=-=-=-=-
+                        // select has been done, finally do the read
+                        int num_bytes = SSL_read( _ssl, (void *) read_ptr, len_to_read );
+           
+                        // =-=-=-=-=-=-=-
+                        // error trapping the read
+                        if( SSL_get_error( _ssl, num_bytes ) != SSL_ERROR_NONE ) {
+                            // =-=-=-=-=-=-=-
+                            // gracefully handle an interrupt
+                            if( EINTR == errno ) {
+                                errno     = 0;
+                                num_bytes = 0;
+                            } else {
+                                break;
+                            }
+                        }
+
+                        // =-=-=-=-=-=-=-
+                        // all has gone well, do byte book keeping
+                        len_to_read -= num_bytes;
+                        read_ptr    += num_bytes;
+                        _bytes_read += num_bytes;
+                    }
+                } // if tv
+                    
+            } // while
+        }
+        
         // =-=-=-=-=-=-=-
         // and were done? report length not read
-        return CODE( _length - len_to_read );
+        // return CODE( _length - len_to_read );
+        return result;
     
     } // ssl_socket_read
     
