@@ -2,12 +2,24 @@
 
 #echo "parameter count = [$#]"
 if [ $# -gt 7 ] ; then
+  # new icat
   THREE_OH_SCRIPT="false"
   PACKAGER_COMMAND=$1
   shift
-else
+elif [ $# -eq 7 ] ; then
+  # old icat
   THREE_OH_SCRIPT="true"
   PACKAGER_COMMAND="upgrade"
+elif [ $# -eq 4 ] ; then
+  # new resource
+  PACKAGER_COMMAND=$1
+  shift
+elif [ $# -eq 3 ] ; then
+  # old resource
+  PACKAGER_COMMAND="upgrade"
+else
+  echo "ERROR: Unspecified state for preremove.sh"
+  exit 1
 fi
 
 EIRODS_HOME_DIR=$1
@@ -66,12 +78,13 @@ if [ "$PACKAGEUPGRADE" == "false" ] ; then
 	    hn=`hostname`
 	    dn=`hostname -d`
 	    fhn="$hn.$dn"
-	    echo "Pre-Remove :: Test Resource Removal"
+	    echo "Testing Safe Resource Removal"
 	    do_not_remove="FALSE"
 
 	    # =-=-=-=-=-=-=-
 	    # do a dryrun on the resource removal to determine if this resource server can
 	    # be safely removed without harming any data
+            resources_to_remove=()
 	    for resc in `su -c "iadmin lr" $OS_EIRODS_ACCT`
 	    do
 		# =-=-=-=-=-=-=-
@@ -82,16 +95,32 @@ if [ "$PACKAGEUPGRADE" == "false" ] ; then
 			rem=$( su -c "iadmin rmresc --dryrun $resc | grep SUCCESS" $OS_EIRODS_ACCT )
 			if [[ "x$rem" == "x" ]]; then
 				# =-=-=-=-=-=-=-
+                                # dryrun for a local resource was a failure, set a flag
+                                do_not_remove="TRUE"
+                        else
+                                # =-=-=-=-=-=-=-
 				# dryrun for a local resource was a success, add resc to array for removal
-				do_not_remove="TRUE"
+                                echo "  Adding [$resc] for removal..."
+				resources_to_remove+=($resc)
 			fi
 		fi
 	    done
 
 	    if [[ "$do_not_remove" == "TRUE" ]]; then
+                # hard stop
 		echo "ERROR :: Unable To Remove a Locally Resident Resource.  Aborting."
 		echo "      :: Please run 'iadmin rmresc --dryrun RESOURCE_NAME' on local resources for more information."
 		exit 1
+            else
+                # loop through and remove the resources
+                for delresc in ${resources_to_remove[*]}
+                do
+                    echo "  Removing Resource [$delresc]"
+                    su -c "iadmin rmresc $delresc" $OS_EIRODS_ACCT
+                    if [ $? != 0 ] ; then
+                        exit 1
+                    fi
+                done
 	    fi
 	fi
 
