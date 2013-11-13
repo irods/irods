@@ -132,8 +132,8 @@ _addResource(
     std::string loc_path( _generalAdminInp->arg4 );
     
     // =-=-=-=-=-=-=-
-    // grab resource context.  this may be overwritted by the 'location' as that 
-    // could also hold the conext string if no host:path pair exists
+    // grab resource context.  this may be overwritten by the 'location' as that
+    // could also hold the context string if no host:path pair exists
     strncpy( rescInfo.rescContext, _generalAdminInp->arg5, sizeof rescInfo.rescContext );
 
     if( !loc_path.empty() ) {
