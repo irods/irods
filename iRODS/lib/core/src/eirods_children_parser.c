@@ -85,6 +85,27 @@ namespace eirods {
         return result;
     }
 
+
+    error children_parser::last_child(
+        std::string& _child)
+    {
+        error result = SUCCESS();
+        if(children_list_.begin() != children_list_.end()) {
+        	eirods::children_parser::const_iterator itr = children_list_.end();
+        	itr--;
+            _child = itr->first;
+        } else {
+            _child.clear();
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " - Trying to retrieve last child from children string but string appears to be empty.";
+            result = ERROR(EIRODS_CHILD_NOT_FOUND, msg.str());
+        }
+        return result;
+    }
+
+
+
     error children_parser::set_string(
         const std::string& str)
     {

@@ -43,6 +43,9 @@ namespace eirods {
         /// @brief Returns the name of the first child in the list
         error first_child(std::string& _child);
 
+        /// @brief Returns the name of the last child in the list
+        error last_child(std::string& _child);
+
         /// @brief Returns an iterator to the beginning of the list
         const_iterator begin(void) const;
 
