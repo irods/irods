@@ -16,7 +16,7 @@ elif [ $# -eq 4 ] ; then
   shift
 elif [ $# -eq 3 ] ; then
   # old resource
-  NOOP=1
+  PACKAGER_COMMAND="upgrade"
 else
   echo "ERROR: Unspecified state for preremove.sh"
   exit 1
