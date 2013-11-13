@@ -78,7 +78,7 @@ if [ "$PACKAGEUPGRADE" == "false" ] ; then
 	    hn=`hostname`
 	    dn=`hostname -d`
 	    fhn="$hn.$dn"
-	    echo "Pre-Remove :: Test Resource Removal"
+	    echo "Testing Safe Resource Removal"
 	    do_not_remove="FALSE"
 
 	    # =-=-=-=-=-=-=-
@@ -100,6 +100,7 @@ if [ "$PACKAGEUPGRADE" == "false" ] ; then
                         else
                                 # =-=-=-=-=-=-=-
 				# dryrun for a local resource was a success, add resc to array for removal
+                                echo "  Adding [$resc] for removal..."
 				resources_to_remove+=($resc)
 			fi
 		fi
@@ -114,7 +115,7 @@ if [ "$PACKAGEUPGRADE" == "false" ] ; then
                 # loop through and remove the resources
                 for delresc in ${resources_to_remove[*]}
                 do
-                    echo "Removing Resource [$delresc]"
+                    echo "  Removing Resource [$delresc]"
                     su -c "iadmin rmresc $delresc" $OS_EIRODS_ACCT
                     if [ $? != 0 ] ; then
                         exit 1
