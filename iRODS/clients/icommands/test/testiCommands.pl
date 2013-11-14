@@ -240,7 +240,8 @@ runCmd( "iadmin rfg testgroup testuser1" );
 runCmd( "iadmin mkresc testresource \"unix file system\" \"$irodshost:/tmp/foo\"", "", "", "", "iadmin rmresc testresource" );
 runCmd( "iadmin mkresc testresource2 \"unix file system\" \"$irodshost:/tmp/testresc2\"", "", "", "", "iadmin rmresc testresource2" );
 runCmd( "iadmin lr testresource", "", "resc_name:", "testresource", "irmtrash" );
-runCmd( "iadmin lr testresource", "", "resc_type_name:", "unix file system" );
+# spaces are now trimmed in resource types, so "unix file system" becomes "unixfilesystem"
+runCmd( "iadmin lr testresource", "", "resc_type_name:", "unixfilesystem" );
 runCmd( "iadmin lr testresource", "", "resc_net:", "$irodshost" );
 runCmd( "iadmin modresc testresource comment \"Modify by me $username\"" );
 runCmd( "iadmin lr testresource", "", "r_comment:", "Modify by me $username" );

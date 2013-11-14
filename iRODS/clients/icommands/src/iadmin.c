@@ -11,6 +11,7 @@
 #include "parseCommandLine.h"
 #include "eirods_string_tokenize.h"
 #include <iostream>
+#include <algorithm>
 
 #define MAX_SQL 300
 #define BIG_STR 3000
@@ -973,8 +974,11 @@ doCommand(char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
     }
 
     if (strcmp(cmdToken[0],"mkresc") ==0) {
+    	// trim spaces in resource type string
+    	std::string resc_type(cmdToken[2]);
+    	resc_type.erase(std::remove_if(resc_type.begin(), resc_type.end(), ::isspace), resc_type.end());
 
-        generalAdmin(0, "add", "resource", cmdToken[1], cmdToken[2],
+        generalAdmin(0, "add", "resource", cmdToken[1], (char *)resc_type.c_str(),
                      cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6], cmdToken[7], cmdToken[8] );
         /* (add resource name type host:path contextstring) */
         return(0);
