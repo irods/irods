@@ -25,7 +25,7 @@
 |
 
 :Author: Renaissance Computing Institute (RENCI)
-:Version: 3.0.1b2
+:Version: 3.0.1rc1
 :Date: |todaysdate|
 
 
@@ -289,9 +289,17 @@ Best practice suggests changing your Zone name before adding new users as any ex
 Upgrading
 ---------
 
-The first release of E-iRODS does not yet support upgrading.  Every install will be a clean install.
+E-iRODS did not support upgrading until 3.0.1rc1.  From that point forward, upgrading should be handled by the host Operating System via the package manager as expected.
 
-This section will be updated when support is included.
+RPM based systems
+-----------------
+
+ $ (sudo) rpm -U eirods-3.0.1-64bit-icat-postgres-suse.rpm
+
+DEB based systems
+-----------------
+
+ $ (sudo) dpkg -i eirods-3.0.1-64bit-icat-postgres.deb
 
 ------------------------------
 Migration from Community iRODS
@@ -376,27 +384,12 @@ Available Plugin Operations
  +-------------------------+-----------------------------------+
  | Plugin Type             | Plugin Operation                  |
  +=========================+===================================+
+ |                         |                                   |
  | Resource                | | resource_create                 |
+ |                         |                                   |
  |                         | | resource_open                   |
  |                         | | resource_read                   |
  |                         | | resource_write                  |
- |                         | | resource_close                  |
- |                         | | resource_unlink                 |
- |                         | | resource_stat                   |
- |                         | | resource_fstat                  |
- |                         | | resource_fsync                  |
- |                         | | resource_mkdir                  |
- |                         | | resource_chmod                  |
- |                         | | resource_opendir                |
- |                         | | resource_readdir                |
- |                         |                                   |
- |                         | | resource_stage                  |
- |                         | | resource_rename                 |
- |                         | | resource_freespace              |
- |                         | | resource_lseek                  |
- |                         | | resource_rmdir                  |
- |                         | | resource_closedir               |
- |                         | | resource_truncate               |
  |                         | | resource_stagetocache           |
  |                         | | resource_synctoarch             |
  |                         | | resource_registered             |
@@ -404,7 +397,9 @@ Available Plugin Operations
  |                         | | resource_modified               |
  |                         | | resource_resolve_hierarchy      |
  |                         | | resource_rebalance              |
+ |                         |                                   |
  +-------------------------+-----------------------------------+
+ |                         |                                   |
  | Authentication          | | auth_client_start               |
  |                         | | auth_agent_start                |
  |                         | | auth_establish_context          |
@@ -412,9 +407,13 @@ Available Plugin Operations
  |                         | | auth_agent_auth_request         |
  |                         | | auth_agent_client_response      |
  |                         | | auth_agent_auth_response        |
+ |                         |                                   |
  |                         | | auth_agent_auth_verify          |
+ |                         |                                   |
  +-------------------------+-----------------------------------+
+ |                         |                                   |
  | Network                 | | network_client_start            |
+ |                         |                                   |
  |                         | | network_client_stop             |
  |                         | | network_agent_start             |
  |                         | | network_agent_stop              |
@@ -422,6 +421,7 @@ Available Plugin Operations
  |                         | | network_read_body               |
  |                         | | network_write_header            |
  |                         | | network_write_body              |
+ |                         |                                   |
  +-------------------------+-----------------------------------+
 
 
@@ -505,6 +505,12 @@ Composable resources are best modeled with a tree metaphor (and in computer scie
 The terms root, leaf, branch, child, and parent represent locations and relationships within the structure of a particular tree.  The terms 'coordinating' and 'storage' represent the functionality of particular resources within a particular tree.  A resource node can be a coordinating resource and/or a storage resource.  For clarity and reuse, it is generally best practice to separate the two so that a particular resource node is either a coordinating resource or a storage resource.
 
 In computer science, a tree is a data structure with a hierarchical representation of linked nodes. These nodes can be named based on where they are in the hierarchy. The node at the top of a tree is the root node. Parent nodes and child nodes are on opposite ends of a connecting link, or edge. Leaf nodes are at the bottom of the tree, and any node that is not a leaf node is a branch node. These positional descriptors are helpful when describing the structure of a tree. Composable resources are best represented using this tree metaphor.
+
+
+This metaphor is best illustrated with an actual example.  You can now use `ilsresc --tree` to visualize the tree structure of a grid.
+
+.. figure:: ./iRODS/images/treeview.png
+   :height: 3.8 in
 
 Virtualization
 --------------
@@ -1155,6 +1161,7 @@ Federation
 
 Jargon
     The Java API for iRODS.  Read more at https://www.irods.org/index.php/Jargon.
+
 iCAT
     The iCAT, or iRODS Metadata Catalog, stores descriptive state metadata about the Data Objects in iRODS Collections in a DBMS database (e.g. PostgreSQL, MySQL, Oracle). The iCAT can keep track of both system-level metadata and user-defined metadata.  There is one iCAT database per iRODS Zone.
 
@@ -1235,40 +1242,47 @@ Known Issues
 History of Releases
 -------------------
 
-==========   =======    =====================================================
-Date         Version    Description
-==========   =======    =====================================================
-2013-11-12   3.0.1b2    Second Beta of Second Release.
-                          This is the second beta of the second open source
-                          release from RENCI.  It includes certification
-                          work with the Jargon library, more CI testing,
-                          and minor fixes.
-2013-10-31   3.0.1b1    First Beta of Second Release.
-                          This is the first beta of the second open source
-                          release from RENCI.
-                          It includes pluggable network and authentication
-                          support as well as a rebalance option and migration
-                          support for the composable resources.
-2013-06-05   3.0        First Release.
-                          This is the first open source release from RENCI.
-                          It includes all the features mentioned below and
-                          has been both manually and continuously tested.
-2013-05-14   3.0rc1     First Release Candidate.
-                          This is the first release candidate from RENCI.  It
-                          includes PAM support, additional resources
-                          (compound, universalMSS, replication, random,
-                          and nonblocking), and additional documentation.
-2013-03-15   3.0b3      Third Beta Release.
-                          This is the third release from RENCI.  It includes
-                          a new package for CentOS 6+, support for composable
-                          resources, and additional documentation.
-2012-06-25   3.0b2      Second Beta Release.
-                          This is the second release from RENCI.  It includes
-                          packages for iCAT, Resource, iCommands, and
-                          development, in both DEB and RPM formats.
-                          Also includes more documentation.
-2012-03-01   3.0b1      Initial Beta Release.
-                          This is the first release from RENCI, based on the
-                          iRODS 3.0 community codebase.
-==========   =======    =====================================================
+==========   =========    ======================================================
+Date         Version      Description
+==========   =========    ======================================================
+2013-11-14   3.0.1rc1     First Release Candidate of Second Release.
+                            This is the first release candidate of the second
+                            open source release from RENCI.  It includes
+                            a new "--tree" view for `ilsresc` and a more
+                            powerful `irodsctl stop`.  In addition, package
+                            managers should now be able to handle upgrades
+                            more gracefully.
+2013-11-12   3.0.1b2      Second Beta of Second Release.
+                            This is the second beta of the second open source
+                            release from RENCI.  It includes certification
+                            work with the Jargon library, more CI testing,
+                            and minor fixes.
+2013-10-31   3.0.1b1      First Beta of Second Release.
+                            This is the first beta of the second open source
+                            release from RENCI.
+                            It includes pluggable network and authentication
+                            support as well as a rebalance option and migration
+                            support for the composable resources.
+2013-06-05   3.0          First Release.
+                            This is the first open source release from RENCI.
+                            It includes all the features mentioned below and
+                            has been both manually and continuously tested.
+2013-05-14   3.0rc1       First Release Candidate.
+                            This is the first release candidate from RENCI.  It
+                            includes PAM support, additional resources
+                            (compound, universalMSS, replication, random,
+                            and nonblocking), and additional documentation.
+2013-03-15   3.0b3        Third Beta Release.
+                            This is the third release from RENCI.  It includes
+                            a new package for CentOS 6+, support for composable
+                            resources, and additional documentation.
+2012-06-25   3.0b2        Second Beta Release.
+                            This is the second release from RENCI.  It includes
+                            packages for iCAT, Resource, iCommands, and
+                            development, in both DEB and RPM formats.
+                            Also includes more documentation.
+2012-03-01   3.0b1        Initial Beta Release.
+                            This is the first release from RENCI, based on the
+                            iRODS 3.0 community codebase.
+==========   =========    ======================================================
 
