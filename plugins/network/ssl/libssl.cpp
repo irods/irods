@@ -461,7 +461,7 @@ extern "C" {
                                 errno     = 0;
                                 num_bytes = 0;
                             } else {
-                                break;
+                                result = ERROR(_length - len_to_read, "Failed to in SSL read.");
                             }
                         }
 
