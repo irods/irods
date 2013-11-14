@@ -665,7 +665,7 @@ extern "C" {
         }
  
         // =-=-=-=-=-=-=-
-        // while we have not found a child still have candidates
+        // while we have not found a child and still have candidates
         while( !child_found && !candidate_resources.empty() ) {
 
             // =-=-=-=-=-=-=-

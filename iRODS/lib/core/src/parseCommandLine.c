@@ -84,6 +84,14 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
                rodsArgs->test=True;
                argv[i]="-Z";
            }
+           if (strcmp("--tree", argv[i])==0) {
+               rodsArgs->tree=True;
+               argv[i]="-Z";
+           }
+           if (strcmp("--ascii", argv[i])==0) {
+               rodsArgs->ascii=True;
+               argv[i]="-Z";
+           }
            if (strcmp("--ttl", argv[i])==0) {
                rodsArgs->ttl=True;
                argv[i]="-Z";

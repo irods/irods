@@ -7,7 +7,7 @@
 %license LICENSE
 %readme README
 %description Enterprise edition of the Integrated Rule Oriented Data System
-%version TEMPLATE_EIRODSVERSION TEMPLATE_EPMEIRODSVERSION
+%version TEMPLATE_EIRODSVERSION TEMPLATE_EIRODSVERSIONINT
 
 
 
@@ -126,6 +126,8 @@ END_POSTINSTALL
 # =-=-=-=-=-=-=-
 
 f 644 root root /usr/share/man/man1 ./man/*.gz
+
+d 644 root root /var/lib/eirods/VERSION ./VERSION
 
 d 755 root root /var/lib/eirods/plugins -
 d 755 root root /var/lib/eirods/plugins/network -

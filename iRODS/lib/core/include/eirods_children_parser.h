@@ -17,6 +17,7 @@ namespace eirods {
     class children_parser {
     public:
         typedef std::map<std::string, std::string> children_map_t;
+        typedef children_map_t::const_iterator const_iterator;
         /**
          * @brief Constructor
          */
@@ -42,8 +43,17 @@ namespace eirods {
         /// @brief Returns the name of the first child in the list
         error first_child(std::string& _child);
 
+        /// @brief Returns the name of the last child in the list
+        error last_child(std::string& _child);
+
+        /// @brief Returns an iterator to the beginning of the list
+        const_iterator begin(void) const;
+
+        /// @brief Returns an iterator to the end of the list
+        const_iterator end(void) const;
+
     private:
-        std::string children_string_;
+        //std::string children_string_;
         children_map_t children_list_;
     };
 }; // namespace eirods
