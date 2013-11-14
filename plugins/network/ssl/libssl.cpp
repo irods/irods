@@ -446,35 +446,36 @@ extern "C" {
                         result = ASSERT_ERROR(errno != EINTR, err_status, "Error on select.");
 
                     } // else
-
-                    else {
-                        // =-=-=-=-=-=-=-
-                        // select has been done, finally do the read
-                        int num_bytes = SSL_read( _ssl, (void *) read_ptr, len_to_read );
-           
-                        // =-=-=-=-=-=-=-
-                        // error trapping the read
-                        if( SSL_get_error( _ssl, num_bytes ) != SSL_ERROR_NONE ) {
-                            // =-=-=-=-=-=-=-
-                            // gracefully handle an interrupt
-                            if( EINTR == errno ) {
-                                errno     = 0;
-                                num_bytes = 0;
-                            } else {
-                                result = ERROR(_length - len_to_read, "Failed to in SSL read.");
-                            }
-                        }
-
-                        // =-=-=-=-=-=-=-
-                        // all has gone well, do byte book keeping
-                        len_to_read -= num_bytes;
-                        read_ptr    += num_bytes;
-                        _bytes_read += num_bytes;
-                    }
+                
                 } // if tv
+
+                // =-=-=-=-=-=-=-
+                // select has been done, finally do the read
+                int num_bytes = SSL_read( _ssl, (void *) read_ptr, len_to_read );
+   
+                // =-=-=-=-=-=-=-
+                // error trapping the read
+                if( SSL_get_error( _ssl, num_bytes ) != SSL_ERROR_NONE ) {
+                    // =-=-=-=-=-=-=-
+                    // gracefully handle an interrupt
+                    if( EINTR == errno ) {
+                        errno     = 0;
+                        num_bytes = 0;
+                    } else {
+                        result = ERROR(_length - len_to_read, "Failed to in SSL read.");
+                    }
+                }
+
+                // =-=-=-=-=-=-=-
+                // all has gone well, do byte book keeping
+                len_to_read -= num_bytes;
+                read_ptr    += num_bytes;
+                _bytes_read += num_bytes;
+       
                     
             } // while
-        }
+
+        } // if assert_error
         
         // =-=-=-=-=-=-=-
         // and were done? report length not read
