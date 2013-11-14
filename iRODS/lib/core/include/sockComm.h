@@ -14,8 +14,7 @@
 
 // =-=-=-=-=-=-=
 // eirods includes
-#include "eirods_tcp_object.h"
-#include "eirods_ssl_object.h"
+#include "eirods_network_object.h"
 
 #define MAX_LISTEN_QUE	50
 #define SOCK_WINDOW_SIZE	(1*1024*1024)   /* sock window size = 1 Mb */
