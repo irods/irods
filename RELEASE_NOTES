@@ -27,6 +27,7 @@ Development of this release has focused on the following features and efforts:
   - Rebalance mechanism
   - Adding/removing child resources with existing data
   - itrim from child resources of replication resources
+- Tree view for visualizing resource hierarchies
 - Full python-based testing framework
 - Certified against full Jargon test suite
 - Continuous integration testing via hudson
