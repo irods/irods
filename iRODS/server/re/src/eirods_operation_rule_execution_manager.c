@@ -84,7 +84,11 @@ namespace eirods {
             msParamArray_t params;
             memset( &params, 0, sizeof( msParamArray_t ) );
             char out_param[ MAX_NAME_LEN ] = {"EMPTY_PARAM"};
-            addMsParamToArray( &params, "*OUT", STR_MS_T, out_param, NULL, 0 );
+            if( _res.empty() ) {
+                addMsParamToArray( &params, "*OUT", STR_MS_T, out_param, NULL, 0 );
+            } else {
+                addMsParamToArray( &params, "*OUT", STR_MS_T, const_cast<char*>( _res.c_str() ), NULL, 0 );
+            }
 
             // =-=-=-=-=-=-=-
             // rule exists, param array is build.  call the rule.
