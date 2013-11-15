@@ -14,9 +14,7 @@ Development of this release has focused on the following features and efforts:
 
   - Native iRODS password
   - OSAuth
-  - GSI
   - PAM
-  - Kerberos
   - LDAP (via PAM)
 - Additional coordinating resource plugins
 
