@@ -265,7 +265,7 @@ f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/VERSION ./VERSION
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/tests -
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/tests/pydevtest -
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/tests/pydevtest ./tests/pydevtest/*.py
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/tests/pydevtest/topology_tests.tar ./tests/pydevtest/topology_tests.tar
+#f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/tests/pydevtest/topology_tests.tar ./tests/pydevtest/topology_tests.tar
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/tests/pydevtest/README ./tests/pydevtest/README
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/tests/devtest.sh ./tests/devtest.sh
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/tests/zombiereaper.sh ./tests/zombiereaper.sh

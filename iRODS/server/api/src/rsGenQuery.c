@@ -90,7 +90,6 @@ int
 rsGenQuery (rsComm_t *rsComm, genQueryInp_t *genQueryInp, 
 genQueryOut_t **genQueryOut)
 {
-    rodsLog( LOG_NOTICE, "XXXX - rsGenQuery :: START" );
     rodsServerHost_t *rodsServerHost;
     int status;
     char *zoneHint;
