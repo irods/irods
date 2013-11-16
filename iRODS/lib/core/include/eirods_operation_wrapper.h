@@ -30,6 +30,10 @@
 
 namespace eirods {
     // =-=-=-=-=-=-=-
+    // const signifying failure of operation call for post dynPEP 
+    static std::string OP_FAILED( "OPERATION_FAILED" );
+
+    // =-=-=-=-=-=-=-
     /**
      * \class 
      * \author Jason M. Coposky 
@@ -86,6 +90,12 @@ namespace eirods {
                 // call the actual operation
                 _ctx.rule_results( pre_results );
                 error op_err = (*operation_)( _ctx );
+                
+                // =-=-=-=-=-=-=-
+                // if the op failed, notifity the post rule
+                if( !op_err.ok() ) {
+                    _ctx.rule_results( OP_FAILED );
+                }
                
                 // =-=-=-=-=-=-=-
                 // call the poste-rule for this op
@@ -127,7 +137,13 @@ namespace eirods {
                 // call the actual operation
                 _ctx.rule_results( pre_results );
                 error op_err = (*operation_)( _ctx, _t1 ); 
-               
+              
+                // =-=-=-=-=-=-=-
+                // if the op failed, notifity the post rule
+                if( !op_err.ok() ) {
+                    _ctx.rule_results( OP_FAILED );
+                }
+  
                 // =-=-=-=-=-=-=-
                 // call the poste-rule for this op
                 std::string rule_results =  _ctx.rule_results();
@@ -168,7 +184,13 @@ namespace eirods {
                 // call the actual operation
                 _ctx.rule_results( pre_results );
                 error op_err = (*operation_)( _ctx, _t1, _t2 ); 
- 
+  
+                // =-=-=-=-=-=-=-
+                // if the op failed, notifity the post rule
+                if( !op_err.ok() ) {
+                    _ctx.rule_results( OP_FAILED );
+                }
+
                 // =-=-=-=-=-=-=-
                 // call the poste-rule for this op
                 std::string rule_results =  _ctx.rule_results();
@@ -210,7 +232,13 @@ namespace eirods {
                 // call the actual operation
                 _ctx.rule_results( pre_results );
                 error op_err =  (*operation_)( _ctx, _t1, _t2, _t3 ); 
- 
+  
+                // =-=-=-=-=-=-=-
+                // if the op failed, notifity the post rule
+                if( !op_err.ok() ) {
+                    _ctx.rule_results( OP_FAILED );
+                }
+
                 // =-=-=-=-=-=-=-
                 // call the poste-rule for this op
                 std::string rule_results =  _ctx.rule_results();
@@ -253,7 +281,13 @@ namespace eirods {
                 // call the actual operation               
                 _ctx.rule_results( pre_results );
                 error op_err =  operation_( _ctx, _t1, _t2, _t3, _t4 ); 
- 
+  
+                // =-=-=-=-=-=-=-
+                // if the op failed, notifity the post rule
+                if( !op_err.ok() ) {
+                    _ctx.rule_results( OP_FAILED );
+                }
+
                 // =-=-=-=-=-=-=-
                 // call the poste-rule for this op
                 std::string rule_results =  _ctx.rule_results();
@@ -298,7 +332,13 @@ namespace eirods {
                 // call the actual operation               
                 _ctx.rule_results( pre_results );
                 error op_err =  (*operation_)( _ctx, _t1, _t2, _t3, _t4, _t5 ); 
- 
+  
+                // =-=-=-=-=-=-=-
+                // if the op failed, notifity the post rule
+                if( !op_err.ok() ) {
+                    _ctx.rule_results( OP_FAILED );
+                }
+
                 // =-=-=-=-=-=-=-
                 // call the poste-rule for this op
                 std::string rule_results =  _ctx.rule_results();
@@ -343,7 +383,13 @@ namespace eirods {
                 // call the actual operation               
                 _ctx.rule_results( pre_results );
                 error op_err = (*operation_)( _ctx, _t1, _t2, _t3, _t4, _t5, _t6 );  
- 
+  
+                // =-=-=-=-=-=-=-
+                // if the op failed, notifity the post rule
+                if( !op_err.ok() ) {
+                    _ctx.rule_results( OP_FAILED );
+                }
+
                 // =-=-=-=-=-=-=-
                 // call the poste-rule for this op
                 std::string rule_results =  _ctx.rule_results();
@@ -389,6 +435,12 @@ namespace eirods {
                 // call the actual operation              
                 _ctx.rule_results( pre_results );
                 error op_err = (*operation_)( _ctx, _t1, _t2, _t3, _t4, _t5, _t6, _t7 );  
+ 
+                // =-=-=-=-=-=-=-
+                // if the op failed, notifity the post rule
+                if( !op_err.ok() ) {
+                    _ctx.rule_results( OP_FAILED );
+                }
 
                 // =-=-=-=-=-=-=-
                 // call the poste-rule for this op
@@ -437,7 +489,13 @@ namespace eirods {
                 // call the actual operation     
                 _ctx.rule_results( pre_results );
                 error op_err = (*operation_)( _ctx, _t1, _t2, _t3, _t4, _t5, _t6, _t7, _t8 );  
-                                                
+                                   
+                // =-=-=-=-=-=-=-
+                // if the op failed, notifity the post rule
+                if( !op_err.ok() ) {
+                    _ctx.rule_results( OP_FAILED );
+                }
+              
                 // =-=-=-=-=-=-=-
                 // call the poste-rule for this op
                 std::string rule_results =  _ctx.rule_results();
