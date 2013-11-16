@@ -463,37 +463,6 @@ int showRescTree(char *name) {
 	// parse results
 	status = parseGenQueryOut(offset, genQueryOut);
 
-//	// parse results
-//	// loop over rows (i.e. for each resource)
-//	for(int i=0; i < genQueryOut->rowCnt; i++) {
-//
-//		// get resource name
-//		t_res = genQueryOut->sqlResult[0].value + i*genQueryOut->sqlResult[0].len;
-//		if (!t_res || !strlen(t_res)) {
-//			// parsing error
-//			return SYS_INTERNAL_NULL_INPUT_ERR;
-//		}
-//		resc_names.push_back(std::string(t_res));
-//
-//		// map resource name to row index
-//		resc_map[resc_names.back()] = i;
-//
-//		// get resource type
-//		t_res = genQueryOut->sqlResult[1].value + i*genQueryOut->sqlResult[1].len;
-//		resc_types.push_back(std::string(t_res));
-//
-//		// get resource children
-//		t_res = genQueryOut->sqlResult[2].value + i*genQueryOut->sqlResult[2].len;
-//		resc_children.push_back(std::string(t_res));
-//
-//		// check if has parent
-//		t_res = genQueryOut->sqlResult[3].value + i*genQueryOut->sqlResult[3].len;
-//		if (!t_res || !strlen(t_res)) {
-//			// another root node
-//			roots.push_back(resc_names.back());
-//		}
-//	}
-
 
 
 	// More rows in the pipeline?
