@@ -321,6 +321,16 @@ Support for migrating from Community iRODS is planned, but automated scripts and
 
 This section will be updated when support is included and tested.
 
+-------------------------------
+Federation with Community iRODS
+-------------------------------
+
+Enterprise iRODS has made some additions to the database tables for the resources (r_resc_main) and Data Objects (r_data_main) for the purposes of tracking resource hierarchy, children, parents, and other relationships.  These changes would have caused a cross-zone query to fail when the target zone is a community version of iRODS.
+
+In order to support commands such as ``ils`` and ``ilsresc`` across an Enterprise to Community federation, E-iRODS will detect the cross zone query and subsequently strip out any requests for columns which do not exist in the community table structure in order to allow the query to succeed.
+
+There are currently no known issues with Federation, but this has not yet been comprehensively tested.
+
 ----------
 Backing Up
 ----------
@@ -384,7 +394,7 @@ The flow of information from the pre PEP to the plugin operation to the post PEP
 
 - pep_PLUGINOPERATION_pre(\*OUT) - Should produce an \*OUT variable that will be passed to the calling plugin operation
 - PLUGINOPERATION - Will receive any \*OUT defined by pep_PLUGINOPERATION_pre(\*OUT) above and will pass its own \*OUT variable to pep_PLUGINOPERATION_post()
-- pep_PLUGINOPERATION_post() - Will receive any \*OUT from PLUGINOPERATION
+- pep_PLUGINOPERATION_post() - Will receive any \*OUT from PLUGINOPERATION.  If the PLUGINOPERATION itself failed, the \*OUT variable will be populated with the string "OPERATION_FAILED".
 
 
 
@@ -399,7 +409,6 @@ The following operations are available for dynamic PEP evaluation.  At this time
  |                         |                                   |
  | Resource                | | resource_create                 |
  |                         | | resource_open                   |
- |                         |                                   |
  |                         | | resource_read                   |
  |                         | | resource_write                  |
  |                         | | resource_stagetocache           |
@@ -419,13 +428,11 @@ The following operations are available for dynamic PEP evaluation.  At this time
  |                         | | auth_agent_auth_request         |
  |                         | | auth_agent_client_response      |
  |                         | | auth_agent_auth_response        |
- |                         |                                   |
  |                         | | auth_agent_auth_verify          |
  |                         |                                   |
  +-------------------------+-----------------------------------+
  |                         |                                   |
  | Network                 | | network_client_start            |
- |                         |                                   |
  |                         | | network_client_stop             |
  |                         | | network_agent_start             |
  |                         | | network_agent_stop              |
@@ -1295,7 +1302,9 @@ Date         Version      Description
 ==========   =========    ======================================================
 2013-11-16   3.0.1        Second Release.
                             This is the second open source release from RENCI.
-                            It includes all updates mentioned below since 3.0.
+                            It includes Federation compliance with Community
+                            iRODS and signaling for dynamic post-PEPs to know
+                            whether their operation failed.
 2013-11-14   3.0.1rc1     First Release Candidate of Second Release.
                             This is the first release candidate of the second
                             open source release from RENCI.  It includes
