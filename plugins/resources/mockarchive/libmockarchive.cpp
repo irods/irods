@@ -154,41 +154,6 @@ eirods::error unix_check_params_and_path(
 
 } // unix_check_params_and_path
 
-// =-=-=-=-=-=-=- 
-//@brief Recursively make all of the dirs in the path
-eirods::error mock_archive_mkdir_r( 
-    rsComm_t*                      _comm,
-    const std::string&             _results,
-    const std::string& path,
-    mode_t mode )
-{
-
-    eirods::error result = SUCCESS();
-    std::string subdir;
-    std::size_t pos = 0;
-    bool done = false;
-    while(!done && result.ok()) {
-        pos = path.find_first_of('/', pos + 1);
-        if(pos > 0) {
-            subdir = path.substr(0, pos);
-            int status = mkdir(subdir.c_str(), mode);
-            
-            // =-=-=-=-=-=-=-
-            // handle error cases
-            int err_status = UNIX_FILE_RENAME_ERR - errno;
-            result = ASSERT_ERROR(status >= 0 || errno == EEXIST, err_status,
-                                  "Mkdir error for \"%s\", errno = \"%s\", status = %d.",
-                                  subdir.c_str(), strerror(errno), err_status);
-        }
-        if(pos == std::string::npos) {
-            done = true;
-        }
-    }
-    
-    return result;
-
-} // mock_archive_mkdir_r
-
 extern "C" {
     // =-=-=-=-=-=-=-
     // 3. Define operations which will be called by the file*
@@ -202,50 +167,6 @@ extern "C" {
     //      :: eirods::error ret = _prop_map.get< double >( "my_key", my_var ); 
     // =-=-=-=-=-=-=-
 
-    /// =-=-=-=-=-=-=-
-    /// @brief interface to notify of a file registration
-    eirods::error mock_archive_registered_plugin(
-        eirods::resource_plugin_context& _ctx)
-    {
-        eirods::error result = SUCCESS();
-        
-        // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path< eirods::file_object >(_ctx);
-        result = ASSERT_PASS(ret, "Invalid plugin context.");
-        // NOOP
-        return result;
-    }
-    
-    /// =-=-=-=-=-=-=-
-    /// @brief interface to notify of a file unregistration
-    eirods::error mock_archive_unregistered_plugin(
-        eirods::resource_plugin_context& _ctx)
-    {
-        eirods::error result = SUCCESS();
-        
-        // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path< eirods::file_object >(_ctx);
-        result = ASSERT_PASS(ret, "Invalid plugin context.");
-
-        // NOOP
-        return result;
-    }
-    
-    /// =-=-=-=-=-=-=-
-    /// @brief interface to notify of a file modification
-    eirods::error mock_archive_modified_plugin(
-        eirods::resource_plugin_context& _ctx)
-    {
-        eirods::error result = SUCCESS();
-        
-        // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path< eirods::file_object >(_ctx);
-        result = ASSERT_PASS(ret, "Invalid plugin context.");
-
-        // NOOP
-        return result;
-    }
-    
     // =-=-=-=-=-=-=-
     // interface for POSIX Unlink
     eirods::error mock_archive_unlink_plugin( 
@@ -276,141 +197,6 @@ extern "C" {
         return result;
 
     } // mock_archive_unlink_plugin
-
-    // =-=-=-=-=-=-=-
-    // interface for POSIX Stat
-    eirods::error mock_archive_stat_plugin( 
-        eirods::resource_plugin_context& _ctx,
-        struct stat*                     _statbuf )
-    {
-        eirods::error result = SUCCESS();
-        
-        // =-=-=-=-=-=-=-
-        // NOTE:: this function assumes the object's physical path is 
-        //        correct and should not have the vault path 
-        //        prepended - hcj
-         
-        eirods::error ret = _ctx.valid(); 
-        if((result = ASSERT_PASS(ret, "Invalid plugin context.")).ok()) {
-        
-            // =-=-=-=-=-=-=-
-            // get ref to fco
-            eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
-        
-            // =-=-=-=-=-=-=-
-            // make the call to stat
-            int status = stat( fco->physical_path().c_str(), _statbuf );
-
-            // =-=-=-=-=-=-=-
-            // if the file can't be accessed due to permission denied 
-            // try again using root credentials.
-#ifdef RUN_SERVER_AS_ROOT
-            if( status < 0 && errno == EACCES && isServiceUserSet() ) {
-                if (changeToRootUser() == 0) {
-                    status = stat (filename, statbuf);
-                    changeToServiceUser();
-                }
-            }
-#endif
-
-            // =-=-=-=-=-=-=-
-            // return an error if necessary
-            int err_status = UNIX_FILE_STAT_ERR - errno;
-            result = ASSERT_ERROR(status >= 0, err_status,
-                                  "Stat error for \"%s\", errno = \"%s\", status = %d.",
-                                  fco->physical_path().c_str(), strerror(errno), err_status);
-         }
-        
-        return result;
-
-    } // mock_archive_stat_plugin
-
-    // =-=-=-=-=-=-=-
-    // interface for POSIX mkdir
-    eirods::error mock_archive_mkdir_plugin( 
-        eirods::resource_plugin_context& _ctx )
-    {
-        eirods::error result = SUCCESS();
-        
-        // =-=-=-=-=-=-=- 
-        // NOTE :: this function assumes the object's physical path is correct and 
-        //         should not have the vault path prepended - hcj
-        eirods::error ret = _ctx.valid< eirods::collection_object >(); 
-        if((result = ASSERT_PASS(ret, "Invalid plugin context.")).ok()) {
- 
-            // =-=-=-=-=-=-=-
-            // cast down the chain to our understood object type
-            eirods::collection_object_ptr coll_obj = boost::dynamic_pointer_cast< eirods::collection_object >( _ctx.fco() );
-
-            // =-=-=-=-=-=-=-
-            // make the call to mkdir & umask
-            mode_t myMask = umask( ( mode_t ) 0000 );
-            int    status = mkdir( coll_obj->physical_path().c_str(), coll_obj->mode() );
-
-            // =-=-=-=-=-=-=-
-            // reset the old mask 
-            umask( ( mode_t ) myMask );
-
-            // =-=-=-=-=-=-=-
-            // return an error if necessary
-            int err_status = UNIX_FILE_MKDIR_ERR - errno;
-            result = ASSERT_ERROR(status >= 0 || errno == EEXIST, err_status,
-                                  "Mkdir error for \"%s\", errno = \"%s\", status = %d.",
-                                  coll_obj->physical_path().c_str(), strerror(errno), err_status);
-        }
-        
-        return result;
-
-    } // mock_archive_mkdir_plugin
-
-    // =-=-=-=-=-=-=-
-    // interface for POSIX readdir
-    eirods::error mock_archive_rename_plugin( 
-        eirods::resource_plugin_context& _ctx,
-        const char*                      _new_file_name )
-    {
-        eirods::error result = SUCCESS();
-        
-        // =-=-=-=-=-=-=- 
-        // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path< eirods::file_object >( _ctx );
-        if((result = ASSERT_PASS(ret, "Invalid plugin context.")).ok()) {
-
-            // =-=-=-=-=-=-=- 
-            // manufacture a new path from the new file name 
-            std::string new_full_path;
-            ret = unix_generate_full_path( _ctx.prop_map(), _new_file_name, new_full_path );
-            if((result = ASSERT_PASS(ret, "Unable to generate full path for destination file: \"%s\".",
-                                     _new_file_name)).ok()) {
-         
-                // =-=-=-=-=-=-=-
-                // get ref to fco
-                eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
-
-                // =-=-=-=-=-=-=- 
-                // make the directories in the path to the new file
-                std::string new_path = new_full_path;
-                std::size_t last_slash = new_path.find_last_of('/');
-                new_path.erase(last_slash);
-                ret = mock_archive_mkdir_r( _ctx.comm(), "", new_path.c_str(), 0750 );
-                if((result = ASSERT_PASS(ret, "Mkdir error for \"%s\".", new_path.c_str())).ok()) {
-
-                    // =-=-=-=-=-=-=-
-                    // make the call to rename
-                    int status = rename( fco->physical_path().c_str(), new_full_path.c_str() );
-
-                    // =-=-=-=-=-=-=-
-                    // handle error cases
-                    int err_status = UNIX_FILE_RENAME_ERR - errno;
-                    result = ASSERT_ERROR(status >= 0, err_status, "Rename error for \"%s\" to \"%s\", errno = \"%s\", status = %d.",
-                                          fco->physical_path().c_str(), new_full_path.c_str(), strerror(errno), err_status);
-                }
-            }
-        }
-        
-        return result;
-
-    } // mock_archive_rename_plugin
 
     int
     mockArchiveCopyPlugin(
@@ -589,50 +375,9 @@ extern "C" {
     } // mock_archive_synctoarch_plugin
 
     // =-=-=-=-=-=-=-
-    // redirect_get - code to determine redirection for get operation
-    eirods::error mock_archive_redirect_create( 
-        eirods::plugin_property_map& _prop_map,
-        eirods::file_object_ptr         _file_obj,
-        const std::string&           _resc_name, 
-        const std::string&           _curr_host, 
-        float&                       _out_vote )
-    {
-        eirods::error result = SUCCESS();
-        
-        // =-=-=-=-=-=-=-
-        // determine if the resource is down 
-        int resc_status = 0;
-        eirods::error get_ret = _prop_map.get< int >( eirods::RESOURCE_STATUS, resc_status );
-        if((result = ASSERT_PASS(get_ret, "Failed to get \"status\" property.")).ok() ) {
-
-            // =-=-=-=-=-=-=-
-            // if the status is down, vote no.
-            if( INT_RESC_STATUS_DOWN == resc_status ) {
-                _out_vote = 0.0;
-            }
-            else {
-
-                // =-=-=-=-=-=-=-
-                // get the resource host for comparison to curr host
-                std::string host_name;
-                get_ret = _prop_map.get< std::string >( eirods::RESOURCE_LOCATION, host_name );
-                if((result = ASSERT_PASS(get_ret, "Failed to get \"location\" property.")).ok() ) {
-        
-                    // =-=-=-=-=-=-=-
-                    // vote higher if we are on the same host
-                    if( _curr_host == host_name ) {
-                        _out_vote = 1.0;
-                    } else {
-                        _out_vote = 0.5;
-                    }
-                }
-            }
-        }
-        
-        return result;
-
-    } // mock_archive_redirect_create
-
+    // redirect_create - code to determine redirection for get operation
+    // Create never gets called on an archive.
+    
     // =-=-=-=-=-=-=-
     // redirect_get - code to determine redirection for get operation
     eirods::error mock_archive_redirect_open( 
@@ -763,7 +508,7 @@ extern "C" {
                     } else if( eirods::EIRODS_CREATE_OPERATION == (*_opr) ) {
                         // =-=-=-=-=-=-=-
                         // call redirect determination for 'create' operation
-                        result = mock_archive_redirect_create( _ctx.prop_map(), file_obj, resc_name, (*_curr_host), (*_out_vote)  );
+                        result = ASSERT_ERROR(false, SYS_INVALID_INPUT_PARAM, "Create operation not supported for an archive");
                     }
                     else {
                         
@@ -872,15 +617,8 @@ extern "C" {
         //     the symbols from the shared object in the delay_load stage of 
         //     plugin loading.
         resc->add_operation( eirods::RESOURCE_OP_UNLINK,       "mock_archive_unlink_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_STAT,         "mock_archive_stat_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_MKDIR,        "mock_archive_mkdir_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_RENAME,       "mock_archive_rename_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_STAGETOCACHE, "mock_archive_stagetocache_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_SYNCTOARCH,   "mock_archive_synctoarch_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_REGISTERED,   "mock_archive_registered_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_UNREGISTERED, "mock_archive_unregistered_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_MODIFIED,     "mock_archive_modified_plugin" );
-        
         resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER,     "mock_archive_redirect_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_REBALANCE,             "mock_archive_file_rebalance" );
 
