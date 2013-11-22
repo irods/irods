@@ -124,6 +124,7 @@ _rsGenQuery (rsComm_t *rsComm, genQueryInp_t *genQueryInp,
 
     chlGenQueryAccessControlSetup(rsComm->clientUser.userName, 
 			      rsComm->clientUser.rodsZone,
+            rsComm->clientAddr,
 	 		      rsComm->clientUser.authInfo.authFlag,
 			      -1);
     if (PrePostProcForGenQueryFlag == 1) {

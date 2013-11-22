@@ -26,6 +26,11 @@ typedef struct {
    int all;
    int accessControl;
    int admin;
+   int agginfo;
+   int ascitime;
+   int attr;
+   int noattr;
+   char *attrStr;
    int bulk;
    int backupMode; 
    int condition;
@@ -33,15 +38,17 @@ typedef struct {
    int collection;
    char *collectionString;
    int dataObjects;
+   int dim;
    int dryrun;
    int echo;
-   int empty; // JMC - backport 4552
+   int empty; // JMC - backport 4552 
    int force;
    int file;
    char *fileString;
    int global;
    int rescGroup;
    char *rescGroupString;
+   int header;
    int help;
    int hostAddr;
    char *hostAddrString;
@@ -60,6 +67,8 @@ typedef struct {
    char *mountType; 
    int replNum;
    char *replNumValue;
+   int newFlag;
+   char *startTimeInxStr;
    int noPage;
    int number;
    int numberValue;
@@ -75,14 +84,21 @@ typedef struct {
    int bundle; // JMC - backport 4536
    int prompt;
    int query;
+   char *queryStr;
    int rbudp;
+   int reg;
    int recursive;
    int resource;
    char *resourceString;
+   int remove;
+   int showFirstLine;
    int sizeFlag;
    rodsLong_t size;
    int srcResc;
    char *srcRescString;
+   int subset;
+   int subsetByVal;
+   char *subsetStr;
    int test;
    int ticket;
    char *ticketString;
@@ -94,9 +110,12 @@ typedef struct {
    int unmount;
    int verbose;
    int veryVerbose;
+   int writeFlag;
    int zone;
    char *zoneName;
    int verify;
+   int var;
+   char *varStr;
    int extract; 
    int restart;
    char *restartFileString;

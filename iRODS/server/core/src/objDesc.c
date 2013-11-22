@@ -265,6 +265,11 @@ initDataObjInfoWithInp (dataObjInfo_t *dataObjInfo, dataObjInp_t *dataObjInp)
         rstrcpy (dataObjInfo->filePath, filePath, MAX_NAME_LEN);
     }
 
+#ifdef FILESYSTEM_META
+    /* copy over the source file metadata if provided */
+    copyFilesystemMetadata(condInput, &dataObjInfo->condInput);
+#endif /* FILESYSTEM_META */
+
     return (0);
 }
 

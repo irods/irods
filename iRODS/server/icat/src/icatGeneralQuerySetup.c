@@ -178,6 +178,16 @@ icatGeneralQuerySetup() {
  sTable( "r_msrvc_au_user_group", "R_USER_GROUP r_msrvc_au_user_group", 0);
  sTable( "r_msrvc_au_user_main", "R_USER_MAIN r_msrvc_au_user_main", 0);
 
+ sTable( "R_TICKET_MAIN", "R_TICKET_MAIN", 0);
+ sTable( "R_TICKET_ALLOWED_HOSTS", "R_TICKET_ALLOWED_HOSTS", 0);
+ sTable( "R_TICKET_ALLOWED_USERS", "R_TICKET_ALLOWED_USERS", 0);
+ sTable( "R_TICKET_ALLOWED_GROUPS", "R_TICKET_ALLOWED_GROUPS", 0);
+ sTable( "r_ticket_coll_main", "R_COLL_MAIN r_ticket_coll_main", 1);
+ sTable( "r_ticket_user_main", "R_USER_MAIN r_ticket_user_main", 1);
+ sTable( "r_ticket_data_coll_main", "R_COLL_MAIN r_ticket_data_coll_main", 1);
+
+ sTable( "r_data_filesystem_meta", "R_OBJT_FILESYSTEM_META r_data_filesystem_meta", 0);
+ sTable( "r_coll_filesystem_meta", "R_OBJT_FILESYSTEM_META r_coll_filesystem_meta", 0);
 
 
   /* Map the #define values to tables and columns */
@@ -547,6 +557,59 @@ icatGeneralQuerySetup() {
   sColumn( COL_MSRVC_ACCESS_USER_ID, "r_msrvc_access", "user_id");
   sColumn( COL_MSRVC_ACCESS_MSRVC_ID, "r_msrvc_access", "object_id");
 
+  sColumn( COL_TICKET_ID, "R_TICKET_MAIN", "ticket_id");
+  sColumn( COL_TICKET_STRING, "R_TICKET_MAIN", "ticket_string");
+  sColumn( COL_TICKET_TYPE, "R_TICKET_MAIN", "ticket_type");
+  sColumn( COL_TICKET_USER_ID, "R_TICKET_MAIN", "user_id");
+  sColumn( COL_TICKET_OBJECT_ID, "R_TICKET_MAIN", "object_id");
+  sColumn( COL_TICKET_OBJECT_TYPE, "R_TICKET_MAIN", "object_type");
+  sColumn( COL_TICKET_USES_LIMIT, "R_TICKET_MAIN", "uses_limit");
+  sColumn( COL_TICKET_USES_COUNT, "R_TICKET_MAIN", "uses_count");
+  sColumn( COL_TICKET_WRITE_FILE_LIMIT, "R_TICKET_MAIN", "write_file_limit");
+  sColumn( COL_TICKET_WRITE_FILE_COUNT, "R_TICKET_MAIN", "write_file_count");
+  sColumn( COL_TICKET_WRITE_BYTE_LIMIT, "R_TICKET_MAIN", "write_byte_limit");
+  sColumn( COL_TICKET_WRITE_BYTE_COUNT, "R_TICKET_MAIN", "write_byte_count");
+  sColumn( COL_TICKET_EXPIRY_TS, "R_TICKET_MAIN", "ticket_expiry_ts");
+  sColumn( COL_TICKET_CREATE_TIME, "R_TICKET_MAIN", "create_time");
+  sColumn( COL_TICKET_MODIFY_TIME, "R_TICKET_MAIN", "modify_time");
+
+  sColumn( COL_TICKET_ALLOWED_HOST, "R_TICKET_ALLOWED_HOSTS", "host");
+  sColumn( COL_TICKET_ALLOWED_HOST_TICKET_ID, "R_TICKET_ALLOWED_HOSTS", "ticket_id");
+  sColumn( COL_TICKET_ALLOWED_USER_NAME, "R_TICKET_ALLOWED_USERS", "user_name");
+  sColumn( COL_TICKET_ALLOWED_USER_TICKET_ID, "R_TICKET_ALLOWED_USERS", "ticket_id");
+  sColumn( COL_TICKET_ALLOWED_GROUP_NAME, "R_TICKET_ALLOWED_GROUPS", "group_name");
+  sColumn( COL_TICKET_ALLOWED_GROUP_TICKET_ID, "R_TICKET_ALLOWED_GROUPS", "ticket_id");
+
+  sColumn( COL_TICKET_DATA_NAME, "R_DATA_MAIN", "data_name");
+  sColumn( COL_TICKET_COLL_NAME, "r_ticket_coll_main", "coll_name");
+  sColumn( COL_TICKET_OWNER_NAME, "r_ticket_user_main", "user_name");
+  sColumn( COL_TICKET_OWNER_ZONE, "r_ticket_user_main", "zone_name");
+
+  sColumn( COL_TICKET_DATA_COLL_NAME, "r_ticket_data_coll_main", "coll_name");
+
+  sColumn( COL_COLL_FILEMETA_OBJ_ID, "r_coll_filesystem_meta", "object_id");
+  sColumn( COL_COLL_FILEMETA_UID, "r_coll_filesystem_meta", "file_uid");
+  sColumn( COL_COLL_FILEMETA_GID, "r_coll_filesystem_meta", "file_gid");
+  sColumn( COL_COLL_FILEMETA_OWNER, "r_coll_filesystem_meta", "file_owner");
+  sColumn( COL_COLL_FILEMETA_GROUP, "r_coll_filesystem_meta", "file_group");
+  sColumn( COL_COLL_FILEMETA_MODE, "r_coll_filesystem_meta", "file_mode");
+  sColumn( COL_COLL_FILEMETA_CTIME, "r_coll_filesystem_meta", "file_ctime");
+  sColumn( COL_COLL_FILEMETA_MTIME, "r_coll_filesystem_meta", "file_mtime");
+  sColumn( COL_COLL_FILEMETA_SOURCE_PATH, "r_coll_filesystem_meta", "file_source_path");
+  sColumn( COL_COLL_FILEMETA_CREATE_TIME, "r_coll_filesystem_meta", "create_ts");
+  sColumn( COL_COLL_FILEMETA_MODIFY_TIME, "r_coll_filesystem_meta", "modify_ts");
+
+  sColumn( COL_DATA_FILEMETA_OBJ_ID, "r_data_filesystem_meta", "object_id");
+  sColumn( COL_DATA_FILEMETA_UID, "r_data_filesystem_meta", "file_uid");
+  sColumn( COL_DATA_FILEMETA_GID, "r_data_filesystem_meta", "file_gid");
+  sColumn( COL_DATA_FILEMETA_OWNER, "r_data_filesystem_meta", "file_owner");
+  sColumn( COL_DATA_FILEMETA_GROUP, "r_data_filesystem_meta", "file_group");
+  sColumn( COL_DATA_FILEMETA_MODE, "r_data_filesystem_meta", "file_mode");
+  sColumn( COL_DATA_FILEMETA_CTIME, "r_data_filesystem_meta", "file_ctime");
+  sColumn( COL_DATA_FILEMETA_MTIME, "r_data_filesystem_meta", "file_mtime");
+  sColumn( COL_DATA_FILEMETA_SOURCE_PATH, "r_data_filesystem_meta", "file_source_path");
+  sColumn( COL_DATA_FILEMETA_CREATE_TIME, "r_data_filesystem_meta", "create_ts");
+  sColumn( COL_DATA_FILEMETA_MODIFY_TIME, "r_data_filesystem_meta", "modify_ts");
 
   /* Define the Foreign Key links between tables */
 
@@ -662,7 +725,17 @@ icatGeneralQuerySetup() {
   sFklink("r_msrvc_audit", "r_msrvc_au_user_group", "r_msrvc_audit.user_id = r_msrvc_au_user_group.group_user_id");
   sFklink("r_msrvc_au_user_group", "r_msrvc_au_user_main", "r_msrvc_au_user_group.user_id = r_msrvc_au_user_main.user_id");
 
+  sFklink("R_TICKET_MAIN", "R_TICKET_ALLOWED_HOSTS", "R_TICKET_MAIN.ticket_id = R_TICKET_ALLOWED_HOSTS.ticket_id");
+  sFklink("R_TICKET_MAIN", "R_TICKET_ALLOWED_USERS", "R_TICKET_MAIN.ticket_id = R_TICKET_ALLOWED_USERS.ticket_id");
+  sFklink("R_TICKET_MAIN", "R_TICKET_ALLOWED_GROUPS", "R_TICKET_MAIN.ticket_id = R_TICKET_ALLOWED_GROUPS.ticket_id");
 
+  sFklink("R_TICKET_MAIN", "R_DATA_MAIN", "R_TICKET_MAIN.object_id = R_DATA_MAIN.data_id");
+  sFklink("R_TICKET_MAIN", "r_ticket_coll_main", "R_TICKET_MAIN.object_id = r_ticket_coll_main.coll_id");
+  sFklink("R_TICKET_MAIN", "r_ticket_data_coll_main", "R_TICKET_MAIN.object_id = R_DATA_MAIN.data_id AND R_DATA_MAIN.coll_id = r_ticket_data_coll_main.coll_id");
+  sFklink("R_TICKET_MAIN", "r_ticket_user_main", "R_TICKET_MAIN.user_id = r_ticket_user_main.user_id");
+
+  sFklink("R_COLL_MAIN", "r_coll_filesystem_meta", "R_COLL_MAIN.coll_id = r_coll_filesystem_meta.object_id");
+  sFklink("R_DATA_MAIN", "r_data_filesystem_meta", "R_DATA_MAIN.data_id = r_data_filesystem_meta.object_id");
 
 /*
   If using the extended ICAT, establish those tables and columns too.

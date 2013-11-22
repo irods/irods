@@ -645,7 +645,6 @@ RuleDesc* getRuleDesc(int ri)
 	}
 }
 
-#ifdef USE_EIRODS
 // =-=-=-=-=-=-=-
 // function to look up and / or load a microservice for execution
 int actionTableLookUp ( eirods::ms_table_entry& _entry, char* _action ) {
@@ -673,20 +672,6 @@ int actionTableLookUp ( eirods::ms_table_entry& _entry, char* _action ) {
 	return 0;
 
 } // actionTableLookUp
-#else
-int actionTableLookUp (char *action)
-{
-
-	int i;
-
-	for (i = 0; i < NumOfAction; i++) {
-		if (!strcmp(MicrosTable[i].action,action))
-			return (i);
-	}
-
-	return (UNMATCHED_ACTION_ERR);
-}
-#endif
 
 
 /*

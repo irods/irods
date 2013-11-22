@@ -445,7 +445,6 @@ l3Unlink (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
         case FILE_CAT:
 #endif // JMC - legacy resource 
             memset (&fileUnlinkInp, 0, sizeof (fileUnlinkInp));
-            fileUnlinkInp.fileType = static_cast< fileDriverType_t >( -1 );//= (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
             rstrcpy (fileUnlinkInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
             rstrcpy (fileUnlinkInp.rescHier, dataObjInfo->rescHier, MAX_NAME_LEN);
             rstrcpy (fileUnlinkInp.addr.hostAddr, location.c_str(), NAME_LEN);

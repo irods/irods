@@ -533,7 +533,15 @@ resolveRodsTarget (rcComm_t *conn, rodsEnv *myRodsEnv,
                         if (destPath->objType == COLL_OBJ_T) {
                             if (oprType != MOVE_OPR) {
                                 /* rename does not need to mkColl */
+#ifdef FILESYSTEM_META
+                                if (srcPath->objType <= COLL_OBJ_T) {
+                                    status = mkCollWithSrcCollMeta (conn, destPath->outPath, srcPath->outPath);
+                                } else {
+                                    status = mkCollWithDirMeta (conn, targPath->outPath, srcPath->inPath);
+                                }
+#else
                                 status = mkColl (conn, targPath->outPath);
+#endif
                             } else {
                                 status = 0;
                             }
@@ -563,7 +571,15 @@ resolveRodsTarget (rcComm_t *conn, rodsEnv *myRodsEnv,
                 if (destPath->objType <= COLL_OBJ_T) { 
                     if (oprType != MOVE_OPR) {
                         /* rename does not need to mkColl */
+#ifdef FILESYSTEM_META
+                        if (srcPath->objType <= COLL_OBJ_T) {
+                            status = mkCollWithSrcCollMeta (conn, destPath->outPath, srcPath->outPath);
+                        } else {
+                            status = mkCollWithDirMeta (conn, destPath->outPath, srcPath->inPath);
+                        }
+#else
                         status = mkColl (conn, destPath->outPath);
+#endif
                     } else {
                         status = 0;
                     }

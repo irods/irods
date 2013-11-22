@@ -393,7 +393,6 @@ _l3Open (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, int mode, int flags)
     rstrcpy( fileOpenInp.resc_name_, dataObjInfo->rescInfo->rescName, MAX_NAME_LEN );
     rstrcpy( fileOpenInp.resc_hier_, dataObjInfo->rescHier, MAX_NAME_LEN );
     rstrcpy( fileOpenInp.objPath,    dataObjInfo->objPath, MAX_NAME_LEN );
-    fileOpenInp.fileType = static_cast< fileDriverType_t >( -1 );//RescTypeDef[rescTypeInx].driverType;
     rstrcpy (fileOpenInp.addr.hostAddr,  location.c_str(), NAME_LEN);
     rstrcpy (fileOpenInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
     fileOpenInp.mode = mode;
@@ -415,7 +414,6 @@ l3OpenByHost (rsComm_t *rsComm, int rescTypeInx, int l3descInx, int flags)
     int newL3descInx;
 
     memset (&fileOpenInp, 0, sizeof (fileOpenInp));
-    fileOpenInp.fileType = static_cast< fileDriverType_t>( -1 );//RescTypeDef[rescTypeInx].driverType;
     rstrcpy( fileOpenInp.resc_hier_, FileDesc[l3descInx].rescHier, MAX_NAME_LEN );
     rstrcpy (fileOpenInp.fileName, FileDesc[l3descInx].fileName, MAX_NAME_LEN);
     rstrcpy(fileOpenInp.objPath, FileDesc[l3descInx].objPath, MAX_NAME_LEN);

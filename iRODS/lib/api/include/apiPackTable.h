@@ -40,6 +40,7 @@ packInstructArray_t ApiPackTable[] = {
         {"fileStatInp_PI", fileStatInp_PI},
         {"fileUnlinkInp_PI", fileUnlinkInp_PI},
         {"fileReadInp_PI", fileReadInp_PI},
+        {"fileChmodInp_PI", fileChmodInp_PI},
         {"fileCloseInp_PI", fileCloseInp_PI},
         {"fileGetFsFreeSpaceInp_PI", fileGetFsFreeSpaceInp_PI},
         {"fileGetFsFreeSpaceOut_PI", fileGetFsFreeSpaceOut_PI},
@@ -60,7 +61,7 @@ packInstructArray_t ApiPackTable[] = {
         {"generalAdminInp_PI", generalAdminInp_PI},
         {"authCheckInp_PI", authCheckInp_PI},
         {"authCheckOut_PI", authCheckOut_PI},
-	    {"modAccessControlInp_PI", modAccessControlInp_PI},
+        {"modAccessControlInp_PI", modAccessControlInp_PI},
         {"ModAVUMetadataInp_PI", ModAVUMetadataInp_PI},
         {"RULE_EXEC_MOD_INP_PI", RULE_EXEC_MOD_INP_PI},
         {"RULE_EXEC_DEL_INP_PI", RULE_EXEC_DEL_INP_PI},
@@ -93,12 +94,45 @@ packInstructArray_t ApiPackTable[] = {
         {"endTransactionInp_PI", endTransactionInp_PI},
         {"ProcStatInp_PI", ProcStatInp_PI},
         {"specificQueryInp_PI", specificQueryInp_PI},
+        {"ticketAdminInp_PI", ticketAdminInp_PI},
+        {"getTempPasswordForOtherInp_PI", getTempPasswordForOtherInp_PI},
+        {"getTempPasswordForOtherOut_PI", getTempPasswordForOtherOut_PI},
+        /* NETCDF PI */
+#ifdef NETCDF_CLIENT
+        {"NcOpenInp_PI", NcOpenInp_PI},
+        {"NcCloseInp_PI", NcCloseInp_PI},
+        {"NcInqIdInp_PI", NcInqIdInp_PI},
+        {"NcInqWithIdOut_PI", NcInqWithIdOut_PI},
+        {"NcGetVarInp_PI", NcGetVarInp_PI},
+        {"NcGetVarOut_PI", NcGetVarOut_PI},
+        {"NccfGetVarInp_PI", NccfGetVarInp_PI},
+        {"NccfGetVarOut_PI", NccfGetVarOut_PI},
+        {"NcGenDimOut_PI", NcGenDimOut_PI},
+        {"NcGenAttOut_PI", NcGenAttOut_PI},
+        {"NcGenVarOut_PI", NcGenVarOut_PI},
+        {"NcInqInp_PI", NcInqInp_PI},
+        {"NcInqOut_PI", NcInqOut_PI},
+        {"NcInqGrpsInp_PI", NcInqGrpsInp_PI},
+        {"NcInqGrpsOut_PI", NcInqGrpsOut_PI},
+        {"NcRegGlobalAttrInp_PI", NcRegGlobalAttrInp_PI},
+        {"NcAggElement_PI", NcAggElement_PI},
+        {"NcAggInfo_PI", NcAggInfo_PI},
+        {"NcArchTimeSeriesInp_PI", NcArchTimeSeriesInp_PI},
+#endif
+        /* endof NETCDF_CLIENT */
+#ifdef OOI_CI
+        {"OoiGenServReqInp_PI", OoiGenServReqInp_PI},
+        {"OoiGenServReqOut_PI", OoiGenServReqOut_PI},
+#endif
+
         {"pamAuthRequestInp_PI", pamAuthRequestInp_PI},
         {"pamAuthRequestOut_PI", pamAuthRequestOut_PI},
         {"authPlugReqInp_PI", authPlugReqInp_PI},
         {"authPlugReqOut_PI", authPlugReqOut_PI},
         {"sslStartInp_PI", sslStartInp_PI},
         {"sslEndInp_PI", sslEndInp_PI},
+        {"getLimitedPasswordInp_PI", getLimitedPasswordInp_PI},
+        {"getLimitedPasswordOut_PI", getLimitedPasswordOut_PI},
        {PACK_TABLE_END_PI, (char *) NULL},
 };
 

@@ -189,7 +189,6 @@ int _rsFileRmdir(
                 fileRmdirInp_t myRmdirInp;
                 memset( &myRmdirInp, 0, sizeof( myRmdirInp ) );
 
-                myRmdirInp.fileType = _rmdir_inp->fileType;
                 myRmdirInp.flags    = _rmdir_inp->flags;
                 rstrcpy( myRmdirInp.dirName, myPath, MAX_NAME_LEN );
                 rstrcpy( myRmdirInp.rescHier, _rmdir_inp->rescHier, MAX_NAME_LEN);

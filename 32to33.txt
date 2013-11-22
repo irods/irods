@@ -1,5 +1,6 @@
 ------------------------------------------------------------------------
 JMC - Done :: r5240 | csmith | 2012-10-03 17:20:23 -0400 (Wed, 03 Oct 2012) | 5 lines
+Zoey - Verified.
 
 rcAuthCheck must talk to a MASTER_RCAT
 
@@ -199,7 +200,7 @@ Fix some error log messages to have the correct function name matching
 where it occurred; noticed by Hao.
 
 ------------------------------------------------------------------------
-JMC - NOT DONE :: r5271 | mwan | 2012-10-26 19:04:14 -0400 (Fri, 26 Oct 2012) | 4 lines
+JMC - NO OP :: r5271 | mwan | 2012-10-26 19:04:14 -0400 (Fri, 26 Oct 2012) | 4 lines
 
 Fix a bug discovered by Howard with "iget -n1" where n==1 is a compound 
 resource copy and a cache copy already exists. There is a problem with the 
@@ -389,7 +390,8 @@ JMC - NOT DONE :: r5290 | mwan | 2012-11-06 18:59:27 -0500 (Tue, 06 Nov 2012) | 
 More development on rsNcArchTimeSeries. Not done yet.
 
 ------------------------------------------------------------------------
-JMC - NOT DONE :: r5291 | schroede | 2012-11-07 12:14:29 -0500 (Wed, 07 Nov 2012) | 12 lines
+Hao - Done :: r5291 | schroede | 2012-11-07 12:14:29 -0500 (Wed, 07 Nov 2012) | 12 lines
+Zoey Verified.
 
 Fix an apparent bug in msiChkHostAccessControl; set the error status
 so the Agent will exit if the check fails (user/host not configured).
@@ -421,7 +423,7 @@ JMC - NOT DONE :: r5294 | mwan | 2012-11-07 20:01:27 -0500 (Wed, 07 Nov 2012) | 
 More work on ncArchTimeSeries. Almost working.
 
 ------------------------------------------------------------------------
-JMC - NOT DONE :: r5295 | mwan | 2012-11-07 20:41:24 -0500 (Wed, 07 Nov 2012) | 2 lines
+JMC - NO OP :: r5295 | mwan | 2012-11-07 20:41:24 -0500 (Wed, 07 Nov 2012) | 2 lines
 
 check for NULL optionStr in setDefaultResc
 
@@ -573,6 +575,7 @@ JMC - NOT DONE :: r5322 | xuh | 2012-11-18 16:45:57 -0500 (Sun, 18 Nov 2012) | 1
 change the type of LIGQ microservice
 ------------------------------------------------------------------------
 JMC - NOT DONE :: r5323 | schroede | 2012-11-19 18:43:30 -0500 (Mon, 19 Nov 2012) | 5 lines
+Zoey Fixed in merge.
 
 Fix an 'icd' stack corruption problem as the current directory
 approaches the max.  I noticed this in testing related to better
@@ -619,7 +622,7 @@ JMC - NOT DONE :: r5328 | mwan | 2012-11-21 17:04:30 -0500 (Wed, 21 Nov 2012) | 
 Move ifdef NETCDF4 a bit so that doxygen will work
 
 ------------------------------------------------------------------------
-JMC - NOT DONE :: r5329 | mwan | 2012-11-21 17:34:01 -0500 (Wed, 21 Nov 2012) | 4 lines
+JMC - NO OP :: r5329 | mwan | 2012-11-21 17:34:01 -0500 (Wed, 21 Nov 2012) | 4 lines
 
 Add a "-G destRescGrp" option to iphymv to allow the specification of
 a target resource group to make it easier to phymv between compound 
@@ -649,7 +652,7 @@ JMC - NOT DONE :: r5334 | jeanyves | 2012-11-27 04:27:11 -0500 (Tue, 27 Nov 2012
 fix a small bug for the "-l" option
 
 ------------------------------------------------------------------------
-JMC - NOT DONE :: r5335 | mwan | 2012-11-27 12:54:28 -0500 (Tue, 27 Nov 2012) | 3 lines
+JMC - NO OP :: r5335 | mwan | 2012-11-27 12:54:28 -0500 (Tue, 27 Nov 2012) | 3 lines
 
 Add a check for NULL for conn->svrVersion in rcDisconnect to prevent
 segfault
@@ -660,12 +663,13 @@ JMC - NOT DONE :: r5336 | mwan | 2012-11-27 20:56:19 -0500 (Tue, 27 Nov 2012) | 
 Handle replication of resource group "all" properly in msiSysReplDataObj
 
 ------------------------------------------------------------------------
-JMC - NOT DONE :: r5337 | mwan | 2012-11-27 22:07:05 -0500 (Tue, 27 Nov 2012) | 2 lines
+JMC - NOT OP :: r5337 | mwan | 2012-11-27 22:07:05 -0500 (Tue, 27 Nov 2012) | 2 lines
 
 fix last checkin with freeRescGrpInfo to avoid a small mem leak
 
 ------------------------------------------------------------------------
-JMC - NOT DONE :: r5338 | xuh | 2012-11-28 13:16:12 -0500 (Wed, 28 Nov 2012) | 1 line
+Hao - Done :: r5338 | xuh | 2012-11-28 13:16:12 -0500 (Wed, 28 Nov 2012) | 1 line
+Zoey Verified.
 
 Fix a bug where '@' is not allowed in email address in mailMS
 ------------------------------------------------------------------------
@@ -739,7 +743,8 @@ JMC - NOT DONE :: r5347 | xuh | 2012-12-06 16:46:00 -0500 (Thu, 06 Dec 2012) | 1
 
 fuse client refactoring and fix a potential double disconnect by mutliple thread error.
 ------------------------------------------------------------------------
-JMC - NOT DONE :: r5348 | xuh | 2012-12-12 20:13:21 -0500 (Wed, 12 Dec 2012) | 1 line
+Hao - Done :: r5348 | xuh | 2012-12-12 20:13:21 -0500 (Wed, 12 Dec 2012) | 1 line
+Zoey Verified.
 
 Fix a problem that core.fnm is no longer working after a performance optimization in release 3.2
 ------------------------------------------------------------------------
@@ -758,6 +763,7 @@ particular case.
 
 ------------------------------------------------------------------------
 JMC - NOT DONE :: r5350 | schroede | 2012-12-14 14:24:52 -0500 (Fri, 14 Dec 2012) | 17 lines
+Zoey Fixed in merge.
 
 Improve the handling of an ICAT AVU metadata concurrency case.
 
@@ -801,7 +807,7 @@ an ICAT AVU metadata concurrency case.
 
 
 ------------------------------------------------------------------------
-JMC - NOT DONE :: r5355 | schroede | 2012-12-19 13:32:12 -0500 (Wed, 19 Dec 2012) | 4 lines
+JMC - NO OP :: r5355 | schroede | 2012-12-19 13:32:12 -0500 (Wed, 19 Dec 2012) | 4 lines
 
 Bug fix for readRodsLog.py to handle paths that contain a ".",
 provided by Adil.
@@ -819,10 +825,12 @@ Another minor change to test SVN email config changes
 
 ------------------------------------------------------------------------
 JMC - NOT DONE :: r5358 | xuh | 2012-12-20 12:14:40 -0500 (Thu, 20 Dec 2012) | 1 line
+Zoey Fixed in merge.
 
 Fix a bug: server function does not provide enough info in rei when calling policy enforcement point rule, causing segfault in admin microservices
 ------------------------------------------------------------------------
 JMC - NOT DONE :: r5359 | xuh | 2012-12-20 13:18:43 -0500 (Thu, 20 Dec 2012) | 1 line
+Zoey Fixed in merge.
 
 fix a typing error in the previous bug fix
 ------------------------------------------------------------------------
@@ -831,11 +839,12 @@ JMC - NOT DONE :: r5360 | schroede | 2012-12-20 16:37:12 -0500 (Thu, 20 Dec 2012
 Minor change to test svn email config update
 
 ------------------------------------------------------------------------
-JMC - NOT DONE :: r5361 | xuh | 2012-12-23 15:33:32 -0500 (Sun, 23 Dec 2012) | 1 line
+Hao - Done :: r5361 | xuh | 2012-12-23 15:33:32 -0500 (Sun, 23 Dec 2012) | 1 line
 
 fix a memery management bug in the rule engine
 ------------------------------------------------------------------------
 JMC - NOT DONE :: r5362 | xuh | 2012-12-26 22:16:32 -0500 (Wed, 26 Dec 2012) | 1 line
+Zoey Fixed in merge.
 
 fix UnixSendMail does not allow valid email address
 ------------------------------------------------------------------------
@@ -878,15 +887,18 @@ Minor update to test svn mailer.conf update (removing
 irods-cvs@irods.org).
 
 ------------------------------------------------------------------------
-JMC - NOT DONE :: r5372 | xuh | 2013-01-08 12:11:05 -0500 (Tue, 08 Jan 2013) | 1 line
+Hao - Done :: r5372 | xuh | 2013-01-08 12:11:05 -0500 (Tue, 08 Jan 2013) | 1 line
+Zoey Verified.
 
 Fix a bug: returning a variable which has not been assigned in a rule causes segfault.
 ------------------------------------------------------------------------
-JMC - NOT DONE :: r5373 | xuh | 2013-01-08 12:18:19 -0500 (Tue, 08 Jan 2013) | 1 line
+Hao - Done :: r5373 | xuh | 2013-01-08 12:18:19 -0500 (Tue, 08 Jan 2013) | 1 line
+Zoey Verified.
 
 fix a small bug in the previous checkin
 ------------------------------------------------------------------------
-JMC - NOT DONE :: r5374 | xuh | 2013-01-08 13:01:58 -0500 (Tue, 08 Jan 2013) | 1 line
+Hao - Done :: r5374 | xuh | 2013-01-08 13:01:58 -0500 (Tue, 08 Jan 2013) | 1 line
+Zoey Verified.
 
 Fix a bug: substr function provided by the rule language generates segfault when index is out of range.
 ------------------------------------------------------------------------
@@ -906,16 +918,18 @@ a ticket will not only list the data-objects but also the sub-collections.
 
 
 ------------------------------------------------------------------------
-JMC - NOT DONE :: r5377 | xuh | 2013-01-11 14:14:04 -0500 (Fri, 11 Jan 2013) | 1 line
+JMC - NO OP :: r5377 | xuh | 2013-01-11 14:14:04 -0500 (Fri, 11 Jan 2013) | 1 line
 
 fix: the rewritten part of the fuse client does not perform operations on the same directory concurrently
 ------------------------------------------------------------------------
 JMC - NOT DONE :: r5378 | antoine | 2013-01-11 15:36:56 -0500 (Fri, 11 Jan 2013) | 2 lines
+Zoey Fixed in merge.
 
 Fix for the writeBytesBuf function
 
 ------------------------------------------------------------------------
 JMC - NOT DONE :: r5379 | antoine | 2013-01-11 17:06:00 -0500 (Fri, 11 Jan 2013) | 2 lines
+Zoey Fixed in merge.
 
 Fixed doxygen
 
@@ -924,7 +938,8 @@ JMC - NOT DONE :: r5380 | xuh | 2013-01-13 15:12:18 -0500 (Sun, 13 Jan 2013) | 1
 
 add conversion from the double type or the int type to the datetime type
 ------------------------------------------------------------------------
-JMC - NOT DONE :: r5381 | xuh | 2013-01-13 15:46:17 -0500 (Sun, 13 Jan 2013) | 1 line
+Hao - Done :: r5381 | xuh | 2013-01-13 15:46:17 -0500 (Sun, 13 Jan 2013) | 1 line
+Zoey Verified.
 
 fix: rule engine does not reload after deleting a rule base from the config file
 ------------------------------------------------------------------------
@@ -940,7 +955,8 @@ JMC - NOT DONE :: r5384 | xuh | 2013-01-13 19:35:27 -0500 (Sun, 13 Jan 2013) | 1
 
 add a rule metadata attribute "logging" which when set of "false" turns auditing off for the rule and all the rules called inside it.
 ------------------------------------------------------------------------
-JMC - NOT DONE :: r5385 | xuh | 2013-01-13 20:12:10 -0500 (Sun, 13 Jan 2013) | 1 line
+Hao - Done :: r5385 | xuh | 2013-01-13 20:12:10 -0500 (Sun, 13 Jan 2013) | 1 line
+Zoey Verified.
 
 fix a problem in JMC - NOT DONE :: r5381 where the rule base is reload even if the rule base set is not changed.
 ------------------------------------------------------------------------
@@ -960,7 +976,7 @@ JMC - NOT DONE :: r5388 | antoine | 2013-01-20 03:19:09 -0500 (Sun, 20 Jan 2013)
 Rearranged URL module with new code and examples
 
 ------------------------------------------------------------------------
-JMC - NOT DONE :: r5389 | schroede | 2013-01-23 11:51:23 -0500 (Wed, 23 Jan 2013) | 6 lines
+JMC - NO OP :: r5389 | schroede | 2013-01-23 11:51:23 -0500 (Wed, 23 Jan 2013) | 6 lines
 
 Fix bug in ichmod for multiple files in admin (-M) mode.
 This is bugzilla bug 160, reported earlier today.
@@ -978,6 +994,7 @@ JMC - NOT DONE :: r5391 | xuh | 2013-01-23 13:09:49 -0500 (Wed, 23 Jan 2013) | 1
 One more file for r5390
 ------------------------------------------------------------------------
 JMC - NOT DONE :: r5392 | schroede | 2013-01-25 10:50:45 -0500 (Fri, 25 Jan 2013) | 8 lines
+Zoey Fixed in merge.
 
 Fix an iquest bug when displaying formatted results from a
 specific-query when more than 256 lines are returned.  The trailing
@@ -1009,7 +1026,7 @@ JMC - NOT DONE :: r5396 | xuh | 2013-02-07 16:52:07 -0500 (Thu, 07 Feb 2013) | 1
 
 fix another gcc compiler error
 ------------------------------------------------------------------------
-JMC - NOT DONE :: r5397 | schroede | 2013-02-07 17:39:29 -0500 (Thu, 07 Feb 2013) | 33 lines
+JMC - NO OP :: r5397 | schroede | 2013-02-07 17:39:29 -0500 (Thu, 07 Feb 2013) | 33 lines
 
 Changes so iRODS can be built with HPSS again (post 3.0).
 
@@ -1050,7 +1067,8 @@ JMC - NOT DONE :: r5398 | antoine | 2013-02-07 21:46:08 -0500 (Thu, 07 Feb 2013)
 Updates to CURL-based microservices
 
 ------------------------------------------------------------------------
-JMC - NOT DONE :: r5399 | xuh | 2013-02-08 12:54:15 -0500 (Fri, 08 Feb 2013) | 1 line
+Hao - Done :: r5399 | xuh | 2013-02-08 12:54:15 -0500 (Fri, 08 Feb 2013) | 1 line
+Zoey Verified.
 
 make str work with BUF_LEN_MS_T
 ------------------------------------------------------------------------
@@ -1059,7 +1077,7 @@ JMC - NOT DONE :: r5400 | antoine | 2013-02-08 14:02:54 -0500 (Fri, 08 Feb 2013)
 More error logging
 
 ------------------------------------------------------------------------
-JMC - NOT DONE :: r5401 | schroede | 2013-02-15 17:19:29 -0500 (Fri, 15 Feb 2013) | 7 lines
+JMC - NO OP :: r5401 | schroede | 2013-02-15 17:19:29 -0500 (Fri, 15 Feb 2013) | 7 lines
 
 Correct the default location of the PamAuthCheck program in the
 config.mk{.in] files (and compile parameters)
@@ -1091,7 +1109,8 @@ JMC - NOT DONE :: r5406 | xuh | 2013-03-15 15:10:33 -0400 (Fri, 15 Mar 2013) | 1
 
 Fix more fuse client concurrency bugs; add some standalone test cases for fuse client
 ------------------------------------------------------------------------
-JMC - NOT DONE :: r5407 | xuh | 2013-03-15 15:17:04 -0400 (Fri, 15 Mar 2013) | 1 line
+Hao - Done :: r5407 | xuh | 2013-03-15 15:17:04 -0400 (Fri, 15 Mar 2013) | 1 line
+Zoey Verified.
 
 remove unused test script
 ------------------------------------------------------------------------
@@ -1112,6 +1131,7 @@ JMC - NOT DONE :: r5411 | xuh | 2013-03-18 14:49:20 -0400 (Mon, 18 Mar 2013) | 1
 rename -s of iqstat to --showFirstLine.
 ------------------------------------------------------------------------
 JMC - NOT DONE :: r5412 | schroede | 2013-03-21 13:52:47 -0400 (Thu, 21 Mar 2013) | 8 lines
+Zoey Fixed in merge
 
 This is the freeware version of sha-1 provided by Paul E. Jones (see
 license.txt), with minor modifications to fit into iRODS.  Where I've
@@ -1123,6 +1143,7 @@ library functions used in iRODS.
 
 ------------------------------------------------------------------------
 JMC - NOT DONE :: r5413 | schroede | 2013-03-21 14:01:45 -0400 (Thu, 21 Mar 2013) | 78 lines
+Zoey Fixed in merge
 
 Optionally use SHA-1 instead of MD5 in iRODS password authentication
 and obfuscation.
@@ -1327,7 +1348,8 @@ Occasionally there is data left in the openssl buffers when the data read by the
 
 Signed-off-by: Chris Smith <chris@distributedbio.com>
 ------------------------------------------------------------------------
-JMC - NOT DONE :: r5422 | schroede | 2013-04-09 18:13:24 -0400 (Tue, 09 Apr 2013) | 17 lines
+JMC - Done :: r5422 | schroede | 2013-04-09 18:13:24 -0400 (Tue, 09 Apr 2013) | 17 lines
+Zoey Verified.
 
 Corrections for MySQL for some of the PAM-related operations (user
 acquiring a PAM-derived password, and iadmin rpp(remove PAM password))
@@ -1398,6 +1420,7 @@ indicate an overall failure.
 
 ------------------------------------------------------------------------
 JMC - NOT DONE :: r5428 | schroede | 2013-04-23 14:20:18 -0400 (Tue, 23 Apr 2013) | 27 lines
+Zoey Fixed in merge.
 
 In strict access-control mode, extend the checks made in the
 general-query to handle items being checked (not just returned).
@@ -1432,7 +1455,7 @@ JMC - NOT DONE :: r5429 | antoine | 2013-04-24 16:20:59 -0400 (Wed, 24 Apr 2013)
 Added support for MSO objects in msiPhyPathReg
 
 ------------------------------------------------------------------------
-JMC - NOT DONE :: r5430 | csmith | 2013-04-24 19:19:12 -0400 (Wed, 24 Apr 2013) | 7 lines
+JMC - NO OP :: r5430 | csmith | 2013-04-24 19:19:12 -0400 (Wed, 24 Apr 2013) | 7 lines
 
 Fixed race conditions in the directAccessFileDriver code.
 
@@ -1455,6 +1478,7 @@ works fine with 9.2.4 and 9.1.9.
 
 ------------------------------------------------------------------------
 JMC - NOT DONE :: r5432 | schroede | 2013-05-02 12:25:38 -0400 (Thu, 02 May 2013) | 26 lines
+Zoey Fixed in merge.
 
 Check that a user has write (or better) permission on a source
 collection before allowing a move out of it. This fixes the case where
@@ -1519,7 +1543,7 @@ on the tinderbox host.  Add a -o option to run one-time to show the
 current step/state and then exit.
 
 ------------------------------------------------------------------------
-JMC - NOT DONE :: r5441 | schroede | 2013-05-13 13:00:53 -0400 (Mon, 13 May 2013) | 19 lines
+JMC - NO OP :: r5441 | schroede | 2013-05-13 13:00:53 -0400 (Mon, 13 May 2013) | 19 lines
 
 Disable the new gcc warning for unused-but-set-variable (now included
 with -Wall) as it generates more false positives than useful warnings.
@@ -1587,6 +1611,7 @@ JMC - NOT DONE :: r5451 | xuh | 2013-05-17 18:08:28 -0400 (Fri, 17 May 2013) | 1
 Remove unused code
 ------------------------------------------------------------------------
 JMC - NOT DONE :: r5452 | xuh | 2013-05-17 18:17:08 -0400 (Fri, 17 May 2013) | 1 line
+Zoey Fixed to not include any old rule engine compatibility in (me)|(pu)rge.
 
 replace commenting with #ifdefs to keep code backward compatible with the old rule engine.
 ------------------------------------------------------------------------
@@ -1600,11 +1625,12 @@ Include SHA1 as one of the optional tests noted on the summary line
 (forgot to include in the commit a few days ago).
 
 ------------------------------------------------------------------------
-JMC - NOT DONE :: r5455 | xuh | 2013-05-18 15:25:57 -0400 (Sat, 18 May 2013) | 1 line
+Hao - Done :: r5455 | xuh | 2013-05-18 15:25:57 -0400 (Sat, 18 May 2013) | 1 line
+Zoey Verified.
 
 Add a "." operator which can be used to create, modify, and access keyValPair_t within the rule language. See testKV.r for examples.
 ------------------------------------------------------------------------
-JMC - NOT DONE :: r5456 | antoine | 2013-05-21 17:38:47 -0400 (Tue, 21 May 2013) | 2 lines
+JMC - NO OP :: r5456 | antoine | 2013-05-21 17:38:47 -0400 (Tue, 21 May 2013) | 2 lines
 
 Fixed a bug in matchVaultPath() and matchCliVaultPath() that made msiSetChkFilePathPerm("chkNonVaultPathPerm") block registration of files in the user's own vault directory, instead of allowing it as described. Also fixed incorrect comments in the code (zone name is not used in physical paths).
 
@@ -1626,7 +1652,8 @@ would something in the server log to indicate something unusual.
 
 
 ------------------------------------------------------------------------
-JMC - NOT DONE :: r5458 | schroede | 2013-05-24 17:00:35 -0400 (Fri, 24 May 2013) | 12 lines
+JMC - Done :: r5458 | schroede | 2013-05-24 17:00:35 -0400 (Fri, 24 May 2013) | 12 lines
+Zoey Verified.
 
 Avoid generating PAM-derived passwords for which the scrambled form
 contains a single quote (') as this causes issues on some platforms
@@ -1641,7 +1668,8 @@ This was provided in large part by the E-iRODS folks (Jason C),
 thanks!
 
 ------------------------------------------------------------------------
-JMC - NOT DONE :: r5459 | xuh | 2013-05-27 17:22:33 -0400 (Mon, 27 May 2013) | 1 line
+Hao - Done :: r5459 | xuh | 2013-05-27 17:22:33 -0400 (Mon, 27 May 2013) | 1 line
+Zoey Verified.
 
 fix memory leaks in the rule engine code
 ------------------------------------------------------------------------
@@ -1670,6 +1698,7 @@ warnings are produced.
 
 ------------------------------------------------------------------------
 JMC - NOT DONE :: r5463 | schroede | 2013-05-31 14:31:00 -0400 (Fri, 31 May 2013) | 30 lines
+Zoey Fixed in Merge.
 
 Implement a TTL (Time To Live) option for regular iRODS passwords.
 
@@ -1709,6 +1738,7 @@ warning.
 
 ------------------------------------------------------------------------
 JMC - NOT DONE :: r5465 | schroede | 2013-06-05 14:23:48 -0400 (Wed, 05 Jun 2013) | 47 lines
+Zoey Fixed in merge.
 
 New version of some SQL used with quota enforcement that performs much
 better at scale.
@@ -1813,10 +1843,12 @@ JMC - NOT DONE :: r5473 | xuh | 2013-06-09 02:09:05 -0400 (Sun, 09 Jun 2013) | 1
 Add a ms param type for data obj info struct
 ------------------------------------------------------------------------
 JMC - NOT DONE :: r5474 | xuh | 2013-06-09 17:12:11 -0400 (Sun, 09 Jun 2013) | 1 line
+Zoey Fixed in merge.
 
 fix an imcoll error that Jean-Yves found
 ------------------------------------------------------------------------
 JMC - NOT DONE :: r5475 | schroede | 2013-06-10 13:03:40 -0400 (Mon, 10 Jun 2013) | 14 lines
+Zoey Fixed in merge.
 
 New i-command scripts, iTicket, iGet, and iDel for working with
 tickets and directory trees, provided by Giacomo.
@@ -1894,7 +1926,8 @@ g++ version by using cut and expr instead of awk.
 
 
 ------------------------------------------------------------------------
-JMC - NOT DONE :: r5483 | xuh | 2013-06-13 01:41:50 -0400 (Thu, 13 Jun 2013) | 1 line
+Hao - Done :: r5483 | xuh | 2013-06-13 01:41:50 -0400 (Thu, 13 Jun 2013) | 1 line
+Zoey Verified.
 
 Fix an non-IES compiler error Wayne found
 ------------------------------------------------------------------------
@@ -1913,6 +1946,7 @@ this svn input file is used in the NMI BaTLab testing.
 
 ------------------------------------------------------------------------
 JMC - NOT DONE :: r5487 | schroede | 2013-06-17 17:46:34 -0400 (Mon, 17 Jun 2013) | 8 lines
+Zoey Fixed in merge.
 
 For the TTL option, allow the admin to set a default in iinit.c and
 use that if TTL is required but not provided.  Also, add a comment about 
@@ -1929,6 +1963,7 @@ Added include header (for C++ compilers)
 
 ------------------------------------------------------------------------
 JMC - NOT DONE :: r5489 | schroede | 2013-06-21 11:52:10 -0400 (Fri, 21 Jun 2013) | 5 lines
+Zoey Fixed in merge.
 
 Add another check to prevent an admin from accidentially creating a
 group (or user perhaps) with a blank name.
@@ -1942,6 +1977,7 @@ Added example rule for msiLoadMetadataFromXml (existing one used old rule syntax
 
 ------------------------------------------------------------------------
 JMC - NOT DONE :: r5491 | antoine | 2013-06-29 22:30:03 -0400 (Sat, 29 Jun 2013) | 12 lines
+Zoey fixed in merge.
 
 Extension of Wayne's commit r5489 to reject blank usernames (as in made of space type chars only), e.g:
 
@@ -1956,12 +1992,14 @@ pho27:iRODS antoine$
  
 
 ------------------------------------------------------------------------
-JMC - NOT DONE :: r5492 | antoine | 2013-07-01 17:21:23 -0400 (Mon, 01 Jul 2013) | 2 lines
+JMC - Done :: r5492 | antoine | 2013-07-01 17:21:23 -0400 (Mon, 01 Jul 2013) | 2 lines
+Zoey Verified.
 
 removed unused nre.genQueryMS.c (to avoid potential confusion)
 
 ------------------------------------------------------------------------
-JMC - NOT DONE :: r5493 | xuh | 2013-07-03 12:30:52 -0400 (Wed, 03 Jul 2013) | 1 line
+Hao - Done :: r5493 | xuh | 2013-07-03 12:30:52 -0400 (Wed, 03 Jul 2013) | 1 line
+Zoey Verified.
 
 change error messages to be more specific; fix bugs in pattern mattching; allow expansion of constants in pattern matching
 ------------------------------------------------------------------------
@@ -1984,6 +2022,7 @@ JMC - NOT DONE :: r5497 | xuh | 2013-07-08 16:14:10 -0400 (Mon, 08 Jul 2013) | 1
 comment out microservices that need more security checks
 ------------------------------------------------------------------------
 JMC - NOT DONE :: r5498 | schroede | 2013-07-08 16:42:40 -0400 (Mon, 08 Jul 2013) | 3 lines
+Zoey Fixed in merge.
 
 Add the new (for 3.3) incarch command to the list of i-commands
 described by ihelp.
@@ -2001,6 +2040,7 @@ JMC - NOT DONE :: r5500 | terrell | 2013-07-10 23:32:41 -0400 (Wed, 10 Jul 2013)
 comment tweaks for Patch script for 3.3 updates
 ------------------------------------------------------------------------
 JMC - NOT DONE :: r5501 | sekar | 2013-07-11 12:38:45 -0400 (Thu, 11 Jul 2013) | 4 lines
+Zoey Fixed in merge.
 
 a massive upgrade with additionalfeature for the Workflow to perform
 call to other workflows. many tests are added.
@@ -2013,6 +2053,7 @@ small compile bug because tinderbox needs cohersion - line 1529 in msiBytesBufTo
 
 ------------------------------------------------------------------------
 JMC - NOT DONE :: r5503 | schroede | 2013-07-11 14:22:56 -0400 (Thu, 11 Jul 2013) | 9 lines
+Zoey Fixed in merge.
 
 Correct the irodsHost config file inadvertantly updated earlier today.
 
@@ -2046,6 +2087,7 @@ More changes to go with previous commit for 3.3 for 'irodsupgrade'
 
 ------------------------------------------------------------------------
 JMC - NOT DONE :: r5508 | schroede | 2013-07-15 12:34:31 -0400 (Mon, 15 Jul 2013) | 13 lines
+Zoey Fixed in merge.
 
 Make additional checks on imeta user input for queries.
 This was recently reported as bugzilla item 162.
@@ -2066,17 +2108,18 @@ JMC - NOT DONE :: r5509 | schroede | 2013-07-15 16:59:10 -0400 (Mon, 15 Jul 2013
 Updates for 3.3
 
 ------------------------------------------------------------------------
-JMC - NOT DONE :: r5510 | csmith | 2013-07-15 20:16:15 -0400 (Mon, 15 Jul 2013) | 2 lines
+JMC - NO OP :: r5510 | csmith | 2013-07-15 20:16:15 -0400 (Mon, 15 Jul 2013) | 2 lines
 
 Changed sslSockComm.c to use GENERAL_NAME instead of GENERAL_NAMES
 to allow for compilation on RHEL/CentOS 5.x based hosts.
 ------------------------------------------------------------------------
-JMC - NOT DONE :: r5511 | csmith | 2013-07-16 01:24:16 -0400 (Tue, 16 Jul 2013) | 3 lines
+JMC - NO OP :: r5511 | csmith | 2013-07-16 01:24:16 -0400 (Tue, 16 Jul 2013) | 3 lines
 
 Revert "Changed sslSockComm.c to use GENERAL_NAME instead of GENERAL_NAMES"
 
 This reverts commit b79ab5e22afd21b5ae5c21442bef0d8247b6e4d6.
-------------------------------------------------------------------------
+--------------------
+----------------------------------------------------
 JMC - NOT DONE :: r5512 | schroede | 2013-07-16 12:21:34 -0400 (Tue, 16 Jul 2013) | 2 lines
 
 Bump doxygen version numbers for upcoming release (3.3)
@@ -2088,6 +2131,7 @@ Update the release checklist now that prods has been moved out of svn.
 
 ------------------------------------------------------------------------
 JMC - NOT DONE :: r5514 | schroede | 2013-07-16 16:50:52 -0400 (Tue, 16 Jul 2013) | 3 lines
+Zoey Fixed in merge.
 
 Add some checks on reaching the limit on the number command tokens and
 increase the limit.  Fixes bugzilla item 163.
@@ -2101,7 +2145,7 @@ in a manner that includes groups.  See irod-chat thread: 'Jargon-core
 permissions issue' for more information.
 
 ------------------------------------------------------------------------
-JMC - NOT DONE :: r5516 | sekar | 2013-07-17 10:17:19 -0400 (Wed, 17 Jul 2013) | 3 lines
+JMC - NOT OP :: r5516 | sekar | 2013-07-17 10:17:19 -0400 (Wed, 17 Jul 2013) | 3 lines
 
 change the HTTP to be disabled by default.
 this helps if someone does not have libcurl
@@ -2114,6 +2158,7 @@ feature/specific-query is not completed yet.
 
 ------------------------------------------------------------------------
 JMC - NOT DONE :: r5518 | sekar | 2013-07-17 10:53:16 -0400 (Wed, 17 Jul 2013) | 3 lines
+Zoey Fixed in merge.
 
 the line for msiExecStrCondQueryWithOptionsNew was stuck with msiExecStrCondQueryWithOptions
 this mae the msiExecStrCondQueryWithOptions unknown to irods. Reagan foun it using the rule showMSs.r

@@ -30,7 +30,6 @@ typedef struct {
     char *fileName;
     char *rescHier;             // The hierarchy of resources in which this file resides
     char *objPath;              // The logical path
-    fileDriverType_t fileType;
     int mode;
     int chkPerm;        /* check for permission in the file vault */
     int fd;             /* the file descriptor from driver */
@@ -46,7 +45,7 @@ allocFileDesc ();
 
 int
 allocAndFillFileDesc (rodsServerHost_t *rodsServerHost, char* objPath, char *fileName,
-                      char* rescHier, fileDriverType_t fileType, int fd, int mode);
+                      char* rescHier, int fd, int mode);
 
 int
 freeFileDesc (int fileInx);
@@ -67,7 +66,7 @@ matchCliVaultPath( rsComm_t*,
                    const std::string&,
                    rodsServerHost_t* );
 int
-chkEmptyDir (int fileType, rsComm_t *rsComm, char *cacheDir);
+chkEmptyDir (rsComm_t *rsComm, char *cacheDir);
 int
 filePathTypeInResc (rsComm_t *rsComm, char* objPath, char *fileName, char* rescHier, rescInfo_t *rescInfo);
 int

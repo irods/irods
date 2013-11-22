@@ -2044,7 +2044,326 @@ getNumFilesInDir (char *mydir)
     }
     return count;
 }
+#ifdef FILESYSTEM_META
 
+/* make the collection and track original 
+   directory filesystem meta-data         */
+int
+mkCollWithDirMeta (rcComm_t *conn, char *collection, char *dirname)
+{
+    int status;
+    collInp_t collCreateInp;
+
+    memset (&collCreateInp, 0, sizeof (collCreateInp));
+
+    rstrcpy (collCreateInp.collName, collection, MAX_NAME_LEN);
+   
+    status = getFileMetaFromPath (dirname, &collCreateInp.condInput);
+    if (status != 0) {
+        return status;
+    }
+    
+    status = rcCollCreate (conn, &collCreateInp);
+    if (status == CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME) {
+	status = 0;
+    }
+
+    return (status);
+}
+
+int
+mkCollRWithDirMeta (rcComm_t *conn, char *startColl, char *destColl, char *srcDir)
+{
+    int status;
+    int startLen;
+    int pathLen, tmpLen, srcLen;
+    char tmpPath[MAX_NAME_LEN];
+    char srcPath[MAX_NAME_LEN];
+    rodsPath_t rodsPath;
+
+    startLen = strlen (startColl);
+    pathLen = strlen (destColl);
+    srcLen = strlen (srcDir);
+
+    rstrcpy (tmpPath, destColl, MAX_NAME_LEN);
+    rstrcpy (srcPath, srcDir, MAX_NAME_LEN);
+
+    tmpLen = pathLen;
+
+    memset (&rodsPath, 0, sizeof (rodsPath));
+    while (tmpLen > startLen) {
+        rodsPath.objType = COLL_OBJ_T;
+	rodsPath.objState = UNKNOWN_ST;
+	rstrcpy (rodsPath.outPath, tmpPath, MAX_NAME_LEN);
+	status = getRodsObjType (conn, &rodsPath);
+        if (status >= 0 && rodsPath.objState == EXIST_ST) {
+	    clearRodsPath (&rodsPath);
+	    break;
+        } else {
+	    clearRodsPath (&rodsPath);
+	}
+
+        /* Go backward */
+
+        while (tmpLen && tmpPath[tmpLen] != '/') {
+            tmpLen --;
+            srcLen --;
+        }
+        tmpPath[tmpLen] = '\0';
+        srcPath[srcLen] = '\0';
+    }
+
+    /* Now we go forward and make the required coll */
+    while (tmpLen < pathLen) {
+        /* Put back the '/' */
+        tmpPath[tmpLen] = '/';
+        srcPath[srcLen] = '/';
+        status = mkCollWithDirMeta (conn, tmpPath, srcPath);
+        if (status < 0) {
+            rodsLog (LOG_NOTICE,
+             "mkCollRWithDirMeta: mkCollWithDirMeta failed for %s, status =%d",
+              tmpPath, status);
+            return status;
+        }
+        while (tmpLen && tmpPath[tmpLen] != '\0') {
+            tmpLen ++;
+            srcLen ++;
+        }
+    }
+    return 0;
+}
+
+/* make the collection set the directory meta-data
+   from the named source collection */
+int
+mkCollWithSrcCollMeta (rcComm_t *conn, char *collection, char *srcColl)
+{
+    int status;
+    collInp_t collCreateInp;
+
+    memset (&collCreateInp, 0, sizeof (collCreateInp));
+
+    rstrcpy (collCreateInp.collName, collection, MAX_NAME_LEN);
+   
+    /* add the collection keyword to collCreateInp.condInput
+       to indicate which collection serves as the source for
+       file metadata */
+    if (srcColl) {
+        addKeyVal(&collCreateInp.condInput, COLLECTION_KW, srcColl);
+    }
+
+    status = rcCollCreate (conn, &collCreateInp);
+    if (status == CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME) {
+	status = 0;
+    }
+
+    return (status);
+}
+
+int
+mkCollRWithSrcCollMeta (rcComm_t *conn, char *startColl, char *destColl, char *srcColl)
+{
+    int status;
+    int startLen;
+    int pathLen, tmpLen, srcLen;
+    char tmpPath[MAX_NAME_LEN];
+    char srcPath[MAX_NAME_LEN];
+    rodsPath_t rodsPath;
+
+    startLen = strlen (startColl);
+    pathLen = strlen (destColl);
+    srcLen = strlen (srcColl);
+
+    rstrcpy (tmpPath, destColl, MAX_NAME_LEN);
+    rstrcpy (srcPath, srcColl, MAX_NAME_LEN);
+
+    tmpLen = pathLen;
+
+    memset (&rodsPath, 0, sizeof (rodsPath));
+    while (tmpLen > startLen) {
+        rodsPath.objType = COLL_OBJ_T;
+	rodsPath.objState = UNKNOWN_ST;
+	rstrcpy (rodsPath.outPath, tmpPath, MAX_NAME_LEN);
+	status = getRodsObjType (conn, &rodsPath);
+        if (status >= 0 && rodsPath.objState == EXIST_ST) {
+	    clearRodsPath (&rodsPath);
+	    break;
+        } else {
+	    clearRodsPath (&rodsPath);
+	}
+
+        /* Go backward */
+
+        while (tmpLen && tmpPath[tmpLen] != '/') {
+            tmpLen --;
+            srcLen --;
+        }
+        tmpPath[tmpLen] = '\0';
+        srcPath[srcLen] = '\0';
+    }
+
+    /* Now we go forward and make the required coll */
+    while (tmpLen < pathLen) {
+        /* Put back the '/' */
+        tmpPath[tmpLen] = '/';
+        srcPath[srcLen] = '/';
+        status = mkCollWithSrcCollMeta (conn, tmpPath, srcPath);
+        if (status < 0) {
+            rodsLog (LOG_NOTICE,
+             "mkCollRWithSrcCollMeta: mkCollWithSrcCollMeta failed for %s, status =%d",
+              tmpPath, status);
+            return status;
+        }
+        while (tmpLen && tmpPath[tmpLen] != '\0') {
+            tmpLen ++;
+            srcLen ++;
+        }
+    }
+    return 0;
+}
+
+int
+getFileMetaFromPath(char *srcPath, keyValPair_t *condInput)
+{
+    static char fname[] = "getFileMetaFromPath";
+    int status;
+    struct stat statbuf;
+    rodsStat_t myStat;
+    char cwd[MAX_NAME_LEN];
+    char fullSrcPath[MAX_NAME_LEN];
+
+    if (srcPath == NULL || condInput == NULL) {
+        rodsLog(LOG_ERROR, "%s: invalid input", fname);
+	return USER__NULL_INPUT_ERR;
+    }
+
+    status = stat (srcPath, &statbuf);
+    if (status) {
+        rodsLog(LOG_ERROR, "%s: could not stat %s. errno=%d",
+                fname, srcPath, errno);
+        return UNABLE_TO_STAT_FILE - errno;
+    }
+
+    statToRodsStat (&myStat, &statbuf);
+
+    status = getFileMetaFromStat(&myStat, condInput);
+
+    if (status == 0) {
+        if (srcPath[0] != '/') {
+            /* append cwd to make a full path */
+            if (getcwd(cwd, MAX_NAME_LEN) == NULL) {
+                rodsLog(LOG_ERROR, 
+                        "%s: working directory name is too long for buffer",
+                        fname);
+                strncpy(fullSrcPath, srcPath, MAX_NAME_LEN);
+            }
+            else {
+                snprintf(fullSrcPath, MAX_NAME_LEN, "%s/%s", cwd, srcPath);
+            }
+        }
+        addKeyVal(condInput, FILE_SOURCE_PATH_KW, fullSrcPath);
+    }
+
+    return status;
+}
+
+int
+getFileMetaFromStat(rodsStat_t *statbuf, keyValPair_t *condInput)
+{
+    static char fname[] = "copyFileMetaFromStat";
+    int status = 0;
+    char uidstr[SHORT_STR_LEN];
+    char gidstr[SHORT_STR_LEN];
+    char username[NAME_LEN];
+    char groupname[NAME_LEN];
+    char mode[SHORT_STR_LEN];
+    char ctime[TIME_LEN];
+    char mtime[TIME_LEN];
+
+    if (statbuf == NULL || condInput == NULL) {
+        rodsLog(LOG_ERROR, "%s: invalid input", fname);
+	return USER__NULL_INPUT_ERR;
+    }
+    
+    status = getUnixUsername(statbuf->st_uid, username, NAME_LEN);
+    if (status) {
+        rodsLog(LOG_ERROR, "%s: could not retrieve username for uid %d",
+                fname, statbuf->st_uid);
+        return status;
+    }
+
+    status = getUnixGroupname(statbuf->st_gid, groupname, NAME_LEN);
+    if (status) {
+        rodsLog(LOG_ERROR, "%s: could not retrieve groupname for gid %d",
+                fname, statbuf->st_gid);
+        return status;
+    }
+    
+    snprintf(uidstr, SHORT_STR_LEN, "%u", statbuf->st_uid);
+    snprintf(gidstr, SHORT_STR_LEN, "%u", statbuf->st_gid);
+    snprintf(mode, SHORT_STR_LEN, "%u", statbuf->st_mode);
+    snprintf(ctime, TIME_LEN, "%u", statbuf->st_ctim);
+    snprintf(mtime, TIME_LEN, "%u", statbuf->st_mtim);
+    
+    addKeyVal(condInput, FILE_UID_KW, uidstr);
+    addKeyVal(condInput, FILE_GID_KW, gidstr);
+    addKeyVal(condInput, FILE_OWNER_KW, username);
+    addKeyVal(condInput, FILE_GROUP_KW, groupname);
+    addKeyVal(condInput, FILE_MODE_KW, mode);
+    addKeyVal(condInput, FILE_CTIME_KW, ctime);
+    addKeyVal(condInput, FILE_MTIME_KW, mtime);
+
+    return status;
+}
+
+int
+copyFilesystemMetadata (keyValPair_t *src, keyValPair_t *dest)
+{
+    char *tmpStr;
+
+    if (src == NULL || dest == NULL) {
+        rodsLog(LOG_ERROR, "copyFileMetadata: null input");
+        return USER__NULL_INPUT_ERR;
+    }
+
+    tmpStr = getValByKey(src, FILE_UID_KW);
+    if (tmpStr != NULL) {
+        addKeyVal(dest, FILE_UID_KW, tmpStr);
+    }
+    tmpStr = getValByKey(src, FILE_GID_KW);
+    if (tmpStr != NULL) {
+        addKeyVal(dest, FILE_GID_KW, tmpStr);
+    }
+    tmpStr = getValByKey(src, FILE_OWNER_KW);
+    if (tmpStr != NULL) {
+        addKeyVal(dest, FILE_OWNER_KW, tmpStr);
+    }
+    tmpStr = getValByKey(src, FILE_GROUP_KW);
+    if (tmpStr != NULL) {
+        addKeyVal(dest, FILE_GROUP_KW, tmpStr);
+    }
+    tmpStr = getValByKey(src, FILE_MODE_KW);
+    if (tmpStr != NULL) {
+        addKeyVal(dest, FILE_MODE_KW, tmpStr);
+    }
+    tmpStr = getValByKey(src, FILE_CTIME_KW);
+    if (tmpStr != NULL) {
+        addKeyVal(dest, FILE_CTIME_KW, tmpStr);
+    }
+    tmpStr = getValByKey(src, FILE_MTIME_KW);
+    if (tmpStr != NULL) {
+        addKeyVal(dest, FILE_MTIME_KW, tmpStr);
+    }
+    tmpStr = getValByKey(src, FILE_SOURCE_PATH_KW);
+    if (tmpStr != NULL) {
+        addKeyVal(dest, FILE_SOURCE_PATH_KW, tmpStr);
+    }
+
+    return 0;
+}
+    
+    
+#endif /* FILESYSTEM_META */ 
 
 
     pathnamePatterns_t *

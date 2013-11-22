@@ -739,7 +739,6 @@ l3Stat (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, rodsStat_t **myStat)
         status = rsSubStructFileStat( rsComm, &subFile, myStat );
     } else {
         memset (&fileStatInp, 0, sizeof (fileStatInp));
-        fileStatInp.fileType = static_cast<fileDriverType_t>( -1 );//RescTypeDef[rescTypeInx].driverType;
         rstrcpy (fileStatInp.fileName, dataObjInfo->filePath, 
                  MAX_NAME_LEN);
         rstrcpy (fileStatInp.addr.hostAddr,  

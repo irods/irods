@@ -19,7 +19,6 @@
 #include "fileDriver.h"
 
 typedef struct {
-    fileDriverType_t fileType;
     rodsHostAddr_t addr;
     char fileName[MAX_NAME_LEN];
     char rescHier[MAX_NAME_LEN];
@@ -27,7 +26,7 @@ typedef struct {
     char in_pdmo[MAX_NAME_LEN];;
 } fileUnlinkInp_t;
     
-#define fileUnlinkInp_PI "int fileType; struct RHostAddr_PI; str fileName[MAX_NAME_LEN]; str rescHier[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN]; str in_pdmo[MAX_NAME_LEN];"
+#define fileUnlinkInp_PI "struct RHostAddr_PI; str fileName[MAX_NAME_LEN]; str rescHier[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN]; str in_pdmo[MAX_NAME_LEN];"
 
 #if defined(RODS_SERVER)
 #define RS_FILE_UNLINK rsFileUnlink

@@ -490,7 +490,6 @@ l3Opendir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
             rstrcpy (fileOpendirInp.dirName, dataObjInfo->filePath, MAX_NAME_LEN);
             rstrcpy( fileOpendirInp.resc_name_, dataObjInfo->rescInfo->rescName, MAX_NAME_LEN );
             rstrcpy( fileOpendirInp.resc_hier_, dataObjInfo->rescHier, MAX_NAME_LEN );
-            fileOpendirInp.fileType = static_cast< fileDriverType_t >( -1 );//RescTypeDef[rescTypeInx].driverType;
             rstrcpy (fileOpendirInp.addr.hostAddr, location.c_str(), NAME_LEN);
 
             status = rsFileOpendir (rsComm, &fileOpendirInp);

@@ -339,7 +339,6 @@ l3FileGetSingleBuf (rsComm_t *rsComm, int l1descInx,
 #endif // JMC - legacy resource 
         memset (&fileGetInp, 0, sizeof (fileGetInp));
         dataObjInp = L1desc[l1descInx].dataObjInp;
-        fileGetInp.fileType = static_cast< fileDriverType_t >( -1 );//(fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
         rstrcpy (fileGetInp.addr.hostAddr,  location.c_str(), NAME_LEN);
         rstrcpy (fileGetInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
         rstrcpy( fileGetInp.resc_name_, dataObjInfo->rescInfo->rescName, MAX_NAME_LEN );

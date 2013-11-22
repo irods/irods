@@ -11,6 +11,7 @@
 #include "rods.h"
 #include "global.h"
 #include "md5.h"
+#include "sha1.h"
 
 #ifdef  __cplusplus
 extern "C" {
@@ -20,6 +21,8 @@ int
 chksumLocFile (char *fileName, char *chksumStr);
 int
 md5ToStr (unsigned char *digest, char *chksumStr);
+int
+hashToStr (unsigned char *digest, char *digestStr);
 int
 rcChksumLocFile (char *fileName, char *chksumFlag, keyValPair_t *condInput);
 

@@ -28,6 +28,7 @@ CFLAGS += `../../packaging/compiler_check.sh 4 2`
 # Source files
 #	core	utility functions
 #	md5	MD5 hash generation functions
+# sha1 SHA1 hash generation functions
 #	api	client API functions (LIB_API_OBJS is set by api.mk)
 #       hasher  Utility classes for generating hash digests
 #
@@ -90,7 +91,7 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/eirods_tcp_object.o \
 		$(libCoreObjDir)/eirods_network_factory.o \
 		$(libCoreObjDir)/eirods_network_manager.o \
-	    $(libCoreObjDir)/eirods_buffer_encryption.o \
+		$(libCoreObjDir)/eirods_buffer_encryption.o \
 		$(libCoreObjDir)/eirods_auth_object.o \
 		$(libCoreObjDir)/eirods_auth_plugin.o \
 		$(libCoreObjDir)/eirods_auth_manager.o \
@@ -100,6 +101,16 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/eirods_osauth_auth_object.o \
 		$(libCoreObjDir)/eirods_pluggable_auth_scheme.o \
 		$(libCoreObjDir)/eirods_kvp_string_parser.o
+
+ifdef NETCDF_CLIENT
+LIB_CORE_OBJS += $(libCoreObjDir)/ncattrUtil.o $(libCoreObjDir)/ncUtil.o  \
+               $(libCoreObjDir)/ncarchUtil.o
+endif
+
+ifdef USE_BOOST_ASIO
+LIB_CORE_OBJS += $(libCoreObjDir)/socket_wrapper.o 
+endif
+
 
 ifdef GSI_AUTH
 LIB_CORE_OBJS += $(libCoreObjDir)/igsi.o
@@ -118,6 +129,10 @@ CFLAGS +=	-DEXTENDED_ICAT
 INCLUDES +=	-I$(svrExtIcatIncDir)
 endif
 
+ifdef OOI_CI
+LIB_CORE_OBJS += $(libCoreObjDir)/ooiCi.o
+endif
+
 # Logging (automatically generated source)
 LOG_SRC =	$(libCoreSrcDir)/rodsLog.c
 
@@ -126,7 +141,13 @@ LOG_SRC =	$(libCoreSrcDir)/rodsLog.c
 LIB_MD5_OBJS =	\
 		$(libMd5ObjDir)/md5c.o \
 		$(libMd5ObjDir)/md5Checksum.o
-INCLUDES +=	-I$(libMd5IncDir)
+INCLUDES +=    -I$(libMd5IncDir) -I$(libSha1IncDir)
+
+# SHA1
+LIB_SHA1_OBJS =        \
+               $(libSha1ObjDir)/sha1.o
+INCLUDES +=    -I$(libSha1IncDir)
+
 
 # Hasher
 LIB_HASHER_OBJS = \
@@ -162,7 +183,8 @@ INCLUDES +=	-I$(libApiIncDir)
 OBJS =	$(LIB_CORE_OBJS) \
         $(LIB_API_OBJS) \
         $(LIB_MD5_OBJS)	\
-		$(LIB_RBUDP_OBJS) \
+        $(LIB_SHA1_OBJS) \
+        $(LIB_RBUDP_OBJS) \
         $(LIB_HASHER_OBJS) 
 
 BOOST_LIBS = $(BOOST_DIR)/stage/lib/libboost_system.a \
@@ -193,6 +215,9 @@ endif
 ifdef IRODS_SYSLOG
 CFLAGS_OPTIONS += -D IRODS_SYSLOG
 endif
+ifdef SYSLOG_FACILITY_CODE
+CFLAGS_OPTIONS += -D SYSLOG_FACILITY_CODE=$(SYSLOG_FACILITY_CODE)
+endif
 
 
 #
@@ -200,7 +225,7 @@ endif
 #
 .PHONY:	all lib libs clean print_cflags
 vpath %c	$(libCoreSrcDir) $(libApiSrcDir) $(libMd5SrcDir) 	\
-		$(libRbudpSrcDir) $(libHasherSrcDir)
+		$(libSha1SrcDir) $(libRbudpSrcDir) $(libHasherSrcDir)
 
 
 BOOST_LIBS = $(BOOST_DIR)/stage/lib/libboost_system.a \
@@ -289,6 +314,11 @@ $(LIB_API_OBJS):  $(libApiObjDir)/%.o: $(libApiSrcDir)/%.c $(DEPEND) $(BOOST_LIB
 $(LIB_MD5_OBJS):  $(libMd5ObjDir)/%.o: $(libMd5SrcDir)/%.c $(configMk) $(platformMk)
 	@echo "Compile md5 `basename $@`..."
 	@$(CC) -c $(MD5_CFLAGS) -o $@ $<
+
+# Build SHA1
+$(LIB_SHA1_OBJS):  $(libSha1ObjDir)/%.o: $(libSha1SrcDir)/%.c $(configMk) $(platformMk)
+	@echo "Compile sha1 `basename $@`..."
+	@$(CC) -c $(CFLAGS) -o $@ $<
 
 # Build Hasher
 $(LIB_HASHER_OBJS): $(libHasherObjDir)/%.o: $(libHasherSrcDir)/%.c $(configMk) $(platformMk)

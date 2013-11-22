@@ -9,6 +9,8 @@
 #
 msiobjget_https|msiobjget_http
 msiobjget_ftp|msiobjget_http
+msiobjput_https|msiobjput_http
+msiobjput_ftp|msiobjput_http
 acExtractMetadataForImageForRaja|acExtractMetadata
 openObj|msiDataObjOpen
 readObj|msiDataObjRead

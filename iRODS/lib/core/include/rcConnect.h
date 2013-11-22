@@ -231,9 +231,11 @@ int
 clientLogin(rcComm_t *conn, const char* _context = 0, const char* _scheme_override = 0 );
 int
 clientLoginPam(rcComm_t *conn, char *password, int ttl);
+int
+clientLoginTTL(rcComm_t *conn, int ttl);
 
 char *
-getSessionSignitureClientside();
+getSessionSignatureClientside();
 
 int
 clientLoginWithPassword(rcComm_t *conn, char* password);

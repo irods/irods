@@ -22,7 +22,7 @@ main(int argc, char **argv) {
     int reconnFlag;
     
 
-    optStr = "hfIKN:n:PQrvVX:R:TZ";
+    optStr = "hfIKN:n:PQrt:vVX:R:TZ";
    
     status = parseCmdLineOpt (argc, argv, optStr, 1, &myRodsArgs);
 
@@ -169,6 +169,7 @@ usage () {
 " --lfrestart lfRestartFile - specifies that the large file restart option is",
 "      on and the lfRestartFile input specifies a local file that contains",
 "      the restart info.",
+" -t  ticket - ticket (string) to use for ticket-based access.",
 " --rlock - use advisory read lock for the download",
 " -h  this help",
 ""};

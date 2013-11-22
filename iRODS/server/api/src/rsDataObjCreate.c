@@ -521,7 +521,6 @@ l3CreateByObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     rstrcpy( fileCreateInp.resc_name_, location.c_str(),      MAX_NAME_LEN );
     rstrcpy( fileCreateInp.resc_hier_, dataObjInfo->rescHier, MAX_NAME_LEN );
     rstrcpy( fileCreateInp.objPath,    dataObjInfo->objPath,  MAX_NAME_LEN );
-    fileCreateInp.fileType = static_cast< fileDriverType_t >( -1 );// RescTypeDef[rescTypeInx].driverType;
     rstrcpy( fileCreateInp.addr.hostAddr, location.c_str(), NAME_LEN );
              
     rstrcpy (fileCreateInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
@@ -529,6 +528,10 @@ l3CreateByObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     // =-=-=-=-=-=-=-
     // JMC - backport 4774
     chkType = getchkPathPerm (rsComm, dataObjInp, dataObjInfo);
+#ifdef FILESYSTEM_META
+    copyFilesystemMetadata(&dataObjInfo->condInput,
+                           &fileCreateInp.condInput);
+#endif
     if (chkType == DISALLOW_PATH_REG) {
         return PATH_REG_NOT_ALLOWED;
     } else if (chkType == NO_CHK_PATH_PERM) {

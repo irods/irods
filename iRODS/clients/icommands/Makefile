@@ -83,6 +83,7 @@ OBJS =		\
 		$(objDir)/ips.o  \
 		$(objDir)/ifsck.o \
 		$(objDir)/genOSAuth.o \
+		$(objDir)/iticket.o \
 		$(objDir)/igroupadmin.o
 
 
@@ -132,7 +133,13 @@ BINS =		\
 		$(binDir)/ips   \
 		$(binDir)/ifsck \
 		$(binDir)/genOSAuth \
+		$(binDir)/iticket \
 		$(binDir)/igroupadmin 
+
+ifdef NETCDF_CLIENT
+OBJS += $(objDir)/incattr.o $(objDir)/inc.o $(objDir)/incarch.o
+BINS += $(binDir)/incattr $(binDir)/inc $(binDir)/incarch
+endif
 
 #
 # Compile and link flags

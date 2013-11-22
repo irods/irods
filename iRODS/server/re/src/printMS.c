@@ -325,7 +325,7 @@ int writePosInt(msParam_t* where, msParam_t* inInt, ruleExecInfo_t *rei)
  * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] where - a msParam of type STR_MS_T which is the buffer name in ruleExecOut. It can be stdout or stderr.
- * \param[in] inBuf - a msParam of type STR_MS_T - related to the status output
+ * \param[in] inBuf - a msParam of type BUF_LEN_MS_T. 
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
@@ -355,20 +355,19 @@ int writeBytesBuf(msParam_t* where, msParam_t* inBuf, ruleExecInfo_t *rei)
         writeId = where->label;
     }
         
-    if (inBuf->inpOutBuf != NULL) {
-        writeStr = (char *) malloc(strlen((const char*)inBuf->inpOutBuf->buf) + MAX_COND_LEN);
-        strcpy(writeStr , (const char*)inBuf->inpOutBuf->buf);
+    if (inBuf->inpOutBuf) {
+            /* Buffer might no be null-terminated */
+            writeStr = (char*)malloc(inBuf->inpOutBuf->len + 1);
+            strncpy(writeStr, (char*)inBuf->inpOutBuf->buf, inBuf->inpOutBuf->len);
+            writeStr[inBuf->inpOutBuf->len] = '\0';
     }
     else {
-        writeStr = (char *) malloc(strlen(inBuf->label) + MAX_COND_LEN);
-        strcpy(writeStr , inBuf->label);
+      writeStr = strdup(inBuf->label);
     }
 
     status = _writeString(writeId, writeStr, rei);
         
-    if (writeStr != NULL) {
-        free(writeStr);
-    }
+    if (writeStr != NULL)  free(writeStr);
 
     return (status);
 }

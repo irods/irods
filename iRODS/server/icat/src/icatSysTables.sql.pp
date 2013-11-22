@@ -484,6 +484,66 @@ create table R_SPECIFIC_QUERY
    create_ts            varchar(32)
  ) SETCHARACTERSET;
 
+/* Main ticket table.
+   Column ticket_type: read or write;
+          object_type: data or collection;
+          restrictions: flag for hosts, users, both or neither,
+                  may be used to avoid unneeded queries on 
+                  the ticket_allowed tables below,
+                  default is any are allowed. */
+create table R_TICKET_MAIN
+(
+   ticket_id           INT64TYPE not null,
+   ticket_string       varchar(100),
+   ticket_type         varchar(20),   
+   user_id             INT64TYPE not null,
+   object_id           INT64TYPE not null,
+   object_type         varchar(16),
+   uses_limit          int  DEFAULT 0,
+   uses_count          int  DEFAULT 0,
+   write_file_limit    int  DEFAULT 10, 
+   write_file_count    int  DEFAULT 0, 
+   write_byte_limit    int  DEFAULT 0,
+   write_byte_count    int  DEFAULT 0,
+   ticket_expiry_ts    varchar(32),
+   restrictions        varchar(16),
+   create_ts           varchar(32),
+   modify_ts           varchar(32)
+);
+
+create table R_TICKET_ALLOWED_HOSTS
+(
+   ticket_id           INT64TYPE not null,
+   host                varchar(32)
+);
+
+create table R_TICKET_ALLOWED_USERS
+(
+   ticket_id           INT64TYPE not null,
+   user_name           varchar(250) not null
+);
+
+create table R_TICKET_ALLOWED_GROUPS
+(
+   ticket_id           INT64TYPE not null,
+   group_name           varchar(250) not null
+);
+
+create table R_OBJT_FILESYSTEM_META
+(
+   object_id INT64TYPE not null,
+   file_uid varchar(32),
+   file_gid varchar(32),
+   file_owner varchar(250),
+   file_group varchar(250),
+   file_mode varchar(32),
+   file_ctime varchar(32),
+   file_mtime varchar(32),
+   file_source_path varchar(2700),
+   create_ts varchar(32),
+   modify_ts varchar(32)
+);
+
 #ifdef mysql
 
 /* The max size for a MySQL InnoDB index prefix is 767 bytes,
@@ -568,3 +628,13 @@ create index idx_tokn_main3 on R_TOKN_MAIN (token_value);
 create index idx_tokn_main4 on R_TOKN_MAIN (token_namespace);
 create index idx_specific_query1 on R_SPECIFIC_QUERY (sqlStr VARCHAR_MAX_IDX_SIZE);
 create index idx_specific_query2 on R_SPECIFIC_QUERY (alias);
+
+
+/* these indexes enforce the uniqueness constraint on the ticket strings
+   (which can be provided by users), hosts, and users */
+create unique index idx_ticket on R_TICKET_MAIN (ticket_string);
+create unique index idx_ticket_host on R_TICKET_ALLOWED_HOSTS (ticket_id, host);
+create unique index idx_ticket_user on R_TICKET_ALLOWED_USERS (ticket_id, user_name);
+create unique index idx_ticket_group on R_TICKET_ALLOWED_GROUPS (ticket_id, group_name);
+
+create unique index idx_obj_filesystem_meta1 on R_OBJT_FILESYSTEM_META (object_id);

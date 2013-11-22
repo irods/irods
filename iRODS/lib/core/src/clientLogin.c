@@ -24,15 +24,15 @@
 #include "eirods_pam_auth_object.h"
 #include "authPluginRequest.h"
 
-static char prevChallengeSignitureClient[200];
+static char prevChallengeSignatureClient[200];
 
-char *getSessionSignitureClientside() {
-    return(prevChallengeSignitureClient);
+char *getSessionSignatureClientside() {
+    return(prevChallengeSignatureClient);
 }
 
-void setSessionSignitureClientside( char* _sig ) {
+void setSessionSignatureClientside( char* _sig ) {
     snprintf(
-        prevChallengeSignitureClient,
+        prevChallengeSignatureClient,
         200,
         "%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x",
         (unsigned char)_sig[0], 
@@ -52,7 +52,7 @@ void setSessionSignitureClientside( char* _sig ) {
         (unsigned char)_sig[14], 
         (unsigned char)_sig[15] );
 
-} // setSessionSignitureClientside
+} // setSessionSignatureClientside
 
 
 
@@ -271,6 +271,63 @@ int clientLoginPam( rcComm_t* Conn,
 #endif
 
     }
+
+/*
+ Make a short-lived password.
+ TTL is Time-to-live, in hours, typically in the few days range.
+ */
+int clientLoginTTL(rcComm_t *Conn, int ttl) 
+{
+   getLimitedPasswordInp_t getLimitedPasswordInp;
+   getLimitedPasswordOut_t *getLimitedPasswordOut;
+   char hashBuf[100];
+   unsigned char digest[100];
+   char limitedPw[100];
+   int status;
+
+   char userPassword[MAX_PASSWORD_LEN+10]="";
+
+   status = obfGetPw(userPassword);
+   if (status) {
+      memset(userPassword, 0, sizeof(userPassword));
+      return(status);
+   }
+
+   status = obfSavePw(0, 0, 0,  "   "); /* clear out the permanent password */
+
+   getLimitedPasswordInp.ttl = ttl;
+   getLimitedPasswordInp.unused1 = "";
+
+   status = rcGetLimitedPassword(Conn, 
+                                &getLimitedPasswordInp,
+                                &getLimitedPasswordOut);
+   if (status) {
+      printError(Conn, status, "rcGetLimitedPassword");
+      memset(userPassword, 0, sizeof(userPassword));
+      return(status);
+   }
+
+   /* calcuate the limited password, which is a hash of the user's main pw and
+      the returned stringToHashWith. */
+   memset(hashBuf, 0, sizeof(hashBuf));
+   strncpy(hashBuf, getLimitedPasswordOut->stringToHashWith, 100);
+   strncat(hashBuf, userPassword, 100);
+
+   obfMakeOneWayHash(
+      HASH_TYPE_DEFAULT,
+      (unsigned char*)hashBuf,
+      100, 
+      digest);
+
+   hashToStr(digest, limitedPw);
+
+   status = obfSavePw(0, 0, 0,  limitedPw);
+
+   memset(hashBuf, 0, sizeof(hashBuf));
+   memset(userPassword, 0, sizeof(userPassword));
+
+   return(0);
+}
 
 /// =-=-=-=-=-=-=-
 /// @brief clientLogin provides the interface for authenticaion

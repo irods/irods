@@ -79,20 +79,6 @@ INCLUDES +=	-I$(svrApiIncDir)
 SVR_DRIVERS_OBJS = \
 		$(svrDriversObjDir)/fileDriver.o
 
-ifdef AMAZON_S3
-SVR_DRIVERS_OBJS+=$(svrDriversObjDir)/s3FileDriver.o
-endif
-
-ifdef DDN_WOS
-SVR_DRIVERS_CPP_OBJS+=$(svrDriversObjDir)/wosFunctPP.o
-SVR_DRIVERS_OBJS+=$(svrDriversObjDir)/wosFileDriver.o
-CPPFLAGS = -g -O0 -c -D$(OS_platform) -I$(libCoreIncDir) -I$(svrDriversIncDir) -I$(WOS_DIR)/include -I$(BOOST_DIR)
-endif
-
-ifdef HPSS
-SVR_DRIVERS_OBJS+=$(svrDriversObjDir)/hpssFileDriver.o
-endif
-
 INCLUDES +=	-I$(svrDriversIncDir)
 
 
@@ -198,8 +184,12 @@ CFLAGS +=		-DEXTENDED_ICAT
 INCLUDES +=	-I$(svrExtIcatIncDir)
 endif
 
+ifdef SYSLOG_FACILITY_CODE
+CFLAGSS +=     -D SYSLOG_FACILITY_CODE=$(SYSLOG_FACILITY_CODE)
+endif
+
 # re
-CFLAGS +=       -DRULE_ENGINE -DRULE_ENGINE_N -DCACHE_ENABLE
+CFLAGS +=       -DCACHE_ENABLE
 
 ifeq ($(OS_platform), osx_platform)
 # osx_platform does not support the POSIX realtime extension, but the shared memory functions are supported 
@@ -255,6 +245,10 @@ SVR_RE_OBJS =	\
 		$(svrReObjDir)/eirods_ms_plugin.o \
 		$(svrReObjDir)/eirods_operation_rule_execution_manager.o
 
+ifdef NETCDF_API
+SVR_RE_OBJS+=  $(svrReObjDir)/reNetcdf.o
+endif
+
 INCLUDES +=	-I$(svrReIncDir)
 SERVER_BINS +=	$(serverBinDir)/irodsReServer
 SERVER_OBJS +=	$(svrCoreObjDir)/irodsReServer.o
@@ -295,9 +289,6 @@ endif
 # All objects (except tests)
 OBJS =		$(SVR_CORE_OBJS) $(SVR_DRIVERS_OBJS) $(SVR_API_OBJS) \
 		$(SVR_ICAT_OBJS) $(SVR_RE_OBJS) $(SVR_DBR_OBJS)
-ifdef DDN_WOS
-OBJS+=$(SVR_DRIVERS_CPP_OBJS)
-endif
 
 # Server configuration
 CONFIG +=	$(svrConfigDir)/server.config $(svrConfigDir)/irodsHost
@@ -467,9 +458,6 @@ $(SVR_CORE_OBJS):	$(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.c $(DEPEND) $(BOOST_L
 	@echo "Compile core `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
-$(svrDriversObjDir)/wosFunctPP.o:	$(svrDriversSrcDir)/wosFunctPP.cpp
-	g++ $(CPPFLAGS) -o $(svrDriversObjDir)/wosFunctPP.o $(svrDriversSrcDir)/wosFunctPP.cpp
-
 # Build server drivers
 $(SVR_DRIVERS_OBJS):	$(svrDriversObjDir)/%.o: $(svrDriversSrcDir)/%.c $(DEPEND) $(BOOST_LIBS)
 	@echo "Compile drivers `basename $@`..."
@@ -558,26 +546,26 @@ $(svrTestBinDir)/reTest: $(svrTestObjDir)/reTest.o $(OBJS) $(BOOST_LIBS) $(BOOST
 	@$(LDR) -o $@ $^ $(LDFLAGS) $(BOOST_LIBS) -lrt
 
 # cll and chl
-$(svrTestBinDir)/test_cll: $(svrTestObjDir)/test_cll.o $(SVR_ICAT_OBJS) $(BOOST_LIBS)
+$(svrTestBinDir)/test_cll: $(svrTestObjDir)/test_cll.o $(SVR_ICAT_OBJS) $(LIBRARY) $(BOOST_LIBS)
 	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $^ $(LDFLAGS) $(BOOST_LIBS) -lrt
+	@$(LDR) -o $@ $^ $(LIBRARY) $(LDFLAGS) $(BOOST_LIBS) -lrt
 
-$(svrTestBinDir)/test_chl: $(svrTestObjDir)/test_chl.o $(SVR_ICAT_OBJS) $(svrCoreObjDir)/readServerConfig.o $(BOOST_LIBS)
+$(svrTestBinDir)/test_chl: $(svrTestObjDir)/test_chl.o $(SVR_ICAT_OBJS) $(LIBRARY) $(svrCoreObjDir)/readServerConfig.o $(BOOST_LIBS)
 	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $^ $(LDFLAGS) $(BOOST_LIBS) -lrt
+	@$(LDR) -o $@ $^ $(LIBRARY) $(LDFLAGS) $(BOOST_LIBS) -lrt
 
 # genq and genu
-$(svrTestBinDir)/test_genq: $(svrTestObjDir)/test_genq.o $(SVR_ICAT_OBJS) $(svrCoreObjDir)/readServerConfig.o $(BOOST_LIBS)
+$(svrTestBinDir)/test_genq: $(svrTestObjDir)/test_genq.o $(SVR_ICAT_OBJS) $(LIBRARY) $(svrCoreObjDir)/readServerConfig.o $(BOOST_LIBS)
 	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $^ $(LDFLAGS) $(BOOST_LIBS) -lrt
+	@$(LDR) -o $@ $^ $(LIBRARY) $(LDFLAGS) $(BOOST_LIBS) -lrt
 
-$(svrTestBinDir)/test_genu: $(svrTestObjDir)/test_genu.o $(SVR_ICAT_OBJS) $(svrCoreObjDir)/readServerConfig.o $(BOOST_LIBS)
+$(svrTestBinDir)/test_genu: $(svrTestObjDir)/test_genu.o $(SVR_ICAT_OBJS) $(LIBRARY) $(svrCoreObjDir)/readServerConfig.o $(BOOST_LIBS)
 	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $^ $(LDFLAGS) $(BOOST_LIBS) -lrt
+	@$(LDR) -o $@ $^ $(LIBRARY) $(LDFLAGS) $(BOOST_LIBS) -lrt
 
-$(svrTestBinDir)/test_rda: $(svrTestObjDir)/test_rda.o $(SVR_ICAT_OBJS) $(BOOST_LIBS)
+$(svrTestBinDir)/test_rda: $(svrTestObjDir)/test_rda.o $(SVR_ICAT_OBJS) $(LIBRARY) $(BOOST_LIBS)
 	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $^ $(LDFLAGS) $(BOOST_LIBS) -lrt
+	@$(LDR) -o $@ $^ $(LIBRARY) $(LDFLAGS) $(BOOST_LIBS) -lrt
 
 
 

@@ -51,7 +51,7 @@ extern icatSessionStruct *chlGetRcs();
 #define MAX_LINKS_TABLES_OR_COLUMNS 500
 #endif
 
-#define MAX_TSQL 100
+#define MAX_TSQL 110
 
 #define MAX_SQL_SIZE_GQ MAX_SQL_SIZE_GENERAL_QUERY // JMC - backport 4848
 
@@ -70,6 +70,9 @@ char accessControlUserName[MAX_NAME_LEN];
 char accessControlZone[MAX_NAME_LEN];
 int accessControlPriv;
 int accessControlControlFlag=0;
+char sessionTicket[MAX_NAME_LEN]="";
+char sessionClientAddr[MAX_NAME_LEN]="";
+
 
 struct tlinks {
    int table1;
@@ -609,7 +612,7 @@ int setTable(int column, int sel, int selectOption, int castOption) {
 	       rstrcat(whereSQL, "cast (", MAX_SQL_SIZE_GQ);
 	    }
 
-        if (doUpperCase==1) {
+        if (doUpperCase==1 && castOption==0) {
            rstrcat(whereSQL, "upper (", MAX_SQL_SIZE_GQ);
         }
 
@@ -617,7 +620,7 @@ int setTable(int column, int sel, int selectOption, int castOption) {
 	    rstrcat(whereSQL, ".", MAX_SQL_SIZE_GQ);
 	    rstrcat(whereSQL, Columns[colIx].columnName, MAX_SQL_SIZE_GQ);
 
-        if (doUpperCase==1) {
+        if (doUpperCase==1 && castOption==0) {
             rstrcat(whereSQL, " )", MAX_SQL_SIZE_GQ);
         }
 
@@ -1063,6 +1066,9 @@ addInClauseToWhereForParentOf(char *inArg) {
 	 rstrcpy((char *)&inStrings[inStrIx], tmpStr,
 		 (MAX_SQL_SIZE_GQ)-inStrIx);
 	 inStrings[inStrIx+ncopy]='\0';
+if (cllBindVarCount+1 >= MAX_BIND_VARS) {
+           return(CAT_BIND_VARIABLE_LIMIT_EXCEEDED);
+        }
 	 cllBindVars[cllBindVarCount++]=(char *)&inStrings[inStrIx];
 	 inStrIx = inStrIx+ncopy+1;
       }
@@ -1326,6 +1332,7 @@ int
 genqAppendAccessCheck() {
    int doCheck=0;
    int ACDebug=0;
+   int addedTicketCheck=0;
 
    if (ACDebug) printf("genqAC 1\n");
 
@@ -1346,26 +1353,81 @@ genqAppendAccessCheck() {
       }
    }
 
+   if (cllBindVarCount+6 >= MAX_BIND_VARS) {
+      /* too close, should normally have plenty of slots */
+      return(CAT_BIND_VARIABLE_LIMIT_EXCEEDED);
+   }
+
+   /* First, in all cases (non-admin), check on ticket_string
+      and, if present, restrict to the owner */
+   if ( strstr(selectSQL, "ticket_string") != NULL &&
+        strstr(selectSQL, "R_TICKET_MAIN") != NULL
+      ) {
+      if (strlen(whereSQL)>6) rstrcat(whereSQL, " AND ", MAX_SQL_SIZE_GQ);
+      cllBindVars[cllBindVarCount++]=accessControlUserName;
+      cllBindVars[cllBindVarCount++]=accessControlZone;
+      rstrcat(whereSQL, "R_TICKET_MAIN.user_id in (select user_id from R_USER_MAIN UM where UM.user_name = ? AND UM.zone_name=?)", MAX_SQL_SIZE_GQ);
+   }
+
    if (doCheck==0) return(0);
 
    if (ACDebug)  printf("genqAC 4\n");
 
    /* if an item in R_DATA_MAIN is being accessed, add a
       (complicated) addition to the where clause to check access */
-   if (strstr(selectSQL, "R_DATA_MAIN") != NULL) {
-      if (strlen(whereSQL)>6) rstrcat(whereSQL, " AND ", MAX_SQL_SIZE_GQ);
-      cllBindVars[cllBindVarCount++]=accessControlUserName;
-      cllBindVars[cllBindVarCount++]=accessControlZone;
-      rstrcat(whereSQL, "R_DATA_MAIN.data_id in (select object_id from R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and UG.group_user_id = OA.user_id and OA.object_id = R_DATA_MAIN.data_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = 'read object')", MAX_SQL_SIZE_GQ);
-   }
+   if (strstr(selectSQL, "R_DATA_MAIN") != NULL ||
+       strstr(whereSQL, "R_DATA_MAIN") != NULL ) {
+
+        if (strlen(whereSQL)>6) rstrcat(whereSQL, " AND ", MAX_SQL_SIZE_GQ);
+        if (sessionTicket[0]=='\0') {
+            /* Normal access control */
+
+            cllBindVars[cllBindVarCount++]=accessControlUserName;
+            cllBindVars[cllBindVarCount++]=accessControlZone;
+            rstrcat(whereSQL, "R_DATA_MAIN.data_id in (select object_id from R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and UG.group_user_id = OA.user_id and OA.object_id = R_DATA_MAIN.data_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = 'read object')", MAX_SQL_SIZE_GQ);
+        }
+        else {
+            /* Ticket-based access control */
+            cllBindVars[cllBindVarCount++]=sessionTicket;
+            cllBindVars[cllBindVarCount++]=sessionTicket;
+            rstrcat(whereSQL, "( R_DATA_MAIN.data_id in (select object_id from R_TICKET_MAIN TICK where TICK.ticket_string=?) OR R_COLL_MAIN.coll_id in (select object_id from R_TICKET_MAIN TICK where TICK.ticket_string=?))", MAX_SQL_SIZE_GQ);
+            addedTicketCheck=1;
+        }
+    }
 
    /* if an item in R_COLL_MAIN is being accessed, add a
       (complicated) addition to the where clause to check access */
-   if (strstr(selectSQL, "R_COLL_MAIN") != NULL) {
-      if (strlen(whereSQL)>6) rstrcat(whereSQL, " AND ", MAX_SQL_SIZE_GQ);
-      cllBindVars[cllBindVarCount++]=accessControlUserName;
-      cllBindVars[cllBindVarCount++]=accessControlZone;
-      rstrcat(whereSQL, "R_COLL_MAIN.coll_id in (select object_id from R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = R_COLL_MAIN.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = 'read object')", MAX_SQL_SIZE_GQ);
+   if (strstr(selectSQL, "R_COLL_MAIN") != NULL ||
+       strstr(whereSQL, "R_COLL_MAIN") != NULL) {
+        if (sessionTicket[0]=='\0') {
+            /* Normal access control */
+            if (strlen(whereSQL)>6) rstrcat(whereSQL, " AND ", MAX_SQL_SIZE_GQ);
+            cllBindVars[cllBindVarCount++]=accessControlUserName;
+            cllBindVars[cllBindVarCount++]=accessControlZone;
+            rstrcat(whereSQL, "R_COLL_MAIN.coll_id in (select object_id from R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = R_COLL_MAIN.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = 'read object')", MAX_SQL_SIZE_GQ);
+        }
+        else {
+            /* Ticket-based access control */
+            /* We add this unless we already added the SQL check a few
+              lines above that includes this */
+            if (addedTicketCheck!=1 ) {
+                if (strlen(whereSQL)>6) rstrcat(whereSQL, " AND ", MAX_SQL_SIZE_GQ);
+                cllBindVars[cllBindVarCount++]=sessionTicket;
+                if (strstr(whereSQL, "parent_coll_name =") != NULL) {
+                    /*
+                      If the where clause is checking on the parent
+                      collection, assume that the needed ticket check is on
+                      the parent.  This works for the 'ils' queries so that
+                      a read (or write) ticket on a collection will find the
+                      existing sub-collections.
+                      */
+                    rstrcat(whereSQL, "parent_coll_name IN (select coll_name from R_COLL_MAIN where coll_id in (select object_id from R_TICKET_MAIN TICK where TICK.ticket_string=?))", MAX_SQL_SIZE_GQ);
+                }
+                else {
+                    rstrcat(whereSQL, "R_COLL_MAIN.coll_id in (select object_id from R_TICKET_MAIN TICK where TICK.ticket_string=?)", MAX_SQL_SIZE_GQ);
+                }
+            }
+        }
    }
    return(0);
 }
@@ -1401,38 +1463,58 @@ generateSpecialQuery(genQueryInp_t genQueryInp, char *resultingSQL) {
    static char rescName[LONG_NAME_LEN];
    static char userName[NAME_LEN]="";
    static char userZone[NAME_LEN]="";
-   char quotaQuery1[]="select distinct QM.user_id, RM.resc_name, QM.quota_limit, QM.quota_over, QM.resc_id from R_QUOTA_MAIN QM, R_USER_MAIN UM, R_RESC_MAIN RM, R_USER_GROUP UG, R_USER_MAIN UM2 where ( (QM.user_id = UM.user_id and UM.user_name = ? and UM.zone_name = ?) or (QM.user_id = UG.group_user_id and UM2.user_name = ? and UM2.zone_name = ? and UG.user_id = UM2.user_id) ) and ((QM.resc_id = RM.resc_id) or QM.resc_id = '0') order by quota_over desc";
 
-   char quotaQuery2[]="select distinct QM.user_id, RM.resc_name, QM.quota_limit, QM.quota_over, QM.resc_id from R_QUOTA_MAIN QM, R_USER_MAIN UM, R_RESC_MAIN RM, R_USER_GROUP UG, R_USER_MAIN UM2 where ( (QM.user_id = UM.user_id and UM.user_name = ? and UM.zone_name=?) or (QM.user_id = UG.group_user_id and UM2.user_name = ? and UM2.zone_name = ? and UG.user_id = UM2.user_id) ) and ((QM.resc_id = RM.resc_id) or QM.resc_id = '0') and RM.resc_name = ? order by quota_over desc";
+   char quotaQuery1[]="( select distinct QM.user_id, RM.resc_name, QM.quota_limit, QM.quota_over, QM.resc_id from R_QUOTA_MAIN QM, R_RESC_MAIN RM, R_USER_GROUP UG, R_USER_MAIN UM2 where QM.resc_id = RM.resc_id AND (QM.user_id = UG.group_user_id and UM2.user_name = ? and UM2.zone_name = ? and UG.user_id = UM2.user_id )) UNION ( select distinct QM.user_id, RM.resc_name, QM.quota_limit, QM.quota_over, QM.resc_id from R_QUOTA_MAIN QM, R_USER_GROUP UG, R_USER_MAIN UM2, R_RESC_MAIN RM where QM.resc_id = '0' AND (QM.user_id = UG.group_user_id and UM2.user_name = ? and UM2.zone_name = ? and UG.user_id = UM2.user_id)) UNION ( select distinct QM.user_id, RM.resc_name, QM.quota_limit, QM.quota_over, QM.resc_id from R_QUOTA_MAIN QM, R_USER_MAIN UM, R_RESC_MAIN RM WHERE (QM.resc_id = RM.resc_id or QM.resc_id = '0') AND (QM.user_id = UM.user_id and UM.user_name = ? and UM.zone_name = ? )) order by quota_over DESC";
+
+  char quotaQuery2[]="( select distinct QM.user_id, RM.resc_name, QM.quota_limit, QM.quota_over, QM.resc_id from R_QUOTA_MAIN QM, R_RESC_MAIN RM, R_USER_GROUP UG, R_USER_MAIN UM2 where QM.resc_id = RM.resc_id AND RM.resc_name = ? AND (QM.user_id = UG.group_user_id and UM2.user_name = ? and UM2.zone_name = ? and UG.user_id = UM2.user_id )) UNION ( select distinct QM.user_id, RM.resc_name, QM.quota_limit, QM.quota_over, QM.resc_id from R_QUOTA_MAIN QM, R_USER_GROUP UG, R_USER_MAIN UM2, R_RESC_MAIN RM where QM.resc_id = '0' AND RM.resc_name = ? AND (QM.user_id = UG.group_user_id and UM2.user_name = ? and UM2.zone_name = ? and UG.user_id = UM2.user_id)) UNION ( select distinct QM.user_id, RM.resc_name, QM.quota_limit, QM.quota_over, QM.resc_id from R_QUOTA_MAIN QM, R_USER_MAIN UM, R_RESC_MAIN RM WHERE (QM.resc_id = RM.resc_id or QM.resc_id = '0') AND RM.resc_name = ? AND (QM.user_id = UM.user_id and UM.user_name = ? and UM.zone_name = ? )) order by quota_over DESC";
+
    int i, valid=0;
+   int cllCounter=cllBindVarCount;
 
    for (i=0; i<genQueryInp.sqlCondInp.len;i++) {
       if (genQueryInp.sqlCondInp.inx[i]==COL_USER_NAME) {
-	 parseUserName(genQueryInp.sqlCondInp.value[i], userName, 
-				userZone);
-	 if (userZone[0]=='\0') {
-	    char *zoneName;
-	    zoneName = chlGetLocalZone();
-	    strncpy(userZone, zoneName, sizeof userZone);
-	    rodsLog(LOG_ERROR,"userZone1=:%s:\n",userZone);
-	 }
-	 rodsLog(LOG_ERROR,"userZone2=:%s:\n",userZone);
-	 rodsLog(LOG_ERROR,"userName=:%s:\n",userName);
-	 rodsLog(LOG_ERROR,"in=:%s:\n",genQueryInp.sqlCondInp.value[i]);
-	 cllBindVars[cllBindVarCount++]=userName;
-	 cllBindVars[cllBindVarCount++]=userZone;
-	 cllBindVars[cllBindVarCount++]=userName;
-	 cllBindVars[cllBindVarCount++]=userZone;
-	 strncpy(resultingSQL, quotaQuery1, MAX_SQL_SIZE_GQ);
-	 valid=1;
+          parseUserName(genQueryInp.sqlCondInp.value[i], userName, 
+              userZone);
+          if (userZone[0]=='\0') {
+              char *zoneName;
+              zoneName = chlGetLocalZone();
+              strncpy(userZone, zoneName, sizeof userZone);
+              rodsLog(LOG_ERROR,"userZone1=:%s:\n",userZone);
+          }
+          rodsLog(LOG_DEBUG,"spQuery(1) userZone2=:%s:\n",userZone);
+          rodsLog(LOG_DEBUG,"spQuery(1) userName=:%s:\n",userName);
+          rodsLog(LOG_DEBUG,"spQuery(1) in=:%s:\n",
+          genQueryInp.sqlCondInp.value[i]);
+          cllBindVars[cllBindVarCount++]=userName;
+          cllBindVars[cllBindVarCount++]=userZone;
+          cllBindVars[cllBindVarCount++]=userName;
+          cllBindVars[cllBindVarCount++]=userZone;
+          cllBindVars[cllBindVarCount++]=userName;
+          cllBindVars[cllBindVarCount++]=userZone;
+          strncpy(resultingSQL, quotaQuery1, MAX_SQL_SIZE_GQ);
+          valid=1;
       }
    }
    if (valid==0) return(CAT_INVALID_ARGUMENT);
    for (i=0; i<genQueryInp.sqlCondInp.len;i++) {
       if (genQueryInp.sqlCondInp.inx[i]==COL_R_RESC_NAME) {
-	 strncpy(rescName, genQueryInp.sqlCondInp.value[i], sizeof rescName);
-	 cllBindVars[cllBindVarCount++]=rescName;
-	 strncpy(resultingSQL, quotaQuery2, MAX_SQL_SIZE_GQ);
+          rodsLog(LOG_DEBUG,"spQuery(2) userZone2=:%s:\n",userZone);
+          rodsLog(LOG_DEBUG,"spQuery(2) userName=:%s:\n",userName);
+          rodsLog(LOG_DEBUG,"spQuery(2) in=:%s:\n",
+          genQueryInp.sqlCondInp.value[i]);
+          strncpy(rescName, genQueryInp.sqlCondInp.value[i], sizeof rescName);
+          cllBindVars[cllCounter++]=rescName;
+          cllBindVars[cllCounter++]=userName;
+          cllBindVars[cllCounter++]=userZone;
+          cllBindVars[cllCounter++]=rescName;
+          cllBindVars[cllCounter++]=userName;
+          cllBindVars[cllCounter++]=userZone;
+          cllBindVars[cllCounter++]=rescName;
+          cllBindVars[cllCounter++]=userName;
+          cllBindVars[cllCounter++]=userZone;
+
+          strncpy(resultingSQL, quotaQuery2, MAX_SQL_SIZE_GQ);
+          cllBindVarCount=cllCounter;
       }
    }
    return (0);
@@ -1699,6 +1781,7 @@ checkCondInputAccess(genQueryInp_t genQueryInp, int statementNum,
    int userIx=-1, zoneIx=-1, accessIx=-1, dataIx=-1, collIx=-1;
    int status;
    char *zoneName;
+   char *ticketString=NULL;
    static char prevDataId[LONG_NAME_LEN];
    static char prevUser[LONG_NAME_LEN];
    static char prevAccess[LONG_NAME_LEN];
@@ -1706,12 +1789,18 @@ checkCondInputAccess(genQueryInp_t genQueryInp, int statementNum,
 
    for (i=0;i<genQueryInp.condInput.len;i++) {
       if (strcmp(genQueryInp.condInput.keyWord[i],
-		USER_NAME_CLIENT_KW)==0)  userIx=i;
+          USER_NAME_CLIENT_KW)==0)  userIx=i;
       if (strcmp(genQueryInp.condInput.keyWord[i],
-		RODS_ZONE_CLIENT_KW)==0)  zoneIx=i;
+          RODS_ZONE_CLIENT_KW)==0)  zoneIx=i;
       if (strcmp(genQueryInp.condInput.keyWord[i],
-		ACCESS_PERMISSION_KW)==0)  accessIx=i;
-
+          ACCESS_PERMISSION_KW)==0)  accessIx=i;
+      if (strcmp(genQueryInp.condInput.keyWord[i],
+          TICKET_KW)==0) {
+         /* for now, log it but the one used is the session ticket */
+        rodsLog(LOG_NOTICE, "ticket input, value: %s",
+                 genQueryInp.condInput.value[i]);
+        ticketString=genQueryInp.condInput.value[i];
+      }
    }
    if (genQueryInp.condInput.len==1 && 
        strcmp(genQueryInp.condInput.keyWord[0], ZONE_KW)==0) {
@@ -1764,10 +1853,13 @@ checkCondInputAccess(genQueryInp_t genQueryInp, int statementNum,
           zoneName = genQueryInp.condInput.value[zoneIx];
       }
       status = cmlCheckDataObjId(
-			      icss->stmtPtr[statementNum]->resultValue[dataIx],
-			      genQueryInp.condInput.value[userIx],
-			      zoneName,
-			      genQueryInp.condInput.value[accessIx], icss);
+                    icss->stmtPtr[statementNum]->resultValue[dataIx],
+                    genQueryInp.condInput.value[userIx],
+                    zoneName,
+                    genQueryInp.condInput.value[accessIx], 
+/*                  ticketString, accessControlHost, icss); */
+/*                  sessionTicket, accessControlHost, icss); */
+                    sessionTicket, sessionClientAddr, icss); 
       prevStatus=status;
       return(status);
    }
@@ -1793,11 +1885,12 @@ checkCondInputAccess(genQueryInp_t genQueryInp, int statementNum,
    user info.
  */
 int 
-chlGenQueryAccessControlSetup(char *user, char *zone, int priv, 
+chlGenQueryAccessControlSetup(char *user, char *zone, char *host, int priv, 
                               int controlFlag) {
     if (user != NULL ) {
         rstrcpy(accessControlUserName, user, MAX_NAME_LEN);
-	rstrcpy(accessControlZone, zone, MAX_NAME_LEN);
+        rstrcpy(accessControlZone, zone, MAX_NAME_LEN);
+//      rstrcpy(accessControlHost, host, MAX_NAME_LEN);
 	accessControlPriv=priv;
     }
     if (controlFlag > 0 ) {
@@ -1812,6 +1905,15 @@ chlGenQueryAccessControlSetup(char *user, char *zone, int priv,
     }
     return(0);
 }
+
+int 
+chlGenQueryTicketSetup(char *ticket, char *clientAddr) {
+    rstrcpy(sessionTicket, ticket, sizeof(sessionTicket));
+    rstrcpy(sessionClientAddr, clientAddr, sizeof(sessionClientAddr));
+    rodsLog(LOG_NOTICE, "session ticket setup, value: %s", ticket);
+    return(0);
+}
+
 
 /* General Query */
 int

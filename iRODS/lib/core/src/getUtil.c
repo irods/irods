@@ -14,6 +14,24 @@
 #include "rcPortalOpr.h"
 
 int
+setSessionTicket(rcComm_t *myConn, char *ticket) {
+   ticketAdminInp_t ticketAdminInp;
+   int status;
+
+   ticketAdminInp.arg1 = "session";
+   ticketAdminInp.arg2 = ticket;
+   ticketAdminInp.arg3 = "";
+   ticketAdminInp.arg4 = "";
+   ticketAdminInp.arg5 = "";
+   ticketAdminInp.arg6 = "";
+   status = rcTicketAdmin(myConn, &ticketAdminInp);
+   if (status != 0) {
+      printf("set ticket error %d \n", status);
+   }
+   return(status);
+}
+
+int
 getUtil (rcComm_t **myConn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
          rodsPathInp_t *rodsPathInp)
 {
@@ -27,6 +45,16 @@ getUtil (rcComm_t **myConn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
 
     if (rodsPathInp == NULL) {
         return (USER__NULL_INPUT_ERR);
+    }
+ 
+    if (myRodsArgs->ticket == True) {
+        if (myRodsArgs->ticketString == NULL) {
+            rodsLog ( LOG_ERROR,
+                      "initCondForPut: NULL ticketString error");
+            return (USER__NULL_INPUT_ERR);
+        } else {
+            setSessionTicket(conn, myRodsArgs->ticketString);
+        }
     }
 
     initCondForGet (conn, myRodsEnv, myRodsArgs, &dataObjOprInp, &rodsRestart);
@@ -281,6 +309,18 @@ initCondForGet (rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                        rodsArgs->resourceString);
         }
     }
+
+    if (rodsArgs->ticket == True) {
+        if (rodsArgs->ticketString == NULL) {
+            rodsLog ( LOG_ERROR,
+                      "initCondForPut: NULL ticketString error");
+            return (USER__NULL_INPUT_ERR);
+        } else {
+            addKeyVal ( &dataObjOprInp->condInput, TICKET_KW,
+                        rodsArgs->ticketString);
+        }
+    }
+
 
 #ifdef RBUDP_TRANSFER
     if (rodsArgs->rbudp == True) {

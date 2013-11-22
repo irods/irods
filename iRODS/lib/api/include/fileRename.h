@@ -19,7 +19,6 @@
 #include "fileDriver.h"
 
 typedef struct {
-    fileDriverType_t fileType;
     rodsHostAddr_t addr;
     char oldFileName[MAX_NAME_LEN];
     char newFileName[MAX_NAME_LEN];
@@ -27,7 +26,7 @@ typedef struct {
     char objPath[MAX_NAME_LEN];
 } fileRenameInp_t;
     
-#define fileRenameInp_PI "int fileType; struct RHostAddr_PI; str oldFileName[MAX_NAME_LEN]; str newFileName[MAX_NAME_LEN]; str rescHier[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN];"
+#define fileRenameInp_PI "struct RHostAddr_PI; str oldFileName[MAX_NAME_LEN]; str newFileName[MAX_NAME_LEN]; str rescHier[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN];"
 
 #if defined(RODS_SERVER)
 #define RS_FILE_RENAME rsFileRename

@@ -64,6 +64,10 @@ int doTemp=0;
 
 int cipherBlockChaining=0;
 
+/* For now, edit this to change the default hash type, types are
+   HASH_TYPE_MD5 and HASH_TYPE_SHA1 */
+static int defaultHashType=HASH_TYPE_MD5;
+
 /* 
   What can be a main routine for some simple tests.
  */
@@ -263,6 +267,9 @@ obfSavePw(int promptOpt, int fileOpt, int printOpt, char *pwArg)
   char inbuf[MAX_PASSWORD_LEN+100];
   char myPw[MAX_PASSWORD_LEN+10];
   int i, fd, envVal;
+#ifndef USE_BOOST_FS
+  struct stat statbuf;
+#endif
 
   i = obfiGetFilename(fileName);
   if (i != 0) return(i);
@@ -275,8 +282,12 @@ obfSavePw(int promptOpt, int fileOpt, int printOpt, char *pwArg)
 	 iRODSNtGetUserPasswdInputInConsole(inbuf, "Enter your current iRODS password:", promptOpt);
 #else
     if (promptOpt != 1) {
+#ifdef USE_BOOST_FS
       path p ("/bin/stty");
       if (exists(p))
+#else
+      if (stat ("/bin/stty", &statbuf) == 0)
+#endif
         system("/bin/stty -echo");
     }
 
@@ -784,6 +795,48 @@ obfiGetEnvKey()
   return 0;
 }
 
+void
+obfSetDefaultHashType(int type) {
+  defaultHashType=type;
+  if (obfDebug) printf("hashType now %d\n",defaultHashType);
+}
+
+int
+obfGetDefaultHashType() {
+  return(defaultHashType);
+}
+
+/* Generate a hash string using MD5 or Sha1 */
+void
+obfMakeOneWayHash(int hashType,
+                  unsigned char *inBuf, int inBufSize, unsigned char *outHash) {
+
+   MD5_CTX md5Context;
+   SHA1Context sha1Context;
+
+   static char outBuf[50];
+
+   if (hashType == HASH_TYPE_SHA1 || 
+       (hashType==HASH_TYPE_DEFAULT && defaultHashType==HASH_TYPE_SHA1 )) {
+     if (obfDebug) printf("obfMakeOneWayHash sha1\n");
+     SHA1Reset(&sha1Context);
+     SHA1Input(&sha1Context, inBuf, inBufSize);
+     SHA1Result(&sha1Context);
+     memcpy((void *)outHash, (void *)&sha1Context.Message_Digest[0], 16);
+   }
+   else {
+     if (obfDebug) printf("obfMakeOneWayHash md5\n");
+     MD5Init (&md5Context);
+     MD5Update (&md5Context, inBuf, inBufSize);
+     MD5Final (outHash, &md5Context);
+   }
+   sprintf(outBuf,"%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x",
+          outHash[0], outHash[1], outHash[2], outHash[3], 
+          outHash[4], outHash[5], outHash[6], outHash[7], 
+          outHash[8], outHash[9], outHash[10], outHash[11], 
+          outHash[12], outHash[13], outHash[14], outHash[15]);
+}
+
 
 /*
   Obfuscate a string using an input key
@@ -793,7 +846,6 @@ obfEncodeByKey(char *in, char *key, char *out) {
 /*
  Set up an array of characters that we will transpose.
 */
-   MD5_CTX context;
 
    int wheel_len=26+26+10+15;
    int wheel[26+26+10+15];
@@ -806,6 +858,8 @@ obfEncodeByKey(char *in, char *key, char *out) {
    char *cpIn, *cpOut;
    unsigned char *cpKey;
 
+    if (obfDebug) printf("obfEncodeByKey enter key:%s:in:%s\n",key,in);
+
    j=0;
    for (i=0;i<10;i++) wheel[j++]=(int)'0' + i;
    for (i=0;i<26;i++) wheel[j++]=(int)'A' + i;
@@ -817,28 +871,30 @@ obfEncodeByKey(char *in, char *key, char *out) {
    memset(buffer, 0, 17);
 
 /* 
-  Get the MD5 digest of the key to get some bytes with many different values
+  Get the MD5/SHA1 digest of the key to get some bytes with many 
+  different values.
 */
 
-   MD5Init (&context);
-   MD5Update (&context, (unsigned char*)keyBuf, 100);
-   MD5Final (buffer, &context);
+   obfMakeOneWayHash(HASH_TYPE_DEFAULT, (unsigned char *)keyBuf, 100, buffer);
 
-   MD5Init (&context);
-   MD5Update (&context, buffer, 16);  /* MD5 of the MD5 */
-   MD5Final (buffer+16, &context);
+   /* Hash of the hash */
+   obfMakeOneWayHash(HASH_TYPE_DEFAULT, buffer, 16, buffer+16);
 
-   MD5Init (&context);
-   MD5Update (&context, buffer, 32);  /* MD5 of 2 MD5s */
-   MD5Final (buffer+32, &context);
+   /* Hash of 2 hashes */
+   obfMakeOneWayHash(HASH_TYPE_DEFAULT, buffer, 32, buffer+32);
 
-   MD5Init (&context);
-   MD5Update (&context, buffer, 32);  /* MD5 of 2 MD5s */
-   MD5Final (buffer+48, &context);
-
+ /* Hash of 2 hashes */
+   obfMakeOneWayHash(HASH_TYPE_DEFAULT, buffer, 32, buffer+48);
 
    cpIn=in;
    cpOut=out;
+  if (defaultHashType == HASH_TYPE_SHA1) {
+     *cpOut++='s';
+     *cpOut++='h';
+     *cpOut++='a';
+     *cpOut++='1';
+   }
+
    cpKey=buffer;
    pc = 0;
    for (;;cpIn++) {
@@ -862,6 +918,8 @@ obfEncodeByKey(char *in, char *key, char *out) {
       if (found==0) {
 	 if (*cpIn == '\0') {
 	    *cpOut++ = '\0'; 
+      if (obfDebug) printf("obfEncodeByKey key:%s in:%s out:%s\n",
+                                key,in,out);
 	    return;
 	 }
 	 else {*cpOut++=*cpIn;}
@@ -873,9 +931,9 @@ obfEncodeByKey(char *in, char *key, char *out) {
   Obfuscate a string using an input key, version 2.  Version two is
   like the original but uses two key and a hash of them instead of the
   key itself (to keep the key itself even more undiscoverable).  The
-  second key is a session signiture (based on the challenge) (not
+  second key is a session signature (based on the challenge) (not
   secret but known to both client and server and unique for each
-  connection).  It also uses a quasi-cipher-block-chaining alrogithm
+  connection).  It also uses a quasi-cipher-block-chaining algorithm
   and adds a random character (so the 'out' is different even with the
   same 'in' each time).
 */
@@ -920,7 +978,6 @@ obfDecodeByKey(char *in, char *key, char *out) {
 /*
  Set up an array of characters that we will transpose.
 */
-   MD5_CTX context;
    int wheel_len=26+26+10+15;
    int wheel[26+26+10+15];
 
@@ -930,6 +987,20 @@ obfDecodeByKey(char *in, char *key, char *out) {
    char keyBuf[100];
    char *cpIn, *cpOut;
    unsigned char *cpKey;
+
+   int myHashType;
+
+   if (obfDebug) printf("obfDecodeByKey enter key:%s: in:%s\n",key,in);
+
+   if (strncmp(in,"sha1",4)==0) {
+     in += 4;
+     if (obfDebug) printf("using sha1 for decodebykey\n");
+     myHashType=HASH_TYPE_SHA1;
+   }
+   else {
+     if (obfDebug) printf("using md5 for decodebykey\n");
+     myHashType=HASH_TYPE_MD5;
+   }
 
    j=0;
    for (i=0;i<10;i++) wheel[j++]=(int)'0' + i;
@@ -943,23 +1014,19 @@ obfDecodeByKey(char *in, char *key, char *out) {
    memset(buffer, 0, 65);
 
 /* 
-  Get the MD5 digest of the key to get some bytes with many different values
+  Get the MD5/SHA1 digest of the key to get some bytes with many 
+  different values.
 */
-   MD5Init (&context);
-   MD5Update (&context, (unsigned char*)keyBuf, 100);
-   MD5Final (buffer, &context);
+   obfMakeOneWayHash(myHashType,(unsigned char *)keyBuf, 100, buffer);
 
-   MD5Init (&context);
-   MD5Update (&context, buffer, 16);  /* MD5 of the MD5 */
-   MD5Final (buffer+16, &context);
+   /* Hash of the hash */
+   obfMakeOneWayHash(myHashType, buffer, 16, buffer+16);
 
-   MD5Init (&context);
-   MD5Update (&context, buffer, 32);  /* MD5 of 2 MD5s */
-   MD5Final (buffer+32, &context);
+   /* Hash of 2 hashes */
+   obfMakeOneWayHash(myHashType, buffer, 32, buffer+32);
 
-   MD5Init (&context);
-   MD5Update (&context, buffer, 32);  /* MD5 of 2 MD5s */
-   MD5Final (buffer+48, &context);
+   /* Hash of 2 hashes */
+    obfMakeOneWayHash(myHashType, buffer, 32, buffer+48);
 
    cpIn=in;
    cpOut=out;
@@ -988,6 +1055,8 @@ obfDecodeByKey(char *in, char *key, char *out) {
       if (found==0) {
 	 if (*cpIn == '\0') {
 	    *cpOut++ = '\0'; 
+      if (obfDebug) printf("obfDecodeByKey key:%s: in:%s out: %s\n",
+                            key,in,out);
 	    return;
 	 }
 	 else {*cpOut++=*cpIn;}
@@ -1035,26 +1104,21 @@ obfDecodeByKeyV2(char *in, char *key, char *key2, char *out) {
 char *
 obfGetMD5Hash(char *stringToHash) {
 /*
- Set up an array of characters that we will transpose.
+  Set up an array of characters that we will transpose.
 */
-   MD5_CTX context;
-
-   unsigned char buffer[20]; /* the digest is 16 bytes */
-   char keyBuf[100];
+  unsigned char buffer[30]; /* the digest is 16 bytes for MD5, 20 SHA1 */
+  unsigned char keyBuf[100];
 
    static char outBuf[50];
 
    memset(keyBuf, 0, 100);
-   strncpy(keyBuf, stringToHash, 100);
+   strncpy((char *)keyBuf, stringToHash, 100);
 
-   memset(buffer, 0, 20);
-
+   memset(buffer, 0, sizeof(buffer));
 /* 
-  Get the MD5 digest of the key
+  Get the MD5 (or SHA1) digest of the key
 */
-   MD5Init (&context);
-   MD5Update (&context, (unsigned char*)keyBuf, 100);
-   MD5Final (buffer, &context);
+   obfMakeOneWayHash(HASH_TYPE_DEFAULT, keyBuf, 100, buffer);
 
    sprintf(outBuf,"%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x",
 	   buffer[0], buffer[1], buffer[2], buffer[3], 

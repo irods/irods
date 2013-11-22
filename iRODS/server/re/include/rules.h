@@ -7,12 +7,9 @@
 #include "arithmetics.h"
 #include "typing.h"
 
-#ifdef USE_EIRODS
 #include "eirods_ms_plugin.h"
 
 extern eirods::ms_table MicrosTable;
-
-#endif
 
 int setLocalVarValue(char* varName, ruleExecInfo_t *rei, Res* res, char* errmsg, Region *r);
 int readRuleSetFromFile(char *ruleBaseName, RuleSet *ruleSet, Env *funcDesc, int* errloc, rError_t *errmsg, Region *r);

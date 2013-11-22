@@ -9,6 +9,8 @@ rcComm_t *Conn;
 int lastCommandStatus=0;
 int printCount=0;
 
+char myZone[50];
+
 void usage(char *subOpt);
 
 /* 
@@ -293,6 +295,13 @@ doCommand(char *cmdToken[]) {
       return(0);
    }
 
+   if (strcmp(cmdToken[0],"mkgroup") == 0) {
+      userAdmin("mkgroup", cmdToken[1], "rodsgroup",
+               myZone, "", "", "", "");
+
+      return(0);
+   }
+
    if (strcmp(cmdToken[0],"rfg") == 0) {
       userAdmin("modify", "group", cmdToken[1], "remove", cmdToken[2],
 		   cmdToken[3], "", "");
@@ -343,6 +352,7 @@ main(int argc, char **argv) {
 	       status);
       exit (1);
    }
+   strncpy(myZone, myEnv.rodsZone, sizeof(myZone));
 
    for (i=0;i<maxCmdTokens;i++) {
       cmdToken[i]="";
@@ -442,6 +452,7 @@ void usageMain()
 " mkuser Name Password (make a user and set the initial password)",
 " atg groupName userName[#Zone] (add to group - add a user to a group)",
 " rfg groupName userName[#Zone] (remove from group - remove a user from a group)",
+" mkgroup groupName[#Zone] (make a new group)",
 " help (or h) [command] (this help, or more details on a command)",
 ""};
    printMsgs(Msgs);
@@ -487,6 +498,13 @@ usage(char *subOpt)
 "for groups they are members of.  They can see group membership via iuserinfo.",
 ""};
 
+   char *mkgroupMsgs[]={
+" mkgroup groupName[#Zone] (make a new group)",
+"Make a new group.  You will need to add yourself to the new group to then",
+"be able to add and remove others (when the group is empty groupadmins are",
+"allowed to add themselves.)",
+""};
+
    char *helpMsgs[]={
 " help (or h) [command] (general help, or more details on a command)",
 " If you specify a command, a brief description of that command",
@@ -497,7 +515,8 @@ usage(char *subOpt)
                     "lg",
 		    "mkuser",
 		    "atg",
-		    "rfg"
+		    "rfg",
+        "mkgroup",
 		    "help", "h",
 		    ""};
 
@@ -506,6 +525,7 @@ usage(char *subOpt)
 		    mkuserMsgs,
 		    atgMsgs, 
 		    rfgMsgs,
+        mkgroupMsgs,
 		    helpMsgs, helpMsgs };
 
    if (*subOpt=='\0') {

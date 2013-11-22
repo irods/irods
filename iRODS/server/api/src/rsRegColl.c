@@ -78,6 +78,21 @@ _rsRegColl (rsComm_t *rsComm, collInp_t *collCreateInp)
             rstrcpy (collInfo.collInfo2, tmpStr, NAME_LEN);
         }
     }
+
+#ifdef FILESYSTEM_META
+    /* if the "collection" keyword has been set, it provides the
+       name of another collection to retrieve directory metadata
+       from (usually during a icp or irsync operation */
+    tmpStr = getValByKey(&collCreateInp->condInput, COLLECTION_KW);
+    if (tmpStr != NULL) {
+        rsQueryDirectoryMeta(rsComm, tmpStr, &collInfo.condInput);
+    }
+    else {
+        /* otherwise copy over the source directory metadata if provided */
+        copyFilesystemMetadata(&collCreateInp->condInput, &collInfo.condInput);
+    }
+#endif /* FILESYSTEM_META */
+
     status = chlRegColl (rsComm, &collInfo);
     return (status);
 #else

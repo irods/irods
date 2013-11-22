@@ -62,7 +62,7 @@ rsFileCreate (rsComm_t *rsComm, fileCreateInp_t *fileCreateInp)
     }
 
     fileInx = allocAndFillFileDesc (rodsServerHost, fileCreateInp->objPath, fileCreateInp->fileName, fileCreateInp->resc_hier_,
-                                    fileCreateInp->fileType, fd, fileCreateInp->mode);
+                                    fd, fileCreateInp->mode);
 
     return (fileInx);
 }

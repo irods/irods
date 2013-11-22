@@ -22,7 +22,7 @@ main(int argc, char **argv) {
     int reconnFlag;
     
 
-    optStr = "abD:fhIkKn:N:p:PrR:QTvVX:Z";
+    optStr = "abD:fhIkKn:N:p:Prt:R:QTvVX:Z";
    
     status = parseCmdLineOpt (argc, argv, optStr, 1, &myRodsArgs);
 
@@ -91,12 +91,12 @@ void
 usage ()
 {
    char *msgs[]={
-"Usage : iput [-abfIkKPQrTUvV] [-D dataType] [-N numThreads] [-n replNum]",
+"Usage : iput [-abfIkKPQrtTUvV] [-D dataType] [-N numThreads] [-n replNum]",
 "             [-p physicalPath] [-R resource] [-X restartFile] [--link]", 
 "             [--lfrestart lfRestartFile] [--retries count] [--wlock]",
 "             [--purgec]",
 "               localSrcFile|localSrcDir ...  destDataObj|destColl",
-"Usage : iput [-abfIkKPQTUvV] [-D dataType] [-N numThreads] [-n replNum] ",
+"Usage : iput [-abfIkKPQtTUvV] [-D dataType] [-N numThreads] [-n replNum] ",
 "             [-p physicalPath] [-R resource] [-X restartFile] [--link]",
 "             [--lfrestart lfRestartFile] [--retries count] [--wlock]",
 "             [--purgec]",
@@ -183,6 +183,7 @@ usage ()
 " -R  resource - specifies the resource to store to. This can also be specified",
 "     in your environment or via a rule set up by the administrator.",
 " -r  recursive - store the whole subdirectory",
+" -t  ticket - ticket (string) to use for ticket-based access",
 " -T  renew socket connection after 10 minutes",
 " -v  verbose",
 " -V  Very verbose",

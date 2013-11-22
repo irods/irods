@@ -219,7 +219,6 @@ if [ "$1" == "clean" ] ; then
     rm -rf cmake*
     rm -rf libarchive*
     rm -rf boost*
-    rm -rf hpssclient/
     echo "Cleaning iRODS fuse residuals..."
     cd $DETECTEDDIR/../iRODS/clients/fuse/
     make clean > /dev/null 2>&1
@@ -550,87 +549,6 @@ else
     echo "Detected PostgreSQL binary [$FINDPOSTGRESBIN]"
 fi
 
-# needed to build hpss client
-LEX=`which lex`
-if [[ "$?" != "0" || `echo $LEX | awk '{print $1}'` == "no" ]] ; then
-    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
-        PREFLIGHT="$PREFLIGHT flex"
-    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-        PREFLIGHT="$PREFLIGHT flex"
-    elif [ "$DETECTEDOS" == "SuSE" ] ; then
-        PREFLIGHT="$PREFLIGHT flex"
-    elif [ "$DETECTEDOS" == "Solaris" ] ; then
-        PREFLIGHT="$PREFLIGHT "
-    elif [ "$DETECTEDOS" == "MacOSX" ] ; then
-        PREFLIGHT="$PREFLIGHT "
-    else
-        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: "
-    fi
-else
-    echo "Detected lex binary [$LEX]"
-fi
-
-# needed to build hpss client
-YACC=`which yacc`
-if [[ "$?" != "0" || `echo $YACC | awk '{print $1}'` == "no" ]] ; then
-    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
-        PREFLIGHT="$PREFLIGHT bison"
-    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-        PREFLIGHT="$PREFLIGHT byacc bison"
-    elif [ "$DETECTEDOS" == "SuSE" ] ; then
-        PREFLIGHT="$PREFLIGHT bison"
-    elif [ "$DETECTEDOS" == "Solaris" ] ; then
-        PREFLIGHT="$PREFLIGHT "
-    elif [ "$DETECTEDOS" == "MacOSX" ] ; then
-        PREFLIGHT="$PREFLIGHT "
-    else
-        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: "
-    fi
-else
-    echo "Detected yacc binary [$YACC]"
-fi
-
-# needed to build hpss client
-KSH=`which ksh`
-if [[ "$?" != "0" || `echo $KSH | awk '{print $1}'` == "no" ]] ; then
-    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
-        PREFLIGHT="$PREFLIGHT ksh"
-    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-        PREFLIGHT="$PREFLIGHT ksh"
-    elif [ "$DETECTEDOS" == "SuSE" ] ; then
-        PREFLIGHT="$PREFLIGHT ksh"
-    elif [ "$DETECTEDOS" == "Solaris" ] ; then
-        PREFLIGHT="$PREFLIGHT "
-    elif [ "$DETECTEDOS" == "MacOSX" ] ; then
-        PREFLIGHT="$PREFLIGHT "
-    else
-        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: "
-    fi
-else
-    echo "Detected ksh binary [$KSH]"
-fi
-
-# needed to build hpss client
-LIBEDIT=`find /usr/include -name readline.h 2> /dev/null`
-if [ "$LIBEDIT" == "" ] ; then
-    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
-        PREFLIGHT="$PREFLIGHT libedit-dev"
-    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-        PREFLIGHT="$PREFLIGHT readline-devel"
-    elif [ "$DETECTEDOS" == "SuSE" ] ; then
-        PREFLIGHT="$PREFLIGHT readline-devel"
-    elif [ "$DETECTEDOS" == "Solaris" ] ; then
-        PREFLIGHT="$PREFLIGHT "
-    elif [ "$DETECTEDOS" == "MacOSX" ] ; then
-        PREFLIGHT="$PREFLIGHT "
-    else
-        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: "
-    fi
-else
-    echo "Detected readline.h [$LIBEDIT]"
-fi
-
-
 EASYINSTALL=`which easy_install`
 if [[ "$?" != "0" || `echo $EASYINSTALL | awk '{print $1}'` == "no" ]] ; then
     if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
@@ -801,7 +719,7 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     fi
 
     # build a copy of boost
-    EIRODS_BUILD_BOOSTVERSION="boost_1_54_0"
+    EIRODS_BUILD_BOOSTVERSION="boost_1_55_0"
     cd $BUILDDIR/external/
     if [ -d "$EIRODS_BUILD_BOOSTVERSION" ] ; then
         echo "${text_green}${text_bold}Detected copy of [$EIRODS_BUILD_BOOSTVERSION]${text_reset}"
@@ -810,7 +728,7 @@ if [ "$BUILDEIRODS" == "1" ] ; then
         if [ -e "$EIRODS_BUILD_BOOSTVERSION.tar.gz" ] ; then
             echo "Using existing copy"
         else
-#            wget -O $EIRODS_BUILD_BOOSTVERSION.tar.gz http://sourceforge.net/projects/boost/files/boost/1.54.0/$EIRODS_BUILD_BOOSTVERSION.tar.gz/download
+#            wget -O $EIRODS_BUILD_BOOSTVERSION.tar.gz http://sourceforge.net/projects/boost/files/boost/1.55.0/$EIRODS_BUILD_BOOSTVERSION.tar.gz/download
             wget ftp://ftp.renci.org/pub/eirods/external/$EIRODS_BUILD_BOOSTVERSION.tar.gz
         fi
         gunzip $EIRODS_BUILD_BOOSTVERSION.tar.gz
@@ -821,58 +739,6 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     sed -i "s/defined(__GLIBC_HAVE_LONG_LONG)/(defined(__GLIBC_HAVE_LONG_LONG) || (defined(__GLIBC__) \&\& ((__GLIBC__ > 2) || ((__GLIBC__ == 2) \&\& (__GLIBC_MINOR__ >= 17)))))/" ./boost/cstdint.hpp
     ./bootstrap.sh --with-libraries=filesystem,system,thread,regex
     ./bjam link=static threading=multi cxxflags="-fPIC" -j$CPUCOUNT
-
-    # build HPSS clients
-#    if [ "$RELEASE" == "1" ] ; then
-     if [ $FALSE ] ; then
-        cd $BUILDDIR/external/
-        # grab from git
-        echo "${text_green}${text_bold}Downloading HPSS client from RENCI${text_reset}"
-        rm -rf hpssclient
-#        git clone ssh://tgr@code.renci.org/gitroot/hpssclient
-        cp -r /projects/irods/hpssclient .
-#        cp -r $BUILDDIR/../hpssclient .
-        # copy down into /opt
-        cd hpssclient
-        gunzip 7.3_clnt_src.tar.gz
-        tar xf 7.3_clnt_src.tar
-        gunzip 7.4_clnt_src.tar.gz
-        tar xf 7.4_clnt_src.tar
-        mkdir -p /opt
-        rm -rf /opt/hpss7.3
-        rm -rf /opt/hpss7.4
-        cp -r 7.3_clnt_src /opt/hpss7.3
-        cp -r 7.4_clnt_src /opt/hpss7.4
-        # copy and build 7.3
-        cd $BUILDDIR/external/hpssclient
-        echo "${text_green}${text_bold}Building the HPSS 7.3 client${text_reset}"
-        rm -rf /opt/hpss
-        cp -r /opt/hpss7.3 /opt/hpss
-        cd /opt/hpss
-        make clnt
-        # copy and build 7.4
-        cd $BUILDDIR/external/hpssclient
-        echo "${text_green}${text_bold}Building the HPSS 7.4 client${text_reset}"
-        rm -rf /opt/hpss
-        cp -r /opt/hpss7.4 /opt/hpss
-        cd /opt/hpss
-        make clnt
-        # copying the testing keytabs into place
-        cd $BUILDDIR/external/hpssclient
-        rm -rf /var/hpss
-        rm -rf /var/hpss7.3
-        rm -rf /var/hpss7.4
-        gunzip 7.3_var_hpss_etc.tar.gz
-        tar xf 7.3_var_hpss_etc.tar
-        gunzip 7.4_var_hpss_etc.tar.gz
-        tar xf 7.4_var_hpss_etc.tar
-        mkdir -p /var/hpss7.3
-        mkdir -p /var/hpss7.4
-        cp -r 7.3_var_hpss_etc /var/hpss7.3/etc
-        cp -r 7.4_var_hpss_etc /var/hpss7.4/etc
-        ln -s /var/hpss7.4 /var/hpss
-    fi
-
 
 fi
 

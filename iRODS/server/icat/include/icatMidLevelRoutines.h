@@ -18,8 +18,8 @@ int cmlOpen(icatSessionStruct *icss);
 
 int cmlClose( icatSessionStruct *icss);
 
-int cmlExecuteNoAnswerSql( const char *sql, 
-                           icatSessionStruct *icss);
+int cmlExecuteNoAnswerSql(const char *sql, 
+                          icatSessionStruct *icss);
 
 int cmlGetRowFromSql (char *sql, 
                       char *cVal[], 
@@ -27,12 +27,12 @@ int cmlGetRowFromSql (char *sql,
                       int numOfCols,
                       icatSessionStruct *icss);
 
-int cmlGetOneRowFromSqlV2 (char *sql, 
-                           char *cVal[], 
-                           int maxCols,
-                           char *bindVar1,
-                           char *bindVar2,
-                           icatSessionStruct *icss);
+int cmlGetOneRowFromSqlV2 ( char *sql, 
+                            char *cVal[], 
+                            int maxCols,
+                            char *bindVar1,
+                            char *bindVar2,
+                            icatSessionStruct *icss);
 
 int cmlGetRowFromSqlV3 (char *sql, 
                         char *cVal[], 
@@ -40,21 +40,21 @@ int cmlGetRowFromSqlV3 (char *sql,
                         int numOfCols,
                         icatSessionStruct *icss);
 
-int cmlFreeStatement(int statementNumber, 
-                     icatSessionStruct *icss);
+int cmlFreeStatement( int statementNumber, 
+                      icatSessionStruct *icss);
 
-int cmlGetFirstRowFromSql (char *sql, 
-                           int *statement,
-                           int skipCount, 
-                           icatSessionStruct *icss);
+int cmlGetFirstRowFromSql ( char *sql, 
+                            int *statement,
+                            int skipCount, 
+                            icatSessionStruct *icss);
 
-int cmlGetFirstRowFromSqlBV (char *sql, 
-                             char *arg1,
-                             char *arg2,
-                             char *arg3,
-                             char *arg4,
-                             int *statement,
-                             icatSessionStruct *icss);
+int cmlGetFirstRowFromSqlBV ( char *sql, 
+                              char *arg1,
+                              char *arg2,
+                              char *arg3,
+                              char *arg4,
+                              int *statement,
+                              icatSessionStruct *icss);
 
 int cmlGetNextRowFromStatement (int stmtNum, 
                                 icatSessionStruct *icss);
@@ -67,35 +67,36 @@ int cmlGetStringValueFromSql (char *sql,
                               const char *bindVar3,
                               icatSessionStruct *icss);
 
-int cmlGetStringValuesFromSql (char *sql, 
-                               char *cVal[],  
-                               int cValSize[],
-                               int numberOfStringsToGet, 
-                               char *bindVar1,
-                               char *bindVar2,
-                               char *bindVar3,
-                               icatSessionStruct *icss);
+int cmlGetStringValuesFromSql ( char *sql, 
+                                char *cVal[],  
+                                int cValSize[],
+                                int numberOfStringsToGet, 
+                                char *bindVar1,
+                                char *bindVar2,
+                                char *bindVar3,
+                                icatSessionStruct *icss);
 
-int cmlGetMultiRowStringValuesFromSql (char *sql, 
-                                       char *returnedStrings,  
-                                       int maxStringLen,
-                                       int maxNumberOfStringsToGet, 
-                                       char *bindVar1,
-                                       char *bindVar2,
-                                       icatSessionStruct *icss);
+int cmlGetMultiRowStringValuesFromSql ( char *sql, 
+                                        char *returnedStrings,  
+                                        int maxStringLen,
+                                        int maxNumberOfStringsToGet, 
+                                        char *bindVar1,
+                                        char *bindVar2,
+                                        char *bindVar3,
+                                        icatSessionStruct *icss);
 
-int cmlGetIntegerValueFromSql (char *sql, 
-                               rodsLong_t *iVal,
-                               const char *bindVar1,
-                               const char *bindVar2,
-                               const char *bindVar3,
-                               const char *bindVar4,
-                               const char *bindVar5,
-                               icatSessionStruct *icss);
+int cmlGetIntegerValueFromSql ( char *sql, 
+                                rodsLong_t *iVal,
+                                const char *bindVar1,
+                                const char *bindVar2,
+                                const char *bindVar3,
+                                const char *bindVar4,
+                                const char *bindVar5,
+                                icatSessionStruct *icss);
 
-int cmlGetIntegerValueFromSqlV3 (char *sql, 
-                                 rodsLong_t *iVal,
-                                 icatSessionStruct *icss);
+int cmlGetIntegerValueFromSqlV3 ( char *sql, 
+                                  rodsLong_t *iVal,
+                                  icatSessionStruct *icss);
 
 int cmlCheckNameToken(char *nameSpace, 
                       char *tokenName, 
@@ -138,22 +139,22 @@ int cmlInsertIntoSingleTableV2 (char *tableName,
                                 int numOfCols,
                                 icatSessionStruct *icss);
 
-int cmlGetOneRowFromSqlBV (char *sql,
-                           char *cVal[],
-                           int cValSize[],
-                           int numOfCols,
-                           const char *bindVar1,
-                           const char *bindVar2,
-                           const char *bindVar3,
-                           const char *bindVar4,
-                           const char *bindVar5,
-                           icatSessionStruct *icss);
+int cmlGetOneRowFromSqlBV ( char *sql,
+                            char *cVal[],
+                            int cValSize[],
+                            int numOfCols,
+                            const char *bindVar1,
+                            const char *bindVar2,
+                            const char *bindVar3,
+                            const char *bindVar4,
+                            const char *bindVar5,
+                            icatSessionStruct *icss);
 
-int cmlGetOneRowFromSql (char *sql,
-                         char *cVal[],
-                         int cValSize[],
-                         int numOfCols,
-                         icatSessionStruct *icss);
+int cmlGetOneRowFromSql ( char *sql,
+                          char *cVal[],
+                          int cValSize[],
+                          int numOfCols,
+                          icatSessionStruct *icss);
 
 rodsLong_t cmlGetNextSeqVal(icatSessionStruct *icss);
 
@@ -164,31 +165,40 @@ int cmlGetNextSeqStr(char *seqStr, int maxSeqStrLen, icatSessionStruct *icss);
 rodsLong_t cmlCheckDir( char *dirName, char *userName, char *userZone, 
                         char *accessLevel, icatSessionStruct *icss);
 
-rodsLong_t cmlCheckResc( char *rescName, char *userName, char *userZone, 
-                         char *accessLevel, icatSessionStruct *icss);
+rodsLong_t cmlCheckResc(char *rescName, char *userName, char *userZone, 
+                        char *accessLevel, icatSessionStruct *icss);
 
-rodsLong_t cmlCheckDirAndGetInheritFlag( char *dirName, char *userName,
-                                         char *userZone, char *accessLevel, 
-                                         int *inheritFlag, icatSessionStruct *icss);
+rodsLong_t cmlCheckDirAndGetInheritFlag(char *dirName, char *userName,
+                                        char *userZone, char *accessLevel, 
+                                        int *inheritFlag, char *ticketStr, char *ticketHost,
+                                        icatSessionStruct *icss);
 
 rodsLong_t cmlCheckDirId( char *dirId, char *userName, char *userZone,
                           char *accessLevel, icatSessionStruct *icss);
 
-rodsLong_t cmlCheckDirOwn( char *dirName, char *userName, char *userZone,
-                           icatSessionStruct *icss);
+rodsLong_t cmlCheckDirOwn(char *dirName, char *userName, char *userZone,
+                          icatSessionStruct *icss);
 
-int cmlCheckDataObjId( char *dataId, char *userName,  char *zoneName, 
-                       char *accessLevel, icatSessionStruct *icss);
+int cmlCheckDataObjId(char *dataId, char *userName,  char *zoneName, 
+                      char *accessLevel, char *ticketStr, 
+                      char *ticketHost, 
+                      icatSessionStruct *icss);
+
+int cmlTicketUpdateWriteBytes(char *ticketStr,
+                              char *dataSize, char *objectId,
+                              icatSessionStruct *icss);
 
 rodsLong_t cmlCheckDataObjOnly( char *dirName, char *dataName, char *userName,
                                 char *userZone,
                                 char *accessLevel, icatSessionStruct *icss);
 
-rodsLong_t cmlCheckDataObjOwn( char *dirName, char *dataName, char *userName,
-                               char *userZone, icatSessionStruct *icss);
+rodsLong_t cmlCheckDataObjOwn(char *dirName, char *dataName, char *userName,
+                              char *userZone, icatSessionStruct *icss);
 
-int cmlCheckGroupAdminAccess(char *userName, char *userZone, 
-                             char *groupName, icatSessionStruct *icss);
+int cmlCheckGroupAdminAccess( char *userName, char *userZone, 
+                              char *groupName, icatSessionStruct *icss);
+
+int cmlGetGroupMemberCount(char *groupName, icatSessionStruct *icss);
 
 int cmlDebug(int mode);
 

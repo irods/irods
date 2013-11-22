@@ -1,0 +1,72 @@
+#!/bin/bash
+# Author: Giacomo Mariani <g.mariani@cineca.it>
+# Licensed under BSD licence <http://en.wikipedia.org/wiki/BSD_licenses>
+# Last edited: Tue Jun  4 15:46:40 CEST 2013
+
+usage()
+{
+cat << EOF
+usage: $0 [options] -o {read write own} -d directory
+
+This script return a file: `pwd`/ticket-DATE.list
+It contains all the informations for a retrieving a collection with iGet.
+
+OPTIONS:
+   -o level      Level of sharing between read write and own
+   -d directory  Directory to be shared
+   -h            Show this message
+   -v            Verbose
+EOF
+return 0
+}
+
+while getopts “hvo:d:” OPTION
+do
+     case $OPTION in
+         o)
+             direction=$OPTARG
+             ;;
+         d)
+             directory=${OPTARG%/}
+             ;;
+         h)
+             usage
+             exit 0
+             ;;
+         v)
+             VERBOSE=1
+             ;;
+         ?)
+             usage
+             exit 1
+             ;;
+     esac
+done
+
+if [ $# -eq "0" ]
+then
+    echo "Wrong number of arguments." ; echo
+    usage
+    exit 1
+fi
+
+ticketfile="ticket-`date "+%Y-%m-%d_%H:%M:%S"`.list"
+echo "The tickets are stored in $ticketfile"
+
+if [ ${VERBOSE} ] 
+then
+    echo "iticket create ${direction} ${directory}"
+fi
+tts=$(iticket create ${direction} ${directory} | awk -F ":" '{print $2}')
+echo "${directory},${tts}" >> ${ticketfile}  
+for i in `ils -r ${directory} | grep "C-" | awk '{print $2}'`
+do
+    if [ ${VERBOSE} ] 
+    then
+        echo "iticket create ${direction} $i"
+    fi
+    tts=$(iticket create ${direction} $i | awk -F ":" '{print $2}')
+    echo "${i},${tts}" >> ${ticketfile} 
+done
+
+exit 0

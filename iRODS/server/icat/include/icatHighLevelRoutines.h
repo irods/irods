@@ -16,6 +16,10 @@
 #include "specificQuery.h" 
 #include "phyBundleColl.h"
 
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
 #include <string>
 #include <vector>
 #include <map>
@@ -53,8 +57,9 @@ int chlSimpleQuery(rsComm_t *rsComm, char *sql,
                    int format, 
                    int *control, char *outBuf, int maxOutBuf);
 int chlGenQuery(genQueryInp_t genQueryInp, genQueryOut_t *result);
-int chlGenQueryAccessControlSetup(char *user, char *zone, int priv, 
-                                  int controlFlag);
+int chlGenQueryAccessControlSetup(char *user, char *zone, char *host, 
+                                  int priv, int controlFlag);
+int chlGenQueryTicketSetup(char *ticket, char *clientAddr);
 int chlSpecificQuery(specificQueryInp_t specificQueryInp,
                      genQueryOut_t *genQueryOut);
 
@@ -64,7 +69,8 @@ int chlDelCollByAdmin(rsComm_t *rsComm, collInfo_t *collInfo);
 int chlDelColl(rsComm_t *rsComm, collInfo_t *collInfo);
 int chlCheckAuth(rsComm_t *rsComm, const char* scheme, char *challenge, char *response,
                  char *username, int *userPrivLevel, int *clientPrivLevel);
-int chlMakeTempPw(rsComm_t *rsComm, char *pwValueToHash);
+int chlMakeTempPw(rsComm_t *rsComm, char *pwValueToHash, char *otherUser);
+int chlMakeLimitedPw(rsComm_t *rsComm, int ttl, char *pwValueToHash);
 int decodePw(rsComm_t *rsComm, char *in, char *out);
 int chlModUser(rsComm_t *rsComm, char *userName, char *option,
                char *newValue);
@@ -96,8 +102,10 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
                         char* accessLevel, char *userName, char *zone, 
                         char* pathName);
 
+#ifdef RESC_GROUP
 int chlModRescGroup(rsComm_t *rsComm, char *rescGroupName, char *option,
                     char *rescName);
+#endif
 
 int chlRegRuleExec(rsComm_t *rsComm, ruleExecSubmitInp_t *ruleExecSubmitInp);
 int chlModRuleExec(rsComm_t *rsComm, char *ruleExecId, keyValPair_t *regParam);
@@ -114,6 +122,8 @@ int chlRegZone(rsComm_t *rsComm, char *zoneName, char *zoneType,
                char *zoneConnInfo, char *zoneComment);
 int chlModZone(rsComm_t *rsComm, char *zoneName, char *option,
                char *optionValue);
+int chlModZoneCollAcl(rsComm_t *rsComm, char* accessLevel, char *userName, 
+                      char* pathName);
 int chlDelZone(rsComm_t *rsComm, char *zoneName);
 int chlRenameLocalZone(rsComm_t *rsComm, char *oldZoneName, char *newZoneName);
 int chlRenameColl(rsComm_t *rsComm, char *oldName, char *newName);
@@ -178,9 +188,11 @@ int chlVersionDvmBase(rsComm_t *rsComm,
                       char *baseName, char *myTime);
 int chlVersionFnmBase(rsComm_t *rsComm,
                       char *baseName, char *myTime);
+int chlModTicket(rsComm_t *rsComm, char *opName, char *ticket,
+                   char *arg1, char *arg2, char *arg3);
 int chlUpdateIrodsPamPassword(rsComm_t *rsComm, char *userName, 
-			      int timeToLive, char *testTime, 
-			      char **irodsPassword);
+                              int timeToLive, char *testTime, 
+                              char **irodsPassword);
 
 
 eirods::error chlRescObjCount(const std::string& _resc_name, int& _rtn_obj_count);

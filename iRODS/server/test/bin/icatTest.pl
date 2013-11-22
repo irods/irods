@@ -423,6 +423,15 @@ runCmd(0, "imeta add -d $F1 miles% 11");
 runCmd(0, "imeta add -d $F1 miles_a 12");
 runCmd(0, "imeta ls -d $F1");
 runCmd(0, "imeta ls -d $F1 badName");
+runCmd(0, "imeta ls -u $U1 badName");
+runCmd(2, "imeta ls -d badName");
+runCmd(2, "imeta ls -C badName");
+runCmd(2, "imeta ls -R badName");
+runCmd(2, "imeta ls -u badName");
+runCmd(2, "imeta ls -d badName badName2");
+runCmd(2, "imeta ls -C badName badName2");
+runCmd(2, "imeta ls -R badName badName2");
+runCmd(2, "imeta ls -u badName badName2");
 runCmd(0, "imeta ls -d $F1 | grep attribute | wc -l", "3");
 runCmd(0, "imeta rm -d $F1 miles% 11");
 runCmd(0, "imeta ls -d $F1 | grep attribute | wc -l", "2");
@@ -521,6 +530,10 @@ runCmd(0, "iadmin moduser $U2 password 'abc'");
 runCmd(0, "iadmin moduser $U2 password '1234'");
 runCmd(2, "iadmin moduser $UA password '1234'");
 
+# For groupadmin test below, make sure G! doesn't exist
+runCmd(1, "iadmin rmgroup $G1");
+
+
 # Auth as non-admin user and test groupadmin SQL
 runCmd(0, "iadmin moduser $U2 type groupadmin");
 unlink($F2);
@@ -538,12 +551,40 @@ runCmd(2, "iinit 1234");
 $ENV{'irodsUserName'}=$U2; 
 runCmd(0, "iinit 1234");
 runCmd(2, "iadmin atg g1 user3"); # test SQL (just needs to be groupadmin to)
+runCmd(0, "igroupadmin mkgroup $G1");
+runCmd(0, "igroupadmin atg $G1 $U2"); # need to add self to group 1st
+runCmd(0, "igroupadmin atg $G1 $U1");
+runCmd(0, "igroupadmin rfg $G1 $U1");
 runCmd(2, "ichmod -R write $U1 $Resc"); # test SQL (the non-admin)
 runCmd(0, "echo '1234\nabcd\nabcd' | ipasswd"); # change the password
 runCmd(0, "echo 'abcd\n1234\n1234' | ipasswd"); # change the password back
+runCmd(0, "iinit --ttl 1 1234"); # also run new SQL for TTL passwords
 runCmd(0, "iexit full");
 runCmd(1, "mv $F2 $authFile"); # restore auth file
 delete $ENV{'irodsUserName'};
+runCmd(0, "ils");
+
+# Large numbers of temporary passwords.
+# MAX_PASSWORDS in icatHighLevelRoutines.c is 40 so make more than
+# that to exercise the SQL that handles that case.
+$count=42;
+for ($i=0;$i<$count;$i++) {
+    runCmd(0,"test_chl tpw rods > /dev/null 2>&1");
+}
+# Also make sure the new SQL works: that the password can be used.
+# This uses 'iinit' with the temp password, which normally isn't done,
+# but it can be used to test this way.
+# Also note that if expired, these temp passwords should be removed
+# when a valid temp password is used, but since they are not yet
+# expired they won't be.  They should be cleaned up next time the test
+# is run tho.
+runCmd(0,"sleep 1");
+runCmd(0,"test_chl tpw rods 2>&1 | grep derived");
+$ix=index($cmdStdout,"=");
+$pw=substr($cmdStdout,$ix+1);
+runCmd(1, "mv $authFile $F2"); # save the auth file
+runCmd(0, "iinit $pw");
+runCmd(1, "mv $F2 $authFile"); # restore auth file
 runCmd(0, "ils");
 
 # group
@@ -622,6 +663,7 @@ runCmd(0, "echo yes | iadmin modrescdatapaths $Resc2 /tmp/v1/ $Resc2Path/ rods")
 
 # repl
 runCmd(0, "irepl -R $Resc $F1");
+runCmd(0, "irepl -R $Resc $F1"); # a second irepl to test a problem fixed Oct 2013
 runCmd(0, "irm -f $F1");
 runCmd(0, "imkdir $D1");
 runCmd(0, "icd $D1");
@@ -632,6 +674,7 @@ runCmd(0, "iput $F2");
 runCmd(0, "ipwd");
 runCmd(0, "icd");
 runCmd(0, "irepl -r -R $Resc2 $D1");
+runCmd(0, "irepl -r -R $Resc2 $D1");  # a 2nd irepl to test an Oct 2013 fix
 runCmd(0, "irm -f -r $D1");
 
 # Resource Groups
@@ -782,45 +825,49 @@ runCmd(0, "iquest \"select count(DATA_SIZE) where COLL_NAME = '$iHome'\"");
 runCmd(0, "irm -f $F2");
 runCmd(0, "irm -f $F1");
 
+# Queries with that find no rows should now (9/26/13) exit success (0)
+runCmd(0, "iquest \"select USER_NAME, USER_ID where USER_ID = '8005'\"");
+runCmd(0, "iquest --sql lsl badName");
+
 #Tickets 
-#runCmd(0, "iput $F1");
-#runCmd(1, "iticket delete $TICKET1");
-#runCmd(0, "iticket create read $F1 $TICKET1");
-#runCmd(0, "iticket mod $TICKET1 uses 10");
-#runCmd(1, "iticket mod badticketname uses 1");
-#runCmd(0, "iticket mod $TICKET1 add host $TICKET_HOST");
-#runCmd(0, "iticket mod $TICKET1 remove host $TICKET_HOST");
-#runCmd(0, "iticket mod $TICKET1 add user $U1");
-#runCmd(0, "iticket mod $TICKET1 remove user $U1");
-#runCmd(0, "iticket mod $TICKET1 expire 2012-02-02");
-#runCmd(0, "iticket mod $TICKET1 expire 0");
-#runCmd(0, "iticket ls $TICKET1");
-#runCmd(0, "iticket ls");
-#runCmd(0, "iget -f -t $TICKET1 $F1");
-#runCmd(0, "iticket mod $TICKET1 uses 0");
-#runCmd(0, "iadmin mkgroup $G1");
-#runCmd(0, "iticket mod $TICKET1 add group $G1");
-#runCmd(1, "iget -f -t $TICKET1 $F1");
-#runCmd(0, "iticket mod $TICKET1 remove group $G1");
-#runCmd(0, "iticket delete $TICKET1");
-#runCmd(1, "iticket delete $TICKET2");
-#runCmd(0, "iticket create write $F1 $TICKET2");
-#runCmd(0, "iticket mod $TICKET2 write-file 10");
-#runCmd(0, "iticket mod $TICKET2 write-byte 10000000");
-#runCmd(0, "iget -f -t $TICKET2 $F1");
-#runCmd(0, "ls -l >> $F1");
-#runCmd(0, "iput -f -t $TICKET2 $F1");
-#runCmd(0, "iticket delete $TICKET2");
-#runCmd(1, "iticket delete $TICKET3");
-#runCmd(1, "irm -fr $D2");
-#runCmd(0, "imkdir $D2");
-#runCmd(0, "iticket create write $D2 $TICKET3");
-#runCmd(0, "iput -t $TICKET3 $F1 $D2");
-#runCmd(0, "iticket delete $TICKET3");
-#runCmd(1, "irm -fr $D2");
-#runCmd(0, "iadmin rmgroup $G1");
-#runCmd(1, "iticket create read badfilename");
-#runCmd(0, "irm -f $F1");
+runCmd(0, "iput $F1");
+runCmd(1, "iticket delete $TICKET1");
+runCmd(0, "iticket create read $F1 $TICKET1");
+runCmd(0, "iticket mod $TICKET1 uses 10");
+runCmd(1, "iticket mod badticketname uses 1");
+runCmd(0, "iticket mod $TICKET1 add host $TICKET_HOST");
+runCmd(0, "iticket mod $TICKET1 remove host $TICKET_HOST");
+runCmd(0, "iticket mod $TICKET1 add user $U1");
+runCmd(0, "iticket mod $TICKET1 remove user $U1");
+runCmd(0, "iticket mod $TICKET1 expire 2012-02-02");
+runCmd(0, "iticket mod $TICKET1 expire 0");
+runCmd(0, "iticket ls $TICKET1");
+runCmd(0, "iticket ls");
+runCmd(0, "iget -f -t $TICKET1 $F1");
+runCmd(0, "iticket mod $TICKET1 uses 0");
+runCmd(0, "iadmin mkgroup $G1");
+runCmd(0, "iticket mod $TICKET1 add group $G1");
+runCmd(1, "iget -f -t $TICKET1 $F1");
+runCmd(0, "iticket mod $TICKET1 remove group $G1");
+runCmd(0, "iticket delete $TICKET1");
+runCmd(1, "iticket delete $TICKET2");
+runCmd(0, "iticket create write $F1 $TICKET2");
+runCmd(0, "iticket mod $TICKET2 write-file 10");
+runCmd(0, "iticket mod $TICKET2 write-byte 10000000");
+runCmd(0, "iget -f -t $TICKET2 $F1");
+runCmd(0, "ls -l >> $F1");
+runCmd(0, "iput -f -t $TICKET2 $F1");
+runCmd(0, "iticket delete $TICKET2");
+runCmd(1, "iticket delete $TICKET3");
+runCmd(1, "irm -fr $D2");
+runCmd(0, "imkdir $D2");
+runCmd(0, "iticket create write $D2 $TICKET3");
+runCmd(0, "iput -t $TICKET3 $F1 $D2");
+runCmd(0, "iticket delete $TICKET3");
+runCmd(1, "irm -fr $D2");
+runCmd(0, "iadmin rmgroup $G1");
+runCmd(1, "iticket create read badfilename");
+runCmd(0, "irm -f $F1");
 
 # simple test to exercise the clean-up AVUs sql;
 # will return CAT_SUCCESS_BUT_WITH_NO_INFO if there were none

@@ -19,9 +19,6 @@
 #include "getRescQuota.h"
 #include "physPath.h"
 #include "eirods_stacktrace.h"
-#ifdef HPSS
-#include "hpssFileDriver.h"
-#endif
 
 #include "eirods_log.h"
 

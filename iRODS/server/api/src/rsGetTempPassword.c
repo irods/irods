@@ -50,7 +50,7 @@ _rsGetTempPassword (rsComm_t *rsComm,
     myGetTempPasswordOut = (getTempPasswordOut_t*)malloc(sizeof(getTempPasswordOut_t));
 
     status = chlMakeTempPw(rsComm, 
-			  myGetTempPasswordOut->stringToHashWith);
+			  myGetTempPasswordOut->stringToHashWith, "");
     if (status < 0 ) { 
 	  rodsLog (LOG_NOTICE, 
 		   "_rsGetTempPassword: getTempPassword, status = %d",

@@ -76,6 +76,20 @@ md5ToStr (unsigned char *digest, char *chksumStr)
     return (0);
 }
 
+int
+hashToStr (unsigned char *digest, char *digestStr)
+{
+    int i;
+    char *outPtr = digestStr;
+
+    for (i = 0; i < 16; i++) {
+        sprintf (outPtr, "%02x", digest[i]);
+       outPtr += 2;
+    }
+
+    return (0);
+}
+
 /* rcChksumLocFile - chksum a local file and put the result in the
  * condInput.
  * Input - 

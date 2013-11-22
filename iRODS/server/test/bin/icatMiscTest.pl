@@ -226,31 +226,31 @@ else {
 unlink($tmpPwFile);
 
 # Temporary password for other
-#$prevAuthFileName=$ENV{'irodsAuthFileName'};  # old one, if any
-#$ENV{'irodsAuthFileName'}=$tmpPwFile;
-#runCmd(0, "test_chl tpwforother 123 $User2 | grep  'temp pw'");
-#$temp1=$cmdStdout;
-#chomp($temp1);
-#$ixPw=index($temp1,"=");
-#$pw=substr($temp1, $ixPw+1);
-#unlink($tmpPwFile);
-#unlink($tmpAuthFile);
-#$ENV{'irodsUserName'}=$User2; 
-#runCmd(0, "echo badpw > $tmpPwFile");
-#runCmd(2, "ils ../$User2 < $tmpPwFile");  # should fail with a bad pw
-#unlink($tmpPwFile);
-#runCmd(0, "echo $pw > $tmpPwFile");  
-#runCmd(0, "ils ../$User2 < $tmpPwFile");  # should work with the temp pw
-#printf($cmdStdout);
-#runCmd(2, "ils ../$User2 < $tmpPwFile");  # but only once
-#delete $ENV{'irodsUserName'};
-#if ($prevAuthFileName eq "") {
-#    delete $ENV{'irodsAuthFileName'};
-#}
-#else {
-#    $ENV{'irodsAuthFileName'}=$prevAuthFileName;
-#}
-#unlink($tmpPwFile);
+$prevAuthFileName=$ENV{'irodsAuthFileName'};  # old one, if any
+$ENV{'irodsAuthFileName'}=$tmpPwFile;
+runCmd(0, "test_chl tpwforother $IRODS_ADMIN_PASSWORD $User2 | grep  'temp pw'");
+$temp1=$cmdStdout;
+chomp($temp1);
+$ixPw=index($temp1,"=");
+$pw=substr($temp1, $ixPw+1);
+unlink($tmpPwFile);
+unlink($tmpAuthFile);
+$ENV{'irodsUserName'}=$User2; 
+runCmd(0, "echo badpw > $tmpPwFile");
+runCmd(2, "ils ../$User2 < $tmpPwFile");  # should fail with a bad pw
+unlink($tmpPwFile);
+runCmd(0, "echo $pw > $tmpPwFile");  
+runCmd(0, "ils ../$User2 < $tmpPwFile");  # should work with the temp pw
+printf($cmdStdout);
+runCmd(2, "ils ../$User2 < $tmpPwFile");  # but only once
+delete $ENV{'irodsUserName'};
+if ($prevAuthFileName eq "") {
+    delete $ENV{'irodsAuthFileName'};
+}
+else {
+    $ENV{'irodsAuthFileName'}=$prevAuthFileName;
+}
+unlink($tmpPwFile);
 
 # auth test (special case)
 runCmd(1, "iadmin rmuser $UserAdmin2");

@@ -478,7 +478,11 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
             return(status);
         }
         if (strcmp(generalAdminInp->arg1,"group")==0) {
-            /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
+            userInfo_t ui;
+            memset(&ui, 0, sizeof(userInfo_t));
+            rei2.uoio = &ui;
+            rstrcpy(ui.userName, generalAdminInp->arg4, NAME_LEN);
+            rstrcpy(ui.rodsZone, generalAdminInp->arg5, NAME_LEN); 
             args[0] = generalAdminInp->arg2; /* groupname */
             args[1] = generalAdminInp->arg3; /* option */
             args[2] = generalAdminInp->arg4; /* username */
@@ -623,8 +627,8 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
             if (status != 0) chlRollback(rsComm);
             return(status);
         }
+#ifdef RESC_GROUP
         if (strcmp(generalAdminInp->arg1,"resourcegroup")==0) {
-            /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
             args[0] = generalAdminInp->arg2; /* rescgroupname */
             args[1] = generalAdminInp->arg3; /* option */
             args[2] = generalAdminInp->arg4; /* rescname */
@@ -639,12 +643,10 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
                          args[0],args[1], i);
                 return i;
             }
-            /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
 
             status = chlModRescGroup(rsComm, generalAdminInp->arg2, 
                                      generalAdminInp->arg3, generalAdminInp->arg4);
 
-            /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
             if (status == 0) {
                 i =  applyRuleArg("acPostProcForModifyResourceGroup",args,argc, &rei2, NO_SAVE_REI);
                 if (i < 0) {
@@ -657,11 +659,11 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
                     return i;
                 }
             }
-            /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
 
             if (status != 0) chlRollback(rsComm);
             return(status);
         }
+#endif
     }
     if (strcmp(generalAdminInp->arg0,"rm")==0) {
         if (strcmp(generalAdminInp->arg1,"user")==0) { 

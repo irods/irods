@@ -27,14 +27,14 @@ rodsPathInp_t *rodsPathInp)
 
 
     if (rodsPathInp == NULL) {
-	return (USER__NULL_INPUT_ERR);
+        return (USER__NULL_INPUT_ERR);
     }
 
 
     status = resolveRodsTarget (conn, myRodsEnv, rodsPathInp, RSYNC_OPR);
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
-          "rsyncUtil: resolveRodsTarget");
+                      "rsyncUtil: resolveRodsTarget");
         return (status);
     }
 
@@ -46,85 +46,89 @@ rodsPathInp_t *rodsPathInp)
     }
 
     for (i = 0; i < rodsPathInp->numSrc; i++) {
-	int srcType, targType;
+        int srcType, targType;
 
         targPath = &rodsPathInp->targPath[i];
         srcPath = &rodsPathInp->srcPath[i];
-	srcType = srcPath->objType;
-	targType = targPath->objType;
+        srcType = srcPath->objType;
+        targType = targPath->objType;
 
-	if (srcPath->objState != EXIST_ST) {
-            rodsLog (LOG_ERROR,
-              "rsyncUtil: Source path %s does not exist");
-	    return USER_INPUT_PATH_ERR;
-	}
-	    
+        if (srcPath->objState != EXIST_ST) {
+            rodsLog ( LOG_ERROR,
+                      "rsyncUtil: Source path %s does not exist");
+            return USER_INPUT_PATH_ERR;
+        }
+     
         if (srcPath->objType <= COLL_OBJ_T && srcPath->rodsObjStat != NULL &&
-          rodsPathInp->srcPath[i].rodsObjStat->specColl != NULL) {
+                rodsPathInp->srcPath[i].rodsObjStat->specColl != NULL) {
             dataObjOprInp.specColl = dataObjCopyInp.srcDataObjInp.specColl =
-              srcPath->rodsObjStat->specColl;
+                    srcPath->rodsObjStat->specColl;
         } else {
             dataObjOprInp.specColl = 
-	      dataObjCopyInp.srcDataObjInp.specColl = NULL;
+                    dataObjCopyInp.srcDataObjInp.specColl = NULL;
         }
 
-	if (srcType == DATA_OBJ_T && targType == LOCAL_FILE_T) { 
-	    rmKeyVal (&dataObjOprInp.condInput, TRANSLATED_PATH_KW);
-	    status = rsyncDataToFileUtil (conn, srcPath, targPath,
-	     myRodsEnv, myRodsArgs, &dataObjOprInp);
-	} else if (srcType == LOCAL_FILE_T && targType == DATA_OBJ_T) {
+        if (srcType == DATA_OBJ_T && targType == LOCAL_FILE_T) { 
+            rmKeyVal (&dataObjOprInp.condInput, TRANSLATED_PATH_KW);
+            status = rsyncDataToFileUtil (conn, srcPath, targPath,
+            myRodsEnv, myRodsArgs, &dataObjOprInp);
+        } else if (srcType == LOCAL_FILE_T && targType == DATA_OBJ_T) {
             if (isPathSymlink (myRodsArgs, srcPath->outPath) > 0)
                 continue;
-	    dataObjOprInp.createMode = rodsPathInp->srcPath[i].objMode;
+            dataObjOprInp.createMode = rodsPathInp->srcPath[i].objMode;
+#ifdef FILESYSTEM_META
+            getFileMetaFromPath(rodsPathInp->srcPath[i].outPath,
+                                    &dataObjOprInp.condInput);
+#endif
             status = rsyncFileToDataUtil (conn, srcPath, targPath,
-             myRodsEnv, myRodsArgs, &dataObjOprInp);
+            myRodsEnv, myRodsArgs, &dataObjOprInp);
         } else if (srcType == DATA_OBJ_T && targType == DATA_OBJ_T) {
             rmKeyVal (&dataObjCopyInp.srcDataObjInp.condInput, 
-	      TRANSLATED_PATH_KW);
-	    addKeyVal (&dataObjCopyInp.destDataObjInp.condInput, 
-	      REG_CHKSUM_KW, "");
+                      TRANSLATED_PATH_KW);
+            addKeyVal ( &dataObjCopyInp.destDataObjInp.condInput, 
+                        REG_CHKSUM_KW, "");
             status = rsyncDataToDataUtil (conn, srcPath, targPath,
-             myRodsEnv, myRodsArgs, &dataObjCopyInp);
+            myRodsEnv, myRodsArgs, &dataObjCopyInp);
         } else if (srcType == COLL_OBJ_T && targType == LOCAL_DIR_T) {
-	    addKeyVal (&dataObjOprInp.condInput, TRANSLATED_PATH_KW, "");
+            addKeyVal (&dataObjOprInp.condInput, TRANSLATED_PATH_KW, "");
             status = rsyncCollToDirUtil (conn, srcPath, targPath,
-             myRodsEnv, myRodsArgs, &dataObjOprInp);
+            myRodsEnv, myRodsArgs, &dataObjOprInp);
             if (status >= 0 && dataObjOprInp.specColl != NULL &&
-              dataObjOprInp.specColl->collClass == STRUCT_FILE_COLL) {
+                    dataObjOprInp.specColl->collClass == STRUCT_FILE_COLL) {
                 dataObjOprInp.specColl = NULL;
-		status = rsyncCollToDirUtil (conn, srcPath, targPath,
-                  myRodsEnv, myRodsArgs, &dataObjOprInp);
-	    }
+                status = rsyncCollToDirUtil (conn, srcPath, targPath,
+                myRodsEnv, myRodsArgs, &dataObjOprInp);
+            }
         } else if (srcType == LOCAL_DIR_T && targType == COLL_OBJ_T) {
             status = rsyncDirToCollUtil (conn, srcPath, targPath,
-             myRodsEnv, myRodsArgs, &dataObjOprInp);
+            myRodsEnv, myRodsArgs, &dataObjOprInp);
         } else if (srcType == COLL_OBJ_T && targType == COLL_OBJ_T) {
-            addKeyVal (&dataObjCopyInp.srcDataObjInp.condInput, 
-	      TRANSLATED_PATH_KW, "");
-            addKeyVal (&dataObjCopyInp.destDataObjInp.condInput, 
-              REG_CHKSUM_KW, "");
+            addKeyVal ( &dataObjCopyInp.srcDataObjInp.condInput, 
+                        TRANSLATED_PATH_KW, "");
+            addKeyVal ( &dataObjCopyInp.destDataObjInp.condInput, 
+                        REG_CHKSUM_KW, "");
             status = rsyncCollToCollUtil (conn, srcPath, targPath,
-             myRodsEnv, myRodsArgs, &dataObjCopyInp);
+                                          myRodsEnv, myRodsArgs, &dataObjCopyInp);
             if (status >= 0 && dataObjOprInp.specColl != NULL &&
-              dataObjCopyInp.srcDataObjInp.specColl->collClass == STRUCT_FILE_COLL) {
-		dataObjCopyInp.srcDataObjInp.specColl = NULL;
+                    dataObjCopyInp.srcDataObjInp.specColl->collClass == STRUCT_FILE_COLL) {
+                dataObjCopyInp.srcDataObjInp.specColl = NULL;
                 status = rsyncCollToCollUtil (conn, srcPath, targPath,
-                 myRodsEnv, myRodsArgs, &dataObjCopyInp);
-	    }
-	} else {
-	    /* should not be here */
-	    rodsLog (LOG_ERROR,
-	     "rsyncUtil: invalid srcType %d and targType %d combination for %s",
-	      srcType, targType, targPath->outPath);
-	    return (USER_INPUT_PATH_ERR);
-	}
-	/* XXXX may need to return a global status */
-	if (status < 0) {
+                                              myRodsEnv, myRodsArgs, &dataObjCopyInp);
+            }
+        } else {
+            /* should not be here */
+            rodsLog ( LOG_ERROR,
+                      "rsyncUtil: invalid srcType %d and targType %d combination for %s",
+                      srcType, targType, targPath->outPath);
+            return (USER_INPUT_PATH_ERR);
+        }
+        /* XXXX may need to return a global status */
+        if (status < 0) {
             rodsLogError (LOG_ERROR, status,
-             "rsyncUtil: rsync error for %s", 
-	      targPath->outPath);
-	    savedStatus = status;
-	} 
+                          "rsyncUtil: rsync error for %s", 
+            targPath->outPath);
+            savedStatus = status;
+        } 
     }
     if (savedStatus < 0) {
         return (savedStatus);
@@ -701,17 +705,18 @@ rsyncDirToCollUtil (rcComm_t *conn, rodsPath_t *srcPath,
             return (USER_INPUT_PATH_ERR);
         }
 
-        if( is_regular_file( p ) && 
-                rodsArgs->age == True ) {
-            if( ageExceeded( 
+        if( (is_regular_file( p ) && rodsArgs->age == True ) &&
+                ageExceeded( 
                         rodsArgs->agevalue, 
                         last_write_time( p ),
                         rodsArgs->verbose, 
                         mySrcPath.outPath, 
                         file_size( p ) ) ) {
-                continue;
-            }
+            continue;
         }
+#ifdef FILESYSTEM_META
+        getFileMetaFromPath(mySrcPath.outPath, &dataObjOprInp->condInput);
+#endif
 
         bzero (&myTargPath, sizeof (myTargPath));
         path childPath = p.filename();
@@ -742,7 +747,12 @@ rsyncDirToCollUtil (rcComm_t *conn, rodsPath_t *srcPath,
             status = 0;
             /* only do the sync if no -l option specified */
             if ( rodsArgs->longOption != True ) {
+#ifdef FILESYSTEM_META
+                status = mkCollRWithDirMeta (conn, targColl,
+                                             myTargPath.outPath, mySrcPath.outPath);
+#else
                 status = mkCollR (conn, targColl, myTargPath.outPath);
+#endif
             }
             if (status < 0) {
                 rodsLogError (LOG_ERROR, status,
@@ -897,7 +907,11 @@ dataObjCopyInp_t *dataObjCopyInp)
               targColl, childPath);
 
             if ( rodsArgs->longOption != True ) {   /* only do the sync if no -l option specified */
-                    mkColl (conn, targChildPath);
+#ifdef FILESYSTEM_META
+                mkCollWithSrcCollMeta (conn, targChildPath, collEnt.collName);
+#else
+                mkColl (conn, targChildPath);
+#endif
             }
 
                 /* the child is a spec coll. need to drill down */

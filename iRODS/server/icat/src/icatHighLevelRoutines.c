@@ -53,10 +53,11 @@
 #include <boost/regex.hpp>
 
 extern int get64RandomBytes(char *buf);
+extern int icatApplyRule(rsComm_t *rsComm, char *ruleName, char *arg1);
 
 static char prevChalSig[200]; /* a 'signature' of the previous
-                                 challenge.  This is used as a sessionSigniture on the ICAT server
-                                 side.  Also see getSessionSignitureClientside function. */
+                                 challenge.  This is used as a sessionSignature on the ICAT server
+                                 side.  Also see getSessionSignatureClientside function. */
 
 /* In 2.3, the METADATA_CLEANUP logic (SQL) (via a
  * 'DISABLE_METADATA_CLEANUP' define) was on by default but it was
@@ -90,7 +91,8 @@ static char prevChalSig[200]; /* a 'signature' of the previous
 #define MAX_PASSWORDS 40
 /* TEMP_PASSWORD_TIME is the number of seconds the temporary, one-time
    password can be used.  chlCheckAuth also checks for this column
-   to be < 1000 to differentiate the row from regular passwords.
+   to be < TEMP_PASSWORD_MAX_TIME (1000) to differentiate the row 
+   from regular passwords and IRODS_PAM passwords.
    This time, 120 seconds, should be long enough to give the iDrop and
    iDrop-lite applets enough time to download and go through their
    startup sequence.  iDrop and iDrop-lite disconnect when idle to
@@ -113,6 +115,10 @@ static char prevChalSig[200]; /* a 'signature' of the previous
    differently.  If they overlap, SQL errors can result */
 #define IRODS_PAM_PASSWORD_MIN_TIME "121"  /* must be > TEMP_PASSWORD_TIME */
 #define IRODS_PAM_PASSWORD_MAX_TIME "1209600"    /* two weeks in seconds */
+#define IRODS_TTL_PASSWORD_MIN_TIME 121  /* must be > TEMP_PASSWORD_TIME */
+#define IRODS_TTL_PASSWORD_MAX_TIME 1209600    /* two weeks in seconds */
+/* For batch jobs that should run "forever", IRODS_TTL_PASSWORD_MAX_TIME
+   can be set very large, for example to 2147483647 to allow 68 years TTL. */
 #ifdef PAM_AUTH_NO_EXTEND
 #define IRODS_PAM_PASSWORD_DEFAULT_TIME "28800"  /* 8 hours in seconds */
 #else
@@ -134,6 +140,9 @@ icatSessionStruct icss={0};
 char localZone[MAX_NAME_LEN]={""};
 
 int creatingUserByGroupAdmin=0; // JMC - backport 4772
+
+char mySessionTicket[NAME_LEN]="";
+char mySessionClientAddr[NAME_LEN]="";
 
 /*
   Enable or disable some debug logging.
@@ -477,6 +486,9 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     int DATA_EXPIRY_TS_IX=9; /* must match index in above colNames table */
     int MODIFY_TS_IX=12;     /* must match index in above colNames table */
 
+    int DATA_SIZE_IX=2;      /* must match index in above colNames table */
+    int doingDataSize=0;
+    char dataSizeString[NAME_LEN]="";
     char objIdString[MAX_NAME_LEN];
     char *neededAccess;
 
@@ -516,15 +528,19 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
             if (i==MODIFY_TS_IX) { /* if modify_ts, also make sure it's
                                             in the standard time-stamp
                                             format: "%011d" */
-               if (strcmp(colNames[i],"modify_ts") == 0) { /* double check*/
+                if (strcmp(colNames[i],"modify_ts") == 0) { /* double check*/
                   if (strlen(theVal) < 11) {
-                     static char theVal3[20];
-                     time_t myTimeValue;
-                     myTimeValue=atoll(theVal);
-                     snprintf(theVal3, sizeof theVal3, "%011d", (int)myTimeValue);
-                     updateVals[j]=theVal3;
+                      static char theVal3[20];
+                      time_t myTimeValue;
+                      myTimeValue=atoll(theVal);
+                      snprintf(theVal3, sizeof theVal3, "%011d", (int)myTimeValue);
+                      updateVals[j]=theVal3;
                   }
-               }
+                }
+            }
+            if (i==DATA_SIZE_IX) {
+              doingDataSize=1; /* flag to check size */
+              strncpy(dataSizeString, theVal, sizeof(dataSizeString));
             }
 
             j++;
@@ -607,33 +623,45 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
         }
     }
     else {
-        status = cmlCheckDataObjId(objIdString, rsComm->clientUser.userName,
-                                   rsComm->clientUser.rodsZone, neededAccess, &icss);
-        if (status != 0) {
-            theVal = getValByKey(regParam, ACL_COLLECTION_KW);
-            if (theVal != NULL && dataObjInfo->objPath != NULL &&
-                upCols==1 && strcmp(updateCols[0],"data_path")==0) {
-                int len, iVal = 0; // JMC cppcheck - uninit var ( shadows prev decl? )
-                /*
-                  In this case, the user is doing a 'imv' of a collection but one of the sub-files is not owned by them.  We decided
-                  this should be allowed and so we support it via this new ACL_COLLECTION_KW, checking that the ACL_COLLECTION
-                  matches the beginning path of the object and that the user has the appropriate access to that collection.  */
-                len = strlen(theVal);
-                if (strncmp(theVal, dataObjInfo->objPath, len) == 0) {
 
-                    iVal = cmlCheckDir(theVal,
-                                       rsComm->clientUser.userName, 
-                                       rsComm->clientUser.rodsZone,
-                                       ACCESS_OWN, 
-                                       &icss);
-                }
-                if (iVal > 0) status=0; /* Collection was found (id
-                                         * returned) & user has access */
-            }
-            if (status) {
+      if (doingDataSize==1 && strlen(mySessionTicket)>0) {
+          status = cmlTicketUpdateWriteBytes(mySessionTicket,
+                                                    dataSizeString, 
+                                                    objIdString,&icss);
+          if (status != 0) return(status);
+      }
+      status = cmlCheckDataObjId( objIdString, rsComm->clientUser.userName,
+                                  rsComm->clientUser.rodsZone, neededAccess, 
+                                  mySessionTicket, mySessionClientAddr,&icss);
+
+      if (status != 0) {
+        theVal = getValByKey(regParam, ACL_COLLECTION_KW);
+        if (theVal != NULL && dataObjInfo->objPath != NULL &&
+            upCols==1 && strcmp(updateCols[0],"data_path")==0) {
+          int len, iVal = 0; // JMC cppcheck - uninit var ( shadows prev decl? )
+/*
+ In this case, the user is doing a 'imv' of a collection but one of
+ the sub-files is not owned by them.  We decided this should be
+ allowed and so we support it via this new ACL_COLLECTION_KW, checking
+ that the ACL_COLLECTION matches the beginning path of the object and
+ that the user has the appropriate access to that collection.
+ */
+          len = strlen(theVal);
+          if (strncmp(theVal, dataObjInfo->objPath, len) == 0) {
+
+            iVal = cmlCheckDir(theVal,
+                               rsComm->clientUser.userName, 
+                               rsComm->clientUser.rodsZone,
+                               ACCESS_OWN, 
+                               &icss);
+          }
+          if (iVal > 0) status=0; /* Collection was found (id
+                                   * returned) & user has access */
+          }
+          if (status) {
                 _rollback("chlModDataObjMeta");
                 return(CAT_NO_ACCESS_PERMISSION);
-            }
+          }
         } 
     }
 
@@ -799,9 +827,10 @@ int chlRegDataObj(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo) {
     /* Check that collection exists and user has write permission. 
        At the same time, also get the inherit flag */
     iVal = cmlCheckDirAndGetInheritFlag(logicalDirName, 
-                                        rsComm->clientUser.userName,
-                                        rsComm->clientUser.rodsZone, 
-                                        ACCESS_MODIFY_OBJECT, &inheritFlag, &icss);
+                      rsComm->clientUser.userName,
+                      rsComm->clientUser.rodsZone, 
+                      ACCESS_MODIFY_OBJECT, &inheritFlag, 
+                      mySessionTicket, mySessionClientAddr,&icss);
     if (iVal < 0) {
         char errMsg[105];
         if (iVal==CAT_UNKNOWN_COLLECTION) {
@@ -839,6 +868,7 @@ int chlRegDataObj(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo) {
     snprintf(dataStatusNum, MAX_NAME_LEN, "%d", dataObjInfo->replStatus);
     snprintf(dataSizeNum, MAX_NAME_LEN, "%lld", dataObjInfo->dataSize);
     getNowStr(myTime);
+
     cllBindVars[0]=dataIdNum;
     cllBindVars[1]=collIdNum;
     cllBindVars[2]=logicalFileName;
@@ -919,6 +949,37 @@ int chlRegDataObj(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo) {
             return(status);
         }
     }
+
+#ifdef FILESYSTEM_META
+   /* we can track the filesystem metadata from the file which 
+      this data object was put or registered from */
+    if (getValByKey(&dataObjInfo->condInput, FILE_UID_KW)) {
+        cllBindVars[0]=dataIdNum;
+        cllBindVars[1]=getValByKey(&dataObjInfo->condInput, FILE_UID_KW);
+        cllBindVars[2]=getValByKey(&dataObjInfo->condInput, FILE_GID_KW);
+        cllBindVars[3]=getValByKey(&dataObjInfo->condInput, FILE_OWNER_KW);
+        cllBindVars[4]=getValByKey(&dataObjInfo->condInput, FILE_GROUP_KW);
+        cllBindVars[5]=getValByKey(&dataObjInfo->condInput, FILE_MODE_KW);
+        cllBindVars[6]=getValByKey(&dataObjInfo->condInput, FILE_CTIME_KW);
+        cllBindVars[7]=getValByKey(&dataObjInfo->condInput, FILE_MTIME_KW);
+        cllBindVars[8]=getValByKey(&dataObjInfo->condInput, FILE_SOURCE_PATH_KW);
+        cllBindVars[9]=myTime;
+        cllBindVars[10]=myTime;
+        cllBindVarCount=11;
+        if (logSQL) rodsLog(LOG_SQL, "chlRegDataObj xSQL 1");
+        status = cmlExecuteNoAnswerSql(
+                                      "insert into R_OBJT_FILESYSTEM_META (object_id, file_uid, file_gid, file_owner, file_group, file_mode, file_ctime, file_mtime, file_source_path, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                                      &icss);
+        if (status != 0) {
+            rodsLog(LOG_NOTICE, 
+                    "chlRegDataObj cmlExecuteNoAnswerSql insert filesystem_meta failure %d",
+                    status);
+            _rollback("chlRegDataObj");
+            return(status);
+        }
+    }
+#endif /* FILESYSTEM_META */
+
 
     status = cmlAudit3(AU_REGISTER_DATA_OBJ, dataIdNum,
                        rsComm->clientUser.userName, 
@@ -1392,6 +1453,14 @@ int chlUnregDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
             "delete from R_OBJT_ACCESS where object_id=? and not exists (select * from R_DATA_MAIN where data_id=?)", &icss);
         if (status == 0) {
             removeMetaMapAndAVU(dataObjNumber); /* remove AVU metadata, if any */
+#ifdef FILESYSTEM_META
+          /* and remove source file OS metadata */
+          cllBindVars[0]=dataObjNumber;
+          cllBindVarCount=1;
+          if (logSQL) rodsLog(LOG_SQL, "chlUnregDataObj xSQL 1");
+          status = cmlExecuteNoAnswerSql(
+                   "delete from R_OBJT_FILESYSTEM_META where object_id=?", &icss);
+#endif
         }
     }
 
@@ -1995,78 +2064,78 @@ chlAddChildResc(
                     result = status;
                 } else {
 
-                	// IF CHILD HAZ DATA
-                	if(_childHasData(new_child_string)) {
+                        // IF CHILD HAZ DATA
+                        if(_childHasData(new_child_string)) {
 
-                	    // =-=-=-=-=-=-=-
-                	    // Resolve resource hierarchy
+                            // =-=-=-=-=-=-=-
+                            // Resolve resource hierarchy
 
-                	    status = chlGetHierarchyForResc(rescInfo->rescName, localZone, hierarchy);
-                	    if (status < 0) {
-                   			std::stringstream ss;
-                    		ss << func_name << ": chlGetHierarchyForResc failed, status = " << status;
-                    		eirods::log(LOG_NOTICE, ss.str());
-                    		_rollback(func_name);
-                	    	return status;
-                	    }
-
-
-                	    // =-=-=-=-=-=-=-
-                	    // Update object count for resources up the tree
-
-                	    // Get the resource name from the child string
-                	    parser.set_string(new_child_string);
-                	    parser.first_child(child_resc);
-
-                		if (chlRescObjCount(child_resc, obj_count).ok()) {
-                			status = _updateObjCountOfResources(hierarchy, localZone, obj_count);
-                		} else {
-                			status = CAT_INVALID_OBJ_COUNT;
-                		}
-
-                		if (status < 0) {
-                			// rollback
-                			std::stringstream ss;
-                			ss << func_name << " aborted. Object count update error, status = " << status;
-                			eirods::log(LOG_NOTICE, ss.str());
-                			_rollback(func_name);
-                			return status;
-                		}
+                            status = chlGetHierarchyForResc(rescInfo->rescName, localZone, hierarchy);
+                            if (status < 0) {
+                                           std::stringstream ss;
+                                    ss << func_name << ": chlGetHierarchyForResc failed, status = " << status;
+                                    eirods::log(LOG_NOTICE, ss.str());
+                                    _rollback(func_name);
+                                    return status;
+                            }
 
 
-                	    // =-=-=-=-=-=-=-
-                	    // Update resource hierarchy for objects down the tree
+                            // =-=-=-=-=-=-=-
+                            // Update object count for resources up the tree
 
-                	    // Add child resource to hierarchy for substitution
-            			hierarchy += eirods::hierarchy_parser::delimiter() + child_resc;
+                            // Get the resource name from the child string
+                            parser.set_string(new_child_string);
+                            parser.first_child(child_resc);
 
-            			// Substitute 'child' with '...;parent;child'
-                		status = chlSubstituteResourceHierarchies(rsComm, child_resc.c_str(), hierarchy.c_str());
+                                if (chlRescObjCount(child_resc, obj_count).ok()) {
+                                        status = _updateObjCountOfResources(hierarchy, localZone, obj_count);
+                                } else {
+                                        status = CAT_INVALID_OBJ_COUNT;
+                                }
+
+                                if (status < 0) {
+                                        // rollback
+                                        std::stringstream ss;
+                                        ss << func_name << " aborted. Object count update error, status = " << status;
+                                        eirods::log(LOG_NOTICE, ss.str());
+                                        _rollback(func_name);
+                                        return status;
+                                }
 
 
-                	    // =-=-=-=-=-=-=-
-                	    // Update resource name for objects in child
-                		// All objects formerly in child resource must now be in hierarchy's root resource
+                            // =-=-=-=-=-=-=-
+                            // Update resource hierarchy for objects down the tree
 
-                		// get root resource
-                		hier_parser.set_string(hierarchy);
-                		hier_parser.first_resc(root_resc);
+                            // Add child resource to hierarchy for substitution
+                                    hierarchy += eirods::hierarchy_parser::delimiter() + child_resc;
 
-                		cllBindVars[cllBindVarCount++]=(char*)root_resc.c_str();
-                		cllBindVars[cllBindVarCount++]=(char*)root_resc.c_str();
-                		cllBindVars[cllBindVarCount++]=(char*)child_resc.c_str();
-                		status = cmlExecuteNoAnswerSql("update R_DATA_MAIN set resc_name = ?, resc_group_name = ? where resc_name = ?", &icss);
+                                    // Substitute 'child' with '...;parent;child'
+                                status = chlSubstituteResourceHierarchies(rsComm, child_resc.c_str(), hierarchy.c_str());
 
-                		if (status < 0) {
-                			// rollback
-                			std::stringstream ss;
-                			ss << func_name << " aborted. Resource update error, status = " << status;
-                			eirods::log(LOG_NOTICE, ss.str());
-                			_rollback(func_name);
-                			return status;
-                		}
 
-                	}  // IF CHILD HAZ DATA
+                            // =-=-=-=-=-=-=-
+                            // Update resource name for objects in child
+                                // All objects formerly in child resource must now be in hierarchy's root resource
+
+                                // get root resource
+                                hier_parser.set_string(hierarchy);
+                                hier_parser.first_resc(root_resc);
+
+                                cllBindVars[cllBindVarCount++]=(char*)root_resc.c_str();
+                                cllBindVars[cllBindVarCount++]=(char*)root_resc.c_str();
+                                cllBindVars[cllBindVarCount++]=(char*)child_resc.c_str();
+                                status = cmlExecuteNoAnswerSql("update R_DATA_MAIN set resc_name = ?, resc_group_name = ? where resc_name = ?", &icss);
+
+                                if (status < 0) {
+                                        // rollback
+                                        std::stringstream ss;
+                                        ss << func_name << " aborted. Resource update error, status = " << status;
+                                        eirods::log(LOG_NOTICE, ss.str());
+                                        _rollback(func_name);
+                                        return status;
+                                }
+
+                        }  // IF CHILD HAZ DATA
 
 
                     /* Audit */
@@ -2107,12 +2176,12 @@ chlAddChildResc(
 /// @brief function for validating a resource name
 eirods::error validate_resource_name(std::string _resc_name) {
 
-	// Must be between 1 and NAME_LEN-1 characters.
-	// Must start and end with a word character.
-	// May contain non consecutive dashes.
-	boost::regex re("^(?=.{1,63}$)\\w(\\w*(-\\w+)?)*$");
+        // Must be between 1 and NAME_LEN-1 characters.
+        // Must start and end with a word character.
+        // May contain non consecutive dashes.
+        boost::regex re("^(?=.{1,63}$)\\w(\\w*(-\\w+)?)*$");
 
-	if (!boost::regex_match(_resc_name, re)) {
+        if (!boost::regex_match(_resc_name, re)) {
         std::stringstream msg;
         msg << "validate_resource_name failed for resource [";
         msg << _resc_name;
@@ -2194,6 +2263,14 @@ int chlRegResc(rsComm_t *rsComm,
     }
 
     if (logSQL!=0) rodsLog(LOG_SQL, "chlRegResc SQL 2");
+status = cmlCheckNameToken("resc_type", rescInfo->rescType, &icss);
+    if (status !=0 ) {
+        char errMsg[105];
+        snprintf(errMsg, 100, "resource_type '%s' is not valid", 
+                rescInfo->rescType);
+        addRErrorMsg (&rsComm->rError, 0, errMsg);
+        return(CAT_INVALID_RESOURCE_TYPE);
+    }
 
 // =-=-=-=-=-=-=-
 // JMC :: resources may now have an empty location if they
@@ -2419,70 +2496,70 @@ chlDelChildResc(
                 result = status;
             } else {
 
-            	// IF CHILD HAZ DATA
-            	if(_childHasData(child_string)) {
+                    // IF CHILD HAZ DATA
+                    if(_childHasData(child_string)) {
 
-            	    // =-=-=-=-=-=-=-
-            	    // Resolve resource hierarchy (of parent)
+                        // =-=-=-=-=-=-=-
+                        // Resolve resource hierarchy (of parent)
 
-            	    status = chlGetHierarchyForResc(rescInfo->rescName, localZone, hierarchy);
-            	    if (status < 0) {
-               			std::stringstream ss;
-                		ss << "chlDelChildResc: chlGetHierarchyForResc failed, status = " << status;
-                		eirods::log(LOG_NOTICE, ss.str());
-                		_rollback("chlDelChildResc");
-            	    	return status;
-            	    }
+                        status = chlGetHierarchyForResc(rescInfo->rescName, localZone, hierarchy);
+                        if (status < 0) {
+                                       std::stringstream ss;
+                                ss << "chlDelChildResc: chlGetHierarchyForResc failed, status = " << status;
+                                eirods::log(LOG_NOTICE, ss.str());
+                                _rollback("chlDelChildResc");
+                                return status;
+                        }
 
-            	    // =-=-=-=-=-=-=-
-            	    // Update object count for resources up the tree
+                        // =-=-=-=-=-=-=-
+                        // Update object count for resources up the tree
 
-            		if (chlRescObjCount(child, obj_count).ok()) {
-            			status = _updateObjCountOfResources(hierarchy, localZone, -obj_count);
-            		} else {
-            			status = CAT_INVALID_OBJ_COUNT;
-            		}
+                            if (chlRescObjCount(child, obj_count).ok()) {
+                                    status = _updateObjCountOfResources(hierarchy, localZone, -obj_count);
+                            } else {
+                                    status = CAT_INVALID_OBJ_COUNT;
+                            }
 
-            		if (status < 0) {
-            			// rollback
-            			std::stringstream ss;
-            			ss << "chlDelChildResc aborted. Object count update error, status = " << status;
-            			eirods::log(LOG_NOTICE, ss.str());
-            			_rollback("chlDelChildResc");
-            			return status;
-            		}
+                            if (status < 0) {
+                                    // rollback
+                                    std::stringstream ss;
+                                    ss << "chlDelChildResc aborted. Object count update error, status = " << status;
+                                    eirods::log(LOG_NOTICE, ss.str());
+                                    _rollback("chlDelChildResc");
+                                    return status;
+                            }
 
 
-            	    // =-=-=-=-=-=-=-
-            	    // Update resource hierarchy for objects down the tree
+                        // =-=-=-=-=-=-=-
+                        // Update resource hierarchy for objects down the tree
 
-            	    // Add child resource to hierarchy for substitution
-        			hierarchy += eirods::hierarchy_parser::delimiter() + child;
+                        // Add child resource to hierarchy for substitution
+                                hierarchy += eirods::hierarchy_parser::delimiter() + child;
 
-        			// Substitute '...;parent;child' with 'child
-            		status = chlSubstituteResourceHierarchies(rsComm, hierarchy.c_str(), child.c_str());
+                                // Substitute '...;parent;child' with 'child
+                            status = chlSubstituteResourceHierarchies(rsComm, hierarchy.c_str(), child.c_str());
 
-            	    // =-=-=-=-=-=-=-
-            	    // Update resource name for objects in child
-            		// If B is removed from A, all files whose resc_hier starts with B are now on B
-            		partial_hier = child + eirods::hierarchy_parser::delimiter() + "%";
+                        // =-=-=-=-=-=-=-
+                        // Update resource name for objects in child
+                            // If B is removed from A, all files whose resc_hier starts with B are now on B
+                            partial_hier = child + eirods::hierarchy_parser::delimiter() + "%";
 
-            		cllBindVars[cllBindVarCount++]=(char*)child.c_str();
-            		cllBindVars[cllBindVarCount++]=(char*)child.c_str();
-            		cllBindVars[cllBindVarCount++]=(char*)child.c_str();
-            		cllBindVars[cllBindVarCount++]=(char*)partial_hier.c_str();
-            		status = cmlExecuteNoAnswerSql("update R_DATA_MAIN set resc_name = ?, resc_group_name = ? where resc_hier = ? or resc_hier like ?", &icss);
+                            cllBindVars[cllBindVarCount++]=(char*)child.c_str();
+                            cllBindVars[cllBindVarCount++]=(char*)child.c_str();
+                            cllBindVars[cllBindVarCount++]=(char*)child.c_str();
+                            cllBindVars[cllBindVarCount++]=(char*)partial_hier.c_str();
+                            status = cmlExecuteNoAnswerSql("update R_DATA_MAIN set resc_name = ?, resc_group_name = ? where resc_hier = ? or resc_hier like ?", &icss);
 
-            		if (status < 0) {
-            			// rollback
-            			std::stringstream ss;
-            			ss << "chlDelChildResc" << " aborted. Resource update error, status = " << status;
-            			eirods::log(LOG_NOTICE, ss.str());
-            			_rollback("chlDelChildResc");
-            			return status;
-            		}
+                            if (status < 0) {
+                                    // rollback
+                                    std::stringstream ss;
+                                    ss << "chlDelChildResc" << " aborted. Resource update error, status = " << status;
+                                    eirods::log(LOG_NOTICE, ss.str());
+                                    _rollback("chlDelChildResc");
+                                    return status;
+                            }
 
-            	}  // IF CHILD HAZ DATA
+                    }  // IF CHILD HAZ DATA
 
 
 
@@ -2763,8 +2840,8 @@ int chlDelUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
 
     if (strncmp(rsComm->clientUser.userName, userName2, sizeof(userName2))==0 &&
         strncmp(rsComm->clientUser.rodsZone, zoneToUse, sizeof(zoneToUse))==0) {
-       addRErrorMsg (&rsComm->rError, 0, "Cannot remove your own admin account, probably unintended");
-       return(CAT_INVALID_USER);
+        addRErrorMsg (&rsComm->rError, 0, "Cannot remove your own admin account, probably unintended");
+        return(CAT_INVALID_USER);
     }
    
 
@@ -3094,9 +3171,10 @@ int chlRegColl(rsComm_t *rsComm, collInfo_t *collInfo) {
        and get the collectionID.  Also get the inherit flag */
     if (logSQL!=0) rodsLog(LOG_SQL, "chlRegColl SQL 1 ");
     status = cmlCheckDirAndGetInheritFlag(logicalParentDirName, 
-                                          rsComm->clientUser.userName,
-                                          rsComm->clientUser.rodsZone, 
-                                          ACCESS_MODIFY_OBJECT, &inheritFlag, &icss);
+                      rsComm->clientUser.userName,
+                      rsComm->clientUser.rodsZone, 
+                      ACCESS_MODIFY_OBJECT, &inheritFlag, 
+                      mySessionTicket, mySessionClientAddr,&icss);
     if (status < 0) {
         char errMsg[105];
         if (status == CAT_UNKNOWN_COLLECTION) {
@@ -3234,20 +3312,49 @@ int chlRegColl(rsComm_t *rsComm, collInfo_t *collInfo) {
         return(status);
     }
 
+#ifdef FILESYSTEM_META
+   /* we can track the filesystem metadata from the directory
+      from which this collection was put or registered from */
+    if (getValByKey(&collInfo->condInput, FILE_UID_KW) != NULL) {
+        cllBindVars[cllBindVarCount++]=getValByKey(&collInfo->condInput, FILE_UID_KW);
+        cllBindVars[cllBindVarCount++]=getValByKey(&collInfo->condInput, FILE_GID_KW);
+        cllBindVars[cllBindVarCount++]=getValByKey(&collInfo->condInput, FILE_OWNER_KW);
+        cllBindVars[cllBindVarCount++]=getValByKey(&collInfo->condInput, FILE_GROUP_KW);
+        cllBindVars[cllBindVarCount++]=getValByKey(&collInfo->condInput, FILE_MODE_KW);
+        cllBindVars[cllBindVarCount++]=getValByKey(&collInfo->condInput, FILE_CTIME_KW);
+        cllBindVars[cllBindVarCount++]=getValByKey(&collInfo->condInput, FILE_MTIME_KW);
+        cllBindVars[cllBindVarCount++]=getValByKey(&collInfo->condInput, FILE_SOURCE_PATH_KW);
+        cllBindVars[cllBindVarCount++]=myTime;
+        cllBindVars[cllBindVarCount++]=myTime;
+        snprintf(tSQL, MAX_SQL_SIZE,
+                "insert into R_OBJT_FILESYSTEM_META (object_id, file_uid, file_gid, file_owner, file_group, file_mode, file_ctime, file_mtime, file_source_path, create_ts, modify_ts) values (%s, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                currStr2);
+        if (logSQL) rodsLog(LOG_SQL, "chlRegColl xSQL 1");
+        status = cmlExecuteNoAnswerSql(tSQL, &icss);
+        if (status != 0) {
+            rodsLog(LOG_NOTICE, 
+                    "chlRegColl cmlExecuteNoAnswerSql insert filesystem_meta failure %d",
+                    status);
+            _rollback("chlRegColl");
+            return(status);
+        }
+    }
+#endif /* FILESYSTEM_META */
+
     /* Audit */
     status = cmlAudit4(AU_REGISTER_COLL,  
-                       currStr2,
-                       "",
-                       rsComm->clientUser.userName,
-                       rsComm->clientUser.rodsZone,
-                       collInfo->collName,
-                       &icss);
+                      currStr2,
+                      "",
+                      rsComm->clientUser.userName,
+                      rsComm->clientUser.rodsZone,
+                      collInfo->collName,
+                      &icss);
     if (status != 0) {
-        rodsLog(LOG_NOTICE,
-                "chlRegColl cmlAudit4 failure %d",
-                status);
-        _rollback("chlRegColl");
-        return(status);
+      rodsLog(LOG_NOTICE,
+              "chlRegColl cmlAudit4 failure %d",
+              status);
+      _rollback("chlRegColl");
+      return(status);
     }
 
     status =  cmlExecuteNoAnswerSql("commit", &icss);
@@ -3646,6 +3753,21 @@ int chlRenameColl(rsComm_t *rsComm, char *oldCollName, char *newCollName) {
     return(status);
 }
 
+/* Modify a Zone Collection ACL */
+int chlModZoneCollAcl(rsComm_t *rsComm, char* accessLevel, char *userName, 
+               char* pathName) {
+  int status;
+  char *cp;
+  if (*pathName != '/') return(CAT_INVALID_ARGUMENT);
+  cp = pathName+1;
+  if (strstr(cp, "/") != NULL) return(CAT_INVALID_ARGUMENT);
+  status =  chlModAccessControl(rsComm, 0,
+                                accessLevel,
+                                userName,
+                                rsComm->clientUser.rodsZone,
+                                pathName);
+  return(status);
+}
 
 /* rename the local zone */
 int chlRenameLocalZone(rsComm_t *rsComm, char *oldZoneName, char *newZoneName) {
@@ -4056,7 +4178,10 @@ int chlSimpleQuery(rsComm_t *rsComm, char *sql,
                 else {
                     rstrcat(outBuf, icss.stmtPtr[stmtNum]->resultValue[i], 
                             maxOutBuf);
-                    rstrcat(outBuf, " ", maxOutBuf);
+                    if (i != nCols-1) {
+                    /* add a space except for the last column */
+                      rstrcat(outBuf, " ", maxOutBuf);
+                    }
                 }
             }
             if (format == 2) {
@@ -4144,6 +4269,23 @@ int chlDelCollByAdmin(rsComm_t *rsComm, collInfo_t *collInfo) {
     /* Remove associated AVUs, if any */
     snprintf(collIdNum, MAX_NAME_LEN, "%lld", iVal);
     removeMetaMapAndAVU(collIdNum);
+
+#ifdef FILESYSTEM_META
+    /* remove any filesystem metadata entries */
+    cllBindVars[cllBindVarCount++]=collIdNum;
+    if (logSQL) rodsLog(LOG_SQL, "chlDelCollByAdmin xSQL 1");
+    status =  cmlExecuteNoAnswerSql(
+                    "delete from R_OBJT_FILESYSTEM_META where object_id=?",
+                    &icss);
+    if (status) {  
+        /* error might indicate that this wasn't set
+          which isn't a problem. Fall through. */
+      rodsLog(LOG_NOTICE,
+              "chlDelCollByAdmin delete filesystem meta failure %d",
+              status);
+    }
+#endif
+
 
     /* Audit (before it's deleted) */
     status = cmlAudit4(AU_DELETE_COLL_BY_ADMIN,  
@@ -4302,6 +4444,21 @@ static int _delColl(rsComm_t *rsComm, collInfo_t *collInfo) {
     /* Remove associated AVUs, if any */
     removeMetaMapAndAVU(collIdNum);
 
+#ifdef FILESYSTEM_META
+    /* remove any filesystem metadata entries */
+    cllBindVars[cllBindVarCount++]=collIdNum;
+    if (logSQL) rodsLog(LOG_SQL, "_delColl xSQL14");
+    status =  cmlExecuteNoAnswerSql(
+                   "delete from R_OBJT_FILESYSTEM_META where object_id=?",
+                   &icss);
+    if (status) {  
+        /* error might indicate that this wasn't set
+          which isn't a problem. Fall through. */
+      rodsLog(LOG_NOTICE,
+              "_delColl delete filesystem meta failure %d",
+              status);
+    }
+#endif
     /* Audit */
     status = cmlAudit3(AU_DELETE_COLL,
                        collIdNum,
@@ -4324,111 +4481,111 @@ static int _delColl(rsComm_t *rsComm, collInfo_t *collInfo) {
 // Modifies a given resource name in all resource hierarchies (i.e for all objects)
 // gets called after a resource has been modified (iadmin modresc <oldname> name <newname>)
 static int _modRescInHierarchies(const std::string& old_resc, const std::string& new_resc) {
-	char update_sql[MAX_SQL_SIZE];
-	int status;
-	const char *sep = eirods::hierarchy_parser::delimiter().c_str();
-	std::string std_conf_str;	// to store value of STANDARD_CONFORMING_STRINGS
+        char update_sql[MAX_SQL_SIZE];
+        int status;
+        const char *sep = eirods::hierarchy_parser::delimiter().c_str();
+        std::string std_conf_str;        // to store value of STANDARD_CONFORMING_STRINGS
 
 #if ORA_ICAT
-	// Should have regexp_update. check syntax
-	return SYS_NOT_IMPLEMENTED;
+        // Should have regexp_update. check syntax
+        return SYS_NOT_IMPLEMENTED;
 #elif MY_ICAT
-	return SYS_NOT_IMPLEMENTED;
+        return SYS_NOT_IMPLEMENTED;
 #endif
 
 
-	// Get STANDARD_CONFORMING_STRINGS setting to determine if backslashes in regex must be escaped
-	eirods::catalog_properties::getInstance().get_property<std::string>(eirods::STANDARD_CONFORMING_STRINGS, std_conf_str);
+        // Get STANDARD_CONFORMING_STRINGS setting to determine if backslashes in regex must be escaped
+        eirods::catalog_properties::getInstance().get_property<std::string>(eirods::STANDARD_CONFORMING_STRINGS, std_conf_str);
 
 
-	// Regex will look in r_data_main.resc_hier
-	// for occurrences of old_resc with either nothing or the separator (and some stuff) on each side
-	// and replace them with new_resc, e.g:
-	// regexp_replace(resc_hier, '(^|(.+;))OLD_RESC($|(;.+))', '\1NEW_RESC\3')
-	// Backslashes must be escaped in older versions of Postgres
+        // Regex will look in r_data_main.resc_hier
+        // for occurrences of old_resc with either nothing or the separator (and some stuff) on each side
+        // and replace them with new_resc, e.g:
+        // regexp_replace(resc_hier, '(^|(.+;))OLD_RESC($|(;.+))', '\1NEW_RESC\3')
+        // Backslashes must be escaped in older versions of Postgres
 
-	if (std_conf_str == "on") {
-		// Default since Postgres 9.1
-		snprintf(update_sql, MAX_SQL_SIZE,
-				"update r_data_main set resc_hier = regexp_replace(resc_hier, '(^|(.+%s))%s($|(%s.+))', '\\1%s\\3');",
-				sep, old_resc.c_str(), sep, new_resc.c_str());
-	} else {
-		// Older versions
-		snprintf(update_sql, MAX_SQL_SIZE,
-				"update r_data_main set resc_hier = regexp_replace(resc_hier, '(^|(.+%s))%s($|(%s.+))', '\\\\1%s\\\\3');",
-				sep, old_resc.c_str(), sep, new_resc.c_str());
-	}
+        if (std_conf_str == "on") {
+                // Default since Postgres 9.1
+                snprintf(update_sql, MAX_SQL_SIZE,
+                                "update r_data_main set resc_hier = regexp_replace(resc_hier, '(^|(.+%s))%s($|(%s.+))', '\\1%s\\3');",
+                                sep, old_resc.c_str(), sep, new_resc.c_str());
+        } else {
+                // Older versions
+                snprintf(update_sql, MAX_SQL_SIZE,
+                                "update r_data_main set resc_hier = regexp_replace(resc_hier, '(^|(.+%s))%s($|(%s.+))', '\\\\1%s\\\\3');",
+                                sep, old_resc.c_str(), sep, new_resc.c_str());
+        }
 
-	// =-=-=-=-=-=-=-
-	// SQL update
-	status = cmlExecuteNoAnswerSql(update_sql, &icss);
+        // =-=-=-=-=-=-=-
+        // SQL update
+        status = cmlExecuteNoAnswerSql(update_sql, &icss);
 
-	// =-=-=-=-=-=-=-
-	// Log error. Rollback is done in calling function
-	if (status < 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
-		std::stringstream ss;
-		ss << "_modRescInHierarchies: cmlExecuteNoAnswerSql update failure, status = " << status;
-		eirods::log(LOG_NOTICE, ss.str());
-		// _rollback("_modRescInHierarchies");
-	}
+        // =-=-=-=-=-=-=-
+        // Log error. Rollback is done in calling function
+        if (status < 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
+                std::stringstream ss;
+                ss << "_modRescInHierarchies: cmlExecuteNoAnswerSql update failure, status = " << status;
+                eirods::log(LOG_NOTICE, ss.str());
+                // _rollback("_modRescInHierarchies");
+        }
 
-	return status;
+        return status;
 }
 
 
 // Modifies a given resource name in all children lists (i.e for all resources)
 // gets called after a resource has been modified (iadmin modresc <oldname> name <newname>)
 static int _modRescInChildren(const std::string& old_resc, const std::string& new_resc) {
-	char update_sql[MAX_SQL_SIZE];
-	int status;
-	char sep[] = ";";	// might later get it from children parser
-	std::string std_conf_str;	// to store value of STANDARD_CONFORMING_STRINGS
+        char update_sql[MAX_SQL_SIZE];
+        int status;
+        char sep[] = ";";        // might later get it from children parser
+        std::string std_conf_str;        // to store value of STANDARD_CONFORMING_STRINGS
 
 #if ORA_ICAT
-	// Should have regexp_update. check syntax
-	return SYS_NOT_IMPLEMENTED;
+        // Should have regexp_update. check syntax
+        return SYS_NOT_IMPLEMENTED;
 #elif MY_ICAT
-	return SYS_NOT_IMPLEMENTED;
+        return SYS_NOT_IMPLEMENTED;
 #endif
 
 
-	// Get STANDARD_CONFORMING_STRINGS setting to determine if backslashes in regex must be escaped
-	eirods::catalog_properties::getInstance().get_property<std::string>(eirods::STANDARD_CONFORMING_STRINGS, std_conf_str);
+        // Get STANDARD_CONFORMING_STRINGS setting to determine if backslashes in regex must be escaped
+        eirods::catalog_properties::getInstance().get_property<std::string>(eirods::STANDARD_CONFORMING_STRINGS, std_conf_str);
 
 
-	// Regex will look in r_resc_main.resc_children
-	// for occurrences of old_resc preceded by either nothing or the separator and followed with '{}'
-	// and replace them with new_resc, e.g:
-	// regexp_replace(resc_hier, '(^|(.+;))OLD_RESC{}(.+)', '\1NEW_RESC{}\3')
-	// This assumes that '{}' are not valid characters in resource name
-	// Backslashes must be escaped in older versions of Postgres
+        // Regex will look in r_resc_main.resc_children
+        // for occurrences of old_resc preceded by either nothing or the separator and followed with '{}'
+        // and replace them with new_resc, e.g:
+        // regexp_replace(resc_hier, '(^|(.+;))OLD_RESC{}(.+)', '\1NEW_RESC{}\3')
+        // This assumes that '{}' are not valid characters in resource name
+        // Backslashes must be escaped in older versions of Postgres
 
-	if (std_conf_str == "on") {
-		// Default since Postgres 9.1
-		snprintf(update_sql, MAX_SQL_SIZE,
-				"update r_resc_main set resc_children = regexp_replace(resc_children, '(^|(.+%s))%s{}(.*)', '\\1%s{}\\3');",
-				sep, old_resc.c_str(), new_resc.c_str());
-	} else {
-		// Older Postgres
-		snprintf(update_sql, MAX_SQL_SIZE,
-				"update r_resc_main set resc_children = regexp_replace(resc_children, '(^|(.+%s))%s{}(.*)', '\\\\1%s{}\\\\3');",
-				sep, old_resc.c_str(), new_resc.c_str());
-	}
+        if (std_conf_str == "on") {
+                // Default since Postgres 9.1
+                snprintf(update_sql, MAX_SQL_SIZE,
+                                "update r_resc_main set resc_children = regexp_replace(resc_children, '(^|(.+%s))%s{}(.*)', '\\1%s{}\\3');",
+                                sep, old_resc.c_str(), new_resc.c_str());
+        } else {
+                // Older Postgres
+                snprintf(update_sql, MAX_SQL_SIZE,
+                                "update r_resc_main set resc_children = regexp_replace(resc_children, '(^|(.+%s))%s{}(.*)', '\\\\1%s{}\\\\3');",
+                                sep, old_resc.c_str(), new_resc.c_str());
+        }
 
-	// =-=-=-=-=-=-=-
-	// SQL update
-	status = cmlExecuteNoAnswerSql(update_sql, &icss);
+        // =-=-=-=-=-=-=-
+        // SQL update
+        status = cmlExecuteNoAnswerSql(update_sql, &icss);
 
-	// =-=-=-=-=-=-=-
-	// Log error. Rollback is done in calling function
-	if (status < 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
-		std::stringstream ss;
-		ss << "_modRescInChildren: cmlExecuteNoAnswerSql update failure, status = " << status;
-		eirods::log(LOG_NOTICE, ss.str());
-		// _rollback("_modRescInChildren");
-	}
+        // =-=-=-=-=-=-=-
+        // Log error. Rollback is done in calling function
+        if (status < 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
+                std::stringstream ss;
+                ss << "_modRescInChildren: cmlExecuteNoAnswerSql update failure, status = " << status;
+                eirods::log(LOG_NOTICE, ss.str());
+                // _rollback("_modRescInChildren");
+        }
 
-	return status;
+        return status;
 }
 
 // =-=-=-=-=-=-=-
@@ -4527,12 +4684,11 @@ int chlCheckAuth(
     int status;
     char md5Buf[CHALLENGE_LEN+MAX_PASSWORD_LEN+2];
     char digest[RESPONSE_LEN+2];
-    MD5_CTX context;
     char *cp;
     int i, OK, k;
     char userType[MAX_NAME_LEN];
     static int prevFailure=0;
-    char pwInfoArray[MAX_PASSWORD_LEN*MAX_PASSWORDS*3];
+    char pwInfoArray[MAX_PASSWORD_LEN*MAX_PASSWORDS*4];
     char goodPw[MAX_PASSWORD_LEN+10];
     char lastPw[MAX_PASSWORD_LEN+10];
     char goodPwExpiry[MAX_PASSWORD_LEN+10];
@@ -4551,6 +4707,17 @@ int chlCheckAuth(
     char userZone[NAME_LEN+2];
     rodsLong_t pamMinTime;
     rodsLong_t pamMaxTime;
+    char *pSha1;
+    int hashType;
+    int queryCount, doMore;
+    char lastPwModTs[MAX_PASSWORD_LEN+10];
+    char *cPwTs;
+    int iTs1, iTs2;
+
+#if defined(OS_AUTH)
+    int doOsAuthentication = 0;
+    char *os_auth_flag;
+#endif
 
     if (logSQL!=0) rodsLog(LOG_SQL, "chlCheckAuth");
 
@@ -4561,6 +4728,13 @@ int chlCheckAuth(
     }
     *userPrivLevel = NO_USER_AUTH;
     *clientPrivLevel = NO_USER_AUTH;
+
+    hashType=HASH_TYPE_MD5;
+    pSha1 = strstr(username,SHA1_FLAG_STRING);
+    if (pSha1 != NULL) {
+      *pSha1='\0';  // truncate off the :::sha1 string
+      hashType=HASH_TYPE_SHA1;
+    }
 
     memset(md5Buf, 0, sizeof(md5Buf));
     strncpy(md5Buf, challenge, CHALLENGE_LEN);
@@ -4574,6 +4748,18 @@ int chlCheckAuth(
             (unsigned char)md5Buf[10],(unsigned char)md5Buf[11],
             (unsigned char)md5Buf[12],(unsigned char)md5Buf[13], 
             (unsigned char)md5Buf[14],(unsigned char)md5Buf[15]);
+#if defined(OS_AUTH)
+    /* check for the OS_AUTH_FLAG token in the username to see if
+    * we should run the OS level authentication. Make sure and
+    * strip it from the username string so other operations 
+    * don't fail parsing the format.
+    */
+    os_auth_flag = strstr(username, OS_AUTH_FLAG);
+    if (os_auth_flag) {
+        *os_auth_flag = 0;
+        doOsAuthentication = 1;
+    }
+#endif
 
     status = parseUserName(username, userName2, userZone);
     if (userZone[0]=='\0') {
@@ -4584,6 +4770,15 @@ int chlCheckAuth(
     else {
         strncpy(myUserZone, userZone, MAX_NAME_LEN);
     }
+
+#if defined(OS_AUTH)
+    if (doOsAuthentication) {
+        if ((status = osauthVerifyResponse(challenge, userName2, response))) {
+            return status;
+        }
+        goto checkLevel;
+    }
+#endif
 
 
     if( scheme && strlen( scheme ) > 0 ) {
@@ -4600,67 +4795,103 @@ int chlCheckAuth(
     }
 
 
-    if (logSQL!=0) rodsLog(LOG_SQL, "chlCheckAuth SQL 1 ");
+    doMore=1;
+    for (queryCount=0;doMore==1;queryCount++) {
+        if (queryCount==0) {
 
-    status = cmlGetMultiRowStringValuesFromSql(
-            "select rcat_password, pass_expiry_ts, R_USER_PASSWORD.create_ts, R_USER_PASSWORD.modify_ts from R_USER_PASSWORD, R_USER_MAIN where user_name=? and zone_name=? and R_USER_MAIN.user_id = R_USER_PASSWORD.user_id",
-            pwInfoArray, MAX_PASSWORD_LEN,
-            MAX_PASSWORDS*4,  /* four strings per password returned */
-            userName2, myUserZone, &icss);
+            if (logSQL!=0) rodsLog(LOG_SQL, "chlCheckAuth SQL 1 ");
 
-    if (status < 4) {
-        if (status == CAT_NO_ROWS_FOUND) {
-            status = CAT_INVALID_USER; /* Be a little more specific */
-            if (strncmp(ANONYMOUS_USER, userName2, NAME_LEN)==0) {
-                /* anonymous user, skip the pw check but do the rest */
-                goto checkLevel;
+            status = cmlGetMultiRowStringValuesFromSql(
+                  "select rcat_password, pass_expiry_ts, R_USER_PASSWORD.create_ts, R_USER_PASSWORD.modify_ts from R_USER_PASSWORD, R_USER_MAIN where user_name=? and zone_name=? and R_USER_MAIN.user_id = R_USER_PASSWORD.user_id",
+                  pwInfoArray, MAX_PASSWORD_LEN,
+                  MAX_PASSWORDS*4,  /* four strings per password returned */
+                  userName2, myUserZone, 0, &icss);
+        }
+        else {
+            if (queryCount==1) {
+                /* first time using the order by below, start with 0 to be sure */
+                rstrcpy(lastPwModTs, "00000000000", sizeof(lastPwModTs));
             }
-        } 
-        return(status);
+            if (logSQL!=0) rodsLog(LOG_SQL, "chlCheckAuth SQL 8");
+                status = cmlGetMultiRowStringValuesFromSql(
+                    "select rcat_password, pass_expiry_ts, R_USER_PASSWORD.create_ts, R_USER_PASSWORD.modify_ts from R_USER_PASSWORD, R_USER_MAIN where user_name=? and zone_name=? and R_USER_MAIN.user_id = R_USER_PASSWORD.user_id and R_USER_PASSWORD.modify_ts >=? order by R_USER_PASSWORD.modify_ts",
+                    pwInfoArray, MAX_PASSWORD_LEN,
+                    MAX_PASSWORDS*4,  /* four strings per password returned */
+                    userName2, myUserZone, lastPwModTs, &icss);
+        }
+
+        if (status < 4) {
+            if (status == CAT_NO_ROWS_FOUND) {
+                status = CAT_INVALID_USER; /* Be a little more specific */
+                if (strncmp(ANONYMOUS_USER, userName2, NAME_LEN)==0) {
+                    /* anonymous user, skip the pw check but do the rest */
+                    goto checkLevel;
+                }
+            } 
+            return(status);
+        }
+
+        nPasswords=status/4;    /* four strings per password returned */
+        goodPwExpiry[0]='\0';
+        goodPwTs[0]='\0';
+        goodPwModTs[0]='\0';
+
+        if(nPasswords != MAX_PASSWORDS) doMore=0;  /* End the loop if
+                                                      less than the max has
+                                                      been returned. */
+
+        cpw=pwInfoArray;
+        for (k=0;k<MAX_PASSWORDS && k<nPasswords;k++) {
+            memset(md5Buf, 0, sizeof(md5Buf));
+            strncpy(md5Buf, challenge, CHALLENGE_LEN);
+            rstrcpy(lastPw, cpw, MAX_PASSWORD_LEN);
+            icatDescramble(cpw);
+            strncpy(md5Buf+CHALLENGE_LEN, cpw, MAX_PASSWORD_LEN);
+
+            obfMakeOneWayHash(hashType,
+                              (unsigned char *)md5Buf, CHALLENGE_LEN+MAX_PASSWORD_LEN,
+                              (unsigned char *)digest);
+
+            for (i=0;i<RESPONSE_LEN;i++) {
+                if (digest[i]=='\0') digest[i]++;  /* make sure 'string' doesn't end
+                                                      early (this matches client code) */
+            }
+
+            cp = response;
+            OK=1;
+            for (i=0;i<RESPONSE_LEN;i++) {
+                if (*cp++ != digest[i]) OK=0;
+            }
+
+            memset(md5Buf, 0, sizeof(md5Buf));
+            if (OK==1) {
+                rstrcpy(goodPw, cpw, MAX_PASSWORD_LEN);
+                cpw+=MAX_PASSWORD_LEN;
+                rstrcpy(goodPwExpiry, cpw, MAX_PASSWORD_LEN);
+                cpw+=MAX_PASSWORD_LEN;
+                rstrcpy(goodPwTs, cpw, MAX_PASSWORD_LEN);
+                cpw+=MAX_PASSWORD_LEN;
+                rstrcpy(goodPwModTs, cpw, MAX_PASSWORD_LEN);
+                doMore=0;
+                break;
+            }
+            cPwTs=cpw+(MAX_PASSWORD_LEN*3);
+            iTs1=atoi(cPwTs);
+            iTs2=atoi(lastPwModTs);
+            if (iTs1==iTs2) {
+              /* MAX_PASSWORDS at same time-stamp, skip ahead to avoid infinite
+                loop; things should recover eventually */
+            snprintf(lastPwModTs, sizeof lastPwModTs, "%011d", iTs1+1);
+            }
+            else {
+              /* normal case */
+            rstrcpy(lastPwModTs, cPwTs, sizeof(lastPwModTs));
+            }
+
+            cpw+=MAX_PASSWORD_LEN*4;
+        }
+        memset(pwInfoArray, 0, sizeof(pwInfoArray));
     }
-
-    nPasswords=status/4;    /* three strings per password returned */
-    goodPwExpiry[0]='\0';
-    goodPwTs[0]='\0';
-    goodPwModTs[0]='\0';
-
-    cpw=pwInfoArray;
-    for (k=0;k<MAX_PASSWORDS && k<nPasswords;k++) {
-        memset(md5Buf, 0, sizeof(md5Buf));
-        strncpy(md5Buf, challenge, CHALLENGE_LEN);
-        icatDescramble(cpw);
-        strncpy(md5Buf+CHALLENGE_LEN, cpw, MAX_PASSWORD_LEN);
-
-        MD5Init (&context);
-        MD5Update (&context, (unsigned char *) md5Buf, CHALLENGE_LEN+MAX_PASSWORD_LEN);
-        MD5Final ((unsigned char *) digest, &context);
-
-        for (i=0;i<RESPONSE_LEN;i++) {
-            if (digest[i]=='\0') digest[i]++;  /* make sure 'string' doesn't end
-                                                  early (this matches client code) */
-        }
-
-        cp = response;
-        OK=1;
-        for (i=0;i<RESPONSE_LEN;i++) {
-            if (*cp++ != digest[i]) OK=0;
-        }
-
-        memset(md5Buf, 0, sizeof(md5Buf));
-        if (OK==1) {
-            rstrcpy(goodPw, cpw, MAX_PASSWORD_LEN);
-            cpw+=MAX_PASSWORD_LEN;
-            rstrcpy(goodPwExpiry, cpw, MAX_PASSWORD_LEN);
-            cpw+=MAX_PASSWORD_LEN;
-            rstrcpy(goodPwTs, cpw, MAX_PASSWORD_LEN);
-            cpw+=MAX_PASSWORD_LEN;
-            rstrcpy(goodPwModTs, cpw, MAX_PASSWORD_LEN);
-            break;
-        }
-        cpw+=MAX_PASSWORD_LEN*4;
-    }
-    memset(pwInfoArray, 0, sizeof(pwInfoArray));
-
     if (OK==0) {
         prevFailure++;
         return(CAT_INVALID_AUTHENTICATION);
@@ -4810,17 +5041,17 @@ checkLevel:
         else {
             if (rsComm->clientUser.userName[0]=='\0') {
                 /* 
-                   When using GSI, the client might not provide a user
-                   name, in which case we avoid the query below (which
-                   would fail) and instead set up minimal privileges.
-                   This is safe since we have just authenticated the
-                   remote server as an admin account.  This will allow
-                   some queries (including the one needed for retrieving
-                   the client's DNs).  Since the clientUser is not set,
-                   some other queries are still exclued.  The non-IES will
-                   reconnect once the rodsUserName is determined.  In
-                   iRODS 2.3 this would return an error.
-                 */
+                    When using GSI, the client might not provide a user
+                    name, in which case we avoid the query below (which
+                    would fail) and instead set up minimal privileges.
+                    This is safe since we have just authenticated the
+                    remote server as an admin account.  This will allow
+                    some queries (including the one needed for retrieving
+                    the client's DNs).  Since the clientUser is not set,
+                    some other queries are still exclued.  The non-IES will
+                    reconnect once the rodsUserName is determined.  In
+                    iRODS 2.3 this would return an error.
+                */
                 *clientPrivLevel = REMOTE_USER_AUTH;
                 prevFailure=0;
                 return(0);
@@ -4848,23 +5079,59 @@ checkLevel:
         }
     }
 
+#ifdef STORAGE_ADMIN_ROLE
+    else if (strcmp(userType, STORAGE_ADMIN_USER_TYPE) == 0) {
+      /* Add a bit to the userPrivLevel to indicate that
+        this user has the storageadmin role */
+      *userPrivLevel = *userPrivLevel | STORAGE_ADMIN_USER;
+
+      /* If the storageadmin is also the client, then we can just
+         set the client privilege level without querying again.
+         Otherwise, we query for the user to make sure they exist,
+         but we don't set any privilege since storageadmin can't 
+         proxy all API calls. */
+      if (strcmp(rsComm->clientUser.userName, userName2) == 0 &&
+          strcmp(rsComm->clientUser.rodsZone, userZone) == 0) {
+        *clientPrivLevel = LOCAL_USER_AUTH; 
+      }
+      else {
+        if (logSQL!=0) rodsLog(LOG_SQL, "chlCheckAuth xSQL 8");
+        status = cmlGetStringValueFromSql(
+                  "select user_type_name from R_USER_MAIN where user_name=? and zone_name=?",
+                  userType, MAX_NAME_LEN, rsComm->clientUser.userName,
+                  rsComm->clientUser.rodsZone, 0, &icss);
+        if (status != 0) {
+          if (status == CAT_NO_ROWS_FOUND) {
+            status = CAT_INVALID_CLIENT_USER; /* more specific */
+          }
+          else {
+            _rollback("chlCheckAuth");
+          }
+          return(status);
+        }
+      }
+    }
+#endif
+
     prevFailure=0;
     return(0);
 }
 
 /* Generate a temporary, one-time password.
-   Input is the username from the rsComm structure.  
-   Output is the pattern, that when hashed with the user's password,
+   Input is the username from the rsComm structure and an optional otherUser.
+   Output is the pattern, that when hashed with the client user's password,
    becomes the temporary password.  The temp password is also stored
    in the database.
 
-   Called from rsGetTempPassword.
+   Called from rsGetTempPassword and rsGetTempPasswordForOther.
+
+   If otherUser is non-blank, then create a password for the
+   specified user, and the caller must be a local admin.  
 */
-int chlMakeTempPw(rsComm_t *rsComm, char *pwValueToHash) {
+int chlMakeTempPw(rsComm_t *rsComm, char *pwValueToHash, char* otherUser) {
     int status;
     char md5Buf[100];
     unsigned char digest[RESPONSE_LEN+2];
-    MD5_CTX context;
     int i;
     char password[MAX_PASSWORD_LEN+10];
     char newPw[MAX_PASSWORD_LEN+10];
@@ -4874,8 +5141,19 @@ int chlMakeTempPw(rsComm_t *rsComm, char *pwValueToHash) {
     char hashValue[50];
     int j=0;
     char tSQL[MAX_SQL_SIZE];
+    int useOtherUser=0;
 
     if (logSQL!=0) rodsLog(LOG_SQL, "chlMakeTempPw");
+
+    if (otherUser!=NULL && strlen(otherUser)>0) {
+        if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+            return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+        }
+        if (rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+            return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+        }
+        useOtherUser=1;
+    }
 
     if (logSQL!=0) rodsLog(LOG_SQL, "chlMakeTempPw SQL 1 ");
 
@@ -4919,22 +5197,26 @@ int chlMakeTempPw(rsComm_t *rsComm, char *pwValueToHash) {
     strncpy(md5Buf, hashValue, 100);
     strncat(md5Buf, password, 100);
 
-    MD5Init (&context);
-    MD5Update (&context, (unsigned char *) md5Buf, 100);
-    MD5Final ((unsigned char *) digest, &context);
+    obfMakeOneWayHash(HASH_TYPE_DEFAULT,
+        (unsigned char *) md5Buf, 100, (unsigned char *) digest);
 
-    md5ToStr(digest, newPw);
+    hashToStr(digest, newPw);
 /*   printf("newPw=%s\n", newPw); */
 
     rstrcpy(pwValueToHash, hashValue, MAX_PASSWORD_LEN);
 
 
-    /* Insert the temporay, one-time password */
+    /* Insert the temporary, one-time password */
 
     getNowStr(myTime);
     sprintf(myTimeExp, "%d", TEMP_PASSWORD_TIME);  /* seconds from create time
                                                       when it will expire */
-    cllBindVars[cllBindVarCount++]=rsComm->clientUser.userName;
+    if (useOtherUser==1) {
+      cllBindVars[cllBindVarCount++]=otherUser;
+    }
+    else {
+      cllBindVars[cllBindVarCount++]=rsComm->clientUser.userName;
+    }
     cllBindVars[cllBindVarCount++]=rsComm->clientUser.rodsZone,
         cllBindVars[cllBindVarCount++]=newPw;
     cllBindVars[cllBindVarCount++]=myTimeExp;
@@ -4962,6 +5244,128 @@ int chlMakeTempPw(rsComm_t *rsComm, char *pwValueToHash) {
 
     memset(newPw, 0, MAX_PASSWORD_LEN);
     return(0);
+}
+
+int 
+chlMakeLimitedPw(rsComm_t *rsComm, int ttl, char *pwValueToHash) {
+    int status;
+    char md5Buf[100];
+    unsigned char digest[RESPONSE_LEN+2];
+    int i;
+    char password[MAX_PASSWORD_LEN+10];
+    char newPw[MAX_PASSWORD_LEN+10];
+    char myTime[50];
+    char rBuf[200];
+    char hashValue[50];
+    int j=0;
+    char tSQL[MAX_SQL_SIZE];
+    char expTime[50];
+    int timeToLive;
+
+    if (logSQL!=0) rodsLog(LOG_SQL, "chlMakeLimitedPw");
+
+    if (logSQL!=0) rodsLog(LOG_SQL, "chlMakeLimitedPw SQL 1 ");
+
+    snprintf(tSQL, MAX_SQL_SIZE, 
+            "select rcat_password from R_USER_PASSWORD, R_USER_MAIN where user_name=? and R_USER_MAIN.zone_name=? and R_USER_MAIN.user_id = R_USER_PASSWORD.user_id and pass_expiry_ts != '%d'",
+            TEMP_PASSWORD_TIME);
+
+    status = cmlGetStringValueFromSql(tSQL,
+            password, MAX_PASSWORD_LEN, 
+            rsComm->clientUser.userName, 
+            rsComm->clientUser.rodsZone, 0, &icss);
+    if (status !=0) {
+      if (status == CAT_NO_ROWS_FOUND) {
+          status = CAT_INVALID_USER; /* Be a little more specific */
+      }
+      else {
+          _rollback("chlMakeLimitedPw");
+      }
+      return(status);
+    }
+
+    icatDescramble(password);
+
+    j=0;
+    get64RandomBytes(rBuf);
+    for (i=0;i<50 && j<MAX_PASSWORD_LEN-1;i++) {
+      char c;
+      c = rBuf[i] &0x7f;
+      if (c < '0') c+='0';
+      if ( (c > 'a' && c < 'z') || (c > 'A' && c < 'Z') ||
+           (c > '0' && c < '9') ){
+          hashValue[j++]=c;
+      }
+    }
+    hashValue[j]='\0';
+
+    /* calcuate the limited password (a hash of the user's main pw and
+       the hashValue) */
+    memset(md5Buf, 0, sizeof(md5Buf));
+    strncpy(md5Buf, hashValue, 100);
+    strncat(md5Buf, password, 100);
+
+    obfMakeOneWayHash(HASH_TYPE_DEFAULT,
+        (unsigned char *) md5Buf, 100, (unsigned char *) digest);
+
+    hashToStr(digest, newPw);
+
+    icatScramble(newPw);
+
+    rstrcpy(pwValueToHash, hashValue, MAX_PASSWORD_LEN);
+
+    getNowStr(myTime);
+
+    timeToLive = ttl*3600;  /* convert input hours to seconds */
+    if (timeToLive < IRODS_TTL_PASSWORD_MIN_TIME  ||
+        timeToLive > IRODS_TTL_PASSWORD_MAX_TIME) {
+      return PAM_AUTH_PASSWORD_INVALID_TTL;
+    }
+
+    /* Insert the limited password */
+    snprintf(expTime, sizeof expTime, "%d", timeToLive);
+    cllBindVars[cllBindVarCount++]=rsComm->clientUser.userName;
+    cllBindVars[cllBindVarCount++]=rsComm->clientUser.rodsZone,
+    cllBindVars[cllBindVarCount++]=newPw;
+    cllBindVars[cllBindVarCount++]=expTime;
+    cllBindVars[cllBindVarCount++]=myTime;
+    cllBindVars[cllBindVarCount++]=myTime;
+    if (logSQL!=0) rodsLog(LOG_SQL, "chlMakeLimitedPw SQL 2");
+  status =  cmlExecuteNoAnswerSql(
+              "insert into R_USER_PASSWORD (user_id, rcat_password, pass_expiry_ts,  create_ts, modify_ts) values ((select user_id from R_USER_MAIN where user_name=? and zone_name=?), ?, ?, ?, ?)",
+              &icss);
+    if (status !=0) {
+      rodsLog(LOG_NOTICE,
+              "chlMakeLimitedPw cmlExecuteNoAnswerSql insert failure %d",
+              status);
+      _rollback("chlMakeLimitedPw");
+      return(status);
+    }
+
+    /* Also delete any that are expired */
+    if (logSQL!=0) rodsLog(LOG_SQL, "chlMakeLimitedPw SQL 3");
+    cllBindVars[cllBindVarCount++]=IRODS_PAM_PASSWORD_MIN_TIME;
+    cllBindVars[cllBindVarCount++]=IRODS_PAM_PASSWORD_MAX_TIME;
+    cllBindVars[cllBindVarCount++]=myTime;
+#if MY_ICAT
+    status =  cmlExecuteNoAnswerSql("delete from R_USER_PASSWORD where pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as signed integer)>=? and cast(pass_expiry_ts as signed integer)<=? and (cast(pass_expiry_ts as signed integer) + cast(modify_ts as signed integer) < ?)",
+           &icss);
+#else
+    status =  cmlExecuteNoAnswerSql("delete from R_USER_PASSWORD where pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as integer)>=? and cast(pass_expiry_ts as integer)<=? and (cast(pass_expiry_ts as integer) + cast(modify_ts as integer) < ?)",
+           &icss);
+#endif
+
+    status =  cmlExecuteNoAnswerSql("commit", &icss);
+    if (status != 0) {
+      rodsLog(LOG_NOTICE,
+              "chlMakeLimitedPw cmlExecuteNoAnswerSql commit failure %d",
+              status);
+      return(status);
+      }
+
+    memset(newPw, 0, MAX_PASSWORD_LEN);
+    return(0);
+
 }
 
 /*
@@ -5032,80 +5436,80 @@ int decodePw(rsComm_t *rsComm, char *in, char *out) {
  If testTime is non-null, use that as the create-time, as a testing aid.
  */
 int chlUpdateIrodsPamPassword(rsComm_t *rsComm,
-			      char *username, int timeToLive,
-			      char *testTime,
-			      char **irodsPassword) {
-   char myTime[50];
-   char rBuf[200];
-   int i, j;
-   char randomPw[50];
-   char randomPwEncoded[50];
-   int status;
-   char passwordInIcat[MAX_PASSWORD_LEN+2];
-   char passwordModifyTime[50];
-   char *cVal[3];
-   int iVal[3];
-   char selUserId[MAX_NAME_LEN];
-   char expTime[50];
+                              char *username, int timeToLive,
+                              char *testTime,
+                              char **irodsPassword) {
+    char myTime[50];
+    char rBuf[200];
+    int i, j;
+    char randomPw[50];
+    char randomPwEncoded[50];
+    int status;
+    char passwordInIcat[MAX_PASSWORD_LEN+2];
+    char passwordModifyTime[50];
+    char *cVal[3];
+    int iVal[3];
+    char selUserId[MAX_NAME_LEN];
+    char expTime[50];
 
-   status = getLocalZone();
-   if (status != 0) return(status);
+    status = getLocalZone();
+    if (status != 0) return(status);
 
-   getNowStr(myTime);
+    getNowStr(myTime);
 
-   /* if ttl is unset, use the default */
-   if (timeToLive == 0) {
-     rstrcpy(expTime, IRODS_PAM_PASSWORD_DEFAULT_TIME, sizeof expTime);
-   }
-   else {
-     /* convert ttl to seconds and make sure ttl is within the limits */
-     rodsLong_t pamMinTime, pamMaxTime;
-     pamMinTime=atoll(IRODS_PAM_PASSWORD_MIN_TIME);
-     pamMaxTime=atoll(IRODS_PAM_PASSWORD_MAX_TIME);
-     timeToLive = timeToLive * 3600;
-     if (timeToLive < pamMinTime || 
-	 timeToLive > pamMaxTime) {
-       return PAM_AUTH_PASSWORD_INVALID_TTL;
-     }
-     snprintf(expTime, sizeof expTime, "%d", timeToLive);
-   }
+    /* if ttl is unset, use the default */
+    if (timeToLive == 0) {
+      rstrcpy(expTime, IRODS_PAM_PASSWORD_DEFAULT_TIME, sizeof expTime);
+    }
+    else {
+      /* convert ttl to seconds and make sure ttl is within the limits */
+      rodsLong_t pamMinTime, pamMaxTime;
+      pamMinTime=atoll(IRODS_PAM_PASSWORD_MIN_TIME);
+      pamMaxTime=atoll(IRODS_PAM_PASSWORD_MAX_TIME);
+      timeToLive = timeToLive * 3600;
+      if (timeToLive < pamMinTime || 
+          timeToLive > pamMaxTime) {
+        return PAM_AUTH_PASSWORD_INVALID_TTL;
+      }
+      snprintf(expTime, sizeof expTime, "%d", timeToLive);
+    }
 
-   /* get user id */
-   if (logSQL!=0) rodsLog(LOG_SQL, "chlUpdateIrodsPamPassword SQL 1");
-   status = cmlGetStringValueFromSql(
+    /* get user id */
+    if (logSQL!=0) rodsLog(LOG_SQL, "chlUpdateIrodsPamPassword SQL 1");
+    status = cmlGetStringValueFromSql(
       "select user_id from R_USER_MAIN where user_name=? and zone_name=? and user_type_name!='rodsgroup'",
       selUserId, MAX_NAME_LEN, username, localZone, 0, &icss);
-   if (status==CAT_NO_ROWS_FOUND) return (CAT_INVALID_USER);
-   if (status) return(status);
+    if (status==CAT_NO_ROWS_FOUND) return (CAT_INVALID_USER);
+    if (status) return(status);
 
-   /* first delete any that are expired */
-   if (logSQL!=0) rodsLog(LOG_SQL, "chlUpdateIrodsPamPassword SQL 2");
-   cllBindVars[cllBindVarCount++]=IRODS_PAM_PASSWORD_MIN_TIME;
-   cllBindVars[cllBindVarCount++]=IRODS_PAM_PASSWORD_MAX_TIME;
-   cllBindVars[cllBindVarCount++]=myTime;
+    /* first delete any that are expired */
+    if (logSQL!=0) rodsLog(LOG_SQL, "chlUpdateIrodsPamPassword SQL 2");
+    cllBindVars[cllBindVarCount++]=IRODS_PAM_PASSWORD_MIN_TIME;
+    cllBindVars[cllBindVarCount++]=IRODS_PAM_PASSWORD_MAX_TIME;
+    cllBindVars[cllBindVarCount++]=myTime;
 #if MY_ICAT
-   status =  cmlExecuteNoAnswerSql("delete from R_USER_PASSWORD where pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as signed integer)>=? and cast(pass_expiry_ts as signed integer)<=? and (cast(pass_expiry_ts as signed integer) + cast(modify_ts as signed integer) < ?)",
+    status =  cmlExecuteNoAnswerSql("delete from R_USER_PASSWORD where pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as signed integer)>=? and cast(pass_expiry_ts as signed integer)<=? and (cast(pass_expiry_ts as signed integer) + cast(modify_ts as signed integer) < ?)",
 #else
-   status =  cmlExecuteNoAnswerSql("delete from R_USER_PASSWORD where pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as integer)>=? and cast(pass_expiry_ts as integer)<=? and (cast(pass_expiry_ts as integer) + cast(modify_ts as integer) < ?)",
+    status =  cmlExecuteNoAnswerSql("delete from R_USER_PASSWORD where pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as integer)>=? and cast(pass_expiry_ts as integer)<=? and (cast(pass_expiry_ts as integer) + cast(modify_ts as integer) < ?)",
 #endif
-				   &icss);
-   if (logSQL!=0) rodsLog(LOG_SQL, "chlUpdateIrodsPamPassword SQL 3");
-   cVal[0]=passwordInIcat;
-   iVal[0]=MAX_PASSWORD_LEN;
-   cVal[1]=passwordModifyTime;
-   iVal[1]=sizeof(passwordModifyTime);
-   status = cmlGetStringValuesFromSql(
+                                    &icss);
+    if (logSQL!=0) rodsLog(LOG_SQL, "chlUpdateIrodsPamPassword SQL 3");
+    cVal[0]=passwordInIcat;
+    iVal[0]=MAX_PASSWORD_LEN;
+    cVal[1]=passwordModifyTime;
+    iVal[1]=sizeof(passwordModifyTime);
+    status = cmlGetStringValuesFromSql(
 #if MY_ICAT
-	    "select rcat_password, modify_ts from R_USER_PASSWORD where user_id=? and pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as signed integer) >= ? and cast (pass_expiry_ts as signed integer) <= ?",
+            "select rcat_password, modify_ts from R_USER_PASSWORD where user_id=? and pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as signed integer) >= ? and cast (pass_expiry_ts as signed integer) <= ?",
 #else
-	    "select rcat_password, modify_ts from R_USER_PASSWORD where user_id=? and pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as integer) >= ? and cast (pass_expiry_ts as integer) <= ?",
+            "select rcat_password, modify_ts from R_USER_PASSWORD where user_id=? and pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as integer) >= ? and cast (pass_expiry_ts as integer) <= ?",
 #endif
-	    cVal, iVal, 2,
-	    selUserId, 
+            cVal, iVal, 2,
+            selUserId, 
             IRODS_PAM_PASSWORD_MIN_TIME,
             IRODS_PAM_PASSWORD_MAX_TIME, &icss);
 
-   if (status==0) {
+    if (status==0) {
 #ifndef PAM_AUTH_NO_EXTEND
       if (logSQL!=0) rodsLog(LOG_SQL, "chlUpdateIrodsPamPassword SQL 4");
       cllBindVars[cllBindVarCount++]=myTime;
@@ -5113,80 +5517,80 @@ int chlUpdateIrodsPamPassword(rsComm_t *rsComm,
       cllBindVars[cllBindVarCount++]=selUserId;
       cllBindVars[cllBindVarCount++]=passwordInIcat;
       status =  cmlExecuteNoAnswerSql("update R_USER_PASSWORD set modify_ts=?, pass_expiry_ts=? where user_id = ? and rcat_password = ?",
-				      &icss);
+                                      &icss);
       if (status) return(status);
 
       status =  cmlExecuteNoAnswerSql("commit", &icss);
       if (status != 0) {
-	 rodsLog(LOG_NOTICE,
-		 "chlUpdateIrodsPamPassword cmlExecuteNoAnswerSql commit failure %d",
-		 status);
-	 return(status);
+          rodsLog(LOG_NOTICE,
+                  "chlUpdateIrodsPamPassword cmlExecuteNoAnswerSql commit failure %d",
+                  status);
+          return(status);
       }
 #endif
       icatDescramble(passwordInIcat);
       strncpy(*irodsPassword, passwordInIcat, IRODS_PAM_PASSWORD_LEN);
       return(0);
-   }
+    }
 
 
-   // =-=-=-=-=-=-=-
-   // if the resultant scrambled password has a ' in the
-   // string, this can cause issues on some systems, notably
-   // Suse 12.  if this is the case we will just get another
-   // random password.
-   bool pw_good = false;
-   while( !pw_good ) {
+    // =-=-=-=-=-=-=-
+    // if the resultant scrambled password has a ' in the
+    // string, this can cause issues on some systems, notably
+    // Suse 12.  if this is the case we will just get another
+    // random password.
+    bool pw_good = false;
+    while( !pw_good ) {
 
-       j=0;
-       get64RandomBytes(rBuf);
-       for (i=0;i<50 && j<IRODS_PAM_PASSWORD_LEN-1;i++) {
+        j=0;
+        get64RandomBytes(rBuf);
+        for (i=0;i<50 && j<IRODS_PAM_PASSWORD_LEN-1;i++) {
           char c;
           c = rBuf[i] & 0x7f;
           if (c < '0') c+='0';
           if ( (c > 'a' && c < 'z') || (c > 'A' && c < 'Z') ||
                (c > '0' && c < '9') ){
-             randomPw[j++]=c;
+              randomPw[j++]=c;
           }
-       }
-       randomPw[j]='\0';
+        }
+        randomPw[j]='\0';
 
-       strncpy(randomPwEncoded, randomPw, 50);
-       icatScramble(randomPwEncoded); 
-       if( !strstr( randomPwEncoded, "\'" ) ) {
-           pw_good = true; 
+        strncpy(randomPwEncoded, randomPw, 50);
+        icatScramble(randomPwEncoded); 
+        if( !strstr( randomPwEncoded, "\'" ) ) {
+            pw_good = true; 
 
-       } else {
-           rodsLog( LOG_STATUS, "chlUpdateIrodsPamPassword :: getting a new password [%s] has a single quote", randomPwEncoded );
+        } else {
+            rodsLog( LOG_STATUS, "chlUpdateIrodsPamPassword :: getting a new password [%s] has a single quote", randomPwEncoded );
 
-       }
+        }
 
-   } // while
+    } // while
 
-   if (testTime!=NULL && strlen(testTime)>0) {
+    if (testTime!=NULL && strlen(testTime)>0) {
       strncpy(myTime, testTime, sizeof(myTime));
-   }
+    }
 
-   if (logSQL!=0) rodsLog(LOG_SQL, "chlUpdateIrodsPamPassword SQL 5");
-   cllBindVars[cllBindVarCount++]=selUserId;
-   cllBindVars[cllBindVarCount++]=randomPwEncoded;
-   cllBindVars[cllBindVarCount++]=expTime;
-   cllBindVars[cllBindVarCount++]=myTime;
-   cllBindVars[cllBindVarCount++]=myTime;
-   status =  cmlExecuteNoAnswerSql("insert into R_USER_PASSWORD (user_id, rcat_password, pass_expiry_ts,  create_ts, modify_ts) values (?, ?, ?, ?, ?)", 
-				   &icss);
-   if (status) return(status);
+    if (logSQL!=0) rodsLog(LOG_SQL, "chlUpdateIrodsPamPassword SQL 5");
+    cllBindVars[cllBindVarCount++]=selUserId;
+    cllBindVars[cllBindVarCount++]=randomPwEncoded;
+    cllBindVars[cllBindVarCount++]=expTime;
+    cllBindVars[cllBindVarCount++]=myTime;
+    cllBindVars[cllBindVarCount++]=myTime;
+    status =  cmlExecuteNoAnswerSql("insert into R_USER_PASSWORD (user_id, rcat_password, pass_expiry_ts,  create_ts, modify_ts) values (?, ?, ?, ?, ?)", 
+                                    &icss);
+    if (status) return(status);
 
-   status =  cmlExecuteNoAnswerSql("commit", &icss);
-   if (status != 0) {
+    status =  cmlExecuteNoAnswerSql("commit", &icss);
+    if (status != 0) {
       rodsLog(LOG_NOTICE,
-	  "chlUpdateIrodsPamPassword cmlExecuteNoAnswerSql commit failure %d",
-	  status);
+          "chlUpdateIrodsPamPassword cmlExecuteNoAnswerSql commit failure %d",
+          status);
       return(status);
-   }
+    }
 
-   strncpy(*irodsPassword, randomPw, IRODS_PAM_PASSWORD_LEN);
-   return(0);
+    strncpy(*irodsPassword, randomPw, IRODS_PAM_PASSWORD_LEN);
+    return(0);
 }
 
 /* Modify an existing user.
@@ -5205,9 +5609,9 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
     char form5[]="insert into R_USER_AUTH (user_id, user_auth_name, create_ts) values ((select user_id from R_USER_MAIN where user_name=? and zone_name=?), ?, ?)";
     char form6[]="delete from R_USER_AUTH where user_id = (select user_id from R_USER_MAIN where user_name=? and zone_name=?) and user_auth_name = ?";
 #if MY_ICAT
-   char form7[]="delete from R_USER_PASSWORD where pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as signed integer)>=? and cast(pass_expiry_ts as signed integer)<=? and user_id = (select user_id from R_USER_MAIN where user_name=? and zone_name=?)";
+    char form7[]="delete from R_USER_PASSWORD where pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as signed integer)>=? and cast(pass_expiry_ts as signed integer)<=? and user_id = (select user_id from R_USER_MAIN where user_name=? and zone_name=?)";
 #else
-   char form7[]="delete from R_USER_PASSWORD where pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as integer)>=? and cast(pass_expiry_ts as integer)<=? and user_id = (select user_id from R_USER_MAIN where user_name=? and zone_name=?)";
+    char form7[]="delete from R_USER_PASSWORD where pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as integer)>=? and cast(pass_expiry_ts as integer)<=? and user_id = (select user_id from R_USER_MAIN where user_name=? and zone_name=?)";
 #endif
 
     char myTime[50];
@@ -5389,6 +5793,9 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
         char userIdStr[MAX_NAME_LEN];
         i = decodePw(rsComm, newValue, decoded);
 
+      int status2 = icatApplyRule(rsComm, "acCheckPasswordStrength", decoded);
+      if (status2) return(status2);
+
         icatScramble(decoded); 
 
         if (i) return(i);
@@ -5519,6 +5926,22 @@ int chlModGroup(rsComm_t *rsComm, char *groupName, char *option,
         status2  = cmlCheckGroupAdminAccess(
             rsComm->clientUser.userName,
             rsComm->clientUser.rodsZone, groupName, &icss);
+        if (status2 != 0) {
+          /* User is not a groupadmin that is a member of this group. */
+          /* But if we're doing an 'add' and they are a groupadmin
+              and the group is empty, allow it */
+          if (strcmp(option, "add")==0) {
+              int status3 =  cmlCheckGroupAdminAccess(
+                            rsComm->clientUser.userName,
+                            rsComm->clientUser.rodsZone, "", &icss);
+              if (status3==0) {
+                int status4 = cmlGetGroupMemberCount(groupName, &icss);
+                if (status4==0) { /* call succeeded and the total is 0 */
+                  status2=0;      /* reset the error to success to allow it */
+                }
+              }
+          }
+        }
         if (status2 != 0) return(status2);
     }
 
@@ -5627,6 +6050,98 @@ int chlModGroup(rsComm_t *rsComm, char *groupName, char *option,
     }
     return(0);
 }
+
+#if 0
+/*
+ Modify a resource host (location) string.  This is used for the new
+WOS resources which may have multiple addresses.  A series or comma
+separated DNS names is maintained.
+ */
+int
+modRescHostStr(rsComm_t *rsComm, char *rescId, char * option, char * optionValue) {
+    char hostStr[MAX_HOST_STR];
+    int status;
+    struct hostent *myHostEnt;
+    int i;
+    char errMsg[155], myTime[50];
+
+    memset(hostStr, 0, sizeof(hostStr));
+    if (logSQL!=0) rodsLog(LOG_SQL, "modRescHostStr S Q L 1 ");
+    status = cmlGetStringValueFromSql(
+          "select resc_net from R_RESC_MAIN where resc_id=?",
+          hostStr, MAX_HOST_STR, rescId, 0, 0, &icss);
+    if (status != 0) {
+      return(status);
+    }
+    if (strcmp(option, "host-add")==0) {
+      myHostEnt = gethostbyname(optionValue);
+      if (myHostEnt == 0) {
+          snprintf(errMsg, 150, 
+                  "Warning, resource host address '%s' is not a valid DNS entry, gethostbyname failed.", 
+                  optionValue);
+          i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+      }
+      if (strstr(hostStr,optionValue)!=NULL) {
+          snprintf(errMsg, 150, 
+                  "Error, input DNS name, %s, already in the list for this resource.", 
+                  optionValue);
+          i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+          return(CAT_INVALID_ARGUMENT);
+      }
+      strncat(hostStr, ",", sizeof(hostStr));
+      strncat(hostStr, optionValue, sizeof(hostStr));
+    }
+    if (strcmp(option, "host-rm")==0) {
+      char *cp, *cp2, *cp3;
+      int len;
+      len=strlen(optionValue);
+      cp = strstr(hostStr,",");
+      if (cp==NULL) {
+          i = addRErrorMsg (&rsComm->rError, 0, 
+                            "Error, removal of last location/host for this resource not allowed.");
+          return(CAT_INVALID_ARGUMENT);
+      }
+
+
+      cp = strstr(hostStr,optionValue);
+      if (cp==NULL ||
+          (cp > hostStr && *(cp-1)!=',') ||
+          (*(cp+len)!= ',' && *(cp+len)!= '\0')) {
+          snprintf(errMsg, 150, 
+                  "Error, input DNS location/host, %s, being removed is not in the list for this resource.", 
+                  optionValue);
+          i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+          return(CAT_INVALID_ARGUMENT);
+      }
+      cp2=cp+len+1;
+      cp3=cp;
+      if (*cp2=='\0') *(cp3-1)='\0'; /* it's the last in the list, remove trailing ',' */
+      while (cp3<cp2) {
+          *cp3++='\0';  /* clear out the entry */
+      }
+      while (cp2<hostStr+sizeof(hostStr)) {
+          *cp++=*cp2++; /* slide up the other items, if any */
+      }
+    }
+    getNowStr(myTime);
+    cllBindVars[cllBindVarCount++]=hostStr;
+    cllBindVars[cllBindVarCount++]=myTime;
+    cllBindVars[cllBindVarCount++]=rescId;
+    if (logSQL!=0) rodsLog(LOG_SQL, "modRescHostStr S Q L 2");
+    status =  cmlExecuteNoAnswerSql(
+      "update R_RESC_MAIN set resc_net = ?, modify_ts=? where resc_id=?",
+      &icss);
+    if (status != 0) {
+      rodsLog(LOG_NOTICE,
+              "modRescHostStr cmlExecuteNoAnswerSql update failure %d",
+              status);
+      _rollback("modRescHostStr");
+      return(status);
+    }
+    return status;
+}
+#endif //if 0
+
 
 /* Modify a Resource (certain fields) */
 int chlModResc(
@@ -5781,6 +6296,13 @@ int chlModResc(
         }
         OK=1;
     }
+#if 0
+    if (strncmp(option, "host-",5)==0) {
+      status = modRescHostStr(rsComm, rescId, option, optionValue);
+      if (status) return(status);
+      OK=1;
+    }
+#endif //if 0
     if (strcmp(option, "host")==0) {
         // =-=-=-=-=-=-=-
         // JMC - backport 4597
@@ -6084,66 +6606,66 @@ int chlModResc(
 
 /* Modify a Resource Data Paths */
 int chlModRescDataPaths(rsComm_t *rsComm, char *rescName, char *oldPath,
-                       char *newPath, char *userName) {
-   char rescId[MAX_NAME_LEN];
-   int status, len, rows;
-   char *cptr;
+                        char *newPath, char *userName) {
+    char rescId[MAX_NAME_LEN];
+    int status, len, rows;
+    char *cptr;
 //   char userId[NAME_LEN]="";
-   char userZone[NAME_LEN];
-   char zoneToUse[NAME_LEN];
-   char userName2[NAME_LEN];
+    char userZone[NAME_LEN];
+    char zoneToUse[NAME_LEN];
+    char userName2[NAME_LEN];
 
-   char oldPath2[MAX_NAME_LEN];
+    char oldPath2[MAX_NAME_LEN];
 
-   if (logSQL!=0) rodsLog(LOG_SQL, "chlModRescDataPaths");
+    if (logSQL!=0) rodsLog(LOG_SQL, "chlModRescDataPaths");
 
-   if (rescName == NULL || oldPath==NULL || newPath==NULL) {
+    if (rescName == NULL || oldPath==NULL || newPath==NULL) {
       return (CAT_INVALID_ARGUMENT);
-   }
+    }
 
-   if (*rescName == '\0' || *oldPath == '\0' || *newPath=='\0') {
+    if (*rescName == '\0' || *oldPath == '\0' || *newPath=='\0') {
       return (CAT_INVALID_ARGUMENT);
-   }
+    }
 
-   /* the paths must begin and end with / */
-   if (*oldPath != '/' or *newPath != '/') {
+    /* the paths must begin and end with / */
+    if (*oldPath != '/' or *newPath != '/') {
       return (CAT_INVALID_ARGUMENT);
-   }
-   len = strlen(oldPath);
-   cptr = oldPath+len-1;
-   if (*cptr != '/') return (CAT_INVALID_ARGUMENT);
-   len = strlen(newPath);
-   cptr = newPath+len-1;
-   if (*cptr != '/') return (CAT_INVALID_ARGUMENT);
+    }
+    len = strlen(oldPath);
+    cptr = oldPath+len-1;
+    if (*cptr != '/') return (CAT_INVALID_ARGUMENT);
+    len = strlen(newPath);
+    cptr = newPath+len-1;
+    if (*cptr != '/') return (CAT_INVALID_ARGUMENT);
 
-   if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+    if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
       return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
-   }
-   if (rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+    }
+    if (rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
       return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
-   }
+    }
 
-   status = getLocalZone();
-   if (status != 0) return(status);
+    status = getLocalZone();
+    if (status != 0) return(status);
 
-   rescId[0]='\0';
-   if (logSQL!=0) rodsLog(LOG_SQL, "chlModRescDataPaths SQL 1 ");
-   status = cmlGetStringValueFromSql(
-       "select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
-       rescId, MAX_NAME_LEN, rescName, localZone, 0, &icss);
-   if (status != 0) {
+    rescId[0]='\0';
+    if (logSQL!=0) rodsLog(LOG_SQL, "chlModRescDataPaths SQL 1 ");
+    status = cmlGetStringValueFromSql(
+        "select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
+        rescId, MAX_NAME_LEN, rescName, localZone, 0, &icss);
+    if (status != 0) {
       if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_RESOURCE);
       _rollback("chlModRescDataPaths");
       return(status);
-   }
+    }
 
-   /* This is needed for like clause which is needed to get the
-      correct number of rows that were updated (seems like the DBMS will
-      return a row count for rows looked at for the replace). */
-   strncpy(oldPath2, oldPath, sizeof(oldPath2));
-   strncat(oldPath2, "%", sizeof(oldPath2));
+    /* This is needed for like clause which is needed to get the
+       correct number of rows that were updated (seems like the DBMS will
+       return a row count for rows looked at for the replace). */
+    strncpy(oldPath2, oldPath, sizeof(oldPath2));
+    strncat(oldPath2, "%", sizeof(oldPath2));
 
-   if (userName != NULL && *userName != '\0') {
+    if (userName != NULL && *userName != '\0') {
       strncpy(zoneToUse, localZone, NAME_LEN);
       status = parseUserName(userName, userName2, userZone);
       if (userZone[0]!='\0') {
@@ -6160,8 +6682,8 @@ int chlModRescDataPaths(rsComm_t *rsComm, char *rescName, char *oldPath,
       status =  cmlExecuteNoAnswerSql(
         "update R_DATA_MAIN set data_path = replace (R_DATA_MAIN.data_path, ?, ?) where resc_name=? and data_path like ? and data_owner_name=? and data_owner_zone=?",
         &icss);
-   }
-   else {
+    }
+    else {
       if (logSQL!=0) rodsLog(LOG_SQL, "chlModRescDataPaths SQL 3");
       cllBindVars[cllBindVarCount++]=oldPath;
       cllBindVars[cllBindVarCount++]=newPath;
@@ -6170,33 +6692,33 @@ int chlModRescDataPaths(rsComm_t *rsComm, char *rescName, char *oldPath,
       status =  cmlExecuteNoAnswerSql(
         "update R_DATA_MAIN set data_path = replace (R_DATA_MAIN.data_path, ?, ?) where resc_name=? and data_path like ?",
         &icss);
-   }
-   if (status != 0) {
+    }
+    if (status != 0) {
       rodsLog(LOG_NOTICE,
              "chlModRescDataPaths cmlExecuteNoAnswerSql update failure %d",
              status);
       _rollback("chlModResc");
       return(status);
-   }
+    }
 
-   rows = cllGetRowCount(&icss,-1);
+    rows = cllGetRowCount(&icss,-1);
 
-   status =  cmlExecuteNoAnswerSql("commit", &icss);
-   if (status != 0) {
+    status =  cmlExecuteNoAnswerSql("commit", &icss);
+    if (status != 0) {
       rodsLog(LOG_NOTICE,
              "chlModResc cmlExecuteNoAnswerSql commit failure %d",
              status);
       return(status);
-   }
+    }
 
-   if (rows > 0) {
+    if (rows > 0) {
       char rowsMsg[100];
       snprintf(rowsMsg, 100, "%d rows updated", 
                  rows);
       status = addRErrorMsg (&rsComm->rError, 0, rowsMsg);
-   }
+    }
 
-   return(0);
+    return(0);
 }
 
 
@@ -6272,6 +6794,7 @@ int chlModRescFreeSpace(rsComm_t *rsComm, char *rescName, int updateValue) {
     return(0);
 }
 
+#ifdef RESC_GROUP
 /* Add or remove a resource to/from a Resource Group */
 int chlModRescGroup(rsComm_t *rsComm, char *rescGroupName, char *option,
                     char *rescName) {
@@ -6433,19 +6956,20 @@ int chlModRescGroup(rsComm_t *rsComm, char *rescGroupName, char *option,
     return(0);
 }
 
+#endif
 
 /// @brief function for validating a username
 eirods::error validate_user_name(std::string _user_name) {
 
-	// Must be between 3 and NAME_LEN-1 characters.
-	// Must start and end with a word character.
-	// May contain non consecutive dashes and dots.
+        // Must be between 3 and NAME_LEN-1 characters.
+        // Must start and end with a word character.
+        // May contain non consecutive dashes and dots.
         boost::regex re("^(?=.{3,63}$)\\w(\\w*([.-]\\w+)?)*$");
 
-	// No upper case letters. (TODO: more discussion, group names also affected by this change)
-	// boost::regex re("^(?=.{3,63}$)[a-z_0-9]([a-z_0-9]*([.-][a-z_0-9]+)?)*$");
+        // No upper case letters. (TODO: more discussion, group names also affected by this change)
+        // boost::regex re("^(?=.{3,63}$)[a-z_0-9]([a-z_0-9]*([.-][a-z_0-9]+)?)*$");
 
-	if (!boost::regex_match(_user_name, re)) {
+        if (!boost::regex_match(_user_name, re)) {
         std::stringstream msg;
         msg << "validate_user_name failed for user [";
         msg << _user_name;
@@ -6484,6 +7008,12 @@ int chlRegUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
         return(SYS_INTERNAL_NULL_INPUT_ERR);
     }
 
+    trimWS(userInfo->userName);
+    trimWS(userInfo->userType);
+
+    if (!strlen(userInfo->userType) || !strlen(userInfo->userName)) {
+      return(CAT_INVALID_ARGUMENT);
+    }
 
     // =-=-=-=-=-=-=-
     // JMC - backport 4772
@@ -6678,8 +7208,10 @@ convertTypeOption(char *typeStr) {
     if (strcmp(typeStr, "-R") == 0) return(3); /* resource */
     if (strcmp(typeStr, "-u") == 0) return(4); /* user */
     if (strcmp(typeStr, "-U") == 0) return(4); /* user */
+#ifdef RESC_GROUP
     if (strcmp(typeStr, "-g") == 0) return(5); /* resource group */
     if (strcmp(typeStr, "-G") == 0) return(5); /* resource group */
+#endif
     return (0);
 }
 
@@ -6798,6 +7330,7 @@ rodsLong_t checkAndGetObjectId(rsComm_t *rsComm, char *type,
         }
     }
    
+#ifdef RESC_GROUP
     if (itype==5) {
         if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
             return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
@@ -6817,6 +7350,7 @@ rodsLong_t checkAndGetObjectId(rsComm_t *rsComm, char *type,
             return(status);
         }
     }
+#endif
    
     return(objId);
 }
@@ -6872,7 +7406,7 @@ findOrInsertAVU(char *attribute, char *value, char *units) {
 // =-=-=-=-=-=-=-
     status = cmlGetNextSeqVal(&icss);
     if (status < 0) {
-        rodsLog(LOG_NOTICE, "findAVU cmlGetNextSeqVal failure %d",
+        rodsLog(LOG_NOTICE, "findOrInsertAVU cmlGetNextSeqVal failure %d",
                 status);
         return(status);
     }
@@ -6927,7 +7461,7 @@ int chlSetAVUMetadata(rsComm_t *rsComm, char *type,
     if (logSQL != 0) rodsLog(LOG_SQL, "chlSetAVUMetadata SQL 2");
     /* Query to see if the attribute exists for this object */
     status = cmlGetMultiRowStringValuesFromSql("select meta_id from R_OBJT_METAMAP where meta_id in (select meta_id from R_META_MAIN where meta_attr_name=? AND meta_id in (select meta_id from R_OBJT_METAMAP where object_id=?))",
-                                               metaIdStr, MAX_NAME_LEN, 2, attribute, objIdStr, &icss);
+                                               metaIdStr, MAX_NAME_LEN, 2, attribute, objIdStr, 0, &icss);
    
     if (status <= 0) {
         if (status == CAT_NO_ROWS_FOUND) { 
@@ -6947,6 +7481,31 @@ int chlSetAVUMetadata(rsComm_t *rsComm, char *type,
         status = chlDeleteAVUMetadata(rsComm, 1, type, name, attribute, "%",
                                       "%", 1);
         if (status != 0) {
+            /* Give it a second chance 
+             * as per r5350:
+             *   "Improve the handling of an ICAT AVU metadata concurrency case.
+             *
+             *    When setting user-defined meta-data (AVUs), if two Agents try to
+             *    modify the the same metadata (which exists with different values in
+             *    R_META_MAIN), one of the chlSetAVUMetadata fails.  These changes allow
+             *    the agent to retry a second time.
+             *
+             *    Since this is in the case of "delete then add", the
+             *    chlDeleteAVUMetadata is called with noCommit=1, but the delete fails
+             *    (since the AVU was changed by the other agent), so in this case
+             *    (noCommit set) it should not do the rollback.  And then the caller,
+             *    chlSetAVUMetadata, can try a second time to modify the AVU."
+             *
+             * Essentially, this is a MASSSIVE hack that attempts to bypass a race condition
+             * by TRYING TWICE. This implies other major race conditions also exist related
+             * to the AVUMetadata, as well as the fact that this race condition is not 
+             * actually fixed. Leaving it in for now, as it is marginally better than the 
+             * alternative, but this is a definite TODO: Implement AVUMetadata locks.
+             */ 
+            status = chlDeleteAVUMetadata(rsComm, 1, type, name, attribute, "%",
+                                      "%", 1);
+        }
+        if (status != 0) {
             _rollback("chlSetAVUMetadata");
             return(status);
         }
@@ -6961,7 +7520,7 @@ int chlSetAVUMetadata(rsComm_t *rsComm, char *type,
     /* Check if there are other objects are using this AVU  */
     if (logSQL != 0) rodsLog(LOG_SQL, "chlSetAVUMetadata SQL 4");
     status = cmlGetMultiRowStringValuesFromSql("select meta_id from R_META_MAIN where meta_attr_name=?",
-                                               metaIdStr, MAX_NAME_LEN, 2, attribute, objIdStr, &icss);
+                                               metaIdStr, MAX_NAME_LEN, 2, attribute, 0, 0, &icss);
     if (status <= 0) {
         rodsLog(LOG_NOTICE,
                 "chlSetAVUMetadata cmlGetMultiRowStringValueFromSql failure %d",
@@ -6974,6 +7533,31 @@ int chlSetAVUMetadata(rsComm_t *rsComm, char *type,
         */
         status = chlDeleteAVUMetadata(rsComm, 1, type, name, attribute,
                                       "%", "%", 1);
+        if (status != 0) {
+            /* Give it a second chance 
+             * as per r5350:
+             *   "Improve the handling of an ICAT AVU metadata concurrency case.
+             *
+             *    When setting user-defined meta-data (AVUs), if two Agents try to
+             *    modify the the same metadata (which exists with different values in
+             *    R_META_MAIN), one of the chlSetAVUMetadata fails.  These changes allow
+             *    the agent to retry a second time.
+             *
+             *    Since this is in the case of "delete then add", the
+             *    chlDeleteAVUMetadata is called with noCommit=1, but the delete fails
+             *    (since the AVU was changed by the other agent), so in this case
+             *    (noCommit set) it should not do the rollback.  And then the caller,
+             *    chlSetAVUMetadata, can try a second time to modify the AVU."
+             *
+             * Essentially, this is a MASSSIVE hack that attempts to bypass a race condition
+             * by TRYING TWICE. This implies other major race conditions also exist related
+             * to the AVUMetadata, as well as the fact that this race condition is not 
+             * actually fixed. Leaving it in for now, as it is marginally better than the 
+             * alternative, but this is a definite TODO: Implement AVUMetadata locks.
+             */ 
+            status = chlDeleteAVUMetadata(rsComm, 1, type, name, attribute, "%",
+                                      "%", 1);
+        }
         if (status != 0) {
             _rollback("chlSetAVUMetadata");
             return(status);
@@ -7034,7 +7618,6 @@ int chlSetAVUMetadata(rsComm_t *rsComm, char *type,
                 status);
         return(status);
     }
-
     return(status);
 }
 // =-=-=-=-=-=-=-
@@ -7494,7 +8077,7 @@ int chlAddAVUMetadata(rsComm_t *rsComm, int adminMode, char *type,
             return(status);
         }
     }
-   
+
     status = findOrInsertAVU(attribute, value, units);
     if (status<0) {
         rodsLog(LOG_NOTICE,
@@ -7703,7 +8286,9 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
                                      rsComm->clientUser.rodsZone, 
                                      ACCESS_DELETE_METADATA, &icss);
         if (status < 0) {
-            _rollback("chlDeleteAVUMetadata");
+            if (noCommit != 1) {
+                _rollback("chlDeleteAVUMetadata");
+            }
             return(status);
         }
         objId=status;
@@ -7744,7 +8329,9 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
             &objId, name, localZone, 0, 0, 0, &icss);
         if (status != 0) {
             if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_RESOURCE);
-            _rollback("chlDeleteAVUMetadata");
+                if (noCommit != 1) {
+                    _rollback("chlDeleteAVUMetadata");
+                }
             return(status);
         }
     }
@@ -7768,7 +8355,9 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
             &objId, userName, userZone, 0, 0, 0, &icss);
         if (status != 0) {
             if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_USER);
-            _rollback("chlDeleteAVUMetadata");
+            if (noCommit != 1) {
+                _rollback("chlDeleteAVUMetadata");
+            }
             return(status);
         }
     }
@@ -7788,7 +8377,9 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
             &objId, name, 0, 0, 0, 0, &icss);
         if (status != 0) {
             if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_RESOURCE);
-            _rollback("chlDeleteAVUMetadata");
+            if (noCommit != 1) {
+                _rollback("chlDeleteAVUMetadata");
+            }
             return(status);
         }
     }
@@ -7808,7 +8399,10 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
             rodsLog(LOG_NOTICE,
                     "chlDeleteAVUMetadata cmlExecuteNoAnswerSql delete failure %d",
                     status);
-            _rollback("chlDeleteAVUMetadata");
+            if (noCommit != 1) {
+                _rollback("chlDeleteAVUMetadata");
+            }
+
             return(status);
         }
 
@@ -7828,7 +8422,10 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
             rodsLog(LOG_NOTICE,
                     "chlDeleteAVUMetadata cmlAudit3 failure %d",
                     status);
-            _rollback("chlDeleteAVUMetadata");
+            if (noCommit != 1) {
+                _rollback("chlDeleteAVUMetadata");
+            }
+
             return(status);
         }
 
@@ -7889,7 +8486,9 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
         rodsLog(LOG_NOTICE,
                 "chlDeleteAVUMetadata cmlExecuteNoAnswerSql delete failure %d",
                 status);
-        _rollback("chlDeleteAVUMetadata");
+        if (noCommit != 1) {
+            _rollback("chlDeleteAVUMetadata");
+        }
         return(status);
     }
 
@@ -7909,7 +8508,9 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
         rodsLog(LOG_NOTICE,
                 "chlDeleteAVUMetadata cmlAudit3 failure %d",
                 status);
-        _rollback("chlDeleteAVUMetadata");
+        if (noCommit != 1) {
+            _rollback("chlDeleteAVUMetadata");
+        }
         return(status);
     }
 
@@ -8000,18 +8601,18 @@ int chlCopyAVUMetadata(rsComm_t *rsComm, char *type1,  char *type2,
 /* create a path name with escaped SQL special characters (% and _) */
 void
 makeEscapedPath(char *inPath, char *outPath, int size) {
-   int i;
-   for (i=0;i<size-1;i++) {
+    int i;
+    for (i=0;i<size-1;i++) {
       if (*inPath=='%' || *inPath=='_') {
-         *outPath++='\\';
+          *outPath++='\\';
       }
       if (*inPath=='\0') {
-         *outPath++=*inPath++;
-         break;
+          *outPath++=*inPath++;
+          break;
       }
       *outPath++=*inPath++;
-   }
-   return;
+    }
+    return;
 }
 
 /* Internal routine to modify inheritance */
@@ -8310,10 +8911,9 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
 
     if (status1 < 0 && inheritFlag!=0) {
         char errMsg[105];
-        snprintf(errMsg, 100, "access level '%s' is valid only for collections",
-                 accessLevel);
+        snprintf(errMsg, 100, "either the collection does not exist or you do not have sufficient access"); 
         addRErrorMsg (&rsComm->rError, 0, errMsg);
-        return(CAT_INVALID_ARGUMENT);
+        return(CAT_NO_ACCESS_PERMISSION);
     }
 
     /* Not a collection (with access for non-Admin) */
@@ -8547,7 +9147,11 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
 
     if (logSQL!=0) rodsLog(LOG_SQL, "chlModAccessControl SQL 8");
     status =  cmlExecuteNoAnswerSql(
-              "delete from R_OBJT_ACCESS where user_id=? and object_id in (select data_id from R_DATA_MAIN where coll_id in (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ?))",
+#if (defined ORA_ICAT || defined MY_ICAT)
+                "delete from R_OBJT_ACCESS where user_id=? and object_id = ANY (select data_id from R_DATA_MAIN where coll_id in (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ?))",
+#else
+                "delete from R_OBJT_ACCESS where user_id=? and object_id = ANY(ARRAY(select data_id from R_DATA_MAIN where coll_id in (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ?)))",
+#endif
               &icss);
      
     if (status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
@@ -8561,7 +9165,11 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
 
     if (logSQL!=0) rodsLog(LOG_SQL, "chlModAccessControl SQL 9");
     status =  cmlExecuteNoAnswerSql(
-               "delete from R_OBJT_ACCESS where user_id=? and object_id in (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ?)",
+#if (defined ORA_ICAT || defined MY_ICAT)
+          "delete from R_OBJT_ACCESS where user_id=? and object_id = ANY (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ?)",
+#else
+          "delete from R_OBJT_ACCESS where user_id=? and object_id = ANY(ARRAY(select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ?))",
+#endif
               &icss);
     if (status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
         _rollback("chlModAccessControl");
@@ -9129,10 +9737,19 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
         }
         if (OK==0) return (CAT_INVALID_ARGUMENT); /* not really, but...*/
 
+      /* check that the user has write access to the source collection */
+      if (logSQL!=0) rodsLog(LOG_SQL, "chlMoveObject SQL 9");
+      status = cmlCheckDir(parentCollName,  rsComm->clientUser.userName,  
+                     rsComm->clientUser.rodsZone, 
+                     ACCESS_MODIFY_OBJECT, &icss);
+      if (status < 0) {
+       return(status);
+      }
+
         /* check that no other dataObj exists with the ObjName in the
            target collection */
         snprintf(collIdString, MAX_NAME_LEN, "%lld", targetCollId);
-        if (logSQL!=0) rodsLog(LOG_SQL, "chlMoveObject SQL 9");
+        if (logSQL!=0) rodsLog(LOG_SQL, "chlMoveObject SQL 10");
         status = cmlGetIntegerValueFromSql(
             "select data_id from R_DATA_MAIN where data_name=? and coll_id=?",
             &otherDataId, endCollName, collIdString, 0, 0, 0, &icss);
@@ -9146,7 +9763,7 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
         strncat(newCollName, "/", MAX_NAME_LEN);
         strncat(newCollName, endCollName, MAX_NAME_LEN);
 
-        if (logSQL!=0) rodsLog(LOG_SQL, "chlMoveObject SQL 10");
+        if (logSQL!=0) rodsLog(LOG_SQL, "chlMoveObject SQL 11");
         status = cmlGetIntegerValueFromSql(
             "select coll_id from R_COLL_MAIN where coll_name = ?",
             &otherCollId, newCollName, 0, 0, 0, 0, &icss);
@@ -9174,7 +9791,7 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
         cllBindVars[cllBindVarCount++]=targetCollName;
         cllBindVars[cllBindVarCount++]=myTime;
         cllBindVars[cllBindVarCount++]=objIdString;
-        if (logSQL!=0) rodsLog(LOG_SQL, "chlMoveObject SQL 11");
+        if (logSQL!=0) rodsLog(LOG_SQL, "chlMoveObject SQL 12");
         status =  cmlExecuteNoAnswerSql(
                   "update R_COLL_MAIN set coll_name = ?, parent_coll_name=?, modify_ts=? where coll_id = ?",
             &icss);
@@ -9202,7 +9819,7 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
         cllBindVars[cllBindVarCount++]=collNameSlashLen;
         cllBindVars[cllBindVarCount++]=collNameSlash;
         cllBindVars[cllBindVarCount++]=oldCollName;
-        if (logSQL!=0) rodsLog(LOG_SQL, "chlMoveObject SQL 12");
+        if (logSQL!=0) rodsLog(LOG_SQL, "chlMoveObject SQL 13");
         status =  cmlExecuteNoAnswerSql(
             "update R_COLL_MAIN set parent_coll_name = ? || substr(parent_coll_name, ?), coll_name = ? || substr(coll_name, ?) where substr(parent_coll_name,1,?) = ? or parent_coll_name = ?",
             &icss);
@@ -9237,7 +9854,7 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
     /* Both collection and dataObj failed, go thru the sql in smaller
        steps to return a specific error */
     snprintf(objIdString, MAX_NAME_LEN, "%lld", objId);
-    if (logSQL!=0) rodsLog(LOG_SQL, "chlMoveObject SQL 13");
+    if (logSQL!=0) rodsLog(LOG_SQL, "chlMoveObject SQL 14");
     status = cmlGetIntegerValueFromSql(
         "select coll_id from R_DATA_MAIN where data_id=?",
         &otherDataId, objIdString, 0, 0, 0, 0, &icss);
@@ -9246,7 +9863,7 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
         return (CAT_NO_ACCESS_PERMISSION);
     }
 
-    if (logSQL!=0) rodsLog(LOG_SQL, "chlMoveObject SQL 14");
+    if (logSQL!=0) rodsLog(LOG_SQL, "chlMoveObject SQL 15");
     status = cmlGetIntegerValueFromSql(
         "select coll_id from R_COLL_MAIN where coll_id=?",
         &otherDataId, objIdString, 0, 0, 0, 0, &icss);
@@ -9652,7 +10269,7 @@ int setOverQuota(rsComm_t *rsComm) {
     if (logSQL!=0) rodsLog(LOG_SQL, "setOverQuota SQL 2");
     status =  cmlExecuteNoAnswerSql(
 #if ORA_ICAT
-        "update R_QUOTA_MAIN set quota_over = (select R_QUOTA_USAGE.quota_usage - R_QUOTA_MAIN.quota_limit from R_QUOTA_USAGE, R_QUOTA_MAIN where R_QUOTA_MAIN.user_id = R_QUOTA_USAGE.user_id and R_QUOTA_MAIN.resc_id = R_QUOTA_USAGE.resc_id) where exists (select 1 from R_QUOTA_USAGE, R_QUOTA_MAIN where R_QUOTA_MAIN.user_id = R_QUOTA_USAGE.user_id and R_QUOTA_MAIN.resc_id = R_QUOTA_USAGE.resc_id)",
+      "update R_QUOTA_MAIN set quota_over = (select distinct R_QUOTA_USAGE.quota_usage - R_QUOTA_MAIN.quota_limit from R_QUOTA_USAGE, R_QUOTA_MAIN where R_QUOTA_MAIN.user_id = R_QUOTA_USAGE.user_id and R_QUOTA_MAIN.resc_id = R_QUOTA_USAGE.resc_id) where exists (select 1 from R_QUOTA_USAGE, R_QUOTA_MAIN where R_QUOTA_MAIN.user_id = R_QUOTA_USAGE.user_id and R_QUOTA_MAIN.resc_id = R_QUOTA_USAGE.resc_id)",
 #elif MY_ICAT
         "update R_QUOTA_MAIN, R_QUOTA_USAGE set R_QUOTA_MAIN.quota_over = R_QUOTA_USAGE.quota_usage - R_QUOTA_MAIN.quota_limit where R_QUOTA_MAIN.user_id = R_QUOTA_USAGE.user_id and R_QUOTA_MAIN.resc_id = R_QUOTA_USAGE.resc_id",
 #else
@@ -10701,12 +11318,12 @@ chlDelSpecificQuery(rsComm_t *rsComm, char *sqlOrAlias) {
 }
 
 /* 
-   This is the Specific Query, also known as a sql-based query or
-   predefined query.  These are some specific queries (admin
-   defined/allowed) that can be performed.  The caller provides the SQL
-   which must match one that is pre-defined, along with input parameters
-   (bind variables) in some cases.  The output is the same as for a
-   general-query.
+    This is the Specific Query, also known as a sql-based query or
+    predefined query.  These are some specific queries (admin
+    defined/allowed) that can be performed.  The caller provides the SQL
+    which must match one that is pre-defined, along with input parameters
+    (bind variables) in some cases.  The output is the same as for a
+    general-query.
 */
 #define MINIMUM_COL_SIZE 50
 
@@ -10910,55 +11527,55 @@ chlSpecificQuery(specificQueryInp_t specificQueryInp, genQueryOut_t *result) {
  *
  */
 int chlSubstituteResourceHierarchies(rsComm_t *rsComm, const char *old_hier, const char *new_hier) {
-	int status = 0;
-	char old_hier_partial[MAX_NAME_LEN];
+        int status = 0;
+        char old_hier_partial[MAX_NAME_LEN];
     eirods::sql_logger logger("chlSubstituteResourceHierarchies", logSQL);
 
     logger.log();
 
     // =-=-=-=-=-=-=-
     // Sanity and permission checks
-	if (!icss.status) {
-		return(CATALOG_NOT_CONNECTED);
-	}
+        if (!icss.status) {
+                return(CATALOG_NOT_CONNECTED);
+        }
     if (!rsComm || !old_hier || !new_hier) {
-    	return(SYS_INTERNAL_NULL_INPUT_ERR);
+            return(SYS_INTERNAL_NULL_INPUT_ERR);
     }
-	if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH || rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
-		return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
-	}
+        if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH || rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+                return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+        }
 
-	// =-=-=-=-=-=-=-
-	// String to match partial hierarchies
-	snprintf(old_hier_partial, MAX_NAME_LEN, "%s%s%%", old_hier, eirods::hierarchy_parser::delimiter().c_str());
+        // =-=-=-=-=-=-=-
+        // String to match partial hierarchies
+        snprintf(old_hier_partial, MAX_NAME_LEN, "%s%s%%", old_hier, eirods::hierarchy_parser::delimiter().c_str());
 
-	// =-=-=-=-=-=-=-
-	// Update r_data_main
-	cllBindVars[cllBindVarCount++]=(char*)new_hier;
-	cllBindVars[cllBindVarCount++]=(char*)old_hier;
-	cllBindVars[cllBindVarCount++]=(char*)old_hier;
-	cllBindVars[cllBindVarCount++]=old_hier_partial;
+        // =-=-=-=-=-=-=-
+        // Update r_data_main
+        cllBindVars[cllBindVarCount++]=(char*)new_hier;
+        cllBindVars[cllBindVarCount++]=(char*)old_hier;
+        cllBindVars[cllBindVarCount++]=(char*)old_hier;
+        cllBindVars[cllBindVarCount++]=old_hier_partial;
 #if ORA_ICAT // Oracle
-	status = cmlExecuteNoAnswerSql("update R_DATA_MAIN set resc_hier = ? || substr(resc_hier, (length(?)+1)) where resc_hier = ? or resc_hier like ?", &icss);
+        status = cmlExecuteNoAnswerSql("update R_DATA_MAIN set resc_hier = ? || substr(resc_hier, (length(?)+1)) where resc_hier = ? or resc_hier like ?", &icss);
 #else // Postgres and MySQL
-	status = cmlExecuteNoAnswerSql("update R_DATA_MAIN set resc_hier = ? || substring(resc_hier from (char_length(?)+1)) where resc_hier = ? or resc_hier like ?", &icss);
+        status = cmlExecuteNoAnswerSql("update R_DATA_MAIN set resc_hier = ? || substring(resc_hier from (char_length(?)+1)) where resc_hier = ? or resc_hier like ?", &icss);
 #endif
 
-	// Nothing was modified
-	if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) {
-		return 0;
-	}
+        // Nothing was modified
+        if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) {
+                return 0;
+        }
 
-	// =-=-=-=-=-=-=-
-	// Roll back if error
-	if (status < 0) {
-		std::stringstream ss;
-		ss << "chlSubstituteResourceHierarchies: cmlExecuteNoAnswerSql update failure " << status;
-		eirods::log(LOG_NOTICE, ss.str());
-		_rollback("chlSubstituteResourceHierarchies");
-	}
+        // =-=-=-=-=-=-=-
+        // Roll back if error
+        if (status < 0) {
+                std::stringstream ss;
+                ss << "chlSubstituteResourceHierarchies: cmlExecuteNoAnswerSql update failure " << status;
+                eirods::log(LOG_NOTICE, ss.str());
+                _rollback("chlSubstituteResourceHierarchies");
+        }
 
-	return status;
+        return status;
 }
 
 
@@ -10978,20 +11595,20 @@ int chlGetDistinctDataObjCountOnResource(
         "%", _resc_name.c_str(), "%", // mid node
         "%", _resc_name.c_str() );    // leaf node
 
-     // =-=-=-=-=-=-=-
-     // invoke the query
-     int statement_num = 0;
-     int status = cmlGetFirstRowFromSql( 
-                         query, 
-                         &statement_num, 
-                         0, &icss );
-     if( status != 0 ) {
-         return status;
-     }
+      // =-=-=-=-=-=-=-
+      // invoke the query
+      int statement_num = 0;
+      int status = cmlGetFirstRowFromSql( 
+                          query, 
+                          &statement_num, 
+                          0, &icss );
+      if( status != 0 ) {
+          return status;
+      }
 
-     _count = atol( icss.stmtPtr[ statement_num ]->resultValue[0] ); 
+      _count = atol( icss.stmtPtr[ statement_num ]->resultValue[0] ); 
 
-     return 0;
+      return 0;
 
 } // chlGetDistinctDataObjCountOnResource
 
@@ -11031,9 +11648,9 @@ int chlGetDistinctDataObjsMissingFromChildGivenParent(
         int status = 0;
         if( 0 == i ) {
             status = cmlGetFirstRowFromSql( 
-                             query, 
-                             &statement_num, 
-                             0, &icss );
+                              query, 
+                              &statement_num, 
+                              0, &icss );
         } else {
             status = cmlGetNextRowFromStatement( statement_num, &icss );
         }
@@ -11056,59 +11673,627 @@ int chlGetDistinctDataObjsMissingFromChildGivenParent(
  * @brief Given a resource, resolves the hierarchy down to said resource
  */
 int chlGetHierarchyForResc(const std::string& resc_name, const std::string& zone_name, std::string& hierarchy) {
-	char *current_node;
-	char parent[MAX_NAME_LEN];
-	int status;
+        char *current_node;
+        char parent[MAX_NAME_LEN];
+        int status;
 
 
     eirods::sql_logger logger("chlGetHierarchyForResc", logSQL);
     logger.log();
 
-	if (!icss.status) {
-		return(CATALOG_NOT_CONNECTED);
-	}
+        if (!icss.status) {
+                return(CATALOG_NOT_CONNECTED);
+        }
 
-	hierarchy = resc_name; // Initialize hierarchy string with resource
+        hierarchy = resc_name; // Initialize hierarchy string with resource
 
-	current_node = (char *)resc_name.c_str();
-	while (current_node) {
-		// Ask for parent of current node
-		status = cmlGetStringValueFromSql("select resc_parent from R_RESC_MAIN where resc_name=? and zone_name=?",
-				parent, MAX_NAME_LEN, current_node, zone_name.c_str(), NULL, &icss);
+        current_node = (char *)resc_name.c_str();
+        while (current_node) {
+                // Ask for parent of current node
+                status = cmlGetStringValueFromSql("select resc_parent from R_RESC_MAIN where resc_name=? and zone_name=?",
+                                parent, MAX_NAME_LEN, current_node, zone_name.c_str(), NULL, &icss);
 
-		if (status == CAT_NO_ROWS_FOUND) { // Resource doesn't exist
-			return CAT_UNKNOWN_RESOURCE;
-		}
+                if (status == CAT_NO_ROWS_FOUND) { // Resource doesn't exist
+                        return CAT_UNKNOWN_RESOURCE;
+                }
 
-		if (status < 0) { // Other error
-			return status;
-		}
+                if (status < 0) { // Other error
+                        return status;
+                }
 
-		if (strlen(parent)) {
-			hierarchy = parent + eirods::hierarchy_parser::delimiter() + hierarchy;	// Add parent to hierarchy string
-			current_node = parent;
-		}
-		else {
-			current_node = NULL;
-		}
-	}
+                if (strlen(parent)) {
+                        hierarchy = parent + eirods::hierarchy_parser::delimiter() + hierarchy;        // Add parent to hierarchy string
+                        current_node = parent;
+                }
+                else {
+                        current_node = NULL;
+                }
+        }
 
-	return 0;
+        return 0;
+}
+
+int
+icatGetTicketUserId(char *userName, char *userIdStr) {
+    char userId[NAME_LEN];
+    char userZone[NAME_LEN];
+    char zoneToUse[NAME_LEN];
+    char userName2[NAME_LEN];
+    int status;
+
+    status = getLocalZone();
+    if (status != 0) return(status);
+
+    strncpy(zoneToUse, localZone, NAME_LEN);
+    status = parseUserName(userName, userName2, userZone);
+    if (userZone[0]!='\0') {
+      rstrcpy(zoneToUse, userZone, NAME_LEN);
+    }
+
+    userId[0]='\0';
+    if (logSQL!=0) rodsLog(LOG_SQL, "icatGetTicketUserId SQL 1 ");
+    status = cmlGetStringValueFromSql(
+            "select user_id from R_USER_MAIN where user_name=? and R_USER_MAIN.zone_name=? and user_type_name!='rodsgroup'",
+            userId, NAME_LEN, userName2, zoneToUse, 0, &icss);
+    if (status != 0) {
+      if (status==CAT_NO_ROWS_FOUND) {
+          return(CAT_INVALID_USER);
+      }
+      return(status);
+    }
+    strncpy(userIdStr, userId, NAME_LEN);
+    return(0);
+}
+
+int
+icatGetTicketGroupId(char *groupName, char *groupIdStr) {
+    char groupId[NAME_LEN];
+    char groupZone[NAME_LEN];
+    char zoneToUse[NAME_LEN];
+    char groupName2[NAME_LEN];
+    int status;
+
+    status = getLocalZone();
+    if (status != 0) return(status);
+
+    strncpy(zoneToUse, localZone, NAME_LEN);
+    status = parseUserName(groupName, groupName2, groupZone);
+    if (groupZone[0]!='\0') {
+      rstrcpy(zoneToUse, groupZone, NAME_LEN);
+    }
+
+    groupId[0]='\0';
+    if (logSQL!=0) rodsLog(LOG_SQL, "icatGetTicketGroupId SQL 1 ");
+    status = cmlGetStringValueFromSql(
+            "select user_id from R_USER_MAIN where user_name=? and R_USER_MAIN.zone_name=? and user_type_name='rodsgroup'",
+            groupId, NAME_LEN, groupName2, zoneToUse, 0, &icss);
+    if (status != 0) {
+      if (status==CAT_NO_ROWS_FOUND) {
+          return(CAT_INVALID_GROUP);
+      }
+      return(status);
+    }
+    strncpy(groupIdStr, groupId, NAME_LEN);
+    return(0);
+}
+
+char *
+convertHostToIp(char *inputName) {
+    struct hostent *myHostent;
+    static char ipAddr[50];
+    myHostent = gethostbyname (inputName);
+    if (myHostent == NULL || myHostent->h_addrtype != AF_INET) {
+      printf("unknown hostname: %s\n", inputName);
+      return(NULL);
+    }
+    snprintf(ipAddr, sizeof(ipAddr), "%s", 
+          (char *)inet_ntoa( *( struct in_addr*)( myHostent->h_addr_list[0])));
+    return(ipAddr);
 }
 
 
+/* Administrative operations on a ticket.
+   create, modify, and remove.
+   ticketString is either the ticket-string or ticket-id.
+*/
+int chlModTicket(rsComm_t *rsComm, char *opName, char *ticketString,
+                    char *arg3, char *arg4, char *arg5) {
+    rodsLong_t status, status2, status3;
+    char logicalEndName[MAX_NAME_LEN];
+    char logicalParentDirName[MAX_NAME_LEN];
+    rodsLong_t objId=0;
+    rodsLong_t userId;
+    rodsLong_t ticketId;
+    rodsLong_t seqNum;
+    char seqNumStr[NAME_LEN];
+    char objIdStr[NAME_LEN];
+    char objTypeStr[NAME_LEN];
+    char userIdStr[NAME_LEN];
+    char user2IdStr[MAX_NAME_LEN];
+    char group2IdStr[NAME_LEN];
+    char ticketIdStr[NAME_LEN];
+    char ticketType[NAME_LEN];
+    int i;
+    char myTime[50];
 
+    status = 0;
 
+    /* session ticket */
+    if (strcmp(opName, "session") == 0) {
+      if (strlen(arg3)>0) {
+          /* for 2 server hops, arg3 is the original client addr */
+          status = chlGenQueryTicketSetup(ticketString, arg3);
+          strncpy(mySessionTicket, ticketString, sizeof(mySessionTicket));
+          strncpy(mySessionClientAddr, arg3, sizeof(mySessionClientAddr));
+      }
+      else {
+          /* for direct connections, rsComm has the original client addr */
+          status = chlGenQueryTicketSetup(ticketString, rsComm->clientAddr);
+          strncpy(mySessionTicket, ticketString, sizeof(mySessionTicket));
+          strncpy(mySessionClientAddr, rsComm->clientAddr, 
+                  sizeof(mySessionClientAddr));
+      }
+      status = cmlAudit3(AU_USE_TICKET, "0",
+                          rsComm->clientUser.userName, 
+                          rsComm->clientUser.rodsZone, ticketString, &icss);
+      if (status != 0) return(status);
+      return(0);
+    }
 
+    /* create */
+    if (strcmp(opName, "create") == 0) {
+      status = splitPathByKey(arg4,
+                              logicalParentDirName, logicalEndName, '/');
+      if (strlen(logicalParentDirName)==0) {
+          strcpy(logicalParentDirName, "/");
+          strcpy(logicalEndName, arg4+1);
+      }
+      status2 = cmlCheckDataObjOnly(logicalParentDirName, logicalEndName,
+                                        rsComm->clientUser.userName, 
+                                        rsComm->clientUser.rodsZone, 
+                                        ACCESS_OWN, &icss);
+      if (status2 > 0) {
+          strncpy(objTypeStr, TICKET_TYPE_DATA, sizeof(objTypeStr));
+          objId=status2;
+      }
+      else 
+      {
+          status3 = cmlCheckDir(arg4,   rsComm->clientUser.userName, 
+                                        rsComm->clientUser.rodsZone, 
+                                        ACCESS_OWN, &icss);
+          if (status3 == CAT_NO_ROWS_FOUND && status2==CAT_NO_ROWS_FOUND) {
+            return(CAT_UNKNOWN_COLLECTION);
+          }
+          if (status3 < 0) {
+            return(status3);
+          }
+          strncpy(objTypeStr, TICKET_TYPE_COLL, sizeof(objTypeStr));
+          objId=status3;
+      }
 
+      if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 1");
+      status = cmlGetIntegerValueFromSql(
+          "select user_id from R_USER_MAIN where user_name=? and zone_name=?",
+          &userId, rsComm->clientUser.userName, rsComm->clientUser.rodsZone,
+          0, 0, 0, &icss);
+      if (status != 0) {
+          return(CAT_INVALID_USER);
+      }
 
+      seqNum = cmlGetNextSeqVal(&icss);
+      if (seqNum < 0) {
+          rodsLog(LOG_NOTICE, "chlModTicket failure %ld",
+                seqNum);
+          return(seqNum);
+      }
+      snprintf(seqNumStr, NAME_LEN, "%lld", seqNum);
+      snprintf(objIdStr, NAME_LEN, "%lld", objId);
+      snprintf(userIdStr, NAME_LEN, "%lld", userId);
+      if (strncmp(arg3, "write", 5) == 0) {
+          strncpy(ticketType, "write", sizeof(ticketType));
+      }
+      else {
+          strncpy(ticketType, "read", sizeof(ticketType));
+      }
+      getNowStr(myTime);
+      i=0;
+      cllBindVars[i++]=seqNumStr;
+      cllBindVars[i++]=ticketString;
+      cllBindVars[i++]=ticketType;
+      cllBindVars[i++]=userIdStr;
+      cllBindVars[i++]=objIdStr;
+      cllBindVars[i++]=objTypeStr;
+      cllBindVars[i++]=myTime;
+      cllBindVars[i++]=myTime;
+      cllBindVarCount=i;
+      if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 2");
+      status =  cmlExecuteNoAnswerSql(
+          "insert into R_TICKET_MAIN (ticket_id, ticket_string, ticket_type, user_id, object_id, object_type, modify_ts, create_ts) values (?, ?, ?, ?, ?, ?, ?, ?)",
+          &icss);
 
+      if (status != 0) {
+          rodsLog(LOG_NOTICE,
+              "chlModTicket cmlExecuteNoAnswerSql insert failure %d",
+                  status);
+          return(status);
+      }
+      status = cmlAudit3(AU_CREATE_TICKET, seqNumStr,
+                  rsComm->clientUser.userName, 
+                  rsComm->clientUser.rodsZone, ticketString, &icss);
+      if (status != 0) return(status);
+      status = cmlAudit3(AU_CREATE_TICKET, seqNumStr,
+                  rsComm->clientUser.userName, 
+                  rsComm->clientUser.rodsZone, objIdStr, &icss); /* target obj */
+      if (status != 0) return(status);
+      status =  cmlExecuteNoAnswerSql("commit", &icss);
+      return(status);
+    }
 
+    if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 3");
+    status = cmlGetIntegerValueFromSql(
+      "select user_id from R_USER_MAIN where user_name=? and zone_name=?",
+      &userId, rsComm->clientUser.userName, rsComm->clientUser.rodsZone,
+      0, 0, 0, &icss);
+    if (status==CAT_SUCCESS_BUT_WITH_NO_INFO ||
+        status==CAT_NO_ROWS_FOUND) {
+      int i;
+      i = addRErrorMsg (&rsComm->rError, 0, "Invalid user");
+      return(CAT_INVALID_USER); 
+    }
+    if (status < 0) return(status);
+    snprintf(userIdStr, sizeof userIdStr, "%lld", userId);
 
+    if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 4");
+    status = cmlGetIntegerValueFromSql(
+      "select ticket_id from R_TICKET_MAIN where user_id=? and ticket_string=?",
+      &ticketId, userIdStr, ticketString,
+          0, 0, 0, &icss);
+    if (status != 0) {
+      if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 5");
+      status = cmlGetIntegerValueFromSql(
+          "select ticket_id from R_TICKET_MAIN where user_id=? and ticket_id=?",
+          &ticketId, userIdStr, ticketString,
+          0, 0, 0, &icss);
+      if (status != 0) {
+          return(CAT_TICKET_INVALID);
+      }
+    }
+    snprintf(ticketIdStr, NAME_LEN, "%lld", ticketId);
 
+    /* delete */
+    if (strcmp(opName, "delete") == 0) {
+      i=0;
+      cllBindVars[i++]=ticketIdStr;
+      cllBindVars[i++]=userIdStr;
+      cllBindVarCount=i;
+      if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 6");
+      status =  cmlExecuteNoAnswerSql(
+          "delete from R_TICKET_MAIN where ticket_id = ? and user_id = ?",
+          &icss);
+      if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) return(status);
+      if (status != 0) {
+          rodsLog(LOG_NOTICE,
+              "chlModTicket cmlExecuteNoAnswerSql delete failure %d",
+                  status);
+          return(status);
+      }
 
+      i=0;
+      cllBindVars[i++]=ticketIdStr;
+      cllBindVarCount=i;
+      status =  cmlExecuteNoAnswerSql(
+          "delete from R_TICKET_ALLOWED_HOSTS where ticket_id = ?",
+          &icss);
+      if (status != 0 && status!=CAT_SUCCESS_BUT_WITH_NO_INFO) {
+          rodsLog(LOG_NOTICE,
+              "chlModTicket cmlExecuteNoAnswerSql delete 2 failure %d",
+                  status);
+      }
 
+      i=0;
+      cllBindVars[i++]=ticketIdStr;
+      cllBindVarCount=i;
+      status =  cmlExecuteNoAnswerSql(
+          "delete from R_TICKET_ALLOWED_USERS where ticket_id = ?",
+          &icss);
+      if (status != 0 && status!=CAT_SUCCESS_BUT_WITH_NO_INFO) {
+          rodsLog(LOG_NOTICE,
+              "chlModTicket cmlExecuteNoAnswerSql delete 3 failure %d",
+                  status);
+      }
 
+      i=0;
+      cllBindVars[i++]=ticketIdStr;
+      cllBindVarCount=i;
+      status =  cmlExecuteNoAnswerSql(
+          "delete from R_TICKET_ALLOWED_GROUPS where ticket_id = ?",
+          &icss);
+      if (status != 0 && status!=CAT_SUCCESS_BUT_WITH_NO_INFO) {
+          rodsLog(LOG_NOTICE,
+              "chlModTicket cmlExecuteNoAnswerSql delete 4 failure %d",
+                  status);
+      }
+      status = cmlAudit3(AU_DELETE_TICKET, ticketIdStr,
+                          rsComm->clientUser.userName, 
+                          rsComm->clientUser.rodsZone, ticketString, &icss);
+      if (status != 0) return(status);
+      status =  cmlExecuteNoAnswerSql("commit", &icss);
+      return(status);
+    }
 
+    /* mod */
+    if (strcmp(opName, "mod") == 0) {
+      if (strcmp(arg3, "uses") == 0) {
+          i=0;
+          cllBindVars[i++]=arg4;
+          cllBindVars[i++]=ticketIdStr;
+          cllBindVars[i++]=userIdStr;
+          cllBindVarCount=i;
+          if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 7");
+          status =  cmlExecuteNoAnswerSql(
+            "update R_TICKET_MAIN set uses_limit=? where ticket_id = ? and user_id = ?",
+            &icss);
+          if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) return(status);
+          if (status != 0) {
+            rodsLog(LOG_NOTICE,
+                    "chlModTicket cmlExecuteNoAnswerSql update failure %d",
+                    status);
+            return(status);
+          }
+          status = cmlAudit3(AU_MOD_TICKET, ticketIdStr,
+                            rsComm->clientUser.userName, 
+                            rsComm->clientUser.rodsZone, "uses", &icss);
+          if (status != 0) return(status);
+          status =  cmlExecuteNoAnswerSql("commit", &icss);
+          return(status);
+      }
 
+      if (strncmp(arg3, "write", 5) == 0) {
+          if (strstr(arg3, "file") != NULL) {
+            i=0;
+            cllBindVars[i++]=arg4;
+            cllBindVars[i++]=ticketIdStr;
+            cllBindVars[i++]=userIdStr;
+            cllBindVarCount=i;
+            if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 8");
+            status =  cmlExecuteNoAnswerSql(
+                "update R_TICKET_MAIN set write_file_limit=? where ticket_id = ? and user_id = ?",
+                &icss);
+            if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) return(status);
+            if (status != 0) {
+                rodsLog(LOG_NOTICE,
+                        "chlModTicket cmlExecuteNoAnswerSql update failure %d",
+                        status);
+                return(status);
+            }
+            status = cmlAudit3(AU_MOD_TICKET, ticketIdStr,
+                                rsComm->clientUser.userName, 
+                                rsComm->clientUser.rodsZone, "write file",
+                                &icss);
+            if (status != 0) return(status);
+            status =  cmlExecuteNoAnswerSql("commit", &icss);
+            return(status);
+          }
+          if (strstr(arg3, "byte") != NULL) {
+            i=0;
+            cllBindVars[i++]=arg4;
+            cllBindVars[i++]=ticketIdStr;
+            cllBindVars[i++]=userIdStr;
+            cllBindVarCount=i;
+            if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 9");
+            status =  cmlExecuteNoAnswerSql(
+                "update R_TICKET_MAIN set write_byte_limit=? where ticket_id = ? and user_id = ?",
+                &icss);
+            if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) return(status);
+            if (status != 0) {
+                rodsLog(LOG_NOTICE,
+                        "chlModTicket cmlExecuteNoAnswerSql update failure %d",
+                        status);
+                return(status);
+            }
+            status = cmlAudit3(AU_MOD_TICKET, ticketIdStr,
+                                rsComm->clientUser.userName, 
+                                rsComm->clientUser.rodsZone, "write byte",
+                                &icss);
+            if (status != 0) return(status);
+            status =  cmlExecuteNoAnswerSql("commit", &icss);
+            return(status);
+          }
+      }
 
+      if (strncmp(arg3, "expir", 5) == 0) {
+          status=checkDateFormat(arg4);
+          if (status!=0) {
+            return(status);
+          }
+          i=0;
+          cllBindVars[i++]=arg4;
+          cllBindVars[i++]=ticketIdStr;
+          cllBindVars[i++]=userIdStr;
+          cllBindVarCount=i;
+          if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 10");
+          status =  cmlExecuteNoAnswerSql(
+            "update R_TICKET_MAIN set ticket_expiry_ts=? where ticket_id = ? and user_id = ?",
+            &icss);
+          if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) return(status);
+          if (status != 0) {
+            rodsLog(LOG_NOTICE,
+                    "chlModTicket cmlExecuteNoAnswerSql update failure %d",
+                    status);
+            return(status);
+          }
+          status = cmlAudit3(AU_MOD_TICKET, ticketIdStr,
+                            rsComm->clientUser.userName, 
+                            rsComm->clientUser.rodsZone, "expire",
+                            &icss);
+          if (status != 0) return(status);
+          status =  cmlExecuteNoAnswerSql("commit", &icss);
+          return(status);
+      }
+
+      if (strcmp(arg3, "add") == 0) {
+          if (strcmp(arg4, "host") == 0) {
+            char *hostIp;
+            hostIp = convertHostToIp(arg5);
+            if (hostIp==NULL) return(CAT_HOSTNAME_INVALID);
+            i=0;
+            cllBindVars[i++]=ticketIdStr;
+            cllBindVars[i++]=hostIp;
+            cllBindVarCount=i;
+            if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 11");
+            status =  cmlExecuteNoAnswerSql(
+                "insert into R_TICKET_ALLOWED_HOSTS (ticket_id, host) values (? , ?)",
+                &icss);
+            if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) return(status);
+            if (status != 0) {
+                rodsLog(LOG_NOTICE,
+                        "chlModTicket cmlExecuteNoAnswerSql insert host failure %d",
+                        status);
+                return(status);
+            }
+            status = cmlAudit3(AU_MOD_TICKET, ticketIdStr,
+                            rsComm->clientUser.userName, 
+                            rsComm->clientUser.rodsZone, "add host",
+                            &icss);
+            if (status != 0) return(status);
+            status =  cmlExecuteNoAnswerSql("commit", &icss);
+            return(status);
+          }
+          if (strcmp(arg4, "user") == 0) {
+            status = icatGetTicketUserId(arg5, user2IdStr);
+            if (status != 0) return(status);
+            i=0;
+            cllBindVars[i++]=ticketIdStr;
+            cllBindVars[i++]=arg5;
+            cllBindVarCount=i;
+            if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 12");
+            status =  cmlExecuteNoAnswerSql(
+                "insert into R_TICKET_ALLOWED_USERS (ticket_id, user_name) values (? , ?)",
+                &icss);
+            if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) return(status);
+            if (status != 0) {
+                rodsLog(LOG_NOTICE,
+                        "chlModTicket cmlExecuteNoAnswerSql insert user failure %d",
+                        status);
+                return(status);
+            }
+            status = cmlAudit3(AU_MOD_TICKET, ticketIdStr,
+                            rsComm->clientUser.userName, 
+                            rsComm->clientUser.rodsZone, "add user",
+                            &icss);
+            if (status != 0) return(status);
+            status =  cmlExecuteNoAnswerSql("commit", &icss);
+            return(status);
+          }
+          if (strcmp(arg4, "group") == 0) {
+            status = icatGetTicketGroupId(arg5, user2IdStr);
+            if (status != 0) return(status);
+            i=0;
+            cllBindVars[i++]=ticketIdStr;
+            cllBindVars[i++]=arg5;
+            cllBindVarCount=i;
+            if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 13");
+            status =  cmlExecuteNoAnswerSql(
+                "insert into R_TICKET_ALLOWED_GROUPS (ticket_id, group_name) values (? , ?)",
+                &icss);
+            if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) return(status);
+            if (status != 0) {
+                rodsLog(LOG_NOTICE,
+                        "chlModTicket cmlExecuteNoAnswerSql insert user failure %d",
+                        status);
+                return(status);
+            }
+            status = cmlAudit3(AU_MOD_TICKET, ticketIdStr,
+                            rsComm->clientUser.userName, 
+                            rsComm->clientUser.rodsZone, "add group",
+                            &icss);
+            if (status != 0) return(status);
+            status =  cmlExecuteNoAnswerSql("commit", &icss);
+            return(status);
+          }
+      }
+      if (strcmp(arg3, "remove") == 0) {
+          if (strcmp(arg4, "host") == 0) {
+            char *hostIp;
+            hostIp = convertHostToIp(arg5);
+            if (hostIp==NULL) return(CAT_HOSTNAME_INVALID);
+            i=0;
+            cllBindVars[i++]=ticketIdStr;
+            cllBindVars[i++]=hostIp;
+            cllBindVarCount=i;
+            if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 14");
+            status =  cmlExecuteNoAnswerSql(
+                "delete from R_TICKET_ALLOWED_HOSTS where ticket_id=? and host=?",
+                &icss);
+            if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) return(status);
+            if (status != 0) {
+                rodsLog(LOG_NOTICE,
+                        "chlModTicket cmlExecuteNoAnswerSql delete host failure %d",
+                        status);
+                return(status);
+            }
+            status = cmlAudit3(AU_MOD_TICKET, ticketIdStr,
+                                rsComm->clientUser.userName, 
+                                rsComm->clientUser.rodsZone, "remove host",
+                                &icss);
+            if (status != 0) return(status);
+            status =  cmlExecuteNoAnswerSql("commit", &icss);
+            return(status);
+          }
+          if (strcmp(arg4, "user") == 0) {
+            status = icatGetTicketUserId(arg5, user2IdStr);
+            if (status != 0) return(status);
+            i=0;
+            cllBindVars[i++]=ticketIdStr;
+            cllBindVars[i++]=arg5;
+            cllBindVarCount=i;
+            if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 15");
+            status =  cmlExecuteNoAnswerSql(
+                "delete from R_TICKET_ALLOWED_USERS where ticket_id=? and user_name=?",
+                &icss);
+            if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) return(status);
+            if (status != 0) {
+                rodsLog(LOG_NOTICE,
+                        "chlModTicket cmlExecuteNoAnswerSql delete user failure %d",
+                        status);
+                return(status);
+            }
+            status = cmlAudit3(AU_MOD_TICKET, ticketIdStr,
+                                rsComm->clientUser.userName, 
+                                rsComm->clientUser.rodsZone, "remove user",
+                                &icss);
+            if (status != 0) return(status);
+            status =  cmlExecuteNoAnswerSql("commit", &icss);
+            return(status);
+          }
+          if (strcmp(arg4, "group") == 0) {
+            status = icatGetTicketGroupId(arg5, group2IdStr);
+            if (status != 0) return(status);
+            i=0;
+            cllBindVars[i++]=ticketIdStr;
+            cllBindVars[i++]=arg5;
+            cllBindVarCount=i;
+            if (logSQL!=0) rodsLog(LOG_SQL, "chlModTicket SQL 16");
+            status =  cmlExecuteNoAnswerSql(
+                "delete from R_TICKET_ALLOWED_GROUPS where ticket_id=? and group_name=?",
+                &icss);
+            if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) return(status);
+            if (status != 0) {
+                rodsLog(LOG_NOTICE,
+                        "chlModTicket cmlExecuteNoAnswerSql delete group failure %d",
+                        status);
+                return(status);
+            }
+            status = cmlAudit3(AU_MOD_TICKET, ticketIdStr,
+                                rsComm->clientUser.userName, 
+                                rsComm->clientUser.rodsZone, "remove group",
+                                &icss);
+            if (status != 0) return(status);
+            status =  cmlExecuteNoAnswerSql("commit", &icss);
+            return(status);
+          }
+      }
+    }
+
+    return (CAT_INVALID_ARGUMENT);
+}

@@ -269,7 +269,6 @@ _rsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
         memset (&chkNVPathPermInp, 0, sizeof (chkNVPathPermInp));
 
         rstrcpy (chkNVPathPermInp.fileName, filePath, MAX_NAME_LEN);
-        chkNVPathPermInp.fileType = static_cast< fileDriverType_t>( -1 );//RescTypeDef[rescTypeInx].driverType;
 
         // =-=-=-=-=-=-=-
         // extract the host location from the resource hierarchy
@@ -404,14 +403,25 @@ filePathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
    rstrcpy (dataObjInfo.rescHier, resc_hier, MAX_NAME_LEN); 
 
     if (dataObjInfo.dataSize <= 0 && 
+#ifdef FILESYSTEM_META
+        (dataObjInfo.dataSize = getFileMetadataFromVault (rsComm, &dataObjInfo)) < 0 &&
+#else
         (dataObjInfo.dataSize = getSizeInVault (rsComm, &dataObjInfo)) < 0 &&
+#endif
         dataObjInfo.dataSize != UNKNOWN_FILE_SZ) {
         status = (int) dataObjInfo.dataSize;
         rodsLog (LOG_ERROR,
+#ifdef FILESYSTEM_META
+         "filePathReg: getFileMetadataFromVault for %s failed, status = %d",
+#else
                  "filePathReg: getSizeInVault for %s failed, status = %d",
+#endif
                  dataObjInfo.objPath, status);
         return (status);
     }
+#ifdef FILESYSTEM_META
+    addKeyVal(&dataObjInfo.condInput, FILE_SOURCE_PATH_KW, filePath);
+#endif
 
     if ((chksum = getValByKey (&phyPathRegInp->condInput, 
                                REG_CHKSUM_KW)) != NULL) {
@@ -485,6 +495,26 @@ dirPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
         /* no need to resolve sym link */ // JMC - backport 4845
         addKeyVal (&collCreateInp.condInput, TRANSLATED_PATH_KW, ""); // JMC - backport 4845
 
+#ifdef FILESYSTEM_META
+        /* stat the source directory to track the         */
+        /* original directory meta-data                   */
+        memset (&fileStatInp, 0, sizeof (fileStatInp));
+        rstrcpy (fileStatInp.fileName, filePath, MAX_NAME_LEN);
+        fileStatInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
+        rstrcpy (fileStatInp.addr.hostAddr, rescInfo->rescLoc, NAME_LEN);
+
+        status = rsFileStat (rsComm, &fileStatInp, &myStat);
+        if (status != 0) {
+            rodsLog (LOG_ERROR,
+             "dirPathReg: rsFileStat failed for %s, status = %d",
+             filePath, status);
+           return (status);
+        }
+        getFileMetaFromStat (myStat, &collCreateInp.condInput);
+        addKeyVal(&collCreateInp.condInput, FILE_SOURCE_PATH_KW, filePath);
+        free (myStat);
+#endif /* FILESYSTEM_META */
+
         /* create the coll just in case it does not exist */
         status = rsCollCreate (rsComm, &collCreateInp);
         clearKeyVal (&collCreateInp.condInput); // JMC - backport 4835
@@ -500,7 +530,6 @@ dirPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
     memset (&fileOpendirInp, 0, sizeof (fileOpendirInp));
 
     rstrcpy (fileOpendirInp.dirName, filePath, MAX_NAME_LEN);
-    fileOpendirInp.fileType = static_cast< fileDriverType_t >( -1 );//RescTypeDef[rescTypeInx].driverType;
     rstrcpy (fileOpendirInp.addr.hostAddr, location.c_str(), NAME_LEN);
     rstrcpy (fileOpendirInp.objPath,    phyPathRegInp->objPath, MAX_NAME_LEN);
     rstrcpy (fileOpendirInp.resc_hier_, resc_hier,              MAX_NAME_LEN);
@@ -546,7 +575,6 @@ dirPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
 
         snprintf (fileStatInp.fileName, MAX_NAME_LEN, "%s/%s", filePath, rodsDirent->d_name);
         rstrcpy(fileStatInp.objPath, subPhyPathRegInp.objPath, MAX_NAME_LEN);
-        fileStatInp.fileType = fileOpendirInp.fileType; 
         fileStatInp.addr = fileOpendirInp.addr;
         rstrcpy (fileStatInp.rescHier, resc_hier, MAX_NAME_LEN); 
 
@@ -652,7 +680,6 @@ int mountFileDir( rsComm_t*     rsComm,
 
     rstrcpy (fileStatInp.fileName, filePath, MAX_NAME_LEN);
     rstrcpy (fileStatInp.objPath, phyPathRegInp->objPath, MAX_NAME_LEN);
-    fileStatInp.fileType = static_cast< fileDriverType_t >( -1 );//RescTypeDef[rescTypeInx].driverType;
     rstrcpy (fileStatInp.addr.hostAddr,  location.c_str(), NAME_LEN);
     rstrcpy (fileStatInp.rescHier, resc_hier, MAX_NAME_LEN); 
 
@@ -668,7 +695,6 @@ int mountFileDir( rsComm_t*     rsComm,
         memset (&fileMkdirInp, 0, sizeof (fileMkdirInp));
         rstrcpy (fileMkdirInp.dirName, filePath, MAX_NAME_LEN);
         rstrcpy (fileMkdirInp.rescHier, resc_hier, MAX_NAME_LEN);
-        fileMkdirInp.fileType = static_cast<fileDriverType_t>(-1);//RescTypeDef[rescTypeInx].driverType;
         fileMkdirInp.mode = getDefDirMode ();
         rstrcpy (fileMkdirInp.addr.hostAddr,  location.c_str(), NAME_LEN);
         status = rsFileMkdir (rsComm, &fileMkdirInp);
@@ -880,6 +906,11 @@ int structFileReg(
         rodsLog( LOG_ERROR, "structFileReg - RESC_HIER_STR_KW is NULL" );
         return -1;
     }
+
+    eirods::hierarchy_parser parser;
+    parser.set_string(std::string(tmp_hier));
+    std::string resc_name;
+    parser.last_resc(resc_name);
     
 #if 0 // JMC - no longer necessary
     if (!structFileSupport (rsComm, phyPathRegInp->objPath, 
@@ -899,6 +930,11 @@ int structFileReg(
     /* have to use dataObjInp.objPath because structFile path was removed */ 
     addKeyVal( &collCreateInp.condInput, COLLECTION_INFO1_KW, dataObjInp.objPath );
                
+
+
+    char collInfo2[MAX_NAME_LEN];
+    snprintf(collInfo2, MAX_NAME_LEN, ";;;%s;;;0", resc_name.c_str());
+    addKeyVal (&collCreateInp.condInput, COLLECTION_INFO2_KW, collInfo2);
 
     /* try to mod the coll first */
     status = rsModColl (rsComm, &collCreateInp);
@@ -1110,7 +1146,6 @@ readPathnamePatternsFromFile(rsComm_t *rsComm, char *filename, char* resc_hier )
 
     memset(&fileStatInp, 0, sizeof(fileStatInp));
     rstrcpy(fileStatInp.fileName, filename, MAX_NAME_LEN);
-    // JMC - legacy resource fileStatInp.fileType = (fileDriverType_t)RescTypeDef[rescInfo->rescTypeInx].driverType;
     rstrcpy(fileStatInp.addr.hostAddr, location.c_str(), NAME_LEN);
     status = rsFileStat(rsComm, &fileStatInp, &stbuf);
     if (status != 0) {
@@ -1125,7 +1160,6 @@ readPathnamePatternsFromFile(rsComm_t *rsComm, char *filename, char* resc_hier )
     
     memset(&fileOpenInp, 0, sizeof(fileOpenInp));
     rstrcpy(fileOpenInp.fileName, filename, MAX_NAME_LEN);
-    // JMC - legacy resource fileOpenInp.fileType = (fileDriverType_t)RescTypeDef[rescInfo->rescTypeInx].driverType;
     rstrcpy(fileOpenInp.addr.hostAddr, location.c_str(), NAME_LEN);
     fileOpenInp.flags = O_RDONLY;
     fd = rsFileOpen(rsComm, &fileOpenInp);

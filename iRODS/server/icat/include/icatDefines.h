@@ -26,6 +26,9 @@
 #define DB_TYPE_ORACLE   2
 #define DB_TYPE_MYSQL    3
 
+#define TICKET_TYPE_DATA "data"
+#define TICKET_TYPE_COLL "collection"
+
 /* 
    These are the access permissions known to the system, listed in
    order.  The defines are here to make it clear what these are and
@@ -129,5 +132,12 @@
 
 #define AU_ADD_CHILD_RESOURCE                  2160
 #define AU_DEL_CHILD_RESOURCE                  2161
+
+#define AU_CREATE_TICKET                       2170
+#define AU_MOD_TICKET                          2171
+#define AU_DELETE_TICKET                       2172
+#define AU_USE_TICKET                          2173
+
+
 
 #endif /* ICAT_DEFINES_H */

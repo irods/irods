@@ -26,7 +26,7 @@
 #include <iostream>
 
 int get64RandomBytes(char *buf);
-void setSessionSignitureClientside( char* _sig );
+void setSessionSignatureClientside( char* _sig );
 void _rsSetAuthRequestGetChallenge( const char* _c );
 static
 int check_proxy_user_privelges(
@@ -134,8 +134,8 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // Save a representation of some of the challenge string for use
-        // as a session signiture 
-        setSessionSignitureClientside( md5_buf );
+        // as a session signature 
+        setSessionSignatureClientside( md5_buf );
 
         // =-=-=-=-=-=-=-
         // determine if a password challenge is needed,

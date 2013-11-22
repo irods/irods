@@ -55,7 +55,7 @@ procApiRequest (rcComm_t *conn, int apiNumber, void *inputStruct,
 
     freeRError (conn->rError);
     conn->rError = NULL;
-    
+
     apiInx = apiTableLookup (apiNumber);
     if (apiInx < 0) {
         rodsLog (LOG_ERROR,

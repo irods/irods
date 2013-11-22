@@ -104,6 +104,7 @@
 						  * the ACL should be used */
 #define NO_CHK_COPY_LEN_KW	"noChkCopyLen"  /* Don't check the len 
 						  * when transfering  */
+#define TICKET_KW               "ticket"        /* for ticket-based-access */
 #define PURGE_CACHE_KW         "purgeCache"    /* purge the cache copy right JMC - backport 4537
                                                 * after the operation */
 #define EMPTY_BUNDLE_ONLY_KW   "emptyBundleOnly" /* delete emptyBundleOnly */ // JMC - backport 4552
@@ -115,6 +116,12 @@
 #define LOCK_CMD_KW    "lockCmd"       /* valid values are SET_LOCK_WAIT_CMD,
                                         * SET_LOCK_CMD and GET_LOCK_CMD */
 #define LOCK_FD_KW     "lockFd"        /* Lock file desc for unlock */
+#define NATIVE_NETCDF_CALL_KW "nativeNetcdfCall"  /* call netcdf natively */
+#define MAX_SUB_FILE_KW "maxSubFile" /* max number of files for tar file bundles */
+#define MAX_BUNDLE_SIZE_KW "maxBunSize" /* max size of a tar bundle in Gbs */
+#define NO_STAGING_KW                  "noStaging"
+#define NEW_NETCDF_ARCH_KW                     "newNetcdfArch"
+
 // =-=-=-=-=-=-=-
 #define MAX_SUB_FILE_KW "maxSubFile" /* max number of files for tar file bundles */ // JMC - backport 4771
 
@@ -122,6 +129,15 @@
 
 /* OBJ_PATH_KW already defined */
 /* COLL_NAME_KW already defined */
+#define FILE_UID_KW             "fileUid"
+#define FILE_OWNER_KW           "fileOwner"
+#define FILE_GID_KW             "fileGid"
+#define FILE_GROUP_KW           "fileGroup"
+#define FILE_MODE_KW            "fileMode"
+#define FILE_CTIME_KW           "fileCtime"
+#define FILE_MTIME_KW           "fileMtime" 
+#define FILE_SOURCE_PATH_KW     "fileSourcePath"    
+#define EXCLUDE_FILE_KW         "excludeFile"
 
 /* The following are the keyWord definition for the rescCond key/value pair */
 /* RESC_NAME_KW is defined above */

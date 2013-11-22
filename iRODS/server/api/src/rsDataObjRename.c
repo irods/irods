@@ -442,7 +442,6 @@ l3Rename (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *newFileName)
         case FILE_CAT:
        #endif // JMC legacy resource 
             memset (&fileRenameInp, 0, sizeof (fileRenameInp));
-            fileRenameInp.fileType = static_cast< fileDriverType_t >( -1 );//RescTypeDef[rescTypeInx].driverType;
             rstrcpy( fileRenameInp.oldFileName,   dataObjInfo->filePath,  MAX_NAME_LEN );
             rstrcpy( fileRenameInp.newFileName,   newFileName,            MAX_NAME_LEN );
             rstrcpy (fileRenameInp.rescHier,      dataObjInfo->rescHier,  MAX_NAME_LEN);

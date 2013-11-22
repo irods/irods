@@ -18,16 +18,9 @@
 
 
 
-#ifdef USE_EIRODS
 //	#include "eirods_ms_plugin.h"
 //	extern eirods::ms_table MicrosTable;
 //	extern int NumOfAction;
-#else
-	#ifndef DEBUG
-	#include "regExpMatch.h"
-	#include "rodsErrorTable.h"
-	#endif
-#endif // ifdef USE_EIRODS
 
 #define RE_ERROR(x, y) if(x) {if((y)!=NULL){(y)->type.t=RE_ERROR;*errnode=node;}return;}
 #define OUTOFMEMORY(x, res) if(x) {(res)->value.e = OUT_OF_MEMORY;TYPE(res) = RE_ERROR;return;}

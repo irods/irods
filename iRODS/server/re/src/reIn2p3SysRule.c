@@ -477,7 +477,7 @@ int msiCheckHostAccessControl (ruleExecInfo_t *rei) {
     rc = checkHostAccessControl(username, hostclient, group);
     if ( rc < 0 ) {
         rodsLog (LOG_NOTICE, "Access to user %s from host %s has been refused.\n", username, hostclient);
-    rei->status = rc;
+        rei->status = rc;
     }
   
     return (rei->status);

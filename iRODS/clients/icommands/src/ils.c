@@ -43,9 +43,10 @@ main(int argc, char **argv) {
     std::cout << "new plain [" << new_plain << "]" << std::endl;
 #endif
 
-   
-    optStr = "hArlLvVZ"; // JMC - backport 4536
-    status = parseCmdLineOpt (argc, argv, optStr, 1, &myRodsArgs);// JMC - backport 4536
+    // -=-=-=-=-=- JMC - backport 4536 -=-=-=-=-=-
+    optStr = "hArlLvt:VZ";
+    status = parseCmdLineOpt (argc, argv, optStr, 1, &myRodsArgs);
+    // -=-=-==-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     if (status < 0) {
         printf("Use -h for help\n");
@@ -115,6 +116,7 @@ usage () {
 " -l  long format",
 " -L  very long format",
 " -r  recursive - show subcollections",
+" -t  ticket - use a read (or write) ticket to access collection information",
 " -v  verbose",
 " -V  Very verbose",
 " -h  this help",

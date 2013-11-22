@@ -15,6 +15,17 @@
 void usage (char *prog);
 void usageTTL ();
 
+
+/* Uncomment the line below if you want TTL to be required for all
+   users; i.e. all credentials will be time-limited.  This is only
+   enforced on the client side so users can bypass this restriction by
+   building their own iinit but it would strongly encourage the use of
+   time-limited credentials. */
+/* #define TIME_TO_LIVE_REQUIRED 1 */
+/* Uncomment the line below if you also want a default TTL if none
+   is specified by the user. This TTL is specified in hours. */
+/* #define TIME_TO_LIVE_DEFAULT 8 */
+
 #define TTYBUF_LEN 100
 #define UPDATE_TEXT_LEN NAME_LEN*10
 
@@ -110,14 +121,20 @@ main(int argc, char **argv)
             printf("Time To Live value needs to be a positive integer\n");
             exit(1);
         }
-        if (strncmp("PAM",myEnv.rodsAuthScheme,3)==0 ||
-            strncmp("pam",myEnv.rodsAuthScheme,3)==0) {
-        }
-        else {
-            printf("Time-To-Live only applies when using PAM authentication\n");
-            exit(1);
-        }
     }
+
+#ifdef TIME_TO_LIVE_REQUIRED 
+    if (myRodsArgs.ttl!=True) {
+#ifdef TIME_TO_LIVE_DEFAULT
+       ttl=TIME_TO_LIVE_DEFAULT;
+       printf("Notice: using default TTL (time to live) value of %d hours\n",
+             ttl);
+#else
+       printf("--ttl (Time To Live) is required, please try again\n");
+       exit(2);
+#endif /* TIME_TO_LIVE_DEFAULT */
+     }
+#endif /* TIME_TO_LIVE_REQUIRED */
 
     ix = myRodsArgs.optind;
 
@@ -303,7 +320,22 @@ main(int argc, char **argv)
     }
 
     printErrorStack(Conn->rError);
-    rcDisconnect(Conn);
+    if (ttl>0 && !pam_flg) {
+        /* if doing non-PAM TTL, now get the 
+        short-term password (after initial login) */
+        status = clientLoginTTL(Conn, ttl);
+        if( status != 0 ) {
+            rcDisconnect(Conn);
+            exit(8);
+        }
+        /* And check that it works */
+        status = clientLogin(Conn);
+        if (status != 0) {
+            rcDisconnect( Conn );
+            exit (7);
+        }
+    }
+
 
     /* Save updates to .irodsEnv. */
     if (doingEnvFileUpdate==1) {
@@ -318,7 +350,7 @@ main(int argc, char **argv)
 void usage( char *prog ) {
     printf("Creates a file containing your iRODS password in a scrambled form,\n");
     printf("to be used automatically by the icommands.\n");
-    printf("Usage: %s [-ehvVl]\n", prog);
+    printf("Usage: %s [-ehvVl] [--ttl TimeToLive]\n", prog);
     printf(" -e  echo the password as you enter it (normally there is no echo)\n");
     printf(" -l  list the iRODS environment variables (only)\n");
     printf(" -v  verbose\n");

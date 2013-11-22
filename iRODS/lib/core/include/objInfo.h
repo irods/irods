@@ -303,19 +303,6 @@ typedef struct RescCacheInfo
         DB_CAT
     } rescCat_t;
 
-    typedef enum {
-        UNIX_FILE_TYPE,
-        PASSTHRU_TYPE,
-        HPSS_FILE_TYPE,
-        NT_FILE_TYPE,
-        TEST_STAGE_FILE_TYPE,
-        S3_FILE_TYPE,
-        UNIV_MSS_FILE_TYPE,
-        WOS_FILE_TYPE,
-        MSO_FILE_TYPE,
-        NON_BLOCKING_FILE_TYPE
-    } fileDriverType_t;
-
 #define DEFAULT_FILE_MODE       0600
 #define DEFAULT_DIR_MODE        0750
 

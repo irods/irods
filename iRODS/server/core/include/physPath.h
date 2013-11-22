@@ -107,6 +107,11 @@ extern "C" {
     fsDataObjLock (char *objPath, int cmd, int type, int infd);
 // =-=-=-=-=-=-=-
     int getLeafRescPathName(const std::string& _resc_hier, std::string& _ret_string);
+
+#ifdef FILESYSTEM_META
+rodsLong_t 
+getFileMetadataFromVault (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo);
+#endif
 #ifdef  __cplusplus
 }
 #endif

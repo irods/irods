@@ -1,0 +1,85 @@
+#!/bin/bash
+# Author: Giacomo Mariani <g.mariani@cineca.it>
+# Licensed under BSD licence <http://en.wikipedia.org/wiki/BSD_licenses>
+# Last edited: Tue Jun  4 15:46:40 CEST 2013
+
+usage()
+{
+cat << EOF
+usage: $0 [options] [-t ticket.list]
+
+This script remove your unused tickets.
+It can remove all your tickets or the tickets listed in a file of the form given by iTicket.
+
+OPTIONS:
+   -h      Show this message
+   -u      Remove all for your username
+   -t ticket.list     
+   -v      Verbose
+EOF
+return 0
+}
+
+remove_all_tickets()
+{
+echo "iRODS username: ${username}"
+for i in `iticket ls | grep -B 3 "owner name: ${username}" | grep "string:" |  awk '{print $2}'`
+do 
+    if [ $VERBOSE ] 
+    then 
+        echo "iticket delete $i" 
+    fi
+    iticket delete $i
+done
+return 0
+}
+
+remove_from_ticketfile()
+{
+echo "Removing tickets listed in: ${ticketfile}"
+for i in `cat ${ticketfile} | awk -F"," '{print $2}'`
+do 
+    if [ $VERBOSE ] 
+    then 
+        echo "iticket delete $i"
+    fi
+    iticket delete $i
+done
+return 0
+}
+
+if [ $# -eq "0" ]
+then
+    echo "Wrong number of arguments." ; echo
+    usage
+    exit 1
+fi
+
+while getopts “ut:hv” OPTION
+do
+     case $OPTION in
+         u)
+             username=$(iuserinfo | grep "name:" | awk '{print $2}') 
+             remove_all_tickets
+             exit 0
+             ;;
+         t)
+             ticketfile=$OPTARG
+             remove_from_ticketfile
+             exit 0
+             ;; 
+         h)
+             usage
+             exit 0
+             ;;
+         v)
+             VERBOSE=1
+             ;;
+         ?)
+             usage
+             exit 1
+             ;;
+     esac
+done
+
+exit 0

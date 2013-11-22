@@ -182,7 +182,6 @@ statPhysFile (rcComm_t *conn, genQueryOut_t *genQueryOut2)
 	fileStatInp_t fileStatInp;
 	rodsStat_t *fileStatOut;
 	
-	fileStatInp.fileType = UNIX_FILE_TYPE;
 	for (i=0;i<genQueryOut2->rowCnt;i++) {
 		dataPathStruct = getSqlResultByInx (genQueryOut2, COL_D_DATA_PATH);
 		locStruct = getSqlResultByInx (genQueryOut2, COL_R_LOC);

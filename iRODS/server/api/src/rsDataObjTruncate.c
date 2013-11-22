@@ -158,7 +158,6 @@ dataObjInfo_t *dataObjInfo)
         status = rsSubStructFileTruncate (rsComm, &subFile);
     } else {
             memset (&fileTruncateInp, 0, sizeof (fileTruncateInp));
-            fileTruncateInp.fileType = static_cast<fileDriverType_t>(-1);
             rstrcpy (fileTruncateInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
             rstrcpy (fileTruncateInp.resc_hier_, dataObjInfo->rescHier, MAX_NAME_LEN);
             rstrcpy (fileTruncateInp.addr.hostAddr, location.c_str(), NAME_LEN);

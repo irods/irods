@@ -1285,6 +1285,7 @@ sub doTestIcat
 	my $icatTestLog = File::Spec->catfile( $serverTestBinDir, "icatTest.log" );
 	my $icatMiscTestLog = File::Spec->catfile( $serverTestBinDir, "icatMiscTest.log" );
 	my $moveTestLog = File::Spec->catfile( $serverTestBinDir, "moveTest.log" );
+  # my $icatTicketTestLog = File::Spec->catfile( $serverTestBinDir, "icatTicketTest.log" );
 
 	my $startDir = cwd( );
 	chdir( $serverTestBinDir );
@@ -1298,6 +1299,9 @@ sub doTestIcat
 	$output=`$perl moveTest.pl 2>&1`;
 	if ( $? != 0 ) { $icatFailure=1; }
 	printToFile( $moveTestLog, $output);
+  # $output = `$perl icatTicketTest.pl 2>&1`;
+  # if ( $? != 0 ) { $icatFailure=1; }
+  # printToFile( $icatTicketTestLog, $output );
 	
 	# If the above all succeeded, check logs to see if all SQL was tested
 	$output = `checkIcatLog.pl 2>&1`;
@@ -1335,6 +1339,7 @@ sub doTestIcat
 	printStatus( "    Logs:     $icatTestLog\n" );
 	printStatus( "              $icatMiscTestLog\n" );
 	printStatus( "              $moveTestLog\n" );
+  # printStatus( "              $icatTicketTestLog\n" );
 	printStatus( "    Summary:  $outputFile\n" );
 }
 

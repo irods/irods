@@ -175,7 +175,7 @@ int _rsStructFileExtract( rsComm_t*           _comm,
 int
 procCacheDir (rsComm_t *rsComm, char *cacheDir, char *resource, int oprType) {
     if( ( oprType & PRESERVE_DIR_CONT) == 0 ) { 
-        int status = chkEmptyDir( -1, rsComm, cacheDir );
+        int status = chkEmptyDir( rsComm, cacheDir );
         if( status == SYS_DIR_IN_VAULT_NOT_EMPTY ) {
             rodsLog( LOG_ERROR,"procCacheDir: chkEmptyDir error for %s in resc %s, status = %d",
                      cacheDir, resource, status );

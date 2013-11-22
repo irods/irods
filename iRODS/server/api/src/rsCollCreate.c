@@ -198,7 +198,6 @@ l3Mkdir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
           case FILE_CAT:
        #endif // JMC legacy resource 
             memset (&fileMkdirInp, 0, sizeof (fileMkdirInp));
-            fileMkdirInp.fileType = static_cast< fileDriverType_t >( -1 );//RescTypeDef[rescTypeInx].driverType;
             rstrcpy (fileMkdirInp.dirName, dataObjInfo->filePath, MAX_NAME_LEN);
             rstrcpy (fileMkdirInp.rescHier, dataObjInfo->rescHier, MAX_NAME_LEN);
             rstrcpy (fileMkdirInp.addr.hostAddr, location.c_str(), NAME_LEN);

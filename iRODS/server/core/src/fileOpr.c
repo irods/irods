@@ -47,7 +47,7 @@ allocFileDesc ()
 
 int
 allocAndFillFileDesc (rodsServerHost_t *rodsServerHost, char* objPath, char *fileName,
-                      char* rescHier, fileDriverType_t fileType, int fd, int mode)
+                      char* rescHier, int fd, int mode)
 {
     int fileInx;
 
@@ -60,7 +60,6 @@ allocAndFillFileDesc (rodsServerHost_t *rodsServerHost, char* objPath, char *fil
     FileDesc[fileInx].objPath  = strdup (objPath);
     FileDesc[fileInx].fileName = strdup (fileName);
     FileDesc[fileInx].rescHier = strdup (rescHier);
-    FileDesc[fileInx].fileType = fileType;
     FileDesc[fileInx].mode = mode;
     FileDesc[fileInx].fd = fd;
 
@@ -207,7 +206,7 @@ int mkFileDirR(
 
 // =-=-=-=-=-=-=-
 // 
-int chkEmptyDir (int fileType, rsComm_t *rsComm, char *cacheDir) {
+int chkEmptyDir (rsComm_t *rsComm, char *cacheDir) {
     
     int status;
     char childPath[MAX_NAME_LEN];
@@ -264,7 +263,7 @@ int chkEmptyDir (int fileType, rsComm_t *rsComm, char *cacheDir) {
         // =-=-=-=-=-=-=-
         // recurse for another directory
         if (myFileStat.st_mode & S_IFDIR) {
-            status = chkEmptyDir( -1, rsComm, childPath);
+            status = chkEmptyDir( rsComm, childPath);
             if (status == SYS_DIR_IN_VAULT_NOT_EMPTY) {
                 rodsLog( LOG_ERROR, "chkEmptyDir: dir %s is not empty", childPath );
                 break;
@@ -517,7 +516,6 @@ filePathTypeInResc (
     rstrcpy (fileStatInp.fileName, fileName, MAX_NAME_LEN);
     rstrcpy (fileStatInp.rescHier, rescHier, MAX_NAME_LEN);
     rstrcpy (fileStatInp.objPath,  objPath,  MAX_NAME_LEN);
-    fileStatInp.fileType = static_cast< fileDriverType_t >( -1 );// JMC - legacy resource - RescTypeDef[rescTypeInx].driverType;
     rstrcpy (fileStatInp.addr.hostAddr,  location.c_str(), NAME_LEN);
     status = rsFileStat (rsComm, &fileStatInp, &myStat);
 
@@ -540,7 +538,7 @@ bindStreamToIRods (rodsServerHost_t *rodsServerHost, int fd)
     int fileInx;
 
     fileInx = allocAndFillFileDesc (rodsServerHost, "", STREAM_FILE_NAME, "",
-                                    UNIX_FILE_TYPE, fd, DEFAULT_FILE_MODE);
+                                    fd, DEFAULT_FILE_MODE);
 
     return fileInx;
 }

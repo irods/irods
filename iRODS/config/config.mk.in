@@ -65,30 +65,8 @@ endif
 PAM_AUTH=1
 USE_SSL=1
 
-# =-=-=-=-=-=-=-
-# JMC :: set flag stating that we will build with E-iRODS Extensions
-#     :: currently this is only microservice plugins
-USE_EIRODS=1
-
-#ifdef USE_EIRODS
 BOOST_DIR=TOBEFILLEDBYBUILDSH
 LIBARCHIVE_DIR=TOBEFILLEDBYBUILDSH
-#endif
-
-
-#
-# Configure the rule engine server
-#
-# RULE_ENGINE and RULE_ENGINE_N define whether one of the Rule Engines is enabled. 
-# The former enables version 2.5, while the latter enables version 3.0.
-# Version 2.5 may not support all features that are supported by version 3.0.
-# 
-# Enable this normally unless you are debugging some 
-# particular module and dont want the rule engine to mess up the flow.
-RULE_ENGINE_N=1
-#RULE_ENGINE=1
-
-
 
 
 #
@@ -344,53 +322,11 @@ endif
 # server/log/ log files.
 #IRODS_SYSLOG = 1
 
-# HPSS - Define whether HPSS is supported on this server. HPSS_UNIX_PASSWD_AUTH
-# specifies whether the UNix password authentication should be used. 
-# HPSS_KRB5_AUTH specifies whether the Kerberos keytab file should be used.
-# The default is using the UNIX keytab file.
-# HPSS=1
-
-ifdef HPSS
-# HPSS_UNIX_PASSWD_AUTH=1
-# HPSS_KRB5_AUTH=1
-
-# HPSS7 - Defines whether the HPSS v7 library or later is used. The default
-# is HPSS v6
-# HPSS7=1
-
-# HPSS_LIB_DIR is the directory of the HPSS library and HPSS_HDR_DIR is the
-# directory of the HPSS header files. When building iRODS, be sure to add the 
-# path defined by HPSS_LIB_DIR to the path in the LD_LIBRARY_PATH env variable.
-HPSS_LIB_DIR=/opt/hpss/lib
-HPSS_HDR_DIR=/opt/hpss/include
-ADDR_64BITS=
-endif
-
-# AMAZON_S3 - Define whether AMAZON S3 is supported on this server.
-# AMAZON_S3=1
-
-ifdef AMAZON_S3
-S3_LIB_DIR=/data1/mwan/s3/libs3-1.4/build/lib
-S3_HDR_DIR=/data1/mwan/s3/libs3-1.4/build/include
-endif
-
 # Extensible ICAT
 
 # See modules/extendedICAT/README.txt.  Uncomment this line, and add
 # modules/extendedICAT/extendedICAT.h, to enable the extensible ICAT:
 # EXTENDED_ICAT = 1
-
-# DDN_WOS - Define whether DDN's WOS driver is supported on this server.
-# WOS_DIR is the directory for the WOS library ($(WOS_DIR)/lib64) and
-# include files ($(WOS_DIR)/include). BOOST_DIR is the directory where
-# the BOOST directory is located. BOOST is required for compiling the
-# C++ WOS driver.
-# DDN_WOS=1
-
-ifdef DDN_WOS
-WOS_DIR=/home/mwan/myapps/ddn/woscpp
-BOOST_DIR=/home/mwan/myapps/boost/boost_1_44_0
-endif
 
 # RUN_SERVER_AS_ROOT - Defines whether the iRODS server contains code
 # that will allow the iRODS servers to switch between root and service
@@ -452,5 +388,47 @@ endif
 USE_SSL = 1
 
 
+# NETCDF_API - specify whether to build iRODS with the NETCDF API. This 
+# option requires the installation of the NETCDF C library and header files.
+# NETCDF4_API - specify whether the NETCDF library supports NETCDF4 APIs -
+# built with --enable-netcdf-4. Since most NETCDF files are very large and 
+# Opendap support is needed for some NETCDF applications, NETCDF4 support 
+# is needed in most cases.
+# NETCDF_DIR - the install directory of NETCDF. 
+# NETCDF_CLIENT - build only the irods client with the NETCDF API. This
+# option does not require the installation of the NETCDF C library nor
+# header files. NETCDF_API must be off with is option.
+# NETCDF_API=1
+# NETCDF4_API=1
+# NETCDF_CLIENT=1
 
+ifdef NETCDF4_API
+NETCDF_API=1
+endif
+ifdef NETCDF_API
+NETCDF_CLIENT=1
+NETCDF_DIR=/usr/local
+endif
+
+# FILESYSTEM_META - turn on functionality that collects the 
+# filesystem meta-data (i.e. 'stat' information) from files 
+# and directories added to iRODS via iput and ireg. Only supported
+# on UNIX/Linux-type systems. 
+# FILESYSTEM_META = 1
+
+# DIRECT_ACCESS_VAULT - build in support for a resource type that
+# will allow users to directly access files in the vault of this 
+# type of resource. Intended for use in environments where there is a
+# need for an "iRODS overlay" of an existing high-performance
+# filesystem (e.g. a parallel file system NAS). It requires that the
+# RUN_SERVER_AS_ROOT and FILESYSTEM_META features are turned on.
+# DIRECT_ACCESS_VAULT = 1
+
+# OOI_CI - specify whether to compile the OOI CI modules
+# OOI_CI=1
+
+# STORAGE_ADMIN_ROLE - turn on support for the 'storageadmin' user type.
+# In this mode, you can run an iRODS server as a non-privileged user
+# so the data server doesn't need rodsadmin credentials.
+# STORAGE_ADMIN_ROLE = 1
 

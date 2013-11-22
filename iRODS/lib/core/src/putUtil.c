@@ -12,7 +12,25 @@
 #include "miscUtil.h"
 #include "rcPortalOpr.h"
 
-    int
+int
+setSessionTicket(rcComm_t *myConn, char *ticket) {
+   ticketAdminInp_t ticketAdminInp;
+   int status;
+
+   ticketAdminInp.arg1 = "session";
+   ticketAdminInp.arg2 = ticket;
+   ticketAdminInp.arg3 = "";
+   ticketAdminInp.arg4 = "";
+   ticketAdminInp.arg5 = "";
+   ticketAdminInp.arg6 = "";
+   status = rcTicketAdmin(myConn, &ticketAdminInp);
+   if (status != 0) {
+      printf("set ticket error %d \n", status);
+   }
+   return(status);
+}
+
+int
 putUtil (rcComm_t **myConn, rodsEnv *myRodsEnv, 
         rodsArguments_t *myRodsArgs, rodsPathInp_t *rodsPathInp)
 {
@@ -27,6 +45,16 @@ putUtil (rcComm_t **myConn, rodsEnv *myRodsEnv,
 
     if (rodsPathInp == NULL) {
         return (USER__NULL_INPUT_ERR);
+    }
+
+    if (myRodsArgs->ticket == True) {
+       if (myRodsArgs->ticketString == NULL) {
+         rodsLog (LOG_ERROR,
+                  "initCondForPut: NULL ticketString error");
+         return (USER__NULL_INPUT_ERR);
+       } else {
+         setSessionTicket(conn, myRodsArgs->ticketString);
+       }
     }
 
     status = initCondForPut (conn, myRodsEnv, myRodsArgs, &dataObjOprInp, 
@@ -86,6 +114,10 @@ putUtil (rcComm_t **myConn, rodsEnv *myRodsEnv,
             if (isPathSymlink (myRodsArgs, rodsPathInp->srcPath[i].outPath) > 0)
                 continue;
             dataObjOprInp.createMode = rodsPathInp->srcPath[i].objMode;
+#ifdef FILESYSTEM_META
+            getFileMetaFromPath(rodsPathInp->srcPath[i].outPath,
+                                &dataObjOprInp.condInput);
+#endif
             status = putFileUtil (conn, rodsPathInp->srcPath[i].outPath, 
                     targPath->outPath, rodsPathInp->srcPath[i].size, myRodsEnv, 
                     myRodsArgs, &dataObjOprInp);
@@ -270,6 +302,10 @@ initCondForPut (rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
     }
 
     dataObjOprInp->oprType = PUT_OPR;
+
+    if (rodsArgs == NULL) {
+       return (0);
+    }
 
     if (rodsArgs->all == True) {
         addKeyVal (&dataObjOprInp->condInput, ALL_KW, "");
@@ -552,6 +588,9 @@ putDirUtil (rcComm_t **myConn, char *srcDir, char *targColl,
         path childPath = p.filename();
         snprintf (targChildPath, MAX_NAME_LEN, "%s/%s",
                 targColl, childPath.c_str());
+#ifdef FILESYSTEM_META
+        getFileMetaFromPath(srcChildPath, &dataObjOprInp->condInput);
+#endif
         if (childObjType == DATA_OBJ_T) {
             if (bulkFlag == BULK_OPR_SMALL_FILES &&
                     file_size(p) > MAX_BULK_OPR_FILE_SIZE) {
@@ -604,7 +643,11 @@ putDirUtil (rcComm_t **myConn, char *srcDir, char *targColl,
                 }
             }
         } else {      /* a directory */
+#ifdef FILESYSTEM_META
+            status = mkCollWithDirMeta (conn, targChildPath, srcChildPath);
+#else
             status = mkColl (conn, targChildPath);
+#endif
             if (status < 0) {
                 rodsLogError (LOG_ERROR, status,
                         "putDirUtil: mkColl error for %s", targChildPath);

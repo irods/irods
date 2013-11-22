@@ -255,6 +255,7 @@ ln -s    /usr/bin/irsync                  ${IRODS_HOME}/clients/icommands/bin/ir
 ln -s    /usr/bin/irule                   ${IRODS_HOME}/clients/icommands/bin/irule             
 ln -s    /usr/bin/iscan                   ${IRODS_HOME}/clients/icommands/bin/iscan             
 ln -s    /usr/bin/isysmeta                ${IRODS_HOME}/clients/icommands/bin/isysmeta          
+ln -s    /usr/bin/iticket                 ${IRODS_HOME}/clients/icommands/bin/iticket           
 ln -s    /usr/bin/itrim                   ${IRODS_HOME}/clients/icommands/bin/itrim             
 ln -s    /usr/bin/iuserinfo               ${IRODS_HOME}/clients/icommands/bin/iuserinfo         
 ln -s    /usr/bin/ixmsg                   ${IRODS_HOME}/clients/icommands/bin/ixmsg             

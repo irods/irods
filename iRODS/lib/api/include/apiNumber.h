@@ -129,31 +129,34 @@
 #define DATA_OBJ_LOCK_AN                699 // JMC - backport 4599
 
 /* 700 - 799 - Metadata API calls */
-#define GET_MISC_SVR_INFO_AN		700
-#define GENERAL_ADMIN_AN 		701
-#define GEN_QUERY_AN 			702
-#define AUTH_REQUEST_AN 		703
-#define AUTH_RESPONSE_AN		704
-#define AUTH_CHECK_AN 			705
-#define MOD_AVU_METADATA_AN		706
-#define MOD_ACCESS_CONTROL_AN 		707
-#define RULE_EXEC_MOD_AN 		708
-#define GET_TEMP_PASSWORD_AN 		709
-#define GENERAL_UPDATE_AN 		710
-#define GSI_AUTH_REQUEST_AN		711
-#define READ_COLLECTION_AN 			713
-#define USER_ADMIN_AN 			714
-#define GENERAL_ROW_INSERT_AN 			715
-#define GENERAL_ROW_PURGE_AN 			716
-#define KRB_AUTH_REQUEST_AN 			717
-#define END_TRANSACTION_AN 			718
-#define DATABASE_RESC_OPEN_AN 		719
-#define DATABASE_OBJ_CONTROL_AN		720
-#define DATABASE_RESC_CLOSE_AN 		721
-#define SPECIFIC_QUERY_AN 			722
-#define PAM_AUTH_REQUEST_AN 			725
+#define GET_MISC_SVR_INFO_AN                        700
+#define GENERAL_ADMIN_AN                            701
+#define GEN_QUERY_AN                                702
+#define AUTH_REQUEST_AN                             703
+#define AUTH_RESPONSE_AN                            704
+#define AUTH_CHECK_AN                               705
+#define MOD_AVU_METADATA_AN                         706
+#define MOD_ACCESS_CONTROL_AN                       707
+#define RULE_EXEC_MOD_AN                            708
+#define GET_TEMP_PASSWORD_AN                        709
+#define GENERAL_UPDATE_AN                           710
+#define GSI_AUTH_REQUEST_AN                         711
+#define READ_COLLECTION_AN                          713
+#define USER_ADMIN_AN                               714
+#define GENERAL_ROW_INSERT_AN                       715
+#define GENERAL_ROW_PURGE_AN                        716
+#define KRB_AUTH_REQUEST_AN                         717
+#define END_TRANSACTION_AN                          718
+#define DATABASE_RESC_OPEN_AN                       719
+#define DATABASE_OBJ_CONTROL_AN                     720
+#define DATABASE_RESC_CLOSE_AN                      721
+#define SPECIFIC_QUERY_AN                           722
+#define TICKET_ADMIN_AN                             723
+#define GET_TEMP_PASSWORD_FOR_OTHER_AN              724
+#define PAM_AUTH_REQUEST_AN                         725
+#define GET_LIMITED_PASSWORD_AN                     726
 
-#define EXEC_CMD241_AN 			634
+#define EXEC_CMD241_AN                  634
 #ifdef COMPAT_201
 #define DATA_OBJ_READ201_AN             603
 #define DATA_OBJ_WRITE201_AN            604
@@ -167,6 +170,25 @@
 #define RM_COLL201_AN                   663
 #define OPEN_COLLECTION201_AN           712
 #endif
+
+/* 1000 - 1059 - NETCDF API calls */
+#define NC_OPEN_AN                      1000
+#define NC_CREATE_AN                    1001
+#define NC_CLOSE_AN                     1002
+#define NC_INQ_ID_AN                    1003
+#define NC_INQ_WITH_ID_AN               1004
+#define NC_GET_VARS_BY_TYPE_AN          1005
+#define NCCF_GET_VARA_AN                1006
+#define NC_INQ_AN                       1007
+#define NC_OPEN_GROUP_AN                1008
+#define NC_INQ_GRPS_AN                  1009
+#define NC_REG_GLOBAL_ATTR_AN           1010
+#define NC_GET_AGG_ELEMENT_AN           1011
+#define NC_GET_AGG_INFO_AN              1012
+#define NC_ARCH_TIME_SERIES_AN          1013
+
+/* 1060 - 1099 - OOI API calls */
+#define OOI_GEN_SERV_REQ_AN             1060
 
 /* 1100 - 1200 - SSL API calls */
 #define SSL_START_AN 			1100

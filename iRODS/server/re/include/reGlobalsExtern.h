@@ -91,12 +91,10 @@ typedef struct RuleExecInfo {
 /***** for more details.                      *****/
 /***** IMPORTANT    IMPORTANT    IMPORTANT    *****/
 
-#ifdef RULE_ENGINE_N
 struct reDebugStack {
 	char *step;
 	int label;
 };
-#endif
 
 typedef struct ReArg {
     int myArgc;
@@ -165,11 +163,7 @@ extern int reLoopBackFlag;
 extern int GlobalREDebugFlag;
 extern int GlobalREAuditFlag;
 extern char *reDebugStackFull[REDEBUG_STACK_SIZE_FULL];
-#ifdef RULE_ENGINE_N
 extern struct reDebugStack reDebugStackCurr[REDEBUG_STACK_SIZE_CURR];
-#else
-extern char *reDebugStackCurr[REDEBUG_STACK_SIZE_CURR];
-#endif
 extern int reDebugStackFullPtr;
 extern int reDebugStackCurrPtr;
 

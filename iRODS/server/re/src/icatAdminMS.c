@@ -532,13 +532,13 @@ msiAclPolicy(msParam_t *msParam, ruleExecInfo_t *rei)
             rei->inOutMsParamArray=*myMsParamArray;
 #endif
 #ifdef RODS_CAT
-            chlGenQueryAccessControlSetup(NULL, NULL, 0, 2);
+            chlGenQueryAccessControlSetup(NULL, NULL, NULL, 0, 2);
 #endif
         }
     }
     else {
 #ifdef RODS_CAT
-        chlGenQueryAccessControlSetup(NULL, NULL, 0, 0);
+        chlGenQueryAccessControlSetup(NULL, NULL, NULL, 0, 0);
 #endif
     }
     return (0);

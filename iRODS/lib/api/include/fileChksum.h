@@ -19,7 +19,6 @@
 #include "fileDriver.h"
 
 typedef struct FileChksumInp {
-    fileDriverType_t fileType;
     rodsHostAddr_t addr;
     char fileName[MAX_NAME_LEN];
     char rescHier[MAX_NAME_LEN];
@@ -28,7 +27,7 @@ typedef struct FileChksumInp {
     char in_pdmo[MAX_NAME_LEN]; // Flag indicating if we are being executed from a pdmo
 } fileChksumInp_t;
     
-#define fileChksumInp_PI "int fileType; struct RHostAddr_PI; str fileName[MAX_NAME_LEN]; str rescHier[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN]; int flags; str in_pdmo[MAX_NAME_LEN];"
+#define fileChksumInp_PI "struct RHostAddr_PI; str fileName[MAX_NAME_LEN]; str rescHier[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN]; int flags; str in_pdmo[MAX_NAME_LEN];"
 
 #define fileChksumOut_PI "str chksumStr[NAME_LEN];"
 
@@ -45,7 +44,7 @@ int
 remoteFileChksum (rsComm_t *rsComm, fileChksumInp_t *fileChksumInp,
                   char **chksumStr, rodsServerHost_t *rodsServerHost);
 int
-fileChksum (int fileType, rsComm_t *rsComm, char* objPath, char *fileName, char* rescHier, char *chksumStr);
+fileChksum (rsComm_t *rsComm, char* objPath, char *fileName, char* rescHier, char *chksumStr);
 #else
 #define RS_FILE_CHKSUM NULL
 #endif

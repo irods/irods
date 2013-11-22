@@ -120,38 +120,6 @@ COLL_ACCESS_KW,
 COLL_ACCESS_INX_KW,
 COLL_ID_KW,
 "ENDOFLIST"};
-#if 0 // JMC - legacy resource
-rescTypeDef_t RescTypeDef[] = {
-  {"unix",	FILE_CAT, UNIX_FILE_TYPE,  DO_CHK_PATH_PERM, CREATE_PATH},
-  {"passthru",	FILE_CAT, PASSTHRU_TYPE,   0, CREATE_PATH},
-  {"hpss",	FILE_CAT, HPSS_FILE_TYPE,  DO_CHK_PATH_PERM, CREATE_PATH},
-  {"windows",   FILE_CAT, NT_FILE_TYPE,    DO_CHK_PATH_PERM, CREATE_PATH},
-  {"test stage",FILE_CAT, TEST_STAGE_FILE_TYPE, DO_CHK_PATH_PERM, CREATE_PATH},
-  {"s3",FILE_CAT, S3_FILE_TYPE, DO_CHK_PATH_PERM, CREATE_PATH},
-  {"MSS universal driver", FILE_CAT, UNIV_MSS_FILE_TYPE,  DO_CHK_PATH_PERM, CREATE_PATH},
-  {"wos",FILE_CAT, WOS_FILE_TYPE, NO_CHK_PATH_PERM, NO_CREATE_PATH},
-  {"database", DB_CAT, 0, 0, NO_CREATE_PATH},
-  {"mso",FILE_CAT, MSO_FILE_TYPE, NO_CHK_PATH_PERM, NO_CREATE_PATH},
-  {"nonblocking",FILE_CAT, NON_BLOCKING_FILE_TYPE,  DO_CHK_PATH_PERM, CREATE_PATH},
-};
-
-int NumRescTypeDef = sizeof (RescTypeDef) / sizeof (rescTypeDef_t);
-
-rescClass_t RescClass[] = {
-	{"generic",	CACHE_CL},
-	{"cache",	CACHE_CL},
-	{"volatile",	CACHE_CL},
-	{"temporary",	CACHE_CL},
-	{"permanent",	ARCHIVAL_CL},
-	{"archive",	ARCHIVAL_CL},
-	{"bundle",	BUNDLE_CL},
-	{"compound",	COMPOUND_CL},
-	{"postgresql",	DATABASE_CL},
-	{"mysql",	DATABASE_CL},
-	{"oracle",	DATABASE_CL},
-};
-int NumRescClass = sizeof (RescClass) / sizeof (rescClass_t);
-#endif // JMC - legacy resource
 
 /* Note; all structFile name must contain the word structFile */ 
 

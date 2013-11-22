@@ -101,6 +101,32 @@ acAclPolicy {msiAclPolicy("STRICT"); }
 # following permissions if you are using the PHP web browser:
 # ichmod -M read public /ZONE_NAME
 # ichmod -M read public /ZONE_NAME/home 
+# Post-3.2, you may also want to use 'iadmin modzonecollacl'; see the
+# help 'iadmin h modzonecollacl' for more information on this.
+#
+# --------------------------------------------------------------------------
+# This is a policy point for ticket-based access (added in iRODS 3.1),
+# where the administrator can allow ticket use by all users, no users,
+# only certain users, or not certain users.  To disallow for all
+# users, comment out the defined acTicketPolicy.  Also, as an example
+# example, to disallow for user anonymous (passwordless logins),
+# comment out the default acTicketPolicy rule and uncomment out the
+# second one.  The default policy is to allow all users.  The rule is
+# executed when the server receives a ticket for use for access and
+# if the rule fails (none found to apply), the ticket is not used.
+acTicketPolicy {}
+#acTicketPolicy {ON($userNameClient != "anonymous") { } }
+#
+# --------------------------------------------------------------------------
+# This is a policy point for checking password strength (added after
+# iRODS 3.2), called when the admin or user is setting a password.  By
+# default, this is a no-op but the simple rule example below can be
+# used to enforce a minimal password length.  Also, microservices
+# could be developed to make other checks, such as requiring both
+# upper and lower case, and/or special characters, etc.
+acCheckPasswordStrength(*password) { }
+#acCheckPasswordStrength(*password) {if(strlen(*password) <7) {msiDeleteDisallowed; }}
+
 #
 # --------------------------------------------------------------------------
 # The following are rules for data object operation
@@ -657,6 +683,15 @@ acPostProcForDataObjWrite(*WriteBuffer) { }
 # rule below used for testing. dont uncomment this....
 # acPostProcForDataObjRead(*ReadBuffer) {msiCutBufferInHalf(*ReadBuffer); }
 acPostProcForDataObjRead(*ReadBuffer) { }
+# 55) acPreProcForExecCmd - Rule for pre processing when remotely executing a command
+#     in server/bin/cmd 
+#     parameter contains the command to be executed, arguments, execution address, hint path.
+#     if a parameter is not provided, then it is the empty string
+acPreProcForExecCmd(*cmd, *args, *addr, *hint) { }
+# Rule for pre and post processing when establishing a parallel connection
+acPreProcForServerPortal(*oprType, *lAddr, *lPort, *pAddr, *pPort, *load) { }
+acPostProcForServerPortal(*oprType, *lAddr, *lPort, *pAddr, *pPort, *load) { }
+
 # ----------------------------------------------------------------------------
 # These rules are for testing only
 #acDataObjCreate {acSetCreateConditions; acDOC; }
@@ -679,6 +714,14 @@ acPurgeFiles(*Condition) {ON((*Condition == "null") %% (*Condition == "")) {msiG
 acPurgeFiles(*Condition) {msiGetIcatTime(*Time,"unix"); acGetIcatResults("remove","DATA_EXPIRY < '*Time' AND *Condition",*List); foreach(*List) {msiDataObjUnlink(*List,*Status); msiGetValByKey(*List,"DATA_NAME",*D); msiGetValByKey(*List,"COLL_NAME",*E); writeLine("stdout","Purged File *E/*D at *Time"); } }
 acConvertToInt(*R) {assign(*A,$sysUidClient); assign($sysUidClient,*R); assign(*K, $sysUidClient); assign(*R,*K); assign($sysUidClient,*A); }
 
+#
+#  rule for running a workflow
+#
+acRunWorkFlow(*File, *R_BUF) {
+   msiDataObjOpen("objPath=*File++++openFlags=O_RDONLY",*S_FD);
+   msiDataObjRead(*S_FD,33554412,*R_BUF);
+   msiDataObjClose(*S_FD,*Status2);
+}
 # =-=-=-=-=-=-=-
 # examples of dynamically called rules via the operation_wrapper
 #pep_resource_open_pre(*OUT)  { writeLine('serverLog','RULECALL :: pep_open_pre  [$pluginInstanceName] [*OUT]'); *OUT="CHANGED_VALUE"; }

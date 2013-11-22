@@ -61,6 +61,8 @@ printCollCollEnt (collEnt_t *collEnt, int flags);
 int
 lsSubfilesInBundle (rcComm_t *conn, char *srcPath, rodsEnv *myRodsEnv,
 rodsArguments_t *rodsArgs);
+int 
+setSessionTicket(rcComm_t *myConn, char *ticket);
 #ifdef  __cplusplus
 }
 #endif

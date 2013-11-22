@@ -288,6 +288,37 @@ eirods::error fileMkdir(
 
 } // fileMkdir
 
+
+// =-=-=-=-=-=-=-
+// Top Level Interface for Resource Plugin POSIX chmod
+eirods::error fileChmod( 
+    rsComm_t*                      _comm, 
+    eirods::first_class_object_ptr _object,
+    int                            _mode) {
+    // =-=-=-=-=-=-=-
+    // retrieve the resource name given the path
+    eirods::plugin_ptr   ptr;
+    eirods::resource_ptr resc;
+    eirods::error ret_err = _object->resolve( eirods::RESOURCE_INTERFACE, ptr ); 
+    if( !ret_err.ok() ) {
+        return PASSMSG( "failed to resolve resource", ret_err );
+    }
+
+    // =-=-=-=-=-=-=-
+    // make the call to the "chmod" interface
+    resc    = boost::dynamic_pointer_cast< eirods::resource >( ptr );
+    ret_err = resc->call( _comm, eirods::RESOURCE_OP_CHMOD, _object, _mode );
+
+    // =-=-=-=-=-=-=-
+    // pass along an error from the interface or return SUCCESS
+    if( !ret_err.ok() ) {
+        return PASSMSG( "failed to call 'chmod'", ret_err );
+    } else {
+        return CODE( ret_err.code() );
+    }
+
+} // fileChmod
+
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX rmdir
 eirods::error fileRmdir( 

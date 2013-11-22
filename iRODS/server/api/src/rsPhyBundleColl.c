@@ -460,7 +460,7 @@ bundleAndRegSubFiles (rsComm_t *rsComm, int l1descInx, char *phyBunDir,
         // =-=-=-=-=-=-=-
         // JMC - backport 4528
         if (chksumFlag != 0) {
-            status = fileChksum (UNIX_FILE_TYPE, rsComm, regReplicaInp.destDataObjInfo->filePath,
+            status = fileChksum (rsComm, regReplicaInp.destDataObjInfo->filePath,
                                  subPhyPath, regReplicaInp.destDataObjInfo->rescHier, tmpBunReplCache->chksumStr);
             if (status < 0) {
                 savedStatus = status;

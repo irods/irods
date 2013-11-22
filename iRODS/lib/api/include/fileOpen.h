@@ -24,9 +24,7 @@
 #define UNIQUE_REM_COMM_FLAG    0x2 
 #define FORCE_FLAG                      0x4
 
-#ifdef USE_EIRODS
 #include <string>
-#endif
 
 struct fileOpenInp_t {
         
@@ -34,7 +32,6 @@ struct fileOpenInp_t {
     char resc_hier_[MAX_NAME_LEN];
     char objPath[MAX_NAME_LEN];
     
-    fileDriverType_t fileType;
     int otherFlags;     /* for chkPerm, uniqueRemoteConn */
     rodsHostAddr_t addr;
     char fileName[MAX_NAME_LEN];
@@ -44,7 +41,7 @@ struct fileOpenInp_t {
     char in_pdmo[MAX_NAME_LEN];
 }; // struct fileOpenInp_t
     
-#define fileOpenInp_PI "str resc_name_[MAX_NAME_LEN]; str resc_hier_[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN]; int fileType; int otherFlags; struct RHostAddr_PI; str fileName[MAX_NAME_LEN]; int flags; int mode; double dataSize; str in_pdmo[MAX_NAME_LEN];"
+#define fileOpenInp_PI "str resc_name_[MAX_NAME_LEN]; str resc_hier_[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN]; int otherFlags; struct RHostAddr_PI; str fileName[MAX_NAME_LEN]; int flags; int mode; double dataSize; str in_pdmo[MAX_NAME_LEN];"
 
 #if defined(RODS_SERVER)
 #define RS_FILE_OPEN rsFileOpen

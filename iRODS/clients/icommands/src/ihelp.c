@@ -8,13 +8,15 @@
 #include "parseCommandLine.h"
 
 char *icmds[]={
-   "iadmin", "ibun", "icd", "ichksum", "ichmod", "icp", "idbug", "ienv",
-   "ierror", "iexecmd", "iexit", "ifsck", "iget", "igetwild",
+   "iadmin", "ibun", "icd", "ichksum", "ichmod", "icp", "idbo", "idbug", "ienv",
+   "ierror", "iexecmd", "iexit", "ifsck", "iget", "igetwild", "igroupadmin",
    "ihelp", "iinit", "ilocate", "ils", "ilsresc",
-   "imcoll", "imeta", "imiscsvrinfo", "imkdir", "imv", "ipasswd",
+   "imcoll", "imeta", "imiscsvrinfo", "imkdir", "imv",
+   "inc", "incarch", "incattr",
+   "ipasswd",
    "iphybun", "iphymv", "ips", "iput", "ipwd", "iqdel", "iqmod", "iqstat",
    "iquest", "iquota", "ireg", "irepl", "irm", "irmtrash", "irsync", "irule",
-   "iscan", "isysmeta", "itrim", "iuserinfo", "ixmsg",
+   "iscan", "isysmeta", "iticket", "itrim", "iuserinfo", "ixmsg",
    ""};
 
 void usage ();
@@ -32,6 +34,7 @@ printMainHelp()
 "ichksum  - checksum one or more data-objects or collections.",
 "ichmod   - change access permissions to collections or data-objects.",
 "icp      - copy a data-object (file) or collection (directory) to another.",
+"idbo     - execute Database Objects on Database Resources, etc." ,
 "idbug    - interactively debug rules.",
 "ienv     - display current irods environment.",
 "ierror   - convert an irods error code to text.",
@@ -40,6 +43,7 @@ printMainHelp()
 "ifsck    - check if local files/directories are consistent with the associated objects/collections in iRODS.",
 "iget     - get a file from iRODS.",
 "igetwild - get one or more files from iRODS using wildcard characters.",
+"igroupadmin - perform group-admin functions:mkuser, add/remove from group, etc.",
 "ihelp    - display a synopsis list of the i-commands.",
 "iinit    - initialize a session, so you don't need to retype your password.",
 "ilocate  - search for data-object(s) OR collections (via a script).",
@@ -50,6 +54,9 @@ printMainHelp()
 "imiscsvrinfo - retrieve basic server information.",
 "imkdir   - make an irods directory (collection).",
 "imv      - move/rename an irods data-object (file) or collection (directory).",
+"inc      - perform NetCDF operations on data objects (available if configured).",
+"incarch  - archive open ended NETCDF time series data. (if configured).",
+"incattr  - perform NetCDF attribute operations (if configured).",
 "ipasswd  - change your irods password.",
 "iphybun  - physically bundle files (admin only).",
 "iphymv   - physically move a data-object to another storage resource.",
@@ -69,6 +76,7 @@ printMainHelp()
 "irule    - submit a rule to be executed by the iRODS server.",
 "iscan    - check if local file or directory is registered in irods.",
 "isysmeta - show or modify system metadata.",
+"iticket  - create, delete, modify & list tickets (alternative access strings).",
 "itrim    - trim down the number of replicas of data-objects.",
 "iuserinfo- show information about your iRODS user account.",
 "ixmsg    - send/receive iRODS xMessage System messages.",

@@ -34,177 +34,273 @@ CommandLineOptions document so we can keep it all consistent.
  */
 int 
 parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
-		 rodsArguments_t *rodsArgs) {
-   char opt;
+         rodsArguments_t *rodsArgs) {
+  char opt;
 
-   int i;
+  int i;
 
-   char fullOpts[]="aAbc:C:dD:efFghH:ikK:lm:n:N:p:P:qrR:s:S:t:Tu:vVzZxWY:";
-   char *opts;
-   int VCount=0;
+  char fullOpts[]="aAbc:C:dD:efFghH:ikK:lm:n:N:p:P:qrR:s:S:t:Tu:vVzZxWY:";
+  char *opts;
+  int VCount=0;
 
-   /* Set all flags and pointers to false/null */
-   memset(rodsArgs, 0, sizeof(rodsArguments_t));
+  /* Set all flags and pointers to false/null */
+  memset(rodsArgs, 0, sizeof(rodsArguments_t));
 
-   if (argv != NULL && argv[0] != NULL) {
-	/* set SP_OPTION to argv[0] so it can be passed to server */
-	char child[MAX_NAME_LEN], parent[MAX_NAME_LEN];
-	*child = '\0';
-	splitPathByKey (argv[0], parent, child, '/');
-	if (*child != '\0') {
-	    mySetenvStr (SP_OPTION, child);
-	}
+  if (argv != NULL && argv[0] != NULL) {
+    /* set SP_OPTION to argv[0] so it can be passed to server */
+    char child[MAX_NAME_LEN], parent[MAX_NAME_LEN];
+    *child = '\0';
+    splitPathByKey (argv[0], parent, child, '/');
+    if (*child != '\0') {
+        mySetenvStr (SP_OPTION, child);
     }
+  }
 
    /* handle the long options first */
    if (includeLong) {
-       for (i=0;i<argc;i++) {
-           if (strcmp("--link", argv[i])==0) {
-               rodsArgs->link=True;
-               argv[i]="-Z";  /* ignore symlink */
-           }
+      for (i=0;i<argc;i++) {
+         if (strcmp("--link", argv[i])==0) {
+            rodsArgs->link=True;
+            argv[i]="-Z";  /* ignore symlink */
+         }
 
-           if (strcmp("--parallel", argv[i])==0) {
-               rodsArgs->parallel=True;
-               argv[i]="-Z";  /* place holder so the getopt will parse */
+     if (strcmp("--parallel", argv[i])==0) {
+        rodsArgs->parallel=True;
+        argv[i]="-Z";  /* place holder so the getopt will parse */
+     }
+     if (strcmp("--serial", argv[i])==0) {
+        rodsArgs->serial=True;
+        argv[i]="-Z";
+     }
+         if (strcmp("--master-icat", argv[i])==0) {
+        rodsArgs->masterIcat=True;
+        argv[i]="-Z";
+     }
+         if (strcmp("--silent", argv[i])==0) {  /* also -W */
+            rodsArgs->silent=True;
+            argv[i]="-Z";
+         }
+         if (strcmp("--test", argv[i])==0) {
+        rodsArgs->test=True;
+        argv[i]="-Z";
+     }
+     if (strcmp("--ttl", argv[i])==0) {
+        rodsArgs->ttl=True;
+        argv[i]="-Z";
+        if (i + 2 <= argc) {
+           if (*argv[i+1] == '-') {
+         rodsLog (LOG_ERROR,
+              "--ttl option needs a time to live number");
+         return USER_INPUT_OPTION_ERR;
            }
-           if (strcmp("--serial", argv[i])==0) {
-               rodsArgs->serial=True;
-               argv[i]="-Z";
-           }
-           if (strcmp("--master-icat", argv[i])==0) {
-               rodsArgs->masterIcat=True;
-               argv[i]="-Z";
-           }
-           if (strcmp("--silent", argv[i])==0) {  /* also -W */
-               rodsArgs->silent=True;
-               argv[i]="-Z";
-           }
-           if (strcmp("--test", argv[i])==0) {
-               rodsArgs->test=True;
-               argv[i]="-Z";
-           }
-           if (strcmp("--ttl", argv[i])==0) {
-               rodsArgs->ttl=True;
-               argv[i]="-Z";
-               if (i + 2 <= argc) {
-                   if (*argv[i+1] == '-') {
-                       rodsLog (LOG_ERROR,
-                               "--ttl option needs a time to live number");
-                       return USER_INPUT_OPTION_ERR;
-                   }
-                   rodsArgs->ttlValue=atoi(argv[i+1]);
-                   argv[i+1]="-Z";
+           rodsArgs->ttlValue=atoi(argv[i+1]);
+           argv[i+1]="-Z";
+        }
+     }
+     if (strcmp("--verify", argv[i])==0) {  /* also -x */
+        rodsArgs->verify=True;
+        argv[i]="-Z";
+     }
+     if (strcmp("--version", argv[i])==0) {  /* also -W */
+        rodsArgs->version=True;
+        argv[i]="-Z";
+     }
+     if (strcmp("--retries", argv[i])==0) {  /* also -Y */
+        rodsArgs->retries=True;
+        argv[i]="-Z";
+            if (i + 2 <= argc) {
+               if (*argv[i+1] == '-') {
+                   rodsLog (LOG_ERROR,
+                    "--retries option needs an iput file");
+                    return USER_INPUT_OPTION_ERR;
                }
-           }
-           if (strcmp("--verify", argv[i])==0) {  /* also -x */
-               rodsArgs->verify=True;
-               argv[i]="-Z";
-           }
-           if (strcmp("--version", argv[i])==0) {  /* also -W */
-               rodsArgs->version=True;
-               argv[i]="-Z";
-           }
-           if (strcmp("--retries", argv[i])==0) {  /* also -Y */
-               rodsArgs->retries=True;
-               argv[i]="-Z";
-               if (i + 2 <= argc) {
-                   if (*argv[i+1] == '-') {
-                       rodsLog (LOG_ERROR,
-                               "--retries option needs an iput file");
-                       return USER_INPUT_OPTION_ERR;
-                   }
-                   rodsArgs->retriesValue=atoi(argv[i+1]);
-                   argv[i+1]="-Z";
+           rodsArgs->retriesValue=atoi(argv[i+1]);
+               argv[i+1]="-Z";
+            }
+     }
+     if (strcmp("--no-page", argv[i])==0) {
+        rodsArgs->noPage=True;
+        argv[i]="-Z";
+     }
+         if (strcmp("--repl", argv[i])==0) {
+            rodsArgs->regRepl=True;
+            argv[i]="-Z";
+         }
+         if (strcmp("--sql", argv[i])==0) {
+            rodsArgs->sql=True;
+            argv[i]="-Z";
+         }
+         if (strcmp("--lfrestart", argv[i])==0) {
+            rodsArgs->lfrestart=True;
+            argv[i]="-Z";
+            if (i + 2 <= argc) {
+           if (*argv[i+1] == '-') {
+                   rodsLog (LOG_ERROR,
+                    "--lfrestart option needs an iput file");
+            return USER_INPUT_OPTION_ERR;
                }
-           }
-           if (strcmp("--no-page", argv[i])==0) {
-               rodsArgs->noPage=True;
-               argv[i]="-Z";
-           }
-           if (strcmp("--repl", argv[i])==0) {
-               rodsArgs->regRepl=True;
-               argv[i]="-Z";
-           }
-           if (strcmp("--sql", argv[i])==0) {
-               rodsArgs->sql=True;
-               argv[i]="-Z";
-           }
-           if (strcmp("--lfrestart", argv[i])==0) {
-               rodsArgs->lfrestart=True;
-               argv[i]="-Z";
-               if (i + 2 <= argc) {
-                   if (*argv[i+1] == '-') {
-                       rodsLog (LOG_ERROR,
-                               "--lfrestart option needs an iput file");
-                       return USER_INPUT_OPTION_ERR;
-                   }
-                   rodsArgs->lfrestartFileString=strdup(argv[i+1]);
-                   argv[i+1]="-Z";
+               rodsArgs->lfrestartFileString=strdup(argv[i+1]);
+               argv[i+1]="-Z";
+            }
+         }
+         if (strcmp("--orphan", argv[i])==0) {
+            rodsArgs->orphan=True;
+            argv[i]="-Z";
+         }
+         if (strcmp("--purgec", argv[i])==0) {
+            rodsArgs->purgeCache=True;
+            argv[i]="-Z";
+         }
+         if (strcmp("--bundle", argv[i])==0) {
+            rodsArgs->bundle=True;
+            argv[i]="-Z";
+         }
+         if (strcmp("--empty", argv[i])==0) {
+            rodsArgs->empty=True;
+            argv[i]="-Z";
+         }
+         if (strcmp("--age", argv[i])==0) {  /* also -Y */
+            rodsArgs->age=True;
+            argv[i]="-Z";
+            if (argc >=i + 2) {
+               if (*argv[i+1] == '-') {
+                   rodsLog (LOG_ERROR,
+                    "--age option needs an iput number");
+                    return USER_INPUT_OPTION_ERR;
                }
-           }
-           if (strcmp("--orphan", argv[i])==0) {
-               rodsArgs->orphan=True;
-               argv[i]="-Z";
-           }
-           if (strcmp("--purgec", argv[i])==0) { // JMC - backport 4537
-               rodsArgs->purgeCache=True;
-               argv[i]="-Z";
-           }
-           if (strcmp("--bundle", argv[i])==0) { // JMC - backport 4536
-               rodsArgs->bundle=True;
-               argv[i]="-Z";
-           }
-           if (strcmp("--empty", argv[i])==0) { // JMC - backport 4552
-               rodsArgs->empty=True;
-               argv[i]="-Z";
-           }
-
-           if (strcmp("--age", argv[i])==0) {  /* also -Y */
-               rodsArgs->age=True;
-               argv[i]="-Z";
-               if ( argc >= i + 2 ) {
-                   if (*argv[i+1] == '-') {
-                       rodsLog (LOG_ERROR,
-                               "--age option needs an iput number");
-                       return USER_INPUT_OPTION_ERR;
-                   }
-                   rodsArgs->agevalue=atoi(argv[i+1]);
-                   argv[i+1]="-Z";
+                rodsArgs->agevalue=atoi(argv[i+1]);
+                argv[i+1]="-Z";
+            }
+         }
+         if (strcmp("--dryrun", argv[i])==0) {
+            rodsArgs->dryrun=True;
+            argv[i]="-Z";
+         }
+         if (strcmp("--rlock", argv[i])==0) {
+            rodsArgs->rlock=True;
+            argv[i]="-Z";
+         }
+         if (strcmp("--wlock", argv[i])==0) {
+            rodsArgs->wlock=True;
+            argv[i]="-Z";
+         }
+         if (strcmp("--add", argv[i])==0) {
+            rodsArgs->add=True;
+            argv[i]="-Z";
+         }
+         if (strcmp("--showFirstLine", argv[i])==0) {
+             rodsArgs->showFirstLine = True;
+             argv[i]="-Z";
+         }
+#ifdef NETCDF_CLIENT
+         if (strcmp("--reg", argv[i])==0) {
+            rodsArgs->reg=True;
+            argv[i]="-Z";
+         }
+         if (strcmp("--attr", argv[i])==0) {
+            rodsArgs->attr=True;
+            argv[i]="-Z";
+            if (i + 2 <= argc) {
+               if (*argv[i+1] == '-') {
+                   rodsLog (LOG_ERROR,
+                    "--attr option needs an iput file");
+                    return USER_INPUT_OPTION_ERR;
                }
-           }
-           if (strcmp("--dryrun", argv[i])==0) {
-               rodsArgs->dryrun=True;
-               argv[i]="-Z";
-           }
-
-           if (strcmp("--rlock", argv[i])==0) { // JMC - backport 4604
-               rodsArgs->rlock=True;
-               argv[i]="-Z";
-           }
-           if (strcmp("--wlock", argv[i])==0) { // JMC - backport 4604
-               rodsArgs->wlock=True;
-               argv[i]="-Z";
-           }
-           if (strcmp("--add", argv[i])==0) { // JMC - backport 4643
-               rodsArgs->add=True;
-               argv[i]="-Z";
-           }
-
-           if (strcmp("--exclude-from", argv[i])==0) {
-               rodsArgs->excludeFile=True;
-               argv[i]="-Z";
-               if (i + 2 < argc) {
-                   if (*argv[i+1] == '-') {
-                       rodsLog (LOG_ERROR,
-                               "--exclude-from option takes a file argument");
-                       return USER_INPUT_OPTION_ERR;
-                   }
-                   rodsArgs->excludeFileString=strdup(argv[i+1]);
-                   argv[i+1]="-Z";
+               rodsArgs->attrStr=strdup(argv[i+1]);
+               argv[i+1]="-Z";
+            }
+         }
+         if (strcmp("--noattr", argv[i])==0) {
+            rodsArgs->noattr=True;
+            argv[i]="-Z";
+         }
+         if (strcmp("--remove", argv[i])==0) {
+            rodsArgs->remove=True;
+            argv[i]="-Z";
+         }
+         if (strcmp("--header", argv[i])==0) {
+            rodsArgs->header=True;
+            argv[i]="-Z";
+         }
+         if (strcmp("--dim", argv[i])==0) {
+            rodsArgs->dim=True;
+            argv[i]="-Z";
+         }
+         if (strcmp("--var", argv[i])==0) {
+            rodsArgs->var=True;
+            argv[i]="-Z";
+            if (i + 2 <= argc) {
+               if (*argv[i+1] == '-') {
+                   rodsLog (LOG_ERROR,
+                    "--var option needs an iput parameter");
+                    return USER_INPUT_OPTION_ERR;
                }
-           }
-       }
+               rodsArgs->varStr=strdup(argv[i+1]);
+               argv[i+1]="-Z";
+            }
+         }
+         if (strcmp("--subset", argv[i])==0) {
+            rodsArgs->subset=True;
+            argv[i]="-Z";
+            if (i + 2 <= argc) {
+               if (*argv[i+1] == '-') {
+                   rodsLog (LOG_ERROR,
+                    "--subset option needs an iput parameter");
+                    return USER_INPUT_OPTION_ERR;
+               }
+               rodsArgs->subsetStr=strdup(argv[i+1]);
+               argv[i+1]="-Z";
+            }
+         }
+        if (strcmp("--SUBSET", argv[i])==0) {
+            rodsArgs->subsetByVal=True;
+            argv[i]="-Z";
+            if (i + 2 <= argc) {
+               if (*argv[i+1] == '-') {
+                   rodsLog (LOG_ERROR,
+                    "--SUBSET option needs an iput parameter");
+                    return USER_INPUT_OPTION_ERR;
+               }
+               rodsArgs->subsetStr=strdup(argv[i+1]);
+               argv[i+1]="-Z";
+            }
+         }
+         if (strcmp("--ascitime", argv[i])==0) {
+            rodsArgs->ascitime=True;
+            argv[i]="-Z";
+         }
+         if (strcmp("--agginfo", argv[i])==0) {
+            rodsArgs->agginfo=True;
+            argv[i]="-Z";
+         }
+         if (strcmp("--new", argv[i])==0) { 
+            rodsArgs->newFlag=True;
+            argv[i]="-Z";
+            if (i + 2 <= argc) {
+               if (*argv[i+1] == '-') {
+                   rodsLog (LOG_ERROR,
+                    "--new option needs an starting time index iput ");
+                    return USER_INPUT_OPTION_ERR;
+               }
+               rodsArgs->startTimeInxStr = strdup(argv[i+1]);
+               argv[i+1]="-Z";
+            }
+         }
+#endif
+         if (strcmp("--exclude-from", argv[i])==0) {
+            rodsArgs->excludeFile=True;
+            argv[i]="-Z";
+            if (i + 2 < argc) {
+               if (*argv[i+1] == '-') {
+                   rodsLog (LOG_ERROR,
+                    "--exclude-from option takes a file argument");
+                   return USER_INPUT_OPTION_ERR;
+               }
+               rodsArgs->excludeFileString=strdup(argv[i+1]);
+               argv[i+1]="-Z";
+            }
+         }
+      }
    }
 
    /* handle the short options */
@@ -271,7 +367,7 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
          rodsArgs->input=True;
          break;
       case 'I':
-         rodsArgs->redirectConn=True;	/* connect directly to resc server */
+         rodsArgs->redirectConn=True;    /* connect directly to resc server */
          break;
       case 'k':
          rodsArgs->checksum=True;
@@ -294,8 +390,8 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
          rodsArgs->admin=True;
          break;
       case 'n':
-	 rodsArgs->replNum=True;
-	 rodsArgs->replNumValue = optarg;
+     rodsArgs->replNum=True;
+     rodsArgs->replNumValue = optarg;
          break;
       case 'N':
          rodsArgs->number=True;
@@ -316,6 +412,9 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
          break;
       case 'q':
          rodsArgs->query=True;
+#ifdef NETCDF_CLIENT
+         rodsArgs->queryStr = optarg;
+#endif
          break;
       case 'Q':
          rodsArgs->rbudp=True;
@@ -329,14 +428,14 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
          break;
       case 's':
          rodsArgs->sizeFlag=True;
-	 if (optarg != NULL) {
-	    /* irsync uses sizeFlag for sync but has no size value */  
+     if (optarg != NULL) {
+        /* irsync uses sizeFlag for sync but has no size value */  
              rodsArgs->size = strtoll (optarg, 0, 0);
-	 }
+     }
          break;
       case 'S':
          rodsArgs->srcResc=True;
-	 rodsArgs->srcRescString=optarg;
+     rodsArgs->srcRescString=optarg;
          break;
       case 't':
          rodsArgs->ticket=True;
@@ -356,44 +455,47 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
          rodsArgs->verbose=True;
          break;
       case 'V':
-	 VCount++;
+     VCount++;
          rodsArgs->verbose=True;  /* also set verbose */
          rodsArgs->veryVerbose=True;
-	 if (VCount <=1) {
-	    rodsLogLevel(LOG_NOTICE);
-	 }
-	 else {
-	    rodsLogLevel(LOG_DEBUG); /* multiple V's is for DEBUG level */
-	 }
+     if (VCount <=1) {
+        rodsLogLevel(LOG_NOTICE);
+     }
+     else {
+        rodsLogLevel(LOG_DEBUG); /* multiple V's is for DEBUG level */
+     }
+         break;
+      case 'w':
+         rodsArgs->writeFlag=True;
          break;
       case 'z':
          rodsArgs->zone=True;
          rodsArgs->zoneName=optarg;
          break;
       case 'Z':
-	 /* noop; Z is placeholder for the long options */
+     /* noop; Z is placeholder for the long options */
          break;
 
       /* The following are also -- options */
       case 'x':
-	 rodsArgs->extract=True;
+     rodsArgs->extract=True;
          break;
       case 'X':
          rodsArgs->restart=True;
          rodsArgs->restartFileString=optarg;
          break;
       case 'W':
-	 rodsArgs->version=True;
+     rodsArgs->version=True;
          break;
       case 'Y':
-	 rodsArgs->retries=True;
-	 rodsArgs->retriesValue= atoi(optarg);
+     rodsArgs->retries=True;
+     rodsArgs->retriesValue= atoi(optarg);
          break;
       default:
-	 rodsLogError (LOG_ERROR, USER_INPUT_OPTION_ERR,
-		       "parseCmdLineOpt: Option -%c not supported",
-		       optopt);
-	 return (USER_INPUT_OPTION_ERR);
+     rodsLogError (LOG_ERROR, USER_INPUT_OPTION_ERR,
+               "parseCmdLineOpt: Option -%c not supported",
+               optopt);
+     return (USER_INPUT_OPTION_ERR);
       }
    }
    rodsArgs->optind = optind;

@@ -1244,8 +1244,6 @@ _rsDataObjReplNewCopy (
                 memset (&fileSyncToArchInp, 0, sizeof (fileSyncToArchInp));
                 dataObjInp                      = L1desc[destL1descInx].dataObjInp;
                 fileSyncToArchInp.dataSize      = srcDataObjInfo->dataSize;
-                fileSyncToArchInp.fileType      = static_cast< fileDriverType_t >( -1 );//RescTypeDef[rescTypeInx].driverType;
-                fileSyncToArchInp.cacheFileType = static_cast< fileDriverType_t >( -1 );//RescTypeDef[cacheRescTypeInx].driverType;
                 
                 // =-=-=-=-=-=-=-
                 // extract the host location from the resource hierarchy
@@ -1322,8 +1320,6 @@ _rsDataObjReplNewCopy (
 #endif // JMC legacy resource 
                 memset (&file_stage, 0, sizeof (file_stage));
                 file_stage.dataSize      = srcDataObjInfo->dataSize;
-                file_stage.fileType      = static_cast< fileDriverType_t >( -1 );//RescTypeDef[rescTypeInx].driverType;
-                file_stage.cacheFileType = static_cast< fileDriverType_t >( -1 );//RescTypeDef[cacheRescTypeInx].driverType;
                  
                 rstrcpy( file_stage.addr.hostAddr,  
                          destDataObjInfo->rescInfo->rescLoc, NAME_LEN );

@@ -114,7 +114,7 @@ int testMove(rsComm_t *rsComm, char *id, char *destId) {
 int testTempPw(rsComm_t *rsComm) {
     int status;
     char pwValueToHash[500];
-    status = chlMakeTempPw(rsComm, pwValueToHash);
+    status = chlMakeTempPw(rsComm, pwValueToHash, "");
     printf("pwValueToHash: %s\n", pwValueToHash);
 
     return(status);
@@ -135,11 +135,10 @@ int testTempPwConvert(char *s1, char *s2) {
     strncpy(md5Buf, s2, sizeof md5Buf);
     strncat(md5Buf, s1, sizeof md5Buf);
 
-    MD5Init (&context);
-    MD5Update (&context, (unsigned char*)md5Buf, sizeof md5Buf);
-    MD5Final (digest, &context);
+    obfMakeOneWayHash(HASH_TYPE_DEFAULT,(unsigned char*)md5Buf, sizeof md5Buf,
+                      digest);
 
-    md5ToStr(digest, digestStr);
+    hashToStr(digest, digestStr);
     printf("digestStr (derived temp pw)=%s\n", digestStr);
 
     return(0);
@@ -159,12 +158,11 @@ testGetLocalZone(rsComm_t *rsComm, char *expectedZone) {
 int
 testGetPamPw(rsComm_t *rsComm, char *username, char *testTime) {
     char *irodsPamPassword;
-    int status;
 
     irodsPamPassword = (char*)malloc(100);
     memset(irodsPamPassword,0,100);
 
-    status = chlUpdateIrodsPamPassword(rsComm, username, 0, testTime,
+    int status = chlUpdateIrodsPamPassword(rsComm, username, 0, testTime,
     &irodsPamPassword);
     if (status==0) {
         printf("status=%d pw=%s \n",status,irodsPamPassword);
@@ -181,9 +179,8 @@ int testTempPwCombined(rsComm_t *rsComm, char *s1) {
     char md5Buf[100];
     unsigned char digest[RESPONSE_LEN+2];
     char digestStr[100];
-    MD5_CTX context;
 
-    status = chlMakeTempPw(rsComm, pwValueToHash);
+    status = chlMakeTempPw(rsComm, pwValueToHash, "");
     if (status) return(status);
 
     printf("pwValueToHash: %s\n", pwValueToHash);
@@ -197,15 +194,48 @@ int testTempPwCombined(rsComm_t *rsComm, char *s1) {
     strncpy(md5Buf, pwValueToHash, sizeof md5Buf);
     strncat(md5Buf, s1, sizeof md5Buf);
 
-    MD5Init (&context);
-    MD5Update (&context, (unsigned char*)md5Buf, sizeof md5Buf);
-    MD5Final (digest, &context);
+    obfMakeOneWayHash(HASH_TYPE_DEFAULT,(unsigned char*)md5Buf, sizeof md5Buf,
+                      digest);
 
-    md5ToStr(digest, digestStr);
+    hashToStr(digest, digestStr);
     printf("digestStr (derived temp pw)=%s\n", digestStr);
 
     return(0);
 }
+
+int testTempPwForOther(rsComm_t *rsComm, char *s1, char *otherUser) {
+    int status;
+    char pwValueToHash[500];
+    char md5Buf[100];
+    unsigned char digest[RESPONSE_LEN+2];
+    char digestStr[100];
+
+   rsComm->clientUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
+   rsComm->proxyUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
+
+   status = chlMakeTempPw(rsComm, pwValueToHash, otherUser);
+    if (status) return(status);
+
+    printf("pwValueToHash: %s\n", pwValueToHash);
+
+    /* 
+       Calcuate the temp password: a hash of s1 (the user's main
+       password) and the value returned by chlGenTempPw.
+    */
+
+    memset(md5Buf, 0, sizeof(md5Buf));
+    strncpy(md5Buf, pwValueToHash, sizeof md5Buf);
+    strncat(md5Buf, s1, sizeof md5Buf);
+
+    obfMakeOneWayHash(HASH_TYPE_DEFAULT,(unsigned char*)md5Buf, sizeof md5Buf,
+                      digest);
+
+    hashToStr(digest, digestStr);
+    printf("digestStr (derived temp pw)=%s\n", digestStr);
+
+    return(0);
+}
+
 int testCheckAuth(rsComm_t *rsComm, char *testAdminUser,  char *testUser,
                   char *testUserZone) {
     /* Use an pre-determined user, challenge and resp */
@@ -1041,6 +1071,11 @@ main(int argc, char **argv) {
         didOne=1;
     }
 
+    if (strcmp(argv[1],"tpwforother")==0) {
+        status = testTempPwForOther(Comm, argv[2], argv[3]);
+        didOne=1;
+    }
+
     if (strcmp(argv[1],"serverload")==0) {
         status = testServerLoad(Comm, argv[2]);
         didOne=1;
@@ -1172,4 +1207,11 @@ main(int argc, char **argv) {
     }
 
     exit(status);
+}
+
+/* This is a dummy version of icatApplyRule for this test program so
+-   the rule-engine is not needed in this ICAT test. */
+int
+icatApplyRule(rsComm_t *rsComm, char *ruleName, char *arg1) {
+  return(0);
 }

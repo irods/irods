@@ -235,7 +235,6 @@ extern "C" {
         // construct a mkdir structure
         fileMkdirInp_t fileMkdirInp;
         memset( &fileMkdirInp, 0, sizeof( fileMkdirInp ) );
-        fileMkdirInp.fileType = UNIX_FILE_TYPE;   // the only type for cache
         fileMkdirInp.mode     = DEFAULT_DIR_MODE;
         strncpy( fileMkdirInp.addr.hostAddr, const_cast<char*>( _host.c_str() ), NAME_LEN ); 
         strncpy( fileMkdirInp.rescHier, spec_coll->rescHier, MAX_NAME_LEN);
@@ -650,7 +649,6 @@ extern "C" {
 
         fileCreateInp.mode       = fco->mode();
         fileCreateInp.flags      = fco->flags();
-        fileCreateInp.fileType   = UNIX_FILE_TYPE;      /* the only type for cache */
         fileCreateInp.otherFlags = NO_CHK_PERM_FLAG; // JMC - backport 4768
         strncpy( fileCreateInp.addr.hostAddr, resc_host.c_str(), NAME_LEN );
         strncpy( fileCreateInp.resc_hier_, eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE.c_str(), MAX_NAME_LEN );
@@ -747,7 +745,6 @@ extern "C" {
 
         fileOpenInp.mode       = fco->mode();
         fileOpenInp.flags      = fco->flags();
-        fileOpenInp.fileType   = UNIX_FILE_TYPE;        /* the only type for cache */
         fileOpenInp.otherFlags = NO_CHK_PERM_FLAG; // JMC - backport 4768
         strncpy( fileOpenInp.addr.hostAddr, resc_host.c_str(), NAME_LEN );
         strncpy( fileOpenInp.resc_hier_, eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE.c_str(), MAX_NAME_LEN );
@@ -991,7 +988,6 @@ extern "C" {
                          "tar_file_unlink_plugin - compose_cache_dir_physical_path failed.", comp_err );
         }
 
-        fileUnlinkInp.fileType = UNIX_FILE_TYPE;        /* the only type for cache */
         strncpy( fileUnlinkInp.addr.hostAddr, resc_host.c_str(), NAME_LEN );
 
         // =-=-=-=-=-=-=-
@@ -1078,7 +1074,6 @@ extern "C" {
                          "tar_file_stat_plugin - compose_cache_dir_physical_path failed.", comp_err );
         }
 
-        fileStatInp.fileType = UNIX_FILE_TYPE;  /* the only type for cache */
         strncpy( fileStatInp.addr.hostAddr, resc_host.c_str(), NAME_LEN );
         strncpy( fileStatInp.rescHier,
                  eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE.c_str(), 
@@ -1204,7 +1199,6 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // build a file mkdir structure to pass off to the server api call
         fileMkdirInp_t fileMkdirInp;
-        fileMkdirInp.fileType = UNIX_FILE_TYPE; /* the only type for cache */
         strncpy( fileMkdirInp.addr.hostAddr, resc_host.c_str(), NAME_LEN );
         strncpy( fileMkdirInp.rescHier, spec_coll->rescHier, MAX_NAME_LEN);
         fileMkdirInp.mode = fco->mode();
@@ -1290,7 +1284,6 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // build a file mkdir structure to pass off to the server api call
         fileRmdirInp_t fileRmdirInp;
-        fileRmdirInp.fileType = UNIX_FILE_TYPE; /* the only type for cache */
         strncpy( fileRmdirInp.addr.hostAddr, resc_host.c_str(), NAME_LEN );
         strncpy( fileRmdirInp.rescHier, spec_coll->rescHier, MAX_NAME_LEN );
         
@@ -1388,7 +1381,6 @@ extern "C" {
         // build a file open structure to pass off to the server api call
         fileOpendirInp_t fileOpendirInp;
         memset( &fileOpendirInp, 0, sizeof( fileOpendirInp ) );
-        fileOpendirInp.fileType = UNIX_FILE_TYPE;       // the only type for cache
         strncpy( fileOpendirInp.addr.hostAddr, resc_host.c_str(),                 NAME_LEN );
         strncpy( fileOpendirInp.objPath,       fco->logical_path().c_str(), MAX_NAME_LEN );
         strncpy( fileOpendirInp.resc_hier_,    fco->resc_hier().c_str(),    MAX_NAME_LEN );
@@ -1567,7 +1559,6 @@ extern "C" {
         // build a file rename structure to pass off to the server api call
         fileRenameInp_t fileRenameInp;
         memset (&fileRenameInp, 0, sizeof (fileRenameInp));
-        fileRenameInp.fileType = UNIX_FILE_TYPE;        /* the only type for cache */
         strncpy( fileRenameInp.addr.hostAddr, resc_host.c_str(), NAME_LEN );
         strncpy( fileRenameInp.rescHier,
                  eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE.c_str(), 
@@ -2293,7 +2284,6 @@ extern "C" {
                 fileRmdirInp_t rmdir_inp;
                 memset( &rmdir_inp, 0, sizeof( rmdir_inp ) );
                 rmdir_inp.flags    = RMDIR_RECUR;
-                rmdir_inp.fileType = UNIX_FILE_TYPE;  
                 rstrcpy( rmdir_inp.dirName,       spec_coll->cacheDir, MAX_NAME_LEN );
                 strncpy( rmdir_inp.addr.hostAddr, resc_host.c_str(),   NAME_LEN );
                 strncpy( rmdir_inp.rescHier,      spec_coll->rescHier, MAX_NAME_LEN );

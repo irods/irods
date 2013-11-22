@@ -92,7 +92,7 @@ _rsFileChksum (
 
     *chksumStr = (char*)malloc (NAME_LEN);
 
-    status = fileChksum (fileChksumInp->fileType, rsComm, fileChksumInp->objPath,
+    status = fileChksum (rsComm, fileChksumInp->objPath,
                          fileChksumInp->fileName, fileChksumInp->rescHier, *chksumStr);
 
     if (status < 0) {
@@ -107,7 +107,6 @@ _rsFileChksum (
 } 
 
 int fileChksum (
-    int       fileType,
     rsComm_t* rsComm,
     char*     objPath,
     char*     fileName,

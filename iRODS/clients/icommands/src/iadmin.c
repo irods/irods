@@ -641,34 +641,13 @@ generalAdmin(int userOption, char *arg0, char *arg1, char *arg2, char *arg3,
         } else {
             printf( "DRYRUN REMOVING RESOURCE [%s - %d] :: FAILURE\n", arg2, status );
         } // else
-    } else {
-#if 0 // Commenting this out because printErrorStack is called later. - harry
-        // =-=-=-=-=-=-=-
-        // JMC - backport 4597
-        if (Conn->rError) {
-            rError_t *Err;
-            rErrMsg_t *ErrMsg;
-            int i, len;
-            Err = Conn->rError;
-            len = Err->len;
-            for (i=0;i<len;i++) {
-                ErrMsg = Err->errMsg[i];
-                printf("Level %d message: %s\n",i, ErrMsg->msg);
-            }
+    } else if (status < 0 ) {
+        myName = rodsErrorName(status, &mySubName);
+        rodsLog( LOG_ERROR, "%s failed with error %d %s %s", funcName, status, myName, mySubName );
+        if (status == CAT_INVALID_USER_TYPE) {
+            printf("See 'lt user_type' for a list of valid user types.\n");
         }
-#endif
-        // =-=-=-=-=-=-=-
-
-        if (status < 0 ) {
-            myName = rodsErrorName(status, &mySubName);
-            rodsLog( LOG_ERROR, "%s failed with error %d %s %s", funcName, status, myName, mySubName );
-            if (status == CAT_INVALID_USER_TYPE) {
-                printf("See 'lt user_type' for a list of valid user types.\n");
-            }
-        } // if status < 0
-
-    } // else
-
+    } // else if status < 0
 
     return(status);
 }
@@ -900,7 +879,7 @@ doCommand(char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
                 return(0);
 #endif
             }
-            key2 = getSessionSignitureClientside();
+            key2 = getSessionSignatureClientside();
             obfEncodeByKeyV2(buf0, buf1, key2, buf2);
             cmdToken[3]=buf2;
         }

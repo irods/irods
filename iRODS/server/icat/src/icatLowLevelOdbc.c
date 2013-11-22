@@ -172,6 +172,8 @@ cllConnect(icatSessionStruct *icss) {
 
     HDBC myHdbc;
 
+    char *odbcEntryName;
+
     stat = SQLAllocConnect(icss->environPtr,
                            &myHdbc);
     if (stat != SQL_SUCCESS) {
@@ -179,14 +181,19 @@ cllConnect(icatSessionStruct *icss) {
         return (-1);
     }
 
-    stat = SQLConnect(myHdbc, (unsigned char *)CATALOG_ODBC_ENTRY_NAME, SQL_NTS,
+    odbcEntryName = getenv("irodsOdbcDSN");
+    if (odbcEntryName == NULL) {
+        odbcEntryName = CATALOG_ODBC_ENTRY_NAME;
+    }
+
+    stat = SQLConnect(myHdbc, (unsigned char *)odbcEntryName, SQL_NTS,
                       (unsigned char *)icss->databaseUsername, SQL_NTS, 
                       (unsigned char *)icss->databasePassword, SQL_NTS);
     if (stat != SQL_SUCCESS) {
         rodsLog(LOG_ERROR, "cllConnect: SQLConnect failed: %d", stat);
         rodsLog(LOG_ERROR, 
                 "cllConnect: SQLConnect failed:odbcEntry=%s,user=%s,pass=%s\n",
-                CATALOG_ODBC_ENTRY_NAME,icss->databaseUsername, 
+                odbcEntryName,icss->databaseUsername, 
                 icss->databasePassword);
         while (SQLError(icss->environPtr,myHdbc , 0, sqlstate, &sqlcode, buffer,
                         SQL_MAX_MESSAGE_LENGTH + 1, &length) == SQL_SUCCESS) {
@@ -944,7 +951,7 @@ cllExecSqlWithResultBV(
         rodsLogSql("SQLPrepare");
         stat = SQLPrepare(hstmt,  (unsigned char *)sql, SQL_NTS);
         if (stat != SQL_SUCCESS) {
-            rodsLog(LOG_ERROR, "cllExecSqlNoResult: SQLPrepare failed: %d",
+            rodsLog(LOG_ERROR, "cllExecSqlWithResultBV: SQLPrepare failed: %d",
                     stat);
             return(-1);
         }
@@ -957,7 +964,7 @@ cllExecSqlWithResultBV(
             rodsLogSql(tmpStr);
             if (stat != SQL_SUCCESS) {
                 rodsLog(LOG_ERROR, 
-                        "cllExecSqlNoResult: SQLBindParameter failed: %d", stat);
+                        "cllExecSqlWithResultBV: SQLBindParameter failed: %d", stat);
                 return(-1);
             }
         }
@@ -969,7 +976,7 @@ cllExecSqlWithResultBV(
             rodsLogSql(tmpStr);
             if (stat != SQL_SUCCESS) {
                 rodsLog(LOG_ERROR, 
-                        "cllExecSqlNoResult: SQLBindParameter failed: %d", stat);
+                        "cllExecSqlWithResultBV: SQLBindParameter failed: %d", stat);
                 return(-1);
             }
         }
@@ -980,7 +987,7 @@ cllExecSqlWithResultBV(
                      "bindVar3=%s", bindVar3);
             rodsLogSql(tmpStr);
             if (stat != SQL_SUCCESS) {
-                rodsLog(LOG_ERROR, "cllExecSqlNoResult: SQLBindParameter failed: %d",
+                rodsLog(LOG_ERROR, "cllExecSqlWithResultBV: SQLBindParameter failed: %d",
                         stat);
                 return(-1);
             }
@@ -992,7 +999,7 @@ cllExecSqlWithResultBV(
                      "bindVar4=%s", bindVar4);
             rodsLogSql(tmpStr);
             if (stat != SQL_SUCCESS) {
-                rodsLog(LOG_ERROR, "cllExecSqlNoResult: SQLBindParameter failed: %d",
+                rodsLog(LOG_ERROR, "cllExecSqlWithResultBV: SQLBindParameter failed: %d",
                         stat);
                 return(-1);
             }
@@ -1004,7 +1011,7 @@ cllExecSqlWithResultBV(
                      "bindVar5=%s", bindVar5);
             rodsLogSql(tmpStr);
             if (stat != SQL_SUCCESS) {
-                rodsLog(LOG_ERROR, "cllExecSqlNoResult: SQLBindParameter failed: %d",
+                rodsLog(LOG_ERROR, "cllExecSqlWithResultBV: SQLBindParameter failed: %d",
                         stat);
                 return(-1);
             }

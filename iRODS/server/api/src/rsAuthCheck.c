@@ -86,10 +86,12 @@ rsAuthCheck (rsComm_t *rsComm, authCheckInp_t *authCheckInp,
         else {
             strncpy(md5Buf+CHALLENGE_LEN, ServerID, len);
 
-            MD5Init (&context);
-            MD5Update (&context, (unsigned char*)md5Buf, 
-                    CHALLENGE_LEN+MAX_PASSWORD_LEN);
-            MD5Final (digest, &context);
+            obfMakeOneWayHash(
+                              HASH_TYPE_DEFAULT, 
+                              (unsigned char*)md5Buf, 
+                              CHALLENGE_LEN+MAX_PASSWORD_LEN,
+                              (unsigned char*)digest);
+
             for (i=0;i<RESPONSE_LEN;i++) {
                 if (digest[i]=='\0') digest[i]++;  /* make sure 'string' doesn't
                                                       end early */

@@ -15,6 +15,7 @@
 #include "fileRead.h"
 #include "fileUnlink.h"
 #include "fileMkdir.h"
+#include "fileChmod.h"
 #include "fileRmdir.h"
 #include "fileStat.h"
 #include "dataObjLock.h" // JMC - backport 4599
@@ -86,6 +87,9 @@
 #include "subStructFileOpendir.h"
 #include "subStructFileReaddir.h"
 #include "subStructFileClosedir.h"
+#include "dataObjTruncate.h"
+#include "fileTruncate.h"
+#include "subStructFileTruncate.h"
 #include "generalUpdate.h"
 #include "getXmsgTicket.h"
 #include "sendXmsg.h"
@@ -127,9 +131,32 @@
 #include "specificQuery.h"
 #include "streamClose.h"
 #include "getHostForGet.h"
+#include "ticketAdmin.h"
+#include "getTempPasswordForOther.h"
+#include "getLimitedPassword.h"
+#ifdef NETCDF_CLIENT
+#include "ncOpen.h"
+#include "ncCreate.h"
+#include "ncClose.h"
+#include "ncInqId.h"
+#include "ncInqWithId.h"
+#include "ncGetVarsByType.h"
+#include "nccfGetVara.h"
+#include "ncInq.h"
+#include "ncOpenGroup.h"
+#include "ncInqGrps.h"
+#include "ncRegGlobalAttr.h"
+#include "ncGetAggElement.h"
+#include "ncGetAggInfo.h"
+#include "ncArchTimeSeries.h"
+#endif
 #include "pamAuthRequest.h"
 #include "sslStart.h"
 #include "sslEnd.h"
+#ifdef OOI_CI
+#include "ooiGenServReq.h"
+#endif
+
 
 // =-=-=-=-=-=-=-
 // necessary for FUSE

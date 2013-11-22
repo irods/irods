@@ -939,6 +939,7 @@ main(int argc, char **argv) {
 	 now used), so just do it.   */
       chlGenQueryAccessControlSetup(myEnv.rodsUserName,
 				myEnv.rodsZone,
+        "",
 				LOCAL_PRIV_USER_AUTH, 1);
 
       if (strstr(myEnv.rodsDebug, "CAT") != NULL) {
@@ -1047,4 +1048,11 @@ main(int argc, char **argv) {
       }
    }
    exit(0);
+}
+
+/* This is a dummy version of icatApplyRule for this test program so
+   the rule-engine is not needed in this ICAT test. */
+int
+icatApplyRule(rsComm_t *rsComm, char *ruleName, char *arg1) {
+  return(0);
 }
