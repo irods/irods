@@ -17,7 +17,7 @@ namespace eirods {
     /// @brief special resource for local file system operations only
     const std::string EIRODS_LOCAL_USE_ONLY_RESOURCE( "EIRODS_LOCAL_USE_ONLY_RESOURCE" );
     const std::string EIRODS_LOCAL_USE_ONLY_RESOURCE_VAULT( "/var/lib/eirods/EIRODS_LOCAL_USE_ONLY_RESOURCE_VAULT" );
-    const std::string EIRODS_LOCAL_USE_ONLY_RESOURCE_TYPE( "unix file system" );
+    const std::string EIRODS_LOCAL_USE_ONLY_RESOURCE_TYPE( "unixfilesystem" );
 
     class resource_manager {
     public:

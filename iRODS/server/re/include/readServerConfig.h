@@ -30,10 +30,23 @@
 #define DB_KEY_KW	        "DBKey"
 #define DB_USERNAME_KW	        "DBUsername"
 
+#define PAM_PW_LEN_KW      "pam_password_length"
+#define PAM_NO_EXTEND_KW   "pam_no_extend"
+#define PAM_PW_MIN_TIME_KW "pam_password_min_time"
+#define PAM_PW_MAX_TIME_KW "pam_password_max_time"
+
 typedef struct rodsServerConfig {
-   char DBUsername[NAME_LEN];
-   char DBPassword[MAX_PASSWORD_LEN];
-   char DBKey[MAX_PASSWORD_LEN];  /* used to descramble password */
+    char DBUsername[NAME_LEN];
+    char DBPassword[MAX_PASSWORD_LEN];
+    char DBKey[MAX_PASSWORD_LEN];  /* used to descramble password */
+
+    // =-=-=-=-=-=-=-
+    // agent side pam configuration
+    bool   eirods_pam_auth_no_extend;
+    size_t eirods_pam_password_len;  
+    char   eirods_pam_password_min_time[ NAME_LEN ];
+    char   eirods_pam_password_max_time[ NAME_LEN ];
+
 } rodsServerConfig_t;
 
 int

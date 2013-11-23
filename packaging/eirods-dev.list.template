@@ -7,7 +7,7 @@
 %license LICENSE
 %readme README
 %description Enterprise edition of the Integrated Rule Oriented Data System
-%version TEMPLATE_EIRODSVERSION TEMPLATE_EPMEIRODSVERSION
+%version TEMPLATE_EIRODSVERSION TEMPLATE_EIRODSVERSIONINT
 
 
 
@@ -94,6 +94,7 @@ d 755 root root /usr/share/eirods/examples/microservices
 d 755 root root /usr/share/eirods/examples/resources
 f 644 root root /usr/share/eirods/examples/microservices ./examples/microservices/*
 f 644 root root /usr/share/eirods/examples/resources ./examples/resources/*
+f 644 root root /usr/share/eirods/examples/resources/libpassthru.cpp ./plugins/resources/passthru/libpassthru.cpp
 
 
 

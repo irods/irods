@@ -14,9 +14,7 @@ Development of this release has focused on the following features and efforts:
 
   - Native iRODS password
   - OSAuth
-  - GSI
   - PAM
-  - Kerberos
   - LDAP (via PAM)
 - Additional coordinating resource plugins
 
@@ -27,6 +25,7 @@ Development of this release has focused on the following features and efforts:
   - Rebalance mechanism
   - Adding/removing child resources with existing data
   - itrim from child resources of replication resources
+- Tree view for visualizing resource hierarchies
 - Full python-based testing framework
 - Certified against full Jargon test suite
 - Continuous integration testing via hudson
@@ -34,3 +33,4 @@ Development of this release has focused on the following features and efforts:
 - Increased code coverage from ~50% to over 56%
 - Continuously built and tested across 3 major linux distributions
 - Packaged for 3 major linux distributions
+- Support for package upgrade via package manager

@@ -952,8 +952,8 @@ main(int argc, char **argv) {
          printf("Error %d from readServerConfig\n", status);
       }
 
-      if ((status = chlOpen(serverConfig.DBUsername,
-			    serverConfig.DBPassword)) != 0) {
+      if ((status = chlOpen( &serverConfig)) != 0) {
+			    
 	 rodsLog (LOG_SYS_FATAL,
 		  "chlopen Error. Status = %d",
 		  status);

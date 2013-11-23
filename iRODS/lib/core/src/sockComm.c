@@ -1260,6 +1260,12 @@ eirods::error sendVersion (
         myVersion.reconnPort = reconnPort;
         rstrcpy (myVersion.reconnAddr, reconnAddr, LONG_NAME_LEN);
         myVersion.cookie = cookie;
+    } else {
+        // =-=-=-=-=-=-=-
+        // super secret jargon eirods detection
+        // sshhhhhhh...
+        myVersion.cookie = 301;
+
     }
 
     /* alway use XML for version */

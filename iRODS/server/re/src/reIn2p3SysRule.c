@@ -620,7 +620,7 @@ int msiServerMonPerf (msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei) {
         if ( check == 0 ) {
             strcpy(thrInput[thrCount].cmdArgv, valinit);
             strcat(thrInput[thrCount].cmdArgv, " -fs ");
-            if ( strcmp(rescList[thrCount].rescType, "unix file system") == 0 ) {
+            if ( strcmp(rescList[thrCount].rescType, "unixfilesystem") == 0 ) {
                 strcat(thrInput[thrCount].cmdArgv, rescList[i].vaultPath);
             } else {
                 strcat(thrInput[thrCount].cmdArgv, "none");
@@ -637,7 +637,7 @@ int msiServerMonPerf (msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei) {
         else {
             rstrcat(thrInput[indx].rescName, ",", MAX_NAME_LEN);
             rstrcat(thrInput[indx].rescName, rescList[i].rescName, MAX_NAME_LEN);
-            if ( strcmp(rescList[i].rescType, "unix file system") == 0 ) {
+            if ( strcmp(rescList[i].rescType, "unixfilesystem") == 0 ) {
                 strcat(thrInput[indx].cmdArgv, ",");
                 strcat(thrInput[indx].cmdArgv, rescList[i].vaultPath);
             } else {

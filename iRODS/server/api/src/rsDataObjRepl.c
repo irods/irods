@@ -487,7 +487,6 @@ int _rsDataObjReplUpdate(
             // if the dst hier kw is not set, then set the dest resc hier kw from the dest obj info 
             // as it is already known and we do not want the resc hier making this decision again
             addKeyVal( &dataObjInp->condInput, DEST_RESC_HIER_STR_KW, destDataObjInfo->rescHier );
-
             status = _rsDataObjReplS( rsComm, dataObjInp, srcDataObjInfo, NULL, "", destDataObjInfo, 1 );
               
             if (status >= 0) {
@@ -816,7 +815,7 @@ _rsDataObjReplNewCopy (
         if (updateFlag > 0) {
             // =-=-=-=-=-=-=-
             // set a open operation 
-            op_name = eirods::EIRODS_OPEN_OPERATION;
+            op_name = eirods::EIRODS_WRITE_OPERATION;
 
             /* update an existing copy */
             if(inpDestDataObjInfo == NULL || inpDestDataObjInfo->dataId <= 0) {
@@ -862,9 +861,9 @@ _rsDataObjReplNewCopy (
             addKeyVal( &dataObjInp->condInput, DEST_RESC_HIER_STR_KW, hier.c_str() );
        
         } else {
-            hier = dst_hier_str;  
+            hier = dst_hier_str;
+
         }
-        
         // =-=-=-=-=-=-=- 
         // expected by fillL1desc 
         //rstrcpy(myDestDataObjInfo->filePath, srcDataObjInfo->filePath, MAX_NAME_LEN);
@@ -936,6 +935,27 @@ _rsDataObjReplNewCopy (
             /* a new replica */
             *inpDestDataObjInfo = *myDestDataObjInfo;
             inpDestDataObjInfo->next = NULL;
+        }
+
+
+        // =-=-=-=-=-=-=-
+        // notify the dest resource hierarchy that something is afoot
+        eirods::file_object_ptr file_obj(
+                                new eirods::file_object( 
+                                    rsComm, 
+                                    myDestDataObjInfo ) );
+        eirods::error ret = fileNotify(
+                                rsComm, 
+                                file_obj,
+                                eirods::EIRODS_WRITE_OPERATION );
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << "Failed to signal the resource that the data object \"";
+            msg << myDestDataObjInfo->objPath;
+            msg << "\" was modified.";
+            ret = PASSMSG( msg.str(), ret );
+            eirods::log( ret );
+            return ret.code();
         }
 
         /* open the src */

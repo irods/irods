@@ -1097,7 +1097,7 @@ Res *execRule(char *ruleNameInp, Res** args, unsigned int argc, int applyAllRule
         if (statusI != 0) {
 			if(applyAllRule == 0) {
 	#ifndef DEBUG
-				rodsLog (LOG_NOTICE,"execRule: no more rules: %s with status %i",ruleName, statusI);
+//				rodsLog (LOG_NOTICE,"execRule: no more rules: %s with status %i",ruleName, statusI);
 	#endif
 				statusRes = statusRes == NULL ? newErrorRes(r, NO_RULE_FOUND_ERR) : statusRes;
 			} else { // apply all rules succeeds even when 0 rule is applied
@@ -1198,7 +1198,7 @@ Res *execRule(char *ruleNameInp, Res** args, unsigned int argc, int applyAllRule
         }
     } else {
 #ifndef DEBUG
-            rodsLog (LOG_NOTICE,"execRule: applyRule Failed: %s with status %i",ruleName, RES_ERR_CODE(statusRes));
+//            rodsLog (LOG_NOTICE,"execRule: applyRule Failed: %s with status %i",ruleName, RES_ERR_CODE(statusRes));
 #endif
         return statusRes;
     }

@@ -354,7 +354,7 @@ endif
 # You can use this instead of using password authentication.
 OS_AUTH = 1
 ifdef OS_AUTH
-OS_AUTH_KEYFILE = /etc/irods.key
+OS_AUTH_KEYFILE = /var/lib/eirods/iRODS/config/irods.key
 # Some environments don't have a uniform username/uid
 # space between the IES and the clients. Uncomment
 # OS_AUTH_NO_UID if this is the case, so the uid will

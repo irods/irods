@@ -74,7 +74,7 @@ typedef struct GenQueryOut {
 
 /* 
 Bits to set in the value array (genQueryInp.selectInp.value[i]) to
-order the results by that column, either ascending or decending.  This
+order the results by that column, either ascending or descending.  This
 is done in the order of the value array, so the first one will be the
 primary ordering column.
 */

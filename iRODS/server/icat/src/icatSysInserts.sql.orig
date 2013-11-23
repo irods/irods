@@ -41,7 +41,7 @@ insert into R_TOKN_MAIN values ('object_type',305,'zone','','','','','1170000000
 insert into R_TOKN_MAIN values ('object_type',306,'collection','','','','','1170000000','1170000000');
 insert into R_TOKN_MAIN values ('object_type',307,'token','','','','','1170000000','1170000000');
 
-insert into R_TOKN_MAIN values ('resc_type',400,'unix file system','','','','','1170000000','1170000000');
+insert into R_TOKN_MAIN values ('resc_type',400,'unixfilesystem','','','','','1170000000','1170000000');
 insert into R_TOKN_MAIN values ('resc_type',401,'hpss file system','','','','','1170000000','1170000000');
 insert into R_TOKN_MAIN values ('resc_type',402,'windows file system','','','','','1170000000','1170000000');
 insert into R_TOKN_MAIN values ('resc_type',403,'s3','','','','','1250100000','1250100000');
@@ -201,7 +201,7 @@ insert into R_COLL_MAIN values (9003,'/','/','rods','tempZone',0,'','','','','',
 insert into R_OBJT_ACCESS values (9003,9001,1130,'1170000000','1170000000');
 insert into R_OBJT_ACCESS values (9003,9002,1200,'1170000000','1170000000');
 
-insert into R_RESC_MAIN (resc_id, resc_name, zone_name, resc_type_name, resc_class_name,  resc_net, resc_def_path, free_space, free_space_ts, resc_info, r_comment, resc_status, create_ts, modify_ts) values (9100, 'bundleResc', 'tempZone', 'unix file system', 'bundle', 'localhost', '/tmp', '', '', '', '', '', '1250100000','1250100000');
+insert into R_RESC_MAIN (resc_id, resc_name, zone_name, resc_type_name, resc_class_name,  resc_net, resc_def_path, free_space, free_space_ts, resc_info, r_comment, resc_status, create_ts, modify_ts) values (9100, 'bundleResc', 'tempZone', 'unixfilesystem', 'bundle', 'localhost', '/tmp', '', '', '', '', '', '1250100000','1250100000');
 
 insert into R_SPECIFIC_QUERY (alias, sqlStr, create_ts) values ('ls', 'select alias,sqlStr from R_SPECIFIC_QUERY', '01292940000');
 insert into R_SPECIFIC_QUERY (alias, sqlStr, create_ts) values ('lsl', 'select alias,sqlStr from R_SPECIFIC_QUERY where sqlStr like ?', '01292940000');

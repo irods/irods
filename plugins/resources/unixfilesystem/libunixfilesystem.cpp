@@ -111,7 +111,6 @@ eirods::error unix_check_path(
     // try dynamic cast on ptr, throw error otherwise 
     eirods::data_object_ptr data_obj = boost::dynamic_pointer_cast< eirods::data_object >( _ctx.fco() );
     if((result = ASSERT_ERROR(data_obj.get(), SYS_INVALID_INPUT_PARAM, "Failed to cast fco to data_object." )).ok()) {
-
         // =-=-=-=-=-=-=-
         // NOTE: Must do this for all storage resources
         std::string full_path;
@@ -256,7 +255,21 @@ extern "C" {
         // NOOP
         return result;
     }
-    
+  
+    /// =-=-=-=-=-=-=-
+    /// @brief interface to notify of a file operation
+    eirods::error unix_file_notify_plugin(
+        eirods::resource_plugin_context& _ctx,
+        const std::string*               _opr ) {
+        eirods::error result = SUCCESS();
+        // Check the operation parameters and update the physical path
+        eirods::error ret = unix_check_params_and_path(_ctx);
+        result = ASSERT_PASS(ret, "Invalid parameters or physical path.");
+
+        // NOOP
+        return result;
+    }
+   
     // =-=-=-=-=-=-=-
     // interface to determine free space on a device given a path
     eirods::error unix_file_get_fsfreespace_plugin( 
@@ -526,7 +539,6 @@ extern "C" {
             int err_status = UNIX_FILE_WRITE_ERR - errno;
             if (!(result = ASSERT_ERROR(status >= 0, err_status, "Write file: \"%s\", errno = \"%s\", status = %d.",
                                         fco->physical_path().c_str(), strerror(errno), err_status)).ok()) {
-                        
                 result.code(err_status);
             } else {
                 result.code(status);
@@ -943,28 +955,10 @@ extern "C" {
 
                 // =-=-=-=-=-=-=-
                 // handle error cases
-                if( status < 0 ) {
-                    status = UNIX_FILE_RENAME_ERR - errno;
-                                
-                    std::stringstream msg;
-                    msg << "unix_file_rename_plugin: rename error for ";
-                    msg <<  fco->physical_path();
-                    msg << " to ";
-                    msg << new_full_path;
-                    msg << ", errno = ";
-                    msg << strerror(errno);
-                    msg << ", status = ";
-                    msg << status;
-                        
-                    return ERROR( status, msg.str() );
-
-                    // =-=-=-=-=-=-=-
-                    // handle error cases
-                    int err_status = UNIX_FILE_RENAME_ERR - errno;
-                    if((result = ASSERT_ERROR(status >= 0, err_status, "Rename error for \"%s\" to \"%s\", errno = \"%s\", status = %d.",
-                                              fco->physical_path().c_str(), new_full_path.c_str(), strerror(errno), err_status)).ok()) {
-                        result.code(status);
-                    }
+                int err_status = UNIX_FILE_RENAME_ERR - errno;
+                if((result = ASSERT_ERROR(status >= 0, err_status, "Rename error for \"%s\" to \"%s\", errno = \"%s\", status = %d.",
+                                          fco->physical_path().c_str(), new_full_path.c_str(), strerror(errno), err_status)).ok()) {
+                    result.code(status);
                 }
             }
         }
@@ -976,44 +970,31 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX truncate
     eirods::error unix_file_truncate_plugin( 
-        eirods::resource_plugin_context& _ctx ) {
+        eirods::resource_plugin_context& _ctx )
+    {
+        eirods::error result = SUCCESS();
+        
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
         eirods::error ret = unix_check_params_and_path< eirods::file_object >( _ctx );
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
-            return PASSMSG(msg.str(), ret);
+        if((result = ASSERT_PASS(ret, "Invalid parameters or physical path.")).ok()) {
+        
+            // =-=-=-=-=-=-=-
+            // cast down the chain to our understood object type
+            eirods::file_object_ptr file_obj = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
+
+            // =-=-=-=-=-=-=-
+            // make the call to rename
+            int status = truncate( file_obj->physical_path().c_str(), file_obj->size() );
+
+            // =-=-=-=-=-=-=-
+            // handle any error cases
+            int err_status = UNIX_FILE_TRUNCATE_ERR - errno;
+            result = ASSERT_ERROR(status >= 0, err_status, "Truncate error for: \"%s\", errno = \"%s\", status = %d.",
+                                  file_obj->physical_path().c_str(), strerror(errno), err_status);
         }
         
-        // =-=-=-=-=-=-=-
-        // cast down the chain to our understood object type
-        eirods::file_object_ptr file_obj = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
-
-        // =-=-=-=-=-=-=-
-        // make the call to rename
-        int status = truncate( file_obj->physical_path().c_str(), 
-                               file_obj->size() );
-
-        // =-=-=-=-=-=-=-
-        // handle any error cases
-        if( status < 0 ) {
-            // =-=-=-=-=-=-=-
-            // cache status in out variable
-            status = UNIX_FILE_TRUNCATE_ERR - errno;
-
-            std::stringstream msg;
-            msg << "unix_file_truncate_plugin: rename error for ";
-            msg << file_obj->physical_path();
-            msg << ", errno = '";
-            msg << strerror( errno );
-            msg << "', status = ";
-            msg << status;
-                        
-            return ERROR( status, msg.str() );
-        }
-
-        return CODE( status );
+        return result;
 
     } // unix_file_truncate_plugin
 
@@ -1322,7 +1303,8 @@ extern "C" {
 
                     // =-=-=-=-=-=-=-
                     // test the operation to determine which choices to make
-                    if( eirods::EIRODS_OPEN_OPERATION == (*_opr) ) {
+                    if( eirods::EIRODS_OPEN_OPERATION  == (*_opr) ||
+                        eirods::EIRODS_WRITE_OPERATION == (*_opr) ) {
                         // =-=-=-=-=-=-=-
                         // call redirect determination for 'get' operation
                         ret = unix_file_redirect_open( _ctx.prop_map(), file_obj, resc_name, (*_curr_host), (*_out_vote) );
@@ -1464,6 +1446,7 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_REGISTERED,   "unix_file_registered_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_UNREGISTERED, "unix_file_unregistered_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_MODIFIED,     "unix_file_modified_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_NOTIFY,       "unix_file_notify_plugin" );
         
         resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER,     "unix_file_redirect_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_REBALANCE,             "unix_file_rebalance" );

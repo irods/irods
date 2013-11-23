@@ -9,6 +9,9 @@
 
 #include "eirods_file_object.h"
 
+int _call_file_modified_for_replica (
+    rsComm_t*     rsComm, 
+    regReplica_t* regReplicaInp );
 
 int
 rsRegReplica (rsComm_t *rsComm, regReplica_t *regReplicaInp)
@@ -36,6 +39,10 @@ rsRegReplica (rsComm_t *rsComm, regReplica_t *regReplicaInp)
 
     }
 
+    if( status >= 0 ) {
+        status = _call_file_modified_for_replica( rsComm, regReplicaInp );
+    }
+
     return (status);
 }
 
@@ -51,64 +58,16 @@ _rsRegReplica (rsComm_t *rsComm, regReplica_t *regReplicaInp)
     srcDataObjInfo = regReplicaInp->srcDataObjInfo;
     destDataObjInfo = regReplicaInp->destDataObjInfo;
     if (getValByKey (&regReplicaInp->condInput, SU_CLIENT_USER_KW) != NULL) {
-	savedClientAuthFlag = rsComm->clientUser.authInfo.authFlag;
-	rsComm->clientUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
+        savedClientAuthFlag = rsComm->clientUser.authInfo.authFlag;
+        rsComm->clientUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
         status = chlRegReplica (rsComm, srcDataObjInfo, destDataObjInfo,
           &regReplicaInp->condInput);
-        
-        eirods::file_object_ptr file_obj(
-                                    new eirods::file_object( 
-                                        rsComm, 
-                                        destDataObjInfo ) );
-        
-        char* pdmo_kw = getValByKey(&regReplicaInp->condInput, IN_PDMO_KW);
-        if(pdmo_kw != NULL) {
-            file_obj->in_pdmo(pdmo_kw);
-        }
-
-        eirods::error ret = fileModified(rsComm, file_obj);
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__;
-            msg << " - Failed to signal resource that the data object \"";
-            msg << destDataObjInfo->objPath;
-            msg << "\" was registered";
-            ret = PASSMSG(msg.str(), ret);
-            eirods::log(ret);
-            status = ret.code();
-        }
-
-
-	/* restore it */
-	rsComm->clientUser.authInfo.authFlag = savedClientAuthFlag;
+        /* restore it */
+        rsComm->clientUser.authInfo.authFlag = savedClientAuthFlag;
     } else {
         status = chlRegReplica (rsComm, srcDataObjInfo, destDataObjInfo, &regReplicaInp->condInput);
 	    if (status >= 0) 
 			status = destDataObjInfo->replNum;
-        eirods::file_object_ptr file_obj(
-                                    new eirods::file_object( 
-                                        rsComm, 
-                                        destDataObjInfo ) );
-
-        char* pdmo_kw = getValByKey(&regReplicaInp->condInput, IN_PDMO_KW);
-        if(pdmo_kw != NULL) {
-            file_obj->in_pdmo(pdmo_kw);
-        }
-
-
-        eirods::error ret = fileModified(rsComm, file_obj);
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__;
-            msg << " - Failed to signal resource that the data object \"";
-            msg << destDataObjInfo->objPath;
-            msg << "\" was registered";
-            ret = PASSMSG(msg.str(), ret);
-            eirods::log(ret);
-            status = ret.code();
-        }
-
-
     }
 	// =-=-=-=-=-=-=-
 	// JMC - backport 4608
@@ -132,4 +91,37 @@ _rsRegReplica (rsComm_t *rsComm, regReplica_t *regReplicaInp)
     return (SYS_NO_RCAT_SERVER_ERR);
 #endif
 }
+
+
+int _call_file_modified_for_replica (
+    rsComm_t*     rsComm, 
+    regReplica_t* regReplicaInp ) {
+    int status = 0;
+    dataObjInfo_t* destDataObjInfo = regReplicaInp->destDataObjInfo;
+
+    eirods::file_object_ptr file_obj(
+                                new eirods::file_object( 
+                                    rsComm, 
+                                    destDataObjInfo ) );
+    
+    char* pdmo_kw = getValByKey(&regReplicaInp->condInput, IN_PDMO_KW);
+    if(pdmo_kw != NULL) {
+        file_obj->in_pdmo(pdmo_kw);
+    }
+
+    eirods::error ret = fileModified(rsComm, file_obj);
+    if(!ret.ok()) {
+        std::stringstream msg;
+        msg << __FUNCTION__;
+        msg << " - Failed to signal resource that the data object \"";
+        msg << destDataObjInfo->objPath;
+        msg << "\" was registered";
+        ret = PASSMSG(msg.str(), ret);
+        eirods::log(ret);
+        status = ret.code();
+    }
+
+    return (status);
+
+} // _call_file_modified_for_replica
 

@@ -27,6 +27,7 @@ typedef struct {
    int accessControl;
    int admin;
    int agginfo;
+   int ascii;
    int ascitime;
    int attr;
    int noattr;
@@ -102,6 +103,7 @@ typedef struct {
    int test;
    int ticket;
    char *ticketString;
+   int tree;
    int ttl;
    int ttlValue;
    int reconnect;

@@ -115,7 +115,7 @@ namespace eirods {
         } // for i
         
         // =-=-=-=-=-=-=-
-        // grid throught the map and get a vote for each root
+        // grind throught the map and get a vote for each root
         // cache that and keep track of the max
         std::string max_hier;
         float       max_vote = -1.0; 
@@ -344,7 +344,7 @@ namespace eirods {
                     float vote = 0.0;
                     error ret = request_vote_for_file_object( 
                                     _comm,
-                                    EIRODS_OPEN_OPERATION,
+                                    EIRODS_WRITE_OPERATION,
                                     _key_word,
                                     _file_obj, 
                                     _out_hier,
@@ -450,7 +450,8 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         // perform an open operation if create is not specificied ( thats all we have for now ) 
-        if( EIRODS_OPEN_OPERATION == oper ) {
+        if( EIRODS_OPEN_OPERATION  == oper || 
+            EIRODS_WRITE_OPERATION == oper ) {
             // =-=-=-=-=-=-=-
             // factory has already been called, test for 
             // success before proceeding

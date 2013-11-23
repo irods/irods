@@ -25,7 +25,7 @@
 |
 
 :Author: Renaissance Computing Institute (RENCI)
-:Version: 3.0.1b1
+:Version: 3.0.1
 :Date: |todaysdate|
 
 
@@ -87,15 +87,11 @@ License
 Overview
 --------
 
-This manual attempts to provide standalone documentation for E-iRODS as packaged by the Renaissance Computing Institute (RENCI).
+This manual attempts to provide standalone documentation for E-iRODS (http://eirods.org) as packaged by the Renaissance Computing Institute (RENCI).
 
     http://eirods.org
 
-Additional documentation is available on the iRODS wiki and in the two books published by the iRODS team:
-
-    http://irods.org
-
-    http://irods.org/doxygen
+Additional documentation is available on the iRODS wiki (http://irods.org), the iRODS Doxygen site (http://irods.org/doxygen), and in the two books published by the iRODS team:
 
     (2010) iRODS Primer: integrated Rule-Oriented Data System (Synthesis Lectures on Information Concepts, Retrieval, and Services)
     http://www.amazon.com/dp/1608453332
@@ -122,7 +118,7 @@ The latest files can be downloaded from http://eirods.org/download.
 Open Source
 -----------
 
-Repositories, ticket trackers, and source are available from the E-iRODS website.
+Repositories, ticket trackers, and source code are available from the developers area of the E-iRODS website.
 
   http://eirods.org/developers
   
@@ -130,6 +126,8 @@ Repositories, ticket trackers, and source are available from the E-iRODS website
 ------------
 Installation
 ------------
+
+The available packages declare the dependencies necessary to run E-iRODS and if satisfied, they install a service account and group named 'eirods', the E-iRODS binaries, microservice documentation, and this manual.
 
 Installation of the Postgres iCAT DEB::
 
@@ -141,8 +139,6 @@ Installation of the Resource RPM::
  - Make sure to read ./packaging/RPM_INSTALLATION_HOWTO.txt before trying to install the RPM package.
  $ (sudo) rpm -i eirods-3.0.1-64bit-resource.rpm
 
-These packages declare the dependencies necessary to run E-iRODS and if satisfied, they install a service account and group named 'eirods', the E-iRODS binaries, microservice documentation, and this manual.
-
 For the iCAT-enabled server packages, the E-iRODS server and EICAT database are started automatically with default values::
 
  eirods@hostname:~/ $ ienv
@@ -153,9 +149,15 @@ For the iCAT-enabled server packages, the E-iRODS server and EICAT database are 
  NOTICE: irodsHome=/tempZone/home/rods
  NOTICE: irodsCwd=/tempZone/home/rods
  NOTICE: irodsUserName=rods
- NOTICE: irodsZone=tempZone 
+ NOTICE: irodsZone=tempZone
+ NOTICE: irodsClientServerNegotiation=request_server_negotiation
+ NOTICE: irodsClientServerPolicy=CS_NEG_REFUSE
+ NOTICE: irodsEncryptionKeySize=32
+ NOTICE: irodsEncryptionSaltSize=8
+ NOTICE: irodsEncryptionNumHashRounds=16
+ NOTICE: irodsEncryptionAlgorithm=AES-256-CBC
 
-For the resource-only packages, the server is not started automatically.  The administrator will need to run the ./packaging/setup_resource.sh script and provide the following five pieces of information before E-iRODS can start and connect to its configured iCAT Zone:
+For the resource-only packages, the server is not started automatically.  The administrator will need to run the `./packaging/setup_resource.sh` script and provide the following five pieces of information before E-iRODS can start and connect to its configured iCAT Zone:
 
 1) Hostname or IP
 2) iCAT Port
@@ -167,7 +169,7 @@ For the resource-only packages, the server is not started automatically.  The ad
 Quickstart
 ----------
 
-Successful installation will complete and leave a running E-iRODS server.  If you installed an iCAT-enabled E-iRODS server, a database of your choice will also have been created and running.  The iCommand ``ils`` will list your new iRODS administrator's empty home directory in the iRODS virtual filesystem::
+Successful installation will complete and result in a running E-iRODS server.  If you installed an iCAT-enabled E-iRODS server, a database of your choice will also have been created and running.  The iCommand ``ils`` will list your new iRODS administrator's empty home directory in the iRODS virtual filesystem::
 
  eirods@hostname:~/ $ ils
  /tempZone/home/rods:
@@ -177,16 +179,18 @@ When moving into production, you will probably want to cover the next few basic 
 Changing the administrator account password
 -------------------------------------------
 
-The default installation of E-iRODS comes with a single account 'rods' that has rodsadmin privileges and password 'rods'.  You should change the password before letting anyone else onto the system::
+The default installation of E-iRODS comes with a single user account 'rods' that is also an admin account ('rodsadmin') with the password 'rods'.  You should change the password before letting anyone else into the system::
 
  eirods@hostname:~/ $ iadmin moduser rods password <newpassword>
 
-To make sure everything succeeded, you will need to reauthenticate and check the new connection::
+To make sure everything succeeded, you will need to re-authenticate and check the new connection::
  
  eirods@hostname:~/ $ iinit
  Enter your current iRODS password:
  eirods@hostname:~/ $ ils
  /tempZone/home/rods:
+
+If you see an authentication or other error message here, please try again.  The password update only manipulates a single database value, and is independent of other changes to the system.
 
 Changing the Zone name
 ----------------------
@@ -202,7 +206,7 @@ The default installation of E-iRODS comes with a Zone named 'tempZone'.  You pro
  Do you really want to modify the local zone name? (enter y or yes to do so):y
  OK, performing the local zone rename
  
-The Zone has been renamed, but now you will need to update your .irodsEnv file to match (note the three places where the updated zone name is located)::
+Once the Zone has been renamed, you will need to update your .irodsEnv file to match (note the three places where the updated zone name is located)::
 
  eirods@hostname:~/ $ cat .irods/.irodsEnv
  # iRODS server host name:
@@ -212,13 +216,13 @@ The Zone has been renamed, but now you will need to update your .irodsEnv file t
  # Default storage resource name:
  irodsDefResource 'demoResc'
  # Home directory in iRODS:
- irodsHome '/<newzonename>/home/rods'
+ irodsHome '/**<newzonename>**/home/rods'
  # Current directory in iRODS:
- irodsCwd '/<newzonename>/home/rods'
+ irodsCwd '/**<newzonename>**/home/rods'
  # Account name:
  irodsUserName 'rods'
  # Zone:
- irodsZone '<newzonename>'
+ irodsZone '**<newzonename>**'
  # Enable Advanced Client-Server negotation:
  irodsClientServerNegotiation 'request_server_negotiation'
  # Client-Server connection policy:
@@ -242,7 +246,7 @@ Now, the connection should be reset and you should be able to list your empty iR
 Add additional resource(s)
 --------------------------
 
-The default installation of E-iRODS comes with a single resource named 'demoResc' which stores its files in the `/var/lib/eirods/iRODS/Vault` directory.  You will want to create additional resources at disk locations of your choosing.  The following command will create a basic 'unix file system' resource at a designated host at the designated fullpath::
+The default installation of E-iRODS comes with a single resource named 'demoResc' which stores its files in the `/var/lib/eirods/iRODS/Vault` directory.  You will want to create additional resources at disk locations of your choosing as the 'demoResc' may not have sufficient disk space available for your intended usage scenarios.  The following command will create a basic 'unix file system' resource at a designated host at the designated full path::
 
  eirods@hostname:~/ $ iadmin mkresc <newrescname> 'unix file system' <fully.qualified.domain.name>:</full/path/to/new/vault>
  
@@ -258,13 +262,17 @@ Additional information about creating resources can be found with::
  And Path is the defaultPath for the vault.
  ContextString is any contextual information relevant to this resource.
    (semi-colon separated key=value pairs e.g. "a=b;c=d")
-  
+
+ A ContextString can be added to a coordinating resource (where there is
+ no hostname or vault path to be set) by explicitly setting the Host:Path
+ to an empty string ('').
+
 Creating new resources does not make them default for any existing or new users.  You will need to make sure that default resources are properly set for newly ingested files.
 
 Add additional user(s)
 ----------------------
 
-The default installation of E-iRODS comes with a single user 'rods' which is a designated 'rodsadmin' type user account.  You will want to create additional 'rodsuser' type user accounts and set their passwords before allowing connections to your new grid::
+The default installation of E-iRODS comes with a single user 'rods' which is a designated 'rodsadmin' type user account.  You will want to create additional user accounts (of type 'rodsuser') and set their passwords before allowing connections to your new grid::
 
  eirods@hostname:~/ $ iadmin mkuser <newusername> rodsuser
 
@@ -283,15 +291,27 @@ The default installation of E-iRODS comes with a single user 'rods' which is a d
  Tip: Use moduser to set a password or other attributes,
  use 'aua' to add a user auth name (GSI DN or Kerberos Principal name)
 
-Best practice suggests changing your Zone name before adding new users as any existing users would need to be informed of the new connection information and changes that would need to be made to their local .irodsEnv files.
+It is best to change your Zone name before adding new users as any existing users would need to be informed of the new connection information and changes that would need to be made to their local .irodsEnv files.
 
 ---------
 Upgrading
 ---------
 
-The first release of E-iRODS does not yet support upgrading.  Every install will be a clean install.
+E-iRODS did not support upgrading until 3.0.1rc1.  From that point forward, upgrading should be handled by the host Operating System via the package manager as expected.
 
-This section will be updated when support is included.
+RPM based systems
+-----------------
+
+ $ (sudo) rpm -U eirods-3.0.1-64bit-icat-postgres-suse.rpm
+
+Upgrading from before 3.0.1rc1 will be detected and require the running of an additional script to get your installation in working order.  The RPM based upgrade for those older installs moves aside the `/var/lib/eirods/` home directory to `/var/lib/eirods_new/`.  To restore this directory and reinstall all the correct packaged files, run the following script with the new RPM file::
+
+ $ sudo /var/lib/eirods_new/packaging/post30upgrade.sh <newfile.rpm>
+
+DEB based systems
+-----------------
+
+ $ (sudo) dpkg -i eirods-3.0.1-64bit-icat-postgres.deb
 
 ------------------------------
 Migration from Community iRODS
@@ -301,11 +321,21 @@ Support for migrating from Community iRODS is planned, but automated scripts and
 
 This section will be updated when support is included and tested.
 
+-------------------------------
+Federation with Community iRODS
+-------------------------------
+
+Enterprise iRODS has made some additions to the database tables for the resources (r_resc_main) and Data Objects (r_data_main) for the purposes of tracking resource hierarchy, children, parents, and other relationships.  These changes would have caused a cross-zone query to fail when the target zone is a community version of iRODS.
+
+In order to support commands such as ``ils`` and ``ilsresc`` across an Enterprise to Community federation, E-iRODS will detect the cross zone query and subsequently strip out any requests for columns which do not exist in the community table structure in order to allow the query to succeed.
+
+There are currently no known issues with Federation, but this has not yet been comprehensively tested.
+
 ----------
 Backing Up
 ----------
 
-Backing up E-iRODS consists of three major parts:  The data, the iRODS system and configuration files, and the iCAT database itself.
+Backing up E-iRODS involves: The data, the iRODS system and configuration files, and the iCAT database itself.
 
 Configuration and maintenance of this type of backup system is out of scope for this document, but is included here as an indication of best practice.
 
@@ -313,7 +343,7 @@ Configuration and maintenance of this type of backup system is out of scope for 
 
 2) The iRODS system and configuration files can be copied into iRODS as a set of Data Objects by using the `msiServerBackup` microservice.  When run on a regular schedule, the `msiServerBackup` microservice will gather and store all the necessary configuration information to help you reconstruct your iRODS setup during disaster recovery.
 
-3) The iCAT database itself can be backed up in a variety of ways.  A PostgreSQL database is contained on the local filesystem as a data/ directory and can be copied like any other set of files.  This is the most basic means to have backup copies.  However, this will have stale information almost immediately.  To cut into this problem of staleness, PostgreSQL 8.4+ includes a feature called `"Record-based Log Shipping"`__.  This consists of sending a full transaction log to another copy of PostgreSQL where it could be "re-played" and bring the copy up to date with the originating server.  Log shipping would generally be handled with a cronjob.  A faster, seamless version of log shipping called `"Streaming Replication"`__ was included in PostgreSQL 9.0+ and can keep two PostgreSQL servers in sync with sub-second delay.
+3) The iCAT database itself can be backed up in a variety of ways.  A PostgreSQL database is contained on the local filesystem as a data/ directory and can be copied like any other set of files.  This is the most basic means to have backup copies.  However, this will have stale information almost immediately.  To cut into this problem of staleness, PostgreSQL 8.4+ includes a feature called `"Record-based Log Shipping"`__.  This consists of sending a full transaction log to another copy of PostgreSQL where it could be "re-played".  This would bring the copy up to date with the originating server.  Log shipping would generally be handled with a cronjob.  A faster, seamless version of log shipping called `"Streaming Replication"`__ was included in PostgreSQL 9.0+ and can keep two PostgreSQL servers in sync with sub-second delay.
 
 .. __: http://www.postgresql.org/docs/8.4/static/warm-standby.html#WARM-STANDBY-RECORD
 .. __: http://www.postgresql.org/docs/9.0/static/warm-standby.html#STREAMING-REPLICATION
@@ -335,7 +365,7 @@ Architecture
 
 E-iRODS represents a major effort to analyze, harden, and package iRODS for sustainability, modularization, security, and testability.  This has led to a fairly significant refactorization of much of the underlying codebase.  The following descriptions are included to help explain the architecture of E-iRODS.
 
-The core is designed to be as immutable as possible and serve as a bus for handling the internal logic of the business of iRODS (data storage, policy enforcement, etc.).  Exposed by the core will be six or seven major interfaces which will allow extensibility and separation of functionality into plugins.  A few plugins will be included by default in E-iRODS to provide a set of base functionality.
+The core is designed to be as immutable as possible and serve as a bus for handling the internal logic of the business of iRODS (data storage, policy enforcement, etc.).  Six or seven major interfaces will be exposed by the core and will allow extensibility and separation of functionality into plugins.  A few plugins are included by default in E-iRODS to provide a set of base functionality.
 
 The planned plugin interfaces and their status are listed here:
 
@@ -358,45 +388,29 @@ E-iRODS has introduced the capability for dynamic policy enforcement points (PEP
 
 The PEP will be constructed of the form "pep_PLUGINOPERATION_pre" and "pep_PLUGINOPERATION_post".
 
-For example, for "resource_create", the two PEPs that are dynamically evaluated are pep_resource_create_pre(\*OUT) and pep_resource_create_post(\*OUT).  If either or both have been defined in a loaded rulebase file (core.re), they will be fired as appropriate.
+For example, for "resource_create", the two PEPs that are dynamically evaluated are pep_resource_create_pre(\*OUT) and pep_resource_create_post(\*OUT).  If either or both have been defined in a loaded rulebase file (core.re), they will be executed as appropriate.
 
 The flow of information from the pre PEP to the plugin operation to the post PEP works as follows:
 
 - pep_PLUGINOPERATION_pre(\*OUT) - Should produce an \*OUT variable that will be passed to the calling plugin operation
 - PLUGINOPERATION - Will receive any \*OUT defined by pep_PLUGINOPERATION_pre(\*OUT) above and will pass its own \*OUT variable to pep_PLUGINOPERATION_post()
-- pep_PLUGINOPERATION_post() - Will receive any \*OUT from PLUGINOPERATION
+- pep_PLUGINOPERATION_post() - Will receive any \*OUT from PLUGINOPERATION.  If the PLUGINOPERATION itself failed, the \*OUT variable will be populated with the string "OPERATION_FAILED".
 
 
 
 Available Plugin Operations
 ***************************
 
- The following operations are available for dynamic PEP evaluation.  At this time, only very few operations themselves consider the output (\*OUT) of its associated pre PEP.
+The following operations are available for dynamic PEP evaluation.  At this time, only very few operations themselves consider the output (\*OUT) of its associated pre PEP.
 
  +-------------------------+-----------------------------------+
  | Plugin Type             | Plugin Operation                  |
  +=========================+===================================+
+ |                         |                                   |
  | Resource                | | resource_create                 |
  |                         | | resource_open                   |
  |                         | | resource_read                   |
  |                         | | resource_write                  |
- |                         | | resource_close                  |
- |                         | | resource_unlink                 |
- |                         | | resource_stat                   |
- |                         | | resource_fstat                  |
- |                         | | resource_fsync                  |
- |                         | | resource_mkdir                  |
- |                         | | resource_chmod                  |
- |                         | | resource_opendir                |
- |                         | | resource_readdir                |
- |                         |                                   |
- |                         | | resource_stage                  |
- |                         | | resource_rename                 |
- |                         | | resource_freespace              |
- |                         | | resource_lseek                  |
- |                         | | resource_rmdir                  |
- |                         | | resource_closedir               |
- |                         | | resource_truncate               |
  |                         | | resource_stagetocache           |
  |                         | | resource_synctoarch             |
  |                         | | resource_registered             |
@@ -404,7 +418,9 @@ Available Plugin Operations
  |                         | | resource_modified               |
  |                         | | resource_resolve_hierarchy      |
  |                         | | resource_rebalance              |
+ |                         |                                   |
  +-------------------------+-----------------------------------+
+ |                         |                                   |
  | Authentication          | | auth_client_start               |
  |                         | | auth_agent_start                |
  |                         | | auth_establish_context          |
@@ -413,7 +429,9 @@ Available Plugin Operations
  |                         | | auth_agent_client_response      |
  |                         | | auth_agent_auth_response        |
  |                         | | auth_agent_auth_verify          |
+ |                         |                                   |
  +-------------------------+-----------------------------------+
+ |                         |                                   |
  | Network                 | | network_client_start            |
  |                         | | network_client_stop             |
  |                         | | network_agent_start             |
@@ -422,30 +440,36 @@ Available Plugin Operations
  |                         | | network_read_body               |
  |                         | | network_write_header            |
  |                         | | network_write_body              |
+ |                         |                                   |
  +-------------------------+-----------------------------------+
 
 
 Available Values within Dynamic PEPs
 ************************************
 
-The following Key-Value Pairs are made available within the running context of each dynamic policy enforcement point (PEP) based both on the plugin type as well as the first class object of interest.  They are available via the rule engine in the form of ``$KVPairs.VARIABLE_NAME`` and are originally defined in ``iRODS/lib/core/include/rodsKeyWdDef.h``.
+The following Key-Value Pairs are made available within the running context of each dynamic policy enforcement point (PEP) based both on the plugin type as well as the first class object of interest.  They are available via the rule engine in the form of ``$KVPairs.VARIABLE_NAME`` and are originally defined in `iRODS/lib/core/include/rodsKeyWdDef.h`.
 
 
  +----------------+---------------------+-------------------------+
  | Plugin Type    | First Class Object  | Variable Name           |
  +================+=====================+=========================+
+ |                |                     |                         |
  | Resource       | Data Object         | | physical_path         |
  |                |                     | | mode_kw               |
  |                |                     | | flags_kw              |
  |                |                     | | resc_hier             |
+ |                |                     |                         |
  |                +---------------------+-------------------------+
+ |                |                     |                         |
  |                | File Object         | | logical_path          |
  |                |                     | | file_descriptor       |
  |                |                     | | l1_desc_idx           |
  |                |                     | | file_size             |
  |                |                     | | repl_requested        |
  |                |                     | | in_pdmo               |
+ |                |                     |                         |
  |                +---------------------+-------------------------+
+ |                |                     |                         |
  |                | Structured Object   | | host_addr             |
  |                |                     | | zone_name             |
  |                |                     | | port_num              |
@@ -453,7 +477,9 @@ The following Key-Value Pairs are made available within the running context of e
  |                |                     | | offset                |
  |                |                     | | dataType              |
  |                |                     | | oprType               |
+ |                |                     |                         |
  |                +---------------------+-------------------------+
+ |                |                     |                         |
  |                | Special Collection  | | spec_coll_class       |
  |                |                     | | spec_coll_type        |
  |                |                     | | spec_coll_obj_path    |
@@ -463,19 +489,34 @@ The following Key-Value Pairs are made available within the running context of e
  |                |                     | | spec_coll_cache_dir   |
  |                |                     | | spec_coll_cache_dirty |
  |                |                     | | spec_coll_repl_num    |
+ |                |                     |                         |
  +----------------+---------------------+-------------------------+
+
+ +----------------+---------------------+-------------------------+
+ | Plugin Type    | First Class Object  | Variable Name           |
+ +================+=====================+=========================+
+ |                |                     |                         |
  | Authentication | | Native Password   | | zone_name             |
  |                | | OS Auth           | | user_name             |
  |                | | PAM               | | digest                |
+ |                |                     |                         |
  +----------------+---------------------+-------------------------+
+
+ +----------------+---------------------+-------------------------+
+ | Plugin Type    | First Class Object  | Variable Name           |
+ +================+=====================+=========================+
+ |                |                     |                         |
  | Network        | TCP                 | | tcp_socket_handle     |
+ |                |                     |                         |
  |                +---------------------+-------------------------+
+ |                |                     |                         |
  |                | SSL                 | | ssl_host              |
  |                |                     | | ssl_shared_secret     |
  |                |                     | | ssl_key_size          |
  |                |                     | | ssl_salt_size         |
  |                |                     | | ssl_num_hash_rounds   |
  |                |                     | | ssl_algorithm         |
+ |                |                     |                         |
  +----------------+---------------------+-------------------------+
 
 
@@ -483,7 +524,7 @@ For example, within a PEP, you could reference $KVPairs.file_size and get the si
 
 Also, $pluginInstanceName is an additional available session variable that gives the instance name of the plugin from which the call is made.
 
-For example, when running ``iput -R myOtherResc newfile.txt``, a ``fileCreate()`` operation is called on "myOtherResc" which delegates the call to the myOtherResc plugin instance which is a "resource_create" operation.  When the pep_resource_create_pre() rule is evaluated, the value of $pluginInstanceName will be "myOtherResc".  This allows rule authors to make decisions at a per-resource basis for this type of operation.
+For example, when running ``iput -R myOtherResc newfile.txt``, a ``fileCreate()`` operation is called on "myOtherResc".  This delegates the call to the myOtherResc plugin instance which is a "resource_create" operation.  When the pep_resource_create_pre() rule is evaluated, the value of $pluginInstanceName will be "myOtherResc".  This allows rule authors to make decisions at a per-resource basis for this type of operation.
 
 -----------------------
 Pluggable Microservices
@@ -500,24 +541,31 @@ The second area of modularity to be added to E-iRODS consists of composable reso
 Tree Metaphor
 -------------
 
-Composable resources are best modeled with a tree metaphor (and in computer science parlance, they are tree data structures).  An E-iRODS composable resource is a tree with one 'root' node.  Nodes that are at the bottom of the tree are 'leaf' nodes.  Nodes that are not leaf nodes are 'branch' nodes and have one more more 'child' nodes.  A child node can have one and only one 'parent' node.
-
-The terms root, leaf, branch, child, and parent represent locations and relationships within the structure of a particular tree.  The terms 'coordinating' and 'storage' represent the functionality of particular resources within a particular tree.  A resource node can be a coordinating resource and/or a storage resource.  For clarity and reuse, it is generally best practice to separate the two so that a particular resource node is either a coordinating resource or a storage resource.
-
 In computer science, a tree is a data structure with a hierarchical representation of linked nodes. These nodes can be named based on where they are in the hierarchy. The node at the top of a tree is the root node. Parent nodes and child nodes are on opposite ends of a connecting link, or edge. Leaf nodes are at the bottom of the tree, and any node that is not a leaf node is a branch node. These positional descriptors are helpful when describing the structure of a tree. Composable resources are best represented using this tree metaphor.
+
+An E-iRODS composite resource is a tree with one 'root' node.  Nodes that are at the bottom of the tree are 'leaf' nodes.  Nodes that are not leaf nodes are 'branch' nodes and have one or more 'child' nodes.  A child node can have one and only one 'parent' node.
+
+The terms root, leaf, branch, child, and parent represent locations and relationships within the structure of a particular tree.  To represent the functionality of a particular resources within a particular tree, the terms 'coordinating' and 'storage' are used in E-iRODS.  Coordinating resources coordinate the flow of data to and from other resources.  Storage resources are typically 'leaf' nodes and handle the direct reading and writing of data through a POSIX-like interface.
+
+Any resource node can be a coordinating resource and/or a storage resource.  However, for clarity and reuse, it is generally best practice to separate the two so that a particular resource node is either a coordinating resource or a storage resource.
+
+This powerful tree metaphor is best illustrated with an actual example.  You can now use `ilsresc --tree` to visualize the tree structure of a grid.
+
+.. figure:: ./iRODS/images/treeview.png
+   :height: 3.8 in
 
 Virtualization
 --------------
 
-In iRODS, files are stored as Data Objects on disk and have an associated physical path as well as a virtual path within the iRODS file system. iRODS collections only exist in the iCAT database and do not have an associated physical path (allowing them to exist across all resources, virtually).
+In iRODS, files are stored as Data Objects on disk and have an associated physical path as well as a virtual path within the iRODS file system. iRODS collections, however, only exist in the iCAT database and do not have an associated physical path (allowing them to exist across all resources, virtually).
 
-Composable resources introduce the same dichotomy between the virtual and physical. E-iRODS resources are defined to be either coordinating resources or storage resources. These two different classes of resource map directly to the branch nodes and leaf nodes of a generic tree data structure. A coordinating resource has built-in logic that defines how it determines, or coordinates, the flow of data to and from its children. Coordinating resources exist solely in the iCAT and virtually exist across all E-iRODS servers in a particular Zone. A storage resource has a Vault (physical) path and knows how to speak to a specific type of storage medium (disk, tape, etc.). The encapsulation of resources into a plugin architecture allows E-iRODS to have a consistent interface to all resources, whether they represent coordination or storage.
+Composable resources, both coordinating and storage, introduce the same dichotomy between the virtual and physical.  A coordinating resource has built-in logic that defines how it determines, or coordinates, the flow of data to and from its children. Coordinating resources exist solely in the iCAT and exist virtually across all E-iRODS servers in a particular Zone. A storage resource has a Vault (physical) path and knows how to speak to a specific type of storage medium (disk, tape, etc.). The encapsulation of resources into a plugin architecture allows E-iRODS to have a consistent interface to all resources, whether they represent coordination or storage.
 
-This virtualization of the coordinating resources allows the logic of how to manage both the placement and the retrieval of Data Objects to exist independent of the types of resources that are connected as children resources. When E-iRODS tries to retrieve data, each child resource will "vote" by offering whether it can provide the requested data, and coordinating resources will decide which particular storage resource (e.g. physical location) the read should come from. The specific manner of this vote is specific to the logic of the coordinating resource. For instance, a coordinating resource could optimize for reducing the number of requests made against each storage resource within some time frame or it could optimize for reducing latency in expected data retrieval times. We expect a wide variety of useful optimizations to be developed by the community.
+This virtualization enables the coordinating resources to manage both the placement and the retrieval of Data Objects independent from the types of resources that are connected as children resources. When E-iRODS tries to retrieve data, each child resource will "vote", indicating whether it can provide the requested data.  Coordinating resources will then decide which particular storage resource (e.g. physical location) the read should come from. The specific manner of this vote is specific to the logic of the coordinating resource.  A coordinating resource may lean toward a particular vote based on the type of optimization it deems best. For instance, a coordinating resource could decide between child votes by opting for the child that will reduce the number of requests made against each storage resource within a particular time frame or opting for the child that reduces latency in expected data retrieval times. We expect a wide variety of useful optimizations to be developed by the community.
 
-An intended side effect of the tree metaphor and the virtualization of coordinating resources is the deprecation of the concept of a resource group. Resource groups in community iRODS could not be put into other resource groups. A specific limiting example was that of the compound resource where, by definition, it was a group and could not be placed into another group significantly limiting its functionality as a management tool. Groups in E-iRODS now only refer to user groups.
+An intended side effect of the tree metaphor and the virtualization of coordinating resources is the deprecation of the concept of a resource group. Resource groups in community iRODS could not be put into other resource groups. A specific limiting example is a compound resource that, by definition, was a group and could not be placed into another group.  This significantly limited its functionality as a management tool. Groups in E-iRODS now only refer to user groups.
 
-Read more at `http://eirods.org/release/e-irods-composable-resources/`__:
+Read more about Composable Resources at `http://eirods.org/release/e-irods-composable-resources/`__:
 
 - `Paper (279kB, PDF)`__
 - `Slides (321kB, PDF)`__
@@ -531,23 +579,23 @@ Read more at `http://eirods.org/release/e-irods-composable-resources/`__:
 Coordinating Resources
 ----------------------
 
-Coordinating resources contain the flow control logic which determines both how its child resources will be allocated copies of data as well as which copy is returned when a Data Object is requested.
+Coordinating resources contain the flow control logic which determines both how its child resources will be allocated copies of data as well as which copy is returned when a Data Object is requested.  There are several types of coordinating resources: compound, random, replication, round robin, passthru, and some additional types that are expected in the future.  Each is discussed in more detail below.
 
 Compound
 ********
 
 The compound resource is a continuation of the legacy compound resource type from Community iRODS.
 
-A compound resource has two and only two children.  One must be designated the 'cache' resource and the other must be designated the 'archive' resource.  This designation is made in the "context string" of the ``addchildtoresc`` command.
+A compound resource has two and only two children.  One must be designated as the 'cache' resource and the other as the 'archive' resource.  This designation is made in the "context string" of the ``addchildtoresc`` command.
 
 An Example::
 
  eirods@hostname:~/ $ iadmin addchildtoresc parentResc newChildResc1 cache
  eirods@hostname:~/ $ iadmin addchildtoresc parentResc newChildResc2 archive
 
-Putting files into the compound resource will create a replica on the cache resource and then create a second replica on the archive resource.
+Putting files into the compound resource will first create a replica on the cache resource and then create a second replica on the archive resource.
 
-Getting files from the compound resource will behave similar to the Community iRODS version.  By default, the replica from the cache resource will always be returned.  If the cache resource does not have a copy, then a replica is created on the cache resource before being returned.
+Getting files from the compound resource will behave in a similar way as the Community iRODS version.  By default, the replica from the cache resource will always be returned.  If the cache resource does not have a copy, then a replica is created on the cache resource before being returned.
 
 This compound resource staging policy can be controlled with the policy key-value pair whose keyword is "compound_resource_cache_refresh_policy" and whose values are either "when_necessary" (default), or "always".
 
@@ -560,9 +608,9 @@ From the example near the bottom of the core.re rulebase::
  # pep_resource_resolve_hierarchy_pre(*OUT){*OUT="compound_resource_cache_refresh_policy=when_necessary";}  # default
  # pep_resource_resolve_hierarchy_pre(*OUT){*OUT="compound_resource_cache_refresh_policy=always";}
 
-Replicas within a compound resource can be trimmed.  There is no rebalance activity defined for a compound resource.  When the cache fills up, the administrator will need to take action as they see fit.
+Replicas within a compound resource can be trimmed.  There is no rebalance activity defined for a compound resource.  When the cache fills up, the administrator will need to take action as they see fit.  This may include physically moving files to other resources, commissioning new storage, or marking certain resources "down" in the iCAT.
 
-The "--purgec" option for ``iput``, ``iget``, and ``irepl`` is honored and will always purge the first replica (usually with replica number of 0) for that Data Object (which may or may not be held within this compound resource).  This is not an optimal use of the compound resource as the behavior will become somewhat nondeterministic with complex resource compositions.
+The "--purgec" option for ``iput``, ``iget``, and ``irepl`` is honored and will always purge the first replica (usually with replica number 0) for that Data Object (regardless of whether it is held within this compound resource).  This is not an optimal use of the compound resource as the behavior will become somewhat nondeterministic with complex resource compositions.
 
 Random
 ******
@@ -845,6 +893,19 @@ Then, the user runs 'iinit' and enters their system password.  To protect the sy
 
 
 In order to use the E-iRODS PAM support, you also need to have SSL working between the iRODS client and server. The SSL communication between client and iRODS server needs some basic setup in order to function properly. Much of the setup concerns getting a proper X.509 certificate setup on the server side, and setting up the trust for the server certificate on the client side. You can use either a self-signed certificate (best for testing) or a certificate from a trusted CA.
+
+Server Configuration
+********************
+
+The following keywords are used to set values for PAM server configuration.  These were previously defined as compile-time options.  They are now configurable via the `iRODS/server/config/server.config` configuration file.  The default values have been preserved.
+
+- pam_password_length
+- pam_no_extend
+- pam_password_min_time
+- pam_password_max_time
+
+Descriptions of these values can be found in `iRODS/server/icat/src/icatHighLevelRoutines.c`.
+
 
 Server SSL Setup
 ****************
@@ -1155,6 +1216,7 @@ Federation
 
 Jargon
     The Java API for iRODS.  Read more at https://www.irods.org/index.php/Jargon.
+
 iCAT
     The iCAT, or iRODS Metadata Catalog, stores descriptive state metadata about the Data Objects in iRODS Collections in a DBMS database (e.g. PostgreSQL, MySQL, Oracle). The iCAT can keep track of both system-level metadata and user-defined metadata.  There is one iCAT database per iRODS Zone.
 
@@ -1235,34 +1297,52 @@ Known Issues
 History of Releases
 -------------------
 
-==========   =======    =====================================================
-Date         Version    Description
-==========   =======    =====================================================
-2013-10-31   3.0.1b1    Second Release.
-                          This is the second open source release from RENCI.
-                          It includes pluggable network and authentication
-                          support as well as a rebalance option and migration
-                          support for the composable resources.
-2013-06-05   3.0        First Release.
-                          This is the first open source release from RENCI.
-                          It includes all the features mentioned below and
-                          has been both manually and continuously tested.
-2013-05-14   3.0rc1     First Release Candidate.
-                          This is the first release candidate from RENCI.  It
-                          includes PAM support, additional resources
-                          (compound, universalMSS, replication, random,
-                          and nonblocking), and additional documentation.
-2013-03-15   3.0b3      Third Beta Release.
-                          This is the third release from RENCI.  It includes
-                          a new package for CentOS 6+, support for composable
-                          resources, and additional documentation.
-2012-06-25   3.0b2      Second Beta Release.
-                          This is the second release from RENCI.  It includes
-                          packages for iCAT, Resource, iCommands, and
-                          development, in both DEB and RPM formats.
-                          Also includes more documentation.
-2012-03-01   3.0b1      Initial Beta Release.
-                          This is the first release from RENCI, based on the
-                          iRODS 3.0 community codebase.
-==========   =======    =====================================================
+==========   =========    ======================================================
+Date         Version      Description
+==========   =========    ======================================================
+2013-11-16   3.0.1        Second Release.
+                            This is the second open source release from RENCI.
+                            It includes Federation compliance with Community
+                            iRODS and signaling for dynamic post-PEPs to know
+                            whether their operation failed.
+2013-11-14   3.0.1rc1     First Release Candidate of Second Release.
+                            This is the first release candidate of the second
+                            open source release from RENCI.  It includes
+                            a new "--tree" view for `ilsresc` and a more
+                            powerful `irodsctl stop`.  In addition, package
+                            managers should now be able to handle upgrades
+                            more gracefully.
+2013-11-12   3.0.1b2      Second Beta of Second Release.
+                            This is the second beta of the second open source
+                            release from RENCI.  It includes certification
+                            work with the Jargon library, more CI testing,
+                            and minor fixes.
+2013-10-31   3.0.1b1      First Beta of Second Release.
+                            This is the first beta of the second open source
+                            release from RENCI.
+                            It includes pluggable network and authentication
+                            support as well as a rebalance option and migration
+                            support for the composable resources.
+2013-06-05   3.0          First Release.
+                            This is the first open source release from RENCI.
+                            It includes all the features mentioned below and
+                            has been both manually and continuously tested.
+2013-05-14   3.0rc1       First Release Candidate.
+                            This is the first release candidate from RENCI.  It
+                            includes PAM support, additional resources
+                            (compound, universalMSS, replication, random,
+                            and nonblocking), and additional documentation.
+2013-03-15   3.0b3        Third Beta Release.
+                            This is the third release from RENCI.  It includes
+                            a new package for CentOS 6+, support for composable
+                            resources, and additional documentation.
+2012-06-25   3.0b2        Second Beta Release.
+                            This is the second release from RENCI.  It includes
+                            packages for iCAT, Resource, iCommands, and
+                            development, in both DEB and RPM formats.
+                            Also includes more documentation.
+2012-03-01   3.0b1        Initial Beta Release.
+                            This is the first release from RENCI, based on the
+                            iRODS 3.0 community codebase.
+==========   =========    ======================================================
 

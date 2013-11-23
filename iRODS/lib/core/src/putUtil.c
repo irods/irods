@@ -11,6 +11,8 @@
 #include "putUtil.h"
 #include "miscUtil.h"
 #include "rcPortalOpr.h"
+#include <string>
+#include <boost/filesystem.hpp>
 
 int
 setSessionTicket(rcComm_t *myConn, char *ticket) {
@@ -353,6 +355,16 @@ initCondForPut (rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                     "initCondForPut: NULL physicalPathString error");
             return (USER__NULL_INPUT_ERR);
         } else {
+            boost::filesystem::path slash("/");
+            std::string preferred_slash = slash.make_preferred().native();
+            if( preferred_slash[0] != rodsArgs->physicalPathString[0] ) {
+                rodsLog( 
+                    LOG_ERROR, 
+                    "initCondForPut: physical path [%s] must be absolute, not relative", 
+                    rodsArgs->physicalPathString );
+                return (USER_INPUT_PATH_ERR);
+            }
+
             addKeyVal (&dataObjOprInp->condInput, FILE_PATH_KW, 
                     rodsArgs->physicalPathString);
         }

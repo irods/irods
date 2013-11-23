@@ -7,7 +7,7 @@
 %license LICENSE
 %readme README
 %description Enterprise edition of the Integrated Rule Oriented Data System
-%version TEMPLATE_EIRODSVERSION TEMPLATE_EPMEIRODSVERSION
+%version TEMPLATE_EIRODSVERSION TEMPLATE_EIRODSVERSIONINT
 
 
 
@@ -124,33 +124,67 @@ $DB_USER=$OS_EIRODS_ACCT
 # preinstall
 # =-=-=-=-=-=-=-
 %preinstall << END_PREINSTALL
-echo "Creating Service Group and Account: $OS_EIRODS_ACCT at $EIRODS_HOME_DIR "
 
-set +e
-CHECKGROUP=`getent group $OS_EIRODS_ACCT `
-CHECKACCT=`getent passwd $OS_EIRODS_ACCT `
-set -e
-if [ "$$CHECKGROUP" = "" ]; then
-  /usr/sbin/groupadd -r $OS_EIRODS_ACCT
-else
-  echo "ERROR :: Please delete the existing Service Group $OS_EIRODS_ACCT before proceeding."
-  if [ "$$CHECKACCT" = "" ]; then
-    echo "      :: The $OS_EIRODS_ACCT Service Account must be deleted prior to deleting the $OS_EIRODS_ACCT Service Group."
+# determine whether this is an upgrade
+if [ "$$1" -eq "$$1" ] 2>/dev/null ; then
+  # integer, therefore rpm
+  if [ $$1 -gt 1 ] ; then
+    PACKAGEUPGRADE="true"
+  else
+    PACKAGEUPGRADE="false"
   fi
-  exit 1
-fi
-
-if [ "$$CHECKACCT" = "" ]; then
-  useradd -r -d $EIRODS_HOME_DIR -M -s /bin/bash -g $OS_EIRODS_ACCT -c "E-iRODS Administrator" $OS_EIRODS_ACCT
 else
-  echo "ERROR :: Please delete the existing Service Account $OS_EIRODS_ACCT before proceeding."
-  exit 1
+  # string, therefore deb
+  if [ "$$1" = "upgrade" ] ; then
+    PACKAGEUPGRADE="true"
+  else
+    PACKAGEUPGRADE="false"
+  fi
 fi
 
-ACCT=$OS_EIRODS_ACCT
-mkdir -p $EIRODS_HOME_DIR
-chown $$ACCT:$$ACCT $EIRODS_HOME_DIR
+if [ "$$PACKAGEUPGRADE" = "true" ] ; then
+  # Upgrade
+  echo "Upgrading Existing E-iRODS Installation"
+  mkdir -p $EIRODS_HOME_DIR
+  # write version information down for postinstall
+  UPGRADE_TEMP_FILE="$EIRODS_HOME_DIR/upgrade.tmp"
+  if [ -f $EIRODS_HOME_DIR/VERSION ] ; then
+    cp $EIRODS_HOME_DIR/VERSION $$UPGRADE_TEMP_FILE
+  else
+    touch $$UPGRADE_TEMP_FILE
+    echo "EIRODSVERSION=3.0" >> $$UPGRADE_TEMP_FILE
+    echo "EIRODSVERSIONINT=300005" >> $$UPGRADE_TEMP_FILE
+  fi
+  
+else
+  # New Install
+  echo "Creating Service Group and Account: $OS_EIRODS_ACCT at $EIRODS_HOME_DIR "
 
+  set +e
+  CHECKGROUP=`getent group $OS_EIRODS_ACCT `
+  CHECKACCT=`getent passwd $OS_EIRODS_ACCT `
+  set -e
+  if [ "$$CHECKGROUP" = "" ]; then
+    /usr/sbin/groupadd -r $OS_EIRODS_ACCT
+  else
+    echo "ERROR :: Please delete the existing Service Group $OS_EIRODS_ACCT before proceeding."
+    if [ "$$CHECKACCT" = "" ]; then
+      echo "      :: The $OS_EIRODS_ACCT Service Account must be deleted prior to deleting the $OS_EIRODS_ACCT Service Group."
+    fi
+    exit 1
+  fi
+
+  if [ "$$CHECKACCT" = "" ]; then
+    useradd -r -d $EIRODS_HOME_DIR -M -s /bin/bash -g $OS_EIRODS_ACCT -c "E-iRODS Administrator" $OS_EIRODS_ACCT
+  else
+    echo "ERROR :: Please delete the existing Service Account $OS_EIRODS_ACCT before proceeding."
+    exit 1
+  fi
+
+  ACCT=$OS_EIRODS_ACCT
+  mkdir -p $EIRODS_HOME_DIR
+  chown $$ACCT:$$ACCT $EIRODS_HOME_DIR
+fi
 END_PREINSTALL
 
 
@@ -177,9 +211,9 @@ END_PREINSTALL
 # preremove
 # =-=-=-=-=-=-=-
 %if ICAT
-%preremove $EIRODS_HOME_DIR/packaging/preremove.sh $EIRODS_HOME_DIR $OS_EIRODS_ACCT icat $DB_TYPE $DB_ADMIN_ROLE $DB_NAME $DB_USER
+%preremove $EIRODS_HOME_DIR/packaging/preremove.sh $$1 $EIRODS_HOME_DIR $OS_EIRODS_ACCT icat $DB_TYPE $DB_ADMIN_ROLE $DB_NAME $DB_USER
 %else
-%preremove $EIRODS_HOME_DIR/packaging/preremove.sh $EIRODS_HOME_DIR $OS_EIRODS_ACCT resource
+%preremove $EIRODS_HOME_DIR/packaging/preremove.sh $$1 $EIRODS_HOME_DIR $OS_EIRODS_ACCT resource
 %endif
 
 
@@ -190,21 +224,31 @@ END_PREINSTALL
 # =-=-=-=-=-=-=-
 # post remove
 # =-=-=-=-=-=-=-
-%if RPM
-%postremove rm -r $EIRODS_HOME_DIR  
-%elseif DEB
 %postremove << END_POSTREMOVE
-# =-=-=-=-=-=-=-
-# remove the install directory if necessary
-if [ -d $EIRODS_HOME_DIR -a "$$1" = 'remove' ]; then
+
+# determine whether this is an upgrade
+if [ "$$1" -eq "$$1" ] 2>/dev/null ; then
+  # integer, therefore rpm
+  if [ $$1 -gt 0 ] ; then
+    PACKAGEUPGRADE="true"
+  else
+    PACKAGEUPGRADE="false"
+  fi
+else
+  # string, therefore deb
+  if [ "$$1" = "upgrade" ] ; then
+    PACKAGEUPGRADE="true"
+  else
+    PACKAGEUPGRADE="false"
+  fi
+fi
+
+# on remove or purge
+if [ "$$PACKAGEUPGRADE" = "false" ] ; then
   rm -rf $EIRODS_HOME_DIR
-fi 
+fi
+
 END_POSTREMOVE
-%endif
-
-
-
-
 
 
 
@@ -216,9 +260,12 @@ END_POSTREMOVE
 # Full File Listing
 # =-=-=-=-=-=-=-
 
+f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/VERSION ./VERSION
+
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/tests -
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/tests/pydevtest -
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/tests/pydevtest ./tests/pydevtest/*.py
+#f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/tests/pydevtest/topology_tests.tar ./tests/pydevtest/topology_tests.tar
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/tests/pydevtest/README ./tests/pydevtest/README
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/tests/devtest.sh ./tests/devtest.sh
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/tests/zombiereaper.sh ./tests/zombiereaper.sh
@@ -234,6 +281,7 @@ d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/packaging -
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/packaging/find_os.sh ./packaging/find_os.sh
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/packaging/find_postgres_bin.sh ./packaging/find_postgres_bin.sh
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/packaging/find_psqlodbc.sh ./packaging/find_psqlodbc.sh
+f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/packaging/post30upgrade.sh ./packaging/post30upgrade.sh
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/packaging/postinstall.sh ./packaging/postinstall.sh
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/packaging/preremove.sh ./packaging/preremove.sh
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/packaging/user_irodsenv.txt ./packaging/user_irodsenv.txt
@@ -321,21 +369,20 @@ d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/log -
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config -
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/lockFileDir -
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/connectControl.config.template ./iRODS/server/config/connectControl.config.template
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/dbr.config ./iRODS/server/config/dbr.config
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/HostAccessControl ./iRODS/server/config/HostAccessControl
-d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/lockFileDir -
+c 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/dbr.config ./iRODS/server/config/dbr.config
+c 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/HostAccessControl ./iRODS/server/config/HostAccessControl
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs -
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core.dvm ./iRODS/server/config/reConfigs/core.dvm
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core.fnm ./iRODS/server/config/reConfigs/core.fnm
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core.re ./iRODS/server/config/reConfigs/core.re
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/rda.config ./iRODS/server/config/rda.config
+c 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core.dvm ./iRODS/server/config/reConfigs/core.dvm
+c 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core.fnm ./iRODS/server/config/reConfigs/core.fnm
+c 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core.re ./iRODS/server/config/reConfigs/core.re
+c 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/rda.config ./iRODS/server/config/rda.config
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/irodsMonPerf.config.in ./iRODS/server/config/irodsMonPerf.config.in
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/server.config.in ./iRODS/server/config/server.config.in
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/irodsHost.in ./iRODS/server/config/irodsHost.in
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/packedRei -
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/irodsHost ./iRODS/server/config/irodsHost
+c 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/irodsHost ./iRODS/server/config/irodsHost
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/s3Auth.template ./iRODS/server/config/s3Auth.template
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/server.config ./iRODS/server/config/server.config
+c 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/server.config ./iRODS/server/config/server.config
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/README.txt ./iRODS/server/config/README.txt
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin -
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/cmd -
@@ -353,7 +400,7 @@ f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/irodsXmsgServer .
 #f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/ ./external/libarchive*/.libs/libarchive*.so*
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/list.pl ./iRODS/server/bin/list.pl
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/irodsAgent ./iRODS/server/bin/irodsAgent
-f 4755 root root ${IRODS_HOME}/server/bin/PamAuthCheck ./iRODS/server/bin/PamAuthCheck
+f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/PamAuthCheck ./iRODS/server/bin/PamAuthCheck
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/re -
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/re/include -
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/re/include/reAction.h ./iRODS/server/re/include/reAction.h
@@ -440,7 +487,7 @@ f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/icatGeneralQ
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/convertSql.pl ./iRODS/server/icat/src/convertSql.pl
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/config -
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/config/platform.mk ./iRODS/config/platform.mk
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/config/irods.config ./iRODS/config/irods.config
+c 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/config/irods.config ./iRODS/config/irods.config
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/config/doxygen-msi.config ./iRODS/config/doxygen-msi.config
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/config/irodsEnv.boot ./iRODS/config/irodsEnv.boot
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/config/installPostgres.config.template ./iRODS/config/installPostgres.config.template
@@ -470,7 +517,7 @@ f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/showCo
 # igetwild.sh - shouldn't have a binary with an extension, lintian complained it's not as future-proof
 f 755 root root /usr/bin/igetwild             ./iRODS/clients/icommands/bin/igetwild
 
-f 4755 root root /usr/bin/genOSAuth           ./iRODS/clients/icommands/bin/genOSAuth
+f 755 root root /usr/bin/genOSAuth            ./iRODS/clients/icommands/bin/genOSAuth
 f 755 root root /usr/bin/iadmin               ./iRODS/clients/icommands/bin/iadmin
 f 755 root root /usr/bin/ibun                 ./iRODS/clients/icommands/bin/ibun
 f 755 root root /usr/bin/icd                  ./iRODS/clients/icommands/bin/icd

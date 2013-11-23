@@ -207,7 +207,6 @@ class ResourceSuite(ResourceBase):
     # iput
     ###################
 
-    # - debug run - @unittest.skip("TEMPORARY: Too Hard for Tiny VMs")
     def test_ssl_iput_small_and_large_files(self):
         # set up client and server side for ssl handshake
 
@@ -233,6 +232,7 @@ class ResourceSuite(ResourceBase):
 
         # server reboot to pick up new irodsEnv settings
         os.system("/var/lib/eirods/iRODS/irodsctl stop")
+        os.system("/var/lib/eirods/tests/zombiereaper.sh")
         os.system("/var/lib/eirods/iRODS/irodsctl start")
 
         # do the encrypted put
@@ -416,11 +416,7 @@ class ResourceSuite(ResourceBase):
         f.close()
         # assertions
         relpath = "relativephysicalpath.txt"
-        assertiCmd(s.adminsession,"iput -p "+relpath+" "+datafilename) # should allow put into server/bin
-        assertiCmd(s.adminsession,"ils -L "+datafilename,"LIST",datafilename)
-        assertiCmd(s.adminsession,"ils -L "+datafilename,"LIST",relpath)
-        # NOTE: cannot remove the file from virtual filesystem without force flag
-        #       because iRODS cannot create similar path in trash
+        assertiCmd(s.adminsession,"iput -p "+relpath+" "+datafilename, "ERROR", "absolute") # should disallow relative path
         # local cleanup
         output = commands.getstatusoutput( 'rm '+datafilename )
 
@@ -432,7 +428,7 @@ class ResourceSuite(ResourceBase):
         f.close()
         # assertions
         relpath = "relativephysicalpath.txt"
-        assertiCmd(s.sessions[1],"iput -p "+relpath+" "+datafilename,"ERROR","PATH_REG_NOT_ALLOWED") # should error
+        assertiCmd(s.sessions[1],"iput -p "+relpath+" "+datafilename,"ERROR","absolute") # should error
         # local cleanup
         output = commands.getstatusoutput( 'rm '+datafilename )
 

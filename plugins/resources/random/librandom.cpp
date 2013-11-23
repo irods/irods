@@ -619,33 +619,64 @@ extern "C" {
     } // random_file_modified
  
     /// =-=-=-=-=-=-=-
+    /// @brief interface to notify a resource of an operation
+    eirods::error random_file_notify(
+        eirods::resource_plugin_context& _ctx,
+        const std::string*               _opr ) {
+        // =-=-=-=-=-=-=-
+        // get the child resc to call
+        eirods::resource_ptr resc; 
+        eirods::error err = random_get_resc_for_call< eirods::file_object >( _ctx, resc );
+        if( !err.ok() ) {
+            std::stringstream msg;
+            msg <<  __FUNCTION__;
+            msg << " - failed.";
+            return PASSMSG( msg.str(), err );
+        }
+
+        // =-=-=-=-=-=-=-
+        // call rename on the child 
+        return resc->call( 
+                   _ctx.comm(), 
+                   eirods::RESOURCE_OP_NOTIFY, 
+                   _ctx.fco(), 
+                   _opr );
+
+    } // random_file_notify
+ 
+    /// =-=-=-=-=-=-=-
     /// @brief find the next valid child resource for create operation
     eirods::error get_next_valid_child_resource( 
         eirods::resource_child_map&  _cmap,
         eirods::resource_ptr&        _resc ) {
         // =-=-=-=-=-=-=-
-        // counter and flag
-        size_t child_ctr   = 0;
+        // flag
         bool   child_found = false;
+
+        // =-=-=-=-=-=-=-
+        // the pool of resources (children) to try
+        std::vector<eirods::resource_ptr> candidate_resources;
+
+        // =-=-=-=-=-=-=-
+        // copy children from _cmap
+        eirods::resource_child_map::iterator itr = _cmap.begin();
+        for( ; itr != _cmap.end(); ++itr ) {
+        	candidate_resources.push_back(itr->second.second);
+        }
  
         // =-=-=-=-=-=-=-
-        // while we have not found a child and have not
-        // exhausted possibly all the children in the map
-        while( !child_found &&
-               child_ctr < ( 10 * _cmap.size() ) ) {
-            // =-=-=-=-=-=-=-
-            // increment child counter
-            child_ctr++;
+        // while we have not found a child and still have candidates
+        while( !child_found && !candidate_resources.empty() ) {
 
             // =-=-=-=-=-=-=-
-            // pick a child at random
-            std::string child_name;
-            random_get_next_child_resource( _cmap, child_name );
+            // generate random index
+            double rand_number  = static_cast<double>( rand() );
+            rand_number /= static_cast<double>( RAND_MAX );
+            size_t rand_index = round( ( candidate_resources.size() - 1 ) * rand_number );
             
             // =-=-=-=-=-=-=-
-            // get the child resource pointer
-            eirods::resource_ptr resc;
-            resc = _cmap[ child_name ].second;
+            // pick resource in pool at random index
+            eirods::resource_ptr resc = candidate_resources[rand_index];
 
             // =-=-=-=-=-=-=-
             // get the resource's status
@@ -664,7 +695,11 @@ extern "C" {
                 _resc = resc;
                 child_found = true;
 
-           } 
+           } else {
+               // =-=-=-=-=-=-=-
+               // remove child from pool of candidates
+        	   candidate_resources.erase(candidate_resources.begin()+rand_index);
+           }
 
         } // while
 
@@ -674,7 +709,7 @@ extern "C" {
             return SUCCESS();
         
         } else {
-            return ERROR( EIRODS_NEXT_RESC_FOUND, "no valid child found" );
+            return ERROR( EIRODS_NO_NEXT_RESC_FOUND, "no valid child found" );
         
         }
 
@@ -727,7 +762,8 @@ extern "C" {
      
         // =-=-=-=-=-=-=-
         // test the operation to determine which choices to make
-        if( eirods::EIRODS_OPEN_OPERATION == (*_opr) ) {
+        if( eirods::EIRODS_OPEN_OPERATION   == (*_opr)  || 
+            eirods::EIRODS_WRITE_OPERATION  == (*_opr) ) {
             // =-=-=-=-=-=-=-
             // get the next child pointer in the hierarchy, given our name and the hier string
             eirods::resource_ptr resc; 
@@ -878,6 +914,7 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_REGISTERED,   "random_file_registered" );
         resc->add_operation( eirods::RESOURCE_OP_UNREGISTERED, "random_file_unregistered" );
         resc->add_operation( eirods::RESOURCE_OP_MODIFIED,     "random_file_modified" );
+        resc->add_operation( eirods::RESOURCE_OP_NOTIFY,       "random_file_notify" );
         
         resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER,     "random_redirect" );
         resc->add_operation( eirods::RESOURCE_OP_REBALANCE,             "random_file_rebalance" );

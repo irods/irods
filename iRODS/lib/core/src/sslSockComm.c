@@ -7,6 +7,7 @@
 
 #include "rodsClient.h"
 #include "sslSockComm.h"
+#include "eirods_client_server_negotiation.h"
 
 // =-=-=-=-=-=-=-
 // work around for SSL Macro version issues
@@ -87,6 +88,10 @@ sslStart(rcComm_t *rcComm)
         return SSL_CERT_ERROR;
     }
     
+    strncpy( 
+        rcComm->negotiation_results, 
+        eirods::CS_NEG_USE_SSL.c_str(),
+        MAX_NAME_LEN );
     return 0;
 }
 
@@ -130,6 +135,13 @@ sslEnd(rcComm_t *rcComm)
     rcComm->ssl_ctx = NULL;
     rcComm->ssl_on = 0;
 
+    strncpy( 
+        rcComm->negotiation_results, 
+        eirods::CS_NEG_USE_TCP.c_str(),
+        MAX_NAME_LEN );
+    rodsLog(LOG_DEBUG, "sslShutdown: shut down SSL connection");
+
+
     return 0;
 }
 
@@ -170,6 +182,10 @@ sslAccept(rsComm_t *rsComm)
     }
 
     rsComm->ssl_on = 1;
+    strncpy( 
+        rsComm->negotiation_results, 
+        eirods::CS_NEG_USE_SSL.c_str(),
+        MAX_NAME_LEN );
 
     rodsLog(LOG_DEBUG, "sslAccept: accepted SSL connection");
 
@@ -201,6 +217,10 @@ sslShutdown(rsComm_t *rsComm)
     rsComm->ssl_ctx = NULL;
     rsComm->ssl_on = 0;
 
+    strncpy( 
+        rsComm->negotiation_results, 
+        eirods::CS_NEG_USE_TCP.c_str(),
+        MAX_NAME_LEN );
     rodsLog(LOG_DEBUG, "sslShutdown: shut down SSL connection");
 
     return 0;

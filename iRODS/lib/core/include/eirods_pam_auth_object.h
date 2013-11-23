@@ -19,18 +19,6 @@ namespace eirods {
     const std::string AUTH_PAM_SCHEME( "pam" );
     
     /// =-=-=-=-=-=-=-
-    /// @brief constant defining the username key for a kvp string
-    const std::string PAM_USER_KEY( "username" );
-    
-    /// =-=-=-=-=-=-=-
-    /// @brief constant defining the ttl key for a kvp string
-    const std::string PAM_TTL_KEY( "ttl" );
-    
-    /// =-=-=-=-=-=-=-
-    /// @brief constant defining the password key for a kvp string
-    const std::string PAM_PASSWORD_KEY( "password" );
-
-    /// =-=-=-=-=-=-=-
     /// @brief object for a native irods authenticaion sceheme
     class pam_auth_object : public auth_object {
     public:

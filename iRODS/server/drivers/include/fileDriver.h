@@ -44,4 +44,5 @@ eirods::error fileSyncToArch  ( rsComm_t*, eirods::first_class_object_ptr, const
 eirods::error fileRegistered(rsComm_t* _comm, eirods::first_class_object_ptr _object );
 eirods::error fileUnregistered(rsComm_t* _comm, eirods::first_class_object_ptr _object );
 eirods::error fileModified(rsComm_t* _comm, eirods::first_class_object_ptr _object );
+eirods::error fileNotify(rsComm_t* _comm, eirods::first_class_object_ptr _object , const std::string& );
 #endif	/* FILE_DRIVER_H */

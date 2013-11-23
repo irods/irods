@@ -15,6 +15,7 @@
 #include "rodsGeneralUpdate.h"
 #include "specificQuery.h" 
 #include "phyBundleColl.h"
+#include "readServerConfig.h"
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -28,7 +29,7 @@
 
 extern icatSessionStruct icss;
 
-int chlOpen(char *DBUser, char *DBpasswd);
+int chlOpen( rodsServerConfig* );
 int chlClose();
 int chlIsConnected();
 int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,

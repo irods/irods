@@ -84,6 +84,7 @@ getFilePathName (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
         && strlen (filePath) > 0) {
         rstrcpy (dataObjInfo->filePath, filePath, MAX_NAME_LEN);
         return (0);
+    } else {
     }
 
     /* Make up a physical path */ 
@@ -1202,7 +1203,7 @@ rsMkOrphanPath (rsComm_t *rsComm, char *objPath, char *orphanPath)
     int status;
     char *tmpStr;
     char *orphanPathPtr;
-    int len;
+    int len = 0;
     char parentColl[MAX_NAME_LEN], childName[MAX_NAME_LEN];
     collInp_t collCreateInp;
 

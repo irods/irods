@@ -33,11 +33,16 @@
 #include <boost/function.hpp>
 #include <boost/any.hpp>
 
-// =-=-=-=-=-=-=-
+/// =-=-=-=-=-=-=-
+/// @ brief constant to reference the operation type for 
+///         file modification
+const std::string OPERATION_TYPE( "operation_type" );
+
+/// =-=-=-=-=-=-=-
 /// @ brief constant to index the cache child resource
 const std::string CACHE_CONTEXT_TYPE( "cache" );
 
-// =-=-=-=-=-=-=-
+/// =-=-=-=-=-=-=-
 /// @ brief constant to index the archive child resource
 const std::string ARCHIVE_CONTEXT_TYPE( "archive" );
 
@@ -981,19 +986,23 @@ extern "C" {
         eirods::resource_plugin_context& _ctx )
     {
        eirods::error result = SUCCESS();
-        
+
         // =-=-=-=-=-=-=- 
         // Check the operation parameters and update the physical path
         eirods::error ret = compound_check_param< eirods::file_object >( _ctx );
         if(( result = ASSERT_PASS(ret, "Invalid resource context.")).ok()) {
-            std::string name;
-            ret = _ctx.prop_map().get<std::string>( eirods::RESOURCE_NAME, name);
-            if((result = ASSERT_PASS(ret, "Failed to get the resource name.")).ok()) {
-                eirods::file_object_ptr file_obj = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
-                eirods::hierarchy_parser sub_parser;
-                sub_parser.set_string(file_obj->in_pdmo());
-                if(!sub_parser.resc_in_hier(name)) {
-                    result = repl_object( _ctx, SYNC_OBJ_KW );
+            std::string operation;
+            ret = _ctx.prop_map().get< std::string >( OPERATION_TYPE, operation );
+            if( ret.ok() ) {
+                std::string name;
+                ret = _ctx.prop_map().get<std::string>( eirods::RESOURCE_NAME, name);
+                if((result = ASSERT_PASS(ret, "Failed to get the resource name.")).ok()) {
+                    eirods::file_object_ptr file_obj = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
+                    eirods::hierarchy_parser sub_parser;
+                    sub_parser.set_string(file_obj->in_pdmo());
+                    if(!sub_parser.resc_in_hier(name)) {
+                        result = repl_object( _ctx, SYNC_OBJ_KW );
+                    }
                 }
             }
         }
@@ -1002,10 +1011,47 @@ extern "C" {
 
     } // compound_file_modified
 
+    /// =-=-=-=-=-=-=-
+    /// @brief interface to notify of a file operation
+    eirods::error compound_file_notify(
+        eirods::resource_plugin_context& _ctx,
+        const std::string*               _opr ) {
+       eirods::error result = SUCCESS();
+        
+        // =-=-=-=-=-=-=- 
+        // Check the operation parameters and update the physical path
+        eirods::error ret = compound_check_param< eirods::file_object >( _ctx );
+        if(( result = ASSERT_PASS(ret, "Invalid resource context.")).ok()) {
+            std::string operation;
+            ret = _ctx.prop_map().get< std::string >( OPERATION_TYPE, operation );
+            if( ret.ok() ) {
+               rodsLog( 
+                   LOG_NOTICE, // should be debug1
+                   "compound_file_notify - oper [%s] changed to [%s]", 
+                   _opr->c_str(), 
+                   operation.c_str() );
+            } // if ret ok
+            if( eirods::EIRODS_WRITE_OPERATION == (*_opr) ||
+                eirods::EIRODS_CREATE_OPERATION == (*_opr ) ) {
+                _ctx.prop_map().set< std::string >( OPERATION_TYPE, (*_opr) );
+            } else {
+                rodsLog( 
+                    LOG_NOTICE, // should be debug1
+                    "compound_file_notify - skipping [%s]",
+                    _opr->c_str() );
+            }
+
+        } // if valid
+        
+        return result;
+
+    } // compound_file_notify
+
     // =-=-=-=-=-=-=-
     // redirect_get - code to determine redirection for get operation
     eirods::error compound_file_redirect_create( 
         eirods::resource_plugin_context& _ctx,
+        const std::string&               _operation,
         const std::string&               _resc_name, 
         const std::string*               _curr_host, 
         eirods::hierarchy_parser*        _out_parser,
@@ -1038,8 +1084,13 @@ extern "C" {
         ret = resc->call< const std::string*, const std::string*, 
             eirods::hierarchy_parser*, float* >( 
                 _ctx.comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(), 
-                &eirods::EIRODS_CREATE_OPERATION, _curr_host, 
+                &_operation, _curr_host, 
                 _out_parser, _out_vote );
+
+        // =-=-=-=-=-=-=-
+        // set the operation type to signal that we need to do some work
+        // in file modified
+        _ctx.prop_map().set< std::string >( OPERATION_TYPE, _operation );
 
         return ret;
 
@@ -1424,10 +1475,11 @@ extern "C" {
             // call redirect determination for 'get' operation
             return compound_file_redirect_open( _ctx, _curr_host, _out_parser, _out_vote );
 
-        } else if( eirods::EIRODS_CREATE_OPERATION == (*_opr) ) {
+        } else if( eirods::EIRODS_CREATE_OPERATION == (*_opr) ||
+                   eirods::EIRODS_WRITE_OPERATION  == (*_opr) ) {
             // =-=-=-=-=-=-=-
             // call redirect determination for 'create' operation
-            return compound_file_redirect_create( _ctx, resc_name, _curr_host, _out_parser, _out_vote );
+            return compound_file_redirect_create( _ctx, (*_opr), resc_name, _curr_host, _out_parser, _out_vote );
 
         }
       
@@ -1514,6 +1566,7 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_REGISTERED,   "compound_file_registered" );
         resc->add_operation( eirods::RESOURCE_OP_UNREGISTERED, "compound_file_unregistered" );
         resc->add_operation( eirods::RESOURCE_OP_MODIFIED,     "compound_file_modified" );
+        resc->add_operation( eirods::RESOURCE_OP_NOTIFY,       "compound_file_notify" );
 
         resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER,     "compound_file_redirect" );
         resc->add_operation( eirods::RESOURCE_OP_REBALANCE,             "compound_file_rebalance" );

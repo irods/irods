@@ -100,6 +100,8 @@ static char prevChalSig[200]; /* a 'signature' of the previous
 #define TEMP_PASSWORD_TIME 120
 #define TEMP_PASSWORD_MAX_TIME 1000
 
+
+#if 0
 /* IRODS_PAM_PASSWORD_DEFAULT_TIME (the default iRODS-PAM password
    lifetime) IRODS_PAM_PASSWORD_MIN_TIME must be greater than
    TEMP_PASSWORD_TIME to avoid the possibility that the logic for
@@ -124,12 +126,23 @@ static char prevChalSig[200]; /* a 'signature' of the previous
 #else
 #define IRODS_PAM_PASSWORD_DEFAULT_TIME "1209600" /* two weeks in seconds */
 #endif
- 
+#endif
+    
 #define PASSWORD_SCRAMBLE_PREFIX ".E_"
 #define PASSWORD_KEY_ENV_VAR "irodsPKey"
 #define PASSWORD_DEFAULT_KEY "a9_3fker"
 
 #define MAX_HOST_STR 2700
+
+// =-=-=-=-=-=-=-
+// local variables externed for config file setting in
+bool eirods_pam_auth_no_extend = false;
+size_t eirods_pam_password_len = 20;
+char eirods_pam_password_min_time[ NAME_LEN ]     = { "121" };
+char eirods_pam_password_max_time[ NAME_LEN ]     = { "1209600" };
+char eirods_pam_password_default_time[ NAME_LEN ] = { "1209600" };
+
+
 
 int logSQL=0;
 
@@ -227,11 +240,13 @@ icatScramble(char *pw) {
   Open a connection to the database.  This has to be called first.  The
   server/agent and Rule-Engine Server call this when initializing.
 */
-int chlOpen(char *DBUser, char *DBpasswd) {
+int chlOpen( 
+    rodsServerConfig* _config ) {
+    
     int i;
     if (logSQL!=0) rodsLog(LOG_SQL, "chlOpen");
-    strncpy(icss.databaseUsername, DBUser, DB_USERNAME_LEN);
-    strncpy(icss.databasePassword, DBpasswd, DB_PASSWORD_LEN);
+    strncpy( icss.databaseUsername, _config->DBUsername, DB_USERNAME_LEN );
+    strncpy( icss.databasePassword, _config->DBPassword, DB_PASSWORD_LEN );
     i = cmlOpen(&icss);
     if (i != 0) {
         rodsLog(LOG_NOTICE, "chlOpen cmlOpen failure %d",i);
@@ -241,6 +256,25 @@ int chlOpen(char *DBUser, char *DBpasswd) {
 
         // Capture ICAT properties
         eirods::catalog_properties::getInstance().capture();
+    }
+
+    // =-=-=-=-=-=-=-
+    // set pam properties
+    eirods_pam_auth_no_extend    = _config->eirods_pam_auth_no_extend;
+    eirods_pam_password_len      = _config->eirods_pam_password_len;
+    strncpy( 
+        eirods_pam_password_min_time,
+        _config->eirods_pam_password_min_time,
+        NAME_LEN );
+    strncpy( 
+        eirods_pam_password_max_time,
+        _config->eirods_pam_password_max_time,
+        NAME_LEN );
+    if( eirods_pam_auth_no_extend ) {
+        strncpy( 
+            eirods_pam_password_default_time,
+            "28800",
+            NAME_LEN );
     }
 
     return(i);
@@ -4902,8 +4936,8 @@ int chlCheckAuth(
     nowTime=atoll(myTime);
 
     /* Check for PAM_AUTH type passwords */
-    pamMaxTime=atoll(IRODS_PAM_PASSWORD_MAX_TIME);
-    pamMinTime=atoll(IRODS_PAM_PASSWORD_MIN_TIME);
+    pamMaxTime=atoll(eirods_pam_password_max_time);
+    pamMinTime=atoll(eirods_pam_password_min_time);
 
     if( ( strncmp(goodPwExpiry, "9999",4)!=0) &&
             expireTime >=  pamMinTime &&
@@ -5261,6 +5295,8 @@ chlMakeLimitedPw(rsComm_t *rsComm, int ttl, char *pwValueToHash) {
     char tSQL[MAX_SQL_SIZE];
     char expTime[50];
     int timeToLive;
+    rodsLong_t pamMinTime;
+    rodsLong_t pamMaxTime;
 
     if (logSQL!=0) rodsLog(LOG_SQL, "chlMakeLimitedPw");
 
@@ -5317,8 +5353,10 @@ chlMakeLimitedPw(rsComm_t *rsComm, int ttl, char *pwValueToHash) {
     getNowStr(myTime);
 
     timeToLive = ttl*3600;  /* convert input hours to seconds */
-    if (timeToLive < IRODS_TTL_PASSWORD_MIN_TIME  ||
-        timeToLive > IRODS_TTL_PASSWORD_MAX_TIME) {
+    pamMaxTime=atoll(eirods_pam_password_max_time);
+    pamMinTime=atoll(eirods_pam_password_min_time);
+    if (timeToLive < pamMinTime ||
+        timeToLive > pamMaxTime ) {
       return PAM_AUTH_PASSWORD_INVALID_TTL;
     }
 
@@ -5344,8 +5382,8 @@ chlMakeLimitedPw(rsComm_t *rsComm, int ttl, char *pwValueToHash) {
 
     /* Also delete any that are expired */
     if (logSQL!=0) rodsLog(LOG_SQL, "chlMakeLimitedPw SQL 3");
-    cllBindVars[cllBindVarCount++]=IRODS_PAM_PASSWORD_MIN_TIME;
-    cllBindVars[cllBindVarCount++]=IRODS_PAM_PASSWORD_MAX_TIME;
+    cllBindVars[cllBindVarCount++]=eirods_pam_password_min_time;
+    cllBindVars[cllBindVarCount++]=eirods_pam_password_max_time;
     cllBindVars[cllBindVarCount++]=myTime;
 #if MY_ICAT
     status =  cmlExecuteNoAnswerSql("delete from R_USER_PASSWORD where pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as signed integer)>=? and cast(pass_expiry_ts as signed integer)<=? and (cast(pass_expiry_ts as signed integer) + cast(modify_ts as signed integer) < ?)",
@@ -5459,13 +5497,13 @@ int chlUpdateIrodsPamPassword(rsComm_t *rsComm,
 
     /* if ttl is unset, use the default */
     if (timeToLive == 0) {
-      rstrcpy(expTime, IRODS_PAM_PASSWORD_DEFAULT_TIME, sizeof expTime);
+      rstrcpy(expTime, eirods_pam_password_default_time, sizeof expTime);
     }
     else {
       /* convert ttl to seconds and make sure ttl is within the limits */
       rodsLong_t pamMinTime, pamMaxTime;
-      pamMinTime=atoll(IRODS_PAM_PASSWORD_MIN_TIME);
-      pamMaxTime=atoll(IRODS_PAM_PASSWORD_MAX_TIME);
+      pamMinTime=atoll(eirods_pam_password_min_time);
+      pamMaxTime=atoll(eirods_pam_password_max_time);
       timeToLive = timeToLive * 3600;
       if (timeToLive < pamMinTime || 
           timeToLive > pamMaxTime) {
@@ -5484,8 +5522,8 @@ int chlUpdateIrodsPamPassword(rsComm_t *rsComm,
 
     /* first delete any that are expired */
     if (logSQL!=0) rodsLog(LOG_SQL, "chlUpdateIrodsPamPassword SQL 2");
-    cllBindVars[cllBindVarCount++]=IRODS_PAM_PASSWORD_MIN_TIME;
-    cllBindVars[cllBindVarCount++]=IRODS_PAM_PASSWORD_MAX_TIME;
+    cllBindVars[cllBindVarCount++]=eirods_pam_password_min_time;
+    cllBindVars[cllBindVarCount++]=eirods_pam_password_max_time;
     cllBindVars[cllBindVarCount++]=myTime;
 #if MY_ICAT
     status =  cmlExecuteNoAnswerSql("delete from R_USER_PASSWORD where pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as signed integer)>=? and cast(pass_expiry_ts as signed integer)<=? and (cast(pass_expiry_ts as signed integer) + cast(modify_ts as signed integer) < ?)",
@@ -5505,34 +5543,33 @@ int chlUpdateIrodsPamPassword(rsComm_t *rsComm,
             "select rcat_password, modify_ts from R_USER_PASSWORD where user_id=? and pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as integer) >= ? and cast (pass_expiry_ts as integer) <= ?",
 #endif
             cVal, iVal, 2,
-            selUserId, 
-            IRODS_PAM_PASSWORD_MIN_TIME,
-            IRODS_PAM_PASSWORD_MAX_TIME, &icss);
+            selUserId,
+            eirods_pam_password_min_time,
+            eirods_pam_password_max_time, &icss);
 
     if (status==0) {
-#ifndef PAM_AUTH_NO_EXTEND
-      if (logSQL!=0) rodsLog(LOG_SQL, "chlUpdateIrodsPamPassword SQL 4");
-      cllBindVars[cllBindVarCount++]=myTime;
-      cllBindVars[cllBindVarCount++]=expTime;
-      cllBindVars[cllBindVarCount++]=selUserId;
-      cllBindVars[cllBindVarCount++]=passwordInIcat;
-      status =  cmlExecuteNoAnswerSql("update R_USER_PASSWORD set modify_ts=?, pass_expiry_ts=? where user_id = ? and rcat_password = ?",
-                                      &icss);
-      if (status) return(status);
+        if( !eirods_pam_auth_no_extend ) {
+            if (logSQL!=0) rodsLog(LOG_SQL, "chlUpdateIrodsPamPassword SQL 4");
+            cllBindVars[cllBindVarCount++]=myTime;
+            cllBindVars[cllBindVarCount++]=expTime;
+            cllBindVars[cllBindVarCount++]=selUserId;
+            cllBindVars[cllBindVarCount++]=passwordInIcat;
+            status =  cmlExecuteNoAnswerSql("update R_USER_PASSWORD set modify_ts=?, pass_expiry_ts=? where user_id = ? and rcat_password = ?",
+                                            &icss);
+            if (status) return(status);
 
-      status =  cmlExecuteNoAnswerSql("commit", &icss);
-      if (status != 0) {
-          rodsLog(LOG_NOTICE,
-                  "chlUpdateIrodsPamPassword cmlExecuteNoAnswerSql commit failure %d",
-                  status);
-          return(status);
-      }
-#endif
-      icatDescramble(passwordInIcat);
-      strncpy(*irodsPassword, passwordInIcat, IRODS_PAM_PASSWORD_LEN);
-      return(0);
+            status =  cmlExecuteNoAnswerSql("commit", &icss);
+            if (status != 0) {
+                rodsLog(LOG_NOTICE,
+                        "chlUpdateIrodsPamPassword cmlExecuteNoAnswerSql commit failure %d",
+                        status);
+                return(status);
+            }
+        } // if !eirods_pam_auth_no_extend
+        icatDescramble(passwordInIcat);
+        strncpy( *irodsPassword, passwordInIcat, eirods_pam_password_len );
+        return(0);
     }
-
 
     // =-=-=-=-=-=-=-
     // if the resultant scrambled password has a ' in the
@@ -5541,10 +5578,9 @@ int chlUpdateIrodsPamPassword(rsComm_t *rsComm,
     // random password.
     bool pw_good = false;
     while( !pw_good ) {
-
-        j=0;
-        get64RandomBytes(rBuf);
-        for (i=0;i<50 && j<IRODS_PAM_PASSWORD_LEN-1;i++) {
+       j=0;
+       get64RandomBytes(rBuf);
+       for (i=0;i<50 && j<eirods_pam_password_len-1;i++) {
           char c;
           c = rBuf[i] & 0x7f;
           if (c < '0') c+='0';
@@ -5589,7 +5625,7 @@ int chlUpdateIrodsPamPassword(rsComm_t *rsComm,
       return(status);
     }
 
-    strncpy(*irodsPassword, randomPw, IRODS_PAM_PASSWORD_LEN);
+    strncpy(*irodsPassword, randomPw, eirods_pam_password_len);
     return(0);
 }
 
@@ -5755,8 +5791,8 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
 
     if (strncmp(option, "rmPamPw", 9)==0) {
         rstrcpy(tSQL, form7, MAX_SQL_SIZE);
-        cllBindVars[cllBindVarCount++]=IRODS_PAM_PASSWORD_MIN_TIME;
-        cllBindVars[cllBindVarCount++]=IRODS_PAM_PASSWORD_MAX_TIME;
+        cllBindVars[cllBindVarCount++]=eirods_pam_password_min_time;
+        cllBindVars[cllBindVarCount++]=eirods_pam_password_max_time;
         cllBindVars[cllBindVarCount++]=userName2;
         cllBindVars[cllBindVarCount++]=zoneName;
         if (logSQL!=0) rodsLog(LOG_SQL, "chlModUser SQL 6");

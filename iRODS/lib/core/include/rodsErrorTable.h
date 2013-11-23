@@ -216,7 +216,7 @@
 #define OBJ_PATH_DOES_NOT_EXIST                     -358000
 #define SYMLINKED_BUNFILE_NOT_ALLOWED               -359000 // JMC - backport 4833
 #define USER_INPUT_STRING_ERR                       -360000
-
+#define USER_INVALID_RESC_INPUT		                  -361000
 
 /* 500,000 to 800,000 - file driver error */
 #define FILE_INDEX_LOOKUP_ERR                       -500000 
@@ -654,7 +654,7 @@
 #define EIRODS_CHILD_EXISTS                         -1802000
 #define EIRODS_HIERARCHY_ERROR                      -1803000
 #define EIRODS_CHILD_NOT_FOUND                      -1804000
-#define EIRODS_NEXT_RESC_FOUND                      -1805000
+#define EIRODS_NO_NEXT_RESC_FOUND                   -1805000
 #define EIRODS_NO_PDMO_DEFINED                      -1806000
 #define EIRODS_INVALID_LOCATION                     -1807000
 #define EIRODS_PLUGIN_ERROR                         -1808000

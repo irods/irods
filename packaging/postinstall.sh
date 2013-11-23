@@ -9,21 +9,39 @@ DB_NAME=$6
 DB_HOST=$7
 DB_PORT=$8
 DB_USER=$9
-DB_PASS=`cat /dev/urandom | base64 | head -c16`
 
 IRODS_HOME=$EIRODS_HOME_DIR/iRODS
 
+# =-=-=-=-=-=-=-
+# detect whether this is an upgrade
+UPGRADE_FLAG_FILE=$EIRODS_HOME_DIR/upgrade.tmp
+if [ -f "$UPGRADE_FLAG_FILE" ] ; then
+    UPGRADE_FLAG="true"
+else
+    UPGRADE_FLAG="false"
+fi
 
-#echo "EIRODS_HOME_DIR=$EIRODS_HOME_DIR"
-#echo "OS_EIRODS_ACCT=$OS_EIRODS_ACCT"
-#echo "SERVER_TYPE=$SERVER_TYPE"
-#echo "DB_TYPE=$DB_TYPE"
-#echo "DB_ADMIN_ROLE=$DB_ADMIN_ROLE"
-#echo "DB_NAME=$DB_NAME"
-#echo "DB_HOST=$DB_HOST"
-#echo "DB_PORT=$DB_PORT"
-#echo "DB_USER=$DB_USER"
-#echo "DB_PASS=$DB_PASS"
+# =-=-=-=-=-=-=-
+# database password
+if [ "$UPGRADE_FLAG" == "true" ] ; then
+    # read existing database password
+    DB_PASS=`grep DATABASE_ADMIN_PASSWORD $EIRODS_HOME_DIR/iRODS/config/irods.config | awk -F\' '{print $2}'`
+    DB_PASS=`echo $DB_PASS | tr -d ' '`
+else
+    # generate new database password
+    DB_PASS=`cat /dev/urandom | base64 | head -c16`
+fi
+#echo "UPGRADE_FLAG=[$UPGRADE_FLAG]"
+#echo "EIRODS_HOME_DIR=[$EIRODS_HOME_DIR]"
+#echo "OS_EIRODS_ACCT=[$OS_EIRODS_ACCT]"
+#echo "SERVER_TYPE=[$SERVER_TYPE]"
+#echo "DB_TYPE=[$DB_TYPE]"
+#echo "DB_ADMIN_ROLE=[$DB_ADMIN_ROLE]"
+#echo "DB_NAME=[$DB_NAME]"
+#echo "DB_HOST=[$DB_HOST]"
+#echo "DB_PORT=[$DB_PORT]"
+#echo "DB_USER=[$DB_USER]"
+#echo "DB_PASS=[$DB_PASS]"
 
 
 # =-=-=-=-=-=-=-
@@ -122,46 +140,48 @@ if [ "$SERVER_TYPE" == "icat" ] ; then
     set +e
     DB=$( su --shell=/bin/bash -c "$PSQL --list" $DB_ADMIN_ROLE  | grep $DB_NAME )
     set -e
-    if [ -n "$DB" ]; then
+    if [ -n "$DB" -a "$UPGRADE_FLAG" == "false" ] ; then
       echo "ERROR :: Database $DB_NAME Already Exists, Aborting."
 	  exit 1
     fi
 
-    # =-=-=-=-=-=-=-
-    # find postgres path & psql - modify config/irods.config accordingly
-    EIRODSPOSTGRESDIR="$PGPATH/"
-    echo "Detecting PostgreSQL Path: [$EIRODSPOSTGRESDIR]"
-    sed -e "\,^\$DATABASE_HOME,s,^.*$,\$DATABASE_HOME = '$EIRODSPOSTGRESDIR';," $IRODS_HOME/config/irods.config > /tmp/irods.config.tmp
-    mv /tmp/irods.config.tmp $IRODS_HOME/config/irods.config
+    if [ "$UPGRADE_FLAG" == "false" ] ; then
+        # =-=-=-=-=-=-=-
+        # find postgres path & psql - modify config/irods.config accordingly
+        EIRODSPOSTGRESDIR="$PGPATH/"
+        echo "Detecting PostgreSQL Path: [$EIRODSPOSTGRESDIR]"
+        sed -e "\,^\$DATABASE_HOME,s,^.*$,\$DATABASE_HOME = '$EIRODSPOSTGRESDIR';," $IRODS_HOME/config/irods.config > /tmp/irods.config.tmp
+        mv /tmp/irods.config.tmp $IRODS_HOME/config/irods.config
 
-    # =-=-=-=-=-=-=-
-    # update config/irods.config with new generated password
-    sed -e "s,TEMPLATE_DB_PASS,$DB_PASS," $IRODS_HOME/config/irods.config > /tmp/irods.config.tmp
-    mv /tmp/irods.config.tmp $IRODS_HOME/config/irods.config
+        # =-=-=-=-=-=-=-
+        # update config/irods.config with new generated password
+        sed -e "s,TEMPLATE_DB_PASS,$DB_PASS," $IRODS_HOME/config/irods.config > /tmp/irods.config.tmp
+        mv /tmp/irods.config.tmp $IRODS_HOME/config/irods.config
 
-    # =-=-=-=-=-=-=-
-    # determine if the database role already exists
-    ROLE=$( su --shell=/bin/bash -c "$PSQL $DB_ADMIN_ROLE -tAc \"SELECT 1 FROM pg_roles WHERE rolname='$DB_USER'\"" $DB_ADMIN_ROLE )
-    if [ $ROLE ]; then
-      echo "ERROR :: Role $DB_USER Already Exists in Database, Aborting."
-	  exit 1
+        # =-=-=-=-=-=-=-
+        # determine if the database role already exists
+        ROLE=$( su --shell=/bin/bash -c "$PSQL $DB_ADMIN_ROLE -tAc \"SELECT 1 FROM pg_roles WHERE rolname='$DB_USER'\"" $DB_ADMIN_ROLE )
+        if [ $ROLE ]; then
+            echo "ERROR :: Role $DB_USER Already Exists in Database, Aborting."
+            exit 1
+        fi
+
+        # =-=-=-=-=-=-=-
+        # create the database role
+        echo "Creating Database Role: $DB_USER as $DB_ADMIN_ROLE"
+        su --shell=/bin/bash -c "createuser -s $DB_USER" $DB_ADMIN_ROLE &> /dev/null
+
+        # =-=-=-=-=-=-=-
+        # update new role with proper password
+        echo "Updating Database Role Password..."
+        ALTERPASSCMD="alter user $DB_USER with password '$DB_PASS'"
+        su --shell=/bin/bash -c "$PSQL -c \"$ALTERPASSCMD\"" $DB_ADMIN_ROLE &> /dev/null
+
+        # =-=-=-=-=-=-=-
+        # create the database
+        echo "Creating Database: $DB_NAME as $DB_USER"
+        su --shell=/bin/bash -c "createdb $DB_NAME" $DB_USER &> /dev/null
     fi
-
-    # =-=-=-=-=-=-=-
-    # create the database role
-	echo "Creating Database Role: $DB_USER as $DB_ADMIN_ROLE"
-	su --shell=/bin/bash -c "createuser -s $DB_USER" $DB_ADMIN_ROLE &> /dev/null
-
-    # =-=-=-=-=-=-=-
-    # update new role with proper password
-	echo "Updating Database Role Password..."
-    ALTERPASSCMD="alter user $DB_USER with password '$DB_PASS'"
-    su --shell=/bin/bash -c "$PSQL -c \"$ALTERPASSCMD\"" $DB_ADMIN_ROLE &> /dev/null
-
-    # =-=-=-=-=-=-=-
-    # create the database
-	echo "Creating Database: $DB_NAME as $DB_USER"
-	su --shell=/bin/bash -c "createdb $DB_NAME" $DB_USER &> /dev/null
 
   else
     # =-=-=-=-=-=-=-
@@ -169,7 +189,6 @@ if [ "$SERVER_TYPE" == "icat" ] ; then
     echo "TODO: detect location of non-postgres database"
     echo "TODO: create database role"
     echo "TODO: check for existing database"
-
   fi
 
 
@@ -210,55 +229,55 @@ fi
 #ln -s    /usr/bin/runQuota.r              ${IRODS_HOME}/clients/icommands/bin/runQuota.r        
 #ln -s    /usr/bin/showCore.ir             ${IRODS_HOME}/clients/icommands/bin/showCore.ir       
 
-ln -s    /usr/bin/genOSAuth               ${IRODS_HOME}/clients/icommands/bin/genOSAuth         
-ln -s    /usr/bin/iadmin                  ${IRODS_HOME}/clients/icommands/bin/iadmin            
-ln -s    /usr/bin/ibun                    ${IRODS_HOME}/clients/icommands/bin/ibun              
-ln -s    /usr/bin/icd                     ${IRODS_HOME}/clients/icommands/bin/icd               
-ln -s    /usr/bin/ichksum                 ${IRODS_HOME}/clients/icommands/bin/ichksum           
-ln -s    /usr/bin/ichmod                  ${IRODS_HOME}/clients/icommands/bin/ichmod            
-ln -s    /usr/bin/icp                     ${IRODS_HOME}/clients/icommands/bin/icp               
-ln -s    /usr/bin/idbug                   ${IRODS_HOME}/clients/icommands/bin/idbug             
-ln -s    /usr/bin/ienv                    ${IRODS_HOME}/clients/icommands/bin/ienv              
-ln -s    /usr/bin/ierror                  ${IRODS_HOME}/clients/icommands/bin/ierror            
-ln -s    /usr/bin/iexecmd                 ${IRODS_HOME}/clients/icommands/bin/iexecmd           
-ln -s    /usr/bin/iexit                   ${IRODS_HOME}/clients/icommands/bin/iexit             
-ln -s    /usr/bin/ifsck                   ${IRODS_HOME}/clients/icommands/bin/ifsck             
-ln -s    /usr/bin/iget                    ${IRODS_HOME}/clients/icommands/bin/iget              
-ln -s    /usr/bin/igetwild                ${IRODS_HOME}/clients/icommands/bin/igetwild          
-ln -s    /usr/bin/igroupadmin             ${IRODS_HOME}/clients/icommands/bin/igroupadmin       
-ln -s    /usr/bin/ihelp                   ${IRODS_HOME}/clients/icommands/bin/ihelp             
-ln -s    /usr/bin/iinit                   ${IRODS_HOME}/clients/icommands/bin/iinit             
-ln -s    /usr/bin/ilocate                 ${IRODS_HOME}/clients/icommands/bin/ilocate           
-ln -s    /usr/bin/ils                     ${IRODS_HOME}/clients/icommands/bin/ils               
-ln -s    /usr/bin/ilsresc                 ${IRODS_HOME}/clients/icommands/bin/ilsresc           
-ln -s    /usr/bin/imcoll                  ${IRODS_HOME}/clients/icommands/bin/imcoll            
-ln -s    /usr/bin/imeta                   ${IRODS_HOME}/clients/icommands/bin/imeta             
-ln -s    /usr/bin/imiscsvrinfo            ${IRODS_HOME}/clients/icommands/bin/imiscsvrinfo      
-ln -s    /usr/bin/imkdir                  ${IRODS_HOME}/clients/icommands/bin/imkdir            
-ln -s    /usr/bin/imv                     ${IRODS_HOME}/clients/icommands/bin/imv               
-ln -s    /usr/bin/ipasswd                 ${IRODS_HOME}/clients/icommands/bin/ipasswd           
-ln -s    /usr/bin/iphybun                 ${IRODS_HOME}/clients/icommands/bin/iphybun           
-ln -s    /usr/bin/iphymv                  ${IRODS_HOME}/clients/icommands/bin/iphymv            
-ln -s    /usr/bin/ips                     ${IRODS_HOME}/clients/icommands/bin/ips               
-ln -s    /usr/bin/iput                    ${IRODS_HOME}/clients/icommands/bin/iput              
-ln -s    /usr/bin/ipwd                    ${IRODS_HOME}/clients/icommands/bin/ipwd              
-ln -s    /usr/bin/iqdel                   ${IRODS_HOME}/clients/icommands/bin/iqdel             
-ln -s    /usr/bin/iqmod                   ${IRODS_HOME}/clients/icommands/bin/iqmod             
-ln -s    /usr/bin/iqstat                  ${IRODS_HOME}/clients/icommands/bin/iqstat            
-ln -s    /usr/bin/iquest                  ${IRODS_HOME}/clients/icommands/bin/iquest            
-ln -s    /usr/bin/iquota                  ${IRODS_HOME}/clients/icommands/bin/iquota            
-ln -s    /usr/bin/ireg                    ${IRODS_HOME}/clients/icommands/bin/ireg              
-ln -s    /usr/bin/irepl                   ${IRODS_HOME}/clients/icommands/bin/irepl             
-ln -s    /usr/bin/irm                     ${IRODS_HOME}/clients/icommands/bin/irm               
-ln -s    /usr/bin/irmtrash                ${IRODS_HOME}/clients/icommands/bin/irmtrash          
-ln -s    /usr/bin/irsync                  ${IRODS_HOME}/clients/icommands/bin/irsync            
-ln -s    /usr/bin/irule                   ${IRODS_HOME}/clients/icommands/bin/irule             
-ln -s    /usr/bin/iscan                   ${IRODS_HOME}/clients/icommands/bin/iscan             
-ln -s    /usr/bin/isysmeta                ${IRODS_HOME}/clients/icommands/bin/isysmeta          
-ln -s    /usr/bin/iticket                 ${IRODS_HOME}/clients/icommands/bin/iticket           
-ln -s    /usr/bin/itrim                   ${IRODS_HOME}/clients/icommands/bin/itrim             
-ln -s    /usr/bin/iuserinfo               ${IRODS_HOME}/clients/icommands/bin/iuserinfo         
-ln -s    /usr/bin/ixmsg                   ${IRODS_HOME}/clients/icommands/bin/ixmsg             
+ln -fs    /usr/bin/genOSAuth               ${IRODS_HOME}/clients/icommands/bin/genOSAuth         
+ln -fs    /usr/bin/iadmin                  ${IRODS_HOME}/clients/icommands/bin/iadmin            
+ln -fs    /usr/bin/ibun                    ${IRODS_HOME}/clients/icommands/bin/ibun              
+ln -fs    /usr/bin/icd                     ${IRODS_HOME}/clients/icommands/bin/icd               
+ln -fs    /usr/bin/ichksum                 ${IRODS_HOME}/clients/icommands/bin/ichksum           
+ln -fs    /usr/bin/ichmod                  ${IRODS_HOME}/clients/icommands/bin/ichmod            
+ln -fs    /usr/bin/icp                     ${IRODS_HOME}/clients/icommands/bin/icp               
+ln -fs    /usr/bin/idbug                   ${IRODS_HOME}/clients/icommands/bin/idbug             
+ln -fs    /usr/bin/ienv                    ${IRODS_HOME}/clients/icommands/bin/ienv              
+ln -fs    /usr/bin/ierror                  ${IRODS_HOME}/clients/icommands/bin/ierror            
+ln -fs    /usr/bin/iexecmd                 ${IRODS_HOME}/clients/icommands/bin/iexecmd           
+ln -fs    /usr/bin/iexit                   ${IRODS_HOME}/clients/icommands/bin/iexit             
+ln -fs    /usr/bin/ifsck                   ${IRODS_HOME}/clients/icommands/bin/ifsck             
+ln -fs    /usr/bin/iget                    ${IRODS_HOME}/clients/icommands/bin/iget              
+ln -fs    /usr/bin/igetwild                ${IRODS_HOME}/clients/icommands/bin/igetwild          
+ln -fs    /usr/bin/igroupadmin             ${IRODS_HOME}/clients/icommands/bin/igroupadmin       
+ln -fs    /usr/bin/ihelp                   ${IRODS_HOME}/clients/icommands/bin/ihelp             
+ln -fs    /usr/bin/iinit                   ${IRODS_HOME}/clients/icommands/bin/iinit             
+ln -fs    /usr/bin/ilocate                 ${IRODS_HOME}/clients/icommands/bin/ilocate           
+ln -fs    /usr/bin/ils                     ${IRODS_HOME}/clients/icommands/bin/ils               
+ln -fs    /usr/bin/ilsresc                 ${IRODS_HOME}/clients/icommands/bin/ilsresc           
+ln -fs    /usr/bin/imcoll                  ${IRODS_HOME}/clients/icommands/bin/imcoll            
+ln -fs    /usr/bin/imeta                   ${IRODS_HOME}/clients/icommands/bin/imeta             
+ln -fs    /usr/bin/imiscsvrinfo            ${IRODS_HOME}/clients/icommands/bin/imiscsvrinfo      
+ln -fs    /usr/bin/imkdir                  ${IRODS_HOME}/clients/icommands/bin/imkdir            
+ln -fs    /usr/bin/imv                     ${IRODS_HOME}/clients/icommands/bin/imv               
+ln -fs    /usr/bin/ipasswd                 ${IRODS_HOME}/clients/icommands/bin/ipasswd           
+ln -fs    /usr/bin/iphybun                 ${IRODS_HOME}/clients/icommands/bin/iphybun           
+ln -fs    /usr/bin/iphymv                  ${IRODS_HOME}/clients/icommands/bin/iphymv            
+ln -fs    /usr/bin/ips                     ${IRODS_HOME}/clients/icommands/bin/ips               
+ln -fs    /usr/bin/iput                    ${IRODS_HOME}/clients/icommands/bin/iput              
+ln -fs    /usr/bin/ipwd                    ${IRODS_HOME}/clients/icommands/bin/ipwd              
+ln -fs    /usr/bin/iqdel                   ${IRODS_HOME}/clients/icommands/bin/iqdel             
+ln -fs    /usr/bin/iqmod                   ${IRODS_HOME}/clients/icommands/bin/iqmod             
+ln -fs    /usr/bin/iqstat                  ${IRODS_HOME}/clients/icommands/bin/iqstat            
+ln -fs    /usr/bin/iquest                  ${IRODS_HOME}/clients/icommands/bin/iquest            
+ln -fs    /usr/bin/iquota                  ${IRODS_HOME}/clients/icommands/bin/iquota            
+ln -fs    /usr/bin/ireg                    ${IRODS_HOME}/clients/icommands/bin/ireg              
+ln -fs    /usr/bin/irepl                   ${IRODS_HOME}/clients/icommands/bin/irepl             
+ln -fs    /usr/bin/irm                     ${IRODS_HOME}/clients/icommands/bin/irm               
+ln -fs    /usr/bin/irmtrash                ${IRODS_HOME}/clients/icommands/bin/irmtrash          
+ln -fs    /usr/bin/irsync                  ${IRODS_HOME}/clients/icommands/bin/irsync            
+ln -fs    /usr/bin/irule                   ${IRODS_HOME}/clients/icommands/bin/irule             
+ln -fs    /usr/bin/iscan                   ${IRODS_HOME}/clients/icommands/bin/iscan             
+ln -fs    /usr/bin/isysmeta                ${IRODS_HOME}/clients/icommands/bin/isysmeta          
+ln -fs    /usr/bin/iticket                 ${IRODS_HOME}/clients/icommands/bin/iticket           
+ln -fs    /usr/bin/itrim                   ${IRODS_HOME}/clients/icommands/bin/itrim             
+ln -fs    /usr/bin/iuserinfo               ${IRODS_HOME}/clients/icommands/bin/iuserinfo         
+ln -fs    /usr/bin/ixmsg                   ${IRODS_HOME}/clients/icommands/bin/ixmsg             
 
 
 
@@ -270,31 +289,26 @@ ln -s    /usr/bin/ixmsg                   ${IRODS_HOME}/clients/icommands/bin/ix
 
 cd $PWD
 
-# =-=-=-=-=-=-=-
-# run setup script to configure an ICAT server
-if [ "$SERVER_TYPE" == "icat" ] ; then
-	cd $IRODS_HOME
-	su --shell=/bin/bash -c "perl ./scripts/perl/eirods_setup.pl $DB_TYPE $DB_HOST $DB_PORT $DB_USER $DB_PASS" $OS_EIRODS_ACCT
-fi
+if [ "$UPGRADE_FLAG" == "true" ] ; then
+    # =-=-=-=-=-=-=-
+    # start the upgraded server
+    # (instead of running eirods_setup.pl which would have started it)
+    set +e
+    su --shell=/bin/bash -c "cd $IRODS_HOME; ./irodsctl start" $OS_EIRODS_ACCT
+    set -e
+else
+    # =-=-=-=-=-=-=-
+    # run setup script to configure an ICAT server
+    if [ "$SERVER_TYPE" == "icat" ] ; then
+        cd $IRODS_HOME
+        su --shell=/bin/bash -c "perl $IRODS_HOME/scripts/perl/eirods_setup.pl $DB_TYPE $DB_HOST $DB_PORT $DB_USER $DB_PASS" $OS_EIRODS_ACCT
+    fi
 
-
-# =-=-=-=-=-=-=-
-# remove setup 'rodsBoot' account - reduce potential attack surface
-if [ "$SERVER_TYPE" == "icat" ] ; then
-    su --shell=/bin/bash -c "/usr/bin/iadmin rmuser rodsBoot" $OS_EIRODS_ACCT
-fi
-
-
-
-
-# =-=-=-=-=-=-=-
-if [ "$SERVER_TYPE" == "icat" ] ; then
-  # tell user about their irodsenv
-  cat $EIRODS_HOME_DIR/packaging/user_irodsenv.txt
-  cat $EIRODS_HOME_DIR/.irods/.irodsEnv
-elif [ "$SERVER_TYPE" == "resource" ] ; then
-  # give user some guidance regarding resource configuration
-  cat $EIRODS_HOME_DIR/packaging/user_resource.txt
+    # =-=-=-=-=-=-=-
+    # remove setup 'rodsBoot' account - reduce potential attack surface
+    if [ "$SERVER_TYPE" == "icat" ] ; then
+        su --shell=/bin/bash -c "/usr/bin/iadmin rmuser rodsBoot" $OS_EIRODS_ACCT
+    fi
 fi
 
 # =-=-=-=-=-=-=-
@@ -302,29 +316,109 @@ fi
 chown -R $OS_EIRODS_ACCT:$OS_EIRODS_ACCT $EIRODS_HOME_DIR
 
 # =-=-=-=-=-=-=-
+# set permissions on iRODS authentication mechanisms
+chown root:root $IRODS_HOME/server/bin/PamAuthCheck
+chmod 4755 $IRODS_HOME/server/bin/PamAuthCheck
+chmod 4755 /usr/bin/genOSAuth
+
+# =-=-=-=-=-=-=-
+# remove the password from the service account
+passwd -d $OS_EIRODS_ACCT > /dev/null
+
+
+if [ "$UPGRADE_FLAG" == "false" ] ; then
+    # =-=-=-=-=-=-=-
+    if [ "$SERVER_TYPE" == "icat" ] ; then
+        # tell user about their irodsenv
+        cat $EIRODS_HOME_DIR/packaging/user_irodsenv.txt
+        cat $EIRODS_HOME_DIR/.irods/.irodsEnv
+    elif [ "$SERVER_TYPE" == "resource" ] ; then
+        # give user some guidance regarding resource configuration
+        cat $EIRODS_HOME_DIR/packaging/user_resource.txt
+    fi
+fi
+
+
+
+
+# =-=-=-=-=-=-=-
+# RPM runs old 3.0 uninstall script last, which removed everything
+# Detect this case and protect the existing data
+if [ "$UPGRADE_FLAG" == "true" ] ; then
+    EIRODSVERSIONINT=`grep EIRODSVERSIONINT $UPGRADE_FLAG_FILE | awk -F\= '{print $2}' | tr -d ' '`
+    # delete temp file
+    rm -f $UPGRADE_FLAG_FILE
+    # check against version integer
+    if [ $EIRODSVERSIONINT -lt 301002 ] ; then
+        # Check for RPM-based systems
+        if [ "$DETECTEDOS" == "RedHatCompatible" -o "$DETECTEDOS" == "SuSE" ] ; then
+            # stop the running server
+            su --shell=/bin/bash -c "cd $IRODS_HOME; ./irodsctl stop" $OS_EIRODS_ACCT
+            # detect whether eirods home directory is a mount point
+            set +e
+            mountpoint $EIRODS_HOME_DIR > /dev/null
+            ISMOUNTPOINT=$?
+            set -e
+            # if a mount point
+            if [ $ISMOUNTPOINT -eq 0 ] ; then
+                # detect current mounted device
+                MOUNTED_DEVICE=`df | grep " $EIRODS_HOME_DIR$" | awk '{print $1}'`
+                # unmount eirods home directory
+                set +e
+                umount $EIRODS_HOME_DIR
+                set -e
+                # report to the admin what happened
+                echo "$EIRODS_HOME_DIR has been unmounted from $MOUNTED_DEVICE"
+                echo "#########################################################"
+                echo "#"
+                echo "#  E-iRODS PostInstall Script"
+                echo "#"
+                echo "#  $EIRODS_HOME_DIR has been unmounted from $MOUNTED_DEVICE"
+                echo "#"
+                echo "#  Due to upgrading from E-iRODS 3.0, your upgrade is"
+                echo "#  not yet fully complete.  Your files and database are"
+                echo "#  safe and awaiting the remounting of $EIRODS_HOME_DIR."
+                echo "#"
+                echo "#  Once $EIRODS_HOME_DIR is mounted again,"
+                echo "#  start the server:"
+                echo "#"
+                echo "#    sudo su - eirods -c 'cd $IRODS_HOME; ./irodsctl start'"
+                echo "#"
+                echo "#########################################################"
+            else
+                # if not, move it aside
+                mv $EIRODS_HOME_DIR ${EIRODS_HOME_DIR}_new
+                # create a passable directory in its place, which will be deleted by existing 3.0 postun script
+                mkdir -p $EIRODS_HOME_DIR
+                cp -r ${EIRODS_HOME_DIR}_new/packaging $EIRODS_HOME_DIR/packaging
+                mkdir $EIRODS_HOME_DIR/iRODS
+                cp -r ${EIRODS_HOME_DIR}_new/iRODS/irodsctl $EIRODS_HOME_DIR/iRODS/irodsctl
+                cp -r ${EIRODS_HOME_DIR}_new/iRODS/scripts $EIRODS_HOME_DIR/iRODS/scripts
+                mkdir -p $EIRODS_HOME_DIR/iRODS/clients/icommands
+                cp -r ${EIRODS_HOME_DIR}_new/iRODS/clients/icommands/bin $EIRODS_HOME_DIR/iRODS/clients/icommands/bin
+                # report to the admin what happened
+                echo "#########################################################"
+                echo "#"
+                echo "#  E-iRODS PostInstall Script"
+                echo "#"
+                echo "#  Due to upgrading from E-iRODS 3.0, your upgrade is"
+                echo "#  not yet fully complete.  Your files and database are"
+                echo "#  safely awaiting the run of the recovery script which"
+                echo "#  will place everything back into the correct locations."
+                echo "#"
+                echo "#  Please run the recovery script with the RPM file you"
+                echo "#  just used to upgrade:"
+                echo "#"
+                echo "#    sudo ${EIRODS_HOME_DIR}_new/packaging/post30upgrade.sh newfile.rpm"
+                echo "#"
+                echo "#########################################################"
+            fi
+        fi
+    fi
+fi
+
+
+# =-=-=-=-=-=-=-
 # exit with success
 exit 0
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

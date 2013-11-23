@@ -136,7 +136,7 @@ namespace eirods {
             T1 _t1, 
             T2 _t2 ) {
             resource_plugin_context ctx( properties_, _obj, "", _comm, children_ );
-                return operations_[ _op ].call< T1, T2 >( ctx, _t1, _t2 );
+            return operations_[ _op ].call< T1, T2 >( ctx, _t1, _t2 );
         
         } // call - T1, T2
 

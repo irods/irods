@@ -11,7 +11,9 @@
 #include "eirods_native_auth_object.h"
 #include "eirods_pam_auth_object.h"
 #include "eirods_kvp_string_parser.h"
+#include "eirods_auth_constants.h"
 
+#include<iostream>
 void usage (char *prog);
 void usageTTL ();
 
@@ -232,15 +234,19 @@ main(int argc, char **argv)
        doPassword=0;
     }
 #endif
-    if (strncmp("PAM",myEnv.rodsAuthScheme,3)==0 ||
-	strncmp("pam",myEnv.rodsAuthScheme,3)==0) {
-#ifdef PAM_AUTH
+
+
+    // =-=-=-=-=-=-=-
+    // ensure scheme is lower case for comparison
+    std::string lower_scheme = myEnv.rodsAuthScheme;;
+    std::transform( 
+       lower_scheme.begin(), 
+       lower_scheme.end(), 
+       lower_scheme.begin(), 
+       ::tolower );
+
+    if( eirods::AUTH_PAM_SCHEME == lower_scheme ) {
        doPassword=0;
-#else 
-       rodsLog (LOG_ERROR,
-	    "PAM_AUTH_NOT_BUILT_INTO_CLIENT, will try iRODS password",
-	     status);
-#endif
     }
 
     if (strcmp(myEnv.rodsUserName, ANONYMOUS_USER)==0) {
@@ -277,21 +283,20 @@ main(int argc, char **argv)
     // PAM auth gets special consideration, and also includes an
     // auth by the usual convention
     bool pam_flg = false;
-    if( strncmp( "PAM", myEnv.rodsAuthScheme, 3 ) == 0 ||
-        strncmp( "pam", myEnv.rodsAuthScheme, 3 ) == 0 ) {
+    if( eirods::AUTH_PAM_SCHEME == lower_scheme ) {
         // =-=-=-=-=-=-=-
         // set a flag stating that we have done pam and the auth
-        // scheme needs overriden
+        // scheme needs overridden
         pam_flg = true;
 
         // =-=-=-=-=-=-=-
         // build a context string which includes the ttl and password
         std::stringstream ttl_str;  ttl_str << ttl;
-        std::string context = eirods::PAM_TTL_KEY       +
+        std::string context = eirods::AUTH_TTL_KEY      +
                               eirods::kvp_association() + 
                               ttl_str.str()             +
                               eirods::kvp_delimiter()   +
-                              eirods::PAM_PASSWORD_KEY  +
+                              eirods::AUTH_PASSWORD_KEY +
                               eirods::kvp_association() + 
                               password;
         // =-=-=-=-=-=-=-
@@ -306,7 +311,7 @@ main(int argc, char **argv)
         // if this succeeded, do the regular login below to check 
         // that the generated password works properly.  
     } // if pam
-
+        
     // =-=-=-=-=-=-=-
     // since we might be using PAM
     // and check that the user/password is OK 

@@ -29,8 +29,6 @@ int reconnFlag, rErrMsg_t *errMsg)
        st.dump();
    }
 
-
-
     rcComm_t *conn;
 
 #ifdef windows_platform

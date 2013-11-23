@@ -30,7 +30,7 @@ namespace eirods {
     error hierarchy_parser::set_string(
         const std::string& _resc_hier) {
         if( _resc_hier.empty() ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "empty heir string" );
+            return ERROR( SYS_INVALID_INPUT_PARAM, "empty hierarchy string" );
         }
         error result = SUCCESS();
         resc_list_.clear();
@@ -112,7 +112,7 @@ namespace eirods {
                     std::stringstream msg;
                     msg << "there is no next resource. [" << _current;
                     msg << "] is a leaf resource.";
-                    result = ERROR(EIRODS_NEXT_RESC_FOUND, msg.str());
+                    result = ERROR(EIRODS_NO_NEXT_RESC_FOUND, msg.str());
                 }
             }
         }

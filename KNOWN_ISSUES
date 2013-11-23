@@ -38,13 +38,9 @@ CAT_SQL_ERR
 
 
 
-Ticket Item:  [#1763] encrypted parallel transfer causing intermittent crash in CI VMs
+Ticket Item:  [#1807] Fix OSAuth testing in CI
 --------------------------------------------------------------------------------------
 
-CI VMs are throwing a stacktrace on the client side in the call to initialization_vector()
+Test for OSAuth yielded a rxAuthResponse error.
 
-
-
-repeatable occasionally on memory-thin machines with the following test
-
-python -m unittest -b test_eirods_resource_types.Test_Compound_Resource.test_ssl_iput_small_and_large_files
+iexit needed to be called before a new iinit is issued with a new environment.

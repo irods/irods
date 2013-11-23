@@ -9,12 +9,12 @@
  */
 
 // =-=-=-=-=-=-=-
-// irods includs
+// irods includes
 #include "rodsClient.h"
 #include "sslSockComm.h"
 
 // =-=-=-=-=-=-=-
-// eirods includs
+// eirods includes
 #include "eirods_auth_object.h"
 #include "eirods_auth_factory.h"
 #include "eirods_auth_plugin.h"
@@ -330,9 +330,9 @@ int clientLoginTTL(rcComm_t *Conn, int ttl)
 }
 
 /// =-=-=-=-=-=-=-
-/// @brief clientLogin provides the interface for authenticaion
+/// @brief clientLogin provides the interface for authentication
 ///        plugins as well as defining the protocol or template
-///        authenticaion will follow
+///        Authentication will follow
 int clientLogin(
     rcComm_t*   _comm,
     const char* _context,
@@ -345,8 +345,8 @@ int clientLogin(
 
     // =-=-=-=-=-=-=-
     // get the rods environment so we can determine the
-    // flavor of authenticaiton desired by the user -
-    // check the environment vairable first then the rods
+    // flavor of authentication desired by the user -
+    // check the environment variable first then the rods
     // env if that was null
     std::string auth_scheme = eirods::AUTH_NATIVE_SCHEME;
     if( ProcessType == CLIENT_PT ) {
@@ -373,6 +373,15 @@ int clientLogin(
                 auth_scheme = auth_env_var;
             
             }
+           
+           // =-=-=-=-=-=-=-
+           // ensure scheme is lower case for comparison
+           std::string lower_scheme = auth_scheme;
+           std::transform( 
+               auth_scheme.begin(), 
+               auth_scheme.end(), 
+               auth_scheme.begin(), 
+               ::tolower );
 
             // =-=-=-=-=-=-=-
             // filter out the pam auth as it is an extra special
@@ -385,6 +394,7 @@ int clientLogin(
         } // if _scheme_override
          
     } // if client side auth
+
 
     // =-=-=-=-=-=-=-
     // construct an auth object given the scheme

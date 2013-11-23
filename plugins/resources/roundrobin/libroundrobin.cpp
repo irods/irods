@@ -920,7 +920,7 @@ extern "C" {
             return SUCCESS();
         
         } else {
-            return ERROR( EIRODS_NEXT_RESC_FOUND, "no valid child found" );
+            return ERROR( EIRODS_NO_NEXT_RESC_FOUND, "no valid child found" );
         
         }
 
@@ -973,7 +973,8 @@ extern "C" {
      
         // =-=-=-=-=-=-=-
         // test the operation to determine which choices to make
-        if( eirods::EIRODS_OPEN_OPERATION == (*_opr) ) {
+        if( eirods::EIRODS_OPEN_OPERATION  == (*_opr)  ||
+            eirods::EIRODS_WRITE_OPERATION == (*_opr) ) {
             // =-=-=-=-=-=-=-
             // get the next child pointer in the hierarchy, given our name and the hier string
             eirods::resource_ptr resc; 
@@ -1074,6 +1075,30 @@ extern "C" {
 
     } // round_robin_file_rebalancec
 
+    // =-=-=-=-=-=-=-
+    // interface for POSIX Open
+    eirods::error round_robin_file_notify( 
+        eirods::resource_plugin_context& _ctx,
+        const std::string*               _opr ) { 
+        // =-=-=-=-=-=-=-
+        // get the child resc to call
+        eirods::resource_ptr resc; 
+        eirods::error err = round_robin_get_resc_for_call< eirods::file_object >( _ctx, resc );
+        if( !err.ok() ) {
+            std::stringstream msg;
+            msg << "failed.";
+            return PASSMSG( msg.str(), err );
+        }
+
+        // =-=-=-=-=-=-=-
+        // call open operation on the child 
+        return resc->call< const std::string* >( 
+                   _ctx.comm(), 
+                   eirods::RESOURCE_OP_NOTIFY, 
+                   _ctx.fco(), 
+                   _opr );
+ 
+    } // round_robin_file_open
 
     // =-=-=-=-=-=-=-
     // 3. create derived class to handle round_robin file system resources
@@ -1209,6 +1234,7 @@ extern "C" {
         
         resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER,     "round_robin_redirect" );
         resc->add_operation( eirods::RESOURCE_OP_REBALANCE,             "round_robin_file_rebalance" );
+        resc->add_operation( eirods::RESOURCE_OP_NOTIFY,             "round_robin_file_notify" );
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code

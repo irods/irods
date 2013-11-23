@@ -7,6 +7,7 @@
 
 #include "rods.h"
 #include "rodsClient.h"
+#include "eirods_children_parser.h"
 
 #define MAX_SQL 300
 #define BIG_STR 200
@@ -14,6 +15,32 @@
 rcComm_t *Conn;
 
 char zoneArgument[MAX_NAME_LEN+2]="";
+
+
+// =-=-=-=-=-=-=-
+// tree stuff
+
+// containers for storing query results
+// one vector per attribute
+std::vector<std::string> resc_names;
+std::vector<std::string> resc_types;
+std::vector<std::string> resc_children;
+
+// mapping of resource names and row indexes for looking up children
+std::map<std::string, int> resc_map;
+
+// list of root resources
+std::vector<std::string> roots;
+
+// tree drawing gfx
+std::string middle_child_connector[2] = {"|-- ", "\u251C\u2500\u2500 "};
+std::string last_child_connector[2] = {"`-- ", "\u2514\u2500\u2500 "};
+std::string vertical_pipe[2] = {"|   ", "\u2502   "};
+std::string indent = "    ";
+int gfx_mode = 1; // 0 for ascii, 1 for unicode
+
+// =-=-=-=-=-=-=-
+
 
 void usage();
 
@@ -296,6 +323,187 @@ showRescAcl(char *name)
 }
 
 
+// depth is a binary string of open nodes
+void printDepth(const std::string& depth) {
+	for (std::string::const_iterator it = depth.begin(); it != depth.end(); ++it) {
+		if (*it == '1') {
+			std::cout << vertical_pipe[gfx_mode];
+		}
+		else {
+			std::cout << indent;
+		}
+	}
+}
+
+
+// recursive function to print resource tree
+void printRescTree(const std::string& node_name, std::string depth) {
+	int resc_index;
+
+	// get children string
+	resc_index = resc_map[node_name];
+	std::string& children_str = resc_children[resc_index];
+
+	// if leaf print name
+	if (children_str.empty()) {
+		std::cout << node_name << std::endl;
+		return;
+	}
+
+	// print coordinating node name and type
+	std::cout << node_name << ":" << resc_types[resc_index] << std::endl;
+
+
+	// print children
+	eirods::children_parser parser;
+	parser.set_string(children_str);
+	eirods::children_parser::const_iterator it, final_it = parser.end();
+	final_it--;
+	for (it = parser.begin(); it != parser.end(); ++it) {
+		if (it != final_it) {
+			// print depth string
+			printDepth(depth);
+
+			// print middle child connector
+			std::cout << middle_child_connector[gfx_mode];
+
+			// append '1' to depth string and print child
+			printRescTree(it->first, depth + "1");
+		}
+		else {
+			// print depth string
+			printDepth(depth);
+
+			// print last child connector
+			std::cout << last_child_connector[gfx_mode];
+
+			// append '0' to depth string and print child
+			printRescTree(it->first, depth + "0");
+		}
+	}
+	return;
+}
+
+
+int parseGenQueryOut(int offset, genQueryOut_t *genQueryOut) {
+	char* t_res;	// target result
+
+	// loop over rows (i.e. for each resource)
+	for(int i=0; i < genQueryOut->rowCnt; i++) {
+
+		// get resource name
+		t_res = genQueryOut->sqlResult[0].value + i*genQueryOut->sqlResult[0].len;
+		if (!t_res || !strlen(t_res)) {
+			// parsing error
+			return SYS_INTERNAL_NULL_INPUT_ERR;
+		}
+		resc_names.push_back(std::string(t_res));
+
+		// map resource name to row index
+		resc_map[resc_names.back()] = i + offset;
+
+		// get resource type
+		t_res = genQueryOut->sqlResult[1].value + i*genQueryOut->sqlResult[1].len;
+		resc_types.push_back(std::string(t_res));
+
+		// get resource children
+		t_res = genQueryOut->sqlResult[2].value + i*genQueryOut->sqlResult[2].len;
+		resc_children.push_back(std::string(t_res));
+
+		// check if has parent
+		t_res = genQueryOut->sqlResult[3].value + i*genQueryOut->sqlResult[3].len;
+		if (!t_res || !strlen(t_res)) {
+			// another root node
+			roots.push_back(resc_names.back());
+		}
+
+	}
+
+	return 0;
+}
+
+
+
+int showRescTree(char *name) {
+	int status;
+	int offset = 0; // when getting more rows
+	char* t_res;	// target result
+
+	// genQuery input and output (camelCase for tradition)
+	genQueryInp_t genQueryInp;
+	genQueryOut_t *genQueryOut;
+	char collQCond[MAX_NAME_LEN];
+
+
+	// start clean
+	memset(&genQueryInp, 0, sizeof(genQueryInp_t));
+
+	// set up query columns
+	addInxIval(&genQueryInp.selectInp, COL_R_RESC_NAME, ORDER_BY);
+	addInxIval(&genQueryInp.selectInp, COL_R_TYPE_NAME, 1);
+	addInxIval(&genQueryInp.selectInp, COL_R_RESC_CHILDREN, 1);
+	addInxIval(&genQueryInp.selectInp, COL_R_RESC_PARENT, 1);
+
+
+	// set up query condition (resc_name != 'bundleResc')
+    snprintf(collQCond, MAX_NAME_LEN, "!='%s'", BUNDLE_RESC);
+    addInxVal(&genQueryInp.sqlCondInp, COL_R_RESC_NAME, collQCond);
+
+	// query for resources
+	genQueryInp.maxRows = MAX_SQL_ROWS;
+	status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+
+	// query fail?
+	if (status < 0) {
+		printError(Conn, status, "rcGenQuery");
+		return status;
+	}
+
+
+	// parse results
+	status = parseGenQueryOut(offset, genQueryOut);
+
+
+
+	// More rows in the pipeline?
+	while (!status && genQueryOut->continueInx > 0) {
+		genQueryInp.continueInx = genQueryOut->continueInx;
+
+		// update offset
+		offset += genQueryOut->rowCnt;
+
+		// get next batch of rows
+		status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+
+		// parse results
+		status = parseGenQueryOut(offset, genQueryOut);
+	}
+
+
+
+	// If target resource was specified print tree for that resource
+	if (name && strlen(name)) {
+		std::string target_resc_name(name);
+
+		// check for invalid resource name
+		if (std::find(resc_names.begin(), resc_names.end(), target_resc_name) == resc_names.end()) {
+			std::cout << "Resource " << target_resc_name << " does not exist." << std::endl;
+			return USER_INVALID_RESC_INPUT;
+		}
+
+		// print tree
+		printRescTree(target_resc_name, "");
+	}
+	else {
+		// Otherwise print tree for each root node
+		for(std::vector<std::string>::const_iterator it = roots.begin(); it != roots.end(); ++it) {
+			printRescTree(*it, "");
+		}
+	}
+
+	return status;
+}
+
 int
 main(int argc, char **argv) {
    int status;
@@ -311,7 +519,7 @@ main(int argc, char **argv) {
 
    rodsLogLevel(LOG_ERROR);
 
-   status = parseCmdLineOpt (argc, argv, "AhvVlz:", 0, &myRodsArgs);
+   status = parseCmdLineOpt (argc, argv, "AhvVlz:Z", 1, &myRodsArgs);
    if (status) {
       printf("Use -h for help.\n");
       exit(1);
@@ -352,19 +560,29 @@ main(int argc, char **argv) {
       exit (3);
    }
 
-   if (myRodsArgs.optind == argc) {  /* no resource name specified */
-      status = showResc(argv[myRodsArgs.optind], myRodsArgs.longOption);
-   }
-   else {
-      if (myRodsArgs.accessControl == True) {
-	      showRescAcl(argv[myRodsArgs.optind]);
-      }
-      else {
-    	  status = showResc(argv[myRodsArgs.optind], myRodsArgs.longOption);
-      }
-   }
+   // tree view
+   if (myRodsArgs.tree == True) {
+	   if (myRodsArgs.ascii == True) { // character set for printing tree
+		   gfx_mode = 0;
+	   }
 
-    printErrorStack(Conn->rError);
+	   status = showRescTree(argv[myRodsArgs.optind]);
+   }
+   else { // regular view
+	   if (myRodsArgs.optind == argc) {  /* no resource name specified */
+		  status = showResc(argv[myRodsArgs.optind], myRodsArgs.longOption);
+	   }
+	   else {
+		  if (myRodsArgs.accessControl == True) {
+			  showRescAcl(argv[myRodsArgs.optind]);
+		  }
+		  else {
+			  status = showResc(argv[myRodsArgs.optind], myRodsArgs.longOption);
+		  }
+	   }
+   } // regular view
+
+   printErrorStack(Conn->rError);
    rcDisconnect(Conn);
 
    /* Exit 0 if one or more items were displayed */
@@ -379,7 +597,7 @@ void usage()
 {
    char *msgs[]={
 "ilsresc lists iRODS resources",
-"Usage: ilsresc [-lvVhA] [Name]", 
+"Usage: ilsresc [-lvVhA] [--tree] [--ascii] [Name]",
 "If Name is present, list only that resource, ",
 "otherwise list them all ",
 "Options are:", 
@@ -388,6 +606,8 @@ void usage()
 " -V Very verbose",
 " -z Zonename  list resources of specified Zone",
 " -A Rescname  list the access permissions (applies to Database Resources only)",
+" --tree - tree view",
+" --ascii - use ascii character set to build tree view (ignored without --tree)",
 " -h This help",
 ""};
    int i;

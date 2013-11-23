@@ -39,7 +39,7 @@ namespace eirods {
     // =-=-=-=-=-=-=-
     /// @brief value for a native file system type - this should be
     ///        modified for different platforms ( windows vs linux, etc. )
-    const std::string RESOURCE_TYPE_NATIVE( "unix file system" );
+    const std::string RESOURCE_TYPE_NATIVE( "unixfilesystem" );
 
     // =-=-=-=-=-=-=-
     /// @brief value for a bundle file system class
@@ -78,6 +78,7 @@ namespace eirods {
     const std::string RESOURCE_OP_MODIFIED( "resource_modified" );
     const std::string RESOURCE_OP_RESOLVE_RESC_HIER( "resource_resolve_hierarchy" );
     const std::string RESOURCE_OP_REBALANCE( "resource_rebalance" );
+    const std::string RESOURCE_OP_NOTIFY( "resource_notify" );
 
     // =-=-=-=-=-=-=-
     /// @brief constants for icat resource properties

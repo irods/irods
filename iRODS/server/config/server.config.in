@@ -35,3 +35,9 @@ reVariableMapSet  core
 # For Kerberos, define the principal name in the server-side Keytab file
 # For example, for host zuri.unc.edu in the Kerberos domain UNC.EDU:
 # KerberosName irods/zuri.unc.edu@UNC.EDU
+
+# PAM authentication configuration - as seen in icatHighLevelRoutines
+# pam_password_length 20
+# pam_no_extend false
+# pam_password_min_time 121
+# pam_password_max_time 1209600

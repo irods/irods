@@ -216,6 +216,8 @@ if [ "$1" == "clean" ] ; then
     rm -rf epm*
     echo "Cleaning external residuals..."
     cd $DETECTEDDIR/../external
+    rm -rf __MACOSX
+    rm -rf cJSON*
     rm -rf cmake*
     rm -rf libarchive*
     rm -rf boost*
@@ -243,9 +245,9 @@ BUILDDIR=$GITDIR  # we'll manipulate this later, depending on the coverage flag
 cd $BUILDDIR/iRODS
 echo "Build Directory set to [$BUILDDIR]"
 # read E-iRODS Version from file
-source ../packaging/VERSION
+source ../VERSION
 echo "Detected E-iRODS Version to Build [$EIRODSVERSION]"
-echo "Detected EPM E-iRODS Version String [$EPMEIRODSVERSION]"
+echo "Detected E-iRODS Version Integer [$EIRODSVERSIONINT]"
 # detect operating system
 DETECTEDOS=`../packaging/find_os.sh`
 if [ "$PORTABLE" == "1" ] ; then
@@ -661,6 +663,24 @@ sleep 1
 # LOCAL COMPILATIONS - in ./external
 if [ "$BUILDEIRODS" == "1" ] ; then
 
+    # get a copy of cjson
+    EIRODS_BUILD_CJSONVERSIONNUMBER="58"
+    EIRODS_BUILD_CJSONVERSION="cJSONFiles-r$EIRODS_BUILD_CJSONVERSIONNUMBER"
+    cd $BUILDDIR/external/
+    if [ -d "cJSON" ] ; then
+        echo "${text_green}${text_bold}Detected copy of [$EIRODS_BUILD_CJSONVERSION]${text_reset}"
+    else
+        echo "${text_green}${text_bold}Downloading [$EIRODS_BUILD_CJSONVERSION] from ftp.renci.org${text_reset}"
+        if [ -e "$EIRODS_BUILD_CJSONVERSION.zip" ] ; then
+            echo "Using existing copy"
+        else
+#            wget http://sourceforge.net/projects/cjson/files/cJSONFiles.zip/download
+            wget ftp://ftp.renci.org/pub/eirods/external/$EIRODS_BUILD_CJSONVERSION.zip
+        fi
+        echo "${text_green}${text_bold}Unzipping [$EIRODS_BUILD_CJSONVERSION]${text_reset}"
+        unzip -o $EIRODS_BUILD_CJSONVERSION.zip
+    fi
+
     # build a copy of cmake
     EIRODS_BUILD_CMAKEVERSIONNUMBER="2.8.11.2"
     EIRODS_BUILD_CMAKEVERSION="cmake-$EIRODS_BUILD_CMAKEVERSIONNUMBER"
@@ -995,20 +1015,20 @@ if [ "$BUILDEIRODS" == "1" ] ; then
 
 
     # =-=-=-=-=-=-=-
-    # populate EPMEIRODSVERSION and EIRODSVERSION in all EPM list files
+    # populate EIRODSVERSIONINT and EIRODSVERSION in all EPM list files
 
     # eirods main package
-    sed -e "s,TEMPLATE_EPMEIRODSVERSION,$EPMEIRODSVERSION," ./packaging/eirods.list > /tmp/eirodslist.tmp
+    sed -e "s,TEMPLATE_EIRODSVERSIONINT,$EIRODSVERSIONINT," ./packaging/eirods.list > /tmp/eirodslist.tmp
     mv /tmp/eirodslist.tmp ./packaging/eirods.list
     sed -e "s,TEMPLATE_EIRODSVERSION,$EIRODSVERSION," ./packaging/eirods.list > /tmp/eirodslist.tmp
     mv /tmp/eirodslist.tmp ./packaging/eirods.list
     # eirods-dev package
-    sed -e "s,TEMPLATE_EPMEIRODSVERSION,$EPMEIRODSVERSION," ./packaging/eirods-dev.list.template > /tmp/eirodsdevlist.tmp
+    sed -e "s,TEMPLATE_EIRODSVERSIONINT,$EIRODSVERSIONINT," ./packaging/eirods-dev.list.template > /tmp/eirodsdevlist.tmp
     mv /tmp/eirodsdevlist.tmp ./packaging/eirods-dev.list
     sed -e "s,TEMPLATE_EIRODSVERSION,$EIRODSVERSION," ./packaging/eirods-dev.list > /tmp/eirodsdevlist.tmp
     mv /tmp/eirodsdevlist.tmp ./packaging/eirods-dev.list
     # eirods-icommands package
-    sed -e "s,TEMPLATE_EPMEIRODSVERSION,$EPMEIRODSVERSION," ./packaging/eirods-icommands.list.template > /tmp/eirodsicommandslist.tmp
+    sed -e "s,TEMPLATE_EIRODSVERSIONINT,$EIRODSVERSIONINT," ./packaging/eirods-icommands.list.template > /tmp/eirodsicommandslist.tmp
     mv /tmp/eirodsicommandslist.tmp ./packaging/eirods-icommands.list
     sed -e "s,TEMPLATE_EIRODSVERSION,$EIRODSVERSION," ./packaging/eirods-icommands.list > /tmp/eirodsicommandslist.tmp
     mv /tmp/eirodsicommandslist.tmp ./packaging/eirods-icommands.list

@@ -85,10 +85,34 @@ namespace eirods {
         return result;
     }
 
+
+    error children_parser::last_child(
+        std::string& _child)
+    {
+        error result = SUCCESS();
+        if(children_list_.begin() != children_list_.end()) {
+        	eirods::children_parser::const_iterator itr = children_list_.end();
+        	itr--;
+            _child = itr->first;
+        } else {
+            _child.clear();
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " - Trying to retrieve last child from children string but string appears to be empty.";
+            result = ERROR(EIRODS_CHILD_NOT_FOUND, msg.str());
+        }
+        return result;
+    }
+
+
+
     error children_parser::set_string(
         const std::string& str)
     {
         error result = SUCCESS();
+
+        // clear existing map
+        children_list_.clear();
 
         // check if the string is empty
         if(!str.empty()) {
@@ -135,6 +159,15 @@ namespace eirods {
         }
         
         return result;
+    }
+
+
+    children_parser::const_iterator children_parser::begin(void) const {
+        return children_list_.begin();
+    }
+
+    children_parser::const_iterator children_parser::end(void) const {
+        return children_list_.end();
     }
 
 }; // namespace eirods

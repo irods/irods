@@ -710,3 +710,49 @@ eirods::error fileModified(
     return result;
 
 } // fileModified
+
+// =-=-=-=-=-=-=-
+// File modified with the database
+eirods::error fileNotify(
+    rsComm_t*                      _comm,
+    eirods::first_class_object_ptr _object,
+    const std::string&             _operation ) {
+    eirods::error result = SUCCESS();
+    eirods::error ret;
+    // =-=-=-=-=-=-=-
+    // downcast - this must be called on a decendant of data object
+    eirods::data_object_ptr data_obj = boost::dynamic_pointer_cast< eirods::data_object >( _object );
+    std::string resc_hier = data_obj->resc_hier();
+    if(!resc_hier.empty()) {
+        // =-=-=-=-=-=-=-
+        // retrieve the resource name given the object
+        eirods::plugin_ptr   ptr;
+        eirods::resource_ptr resc;
+        ret = _object->resolve( eirods::RESOURCE_INTERFACE, ptr ); 
+        if( !ret.ok() ) {
+            std::stringstream msg;
+            msg << "Failed to resolve resource.";
+            result = PASSMSG(msg.str(), ret);
+        } else {
+        
+            // =-=-=-=-=-=-=-
+            // make the call to the "open" interface
+            resc = boost::dynamic_pointer_cast< eirods::resource >( ptr );
+            ret  = resc->call< const std::string* >( 
+                       _comm, 
+                       eirods::RESOURCE_OP_NOTIFY, 
+                       _object,
+                       &_operation );
+            if( !ret.ok() ) {
+                std::stringstream msg;
+                msg << "Failed to call notify interface.";
+                result = PASSMSG(msg.str(), ret);
+            }
+        }
+    } else {
+        // NOOP okay for struct file objects
+    }
+
+    return result;
+
+} // fileNotify

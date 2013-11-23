@@ -30,7 +30,7 @@ rsGsiAuthRequest (rsComm_t *rsComm, gsiAuthRequestOut_t **gsiAuthRequestOut)
     memset((char *)*gsiAuthRequestOut, 0, sizeof(gsiAuthRequestOut_t));
 
 #if defined(GSI_AUTH)
-    status = igsiSetupCreds(NULL, rsComm, NULL, &result->serverDN);
+    status = igsiSetupCreds(NULL, rsComm, NULL, &(*gsiAuthRequestOut)->serverDN);
     if (status==0) {
         rsComm->gsiRequest=1;
     }

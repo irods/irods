@@ -15,8 +15,9 @@
 
 namespace eirods {
 
-    const std::string EIRODS_OPEN_OPERATION( "OPEN" );
     const std::string EIRODS_CREATE_OPERATION( "CREATE" );
+    const std::string EIRODS_WRITE_OPERATION( "WRITE" );
+    const std::string EIRODS_OPEN_OPERATION( "OPEN" );
 
     error resolve_resource_hierarchy( 
               const std::string&, // requested operation to consider
