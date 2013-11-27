@@ -18,12 +18,28 @@ CFLAGS = $(CFLAGS_OPTIONS) -I$(buildDir)/server/core/include \
 -I$(buildDir)/lib/api/include -I$(buildDir)/lib/md5/include
 
 LDFLAGS += $(LDADD) -L$(buildDir)/lib/core/obj -l$(LIBRARY_NAME)
+ifdef OOI_CI
+CFLAGS+= -I/usr/include/libxml2
+LDFLAGS+= -ljansson -lrabbitmq -lmsgpack -lxml2
+endif
 
 TESTOBJS = iTestGenQuery.o luketest.o lowlevtest.o packtest.o l1test.o l1rm.o testrule.o xmltest.o \
-l3structFile.o xmsgtest.o listcoll.o
+l3structFile.o xmsgtest.o listcoll.o nctest.o
+
+ifdef OOI_CI
+TESTOBJS+=  ncaggr.o tdsdir.o erddapdir.o pydapdir.o httpget.o ooitest.o ooiAmqptest.o ooiapitest.o
+endif
 
 TARGETS = iTestGenQuery luketest lowlevtest packtest l1test l1rm testrule xmltest l3structFile  \
 xmsgtest listcoll
+
+ifdef NETCDF_API
+TARGETS+= nctest
+endif
+
+ifdef OOI_CI
+TARGETS+= ncaggr tdsdir erddapdir pydapdir httpget ooitest ooiAmqptest ooiapitest
+endif
 
 ifdef TAR_STRUCT_FILE
 # TARGETS+=tartest
@@ -110,6 +126,29 @@ phpexttest: phpexttest.o
 
 listcoll: listcoll.o
 	$(LDR) -o $@ $^ $(LDFLAGS) $(AG_LDADD)
+
+nctest: nctest.o
+	$(LDR) -o $@ $^ $(LDFLAGS) $(AG_LDADD)
+
+ifdef OOI_CI
+httpget: httpget.o
+	$(LDR) -o $@ $^ $(LDFLAGS) $(AG_LDADD)
+erddapdir: erddapdir.o
+	$(LDR) -o $@ $^ $(LDFLAGS) $(AG_LDADD)
+tdsdir: tdsdir.o
+	$(LDR) -o $@ $^ $(LDFLAGS) $(AG_LDADD)
+pydapdir: pydapdir.o
+	$(LDR) -o $@ $^ $(LDFLAGS) $(AG_LDADD)
+ooitest: ooitest.o
+	$(LDR) -o $@ $^ $(LDFLAGS) $(AG_LDADD)
+
+ooiDeployTest: ooiDeployTest.o
+	$(LDR) -o $@ $^ $(LDFLAGS) $(AG_LDADD)
+ooiapitest: ooiapitest.o
+	$(LDR) -o $@ $^ $(LDFLAGS) $(AG_LDADD)
+ncaggr: ncaggr.o
+	$(LDR) -o $@ $^ $(LDFLAGS) $(AG_LDADD)
+endif
 
 ifdef TAR_STRUCT_FILE
 tartest: tartest.o

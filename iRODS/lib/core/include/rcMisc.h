@@ -288,6 +288,13 @@ isPathSymlink (rodsArguments_t *rodsArgs, char *path);
 int
 getAttriInAttriArray (char *objPath, genQueryOut_t *attriArray,
                       int *outDataMode, char **outChksum);
+
+char *trimSpaces(char *str); 
+char *trimPrefix(char *str);
+int  convertListToMultiString(char *strInput, int input);
+int startsWith(char *str, char *prefix);
+int splitMultiStr (char *strInput, strArray_t *strArray);
+
 int
 hasSymlinkInDir (char *mydir);
 int

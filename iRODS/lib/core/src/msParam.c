@@ -260,6 +260,44 @@ fillIntInMsParam (msParam_t *msParam, int myInt)
     return (0);
 }
 
+int
+fillFloatInMsParam (msParam_t *msParam, float myFloat)
+{
+    float *myInOutStruct;
+
+    if (msParam != NULL) {
+        myInOutStruct = (float *)malloc (sizeof (float));
+        *myInOutStruct = myFloat;
+        fillMsParam (msParam, NULL, FLOAT_MS_T, myInOutStruct, NULL);
+    }
+    return (0);
+}
+
+int
+fillDoubleInMsParam (msParam_t *msParam, rodsLong_t myDouble)
+{
+    rodsLong_t *myInOutStruct;
+
+    if (msParam != NULL) {
+        myInOutStruct = (rodsLong_t *)malloc (sizeof (rodsLong_t));
+        *myInOutStruct = myDouble;
+        fillMsParam (msParam, NULL, DOUBLE_MS_T, myInOutStruct, NULL);
+    }
+    return (0);
+}
+
+int
+fillCharInMsParam (msParam_t *msParam, char myChar)
+{
+    char *myInOutStruct;
+
+    if (msParam != NULL) {
+        myInOutStruct = (char *)malloc (sizeof (char));
+        *myInOutStruct = myChar;
+        fillMsParam (msParam, NULL, CHAR_MS_T, myInOutStruct, NULL);
+    }
+    return (0);
+}
 
 int
 fillStrInMsParam (msParam_t *msParam, const char *myStr)
@@ -899,6 +937,9 @@ parseMspForPosInt (msParam_t *inpParam)
     } else if (strcmp (inpParam->type, INT_MS_T) == 0 || 
       strcmp (inpParam->type, BUF_LEN_MS_T) == 0) {
         myInt = *(int *)inpParam->inOutStruct;
+    } else if (strcmp (inpParam->type, DOUBLE_MS_T) == 0) {
+       rodsLong_t myLong = *(rodsLong_t *)inpParam->inOutStruct;
+       myInt = (int) myLong;
     } else {
         rodsLog (LOG_ERROR, 
           "parseMspForPosInt: Unsupported input Param type %s",
@@ -930,6 +971,33 @@ parseMspForStr (msParam_t *inpParam)
     }
 
     return (char *)(inpParam->inOutStruct);
+}
+
+int
+parseMspForFloat (msParam_t *inpParam, float *floatout) 
+{
+
+    if (inpParam == NULL || floatout == NULL) return SYS_NULL_INPUT;
+    if (strcmp (inpParam->type, STR_MS_T) == 0) {
+        /* str input */
+       if (strcmp ((char *) inpParam->inOutStruct, "null") == 0) {
+           return (SYS_NULL_INPUT);
+       }
+#if defined(solaris_platform)
+       *floatout = (float)strtod ((const char*)inpParam->inOutStruct, NULL);
+#else
+       *floatout = strtof ((const char*)inpParam->inOutStruct, NULL);
+#endif
+    } else if (strcmp (inpParam->type, INT_MS_T) == 0 || 
+      strcmp (inpParam->type, FLOAT_MS_T) == 0) {
+        *floatout = *(float *)inpParam->inOutStruct;
+    } else {
+        rodsLog (LOG_ERROR, 
+          "parseMspForPosFloat: Unsupported input Param type %s",
+          inpParam->type);
+        return (USER_PARAM_TYPE_ERR);
+    }
+    return 0;
 }
 
 int
@@ -1462,3 +1530,228 @@ chkStructFileExtAndRegInpKw (char *keyWd, int validKwFlags)
     return USER_BAD_KEYWORD_ERR;
 }
 
+int
+parseMsParamFromIRFile (msParamArray_t *inpParamArray, char *inBuf)
+{
+    strArray_t strArray;
+    int status, i;
+    char *value;
+
+    if (inBuf == NULL || strcmp (inBuf, "null") == 0) {
+       inpParamArray = NULL;
+       return (0);
+    }
+
+    memset (&strArray, 0, sizeof (strArray));
+
+    status = splitMultiStr (inBuf, &strArray);
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+          "parseMsParamFromIRFile: parseMultiStr error, status = %d", status);
+       inpParamArray = NULL;
+        return (status);
+    }
+    value = strArray.value;
+
+    for (i = 0; i < strArray.len; i++) {
+       char *valPtr = &value[i * strArray.size];
+       char *tmpPtr;
+       if ((tmpPtr = strstr (valPtr, "=")) != NULL) {
+           *tmpPtr = '\0';
+           tmpPtr++;
+           if (*tmpPtr == '\\') {
+             tmpPtr++;
+           }
+           char *param = strdup (tmpPtr);
+           addMsParam (inpParamArray, valPtr, STR_MS_T,
+                         param, NULL);
+           
+       } else {
+           rodsLog (LOG_ERROR,
+             "parseMsParamFromIRFile: inpParam %s format error", valPtr);
+       }
+    }
+
+    return (0);
+}
+
+
+
+#ifdef NETCDF_API
+int
+parseMspForNcInqIdInpName (msParam_t *inpParam, ncInqIdInp_t *ncInqIdInp)
+{
+    if (strcmp (inpParam->type, STR_MS_T) == 0) {
+        /* str input */
+        bzero (ncInqIdInp, sizeof (ncInqIdInp_t));
+        rstrcpy (ncInqIdInp->name, (char*)inpParam->inOutStruct,
+          MAX_NAME_LEN);
+    } else  if (strcmp (inpParam->type, NcInqIdInp_MS_T) == 0) {
+        *ncInqIdInp = *((ncInqIdInp_t *) inpParam->inOutStruct);
+        replKeyVal (&((ncInqIdInp_t *) inpParam->inOutStruct)->condInput,
+          &ncInqIdInp->condInput);
+    } else {
+        rodsLog (LOG_ERROR,
+          "parseMspForNcInqIdInp: Unsupported input Param1 type %s",
+          inpParam->type);
+        return (USER_PARAM_TYPE_ERR);
+    }
+    return 0;
+}
+int
+parseMspForNcInqIdInpId (msParam_t *inpParam, ncInqIdInp_t *ncInqIdInp)
+{
+    if (strcmp (inpParam->type, STR_MS_T) == 0) {
+        /* str input */
+        bzero (ncInqIdInp, sizeof (ncInqIdInp_t));
+       ncInqIdInp->myid = atoi ((const char*)inpParam->inOutStruct);
+    } else if (strcmp (inpParam->type, INT_MS_T) == 0) {
+        bzero (ncInqIdInp, sizeof (ncInqIdInp_t));
+        ncInqIdInp->myid = *(int *)inpParam->inOutStruct;
+    } else if (strcmp (inpParam->type, NcInqIdInp_MS_T) == 0) {
+        *ncInqIdInp = *((ncInqIdInp_t *) inpParam->inOutStruct);
+        replKeyVal (&((ncInqIdInp_t *) inpParam->inOutStruct)->condInput,
+          &ncInqIdInp->condInput);
+    } else {
+        rodsLog (LOG_ERROR,
+          "parseMspForNcInqIdInp: Unsupported input Param1 type %s",
+          inpParam->type);
+        return (USER_PARAM_TYPE_ERR);
+    }
+    return 0;
+}
+int
+parseMspForNcGetVarInp (msParam_t *inpParam, ncGetVarInp_t *ncGetVarInp)
+{
+    if (strcmp (inpParam->type, STR_MS_T) == 0) {
+        /* str input */
+        bzero (ncGetVarInp, sizeof (ncGetVarInp_t));
+       ncGetVarInp->dataType = parseStrToNcType ((char*)inpParam->inOutStruct);
+       if (ncGetVarInp->dataType < 0) return ncGetVarInp->dataType;
+    } else if (strcmp (inpParam->type, INT_MS_T) == 0) {
+        bzero (ncGetVarInp, sizeof (ncGetVarInp_t));
+        ncGetVarInp->dataType = *(int *)inpParam->inOutStruct;
+    } else if (strcmp (inpParam->type, NcGetVarInp_MS_T) == 0) {
+        *ncGetVarInp = *((ncGetVarInp_t *) inpParam->inOutStruct);
+        replKeyVal (&((ncGetVarInp_t *) inpParam->inOutStruct)->condInput,
+          &ncGetVarInp->condInput);
+    } else {
+        rodsLog (LOG_ERROR,
+          "parseMspForNcGetVarInp: Unsupported input Param1 type %s",
+          inpParam->type);
+        return (USER_PARAM_TYPE_ERR);
+    }
+    return 0;
+}
+
+int
+parseStrToNcType (char *myStr)
+{
+    if (strcmp (myStr, "NC_BYTE") == 0) {
+       return NC_BYTE;
+    } else if (strcmp (myStr, "NC_CHAR") == 0) {
+        return NC_CHAR;
+    } else if (strcmp (myStr, "NC_SHORT") == 0) {
+        return NC_SHORT;
+    } else if (strcmp (myStr, "NC_INT") == 0) {
+        return NC_INT;
+    } else if (strcmp (myStr, "NC_FLOAT") == 0) {
+        return NC_FLOAT;
+    } else if (strcmp (myStr, "NC_DOUBLE") == 0) {
+        return NC_DOUBLE;
+    } else if (strcmp (myStr, "NC_UBYTE") == 0) {
+        return NC_UBYTE;
+    } else if (strcmp (myStr, "NC_USHORT") == 0) {
+        return NC_USHORT;
+    } else if (strcmp (myStr, "NC_UINT") == 0) {
+        return NC_UINT;
+    } else if (strcmp (myStr, "NC_INT64") == 0) {
+        return NC_INT64;
+    } else if (strcmp (myStr, "NC_UINT64") == 0) {
+        return NC_UINT64;
+    } else if (strcmp (myStr, "NC_STRING") == 0) {
+        return NC_STRING;
+    } else {
+        rodsLog (LOG_ERROR,
+          "parseStrToNcType: Unknow dataType %s", myStr);
+        return (NETCDF_INVALID_DATA_TYPE);
+    }
+}
+ 
+int
+parseStrMspForLongArray (msParam_t *inpParam, int *ndimOut, 
+rodsLong_t **longArrayOut)
+{
+    char *strPtr;
+    strArray_t strArray;
+    char *value;
+    int status, i;
+    rodsLong_t *longArray;
+
+    if (strcmp (inpParam->type, STR_MS_T) == 0) {
+        strPtr = (char *) inpParam->inOutStruct;
+        memset (&strArray, 0, sizeof (strArray));
+
+        status = parseMultiStr (strPtr, &strArray);
+
+        if (status <= 0) return (SYS_INVALID_INPUT_PARAM);
+
+        *ndimOut = strArray.len;
+        value = strArray.value;
+        *longArrayOut = longArray = (rodsLong_t *) 
+          calloc (1, strArray.len * sizeof (rodsLong_t));
+        for (i = 0; i < strArray.len; i++) {
+           longArray[i] = atoi (&value[i * strArray.size]);
+        }
+        if (value != NULL) free (value);
+    } else if (strcmp (inpParam->type, NcGetVarOut_MS_T) == 0) {
+        ncGetVarOut_t *ncArray;
+       int *inArray;
+       int len;
+       ncArray = (ncGetVarOut_t *) inpParam->inOutStruct;
+       if (ncArray == NULL || ncArray->dataArray == NULL || 
+         ncArray->dataArray->buf == NULL) return USER__NULL_INPUT_ERR;
+       inArray = (int *) ncArray->dataArray->buf;
+       len = ncArray->dataArray->len;
+       if (len <= 0) return SYS_INVALID_INPUT_PARAM;
+       *longArrayOut = longArray = (rodsLong_t *) 
+          calloc (1, len * sizeof (rodsLong_t));
+       for (i = 0; i < len; i++) {
+           longArray[i] = inArray[i];
+       }
+       *ndimOut = len;
+    } else {
+        rodsLog (LOG_ERROR,
+          "parseStrMspForLongArray: Unsupported input Param type %s",
+          inpParam->type);
+        return (USER_PARAM_TYPE_ERR);
+    }
+
+    return 0;
+}
+
+int
+parseMspForNccfGetVarInp (msParam_t *inpParam, nccfGetVarInp_t *nccfGetVarInp)
+{
+    if (strcmp (inpParam->type, STR_MS_T) == 0) {
+        /* str input */
+        bzero (nccfGetVarInp, sizeof (nccfGetVarInp_t));
+        nccfGetVarInp->ncid = atoi ((char*)inpParam->inOutStruct);
+        if (nccfGetVarInp->ncid < 0) return nccfGetVarInp->ncid;
+    } else if (strcmp (inpParam->type, INT_MS_T) == 0) {
+        bzero (nccfGetVarInp, sizeof (nccfGetVarInp_t));
+        nccfGetVarInp->ncid = *(int *)inpParam->inOutStruct;
+    } else if (strcmp (inpParam->type, NccfGetVarInp_MS_T) == 0) {
+        *nccfGetVarInp = *((nccfGetVarInp_t *) inpParam->inOutStruct);
+        replKeyVal (&((nccfGetVarInp_t *) inpParam->inOutStruct)->condInput,
+          &nccfGetVarInp->condInput);
+    } else {
+        rodsLog (LOG_ERROR,
+          "parseMspForNccfGetVarInp: Unsupported input Param1 type %s",
+          inpParam->type);
+        return (USER_PARAM_TYPE_ERR);
+    }
+    return 0;
+}
+
+#endif

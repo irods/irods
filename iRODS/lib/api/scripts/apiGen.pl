@@ -134,9 +134,19 @@ else {
 	insertNewDefInFile("$apiNumberH", "Metadata", $nStr);
 	$didOne=1;
     }
+    $typeApi=`grep -i 'NETCDF' $incFile`;
+    if ($typeApi) {
+        insertNewDefInFile("$apiNumberH", "NETCDF", $nStr);
+        $didOne=1;
+    }
+    $typeApi=`grep -i 'OOI' $incFile`;
+    if ($typeApi) {
+        insertNewDefInFile("$apiNumberH", "OOI", $nStr);
+        $didOne=1;
+    }
     if ($didOne == 0) {
 	printf("Cannot determine the type of API call; needs to be defined in $incFile\n");
-	printf("It should be Internal I/O, Object File I/O, or Metadata\n");
+	printf("It should be Internal I/O, Object File I/O, NETCDF or Metadata\n");
 	die("No type defined");
     }
     printf("Updated $apiNumberH\n");

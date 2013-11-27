@@ -12,6 +12,9 @@
 #include "rodsGenQuery.h"
 #include "reGlobalsExtern.h"
 #include "apiHeaderAll.h"
+#ifdef OOI_CI
+#include "ooiCi.h"
+#endif
 
 #define UNKNOWN_SIZE	-1
 
@@ -25,6 +28,7 @@ packType_t packTypeTable[] = {
         {"struct", PACK_STRUCT_TYPE, UNKNOWN_SIZE},
         {"?", PACK_DEPENDENT_TYPE, UNKNOWN_SIZE},
         {"%", PACK_INT_DEPENDENT_TYPE, UNKNOWN_SIZE},
+        {"int16", PACK_INT16_TYPE, 2},
 };
 
 int NumOfPackTypes = (sizeof (packTypeTable) / sizeof (packType_t));
@@ -61,8 +65,12 @@ packInstructArray_t RodsPackTable[] = {
 	{"IRODS_STR_PI", IRODS_STR_PI},
 	{"STR_PTR_PI", STR_PTR_PI},
 	{"INT_PI", INT_PI},
+	{"CHAR_PI", CHAR_PI},
 	{"DOUBLE_PI", DOUBLE_PI},
+	{"FLOAT_PI", INT_PI},           /* pack as if it is INT_PI */
+	{"BOOL_PI", INT_PI},            /* pack as if it is INT_PI */
 	{"BUF_LEN_PI", BUF_LEN_PI},
+	{"INT16_PI", INT16_PI},
 	{"MsgHeader_PI", MsgHeader_PI},
 	{"StartupPack_PI", StartupPack_PI},
 	{"Version_PI", Version_PI},
@@ -93,6 +101,11 @@ packInstructArray_t RodsPackTable[] = {
 	{"ReArg_PI", ReArg_PI},
 	{"ReiAndArg_PI", ReiAndArg_PI},
 	{"BytesBuf_PI", BytesBuf_PI},
+	{"charDataArray_PI", charDataArray_PI},
+	{"strDataArray_PI", strDataArray_PI},
+	{"intDataArray_PI", intDataArray_PI},
+	{"int16DataArray_PI", int16DataArray_PI},
+	{"int64DataArray_PI", int64DataArray_PI},
 	{"BinBytesBuf_PI", BinBytesBuf_PI},
 	{"MsParam_PI", MsParam_PI},
 	{"MsParamArray_PI", MsParamArray_PI},
@@ -124,6 +137,12 @@ packInstructArray_t RodsPackTable[] = {
     {"MsrvcStruct_PI", MsrvcStruct_PI},
     {"DataSeg_PI", DataSeg_PI},
     {"FileRestartInfo_PI", FileRestartInfo_PI},
+#ifdef OOI_CI
+    {"DictValue_PI", DictValue_PI},
+    {"Dictionary_PI", Dictionary_PI},
+    {"DictArray_PI", DictArray_PI},
+    {"GenArray_PI", GenArray_PI},
+#endif
 	{"CS_NEG_PI", CS_NEG_PI},
         {PACK_TABLE_END_PI, (char *) NULL},
 };

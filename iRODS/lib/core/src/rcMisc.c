@@ -1517,8 +1517,7 @@ parseMultiStr (char *strInput, strArray_t *strArray)
     startPtr = endPtr = strInput;
 
     while (1) {
-        /* RAJA changed JUl 11, 2007 so that two %% will be taken as an input %
-           instead of as a delimiter */
+        // two %% will be taken as an input instead of as a delimiter
         while (*endPtr != '%' && *endPtr != '\0') {
             endPtr ++;
         }
@@ -2952,10 +2951,6 @@ getNextRepeatTime(char *currTime, char *delayStr, char *nextTime)
                     }
                 }
                 t = f + 6;
-                /**** RAJA changed Jul 2, 2008 
-                  while ((u = strstr(t," and ")) != NULL ||
-                  (u = strstr(t," AND ")) != NULL ){
-                 ***/
                 while ((u = getCondFromString(t)) != NULL) {
                     *u = '\0';
                     trimWS(t);
@@ -4387,7 +4382,6 @@ getNextRepeatTime(char *currTime, char *delayStr, char *nextTime)
                     }
                 }
 
-            /* Added by RAJA Nov 22 2010 */
             int
                 clearAuthResponseInp (void *inauthResponseInp)
                 {
@@ -4404,6 +4398,196 @@ getNextRepeatTime(char *currTime, char *delayStr, char *nextTime)
 
                     return (0);
                 }
+            char *trimPrefix(char *str) {
+                int i = 0;
+                while(str[i]!=' ') {
+                    i++;
+                }
+                while(str[i]==' ') {
+                    i++;
+                }
+                memmove(str, str+i, strlen(str) + 1 - i);
+                return str;
+            }
+
+            char *trimSpaces(char *str) {
+                char *p = str;
+                char *psrc = str;
+
+                while(*psrc != '\0' && isspace(*psrc)) {
+                    psrc++;
+                }
+
+                while(*psrc != '\0') {
+                    *(p++) = *(psrc++);
+                }
+
+                p--;
+                while(isspace(*p) && p - str >= 0) {
+                    p--;
+                }
+
+                p++;
+                *p = '\0';
+
+                return str;
+
+            }
+
+            int startsWith(char *str, char *prefix) {
+                int i = 0;
+                while(str[i]!='\0' && prefix[i]!='\0') {
+                    if(str[i] != prefix[i]) {
+                        return 0;
+                    }
+                    i++;
+                }
+                return prefix[i] == '\0';
+            }
+
+            int convertListToMultiString(char *strInput, int input) {
+                if(strcmp(strInput, "null")==0) {
+                    return 0;
+                }
+                char *src = strdup(strInput);
+
+                char *p = strInput;
+                char *psrc = src;
+
+                /* replace % with %% */
+                while(*psrc!='\0') {
+                    if(*psrc == '%') {
+                        *(p++) = '%';
+                        *(p++) = '%';
+                        psrc++;
+                    } else {
+                        *(p++) = *(psrc++);
+                    }
+                }
+                *p = '\0';
+
+                free(src);
+
+                /* replace , with % and remove extra spaces */
+                p = strInput;
+                psrc = strInput;
+                while(*psrc!='\0') {
+                    /* variable name */
+                    while(!isspace(*psrc) && *psrc != '=' && *psrc != ',' && *psrc != '\0') {
+                        *(p++) = *(psrc++);
+                    }
+
+                    /* skip spaces */
+                    while(isspace(*psrc)) {
+                        psrc++;
+                    }
+                    if(input) {
+                        if(*psrc == '=') {
+                            /* assignment */
+                            *(p++) = *(psrc++);
+
+                            int inString = 0;
+                            char delim = '\0';
+                            while(*psrc!='\0') {
+                                if(inString) {
+                                    if(*psrc == delim) {
+                                        inString = 0;
+                                    } else if(*psrc == '\\') {
+                                        *(p++) = *(psrc++);
+                                        if(*psrc=='\0') {
+                                            return -1;
+                                        }
+                                    }
+                                    *(p++) = *(psrc++);
+                                } else {
+                                    if(*psrc == ',') {
+                                        *(p++) = '%';
+                                        psrc++;
+                                        break;
+                                    } else {
+                                        if(*psrc == '\'' || *psrc == '\"') {
+                                            inString = 1;
+                                            delim = *psrc;
+                                        }
+                                        *(p++) = *(psrc++);
+                                    }
+                                }
+                            }
+                        } else {
+                            return -1;
+                        }
+                    } else {
+                        if(*psrc == '\0') {
+                            break;
+                        } else if (*psrc == ','){
+                            *(p++) = '%';
+                            psrc++;
+                        } else {
+                            return -1;
+                        }
+                    }
+                    /* skip spaces */
+                    while(isspace(*psrc)) {
+                        psrc++;
+                    }
+                }
+                *p = '\0';
+                return 0;
+            }
+
+            int
+            splitMultiStr (char *strInput, strArray_t *strArray)
+            {
+                char *startPtr, *endPtr;
+                int endReached = 0;
+
+              if (strInput == NULL || strArray == NULL) {
+                    return (SYS_INTERNAL_NULL_INPUT_ERR);
+                }
+
+                startPtr = endPtr = strInput;
+
+                while (1) {
+                  // two %% will be taken as an input % instead of as a delimiter
+                    while (*endPtr != '%' && *endPtr != '\0') {
+                        endPtr ++;
+                    }
+                    if (*endPtr == '%') {
+                        if (*(endPtr+1) == '%') {
+                            endPtr ++;endPtr ++;
+                            continue;
+                        }
+                        *endPtr = '\0';
+                    } else {
+                        endReached = 1;
+                    }
+
+                    char *str = strdup(startPtr);
+                    char *p = str;
+                    char *psrc = str;
+                    while(*psrc!='\0') {
+                        while(*psrc!='%' && *psrc!='\0') *(p++) = *(psrc++);
+                        if(*psrc == '%') {
+                        *(p++) = *(psrc++);
+                        psrc++;
+                        }
+                    }
+                    *p = '\0';
+
+                    addStrArray (strArray, str);
+
+                    free(str);
+
+                    if (endReached == 1) {
+                        break;
+                    }
+
+                    endPtr++;
+                    startPtr = endPtr;
+                }
+
+                return (strArray->len);
+            }
 
             namespace boost
             {

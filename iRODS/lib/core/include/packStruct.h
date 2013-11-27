@@ -55,7 +55,8 @@ typedef enum {
     PACK_DOUBLE_TYPE,
     PACK_STRUCT_TYPE,
     PACK_DEPENDENT_TYPE,
-    PACK_INT_DEPENDENT_TYPE
+    PACK_INT_DEPENDENT_TYPE,
+    PACK_INT16_TYPE
 } packTypeInx_t;
 
 /* for the packOpr input in resolvePackedItem() */
@@ -124,6 +125,7 @@ packTypeLookup (char *typeName);
 
 void *alignAddrToBoundary (void *ptr, int boundary);
 void *alignInt(void *ptr);
+void *alignInt16 (void *ptr);
 void *alignDouble (void *ptr);
 void *ialignAddr (void *ptr);
 int
@@ -180,6 +182,9 @@ int
 packInt (void **inPtr, packedOutput_t *packedOutput, int numElement,
 packItem_t *myPackedItem, irodsProt_t irodsProt);
 int
+packInt16 (void **inPtr, packedOutput_t *packedOutput, int numElement,
+packItem_t *myPackedItem, irodsProt_t irodsProt);
+int
 packDouble (void **inPtr, packedOutput_t *packedOutput, int numElement,
 packItem_t *myPackedItem, irodsProt_t irodsProt);
 int
@@ -227,6 +232,17 @@ unpackXmlIntToOutPtr (void **inPtr, void **outPtr, int numElement,
 packItem_t *myPackedItem);
 int
 unpackNatIntToOutPtr (void **inPtr, void **outPtr, int numElement);
+int
+unpackInt16 (void **inPtr, packedOutput_t *unpackedOutput, int numElement,
+packItem_t *myPackedItem, irodsProt_t irodsProt);
+int
+unpackInt16ToOutPtr (void **inPtr, void **outPtr, int numElement,
+packItem_t *myPackedItem, irodsProt_t irodsProt);
+int
+unpackNatInt16ToOutPtr (void **inPtr, void **outPtr, int numElement);
+int
+unpackXmlInt16ToOutPtr (void **inPtr, void **outPtr, int numElement,
+packItem_t *myPackedItem);
 int
 unpackXmlDoubleToOutPtr (void **inPtr, void **outPtr, int numElement,
 packItem_t *myPackedItem);

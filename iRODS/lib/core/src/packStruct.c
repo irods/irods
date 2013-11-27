@@ -344,6 +344,15 @@ alignInt (void *ptr)
     return (alignAddrToBoundary (ptr, 4));
 }
 
+/* alignInt16 - align the inout pointer ptr to an int16
+ * boundary in a struct */
+
+void *
+alignInt16 (void *ptr)
+{
+    return (alignAddrToBoundary (ptr, 2));
+}
+
 /* alignDoubleAddr - align the inout pointer ptr to a longlong , 
  * boundary in a struct */
 
@@ -949,6 +958,19 @@ packNonpointerItem (packItem_t *myPackedItem, void **inPtr,
         myPackedItem->intValue = status;
         break;
 
+    case PACK_INT16_TYPE:
+      /* align inPtr to 2 bytes boundary. Will not align outPtr */
+
+      *inPtr = alignInt16 (*inPtr);
+
+      status = packInt16 (inPtr, packedOutput, numElement, myPackedItem,
+        irodsProt);
+      if (status < 0) {
+          return (status);
+      }
+      myPackedItem->intValue = status;
+      break;
+
     case PACK_DOUBLE_TYPE:
         /* align inPtr to 8 bytes boundary. Will not align outPtr */
 #if defined(osx_platform) || (defined(solaris_platform) && defined(i86_hardware))
@@ -1127,6 +1149,29 @@ packPointerItem (packItem_t *myPackedItem, void **inPtr,
             free (pointerArray);
         }
         break;
+
+    case PACK_INT16_TYPE:
+      for (i = 0; i < numPointer; i++) {
+          origPtr = pointer = pointerArray[i];
+
+          status = packInt16 (&pointer, packedOutput, numElement,
+            myPackedItem, irodsProt);
+          if ((packFlag & FREE_POINTER) &&
+            myPackedItem->pointerType == A_POINTER) {
+              free (origPtr);
+          }
+          if (status < 0) {
+              return (status);
+          }
+      }
+
+      if ((packFlag & FREE_POINTER) &&
+        myPackedItem->pointerType == A_POINTER &&
+        numPointer > 0 && myDim > 0) {
+          /* Array of pointers */
+          free (pointerArray);
+      }
+      break;
 
     case PACK_DOUBLE_TYPE:
         for (i = 0; i < numPointer; i++) {
@@ -1659,6 +1704,69 @@ packInt (void **inPtr, packedOutput_t *packedOutput, int numElement,
 }
 
 int
+packInt16 (void **inPtr, packedOutput_t *packedOutput, int numElement,
+packItem_t *myPackedItem, irodsProt_t irodsProt)
+{
+    short *tmpIntPtr, *origIntPtr, *inIntPtr;
+    int i;
+    void *outPtr;
+    short intValue = 0;
+
+    if (numElement == 0) {
+        return 0;
+    }
+
+    inIntPtr = (short *) *inPtr;
+
+    if (inIntPtr != NULL) {
+        /* save this and return later */
+        intValue = *inIntPtr;
+    }
+
+    if (irodsProt == XML_PROT) {
+       if (inIntPtr == NULL) {
+           /* pack nothing */
+           return (0);
+       }
+        for (i = 0; i < numElement; i++) {
+           packXmlTag (myPackedItem, packedOutput, START_TAG_FL);
+            extendPackedOutput (packedOutput, 12, &outPtr);
+           snprintf ((char*)outPtr, 12, "%hi", *inIntPtr);
+           packedOutput->bBuf->len += (strlen ((char*)outPtr));
+           packXmlTag (myPackedItem, packedOutput, END_TAG_FL);
+           inIntPtr++;
+       }
+        *inPtr = inIntPtr;
+    } else {
+        origIntPtr = tmpIntPtr = (short *) malloc (sizeof(short) * numElement);
+
+        if (inIntPtr == NULL) {
+           /* a NULL pointer, fill the array with 0 */
+           memset (origIntPtr, 0, sizeof(short) * numElement);
+        } else {
+            for (i = 0; i < numElement; i++) {
+                *tmpIntPtr = htons (*inIntPtr);
+                tmpIntPtr ++;
+                inIntPtr ++;
+           }
+            *inPtr = inIntPtr;
+        }
+
+        extendPackedOutput (packedOutput, sizeof(short) * numElement, &outPtr);
+        memcpy (outPtr, (void *) origIntPtr, sizeof(short) * numElement);
+        free (origIntPtr);
+        packedOutput->bBuf->len += (sizeof(short) * numElement);
+
+    }
+    if (intValue < 0) {
+       /* prevent error exiting */
+       intValue = 0;
+    }
+
+    return (intValue);
+}
+
+int
 packDouble (void **inPtr, packedOutput_t *packedOutput, int numElement,
             packItem_t *myPackedItem, irodsProt_t irodsProt)
 {
@@ -1895,6 +2003,14 @@ unpackNonpointerItem (packItem_t *myPackedItem, void **inPtr,
         }
         myPackedItem->intValue = status;
         break;
+    case PACK_INT16_TYPE:
+      status = unpackInt16 (inPtr, unpackedOutput, numElement,
+        myPackedItem, irodsProt);
+      if (status < 0) {
+          return (status);
+      }
+      myPackedItem->intValue = status;
+      break;
     case PACK_DOUBLE_TYPE:
         status = unpackDouble (inPtr, unpackedOutput, numElement,
                                myPackedItem, irodsProt);
@@ -2333,6 +2449,144 @@ unpackXmlIntToOutPtr (void **inPtr, void **outPtr, int numElement,
 }
 
 int
+unpackInt16 (void **inPtr, packedOutput_t *unpackedOutput, int numElement,
+packItem_t *myPackedItem, irodsProt_t irodsProt)
+{
+    void *outPtr;
+    short intValue = 0;
+
+    if (numElement == 0) {
+        return 0;
+    }
+
+    extendPackedOutput (unpackedOutput, sizeof(short) * (numElement + 1),
+      &outPtr);
+
+    intValue = unpackInt16ToOutPtr (inPtr, &outPtr, numElement, myPackedItem,
+      irodsProt);
+
+    /* adjust len */
+    unpackedOutput->bBuf->len = (int) ((char *) outPtr -
+      (char *) unpackedOutput->bBuf->buf) + (sizeof(short) * numElement);
+
+    if (intValue < 0) {
+        /* prevent error exit */
+        intValue = 0;
+    }
+
+    return (intValue);
+}
+
+int
+unpackInt16ToOutPtr (void **inPtr, void **outPtr, int numElement,
+packItem_t *myPackedItem, irodsProt_t irodsProt)
+{
+    int status;
+
+    if (irodsProt == XML_PROT) {
+        status = unpackXmlInt16ToOutPtr (inPtr, outPtr, numElement,
+          myPackedItem);
+    } else {
+        status = unpackNatInt16ToOutPtr (inPtr, outPtr, numElement);
+    }
+    return (status);
+}
+
+int
+unpackNatInt16ToOutPtr (void **inPtr, void **outPtr, int numElement)
+{
+    short *tmpIntPtr, *origIntPtr;
+    void *inIntPtr;
+    int i;
+    short intValue = 0;
+
+    if (numElement == 0) {
+        return 0;
+    }
+
+    inIntPtr = *inPtr;
+
+    origIntPtr = tmpIntPtr = (short *) malloc (sizeof(short) * numElement);
+
+    if (inIntPtr == NULL) {
+        /* a NULL pointer, fill the array with 0 */
+        memset (origIntPtr, 0, sizeof(short) * numElement);
+    } else {
+        for (i = 0; i < numElement; i++) {
+            short tmpInt;
+
+            memcpy (&tmpInt, inIntPtr, sizeof (short));
+            *tmpIntPtr = htons (tmpInt);
+            if (i == 0) {
+                /* save this and return later */
+                intValue = *tmpIntPtr;
+            }
+            tmpIntPtr ++;
+            inIntPtr = (void *) ((char *) inIntPtr + sizeof (short));
+        }
+        *inPtr = inIntPtr;
+    }
+
+    /* align unpackedOutput to 4 bytes boundary. Will not align inPtr */
+
+    *outPtr = alignInt16 (*outPtr);
+
+    memcpy (*outPtr, (void *) origIntPtr, sizeof(short) * numElement);
+    free (origIntPtr);
+
+    return (intValue);
+}
+
+int
+unpackXmlInt16ToOutPtr (void **inPtr, void **outPtr, int numElement,
+packItem_t *myPackedItem)
+{
+    short *tmpIntPtr;
+    int i;
+    int myStrlen;
+    int endTagLen;      /* the length of end tag */
+    short intValue = 0;
+
+    if (numElement == 0) {
+        return 0;
+    }
+
+    /* align outPtr to 4 bytes boundary. Will not align inPtr */
+
+    *outPtr = tmpIntPtr = (short*)alignInt16 (*outPtr);
+
+    if (*inPtr == NULL) {
+        /* a NULL pointer, fill the array with 0 */
+        memset (*outPtr, 0, sizeof(short) * numElement);
+    } else {
+        char tmpStr[NAME_LEN];
+
+        for (i = 0; i < numElement; i++) {
+            myStrlen = parseXmlValue (inPtr, myPackedItem, &endTagLen);
+            if (myStrlen < 0) {
+                return (myStrlen);
+            } else if (myStrlen >= NAME_LEN) {
+                rodsLog (LOG_ERROR,
+                  "unpackXmlIntToOutPtr: input %s with value %s too long",
+                  myPackedItem->name, *inPtr);
+                return (USER_PACKSTRUCT_INPUT_ERR);
+            }
+            strncpy (tmpStr, (char*)*inPtr, myStrlen);
+            tmpStr[myStrlen] = '\0';
+
+            *tmpIntPtr = atoi (tmpStr);
+            if (i == 0) {
+                /* save this and return later */
+                intValue = *tmpIntPtr;
+            }
+            tmpIntPtr ++;
+            *inPtr = (void *) ((char *) *inPtr + (myStrlen + endTagLen));
+        }
+    }
+    return (intValue);
+}
+
+int
 unpackDouble (void **inPtr, packedOutput_t *unpackedOutput, int numElement,
               packItem_t *myPackedItem, irodsProt_t irodsProt)
 {
@@ -2608,7 +2862,8 @@ unpackPointerItem (packItem_t *myPackedItem, void **inPtr,
             } else {
                 allocLen = numPointer + PTR_ARRAY_MALLOC_LEN - myModu;
             } 
-            if (myTypeNum == PACK_DOUBLE_TYPE || myTypeNum == PACK_INT_TYPE) {
+            if (myTypeNum == PACK_DOUBLE_TYPE || myTypeNum == PACK_INT_TYPE ||
+                myTypeNum == PACK_INT16_TYPE) {
                 /* pointer to an array of int or double */
                 pointerArray = (void **) addPointerToPackedOut (unpackedOutput,
                                                                 allocLen * elementSz, NULL);
@@ -2729,7 +2984,25 @@ unpackPointerItem (packItem_t *myPackedItem, void **inPtr,
             }
         }
         break;
-
+    case PACK_INT16_TYPE:
+      if (myDim == 0) {
+          outPtr = addPointerToPackedOut (unpackedOutput,
+            numElement * elementSz, NULL);
+          status = unpackInt16ToOutPtr (inPtr, &outPtr, numElement,
+            myPackedItem, irodsProt);
+          /* don't chk status. It could be a -ive int */
+      } else {
+          /* pointer to an array of pointers */
+          for (i = 0; i < numPointer; i++) {
+              outPtr = pointerArray[i] = malloc (numElement * elementSz);
+              status = unpackInt16ToOutPtr (inPtr, &outPtr,
+                numElement * elementSz, myPackedItem, irodsProt);
+              if (status < 0) {
+                  return (status);
+              }
+          }
+      }
+      break;
     case PACK_DOUBLE_TYPE:
         if (myDim == 0) {
             outPtr = addPointerToPackedOut (unpackedOutput,

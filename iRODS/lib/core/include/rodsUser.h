@@ -35,6 +35,11 @@
 #define REMOTE_PRIV_USER_AUTH	4	/* auth as a remote priv user */
 #define LOCAL_PRIV_USER_AUTH	5	/* auth as local priv user */
 
+#ifdef STORAGE_ADMIN_ROLE
+#define STORAGE_ADMIN_USER      0x1000   /* allow a storageadmin to execute */
+#define STORAGE_ADMIN_USER_TYPE "storageadmin"
+#endif
+
 #define XMSG_SVR_ONLY		0x4000   /* execute only xmsgServer only */
 #define XMSG_SVR_ALSO		0x8000   /* execute on xmsgServer server also
 					  * in addition to agent server */
