@@ -424,6 +424,17 @@ extern "C" {
                             }
                         }
 
+#ifdef STORAGE_ADMIN_ROLE
+                        /* if the user is a storage admin, this will be indicated with
+                            a bit in authCheckOut->privLevel. If it's set, set the userType
+                            in rsComm->proxyUser to 'storageadmin' and clear the bit so
+                            it doesn't affect subsequent checks */
+                        if (authCheckOut->privLevel & STORAGE_ADMIN_USER) {
+                          strncpy(rsComm->proxyUser.userType, STORAGE_ADMIN_USER_TYPE, NAME_LEN);
+                          authCheckOut->privLevel &= ~STORAGE_ADMIN_USER;
+                        }
+#endif
+
                         /* Set the clientUser zone if it is null. */
                         if (result.ok() && strlen( _comm->clientUser.rodsZone)==0) {
                             zoneInfo_t *tmpZoneInfo;

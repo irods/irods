@@ -16,6 +16,12 @@
 #include "structFileExtAndReg.h"
 #include "execCmd.h"
 #include "rodsPath.h"
+#ifdef NETCDF_API
+#include "ncInqId.h"
+#include "ncGetVarsByType.h"
+#include "nccfGetVara.h"
+#endif
+
 
 #ifdef  __cplusplus
 extern "C" {
@@ -24,9 +30,16 @@ extern "C" {
 /* some commonly used MS (micro service) type */
 #define STR_MS_T                "STR_PI"
 #define INT_MS_T                "INT_PI"
+#define INT16_MS_T              "INT16_PI"
+#define CHAR_MS_T               "CHAR_PI"
 #define BUF_LEN_MS_T            "BUF_LEN_PI"    /* an integer indication the
                                                  * length of BBuf */
+#define STREAM_MS_T            "INT_PI"    /* value from bindStreamToIRods.
+                                            * Caller should use rcStreamRead 
+                                            * and rcStreamClose to read */
 #define DOUBLE_MS_T             "DOUBLE_PI"
+#define FLOAT_MS_T              "FLOAT_PI"
+#define BOOL_MS_T               "BOOL_PI"
 #define DataObjInp_MS_T         "DataObjInp_PI"
 #define DataObjCloseInp_MS_T    "DataObjCloseInp_PI"
 #define DataObjCopyInp_MS_T     "DataObjCopyInp_PI"
@@ -57,6 +70,22 @@ extern "C" {
 #define DVMapStruct_MS_T        "DVMapStruct_PI"
 #define FNMapStruct_MS_T        "FNMapStruct_PI"
 #define MsrvcStruct_MS_T         "MsrvcStruct_PI"
+#define NcOpenInp_MS_T         "NcOpenInp_PI"
+#define NcInqIdInp_MS_T                "NcInqIdInp_PI"
+#define NcInqWithIdOut_MS_T    "NcInqWithIdOut_PI"
+#define NcInqInp_MS_T          "NcInqInp_PI"
+#define NcInqOut_MS_T          "NcInqOut_PI"
+#define NcCloseInp_MS_T                "NcCloseInp_PI"
+#define NcGetVarInp_MS_T       "NcGetVarInp_PI"
+#define NcGetVarOut_MS_T       "NcGetVarOut_PI"
+#define NccfGetVarInp_MS_T     "NccfGetVarInp_PI"
+#define NccfGetVarOut_MS_T     "NccfGetVarOut_PI"
+#define NcInqOut_MS_T          "NcInqOut_PI"
+#define NcInqGrpsOut_MS_T      "NcInqGrpsOut_PI"
+#define Dictionary_MS_T                "Dictionary_PI"
+#define DictArray_MS_T         "DictArray_PI"
+#define GenArray_MS_T          "GenArray_PI"
+#define DataObjInfo_MS_T       "DataObjInfo_PI"
 
 /* micro service input/output parameter */
 typedef struct MsParam {
@@ -161,6 +190,12 @@ clearMsParamArray (msParamArray_t *msParamArray, int freeStruct);
 int 
 fillIntInMsParam (msParam_t *msParam, int myInt);
 int
+fillFloatInMsParam (msParam_t *msParam, float myFloat);
+int
+fillCharInMsParam (msParam_t *msParam, char myChar);
+int
+fillDoubleInMsParam (msParam_t *msParam, rodsLong_t myDouble);
+int
 fillStrInMsParam (msParam_t *msParam, const char *myStr);
 int
 fillBufLenInMsParam (msParam_t *msParam, int myInt, bytesBuf_t *bytesBuf);
@@ -181,6 +216,8 @@ int
 parseMspForPosInt (msParam_t *inpParam);
 char *
 parseMspForStr (msParam_t *inpParam);
+int
+parseMspForFloat (msParam_t *inpParam, float *floatout);
 int
 parseMspForDataObjCopyInp (msParam_t *inpParam,
 dataObjCopyInp_t *dataObjCopyInpCache, dataObjCopyInp_t **outDataObjCopyInp);
@@ -218,6 +255,24 @@ int
 parseMsKeyValStrForStructFileExtAndRegInp (msParam_t *inpParam,
 structFileExtAndRegInp_t *structFileExtAndRegInp,
 char *hintForMissingKw, int validKwFlags, char **outBadKeyWd);
+#ifdef NETCDF_API
+int
+parseMspForNcInqIdInpName (msParam_t *inpParam, ncInqIdInp_t *ncInqIdInp);
+int
+parseMspForNcInqIdInpId (msParam_t *inpParam, ncInqIdInp_t *ncInqIdInp);
+int
+parseMspForNcGetVarInp (msParam_t *inpParam, ncGetVarInp_t *ncGetVarInp);
+int
+parseStrToNcType (char *myStr);
+int
+parseStrMspForLongArray (msParam_t *inpParam, int *ndim, 
+rodsLong_t **longArray);
+int
+parseMspForNccfGetVarInp (msParam_t *inpParam, nccfGetVarInp_t *nccfGetVarInp);
+#endif
+int
+parseMsParamFromIRFile (msParamArray_t *inpParamArray, char *inBuf);
+
 #ifdef  __cplusplus
 }
 #endif

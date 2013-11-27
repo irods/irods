@@ -10,10 +10,12 @@
 #define PACK_INSTRUCT_H
 
 #define IRODS_STR_PI "str myStr[MAX_NAME_LEN];"
-#define STR_PI "str myStr;" 
-#define STR_PTR_PI "str *myStr;" 
-#define PI_STR_PI "piStr myStr[MAX_NAME_LEN];" 
+#define STR_PI "str myStr;"
+#define CHAR_PI "char myChar;"
+#define STR_PTR_PI "str *myStr;"
+#define PI_STR_PI "piStr myStr[MAX_NAME_LEN];"
 #define INT_PI "int myInt;"
+#define INT16_PI "int16 myInt;"
 #define BUF_LEN_PI "int myInt;"
 #define DOUBLE_PI "double myDouble;"
 
@@ -92,6 +94,14 @@
 #define ReiAndArg_PI "struct *Rei_PI; struct ReArg_PI;"
 
 #define BytesBuf_PI "int buflen; char *buf(buflen);"
+
+/* PI for dataArray_t */
+#define charDataArray_PI "int type; int len; char *buf(len);"
+#define strDataArray_PI "int type; int len; str *buf[len];"
+#define intDataArray_PI "int type; int len; int *buf(len);"
+#define int16DataArray_PI "int type; int len; int16 *buf(len);"
+#define int64DataArray_PI "int type; int len; double *buf(len);"
+
 #define BinBytesBuf_PI "int buflen; bin *buf(buflen);"
 
 #define MsParam_PI "str *label; piStr *type; ?type *inOutStruct; struct *BinBytesBuf_PI;"

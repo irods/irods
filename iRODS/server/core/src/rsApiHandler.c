@@ -21,6 +21,11 @@
 #include <setjmp.h>
 jmp_buf Jenv;
 
+#ifdef NETCDF_API
+#include "ncGetVarsByType.h"
+#include "ncRegGlobalAttr.h"
+#endif
+
 // =-=-=-=-=-=-=-
 // eirods includes
 #include "eirods_network_factory.h"
@@ -209,6 +214,16 @@ int rsApiHandler(
                           "authResponseInp_PI" )  == 0 ) {
             /* Added by RAJA Nov 22 2010 */
             clearAuthResponseInp( ( void * ) myInStruct );
+#ifdef NETCDF_API
+        }
+        else if ( strcmp (RsApiTable[apiInx].inPackInstruct,
+             "NcGetVarInp_PI" )  == 0 ) {
+            clearNcGetVarInp ( ( ncGetVarInp_t * ) myInStruct );
+        }
+        else if ( strcmp (RsApiTable[apiInx].inPackInstruct,
+             "NcRegGlobalAttrInp_PI" )  == 0 ) {
+            clearRegGlobalAttrInp ( ( ncRegGlobalAttrInp_t * ) myInStruct );
+#endif
         }
         free( myInStruct );
         myInStruct = NULL;
@@ -413,6 +428,13 @@ chkApiPermission( rsComm_t * rsComm, int apiInx ) {
                  RsApiTable[apiInx].apiNumber );
         return ( SYS_NO_API_PRIV );
     }
+
+#ifdef STORAGE_ADMIN_ROLE
+    if ( ( strcmp( rsComm->proxyUser.userType, STORAGE_ADMIN_USER_TYPE ) == 0 )
+        && ( clientUserAuth & STORAGE_ADMIN_USER ) ) {
+      return ( 0 );
+    }
+#endif
 
     clientUserAuth = clientUserAuth & 0xfff;	/* take out XMSG_SVR_* flags */
 
