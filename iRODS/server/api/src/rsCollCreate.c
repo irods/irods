@@ -25,7 +25,7 @@
 
 
 // =-=-=-=-=-=-=-
-/// @brief function which determiens if a collection is created at the root level
+/// @brief function which determines if a collection is created at the root level
 eirods::error validate_collection_path( 
     const std::string& _path ) {
     // =-=-=-=-=-=-=-
