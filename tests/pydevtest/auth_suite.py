@@ -73,7 +73,7 @@ class Test_Auth_Suite(unittest.TestCase, ResourceBase):
         self.run_resource_teardown()
         s.twousers_down()
 
-    @unittest.skip("TODO: Seeing inconsistent behavior in CI")
+    #@unittest.skip("TODO: Seeing inconsistent behavior in CI")
     def test_authentication_PAM(self):
         # add auth test user
         authTestUser = "irodsauthuser"
@@ -128,7 +128,7 @@ class Test_Auth_Suite(unittest.TestCase, ResourceBase):
         # clean up
         os.system("rm server.key server.csr chain.pem dhparams.pem")
 
-    @unittest.skip("TODO: Seeing inconsistent behavior in CI")
+    #@unittest.skip("TODO: Seeing inconsistent behavior in CI")
     def test_authentication_PAM_with_server_params(self):
         # add auth test user
         authTestUser = "irodsauthuser"
