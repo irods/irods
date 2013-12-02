@@ -8,6 +8,7 @@ from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd
 import pydevtest_sessions as s
 import commands
 import os
+import time
 
 class Test_OSAuth_Only(unittest.TestCase, ResourceBase):
 
@@ -22,7 +23,7 @@ class Test_OSAuth_Only(unittest.TestCase, ResourceBase):
         self.run_resource_teardown()
         s.twousers_down()
 
-    @unittest.skip("TODO: Seeing inconsistent behavior in CI")
+    #@unittest.skip("TODO: Seeing inconsistent behavior in CI")
     def test_authentication_OSAuth(self):
         # add auth test user
         authTestUser = "eirods"
@@ -43,6 +44,7 @@ class Test_OSAuth_Only(unittest.TestCase, ResourceBase):
 
         # do the reauth
         assertiCmd(s.adminsession,"iexit full" )             # exit out entirely
+        time.sleep(2);      # let's see if this fixes intermittent timing issues
         assertiCmd(s.adminsession,"iinit %s" % authTestPass) # reinitialize
         # connect and list some files
         assertiCmd(s.adminsession,"icd") # home directory
