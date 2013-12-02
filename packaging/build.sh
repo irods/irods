@@ -663,6 +663,32 @@ sleep 1
 # LOCAL COMPILATIONS - in ./external
 if [ "$BUILDEIRODS" == "1" ] ; then
 
+    # build a copy of jansson
+    EIRODS_BUILD_JANSSONVERSIONNUMBER="2.5"
+    EIRODS_BUILD_JANSSONVERSION="jansson-$EIRODS_BUILD_JANSSONVERSIONNUMBER"
+    cd $BUILDDIR/external/
+    if [ -d "$EIRODS_BUILD_JANSSONVERSION" ] ; then
+        echo "${text_green}${text_bold}Detected copy of [$EIRODS_BUILD_JANSSONVERSION]${text_reset}"
+    else
+        echo "${text_green}${text_bold}Downloading [$EIRODS_BUILD_JANSSONVERSION] from ftp.renci.org${text_reset}"
+        if [ -e "$EIRODS_BUILD_JANSSONVERSION.tar.gz" ] ; then
+            echo "Using existing copy"
+        else
+#            http://www.digip.org/jansson/
+            wget ftp://ftp.renci.org/pub/eirods/external/$EIRODS_BUILD_JANSSONVERSION.tar.gz
+        fi
+        gunzip $EIRODS_BUILD_JANSSONVERSION.tar.gz
+        tar xf $EIRODS_BUILD_JANSSONVERSION.tar
+    fi
+    echo "${text_green}${text_bold}Building [$EIRODS_BUILD_JANSSONVERSION]${text_reset}"
+    cd $BUILDDIR/external/$EIRODS_BUILD_JANSSONVERSION
+    if [[ ( ! -e "Makefile" ) || ( "$FULLPATHSCRIPTNAME" -nt "Makefile" ) ]] ; then
+        ./configure
+        $MAKEJCMD
+    else
+        echo "Nothing to build - all files up to date."
+    fi
+
     # get a copy of cjson
     EIRODS_BUILD_CJSONVERSIONNUMBER="58"
     EIRODS_BUILD_CJSONVERSION="cJSONFiles-r$EIRODS_BUILD_CJSONVERSIONNUMBER"
