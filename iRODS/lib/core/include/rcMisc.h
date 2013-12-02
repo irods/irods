@@ -118,6 +118,10 @@ int
 clearBulkOprInp (bulkOprInp_t *bulkOprInp);
 int
 getUnixUid (char *userName);
+int
+getUnixUsername (int uid, char *username, int username_len);
+int
+getUnixGroupname (int gid, char *groupname, int groupname_len);
 int 
 freeAllRescGrpInfo (rescGrpInfo_t *rescGrpInfoHead);
 int

@@ -5,6 +5,9 @@
 
 #include "regColl.h"
 #include "icatHighLevelRoutines.h"
+#ifdef FILESYSTEM_META
+#include "collection.h"
+#endif
 
 int
 rsRegColl (rsComm_t *rsComm, collInp_t *regCollInp)

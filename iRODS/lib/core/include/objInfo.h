@@ -183,6 +183,13 @@ typedef struct RescCacheInfo
 #define OPEN_EXISTING_COPY      0x10
 #define FILE_PATH_HAS_CHG       0x20
 
+/* keyValPair_t - str key, str value pair */
+typedef struct KeyValPair {
+    int len;
+    char **keyWord;     /* array of keyword */
+    char **value;       /* pointer to an array of values */
+} keyValPair_t;
+
 /* definition for flags in dataObjInfo_t */
 #define NO_COMMIT_FLAG  0x1  /* used in chlModDataObjMeta and chlRegDataObj */
 
@@ -220,6 +227,7 @@ typedef struct RescCacheInfo
         specColl_t *specColl;
         int regUid;                /* the UNIX uid the registering user */
         int otherFlags;    /* not used for now */
+        keyValPair_t condInput;
         char in_pdmo[MAX_NAME_LEN]; // If this is set then we are currently in a pdmo call at that level of hierarchy
         struct DataObjInfo *next;
     } dataObjInfo_t ;
@@ -251,6 +259,7 @@ typedef struct RescCacheInfo
         char collType[NAME_LEN];
         char collInfo1[MAX_NAME_LEN];
         char collInfo2[MAX_NAME_LEN];
+        keyValPair_t condInput;
   
         struct CollInfo *next;
     } collInfo_t;
@@ -258,13 +267,6 @@ typedef struct RescCacheInfo
     typedef struct RuleInfo {
         int TDB;
     } ruleInfo_t;
-
-/* keyValPair_t - str key, str value pair */
-    typedef struct KeyValPair {
-        int len;
-        char **keyWord;     /* array of keyword */
-        char **value;       /* pointer to an array of values */
-    } keyValPair_t;
 
 /* inxIvalPair_t - int index, int value pair */
 

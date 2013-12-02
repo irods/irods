@@ -10,6 +10,7 @@
 #include "fileStat.h"
 #include "rsGlobalExtern.h"
 #include "rcGlobalExtern.h"
+#include "collection.h"
 
 // =-=-=-=-=-=-=-
 // eirods includes

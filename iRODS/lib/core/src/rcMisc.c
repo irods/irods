@@ -1235,6 +1235,80 @@ getUnixUid (char *userName)
 #endif
 }
 
+int
+getUnixUsername (int uid, char *username, int username_len)
+{
+#ifndef _WIN32
+    struct passwd *pwent;
+
+    if (uid < 0 || username == NULL) {
+        return USER__NULL_INPUT_ERR;
+    }
+
+    /* if getpwuid returns NULL and errno is zero, it
+       means the user doesn't exist in the user db */
+    errno = 0;
+    pwent = getpwuid(uid);
+    if (pwent == NULL) {
+        if (errno) {
+            rodsLog(LOG_ERROR,
+                    "getUnixUsername: error calling getpwuid for uid %d. errno = %d",
+                    uid, errno);
+        }
+        else {
+            rodsLog(LOG_ERROR, "getUnixUsername: no user with uid %d", uid);
+        }
+        return SYS_USER_RETRIEVE_ERR - errno;
+    }
+    if ((unsigned int)username_len <= strlen(pwent->pw_name)) {
+        rodsLog(LOG_ERROR, "getUnixUsername: username input buffer too small (%d <= %d)",
+                username_len, strlen(pwent->pw_name));
+        return USER_STRLEN_TOOLONG;
+    }
+    strcpy(username, pwent->pw_name);
+
+    return 0;
+#else
+    return -1;
+#endif
+}
+
+int
+getUnixGroupname(int gid, char *groupname, int groupname_len)
+{
+#ifndef _WIN32
+    struct group *grent;
+
+    if (gid < 0 || groupname == NULL) {
+        return USER__NULL_INPUT_ERR;
+    }
+
+    errno = 0;
+    grent = getgrgid(gid);
+    if (grent == NULL) {
+        if (errno) {
+            rodsLog(LOG_ERROR,
+                    "getUnixGroupname: error calling getgrgid for gid %d. errno = %d",
+                    gid, errno);
+        }
+        else {
+            rodsLog(LOG_ERROR, "getUnixGroupname: no group with gid %d", gid);
+        }
+        return SYS_GROUP_RETRIEVE_ERR - errno;
+    }
+    if ((unsigned int)groupname_len <= strlen(grent->gr_name)) {
+        rodsLog(LOG_ERROR, "getUnixGroupname: groupname input buffer too small (%d <= %d)",
+                groupname_len, strlen(grent->gr_name));
+        return USER_STRLEN_TOOLONG;
+    }
+    strcpy(groupname, grent->gr_name);
+
+    return 0;
+#else
+    return -1;
+#endif
+}
+
 /*
    Return 64 semi-random bytes terminated by a null.  
 

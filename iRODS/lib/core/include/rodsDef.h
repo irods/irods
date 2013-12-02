@@ -49,6 +49,7 @@
 #include <time.h>
 #include <sys/param.h>
 #include <pwd.h>
+#include <grp.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
