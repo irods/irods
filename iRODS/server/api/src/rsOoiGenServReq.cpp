@@ -2,14 +2,14 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* This is script-generated code (for the most part).  */
 /* See ooiGenServReq.h for a description of this API call.*/
-#include "ooiGenServReq.h"
-#include "rodsLog.h"
-#include "rsGlobalExtern.h"
-#include "rcGlobalExtern.h"
-#include "rsApiHandler.h"
-#include "specColl.h"
-#include "resource.h"
-#include "miscServerFunct.h"
+#include "ooiGenServReq.hpp"
+#include "rodsLog.hpp"
+#include "rsGlobalExtern.hpp"
+#include "rcGlobalExtern.hpp"
+#include "rsApiHandler.hpp"
+#include "specColl.hpp"
+#include "resource.hpp"
+#include "miscServerFunct.hpp"
 
 int
 rsOoiGenServReq (rsComm_t *rsComm, ooiGenServReqInp_t *ooiGenServReqInp,

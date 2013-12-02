@@ -2,7 +2,7 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_network_manager.h"
+#include "eirods_network_manager.hpp"
 
 namespace eirods {
     // =-=-=-=-=-=-=-

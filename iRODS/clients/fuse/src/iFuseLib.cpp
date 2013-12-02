@@ -11,9 +11,9 @@
 #include <errno.h>
 #include <time.h>
 #include <assert.h>
-#include "irodsFs.h"
-#include "iFuseLib.h"
-#include "iFuseOper.h"
+#include "irodsFs.hpp"
+#include "iFuseLib.hpp"
+#include "iFuseOper.hpp"
 
 #include <cstdlib>
 #include <iostream>

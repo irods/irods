@@ -3,16 +3,16 @@
 /* ruleExecMod.h
  */
 
-#ifndef RULE_EXEC_MOD_H
-#define RULE_EXEC_MOD_H
+#ifndef RULE_EXEC_MOD_HPP
+#define RULE_EXEC_MOD_HPP
 
 /* This is a Metadata type API call */
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "reGlobalsExtern.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "reGlobalsExtern.hpp"
 
 typedef struct {
    char ruleId[NAME_LEN];

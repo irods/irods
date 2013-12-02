@@ -3,8 +3,8 @@
 /* sendXmsg.c
  */
 
-#include "sendXmsg.h"
-#include "xmsgLib.h"
+#include "sendXmsg.hpp"
+#include "xmsgLib.hpp"
 
 
 extern ticketHashQue_t XmsgHashQue[];

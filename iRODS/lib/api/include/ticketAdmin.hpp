@@ -8,17 +8,17 @@
    or utilize tickets.
  */
 
-#ifndef TICKET_ADMIN_H
-#define TICKET_ADMIN_H
+#ifndef TICKET_ADMIN_HPP
+#define TICKET_ADMIN_HPP
 
 /* This is a Metadata type API call */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "icatDefines.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "icatDefines.hpp"
 
 typedef struct {
    char *arg1;

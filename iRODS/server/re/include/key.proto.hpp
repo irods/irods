@@ -1,8 +1,8 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
 
-#ifndef KEY_PROTO_H
-#define KEY_PROTO_H
+#ifndef KEY_PROTO_HPP
+#define KEY_PROTO_HPP
 
 #define KEY_SIZE 1024
 

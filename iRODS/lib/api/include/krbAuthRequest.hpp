@@ -3,17 +3,17 @@
 /* krbAuthRequest.h
  */
 
-#ifndef KRB_AUTH_REQUEST_H
-#define KRB_AUTH_REQUEST_H
+#ifndef KRB_AUTH_REQUEST_HPP
+#define KRB_AUTH_REQUEST_HPP
 
 /* This is a Metadata API call */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "icatDefines.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "icatDefines.hpp"
 
 #ifdef  __cplusplus
 extern "C" {

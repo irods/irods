@@ -5,35 +5,35 @@
 /* This is script-generated code (for the most part).  */ 
 /* See dataObjCreate.h for a description of this API call.*/
 
-#include "dataObjCreate.h"
-#include "dataObjCreateAndStat.h"
-#include "dataObjOpen.h"
-#include "fileCreate.h"
-#include "subStructFileCreate.h"
-#include "rodsLog.h"
-#include "objMetaOpr.h"
-#include "resource.h"
-#include "specColl.h"
-#include "dataObjOpr.h"
-#include "physPath.h"
-#include "dataObjUnlink.h"
-#include "dataObjLock.h" // JMC - backport 4604
-#include "regDataObj.h"
-#include "rcGlobalExtern.h"
-#include "reGlobalsExtern.h"
-#include "reDefines.h"
-#include "getRemoteZoneResc.h"
-#include "getRescQuota.h"
-#include "icatHighLevelRoutines.h"
+#include "dataObjCreate.hpp"
+#include "dataObjCreateAndStat.hpp"
+#include "dataObjOpen.hpp"
+#include "fileCreate.hpp"
+#include "subStructFileCreate.hpp"
+#include "rodsLog.hpp"
+#include "objMetaOpr.hpp"
+#include "resource.hpp"
+#include "specColl.hpp"
+#include "dataObjOpr.hpp"
+#include "physPath.hpp"
+#include "dataObjUnlink.hpp"
+#include "dataObjLock.hpp" // JMC - backport 4604
+#include "regDataObj.hpp"
+#include "rcGlobalExtern.hpp"
+#include "reGlobalsExtern.hpp"
+#include "reDefines.hpp"
+#include "getRemoteZoneResc.hpp"
+#include "getRescQuota.hpp"
+#include "icatHighLevelRoutines.hpp"
 
-#include "eirods_hierarchy_parser.h"
+#include "eirods_hierarchy_parser.hpp"
 
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_resource_backport.h"
-#include "eirods_resource_redirect.h"
-#include "eirods_hierarchy_parser.h"
+#include "eirods_resource_backport.hpp"
+#include "eirods_resource_redirect.hpp"
+#include "eirods_hierarchy_parser.hpp"
 
 /* rsDataObjCreate - handle dataObj create request.
  *

@@ -2,25 +2,25 @@
  *** For full copyright notice please refer to files in the COPYRIGHT directory                ***/
 /* Written by Jean-Yves Nief of CCIN2P3 and copyright assigned to Data Intensive Cyberinfrastructure Foundation */
 
-#ifndef RE_IN2P3_SYS_RULE_H
-#define RE_IN2P3_SYS_RULE_H
+#ifndef RE_IN2P3_SYS_RULE_HPP
+#define RE_IN2P3_SYS_RULE_HPP
 
-#include "msParam.h"
-#include "reDataObjOpr.h"
-#include "rods.h"
-#include "rsGlobalExtern.h"   /* server global */
-#include "rcGlobalExtern.h"   /* client global */
-#include "reGlobalsExtern.h"
-#include "rsLog.h"
-#include "rodsLog.h"
-#include "sockComm.h"
-#include "rsMisc.h"
-#include "getRodsEnv.h"
-#include "rcConnect.h"
-#include "initServer.h"
-#include "generalRowInsert.h"
-#include "generalRowPurge.h"
-#include "generalAdmin.h"
+#include "msParam.hpp"
+#include "reDataObjOpr.hpp"
+#include "rods.hpp"
+#include "rsGlobalExtern.hpp"   /* server global */
+#include "rcGlobalExtern.hpp"   /* client global */
+#include "reGlobalsExtern.hpp"
+#include "rsLog.hpp"
+#include "rodsLog.hpp"
+#include "sockComm.hpp"
+#include "rsMisc.hpp"
+#include "getRodsEnv.hpp"
+#include "rcConnect.hpp"
+#include "initServer.hpp"
+#include "generalRowInsert.hpp"
+#include "generalRowPurge.hpp"
+#include "generalAdmin.hpp"
 
 #define NFIELDS 4 /* number of fields in HostControlAccess file: 
                      <user> <group> <IP address> <subnet mask> */

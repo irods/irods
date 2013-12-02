@@ -5,8 +5,8 @@
 
 // =-=-=-=-=-=-=-
 // My Includes
-#include "eirods_log.h"
-#include "eirods_plugin_name_generator.h"
+#include "eirods_log.hpp"
+#include "eirods_plugin_name_generator.hpp"
 
 // =-=-=-=-=-=-=-
 // STL Includes

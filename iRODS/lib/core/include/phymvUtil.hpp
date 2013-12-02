@@ -2,12 +2,12 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* phymvUtil.h - Header for for phymvUtil.c */
 
-#ifndef PHYMVUTIL_H
-#define PHYMVUTIL_H
+#ifndef PHYMVUTIL_HPP
+#define PHYMVUTIL_HPP
 
-#include "rodsClient.h"
-#include "parseCommandLine.h"
-#include "rodsPath.h"
+#include "rodsClient.hpp"
+#include "parseCommandLine.hpp"
+#include "rodsPath.hpp"
 
 #ifdef  __cplusplus
 extern "C" {

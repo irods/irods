@@ -1,9 +1,9 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
-#include "eirods_hierarchy_parser.h"
-#include "eirods_string_tokenize.h"
-#include "rodsErrorTable.h"
-#include "eirods_log.h"
+#include "eirods_hierarchy_parser.hpp"
+#include "eirods_string_tokenize.hpp"
+#include "rodsErrorTable.hpp"
+#include "eirods_log.hpp"
 
 #include <iostream>
 

@@ -2,8 +2,8 @@
  *** For more information please refer to files in the COPYRIGHT directory ***
  *****************************************************************************/
 
-#ifndef DBO_HIGHLEVEL_ROUTINES_H
-#define DBO_HIGHLEVEL_ROUTINES_H
+#ifndef DBO_HIGHLEVEL_ROUTINES_HPP
+#define DBO_HIGHLEVEL_ROUTINES_HPP
 
 int dbrOpen(char *dbrName);
 int dboExecute(rsComm_t *rsComm, char *dbrName, char *dboName, char *dborName,

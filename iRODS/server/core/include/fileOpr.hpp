@@ -8,13 +8,13 @@
 
 
 
-#ifndef FILE_OPR_H
-#define FILE_OPR_H
+#ifndef FILE_OPR_HPP
+#define FILE_OPR_HPP
 
-#include "rods.h"
-#include "initServer.h"
-#include "fileDriver.h"
-#include "chkNVPathPerm.h"
+#include "rods.hpp"
+#include "initServer.hpp"
+#include "fileDriver.hpp"
+#include "chkNVPathPerm.hpp"
 
 #define NUM_FILE_DESC   1026    /* number of FileDesc */
 

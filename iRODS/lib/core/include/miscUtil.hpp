@@ -2,12 +2,12 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* miscUtil.h - Header file for miscUtil.c */
 
-#ifndef MISC_UTIL_H
-#define MISC_UTIL_H
+#ifndef MISC_UTIL_HPP
+#define MISC_UTIL_HPP
 
-#include "rodsPath.h"
-#include "parseCommandLine.h"
-#include "irodsGuiProgressCallback.h"
+#include "rodsPath.hpp"
+#include "parseCommandLine.hpp"
+#include "irodsGuiProgressCallback.hpp"
 
 #define	INIT_UMASK_VAL	99999999
 typedef struct CollSqlResult {

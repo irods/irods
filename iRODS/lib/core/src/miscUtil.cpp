@@ -7,11 +7,11 @@
 #include <sys/time.h>
 #endif
 #include <fnmatch.h>
-#include "rodsClient.h"
-#include "rodsLog.h"
-#include "miscUtil.h"
+#include "rodsClient.hpp"
+#include "rodsLog.hpp"
+#include "miscUtil.hpp"
 
-#include "eirods_stacktrace.h"
+#include "eirods_stacktrace.hpp"
 
 /* VERIFY_DIV - contributed by g.soudlenkov@auckland.ac.nz */
 #define VERIFY_DIV(_v1_,_v2_) ((_v2_)? (float)(_v1_)/(_v2_):0.0)

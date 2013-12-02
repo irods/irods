@@ -1,12 +1,12 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 
-#include "eirods_zone_info.h"
+#include "eirods_zone_info.hpp"
 
-#include "rodsLog.h"
-#include "icatHighLevelRoutines.h"
-#include "icatMidLevelRoutines.h"
-#include "rodsDef.h"
+#include "rodsLog.hpp"
+#include "icatHighLevelRoutines.hpp"
+#include "icatMidLevelRoutines.hpp"
+#include "rodsDef.hpp"
 
 namespace eirods {
 

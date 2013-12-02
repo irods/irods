@@ -3,10 +3,10 @@
 /* packStruct.h - header file for packStruct.c
  */
 
-#ifndef PACK_STRUCT_H
-#define PACK_STRUCT_H
+#ifndef PACK_STRUCT_HPP
+#define PACK_STRUCT_HPP
 
-#include "rodsDef.h"
+#include "rodsDef.hpp"
 
 #define MAX_PI_LEN	1024	/* max pack instruct length */
 #define SEMI_COL_FLAG	0x2	/* got semi colon at end */

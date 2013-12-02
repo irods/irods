@@ -3,16 +3,16 @@
 /* subStructFileRmdir.h  
  */
 
-#ifndef SUB_STRUCT_FILE_RMDIR_H
-#define SUB_STRUCT_FILE_RMDIR_H
+#ifndef SUB_STRUCT_FILE_RMDIR_HPP
+#define SUB_STRUCT_FILE_RMDIR_HPP
 
 /* This is Object File I/O type API call */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
 
 #if defined(RODS_SERVER)
 #define RS_SUB_STRUCT_FILE_RMDIR rsSubStructFileRmdir

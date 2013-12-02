@@ -3,8 +3,8 @@
 /* modAccessControl.h
  */
 
-#ifndef MOD_ACCESS_CONTROL_H
-#define MOD_ACCESS_CONTROL_H
+#ifndef MOD_ACCESS_CONTROL_HPP
+#define MOD_ACCESS_CONTROL_HPP
 
 /* This is a Metadata type API call */
 
@@ -14,12 +14,12 @@
    command and processed by the chlModAccessControl routine.
 */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "icatDefines.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "icatDefines.hpp"
 
 #define MOD_RESC_PREFIX "resource:"  /* Used to indicate a resource
 				      * instead of requiring a change

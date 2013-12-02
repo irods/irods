@@ -6,7 +6,7 @@
 /* This is script-generated code.  */ 
 /* See ncInq.h for a description of this API call.*/
 
-#include "ncInq.h"
+#include "ncInq.hpp"
 
 /**
  * \fn rcNcInq (rcComm_t *conn, ncInqInp_t *ncInqInp, ncInqOut_t **ncInqOut)

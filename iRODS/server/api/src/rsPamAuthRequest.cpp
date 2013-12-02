@@ -5,11 +5,11 @@
 
 #include <sys/wait.h>
 
-#include "pamAuthRequest.h"
-#include "genQuery.h"
-#include "reGlobalsExtern.h"
-#include "icatHighLevelRoutines.h"
-#include "miscServerFunct.h"
+#include "pamAuthRequest.hpp"
+#include "genQuery.hpp"
+#include "reGlobalsExtern.hpp"
+#include "icatHighLevelRoutines.hpp"
+#include "miscServerFunct.hpp"
 
 
 int

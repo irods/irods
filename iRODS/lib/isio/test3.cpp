@@ -3,7 +3,7 @@
   using isio, change stdio.h to isio.h. */
 
 //#include <stdio.h> 
-#include "isio.h"   /* the irods standard IO emulation library */
+#include "isio.hpp"   /* the irods standard IO emulation library */
 #include <stdlib.h>
 #include <string.h>
 void main(int argc, char **argv)

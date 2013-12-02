@@ -3,9 +3,9 @@
 /* This is script-generated code (for the most part).  */ 
 /* See userAdmin.h for a description of this API call.*/
 
-#include "userAdmin.h"
-#include "reGlobalsExtern.h"
-#include "icatHighLevelRoutines.h"
+#include "userAdmin.hpp"
+#include "reGlobalsExtern.hpp"
+#include "icatHighLevelRoutines.hpp"
 
 int
 rsUserAdmin (rsComm_t *rsComm, userAdminInp_t *userAdminInp )

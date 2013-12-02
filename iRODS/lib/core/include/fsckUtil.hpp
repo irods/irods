@@ -2,13 +2,13 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* fsckUtil.h - Header for fsckUtil.c */
 
-#ifndef FSCK_UTIL_H
-#define FSCK_UTIL_H
+#ifndef FSCK_UTIL_HPP
+#define FSCK_UTIL_HPP
 
-#include "rodsClient.h"
-#include "parseCommandLine.h"
-#include "rodsPath.h"
-#include "scanUtil.h"
+#include "rodsClient.hpp"
+#include "parseCommandLine.hpp"
+#include "rodsPath.hpp"
+#include "scanUtil.hpp"
 
 #ifdef  __cplusplus
 extern "C" {

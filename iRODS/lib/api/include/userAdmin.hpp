@@ -7,17 +7,17 @@
    administrative functions.  It is non-privileged for use by regular
    users for certain updates, such as changing their password. */
 
-#ifndef USER_ADMIN_H
-#define USER_ADMIN_H
+#ifndef USER_ADMIN_HPP
+#define USER_ADMIN_HPP
 
 /* This is a Metadata type API call */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "icatDefines.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "icatDefines.hpp"
 
 typedef struct {
    char *arg0;

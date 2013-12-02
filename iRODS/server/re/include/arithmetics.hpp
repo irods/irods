@@ -1,23 +1,23 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
 
-#ifndef ARITHMETICS_H
-#define ARITHMETICS_H
+#ifndef ARITHMETICS_HPP
+#define ARITHMETICS_HPP
 #include <math.h>
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include "conversion.h"
-#include "parser.h"
-#include "hashtable.h"
+#include "conversion.hpp"
+#include "parser.hpp"
+#include "hashtable.hpp"
 #define POSIX_REGEXP
 
 #ifndef DEBUG
 
-#include "msParam.h"
-#include "rodsDef.h"
+#include "msParam.hpp"
+#include "rodsDef.hpp"
 
 #endif
 

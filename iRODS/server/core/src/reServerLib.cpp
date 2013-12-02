@@ -7,23 +7,23 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #endif
-#include "reServerLib.h"
+#include "reServerLib.hpp"
 #if 0
-#include "resource.h"
-#include "collection.h"
-#include "specColl.h"
-#include "modDataObjMeta.h"
+#include "resource.hpp"
+#include "collection.hpp"
+#include "specColl.hpp"
+#include "modDataObjMeta.hpp"
 #endif
-#include "ruleExecSubmit.h"
-#include "ruleExecDel.h"
-#include "genQuery.h"
-#include "icatHighLevelRoutines.h"
-#include "reSysDataObjOpr.h"
-#include "miscUtil.h"
-#include "rodsClient.h"
-#include "rsIcatOpr.h"
-#include "resource.h"
-#include "eirods_stacktrace.h"
+#include "ruleExecSubmit.hpp"
+#include "ruleExecDel.hpp"
+#include "genQuery.hpp"
+#include "icatHighLevelRoutines.hpp"
+#include "reSysDataObjOpr.hpp"
+#include "miscUtil.hpp"
+#include "rodsClient.hpp"
+#include "rsIcatOpr.hpp"
+#include "resource.hpp"
+#include "eirods_stacktrace.hpp"
 
 int 
 getReInfo (rsComm_t *rsComm, genQueryOut_t **genQueryOut)

@@ -6,8 +6,8 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *  *** For more information please refer to files in the COPYRIGHT directory ***/
 
-#include "collection.h"
-#include "reNetcdf.h"
+#include "collection.hpp"
+#include "reNetcdf.hpp"
 
 /**
  * \fn msiNcOpen (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)

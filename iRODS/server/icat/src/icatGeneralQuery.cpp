@@ -23,16 +23,16 @@
  be called when the tables change to make sure there are no cycles.
 
  */
-#include "rodsClient.h"
-#include "icatHighLevelRoutines.h"
-#include "icatMidLevelRoutines.h"
-#include "icatLowLevel.h"
+#include "rodsClient.hpp"
+#include "icatHighLevelRoutines.hpp"
+#include "icatMidLevelRoutines.hpp"
+#include "icatLowLevel.hpp"
 #define LIMIT_AUDIT_ACCESS 1  /* undefine this if you want to allow
                                  access to the audit tables by
                                  non-privileged users */
 
 #ifdef EXTENDED_ICAT
-#include "extendedICAT.h"
+#include "extendedICAT.hpp"
 #endif
 
 int logSQLGenQuery=0;

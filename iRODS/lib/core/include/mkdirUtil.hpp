@@ -2,12 +2,12 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* getUtil.h - Header for for getUtil.c */
 
-#ifndef MKDIR_UTIL_H
-#define MKDIR_UTIL_H
+#ifndef MKDIR_UTIL_HPP
+#define MKDIR_UTIL_HPP
 
-#include "rodsClient.h"
-#include "parseCommandLine.h"
-#include "rodsPath.h"
+#include "rodsClient.hpp"
+#include "parseCommandLine.hpp"
+#include "rodsPath.hpp"
 
 #ifdef  __cplusplus
 extern "C" {

@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See chkObjPermAndStat.h for a description of this API call.*/
 
-#include "chkObjPermAndStat.h"
+#include "chkObjPermAndStat.hpp"
 
 int
 rcChkObjPermAndStat (rcComm_t *conn, chkObjPermAndStat_t *chkObjPermAndStatInp)

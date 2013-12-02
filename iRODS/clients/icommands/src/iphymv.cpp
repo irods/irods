@@ -6,10 +6,10 @@
  * iphymv - The irods physical move utility
  */
 
-#include "rodsClient.h"
-#include "parseCommandLine.h"
-#include "rodsPath.h"
-#include "phymvUtil.h"
+#include "rodsClient.hpp"
+#include "parseCommandLine.hpp"
+#include "rodsPath.hpp"
+#include "phymvUtil.hpp"
 void usage ();
 
 int

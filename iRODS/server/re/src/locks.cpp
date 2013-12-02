@@ -1,9 +1,9 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
-#include "debug.h"
-#include "locks.h"
-#include "filesystem.h"
-#include "utils.h"
+#include "debug.hpp"
+#include "locks.hpp"
+#include "filesystem.hpp"
+#include "utils.hpp"
 
 int lockMutex(mutex_type **mutex) {
 	char sem_name[1024];

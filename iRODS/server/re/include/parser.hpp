@@ -2,8 +2,8 @@
  */
 
 
-#ifndef PARSER_H
-#define PARSER_H
+#ifndef PARSER_HPP
+#define PARSER_HPP
 
 #include <ctype.h>
 #include <stdio.h>
@@ -12,15 +12,15 @@
 
 
 #ifndef DEBUG
-#include "objInfo.h"
-#include "reHelpers1.h"
+#include "objInfo.hpp"
+#include "reHelpers1.hpp"
 #endif
 
-#include "reconstants.h"
-#include "restructs.h"
-#include "utils.h"
-#include "region.h"
-#include "hashtable.h"
+#include "reconstants.hpp"
+#include "restructs.hpp"
+#include "utils.hpp"
+#include "region.hpp"
+#include "hashtable.hpp"
 
 
 typedef struct op {

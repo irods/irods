@@ -8,28 +8,28 @@
 /* XXXXXX take me out. For testing only */
 /* #define TEST_QUE_RULE        1 */
 
-#include "dataObjClose.h"
-#include "rodsLog.h"
-#include "regReplica.h"
-#include "modDataObjMeta.h"
-#include "dataObjOpr.h"
-#include "objMetaOpr.h"
-#include "physPath.h"
-#include "resource.h"
-#include "dataObjUnlink.h"
-#include "rsGlobalExtern.h"
-#include "rcGlobalExtern.h"
-#include "reGlobalsExtern.h"
-#include "reDefines.h"
-#include "ruleExecSubmit.h"
-#include "subStructFileRead.h"
-#include "subStructFileStat.h"
-#include "subStructFileClose.h"
-#include "regDataObj.h"
-#include "dataObjRepl.h"
-#include "dataObjTrim.h" // JMC - backport 4537
-#include "dataObjLock.h" // JMC - backport 4604
-#include "getRescQuota.h"
+#include "dataObjClose.hpp"
+#include "rodsLog.hpp"
+#include "regReplica.hpp"
+#include "modDataObjMeta.hpp"
+#include "dataObjOpr.hpp"
+#include "objMetaOpr.hpp"
+#include "physPath.hpp"
+#include "resource.hpp"
+#include "dataObjUnlink.hpp"
+#include "rsGlobalExtern.hpp"
+#include "rcGlobalExtern.hpp"
+#include "reGlobalsExtern.hpp"
+#include "reDefines.hpp"
+#include "ruleExecSubmit.hpp"
+#include "subStructFileRead.hpp"
+#include "subStructFileStat.hpp"
+#include "subStructFileClose.hpp"
+#include "regDataObj.hpp"
+#include "dataObjRepl.hpp"
+#include "dataObjTrim.hpp" // JMC - backport 4537
+#include "dataObjLock.hpp" // JMC - backport 4604
+#include "getRescQuota.hpp"
 
 #ifdef LOG_TRANSFERS
 #include <sys/time.h>
@@ -40,10 +40,10 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_resource_backport.h"
-#include "eirods_stacktrace.h"
-#include "eirods_hierarchy_parser.h"
-#include "eirods_file_object.h"
+#include "eirods_resource_backport.hpp"
+#include "eirods_stacktrace.hpp"
+#include "eirods_hierarchy_parser.hpp"
+#include "eirods_file_object.hpp"
 
 
 int

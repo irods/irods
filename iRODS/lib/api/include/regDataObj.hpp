@@ -5,17 +5,17 @@
 /* regDataObj.h
  */
 
-#ifndef REG_DATA_OBJ_H
-#define REG_DATA_OBJ_H
+#ifndef REG_DATA_OBJ_HPP
+#define REG_DATA_OBJ_HPP
 
 /* This is Object File I/O type API call */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "dataObjInpOut.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "dataObjInpOut.hpp"
 
 #if defined(RODS_SERVER)
 #define RS_REG_DATA_OBJ rsRegDataObj

@@ -5,8 +5,8 @@
   User interface to display quota information.
 */
 
-#include "rods.h"
-#include "rodsClient.h"
+#include "rods.hpp"
+#include "rodsClient.hpp"
 
 #define BIG_STR 200
 #define QUOTA_APPROACH_WARNING_SIZE -10000000000LL

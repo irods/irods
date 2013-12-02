@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See ruleExecMod.h for a description of this API call.*/
 
-#include "ruleExecMod.h"
+#include "ruleExecMod.hpp"
 
 int
 rcRuleExecMod (rcComm_t *conn, ruleExecModInp_t *ruleExecModInp)

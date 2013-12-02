@@ -1,11 +1,11 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
 
-#ifndef REGION_TO_REGION2_INSTANCE_H
-#define REGION_TO_REGION2_INSTANCE_H
+#ifndef REGION_TO_REGION2_INSTANCE_HPP
+#define REGION_TO_REGION2_INSTANCE_HPP
 
-#include "region.to.region2.proto.h"
-#include "traversal.instance.h"
+#include "region.to.region2.proto.hpp"
+#include "traversal.instance.hpp"
 
 #define TRAVERSE_BEGIN(T) \
 	T* ptr1; \

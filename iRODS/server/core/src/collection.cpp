@@ -4,10 +4,10 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* collection.c - collection operation */
 
-#include "collection.h"
-#include "specColl.h"
-#include "genQuery.h"
-#include "rodsClient.h"
+#include "collection.hpp"
+#include "specColl.hpp"
+#include "genQuery.hpp"
+#include "rodsClient.hpp"
 
 /* checkCollAccessPerm - Check whether the user is allowed to perform
  * operation specified by the accessPerm string on the collection.

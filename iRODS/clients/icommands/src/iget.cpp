@@ -4,10 +4,10 @@
  * iget - The irods get utility
 */
 
-#include "rodsClient.h"
-#include "parseCommandLine.h"
-#include "rodsPath.h"
-#include "getUtil.h"
+#include "rodsClient.hpp"
+#include "parseCommandLine.hpp"
+#include "rodsPath.hpp"
+#include "getUtil.hpp"
 void usage ();
 
 int

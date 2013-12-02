@@ -1,11 +1,11 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
-#ifndef HASHTABLE_H
-#define HASHTABLE_H
+#ifndef HASHTABLE_HPP
+#define HASHTABLE_HPP
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "region.h"
+#include "region.hpp"
 #define HASH_BASE 5381
 #define myhash(x) B_hash((unsigned char*)(x))
 

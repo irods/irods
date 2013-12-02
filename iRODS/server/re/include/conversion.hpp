@@ -1,10 +1,10 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
 
-#ifndef _CONVERSION_H
-#define	_CONVERSION_H
-#include "utils.h"
-#include "parser.h"
+#ifndef _CONVERSION_HPP
+#define	_CONVERSION_HPP
+#include "utils.hpp"
+#include "parser.hpp"
 
 
 /** conversion functions */

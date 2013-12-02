@@ -6,10 +6,10 @@
 
 ****************************************************************************/
 
-#ifndef ICAT_STRUCTS_H
-#define ICAT_STRUCTS_H
+#ifndef ICAT_STRUCTS_HPP
+#define ICAT_STRUCTS_HPP
 
-#include "icatDefines.h"
+#include "icatDefines.hpp"
 
 typedef struct
 {

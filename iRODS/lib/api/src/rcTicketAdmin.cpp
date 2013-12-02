@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See ticketAdmin.h for a description of this API call.*/
 
-#include "ticketAdmin.h"
+#include "ticketAdmin.hpp"
 
 int
 rcTicketAdmin (rcComm_t *conn, ticketAdminInp_t *ticketAdminInp)

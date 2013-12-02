@@ -3,19 +3,19 @@
 /* ncArchTimeSeries.h
  */
 
-#ifndef NC_ARCH_TIME_SERIES_H
-#define NC_ARCH_TIME_SERIES_H
+#ifndef NC_ARCH_TIME_SERIES_HPP
+#define NC_ARCH_TIME_SERIES_HPP
 
 /* This is a NETCDF API call */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "dataObjInpOut.h"
-#include "ncInq.h"
-#include "ncGetAggInfo.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "dataObjInpOut.hpp"
+#include "ncInq.hpp"
+#include "ncGetAggInfo.hpp"
 
 #define READ_TIME_SIZE	100
 #define ARCH_FILE_SIZE  (1024*1024*1024)   /* archival file size */

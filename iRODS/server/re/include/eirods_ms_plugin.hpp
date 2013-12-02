@@ -13,8 +13,8 @@
 
 // =-=-=-=-=-=-=-
 // My Includes
-#include "eirods_lookup_table.h"
-#include "eirods_plugin_base.h"
+#include "eirods_lookup_table.hpp"
+#include "eirods_plugin_base.hpp"
 
 namespace eirods {
 

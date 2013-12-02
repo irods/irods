@@ -6,20 +6,20 @@
 /* fileOpr.c - File type operation. Will call low level file drivers
  */
 
-#include "fileOpr.h"
-#include "fileStat.h"
-#include "rsGlobalExtern.h"
-#include "rcGlobalExtern.h"
-#include "collection.h"
+#include "fileOpr.hpp"
+#include "fileStat.hpp"
+#include "rsGlobalExtern.hpp"
+#include "rcGlobalExtern.hpp"
+#include "collection.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_log.h"
-#include "eirods_file_object.h"
-#include "eirods_collection_object.h"
-#include "eirods_stacktrace.h"
-#include "eirods_resource_backport.h"
-#include "eirods_resource_manager.h"
+#include "eirods_log.hpp"
+#include "eirods_file_object.hpp"
+#include "eirods_collection_object.hpp"
+#include "eirods_stacktrace.hpp"
+#include "eirods_resource_backport.hpp"
+#include "eirods_resource_manager.hpp"
 
 int
 initFileDesc ()

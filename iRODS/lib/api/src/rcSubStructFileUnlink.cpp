@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See bunSubUnlink.h for a description of this API call.*/
 
-#include "subStructFileUnlink.h"
+#include "subStructFileUnlink.hpp"
 
 int
 rcSubStructFileUnlink (rcComm_t *conn, subFile_t *subFile)

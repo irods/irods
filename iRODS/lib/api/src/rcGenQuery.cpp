@@ -7,7 +7,7 @@
 
 /* See genQuery.h for a description of this API call.*/
 
-#include "genQuery.h"
+#include "genQuery.hpp"
 
 /* this is a debug routine; it just prints the genQueryInp
    structure */

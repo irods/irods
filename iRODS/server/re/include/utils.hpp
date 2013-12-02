@@ -2,20 +2,20 @@
  */
 
 
-#ifndef UTILS_H
-#define UTILS_H
+#ifndef UTILS_HPP
+#define UTILS_HPP
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #ifndef DEBUG
-#include "objInfo.h"
-#include "reHelpers1.h"
-#include "rodsType.h"
+#include "objInfo.hpp"
+#include "reHelpers1.hpp"
+#include "rodsType.hpp"
 #endif
-#include "restructs.h"
-#include "region.h"
-#include "hashtable.h"
+#include "restructs.hpp"
+#include "region.hpp"
+#include "hashtable.hpp"
 
 
 #define CASCASE_NON_ZERO(x) {int ret = x; if(ret != 0) { return ret;} }
@@ -106,38 +106,38 @@ int isRuleGenSyntax(char *expr);
 #define CONCAT(a,b) CONCAT2(a,b)
 
 #define KEY_PROTO
-#include "key.proto.h"
-#include "proto.h"
-#include "restruct.templates.h"
-#include "end.instance.h"
+#include "key.proto.hpp"
+#include "proto.hpp"
+#include "restruct.templates.hpp"
+#include "end.instance.hpp"
 
 void keyBuf(unsigned char *buf, int size, char *keyBuf);
 
 #undef KEY_PROTO
 
-#include "region.to.region.proto.h"
-#include "proto.h"
-#include "restruct.templates.h"
-#include "end.instance.h"
+#include "region.to.region.proto.hpp"
+#include "proto.hpp"
+#include "restruct.templates.hpp"
+#include "end.instance.hpp"
 
-#include "to.region.proto.h"
-#include "proto.h"
-#include "restruct.templates.h"
-#include "end.instance.h"
+#include "to.region.proto.hpp"
+#include "proto.hpp"
+#include "restruct.templates.hpp"
+#include "end.instance.hpp"
 
-#include "to.memory.proto.h"
-#include "proto.h"
-#include "restruct.templates.h"
-#include "end.instance.h"
+#include "to.memory.proto.hpp"
+#include "proto.hpp"
+#include "restruct.templates.hpp"
+#include "end.instance.hpp"
 
-#include "region.to.region2.proto.h"
-#include "proto.h"
-#include "restruct.templates.h"
-#include "end.instance.h"
+#include "region.to.region2.proto.hpp"
+#include "proto.hpp"
+#include "restruct.templates.hpp"
+#include "end.instance.hpp"
 
-/*#include "region.check.proto.h"
-#include "restruct.templates.h"
-#include "end.instance.h"*/
+/*#include "region.check.proto.hpp"
+#include "restruct.templates.hpp"
+#include "end.instance.hpp"*/
 
 /** debugging functions */
 int writeToTmp(char *fileName, char *text);

@@ -3,8 +3,8 @@
 #ifndef _create_write_replicator_H_
 #define _create_write_replicator_H_
 
-#include "eirods_error.h"
-#include "eirods_oper_replicator.h"
+#include "eirods_error.hpp"
+#include "eirods_oper_replicator.hpp"
 
 namespace eirods {
 

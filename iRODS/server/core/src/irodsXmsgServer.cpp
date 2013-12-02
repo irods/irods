@@ -3,11 +3,11 @@
 /* irodsXmsgServer.c - The irods xmsg server
  */
 
-#include "reconstants.h"
-#include "irodsXmsgServer.h"
-#include "xmsgLib.h"
-#include "rsGlobal.h"
-#include "miscServerFunct.h"
+#include "reconstants.hpp"
+#include "irodsXmsgServer.hpp"
+#include "xmsgLib.hpp"
+#include "rsGlobal.hpp"
+#include "miscServerFunct.hpp"
 
 int loopCnt=-1;  /* make it -1 to run infinitel */
 

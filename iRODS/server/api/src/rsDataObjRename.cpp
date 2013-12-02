@@ -4,29 +4,29 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* rsDataObjRename.c - rename a data object.
  */
-#include "dataObjRename.h"
-#include "objMetaOpr.h"
-#include "dataObjOpr.h"
-#include "collection.h"
-#include "resource.h"
-#include "specColl.h"
-#include "physPath.h"
-#include "subStructFileRename.h"
-#include "icatHighLevelRoutines.h"
-#include "dataObjUnlink.h"
-#include "phyBundleColl.h"
-#include "regDataObj.h"
-#include "fileOpendir.h"
-#include "fileReaddir.h"
-#include "fileClosedir.h"
-#include "rmCollOld.h"
+#include "dataObjRename.hpp"
+#include "objMetaOpr.hpp"
+#include "dataObjOpr.hpp"
+#include "collection.hpp"
+#include "resource.hpp"
+#include "specColl.hpp"
+#include "physPath.hpp"
+#include "subStructFileRename.hpp"
+#include "icatHighLevelRoutines.hpp"
+#include "dataObjUnlink.hpp"
+#include "phyBundleColl.hpp"
+#include "regDataObj.hpp"
+#include "fileOpendir.hpp"
+#include "fileReaddir.hpp"
+#include "fileClosedir.hpp"
+#include "rmCollOld.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_resource_backport.h"
-#include "eirods_stacktrace.h"
-#include "eirods_hierarchy_parser.h"
-#include "eirods_resource_redirect.h"
+#include "eirods_resource_backport.hpp"
+#include "eirods_stacktrace.hpp"
+#include "eirods_hierarchy_parser.hpp"
+#include "eirods_resource_redirect.hpp"
 
 int
 rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)

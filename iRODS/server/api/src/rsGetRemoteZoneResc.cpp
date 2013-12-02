@@ -3,19 +3,19 @@
 /* rsGetRemoteZoneResc.c
  */
 
-#include "getRemoteZoneResc.h"
-#include "rodsLog.h"
-#include "objMetaOpr.h"
-#include "dataObjOpr.h"
-#include "physPath.h"
-#include "regDataObj.h"
-#include "rcGlobalExtern.h"
-#include "reGlobalsExtern.h"
-#include "reDefines.h"
-#include "dataObjCreate.h"
-#include "dataObjOpen.h"
+#include "getRemoteZoneResc.hpp"
+#include "rodsLog.hpp"
+#include "objMetaOpr.hpp"
+#include "dataObjOpr.hpp"
+#include "physPath.hpp"
+#include "regDataObj.hpp"
+#include "rcGlobalExtern.hpp"
+#include "reGlobalsExtern.hpp"
+#include "reDefines.hpp"
+#include "dataObjCreate.hpp"
+#include "dataObjOpen.hpp"
 
-#include "eirods_resource_redirect.h"
+#include "eirods_resource_redirect.hpp"
 
 int
 rsGetRemoteZoneResc (rsComm_t *rsComm, dataObjInp_t *dataObjInp,

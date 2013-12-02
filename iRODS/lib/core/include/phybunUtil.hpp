@@ -2,12 +2,12 @@
  *** For more infophybunation please refer to files in the COPYRIGHT directory ***/
 /* phybunUtil.h - Header for for phybunUtil.c */
 
-#ifndef PHYBUN_UTIL_H
-#define PHYBUN_UTIL_H
+#ifndef PHYBUN_UTIL_HPP
+#define PHYBUN_UTIL_HPP
 
-#include "rodsClient.h"
-#include "parseCommandLine.h"
-#include "rodsPath.h"
+#include "rodsClient.hpp"
+#include "parseCommandLine.hpp"
+#include "rodsPath.hpp"
 
 #ifdef _WIN32
 #include "sys/timeb.h"

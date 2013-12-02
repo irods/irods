@@ -3,7 +3,7 @@
 /* This is script-generated code.  */ 
 /* See authRequest.h for a description of this API call.*/
 
-#include "authRequest.h"
+#include "authRequest.hpp"
 
 int
 rcAuthRequest (rcComm_t *conn, authRequestOut_t **authRequestOut )

@@ -4,13 +4,13 @@
   header file for the Oracle version of the icat low level routines.
  */
 
-#ifndef CLL_ORA_H
-#define CLL_ORA_H
+#ifndef CLL_ORA_HPP
+#define CLL_ORA_HPP
 
-#include "oci.h"
+#include "oci.hpp"
 
-#include "rods.h"
-#include "icatMidLevelRoutines.h"
+#include "rods.hpp"
+#include "icatMidLevelRoutines.hpp"
 
 #define MAX_BIND_VARS 120 // JMC - backport 4848 ( 40->120 )
 

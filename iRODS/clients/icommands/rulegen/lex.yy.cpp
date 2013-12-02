@@ -579,7 +579,7 @@ char *yytext;
 #line 1 "rulegen.l"
 #define INITIAL 0
 #line 2 "rulegen.l"
-#include "y.tab.h"
+#include "y.tab.hpp"
 void count ();
 #line 585 "lex.yy.c"
 

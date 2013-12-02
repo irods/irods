@@ -1,9 +1,9 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
-#include "rodsServer.h"
-#include "resource.h"
-#include "miscServerFunct.h"
+#include "rodsServer.hpp"
+#include "resource.hpp"
+#include "miscServerFunct.hpp"
 
 #include <syslog.h>
 
@@ -17,13 +17,13 @@
 #endif
 
 #ifdef windows_platform
-#include "irodsntutil.h"
+#include "irodsntutil.hpp"
 #endif
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_client_server_negotiation.h"
-#include "eirods_network_factory.h"
+#include "eirods_client_server_negotiation.hpp"
+#include "eirods_network_factory.hpp"
 
 
 

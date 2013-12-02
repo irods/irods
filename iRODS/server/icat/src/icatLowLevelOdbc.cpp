@@ -30,10 +30,10 @@
 
 */
 
-#include "icatLowLevelOdbc.h"
+#include "icatLowLevelOdbc.hpp"
 
-#include "eirods_tmp_string.h"
-#include "eirods_log.h"
+#include "eirods_tmp_string.hpp"
+#include "eirods_log.hpp"
 
 int _cllFreeStatementColumns(icatSessionStruct *icss, int statementNumber);
 

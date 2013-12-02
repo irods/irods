@@ -3,18 +3,18 @@
 /* This is script-generated code (for the most part).  */ 
 /* See dataObjLock.h for a description of this API call.*/
 
-#include "dataObjLock.h"
-#include "rodsLog.h"
-#include "objMetaOpr.h"
-#include "dataObjOpr.h"
-#include "physPath.h"
-#include "specColl.h"
-#include "rsGlobalExtern.h"
-#include "rcGlobalExtern.h"
-#include "reGlobalsExtern.h"
-#include "reDefines.h"
-#include "reDefines.h"
-#include "getRemoteZoneResc.h"
+#include "dataObjLock.hpp"
+#include "rodsLog.hpp"
+#include "objMetaOpr.hpp"
+#include "dataObjOpr.hpp"
+#include "physPath.hpp"
+#include "specColl.hpp"
+#include "rsGlobalExtern.hpp"
+#include "rcGlobalExtern.hpp"
+#include "reGlobalsExtern.hpp"
+#include "reDefines.hpp"
+#include "reDefines.hpp"
+#include "getRemoteZoneResc.hpp"
 
 int
 rsDataObjLock (rsComm_t *rsComm, dataObjInp_t *dataObjInp)

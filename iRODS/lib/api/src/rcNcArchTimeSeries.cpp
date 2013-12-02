@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See ncArchTimeSeries.h for a description of this API call.*/
 
-#include "ncArchTimeSeries.h"
+#include "ncArchTimeSeries.hpp"
 
 /* rcNcArchTimeSeries - Archive a time series data set given in objPath to
  * a aggregate collection.

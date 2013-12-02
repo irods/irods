@@ -3,16 +3,16 @@
 /* structFileSync.h  
  */
 
-#ifndef STRUCT_FILE_SYNC_H
-#define STRUCT_FILE_SYNC_H
+#ifndef STRUCT_FILE_SYNC_HPP
+#define STRUCT_FILE_SYNC_HPP
 
 /* This is Object File I/O type API call */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
 
 /* definition for flags */
 

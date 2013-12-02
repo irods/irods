@@ -3,7 +3,7 @@
 /* This is script-generated code.  */ 
 /* See fileClose.h for a description of this API call.*/
 
-#include "fileClose.h"
+#include "fileClose.hpp"
 
 int
 rcFileClose (rcComm_t *conn, fileCloseInp_t *fileCloseInp)

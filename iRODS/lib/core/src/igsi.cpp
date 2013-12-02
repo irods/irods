@@ -25,8 +25,8 @@ sets up the login session.
 #include <stdlib.h>
 #include <ctype.h>
 #include <unistd.h>
-#include "rods.h"
-#include "rcGlobalExtern.h"
+#include "rods.hpp"
+#include "rcGlobalExtern.hpp"
 
 #if defined(GSI_AUTH)
 #include <gssapi.h>
@@ -36,7 +36,7 @@ sets up the login session.
 #include <sys/time.h>           /* for IGSI_TIMING only */
 #include <string.h>
 
-#include "rodsErrorTable.h"
+#include "rodsErrorTable.hpp"
 
 rError_t *igsi_rErrorPtr;
 

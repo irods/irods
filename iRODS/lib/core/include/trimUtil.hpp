@@ -2,12 +2,12 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* trimUtil.h - Header for for trimUtil.c */
 
-#ifndef TRIMUTIL_H
-#define TRIMUTIL_H
+#ifndef TRIMUTIL_HPP
+#define TRIMUTIL_HPP
 
-#include "rodsClient.h"
-#include "parseCommandLine.h"
-#include "rodsPath.h"
+#include "rodsClient.hpp"
+#include "parseCommandLine.hpp"
+#include "rodsPath.hpp"
 
 #ifdef  __cplusplus
 extern "C" {

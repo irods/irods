@@ -7,9 +7,9 @@
 #define RODS_PARSE_COMMAND_LINE
 
 #if _WIN32
-#include "irodsntutil.h"
-#include "IRodsLib3.h"
-#include "rodsType.h"
+#include "irodsntutil.hpp"
+#include "IRodsLib3.hpp"
+#include "rodsType.hpp"
 #endif
 
 #ifdef  __cplusplus

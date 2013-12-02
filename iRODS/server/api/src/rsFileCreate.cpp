@@ -7,22 +7,22 @@
  */
 
 /* script generated code */
-#include "fileCreate.h"
-#include "fileOpr.h"
-#include "miscServerFunct.h"
-#include "dataObjOpr.h"
-#include "physPath.h"
-#include "rsGlobalExtern.h"
-#include "icatHighLevelRoutines.h"
+#include "fileCreate.hpp"
+#include "fileOpr.hpp"
+#include "miscServerFunct.hpp"
+#include "dataObjOpr.hpp"
+#include "physPath.hpp"
+#include "rsGlobalExtern.hpp"
+#include "icatHighLevelRoutines.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_log.h"
-#include "eirods_file_object.h"
-#include "eirods_collection_object.h"
-#include "eirods_hierarchy_parser.h"
-#include "eirods_stacktrace.h"
-#include "eirods_resource_backport.h"
+#include "eirods_log.hpp"
+#include "eirods_file_object.hpp"
+#include "eirods_collection_object.hpp"
+#include "eirods_hierarchy_parser.hpp"
+#include "eirods_stacktrace.hpp"
+#include "eirods_resource_backport.hpp"
 
 
 #include <string>

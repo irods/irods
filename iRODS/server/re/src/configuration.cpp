@@ -2,19 +2,19 @@
  */
 #include <sys/stat.h>
 #include <time.h>
-#include "configuration.h"
-#include "utils.h"
-#include "rules.h"
-#include "index.h"
-#include "cache.h"
-#include "region.h"
-#include "functions.h"
-#include "filesystem.h"
-#include "sharedmemory.h"
-#include "icatHighLevelRoutines.h"
-#include "modAVUMetadata.h"
+#include "configuration.hpp"
+#include "utils.hpp"
+#include "rules.hpp"
+#include "index.hpp"
+#include "cache.hpp"
+#include "region.hpp"
+#include "functions.hpp"
+#include "filesystem.hpp"
+#include "sharedmemory.hpp"
+#include "icatHighLevelRoutines.hpp"
+#include "modAVUMetadata.hpp"
 #ifdef DEBUG
-#include "re.h"
+#include "re.hpp"
 #endif
 Cache ruleEngineConfig = {
     NULL, /* unsigned char *address */

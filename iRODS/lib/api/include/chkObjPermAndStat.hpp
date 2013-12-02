@@ -3,17 +3,17 @@
 /* chkObjPermAndStat.h
  */
 
-#ifndef CHK_OBJ_PERM_AND_STAT_H
-#define CHK_OBJ_PERM_AND_STAT_H
+#ifndef CHK_OBJ_PERM_AND_STAT_HPP
+#define CHK_OBJ_PERM_AND_STAT_HPP
 
 /* This is Object File I/O type API call */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "dataObjInpOut.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "dataObjInpOut.hpp"
 
 /* definition for flags */
 #define CHK_COLL_FOR_BUNDLE_OPR		0x1

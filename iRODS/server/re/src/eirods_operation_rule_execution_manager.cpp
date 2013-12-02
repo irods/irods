@@ -2,12 +2,12 @@
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "index.h"
-#include "reFuncDefs.h"
+#include "index.hpp"
+#include "reFuncDefs.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_operation_rule_execution_manager.h"
+#include "eirods_operation_rule_execution_manager.hpp"
 
 namespace eirods {
         // =-=-=-=-=-=-=-

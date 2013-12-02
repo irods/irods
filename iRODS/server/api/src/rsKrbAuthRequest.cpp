@@ -3,10 +3,10 @@
 
 /* See krbAuthRequest.h for a description of this API call.*/
 
-#include "krbAuthRequest.h"
-#include "authResponse.h"
-#include "genQuery.h"
-#include "rsGlobalExtern.h"
+#include "krbAuthRequest.hpp"
+#include "authResponse.hpp"
+#include "genQuery.hpp"
+#include "rsGlobalExtern.hpp"
 
 static int krbAuthReqStatus=0;
 static int krbAuthReqError=0;

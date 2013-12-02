@@ -3,17 +3,17 @@
 /* This is script-generated code (for the most part).  */ 
 /* See dataObjLseek.h for a description of this API call.*/
 
-#include "dataObjLseek.h"
-#include "rodsLog.h"
-#include "rsGlobalExtern.h"
-#include "rcGlobalExtern.h"
-#include "subStructFileLseek.h"
-#include "objMetaOpr.h"
-#include "subStructFileUnlink.h"
+#include "dataObjLseek.hpp"
+#include "rodsLog.hpp"
+#include "rsGlobalExtern.hpp"
+#include "rcGlobalExtern.hpp"
+#include "subStructFileLseek.hpp"
+#include "objMetaOpr.hpp"
+#include "subStructFileUnlink.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_resource_backport.h"
+#include "eirods_resource_backport.hpp"
 
 int
 rsDataObjLseek (rsComm_t *rsComm, openedDataObjInp_t *dataObjLseekInp, 

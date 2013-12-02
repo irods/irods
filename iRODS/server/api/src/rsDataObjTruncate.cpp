@@ -3,26 +3,26 @@
 /* This is script-generated code (for the most part).  */
 /* See dataObjTruncate.h for a description of this API call.*/
 
-#include "dataObjTruncate.h"
-#include "rodsLog.h"
-#include "icatDefines.h"
-#include "fileTruncate.h"
-#include "unregDataObj.h"
-#include "objMetaOpr.h"
-#include "dataObjOpr.h"
-#include "rsGlobalExtern.h"
-#include "rcGlobalExtern.h"
-#include "reGlobalsExtern.h"
-#include "reDefines.h"
-#include "rmColl.h"
-#include "modDataObjMeta.h"
-#include "subStructFileTruncate.h"
-#include "getRemoteZoneResc.h"
-#include "phyBundleColl.h"
+#include "dataObjTruncate.hpp"
+#include "rodsLog.hpp"
+#include "icatDefines.hpp"
+#include "fileTruncate.hpp"
+#include "unregDataObj.hpp"
+#include "objMetaOpr.hpp"
+#include "dataObjOpr.hpp"
+#include "rsGlobalExtern.hpp"
+#include "rcGlobalExtern.hpp"
+#include "reGlobalsExtern.hpp"
+#include "reDefines.hpp"
+#include "rmColl.hpp"
+#include "modDataObjMeta.hpp"
+#include "subStructFileTruncate.hpp"
+#include "getRemoteZoneResc.hpp"
+#include "phyBundleColl.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_resource_backport.h"
+#include "eirods_resource_backport.hpp"
 
 
 

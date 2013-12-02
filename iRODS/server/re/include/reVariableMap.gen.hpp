@@ -3,10 +3,10 @@
 
 #ifndef RE_VARIABLE_MAP_GEN
 #define RE_VARIABLE_MAP_GEN
-#include "reGlobalsExtern.h"
-#include "reVariables.h"
-#include "rcMisc.h"
-#include "restructs.h"
+#include "reGlobalsExtern.hpp"
+#include "reVariables.hpp"
+#include "rcMisc.hpp"
+#include "restructs.hpp"
 
 
 #define RescInfo_MS_T "RescInfo_PI"

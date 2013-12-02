@@ -1,8 +1,8 @@
-#include "ruleExecSubmit.h"
-#include "ruleExecDel.h"
-#include "reServerLib.h"
-#include "objMetaOpr.h"
-#include "icatHighLevelRoutines.h"
+#include "ruleExecSubmit.hpp"
+#include "ruleExecDel.hpp"
+#include "reServerLib.hpp"
+#include "objMetaOpr.hpp"
+#include "icatHighLevelRoutines.hpp"
 
 int
 rsRuleExecDel (rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp)

@@ -8,7 +8,7 @@
 /* This is script-generated code.  */ 
 /* See collCreate.h for a description of this API call.*/
 
-#include "collCreate.h"
+#include "collCreate.hpp"
 
 /**
  * \fn rcCollCreate (rcComm_t *conn, collInp_t *collCreateInp)

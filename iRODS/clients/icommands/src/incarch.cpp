@@ -4,10 +4,10 @@
  * incarch.c - Archive irods NETCDF time series data utility
 */
 
-#include "rodsClient.h"
-#include "parseCommandLine.h"
-#include "rodsPath.h"
-#include "ncarchUtil.h"
+#include "rodsClient.hpp"
+#include "parseCommandLine.hpp"
+#include "rodsPath.hpp"
+#include "ncarchUtil.hpp"
 void usage ();
 
 int

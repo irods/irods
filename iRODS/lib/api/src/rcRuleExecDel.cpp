@@ -3,7 +3,7 @@
 /* This is script-generated code.  */ 
 /* See rcRuleExecDel.h for a description of this API call.*/
 
-#include "ruleExecDel.h"
+#include "ruleExecDel.hpp"
 
 int
 rcRuleExecDel (rcComm_t *conn, ruleExecDelInp_t *ruleExecDelInp)

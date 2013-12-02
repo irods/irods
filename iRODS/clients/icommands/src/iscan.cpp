@@ -2,10 +2,10 @@
  *** For full copyright notice please refer to files in the COPYRIGHT directory                ***/
 /* Written by Jean-Yves Nief of CCIN2P3 and copyright assigned to Data Intensive Cyberinfrastructure Foundation */
 
-#include "rodsClient.h"
-#include "parseCommandLine.h"
-#include "rodsPath.h"
-#include "scanUtil.h" 
+#include "rodsClient.hpp"
+#include "parseCommandLine.hpp"
+#include "rodsPath.hpp"
+#include "scanUtil.hpp" 
 void usage ();
 
 int

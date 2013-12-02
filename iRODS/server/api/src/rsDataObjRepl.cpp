@@ -5,35 +5,35 @@
 /* This is script-generated code (for the most part).  */ 
 /* See dataObjRepl.h for a description of this API call.*/
 
-#include "dataObjRepl.h"
-#include "dataObjOpr.h"
-#include "dataObjCreate.h"
-#include "dataObjOpen.h"
-#include "dataObjPut.h"
-#include "dataObjGet.h"
-#include "rodsLog.h"
-#include "objMetaOpr.h"
-#include "physPath.h"
-#include "specColl.h"
-#include "resource.h"
-#include "reGlobalsExtern.h"
-#include "reDefines.h"
-#include "reSysDataObjOpr.h"
-#include "getRemoteZoneResc.h"
-#include "l3FileGetSingleBuf.h"
-#include "l3FilePutSingleBuf.h"
-#include "fileSyncToArch.h"
-#include "fileStageToCache.h"
-#include "unbunAndRegPhyBunfile.h"
-#include "dataObjTrim.h" // JMC - backport 4550
-#include "dataObjLock.h" // JMC - backport 4609
+#include "dataObjRepl.hpp"
+#include "dataObjOpr.hpp"
+#include "dataObjCreate.hpp"
+#include "dataObjOpen.hpp"
+#include "dataObjPut.hpp"
+#include "dataObjGet.hpp"
+#include "rodsLog.hpp"
+#include "objMetaOpr.hpp"
+#include "physPath.hpp"
+#include "specColl.hpp"
+#include "resource.hpp"
+#include "reGlobalsExtern.hpp"
+#include "reDefines.hpp"
+#include "reSysDataObjOpr.hpp"
+#include "getRemoteZoneResc.hpp"
+#include "l3FileGetSingleBuf.hpp"
+#include "l3FilePutSingleBuf.hpp"
+#include "fileSyncToArch.hpp"
+#include "fileStageToCache.hpp"
+#include "unbunAndRegPhyBunfile.hpp"
+#include "dataObjTrim.hpp" // JMC - backport 4550
+#include "dataObjLock.hpp" // JMC - backport 4609
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_resource_backport.h"
-#include "eirods_resource_redirect.h"
-#include "eirods_log.h"
-#include "eirods_stacktrace.h"
+#include "eirods_resource_backport.hpp"
+#include "eirods_resource_redirect.hpp"
+#include "eirods_log.hpp"
+#include "eirods_stacktrace.hpp"
 
 int
 rsDataObjRepl250 (rsComm_t *rsComm, dataObjInp_t *dataObjInp,

@@ -5,11 +5,11 @@
 /* rsReadCollection.c
  */
 
-#include "openCollection.h"
-#include "readCollection.h"
-#include "objMetaOpr.h"
-#include "rcGlobalExtern.h"
-#include "rsGlobalExtern.h"
+#include "openCollection.hpp"
+#include "readCollection.hpp"
+#include "objMetaOpr.hpp"
+#include "rcGlobalExtern.hpp"
+#include "rsGlobalExtern.hpp"
 
 int
 rsReadCollection (rsComm_t *rsComm, int *handleInxInp,

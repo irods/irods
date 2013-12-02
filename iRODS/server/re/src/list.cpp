@@ -1,6 +1,6 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
-#include "list.h"
+#include "list.hpp"
 
 List *newList(Region *r) {
     List *l = (List *)region_alloc(r, sizeof (List));

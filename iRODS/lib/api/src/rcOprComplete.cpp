@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See oprComplete.h for a description of this API call.*/
 
-#include "oprComplete.h"
+#include "oprComplete.hpp"
 
 int
 rcOprComplete (rcComm_t *conn, int retval)

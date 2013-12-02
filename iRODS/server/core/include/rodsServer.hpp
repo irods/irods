@@ -9,8 +9,8 @@
  *-------------------------------------------------------------------------
  */
 
-#ifndef RODS_SERVER_H
-#define RODS_SERVER_H
+#ifndef RODS_SERVER_HPP
+#define RODS_SERVER_HPP
 
 #include <stdarg.h>
 #ifndef windows_platform
@@ -19,17 +19,17 @@
 #include <sys/wait.h>
 #endif
 
-#include "rods.h"
-#include "rsGlobal.h"	/* server global */
-#include "rcGlobalExtern.h"	/* client global */
-#include "rsLog.h"
-#include "rodsLog.h"
-#include "sockComm.h"
-#include "rsMisc.h"
-#include "rsIcatOpr.h"
-#include "getRodsEnv.h"
-#include "rcConnect.h"
-#include "initServer.h"
+#include "rods.hpp"
+#include "rsGlobal.hpp"	/* server global */
+#include "rcGlobalExtern.hpp"	/* client global */
+#include "rsLog.hpp"
+#include "rodsLog.hpp"
+#include "sockComm.hpp"
+#include "rsMisc.hpp"
+#include "rsIcatOpr.hpp"
+#include "getRodsEnv.hpp"
+#include "rcConnect.hpp"
+#include "initServer.hpp"
 
 
 extern char *optarg;

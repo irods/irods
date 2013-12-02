@@ -3,10 +3,10 @@
 /* rsLog.h - header file for rsLog.c
  */
 
-#ifndef RS_LOG_H
-#define RS_LOG_H
+#ifndef RS_LOG_HPP
+#define RS_LOG_HPP
 
-#include "rods.h"
+#include "rods.hpp"
 
 #define RODS_LOGFILE     "rodsLog"
 #define RULE_EXEC_LOGFILE     "reLog"

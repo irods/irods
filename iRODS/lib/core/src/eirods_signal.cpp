@@ -1,7 +1,7 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
-#include "eirods_signal.h"
-#include "eirods_stacktrace.h"
+#include "eirods_signal.hpp"
+#include "eirods_stacktrace.hpp"
 
 #include <string.h>
 #include <signal.h>

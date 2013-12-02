@@ -8,11 +8,11 @@
 
 *******************************************************************************/
 
-#ifndef ICAT_MIDLEVEL_ROUTINES_H
-#define ICAT_MIDLEVEL_ROUTINES_H
+#ifndef ICAT_MIDLEVEL_ROUTINES_HPP
+#define ICAT_MIDLEVEL_ROUTINES_HPP
 
-#include "rodsType.h"
-#include "icatStructs.h"
+#include "rodsType.hpp"
+#include "icatStructs.hpp"
 
 int cmlOpen(icatSessionStruct *icss);
 

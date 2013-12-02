@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See getXmsgTicket.h for a description of this API call.*/
 
-#include "getXmsgTicket.h"
+#include "getXmsgTicket.hpp"
 
 int
 rcGetXmsgTicket (rcComm_t *conn, getXmsgTicketInp_t *getXmsgTicketInp, 

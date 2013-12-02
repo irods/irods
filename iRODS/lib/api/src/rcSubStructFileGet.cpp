@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See subStructFileGet.h for a description of this API call.*/
 
-#include "subStructFileGet.h"
+#include "subStructFileGet.hpp"
 
 int
 rcSubStructFileGet (rcComm_t *conn, subFile_t *subFile, 

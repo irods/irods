@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See krbAuthRequest.h for a description of this API call.*/
 
-#include "krbAuthRequest.h"
+#include "krbAuthRequest.hpp"
 
 int
 rcKrbAuthRequest (rcComm_t *conn, krbAuthRequestOut_t **krbAuthRequestOut )

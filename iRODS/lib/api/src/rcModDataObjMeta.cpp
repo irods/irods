@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See modDataObjMeta.h for a description of this API call.*/
 
-#include "modDataObjMeta.h"
+#include "modDataObjMeta.hpp"
 
 int
 rcModDataObjMeta (rcComm_t *conn, modDataObjMeta_t *modDataObjMetaInp)

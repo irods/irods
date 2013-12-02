@@ -5,12 +5,12 @@
 #ifndef windows_platform
 #include <sys/time.h>
 #endif
-#include "rodsPath.h"
-#include "rodsErrorTable.h"
-#include "rodsLog.h"
-#include "putUtil.h"
-#include "miscUtil.h"
-#include "rcPortalOpr.h"
+#include "rodsPath.hpp"
+#include "rodsErrorTable.hpp"
+#include "rodsLog.hpp"
+#include "putUtil.hpp"
+#include "miscUtil.hpp"
+#include "rcPortalOpr.hpp"
 #include <string>
 #include <boost/filesystem.hpp>
 

@@ -6,19 +6,19 @@
 
 
 
-#ifndef RODS_AGENT_H
-#define RODS_AGENT_H
+#ifndef RODS_AGENT_HPP
+#define RODS_AGENT_HPP
 
-#include "rods.h"
-#include "rsGlobal.h"   /* server global */
-#include "rcGlobalExtern.h"     /* client global */
-#include "rsLog.h"
-#include "rodsLog.h"
-#include "sockComm.h"
-#include "rsMisc.h"
-#include "getRodsEnv.h"
-#include "rcConnect.h"
-#include "initServer.h"
+#include "rods.hpp"
+#include "rsGlobal.hpp"   /* server global */
+#include "rcGlobalExtern.hpp"     /* client global */
+#include "rsLog.hpp"
+#include "rodsLog.hpp"
+#include "sockComm.hpp"
+#include "rsMisc.hpp"
+#include "getRodsEnv.hpp"
+#include "rcConnect.hpp"
+#include "initServer.hpp"
 
 #define MAX_MSG_READ_RETRY	1	
 #define READ_RETRY_SLEEP_TIME	1	

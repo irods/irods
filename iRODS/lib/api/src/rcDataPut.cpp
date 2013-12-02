@@ -3,7 +3,7 @@
 /* This is script-generated code.  */ 
 /* See dataPut.h for a description of this API call.*/
 
-#include "dataPut.h"
+#include "dataPut.hpp"
 
 int
 rcDataPut (rcComm_t *conn, dataOprInp_t *dataPutInp,

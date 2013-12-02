@@ -4,10 +4,10 @@
  * ichksum - The irods chksum utility
 */
 
-#include "rodsClient.h"
-#include "parseCommandLine.h"
-#include "rodsPath.h"
-#include "chksumUtil.h"
+#include "rodsClient.hpp"
+#include "parseCommandLine.hpp"
+#include "rodsPath.hpp"
+#include "chksumUtil.hpp"
 void usage ();
 
 int

@@ -2,22 +2,22 @@
  */
 
 
-#ifndef RESTRUCTS_H
-#define RESTRUCTS_H
+#ifndef RESTRUCTS_HPP
+#define RESTRUCTS_HPP
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "reGlobalsExtern.h"
+#include "reGlobalsExtern.hpp"
 #ifndef DEBUG
-#include "rodsType.h"
-#include "msParam.h"
+#include "rodsType.hpp"
+#include "msParam.hpp"
 #endif
 
-#include "reconstants.h"
-#include "region.h"
-#include "hashtable.h"
-#include "list.h"
+#include "reconstants.hpp"
+#include "region.hpp"
+#include "hashtable.hpp"
+#include "list.hpp"
 
 #define TYPE(x) ((x)->exprType->nodeType)
 

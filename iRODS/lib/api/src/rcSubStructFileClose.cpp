@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See subStructFileClose.h for a description of this API call.*/
 
-#include "subStructFileClose.h"
+#include "subStructFileClose.hpp"
 
 int
 rcSubStructFileClose (rcComm_t *conn, subStructFileFdOprInp_t *subStructFileCloseInp)

@@ -5,16 +5,16 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_native_auth_object.h"
-#include "eirods_auth_object.h"
-#include "eirods_auth_factory.h"
-#include "eirods_auth_plugin.h"
-#include "eirods_auth_manager.h"
-#include "eirods_auth_constants.h"
+#include "eirods_native_auth_object.hpp"
+#include "eirods_auth_object.hpp"
+#include "eirods_auth_factory.hpp"
+#include "eirods_auth_plugin.hpp"
+#include "eirods_auth_manager.hpp"
+#include "eirods_auth_constants.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "authRequest.h"
+#include "authRequest.hpp"
 
 int get64RandomBytes(char *buf);
 static char buf[CHALLENGE_LEN+MAX_PASSWORD_LEN+1];

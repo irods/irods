@@ -3,7 +3,7 @@
 /* This is script-generated code.  */ 
 /* See filePut.h for a description of this API call.*/
 
-#include "filePut.h"
+#include "filePut.hpp"
 
 int
 rcFilePut (rcComm_t *conn, fileOpenInp_t *filePutInp, 

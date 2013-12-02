@@ -3,8 +3,8 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_network_factory.h"
-#include "eirods_client_server_negotiation.h"
+#include "eirods_network_factory.hpp"
+#include "eirods_client_server_negotiation.hpp"
 
 namespace eirods {
    // =-=-=-=-=-=-=-

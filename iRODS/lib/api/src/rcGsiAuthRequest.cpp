@@ -3,7 +3,7 @@
 /* This is script-generated code.  */ 
 /* See gsiAuthRequest.h for a description of this API call.*/
 
-#include "gsiAuthRequest.h"
+#include "gsiAuthRequest.hpp"
 
 int
 rcGsiAuthRequest (rcComm_t *conn, gsiAuthRequestOut_t **gsiAuthRequestOut )

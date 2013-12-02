@@ -6,7 +6,7 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_log.h"
+#include "eirods_log.hpp"
 
 // =-=-=-=-=-=-=-
 // boost includes

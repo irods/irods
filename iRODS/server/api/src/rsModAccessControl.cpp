@@ -3,10 +3,10 @@
 /* This is script-generated code (for the most part).  */ 
 /* See modAccessControl.h for a description of this API call.*/
 
-#include "modAccessControl.h"
-#include "specColl.h"
-#include "reGlobalsExtern.h"
-#include "icatHighLevelRoutines.h"
+#include "modAccessControl.hpp"
+#include "specColl.hpp"
+#include "reGlobalsExtern.hpp"
+#include "icatHighLevelRoutines.hpp"
 
 int
 rsModAccessControl (rsComm_t *rsComm, modAccessControlInp_t *modAccessControlInp )

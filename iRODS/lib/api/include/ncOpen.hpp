@@ -3,19 +3,19 @@
 /* ncOpen.h
  */
 
-#ifndef NC_OPEN_H
-#define NC_OPEN_H
+#ifndef NC_OPEN_HPP
+#define NC_OPEN_HPP
 
 /* This is a NETCDF API call */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "dataObjInpOut.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "dataObjInpOut.hpp"
 #ifdef NETCDF_API
-#include "netcdf.h"
+#include "netcdf.hpp"
 #endif
 
 typedef struct {

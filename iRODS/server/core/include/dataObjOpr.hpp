@@ -8,17 +8,17 @@
 
 
 
-#ifndef DATA_OBJ_OPR_H
-#define DATA_OBJ_OPR_H
+#ifndef DATA_OBJ_OPR_HPP
+#define DATA_OBJ_OPR_HPP
 
-#include "rods.h"
-#include "initServer.h"
-#include "objInfo.h"
-#include "dataObjInpOut.h"
-#include "ruleExecSubmit.h"
-#include "rcGlobalExtern.h"
-#include "rsGlobalExtern.h"
-#include "reIn2p3SysRule.h"
+#include "rods.hpp"
+#include "initServer.hpp"
+#include "objInfo.hpp"
+#include "dataObjInpOut.hpp"
+#include "ruleExecSubmit.hpp"
+#include "rcGlobalExtern.hpp"
+#include "rsGlobalExtern.hpp"
+#include "reIn2p3SysRule.hpp"
 
 /* definition for return value of resolveSingleReplCopy */
 #define NO_GOOD_COPY    0

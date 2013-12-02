@@ -7,7 +7,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include "rodsClient.h"
+#include "rodsClient.hpp"
 
 
 int

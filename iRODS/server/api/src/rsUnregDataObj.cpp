@@ -5,12 +5,12 @@
 /* unregDataObj.c
  */
 
-#include "unregDataObj.h"
-#include "icatHighLevelRoutines.h"
-#include "fileDriver.h"
+#include "unregDataObj.hpp"
+#include "icatHighLevelRoutines.hpp"
+#include "fileDriver.hpp"
 
-#include "eirods_file_object.h"
-#include "eirods_stacktrace.h"
+#include "eirods_file_object.hpp"
+#include "eirods_stacktrace.hpp"
 
 int
 rsUnregDataObj (rsComm_t *rsComm, unregDataObj_t *unregDataObjInp)

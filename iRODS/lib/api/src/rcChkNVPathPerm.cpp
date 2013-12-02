@@ -3,7 +3,7 @@
 /* This is script-generated code.  */ 
 /* See chkNVPathPerm.h for a description of this API call.*/
 
-#include "chkNVPathPerm.h"
+#include "chkNVPathPerm.hpp"
 
 int
 rcChkNVPathPerm (rcComm_t *conn, fileOpenInp_t *chkNVPathPermInp)

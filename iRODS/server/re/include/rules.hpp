@@ -1,13 +1,13 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
-#ifndef RULES_H
-#define RULES_H
-#include "parser.h"
-#include "utils.h"
-#include "arithmetics.h"
-#include "typing.h"
+#ifndef RULES_HPP
+#define RULES_HPP
+#include "parser.hpp"
+#include "utils.hpp"
+#include "arithmetics.hpp"
+#include "typing.hpp"
 
-#include "eirods_ms_plugin.h"
+#include "eirods_ms_plugin.hpp"
 
 extern eirods::ms_table MicrosTable;
 

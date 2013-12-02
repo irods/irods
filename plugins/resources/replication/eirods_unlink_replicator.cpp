@@ -1,8 +1,8 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
-#include "eirods_unlink_replicator.h"
+#include "eirods_unlink_replicator.hpp"
 
-#include "dataObjUnlink.h"
+#include "dataObjUnlink.hpp"
 
 namespace eirods {
 

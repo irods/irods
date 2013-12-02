@@ -5,22 +5,22 @@
 /* This is script-generated code (for the most part).  */
 /* See collCreate.h for a description of this API call.*/
 
-#include "rmCollOld.h"
-#include "collCreate.h"
-#include "icatHighLevelRoutines.h"
-#include "rodsLog.h"
-#include "icatDefines.h"
-#include "dataObjRename.h"
-#include "dataObjOpr.h"
-#include "objMetaOpr.h"
-#include "collection.h"
-#include "specColl.h"
-#include "fileRmdir.h"
-#include "subStructFileRmdir.h"
-#include "genQuery.h"
-#include "dataObjUnlink.h"
+#include "rmCollOld.hpp"
+#include "collCreate.hpp"
+#include "icatHighLevelRoutines.hpp"
+#include "rodsLog.hpp"
+#include "icatDefines.hpp"
+#include "dataObjRename.hpp"
+#include "dataObjOpr.hpp"
+#include "objMetaOpr.hpp"
+#include "collection.hpp"
+#include "specColl.hpp"
+#include "fileRmdir.hpp"
+#include "subStructFileRmdir.hpp"
+#include "genQuery.hpp"
+#include "dataObjUnlink.hpp"
 
-#include "eirods_resource_backport.h"
+#include "eirods_resource_backport.hpp"
 
 int
 rsRmCollOld (rsComm_t *rsComm, collInp_t *rmCollInp)

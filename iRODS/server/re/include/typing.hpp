@@ -1,13 +1,13 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
 
-#ifndef TYPING_H
-#define TYPING_H
+#ifndef TYPING_HPP
+#define TYPING_HPP
 
-#include "utils.h"
-#include "hashtable.h"
-#include "region.h"
-#include "parser.h"
+#include "utils.hpp"
+#include "hashtable.hpp"
+#include "region.hpp"
+#include "parser.hpp"
 
 typedef enum satisfiability {
     TAUTOLOGY = 1, CONTINGENCY = 2, ABSURDITY = 4

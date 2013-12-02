@@ -3,7 +3,7 @@
 /* This is script-generated code.  */ 
 /* See fileGetFsFreeSpace.h for a description of this API call.*/
 
-#include "fileGetFsFreeSpace.h"
+#include "fileGetFsFreeSpace.hpp"
 
 int
 rcFileGetFsFreeSpace (rcComm_t *conn, 

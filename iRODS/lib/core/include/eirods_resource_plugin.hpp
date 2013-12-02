@@ -5,9 +5,9 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_resource_constants.h"
-#include "eirods_operation_wrapper.h"
-#include "eirods_resource_plugin_context.h"
+#include "eirods_resource_constants.hpp"
+#include "eirods_operation_wrapper.hpp"
+#include "eirods_resource_plugin_context.hpp"
 
 #include <iostream>
 

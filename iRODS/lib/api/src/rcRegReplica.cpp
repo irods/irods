@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See regReplica.h for a description of this API call.*/
 
-#include "regReplica.h"
+#include "regReplica.hpp"
 
 int
 rcRegReplica (rcComm_t *conn, regReplica_t *regReplicaInp)

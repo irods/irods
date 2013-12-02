@@ -1,8 +1,8 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
-#ifndef RE_FUNCDEFS_H
-#define RE_FUNCDEFS_H
+#ifndef RE_FUNCDEFS_HPP
+#define RE_FUNCDEFS_HPP
 
 /* definition for freeSpeialStructFlag in freeRuleExecInfoStruct and
  * freeRuleExecInfoInternals
@@ -10,7 +10,7 @@
 #define FREE_MS_PARAM	0x1
 #define FREE_DOINP	0x2
 
-#include "restructs.h"
+#include "restructs.hpp"
 int initRuleStruct(int processType, rsComm_t *svrComm, char *ruleSet, char *dvmSet, char *fnmSet);
 
 int readRuleStructFromFile(int processType, char *ruleBaseName, ruleStruct_t *inRuleStrct);
@@ -43,7 +43,7 @@ int executeRuleRecovery(char *ruleRecovery, ruleExecInfo_t *rei, int reiSaveFlag
 int parseAction(char *inAction,char *action, char *args[], int *argc);
 
 int executeRuleAction(char *inAction, ruleExecInfo_t *rei, int reiSaveFlag);
-#include "eirods_ms_plugin.h"
+#include "eirods_ms_plugin.hpp"
 int actionTableLookUp ( eirods::ms_table_entry&, char *action );
 
 

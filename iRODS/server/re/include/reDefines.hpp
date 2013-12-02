@@ -7,8 +7,8 @@
 
 *****************************************************************************/
 
-#ifndef RE_DEFINES_H
-#define RE_DEFINES_H
+#ifndef RE_DEFINES_HPP
+#define RE_DEFINES_HPP
 
 #define MAX_NUM_OF_RULES  2048
 #define MAX_NUM_OF_DVARS  2048

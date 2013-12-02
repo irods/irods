@@ -3,8 +3,8 @@
 /* rsLog.c - Routines for log files.
  */
 
-#include "rsLog.h"
-#include "rsGlobalExtern.h"
+#include "rsLog.hpp"
+#include "rsGlobalExtern.hpp"
 
 static time_t LogfileLastChkTime = 0;
 

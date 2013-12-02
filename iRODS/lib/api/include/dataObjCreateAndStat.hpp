@@ -3,19 +3,19 @@
 /* dataObjCreateAndStat.h
  */
 
-#ifndef DATA_OBJ_CREATE_AND_STAT_H
-#define DATA_OBJ_CREATE_AND_STAT_H
+#ifndef DATA_OBJ_CREATE_AND_STAT_HPP
+#define DATA_OBJ_CREATE_AND_STAT_HPP
 
 /* This is a high level type API call */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "dataObjInpOut.h"
-#include "fileCreate.h"
-#include "dataObjOpenAndStat.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "dataObjInpOut.hpp"
+#include "fileCreate.hpp"
+#include "dataObjOpenAndStat.hpp"
 
 /* This is a Object File I/O call */
 

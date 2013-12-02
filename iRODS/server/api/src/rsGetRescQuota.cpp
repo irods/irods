@@ -5,15 +5,15 @@
 
 /* See genQuery.h for a description of this API call.*/
 
-#include "getRescQuota.h"
-#include "miscUtil.h"
-#include "genQuery.h"
-#include "objMetaOpr.h"
-#include "resource.h"
+#include "getRescQuota.hpp"
+#include "miscUtil.hpp"
+#include "genQuery.hpp"
+#include "objMetaOpr.hpp"
+#include "resource.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods resource includes
-#include "eirods_resource_backport.h"
+#include "eirods_resource_backport.hpp"
 
 
 int

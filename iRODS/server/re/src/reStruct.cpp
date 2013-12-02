@@ -3,14 +3,14 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
-#include "reGlobalsExtern.h"
-#include "rcMisc.h"
-#include "objMetaOpr.h"
-#include "resource.h"
+#include "reGlobalsExtern.hpp"
+#include "rcMisc.hpp"
+#include "objMetaOpr.hpp"
+#include "resource.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_resource_backport.h"
+#include "eirods_resource_backport.hpp"
 
 
 void *mallocAndZero(int s)

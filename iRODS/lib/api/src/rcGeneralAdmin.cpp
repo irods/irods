@@ -9,7 +9,7 @@
 /* This is was initially script-generated code.  */ 
 /* Also see generalAdmin.h for a description of this API call.*/
 
-#include "generalAdmin.h"
+#include "generalAdmin.hpp"
 
 /**
  * \fn rcGeneralAdmin (rcComm_t *conn, generalAdminInp_t *generalAdminInp)

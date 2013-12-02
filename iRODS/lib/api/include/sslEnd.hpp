@@ -6,17 +6,17 @@
 /* This call is used to ask the agent to turn SSL off for the 
    communication socket. */
 
-#ifndef SSL_END_H
-#define SSL_END_H
+#ifndef SSL_END_HPP
+#define SSL_END_HPP
 
 /* This is a SSL type API call */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "icatDefines.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "icatDefines.hpp"
 
 #ifdef  __cplusplus
 extern "C" {

@@ -1,13 +1,13 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
-#include "reGlobalsExtern.h"
-#include "conversion.h"
-#include "reVariableMap.gen.h"
-#include "reVariables.h"
-#include "rcMisc.h"
+#include "reGlobalsExtern.hpp"
+#include "conversion.hpp"
+#include "reVariableMap.gen.hpp"
+#include "reVariables.hpp"
+#include "rcMisc.hpp"
 #ifdef DEBUG
-#include "re.h"
+#include "re.hpp"
 #endif
 
 int getIntLeafValue(Res **varValue, int leaf, Region *r) {

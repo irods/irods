@@ -3,16 +3,16 @@
 /* This is script-generated code (for the most part).  */
 /* See dataObjGet.h for a description of this API call.*/
 
-#include "ncInqGrps.h"
-#include "rodsLog.h"
-#include "dataObjOpen.h"
-#include "rsGlobalExtern.h"
-#include "rcGlobalExtern.h"
-#include "rsApiHandler.h"
-#include "objMetaOpr.h"
-#include "physPath.h"
-#include "specColl.h"
-#include "getRemoteZoneResc.h"
+#include "ncInqGrps.hpp"
+#include "rodsLog.hpp"
+#include "dataObjOpen.hpp"
+#include "rsGlobalExtern.hpp"
+#include "rcGlobalExtern.hpp"
+#include "rsApiHandler.hpp"
+#include "objMetaOpr.hpp"
+#include "physPath.hpp"
+#include "specColl.hpp"
+#include "getRemoteZoneResc.hpp"
 
 int
 rsNcInqGrps (rsComm_t *rsComm, ncInqGrpsInp_t *ncInqGrpsInp,

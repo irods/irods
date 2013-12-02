@@ -1,8 +1,8 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 
-#include "eirods_replicator.h"
-#include "eirods_object_oper.h"
+#include "eirods_replicator.hpp"
+#include "eirods_object_oper.hpp"
 
 namespace eirods {
 

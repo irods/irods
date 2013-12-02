@@ -1,12 +1,12 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
-#include "subStructFileOpendir.h" 
-#include "miscServerFunct.h"
-#include "dataObjOpr.h"
+#include "subStructFileOpendir.hpp" 
+#include "miscServerFunct.hpp"
+#include "dataObjOpr.hpp"
  
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_structured_object.h"
+#include "eirods_structured_object.hpp"
 
 int
 rsSubStructFileOpendir (rsComm_t *rsComm, subFile_t *subFile)

@@ -3,11 +3,11 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_kvp_string_parser.h"
+#include "eirods_kvp_string_parser.hpp"
 
 // =-=-=-=-=-=-=-
 // rods includes
-#include "rodsErrorTable.h"
+#include "rodsErrorTable.hpp"
 
 namespace eirods {
     /// =-=-=-=-=-=-=-

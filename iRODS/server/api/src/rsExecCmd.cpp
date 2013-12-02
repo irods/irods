@@ -7,18 +7,18 @@
 #ifndef windows_platform
 #include <sys/wait.h>
 #else
-#include "Unix2Nt.h"
+#include "Unix2Nt.hpp"
 #endif
-#include "execCmd.h"
-#include "objMetaOpr.h"
-#include "dataObjOpr.h"
-#include "miscServerFunct.h"
-#include "rodsLog.h"
-#include "rsGlobalExtern.h"
-#include "rcGlobalExtern.h"
+#include "execCmd.hpp"
+#include "objMetaOpr.hpp"
+#include "dataObjOpr.hpp"
+#include "miscServerFunct.hpp"
+#include "rodsLog.hpp"
+#include "rsGlobalExtern.hpp"
+#include "rcGlobalExtern.hpp"
 
-#include "eirods_resource_backport.h"
-#include "eirods_resource_redirect.h"
+#include "eirods_resource_backport.hpp"
+#include "eirods_resource_redirect.hpp"
 
 #include <boost/thread/mutex.hpp>
 boost::mutex ExecCmdMutex;

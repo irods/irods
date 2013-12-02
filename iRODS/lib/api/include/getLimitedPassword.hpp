@@ -6,15 +6,15 @@
    credentials which are  typically valid for 10 hours or so.
  */
 
-#ifndef GET_LIMITED_PASSWORD_H
-#define GET_LIMITED_PASSWORD_H
+#ifndef GET_LIMITED_PASSWORD_HPP
+#define GET_LIMITED_PASSWORD_HPP
 
 /* This is a high level Metadata type API call */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
 
 typedef struct {
    int  ttl;

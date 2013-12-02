@@ -5,16 +5,16 @@
 /* This is script-generated code (for the most part).  */ 
 /* See fileLseek.h for a description of this API call.*/
 
-#include "fileLseek.h"
-#include "miscServerFunct.h"
-#include "rsGlobalExtern.h"
+#include "fileLseek.hpp"
+#include "miscServerFunct.hpp"
+#include "rsGlobalExtern.hpp"
 
 
 // =-=-=-=-=-=-=-
 // eirods inludes
-#include "eirods_log.h"
-#include "eirods_file_object.h"
-#include "eirods_stacktrace.h"
+#include "eirods_log.hpp"
+#include "eirods_file_object.hpp"
+#include "eirods_stacktrace.hpp"
 
 int
 rsFileLseek (rsComm_t *rsComm, fileLseekInp_t *fileLseekInp, 

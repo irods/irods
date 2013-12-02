@@ -6,20 +6,20 @@
 
 
 
-#ifndef RC_CONNECT_H
-#define RC_CONNECT_H
+#ifndef RC_CONNECT_HPP
+#define RC_CONNECT_HPP
 
-#include "rodsDef.h"
-#include "rodsVersion.h"
-#include "rodsError.h"
-#include "rodsLog.h"
-#include "stringOpr.h"
-#include "rodsType.h"
-#include "rodsUser.h"
-#include "getRodsEnv.h"
-#include "objInfo.h"
-#include "dataObjInpOut.h"
-#include "irodsGuiProgressCallback.h"
+#include "rodsDef.hpp"
+#include "rodsVersion.hpp"
+#include "rodsError.hpp"
+#include "rodsLog.hpp"
+#include "stringOpr.hpp"
+#include "rodsType.hpp"
+#include "rodsUser.hpp"
+#include "getRodsEnv.hpp"
+#include "objInfo.hpp"
+#include "dataObjInpOut.hpp"
+#include "irodsGuiProgressCallback.hpp"
 
 
 #include <boost/thread.hpp>

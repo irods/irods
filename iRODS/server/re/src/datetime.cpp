@@ -1,7 +1,7 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
 
-#include "datetime.h"
+#include "datetime.hpp"
 static char* defaultformat = "%b %d %Y %H:%M:%S";
 /*
  * returns 0 if failed

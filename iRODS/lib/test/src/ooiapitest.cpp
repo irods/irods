@@ -2,7 +2,7 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* packtest.c - test the basic packing routines */
 
-#include "rodsClient.h" 
+#include "rodsClient.hpp" 
 
 /* bank example test */
 #define BANK_SERVICE_NAME               "bank"

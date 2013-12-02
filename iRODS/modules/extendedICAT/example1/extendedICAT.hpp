@@ -2,8 +2,8 @@
    extensions to the ICAT feature ('extensible ICAT').
  */
 
-#ifndef IRODS_EXTENDED_ICAT_H
-#define IRODS_EXTENDED_ICAT_H
+#ifndef IRODS_EXTENDED_ICAT_HPP
+#define IRODS_EXTENDED_ICAT_HPP
 
 /* Number of Tables and Columns defined below; larger than actual is
    OK (used to allocate tables elsewhere):  */

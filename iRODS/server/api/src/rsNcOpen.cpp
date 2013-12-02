@@ -3,18 +3,18 @@
 /* This is script-generated code (for the most part).  */
 /* See ncOpen.h for a description of this API call.*/
 
-#include "ncOpen.h"
-#include "ncClose.h"
-#include "rodsLog.h"
-#include "dataObjOpen.h"
-#include "rsGlobalExtern.h"
-#include "rcGlobalExtern.h"
-#include "rsApiHandler.h"
-#include "objMetaOpr.h"
-#include "physPath.h"
-#include "specColl.h"
-#include "getRemoteZoneResc.h"
-#include "miscServerFunct.h"
+#include "ncOpen.hpp"
+#include "ncClose.hpp"
+#include "rodsLog.hpp"
+#include "dataObjOpen.hpp"
+#include "rsGlobalExtern.hpp"
+#include "rcGlobalExtern.hpp"
+#include "rsApiHandler.hpp"
+#include "objMetaOpr.hpp"
+#include "physPath.hpp"
+#include "specColl.hpp"
+#include "getRemoteZoneResc.hpp"
+#include "miscServerFunct.hpp"
 
 int
 rsNcOpen (rsComm_t *rsComm, ncOpenInp_t *ncOpenInp, int **ncid)

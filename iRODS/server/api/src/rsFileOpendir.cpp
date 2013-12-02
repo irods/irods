@@ -5,16 +5,16 @@
  */
 
 /* script generated code */
-#include "fileOpendir.h"
-#include "miscServerFunct.h"
-#include "rsGlobalExtern.h"
+#include "fileOpendir.hpp"
+#include "miscServerFunct.hpp"
+#include "rsGlobalExtern.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_log.h"
-#include "eirods_collection_object.h"
-#include "eirods_resource_backport.h"
-#include "eirods_stacktrace.h"
+#include "eirods_log.hpp"
+#include "eirods_collection_object.hpp"
+#include "eirods_resource_backport.hpp"
+#include "eirods_stacktrace.hpp"
 
 int
 rsFileOpendir (rsComm_t *rsComm, fileOpendirInp_t *fileOpendirInp)

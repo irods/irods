@@ -3,16 +3,16 @@
 /* subStructFileOpendir.h  
  */
 
-#ifndef SUB_STRUCT_FILE_OPENDIR_H
-#define SUB_STRUCT_FILE_OPENDIR_H
+#ifndef SUB_STRUCT_FILE_OPENDIR_HPP
+#define SUB_STRUCT_FILE_OPENDIR_HPP
 
 /* This is Object File I/O type API call */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
 
 #if defined(RODS_SERVER)
 #define RS_SUB_STRUCT_FILE_OPENDIR rsSubStructFileOpendir

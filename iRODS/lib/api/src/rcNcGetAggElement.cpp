@@ -8,8 +8,8 @@
 /* This is script-generated code.  */ 
 /* See ncOpen.h for a description of this API call.*/
 
-#include "ncGetAggElement.h"
-#include "ncInq.h"
+#include "ncGetAggElement.hpp"
+#include "ncInq.hpp"
 
 /**
  * \fn ncGetAggElement (rcComm_t *conn, ncOpenInp_t *ncOpenInp,

@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See sslStart.h for a description of this API call.*/
 
-#include "sslStart.h"
+#include "sslStart.hpp"
 
 int
 rcSslStart (rcComm_t *conn, sslStartInp_t *sslStartInp)

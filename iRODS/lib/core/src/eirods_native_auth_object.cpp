@@ -2,13 +2,13 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_native_auth_object.h"
-#include "eirods_auth_manager.h"
-#include "eirods_auth_plugin.h"
+#include "eirods_native_auth_object.hpp"
+#include "eirods_auth_manager.hpp"
+#include "eirods_auth_plugin.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "rcMisc.h"
+#include "rcMisc.hpp"
 
 namespace eirods {
 

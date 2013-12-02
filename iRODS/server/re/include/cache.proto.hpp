@@ -1,7 +1,7 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
-#ifndef CACHE_PROTO_H
-#define CACHE_PROTO_H
+#ifndef CACHE_PROTO_HPP
+#define CACHE_PROTO_HPP
 
 typedef void * (CacheCopyFuncType)(unsigned char *, unsigned char **, unsigned char **, void *, Hashtable *, int);
 

@@ -2,23 +2,23 @@
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "rodsDef.h"
-#include "msParam.h"
-#include "reGlobalsExtern.h"
-#include "rcConnect.h"
-#include "authRequest.h"
-#include "authResponse.h"
-#include "authCheck.h"
-#include "miscServerFunct.h"
-#include "authPluginRequest.h"
+#include "rodsDef.hpp"
+#include "msParam.hpp"
+#include "reGlobalsExtern.hpp"
+#include "rcConnect.hpp"
+#include "authRequest.hpp"
+#include "authResponse.hpp"
+#include "authCheck.hpp"
+#include "miscServerFunct.hpp"
+#include "authPluginRequest.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_auth_plugin.h"
-#include "eirods_auth_constants.h"
-#include "eirods_native_auth_object.h"
-#include "eirods_stacktrace.h"
-#include "eirods_kvp_string_parser.h"
+#include "eirods_auth_plugin.hpp"
+#include "eirods_auth_constants.hpp"
+#include "eirods_native_auth_object.hpp"
+#include "eirods_stacktrace.hpp"
+#include "eirods_kvp_string_parser.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes

@@ -5,14 +5,14 @@
 
 /* fileDriver.c - The general driver for all file types. */
 
-#include "fileDriver.h"
-#include "eirods_log.h"
-#include "eirods_resource_plugin.h"
-#include "eirods_data_object.h"
-#include "eirods_stacktrace.h"
+#include "fileDriver.hpp"
+#include "eirods_log.hpp"
+#include "eirods_resource_plugin.hpp"
+#include "eirods_data_object.hpp"
+#include "eirods_stacktrace.hpp"
 
-#include "eirods_resource_constants.h"
-#include "eirods_resource_manager.h"
+#include "eirods_resource_constants.hpp"
+#include "eirods_resource_manager.hpp"
 
 // =-=-=-=-=-=-=-
 // Top Level Inteface for Resource Plugin POSIX create

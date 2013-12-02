@@ -7,12 +7,12 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 #include <string.h>
 #include <time.h>
-#include "reGlobalsExtern.h"
-#include "icatHighLevelRoutines.h"
-#include "execMyRule.h"
-#include "region.h"
-#include "rules.h"
-#include "conversion.h"
+#include "reGlobalsExtern.hpp"
+#include "icatHighLevelRoutines.hpp"
+#include "execMyRule.hpp"
+#include "region.hpp"
+#include "rules.hpp"
+#include "conversion.hpp"
 
 int
 fillSubmitConditions (char *action, char *inDelayCondition, bytesBuf_t *packedReiAndArgBBuf, 

@@ -1,12 +1,12 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 #include <fcntl.h>
-#include "rods.h"
-#include "parseCommandLine.h"
-#include "rodsPath.h"
-#include "miscUtil.h"
-#include "rcMisc.h"
-#include "genQuery.h"
+#include "rods.hpp"
+#include "parseCommandLine.hpp"
+#include "rodsPath.hpp"
+#include "miscUtil.hpp"
+#include "rcMisc.hpp"
+#include "genQuery.hpp"
 
 void usage (char *prog);
 

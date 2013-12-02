@@ -6,7 +6,7 @@
 /* This is script-generated code.  */ 
 /* See readCollection.h for a description of this API call.*/
 
-#include "readCollection.h"
+#include "readCollection.hpp"
 
 /**
  * \fn rcReadCollection (rcComm_t *conn, int handleInxInp, collEnt_t **collEnt)

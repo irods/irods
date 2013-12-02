@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See generalUpdate.h for a description of this API call.*/
 
-#include "generalUpdate.h"
+#include "generalUpdate.hpp"
 
 int
 rcGeneralUpdate (rcComm_t *conn, generalUpdateInp_t *generalUpdateInp)

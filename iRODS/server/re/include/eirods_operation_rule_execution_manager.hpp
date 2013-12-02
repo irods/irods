@@ -7,11 +7,11 @@
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "rcConnect.h"
+#include "rcConnect.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_operation_rule_execution_manager_base.h"
+#include "eirods_operation_rule_execution_manager_base.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes

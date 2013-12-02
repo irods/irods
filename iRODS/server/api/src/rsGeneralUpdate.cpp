@@ -3,9 +3,9 @@
 
 /* See generalUpdate.h for a description of this API call.*/
 
-#include "generalUpdate.h"
-#include "reGlobalsExtern.h"
-#include "icatHighLevelRoutines.h"
+#include "generalUpdate.hpp"
+#include "reGlobalsExtern.hpp"
+#include "icatHighLevelRoutines.hpp"
 
 int
 rsGeneralUpdate (rsComm_t *rsComm, generalUpdateInp_t *generalUpdateInp )

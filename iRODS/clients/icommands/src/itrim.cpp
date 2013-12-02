@@ -4,10 +4,10 @@
  * itrim - The irods replica trimming utility
 */
 
-#include "rodsClient.h"
-#include "parseCommandLine.h"
-#include "rodsPath.h"
-#include "trimUtil.h"
+#include "rodsClient.hpp"
+#include "parseCommandLine.hpp"
+#include "rodsPath.hpp"
+#include "trimUtil.hpp"
 void usage ();
 
 int

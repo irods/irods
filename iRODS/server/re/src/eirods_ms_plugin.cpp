@@ -2,10 +2,10 @@
 
 // =-=-=-=-=-=-=-
 // My Includes
-#include "eirods_ms_home.h"
-#include "eirods_ms_plugin.h"
-#include "eirods_load_plugin.h"
-#include "eirods_log.h"
+#include "eirods_ms_home.hpp"
+#include "eirods_ms_plugin.hpp"
+#include "eirods_load_plugin.hpp"
+#include "eirods_log.hpp"
 
 // =-=-=-=-=-=-=-
 // STL Includes

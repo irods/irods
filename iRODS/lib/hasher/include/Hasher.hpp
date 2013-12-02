@@ -3,7 +3,7 @@
 #ifndef _Hasher_H_
 #define _Hasher_H_
 
-#include "HashStrategy.h"
+#include "HashStrategy.hpp"
 
 #include <string>
 #include <vector>

@@ -3,9 +3,9 @@
 #ifndef _zone_info_H_
 #define _zone_info_H_
 
-#include "eirods_error.h"
+#include "eirods_error.hpp"
 
-#include "icatStructs.h"
+#include "icatStructs.hpp"
 
 #include <string>
 

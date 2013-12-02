@@ -2,8 +2,8 @@
  */
 
 
-#ifndef RECONSTANTS_H
-#define RECONSTANTS_H
+#ifndef RECONSTANTS_HPP
+#define RECONSTANTS_HPP
 
 #define MAX_PARAMS_LEN 100
 #define MAX_RULE_LEN (1024 * 64)

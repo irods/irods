@@ -27,13 +27,13 @@
   the env file, either creating it or appending to it.
 */
 
-#include "rods.h"
+#include "rods.hpp"
 
-#include "getRodsEnv.h"
-#include "rodsLog.h"
+#include "getRodsEnv.hpp"
+#include "rodsLog.hpp"
 
 #ifdef windows_platform
-#include "irodsntutil.h"
+#include "irodsntutil.hpp"
 #else
 #ifdef UNI_CODE
 #include <locale.h>

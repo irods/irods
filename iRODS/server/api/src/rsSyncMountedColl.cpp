@@ -3,21 +3,21 @@
 /* This is script-generated code (for the most part).  */ 
 /* See syncMountedColl.h for a description of this API call.*/
 
-#include "syncMountedColl.h"
-#include "rodsLog.h"
-#include "icatDefines.h"
-#include "objMetaOpr.h"
-#include "collection.h"
-#include "resource.h"
-#include "rsGlobalExtern.h"
-#include "rcGlobalExtern.h"
-#include "reGlobalsExtern.h"
-#include "miscServerFunct.h"
-#include "apiHeaderAll.h"
+#include "syncMountedColl.hpp"
+#include "rodsLog.hpp"
+#include "icatDefines.hpp"
+#include "objMetaOpr.hpp"
+#include "collection.hpp"
+#include "resource.hpp"
+#include "rsGlobalExtern.hpp"
+#include "rcGlobalExtern.hpp"
+#include "reGlobalsExtern.hpp"
+#include "miscServerFunct.hpp"
+#include "apiHeaderAll.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods resource includes
-#include "eirods_resource_backport.h"
+#include "eirods_resource_backport.hpp"
 
 int
 rsSyncMountedColl (rsComm_t *rsComm, dataObjInp_t *syncMountedCollInp)

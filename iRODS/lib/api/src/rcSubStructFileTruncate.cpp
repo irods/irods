@@ -1,7 +1,7 @@
 /* This is script-generated code.  */
 /* See bunSubTruncate.h for a description of this API call.*/
 
-#include "subStructFileTruncate.h"
+#include "subStructFileTruncate.hpp"
 
 int
 rcSubStructFileTruncate (rcComm_t *conn, subFile_t *bunSubTruncateInp)

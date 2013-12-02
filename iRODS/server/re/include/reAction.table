@@ -219,14 +219,14 @@ int msiDbrRollback(msParam_t *dbrName, ruleExecInfo_t *rei);
 int msiString2StrArray(msParam_t *inBufferP, msParam_t* outStrArrayP, ruleExecInfo_t *rei);
 
 
-    #include "eirods_ms_plugin.h"
+    #include "eirods_ms_plugin.hpp"
 
 	namespace eirods {
 
 		// =-=-=-=-=-=-=-
 		// implementation of the microservice table class, which initializes the table during the ctor
 		// inserting the statically compiled microservices during construction providing RAII behavior
-		// NOTE:: this template class is the same as the ms_table typedef from eirods_ms_plugin.h
+		// NOTE:: this template class is the same as the ms_table typedef from eirods_ms_plugin.hpp
 		template<>
 		lookup_table< eirods::ms_table_entry* >::lookup_table() {
 			table_[ "print_hello" ] = new eirods::ms_table_entry( "print_hello", 0, (funcPtr) print_hello );

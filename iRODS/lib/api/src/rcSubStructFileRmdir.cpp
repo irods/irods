@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See bunSubRmdir.h for a description of this API call.*/
 
-#include "subStructFileRmdir.h"
+#include "subStructFileRmdir.hpp"
 
 int
 rcSubStructFileRmdir (rcComm_t *conn, subFile_t *subFile)

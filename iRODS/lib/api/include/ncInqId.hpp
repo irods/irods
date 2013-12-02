@@ -3,18 +3,18 @@
 /* ncInqId.h
  */
 
-#ifndef NC_INQ_ID_H
-#define NC_INQ_ID_H
+#ifndef NC_INQ_ID_HPP
+#define NC_INQ_ID_HPP
 
 /* This is a NETCDF API call */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "dataObjInpOut.h"
-#include "ncOpen.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "dataObjInpOut.hpp"
+#include "ncOpen.hpp"
 
 /* definition for paramType */
 #define NC_VAR_T		0	/* nc variable */

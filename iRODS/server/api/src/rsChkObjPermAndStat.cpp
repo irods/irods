@@ -3,10 +3,10 @@
 /* rsChkObjPermAndStat.c
  */
 
-#include "chkObjPermAndStat.h"
-#include "apiHeaderAll.h"
-#include "icatHighLevelRoutines.h"
-#include "icatHighLevelRoutines.h"
+#include "chkObjPermAndStat.hpp"
+#include "apiHeaderAll.hpp"
+#include "icatHighLevelRoutines.hpp"
+#include "icatHighLevelRoutines.hpp"
 int
 saveCollEntForChkColl (collEnt_t *collEnt);
 int

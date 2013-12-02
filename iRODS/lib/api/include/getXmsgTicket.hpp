@@ -4,17 +4,17 @@
  * 
  */
 
-#ifndef GET_XMSG_TICKET_H
-#define GET_XMSG_TICKET_H
+#ifndef GET_XMSG_TICKET_HPP
+#define GET_XMSG_TICKET_HPP
 
 /* This is Object File I/O type API call */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "dataObjInpOut.h"
-#include "msParam.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "dataObjInpOut.hpp"
+#include "msParam.hpp"
 
 #if defined(RODS_SERVER)
 #define RS_GET_XMSG_TICKET rsGetXmsgTicket

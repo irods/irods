@@ -6,15 +6,15 @@
 
 
 
-#ifndef RE_NARA_META_DATA_H
-#define RE_NARA_META_DATA_H
+#ifndef RE_NARA_META_DATA_HPP
+#define RE_NARA_META_DATA_HPP
 
-#include "rods.h"
-#include "objMetaOpr.h"
-#include "dataObjRepl.h"
-#include "reGlobalsExtern.h"
-#include "rsGlobalExtern.h"
-#include "rcGlobalExtern.h"
+#include "rods.hpp"
+#include "objMetaOpr.hpp"
+#include "dataObjRepl.hpp"
+#include "reGlobalsExtern.hpp"
+#include "rsGlobalExtern.hpp"
+#include "rcGlobalExtern.hpp"
 
 #define NARA_META_DATA_FILE	"naraMetaData.txt"
 int

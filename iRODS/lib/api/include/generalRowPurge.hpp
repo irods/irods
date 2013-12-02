@@ -7,18 +7,18 @@
    Admin only.  Also see generalRowInsert.
  */
 
-#ifndef GENERAL_ROW_PURGE_H
-#define GENERAL_ROW_PURGE_H
+#ifndef GENERAL_ROW_PURGE_HPP
+#define GENERAL_ROW_PURGE_HPP
 
 /* This is a Metadata type API call */
 
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "icatDefines.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "icatDefines.hpp"
 
 typedef struct {
    char *tableName;

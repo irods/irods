@@ -2,12 +2,12 @@
  */
 
 #include <stdlib.h>
-#include "utils.h"
-#include "parser.h"
-#include "rules.h"
-#include "functions.h"
-#include "configuration.h"
-#include "filesystem.h"
+#include "utils.hpp"
+#include "parser.hpp"
+#include "rules.hpp"
+#include "functions.hpp"
+#include "configuration.hpp"
+#include "filesystem.hpp"
 
 Op new_ops[num_ops] = {
     {"-",1,10},

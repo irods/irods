@@ -7,19 +7,19 @@
  */
 
 /* script generated code */
-#include "fileStageToCache.h"
-#include "fileOpr.h"
-#include "miscServerFunct.h"
-#include "dataObjOpr.h"
-#include "physPath.h"
+#include "fileStageToCache.hpp"
+#include "fileOpr.hpp"
+#include "miscServerFunct.hpp"
+#include "dataObjOpr.hpp"
+#include "physPath.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_log.h"
-#include "eirods_file_object.h"
-#include "eirods_collection_object.h"
-#include "eirods_stacktrace.h"
-#include "eirods_resource_backport.h"
+#include "eirods_log.hpp"
+#include "eirods_file_object.hpp"
+#include "eirods_collection_object.hpp"
+#include "eirods_stacktrace.hpp"
+#include "eirods_resource_backport.hpp"
 
 int
 rsFileStageToCache (rsComm_t *rsComm, fileStageSyncInp_t *fileStageToCacheInp)

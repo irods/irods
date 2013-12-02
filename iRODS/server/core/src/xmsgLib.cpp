@@ -4,10 +4,10 @@
 /* xmsgLib.c - library routines for irodsXmsg
  */
 
-#include "xmsgLib.h"
-#include "rsApiHandler.h"
-#include "reGlobalsExtern.h"
-#include "miscServerFunct.h"
+#include "xmsgLib.hpp"
+#include "rsApiHandler.hpp"
+#include "reGlobalsExtern.hpp"
+#include "miscServerFunct.hpp"
 
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
@@ -20,7 +20,7 @@ boost::mutex			MessQueCondMutex;
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_network_factory.h"
+#include "eirods_network_factory.hpp"
 
 
 xmsgReq_t *XmsgReqHead = NULL;

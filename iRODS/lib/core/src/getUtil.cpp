@@ -5,13 +5,13 @@
 #ifndef windows_platform
 #include <sys/time.h>
 #endif
-#include "rodsPath.h"
-#include "rodsErrorTable.h"
-#include "rodsLog.h"
-#include "lsUtil.h"
-#include "getUtil.h"
-#include "miscUtil.h"
-#include "rcPortalOpr.h"
+#include "rodsPath.hpp"
+#include "rodsErrorTable.hpp"
+#include "rodsLog.hpp"
+#include "lsUtil.hpp"
+#include "getUtil.hpp"
+#include "miscUtil.hpp"
+#include "rcPortalOpr.hpp"
 
 int
 setSessionTicket(rcComm_t *myConn, char *ticket) {

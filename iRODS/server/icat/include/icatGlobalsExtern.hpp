@@ -6,10 +6,10 @@
 
 *******************************************************************************/
 
-#ifndef ICAT_GLOBALS_EXTERN_H
-#define ICAT_GLOBALS_EXTERN_H
+#ifndef ICAT_GLOBALS_EXTERN_HPP
+#define ICAT_GLOBALS_EXTERN_HPP
 
-#include "icatStruct.h"
+#include "icatStruct.hpp"
 
 
 extern icatSessionStruct  icatSess;

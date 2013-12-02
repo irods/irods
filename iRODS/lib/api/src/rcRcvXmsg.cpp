@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See rcvXmsg.h for a description of this API call.*/
 
-#include "rcvXmsg.h"
+#include "rcvXmsg.hpp"
 
 int
 rcRcvXmsg (rcComm_t *conn, rcvXmsgInp_t *rcvXmsgInp, 

@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See generalRowPurge.h for a description of this API call.*/
 
-#include "generalRowPurge.h"
+#include "generalRowPurge.hpp"
 
 int
 rcGeneralRowPurge (rcComm_t *conn, generalRowPurgeInp_t *generalRowPurgeInp)

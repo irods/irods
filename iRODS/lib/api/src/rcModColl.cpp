@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See modColl.h for a description of this API call.*/
 
-#include "modColl.h"
+#include "modColl.hpp"
 
 int
 rcModColl (rcComm_t *conn, collInp_t *modCollInp)

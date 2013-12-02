@@ -1,10 +1,10 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
 
-#ifndef REGION_CHECK_INSTANCE_H
-#define REGION_CHECK_INSTANCE_H
+#ifndef REGION_CHECK_INSTANCE_HPP
+#define REGION_CHECK_INSTANCE_HPP
 
-#include "region.check.proto.h"
+#include "region.check.proto.hpp"
 
 #define CHECK_NON_NULL(f) \
 	  if(ptr->f == NULL) { \

@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See modAccessControl.h for a description of this API call.*/
 
-#include "modAccessControl.h"
+#include "modAccessControl.hpp"
 
 int
 rcModAccessControl (rcComm_t *conn, modAccessControlInp_t *modAccessControlInp)

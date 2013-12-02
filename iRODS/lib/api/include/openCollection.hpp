@@ -3,17 +3,17 @@
 /* openCollection.h
  */
 
-#ifndef OPEN_COLLECTION_H
-#define OPEN_COLLECTION_H
+#ifndef OPEN_COLLECTION_HPP
+#define OPEN_COLLECTION_HPP
 
 /* This is a high level type API call */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "dataObjInpOut.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "dataObjInpOut.hpp"
 
 #ifdef COMPAT_201
 typedef struct OpenCollInp {

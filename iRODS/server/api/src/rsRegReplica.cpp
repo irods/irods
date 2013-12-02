@@ -3,11 +3,11 @@
 /* unregDataObj.c
  */
 
-#include "regReplica.h"
-#include "objMetaOpr.h" // JMC - backport 4497
-#include "icatHighLevelRoutines.h"
+#include "regReplica.hpp"
+#include "objMetaOpr.hpp" // JMC - backport 4497
+#include "icatHighLevelRoutines.hpp"
 
-#include "eirods_file_object.h"
+#include "eirods_file_object.hpp"
 
 int _call_file_modified_for_replica (
     rsComm_t*     rsComm, 

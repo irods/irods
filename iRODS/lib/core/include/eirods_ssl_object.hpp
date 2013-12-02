@@ -6,8 +6,8 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_network_object.h"
-#include "eirods_buffer_encryption.h"
+#include "eirods_network_object.hpp"
+#include "eirods_buffer_encryption.hpp"
 
 // =-=-=-=-=-=-=-
 // ssl includes

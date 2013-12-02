@@ -6,15 +6,15 @@
 
 
 
-#ifndef MSI_HELPER_H
-#define MSI_HELPER_H
+#ifndef MSI_HELPER_HPP
+#define MSI_HELPER_HPP
 
-#include "rods.h"
-#include "objMetaOpr.h"
-#include "dataObjRepl.h"
-#include "reGlobalsExtern.h"
-#include "rsGlobalExtern.h"
-#include "rcGlobalExtern.h"
+#include "rods.hpp"
+#include "objMetaOpr.hpp"
+#include "dataObjRepl.hpp"
+#include "reGlobalsExtern.hpp"
+#include "rsGlobalExtern.hpp"
+#include "rcGlobalExtern.hpp"
 
 
 int

@@ -1,8 +1,8 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 
-#include "eirods_gsi_object.h"
-#include "eirods_auth_manager.h"
+#include "eirods_gsi_object.hpp"
+#include "eirods_auth_manager.hpp"
 
 namespace eirods {
 

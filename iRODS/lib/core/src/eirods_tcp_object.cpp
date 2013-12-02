@@ -2,8 +2,8 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_tcp_object.h"
-#include "eirods_network_manager.h"
+#include "eirods_tcp_object.hpp"
+#include "eirods_network_manager.hpp"
 
 namespace eirods {
     // =-=-=-=-=-=-=-

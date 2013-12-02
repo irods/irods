@@ -1,10 +1,10 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-#include "rodsPath.h"
-#include "rodsErrorTable.h"
-#include "rodsLog.h"
-#include "regUtil.h"
-#include "miscUtil.h"
+#include "rodsPath.hpp"
+#include "rodsErrorTable.hpp"
+#include "rodsLog.hpp"
+#include "regUtil.hpp"
+#include "miscUtil.hpp"
 
 int
 regUtil (rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,

@@ -6,7 +6,7 @@
 /* This is script-generated code.  */ 
 /* See closeCollection.h for a description of this API call.*/
 
-#include "closeCollection.h"
+#include "closeCollection.hpp"
 
 /**
  * \fn rcCloseCollection (rcComm_t *conn, int handleInxInp)

@@ -4,10 +4,10 @@
 /* rsRe.c - Routines for Server interfacing to the Rule Engine
  */
 
-#include "rsGlobalExtern.h"
-#include "reGlobalsExtern.h"
-#include "reconstants.h"
-#include "configuration.h"
+#include "rsGlobalExtern.hpp"
+#include "reGlobalsExtern.hpp"
+#include "reconstants.hpp"
+#include "configuration.hpp"
 
 static char ruleSetInitialized[NAME_LEN]="";
 

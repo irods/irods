@@ -6,13 +6,13 @@
  * copying.
  */
 
-#include "rodsPath.h"
-#include "miscUtil.h"
-#include "rcMisc.h"
-#include "rodsErrorTable.h"
-#include "rodsLog.h"
+#include "rodsPath.hpp"
+#include "miscUtil.hpp"
+#include "rcMisc.hpp"
+#include "rodsErrorTable.hpp"
+#include "rodsLog.hpp"
 #ifdef windows_platform
-#include "irodsntutil.h"
+#include "irodsntutil.hpp"
 #endif
 
 /* parseRodsPathStr - This is similar to parseRodsPath except the

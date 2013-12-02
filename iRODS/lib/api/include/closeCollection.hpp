@@ -3,17 +3,17 @@
 /* closeCollection.h
  */
 
-#ifndef CLOSE_COLLECTION_H
-#define CLOSE_COLLECTION_H
+#ifndef CLOSE_COLLECTION_HPP
+#define CLOSE_COLLECTION_HPP
 
 /* This is a Object File I/O API call */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "dataObjInpOut.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "dataObjInpOut.hpp"
 
 #if defined(RODS_SERVER)
 #define RS_CLOSE_COLLECTION rsCloseCollection

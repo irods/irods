@@ -3,17 +3,17 @@
 /* syncMountedColl.h
  */
 
-#ifndef SYNC_MOUNTED_COLL_H
-#define SYNC_MOUNTED_COLL_H
+#ifndef SYNC_MOUNTED_COLL_HPP
+#define SYNC_MOUNTED_COLL_HPP
 
 /* This is a Object File I/O API call */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "dataObjInpOut.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "dataObjInpOut.hpp"
 
 #if defined(RODS_SERVER)
 #define RS_SYNC_MOUNTED_COLL rsSyncMountedColl

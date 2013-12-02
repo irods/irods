@@ -3,10 +3,10 @@
 #ifndef _auth_H_
 #define _auth_H_
 
-#include "eirods_error.h"
-#include "eirods_operation_wrapper.h"
-#include "eirods_auth_types.h"
-#include "eirods_auth_plugin_context.h"
+#include "eirods_error.hpp"
+#include "eirods_operation_wrapper.hpp"
+#include "eirods_auth_types.hpp"
+#include "eirods_auth_plugin_context.hpp"
 
 namespace eirods {
 

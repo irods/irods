@@ -7,8 +7,8 @@
 
 *****************************************************************************/
 
-#ifndef ICAT_DEFINES_H
-#define ICAT_DEFINES_H
+#ifndef ICAT_DEFINES_HPP
+#define ICAT_DEFINES_HPP
 
 #define   MAX_NUM_OF_SELECT_ITEMS                  30
 #define   MAX_NUM_OF_CONCURRENT_STMTS              50

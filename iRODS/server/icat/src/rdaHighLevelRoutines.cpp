@@ -25,13 +25,13 @@
 
 **************************************************************************/
 
-#include "rods.h"
-#include "rcMisc.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
 
-#include "rdaHighLevelRoutines.h"
-#include "icatLowLevel.h"
+#include "rdaHighLevelRoutines.hpp"
+#include "icatLowLevel.hpp"
 
-#include "icatHighLevelRoutines.h"
+#include "icatHighLevelRoutines.hpp"
 
 /* For now, uncomment this line to build RDA 
 #define BUILD_RDA 1  */

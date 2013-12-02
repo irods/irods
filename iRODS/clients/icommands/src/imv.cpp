@@ -4,10 +4,10 @@
  * imv - The irods mv utility
 */
 
-#include "rodsClient.h"
-#include "parseCommandLine.h"
-#include "rodsPath.h"
-#include "mvUtil.h"
+#include "rodsClient.hpp"
+#include "parseCommandLine.hpp"
+#include "rodsPath.hpp"
+#include "mvUtil.hpp"
 void usage (char *program);
 
 int

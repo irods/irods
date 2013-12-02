@@ -12,11 +12,11 @@
  the routine does (and more as needed).
  */
  
-#include "rcatC_db_externs.h"
-#include "rodsC_rcat_externs.h"
-#include "icatGlobalsExtern.h"
-#include "rodsLog.h"
-#include "rods.h"
+#include "rcatC_db_externs.hpp"
+#include "rodsC_rcat_externs.hpp"
+#include "icatGlobalsExtern.hpp"
+#include "rodsLog.hpp"
+#include "rods.hpp"
 #include <string.h>
 
 #include <string>

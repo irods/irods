@@ -2,8 +2,8 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_data_object.h"
-#include "eirods_resource_manager.h"
+#include "eirods_data_object.hpp"
+#include "eirods_resource_manager.hpp"
 
 namespace eirods {
 

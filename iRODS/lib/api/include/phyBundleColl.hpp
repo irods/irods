@@ -4,18 +4,18 @@
  * script
  */
 
-#ifndef PHY_BUNDLE_COLL_H
-#define PHY_BUNDLE_COLL_H
+#ifndef PHY_BUNDLE_COLL_HPP
+#define PHY_BUNDLE_COLL_HPP
 
 /* This is a Object File I/O call */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "structFileExtAndReg.h"
-#include "miscUtil.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "structFileExtAndReg.hpp"
+#include "miscUtil.hpp"
 
 #define BUNDLE_RESC	"bundleResc"
 #define TAR_BUNDLE_TYPE	"tar bundle"

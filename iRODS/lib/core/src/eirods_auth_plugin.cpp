@@ -1,9 +1,9 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 
-#include "eirods_auth_plugin.h"
-#include "eirods_load_plugin.h"
-#include "eirods_auth_home.h"
+#include "eirods_auth_plugin.hpp"
+#include "eirods_load_plugin.hpp"
+#include "eirods_auth_home.hpp"
 
 namespace eirods {
 

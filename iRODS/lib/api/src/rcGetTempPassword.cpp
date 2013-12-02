@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See getTempPassword.h for a description of this API call.*/
 
-#include "getTempPassword.h"
+#include "getTempPassword.hpp"
 
 int
 rcGetTempPassword (rcComm_t *conn, getTempPasswordOut_t **getTempPasswordOut)

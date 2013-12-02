@@ -1,10 +1,10 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
-#include "utils.h"
-#include "restructs.h"
-#include "conversion.h"
-#include "configuration.h"
-#include "reVariableMap.gen.h"
+#include "utils.hpp"
+#include "restructs.hpp"
+#include "conversion.hpp"
+#include "configuration.hpp"
+#include "reVariableMap.gen.hpp"
 /* make a new type by substituting tvars with fresh tvars */
 ExprType *dupType(ExprType *ty, Region *r) {
     Hashtable *varTable = newHashTable2(100, r);
@@ -964,9 +964,9 @@ int isRuleGenSyntax(char *expr) {
 	return 1;
 }
 #define KEY_INSTANCE
-#include "key.instance.h"
-#include "restruct.templates.h"
-#include "end.instance.h"
+#include "key.instance.hpp"
+#include "restruct.templates.hpp"
+#include "end.instance.hpp"
 void keyNode(Node *node, char *keyBuf) {
 	/* memset(keyBuf, 0, KEY_SIZE); */
 	if(node->degree>0) {
@@ -999,31 +999,31 @@ void keyBuf(unsigned char *buf, int size, char *keyBuf) {
 }
 #undef KEY_INSTANCE
 
-#include "region.to.region.instance.h"
-#include "restruct.templates.h"
-#include "end.instance.h"
+#include "region.to.region.instance.hpp"
+#include "restruct.templates.hpp"
+#include "end.instance.hpp"
 
-#include "region.to.region2.instance.h"
-#include "restruct.templates.h"
-#include "end.instance.h"
+#include "region.to.region2.instance.hpp"
+#include "restruct.templates.hpp"
+#include "end.instance.hpp"
 
-#include "to.region.instance.h"
-#include "restruct.templates.h"
-#include "end.instance.h"
+#include "to.region.instance.hpp"
+#include "restruct.templates.hpp"
+#include "end.instance.hpp"
 
-#include "to.memory.instance.h"
-#include "restruct.templates.h"
-#include "end.instance.h"
+#include "to.memory.instance.hpp"
+#include "restruct.templates.hpp"
+#include "end.instance.hpp"
 
 #ifdef RE_CACHE_CHECK
-#include "cache.check.instance.h"
-#include "restruct.templates.h"
-#include "end.instance.h"
+#include "cache.check.instance.hpp"
+#include "restruct.templates.hpp"
+#include "end.instance.hpp"
 #endif
 
 #ifdef RE_REGION_CHECK
-#include "region.check.instance.h"
-#include "restruct.templates.h"
-#include "end.instance.h"
+#include "region.check.instance.hpp"
+#include "restruct.templates.hpp"
+#include "end.instance.hpp"
 #endif
 

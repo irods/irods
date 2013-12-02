@@ -5,15 +5,15 @@
 /* This is script-generated code (for the most part).  */ 
 /* See fileClose.h for a description of this API call.*/
 
-#include "fileClose.h"
-#include "miscServerFunct.h"
-#include "rsGlobalExtern.h"
+#include "fileClose.hpp"
+#include "miscServerFunct.hpp"
+#include "rsGlobalExtern.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_log.h"
-#include "eirods_file_object.h"
-#include "eirods_stacktrace.h"
+#include "eirods_log.hpp"
+#include "eirods_file_object.hpp"
+#include "eirods_stacktrace.hpp"
 
 
 int

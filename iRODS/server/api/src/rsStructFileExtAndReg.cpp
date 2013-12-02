@@ -5,26 +5,26 @@
 /* rsStructFileExtAndReg.c. See structFileExtAndReg.h for a description of 
  * this API call.*/
 
-#include "apiHeaderAll.h"
-#include "objMetaOpr.h"
-#include "collection.h"
-#include "dataObjOpr.h"
-#include "resource.h"
-#include "specColl.h"
-#include "physPath.h"
-#include "objStat.h"
-#include "miscServerFunct.h"
-#include "fileOpr.h"
-#include "rcGlobalExtern.h"
-#include "reGlobalsExtern.h"
-#include "structFileExtAndReg.h"
+#include "apiHeaderAll.hpp"
+#include "objMetaOpr.hpp"
+#include "collection.hpp"
+#include "dataObjOpr.hpp"
+#include "resource.hpp"
+#include "specColl.hpp"
+#include "physPath.hpp"
+#include "objStat.hpp"
+#include "miscServerFunct.hpp"
+#include "fileOpr.hpp"
+#include "rcGlobalExtern.hpp"
+#include "reGlobalsExtern.hpp"
+#include "structFileExtAndReg.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_resource_redirect.h"
-#include "eirods_stacktrace.h"
-#include "eirods_resource_backport.h"
-#include "eirods_file_object.h"
+#include "eirods_resource_redirect.hpp"
+#include "eirods_stacktrace.hpp"
+#include "eirods_resource_backport.hpp"
+#include "eirods_file_object.hpp"
 
 int
 rsStructFileExtAndReg (rsComm_t *rsComm,

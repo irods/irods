@@ -3,13 +3,13 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_client_server_negotiation.h"
+#include "eirods_client_server_negotiation.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "rodsDef.h"
-#include "index.h"
-#include "reFuncDefs.h"
+#include "rodsDef.hpp"
+#include "index.hpp"
+#include "reFuncDefs.hpp"
 
 
 namespace eirods {

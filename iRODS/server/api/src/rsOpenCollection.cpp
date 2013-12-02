@@ -7,10 +7,10 @@
  */
 
 
-#include "openCollection.h"
-#include "closeCollection.h"
-#include "rsGlobalExtern.h"
-#include "rcGlobalExtern.h"
+#include "openCollection.hpp"
+#include "closeCollection.hpp"
+#include "rsGlobalExtern.hpp"
+#include "rcGlobalExtern.hpp"
 
 int
 rsOpenCollection (rsComm_t *rsComm, collInp_t *openCollInp)

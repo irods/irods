@@ -1,24 +1,24 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
 
-#include "utils.h"
-#include "restructs.h"
-#include "parser.h"
-#include "arithmetics.h"
-#include "datetime.h"
-#include "index.h"
-#include "rules.h"
-#include "functions.h"
-#include "configuration.h"
-#include "reVariableMap.gen.h"
-#include "reVariableMap.h"
-#include "debug.h"
+#include "utils.hpp"
+#include "restructs.hpp"
+#include "parser.hpp"
+#include "arithmetics.hpp"
+#include "datetime.hpp"
+#include "index.hpp"
+#include "rules.hpp"
+#include "functions.hpp"
+#include "configuration.hpp"
+#include "reVariableMap.gen.hpp"
+#include "reVariableMap.hpp"
+#include "debug.hpp"
 
 
 
 
 
-//	#include "eirods_ms_plugin.h"
+//	#include "eirods_ms_plugin.hpp"
 //	extern eirods::ms_table MicrosTable;
 //	extern int NumOfAction;
 

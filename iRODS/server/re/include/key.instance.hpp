@@ -1,10 +1,10 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
 
-#ifndef KEY_INSTANCE_H
-#define KEY_INSTANCE_H
+#ifndef KEY_INSTANCE_HPP
+#define KEY_INSTANCE_HPP
 
-#include "key.proto.h"
+#include "key.proto.hpp"
 
 #define GENERIC(T)
 

@@ -3,7 +3,7 @@
 /* This is script-generated code.  */ 
 /* See fileReaddir.h for a description of this API call.*/
 
-#include "fileReaddir.h"
+#include "fileReaddir.hpp"
 
 int
 rcFileReaddir (rcComm_t *conn, fileReaddirInp_t *fileReaddirInp, 

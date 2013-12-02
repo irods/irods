@@ -7,10 +7,10 @@
 
 
 
-#ifndef RODS_GEN_QUERY_H
-#define RODS_GEN_QUERY_H
+#ifndef RODS_GEN_QUERY_HPP
+#define RODS_GEN_QUERY_HPP
 
-#include "objInfo.h"
+#include "objInfo.hpp"
 
 #define MAX_SQL_ATTR    50
 #define MAX_SQL_ROWS   256

@@ -3,18 +3,18 @@
 /* ncGetVarsByType.h
  */
 
-#ifndef NC_GET_VARS_BY_TYPE_H
-#define NC_GET_VARS_BY_TYPE_H
+#ifndef NC_GET_VARS_BY_TYPE_HPP
+#define NC_GET_VARS_BY_TYPE_HPP
 
 /* This is a NETCDF API call */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "dataObjInpOut.h"
-#include "ncInqId.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "dataObjInpOut.hpp"
+#include "ncInqId.hpp"
 
 #ifndef NETCDF_API
 #include <stddef.h>

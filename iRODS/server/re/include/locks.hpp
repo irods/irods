@@ -1,8 +1,8 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
 
-#ifndef RULEENGINELOCKS_H
-#define RULEENGINELOCKS_H
+#ifndef RULEENGINELOCKS_HPP
+#define RULEENGINELOCKS_HPP
 #include <boost/interprocess/sync/named_mutex.hpp>
 #include <boost/interprocess/creation_tags.hpp>
 #include <boost/interprocess/exceptions.hpp>

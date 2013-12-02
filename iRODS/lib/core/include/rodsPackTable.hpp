@@ -3,17 +3,17 @@
 /* rodsPackTable.h - The common rods pack Instruction table
  */
 
-#ifndef RODS_PACK_TABLE_H
-#define RODS_PACK_TABLE_H
+#ifndef RODS_PACK_TABLE_HPP
+#define RODS_PACK_TABLE_HPP
 
-#include "rods.h"
-#include "packStruct.h"
-#include "rodsPackInstruct.h"
-#include "rodsGenQuery.h"
-#include "reGlobalsExtern.h"
-#include "apiHeaderAll.h"
+#include "rods.hpp"
+#include "packStruct.hpp"
+#include "rodsPackInstruct.hpp"
+#include "rodsGenQuery.hpp"
+#include "reGlobalsExtern.hpp"
+#include "apiHeaderAll.hpp"
 #ifdef OOI_CI
-#include "ooiCi.h"
+#include "ooiCi.hpp"
 #endif
 
 #define UNKNOWN_SIZE	-1

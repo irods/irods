@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See generalRowInsert.h for a description of this API call.*/
 
-#include "generalRowInsert.h"
+#include "generalRowInsert.hpp"
 
 int
 rcGeneralRowInsert (rcComm_t *conn, generalRowInsertInp_t *generalRowInsertInp)

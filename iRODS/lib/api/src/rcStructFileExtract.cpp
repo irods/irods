@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See structFileExtract.h for a description of this API call.*/
 
-#include "structFileExtract.h"
+#include "structFileExtract.hpp"
 
 int
 rcStructFileExtract (rcComm_t *conn, structFileOprInp_t *structFileOprInp)

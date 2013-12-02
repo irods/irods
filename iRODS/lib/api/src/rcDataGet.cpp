@@ -3,7 +3,7 @@
 /* This is script-generated code.  */ 
 /* See dataGet.h for a description of this API call.*/
 
-#include "dataGet.h"
+#include "dataGet.hpp"
 
 int
 rcDataGet (rcComm_t *conn, dataOprInp_t *dataGetInp,

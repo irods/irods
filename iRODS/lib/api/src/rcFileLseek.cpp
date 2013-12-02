@@ -3,7 +3,7 @@
 /* This is script-generated code.  */ 
 /* See fileLseek.h for a description of this API call.*/
 
-#include "fileLseek.h"
+#include "fileLseek.hpp"
 
 int
 rcFileLseek (rcComm_t *conn, fileLseekInp_t *fileLseekInp, 

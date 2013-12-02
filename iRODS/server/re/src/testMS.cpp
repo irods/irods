@@ -1,7 +1,7 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-#include "reGlobalsExtern.h"
-#include "icatHighLevelRoutines.h"
+#include "reGlobalsExtern.hpp"
+#include "icatHighLevelRoutines.hpp"
 
 int
 print_hello(ruleExecInfo_t *rei)

@@ -1,13 +1,13 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
 
-#ifndef REGION_CHECK_PROTO_H
-#define REGION_CHECK_PROTO_H
+#ifndef REGION_CHECK_PROTO_HPP
+#define REGION_CHECK_PROTO_HPP
 
 typedef int (ChkFuncType)(void *ptr, Region *r);
 #endif
 
-#include "proto.h"
+#include "proto.hpp"
 
 #define RE_STRUCT_FUNC_PROTO(T) \
     int regionChk##T(T *ptr, Region *r)

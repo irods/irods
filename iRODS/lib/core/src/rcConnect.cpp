@@ -5,19 +5,19 @@
  * 
  */
 
-#include "rcConnect.h"
-#include "rcGlobal.h"
+#include "rcConnect.hpp"
+#include "rcGlobal.hpp"
 
 #ifdef windows_platform
-#include "startsock.h"
+#include "startsock.hpp"
 #endif
 
 #include <boost/thread/thread_time.hpp>
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_stacktrace.h"
-#include "eirods_network_factory.h"
+#include "eirods_stacktrace.hpp"
+#include "eirods_network_factory.hpp"
 
 rcComm_t *
 rcConnect (char *rodsHost, int rodsPort, char *userName, char *rodsZone,

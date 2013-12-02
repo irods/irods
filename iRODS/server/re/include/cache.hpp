@@ -1,16 +1,16 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
-#ifndef CACHE_H
-#define CACHE_H
-#include "rules.h"
-#include "index.h"
-#include "configuration.h"
-#include "region.h"
+#ifndef CACHE_HPP
+#define CACHE_HPP
+#include "rules.hpp"
+#include "index.hpp"
+#include "configuration.hpp"
+#include "region.hpp"
 
-#include "cache.proto.h"
-#include "proto.h"
-#include "restruct.templates.h"
-#include "end.instance.h"
+#include "cache.proto.hpp"
+#include "proto.hpp"
+#include "restruct.templates.hpp"
+#include "end.instance.hpp"
 
 Cache *copyCache(unsigned char **buf, size_t size, Cache *c);
 Cache *restoreCache(unsigned char *buf);

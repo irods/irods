@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See getRemoteZoneRescRecur.h for a description of this API call.*/
 
-#include "getRemoteZoneResc.h"
+#include "getRemoteZoneResc.hpp"
 
 int
 rcGetRemoteZoneResc (rcComm_t *conn, dataObjInp_t *dataObjInp,

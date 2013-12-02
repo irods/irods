@@ -6,12 +6,12 @@
  */
 
 
-#ifndef RODS_GENERAL_UPDATE_H
-#define RODS_GENERAL_UPDATE_H
+#ifndef RODS_GENERAL_UPDATE_HPP
+#define RODS_GENERAL_UPDATE_HPP
 
-#include "objInfo.h"
+#include "objInfo.hpp"
 
-#include "rodsGenQuery.h"
+#include "rodsGenQuery.hpp"
 
 /* Unusual values since don't want caller to accidentally select wrong call: */
 #define GENERAL_UPDATE_INSERT 23451

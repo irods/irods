@@ -3,9 +3,9 @@
 /* This is script-generated code (for the most part).  */ 
 /* See generalRowPurge.h for a description of this API call.*/
 
-#include "generalRowPurge.h"
-#include "reGlobalsExtern.h"
-#include "icatHighLevelRoutines.h"
+#include "generalRowPurge.hpp"
+#include "reGlobalsExtern.hpp"
+#include "icatHighLevelRoutines.hpp"
 
 int
 rsGeneralRowPurge (rsComm_t *rsComm, generalRowPurgeInp_t *generalRowPurgeInp )

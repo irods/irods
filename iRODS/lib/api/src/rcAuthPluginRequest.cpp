@@ -3,7 +3,7 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "authPluginRequest.h"
+#include "authPluginRequest.hpp"
 
 int rcAuthPluginRequest(
     rcComm_t*             _comm,

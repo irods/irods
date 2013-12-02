@@ -3,7 +3,7 @@
 /* This is script-generated code.  */ 
 /* See fileGet.h for a description of this API call.*/
 
-#include "fileGet.h"
+#include "fileGet.hpp"
 
 int
 rcFileGet (rcComm_t *conn, fileOpenInp_t *fileGetInp, 

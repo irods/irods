@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "TestBase.h"
+#include "TestBase.hpp"
 
 #include "../../icat/src/icatLowLevelOdbc.c"
 

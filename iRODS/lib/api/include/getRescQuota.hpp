@@ -4,19 +4,19 @@
  * script
  */
 
-#ifndef GET_RESC_QUOTA_H
-#define GET_RESC_QUOTA_H
+#ifndef GET_RESC_QUOTA_HPP
+#define GET_RESC_QUOTA_HPP
 
 /* This is a Object File I/O call */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "icatDefines.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "icatDefines.hpp"
 
-#include "rodsGenQuery.h"  /* for input/output structs, etc */
+#include "rodsGenQuery.hpp"  /* for input/output structs, etc */
 
 /* definition for RescQuotaPolicy and GlobalQuotaLimit */
 #define RESC_QUOTA_UNINIT	-1	/* RescQuotaPolicy not initialized */

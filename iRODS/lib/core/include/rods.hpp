@@ -6,37 +6,37 @@
 
 
 
-#ifndef RODS_H
-#define RODS_H
+#ifndef RODS_HPP
+#define RODS_HPP
 
-#include "rodsDef.h"
-#include "rodsVersion.h"
-#include "rodsError.h"
-#include "rodsLog.h"
-#include "stringOpr.h"
-#include "rodsType.h"
-#include "rodsKeyWdDef.h"
-#include "sockComm.h"
-#include "objInfo.h"
-#include "getRodsEnv.h"
-#include "dataObjInpOut.h"
-#include "rodsGenQuery.h"
-#include "packStruct.h"
-#include "md5Checksum.h"
-#include "authenticate.h"
-#include "parseCommandLine.h"
-#include "obf.h"
-#include "rodsXmsg.h"
-#include "igsi.h"
-#include "ikrb.h"
-#include "rodsQuota.h"
-#include "osauth.h"
-#include "sslSockComm.h"
+#include "rodsDef.hpp"
+#include "rodsVersion.hpp"
+#include "rodsError.hpp"
+#include "rodsLog.hpp"
+#include "stringOpr.hpp"
+#include "rodsType.hpp"
+#include "rodsKeyWdDef.hpp"
+#include "sockComm.hpp"
+#include "objInfo.hpp"
+#include "getRodsEnv.hpp"
+#include "dataObjInpOut.hpp"
+#include "rodsGenQuery.hpp"
+#include "packStruct.hpp"
+#include "md5Checksum.hpp"
+#include "authenticate.hpp"
+#include "parseCommandLine.hpp"
+#include "obf.hpp"
+#include "rodsXmsg.hpp"
+#include "igsi.hpp"
+#include "ikrb.hpp"
+#include "rodsQuota.hpp"
+#include "osauth.hpp"
+#include "sslSockComm.hpp"
 
 #ifdef _WIN32
-#include "IRodsLib3.h"
+#include "IRodsLib3.hpp"
 #include <stdio.h>
-#include "winsock2.h"
+#include "winsock2.hpp"
 
 #if defined(_WIN32)
 #ifndef snprintf

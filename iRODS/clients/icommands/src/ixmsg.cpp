@@ -2,7 +2,7 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* ixmsg.c - Xmessage communicator */
 
-#include "rodsClient.h" 
+#include "rodsClient.hpp" 
 
 rodsEnv myRodsEnv;
 rErrMsg_t errMsg;

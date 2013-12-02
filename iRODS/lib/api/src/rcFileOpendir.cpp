@@ -3,7 +3,7 @@
 /* This is script-generated code.  */ 
 /* See fileOpendir.h for a description of this API call.*/
 
-#include "fileOpendir.h"
+#include "fileOpendir.hpp"
 
 int
 rcFileOpendir (rcComm_t *conn, fileOpendirInp_t *fileOpendirInp)

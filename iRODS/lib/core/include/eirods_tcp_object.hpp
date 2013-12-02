@@ -6,7 +6,7 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_network_object.h"
+#include "eirods_network_object.hpp"
 
 namespace eirods {
     // =-=-=-=-=-=-=-

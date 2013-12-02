@@ -3,11 +3,11 @@
 
 /* See genQuery.h for a description of this API call.*/
 
-#include "genQuery.h"
-#include "icatHighLevelRoutines.h"
-#include "miscUtil.h"
-#include "cache.h"
-#include "rsGlobalExtern.h"
+#include "genQuery.hpp"
+#include "icatHighLevelRoutines.hpp"
+#include "miscUtil.hpp"
+#include "cache.hpp"
+#include "rsGlobalExtern.hpp"
 
 static
 eirods::error strip_eirods_query_terms( 

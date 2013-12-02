@@ -6,7 +6,7 @@
 /* This is script-generated code.  */ 
 /* See ncClose.h for a description of this API call.*/
 
-#include "ncClose.h"
+#include "ncClose.hpp"
 
 /**
  * \fn rcNcClose (rcComm_t *conn, ncCloseInp_t *ncCloseInp)

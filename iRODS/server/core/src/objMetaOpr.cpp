@@ -7,26 +7,26 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #endif
-#include "objMetaOpr.h"
-#include "resource.h"
-#include "collection.h"
-#include "specColl.h"
+#include "objMetaOpr.hpp"
+#include "resource.hpp"
+#include "collection.hpp"
+#include "specColl.hpp"
 #if 0
-#include "modDataObjMeta.h"
-#include "ruleExecSubmit.h"
-#include "ruleExecDel.h"
-#include "reSysDataObjOpr.h"
+#include "modDataObjMeta.hpp"
+#include "ruleExecSubmit.hpp"
+#include "ruleExecDel.hpp"
+#include "reSysDataObjOpr.hpp"
 #endif
-#include "genQuery.h"
-#include "icatHighLevelRoutines.h"
-#include "miscUtil.h"
-#include "rodsClient.h"
-#include "rsIcatOpr.h"
+#include "genQuery.hpp"
+#include "icatHighLevelRoutines.hpp"
+#include "miscUtil.hpp"
+#include "rodsClient.hpp"
+#include "rsIcatOpr.hpp"
 
 // =-=-=-=-=-=-
 // eirods includes
-#include "eirods_resource_redirect.h"
-#include "eirods_hierarchy_parser.h"
+#include "eirods_resource_redirect.hpp"
+#include "eirods_hierarchy_parser.hpp"
 
 int
 svrCloseQueryOut (rsComm_t *rsComm, genQueryOut_t *genQueryOut)

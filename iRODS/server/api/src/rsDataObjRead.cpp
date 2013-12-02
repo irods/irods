@@ -3,18 +3,18 @@
 /* This is script-generated code (for the most part).  */ 
 /* See dataObjRead.h for a description of this API call.*/
 
-#include "dataObjRead.h"
-#include "rodsLog.h"
-#include "objMetaOpr.h"
-#include "rsGlobalExtern.h"
-#include "rcGlobalExtern.h"
-#include "subStructFileRead.h"  /* XXXXX can be taken out when structFile api done */
-#include "reGlobalsExtern.h"
+#include "dataObjRead.hpp"
+#include "rodsLog.hpp"
+#include "objMetaOpr.hpp"
+#include "rsGlobalExtern.hpp"
+#include "rcGlobalExtern.hpp"
+#include "subStructFileRead.hpp"  /* XXXXX can be taken out when structFile api done */
+#include "reGlobalsExtern.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_resource_backport.h"
-#include "eirods_hierarchy_parser.h" 
+#include "eirods_resource_backport.hpp"
+#include "eirods_hierarchy_parser.hpp" 
 
 int
 applyRuleForPostProcForRead(rsComm_t *rsComm, bytesBuf_t *dataObjReadOutBBuf, char *objPath)

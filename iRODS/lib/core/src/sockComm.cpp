@@ -5,18 +5,18 @@
 /* sockComm.c - sock communication routines 
  */
 
-#include "sockComm.h"
-#include "rcMisc.h"
-#include "rcGlobalExtern.h"
-#include "miscServerFunct.h"
-#include "getHostForPut.h"
-#include "getHostForGet.h"
+#include "sockComm.hpp"
+#include "rcMisc.hpp"
+#include "rcGlobalExtern.hpp"
+#include "miscServerFunct.hpp"
+#include "getHostForPut.hpp"
+#include "getHostForGet.hpp"
 #ifdef RBUDP_TRANSFER
-#include "QUANTAnet_rbudpBase_c.h"
+#include "QUANTAnet_rbudpBase_c.hpp"
 #endif  /* RBUDP_TRANSFER */
 
 #ifdef windows_platform
-#include "irodsntutil.h"
+#include "irodsntutil.hpp"
 #endif
 
 #ifdef _WIN32
@@ -42,12 +42,12 @@ connToutHandler (int sig)
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_stacktrace.h"
-#include "eirods_client_server_negotiation.h"
-#include "eirods_network_plugin.h"
-#include "eirods_network_manager.h"
-#include "eirods_network_factory.h"
-#include "eirods_network_constants.h"
+#include "eirods_stacktrace.hpp"
+#include "eirods_client_server_negotiation.hpp"
+#include "eirods_network_plugin.hpp"
+#include "eirods_network_manager.hpp"
+#include "eirods_network_factory.hpp"
+#include "eirods_network_constants.hpp"
 
 // =-=-=-=-=-=-=-
 //

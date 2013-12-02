@@ -6,10 +6,10 @@
 
 
 
-#ifndef STRING_OPR_H
-#define STRING_OPR_H
+#ifndef STRING_OPR_HPP
+#define STRING_OPR_HPP
 
-#include "rodsDef.h"
+#include "rodsDef.hpp"
 
 #ifdef  __cplusplus
 extern "C" {

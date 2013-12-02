@@ -3,11 +3,11 @@
 #ifndef _EIRODS_REPL_TYPES_H_
 #define _EIRODS_REPL_TYPES_H_
 
-#include "eirods_resource_constants.h"
-#include "eirods_object_oper.h"
-#include "eirods_hierarchy_parser.h"
-#include "eirods_resource_plugin_context.h"
-#include "eirods_resource_redirect.h"
+#include "eirods_resource_constants.hpp"
+#include "eirods_object_oper.hpp"
+#include "eirods_hierarchy_parser.hpp"
+#include "eirods_resource_plugin_context.hpp"
+#include "eirods_resource_redirect.hpp"
 
 #include <vector>
 #include <list>

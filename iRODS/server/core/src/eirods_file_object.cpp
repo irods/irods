@@ -2,18 +2,18 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_file_object.h"
-#include "eirods_resource_manager.h"
-#include "eirods_hierarchy_parser.h"
-#include "eirods_log.h"
-#include "eirods_stacktrace.h"
-#include "eirods_hierarchy_parser.h"
-#include "eirods_resource_backport.h"
+#include "eirods_file_object.hpp"
+#include "eirods_resource_manager.hpp"
+#include "eirods_hierarchy_parser.hpp"
+#include "eirods_log.hpp"
+#include "eirods_stacktrace.hpp"
+#include "eirods_hierarchy_parser.hpp"
+#include "eirods_resource_backport.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "miscServerFunct.h"
-#include "dataObjOpr.h"
+#include "miscServerFunct.hpp"
+#include "dataObjOpr.hpp"
 
 // =-=-=-=-=-=-=-
 // boost includes

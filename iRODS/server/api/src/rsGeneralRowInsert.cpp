@@ -3,9 +3,9 @@
 /* This is script-generated code (for the most part).  */ 
 /* See generalRowInsert.h for a description of this API call.*/
 
-#include "generalRowInsert.h"
-#include "reGlobalsExtern.h"
-#include "icatHighLevelRoutines.h"
+#include "generalRowInsert.hpp"
+#include "reGlobalsExtern.hpp"
+#include "icatHighLevelRoutines.hpp"
 
 int
 rsGeneralRowInsert (rsComm_t *rsComm, generalRowInsertInp_t *generalRowInsertInp )

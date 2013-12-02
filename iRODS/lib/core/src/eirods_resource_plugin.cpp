@@ -2,10 +2,10 @@
 
 // =-=-=-=-=-=-=-
 // My Includes
-#include "eirods_resource_plugin.h"
-#include "eirods_load_plugin.h"
-#include "eirods_resources_home.h"
-#include "eirods_operation_rule_execution_manager_base.h"
+#include "eirods_resource_plugin.hpp"
+#include "eirods_load_plugin.hpp"
+#include "eirods_resources_home.hpp"
+#include "eirods_operation_rule_execution_manager_base.hpp"
 
 // =-=-=-=-=-=-=-
 // STL Includes

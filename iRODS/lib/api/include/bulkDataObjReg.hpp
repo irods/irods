@@ -5,17 +5,17 @@
 /* bulkDataObjReg.h
  */
 
-#ifndef BULK_DATA_OBJ_REG_H
-#define BULK_DATA_OBJ_REG_H
+#ifndef BULK_DATA_OBJ_REG_HPP
+#define BULK_DATA_OBJ_REG_HPP
 
 /* This is a Object File I/O API call */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "dataObjInpOut.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "dataObjInpOut.hpp"
 
 /* definition for opreration type */
 #define OPR_TYPE_INX    999999

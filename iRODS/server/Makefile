@@ -21,7 +21,7 @@ include $(buildDir)/config/platform.mk
 include $(buildDir)/config/directories.mk
 include $(buildDir)/config/common.mk
 
-extendedICAT.h = 	$(buildDir)/modules/extendedICAT/extendedICAT.h
+extendedICAT.hpp = 	$(buildDir)/modules/extendedICAT/extendedICAT.hpp
 
 #
 # Source files
@@ -455,34 +455,34 @@ BOOST_LIBS = $(BOOST_DIR)/stage/lib/libboost_system.a \
 # Compilation Targets
 #
 # Build server API
-$(SVR_API_OBJS):	$(svrApiObjDir)/%.o: $(svrApiSrcDir)/%.c $(DEPEND) $(BOOST_LIBS)
+$(SVR_API_OBJS):	$(svrApiObjDir)/%.o: $(svrApiSrcDir)/%.cpp $(DEPEND) $(BOOST_LIBS)
 	@echo "Compile api `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
 # Build server core
-$(SVR_CORE_OBJS):	$(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.c $(DEPEND) $(BOOST_LIBS)
+$(SVR_CORE_OBJS):	$(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.cpp $(DEPEND) $(BOOST_LIBS)
 	@echo "Compile core `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
 # Build server drivers
-$(SVR_DRIVERS_OBJS):	$(svrDriversObjDir)/%.o: $(svrDriversSrcDir)/%.c $(DEPEND) $(BOOST_LIBS)
+$(SVR_DRIVERS_OBJS):	$(svrDriversObjDir)/%.o: $(svrDriversSrcDir)/%.cpp $(DEPEND) $(BOOST_LIBS)
 	@echo "Compile drivers `basename $@`..."
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 # Build server ICAT
-$(SVR_ICAT_OBJS):	$(svrIcatObjDir)/%.o: $(svrIcatSrcDir)/%.c $(extendedICAT.h) $(DEPEND) $(BOOST_LIBS)
+$(SVR_ICAT_OBJS):	$(svrIcatObjDir)/%.o: $(svrIcatSrcDir)/%.cpp $(extendedICAT.hpp) $(DEPEND) $(BOOST_LIBS)
 	@echo "Compile icat `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
-$(extendedICAT.h): 
-	@touch $(extendedICAT.h)
+$(extendedICAT.hpp): 
+	@touch $(extendedICAT.hpp)
 
 # Build server ICAT
-$(SVR_DBR_OBJS):	$(svrIcatObjDir)/%.o: $(svrIcatSrcDir)/%.c $(BOOST_LIBS)
+$(SVR_DBR_OBJS):	$(svrIcatObjDir)/%.o: $(svrIcatSrcDir)/%.cpp $(BOOST_LIBS)
 	@echo "Compile icat `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
 # Builder server rule engine
-$(SVR_RE_OBJS):		$(svrReObjDir)/%.o: $(svrReSrcDir)/%.c $(DEPEND) $(BOOST_LIBS)
+$(SVR_RE_OBJS):		$(svrReObjDir)/%.o: $(svrReSrcDir)/%.cpp $(DEPEND) $(BOOST_LIBS)
 	@echo "Compile re `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
@@ -491,7 +491,7 @@ $(SVR_RE_OBJS):		$(svrReObjDir)/%.o: $(svrReSrcDir)/%.c $(DEPEND) $(BOOST_LIBS)
 # Servers
 #
 # Agent
-$(svrCoreObjDir)/rodsAgent.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.c $(LIBRARY) $(OBJS) $(BOOST_LIBS)
+$(svrCoreObjDir)/rodsAgent.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.cpp $(LIBRARY) $(OBJS) $(BOOST_LIBS)
 	@echo "Compile agent server `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
@@ -500,7 +500,7 @@ $(serverBinDir)/irodsAgent: $(svrCoreObjDir)/rodsAgent.o $(LIBRARY) $(OBJS) $(MO
 	@$(LDR) -o $@ $(svrCoreObjDir)/rodsAgent.o $(LIBRARY) $(MODULE_LDFLAGS) $(OBJS) $(BOOST_LIBS) $(LDFLAGS) $(AG_LDADD)
 
 # Rule engine
-$(svrCoreObjDir)/irodsReServer.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.c $(LIBRARY) $(OBJS)
+$(svrCoreObjDir)/irodsReServer.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.cpp $(LIBRARY) $(OBJS)
 	@echo "Compile rule engine server `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
@@ -509,7 +509,7 @@ $(serverBinDir)/irodsReServer: $(svrCoreObjDir)/irodsReServer.o $(LIBRARY) $(OBJ
 	@$(LDR) -o $@ $(svrCoreObjDir)/irodsReServer.o $(LIBRARY) $(MODULE_LDFLAGS) $(OBJS) $(BOOST_LIBS) $(LDFLAGS)
 
 # RODS
-$(svrCoreObjDir)/rodsServer.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.c $(LIBRARY) $(OBJS) $(BOOST_LIBS)
+$(svrCoreObjDir)/rodsServer.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.cpp $(LIBRARY) $(OBJS) $(BOOST_LIBS)
 	@echo "Compile rods server `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
@@ -519,7 +519,7 @@ $(serverBinDir)/irodsServer: $(svrCoreObjDir)/rodsServer.o $(LIBRARY) $(OBJS) $(
 
 
 # xmsg server
-$(svrCoreObjDir)/irodsXmsgServer.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.c $(LIBRARY) $(OBJS)
+$(svrCoreObjDir)/irodsXmsgServer.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.cpp $(LIBRARY) $(OBJS)
 	@echo "Compile xmsg server `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
@@ -531,7 +531,7 @@ $(serverBinDir)/irodsXmsgServer: $(svrCoreObjDir)/irodsXmsgServer.o $(LIBRARY) $
 #
 # Authentication support
 #
-$(svrAuthObjDir)/PamAuthCheck.o: $(svrAuthSrcDir)/PamAuthCheck.c
+$(svrAuthObjDir)/PamAuthCheck.o: $(svrAuthSrcDir)/PamAuthCheck.cpp
 	@echo "Compile PamAuthCheck utility `basename $@`..."
 	@$(CC) -c $(AUTH_CFLAGS) -o $@ $<
 
@@ -542,7 +542,7 @@ $(serverBinDir)/PamAuthCheck: $(svrAuthObjDir)/PamAuthCheck.o
 #
 # Tests
 #
-$(TEST_OBJS):	$(svrTestObjDir)/%.o: $(svrTestSrcDir)/%.c $(DEPEND) $(BOOST_LIBS)
+$(TEST_OBJS):	$(svrTestObjDir)/%.o: $(svrTestSrcDir)/%.cpp $(DEPEND) $(BOOST_LIBS)
 	@echo "Compile server test `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
@@ -581,7 +581,7 @@ $(svrTestBinDir)/test_rda: $(svrTestObjDir)/test_rda.o $(SVR_ICAT_OBJS) $(LIBRAR
 ruleadmin:: $(serverBinDir)/ruleAdmin 
 	@cp $(serverBinDir)/ruleAdmin /misc/www/projects/srb-secure/cgi-bin/ruleAdminRaja.cgi
 
-$(svrCoreObjDir)/ruleAdmin.o: $(svrCoreObjDir)/%.o: %.c $(LIBRARY) $(OBJS)
+$(svrCoreObjDir)/ruleAdmin.o: $(svrCoreObjDir)/%.o: %.cpp $(LIBRARY) $(OBJS)
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 $(serverBinDir)/ruleAdmin: $(svrCoreObjDir)/ruleAdmin.o $(LIBRARY) $(OBJS)

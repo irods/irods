@@ -4,10 +4,10 @@
  * irmtrash - The irods rmtrash utility
 */
 
-#include "rodsClient.h"
-#include "parseCommandLine.h"
-#include "rodsPath.h"
-#include "rmtrashUtil.h"
+#include "rodsClient.hpp"
+#include "parseCommandLine.hpp"
+#include "rodsPath.hpp"
+#include "rmtrashUtil.hpp"
 void usage ();
 
 int

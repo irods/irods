@@ -2,12 +2,12 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* putUtil.h - Header for for putUtil.c */
 
-#ifndef PUT_UTIL_H
-#define PUT_UTIL_H
+#ifndef PUT_UTIL_HPP
+#define PUT_UTIL_HPP
 
-#include "rodsClient.h"
-#include "parseCommandLine.h"
-#include "rodsPath.h"
+#include "rodsClient.hpp"
+#include "parseCommandLine.hpp"
+#include "rodsPath.hpp"
 
 #ifdef  __cplusplus
 extern "C" {

@@ -2,10 +2,10 @@
  */
 
 
-#ifndef FILESYSTEM_H
-#define FILESYSTEM_H
+#ifndef FILESYSTEM_HPP
+#define FILESYSTEM_HPP
 
-#include "datetime.h"
+#include "datetime.hpp"
 
 int getModifiedTime(char *fn, time_type *timestamp);
 char *getRuleBasePath(char *ruleBaseName, char rulesFileName[MAX_NAME_LEN]);

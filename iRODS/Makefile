@@ -33,7 +33,7 @@ SERVER_CFLAGS_TMP =	.server_cflags
 CLIENT_CFLAGS_TMP =	.client_cflags
 REACTION_TMP =		.reaction
 
-# reAction.h is automatically built by concatenating the main
+# reAction.hpp is automatically built by concatenating the main
 # header, each module's header, the main table, each module's
 # table, and the main footer.
 REACTION_MASTERS =	$(svrReIncDir)/reAction.header \
@@ -180,11 +180,11 @@ client_cflags:
 		$(PERL) $(perlScriptsDir)/joinlines.pl > $(CLIENT_CFLAGS_TMP)
 
 # Build the microservices table based upon enabled modules
-reaction:	$(svrReIncDir)/reAction.h
+reaction:	$(svrReIncDir)/reAction.hpp
 	@true
 
-$(svrReIncDir)/reAction.h:	$(REACTION_MASTERS) $(REACTION_DEPEND)
-	@echo "Build reAction.h"
+$(svrReIncDir)/reAction.hpp:	$(REACTION_MASTERS) $(REACTION_DEPEND)
+	@echo "Build reAction.hpp"
 	@echo "------------------------------------------------------------------------"
 	@echo "  Header..."
 	@cat $(svrReIncDir)/reAction.header >> $(REACTION_TMP)
@@ -209,7 +209,7 @@ $(svrReIncDir)/reAction.h:	$(REACTION_MASTERS) $(REACTION_DEPEND)
 	@echo "  Footer..."
 	@echo "" >> $(REACTION_TMP)
 	@cat $(svrReIncDir)/reAction.footer >> $(REACTION_TMP)
-	@mv $(REACTION_TMP) $(svrReIncDir)/reAction.h
+	@mv $(REACTION_TMP) $(svrReIncDir)/reAction.hpp
 	@echo " "
 
 else
@@ -228,11 +228,11 @@ server_cflags:
 client_cflags: 
 	@touch $(CLIENT_CFLAGS_TMP)
 
-reaction:	$(svrReIncDir)/reAction.h
+reaction:	$(svrReIncDir)/reAction.hpp
 	@true
 
-$(svrReIncDir)/reAction.h:	$(REACTION_MASTERS) $(REACTION_DEPEND)
-	@echo "Build reAction.h"
+$(svrReIncDir)/reAction.hpp:	$(REACTION_MASTERS) $(REACTION_DEPEND)
+	@echo "Build reAction.hpp"
 	@echo "------------------------------------------------------------------------"
 	@echo "  Header..."
 	@cat $(svrReIncDir)/reAction.header >> $(REACTION_TMP)
@@ -240,7 +240,7 @@ $(svrReIncDir)/reAction.h:	$(REACTION_MASTERS) $(REACTION_DEPEND)
 	@cat $(svrReIncDir)/reAction.table  >> $(REACTION_TMP)
 	@echo "  Footer..."
 	@cat $(svrReIncDir)/reAction.footer >> $(REACTION_TMP)
-	@mv $(REACTION_TMP) $(svrReIncDir)/reAction.h
+	@mv $(REACTION_TMP) $(svrReIncDir)/reAction.hpp
 	@echo " "
 
 endif
@@ -329,8 +329,8 @@ clean:
 	@echo "Cleaning temp files..."
 	@rm -f $(SERVER_LDFLAGS_TMP) $(CLIENT_LDFLAGS_TMP) $(REACTION_TMP)
 	@rm -f $(SERVER_CFLAGS_TMP) $(CLIENT_CFLAGS_TMP)
-	@echo "Cleaning reAction.h..."
-	@rm -f $(svrReIncDir)/reAction.h
+	@echo "Cleaning reAction.hpp..."
+	@rm -f $(svrReIncDir)/reAction.hpp
 	@$(MAKE) cleanlib
 	@$(MAKE) cleanclients
 	@$(MAKE) cleanserver

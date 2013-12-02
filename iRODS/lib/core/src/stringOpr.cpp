@@ -4,9 +4,9 @@
  * copying.
  */
 
-#include "stringOpr.h"
-#include "rodsErrorTable.h"
-#include "rodsLog.h"
+#include "stringOpr.hpp"
+#include "rodsErrorTable.hpp"
+#include "rodsLog.hpp"
 
 char *rmemmove (void *dest, void *src, int strLen, int maxLen)
 {

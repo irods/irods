@@ -2,12 +2,12 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* ncUtil.h - Header for for ncUtil.c */
 
-#ifndef NCUTIL_H
-#define NCUTIL_H
+#ifndef NCUTIL_HPP
+#define NCUTIL_HPP
 
-#include "rodsClient.h"
-#include "parseCommandLine.h"
-#include "rodsPath.h"
+#include "rodsClient.hpp"
+#include "parseCommandLine.hpp"
+#include "rodsPath.hpp"
 
 #ifdef  __cplusplus
 extern "C" {

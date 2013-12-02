@@ -1,20 +1,20 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
-#include "reGlobalsExtern.h"
-#include "dataObjChksum.h"
-#include "objMetaOpr.h"
-#include "resource.h"
-#include "specColl.h"
-#include "dataObjOpr.h"
-#include "physPath.h"
-#include "rsApiHandler.h"
-#include "modDataObjMeta.h"
-#include "getRemoteZoneResc.h"
+#include "reGlobalsExtern.hpp"
+#include "dataObjChksum.hpp"
+#include "objMetaOpr.hpp"
+#include "resource.hpp"
+#include "specColl.hpp"
+#include "dataObjOpr.hpp"
+#include "physPath.hpp"
+#include "rsApiHandler.hpp"
+#include "modDataObjMeta.hpp"
+#include "getRemoteZoneResc.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_resource_backport.h"
-#include "eirods_resource_redirect.h"
+#include "eirods_resource_backport.hpp"
+#include "eirods_resource_redirect.hpp"
 
 int
 rsDataObjChksum (rsComm_t *rsComm, dataObjInp_t *dataObjChksumInp,

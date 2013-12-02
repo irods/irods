@@ -10,19 +10,19 @@
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "rodsClient.h"
-#include "sslSockComm.h"
+#include "rodsClient.hpp"
+#include "sslSockComm.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_auth_object.h"
-#include "eirods_auth_factory.h"
-#include "eirods_auth_plugin.h"
-#include "eirods_auth_manager.h"
-#include "eirods_auth_constants.h"
-#include "eirods_native_auth_object.h"
-#include "eirods_pam_auth_object.h"
-#include "authPluginRequest.h"
+#include "eirods_auth_object.hpp"
+#include "eirods_auth_factory.hpp"
+#include "eirods_auth_plugin.hpp"
+#include "eirods_auth_manager.hpp"
+#include "eirods_auth_constants.hpp"
+#include "eirods_native_auth_object.hpp"
+#include "eirods_pam_auth_object.hpp"
+#include "authPluginRequest.hpp"
 
 static char prevChallengeSignatureClient[200];
 

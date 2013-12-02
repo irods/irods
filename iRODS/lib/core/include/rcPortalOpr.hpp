@@ -6,17 +6,17 @@
 
 
 
-#ifndef RC_PORTAL_OPR_H
-#define RC_PORTAL_OPR_H
+#ifndef RC_PORTAL_OPR_HPP
+#define RC_PORTAL_OPR_HPP
 
-#include "rods.h"
-#include "rodsError.h"
-#include "objInfo.h"
-#include "dataObjInpOut.h"
+#include "rods.hpp"
+#include "rodsError.hpp"
+#include "objInfo.hpp"
+#include "dataObjInpOut.hpp"
 #ifdef RBUDP_TRANSFER
-#include "QUANTAnet_rbudpBase_c.h"
-#include "QUANTAnet_rbudpSender_c.h"
-#include "QUANTAnet_rbudpReceiver_c.h"
+#include "QUANTAnet_rbudpBase_c.hpp"
+#include "QUANTAnet_rbudpSender_c.hpp"
+#include "QUANTAnet_rbudpReceiver_c.hpp"
 #endif
 #ifdef  __cplusplus
 extern "C" {

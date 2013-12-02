@@ -6,7 +6,7 @@
 #include <amqp_framing.h>
 #include <time.h>
 #include <msgpack.h>
-#include "rodsClient.h"
+#include "rodsClient.hpp"
 
 #define PROD_CHAN	1
 #define CONS_CHAN	2

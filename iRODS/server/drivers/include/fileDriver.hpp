@@ -6,22 +6,22 @@
 
 
 
-#ifndef FILE_DRIVER_H
-#define FILE_DRIVER_H
+#ifndef FILE_DRIVER_HPP
+#define FILE_DRIVER_HPP
 
 #ifndef windows_platform
 #include <dirent.h>
 #endif
 
-#include "rods.h"
-#include "rcConnect.h"
-#include "objInfo.h"
-#include "msParam.h"
+#include "rods.hpp"
+#include "rcConnect.hpp"
+#include "objInfo.hpp"
+#include "msParam.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_error.h"
-#include "eirods_first_class_object.h"
+#include "eirods_error.hpp"
+#include "eirods_first_class_object.hpp"
 eirods::error fileCreate  ( rsComm_t*, eirods::first_class_object_ptr );
 eirods::error fileOpen    ( rsComm_t*, eirods::first_class_object_ptr );
 eirods::error fileRead    ( rsComm_t*, eirods::first_class_object_ptr, void*, int );

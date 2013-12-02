@@ -2,19 +2,19 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_resource_manager.h"
-#include "eirods_log.h"
-#include "eirods_string_tokenize.h"
-#include "eirods_stacktrace.h"
+#include "eirods_resource_manager.hpp"
+#include "eirods_log.hpp"
+#include "eirods_string_tokenize.hpp"
+#include "eirods_stacktrace.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "getRescQuota.h"
-#include "eirods_children_parser.h"
-#include "rsGlobalExtern.h"
-#include "generalAdmin.h"
-#include "phyBundleColl.h"
-#include "miscServerFunct.h"
+#include "getRescQuota.hpp"
+#include "eirods_children_parser.hpp"
+#include "rsGlobalExtern.hpp"
+#include "generalAdmin.hpp"
+#include "phyBundleColl.hpp"
+#include "miscServerFunct.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes

@@ -1,13 +1,13 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-#ifndef RODS_PATH_H
-#define RODS_PATH_H
+#ifndef RODS_PATH_HPP
+#define RODS_PATH_HPP
 
-#include "rodsDef.h"
-#include "rods.h"
-#include "getRodsEnv.h"
-#include "rodsType.h"
-#include "objStat.h"
+#include "rodsDef.hpp"
+#include "rods.hpp"
+#include "getRodsEnv.hpp"
+#include "rodsType.hpp"
+#include "objStat.hpp"
 
 #include <iostream>
 #include <iterator>

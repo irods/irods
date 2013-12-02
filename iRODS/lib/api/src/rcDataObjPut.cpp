@@ -10,13 +10,13 @@
 /* This is script-generated code.  */ 
 /* See dataObjPut.h for a description of this API call.*/
 
-#include "dataObjPut.h"
-#include "rcPortalOpr.h"
-#include "oprComplete.h"
+#include "dataObjPut.hpp"
+#include "rcPortalOpr.hpp"
+#include "oprComplete.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_client_server_negotiation.h"
+#include "eirods_client_server_negotiation.hpp"
 
 /**
  * \fn rcDataObjPut (rcComm_t *conn, dataObjInp_t *dataObjInp, 

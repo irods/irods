@@ -1,7 +1,7 @@
 /* This is script-generated code.  */
 /* See fileTruncate.h for a description of this API call.*/
 
-#include "fileTruncate.h"
+#include "fileTruncate.hpp"
 
 int
 rcFileTruncate (rcComm_t *conn, fileOpenInp_t *fileTruncateInp)

@@ -3,8 +3,8 @@
 /* This is script-generated code (for the most part).  */ 
 /* See simpleQuery.h for a description of this API call.*/
 
-#include "simpleQuery.h"
-#include "icatHighLevelRoutines.h"
+#include "simpleQuery.hpp"
+#include "icatHighLevelRoutines.hpp"
 
 int
 rsSimpleQuery (rsComm_t *rsComm, simpleQueryInp_t *simpleQueryInp, 

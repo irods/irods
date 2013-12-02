@@ -26,8 +26,8 @@
 
 #include <stdio.h>
 
-#include "rodsClient.h"
-#include "parseCommandLine.h"
+#include "rodsClient.hpp"
+#include "parseCommandLine.hpp"
 
 #define BIG_STR 200
 

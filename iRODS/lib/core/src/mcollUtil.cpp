@@ -1,10 +1,10 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-#include "rodsPath.h"
-#include "rodsErrorTable.h"
-#include "rodsLog.h"
-#include "mcollUtil.h"
-#include "miscUtil.h"
+#include "rodsPath.hpp"
+#include "rodsErrorTable.hpp"
+#include "rodsLog.hpp"
+#include "mcollUtil.hpp"
+#include "miscUtil.hpp"
 
 /* redefine of some input option */
 #define syncCacheDir	sizeFlag

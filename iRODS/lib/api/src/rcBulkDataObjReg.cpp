@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See bulkDataObjReg.h for a description of this API call.*/
 
-#include "bulkDataObjReg.h"
+#include "bulkDataObjReg.hpp"
 
 int
 rcBulkDataObjReg (rcComm_t *conn, genQueryOut_t *bulkDataObjRegInp,

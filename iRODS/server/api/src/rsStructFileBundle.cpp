@@ -5,20 +5,20 @@
 /* rsStructFileBundle.c. See structFileBundle.h for a description of 
  * this API call.*/
 
-#include "apiHeaderAll.h"
-#include "objMetaOpr.h"
-#include "dataObjOpr.h"
-#include "physPath.h"
-#include "miscServerFunct.h"
-#include "rcGlobalExtern.h"
-#include "reGlobalsExtern.h"
+#include "apiHeaderAll.hpp"
+#include "objMetaOpr.hpp"
+#include "dataObjOpr.hpp"
+#include "physPath.hpp"
+#include "miscServerFunct.hpp"
+#include "rcGlobalExtern.hpp"
+#include "reGlobalsExtern.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_log.h"
-#include "eirods_file_object.h"
-#include "eirods_stacktrace.h"
-#include "eirods_resource_redirect.h"
+#include "eirods_log.hpp"
+#include "eirods_file_object.hpp"
+#include "eirods_stacktrace.hpp"
+#include "eirods_resource_redirect.hpp"
 
 int
 rsStructFileBundle (rsComm_t *rsComm,

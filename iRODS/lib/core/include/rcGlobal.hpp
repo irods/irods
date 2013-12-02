@@ -2,17 +2,17 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* rcGlobal.h - global definition for client API */
 
-#ifndef RC_GLOBAL_H
-#define RC_GLOBAL_H
+#ifndef RC_GLOBAL_HPP
+#define RC_GLOBAL_HPP
 
-#include "rods.h"
-#include "rodsPackTable.h"		/* globally declare RodsPackTable */
-#include "apiPackTable.h"		/* globally declare apiPackTable */
-#include "apiTable.h"   /* contains global RsApiTable */
-#include "objInfo.h" 
-#include "rodsGenQuery.h" 
-#include "rodsGeneralUpdate.h" 
-#include "irodsGuiProgressCallback.h"
+#include "rods.hpp"
+#include "rodsPackTable.hpp"		/* globally declare RodsPackTable */
+#include "apiPackTable.hpp"		/* globally declare apiPackTable */
+#include "apiTable.hpp"   /* contains global RsApiTable */
+#include "objInfo.hpp" 
+#include "rodsGenQuery.hpp" 
+#include "rodsGeneralUpdate.hpp" 
+#include "irodsGuiProgressCallback.hpp"
 
 int ProcessType = CLIENT_PT;
 

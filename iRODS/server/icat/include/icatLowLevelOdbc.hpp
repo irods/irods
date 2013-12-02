@@ -5,8 +5,8 @@
   which is for Postgres or MySQL.
  */
 
-#ifndef CLL_PSQ_H
-#define CLL_PSQ_H
+#ifndef CLL_PSQ_HPP
+#define CLL_PSQ_HPP
 
 #ifdef NEW_ODBC
 #include "sql.h"
@@ -22,8 +22,8 @@
 #define SQL_SQLSTATE_SIZE     6
 #endif
 
-#include "rods.h"
-#include "icatMidLevelRoutines.h"
+#include "rods.hpp"
+#include "icatMidLevelRoutines.hpp"
 
 #define MAX_BIND_VARS  120 // JMC - backport 4848 ( 40->120 )
 

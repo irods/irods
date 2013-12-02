@@ -6,11 +6,11 @@
 
 
 
-#ifndef RODS_CLIENT_H
-#define RODS_CLIENT_H
+#ifndef RODS_CLIENT_HPP
+#define RODS_CLIENT_HPP
 
-#include "rods.h"
-#include "apiHeaderAll.h"
+#include "rods.hpp"
+#include "apiHeaderAll.hpp"
 
 /* Struct used to monitor transfer progress in getUtil and putUtil functions.*/
 typedef struct TransferProgress {

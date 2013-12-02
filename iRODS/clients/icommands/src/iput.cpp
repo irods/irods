@@ -4,10 +4,10 @@
  * iput - The irods put utility
 */
 
-#include "rodsClient.h"
-#include "parseCommandLine.h"
-#include "rodsPath.h"
-#include "putUtil.h"
+#include "rodsClient.hpp"
+#include "parseCommandLine.hpp"
+#include "rodsPath.hpp"
+#include "putUtil.hpp"
 void usage ();
 
 int

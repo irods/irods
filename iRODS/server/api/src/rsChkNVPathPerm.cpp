@@ -5,17 +5,17 @@
 /* This is script-generated code (for the most part).  */ 
 /* See chkNVPathPerm.h for a description of this API call.*/
 
-#include "chkNVPathPerm.h"
-#include "fileStat.h"
-#include "miscServerFunct.h"
-#include "dataObjOpr.h"
+#include "chkNVPathPerm.hpp"
+#include "fileStat.hpp"
+#include "miscServerFunct.hpp"
+#include "dataObjOpr.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_log.h"
-#include "eirods_file_object.h"
-#include "eirods_stacktrace.h"
-#include "eirods_resource_backport.h"
+#include "eirods_log.hpp"
+#include "eirods_file_object.hpp"
+#include "eirods_stacktrace.hpp"
+#include "eirods_resource_backport.hpp"
 
 int
 rsChkNVPathPerm (rsComm_t *rsComm, fileOpenInp_t *chkNVPathPermInp)

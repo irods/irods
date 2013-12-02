@@ -1,9 +1,9 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
-#include "reGlobalsExtern.h"
-#include "resource.h"
-#include "dataObjOpr.h"
+#include "reGlobalsExtern.hpp"
+#include "resource.hpp"
+#include "dataObjOpr.hpp"
 
 extern char *rmemmove (void *dest, void *src, int strLen, int maxLen);
 

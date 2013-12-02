@@ -2,11 +2,11 @@
  *** For full copyright notice please refer to files in the COPYRIGHT directory                ***/
 /* Written by Jean-Yves Nief of CCIN2P3 and copyright assigned to Data Intensive Cyberinfrastructure Foundation */
 
-#include "rodsPath.h"
-#include "rodsErrorTable.h"
-#include "rodsLog.h"
-#include "scanUtil.h"
-#include "miscUtil.h"
+#include "rodsPath.hpp"
+#include "rodsErrorTable.hpp"
+#include "rodsLog.hpp"
+#include "scanUtil.hpp"
+#include "miscUtil.hpp"
 
 int
 scanObj (rcComm_t *conn, rodsArguments_t *myRodsArgs, rodsPathInp_t *rodsPathInp, char hostname[LONG_NAME_LEN])

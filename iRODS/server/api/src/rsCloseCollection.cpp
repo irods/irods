@@ -3,11 +3,11 @@
 /* rsCloseCollection.c
  */
 
-#include "openCollection.h"
-#include "closeCollection.h"
-#include "objMetaOpr.h"
-#include "rcGlobalExtern.h"
-#include "rsGlobalExtern.h"
+#include "openCollection.hpp"
+#include "closeCollection.hpp"
+#include "objMetaOpr.hpp"
+#include "rcGlobalExtern.hpp"
+#include "rsGlobalExtern.hpp"
 
 int
 rsCloseCollection (rsComm_t *rsComm, int *handleInxInp)

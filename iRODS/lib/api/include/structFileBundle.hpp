@@ -4,17 +4,17 @@
  * script
  */
 
-#ifndef STRUCT_FILE_BUNDLE_H
-#define STRUCT_FILE_BUNDLE_H
+#ifndef STRUCT_FILE_BUNDLE_HPP
+#define STRUCT_FILE_BUNDLE_HPP
 
 /* This is a Object File I/O call */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "structFileExtAndReg.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "structFileExtAndReg.hpp"
 
 #if defined(RODS_SERVER)
 #define RS_STRUCT_FILE_BUNDLE rsStructFileBundle

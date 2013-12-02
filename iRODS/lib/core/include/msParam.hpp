@@ -6,20 +6,20 @@
 
 
 
-#ifndef MS_PARAM_H
-#define MS_PARAM_H
+#ifndef MS_PARAM_HPP
+#define MS_PARAM_HPP
 
-#include "rods.h"
-#include "rodsError.h"
-#include "objInfo.h"
-#include "dataObjCopy.h"
-#include "structFileExtAndReg.h"
-#include "execCmd.h"
-#include "rodsPath.h"
+#include "rods.hpp"
+#include "rodsError.hpp"
+#include "objInfo.hpp"
+#include "dataObjCopy.hpp"
+#include "structFileExtAndReg.hpp"
+#include "execCmd.hpp"
+#include "rodsPath.hpp"
 #ifdef NETCDF_API
-#include "ncInqId.h"
-#include "ncGetVarsByType.h"
-#include "nccfGetVara.h"
+#include "ncInqId.hpp"
+#include "ncGetVarsByType.hpp"
+#include "nccfGetVara.hpp"
 #endif
 
 

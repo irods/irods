@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See subStructFileClosedir.h for a description of this API call.*/
 
-#include "subStructFileClosedir.h"
+#include "subStructFileClosedir.hpp"
 
 int
 rcSubStructFileClosedir (rcComm_t *conn, subStructFileFdOprInp_t *subStructFileClosedirInp)

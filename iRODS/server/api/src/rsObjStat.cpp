@@ -3,17 +3,17 @@
 /* rsObjStat.c
  */
 
-#include "objStat.h"
-#include "rcMisc.h"
-#include "genQuery.h"
-#include "querySpecColl.h"
-#include "objMetaOpr.h"
-#include "collection.h"
-#include "specColl.h"
-#include "resource.h"
-#include "rcGlobalExtern.h"
-#include "rsGlobalExtern.h"
-#include "dataObjClose.h"
+#include "objStat.hpp"
+#include "rcMisc.hpp"
+#include "genQuery.hpp"
+#include "querySpecColl.hpp"
+#include "objMetaOpr.hpp"
+#include "collection.hpp"
+#include "specColl.hpp"
+#include "resource.hpp"
+#include "rcGlobalExtern.hpp"
+#include "rsGlobalExtern.hpp"
+#include "dataObjClose.hpp"
 
 int
 rsObjStat (rsComm_t *rsComm, dataObjInp_t *dataObjInp,

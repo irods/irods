@@ -4,8 +4,8 @@
 #ifndef __EIRODS_OPERATION_RULE_EXECUTION_MANAGER_FACTORY_H__
 #define __EIRODS_OPERATION_RULE_EXECUTION_MANAGER_FACTORY_H__
 
-#include "eirods_operation_rule_execution_manager.h"
-#include "eirods_operation_rule_execution_manager_no_op.h"
+#include "eirods_operation_rule_execution_manager.hpp"
+#include "eirods_operation_rule_execution_manager_no_op.hpp"
 
 namespace eirods {
 #if 0

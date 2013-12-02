@@ -6,10 +6,10 @@
  * irm - The irods rm utility
  */
 
-#include "rodsClient.h"
-#include "parseCommandLine.h"
-#include "rodsPath.h"
-#include "rmUtil.h"
+#include "rodsClient.hpp"
+#include "parseCommandLine.hpp"
+#include "rodsPath.hpp"
+#include "rmUtil.hpp"
 void usage ();
 
 int

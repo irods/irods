@@ -5,17 +5,17 @@
 /* This is script-generated code (for the most part).  */ 
 /* See fileRmdir.h for a description of this API call.*/
 
-#include "fileRmdir.h"
-#include "fileOpendir.h"
-#include "fileReaddir.h"
-#include "fileClosedir.h"
-#include "miscServerFunct.h"
-//#include "tarSubStructFileDriver.h"
+#include "fileRmdir.hpp"
+#include "fileOpendir.hpp"
+#include "fileReaddir.hpp"
+#include "fileClosedir.hpp"
+#include "miscServerFunct.hpp"
+//#include "tarSubStructFileDriver.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods include
-#include "eirods_log.h"
-#include "eirods_collection_object.h"
+#include "eirods_log.hpp"
+#include "eirods_collection_object.hpp"
 
 #define CACHE_DIR_STR "cacheDir" // FIXME JMC - need a better place for this.  also used in tar plugin
 

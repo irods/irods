@@ -7,11 +7,11 @@
  */
 
 
-#include "packStruct.h"
-#include "rodsLog.h"
-#include "rcGlobalExtern.h"
-#include "base64.h"
-#include "rcMisc.h"
+#include "packStruct.hpp"
+#include "rodsLog.hpp"
+#include "rcGlobalExtern.hpp"
+#include "base64.hpp"
+#include "rcMisc.hpp"
 
 #include <iostream>
 

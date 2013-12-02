@@ -10,10 +10,10 @@
  setup, so both this and initServer read thru the file.
 */
 
-#include "rods.h"
+#include "rods.hpp"
 
-#include "readServerConfig.h"
-#include "initServer.h"
+#include "readServerConfig.hpp"
+#include "initServer.hpp"
 
 #include <string>
 #include <algorithm>

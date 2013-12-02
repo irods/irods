@@ -3,11 +3,11 @@
 /* rsNcRegGlobalAttr.c
  */
 
-#include "ncRegGlobalAttr.h"
-#include "ncInq.h"
-#include "ncClose.h"
-#include "modAVUMetadata.h"
-#include "icatHighLevelRoutines.h"
+#include "ncRegGlobalAttr.hpp"
+#include "ncInq.hpp"
+#include "ncClose.hpp"
+#include "modAVUMetadata.hpp"
+#include "icatHighLevelRoutines.hpp"
 
 int
 rsNcRegGlobalAttr (rsComm_t *rsComm, ncRegGlobalAttrInp_t *ncRegGlobalAttrInp)

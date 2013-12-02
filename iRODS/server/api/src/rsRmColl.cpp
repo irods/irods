@@ -5,16 +5,16 @@
 /* rsRmColl.c
  */
 
-#include "rmCollOld.h"
-#include "rmColl.h"
-#include "objMetaOpr.h"
-#include "specColl.h"
-#include "icatHighLevelRoutines.h"
-#include "openCollection.h"
-#include "readCollection.h"
-#include "closeCollection.h"
-#include "dataObjUnlink.h"
-#include "rsApiHandler.h"
+#include "rmCollOld.hpp"
+#include "rmColl.hpp"
+#include "objMetaOpr.hpp"
+#include "specColl.hpp"
+#include "icatHighLevelRoutines.hpp"
+#include "openCollection.hpp"
+#include "readCollection.hpp"
+#include "closeCollection.hpp"
+#include "dataObjUnlink.hpp"
+#include "rsApiHandler.hpp"
 
 int
 rsRmColl (rsComm_t *rsComm, collInp_t *rmCollInp,

@@ -11,8 +11,8 @@
 
 
 
-#ifndef RODS_DEF_H
-#define RODS_DEF_H
+#ifndef RODS_DEF_HPP
+#define RODS_DEF_HPP
 
 #include <stdio.h>
 #include <errno.h>
@@ -37,7 +37,7 @@
 
 #ifdef _WIN32
 #include <winsock2.h>
-#include "dirent.h"
+#include "dirent.hpp"
 #endif
 
 #ifndef _WIN32
@@ -55,7 +55,7 @@
 #include <netinet/tcp.h>
 #endif
 
-#include "eirods_log.h"
+#include "eirods_log.hpp"
 
 #define HEADER_TYPE_LEN 128 /* changed by Raja to 128 from 16 */
 #define TIME_LEN        32

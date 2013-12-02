@@ -3,18 +3,18 @@
 /* dataObjChksum.h
  */
 
-#ifndef DATA_OBJ_CHKSUM_H
-#define DATA_OBJ_CHKSUM_H
+#ifndef DATA_OBJ_CHKSUM_HPP
+#define DATA_OBJ_CHKSUM_HPP
 
 /* This is a Object File I/O API call */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "dataObjInpOut.h"
-#include "fileChksum.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "dataObjInpOut.hpp"
+#include "fileChksum.hpp"
 
 #if defined(RODS_SERVER)
 #define RS_DATA_OBJ_CHKSUM rsDataObjChksum

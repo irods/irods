@@ -1,12 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "TestBase.h"
-#include "rodsClient.h"
-#include "parseCommandLine.h"
-#include "readServerConfig.h"
-#include "rodsUser.h"
-#include "icatHighLevelRoutines.h"
-#include "icatMidLevelRoutines.h"
+#include "TestBase.hpp"
+#include "rodsClient.hpp"
+#include "parseCommandLine.hpp"
+#include "readServerConfig.hpp"
+#include "rodsUser.hpp"
+#include "icatHighLevelRoutines.hpp"
+#include "icatMidLevelRoutines.hpp"
 
 #include "../../icat/src/icatHighLevelRoutines.c"
 

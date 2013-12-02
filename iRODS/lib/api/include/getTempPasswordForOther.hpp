@@ -10,15 +10,15 @@
    way to operate on behalf of other users.
 */
 
-#ifndef GET_TEMP_PASSWORD_FOR_OTHER_H
-#define GET_TEMP_PASSWORD_FOR_OTHER_H
+#ifndef GET_TEMP_PASSWORD_FOR_OTHER_HPP
+#define GET_TEMP_PASSWORD_FOR_OTHER_HPP
 
 /* This is a high level Metadata type API call */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
 
 typedef struct {
    char *otherUser;

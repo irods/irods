@@ -1,8 +1,8 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
 
-#ifndef TRAVERSAL_INSTANCE_H
-#define TRAVERSAL_INSTANCE_H
+#ifndef TRAVERSAL_INSTANCE_HPP
+#define TRAVERSAL_INSTANCE_HPP
 
 #define TRAVERSE_PTR_ARRAY(type, size, f) \
 	  int i; \

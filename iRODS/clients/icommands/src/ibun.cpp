@@ -4,10 +4,10 @@
  * ibun - bundle files operation
 */
 
-#include "rodsClient.h"
-#include "parseCommandLine.h"
-#include "rodsPath.h"
-#include "bunUtil.h"
+#include "rodsClient.hpp"
+#include "parseCommandLine.hpp"
+#include "rodsPath.hpp"
+#include "bunUtil.hpp"
 void usage ();
 
 int

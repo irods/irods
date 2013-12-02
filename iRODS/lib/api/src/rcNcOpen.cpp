@@ -8,7 +8,7 @@
 /* This is script-generated code.  */ 
 /* See ncOpen.h for a description of this API call.*/
 
-#include "ncOpen.h"
+#include "ncOpen.hpp"
 
 /**
  * \fn rcNcOpen (rcComm_t *conn, ncOpenInp_t *ncOpenInp, int *ncid)

@@ -3,7 +3,7 @@
 /* This is script-generated code.  */ 
 /* See rcRuleExecSubmit.h for a description of this API call.*/
 
-#include "ruleExecSubmit.h"
+#include "ruleExecSubmit.hpp"
 
 int
 rcRuleExecSubmit (rcComm_t *conn, ruleExecSubmitInp_t *ruleExecSubmitInp,

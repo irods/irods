@@ -3,7 +3,7 @@
 /* This is script-generated code.  */ 
 /* See fileChksum.h for a description of this API call.*/
 
-#include "fileChksum.h"
+#include "fileChksum.hpp"
 
 int
 rcFileChksum (rcComm_t *conn, fileChksumInp_t *fileChksumInp,

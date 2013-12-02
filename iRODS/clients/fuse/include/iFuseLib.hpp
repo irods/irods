@@ -2,11 +2,11 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* iFuseLib.h - Header for for iFuseLib.c */
 
-#ifndef I_FUSE_LIB_H
-#define I_FUSE_LIB_H
+#ifndef I_FUSE_LIB_HPP
+#define I_FUSE_LIB_HPP
 
-#include "rodsClient.h"
-#include "rodsPath.h"
+#include "rodsClient.hpp"
+#include "rodsPath.hpp"
 
 #define CACHE_FUSE_PATH         1
 #ifdef CACHE_FUSE_PATH

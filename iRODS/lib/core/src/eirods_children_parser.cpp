@@ -1,8 +1,8 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
-#include "eirods_children_parser.h"
-#include "eirods_log.h"
-#include "rodsErrorTable.h"
+#include "eirods_children_parser.hpp"
+#include "eirods_log.hpp"
+#include "rodsErrorTable.hpp"
 
 #include <sstream>
 #include <iostream>

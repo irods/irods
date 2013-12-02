@@ -1,7 +1,7 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
-#ifndef LIST_H
-#include "region.h"
+#ifndef LIST_HPP
+#include "region.hpp"
 
 typedef struct listNode ListNode;
 struct listNode {
@@ -30,5 +30,5 @@ void listRemoveNoRegion(List *list, ListNode *node);
 void deleteListNoRegion(List *list);
 void clearListNoRegion(List *list);
 
-#define LIST_H
+#define LIST_HPP
 #endif

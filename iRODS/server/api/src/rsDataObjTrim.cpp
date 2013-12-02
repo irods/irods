@@ -4,21 +4,21 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* See dataObjTrim.h for a description of this API call.*/
 
-#include "dataObjTrim.h"
-#include "dataObjUnlink.h"
-#include "dataObjOpr.h"
-#include "rodsLog.h"
-#include "objMetaOpr.h"
-#include "specColl.h"
-#include "reGlobalsExtern.h"
-#include "reDefines.h"
-#include "reSysDataObjOpr.h"
-#include "getRemoteZoneResc.h"
+#include "dataObjTrim.hpp"
+#include "dataObjUnlink.hpp"
+#include "dataObjOpr.hpp"
+#include "rodsLog.hpp"
+#include "objMetaOpr.hpp"
+#include "specColl.hpp"
+#include "reGlobalsExtern.hpp"
+#include "reDefines.hpp"
+#include "reSysDataObjOpr.hpp"
+#include "getRemoteZoneResc.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_resource_redirect.h"
-#include "eirods_hierarchy_parser.h"
+#include "eirods_resource_redirect.hpp"
+#include "eirods_hierarchy_parser.hpp"
 
 /* rsDataObjTrim - The Api handler of the rcDataObjTrim call - trim down 
  * the number of replica of a file

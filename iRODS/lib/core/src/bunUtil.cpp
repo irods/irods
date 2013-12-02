@@ -1,10 +1,10 @@
 /*** Copyright (c), The BunOprents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-#include "rodsPath.h"
-#include "rodsErrorTable.h"
-#include "rodsLog.h"
-#include "bunUtil.h"
-#include "miscUtil.h"
+#include "rodsPath.hpp"
+#include "rodsErrorTable.hpp"
+#include "rodsLog.hpp"
+#include "bunUtil.hpp"
+#include "miscUtil.hpp"
 
 int
 bunUtil (rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,

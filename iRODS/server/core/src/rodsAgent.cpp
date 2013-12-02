@@ -7,22 +7,22 @@
  */
 
 #include <syslog.h>
-#include "rodsAgent.h"
-#include "reconstants.h"
-#include "rsApiHandler.h"
-#include "icatHighLevelRoutines.h"
-#include "miscServerFunct.h"
+#include "rodsAgent.hpp"
+#include "reconstants.hpp"
+#include "rsApiHandler.hpp"
+#include "icatHighLevelRoutines.hpp"
+#include "miscServerFunct.hpp"
 #ifdef windows_platform
-#include "rsLog.h"
+#include "rsLog.hpp"
 static void NtAgentSetEnvsFromArgs(int ac, char **av);
 #endif
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_dynamic_cast.h"
-#include "eirods_signal.h"
-#include "eirods_client_server_negotiation.h"
-#include "eirods_network_factory.h"
+#include "eirods_dynamic_cast.hpp"
+#include "eirods_signal.hpp"
+#include "eirods_client_server_negotiation.hpp"
+#include "eirods_network_factory.hpp"
 
 /* #define SERVER_DEBUG 1   */
 int

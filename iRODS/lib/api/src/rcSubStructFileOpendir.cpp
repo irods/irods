@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See bunSubOpendir.h for a description of this API call.*/
 
-#include "subStructFileOpendir.h"
+#include "subStructFileOpendir.hpp"
 
 int
 rcSubStructFileOpendir (rcComm_t *conn, subFile_t *subFile)

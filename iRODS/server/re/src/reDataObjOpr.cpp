@@ -6,10 +6,10 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
-#include "reDataObjOpr.h"
-#include "apiHeaderAll.h"
-#include "rsApiHandler.h"
-#include "collection.h"
+#include "reDataObjOpr.hpp"
+#include "apiHeaderAll.hpp"
+#include "rsApiHandler.hpp"
+#include "collection.hpp"
 
 /**
  * \fn msiDataObjCreate (msParam_t *inpParam1, msParam_t *msKeyValStr, 

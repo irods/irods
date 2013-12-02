@@ -6,12 +6,12 @@
 
 
 
-#ifndef API_HANDLER_H
-#define API_HANDLER_H
+#ifndef API_HANDLER_HPP
+#define API_HANDLER_HPP
 
-#include "rods.h"
-#include "sockComm.h"
-#include "packStruct.h"
+#include "rods.hpp"
+#include "sockComm.hpp"
+#include "packStruct.hpp"
 
 #ifdef  __cplusplus
 extern "C" {

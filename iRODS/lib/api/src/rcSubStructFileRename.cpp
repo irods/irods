@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See subStructFileRename.h for a description of this API call.*/
 
-#include "subStructFileRename.h"
+#include "subStructFileRename.hpp"
 
 int
 rcSubStructFileRename (rcComm_t *conn, subStructFileRenameInp_t *subStructFileRenameInp)

@@ -23,7 +23,7 @@
 #ifndef _QUANTAPLUS_RBUDPRECEIVER_C
 #define _QUANTAPLUS_RBUDPRECEIVER_C
 
-#include "QUANTAnet_rbudpBase_c.h"
+#include "QUANTAnet_rbudpBase_c.hpp"
 
 /**
 RBUDP Receiver class.  This class implements the receiver part of RBUDP protocol. First, instantiate the QUANTAnet_rbudpReceiver_c class. Then

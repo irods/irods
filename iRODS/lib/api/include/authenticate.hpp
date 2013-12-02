@@ -3,16 +3,16 @@
 /* Authenticate.h
  */
 
-#ifndef AUTHENTICATE_H
-#define AUTHENTICATE_H
+#ifndef AUTHENTICATE_HPP
+#define AUTHENTICATE_HPP
 
 /* This is a high level file type API call */
 
-#include "rods.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "icatDefines.h"
+#include "rods.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "icatDefines.hpp"
 
 #define AUTH_SUBOP_REQ_AUTH "request challenge"
 #define AUTH_SUBOP_RESP "challenge response"

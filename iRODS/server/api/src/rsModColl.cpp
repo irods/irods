@@ -3,8 +3,8 @@
 /* modColl.c
  */
 
-#include "modColl.h"
-#include "icatHighLevelRoutines.h"
+#include "modColl.hpp"
+#include "icatHighLevelRoutines.hpp"
 
 int
 rsModColl (rsComm_t *rsComm, collInp_t *modCollInp)

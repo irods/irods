@@ -5,7 +5,7 @@
  */
 
 /* script generated code */
-#include "getMiscSvrInfo.h"
+#include "getMiscSvrInfo.hpp"
 
 int
 rsGetMiscSvrInfo (rsComm_t *rsComm, miscSvrInfo_t **outSvrInfo)

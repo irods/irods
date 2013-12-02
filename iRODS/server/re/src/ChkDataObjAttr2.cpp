@@ -7,16 +7,16 @@
 #if !defined(osx_platform)
 #include <values.h>
 #endif
-#include "apiHeaderAll.h"
-#include "objStat.h"
-#include "miscUtil.h"
-#include "reDataObjOpr.h"
-#include "reGlobalsExtern.h"
-#include "reDataRel.h"
+#include "apiHeaderAll.hpp"
+#include "objStat.hpp"
+#include "miscUtil.hpp"
+#include "reDataObjOpr.hpp"
+#include "reGlobalsExtern.hpp"
+#include "reDataRel.hpp"
 
 #endif
 
-#include "objStat.h"
+#include "objStat.hpp"
 
 /*
  * \fn msiChkRechkRecompChkSum4DatObjVol2

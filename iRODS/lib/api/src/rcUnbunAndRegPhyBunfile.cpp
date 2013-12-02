@@ -3,7 +3,7 @@
 /* This is script-generated code.  */ 
 /* See unbunAndRegPhyBunfle.h for a description of this API call.*/
 
-#include "unbunAndRegPhyBunfile.h"
+#include "unbunAndRegPhyBunfile.hpp"
 
 int
 rcUnbunAndRegPhyBunfile (rcComm_t *conn, dataObjInp_t *dataObjInp)

@@ -6,7 +6,7 @@
 /* This is script-generated code.  */ 
 /* See ncRegGlobalAttr.h for a description of this API call.*/
 
-#include "ncRegGlobalAttr.h"
+#include "ncRegGlobalAttr.hpp"
 
 /**
  * \fn rcNcRegGlobalAttr (rcComm_t *conn, ncRegGlobalAttrInp_t *ncRegGlobalAttrInp)

@@ -6,17 +6,17 @@
 /* This client/server call is used for ending ICAT transactions, via
  * either a commit or rollback.  */
 
-#ifndef END_TRANSACTION_H
-#define END_TRANSACTION_H
+#ifndef END_TRANSACTION_HPP
+#define END_TRANSACTION_HPP
 
 /* This is a Metadata type API call */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "icatDefines.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "icatDefines.hpp"
 
 typedef struct {
    char *arg0;

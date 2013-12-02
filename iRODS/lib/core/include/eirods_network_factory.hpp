@@ -6,9 +6,9 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_tcp_object.h"
-#include "eirods_ssl_object.h"
-#include "eirods_stacktrace.h"
+#include "eirods_tcp_object.hpp"
+#include "eirods_ssl_object.hpp"
+#include "eirods_stacktrace.hpp"
 
 // =-=-=-=-=-=-=-
 // boost includes

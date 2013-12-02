@@ -6,10 +6,10 @@
 
 
 
-#ifndef RODS_USER_H
-#define RODS_USER_H
+#ifndef RODS_USER_HPP
+#define RODS_USER_HPP
 
-#include "rodsDef.h"
+#include "rodsDef.hpp"
 
 
 

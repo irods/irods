@@ -5,11 +5,11 @@
 /* regDataObj.c
  */
 
-#include "regDataObj.h"
-#include "icatHighLevelRoutines.h"
-#include "fileDriver.h"
+#include "regDataObj.hpp"
+#include "icatHighLevelRoutines.hpp"
+#include "fileDriver.hpp"
 
-#include "eirods_file_object.h"
+#include "eirods_file_object.hpp"
 
 /* rsRegDataObj - This call is strictly an API handler and should not be 
  * called directly in the server. For server calls, use svrRegDataObj

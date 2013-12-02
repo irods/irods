@@ -2,10 +2,10 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_collection_object.h"
-#include "eirods_resource_manager.h"
-#include "eirods_hierarchy_parser.h"
-#include "eirods_stacktrace.h"
+#include "eirods_collection_object.hpp"
+#include "eirods_resource_manager.hpp"
+#include "eirods_hierarchy_parser.hpp"
+#include "eirods_stacktrace.hpp"
 
 extern eirods::resource_manager resc_mgr;
 

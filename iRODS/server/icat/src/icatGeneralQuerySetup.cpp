@@ -28,11 +28,11 @@
   be related together via the sql text string.  This creates a tree
   structure describing the ICAT schema.
 */
-#include "rodsClient.h"
-#include "icatHighLevelRoutines.h"
+#include "rodsClient.hpp"
+#include "icatHighLevelRoutines.hpp"
 #ifdef EXTENDED_ICAT
 #define EXTENDED_ICAT_TABLES_2 1
-#include "extendedICAT.h"
+#include "extendedICAT.hpp"
 #endif
 
 void

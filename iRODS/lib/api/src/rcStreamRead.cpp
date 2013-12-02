@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See streamRead.h for a description of this API call.*/
 
-#include "streamRead.h"
+#include "streamRead.hpp"
 
 int
 rcStreamRead (rcComm_t *conn, fileReadInp_t *streamReadInp,

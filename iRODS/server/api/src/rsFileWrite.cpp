@@ -7,16 +7,16 @@
  */
 
 /* script generated code */
-#include "fileWrite.h"
-#include "miscServerFunct.h"
-#include "rsGlobalExtern.h"
+#include "fileWrite.hpp"
+#include "miscServerFunct.hpp"
+#include "rsGlobalExtern.hpp"
 #include <sstream>
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_log.h"
-#include "eirods_file_object.h"
-#include "eirods_stacktrace.h"
+#include "eirods_log.hpp"
+#include "eirods_file_object.hpp"
+#include "eirods_stacktrace.hpp"
 
 int
 rsFileWrite (rsComm_t *rsComm, fileWriteInp_t *fileWriteInp,

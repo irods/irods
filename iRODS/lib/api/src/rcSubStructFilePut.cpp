@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See subStructFilePut.h for a description of this API call.*/
 
-#include "subStructFilePut.h"
+#include "subStructFilePut.hpp"
 
 int
 rcSubStructFilePut (rcComm_t *conn, subFile_t *subFile, 

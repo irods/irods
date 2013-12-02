@@ -3,17 +3,17 @@
 /* phyPathReg.h
  */
 
-#ifndef PHY_PATH_REG_H
-#define PHY_PATH_REG_H
+#ifndef PHY_PATH_REG_HPP
+#define PHY_PATH_REG_HPP
 
 /* This is a Object File I/O API call */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "dataObjInpOut.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "dataObjInpOut.hpp"
 
 #if defined(RODS_SERVER)
 #define RS_PHY_PATH_REG rsPhyPathReg

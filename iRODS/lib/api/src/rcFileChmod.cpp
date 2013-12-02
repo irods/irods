@@ -3,7 +3,7 @@
 /* This is script-generated code.  */ 
 /* See fileChmod.h for a description of this API call.*/
 
-#include "fileChmod.h"
+#include "fileChmod.hpp"
 
 int
 rcFileChmod (rcComm_t *conn, fileChmodInp_t *fileChmodInp)

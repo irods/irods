@@ -1,8 +1,8 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 
-#ifndef EIRODS_PLUGIN_TABLE_H
-#define EIRODS_PLUGIN_TABLE_H
+#ifndef EIRODS_PLUGIN_TABLE_HPP
+#define EIRODS_PLUGIN_TABLE_HPP
 
 // =-=-=-=-=-=-=-
 // boost includes
@@ -10,10 +10,10 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_hash.h"
-#include "eirods_error.h"
+#include "eirods_hash.hpp"
+#include "eirods_error.hpp"
 
-#include "rodsLog.h"
+#include "rodsLog.hpp"
 
 namespace eirods {
 

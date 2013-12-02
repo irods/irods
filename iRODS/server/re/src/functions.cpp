@@ -1,15 +1,15 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
-#include "index.h"
-#include "functions.h"
-#include "arithmetics.h"
-#include "datetime.h"
-#include "cache.h"
-#include "configuration.h"
+#include "index.hpp"
+#include "functions.hpp"
+#include "arithmetics.hpp"
+#include "datetime.hpp"
+#include "cache.hpp"
+#include "configuration.hpp"
 #ifndef DEBUG
-#include "apiHeaderAll.h"
-#include "rsApiHandler.h"
-#include "dataObjOpr.h"
+#include "apiHeaderAll.hpp"
+#include "rsApiHandler.hpp"
+#include "dataObjOpr.hpp"
 #else
 int
 getDataObjInfoIncSpecColl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
@@ -20,12 +20,12 @@ dataObjInfo_t **dataObjInfo);
 #include <boost/regex.h>
 
 #ifndef DEBUG
-#include "execMyRule.h"
-#include "msParam.h"
-#include "reFuncDefs.h"
-#include "rsMisc.h"
-#include "stringOpr.h"
-#include "miscServerFunct.h"
+#include "execMyRule.hpp"
+#include "msParam.hpp"
+#include "reFuncDefs.hpp"
+#include "rsMisc.hpp"
+#include "stringOpr.hpp"
+#include "miscServerFunct.hpp"
 #endif
 
 #define GC_BEGIN Region *_rnew = make_region(0, NULL), *_rnew2 = NULL;

@@ -13,12 +13,12 @@
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "rcConnect.h"
+#include "rcConnect.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_error.h"
-#include "eirods_lookup_table.h"
+#include "eirods_error.hpp"
+#include "eirods_lookup_table.hpp"
 
 /// =-=-=-=-=-=-=-
 /// @brief interface plugin loader will used to load the 

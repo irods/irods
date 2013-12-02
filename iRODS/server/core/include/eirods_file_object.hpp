@@ -5,13 +5,13 @@
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "fileCreate.h"
-#include "initServer.h"
+#include "fileCreate.hpp"
+#include "initServer.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_data_object.h"
-#include "eirods_physical_object.h"
+#include "eirods_data_object.hpp"
+#include "eirods_physical_object.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes

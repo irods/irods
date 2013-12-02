@@ -5,21 +5,21 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_native_auth_object.h"
-#include "eirods_auth_object.h"
-#include "eirods_auth_factory.h"
-#include "eirods_auth_plugin.h"
-#include "eirods_auth_manager.h"
-#include "eirods_auth_constants.h"
-#include "eirods_kvp_string_parser.h"
-#include "eirods_pluggable_auth_scheme.h"
+#include "eirods_native_auth_object.hpp"
+#include "eirods_auth_object.hpp"
+#include "eirods_auth_factory.hpp"
+#include "eirods_auth_plugin.hpp"
+#include "eirods_auth_manager.hpp"
+#include "eirods_auth_constants.hpp"
+#include "eirods_kvp_string_parser.hpp"
+#include "eirods_pluggable_auth_scheme.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "authRequest.h"
-#include "authResponse.h"
-#include "authCheck.h"
-#include "miscServerFunct.h"
+#include "authRequest.hpp"
+#include "authResponse.hpp"
+#include "authCheck.hpp"
+#include "miscServerFunct.hpp"
 
 int rsAuthResponse( 
     rsComm_t*          _comm, 

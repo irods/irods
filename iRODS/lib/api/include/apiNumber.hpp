@@ -6,8 +6,8 @@
 
 
 
-#ifndef API_NUMBER_H
-#define API_NUMBER_H
+#ifndef API_NUMBER_HPP
+#define API_NUMBER_HPP
 
 /* 500 - 599 - Internal File I/O API calls */
 #define FILE_CREATE_AN			500

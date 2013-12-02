@@ -3,11 +3,11 @@
 #ifndef windows_platform
 #include <sys/time.h>
 #endif
-#include "rodsPath.h"
-#include "rodsErrorTable.h"
-#include "miscUtil.h"
-#include "rodsLog.h"
-#include "rmUtil.h"
+#include "rodsPath.hpp"
+#include "rodsErrorTable.hpp"
+#include "miscUtil.hpp"
+#include "rodsLog.hpp"
+#include "rmUtil.hpp"
 
 int
 rmUtil (rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,

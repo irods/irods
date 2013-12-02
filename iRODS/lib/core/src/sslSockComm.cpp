@@ -5,9 +5,9 @@
 
 #ifdef USE_SSL
 
-#include "rodsClient.h"
-#include "sslSockComm.h"
-#include "eirods_client_server_negotiation.h"
+#include "rodsClient.hpp"
+#include "sslSockComm.hpp"
+#include "eirods_client_server_negotiation.hpp"
 
 // =-=-=-=-=-=-=-
 // work around for SSL Macro version issues

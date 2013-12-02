@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See bunSubCreate.h for a description of this API call.*/
 
-#include "subStructFileCreate.h"
+#include "subStructFileCreate.hpp"
 
 int
 rcSubStructFileCreate (rcComm_t *conn, subFile_t *subFile)

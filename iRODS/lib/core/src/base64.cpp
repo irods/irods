@@ -2,8 +2,8 @@
  * SiFang 
  */
 
-#include "rodsClient.h"
-#include "base64.h"
+#include "rodsClient.hpp"
+#include "base64.hpp"
 #define OK 0
 
 static const char *codes =

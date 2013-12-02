@@ -3,16 +3,16 @@
 /* ooiGenServReq.h
  */
 
-#ifndef OOI_GEN_SERV_REQ_H
-#define OOI_GEN_SERV_REQ_H
+#ifndef OOI_GEN_SERV_REQ_HPP
+#define OOI_GEN_SERV_REQ_HPP
 
 /* This is a General OOI service request  API call */
 
-#include "rods.h"
-#include "ooiCi.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
+#include "rods.hpp"
+#include "ooiCi.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
 
 #define DEF_OOI_GATEWAY_URL "http://localhost"
 #define DEF_OOI_GATEWAY_PORT "5000"

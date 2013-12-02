@@ -4,21 +4,21 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* See dataObjPhymv.h for a description of this API call.*/
 
-#include "dataObjPhymv.h"
-#include "dataObjRepl.h"
-#include "dataObjOpr.h"
-#include "rodsLog.h"
-#include "objMetaOpr.h"
-#include "specColl.h"
-#include "reGlobalsExtern.h"
-#include "reDefines.h"
-#include "reSysDataObjOpr.h"
-#include "dataObjCreate.h"
-#include "getRemoteZoneResc.h"
+#include "dataObjPhymv.hpp"
+#include "dataObjRepl.hpp"
+#include "dataObjOpr.hpp"
+#include "rodsLog.hpp"
+#include "objMetaOpr.hpp"
+#include "specColl.hpp"
+#include "reGlobalsExtern.hpp"
+#include "reDefines.hpp"
+#include "reSysDataObjOpr.hpp"
+#include "dataObjCreate.hpp"
+#include "getRemoteZoneResc.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_resource_redirect.h"
+#include "eirods_resource_redirect.hpp"
 
 int
 rsDataObjPhymv250 (rsComm_t *rsComm, dataObjInp_t *dataObjInp,

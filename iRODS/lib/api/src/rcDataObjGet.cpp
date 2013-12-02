@@ -12,14 +12,14 @@
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "dataObjGet.h"
-#include "rcPortalOpr.h"
-#include "apiHeaderAll.h"
+#include "dataObjGet.hpp"
+#include "rcPortalOpr.hpp"
+#include "apiHeaderAll.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_client_server_negotiation.h"
-#include "eirods_stacktrace.h"
+#include "eirods_client_server_negotiation.hpp"
+#include "eirods_stacktrace.hpp"
 
 /**
  * \fn rcDataObjGet (rcComm_t *conn, dataObjInp_t *dataObjInp,

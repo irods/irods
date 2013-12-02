@@ -5,14 +5,14 @@
 /* This is script-generated code (for the most part).  */ 
 /* See fileMkdir.h for a description of this API call.*/
 
-#include "fileMkdir.h"
-#include "miscServerFunct.h"
+#include "fileMkdir.hpp"
+#include "miscServerFunct.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_log.h"
-#include "eirods_collection_object.h"
-#include "eirods_stacktrace.h"
+#include "eirods_log.hpp"
+#include "eirods_collection_object.hpp"
+#include "eirods_stacktrace.hpp"
 
 int
 rsFileMkdir (rsComm_t *rsComm, fileMkdirInp_t *fileMkdirInp)

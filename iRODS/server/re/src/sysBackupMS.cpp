@@ -12,17 +12,17 @@
 
 #include <stdlib.h>
 #include <dirent.h>
-#include "rodsDef.h"
-#include "sysBackupMS.h"
-#include "resource.h"
-#include "fileOpr.h"
-#include "physPath.h"
-#include "objMetaOpr.h"
-#include "apiHeaderAll.h"
+#include "rodsDef.hpp"
+#include "sysBackupMS.hpp"
+#include "resource.hpp"
+#include "fileOpr.hpp"
+#include "physPath.hpp"
+#include "objMetaOpr.hpp"
+#include "apiHeaderAll.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_resource_backport.h"
+#include "eirods_resource_backport.hpp"
 
 
 /*

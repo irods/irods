@@ -9,27 +9,27 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #endif
-#include "dataObjOpr.h"
-#include "objMetaOpr.h"
-#include "resource.h"
-#include "collection.h"
-#include "specColl.h"
-#include "physPath.h"
-#include "modDataObjMeta.h"
-#include "ruleExecSubmit.h"
-#include "ruleExecDel.h"
-#include "genQuery.h"
-#include "icatHighLevelRoutines.h"
-#include "reSysDataObjOpr.h"
-#include "miscUtil.h"
-#include "rodsClient.h"
-#include "rsIcatOpr.h"
+#include "dataObjOpr.hpp"
+#include "objMetaOpr.hpp"
+#include "resource.hpp"
+#include "collection.hpp"
+#include "specColl.hpp"
+#include "physPath.hpp"
+#include "modDataObjMeta.hpp"
+#include "ruleExecSubmit.hpp"
+#include "ruleExecDel.hpp"
+#include "genQuery.hpp"
+#include "icatHighLevelRoutines.hpp"
+#include "reSysDataObjOpr.hpp"
+#include "miscUtil.hpp"
+#include "rodsClient.hpp"
+#include "rsIcatOpr.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods include
-#include "eirods_resource_backport.h"
-#include "eirods_log.h"
-#include "eirods_stacktrace.h"
+#include "eirods_resource_backport.hpp"
+#include "eirods_log.hpp"
+#include "eirods_stacktrace.hpp"
 
 #ifdef FILESYSTEM_META
 int

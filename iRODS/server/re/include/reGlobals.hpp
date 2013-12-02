@@ -2,11 +2,11 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* reGlobals.h - header file for globals in the rule engine
  */
-#ifndef RE_GLOBALS_H
-#define RE_GLOBALS_H
+#ifndef RE_GLOBALS_HPP
+#define RE_GLOBALS_HPP
 
 
-#include "reGlobalsExtern.h"
+#include "reGlobalsExtern.hpp"
 
 ruleStruct_t coreRuleStrct;
 rulevardef_t coreRuleVarDef;

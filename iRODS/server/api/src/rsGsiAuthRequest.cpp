@@ -3,10 +3,10 @@
 
 /* See gsiAuthRequest.h for a description of this API call.*/
 
-#include "gsiAuthRequest.h"
-#include "authResponse.h"
-#include "genQuery.h"
-#include "reGlobalsExtern.h"
+#include "gsiAuthRequest.hpp"
+#include "authResponse.hpp"
+#include "genQuery.hpp"
+#include "reGlobalsExtern.hpp"
 
 static int gsiAuthReqStatus=0;
 static int gsiAuthReqError=0;

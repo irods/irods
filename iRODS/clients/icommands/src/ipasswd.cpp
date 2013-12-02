@@ -2,8 +2,8 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
 /* User command to change their password. */
-#include "rods.h"
-#include "rodsClient.h"
+#include "rods.hpp"
+#include "rodsClient.hpp"
 
 void usage (char *prog);
 

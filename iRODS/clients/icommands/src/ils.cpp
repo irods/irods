@@ -2,13 +2,13 @@
  * ils - The irods ls utility
 */
 
-#include "rodsClient.h"
-#include "parseCommandLine.h"
-#include "rodsPath.h"
-#include "lsUtil.h"
+#include "rodsClient.hpp"
+#include "parseCommandLine.hpp"
+#include "rodsPath.hpp"
+#include "lsUtil.hpp"
 
 
-#include "eirods_buffer_encryption.h"
+#include "eirods_buffer_encryption.hpp"
 #include <string>
 #include <iostream>
 

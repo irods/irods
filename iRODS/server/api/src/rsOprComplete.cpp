@@ -1,7 +1,7 @@
 /* rsOprComplete.c */
-#include "oprComplete.h"
-#include "dataObjClose.h"
-#include "rsGlobalExtern.h"
+#include "oprComplete.hpp"
+#include "dataObjClose.hpp"
+#include "rsGlobalExtern.hpp"
 
 int rsOprComplete (rsComm_t *rsComm, int *retval)
 {

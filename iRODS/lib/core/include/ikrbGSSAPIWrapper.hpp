@@ -6,8 +6,8 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <unistd.h>
-#include "rods.h"
-#include "rcGlobalExtern.h"
+#include "rods.hpp"
+#include "rcGlobalExtern.hpp"
 
 #if defined(KRB_AUTH)
 #include <gssapi.h>
@@ -17,7 +17,7 @@
 #include <sys/time.h>           /* for IKRB_TIMING only */
 #include <string.h>
 
-#include "rodsErrorTable.h"
+#include "rodsErrorTable.hpp"
 
 OM_uint32 krb_gss_import_name
 (OM_uint32 *,       /* minor_status */

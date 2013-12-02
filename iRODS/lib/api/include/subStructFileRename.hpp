@@ -5,16 +5,16 @@
 /* subStructFileRename.h  
  */
 
-#ifndef SUB_STRUCT_FILE_RENAME_H
-#define SUB_STRUCT_FILE_RENAME_H
+#ifndef SUB_STRUCT_FILE_RENAME_HPP
+#define SUB_STRUCT_FILE_RENAME_HPP
 
 /* This is Object File I/O type API call */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
 
 typedef struct SubStructFileRenameInp {
     subFile_t subFile;

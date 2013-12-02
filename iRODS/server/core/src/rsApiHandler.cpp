@@ -7,13 +7,13 @@
  * messages
  */
 
-#include "rsApiHandler.h"
-#include "modDataObjMeta.h"
-#include "rcMisc.h"
-#include "miscServerFunct.h"
-#include "regReplica.h"
-#include "unregDataObj.h"
-#include "modAVUMetadata.h"
+#include "rsApiHandler.hpp"
+#include "modDataObjMeta.hpp"
+#include "rcMisc.hpp"
+#include "miscServerFunct.hpp"
+#include "regReplica.hpp"
+#include "unregDataObj.hpp"
+#include "modAVUMetadata.hpp"
 
 #include <boost/thread.hpp>
 #include <boost/thread/mutex.hpp>
@@ -22,13 +22,13 @@
 jmp_buf Jenv;
 
 #ifdef NETCDF_API
-#include "ncGetVarsByType.h"
-#include "ncRegGlobalAttr.h"
+#include "ncGetVarsByType.hpp"
+#include "ncRegGlobalAttr.hpp"
 #endif
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_network_factory.h"
+#include "eirods_network_factory.hpp"
 
 
 int rsApiHandler(

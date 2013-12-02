@@ -1,11 +1,11 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
 
-#ifndef TO_MEMORY_INSTANCE_H
-#define TO_MEMORY_INSTANCE_H
+#ifndef TO_MEMORY_INSTANCE_HPP
+#define TO_MEMORY_INSTANCE_HPP
 
-#include "to.memory.proto.h"
-#include "traversal.instance.h"
+#include "to.memory.proto.hpp"
+#include "traversal.instance.hpp"
 
 #define KEY_SIZE 1024
 

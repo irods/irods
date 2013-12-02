@@ -3,19 +3,19 @@
 /* readCollection.h
  */
 
-#ifndef READ_COLLECTION_H
-#define READ_COLLECTION_H
+#ifndef READ_COLLECTION_HPP
+#define READ_COLLECTION_HPP
 
 /* This is a high level type API call */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "dataObjInpOut.h"
-#include "dataObjRead.h"
-#include "miscUtil.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "dataObjInpOut.hpp"
+#include "dataObjRead.hpp"
+#include "miscUtil.hpp"
 
 #if defined(RODS_SERVER)
 #define RS_READ_COLLECTION rsReadCollection

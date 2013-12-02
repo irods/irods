@@ -5,13 +5,13 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_log.h"
-#include "eirods_resource_types.h"
-#include "eirods_network_types.h"
+#include "eirods_log.hpp"
+#include "eirods_resource_types.hpp"
+#include "eirods_network_types.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "rcConnect.h"
+#include "rcConnect.hpp"
 
 // =-=-=-=-=-=-=-
 // boost includs

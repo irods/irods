@@ -6,7 +6,7 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_error.h"
+#include "eirods_error.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes

@@ -1,8 +1,8 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
-#include "rods.h"
-#include "rodsClient.h"
+#include "rods.hpp"
+#include "rodsClient.hpp"
 
 rcComm_t *Conn;
 

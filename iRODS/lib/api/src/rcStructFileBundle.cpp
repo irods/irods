@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See structFileBundle.h for a description of this API call.*/
 
-#include "structFileBundle.h"
+#include "structFileBundle.hpp"
 
 int
 rcStructFileBundle (rcComm_t *conn, 

@@ -14,8 +14,8 @@
  */
 
 #include <stdio.h>
-#include "rodsClient.h"
-#include "dataObjRead.h"
+#include "rodsClient.hpp"
+#include "dataObjRead.hpp"
 
 int debug=0;
 

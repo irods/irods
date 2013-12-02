@@ -2,8 +2,8 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* rodsXmsg.h - Header for for xmsg  */
 
-#ifndef RODS_XMSG_H
-#define RODS_XMSG_H
+#ifndef RODS_XMSG_HPP
+#define RODS_XMSG_HPP
 
 #define DEF_EXPIRE_INT	(3600 * 4)	/* default expire interval */
 #define MAX_EXPIRE_INT  (3600 * 48)	/* max expire interval */

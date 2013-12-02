@@ -3,7 +3,7 @@
 #ifndef _stacktrace_H_
 #define _stacktrace_H_
 
-#include "eirods_error.h"
+#include "eirods_error.hpp"
 
 #include <list>
 #include <string>

@@ -2,11 +2,11 @@
 
 // =-=-=-=-=-=-=-
 // My Includes
-#include "eirods_network_plugin.h"
-#include "eirods_load_plugin.h"
-#include "eirods_network_home.h"
-#include "eirods_stacktrace.h"
-#include "eirods_operation_rule_execution_manager_base.h"
+#include "eirods_network_plugin.hpp"
+#include "eirods_load_plugin.hpp"
+#include "eirods_network_home.hpp"
+#include "eirods_stacktrace.hpp"
+#include "eirods_operation_rule_execution_manager_base.hpp"
 
 // =-=-=-=-=-=-=-
 // STL Includes

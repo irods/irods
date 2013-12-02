@@ -3,18 +3,18 @@
 /* sockComm.h - header file for sockComm.c
  */
 
-#ifndef SOCK_COMM_H
-#define SOCK_COMM_H
+#ifndef SOCK_COMM_HPP
+#define SOCK_COMM_HPP
 
 // =-=-=-=-=-=-=
 // irods includes
-#include "rodsDef.h"
-#include "rcConnect.h"
-#include "rodsPackInstruct.h"
+#include "rodsDef.hpp"
+#include "rcConnect.hpp"
+#include "rodsPackInstruct.hpp"
 
 // =-=-=-=-=-=-=
 // eirods includes
-#include "eirods_network_object.h"
+#include "eirods_network_object.hpp"
 
 #define MAX_LISTEN_QUE	50
 #define SOCK_WINDOW_SIZE	(1*1024*1024)   /* sock window size = 1 Mb */

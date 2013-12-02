@@ -3,17 +3,17 @@
 /* sslSockComm.h - header file for sslSockComm.c
  */
 
-#ifndef SSL_SOCK_COMM_H
-#define SSL_SOCK_COMM_H
+#ifndef SSL_SOCK_COMM_HPP
+#define SSL_SOCK_COMM_HPP
 
 #ifdef USE_SSL
 #include <openssl/ssl.h>
 #include <openssl/x509v3.h>
 #include <openssl/err.h>
 
-#include "rodsDef.h"
-#include "rcConnect.h"
-#include "rodsPackInstruct.h"
+#include "rodsDef.hpp"
+#include "rcConnect.hpp"
+#include "rodsPackInstruct.hpp"
 
 #define SSL_CIPHER_LIST "ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH"
 

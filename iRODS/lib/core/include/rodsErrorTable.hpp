@@ -21,8 +21,8 @@
  */
 
 
-#ifndef RODS_ERROR_TABLE_H
-#define RODS_ERROR_TABLE_H
+#ifndef RODS_ERROR_TABLE_HPP
+#define RODS_ERROR_TABLE_HPP
 
 /* 1,000 - 299,000 - system type */
 #define SYS_SOCK_OPEN_ERR                           -1000

@@ -1,8 +1,8 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
-#include "utils.h"
-#include "restructs.h"
-#include "parser.h"
+#include "utils.hpp"
+#include "restructs.hpp"
+#include "parser.hpp"
 
 /**
  * create a new node n

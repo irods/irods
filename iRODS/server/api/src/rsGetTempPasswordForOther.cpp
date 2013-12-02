@@ -3,8 +3,8 @@
 
 /* See getTempPasswordForOther.h for a description of this API call.*/
 
-#include "getTempPasswordForOther.h"
-#include "icatHighLevelRoutines.h"
+#include "getTempPasswordForOther.hpp"
+#include "icatHighLevelRoutines.hpp"
 
 int
 rsGetTempPasswordForOther (rsComm_t *rsComm, 

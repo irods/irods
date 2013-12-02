@@ -6,7 +6,7 @@
 /* This is script-generated code.  */ 
 /* See rmColl.h for a description of this API call.*/
 
-#include "rmColl.h"
+#include "rmColl.hpp"
 
 int
 _rcRmColl (rcComm_t *conn, collInp_t *rmCollInp, 

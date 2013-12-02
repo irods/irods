@@ -3,7 +3,7 @@
 #ifndef _children_parser_H_
 #define _children_parser_H_
 
-#include "eirods_error.h"
+#include "eirods_error.hpp"
 
 #include <map>
 #include <utility>

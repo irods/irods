@@ -6,8 +6,8 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_log.h"
-#include "eirods_network_object.h"
+#include "eirods_log.hpp"
+#include "eirods_network_object.hpp"
 
 // =-=-=-=-=-=-=-
 // boost includes
@@ -15,7 +15,7 @@
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "rcConnect.h"
+#include "rcConnect.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes

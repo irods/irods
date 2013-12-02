@@ -18,11 +18,11 @@
    value string based on a keyword.
 */
 
-#ifndef OBJ_INFO_H
-#define OBJ_INFO_H
+#ifndef OBJ_INFO_HPP
+#define OBJ_INFO_HPP
 
-#include "rodsType.h"
-#include "rodsUser.h"
+#include "rodsType.hpp"
+#include "rodsUser.hpp"
 
 #include <string>
 

@@ -2,12 +2,12 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* ncarchUtil.h - Header for for ncarchUtil.c */
 
-#ifndef NCARCHUTIL_H
-#define NCARCHUTIL_H
+#ifndef NCARCHUTIL_HPP
+#define NCARCHUTIL_HPP
 
-#include "rodsClient.h"
-#include "parseCommandLine.h"
-#include "rodsPath.h"
+#include "rodsClient.hpp"
+#include "parseCommandLine.hpp"
+#include "rodsPath.hpp"
 
 #ifdef  __cplusplus
 extern "C" {

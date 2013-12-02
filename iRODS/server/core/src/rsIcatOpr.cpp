@@ -6,11 +6,11 @@
 
 
 
-#include "rsIcatOpr.h"
-#include "initServer.h"
-#include "rsGlobalExtern.h"
-#include "readServerConfig.h"
-#include "icatHighLevelRoutines.h"
+#include "rsIcatOpr.hpp"
+#include "initServer.hpp"
+#include "rsGlobalExtern.hpp"
+#include "readServerConfig.hpp"
+#include "icatHighLevelRoutines.hpp"
 
 #ifdef RODS_CAT
 int

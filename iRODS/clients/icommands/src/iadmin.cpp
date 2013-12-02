@@ -7,9 +7,9 @@
    Initial version of an administrator interface
 */
 
-#include "rodsClient.h"
-#include "parseCommandLine.h"
-#include "eirods_string_tokenize.h"
+#include "rodsClient.hpp"
+#include "parseCommandLine.hpp"
+#include "eirods_string_tokenize.hpp"
 #include <iostream>
 #include <algorithm>
 

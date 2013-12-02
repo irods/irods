@@ -3,9 +3,9 @@
 
 /* See ticketAdmin.h for a description of this API call.*/
 
-#include "ticketAdmin.h"
-#include "reGlobalsExtern.h"
-#include "icatHighLevelRoutines.h"
+#include "ticketAdmin.hpp"
+#include "reGlobalsExtern.hpp"
+#include "icatHighLevelRoutines.hpp"
 
 int
 rsTicketAdmin (rsComm_t *rsComm, ticketAdminInp_t *ticketAdminInp )

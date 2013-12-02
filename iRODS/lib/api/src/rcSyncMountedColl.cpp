@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See syncMountedColl.h for a description of this API call.*/
 
-#include "syncMountedColl.h"
+#include "syncMountedColl.hpp"
 
 int
 rcSyncMountedColl (rcComm_t *conn, dataObjInp_t *syncMountedCollInp)

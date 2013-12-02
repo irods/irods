@@ -3,7 +3,7 @@
 
 /* See sslStart.h for a description of this API call.*/
 
-#include "sslStart.h"
+#include "sslStart.hpp"
 
 int
 rsSslStart(rsComm_t *rsComm, sslStartInp_t *sslStartInp)

@@ -33,8 +33,8 @@ Removed PROTO_LIST macro for C++ compatability.
 		is undefined.
 */
 
-#include "global.h"
-#include "md5.h"
+#include "global.hpp"
+#include "md5.hpp"
 
 /* Constants for MD5Transform routine.
  */

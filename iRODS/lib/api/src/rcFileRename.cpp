@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See fileRename.h for a description of this API call.*/
 
-#include "fileRename.h"
+#include "fileRename.hpp"
 
 int
 rcFileRename (rcComm_t *conn, fileRenameInp_t *fileRenameInp)

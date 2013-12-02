@@ -13,8 +13,8 @@
 #ifndef SYSBACKUPMS_H_
 #define SYSBACKUPMS_H_
 
-#include "rods.h"
-#include "reGlobalsExtern.h"
+#include "rods.hpp"
+#include "reGlobalsExtern.hpp"
 
 #define BCKP_COLL_NAME	"system_backups"
 

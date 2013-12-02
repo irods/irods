@@ -3,9 +3,9 @@
 #ifndef _oper_replicator_H_
 #define _oper_replicator_H_
 
-#include "eirods_error.h"
-#include "eirods_object_oper.h"
-#include "eirods_repl_types.h"
+#include "eirods_error.hpp"
+#include "eirods_object_oper.hpp"
+#include "eirods_repl_types.hpp"
 
 #include <string>
 

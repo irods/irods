@@ -1,9 +1,9 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
-#include "index.h"
-#include "rules.h"
-#include "debug.h"
-#include "configuration.h"
+#include "index.hpp"
+#include "rules.hpp"
+#include "debug.hpp"
+#include "configuration.hpp"
 #define RE_ERROR(x) if(x) { goto error; }
 
 #include <assert.h>

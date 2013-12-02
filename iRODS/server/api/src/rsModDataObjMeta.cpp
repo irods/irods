@@ -5,13 +5,13 @@
 /* unregDataObj.c
  */
 
-#include "modDataObjMeta.h"
-#include "icatHighLevelRoutines.h"
-#include "objMetaOpr.h"
-#include "dataObjOpr.h"
+#include "modDataObjMeta.hpp"
+#include "icatHighLevelRoutines.hpp"
+#include "objMetaOpr.hpp"
+#include "dataObjOpr.hpp"
 
-#include "eirods_file_object.h"
-#include "eirods_stacktrace.h"
+#include "eirods_file_object.hpp"
+#include "eirods_stacktrace.hpp"
 
 int _call_file_modified_for_modification(
     rsComm_t*         rsComm, 

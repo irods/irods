@@ -1,20 +1,20 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
-#include "structFileExtract.h" 
-#include "miscServerFunct.h"
-#include "syncMountedColl.h"
+#include "structFileExtract.hpp" 
+#include "miscServerFunct.hpp"
+#include "syncMountedColl.hpp"
 
-#include "dataObjOpr.h"
-#include "rsGlobalExtern.h"
-#include "objMetaOpr.h"
-#include "resource.h"
-#include "physPath.h"
+#include "dataObjOpr.hpp"
+#include "rsGlobalExtern.hpp"
+#include "objMetaOpr.hpp"
+#include "resource.hpp"
+#include "physPath.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_structured_object.h"
-#include "eirods_resource_backport.h"
-#include "eirods_resource_redirect.h"
+#include "eirods_structured_object.hpp"
+#include "eirods_resource_backport.hpp"
+#include "eirods_resource_redirect.hpp"
 
 
 int

@@ -3,10 +3,10 @@
 #ifndef _auth_object_H_
 #define _auth_object_H_
 
-#include "eirods_error.h"
-#include "eirods_first_class_object.h"
+#include "eirods_error.hpp"
+#include "eirods_first_class_object.hpp"
 
-#include "rcConnect.h"
+#include "rcConnect.hpp"
 
 // boost includes
 #include <boost/shared_ptr.hpp>

@@ -188,7 +188,7 @@
 /* Copy the first part of user declarations.  */
 #line 1 "rulegen.y"
 
-#include "rulegen.h"
+#include "rulegen.hpp"
 
 #define	YYTRACE
 #define	YYMAX_READ 0

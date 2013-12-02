@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See collRepl.h for a description of this API call.*/
 
-#include "collRepl.h"
+#include "collRepl.hpp"
 
 int
 _rcCollRepl (rcComm_t *conn, collInp_t *collReplInp, 

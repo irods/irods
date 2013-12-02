@@ -4,8 +4,8 @@
   ips.c - Command to get the stat of irods agents running in the federation..
 */
 
-#include "rodsClient.h"
-#include "parseCommandLine.h"
+#include "rodsClient.hpp"
+#include "parseCommandLine.hpp"
 
 int
 printProcStat (rodsArguments_t *myRodsArgs, genQueryOut_t *procStatOut);

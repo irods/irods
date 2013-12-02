@@ -9,32 +9,32 @@
 #include <sys/time.h>
 #include <sys/wait.h>
 #else
-#include "Unix2Nt.h"
+#include "Unix2Nt.hpp"
 #endif
-#include "rcMisc.h"
-#include "apiHeaderAll.h"
-#include "modDataObjMeta.h"
-#include "rcGlobalExtern.h"
-#include "rodsGenQueryNames.h"
-#include "rodsType.h"
-#include "rsApiHandler.h"
-#include "dataObjPut.h"
+#include "rcMisc.hpp"
+#include "apiHeaderAll.hpp"
+#include "modDataObjMeta.hpp"
+#include "rcGlobalExtern.hpp"
+#include "rodsGenQueryNames.hpp"
+#include "rodsType.hpp"
+#include "rsApiHandler.hpp"
+#include "dataObjPut.hpp"
 
 #ifdef EXTENDED_ICAT
 #define EXTENDED_ICAT_TABLES_1 1 /* have extendedICAT.h 
                                     set up the set 1 tables */
-#include "extendedICAT.h"
+#include "extendedICAT.hpp"
 #endif
-#include "bulkDataObjPut.h"
-#include "putUtil.h"
+#include "bulkDataObjPut.hpp"
+#include "putUtil.hpp"
 
 #include <cstdlib>
 #include <iostream>
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_hierarchy_parser.h"
-#include "eirods_stacktrace.h"
+#include "eirods_hierarchy_parser.hpp"
+#include "eirods_stacktrace.hpp"
 
 // =-=-=-=-=-=-=-
 // boost includes

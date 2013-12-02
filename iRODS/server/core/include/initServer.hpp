@@ -6,12 +6,12 @@
 
 
 
-#ifndef INIT_SERVER_H
-#define INIT_SERVER_H
+#ifndef INIT_SERVER_HPP
+#define INIT_SERVER_HPP
 
-#include "rods.h"
-#include "sockComm.h"
-#include "rsLog.h"
+#include "rods.hpp"
+#include "sockComm.hpp"
+#include "rsLog.hpp"
 
 /* server host configuration */
 

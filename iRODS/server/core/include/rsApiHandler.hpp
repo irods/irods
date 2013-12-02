@@ -6,14 +6,14 @@
 
 
 
-#ifndef RS_API_HANDLER_H
-#define RS_API_HANDLER_H
+#ifndef RS_API_HANDLER_HPP
+#define RS_API_HANDLER_HPP
 
-#include "rods.h"
-#include "apiHandler.h"
-#include "rsGlobalExtern.h"
-#include "rcGlobalExtern.h"
-#include "rcMisc.h"
+#include "rods.hpp"
+#include "apiHandler.hpp"
+#include "rsGlobalExtern.hpp"
+#include "rcGlobalExtern.hpp"
+#include "rcMisc.hpp"
 
 #define	DISCONN_STATUS	-1
 #define SEND_RCV_RETRY_CNT	1

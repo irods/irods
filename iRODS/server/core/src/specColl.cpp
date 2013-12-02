@@ -4,17 +4,17 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* specColl.c - special collection (mounted and linked collections) routines */
 
-#include "dataObjOpr.h"
-#include "specColl.h"
-#include "collection.h"
-#include "resource.h"
-#include "genQuery.h"
-#include "rodsClient.h"
+#include "dataObjOpr.hpp"
+#include "specColl.hpp"
+#include "collection.hpp"
+#include "resource.hpp"
+#include "genQuery.hpp"
+#include "rodsClient.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods include
-#include "eirods_resource_backport.h"
-#include "eirods_stacktrace.h"
+#include "eirods_resource_backport.hpp"
+#include "eirods_stacktrace.hpp"
 
 static int HaveFailedSpecCollPath = 0;
 static char FailedSpecCollPath[MAX_NAME_LEN];

@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See fileSyncToArch.h for a description of this API call.*/
 
-#include "fileSyncToArch.h"
+#include "fileSyncToArch.hpp"
 
 int
 rcFileSyncToArch (rcComm_t *conn, fileStageSyncInp_t *fileSyncToArchInp )

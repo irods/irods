@@ -6,21 +6,21 @@
 /* initServer.c - Server initialization routines
  */
 
-#include "initServer.h"
-#include "resource.h"
-#include "rsGlobalExtern.h"
-#include "rcGlobalExtern.h"
-#include "genQuery.h"
-#include "rsIcatOpr.h"
-#include "miscServerFunct.h"
-#include "reGlobalsExtern.h"
-#include "reDefines.h"
-#include "getRemoteZoneResc.h"
-#include "getRescQuota.h"
-#include "physPath.h"
-#include "eirods_stacktrace.h"
+#include "initServer.hpp"
+#include "resource.hpp"
+#include "rsGlobalExtern.hpp"
+#include "rcGlobalExtern.hpp"
+#include "genQuery.hpp"
+#include "rsIcatOpr.hpp"
+#include "miscServerFunct.hpp"
+#include "reGlobalsExtern.hpp"
+#include "reDefines.hpp"
+#include "getRemoteZoneResc.hpp"
+#include "getRescQuota.hpp"
+#include "physPath.hpp"
+#include "eirods_stacktrace.hpp"
 
-#include "eirods_log.h"
+#include "eirods_log.hpp"
 
 static time_t LastBrokenPipeTime = 0;
 static int BrokenPipeCnt = 0;

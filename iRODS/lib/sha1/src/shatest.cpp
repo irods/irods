@@ -20,7 +20,7 @@
 
 #include <stdio.h>
 #include <string.h>
-#include "sha1.h"
+#include "sha1.hpp"
 
 /*
  *  Define patterns for testing

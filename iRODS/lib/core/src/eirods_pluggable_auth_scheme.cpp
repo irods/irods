@@ -3,7 +3,7 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_pluggable_auth_scheme.h"
+#include "eirods_pluggable_auth_scheme.hpp"
 
 namespace eirods {
     pluggable_auth_scheme& pluggable_auth_scheme::get_instance() {

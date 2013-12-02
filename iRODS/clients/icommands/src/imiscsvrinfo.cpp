@@ -5,8 +5,8 @@
   Tests connecting to the server.
 */
 
-#include "rodsClient.h"
-#include "parseCommandLine.h"
+#include "rodsClient.hpp"
+#include "parseCommandLine.hpp"
 
 void usage ();
 

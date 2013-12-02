@@ -3,14 +3,14 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "authPluginRequest.h"
-#include "eirods_native_auth_object.h"
-#include "eirods_auth_object.h"
-#include "eirods_auth_factory.h"
-#include "eirods_auth_plugin.h"
-#include "eirods_auth_manager.h"
-#include "eirods_auth_constants.h"
-#include "eirods_pluggable_auth_scheme.h"
+#include "authPluginRequest.hpp"
+#include "eirods_native_auth_object.hpp"
+#include "eirods_auth_object.hpp"
+#include "eirods_auth_factory.hpp"
+#include "eirods_auth_plugin.hpp"
+#include "eirods_auth_manager.hpp"
+#include "eirods_auth_constants.hpp"
+#include "eirods_pluggable_auth_scheme.hpp"
 
 void _rsSetAuthRequestGetChallenge( const char* );
 

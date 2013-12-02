@@ -1,7 +1,7 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
-#include "hashtable.h"
-#include "utils.h"
+#include "hashtable.hpp"
+#include "utils.hpp"
 /**
  * returns NULL if out of memory
  */
@@ -295,8 +295,8 @@ unsigned long sdbm_hash(char* str) { /* sdbm */
         return hash;
 }
 
-#include "utils.h"
-#include "index.h"
+#include "utils.hpp"
+#include "index.hpp"
 
 void dumpHashtableKeys(Hashtable *t) {
     int i;

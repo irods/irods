@@ -7,13 +7,13 @@
  *-------------------------------------------------------------------------
  */
 
-#include "irodsReServer.h"
-#include "reServerLib.h"
-#include "rsApiHandler.h"
-#include "rsIcatOpr.h"
+#include "irodsReServer.hpp"
+#include "reServerLib.hpp"
+#include "rsApiHandler.hpp"
+#include "rsIcatOpr.hpp"
 #include <syslog.h>
-#include "miscServerFunct.h"
-#include "reconstants.h"
+#include "miscServerFunct.hpp"
+#include "reconstants.hpp"
 
 extern int msiAdmClearAppRuleStruct(ruleExecInfo_t *rei);
 

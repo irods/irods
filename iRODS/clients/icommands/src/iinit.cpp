@@ -2,16 +2,16 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 // =-=-=-=-=-=-=-
 // irods includes
-#include "rods.h"
-#include "parseCommandLine.h"
-#include "rcMisc.h"
+#include "rods.hpp"
+#include "parseCommandLine.hpp"
+#include "rcMisc.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_native_auth_object.h"
-#include "eirods_pam_auth_object.h"
-#include "eirods_kvp_string_parser.h"
-#include "eirods_auth_constants.h"
+#include "eirods_native_auth_object.hpp"
+#include "eirods_pam_auth_object.hpp"
+#include "eirods_kvp_string_parser.hpp"
+#include "eirods_auth_constants.hpp"
 
 #include<iostream>
 void usage (char *prog);

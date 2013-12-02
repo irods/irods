@@ -2,13 +2,13 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* iFuseOper.h - Header for for iFuseOper.c */
 
-#ifndef I_FUSE_OPER_H
-#define I_FUSE_OPER_H
+#ifndef I_FUSE_OPER_HPP
+#define I_FUSE_OPER_HPP
 
 #include <sys/statvfs.h>
-#include "rodsClient.h"
-#include "rodsPath.h"
-#include "iFuseLib.h"
+#include "rodsClient.hpp"
+#include "rodsPath.hpp"
+#include "iFuseLib.hpp"
 
 #ifdef  __cplusplus
 extern "C" {

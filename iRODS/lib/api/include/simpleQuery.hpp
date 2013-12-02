@@ -3,17 +3,17 @@
 /* simpleQuery.h
  */
 
-#ifndef SIMPLE_QUERY_H
-#define SIMPLE_QUERY_H
+#ifndef SIMPLE_QUERY_HPP
+#define SIMPLE_QUERY_HPP
 
 /* This is a high level file type API call */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "icatDefines.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "icatDefines.hpp"
 
 typedef struct {
    char *sql;

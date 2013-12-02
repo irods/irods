@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See ooiGenServReq.h for a description of this API call.*/
 
-#include "ooiGenServReq.h"
+#include "ooiGenServReq.hpp"
 
 int
 rcOoiGenServReq (rcComm_t *conn, ooiGenServReqInp_t *ooiGenServReqInp, 

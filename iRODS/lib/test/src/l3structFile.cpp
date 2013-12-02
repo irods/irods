@@ -2,7 +2,7 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* l3bundle.c - test the low level api */
 
-#include "rodsClient.h" 
+#include "rodsClient.hpp" 
 
 
 #define BUFSIZE	(1024*1024)

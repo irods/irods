@@ -3,18 +3,18 @@
 /* ncCreate.h
  */
 
-#ifndef NC_CREATE_H
-#define NC_CREATE_H
+#ifndef NC_CREATE_HPP
+#define NC_CREATE_HPP
 
 /* This is a NETCDF API call */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "dataObjInpOut.h"
-#include "ncOpen.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "dataObjInpOut.hpp"
+#include "ncOpen.hpp"
 
 #if defined(RODS_SERVER) && defined(NETCDF_API)
 #define RS_NC_CREATE rsNcCreate

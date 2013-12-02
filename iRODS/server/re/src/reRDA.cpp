@@ -8,10 +8,10 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
-#include "reGlobalsExtern.h"
+#include "reGlobalsExtern.hpp"
 
-#include "rdaHighLevelRoutines.h"
-#include "dataObjWrite.h"
+#include "rdaHighLevelRoutines.hpp"
+#include "dataObjWrite.hpp"
 
 /* For now, uncomment this line to build RDA #define BUILD_RDA 1  */
 /* Do same in rdaHighLevelRoutines.c */

@@ -1,7 +1,7 @@
 /* -*- mode: c++; fill-column: 72; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 
-#include "Hasher.h"
+#include "Hasher.hpp"
 
 namespace eirods {
     

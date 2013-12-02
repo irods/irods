@@ -5,14 +5,14 @@
 /* This is script-generated code (for the most part).  */ 
 /* See fileGet.h for a description of this API call.*/
 
-#include "fileGet.h"
-#include "miscServerFunct.h"
+#include "fileGet.hpp"
+#include "miscServerFunct.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_log.h"
-#include "eirods_file_object.h"
-#include "eirods_resource_backport.h"
+#include "eirods_log.hpp"
+#include "eirods_file_object.hpp"
+#include "eirods_resource_backport.hpp"
 
 
 /* rsFileGet - Get the content of a small file into a single buffer

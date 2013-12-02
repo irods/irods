@@ -2,8 +2,8 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* irodsFs.h - Header for for irodsFs.c */
 
-#ifndef IRODS_FS_H
-#define IRODS_FS_H
+#ifndef IRODS_FS_HPP
+#define IRODS_FS_HPP
 
 // =-=-=-=-=-=-=-
 // boost includes
@@ -15,9 +15,9 @@
 #define FUSE_USE_VERSION 26
 
 #include <fuse.h>
-#include "rodsClient.h"
-#include "parseCommandLine.h"
-#include "rodsPath.h"
+#include "rodsClient.hpp"
+#include "parseCommandLine.hpp"
+#include "rodsPath.hpp"
 
 #define FILE_BLOCK_SZ	512
 #define DIR_SZ    4096

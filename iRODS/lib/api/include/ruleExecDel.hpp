@@ -3,17 +3,17 @@
 /* ruleExecDel.h
  */
 
-#ifndef RULE_EXEC_DEL_H
-#define RULE_EXEC_DEL_H
+#ifndef RULE_EXEC_DEL_HPP
+#define RULE_EXEC_DEL_HPP
 
 /* This is Object File I/O type API call */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "reGlobalsExtern.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "reGlobalsExtern.hpp"
 
 typedef struct {
     char ruleExecId[NAME_LEN];	

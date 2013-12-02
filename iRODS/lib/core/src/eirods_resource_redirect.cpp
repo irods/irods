@@ -3,17 +3,17 @@
 // =-=-=-=-=-=-=
 // irods includes
 #define RODS_SERVER
-#include "miscServerFunct.h"
-#include "objInfo.h"
-#include "dataObjCreate.h"
-#include "specColl.h"
-#include "collection.h"
+#include "miscServerFunct.hpp"
+#include "objInfo.hpp"
+#include "dataObjCreate.hpp"
+#include "specColl.hpp"
+#include "collection.hpp"
 
 // =-=-=-=-=-=-=
 // eirods includes
-#include "eirods_resource_redirect.h"
-#include "eirods_hierarchy_parser.h"
-#include "eirods_resource_backport.h"
+#include "eirods_resource_redirect.hpp"
+#include "eirods_hierarchy_parser.hpp"
+#include "eirods_resource_backport.hpp"
 
 
 namespace eirods {

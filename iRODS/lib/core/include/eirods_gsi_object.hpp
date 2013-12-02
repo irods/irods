@@ -3,7 +3,7 @@
 #ifndef _gsi_object_H_
 #define _gsi_object_H_
 
-#include "eirods_error.h"
+#include "eirods_error.hpp"
 
 #include <gssapi.h>
 

@@ -2,8 +2,8 @@
  *** For more information please refer to files in the COPYRIGHT directory ***
  *****************************************************************************/
 
-#ifndef RDA_HIGHLEVEL_ROUTINES_H
-#define RDA_HIGHLEVEL_ROUTINES_H
+#ifndef RDA_HIGHLEVEL_ROUTINES_HPP
+#define RDA_HIGHLEVEL_ROUTINES_HPP
 
 int rdaOpen(char *rdaName);
 int rdaClose();

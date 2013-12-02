@@ -3,7 +3,7 @@
 /* This is script-generated code.  */ 
 /* See dataCopy.h for a description of this API call.*/
 
-#include "dataCopy.h"
+#include "dataCopy.hpp"
 
 int
 rcDataCopy (rcComm_t *conn, dataCopyInp_t *dataCopyInp)

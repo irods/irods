@@ -3,10 +3,10 @@
 
 #include <sys/stat.h>
 #include <errno.h>
-#include "debug.h"
-#include "utils.h"
-#include "datetime.h"
-#include "filesystem.h"
+#include "debug.hpp"
+#include "utils.hpp"
+#include "datetime.hpp"
+#include "filesystem.hpp"
 
 char *getRuleBasePath(char *ruleBaseName, char rulesFileName[MAX_NAME_LEN]) {
     char *configDir = getConfigDir ();

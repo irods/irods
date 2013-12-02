@@ -6,7 +6,7 @@
 /* This is script-generated code.  */ 
 /* See nccfGetVara.h for a description of this API call.*/
 
-#include "nccfGetVara.h"
+#include "nccfGetVara.hpp"
 
 /**
  * \fn rcNccfGetVara (rcComm_t *conn,   nccfGetVarInp_t *nccfGetVarInp, nccfGetVarOut_t ** nccfGetVarOut)

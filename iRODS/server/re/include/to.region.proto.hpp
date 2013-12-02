@@ -1,8 +1,8 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
 
-#ifndef TO_REGION_PROTO_H
-#define TO_REGION_PROTO_H
+#ifndef TO_REGION_PROTO_HPP
+#define TO_REGION_PROTO_HPP
 
 typedef void *(RegionCopyFuncType)(void *, Region *, Hashtable *);
 

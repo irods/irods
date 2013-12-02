@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See ncGetAggInfo.h for a description of this API call.*/
 
-#include "ncGetAggInfo.h"
+#include "ncGetAggInfo.hpp"
 
 int
 rcNcGetAggInfo (rcComm_t *conn, ncOpenInp_t *ncOpenInp, 

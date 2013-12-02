@@ -6,16 +6,16 @@
 
 
 
-#ifndef API_TABLE_H
-#define API_TABLE_H
+#ifndef API_TABLE_HPP
+#define API_TABLE_HPP
 
-#include "rods.h"
-#include "apiHandler.h"
-#include "apiNumber.h"
-#include "rodsUser.h"
+#include "rods.hpp"
+#include "apiHandler.hpp"
+#include "apiNumber.hpp"
+#include "rodsUser.hpp"
 
 /* need to include a header for for each API */
-#include "apiHeaderAll.h"
+#include "apiHeaderAll.hpp"
 
 //#ifdef  __cplusplus
 //extern "C" {

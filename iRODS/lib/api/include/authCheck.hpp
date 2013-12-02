@@ -3,20 +3,20 @@
 /* authCheck.h 
  */
 
-#ifndef AUTH_CHECK_H
-#define AUTH_CHECK_H
+#ifndef AUTH_CHECK_HPP
+#define AUTH_CHECK_HPP
 
 /* This is a Metadata API call but is is only used server to server */
 
 /* This is used by one server to connect to the ICAT-enabled server to
    verify a user's login */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "icatDefines.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "icatDefines.hpp"
 
 #ifdef  __cplusplus
 extern "C" {

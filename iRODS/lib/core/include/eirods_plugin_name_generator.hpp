@@ -3,7 +3,7 @@
 #ifndef _plugin_name_generator_H_
 #define _plugin_name_generator_H_
 
-#include "eirods_error.h"
+#include "eirods_error.hpp"
 #include <vector>
 #include <string>
 

@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See subStructFileLseek.h for a description of this API call.*/
 
-#include "subStructFileLseek.h"
+#include "subStructFileLseek.hpp"
 
 int
 rcSubStructFileLseek (rcComm_t *conn, subStructFileLseekInp_t *subStructFileLseekInp,

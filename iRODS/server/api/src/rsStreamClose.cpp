@@ -7,9 +7,9 @@
  */
 
 /* script generated code */
-#include "streamClose.h"
-#include "miscServerFunct.h"
-#include "rsGlobalExtern.h"
+#include "streamClose.hpp"
+#include "miscServerFunct.hpp"
+#include "rsGlobalExtern.hpp"
 
 int
 rsStreamClose (rsComm_t *rsComm, fileCloseInp_t *streamCloseInp)

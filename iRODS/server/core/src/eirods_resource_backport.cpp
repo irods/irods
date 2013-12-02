@@ -2,10 +2,10 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_resource_backport.h"
-#include "eirods_string_tokenize.h"
-#include "eirods_hierarchy_parser.h"
-#include "eirods_stacktrace.h"
+#include "eirods_resource_backport.hpp"
+#include "eirods_string_tokenize.hpp"
+#include "eirods_hierarchy_parser.hpp"
+#include "eirods_stacktrace.hpp"
 
 namespace eirods {
 

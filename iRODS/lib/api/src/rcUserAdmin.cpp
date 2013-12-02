@@ -7,7 +7,7 @@
  
 /* Also see userAdmin.h for a description of this API call.*/
 
-#include "userAdmin.h"
+#include "userAdmin.hpp"
 
 /**
  * \fn rcUserAdmin (rcComm_t *conn, userAdminInp_t *userAdminInp)

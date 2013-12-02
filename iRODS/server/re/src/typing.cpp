@@ -1,8 +1,8 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
 
-#include "typing.h"
-#include "functions.h"
+#include "typing.hpp"
+#include "functions.hpp"
 #define RE_ERROR(x) if(x) {goto error;}
 #define RE_ERROR2(x,y) if(x) {localErrorMsg=(y);goto error;}
 #define N_BASE_TYPES 7

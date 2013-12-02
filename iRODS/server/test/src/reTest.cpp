@@ -1,8 +1,8 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-#include "rodsServer.h"
-#include "reGlobalsExtern.h"
-#include "reDefines.h"
+#include "rodsServer.hpp"
+#include "reGlobalsExtern.hpp"
+#include "reDefines.hpp"
 #include <sys/time.h>
 time_t time_offset(const time_t *base, const struct tm *off);
 void

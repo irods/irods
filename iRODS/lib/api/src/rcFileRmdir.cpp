@@ -3,7 +3,7 @@
 /* This is script-generated code.  */ 
 /* See fileRmdir.h for a description of this API call.*/
 
-#include "fileRmdir.h"
+#include "fileRmdir.hpp"
 
 int
 rcFileRmdir (rcComm_t *conn, fileRmdirInp_t *fileRmdirInp)

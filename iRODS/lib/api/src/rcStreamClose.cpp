@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See streamClose.h for a description of this API call.*/
 
-#include "streamClose.h"
+#include "streamClose.hpp"
 
 int
 rcStreamClose (rcComm_t *conn, fileCloseInp_t *fileCloseInp)

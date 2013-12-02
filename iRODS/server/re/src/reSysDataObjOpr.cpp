@@ -10,17 +10,17 @@
 
 /* reSysDataObjOpr.c */
 
-#include "reSysDataObjOpr.h"
-#include "genQuery.h"
-#include "getRescQuota.h"
-#include "reServerLib.h"
-#include "dataObjOpr.h"
-#include "resource.h"
-#include "physPath.h"
+#include "reSysDataObjOpr.hpp"
+#include "genQuery.hpp"
+#include "getRescQuota.hpp"
+#include "reServerLib.hpp"
+#include "dataObjOpr.hpp"
+#include "resource.hpp"
+#include "physPath.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_resource_backport.h"
+#include "eirods_resource_backport.hpp"
 
 /**
  * \fn msiSetDefaultResc (msParam_t *xdefaultRescList, msParam_t *xoptionStr, ruleExecInfo_t *rei)

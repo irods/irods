@@ -6,9 +6,9 @@
 #include <errno.h>
 #include <time.h>
 #include <assert.h>
-#include "irodsFs.h"
-#include "iFuseOper.h"
-#include "miscUtil.h"
+#include "irodsFs.hpp"
+#include "iFuseOper.hpp"
+#include "miscUtil.hpp"
 
 extern iFuseConn_t *ConnHead;
 extern rodsEnv MyRodsEnv;

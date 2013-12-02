@@ -5,17 +5,17 @@
 /* generalAdmin.h
  */
 
-#ifndef GENERAL_ADMIN_H
-#define GENERAL_ADMIN_H
+#ifndef GENERAL_ADMIN_HPP
+#define GENERAL_ADMIN_HPP
 
 /* This is a high level file type API call */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "icatDefines.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "icatDefines.hpp"
 
 typedef struct {
     char *arg0;

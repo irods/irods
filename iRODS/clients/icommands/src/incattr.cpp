@@ -4,10 +4,10 @@
  * incattr - The irods NETCDF attributes utility
 */
 
-#include "rodsClient.h"
-#include "parseCommandLine.h"
-#include "rodsPath.h"
-#include "ncattrUtil.h"
+#include "rodsClient.hpp"
+#include "parseCommandLine.hpp"
+#include "rodsPath.hpp"
+#include "ncattrUtil.hpp"
 void usage ();
 
 int

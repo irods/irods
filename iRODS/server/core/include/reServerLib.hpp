@@ -6,16 +6,16 @@
 
 
 
-#ifndef RE_SERVER_LIB_H
-#define RE_SERVER_LIB_H
+#ifndef RE_SERVER_LIB_HPP
+#define RE_SERVER_LIB_HPP
 
-#include "rods.h"
-#include "objInfo.h"
-#include "dataObjInpOut.h"
-#include "ruleExecSubmit.h"
-#include "rcGlobalExtern.h"
-#include "rsGlobalExtern.h"
-#include "reIn2p3SysRule.h"
+#include "rods.hpp"
+#include "objInfo.hpp"
+#include "dataObjInpOut.hpp"
+#include "ruleExecSubmit.hpp"
+#include "rcGlobalExtern.hpp"
+#include "rsGlobalExtern.hpp"
+#include "reIn2p3SysRule.hpp"
 
 #define MAX_RE_PROCS	4
 #define DEF_NUM_RE_PROCS	1

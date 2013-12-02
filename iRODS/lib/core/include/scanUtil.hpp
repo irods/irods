@@ -2,12 +2,12 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* scanUtil.h - Header for scanUtil.c */
 
-#ifndef SCAN_UTIL_H
-#define SCAN_UTIL_H
+#ifndef SCAN_UTIL_HPP
+#define SCAN_UTIL_HPP
 
-#include "rodsClient.h"
-#include "parseCommandLine.h"
-#include "rodsPath.h"
+#include "rodsClient.hpp"
+#include "parseCommandLine.hpp"
+#include "rodsPath.hpp"
 
 #ifdef  __cplusplus
 extern "C" {

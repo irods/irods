@@ -3,17 +3,17 @@
 /* collCreate.h
  */
 
-#ifndef COLL_CREATE_H
-#define COLL_CREATE_H
+#ifndef COLL_CREATE_HPP
+#define COLL_CREATE_HPP
 
 /* This is a high level type API call */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "dataObjInpOut.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "dataObjInpOut.hpp"
 
 #if defined(RODS_SERVER)
 #define RS_COLL_CREATE rsCollCreate

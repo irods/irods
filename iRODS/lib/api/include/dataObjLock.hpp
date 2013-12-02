@@ -3,17 +3,17 @@
 /* dataObjLock.h
  */
 
-#ifndef DATA_OBJ_LOCK_H
-#define DATA_OBJ_LOCK_H
+#ifndef DATA_OBJ_LOCK_HPP
+#define DATA_OBJ_LOCK_HPP
 
 /* This is a Object File I/O API call */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "dataObjInpOut.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "dataObjInpOut.hpp"
 
 /* lock type definition */
 #define READ_LOCK_TYPE "readLockType"

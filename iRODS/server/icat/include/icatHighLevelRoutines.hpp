@@ -5,17 +5,17 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /*****************************************************************************/
 
-#ifndef ICAT_HIGHLEVEL_ROUTINES_H
-#define ICAT_HIGHLEVEL_ROUTINES_H
+#ifndef ICAT_HIGHLEVEL_ROUTINES_HPP
+#define ICAT_HIGHLEVEL_ROUTINES_HPP
 
-#include "objInfo.h"
-#include "ruleExecSubmit.h"
-#include "rcConnect.h"
-#include "icatStructs.h"
-#include "rodsGeneralUpdate.h"
-#include "specificQuery.h" 
-#include "phyBundleColl.h"
-#include "readServerConfig.h"
+#include "objInfo.hpp"
+#include "ruleExecSubmit.hpp"
+#include "rcConnect.hpp"
+#include "icatStructs.hpp"
+#include "rodsGeneralUpdate.hpp"
+#include "specificQuery.hpp" 
+#include "phyBundleColl.hpp"
+#include "readServerConfig.hpp"
 
 #include <sys/socket.h>
 #include <netinet/in.h>

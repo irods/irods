@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See modAVUMetadata.h for a description of this API call.*/
 
-#include "modAVUMetadata.h"
+#include "modAVUMetadata.hpp"
 
 int
 rcModAVUMetadata (rcComm_t *conn, modAVUMetadataInp_t *modAVUMetadataInp)

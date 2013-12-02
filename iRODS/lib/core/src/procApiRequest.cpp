@@ -8,13 +8,13 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_network_factory.h"
+#include "eirods_network_factory.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "procApiRequest.h"
-#include "rcGlobalExtern.h"
-#include "rcMisc.h"
+#include "procApiRequest.hpp"
+#include "rcGlobalExtern.hpp"
+#include "rcMisc.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes

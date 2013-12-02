@@ -1,14 +1,14 @@
 
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
-#include "miscServerFunct.h"
-#include "dataObjOpr.h"
-#include "subStructFileCreate.h"
+#include "miscServerFunct.hpp"
+#include "dataObjOpr.hpp"
+#include "subStructFileCreate.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_structured_object.h"
-#include "eirods_log.h"
+#include "eirods_structured_object.hpp"
+#include "eirods_log.hpp"
 
 int
 rsSubStructFileCreate (rsComm_t *rsComm, subFile_t *subFile)

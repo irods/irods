@@ -8,7 +8,7 @@
 /* This is script-generated code.  */ 
 /* See dataObjRead.h for a description of this API call.*/
 
-#include "dataObjRead.h"
+#include "dataObjRead.hpp"
 /**
  * \fn rcDataObjRead (rcComm_t *conn, openedDataObjInp_t *dataObjReadInp,
  * bytesBuf_t *dataObjReadOutBBuf)

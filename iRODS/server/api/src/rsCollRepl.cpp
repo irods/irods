@@ -3,18 +3,18 @@
 /* This is script-generated code (for the most part).  */
 /* See dataObjRepl.h for a description of this API call.*/
 
-#include "collRepl.h"
-#include "dataObjOpr.h"
-#include "rodsLog.h"
-#include "objMetaOpr.h"
-#include "reGlobalsExtern.h"
-#include "reDefines.h"
-#include "openCollection.h"
-#include "readCollection.h"
-#include "closeCollection.h"
-#include "dataObjRepl.h"
-#include "rsApiHandler.h"
-#include "getRemoteZoneResc.h"
+#include "collRepl.hpp"
+#include "dataObjOpr.hpp"
+#include "rodsLog.hpp"
+#include "objMetaOpr.hpp"
+#include "reGlobalsExtern.hpp"
+#include "reDefines.hpp"
+#include "openCollection.hpp"
+#include "readCollection.hpp"
+#include "closeCollection.hpp"
+#include "dataObjRepl.hpp"
+#include "rsApiHandler.hpp"
+#include "getRemoteZoneResc.hpp"
 
 /* rsCollRepl - The Api handler of the rcCollRepl call - Replicate
  * a data object.

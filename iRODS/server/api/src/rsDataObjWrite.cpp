@@ -3,21 +3,21 @@
 /* This is script-generated code (for the most part).  */ 
 /* See dataObjWrite.h for a description of this API call.*/
 
-#include "dataObjWrite.h"
-#include "rodsLog.h"
-#include "objMetaOpr.h"
-#include "subStructFileWrite.h"
-#include "rsGlobalExtern.h"
-#include "rcGlobalExtern.h"
-#include "subStructFileRead.h"  /* XXXXX can be taken out when structFile api done */
-#include "reGlobalsExtern.h"
+#include "dataObjWrite.hpp"
+#include "rodsLog.hpp"
+#include "objMetaOpr.hpp"
+#include "subStructFileWrite.hpp"
+#include "rsGlobalExtern.hpp"
+#include "rcGlobalExtern.hpp"
+#include "subStructFileRead.hpp"  /* XXXXX can be taken out when structFile api done */
+#include "reGlobalsExtern.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_resource_backport.h"
-#include "eirods_hierarchy_parser.h" 
-#include "eirods_file_object.h" 
-#include "eirods_resource_redirect.h"
+#include "eirods_resource_backport.hpp"
+#include "eirods_hierarchy_parser.hpp" 
+#include "eirods_file_object.hpp" 
+#include "eirods_resource_redirect.hpp"
 
 
 int

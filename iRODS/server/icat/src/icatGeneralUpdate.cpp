@@ -12,11 +12,11 @@
  Initially, this was developed for use with a notification service which
  was postponed and now may be used with rule tables.
 */
-#include "rodsGeneralUpdate.h"
+#include "rodsGeneralUpdate.hpp"
 
-#include "rodsClient.h"
-#include "icatMidLevelRoutines.h"
-#include "icatLowLevel.h"
+#include "rodsClient.hpp"
+#include "icatMidLevelRoutines.hpp"
+#include "icatLowLevel.hpp"
 
 extern int sGetColumnInfo(int defineVal, char **tableName, char **columnName);
 extern icatSessionStruct *chlGetRcs();

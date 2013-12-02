@@ -3,7 +3,7 @@
 /* This is script-generated code.  */ 
 /* See fileClosedir.h for a description of this API call.*/
 
-#include "fileClosedir.h"
+#include "fileClosedir.hpp"
 
 int
 rcFileClosedir (rcComm_t *conn, fileClosedirInp_t *fileClosedirInp)

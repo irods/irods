@@ -1,14 +1,14 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
-#ifndef INDEX_H
-#define INDEX_H
-//#include "debug.h"
-#include "hashtable.h"
-#include "rules.h"
+#ifndef INDEX_HPP
+#define INDEX_HPP
+//#include "debug.hpp"
+#include "hashtable.hpp"
+#include "rules.hpp"
 #ifndef DEBUG
-#include "reGlobalsExtern.h"
+#include "reGlobalsExtern.hpp"
 #else
-#include "re.h"
+#include "re.hpp"
 #endif
 
 #define COND_INDEX_THRESHOLD 2

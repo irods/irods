@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See l3FilePutSingleBuf.h for a description of this API call.*/
 
-#include "l3FilePutSingleBuf.h"
+#include "l3FilePutSingleBuf.hpp"
 
 int
 rcL3FilePutSingleBuf (rcComm_t *conn, int l1descInx,

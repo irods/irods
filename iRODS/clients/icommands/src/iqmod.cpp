@@ -6,8 +6,8 @@
   in delayed execution rules.
 */
 
-#include "rodsClient.h"
-#include "parseCommandLine.h"
+#include "rodsClient.hpp"
+#include "parseCommandLine.hpp"
 
 #define MAX_SQL 300
 #define BIG_STR 200

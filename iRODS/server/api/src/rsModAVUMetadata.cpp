@@ -3,9 +3,9 @@
 /* This is script-generated code (for the most part).  */ 
 /* See modAVUMetadata.h for a description of this API call.*/
 
-#include "modAVUMetadata.h"
-#include "reGlobalsExtern.h"
-#include "icatHighLevelRoutines.h"
+#include "modAVUMetadata.hpp"
+#include "reGlobalsExtern.hpp"
+#include "icatHighLevelRoutines.hpp"
 
 int
 rsModAVUMetadata (rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp )

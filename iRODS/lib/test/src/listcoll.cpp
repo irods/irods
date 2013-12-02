@@ -5,8 +5,8 @@
  * 1) 
  */
 
-#include "rodsClient.h" 
-#include "miscUtil.h" 
+#include "rodsClient.hpp" 
+#include "miscUtil.hpp" 
 
 int
 printCollection (rcComm_t *conn, char *collection, int flags);

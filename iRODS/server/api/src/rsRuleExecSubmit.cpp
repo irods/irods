@@ -1,5 +1,5 @@
-#include "ruleExecSubmit.h"
-#include "icatHighLevelRoutines.h"
+#include "ruleExecSubmit.hpp"
+#include "icatHighLevelRoutines.hpp"
 
 int
 rsRuleExecSubmit (rsComm_t *rsComm, ruleExecSubmitInp_t *ruleExecSubmitInp,

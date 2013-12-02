@@ -1,10 +1,10 @@
 /* This is script-generated code.  */ 
 /* See execMyRule.h for a description of this API call.*/
 
-#include "execMyRule.h"
-#include "oprComplete.h"
-#include "dataObjPut.h"
-#include "dataObjGet.h"
+#include "execMyRule.hpp"
+#include "oprComplete.hpp"
+#include "dataObjPut.hpp"
+#include "dataObjGet.hpp"
 
 int
 rcExecMyRule (rcComm_t *conn, execMyRuleInp_t *execMyRuleInp, 

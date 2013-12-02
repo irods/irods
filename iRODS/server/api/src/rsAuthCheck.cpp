@@ -3,10 +3,10 @@
 
 /* See authCheck.h for a description of this API call.*/
 
-#include "authRequest.h"
-#include "authCheck.h"
-#include "icatHighLevelRoutines.h"
-#include "miscServerFunct.h"
+#include "authRequest.hpp"
+#include "authCheck.hpp"
+#include "icatHighLevelRoutines.hpp"
+#include "miscServerFunct.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -14,8 +14,8 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_kvp_string_parser.h"
-#include "eirods_auth_constants.h"
+#include "eirods_kvp_string_parser.hpp"
+#include "eirods_auth_constants.hpp"
 
 int
 rsAuthCheck (rsComm_t *rsComm, authCheckInp_t *authCheckInp, 

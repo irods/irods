@@ -3,7 +3,7 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_plugin_base.h"
+#include "eirods_plugin_base.hpp"
 
 extern "C" {
     /// =-=-=-=-=-=-=-

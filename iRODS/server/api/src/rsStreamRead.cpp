@@ -7,11 +7,11 @@
  */
 
 /* script generated code */
-#include "fileRead.h"
-#include "fileClose.h"
-#include "streamRead.h"
-#include "miscServerFunct.h"
-#include "rsGlobalExtern.h"
+#include "fileRead.hpp"
+#include "fileClose.hpp"
+#include "streamRead.hpp"
+#include "miscServerFunct.hpp"
+#include "rsGlobalExtern.hpp"
 
 int
 rsStreamRead (rsComm_t *rsComm, fileReadInp_t *streamReadInp,

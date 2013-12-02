@@ -5,31 +5,31 @@
 /* rsPhyBundleColl.c. See phyBundleColl.h for a description of
  * this API call.*/
 
-#include "phyBundleColl.h"
-#include "objMetaOpr.h"
-#include "resource.h"
-#include "collection.h"
-#include "specColl.h"
-#include "physPath.h"
-#include "dataObjOpr.h"
-#include "miscServerFunct.h"
-#include "openCollection.h"
-#include "readCollection.h"
-#include "closeCollection.h"
-#include "dataObjRepl.h"
-#include "dataObjUnlink.h"
-#include "dataObjCreate.h"
-#include "syncMountedColl.h"
-#include "regReplica.h"
-#include "unbunAndRegPhyBunfile.h"
-#include "fileChksum.h"
-#include "eirods_stacktrace.h"
+#include "phyBundleColl.hpp"
+#include "objMetaOpr.hpp"
+#include "resource.hpp"
+#include "collection.hpp"
+#include "specColl.hpp"
+#include "physPath.hpp"
+#include "dataObjOpr.hpp"
+#include "miscServerFunct.hpp"
+#include "openCollection.hpp"
+#include "readCollection.hpp"
+#include "closeCollection.hpp"
+#include "dataObjRepl.hpp"
+#include "dataObjUnlink.hpp"
+#include "dataObjCreate.hpp"
+#include "syncMountedColl.hpp"
+#include "regReplica.hpp"
+#include "unbunAndRegPhyBunfile.hpp"
+#include "fileChksum.hpp"
+#include "eirods_stacktrace.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods resource includes
-#include "eirods_resource_backport.h"
-#include "eirods_resource_redirect.h"
-#include "eirods_stacktrace.h"
+#include "eirods_resource_backport.hpp"
+#include "eirods_resource_redirect.hpp"
+#include "eirods_stacktrace.hpp"
 
 
 static rodsLong_t OneGig = (1024*1024*1024);

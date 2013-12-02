@@ -9,14 +9,14 @@
  *** For full copyright notice please refer to files in the COPYRIGHT directory                ***/
 /* Written by Jean-Yves Nief of CCIN2P3 and copyright assigned to Data Intensive Cyberinfrastructure Foundation */
 
-#include "reIn2p3SysRule.h"
-#include "genQuery.h"
+#include "reIn2p3SysRule.hpp"
+#include "genQuery.hpp"
 #ifndef windows_platform
 #include <sys/socket.h>
 #include <pthread.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include "eirods_stacktrace.h"
+#include "eirods_stacktrace.hpp"
 
 static pthread_mutex_t my_mutex;
 #endif

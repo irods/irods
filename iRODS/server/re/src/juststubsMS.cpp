@@ -1,13 +1,13 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-#include "reGlobalsExtern.h"
-#include "icatHighLevelRoutines.h"
-#include "rsGlobalExtern.h"
-#include "dataObjCreate.h"
-#include "objMetaOpr.h"
-#include "regDataObj.h"
-/* #include "reAction.h" */
-#include "miscServerFunct.h"
+#include "reGlobalsExtern.hpp"
+#include "icatHighLevelRoutines.hpp"
+#include "rsGlobalExtern.hpp"
+#include "dataObjCreate.hpp"
+#include "objMetaOpr.hpp"
+#include "regDataObj.hpp"
+/* #include "reAction.hpp" */
+#include "miscServerFunct.hpp"
 
 
 int

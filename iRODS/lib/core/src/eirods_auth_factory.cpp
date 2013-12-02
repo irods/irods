@@ -3,10 +3,10 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_auth_factory.h"
-#include "eirods_native_auth_object.h"
-#include "eirods_pam_auth_object.h"
-#include "eirods_osauth_auth_object.h"
+#include "eirods_auth_factory.hpp"
+#include "eirods_native_auth_object.hpp"
+#include "eirods_pam_auth_object.hpp"
+#include "eirods_osauth_auth_object.hpp"
 
 namespace eirods {
    /// =-=-=-=-=-=-=-

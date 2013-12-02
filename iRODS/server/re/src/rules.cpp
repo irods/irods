@@ -1,18 +1,18 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
-#include "debug.h"
+#include "debug.hpp"
 #ifdef DEBUG
-#include "re.h"
+#include "re.hpp"
 #else
-#include "reGlobalsExtern.h"
-#include "reHelpers1.h"
+#include "reGlobalsExtern.hpp"
+#include "reHelpers1.hpp"
 #endif
-#include "rules.h"
-#include "index.h"
-#include "functions.h"
-#include "arithmetics.h"
-#include "configuration.h"
-#include "filesystem.h"
+#include "rules.hpp"
+#include "index.hpp"
+#include "functions.hpp"
+#include "arithmetics.hpp"
+#include "configuration.hpp"
+#include "filesystem.hpp"
 
 
 

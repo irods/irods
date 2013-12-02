@@ -6,12 +6,12 @@
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "authRequest.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "authRequest.hpp"
 
 
 struct authPluginReqInp_t {

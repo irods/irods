@@ -2,7 +2,7 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_physical_object.h"
+#include "eirods_physical_object.hpp"
 
 
 namespace eirods {

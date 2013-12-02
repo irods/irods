@@ -6,11 +6,11 @@
 
 
 
-#ifndef PROC_API_REQUEST_H
-#define PROC_API_REQUEST_H
+#ifndef PROC_API_REQUEST_HPP
+#define PROC_API_REQUEST_HPP
 
-#include "rods.h"
-#include "apiHandler.h"
+#include "rods.hpp"
+#include "apiHandler.hpp"
 
 #ifdef  __cplusplus
 extern "C" {

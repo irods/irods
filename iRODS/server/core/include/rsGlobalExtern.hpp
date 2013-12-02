@@ -4,20 +4,20 @@
  * modules
  */
 
-#ifndef RS_GLOBAL_EXTERN_H
-#define RS_GLOBAL_EXTERN_H
+#ifndef RS_GLOBAL_EXTERN_HPP
+#define RS_GLOBAL_EXTERN_HPP
 
-#include "rods.h"
-#include "apiHandler.h"
-#include "initServer.h"
-#include "fileOpr.h"
-#include "objDesc.h"
-#include "querySpecColl.h"
-#include "miscUtil.h"
+#include "rods.hpp"
+#include "apiHandler.hpp"
+#include "initServer.hpp"
+#include "fileOpr.hpp"
+#include "objDesc.hpp"
+#include "querySpecColl.hpp"
+#include "miscUtil.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_resource_manager.h"
+#include "eirods_resource_manager.hpp"
 
 // =-=-=-=-=-=-=-
 // externs to singleton plugin managers

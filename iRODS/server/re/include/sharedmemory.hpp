@@ -1,9 +1,9 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
 
-#ifndef SHAREDMEMORY_H
-#define SHAREDMEMORY_H
-#include "debug.h"
+#ifndef SHAREDMEMORY_HPP
+#define SHAREDMEMORY_HPP
+#include "debug.hpp"
 
 #include <assert.h>
 #include <boost/interprocess/creation_tags.hpp>

@@ -3,20 +3,20 @@
 /* getRemoteZoneResc.h
  */
 
-#ifndef GET_REMOTE_ZONE_RESC_H
-#define GET_REMOTE_ZONE_RESC_H
+#ifndef GET_REMOTE_ZONE_RESC_HPP
+#define GET_REMOTE_ZONE_RESC_HPP
 
 #define REMOTE_CREATE   "remoteCreate"
 #define REMOTE_OPEN     "remoteOpen"
 
 /* This is a Object File I/O call */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "dataObjInpOut.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "dataObjInpOut.hpp"
 
 #if defined(RODS_SERVER)
 #define RS_GET_REMOTE_ZONE_RESC rsGetRemoteZoneResc

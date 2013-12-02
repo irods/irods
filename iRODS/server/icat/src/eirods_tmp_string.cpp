@@ -1,7 +1,7 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 
-#include "eirods_tmp_string.h"
+#include "eirods_tmp_string.hpp"
 
 #include <string.h>
 

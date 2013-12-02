@@ -6,12 +6,12 @@
 
 
 
-#ifndef RE_NETCDF_H
-#define RE_NETCDF_H
+#ifndef RE_NETCDF_HPP
+#define RE_NETCDF_HPP
 
-#include "apiHeaderAll.h"
-#include "reGlobalsExtern.h"
-#include "rsGlobalExtern.h"
+#include "apiHeaderAll.hpp"
+#include "reGlobalsExtern.hpp"
+#include "rsGlobalExtern.hpp"
 
 int
 msiNcOpen (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam,

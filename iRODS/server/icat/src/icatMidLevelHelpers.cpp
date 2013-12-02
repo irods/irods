@@ -9,9 +9,9 @@
 **************************************************************************/
 
 
-#include "icatMidLevelHelpers.h"
-#include "icatMidLevelRoutines.h"
-#include "stringOpr.h"
+#include "icatMidLevelHelpers.hpp"
+#include "icatMidLevelRoutines.hpp"
+#include "stringOpr.hpp"
 #include <stdio.h>
 #include <time.h>
 

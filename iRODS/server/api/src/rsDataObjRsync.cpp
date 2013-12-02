@@ -1,16 +1,16 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
-#include "reGlobalsExtern.h"
-#include "dataObjChksum.h"
-#include "dataObjRsync.h"
-#include "objMetaOpr.h"
-#include "specColl.h"
-#include "dataObjOpr.h"
-#include "rsApiHandler.h"
-#include "modDataObjMeta.h"
-#include "getRemoteZoneResc.h"
+#include "reGlobalsExtern.hpp"
+#include "dataObjChksum.hpp"
+#include "dataObjRsync.hpp"
+#include "objMetaOpr.hpp"
+#include "specColl.hpp"
+#include "dataObjOpr.hpp"
+#include "rsApiHandler.hpp"
+#include "modDataObjMeta.hpp"
+#include "getRemoteZoneResc.hpp"
 
-#include "eirods_resource_redirect.h"
+#include "eirods_resource_redirect.hpp"
 
 int
 rsDataObjRsync (rsComm_t *rsComm, dataObjInp_t *dataObjInp,

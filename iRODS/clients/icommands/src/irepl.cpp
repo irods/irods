@@ -6,10 +6,10 @@
  * irepl - The irods repl utility
  */
 
-#include "rodsClient.h"
-#include "parseCommandLine.h"
-#include "rodsPath.h"
-#include "replUtil.h"
+#include "rodsClient.hpp"
+#include "parseCommandLine.hpp"
+#include "rodsPath.hpp"
+#include "replUtil.hpp"
 void usage ();
 
 int

@@ -10,7 +10,7 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_data_object.h"
+#include "eirods_data_object.hpp"
 
 namespace eirods {
 

@@ -5,11 +5,11 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_first_class_object.h"
+#include "eirods_first_class_object.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "rcConnect.h"
+#include "rcConnect.hpp"
 
 
 namespace eirods {

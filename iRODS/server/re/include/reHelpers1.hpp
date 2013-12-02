@@ -6,10 +6,10 @@
 
 
 
-#ifndef RE_HELPERS1_H
-#define RE_HELPERS1_H
+#ifndef RE_HELPERS1_HPP
+#define RE_HELPERS1_HPP
 
-#include "reGlobalsExtern.h"
+#include "reGlobalsExtern.hpp"
 
 int
 checkRuleCondition(char *action, char *incond, 

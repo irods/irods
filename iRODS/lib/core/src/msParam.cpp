@@ -4,10 +4,10 @@
 /* msParam.c - function for handling msParam_t.
  */
 
-#include "msParam.h"
-#include "apiHeaderAll.h"
-#include "modDataObjMeta.h"
-#include "rcGlobalExtern.h"
+#include "msParam.hpp"
+#include "apiHeaderAll.hpp"
+#include "modDataObjMeta.hpp"
+#include "rcGlobalExtern.hpp"
 
 /* addMsParam - This is for backward compatibility only.
  *  addMsParamToArray should be used for all new functions

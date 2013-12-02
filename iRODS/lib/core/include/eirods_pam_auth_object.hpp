@@ -3,10 +3,10 @@
 #ifndef __PAM_AUTH_OBJECT_H__
 #define __PAM_AUTH_OBJECT_H__
 
-#include "eirods_error.h"
-#include "eirods_auth_object.h"
+#include "eirods_error.hpp"
+#include "eirods_auth_object.hpp"
 
-#include "rcConnect.h"
+#include "rcConnect.hpp"
 
 // =-=-=-=-=-=-=-
 // boost includes

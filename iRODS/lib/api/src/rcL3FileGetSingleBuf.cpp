@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See l3FileGetSingleBuf.h for a description of this API call.*/
 
-#include "l3FileGetSingleBuf.h"
+#include "l3FileGetSingleBuf.hpp"
 
 int
 rcL3FileGetSingleBuf (rcComm_t *conn, int l1descInx,

@@ -8,16 +8,16 @@
 
 
 
-#ifndef RC_MISC_H
-#define RC_MISC_H
+#ifndef RC_MISC_HPP
+#define RC_MISC_HPP
 
-#include "rods.h"
-#include "rodsError.h"
-#include "objInfo.h"
-#include "dataObjCopy.h"
-#include "execCmd.h"
-#include "rodsPath.h"
-#include "bulkDataObjPut.h"
+#include "rods.hpp"
+#include "rodsError.hpp"
+#include "objInfo.hpp"
+#include "dataObjCopy.hpp"
+#include "execCmd.hpp"
+#include "rodsPath.hpp"
+#include "bulkDataObjPut.hpp"
 
 #ifdef  __cplusplus
 extern "C" {

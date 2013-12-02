@@ -3,8 +3,8 @@
 #ifndef _unlink_replicator_H_
 #define _unlink_replicator_H_
 
-#include "eirods_error.h"
-#include "eirods_oper_replicator.h"
+#include "eirods_error.hpp"
+#include "eirods_oper_replicator.hpp"
 
 namespace eirods {
 

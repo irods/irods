@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See subStructFileStat.h for a description of this API call.*/
 
-#include "subStructFileStat.h"
+#include "subStructFileStat.hpp"
 
 int
 rcSubStructFileStat (rcComm_t *conn, subFile_t *subFile,

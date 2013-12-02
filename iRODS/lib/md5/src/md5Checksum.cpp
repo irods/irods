@@ -1,9 +1,9 @@
 /* md5Checksum.c - checksumming routine on the client side
  */
 
-#include "md5Checksum.h"
-#include "rcMisc.h"
-#include "eirods_stacktrace.h"
+#include "md5Checksum.hpp"
+#include "rcMisc.hpp"
+#include "eirods_stacktrace.hpp"
 
 #define MD5_BUF_SZ      (4 * 1024)
 

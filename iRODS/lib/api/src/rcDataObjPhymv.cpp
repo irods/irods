@@ -8,7 +8,7 @@
 /* This is script-generated code.  */ 
 /* See dataObjPhymv.h for a description of this API call.*/
 
-#include "dataObjPhymv.h"
+#include "dataObjPhymv.hpp"
 
 /**
  * \fn rcDataObjPhymv (rcComm_t *conn, dataObjInp_t *dataObjInp)

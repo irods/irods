@@ -2,15 +2,15 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* rcGlobalExtern.h - Extern global declaration for client API */
 
-#ifndef RC_GLOBAL_EXTERN_H
-#define RC_GLOBAL_EXTERN_H
+#ifndef RC_GLOBAL_EXTERN_HPP
+#define RC_GLOBAL_EXTERN_HPP
 
-#include "rods.h"
-#include "packStruct.h"
-#include "apiHandler.h"
-#include "objInfo.h"
-#include "msParam.h"
-#include "irodsGuiProgressCallback.h"
+#include "rods.hpp"
+#include "packStruct.hpp"
+#include "apiHandler.hpp"
+#include "objInfo.hpp"
+#include "msParam.hpp"
+#include "irodsGuiProgressCallback.hpp"
 
 extern packConstantArray_t PackConstantTable[];
 extern packInstructArray_t RodsPackTable[];

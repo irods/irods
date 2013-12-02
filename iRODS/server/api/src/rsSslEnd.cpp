@@ -3,7 +3,7 @@
 
 /* See sslEnd.h for a description of this API call.*/
 
-#include "sslEnd.h"
+#include "sslEnd.hpp"
 
 int
 rsSslEnd(rsComm_t *rsComm, sslEndInp_t *sslEndInp)

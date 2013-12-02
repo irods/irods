@@ -5,23 +5,23 @@
 /* This is script-generated code (for the most part).  */ 
 /* See collCreate.h for a description of this API call.*/
 
-#include "collCreate.h"
-#include "rodsLog.h"
-#include "regColl.h"
-#include "icatDefines.h"
-#include "fileMkdir.h"
-#include "subStructFileMkdir.h"
-#include "rsGlobalExtern.h"
-#include "rcGlobalExtern.h"
-#include "objMetaOpr.h"
-#include "collection.h"
-#include "specColl.h"
-#include "physPath.h"
+#include "collCreate.hpp"
+#include "rodsLog.hpp"
+#include "regColl.hpp"
+#include "icatDefines.hpp"
+#include "fileMkdir.hpp"
+#include "subStructFileMkdir.hpp"
+#include "rsGlobalExtern.hpp"
+#include "rcGlobalExtern.hpp"
+#include "objMetaOpr.hpp"
+#include "collection.hpp"
+#include "specColl.hpp"
+#include "physPath.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_resource_backport.h"
-#include "eirods_hierarchy_parser.h"
+#include "eirods_resource_backport.hpp"
+#include "eirods_hierarchy_parser.hpp"
 
 
 // =-=-=-=-=-=-=-

@@ -8,31 +8,31 @@
 
 #include <unistd.h> // JMC - backport 4598
 #include <fcntl.h> // JMC - backport 4598
-#include "rodsDef.h"
-#include "physPath.h"
-#include "dataObjOpr.h"
-#include "rodsDef.h"
-#include "rsGlobalExtern.h"
-#include "fileChksum.h"
-#include "modDataObjMeta.h"
-#include "objMetaOpr.h"
-#include "collection.h"
-#include "resource.h"
-#include "dataObjClose.h"
-#include "rcGlobalExtern.h"
-#include "reGlobalsExtern.h"
-#include "reDefines.h"
-#include "reSysDataObjOpr.h"
-#include "genQuery.h"
-#include "rodsClient.h"
+#include "rodsDef.hpp"
+#include "physPath.hpp"
+#include "dataObjOpr.hpp"
+#include "rodsDef.hpp"
+#include "rsGlobalExtern.hpp"
+#include "fileChksum.hpp"
+#include "modDataObjMeta.hpp"
+#include "objMetaOpr.hpp"
+#include "collection.hpp"
+#include "resource.hpp"
+#include "dataObjClose.hpp"
+#include "rcGlobalExtern.hpp"
+#include "reGlobalsExtern.hpp"
+#include "reDefines.hpp"
+#include "reSysDataObjOpr.hpp"
+#include "genQuery.hpp"
+#include "rodsClient.hpp"
 
 #include <iostream>
 
 // =-=-=-=-=-=-=-
 // eirods include
-#include "eirods_resource_backport.h"
-#include "eirods_hierarchy_parser.h"
-#include "eirods_stacktrace.h"
+#include "eirods_resource_backport.hpp"
+#include "eirods_hierarchy_parser.hpp"
+#include "eirods_stacktrace.hpp"
 
 int
 getFileMode (dataObjInp_t *dataObjInp)

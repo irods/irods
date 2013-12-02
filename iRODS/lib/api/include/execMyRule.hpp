@@ -4,17 +4,17 @@
  * Execute my rule
  */
 
-#ifndef EXEC_MY_RULE_H
-#define EXEC_MY_RULE_H
+#ifndef EXEC_MY_RULE_HPP
+#define EXEC_MY_RULE_HPP
 
 /* This is Object File I/O type API call */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "dataObjInpOut.h"
-#include "msParam.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "dataObjInpOut.hpp"
+#include "msParam.hpp"
 
 typedef struct ExecMyRuleInp {
     char myRule[META_STR_LEN];

@@ -5,12 +5,12 @@
 
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-#include "reGlobalsExtern.h"
-#include "icatHighLevelRoutines.h"
-#include "rodsXmsg.h"
-#include "getXmsgTicket.h"
-#include "sendXmsg.h"
-#include "rcvXmsg.h"
+#include "reGlobalsExtern.hpp"
+#include "icatHighLevelRoutines.hpp"
+#include "rodsXmsg.hpp"
+#include "getXmsgTicket.hpp"
+#include "sendXmsg.hpp"
+#include "rcvXmsg.hpp"
 
 #ifdef ADDR_64BITS
 #define CAST_PTR_INT (long int)

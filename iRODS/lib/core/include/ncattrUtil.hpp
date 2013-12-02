@@ -2,12 +2,12 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* ncattrUtil.h - Header for for ncattrUtil.c */
 
-#ifndef NCATTRUTIL_H
-#define NCATTRUTIL_H
+#ifndef NCATTRUTIL_HPP
+#define NCATTRUTIL_HPP
 
-#include "rodsClient.h"
-#include "parseCommandLine.h"
-#include "rodsPath.h"
+#include "rodsClient.hpp"
+#include "parseCommandLine.hpp"
+#include "rodsPath.hpp"
 
 #ifdef  __cplusplus
 extern "C" {

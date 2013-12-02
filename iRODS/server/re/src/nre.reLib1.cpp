@@ -2,18 +2,18 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* #define RE_LOG_RULES_TMP */
 #define HAS_MICROSDEF_T
-#include "reGlobals.h"
-#include "initServer.h"
-#include "reHelpers1.h"
-#include "reAction.h"
-#include "apiHeaderAll.h"
-#include "parser.h"
-#include "index.h"
-#include "rules.h"
-#include "cache.h"
-#include "locks.h"
-#include "functions.h"
-#include "configuration.h"
+#include "reGlobals.hpp"
+#include "initServer.hpp"
+#include "reHelpers1.hpp"
+#include "reAction.hpp"
+#include "apiHeaderAll.hpp"
+#include "parser.hpp"
+#include "index.hpp"
+#include "rules.hpp"
+#include "cache.hpp"
+#include "locks.hpp"
+#include "functions.hpp"
+#include "configuration.hpp"
 
 #ifdef MYMALLOC
 # Within reLib1.c here, change back the redefines of malloc back to normal

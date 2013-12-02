@@ -1,7 +1,7 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
-#ifndef _REGION_H
-#define _REGION_H
+#ifndef _REGION_HPP
+#define _REGION_HPP
 
 #include <stdio.h>
 #include <stdlib.h>

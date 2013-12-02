@@ -2,10 +2,10 @@
  */
 
 #include <fcntl.h>
-#include "debug.h"
-#include "sharedmemory.h"
-#include "utils.h"
-#include "filesystem.h"
+#include "debug.hpp"
+#include "sharedmemory.hpp"
+#include "utils.hpp"
+#include "filesystem.hpp"
 
 
 static boost::interprocess::shared_memory_object *shm_obj = NULL;

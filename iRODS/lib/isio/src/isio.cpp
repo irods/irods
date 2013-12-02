@@ -26,8 +26,8 @@
  */
 
 #include <stdio.h>
-#include "rodsClient.h"
-#include "dataObjRead.h"
+#include "rodsClient.hpp"
+#include "dataObjRead.hpp"
 
 #define IRODS_PREFIX "irods:"
 #define ISIO_MAX_OPEN_FILES 20

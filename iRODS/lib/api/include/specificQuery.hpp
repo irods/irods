@@ -3,19 +3,19 @@
 /* specificQuery.h
  */
 
-#ifndef SPECIFIC_QUERY_H
-#define SPECIFIC_QUERY_H
+#ifndef SPECIFIC_QUERY_HPP
+#define SPECIFIC_QUERY_HPP
 
 /* This is a metadata type API call */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "icatDefines.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "icatDefines.hpp"
 
-#include "rodsGenQuery.h"  /* for output struct, etc */
+#include "rodsGenQuery.hpp"  /* for output struct, etc */
 
 typedef struct {
    char *sql;

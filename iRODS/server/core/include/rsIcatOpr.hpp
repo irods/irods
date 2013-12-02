@@ -6,11 +6,11 @@
 
 
 
-#ifndef RS_ICAT_OPR_H
-#define RS_ICAT_OPR_H
+#ifndef RS_ICAT_OPR_HPP
+#define RS_ICAT_OPR_HPP
 
-#include "rods.h"
-#include "getRodsEnv.h"
+#include "rods.hpp"
+#include "getRodsEnv.hpp"
 
 int
 connectRcat (rsComm_t *rsComm);

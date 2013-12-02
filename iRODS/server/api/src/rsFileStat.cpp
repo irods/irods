@@ -5,15 +5,15 @@
 /* This is script-generated code (for the most part).  */ 
 /* See fileStat.h for a description of this API call.*/
 
-#include "fileStat.h"
-#include "miscServerFunct.h"
+#include "fileStat.hpp"
+#include "miscServerFunct.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_log.h"
-#include "eirods_file_object.h"
-#include "eirods_stacktrace.h"
-#include "eirods_resource_backport.h"
+#include "eirods_log.hpp"
+#include "eirods_file_object.hpp"
+#include "eirods_stacktrace.hpp"
+#include "eirods_resource_backport.hpp"
 
 
 int

@@ -2,8 +2,8 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_structured_object.h"
-#include "eirods_resource_manager.h"
+#include "eirods_structured_object.hpp"
+#include "eirods_resource_manager.hpp"
 
 extern eirods::resource_manager resc_mgr;
 

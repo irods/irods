@@ -24,7 +24,7 @@
 #include <stdlib.h>
 #include <dlfcn.h>
 #include <gssapi.h>
-#include "ikrbGSSAPIWrapper.h"
+#include "ikrbGSSAPIWrapper.hpp"
 
 OM_uint32 krb_gss_import_name
    ( OM_uint32 *a,       /* minor_status */

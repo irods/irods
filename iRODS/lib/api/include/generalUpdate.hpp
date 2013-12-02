@@ -3,8 +3,8 @@
 /* generalUpdate.h
  */
 
-#ifndef GENERAL_UPDATE_H
-#define GENERAL_UPDATE_H
+#ifndef GENERAL_UPDATE_HPP
+#define GENERAL_UPDATE_HPP
 
 /* This is a metadata type API call */
 
@@ -15,14 +15,14 @@
    irods-admin users.
 */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "icatDefines.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "icatDefines.hpp"
 
-#include "rodsGeneralUpdate.h"  /* for input/output structs, etc */
+#include "rodsGeneralUpdate.hpp"  /* for input/output structs, etc */
     
 #if defined(RODS_SERVER)
 #define RS_GENERAL_UPDATE rsGeneralUpdate

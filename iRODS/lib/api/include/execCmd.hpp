@@ -3,16 +3,16 @@
 /* execCmd.h
  */
 
-#ifndef EXEC_CMD_H
-#define EXEC_CMD_H
+#ifndef EXEC_CMD_HPP
+#define EXEC_CMD_HPP
 
 /* This is Object File I/O type API call */
 
-#include "rods.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "dataObjInpOut.h"
+#include "rods.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "dataObjInpOut.hpp"
 
 #define CMD_DIR		"cmd"
 /* for backward compatibility */

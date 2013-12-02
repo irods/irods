@@ -1,11 +1,11 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 
-#include "eirods_sql_logger.h"
-#include "eirods_error.h"
-#include "eirods_log.h"
+#include "eirods_sql_logger.hpp"
+#include "eirods_error.hpp"
+#include "eirods_log.hpp"
 
-#include "rodsLog.h"
+#include "rodsLog.hpp"
 
 #include <sstream>
 

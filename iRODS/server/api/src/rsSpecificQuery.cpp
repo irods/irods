@@ -3,9 +3,9 @@
 
 /* See specificQuery.h for a description of this API call.*/
 
-#include "specificQuery.h"
-#include "icatHighLevelRoutines.h"
-#include "miscUtil.h"
+#include "specificQuery.hpp"
+#include "icatHighLevelRoutines.hpp"
+#include "miscUtil.hpp"
 
 /* can be used for debug: */
 

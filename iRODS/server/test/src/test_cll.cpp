@@ -4,8 +4,8 @@
  Simple program to test the Rcat Low Level routines to Postgres or Oracle.
  */
 
-#include "rods.h"
-#include "icatLowLevel.h"
+#include "rods.hpp"
+#include "icatLowLevel.hpp"
 
 /*int ProcessType=CLIENT_PT; */
 

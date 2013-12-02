@@ -2,7 +2,7 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* definitions for rodsLog routines */
 
-#include "rodsError.h"
+#include "rodsError.hpp"
 
 #define LOG_SQL 11
 /* This is for logging SQL statements.  These are only logged when

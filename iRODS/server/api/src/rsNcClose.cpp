@@ -3,16 +3,16 @@
 /* This is script-generated code (for the most part).  */
 /* See dataObjGet.h for a description of this API call.*/
 
-#include "ncClose.h"
-#include "rodsLog.h"
-#include "dataObjClose.h"
-#include "rsGlobalExtern.h"
-#include "rcGlobalExtern.h"
-#include "rsApiHandler.h"
-#include "objMetaOpr.h"
-#include "physPath.h"
-#include "specColl.h"
-#include "getRemoteZoneResc.h"
+#include "ncClose.hpp"
+#include "rodsLog.hpp"
+#include "dataObjClose.hpp"
+#include "rsGlobalExtern.hpp"
+#include "rcGlobalExtern.hpp"
+#include "rsApiHandler.hpp"
+#include "objMetaOpr.hpp"
+#include "physPath.hpp"
+#include "specColl.hpp"
+#include "getRemoteZoneResc.hpp"
 
 int
 rsNcClose (rsComm_t *rsComm, ncCloseInp_t *ncCloseInp)

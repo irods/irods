@@ -44,13 +44,13 @@
 #endif
 #include <stdlib.h>
 
-#include "rods.h"
-#include "rodsPath.h"
+#include "rods.hpp"
+#include "rodsPath.hpp"
 
 #ifdef _WIN32
-#include "Unix2Nt.h"  /* May need something like this for Windows */ 
-#include "iRODSNtUtil.h"    /* May need something like this for Windows */
-#include "rcGlobalExtern.h"
+#include "Unix2Nt.hpp"  /* May need something like this for Windows */ 
+#include "iRODSNtUtil.hpp"    /* May need something like this for Windows */
+#include "rcGlobalExtern.hpp"
 #endif
 
 #define TMP_FLAG "%TEMPORARY_PW%"

@@ -7,10 +7,10 @@
 
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-#include "reGlobalsExtern.h"
-#include "icatHighLevelRoutines.h"
-#include "apiHeaderAll.h"
-#include "rsApiHandler.h"
+#include "reGlobalsExtern.hpp"
+#include "icatHighLevelRoutines.hpp"
+#include "apiHeaderAll.hpp"
+#include "rsApiHandler.hpp"
 
 #ifdef ADDR_64BITS
 #define CAST_PTR_INT (long int)

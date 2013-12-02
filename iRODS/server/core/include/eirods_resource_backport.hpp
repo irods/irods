@@ -6,11 +6,11 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_resource_manager.h"
+#include "eirods_resource_manager.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "rsGlobalExtern.h"
+#include "rsGlobalExtern.hpp"
 
 namespace eirods {
 

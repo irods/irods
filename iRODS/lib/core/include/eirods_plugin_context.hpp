@@ -10,8 +10,8 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_plugin_base.h"
-#include "eirods_first_class_object.h"
+#include "eirods_plugin_base.hpp"
+#include "eirods_first_class_object.hpp"
 
 namespace eirods {
     // =-=-=-=-=-=-=-

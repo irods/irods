@@ -3,7 +3,7 @@
 
 #ifndef REVARIABLEMAP_H_
 
-#include "restructs.h"
+#include "restructs.hpp"
 
 int setVarValue(char *varMap, ruleExecInfo_t *rei, Res *newVarValue);
 

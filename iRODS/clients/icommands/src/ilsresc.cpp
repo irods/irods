@@ -5,9 +5,9 @@
   This is a regular-user level utility to list the resources.
 */
 
-#include "rods.h"
-#include "rodsClient.h"
-#include "eirods_children_parser.h"
+#include "rods.hpp"
+#include "rodsClient.hpp"
+#include "eirods_children_parser.hpp"
 
 #define MAX_SQL 300
 #define BIG_STR 200

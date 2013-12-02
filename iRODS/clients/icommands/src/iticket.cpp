@@ -5,8 +5,8 @@
   This is an interface to the Ticket management system.
 */
 
-#include "rods.h"
-#include "rodsClient.h"
+#include "rods.hpp"
+#include "rodsClient.hpp"
 
 #define MAX_SQL 300
 #define BIG_STR 3000

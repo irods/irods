@@ -7,10 +7,10 @@
 
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-#include "reGlobalsExtern.h"
-#include "genQuery.h"
-#include "reHelpers1.h"
-#include "rcMisc.h"
+#include "reGlobalsExtern.hpp"
+#include "genQuery.hpp"
+#include "reHelpers1.hpp"
+#include "rcMisc.hpp"
 
 int _makeQuery( char *sel, char *cond, char **sql);
 

@@ -3,7 +3,7 @@
 /* This is script-generated code.  */ 
 /* See fileUnlink.h for a description of this API call.*/
 
-#include "fileUnlink.h"
+#include "fileUnlink.hpp"
 
 int
 rcFileUnlink (rcComm_t *conn, fileUnlinkInp_t *fileUnlinkInp)

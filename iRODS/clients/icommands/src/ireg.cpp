@@ -6,10 +6,10 @@
  * ireg - The irods reg utility
  */
 
-#include "rodsClient.h"
-#include "parseCommandLine.h"
-#include "rodsPath.h"
-#include "regUtil.h"
+#include "rodsClient.hpp"
+#include "parseCommandLine.hpp"
+#include "rodsPath.hpp"
+#include "regUtil.hpp"
 void usage ();
 
 int

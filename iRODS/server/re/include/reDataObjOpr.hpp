@@ -6,15 +6,15 @@
 
 
 
-#ifndef RE_DATA_OBJ_OPR_H
-#define RE_DATA_OBJ_OPR_H
+#ifndef RE_DATA_OBJ_OPR_HPP
+#define RE_DATA_OBJ_OPR_HPP
 
-#include "rods.h"
-#include "objMetaOpr.h"
-#include "dataObjRepl.h"
-#include "reGlobalsExtern.h"
-#include "rsGlobalExtern.h"
-#include "rcGlobalExtern.h"
+#include "rods.hpp"
+#include "objMetaOpr.hpp"
+#include "dataObjRepl.hpp"
+#include "reGlobalsExtern.hpp"
+#include "rsGlobalExtern.hpp"
+#include "rcGlobalExtern.hpp"
 
 /* the following are data object operation rule handler */
 

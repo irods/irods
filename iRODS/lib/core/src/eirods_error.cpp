@@ -2,11 +2,11 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_error.h"
+#include "eirods_error.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "rodsLog.h"
+#include "rodsLog.hpp"
 
 // =-=-=-=-=-=-=-
 // boost includes

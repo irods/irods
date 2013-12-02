@@ -3,8 +3,8 @@
 
 /* See getLimitedPassword.h for a description of this API call.*/
 
-#include "getLimitedPassword.h"
-#include "icatHighLevelRoutines.h"
+#include "getLimitedPassword.hpp"
+#include "icatHighLevelRoutines.hpp"
 
 int
 rsGetLimitedPassword (rsComm_t *rsComm, 

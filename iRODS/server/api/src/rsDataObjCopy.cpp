@@ -5,22 +5,22 @@
 /* This is script-generated code (for the most part).  */
 /* See dataObjCopy.h for a description of this API call.*/
 
-#include "dataObjCopy.h"
-#include "rodsLog.h"
-#include "objMetaOpr.h"
-#include "collection.h"
-#include "specColl.h"
-#include "dataObjOpen.h"
-#include "dataObjCreate.h"
-#include "dataObjRepl.h"
-#include "regDataObj.h"
-#include "rsGlobalExtern.h"
-#include "rcGlobalExtern.h"
-#include "getRemoteZoneResc.h"
+#include "dataObjCopy.hpp"
+#include "rodsLog.hpp"
+#include "objMetaOpr.hpp"
+#include "collection.hpp"
+#include "specColl.hpp"
+#include "dataObjOpen.hpp"
+#include "dataObjCreate.hpp"
+#include "dataObjRepl.hpp"
+#include "regDataObj.hpp"
+#include "rsGlobalExtern.hpp"
+#include "rcGlobalExtern.hpp"
+#include "getRemoteZoneResc.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_resource_redirect.h"
+#include "eirods_resource_redirect.hpp"
 
 int
 rsDataObjCopy250 (rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,

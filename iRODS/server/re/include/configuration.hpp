@@ -1,12 +1,12 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
-#ifndef _CONFIGURATION_H
-#define _CONFIGURATION_H
+#ifndef _CONFIGURATION_HPP
+#define _CONFIGURATION_HPP
 
-#include "rules.h"
-#include "hashtable.h"
-#include "parser.h"
-#include "datetime.h"
+#include "rules.hpp"
+#include "hashtable.hpp"
+#include "parser.hpp"
+#include "datetime.hpp"
 
 #define RESC_CORE_RULE_SET 0x1
 #define RESC_APP_RULE_SET 0x2

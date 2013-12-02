@@ -16,10 +16,10 @@
  */
 
 
-#ifndef READ_SERVER_CONFIG_H
-#define READ_SERVER_CONFIG_H
+#ifndef READ_SERVER_CONFIG_HPP
+#define READ_SERVER_CONFIG_HPP
 
-#include "rods.h"
+#include "rods.hpp"
 
 /* server host configuration */
 

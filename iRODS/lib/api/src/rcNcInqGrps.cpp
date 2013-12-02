@@ -6,7 +6,7 @@
 /* This is script-generated code.  */ 
 /* See ncInqGrps.h for a description of this API call.*/
 
-#include "ncInqGrps.h"
+#include "ncInqGrps.hpp"
 
 /**
  * \fn rcNcInqGrps (rcComm_t *conn, ncInqGrpsInp_t *ncInqGrpsInp, ncInqGrpsOut_t **ncInqGrpsOut)

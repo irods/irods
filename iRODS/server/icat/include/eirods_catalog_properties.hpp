@@ -12,7 +12,7 @@
 // =-=-=-=-=-=-=-
 // eirods includes
 
-#include "eirods_lookup_table.h"
+#include "eirods_lookup_table.hpp"
 
 
 namespace eirods {

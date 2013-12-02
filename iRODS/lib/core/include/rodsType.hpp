@@ -6,14 +6,14 @@
 
 
 
-#ifndef RODS_TYPE_H
-#define RODS_TYPE_H
+#ifndef RODS_TYPE_HPP
+#define RODS_TYPE_HPP
 
 #include <sys/types.h>
 #if defined(solaris_platform) || defined(aix_platform)
 #include <strings.h>
 #endif
-#include "rodsDef.h"
+#include "rodsDef.hpp"
 
 #if defined(osx_platform)
 typedef int64_t rodsLong_t;

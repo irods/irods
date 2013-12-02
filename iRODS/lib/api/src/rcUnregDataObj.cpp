@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See unregDataObj.h for a description of this API call.*/
 
-#include "unregDataObj.h"
+#include "unregDataObj.hpp"
 
 int
 rcUnregDataObj (rcComm_t *conn, unregDataObj_t *unregDataObjInp)

@@ -12,11 +12,11 @@
 
 
 
-#ifndef DATA_OBJ_INP_OUT_H
-#define DATA_OBJ_INP_OUT_H
+#ifndef DATA_OBJ_INP_OUT_HPP
+#define DATA_OBJ_INP_OUT_HPP
 
 
-#include "rodsDef.h"
+#include "rodsDef.hpp"
 
 #ifdef PARA_OPR
 #if defined(aix_platform)

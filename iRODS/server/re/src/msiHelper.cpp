@@ -7,7 +7,7 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* reHelper.c */
 
-#include "msiHelper.h"
+#include "msiHelper.hpp"
 /**
  * \fn msiGetStdoutInExecCmdOut (msParam_t *inpExecCmdOut, msParam_t *outStr, ruleExecInfo_t *rei)
  *

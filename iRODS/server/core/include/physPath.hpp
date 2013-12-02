@@ -8,18 +8,18 @@
 
 
 
-#ifndef PHYS_PATH_H
-#define PHYS_PATH_H
+#ifndef PHYS_PATH_HPP
+#define PHYS_PATH_HPP
 
-#include "rods.h"
-#include "initServer.h"
-#include "objInfo.h"
-#include "dataObjInpOut.h"
-#include "fileRename.h"
-#include "miscUtil.h"
-#include "structFileSync.h"
-#include "structFileExtAndReg.h"
-#include "dataObjOpenAndStat.h"
+#include "rods.hpp"
+#include "initServer.hpp"
+#include "objInfo.hpp"
+#include "dataObjInpOut.hpp"
+#include "fileRename.hpp"
+#include "miscUtil.hpp"
+#include "structFileSync.hpp"
+#include "structFileExtAndReg.hpp"
+#include "dataObjOpenAndStat.hpp"
 
 #define ORPHAN_DIR      "orphan"
 #define REPL_DIR        "replica"

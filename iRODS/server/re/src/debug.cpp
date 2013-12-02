@@ -1,13 +1,13 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
 
-#include "debug.h"
-#include "stdio.h"
-#include "time.h"
-#include "parser.h"
+#include "debug.hpp"
+#include "stdio.hpp"
+#include "time.hpp"
+#include "parser.hpp"
 
 #ifdef DEBUG
-#include "re.h"
+#include "re.hpp"
 int GlobalAllRuleExecFlag=0;
 
 int GlobalREDebugFlag = 0;

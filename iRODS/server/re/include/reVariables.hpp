@@ -3,15 +3,15 @@
 /* reVariables.h - header file for Variables that are 'used' when computing the conditional
  * expressions in a rule by the the rule engine module
  */
-#ifndef RE_VARIABLES_H
-#define RE_VARIABLES_H
+#ifndef RE_VARIABLES_HPP
+#define RE_VARIABLES_HPP
 
-#include "rodsUser.h"
-#include "rods.h"
-#include "rcGlobalExtern.h"
-#include "reDefines.h"
-#include "objInfo.h"
-#include "regExpMatch.h"
+#include "rodsUser.hpp"
+#include "rods.hpp"
+#include "rcGlobalExtern.hpp"
+#include "reDefines.hpp"
+#include "objInfo.hpp"
+#include "regExpMatch.hpp"
 
 /*************
 typedef struct {

@@ -3,7 +3,7 @@
 /* This is script-generated code.  */ 
 /* See fileMkdir.h for a description of this API call.*/
 
-#include "fileMkdir.h"
+#include "fileMkdir.hpp"
 
 int
 rcFileMkdir (rcComm_t *conn, fileMkdirInp_t *fileMkdirInp)

@@ -12,8 +12,8 @@
    Current tests include two queries on ACLs and one that gets
    object and sorted resource information.
 */
-#include "rods.h"
-#include "rodsClient.h"
+#include "rods.hpp"
+#include "rodsClient.hpp"
 
 void usage (char *prog);
 

@@ -8,7 +8,7 @@
 #include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
-#include "libs3.h"
+#include "libs3.hpp"
 
 static int statusG = 0;
 

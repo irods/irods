@@ -2,9 +2,9 @@
  * iexecmd - The irods utility to execute user composed rules.
 */
 
-#include "rodsClient.h"
-#include "parseCommandLine.h"
-#include "rodsPath.h"
+#include "rodsClient.hpp"
+#include "parseCommandLine.hpp"
+#include "rodsPath.hpp"
 void usage ();
 
 int

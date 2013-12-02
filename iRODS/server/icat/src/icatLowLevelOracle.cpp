@@ -14,7 +14,7 @@
 
 */
 
-#include "icatLowLevelOracle.h"
+#include "icatLowLevelOracle.hpp"
 int _cllFreeStatementColumns(icatSessionStruct *icss, int statementNumber);
 
 int cllBindVarCount=0;

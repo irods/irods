@@ -3,8 +3,8 @@
 #ifndef _object_oper_H_
 #define _object_oper_H_
 
-#include "eirods_error.h"
-#include "eirods_file_object.h"
+#include "eirods_error.hpp"
+#include "eirods_file_object.hpp"
 
 namespace eirods {
 

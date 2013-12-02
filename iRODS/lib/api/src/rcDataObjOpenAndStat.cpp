@@ -6,7 +6,7 @@
 /* This is script-generated code.  */ 
 /* See dataObjOpenAndStat.h for a description of this API call.*/
 
-#include "dataObjOpenAndStat.h"
+#include "dataObjOpenAndStat.hpp"
 
 /**
  * \fn rcDataObjOpenAndStat (rcComm_t *conn, dataObjInp_t *dataObjInp,

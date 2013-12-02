@@ -6,19 +6,19 @@
 
 
 
-#ifndef RESOURCE_H
-#define RESOURCE_H
+#ifndef RESOURCE_HPP
+#define RESOURCE_HPP
 
 
-#include "rods.h"
-#include "initServer.h"
-#include "objInfo.h"
-#include "dataObjInpOut.h"
-#include "ruleExecSubmit.h"
-#include "rcGlobalExtern.h"
-#include "rsGlobalExtern.h"
-#include "reIn2p3SysRule.h"
-#include "reSysDataObjOpr.h"
+#include "rods.hpp"
+#include "initServer.hpp"
+#include "objInfo.hpp"
+#include "dataObjInpOut.hpp"
+#include "ruleExecSubmit.hpp"
+#include "rcGlobalExtern.hpp"
+#include "rsGlobalExtern.hpp"
+#include "reIn2p3SysRule.hpp"
+#include "reSysDataObjOpr.hpp"
 
 /* definition for the flag in queRescGrp and queResc */
 #define BOTTOM_FLAG     0

@@ -6,7 +6,7 @@
 /* This is script-generated code.  */ 
 /* See ncGetVarsByType.h for a description of this API call.*/
 
-#include "ncGetVarsByType.h"
+#include "ncGetVarsByType.hpp"
 
 /**
  * \fn rcNcGetVarsByType (rcComm_t *conn,  ncGetVarInp_t *ncGetVarInp,

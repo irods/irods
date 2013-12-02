@@ -2,10 +2,10 @@
  * irule - The irods utility to execute user composed rules.
 */
 
-#include "rodsClient.h"
-#include "parseCommandLine.h"
-#include "rodsPath.h"
-#include "getUtil.h"
+#include "rodsClient.hpp"
+#include "parseCommandLine.hpp"
+#include "rodsPath.hpp"
+#include "getUtil.hpp"
 #define string sizeFlag /* in rodsArg, use the sizeFlag field for string mode */
 
 void usage ();

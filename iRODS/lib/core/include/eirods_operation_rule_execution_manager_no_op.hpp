@@ -6,7 +6,7 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_operation_rule_execution_manager_base.h"
+#include "eirods_operation_rule_execution_manager_base.hpp"
 
 namespace eirods {
     /// =-=-=-=-=-=-=-

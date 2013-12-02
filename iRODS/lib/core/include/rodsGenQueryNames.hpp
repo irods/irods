@@ -5,10 +5,10 @@
  * Maps the user specified strings to the corresponding #define values.
  */
 
-#ifndef IRODS_GEN_QUERY_NAMES_H
-#define IRODS_GEN_QUERY_NAMES_H
+#ifndef IRODS_GEN_QUERY_NAMES_HPP
+#define IRODS_GEN_QUERY_NAMES_HPP
 
-#include "rodsGenQuery.h"
+#include "rodsGenQuery.hpp"
 
 typedef struct {
    int columnId;

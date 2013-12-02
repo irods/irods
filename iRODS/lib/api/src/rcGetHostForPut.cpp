@@ -3,7 +3,7 @@
 /* This is script-generated code.  */ 
 /* See getHostForPut.h for a description of this API call.*/
 
-#include "getHostForPut.h"
+#include "getHostForPut.hpp"
 
 int
 rcGetHostForPut (rcComm_t *conn, dataObjInp_t *dataObjInp,

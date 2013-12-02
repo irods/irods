@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See phyBundleColl.h for a description of this API call.*/
 
-#include "phyBundleColl.h"
+#include "phyBundleColl.hpp"
 
 int
 rcPhyBundleColl (rcComm_t *conn, 

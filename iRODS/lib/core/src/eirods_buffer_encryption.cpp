@@ -3,7 +3,7 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_buffer_encryption.h"
+#include "eirods_buffer_encryption.hpp"
 
 // =-=-=-=-=-=-=-
 // ssl includes
@@ -16,8 +16,8 @@
 #include <iomanip>
 
 
-#include "global.h"
-#include "md5.h"
+#include "global.hpp"
+#include "md5.hpp"
 
 namespace eirods {
 

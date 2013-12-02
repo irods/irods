@@ -4,21 +4,21 @@
    General Query
  */
 
-#ifndef GENERAL_QUERY_H
-#define GENERAL_QUERY_H
+#ifndef GENERAL_QUERY_HPP
+#define GENERAL_QUERY_HPP
 
 /* This is a high level file type API call */
 
-#include "rods.h"
+#include "rods.hpp"
 #if 0
-#include "rcMisc.h"
+#include "rcMisc.hpp"
 #endif
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "icatDefines.h"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "icatDefines.hpp"
 
-#include "rodsGenQuery.h"  /* for input/output structs, etc */
+#include "rodsGenQuery.hpp"  /* for input/output structs, etc */
 
 #if defined(RODS_SERVER)
 #define RS_GEN_QUERY rsGenQuery

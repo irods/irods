@@ -3,8 +3,8 @@
 
 /* ooiCi.c - OOI CI routines
  */
-#include "ooiCi.h"
-#include "msParam.h"
+#include "ooiCi.hpp"
+#include "msParam.hpp"
 
 /* dictSetAttr - set a key/value pair. For non array, arrLen = 0 */ 
 int

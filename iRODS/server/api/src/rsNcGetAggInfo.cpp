@@ -3,22 +3,22 @@
 /* This is script-generated code (for the most part).  */
 /* See ncGetAggInfo.h for a description of this API call.*/
 
-#include "ncGetAggInfo.h"
-#include "ncInq.h"
-#include "rodsLog.h"
-#include "dataObjOpen.h"
-#include "rsGlobalExtern.h"
-#include "rcGlobalExtern.h"
-#include "rsApiHandler.h"
-#include "objMetaOpr.h"
-#include "physPath.h"
-#include "specColl.h"
-#include "openCollection.h"
-#include "readCollection.h"
-#include "closeCollection.h"
-#include "closeCollection.h"
-#include "dataObjPut.h"
-#include "dataObjGet.h"
+#include "ncGetAggInfo.hpp"
+#include "ncInq.hpp"
+#include "rodsLog.hpp"
+#include "dataObjOpen.hpp"
+#include "rsGlobalExtern.hpp"
+#include "rcGlobalExtern.hpp"
+#include "rsApiHandler.hpp"
+#include "objMetaOpr.hpp"
+#include "physPath.hpp"
+#include "specColl.hpp"
+#include "openCollection.hpp"
+#include "readCollection.hpp"
+#include "closeCollection.hpp"
+#include "closeCollection.hpp"
+#include "dataObjPut.hpp"
+#include "dataObjGet.hpp"
 
 int
 rsNcGetAggInfo (rsComm_t *rsComm, ncOpenInp_t *ncOpenInp,

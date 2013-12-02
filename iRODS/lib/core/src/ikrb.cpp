@@ -28,13 +28,13 @@ sets up the login session.
 #include <stdlib.h>
 #include <ctype.h>
 #include <unistd.h>
-#include "rods.h"
-#include "rcGlobalExtern.h"
+#include "rods.hpp"
+#include "rcGlobalExtern.hpp"
 
 #if defined(KRB_AUTH)
 #include <gssapi.h>
 #if defined(GSI_AUTH)
-#include "ikrbGSSAPIWrapper.h"
+#include "ikrbGSSAPIWrapper.hpp"
 #endif
 #endif
 
@@ -42,7 +42,7 @@ sets up the login session.
 #include <sys/time.h>           /* for IKRB_TIMING only */
 #include <string.h>
 
-#include "rodsErrorTable.h"
+#include "rodsErrorTable.hpp"
 
 #if defined(KRB_AUTH) && defined(GSI_AUTH)
 /* When both KRB and GSI are used at the same time, redefine the

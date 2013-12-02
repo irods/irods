@@ -3,17 +3,17 @@
 /* oprComplete.h
  */
 
-#ifndef OPR_COMPLETE_H
-#define OPR_COMPLETE_H
+#ifndef OPR_COMPLETE_HPP
+#define OPR_COMPLETE_HPP
 
 /* This is Object File I/O type API call */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "reGlobalsExtern.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "reGlobalsExtern.hpp"
 
 #if defined(RODS_SERVER)
 #define RS_OPR_COMPLETE rsOprComplete

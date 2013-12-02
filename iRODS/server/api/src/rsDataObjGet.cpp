@@ -5,25 +5,25 @@
 /* This is script-generated code (for the most part).  */ 
 /* See dataObjGet.h for a description of this API call.*/
 
-#include "dataObjGet.h"
-#include "rodsLog.h"
-#include "dataGet.h"
-#include "fileGet.h"
-#include "dataObjOpen.h"
-#include "rsGlobalExtern.h"
-#include "rcGlobalExtern.h"
-#include "rsApiHandler.h"
-#include "objMetaOpr.h"
-#include "physPath.h"
-#include "specColl.h"
-#include "subStructFileGet.h"
-#include "getRemoteZoneResc.h"
+#include "dataObjGet.hpp"
+#include "rodsLog.hpp"
+#include "dataGet.hpp"
+#include "fileGet.hpp"
+#include "dataObjOpen.hpp"
+#include "rsGlobalExtern.hpp"
+#include "rcGlobalExtern.hpp"
+#include "rsApiHandler.hpp"
+#include "objMetaOpr.hpp"
+#include "physPath.hpp"
+#include "specColl.hpp"
+#include "subStructFileGet.hpp"
+#include "getRemoteZoneResc.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_resource_redirect.h"
-#include "eirods_hierarchy_parser.h"
-#include "eirods_resource_backport.h"
+#include "eirods_resource_redirect.hpp"
+#include "eirods_hierarchy_parser.hpp"
+#include "eirods_resource_backport.hpp"
 
 int
 rsDataObjGet (rsComm_t *rsComm, dataObjInp_t *dataObjInp,

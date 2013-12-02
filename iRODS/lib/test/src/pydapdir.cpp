@@ -2,8 +2,8 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* pydapdir.c - test the basic routine for parsing a pydap web page */
 
-#include "rodsClient.h" 
-#include "regUtil.h" 
+#include "rodsClient.hpp" 
+#include "regUtil.hpp" 
 #include <curl/curl.h>
 #include <jansson.h>
 

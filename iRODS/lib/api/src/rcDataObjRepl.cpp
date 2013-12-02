@@ -10,7 +10,7 @@
 /* This is script-generated code.  */ 
 /* See dataObjRepl.h for a description of this API call.*/
 
-#include "dataObjRepl.h"
+#include "dataObjRepl.hpp"
 
 /**
  * \fn rcDataObjRepl (rcComm_t *conn, dataObjInp_t *dataObjInp)

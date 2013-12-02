@@ -4,11 +4,11 @@
   ICAT test program for the GeneralUpdate.
 */
 
-#include "rodsClient.h"
-#include "readServerConfig.h"
+#include "rodsClient.hpp"
+#include "readServerConfig.hpp"
 
-#include "icatHighLevelRoutines.h"
-#include "rodsGeneralUpdate.h"
+#include "icatHighLevelRoutines.hpp"
+#include "rodsGeneralUpdate.hpp"
 
 int sTest(int i1, int i2);
 int sTest2(int i1, int i2, int i3);

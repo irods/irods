@@ -18,8 +18,8 @@ J. Kercheval Sun, 03/10/1991 18:25:48 add error_type in is_valid_pattern
 J. Kercheval Sun, 03/10/1991 18:47:47 error return from matche()
 J. Kercheval Tue, 03/12/1991 22:24:49 Released as V1.1 to Public Domain
 */
-#ifndef MATCH__H
-#define MATCH__H
+#ifndef MATCH__HPP
+#define MATCH__HPP
 /*
 Wildcard Pattern Matching
 */

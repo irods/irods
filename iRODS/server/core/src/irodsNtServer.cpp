@@ -1,6 +1,6 @@
 /* irodsNtServer.c */
 #include <string.h>
-#include "irodsntutil.h"
+#include "irodsntutil.hpp"
 #include <io.h>
 #include <fcntl.h>
 #include <windows.h>

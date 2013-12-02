@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See endTransaction.h for a description of this API call.*/
 
-#include "endTransaction.h"
+#include "endTransaction.hpp"
 
 int
 rcEndTransaction (rcComm_t *conn, endTransactionInp_t *endTransactionInp)

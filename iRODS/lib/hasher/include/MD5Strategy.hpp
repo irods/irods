@@ -3,9 +3,9 @@
 #ifndef _MD5Strategy_H_
 #define _MD5Strategy_H_
 
-#include "HashStrategy.h"
-#include "global.h"             // cause md5.h needs it
-#include "md5.h"
+#include "HashStrategy.hpp"
+#include "global.hpp"             // cause md5.h needs it
+#include "md5.hpp"
 
 namespace eirods {
     

@@ -3,22 +3,22 @@
 /* ncGetAggInfo.h
  */
 
-#ifndef NC_GET_AGG_INFO_H
-#define NC_GET_AGG_INFO_H
+#ifndef NC_GET_AGG_INFO_HPP
+#define NC_GET_AGG_INFO_HPP
 
 /* This is a NETCDF API call */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "dataObjInpOut.h"
-#include "ncOpen.h"
-#include "ncGetAggElement.h"
-#include "ncInq.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "dataObjInpOut.hpp"
+#include "ncOpen.hpp"
+#include "ncGetAggElement.hpp"
+#include "ncInq.hpp"
 #ifdef NETCDF_API
-#include "netcdf.h"
+#include "netcdf.hpp"
 #endif
 
 /* The file name for the aggregate info */

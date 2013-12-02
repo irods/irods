@@ -6,8 +6,8 @@
 
 
 
-#ifndef PACK_INSTRUCT_H
-#define PACK_INSTRUCT_H
+#ifndef PACK_INSTRUCT_HPP
+#define PACK_INSTRUCT_HPP
 
 #define IRODS_STR_PI "str myStr[MAX_NAME_LEN];"
 #define STR_PI "str myStr;"

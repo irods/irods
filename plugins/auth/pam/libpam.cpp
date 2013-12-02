@@ -3,27 +3,27 @@
 // =-=-=-=-=-=-=-
 // irods includes
 #define USE_SSL 1
-#include "sslSockComm.h"
+#include "sslSockComm.hpp"
 
-#include "rodsDef.h"
-#include "msParam.h"
-#include "reGlobalsExtern.h"
-#include "rcConnect.h"
-#include "authRequest.h"
-#include "authResponse.h"
-#include "authCheck.h"
-#include "miscServerFunct.h"
-#include "authPluginRequest.h"
-#include "icatHighLevelRoutines.h"
+#include "rodsDef.hpp"
+#include "msParam.hpp"
+#include "reGlobalsExtern.hpp"
+#include "rcConnect.hpp"
+#include "authRequest.hpp"
+#include "authResponse.hpp"
+#include "authCheck.hpp"
+#include "miscServerFunct.hpp"
+#include "authPluginRequest.hpp"
+#include "icatHighLevelRoutines.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_auth_plugin.h"
-#include "eirods_auth_constants.h"
-#include "eirods_pam_auth_object.h"
-#include "eirods_stacktrace.h"
-#include "eirods_kvp_string_parser.h"
-#include "eirods_client_server_negotiation.h"
+#include "eirods_auth_plugin.hpp"
+#include "eirods_auth_constants.hpp"
+#include "eirods_pam_auth_object.hpp"
+#include "eirods_stacktrace.hpp"
+#include "eirods_kvp_string_parser.hpp"
+#include "eirods_client_server_negotiation.hpp"
 
 // =-=-=-=-=-=-=-
 // boost includes

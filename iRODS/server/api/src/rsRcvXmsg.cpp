@@ -3,8 +3,8 @@
 /* rcvXmsg.c
  */
 
-#include "rcvXmsg.h"
-#include "xmsgLib.h"
+#include "rcvXmsg.hpp"
+#include "xmsgLib.hpp"
 
 extern ticketHashQue_t XmsgHashQue[];
 extern xmsgQue_t XmsgQue;

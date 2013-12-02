@@ -8,7 +8,7 @@
 /* This is script-generated code.  */ 
 /* See ncCreate.h for a description of this API call.*/
 
-#include "ncCreate.h"
+#include "ncCreate.hpp"
 
 /**
  * \fn rcNcCreate (rcComm_t *conn, ncOpenInp_t *ncCreateInp, int *ncid)

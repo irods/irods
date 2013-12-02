@@ -5,17 +5,17 @@
 /* modDataObjMeta.h
  */
 
-#ifndef MOD_DATA_OBJ_META_H
-#define MOD_DATA_OBJ_META_H
+#ifndef MOD_DATA_OBJ_META_HPP
+#define MOD_DATA_OBJ_META_HPP
 
 /* This is Object File I/O type API call */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "dataObjInpOut.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "dataObjInpOut.hpp"
 
 typedef struct {
     dataObjInfo_t *dataObjInfo;

@@ -3,17 +3,17 @@
 /* modColl.h
  */
 
-#ifndef MOD_COLL_H
-#define MOD_COLL_H
+#ifndef MOD_COLL_HPP
+#define MOD_COLL_HPP
 
 /* This is Object File I/O type API call */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "dataObjInpOut.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "dataObjInpOut.hpp"
 
 #if defined(RODS_SERVER)
 #define RS_MOD_COLL rsModColl

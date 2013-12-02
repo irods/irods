@@ -5,9 +5,9 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_plugin_context.h"
-#include "eirods_network_types.h"
-#include "eirods_operation_wrapper.h"
+#include "eirods_plugin_context.hpp"
+#include "eirods_network_types.hpp"
+#include "eirods_operation_wrapper.hpp"
 
 #include <iostream>
 

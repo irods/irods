@@ -3,8 +3,8 @@
 /* modMetadata.h
  */
 
-#ifndef MOD_AVU_METADATA_H
-#define MOD_AVU_METADATA_H
+#ifndef MOD_AVU_METADATA_HPP
+#define MOD_AVU_METADATA_HPP
 
 /* This is a metadata type API call */
 
@@ -16,12 +16,12 @@
    the genQuery call.
 */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "icatDefines.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "icatDefines.hpp"
 
 typedef struct {
    char *arg0;

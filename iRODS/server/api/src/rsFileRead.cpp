@@ -7,15 +7,15 @@
  */
 
 /* script generated code */
-#include "fileRead.h"
-#include "miscServerFunct.h"
-#include "rsGlobalExtern.h"
+#include "fileRead.hpp"
+#include "miscServerFunct.hpp"
+#include "rsGlobalExtern.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_log.h"
-#include "eirods_file_object.h"
-#include "eirods_stacktrace.h"
+#include "eirods_log.hpp"
+#include "eirods_file_object.hpp"
+#include "eirods_stacktrace.hpp"
 
 int
 rsFileRead (rsComm_t *rsComm, fileReadInp_t *fileReadInp,

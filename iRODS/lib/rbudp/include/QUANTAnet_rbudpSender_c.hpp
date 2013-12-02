@@ -24,7 +24,7 @@
 
 #define _QUANTAPLUS_RBUDPSENDER_C
 
-#include "QUANTAnet_rbudpBase_c.h"
+#include "QUANTAnet_rbudpBase_c.hpp"
 
 #define SEND_PORT	38000
 #define SEND_BUF_SIZE	 64*1024*1024

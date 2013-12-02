@@ -16,13 +16,13 @@
 **************************************************************************/
 
 
-#include "icatMidLevelRoutines.h"
-#include "icatLowLevel.h"
-#include "icatMidLevelHelpers.h"
-#include "eirods_stacktrace.h"
-#include "eirods_log.h"
+#include "icatMidLevelRoutines.hpp"
+#include "icatLowLevel.hpp"
+#include "icatMidLevelHelpers.hpp"
+#include "eirods_stacktrace.hpp"
+#include "eirods_log.hpp"
 
-#include "rcMisc.h"
+#include "rcMisc.hpp"
 
 /* Size of the R_OBJT_AUDIT comment field;must match table column definition */
 #define AUDIT_COMMENT_MAX_SIZE       1000

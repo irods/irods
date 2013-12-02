@@ -3,11 +3,11 @@
 #ifndef windows_platform
 #include <sys/time.h>
 #endif
-#include "rodsPath.h"
-#include "rodsErrorTable.h"
-#include "rodsLog.h"
-#include "rsyncUtil.h"
-#include "miscUtil.h"
+#include "rodsPath.hpp"
+#include "rodsErrorTable.hpp"
+#include "rodsLog.hpp"
+#include "rsyncUtil.hpp"
+#include "miscUtil.hpp"
 
 static int CurrentTime = 0;
 int

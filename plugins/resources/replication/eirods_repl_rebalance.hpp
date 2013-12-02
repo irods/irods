@@ -6,11 +6,11 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_error.h"
+#include "eirods_error.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "icatHighLevelRoutines.h"
+#include "icatHighLevelRoutines.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes

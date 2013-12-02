@@ -3,9 +3,9 @@
 /* This is script-generated code (for the most part).  */ 
 /* See endTransaction.h for a description of this API call.*/
 
-#include "endTransaction.h"
-#include "reGlobalsExtern.h"
-#include "icatHighLevelRoutines.h"
+#include "endTransaction.hpp"
+#include "reGlobalsExtern.hpp"
+#include "icatHighLevelRoutines.hpp"
 
 int
 rsEndTransaction (rsComm_t *rsComm, endTransactionInp_t *endTransactionInp )

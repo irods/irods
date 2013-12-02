@@ -6,8 +6,8 @@
 
 
 
-#ifndef MISC_SERVER_FUNCT_H
-#define MISC_SERVER_FUNCT_H
+#ifndef MISC_SERVER_FUNCT_HPP
+#define MISC_SERVER_FUNCT_HPP
 
 #include <sys/types.h>
 
@@ -17,21 +17,21 @@
 #include <arpa/inet.h>
 #endif
 
-#include "rods.h"
-#include "rcConnect.h"
-#include "initServer.h"
-#include "fileOpen.h"
-#include "dataObjInpOut.h"
-#include "dataCopy.h"
+#include "rods.hpp"
+#include "rcConnect.hpp"
+#include "initServer.hpp"
+#include "fileOpen.hpp"
+#include "dataObjInpOut.hpp"
+#include "dataCopy.hpp"
 #ifdef RBUDP_TRANSFER
-#include "QUANTAnet_rbudpBase_c.h"
-#include "QUANTAnet_rbudpSender_c.h"
-#include "QUANTAnet_rbudpReceiver_c.h"
+#include "QUANTAnet_rbudpBase_c.hpp"
+#include "QUANTAnet_rbudpSender_c.hpp"
+#include "QUANTAnet_rbudpReceiver_c.hpp"
 #endif	/* RBUDP_TRANSFER */
 
-#include "structFileSync.h" /* JMC */
+#include "structFileSync.hpp" /* JMC */
 
-#include "eirods_network_object.h"
+#include "eirods_network_object.hpp"
 
 #define MAX_RECON_ERROR_CNT	10
 

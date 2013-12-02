@@ -3,18 +3,18 @@
 /* rmColl.h
  */
 
-#ifndef RM_COLL_H
-#define RM_COLL_H
+#ifndef RM_COLL_HPP
+#define RM_COLL_HPP
 
 /* This is a Object File I/O type API call */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "dataObjInpOut.h"
-#include "miscUtil.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "dataObjInpOut.hpp"
+#include "miscUtil.hpp"
 
 #if defined(RODS_SERVER)
 #define RS_RM_COLL rsRmColl

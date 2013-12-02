@@ -1,9 +1,9 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
-#include "eirods_plugin_name_generator.h"
-#include "eirods_log.h"
+#include "eirods_plugin_name_generator.hpp"
+#include "eirods_log.hpp"
 
-#include "rodsErrorTable.h"
+#include "rodsErrorTable.hpp"
 
 #ifndef BOOST_ASSERT_MSG
 #define BOOST_ASSERT_MSG( cond, msg ) do \

@@ -1,16 +1,16 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
 
-#ifndef FUNCTIONS_H
-#define	FUNCTIONS_H
+#ifndef FUNCTIONS_HPP
+#define	FUNCTIONS_HPP
 
-#include "hashtable.h"
-#include "region.h"
-#include "parser.h"
-#include "debug.h"
+#include "hashtable.hpp"
+#include "region.hpp"
+#include "parser.hpp"
+#include "debug.hpp"
 
 #ifdef DEBUG
-#include "re.h"
+#include "re.hpp"
 #endif
 
 typedef struct reIterableData {

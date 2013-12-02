@@ -4,8 +4,8 @@
  * rule engine modules
  */
 
-#ifndef RE_GLOBALS_EXTERN_H
-#define RE_GLOBALS_EXTERN_H
+#ifndef RE_GLOBALS_EXTERN_HPP
+#define RE_GLOBALS_EXTERN_HPP
 
 /****
 #ifdef MALLOC_TESTING
@@ -19,18 +19,18 @@ extern void myfree(char* file, int line, void *x);
 #endif
 ***/
 
-#include "rodsUser.h"
-#include "rods.h"
-#include "rcGlobalExtern.h"
-#include "objInfo.h"
-#include "fileOpen.h"
-#include "regExpMatch.h"
-#include "reDefines.h"
-#include "ruleExecSubmit.h"
-#include "ruleExecDel.h"
-#include "dataObjInpOut.h"
-#include "msParam.h"
-#include "modAccessControl.h"
+#include "rodsUser.hpp"
+#include "rods.hpp"
+#include "rcGlobalExtern.hpp"
+#include "objInfo.hpp"
+#include "fileOpen.hpp"
+#include "regExpMatch.hpp"
+#include "reDefines.hpp"
+#include "ruleExecSubmit.hpp"
+#include "ruleExecDel.hpp"
+#include "dataObjInpOut.hpp"
+#include "msParam.hpp"
+#include "modAccessControl.hpp"
 
 /***** IMPORTANT    IMPORTANT    IMPORTANT    *****/
 /***** If you are changing the RuleExecInfo   *****/
@@ -171,6 +171,6 @@ extern char tmpStr[];
 extern strArray_t delayStack;
 extern strArray_t msParamStack;
 
-#include "reFuncDefs.h"
-#include "reHelpers1.h"
+#include "reFuncDefs.hpp"
+#include "reHelpers1.hpp"
 #endif  /* RE_GLOBALS_EXTERN_H */

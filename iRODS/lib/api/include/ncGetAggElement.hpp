@@ -3,20 +3,20 @@
 /* ncGetAggElement.h
  */
 
-#ifndef NC_GET_AGG_ELEMENT_H
-#define NC_GET_AGG_ELEMENT_H
+#ifndef NC_GET_AGG_ELEMENT_HPP
+#define NC_GET_AGG_ELEMENT_HPP
 
 /* This is a NETCDF API call */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "dataObjInpOut.h"
-#include "ncOpen.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "dataObjInpOut.hpp"
+#include "ncOpen.hpp"
 #ifdef NETCDF_API
-#include "netcdf.h"
+#include "netcdf.hpp"
 #endif
 
 /* data struct for aggregation of netcdf files. Our first attempt assumes

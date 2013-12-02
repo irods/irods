@@ -5,18 +5,18 @@
 /* dataObjCreate.h
  */
 
-#ifndef DATA_OBJ_CREATE_H
-#define DATA_OBJ_CREATE_H
+#ifndef DATA_OBJ_CREATE_HPP
+#define DATA_OBJ_CREATE_HPP
 
 /* This is a high level type API call */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "dataObjInpOut.h"
-#include "fileCreate.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "dataObjInpOut.hpp"
+#include "fileCreate.hpp"
 
 #if defined(RODS_SERVER)
 #define RS_DATA_OBJ_CREATE rsDataObjCreate

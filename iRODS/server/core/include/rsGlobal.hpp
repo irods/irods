@@ -5,18 +5,18 @@
 /* rsGlobal.h - header file for globals in the server
  */
 
-#ifndef RS_GLOBAL_H
-#define RS_GLOBAL_H
+#ifndef RS_GLOBAL_HPP
+#define RS_GLOBAL_HPP
 
-#include "apiTable.h"   /* contains global RsApiTable */ 
-#include "initServer.h"
-#include "fileOpr.h"
-#include "dataObjOpr.h"
-#include "miscUtil.h"
+#include "apiTable.hpp"   /* contains global RsApiTable */ 
+#include "initServer.hpp"
+#include "fileOpr.hpp"
+#include "dataObjOpr.hpp"
+#include "miscUtil.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_resource_manager.h"
+#include "eirods_resource_manager.hpp"
 
 // =-=-=-=-=-=-=-
 // externs to singleton plugin managers

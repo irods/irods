@@ -7,9 +7,9 @@
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "generalAdmin.h"
-#include "reGlobalsExtern.h"
-#include "icatHighLevelRoutines.h"
+#include "generalAdmin.hpp"
+#include "reGlobalsExtern.hpp"
+#include "icatHighLevelRoutines.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -18,12 +18,12 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_children_parser.h"
-#include "eirods_string_tokenize.h"
-#include "eirods_plugin_name_generator.h"
-#include "eirods_resources_home.h"
-#include "eirods_resource_manager.h"
-#include "eirods_file_object.h"
+#include "eirods_children_parser.hpp"
+#include "eirods_string_tokenize.hpp"
+#include "eirods_plugin_name_generator.hpp"
+#include "eirods_resources_home.hpp"
+#include "eirods_resource_manager.hpp"
+#include "eirods_file_object.hpp"
 extern eirods::resource_manager resc_mgr;
 
 

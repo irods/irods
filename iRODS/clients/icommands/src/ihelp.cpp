@@ -4,8 +4,8 @@
  A simple program to provide intro help to the icommands
 */
 
-#include "rodsClient.h"
-#include "parseCommandLine.h"
+#include "rodsClient.hpp"
+#include "parseCommandLine.hpp"
 
 char *icmds[]={
    "iadmin", "ibun", "icd", "ichksum", "ichmod", "icp", "idbo", "idbug", "ienv",

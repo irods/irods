@@ -3,7 +3,7 @@
 /* This is script-generated code.  */ 
 /* See fileStat.h for a description of this API call.*/
 
-#include "fileStat.h"
+#include "fileStat.hpp"
 
 int
 rcFileStat (rcComm_t *conn, fileStatInp_t *fileStatInp, 

@@ -3,10 +3,10 @@
 /* regColl.c
  */
 
-#include "regColl.h"
-#include "icatHighLevelRoutines.h"
+#include "regColl.hpp"
+#include "icatHighLevelRoutines.hpp"
 #ifdef FILESYSTEM_META
-#include "collection.h"
+#include "collection.hpp"
 #endif
 
 int

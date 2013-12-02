@@ -1,10 +1,10 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
-#include "arithmetics.h"
-#include "index.h"
-#include "datetime.h"
+#include "arithmetics.hpp"
+#include "index.hpp"
+#include "datetime.hpp"
 #ifndef DEBUG
-#include "rodsType.h"
+#include "rodsType.hpp"
 #endif
 
 

@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See subStructFileRead.h for a description of this API call.*/
 
-#include "subStructFileRead.h"
+#include "subStructFileRead.hpp"
 
 int
 rcSubStructFileRead (rcComm_t *conn, subStructFileFdOprInp_t *subStructFileReadInp,

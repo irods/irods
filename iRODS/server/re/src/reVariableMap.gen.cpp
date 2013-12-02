@@ -1,9 +1,9 @@
 
 /* this is automatically generated C code */
 
-#include "reVariableMap.gen.h"
+#include "reVariableMap.gen.hpp"
 
-#include "reVariableMap.h"
+#include "reVariableMap.hpp"
 
 
 

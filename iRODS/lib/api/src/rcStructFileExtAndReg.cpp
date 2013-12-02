@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See structFileExtAndReg.h for a description of this API call.*/
 
-#include "apiHeaderAll.h"
+#include "apiHeaderAll.hpp"
 
 int
 rcStructFileExtAndReg (rcComm_t *conn, 

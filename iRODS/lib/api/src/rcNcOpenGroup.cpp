@@ -84,7 +84,7 @@
  * \bug  no known bugs
 **/
 
-#include "ncOpenGroup.h"
+#include "ncOpenGroup.hpp"
 
 int
 rcNcOpenGroup (rcComm_t *conn, ncOpenInp_t *ncOpenGroupInp, int *ncid)

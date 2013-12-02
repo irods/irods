@@ -1,12 +1,12 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
-#include "reHelpers1.h"
+#include "reHelpers1.hpp"
 
-#include "index.h"
-#include "parser.h"
-#include "filesystem.h"
-#include "configuration.h"
+#include "index.hpp"
+#include "parser.hpp"
+#include "filesystem.hpp"
+#include "configuration.hpp"
 
 struct Breakpoint {
 	char *actionName;

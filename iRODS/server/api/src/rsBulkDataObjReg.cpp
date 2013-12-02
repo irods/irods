@@ -5,13 +5,13 @@
 /* rsBulkDataObjReg.c. See bulkDataObjReg.h for a description of
  * this API call.*/
 
-#include "apiHeaderAll.h"
-#include "dataObjOpr.h"
-#include "objMetaOpr.h"
-#include "icatHighLevelRoutines.h"
+#include "apiHeaderAll.hpp"
+#include "dataObjOpr.hpp"
+#include "objMetaOpr.hpp"
+#include "icatHighLevelRoutines.hpp"
 
-#include "eirods_stacktrace.h"
-#include "eirods_file_object.h"
+#include "eirods_stacktrace.hpp"
+#include "eirods_file_object.hpp"
 
 int
 rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,

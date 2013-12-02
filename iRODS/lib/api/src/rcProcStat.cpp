@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See procStat.h for a description of this API call.*/
 
-#include "procStat.h"
+#include "procStat.hpp"
 
 int
 rcProcStat (rcComm_t *conn, procStatInp_t *procStatInp,

@@ -2,7 +2,7 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* nctest.c - test the iRODS NETCDF api */
 
-#include "rodsClient.h" 
+#include "rodsClient.hpp" 
 
 #define TEST_PATH1 "./ncdata/HFRadarCurrent"
 

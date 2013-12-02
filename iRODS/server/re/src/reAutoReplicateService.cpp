@@ -3,10 +3,10 @@
  *
  */
 
-#include "apiHeaderAll.h"
-#include "rsApiHandler.h"
-#include "objMetaOpr.h"
-#include "dataObjOpr.h"
+#include "apiHeaderAll.hpp"
+#include "rsApiHandler.hpp"
+#include "objMetaOpr.hpp"
+#include "dataObjOpr.hpp"
 
 
 typedef struct __replicas_check_status_

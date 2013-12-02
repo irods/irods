@@ -3,11 +3,11 @@
 #ifndef windows_platform
 #include <sys/time.h>
 #endif
-#include "rodsPath.h"
-#include "rodsErrorTable.h"
-#include "rodsLog.h"
-#include "miscUtil.h"
-#include "trimUtil.h"
+#include "rodsPath.hpp"
+#include "rodsErrorTable.hpp"
+#include "rodsLog.hpp"
+#include "miscUtil.hpp"
+#include "trimUtil.hpp"
 
 rodsLong_t TotalSizeTrimmed = 0;
 int TotalTrimmed = 0;

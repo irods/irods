@@ -2,16 +2,16 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* md5Checksum.h - Extern global declaration for client API */
 
-#ifndef MD5_CHECKSUM_H
-#define MD5_CHECKSUM_H
+#ifndef MD5_CHECKSUM_HPP
+#define MD5_CHECKSUM_HPP
 
 #include <stdio.h>
 #include <time.h>
 #include <string.h>
-#include "rods.h"
-#include "global.h"
-#include "md5.h"
-#include "sha1.h"
+#include "rods.hpp"
+#include "global.hpp"
+#include "md5.hpp"
+#include "sha1.hpp"
 
 #ifdef  __cplusplus
 extern "C" {

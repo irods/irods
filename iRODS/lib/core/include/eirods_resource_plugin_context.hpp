@@ -6,7 +6,7 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_plugin_context.h"
+#include "eirods_plugin_context.hpp"
 
 namespace eirods {
     /// =-=-=-=-=-=-=-

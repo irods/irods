@@ -3,17 +3,17 @@
 /* authResponse.h
  */
 
-#ifndef AUTH_RESPONSE_H
-#define AUTH_RESPONSE_H
+#ifndef AUTH_RESPONSE_HPP
+#define AUTH_RESPONSE_HPP
 
 /* This is a Metadata API call */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-#include "icatDefines.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "procApiRequest.hpp"
+#include "apiNumber.hpp"
+#include "initServer.hpp"
+#include "icatDefines.hpp"
 
 #ifdef  __cplusplus
 extern "C" {

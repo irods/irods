@@ -6,17 +6,17 @@
 
 
 
-#ifndef COLLECTION_H
-#define COLLECTION_H
+#ifndef COLLECTION_HPP
+#define COLLECTION_HPP
 
-#include "rods.h"
-#include "initServer.h"
-#include "objInfo.h"
-#include "dataObjInpOut.h"
-#include "ruleExecSubmit.h"
-#include "rcGlobalExtern.h"
-#include "rsGlobalExtern.h"
-#include "reIn2p3SysRule.h"
+#include "rods.hpp"
+#include "initServer.hpp"
+#include "objInfo.hpp"
+#include "dataObjInpOut.hpp"
+#include "ruleExecSubmit.hpp"
+#include "rcGlobalExtern.hpp"
+#include "rsGlobalExtern.hpp"
+#include "reIn2p3SysRule.hpp"
 
 int
 checkCollAccessPerm (rsComm_t *rsComm, char *collection, char *accessPerm);

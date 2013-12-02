@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See bunSubMkdir.h for a description of this API call.*/
 
-#include "subStructFileMkdir.h"
+#include "subStructFileMkdir.hpp"
 
 int
 rcSubStructFileMkdir (rcComm_t *conn, subFile_t *subFile)

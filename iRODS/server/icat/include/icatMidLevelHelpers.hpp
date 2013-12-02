@@ -7,11 +7,11 @@
 
 *****************************************************************************/
 
-#ifndef ICAT_MIDLEVEL_HELPERS_H
-#define ICAT_MIDLEVEL_HELPERS_H
+#ifndef ICAT_MIDLEVEL_HELPERS_HPP
+#define ICAT_MIDLEVEL_HELPERS_HPP
 
-#include "icatStructs.h"
-#include "icatLowLevel.h"
+#include "icatStructs.hpp"
+#include "icatLowLevel.hpp"
 
 char *cmlArrToSepStr(char *str, 
 		  char *preStr,

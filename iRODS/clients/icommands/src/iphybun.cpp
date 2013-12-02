@@ -4,10 +4,10 @@
  * iphybun - The irods phybun utility
 */
 
-#include "rodsClient.h"
-#include "parseCommandLine.h"
-#include "rodsPath.h"
-#include "phybunUtil.h"
+#include "rodsClient.hpp"
+#include "parseCommandLine.hpp"
+#include "rodsPath.hpp"
+#include "phybunUtil.hpp"
 void usage ();
 
 int

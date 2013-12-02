@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See regColl.h for a description of this API call.*/
 
-#include "regColl.h"
+#include "regColl.hpp"
 
 int
 rcRegColl (rcComm_t *conn, collInp_t *regCollInp)

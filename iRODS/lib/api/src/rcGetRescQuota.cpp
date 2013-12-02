@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See getRescQuota.h for a description of this API call.*/
 
-#include "getRescQuota.h"
+#include "getRescQuota.hpp"
 
 int
 rcGetRescQuota (rcComm_t *conn, getRescQuotaInp_t *getRescQuotaInp,

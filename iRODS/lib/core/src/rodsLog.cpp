@@ -1,7 +1,7 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
-#include "rods.h"
+#include "rods.hpp"
 
 #ifdef IRODS_SYSLOG
 #ifndef windows_platform
@@ -9,9 +9,9 @@
 #endif
 #endif
 
-#include "rodsLog.h"
-#include "rcGlobalExtern.h"
-#include "rcMisc.h"
+#include "rodsLog.hpp"
+#include "rcGlobalExtern.hpp"
+#include "rcMisc.hpp"
 #include <time.h>
 #include <sys/time.h>
 
@@ -20,7 +20,7 @@
 #endif
 
 #ifdef windows_platform
-#include "irodsntutil.h"
+#include "irodsntutil.hpp"
 #endif
 
 #define BIG_STRING_LEN MAX_NAME_LEN+300

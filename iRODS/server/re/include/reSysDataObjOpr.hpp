@@ -6,17 +6,17 @@
 
 
 
-#ifndef RE_SYS_DATA_OBJ_OPR_H
-#define RE_SYS_DATA_OBJ_OPR_H
+#ifndef RE_SYS_DATA_OBJ_OPR_HPP
+#define RE_SYS_DATA_OBJ_OPR_HPP
 
-#include "rods.h"
-#include "objMetaOpr.h"
-#include "dataObjRepl.h"
-#include "modDataObjMeta.h"
-#include "reGlobalsExtern.h"
-#include "rsGlobalExtern.h"
+#include "rods.hpp"
+#include "objMetaOpr.hpp"
+#include "dataObjRepl.hpp"
+#include "modDataObjMeta.hpp"
+#include "reGlobalsExtern.hpp"
+#include "rsGlobalExtern.hpp"
 #if 0
-#include "rcGlobalExtern.h" 
+#include "rcGlobalExtern.hpp" 
 #endif
 
 #define MULTI_COPIES_PER_RESC "MULTI_COPIES_PER_RESC"

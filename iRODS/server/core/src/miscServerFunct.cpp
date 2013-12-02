@@ -10,32 +10,32 @@
 #endif
 
 
-#include "miscServerFunct.h"
-#include "dataObjOpen.h"
-#include "dataObjLseek.h"	
-#include "dataObjOpr.h"
-#include "dataObjClose.h"
-#include "dataObjWrite.h"
-#include "dataObjRead.h"
-#include "rcPortalOpr.h"
-#include "initServer.h"
+#include "miscServerFunct.hpp"
+#include "dataObjOpen.hpp"
+#include "dataObjLseek.hpp"	
+#include "dataObjOpr.hpp"
+#include "dataObjClose.hpp"
+#include "dataObjWrite.hpp"
+#include "dataObjRead.hpp"
+#include "rcPortalOpr.hpp"
+#include "initServer.hpp"
 #ifdef PARA_OPR
 #include <boost/thread/thread.hpp>
 #endif
 #if !defined(solaris_platform)
 char *__loc1;
 #endif /* linux_platform */
-#include "rsGlobalExtern.h"
-#include "rcGlobalExtern.h"
+#include "rsGlobalExtern.hpp"
+#include "rcGlobalExtern.hpp"
 
-#include "md5.h"
+#include "md5.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_stacktrace.h"
-#include "eirods_network_factory.h"
-#include "eirods_buffer_encryption.h"
-#include "eirods_client_server_negotiation.h"
+#include "eirods_stacktrace.hpp"
+#include "eirods_network_factory.hpp"
+#include "eirods_buffer_encryption.hpp"
+#include "eirods_client_server_negotiation.hpp"
 
 #include <iomanip>
 #include <fstream>

@@ -8,7 +8,7 @@
 /* See specificQuery.h for a description of this API call.*/
 
 
-#include "specificQuery.h"
+#include "specificQuery.hpp"
 
 /**
  * \fn rcSpecificQuery (rcComm_t *conn, specificQueryInp_t *specificQueryInp, genQueryOut_t **genQueryOut)

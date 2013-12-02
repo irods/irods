@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See regDataObj.h for a description of this API call.*/
 
-#include "regDataObj.h"
+#include "regDataObj.hpp"
 
 int
 rcRegDataObj (rcComm_t *conn, dataObjInfo_t *dataObjInfo, 

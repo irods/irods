@@ -4,10 +4,10 @@
   ICAT test program for the GeneralQuery.
 */
 
-#include "rodsClient.h"
-#include "readServerConfig.h"
+#include "rodsClient.hpp"
+#include "readServerConfig.hpp"
 
-#include "icatHighLevelRoutines.h"
+#include "icatHighLevelRoutines.hpp"
 
 int sTest(int i1, int i2);
 int sTest2(int i1, int i2, int i3);

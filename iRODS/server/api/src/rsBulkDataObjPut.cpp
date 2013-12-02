@@ -5,23 +5,23 @@
 /* rsBulkDataObjPut.c. See bulkDataObjReg.h for a description of
  * this API call.*/
 
-#include "apiHeaderAll.h"
-#include "objMetaOpr.h"
-#include "resource.h"
-#include "collection.h"
-#include "specColl.h"
-#include "dataObjOpr.h"
-#include "physPath.h"
-#include "miscServerFunct.h"
-#include "rcGlobalExtern.h"
-#include "reGlobalsExtern.h"
-#include "rsApiHandler.h"
-#include "eirods_stacktrace.h"
+#include "apiHeaderAll.hpp"
+#include "objMetaOpr.hpp"
+#include "resource.hpp"
+#include "collection.hpp"
+#include "specColl.hpp"
+#include "dataObjOpr.hpp"
+#include "physPath.hpp"
+#include "miscServerFunct.hpp"
+#include "rcGlobalExtern.hpp"
+#include "reGlobalsExtern.hpp"
+#include "rsApiHandler.hpp"
+#include "eirods_stacktrace.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods resource includes
-#include "eirods_resource_backport.h"
-#include "eirods_resource_redirect.h"
+#include "eirods_resource_backport.hpp"
+#include "eirods_resource_redirect.hpp"
 
 
 int

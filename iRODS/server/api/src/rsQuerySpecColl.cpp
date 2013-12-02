@@ -5,28 +5,28 @@
 /* rsQuerySpecColl.c
  */
 
-#include "querySpecColl.h"
-#include "rcMisc.h"
-#include "fileOpendir.h"
-#include "fileReaddir.h"
-#include "fileClosedir.h"
-#include "objMetaOpr.h"
-#include "specColl.h"
-#include "dataObjClose.h"
-#include "subStructFileOpendir.h"
-#include "subStructFileReaddir.h"
-#include "subStructFileClosedir.h"
-#include "fileStat.h"
-#include "genQuery.h"
-#include "rsGlobalExtern.h"
-#include "rcGlobalExtern.h"
+#include "querySpecColl.hpp"
+#include "rcMisc.hpp"
+#include "fileOpendir.hpp"
+#include "fileReaddir.hpp"
+#include "fileClosedir.hpp"
+#include "objMetaOpr.hpp"
+#include "specColl.hpp"
+#include "dataObjClose.hpp"
+#include "subStructFileOpendir.hpp"
+#include "subStructFileReaddir.hpp"
+#include "subStructFileClosedir.hpp"
+#include "fileStat.hpp"
+#include "genQuery.hpp"
+#include "rsGlobalExtern.hpp"
+#include "rcGlobalExtern.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_resource_backport.h"
-#include "eirods_resource_redirect.h"
-#include "eirods_stacktrace.h"
-#include "eirods_hierarchy_parser.h"
+#include "eirods_resource_backport.hpp"
+#include "eirods_resource_redirect.hpp"
+#include "eirods_stacktrace.hpp"
+#include "eirods_hierarchy_parser.hpp"
 
 
 int

@@ -2,12 +2,12 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* rsyncUtil.h - Header for for rsyncUtil.c */
 
-#ifndef RSYNC_UTIL_H
-#define RSYNC_UTIL_H
+#ifndef RSYNC_UTIL_HPP
+#define RSYNC_UTIL_HPP
 
-#include "rodsClient.h"
-#include "parseCommandLine.h"
-#include "rodsPath.h"
+#include "rodsClient.hpp"
+#include "parseCommandLine.hpp"
+#include "rodsPath.hpp"
 
 #ifdef  __cplusplus
 extern "C" {

@@ -1,14 +1,14 @@
 /* This file handles the libcf subsetting. */
 
-#include "nccfGetVara.h"
-#include "rodsLog.h"
-#include "rsGlobalExtern.h"
-#include "rcGlobalExtern.h"
-#include "rsApiHandler.h"
-#include "objMetaOpr.h"
-#include "physPath.h"
-#include "specColl.h"
-#include "getRemoteZoneResc.h"
+#include "nccfGetVara.hpp"
+#include "rodsLog.hpp"
+#include "rsGlobalExtern.hpp"
+#include "rcGlobalExtern.hpp"
+#include "rsApiHandler.hpp"
+#include "objMetaOpr.hpp"
+#include "physPath.hpp"
+#include "specColl.hpp"
+#include "getRemoteZoneResc.hpp"
 
 int
 rsNccfGetVara (rsComm_t *rsComm,  nccfGetVarInp_t * nccfGetVarInp,

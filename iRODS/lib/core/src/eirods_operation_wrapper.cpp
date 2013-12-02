@@ -2,7 +2,7 @@
 
 // =-=-=-=-=-=-=-
 // My Includes
-#include "eirods_operation_wrapper.h"
+#include "eirods_operation_wrapper.hpp"
 
 // =-=-=-=-=-=-=-
 // STL Includes

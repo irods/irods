@@ -9,8 +9,8 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_file_object.h"
-#include "eirods_log.h"
+#include "eirods_file_object.hpp"
+#include "eirods_log.hpp"
 
 namespace eirods {
 

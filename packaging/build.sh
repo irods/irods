@@ -232,6 +232,10 @@ if [ "$1" == "clean" ] ; then
     rm -f server/config/scriptMonPerf.config
     rm -f server/icat/src/icatCoreTables.sql
     rm -f server/icat/src/icatSysTables.sql
+    rm -f lib/core/include/eirods_ms_home.hpp
+    rm -f lib/core/include/eirods_network_home.hpp
+    rm -f lib/core/include/eirods_auth_home.hpp
+    rm -f lib/core/include/eirods_resources_home.hpp
     set -e
     echo "${text_green}${text_bold}Done.${text_reset}"
     exit 0
@@ -941,27 +945,27 @@ if [ "$BUILDEIRODS" == "1" ] ; then
 #    mv /tmp/eirods_p_r_Makefile ../plugins/resources/Makefile
 
     # =-=-=-=-=-=-=-
-    # modify the eirods_ms_home.h file with the proper path to the binary directory
+    # modify the eirods_ms_home.hpp file with the proper path to the binary directory
     detected_irods_home=`./scripts/find_irods_home.sh`
     detected_irods_home=`dirname $detected_irods_home`
     irods_msvc_home="$detected_irods_home/plugins/microservices/"
-    sed -e s,EIRODSMSVCPATH,$irods_msvc_home, ./lib/core/include/eirods_ms_home.h.src > /tmp/eirods_ms_home.h
-    mv /tmp/eirods_ms_home.h ./lib/core/include/
+    sed -e s,EIRODSMSVCPATH,$irods_msvc_home, ./lib/core/include/eirods_ms_home.hpp.src > /tmp/eirods_ms_home.hpp
+    mv /tmp/eirods_ms_home.hpp ./lib/core/include/
     # =-=-=-=-=-=-=-
-    # modify the eirods_network_home.h file with the proper path to the binary directory
+    # modify the eirods_network_home.hpp file with the proper path to the binary directory
     irods_network_home="$detected_irods_home/plugins/network/"
-    sed -e s,EIRODSNETWORKPATH,$irods_network_home, ./lib/core/include/eirods_network_home.h.src > /tmp/eirods_network_home.h
-    mv /tmp/eirods_network_home.h ./lib/core/include/
+    sed -e s,EIRODSNETWORKPATH,$irods_network_home, ./lib/core/include/eirods_network_home.hpp.src > /tmp/eirods_network_home.hpp
+    mv /tmp/eirods_network_home.hpp ./lib/core/include/
     # =-=-=-=-=-=-=-
-    # modify the eirods_auth_home.h file with the proper path to the binary directory
+    # modify the eirods_auth_home.hpp file with the proper path to the binary directory
     irods_auth_home="$detected_irods_home/plugins/auth/"
-    sed -e s,EIRODSAUTHPATH,$irods_auth_home, ./lib/core/include/eirods_auth_home.h.src > /tmp/eirods_auth_home.h
-    mv /tmp/eirods_auth_home.h ./lib/core/include/
+    sed -e s,EIRODSAUTHPATH,$irods_auth_home, ./lib/core/include/eirods_auth_home.hpp.src > /tmp/eirods_auth_home.hpp
+    mv /tmp/eirods_auth_home.hpp ./lib/core/include/
     # =-=-=-=-=-=-=-
-    # modify the eirods_resources_home.h file with the proper path to the binary directory
+    # modify the eirods_resources_home.hpp file with the proper path to the binary directory
     irods_resources_home="$detected_irods_home/plugins/resources/"
-    sed -e s,EIRODSRESOURCESPATH,$irods_resources_home, ./lib/core/include/eirods_resources_home.h.src > /tmp/eirods_resources_home.h
-    mv /tmp/eirods_resources_home.h ./lib/core/include/
+    sed -e s,EIRODSRESOURCESPATH,$irods_resources_home, ./lib/core/include/eirods_resources_home.hpp.src > /tmp/eirods_resources_home.hpp
+    mv /tmp/eirods_resources_home.hpp ./lib/core/include/
 
 
     ###########################################

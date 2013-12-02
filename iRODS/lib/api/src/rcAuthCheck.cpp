@@ -3,7 +3,7 @@
 /* This is script-generated code.  */ 
 /* See authCheck.h for a description of this API call.*/
 
-#include "authCheck.h"
+#include "authCheck.hpp"
 
 int
 rcAuthCheck (rcComm_t *conn, authCheckInp_t *authCheckInp, 

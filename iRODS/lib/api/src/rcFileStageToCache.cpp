@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See fileStageToCache.h for a description of this API call.*/
 
-#include "fileStageToCache.h"
+#include "fileStageToCache.hpp"
 
 int
 rcFileStageToCache (rcComm_t *conn, fileStageSyncInp_t *fileStageToCacheInp)

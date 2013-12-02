@@ -15,16 +15,16 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_plugin_base.h"
-#include "eirods_lookup_table.h"
-#include "eirods_plugin_context.h"
-#include "eirods_error.h"
-#include "eirods_operation_rule_execution_manager_factory.h"
+#include "eirods_plugin_base.hpp"
+#include "eirods_lookup_table.hpp"
+#include "eirods_plugin_context.hpp"
+#include "eirods_error.hpp"
+#include "eirods_operation_rule_execution_manager_factory.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "reGlobalsExtern.h"
-#include "dataObjInpOut.h"
+#include "reGlobalsExtern.hpp"
+#include "dataObjInpOut.hpp"
 
 #include <iostream>
 

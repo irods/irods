@@ -8,7 +8,7 @@
 /* This is script-generated code.  */ 
 /* See dataObjLock.h for a description of this API call.*/
 
-#include "dataObjLock.h"
+#include "dataObjLock.hpp"
 
 /**
  * \fn rcDataObjLock (rcComm_t *conn, dataObjInp_t *dataObjInp)

@@ -5,14 +5,14 @@
 /* This is script-generated code (for the most part).  */ 
 /* See fileClosedir.h for a description of this API call.*/
 
-#include "fileClosedir.h"
-#include "miscServerFunct.h"
-#include "rsGlobalExtern.h"
+#include "fileClosedir.hpp"
+#include "miscServerFunct.hpp"
+#include "rsGlobalExtern.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_log.h"
-#include "eirods_collection_object.h"
+#include "eirods_log.hpp"
+#include "eirods_collection_object.hpp"
 
 int
 rsFileClosedir (rsComm_t *rsComm, fileClosedirInp_t *fileClosedirInp)

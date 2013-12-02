@@ -6,19 +6,19 @@
 
 
 
-#ifndef IRODS_RE_SERVER_H
-#define IRODS_RE_SERVER_H
+#ifndef IRODS_RE_SERVER_HPP
+#define IRODS_RE_SERVER_HPP
 
-#include "rods.h"
-#include "rsGlobal.h"   /* server global */
-#include "rcGlobalExtern.h"     /* client global */
-#include "rsLog.h"
-#include "rodsLog.h"
-#include "sockComm.h"
-#include "rsMisc.h"
-#include "getRodsEnv.h"
-#include "rcConnect.h"
-#include "initServer.h"
+#include "rods.hpp"
+#include "rsGlobal.hpp"   /* server global */
+#include "rcGlobalExtern.hpp"     /* client global */
+#include "rsLog.hpp"
+#include "rodsLog.hpp"
+#include "sockComm.hpp"
+#include "rsMisc.hpp"
+#include "getRodsEnv.hpp"
+#include "rcConnect.hpp"
+#include "initServer.hpp"
 
 #define RE_SERVER_SLEEP_TIME    30
 #define RE_SERVER_EXEC_TIME     120

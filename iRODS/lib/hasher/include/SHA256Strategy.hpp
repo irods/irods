@@ -3,7 +3,7 @@
 #ifndef _SHA256Strategy_H_
 #define _SHA256Strategy_H_
 
-#include "HashStrategy.h"
+#include "HashStrategy.hpp"
 
 #include <string>
 

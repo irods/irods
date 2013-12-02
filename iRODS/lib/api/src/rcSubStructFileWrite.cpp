@@ -1,7 +1,7 @@
 /* This is script-generated code.  */ 
 /* See subStructFileWrite.h for a description of this API call.*/
 
-#include "subStructFileWrite.h"
+#include "subStructFileWrite.hpp"
 
 int
 rcSubStructFileWrite (rcComm_t *conn, subStructFileFdOprInp_t *subStructFileWriteInp,

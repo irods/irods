@@ -3,12 +3,12 @@
 /* This is script-generated code (for the most part).  */
 /* See dataObjOpen.h for a description of this API call.*/
 
-#include "dataObjOpen.h"
-#include "dataObjOpenAndStat.h"
-#include "rodsLog.h"
-#include "rsGlobalExtern.h"
-#include "rcGlobalExtern.h"
-#include "reGlobalsExtern.h"
+#include "dataObjOpen.hpp"
+#include "dataObjOpenAndStat.hpp"
+#include "rodsLog.hpp"
+#include "rsGlobalExtern.hpp"
+#include "rcGlobalExtern.hpp"
+#include "reGlobalsExtern.hpp"
 
 int
 rsDataObjOpenAndStat (rsComm_t *rsComm, dataObjInp_t *dataObjInp,

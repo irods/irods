@@ -4,10 +4,10 @@
  * imkdir - The irods mkdir utility
 */
 
-#include "rodsClient.h"
-#include "parseCommandLine.h"
-#include "rodsPath.h"
-#include "mkdirUtil.h"
+#include "rodsClient.hpp"
+#include "parseCommandLine.hpp"
+#include "rodsPath.hpp"
+#include "mkdirUtil.hpp"
 void usage ();
 
 int

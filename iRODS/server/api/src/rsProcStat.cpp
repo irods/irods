@@ -5,17 +5,17 @@
  */
 
 /* script generated code */
-#include "procStat.h"
-#include "objMetaOpr.h"
-#include "resource.h"
-#include "miscServerFunct.h"
-#include "rodsLog.h"
-#include "rsGlobalExtern.h"
-#include "rcGlobalExtern.h"
+#include "procStat.hpp"
+#include "objMetaOpr.hpp"
+#include "resource.hpp"
+#include "miscServerFunct.hpp"
+#include "rodsLog.hpp"
+#include "rsGlobalExtern.hpp"
+#include "rcGlobalExtern.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods resource includes
-#include "eirods_resource_backport.h"
+#include "eirods_resource_backport.hpp"
 
 
 int

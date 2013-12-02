@@ -16,8 +16,8 @@
 #include <sys/stat.h>
 #endif
 
-#include "rods.h"
-#include "rcGlobalExtern.h"
+#include "rods.hpp"
+#include "rcGlobalExtern.hpp"
 extern "C" {
 
 int 

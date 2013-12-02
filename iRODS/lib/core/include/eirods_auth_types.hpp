@@ -9,12 +9,12 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_plugin_base.h"
-#include "eirods_lookup_table.h"
+#include "eirods_plugin_base.hpp"
+#include "eirods_lookup_table.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "rcConnect.h"
+#include "rcConnect.hpp"
 
 namespace eirods {
     // =-=-=-=-=-=-=-

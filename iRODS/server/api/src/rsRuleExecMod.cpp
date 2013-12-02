@@ -2,9 +2,9 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* See ruleExecMod.h for a description of this API call.*/
 
-#include "ruleExecMod.h"
-#include "reGlobalsExtern.h"
-#include "icatHighLevelRoutines.h"
+#include "ruleExecMod.hpp"
+#include "reGlobalsExtern.hpp"
+#include "icatHighLevelRoutines.hpp"
 
 int
 rsRuleExecMod (rsComm_t *rsComm, ruleExecModInp_t *ruleExecModInp )

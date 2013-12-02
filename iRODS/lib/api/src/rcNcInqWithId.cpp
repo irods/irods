@@ -6,7 +6,7 @@
 /* This is script-generated code.  */ 
 /* See ncInqWithId.h for a description of this API call.*/
 
-#include "ncInqWithId.h"
+#include "ncInqWithId.hpp"
 
 /**
  * \fn rcNcInqWithId (rcComm_t *conn, ncInqIdInp_t *ncInqWithIdInp, ncInqWithIdOut_t **ncInqWithIdOut)

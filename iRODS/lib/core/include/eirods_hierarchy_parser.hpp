@@ -3,7 +3,7 @@
 #ifndef _hierarchy_parser_H_
 #define _hierarchy_parser_H_
 
-#include "eirods_error.h"
+#include "eirods_error.hpp"
 
 #include <vector>
 #include <string>

@@ -3,7 +3,7 @@
 /* This is script-generated code.  */ 
 /* See rmColl.h for a description of this API call.*/
 
-#include "rmCollOld.h"
+#include "rmCollOld.hpp"
 
 int
 rcRmCollOld (rcComm_t *conn, collInp_t *rmCollInp)

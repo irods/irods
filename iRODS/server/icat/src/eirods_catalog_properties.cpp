@@ -7,13 +7,13 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_error.h"
-#include "eirods_catalog_properties.h"
+#include "eirods_error.hpp"
+#include "eirods_catalog_properties.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "icatHighLevelRoutines.h"
-#include "icatMidLevelRoutines.h"
+#include "icatHighLevelRoutines.hpp"
+#include "icatMidLevelRoutines.hpp"
 
 namespace eirods {
 

@@ -1,10 +1,10 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
 
-#ifndef CACHE_INSTANCE_H
-#define CACHE_INSTANCE_H
+#ifndef CACHE_INSTANCE_HPP
+#define CACHE_INSTANCE_HPP
 
-#include "cache.proto.h"
+#include "cache.proto.hpp"
 
 
 #define allocateInBuffer(ty, vn, val) \

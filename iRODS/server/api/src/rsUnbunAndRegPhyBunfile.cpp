@@ -5,21 +5,21 @@
 /* rsStructFileExtAndReg.c. See unbunAndRegPhyBunfile.h for a description of 
  * this API call.*/
 
-#include "unbunAndRegPhyBunfile.h"
-#include "apiHeaderAll.h"
-#include "miscServerFunct.h"
-#include "objMetaOpr.h"
-#include "resource.h"
-#include "dataObjOpr.h"
-#include "physPath.h"
-#include "rcGlobalExtern.h"
-#include "reGlobalsExtern.h"
+#include "unbunAndRegPhyBunfile.hpp"
+#include "apiHeaderAll.hpp"
+#include "miscServerFunct.hpp"
+#include "objMetaOpr.hpp"
+#include "resource.hpp"
+#include "dataObjOpr.hpp"
+#include "physPath.hpp"
+#include "rcGlobalExtern.hpp"
+#include "reGlobalsExtern.hpp"
 
-#include "eirods_stacktrace.h"
+#include "eirods_stacktrace.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods resource includes
-#include "eirods_resource_backport.h"
+#include "eirods_resource_backport.hpp"
 
 int
 rsUnbunAndRegPhyBunfile (rsComm_t *rsComm, dataObjInp_t *dataObjInp)

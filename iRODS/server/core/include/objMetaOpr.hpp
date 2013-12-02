@@ -6,19 +6,19 @@
 
 
 
-#ifndef OBJ_META_OPR_H
-#define OBJ_META_OPR_H
+#ifndef OBJ_META_OPR_HPP
+#define OBJ_META_OPR_HPP
 
-#include "rods.h"
-#include "initServer.h"
-#include "objInfo.h"
-#include "dataObjInpOut.h"
+#include "rods.hpp"
+#include "initServer.hpp"
+#include "objInfo.hpp"
+#include "dataObjInpOut.hpp"
 #if 0
-#include "ruleExecSubmit.h"
-#include "reIn2p3SysRule.h"
+#include "ruleExecSubmit.hpp"
+#include "reIn2p3SysRule.hpp"
 #endif
-#include "rcGlobalExtern.h"
-#include "rsGlobalExtern.h"
+#include "rcGlobalExtern.hpp"
+#include "rsGlobalExtern.hpp"
 
 #ifdef  __cplusplus
 extern "C" {

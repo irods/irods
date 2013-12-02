@@ -3,19 +3,19 @@
 /* This is script-generated code (for the most part).  */
 /* See dataObjGet.h for a description of this API call.*/
 
-#include "ncCreate.h"
-#include "rodsLog.h"
-#include "dataObjCreate.h"
-#include "rsGlobalExtern.h"
-#include "rcGlobalExtern.h"
-#include "rsApiHandler.h"
-#include "objMetaOpr.h"
-#include "dataObjUnlink.h"
-#include "ncClose.h"
-#include "physPath.h"
-#include "specColl.h"
-#include "regDataObj.h"
-#include "getRemoteZoneResc.h"
+#include "ncCreate.hpp"
+#include "rodsLog.hpp"
+#include "dataObjCreate.hpp"
+#include "rsGlobalExtern.hpp"
+#include "rcGlobalExtern.hpp"
+#include "rsApiHandler.hpp"
+#include "objMetaOpr.hpp"
+#include "dataObjUnlink.hpp"
+#include "ncClose.hpp"
+#include "physPath.hpp"
+#include "specColl.hpp"
+#include "regDataObj.hpp"
+#include "getRemoteZoneResc.hpp"
 
 int
 rsNcCreate (rsComm_t *rsComm, ncOpenInp_t *ncCreateInp, int **ncid)

@@ -5,7 +5,7 @@
  */
 
 #if defined(ORA_ICAT) || defined(ORA_DBR)
-#include "icatLowLevelOracle.h"
+#include "icatLowLevelOracle.hpp"
 #else
-#include "icatLowLevelOdbc.h"
+#include "icatLowLevelOdbc.hpp"
 #endif

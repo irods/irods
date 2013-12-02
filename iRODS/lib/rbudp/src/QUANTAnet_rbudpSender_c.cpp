@@ -20,8 +20,8 @@
  * Direct questions, comments etc about Quanta to cavern@evl.uic.edu
  *****************************************************************************/
 
-#include "QUANTAnet_rbudpSender_c.h"
-#include "rodsErrorTable.h"
+#include "QUANTAnet_rbudpSender_c.hpp"
+#include "rodsErrorTable.hpp"
 
 #include <stdarg.h>
 

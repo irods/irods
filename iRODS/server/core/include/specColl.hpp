@@ -6,17 +6,17 @@
 
 
 
-#ifndef SPEC_COLL_H
-#define SPEC_COLL_H
+#ifndef SPEC_COLL_HPP
+#define SPEC_COLL_HPP
 
-#include "rods.h"
-#include "initServer.h"
-#include "objInfo.h"
-#include "dataObjInpOut.h"
-#include "ruleExecSubmit.h"
-#include "rcGlobalExtern.h"
-#include "rsGlobalExtern.h"
-#include "reIn2p3SysRule.h"
+#include "rods.hpp"
+#include "initServer.hpp"
+#include "objInfo.hpp"
+#include "dataObjInpOut.hpp"
+#include "ruleExecSubmit.hpp"
+#include "rcGlobalExtern.hpp"
+#include "rsGlobalExtern.hpp"
+#include "reIn2p3SysRule.hpp"
 
 #ifdef  __cplusplus
 extern "C" {

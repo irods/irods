@@ -5,10 +5,10 @@
  * mounting/unmounting and the management of mounted structured files.
 */
 
-#include "rodsClient.h"
-#include "parseCommandLine.h"
-#include "rodsPath.h"
-#include "mcollUtil.h"
+#include "rodsClient.hpp"
+#include "parseCommandLine.hpp"
+#include "rodsPath.hpp"
+#include "mcollUtil.hpp"
 void usage ();
 
 int

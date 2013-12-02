@@ -4,10 +4,10 @@
  * inc - The irods NETCDF utility
 */
 
-#include "rodsClient.h"
-#include "parseCommandLine.h"
-#include "rodsPath.h"
-#include "ncUtil.h"
+#include "rodsClient.hpp"
+#include "parseCommandLine.hpp"
+#include "rodsPath.hpp"
+#include "ncUtil.hpp"
 void usage ();
 
 int

@@ -8,7 +8,7 @@
 /* This is script-generated code.  */ 
 /* See dataObjChksum.h for a description of this API call.*/
 
-#include "dataObjChksum.h"
+#include "dataObjChksum.hpp"
 
 /**
  * \fn rcDataObjChksum (rcComm_t *conn, dataObjInp_t *dataObjInp,
