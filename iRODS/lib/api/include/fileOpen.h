@@ -38,10 +38,11 @@ struct fileOpenInp_t {
     int flags;
     int mode;
     rodsLong_t dataSize;
+    keyValPair_t condInput;
     char in_pdmo[MAX_NAME_LEN];
 }; // struct fileOpenInp_t
     
-#define fileOpenInp_PI "str resc_name_[MAX_NAME_LEN]; str resc_hier_[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN]; int otherFlags; struct RHostAddr_PI; str fileName[MAX_NAME_LEN]; int flags; int mode; double dataSize; str in_pdmo[MAX_NAME_LEN];"
+#define fileOpenInp_PI "str resc_name_[MAX_NAME_LEN]; str resc_hier_[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN]; int otherFlags; struct RHostAddr_PI; str fileName[MAX_NAME_LEN]; int flags; int mode; double dataSize; struct KeyValPair_PI; str in_pdmo[MAX_NAME_LEN];"
 
 #if defined(RODS_SERVER)
 #define RS_FILE_OPEN rsFileOpen

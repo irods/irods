@@ -470,6 +470,8 @@ dirPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
     rodsDirent_t *rodsDirent = NULL;
     rodsObjStat_t *rodsObjStatOut = NULL;
     int forceFlag;
+    fileStatInp_t fileStatInp;
+    rodsStat_t *myStat = NULL;
 
     char* resc_hier = getValByKey( &phyPathRegInp->condInput, RESC_HIER_STR_KW ); 
     if( !resc_hier ) {
@@ -500,7 +502,6 @@ dirPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
         /* original directory meta-data                   */
         memset (&fileStatInp, 0, sizeof (fileStatInp));
         rstrcpy (fileStatInp.fileName, filePath, MAX_NAME_LEN);
-        fileStatInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
         rstrcpy (fileStatInp.addr.hostAddr, rescInfo->rescLoc, NAME_LEN);
 
         status = rsFileStat (rsComm, &fileStatInp, &myStat);
@@ -552,8 +553,7 @@ dirPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
 
     while ((status = rsFileReaddir (rsComm, &fileReaddirInp, &rodsDirent))>= 0) {
 
-        fileStatInp_t fileStatInp;
-        rodsStat_t *myStat = NULL;
+      myStat = NULL;
 
         if (strlen (rodsDirent->d_name) == 0) break;
 
