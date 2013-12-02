@@ -2295,9 +2295,12 @@ int chlRegResc(rsComm_t *rsComm,
             return(CAT_INVALID_ZONE);
         }
     }
-
+#if 0
+    // =-=-=-=-=-=-=-
+    // JMC :: resource type is dynamically checked above. we do not check
+    //     :: against a static token list.
     if (logSQL!=0) rodsLog(LOG_SQL, "chlRegResc SQL 2");
-status = cmlCheckNameToken("resc_type", rescInfo->rescType, &icss);
+    status = cmlCheckNameToken("resc_type", rescInfo->rescType, &icss);
     if (status !=0 ) {
         char errMsg[105];
         snprintf(errMsg, 100, "resource_type '%s' is not valid", 
@@ -2305,7 +2308,7 @@ status = cmlCheckNameToken("resc_type", rescInfo->rescType, &icss);
         addRErrorMsg (&rsComm->rError, 0, errMsg);
         return(CAT_INVALID_RESOURCE_TYPE);
     }
-
+#endif
 // =-=-=-=-=-=-=-
 // JMC :: resources may now have an empty location if they
 //     :: are coordinating nodes

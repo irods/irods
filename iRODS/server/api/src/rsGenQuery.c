@@ -58,10 +58,11 @@ eirods::error proc_query_terms_for_non_eirods_server(
         if( std::string::npos != pos ) {
             zone_hint = _zone_hint.substr( 1, pos-1 );
         } else {
-            return ERROR( 
-                       SYS_INVALID_INPUT_PARAM, 
-                       "error finding zone hint" );
+            zone_hint = _zone_hint.substr( 1 ); 
         }
+
+    } else {
+        return SUCCESS();
     }
 
     // =-=-=-=-=-=-=-

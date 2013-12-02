@@ -63,6 +63,7 @@ rsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
         rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
         return SYS_NO_API_PRIV;
     }
+rodsLog( LOG_NOTICE, "XXXX - rsPhyPathReg" );
 
     status = irsPhyPathReg (rsComm, phyPathRegInp);
     return (status);
@@ -125,6 +126,8 @@ irsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
     } else {
         hier = tmp_hier; 
     }
+
+rodsLog( LOG_NOTICE, "XXXX - irsPhyPathReg :: resc_hier [%s]", hier.c_str() );
 
     // =-=-=-=-=-=-=-
     // coll registration requires the resource hierarchy
@@ -228,6 +231,7 @@ int
 _rsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, 
                rescGrpInfo_t *rescGrpInfo, rodsServerHost_t *rodsServerHost)
 {
+rodsLog( LOG_NOTICE, "XXXX - _rsPhyPathReg" );
     int status = 0;
     fileOpenInp_t chkNVPathPermInp;
     char *tmpFilePath = 0;
@@ -401,6 +405,7 @@ filePathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
     }
 
    rstrcpy (dataObjInfo.rescHier, resc_hier, MAX_NAME_LEN); 
+rodsLog( LOG_NOTICE, "XXXX - filePathReg :: resc_hier [%s]", resc_hier );
 
     if (dataObjInfo.dataSize <= 0 && 
 #ifdef FILESYSTEM_META
@@ -477,6 +482,7 @@ dirPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
         return -1;
     }
 
+rodsLog( LOG_NOTICE, "XXXX - dirPathReg :: resc_hier [%s]", resc_hier );
     // =-=-=-=-=-=-=-
     // extract the host location from the resource hierarchy
     std::string location;
@@ -641,6 +647,7 @@ int mountFileDir( rsComm_t*     rsComm,
         rodsLog( LOG_NOTICE, "mountFileDir - RESC_HIER_STR_KW is NULL" );
         return -1;
     }
+rodsLog( LOG_NOTICE, "XXXX - mountFileDir :: resc_hier [%s]", resc_hier );
 
     // =-=-=-=-=-=-=-
     // extract the host location from the resource hierarchy
@@ -906,7 +913,7 @@ int structFileReg(
         rodsLog( LOG_ERROR, "structFileReg - RESC_HIER_STR_KW is NULL" );
         return -1;
     }
-
+rodsLog( LOG_NOTICE, "XXXX - structFileReg :: hier [%s]", tmp_hier );
     eirods::hierarchy_parser parser;
     parser.set_string(std::string(tmp_hier));
     std::string resc_name;
@@ -930,12 +937,6 @@ int structFileReg(
     /* have to use dataObjInp.objPath because structFile path was removed */ 
     addKeyVal( &collCreateInp.condInput, COLLECTION_INFO1_KW, dataObjInp.objPath );
                
-
-
-    char collInfo2[MAX_NAME_LEN];
-    snprintf(collInfo2, MAX_NAME_LEN, ";;;%s;;;0", resc_name.c_str());
-    addKeyVal (&collCreateInp.condInput, COLLECTION_INFO2_KW, collInfo2);
-
     /* try to mod the coll first */
     status = rsModColl (rsComm, &collCreateInp);
 
