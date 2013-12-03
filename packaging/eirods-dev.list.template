@@ -80,13 +80,14 @@ $RPM=true
 f 644 root root /usr/lib/libeirods.a ./libeirods.a
 
 d 755 root root /usr/include/eirods/
-f 644 root root /usr/include/eirods/ ./iRODS/lib/core/include/*.h
-f 644 root root /usr/include/eirods/ ./iRODS/lib/api/include/*.h
-f 644 root root /usr/include/eirods/ ./iRODS/lib/md5/include/*.h 
-f 644 root root /usr/include/eirods/ ./iRODS/server/core/include/*.h 
-f 644 root root /usr/include/eirods/ ./iRODS/server/icat/include/*.h
-f 644 root root /usr/include/eirods/ ./iRODS/server/re/include/*.h
-f 644 root root /usr/include/eirods/ ./iRODS/server/drivers/include/*.h
+f 644 root root /usr/include/eirods/ ./iRODS/lib/core/include/*.hpp
+f 644 root root /usr/include/eirods/ ./iRODS/lib/api/include/*.hpp
+f 644 root root /usr/include/eirods/ ./iRODS/lib/md5/include/*.hpp 
+f 644 root root /usr/include/eirods/ ./iRODS/server/core/include/*.hpp 
+f 644 root root /usr/include/eirods/ ./iRODS/server/icat/include/*.hpp
+f 644 root root /usr/include/eirods/ ./iRODS/server/re/include/*.hpp
+f 644 root root /usr/include/eirods/ ./iRODS/server/drivers/include/*.hpp
+f 644 root root /usr/include/eirods/ ./iRODS/lib/sha1/include/*.hpp
 
 d 755 root root /usr/share/eirods/
 d 755 root root /usr/share/eirods/examples
