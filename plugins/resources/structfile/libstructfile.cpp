@@ -3,12 +3,12 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_resource_plugin.h"
-#include "eirods_file_object.h"
-#include "eirods_collection_object.h"
-#include "eirods_structured_object.h"
-#include "eirods_string_tokenize.h"
-#include "eirods_resource_manager.h"
+#include "eirods_resource_plugin.hpp"
+#include "eirods_file_object.hpp"
+#include "eirods_collection_object.hpp"
+#include "eirods_structured_object.hpp"
+#include "eirods_string_tokenize.hpp"
+#include "eirods_resource_manager.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -54,17 +54,17 @@ typedef struct tarSubFileDesc {
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "rsGlobalExtern.h"
-#include "modColl.h"
-#include "apiHeaderAll.h"
-#include "objMetaOpr.h"
-#include "dataObjOpr.h"
-#include "collection.h"
-#include "specColl.h"
-#include "resource.h"
-#include "miscServerFunct.h"
-#include "physPath.h"
-#include "fileOpen.h"
+#include "rsGlobalExtern.hpp"
+#include "modColl.hpp"
+#include "apiHeaderAll.hpp"
+#include "objMetaOpr.hpp"
+#include "dataObjOpr.hpp"
+#include "collection.hpp"
+#include "specColl.hpp"
+#include "resource.hpp"
+#include "miscServerFunct.hpp"
+#include "physPath.hpp"
+#include "fileOpen.hpp"
 
 
 // =-=-=-=-=-=-=-=-

@@ -7,17 +7,17 @@
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "msParam.h"
-#include "reGlobalsExtern.h"
+#include "msParam.hpp"
+#include "reGlobalsExtern.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_resource_plugin.h"
-#include "eirods_file_object.h"
-#include "eirods_collection_object.h"
-#include "eirods_string_tokenize.h"
-#include "eirods_hierarchy_parser.h"
-#include "eirods_error.h"
+#include "eirods_resource_plugin.hpp"
+#include "eirods_file_object.hpp"
+#include "eirods_collection_object.hpp"
+#include "eirods_string_tokenize.hpp"
+#include "eirods_hierarchy_parser.hpp"
+#include "eirods_error.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes

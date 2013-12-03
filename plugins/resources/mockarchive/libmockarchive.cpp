@@ -2,20 +2,20 @@
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "msParam.h"
-#include "reGlobalsExtern.h"
-#include "rcConnect.h"
+#include "msParam.hpp"
+#include "reGlobalsExtern.hpp"
+#include "rcConnect.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_resource_plugin.h"
-#include "eirods_file_object.h"
-#include "eirods_physical_object.h"
-#include "eirods_collection_object.h"
-#include "eirods_string_tokenize.h"
-#include "eirods_hierarchy_parser.h"
-#include "eirods_resource_redirect.h"
-#include "eirods_stacktrace.h"
+#include "eirods_resource_plugin.hpp"
+#include "eirods_file_object.hpp"
+#include "eirods_physical_object.hpp"
+#include "eirods_collection_object.hpp"
+#include "eirods_string_tokenize.hpp"
+#include "eirods_hierarchy_parser.hpp"
+#include "eirods_resource_redirect.hpp"
+#include "eirods_stacktrace.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes

@@ -3,16 +3,16 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_repl_rebalance.h"
-#include "eirods_resource_plugin.h"
-#include "eirods_file_object.h"
-#include "eirods_hierarchy_parser.h"
-#include "eirods_resource_redirect.h"
-#include "eirods_virtual_path.h"
+#include "eirods_repl_rebalance.hpp"
+#include "eirods_resource_plugin.hpp"
+#include "eirods_file_object.hpp"
+#include "eirods_hierarchy_parser.hpp"
+#include "eirods_resource_redirect.hpp"
+#include "eirods_virtual_path.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "dataObjRepl.h"
+#include "dataObjRepl.hpp"
 
 namespace eirods {
     /// =-=-=-=-=-=-=-

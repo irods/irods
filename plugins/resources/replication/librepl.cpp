@@ -7,31 +7,31 @@
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "msParam.h"
-#include "reGlobalsExtern.h"
-#include "rodsLog.h"
-#include "icatHighLevelRoutines.h"
-#include "dataObjRepl.h"
+#include "msParam.hpp"
+#include "reGlobalsExtern.hpp"
+#include "rodsLog.hpp"
+#include "icatHighLevelRoutines.hpp"
+#include "dataObjRepl.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_resource_plugin.h"
-#include "eirods_file_object.h"
-#include "eirods_collection_object.h"
-#include "eirods_string_tokenize.h"
-#include "eirods_hierarchy_parser.h"
-#include "eirods_resource_backport.h"
-#include "eirods_plugin_base.h"
-#include "eirods_stacktrace.h"
-#include "eirods_repl_types.h"
-#include "eirods_object_oper.h"
-#include "eirods_replicator.h"
-#include "eirods_create_write_replicator.h"
-#include "eirods_unlink_replicator.h"
-#include "eirods_hierarchy_parser.h"
-#include "eirods_resource_redirect.h"
-#include "eirods_repl_rebalance.h"
-#include "eirods_kvp_string_parser.h"
+#include "eirods_resource_plugin.hpp"
+#include "eirods_file_object.hpp"
+#include "eirods_collection_object.hpp"
+#include "eirods_string_tokenize.hpp"
+#include "eirods_hierarchy_parser.hpp"
+#include "eirods_resource_backport.hpp"
+#include "eirods_plugin_base.hpp"
+#include "eirods_stacktrace.hpp"
+#include "eirods_repl_types.hpp"
+#include "eirods_object_oper.hpp"
+#include "eirods_replicator.hpp"
+#include "eirods_create_write_replicator.hpp"
+#include "eirods_unlink_replicator.hpp"
+#include "eirods_hierarchy_parser.hpp"
+#include "eirods_resource_redirect.hpp"
+#include "eirods_repl_rebalance.hpp"
+#include "eirods_kvp_string_parser.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes

@@ -19,7 +19,7 @@ include $(buildDir)/config/platform.mk
 include $(buildDir)/config/directories.mk
 include $(buildDir)/config/common.mk
 
-extendedICAT.h =	$(buildDir)/modules/extendedICAT/extendedICAT.h
+extendedICAT.hpp =	$(buildDir)/modules/extendedICAT/extendedICAT.hpp
 
 CFLAGS += `../../packaging/compiler_check.sh 4 2`
 
@@ -134,7 +134,7 @@ LIB_CORE_OBJS += $(libCoreObjDir)/ooiCi.o
 endif
 
 # Logging (automatically generated source)
-LOG_SRC =	$(libCoreSrcDir)/rodsLog.c
+LOG_SRC =	$(libCoreSrcDir)/rodsLog.cpp
 
 
 # MD5
@@ -298,44 +298,44 @@ clean:
 # Compilation Targets
 #
 # Build core
-$(LIB_CORE_OBJS):  $(libCoreObjDir)/%.o: $(libCoreSrcDir)/%.c $(extendedICAT.h) $(DEPEND) $(BOOST_LIBS)
+$(LIB_CORE_OBJS):  $(libCoreObjDir)/%.o: $(libCoreSrcDir)/%.cpp $(extendedICAT.hpp) $(DEPEND) $(BOOST_LIBS)
 	@echo "Compile core `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
-$(extendedICAT.h): 
-	@touch $(extendedICAT.h)
+$(extendedICAT.hpp): 
+	@touch $(extendedICAT.hpp)
 
 # Build API
-$(LIB_API_OBJS):  $(libApiObjDir)/%.o: $(libApiSrcDir)/%.c $(DEPEND) $(BOOST_LIBS)
+$(LIB_API_OBJS):  $(libApiObjDir)/%.o: $(libApiSrcDir)/%.cpp $(DEPEND) $(BOOST_LIBS)
 	@echo "Compile api `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
 # Build MD5
 #	Requires -O3 for optimization
-$(LIB_MD5_OBJS):  $(libMd5ObjDir)/%.o: $(libMd5SrcDir)/%.c $(configMk) $(platformMk)
+$(LIB_MD5_OBJS):  $(libMd5ObjDir)/%.o: $(libMd5SrcDir)/%.cpp $(configMk) $(platformMk)
 	@echo "Compile md5 `basename $@`..."
 	@$(CC) -c $(MD5_CFLAGS) -o $@ $<
 
 # Build SHA1
-$(LIB_SHA1_OBJS):  $(libSha1ObjDir)/%.o: $(libSha1SrcDir)/%.c $(configMk) $(platformMk)
+$(LIB_SHA1_OBJS):  $(libSha1ObjDir)/%.o: $(libSha1SrcDir)/%.cpp $(configMk) $(platformMk)
 	@echo "Compile sha1 `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
 # Build Hasher
-$(LIB_HASHER_OBJS): $(libHasherObjDir)/%.o: $(libHasherSrcDir)/%.c $(configMk) $(platformMk)
+$(LIB_HASHER_OBJS): $(libHasherObjDir)/%.o: $(libHasherSrcDir)/%.cpp $(configMk) $(platformMk)
 	@echo "Compile Hasher `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
 ifdef RBUDP_TRANSFER
-$(LIB_RBUDP_OBJS):  $(libRbudpObjDir)/%.o: $(libRbudpSrcDir)/%.c $(configMk) $(platformMk)
+$(LIB_RBUDP_OBJS):  $(libRbudpObjDir)/%.o: $(libRbudpSrcDir)/%.cpp $(configMk) $(platformMk)
 	@echo "Compile rbudp `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 endif
 
 # Build logging source
-rodslog:  $(libCoreSrcDir)/rodsLog.c
+rodslog:  $(libCoreSrcDir)/rodsLog.cpp
 	@true
 
-$(libCoreSrcDir)/rodsLog.c:  $(libCoreIncDir)/rodsErrorTable.h
+$(libCoreSrcDir)/rodsLog.cpp:  $(libCoreIncDir)/rodsErrorTable.hpp
 	@$(PERL) $(perlScriptsDir)/updateRodsLog.pl
 
 

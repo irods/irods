@@ -154,7 +154,7 @@ clients: fuse
 fuse:	print_cflags print_ldflags $(LIB_OBJS) $(OBJS) $(BINS)
 	@true
 
-$(objDir)/%.o:	$(srcDir)/%.c $(LIBRARY)
+$(objDir)/%.o:	$(srcDir)/%.cpp $(LIBRARY)
 	@echo "Compile fuse `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 

@@ -2,18 +2,18 @@
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "rodsDef.h"
-#include "msParam.h"
-#include "reGlobalsExtern.h"
-#include "rcConnect.h"
+#include "rodsDef.hpp"
+#include "msParam.hpp"
+#include "reGlobalsExtern.hpp"
+#include "rcConnect.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_network_plugin.h"
-#include "eirods_network_constants.h"
-#include "eirods_ssl_object.h"
-#include "eirods_stacktrace.h"
-#include "eirods_buffer_encryption.h"
+#include "eirods_network_plugin.hpp"
+#include "eirods_network_constants.hpp"
+#include "eirods_ssl_object.hpp"
+#include "eirods_stacktrace.hpp"
+#include "eirods_buffer_encryption.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
