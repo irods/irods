@@ -15,7 +15,7 @@ def check_xinetd_authd_config(config_fn):
     Check the server_args attribute in the xinetd authd system configuration
     file (specified by config_fn), and confirm that it does not include the -E
     option.  Returns 1 if the -E is present (which should be corrected before
-    installing the E-iRODS RPM), or 0 if the file cannot be found or if the
+    installing the iRODS RPM), or 0 if the file cannot be found or if the
     file does not include the -E option for server_args.
     """
     if not os.path.exists(config_fn):
@@ -45,12 +45,12 @@ def check_xinetd_authd_config(config_fn):
 def check_authd_in_runlevel(runlevel):
     """
     Check the specified runlevel and confirm that authd is enabled.  Returns 0
-    if authd is confirmed to be enabled (as required by E-iRODS), or 1
+    if authd is confirmed to be enabled (as required by iRODS), or 1
     otherwise.
     """
     error = 1
     (temp_file, temp_fn) = (
-        tempfile.mkstemp(prefix = 'eirods_pre_rpm-', dir = '/tmp') )
+        tempfile.mkstemp(prefix = 'irods_pre_rpm-', dir = '/tmp') )
     subprocess.call(
         ['/sbin/chkconfig',
             '--list',
@@ -69,7 +69,7 @@ def check_authd_in_runlevel(runlevel):
 
 def pre_rpm_checks():
     """
-    Calls checks required before the E-iRODS RPM is installed, and outputs any
+    Calls checks required before the iRODS RPM is installed, and outputs any
     failures to standard error.  Exits with a return code of 0 if all checks
     were successful, or 1 if the xinetd authd configuration check failed, or 2
     if the authd runlevel check failed.

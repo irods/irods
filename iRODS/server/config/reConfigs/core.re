@@ -5,15 +5,6 @@
 #Test Rules
 printHello { print_hello; }
 
-###########
-# E-iRODS specific indicator rule
-#   Clients can check for this and know that they are communicating with
-#   an E-iRODS instance (useful to distinguish between E-iRODS 3.0.1 and
-#   Community iRODS 3.0, both of which report release version "rods3.0").
-#   Initially included for the Jargon library.
-############
-isEiRODS {}
-
 # 
 #
 # These are sys admin rules for creating and deleting users and renaming

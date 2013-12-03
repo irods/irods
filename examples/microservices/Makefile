@@ -1,14 +1,14 @@
 GCC = g++ 
-INC=-I/usr/include/eirods/
+INC=-I/usr/include/irods/
 
 all: msvc_test hello curl_get
 
 msvc_test:
-	${GCC} ${INC} -fPIC -shared -Wno-deprecated -o libeirods_msvc_test.so eirods_msvc_test.cpp /usr/lib/libeirods.a
+	${GCC} ${INC} -fPIC -shared -Wno-deprecated -o libirods_msvc_test.so irods_msvc_test.cpp /usr/lib/libirods.a
 	
 hello:
-	${GCC} ${INC} -fPIC -shared -o libeirods_hello.so eirods_hello.cpp -Wno-deprecated /usr/lib/libeirods.a
+	${GCC} ${INC} -fPIC -shared -o libirods_hello.so irods_hello.cpp -Wno-deprecated /usr/lib/libirods.a
 	
 curl_get:
-	${GCC} ${INC} -DRODS_SERVER -fPIC -shared -g -Wno-deprecated -o libeirods_curl_get.so eirods_curl_get.cpp `curl-config --libs` /usr/lib/libeirods.a
+	${GCC} ${INC} -DRODS_SERVER -fPIC -shared -g -Wno-deprecated -o libirods_curl_get.so irods_curl_get.cpp `curl-config --libs` /usr/lib/libirods.a
 	

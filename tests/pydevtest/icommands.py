@@ -9,7 +9,7 @@ import sys
 
 '''Originally written by Antoine de Torcy'''
 
-RODSLOGDIR = "/var/lib/eirods/iRODS/server/log"
+RODSLOGDIR = "/var/lib/irods/iRODS/server/log"
 
 class RodsEnv(object):
     '''Contains Env/Auth variables.

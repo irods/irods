@@ -22,8 +22,8 @@ else
   exit 1
 fi
 
-EIRODS_HOME_DIR=$1
-OS_EIRODS_ACCT=$2
+IRODS_HOME_DIR=$1
+OS_IRODS_ACCT=$2
 SERVER_TYPE=$3
 DB_TYPE=$4
 DB_ADMIN_ROLE=$5
@@ -34,8 +34,8 @@ IRODS_HOME=$EIRODS_HOME_DIR/iRODS
 
 #echo "THREE_OH_SCRIPT=[$THREE_OH_SCRIPT]"
 #echo "PACKAGER_COMMAND=[$PACKAGER_COMMAND]"
-#echo "EIRODS_HOME_DIR=[$EIRODS_HOME_DIR]"
-#echo "OS_EIRODS_ACCT=[$OS_EIRODS_ACCT]"
+#echo "IRODS_HOME_DIR=[$IRODS_HOME_DIR]"
+#echo "OS_IRODS_ACCT=[$OS_IRODS_ACCT]"
 #echo "SERVER_TYPE=[$SERVER_TYPE]"
 #echo "DB_TYPE=[$DB_TYPE]"
 #echo "DB_ADMIN_ROLE=[$DB_ADMIN_ROLE]"
@@ -65,9 +65,9 @@ fi
 if [ "$PACKAGEUPGRADE" == "false" ] ; then
 	# =-=-=-=-=-=-=-
 	# determine if we can delete the service account
-	user=`who | grep $OS_EIRODS_ACCT`
+	user=`who | grep $OS_IRODS_ACCT`
 	if [ "x$user" != "x" ]; then
-		echo "ERROR :: $OS_EIRODS_ACCT is currently logged in.  Aborting."
+		echo "ERROR :: $OS_IRODS_ACCT is currently logged in.  Aborting."
 		exit 1
 	fi
 
@@ -125,7 +125,7 @@ if [ "$PACKAGEUPGRADE" == "false" ] ; then
 	fi
 
 	# =-=-=-=-=-=-=-
-	# stop any running E-iRODS Processes
+	# stop any running iRODS Processes
 	echo "Stopping iRODS :: $IRODS_HOME/irodsctl stop"
 	cd $IRODS_HOME
 	su --shell=/bin/bash -c "$IRODS_HOME/irodsctl stop" $OS_EIRODS_ACCT
@@ -163,7 +163,7 @@ if [ "$PACKAGEUPGRADE" == "false" ] ; then
 
 	# =-=-=-=-=-=-=-
 	# detect operating system
-	DETECTEDOS=`$EIRODS_HOME_DIR/packaging/find_os.sh`
+	DETECTEDOS=`$IRODS_HOME_DIR/packaging/find_os.sh`
 
 	# =-=-=-=-=-=-=-
 	# report that we are not deleting some things
@@ -172,35 +172,35 @@ if [ "$PACKAGEUPGRADE" == "false" ] ; then
 	if [ "$SERVER_TYPE" == "icat" ] ; then
 	    # =-=-=-=-=-=-=-
 	    # database(s) and database role
-	    echo "     :: Leaving the E-iRODS database(s) and role in place."
+	    echo "     :: Leaving the iRODS database(s) and role in place."
 	    echo "     :: try:"
 	    echo "     ::      sudo su - postgres -c 'dropdb $DB_NAME; dropuser $DB_USER;'"
 	fi
 
 	# =-=-=-=-=-=-=-
 	# report that we are not deleting the account(s)
-	echo "     :: Leaving $OS_EIRODS_ACCT Service Group and Account in place."
+	echo "     :: Leaving $OS_IRODS_ACCT Service Group and Account in place."
 	if [ "$DETECTEDOS" == "RedHatCompatible" ]; then # CentOS and RHEL and Fedora
 	    echo "     :: try:"
-	    echo "     ::      sudo /usr/sbin/userdel $OS_EIRODS_ACCT"
+	    echo "     ::      sudo /usr/sbin/userdel $OS_IRODS_ACCT"
 	elif [ "$DETECTEDOS" == "SuSE" ]; then # SuSE
 	    echo "     :: try:"
-	    echo "     ::      sudo /usr/sbin/userdel $OS_EIRODS_ACCT"
-	    echo "     ::      sudo /usr/sbin/groupdel $OS_EIRODS_ACCT"
+	    echo "     ::      sudo /usr/sbin/userdel $OS_IRODS_ACCT"
+	    echo "     ::      sudo /usr/sbin/groupdel $OS_IRODS_ACCT"
 	elif [ "$DETECTEDOS" == "Ubuntu" ]; then  # Ubuntu
 	    echo "     :: try:"
-	    echo "     ::      sudo userdel $OS_EIRODS_ACCT"
+	    echo "     ::      sudo userdel $OS_IRODS_ACCT"
 	                       # groupdel is not necessary on Ubuntu, apparently...
 	fi
 
 	# =-=-=-=-=-=-=-
 	# remove runlevels and aliases (use os-specific tools)
 	if [ "$DETECTEDOS" == "Ubuntu" ] ; then
-	    update-rc.d -f eirods remove
+	    update-rc.d -f irods remove
 	elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-	    /sbin/chkconfig --del eirods
+	    /sbin/chkconfig --del irods
 	elif [ "$DETECTEDOS" == "SuSE" ] ; then
-	    /sbin/chkconfig --del eirods
+	    /sbin/chkconfig --del irods
 	fi
 
 	# =-=-=-=-=-=-=-

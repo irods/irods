@@ -19,7 +19,7 @@ INC = -I${IRODSDIR}/lib/core/include/ -I${IRODSDIR}/lib/api/include/ -I${IRODSDI
       -I${IRODSDIR}/server/drivers/include/ -I$(LIBARCHIVE_DIR)/libarchive/ -I$(BOOST_DIR) \
       -I/opt/hpss/include  -L/opt/hpss/lib -I/usr/include/openssl -I${IRODSDIR}/lib/sha1/include/
 
-ifeq ($(EIRODS_BUILD_COVERAGE), 1)
+ifeq ($(IRODS_BUILD_COVERAGE), 1)
 GCC += -fprofile-arcs -ftest-coverage -lgcov
 OBJS = $(patsubst %.cpp, %.o, ${SRCS})
 %.o: %.cpp
@@ -38,7 +38,7 @@ clean:
 
 ${FULLTARGET}: ${OBJS} ${DEPFILE}
 	@-mkdir -p ${SODIR} > /dev/null 2>&1
-	${GCC} ${INC} -D${OS_platform} -fPIC "-Wl,-E" -shared -o ${FULLTARGET} ${OBJS} ../../../iRODS/lib/core/obj/eirods_plugin_base.o ${EXTRALIBS}
+	${GCC} ${INC} -D${OS_platform} -fPIC "-Wl,-E" -shared -o ${FULLTARGET} ${OBJS} ../../../iRODS/lib/core/obj/irods_plugin_base.o ${EXTRALIBS}
 
 ${DEPFILE}: ${DEPS}
 	@-rm -f ${DEPFILE} > /dev/null 2>&1

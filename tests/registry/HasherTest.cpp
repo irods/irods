@@ -7,7 +7,7 @@
 #include <fstream>
 
 using namespace std;
-using namespace eirods;
+using namespace irods;
 
 void
 generateHash(
@@ -19,7 +19,7 @@ generateHash(
     hasher.addStrategy(md5Strategy);
     SHA256Strategy* sha256Strategy = new SHA256Strategy();
     hasher.addStrategy(sha256Strategy);
-    
+
     // Read the file and hash it
     ifstream input(filename, ios_base::in | ios_base::binary);
     if(input.is_open()) {

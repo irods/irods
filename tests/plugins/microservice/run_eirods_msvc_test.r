@@ -1,6 +1,6 @@
 test {
 
-	eirods_msvc_test( "1", "2", "3" );
+	irods_msvc_test( "1", "2", "3" );
 
 }
 

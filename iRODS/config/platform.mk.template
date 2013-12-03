@@ -36,7 +36,7 @@ CCFLAGS += -Wno-deprecated
 #CCFLAGS += -Wunreachable-code
 
 # =-=-=-=-=-=-=-
-# JMC :: build using E-iRODS Extensions
+# JMC :: build using iRODS Extensions
 #     :: currently this is only the microservice plugins
 #     :: also enable C++ 0x capabilities
 CCFLAGS += -fPIC

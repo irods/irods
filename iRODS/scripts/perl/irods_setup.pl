@@ -5,7 +5,7 @@
 # Create the database tables and finish the irods-e installation
 #
 # Usage is:
-#	perl eirods_setup.pl [options]
+#	perl irods_setup.pl [options]
 #
 # Help options:
 #	--help      Show a list of options
@@ -31,7 +31,7 @@ use Cwd;
 use Cwd "abs_path";
 use Config;
 
-$version{"eirods_setup.pl"} = "Nov 2013";
+$version{"irods_setup.pl"} = "Nov 2013";
 
 
 # =-=-=-=-=-=-=-
@@ -154,7 +154,7 @@ my $thisHost   = getCurrentHostName( );
 my %thisHostAddresses = getCurrentHostAddresses( );
 
 # Name a log file.
-my $logFile = File::Spec->catfile( $logDir, "eirods_setup.log" );
+my $logFile = File::Spec->catfile( $logDir, "irods_setup.log" );
 
 # Set the number of seconds to sleep after starting or stopping the
 # database server.  This gives it time to start or stop before
@@ -338,7 +338,7 @@ if ( ! -e $iadmin )
 # =-=-=-=-=-=-=-
 # JMC :: pulled from utils_config.pl - the call to set up env vars
 #     :: was breaking the path to the system db binaries
-sub eirodsLoadIrodsConfig()
+sub irodsLoadIrodsConfig()
 {
 
 	# Check that the configuration file exists.
@@ -402,7 +402,7 @@ sub eirodsLoadIrodsConfig()
 # prints messages if they do not.
 #
 copyTemplateIfNeeded( $irodsConfig );
-if ( eirodsLoadIrodsConfig( ) == 0 )
+if ( irodsLoadIrodsConfig( ) == 0 )
 {
 	# Configuration failed to load or validate.  An error message
 	# has already been output.
@@ -435,7 +435,7 @@ openLog( $logFile );
 # change permissions on it so that only the current user can read it.
 chmod( 0600, $logFile );
 
-printLog( "E-iRODS setup\n" );
+printLog( "iRODS setup\n" );
 printLog( "------------------------------------------------------------------------\n" );
 
 # When was this script run?
@@ -518,7 +518,7 @@ else
         print "\n";
         print "  iCAT server's admin username: $IRODS_ADMIN_NAME\n";
         print "  iCAT server's admin password: ";
-        $IRODS_ADMIN_PASSWORD = `/var/lib/eirods/packaging/get_icat_server_password.sh`;
+        $IRODS_ADMIN_PASSWORD = `/var/lib/irods/packaging/get_icat_server_password.sh`;
         print "\n";
         print "\n";
     }
@@ -3131,7 +3131,7 @@ sub Postgres_CreateDatabase()
 	}
 	else
 	{
-		# E-iRODS now supports a script to determine the path & lib name of the odbc driver
+		# iRODS now supports a script to determine the path & lib name of the odbc driver
 		my $psqlOdbcLib = `../packaging/find_psqlodbc.sh`;
 		chomp($psqlOdbcLib);
 

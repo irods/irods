@@ -26,7 +26,7 @@ class Test_OSAuth_Only(unittest.TestCase, ResourceBase):
     #@unittest.skip("TODO: Seeing inconsistent behavior in CI")
     def test_authentication_OSAuth(self):
         # add auth test user
-        authTestUser = "eirods"
+        authTestUser = "irods"
         authTestPass = "temporarypasswordforci"
         assertiCmd(s.adminsession,"iadmin mkuser %s rodsuser" % authTestUser)
 
@@ -39,7 +39,7 @@ class Test_OSAuth_Only(unittest.TestCase, ResourceBase):
         os.system("echo \"irodsCwd '/tempZone/home/%s'\" >> %s" % (authTestUser, clientEnvFile))
 
         # setup the irods.key file necessary for OSAuth
-        keyfile = "/var/lib/eirods/iRODS/config/irods.key"
+        keyfile = "/var/lib/irods/iRODS/config/irods.key"
         os.system("echo \"gibberish\" > %s" % keyfile)
 
         # do the reauth
@@ -92,9 +92,9 @@ class Test_Auth_Suite(unittest.TestCase, ResourceBase):
         os.system("openssl dhparam -2 -out dhparams.pem 100") # normally 2048, but smaller size here for speed
 
         # server side environment variables
-        os.environ['irodsSSLCertificateChainFile'] = "/var/lib/eirods/tests/pydevtest/chain.pem"
-        os.environ['irodsSSLCertificateKeyFile'] = "/var/lib/eirods/tests/pydevtest/server.key"
-        os.environ['irodsSSLDHParamsFile'] = "/var/lib/eirods/tests/pydevtest/dhparams.pem"
+        os.environ['irodsSSLCertificateChainFile'] = "/var/lib/irods/tests/pydevtest/chain.pem"
+        os.environ['irodsSSLCertificateKeyFile'] = "/var/lib/irods/tests/pydevtest/server.key"
+        os.environ['irodsSSLDHParamsFile'] = "/var/lib/irods/tests/pydevtest/dhparams.pem"
 
         # client side environment variables
         os.environ['irodsSSLVerifyServer'] = "none"
@@ -109,9 +109,9 @@ class Test_Auth_Suite(unittest.TestCase, ResourceBase):
         os.system("echo \"irodsCwd '/tempZone/home/%s'\" >> %s" % (authTestUser, clientEnvFile))
 
         # server reboot to pick up new irodsEnv settings
-        os.system("/var/lib/eirods/iRODS/irodsctl stop")
-        os.system("/var/lib/eirods/tests/zombiereaper.sh")
-        os.system("/var/lib/eirods/iRODS/irodsctl start")
+        os.system("/var/lib/irods/iRODS/irodsctl stop")
+        os.system("/var/lib/irods/tests/zombiereaper.sh")
+        os.system("/var/lib/irods/iRODS/irodsctl start")
 
         # do the reauth
         assertiCmd(s.adminsession,"iinit %s" % authTestPass) # reinitialize
@@ -147,9 +147,9 @@ class Test_Auth_Suite(unittest.TestCase, ResourceBase):
         os.system("openssl dhparam -2 -out dhparams.pem 100") # normally 2048, but smaller size here for speed
 
         # server side environment variables
-        os.environ['irodsSSLCertificateChainFile'] = "/var/lib/eirods/tests/pydevtest/chain.pem"
-        os.environ['irodsSSLCertificateKeyFile'] = "/var/lib/eirods/tests/pydevtest/server.key"
-        os.environ['irodsSSLDHParamsFile'] = "/var/lib/eirods/tests/pydevtest/dhparams.pem"
+        os.environ['irodsSSLCertificateChainFile'] = "/var/lib/irods/tests/pydevtest/chain.pem"
+        os.environ['irodsSSLCertificateKeyFile'] = "/var/lib/irods/tests/pydevtest/server.key"
+        os.environ['irodsSSLDHParamsFile'] = "/var/lib/irods/tests/pydevtest/dhparams.pem"
 
         # client side environment variables
         os.environ['irodsSSLVerifyServer'] = "none"
@@ -164,7 +164,7 @@ class Test_Auth_Suite(unittest.TestCase, ResourceBase):
         os.system("echo \"irodsCwd '/tempZone/home/%s'\" >> %s" % (authTestUser, clientEnvFile))
         
         # add server.config settings
-        serverConfigFile = "/var/lib/eirods/iRODS/server/config/server.config"
+        serverConfigFile = "/var/lib/irods/iRODS/server/config/server.config"
         os.system("cp %s %sOrig" % (serverConfigFile, serverConfigFile))
         os.system("echo \"pam_password_length 20\" >> %s" % serverConfigFile)
         os.system("echo \"pam_no_extend false\" >> %s" % serverConfigFile)
@@ -173,9 +173,9 @@ class Test_Auth_Suite(unittest.TestCase, ResourceBase):
 
 
         # server reboot to pick up new irodsEnv and server settings
-        os.system("/var/lib/eirods/iRODS/irodsctl stop")
-        os.system("/var/lib/eirods/tests/zombiereaper.sh")
-        os.system("/var/lib/eirods/iRODS/irodsctl start")
+        os.system("/var/lib/irods/iRODS/irodsctl stop")
+        os.system("/var/lib/irods/tests/zombiereaper.sh")
+        os.system("/var/lib/irods/iRODS/irodsctl start")
 
         # do the reauth
         assertiCmd(s.adminsession,"iinit %s" % authTestPass) # reinitialize
@@ -198,9 +198,9 @@ class Test_Auth_Suite(unittest.TestCase, ResourceBase):
         os.system("mv %sOrig %s" % (serverConfigFile, serverConfigFile))
         
         # server reboot to revert to previous server configuration
-        os.system("/var/lib/eirods/iRODS/irodsctl stop")
-        os.system("/var/lib/eirods/tests/zombiereaper.sh")
-        os.system("/var/lib/eirods/iRODS/irodsctl start")
+        os.system("/var/lib/irods/iRODS/irodsctl stop")
+        os.system("/var/lib/irods/tests/zombiereaper.sh")
+        os.system("/var/lib/irods/iRODS/irodsctl start")
         
         
 

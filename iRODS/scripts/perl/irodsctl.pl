@@ -742,9 +742,9 @@ sub doAllRescTests
                         "setup" => [
                                 "yes | iadmin modresc demoResc name origResc",
                                 "iadmin mkresc demoResc random",
-                                "iadmin mkresc unix1Resc 'unix file system' $hostname:/var/lib/eirods/unix1RescVault",
-                                "iadmin mkresc unix2Resc 'unix file system' $hostname:/var/lib/eirods/unix2RescVault",
-                                "iadmin mkresc unix3Resc 'unix file system' $hostname:/var/lib/eirods/unix3RescVault",
+                                "iadmin mkresc unix1Resc 'unix file system' $hostname:/var/lib/irods/unix1RescVault",
+                                "iadmin mkresc unix2Resc 'unix file system' $hostname:/var/lib/irods/unix2RescVault",
+                                "iadmin mkresc unix3Resc 'unix file system' $hostname:/var/lib/irods/unix3RescVault",
                                 "iadmin addchildtoresc demoResc unix1Resc",
                                 "iadmin addchildtoresc demoResc unix2Resc",
                                 "iadmin addchildtoresc demoResc unix3Resc",
@@ -758,9 +758,9 @@ sub doAllRescTests
                                 "iadmin rmresc unix1Resc",
                                 "iadmin rmresc demoResc",
                                 "yes | iadmin modresc origResc name demoResc",
-                                "rm -rf /var/lib/eirods/unix1RescVault",
-                                "rm -rf /var/lib/eirods/unix2RescVault",
-                                "rm -rf /var/lib/eirods/unix3RescVault",
+                                "rm -rf /var/lib/irods/unix1RescVault",
+                                "rm -rf /var/lib/irods/unix2RescVault",
+                                "rm -rf /var/lib/irods/unix3RescVault",
                         ],
                 },
                 "unix file system" => {
@@ -770,7 +770,7 @@ sub doAllRescTests
                 "nonblocking" => {
                         "setup" => [
                                 "yes | iadmin modresc demoResc name origResc",
-                                "iadmin mkresc demoResc nonblocking $hostname:/var/lib/eirods/nbVault",
+                                "iadmin mkresc demoResc nonblocking $hostname:/var/lib/irods/nbVault",
                         ],
                         "teardown" => [
                                 "iadmin rmresc demoResc",
@@ -781,7 +781,7 @@ sub doAllRescTests
                         "setup" => [
                                 "yes | iadmin modresc demoResc name origResc",
                                 "iadmin mkresc demoResc passthru",
-                                "iadmin mkresc unix1Resc 'unix file system' $hostname:/var/lib/eirods/unix1RescVault",
+                                "iadmin mkresc unix1Resc 'unix file system' $hostname:/var/lib/irods/unix1RescVault",
                                 "iadmin addchildtoresc demoResc unix1Resc",
                         ],
                         "teardown" => [
@@ -789,15 +789,15 @@ sub doAllRescTests
                                 "iadmin rmresc unix1Resc",
                                 "iadmin rmresc demoResc",
                                 "yes | iadmin modresc origResc name demoResc",
-                                "rm -rf /var/lib/eirods/unix1RescVault",
+                                "rm -rf /var/lib/irods/unix1RescVault",
                         ],
                 },
                 "roundrobin" => {
                         "setup" => [
                                 "yes | iadmin modresc demoResc name origResc",
                                 "iadmin mkresc demoResc roundrobin",
-                                "iadmin mkresc unix1Resc 'unix file system' $hostname:/var/lib/eirods/unix1RescVault",
-                                "iadmin mkresc unix2Resc 'unix file system' $hostname:/var/lib/eirods/unix2RescVault",
+                                "iadmin mkresc unix1Resc 'unix file system' $hostname:/var/lib/irods/unix1RescVault",
+                                "iadmin mkresc unix2Resc 'unix file system' $hostname:/var/lib/irods/unix2RescVault",
                                 "iadmin addchildtoresc demoResc unix1Resc",
                                 "iadmin addchildtoresc demoResc unix2Resc",
                         ],
@@ -808,8 +808,8 @@ sub doAllRescTests
                                 "iadmin rmresc unix1Resc",
                                 "iadmin rmresc demoResc",
                                 "yes | iadmin modresc origResc name demoResc",
-                                "rm -rf /var/lib/eirods/unix1RescVault",
-                                "rm -rf /var/lib/eirods/unix2RescVault",
+                                "rm -rf /var/lib/irods/unix1RescVault",
+                                "rm -rf /var/lib/irods/unix2RescVault",
                         ],
                 },
                 "multilayered" => {
@@ -818,9 +818,9 @@ sub doAllRescTests
                                 "iadmin mkresc demoResc passthru",
                                 "iadmin mkresc pass2Resc passthru",
                                 "iadmin mkresc rrResc roundrobin",
-                                "iadmin mkresc unix1Resc 'unix file system' $hostname:/var/lib/eirods/unix1RescVault",
-                                "iadmin mkresc unix2Resc 'unix file system' $hostname:/var/lib/eirods/unix2RescVault",
-                                "iadmin mkresc unix3Resc 'unix file system' $hostname:/var/lib/eirods/unix3RescVault",
+                                "iadmin mkresc unix1Resc 'unix file system' $hostname:/var/lib/irods/unix1RescVault",
+                                "iadmin mkresc unix2Resc 'unix file system' $hostname:/var/lib/irods/unix2RescVault",
+                                "iadmin mkresc unix3Resc 'unix file system' $hostname:/var/lib/irods/unix3RescVault",
                                 "iadmin addchildtoresc demoResc pass2Resc",
                                 "iadmin addchildtoresc pass2Resc rrResc",
                                 "iadmin addchildtoresc rrResc unix1Resc",
@@ -840,15 +840,15 @@ sub doAllRescTests
                                 "iadmin rmresc pass2Resc",
                                 "iadmin rmresc demoResc",
                                 "yes | iadmin modresc origResc name demoResc",
-                                "rm -rf /var/lib/eirods/unix1RescVault",
-                                "rm -rf /var/lib/eirods/unix2RescVault",
-                                "rm -rf /var/lib/eirods/unix3RescVault",
+                                "rm -rf /var/lib/irods/unix1RescVault",
+                                "rm -rf /var/lib/irods/unix2RescVault",
+                                "rm -rf /var/lib/irods/unix3RescVault",
                         ],
                 },
 #                "hpss" => {
 #                        "setup" => [
 #                                "yes | iadmin modresc demoResc name origResc",
-#                                "iadmin mkresc demoResc hpss $hostname:/VaultPath 'user=eirods;keytab=/var/hpss/etc/hpss.eirods.keytab'",
+#                                "iadmin mkresc demoResc hpss $hostname:/VaultPath 'user=irods;keytab=/var/hpss/etc/hpss.irods.keytab'",
 #                        ],
 #                        "teardown" => [
 #                                "iadmin rmresc demoResc",
@@ -1546,7 +1546,7 @@ sub stopIrods
         # no regard for PIDs
         # iRODS must kill all owned processes for packaging purposes
 #        printStatus( "\tKilling any remaining Zombies... Silently.\n" );
-        system( "pgrep -l -u eirods irods | grep -v irodsctl | awk '{print $1}' | xargs kill -9 > /dev/null 2>&1" );
+        system( "pgrep -l -u irods irods | grep -v irodsctl | awk '{print $1}' | xargs kill -9 > /dev/null 2>&1" );
 
 	# Report if there are any left.
 	my $didNotDie = 0;

@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-ar_file="libeirods.a"
+ar_file="libirods.a"
 
 rm -f $ar_file
 
@@ -11,12 +11,12 @@ ar d  $ar_file dummy
 
 rm dummy
 
-ar r $ar_file iRODS/lib/core/obj/eirods_plugin_base.o
-ar r $ar_file iRODS/lib/core/obj/eirods_kvp_string_parser.o
-ar r $ar_file iRODS/server/re/obj/eirods_ms_plugin.o
-ar r $ar_file iRODS/lib/core/obj/eirods_resource_plugin.o
-ar r $ar_file iRODS/lib/core/obj/eirods_network_plugin.o
-ar r $ar_file iRODS/lib/core/obj/eirods_auth_plugin.o
+ar r $ar_file iRODS/lib/core/obj/irods_plugin_base.o
+ar r $ar_file iRODS/lib/core/obj/irods_kvp_string_parser.o
+ar r $ar_file iRODS/server/re/obj/irods_ms_plugin.o
+ar r $ar_file iRODS/lib/core/obj/irods_resource_plugin.o
+ar r $ar_file iRODS/lib/core/obj/irods_network_plugin.o
+ar r $ar_file iRODS/lib/core/obj/irods_auth_plugin.o
 
 
 #for ff in `find iRODS/ -name "*.o"`
