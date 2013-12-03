@@ -18,31 +18,31 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_error.h"
-#include "eirods_zone_info.h"
-#include "eirods_sql_logger.h"
-#include "eirods_string_tokenize.h"
-#include "eirods_log.h"
-#include "eirods_tmp_string.h"
-#include "eirods_children_parser.h"
-#include "eirods_stacktrace.h"
-#include "eirods_hierarchy_parser.h"
-#include "eirods_catalog_properties.h"
-#include "eirods_kvp_string_parser.h"
-#include "eirods_auth_object.h"
-#include "eirods_auth_factory.h"
-#include "eirods_auth_plugin.h"
-#include "eirods_auth_manager.h"
-#include "eirods_auth_constants.h"
+#include "eirods_error.hpp"
+#include "eirods_zone_info.hpp"
+#include "eirods_sql_logger.hpp"
+#include "eirods_string_tokenize.hpp"
+#include "eirods_log.hpp"
+#include "eirods_tmp_string.hpp"
+#include "eirods_children_parser.hpp"
+#include "eirods_stacktrace.hpp"
+#include "eirods_hierarchy_parser.hpp"
+#include "eirods_catalog_properties.hpp"
+#include "eirods_kvp_string_parser.hpp"
+#include "eirods_auth_object.hpp"
+#include "eirods_auth_factory.hpp"
+#include "eirods_auth_plugin.hpp"
+#include "eirods_auth_manager.hpp"
+#include "eirods_auth_constants.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "rods.h"
-#include "rcMisc.h"
-#include "icatMidLevelRoutines.h"
-#include "icatMidLevelHelpers.h"
-#include "icatHighLevelRoutines.h"
-#include "icatLowLevel.h"
+#include "rods.hpp"
+#include "rcMisc.hpp"
+#include "icatMidLevelRoutines.hpp"
+#include "icatMidLevelHelpers.hpp"
+#include "icatHighLevelRoutines.hpp"
+#include "icatLowLevel.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes

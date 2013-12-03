@@ -5,26 +5,27 @@
 /* This is script-generated code (for the most part).  */ 
 /* See phyPathReg.h for a description of this API call.*/
 
-#include "phyPathReg.h"
-#include "rodsLog.h"
-#include "icatDefines.h"
-#include "objMetaOpr.h"
-#include "dataObjOpr.h"
-#include "collection.h"
-#include "specColl.h"
-#include "resource.h"
-#include "physPath.h"
-#include "rsGlobalExtern.h"
-#include "rcGlobalExtern.h"
-#include "reGlobalsExtern.h"
-#include "miscServerFunct.h"
-#include "apiHeaderAll.h"
+#include "fileStat.hpp"
+#include "phyPathReg.hpp"
+#include "rodsLog.hpp"
+#include "icatDefines.hpp"
+#include "objMetaOpr.hpp"
+#include "dataObjOpr.hpp"
+#include "collection.hpp"
+#include "specColl.hpp"
+#include "resource.hpp"
+#include "physPath.hpp"
+#include "rsGlobalExtern.hpp"
+#include "rcGlobalExtern.hpp"
+#include "reGlobalsExtern.hpp"
+#include "miscServerFunct.hpp"
+#include "apiHeaderAll.hpp"
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_resource_backport.h"
-#include "eirods_resource_redirect.h"
-#include "eirods_hierarchy_parser.h"
+#include "eirods_resource_backport.hpp"
+#include "eirods_resource_redirect.hpp"
+#include "eirods_hierarchy_parser.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -465,6 +466,8 @@ int
 dirPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
             rescInfo_t *rescInfo )
 {
+    rodsStat_t *myStat = NULL;
+    fileStatInp_t fileStatInp;
     collInp_t collCreateInp;
     fileOpendirInp_t fileOpendirInp;
     fileClosedirInp_t fileClosedirInp;
@@ -482,7 +485,6 @@ dirPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
         return -1;
     }
 
-rodsLog( LOG_NOTICE, "XXXX - dirPathReg :: resc_hier [%s]", resc_hier );
     // =-=-=-=-=-=-=-
     // extract the host location from the resource hierarchy
     std::string location;
@@ -506,7 +508,6 @@ rodsLog( LOG_NOTICE, "XXXX - dirPathReg :: resc_hier [%s]", resc_hier );
         /* original directory meta-data                   */
         memset (&fileStatInp, 0, sizeof (fileStatInp));
         rstrcpy (fileStatInp.fileName, filePath, MAX_NAME_LEN);
-        fileStatInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
         rstrcpy (fileStatInp.addr.hostAddr, rescInfo->rescLoc, NAME_LEN);
 
         status = rsFileStat (rsComm, &fileStatInp, &myStat);
