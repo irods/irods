@@ -760,7 +760,8 @@ if [ "$BUILDEIRODS" == "1" ] ; then
         sed '/^#ifdef HAVE_LINUX_FIEMAP_H$/i \
 #ifdef HAVE_LINUX_TYPES_H\
 #include <linux/types.h>\
-#endif' ./libarchive/test/test_sparse_basic.c > /tmp/libarchive-test-test_sparse_basic.c
+#endif\
+' ./libarchive/test/test_sparse_basic.c > /tmp/libarchive-test-test_sparse_basic.c
         cp /tmp/libarchive-test-test_sparse_basic.c ./libarchive/test/test_sparse_basic.c
         ../$EIRODS_BUILD_CMAKEVERSION/bin/cmake -D CMAKE_C_FLAGS:STRING=-fPIC .
         $MAKEJCMD
