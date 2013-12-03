@@ -164,13 +164,13 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         assertiCmd(s.adminsession,"iadmin lr %s" % "unixB2","LIST","resc_objcount: %d" % tree2)
         # check resc_hier on replB files, should have full hierarchy, and should NOT start with replB
         assertiCmd(s.adminsession,"iquest \"select DATA_RESC_HIER where DATA_RESC_HIER like '%s;%%'\"" % "pt;replA;replB", "LIST", "pt")
-        assertiCmd(s.adminsession,"iquest \"select DATA_RESC_HIER where DATA_RESC_HIER like '%s;%%'\"" % "replB", "ERROR", "CAT_NO_ROWS_FOUND")
+        assertiCmd(s.adminsession,"iquest \"select DATA_RESC_HIER where DATA_RESC_HIER like '%s;%%'\"" % "replB", "LIST", "CAT_NO_ROWS_FOUND")
         # check resc_name on replB files
         assertiCmd(s.adminsession,"iquest \"select DATA_RESC_NAME where DATA_RESC_HIER like '%s;%%'\"" % "pt;replA;replB", "LIST", "pt")
-        assertiCmd(s.adminsession,"iquest \"select DATA_RESC_NAME where DATA_RESC_HIER like '%s;%%'\"" % "replB", "ERROR", "CAT_NO_ROWS_FOUND")
+        assertiCmd(s.adminsession,"iquest \"select DATA_RESC_NAME where DATA_RESC_HIER like '%s;%%'\"" % "replB", "LIST", "CAT_NO_ROWS_FOUND")
         # check resc_group_name on replB files
         assertiCmd(s.adminsession,"iquest \"select DATA_RESC_GROUP_NAME where DATA_RESC_HIER like '%s;%%'\"" % "pt;replA;replB", "LIST", "pt")
-        assertiCmd(s.adminsession,"iquest \"select DATA_RESC_GROUP_NAME where DATA_RESC_HIER like '%s;%%'\"" % "replB", "ERROR", "CAT_NO_ROWS_FOUND")
+        assertiCmd(s.adminsession,"iquest \"select DATA_RESC_GROUP_NAME where DATA_RESC_HIER like '%s;%%'\"" % "replB", "LIST", "CAT_NO_ROWS_FOUND")
         
         # remove child
         # rm replB from replA
