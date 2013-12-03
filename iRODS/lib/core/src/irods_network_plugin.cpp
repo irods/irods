@@ -2,11 +2,11 @@
 
 // =-=-=-=-=-=-=-
 // My Includes
-#include "eirods_network_plugin.hpp"
-#include "eirods_load_plugin.hpp"
-#include "eirods_network_home.hpp"
-#include "eirods_stacktrace.hpp"
-#include "eirods_operation_rule_execution_manager_base.hpp"
+#include "irods_network_plugin.hpp"
+#include "irods_load_plugin.hpp"
+#include "irods_network_home.hpp"
+#include "irods_stacktrace.hpp"
+#include "irods_operation_rule_execution_manager_base.hpp"
 
 // =-=-=-=-=-=-=-
 // STL Includes
@@ -18,7 +18,7 @@
 // dlopen, etc
 #include <dlfcn.h>
 
-namespace eirods {
+namespace irods {
 
     // =-=-=-=-=-=-=-
     // public - ctor
@@ -28,8 +28,8 @@ namespace eirods {
         plugin_base( 
             _inst, 
             _ctx ),
-        start_operation_( eirods::network::default_start_operation ), 
-        stop_operation_ ( eirods::network::default_stop_operation  ) {
+        start_operation_( irods::network::default_start_operation ), 
+        stop_operation_ ( irods::network::default_stop_operation  ) {
     } // ctor
     
     // =-=-=-=-=-=-=-
@@ -138,7 +138,7 @@ namespace eirods {
             // =-=-=-=-=-=-=-
             // check key and fcn name before trying to load
             if( key.empty() ) {
-                std::cout << "[!]\teirods::network::delay_load - empty op key for [" 
+                std::cout << "[!]\tirods::network::delay_load - empty op key for [" 
                           << fcn << "], skipping." << std::endl;
                 continue;
             }
@@ -146,7 +146,7 @@ namespace eirods {
             // =-=-=-=-=-=-=-
             // check key and fcn name before trying to load
             if( fcn.empty() ) {
-                std::cout << "[!]\teirods::network::delay_load - empty function name for [" 
+                std::cout << "[!]\tirods::network::delay_load - empty function name for [" 
                           << key << "], skipping." << std::endl;
                 continue;
             }
@@ -156,7 +156,7 @@ namespace eirods {
             dlerror();
             plugin_operation res_op_ptr = reinterpret_cast< plugin_operation >( dlsym( _handle, fcn.c_str() ) );
             if( !res_op_ptr ) {
-                std::cout << "[!]\teirods::network::delay_load - failed to load [" 
+                std::cout << "[!]\tirods::network::delay_load - failed to load [" 
                           << fcn << "].  error - " << dlerror() << std::endl;
                 continue;
             }
@@ -222,7 +222,7 @@ namespace eirods {
         error ret = load_plugin< network >( 
                         net, 
                         _plugin_name, 
-                        EIRODS_NETWORK_HOME, 
+                        NETWORK_HOME, 
                         _inst_name, 
                         _context );
         if( ret.ok() && net ) {
@@ -236,7 +236,7 @@ namespace eirods {
 
     } // load_network_plugin
 
-}; // namespace eirods
+}; // namespace irods
 
 
 

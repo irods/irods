@@ -1,12 +1,11 @@
 
 
 
-#ifndef __EIRODS_KVP_STRING_PARSER_HPP__
-#define __EIRODS_KVP_STRING_PARSER_HPP__
+#ifndef __IRODS_KVP_STRING_PARSER_HPP__
+#define __IRODS_KVP_STRING_PARSER_HPP__
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_error.hpp"
+#include "irods_error.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -22,7 +21,7 @@
 #include <boost/foreach.hpp>
 #include <boost/algorithm/string.hpp>
 
-namespace eirods {
+namespace irods {
     /// =-=-=-=-=-=-=-
     /// @brief default delimiter and key-value association
     static const std::string KVP_DEF_DELIM(";");
@@ -49,10 +48,10 @@ namespace eirods {
         const std::string& _assoc = KVP_DEF_ASSOC,  // associative token, defaults
         const std::string& _delim = KVP_DEF_DELIM); // delimiter, defaults
      
-}; // namespace eirods
+}; // namespace irods
 
 
-#endif // __EIRODS_KVP_STRING_PARSER_HPP__
+#endif // __IRODS_KVP_STRING_PARSER_HPP__
 
 
 

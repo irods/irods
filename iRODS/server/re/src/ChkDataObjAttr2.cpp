@@ -38,7 +38,7 @@
  *               be used.  
  *               The options can be the following
  *              - "all"(ALL_KW) 
- *              - "irodsAdmin" (IRODS_ADMIN_KW).
+ *              - "irodsAdmin" (ADMIN_KW).
  *              - "backupMode" if specified, it will try to use 'backup mode' 
  *                to the destination resource. Means if a good copy already
  *                exists in destination resource, it will not throw an error

@@ -14,11 +14,10 @@
 #include "physPath.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_log.hpp"
-#include "eirods_file_object.hpp" 
-#include "eirods_stacktrace.hpp"
-#include "eirods_resource_backport.hpp"
+#include "irods_log.hpp"
+#include "irods_file_object.hpp" 
+#include "irods_stacktrace.hpp"
+#include "irods_resource_backport.hpp"
 
 int
 rsFileRename (rsComm_t *rsComm, fileRenameInp_t *fileRenameInp)
@@ -28,9 +27,9 @@ rsFileRename (rsComm_t *rsComm, fileRenameInp_t *fileRenameInp)
     int status;
 
     //remoteFlag = resolveHost (&fileRenameInp->addr, &rodsServerHost);
-    eirods::error ret = eirods::get_host_for_hier_string( fileRenameInp->rescHier, remoteFlag, rodsServerHost );
+    irods::error ret = irods::get_host_for_hier_string( fileRenameInp->rescHier, remoteFlag, rodsServerHost );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "failed in call to eirods::get_host_for_hier_string", ret ) );
+        irods::log( PASSMSG( "failed in call to irods::get_host_for_hier_string", ret ) );
         return -1;
     }
 
@@ -94,20 +93,20 @@ int _rsFileRename(
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - Empty logical path.";
-        eirods::log(LOG_ERROR, msg.str());
+        irods::log(LOG_ERROR, msg.str());
         return -1;
     }
     
     // =-=-=-=-=-=-=-
     // make the call to rename via the resource plugin
-    eirods::file_object_ptr file_obj( 
-                                new eirods::file_object( 
+    irods::file_object_ptr file_obj( 
+                                new irods::file_object( 
                                     _comm, 
                                     _rename_inp->objPath, 
                                     _rename_inp->oldFileName, 
                                     _rename_inp->rescHier, 
                                     0, 0, 0 ) );
-    eirods::error rename_err = fileRename( _comm, file_obj, _rename_inp->newFileName );
+    irods::error rename_err = fileRename( _comm, file_obj, _rename_inp->newFileName );
 
     // =-=-=-=-=-=-=-
     // report errors if any
@@ -118,8 +117,8 @@ int _rsFileRename(
         msg << "] to [";
         msg << _rename_inp->newFileName;
         msg << "]";
-        eirods::error err = PASSMSG( msg.str(), rename_err );
-        eirods::log ( err );
+        irods::error err = PASSMSG( msg.str(), rename_err );
+        irods::log ( err );
     }
 
     return rename_err.code();

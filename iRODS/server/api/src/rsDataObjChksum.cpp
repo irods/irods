@@ -12,9 +12,8 @@
 #include "getRemoteZoneResc.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_resource_backport.hpp"
-#include "eirods_resource_redirect.hpp"
+#include "irods_resource_backport.hpp"
+#include "irods_resource_redirect.hpp"
 
 int
 rsDataObjChksum (rsComm_t *rsComm, dataObjInp_t *dataObjChksumInp,
@@ -41,13 +40,13 @@ rsDataObjChksum (rsComm_t *rsComm, dataObjInp_t *dataObjChksumInp,
         // determine the resource hierarchy if one is not provided
         if( getValByKey( &dataObjChksumInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
             std::string       hier;
-            eirods::error ret = eirods::resolve_resource_hierarchy( eirods::EIRODS_OPEN_OPERATION, 
+            irods::error ret = irods::resolve_resource_hierarchy( irods::OPEN_OPERATION, 
                                                                     rsComm, dataObjChksumInp, hier );
             if( !ret.ok() ) { 
                 std::stringstream msg;
-                msg << "failed in eirods::resolve_resource_hierarchy for [";
+                msg << "failed in irods::resolve_resource_hierarchy for [";
                 msg << dataObjChksumInp->objPath << "]";
-                eirods::log( PASSMSG( msg.str(), ret ) );
+                irods::log( PASSMSG( msg.str(), ret ) );
                 return ret.code();
             }
            
@@ -151,12 +150,12 @@ _rsDataObjChksum (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         char *tmpChksumStr;
         //JMC - legacy resource :: int rescClass = getRescClass (tmpDataObjInfo->rescInfo);
         std::string resc_class;
-        eirods::error err = eirods::get_resource_property< std::string >( 
+        irods::error err = irods::get_resource_property< std::string >( 
             tmpDataObjInfo->rescInfo->rescName, 
-            eirods::RESOURCE_CLASS,
+            irods::RESOURCE_CLASS,
             resc_class );
         if( !err.ok() ) {
-            eirods::log( PASSMSG( "failed in get_resource_property [class]", err ) );
+            irods::log( PASSMSG( "failed in get_resource_property [class]", err ) );
         }
 
 #if 0 // JMC - legacy resource 
@@ -170,7 +169,7 @@ _rsDataObjChksum (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             }
         } else 
 #endif // JMC - legacy resource 
-            if ( resc_class == eirods::RESOURCE_CLASS_BUNDLE ) { // (rescClass == BUNDLE_CL) {
+            if ( resc_class == irods::RESOURCE_CLASS_BUNDLE ) { // (rescClass == BUNDLE_CL) {
                 /* don't do BUNDLE_CL. should be done on the bundle file */
                 tmpDataObjInfo = tmpDataObjInfo->next;
                 status = 0;

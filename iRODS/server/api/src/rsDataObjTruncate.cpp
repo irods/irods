@@ -21,8 +21,7 @@
 #include "phyBundleColl.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_resource_backport.hpp"
+#include "irods_resource_backport.hpp"
 
 
 
@@ -141,9 +140,9 @@ dataObjInfo_t *dataObjInfo)
     // =-=-=-=-=-=-=-
     // extract the host location from the resource hierarchy
     std::string location;
-    eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
+    irods::error ret = irods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "l3Truncate - failed in get_loc_for_hier_String", ret ) );
+        irods::log( PASSMSG( "l3Truncate - failed in get_loc_for_hier_String", ret ) );
         return -1;
     }
 

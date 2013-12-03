@@ -56,10 +56,10 @@
 #define CHKSUM_ALL_KW    "ChksumAll"
 #define FORCE_CHKSUM_KW    "forceChksum"
 #define COLLECTION_KW    "collection"
-#define IRODS_ADMIN_KW    "irodsAdmin"
-#define IRODS_ADMIN_RMTRASH_KW "irodsAdminRmTrash"
+#define ADMIN_KW    "irodsAdmin"
+#define ADMIN_RMTRASH_KW "irodsAdminRmTrash"
 #define UNREG_KW       "unreg"
-#define IRODS_RMTRASH_KW "irodsRmTrash"
+#define RMTRASH_KW "irodsRmTrash"
 #define RECURSIVE_OPR__KW    "recursiveOpr"
 #define COLLECTION_TYPE_KW    "collectionType"
 #define COLLECTION_INFO1_KW    "collectionInfo1"
@@ -225,7 +225,7 @@
 #define AGE_KW                      "age"  /* age of the file for itrim */
 
 // =-=-=-=-=-=-=-
-// eirods general keywords definitions
+// irods general keywords definitions
 #define RESC_HIER_STR_KW             "resc_hier"
 #define DEST_RESC_HIER_STR_KW        "dest_resc_hier"
 #define IN_PDMO_KW                   "in_pdmo"
@@ -234,11 +234,11 @@
 #define IN_REPL_KW                   "in_repl"
 
 // =-=-=-=-=-=-=-
-// eirods tcp keyword definitions
+// irods tcp keyword definitions
 #define SOCKET_HANDLE_KW             "tcp_socket_handle"
 
 // =-=-=-=-=-=-=-
-// eirods ssl keyword definitions
+// irods ssl keyword definitions
 #define SSL_HOST_KW                  "ssl_host"
 #define SSL_SHARED_SECRET_KW         "ssl_shared_secret"
 #define SSL_KEY_SIZE_KW              "ssl_key_size"
@@ -247,14 +247,14 @@
 #define SSL_ALGORITHM_KW             "ssl_algorithm"
 
 // =-=-=-=-=-=-=-
-// eirods data_object keyword definitions
+// irods data_object keyword definitions
 #define PHYSICAL_PATH_KW             "physical_path"
 #define MODE_KW                      "mode_kw"
 #define FLAGS_KW                     "flags_kw"
 // borrowed RESC_HIER_STR_KW
 
 // =-=-=-=-=-=-=-
-// eirods file_object keyword definitions
+// irods file_object keyword definitions
 #define LOGICAL_PATH_KW              "logical_path"
 #define FILE_DESCRIPTOR_KW           "file_descriptor"
 #define L1_DESC_IDX_KW               "l1_desc_idx"
@@ -263,7 +263,7 @@
 // borrowed IN_PDMO_KW
 
 // =-=-=-=-=-=-=-
-// eirods structured_object keyword definitions
+// irods structured_object keyword definitions
 #define HOST_ADDR_KW                 "host_addr"
 #define ZONE_NAME_KW                 "zone_name"
 #define PORT_NUM_KW                  "port_num"
@@ -273,7 +273,7 @@
 // borrowed OPR_TYPE_KW
 
 // =-=-=-=-=-=-=-
-// eirods spec coll keyword definitions
+// irods spec coll keyword definitions
 #define SPEC_COLL_CLASS_KW           "spec_coll_class"
 #define SPEC_COLL_TYPE_KW            "spec_coll_type"
 #define SPEC_COLL_OBJ_PATH_KW        "spec_coll_obj_path"

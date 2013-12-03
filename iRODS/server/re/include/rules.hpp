@@ -7,9 +7,9 @@
 #include "arithmetics.hpp"
 #include "typing.hpp"
 
-#include "eirods_ms_plugin.hpp"
+#include "irods_ms_plugin.hpp"
 
-extern eirods::ms_table MicrosTable;
+extern irods::ms_table MicrosTable;
 
 int setLocalVarValue(char* varName, ruleExecInfo_t *rei, Res* res, char* errmsg, Region *r);
 int readRuleSetFromFile(char *ruleBaseName, RuleSet *ruleSet, Env *funcDesc, int* errloc, rError_t *errmsg, Region *r);

@@ -1,17 +1,16 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
-#ifndef ___EIRODS_NETWORK_PLUGIN_H__
-#define ___EIRODS_NETWORK_PLUGIN_H__
+#ifndef ___IRODS_NETWORK_PLUGIN_HPP__
+#define ___IRODS_NETWORK_PLUGIN_HPP__
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_plugin_context.hpp"
-#include "eirods_network_types.hpp"
-#include "eirods_operation_wrapper.hpp"
+#include "irods_plugin_context.hpp"
+#include "irods_network_types.hpp"
+#include "irods_operation_wrapper.hpp"
 
 #include <iostream>
 
-namespace eirods {
+namespace irods {
     typedef error (*network_maintenance_operation)( plugin_property_map& );
     // =-=-=-=-=-=-=-
     /**
@@ -89,7 +88,7 @@ namespace eirods {
         /// @brief delegate the call to the operation in question to the operation wrapper, with 1 param
         error call( 
             const std::string& _op, 
-            eirods::first_class_object_ptr _obj ) {
+            irods::first_class_object_ptr _obj ) {
             plugin_context ctx( properties_, _obj, "" );
             return operations_[ _op ].call( ctx );
         
@@ -100,7 +99,7 @@ namespace eirods {
         template< typename T1 >
         error call( 
             const std::string& _op, 
-            eirods::first_class_object_ptr _obj, 
+            irods::first_class_object_ptr _obj, 
             T1 _t1 ) {
             plugin_context ctx( properties_, _obj, "" );
             return operations_[ _op ].call< T1 >( ctx, _t1 );
@@ -112,7 +111,7 @@ namespace eirods {
         template< typename T1, typename T2 >
         error call( 
             const std::string& _op, 
-            eirods::first_class_object_ptr _obj, 
+            irods::first_class_object_ptr _obj, 
             T1 _t1, 
             T2 _t2 ) {
             plugin_context ctx( properties_, _obj, "" );
@@ -126,7 +125,7 @@ namespace eirods {
         template< typename T1, typename T2, typename T3 >
         error call( 
             const std::string& _op, 
-            eirods::first_class_object_ptr _obj, 
+            irods::first_class_object_ptr _obj, 
             T1 _t1, 
             T2 _t2, 
             T3 _t3 ) {
@@ -141,7 +140,7 @@ namespace eirods {
         template< typename T1, typename T2, typename T3, typename T4 >
         error call( 
             const std::string& _op, 
-            eirods::first_class_object_ptr _obj, 
+            irods::first_class_object_ptr _obj, 
             T1 _t1, 
             T2 _t2, 
             T3 _t3, 
@@ -157,7 +156,7 @@ namespace eirods {
         template< typename T1, typename T2, typename T3, typename T4, typename T5 >
         error call( 
             const std::string& _op, 
-            eirods::first_class_object_ptr _obj, 
+            irods::first_class_object_ptr _obj, 
             T1 _t1, 
             T2 _t2, 
             T3 _t3, 
@@ -174,7 +173,7 @@ namespace eirods {
         template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6 >
         error call( 
             const std::string& _op, 
-            eirods::first_class_object_ptr _obj, 
+            irods::first_class_object_ptr _obj, 
             T1 _t1, 
             T2 _t2, 
             T3 _t3, 
@@ -192,7 +191,7 @@ namespace eirods {
         template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7 >
         error call( 
             const std::string& _op, 
-            eirods::first_class_object_ptr _obj, 
+            irods::first_class_object_ptr _obj, 
             T1 _t1, 
             T2 _t2, 
             T3 _t3, 
@@ -211,7 +210,7 @@ namespace eirods {
         template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8 >
         error call( 
             const std::string& _op, 
-            eirods::first_class_object_ptr _obj, 
+            irods::first_class_object_ptr _obj, 
             T1 _t1, 
             T2 _t2, 
             T3 _t3, 
@@ -251,10 +250,10 @@ namespace eirods {
         const std::string&,   // instance name
         const std::string& ); // context string
 
-}; // namespace eirods
+}; // namespace irods
 
 
-#endif // ___EIRODS_NETWORK_PLUGIN_H__
+#endif // ___IRODS_NETWORK_PLUGIN_HPP__
 
 
 

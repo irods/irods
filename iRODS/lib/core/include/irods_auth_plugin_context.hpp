@@ -1,14 +1,13 @@
 
 
 
-#ifndef __EIRODS_AUTH_PLUGIN_CONTEXT_H__
-#define __EIRODS_AUTH_PLUGIN_CONTEXT_H__
+#ifndef __IRODS_AUTH_PLUGIN_CONTEXT_HPP__
+#define __IRODS_AUTH_PLUGIN_CONTEXT_HPP__
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_plugin_context.hpp"
+#include "irods_plugin_context.hpp"
 
-namespace eirods {
+namespace irods {
     /// =-=-=-=-=-=-=-
     /// @brief forward decl of auth
     class auth;
@@ -67,9 +66,9 @@ namespace eirods {
 
     }; // class auth_plugin_context
 
-}; // namespace eirods
+}; // namespace irods
 
-#endif // __EIRODS_AUTH_PLUGIN_CONTEXT_H__
+#endif // __IRODS_AUTH_PLUGIN_CONTEXT_HPP__
 
 
 

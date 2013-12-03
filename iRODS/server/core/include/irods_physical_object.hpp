@@ -1,14 +1,14 @@
 
 
 
-#ifndef __EIRODS_PHYSICAL_OBJECT_HPP__
-#define  __EIRODS_PHYSICAL_OBJECT_HPP__
+#ifndef __IRODS_PHYSICAL_OBJECT_HPP__
+#define  __IRODS_PHYSICAL_OBJECT_HPP__
 
 // =-=-=-=-=-=-=-
 // stl includes
 #include <string>
 
-namespace eirods {
+namespace irods {
 
     class physical_object {
     public:
@@ -101,9 +101,9 @@ namespace eirods {
 
     }; // physical_object
 
-}; // namespace eirods
+}; // namespace irods
 
-#endif // __EIRODS_PHYSICAL_OBJECT_HPP__
+#endif // __IRODS_PHYSICAL_OBJECT_HPP__
 
 
 

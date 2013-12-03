@@ -284,7 +284,7 @@ main(int argc, char **argv)
           &dataObjOprInp.condInput);
 
     addKeyVal (&dataObjOprInp.condInput, RSYNC_DEST_PATH_KW, "foo20");
-    addKeyVal (&dataObjOprInp.condInput, RSYNC_MODE_KW, IRODS_TO_LOCAL);
+    addKeyVal (&dataObjOprInp.condInput, RSYNC_MODE_KW, TO_LOCAL);
 
     status = rcDataObjRsync (conn, &dataObjOprInp);
 
@@ -558,7 +558,7 @@ main(int argc, char **argv)
     }
 
     addKeyVal (&collCreateInp.condInput, FORCE_FLAG_KW, "");
-    addKeyVal (&collCreateInp.condInput, IRODS_RMTRASH_KW, "");
+    addKeyVal (&collCreateInp.condInput, RMTRASH_KW, "");
 
     l1descInx1 = rcRmColl (conn, &collCreateInp, True);
 

@@ -21,9 +21,8 @@
 #include "dataObjOpr.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_resource_backport.hpp"
-#include "eirods_resource_redirect.hpp"
+#include "irods_resource_backport.hpp"
+#include "irods_resource_redirect.hpp"
 
 int rsGetHostForGet(
     rsComm_t*     rsComm, 
@@ -40,14 +39,14 @@ int rsGetHostForGet(
     if( isColl( rsComm, dataObjInp->objPath, NULL ) < 0 ) {
         std::string       hier;
         if( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
-            eirods::error ret = eirods::resolve_resource_hierarchy( eirods::EIRODS_OPEN_OPERATION, rsComm, 
+            irods::error ret = irods::resolve_resource_hierarchy( irods::OPEN_OPERATION, rsComm, 
                                                            dataObjInp, hier );
             if( !ret.ok() ) { 
                 std::stringstream msg;
                 msg << __FUNCTION__;
-                msg << " :: failed in eirods::resolve_resource_hierarchy for [";
+                msg << " :: failed in irods::resolve_resource_hierarchy for [";
                 msg << dataObjInp->objPath << "]";
-                eirods::log( PASSMSG( msg.str(), ret ) );
+                irods::log( PASSMSG( msg.str(), ret ) );
                 return ret.code();
             }
             // =-=-=-=-=-=-=-
@@ -60,9 +59,9 @@ int rsGetHostForGet(
         // =-=-=-=-=-=-=-
         // extract the host location from the resource hierarchy
         std::string location;
-        eirods::error ret = eirods::get_loc_for_hier_string( hier, location );
+        irods::error ret = irods::get_loc_for_hier_string( hier, location );
         if( !ret.ok() ) {
-            eirods::log( PASSMSG( "rsGetHostForGet - failed in get_loc_for_hier_String", ret ) );
+            irods::log( PASSMSG( "rsGetHostForGet - failed in get_loc_for_hier_String", ret ) );
             return -1;
         }
 
@@ -122,7 +121,7 @@ int rsGetHostForGet(
 #endif     // JMC - backport 4746
 	}
 
-    eirods::resource_ptr resc;
+    irods::resource_ptr resc;
     status = getSpecCollCache (rsComm, dataObjInp->objPath, 0, &specCollCache);
     if (status >= 0 && NULL != specCollCache ) { // JMC cppcheck - nullptr
 	    if (specCollCache->specColl.collClass == MOUNTED_COLL) {
@@ -133,13 +132,13 @@ int rsGetHostForGet(
                  specCollCache->specColl.resource, status);
                 return status;
             }*/
-            eirods::error err = eirods::get_resc_info( specCollCache->specColl.resource, *myRescInfo );
+            irods::error err = irods::get_resc_info( specCollCache->specColl.resource, *myRescInfo );
             if( !err.ok() ) {
                 std::stringstream msg;
                 msg << "rsGetHostForGet - failed to get resc info for [";
                 msg << specCollCache->specColl.resource;
                 msg << "]";
-                eirods::log( PASS( false, -1, msg.str(), err ) );
+                irods::log( PASS( false, -1, msg.str(), err ) );
             }
 
             /* mounted coll will fall through with myRescInfo */
@@ -148,7 +147,7 @@ int rsGetHostForGet(
             return 0;
         }
     } else if( ( myResc = getValByKey( &dataObjInp->condInput, RESC_NAME_KW ) )  != NULL && 
-                eirods::get_resc_info( myResc, *myRescInfo ).ok() ) {
+                irods::get_resc_info( myResc, *myRescInfo ).ok() ) {
 	    /* user specified a resource. myRescInfo set and fall through */
     } else {
 	    /* normal type */

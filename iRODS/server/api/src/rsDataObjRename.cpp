@@ -22,11 +22,10 @@
 #include "rmCollOld.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_resource_backport.hpp"
-#include "eirods_stacktrace.hpp"
-#include "eirods_hierarchy_parser.hpp"
-#include "eirods_resource_redirect.hpp"
+#include "irods_resource_backport.hpp"
+#include "irods_stacktrace.hpp"
+#include "irods_hierarchy_parser.hpp"
+#include "irods_resource_redirect.hpp"
 
 int
 rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
@@ -419,9 +418,9 @@ l3Rename (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *newFileName)
         return SYS_RESC_IS_DOWN;
 
     std::string location;
-    eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
+    irods::error ret = irods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "specCollReaddir - failed in specColl open", ret ) );
+        irods::log( PASSMSG( "specCollReaddir - failed in specColl open", ret ) );
         return -1;
     }
 

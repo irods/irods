@@ -1,10 +1,10 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
-#include "eirods_unlink_replicator.hpp"
+#include "irods_unlink_replicator.hpp"
 
 #include "dataObjUnlink.hpp"
 
-namespace eirods {
+namespace irods {
 
     unlink_replicator::unlink_replicator(
         const std::string& _child,
@@ -24,7 +24,7 @@ namespace eirods {
         const object_oper& _object_oper)
     {
         error result = SUCCESS();
-        if((result = ASSERT_ERROR(_object_oper.operation() == unlink_oper, EIRODS_INVALID_OPERATION,
+        if((result = ASSERT_ERROR(_object_oper.operation() == unlink_oper, INVALID_OPERATION,
                                   "Performing replication of unlink operation but specified operation is \"%s\".",
                                   _object_oper.operation().c_str())).ok()) {
 
@@ -61,4 +61,4 @@ namespace eirods {
         return result;
     }
     
-}; // namespace eirods
+}; // namespace irods

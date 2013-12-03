@@ -2,8 +2,8 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* irodsFs.h - Header for for irodsFs.c */
 
-#ifndef IRODS_FS_HPP
-#define IRODS_FS_HPP
+#ifndef FS_HPP
+#define FS_HPP
 
 // =-=-=-=-=-=-=-
 // boost includes
@@ -48,4 +48,4 @@ extern "C" {
 }
 #endif
 
-#endif	/* IRODS_FS_H */
+#endif	/* FS_H */

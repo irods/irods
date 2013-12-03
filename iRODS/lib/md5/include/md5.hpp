@@ -33,8 +33,8 @@ Removed PROTO_LIST macro for C++ compatability.
 		is undefined.
 */
 
-#ifndef __MD5_H__
-#define __MD5_H__
+#ifndef __MD5_HPP__
+#define __MD5_HPP__
 
 #ifdef  __cplusplus
 extern "C" {
@@ -70,4 +70,4 @@ void MD5Final PROTO_LIST ((unsigned char [16], MD5_CTX *));
 }
 #endif
 
-#endif // __MD5_H__
+#endif // __MD5_HPP__

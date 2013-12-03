@@ -1,18 +1,17 @@
 
 
 
-#ifndef __EIRODS_RESOURCE_BACKPORT_H_
-#define __EIRODS_RESOURCE_BACKPORT_H_
+#ifndef __IRODS_RESOURCE_BACKPORT_HPP_
+#define __IRODS_RESOURCE_BACKPORT_HPP_
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_resource_manager.hpp"
+#include "irods_resource_manager.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
 #include "rsGlobalExtern.hpp"
 
-namespace eirods {
+namespace irods {
 
     // =-=-=-=-=-=-=-
     // helper functions for knitting back into legacy irods code
@@ -64,9 +63,9 @@ namespace eirods {
     } // get_resource_property
 
     error get_vault_path_for_hier_string(const std::string& _hier_string, std::string& _rtn_vault_path);
-}; // namespace eirods
+}; // namespace irods
 
-#endif // __EIRODS_RESOURCE_BACKPORT_H_
+#endif // __IRODS_RESOURCE_BACKPORT_HPP_
 
 
 

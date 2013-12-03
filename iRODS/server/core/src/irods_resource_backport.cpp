@@ -1,13 +1,12 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_resource_backport.hpp"
-#include "eirods_string_tokenize.hpp"
-#include "eirods_hierarchy_parser.hpp"
-#include "eirods_stacktrace.hpp"
+#include "irods_resource_backport.hpp"
+#include "irods_string_tokenize.hpp"
+#include "irods_hierarchy_parser.hpp"
+#include "irods_stacktrace.hpp"
 
-namespace eirods {
+namespace irods {
 
     // =-=-=-=-=-=-=-
     // helper function to convert properties from a resource plugin
@@ -335,7 +334,7 @@ namespace eirods {
                 msg << "failed to get group info for [";
                 msg << *itr;
                 msg << "]";
-                eirods::log( PASSMSG( msg.str(), grp_err ) );    
+                irods::log( PASSMSG( msg.str(), grp_err ) );    
                 
             }
 
@@ -582,7 +581,7 @@ namespace eirods {
             msg << " - Host from hierarchy string: \"";
             msg << _hier_str;
             msg << "\" is NULL";
-            return ERROR(EIRODS_INVALID_LOCATION, msg.str());
+            return ERROR(INVALID_LOCATION, msg.str());
         }
         
         // =-=-=-=-=-=-=-
@@ -658,7 +657,7 @@ namespace eirods {
         return result;
     }
 
-}; // namespace eirods
+}; // namespace irods
 
 
 

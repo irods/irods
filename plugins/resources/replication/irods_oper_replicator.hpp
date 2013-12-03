@@ -3,13 +3,13 @@
 #ifndef _oper_replicator_H_
 #define _oper_replicator_H_
 
-#include "eirods_error.hpp"
-#include "eirods_object_oper.hpp"
-#include "eirods_repl_types.hpp"
+#include "irods_error.hpp"
+#include "irods_object_oper.hpp"
+#include "irods_repl_types.hpp"
 
 #include <string>
 
-namespace eirods {
+namespace irods {
 
 /**
  * @brief Abstract base class for holding the implementation of the replication logic for different operations
@@ -18,6 +18,6 @@ namespace eirods {
     public:
         virtual error replicate(resource_plugin_context& _ctx, const child_list_t& _siblings, const object_oper& _object_oper) = 0;
     };
-}; // namespace eirods
+}; // namespace irods
 
 #endif // _oper_replicator_H_

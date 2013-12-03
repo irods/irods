@@ -24,9 +24,8 @@
 #include "rsIcatOpr.hpp"
 
 // =-=-=-=-=-=-
-// eirods includes
-#include "eirods_resource_redirect.hpp"
-#include "eirods_hierarchy_parser.hpp"
+#include "irods_resource_redirect.hpp"
+#include "irods_hierarchy_parser.hpp"
 
 int
 svrCloseQueryOut (rsComm_t *rsComm, genQueryOut_t *genQueryOut)
@@ -108,14 +107,14 @@ getPhyPath (
     dataObjInp_t data_inp;
     memset( &data_inp, 0, sizeof( data_inp ) );
     strncpy( data_inp.objPath, _obj_name, MAX_NAME_LEN );
-    eirods::error ret = eirods::resolve_resource_hierarchy( 
-                            eirods::EIRODS_OPEN_OPERATION,
+    irods::error ret = irods::resolve_resource_hierarchy( 
+                            irods::OPEN_OPERATION,
                             _comm,
                             &data_inp,
                             resc_hier );
     if( ret.ok() ) {
         std::string              root_resc;
-        eirods::hierarchy_parser parser;
+        irods::hierarchy_parser parser;
         parser.set_string( resc_hier );
         parser.first_resc( root_resc );
 
@@ -184,13 +183,13 @@ getPhyPath (
         return status;
 
     } else {
-        eirods::log( PASS( ret ) );
+        irods::log( PASS( ret ) );
         return -1;
     }
     
     #if 0    
     else {
-        eirods::log( PASS( ret ) );
+        irods::log( PASS( ret ) );
 
         genQueryOut_t* gen_out = NULL;
         char tmp_str                [ MAX_NAME_LEN ];

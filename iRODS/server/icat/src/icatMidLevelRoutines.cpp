@@ -19,8 +19,8 @@
 #include "icatMidLevelRoutines.hpp"
 #include "icatLowLevel.hpp"
 #include "icatMidLevelHelpers.hpp"
-#include "eirods_stacktrace.hpp"
-#include "eirods_log.hpp"
+#include "irods_stacktrace.hpp"
+#include "irods_log.hpp"
 
 #include "rcMisc.hpp"
 

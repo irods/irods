@@ -9,11 +9,10 @@
 #include "miscServerFunct.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods include
-#include "eirods_log.hpp"
-#include "eirods_file_object.hpp"
-#include "eirods_stacktrace.hpp"
-#include "eirods_resource_backport.hpp"
+#include "irods_log.hpp"
+#include "irods_file_object.hpp"
+#include "irods_stacktrace.hpp"
+#include "irods_resource_backport.hpp"
 
 int
 rsFileUnlink (rsComm_t *rsComm, fileUnlinkInp_t *fileUnlinkInp)
@@ -23,9 +22,9 @@ rsFileUnlink (rsComm_t *rsComm, fileUnlinkInp_t *fileUnlinkInp)
     int status;
 
     //remoteFlag = resolveHost (&fileUnlinkInp->addr, &rodsServerHost);
-    eirods::error ret = eirods::get_host_for_hier_string( fileUnlinkInp->rescHier, remoteFlag, rodsServerHost );
+    irods::error ret = irods::get_host_for_hier_string( fileUnlinkInp->rescHier, remoteFlag, rodsServerHost );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "failed in call to eirods::get_host_for_hier_string", ret ) );
+        irods::log( PASSMSG( "failed in call to irods::get_host_for_hier_string", ret ) );
         return -1;
     }
     if (remoteFlag == LOCAL_HOST) {
@@ -85,14 +84,14 @@ int _rsFileUnlink(
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - empty logical path.";
-        eirods::log(LOG_ERROR, msg.str());
+        irods::log(LOG_ERROR, msg.str());
         return -1;
     }
     
     // =-=-=-=-=-=-=-
     // call unlink via resource plugin
-    eirods::file_object_ptr file_obj( 
-                                new eirods::file_object( 
+    irods::file_object_ptr file_obj( 
+                                new irods::file_object( 
                                     _comm, 
                                     _unlink_inp->objPath, 
                                     _unlink_inp->fileName, 
@@ -100,7 +99,7 @@ int _rsFileUnlink(
                                     0, 0, 0 ) );
     file_obj->in_pdmo(_unlink_inp->in_pdmo);
     
-    eirods::error unlink_err = fileUnlink( _comm, file_obj );
+    irods::error unlink_err = fileUnlink( _comm, file_obj );
      
     // =-=-=-=-=-=-=-
     // log potential error message
@@ -110,8 +109,8 @@ int _rsFileUnlink(
         msg << _unlink_inp->fileName;
         msg << "]";
         msg << unlink_err.code();
-        eirods::error ret_err = PASSMSG( msg.str(), unlink_err );
-        eirods::log( ret_err );
+        irods::error ret_err = PASSMSG( msg.str(), unlink_err );
+        irods::log( ret_err );
     }
 
     return (unlink_err.code());

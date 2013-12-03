@@ -7,15 +7,14 @@
 #include "rcConnect.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_resource_plugin.hpp"
-#include "eirods_file_object.hpp"
-#include "eirods_physical_object.hpp"
-#include "eirods_collection_object.hpp"
-#include "eirods_string_tokenize.hpp"
-#include "eirods_hierarchy_parser.hpp"
-#include "eirods_resource_redirect.hpp"
-#include "eirods_stacktrace.hpp"
+#include "irods_resource_plugin.hpp"
+#include "irods_file_object.hpp"
+#include "irods_physical_object.hpp"
+#include "irods_collection_object.hpp"
+#include "irods_string_tokenize.hpp"
+#include "irods_hierarchy_parser.hpp"
+#include "irods_resource_redirect.hpp"
+#include "irods_stacktrace.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -76,16 +75,16 @@
 
 // =-=-=-=-=-=-=-
 /// @brief Generates a full path name from the partial physical path and the specified resource's vault path
-eirods::error non_blocking_generate_full_path(
-    eirods::plugin_property_map& _prop_map,
+irods::error non_blocking_generate_full_path(
+    irods::plugin_property_map& _prop_map,
     const std::string&           _phy_path,
     std::string&                 _ret_string )
 {
-    eirods::error result = SUCCESS();
-    eirods::error ret;
+    irods::error result = SUCCESS();
+    irods::error ret;
     std::string vault_path;
     // TODO - getting vault path by property will not likely work for coordinating nodes
-    ret = _prop_map.get<std::string>(eirods::RESOURCE_PATH, vault_path);
+    ret = _prop_map.get<std::string>(irods::RESOURCE_PATH, vault_path);
     if((result = ASSERT_ERROR(ret.ok(), SYS_INVALID_INPUT_PARAM, "resource has no vault path.")).ok()) {
         if(_phy_path.compare(0, 1, "/") != 0 &&
            _phy_path.compare(0, vault_path.size(), vault_path) != 0) {
@@ -104,20 +103,20 @@ eirods::error non_blocking_generate_full_path(
 
 // =-=-=-=-=-=-=-
 /// @brief update the physical path in the file object
-eirods::error non_blocking_check_path( 
-    eirods::resource_plugin_context& _ctx )
+irods::error non_blocking_check_path( 
+    irods::resource_plugin_context& _ctx )
 {
-    eirods::error result = SUCCESS();
+    irods::error result = SUCCESS();
     
     // =-=-=-=-=-=-=-
     // try dynamic cast on ptr, throw error otherwise 
-    eirods::data_object_ptr data_obj = boost::dynamic_pointer_cast< eirods::data_object >( _ctx.fco() );
+    irods::data_object_ptr data_obj = boost::dynamic_pointer_cast< irods::data_object >( _ctx.fco() );
     if((result = ASSERT_ERROR(data_obj.get(), SYS_INVALID_INPUT_PARAM, "Failed to cast fco to data_object." )).ok()) {
 
         // =-=-=-=-=-=-=-
         // NOTE: Must do this for all storage resources
         std::string full_path;
-        eirods::error ret = non_blocking_generate_full_path( _ctx.prop_map(), 
+        irods::error ret = non_blocking_generate_full_path( _ctx.prop_map(), 
                                                      data_obj->physical_path(), 
                                                      full_path );
         if((result = ASSERT_PASS(ret, "Failed generating full path for object.")).ok()) {
@@ -132,11 +131,11 @@ eirods::error non_blocking_check_path(
 // =-=-=-=-=-=-=-
 /// @brief Checks the basic operation parameters and updates the physical path in the file object
 template< typename DEST_TYPE >
-eirods::error non_blocking_check_params_and_path(
-    eirods::resource_plugin_context& _ctx ) {
+irods::error non_blocking_check_params_and_path(
+    irods::resource_plugin_context& _ctx ) {
     
-    eirods::error result = SUCCESS();
-    eirods::error ret;
+    irods::error result = SUCCESS();
+    irods::error ret;
 
     // =-=-=-=-=-=-=-
     // verify that the resc context is valid 
@@ -151,11 +150,11 @@ eirods::error non_blocking_check_params_and_path(
 
 // =-=-=-=-=-=-=-
 /// @brief Checks the basic operation parameters and updates the physical path in the file object
-eirods::error non_blocking_check_params_and_path(
-    eirods::resource_plugin_context& _ctx ) {
+irods::error non_blocking_check_params_and_path(
+    irods::resource_plugin_context& _ctx ) {
     
-    eirods::error result = SUCCESS();
-    eirods::error ret;
+    irods::error result = SUCCESS();
+    irods::error ret;
 
     // =-=-=-=-=-=-=-
     // verify that the resc context is valid 
@@ -170,13 +169,13 @@ eirods::error non_blocking_check_params_and_path(
 
 // =-=-=-=-=-=-=- 
 //@brief Recursively make all of the dirs in the path
-eirods::error non_blocking_file_mkdir_r( 
+irods::error non_blocking_file_mkdir_r( 
     rsComm_t*                      _comm,
     const std::string&             _results,
     const std::string& path,
     mode_t mode )
 {
-    eirods::error result = SUCCESS();
+    irods::error result = SUCCESS();
     std::string subdir;
     std::size_t pos = 0;
     bool done = false;
@@ -211,18 +210,18 @@ extern "C" {
     // NOTE :: to access properties in the _prop_map do the 
     //      :: following :
     //      :: double my_var = 0.0;
-    //      :: eirods::error ret = _prop_map.get< double >( "my_key", my_var ); 
+    //      :: irods::error ret = _prop_map.get< double >( "my_key", my_var ); 
     // =-=-=-=-=-=-=-
 
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file registration
-    eirods::error non_blocking_file_registered_plugin(
-        eirods::resource_plugin_context& _ctx)
+    irods::error non_blocking_file_registered_plugin(
+        irods::resource_plugin_context& _ctx)
     {
-        eirods::error result = SUCCESS();
+        irods::error result = SUCCESS();
         
         // Check the operation parameters and update the physical path
-        eirods::error ret = non_blocking_check_params_and_path(_ctx);
+        irods::error ret = non_blocking_check_params_and_path(_ctx);
         result = ASSERT_PASS(ret, "Invalid parameters or physical path.");
         
         // NOOP
@@ -231,13 +230,13 @@ extern "C" {
     
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file unregistration
-    eirods::error non_blocking_file_unregistered_plugin(
-        eirods::resource_plugin_context& _ctx)
+    irods::error non_blocking_file_unregistered_plugin(
+        irods::resource_plugin_context& _ctx)
     {
-        eirods::error result = SUCCESS();
+        irods::error result = SUCCESS();
         
         // Check the operation parameters and update the physical path
-        eirods::error ret = non_blocking_check_params_and_path(_ctx);
+        irods::error ret = non_blocking_check_params_and_path(_ctx);
         result = ASSERT_PASS(ret, "Invalid parameters or physical path.");
 
         // NOOP
@@ -246,13 +245,13 @@ extern "C" {
     
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file modification
-    eirods::error non_blocking_file_modified_plugin(
-        eirods::resource_plugin_context& _ctx)
+    irods::error non_blocking_file_modified_plugin(
+        irods::resource_plugin_context& _ctx)
     {
-        eirods::error result = SUCCESS();
+        irods::error result = SUCCESS();
         
         // Check the operation parameters and update the physical path
-        eirods::error ret = non_blocking_check_params_and_path(_ctx);
+        irods::error ret = non_blocking_check_params_and_path(_ctx);
         result = ASSERT_PASS(ret, "Invalid parameters or physical path.");
 
         // NOOP
@@ -261,12 +260,12 @@ extern "C" {
   
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file operation
-    eirods::error non_blocking_file_notify_plugin(
-        eirods::resource_plugin_context& _ctx,
+    irods::error non_blocking_file_notify_plugin(
+        irods::resource_plugin_context& _ctx,
         const std::string*               _opr ) {
-        eirods::error result = SUCCESS();
+        irods::error result = SUCCESS();
         // Check the operation parameters and update the physical path
-        eirods::error ret = non_blocking_check_params_and_path(_ctx);
+        irods::error ret = non_blocking_check_params_and_path(_ctx);
         result = ASSERT_PASS(ret, "Invalid parameters or physical path.");
 
         // NOOP
@@ -275,19 +274,19 @@ extern "C" {
    
     // =-=-=-=-=-=-=-
     // interface to determine free space on a device given a path
-    eirods::error non_blocking_file_get_fsfreespace_plugin( 
-        eirods::resource_plugin_context& _ctx )
+    irods::error non_blocking_file_get_fsfreespace_plugin( 
+        irods::resource_plugin_context& _ctx )
     {
-        eirods::error result = SUCCESS();
+        irods::error result = SUCCESS();
         
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = non_blocking_check_params_and_path( _ctx );
+        irods::error ret = non_blocking_check_params_and_path( _ctx );
         if((result = ASSERT_PASS(ret, "Invalid parameters or physical path.")).ok()) {
         
             // =-=-=-=-=-=-=-
             // cast down the hierarchy to the desired object
-            eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
+            irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
             size_t found = fco->physical_path().find_last_of("/");
             std::string path = fco->physical_path().substr(0, found + 1);
             int status = -1;
@@ -346,19 +345,19 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX create
-    eirods::error non_blocking_file_create_plugin( 
-        eirods::resource_plugin_context& _ctx )
+    irods::error non_blocking_file_create_plugin( 
+        irods::resource_plugin_context& _ctx )
     {
-        eirods::error result = SUCCESS();
+        irods::error result = SUCCESS();
         
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = non_blocking_check_params_and_path( _ctx );
+        irods::error ret = non_blocking_check_params_and_path( _ctx );
         if((result = ASSERT_PASS(ret, "Invalid parameters or physical path.")).ok()) {
         
             // =-=-=-=-=-=-=-
             // get ref to fco
-            eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
+            irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
 
             ret = non_blocking_file_get_fsfreespace_plugin(_ctx);
             if((result = ASSERT_PASS(ret, "Error determining freespace on system.")).ok()) {
@@ -416,19 +415,19 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Open
-    eirods::error non_blocking_file_open_plugin( 
-        eirods::resource_plugin_context& _ctx )
+    irods::error non_blocking_file_open_plugin( 
+        irods::resource_plugin_context& _ctx )
     {
-        eirods::error result = SUCCESS();
+        irods::error result = SUCCESS();
         
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = non_blocking_check_params_and_path( _ctx );
+        irods::error ret = non_blocking_check_params_and_path( _ctx );
         if((result = ASSERT_PASS(ret, "Invalid parameters or physical path.")).ok()) {
         
             // =-=-=-=-=-=-=-
             // get ref to fco
-            eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
+            irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
         
             // =-=-=-=-=-=-=-
             // handle OSX weirdness...
@@ -478,21 +477,21 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Read
-    eirods::error non_blocking_file_read_plugin( 
-        eirods::resource_plugin_context& _ctx,
+    irods::error non_blocking_file_read_plugin( 
+        irods::resource_plugin_context& _ctx,
         void*                            _buf, 
         int                              _len )
     {
-        eirods::error result = SUCCESS();
+        irods::error result = SUCCESS();
         
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = non_blocking_check_params_and_path( _ctx );
+        irods::error ret = non_blocking_check_params_and_path( _ctx );
         if((result = ASSERT_PASS(ret, "Invalid parameters or physical path.")).ok()) {
         
             // =-=-=-=-=-=-=-
             // get ref to fco
-            eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
+            irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
             int status;
             struct timeval tv;
             int nbytes;
@@ -567,20 +566,20 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Write
-    eirods::error non_blocking_file_write_plugin( 
-        eirods::resource_plugin_context& _ctx,
+    irods::error non_blocking_file_write_plugin( 
+        irods::resource_plugin_context& _ctx,
         void*                            _buf, 
         int                              _len )
     {
-        eirods::error result = SUCCESS();
+        irods::error result = SUCCESS();
         
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = non_blocking_check_params_and_path( _ctx );
+        irods::error ret = non_blocking_check_params_and_path( _ctx );
         if((result = ASSERT_PASS(ret, "Invalid parameters or physical path.")).ok()) {
             // =-=-=-=-=-=-=-
             // get ref to fco
-            eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
+            irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
              
             int fd = fco->file_descriptor();
             int nbytes   = 0;
@@ -644,19 +643,19 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Close
-    eirods::error non_blocking_file_close_plugin(
-        eirods::resource_plugin_context& _ctx )
+    irods::error non_blocking_file_close_plugin(
+        irods::resource_plugin_context& _ctx )
     {
-        eirods::error result = SUCCESS();
+        irods::error result = SUCCESS();
         
         // =-=-=-=-=-=-=-                               
         // Check the operation parameters and update the physical path
-        eirods::error ret = non_blocking_check_params_and_path( _ctx );
+        irods::error ret = non_blocking_check_params_and_path( _ctx );
         if((result = ASSERT_PASS(ret, "Invalid parameters or physical path.")).ok()) {
         
             // =-=-=-=-=-=-=-
             // get ref to fco
-            eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
+            irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
         
             // =-=-=-=-=-=-=-
             // make the call to close
@@ -679,19 +678,19 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Unlink
-    eirods::error non_blocking_file_unlink_plugin( 
-        eirods::resource_plugin_context& _ctx )
+    irods::error non_blocking_file_unlink_plugin( 
+        irods::resource_plugin_context& _ctx )
     {
-        eirods::error result = SUCCESS();
+        irods::error result = SUCCESS();
         
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = non_blocking_check_params_and_path( _ctx );
+        irods::error ret = non_blocking_check_params_and_path( _ctx );
         if((result = ASSERT_PASS(ret, "Invalid parameters or physical path.")).ok()) {
         
             // =-=-=-=-=-=-=-
             // get ref to fco
-            eirods::data_object_ptr fco = boost::dynamic_pointer_cast< eirods::data_object >( _ctx.fco() );
+            irods::data_object_ptr fco = boost::dynamic_pointer_cast< irods::data_object >( _ctx.fco() );
         
             // =-=-=-=-=-=-=-
             // make the call to unlink      
@@ -715,22 +714,22 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Stat
-    eirods::error non_blocking_file_stat_plugin( 
-        eirods::resource_plugin_context& _ctx,
+    irods::error non_blocking_file_stat_plugin( 
+        irods::resource_plugin_context& _ctx,
         struct stat*                        _statbuf )
     {
-        eirods::error result = SUCCESS();
+        irods::error result = SUCCESS();
         // =-=-=-=-=-=-=-
         // NOTE:: this function assumes the object's physical path is 
         //        correct and should not have the vault path 
         //        prepended - hcj
          
-        eirods::error ret = _ctx.valid(); 
+        irods::error ret = _ctx.valid(); 
         if((result = ASSERT_PASS(ret, "resource context is invalid.")).ok()) {
         
             // =-=-=-=-=-=-=-
             // get ref to fco
-            eirods::data_object_ptr fco = boost::dynamic_pointer_cast< eirods::data_object >( _ctx.fco() );
+            irods::data_object_ptr fco = boost::dynamic_pointer_cast< irods::data_object >( _ctx.fco() );
             
             // =-=-=-=-=-=-=-
             // make the call to stat
@@ -763,21 +762,21 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX lseek
-    eirods::error non_blocking_file_lseek_plugin( 
-        eirods::resource_plugin_context& _ctx,
+    irods::error non_blocking_file_lseek_plugin( 
+        irods::resource_plugin_context& _ctx,
         long long                           _offset, 
         int                                 _whence )
     {
-        eirods::error result = SUCCESS();
+        irods::error result = SUCCESS();
         
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = non_blocking_check_params_and_path( _ctx );
+        irods::error ret = non_blocking_check_params_and_path( _ctx );
         if((result = ASSERT_PASS(ret, "Invalid parameters or physical path.")).ok()) {
         
             // =-=-=-=-=-=-=-
             // get ref to fco
-            eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
+            irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
         
             // =-=-=-=-=-=-=-
             // make the call to lseek       
@@ -798,21 +797,21 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX mkdir
-    eirods::error non_blocking_file_mkdir_plugin( 
-        eirods::resource_plugin_context& _ctx )
+    irods::error non_blocking_file_mkdir_plugin( 
+        irods::resource_plugin_context& _ctx )
     {
-        eirods::error result = SUCCESS();
+        irods::error result = SUCCESS();
         
         // =-=-=-=-=-=-=- 
         // NOTE :: this function assumes the object's physical path is correct and 
         //         should not have the vault path prepended - hcj
          
-        eirods::error ret = _ctx.valid< eirods::collection_object >(); 
+        irods::error ret = _ctx.valid< irods::collection_object >(); 
         if((result = ASSERT_PASS(ret, "resource context is invalid.")).ok()) {
  
             // =-=-=-=-=-=-=-
             // cast down the chain to our understood object type
-            eirods::collection_object_ptr fco = boost::dynamic_pointer_cast< eirods::collection_object >( _ctx.fco() );
+            irods::collection_object_ptr fco = boost::dynamic_pointer_cast< irods::collection_object >( _ctx.fco() );
 
             // =-=-=-=-=-=-=-
             // make the call to mkdir & umask
@@ -838,19 +837,19 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX rmdir
-    eirods::error non_blocking_file_rmdir_plugin( 
-        eirods::resource_plugin_context& _ctx )
+    irods::error non_blocking_file_rmdir_plugin( 
+        irods::resource_plugin_context& _ctx )
     {
-        eirods::error result = SUCCESS();
+        irods::error result = SUCCESS();
         
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = non_blocking_check_params_and_path( _ctx );
+        irods::error ret = non_blocking_check_params_and_path( _ctx );
         if((result = ASSERT_PASS(ret, "Invalid parameters or physical path.")).ok()) {
         
             // =-=-=-=-=-=-=-
             // cast down the chain to our understood object type
-            eirods::collection_object_ptr fco = boost::dynamic_pointer_cast< eirods::collection_object >( _ctx.fco() );
+            irods::collection_object_ptr fco = boost::dynamic_pointer_cast< irods::collection_object >( _ctx.fco() );
         
             // =-=-=-=-=-=-=-
             // make the call to chmod
@@ -869,19 +868,19 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX opendir
-    eirods::error non_blocking_file_opendir_plugin( 
-        eirods::resource_plugin_context& _ctx )
+    irods::error non_blocking_file_opendir_plugin( 
+        irods::resource_plugin_context& _ctx )
     {
-        eirods::error result = SUCCESS();
+        irods::error result = SUCCESS();
         
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = non_blocking_check_params_and_path< eirods::collection_object >( _ctx );
+        irods::error ret = non_blocking_check_params_and_path< irods::collection_object >( _ctx );
         if((result = ASSERT_PASS(ret, "Invalid parameters or physical path.")).ok()) {
         
             // =-=-=-=-=-=-=-
             // cast down the chain to our understood object type
-            eirods::collection_object_ptr fco = boost::dynamic_pointer_cast< eirods::collection_object >( _ctx.fco() );
+            irods::collection_object_ptr fco = boost::dynamic_pointer_cast< irods::collection_object >( _ctx.fco() );
 
             // =-=-=-=-=-=-=-
             // make the callt to opendir
@@ -919,19 +918,19 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX closedir
-    eirods::error non_blocking_file_closedir_plugin( 
-        eirods::resource_plugin_context& _ctx )
+    irods::error non_blocking_file_closedir_plugin( 
+        irods::resource_plugin_context& _ctx )
     {
-        eirods::error result = SUCCESS();
+        irods::error result = SUCCESS();
         
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = non_blocking_check_params_and_path< eirods::collection_object >( _ctx );
+        irods::error ret = non_blocking_check_params_and_path< irods::collection_object >( _ctx );
         if((result = ASSERT_PASS(ret, "Invalid parameters or physical path.")).ok()) {
         
             // =-=-=-=-=-=-=-
             // cast down the chain to our understood object type
-            eirods::collection_object_ptr fco = boost::dynamic_pointer_cast< eirods::collection_object >( _ctx.fco() );
+            irods::collection_object_ptr fco = boost::dynamic_pointer_cast< irods::collection_object >( _ctx.fco() );
 
             // =-=-=-=-=-=-=-
             // make the callt to opendir
@@ -950,20 +949,20 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX readdir
-    eirods::error non_blocking_file_readdir_plugin( 
-        eirods::resource_plugin_context& _ctx,
+    irods::error non_blocking_file_readdir_plugin( 
+        irods::resource_plugin_context& _ctx,
         struct rodsDirent**                 _dirent_ptr )
     {
-        eirods::error result = SUCCESS();
+        irods::error result = SUCCESS();
         
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = non_blocking_check_params_and_path< eirods::collection_object >( _ctx );
+        irods::error ret = non_blocking_check_params_and_path< irods::collection_object >( _ctx );
         if((result = ASSERT_PASS(ret, "Invalid parameters or physical path.")).ok()) {
         
             // =-=-=-=-=-=-=-
             // cast down the chain to our understood object type
-            eirods::collection_object_ptr fco = boost::dynamic_pointer_cast< eirods::collection_object >( _ctx.fco() );
+            irods::collection_object_ptr fco = boost::dynamic_pointer_cast< irods::collection_object >( _ctx.fco() );
 
             // =-=-=-=-=-=-=-
             // zero out errno?
@@ -1008,15 +1007,15 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX readdir
-    eirods::error non_blocking_file_rename_plugin( 
-        eirods::resource_plugin_context& _ctx,
+    irods::error non_blocking_file_rename_plugin( 
+        irods::resource_plugin_context& _ctx,
         const char*                         _new_file_name )
     {
-        eirods::error result = SUCCESS();
+        irods::error result = SUCCESS();
         
         // =-=-=-=-=-=-=- 
         // Check the operation parameters and update the physical path
-        eirods::error ret = non_blocking_check_params_and_path( _ctx );
+        irods::error ret = non_blocking_check_params_and_path( _ctx );
         if((result = ASSERT_PASS(ret, "Invalid parameters or physical path.")).ok()) {
 
             // =-=-=-=-=-=-=- 
@@ -1028,7 +1027,7 @@ extern "C" {
          
                 // =-=-=-=-=-=-=-
                 // cast down the hierarchy to the desired object
-                eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
+                irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
 
                 // =-=-=-=-=-=-=- 
                 // make the directories in the path to the new file
@@ -1078,11 +1077,11 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX truncate
-    eirods::error non_blocking_file_truncate_plugin( 
-        eirods::resource_plugin_context& _ctx ) {
+    irods::error non_blocking_file_truncate_plugin( 
+        irods::resource_plugin_context& _ctx ) {
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = non_blocking_check_params_and_path< eirods::file_object >( _ctx );
+        irods::error ret = non_blocking_check_params_and_path< irods::file_object >( _ctx );
         if(!ret.ok()) {
             std::stringstream msg;
             msg << __FUNCTION__ << " - Invalid parameters or physical path.";
@@ -1091,7 +1090,7 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
-        eirods::file_object_ptr file_obj = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
+        irods::file_object_ptr file_obj = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
 
         // =-=-=-=-=-=-=-
         // make the call to rename
@@ -1121,12 +1120,12 @@ extern "C" {
     } // non_blocking_file_truncate_plugin
 
 
-    eirods::error
+    irods::error
     non_blockingFileCopyPlugin( int         mode, 
                         const char* srcFileName, 
                         const char* destFileName )
     {
-        eirods::error result = SUCCESS();
+        irods::error result = SUCCESS();
         
         int inFd, outFd;
         char myBuf[TRANS_BUF_SZ];
@@ -1181,20 +1180,20 @@ extern "C" {
     // non_blockingStageToCache - This routine is for testing the TEST_STAGE_FILE_TYPE.
     // Just copy the file from filename to cacheFilename. optionalInfo info
     // is not used.
-    eirods::error non_blocking_file_stagetocache_plugin( 
-        eirods::resource_plugin_context& _ctx,
+    irods::error non_blocking_file_stagetocache_plugin( 
+        irods::resource_plugin_context& _ctx,
         const char*                      _cache_file_name )
     {
-        eirods::error result = SUCCESS();
+        irods::error result = SUCCESS();
         
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = non_blocking_check_params_and_path( _ctx );
+        irods::error ret = non_blocking_check_params_and_path( _ctx );
         if((result = ASSERT_PASS(ret, "Invalid parameters or physical path.")).ok()) {
         
             // =-=-=-=-=-=-=-
             // cast down the hierarchy to the desired object
-            eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
+            irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
         
             ret = non_blockingFileCopyPlugin( fco->mode(), fco->physical_path().c_str(), _cache_file_name );
             result = ASSERT_PASS(ret, "Failed");
@@ -1206,20 +1205,20 @@ extern "C" {
     // non_blockingSyncToArch - This routine is for testing the TEST_STAGE_FILE_TYPE.
     // Just copy the file from cacheFilename to filename. optionalInfo info
     // is not used.
-    eirods::error non_blocking_file_synctoarch_plugin( 
-        eirods::resource_plugin_context& _ctx,
+    irods::error non_blocking_file_synctoarch_plugin( 
+        irods::resource_plugin_context& _ctx,
         char*                            _cache_file_name )
     {
-        eirods::error result = SUCCESS();
+        irods::error result = SUCCESS();
         
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = non_blocking_check_params_and_path( _ctx );
+        irods::error ret = non_blocking_check_params_and_path( _ctx );
         if((result = ASSERT_PASS(ret, "Invalid parameters or physical path.")).ok()) {
         
             // =-=-=-=-=-=-=-
             // cast down the hierarchy to the desired object
-            eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
+            irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
         
             ret = non_blockingFileCopyPlugin( fco->mode(), _cache_file_name, fco->physical_path().c_str() );
             result = ASSERT_PASS(ret, "Failed");
@@ -1231,19 +1230,19 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // redirect_create - code to determine redirection for create operation
-    eirods::error non_blocking_file_redirect_create( 
-        eirods::plugin_property_map&   _prop_map,
-        eirods::file_object_ptr        _file_obj,
+    irods::error non_blocking_file_redirect_create( 
+        irods::plugin_property_map&   _prop_map,
+        irods::file_object_ptr        _file_obj,
         const std::string&             _resc_name, 
         const std::string&             _curr_host, 
         float&                         _out_vote )
     {
-        eirods::error result = SUCCESS();
+        irods::error result = SUCCESS();
         
         // =-=-=-=-=-=-=-
         // determine if the resource is down 
         int resc_status = 0;
-        eirods::error get_ret = _prop_map.get< int >( eirods::RESOURCE_STATUS, resc_status );
+        irods::error get_ret = _prop_map.get< int >( irods::RESOURCE_STATUS, resc_status );
         if((result = ASSERT_PASS(get_ret, "Failed to get \"status\" property." )).ok()) {
 
             // =-=-=-=-=-=-=-
@@ -1256,7 +1255,7 @@ extern "C" {
                 // =-=-=-=-=-=-=-
                 // get the resource host for comparison to curr host
                 std::string host_name;
-                get_ret = _prop_map.get< std::string >( eirods::RESOURCE_LOCATION, host_name );
+                get_ret = _prop_map.get< std::string >( irods::RESOURCE_LOCATION, host_name );
                 if((result = ASSERT_PASS(get_ret, "Failed to get \"location\" property." )).ok()) {
         
                     // =-=-=-=-=-=-=-
@@ -1275,14 +1274,14 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // redirect_open - code to determine redirection for open operation
-    eirods::error non_blocking_file_redirect_open( 
-        eirods::plugin_property_map&   _prop_map,
-        eirods::file_object_ptr        _file_obj,
+    irods::error non_blocking_file_redirect_open( 
+        irods::plugin_property_map&   _prop_map,
+        irods::file_object_ptr        _file_obj,
         const std::string&             _resc_name, 
         const std::string&             _curr_host, 
         float&                         _out_vote )
     {
-        eirods::error result = SUCCESS();
+        irods::error result = SUCCESS();
         
         // =-=-=-=-=-=-=-
         // initially set a good default
@@ -1291,7 +1290,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // determine if the resource is down 
         int resc_status = 0;
-        eirods::error get_ret = _prop_map.get< int >( eirods::RESOURCE_STATUS, resc_status );
+        irods::error get_ret = _prop_map.get< int >( irods::RESOURCE_STATUS, resc_status );
         if((result = ASSERT_PASS(get_ret, "Failed to get \"status\" property." )).ok()) {
 
             // =-=-=-=-=-=-=-
@@ -1301,7 +1300,7 @@ extern "C" {
                 // =-=-=-=-=-=-=-
                 // get the resource host for comparison to curr host
                 std::string host_name;
-                get_ret = _prop_map.get< std::string >( eirods::RESOURCE_LOCATION, host_name );
+                get_ret = _prop_map.get< std::string >( irods::RESOURCE_LOCATION, host_name );
                 if((result = ASSERT_PASS(get_ret, "Failed to get \"location\" property." )).ok()) {
         
                     // =-=-=-=-=-=-=-
@@ -1315,9 +1314,9 @@ extern "C" {
                     // =-=-=-=-=-=-=-
                     // set up variables for iteration
                     bool          found     = false;
-                    eirods::error final_ret = SUCCESS();
-                    std::vector< eirods::physical_object > objs = _file_obj->replicas();
-                    std::vector< eirods::physical_object >::iterator itr = objs.begin();
+                    irods::error final_ret = SUCCESS();
+                    std::vector< irods::physical_object > objs = _file_obj->replicas();
+                    std::vector< irods::physical_object >::iterator itr = objs.begin();
 
                     // =-=-=-=-=-=-=-
                     // check to see if the replica is in this resource, if one is requested
@@ -1326,7 +1325,7 @@ extern "C" {
                         // run the hier string through the parser and get the last
                         // entry.
                         std::string last_resc;
-                        eirods::hierarchy_parser parser;
+                        irods::hierarchy_parser parser;
                         parser.set_string( itr->resc_hier() );
                         parser.last_resc( last_resc ); 
           
@@ -1387,18 +1386,18 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // used to allow the resource to determine which host
     // should provide the requested operation
-    eirods::error non_blocking_file_redirect_plugin( 
-        eirods::resource_plugin_context& _ctx,
+    irods::error non_blocking_file_redirect_plugin( 
+        irods::resource_plugin_context& _ctx,
         const std::string*                  _opr,
         const std::string*                  _curr_host,
-        eirods::hierarchy_parser*           _out_parser,
+        irods::hierarchy_parser*           _out_parser,
         float*                              _out_vote )
     {
-        eirods::error result = SUCCESS();
+        irods::error result = SUCCESS();
         
         // =-=-=-=-=-=-=-
         // check the context validity
-        eirods::error ret = _ctx.valid< eirods::file_object >(); 
+        irods::error ret = _ctx.valid< irods::file_object >(); 
         if((result = ASSERT_PASS(ret, "Invalid resource context.")).ok()) {
  
             // =-=-=-=-=-=-=-
@@ -1407,12 +1406,12 @@ extern "C" {
         
                 // =-=-=-=-=-=-=-
                 // cast down the chain to our understood object type
-                eirods::file_object_ptr file_obj = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
+                irods::file_object_ptr file_obj = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
 
                 // =-=-=-=-=-=-=-
                 // get the name of this resource
                 std::string resc_name;
-                ret = _ctx.prop_map().get< std::string >( eirods::RESOURCE_NAME, resc_name );
+                ret = _ctx.prop_map().get< std::string >( irods::RESOURCE_NAME, resc_name );
                 if((result = ASSERT_PASS(ret, "Failed in get property for name." )).ok()) {
 
                     // =-=-=-=-=-=-=-
@@ -1421,14 +1420,14 @@ extern "C" {
 
                     // =-=-=-=-=-=-=-
                     // test the operation to determine which choices to make
-                    if( eirods::EIRODS_OPEN_OPERATION == (*_opr) ) {
+                    if( irods::OPEN_OPERATION == (*_opr) ) {
                         // =-=-=-=-=-=-=-
                         // call redirect determination for 'get' operation
                         ret = non_blocking_file_redirect_open( _ctx.prop_map(), file_obj, resc_name, (*_curr_host), (*_out_vote) );
                         result = ASSERT_PASS(ret, "Failed redirecting for open.");
 
-                    } else if( eirods::EIRODS_CREATE_OPERATION == (*_opr) ||
-                               eirods::EIRODS_WRITE_OPERATION  == (*_opr) ) {
+                    } else if( irods::CREATE_OPERATION == (*_opr) ||
+                               irods::WRITE_OPERATION  == (*_opr) ) {
                         // =-=-=-=-=-=-=-
                         // call redirect determination for 'create' operation
                         ret = non_blocking_file_redirect_create( _ctx.prop_map(), file_obj, resc_name, (*_curr_host), (*_out_vote)  );
@@ -1438,7 +1437,7 @@ extern "C" {
                     else {
                         // =-=-=-=-=-=-=-
                         // must have been passed a bad operation 
-                        result = ASSERT_ERROR(false, EIRODS_INVALID_OPERATION, "Operation not supported.");
+                        result = ASSERT_ERROR(false, INVALID_OPERATION, "Operation not supported.");
                     }
                 }
             }
@@ -1450,8 +1449,8 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // non_blocking_file_rebalance - code which would rebalance the subtree
-    eirods::error non_blocking_file_rebalance(
-        eirods::resource_plugin_context& _ctx ) {
+    irods::error non_blocking_file_rebalance(
+        irods::resource_plugin_context& _ctx ) {
         return SUCCESS();
 
     } // non_blocking_file_rebalancec
@@ -1461,7 +1460,7 @@ extern "C" {
     //    necessary to do custom parsing of the context string to place
     //    any useful values into the property map for reference in later
     //    operations.  semicolon is the preferred delimiter
-    class non_blocking_resource : public eirods::resource {
+    class non_blocking_resource : public irods::resource {
         // =-=-=-=-=-=-=-
         // 3a. create a class to provide maintenance operations, this is only for example
         //     and will not be called.
@@ -1479,7 +1478,7 @@ extern "C" {
                 return *this;
             }
 
-            eirods::error operator()( rcComm_t* ) {
+            irods::error operator()( rcComm_t* ) {
                 rodsLog( LOG_NOTICE, "non_blocking_resource::post_disconnect_maintenance_operation - [%s]", 
                          name_.c_str() );
                 return SUCCESS();
@@ -1494,13 +1493,13 @@ extern "C" {
         non_blocking_resource( 
             const std::string& _inst_name, 
             const std::string& _context ) : 
-            eirods::resource( 
+            irods::resource( 
                 _inst_name, 
                 _context ) {
         } // ctor
 
 
-        eirods::error need_post_disconnect_maintenance_operation( bool& _b ) {
+        irods::error need_post_disconnect_maintenance_operation( bool& _b ) {
             _b = false;
             return SUCCESS();
         }
@@ -1509,12 +1508,12 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // 3b. pass along a functor for maintenance work after
         //     the client disconnects, uncomment the first two lines for effect.
-        eirods::error post_disconnect_maintenance_operation( eirods::pdmo_type& _op  )
+        irods::error post_disconnect_maintenance_operation( irods::pdmo_type& _op  )
             {
-                eirods::error result = SUCCESS();
+                irods::error result = SUCCESS();
 #if 0
                 std::string name;
-                eirods::error err = get_property< std::string >( "name", name );
+                irods::error err = get_property< std::string >( "name", name );
                 if((result = ASSERT_PASS(err, "post_disconnect_maintenance_operation failed.")).ok()) {
                     
                     _op = maintenance_operation( name );
@@ -1531,9 +1530,9 @@ extern "C" {
     //    instantiated object of the previously defined derived resource.  use
     //    the add_operation member to associate a 'call name' to the interfaces
     //    defined above.  for resource plugins these call names are standardized
-    //    as used by the eirods facing interface defined in 
+    //    as used by the irods facing interface defined in 
     //    server/drivers/src/fileDriver.c
-    eirods::resource* plugin_factory( const std::string& _inst_name, const std::string& _context  ) {
+    irods::resource* plugin_factory( const std::string& _inst_name, const std::string& _context  ) {
 
         // =-=-=-=-=-=-=-
         // 4a. create non_blocking_resource
@@ -1543,41 +1542,41 @@ extern "C" {
         // 4b. map function names to operations.  this map will be used to load
         //     the symbols from the shared object in the delay_load stage of 
         //     plugin loading.
-        resc->add_operation( eirods::RESOURCE_OP_CREATE,       "non_blocking_file_create_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_OPEN,         "non_blocking_file_open_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_READ,         "non_blocking_file_read_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_WRITE,        "non_blocking_file_write_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_CLOSE,        "non_blocking_file_close_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_UNLINK,       "non_blocking_file_unlink_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_STAT,         "non_blocking_file_stat_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_LSEEK,        "non_blocking_file_lseek_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_MKDIR,        "non_blocking_file_mkdir_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_RMDIR,        "non_blocking_file_rmdir_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_OPENDIR,      "non_blocking_file_opendir_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_CLOSEDIR,     "non_blocking_file_closedir_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_READDIR,      "non_blocking_file_readdir_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_RENAME,       "non_blocking_file_rename_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_TRUNCATE,     "non_blocking_file_truncate_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_FREESPACE,    "non_blocking_file_get_fsfreespace_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_STAGETOCACHE, "non_blocking_file_stagetocache_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_SYNCTOARCH,   "non_blocking_file_synctoarch_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_REGISTERED,   "non_blocking_file_registered_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_UNREGISTERED, "non_blocking_file_unregistered_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_MODIFIED,     "non_blocking_file_modified_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_CREATE,       "non_blocking_file_create_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_OPEN,         "non_blocking_file_open_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_READ,         "non_blocking_file_read_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_WRITE,        "non_blocking_file_write_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_CLOSE,        "non_blocking_file_close_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_UNLINK,       "non_blocking_file_unlink_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_STAT,         "non_blocking_file_stat_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_LSEEK,        "non_blocking_file_lseek_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_MKDIR,        "non_blocking_file_mkdir_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_RMDIR,        "non_blocking_file_rmdir_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_OPENDIR,      "non_blocking_file_opendir_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_CLOSEDIR,     "non_blocking_file_closedir_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_READDIR,      "non_blocking_file_readdir_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_RENAME,       "non_blocking_file_rename_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_TRUNCATE,     "non_blocking_file_truncate_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_FREESPACE,    "non_blocking_file_get_fsfreespace_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_STAGETOCACHE, "non_blocking_file_stagetocache_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_SYNCTOARCH,   "non_blocking_file_synctoarch_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_REGISTERED,   "non_blocking_file_registered_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_UNREGISTERED, "non_blocking_file_unregistered_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_MODIFIED,     "non_blocking_file_modified_plugin" );
         
-        resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER,     "non_blocking_file_redirect_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_REBALANCE,             "non_blocking_file_rebalance" );
-        resc->add_operation( eirods::RESOURCE_OP_NOTIFY,       "non_blocking_file_notify_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_RESOLVE_RESC_HIER,     "non_blocking_file_redirect_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_REBALANCE,             "non_blocking_file_rebalance" );
+        resc->add_operation( irods::RESOURCE_OP_NOTIFY,       "non_blocking_file_notify_plugin" );
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code
-        resc->set_property< int >( eirods::RESOURCE_CHECK_PATH_PERM, 2 );//DO_CHK_PATH_PERM );
-        resc->set_property< int >( eirods::RESOURCE_CREATE_PATH,     1 );//CREATE_PATH );
+        resc->set_property< int >( irods::RESOURCE_CHECK_PATH_PERM, 2 );//DO_CHK_PATH_PERM );
+        resc->set_property< int >( irods::RESOURCE_CREATE_PATH,     1 );//CREATE_PATH );
 
         // =-=-=-=-=-=-=-
         // 4c. return the pointer through the generic interface of an
-        //     eirods::resource pointer
-        return dynamic_cast<eirods::resource*>( resc );
+        //     irods::resource pointer
+        return dynamic_cast<irods::resource*>( resc );
         
     } // plugin_factory
 

@@ -36,7 +36,7 @@
  * \n dataObjInp_t dataObjInp;
  * \n bzero (&dataObjInp, sizeof (dataObjInp));
  * \n rstrcpy (dataObjInp.objPath, "/myZone/home/john/myfileA", MAX_NAME_LEN);
- * \n addKeyVal (&dataObjInp.condInput, RSYNC_MODE_KW, IRODS_TO_IRODS);
+ * \n addKeyVal (&dataObjInp.condInput, RSYNC_MODE_KW, TO_IRODS);
  * \n addKeyVal (&dataObjInp.condInput, RSYNC_DEST_PATH_KW, 
  *      "/myZone/home/john/myfileB");
  * \n addKeyVal (&dataObjInp.condInput, DEST_RESC_NAME_KW, "myRescource");
@@ -48,8 +48,8 @@
  * \param[in] conn - A rcComm_t connection handle to the server.
  * \param[in] dataObjInp - Elements of dataObjInp_t used :
  *    \li char \b objPath[MAX_NAME_LEN] - For LOCAL_TO_IRODS or 
- *         IRODS_TO_LOCAL modes, this is the iRODS data object path.
- *         For IRODS_TO_IRODS mode, this is the source path.
+ *         TO_LOCAL modes, this is the iRODS data object path.
+ *         For TO_IRODS mode, this is the source path.
  *    \li int \b createMode - the file mode of the data object. Meaningful
  *	    only for LOCAL_TO_IRODS mode. 
  *    \li rodsLong_t \b dataSize - the size of the data object.
@@ -62,20 +62,20 @@
  *    \li keyValPair_t \b condInput - keyword/value pair input. Valid keywords:
  *    \n RSYNC_MODE_KW - The mode of the Synchronization. Valid modes are:
  *	 LOCAL_TO_IRODS - synchronize from a local file to a iRODS data object.
- *	 IRODS_TO_LOCAL - synchronize from a iRODS data object to a local file.
- *	 IRODS_TO_IRODS - synchronize from a iRODS data object to a 
+ *	 TO_LOCAL - synchronize from a iRODS data object to a local file.
+ *	 TO_IRODS - synchronize from a iRODS data object to a 
  *            iRODS data object..
- *    \n RSYNC_DEST_PATH_KW - For LOCAL_TO_IRODS or IRODS_TO_LOCAL modes,
- *         this is the local file path. For IRODS_TO_IRODS mode, this is 
+ *    \n RSYNC_DEST_PATH_KW - For LOCAL_TO_IRODS or TO_LOCAL modes,
+ *         this is the local file path. For TO_IRODS mode, this is 
  *         the target path. 
  *    \n RSYNC_CHKSUM_KW - The md5 checksum value of the local file. valid
- *            only for LOCAL_TO_IRODS or IRODS_TO_LOCAL modes.
+ *            only for LOCAL_TO_IRODS or TO_LOCAL modes.
  *    \n DEST_RESC_NAME_KW - The resource to store the new data object. 
- *            Valid only for LOCAL_TO_IRODS or IRODS_TO_IRODS modes.
+ *            Valid only for LOCAL_TO_IRODS or TO_IRODS modes.
  *    \n ALL_KW - replicate to all resources in the resource group if the
  *             input resource (via DEST_RESC_NAME_KW) is a resource group.
  *            This keyWd has no value. Valid only for LOCAL_TO_IRODS or 
- *            IRODS_TO_IRODS modes.
+ *            TO_IRODS modes.
  *
  * \return integer
  * \retval 0 on success

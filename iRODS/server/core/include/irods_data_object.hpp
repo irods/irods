@@ -1,18 +1,17 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
-#ifndef __EIRODS_DATA_OBJECT_H__
-#define __EIRODS_DATA_OBJECT_H__
+#ifndef __IRODS_DATA_OBJECT_HPP__
+#define __IRODS_DATA_OBJECT_HPP__
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_first_class_object.hpp"
+#include "irods_first_class_object.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
 #include "rcConnect.hpp"
 
 
-namespace eirods {
+namespace irods {
     // =-=-=-=-=-=-=-
     // base class for all object types
     class data_object : public first_class_object {
@@ -77,9 +76,9 @@ namespace eirods {
     /// @brief typedef for managed data object pointer
     typedef boost::shared_ptr< data_object > data_object_ptr;
 
-}; // namespace eirods
+}; // namespace irods
 
-#endif // __EIRODS_DATA_OBJECT_H__
+#endif // __IRODS_DATA_OBJECT_HPP__
 
 
 

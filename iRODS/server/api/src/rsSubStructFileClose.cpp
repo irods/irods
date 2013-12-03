@@ -5,8 +5,7 @@
 #include "dataObjOpr.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_structured_object.hpp"
+#include "irods_structured_object.hpp"
 
 int
 rsSubStructFileClose (rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFileCloseInp)
@@ -68,21 +67,21 @@ int _rsSubStructFileClose(
     subStructFileFdOprInp_t* _close_inp ) {
     // =-=-=-=-=-=-=-
     // create first class structured object 
-    eirods::structured_object_ptr struct_obj( 
-                                      new eirods::structured_object(  ) );
+    irods::structured_object_ptr struct_obj( 
+                                      new irods::structured_object(  ) );
     struct_obj->comm( _comm );
-    struct_obj->resc_hier( eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE );
+    struct_obj->resc_hier( irods::LOCAL_USE_ONLY_RESOURCE );
     struct_obj->file_descriptor( _close_inp->fd );
 
     // =-=-=-=-=-=-=-
     // call abstrcated interface to open a file
-    eirods::error close_err = fileClose( _comm, struct_obj );
+    irods::error close_err = fileClose( _comm, struct_obj );
     if( !close_err.ok() ) {
         std::stringstream msg;
         msg << "failed on call to fileClose for fd [ ";
         msg << struct_obj->file_descriptor();
         msg << " ]";
-        eirods::log( PASSMSG( msg.str(), close_err ) );
+        irods::log( PASSMSG( msg.str(), close_err ) );
         return close_err.code();
 
     } else {

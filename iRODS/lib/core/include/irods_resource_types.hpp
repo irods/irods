@@ -1,13 +1,13 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
-#ifndef __EIRODS_RESOURCE_TYPES_H__
-#define __EIRODS_RESOURCE_TYPES_H__
+#ifndef __IRODS_RESOURCE_TYPES_HPP__
+#define __IRODS_RESOURCE_TYPES_HPP__
 
 // =-=-=-=-=-=-=-
 // Boost Includes
 #include <boost/shared_ptr.hpp>
 
-namespace eirods {
+namespace irods {
     // =-=-=-=-=-=-=-
     // resource plugin pointer type
     class resource;
@@ -19,7 +19,7 @@ namespace eirods {
 
 }; // namespace
 
-#endif // __EIRODS_RESOURCE_TYPES_H__
+#endif // __IRODS_RESOURCE_TYPES_HPP__
 
 
 

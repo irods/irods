@@ -6,8 +6,8 @@
 
 
 
-#ifndef IRODS_XMSG_SERVER_HPP
-#define IRODS_XMSG_SERVER_HPP
+#ifndef XMSG_SERVER_HPP
+#define XMSG_SERVER_HPP
 
 #include "rods.hpp"
 #include "rsGlobalExtern.hpp"   /* server global */
@@ -25,4 +25,4 @@
 int
 xmsgServerMain ();
 int usage (char *prog);
-#endif	/* IRODS_XMSG_SERVER_H */
+#endif	/* XMSG_SERVER_H */

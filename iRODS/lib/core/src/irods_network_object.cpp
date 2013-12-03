@@ -1,11 +1,10 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_network_object.hpp"
-#include "eirods_network_manager.hpp"
+#include "irods_network_object.hpp"
+#include "irods_network_manager.hpp"
 
-namespace eirods {
+namespace irods {
 
     // =-=-=-=-=-=-=-
     // public - ctor
@@ -99,7 +98,7 @@ namespace eirods {
     } // to_server
 
 
-}; // namespace eirods
+}; // namespace irods
 
 
 

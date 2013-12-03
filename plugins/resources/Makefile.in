@@ -5,13 +5,13 @@ include ../../iRODS/config/config.mk
 GCC = g++ -DRODS_SERVER -DZIP_EXEC_PATH=\"$(ZIP_EXEC_PATH)\" -DUNZIP_EXEC_PATH=\"$(UNZIP_EXEC_PATH)\"
 GCC += `../../packaging/compiler_check.sh 4 2`
 
-ifeq ($(EIRODS_BUILD_COVERAGE), 1)
+ifeq ($(IRODS_BUILD_COVERAGE), 1)
 GCC += -fprofile-arcs -ftest-coverage -lgcov
 endif
 
 DEPS = base
 
-ifeq ($(EIRODS_BUILD_DEBUG), 0)
+ifeq ($(IRODS_BUILD_DEBUG), 0)
 DEPS += hpss
 endif
 
@@ -35,7 +35,7 @@ base:
 	${GCC} ${INC} -Dlinux_platform -fPIC -shared -o libroundrobin.so      libroundrobin.cpp 
 	${GCC} ${INC} -Dlinux_platform -fPIC -shared -o libunixfilesystem.so  libunixfilesystem.cpp 
 	${GCC} ${INC} -Dlinux_platform -fPIC -shared -o libpassthru.so        libpassthru.cpp 
-	${GCC} ${INC} -Dlinux_platform -fPIC -shared -o librepl.so            librepl.cpp eirods_replicator.cpp eirods_create_write_replicator.cpp eirods_unlink_replicator.cpp eirods_object_oper.cpp
+	${GCC} ${INC} -Dlinux_platform -fPIC -shared -o librepl.so            librepl.cpp irods_replicator.cpp irods_create_write_replicator.cpp irods_unlink_replicator.cpp irods_object_oper.cpp
 	${GCC} ${INC} -Dlinux_platform -fPIC -shared -o libnonblocking.so     libnonblocking.cpp 
 	${GCC} ${INC} -Dlinux_platform -fPIC -shared -o libstructfile.so      libstructfile.cpp \
 	$(LIBARCHIVE_DIR)/libarchive/libarchive.a \

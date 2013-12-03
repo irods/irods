@@ -18,9 +18,9 @@
 #include "getRemoteZoneResc.hpp"
 #include "getRescQuota.hpp"
 #include "physPath.hpp"
-#include "eirods_stacktrace.hpp"
+#include "irods_stacktrace.hpp"
 
-#include "eirods_log.hpp"
+#include "irods_log.hpp"
 
 static time_t LastBrokenPipeTime = 0;
 static int BrokenPipeCnt = 0;
@@ -229,10 +229,10 @@ initServerInfo (rsComm_t *rsComm)
       }
       }*/
 
-    eirods::error ret = resc_mgr.init_from_catalog( rsComm );
+    irods::error ret = resc_mgr.init_from_catalog( rsComm );
     if( !ret.ok() ) {
-        eirods::error log_err = PASSMSG( "init_from_catalog failed", ret );
-        eirods::log( log_err );
+        irods::error log_err = PASSMSG( "init_from_catalog failed", ret );
+        irods::log( log_err );
     }
 
     return (status);
@@ -297,21 +297,21 @@ printServerHost (rodsServerHost_t *myServerHost)
 
     if (myServerHost->localFlag == LOCAL_HOST) {
 #ifndef windows_platform
-#ifdef IRODS_SYSLOG
+#ifdef SYSLOG
         rodsLog (LOG_NOTICE,"    LocalHostName: ");
-#else /* IRODS_SYSLOG */
+#else /* SYSLOG */
         fprintf (stderr, "    LocalHostName: ");
-#endif /* IRODS_SYSLOG */
+#endif /* SYSLOG */
 #else
         rodsLog (LOG_NOTICE,"    LocalHostName: ");
 #endif
     } else {
 #ifndef windows_platform
-#ifdef IRODS_SYSLOG
+#ifdef SYSLOG
         rodsLog (LOG_NOTICE,"    RemoteHostName: ");
-#else /* IRODS_SYSLOG */
+#else /* SYSLOG */
         fprintf (stderr, "    RemoteHostName: ");
-#endif /* IRODS_SYSLOG */
+#endif /* SYSLOG */
 #else
         rodsLog (LOG_NOTICE,"    RemoteHostName: ");
 #endif
@@ -321,11 +321,11 @@ printServerHost (rodsServerHost_t *myServerHost)
 
     while (tmpHostName != NULL) {
 #ifndef windows_platform
-#ifdef IRODS_SYSLOG
+#ifdef SYSLOG
         rodsLog (LOG_NOTICE," %s,", tmpHostName->name);
-#else /* IRODS_SYSLOG */
+#else /* SYSLOG */
         fprintf (stderr, " %s,", tmpHostName->name);
-#endif /* IRODS_SYSLOG */
+#endif /* SYSLOG */
 #else
         rodsLog (LOG_NOTICE," %s,", tmpHostName->name);
 #endif
@@ -333,12 +333,12 @@ printServerHost (rodsServerHost_t *myServerHost)
     }
 
 #ifndef windows_platform
-#ifdef IRODS_SYSLOG
+#ifdef SYSLOG
     rodsLog (LOG_NOTICE," Port Num: %d.\n\n", ((zoneInfo_t *)myServerHost->zoneInfo)->portNum);
-#else /* IRODS_SYSLOG */
+#else /* SYSLOG */
     fprintf (stderr, " Port Num: %d.\n\n", 
              ((zoneInfo_t *)myServerHost->zoneInfo)->portNum);
-#endif /* IRODS_SYSLOG */
+#endif /* SYSLOG */
 #else
     rodsLog (LOG_NOTICE," Port Num: %d.\n\n", ((zoneInfo_t *)myServerHost->zoneInfo)->portNum);
 #endif
@@ -354,11 +354,11 @@ printZoneInfo ()
 
     tmpZoneInfo = ZoneInfoHead;
 #ifndef windows_platform
-#ifdef IRODS_SYSLOG
+#ifdef SYSLOG
     rodsLog (LOG_NOTICE,"Zone Info:\n");
-#else /* IRODS_SYSLOG */
+#else /* SYSLOG */
     fprintf (stderr, "Zone Info:\n");
-#endif /* IRODS_SYSLOG */
+#endif /* SYSLOG */
 #else
     rodsLog (LOG_NOTICE,"Zone Info:\n");
 #endif
@@ -366,44 +366,44 @@ printZoneInfo ()
         /* print the master */
         tmpRodsServerHost = (rodsServerHost_t *) tmpZoneInfo->masterServerHost;
 #ifndef windows_platform
-#ifdef IRODS_SYSLOG
+#ifdef SYSLOG
         rodsLog (LOG_NOTICE,"    ZoneName: %s   ", tmpZoneInfo->zoneName);
-#else /* IRODS_SYSLOG */
+#else /* SYSLOG */
         fprintf (stderr, "    ZoneName: %s   ", tmpZoneInfo->zoneName);
-#endif /* IRODS_SYSLOG */
+#endif /* SYSLOG */
 #else
         rodsLog (LOG_NOTICE,"    ZoneName: %s   ", tmpZoneInfo->zoneName);
 #endif
         if (tmpRodsServerHost->rcatEnabled == LOCAL_ICAT) {
 #ifndef windows_platform
-#ifdef IRODS_SYSLOG
+#ifdef SYSLOG
             rodsLog (LOG_NOTICE,"Type: LOCAL_ICAT   "); 
-#else /* IRODS_SYSLOG */
+#else /* SYSLOG */
             fprintf (stderr, "Type: LOCAL_ICAT   "); 
-#endif /* IRODS_SYSLOG */
+#endif /* SYSLOG */
 #else
             rodsLog (LOG_NOTICE,"Type: LOCAL_ICAT   "); 
 #endif
         } else {
 #ifndef windows_platform
-#ifdef IRODS_SYSLOG
+#ifdef SYSLOG
             rodsLog (LOG_NOTICE,"Type: REMOTE_ICAT   ");
-#else /* IRODS_SYSLOG */
+#else /* SYSLOG */
             fprintf (stderr, "Type: REMOTE_ICAT   "); 
-#endif /* IRODS_SYSLOG */
+#endif /* SYSLOG */
 #else
             rodsLog (LOG_NOTICE,"Type: REMOTE_ICAT   ");
 #endif
         }
 
 #ifndef windows_platform
-#ifdef IRODS_SYSLOG
+#ifdef SYSLOG
         rodsLog (LOG_NOTICE, " HostAddr: %s   PortNum: %d\n\n", 
                  tmpRodsServerHost->hostName->name, tmpZoneInfo->portNum);
-#else /* IRODS_SYSLOG */
+#else /* SYSLOG */
         fprintf (stderr, " HostAddr: %s   PortNum: %d\n\n", 
                  tmpRodsServerHost->hostName->name, tmpZoneInfo->portNum);
-#endif /* IRODS_SYSLOG */
+#endif /* SYSLOG */
 #else
         rodsLog (LOG_NOTICE, " HostAddr: %s   PortNum: %d\n\n", 
                  tmpRodsServerHost->hostName->name, tmpZoneInfo->portNum);
@@ -413,17 +413,17 @@ printZoneInfo ()
         tmpRodsServerHost = (rodsServerHost_t *) tmpZoneInfo->slaveServerHost;
         if (tmpRodsServerHost != NULL) { 
 #ifndef windows_platform
-#ifdef IRODS_SYSLOG
+#ifdef SYSLOG
             rodsLog (LOG_NOTICE, "    ZoneName: %s   ", tmpZoneInfo->zoneName);
             rodsLog (LOG_NOTICE, "Type: LOCAL_SLAVE_ICAT   ");
             rodsLog (LOG_NOTICE, " HostAddr: %s   PortNum: %d\n\n",
                      tmpRodsServerHost->hostName->name, tmpZoneInfo->portNum);
-#else /* IRODS_SYSLOG */
+#else /* SYSLOG */
             fprintf (stderr, "    ZoneName: %s   ", tmpZoneInfo->zoneName);
             fprintf (stderr, "Type: LOCAL_SLAVE_ICAT   ");
             fprintf (stderr, " HostAddr: %s   PortNum: %d\nn",
                      tmpRodsServerHost->hostName->name, tmpZoneInfo->portNum);
-#endif /* IRODS_SYSLOG */
+#endif /* SYSLOG */
 #else
             rodsLog (LOG_NOTICE, "    ZoneName: %s   ", tmpZoneInfo->zoneName);
             rodsLog (LOG_NOTICE, "Type: LOCAL_SLAVE_ICAT   ");
@@ -437,21 +437,21 @@ printZoneInfo ()
     /* print the reHost */
     if (getReHost (&tmpRodsServerHost) >= 0) {
 #ifndef windows_platform
-#ifdef IRODS_SYSLOG
+#ifdef SYSLOG
         rodsLog (LOG_NOTICE,"reHost:   %s", tmpRodsServerHost->hostName->name);
-#else /* IRODS_SYSLOG */
+#else /* SYSLOG */
         fprintf (stderr, "reHost:   %s\n\n", tmpRodsServerHost->hostName->name);
-#endif /* IRODS_SYSLOG */
+#endif /* SYSLOG */
 #else
         rodsLog (LOG_NOTICE,"reHost:   %s", tmpRodsServerHost->hostName->name);
 #endif
     } else {
 #ifndef windows_platform
-#ifdef IRODS_SYSLOG
+#ifdef SYSLOG
         rodsLog (LOG_ERROR,"reHost error");
-#else /* IRODS_SYSLOG */
+#else /* SYSLOG */
         fprintf (stderr,"reHost error");
-#endif /* IRODS_SYSLOG */
+#endif /* SYSLOG */
 #else
         rodsLog (LOG_ERROR,"reHost error");
 #endif
@@ -459,11 +459,11 @@ printZoneInfo ()
 
     if (getXmsgHost (&tmpRodsServerHost) >= 0) {
 #ifndef windows_platform
-#ifdef IRODS_SYSLOG
+#ifdef SYSLOG
         rodsLog (LOG_NOTICE,"xmsgHost:  %s", tmpRodsServerHost->hostName->name);
-#else /* IRODS_SYSLOG */
+#else /* SYSLOG */
         fprintf (stderr, "xmsgHost:  %s\n\n",tmpRodsServerHost->hostName->name);
-#endif /* IRODS_SYSLOG */
+#endif /* SYSLOG */
 #else
         rodsLog (LOG_NOTICE,"xmsgHost:  %s", tmpRodsServerHost->hostName->name);
 #endif
@@ -680,7 +680,7 @@ queAddr (rodsServerHost_t *rodsServerHost, char *myHostName)
     /* gethostbyname could hang for some address */
     // =-=-=-=-=-=-=-
     // JMC :: consider empty host for coordinating nodes
-    if( eirods::EMPTY_RESC_HOST != myHostName ) {
+    if( irods::EMPTY_RESC_HOST != myHostName ) {
         beforeTime = time (0);
         if ((hostEnt = gethostbyname (myHostName)) == NULL) {
             status = SYS_GET_HOSTNAME_ERR - errno;
@@ -1711,7 +1711,7 @@ int
 logFileOpen (int runMode, char *logDir, char *logFileName)
 {
     char *logFile = NULL;
-#ifdef IRODS_SYSLOG
+#ifdef SYSLOG
     int logFd = 0;
 #else
     int logFd;
@@ -1732,7 +1732,7 @@ logFileOpen (int runMode, char *logDir, char *logFileName)
         return -1;
     }
 
-#ifndef IRODS_SYSLOG
+#ifndef SYSLOG
     logFd = open (logFile, O_CREAT|O_WRONLY|O_APPEND, 0666);
 #endif
     if (logFd < 0) {
@@ -1752,7 +1752,7 @@ initRsCommWithStartupPack (rsComm_t *rsComm, startupPack_t *startupPack)
     static char tmpStr2[LONG_NAME_LEN]; /** RAJA added to take care of memory 
                                          * leak Nov 15 2010 found by J-Y **/
     /* always use NATIVE_PROT as a client. e.g., server to server comm */
-    snprintf (tmpStr2, LONG_NAME_LEN, "%s=%d", IRODS_PROT, NATIVE_PROT);
+    snprintf (tmpStr2, LONG_NAME_LEN, "%s=%d", PROT, NATIVE_PROT);
     putenv (tmpStr2);
 
     if (startupPack != NULL) {

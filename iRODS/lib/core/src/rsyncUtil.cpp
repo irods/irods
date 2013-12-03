@@ -356,7 +356,7 @@ dataObjInp_t *dataObjOprInp)
     } else if (syncFlag == 1) {
 	addKeyVal (&dataObjOprInp->condInput, RSYNC_DEST_PATH_KW, 
 	  srcPath->outPath);
-	addKeyVal (&dataObjOprInp->condInput, RSYNC_MODE_KW, IRODS_TO_LOCAL);
+	addKeyVal (&dataObjOprInp->condInput, RSYNC_MODE_KW, TO_LOCAL);
 	/* only do the sync if no -l option specified */
 	if ( myRodsArgs->longOption != True ) {
     rodsLog( LOG_NOTICE, "XXXx - rsyncFileToDataUtil :: calling rcDataObjRsync" );
@@ -450,7 +450,7 @@ dataObjCopyInp_t *dataObjCopyInp)
 		msg << targPath->outPath;
 		msg << "\" ";
 		msg << rods_error << " " << sys_error;
-		eirods::log(LOG_ERROR, msg.str());
+		irods::log(LOG_ERROR, msg.str());
 	    }
 
 	} else {
@@ -464,7 +464,7 @@ dataObjCopyInp_t *dataObjCopyInp)
         dataObjOprInp->dataSize = srcPath->size;
         addKeyVal (&dataObjOprInp->condInput, RSYNC_DEST_PATH_KW,
           targPath->outPath);
-	addKeyVal (&dataObjOprInp->condInput, RSYNC_MODE_KW, IRODS_TO_IRODS);
+	addKeyVal (&dataObjOprInp->condInput, RSYNC_MODE_KW, TO_IRODS);
 	/* only do the sync if no -l option specified */
 	if ( myRodsArgs->longOption != True ) {
 	    status = rcDataObjRsync (conn, dataObjOprInp);

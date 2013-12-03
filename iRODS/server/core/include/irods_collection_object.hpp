@@ -1,7 +1,7 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
-#ifndef __EIRODS_COLLECTION_OBJECT_H__
-#define __EIRODS_COLLECTION_OBJECT_H__
+#ifndef __IRODS_COLLECTION_OBJECT_HPP__
+#define __IRODS_COLLECTION_OBJECT_HPP__
 
 // =-=-=-=-=-=-=-
 // system includes
@@ -9,10 +9,9 @@
 #include <dirent.h>
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_data_object.hpp"
+#include "irods_data_object.hpp"
 
-namespace eirods {
+namespace irods {
 
     class collection_object : public data_object {
     public:
@@ -66,9 +65,9 @@ namespace eirods {
     /// @brief typedef for managed collection object pointer
     typedef boost::shared_ptr< collection_object > collection_object_ptr;
 
-}; // namespace eirods
+}; // namespace irods
 
-#endif // __EIRODS_COLLECTION_OBJECT_H__
+#endif // __IRODS_COLLECTION_OBJECT_HPP__
 
 
 

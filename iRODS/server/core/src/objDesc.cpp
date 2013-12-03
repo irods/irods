@@ -28,10 +28,9 @@
 #endif
 
 // =-=-=-=-=-=-=-
-// eirods_includes
-#include "eirods_resource_backport.hpp"
-#include "eirods_hierarchy_parser.hpp"
-#include "eirods_stacktrace.hpp"
+#include "irods_resource_backport.hpp"
+#include "irods_hierarchy_parser.hpp"
+#include "irods_stacktrace.hpp"
 
 int
 initL1desc ()
@@ -322,7 +321,7 @@ getNumThreads (rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
     initReiWithDataObjInp (&rei, rsComm, &doinp);
 
     if (destRescHier != NULL) {
-        eirods::hierarchy_parser parser;
+        irods::hierarchy_parser parser;
         parser.set_string( destRescHier );
 
         std::string last_resc;
@@ -335,7 +334,7 @@ getNumThreads (rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
         
         // =-=-=-=-=-=-=-
         // get rescGrpInfo_t from resource name
-        eirods::error err = eirods::get_resc_grp_info( last_resc.c_str(), *rescGrpInfo );
+        irods::error err = irods::get_resc_grp_info( last_resc.c_str(), *rescGrpInfo );
         if ( err.ok() ) {
             rei.rgi = rescGrpInfo;
             status = applyRule ("acSetNumThreads", NULL, &rei, NO_SAVE_REI);
@@ -363,7 +362,7 @@ getNumThreads (rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
         if (numDestThr > 0 && strcmp (destRescHier, srcRescHier) == 0) 
             return numDestThr;
 
-        eirods::hierarchy_parser parser;
+        irods::hierarchy_parser parser;
         parser.set_string( srcRescHier );
 
         std::string last_resc;
@@ -373,7 +372,7 @@ getNumThreads (rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
         rescGrpInfo->rescInfo = new rescInfo_t;
         // =-=-=-=-=-=-=-
         // convert the resource into the rescGrpInfo_t
-        eirods::error err = eirods::get_resc_grp_info( last_resc.c_str(), *rescGrpInfo );
+        irods::error err = irods::get_resc_grp_info( last_resc.c_str(), *rescGrpInfo );
 
         //status = resolveAndQueResc (srcRescName, NULL, &rescGrpInfo);
         if ( err.ok() ) {
@@ -523,12 +522,12 @@ initDataOprInp (dataOprInp_t *dataOprInp, int l1descInx, int oprType)
             // JMC - legacy resource - int rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
             // JMC - legacy resource - if (RescTypeDef[rescTypeInx].driverType == UNIX_FILE_TYPE)
             std::string type;
-            eirods::error err = eirods::get_resource_property< std::string >( 
-                                    dataObjInfo->rescInfo->rescName, eirods::RESOURCE_TYPE, type );
+            irods::error err = irods::get_resource_property< std::string >( 
+                                    dataObjInfo->rescInfo->rescName, irods::RESOURCE_TYPE, type );
             if( !err.ok() ) {
-                eirods::log( PASS( err ) );
+                irods::log( PASS( err ) );
             } else {
-                if( eirods::RESOURCE_TYPE_NATIVE == type ) { // JMC :: 
+                if( irods::RESOURCE_TYPE_NATIVE == type ) { // JMC :: 
                     addKeyVal (&dataOprInp->condInput, RBUDP_TRANSFER_KW, "");
                 }
             }

@@ -64,7 +64,7 @@
  *    \n ALL_KW - replicate to all resources in the resource group if the
  *             input resource (via DEST_RESC_NAME_KW) is a resource group.
  *            This keyWd has no value.
- *    \n IRODS_ADMIN_KW - admin user backup/replicate other user's files.
+ *    \n ADMIN_KW - admin user backup/replicate other user's files.
  *            This keyWd has no value.
  *    \n FILE_PATH_KW - The physical file path for this data object if the
  *             normal resource vault is not used.

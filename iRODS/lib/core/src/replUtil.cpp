@@ -178,7 +178,7 @@ initCondForRepl (rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
     }
 
     if (rodsArgs->admin == True) {
-        addKeyVal (&dataObjInp->condInput, IRODS_ADMIN_KW, "");
+        addKeyVal (&dataObjInp->condInput, ADMIN_KW, "");
     }
 
     if (rodsArgs->srcResc == True) {

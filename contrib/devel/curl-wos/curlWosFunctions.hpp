@@ -1,5 +1,5 @@
-#ifndef CURL_WOS_FUNCTIONS_H
-#define CURL_WOS_FUNCTIONS_H
+#ifndef CURL_WOS_FUNCTIONS_HPP
+#define CURL_WOS_FUNCTIONS_HPP
 /**
  * @file
  * @author  Howard Lander <howard@renci.org>

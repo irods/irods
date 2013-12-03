@@ -26,14 +26,13 @@
 #include "getRescQuota.hpp"
 #include "icatHighLevelRoutines.hpp"
 
-#include "eirods_hierarchy_parser.hpp"
+#include "irods_hierarchy_parser.hpp"
 
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_resource_backport.hpp"
-#include "eirods_resource_redirect.hpp"
-#include "eirods_hierarchy_parser.hpp"
+#include "irods_resource_backport.hpp"
+#include "irods_resource_redirect.hpp"
+#include "irods_hierarchy_parser.hpp"
 
 /* rsDataObjCreate - handle dataObj create request.
  *
@@ -85,13 +84,13 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     char* resc_hier = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
     if( NULL == resc_hier ) {
         std::string       hier;
-        eirods::error ret = eirods::resolve_resource_hierarchy( eirods::EIRODS_CREATE_OPERATION, rsComm, 
+        irods::error ret = irods::resolve_resource_hierarchy( irods::CREATE_OPERATION, rsComm, 
                                                                 dataObjInp, hier );
         if( !ret.ok() ) { 
             std::stringstream msg;
-            msg << "failed in eirods::resolve_resource_hierarchy for [";
+            msg << "failed in irods::resolve_resource_hierarchy for [";
             msg << dataObjInp->objPath << "]";
-            eirods::log( PASSMSG( msg.str(), ret ) );
+            irods::log( PASSMSG( msg.str(), ret ) );
             return ret.code();
         }
        
@@ -165,14 +164,14 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
             // =-=-=-=-=-=-=-
             // re-determine the resource hierarchy since this is an open instead of a create
             std::string       hier;
-            eirods::error ret = eirods::resolve_resource_hierarchy( eirods::EIRODS_WRITE_OPERATION, 
+            irods::error ret = irods::resolve_resource_hierarchy( irods::WRITE_OPERATION, 
                                                                     rsComm, dataObjInp, hier );
             if( !ret.ok() ) { 
                 std::stringstream msg;
                 msg << __FUNCTION__;
-                msg << " :: failed in eirods::resolve_resource_hierarchy for [";
+                msg << " :: failed in irods::resolve_resource_hierarchy for [";
                 msg << dataObjInp->objPath << "]";
-                eirods::log( PASSMSG( msg.str(), ret ) );
+                irods::log( PASSMSG( msg.str(), ret ) );
                 return ret.code();
             }
            
@@ -181,7 +180,7 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
             // api calls, etc.
             addKeyVal( &dataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
             std::string top_resc;
-            eirods::hierarchy_parser parser;
+            irods::hierarchy_parser parser;
             parser.set_string(hier);
             parser.first_resc(top_resc);
             addKeyVal( &dataObjInp->condInput, DEST_RESC_NAME_KW, top_resc.c_str());
@@ -465,9 +464,9 @@ l3Create (rsComm_t *rsComm, int l1descInx)
     // =-=-=-=-=-=-=-
     // extract the host location from the resource hierarchy
     std::string location;
-    eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
+    irods::error ret = irods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "l3Create - failed in get_loc_for_hier_String", ret ) );
+        irods::log( PASSMSG( "l3Create - failed in get_loc_for_hier_String", ret ) );
         return -1;
     }
 
@@ -509,9 +508,9 @@ l3CreateByObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     // =-=-=-=-=-=-=-
     // extract the host location from the resource hierarchy
     std::string location;
-    eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
+    irods::error ret = irods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "l3CreateByObjInfo - failed in get_loc_for_hier_String", ret ) );
+        irods::log( PASSMSG( "l3CreateByObjInfo - failed in get_loc_for_hier_String", ret ) );
         return -1;
     }
 
@@ -616,9 +615,9 @@ int getRescGrpForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp, rescGrpInfo
         (*myRescGrpInfo)->rescInfo = new rescInfo_t;
         //}
 
-        eirods::error set_err = eirods::set_default_resource( rsComm, "", "", &dataObjInp->condInput, *(*myRescGrpInfo) );
+        irods::error set_err = irods::set_default_resource( rsComm, "", "", &dataObjInp->condInput, *(*myRescGrpInfo) );
         if( !set_err.ok() ) {
-            eirods::log( PASS( set_err ) );
+            irods::log( PASS( set_err ) );
             return SYS_INVALID_RESC_INPUT;
         }
 

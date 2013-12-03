@@ -52,7 +52,7 @@
  *    \n REPL_NUM_KW - the replica number of the copy to phymv.
  *    \n RESC_NAME_KW - the source resource for the phymv.
  *    \n DEST_RESC_NAME_KW - The target resource for the phymv.
- *    \n IRODS_ADMIN_KW - admin user phymove other users files. 
+ *    \n ADMIN_KW - admin user phymove other users files. 
  *             This keyWd has no value.
  *
  * \return integer

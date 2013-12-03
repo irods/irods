@@ -26,10 +26,9 @@
 #include "rsIcatOpr.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods include
-#include "eirods_resource_backport.hpp"
-#include "eirods_log.hpp"
-#include "eirods_stacktrace.hpp"
+#include "irods_resource_backport.hpp"
+#include "irods_log.hpp"
+#include "irods_stacktrace.hpp"
 
 #ifdef FILESYSTEM_META
 int
@@ -471,12 +470,12 @@ if ((tmpStr= getValByKey(&dataObjInp->condInput, TICKET_KW)) != NULL) {
         // =-=-=-=-=-=-=-
         // get the resource info struct given a resource name
         dataObjInfo->rescInfo = new rescInfo_t;
-        eirods::error err = eirods::get_resc_info( dataObjInfo->rescName, *dataObjInfo->rescInfo );
+        irods::error err = irods::get_resc_info( dataObjInfo->rescName, *dataObjInfo->rescInfo );
         if( !err.ok() ) {
             std::stringstream msg;
             msg << "failed to get resource info [";
             msg << dataObjInfo->rescName << "]";
-            eirods::log( PASSMSG( msg.str(), err ) );
+            irods::log( PASSMSG( msg.str(), err ) );
             return err.code();
         }
 
@@ -575,9 +574,9 @@ sortObjInfo (
         }
 
         std::string class_type;
-        eirods::error prop_err = eirods::get_resource_property<std::string>( 
+        irods::error prop_err = irods::get_resource_property<std::string>( 
             tmpDataObjInfo->rescInfo->rescName, 
-            eirods::RESOURCE_CLASS, 
+            irods::RESOURCE_CLASS, 
             class_type );
 
         bool hier_match = false;
@@ -656,7 +655,7 @@ int sortObjInfoForOpen(
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - No resource hierarchy specified in keywords.";
-        eirods::log(ERROR(SYS_INVALID_INPUT_PARAM, msg.str()));
+        irods::log(ERROR(SYS_INVALID_INPUT_PARAM, msg.str()));
         result = SYS_INVALID_INPUT_PARAM;
     } else {
         dataObjInfo_t* found_info = NULL;
@@ -680,8 +679,8 @@ int sortObjInfoForOpen(
                 msg << " - No data object found matching resource hierarchy: \"";
                 msg << resc_hier;
                 msg << "\"";
-                eirods::log(ERROR(EIRODS_HIERARCHY_ERROR, msg.str()));
-                result = EIRODS_HIERARCHY_ERROR;
+                irods::log(ERROR(HIERARCHY_ERROR, msg.str()));
+                result = HIERARCHY_ERROR;
             }
         } else {
             if(prev_info == NULL) {
@@ -737,7 +736,7 @@ int sortObjInfoForOpen(
         if (*dataObjInfoHead == NULL) {
             /* no working copy. */
             std::string resc_name;
-            eirods::error name_err = eirods::resolve_resource_name( "", condInput, resc_name );
+            irods::error name_err = irods::resolve_resource_name( "", condInput, resc_name );
             if( !name_err.ok() ) {
                 freeAllDataObjInfo (downCurrentInfo);
                 freeAllDataObjInfo (downOldInfo);
@@ -745,9 +744,9 @@ int sortObjInfoForOpen(
 
             } else {
                 int resc_status = -1;
-                eirods::error prop_err = eirods::get_resource_property<int>( 
+                irods::error prop_err = irods::get_resource_property<int>( 
                     resc_name, 
-                    eirods::RESOURCE_STATUS, 
+                    irods::RESOURCE_STATUS, 
                     resc_status );
                 // JMC - legacy resource if (getRescStatus (rsComm, NULL, condInput) == INT_RESC_STATUS_DOWN) {
                 if( resc_status == INT_RESC_STATUS_DOWN ) {
@@ -1910,7 +1909,7 @@ chkOrphanDir (rsComm_t *rsComm, char *dirPath, char *rescName)
                                                                 specCollPerm, 1, dataObjInfo)) >= 0) {
                         /* check if specColl in cache. May be able to save one query */
                     } else if (getValByKey (&dataObjInp->condInput,
-                                            IRODS_ADMIN_RMTRASH_KW) != NULL &&
+                                            ADMIN_RMTRASH_KW) != NULL &&
                                rsComm->proxyUser.authInfo.authFlag == LOCAL_PRIV_USER_AUTH) {
                         status = getDataObjInfo (rsComm, dataObjInp, dataObjInfo,
                                                  NULL, 0);
@@ -2159,12 +2158,12 @@ chkOrphanDir (rsComm_t *rsComm, char *dirPath, char *rescName)
                                         while (tmpDataObjInfo != NULL) {
 
                                             std::string resc_class;
-                                            eirods::error ret =  eirods::get_resource_property( 
+                                            irods::error ret =  irods::get_resource_property( 
                                                 tmpDataObjInfo->rescInfo->rescName, 
-                                                eirods::RESOURCE_CLASS, 
+                                                irods::RESOURCE_CLASS, 
                                                 resc_class );
                                             if( !ret.ok() ) {
-                                                eirods::log( PASS( ret ) );
+                                                irods::log( PASS( ret ) );
                                                 return -1;
                                             }
 

@@ -20,10 +20,9 @@
 #include "getRemoteZoneResc.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_resource_redirect.hpp"
-#include "eirods_hierarchy_parser.hpp"
-#include "eirods_resource_backport.hpp"
+#include "irods_resource_redirect.hpp"
+#include "irods_hierarchy_parser.hpp"
+#include "irods_resource_backport.hpp"
 
 int
 rsDataObjGet (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
@@ -48,13 +47,13 @@ rsDataObjGet (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         // we know that the redirection decision has already been made
         if( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
             std::string       hier;
-            eirods::error ret = eirods::resolve_resource_hierarchy( eirods::EIRODS_OPEN_OPERATION, rsComm, 
+            irods::error ret = irods::resolve_resource_hierarchy( irods::OPEN_OPERATION, rsComm, 
                                                            dataObjInp, hier );
             if( !ret.ok() ) { 
                 std::stringstream msg;
-                msg << "rsDataObjGet :: failed in eirods::resolve_resource_redirect for [";
+                msg << "rsDataObjGet :: failed in irods::resolve_resource_redirect for [";
                 msg << dataObjInp->objPath << "]";
-                eirods::log( PASSMSG( msg.str(), ret ) );
+                irods::log( PASSMSG( msg.str(), ret ) );
                 return ret.code();
             }
            
@@ -306,9 +305,9 @@ l3FileGetSingleBuf (rsComm_t *rsComm, int l1descInx,
     // =-=-=-=-=-=-=-
     // extract the host location from the resource hierarchy
     std::string location;
-    eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
+    irods::error ret = irods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "l3FileGetSingleBuf - failed in get_loc_for_hier_String", ret ) );
+        irods::log( PASSMSG( "l3FileGetSingleBuf - failed in get_loc_for_hier_String", ret ) );
         return -1;
     }
 

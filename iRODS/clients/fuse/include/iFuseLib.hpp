@@ -26,8 +26,8 @@
 
 #define FUSE_CACHE_DIR	"/tmp/fuseCache"
 
-#define IRODS_FREE		0
-#define IRODS_INUSE	1 
+#define FREE		0
+#define INUSE	1 
 
 
 // =-=-=-=-=-=-=-

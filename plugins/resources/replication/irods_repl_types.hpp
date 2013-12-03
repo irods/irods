@@ -1,13 +1,13 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
-#ifndef _EIRODS_REPL_TYPES_H_
-#define _EIRODS_REPL_TYPES_H_
+#ifndef _IRODS_REPL_TYPES_HPP_
+#define _IRODS_REPL_TYPES_HPP_
 
-#include "eirods_resource_constants.hpp"
-#include "eirods_object_oper.hpp"
-#include "eirods_hierarchy_parser.hpp"
-#include "eirods_resource_plugin_context.hpp"
-#include "eirods_resource_redirect.hpp"
+#include "irods_resource_constants.hpp"
+#include "irods_object_oper.hpp"
+#include "irods_hierarchy_parser.hpp"
+#include "irods_resource_plugin_context.hpp"
+#include "irods_resource_redirect.hpp"
 
 #include <vector>
 #include <list>
@@ -15,13 +15,13 @@
 #include <string>
 
 // Define some types
-typedef std::vector<eirods::hierarchy_parser> child_list_t;
-typedef std::list<eirods::object_oper> object_list_t;
+typedef std::vector<irods::hierarchy_parser> child_list_t;
+typedef std::list<irods::object_oper> object_list_t;
 // define this so we sort children from highest vote to lowest
 struct child_comp {
     bool operator()(float _lhs, float _rhs) const { return _lhs > _rhs; }
 };
-typedef std::multimap<float, eirods::hierarchy_parser, child_comp> redirect_map_t;
+typedef std::multimap<float, irods::hierarchy_parser, child_comp> redirect_map_t;
 
 // define some constants
 const std::string child_list_prop = "child_list";
@@ -30,9 +30,9 @@ const std::string need_pdmo_prop = "Need_PDMO";
 const std::string hierarchy_prop = "hierarchy";
 const std::string operation_type_prop = "operation_type";
 
-const std::string write_oper  = eirods::EIRODS_WRITE_OPERATION;
-const std::string unlink_oper = eirods::RESOURCE_OP_UNLINK;
-const std::string create_oper = eirods::EIRODS_CREATE_OPERATION;
-const std::string rename_oper = eirods::RESOURCE_OP_RENAME;
+const std::string write_oper  = irods::WRITE_OPERATION;
+const std::string unlink_oper = irods::RESOURCE_OP_UNLINK;
+const std::string create_oper = irods::CREATE_OPERATION;
+const std::string rename_oper = irods::RESOURCE_OP_RENAME;
 
-#endif // _EIRODS_REPL_TYPES_H_
+#endif // _IRODS_REPL_TYPES_HPP_

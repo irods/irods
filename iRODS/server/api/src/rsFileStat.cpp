@@ -9,11 +9,10 @@
 #include "miscServerFunct.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_log.hpp"
-#include "eirods_file_object.hpp"
-#include "eirods_stacktrace.hpp"
-#include "eirods_resource_backport.hpp"
+#include "irods_log.hpp"
+#include "irods_file_object.hpp"
+#include "irods_stacktrace.hpp"
+#include "irods_resource_backport.hpp"
 
 
 int
@@ -27,9 +26,9 @@ rsFileStat (rsComm_t *rsComm, fileStatInp_t *fileStatInp,
     *fileStatOut = NULL;
 
     //remoteFlag = resolveHost (&fileStatInp->addr, &rodsServerHost);
-    eirods::error ret = eirods::get_host_for_hier_string( fileStatInp->rescHier, remoteFlag, rodsServerHost );
+    irods::error ret = irods::get_host_for_hier_string( fileStatInp->rescHier, remoteFlag, rodsServerHost );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "rsFileStat - failed in call to eirods::get_host_for_hier_string", ret ) );
+        irods::log( PASSMSG( "rsFileStat - failed in call to irods::get_host_for_hier_string", ret ) );
         return -1;
     }
 
@@ -116,25 +115,25 @@ int _rsFileStat(
     if(_stat_inp->objPath[0] == '\0') {
         std::stringstream msg;
         msg << "Empty logical path.";
-        eirods::log(LOG_ERROR, msg.str());
+        irods::log(LOG_ERROR, msg.str());
         return -1;
     }
 
     // =-=-=-=-=-=-=-
     // make call to stat via resource plugin
-    eirods::file_object_ptr file_obj( 
-                                new eirods::file_object( 
+    irods::file_object_ptr file_obj( 
+                                new irods::file_object( 
                                     _comm, 
                                     _stat_inp->objPath, 
                                     _stat_inp->fileName, 
                                     _stat_inp->rescHier, 
                                     0, 0, 0 ) );
-    eirods::error stat_err = fileStat( _comm, file_obj, &myFileStat );
+    irods::error stat_err = fileStat( _comm, file_obj, &myFileStat );
 
     // =-=-=-=-=-=-=-
     // log error if necessary
     if( !stat_err.ok() ) {
-//        eirods::log(LOG_ERROR, stat_err.result());
+//        irods::log(LOG_ERROR, stat_err.result());
         return stat_err.code();
     }
 

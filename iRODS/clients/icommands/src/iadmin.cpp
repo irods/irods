@@ -9,7 +9,7 @@
 
 #include "rodsClient.hpp"
 #include "parseCommandLine.hpp"
-#include "eirods_string_tokenize.hpp"
+#include "irods_string_tokenize.hpp"
 #include <iostream>
 #include <algorithm>
 
@@ -41,7 +41,7 @@ int
 printSimpleQuery(char *buf) {
 
     std::vector< std::string > tokens;
-    eirods::string_tokenize( buf, "\n", tokens ); 
+    irods::string_tokenize( buf, "\n", tokens ); 
     std::vector< std::string >::iterator itr = tokens.begin();
     for( ; itr != tokens.end(); ++itr ) {
         // =-=-=-=-=-=-=-
@@ -55,7 +55,7 @@ printSimpleQuery(char *buf) {
                 // tokenize based on the ':' delimiter this time
                 // to convert the time
                 std::vector< std::string > time_tokens;
-                eirods::string_tokenize( *itr, ":", time_tokens ); 
+                irods::string_tokenize( *itr, ":", time_tokens ); 
                 if( time_tokens.size() != 2 ) {
                     std::cout << "printSimpleQuery - incorrect number of tokens "
                               << "for case of time conversion" << std::endl;

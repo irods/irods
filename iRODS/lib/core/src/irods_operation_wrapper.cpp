@@ -2,7 +2,7 @@
 
 // =-=-=-=-=-=-=-
 // My Includes
-#include "eirods_operation_wrapper.hpp"
+#include "irods_operation_wrapper.hpp"
 
 // =-=-=-=-=-=-=-
 // STL Includes
@@ -11,7 +11,7 @@
 // =-=-=-=-=-=-=-
 // Boost Includes
 
-namespace eirods {
+namespace irods {
 
     // =-=-=-=-=-=-=-
     // public - ctor
@@ -60,7 +60,7 @@ namespace eirods {
     // END operation_wrapper
     // =-=-=-=-=-=-=-
 
-}; // namespace eirods
+}; // namespace irods
 
 
 

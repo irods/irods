@@ -22,10 +22,9 @@
 #include "apiHeaderAll.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_resource_backport.hpp"
-#include "eirods_resource_redirect.hpp"
-#include "eirods_hierarchy_parser.hpp"
+#include "irods_resource_backport.hpp"
+#include "irods_resource_redirect.hpp"
+#include "irods_hierarchy_parser.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -110,13 +109,13 @@ irsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
     std::string       hier;
     char*             tmp_hier = getValByKey( &phyPathRegInp->condInput, RESC_HIER_STR_KW );
     if( NULL == tmp_hier ) {
-        eirods::error ret = eirods::resource_redirect( eirods::EIRODS_CREATE_OPERATION, rsComm, 
+        irods::error ret = irods::resource_redirect( irods::CREATE_OPERATION, rsComm, 
                                                        phyPathRegInp, hier, host, local );
         if( !ret.ok() ) { 
             std::stringstream msg;
-            msg << "failed in eirods::resource_redirect for [";
+            msg << "failed in irods::resource_redirect for [";
             msg << phyPathRegInp->objPath << "]";
-            eirods::log( PASSMSG( msg.str(), ret ) );
+            irods::log( PASSMSG( msg.str(), ret ) );
             return ret.code();
         }
         // =-=-=-=-=-=-=-
@@ -141,16 +140,16 @@ rodsLog( LOG_NOTICE, "XXXX - irsPhyPathReg :: resc_hier [%s]", hier.c_str() );
     // =-=-=-=-=-=-=-
     // 
     // JMC - legacy resource - status = getRescInfo( rsComm, NULL, &phyPathRegInp->condInput, &rescGrpInfo);
-    eirods::hierarchy_parser parser;
+    irods::hierarchy_parser parser;
     parser.set_string( hier );
     std::string resc_name;
     parser.first_resc( resc_name );
 
     rescGrpInfo = new rescGrpInfo_t;
     rescGrpInfo->rescInfo = new rescInfo_t;
-    eirods::error err = eirods::get_resc_grp_info( resc_name, *rescGrpInfo );
+    irods::error err = irods::get_resc_grp_info( resc_name, *rescGrpInfo );
     if( !err.ok() ) {
-         eirods::log( PASS( err ) );
+         irods::log( PASS( err ) );
          delete rescGrpInfo->rescInfo;
          delete rescGrpInfo;
          return -1;
@@ -160,12 +159,12 @@ rodsLog( LOG_NOTICE, "XXXX - irsPhyPathReg :: resc_hier [%s]", hier.c_str() );
     parser.last_resc( last_resc );
    
     std::string location;
-    eirods::error ret = eirods::get_resource_property< std::string >( 
+    irods::error ret = irods::get_resource_property< std::string >( 
                           last_resc, 
-                          eirods::RESOURCE_LOCATION, 
+                          irods::RESOURCE_LOCATION, 
                           location );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "failed in get_resource_property", ret ) );
+        irods::log( PASSMSG( "failed in get_resource_property", ret ) );
         delete rescGrpInfo->rescInfo;
         delete rescGrpInfo;
         return -1;
@@ -278,9 +277,9 @@ rodsLog( LOG_NOTICE, "XXXX - _rsPhyPathReg" );
         // =-=-=-=-=-=-=-
         // extract the host location from the resource hierarchy
         std::string location;
-        eirods::error ret = eirods::get_loc_for_hier_string( resc_hier, location );
+        irods::error ret = irods::get_loc_for_hier_string( resc_hier, location );
         if( !ret.ok() ) {
-            eirods::log( PASSMSG( "failed in get_loc_for_hier_String", ret ) );
+            irods::log( PASSMSG( "failed in get_loc_for_hier_String", ret ) );
             return -1;
         }
 
@@ -368,10 +367,10 @@ filePathRegRepl (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
     regReplicaInp.destDataObjInfo = &destDataObjInfo;
     if (getValByKey (&phyPathRegInp->condInput, SU_CLIENT_USER_KW) != NULL) {
         addKeyVal (&regReplicaInp.condInput, SU_CLIENT_USER_KW, "");
-        addKeyVal (&regReplicaInp.condInput, IRODS_ADMIN_KW, "");
+        addKeyVal (&regReplicaInp.condInput, ADMIN_KW, "");
     } else if (getValByKey (&phyPathRegInp->condInput,
-                            IRODS_ADMIN_KW) != NULL) {
-        addKeyVal (&regReplicaInp.condInput, IRODS_ADMIN_KW, "");
+                            ADMIN_KW) != NULL) {
+        addKeyVal (&regReplicaInp.condInput, ADMIN_KW, "");
     }
     status = rsRegReplica (rsComm, &regReplicaInp);
     clearKeyVal (&regReplicaInp.condInput);
@@ -488,9 +487,9 @@ dirPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
     // =-=-=-=-=-=-=-
     // extract the host location from the resource hierarchy
     std::string location;
-    eirods::error ret = eirods::get_loc_for_hier_string( resc_hier, location );
+    irods::error ret = irods::get_loc_for_hier_string( resc_hier, location );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "failed in get_loc_for_hier_String", ret ) );
+        irods::log( PASSMSG( "failed in get_loc_for_hier_String", ret ) );
         return -1;
     }
 
@@ -653,9 +652,9 @@ rodsLog( LOG_NOTICE, "XXXX - mountFileDir :: resc_hier [%s]", resc_hier );
     // =-=-=-=-=-=-=-
     // extract the host location from the resource hierarchy
     std::string location;
-    eirods::error ret = eirods::get_loc_for_hier_string( resc_hier, location );
+    irods::error ret = irods::get_loc_for_hier_string( resc_hier, location );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "failed in get_loc_for_hier_String", ret ) );
+        irods::log( PASSMSG( "failed in get_loc_for_hier_String", ret ) );
         return -1;
     }
 
@@ -915,7 +914,7 @@ int structFileReg(
         return -1;
     }
 rodsLog( LOG_NOTICE, "XXXX - structFileReg :: hier [%s]", tmp_hier );
-    eirods::hierarchy_parser parser;
+    irods::hierarchy_parser parser;
     parser.set_string(std::string(tmp_hier));
     std::string resc_name;
     parser.last_resc(resc_name);
@@ -977,13 +976,13 @@ structFileSupport (rsComm_t *rsComm, char *collection, char *collType,
     // =-=-=-=-=-=-=-
     // extract the host location from the resource hierarchy
     std::string location;
-    eirods::error ret = eirods::get_loc_for_hier_string( resc_hier, location );
+    irods::error ret = irods::get_loc_for_hier_string( resc_hier, location );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "failed in get_loc_for_hier_String", ret ) );
+        irods::log( PASSMSG( "failed in get_loc_for_hier_String", ret ) );
         return -1;
     }
 
-    eirods::hierarchy_parser parser;
+    irods::hierarchy_parser parser;
     parser.set_string( resc_hier );
     std::string first_resc;
     parser.first_resc( first_resc );
@@ -1140,9 +1139,9 @@ readPathnamePatternsFromFile(rsComm_t *rsComm, char *filename, char* resc_hier )
     // =-=-=-=-=-=-=-
     // extract the host location from the resource hierarchy
     std::string location;
-    eirods::error ret = eirods::get_loc_for_hier_string( resc_hier, location );
+    irods::error ret = irods::get_loc_for_hier_string( resc_hier, location );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "failed in get_loc_for_hier_String", ret ) );
+        irods::log( PASSMSG( "failed in get_loc_for_hier_String", ret ) );
         return NULL;
     }
 

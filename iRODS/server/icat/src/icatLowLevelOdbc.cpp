@@ -32,8 +32,8 @@
 
 #include "icatLowLevelOdbc.hpp"
 
-#include "eirods_tmp_string.hpp"
-#include "eirods_log.hpp"
+#include "irods_tmp_string.hpp"
+#include "irods_log.hpp"
 
 int _cllFreeStatementColumns(icatSessionStruct *icss, int statementNumber);
 
@@ -911,11 +911,11 @@ cllExecSqlWithResultBV(
     char *status;
     char tmpStr[TMP_STR_LEN+2];
 
-    eirods::tmp_string tmp_string1(bindVar1);
-    eirods::tmp_string tmp_string2(bindVar2);
-    eirods::tmp_string tmp_string3(bindVar3);
-    eirods::tmp_string tmp_string4(bindVar4);
-    eirods::tmp_string tmp_string5(bindVar5);
+    irods::tmp_string tmp_string1(bindVar1);
+    irods::tmp_string tmp_string2(bindVar2);
+    irods::tmp_string tmp_string3(bindVar3);
+    irods::tmp_string tmp_string4(bindVar4);
+    irods::tmp_string tmp_string5(bindVar5);
     
     myHdbc = icss->connectPtr;
     rodsLog(LOG_DEBUG1, sql);

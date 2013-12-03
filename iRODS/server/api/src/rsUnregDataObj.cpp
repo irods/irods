@@ -9,8 +9,8 @@
 #include "icatHighLevelRoutines.hpp"
 #include "fileDriver.hpp"
 
-#include "eirods_file_object.hpp"
-#include "eirods_stacktrace.hpp"
+#include "irods_file_object.hpp"
+#include "irods_stacktrace.hpp"
 
 int
 rsUnregDataObj (rsComm_t *rsComm, unregDataObj_t *unregDataObjInp)
@@ -46,7 +46,7 @@ _rsUnregDataObj (rsComm_t *rsComm, unregDataObj_t *unregDataObjInp)
     dataObjInfo_t *dataObjInfo;
     keyValPair_t *condInput;
     int status;
-    eirods::error ret;
+    irods::error ret;
     
     condInput = unregDataObjInp->condInput;
     dataObjInfo = unregDataObjInp->dataObjInfo;
@@ -62,10 +62,10 @@ _rsUnregDataObj (rsComm_t *rsComm, unregDataObj_t *unregDataObjInp)
         msg << "\" - ";
         msg << rods_error << " " << sys_error;
         ret = ERROR(status, msg.str());
-        eirods::log(ret);
+        irods::log(ret);
     } else {
-        eirods::file_object_ptr file_obj(
-                                    new eirods::file_object( 
+        irods::file_object_ptr file_obj(
+                                    new irods::file_object( 
                                         rsComm, 
                                         dataObjInfo ) );
         ret = fileUnregistered(rsComm, file_obj);
@@ -76,7 +76,7 @@ _rsUnregDataObj (rsComm_t *rsComm, unregDataObj_t *unregDataObjInp)
             msg << dataObjInfo->objPath;
             msg << "\" was unregistered";
             ret = PASSMSG(msg.str(), ret);
-            eirods::log(ret);
+            irods::log(ret);
             status = ret.code();
         }
     }

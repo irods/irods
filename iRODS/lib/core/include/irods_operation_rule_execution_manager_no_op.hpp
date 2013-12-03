@@ -1,14 +1,13 @@
 
 
 
-#ifndef __EIRODS_OPERATION_RULE_EXECUTION_MANAGER_NO_OP_H__
-#define __EIRODS_OPERATION_RULE_EXECUTION_MANAGER_NO_OP_H__
+#ifndef __IRODS_OPERATION_RULE_EXECUTION_MANAGER_NO_OP_HPP__
+#define __IRODS_OPERATION_RULE_EXECUTION_MANAGER_NO_OP_HPP__
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_operation_rule_execution_manager_base.hpp"
+#include "irods_operation_rule_execution_manager_base.hpp"
 
-namespace eirods {
+namespace irods {
     /// =-=-=-=-=-=-=-
     /// @brief base class for rule execution which will allow
     ///        the use of a stub for client side network plugins
@@ -55,9 +54,9 @@ namespace eirods {
 
     }; // class operation_rule_execution_manager_no_op
 
-}; // namespace eirods
+}; // namespace irods
 
-#endif // __EIRODS_OPERATION_RULE_EXECUTION_MANAGER_NO_OP_H__
+#endif // __IRODS_OPERATION_RULE_EXECUTION_MANAGER_NO_OP_HPP__
 
 
 

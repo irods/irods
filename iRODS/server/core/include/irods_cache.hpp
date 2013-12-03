@@ -1,6 +1,6 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
-namespace eirods {
+namespace irods {
 
     /**
        Abstract base class that should be subclassed in order to encapsulate the method by which objects are retrieved from their
@@ -58,4 +58,4 @@ namespace eirods {
         }
     }; // class cache
     
-}; // namespace eirods
+}; // namespace irods

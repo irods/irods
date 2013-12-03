@@ -1,13 +1,12 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
-#ifndef __EIRODS_FIRST_CLASS_OBJECT_H__
-#define __EIRODS_FIRST_CLASS_OBJECT_H__
+#ifndef __IRODS_FIRST_CLASS_OBJECT_HPP__
+#define __IRODS_FIRST_CLASS_OBJECT_HPP__
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_log.hpp"
-#include "eirods_resource_types.hpp"
-#include "eirods_network_types.hpp"
+#include "irods_log.hpp"
+#include "irods_resource_types.hpp"
+#include "irods_network_types.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
@@ -17,7 +16,7 @@
 // boost includs
 #include <boost/shared_ptr.hpp>
 
-namespace eirods {
+namespace irods {
     // =-=-=-=-=-=-=-
     // base class for all object types
     class first_class_object {
@@ -46,9 +45,9 @@ namespace eirods {
     /// @brief shared pointer to first_class_object
     typedef boost::shared_ptr< first_class_object > first_class_object_ptr;
 
-}; // namespace eirods
+}; // namespace irods
 
-#endif // __EIRODS_FIRST_CLASS_OBJECT_H__
+#endif // __IRODS_FIRST_CLASS_OBJECT_HPP__
 
 
 

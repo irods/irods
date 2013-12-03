@@ -1,8 +1,8 @@
 /* iRODS unix stdio i/o functions; emulate a subset of stdio.h
  * calls */
 
-#ifndef IRODS_IO_HPP
-#define IRODS_IO_HPP
+#ifndef IO_HPP
+#define IO_HPP
 
 #define fopen(A,B) irodsfopen(A,B)
 #define fread(A,B,C,D) irodsfread(A,B,C,D)
@@ -15,4 +15,4 @@
 #define fgetc(A) irodsfgetc(A)
 #include <stdio.h>
 
-#endif /* IRODS_IO_H */
+#endif /* IO_H */

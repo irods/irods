@@ -1,21 +1,20 @@
 /*
- * eirods_catalog_properties.h
+ * irods_catalog_properties.h
  *
  *  Created on: Oct 9, 2013
  *      Author: adt
  */
 
-#ifndef CATALOG_PROPERTIES_H_
-#define CATALOG_PROPERTIES_H_
+#ifndef CATALOG_PROPERTIES_HPP_
+#define CATALOG_PROPERTIES_HPP_
 
 
 // =-=-=-=-=-=-=-
-// eirods includes
 
-#include "eirods_lookup_table.hpp"
+#include "irods_lookup_table.hpp"
 
 
-namespace eirods {
+namespace irods {
 
 	// =-=-=-=-=-=-=-
 	/// @brief This setting controls how backslashes in strings literals are treated.
@@ -58,7 +57,7 @@ namespace eirods {
 	}; // class catalog_properties
 
 
-} // namespace eirods
+} // namespace irods
 
 
 #endif /* CATALOG_PROPERTIES_H_ */

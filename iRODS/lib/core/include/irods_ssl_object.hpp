@@ -1,19 +1,18 @@
 
 
 
-#ifndef __EIRODS_SSL_OBJECT_H__
-#define __EIRODS_SSL_OBJECT_H__
+#ifndef __IRODS_SSL_OBJECT_HPP__
+#define __IRODS_SSL_OBJECT_HPP__
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_network_object.hpp"
-#include "eirods_buffer_encryption.hpp"
+#include "irods_network_object.hpp"
+#include "irods_buffer_encryption.hpp"
 
 // =-=-=-=-=-=-=-
 // ssl includes
 #include "ssl.h"
 
-namespace eirods {
+namespace irods {
 
     // =-=-=-=-=-=-=-
     // constant key for tcp network object
@@ -102,6 +101,6 @@ namespace eirods {
     /// @brief typedef for shared tcp object ptr
     typedef boost::shared_ptr< ssl_object > ssl_object_ptr;
 
-}; // namespace eirods
+}; // namespace irods
 
-#endif // __EIRODS_SSL_OBJECT_H__
+#endif // __IRODS_SSL_OBJECT_HPP__

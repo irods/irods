@@ -1,16 +1,15 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_osauth_auth_object.hpp"
-#include "eirods_auth_manager.hpp"
-#include "eirods_auth_plugin.hpp"
+#include "irods_osauth_auth_object.hpp"
+#include "irods_auth_manager.hpp"
+#include "irods_auth_plugin.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
 #include "rcMisc.hpp"
 
-namespace eirods {
+namespace irods {
 
     // =-=-=-=-=-=-=-
     // public - ctor
@@ -131,4 +130,4 @@ namespace eirods {
 
     } // get_re_vars
 
-}; // namespace eirods
+}; // namespace irods

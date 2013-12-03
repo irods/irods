@@ -5,8 +5,7 @@
 #include "dataObjOpr.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_structured_object.hpp"
+#include "irods_structured_object.hpp"
 
 int
 rsSubStructFileRead (rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFileReadInp,
@@ -80,15 +79,15 @@ int _rsSubStructFileRead( rsComm_t*                _comm,
 
     // =-=-=-=-=-=-=-
     // create first class structured object 
-    eirods::structured_object_ptr struct_obj( 
-                                      new eirods::structured_object(  ) );
+    irods::structured_object_ptr struct_obj( 
+                                      new irods::structured_object(  ) );
     struct_obj->comm( _comm );
-    struct_obj->resc_hier( eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE );
+    struct_obj->resc_hier( irods::LOCAL_USE_ONLY_RESOURCE );
     struct_obj->file_descriptor( _read_inp->fd );
 
     // =-=-=-=-=-=-=-
     // call abstrcated interface to read a file
-    eirods::error read_err = fileRead( 
+    irods::error read_err = fileRead( 
                                  _comm, 
                                  struct_obj, 
                                  _out_buf->buf, 
@@ -98,7 +97,7 @@ int _rsSubStructFileRead( rsComm_t*                _comm,
         msg << "failed on call to fileRead for [";
         msg << struct_obj->physical_path();
         msg << "]";
-        eirods::log( PASSMSG( msg.str(), read_err ) );
+        irods::log( PASSMSG( msg.str(), read_err ) );
         _out_buf->len = 0;
         return read_err.code();
 

@@ -1,15 +1,14 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_collection_object.hpp"
-#include "eirods_resource_manager.hpp"
-#include "eirods_hierarchy_parser.hpp"
-#include "eirods_stacktrace.hpp"
+#include "irods_collection_object.hpp"
+#include "irods_resource_manager.hpp"
+#include "irods_hierarchy_parser.hpp"
+#include "irods_stacktrace.hpp"
 
-extern eirods::resource_manager resc_mgr;
+extern irods::resource_manager resc_mgr;
 
-namespace eirods {
+namespace irods {
 
     // =-=-=-=-=-=-=-
     // public - ctor
@@ -103,9 +102,9 @@ namespace eirods {
                     std::stringstream msg;
                     msg << __FUNCTION__;
                     msg << " - No resource hierarchy or resource specified.";
-                    return ERROR(EIRODS_HIERARCHY_ERROR, msg.str());
+                    return ERROR(HIERARCHY_ERROR, msg.str());
                 } else if(resc.empty()) {
-                    return ERROR( EIRODS_HIERARCHY_ERROR, "Hierarchy string is not empty but first resource is!");
+                    return ERROR( HIERARCHY_ERROR, "Hierarchy string is not empty but first resource is!");
                 }
     
                 resource_ptr resc_ptr; 
@@ -133,7 +132,7 @@ namespace eirods {
     } // get_re_vars 
 
 
-}; // namespace eirods
+}; // namespace irods
 
 
 

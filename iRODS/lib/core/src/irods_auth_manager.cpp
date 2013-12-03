@@ -1,10 +1,10 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 
-#include "eirods_auth_manager.hpp"
-#include "eirods_auth_plugin.hpp"
+#include "irods_auth_manager.hpp"
+#include "irods_auth_plugin.hpp"
 
-namespace eirods {
+namespace irods {
     // =-=-=-=-=-=-=-
     // globally available auth manager
     auth_manager auth_mgr;
@@ -59,4 +59,4 @@ namespace eirods {
         return result;
     }
 
-}; // namespace eirods
+}; // namespace irods

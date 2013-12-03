@@ -3,11 +3,11 @@
 #ifndef _replicator_H_
 #define _replicator_H_
 
-#include "eirods_error.hpp"
-#include "eirods_oper_replicator.hpp"
-#include "eirods_repl_types.hpp"
+#include "irods_error.hpp"
+#include "irods_oper_replicator.hpp"
+#include "irods_repl_types.hpp"
 
-namespace eirods {
+namespace irods {
 
 /**
  * @brief Class to replicate operations across all of a replicating nodes children
@@ -24,6 +24,6 @@ namespace eirods {
     private:
         oper_replicator* oper_replicator_;
     };
-}; // namespace eirods
+}; // namespace irods
 
 #endif // _replicator_H_

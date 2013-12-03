@@ -2,10 +2,10 @@
 
 // =-=-=-=-=-=-=-
 // My Includes
-#include "eirods_resource_plugin.hpp"
-#include "eirods_load_plugin.hpp"
-#include "eirods_resources_home.hpp"
-#include "eirods_operation_rule_execution_manager_base.hpp"
+#include "irods_resource_plugin.hpp"
+#include "irods_load_plugin.hpp"
+#include "irods_resources_home.hpp"
+#include "irods_operation_rule_execution_manager_base.hpp"
 
 // =-=-=-=-=-=-=-
 // STL Includes
@@ -17,7 +17,7 @@
 // dlopen, etc
 #include <dlfcn.h>
 
-namespace eirods {
+namespace irods {
     // =-=-=-=-=-=-=-
     // public - ctor
     resource::resource( 
@@ -134,7 +134,7 @@ namespace eirods {
             // =-=-=-=-=-=-=-
             // check key and fcn name before trying to load
             if( key.empty() ) {
-                std::cout << "[!]\teirods::resource::delay_load - empty op key for [" 
+                std::cout << "[!]\tirods::resource::delay_load - empty op key for [" 
                           << fcn << "], skipping." << std::endl;
                 continue;
             }
@@ -142,7 +142,7 @@ namespace eirods {
             // =-=-=-=-=-=-=-
             // check key and fcn name before trying to load
             if( fcn.empty() ) {
-                std::cout << "[!]\teirods::resource::delay_load - empty function name for [" 
+                std::cout << "[!]\tirods::resource::delay_load - empty function name for [" 
                           << key << "], skipping." << std::endl;
                 continue;
             }
@@ -152,7 +152,7 @@ namespace eirods {
             dlerror();
             plugin_operation res_op_ptr = reinterpret_cast< plugin_operation >( dlsym( _handle, fcn.c_str() ) );
             if( !res_op_ptr ) {
-                std::cout << "[!]\teirods::resource::delay_load - failed to load [" 
+                std::cout << "[!]\tirods::resource::delay_load - failed to load [" 
                           << fcn << "].  error - " << dlerror() << std::endl;
                 continue;
             }
@@ -271,7 +271,7 @@ namespace eirods {
                                 const std::string _context ) {
                 
         resource* resc = 0;
-        error ret = load_plugin< resource >( resc, _plugin_name, EIRODS_RESOURCES_HOME, _inst_name, _context );
+        error ret = load_plugin< resource >( resc, _plugin_name, RESOURCES_HOME, _inst_name, _context );
         if( ret.ok() && resc ) {
             _plugin.reset( resc );
             return SUCCESS();       
@@ -283,7 +283,7 @@ namespace eirods {
 
     } // load_resource_plugin
 
-}; // namespace eirods
+}; // namespace irods
 
 
 

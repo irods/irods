@@ -2,8 +2,7 @@
 
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_client_server_negotiation.hpp"
+#include "irods_client_server_negotiation.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
@@ -12,11 +11,11 @@
 #include "reFuncDefs.hpp"
 
 
-namespace eirods {
+namespace irods {
     /// =-=-=-=-=-=-=-
     /// @brief function which manages the TLS and Auth negotiations with the client
     error client_server_negotiation_for_server( 
-        eirods::network_object_ptr _ptr,
+        irods::network_object_ptr _ptr,
         std::string&               _result ) {
         // =-=-=-=-=-=-=-
         // manufacture an rei for the applyRule
@@ -75,7 +74,7 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         // pass the PEP result to the client, send CS_NEG_SVR_1_MSG
-        eirods::cs_neg_t cs_neg;
+        irods::cs_neg_t cs_neg;
         cs_neg.status_ = CS_NEG_STATUS_SUCCESS;
         strncpy( cs_neg.result_, rule_result.c_str(), MAX_NAME_LEN );
         error err = send_client_server_negotiation_message( _ptr, cs_neg );
@@ -111,7 +110,7 @@ namespace eirods {
 
     } // client_server_negotiation_for_server
 
-}; // namespace eirods
+}; // namespace irods
 
 
 

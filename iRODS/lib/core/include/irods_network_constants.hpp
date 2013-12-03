@@ -1,14 +1,14 @@
 
 
 
-#ifndef __EIRODS_NETWORK_CONSTANTS_H__
-#define __EIRODS_NETWORK_CONSTANTS_H__
+#ifndef __IRODS_NETWORK_CONSTANTS_HPP__
+#define __IRODS_NETWORK_CONSTANTS_HPP__
 
 // =-=-=-=-=-=-=-
 // stl includes
 #include <string>
 
-namespace eirods {
+namespace irods {
     /// =-=-=-=-=-=-=-
     /// @brief constants for network object indexing
     const std::string NETWORK_OP_CLIENT_START( "network_client_start" );
@@ -20,9 +20,9 @@ namespace eirods {
     const std::string NETWORK_OP_WRITE_HEADER( "network_write_header" );
     const std::string NETWORK_OP_WRITE_BODY( "network_write_body" );
 
-}; // namespace eirods
+}; // namespace irods
 
-#endif // __EIRODS_NETWORK_CONSTANTS_H__
+#endif // __IRODS_NETWORK_CONSTANTS_HPP__
 
 
 

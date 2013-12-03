@@ -1,10 +1,10 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 
-#include "eirods_gsi_object.hpp"
-#include "eirods_auth_manager.hpp"
+#include "irods_gsi_object.hpp"
+#include "irods_auth_manager.hpp"
 
-namespace eirods {
+namespace irods {
 
     gsi_object::gsi_object(
         rError_t* _r_error) : auth_object(_r_error)
@@ -47,4 +47,4 @@ namespace eirods {
         return creds_ == _rhs.creds_;
     }
 
-}; // namespace eirods
+}; // namespace irods

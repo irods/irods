@@ -7,7 +7,7 @@
 #include "global.hpp"             // cause md5.h needs it
 #include "md5.hpp"
 
-namespace eirods {
+namespace irods {
     
     class MD5Strategy : public HashStrategy
     {
@@ -27,6 +27,6 @@ namespace eirods {
         bool _finalized;
         std::string _digest;
     };
-}; // namespace eirods
+}; // namespace irods
 
 #endif // _MD5Strategy_H_

@@ -1,11 +1,10 @@
 
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_physical_object.hpp"
+#include "irods_physical_object.hpp"
 
 
-namespace eirods {
+namespace irods {
 
     // =-=-=-=-=-=-=-
     // public - default constructor
@@ -84,7 +83,7 @@ namespace eirods {
     } // operator=
 
 
-}; // namespace eirods
+}; // namespace irods
 
 
 

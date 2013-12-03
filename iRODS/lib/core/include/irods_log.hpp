@@ -2,18 +2,17 @@
 
 
 
-#ifndef __EIRODS_LOG_H__
-#define __EIRODS_LOG_H__
+#ifndef __IRODS_LOG_HPP__
+#define __IRODS_LOG_HPP__
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_error.hpp"
+#include "irods_error.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
 #include <string>
 
-namespace eirods {
+namespace irods {
 class error;
     // =-=-=-=-=-=-=-
     // provide our own interface which will take our error which can
@@ -25,16 +24,16 @@ class error;
     // be refactored later
     void log( int, std::string );
 
-}; // namespace eirods
+}; // namespace irods
 
 #define DEBUGMSG(msg)                                           \
     {                                                           \
     std::stringstream ss;                                       \
     ss << msg << " " << __FUNCTION__ << " " << __FILE__ << ":" << __LINE__; \
-    eirods::log(LOG_NOTICE, ss.str());                                  \
+    irods::log(LOG_NOTICE, ss.str());                                  \
     }
     
-#endif // __EIRODS_LOG_H__
+#endif // __IRODS_LOG_HPP__
 
 
 

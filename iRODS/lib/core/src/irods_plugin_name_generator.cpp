@@ -1,7 +1,7 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
-#include "eirods_plugin_name_generator.hpp"
-#include "eirods_log.hpp"
+#include "irods_plugin_name_generator.hpp"
+#include "irods_log.hpp"
 
 #include "rodsErrorTable.hpp"
 
@@ -15,7 +15,7 @@
 
 #include <boost/filesystem.hpp>
 
-namespace eirods {
+namespace irods {
 
     // =-=-=-=-=-=-=-
     // predicate to determine if a char is not alphanumeric
@@ -144,4 +144,4 @@ namespace eirods {
         return result;
     }
 
-}; // namespace eirods
+}; // namespace irods

@@ -63,8 +63,8 @@ collOprStat_t **collOprStat)
  *    \n UNREG_COLL_KW - The collections and data objects in this collection is 
  *         unregistered instead of deleted. i.e., physical files and directories
  *         in this collection are not deleted. This keyWd has no value.
- *    \n IRODS_RMTRASH_KW - delete the trash in this path.  This keyWd has no value.
- *    \n IRODS_ADMIN_RMTRASH_KW - ddmin user delete other user's trash in this path.
+ *    \n RMTRASH_KW - delete the trash in this path.  This keyWd has no value.
+ *    \n ADMIN_RMTRASH_KW - ddmin user delete other user's trash in this path.
  *         This keyWd has no value.
  * \param[in] vFlag - Verbose flag. Verbose output if set to greater than 0.
  *

@@ -2,13 +2,12 @@
 
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_auth_factory.hpp"
-#include "eirods_native_auth_object.hpp"
-#include "eirods_pam_auth_object.hpp"
-#include "eirods_osauth_auth_object.hpp"
+#include "irods_auth_factory.hpp"
+#include "irods_native_auth_object.hpp"
+#include "irods_pam_auth_object.hpp"
+#include "irods_osauth_auth_object.hpp"
 
-namespace eirods {
+namespace irods {
    /// =-=-=-=-=-=-=-
    /// @brief super basic free factory function to create an auth object
    ///        given the requested authentication scheme
@@ -92,7 +91,7 @@ namespace eirods {
 
    } // auth_factory
 
-}; // namespace eirods
+}; // namespace irods
 
 
 

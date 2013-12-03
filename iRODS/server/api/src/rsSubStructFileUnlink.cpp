@@ -5,8 +5,7 @@
 #include "dataObjOpr.hpp"
  
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_structured_object.hpp"
+#include "irods_structured_object.hpp"
 
 
 int
@@ -67,21 +66,21 @@ int _rsSubStructFileUnlink( rsComm_t*  _comm,
                             subFile_t* _sub_file ) {
     // =-=-=-=-=-=-=-
     // create first class structured object 
-    eirods::structured_object_ptr struct_obj( 
-                                      new eirods::structured_object( 
+    irods::structured_object_ptr struct_obj( 
+                                      new irods::structured_object( 
                                           *_sub_file ) );
     struct_obj->comm( _comm );
-    struct_obj->resc_hier( eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE );
+    struct_obj->resc_hier( irods::LOCAL_USE_ONLY_RESOURCE );
 
     // =-=-=-=-=-=-=-
     // call abstrcated interface to unlink
-    eirods::error unlink_err = fileUnlink( _comm, struct_obj );
+    irods::error unlink_err = fileUnlink( _comm, struct_obj );
     if( !unlink_err.ok() ) {
         std::stringstream msg;
         msg << "failed on call to fileUnlink for [";
         msg << struct_obj->physical_path();
         msg << "]";
-        eirods::log( PASSMSG( msg.str(), unlink_err ) );
+        irods::log( PASSMSG( msg.str(), unlink_err ) );
         return unlink_err.code();
 
     } else {

@@ -13,10 +13,9 @@
 #include <sstream>
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_log.hpp"
-#include "eirods_file_object.hpp"
-#include "eirods_stacktrace.hpp"
+#include "irods_log.hpp"
+#include "irods_file_object.hpp"
+#include "irods_stacktrace.hpp"
 
 int
 rsFileWrite (rsComm_t *rsComm, fileWriteInp_t *fileWriteInp,
@@ -96,14 +95,14 @@ int _rsFileWrite(
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - Empty logical path.";
-        eirods::log(LOG_ERROR, msg.str());
+        irods::log(LOG_ERROR, msg.str());
         return -1;
     }
     
     // =-=-=-=-=-=-=-
     // make a call to the resource write
-    eirods::file_object_ptr file_obj( 
-                                new eirods::file_object( 
+    irods::file_object_ptr file_obj( 
+                                new irods::file_object( 
                                     _comm,
                                     FileDesc[_write_inp->fileInx].objPath,
                                     FileDesc[_write_inp->fileInx].fileName,
@@ -111,7 +110,7 @@ int _rsFileWrite(
                                     FileDesc[_write_inp->fileInx].fd,
                                     0, 0 ) ); 
  
-    eirods::error write_err = fileWrite( _comm,
+    irods::error write_err = fileWrite( _comm,
                                          file_obj,										 
                                          _write_bbuf->buf,
                                          _write_inp->len );
@@ -122,8 +121,8 @@ int _rsFileWrite(
         msg << "fileWrite for [";
         msg << file_obj->physical_path();
         msg << "]";
-        eirods::error err = PASSMSG( msg.str(), write_err );
-        eirods::log( err ); 
+        irods::error err = PASSMSG( msg.str(), write_err );
+        irods::log( err ); 
     }
 
     return write_err.code();

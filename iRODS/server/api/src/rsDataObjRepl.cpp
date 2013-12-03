@@ -29,11 +29,10 @@
 #include "dataObjLock.hpp" // JMC - backport 4609
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_resource_backport.hpp"
-#include "eirods_resource_redirect.hpp"
-#include "eirods_log.hpp"
-#include "eirods_stacktrace.hpp"
+#include "irods_resource_backport.hpp"
+#include "irods_resource_redirect.hpp"
+#include "irods_log.hpp"
+#include "irods_stacktrace.hpp"
 
 int
 rsDataObjRepl250 (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
@@ -127,13 +126,13 @@ rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     if( 0 == tmp_hier ) {
         // set a repl keyword here so resources can respond accordingly
         addKeyVal(&dataObjInp->condInput, IN_REPL_KW, "");
-        eirods::error ret = eirods::resolve_resource_hierarchy( eirods::EIRODS_OPEN_OPERATION, 
+        irods::error ret = irods::resolve_resource_hierarchy( irods::OPEN_OPERATION, 
                                                                 rsComm, dataObjInp, hier );
         if( !ret.ok() ) { 
             std::stringstream msg;
-            msg << "failed in eirods::resolve_resource_hierarchy for [";
+            msg << "failed in irods::resolve_resource_hierarchy for [";
             msg << dataObjInp->objPath << "]";
-            eirods::log( PASSMSG( msg.str(), ret ) );
+            irods::log( PASSMSG( msg.str(), ret ) );
             return ret.code();
         }
         
@@ -171,7 +170,7 @@ rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     // =-=-=-=-=-=-=-
 
     status = _rsDataObjRepl (rsComm, dataObjInp, *transStat, NULL); 
-    if( status < 0 && status != EIRODS_DIRECT_ARCHIVE_ACCESS ) {
+    if( status < 0 && status != DIRECT_ARCHIVE_ACCESS ) {
         rodsLog(LOG_NOTICE, "%s - Failed to replicate data object.", __FUNCTION__);
     }
     
@@ -180,7 +179,7 @@ rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     // =-=-=-=-=-=-=-
     // specifically ignore this error as it should not cause
     // any issues with replication.   
-    if( status == EIRODS_DIRECT_ARCHIVE_ACCESS ) {
+    if( status == DIRECT_ARCHIVE_ACCESS ) {
         return 0;
     } else {
         return (status);
@@ -207,7 +206,7 @@ _rsDataObjRepl (
     int savedStatus = 0;
     if (getValByKey (&dataObjInp->condInput, SU_CLIENT_USER_KW) != NULL) {
         accessPerm = NULL;
-    } else if (getValByKey (&dataObjInp->condInput, IRODS_ADMIN_KW) != NULL) {
+    } else if (getValByKey (&dataObjInp->condInput, ADMIN_KW) != NULL) {
         if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
             return (CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
         }
@@ -266,7 +265,7 @@ _rsDataObjRepl (
             *outDataObjInfo = *oldDataObjInfoHead; // JMC - possible double free situation
             outDataObjInfo->next = NULL;
         } else {
-            if( status < 0 && status != EIRODS_DIRECT_ARCHIVE_ACCESS ) {
+            if( status < 0 && status != DIRECT_ARCHIVE_ACCESS ) {
                 rodsLog(LOG_NOTICE, "%s - Failed to update replica.", __FUNCTION__);
             }
         }
@@ -815,7 +814,7 @@ _rsDataObjReplNewCopy (
         if (updateFlag > 0) {
             // =-=-=-=-=-=-=-
             // set a open operation 
-            op_name = eirods::EIRODS_WRITE_OPERATION;
+            op_name = irods::WRITE_OPERATION;
 
             /* update an existing copy */
             if(inpDestDataObjInfo == NULL || inpDestDataObjInfo->dataId <= 0) {
@@ -834,7 +833,7 @@ _rsDataObjReplNewCopy (
         } else {    /* a new copy */
             // =-=-=-=-=-=-=-
             // set a creation operation 
-            op_name = eirods::EIRODS_CREATE_OPERATION;
+            op_name = irods::CREATE_OPERATION;
 
             initDataObjInfoForRepl( rsComm, myDestDataObjInfo, srcDataObjInfo, 
                                     destRescInfo, rescGroupName);
@@ -849,12 +848,12 @@ _rsDataObjReplNewCopy (
             // set a repl keyword here so resources can respond accordingly
             addKeyVal(&dataObjInp->condInput, IN_REPL_KW, "");
         
-            eirods::error ret = eirods::resolve_resource_hierarchy( op_name, rsComm, &dest_inp, hier );
+            irods::error ret = irods::resolve_resource_hierarchy( op_name, rsComm, &dest_inp, hier );
             if( !ret.ok() ) { 
                 std::stringstream msg;
-                msg << "failed in eirods::resolve_resource_hierarchy for [";
+                msg << "failed in irods::resolve_resource_hierarchy for [";
                 msg << dest_inp.objPath << "]";
-                eirods::log( PASSMSG( msg.str(), ret ) );
+                irods::log( PASSMSG( msg.str(), ret ) );
                 return ret.code();
             }
 
@@ -940,21 +939,21 @@ _rsDataObjReplNewCopy (
 
         // =-=-=-=-=-=-=-
         // notify the dest resource hierarchy that something is afoot
-        eirods::file_object_ptr file_obj(
-                                new eirods::file_object( 
+        irods::file_object_ptr file_obj(
+                                new irods::file_object( 
                                     rsComm, 
                                     myDestDataObjInfo ) );
-        eirods::error ret = fileNotify(
+        irods::error ret = fileNotify(
                                 rsComm, 
                                 file_obj,
-                                eirods::EIRODS_WRITE_OPERATION );
+                                irods::WRITE_OPERATION );
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Failed to signal the resource that the data object \"";
             msg << myDestDataObjInfo->objPath;
             msg << "\" was modified.";
             ret = PASSMSG( msg.str(), ret );
-            eirods::log( ret );
+            irods::log( ret );
             return ret.code();
         }
 
@@ -1244,10 +1243,10 @@ _rsDataObjReplNewCopy (
 #endif // JMC legacy resource 
   
                 int dst_create_path = 0; 
-                eirods::error err = eirods::get_resource_property< int >( destDataObjInfo->rescInfo->rescName, 
-                                                                          eirods::RESOURCE_CREATE_PATH, dst_create_path );
+                irods::error err = irods::get_resource_property< int >( destDataObjInfo->rescInfo->rescName, 
+                                                                          irods::RESOURCE_CREATE_PATH, dst_create_path );
                 if( !err.ok() ) {
-                    eirods::log( PASS( err ) );
+                    irods::log( PASS( err ) );
                 }
 
                 if( CREATE_PATH == dst_create_path ) {
@@ -1268,9 +1267,9 @@ _rsDataObjReplNewCopy (
                 // =-=-=-=-=-=-=-
                 // extract the host location from the resource hierarchy
                 std::string location;
-                eirods::error ret = eirods::get_loc_for_hier_string( srcDataObjInfo->rescHier, location );
+                irods::error ret = irods::get_loc_for_hier_string( srcDataObjInfo->rescHier, location );
                 if( !ret.ok() ) {
-                    eirods::log( PASSMSG( "failed in get_loc_for_hier_String", ret ) );
+                    irods::log( PASSMSG( "failed in get_loc_for_hier_String", ret ) );
                     return -1;
                 }
                 

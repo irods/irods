@@ -16,7 +16,7 @@
 #include <pthread.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include "eirods_stacktrace.hpp"
+#include "irods_stacktrace.hpp"
 
 static pthread_mutex_t my_mutex;
 #endif
@@ -180,7 +180,7 @@ int getListOfResc(rsComm_t *rsComm, char serverList[MAX_VALUE][MAX_NAME_LEN], in
     status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
     if( status < 0)
     {
-      eirods::log(ERROR (status, "rsGenQuery failed.")); 
+      irods::log(ERROR (status, "rsGenQuery failed.")); 
     }
     if ( genQueryOut->rowCnt > 0 ) {
         l = 0;

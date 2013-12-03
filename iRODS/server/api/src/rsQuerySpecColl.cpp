@@ -22,11 +22,10 @@
 #include "rcGlobalExtern.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_resource_backport.hpp"
-#include "eirods_resource_redirect.hpp"
-#include "eirods_stacktrace.hpp"
-#include "eirods_hierarchy_parser.hpp"
+#include "irods_resource_backport.hpp"
+#include "irods_resource_redirect.hpp"
+#include "irods_stacktrace.hpp"
+#include "irods_hierarchy_parser.hpp"
 
 
 int
@@ -57,13 +56,13 @@ rsQuerySpecColl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     std::string hier;
     char* hier_kw = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
     if( NULL == hier_kw ) {
-        eirods::error ret = eirods::resolve_resource_hierarchy( eirods::EIRODS_OPEN_OPERATION, rsComm, 
+        irods::error ret = irods::resolve_resource_hierarchy( irods::OPEN_OPERATION, rsComm, 
 						   dataObjInp, hier );
         if( !ret.ok() ) { 
             std::stringstream msg;
             msg << "failed for [";
             msg << dataObjInp->objPath << "]";
-            eirods::log( PASSMSG( msg.str(), ret ) );
+            irods::log( PASSMSG( msg.str(), ret ) );
             return ret.code();
         }
    
@@ -386,9 +385,9 @@ specCollReaddir (rsComm_t *rsComm, int specCollInx, rodsDirent_t **rodsDirent)
     // =-=-=-=-=-=-=-
     // get the resc location of the hier leaf
     std::string location;
-    eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
+    irods::error ret = irods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "specCollReaddir - failed in get_loc_for_hier_string", ret ) );
+        irods::log( PASSMSG( "specCollReaddir - failed in get_loc_for_hier_string", ret ) );
         return -1;
     }
 
@@ -430,9 +429,9 @@ specCollClosedir (rsComm_t *rsComm, int specCollInx)
     // =-=-=-=-=-=-=-
     // get the resc location of the hier leaf
     std::string location;
-    eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
+    irods::error ret = irods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "specCollClosedir - failed in get_loc_for_hier_string", ret ) );
+        irods::log( PASSMSG( "specCollClosedir - failed in get_loc_for_hier_string", ret ) );
         return -1;
     }
 
@@ -468,9 +467,9 @@ l3Opendir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
     // =-=-=-=-=-=-=-
     // get the resc location of the hier leaf
     std::string location;
-    eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
+    irods::error ret = irods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "l3Opendir - failed in get_loc_for_hier_string", ret ) );
+        irods::log( PASSMSG( "l3Opendir - failed in get_loc_for_hier_string", ret ) );
         return -1;
     }
 

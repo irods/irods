@@ -20,7 +20,7 @@
 #include "genQuery.hpp"
 #include "dataObjUnlink.hpp"
 
-#include "eirods_resource_backport.hpp"
+#include "irods_resource_backport.hpp"
 
 int
 rsRmCollOld (rsComm_t *rsComm, collInp_t *rmCollInp)
@@ -82,7 +82,7 @@ svrRmCollOld (rsComm_t *rsComm, collInp_t *rmCollInp)
 
     rstrcpy (collInfo.collName, rmCollInp->collName, MAX_NAME_LEN);
 #ifdef RODS_CAT
-    if (getValByKey (&rmCollInp->condInput, IRODS_ADMIN_RMTRASH_KW) != NULL) {
+    if (getValByKey (&rmCollInp->condInput, ADMIN_RMTRASH_KW) != NULL) {
         status = chlDelCollByAdmin (rsComm, &collInfo);
         if (status >= 0) {
             chlCommit(rsComm);
@@ -140,23 +140,23 @@ rsPhyRmCollRecurOld (rsComm_t *rsComm, collInp_t *rmCollInp)
     addKeyVal (&tmpCollInp.condInput, FORCE_FLAG_KW, "");
     addKeyVal (&dataObjInp.condInput, FORCE_FLAG_KW, "");
 
-    if (getValByKey (&rmCollInp->condInput, IRODS_ADMIN_RMTRASH_KW) != NULL) {
+    if (getValByKey (&rmCollInp->condInput, ADMIN_RMTRASH_KW) != NULL) {
 	if (isTrashPath (rmCollInp->collName) == False) {
 	    return (SYS_INVALID_FILE_PATH);
 	}
         if (rsComm->clientUser.authInfo.authFlag != LOCAL_PRIV_USER_AUTH) {
            return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
         }
-        addKeyVal (&tmpCollInp.condInput, IRODS_ADMIN_RMTRASH_KW, "");
-        addKeyVal (&dataObjInp.condInput, IRODS_ADMIN_RMTRASH_KW, "");
+        addKeyVal (&tmpCollInp.condInput, ADMIN_RMTRASH_KW, "");
+        addKeyVal (&dataObjInp.condInput, ADMIN_RMTRASH_KW, "");
 	rmtrashFlag = 2;
 
-    } else if (getValByKey (&rmCollInp->condInput, IRODS_RMTRASH_KW) != NULL) {
+    } else if (getValByKey (&rmCollInp->condInput, RMTRASH_KW) != NULL) {
         if (isTrashPath (rmCollInp->collName) == False) {
             return (SYS_INVALID_FILE_PATH);
         }
-        addKeyVal (&tmpCollInp.condInput, IRODS_RMTRASH_KW, "");
-        addKeyVal (&dataObjInp.condInput, IRODS_RMTRASH_KW, "");
+        addKeyVal (&tmpCollInp.condInput, RMTRASH_KW, "");
+        addKeyVal (&dataObjInp.condInput, RMTRASH_KW, "");
         rmtrashFlag = 1;
     }
 
@@ -540,9 +540,9 @@ l3Rmdir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
     // =-=-=-=-=-=-=-
     // get the resc location of the hier leaf
     std::string location;
-    eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
+    irods::error ret = irods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "l3Rmdir - failed in get_loc_for_hier_string", ret ) );
+        irods::log( PASSMSG( "l3Rmdir - failed in get_loc_for_hier_string", ret ) );
         return -1;
     }
 

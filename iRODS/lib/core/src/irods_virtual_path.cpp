@@ -3,12 +3,12 @@
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "eirods_virtual_path.hpp"
+#include "irods_virtual_path.hpp"
 
 // =-=-=-=-=-=-=-
 // NOTE :: eventually move all knowledge of path management
 //      :: policy, validation etc here
-namespace eirods {
+namespace irods {
     /// =-=-=-=-=-=-=-
     /// @brief interface to get virtual path separator
     std::string get_virtual_path_separator() {
@@ -16,7 +16,7 @@ namespace eirods {
         return PATH_SEPARATOR;
     }
 
-}; // namespace eirods
+}; // namespace irods
 
 
 

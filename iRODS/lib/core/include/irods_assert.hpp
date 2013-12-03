@@ -1,19 +1,19 @@
 
 
 
-#ifndef __EIRODS_ASSERT_H__
-#define __EIRODS_ASSERT_H__
+#ifndef __IRODS_ASSERT_HPP__
+#define __IRODS_ASSERT_HPP__
 
-namespace eirods {
+namespace irods {
     // =-=-=-=-=-=-=-
     /// @brief evaluate the expr, call stacktrace and potentially exit if necessary
     bool assert( bool _expr,           // expression to assert
                  bool _exit = false ); // call exit( -1 ) 
 
-}; // namespace eirods
+}; // namespace irods
 
 
-#endif // __EIRODS_ASSERT_H__
+#endif // __IRODS_ASSERT_HPP__
 
 
 

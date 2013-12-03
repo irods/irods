@@ -3,13 +3,13 @@
 #ifndef _zone_info_H_
 #define _zone_info_H_
 
-#include "eirods_error.hpp"
+#include "irods_error.hpp"
 
 #include "icatStructs.hpp"
 
 #include <string>
 
-namespace eirods {
+namespace irods {
 
     class zone_info {
     public:
@@ -26,6 +26,6 @@ namespace eirods {
 	
 	std::string local_zone_;
     };
-}; // namespace eirods
+}; // namespace irods
 
 #endif // _zone_info_H_

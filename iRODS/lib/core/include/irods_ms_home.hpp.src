@@ -1,13 +1,13 @@
 
-#ifndef __EIRODS_MS_HOME_H__
-#define __EIRODS_MS_HOME_H__
+#ifndef __IRODS_MS_HOME_HPP__
+#define __IRODS_MS_HOME_HPP__
 
 #include <string>
 
-namespace eirods {
+namespace irods {
 
-	const std::string EIRODS_MS_HOME( "EIRODSMSVCPATH" );
+	const std::string MS_HOME( "IRODSMSVCPATH" );
 
-}; // namespace eirods
+}; // namespace irods
 
-#endif // __EIRODS_MS_HOME_H__
+#endif // __IRODS_MS_HOME_HPP__

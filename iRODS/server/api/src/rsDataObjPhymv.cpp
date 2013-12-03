@@ -17,8 +17,7 @@
 #include "getRemoteZoneResc.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_resource_redirect.hpp"
+#include "irods_resource_redirect.hpp"
 
 int
 rsDataObjPhymv250 (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
@@ -78,14 +77,14 @@ rsDataObjPhymv (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     // determine hierarchy string
     if( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
         std::string       hier;
-        eirods::error ret = eirods::resolve_resource_hierarchy( eirods::EIRODS_OPEN_OPERATION, rsComm, 
+        irods::error ret = irods::resolve_resource_hierarchy( irods::OPEN_OPERATION, rsComm, 
                                                        dataObjInp, hier );
         if( !ret.ok() ) { 
             std::stringstream msg;
             msg << __FUNCTION__;
-            msg <<" :: failed in eirods::resolve_resource_hierarchy for [";
+            msg <<" :: failed in irods::resolve_resource_hierarchy for [";
             msg << dataObjInp->objPath << "]";
-            eirods::log( PASSMSG( msg.str(), ret ) );
+            irods::log( PASSMSG( msg.str(), ret ) );
             return ret.code();
         }
        
@@ -99,7 +98,7 @@ rsDataObjPhymv (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     *transStat = (transferStat_t*)malloc (sizeof (transferStat_t));
     memset (*transStat, 0, sizeof (transferStat_t));
 
-    if (getValByKey (&dataObjInp->condInput, IRODS_ADMIN_KW) != NULL) {
+    if (getValByKey (&dataObjInp->condInput, ADMIN_KW) != NULL) {
         if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
             return (CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
         }

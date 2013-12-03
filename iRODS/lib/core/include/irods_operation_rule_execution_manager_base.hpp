@@ -1,12 +1,11 @@
 
 
 
-#ifndef __EIRODS_OPERATION_RULE_EXECUTION_MANAGER_BASE_H__
-#define __EIRODS_OPERATION_RULE_EXECUTION_MANAGER_BASE_H__
+#ifndef __IRODS_OPERATION_RULE_EXECUTION_MANAGER_BASE_HPP__
+#define __IRODS_OPERATION_RULE_EXECUTION_MANAGER_BASE_HPP__
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_log.hpp"
+#include "irods_log.hpp"
 
 // =-=-=-=-=-=-=-
 // boost includes
@@ -17,7 +16,7 @@
 #include <string>
 
 
-namespace eirods {
+namespace irods {
     /// =-=-=-=-=-=-=-
     /// @brief base class for rule execution which will allow
     ///        the use of a stub for client side network plugins
@@ -63,9 +62,9 @@ namespace eirods {
 
     typedef boost::shared_ptr< operation_rule_execution_manager_base > oper_rule_exec_mgr_ptr;
 
-}; // namespace eirods
+}; // namespace irods
 
-#endif // __EIRODS_OPERATION_RULE_EXECUTION_MANAGER_BASE_H__
+#endif // __IRODS_OPERATION_RULE_EXECUTION_MANAGER_BASE_HPP__
 
 
 

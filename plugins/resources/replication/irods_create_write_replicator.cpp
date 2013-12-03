@@ -1,10 +1,10 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
-#include "eirods_create_write_replicator.hpp"
+#include "irods_create_write_replicator.hpp"
 
 #include "dataObjRepl.hpp"
 
-namespace eirods {
+namespace irods {
 
     create_write_replicator::create_write_replicator(
         const std::string& _root_resource,
@@ -27,7 +27,7 @@ namespace eirods {
     {
         error result = SUCCESS();
         if((result = ASSERT_ERROR(_object_oper.operation() == create_oper || _object_oper.operation() == write_oper,
-                                   EIRODS_INVALID_OPERATION, "Performing create/write replication but objects operation is: \"%s\".",
+                                   INVALID_OPERATION, "Performing create/write replication but objects operation is: \"%s\".",
                                   _object_oper.operation().c_str())).ok()) {
             // Generate a resource hierarchy string up to and including this resource
             hierarchy_parser child_parser;
@@ -71,4 +71,4 @@ namespace eirods {
         return result;
     }
     
-}; // namespace eirods
+}; // namespace irods

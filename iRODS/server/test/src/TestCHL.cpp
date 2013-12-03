@@ -8,7 +8,7 @@
 #include "icatHighLevelRoutines.hpp"
 #include "icatMidLevelRoutines.hpp"
 
-#include "../../icat/src/icatHighLevelRoutines.c"
+#include "../../icat/src/icatHighLevelRoutines.cpp"
 
 using namespace std;
 

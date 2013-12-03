@@ -2,22 +2,21 @@
 
 
 
-#ifndef __OPERATION_RULE_EXECUTION_OBJECT_H__
-#define __OPERATION_RULE_EXECUTION_OBJECT_H__
+#ifndef __OPERATION_RULE_EXECUTION_OBJECT_HPP__
+#define __OPERATION_RULE_EXECUTION_OBJECT_HPP__
 
 // =-=-=-=-=-=-=-
 // irods includes
 #include "rcConnect.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_operation_rule_execution_manager_base.hpp"
+#include "irods_operation_rule_execution_manager_base.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
 #include <string>
 
-namespace eirods {
+namespace irods {
 
 	// =-=-=-=-=-=-=-
 	/**
@@ -67,10 +66,10 @@ namespace eirods {
 
     }; // class operation_rule_execution_manager
 
-}; // namespace eirods
+}; // namespace irods
 
 
-#endif // __OPERATION_RULE_EXECUTION_OBJECT_H__
+#endif // __OPERATION_RULE_EXECUTION_OBJECT_HPP__
 
 
 

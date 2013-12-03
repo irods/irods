@@ -1,16 +1,15 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_resource_manager.hpp"
-#include "eirods_log.hpp"
-#include "eirods_string_tokenize.hpp"
-#include "eirods_stacktrace.hpp"
+#include "irods_resource_manager.hpp"
+#include "irods_log.hpp"
+#include "irods_string_tokenize.hpp"
+#include "irods_stacktrace.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
 #include "getRescQuota.hpp"
-#include "eirods_children_parser.hpp"
+#include "irods_children_parser.hpp"
 #include "rsGlobalExtern.hpp"
 #include "generalAdmin.hpp"
 #include "phyBundleColl.hpp"
@@ -22,9 +21,9 @@
 
 // =-=-=-=-=-=-=-
 // global singleton 
-eirods::resource_manager resc_mgr;
+irods::resource_manager resc_mgr;
 
-namespace eirods {
+namespace irods {
     // =-=-=-=-=-=-=-
     // public - Constructor
     resource_manager::resource_manager() {
@@ -124,7 +123,7 @@ namespace eirods {
                 msg << "resource_manager::resolve_from_physical_path - ";
                 msg << "failed to get vault parameter from resource";
                 msg << ret.code();
-                eirods::log( PASSMSG( msg.str(), ret ) );
+                irods::log( PASSMSG( msg.str(), ret ) );
             
             }
 
@@ -213,8 +212,8 @@ namespace eirods {
             // =-=-=-=-=-=-=-
             // if error is not valid, clear query and bail
             if( !proc_ret.ok() ) {
-                eirods::error log_err = PASSMSG( "init_from_catalog - process_init_results failed", proc_ret );
-                eirods::log( log_err );
+                irods::error log_err = PASSMSG( "init_from_catalog - process_init_results failed", proc_ret );
+                irods::log( log_err );
                 freeGenQueryOut (&genQueryOut);
                 break;
             } else {
@@ -437,7 +436,7 @@ namespace eirods {
            
             // =-=-=-=-=-=-=-
             // resolve the host name into a rods server host structure
-            if( tmpRescLoc != eirods::EMPTY_RESC_HOST ) {
+            if( tmpRescLoc != irods::EMPTY_RESC_HOST ) {
                 rodsHostAddr_t addr;
                 rstrcpy( addr.hostAddr, const_cast<char*>( tmpRescLoc.c_str()  ), LONG_NAME_LEN );
                 rstrcpy( addr.zoneName, const_cast<char*>( tmpZoneName.c_str() ), NAME_LEN );
@@ -516,9 +515,9 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // init the local fs resource 
         resource_ptr resc;
-        error err = init_from_type( EIRODS_LOCAL_USE_ONLY_RESOURCE_TYPE,
-                                    EIRODS_LOCAL_USE_ONLY_RESOURCE,
-                                    EIRODS_LOCAL_USE_ONLY_RESOURCE,
+        error err = init_from_type( LOCAL_USE_ONLY_RESOURCE_TYPE,
+                                    LOCAL_USE_ONLY_RESOURCE,
+                                    LOCAL_USE_ONLY_RESOURCE,
                                     "",
                                     resc );
         // =-=-=-=-=-=-=-
@@ -558,11 +557,11 @@ namespace eirods {
         resc->set_property<long>( RESOURCE_QUOTA, RESC_QUOTA_UNINIT );
             
         resc->set_property<std::string>( RESOURCE_ZONE,      zone_info->zoneName );
-        resc->set_property<std::string>( RESOURCE_NAME,      EIRODS_LOCAL_USE_ONLY_RESOURCE );
+        resc->set_property<std::string>( RESOURCE_NAME,      LOCAL_USE_ONLY_RESOURCE );
         resc->set_property<std::string>( RESOURCE_LOCATION,  "localhost" );
-        resc->set_property<std::string>( RESOURCE_TYPE,      EIRODS_LOCAL_USE_ONLY_RESOURCE_TYPE );
+        resc->set_property<std::string>( RESOURCE_TYPE,      LOCAL_USE_ONLY_RESOURCE_TYPE );
         resc->set_property<std::string>( RESOURCE_CLASS,     "cache" );
-        resc->set_property<std::string>( RESOURCE_PATH,      EIRODS_LOCAL_USE_ONLY_RESOURCE_VAULT );
+        resc->set_property<std::string>( RESOURCE_PATH,      LOCAL_USE_ONLY_RESOURCE_VAULT );
         resc->set_property<std::string>( RESOURCE_INFO,      "info" );
         resc->set_property<std::string>( RESOURCE_COMMENTS,  "comments" );
         resc->set_property<std::string>( RESOURCE_CREATE_TS, "999" );
@@ -574,7 +573,7 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         // assign to the map
-        resources_[ EIRODS_LOCAL_USE_ONLY_RESOURCE ] = resc;
+        resources_[ LOCAL_USE_ONLY_RESOURCE ] = resc;
 
         return SUCCESS();
 
@@ -819,7 +818,7 @@ namespace eirods {
             // if any resources need a pdmo, return true;
             error ret = itr->second->start_operation( );
             if( !ret.ok() ) {
-                eirods::log( ret );
+                irods::log( ret );
             }
 
         } // for itr
@@ -887,7 +886,7 @@ namespace eirods {
         return result;
     } // call_maintenance_operations
 
-}; // namespace eirods
+}; // namespace irods
 
 
 

@@ -13,13 +13,12 @@
 #include "collection.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_log.hpp"
-#include "eirods_file_object.hpp"
-#include "eirods_collection_object.hpp"
-#include "eirods_stacktrace.hpp"
-#include "eirods_resource_backport.hpp"
-#include "eirods_resource_manager.hpp"
+#include "irods_log.hpp"
+#include "irods_file_object.hpp"
+#include "irods_collection_object.hpp"
+#include "irods_stacktrace.hpp"
+#include "irods_resource_backport.hpp"
+#include "irods_resource_manager.hpp"
 
 int
 initFileDesc ()
@@ -158,8 +157,8 @@ int mkFileDirR(
     tmpLen = pathLen;
 
     while (tmpLen > startLen) {
-        eirods::collection_object_ptr tmp_coll_obj( new eirods::collection_object( tmpPath, eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE, 0, 0 ) );
-        eirods::error stat_err = fileStat( rsComm, tmp_coll_obj, &statbuf );
+        irods::collection_object_ptr tmp_coll_obj( new irods::collection_object( tmpPath, irods::LOCAL_USE_ONLY_RESOURCE, 0, 0 ) );
+        irods::error stat_err = fileStat( rsComm, tmp_coll_obj, &statbuf );
         if ( stat_err.code() >= 0) {
             if (statbuf.st_mode & S_IFDIR) {
                 break;
@@ -170,7 +169,7 @@ int mkFileDirR(
                 return (stat_err.code() );
             }
         } else {
-            // debug code only -- eirods::log( stat_err );
+            // debug code only -- irods::log( stat_err );
         }
 
         /* Go backward */
@@ -187,15 +186,15 @@ int mkFileDirR(
         /* Put back the '/' */
         tmpPath[tmpLen] = '/';
      
-        eirods::collection_object_ptr tmp_coll_obj( new eirods::collection_object( tmpPath, eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE, mode, 0 ) ); 
-        eirods::error mkdir_err = fileMkdir( rsComm, tmp_coll_obj );
+        irods::collection_object_ptr tmp_coll_obj( new irods::collection_object( tmpPath, irods::LOCAL_USE_ONLY_RESOURCE, mode, 0 ) ); 
+        irods::error mkdir_err = fileMkdir( rsComm, tmp_coll_obj );
         if ( !mkdir_err.ok() && (getErrno ( mkdir_err.code()) != EEXIST)) { // JMC - backport 4834
             std::stringstream msg;
             msg << "fileMkdir for [";
             msg << tmpPath;
             msg << "]";
-            eirods::error ret_err = PASSMSG( msg.str(), mkdir_err );
-            eirods::log( ret_err );
+            irods::error ret_err = PASSMSG( msg.str(), mkdir_err );
+            irods::log( ret_err );
 
             return  mkdir_err.code();
         }
@@ -216,8 +215,8 @@ int chkEmptyDir (rsComm_t *rsComm, char *cacheDir) {
 
     // =-=-=-=-=-=-=-
     // call opendir via resource plugin
-    eirods::collection_object_ptr cacheDir_obj( new eirods::collection_object( cacheDir, eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE, 0, 0 ) );
-    eirods::error opendir_err = fileOpendir( rsComm, cacheDir_obj );
+    irods::collection_object_ptr cacheDir_obj( new irods::collection_object( cacheDir, irods::LOCAL_USE_ONLY_RESOURCE, 0, 0 ) );
+    irods::error opendir_err = fileOpendir( rsComm, cacheDir_obj );
 
     // =-=-=-=-=-=-=-
     // dont log an error as this is part
@@ -228,7 +227,7 @@ int chkEmptyDir (rsComm_t *rsComm, char *cacheDir) {
 
     // =-=-=-=-=-=-=-
     // make call to readdir via resource plugin
-    eirods::error readdir_err = fileReaddir( rsComm, cacheDir_obj, &myFileDirent );
+    irods::error readdir_err = fileReaddir( rsComm, cacheDir_obj, &myFileDirent );
     while( readdir_err.ok() && 0 == readdir_err.code() ) {
         // =-=-=-=-=-=-=-
         // handle relative paths
@@ -241,8 +240,8 @@ int chkEmptyDir (rsComm_t *rsComm, char *cacheDir) {
         // =-=-=-=-=-=-=-
         // get status of path
         snprintf( childPath, MAX_NAME_LEN, "%s/%s", cacheDir, myFileDirent->d_name );
-        eirods::collection_object_ptr tmp_coll_obj( new eirods::collection_object( childPath, eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE, 0, 0 ) );
-        eirods::error stat_err = fileStat( rsComm, tmp_coll_obj, &myFileStat );
+        irods::collection_object_ptr tmp_coll_obj( new irods::collection_object( childPath, irods::LOCAL_USE_ONLY_RESOURCE, 0, 0 ) );
+        irods::error stat_err = fileStat( rsComm, tmp_coll_obj, &myFileStat );
 
         // =-=-=-=-=-=-=-
         // handle hard error
@@ -279,26 +278,26 @@ int chkEmptyDir (rsComm_t *rsComm, char *cacheDir) {
 
     // =-=-=-=-=-=-=-
     // make call to closedir via resource plugin, log error if necessary
-    eirods::error closedir_err = fileClosedir( rsComm, cacheDir_obj );
+    irods::error closedir_err = fileClosedir( rsComm, cacheDir_obj );
     if( !closedir_err.ok() ) {
         std::stringstream msg;
         msg << "fileClosedir failed for [";
         msg << cacheDir;
         msg << "]";
-        eirods::error log_err = PASSMSG( msg.str(), closedir_err );
-        eirods::log( log_err ); 
+        irods::error log_err = PASSMSG( msg.str(), closedir_err );
+        irods::log( log_err ); 
     }
 
     if( status != SYS_DIR_IN_VAULT_NOT_EMPTY ) {
-        eirods::collection_object_ptr coll_obj( new eirods::collection_object( cacheDir, eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE, 0, 0 ) );
-        eirods::error rmdir_err = fileRmdir( rsComm, coll_obj );
+        irods::collection_object_ptr coll_obj( new irods::collection_object( cacheDir, irods::LOCAL_USE_ONLY_RESOURCE, 0, 0 ) );
+        irods::error rmdir_err = fileRmdir( rsComm, coll_obj );
         if( !rmdir_err.ok() ) {
             std::stringstream msg;
             msg << "fileRmdir failed for [";
             msg << cacheDir;
             msg << "]";
-            eirods::error err = PASSMSG( msg.str(), rmdir_err );
-            eirods::log ( err );
+            irods::error err = PASSMSG( msg.str(), rmdir_err );
+            irods::log ( err );
         }
         status = 0;
     }
@@ -347,7 +346,7 @@ chkFilePathPerm (rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
         }
     } else if (chkType == DO_CHK_PATH_PERM) {
         std::string out_path;
-        eirods::error ret = resc_mgr.validate_vault_path( fileOpenInp->fileName, rodsServerHost, out_path );
+        irods::error ret = resc_mgr.validate_vault_path( fileOpenInp->fileName, rodsServerHost, out_path );
         if( ret.ok() ) {
             /* a match */
             return CANT_REG_IN_VAULT_FILE;
@@ -421,7 +420,7 @@ int matchCliVaultPath(
     // =-=-=-=-=-=-=-
     // validate the vault path against a known host
     std::string vault_path;
-    eirods::error ret = resc_mgr.validate_vault_path( _path, _svr_host, vault_path );
+    irods::error ret = resc_mgr.validate_vault_path( _path, _svr_host, vault_path );
     if( !ret.ok() || vault_path.empty() ) {
         return 0;
     }
@@ -507,9 +506,9 @@ filePathTypeInResc (
     // =-=-=-=-=-=-=-
     // get location of leaf in hier string
     std::string location;
-    eirods::error ret = eirods::get_loc_for_hier_string( rescHier, location );
+    irods::error ret = irods::get_loc_for_hier_string( rescHier, location );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "failed in get_loc_for_hier_string", ret ) );
+        irods::log( PASSMSG( "failed in get_loc_for_hier_string", ret ) );
         return -1;
     }
     

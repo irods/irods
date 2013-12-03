@@ -14,12 +14,11 @@
 #include "physPath.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_log.hpp"
-#include "eirods_file_object.hpp"
-#include "eirods_collection_object.hpp"
-#include "eirods_stacktrace.hpp"
-#include "eirods_resource_backport.hpp"
+#include "irods_log.hpp"
+#include "irods_file_object.hpp"
+#include "irods_collection_object.hpp"
+#include "irods_stacktrace.hpp"
+#include "irods_resource_backport.hpp"
 
 int
 rsFileStageToCache (rsComm_t *rsComm, fileStageSyncInp_t *fileStageToCacheInp)
@@ -29,9 +28,9 @@ rsFileStageToCache (rsComm_t *rsComm, fileStageSyncInp_t *fileStageToCacheInp)
     int status;
 
     //remoteFlag = resolveHost (&fileStageToCacheInp->addr, &rodsServerHost);
-    eirods::error ret = eirods::get_host_for_hier_string( fileStageToCacheInp->rescHier, remoteFlag, rodsServerHost );
+    irods::error ret = irods::get_host_for_hier_string( fileStageToCacheInp->rescHier, remoteFlag, rodsServerHost );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "failed in call to eirods::get_host_for_hier_string", ret ) );
+        irods::log( PASSMSG( "failed in call to irods::get_host_for_hier_string", ret ) );
         return -1;
     }
 
@@ -123,14 +122,14 @@ int _rsFileStageToCache(
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - Empty logical path.";
-        eirods::log(LOG_ERROR, msg.str());
+        irods::log(LOG_ERROR, msg.str());
         return -1;
     }
 
     // =-=-=-=-=-=-=-
     // make the call to fileStageToCache via the resource plugin
-    eirods::file_object_ptr file_obj( 
-                                new eirods::file_object( 
+    irods::file_object_ptr file_obj( 
+                                new irods::file_object( 
                                     _comm,
                                     _stage_inp->objPath,
                                     _stage_inp->filename, "", 0, 
@@ -138,7 +137,7 @@ int _rsFileStageToCache(
                                     _stage_inp->flags ) );
     file_obj->resc_hier( _stage_inp->rescHier );
     file_obj->size(_stage_inp->dataSize);
-    eirods::error stage_err = fileStageToCache( _comm,
+    irods::error stage_err = fileStageToCache( _comm,
                                                 file_obj,  
                                                 _stage_inp->cacheFilename );
     // =-=-=-=-=-=-=-
@@ -150,23 +149,23 @@ int _rsFileStageToCache(
 
             // =-=-=-=-=-=-=-
             // make the call to rmdir via the resource plugin
-            eirods::collection_object_ptr coll_obj( 
-                                              new eirods::collection_object(
+            irods::collection_object_ptr coll_obj( 
+                                              new irods::collection_object(
                                                   _stage_inp->cacheFilename, 
                                                   _stage_inp->rescHier, 
                                                   0, 0 ) );
-            eirods::error rmdir_err = fileRmdir( _comm, coll_obj );
+            irods::error rmdir_err = fileRmdir( _comm, coll_obj );
             if( !rmdir_err.ok() ) {
                 std::stringstream msg;
                 msg << "fileRmdir failed for [";
                 msg << _stage_inp->cacheFilename;
                 msg << "]";
-                eirods::error err = PASSMSG( msg.str(), rmdir_err );
-                eirods::log ( err );
+                irods::error err = PASSMSG( msg.str(), rmdir_err );
+                irods::log ( err );
             }
         } else {
-            eirods::error err = ASSERT_PASS(stage_err, "Failed for \"%s\".", _stage_inp->filename);
-            eirods::log ( err );
+            irods::error err = ASSERT_PASS(stage_err, "Failed for \"%s\".", _stage_inp->filename);
+            irods::log ( err );
         }
 
         // =-=-=-=-=-=-=-
@@ -182,8 +181,8 @@ int _rsFileStageToCache(
             msg << _stage_inp->filename;
             msg << "]";
             msg << stage_err.code();
-            eirods::error err = PASSMSG( msg.str(), stage_err );
-            eirods::log ( err );
+            irods::error err = PASSMSG( msg.str(), stage_err );
+            irods::log ( err );
         }
 
     } // if ! stage_err.ok

@@ -1,12 +1,12 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
-#ifndef __EIRODS_LOAD_PLUGIN_H__
-#define __EIRODS_LOAD_PLUGIN_H__
+#ifndef __IRODS_LOAD_PLUGIN_HPP__
+#define __IRODS_LOAD_PLUGIN_HPP__
 
 // =-=-=-=-=-=-=-
 // My Includes
-#include "eirods_log.hpp"
-#include "eirods_plugin_name_generator.hpp"
+#include "irods_log.hpp"
+#include "irods_plugin_name_generator.hpp"
 
 // =-=-=-=-=-=-=-
 // STL Includes
@@ -23,7 +23,7 @@
 // dlopen, etc
 #include <dlfcn.h>
 
-namespace eirods {
+namespace irods {
 
     // =-=-=-=-=-=-=-
     // machinery using SFINAE to determine if PluginType supports delay_load
@@ -72,7 +72,7 @@ namespace eirods {
      *
      * \usage
      * ms_table_entry* tab_entry;\n
-     * tab_entry = load_plugin( "some_microservice_name", "/var/lib/eirods/iRODS/server/bin" );
+     * tab_entry = load_plugin( "some_microservice_name", "/var/lib/irods/iRODS/server/bin" );
      *
      * \param[in] _dir         - hard coded string which will house the shared object to be loaded
      * \param[in] _plugin_name - name of plugin you wish to load, which will have all nonalnum characters removed, as found in a file named "lib" + clean_plugin_name + ".so"
@@ -110,7 +110,7 @@ namespace eirods {
             std::stringstream msg;
             msg << "failed to open shared object file [" << so_name
                 << "] :: dlerror: is [" << dlerror() << "]";
-            return ERROR( EIRODS_PLUGIN_ERROR, msg.str() );
+            return ERROR( PLUGIN_ERROR, msg.str() );
         }
 
         // =-=-=-=-=-=-=-
@@ -127,7 +127,7 @@ namespace eirods {
             msg << "failed to get [get_plugin_interface_version]";
             msg << " dlerror is [" << err << "]";
             dlclose( handle );
-            return ERROR( EIRODS_PLUGIN_ERROR, msg.str() );
+            return ERROR( PLUGIN_ERROR, msg.str() );
         } 
 
         // =-=-=-=-=-=-=-
@@ -151,12 +151,12 @@ namespace eirods {
             msg << "failed to load symbol from shared object handle - plugin_factory"
                 << " :: dlerror is [" << err << "]";
             dlclose( handle );
-            return ERROR( EIRODS_PLUGIN_ERROR, msg.str() );
+            return ERROR( PLUGIN_ERROR, msg.str() );
         }
 
         if( !factory ) {
             dlclose( handle );
-            return ERROR( EIRODS_PLUGIN_ERROR, "failed to cast plugin factory" );
+            return ERROR( PLUGIN_ERROR, "failed to cast plugin factory" );
         }
 
         // =-=-=-=-=-=-=-
@@ -177,7 +177,7 @@ namespace eirods {
                 std::stringstream msg;
                 msg << "failed on delayed load for [" << _plugin_name << "]";
                 dlclose( handle );
-                return ERROR( EIRODS_PLUGIN_ERROR, msg.str() );
+                return ERROR( PLUGIN_ERROR, msg.str() );
             }
 			
             return SUCCESS();;
@@ -186,21 +186,21 @@ namespace eirods {
             std::stringstream msg;
             msg << "failed to create plugin object for [" << _plugin_name << "]";
             dlclose( handle );
-            return ERROR( EIRODS_PLUGIN_ERROR, msg.str() );
+            return ERROR( PLUGIN_ERROR, msg.str() );
         }
 
         // =-=-=-=-=-=-=-
         // the code should never get here
         dlclose( handle );
-        return ERROR( EIRODS_INVALID_LOCATION, "this shouldnt happen." );
+        return ERROR( INVALID_LOCATION, "this shouldnt happen." );
 
     } // load_plugin
 
-}; // namespace eirods
+}; // namespace irods
 
 
 
-#endif // __EIRODS_LOAD_PLUGIN_H__
+#endif // __IRODS_LOAD_PLUGIN_HPP__
 
 
 

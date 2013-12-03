@@ -8,12 +8,11 @@
 #include "rcConnect.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_network_plugin.hpp"
-#include "eirods_network_constants.hpp"
-#include "eirods_ssl_object.hpp"
-#include "eirods_stacktrace.hpp"
-#include "eirods_buffer_encryption.hpp"
+#include "irods_network_plugin.hpp"
+#include "irods_network_constants.hpp"
+#include "irods_ssl_object.hpp"
+#include "irods_stacktrace.hpp"
+#include "irods_buffer_encryption.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -30,13 +29,13 @@
 // =-=-=-=-=-=-=-
 // work around for SSL Macro version issues
 #ifdef sk_GENERAL_NAMES_num
-#define EIRODS_GENERAL_NAMES_NUM sk_GENERAL_NAMES_num
-#define EIRODS_GENERAL_NAMES_VALUE sk_GENERAL_NAMES_value
-#define EIRODS_GENERAL_NAMES_FREE sk_GENERAL_NAMES_free
+#define GENERAL_NAMES_NUM sk_GENERAL_NAMES_num
+#define GENERAL_NAMES_VALUE sk_GENERAL_NAMES_value
+#define GENERAL_NAMES_FREE sk_GENERAL_NAMES_free
 #else
-#define EIRODS_GENERAL_NAMES_NUM sk_GENERAL_NAME_num
-#define EIRODS_GENERAL_NAMES_VALUE sk_GENERAL_NAME_value
-#define EIRODS_GENERAL_NAMES_FREE sk_GENERAL_NAME_free
+#define GENERAL_NAMES_NUM sk_GENERAL_NAME_num
+#define GENERAL_NAMES_VALUE sk_GENERAL_NAME_value
+#define GENERAL_NAMES_FREE sk_GENERAL_NAME_free
 #endif
 
 // =-=-=-=-=-=-=-
@@ -335,9 +334,9 @@ static int ssl_post_connection_check(
     /* check if the peer name matches any of the subjectAltNames 
        listed in the certificate */
     names = (STACK_OF(GENERAL_NAMES)*)X509_get_ext_d2i(cert, NID_subject_alt_name, NULL, NULL);
-    num_names = EIRODS_GENERAL_NAMES_NUM(names);
+    num_names = GENERAL_NAMES_NUM(names);
     for (i = 0; i < num_names; i++ ) {
-        name = (GENERAL_NAME*)EIRODS_GENERAL_NAMES_VALUE(names, i);
+        name = (GENERAL_NAME*)GENERAL_NAMES_VALUE(names, i);
         if (name->type == GEN_DNS) {
             namestr = (char*)ASN1_STRING_data(name->d.dNSName);
             if (!strcasecmp(namestr, peer)) {
@@ -346,7 +345,7 @@ static int ssl_post_connection_check(
             }
         }
     }
-    EIRODS_GENERAL_NAMES_FREE(names);
+    GENERAL_NAMES_FREE(names);
 
     /* if no match above, check the common name in the certificate */
     if (!match &&
@@ -380,11 +379,11 @@ extern "C" {
     // 1. Define plugin Version Variable, used in plugin
     //    creation when the factory function is called.
     //    -- currently only 1.0 is supported.
-    double EIRODS_PLUGIN_INTERFACE_VERSION=1.0;
+    double PLUGIN_INTERFACE_VERSION=1.0;
     
     // =-=-=-=-=-=-=-
     // local function to read a buffer from a socket
-    eirods::error ssl_socket_read(
+    irods::error ssl_socket_read(
         int             _socket, 
         void*           _buffer, 
         int             _length, 
@@ -392,7 +391,7 @@ extern "C" {
         struct timeval* _time_value,
         SSL*            _ssl )
     {
-        eirods::error result = SUCCESS();
+        irods::error result = SUCCESS();
         
         // =-=-=-=-=-=-=-
         // check incoming pointers
@@ -486,14 +485,14 @@ extern "C" {
     
     // =-=-=-=-=-=-=-
     // local function to write a buffer to a socket
-    eirods::error ssl_socket_write(
+    irods::error ssl_socket_write(
         int   _socket, 
         void* _buffer, 
         int   _length, 
         int&  _bytes_written,
         SSL*  _ssl )
     {
-        eirods::error result = SUCCESS();
+        irods::error result = SUCCESS();
         
         // =-=-=-=-=-=-=-
         // check incoming pointers
@@ -545,21 +544,21 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // 
-    eirods::error ssl_read_msg_header( 
-        eirods::plugin_context& _ctx,
+    irods::error ssl_read_msg_header( 
+        irods::plugin_context& _ctx,
         void*                   _buffer,
         struct timeval*         _time_val )
     {
-        eirods::error result = SUCCESS();
+        irods::error result = SUCCESS();
         
         // =-=-=-=-=-=-=-
         // check the context
-        eirods::error ret = _ctx.valid< eirods::ssl_object >();
+        irods::error ret = _ctx.valid< irods::ssl_object >();
         if((result = ASSERT_PASS(ret, "Invalid SSL plugin context.")).ok() ) {
 
             // =-=-=-=-=-=-=-
             // extract the useful bits from the context
-            eirods::ssl_object_ptr ssl_obj = boost::dynamic_pointer_cast< eirods::ssl_object >( _ctx.fco() );
+            irods::ssl_object_ptr ssl_obj = boost::dynamic_pointer_cast< irods::ssl_object >( _ctx.fco() );
             int socket_handle = ssl_obj->socket_handle();
 
             // =-=-=-=-=-=-=- 
@@ -627,20 +626,20 @@ extern "C" {
  
     // =-=-=-=-=-=-=-
     // 
-    eirods::error ssl_client_stop(
-        eirods::plugin_context& _ctx,
+    irods::error ssl_client_stop(
+        irods::plugin_context& _ctx,
         rodsEnv*                _env )
     {
-        eirods::error result = SUCCESS();
+        irods::error result = SUCCESS();
         
         // =-=-=-=-=-=-=-
         // check the context
-        eirods::error ret = _ctx.valid< eirods::ssl_object >();
+        irods::error ret = _ctx.valid< irods::ssl_object >();
         if((result = ASSERT_PASS(ret, "Invalid SSL plugin context.")).ok() ) {
  
             // =-=-=-=-=-=-=-
             // extract the useful bits from the context
-            eirods::ssl_object_ptr ssl_obj = boost::dynamic_pointer_cast< eirods::ssl_object >( _ctx.fco() );
+            irods::ssl_object_ptr ssl_obj = boost::dynamic_pointer_cast< irods::ssl_object >( _ctx.fco() );
             SSL*     ssl = ssl_obj->ssl();
             SSL_CTX* ctx = ssl_obj->ssl_ctx();
          
@@ -670,20 +669,20 @@ extern "C" {
  
     // =-=-=-=-=-=-=-
     // 
-    eirods::error ssl_client_start( 
-        eirods::plugin_context& _ctx,
+    irods::error ssl_client_start( 
+        irods::plugin_context& _ctx,
         rodsEnv*                _env )
     {
-        eirods::error result = SUCCESS();
+        irods::error result = SUCCESS();
         
         // =-=-=-=-=-=-=-
         // check the context
-        eirods::error ret = _ctx.valid< eirods::ssl_object >();
+        irods::error ret = _ctx.valid< irods::ssl_object >();
         if((result = ASSERT_PASS(ret, "Invalid SSL plugin context.")).ok() ) {
  
             // =-=-=-=-=-=-=-
             // extract the useful bits from the context
-            eirods::ssl_object_ptr ssl_obj = boost::dynamic_pointer_cast< eirods::ssl_object >( _ctx.fco() );
+            irods::ssl_object_ptr ssl_obj = boost::dynamic_pointer_cast< irods::ssl_object >( _ctx.fco() );
 
             // =-=-=-=-=-=-=-
             // set up SSL on our side of the socket 
@@ -729,21 +728,21 @@ extern "C" {
                             // =-=-=-=-=-=-=-
                             // check to see if a key has already been placed
                             // in the property map
-                            eirods::buffer_crypt::array_t key;
-                            ret = _ctx.prop_map().get< eirods::buffer_crypt::array_t >( SHARED_KEY, key );
+                            irods::buffer_crypt::array_t key;
+                            ret = _ctx.prop_map().get< irods::buffer_crypt::array_t >( SHARED_KEY, key );
                             if( !ret.ok() ) {
                                 // =-=-=-=-=-=-=-
                                 // if no key exists then ship a new key and set the
                                 // property
-                                eirods::buffer_crypt crypt(
+                                irods::buffer_crypt crypt(
                                     _env->rodsEncryptionKeySize,
                                     _env->rodsEncryptionSaltSize,
                                     _env->rodsEncryptionNumHashRounds,
                                     _env->rodsEncryptionAlgorithm );
                                 crypt.generate_key( key );
-                                ret = _ctx.prop_map().set< eirods::buffer_crypt::array_t >( SHARED_KEY, key );
+                                ret = _ctx.prop_map().set< irods::buffer_crypt::array_t >( SHARED_KEY, key );
                                 if( !ret.ok() ) {
-                                    eirods::log( PASS( ret ) );
+                                    irods::log( PASS( ret ) );
                                 }
                             }
 
@@ -802,19 +801,19 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // 
-    eirods::error ssl_agent_start(
-        eirods::plugin_context& _ctx )
+    irods::error ssl_agent_start(
+        irods::plugin_context& _ctx )
     {
-        eirods::error result = SUCCESS();
+        irods::error result = SUCCESS();
         
         // =-=-=-=-=-=-=-
         // check the context
-        eirods::error ret = _ctx.valid< eirods::ssl_object >();
+        irods::error ret = _ctx.valid< irods::ssl_object >();
         if((result = ASSERT_PASS(ret, "Invalid SSL plugin context.")).ok() ) {
  
             // =-=-=-=-=-=-=-
             // extract the useful bits from the context
-            eirods::ssl_object_ptr ssl_obj = boost::dynamic_pointer_cast< eirods::ssl_object >( _ctx.fco() );
+            irods::ssl_object_ptr ssl_obj = boost::dynamic_pointer_cast< irods::ssl_object >( _ctx.fco() );
 
             // =-=-=-=-=-=-=-
             // set up the context using a certificate file and separate
@@ -898,13 +897,13 @@ extern "C" {
                                         // =-=-=-=-=-=-=-
                                         // set the incoming shared secret
                                         unsigned char* secret_ptr = static_cast< unsigned char* >( msg_buf.buf );
-                                        eirods::buffer_crypt::array_t key;
+                                        irods::buffer_crypt::array_t key;
                                         key.assign( 
                                             secret_ptr,
                                             &secret_ptr[ msg_buf.len ] );
         
                                         ssl_obj->shared_secret( key );
-                                        ret = _ctx.prop_map().set< eirods::buffer_crypt::array_t >( SHARED_KEY, key );
+                                        ret = _ctx.prop_map().set< irods::buffer_crypt::array_t >( SHARED_KEY, key );
                                         result = ASSERT_PASS(ret, "Shared key property not found.");
                                     }
                                 }
@@ -921,19 +920,19 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // 
-    eirods::error ssl_agent_stop(
-        eirods::plugin_context& _ctx )
+    irods::error ssl_agent_stop(
+        irods::plugin_context& _ctx )
     {
-        eirods::error result = SUCCESS();
+        irods::error result = SUCCESS();
         
         // =-=-=-=-=-=-=-
         // check the context
-        eirods::error ret = _ctx.valid< eirods::ssl_object >();
+        irods::error ret = _ctx.valid< irods::ssl_object >();
         if((result = ASSERT_PASS(ret, "Invalid SSL plugin context.")).ok() ) {
  
             // =-=-=-=-=-=-=-
             // extract the useful bits from the context
-            eirods::ssl_object_ptr ssl_obj = boost::dynamic_pointer_cast< eirods::ssl_object >( _ctx.fco() );
+            irods::ssl_object_ptr ssl_obj = boost::dynamic_pointer_cast< irods::ssl_object >( _ctx.fco() );
             SSL*     ssl = ssl_obj->ssl();
             SSL_CTX* ctx = ssl_obj->ssl_ctx();
 
@@ -968,15 +967,15 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // 
-    eirods::error ssl_write_msg_header( 
-        eirods::plugin_context& _ctx,
+    irods::error ssl_write_msg_header( 
+        irods::plugin_context& _ctx,
         bytesBuf_t*             _header )
     {
-        eirods::error result = SUCCESS();
+        irods::error result = SUCCESS();
         
         // =-=-=-=-=-=-=-
         // check the context
-        eirods::error ret = _ctx.valid< eirods::ssl_object >();
+        irods::error ret = _ctx.valid< irods::ssl_object >();
         if((result = ASSERT_PASS(ret, "Invalid SSL plugin context.")).ok() ) {
 
             // =-=-=-=-=-=-=-
@@ -987,7 +986,7 @@ extern "C" {
         
             // =-=-=-=-=-=-=-
             // extract the useful bits from the context
-            eirods::ssl_object_ptr ssl_obj = boost::dynamic_pointer_cast< eirods::ssl_object >( _ctx.fco() );
+            irods::ssl_object_ptr ssl_obj = boost::dynamic_pointer_cast< irods::ssl_object >( _ctx.fco() );
             int socket_handle = ssl_obj->socket_handle();
 
             // =-=-=-=-=-=-=-
@@ -1017,8 +1016,8 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // 
-    eirods::error ssl_send_rods_msg( 
-        eirods::plugin_context& _ctx,
+    irods::error ssl_send_rods_msg( 
+        irods::plugin_context& _ctx,
         char*                   _msg_type,
         bytesBuf_t*             _msg_buf,
         bytesBuf_t*             _stream_bbuf,
@@ -1026,11 +1025,11 @@ extern "C" {
         int                     _int_info,
         irodsProt_t             _protocol )
     {
-        eirods::error result = SUCCESS();
+        irods::error result = SUCCESS();
         
         // =-=-=-=-=-=-=-
         // check the context
-        eirods::error ret = _ctx.valid< eirods::ssl_object >();
+        irods::error ret = _ctx.valid< irods::ssl_object >();
         if((result = ASSERT_PASS(ret, "Invalid SSL plugin context.")).ok() ) {
         
             // =-=-=-=-=-=-=-
@@ -1039,7 +1038,7 @@ extern "C" {
 
                 // =-=-=-=-=-=-=-
                 // extract the useful bits from the context
-                eirods::ssl_object_ptr ssl_obj = boost::dynamic_pointer_cast< eirods::ssl_object >( _ctx.fco() );
+                irods::ssl_object_ptr ssl_obj = boost::dynamic_pointer_cast< irods::ssl_object >( _ctx.fco() );
                 int socket_handle = ssl_obj->socket_handle();
 
                 // =-=-=-=-=-=-=-
@@ -1064,7 +1063,7 @@ extern "C" {
         
                 // =-=-=-=-=-=-=-
                 // send the header
-                eirods::network_object_ptr net_obj = boost::dynamic_pointer_cast< eirods::network_object >( _ctx.fco() );
+                irods::network_object_ptr net_obj = boost::dynamic_pointer_cast< irods::network_object >( _ctx.fco() );
                 ret = writeMsgHeader(net_obj, &msg_header ); 
                 if((result = ASSERT_PASS(ret, "Write message header failed.")).ok() ) {
         
@@ -1121,7 +1120,7 @@ extern "C" {
     
     // =-=-=-=-=-=-=-
     // helper fcn to read a bytes buf
-    eirods::error read_bytes_buf( 
+    irods::error read_bytes_buf( 
         int             _socket_handle,
         int             _length,
         bytesBuf_t*     _buffer,
@@ -1129,7 +1128,7 @@ extern "C" {
         struct timeval* _time_val,
         SSL*            _ssl )
     {
-        eirods::error result = SUCCESS();
+        irods::error result = SUCCESS();
         
         // =-=-=-=-=-=-=-
         // trap input buffer ptr
@@ -1139,7 +1138,7 @@ extern "C" {
             // allocate and read buffer
             int bytes_read = 0;
             _buffer->buf = malloc( _length );
-            eirods::error ret = ssl_socket_read(_socket_handle, _buffer->buf, _length, bytes_read, _time_val, _ssl );
+            irods::error ret = ssl_socket_read(_socket_handle, _buffer->buf, _length, bytes_read, _time_val, _ssl );
             _buffer->len = bytes_read;
          
             // =-=-=-=-=-=-=-
@@ -1164,8 +1163,8 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // read a message body off of the socket
-    eirods::error ssl_read_msg_body( 
-        eirods::plugin_context& _ctx,
+    irods::error ssl_read_msg_body( 
+        irods::plugin_context& _ctx,
         msgHeader_t*            _header,
         bytesBuf_t*             _input_struct_buf,
         bytesBuf_t*             _bs_buf,
@@ -1173,16 +1172,16 @@ extern "C" {
         irodsProt_t             _protocol,
         struct timeval*         _time_val )
     {
-        eirods::error result = SUCCESS();
+        irods::error result = SUCCESS();
         
         // =-=-=-=-=-=-=-
         // check the context
-        eirods::error ret = _ctx.valid< eirods::ssl_object >();
+        irods::error ret = _ctx.valid< irods::ssl_object >();
         if((result = ASSERT_PASS(ret, "Invalid SSL plugin context.")).ok() ) {
 
             // =-=-=-=-=-=-=-
             // extract the useful bits from the context
-            eirods::ssl_object_ptr ssl_obj = boost::dynamic_pointer_cast< eirods::ssl_object >( _ctx.fco() );
+            irods::ssl_object_ptr ssl_obj = boost::dynamic_pointer_cast< irods::ssl_object >( _ctx.fco() );
             int socket_handle = ssl_obj->socket_handle();
 
             // =-=-=-=-=-=-=-
@@ -1254,8 +1253,8 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // stub for ops that the ssl plug does 
     // not need to support - accept etc
-    eirods::error ssl_success_stub( 
-        eirods::plugin_context& _ctx ) {
+    irods::error ssl_success_stub( 
+        irods::plugin_context& _ctx ) {
         return SUCCESS();
 
     } // ssl_success_stub
@@ -1265,12 +1264,12 @@ extern "C" {
     // derive a new ssl network plugin from
     // the network plugin base class for handling
     // ssl communications
-    class ssl_network_plugin : public eirods::network {
+    class ssl_network_plugin : public irods::network {
     public:
         ssl_network_plugin( 
            const std::string& _nm, 
            const std::string& _ctx ) :
-               eirods::network( 
+               irods::network( 
                    _nm, 
                    _ctx ) {
         } // ctor
@@ -1284,7 +1283,7 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // factory function to provide instance of the plugin
-    eirods::network* plugin_factory( 
+    irods::network* plugin_factory( 
         const std::string& _inst_name, 
         const std::string& _context ) {
         // =-=-=-=-=-=-=-
@@ -1300,18 +1299,18 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // fill in the operation table mapping call 
         // names to function names
-        ssl->add_operation( eirods::NETWORK_OP_CLIENT_START, "ssl_client_start"     );
-        ssl->add_operation( eirods::NETWORK_OP_CLIENT_STOP,  "ssl_client_stop"     );
-        ssl->add_operation( eirods::NETWORK_OP_AGENT_START,  "ssl_agent_start"     );
-        ssl->add_operation( eirods::NETWORK_OP_AGENT_STOP,   "ssl_agent_stop"     );
-        ssl->add_operation( eirods::NETWORK_OP_READ_HEADER,  "ssl_read_msg_header"  );
-        ssl->add_operation( eirods::NETWORK_OP_READ_BODY,    "ssl_read_msg_body"    );
-        ssl->add_operation( eirods::NETWORK_OP_WRITE_HEADER, "ssl_write_msg_header" );
-        ssl->add_operation( eirods::NETWORK_OP_WRITE_BODY,   "ssl_send_rods_msg"    );
+        ssl->add_operation( irods::NETWORK_OP_CLIENT_START, "ssl_client_start"     );
+        ssl->add_operation( irods::NETWORK_OP_CLIENT_STOP,  "ssl_client_stop"     );
+        ssl->add_operation( irods::NETWORK_OP_AGENT_START,  "ssl_agent_start"     );
+        ssl->add_operation( irods::NETWORK_OP_AGENT_STOP,   "ssl_agent_stop"     );
+        ssl->add_operation( irods::NETWORK_OP_READ_HEADER,  "ssl_read_msg_header"  );
+        ssl->add_operation( irods::NETWORK_OP_READ_BODY,    "ssl_read_msg_body"    );
+        ssl->add_operation( irods::NETWORK_OP_WRITE_HEADER, "ssl_write_msg_header" );
+        ssl->add_operation( irods::NETWORK_OP_WRITE_BODY,   "ssl_send_rods_msg"    );
 
-        eirods::network* net = dynamic_cast< eirods::network* >( ssl );
+        irods::network* net = dynamic_cast< irods::network* >( ssl );
         if( !net ) {
-            printf( "failed to dynamic cast to eirods::network*" );
+            printf( "failed to dynamic cast to irods::network*" );
         }
 
         return net;

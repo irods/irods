@@ -17,8 +17,8 @@
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.hpp"
 
-#include "eirods_resource_backport.hpp"
-#include "eirods_resource_redirect.hpp"
+#include "irods_resource_backport.hpp"
+#include "irods_resource_redirect.hpp"
 
 #include <boost/thread/mutex.hpp>
 boost::mutex ExecCmdMutex;
@@ -72,13 +72,13 @@ rsExecCmd (rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut)
         std::string resc_hier;
         char*       resc_hier_ptr = getValByKey( &dataObjInp.condInput, RESC_HIER_STR_KW );
         if( resc_hier_ptr == NULL ) {
-            eirods::error ret = eirods::resolve_resource_hierarchy( eirods::EIRODS_OPEN_OPERATION, 
+            irods::error ret = irods::resolve_resource_hierarchy( irods::OPEN_OPERATION, 
                                                                     rsComm, &dataObjInp, resc_hier );
             if( !ret.ok() ) { 
                 std::stringstream msg;
-                msg << "failed in eirods::resolve_resource_hierarchy for [";
+                msg << "failed in irods::resolve_resource_hierarchy for [";
                 msg << dataObjInp.objPath << "]";
-                eirods::log( PASSMSG( msg.str(), ret ) );
+                irods::log( PASSMSG( msg.str(), ret ) );
                 return ret.code();
             }
            
@@ -114,9 +114,9 @@ rsExecCmd (rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut)
         // =-=-=-=-=-=-=-
         // extract the host location from the resource hierarchy
         std::string location;
-        eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfoHead->rescHier, location );
+        irods::error ret = irods::get_loc_for_hier_string( dataObjInfoHead->rescHier, location );
         if( !ret.ok() ) {
-            eirods::log( PASSMSG( "rsGetHostForGet - failed in get_loc_for_hier_String", ret ) );
+            irods::log( PASSMSG( "rsGetHostForGet - failed in get_loc_for_hier_String", ret ) );
             return -1;
         }
 

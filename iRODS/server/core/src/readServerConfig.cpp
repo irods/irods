@@ -88,14 +88,14 @@ readServerConfig(rodsServerConfig_t *rodsServerConfig) {
 
         // =-=-=-=-=-=-=-
         // pam configuration - init pam values in config struct
-        rodsServerConfig->eirods_pam_auth_no_extend = false;
-        rodsServerConfig->eirods_pam_password_len   = 20;
+        rodsServerConfig->irods_pam_auth_no_extend = false;
+        rodsServerConfig->irods_pam_password_len   = 20;
         strncpy( 
-            rodsServerConfig->eirods_pam_password_min_time,
+            rodsServerConfig->irods_pam_password_min_time,
             "121",
             NAME_LEN );
         strncpy( 
-            rodsServerConfig->eirods_pam_password_max_time,
+            rodsServerConfig->irods_pam_password_max_time,
             "1209600",
             NAME_LEN );
 
@@ -107,7 +107,7 @@ readServerConfig(rodsServerConfig_t *rodsServerConfig) {
                val,
                findNextTokenAndTerm( key + len ), 
                NAME_LEN );
-            rodsServerConfig->eirods_pam_password_len = atoi( val );
+            rodsServerConfig->irods_pam_password_len = atoi( val );
             rodsLog( 
                 LOG_NOTICE, 
                 "%s=%s", 
@@ -132,9 +132,9 @@ readServerConfig(rodsServerConfig_t *rodsServerConfig) {
                val_str.begin(), 
                ::tolower );
             if( val_str == "true" ) {
-                rodsServerConfig->eirods_pam_auth_no_extend = true;
+                rodsServerConfig->irods_pam_auth_no_extend = true;
             } else {
-                rodsServerConfig->eirods_pam_auth_no_extend = false;
+                rodsServerConfig->irods_pam_auth_no_extend = false;
             }
             
             rodsLog( 
@@ -149,14 +149,14 @@ readServerConfig(rodsServerConfig_t *rodsServerConfig) {
         if( key != NULL ) {
             len = strlen( PAM_PW_MIN_TIME_KW );
             rstrcpy( 
-               rodsServerConfig->eirods_pam_password_min_time,
+               rodsServerConfig->irods_pam_password_min_time,
                findNextTokenAndTerm( key + len ), 
                NAME_LEN );
             rodsLog( 
                 LOG_NOTICE, 
                 "%s=%s", 
                 PAM_PW_MIN_TIME_KW, 
-                rodsServerConfig->eirods_pam_password_min_time );
+                rodsServerConfig->irods_pam_password_min_time );
         
         } // PAM_PW_MIN_TIME_KW
 
@@ -164,14 +164,14 @@ readServerConfig(rodsServerConfig_t *rodsServerConfig) {
         if( key != NULL ) {
             len = strlen( PAM_PW_MAX_TIME_KW );
             rstrcpy( 
-               rodsServerConfig->eirods_pam_password_min_time,
+               rodsServerConfig->irods_pam_password_min_time,
                findNextTokenAndTerm( key + len ), 
                NAME_LEN );
             rodsLog( 
                 LOG_NOTICE, 
                 "%s=%s", 
                 PAM_PW_MAX_TIME_KW, 
-                rodsServerConfig->eirods_pam_password_min_time );
+                rodsServerConfig->irods_pam_password_min_time );
         
         } // PAM_PW_MAX_TIME_KW
 

@@ -13,11 +13,10 @@
 #include "rsGlobalExtern.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_log.hpp"
-#include "eirods_file_object.hpp"
-#include "eirods_stacktrace.hpp"
-#include "eirods_resource_backport.hpp"
+#include "irods_log.hpp"
+#include "irods_file_object.hpp"
+#include "irods_stacktrace.hpp"
+#include "irods_resource_backport.hpp"
 
 int
 rsFileOpen (rsComm_t *rsComm, fileOpenInp_t *fileOpenInp)
@@ -27,9 +26,9 @@ rsFileOpen (rsComm_t *rsComm, fileOpenInp_t *fileOpenInp)
     int fileInx;
 
     //remoteFlag = resolveHost (&fileOpenInp->addr, &rodsServerHost);
-    eirods::error ret = eirods::get_host_for_hier_string( fileOpenInp->resc_hier_, remoteFlag, rodsServerHost );
+    irods::error ret = irods::get_host_for_hier_string( fileOpenInp->resc_hier_, remoteFlag, rodsServerHost );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "failed in call to eirods::get_host_for_hier_string", ret ) );
+        irods::log( PASSMSG( "failed in call to irods::get_host_for_hier_string", ret ) );
         return -1;
     }
 
@@ -134,14 +133,14 @@ int _rsFileOpen(
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - Empty logical path.";
-        eirods::log(LOG_ERROR, msg.str());
+        irods::log(LOG_ERROR, msg.str());
         return -1;
     }
     
     // =-=-=-=-=-=-=-
     // call file open on the resource plugin 
-    eirods::file_object_ptr file_obj( 
-                                new eirods::file_object( 
+    irods::file_object_ptr file_obj( 
+                                new irods::file_object( 
                                     _comm, 
                                     _open_inp->objPath, 
                                     _open_inp->fileName, 
@@ -151,22 +150,22 @@ int _rsFileOpen(
                                     _open_inp->flags ) );
     file_obj->in_pdmo(_open_inp->in_pdmo);
     
-    eirods::error ret_err = fileOpen( _comm, file_obj );
+    irods::error ret_err = fileOpen( _comm, file_obj );
     
     // =-=-=-=-=-=-=-
     // log errors, if any.
     // NOTE:: direct archive access is a special case in that we
     //        need to detect it and then carry on   
-    if( ret_err.code() == EIRODS_DIRECT_ARCHIVE_ACCESS ) {
-        return EIRODS_DIRECT_ARCHIVE_ACCESS;
+    if( ret_err.code() == DIRECT_ARCHIVE_ACCESS ) {
+        return DIRECT_ARCHIVE_ACCESS;
 
     } else if ( !ret_err.ok() ) {
         std::stringstream msg;
         msg << "_rsFileOpen: fileOpen for [";
         msg << _open_inp->fileName;
         msg << "]";
-        eirods::error out_err = PASSMSG( msg.str(), ret_err );
-        eirods::log( out_err );
+        irods::error out_err = PASSMSG( msg.str(), ret_err );
+        irods::log( out_err );
     } // if
 
     return file_obj->file_descriptor();

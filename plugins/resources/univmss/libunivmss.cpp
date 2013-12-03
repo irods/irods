@@ -10,15 +10,14 @@
 #include "reIn2p3SysRule.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_resource_plugin.hpp"
-#include "eirods_file_object.hpp"
-#include "eirods_physical_object.hpp"
-#include "eirods_collection_object.hpp"
-#include "eirods_string_tokenize.hpp"
-#include "eirods_hierarchy_parser.hpp"
-#include "eirods_resource_redirect.hpp"
-#include "eirods_stacktrace.hpp"
+#include "irods_resource_plugin.hpp"
+#include "irods_file_object.hpp"
+#include "irods_physical_object.hpp"
+#include "irods_collection_object.hpp"
+#include "irods_string_tokenize.hpp"
+#include "irods_hierarchy_parser.hpp"
+#include "irods_resource_redirect.hpp"
+#include "irods_stacktrace.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -36,11 +35,11 @@
 /// =-=-=-=-=-=-=-
 /// @brief Check the general parameters passed in to most plugin functions
 template< typename DEST_TYPE >
-inline eirods::error univ_mss_check_param(
-    eirods::resource_plugin_context& _ctx ) { 
+inline irods::error univ_mss_check_param(
+    irods::resource_plugin_context& _ctx ) { 
     // =-=-=-=-=-=-=-
     // ask the context if it is valid
-    eirods::error ret = _ctx.valid< DEST_TYPE >();
+    irods::error ret = _ctx.valid< DEST_TYPE >();
     if( !ret.ok() ) {
         return PASSMSG( "resource context is invalid", ret );
 
@@ -62,24 +61,24 @@ extern "C" {
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX create
-    eirods::error univ_mss_file_create( 
-        eirods::resource_plugin_context& _ctx ) { 
+    irods::error univ_mss_file_create( 
+        irods::resource_plugin_context& _ctx ) { 
         return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
    
     } // univ_mss_file_create
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Open
-    eirods::error univ_mss_file_open( 
-        eirods::resource_plugin_context& _ctx ) { 
+    irods::error univ_mss_file_open( 
+        irods::resource_plugin_context& _ctx ) { 
         return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
  
     } // univ_mss_file_open
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX Read
-    eirods::error univ_mss_file_read(
-        eirods::resource_plugin_context& _ctx,
+    irods::error univ_mss_file_read(
+        irods::resource_plugin_context& _ctx,
         void*                               _buf, 
         int                                 _len ) {
         return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
@@ -88,8 +87,8 @@ extern "C" {
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX Write
-    eirods::error univ_mss_file_write( 
-        eirods::resource_plugin_context& _ctx,
+    irods::error univ_mss_file_write( 
+        irods::resource_plugin_context& _ctx,
         void*                               _buf, 
         int                                 _len ) {
         return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
@@ -98,19 +97,19 @@ extern "C" {
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX Close
-    eirods::error univ_mss_file_close(
-        eirods::resource_plugin_context& _ctx ) { 
+    irods::error univ_mss_file_close(
+        irods::resource_plugin_context& _ctx ) { 
         return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
  
     } // univ_mss_file_close
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX Unlink
-    eirods::error univ_mss_file_unlink(
-        eirods::resource_plugin_context& _ctx ) { 
+    irods::error univ_mss_file_unlink(
+        irods::resource_plugin_context& _ctx ) { 
         // =-=-=-=-=-=-=-
         // check context
-        eirods::error err = univ_mss_check_param< eirods::data_object >( _ctx );
+        irods::error err = univ_mss_check_param< irods::data_object >( _ctx );
         if( !err.ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__;
@@ -129,7 +128,7 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // snag a ref to the fco
-        eirods::data_object_ptr fco = boost::dynamic_pointer_cast< eirods::data_object >( _ctx.fco() );
+        irods::data_object_ptr fco = boost::dynamic_pointer_cast< irods::data_object >( _ctx.fco() );
         std::string filename = fco->physical_path();
 
         int status;
@@ -162,12 +161,12 @@ extern "C" {
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX Stat
-    eirods::error univ_mss_file_stat(
-        eirods::resource_plugin_context& _ctx,
+    irods::error univ_mss_file_stat(
+        irods::resource_plugin_context& _ctx,
         struct stat*                     _statbuf ) {
         // =-=-=-=-=-=-=-
         // check context
-        eirods::error err = univ_mss_check_param< eirods::data_object >( _ctx );
+        irods::error err = univ_mss_check_param< irods::data_object >( _ctx );
         if( !err.ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__;
@@ -186,7 +185,7 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // snag a ref to the fco
-        eirods::data_object_ptr fco = boost::dynamic_pointer_cast< eirods::data_object >( _ctx.fco() );
+        irods::data_object_ptr fco = boost::dynamic_pointer_cast< irods::data_object >( _ctx.fco() );
         std::string filename = fco->physical_path();
 
 
@@ -269,8 +268,8 @@ extern "C" {
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX lseek
-    eirods::error univ_mss_file_lseek(
-        eirods::resource_plugin_context& _ctx,
+    irods::error univ_mss_file_lseek(
+        irods::resource_plugin_context& _ctx,
         long long                        _offset, 
         int                              _whence ) {
         return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
@@ -279,11 +278,11 @@ extern "C" {
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX chmod
-    eirods::error univ_mss_file_chmod(
-        eirods::resource_plugin_context& _ctx ) { 
+    irods::error univ_mss_file_chmod(
+        irods::resource_plugin_context& _ctx ) { 
         // =-=-=-=-=-=-=-
         // check context
-        eirods::error err = univ_mss_check_param< eirods::data_object >( _ctx );
+        irods::error err = univ_mss_check_param< irods::data_object >( _ctx );
         if( !err.ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__;
@@ -302,7 +301,7 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // snag a ref to the fco
-        eirods::data_object_ptr fco = boost::dynamic_pointer_cast< eirods::data_object >( _ctx.fco() );
+        irods::data_object_ptr fco = boost::dynamic_pointer_cast< irods::data_object >( _ctx.fco() );
         std::string filename = fco->physical_path();
 
         int mode = fco->mode(); 
@@ -344,11 +343,11 @@ extern "C" {
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX mkdir
-    eirods::error univ_mss_file_mkdir(
-        eirods::resource_plugin_context& _ctx ) { 
+    irods::error univ_mss_file_mkdir(
+        irods::resource_plugin_context& _ctx ) { 
         // =-=-=-=-=-=-=-
         // check context
-        eirods::error err = univ_mss_check_param< eirods::collection_object >( _ctx );
+        irods::error err = univ_mss_check_param< irods::collection_object >( _ctx );
         if( !err.ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__;
@@ -367,7 +366,7 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // snag a ref to the fco
-        eirods::collection_object_ptr fco = boost::dynamic_pointer_cast< eirods::collection_object >( _ctx.fco() );
+        irods::collection_object_ptr fco = boost::dynamic_pointer_cast< irods::collection_object >( _ctx.fco() );
         std::string dirname = fco->physical_path();
 
         int status = 0;
@@ -403,32 +402,32 @@ extern "C" {
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX rmdir
-    eirods::error univ_mss_file_rmdir(
-        eirods::resource_plugin_context& _ctx ) { 
+    irods::error univ_mss_file_rmdir(
+        irods::resource_plugin_context& _ctx ) { 
         return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
 
     } // univ_mss_file_rmdir
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX opendir
-    eirods::error univ_mss_file_opendir(
-        eirods::resource_plugin_context& _ctx ) { 
+    irods::error univ_mss_file_opendir(
+        irods::resource_plugin_context& _ctx ) { 
         return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
 
     } // univ_mss_file_opendir
 
     // =-=-=-=-=-=-=-
     /// @brief interface for POSIX closedir
-    eirods::error univ_mss_file_closedir(
-        eirods::resource_plugin_context& _ctx ) { 
+    irods::error univ_mss_file_closedir(
+        irods::resource_plugin_context& _ctx ) { 
         return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
 
     } // univ_mss_file_closedir
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX readdir
-    eirods::error univ_mss_file_readdir(
-        eirods::resource_plugin_context& _ctx,
+    irods::error univ_mss_file_readdir(
+        irods::resource_plugin_context& _ctx,
         struct rodsDirent**                 _dirent_ptr ) {
         return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
 
@@ -436,12 +435,12 @@ extern "C" {
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX rename
-    eirods::error univ_mss_file_rename(
-        eirods::resource_plugin_context& _ctx,
+    irods::error univ_mss_file_rename(
+        irods::resource_plugin_context& _ctx,
         const char*                      _new_file_name ) {
         // =-=-=-=-=-=-=-
         // check context
-        eirods::error err = univ_mss_check_param< eirods::file_object >( _ctx );
+        irods::error err = univ_mss_check_param< irods::file_object >( _ctx );
         if( !err.ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__;
@@ -460,7 +459,7 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // snag a ref to the fco
-        eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
+        irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
         std::string filename = fco->physical_path();
 
         // =-=-=-=-=-=-=-
@@ -472,12 +471,12 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // create a context to call the mkdir operation
-        eirods::collection_object_ptr coll_obj( 
-                                          new eirods::collection_object(
+        irods::collection_object_ptr coll_obj( 
+                                          new irods::collection_object(
                                               dirname, 
                                               fco->resc_hier(), 
                                               fco->mode(), 0 ) );
-        eirods::resource_plugin_context context( 
+        irods::resource_plugin_context context( 
             _ctx.prop_map(), 
             coll_obj, "", 
             _ctx.comm(), 
@@ -520,16 +519,16 @@ extern "C" {
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX truncate
-    eirods::error univ_mss_file_truncate(
-        eirods::resource_plugin_context& _ctx ) { 
+    irods::error univ_mss_file_truncate(
+        irods::resource_plugin_context& _ctx ) { 
         return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
 
     } // univ_mss_file_truncate
 
     /// =-=-=-=-=-=-=-
     /// @brief interface to determine free space on a device given a path
-    eirods::error univ_mss_file_getfs_freespace(
-        eirods::resource_plugin_context& _ctx ) { 
+    irods::error univ_mss_file_getfs_freespace(
+        irods::resource_plugin_context& _ctx ) { 
         return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
 
     } // univ_mss_file_getfs_freespace
@@ -538,12 +537,12 @@ extern "C" {
     /// @brief This routine is for testing the TEST_STAGE_FILE_TYPE.
     ///        Just copy the file from filename to cacheFilename. optionalInfo info
     ///        is not used.
-    eirods::error univ_mss_file_stage_to_cache(
-        eirods::resource_plugin_context& _ctx,
+    irods::error univ_mss_file_stage_to_cache(
+        irods::resource_plugin_context& _ctx,
         const char*                         _cache_file_name ) { 
         // =-=-=-=-=-=-=-
         // check context
-        eirods::error err = univ_mss_check_param< eirods::file_object >( _ctx );
+        irods::error err = univ_mss_check_param< irods::file_object >( _ctx );
         if( !err.ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__;
@@ -554,7 +553,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // snag a ref to the fco
-        eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
+        irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
         std::string filename = fco->physical_path();
 
         // =-=-=-=-=-=-=-
@@ -601,12 +600,12 @@ extern "C" {
     /// @brief This routine is for testing the TEST_STAGE_FILE_TYPE.
     ///        Just copy the file from cacheFilename to filename. optionalInfo info
     ///        is not used.
-    eirods::error univ_mss_file_sync_to_arch(
-        eirods::resource_plugin_context& _ctx, 
+    irods::error univ_mss_file_sync_to_arch(
+        irods::resource_plugin_context& _ctx, 
         const char*                         _cache_file_name ) { 
         // =-=-=-=-=-=-=-
         // check context
-        eirods::error err = univ_mss_check_param< eirods::file_object >( _ctx );
+        irods::error err = univ_mss_check_param< irods::file_object >( _ctx );
         if( !err.ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__;
@@ -617,7 +616,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // snag a ref to the fco
-        eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
+        irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
         std::string filename = fco->physical_path();
 
         // =-=-=-=-=-=-=-
@@ -629,12 +628,12 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // create a context to call the mkdir operation
-        eirods::collection_object_ptr coll_obj( 
-                                          new eirods::collection_object( 
+        irods::collection_object_ptr coll_obj( 
+                                          new irods::collection_object( 
                                               dirname, 
                                               fco->resc_hier(), 
                                               fco->mode(), 0 ) );
-        eirods::resource_plugin_context context( 
+        irods::resource_plugin_context context( 
             _ctx.prop_map(), 
             coll_obj, "",
             _ctx.comm(), 
@@ -698,10 +697,10 @@ extern "C" {
 
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file registration
-    eirods::error univ_mss_file_registered(
-        eirods::resource_plugin_context& _ctx) {
+    irods::error univ_mss_file_registered(
+        irods::resource_plugin_context& _ctx) {
         // Check the operation parameters and update the physical path
-        eirods::error ret = univ_mss_check_param< eirods::file_object >(_ctx);
+        irods::error ret = univ_mss_check_param< irods::file_object >(_ctx);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
@@ -713,10 +712,10 @@ extern "C" {
     
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file unregistration
-    eirods::error univ_mss_file_unregistered(
-        eirods::resource_plugin_context& _ctx) {
+    irods::error univ_mss_file_unregistered(
+        irods::resource_plugin_context& _ctx) {
         // Check the operation parameters and update the physical path
-        eirods::error ret = univ_mss_check_param< eirods::file_object >(_ctx);
+        irods::error ret = univ_mss_check_param< irods::file_object >(_ctx);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
@@ -728,10 +727,10 @@ extern "C" {
     
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file modification
-    eirods::error univ_mss_file_modified(
-        eirods::resource_plugin_context& _ctx) {
+    irods::error univ_mss_file_modified(
+        irods::resource_plugin_context& _ctx) {
         // Check the operation parameters and update the physical path
-        eirods::error ret = univ_mss_check_param< eirods::file_object >(_ctx);
+        irods::error ret = univ_mss_check_param< irods::file_object >(_ctx);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
@@ -743,16 +742,16 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // redirect_get - code to determine redirection for get operation
-    eirods::error univ_mss_file_redirect_create( 
-        eirods::plugin_property_map& _prop_map,
-        eirods::file_object_ptr         _file_obj,
+    irods::error univ_mss_file_redirect_create( 
+        irods::plugin_property_map& _prop_map,
+        irods::file_object_ptr         _file_obj,
         const std::string&           _resc_name, 
         const std::string&           _curr_host, 
         float&                       _out_vote ) {
         // =-=-=-=-=-=-=-
         // determine if the resource is down 
         int resc_status = 0;
-        eirods::error get_ret = _prop_map.get< int >( eirods::RESOURCE_STATUS, resc_status );
+        irods::error get_ret = _prop_map.get< int >( irods::RESOURCE_STATUS, resc_status );
         if( !get_ret.ok() ) {
             return PASSMSG( "univ_mss_file_redirect_create - failed to get 'status' property", get_ret );
         }
@@ -767,7 +766,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the resource host for comparison to curr host
         std::string host_name;
-        get_ret = _prop_map.get< std::string >( eirods::RESOURCE_LOCATION, host_name );
+        get_ret = _prop_map.get< std::string >( irods::RESOURCE_LOCATION, host_name );
         if( !get_ret.ok() ) {
             return PASSMSG( "univ_mss_file_redirect_create - failed to get 'location' property", get_ret );
         }
@@ -786,16 +785,16 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // redirect_get - code to determine redirection for get operation
-    eirods::error univ_mss_file_redirect_open( 
-        eirods::plugin_property_map& _prop_map,
-        eirods::file_object_ptr         _file_obj,
+    irods::error univ_mss_file_redirect_open( 
+        irods::plugin_property_map& _prop_map,
+        irods::file_object_ptr         _file_obj,
         const std::string&           _resc_name, 
         const std::string&           _curr_host, 
         float&                       _out_vote ) {
         // =-=-=-=-=-=-=-
         // determine if the resource is down 
         int resc_status = 0;
-        eirods::error get_ret = _prop_map.get< int >( eirods::RESOURCE_STATUS, resc_status );
+        irods::error get_ret = _prop_map.get< int >( irods::RESOURCE_STATUS, resc_status );
         if( !get_ret.ok() ) {
             return PASSMSG( "univ_mss_file_redirect_open - failed to get 'status' property", get_ret );
         }
@@ -810,7 +809,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the resource host for comparison to curr host
         std::string host_name;
-        get_ret = _prop_map.get< std::string >( eirods::RESOURCE_LOCATION, host_name );
+        get_ret = _prop_map.get< std::string >( irods::RESOURCE_LOCATION, host_name );
         if( !get_ret.ok() ) {
             return PASSMSG( "univ_mss_file_redirect_open - failed to get 'location' property", get_ret );
         }
@@ -826,9 +825,9 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // set up variables for iteration
         bool          found     = false;
-        eirods::error final_ret = SUCCESS();
-        std::vector< eirods::physical_object > objs = _file_obj->replicas();
-        std::vector< eirods::physical_object >::iterator itr = objs.begin();
+        irods::error final_ret = SUCCESS();
+        std::vector< irods::physical_object > objs = _file_obj->replicas();
+        std::vector< irods::physical_object >::iterator itr = objs.begin();
         
         // =-=-=-=-=-=-=-
         // initially set vote to 0.0
@@ -841,7 +840,7 @@ extern "C" {
             // run the hier string through the parser and get the last
             // entry.
             std::string last_resc;
-            eirods::hierarchy_parser parser;
+            irods::hierarchy_parser parser;
             parser.set_string( itr->resc_hier() );
             parser.last_resc( last_resc ); 
           
@@ -875,15 +874,15 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // used to allow the resource to determine which host
     // should provide the requested operation
-    eirods::error univ_mss_file_redirect( 
-        eirods::resource_plugin_context& _ctx,
+    irods::error univ_mss_file_redirect( 
+        irods::resource_plugin_context& _ctx,
         const std::string*                  _opr,
         const std::string*                  _curr_host,
-        eirods::hierarchy_parser*           _out_parser,
+        irods::hierarchy_parser*           _out_parser,
         float*                              _out_vote ) {
         // =-=-=-=-=-=-=-
         // check the context validity
-        eirods::error ret = _ctx.valid< eirods::file_object >(); 
+        irods::error ret = _ctx.valid< irods::file_object >(); 
         if(!ret.ok()) {
             std::stringstream msg;
             msg << __FUNCTION__ << " - resource context is invalid";
@@ -907,12 +906,12 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
-        eirods::file_object_ptr file_obj = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
+        irods::file_object_ptr file_obj = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
 
         // =-=-=-=-=-=-=-
         // get the name of this resource
         std::string resc_name;
-        ret = _ctx.prop_map().get< std::string >( eirods::RESOURCE_NAME, resc_name );
+        ret = _ctx.prop_map().get< std::string >( irods::RESOURCE_NAME, resc_name );
         if( !ret.ok() ) {
             std::stringstream msg;
             msg << "univ_mss_file_redirect- failed in get property for name";
@@ -925,12 +924,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // test the operation to determine which choices to make
-        if( eirods::EIRODS_OPEN_OPERATION == (*_opr) ) {
+        if( irods::OPEN_OPERATION == (*_opr) ) {
             // =-=-=-=-=-=-=-
             // call redirect determination for 'get' operation
             return univ_mss_file_redirect_open( _ctx.prop_map(), file_obj, resc_name, (*_curr_host), (*_out_vote)  );
 
-        } else if( eirods::EIRODS_CREATE_OPERATION == (*_opr) ) {
+        } else if( irods::CREATE_OPERATION == (*_opr) ) {
             // =-=-=-=-=-=-=-
             // call redirect determination for 'create' operation
             return univ_mss_file_redirect_create( _ctx.prop_map(), file_obj, resc_name, (*_curr_host), (*_out_vote)  );
@@ -948,8 +947,8 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // univ_mss__file_rebalance - code which would rebalance the subtree
-    eirods::error univ_mss__file_rebalance(
-        eirods::resource_plugin_context& _ctx ) {
+    irods::error univ_mss__file_rebalance(
+        irods::resource_plugin_context& _ctx ) {
         return SUCCESS();
     
     } // univ_mss__file_rebalancec
@@ -957,11 +956,11 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // 3. create derived class to handle universal mss resources
     //    context string will hold the script to be called.
-    class univ_mss_resource : public eirods::resource {
+    class univ_mss_resource : public irods::resource {
     public:
         univ_mss_resource( const std::string& _inst_name, 
                            const std::string& _context ) : 
-            eirods::resource( _inst_name, _context ) {
+            irods::resource( _inst_name, _context ) {
             
             // =-=-=-=-=-=-=-
             // check the context string for inappropriate path behavior
@@ -980,14 +979,14 @@ extern "C" {
 
         // =-=-=-=-=-=-
         // override from plugin_base
-        eirods::error need_post_disconnect_maintenance_operation( bool& _flg ) {
+        irods::error need_post_disconnect_maintenance_operation( bool& _flg ) {
             _flg = false;
             return SUCCESS();
         }
 
         // =-=-=-=-=-=-
         // override from plugin_base
-        eirods::error post_disconnect_maintenance_operation( eirods::pdmo_type& _pdmo ) {
+        irods::error post_disconnect_maintenance_operation( irods::pdmo_type& _pdmo ) {
             return ERROR( -1, "nop" );
         }
 
@@ -998,9 +997,9 @@ extern "C" {
     //    instantiated object of the previously defined derived resource.  use
     //    the add_operation member to associate a 'call name' to the interfaces
     //    defined above.  for resource plugins these call names are standardized
-    //    as used by the eirods facing interface defined in 
+    //    as used by the irods facing interface defined in 
     //    server/drivers/src/fileDriver.c
-    eirods::resource* plugin_factory( const std::string& _inst_name, 
+    irods::resource* plugin_factory( const std::string& _inst_name, 
                                       const std::string& _context  ) {
         // =-=-=-=-=-=-=-
         // 4a. create univ_mss_resource object
@@ -1010,40 +1009,40 @@ extern "C" {
         // 4b. map function names to operations.  this map will be used to load
         //     the symbols from the shared object in the delay_load stage of 
         //     plugin loading.
-        resc->add_operation( eirods::RESOURCE_OP_CREATE,            "univ_mss_file_create" );
-        resc->add_operation( eirods::RESOURCE_OP_OPEN,              "univ_mss_file_open" );
-        resc->add_operation( eirods::RESOURCE_OP_READ,              "univ_mss_file_read" );
-        resc->add_operation( eirods::RESOURCE_OP_WRITE,             "univ_mss_file_write" );
-        resc->add_operation( eirods::RESOURCE_OP_CLOSE,             "univ_mss_file_close" );
-        resc->add_operation( eirods::RESOURCE_OP_UNLINK,            "univ_mss_file_unlink" );
-        resc->add_operation( eirods::RESOURCE_OP_STAT,              "univ_mss_file_stat" );
-        resc->add_operation( eirods::RESOURCE_OP_MKDIR,             "univ_mss_file_mkdir" );
-        resc->add_operation( eirods::RESOURCE_OP_OPENDIR,           "univ_mss_file_opendir" );
-        resc->add_operation( eirods::RESOURCE_OP_READDIR,           "univ_mss_file_readdir" );
-        resc->add_operation( eirods::RESOURCE_OP_RENAME,            "univ_mss_file_rename" );
-        resc->add_operation( eirods::RESOURCE_OP_TRUNCATE,          "univ_mss_file_truncate" );
-        resc->add_operation( eirods::RESOURCE_OP_FREESPACE,         "univ_mss_file_getfs_freespace" );
-        resc->add_operation( eirods::RESOURCE_OP_LSEEK,             "univ_mss_file_lseek" );
-        resc->add_operation( eirods::RESOURCE_OP_RMDIR,             "univ_mss_file_rmdir" );
-        resc->add_operation( eirods::RESOURCE_OP_CLOSEDIR,          "univ_mss_file_closedir" );
-        resc->add_operation( eirods::RESOURCE_OP_STAGETOCACHE,      "univ_mss_file_stage_to_cache" );
-        resc->add_operation( eirods::RESOURCE_OP_SYNCTOARCH,        "univ_mss_file_sync_to_arch" );
-        resc->add_operation( eirods::RESOURCE_OP_REGISTERED,        "univ_mss_file_registered" );
-        resc->add_operation( eirods::RESOURCE_OP_UNREGISTERED,      "univ_mss_file_unregistered" );
-        resc->add_operation( eirods::RESOURCE_OP_MODIFIED,          "univ_mss_file_modified" );
+        resc->add_operation( irods::RESOURCE_OP_CREATE,            "univ_mss_file_create" );
+        resc->add_operation( irods::RESOURCE_OP_OPEN,              "univ_mss_file_open" );
+        resc->add_operation( irods::RESOURCE_OP_READ,              "univ_mss_file_read" );
+        resc->add_operation( irods::RESOURCE_OP_WRITE,             "univ_mss_file_write" );
+        resc->add_operation( irods::RESOURCE_OP_CLOSE,             "univ_mss_file_close" );
+        resc->add_operation( irods::RESOURCE_OP_UNLINK,            "univ_mss_file_unlink" );
+        resc->add_operation( irods::RESOURCE_OP_STAT,              "univ_mss_file_stat" );
+        resc->add_operation( irods::RESOURCE_OP_MKDIR,             "univ_mss_file_mkdir" );
+        resc->add_operation( irods::RESOURCE_OP_OPENDIR,           "univ_mss_file_opendir" );
+        resc->add_operation( irods::RESOURCE_OP_READDIR,           "univ_mss_file_readdir" );
+        resc->add_operation( irods::RESOURCE_OP_RENAME,            "univ_mss_file_rename" );
+        resc->add_operation( irods::RESOURCE_OP_TRUNCATE,          "univ_mss_file_truncate" );
+        resc->add_operation( irods::RESOURCE_OP_FREESPACE,         "univ_mss_file_getfs_freespace" );
+        resc->add_operation( irods::RESOURCE_OP_LSEEK,             "univ_mss_file_lseek" );
+        resc->add_operation( irods::RESOURCE_OP_RMDIR,             "univ_mss_file_rmdir" );
+        resc->add_operation( irods::RESOURCE_OP_CLOSEDIR,          "univ_mss_file_closedir" );
+        resc->add_operation( irods::RESOURCE_OP_STAGETOCACHE,      "univ_mss_file_stage_to_cache" );
+        resc->add_operation( irods::RESOURCE_OP_SYNCTOARCH,        "univ_mss_file_sync_to_arch" );
+        resc->add_operation( irods::RESOURCE_OP_REGISTERED,        "univ_mss_file_registered" );
+        resc->add_operation( irods::RESOURCE_OP_UNREGISTERED,      "univ_mss_file_unregistered" );
+        resc->add_operation( irods::RESOURCE_OP_MODIFIED,          "univ_mss_file_modified" );
 
-        resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER, "univ_mss_file_redirect" );
-        resc->add_operation( eirods::RESOURCE_OP_REBALANCE,         "univ_mss__file_rebalance" );
+        resc->add_operation( irods::RESOURCE_OP_RESOLVE_RESC_HIER, "univ_mss_file_redirect" );
+        resc->add_operation( irods::RESOURCE_OP_REBALANCE,         "univ_mss__file_rebalance" );
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code
-        resc->set_property< int >( eirods::RESOURCE_CHECK_PATH_PERM, 2 );//DO_CHK_PATH_PERM );
-        resc->set_property< int >( eirods::RESOURCE_CREATE_PATH,     1 );//CREATE_PATH );
+        resc->set_property< int >( irods::RESOURCE_CHECK_PATH_PERM, 2 );//DO_CHK_PATH_PERM );
+        resc->set_property< int >( irods::RESOURCE_CREATE_PATH,     1 );//CREATE_PATH );
         
         // =-=-=-=-=-=-=-
         // 4c. return the pointer through the generic interface of an
-        //     eirods::resource pointer
-        return dynamic_cast<eirods::resource*>( resc );
+        //     irods::resource pointer
+        return dynamic_cast<irods::resource*>( resc );
         
     } // plugin_factory
 

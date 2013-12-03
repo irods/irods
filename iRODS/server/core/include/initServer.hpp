@@ -94,7 +94,7 @@ typedef struct hostName {
 /* definition for runMode */
 
 #define SINGLE_PASS             0
-#define IRODS_SERVER            1
+#define SERVER            1
 #define STANDALONE_SERVER       2
 
 typedef struct rodsServerHost {

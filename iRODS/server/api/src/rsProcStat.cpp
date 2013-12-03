@@ -14,8 +14,7 @@
 #include "rcGlobalExtern.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods resource includes
-#include "eirods_resource_backport.hpp"
+#include "irods_resource_backport.hpp"
 
 
 int
@@ -75,7 +74,7 @@ genQueryOut_t **procStatOut)
         rescGrpInfo_t *rescGrpInfo = new rescGrpInfo_t;
         
         //status = _getRescInfo (rsComm, tmpStr, &rescGrpInfo);
-        eirods::error err = eirods::get_resc_grp_info( tmpStr, *rescGrpInfo );
+        irods::error err = irods::get_resc_grp_info( tmpStr, *rescGrpInfo );
         if( !err.ok() ) { // (status < 0 || NULL == rescGrpInfo ) { // JMC cppcheck - nullptr
             rodsLog (LOG_ERROR,
               "_rsProcStat: _getRescInfo of %s error. stat = %d",
@@ -124,7 +123,7 @@ _rsProcStatAll (rsComm_t *rsComm, procStatInp_t *procStatInp,
     bzero (&myProcStatInp, sizeof (myProcStatInp));
     tmpRodsServerHost = ServerHostHead;
     while (tmpRodsServerHost != NULL) {
-        eirods::error err = eirods::get_host_status_by_host_info( tmpRodsServerHost );
+        irods::error err = irods::get_host_status_by_host_info( tmpRodsServerHost );
         if( err.ok() && err.code() == INT_RESC_STATUS_UP ) {
             if (tmpRodsServerHost->localFlag == LOCAL_HOST) {
                 setLocalSrvAddr (myProcStatInp.addr);

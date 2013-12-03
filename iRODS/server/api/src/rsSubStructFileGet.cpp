@@ -5,10 +5,9 @@
 #include "dataObjOpr.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_structured_object.hpp"
-#include "eirods_error.hpp"
-#include "eirods_stacktrace.hpp"
+#include "irods_structured_object.hpp"
+#include "irods_error.hpp"
+#include "irods_stacktrace.hpp"
 
 int
 rsSubStructFileGet (rsComm_t *rsComm, subFile_t *subFile,
@@ -72,27 +71,27 @@ int _rsSubStructFileGet( rsComm_t*   _comm,
                          bytesBuf_t* _out_buf ) {
     // =-=-=-=-=-=-=-
     // convert subfile to a first class object
-    eirods::structured_object_ptr struct_obj( 
-                                      new eirods::structured_object( 
+    irods::structured_object_ptr struct_obj( 
+                                      new irods::structured_object( 
                                           *_sub_file ) );
     struct_obj->comm( _comm );
-    struct_obj->resc_hier( eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE );
+    struct_obj->resc_hier( irods::LOCAL_USE_ONLY_RESOURCE );
 
     if( _sub_file->offset <= 0 ) {
-        eirods::log( ERROR( SYS_INVALID_INPUT_PARAM, "invalid length" ) );
+        irods::log( ERROR( SYS_INVALID_INPUT_PARAM, "invalid length" ) );
         return -1;    
     }
 
     // =-=-=-=-=-=-=-
     // open the structured object
-    eirods::error open_err = fileOpen( _comm, struct_obj );
+    irods::error open_err = fileOpen( _comm, struct_obj );
     if( !open_err.ok() ) {
         std::stringstream msg;
         msg << "fileOpen error for [";
         msg << struct_obj->sub_file_path();
         msg << "], status = ";
         msg << open_err.code();
-        eirods::log( PASSMSG( msg.str(), open_err ) );  
+        irods::log( PASSMSG( msg.str(), open_err ) );  
         return open_err.code();
     }
 
@@ -104,7 +103,7 @@ int _rsSubStructFileGet( rsComm_t*   _comm,
 
     // =-=-=-=-=-=-=-
     // read structured file
-    eirods::error read_err = fileRead( _comm, struct_obj, _out_buf->buf, _sub_file->offset ); 
+    irods::error read_err = fileRead( _comm, struct_obj, _out_buf->buf, _sub_file->offset ); 
     int status = read_err.code();
 
     if( !read_err.ok() ) {
@@ -116,7 +115,7 @@ int _rsSubStructFileGet( rsComm_t*   _comm,
             msg << _sub_file->offset;
             msg << ", read ";
             msg << read_err.code();
-            eirods::log( PASSMSG( msg.str(), read_err ) );
+            irods::log( PASSMSG( msg.str(), read_err ) );
              
             status = SYS_COPY_LEN_ERR;
         } else {
@@ -125,7 +124,7 @@ int _rsSubStructFileGet( rsComm_t*   _comm,
             msg << struct_obj->sub_file_path();
             msg << ", status = ";
             msg << read_err.code();
-            eirods::log( PASSMSG( msg.str(), read_err ) );
+            irods::log( PASSMSG( msg.str(), read_err ) );
 
             status = read_err.code();
         }
@@ -136,14 +135,14 @@ int _rsSubStructFileGet( rsComm_t*   _comm,
 
     // =-=-=-=-=-=-=-
     // ok, done with that.  close the file.
-    eirods::error close_err = fileClose( _comm, struct_obj );
+    irods::error close_err = fileClose( _comm, struct_obj );
     if( !close_err.ok() ) {
         std::stringstream msg;
         msg << "failed in fileClose for [";
         msg << struct_obj->sub_file_path();
         msg << ", status = ";
         msg << close_err.code();
-        eirods::log( PASSMSG( msg.str(), read_err ) );
+        irods::log( PASSMSG( msg.str(), read_err ) );
     }
     
     return (status);

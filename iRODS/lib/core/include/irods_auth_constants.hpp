@@ -1,15 +1,14 @@
 
 
 
-#ifdef __EIRODS_AUTH_CONSTANTS_H__
-#define __EIRODS_AUTH_CONSTANTS_H__
-#endif // __EIRODS_AUTH_CONSTANTS_H__
+#ifndef __IRODS_AUTH_CONSTANTS_HPP__
+#define __IRODS_AUTH_CONSTANTS_HPP__
 
 // =-=-=-=-=-=-=-
 // stl includes
 #include <string>
 
-namespace eirods {
+namespace irods {
     /// =-=-=-=-=-=-=-
     /// @brief constants for auth object indexing
     const std::string AUTH_CLIENT_START( "auth_client_start" );
@@ -29,7 +28,8 @@ namespace eirods {
     const std::string AUTH_PASSWORD_KEY( "a_pw" );
     const std::string AUTH_RESPONSE_KEY( "a_resp" );
 
-}; // namespace eirods
+}; // namespace irods
 
 
+#endif // __IRODS_AUTH_CONSTANTS_HPP__
 

@@ -3,7 +3,7 @@
 
 #include "Hasher.hpp"
 
-namespace eirods {
+namespace irods {
     
     Hasher::
     Hasher(void)
@@ -100,4 +100,4 @@ namespace eirods {
         }
         return result;
     }
-}; //namespace eirods
+}; //namespace irods

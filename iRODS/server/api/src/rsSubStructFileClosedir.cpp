@@ -5,8 +5,7 @@
 #include "dataObjOpr.hpp"
  
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_structured_object.hpp"
+#include "irods_structured_object.hpp"
 
 int
 rsSubStructFileClosedir (rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFileClosedirInp)
@@ -67,22 +66,22 @@ int _rsSubStructFileClosedir( rsComm_t*                _comm,
                               subStructFileFdOprInp_t* _close_inp ) {
     // =-=-=-=-=-=-=-
     // create first class structured object 
-    eirods::structured_object_ptr struct_obj( 
-                                      new eirods::structured_object( 
+    irods::structured_object_ptr struct_obj( 
+                                      new irods::structured_object( 
                                            ) );
     struct_obj->comm( _comm );
-    struct_obj->resc_hier( eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE );
+    struct_obj->resc_hier( irods::LOCAL_USE_ONLY_RESOURCE );
     struct_obj->file_descriptor( _close_inp->fd );
 
     // =-=-=-=-=-=-=-
     // call abstrcated interface to close a file
-    eirods::error closedir_err = fileClosedir( _comm, struct_obj );
+    irods::error closedir_err = fileClosedir( _comm, struct_obj );
     if( !closedir_err.ok() ) {
         std::stringstream msg;
         msg << "failed on call to fileClosedir for [";
         msg << struct_obj->physical_path();
         msg << "]";
-        eirods::log( PASSMSG( msg.str(), closedir_err ) );
+        irods::log( PASSMSG( msg.str(), closedir_err ) );
         return closedir_err.code();
 
     } else {

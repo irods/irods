@@ -9,8 +9,7 @@
 #include "resource.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_resource_backport.hpp"
+#include "irods_resource_backport.hpp"
 
 
 void *mallocAndZero(int s)
@@ -466,10 +465,10 @@ touchupPackedRei (rsComm_t *rsComm, ruleExecInfo_t *myRei)
             myRei->doi->next = NULL;
         }
         rescInfo = new rescInfo_t;
-        eirods::resource_ptr resc;
+        irods::resource_ptr resc;
         std::string rescName = myRei->doi->rescInfo->rescName; // save the resource name
         free (myRei->doi->rescInfo);
-        eirods::error err = eirods::get_resc_info(rescName, *rescInfo );
+        irods::error err = irods::get_resc_info(rescName, *rescInfo );
         if( !err.ok() ) {
             delete rescInfo;
             savedStatus = err.code();
@@ -478,7 +477,7 @@ touchupPackedRei (rsComm_t *rsComm, ruleExecInfo_t *myRei)
             msg << "failed to resolve resource [";
             msg << rescName;
             msg << "]";
-            eirods::log( PASSMSG( msg.str(), err ) );
+            irods::log( PASSMSG( msg.str(), err ) );
         } else {
             myRei->doi->rescInfo = rescInfo;
         }
@@ -490,9 +489,9 @@ touchupPackedRei (rsComm_t *rsComm, ruleExecInfo_t *myRei)
         while (rescGrpInfo != NULL) {
 
             rescInfo = new rescInfo_t;
-            eirods::resource_ptr resc;
+            irods::resource_ptr resc;
             std::string rescName = rescGrpInfo->rescInfo->rescName; // save the resource name
-            eirods::error err = eirods::get_resc_info( rescName, *rescInfo );
+            irods::error err = irods::get_resc_info( rescName, *rescInfo );
             free(rescGrpInfo->rescInfo);
             if( !err.ok() ) {
                 delete rescInfo;
@@ -502,7 +501,7 @@ touchupPackedRei (rsComm_t *rsComm, ruleExecInfo_t *myRei)
                 msg << "failed to resolve resource [";
                 msg << rescName;
                 msg << "]";
-                eirods::log( PASSMSG( msg.str(), err ) );
+                irods::log( PASSMSG( msg.str(), err ) );
             } else {
                 rescGrpInfo->rescInfo = rescInfo;
             }

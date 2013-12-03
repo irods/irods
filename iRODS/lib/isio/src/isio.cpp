@@ -5,7 +5,7 @@
    fread, fwrite, etc) to the equivalent irods calls.  To convert an
    application you just need to add an include statement (isio.h) and
    recompile and relink with irods libraries.  fopen calls with input
-   filenames that include the IRODS_PREFIX string ('irods:') will be
+   filenames that include the PREFIX string ('irods:') will be
    opened and handled as iRODS files; without the prefix this package
    will call the fopen family to handle them as regular local files.
 
@@ -29,7 +29,7 @@
 #include "rodsClient.hpp"
 #include "dataObjRead.hpp"
 
-#define IRODS_PREFIX "irods:"
+#define PREFIX "irods:"
 #define ISIO_MAX_OPEN_FILES 20
 #define ISIO_MIN_OPEN_FD 5
 
@@ -165,8 +165,8 @@ FILE *irodsfopen(char *filename, char *modes) {
 
    if (debug) printf("irodsfopen: %s\n", filename);
 
-   len = strlen(IRODS_PREFIX);
-   if (strncmp(filename,IRODS_PREFIX,len)==0) {
+   len = strlen(PREFIX);
+   if (strncmp(filename,PREFIX,len)==0) {
      return(isioFileOpen(filename+len, modes));
    }
    else {

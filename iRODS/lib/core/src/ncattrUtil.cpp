@@ -147,7 +147,7 @@ ncRegGlobalAttrInp_t *ncRegGlobalAttrInp)
     }
 
     if (rodsArgs->admin == True) {
-        addKeyVal (&ncRegGlobalAttrInp->condInput, IRODS_ADMIN_KW, "");
+        addKeyVal (&ncRegGlobalAttrInp->condInput, ADMIN_KW, "");
     }
 
     if ((rodsArgs->reg == True || rodsArgs->remove == true) && 

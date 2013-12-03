@@ -795,7 +795,7 @@ ruleExecInfo_t *rei)
         bzero (&dataObjInp, sizeof (dataObjInp));
         myDataObjInp = &dataObjInp;
         validKwFlags = OBJ_PATH_FLAG | FORCE_FLAG_FLAG | REPL_NUM_FLAG |
-	  IRODS_RMTRASH_FLAG | IRODS_ADMIN_RMTRASH_FLAG;
+	  RMTRASH_FLAG | ADMIN_RMTRASH_FLAG;
         rei->status = parseMsKeyValStrForDataObjInp (inpParam, myDataObjInp,
           OBJ_PATH_KW, validKwFlags, &outBadKeyWd);
     } else {
@@ -933,7 +933,7 @@ msParam_t *outParam, ruleExecInfo_t *rei)
 #else
     validKwFlags = OBJ_PATH_FLAG | DEST_RESC_NAME_FLAG | NUM_THREADS_FLAG |
       BACKUP_RESC_NAME_FLAG | RESC_NAME_FLAG | UPDATE_REPL_FLAG |
-      REPL_NUM_FLAG | ALL_FLAG | IRODS_ADMIN_FLAG | VERIFY_CHKSUM_FLAG |
+      REPL_NUM_FLAG | ALL_FLAG | ADMIN_FLAG | VERIFY_CHKSUM_FLAG |
       RBUDP_TRANSFER_FLAG | RBUDP_SEND_RATE_FLAG | RBUDP_PACK_SIZE_FLAG;
     rei->status = parseMsKeyValStrForDataObjInp (msKeyValStr, myDataObjInp,
       DEST_RESC_NAME_KW, validKwFlags, &outBadKeyWd);
@@ -1674,7 +1674,7 @@ msParam_t *outParam, ruleExecInfo_t *rei)
  * \param[in] inpParam2 - Optional - a STR_MS_T which specifies the dest resourceName.
  * \param[in] inpParam3 - Optional - a STR_MS_T which specifies the src resourceName.
  * \param[in] inpParam4 - Optional - a STR_MS_T which specifies the replNum.
- * \param[in] inpParam5 - Optional - a STR_MS_T which specifies the IRODS_ADMIN_KW.
+ * \param[in] inpParam5 - Optional - a STR_MS_T which specifies the ADMIN_KW.
  * \param[out] outParam - a INT_MS_T containing the status.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -1742,7 +1742,7 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     }
 
     if ((rei->status = parseMspForCondInp (inpParam5, &myDataObjInp->condInput,
-      IRODS_ADMIN_KW)) < 0) {
+      ADMIN_KW)) < 0) {
         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
           "msiDataObjPhymv: input inpParam5 error. status = %d", rei->status);
         return (rei->status);
@@ -1891,7 +1891,7 @@ msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
  * \param[in] inpParam2 - Optional - a STR_MS_T which specifies the resourceName.
  * \param[in] inpParam3 - Optional - a STR_MS_T which specifies the replNum.
  * \param[in] inpParam4 - Optional - a STR_MS_T which specifies the minimum number of copies to keep.
- * \param[in] inpParam5 - Optional - a STR_MS_T which specifies the IRODS_ADMIN_KW.
+ * \param[in] inpParam5 - Optional - a STR_MS_T which specifies the ADMIN_KW.
  * \param[out] outParam - a INT_MS_T containing the status.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -1957,7 +1957,7 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     }
 
     if ((rei->status = parseMspForCondInp (inpParam5, &myDataObjInp->condInput,
-      IRODS_ADMIN_KW)) < 0) {
+      ADMIN_KW)) < 0) {
         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
           "msiDataObjTrim: input inpParam5 error. status = %d", rei->status);
         return (rei->status);
@@ -2147,7 +2147,7 @@ msiRmColl (msParam_t *inpParam1, msParam_t *msKeyValStr, msParam_t *outParam, ru
         return (rei->status);
     }
 #else
-    validKwFlags = IRODS_RMTRASH_FLAG | IRODS_ADMIN_RMTRASH_FLAG | 
+    validKwFlags = RMTRASH_FLAG | ADMIN_RMTRASH_FLAG | 
       FORCE_FLAG_FLAG | COLL_NAME_FLAG;
     if ((rei->status = parseMsKeyValStrForCollInp (msKeyValStr,
       myRmCollInp, KEY_WORD_KW, validKwFlags, &outBadKeyWd)) < 0) {
@@ -2213,7 +2213,7 @@ msiRmColl (msParam_t *inpParam1, msParam_t *msKeyValStr, msParam_t *outParam, ru
  *               be used.  
  *               The options can be the following:
  *              \li "all"(ALL_KW) 
- *              \li "irodsAdmin" (IRODS_ADMIN_KW).
+ *              \li "irodsAdmin" (ADMIN_KW).
  *              \li "backupMode" if specified, it will try to use 'backup mode' 
  *                to the destination resource. Means if a good copy already
  *                exists in destination resource, it will not throw an error
@@ -2295,7 +2295,7 @@ msiReplColl (msParam_t *coll, msParam_t *destRescName, msParam_t *options,
         char *option;
         option= &optArray.value[i*optArray.size];
         if ( strcmp(option,ALL_KW) && 
-             strcmp(option,IRODS_ADMIN_KW) &&
+             strcmp(option,ADMIN_KW) &&
              strcmp(option,"backupMode")
            )
         {
@@ -2593,7 +2593,7 @@ msiObjStat (msParam_t *inpParam1, msParam_t *outParam, ruleExecInfo_t *rei)
  * \author  Michael Wan
  * \date    2007-02-12
  *
- * \note For now, this microservice should only be used for IRODS_TO_IRODS
+ * \note For now, this microservice should only be used for TO_IRODS
  * mode because of the logistic difficulty with the microservice getting the 
  * checksum values of the local file. 
  *
@@ -2601,12 +2601,12 @@ msiObjStat (msParam_t *inpParam1, msParam_t *outParam, ruleExecInfo_t *rei)
  *
  * \param[in] inpParam1 - A DataObjInp_MS_T or STR_MS_T which would be taken as dataObj path.
  * \param[in] inpParam2 - Optional - a STR_MS_T which specifies the rsync mode 
- *      (RSYNC_MODE_KW). Valid mode is IRODS_TO_IRODS and IRODS_TO_COLLECTION.
+ *      (RSYNC_MODE_KW). Valid mode is TO_IRODS and TO_COLLECTION.
  * \param[in] inpParam3 - Optional - a STR_MS_T which specifies the resource 
   *      value (DEST_RESC_NAME_KW).
  * \param[in] inpParam4 - Optional - a STR_MS_T which specifies the 
- *      (RSYNC_DEST_PATH_KW).  For IRODS_TO_IRODS, this is the target path.
- *       For IRODS_TO_COLLECTION, this is the top level target collection.
+ *      (RSYNC_DEST_PATH_KW).  For TO_IRODS, this is the target path.
+ *       For TO_COLLECTION, this is the top level target collection.
  *       e.g., if dataObj (inpParam1) is /tempZone/home/rods/foo and 
  *       the target collection (inpParam4) is /tempZone/archive, then
  *       the target path is /tempZone/archive/home/rods/foo.
@@ -2694,14 +2694,14 @@ ruleExecInfo_t *rei)
         return (rei->status);
     }
 
-    if (strcmp (rsyncMode, IRODS_TO_LOCAL) == 0 ||
+    if (strcmp (rsyncMode, TO_LOCAL) == 0 ||
       strcmp (rsyncMode, LOCAL_TO_IRODS) == 0) {
         rodsLog (LOG_ERROR,
           "msiDataObjRsync: local/iRODS rsync not supported for %s",
           myDataObjInp->objPath);
         rei->status = NO_LOCAL_FILE_RSYNC_IN_MSI;
         return (rei->status);
-    } else if (strcmp (rsyncMode, IRODS_TO_COLLECTION) == 0) {
+    } else if (strcmp (rsyncMode, TO_COLLECTION) == 0) {
 	targCollection = getValByKey (&myDataObjInp->condInput, 
 	  RSYNC_DEST_PATH_KW);
         if (targCollection == NULL) {
@@ -2719,7 +2719,7 @@ ruleExecInfo_t *rei)
             return (rei->status);
         }
 	snprintf (targPath, MAX_NAME_LEN, "%s%s", targCollection, tmpPtr);
-	addKeyVal (&myDataObjInp->condInput, RSYNC_MODE_KW, IRODS_TO_IRODS);
+	addKeyVal (&myDataObjInp->condInput, RSYNC_MODE_KW, TO_IRODS);
 	addKeyVal (&myDataObjInp->condInput, RSYNC_DEST_PATH_KW, targPath);
     }
 
@@ -2767,7 +2767,7 @@ ruleExecInfo_t *rei)
  * \param[in] inpParam3 - Optional - a STR_MS_T which specifies the target
  *      resource.
  * \param[in] inpParam4 - Optional - a STR_MS_T which specifies the rsync mode
- *      (RSYNC_MODE_KW). Valid mode is IRODS_TO_IRODS.
+ *      (RSYNC_MODE_KW). Valid mode is TO_IRODS.
  * \param[out] outParam - a INT_MS_T containing the status.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -2853,7 +2853,7 @@ ruleExecInfo_t *rei)
         return (rei->status);
     }
 
-    if (strcmp (rsyncMode, IRODS_TO_LOCAL) == 0 ||
+    if (strcmp (rsyncMode, TO_LOCAL) == 0 ||
       strcmp (rsyncMode, LOCAL_TO_IRODS) == 0) {
         rodsLog (LOG_ERROR,
           "msiCollRsync: local/iRODS rsync not supported for %s",
@@ -3176,7 +3176,7 @@ ruleExecInfo_t *rei)
 #else
     validKwFlags = COLL_NAME_FLAG | DEST_RESC_NAME_FLAG |
       BACKUP_RESC_NAME_FLAG | RESC_NAME_FLAG | UPDATE_REPL_FLAG |
-      REPL_NUM_FLAG | ALL_FLAG | IRODS_ADMIN_FLAG | VERIFY_CHKSUM_FLAG;
+      REPL_NUM_FLAG | ALL_FLAG | ADMIN_FLAG | VERIFY_CHKSUM_FLAG;
     rei->status = parseMsKeyValStrForCollInp (msKeyValStr, collInp,
       DEST_RESC_NAME_KW, validKwFlags, &outBadKeyWd);
 #endif
@@ -3364,7 +3364,7 @@ msParam_t *inpAllCopiesParam, msParam_t *outParam, ruleExecInfo_t *rei)
  * \param[in] inpParam1 - a msParam of type DataObjInp_MS_T or STR_MS_T which would be the obj Path.
  * \param[in] inpParam2 - Optional - a STR_MS_T which specifies the resource.
  * \param[in] inpParam3 - Optional - a STR_MS_T which specifies an additional
- *     param like all (ALL_KW), irodsAdmin (IRODS_ADMIN_KW)
+ *     param like all (ALL_KW), irodsAdmin (ADMIN_KW)
  * \param[out] outParam - a INT_MS_T for the status.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -3686,7 +3686,7 @@ msiTarFileExtract (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPar
         rc1 = rsModDataObjMeta(rsComm, &modDataObjMetaInp);
         if (rc1 < 0)
         {
-          eirods::log( ERROR (rc1, "rsModDataObjMeta failed."));
+          irods::log( ERROR (rc1, "rsModDataObjMeta failed."));
         }
     }
 
@@ -3701,7 +3701,7 @@ msiTarFileExtract (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPar
         rc1 = rsModDataObjMeta(rsComm, &modDataObjMetaInp);
         if (rc1 < 0)
         {
-          eirods::log( ERROR (rc1, "rsModDataObjMeta failed."));
+          irods::log( ERROR (rc1, "rsModDataObjMeta failed."));
         }
     }
 

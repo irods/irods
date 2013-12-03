@@ -6,8 +6,8 @@
 
 
 
-#ifndef IRODS_RE_SERVER_HPP
-#define IRODS_RE_SERVER_HPP
+#ifndef RE_SERVER_HPP
+#define RE_SERVER_HPP
 
 #include "rods.hpp"
 #include "rsGlobal.hpp"   /* server global */
@@ -35,4 +35,4 @@ int
 reSvrSleep (rsComm_t *rsComm);
 int
 chkAndResetRule (rsComm_t *rsComm);
-#endif	/* IRODS_RE_SERVER_H */
+#endif	/* RE_SERVER_H */

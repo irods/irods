@@ -719,7 +719,7 @@ reDebug(RuleEngineEvent label, int flag, RuleEngineEventParam *param, Node *node
 		i = _writeXMsg(GlobalREAuditFlag, hdr, seActionStr);
     if (i < 0)
     {
-      eirods::log( ERROR (i, "_writeXMsg failed."));
+      irods::log( ERROR (i, "_writeXMsg failed."));
     }
 	}
   
@@ -742,7 +742,7 @@ reDebug(RuleEngineEvent label, int flag, RuleEngineEventParam *param, Node *node
 			i = _writeXMsg(GlobalREDebugFlag, hdr, buf);
       if (i < 0)
       {
-        eirods::log( ERROR (i, "_writeXMsg failed."));
+        irods::log( ERROR (i, "_writeXMsg failed."));
       }
     }
 

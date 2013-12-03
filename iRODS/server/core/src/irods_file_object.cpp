@@ -1,14 +1,13 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_file_object.hpp"
-#include "eirods_resource_manager.hpp"
-#include "eirods_hierarchy_parser.hpp"
-#include "eirods_log.hpp"
-#include "eirods_stacktrace.hpp"
-#include "eirods_hierarchy_parser.hpp"
-#include "eirods_resource_backport.hpp"
+#include "irods_file_object.hpp"
+#include "irods_resource_manager.hpp"
+#include "irods_hierarchy_parser.hpp"
+#include "irods_log.hpp"
+#include "irods_stacktrace.hpp"
+#include "irods_hierarchy_parser.hpp"
+#include "irods_resource_backport.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
@@ -19,7 +18,7 @@
 // boost includes
 #include <boost/asio/ip/host_name.hpp>
 
-namespace eirods {
+namespace irods {
     // =-=-=-=-=-=-=-
     // public - ctor
     file_object::file_object() :
@@ -178,7 +177,7 @@ namespace eirods {
                     //    << " - there is no resource specified in the resource hierarchy.";
                     //log(LOG_NOTICE, msg.str());
                 } else if(resc.empty()) {
-                    return ERROR( EIRODS_HIERARCHY_ERROR, "Hierarchy string is not empty but first resource is!");
+                    return ERROR( HIERARCHY_ERROR, "Hierarchy string is not empty but first resource is!");
                 }
    
                 resource_ptr resc_ptr; 
@@ -343,7 +342,7 @@ namespace eirods {
 
     } // file_object_factory
 
-}; // namespace eirods
+}; // namespace irods
 
 
 

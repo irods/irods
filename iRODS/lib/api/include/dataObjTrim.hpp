@@ -44,7 +44,7 @@ extern "C" {
  *	    COPIES_KW - The number of copies to retain. Default is 2. 
  *          REPL_NUM_KW  - "value" = The replica number to trim.
  *          RESC_NAME_KW - "value" = The Resource to trim.
- *          IRODS_ADMIN_KW - Admin trim other users' files.
+ *          ADMIN_KW - Admin trim other users' files.
  *   return value - The status of the operation.
  */
 int

@@ -10,9 +10,8 @@
 #include "rsGlobalExtern.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_log.hpp"
-#include "eirods_collection_object.hpp"
+#include "irods_log.hpp"
+#include "irods_collection_object.hpp"
 
 int
 rsFileClosedir (rsComm_t *rsComm, fileClosedirInp_t *fileClosedirInp)
@@ -81,21 +80,21 @@ int _rsFileClosedir(
     fileClosedirInp_t* _closedir_inp ) {
     // =-=-=-=-=-=-=-
     // call closedir via resource plugin, handle errors
-    eirods::collection_object_ptr coll_obj( 
-                                      new eirods::collection_object( 
+    irods::collection_object_ptr coll_obj( 
+                                      new irods::collection_object( 
                                           FileDesc[_closedir_inp->fileInx].fileName, 
                                           FileDesc[_closedir_inp->fileInx].rescHier, 
                                           0, 0 ) );
     coll_obj->directory_pointer( reinterpret_cast< DIR* >( FileDesc[_closedir_inp->fileInx].driverDep ) );
-    eirods::error closedir_err = fileClosedir( _comm, coll_obj );
+    irods::error closedir_err = fileClosedir( _comm, coll_obj );
 
     if( !closedir_err.ok() ) {
         std::stringstream msg;
         msg << "fileClosedir failed for [";
         msg << FileDesc[_closedir_inp->fileInx].fileName;
         msg << "]";
-        eirods::error log_err = PASSMSG( msg.str(), closedir_err );
-        eirods::log( log_err ); 
+        irods::error log_err = PASSMSG( msg.str(), closedir_err );
+        irods::log( log_err ); 
     }
 
     return closedir_err.code();

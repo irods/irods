@@ -25,12 +25,11 @@
 #include "icatHighLevelRoutines.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_resource_backport.hpp"
-#include "eirods_resource_redirect.hpp"
-#include "eirods_hierarchy_parser.hpp"
-#include "eirods_hierarchy_parser.hpp"
-#include "eirods_stacktrace.hpp"
+#include "irods_resource_backport.hpp"
+#include "irods_resource_redirect.hpp"
+#include "irods_hierarchy_parser.hpp"
+#include "irods_hierarchy_parser.hpp"
+#include "irods_stacktrace.hpp"
 
 int
 rsDataObjPut (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
@@ -56,15 +55,15 @@ rsDataObjPut (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         // we know that the redirection decision has already been made
         std::string       hier;
         if( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
-            eirods::error ret = eirods::resolve_resource_hierarchy( 
-                                            eirods::EIRODS_CREATE_OPERATION, rsComm, 
+            irods::error ret = irods::resolve_resource_hierarchy( 
+                                            irods::CREATE_OPERATION, rsComm, 
                                             dataObjInp, hier );
             if( !ret.ok() ) { 
                 std::stringstream msg;
                 msg << __FUNCTION__;
-                msg << " :: failed in eirods::eirods::resolve_resource_hierarchy for [";
+                msg << " :: failed in irods::irods::resolve_resource_hierarchy for [";
                 msg << dataObjInp->objPath << "]";
-                eirods::log( PASSMSG( msg.str(), ret ) );
+                irods::log( PASSMSG( msg.str(), ret ) );
                 return ret.code();
             }
             // =-=-=-=-=-=-=-
@@ -421,9 +420,9 @@ l3FilePutSingleBuf (rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf)
     // =-=-=-=-=-=-=-
     // extract the host location from the resource hierarchy
     std::string location;
-    eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
+    irods::error ret = irods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "l3FilePutSingleBuf - failed in get_loc_for_hier_String", ret ) );
+        irods::log( PASSMSG( "l3FilePutSingleBuf - failed in get_loc_for_hier_String", ret ) );
         return -1;
     }
 

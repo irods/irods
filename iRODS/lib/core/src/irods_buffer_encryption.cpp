@@ -2,8 +2,7 @@
 
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_buffer_encryption.hpp"
+#include "irods_buffer_encryption.hpp"
 
 // =-=-=-=-=-=-=-
 // ssl includes
@@ -19,7 +18,7 @@
 #include "global.hpp"
 #include "md5.hpp"
 
-namespace eirods {
+namespace irods {
 
     std::string buffer_crypt::gen_hash(
             unsigned char* _buf,
@@ -90,7 +89,7 @@ namespace eirods {
     
     // =-=-=-=-=-=-=-
     // public - generate a random 32 byte key
-    eirods::error buffer_crypt::generate_key( 
+    irods::error buffer_crypt::generate_key( 
         array_t& _out_key ) {
         // =-=-=-=-=-=-=-
         // generate 32 random bytes
@@ -120,7 +119,7 @@ namespace eirods {
      
     // =-=-=-=-=-=-=-
     // public - create a hashed key and initialization vector
-    eirods::error buffer_crypt::initialization_vector( 
+    irods::error buffer_crypt::initialization_vector( 
         array_t& _out_iv ) {
         // =-=-=-=-=-=-=-
         // generate a random initialization vector
@@ -153,7 +152,7 @@ namespace eirods {
 
     // =-=-=-=-=-=-=-
     // public - encryptor
-    eirods::error buffer_crypt::encrypt( 
+    irods::error buffer_crypt::encrypt( 
         const array_t& _key,
         const array_t& _iv,
         const array_t& _in_buf,
@@ -230,7 +229,7 @@ namespace eirods {
  
     // =-=-=-=-=-=-=-
     // public - decryptor
-    eirods::error buffer_crypt::decrypt( 
+    irods::error buffer_crypt::decrypt( 
         const array_t& _key,
         const array_t& _iv,
         const array_t& _in_buf,
@@ -306,7 +305,7 @@ namespace eirods {
 
     } // decrypt 
 
-}; // namespace eirods
+}; // namespace irods
 
 
 

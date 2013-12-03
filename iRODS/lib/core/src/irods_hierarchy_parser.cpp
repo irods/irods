@@ -1,13 +1,13 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
-#include "eirods_hierarchy_parser.hpp"
-#include "eirods_string_tokenize.hpp"
+#include "irods_hierarchy_parser.hpp"
+#include "irods_string_tokenize.hpp"
 #include "rodsErrorTable.hpp"
-#include "eirods_log.hpp"
+#include "irods_log.hpp"
 
 #include <iostream>
 
-namespace eirods {
+namespace irods {
 
     static const std::string DELIM = ";";
     
@@ -112,14 +112,14 @@ namespace eirods {
                     std::stringstream msg;
                     msg << "there is no next resource. [" << _current;
                     msg << "] is a leaf resource.";
-                    result = ERROR(EIRODS_NO_NEXT_RESC_FOUND, msg.str());
+                    result = ERROR(NO_NEXT_RESC_FOUND, msg.str());
                 }
             }
         }
         if(!found) {
             std::stringstream msg;
             msg << "resource [" << _current << "] not in hierarchy.";
-            result = ERROR(EIRODS_CHILD_NOT_FOUND, msg.str());
+            result = ERROR(CHILD_NOT_FOUND, msg.str());
         }
         return result;
     }
@@ -162,4 +162,4 @@ namespace eirods {
         return result;
     }
 
-}; // namespace eirods
+}; // namespace irods

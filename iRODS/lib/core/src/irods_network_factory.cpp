@@ -2,17 +2,16 @@
 
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_network_factory.hpp"
-#include "eirods_client_server_negotiation.hpp"
+#include "irods_network_factory.hpp"
+#include "irods_client_server_negotiation.hpp"
 
-namespace eirods {
+namespace irods {
    // =-=-=-=-=-=-=-
    // super basic free factory function to create either a tcp
    // object or an ssl object based on wether ssl has been enabled
-   eirods::error network_factory( 
+   irods::error network_factory( 
        rcComm_t*                   _comm,
-       eirods::network_object_ptr& _ptr ) {
+       irods::network_object_ptr& _ptr ) {
        // =-=-=-=-=-=-=-
        // param check 
        if( !_comm ) {
@@ -24,13 +23,13 @@ namespace eirods {
        // is wether SSL has been enabled.  if it has then we
        // want an ssl object which will resolve to an ssl 
        // network plugin
-       if( eirods::CS_NEG_USE_SSL == _comm->negotiation_results ) {
-           eirods::ssl_object* ssl = new eirods::ssl_object( *_comm );
+       if( irods::CS_NEG_USE_SSL == _comm->negotiation_results ) {
+           irods::ssl_object* ssl = new irods::ssl_object( *_comm );
            if( !ssl ) {
                return ERROR( SYS_INVALID_INPUT_PARAM, "ssl allocation failed" );
            }
 
-           eirods::network_object* nobj = dynamic_cast< eirods::network_object* >( ssl );
+           irods::network_object* nobj = dynamic_cast< irods::network_object* >( ssl );
            if( !nobj ) {
                return ERROR( SYS_INVALID_INPUT_PARAM, "ssl dynamic cast failed" );
            }
@@ -41,12 +40,12 @@ namespace eirods {
            // =-=-=-=-=-=-=-
            // otherwise we just need an plain ol' tcp object
            // which resolves to a plain ol' tcp network plugin
-           eirods::tcp_object* tcp = new eirods::tcp_object( *_comm );
+           irods::tcp_object* tcp = new irods::tcp_object( *_comm );
            if( !tcp ) {
                return ERROR( SYS_INVALID_INPUT_PARAM, "tcp allocation failed" );
            }
 
-           eirods::network_object* nobj = dynamic_cast< eirods::network_object* >( tcp );
+           irods::network_object* nobj = dynamic_cast< irods::network_object* >( tcp );
            if( !nobj ) {
                return ERROR( SYS_INVALID_INPUT_PARAM, "tcp dynamic cast failed" );
            }
@@ -61,9 +60,9 @@ namespace eirods {
 
    // =-=-=-=-=-=-=-
    // version for server connection as well
-   eirods::error network_factory( 
+   irods::error network_factory( 
        rsComm_t*                   _comm,
-       eirods::network_object_ptr& _ptr ) {
+       irods::network_object_ptr& _ptr ) {
 
        // =-=-=-=-=-=-=-
        // param check 
@@ -76,13 +75,13 @@ namespace eirods {
        // is wether SSL has been enabled.  if it has then we
        // want an ssl object which will resolve to an ssl 
        // network plugin
-       if( eirods::CS_NEG_USE_SSL == _comm->negotiation_results ) {
-           eirods::ssl_object* ssl = new eirods::ssl_object( *_comm );
+       if( irods::CS_NEG_USE_SSL == _comm->negotiation_results ) {
+           irods::ssl_object* ssl = new irods::ssl_object( *_comm );
            if( !ssl ) {
                return ERROR( SYS_INVALID_INPUT_PARAM, "ssl allocation failed" );
            }
 
-           eirods::network_object* nobj = dynamic_cast< eirods::network_object* >( ssl );
+           irods::network_object* nobj = dynamic_cast< irods::network_object* >( ssl );
            if( !nobj ) {
                return ERROR( SYS_INVALID_INPUT_PARAM, "ssl dynamic cast failed" );
            }
@@ -93,12 +92,12 @@ namespace eirods {
            // =-=-=-=-=-=-=-
            // otherwise we just need an plain ol' tcp object
            // which resolves to a plain ol' tcp network plugin
-           eirods::tcp_object* tcp = new eirods::tcp_object( *_comm );
+           irods::tcp_object* tcp = new irods::tcp_object( *_comm );
            if( !tcp ) {
                return ERROR( SYS_INVALID_INPUT_PARAM, "tcp allocation failed" );
            }
 
-           eirods::network_object* nobj = dynamic_cast< eirods::network_object* >( tcp );
+           irods::network_object* nobj = dynamic_cast< irods::network_object* >( tcp );
            if( !nobj ) {
                return ERROR( SYS_INVALID_INPUT_PARAM, "tcp dynamic cast failed" );
            }
@@ -111,7 +110,7 @@ namespace eirods {
 
    } // network_factory
 
-}; // namespace eirods
+}; // namespace irods
 
 
 

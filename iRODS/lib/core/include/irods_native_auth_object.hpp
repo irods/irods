@@ -1,10 +1,10 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
-#ifndef __NATIVE_AUTH_OBJECT_H__
-#define __NATIVE_AUTH_OBJECT_H__
+#ifndef __NATIVE_AUTH_OBJECT_HPP__
+#define __NATIVE_AUTH_OBJECT_HPP__
 
-#include "eirods_error.hpp"
-#include "eirods_auth_object.hpp"
+#include "irods_error.hpp"
+#include "irods_auth_object.hpp"
 
 #include "rcConnect.hpp"
 
@@ -12,7 +12,7 @@
 // boost includes
 #include <boost/shared_ptr.hpp>
 
-namespace eirods {
+namespace irods {
 
     /// =-=-=-=-=-=-=-
     /// @brief constant defining the native auth scheme string
@@ -64,6 +64,6 @@ namespace eirods {
     /// @brief Helpful typedef
     typedef boost::shared_ptr<native_auth_object> native_auth_object_ptr;
     
-}; // namespace eirods
+}; // namespace irods
 
-#endif // __NATIVE_AUTH_OBJECT_H__
+#endif // __NATIVE_AUTH_OBJECT_HPP__

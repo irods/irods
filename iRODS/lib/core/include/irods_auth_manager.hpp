@@ -1,15 +1,15 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
-#ifndef _auth_manager_H_
-#define _auth_manager_H_
+#ifndef _AUTH_MANAGER_HPP_
+#define _AUTH_MANAGER_HPP_
 
-#include "eirods_error.hpp"
-#include "eirods_auth_types.hpp"
+#include "irods_error.hpp"
+#include "irods_auth_types.hpp"
 
-namespace eirods {
+namespace irods {
 
     /// @brief String identifying this as an auth plugin interface
-    const std::string AUTH_INTERFACE("eirods_auth_interface");
+    const std::string AUTH_INTERFACE("irods_auth_interface");
     
 /**
  * @brief Class which manages the lifetime of auth plugins
@@ -43,6 +43,6 @@ namespace eirods {
     /// @brief The global auth_manager instance
     extern auth_manager auth_mgr;
     
-}; // namespace eirods
+}; // namespace irods
 
-#endif // _auth_manager_H_
+#endif // _AUTH_MANAGER_HPP_

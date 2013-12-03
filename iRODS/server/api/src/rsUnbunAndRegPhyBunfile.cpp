@@ -15,11 +15,10 @@
 #include "rcGlobalExtern.hpp"
 #include "reGlobalsExtern.hpp"
 
-#include "eirods_stacktrace.hpp"
+#include "irods_stacktrace.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods resource includes
-#include "eirods_resource_backport.hpp"
+#include "irods_resource_backport.hpp"
 
 int
 rsUnbunAndRegPhyBunfile (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
@@ -33,14 +32,14 @@ rsUnbunAndRegPhyBunfile (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     }
 
     rescInfo_t* rescInfo = new rescInfo_t;
-    eirods::error err = eirods::get_resc_info( rescName, *rescInfo );
+    irods::error err = irods::get_resc_info( rescName, *rescInfo );
     if( !err.ok() ) {
         delete rescInfo;
         std::stringstream msg;
         msg << "failed for [";
         msg << rescName;
         msg << "]";
-        eirods::log( PASSMSG( msg.str(), err ) );
+        irods::log( PASSMSG( msg.str(), err ) );
         return -1;
     }
     status = _rsUnbunAndRegPhyBunfile( rsComm, dataObjInp, rescInfo );
@@ -69,9 +68,9 @@ _rsUnbunAndRegPhyBunfile (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     // =-=-=-=-=-=-=-
     // extract the host location from the resource hierarchy
     std::string location;
-    eirods::error ret = eirods::get_loc_for_hier_string( resc_hier, location );
+    irods::error ret = irods::get_loc_for_hier_string( resc_hier, location );
     if( !ret.ok() ) {
-        eirods::log( PASS( ret ) );
+        irods::log( PASS( ret ) );
         return -1;
     }
 
@@ -150,7 +149,7 @@ regUnbunPhySubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *phyBunDir,
     bzero (&dataObjInp, sizeof (dataObjInp));
     if (rmBunCopyFlag > 0) {
         bzero (&dataObjUnlinkInp, sizeof (dataObjUnlinkInp));
-        addKeyVal (&dataObjUnlinkInp.condInput, IRODS_ADMIN_KW, "");
+        addKeyVal (&dataObjUnlinkInp.condInput, ADMIN_KW, "");
     }
 
     directory_iterator end_itr; // default construction yields past-the-end
@@ -286,7 +285,7 @@ regPhySubFile (rsComm_t *rsComm, char *subfilePath,
     regReplicaInp.srcDataObjInfo = bunDataObjInfo;
     regReplicaInp.destDataObjInfo = &stageDataObjInfo;
     addKeyVal (&regReplicaInp.condInput, SU_CLIENT_USER_KW, "");
-    addKeyVal (&regReplicaInp.condInput, IRODS_ADMIN_KW, "");
+    addKeyVal (&regReplicaInp.condInput, ADMIN_KW, "");
 
     status = rsRegReplica (rsComm, &regReplicaInp);
 
@@ -313,9 +312,9 @@ int unbunPhyBunFile( rsComm_t *rsComm, char *objPath,
     // =-=-=-=-=-=-=-
     // extract the host location from the resource hierarchy
     std::string location;
-    eirods::error ret = eirods::get_loc_for_hier_string( resc_hier, location );
+    irods::error ret = irods::get_loc_for_hier_string( resc_hier, location );
     if( !ret.ok() ) {
-        eirods::log( PASS( ret ) );
+        irods::log( PASS( ret ) );
         return -1;
     }
 
@@ -436,7 +435,7 @@ rmLinkedFilesInUnixDir (char *phyBunDir)
             status = rmLinkedFilesInUnixDir (subfilePath);
             if(status < 0)
             {
-              eirods::log( ERROR (status, "rmLinkedFilesInUnixDir failed") );
+              irods::log( ERROR (status, "rmLinkedFilesInUnixDir failed") );
             }
                 /* rm subfilePath but not phyBunDir */
             rmdir (subfilePath);

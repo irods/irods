@@ -1,11 +1,11 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 
-#include "eirods_tmp_string.hpp"
+#include "irods_tmp_string.hpp"
 
 #include <string.h>
 
-namespace eirods {
+namespace irods {
 
     tmp_string::tmp_string(
         const char* orig) : string_(0){
@@ -24,4 +24,4 @@ namespace eirods {
         }
     }
 
-}; // namespace eirods
+}; // namespace irods

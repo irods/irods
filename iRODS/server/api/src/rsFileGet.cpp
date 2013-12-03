@@ -9,10 +9,9 @@
 #include "miscServerFunct.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_log.hpp"
-#include "eirods_file_object.hpp"
-#include "eirods_resource_backport.hpp"
+#include "irods_log.hpp"
+#include "irods_file_object.hpp"
+#include "irods_resource_backport.hpp"
 
 
 /* rsFileGet - Get the content of a small file into a single buffer
@@ -29,9 +28,9 @@ rsFileGet (rsComm_t *rsComm, fileOpenInp_t *fileGetInp,
     int status;
 
     //remoteFlag = resolveHost (&fileGetInp->addr, &rodsServerHost);
-    eirods::error ret = eirods::get_host_for_hier_string( fileGetInp->resc_hier_, remoteFlag, rodsServerHost );
+    irods::error ret = irods::get_host_for_hier_string( fileGetInp->resc_hier_, remoteFlag, rodsServerHost );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "failed in call to eirods::get_host_for_hier_string", ret ) );
+        irods::log( PASSMSG( "failed in call to irods::get_host_for_hier_string", ret ) );
         return -1;
     }
     if (remoteFlag == LOCAL_HOST) {
@@ -110,12 +109,12 @@ int _rsFileGet(
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - Empty logical path.";
-        eirods::log(LOG_ERROR, msg.str());
+        irods::log(LOG_ERROR, msg.str());
         return -1;
     }
     
-    eirods::file_object_ptr file_obj( 
-                                new eirods::file_object( 
+    irods::file_object_ptr file_obj( 
+                                new irods::file_object( 
                                     _comm, 
                                     _get_inp->objPath, 
                                     _get_inp->fileName, 
@@ -123,7 +122,7 @@ int _rsFileGet(
                                     fd, 
                                     _get_inp->mode, 
                                     _get_inp->flags  ) );
-    eirods::error read_err = fileRead( _comm,
+    irods::error read_err = fileRead( _comm,
                                        file_obj,
                                        _get_buf->buf, 
                                        len );
@@ -138,8 +137,8 @@ int _rsFileGet(
             msg << "fileRead failed for [";
             msg << _get_inp->fileName;
             msg << "]";
-            eirods::error ret_err = PASSMSG( msg.str(), read_err );
-            eirods::log( ret_err );
+            irods::error ret_err = PASSMSG( msg.str(), read_err );
+            irods::log( ret_err );
         }
     } else {
         _get_buf->len = bytes_read;
@@ -147,11 +146,11 @@ int _rsFileGet(
 
     // =-=-=-=-=-=-=-
     // call resource plugin close 
-    eirods::error close_err = fileClose( _comm,
+    irods::error close_err = fileClose( _comm,
                                          file_obj );
     if( !close_err.ok() ) {
-        eirods::error err = PASSMSG( "error on close", close_err );
-        eirods::log( err );
+        irods::error err = PASSMSG( "error on close", close_err );
+        irods::log( err );
     }
 
     return (bytes_read);

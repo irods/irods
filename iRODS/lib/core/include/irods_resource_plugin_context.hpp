@@ -1,14 +1,13 @@
 
 
 
-#ifndef __EIRODS_RESOURCE_PLUGIN_CONTEXT_H__
-#define __EIRODS_RESOURCE_PLUGIN_CONTEXT_H__
+#ifndef __IRODS_RESOURCE_PLUGIN_CONTEXT_HPP__
+#define __IRODS_RESOURCE_PLUGIN_CONTEXT_HPP__
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_plugin_context.hpp"
+#include "irods_plugin_context.hpp"
 
-namespace eirods {
+namespace irods {
     /// =-=-=-=-=-=-=-
     /// @brief typedef for resource child map
     class resource;
@@ -83,9 +82,9 @@ namespace eirods {
 
     }; // class resource_plugin_context
 
-}; // namespace eirods
+}; // namespace irods
 
-#endif // __EIRODS_RESOURCE_PLUGIN_CONTEXT_H__
+#endif // __IRODS_RESOURCE_PLUGIN_CONTEXT_HPP__
 
 
 

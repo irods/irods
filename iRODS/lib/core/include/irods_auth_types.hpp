@@ -1,6 +1,6 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
-#ifndef __EIRODS_AUTH_TYPES_H__
+#ifndef __IRODS_AUTH_TYPES_HPP__
 
 // =-=-=-=-=-=-=-
 // Boost Includes
@@ -8,15 +8,14 @@
 #include <boost/any.hpp>
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_plugin_base.hpp"
-#include "eirods_lookup_table.hpp"
+#include "irods_plugin_base.hpp"
+#include "irods_lookup_table.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
 #include "rcConnect.hpp"
 
-namespace eirods {
+namespace irods {
     // =-=-=-=-=-=-=-
     // auth plugin pointer type
     class auth;
@@ -28,8 +27,8 @@ namespace eirods {
                                          
 }; // namespace
 
-#define __EIRODS_AUTH_TYPES_H__
-#endif // __EIRODS_AUTH_TYPES_H__
+#define __IRODS_AUTH_TYPES_HPP__
+#endif // __IRODS_AUTH_TYPES_HPP__
 
 
 

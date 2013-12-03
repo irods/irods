@@ -2,9 +2,8 @@
 
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_client_server_negotiation.hpp"
-#include "eirods_stacktrace.hpp"
+#include "irods_client_server_negotiation.hpp"
+#include "irods_stacktrace.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
@@ -17,7 +16,7 @@
 #include <map>
 
 
-namespace eirods {
+namespace irods {
     /// =-=-=-=-=-=-=-
     /// @brief convenience class to initialize the table and index map for negotiations
     class client_server_negotiations_context {
@@ -152,7 +151,7 @@ namespace eirods {
     /// =-=-=-=-=-=-=-
     /// @brief function which manages the TLS and Auth negotiations with the client
     error client_server_negotiation_for_client( 
-        eirods::network_object_ptr _ptr,
+        irods::network_object_ptr _ptr,
         std::string&               _result ) {
         // =-=-=-=-=-=-=-
         // prep the out variable
@@ -250,7 +249,7 @@ namespace eirods {
     /// =-=-=-=-=-=-=-
     /// @brief function which sends the negotiation message
     error send_client_server_negotiation_message( 
-        eirods::network_object_ptr _ptr, 
+        irods::network_object_ptr _ptr, 
         cs_neg_t&                  _cs_neg_msg ) {
         // =-=-=-=-=-=-=-
         // pack the negotiation message
@@ -266,7 +265,7 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         // pack the negotiation message
-        eirods::error ret = sendRodsMsg( _ptr, 
+        irods::error ret = sendRodsMsg( _ptr, 
                               RODS_CS_NEG_T, 
                               cs_neg_buf, 
                               0, 0, 0,
@@ -284,7 +283,7 @@ namespace eirods {
     /// =-=-=-=-=-=-=-
     /// @brief function which sends the negotiation message
     error read_client_server_negotiation_message( 
-        eirods::network_object_ptr      _ptr, 
+        irods::network_object_ptr      _ptr, 
         boost::shared_ptr< cs_neg_t >&  _cs_neg_msg ) {
         // =-=-=-=-=-=-=-
         // read the message header 
@@ -293,7 +292,7 @@ namespace eirods {
         tv.tv_usec = 0;
 
         msgHeader_t msg_header;
-        eirods::error ret = readMsgHeader( _ptr, &msg_header, &tv );
+        irods::error ret = readMsgHeader( _ptr, &msg_header, &tv );
         if( !ret.ok() ) {
             return PASSMSG( "read message header failed", ret );
         }
@@ -360,7 +359,7 @@ namespace eirods {
 			msg << "\t*** which is most likely not supported by the server.           ***\n";
 			msg << "\t*** Comment out irodsClientServerNegotiation in the irodsEnv    ***\n";
 			msg << "\t*** file to disable.                                            ***\n"; 
-			return ERROR( EIRODS_ADVANCED_NEGOTIATION_NOT_SUPPORTED, msg.str() );
+			return ERROR( ADVANCED_NEGOTIATION_NOT_SUPPORTED, msg.str() );
                 }
  
             } else {
@@ -395,12 +394,12 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         // check that we did get an appropriately sized message
-        if( msg_header.msgLen > (int) sizeof( eirods::cs_neg_t ) * 2 || 
+        if( msg_header.msgLen > (int) sizeof( irods::cs_neg_t ) * 2 || 
             msg_header.msgLen <= 0 ) {
             if ( struct_buf.buf != NULL)
                 free ( struct_buf.buf);
             std::stringstream msg;
-            msg << "message length is invalid: " << msg_header.msgLen << " vs " << sizeof( eirods::cs_neg_t );
+            msg << "message length is invalid: " << msg_header.msgLen << " vs " << sizeof( irods::cs_neg_t );
             return ERROR( SYS_HEADER_READ_LEN_ERR, msg.str() );
         }
         
@@ -427,7 +426,7 @@ namespace eirods {
 
     } // read_client_server_negotiation_message
 
-}; // namespace eirods
+}; // namespace irods
 
 
 

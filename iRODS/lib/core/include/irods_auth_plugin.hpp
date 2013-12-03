@@ -3,12 +3,12 @@
 #ifndef _auth_H_
 #define _auth_H_
 
-#include "eirods_error.hpp"
-#include "eirods_operation_wrapper.hpp"
-#include "eirods_auth_types.hpp"
-#include "eirods_auth_plugin_context.hpp"
+#include "irods_error.hpp"
+#include "irods_operation_wrapper.hpp"
+#include "irods_auth_types.hpp"
+#include "irods_auth_plugin_context.hpp"
 
-namespace eirods {
+namespace irods {
 
     /// @brief Type of an operation for start / stop
     typedef error (*auth_maintenance_operation)( plugin_property_map& );
@@ -69,7 +69,7 @@ namespace eirods {
         /// @brief delegate the call to the operation in question to the operation wrapper, with 0 param
         error call( 
             const std::string& _op, 
-            eirods::first_class_object_ptr _obj ) {
+            irods::first_class_object_ptr _obj ) {
             auth_plugin_context ctx( properties_, _obj, "" );
             return operations_[ _op ].call( ctx );
         
@@ -80,7 +80,7 @@ namespace eirods {
         template< typename T1 >
         error call( 
             const std::string& _op, 
-            eirods::first_class_object_ptr _obj, 
+            irods::first_class_object_ptr _obj, 
             T1 _t1 ) {
             auth_plugin_context ctx( properties_, _obj, "" );
             return operations_[ _op ].call< T1 >( ctx, _t1 );
@@ -92,7 +92,7 @@ namespace eirods {
         template< typename T1, typename T2 >
         error call( 
             const std::string& _op, 
-            eirods::first_class_object_ptr _obj, 
+            irods::first_class_object_ptr _obj, 
             T1 _t1, 
             T2 _t2 ) {
             auth_plugin_context ctx( properties_, _obj, "" );
@@ -105,7 +105,7 @@ namespace eirods {
         template< typename T1, typename T2, typename T3 >
         error call( 
             const std::string& _op, 
-            eirods::first_class_object_ptr _obj, 
+            irods::first_class_object_ptr _obj, 
             T1 _t1, 
             T2 _t2, 
             T3 _t3 ) {
@@ -120,7 +120,7 @@ namespace eirods {
         template< typename T1, typename T2, typename T3, typename T4 >
         error call( 
             const std::string& _op, 
-            eirods::first_class_object_ptr _obj, 
+            irods::first_class_object_ptr _obj, 
             T1 _t1, 
             T2 _t2, 
             T3 _t3, 
@@ -136,7 +136,7 @@ namespace eirods {
         template< typename T1, typename T2, typename T3, typename T4, typename T5 >
         error call( 
             const std::string& _op, 
-            eirods::first_class_object_ptr _obj, 
+            irods::first_class_object_ptr _obj, 
             T1 _t1, 
             T2 _t2, 
             T3 _t3, 
@@ -153,7 +153,7 @@ namespace eirods {
         template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6 >
         error call( 
             const std::string& _op, 
-            eirods::first_class_object_ptr _obj, 
+            irods::first_class_object_ptr _obj, 
             T1 _t1, 
             T2 _t2, 
             T3 _t3, 
@@ -171,7 +171,7 @@ namespace eirods {
         template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7 >
         error call( 
             const std::string& _op, 
-            eirods::first_class_object_ptr _obj, 
+            irods::first_class_object_ptr _obj, 
             T1 _t1, 
             T2 _t2, 
             T3 _t3, 
@@ -190,7 +190,7 @@ namespace eirods {
         template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8 >
         error call( 
             const std::string& _op, 
-            eirods::first_class_object_ptr _obj, 
+            irods::first_class_object_ptr _obj, 
             T1 _t1, 
             T2 _t2, 
             T3 _t3, 
@@ -230,6 +230,6 @@ namespace eirods {
         const std::string&,     // instance name
         const std::string& );   // context string
 
-}; // namespace eirods
+}; // namespace irods
 
 #endif // _auth_H_

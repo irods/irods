@@ -3,10 +3,10 @@
 #ifndef _create_write_replicator_H_
 #define _create_write_replicator_H_
 
-#include "eirods_error.hpp"
-#include "eirods_oper_replicator.hpp"
+#include "irods_error.hpp"
+#include "irods_oper_replicator.hpp"
 
-namespace eirods {
+namespace irods {
 
 /**
  * @brief Replicator for create/write operations
@@ -27,6 +27,6 @@ namespace eirods {
         std::string current_resource_;
         std::string child_;
     };
-}; // namespace eirods
+}; // namespace irods
 
 #endif // _create_write_replicator_H_

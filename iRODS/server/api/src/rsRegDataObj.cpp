@@ -9,7 +9,7 @@
 #include "icatHighLevelRoutines.hpp"
 #include "fileDriver.hpp"
 
-#include "eirods_file_object.hpp"
+#include "irods_file_object.hpp"
 
 /* rsRegDataObj - This call is strictly an API handler and should not be 
  * called directly in the server. For server calls, use svrRegDataObj
@@ -52,7 +52,7 @@ _rsRegDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
 {
 #ifdef RODS_CAT
     int status;
-    eirods::error ret;
+    irods::error ret;
     status = chlRegDataObj (rsComm, dataObjInfo);
     if(status < 0) {
         char* sys_error;
@@ -62,10 +62,10 @@ _rsRegDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
         msg << " - Failed to register data object \"" << dataObjInfo->objPath << "\"";
         msg << " - " << rods_error << " " << sys_error;
         ret = ERROR(status, msg.str());
-        eirods::log(ret);
+        irods::log(ret);
     } else {
-        eirods::file_object_ptr file_obj(
-                                    new eirods::file_object( 
+        irods::file_object_ptr file_obj(
+                                    new irods::file_object( 
                                         rsComm, 
                                         dataObjInfo ) );
         ret = fileRegistered(rsComm, file_obj);
@@ -76,7 +76,7 @@ _rsRegDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
             msg << dataObjInfo->objPath;
             msg << "\" was registered";
             ret = PASSMSG(msg.str(), ret);
-            eirods::log(ret);
+            irods::log(ret);
             status = ret.code();
         }
     }

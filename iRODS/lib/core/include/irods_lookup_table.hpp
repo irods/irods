@@ -1,37 +1,36 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 
-#ifndef EIRODS_PLUGIN_TABLE_HPP
-#define EIRODS_PLUGIN_TABLE_HPP
+#ifndef PLUGIN_TABLE_HPP
+#define PLUGIN_TABLE_HPP
 
 // =-=-=-=-=-=-=-
 // boost includes
 #include <boost/any.hpp>
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_hash.hpp"
-#include "eirods_error.hpp"
+#include "irods_hash.hpp"
+#include "irods_error.hpp"
 
 #include "rodsLog.hpp"
 
-namespace eirods {
+namespace irods {
 
     // =-=-=-=-=-=-=-
     // class to manage tables of plugins.  employing a class in order to use
     // RAII for adding entries to the table now that it is not a static array
     template< typename ValueType, 
               typename KeyType=std::string, 
-              typename HashType=eirods_string_hash >
+              typename HashType=irods_string_hash >
     class lookup_table {
     protected:
-        typedef EIRODS_HASH_TYPE< KeyType, ValueType, HashType > eirods_hash_map;
+        typedef HASH_TYPE< KeyType, ValueType, HashType > irods_hash_map;
         
-        eirods_hash_map table_;
+        irods_hash_map table_;
 			
     public:
-        typedef typename eirods_hash_map::iterator       iterator;
-        typedef typename eirods_hash_map::const_iterator const_iterator;
+        typedef typename irods_hash_map::iterator       iterator;
+        typedef typename irods_hash_map::const_iterator const_iterator;
         lookup_table(){};
         virtual ~lookup_table() {}
         ValueType& operator[]( KeyType _k ) {
@@ -62,7 +61,7 @@ namespace eirods {
         // accessor function
         error get( std::string _key, ValueType& _val ) {
             if( !has_entry( _key ) ) {
-                return ERROR( EIRODS_KEY_NOT_FOUND, "key not found" );
+                return ERROR( KEY_NOT_FOUND, "key not found" );
             }
 
             _val = table_[ _key ];
@@ -87,11 +86,11 @@ namespace eirods {
     template< typename KeyType, typename HashType >
     class lookup_table < boost::any, KeyType, HashType > {
     protected:
-        typedef EIRODS_HASH_TYPE< KeyType, boost::any, HashType > eirods_hash_map;
-        eirods_hash_map table_;
+        typedef HASH_TYPE< KeyType, boost::any, HashType > irods_hash_map;
+        irods_hash_map table_;
 			
     public:
-        typedef typename eirods_hash_map::iterator iterator;
+        typedef typename irods_hash_map::iterator iterator;
         lookup_table(){};
         virtual ~lookup_table() {}
         boost::any& operator[]( KeyType _k ) {
@@ -124,7 +123,7 @@ namespace eirods {
             // =-=-=-=-=-=-=-
             // check params
             if( _key.empty() ) {
-                return ERROR( EIRODS_KEY_NOT_FOUND, "empty key" );
+                return ERROR( KEY_NOT_FOUND, "empty key" );
             }
 
             if( !has_entry( _key ) ) {
@@ -132,7 +131,7 @@ namespace eirods {
                 msg << "failed to find key [";
                 msg << _key;
                 msg << "] in table.";
-                return ERROR(EIRODS_KEY_NOT_FOUND, msg.str());
+                return ERROR(KEY_NOT_FOUND, msg.str());
             }
 
             // =-=-=-=-=-=-=-
@@ -146,12 +145,12 @@ namespace eirods {
                 msg << "type and property key [";
                 msg << _key;
                 msg << "] mismatch";
-                return ERROR( EIRODS_KEY_TYPE_MISMATCH, msg.str() );
+                return ERROR( KEY_TYPE_MISMATCH, msg.str() );
             }
 		
             // =-=-=-=-=-=-=-
             // invalid locaiton in the code 
-            return ERROR( EIRODS_INVALID_LOCATION, "shouldn't get here." );
+            return ERROR( INVALID_LOCATION, "shouldn't get here." );
 
         } // get_property
 
@@ -162,7 +161,7 @@ namespace eirods {
             // =-=-=-=-=-=-=-
             // check params	
             if( _key.empty() ) {
-                return ERROR( EIRODS_KEY_NOT_FOUND, "empty key" );
+                return ERROR( KEY_NOT_FOUND, "empty key" );
             }
                 
             // =-=-=-=-=-=-=-
@@ -175,9 +174,9 @@ namespace eirods {
             
     }; // class lookup_table
 	
-}; // namepsace eirods
+}; // namespace irods
 
-#endif // EIRODS_PLUGIN_TABLE_H
+#endif // PLUGIN_TABLE_HPP
 
 
 

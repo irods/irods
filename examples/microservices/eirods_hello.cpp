@@ -22,11 +22,11 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // 2.  Create the plugin factory function which will return a microservice
     //     table entry
-    eirods::ms_table_entry*  plugin_factory() {
+    irods::ms_table_entry*  plugin_factory() {
         // =-=-=-=-=-=-=-
         // 3. allocate a microservice plugin which takes the number of function
         //    params as a parameter to the constructor
-    	eirods::ms_table_entry* msvc = new eirods::ms_table_entry(1);
+    	irods::ms_table_entry* msvc = new eirods::ms_table_entry(1);
 
         // =-=-=-=-=-=-=-
         // 4. add the microservice function as an operation to the plugin

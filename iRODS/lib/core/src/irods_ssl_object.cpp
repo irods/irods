@@ -1,11 +1,10 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_ssl_object.hpp"
-#include "eirods_network_manager.hpp"
+#include "irods_ssl_object.hpp"
+#include "irods_network_manager.hpp"
 
-namespace eirods {
+namespace irods {
     // =-=-=-=-=-=-=-
     // public - ctor
     ssl_object::ssl_object() :
@@ -222,7 +221,7 @@ namespace eirods {
     } // to_server
 
 
-}; // namespace eirods
+}; // namespace irods
 
 
 

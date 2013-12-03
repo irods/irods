@@ -414,7 +414,7 @@ endif
 # filesystem meta-data (i.e. 'stat' information) from files 
 # and directories added to iRODS via iput and ireg. Only supported
 # on UNIX/Linux-type systems. 
-FILESYSTEM_META = 1
+# FILESYSTEM_META = 1
 
 # DIRECT_ACCESS_VAULT - build in support for a resource type that
 # will allow users to directly access files in the vault of this 

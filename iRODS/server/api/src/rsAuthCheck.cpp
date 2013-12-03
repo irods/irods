@@ -13,9 +13,8 @@
 #include <string>
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_kvp_string_parser.hpp"
-#include "eirods_auth_constants.hpp"
+#include "irods_kvp_string_parser.hpp"
+#include "irods_auth_constants.hpp"
 
 int
 rsAuthCheck (rsComm_t *rsComm, authCheckInp_t *authCheckInp, 
@@ -39,17 +38,17 @@ rsAuthCheck (rsComm_t *rsComm, authCheckInp_t *authCheckInp,
     // holding the auth scheme as well as the response
     // try to parse it
     std::string orig_resp = authCheckInp->response;
-    eirods::kvp_map_t kvp;
-    eirods::error ret = eirods::parse_kvp_string(
+    irods::kvp_map_t kvp;
+    irods::error ret = irods::parse_kvp_string(
             orig_resp,
             kvp );
     std::string scheme;
     std::string response = authCheckInp->response; 
     if( ret.ok() ) {
-        if( kvp.end() != kvp.find( eirods::AUTH_SCHEME_KEY ) &&
-            kvp.end() != kvp.find( eirods::AUTH_RESPONSE_KEY ) ) {
-            response = kvp[ eirods::AUTH_RESPONSE_KEY ];
-            scheme   = kvp[ eirods::AUTH_SCHEME_KEY   ];
+        if( kvp.end() != kvp.find( irods::AUTH_SCHEME_KEY ) &&
+            kvp.end() != kvp.find( irods::AUTH_RESPONSE_KEY ) ) {
+            response = kvp[ irods::AUTH_RESPONSE_KEY ];
+            scheme   = kvp[ irods::AUTH_SCHEME_KEY   ];
         }   
     }
     status = chlCheckAuth(

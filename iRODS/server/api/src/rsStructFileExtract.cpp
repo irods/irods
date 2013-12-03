@@ -11,10 +11,9 @@
 #include "physPath.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_structured_object.hpp"
-#include "eirods_resource_backport.hpp"
-#include "eirods_resource_redirect.hpp"
+#include "irods_structured_object.hpp"
+#include "irods_resource_backport.hpp"
+#include "irods_resource_redirect.hpp"
 
 
 int
@@ -37,13 +36,13 @@ rsStructFileExtract (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
     int               local = LOCAL_HOST;
     rodsServerHost_t* host  =  0;
     if( getValByKey( &structFileOprInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
-        eirods::error ret = eirods::resource_redirect( eirods::EIRODS_OPEN_OPERATION, rsComm, 
+        irods::error ret = irods::resource_redirect( irods::OPEN_OPERATION, rsComm, 
                                                        &dataObjInp, hier, host, local );
         if( !ret.ok() ) { 
             std::stringstream msg;
-            msg << "failed in eirods::resource_redirect for [";
+            msg << "failed in irods::resource_redirect for [";
             msg << dataObjInp.objPath << "]";
-            eirods::log( PASSMSG( msg.str(), ret ) );
+            irods::log( PASSMSG( msg.str(), ret ) );
             return ret.code();
         }
        
@@ -128,8 +127,8 @@ int _rsStructFileExtract( rsComm_t*           _comm,
     // =-=-=-=-=-=-=-
     // create a structured fco and resolve a resource plugin
     // to handle the extract process
-    eirods::structured_object_ptr struct_obj( 
-                                      new eirods::structured_object( 
+    irods::structured_object_ptr struct_obj( 
+                                      new irods::structured_object( 
                                            ) );
     struct_obj->spec_coll( _struct_inp->specColl );
     struct_obj->addr( _struct_inp->addr );
@@ -146,15 +145,15 @@ int _rsStructFileExtract( rsComm_t*           _comm,
 
     // =-=-=-=-=-=-=-
 	// retrieve the resource name given the object
-    eirods::plugin_ptr ptr;
-    eirods::error ret_err = struct_obj->resolve( eirods::RESOURCE_INTERFACE, ptr ); 
+    irods::plugin_ptr ptr;
+    irods::error ret_err = struct_obj->resolve( irods::RESOURCE_INTERFACE, ptr ); 
 	if( !ret_err.ok() ) {
-		eirods::error err = PASSMSG( "failed to resolve resource", ret_err );
-        eirods::log( err );
+		irods::error err = PASSMSG( "failed to resolve resource", ret_err );
+        irods::log( err );
         return ret_err.code();
 	}
 	
-    eirods::resource_ptr resc = boost::dynamic_pointer_cast< eirods::resource >( ptr );
+    irods::resource_ptr resc = boost::dynamic_pointer_cast< irods::resource >( ptr );
  
 	// =-=-=-=-=-=-=-
 	// make the call to the "extract" interface
@@ -163,8 +162,8 @@ int _rsStructFileExtract( rsComm_t*           _comm,
     // =-=-=-=-=-=-=-
 	// pass along an error from the interface or return SUCCESS
 	if( !ret_err.ok() ) {
-        eirods::error err = PASSMSG( "failed to call 'extract'", ret_err );
-        eirods::log( err );
+        irods::error err = PASSMSG( "failed to call 'extract'", ret_err );
+        irods::log( err );
         return ret_err.code();
 	} else {
         return ret_err.code();

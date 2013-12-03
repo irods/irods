@@ -8,11 +8,10 @@
 
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_log.hpp"
-#include "eirods_file_object.hpp"
-#include "eirods_stacktrace.hpp"
-#include "eirods_resource_backport.hpp"
+#include "irods_log.hpp"
+#include "irods_file_object.hpp"
+#include "irods_stacktrace.hpp"
+#include "irods_resource_backport.hpp"
 
 int
 rsFileChmod (rsComm_t *rsComm, fileChmodInp_t *fileChmodInp)
@@ -22,9 +21,9 @@ rsFileChmod (rsComm_t *rsComm, fileChmodInp_t *fileChmodInp)
     int status;
 
     //remoteFlag = resolveHost (&fileChmodInp->addr, &rodsServerHost);
-    eirods::error ret = eirods::get_host_for_hier_string( fileChmodInp->rescHier, remoteFlag, rodsServerHost );
+    irods::error ret = irods::get_host_for_hier_string( fileChmodInp->rescHier, remoteFlag, rodsServerHost );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "failed in call to eirods::get_host_for_hier_string", ret ) );
+        irods::log( PASSMSG( "failed in call to irods::get_host_for_hier_string", ret ) );
         return -1;
     }
     
@@ -87,20 +86,20 @@ int _rsFileChmod(
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - Empty logical path.";
-        eirods::log(LOG_ERROR, msg.str());
+        irods::log(LOG_ERROR, msg.str());
         return -1;
     }
 
     // =-=-=-=-=-=-=-
     // make the call to chmod via the resource plugin
-    eirods::file_object_ptr file_obj( 
-                                new eirods::file_object( 
+    irods::file_object_ptr file_obj( 
+                                new irods::file_object( 
                                     _comm, 
                                     _chmod_inp->objPath, 
                                     _chmod_inp->fileName, 
                                     _chmod_inp->rescHier, 
                                     0, 0, 0 ) );
-    eirods::error chmod_err = fileChmod( _comm, file_obj, _chmod_inp->mode );
+    irods::error chmod_err = fileChmod( _comm, file_obj, _chmod_inp->mode );
     
     // =-=-=-=-=-=-=-
     // report errors if any
@@ -111,8 +110,8 @@ int _rsFileChmod(
         msg << "] to mode [";
         msg << _chmod_inp->mode;
         msg << "";
-        eirods::error err = PASSMSG( msg.str(), chmod_err );
-        eirods::log ( err );
+        irods::error err = PASSMSG( msg.str(), chmod_err );
+        irods::log ( err );
     }
 
     return chmod_err.code();

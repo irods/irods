@@ -7,8 +7,7 @@
  */
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_network_factory.hpp"
+#include "irods_network_factory.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
@@ -145,10 +144,10 @@ sendApiRequest (rcComm_t *conn, int apiInx, void *inputStruct,
         inputBsBBuf = NULL;
     }
 
-    eirods::network_object_ptr net_obj;
-    eirods::error ret = eirods::network_factory( conn, net_obj );
+    irods::network_object_ptr net_obj;
+    irods::error ret = irods::network_factory( conn, net_obj );
     if( !ret.ok() ) {
-        eirods::log( PASS( ret ) );
+        irods::log( PASS( ret ) );
         return ret.code();
     }
  
@@ -161,7 +160,7 @@ sendApiRequest (rcComm_t *conn, int apiInx, void *inputStruct,
               RcApiTable[apiInx].apiNumber, 
               conn->irodsProt );
     if( !ret.ok() ) {
-        eirods::log( PASS( ret ) ); 
+        irods::log( PASS( ret ) ); 
         if( conn->svrVersion != NULL && 
             conn->svrVersion->reconnPort > 0 ) {
             int status1;
@@ -185,7 +184,7 @@ sendApiRequest (rcComm_t *conn, int apiInx, void *inputStruct,
                           RcApiTable[apiInx].apiNumber, 
                           conn->irodsProt );
                 if( !ret.ok() ) {
-                    eirods::log( PASS( ret ) ); 
+                    irods::log( PASS( ret ) ); 
                 } else {
                     status = savedStatus;
                 }
@@ -240,16 +239,16 @@ readAndProcApiReply (rcComm_t *conn, int apiInx, void **outStruct,
         return (USER_API_INPUT_ERR);
     }
 
-    eirods::network_object_ptr net_obj;
-    eirods::error ret = eirods::network_factory( conn, net_obj );
+    irods::network_object_ptr net_obj;
+    irods::error ret = irods::network_factory( conn, net_obj );
     if( !ret.ok() ) {
-        eirods::log( PASS( ret ) );
+        irods::log( PASS( ret ) );
         return ret.code();
     }
 
     ret = readMsgHeader( net_obj, &myHeader, NULL );
     if( !ret.ok() ) {
-        eirods::log( PASS( ret ) );
+        irods::log( PASS( ret ) );
         if (conn->svrVersion != NULL && conn->svrVersion->reconnPort > 0) {
             int savedStatus = ret.code();
             /* try again. the socket might have changed */
@@ -259,7 +258,7 @@ readAndProcApiReply (rcComm_t *conn, int apiInx, void **outStruct,
                      conn->clientState, conn->agentState);
             cliSwitchConnect (conn);
             conn->lock->unlock();
-            eirods::error ret = readMsgHeader( net_obj, &myHeader, NULL );
+            irods::error ret = readMsgHeader( net_obj, &myHeader, NULL );
 
             if( !ret.ok() ) {
                 cliChkReconnAtReadEnd (conn);
@@ -275,7 +274,7 @@ readAndProcApiReply (rcComm_t *conn, int apiInx, void **outStruct,
     ret = readMsgBody( net_obj, &myHeader, &outStructBBuf, outBsBBuf,
                        &errorBBuf, conn->irodsProt, NULL );
     if( !ret.ok() ) {
-        eirods::log( PASS( ret ) );
+        irods::log( PASS( ret ) );
         cliChkReconnAtReadEnd (conn);
         return (status);
     } // if !ret.ok

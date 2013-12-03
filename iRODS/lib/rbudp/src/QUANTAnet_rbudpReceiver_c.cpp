@@ -21,7 +21,7 @@
  *****************************************************************************/
 
 #include "QUANTAnet_rbudpReceiver_c.hpp"
-#include "eirods_log.hpp"
+#include "irods_log.hpp"
 
 #include <stdarg.h>
 
@@ -230,7 +230,7 @@ int  udpReceive (rbudpReceiver_t *rbudpReceiver)
 		retval = select(maxfdpl, &rset, NULL, NULL, &timeout);
     if (retval < 0)
     {
-      eirods::log( ERROR ( retval, "select failed.")); 
+      irods::log( ERROR ( retval, "select failed.")); 
     }
 		// receiving a packet
 		if (FD_ISSET(rbudpReceiver->rbudpBase.udpSockfd, &rset))

@@ -29,10 +29,9 @@
 #include <iostream>
 
 // =-=-=-=-=-=-=-
-// eirods include
-#include "eirods_resource_backport.hpp"
-#include "eirods_hierarchy_parser.hpp"
-#include "eirods_stacktrace.hpp"
+#include "irods_resource_backport.hpp"
+#include "irods_hierarchy_parser.hpp"
+#include "irods_stacktrace.hpp"
 
 int
 getFileMode (dataObjInp_t *dataObjInp)
@@ -97,11 +96,11 @@ getFilePathName (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
 
     // JMC - legacy resource if (RescTypeDef[dataObjInfo->rescInfo->rescTypeInx].createPathFlag == NO_CREATE_PATH) {
     int chk_path = 0;
-    eirods::error err = eirods::get_resource_property< int >( 
+    irods::error err = irods::get_resource_property< int >( 
                             dataObjInfo->rescInfo->rescName, 
-                            eirods::RESOURCE_CHECK_PATH_PERM, chk_path );
+                            irods::RESOURCE_CHECK_PATH_PERM, chk_path );
     if( !err.ok() ) {
-        eirods::log( PASS( err ) );
+        irods::log( PASS( err ) );
     }
 
     if( NO_CREATE_PATH == chk_path ) {
@@ -321,11 +320,11 @@ getchkPathPerm (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             applyRule ("acSetChkFilePathPerm", NULL, &rei, NO_SAVE_REI);
 
             int chk_path = 0;
-            eirods::error err = eirods::get_resource_property< int >( 
+            irods::error err = irods::get_resource_property< int >( 
                                     rescInfo->rescName, 
-                                    eirods::RESOURCE_CHECK_PATH_PERM, chk_path );
+                                    irods::RESOURCE_CHECK_PATH_PERM, chk_path );
             if( !err.ok() ) {
-                eirods::log( PASS( err ) );
+                irods::log( PASS( err ) );
             }
 
             if( err.ok() && ( rei.status == NO_CHK_PATH_PERM || NO_CHK_PATH_PERM == chk_path ) ) {
@@ -460,15 +459,15 @@ _dataObjChksum (
     int category = FILE_CAT; // only supporting file resource, not DB right now
     
     std::string location;
-    eirods::error ret;
+    irods::error ret;
     // JMC - legacy resource - switch ( RescTypeDef[rescTypeInx].rescCat) {
     switch( category ) {
     case FILE_CAT:
         // =-=-=-=-=-=-=-
         // get the resource location for the hier string leaf
-        ret = eirods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
+        ret = irods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
         if( !ret.ok() ) {
-            eirods::log( PASSMSG( "_dataObjChksum - failed in get_loc_for_hier_string", ret ) );
+            irods::log( PASSMSG( "_dataObjChksum - failed in get_loc_for_hier_string", ret ) );
             return -1;
         }
 
@@ -479,12 +478,12 @@ _dataObjChksum (
         rstrcpy (fileChksumInp.objPath, dataObjInfo->objPath, MAX_NAME_LEN);
         rstrcpy (fileChksumInp.in_pdmo, dataObjInfo->in_pdmo, MAX_NAME_LEN);
         status = rsFileChksum (rsComm, &fileChksumInp, chksumStr);
-        if(status == EIRODS_DIRECT_ARCHIVE_ACCESS) {
+        if(status == DIRECT_ARCHIVE_ACCESS) {
             std::stringstream msg;
             msg << "Data object: \"";
             msg << dataObjInfo->filePath;
             msg << "\" is located in an archive resource. Ignoring its checksum.";
-            eirods::log(LOG_NOTICE, msg.str());
+            irods::log(LOG_NOTICE, msg.str());
 
         }
         break;
@@ -680,24 +679,24 @@ renameFilePathToNewDir (rsComm_t *rsComm, char *newDir,
     // =-=-=-=-=-=-=-
     // get the resource location for the hier string leaf
     std::string location;
-    eirods::error ret = eirods::get_loc_for_hier_string( fileRenameInp->rescHier, location );
+    irods::error ret = irods::get_loc_for_hier_string( fileRenameInp->rescHier, location );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "renameFilePathToNewDir - failed in get_loc_for_hier_string", ret ) );
+        irods::log( PASSMSG( "renameFilePathToNewDir - failed in get_loc_for_hier_string", ret ) );
         return -1;
     }
 
     rstrcpy (fileRenameInp->addr.hostAddr, location.c_str(), NAME_LEN);
 
     std::string vault_path;
-    ret = eirods::get_vault_path_for_hier_string(fileRenameInp->rescHier, vault_path);
+    ret = irods::get_vault_path_for_hier_string(fileRenameInp->rescHier, vault_path);
     if(!ret.ok()) {
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - Unable to determine vault path from resource hierarch: \"";
         msg << fileRenameInp->rescHier;
         msg << "\"";
-        eirods::error result = PASSMSG(msg.str(), ret);
-        eirods::log(result);
+        irods::error result = PASSMSG(msg.str(), ret);
+        irods::log(result);
         return result.code();
     }
     
@@ -707,8 +706,8 @@ renameFilePathToNewDir (rsComm_t *rsComm, char *newDir,
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - Vault path is empty.";
-        eirods::error result = ERROR(RESCVAULTPATH_EMPTY_IN_STRUCT_ERR, msg.str());
-        eirods::log(result);
+        irods::error result = ERROR(RESCVAULTPATH_EMPTY_IN_STRUCT_ERR, msg.str());
+        irods::log(result);
         return (result.code());
     }
 
@@ -722,8 +721,8 @@ renameFilePathToNewDir (rsComm_t *rsComm, char *newDir,
         msg << "\" is not in vault: \"";
         msg << vault_path;
         msg << "\"";
-        eirods::error result = ERROR(EIRODS_FILE_NOT_IN_VAULT, msg.str());
-        eirods::log(result);
+        irods::error result = ERROR(FILE_NOT_IN_VAULT, msg.str());
+        irods::log(result);
         return result.code();
     }
 
@@ -791,11 +790,11 @@ syncDataObjPhyPathS (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         return 0;
 
     int create_path = 0;
-    eirods::error err = eirods::get_resource_property< int >( 
+    irods::error err = irods::get_resource_property< int >( 
                             dataObjInfo->rescInfo->rescName, 
-                            eirods::RESOURCE_CREATE_PATH, create_path );
+                            irods::RESOURCE_CREATE_PATH, create_path );
     if( !err.ok() ) {
-        eirods::log( PASS( err ) );
+        irods::log( PASS( err ) );
     }
 
     // JMC - legacy code - if (RescTypeDef[dataObjInfo->rescInfo->rescTypeInx].createPathFlag == NO_CREATE_PATH) {
@@ -827,9 +826,9 @@ syncDataObjPhyPathS (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     // =-=-=-=-=-=-=-
     // get the resource location for the hier string leaf
     std::string location;
-    eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
+    irods::error ret = irods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "syncDataObjPhyPathS - failed in get_loc_for_hier_string", ret ) );
+        irods::log( PASSMSG( "syncDataObjPhyPathS - failed in get_loc_for_hier_string", ret ) );
         return -1;
     }
 
@@ -1002,12 +1001,12 @@ syncCollPhyPath (rsComm_t *rsComm, char *collection)
               }*/
            
             dataObjInfo.rescInfo = new rescInfo_t; 
-            eirods::error err = eirods::get_resc_info( tmpRescName, *dataObjInfo.rescInfo );
+            irods::error err = irods::get_resc_info( tmpRescName, *dataObjInfo.rescInfo );
             if( !err.ok() ) {
                 std::stringstream msg;
                 msg << "getDefaultLocalRescInfo - failed to get resource info";
                 msg << tmpRescName;
-                eirods::log( PASS( err ) );
+                irods::log( PASS( err ) );
             }
 
             rstrcpy (dataObjInfo.filePath, tmpFilePath, MAX_NAME_LEN);
@@ -1050,13 +1049,13 @@ isInVault (dataObjInfo_t *dataObjInfo)
     }
 
     std::string vault_path;
-    eirods::error ret = eirods::get_vault_path_for_hier_string(dataObjInfo->rescHier, vault_path);
+    irods::error ret = irods::get_vault_path_for_hier_string(dataObjInfo->rescHier, vault_path);
     if(!ret.ok()) {
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - Failed to get the vault path for the hierarchy: \"" << dataObjInfo->rescHier << "\"";
         ret = PASSMSG(msg.str(), ret);
-        eirods::log(ret);
+        irods::log(ret);
         return ret.code();
     }
     len = vault_path.size();
@@ -1427,13 +1426,13 @@ getLeafRescPathName(
     std::string& _ret_string)
 {
     int result = 0;
-    eirods::hierarchy_parser hp;
-    eirods::error ret;
+    irods::hierarchy_parser hp;
+    irods::error ret;
     ret = hp.set_string(_resc_hier);
     if(!ret.ok()) {
         std::stringstream msg;
         msg << "Unable to parse hierarchy string: \"" << _resc_hier << "\"";
-        eirods::log(LOG_ERROR, msg.str());
+        irods::log(LOG_ERROR, msg.str());
         result = ret.code();
     } else {
         std::string leaf;
@@ -1441,14 +1440,14 @@ getLeafRescPathName(
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Unable to retrieve last resource from hierarchy string: \"" << _resc_hier << "\"";
-            eirods::log(LOG_ERROR, msg.str());
+            irods::log(LOG_ERROR, msg.str());
             result = ret.code();
         } else {
-            ret = eirods::get_resource_property<std::string>(leaf, eirods::RESOURCE_PATH, _ret_string);
+            ret = irods::get_resource_property<std::string>(leaf, irods::RESOURCE_PATH, _ret_string);
             if(!ret.ok()) {
                 std::stringstream msg;
                 msg << "Unable to get vault path from resource: \"" << leaf << "\"";
-                eirods::log(LOG_ERROR, msg.str());
+                irods::log(LOG_ERROR, msg.str());
                 result = ret.code();
             }
         }

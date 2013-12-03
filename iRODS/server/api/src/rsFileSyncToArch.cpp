@@ -14,12 +14,11 @@
 #include "physPath.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_log.hpp"
-#include "eirods_file_object.hpp"
-#include "eirods_collection_object.hpp"
-#include "eirods_stacktrace.hpp"
-#include "eirods_resource_backport.hpp"
+#include "irods_log.hpp"
+#include "irods_file_object.hpp"
+#include "irods_collection_object.hpp"
+#include "irods_stacktrace.hpp"
+#include "irods_resource_backport.hpp"
 
 int
 rsFileSyncToArch (rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp)
@@ -29,9 +28,9 @@ rsFileSyncToArch (rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp)
     int status;
 
 //    remoteFlag = resolveHost (&fileSyncToArchInp->addr, &rodsServerHost);
-    eirods::error ret = eirods::get_host_for_hier_string( fileSyncToArchInp->rescHier, remoteFlag, rodsServerHost );
+    irods::error ret = irods::get_host_for_hier_string( fileSyncToArchInp->rescHier, remoteFlag, rodsServerHost );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "failed in call to eirods::get_host_for_hier_string", ret ) );
+        irods::log( PASSMSG( "failed in call to irods::get_host_for_hier_string", ret ) );
         return -1;
     }
 
@@ -115,21 +114,21 @@ int _rsFileSyncToArch(
     if(_sync_inp->objPath[0] == '\0') {
         std::stringstream msg;
         msg << "Empty logical path.";
-        eirods::log(LOG_ERROR, msg.str());
+        irods::log(LOG_ERROR, msg.str());
         return -1;
     }
     
     // =-=-=-=-=-=-=-
     // make call to synctoarch via resource plugin
-    eirods::file_object_ptr file_obj( 
-                            new eirods::file_object( 
+    irods::file_object_ptr file_obj( 
+                            new irods::file_object( 
                                 _comm,
                                 _sync_inp->objPath,
                                 _sync_inp->filename, "", 0, 
                                 _sync_inp->mode, 
                                 _sync_inp->flags ) );
     file_obj->resc_hier( _sync_inp->rescHier );
-    eirods::error sync_err = fileSyncToArch( _comm, file_obj, _sync_inp->cacheFilename );
+    irods::error sync_err = fileSyncToArch( _comm, file_obj, _sync_inp->cacheFilename );
 
     if( !sync_err.ok() ) {
 
@@ -140,27 +139,27 @@ int _rsFileSyncToArch(
         } else if (getErrno (sync_err.code()) == EEXIST) {
             // =-=-=-=-=-=-=-
             // an empty dir may be there, make the call to rmdir via the resource plugin
-            eirods::collection_object_ptr coll_obj( 
-                                              new eirods::collection_object(
+            irods::collection_object_ptr coll_obj( 
+                                              new irods::collection_object(
                                                   _sync_inp->filename, 
                                                   _sync_inp->rescHier, 
                                                   0, 0 ) );
-            eirods::error rmdir_err = fileRmdir( _comm, coll_obj );
+            irods::error rmdir_err = fileRmdir( _comm, coll_obj );
             if( !rmdir_err.ok() ) {
                 std::stringstream msg;
                 msg << "fileRmdir failed for [";
                 msg << _sync_inp->filename;
                 msg << "]";
-                eirods::error err = PASSMSG( msg.str(), sync_err );
-                eirods::log ( err );
+                irods::error err = PASSMSG( msg.str(), sync_err );
+                irods::log ( err );
             }
         } else {
             std::stringstream msg;
             msg << "fileSyncToArch failed for [";
             msg << _sync_inp->filename;
             msg << "]";
-            eirods::error err = PASSMSG( msg.str(), sync_err );
-            eirods::log ( err );
+            irods::error err = PASSMSG( msg.str(), sync_err );
+            irods::log ( err );
             return sync_err.code();
         }
         
@@ -173,8 +172,8 @@ int _rsFileSyncToArch(
             msg << _sync_inp->filename;
             msg << "]";
             msg << sync_err.code();
-            eirods::error err = PASSMSG( msg.str(), sync_err );
-            eirods::log ( err );
+            irods::error err = PASSMSG( msg.str(), sync_err );
+            irods::log ( err );
         }
 
     } // if !sync_err.ok()

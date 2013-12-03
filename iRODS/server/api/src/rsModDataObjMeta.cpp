@@ -10,8 +10,8 @@
 #include "objMetaOpr.hpp"
 #include "dataObjOpr.hpp"
 
-#include "eirods_file_object.hpp"
-#include "eirods_stacktrace.hpp"
+#include "irods_file_object.hpp"
+#include "irods_stacktrace.hpp"
 
 int _call_file_modified_for_modification(
     rsComm_t*         rsComm, 
@@ -113,8 +113,8 @@ _rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)
                          "_rsModDataObjMeta:chlModDataObjMeta %s error stat=%d",
                          tmpDataObjInfo->objPath, status);
             } else {
-                eirods::file_object_ptr file_obj(
-                                            new eirods::file_object( 
+                irods::file_object_ptr file_obj(
+                                            new irods::file_object( 
                                                 rsComm, 
                                                 tmpDataObjInfo ) );
 
@@ -124,7 +124,7 @@ _rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)
 
                 }
 
-                eirods::error ret = fileModified(rsComm, file_obj);
+                irods::error ret = fileModified(rsComm, file_obj);
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
@@ -132,7 +132,7 @@ _rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)
                     msg << tmpDataObjInfo->objPath;
                     msg << " was modified.";
                     ret = PASSMSG(msg.str(), ret);
-                    eirods::log(ret);
+                    irods::log(ret);
                     status = ret.code();
                 }
             }
@@ -149,11 +149,11 @@ _rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)
             msg << " - Failed to modify the database for object \"";
             msg << dataObjInfo->objPath;
             msg << "\" - " << rods_error << " " << sys_error;
-            eirods::error ret = ERROR(status, msg.str());
-            eirods::log(ret);
+            irods::error ret = ERROR(status, msg.str());
+            irods::log(ret);
         } else {
-            eirods::file_object_ptr file_obj(
-                                        new eirods::file_object( 
+            irods::file_object_ptr file_obj(
+                                        new irods::file_object( 
                                             rsComm, 
                                             dataObjInfo ) );
 
@@ -161,7 +161,7 @@ _rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)
             if(pdmo_kw != NULL) {
                 file_obj->in_pdmo(pdmo_kw);
             }
-            eirods::error ret = fileModified(rsComm, file_obj);
+            irods::error ret = fileModified(rsComm, file_obj);
             if(!ret.ok()) {
                 std::stringstream msg;
                 msg << __FUNCTION__;
@@ -169,7 +169,7 @@ _rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)
                 msg << dataObjInfo->objPath;
                 msg << "\" was modified.";
                 ret = PASSMSG(msg.str(), ret);
-                eirods::log(ret);
+                irods::log(ret);
                 status = ret.code();
             }
         }
@@ -241,8 +241,8 @@ int _call_file_modified_for_modification(
             if (tmpDataObjInfo->specColl != NULL)
                 break;
         
-            eirods::file_object_ptr file_obj(
-                                        new eirods::file_object( 
+            irods::file_object_ptr file_obj(
+                                        new irods::file_object( 
                                             rsComm, 
                                             tmpDataObjInfo ) );
 
@@ -252,7 +252,7 @@ int _call_file_modified_for_modification(
 
             }
 
-            eirods::error ret = fileModified(rsComm, file_obj);
+            irods::error ret = fileModified(rsComm, file_obj);
             if(!ret.ok()) {
                 std::stringstream msg;
                 msg << __FUNCTION__;
@@ -260,7 +260,7 @@ int _call_file_modified_for_modification(
                 msg << tmpDataObjInfo->objPath;
                 msg << " was modified.";
                 ret = PASSMSG(msg.str(), ret);
-                eirods::log(ret);
+                irods::log(ret);
                 status = ret.code();
             }
         
@@ -268,8 +268,8 @@ int _call_file_modified_for_modification(
         }
         freeAllDataObjInfo (dataObjInfoHead);
     } else {
-        eirods::file_object_ptr file_obj(
-                                    new eirods::file_object( 
+        irods::file_object_ptr file_obj(
+                                    new irods::file_object( 
                                         rsComm, 
                                         dataObjInfo ) );
 
@@ -277,7 +277,7 @@ int _call_file_modified_for_modification(
         if(pdmo_kw != NULL) {
             file_obj->in_pdmo(pdmo_kw);
         }
-        eirods::error ret = fileModified(rsComm, file_obj);
+        irods::error ret = fileModified(rsComm, file_obj);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << __FUNCTION__;
@@ -285,7 +285,7 @@ int _call_file_modified_for_modification(
             msg << dataObjInfo->objPath;
             msg << "\" was modified.";
             ret = PASSMSG(msg.str(), ret);
-            eirods::log(ret);
+            irods::log(ret);
             status = ret.code();
         }
     

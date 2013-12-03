@@ -7,11 +7,10 @@
 #include "rcMisc.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_native_auth_object.hpp"
-#include "eirods_pam_auth_object.hpp"
-#include "eirods_kvp_string_parser.hpp"
-#include "eirods_auth_constants.hpp"
+#include "irods_native_auth_object.hpp"
+#include "irods_pam_auth_object.hpp"
+#include "irods_kvp_string_parser.hpp"
+#include "irods_auth_constants.hpp"
 
 #include<iostream>
 void usage (char *prog);
@@ -245,7 +244,7 @@ main(int argc, char **argv)
        lower_scheme.begin(), 
        ::tolower );
 
-    if( eirods::AUTH_PAM_SCHEME == lower_scheme ) {
+    if( irods::AUTH_PAM_SCHEME == lower_scheme ) {
        doPassword=0;
     }
 
@@ -283,7 +282,7 @@ main(int argc, char **argv)
     // PAM auth gets special consideration, and also includes an
     // auth by the usual convention
     bool pam_flg = false;
-    if( eirods::AUTH_PAM_SCHEME == lower_scheme ) {
+    if( irods::AUTH_PAM_SCHEME == lower_scheme ) {
         // =-=-=-=-=-=-=-
         // set a flag stating that we have done pam and the auth
         // scheme needs overridden
@@ -292,17 +291,17 @@ main(int argc, char **argv)
         // =-=-=-=-=-=-=-
         // build a context string which includes the ttl and password
         std::stringstream ttl_str;  ttl_str << ttl;
-        std::string context = eirods::AUTH_TTL_KEY      +
-                              eirods::kvp_association() + 
+        std::string context = irods::AUTH_TTL_KEY      +
+                              irods::kvp_association() + 
                               ttl_str.str()             +
-                              eirods::kvp_delimiter()   +
-                              eirods::AUTH_PASSWORD_KEY +
-                              eirods::kvp_association() + 
+                              irods::kvp_delimiter()   +
+                              irods::AUTH_PASSWORD_KEY +
+                              irods::kvp_association() + 
                               password;
         // =-=-=-=-=-=-=-
         // pass the context with the ttl as well as an override which 
         // demands the pam authentication plugin
-        status = clientLogin( Conn, context.c_str(), eirods::AUTH_PAM_SCHEME.c_str() );
+        status = clientLogin( Conn, context.c_str(), irods::AUTH_PAM_SCHEME.c_str() );
         if( status != 0 ) {
             exit(8);
         }
@@ -316,7 +315,7 @@ main(int argc, char **argv)
     // since we might be using PAM
     // and check that the user/password is OK 
     const char* auth_scheme = ( pam_flg )                        ? 
-                              eirods::AUTH_NATIVE_SCHEME.c_str() : 
+                              irods::AUTH_NATIVE_SCHEME.c_str() : 
                               myEnv.rodsAuthScheme;
     status = clientLogin( Conn, 0, auth_scheme );
     if (status != 0) {

@@ -1,8 +1,8 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
-#include "eirods_stacktrace.hpp"
+#include "irods_stacktrace.hpp"
 #include "rodsErrorTable.hpp"
-#include "eirods_log.hpp"
+#include "irods_log.hpp"
 
 #include <iostream>
 
@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <cxxabi.h>
 
-namespace eirods {
+namespace irods {
 
     static const int max_stack_size = 50;
     
@@ -124,4 +124,4 @@ namespace eirods {
         return result;
     }
 
-}; // namespace eirods
+}; // namespace irods

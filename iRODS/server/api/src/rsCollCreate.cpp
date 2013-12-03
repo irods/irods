@@ -19,14 +19,13 @@
 #include "physPath.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_resource_backport.hpp"
-#include "eirods_hierarchy_parser.hpp"
+#include "irods_resource_backport.hpp"
+#include "irods_hierarchy_parser.hpp"
 
 
 // =-=-=-=-=-=-=-
 /// @brief function which determines if a collection is created at the root level
-eirods::error validate_collection_path( 
+irods::error validate_collection_path( 
     const std::string& _path ) {
     // =-=-=-=-=-=-=-
     // set up a default error structure
@@ -34,7 +33,7 @@ eirods::error validate_collection_path(
     msg << "a valid zone name does not appear at the root of the collection path [";
     msg << _path;
     msg << "]";
-    eirods::error ret_val = ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
+    irods::error ret_val = ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
 
     // =-=-=-=-=-=-=-
     // loop over the ZoneInfo linked list and see if the path
@@ -77,9 +76,9 @@ rsCollCreate (rsComm_t *rsComm, collInp_t *collCreateInp)
     dataObjInfo_t *dataObjInfo = NULL;
 #endif
    
-    eirods::error ret = validate_collection_path( collCreateInp->collName ); 
+    irods::error ret = validate_collection_path( collCreateInp->collName ); 
     if( !ret.ok() ) {
-        eirods::log( ret );
+        irods::log( ret );
         return SYS_INVALID_INPUT_PARAM;    
     }
 
@@ -175,9 +174,9 @@ l3Mkdir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
     // =-=-=-=-=-=-=-
     // extract the host location from the resource hierarchy
     std::string location;
-    eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
+    irods::error ret = irods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "l3Mkdir - failed in get_loc_for_hier_String", ret ) );
+        irods::log( PASSMSG( "l3Mkdir - failed in get_loc_for_hier_String", ret ) );
         return -1;
     }
 

@@ -7,7 +7,7 @@
 #include "objMetaOpr.hpp" // JMC - backport 4497
 #include "icatHighLevelRoutines.hpp"
 
-#include "eirods_file_object.hpp"
+#include "irods_file_object.hpp"
 
 int _call_file_modified_for_replica (
     rsComm_t*     rsComm, 
@@ -99,8 +99,8 @@ int _call_file_modified_for_replica (
     int status = 0;
     dataObjInfo_t* destDataObjInfo = regReplicaInp->destDataObjInfo;
 
-    eirods::file_object_ptr file_obj(
-                                new eirods::file_object( 
+    irods::file_object_ptr file_obj(
+                                new irods::file_object( 
                                     rsComm, 
                                     destDataObjInfo ) );
     
@@ -109,7 +109,7 @@ int _call_file_modified_for_replica (
         file_obj->in_pdmo(pdmo_kw);
     }
 
-    eirods::error ret = fileModified(rsComm, file_obj);
+    irods::error ret = fileModified(rsComm, file_obj);
     if(!ret.ok()) {
         std::stringstream msg;
         msg << __FUNCTION__;
@@ -117,7 +117,7 @@ int _call_file_modified_for_replica (
         msg << destDataObjInfo->objPath;
         msg << "\" was registered";
         ret = PASSMSG(msg.str(), ret);
-        eirods::log(ret);
+        irods::log(ret);
         status = ret.code();
     }
 

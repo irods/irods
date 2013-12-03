@@ -16,9 +16,8 @@
 #include "getRemoteZoneResc.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_resource_redirect.hpp"
-#include "eirods_hierarchy_parser.hpp"
+#include "irods_resource_redirect.hpp"
+#include "irods_hierarchy_parser.hpp"
 
 /* rsDataObjTrim - The Api handler of the rcDataObjTrim call - trim down 
  * the number of replica of a file
@@ -67,14 +66,14 @@ rsDataObjTrim (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     if( hier_char == NULL ) {
         // set a repl keyword here so resources can respond accordingly
         addKeyVal(&dataObjInp->condInput, IN_REPL_KW, "");
-        eirods::error ret = eirods::resource_redirect( eirods::EIRODS_CREATE_OPERATION, rsComm, 
+        irods::error ret = irods::resource_redirect( irods::CREATE_OPERATION, rsComm, 
                                                        dataObjInp, hier, host, local );
         if( !ret.ok() ) { 
             std::stringstream msg;
             msg << __FUNCTION__;
-            msg << " :: failed in eirods::resource_redirect for [";
+            msg << " :: failed in irods::resource_redirect for [";
             msg << dataObjInp->objPath << "]";
-            eirods::log( PASSMSG( msg.str(), ret ) );
+            irods::log( PASSMSG( msg.str(), ret ) );
             return ret.code();
         }
         // =-=-=-=-=-=-=-
@@ -84,7 +83,7 @@ rsDataObjTrim (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
         
     } // if keyword
 
-    if (getValByKey (&dataObjInp->condInput, IRODS_ADMIN_KW) != NULL) {
+    if (getValByKey (&dataObjInp->condInput, ADMIN_KW) != NULL) {
         if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
             return (CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
         }
@@ -148,7 +147,7 @@ int trimDataObjInfo(
 
     // =-=-=-=-=-=-=-
     // add the hier to a parser to get the leaf
-    eirods::hierarchy_parser parser;
+    irods::hierarchy_parser parser;
     parser.set_string( dataObjInfo->rescHier );
     std::string cache_resc;
     parser.last_resc( cache_resc );

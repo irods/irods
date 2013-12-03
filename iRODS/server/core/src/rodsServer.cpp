@@ -21,9 +21,8 @@
 #endif
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_client_server_negotiation.hpp"
-#include "eirods_network_factory.hpp"
+#include "irods_client_server_negotiation.hpp"
+#include "irods_network_factory.hpp"
 
 
 
@@ -84,7 +83,7 @@ int irodsWinMain(int argc, char **argv)
       rodsLogLevel(LOG_NOTICE); /* default */
     }
 
-#ifdef IRODS_SYSLOG
+#ifdef SYSLOG
 /* Open a connection to syslog */
 	openlog("rodsServer",LOG_ODELAY|LOG_PID,LOG_DAEMON);
 #endif
@@ -190,7 +189,7 @@ serverize (char *logDir)
     getLogfileName (&logFile, logDir, RODS_LOGFILE);
 
 #ifndef windows_platform
-#ifdef IRODS_SYSLOG
+#ifdef SYSLOG
     LogFd = 0;
 #else
     LogFd = open (logFile, O_CREAT|O_WRONLY|O_APPEND, 0644);
@@ -219,7 +218,7 @@ serverize (char *logDir)
 //sleep( 60 );
 
 
-#ifndef IRODS_SYSLOG
+#ifndef SYSLOG
         (void) dup2 (LogFd, 0);
         (void) dup2 (LogFd, 1);
         (void) dup2 (LogFd, 2);
@@ -231,7 +230,7 @@ serverize (char *logDir)
 	_close(LogFd);
 #endif
 
-#ifdef IRODS_SYSLOG
+#ifdef SYSLOG
     return (0);
 #else
     return (LogFd);
@@ -316,14 +315,14 @@ serverMain (char *logDir)
             // plugin interface.  repave with newSock as that is the 
             // operational socket at this point
 
-            eirods::network_object_ptr net_obj;
-            eirods::error ret = eirods::network_factory( &svrComm, net_obj );
+            irods::network_object_ptr net_obj;
+            irods::error ret = irods::network_factory( &svrComm, net_obj );
             if( !ret.ok() ) {
-                eirods::log( PASS( ret ) );
+                irods::log( PASS( ret ) );
             } else {
                 ret = sendVersion (net_obj, status, 0, NULL, 0 );
                 if( !ret.ok() ) {
-                    eirods::log( PASS( ret ) );
+                    irods::log( PASS( ret ) );
                 }
             }
 	        status = mySockClose (newSock);
@@ -533,7 +532,7 @@ execAgent (int newSock, startupPack_t *startupPack)
     if( std::string::npos != pos ) {
         std::string trunc_str = opt_str.substr( 0, pos );
         mySetenvStr( SP_OPTION,           trunc_str.c_str() );
-        mySetenvStr( eirods::RODS_CS_NEG, REQ_SVR_NEG );
+        mySetenvStr( irods::RODS_CS_NEG, REQ_SVR_NEG );
 
     } else {
         mySetenvStr (SP_OPTION, startupPack->option);
@@ -1030,10 +1029,10 @@ readWorkerTask ()
     rcComm_t            tmp_comm;
     bzero( &tmp_comm, sizeof( rcComm_t ) );
 
-    eirods::network_object_ptr net_obj;
-    eirods::error ret = eirods::network_factory( &tmp_comm, net_obj );
+    irods::network_object_ptr net_obj;
+    irods::error ret = irods::network_factory( &tmp_comm, net_obj );
     if( !ret.ok() || !net_obj.get() ) {
-        eirods::log( PASS( ret ) );
+        irods::log( PASS( ret ) );
         return;
     } 
 
@@ -1166,10 +1165,10 @@ procSingleConnReq (agentProc_t *connReq)
     rcComm_t            tmp_comm;
     bzero( &tmp_comm, sizeof( rcComm_t ) );
     
-    eirods::network_object_ptr net_obj;
-    eirods::error ret = eirods::network_factory( &tmp_comm, net_obj );
+    irods::network_object_ptr net_obj;
+    irods::error ret = irods::network_factory( &tmp_comm, net_obj );
     if( !ret.ok() ) {
-        eirods::log( PASS( ret ) );
+        irods::log( PASS( ret ) );
         return -1;
     } 
 

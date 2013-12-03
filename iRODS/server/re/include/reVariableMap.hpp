@@ -1,7 +1,7 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
 
-#ifndef REVARIABLEMAP_H_
+#ifndef REVARIABLEMAP_HPP_
 
 #include "restructs.hpp"
 
@@ -25,7 +25,7 @@ ExprType *getVarType(char *varMap, Region *r);
 int getVarValue(char *varMap, ruleExecInfo_t *rei, Res **varValue, Region *r);
 int getVarNameFromVarMap(char *varMap, char *varName, char **varMapCPtr);
 
-#define REVARIABLEMAP_H_
+#define REVARIABLEMAP_HPP_
 
 
 

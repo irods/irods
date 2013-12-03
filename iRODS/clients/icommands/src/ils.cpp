@@ -8,7 +8,7 @@
 #include "lsUtil.hpp"
 
 
-#include "eirods_buffer_encryption.hpp"
+#include "irods_buffer_encryption.hpp"
 #include <string>
 #include <iostream>
 
@@ -28,7 +28,7 @@ main(int argc, char **argv) {
 
 #if 0
     std::string key, hkey, iv;
-    eirods::buffer_crypt crypt;
+    irods::buffer_crypt crypt;
     crypt.generate_key( key );
     crypt.initialization_vector( key, hkey, iv);
 

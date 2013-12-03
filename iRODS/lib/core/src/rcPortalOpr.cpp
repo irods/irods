@@ -12,10 +12,9 @@
 #include "md5.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_stacktrace.hpp"
-#include "eirods_buffer_encryption.hpp"
-#include "eirods_client_server_negotiation.hpp"
+#include "irods_stacktrace.hpp"
+#include "irods_buffer_encryption.hpp"
+#include "irods_client_server_negotiation.hpp"
 
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
@@ -313,7 +312,7 @@ rcPartialDataPut (rcPortalTransferInp_t *myInput)
     // flag to determine if we need to use encryption
     bool use_encryption_flg = 
              ( myInput->conn->negotiation_results == 
-               eirods::CS_NEG_USE_SSL );
+               irods::CS_NEG_USE_SSL );
     
     // =-=-=-=-=-=-=-
     // get the client side Env to determine
@@ -328,11 +327,11 @@ rcPartialDataPut (rcPortalTransferInp_t *myInput)
     // =-=-=-=-=-=-=-
     // create an encryption context
     int iv_size = 0;
-    eirods::buffer_crypt::array_t iv;
-    eirods::buffer_crypt::array_t cipher;
-    eirods::buffer_crypt::array_t in_buf;
-    eirods::buffer_crypt::array_t shared_secret;
-    eirods::buffer_crypt crypt( 
+    irods::buffer_crypt::array_t iv;
+    irods::buffer_crypt::array_t cipher;
+    irods::buffer_crypt::array_t in_buf;
+    irods::buffer_crypt::array_t shared_secret;
+    irods::buffer_crypt crypt( 
                                rods_env.rodsEncryptionKeySize,
                                rods_env.rodsEncryptionSaltSize,
                                rods_env.rodsEncryptionNumHashRounds,
@@ -411,7 +410,7 @@ rcPartialDataPut (rcPortalTransferInp_t *myInput)
             // it to encrypt this buffer
             int new_size = bytesRead;
             if( use_encryption_flg ) {
-                eirods::error ret = crypt.initialization_vector( iv );
+                irods::error ret = crypt.initialization_vector( iv );
                 if( !ret.ok() ) {
                     ret = PASS( ret );
                     printf( "%s", ret.result().c_str() );
@@ -977,7 +976,7 @@ rcPartialDataGet (rcPortalTransferInp_t *myInput)
     // flag to determine if we need to use encryption
     bool use_encryption_flg = 
              ( myInput->conn->negotiation_results == 
-               eirods::CS_NEG_USE_SSL );
+               irods::CS_NEG_USE_SSL );
 
     // =-=-=-=-=-=-=-
     // get the client side Env to determine
@@ -992,12 +991,12 @@ rcPartialDataGet (rcPortalTransferInp_t *myInput)
     // =-=-=-=-=-=-=-
     // create an encryption context
     int iv_size = 0;
-    eirods::buffer_crypt::array_t iv;
-    eirods::buffer_crypt::array_t this_iv;
-    eirods::buffer_crypt::array_t cipher;
-    eirods::buffer_crypt::array_t plain;
-    eirods::buffer_crypt::array_t shared_secret;
-    eirods::buffer_crypt crypt( 
+    irods::buffer_crypt::array_t iv;
+    irods::buffer_crypt::array_t this_iv;
+    irods::buffer_crypt::array_t cipher;
+    irods::buffer_crypt::array_t plain;
+    irods::buffer_crypt::array_t shared_secret;
+    irods::buffer_crypt crypt( 
                              rods_env.rodsEncryptionKeySize,
                              rods_env.rodsEncryptionSaltSize,
                              rods_env.rodsEncryptionNumHashRounds,
@@ -1102,13 +1101,13 @@ rcPartialDataGet (rcPortalTransferInp_t *myInput)
                 cipher.assign( 
                     &buf[ iv_size ], 
                     &buf[ new_size ] ); 
-                eirods::error ret = crypt.decrypt( 
+                irods::error ret = crypt.decrypt( 
                                         shared_secret, 
                                         this_iv, 
                                         cipher, 
                                         plain );
                 if( !ret.ok() ) {
-                    eirods::log( PASS( ret ) );
+                    irods::log( PASS( ret ) );
                     myInput->status = SYS_COPY_LEN_ERR;
                     break;
                 }

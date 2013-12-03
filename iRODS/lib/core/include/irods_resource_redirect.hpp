@@ -1,23 +1,22 @@
 
 
 
-#ifndef __EIRODS_RESOURCE_REDIRECT_H__
-#define __EIRODS_RESOURCE_REDIRECT_H__
+#ifndef __IRODS_RESOURCE_REDIRECT_HPP__
+#define __IRODS_RESOURCE_REDIRECT_HPP__
 
 // =-=-=-=-=-=-=-
 // irods includes
 #include "rsGlobalExtern.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_file_object.hpp"
-#include "eirods_log.hpp"
+#include "irods_file_object.hpp"
+#include "irods_log.hpp"
 
-namespace eirods {
+namespace irods {
 
-    const std::string EIRODS_CREATE_OPERATION( "CREATE" );
-    const std::string EIRODS_WRITE_OPERATION( "WRITE" );
-    const std::string EIRODS_OPEN_OPERATION( "OPEN" );
+    const std::string CREATE_OPERATION( "CREATE" );
+    const std::string WRITE_OPERATION( "WRITE" );
+    const std::string OPEN_OPERATION( "OPEN" );
 
     error resolve_resource_hierarchy( 
               const std::string&, // requested operation to consider
@@ -33,9 +32,9 @@ namespace eirods {
               rodsServerHost_t*&, // selected host for redirection if necessary 
               int& );             // flag stating LOCAL_HOST or REMOTE_HOST
  
-}; // namespace eirods
+}; // namespace irods
 
-#endif // __EIRODS_RESOURCE_REDIRECT_H__
+#endif // __IRODS_RESOURCE_REDIRECT_HPP__
 
 
 

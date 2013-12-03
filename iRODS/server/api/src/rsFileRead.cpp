@@ -12,10 +12,9 @@
 #include "rsGlobalExtern.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_log.hpp"
-#include "eirods_file_object.hpp"
-#include "eirods_stacktrace.hpp"
+#include "irods_log.hpp"
+#include "irods_file_object.hpp"
+#include "irods_stacktrace.hpp"
 
 int
 rsFileRead (rsComm_t *rsComm, fileReadInp_t *fileReadInp,
@@ -100,14 +99,14 @@ int _rsFileRead(
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - Empty logical path.";
-        eirods::log(LOG_ERROR, msg.str());
+        irods::log(LOG_ERROR, msg.str());
         return -1;
     }
     
     // =-=-=-=-=-=-=-
     // call resource plugin for POSIX read
-    eirods::file_object_ptr file_obj( 
-                                new eirods::file_object( 
+    irods::file_object_ptr file_obj( 
+                                new irods::file_object( 
                                     _comm,
                                     FileDesc[_read_inp->fileInx].objPath,
                                     FileDesc[_read_inp->fileInx].fileName,
@@ -115,7 +114,7 @@ int _rsFileRead(
                                     FileDesc[_read_inp->fileInx].fd,  
                                     0, 0 ) );
                                      
-    eirods::error ret = fileRead( _comm, 
+    irods::error ret = fileRead( _comm, 
                                   file_obj,  
                                   _read_bbuf->buf, 
                                   _read_inp->len );
@@ -127,8 +126,8 @@ int _rsFileRead(
         msg << "fileRead failed for ";
         msg << file_obj->physical_path();
         msg << "]";
-        eirods::error err = PASSMSG( msg.str(), ret );
-        eirods::log( err );
+        irods::error err = PASSMSG( msg.str(), ret );
+        irods::log( err );
     } else {
         _read_bbuf->len = ret.code();
     }

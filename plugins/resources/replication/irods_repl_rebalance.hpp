@@ -1,12 +1,11 @@
 
 
 
-#ifndef __EIRODS_REPL_REBALANCE_H__
-#define __EIRODS_REPL_REBALANCE_H__
+#ifndef __IRODS_REPL_REBALANCE_HPP__
+#define __IRODS_REPL_REBALANCE_HPP__
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_error.hpp"
+#include "irods_error.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
@@ -18,7 +17,7 @@
 #include <string>
 #include <utility>
 
-namespace eirods {
+namespace irods {
     /// =-=-=-=-=-=-=-
     /// @brief gather a limit bound result set of all data objects 
     ///        which need re-replicated
@@ -31,13 +30,13 @@ namespace eirods {
     /// =-=-=-=-=-=-=-
     /// @brief refresh a limit bound result set of all data objects 
     ///        which need re-replicated
-    eirods::error proc_results_for_rebalance(
+    irods::error proc_results_for_rebalance(
         rsComm_t*,                        // comm object
         const std::string&,               // parent resc name
         const std::string&,               // child resc name
         const dist_child_result_t& );     // query results
 
-}; // namespace eirods
+}; // namespace irods
 
-#endif // __EIRODS_REPL_REBALANCE_H__
+#endif // __IRODS_REPL_REBALANCE_HPP__
 

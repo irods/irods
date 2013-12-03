@@ -10,9 +10,8 @@
 #include "rsGlobalExtern.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_log.hpp"
-#include "eirods_collection_object.hpp"
+#include "irods_log.hpp"
+#include "irods_collection_object.hpp"
 
 int
 rsFileReaddir (rsComm_t *rsComm, fileReaddirInp_t *fileReaddirInp, 
@@ -86,8 +85,8 @@ int _rsFileReaddir(
     rodsDirent_t**    _rods_dirent ) {
     // =-=-=-=-=-=-=-
     // create a collection_object, and extract dir ptr from the file desc table
-    eirods::collection_object_ptr coll_obj( 
-                                      new eirods::collection_object( 
+    irods::collection_object_ptr coll_obj( 
+                                      new irods::collection_object( 
                                           FileDesc[ _file_readdir_inp->fileInx].fileName, 
                                           FileDesc[ _file_readdir_inp->fileInx].rescHier, 
                                           0, 0 ) );
@@ -95,7 +94,7 @@ int _rsFileReaddir(
 
     // =-=-=-=-=-=-=-
     // make call to readdir via resource plugin and handle errors, if necessary
-    eirods::error readdir_err = fileReaddir( _comm,
+    irods::error readdir_err = fileReaddir( _comm,
                                              coll_obj, 
                                              _rods_dirent );
     if( !readdir_err.ok() ) {
@@ -103,8 +102,8 @@ int _rsFileReaddir(
         msg << "fileReaddir failed for [";
         msg << FileDesc[ _file_readdir_inp->fileInx].fileName;
         msg << "]";
-        eirods::error err = PASSMSG( msg.str(), readdir_err );
-        eirods::log ( err );
+        irods::error err = PASSMSG( msg.str(), readdir_err );
+        irods::log ( err );
 
         return readdir_err.code();
     } else {

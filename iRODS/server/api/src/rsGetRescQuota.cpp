@@ -12,8 +12,7 @@
 #include "resource.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods resource includes
-#include "eirods_resource_backport.hpp"
+#include "irods_resource_backport.hpp"
 
 
 int
@@ -69,7 +68,7 @@ _rsGetRescQuota (rsComm_t *rsComm, getRescQuotaInp_t *getRescQuotaInp,
     //status = _getRescInfo (rsComm, getRescQuotaInp->rescName, &rescGrpInfo);
     rescGrpInfo = new rescGrpInfo_t;
     rescGrpInfo->rescInfo = new rescInfo_t;
-    eirods::error err = eirods::get_resc_grp_info( getRescQuotaInp->rescName, *rescGrpInfo );
+    irods::error err = irods::get_resc_grp_info( getRescQuotaInp->rescName, *rescGrpInfo );
     if ( !err.ok() ) {//(status < 0) {
         rodsLog (LOG_ERROR,
                  "_rsGetRescQuota: _getRescInfo of %s error for %s. stat = %d",

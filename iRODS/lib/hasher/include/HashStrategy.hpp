@@ -5,7 +5,7 @@
 
 #include <string>
 
-namespace eirods {
+namespace irods {
     
     class HashStrategy
     {
@@ -18,6 +18,6 @@ namespace eirods {
         virtual unsigned int update(char const* data, unsigned int size) = 0;
         virtual unsigned int digest(std::string& messageDigest) = 0;
     };
-}; // namespace eirods
+}; // namespace irods
 
 #endif // _HashStrategy_H_

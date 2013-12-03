@@ -17,14 +17,13 @@
 #include <string>
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_children_parser.hpp"
-#include "eirods_string_tokenize.hpp"
-#include "eirods_plugin_name_generator.hpp"
-#include "eirods_resources_home.hpp"
-#include "eirods_resource_manager.hpp"
-#include "eirods_file_object.hpp"
-extern eirods::resource_manager resc_mgr;
+#include "irods_children_parser.hpp"
+#include "irods_string_tokenize.hpp"
+#include "irods_plugin_name_generator.hpp"
+#include "irods_resources_home.hpp"
+#include "irods_resource_manager.hpp"
+#include "irods_file_object.hpp"
+extern irods::resource_manager resc_mgr;
 
 
 
@@ -75,7 +74,7 @@ _addChildToResource(
     strncpy(rescInfo.rescName, _generalAdminInp->arg2, sizeof rescInfo.rescName);
     std::string rescChild(_generalAdminInp->arg3);
     std::string rescContext(_generalAdminInp->arg4);
-    eirods::children_parser parser;
+    irods::children_parser parser;
     parser.add_child(rescChild, rescContext);
     std::string rescChildren;
     parser.str(rescChildren);
@@ -140,7 +139,7 @@ _addResource(
         // =-=-=-=-=-=-=-
         // separate the location:/vault/path pair
         std::vector< std::string > tok;
-        eirods::string_tokenize( loc_path, ":", tok );
+        irods::string_tokenize( loc_path, ":", tok );
 
         // =-=-=-=-=-=-=-
         // if we have exactly 2 tokens, things are going well
@@ -153,16 +152,16 @@ _addResource(
             // =-=-=-=-=-=-=-
             // a key:value was not found, so blatantly assume the string is a context string
             strncpy(rescInfo.rescContext, loc_path.c_str(), sizeof rescInfo.rescContext);
-            strncpy( rescInfo.rescLoc,       eirods::EMPTY_RESC_HOST.c_str(), sizeof rescInfo.rescLoc );
-            strncpy( rescInfo.rescVaultPath, eirods::EMPTY_RESC_PATH.c_str(), sizeof rescInfo.rescVaultPath );
+            strncpy( rescInfo.rescLoc,       irods::EMPTY_RESC_HOST.c_str(), sizeof rescInfo.rescLoc );
+            strncpy( rescInfo.rescVaultPath, irods::EMPTY_RESC_PATH.c_str(), sizeof rescInfo.rescVaultPath );
         }
 
     }  else {
         if ( strlen( rescInfo.rescContext ) != 0 ) {
             addRErrorMsg( &_rsComm->rError, 0, "resource host:path string is empty" );
         }
-        strncpy( rescInfo.rescLoc,       eirods::EMPTY_RESC_HOST.c_str(), sizeof rescInfo.rescLoc );
-        strncpy( rescInfo.rescVaultPath, eirods::EMPTY_RESC_PATH.c_str(), sizeof rescInfo.rescVaultPath );
+        strncpy( rescInfo.rescLoc,       irods::EMPTY_RESC_HOST.c_str(), sizeof rescInfo.rescLoc );
+        strncpy( rescInfo.rescVaultPath, irods::EMPTY_RESC_PATH.c_str(), sizeof rescInfo.rescVaultPath );
 
     }
 
@@ -186,13 +185,13 @@ _addResource(
     args[6] = rescInfo.zoneName;
 
     // Check that there is a plugin matching the resource type
-    eirods::plugin_name_generator name_gen;
-    if(!name_gen.exists(rescInfo.rescType, eirods::EIRODS_RESOURCES_HOME)) {
+    irods::plugin_name_generator name_gen;
+    if(!name_gen.exists(rescInfo.rescType, irods::RESOURCES_HOME)) {
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - No plugin exists to provide resource type \"";
         msg << rescInfo.rescType << "\".";
-        eirods::log(ERROR(SYS_INVALID_RESC_TYPE, msg.str()));
+        irods::log(ERROR(SYS_INVALID_RESC_TYPE, msg.str()));
         result = SYS_INVALID_RESC_TYPE;
     }
     
@@ -232,12 +231,12 @@ int
 _listRescTypes(rsComm_t* _rsComm)
 {
     int result = 0;
-    eirods::plugin_name_generator name_gen;
-    eirods::plugin_name_generator::plugin_list_t plugin_list;
-    eirods::error ret = name_gen.list_plugins(eirods::EIRODS_RESOURCES_HOME, plugin_list);
+    irods::plugin_name_generator name_gen;
+    irods::plugin_name_generator::plugin_list_t plugin_list;
+    irods::error ret = name_gen.list_plugins(irods::RESOURCES_HOME, plugin_list);
     if(ret.ok()) {
         std::stringstream msg;
-        for(eirods::plugin_name_generator::plugin_list_t::iterator it = plugin_list.begin();
+        for(irods::plugin_name_generator::plugin_list_t::iterator it = plugin_list.begin();
             result == 0 && it != plugin_list.end(); ++it)
         {
             msg << *it << std::endl;
@@ -249,8 +248,8 @@ _listRescTypes(rsComm_t* _rsComm)
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - Failed to generate the list of resource plugins.";
-        eirods::error res = PASSMSG(msg.str(), ret);
-        eirods::log(res);
+        irods::error res = PASSMSG(msg.str(), ret);
+        irods::log(res);
         result = res.code();
     }
     return result;
@@ -585,18 +584,18 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
 
                 // =-=-=-=-=-=-=-
                 // resolve the plugin we wish to rebalance
-                eirods::resource_ptr resc;
-                eirods::error ret = resc_mgr.resolve( args[0], resc );
+                irods::resource_ptr resc;
+                irods::error ret = resc_mgr.resolve( args[0], resc );
                 if( !ret.ok() ) {
-                    eirods::log( PASSMSG( "failed to resolve resource", ret ) );
+                    irods::log( PASSMSG( "failed to resolve resource", ret ) );
                     status = -1;
                 } else {
                     // =-=-=-=-=-=-=-
                     // call the rebalance operation on the resource
-                    eirods::file_object_ptr obj( new eirods::file_object() );
-                    ret = resc->call( rsComm, eirods::RESOURCE_OP_REBALANCE, obj );
+                    irods::file_object_ptr obj( new irods::file_object() );
+                    ret = resc->call( rsComm, irods::RESOURCE_OP_REBALANCE, obj );
                     if( !ret.ok() ) {
-                        eirods::log( PASSMSG( "failed to rebalance resource", ret ) );
+                        irods::log( PASSMSG( "failed to rebalance resource", ret ) );
                         status = -1;
               
                     } 

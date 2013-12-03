@@ -52,7 +52,7 @@
  *         replicas will be deleted according to input instruction but
  *         the remaining won't go below this value. If not specified, 
  *         the default value is 2.
- *    \n IRODS_ADMIN_KW - admin user trims other user's files.
+ *    \n ADMIN_KW - admin user trims other user's files.
  *            This keyWd has no value.
  *    \n REPL_NUM_KW - The replica number of the replica to delete.
  *    \n RESC_NAME_KW - delete replica stored in this resource.

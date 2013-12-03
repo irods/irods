@@ -17,23 +17,22 @@
 **************************************************************************/
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_error.hpp"
-#include "eirods_zone_info.hpp"
-#include "eirods_sql_logger.hpp"
-#include "eirods_string_tokenize.hpp"
-#include "eirods_log.hpp"
-#include "eirods_tmp_string.hpp"
-#include "eirods_children_parser.hpp"
-#include "eirods_stacktrace.hpp"
-#include "eirods_hierarchy_parser.hpp"
-#include "eirods_catalog_properties.hpp"
-#include "eirods_kvp_string_parser.hpp"
-#include "eirods_auth_object.hpp"
-#include "eirods_auth_factory.hpp"
-#include "eirods_auth_plugin.hpp"
-#include "eirods_auth_manager.hpp"
-#include "eirods_auth_constants.hpp"
+#include "irods_error.hpp"
+#include "irods_zone_info.hpp"
+#include "irods_sql_logger.hpp"
+#include "irods_string_tokenize.hpp"
+#include "irods_log.hpp"
+#include "irods_tmp_string.hpp"
+#include "irods_children_parser.hpp"
+#include "irods_stacktrace.hpp"
+#include "irods_hierarchy_parser.hpp"
+#include "irods_catalog_properties.hpp"
+#include "irods_kvp_string_parser.hpp"
+#include "irods_auth_object.hpp"
+#include "irods_auth_factory.hpp"
+#include "irods_auth_plugin.hpp"
+#include "irods_auth_manager.hpp"
+#include "irods_auth_constants.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
@@ -92,7 +91,7 @@ static char prevChalSig[200]; /* a 'signature' of the previous
 /* TEMP_PASSWORD_TIME is the number of seconds the temporary, one-time
    password can be used.  chlCheckAuth also checks for this column
    to be < TEMP_PASSWORD_MAX_TIME (1000) to differentiate the row 
-   from regular passwords and IRODS_PAM passwords.
+   from regular passwords and PAM passwords.
    This time, 120 seconds, should be long enough to give the iDrop and
    iDrop-lite applets enough time to download and go through their
    startup sequence.  iDrop and iDrop-lite disconnect when idle to
@@ -102,29 +101,29 @@ static char prevChalSig[200]; /* a 'signature' of the previous
 
 
 #if 0
-/* IRODS_PAM_PASSWORD_DEFAULT_TIME (the default iRODS-PAM password
-   lifetime) IRODS_PAM_PASSWORD_MIN_TIME must be greater than
+/* PAM_PASSWORD_DEFAULT_TIME (the default iRODS-PAM password
+   lifetime) PAM_PASSWORD_MIN_TIME must be greater than
    TEMP_PASSWORD_TIME to avoid the possibility that the logic for
    temporary passwords would be applied.  This should be fine as
    IRODS-PAM passwords will typically be valid on the order of a
    couple weeks compared to a couple minutes for temporary one-time
    passwords.
  */
-#define IRODS_PAM_PASSWORD_LEN 20
+#define PAM_PASSWORD_LEN 20
 
-/* The IRODS_PAM_PASSWORD_MIN_TIME must be greater than
+/* The PAM_PASSWORD_MIN_TIME must be greater than
    TEMP_PASSWORD_TIME so the logic can deal with each password type
    differently.  If they overlap, SQL errors can result */
-#define IRODS_PAM_PASSWORD_MIN_TIME "121"  /* must be > TEMP_PASSWORD_TIME */
-#define IRODS_PAM_PASSWORD_MAX_TIME "1209600"    /* two weeks in seconds */
-#define IRODS_TTL_PASSWORD_MIN_TIME 121  /* must be > TEMP_PASSWORD_TIME */
-#define IRODS_TTL_PASSWORD_MAX_TIME 1209600    /* two weeks in seconds */
-/* For batch jobs that should run "forever", IRODS_TTL_PASSWORD_MAX_TIME
+#define PAM_PASSWORD_MIN_TIME "121"  /* must be > TEMP_PASSWORD_TIME */
+#define PAM_PASSWORD_MAX_TIME "1209600"    /* two weeks in seconds */
+#define TTL_PASSWORD_MIN_TIME 121  /* must be > TEMP_PASSWORD_TIME */
+#define TTL_PASSWORD_MAX_TIME 1209600    /* two weeks in seconds */
+/* For batch jobs that should run "forever", TTL_PASSWORD_MAX_TIME
    can be set very large, for example to 2147483647 to allow 68 years TTL. */
 #ifdef PAM_AUTH_NO_EXTEND
-#define IRODS_PAM_PASSWORD_DEFAULT_TIME "28800"  /* 8 hours in seconds */
+#define PAM_PASSWORD_DEFAULT_TIME "28800"  /* 8 hours in seconds */
 #else
-#define IRODS_PAM_PASSWORD_DEFAULT_TIME "1209600" /* two weeks in seconds */
+#define PAM_PASSWORD_DEFAULT_TIME "1209600" /* two weeks in seconds */
 #endif
 #endif
     
@@ -136,11 +135,11 @@ static char prevChalSig[200]; /* a 'signature' of the previous
 
 // =-=-=-=-=-=-=-
 // local variables externed for config file setting in
-bool eirods_pam_auth_no_extend = false;
-size_t eirods_pam_password_len = 20;
-char eirods_pam_password_min_time[ NAME_LEN ]     = { "121" };
-char eirods_pam_password_max_time[ NAME_LEN ]     = { "1209600" };
-char eirods_pam_password_default_time[ NAME_LEN ] = { "1209600" };
+bool irods_pam_auth_no_extend = false;
+size_t irods_pam_password_len = 20;
+char irods_pam_password_min_time[ NAME_LEN ]     = { "121" };
+char irods_pam_password_max_time[ NAME_LEN ]     = { "1209600" };
+char irods_pam_password_default_time[ NAME_LEN ] = { "1209600" };
 
 
 
@@ -255,24 +254,24 @@ int chlOpen(
         icss.status=1;
 
         // Capture ICAT properties
-        eirods::catalog_properties::getInstance().capture();
+        irods::catalog_properties::getInstance().capture();
     }
 
     // =-=-=-=-=-=-=-
     // set pam properties
-    eirods_pam_auth_no_extend    = _config->eirods_pam_auth_no_extend;
-    eirods_pam_password_len      = _config->eirods_pam_password_len;
+    irods_pam_auth_no_extend    = _config->irods_pam_auth_no_extend;
+    irods_pam_password_len      = _config->irods_pam_password_len;
     strncpy( 
-        eirods_pam_password_min_time,
-        _config->eirods_pam_password_min_time,
+        irods_pam_password_min_time,
+        _config->irods_pam_password_min_time,
         NAME_LEN );
     strncpy( 
-        eirods_pam_password_max_time,
-        _config->eirods_pam_password_max_time,
+        irods_pam_password_max_time,
+        _config->irods_pam_password_max_time,
         NAME_LEN );
-    if( eirods_pam_auth_no_extend ) {
+    if( irods_pam_auth_no_extend ) {
         strncpy( 
-            eirods_pam_password_default_time,
+            irods_pam_password_default_time,
             "28800",
             NAME_LEN );
     }
@@ -350,7 +349,7 @@ int
 getLocalZone()
 {
     std::string local_zone;
-    eirods::error e = eirods::zone_info::get_instance()->get_local_zone(icss, logSQL, local_zone);
+    irods::error e = irods::zone_info::get_instance()->get_local_zone(icss, logSQL, local_zone);
     strncpy(localZone, local_zone.c_str(), MAX_NAME_LEN);
     return e.code();
 }
@@ -378,8 +377,8 @@ _updateRescObjCount(
     int status;
     char resc_id[MAX_NAME_LEN];
     char myTime[50];
-    eirods::sql_logger logger(__FUNCTION__, logSQL);
-    eirods::hierarchy_parser hparse;
+    irods::sql_logger logger(__FUNCTION__, logSQL);
+    irods::hierarchy_parser hparse;
     
     resc_id[0] = '\0';
 //    logger.log();
@@ -405,7 +404,7 @@ _updateRescObjCount(
         if((status = cmlExecuteNoAnswerSql(ss.str().c_str(), &icss)) != 0) {
             std::stringstream ss;
             ss << __FUNCTION__ << " cmlExecuteNoAnswerSql update failure " << status;
-            eirods::log(LOG_NOTICE, ss.str());
+            irods::log(LOG_NOTICE, ss.str());
             _rollback(__FUNCTION__);
             result = status;
         }
@@ -422,10 +421,10 @@ _updateObjCountOfResources(
     const std::string _zone,
     int _amount) {
     int result = 0;
-    eirods::hierarchy_parser hparse;
+    irods::hierarchy_parser hparse;
 
     hparse.set_string(_resc_hier);
-    for(eirods::hierarchy_parser::const_iterator it = hparse.begin();
+    for(irods::hierarchy_parser::const_iterator it = hparse.begin();
         result == 0 && it != hparse.end(); ++it) {
         result = _updateRescObjCount(*it, _zone, _amount);
     }
@@ -445,12 +444,12 @@ chlUpdateRescObjCount(
     if((ret = getLocalZone()) != 0) {
         std::stringstream msg;
         msg << __FUNCTION__ << " - Failed to set the local zone.";
-        eirods::log(LOG_ERROR, msg.str());
+        irods::log(LOG_ERROR, msg.str());
         result = ret;
     } else if((ret = _updateRescObjCount(_resc, localZone, _delta)) != 0) {
         std::stringstream msg;
         msg << __FUNCTION__ << " - Failed to update the object count for resource \"" << _resc << "\"";
-        eirods::log(LOG_ERROR, msg.str());
+        irods::log(LOG_ERROR, msg.str());
         result = ret;
     }
     
@@ -533,7 +532,7 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     }
 
     adminMode=0;
-    theVal = getValByKey(regParam, IRODS_ADMIN_KW);
+    theVal = getValByKey(regParam, ADMIN_KW);
     if (theVal != NULL) {
         adminMode=1; 
     }
@@ -747,7 +746,7 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
             msg << id_stream.str();
             msg << " and replNum: ";
             msg << repl_stream.str();
-            eirods::log(LOG_NOTICE, msg.str());
+            irods::log(LOG_NOTICE, msg.str());
             return status;
         }
         // TODO - Address this in terms of resource hierarchies
@@ -1085,7 +1084,7 @@ int chlRegReplica(rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
 
     adminMode=0;
     if (condInput != NULL) {
-        theVal = getValByKey(condInput, IRODS_ADMIN_KW);
+        theVal = getValByKey(condInput, ADMIN_KW);
         if (theVal != NULL) {
             adminMode=1;
         }
@@ -1289,7 +1288,7 @@ _dataIsLastRepl(
 
     bool result = true;
     int status;
-    eirods::sql_logger logger("_dataIsLastRepl", logSQL);
+    irods::sql_logger logger("_dataIsLastRepl", logSQL);
     static const unsigned int length = 30;
     char cVal[length];
     
@@ -1338,11 +1337,11 @@ int chlUnregDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     adminMode=0;
     trashMode=0;
     if (condInput != NULL) {
-        theVal = getValByKey(condInput, IRODS_ADMIN_KW);
+        theVal = getValByKey(condInput, ADMIN_KW);
         if (theVal != NULL) {
             adminMode=1;
         }
-        theVal = getValByKey(condInput, IRODS_ADMIN_RMTRASH_KW);
+        theVal = getValByKey(condInput, ADMIN_RMTRASH_KW);
         if (theVal != NULL) {
             adminMode=1;
             trashMode=1;
@@ -1856,12 +1855,12 @@ _childIsValid(
 
     // Get the resource name from the child string
     std::string resc_name;
-    eirods::children_parser parser;
+    irods::children_parser parser;
     parser.set_string(_new_child);
     parser.first_child(resc_name);
 
     // Get resources parent
-    eirods::sql_logger logger("_childIsValid", logSQL);
+    irods::sql_logger logger("_childIsValid", logSQL);
     logger.log();
     parent[0] = '\0';
     if((status = cmlGetStringValueFromSql("select resc_parent from R_RESC_MAIN where resc_name=? and zone_name=?",
@@ -1869,7 +1868,7 @@ _childIsValid(
         if(status == CAT_NO_ROWS_FOUND) {
             std::stringstream ss;
             ss << "Child resource \"" << resc_name << "\" not found";
-            eirods::log(LOG_NOTICE, ss.str());
+            irods::log(LOG_NOTICE, ss.str());
         } else {
             _rollback("_childIsValid");
         }
@@ -1879,8 +1878,8 @@ _childIsValid(
         // If the resource already has a parent it cannot be added as a child of another one
         std::stringstream ss;
         ss << "Child resource \"" << resc_name << "\" already has a parent \"" << parent << "\"";
-        eirods::log(LOG_NOTICE, ss.str());
-        result = EIRODS_CHILD_HAS_PARENT;
+        irods::log(LOG_NOTICE, ss.str());
+        result = CHILD_HAS_PARENT;
     }
     return result;
 }
@@ -1894,7 +1893,7 @@ _updateRescChildren(
     int status;
     char children[MAX_PATH_ALLOWED];
     char myTime[50];
-    eirods::sql_logger logger("_updateRescChildren", logSQL);
+    irods::sql_logger logger("_updateRescChildren", logSQL);
     
     if((status = cmlGetStringValueFromSql("select resc_children from R_RESC_MAIN where resc_id=?",
                                           children, MAX_PATH_ALLOWED, _resc_id, 0, 0, &icss)) != 0) {
@@ -1911,7 +1910,7 @@ _updateRescChildren(
         std::string combined_children = ss.str();
 
         // have to do this to avoid const issues
-        eirods::tmp_string ts(combined_children.c_str());
+        irods::tmp_string ts(combined_children.c_str());
         getNowStr(myTime);
         cllBindVarCount = 0;
         cllBindVars[cllBindVarCount++] = ts.str();
@@ -1922,7 +1921,7 @@ _updateRescChildren(
                                            "where resc_id=?", &icss)) != 0) {
             std::stringstream ss;
             ss << "_updateRescChildren cmlExecuteNoAnswerSql update failure " << status;
-            eirods::log(LOG_NOTICE, ss.str());
+            irods::log(LOG_NOTICE, ss.str());
             _rollback("_updateRescChildren");
             result = status;
         }
@@ -1938,11 +1937,11 @@ _updateChildParent(
     int result = 0;
     char resc_id[MAX_NAME_LEN];
     char myTime[50];
-    eirods::sql_logger logger("_updateChildParent", logSQL);
+    irods::sql_logger logger("_updateChildParent", logSQL);
     int status;
     
     // Get the resource name from the child string
-    eirods::children_parser parser;
+    irods::children_parser parser;
     std::string child;
     parser.set_string(_new_child);
     parser.first_child(child);
@@ -1962,7 +1961,7 @@ _updateChildParent(
         // Update the parent for the child resource
         
         // have to do this to get around const
-        eirods::tmp_string ts(_parent.c_str());
+        irods::tmp_string ts(_parent.c_str());
         getNowStr(myTime);
         cllBindVarCount = 0;
         cllBindVars[cllBindVarCount++] = ts.str();
@@ -1973,7 +1972,7 @@ _updateChildParent(
                                            "where resc_id=?", &icss)) != 0) {
             std::stringstream ss;
             ss << "_updateChildParent cmlExecuteNoAnswerSql update failure " << status;
-            eirods::log(LOG_NOTICE, ss.str());
+            irods::log(LOG_NOTICE, ss.str());
             _rollback("_updateChildParent");
             result = status;
         }
@@ -1982,11 +1981,11 @@ _updateChildParent(
     return result;
 }
 
-eirods::error chlRescObjCount(
+irods::error chlRescObjCount(
     const std::string& _resc_name,
     rodsLong_t & _rtn_obj_count)
 {
-    eirods::error result = SUCCESS();
+    irods::error result = SUCCESS();
     rodsLong_t obj_count = 0;
     int status;
     
@@ -2011,7 +2010,7 @@ _rescHasData(
     const std::string& _resc_name) {
 
     bool result = false;
-    eirods::sql_logger logger("_rescHasData", logSQL);
+    irods::sql_logger logger("_rescHasData", logSQL);
     int status;
     static const char* func_name = "_rescHasData";
     rodsLong_t obj_count;
@@ -2036,7 +2035,7 @@ _childHasData(
     const std::string& _child) {
 
     bool result = true;
-    eirods::children_parser parser;
+    irods::children_parser parser;
     parser.set_string(_child);
     std::string child;
     parser.first_child(child);
@@ -2056,11 +2055,11 @@ chlAddChildResc(
     
     int status;
     static const char* func_name = "chlAddChildResc";
-    eirods::sql_logger logger(func_name, logSQL);
+    irods::sql_logger logger(func_name, logSQL);
     std::string new_child_string(rescInfo->rescChildren);
     std::string hierarchy, child_resc, root_resc;
-    eirods::children_parser parser;
-    eirods::hierarchy_parser hier_parser;
+    irods::children_parser parser;
+    irods::hierarchy_parser hier_parser;
     rodsLong_t obj_count;
     char resc_id[MAX_NAME_LEN];
 
@@ -2108,7 +2107,7 @@ chlAddChildResc(
                             if (status < 0) {
                                            std::stringstream ss;
                                     ss << func_name << ": chlGetHierarchyForResc failed, status = " << status;
-                                    eirods::log(LOG_NOTICE, ss.str());
+                                    irods::log(LOG_NOTICE, ss.str());
                                     _rollback(func_name);
                                     return status;
                             }
@@ -2131,7 +2130,7 @@ chlAddChildResc(
                                         // rollback
                                         std::stringstream ss;
                                         ss << func_name << " aborted. Object count update error, status = " << status;
-                                        eirods::log(LOG_NOTICE, ss.str());
+                                        irods::log(LOG_NOTICE, ss.str());
                                         _rollback(func_name);
                                         return status;
                                 }
@@ -2141,7 +2140,7 @@ chlAddChildResc(
                             // Update resource hierarchy for objects down the tree
 
                             // Add child resource to hierarchy for substitution
-                                    hierarchy += eirods::hierarchy_parser::delimiter() + child_resc;
+                                    hierarchy += irods::hierarchy_parser::delimiter() + child_resc;
 
                                     // Substitute 'child' with '...;parent;child'
                                 status = chlSubstituteResourceHierarchies(rsComm, child_resc.c_str(), hierarchy.c_str());
@@ -2164,7 +2163,7 @@ chlAddChildResc(
                                         // rollback
                                         std::stringstream ss;
                                         ss << func_name << " aborted. Resource update error, status = " << status;
-                                        eirods::log(LOG_NOTICE, ss.str());
+                                        irods::log(LOG_NOTICE, ss.str());
                                         _rollback(func_name);
                                         return status;
                                 }
@@ -2179,19 +2178,19 @@ chlAddChildResc(
                                            commentStr, &icss)) != 0) {
                         std::stringstream ss;
                         ss << func_name << " cmlAudit3 failure " << status;
-                        eirods::log(LOG_NOTICE, ss.str());
+                        irods::log(LOG_NOTICE, ss.str());
                         _rollback(func_name);
                         result = status;
                     } else if((status =  cmlExecuteNoAnswerSql("commit", &icss)) != 0) {
                         std::stringstream ss;
                         ss << func_name<< " cmlExecuteNoAnswerSql commit failure " << status;
-                        eirods::log(LOG_NOTICE, ss.str());
+                        irods::log(LOG_NOTICE, ss.str());
                         result = status;
                     }
                 }                
             } else {
                 std::string resc_name;
-                eirods::children_parser parser;
+                irods::children_parser parser;
                 parser.set_string(new_child_string);
                 parser.first_child(resc_name);
                 
@@ -2208,7 +2207,7 @@ chlAddChildResc(
 
 
 /// @brief function for validating a resource name
-eirods::error validate_resource_name(std::string _resc_name) {
+irods::error validate_resource_name(std::string _resc_name) {
 
         // Must be between 1 and NAME_LEN-1 characters.
         // Must start and end with a word character.
@@ -2267,9 +2266,9 @@ int chlRegResc(rsComm_t *rsComm,
 
     // =-=-=-=-=-=-=-
     // Validate user name format
-    eirods::error ret = validate_resource_name(rescInfo->rescName);
+    irods::error ret = validate_resource_name(rescInfo->rescName);
     if(!ret.ok()) {
-        eirods::log(ret);
+        irods::log(ret);
         return SYS_INVALID_INPUT_PARAM;
     }
     // =-=-=-=-=-=-=-
@@ -2295,20 +2294,6 @@ int chlRegResc(rsComm_t *rsComm,
             return(CAT_INVALID_ZONE);
         }
     }
-#if 0
-    // =-=-=-=-=-=-=-
-    // JMC :: resource type is dynamically checked above. we do not check
-    //     :: against a static token list.
-    if (logSQL!=0) rodsLog(LOG_SQL, "chlRegResc SQL 2");
-    status = cmlCheckNameToken("resc_type", rescInfo->rescType, &icss);
-    if (status !=0 ) {
-        char errMsg[105];
-        snprintf(errMsg, 100, "resource_type '%s' is not valid", 
-                rescInfo->rescType);
-        addRErrorMsg (&rsComm->rError, 0, errMsg);
-        return(CAT_INVALID_RESOURCE_TYPE);
-    }
-#endif
 // =-=-=-=-=-=-=-
 // JMC :: resources may now have an empty location if they
 //     :: are coordinating nodes
@@ -2317,7 +2302,7 @@ int chlRegResc(rsComm_t *rsComm,
 //    }
     // =-=-=-=-=-=-=-
     // if the resource is not the 'empty resource' test it
-    if( eirods::EMPTY_RESC_HOST != rescInfo->rescLoc ) {
+    if( irods::EMPTY_RESC_HOST != rescInfo->rescLoc ) {
         // =-=-=-=-=-=-=-
         // JMC - backport 4597
         myHostEnt = gethostbyname(rescInfo->rescLoc);
@@ -2408,7 +2393,7 @@ _removeRescChild(
     int status;
     char children[MAX_PATH_ALLOWED];
     char myTime[50];
-    eirods::sql_logger logger("_removeRescChild", logSQL);
+    irods::sql_logger logger("_removeRescChild", logSQL);
 
     // Get the resources current children string
     if((status = cmlGetStringValueFromSql("select resc_children from R_RESC_MAIN where resc_id=?",
@@ -2418,13 +2403,13 @@ _removeRescChild(
     } else {
 
         // Parse the children string
-        eirods::children_parser parser;
-        eirods::error ret = parser.set_string(children);
+        irods::children_parser parser;
+        irods::error ret = parser.set_string(children);
         if(!ret.ok()) {
             std::stringstream ss;
             ss << "_removeChildFromResource resource has invalid children string \"" << children << "\'";
             ss << ret.result();
-            eirods::log(LOG_NOTICE, ss.str());
+            irods::log(LOG_NOTICE, ss.str());
             result = CAT_INVALID_CHILD;
         } else {
 
@@ -2434,7 +2419,7 @@ _removeRescChild(
                 std::stringstream ss;
                 ss << "_removeChildFromResource parent has no child \"" << _child_string << "\'";
                 ss << ret.result();
-                eirods::log(LOG_NOTICE, ss.str());
+                irods::log(LOG_NOTICE, ss.str());
                 result = CAT_INVALID_CHILD;
             } else {
                 // Update the database with the new children string
@@ -2442,7 +2427,7 @@ _removeRescChild(
                 // have to do this to avoid const issues
                 std::string children_string;
                 parser.str(children_string);
-                eirods::tmp_string tmp_children(children_string.c_str());
+                irods::tmp_string tmp_children(children_string.c_str());
                 getNowStr(myTime);
                 cllBindVarCount = 0;
                 cllBindVars[cllBindVarCount++] = tmp_children.str();
@@ -2453,7 +2438,7 @@ _removeRescChild(
                                                    "where resc_id=?", &icss)) != 0) {
                     std::stringstream ss;
                     ss << "_removeRescChild cmlExecuteNoAnswerSql update failure " << status;
-                    eirods::log(LOG_NOTICE, ss.str());
+                    irods::log(LOG_NOTICE, ss.str());
                     _rollback("_removeRescChild");
                     result = status;
                 }
@@ -2474,7 +2459,7 @@ _rescHasChildren(
     bool result = false;
     int status;
     char children[MAX_NAME_LEN];
-    eirods::sql_logger logger("_rescHasChildren", logSQL);
+    irods::sql_logger logger("_rescHasChildren", logSQL);
 
     logger.log();
     if((status = cmlGetStringValueFromSql("select resc_children from R_RESC_MAIN where resc_name=?",
@@ -2498,14 +2483,14 @@ chlDelChildResc(
     rsComm_t* rsComm,
     rescInfo_t* rescInfo) {
 
-    eirods::sql_logger logger("chlDelChildResc", logSQL);
+    irods::sql_logger logger("chlDelChildResc", logSQL);
     int result = 0;
     int status;
     rodsLong_t obj_count;
     char resc_id[MAX_NAME_LEN];
     std::string child_string(rescInfo->rescChildren);
     std::string child, hierarchy, partial_hier;
-    eirods::children_parser parser;
+    irods::children_parser parser;
 
     parser.set_string(child_string);
     parser.first_child(child);
@@ -2543,7 +2528,7 @@ chlDelChildResc(
                         if (status < 0) {
                                        std::stringstream ss;
                                 ss << "chlDelChildResc: chlGetHierarchyForResc failed, status = " << status;
-                                eirods::log(LOG_NOTICE, ss.str());
+                                irods::log(LOG_NOTICE, ss.str());
                                 _rollback("chlDelChildResc");
                                 return status;
                         }
@@ -2561,7 +2546,7 @@ chlDelChildResc(
                                     // rollback
                                     std::stringstream ss;
                                     ss << "chlDelChildResc aborted. Object count update error, status = " << status;
-                                    eirods::log(LOG_NOTICE, ss.str());
+                                    irods::log(LOG_NOTICE, ss.str());
                                     _rollback("chlDelChildResc");
                                     return status;
                             }
@@ -2571,7 +2556,7 @@ chlDelChildResc(
                         // Update resource hierarchy for objects down the tree
 
                         // Add child resource to hierarchy for substitution
-                                hierarchy += eirods::hierarchy_parser::delimiter() + child;
+                                hierarchy += irods::hierarchy_parser::delimiter() + child;
 
                                 // Substitute '...;parent;child' with 'child
                             status = chlSubstituteResourceHierarchies(rsComm, hierarchy.c_str(), child.c_str());
@@ -2579,7 +2564,7 @@ chlDelChildResc(
                         // =-=-=-=-=-=-=-
                         // Update resource name for objects in child
                             // If B is removed from A, all files whose resc_hier starts with B are now on B
-                            partial_hier = child + eirods::hierarchy_parser::delimiter() + "%";
+                            partial_hier = child + irods::hierarchy_parser::delimiter() + "%";
 
                             cllBindVars[cllBindVarCount++]=(char*)child.c_str();
                             cllBindVars[cllBindVarCount++]=(char*)child.c_str();
@@ -2591,7 +2576,7 @@ chlDelChildResc(
                                     // rollback
                                     std::stringstream ss;
                                     ss << "chlDelChildResc" << " aborted. Resource update error, status = " << status;
-                                    eirods::log(LOG_NOTICE, ss.str());
+                                    irods::log(LOG_NOTICE, ss.str());
                                     _rollback("chlDelChildResc");
                                     return status;
                             }
@@ -2608,13 +2593,13 @@ chlDelChildResc(
                                        commentStr, &icss)) != 0) {
                     std::stringstream ss;
                     ss << "chlDelChildResc cmlAudit3 failure " << status;
-                    eirods::log(LOG_NOTICE, ss.str());
+                    irods::log(LOG_NOTICE, ss.str());
                     _rollback("chlDelChildResc");
                     result = status;
                 } else if((status =  cmlExecuteNoAnswerSql("commit", &icss)) != 0) {
                     std::stringstream ss;
                     ss << "chlDelChildResc cmlExecuteNoAnswerSql commit failure " << status;
-                    eirods::log(LOG_NOTICE, ss.str());
+                    irods::log(LOG_NOTICE, ss.str());
                     result = status;
                 }
             }
@@ -2631,7 +2616,7 @@ _rescHasParentOrChild(
     char parent[MAX_NAME_LEN];
     char children[MAX_NAME_LEN];
     int status;
-    eirods::sql_logger logger("_rescHasParentOrChild", logSQL);
+    irods::sql_logger logger("_rescHasParentOrChild", logSQL);
 
     logger.log();
     parent[0] = '\0';
@@ -2641,7 +2626,7 @@ _rescHasParentOrChild(
         if(status == CAT_NO_ROWS_FOUND) {
             std::stringstream ss;
             ss << "Resource \"" << rescId << "\" not found";
-            eirods::log(LOG_NOTICE, ss.str());
+            irods::log(LOG_NOTICE, ss.str());
         } else {
             _rollback("_rescHasParentOrChild");
         }
@@ -3538,7 +3523,7 @@ static bool allowed_zone_char( const char _c ) {
 
 // =-=-=-=-=-=-=-
 /// @brief function for validing the name of a zone
-eirods::error validate_zone_name( 
+irods::error validate_zone_name( 
     std::string _zone_name ) {
     std::string::iterator itr = std::find_if( _zone_name.begin(),
                                               _zone_name.end(),
@@ -3589,9 +3574,9 @@ int chlRegZone(rsComm_t *rsComm,
 
     // =-=-=-=-=-=-=-
     // validate the zone name does not include improper characters
-    eirods::error ret = validate_zone_name( zoneName );
+    irods::error ret = validate_zone_name( zoneName );
     if( !ret.ok() ) {
-        eirods::log( ret );
+        irods::log( ret );
         return SYS_INVALID_INPUT_PARAM;
     }
 
@@ -4520,7 +4505,7 @@ static int _delColl(rsComm_t *rsComm, collInfo_t *collInfo) {
 static int _modRescInHierarchies(const std::string& old_resc, const std::string& new_resc) {
         char update_sql[MAX_SQL_SIZE];
         int status;
-        const char *sep = eirods::hierarchy_parser::delimiter().c_str();
+        const char *sep = irods::hierarchy_parser::delimiter().c_str();
         std::string std_conf_str;        // to store value of STANDARD_CONFORMING_STRINGS
 
 #if ORA_ICAT
@@ -4532,7 +4517,7 @@ static int _modRescInHierarchies(const std::string& old_resc, const std::string&
 
 
         // Get STANDARD_CONFORMING_STRINGS setting to determine if backslashes in regex must be escaped
-        eirods::catalog_properties::getInstance().get_property<std::string>(eirods::STANDARD_CONFORMING_STRINGS, std_conf_str);
+        irods::catalog_properties::getInstance().get_property<std::string>(irods::STANDARD_CONFORMING_STRINGS, std_conf_str);
 
 
         // Regex will look in r_data_main.resc_hier
@@ -4562,7 +4547,7 @@ static int _modRescInHierarchies(const std::string& old_resc, const std::string&
         if (status < 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
                 std::stringstream ss;
                 ss << "_modRescInHierarchies: cmlExecuteNoAnswerSql update failure, status = " << status;
-                eirods::log(LOG_NOTICE, ss.str());
+                irods::log(LOG_NOTICE, ss.str());
                 // _rollback("_modRescInHierarchies");
         }
 
@@ -4587,7 +4572,7 @@ static int _modRescInChildren(const std::string& old_resc, const std::string& ne
 
 
         // Get STANDARD_CONFORMING_STRINGS setting to determine if backslashes in regex must be escaped
-        eirods::catalog_properties::getInstance().get_property<std::string>(eirods::STANDARD_CONFORMING_STRINGS, std_conf_str);
+        irods::catalog_properties::getInstance().get_property<std::string>(irods::STANDARD_CONFORMING_STRINGS, std_conf_str);
 
 
         // Regex will look in r_resc_main.resc_children
@@ -4618,7 +4603,7 @@ static int _modRescInChildren(const std::string& old_resc, const std::string& ne
         if (status < 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
                 std::stringstream ss;
                 ss << "_modRescInChildren: cmlExecuteNoAnswerSql update failure, status = " << status;
-                eirods::log(LOG_NOTICE, ss.str());
+                irods::log(LOG_NOTICE, ss.str());
                 // _rollback("_modRescInChildren");
         }
 
@@ -4629,7 +4614,7 @@ static int _modRescInChildren(const std::string& old_resc, const std::string& ne
 // local function to delegate the reponse
 // verification to an authentication plugin
 static 
-eirods::error verify_auth_response(
+irods::error verify_auth_response(
     const char* _scheme,
     const char* _challenge,
     const char* _user_name,
@@ -4656,8 +4641,8 @@ eirods::error verify_auth_response(
 
     // =-=-=-=-=-=-=-
     // construct an auth object given the scheme
-    eirods::auth_object_ptr auth_obj;
-    eirods::error ret = eirods::auth_factory( 
+    irods::auth_object_ptr auth_obj;
+    irods::error ret = irods::auth_factory( 
                             _scheme, 
                             0,
                             auth_obj );
@@ -4667,14 +4652,14 @@ eirods::error verify_auth_response(
 
     // =-=-=-=-=-=-=-
     // resolve an auth plugin given the auth object
-    eirods::plugin_ptr ptr;
+    irods::plugin_ptr ptr;
     ret = auth_obj->resolve( 
-              eirods::AUTH_INTERFACE,
+              irods::AUTH_INTERFACE,
               ptr );
     if( !ret.ok() ){
         return ret;
     }
-    eirods::auth_ptr auth_plugin = boost::dynamic_pointer_cast< eirods::auth >( ptr );
+    irods::auth_ptr auth_plugin = boost::dynamic_pointer_cast< irods::auth >( ptr );
  
     // =-=-=-=-=-=-=-
     // call auth verify on plugin
@@ -4682,13 +4667,13 @@ eirods::error verify_auth_response(
               const char*,
               const char*,
               const char* >( 
-                  eirods::AUTH_AGENT_AUTH_VERIFY, 
+                  irods::AUTH_AGENT_AUTH_VERIFY, 
                   auth_obj,
                   _challenge,
                   _user_name,
                   _response );
     if( !ret.ok() ){
-        eirods::log( PASS( ret ) );
+        irods::log( PASS( ret ) );
         return ret;
     }
 
@@ -4819,13 +4804,13 @@ int chlCheckAuth(
 
 
     if( scheme && strlen( scheme ) > 0 ) {
-        eirods::error ret = verify_auth_response(
+        irods::error ret = verify_auth_response(
                                scheme,
                                challenge,
                                userName2,
                                response );
         if( !ret.ok() ) {
-            eirods::log( PASS( ret ) );
+            irods::log( PASS( ret ) );
             return ret.code();
         }
         goto checkLevel;
@@ -4939,8 +4924,8 @@ int chlCheckAuth(
     nowTime=atoll(myTime);
 
     /* Check for PAM_AUTH type passwords */
-    pamMaxTime=atoll(eirods_pam_password_max_time);
-    pamMinTime=atoll(eirods_pam_password_min_time);
+    pamMaxTime=atoll(irods_pam_password_max_time);
+    pamMinTime=atoll(irods_pam_password_min_time);
 
     if( ( strncmp(goodPwExpiry, "9999",4)!=0) &&
             expireTime >=  pamMinTime &&
@@ -5356,8 +5341,8 @@ chlMakeLimitedPw(rsComm_t *rsComm, int ttl, char *pwValueToHash) {
     getNowStr(myTime);
 
     timeToLive = ttl*3600;  /* convert input hours to seconds */
-    pamMaxTime=atoll(eirods_pam_password_max_time);
-    pamMinTime=atoll(eirods_pam_password_min_time);
+    pamMaxTime=atoll(irods_pam_password_max_time);
+    pamMinTime=atoll(irods_pam_password_min_time);
     if (timeToLive < pamMinTime ||
         timeToLive > pamMaxTime ) {
       return PAM_AUTH_PASSWORD_INVALID_TTL;
@@ -5385,8 +5370,8 @@ chlMakeLimitedPw(rsComm_t *rsComm, int ttl, char *pwValueToHash) {
 
     /* Also delete any that are expired */
     if (logSQL!=0) rodsLog(LOG_SQL, "chlMakeLimitedPw SQL 3");
-    cllBindVars[cllBindVarCount++]=eirods_pam_password_min_time;
-    cllBindVars[cllBindVarCount++]=eirods_pam_password_max_time;
+    cllBindVars[cllBindVarCount++]=irods_pam_password_min_time;
+    cllBindVars[cllBindVarCount++]=irods_pam_password_max_time;
     cllBindVars[cllBindVarCount++]=myTime;
 #if MY_ICAT
     status =  cmlExecuteNoAnswerSql("delete from R_USER_PASSWORD where pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as signed integer)>=? and cast(pass_expiry_ts as signed integer)<=? and (cast(pass_expiry_ts as signed integer) + cast(modify_ts as signed integer) < ?)",
@@ -5500,13 +5485,13 @@ int chlUpdateIrodsPamPassword(rsComm_t *rsComm,
 
     /* if ttl is unset, use the default */
     if (timeToLive == 0) {
-      rstrcpy(expTime, eirods_pam_password_default_time, sizeof expTime);
+      rstrcpy(expTime, irods_pam_password_default_time, sizeof expTime);
     }
     else {
       /* convert ttl to seconds and make sure ttl is within the limits */
       rodsLong_t pamMinTime, pamMaxTime;
-      pamMinTime=atoll(eirods_pam_password_min_time);
-      pamMaxTime=atoll(eirods_pam_password_max_time);
+      pamMinTime=atoll(irods_pam_password_min_time);
+      pamMaxTime=atoll(irods_pam_password_max_time);
       timeToLive = timeToLive * 3600;
       if (timeToLive < pamMinTime || 
           timeToLive > pamMaxTime) {
@@ -5525,8 +5510,8 @@ int chlUpdateIrodsPamPassword(rsComm_t *rsComm,
 
     /* first delete any that are expired */
     if (logSQL!=0) rodsLog(LOG_SQL, "chlUpdateIrodsPamPassword SQL 2");
-    cllBindVars[cllBindVarCount++]=eirods_pam_password_min_time;
-    cllBindVars[cllBindVarCount++]=eirods_pam_password_max_time;
+    cllBindVars[cllBindVarCount++]=irods_pam_password_min_time;
+    cllBindVars[cllBindVarCount++]=irods_pam_password_max_time;
     cllBindVars[cllBindVarCount++]=myTime;
 #if MY_ICAT
     status =  cmlExecuteNoAnswerSql("delete from R_USER_PASSWORD where pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as signed integer)>=? and cast(pass_expiry_ts as signed integer)<=? and (cast(pass_expiry_ts as signed integer) + cast(modify_ts as signed integer) < ?)",
@@ -5547,11 +5532,11 @@ int chlUpdateIrodsPamPassword(rsComm_t *rsComm,
 #endif
             cVal, iVal, 2,
             selUserId,
-            eirods_pam_password_min_time,
-            eirods_pam_password_max_time, &icss);
+            irods_pam_password_min_time,
+            irods_pam_password_max_time, &icss);
 
     if (status==0) {
-        if( !eirods_pam_auth_no_extend ) {
+        if( !irods_pam_auth_no_extend ) {
             if (logSQL!=0) rodsLog(LOG_SQL, "chlUpdateIrodsPamPassword SQL 4");
             cllBindVars[cllBindVarCount++]=myTime;
             cllBindVars[cllBindVarCount++]=expTime;
@@ -5568,9 +5553,9 @@ int chlUpdateIrodsPamPassword(rsComm_t *rsComm,
                         status);
                 return(status);
             }
-        } // if !eirods_pam_auth_no_extend
+        } // if !irods_pam_auth_no_extend
         icatDescramble(passwordInIcat);
-        strncpy( *irodsPassword, passwordInIcat, eirods_pam_password_len );
+        strncpy( *irodsPassword, passwordInIcat, irods_pam_password_len );
         return(0);
     }
 
@@ -5583,7 +5568,7 @@ int chlUpdateIrodsPamPassword(rsComm_t *rsComm,
     while( !pw_good ) {
        j=0;
        get64RandomBytes(rBuf);
-       for (i=0;i<50 && j<eirods_pam_password_len-1;i++) {
+       for (i=0;i<50 && j<irods_pam_password_len-1;i++) {
           char c;
           c = rBuf[i] & 0x7f;
           if (c < '0') c+='0';
@@ -5628,7 +5613,7 @@ int chlUpdateIrodsPamPassword(rsComm_t *rsComm,
       return(status);
     }
 
-    strncpy(*irodsPassword, randomPw, eirods_pam_password_len);
+    strncpy(*irodsPassword, randomPw, irods_pam_password_len);
     return(0);
 }
 
@@ -5794,8 +5779,8 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
 
     if (strncmp(option, "rmPamPw", 9)==0) {
         rstrcpy(tSQL, form7, MAX_SQL_SIZE);
-        cllBindVars[cllBindVarCount++]=eirods_pam_password_min_time;
-        cllBindVars[cllBindVarCount++]=eirods_pam_password_max_time;
+        cllBindVars[cllBindVarCount++]=irods_pam_password_min_time;
+        cllBindVars[cllBindVarCount++]=irods_pam_password_max_time;
         cllBindVars[cllBindVarCount++]=userName2;
         cllBindVars[cllBindVarCount++]=zoneName;
         if (logSQL!=0) rodsLog(LOG_SQL, "chlModUser SQL 6");
@@ -6998,7 +6983,7 @@ int chlModRescGroup(rsComm_t *rsComm, char *rescGroupName, char *option,
 #endif
 
 /// @brief function for validating a username
-eirods::error validate_user_name(std::string _user_name) {
+irods::error validate_user_name(std::string _user_name) {
 
         // Must be between 3 and NAME_LEN-1 characters.
         // Must start and end with a word character.
@@ -7115,9 +7100,9 @@ int chlRegUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
 
     // =-=-=-=-=-=-=-
     // Validate user name format
-    eirods::error ret = validate_user_name(userName2);
+    irods::error ret = validate_user_name(userName2);
     if(!ret.ok()) {
-        eirods::log(ret);
+        irods::log(ret);
         return SYS_INVALID_INPUT_PARAM;
     }
     // =-=-=-=-=-=-=-
@@ -11568,7 +11553,7 @@ chlSpecificQuery(specificQueryInp_t specificQueryInp, genQueryOut_t *result) {
 int chlSubstituteResourceHierarchies(rsComm_t *rsComm, const char *old_hier, const char *new_hier) {
         int status = 0;
         char old_hier_partial[MAX_NAME_LEN];
-    eirods::sql_logger logger("chlSubstituteResourceHierarchies", logSQL);
+    irods::sql_logger logger("chlSubstituteResourceHierarchies", logSQL);
 
     logger.log();
 
@@ -11586,7 +11571,7 @@ int chlSubstituteResourceHierarchies(rsComm_t *rsComm, const char *old_hier, con
 
         // =-=-=-=-=-=-=-
         // String to match partial hierarchies
-        snprintf(old_hier_partial, MAX_NAME_LEN, "%s%s%%", old_hier, eirods::hierarchy_parser::delimiter().c_str());
+        snprintf(old_hier_partial, MAX_NAME_LEN, "%s%s%%", old_hier, irods::hierarchy_parser::delimiter().c_str());
 
         // =-=-=-=-=-=-=-
         // Update r_data_main
@@ -11610,7 +11595,7 @@ int chlSubstituteResourceHierarchies(rsComm_t *rsComm, const char *old_hier, con
         if (status < 0) {
                 std::stringstream ss;
                 ss << "chlSubstituteResourceHierarchies: cmlExecuteNoAnswerSql update failure " << status;
-                eirods::log(LOG_NOTICE, ss.str());
+                irods::log(LOG_NOTICE, ss.str());
                 _rollback("chlSubstituteResourceHierarchies");
         }
 
@@ -11717,7 +11702,7 @@ int chlGetHierarchyForResc(const std::string& resc_name, const std::string& zone
         int status;
 
 
-    eirods::sql_logger logger("chlGetHierarchyForResc", logSQL);
+    irods::sql_logger logger("chlGetHierarchyForResc", logSQL);
     logger.log();
 
         if (!icss.status) {
@@ -11741,7 +11726,7 @@ int chlGetHierarchyForResc(const std::string& resc_name, const std::string& zone
                 }
 
                 if (strlen(parent)) {
-                        hierarchy = parent + eirods::hierarchy_parser::delimiter() + hierarchy;        // Add parent to hierarchy string
+                        hierarchy = parent + irods::hierarchy_parser::delimiter() + hierarchy;        // Add parent to hierarchy string
                         current_node = parent;
                 }
                 else {

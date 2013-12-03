@@ -1,14 +1,14 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 
-#include "eirods_zone_info.hpp"
+#include "irods_zone_info.hpp"
 
 #include "rodsLog.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "icatMidLevelRoutines.hpp"
 #include "rodsDef.hpp"
 
-namespace eirods {
+namespace irods {
 
     zone_info* zone_info::the_instance_ = NULL;
 
@@ -51,4 +51,4 @@ namespace eirods {
 
     }
     
-}; // namespace eirods
+}; // namespace irods

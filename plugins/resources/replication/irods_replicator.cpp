@@ -1,10 +1,10 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 
-#include "eirods_replicator.hpp"
-#include "eirods_object_oper.hpp"
+#include "irods_replicator.hpp"
+#include "irods_object_oper.hpp"
 
-namespace eirods {
+namespace irods {
 
     replicator::replicator(
         oper_replicator* _oper_replicator) :
@@ -36,4 +36,4 @@ namespace eirods {
         return result;
     }
     
-}; // namespace eirods
+}; // namespace irods

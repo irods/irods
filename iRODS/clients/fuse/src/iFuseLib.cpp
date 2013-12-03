@@ -327,9 +327,9 @@ allocIFuseDesc ()
 
     DescLock.lock();
     for (i = 3; i < MAX_IFUSE_DESC; i++) {
-        if (IFuseDesc[i].inuseFlag <= IRODS_FREE) {
+        if (IFuseDesc[i].inuseFlag <= FREE) {
 	    IFuseDesc[i].mutex = new boost::mutex; // JMC :: necessary since no ctor/dtor on struct
-            IFuseDesc[i].inuseFlag = IRODS_INUSE;
+            IFuseDesc[i].inuseFlag = INUSE;
 	    IFuseDescInuseCnt++;
             DescLock.unlock();
             return (i);
@@ -388,7 +388,7 @@ iFuseConnInuse (iFuseConn_t *iFuseConn)
     DescLock.lock();
     for (i = 3; i < MAX_IFUSE_DESC; i++) {
 	if (inuseCnt >= IFuseDescInuseCnt) break;
-        if (IFuseDesc[i].inuseFlag == IRODS_INUSE) {
+        if (IFuseDesc[i].inuseFlag == INUSE) {
 	    inuseCnt++;
 	    if (IFuseDesc[i].iFuseConn != NULL && 
 	      IFuseDesc[i].iFuseConn == iFuseConn) {
@@ -473,7 +473,7 @@ checkFuseDesc (int descInx)
         return (SYS_FILE_DESC_OUT_OF_RANGE);
     }
 
-    if (IFuseDesc[descInx].inuseFlag != IRODS_INUSE) {
+    if (IFuseDesc[descInx].inuseFlag != INUSE) {
         rodsLog (LOG_ERROR,
          "checkFuseDesc: descInx %d is not inuse", descInx);
         return (SYS_BAD_FILE_DESCRIPTOR);
@@ -866,7 +866,7 @@ rodsEnv *myRodsEnv)
     DescLock.lock();
     for (i = 3; i < MAX_IFUSE_DESC; i++) {
         if (inuseCnt >= IFuseDescInuseCnt) break;
-        if (IFuseDesc[i].inuseFlag == IRODS_INUSE) {
+        if (IFuseDesc[i].inuseFlag == INUSE) {
 	    inuseCnt++;
 	    if (IFuseDesc[i].iFuseConn != NULL &&
               IFuseDesc[i].iFuseConn->conn != NULL &&
@@ -902,7 +902,7 @@ getIFuseConn (iFuseConn_t **iFuseConn, rodsEnv *myRodsEnv)
 	inuseCnt = 0;
         tmpIFuseConn = ConnHead;
         while (tmpIFuseConn != NULL) {
-	    if (tmpIFuseConn->status == IRODS_FREE && 
+	    if (tmpIFuseConn->status == FREE && 
 	      tmpIFuseConn->conn != NULL) {
 	        useFreeIFuseConn (tmpIFuseConn);
 	        *iFuseConn = tmpIFuseConn;
@@ -1007,7 +1007,7 @@ _useIFuseConn (iFuseConn_t *iFuseConn)
     if (iFuseConn == NULL || iFuseConn->conn == NULL) 
 	return USER__NULL_INPUT_ERR;
     iFuseConn->actTime = time (NULL);
-    iFuseConn->status = IRODS_INUSE;
+    iFuseConn->status = INUSE;
     iFuseConn->pendingCnt++;
 
     ConnLock.unlock();
@@ -1026,7 +1026,7 @@ useFreeIFuseConn (iFuseConn_t *iFuseConn)
 {
     if (iFuseConn == NULL) return USER__NULL_INPUT_ERR;
     iFuseConn->actTime = time (NULL);
-    iFuseConn->status = IRODS_INUSE;
+    iFuseConn->status = INUSE;
     iFuseConn->inuseCnt++;
     ConnLock.unlock();
     iFuseConn->mutex->lock();
@@ -1102,7 +1102,7 @@ _relIFuseConn (iFuseConn_t *iFuseConn)
         ConnLock.unlock(); 
         if (iFuseConnInuse (iFuseConn) == 0) {
             ConnLock.lock();
-            iFuseConn->status = IRODS_FREE;
+            iFuseConn->status = FREE;
             ConnLock.unlock();
         }
     } else if (iFuseConn->pendingCnt + iFuseConn->inuseCnt <= 0) {
@@ -1110,7 +1110,7 @@ _relIFuseConn (iFuseConn_t *iFuseConn)
         ConnLock.unlock(); 
         if (iFuseConnInuse (iFuseConn) == 0) {
             ConnLock.lock();
-            iFuseConn->status = IRODS_FREE;
+            iFuseConn->status = FREE;
             ConnLock.unlock();
 	}
     } else {
@@ -1180,9 +1180,9 @@ connManager ()
 	connCnt = 0;
 	prevIFuseConn = NULL;
         while (tmpIFuseConn != NULL) {
-	    if (tmpIFuseConn->status == IRODS_FREE) freeCnt ++;
+	    if (tmpIFuseConn->status == FREE) freeCnt ++;
 	    if (curTime - tmpIFuseConn->actTime > IFUSE_CONN_TIMEOUT) {
-		if (tmpIFuseConn->status == IRODS_FREE) {
+		if (tmpIFuseConn->status == FREE) {
 		    /* can be disconnected */
 		    if (tmpIFuseConn->conn != NULL) {
 		        rcDisconnect (tmpIFuseConn->conn);
@@ -1214,7 +1214,7 @@ connManager ()
             tmpIFuseConn = ConnHead;
             prevIFuseConn = NULL;
             while (tmpIFuseConn != NULL && connCnt > HIGH_NUM_CONN) {
-		if (tmpIFuseConn->status == IRODS_FREE) {
+		if (tmpIFuseConn->status == FREE) {
                     /* can be disconnected */
                     if (tmpIFuseConn->conn != NULL) {
                         rcDisconnect (tmpIFuseConn->conn);
@@ -1280,17 +1280,17 @@ pathCache_t **tmpPathCache)
     uint cachedTime = time (0);
     NewlyCreatedOprLock.lock();
     for (i = 0; i < NUM_NEWLY_CREATED_SLOT; i++) {
-	if (newlyInx < 0 && NewlyCreatedFile[i].inuseFlag == IRODS_FREE) { 
+	if (newlyInx < 0 && NewlyCreatedFile[i].inuseFlag == FREE) { 
 	    newlyInx = i;
-	    NewlyCreatedFile[i].inuseFlag = IRODS_INUSE;
-	} else if (NewlyCreatedFile[i].inuseFlag == IRODS_INUSE) {
+	    NewlyCreatedFile[i].inuseFlag = INUSE;
+	} else if (NewlyCreatedFile[i].inuseFlag == INUSE) {
 	    if (cachedTime - NewlyCreatedFile[i].cachedTime  >= 
 	      MAX_NEWLY_CREATED_TIME) {
 		closeNewlyCreatedCache (&NewlyCreatedFile[i]);
 	        if (newlyInx < 0) {
 		    newlyInx = i;
 		} else {
-		    NewlyCreatedFile[i].inuseFlag = IRODS_FREE;
+		    NewlyCreatedFile[i].inuseFlag = FREE;
 		}
 	    }
 	}
@@ -1299,7 +1299,7 @@ pathCache_t **tmpPathCache)
 	/* have to close one */
 	newlyInx = NUM_NEWLY_CREATED_SLOT - 2;
         closeNewlyCreatedCache (&NewlyCreatedFile[newlyInx]);
-	NewlyCreatedFile[newlyInx].inuseFlag = IRODS_INUSE;
+	NewlyCreatedFile[newlyInx].inuseFlag = INUSE;
     }
     rstrcpy (NewlyCreatedFile[newlyInx].filePath, path, MAX_NAME_LEN);
     NewlyCreatedFile[newlyInx].descInx = descInx;
@@ -1627,7 +1627,7 @@ getNewlyCreatedDescByPath (char *path)
     DescLock.lock();
     for (i = 3; i < MAX_IFUSE_DESC; i++) {
 	if (inuseCnt >= IFuseDescInuseCnt) break;
-        if (IFuseDesc[i].inuseFlag == IRODS_INUSE) { 
+        if (IFuseDesc[i].inuseFlag == INUSE) { 
             inuseCnt++;
 	    if (IFuseDesc[i].locCacheState != HAVE_NEWLY_CREATED_CACHE ||
 	      IFuseDesc[i].localPath == NULL) {

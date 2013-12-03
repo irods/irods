@@ -11,10 +11,9 @@
 
 
 // =-=-=-=-=-=-=-
-// eirods inludes
-#include "eirods_log.hpp"
-#include "eirods_file_object.hpp"
-#include "eirods_stacktrace.hpp"
+#include "irods_log.hpp"
+#include "irods_file_object.hpp"
+#include "irods_stacktrace.hpp"
 
 int
 rsFileLseek (rsComm_t *rsComm, fileLseekInp_t *fileLseekInp, 
@@ -90,14 +89,14 @@ int _rsFileLseek(
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - Empty logical path.";
-        eirods::log(LOG_ERROR, msg.str());
+        irods::log(LOG_ERROR, msg.str());
         return -1;
     }
     
     // =-=-=-=-=-=-=-
     // make call to lseek via resource plugin
-    eirods::file_object_ptr file_obj( 
-                                new eirods::file_object( 
+    irods::file_object_ptr file_obj( 
+                                new irods::file_object( 
                                     _comm,
                                     FileDesc[_lseek_inp->fileInx].objPath,
                                     FileDesc[_lseek_inp->fileInx].fileName,
@@ -105,7 +104,7 @@ int _rsFileLseek(
                                     FileDesc[_lseek_inp->fileInx].fd,
                                     0, 0 ) );
 
-    eirods::error lseek_err = fileLseek( 
+    irods::error lseek_err = fileLseek( 
                                   _comm, 
                                   file_obj,
                                   _lseek_inp->offset, 
@@ -117,8 +116,8 @@ int _rsFileLseek(
         msg << "lseek failed for [";
         msg << FileDesc[_lseek_inp->fileInx].fileName;
         msg << "]"; 
-        eirods::error ret_err = PASSMSG( msg.str(), lseek_err );
-        eirods::log( ret_err );
+        irods::error ret_err = PASSMSG( msg.str(), lseek_err );
+        irods::log( ret_err );
 
         return lseek_err.code();
 

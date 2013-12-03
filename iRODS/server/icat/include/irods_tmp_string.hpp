@@ -6,7 +6,7 @@
 #include <string>
 
 /// @brief This class provides a non-const char* that is automatically cleaned up when it goes out of scope
-namespace eirods {
+namespace irods {
 
     class tmp_string {
     public:
@@ -20,6 +20,6 @@ namespace eirods {
         char* string_;
     };
     
-}; // namespace eirods
+}; // namespace irods
 
 #endif // _tmp_string_H_

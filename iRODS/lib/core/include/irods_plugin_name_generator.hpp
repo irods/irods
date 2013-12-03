@@ -3,11 +3,11 @@
 #ifndef _plugin_name_generator_H_
 #define _plugin_name_generator_H_
 
-#include "eirods_error.hpp"
+#include "irods_error.hpp"
 #include <vector>
 #include <string>
 
-namespace eirods {
+namespace irods {
 
 /**
  * @brief Functor for generating plugin filenames from the resource name
@@ -36,6 +36,6 @@ namespace eirods {
         error generate_plugin_name(const std::string& filename, std::string& _rtn_name);
 
     };
-}; // namespace eirods
+}; // namespace irods
 
 #endif // _plugin_name_generator_H_

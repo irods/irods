@@ -1,9 +1,9 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 
-#include "eirods_auth_object.hpp"
+#include "irods_auth_object.hpp"
 
-namespace eirods {
+namespace irods {
 
     auth_object::auth_object(
         rError_t* _r_error) : r_error_(_r_error)
@@ -41,4 +41,4 @@ namespace eirods {
                  context_        == _rhs.context() );
     }
 
-}; // namespace eirods
+}; // namespace irods

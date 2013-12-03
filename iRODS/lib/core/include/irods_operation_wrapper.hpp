@@ -1,7 +1,7 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
-#ifndef ___EIRODS_OPERATION_WRAPPER_H__
-#define ___EIRODS_OPERATION_WRAPPER_H__
+#ifndef ___IRODS_OPERATION_WRAPPER_HPP__
+#define ___IRODS_OPERATION_WRAPPER_HPP__
 
 // =-=-=-=-=-=-=-
 // STL Includes
@@ -14,12 +14,11 @@
 #include <boost/any.hpp>
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_plugin_base.hpp"
-#include "eirods_lookup_table.hpp"
-#include "eirods_plugin_context.hpp"
-#include "eirods_error.hpp"
-#include "eirods_operation_rule_execution_manager_factory.hpp"
+#include "irods_plugin_base.hpp"
+#include "irods_lookup_table.hpp"
+#include "irods_plugin_context.hpp"
+#include "irods_error.hpp"
+#include "irods_operation_rule_execution_manager_factory.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
@@ -28,7 +27,7 @@
 
 #include <iostream>
 
-namespace eirods {
+namespace irods {
     // =-=-=-=-=-=-=-
     // const signifying failure of operation call for post dynPEP 
     static std::string OP_FAILED( "OPERATION_FAILED" );
@@ -529,9 +528,9 @@ namespace eirods {
 
     }; // class operation_wrapper 
 
-}; // namespace eirods
+}; // namespace irods
 
-#endif // __EIRODS_OPERATION_WRAPPER_H__
+#endif // __IRODS_OPERATION_WRAPPER_HPP__
 
 
 

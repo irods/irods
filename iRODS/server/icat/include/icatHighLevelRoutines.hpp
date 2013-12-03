@@ -196,7 +196,7 @@ int chlUpdateIrodsPamPassword(rsComm_t *rsComm, char *userName,
                               char **irodsPassword);
 
 
-eirods::error chlRescObjCount(const std::string& _resc_name, int& _rtn_obj_count);
+irods::error chlRescObjCount(const std::string& _resc_name, int& _rtn_obj_count);
 
 int chlSubstituteResourceHierarchies(rsComm_t *rsComm, const char *old_hier, const char *new_hier);
 

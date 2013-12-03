@@ -1,14 +1,13 @@
 
 
 
-#ifndef __EIRODS_TCP_OBJECT_H__
-#define __EIRODS_TCP_OBJECT_H__
+#ifndef __IRODS_TCP_OBJECT_HPP__
+#define __IRODS_TCP_OBJECT_HPP__
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_network_object.hpp"
+#include "irods_network_object.hpp"
 
-namespace eirods {
+namespace irods {
     // =-=-=-=-=-=-=-
     // constant key for tcp network object
     const std::string TCP_NETWORK_PLUGIN( "tcp" );
@@ -56,6 +55,6 @@ namespace eirods {
     /// @brief typedef for shared tcp object ptr
     typedef boost::shared_ptr< tcp_object > tcp_object_ptr;
 
-}; // namespace eirods
+}; // namespace irods
 
-#endif // __EIRODS_TCP_OBJECT_H__
+#endif // __IRODS_TCP_OBJECT_HPP__

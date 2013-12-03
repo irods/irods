@@ -1,16 +1,15 @@
 
 
 
-#ifndef __EIRODS_BUFFER_ENCRYPTION_H__
-#define __EIRODS_BUFFER_ENCRYPTION_H__
+#ifndef __IRODS_BUFFER_ENCRYPTION_HPP__
+#define __IRODS_BUFFER_ENCRYPTION_HPP__
 
 // =-=-=-=-=-=-=-
 // irods includes
 #include "rodsDef.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_error.hpp"
+#include "irods_error.hpp"
 
 // =-=-=-=-=-=-=-
 // boost includes
@@ -20,7 +19,7 @@
 // ssl includes
 #include <openssl/evp.h>
 
-namespace eirods {
+namespace irods {
 
     /// =-=-=-=-=-=-=-
     /// @brief functor which manages buffer encryption
@@ -44,7 +43,7 @@ namespace eirods {
         
         /// =-=-=-=-=-=-=-
         /// @brief given a string, encrypt it
-        eirods::error encrypt( 
+        irods::error encrypt( 
             const array_t&, // key
             const array_t&, // initialization vector
             const array_t&, // plaintext buffer
@@ -52,7 +51,7 @@ namespace eirods {
 
         /// =-=-=-=-=-=-=-
         /// @brief given a string, decrypt it
-        eirods::error decrypt( 
+        irods::error decrypt( 
             const array_t&, // key
             const array_t&, // initialization vector
             const array_t&, // encrypted buffer
@@ -60,12 +59,12 @@ namespace eirods {
 
         /// =-=-=-=-=-=-=-
         /// @brief given a key, create a hashed key and IV
-        eirods::error initialization_vector(
+        irods::error initialization_vector(
             array_t& );     // intialization vector
 
         /// =-=-=-=-=-=-=-
         /// @brief generate a random byte key
-        eirods::error generate_key(
+        irods::error generate_key(
             array_t& ); // random byte key
         
         /// =-=-=-=-=-=-=-
@@ -87,9 +86,9 @@ namespace eirods {
 
     }; // class buffer_crypt
 
-}; // namespace eirods
+}; // namespace irods
 
-#endif // __EIRODS_BUFFER_ENCRYPTION_H__
+#endif // __IRODS_BUFFER_ENCRYPTION_HPP__
 
 
 

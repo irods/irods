@@ -2,14 +2,13 @@
 
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_log.hpp"
+#include "irods_log.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
 #include "rodsLog.hpp"
 
-namespace eirods {
+namespace irods {
 
     // =-=-=-=-=-=-=-
     // provide our own interface which will take stl types which can
@@ -21,7 +20,7 @@ namespace eirods {
     // =-=-=-=-=-=-=-
     // provide our own interface which will take our error which can
     // be refactored later
-    void log( eirods::error _err ) {
+    void log( irods::error _err ) {
         if( _err.ok() ) {
             log( LOG_NOTICE, _err.result() );
         } else {
@@ -29,7 +28,7 @@ namespace eirods {
         }
     } // log
 
-}; // namespace eirods
+}; // namespace irods
 
 
 

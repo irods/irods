@@ -18,9 +18,8 @@
 #include "miscServerFunct.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods resource includes
-#include "eirods_resource_backport.hpp"
-#include "eirods_resource_redirect.hpp"
+#include "irods_resource_backport.hpp"
+#include "irods_resource_redirect.hpp"
 
 
 int rsGetHostForPut(
@@ -33,14 +32,14 @@ int rsGetHostForPut(
     // we know that the redirection decision has already been made
     std::string       hier;
     if( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
-        eirods::error ret = eirods::resolve_resource_hierarchy( eirods::EIRODS_CREATE_OPERATION, rsComm, 
+        irods::error ret = irods::resolve_resource_hierarchy( irods::CREATE_OPERATION, rsComm, 
                                                        dataObjInp, hier );
         if( !ret.ok() ) { 
             std::stringstream msg;
             msg << __FUNCTION__;
-            msg << " :: failed in eirods::resolve_resource_hierarchy for [";
+            msg << " :: failed in irods::resolve_resource_hierarchy for [";
             msg << dataObjInp->objPath << "]";
-            eirods::log( PASSMSG( msg.str(), ret ) );
+            irods::log( PASSMSG( msg.str(), ret ) );
             return ret.code();
         }
         // =-=-=-=-=-=-=-
@@ -53,9 +52,9 @@ int rsGetHostForPut(
     // =-=-=-=-=-=-=-
     // extract the host location from the resource hierarchy
     std::string location;
-    eirods::error ret = eirods::get_loc_for_hier_string( hier, location );
+    irods::error ret = irods::get_loc_for_hier_string( hier, location );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "rsGetHostForPut - failed in get_loc_for_hier_String", ret ) );
+        irods::log( PASSMSG( "rsGetHostForPut - failed in get_loc_for_hier_String", ret ) );
         return -1;
     }
 
@@ -117,13 +116,13 @@ int rsGetHostForPut(
                }*/
 
             myRescInfo = new rescInfo_t;
-            eirods::error err = eirods::get_resc_info( specCollCache->specColl.resource, *myRescInfo );
+            irods::error err = irods::get_resc_info( specCollCache->specColl.resource, *myRescInfo );
             if( !err.ok() ) {
                 std::stringstream msg;
                 msg << "rsGetHostForPut - failed for [";
                 msg << specCollCache->specColl.resource;
                 msg << "]";
-                eirods::log( PASS( false, -1, msg.str(), err ) );
+                irods::log( PASS( false, -1, msg.str(), err ) );
             }
 
 

@@ -16,12 +16,11 @@
 #include "rcGlobalExtern.hpp"
 #include "reGlobalsExtern.hpp"
 #include "rsApiHandler.hpp"
-#include "eirods_stacktrace.hpp"
+#include "irods_stacktrace.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods resource includes
-#include "eirods_resource_backport.hpp"
-#include "eirods_resource_redirect.hpp"
+#include "irods_resource_backport.hpp"
+#include "irods_resource_redirect.hpp"
 
 
 int
@@ -50,13 +49,13 @@ rsBulkDataObjPut (rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
         rodsServerHost_t* host  =  0;
         if( getValByKey( &dataObjInp.condInput, RESC_HIER_STR_KW ) == NULL ) {
             std::string       hier;
-            eirods::error ret = eirods::resource_redirect( eirods::EIRODS_CREATE_OPERATION, rsComm, 
+            irods::error ret = irods::resource_redirect( irods::CREATE_OPERATION, rsComm, 
                     &dataObjInp, hier, host, local );
             if( !ret.ok() ) { 
                 std::stringstream msg;
                 msg << "failed for [";
                 msg << dataObjInp.objPath << "]";
-                eirods::log( PASSMSG( msg.str(), ret ) );
+                irods::log( PASSMSG( msg.str(), ret ) );
                 return ret.code();
             }
 
@@ -144,7 +143,7 @@ unbunBulkBuf (
         if(status < 0) {
             std::stringstream msg;
             msg << __FUNCTION__ << ": Unable to make collection \"" << collString << "\"";
-            eirods::log(LOG_ERROR, msg.str());
+            irods::log(LOG_ERROR, msg.str());
             return status;
         }
 
@@ -156,7 +155,7 @@ unbunBulkBuf (
         if(status < 0) {
             std::stringstream msg;
             msg << __FUNCTION__ << ": Failed to put data into file \"" << phyBunPath << "\"";
-            eirods::log(LOG_NOTICE, msg.str());
+            irods::log(LOG_NOTICE, msg.str());
             return status;
         }
     }
@@ -196,8 +195,8 @@ _rsBulkDataObjPut (rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
           freeRodsObjStat (myRodsObjStat);
           return (status);
           }*/
-        eirods::resource_ptr resc;
-        eirods::error err = eirods::get_resc_grp_info( myRodsObjStat->specColl->resource, *myRescGrpInfo );
+        irods::resource_ptr resc;
+        irods::error err = irods::get_resc_grp_info( myRodsObjStat->specColl->resource, *myRescGrpInfo );
         if( !err.ok() ) {
             delete myRescGrpInfo->rescInfo;
             delete myRescGrpInfo;
@@ -205,7 +204,7 @@ _rsBulkDataObjPut (rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
             std::stringstream msg;
             msg << "failed to get resource info [";
             msg << myRodsObjStat->specColl->resource << "]";
-            eirods::log( PASSMSG( msg.str(), err ) );
+            irods::log( PASSMSG( msg.str(), err ) );
             freeRodsObjStat (myRodsObjStat);
             return err.code();
         }
@@ -245,7 +244,7 @@ _rsBulkDataObjPut (rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
     if(status < 0) {
         std::stringstream msg;
         msg << __FUNCTION__ << ": Unable to create BunDir";
-        eirods::log(LOG_ERROR, msg.str());
+        irods::log(LOG_ERROR, msg.str());
         return status;
     }
 
@@ -253,7 +252,7 @@ _rsBulkDataObjPut (rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
     if(status < 0) {
         std::stringstream msg;
         msg << __FUNCTION__ << ": Unable to make collection \"" << bulkOprInp->objPath << "\"";
-        eirods::log(LOG_ERROR, msg.str());
+        irods::log(LOG_ERROR, msg.str());
         return status;
     }
 
@@ -664,7 +663,7 @@ postProcRenamedPhyFiles (renamedPhyFiles_t *renamedPhyFiles, int regStatus)
                     &renamedPhyFiles->origFilePath[i][0]);
             if ( status < 0)
             {
-              eirods::log(status, "rename failed.");
+              irods::log(status, "rename failed.");
             }
             savedStatus = UNIX_FILE_RENAME_ERR - errno;
             rodsLog (LOG_ERROR,
@@ -823,12 +822,12 @@ postProcBulkPut (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
       }*/
 
     dataObjInfo.rescInfo = new rescInfo_t; 
-    eirods::error err = eirods::get_resc_info( rescName->value, *dataObjInfo.rescInfo );
+    irods::error err = irods::get_resc_info( rescName->value, *dataObjInfo.rescInfo );
     if( !err.ok() ) {
         std::stringstream msg;
         msg << "failed to get resource info [";
         msg << rescName->value << "]";
-        eirods::log( PASSMSG( msg.str(), err ) );
+        irods::log( PASSMSG( msg.str(), err ) );
         return err.code();
     }
 

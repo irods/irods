@@ -6,10 +6,9 @@
 #include "reFuncDefs.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_operation_rule_execution_manager.hpp"
+#include "irods_operation_rule_execution_manager.hpp"
 
-namespace eirods {
+namespace irods {
         // =-=-=-=-=-=-=-
         // public - Constructor
         operation_rule_execution_manager::operation_rule_execution_manager( 
@@ -117,7 +116,7 @@ namespace eirods {
 
         } // exec_op
 
-}; // namespace eirods
+}; // namespace irods
 
 
 

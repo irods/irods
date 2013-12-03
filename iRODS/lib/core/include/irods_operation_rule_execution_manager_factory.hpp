@@ -1,13 +1,13 @@
 
 
 
-#ifndef __EIRODS_OPERATION_RULE_EXECUTION_MANAGER_FACTORY_H__
-#define __EIRODS_OPERATION_RULE_EXECUTION_MANAGER_FACTORY_H__
+#ifndef __IRODS_OPERATION_RULE_EXECUTION_MANAGER_FACTORY_HPP__
+#define __IRODS_OPERATION_RULE_EXECUTION_MANAGER_FACTORY_HPP__
 
-#include "eirods_operation_rule_execution_manager.hpp"
-#include "eirods_operation_rule_execution_manager_no_op.hpp"
+#include "irods_operation_rule_execution_manager.hpp"
+#include "irods_operation_rule_execution_manager_no_op.hpp"
 
-namespace eirods {
+namespace irods {
 #if 0
 #ifdef RODS_SERVER
     typedef operation_rule_execution_manager       MANAGER_TYPE;
@@ -25,9 +25,9 @@ namespace eirods {
     } // operation_rule_execution_manager_factory
 
 #endif
-}; // namespace eirods
+}; // namespace irods
 
-#endif // __EIRODS_OPERATION_RULE_EXECUTION_MANAGER_FACTORY_H__
+#endif // __IRODS_OPERATION_RULE_EXECUTION_MANAGER_FACTORY_HPP__
 
 
 

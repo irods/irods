@@ -1,19 +1,19 @@
 
 
 
-#ifndef __EIRODS_VIRTUAL_PATH_H__
-#define __EIRODS_VIRTUAL_PATH_H__
+#ifndef __IRODS_VIRTUAL_PATH_HPP__
+#define __IRODS_VIRTUAL_PATH_HPP__
 
 #include <string>
 
-namespace eirods {
+namespace irods {
     /// =-=-=-=-=-=-=-
     /// @brief interface to get virtual path separator
     std::string get_virtual_path_separator();
      
-}; // namespace eirods
+}; // namespace irods
 
-#endif // __EIRODS_VIRTUAL_PATH_H__
+#endif // __IRODS_VIRTUAL_PATH_HPP__
 
 
 

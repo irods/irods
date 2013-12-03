@@ -19,8 +19,7 @@ boost::thread*			ProcReqThread[ NUM_XMSG_THR ];
 boost::mutex			MessQueCondMutex;
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_network_factory.hpp"
+#include "irods_network_factory.hpp"
 
 
 xmsgReq_t *XmsgReqHead = NULL;
@@ -589,10 +588,10 @@ procReqRoutine ()
 
     // =-=-=-=-=-=-=-
     // maufacture a network object
-    eirods::network_object_ptr net_obj;
-    eirods::error ret = eirods::network_factory( &rsComm, net_obj );
+    irods::network_object_ptr net_obj;
+    irods::error ret = irods::network_factory( &rsComm, net_obj );
     if( !ret.ok() ) {
-        eirods::log( PASS( ret ) );
+        irods::log( PASS( ret ) );
     }  
    
     status = readStartupPack( net_obj, &startupPack, NULL );

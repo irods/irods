@@ -1,7 +1,7 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
-#ifndef __EIRODS_PLUGIN_BASE_H__
-#define __EIRODS_PLUGIN_BASE_H__
+#ifndef __IRODS_PLUGIN_BASE_HPP__
+#define __IRODS_PLUGIN_BASE_HPP__
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -16,9 +16,8 @@
 #include "rcConnect.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_error.hpp"
-#include "eirods_lookup_table.hpp"
+#include "irods_error.hpp"
+#include "irods_lookup_table.hpp"
 
 /// =-=-=-=-=-=-=-
 /// @brief interface plugin loader will used to load the 
@@ -26,11 +25,11 @@
 ///        into the plugins 
 extern "C" double get_plugin_interface_version();
 
-namespace eirods {
+namespace irods {
     /// =-=-=-=-=-=-=-
     /// @brief abstraction for post disconnect functor - plugins can bind
     ///        functors, free functions or member functions as necessary
-    typedef boost::function< eirods::error( rcComm_t* ) > pdmo_type;
+    typedef boost::function< irods::error( rcComm_t* ) > pdmo_type;
     typedef lookup_table<boost::any>                      plugin_property_map;
     
     /**
@@ -40,7 +39,7 @@ namespace eirods {
      * \brief  This class enforces the delay_load interface necessary for the 
      load_plugin call to load any other non-member symbols from the 
      shared object.  
-     reference iRODS/lib/core/include/eirods_load_plugin.h
+     reference iRODS/lib/core/include/irods_load_plugin.h
     **/
     class plugin_base {
     public:
@@ -102,9 +101,9 @@ namespace eirods {
     // helpful typedef for sock comm interface & factory
     typedef boost::shared_ptr< plugin_base > plugin_ptr;
 
-}; // namespace eirods
+}; // namespace irods
 
-#endif // __EIRODS_PLUGIN_BASE_H__
+#endif // __IRODS_PLUGIN_BASE_HPP__
 
 
 

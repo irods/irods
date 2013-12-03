@@ -2,7 +2,6 @@
 
 
 // =-=-=-=-=-=-=-
-// eirods includes
 #include "authPluginRequest.hpp"
 
 int rcAuthPluginRequest(

@@ -157,8 +157,8 @@ _rsRmCollRecur (rsComm_t *rsComm, collInp_t *rmCollInp,
         /* a normal coll */
         if (rmCollInp->oprType != UNREG_OPR &&
             getValByKey (&rmCollInp->condInput, FORCE_FLAG_KW) == NULL &&
-            getValByKey (&rmCollInp->condInput, IRODS_RMTRASH_KW) == NULL &&
-            getValByKey (&rmCollInp->condInput, IRODS_ADMIN_RMTRASH_KW) == NULL) {
+            getValByKey (&rmCollInp->condInput, RMTRASH_KW) == NULL &&
+            getValByKey (&rmCollInp->condInput, ADMIN_RMTRASH_KW) == NULL) {
             initReiWithDataObjInp (&rei, rsComm, NULL);
             status = applyRule ("acTrashPolicy", NULL, &rei, NO_SAVE_REI);
             trashPolicy = rei.status;
@@ -252,22 +252,22 @@ _rsPhyRmColl (rsComm_t *rsComm, collInp_t *rmCollInp,
 
 
 
-    if (getValByKey (&rmCollInp->condInput, IRODS_ADMIN_RMTRASH_KW) != NULL) {
+    if (getValByKey (&rmCollInp->condInput, ADMIN_RMTRASH_KW) != NULL) {
         if (isTrashPath (rmCollInp->collName) == False) {
             return (SYS_INVALID_FILE_PATH);
         }
         if (rsComm->clientUser.authInfo.authFlag != LOCAL_PRIV_USER_AUTH) {
             return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
         }
-        addKeyVal (&tmpCollInp.condInput, IRODS_ADMIN_RMTRASH_KW, "");
-        addKeyVal (&dataObjInp.condInput, IRODS_ADMIN_RMTRASH_KW, "");
+        addKeyVal (&tmpCollInp.condInput, ADMIN_RMTRASH_KW, "");
+        addKeyVal (&dataObjInp.condInput, ADMIN_RMTRASH_KW, "");
         rmtrashFlag = 2;
-    } else if (getValByKey (&rmCollInp->condInput, IRODS_RMTRASH_KW) != NULL) {
+    } else if (getValByKey (&rmCollInp->condInput, RMTRASH_KW) != NULL) {
         if (isTrashPath (rmCollInp->collName) == False) {
             return (SYS_INVALID_FILE_PATH);
         }
-        addKeyVal (&tmpCollInp.condInput, IRODS_RMTRASH_KW, "");
-        addKeyVal (&dataObjInp.condInput, IRODS_RMTRASH_KW, "");
+        addKeyVal (&tmpCollInp.condInput, RMTRASH_KW, "");
+        addKeyVal (&dataObjInp.condInput, RMTRASH_KW, "");
         rmtrashFlag = 1;
     }
     // =-=-=-=-=-=-=-
@@ -392,7 +392,7 @@ svrUnregColl (rsComm_t *rsComm, collInp_t *rmCollInp)
 #ifdef RODS_CAT
         memset (&collInfo, 0, sizeof (collInfo));
         rstrcpy (collInfo.collName, rmCollInp->collName, MAX_NAME_LEN);
-        if (getValByKey (&rmCollInp->condInput, IRODS_ADMIN_RMTRASH_KW)
+        if (getValByKey (&rmCollInp->condInput, ADMIN_RMTRASH_KW)
             != NULL) {
             status = chlDelCollByAdmin (rsComm, &collInfo);
             if (status >= 0) {

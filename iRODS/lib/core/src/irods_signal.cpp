@@ -1,7 +1,7 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
-#include "eirods_signal.hpp"
-#include "eirods_stacktrace.hpp"
+#include "irods_signal.hpp"
+#include "irods_stacktrace.hpp"
 
 #include <string.h>
 #include <signal.h>
@@ -12,7 +12,7 @@
 #include <malloc.h>
 #endif
 
-// Define signal handlers for eirods
+// Define signal handlers for irods
 
 extern "C" {
 
@@ -22,7 +22,7 @@ extern "C" {
     static void segv_handler(
         int signal)
     {
-        eirods::stacktrace st;
+        irods::stacktrace st;
         st.trace();
         st.dump();
         exit(signal);

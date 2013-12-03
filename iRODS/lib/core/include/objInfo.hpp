@@ -27,11 +27,10 @@
 #include <string>
 
 // =-=-=-=-=-=-=-
-// eirods constants
-namespace eirods {
+namespace irods {
     const std::string EMPTY_RESC_HOST( "EMPTY_RESC_HOST" );
     const std::string EMPTY_RESC_PATH( "EMPTY_RESC_PATH" );
-}; // namespace eirods
+}; // namespace irods
 
 /* this defines the "copies" condition */
 #define ALL_COPIES      -1      /* "all" */ 

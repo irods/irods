@@ -2,17 +2,17 @@
 
 // =-=-=-=-=-=-=-
 // My Includes
-#include "eirods_ms_home.hpp"
-#include "eirods_ms_plugin.hpp"
-#include "eirods_load_plugin.hpp"
-#include "eirods_log.hpp"
+#include "irods_ms_home.hpp"
+#include "irods_ms_plugin.hpp"
+#include "irods_load_plugin.hpp"
+#include "irods_log.hpp"
 
 // =-=-=-=-=-=-=-
 // STL Includes
 #include <iostream>
 #include <sstream>
 
-namespace eirods {
+namespace irods {
     // =-=-=-=-=-=-=-
     // ms_table_entry definition
     ms_table_entry::ms_table_entry( ) : 
@@ -101,7 +101,7 @@ namespace eirods {
     error load_microservice_plugin( ms_table& _table, const std::string _ms ) {
 
         ms_table_entry* entry = 0;
-	    error load_err = load_plugin< ms_table_entry >( entry, _ms, EIRODS_MS_HOME, "msvc", "ctx" );
+	    error load_err = load_plugin< ms_table_entry >( entry, _ms, MS_HOME, "msvc", "ctx" );
         if( load_err.ok() && entry ) {
             _table[ _ms ] = entry;
             return SUCCESS();
@@ -112,4 +112,4 @@ namespace eirods {
         }
     } // load_microservice_plugin
 
-}; // namespace eirods
+}; // namespace irods

@@ -16,13 +16,12 @@
 #include "icatHighLevelRoutines.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_log.hpp"
-#include "eirods_file_object.hpp"
-#include "eirods_collection_object.hpp"
-#include "eirods_hierarchy_parser.hpp"
-#include "eirods_stacktrace.hpp"
-#include "eirods_resource_backport.hpp"
+#include "irods_log.hpp"
+#include "irods_file_object.hpp"
+#include "irods_collection_object.hpp"
+#include "irods_hierarchy_parser.hpp"
+#include "irods_stacktrace.hpp"
+#include "irods_resource_backport.hpp"
 
 
 #include <string>
@@ -36,9 +35,9 @@ rsFileCreate (rsComm_t *rsComm, fileCreateInp_t *fileCreateInp)
     int fd;
 
     //remoteFlag = resolveHost (&fileCreateInp->addr, &rodsServerHost);
-    eirods::error ret = eirods::get_host_for_hier_string( fileCreateInp->resc_hier_, remoteFlag, rodsServerHost );
+    irods::error ret = irods::get_host_for_hier_string( fileCreateInp->resc_hier_, remoteFlag, rodsServerHost );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "failed in call to eirods::get_host_for_hier_string", ret ) );
+        irods::log( PASSMSG( "failed in call to irods::get_host_for_hier_string", ret ) );
         return -1;
     }
 
@@ -123,14 +122,14 @@ int _rsFileCreate(
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - Empty logical path.";
-        eirods::log(LOG_ERROR, msg.str());
+        irods::log(LOG_ERROR, msg.str());
         return -1;
     }
     
     // =-=-=-=-=-=-=-
-    // dont capture the eirods results in the log here as there may be an issue with
+    // dont capture the irods results in the log here as there may be an issue with
     // needing to create a directory, etc.
-    eirods::file_object_ptr file_obj( new eirods::file_object( 
+    irods::file_object_ptr file_obj( new irods::file_object( 
                                 _comm, 
                                 _create_inp->objPath, 
                                 _create_inp->fileName, 
@@ -140,7 +139,7 @@ int _rsFileCreate(
                                 _create_inp->flags ) );
     file_obj->in_pdmo(_create_inp->in_pdmo);
     
-    eirods::error create_err = fileCreate( _comm, file_obj );
+    irods::error create_err = fileCreate( _comm, file_obj );
 
     // =-=-=-=-=-=-=-
     // if we get a bad file descriptor
@@ -161,55 +160,55 @@ int _rsFileCreate(
                 msg << "Unable to make directory: \"" 
                     << file_obj->physical_path() 
                     << "\"";
-                eirods::log(LOG_ERROR, msg.str());
+                irods::log(LOG_ERROR, msg.str());
                 return status;
             }
             
             create_err = fileCreate( _comm, file_obj );
                                                 
             // =-=-=-=-=-=-=-
-            // capture the eirods results in the log as our error mechanism
+            // capture the irods results in the log as our error mechanism
             // doesnt extend outside this function for now.
             if( !create_err.ok() ) {
                 std::stringstream msg;
                 msg << "ENOENT fileCreate for [";
                 msg << _create_inp->fileName;
                 msg << "]";
-                eirods::error ret_err = PASSMSG( msg.str(), create_err );
-                eirods::log( ret_err );
+                irods::error ret_err = PASSMSG( msg.str(), create_err );
+                irods::log( ret_err );
 
             }
 
         } else if( getErrno( create_err.code() ) == EEXIST ) {
             // =-=-=-=-=-=-=-
             // remove a potentially empty directoy which is already in place
-            eirods::collection_object_ptr coll_obj( 
-                                              new eirods::collection_object( 
+            irods::collection_object_ptr coll_obj( 
+                                              new irods::collection_object( 
                                                       _create_inp->fileName, 
                                                       _create_inp->resc_hier_, 
                                                       0, 0 ) );
-            eirods::error rmdir_err = fileRmdir( _comm, coll_obj );
+            irods::error rmdir_err = fileRmdir( _comm, coll_obj );
             if( !rmdir_err.ok() ) {
                 std::stringstream msg;
                 msg << "EEXIST 1 fileRmdir for [";
                 msg << _create_inp->fileName;
                 msg << "]";
-                eirods::error err = PASSMSG( msg.str(), rmdir_err );
-                eirods::log ( err );
+                irods::error err = PASSMSG( msg.str(), rmdir_err );
+                irods::log ( err );
             }
                          
             create_err = fileCreate( _comm, file_obj );
                                                                         
             // =-=-=-=-=-=-=-
-            // capture the eirods results in the log as our error mechanism
+            // capture the irods results in the log as our error mechanism
             // doesnt extend outside this function for now.
             if( !create_err.ok() ) {
                 std::stringstream msg;
                 msg << "EEXIST 2 fileCreate for [";
                 msg << _create_inp->fileName;
                 msg << "]";
-                eirods::error ret_err = PASSMSG( msg.str(), create_err );
-                eirods::log( ret_err );
+                irods::error ret_err = PASSMSG( msg.str(), create_err );
+                irods::log( ret_err );
             }
 
         } else {
@@ -217,8 +216,8 @@ int _rsFileCreate(
             msg << "UNHANDLED fileCreate for [";
             msg << _create_inp->fileName;
             msg << "]";
-            eirods::error ret_err = PASSMSG( msg.str(), create_err );
-            eirods::log( ret_err );
+            irods::error ret_err = PASSMSG( msg.str(), create_err );
+            irods::log( ret_err );
                 
         } // else
 

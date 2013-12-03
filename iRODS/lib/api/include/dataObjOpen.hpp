@@ -60,7 +60,7 @@ procDataObjOpenForExistObj( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                             dataObjInfo_t **dataObjInfoHead, dataObjInfo_t **cacheDataObjInfo,
                             dataObjInfo_t **compDataObjInfo, rescInfo_t **compRescInfo );
 
-eirods::error selectObjInfo(dataObjInfo_t * _dataObjInfoHead, keyValPair_t* _condInput, dataObjInfo_t** _rtn_dataObjInfo);
+irods::error selectObjInfo(dataObjInfo_t * _dataObjInfoHead, keyValPair_t* _condInput, dataObjInfo_t** _rtn_dataObjInfo);
 
 // =-=-=-=-=-=-=-
 #else

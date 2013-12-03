@@ -2,8 +2,8 @@
    extensions to the ICAT feature ('extensible ICAT').
  */
 
-#ifndef IRODS_EXTENDED_ICAT_HPP
-#define IRODS_EXTENDED_ICAT_HPP
+#ifndef EXTENDED_ICAT_HPP
+#define EXTENDED_ICAT_HPP
 
 /* Number of Tables and Columns defined below; larger than actual is
    OK (used to allocate tables elsewhere):  */
@@ -93,4 +93,4 @@ int NumOfExtTableLinks = sizeof(extLinks) / sizeof(extLinks_t);
 #endif  /* EXTENDED_ICAT_TABLES_2 */
 
 
-#endif	/* IRODS_EXTENDED_ICAT_H */
+#endif	/* EXTENDED_ICAT_H */

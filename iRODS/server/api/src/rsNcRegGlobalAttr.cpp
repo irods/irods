@@ -79,7 +79,7 @@ _rsNcRegGlobalAttr (rsComm_t *rsComm, ncRegGlobalAttrInp_t *ncRegGlobalAttrInp)
     }
     /* register them */
     bzero (&modAVUMetadataInp, sizeof (modAVUMetadataInp));
-    if (getValByKey (&ncRegGlobalAttrInp->condInput, IRODS_ADMIN_KW) == NULL) {
+    if (getValByKey (&ncRegGlobalAttrInp->condInput, ADMIN_KW) == NULL) {
         modAVUMetadataInp.arg0 = "add";
     } else {
         modAVUMetadataInp.arg0 = "adda";    /* admin mod */

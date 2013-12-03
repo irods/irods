@@ -16,7 +16,7 @@ int
 main(int argc, char **argv)
 {
     int c;
-    int runMode = IRODS_SERVER;
+    int runMode = SERVER;
     int flagval = 0;
     char *logDir = NULL;
     char *tmpStr;

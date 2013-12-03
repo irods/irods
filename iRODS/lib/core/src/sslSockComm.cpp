@@ -7,18 +7,18 @@
 
 #include "rodsClient.hpp"
 #include "sslSockComm.hpp"
-#include "eirods_client_server_negotiation.hpp"
+#include "irods_client_server_negotiation.hpp"
 
 // =-=-=-=-=-=-=-
 // work around for SSL Macro version issues
 #ifdef sk_GENERAL_NAMES_num
-#define EIRODS_GENERAL_NAMES_NUM sk_GENERAL_NAMES_num
-#define EIRODS_GENERAL_NAMES_VALUE sk_GENERAL_NAMES_value
-#define EIRODS_GENERAL_NAMES_FREE sk_GENERAL_NAMES_free
+#define GENERAL_NAMES_NUM sk_GENERAL_NAMES_num
+#define GENERAL_NAMES_VALUE sk_GENERAL_NAMES_value
+#define GENERAL_NAMES_FREE sk_GENERAL_NAMES_free
 #else
-#define EIRODS_GENERAL_NAMES_NUM sk_GENERAL_NAME_num
-#define EIRODS_GENERAL_NAMES_VALUE sk_GENERAL_NAME_value
-#define EIRODS_GENERAL_NAMES_FREE sk_GENERAL_NAME_free
+#define GENERAL_NAMES_NUM sk_GENERAL_NAME_num
+#define GENERAL_NAMES_VALUE sk_GENERAL_NAME_value
+#define GENERAL_NAMES_FREE sk_GENERAL_NAME_free
 #endif
 
 
@@ -90,7 +90,7 @@ sslStart(rcComm_t *rcComm)
     
     strncpy( 
         rcComm->negotiation_results, 
-        eirods::CS_NEG_USE_SSL.c_str(),
+        irods::CS_NEG_USE_SSL.c_str(),
         MAX_NAME_LEN );
     return 0;
 }
@@ -137,7 +137,7 @@ sslEnd(rcComm_t *rcComm)
 
     strncpy( 
         rcComm->negotiation_results, 
-        eirods::CS_NEG_USE_TCP.c_str(),
+        irods::CS_NEG_USE_TCP.c_str(),
         MAX_NAME_LEN );
     rodsLog(LOG_DEBUG, "sslShutdown: shut down SSL connection");
 
@@ -184,7 +184,7 @@ sslAccept(rsComm_t *rsComm)
     rsComm->ssl_on = 1;
     strncpy( 
         rsComm->negotiation_results, 
-        eirods::CS_NEG_USE_SSL.c_str(),
+        irods::CS_NEG_USE_SSL.c_str(),
         MAX_NAME_LEN );
 
     rodsLog(LOG_DEBUG, "sslAccept: accepted SSL connection");
@@ -219,7 +219,7 @@ sslShutdown(rsComm_t *rsComm)
 
     strncpy( 
         rsComm->negotiation_results, 
-        eirods::CS_NEG_USE_TCP.c_str(),
+        irods::CS_NEG_USE_TCP.c_str(),
         MAX_NAME_LEN );
     rodsLog(LOG_DEBUG, "sslShutdown: shut down SSL connection");
 
@@ -854,9 +854,9 @@ sslPostConnectionCheck(SSL *ssl, char *peer)
     /* check if the peer name matches any of the subjectAltNames 
        listed in the certificate */
     names = (STACK_OF(GENERAL_NAMES)*)X509_get_ext_d2i(cert, NID_subject_alt_name, NULL, NULL);
-    num_names = EIRODS_GENERAL_NAMES_NUM(names);
+    num_names = GENERAL_NAMES_NUM(names);
     for (i = 0; i < num_names; i++ ) {
-        name = (GENERAL_NAME*)EIRODS_GENERAL_NAMES_VALUE(names, i);
+        name = (GENERAL_NAME*)GENERAL_NAMES_VALUE(names, i);
         if (name->type == GEN_DNS) {
             namestr = (char*)ASN1_STRING_data(name->d.dNSName);
             if (!strcasecmp(namestr, peer)) {
@@ -865,7 +865,7 @@ sslPostConnectionCheck(SSL *ssl, char *peer)
             }
         }
     }
-    EIRODS_GENERAL_NAMES_FREE(names);
+    GENERAL_NAMES_FREE(names);
 
     /* if no match above, check the common name in the certificate */
     if (!match &&

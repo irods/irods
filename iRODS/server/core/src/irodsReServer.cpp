@@ -25,7 +25,7 @@ main(int argc, char **argv)
     int status;
     int c;
     rsComm_t rsComm;
-    int runMode = IRODS_SERVER;
+    int runMode = SERVER;
     int flagval = 0;
     char *logDir = NULL;
     char *tmpStr;
@@ -58,7 +58,7 @@ main(int argc, char **argv)
     /* Handle option to log sql commands */
     tmpStr = getenv (SP_LOG_SQL);
     if (tmpStr != NULL) {
-#ifdef IRODS_SYSLOG
+#ifdef SYSLOG
        int j = atoi(tmpStr);
        rodsLogSqlReq(j);
 #else
@@ -76,7 +76,7 @@ main(int argc, char **argv)
          rodsLogLevel(LOG_NOTICE); /* default */
     }
 
-#ifdef IRODS_SYSLOG
+#ifdef SYSLOG
 /* Open a connection to syslog */
     openlog("rodsReServer",LOG_ODELAY|LOG_PID,LOG_DAEMON);
 #endif
@@ -164,7 +164,7 @@ reServerMain (rsComm_t *rsComm, char* logDir )
     LastRescUpdateTime = time (NULL);
     while (1) {
 #ifndef windows_platform
-#ifndef IRODS_SYSLOG
+#ifndef SYSLOG
         chkLogfileName (logDir, RULE_EXEC_LOGFILE);
 #endif
 #endif 

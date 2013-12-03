@@ -2,19 +2,18 @@
 
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_repl_rebalance.hpp"
-#include "eirods_resource_plugin.hpp"
-#include "eirods_file_object.hpp"
-#include "eirods_hierarchy_parser.hpp"
-#include "eirods_resource_redirect.hpp"
-#include "eirods_virtual_path.hpp"
+#include "irods_repl_rebalance.hpp"
+#include "irods_resource_plugin.hpp"
+#include "irods_file_object.hpp"
+#include "irods_hierarchy_parser.hpp"
+#include "irods_resource_redirect.hpp"
+#include "irods_virtual_path.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
 #include "dataObjRepl.hpp"
 
-namespace eirods {
+namespace irods {
     /// =-=-=-=-=-=-=-
     /// @brief local function to replicate a new copy for 
     ///        proc_results_for_rebalance
@@ -501,7 +500,7 @@ namespace eirods {
                         _comm, 
                         RESOURCE_OP_RESOLVE_RESC_HIER, 
                         f_ptr, 
-                        &EIRODS_CREATE_OPERATION,
+                        &CREATE_OPERATION,
                         &host_name, 
                         &parser, 
                         &vote );
@@ -536,7 +535,7 @@ namespace eirods {
 
     } // proc_results_for_rebalance
 
-}; // namespace eirods
+}; // namespace irods
 
 
 

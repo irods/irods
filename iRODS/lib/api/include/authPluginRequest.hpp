@@ -1,8 +1,8 @@
 
 
 
-#ifndef __AUTH_PLUGIN_REQUEST_H__
-#define __AUTH_PLUGIN_REQUEST_H__
+#ifndef __AUTH_PLUGIN_REQUEST_HPP__
+#define __AUTH_PLUGIN_REQUEST_HPP__
 
 // =-=-=-=-=-=-=-
 // irods includes
@@ -46,7 +46,7 @@ int rcAuthPluginRequest(
     authPluginReqInp_t*,    // incoming struct with scheme
     authPluginReqOut_t** ); // response from agent
 
-#endif // __AUTH_PLUGIN_REQUEST_H__
+#endif // __AUTH_PLUGIN_REQUEST_HPP__
 
 
 

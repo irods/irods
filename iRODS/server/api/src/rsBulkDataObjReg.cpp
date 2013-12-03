@@ -10,8 +10,8 @@
 #include "objMetaOpr.hpp"
 #include "icatHighLevelRoutines.hpp"
 
-#include "eirods_stacktrace.hpp"
-#include "eirods_file_object.hpp"
+#include "irods_stacktrace.hpp"
+#include "irods_file_object.hpp"
 
 int
 rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
@@ -189,12 +189,12 @@ _rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
             // =-=-=-=-=-=-=-
             // added due to lack of notificaiton of new data object
             // to resource hiers during operation.  ticket 1753 
-            eirods::file_object_ptr file_obj(
-                                        new eirods::file_object(
+            irods::file_object_ptr file_obj(
+                                        new irods::file_object(
                                         rsComm,
                                         &dataObjInfo ) );
 
-            eirods::error ret = fileModified(rsComm, file_obj);
+            irods::error ret = fileModified(rsComm, file_obj);
             if(!ret.ok()) {
                 std::stringstream msg;
                 msg << __FUNCTION__;
@@ -202,7 +202,7 @@ _rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
                 msg << dataObjInfo.objPath;
                 msg << "\" was registered";
                 ret = PASSMSG(msg.str(), ret);
-                eirods::log(ret);
+                irods::log(ret);
                 status = ret.code();
             }
 

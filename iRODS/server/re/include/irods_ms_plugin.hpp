@@ -1,7 +1,7 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
-#ifndef __EIRODS_MS_PLUGIN_H__
-#define __EIRODS_MS_PLUGIN_H__
+#ifndef __IRODS_MS_PLUGIN_HPP__
+#define __IRODS_MS_PLUGIN_HPP__
 
 // =-=-=-=-=-=-=-
 // STL Includes
@@ -13,10 +13,10 @@
 
 // =-=-=-=-=-=-=-
 // My Includes
-#include "eirods_lookup_table.hpp"
-#include "eirods_plugin_base.hpp"
+#include "irods_lookup_table.hpp"
+#include "irods_plugin_base.hpp"
 
-namespace eirods {
+namespace irods {
 
     // =-=-=-=-=-=-=-
     /**
@@ -83,7 +83,7 @@ namespace eirods {
     error load_microservice_plugin( ms_table& _table, const std::string _ms );
 
 
-}; // namespace eirods
+}; // namespace irods
 
-#endif // __EIRODS_MS_PLUGIN_H__
+#endif // __IRODS_MS_PLUGIN_HPP__
 

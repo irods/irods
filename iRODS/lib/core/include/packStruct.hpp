@@ -31,7 +31,7 @@ typedef char* packInstruct_t;
 
 #define PACK_TABLE_END_PI  "PACK_TABLE_END_PI"
 
-#define IRODS_XML_TAG		"iRODSStruct"
+#define XML_TAG		"iRODSStruct"
 /* XXXXX should change (packInstruct_t *) to packInstruct_t. Then we don't
 have to use globals */ 
 

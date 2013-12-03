@@ -7,7 +7,7 @@
 
 #include "rods.hpp"
 #include "rodsClient.hpp"
-#include "eirods_children_parser.hpp"
+#include "irods_children_parser.hpp"
 
 #define MAX_SQL 300
 #define BIG_STR 200
@@ -355,9 +355,9 @@ void printRescTree(const std::string& node_name, std::string depth) {
 
 
 	// print children
-	eirods::children_parser parser;
+	irods::children_parser parser;
 	parser.set_string(children_str);
-	eirods::children_parser::const_iterator it, final_it = parser.end();
+	irods::children_parser::const_iterator it, final_it = parser.end();
 	final_it--;
 	for (it = parser.begin(); it != parser.end(); ++it) {
 		if (it != final_it) {

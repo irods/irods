@@ -30,11 +30,10 @@
 #include "dataObjRepl.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_resource_backport.hpp"
-#include "eirods_resource_redirect.hpp"
-#include "eirods_hierarchy_parser.hpp"
-#include "eirods_stacktrace.hpp"
+#include "irods_resource_backport.hpp"
+#include "irods_resource_redirect.hpp"
+#include "irods_hierarchy_parser.hpp"
+#include "irods_stacktrace.hpp"
 
 int
 rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
@@ -61,13 +60,13 @@ rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
         // determine the resource hierarchy if one is not provided
         if( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
             std::string       hier;
-            eirods::error ret = eirods::resolve_resource_hierarchy( eirods::EIRODS_OPEN_OPERATION, 
+            irods::error ret = irods::resolve_resource_hierarchy( irods::OPEN_OPERATION, 
                                                                     rsComm, dataObjInp, hier );
             if( !ret.ok() ) { 
                 std::stringstream msg;
-                msg << "failed in eirods::resolve_resource_hierarchy for [";
+                msg << "failed in irods::resolve_resource_hierarchy for [";
                 msg << dataObjInp->objPath << "]";
-                eirods::log( PASSMSG( msg.str(), ret ) );
+                irods::log( PASSMSG( msg.str(), ret ) );
                 return ret.code();
             }
            
@@ -161,7 +160,7 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - Unable to select a data obj info matching the resource hierarchy from the keywords.";
-            eirods::log(ERROR(status, msg.str()));
+            irods::log(ERROR(status, msg.str()));
             return status;
         }
 
@@ -189,7 +188,7 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     }
 
     std::string resc_class;
-    eirods::error prop_err = eirods::get_resource_property<std::string>( 
+    irods::error prop_err = irods::get_resource_property<std::string>( 
         dataObjInfoHead->rescInfo->rescName, "class", resc_class );
     if( prop_err.ok() ) {
         if( resc_class == "bundle" ) {
@@ -351,9 +350,9 @@ l3Open (rsComm_t *rsComm, int l1descInx)
     dataObjInfo = L1desc[l1descInx].dataObjInfo;
 
     std::string location;
-    eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
+    irods::error ret = irods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "l3Open - failed in specColl open", ret ) );
+        irods::log( PASSMSG( "l3Open - failed in specColl open", ret ) );
         return -1;
     }
 
@@ -383,9 +382,9 @@ _l3Open (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, int mode, int flags)
     // =-=-=-=-=-=-=-
     // extract the host location from the resource hierarchy
     std::string location;
-    eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
+    irods::error ret = irods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "l3FilePutSingleBuf - failed in get_loc_for_hier_String", ret ) );
+        irods::log( PASSMSG( "l3FilePutSingleBuf - failed in get_loc_for_hier_String", ret ) );
         return -1;
     }
 
@@ -514,8 +513,8 @@ createEmptyRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         memset (&regReplicaInp, 0, sizeof (regReplicaInp));
         regReplicaInp.srcDataObjInfo = *dataObjInfoHead;
         regReplicaInp.destDataObjInfo = myDataObjInfo;
-        if (getValByKey (&dataObjInp->condInput, IRODS_ADMIN_KW) != NULL) {
-            addKeyVal (&regReplicaInp.condInput, IRODS_ADMIN_KW, "");
+        if (getValByKey (&dataObjInp->condInput, ADMIN_KW) != NULL) {
+            addKeyVal (&regReplicaInp.condInput, ADMIN_KW, "");
         }
         status = rsRegReplica (rsComm, &regReplicaInp);
         clearKeyVal (&regReplicaInp.condInput);
@@ -578,12 +577,12 @@ procDataObjOpenForWrite (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
 
 /// @brief Selects the dataObjInfo in the specified list whose resc hier matches that of the cond input
-eirods::error selectObjInfo(
+irods::error selectObjInfo(
     dataObjInfo_t * _dataObjInfoHead,
     keyValPair_t* _condInput,
     dataObjInfo_t** _rtn_dataObjInfo)
 {
-    eirods::error result = SUCCESS();
+    irods::error result = SUCCESS();
     *_rtn_dataObjInfo = NULL;
     char* resc_hier = getValByKey(_condInput, RESC_HIER_STR_KW);
     if(!resc_hier) {
@@ -605,7 +604,7 @@ eirods::error selectObjInfo(
             msg << " - Failed to find a data obj matching resource hierarchy: \"";
             msg << resc_hier;
             msg << "\"";
-            result = ERROR(EIRODS_HIERARCHY_ERROR, msg.str());
+            result = ERROR(HIERARCHY_ERROR, msg.str());
         }
     }
     return result;

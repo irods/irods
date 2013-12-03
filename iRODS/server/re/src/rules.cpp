@@ -647,7 +647,7 @@ RuleDesc* getRuleDesc(int ri)
 
 // =-=-=-=-=-=-=-
 // function to look up and / or load a microservice for execution
-int actionTableLookUp ( eirods::ms_table_entry& _entry, char* _action ) {
+int actionTableLookUp ( irods::ms_table_entry& _entry, char* _action ) {
 
 	std::string str_act( _action );
 
@@ -659,7 +659,7 @@ int actionTableLookUp ( eirods::ms_table_entry& _entry, char* _action ) {
 	// the end() iterator, is is not found so try to load it.
 	if( !MicrosTable.has_entry( str_act ) ) {
 		rodsLog( LOG_NOTICE, "actionTableLookUp - [%s] not found, load it.", _action );
-		eirods::error ret = eirods::load_microservice_plugin( MicrosTable, str_act );
+		irods::error ret = irods::load_microservice_plugin( MicrosTable, str_act );
 		if( !ret.ok() ) {
 			return UNMATCHED_ACTION_ERR;
 		} else { // if loaded

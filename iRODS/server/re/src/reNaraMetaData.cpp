@@ -5,7 +5,7 @@
 
 #include "reNaraMetaData.hpp"
 #include "apiHeaderAll.hpp"
-#include "eirods_stacktrace.hpp"
+#include "irods_stacktrace.hpp"
 
 /**
  * \fn msiExtractNaraMetadata (ruleExecInfo_t *rei)
@@ -88,7 +88,7 @@ msiExtractNaraMetadata (ruleExecInfo_t *rei)
            status = rsModAVUMetadata (rei->rsComm, &modAVUMetadataInp);
            if(status < 0)
            {
-              eirods::log( ERROR (status, "rsModAVUMetadata failed." ) );
+              irods::log( ERROR (status, "rsModAVUMetadata failed." ) );
            }
            rodsLog (LOG_DEBUG, "msiExtractNaraMetadata: %s:%s",attr, value);
          }

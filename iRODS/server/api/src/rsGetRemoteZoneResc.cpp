@@ -15,7 +15,7 @@
 #include "dataObjCreate.hpp"
 #include "dataObjOpen.hpp"
 
-#include "eirods_resource_redirect.hpp"
+#include "irods_resource_redirect.hpp"
 
 int
 rsGetRemoteZoneResc (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
@@ -53,13 +53,13 @@ rodsHostAddr_t **rescAddr)
         // =-=-=-=-=-=-=-
         // determine the hier string for the dest data obj inp
         std::string hier;
-        eirods::error ret = eirods::resolve_resource_hierarchy( eirods::EIRODS_OPEN_OPERATION, rsComm, 
+        irods::error ret = irods::resolve_resource_hierarchy( irods::OPEN_OPERATION, rsComm, 
                                                                 dataObjInp, hier );
         if( !ret.ok() ) { 
             std::stringstream msg;
-            msg << "failed in eirods::resolve_resource_hierarchy for [";
+            msg << "failed in irods::resolve_resource_hierarchy for [";
             msg << dataObjInp->objPath << "]";
-            eirods::log( PASSMSG( msg.str(), ret ) );
+            irods::log( PASSMSG( msg.str(), ret ) );
             return ret.code();
         }
    

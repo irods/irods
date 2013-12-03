@@ -1,15 +1,15 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 
-#include "eirods_sql_logger.hpp"
-#include "eirods_error.hpp"
-#include "eirods_log.hpp"
+#include "irods_sql_logger.hpp"
+#include "irods_error.hpp"
+#include "irods_log.hpp"
 
 #include "rodsLog.hpp"
 
 #include <sstream>
 
-namespace eirods {
+namespace irods {
 
     sql_logger::sql_logger(
 	const std::string& _function_name,
@@ -26,15 +26,15 @@ namespace eirods {
     void sql_logger::log(void) {
 	if(log_sql_) {
 	    if(count_ == 0) {
-                eirods::log(LOG_SQL, name_);
+                irods::log(LOG_SQL, name_);
 	    } else {
 		std::stringstream ss(std::stringstream::in);
 		ss << name_ << " SQL " << count_ << " ";
 		std::string log_string = ss.str();
-                eirods::log(LOG_SQL, log_string);
+                irods::log(LOG_SQL, log_string);
 	    }
 	    ++count_;
 	}
     }
 
-}; // namespace eirods
+}; // namespace irods

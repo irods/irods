@@ -10,8 +10,8 @@
 
 
 
-#ifndef SYSBACKUPMS_H_
-#define SYSBACKUPMS_H_
+#ifndef SYSBACKUPMS_HPP_
+#define SYSBACKUPMS_HPP_
 
 #include "rods.hpp"
 #include "reGlobalsExtern.hpp"

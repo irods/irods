@@ -2,15 +2,14 @@
 
 
 // =-=-=-=-=-=-=-
-// eirods includes
 #include "authPluginRequest.hpp"
-#include "eirods_native_auth_object.hpp"
-#include "eirods_auth_object.hpp"
-#include "eirods_auth_factory.hpp"
-#include "eirods_auth_plugin.hpp"
-#include "eirods_auth_manager.hpp"
-#include "eirods_auth_constants.hpp"
-#include "eirods_pluggable_auth_scheme.hpp"
+#include "irods_native_auth_object.hpp"
+#include "irods_auth_object.hpp"
+#include "irods_auth_factory.hpp"
+#include "irods_auth_plugin.hpp"
+#include "irods_auth_manager.hpp"
+#include "irods_auth_constants.hpp"
+#include "irods_pluggable_auth_scheme.hpp"
 
 void _rsSetAuthRequestGetChallenge( const char* );
 
@@ -36,7 +35,7 @@ int rsAuthPluginRequest(
 
     // =-=-=-=-=-=-=-
     // check the auth scheme
-    std::string auth_scheme = eirods::AUTH_NATIVE_SCHEME;
+    std::string auth_scheme = irods::AUTH_NATIVE_SCHEME;
     if( _req_inp->auth_scheme_ &&
         strlen( _req_inp->auth_scheme_ ) > 0 ) {
         auth_scheme = _req_inp->auth_scheme_;
@@ -44,7 +43,7 @@ int rsAuthPluginRequest(
 
     // =-=-=-=-=-=-=-
     // store the scheme in a singleton for use in the following rsAuthResponse call
-    eirods::pluggable_auth_scheme& plug_a = eirods::pluggable_auth_scheme::get_instance();
+    irods::pluggable_auth_scheme& plug_a = irods::pluggable_auth_scheme::get_instance();
     plug_a.set( auth_scheme );
 
     // =-=-=-=-=-=-=-
@@ -53,13 +52,13 @@ int rsAuthPluginRequest(
    
     // =-=-=-=-=-=-=-
     // construct an auth object given the native scheme
-    eirods::auth_object_ptr auth_obj;
-    eirods::error ret = eirods::auth_factory( 
+    irods::auth_object_ptr auth_obj;
+    irods::error ret = irods::auth_factory( 
                             auth_scheme,
                             &_comm->rError,
                             auth_obj );
     if( !ret.ok() ){
-        eirods::log( PASS( ret ) );
+        irods::log( PASS( ret ) );
         return ret.code();
     }
 
@@ -72,26 +71,26 @@ int rsAuthPluginRequest(
 
     // =-=-=-=-=-=-=-
     // resolve an auth plugin given the auth object
-    eirods::plugin_ptr ptr;
+    irods::plugin_ptr ptr;
     ret = auth_obj->resolve( 
-              eirods::AUTH_INTERFACE,
+              irods::AUTH_INTERFACE,
               ptr );
     if( !ret.ok() ){
-        eirods::log( PASS( ret ) );
+        irods::log( PASS( ret ) );
         return ret.code();
     }
-    eirods::auth_ptr auth_plugin = boost::dynamic_pointer_cast< 
-                                       eirods::auth >( ptr );
+    irods::auth_ptr auth_plugin = boost::dynamic_pointer_cast< 
+                                       irods::auth >( ptr );
 
     // =-=-=-=-=-=-=-
     // call client side init - 'establish creds'
     ret = auth_plugin->call<
                   rsComm_t* >( 
-                      eirods::AUTH_AGENT_AUTH_REQUEST,
+                      irods::AUTH_AGENT_AUTH_REQUEST,
                       auth_obj,
                       _comm );
     if( !ret.ok() ){
-        eirods::log( PASS( ret ) );
+        irods::log( PASS( ret ) );
         return ret.code();
     }
     

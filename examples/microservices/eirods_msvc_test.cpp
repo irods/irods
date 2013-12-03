@@ -12,7 +12,7 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // 1. Set the version of the plugin.  1.0 is currently the standard
-    double EIRODS_PLUGIN_INTERFACE_VERSION=1.0;
+    double PLUGIN_INTERFACE_VERSION=1.0;
 	
     // =-=-=-=-=-=-=-
     // 2. Write a standard issue microservice	
@@ -24,11 +24,11 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // 3.  Create the plugin factory function which will return a microservice
     //     table entry 
-    eirods::ms_table_entry*  plugin_factory( ) {
+    irods::ms_table_entry*  plugin_factory( ) {
         // =-=-=-=-=-=-=-
         // 4.  allocate a microservice plugin which takes the number of function 
         //     params as a parameter to the constructor 
-        eirods::ms_table_entry* msvc = new eirods::ms_table_entry( 3 );	
+        irods::ms_table_entry* msvc = new eirods::ms_table_entry( 3 );	
 
         // =-=-=-=-=-=-=-
         // 5. add the microservice function as an operation to the plugin

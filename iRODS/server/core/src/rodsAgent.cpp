@@ -18,11 +18,10 @@ static void NtAgentSetEnvsFromArgs(int ac, char **av);
 #endif
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_dynamic_cast.hpp"
-#include "eirods_signal.hpp"
-#include "eirods_client_server_negotiation.hpp"
-#include "eirods_network_factory.hpp"
+#include "irods_dynamic_cast.hpp"
+#include "irods_signal.hpp"
+#include "irods_client_server_negotiation.hpp"
+#include "irods_network_factory.hpp"
 
 /* #define SERVER_DEBUG 1   */
 int
@@ -56,7 +55,7 @@ main(int argc, char *argv[])
     signal(SIGUSR1, signalExit);
     signal(SIGPIPE, rsPipSigalHandler);
 
-    // register eirods signal handlers
+    // register irods signal handlers
     register_handlers();
 #endif
 
@@ -78,10 +77,10 @@ main(int argc, char *argv[])
  
     // =-=-=-=-=-=-=-
     // manufacture a network object for comms
-    eirods::network_object_ptr net_obj;
-    eirods::error ret = eirods::network_factory( &rsComm, net_obj );
+    irods::network_object_ptr net_obj;
+    irods::error ret = irods::network_factory( &rsComm, net_obj );
     if( !ret.ok() ) {
-        eirods::log( PASS( ret ) );
+        irods::log( PASS( ret ) );
     }
 
     if (status < 0) {
@@ -93,7 +92,7 @@ main(int argc, char *argv[])
     /* Handle option to log sql commands */
     tmpStr = getenv (SP_LOG_SQL);
     if (tmpStr != NULL) {
-#ifdef IRODS_SYSLOG
+#ifdef SYSLOG
         int j = atoi(tmpStr);
         rodsLogSqlReq(j);
 #else
@@ -111,7 +110,7 @@ main(int argc, char *argv[])
         rodsLogLevel(LOG_NOTICE); /* default */
     }
 
-#ifdef IRODS_SYSLOG
+#ifdef SYSLOG
 /* Open a connection to syslog */
     openlog("rodsAgent",LOG_ODELAY|LOG_PID,LOG_DAEMON);
 #endif
@@ -162,13 +161,13 @@ main(int argc, char *argv[])
     // =-=-=-=-=-=-=-
     // handle negotiations with the client regarding TLS if requested
     std::string neg_results;
-    ret = eirods::client_server_negotiation_for_server( net_obj, neg_results );
-    if( !ret.ok() || neg_results == eirods::CS_NEG_FAILURE ) {
-        eirods::log( PASS( ret ) );
+    ret = irods::client_server_negotiation_for_server( net_obj, neg_results );
+    if( !ret.ok() || neg_results == irods::CS_NEG_FAILURE ) {
+        irods::log( PASS( ret ) );
         // =-=-=-=-=-=-=-
         // send a 'we failed to negotiate' message here??
         // or use the error stack rule engine thingie
-        eirods::log( PASS( ret ) );
+        irods::log( PASS( ret ) );
         sendVersion( net_obj, SYS_AGENT_INIT_ERR, 0, NULL, 0 );
         unregister_handlers();
         cleanupAndExit( ret.code() );
@@ -187,7 +186,7 @@ main(int argc, char *argv[])
                           rsComm.reconnAddr, rsComm.cookie);
 
     if( !ret.ok() ) {
-        eirods::log( PASS( ret ) );
+        irods::log( PASS( ret ) );
         sendVersion (net_obj, SYS_AGENT_INIT_ERR, 0, NULL, 0);
         unregister_handlers();
         cleanupAndExit (status);
@@ -206,15 +205,15 @@ main(int argc, char *argv[])
 #if 1 
     // =-=-=-=-=-=-=-
     // call initialization for network plugin as negotiated 
-    eirods::network_object_ptr new_net_obj;
-    ret = eirods::network_factory( &rsComm, new_net_obj );
+    irods::network_object_ptr new_net_obj;
+    ret = irods::network_factory( &rsComm, new_net_obj );
     if( !ret.ok() ) {
         return ret.code();
     }
 
     ret = sockAgentStart( new_net_obj );
     if( !ret.ok() ) {
-        eirods::log( PASS( ret ) );
+        irods::log( PASS( ret ) );
         return ret.code();
     }
 
@@ -227,7 +226,7 @@ main(int argc, char *argv[])
     // call initialization for network plugin as negotiated 
     ret = sockAgentStop( new_net_obj );
     if( !ret.ok() ) {
-        eirods::log( PASS( ret ) );
+        irods::log( PASS( ret ) );
         return ret.code();
     }
 
@@ -247,7 +246,7 @@ agentMain (rsComm_t *rsComm)
     // =-=-=-=-=-=-=-
     // compiler backwards compatibility hack
     // see header file for more details
-    eirods::dynamic_cast_hack();
+    irods::dynamic_cast_hack();
 
     while (1) {
 
@@ -295,7 +294,7 @@ agentMain (rsComm_t *rsComm)
     rodsServerHost_t *rodsServerHost = 0;
     status = getRcatHost( MASTER_RCAT, 0, &rodsServerHost );
     if( status < 0 ) {
-        eirods::log( ERROR( status, "getRcatHost failed." ) );
+        irods::log( ERROR( status, "getRcatHost failed." ) );
         return status;
     }
     
@@ -303,7 +302,7 @@ agentMain (rsComm_t *rsComm)
     // connect to the icat host
     status = svrToSvrConnect ( rsComm, rodsServerHost );
     if( status < 0 ) {
-        eirods::log( ERROR( status, "svrToSvrConnect failed." ) );
+        irods::log( ERROR( status, "svrToSvrConnect failed." ) );
         return status;
     }
 

@@ -1,23 +1,22 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
-#ifndef __EIRODS_RESOURCE_MANAGER_H__
-#define __EIRODS_RESOURCE_MANAGER_H__
+#ifndef __IRODS_RESOURCE_MANAGER_HPP__
+#define __IRODS_RESOURCE_MANAGER_HPP__
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_resource_plugin.hpp"
-#include "eirods_first_class_object.hpp"
+#include "irods_resource_plugin.hpp"
+#include "irods_first_class_object.hpp"
 
-namespace eirods {
+namespace irods {
     // =-=-=-=-=-=-=-
     /// @brief definition of the resource interface
-    const std::string RESOURCE_INTERFACE( "eirods_resource_interface" );
+    const std::string RESOURCE_INTERFACE( "irods_resource_interface" );
 
     // =-=-=-=-=-=-=-
     /// @brief special resource for local file system operations only
-    const std::string EIRODS_LOCAL_USE_ONLY_RESOURCE( "EIRODS_LOCAL_USE_ONLY_RESOURCE" );
-    const std::string EIRODS_LOCAL_USE_ONLY_RESOURCE_VAULT( "/var/lib/eirods/EIRODS_LOCAL_USE_ONLY_RESOURCE_VAULT" );
-    const std::string EIRODS_LOCAL_USE_ONLY_RESOURCE_TYPE( "unixfilesystem" );
+    const std::string LOCAL_USE_ONLY_RESOURCE( "LOCAL_USE_ONLY_RESOURCE" );
+    const std::string LOCAL_USE_ONLY_RESOURCE_VAULT( "/var/lib/irods/LOCAL_USE_ONLY_RESOURCE_VAULT" );
+    const std::string LOCAL_USE_ONLY_RESOURCE_TYPE( "unixfilesystem" );
 
     class resource_manager {
     public:
@@ -116,7 +115,7 @@ namespace eirods {
                     std::stringstream msg;
                     msg << "resource_manager::resolve_from_property - ";
                     msg << "failed to get vault parameter from resource";
-                    eirods::error err = PASSMSG( msg.str(), ret ); 
+                    irods::error err = PASSMSG( msg.str(), ret ); 
 
                 }
 
@@ -174,10 +173,10 @@ namespace eirods {
 
     }; // class resource_manager
 
-}; // namespace eirods
+}; // namespace irods
 
 
-#endif // __EIRODS_RESOURCE_MANAGER_H__
+#endif // __IRODS_RESOURCE_MANAGER_HPP__
 
 
 

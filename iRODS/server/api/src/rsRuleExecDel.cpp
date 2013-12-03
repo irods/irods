@@ -128,7 +128,7 @@ _rsRuleExecDel (rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp)
         i = addRErrorMsg (&rsComm->rError, 0, errMsg);
         if(i < 0)
         {
-          eirods::log( ERROR (i, "addRErrorMsg failed") );
+          irods::log( ERROR (i, "addRErrorMsg failed") );
         }
         freeGenQueryOut (&genQueryOut);
 
@@ -171,7 +171,7 @@ _rsRuleExecDel (rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp)
         i = addRErrorMsg (&rsComm->rError, 0, errMsg);
         if(i < 0)
         {
-          eirods::log( ERROR (i, "addRErrorMsg failed") );
+          irods::log( ERROR (i, "addRErrorMsg failed") );
         }
         snprintf(errMsg, sizeof errMsg, 
                  "rei file: %s", 

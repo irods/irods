@@ -16,8 +16,7 @@
 #include "apiHeaderAll.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods resource includes
-#include "eirods_resource_backport.hpp"
+#include "irods_resource_backport.hpp"
 
 int
 rsSyncMountedColl (rsComm_t *rsComm, dataObjInp_t *syncMountedCollInp)
@@ -86,21 +85,21 @@ _rsSyncMountedColl (rsComm_t *rsComm, specColl_t *specColl, int oprType)
             return (status);
         }*/
 
-        eirods::error err = eirods::get_resc_info( specColl->resource, rescInfo );
+        irods::error err = irods::get_resc_info( specColl->resource, rescInfo );
         if( !err.ok() ) {
             std::stringstream msg;
             msg << "failed to resolve resource [";
             msg << specColl->resource;
             msg << "]";
-            eirods::log( PASSMSG( msg.str(), err ) );
+            irods::log( PASSMSG( msg.str(), err ) );
         }
 
         // =-=-=-=-=-=-=-
         // extract the host location from the resource hierarchy
         std::string location;
-        eirods::error ret = eirods::get_loc_for_hier_string( specColl->rescHier, location );
+        irods::error ret = irods::get_loc_for_hier_string( specColl->rescHier, location );
         if( !ret.ok() ) {
-            eirods::log( PASSMSG( "failed in get_loc_for_hier_String", ret ) );
+            irods::log( PASSMSG( "failed in get_loc_for_hier_String", ret ) );
             return -1;
         }
 

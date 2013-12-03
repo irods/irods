@@ -14,14 +14,13 @@
 #include "sslSockComm.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_auth_object.hpp"
-#include "eirods_auth_factory.hpp"
-#include "eirods_auth_plugin.hpp"
-#include "eirods_auth_manager.hpp"
-#include "eirods_auth_constants.hpp"
-#include "eirods_native_auth_object.hpp"
-#include "eirods_pam_auth_object.hpp"
+#include "irods_auth_object.hpp"
+#include "irods_auth_factory.hpp"
+#include "irods_auth_plugin.hpp"
+#include "irods_auth_manager.hpp"
+#include "irods_auth_constants.hpp"
+#include "irods_native_auth_object.hpp"
+#include "irods_pam_auth_object.hpp"
 #include "authPluginRequest.hpp"
 
 static char prevChallengeSignatureClient[200];
@@ -348,7 +347,7 @@ int clientLogin(
     // flavor of authentication desired by the user -
     // check the environment variable first then the rods
     // env if that was null
-    std::string auth_scheme = eirods::AUTH_NATIVE_SCHEME;
+    std::string auth_scheme = irods::AUTH_NATIVE_SCHEME;
     if( ProcessType == CLIENT_PT ) {
         // =-=-=-=-=-=-=-
         // the caller may want to override the env var
@@ -387,8 +386,8 @@ int clientLogin(
             // filter out the pam auth as it is an extra special
             // case and only sent in as an override. 
             // everyone other scheme behaves as normal
-            if( eirods::AUTH_PAM_SCHEME == auth_scheme ) {
-                auth_scheme = eirods::AUTH_NATIVE_SCHEME;
+            if( irods::AUTH_PAM_SCHEME == auth_scheme ) {
+                auth_scheme = irods::AUTH_NATIVE_SCHEME;
             }
        
         } // if _scheme_override
@@ -398,39 +397,39 @@ int clientLogin(
 
     // =-=-=-=-=-=-=-
     // construct an auth object given the scheme
-    eirods::auth_object_ptr auth_obj;
-    eirods::error ret = eirods::auth_factory( 
+    irods::auth_object_ptr auth_obj;
+    irods::error ret = irods::auth_factory( 
                             auth_scheme, 
                             _comm->rError,
                             auth_obj );
     if( !ret.ok() ){
-        eirods::log( PASS( ret ) );
+        irods::log( PASS( ret ) );
         return ret.code();
     }
 
     // =-=-=-=-=-=-=-
     // resolve an auth plugin given the auth object
-    eirods::plugin_ptr ptr;
+    irods::plugin_ptr ptr;
     ret = auth_obj->resolve( 
-              eirods::AUTH_INTERFACE,
+              irods::AUTH_INTERFACE,
               ptr );
     if( !ret.ok() ){
-        eirods::log( PASS( ret ) );
+        irods::log( PASS( ret ) );
         return ret.code();
     }
-    eirods::auth_ptr auth_plugin = boost::dynamic_pointer_cast< eirods::auth >( ptr );
+    irods::auth_ptr auth_plugin = boost::dynamic_pointer_cast< irods::auth >( ptr );
     
     // =-=-=-=-=-=-=-
     // call client side init 
     ret = auth_plugin->call<
               rcComm_t*,
               const char* >( 
-                  eirods::AUTH_CLIENT_START, 
+                  irods::AUTH_CLIENT_START, 
                   auth_obj,
                   _comm,
                   _context );
     if( !ret.ok() ){
-        eirods::log( PASS( ret ) );
+        irods::log( PASS( ret ) );
         return ret.code();
     }
     
@@ -438,7 +437,7 @@ int clientLogin(
     // send an authentication request to the server
     ret = auth_plugin->call<
               rcComm_t* >(
-                  eirods::AUTH_CLIENT_AUTH_REQUEST,
+                  irods::AUTH_CLIENT_AUTH_REQUEST,
                   auth_obj,
                   _comm );
     if( !ret.ok() ) {
@@ -452,10 +451,10 @@ int clientLogin(
     // =-=-=-=-=-=-=-
     // establish auth context client side
     ret = auth_plugin->call( 
-              eirods::AUTH_ESTABLISH_CONTEXT, 
+              irods::AUTH_ESTABLISH_CONTEXT, 
               auth_obj );
     if( !ret.ok() ){
-        eirods::log( PASS( ret ) );
+        irods::log( PASS( ret ) );
         return ret.code();
     }
 
@@ -463,7 +462,7 @@ int clientLogin(
     // send the auth response to the agent
     ret = auth_plugin->call<
               rcComm_t* >(
-                  eirods::AUTH_CLIENT_AUTH_RESPONSE,
+                  irods::AUTH_CLIENT_AUTH_RESPONSE,
                   auth_obj,
                   _comm );
     if( !ret.ok() ) {

@@ -1,8 +1,7 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_error.hpp"
+#include "irods_error.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
@@ -16,7 +15,7 @@
 // stl includes
 #include <iostream>
 
-namespace eirods {
+namespace irods {
     // =-=-=-=-=-=-=-
     // private - helper fcn to build the result string
     std::string error::build_result_string( 
@@ -260,7 +259,7 @@ namespace eirods {
         return result;
     }
     
-}; // namespace eirods
+}; // namespace irods
 
 
 

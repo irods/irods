@@ -43,8 +43,8 @@ int executeRuleRecovery(char *ruleRecovery, ruleExecInfo_t *rei, int reiSaveFlag
 int parseAction(char *inAction,char *action, char *args[], int *argc);
 
 int executeRuleAction(char *inAction, ruleExecInfo_t *rei, int reiSaveFlag);
-#include "eirods_ms_plugin.hpp"
-int actionTableLookUp ( eirods::ms_table_entry&, char *action );
+#include "irods_ms_plugin.hpp"
+int actionTableLookUp ( irods::ms_table_entry&, char *action );
 
 
 

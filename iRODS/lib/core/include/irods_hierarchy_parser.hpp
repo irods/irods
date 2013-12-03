@@ -3,12 +3,12 @@
 #ifndef _hierarchy_parser_H_
 #define _hierarchy_parser_H_
 
-#include "eirods_error.hpp"
+#include "irods_error.hpp"
 
 #include <vector>
 #include <string>
 
-namespace eirods {
+namespace irods {
 
 /**
  * @brief Class to manage resource hierarchy strings
@@ -68,6 +68,6 @@ namespace eirods {
     private:
         resc_list_t resc_list_;
     };
-}; // namespace eirods
+}; // namespace irods
 
 #endif // _hierarchy_parser_H_

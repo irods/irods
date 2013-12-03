@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-namespace eirods {
+namespace irods {
     
     class Hasher
     {
@@ -28,6 +28,6 @@ namespace eirods {
         std::vector<HashStrategy*> _strategies;
     };
 
-}; // namespace eirods
+}; // namespace irods
 
 #endif // _Hasher_H_

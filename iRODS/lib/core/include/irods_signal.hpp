@@ -1,8 +1,8 @@
-#ifndef _EIRODS_SIGNAL_H_
-#define _EIRODS_SIGNAL_H_
+#ifndef _IRODS_SIGNAL_HPP_
+#define _IRODS_SIGNAL_HPP_
 
 extern "C" {
     extern void register_handlers(void);
     extern void unregister_handlers(void);
 }
-#endif // _EIRODS_SIGNAL_H_
+#endif // _IRODS_SIGNAL_HPP_

@@ -23,13 +23,12 @@
 #include "regReplica.hpp"
 #include "unbunAndRegPhyBunfile.hpp"
 #include "fileChksum.hpp"
-#include "eirods_stacktrace.hpp"
+#include "irods_stacktrace.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods resource includes
-#include "eirods_resource_backport.hpp"
-#include "eirods_resource_redirect.hpp"
-#include "eirods_stacktrace.hpp"
+#include "irods_resource_backport.hpp"
+#include "irods_resource_redirect.hpp"
+#include "irods_stacktrace.hpp"
 
 
 static rodsLong_t OneGig = (1024*1024*1024);
@@ -69,9 +68,9 @@ rsPhyBundleColl( rsComm_t*                 rsComm,
 
     rescGrpInfo_t rescGrpInfo;
     rescGrpInfo.rescInfo = 0;
-    eirods::error err = eirods::get_resc_grp_info( destRescName, rescGrpInfo );
+    irods::error err = irods::get_resc_grp_info( destRescName, rescGrpInfo );
     if( !err.ok() ) {
-        eirods::log( PASS( err ) );
+        irods::log( PASS( err ) );
         return err.code();
     }
 
@@ -88,13 +87,13 @@ rsPhyBundleColl( rsComm_t*                 rsComm,
     std::string       hier;
     char* hier_kw = getValByKey( &phyBundleCollInp->condInput, RESC_HIER_STR_KW );
     if( hier_kw == NULL ) {
-        eirods::error ret = eirods::resolve_resource_hierarchy( eirods::EIRODS_CREATE_OPERATION, rsComm, 
+        irods::error ret = irods::resolve_resource_hierarchy( irods::CREATE_OPERATION, rsComm, 
 						                                        &data_inp, hier );
         if( !ret.ok() ) { 
             std::stringstream msg;
-            msg << "failed in eirods::resolve_resource_hierarchy for [";
+            msg << "failed in irods::resolve_resource_hierarchy for [";
             msg << data_inp.objPath << "]";
-            eirods::log( PASSMSG( msg.str(), ret ) );
+            irods::log( PASSMSG( msg.str(), ret ) );
             return ret.code();
         }
    
@@ -108,9 +107,9 @@ rsPhyBundleColl( rsComm_t*                 rsComm,
     // =-=-=-=-=-=-=-
     // extract the host location from the resource hierarchy
     std::string location;
-    eirods::error ret = eirods::get_loc_for_hier_string( hier, location );
+    irods::error ret = irods::get_loc_for_hier_string( hier, location );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "failed in get_loc_for_hier_String", ret ) );
+        irods::log( PASSMSG( "failed in get_loc_for_hier_String", ret ) );
         return -1;
     }
 
@@ -431,7 +430,7 @@ bundleAndRegSubFiles (rsComm_t *rsComm, int l1descInx, char *phyBunDir,
     regReplicaInp.destDataObjInfo = (dataObjInfo_t*)malloc (sizeof (dataObjInfo_t));
     bzero (regReplicaInp.srcDataObjInfo, sizeof (dataObjInfo_t));
     bzero (regReplicaInp.destDataObjInfo, sizeof (dataObjInfo_t));
-    addKeyVal (&regReplicaInp.condInput, IRODS_ADMIN_KW, "");
+    addKeyVal (&regReplicaInp.condInput, ADMIN_KW, "");
     rstrcpy (regReplicaInp.destDataObjInfo->rescName, BUNDLE_RESC, NAME_LEN);
     rstrcpy (regReplicaInp.destDataObjInfo->filePath, 
              L1desc[l1descInx].dataObjInfo->objPath, MAX_NAME_LEN);
@@ -662,7 +661,7 @@ replDataObjForBundle (rsComm_t *rsComm, char *collName, char *dataName,
         addKeyVal (&dataObjInp.condInput, DEST_RESC_HIER_STR_KW, dstRescHier); 
     }
     if (adminFlag > 0) 
-        addKeyVal (&dataObjInp.condInput, IRODS_ADMIN_KW, "");
+        addKeyVal (&dataObjInp.condInput, ADMIN_KW, "");
 
     status = _rsDataObjRepl (rsComm, &dataObjInp, &transStat,
                              outCacheObjInfo);
@@ -692,12 +691,12 @@ createPhyBundleDataObj (rsComm_t *rsComm, char *collection,
     /* XXXXXX We do bundle only with UNIX_FILE_TYPE for now */
 
     std::string type;
-    eirods::error err = eirods::get_resource_property< std::string >( 
+    irods::error err = irods::get_resource_property< std::string >( 
                             rescGrpInfo->rescInfo->rescName, 
-                            eirods::RESOURCE_TYPE, 
+                            irods::RESOURCE_TYPE, 
                             type );
     if( !err.ok() ) {
-        eirods::log( PASS( err ) );
+        irods::log( PASS( err ) );
     }
 
 #if 0 // JMC legacy resources

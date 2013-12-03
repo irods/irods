@@ -3,7 +3,7 @@
 
 #include "md5Checksum.hpp"
 #include "rcMisc.hpp"
-#include "eirods_stacktrace.hpp"
+#include "irods_stacktrace.hpp"
 
 #define MD5_BUF_SZ      (4 * 1024)
 

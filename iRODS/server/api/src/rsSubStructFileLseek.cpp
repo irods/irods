@@ -5,8 +5,7 @@
 #include "dataObjOpr.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_structured_object.hpp"
+#include "irods_structured_object.hpp"
 
 
 int
@@ -71,16 +70,16 @@ int _rsSubStructFileLseek( rsComm_t*                _comm,
                            fileLseekOut_t**         _lseek_out ) {
    // =-=-=-=-=-=-=-
    // create a structured object fco
-    eirods::structured_object_ptr struct_obj( 
-                                      new eirods::structured_object( 
+    irods::structured_object_ptr struct_obj( 
+                                      new irods::structured_object( 
                                            ) );
     struct_obj->comm( _comm );
-    struct_obj->resc_hier( eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE );
+    struct_obj->resc_hier( irods::LOCAL_USE_ONLY_RESOURCE );
     struct_obj->file_descriptor( _lseek_inp->fd );
     
     // =-=-=-=-=-=-=-
     // call lseek interface
-    eirods::error lseek_err = fileLseek( _comm,
+    irods::error lseek_err = fileLseek( _comm,
                                          struct_obj, 
                                          _lseek_inp->offset, 
                                          _lseek_inp->whence ); 
@@ -89,7 +88,7 @@ int _rsSubStructFileLseek( rsComm_t*                _comm,
         msg << "fileLseek failed for fd [";
         msg << struct_obj->file_descriptor();
         msg << "]";
-        eirods::log( PASSMSG( msg.str(), lseek_err ) );
+        irods::log( PASSMSG( msg.str(), lseek_err ) );
         return lseek_err.code();
 
     } else {

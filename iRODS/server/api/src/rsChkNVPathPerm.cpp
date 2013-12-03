@@ -11,11 +11,10 @@
 #include "dataObjOpr.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_log.hpp"
-#include "eirods_file_object.hpp"
-#include "eirods_stacktrace.hpp"
-#include "eirods_resource_backport.hpp"
+#include "irods_log.hpp"
+#include "irods_file_object.hpp"
+#include "irods_stacktrace.hpp"
+#include "irods_resource_backport.hpp"
 
 int
 rsChkNVPathPerm (rsComm_t *rsComm, fileOpenInp_t *chkNVPathPermInp)
@@ -25,9 +24,9 @@ rsChkNVPathPerm (rsComm_t *rsComm, fileOpenInp_t *chkNVPathPermInp)
     int status;
 
     //remoteFlag = resolveHost (&chkNVPathPermInp->addr, &rodsServerHost);
-    eirods::error ret = eirods::get_host_for_hier_string( chkNVPathPermInp->resc_hier_, remoteFlag, rodsServerHost );
+    irods::error ret = irods::get_host_for_hier_string( chkNVPathPermInp->resc_hier_, remoteFlag, rodsServerHost );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "rsChkNVPathPerm - failed in call to eirods::get_host_for_hier_string", ret ) );
+        irods::log( PASSMSG( "rsChkNVPathPerm - failed in call to irods::get_host_for_hier_string", ret ) );
         return -1;
     }
 
@@ -117,7 +116,7 @@ _rsChkNVPathPerm (rsComm_t *rsComm, fileOpenInp_t *chkNVPathPermInp)
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - Empty logical path.";
-        eirods::log(LOG_ERROR, msg.str());
+        irods::log(LOG_ERROR, msg.str());
         return -1;
     }
     
@@ -147,11 +146,11 @@ _rsChkNVPathPerm (rsComm_t *rsComm, fileOpenInp_t *chkNVPathPermInp)
     rstrcpy (tmpPath, chkNVPathPermInp->fileName, MAX_NAME_LEN);
 
     len = strlen (tmpPath);
-    eirods::error stat_err;
+    irods::error stat_err;
     while (1) {
        
-        eirods::file_object_ptr file_obj( 
-                                    new eirods::file_object( 
+        irods::file_object_ptr file_obj( 
+                                    new irods::file_object( 
                                         rsComm, 
                                         chkNVPathPermInp->objPath, 
                                         tmpPath, 

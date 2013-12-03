@@ -15,16 +15,15 @@
 #include <boost/thread/thread_time.hpp>
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_stacktrace.hpp"
-#include "eirods_network_factory.hpp"
+#include "irods_stacktrace.hpp"
+#include "irods_network_factory.hpp"
 
 rcComm_t *
 rcConnect (char *rodsHost, int rodsPort, char *userName, char *rodsZone,
 int reconnFlag, rErrMsg_t *errMsg)
 {
    if( strlen( rodsHost ) == 0 ) {
-       eirods::stacktrace st;
+       irods::stacktrace st;
        st.trace();
        st.dump();
    }
@@ -75,7 +74,7 @@ int reconnFlag)
 	memset (errMsg, 0, sizeof (rErrMsg_t));
     }
 
-    if ((tmpStr = getenv (IRODS_PROT)) != NULL) {
+    if ((tmpStr = getenv (PROT)) != NULL) {
 	conn->irodsProt = (irodsProt_t)atoi(tmpStr);
     } else {
         conn->irodsProt = NATIVE_PROT;
@@ -210,7 +209,7 @@ setSockAddr (struct sockaddr_in *remoteAddr, char *rodsHost, int rodsPort)
     myHostent = gethostbyname (rodsHost);
 
     if (myHostent == NULL || myHostent->h_addrtype != AF_INET) {
-        eirods::stacktrace st;
+        irods::stacktrace st;
         st.trace();
         st.dump();
 
@@ -238,10 +237,10 @@ int rcDisconnect(
 
     // =-=-=-=-=-=-=-
     // create network object to pass to plugin interface
-    eirods::network_object_ptr net_obj;
-    eirods::error ret = eirods::network_factory(  _conn, net_obj );
+    irods::network_object_ptr net_obj;
+    irods::error ret = irods::network_factory(  _conn, net_obj );
     if( !ret.ok() ) {
-        eirods::log( PASS( ret ) );
+        irods::log( PASS( ret ) );
         return ret.code();
     }
 
@@ -253,7 +252,7 @@ int rcDisconnect(
               NULL, NULL, NULL, 0,
                _conn->irodsProt );
     if( !ret.ok() ) {
-        eirods::log( PASS( ret ) );
+        irods::log( PASS( ret ) );
     }
 
     // =-=-=-=-=-=-=-
@@ -265,7 +264,7 @@ int rcDisconnect(
     // shut down any network plugin activitiy
     ret = sockClientStop( net_obj, &rods_env );
     if( !ret.ok() ) {
-        eirods::log( PASS( ret ) );
+        irods::log( PASS( ret ) );
     }
 
     net_obj->to_client( _conn ); 
@@ -415,10 +414,10 @@ cliReconnManager (rcComm_t *conn)
         // create network object, need to override the socket
         // with the reconn socket.  no way to infer this in the
         // factory for the client comm
-        eirods::network_object_ptr net_obj;
-        eirods::error ret = eirods::network_factory( conn, net_obj );
+        irods::network_object_ptr net_obj;
+        irods::error ret = irods::network_factory( conn, net_obj );
         if( !ret.ok() ) {
-            eirods::log( PASS( ret ) );
+            irods::log( PASS( ret ) );
         }
 
         net_obj->socket_handle( conn->reconnectedSock ); // repave w/ recon socket

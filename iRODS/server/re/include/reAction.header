@@ -1,8 +1,8 @@
 /* reAction.hpp - header file for Actions that are 'called' when executing the rules by 
  * the rule engine modules
  */
-#ifndef RE_ACTION_H
-#define RE_ACTION_H
+#ifndef _RE_ACTION_HPP_
+#define _RE_ACTION_HPP_
 
 #include "rodsUser.hpp"
 #include "rods.hpp"

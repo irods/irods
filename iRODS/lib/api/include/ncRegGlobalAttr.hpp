@@ -50,7 +50,7 @@ extern "C" {
  *   ncRegGlobalAttrInp_t *ncRegGlobalAttrInp - Relevant items are:
  *	objPath - the path of the NETCDF data object.
  *	condInput - condition input.
- *        IRODS_ADMIN_KW - admin reg on behalf of other users 
+ *        ADMIN_KW - admin reg on behalf of other users 
  * OutPut - 
  *   int the ncid of the opened object - an integer descriptor.   
  */

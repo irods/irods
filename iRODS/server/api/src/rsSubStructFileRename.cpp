@@ -5,8 +5,7 @@
 #include "dataObjOpr.hpp"
  
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_structured_object.hpp"
+#include "irods_structured_object.hpp"
 
 
 int
@@ -68,20 +67,20 @@ _rsSubStructFileRename( rsComm_t*                 _comm,
                         subStructFileRenameInp_t* _rename_inp ) {
     // =-=-=-=-=-=-=-
     // create first class structured object 
-    eirods::structured_object_ptr struct_obj( 
-                                      new eirods::structured_object( 
+    irods::structured_object_ptr struct_obj( 
+                                      new irods::structured_object( 
                                           _rename_inp->subFile ) );
     struct_obj->comm( _comm );
 
     // =-=-=-=-=-=-=-
     // call abstrcated interface to rename
-    eirods::error rename_err = fileRename( _comm, struct_obj, _rename_inp->newSubFilePath );
+    irods::error rename_err = fileRename( _comm, struct_obj, _rename_inp->newSubFilePath );
     if( !rename_err.ok() ) {
         std::stringstream msg;
         msg << "failed on call to fileRename for [";
         msg << struct_obj->physical_path();
         msg << "]";
-        eirods::log( PASSMSG( msg.str(), rename_err ) );
+        irods::log( PASSMSG( msg.str(), rename_err ) );
         return rename_err.code();
 
     } else {

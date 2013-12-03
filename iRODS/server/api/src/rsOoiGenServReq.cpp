@@ -23,7 +23,7 @@ ooiGenServReqOut_t **ooiGenServReqOut)
 
     rescGrpInfo = new rescGrpInfo_t;
     rescGrpInfo->rescInfo = new rescInfo_t;
-    eirods::error err = eirods::get_resc_grp_info ( ooiGenServReqInp->irodsRescName, &rescGrpInfo);
+    irods::error err = irods::get_resc_grp_info ( ooiGenServReqInp->irodsRescName, &rescGrpInfo);
     if ( !err.ok() ) {
          rodsLogError ( LOG_ERROR, status,
                         "rsOoiGenServReq: _getRescInfo of %s error", 

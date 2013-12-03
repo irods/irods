@@ -5,10 +5,9 @@
 #include "dataObjOpr.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_structured_object.hpp"
-#include "eirods_stacktrace.hpp"
-#include "eirods_log.hpp"
+#include "irods_structured_object.hpp"
+#include "irods_stacktrace.hpp"
+#include "irods_log.hpp"
 
 int
 rsSubStructFilePut (rsComm_t *rsComm, subFile_t *subFile,
@@ -75,21 +74,21 @@ _rsSubStructFilePut( rsComm_t*   _comm,
    
     // =-=-=-=-=-=-=-
     // create a structured object on which to operate    
-    eirods::structured_object_ptr struct_obj( 
-                                      new eirods::structured_object( 
+    irods::structured_object_ptr struct_obj( 
+                                      new irods::structured_object( 
                                           *_sub_file ) );
     struct_obj->comm( _comm );
-    struct_obj->resc_hier( eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE );
+    struct_obj->resc_hier( irods::LOCAL_USE_ONLY_RESOURCE );
 
     // =-=-=-=-=-=-=-
     // force the opening of a file?
     if (_sub_file->flags & FORCE_FLAG) {
-        eirods::error err = fileOpen( _comm, struct_obj );
+        irods::error err = fileOpen( _comm, struct_obj );
         if( !err.ok() ) {
             std::stringstream msg;
             msg << "failed on call to fileCreate for [";
             msg << struct_obj->sub_file_path();
-            eirods::log( PASSMSG( msg.str(), err ) );
+            irods::log( PASSMSG( msg.str(), err ) );
             fd = -1;
 
         } else {
@@ -97,12 +96,12 @@ _rsSubStructFilePut( rsComm_t*   _comm,
         }
 
     } else {
-        eirods::error err = fileCreate( _comm, struct_obj );
+        irods::error err = fileCreate( _comm, struct_obj );
         if( !err.ok() ) {
             std::stringstream msg;
             msg << "failed on call to fileCreate for [";
             msg << struct_obj->sub_file_path();
-            eirods::log( PASSMSG( msg.str(), err ) );
+            irods::log( PASSMSG( msg.str(), err ) );
             fd = -1;
 
         } else {
@@ -130,12 +129,12 @@ _rsSubStructFilePut( rsComm_t*   _comm,
     //  fd, _out_buf->buf, _out_buf->len);
     // =-=-=-=-=-=-=-
     // write the buffer to our structured file
-    eirods::error write_err = fileWrite( _comm, struct_obj, _out_buf->buf, _out_buf->len );
+    irods::error write_err = fileWrite( _comm, struct_obj, _out_buf->buf, _out_buf->len );
     if( !write_err.ok() ) {
         std::stringstream msg;
         msg << "failed on call to fileWrite for [";
         msg << struct_obj->sub_file_path();
-        eirods::log( PASSMSG( msg.str(), write_err ) );
+        irods::log( PASSMSG( msg.str(), write_err ) );
         status = write_err.code();
 
     } else {
@@ -160,12 +159,12 @@ _rsSubStructFilePut( rsComm_t*   _comm,
 
     // =-=-=-=-=-=-=-
     // close up our file after writing
-    eirods::error close_err = fileClose( _comm, struct_obj );
+    irods::error close_err = fileClose( _comm, struct_obj );
     if( !close_err.ok() ) {
         std::stringstream msg;
         msg << "failed on call to fileWrite for [";
         msg << struct_obj->sub_file_path();
-        eirods::log( PASSMSG( msg.str(), close_err ) );
+        irods::log( PASSMSG( msg.str(), close_err ) );
         status = close_err.code();
 
     }

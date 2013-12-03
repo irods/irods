@@ -17,13 +17,12 @@
 #include "icatHighLevelRoutines.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_auth_plugin.hpp"
-#include "eirods_auth_constants.hpp"
-#include "eirods_pam_auth_object.hpp"
-#include "eirods_stacktrace.hpp"
-#include "eirods_kvp_string_parser.hpp"
-#include "eirods_client_server_negotiation.hpp"
+#include "irods_auth_plugin.hpp"
+#include "irods_auth_constants.hpp"
+#include "irods_pam_auth_object.hpp"
+#include "irods_stacktrace.hpp"
+#include "irods_kvp_string_parser.hpp"
+#include "irods_client_server_negotiation.hpp"
 
 // =-=-=-=-=-=-=-
 // boost includes
@@ -54,24 +53,24 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // establish context - take the auth request results and massage them
     // for the auth response call
-    eirods::error pam_auth_client_start(
-        eirods::auth_plugin_context& _ctx,
+    irods::error pam_auth_client_start(
+        irods::auth_plugin_context& _ctx,
         rcComm_t*                    _comm,
         const char*                  _context )
     {
-        eirods::error result = SUCCESS();
-        eirods::error ret;
+        irods::error result = SUCCESS();
+        irods::error ret;
         
         // =-=-=-=-=-=-=-
         // validate incoming parameters
-        ret = _ctx.valid< eirods::pam_auth_object >();
+        ret = _ctx.valid< irods::pam_auth_object >();
         if((result = ASSERT_PASS(ret, "Invalid plugin context.")).ok() ) {
             if((result = ASSERT_ERROR(_comm, SYS_INVALID_INPUT_PARAM, "Null comm pointer." )).ok()) {
         
                 // =-=-=-=-=-=-=-
                 // simply cache the context string for a rainy day...
                 // or to pass to the auth client call later.
-                eirods::pam_auth_object_ptr ptr = boost::dynamic_pointer_cast<eirods::pam_auth_object >( _ctx.fco() );
+                irods::pam_auth_object_ptr ptr = boost::dynamic_pointer_cast<irods::pam_auth_object >( _ctx.fco() );
                 if( _context ) {
                     ptr->context( _context );
         
@@ -79,12 +78,12 @@ extern "C" {
          
                 // =-=-=-=-=-=-=-
                 // parse the kvp out of the _resp->username string
-                eirods::kvp_map_t kvp;
-                eirods::error ret = eirods::parse_kvp_string(_context, kvp );
+                irods::kvp_map_t kvp;
+                irods::error ret = irods::parse_kvp_string(_context, kvp );
                 if((result = ASSERT_PASS(ret, "Failed to parse the key-value pairs.")).ok() ) {
 
-                    std::string password = kvp[ eirods::AUTH_PASSWORD_KEY ];
-                    std::string ttl_str  = kvp[ eirods::AUTH_TTL_KEY ];
+                    std::string password = kvp[ irods::AUTH_PASSWORD_KEY ];
+                    std::string ttl_str  = kvp[ irods::AUTH_TTL_KEY ];
 
                     // =-=-=-=-=-=-=-
                     // prompt for a password if necessary
@@ -108,12 +107,12 @@ extern "C" {
 
                         // =-=-=-=-=-=-=-
                         // rebuilt and reset context string
-                        std::string context = eirods::AUTH_TTL_KEY        + 
-                            eirods::kvp_association()  +
+                        std::string context = irods::AUTH_TTL_KEY        + 
+                            irods::kvp_association()  +
                             ttl_str                    +
-                            eirods::kvp_delimiter()    +
-                            eirods::AUTH_PASSWORD_KEY  +
-                            eirods::kvp_association()  +
+                            irods::kvp_delimiter()    +
+                            irods::AUTH_PASSWORD_KEY  +
+                            irods::kvp_association()  +
                             new_password;
                         ptr->context( context );
 
@@ -137,12 +136,12 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // handle an agent-side auth request call 
-    eirods::error pam_auth_client_request(
-        eirods::auth_plugin_context& _ctx,
+    irods::error pam_auth_client_request(
+        irods::auth_plugin_context& _ctx,
         rcComm_t*                    _comm ) {
         // =-=-=-=-=-=-=-
         // validate incoming parameters
-        if( !_ctx.valid< eirods::pam_auth_object >().ok() ) {
+        if( !_ctx.valid< irods::pam_auth_object >().ok() ) {
             return ERROR( 
                 SYS_INVALID_INPUT_PARAM,
                 "invalid plugin context" );
@@ -156,8 +155,8 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // get the auth object
-        eirods::pam_auth_object_ptr ptr = boost::dynamic_pointer_cast< 
-            eirods::pam_auth_object >( _ctx.fco() );
+        irods::pam_auth_object_ptr ptr = boost::dynamic_pointer_cast< 
+            irods::pam_auth_object >( _ctx.fco() );
         // =-=-=-=-=-=-=-
         // get the context string
         std::string context = ptr->context( );
@@ -169,9 +168,9 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // append the auth scheme and user name
-        context += eirods::kvp_delimiter()   +
-            eirods::AUTH_USER_KEY      +
-            eirods::kvp_association() + 
+        context += irods::kvp_delimiter()   +
+            irods::AUTH_USER_KEY      +
+            irods::kvp_association() + 
             ptr->user_name();
                     
         // =-=-=-=-=-=-=-
@@ -194,12 +193,12 @@ extern "C" {
         // copy the auth scheme to the req in struct
         strncpy( 
             req_in.auth_scheme_,
-            eirods::AUTH_PAM_SCHEME.c_str(),
-            eirods::AUTH_PAM_SCHEME.size()+1 );
+            irods::AUTH_PAM_SCHEME.c_str(),
+            irods::AUTH_PAM_SCHEME.size()+1 );
         
         // =-=-=-=-=-=-=-
         // check to see if SSL is currently in place
-        bool using_ssl = ( eirods::CS_NEG_USE_SSL == _comm->negotiation_results );
+        bool using_ssl = ( irods::CS_NEG_USE_SSL == _comm->negotiation_results );
             
         // =-=-=-=-=-=-=-
         // warm up SSL if it is not already in use
@@ -293,12 +292,12 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // handle an agent-side auth request call 
-    eirods::error pam_auth_agent_request(
-        eirods::auth_plugin_context& _ctx,
+    irods::error pam_auth_agent_request(
+        irods::auth_plugin_context& _ctx,
         rsComm_t*                    _comm ) {
         // =-=-=-=-=-=-=-
         // validate incoming parameters
-        if( !_ctx.valid< eirods::pam_auth_object >().ok() ) {
+        if( !_ctx.valid< irods::pam_auth_object >().ok() ) {
             return ERROR( 
                 SYS_INVALID_INPUT_PARAM,
                 "invalid plugin context" );
@@ -325,8 +324,8 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // simply cache the context string for a rainy day...
         // or to pass to the auth client call later.
-        eirods::pam_auth_object_ptr ptr = boost::dynamic_pointer_cast< 
-            eirods::pam_auth_object >( _ctx.fco() );
+        irods::pam_auth_object_ptr ptr = boost::dynamic_pointer_cast< 
+            irods::pam_auth_object >( _ctx.fco() );
         std::string context = ptr->context( );
 
         // =-=-=-=-=-=-=-
@@ -349,8 +348,8 @@ extern "C" {
             authPluginReqInp_t  req_inp;
             strncpy( 
                 req_inp.auth_scheme_,
-                eirods::AUTH_PAM_SCHEME.c_str(),
-                eirods::AUTH_PAM_SCHEME.size()+1 );
+                irods::AUTH_PAM_SCHEME.c_str(),
+                irods::AUTH_PAM_SCHEME.size()+1 );
             strncpy( 
                 req_inp.context_,
                 context.c_str(),
@@ -387,25 +386,25 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // parse the kvp out of the _resp->username string
-        eirods::kvp_map_t kvp;
-        eirods::error ret = eirods::parse_kvp_string(
+        irods::kvp_map_t kvp;
+        irods::error ret = irods::parse_kvp_string(
             context,
             kvp );
         if( !ret.ok() ) {
             return PASS( ret );
         }
 
-        if( kvp.find( eirods::AUTH_USER_KEY     ) == kvp.end() ||
-            kvp.find( eirods::AUTH_TTL_KEY      ) == kvp.end() ||
-            kvp.find( eirods::AUTH_PASSWORD_KEY ) == kvp.end() ) {
+        if( kvp.find( irods::AUTH_USER_KEY     ) == kvp.end() ||
+            kvp.find( irods::AUTH_TTL_KEY      ) == kvp.end() ||
+            kvp.find( irods::AUTH_PASSWORD_KEY ) == kvp.end() ) {
             return ERROR( 
                 SYS_INVALID_INPUT_PARAM,
                 "user or ttl or password key missing" );
         }
 
-        std::string user_name = kvp[ eirods::AUTH_USER_KEY     ];
-        std::string password  = kvp[ eirods::AUTH_PASSWORD_KEY ];
-        std::string ttl_str   = kvp[ eirods::AUTH_TTL_KEY      ];
+        std::string user_name = kvp[ irods::AUTH_USER_KEY     ];
+        std::string password  = kvp[ irods::AUTH_PASSWORD_KEY ];
+        std::string ttl_str   = kvp[ irods::AUTH_TTL_KEY      ];
         int ttl = 0;
         if( !ttl_str.empty() ) {
             ttl = boost::lexical_cast<int>( ttl_str );
@@ -450,11 +449,11 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // establish context - take the auth request results and massage them
     // for the auth response call
-    eirods::error pam_auth_establish_context(
-        eirods::auth_plugin_context& _ctx ) {
+    irods::error pam_auth_establish_context(
+        irods::auth_plugin_context& _ctx ) {
         // =-=-=-=-=-=-=-
         // validate incoming parameters
-        if( !_ctx.valid< eirods::pam_auth_object >().ok() ) {
+        if( !_ctx.valid< irods::pam_auth_object >().ok() ) {
             return ERROR( 
                 SYS_INVALID_INPUT_PARAM,
                 "invalid plugin context" );
@@ -468,8 +467,8 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // stub for ops that the native plug does 
     // not need to support 
-    eirods::error pam_auth_success_stub( 
-        eirods::auth_plugin_context& _ctx ) {
+    irods::error pam_auth_success_stub( 
+        irods::auth_plugin_context& _ctx ) {
         return SUCCESS();
 
     } // pam_auth_success_stub
@@ -478,12 +477,12 @@ extern "C" {
     // derive a new pam_auth auth plugin from
     // the auth plugin base class for handling
     // native authentication
-    class pam_auth_plugin : public eirods::auth {
+    class pam_auth_plugin : public irods::auth {
     public:
         pam_auth_plugin( 
             const std::string& _nm, 
             const std::string& _ctx ) :
-            eirods::auth( 
+            irods::auth( 
                 _nm, 
                 _ctx ) {
         } // ctor
@@ -495,7 +494,7 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // factory function to provide instance of the plugin
-    eirods::auth* plugin_factory( 
+    irods::auth* plugin_factory( 
         const std::string& _inst_name, 
         const std::string& _context ) {
         // =-=-=-=-=-=-=-
@@ -511,18 +510,18 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // fill in the operation table mapping call 
         // names to function names
-        pam->add_operation( eirods::AUTH_CLIENT_START,         "pam_auth_client_start"   );
-        pam->add_operation( eirods::AUTH_AGENT_START,          "pam_auth_success_stub"   );
-        pam->add_operation( eirods::AUTH_ESTABLISH_CONTEXT,    "pam_auth_success_stub"   );
-        pam->add_operation( eirods::AUTH_CLIENT_AUTH_REQUEST,  "pam_auth_client_request" );
-        pam->add_operation( eirods::AUTH_AGENT_AUTH_REQUEST,   "pam_auth_agent_request"  );
-        pam->add_operation( eirods::AUTH_CLIENT_AUTH_RESPONSE, "pam_auth_success_stub"   );
-        pam->add_operation( eirods::AUTH_AGENT_AUTH_RESPONSE,  "pam_auth_success_stub"   );
-        pam->add_operation( eirods::AUTH_AGENT_AUTH_VERIFY,    "pam_auth_success_stub"   );
+        pam->add_operation( irods::AUTH_CLIENT_START,         "pam_auth_client_start"   );
+        pam->add_operation( irods::AUTH_AGENT_START,          "pam_auth_success_stub"   );
+        pam->add_operation( irods::AUTH_ESTABLISH_CONTEXT,    "pam_auth_success_stub"   );
+        pam->add_operation( irods::AUTH_CLIENT_AUTH_REQUEST,  "pam_auth_client_request" );
+        pam->add_operation( irods::AUTH_AGENT_AUTH_REQUEST,   "pam_auth_agent_request"  );
+        pam->add_operation( irods::AUTH_CLIENT_AUTH_RESPONSE, "pam_auth_success_stub"   );
+        pam->add_operation( irods::AUTH_AGENT_AUTH_RESPONSE,  "pam_auth_success_stub"   );
+        pam->add_operation( irods::AUTH_AGENT_AUTH_VERIFY,    "pam_auth_success_stub"   );
 
-        eirods::auth* auth = dynamic_cast< eirods::auth* >( pam );
+        irods::auth* auth = dynamic_cast< irods::auth* >( pam );
         if( !auth ) {
-            rodsLog( LOG_ERROR, "failed to dynamic cast to eirods::auth*" );
+            rodsLog( LOG_ERROR, "failed to dynamic cast to irods::auth*" );
         }
 
         return auth;

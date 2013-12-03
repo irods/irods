@@ -9,10 +9,9 @@
 #include "miscServerFunct.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_log.hpp"
-#include "eirods_collection_object.hpp"
-#include "eirods_stacktrace.hpp"
+#include "irods_log.hpp"
+#include "irods_collection_object.hpp"
+#include "irods_stacktrace.hpp"
 
 int
 rsFileMkdir (rsComm_t *rsComm, fileMkdirInp_t *fileMkdirInp)
@@ -78,13 +77,13 @@ int _rsFileMkdir(
     // =-=-=-=-=-=-=-
     // make call to mkdir via resource plugin
 
-    eirods::collection_object_ptr coll_obj( 
-                                      new eirods::collection_object( 
+    irods::collection_object_ptr coll_obj( 
+                                      new irods::collection_object( 
                                           _mkdir_inp->dirName, 
                                           _mkdir_inp->rescHier, 
                                           _mkdir_inp->mode, 
                                           0 ) );
-    eirods::error mkdir_err = fileMkdir( _comm, coll_obj );
+    irods::error mkdir_err = fileMkdir( _comm, coll_obj );
 
     // =-=-=-=-=-=-=-
     // log error if necessary
@@ -94,8 +93,8 @@ int _rsFileMkdir(
             msg << "fileMkdir failed for ";
             msg << _mkdir_inp->dirName;
             msg << "]";
-            eirods::error ret_err = PASSMSG( msg.str(), mkdir_err );
-            eirods::log( ret_err );
+            irods::error ret_err = PASSMSG( msg.str(), mkdir_err );
+            irods::log( ret_err );
         }
     }
 

@@ -5,7 +5,7 @@
 
 #include <string>
 
-namespace eirods {
+namespace irods {
 
     class sql_logger {
     public:
@@ -19,6 +19,6 @@ namespace eirods {
 	std::string name_;
 	bool log_sql_;
     };
-}; // namespace eirods
+}; // namespace irods
 
 #endif // _sql_logger_H_

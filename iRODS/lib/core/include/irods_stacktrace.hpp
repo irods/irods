@@ -3,12 +3,12 @@
 #ifndef _stacktrace_H_
 #define _stacktrace_H_
 
-#include "eirods_error.hpp"
+#include "irods_error.hpp"
 
 #include <list>
 #include <string>
 
-namespace eirods {
+namespace irods {
 
 /**
  * @brief Class for generating and manipulating a stack trace
@@ -40,6 +40,6 @@ namespace eirods {
         
         stacklist stack_;
     };
-}; // namespace eirods
+}; // namespace irods
 
 #endif // _stacktrace_H_

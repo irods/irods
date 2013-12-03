@@ -649,24 +649,24 @@
 #define DBO_WRITABLE_BY_NON_PRIVILEGED              -1718000
 
 // e-irods errors
-#define EIRODS_KEY_NOT_FOUND                        -1800000
-#define EIRODS_KEY_TYPE_MISMATCH                    -1801000
-#define EIRODS_CHILD_EXISTS                         -1802000
-#define EIRODS_HIERARCHY_ERROR                      -1803000
-#define EIRODS_CHILD_NOT_FOUND                      -1804000
-#define EIRODS_NO_NEXT_RESC_FOUND                   -1805000
-#define EIRODS_NO_PDMO_DEFINED                      -1806000
-#define EIRODS_INVALID_LOCATION                     -1807000
-#define EIRODS_PLUGIN_ERROR                         -1808000
-#define EIRODS_INVALID_RESC_CHILD_CONTEXT           -1809000
-#define EIRODS_INVALID_FILE_OBJECT                  -1810000
-#define EIRODS_INVALID_OPERATION                    -1811000
-#define EIRODS_CHILD_HAS_PARENT                     -1812000
-#define EIRODS_FILE_NOT_IN_VAULT                    -1813000
-#define EIRODS_DIRECT_ARCHIVE_ACCESS                -1814000
-#define EIRODS_ADVANCED_NEGOTIATION_NOT_SUPPORTED   -1815000
-#define EIRODS_DIRECT_CHILD_ACCESS                  -1816000
-#define EIRODS_INVALID_DYNAMIC_CAST                 -1816000
+#define KEY_NOT_FOUND                        -1800000
+#define KEY_TYPE_MISMATCH                    -1801000
+#define CHILD_EXISTS                         -1802000
+#define HIERARCHY_ERROR                      -1803000
+#define CHILD_NOT_FOUND                      -1804000
+#define NO_NEXT_RESC_FOUND                   -1805000
+#define NO_PDMO_DEFINED                      -1806000
+#define INVALID_LOCATION                     -1807000
+#define PLUGIN_ERROR                         -1808000
+#define INVALID_RESC_CHILD_CONTEXT           -1809000
+#define INVALID_FILE_OBJECT                  -1810000
+#define INVALID_OPERATION                    -1811000
+#define CHILD_HAS_PARENT                     -1812000
+#define FILE_NOT_IN_VAULT                    -1813000
+#define DIRECT_ARCHIVE_ACCESS                -1814000
+#define ADVANCED_NEGOTIATION_NOT_SUPPORTED   -1815000
+#define DIRECT_CHILD_ACCESS                  -1816000
+#define INVALID_DYNAMIC_CAST                 -1816000
 
 
 /* NetCDF error code */

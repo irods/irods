@@ -2,14 +2,13 @@
 
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_kvp_string_parser.hpp"
+#include "irods_kvp_string_parser.hpp"
 
 // =-=-=-=-=-=-=-
 // rods includes
 #include "rodsErrorTable.hpp"
 
-namespace eirods {
+namespace irods {
     /// =-=-=-=-=-=-=-
     /// @brief function to return defined delimiter
     std::string kvp_delimiter() {
@@ -102,7 +101,7 @@ namespace eirods {
 
     } // parse_kvp_string
 
-}; // namespace eirods
+}; // namespace irods
 
 
 

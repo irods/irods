@@ -10,13 +10,12 @@
 #include "collection.hpp"
 
 // =-=-=-=-=-=-=
-// eirods includes
-#include "eirods_resource_redirect.hpp"
-#include "eirods_hierarchy_parser.hpp"
-#include "eirods_resource_backport.hpp"
+#include "irods_resource_redirect.hpp"
+#include "irods_hierarchy_parser.hpp"
+#include "irods_resource_backport.hpp"
 
 
-namespace eirods {
+namespace irods {
     /// =-=-=-=-=-=-=-
     /// @breif function to handle collecting a vote from a resource
     ///        for a given operation and fco
@@ -25,12 +24,12 @@ namespace eirods {
         rsComm_t*                _comm,
         const std::string&       _oper,
         const std::string&       _resc_name,
-        eirods::file_object_ptr  _file_obj,
+        irods::file_object_ptr  _file_obj,
         std::string&             _out_hier,
         float&                   _out_vote ) { 
         // =-=-=-=-=-=-=-
         // request the resource by name
-        eirods::resource_ptr resc;
+        irods::resource_ptr resc;
         error err = resc_mgr.resolve( _resc_name, resc );
         if( !err.ok() ) {
             return PASSMSG( "failed in resc_mgr.resolve", err );
@@ -43,7 +42,7 @@ namespace eirods {
         error p_err = resc->get_parent( parent );
         if( p_err.ok() ) {
             return ERROR( 
-                       EIRODS_DIRECT_CHILD_ACCESS,
+                       DIRECT_CHILD_ACCESS,
                        "attempt to directly address a child resource" );
         }
        
@@ -91,7 +90,7 @@ namespace eirods {
     static 
     error resolve_hier_for_open_without_keyword(
         rsComm_t*                _comm,
-        eirods::file_object_ptr  _file_obj,
+        irods::file_object_ptr  _file_obj,
         std::string&             _out_hier ) {
         // =-=-=-=-=-=-=-
         // build a list of root hiers for all
@@ -125,9 +124,9 @@ namespace eirods {
             // request the vote
             float       vote = 0.0; 
             std::string voted_hier;
-            eirods::error ret = request_vote_for_file_object( 
+            irods::error ret = request_vote_for_file_object( 
                                     _comm,
-                                    EIRODS_OPEN_OPERATION,
+                                    OPEN_OPERATION,
                                     itr->first,
                                     _file_obj,
                                     voted_hier,
@@ -153,7 +152,7 @@ namespace eirods {
         double diff = ( max_vote - 0.00000001 );
         if( diff <= 0.0 ) {
             return ERROR(
-                      EIRODS_HIERARCHY_ERROR, 
+                      HIERARCHY_ERROR, 
                       "no valid resource found for data object" );
         }
         
@@ -171,7 +170,7 @@ namespace eirods {
     static 
     error resolve_hier_for_open(
         rsComm_t*                _comm,
-        eirods::file_object_ptr  _file_obj,
+        irods::file_object_ptr  _file_obj,
         const char*              _key_word,
         std::string&             _out_hier ) {
             // =-=-=-=-=-=-=-
@@ -207,7 +206,7 @@ namespace eirods {
                     float vote = 0.0;
                     error ret = request_vote_for_file_object( 
                                     _comm,
-                                    EIRODS_OPEN_OPERATION,
+                                    OPEN_OPERATION,
                                     _key_word,
                                     _file_obj, 
                                     _out_hier,
@@ -243,7 +242,7 @@ namespace eirods {
     static 
     error resolve_hier_for_create(
         rsComm_t*                _comm,
-        eirods::file_object_ptr  _file_obj,
+        irods::file_object_ptr  _file_obj,
         const char*              _key_word,
         dataObjInp_t*            _data_obj_inp, 
         std::string&             _out_hier ) {
@@ -286,7 +285,7 @@ namespace eirods {
         float vote = 0.0;
         error ret = request_vote_for_file_object( 
                         _comm,
-                        EIRODS_CREATE_OPERATION,
+                        CREATE_OPERATION,
                         resc_name,
                         _file_obj, 
                         _out_hier,
@@ -308,7 +307,7 @@ namespace eirods {
     static 
     error resolve_hier_for_create_or_open(
         rsComm_t*                _comm,
-        eirods::file_object_ptr  _file_obj,
+        irods::file_object_ptr  _file_obj,
         const char*              _key_word,
         dataObjInp_t*            _data_obj_inp, 
         std::string&             _out_hier ) {
@@ -344,7 +343,7 @@ namespace eirods {
                     float vote = 0.0;
                     error ret = request_vote_for_file_object( 
                                     _comm,
-                                    EIRODS_WRITE_OPERATION,
+                                    WRITE_OPERATION,
                                     _key_word,
                                     _file_obj, 
                                     _out_hier,
@@ -450,8 +449,8 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         // perform an open operation if create is not specificied ( thats all we have for now ) 
-        if( EIRODS_OPEN_OPERATION  == oper || 
-            EIRODS_WRITE_OPERATION == oper ) {
+        if( OPEN_OPERATION  == oper || 
+            WRITE_OPERATION == oper ) {
             // =-=-=-=-=-=-=-
             // factory has already been called, test for 
             // success before proceeding
@@ -480,7 +479,7 @@ namespace eirods {
                        _out_hier );
             return ret; 
 
-        } else if( EIRODS_CREATE_OPERATION == oper ) {
+        } else if( CREATE_OPERATION == oper ) {
             // =-=-=-=-=-=-=-
             // include the default resc name if it applies
             if( !key_word && default_resc_name ) {
@@ -640,7 +639,7 @@ namespace eirods {
 
     } // resource_redirect
 
-}; // namespace eirods
+}; // namespace irods
 
 
 

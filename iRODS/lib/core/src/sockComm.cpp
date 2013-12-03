@@ -41,24 +41,23 @@ connToutHandler (int sig)
 #endif  /* _WIN32 */
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_stacktrace.hpp"
-#include "eirods_client_server_negotiation.hpp"
-#include "eirods_network_plugin.hpp"
-#include "eirods_network_manager.hpp"
-#include "eirods_network_factory.hpp"
-#include "eirods_network_constants.hpp"
+#include "irods_stacktrace.hpp"
+#include "irods_client_server_negotiation.hpp"
+#include "irods_network_plugin.hpp"
+#include "irods_network_manager.hpp"
+#include "irods_network_factory.hpp"
+#include "irods_network_constants.hpp"
 
 // =-=-=-=-=-=-=-
 //
-eirods::error sockClientStart( 
-    eirods::network_object_ptr _ptr,
+irods::error sockClientStart( 
+    irods::network_object_ptr _ptr,
     rodsEnv*                   _env ) {
     // =-=-=-=-=-=-=-
     // resolve a network interface plugin from the
     // network object
-    eirods::plugin_ptr p_ptr;
-    eirods::error ret_err = _ptr->resolve( eirods::NETWORK_INTERFACE, p_ptr );
+    irods::plugin_ptr p_ptr;
+    irods::error ret_err = _ptr->resolve( irods::NETWORK_INTERFACE, p_ptr );
     if( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve network interface", ret_err );
 
@@ -66,8 +65,8 @@ eirods::error sockClientStart(
 
     // =-=-=-=-=-=-=-
     // make the call to the "read" interface
-    eirods::network_ptr net = boost::dynamic_pointer_cast< eirods::network >( p_ptr );
-    ret_err = net->call< rodsEnv* >( eirods::NETWORK_OP_CLIENT_START, _ptr, _env );
+    irods::network_ptr net = boost::dynamic_pointer_cast< irods::network >( p_ptr );
+    ret_err = net->call< rodsEnv* >( irods::NETWORK_OP_CLIENT_START, _ptr, _env );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
@@ -83,14 +82,14 @@ eirods::error sockClientStart(
 
 // =-=-=-=-=-=-=-
 //
-eirods::error sockClientStop( 
-    eirods::network_object_ptr _ptr,
+irods::error sockClientStop( 
+    irods::network_object_ptr _ptr,
     rodsEnv*                   _env ) {
     // =-=-=-=-=-=-=-
     // resolve a network interface plugin from the
     // network object
-    eirods::plugin_ptr p_ptr;
-    eirods::error ret_err = _ptr->resolve( eirods::NETWORK_INTERFACE, p_ptr );
+    irods::plugin_ptr p_ptr;
+    irods::error ret_err = _ptr->resolve( irods::NETWORK_INTERFACE, p_ptr );
     if( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve network interface", ret_err );
 
@@ -98,8 +97,8 @@ eirods::error sockClientStop(
 
     // =-=-=-=-=-=-=-
     // make the call to the "read" interface
-    eirods::network_ptr net = boost::dynamic_pointer_cast< eirods::network >( p_ptr );
-    ret_err = net->call< rodsEnv* >( eirods::NETWORK_OP_CLIENT_STOP, _ptr, _env );
+    irods::network_ptr net = boost::dynamic_pointer_cast< irods::network >( p_ptr );
+    ret_err = net->call< rodsEnv* >( irods::NETWORK_OP_CLIENT_STOP, _ptr, _env );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
@@ -115,21 +114,21 @@ eirods::error sockClientStop(
 
 // =-=-=-=-=-=-=-
 //
-eirods::error sockAgentStart( 
-    eirods::network_object_ptr _ptr ) {
+irods::error sockAgentStart( 
+    irods::network_object_ptr _ptr ) {
     // =-=-=-=-=-=-=-
     // resolve a network interface plugin from the
     // network object
-    eirods::plugin_ptr p_ptr;
-    eirods::error ret_err = _ptr->resolve( eirods::NETWORK_INTERFACE, p_ptr );
+    irods::plugin_ptr p_ptr;
+    irods::error ret_err = _ptr->resolve( irods::NETWORK_INTERFACE, p_ptr );
     if( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve network interface", ret_err );
     }
 
     // =-=-=-=-=-=-=-
     // make the call to the "read" interface
-    eirods::network_ptr net = boost::dynamic_pointer_cast< eirods::network >( p_ptr );
-    ret_err = net->call( eirods::NETWORK_OP_AGENT_START, _ptr );
+    irods::network_ptr net = boost::dynamic_pointer_cast< irods::network >( p_ptr );
+    ret_err = net->call( irods::NETWORK_OP_AGENT_START, _ptr );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
@@ -145,21 +144,21 @@ eirods::error sockAgentStart(
 
 // =-=-=-=-=-=-=-
 //
-eirods::error sockAgentStop( 
-    eirods::network_object_ptr _ptr ) {                                                                                 
+irods::error sockAgentStop( 
+    irods::network_object_ptr _ptr ) {                                                                                 
     // =-=-=-=-=-=-=-
     // resolve a network interface plugin from the
     // network object
-    eirods::plugin_ptr p_ptr;
-    eirods::error ret_err = _ptr->resolve( eirods::NETWORK_INTERFACE, p_ptr );
+    irods::plugin_ptr p_ptr;
+    irods::error ret_err = _ptr->resolve( irods::NETWORK_INTERFACE, p_ptr );
     if( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve network interface", ret_err );
     }
 
     // =-=-=-=-=-=-=-
     // make the call to the "read" interface
-    eirods::network_ptr net = boost::dynamic_pointer_cast< eirods::network >( p_ptr );
-    ret_err = net->call( eirods::NETWORK_OP_AGENT_STOP, _ptr );
+    irods::network_ptr net = boost::dynamic_pointer_cast< irods::network >( p_ptr );
+    ret_err = net->call( irods::NETWORK_OP_AGENT_STOP, _ptr );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
@@ -173,15 +172,15 @@ eirods::error sockAgentStop(
 
 // =-=-=-=-=-=-=-
 // 
-eirods::error readMsgHeader( 
-    eirods::network_object_ptr _ptr, 
+irods::error readMsgHeader( 
+    irods::network_object_ptr _ptr, 
     msgHeader_t*               _header, 
     struct timeval*            _time_val ) {
     // =-=-=-=-=-=-=-
     // resolve a network interface plugin from the
     // network object
-    eirods::plugin_ptr p_ptr;
-    eirods::error ret_err = _ptr->resolve( eirods::NETWORK_INTERFACE, p_ptr );
+    irods::plugin_ptr p_ptr;
+    irods::error ret_err = _ptr->resolve( irods::NETWORK_INTERFACE, p_ptr );
     if( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve network interface", ret_err );
     }
@@ -189,10 +188,10 @@ eirods::error readMsgHeader(
     // =-=-=-=-=-=-=-
     // make the call to the "read" interface
     char tmp_buf[ MAX_NAME_LEN ]; 
-    eirods::first_class_object_ptr ptr = boost::dynamic_pointer_cast< eirods::first_class_object >( _ptr );
-    eirods::network_ptr            net = boost::dynamic_pointer_cast< eirods::network >( p_ptr );
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast< irods::first_class_object >( _ptr );
+    irods::network_ptr            net = boost::dynamic_pointer_cast< irods::network >( p_ptr );
     ret_err = net->call< void*, struct timeval* >( 
-                  eirods::NETWORK_OP_READ_HEADER, 
+                  irods::NETWORK_OP_READ_HEADER, 
                   ptr,
                   tmp_buf, 
                   _time_val );
@@ -234,8 +233,8 @@ eirods::error readMsgHeader(
 
 // =-=-=-=-=-=-=-
 // 
-eirods::error readMsgBody(
-    eirods::network_object_ptr _ptr, 
+irods::error readMsgBody(
+    irods::network_object_ptr _ptr, 
     msgHeader_t*        _header, 
     bytesBuf_t*         _input_struct_buf, 
     bytesBuf_t*         _bs_buf, 
@@ -245,8 +244,8 @@ eirods::error readMsgBody(
     // =-=-=-=-=-=-=-
     // resolve a network interface plugin from the
     // network object
-    eirods::plugin_ptr p_ptr;
-    eirods::error ret_err = _ptr->resolve( eirods::NETWORK_INTERFACE, p_ptr );
+    irods::plugin_ptr p_ptr;
+    irods::error ret_err = _ptr->resolve( irods::NETWORK_INTERFACE, p_ptr );
     if( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve network interface", ret_err );
 
@@ -254,15 +253,15 @@ eirods::error readMsgBody(
 
     // =-=-=-=-=-=-=-
     // make the call to the "read" interface
-    eirods::first_class_object_ptr ptr = boost::dynamic_pointer_cast< eirods::first_class_object >( _ptr );
-    eirods::network_ptr            net = boost::dynamic_pointer_cast< eirods::network >( p_ptr );
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast< irods::first_class_object >( _ptr );
+    irods::network_ptr            net = boost::dynamic_pointer_cast< irods::network >( p_ptr );
     ret_err = net->call< msgHeader_t*, 
                          bytesBuf_t*, 
                          bytesBuf_t*, 
                          bytesBuf_t*, 
                          irodsProt_t, 
                          struct timeval* >( 
-                             eirods::NETWORK_OP_READ_BODY, 
+                             irods::NETWORK_OP_READ_BODY, 
                              ptr,
                              _header,
                              _input_struct_buf,
@@ -419,8 +418,8 @@ rsAcceptConn (rsComm_t *svrComm)
 
 // =-=-=-=-=-=-=-
 // 
-eirods::error writeMsgHeader(
-    eirods::network_object_ptr _ptr,
+irods::error writeMsgHeader(
+    irods::network_object_ptr _ptr,
     msgHeader_t*               _header ) {
     // =-=-=-=-=-=-=-
     // always use XML_PROT for the Header 
@@ -439,18 +438,18 @@ eirods::error writeMsgHeader(
     // =-=-=-=-=-=-=-
     // resolve a network interface plugin from the
     // network object
-    eirods::plugin_ptr p_ptr;
-    eirods::error ret = _ptr->resolve( eirods::NETWORK_INTERFACE, p_ptr );
+    irods::plugin_ptr p_ptr;
+    irods::error ret = _ptr->resolve( irods::NETWORK_INTERFACE, p_ptr );
     if( !ret.ok() ) {
         return PASSMSG( "failed to resolve network interface", ret );
     }
   
     // =-=-=-=-=-=-=-
     // make the call to the plugin interface
-    eirods::first_class_object_ptr ptr = boost::dynamic_pointer_cast< eirods::first_class_object >( _ptr );
-    eirods::network_ptr            net = boost::dynamic_pointer_cast< eirods::network >( p_ptr );
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast< irods::first_class_object >( _ptr );
+    irods::network_ptr            net = boost::dynamic_pointer_cast< irods::network >( p_ptr );
     ret = net->call< bytesBuf_t* >( 
-              eirods::NETWORK_OP_WRITE_HEADER,
+              irods::NETWORK_OP_WRITE_HEADER,
               ptr,
               header_buf );
     if( !ret.ok() ) {
@@ -571,8 +570,8 @@ myWrite (int sock, void *buf, int len, irodsDescType_t irodsDescType,
 
 // =-=-=-=-=-=-=-
 //
-eirods::error readVersion(
-    eirods::network_object_ptr _ptr, 
+irods::error readVersion(
+    irods::network_object_ptr _ptr, 
     version_t**         _version ) {
     // =-=-=-=-=-=-=-
     // init timval struct for header call
@@ -583,7 +582,7 @@ eirods::error readVersion(
     // =-=-=-=-=-=-=-
     // call inteface to read message header
     msgHeader_t myHeader;
-    eirods::error ret = readMsgHeader( _ptr, &myHeader, &tv );
+    irods::error ret = readMsgHeader( _ptr, &myHeader, &tv );
     if( !ret.ok() ) {
         return PASS( ret );
     }
@@ -805,25 +804,25 @@ connectToRhost (rcComm_t *conn, int connectCnt, int reconnFlag)
     
     // =-=-=-=-=-=-=-
     // create a network object
-    eirods::network_object_ptr net_obj;
-    eirods::error ret = eirods::network_factory( conn, net_obj );
+    irods::network_object_ptr net_obj;
+    irods::error ret = irods::network_factory( conn, net_obj );
     if( !ret.ok() ) {
-        eirods::log( PASS( ret ) );
+        irods::log( PASS( ret ) );
         return ret.code();    
     }
 
     // =-=-=-=-=-=-=-
     // if the client requests the connection negotiation then wait for a
     // response here from the Agent
-    if( eirods::do_client_server_negotiation_for_client() ) {
+    if( irods::do_client_server_negotiation_for_client() ) {
         // =-=-=-=-=-=-=-
         // politely do the negotiation
         std::string results;
-        ret = eirods::client_server_negotiation_for_client( 
+        ret = irods::client_server_negotiation_for_client( 
                   net_obj, 
                   results ); 
         if( !ret.ok() ) {
-            eirods::log( PASS( ret ) ); 
+            irods::log( PASS( ret ) ); 
             return ret.code();    
         }
 
@@ -831,7 +830,7 @@ connectToRhost (rcComm_t *conn, int connectCnt, int reconnFlag)
         // =-=-=-=-=-=-=-
         // enable SSL if requested 
         // NOTE:: this is disabled in rcDisconnect if the conn->ssl_on flag is set
-        if( eirods::CS_NEG_USE_SSL == eirods::CS_NEG_FAILURE ) {
+        if( irods::CS_NEG_USE_SSL == irods::CS_NEG_FAILURE ) {
             printf( "connectToRhost - failed in client-server negotiations\n" );
         } 
     
@@ -862,10 +861,10 @@ connectToRhost (rcComm_t *conn, int connectCnt, int reconnFlag)
     
     // =-=-=-=-=-=-=-
     // call initialization for network plugin as negotiated 
-    eirods::network_object_ptr new_net_obj;
-    ret = eirods::network_factory( conn, new_net_obj );
+    irods::network_object_ptr new_net_obj;
+    ret = irods::network_factory( conn, new_net_obj );
     if( !ret.ok() ) {
-        eirods::log( PASS( ret ) );
+        irods::log( PASS( ret ) );
         return ret.code();
     }
 
@@ -876,7 +875,7 @@ connectToRhost (rcComm_t *conn, int connectCnt, int reconnFlag)
 
     ret = sockClientStart( new_net_obj, &rods_env );
     if( !ret.ok() ) {
-        eirods::log( PASS( ret ) );
+        irods::log( PASS( ret ) );
         return ret.code();
     }
 
@@ -1216,10 +1215,10 @@ sendStartupPack (rcComm_t *conn, int connectCnt, int reconnFlag)
         return status;
     }
 
-    eirods::network_object_ptr net_obj;
-    eirods::error ret = eirods::network_factory( conn, net_obj );
+    irods::network_object_ptr net_obj;
+    irods::error ret = irods::network_factory( conn, net_obj );
     if( !ret.ok() ) {
-        eirods::log( PASS( ret ) );
+        irods::log( PASS( ret ) );
         return ret.code();
     }
     
@@ -1230,7 +1229,7 @@ sendStartupPack (rcComm_t *conn, int connectCnt, int reconnFlag)
               NULL, NULL, 0, 
               XML_PROT );
     if( !ret.ok() ) {
-        eirods::log( PASS( ret ) );
+        irods::log( PASS( ret ) );
         return ret.code();
     }
 
@@ -1239,8 +1238,8 @@ sendStartupPack (rcComm_t *conn, int connectCnt, int reconnFlag)
 } // sendStartupPack
 
 
-eirods::error sendVersion (
-    eirods::network_object_ptr _ptr, 
+irods::error sendVersion (
+    irods::network_object_ptr _ptr, 
     int                 versionStatus, 
     int                 reconnPort, 
     char*               reconnAddr, 
@@ -1262,9 +1261,9 @@ eirods::error sendVersion (
         myVersion.cookie = cookie;
     } else {
         // =-=-=-=-=-=-=-
-        // super secret jargon eirods detection
+        // super secret jargon irods detection
         // sshhhhhhh...
-        myVersion.cookie = 301;
+        myVersion.cookie = 4;
 
     }
 
@@ -1275,7 +1274,7 @@ eirods::error sendVersion (
         return ERROR( status, "packStruct error" );
     }
 
-    eirods::error ret = sendRodsMsg( 
+    irods::error ret = sendRodsMsg( 
                             _ptr, 
                             RODS_VERSION_T, 
                             versionBBuf, 
@@ -1291,8 +1290,8 @@ eirods::error sendVersion (
 } // sendVersion
 
 
-eirods::error sendRodsMsg(
-    eirods::network_object_ptr _ptr,
+irods::error sendRodsMsg(
+    irods::network_object_ptr _ptr,
     char*               _msg_type, 
     bytesBuf_t*         _msg_buf, 
     bytesBuf_t*         _bs_buf, 
@@ -1302,8 +1301,8 @@ eirods::error sendRodsMsg(
     // =-=-=-=-=-=-=-
     // resolve a network interface plugin from the
     // network object
-    eirods::plugin_ptr p_ptr;
-    eirods::error ret_err = _ptr->resolve( eirods::NETWORK_INTERFACE, p_ptr );
+    irods::plugin_ptr p_ptr;
+    irods::error ret_err = _ptr->resolve( irods::NETWORK_INTERFACE, p_ptr );
     if( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve network interface", ret_err );
 
@@ -1311,10 +1310,10 @@ eirods::error sendRodsMsg(
     
     // =-=-=-=-=-=-=-
     // make the call to the "write body" interface
-    eirods::first_class_object_ptr ptr = boost::dynamic_pointer_cast< eirods::first_class_object >( _ptr );
-    eirods::network_ptr            net = boost::dynamic_pointer_cast< eirods::network >( p_ptr );
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast< irods::first_class_object >( _ptr );
+    irods::network_ptr            net = boost::dynamic_pointer_cast< irods::network >( p_ptr );
     ret_err = net->call< char*, bytesBuf_t*, bytesBuf_t*, bytesBuf_t*, int, irodsProt_t >( 
-                  eirods::NETWORK_OP_WRITE_BODY, 
+                  irods::NETWORK_OP_WRITE_BODY, 
                   ptr,
                   _msg_type,
                   _msg_buf,
@@ -1375,15 +1374,15 @@ rods_inet_ntoa (struct in_addr in)
 
 // =-=-=-=-=-=-=-
 // 
-eirods::error readReconMsg( 
-    eirods::network_object_ptr _ptr, 
+irods::error readReconMsg( 
+    irods::network_object_ptr _ptr, 
     reconnMsg_t**       _msg ){
     int status;
     msgHeader_t myHeader;
     bytesBuf_t inputStructBBuf, bsBBuf, errorBBuf;
     // =-=-=-=-=-=-=-
     //  
-    eirods::error ret = readMsgHeader( _ptr, &myHeader, NULL );
+    irods::error ret = readMsgHeader( _ptr, &myHeader, NULL );
     if( !ret.ok() ) {
         return PASSMSG( "read msg header error", ret );
     }
@@ -1465,8 +1464,8 @@ eirods::error readReconMsg(
 
 // =-=-=-=-=-=-=-
 // interface for requesting a reconnection
-eirods::error sendReconnMsg(
-    eirods::network_object_ptr _ptr, 
+irods::error sendReconnMsg(
+    irods::network_object_ptr _ptr, 
     reconnMsg_t*        _msg ) {
     // =-=-=-=-=-=-=-
     // trap invalid param 
@@ -1489,7 +1488,7 @@ eirods::error sendReconnMsg(
 
     // =-=-=-=-=-=-=-
     // pack outgoing message - alway use XML for version 
-    eirods::error ret = sendRodsMsg(
+    irods::error ret = sendRodsMsg(
                            _ptr, 
                            RODS_RECONNECT_T, 
                            recon_buf,
@@ -1512,10 +1511,10 @@ int svrSwitchConnect(
     rsComm_t *rsComm ) {
     // =-=-=-=-=-=-=-
     // construct a network object from the comm
-    eirods::network_object_ptr net_obj;
-    eirods::error ret = eirods::network_factory( rsComm, net_obj );
+    irods::network_object_ptr net_obj;
+    irods::error ret = irods::network_factory( rsComm, net_obj );
     if( !ret.ok() ) {
-        eirods::log( PASS( ret ) );
+        irods::log( PASS( ret ) );
         return ret.code();
     }
 
@@ -1541,10 +1540,10 @@ int cliSwitchConnect (rcComm_t *conn)
 {
     // =-=-=-=-=-=-=-
     // construct a network object from the comm
-    eirods::network_object_ptr net_obj;
-    eirods::error ret = eirods::network_factory( conn, net_obj );
+    irods::network_object_ptr net_obj;
+    irods::error ret = irods::network_factory( conn, net_obj );
     if( !ret.ok() ) {
-        eirods::log( PASS( ret ) );
+        irods::log( PASS( ret ) );
         return ret.code();
     }
 

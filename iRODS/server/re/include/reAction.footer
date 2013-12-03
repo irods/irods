@@ -4,18 +4,18 @@
     // =-=-=-=-=-=-=-
     // implement the micros table dtor 
     template<>
-    lookup_table< eirods::ms_table_entry* >::~lookup_table() {
+    lookup_table< irods::ms_table_entry* >::~lookup_table() {
         ms_table::iterator itr = begin();
         for( ; itr != end(); ++itr ) {
             delete itr->second;
         }
     }
 
-}; // namespace eirods
+}; // namespace irods::
 
 int NumOfAction = -1; // no longer used
 
-eirods::ms_table MicrosTable;
+irods::ms_table MicrosTable;
 
-#endif	/* RE_ACTION_H */
+#endif	/* _RE_ACTION_HPP_ */
 

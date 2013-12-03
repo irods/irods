@@ -4,13 +4,12 @@
 /* See authRequest.h for a description of this API call.*/
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_native_auth_object.hpp"
-#include "eirods_auth_object.hpp"
-#include "eirods_auth_factory.hpp"
-#include "eirods_auth_plugin.hpp"
-#include "eirods_auth_manager.hpp"
-#include "eirods_auth_constants.hpp"
+#include "irods_native_auth_object.hpp"
+#include "irods_auth_object.hpp"
+#include "irods_auth_factory.hpp"
+#include "irods_auth_plugin.hpp"
+#include "irods_auth_manager.hpp"
+#include "irods_auth_constants.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
@@ -53,37 +52,37 @@ int rsAuthRequest(
    
     // =-=-=-=-=-=-=-
     // construct an auth object given the native scheme
-    eirods::auth_object_ptr auth_obj;
-    eirods::error ret = eirods::auth_factory( 
-                            eirods::AUTH_NATIVE_SCHEME, 
+    irods::auth_object_ptr auth_obj;
+    irods::error ret = irods::auth_factory( 
+                            irods::AUTH_NATIVE_SCHEME, 
                             &_comm->rError,
                             auth_obj );
     if( !ret.ok() ){
-        eirods::log( PASS( ret ) );
+        irods::log( PASS( ret ) );
         return ret.code();
     }
 
     // =-=-=-=-=-=-=-
     // resolve an auth plugin given the auth object
-    eirods::plugin_ptr ptr;
+    irods::plugin_ptr ptr;
     ret = auth_obj->resolve( 
-              eirods::AUTH_INTERFACE,
+              irods::AUTH_INTERFACE,
               ptr );
     if( !ret.ok() ){
-        eirods::log( PASS( ret ) );
+        irods::log( PASS( ret ) );
         return ret.code();
     }
-    eirods::auth_ptr auth_plugin = boost::dynamic_pointer_cast< eirods::auth >( ptr );
+    irods::auth_ptr auth_plugin = boost::dynamic_pointer_cast< irods::auth >( ptr );
 
     // =-=-=-=-=-=-=-
     // call client side init - 'establish creds'
     ret = auth_plugin->call< 
               rsComm_t* >( 
-                  eirods::AUTH_AGENT_AUTH_REQUEST,
+                  irods::AUTH_AGENT_AUTH_REQUEST,
                   auth_obj,
                   _comm );
     if( !ret.ok() ){
-        eirods::log( PASS( ret ) );
+        irods::log( PASS( ret ) );
         return ret.code();
     }
 

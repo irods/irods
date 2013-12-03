@@ -13,11 +13,10 @@
 #include "reGlobalsExtern.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_resource_backport.hpp"
-#include "eirods_hierarchy_parser.hpp" 
-#include "eirods_file_object.hpp" 
-#include "eirods_resource_redirect.hpp"
+#include "irods_resource_backport.hpp"
+#include "irods_hierarchy_parser.hpp" 
+#include "irods_file_object.hpp" 
+#include "irods_resource_redirect.hpp"
 
 
 int
@@ -107,25 +106,25 @@ int rsDataObjWrite(
 
         // =-=-=-=-=-=-=-
         // notify the resource hierarchy that something is afoot
-        eirods::file_object_ptr file_obj(
-                                new eirods::file_object( 
+        irods::file_object_ptr file_obj(
+                                new irods::file_object( 
                                     rsComm, 
                                     L1desc[l1descInx].dataObjInfo ) );
         char* pdmo_kw = getValByKey( &dataObjWriteInp->condInput, IN_PDMO_KW);
         if(pdmo_kw != NULL) {
             file_obj->in_pdmo(pdmo_kw);
         }
-        eirods::error ret = fileNotify(
+        irods::error ret = fileNotify(
                                 rsComm, 
                                 file_obj,
-                                eirods::EIRODS_WRITE_OPERATION );
+                                irods::WRITE_OPERATION );
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Failed to signal the resource that the data object \"";
             msg << L1desc[l1descInx].dataObjInfo->objPath;
             msg << "\" was modified.";
             ret = PASSMSG( msg.str(), ret );
-            eirods::log( ret );
+            irods::log( ret );
             return ret.code();
         }
  
@@ -151,9 +150,9 @@ bytesBuf_t *dataObjWriteInpBBuf)
     dataObjInfo = L1desc[l1descInx].dataObjInfo;
 
     std::string location;
-    eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
+    irods::error ret = irods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "l3Write - failed in get_loc_for_hier_string", ret ) );
+        irods::log( PASSMSG( "l3Write - failed in get_loc_for_hier_string", ret ) );
         return -1;
     }
 

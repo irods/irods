@@ -10,10 +10,9 @@
 #include "rsGlobalExtern.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_log.hpp"
-#include "eirods_file_object.hpp"
-#include "eirods_stacktrace.hpp"
+#include "irods_log.hpp"
+#include "irods_file_object.hpp"
+#include "irods_stacktrace.hpp"
 
 
 int
@@ -97,14 +96,14 @@ int _rsFileClose(
         FileDesc[ _close_inp->fileInx ].objPath[0] == '\0') {
         std::stringstream msg;
         msg << "Empty logical path.";
-        eirods::log(LOG_ERROR, msg.str());
+        irods::log(LOG_ERROR, msg.str());
         return SYS_INVALID_INPUT_PARAM;
     }
     
     // =-=-=-=-=-=-=-
     // call the resource plugin close operation 
-    eirods::file_object_ptr file_obj( 
-                                new eirods::file_object( 
+    irods::file_object_ptr file_obj( 
+                                new irods::file_object( 
                                     _comm,
                                     FileDesc[ _close_inp->fileInx ].objPath, 
                                     FileDesc[ _close_inp->fileInx ].fileName, 
@@ -113,7 +112,7 @@ int _rsFileClose(
                                     0, 0 ) );
     file_obj->in_pdmo(_close_inp->in_pdmo);
     
-    eirods::error close_err = fileClose( _comm, file_obj );
+    irods::error close_err = fileClose( _comm, file_obj );
     // =-=-=-=-=-=-=-
     // log an error, if any
     if( !close_err.ok() ) {
@@ -121,7 +120,7 @@ int _rsFileClose(
         msg << "fileClose failed for [";
         msg << _close_inp->fileInx;
         msg << "]";
-        eirods::error err = PASSMSG( msg.str(), close_err ); 
+        irods::error err = PASSMSG( msg.str(), close_err ); 
     }
 
     return close_err.code();

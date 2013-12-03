@@ -3,10 +3,10 @@
 #ifndef _unlink_replicator_H_
 #define _unlink_replicator_H_
 
-#include "eirods_error.hpp"
-#include "eirods_oper_replicator.hpp"
+#include "irods_error.hpp"
+#include "irods_oper_replicator.hpp"
 
-namespace eirods {
+namespace irods {
 
 /**
  * @brief Class to replicate the unlink operation
@@ -22,6 +22,6 @@ namespace eirods {
         std::string child_;
         std::string resource_;
     };
-}; // namespace eirods
+}; // namespace irods
 
 #endif // _unlink_replicator_H_

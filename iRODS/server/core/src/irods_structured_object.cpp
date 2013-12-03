@@ -1,13 +1,12 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_structured_object.hpp"
-#include "eirods_resource_manager.hpp"
+#include "irods_structured_object.hpp"
+#include "irods_resource_manager.hpp"
 
-extern eirods::resource_manager resc_mgr;
+extern irods::resource_manager resc_mgr;
 
-namespace eirods {
+namespace irods {
 
     // =-=-=-=-=-=-=-
     // public - ctor
@@ -101,7 +100,7 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // try to find the resource based on the type 
         resource_ptr resc_ptr;
-        eirods::error err = resc_mgr.resolve( 
+        irods::error err = resc_mgr.resolve( 
                                          "struct file", 
                                          resc_ptr );
         if( err.ok() ) {
@@ -218,7 +217,7 @@ namespace eirods {
 
     } // get_re_vars 
 
-}; // namespace eirods
+}; // namespace irods
 
 
 

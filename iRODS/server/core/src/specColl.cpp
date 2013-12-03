@@ -12,9 +12,8 @@
 #include "rodsClient.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods include
-#include "eirods_resource_backport.hpp"
-#include "eirods_stacktrace.hpp"
+#include "irods_resource_backport.hpp"
+#include "irods_stacktrace.hpp"
 
 static int HaveFailedSpecCollPath = 0;
 static char FailedSpecCollPath[MAX_NAME_LEN];
@@ -416,13 +415,13 @@ specCollSubStat (rsComm_t *rsComm, specColl_t *specColl,
         }*/
 
         myDataObjInfo->rescInfo = new rescInfo_t;
-        eirods::error err = eirods::get_resc_info( specColl->resource, *myDataObjInfo->rescInfo );
+        irods::error err = irods::get_resc_info( specColl->resource, *myDataObjInfo->rescInfo );
         if( !err.ok() ) {
             std::stringstream msg;
             msg << "failed to get resource info [";
             msg << specColl->resource;
             msg << "]";
-            eirods::log( PASSMSG( msg.str(), err ) );
+            irods::log( PASSMSG( msg.str(), err ) );
             freeDataObjInfo (myDataObjInfo);
             *dataObjInfo = NULL;
             return err.code();

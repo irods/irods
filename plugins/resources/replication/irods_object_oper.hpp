@@ -3,10 +3,10 @@
 #ifndef _object_oper_H_
 #define _object_oper_H_
 
-#include "eirods_error.hpp"
-#include "eirods_file_object.hpp"
+#include "irods_error.hpp"
+#include "irods_file_object.hpp"
 
-namespace eirods {
+namespace irods {
 
 /**
  * @brief Class that holds a resource operation that needs to be replicated and the object on which it operated.
@@ -28,6 +28,6 @@ namespace eirods {
         file_object file_object_;
         std::string operation_;
     };
-}; // namespace eirods
+}; // namespace irods
 
 #endif // _object_oper_H_

@@ -13,12 +13,11 @@
 #include "authPluginRequest.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_auth_plugin.hpp"
-#include "eirods_auth_constants.hpp"
-#include "eirods_native_auth_object.hpp"
-#include "eirods_stacktrace.hpp"
-#include "eirods_kvp_string_parser.hpp"
+#include "irods_auth_plugin.hpp"
+#include "irods_auth_constants.hpp"
+#include "irods_native_auth_object.hpp"
+#include "irods_stacktrace.hpp"
+#include "irods_kvp_string_parser.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -30,11 +29,11 @@ int get64RandomBytes(char *buf);
 void setSessionSignatureClientside( char* _sig );
 void _rsSetAuthRequestGetChallenge( const char* _c );
 
-static eirods::error check_proxy_user_privileges(
+static irods::error check_proxy_user_privileges(
     rsComm_t *rsComm, 
     int proxyUserPriv )
 {
-    eirods::error result = SUCCESS();
+    irods::error result = SUCCESS();
     
     if (strcmp (rsComm->proxyUser.userName, rsComm->clientUser.userName) != 0) {
 
@@ -64,24 +63,24 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // given the client connection and context string, set up the
     // native auth object with relevant informaiton: user, zone, etc
-    eirods::error native_auth_client_start(
-        eirods::auth_plugin_context& _ctx,
+    irods::error native_auth_client_start(
+        irods::auth_plugin_context& _ctx,
         rcComm_t*                    _comm, 
         const char*                  _context )
     {
-        eirods::error result = SUCCESS();
-        eirods::error ret;
+        irods::error result = SUCCESS();
+        irods::error ret;
         
         // =-=-=-=-=-=-=-
         // validate incoming parameters
-        ret = _ctx.valid< eirods::native_auth_object >();
+        ret = _ctx.valid< irods::native_auth_object >();
         if((result = ASSERT_PASS(ret, "Invalid plugin context.")).ok() ) {
 
             if((result = ASSERT_ERROR(_comm, SYS_INVALID_INPUT_PARAM, "Null rcConn_t pointer.")).ok()) {
 
                 // =-=-=-=-=-=-=-
                 // get the native auth object
-                eirods::native_auth_object_ptr ptr = boost::dynamic_pointer_cast<eirods::native_auth_object >(_ctx.fco() );
+                irods::native_auth_object_ptr ptr = boost::dynamic_pointer_cast<irods::native_auth_object >(_ctx.fco() );
                 
                 // =-=-=-=-=-=-=-
                 // set the user name from the conn
@@ -100,15 +99,15 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // establish context - take the auth request results and massage them
     // for the auth response call
-    eirods::error native_auth_establish_context(
-        eirods::auth_plugin_context& _ctx )
+    irods::error native_auth_establish_context(
+        irods::auth_plugin_context& _ctx )
     {
-        eirods::error result = SUCCESS();
-        eirods::error ret;
+        irods::error result = SUCCESS();
+        irods::error ret;
         
         // =-=-=-=-=-=-=-
         // validate incoming parameters
-        ret = _ctx.valid< eirods::native_auth_object >(); 
+        ret = _ctx.valid< irods::native_auth_object >(); 
         if((result = ASSERT_PASS(ret, "Invalid plugin context.")).ok() ) {
                
             // =-=-=-=-=-=-=-
@@ -118,7 +117,7 @@ extern "C" {
  
             // =-=-=-=-=-=-=-
             // get the native auth object
-            eirods::native_auth_object_ptr ptr = boost::dynamic_pointer_cast<eirods::native_auth_object >(_ctx.fco() );
+            irods::native_auth_object_ptr ptr = boost::dynamic_pointer_cast<irods::native_auth_object >(_ctx.fco() );
             
             // =-=-=-=-=-=-=-
             // copy the challenge into the md5 buffer
@@ -203,16 +202,16 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // handle an client-side auth request call 
-    eirods::error native_auth_client_request(
-        eirods::auth_plugin_context& _ctx,
+    irods::error native_auth_client_request(
+        irods::auth_plugin_context& _ctx,
         rcComm_t*                    _comm )
     {
-        eirods::error result = SUCCESS();
-        eirods::error ret;
+        irods::error result = SUCCESS();
+        irods::error ret;
         
         // =-=-=-=-=-=-=-
         // validate incoming parameters
-        ret = _ctx.valid< eirods::native_auth_object >();
+        ret = _ctx.valid< irods::native_auth_object >();
         if((result = ASSERT_PASS(ret, "Invalid plugin context.")).ok() ) {
         
             // =-=-=-=-=-=-=-
@@ -226,7 +225,7 @@ extern "C" {
                 
                 // =-=-=-=-=-=-=-
                 // get the auth object
-                eirods::native_auth_object_ptr ptr = boost::dynamic_pointer_cast<eirods::native_auth_object >( _ctx.fco() );
+                irods::native_auth_object_ptr ptr = boost::dynamic_pointer_cast<irods::native_auth_object >( _ctx.fco() );
                 
                 // =-=-=-=-=-=-=-
                 // cache the challenge
@@ -245,16 +244,16 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // handle an agent-side auth request call 
-    eirods::error native_auth_agent_request(
-        eirods::auth_plugin_context& _ctx,
+    irods::error native_auth_agent_request(
+        irods::auth_plugin_context& _ctx,
         rsComm_t*                    _comm )
     {
-        eirods::error result = SUCCESS();
-        eirods::error ret;
+        irods::error result = SUCCESS();
+        irods::error ret;
         
         // =-=-=-=-=-=-=-
         // validate incoming parameters
-        ret = _ctx.valid< eirods::native_auth_object >();
+        ret = _ctx.valid< irods::native_auth_object >();
         if((result = ASSERT_PASS(ret, "Invalid plugin context.")).ok() ) {
 
             if((result = ASSERT_ERROR(_comm, SYS_INVALID_INPUT_PARAM, "Null comm pointer.")).ok()) {
@@ -266,7 +265,7 @@ extern "C" {
         
                 // =-=-=-=-=-=-=-
                 // get the auth object
-                eirods::native_auth_object_ptr ptr = boost::dynamic_pointer_cast<eirods::native_auth_object >( _ctx.fco() );
+                irods::native_auth_object_ptr ptr = boost::dynamic_pointer_cast<irods::native_auth_object >( _ctx.fco() );
                 
                 // =-=-=-=-=-=-=-
                 // cache the challenge
@@ -286,22 +285,22 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // handle a client-side auth request call 
-    eirods::error native_auth_client_response(
-        eirods::auth_plugin_context& _ctx,
+    irods::error native_auth_client_response(
+        irods::auth_plugin_context& _ctx,
         rcComm_t*                    _comm )
     {
-        eirods::error result = SUCCESS();
-        eirods::error ret;
+        irods::error result = SUCCESS();
+        irods::error ret;
         
         // =-=-=-=-=-=-=-
         // validate incoming parameters
-        ret = _ctx.valid< eirods::native_auth_object >();
+        ret = _ctx.valid< irods::native_auth_object >();
         if((result = ASSERT_PASS(ret, "Invalid plugin context.")).ok() ) {
             if((result = ASSERT_ERROR(_comm, SYS_INVALID_INPUT_PARAM, "Null rcComm_t pointer.")).ok()) { 
         
                 // =-=-=-=-=-=-=-
                 // get the auth object
-                eirods::native_auth_object_ptr ptr = boost::dynamic_pointer_cast<eirods::native_auth_object >(_ctx.fco() );
+                irods::native_auth_object_ptr ptr = boost::dynamic_pointer_cast<irods::native_auth_object >(_ctx.fco() );
                 
                 // =-=-=-=-=-=-=-
                 // build the response string
@@ -329,13 +328,13 @@ extern "C" {
     
     // =-=-=-=-=-=-=-
     // handle an agent-side auth request call 
-    eirods::error native_auth_agent_response(
-        eirods::auth_plugin_context& _ctx,
+    irods::error native_auth_agent_response(
+        irods::auth_plugin_context& _ctx,
         rsComm_t*                    _comm,
         authResponseInp_t*           _resp )
     {
-        eirods::error result = SUCCESS();
-        eirods::error ret;
+        irods::error result = SUCCESS();
+        irods::error ret;
         
         // =-=-=-=-=-=-=-
         // validate incoming parameters
@@ -527,8 +526,8 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // stub for ops that the native plug does 
     // not need to support 
-    eirods::error native_auth_agent_verify(
-        eirods::auth_plugin_context& _ctx,
+    irods::error native_auth_agent_verify(
+        irods::auth_plugin_context& _ctx,
         const char* _a,
         const char* _b,
         const char* _c ) {
@@ -540,8 +539,8 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // stub for ops that the native plug does 
     // not need to support 
-    eirods::error native_auth_success_stub( 
-        eirods::auth_plugin_context& _ctx ) {
+    irods::error native_auth_success_stub( 
+        irods::auth_plugin_context& _ctx ) {
         return SUCCESS();
 
     } // native_auth_success_stub
@@ -550,12 +549,12 @@ extern "C" {
     // derive a new native_auth auth plugin from
     // the auth plugin base class for handling
     // native authentication
-    class native_auth_plugin : public eirods::auth {
+    class native_auth_plugin : public irods::auth {
     public:
         native_auth_plugin( 
             const std::string& _nm, 
             const std::string& _ctx ) :
-            eirods::auth( 
+            irods::auth( 
                 _nm, 
                 _ctx ) {
         } // ctor
@@ -567,7 +566,7 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // factory function to provide instance of the plugin
-    eirods::auth* plugin_factory( 
+    irods::auth* plugin_factory( 
         const std::string& _inst_name, 
         const std::string& _context ) {
         // =-=-=-=-=-=-=-
@@ -583,18 +582,18 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // fill in the operation table mapping call 
         // names to function names
-        nat->add_operation( eirods::AUTH_CLIENT_START,         "native_auth_client_start" );
-        nat->add_operation( eirods::AUTH_AGENT_START,          "native_auth_success_stub" );
-        nat->add_operation( eirods::AUTH_ESTABLISH_CONTEXT,    "native_auth_establish_context" );
-        nat->add_operation( eirods::AUTH_CLIENT_AUTH_REQUEST,  "native_auth_client_request" );
-        nat->add_operation( eirods::AUTH_AGENT_AUTH_REQUEST,   "native_auth_agent_request" );
-        nat->add_operation( eirods::AUTH_CLIENT_AUTH_RESPONSE, "native_auth_client_response" );
-        nat->add_operation( eirods::AUTH_AGENT_AUTH_RESPONSE,  "native_auth_agent_response" );
-        nat->add_operation( eirods::AUTH_AGENT_AUTH_VERIFY,    "native_auth_agent_verify" );
+        nat->add_operation( irods::AUTH_CLIENT_START,         "native_auth_client_start" );
+        nat->add_operation( irods::AUTH_AGENT_START,          "native_auth_success_stub" );
+        nat->add_operation( irods::AUTH_ESTABLISH_CONTEXT,    "native_auth_establish_context" );
+        nat->add_operation( irods::AUTH_CLIENT_AUTH_REQUEST,  "native_auth_client_request" );
+        nat->add_operation( irods::AUTH_AGENT_AUTH_REQUEST,   "native_auth_agent_request" );
+        nat->add_operation( irods::AUTH_CLIENT_AUTH_RESPONSE, "native_auth_client_response" );
+        nat->add_operation( irods::AUTH_AGENT_AUTH_RESPONSE,  "native_auth_agent_response" );
+        nat->add_operation( irods::AUTH_AGENT_AUTH_VERIFY,    "native_auth_agent_verify" );
 
-        eirods::auth* auth = dynamic_cast< eirods::auth* >( nat );
+        irods::auth* auth = dynamic_cast< irods::auth* >( nat );
         if( !auth ) {
-            rodsLog( LOG_ERROR, "failed to dynamic cast to eirods::auth*" );
+            rodsLog( LOG_ERROR, "failed to dynamic cast to irods::auth*" );
         }
 
         return auth;

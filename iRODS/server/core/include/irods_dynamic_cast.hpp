@@ -1,15 +1,14 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
-#ifndef __EIRODS_DYNAMIC_CAST_H__
-#define __EIRODS_DYNAMIC_CAST_H__
+#ifndef __IRODS_DYNAMIC_CAST_HPP__
+#define __IRODS_DYNAMIC_CAST_HPP__
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_file_object.hpp"
-#include "eirods_collection_object.hpp"
-#include "eirods_structured_object.hpp"
+#include "irods_file_object.hpp"
+#include "irods_collection_object.hpp"
+#include "irods_structured_object.hpp"
 
-namespace eirods {
+namespace irods {
 
     // =-=-=-=-=-=-=-=-
     // FIXME :: this is an unholy work around discovered due to an issue
@@ -41,7 +40,7 @@ namespace eirods {
 
     } // dynamic_cast_hack
 
-}; // namespace eirods
+}; // namespace irods
 
-#endif // __EIRODS_DYNAMIC_CAST_H__
+#endif // __IRODS_DYNAMIC_CAST_HPP__
 

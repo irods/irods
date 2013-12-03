@@ -47,7 +47,7 @@ extern "C" {
  *   dataObjInp_t *dataObjInp - generic dataObj input. Relevant items are:
  *      objPath - the path of the data object to be moved.
  *      condInput - condition input (optional).
- *	    IRODS_ADMIN_KW - Admin moving other users' files.
+ *	    ADMIN_KW - Admin moving other users' files.
  *          REPL_NUM_KW  - "value" = The replica number of the copy to
  *              be moved.
  *	    RESC_NAME_KW - "value" = The resource of the physical data to 

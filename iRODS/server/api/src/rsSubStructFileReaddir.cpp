@@ -5,8 +5,7 @@
 #include "dataObjOpr.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_structured_object.hpp"
+#include "irods_structured_object.hpp"
 
 int
 rsSubStructFileReaddir (rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFileReaddirInp,
@@ -70,28 +69,28 @@ int _rsSubStructFileReaddir( rsComm_t*                 _comm,
                              subStructFileFdOprInp_t*  _read_inp, 
                              rodsDirent_t **           _dirent ) {
     if( !_read_inp ) {
-        eirods::log( LOG_NOTICE, "XXXX _rsSubStructFileReaddir - null _read_inp" ); 
+        irods::log( LOG_NOTICE, "XXXX _rsSubStructFileReaddir - null _read_inp" ); 
         return -1;
     }
     
     // =-=-=-=-=-=-=-
     // create first class structured object 
-    eirods::structured_object_ptr struct_obj( 
-                                      new eirods::structured_object( 
+    irods::structured_object_ptr struct_obj( 
+                                      new irods::structured_object( 
                                            ) );
     struct_obj->comm( _comm );
-    struct_obj->resc_hier( eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE );
+    struct_obj->resc_hier( irods::LOCAL_USE_ONLY_RESOURCE );
     struct_obj->file_descriptor( _read_inp->fd );
 
     // =-=-=-=-=-=-=-
     // call abstrcated interface to read a file
-    eirods::error readdir_err = fileReaddir( _comm, struct_obj, _dirent );
+    irods::error readdir_err = fileReaddir( _comm, struct_obj, _dirent );
     if( !readdir_err.ok() ) {
         std::stringstream msg;
         msg << "failed on call to fileReaddir for [";
         msg << struct_obj->physical_path();
         msg << "]";
-        eirods::log( PASSMSG( msg.str(), readdir_err ) );
+        irods::log( PASSMSG( msg.str(), readdir_err ) );
         return readdir_err.code();
 
     } else {

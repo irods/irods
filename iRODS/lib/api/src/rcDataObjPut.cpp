@@ -15,8 +15,7 @@
 #include "oprComplete.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_client_server_negotiation.hpp"
+#include "irods_client_server_negotiation.hpp"
 
 /**
  * \fn rcDataObjPut (rcComm_t *conn, dataObjInp_t *dataObjInp, 
@@ -178,7 +177,7 @@ rcDataObjPut (rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath)
             veryVerbose = 0;
         }
 
-        if( eirods::CS_NEG_USE_SSL == conn->negotiation_results ) {
+        if( irods::CS_NEG_USE_SSL == conn->negotiation_results ) {
             // =-=-=-=-=-=-=-
             // if a secret has been negotiated then we must be using
             // encryption.  given that RBUDP is not supported in an

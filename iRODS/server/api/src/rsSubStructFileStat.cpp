@@ -5,9 +5,8 @@
 #include "dataObjOpr.hpp"
  
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_structured_object.hpp"
-#include "eirods_stacktrace.hpp"
+#include "irods_structured_object.hpp"
+#include "irods_stacktrace.hpp"
 
 
 
@@ -70,17 +69,17 @@ int _rsSubStructFileStat( rsComm_t*    _comm,
                           rodsStat_t** _stat_out ) {
     // =-=-=-=-=-=-=-
     // create first class structured object 
-    eirods::structured_object_ptr struct_obj( 
-                                      new eirods::structured_object( 
+    irods::structured_object_ptr struct_obj( 
+                                      new irods::structured_object( 
                                           *_sub_file ) );
     struct_obj->comm( _comm );
-    struct_obj->resc_hier( eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE );
+    struct_obj->resc_hier( irods::LOCAL_USE_ONLY_RESOURCE );
 
 
     // =-=-=-=-=-=-=-
     // call abstracted interface to stat
     struct stat my_stat;
-    eirods::error stat_err = fileStat( _comm, struct_obj, &my_stat );
+    irods::error stat_err = fileStat( _comm, struct_obj, &my_stat );
 
     if( !stat_err.ok() ) {
         // errors are expected
@@ -89,7 +88,7 @@ int _rsSubStructFileStat( rsComm_t*    _comm,
         msg << "_rsSubStructFileStat - failed on call to fileStat for [";
         msg << struct_obj.physical_path();
         msg << "]";
-        eirods::log( PASS( false, -1, msg.str(), stat_err ) );
+        irods::log( PASS( false, -1, msg.str(), stat_err ) );
         #endif
         return stat_err.code();
 

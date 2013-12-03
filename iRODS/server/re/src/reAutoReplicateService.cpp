@@ -591,7 +591,7 @@ static int process_single_obj(rsComm_t *conn, char *parColl, char *fileName,
          /* addKeyVal(&myDataObjInp.condInput, DEST_RESC_NAME_KW, grpRescForReplication); */
          validKwFlags = OBJ_PATH_FLAG | DEST_RESC_NAME_FLAG | NUM_THREADS_FLAG |
                         BACKUP_RESC_NAME_FLAG | RESC_NAME_FLAG | UPDATE_REPL_FLAG |
-                        REPL_NUM_FLAG | ALL_FLAG | IRODS_ADMIN_FLAG | VERIFY_CHKSUM_FLAG |
+                        REPL_NUM_FLAG | ALL_FLAG | ADMIN_FLAG | VERIFY_CHKSUM_FLAG |
                         RBUDP_TRANSFER_FLAG | RBUDP_SEND_RATE_FLAG | RBUDP_PACK_SIZE_FLAG;
          t = parseMsKeyValStrForDataObjInp(&msGrpRescStr, &myDataObjInp, DEST_RESC_NAME_KW, validKwFlags, &outBadKeyWd);
          if(t < 0)

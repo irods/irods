@@ -10,11 +10,10 @@
 #include "rsGlobalExtern.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_log.hpp"
-#include "eirods_collection_object.hpp"
-#include "eirods_resource_backport.hpp"
-#include "eirods_stacktrace.hpp"
+#include "irods_log.hpp"
+#include "irods_collection_object.hpp"
+#include "irods_resource_backport.hpp"
+#include "irods_stacktrace.hpp"
 
 int
 rsFileOpendir (rsComm_t *rsComm, fileOpendirInp_t *fileOpendirInp)
@@ -26,9 +25,9 @@ rsFileOpendir (rsComm_t *rsComm, fileOpendirInp_t *fileOpendirInp)
     void *dirPtr = NULL;
 
     //remoteFlag = resolveHost (&fileOpendirInp->addr, &rodsServerHost);
-    eirods::error ret = eirods::get_host_for_hier_string( fileOpendirInp->resc_hier_, remoteFlag, rodsServerHost );
+    irods::error ret = irods::get_host_for_hier_string( fileOpendirInp->resc_hier_, remoteFlag, rodsServerHost );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "failed in call to eirods::get_host_for_hier_string", ret ) );
+        irods::log( PASSMSG( "failed in call to irods::get_host_for_hier_string", ret ) );
         return -1;
     }
 
@@ -98,12 +97,12 @@ int _rsFileOpendir(
      
     // =-=-=-=-=-=-=-
 	// make the call to opendir via resource plugin
-    eirods::collection_object_ptr coll_obj( 
-                                      new eirods::collection_object( 
+    irods::collection_object_ptr coll_obj( 
+                                      new irods::collection_object( 
                                           _opendir_inp->dirName, 
                                           _opendir_inp->resc_hier_, 
                                           0, 0 ) );
-    eirods::error opendir_err = fileOpendir( _comm, coll_obj );
+    irods::error opendir_err = fileOpendir( _comm, coll_obj );
 
     // =-=-=-=-=-=-=-
 	// log an error, if any
@@ -112,8 +111,8 @@ int _rsFileOpendir(
 		msg << "fileOpendir failed for [";
 		msg <<_opendir_inp->dirName; 
 		msg << "]";
-		eirods::error err = PASSMSG( msg.str(), opendir_err );
-		eirods::log ( err );
+		irods::error err = PASSMSG( msg.str(), opendir_err );
+		irods::log ( err );
 	}
 
     (*_dir_ptr) = coll_obj->directory_pointer(); // JMC -- TEMPORARY 

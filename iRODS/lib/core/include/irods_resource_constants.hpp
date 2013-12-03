@@ -1,14 +1,14 @@
 
 
 
-#ifndef __EIRODS_RESOURCE_CONSTANTS_H__
-#define __EIRODS_RESOURCE_CONSTANTS_H__
+#ifndef __IRODS_RESOURCE_CONSTANTS_HPP__
+#define __IRODS_RESOURCE_CONSTANTS_HPP__
 
 // =-=-=-=-=-=-=-
 // stl includes
 #include <string>
 
-namespace eirods {
+namespace irods {
 
     // =-=-=-=-=-=-=-
     /// @brief delimiter used for parsing resource context strings
@@ -104,9 +104,9 @@ namespace eirods {
     const std::string RESOURCE_CREATE_PATH( "resource_property_create_path" );
 
 
-}; // namespace eirods
+}; // namespace irods
 
-#endif // __EIRODS_RESOURCE_CONSTANTS_H__
+#endif // __IRODS_RESOURCE_CONSTANTS_HPP__
 
 
 

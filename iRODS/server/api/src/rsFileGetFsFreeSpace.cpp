@@ -9,11 +9,10 @@
 #include "miscServerFunct.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_log.hpp"
-#include "eirods_file_object.hpp"
-#include "eirods_stacktrace.hpp"
-#include "eirods_resource_backport.hpp"
+#include "irods_log.hpp"
+#include "irods_file_object.hpp"
+#include "irods_stacktrace.hpp"
+#include "irods_resource_backport.hpp"
 
 int
 rsFileGetFsFreeSpace (rsComm_t *rsComm, 
@@ -27,9 +26,9 @@ rsFileGetFsFreeSpace (rsComm_t *rsComm,
     *fileGetFsFreeSpaceOut = NULL;
 
     //remoteFlag = resolveHost (&fileGetFsFreeSpaceInp->addr, &rodsServerHost);
-    eirods::error ret = eirods::get_host_for_hier_string( fileGetFsFreeSpaceInp->rescHier, remoteFlag, rodsServerHost );
+    irods::error ret = irods::get_host_for_hier_string( fileGetFsFreeSpaceInp->rescHier, remoteFlag, rodsServerHost );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "failed in call to eirods::get_host_for_hier_string", ret ) );
+        irods::log( PASSMSG( "failed in call to irods::get_host_for_hier_string", ret ) );
         return -1;
     }
     if (remoteFlag == LOCAL_HOST) {
@@ -97,14 +96,14 @@ int _rsFileGetFsFreeSpace(
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - Empty logical path.";
-        eirods::log(LOG_ERROR, msg.str());
+        irods::log(LOG_ERROR, msg.str());
         return -1;
     }
     
     // =-=-=-=-=-=-=-
     // make call to freespace via resource plugin
-    eirods::file_object_ptr file_obj( 
-                                new eirods::file_object( 
+    irods::file_object_ptr file_obj( 
+                                new irods::file_object( 
                                     _comm, 
                                     _freespace_inp->objPath, 
                                     _freespace_inp->fileName, 
@@ -112,7 +111,7 @@ int _rsFileGetFsFreeSpace(
                                     0, 0, 
                                     _freespace_inp->flag ) );
  
-    eirods::error free_err = fileGetFsFreeSpace( _comm, file_obj );
+    irods::error free_err = fileGetFsFreeSpace( _comm, file_obj );
     // =-=-=-=-=-=-=-
     // handle errors if any
     if( !free_err.ok() ) {
@@ -120,8 +119,8 @@ int _rsFileGetFsFreeSpace(
         msg << "fileGetFsFreeSpace failed for [";
         msg << _freespace_inp->fileName;
         msg << "]";
-        eirods::error err = PASSMSG( msg.str(), free_err );
-        eirods::log ( err );
+        irods::error err = PASSMSG( msg.str(), free_err );
+        irods::log ( err );
         return ((int) free_err.code());
     }
 

@@ -3,13 +3,13 @@
 #ifndef _children_parser_H_
 #define _children_parser_H_
 
-#include "eirods_error.hpp"
+#include "irods_error.hpp"
 
 #include <map>
 #include <utility>
 #include <string>
 
-namespace eirods {
+namespace irods {
 
 /**
  * @brief Class for managing the children string of a resource
@@ -56,6 +56,6 @@ namespace eirods {
         //std::string children_string_;
         children_map_t children_list_;
     };
-}; // namespace eirods
+}; // namespace irods
 
 #endif // _children_parser_H_

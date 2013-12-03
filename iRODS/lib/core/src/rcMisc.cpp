@@ -32,9 +32,8 @@
 #include <iostream>
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_hierarchy_parser.hpp"
-#include "eirods_stacktrace.hpp"
+#include "irods_hierarchy_parser.hpp"
+#include "irods_stacktrace.hpp"
 
 // =-=-=-=-=-=-=-
 // boost includes
@@ -2640,7 +2639,7 @@ getNextRepeatTime(char *currTime, char *delayStr, char *nextTime)
                             int status = rcDataObjUnlink (conn,& dataObjInp);
 //                            if(status < 0)
 //                            {
-// FIXME                         eirods::log( ERROR ( status, "rcDataObjUnlink failed."));
+// FIXME                         irods::log( ERROR ( status, "rcDataObjUnlink failed."));
 //                            }
                             clearKeyVal (&dataObjInp.condInput);
                         }
@@ -2652,7 +2651,7 @@ getNextRepeatTime(char *currTime, char *delayStr, char *nextTime)
                                 int status = boost::filesystem::remove(path);
                                 if(status < 0)
                                 {
-                                  eirods::log( ERROR ( status, "boost:filesystem::remove() failed."));
+                                  irods::log( ERROR ( status, "boost:filesystem::remove() failed."));
                                 }
                            }
                         }
@@ -3228,7 +3227,7 @@ getNextRepeatTime(char *currTime, char *delayStr, char *nextTime)
                         specColl->collClass = MOUNTED_COLL;
                         rstrcpy (specColl->phyPath, collInfo1, MAX_NAME_LEN);
 
-                        eirods::hierarchy_parser parse;
+                        irods::hierarchy_parser parse;
                         parse.set_string( collInfo2 );
 
                         std::string first_resc;
@@ -3302,7 +3301,7 @@ getNextRepeatTime(char *currTime, char *delayStr, char *nextTime)
 
                     len = (int) (tmpPtr2 - tmpPtr1);
 
-                    eirods::hierarchy_parser parse;
+                    irods::hierarchy_parser parse;
                     parse.set_string( tmpPtr1 );
 
                     std::string first_resc;

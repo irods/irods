@@ -3,11 +3,11 @@
 #ifndef _gsi_object_H_
 #define _gsi_object_H_
 
-#include "eirods_error.hpp"
+#include "irods_error.hpp"
 
 #include <gssapi.h>
 
-namespace eirods {
+namespace irods {
 
     // constant key for gsi auth object
     const std::string GSI_AUTH_PLUGIN("GSI");
@@ -46,6 +46,6 @@ namespace eirods {
 
     typedef boost::shared_ptr<gsi_object> gsi_object_ptr;
     
-}; // namespace eirods
+}; // namespace irods
 
 #endif // _gsi_object_H_

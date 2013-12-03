@@ -1,13 +1,13 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
-#include "eirods_children_parser.hpp"
-#include "eirods_log.hpp"
+#include "irods_children_parser.hpp"
+#include "irods_log.hpp"
 #include "rodsErrorTable.hpp"
 
 #include <sstream>
 #include <iostream>
 
-namespace eirods {
+namespace irods {
 
     children_parser::children_parser(void) {
     }
@@ -47,7 +47,7 @@ namespace eirods {
         if(itr != children_list_.end()) {
             std::stringstream msg;
             msg << "child [" << child << "] already exists";
-            ret = ERROR( EIRODS_CHILD_EXISTS, msg.str() );
+            ret = ERROR( CHILD_EXISTS, msg.str() );
         } else {
             children_list_[child] = context;
         }
@@ -61,7 +61,7 @@ namespace eirods {
         if(itr == children_list_.end()) {
             std::stringstream msg;
             msg << "child [" << child << "] not found";
-            ret = ERROR(EIRODS_CHILD_NOT_FOUND, msg.str());
+            ret = ERROR(CHILD_NOT_FOUND, msg.str());
         } else {
             children_list_.erase(itr);
         }
@@ -80,7 +80,7 @@ namespace eirods {
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - Trying to retrieve first child from children string but string appears to be empty.";
-            result = ERROR(EIRODS_CHILD_NOT_FOUND, msg.str());
+            result = ERROR(CHILD_NOT_FOUND, msg.str());
         }
         return result;
     }
@@ -91,7 +91,7 @@ namespace eirods {
     {
         error result = SUCCESS();
         if(children_list_.begin() != children_list_.end()) {
-        	eirods::children_parser::const_iterator itr = children_list_.end();
+        	irods::children_parser::const_iterator itr = children_list_.end();
         	itr--;
             _child = itr->first;
         } else {
@@ -99,7 +99,7 @@ namespace eirods {
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - Trying to retrieve last child from children string but string appears to be empty.";
-            result = ERROR(EIRODS_CHILD_NOT_FOUND, msg.str());
+            result = ERROR(CHILD_NOT_FOUND, msg.str());
         }
         return result;
     }
@@ -136,7 +136,7 @@ namespace eirods {
                     if(context_end == std::string::npos) {
                         std::stringstream msg;
                         msg << "missing matching \"}\" in child context string \"" << str << "\"";
-                        result = ERROR(EIRODS_CHILD_NOT_FOUND, msg.str());
+                        result = ERROR(CHILD_NOT_FOUND, msg.str());
                     } else {
                         context = complete_child.substr(context_start, context_end - context_start);
                     }
@@ -170,4 +170,4 @@ namespace eirods {
         return children_list_.end();
     }
 
-}; // namespace eirods
+}; // namespace irods

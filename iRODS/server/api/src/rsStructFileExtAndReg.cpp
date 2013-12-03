@@ -20,11 +20,10 @@
 #include "structFileExtAndReg.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_resource_redirect.hpp"
-#include "eirods_stacktrace.hpp"
-#include "eirods_resource_backport.hpp"
-#include "eirods_file_object.hpp"
+#include "irods_resource_redirect.hpp"
+#include "irods_stacktrace.hpp"
+#include "irods_resource_backport.hpp"
+#include "irods_file_object.hpp"
 
 int
 rsStructFileExtAndReg (rsComm_t *rsComm,
@@ -81,13 +80,13 @@ rsStructFileExtAndReg (rsComm_t *rsComm,
     int               local = LOCAL_HOST;
     rodsServerHost_t* host  =  0;
     if( getValByKey( &dataObjInp.condInput, RESC_HIER_STR_KW ) == NULL ) {
-        eirods::error ret = eirods::resource_redirect( eirods::EIRODS_OPEN_OPERATION, rsComm, 
+        irods::error ret = irods::resource_redirect( irods::OPEN_OPERATION, rsComm, 
                 &dataObjInp, hier, host, local );
         if( !ret.ok() ) { 
             std::stringstream msg;
-            msg << "rsStructFileExtAndReg :: failed in eirods::resource_redirect for [";
+            msg << "rsStructFileExtAndReg :: failed in irods::resource_redirect for [";
             msg << dataObjInp.objPath << "]";
-            eirods::log( PASSMSG( msg.str(), ret ) );
+            irods::log( PASSMSG( msg.str(), ret ) );
             return ret.code();
         }
 
@@ -112,9 +111,9 @@ rsStructFileExtAndReg (rsComm_t *rsComm,
     rescInfo = L1desc[l1descInx].dataObjInfo->rescInfo;
     rescGroupName = L1desc[l1descInx].dataObjInfo->rescGroupName;
     //remoteFlag = resolveHostByRescInfo (rescInfo, &rodsServerHost);
-    //eirods::error ret = eirods::get_host_for_hier_string( hier.c_str(), remoteFlag, rodsServerHost );
+    //irods::error ret = irods::get_host_for_hier_string( hier.c_str(), remoteFlag, rodsServerHost );
     //if( !ret.ok() ) {
-    //    eirods::log( PASSMSG( "rsStructFileExtAndReg - failed in call to eirods::get_host_for_hier_string", ret ) );
+    //    irods::log( PASSMSG( "rsStructFileExtAndReg - failed in call to irods::get_host_for_hier_string", ret ) );
     //    return -1;
     //}
 
@@ -426,19 +425,19 @@ regSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo, const char* rescHier, char *
         // =-=-=-=-=-=-=-
         // need to call modified under the covers for unbundle
         // otherwise the resource hier is not properly notified 
-        eirods::file_object_ptr file_obj(
-                                    new eirods::file_object( 
+        irods::file_object_ptr file_obj(
+                                    new irods::file_object( 
                                         rsComm, 
                                         &dataObjInfo ) );
 
-        eirods::error ret = fileModified(rsComm, file_obj);
+        irods::error ret = fileModified(rsComm, file_obj);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << " Failed to signal resource that the data object \"";
             msg << dataObjInfo.objPath;
             msg << " was modified.";
             ret = PASSMSG(msg.str(), ret);
-            eirods::log(ret);
+            irods::log(ret);
             status = ret.code();
         }
 

@@ -7,10 +7,9 @@
 #include "dataObjOpr.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_structured_object.hpp"
-#include "eirods_resource_backport.hpp"
-#include "eirods_stacktrace.hpp"
+#include "irods_structured_object.hpp"
+#include "irods_resource_backport.hpp"
+#include "irods_stacktrace.hpp"
 
 int
 rsStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
@@ -21,9 +20,9 @@ rsStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
    
     char* resc_hier =  getValByKey( &structFileOprInp->condInput, RESC_HIER_STR_KW );
     if( resc_hier != NULL ) {
-        eirods::error ret = eirods::get_host_for_hier_string( resc_hier, remoteFlag, rodsServerHost );
+        irods::error ret = irods::get_host_for_hier_string( resc_hier, remoteFlag, rodsServerHost );
         if( !ret.ok() ) {
-            eirods::log( PASSMSG( "failed in call to eirods::get_host_for_hier_string", ret ) );
+            irods::log( PASSMSG( "failed in call to irods::get_host_for_hier_string", ret ) );
             return -1;
         }
     } else {
@@ -84,15 +83,15 @@ int _rsStructFileSync( rsComm_t*           _comm,
     // =-=-=-=-=-=-=-
     // create a structured fco and resolve a resource plugin
     // to handle the extract process
-    eirods::structured_object_ptr struct_obj( 
-                                      new eirods::structured_object( 
+    irods::structured_object_ptr struct_obj( 
+                                      new irods::structured_object( 
                                            ) );
     struct_obj->spec_coll( _struct_inp->specColl );
     struct_obj->addr( _struct_inp->addr );
     struct_obj->flags( _struct_inp->flags );
     struct_obj->comm( _comm );
     struct_obj->opr_type( _struct_inp->oprType );
-    struct_obj->resc_hier( eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE );
+    struct_obj->resc_hier( irods::LOCAL_USE_ONLY_RESOURCE );
 
     // =-=-=-=-=-=-=-
     // cache data type for selection of tasty compression options
@@ -103,15 +102,15 @@ int _rsStructFileSync( rsComm_t*           _comm,
 
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the object
-    eirods::plugin_ptr ptr;
-    eirods::error ret_err = struct_obj->resolve( eirods::RESOURCE_INTERFACE, ptr ); 
+    irods::plugin_ptr ptr;
+    irods::error ret_err = struct_obj->resolve( irods::RESOURCE_INTERFACE, ptr ); 
     if( !ret_err.ok() ) {
-        eirods::error err = PASSMSG( "failed to resolve resource", ret_err );
-        eirods::log( err );
+        irods::error err = PASSMSG( "failed to resolve resource", ret_err );
+        irods::log( err );
         return ret_err.code();
     }
     
-    eirods::resource_ptr resc = boost::dynamic_pointer_cast< eirods::resource >( ptr );
+    irods::resource_ptr resc = boost::dynamic_pointer_cast< irods::resource >( ptr );
  
     // =-=-=-=-=-=-=-
     // make the call to the "extract" interface
@@ -120,8 +119,8 @@ int _rsStructFileSync( rsComm_t*           _comm,
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
     if( !ret_err.ok() ) {
-        eirods::error err = PASSMSG( "failed to call 'sync'", ret_err );
-        eirods::log( err );
+        irods::error err = PASSMSG( "failed to call 'sync'", ret_err );
+        irods::log( err );
         return ret_err.code();
     } else {
         return ret_err.code();

@@ -1,7 +1,7 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
-#ifndef __EIRODS_FILE_OBJECT_H__
-#define __EIRODS_FILE_OBJECT_H__
+#ifndef __IRODS_FILE_OBJECT_HPP__
+#define __IRODS_FILE_OBJECT_HPP__
 
 // =-=-=-=-=-=-=-
 // irods includes
@@ -9,15 +9,14 @@
 #include "initServer.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_data_object.hpp"
-#include "eirods_physical_object.hpp"
+#include "irods_data_object.hpp"
+#include "irods_physical_object.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
 #include <vector>
 
-namespace eirods {
+namespace irods {
 
     class file_object : public data_object {
     public:
@@ -115,7 +114,7 @@ namespace eirods {
                                dataObjInp_t*,     // incoming data object request struct
                                file_object_ptr ); // out var for file object
     // =-=-=-=-=-=-=-
-    // function which will inform eirods as to which server to select for a given operation
+    // function which will inform irods as to which server to select for a given operation
     error resource_redirect( const std::string&,   // operation in question
                              rsComm_t*,            // server network connection  
                              dataObjInp_t*,        // incoming data object request struct
@@ -123,9 +122,9 @@ namespace eirods {
                              rodsServerHost_t*&,   // svr2svr conn if redirecting
                              int& );               // local / remote flag
 
-}; // namespace eirods
+}; // namespace irods
 
-#endif // __EIRODS_FILE_OBJECT_H__
+#endif // __IRODS_FILE_OBJECT_HPP__
 
 
 

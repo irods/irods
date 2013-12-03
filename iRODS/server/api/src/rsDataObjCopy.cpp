@@ -19,8 +19,7 @@
 #include "getRemoteZoneResc.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_resource_redirect.hpp"
+#include "irods_resource_redirect.hpp"
 
 int
 rsDataObjCopy250 (rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
@@ -73,13 +72,13 @@ rsDataObjCopy (rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
     // pre-determine hier strings for the source 
     if(getValByKey(&srcDataObjInp->condInput, RESC_HIER_STR_KW) == NULL) {
         std::string hier;
-        eirods::error ret = eirods::resolve_resource_hierarchy( eirods::EIRODS_OPEN_OPERATION, rsComm, 
+        irods::error ret = irods::resolve_resource_hierarchy( irods::OPEN_OPERATION, rsComm, 
                                                                 srcDataObjInp, hier );
         if( !ret.ok() ) { 
             std::stringstream msg;
-            msg << "rsDataObjCopy :: failed in eirods::resolve_resource_hierarchy for [";
+            msg << "rsDataObjCopy :: failed in irods::resolve_resource_hierarchy for [";
             msg << srcDataObjInp->objPath << "]";
-            eirods::log( PASSMSG( msg.str(), ret ) );
+            irods::log( PASSMSG( msg.str(), ret ) );
             return ret.code();
         }
    
@@ -92,13 +91,13 @@ rsDataObjCopy (rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
     // determine the hier string for the dest data obj inp
     if(getValByKey(&destDataObjInp->condInput, RESC_HIER_STR_KW) == NULL) {
         std::string hier;
-        eirods::error ret = eirods::resolve_resource_hierarchy( eirods::EIRODS_CREATE_OPERATION, rsComm, 
+        irods::error ret = irods::resolve_resource_hierarchy( irods::CREATE_OPERATION, rsComm, 
                                                                 destDataObjInp, hier );
         if( !ret.ok() ) { 
             std::stringstream msg;
-            msg << "rsDataObjCopy :: failed in eirods::resolve_resource_hierarchy for [";
+            msg << "rsDataObjCopy :: failed in irods::resolve_resource_hierarchy for [";
             msg << destDataObjInp->objPath << "]";
-            eirods::log( PASSMSG( msg.str(), ret ) );
+            irods::log( PASSMSG( msg.str(), ret ) );
             return ret.code();
         }
    
@@ -135,7 +134,7 @@ rsDataObjCopy (rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
         msg << srcDataObjInp->objPath;
         msg << "\" - ";
         msg << rods_error << " " << sys_error;
-        eirods::log(LOG_ERROR, msg.str());
+        irods::log(LOG_ERROR, msg.str());
         return srcL1descInx;
     }
 
@@ -179,7 +178,7 @@ rsDataObjCopy (rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
         msg << destDataObjInp->objPath;
         msg << "\" - ";
         msg << rods_error << " " << sys_error;
-        eirods::log(LOG_ERROR, msg.str());
+        irods::log(LOG_ERROR, msg.str());
         return (destL1descInx);
     }
 

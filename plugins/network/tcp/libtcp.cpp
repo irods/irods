@@ -8,11 +8,10 @@
 #include "rcConnect.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_network_plugin.hpp"
-#include "eirods_network_constants.hpp"
-#include "eirods_tcp_object.hpp"
-#include "eirods_stacktrace.hpp"
+#include "irods_network_plugin.hpp"
+#include "irods_network_constants.hpp"
+#include "irods_tcp_object.hpp"
+#include "irods_stacktrace.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -23,7 +22,7 @@
 extern "C" {
     // =-=-=-=-=-=-=-
     // local function to read a buffer from a socket
-    eirods::error tcp_socket_read(
+    irods::error tcp_socket_read(
         int             _socket, 
         void*           _buffer, 
         int             _length, 
@@ -118,7 +117,7 @@ extern "C" {
     
     // =-=-=-=-=-=-=-
     // local function to write a buffer to a socket
-    eirods::error tcp_socket_write(
+    irods::error tcp_socket_write(
         int   _socket, 
         void* _buffer, 
         int   _length, 
@@ -169,44 +168,44 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // 
-    eirods::error tcp_start( 
-        eirods::plugin_context& _ctx ) { 
+    irods::error tcp_start( 
+        irods::plugin_context& _ctx ) { 
         return SUCCESS();
 
     } // tcp_start
 
     // =-=-=-=-=-=-=-
     // 
-    eirods::error tcp_end( 
-        eirods::plugin_context& _ctx ) { 
+    irods::error tcp_end( 
+        irods::plugin_context& _ctx ) { 
         return SUCCESS();
 
     } // tcp_end
 
     // =-=-=-=-=-=-=-
     // 
-    eirods::error tcp_shutdown( 
-        eirods::plugin_context& _ctx ) { 
+    irods::error tcp_shutdown( 
+        irods::plugin_context& _ctx ) { 
         return SUCCESS();
 
     } // tcp_end
 
     // =-=-=-=-=-=-=-
     // 
-    eirods::error tcp_read_msg_header( 
-        eirods::plugin_context& _ctx,
+    irods::error tcp_read_msg_header( 
+        irods::plugin_context& _ctx,
         void*                   _buffer,
         struct timeval*         _time_val ) {
         // =-=-=-=-=-=-=-
         // check the context
-        eirods::error ret = _ctx.valid< eirods::tcp_object >();
+        irods::error ret = _ctx.valid< irods::tcp_object >();
         if( !ret.ok() ) {
             return PASS( ret ); 
         }
 
         // =-=-=-=-=-=-=-
         // extract the useful bits from the context
-        eirods::tcp_object_ptr tcp = boost::dynamic_pointer_cast< eirods::tcp_object >( _ctx.fco() );
+        irods::tcp_object_ptr tcp = boost::dynamic_pointer_cast< irods::tcp_object >( _ctx.fco() );
         int socket_handle = tcp->socket_handle();
 
         // =-=-=-=-=-=-=- 
@@ -290,12 +289,12 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // 
-    eirods::error tcp_write_msg_header( 
-        eirods::plugin_context& _ctx,
+    irods::error tcp_write_msg_header( 
+        irods::plugin_context& _ctx,
         bytesBuf_t*             _header ) {
         // =-=-=-=-=-=-=-
         // check the context
-        eirods::error ret = _ctx.valid< eirods::tcp_object >();
+        irods::error ret = _ctx.valid< irods::tcp_object >();
         if( !ret.ok() ) {
             return PASS( ret ); 
         }
@@ -310,7 +309,7 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // extract the useful bits from the context
-        eirods::tcp_object_ptr tcp = boost::dynamic_pointer_cast< eirods::tcp_object >( _ctx.fco() );
+        irods::tcp_object_ptr tcp = boost::dynamic_pointer_cast< irods::tcp_object >( _ctx.fco() );
         int socket_handle = tcp->socket_handle();
 
         // =-=-=-=-=-=-=-
@@ -358,8 +357,8 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // 
-    eirods::error tcp_send_rods_msg( 
-        eirods::plugin_context& _ctx,
+    irods::error tcp_send_rods_msg( 
+        irods::plugin_context& _ctx,
         char*                   _msg_type,
         bytesBuf_t*             _msg_buf,
         bytesBuf_t*             _stream_bbuf,
@@ -368,7 +367,7 @@ extern "C" {
         irodsProt_t             _protocol ) {
         // =-=-=-=-=-=-=-
         // check the context
-        eirods::error ret = _ctx.valid< eirods::tcp_object >();
+        irods::error ret = _ctx.valid< irods::tcp_object >();
         if( !ret.ok() ) {
             return PASS( ret ); 
         }
@@ -382,7 +381,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // extract the useful bits from the context
-        eirods::tcp_object_ptr tcp = boost::dynamic_pointer_cast< eirods::tcp_object >( _ctx.fco() );
+        irods::tcp_object_ptr tcp = boost::dynamic_pointer_cast< irods::tcp_object >( _ctx.fco() );
         int socket_handle = tcp->socket_handle();
 
         // =-=-=-=-=-=-=-
@@ -478,7 +477,7 @@ extern "C" {
     
     // =-=-=-=-=-=-=-
     // helper fcn to read a bytes buf
-    eirods::error read_bytes_buf( 
+    irods::error read_bytes_buf( 
         int             _socket_handle,
         int             _length,
         bytesBuf_t*     _buffer,
@@ -495,7 +494,7 @@ extern "C" {
         // allocate and read buffer
         int bytes_read = 0;
         _buffer->buf = malloc( _length );
-        eirods::error ret = tcp_socket_read( 
+        irods::error ret = tcp_socket_read( 
                                 _socket_handle, 
                                 _buffer->buf,
                                 _length,
@@ -533,8 +532,8 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // read a message body off of the socket
-    eirods::error tcp_read_msg_body( 
-        eirods::plugin_context& _ctx,
+    irods::error tcp_read_msg_body( 
+        irods::plugin_context& _ctx,
         msgHeader_t*            _header,
         bytesBuf_t*             _input_struct_buf,
         bytesBuf_t*             _bs_buf,
@@ -543,14 +542,14 @@ extern "C" {
         struct timeval*         _time_val ) { 
         // =-=-=-=-=-=-=-
         // check the context
-        eirods::error ret = _ctx.valid< eirods::tcp_object >();
+        irods::error ret = _ctx.valid< irods::tcp_object >();
         if( !ret.ok() ) {
             return PASS( ret ); 
         }
 
         // =-=-=-=-=-=-=-
         // extract the useful bits from the context
-        eirods::tcp_object_ptr tcp = boost::dynamic_pointer_cast< eirods::tcp_object >( _ctx.fco() );
+        irods::tcp_object_ptr tcp = boost::dynamic_pointer_cast< irods::tcp_object >( _ctx.fco() );
         int socket_handle = tcp->socket_handle();
 
         // =-=-=-=-=-=-=-
@@ -639,8 +638,8 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // stub for ops that the tcp plug does 
     // not need to support - accept etc
-    eirods::error tcp_success_stub( 
-        eirods::plugin_context& _ctx ) {
+    irods::error tcp_success_stub( 
+        irods::plugin_context& _ctx ) {
         return SUCCESS();
 
     } // tcp_success_stub
@@ -650,12 +649,12 @@ extern "C" {
     // derive a new tcp network plugin from
     // the network plugin base class for handling
     // tcp communications
-    class tcp_network_plugin : public eirods::network {
+    class tcp_network_plugin : public irods::network {
     public:
         tcp_network_plugin( 
            const std::string& _nm, 
            const std::string& _ctx ) :
-               eirods::network( 
+               irods::network( 
                    _nm, 
                    _ctx ) {
         } // ctor
@@ -669,7 +668,7 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // factory function to provide instance of the plugin
-    eirods::network* plugin_factory( 
+    irods::network* plugin_factory( 
         const std::string& _inst_name, 
         const std::string& _context ) {
         // =-=-=-=-=-=-=-
@@ -685,18 +684,18 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // fill in the operation table mapping call 
         // names to function names
-        tcp->add_operation( eirods::NETWORK_OP_CLIENT_START, "tcp_success_stub"     );
-        tcp->add_operation( eirods::NETWORK_OP_CLIENT_STOP,  "tcp_success_stub"     );
-        tcp->add_operation( eirods::NETWORK_OP_AGENT_START,  "tcp_success_stub"     );
-        tcp->add_operation( eirods::NETWORK_OP_AGENT_STOP,   "tcp_success_stub"     );
-        tcp->add_operation( eirods::NETWORK_OP_READ_HEADER,  "tcp_read_msg_header"  );
-        tcp->add_operation( eirods::NETWORK_OP_READ_BODY,    "tcp_read_msg_body"    );
-        tcp->add_operation( eirods::NETWORK_OP_WRITE_HEADER, "tcp_write_msg_header" );
-        tcp->add_operation( eirods::NETWORK_OP_WRITE_BODY,   "tcp_send_rods_msg"    );
+        tcp->add_operation( irods::NETWORK_OP_CLIENT_START, "tcp_success_stub"     );
+        tcp->add_operation( irods::NETWORK_OP_CLIENT_STOP,  "tcp_success_stub"     );
+        tcp->add_operation( irods::NETWORK_OP_AGENT_START,  "tcp_success_stub"     );
+        tcp->add_operation( irods::NETWORK_OP_AGENT_STOP,   "tcp_success_stub"     );
+        tcp->add_operation( irods::NETWORK_OP_READ_HEADER,  "tcp_read_msg_header"  );
+        tcp->add_operation( irods::NETWORK_OP_READ_BODY,    "tcp_read_msg_body"    );
+        tcp->add_operation( irods::NETWORK_OP_WRITE_HEADER, "tcp_write_msg_header" );
+        tcp->add_operation( irods::NETWORK_OP_WRITE_BODY,   "tcp_send_rods_msg"    );
 
-        eirods::network* net = dynamic_cast< eirods::network* >( tcp );
+        irods::network* net = dynamic_cast< irods::network* >( tcp );
         if( !net ) {
-            rodsLog( LOG_ERROR, "failed to dynamic cast to eirods::network*" );
+            rodsLog( LOG_ERROR, "failed to dynamic cast to irods::network*" );
         }
 
         return net;

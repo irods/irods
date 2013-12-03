@@ -2,19 +2,18 @@
 
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_plugin_base.hpp"
+#include "irods_plugin_base.hpp"
 
 extern "C" {
     /// =-=-=-=-=-=-=-
     /// @brief definition of plugin interface version
     double get_plugin_interface_version() {
-        static const double EIRODS_PLUGIN_INTERFACE_VERSION = 1.0;
-        return EIRODS_PLUGIN_INTERFACE_VERSION;
+        static const double PLUGIN_INTERFACE_VERSION = 1.0;
+        return PLUGIN_INTERFACE_VERSION;
     }
 }
 
-namespace eirods {
+namespace irods {
     // =-=-=-=-=-=-=-
     // public - constructor
     plugin_base::plugin_base( 
@@ -54,7 +53,7 @@ namespace eirods {
     // =-=-=-=-=-=-=-
     // public - default implementation
     error plugin_base::post_disconnect_maintenance_operation( pdmo_type& _op ) {
-       return ERROR( EIRODS_NO_PDMO_DEFINED, "no defined operation" );
+       return ERROR( NO_PDMO_DEFINED, "no defined operation" );
 
     } // post_disconnect_maintenance_operation
 
@@ -105,7 +104,7 @@ namespace eirods {
 
     } // enumerate_operations
 
-}; // namespace eirods
+}; // namespace irods
 
 
 

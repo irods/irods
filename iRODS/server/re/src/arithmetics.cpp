@@ -18,8 +18,8 @@
 
 
 
-//	#include "eirods_ms_plugin.hpp"
-//	extern eirods::ms_table MicrosTable;
+//	#include "irods_ms_plugin.hpp"
+//	extern irods::ms_table MicrosTable;
 //	extern int NumOfAction;
 
 #define RE_ERROR(x, y) if(x) {if((y)!=NULL){(y)->type.t=RE_ERROR;*errnode=node;}return;}
@@ -799,7 +799,7 @@ Res* execAction3(char *actionName, Res** args, unsigned int nargs, int applyAllR
         
         // =-=-=-=-=-=-=-
         // didnt find a rule, try a msvc 
-        eirods::ms_table_entry ms_entry;
+        irods::ms_table_entry ms_entry;
         int actionInx = actionTableLookUp( ms_entry, action );
         if ( actionInx >= 0 ) { /* rule */
  
@@ -830,7 +830,7 @@ Res* execMicroService3 (char *msName, Res **args, unsigned int nargs, Node *node
     Res *res;
 
 	/* look up the micro service */
-	eirods::ms_table_entry ms_entry;
+	irods::ms_table_entry ms_entry;
     actionInx = actionTableLookUp( ms_entry, msName );
 
     char errbuf[ERR_MSG_LEN];

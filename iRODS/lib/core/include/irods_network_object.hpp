@@ -1,12 +1,11 @@
 
 
 
-#ifndef __EIRODS_NETWORK_OBJECT_H__
-#define __EIRODS_NETWORK_OBJECT_H__
+#ifndef __IRODS_NETWORK_OBJECT_HPP__
+#define __IRODS_NETWORK_OBJECT_HPP__
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_first_class_object.hpp"
+#include "irods_first_class_object.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
@@ -16,7 +15,7 @@
 // boost includes
 #include <boost/shared_ptr.hpp>
 
-namespace eirods {
+namespace irods {
     // =-=-=-=-=-=-=-
     // network object base class
     class network_object : public first_class_object {
@@ -77,9 +76,9 @@ namespace eirods {
     // helpful typedef for sock comm interface & factory
     typedef boost::shared_ptr< network_object > network_object_ptr;
 
-}; // namespace eirods
+}; // namespace irods
 
-#endif // __EIRODS_NETWORK_OBJECT_H__
+#endif // __IRODS_NETWORK_OBJECT_HPP__
 
 
 

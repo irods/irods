@@ -9,11 +9,10 @@
 #include "miscServerFunct.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_log.hpp"
-#include "eirods_file_object.hpp"
-#include "eirods_stacktrace.hpp"
-#include "eirods_resource_backport.hpp"
+#include "irods_log.hpp"
+#include "irods_file_object.hpp"
+#include "irods_stacktrace.hpp"
+#include "irods_resource_backport.hpp"
 
 #define SVR_MD5_BUF_SZ (1024*1024)
 
@@ -28,9 +27,9 @@ rsFileChksum (
     int status;
 
     //remoteFlag = resolveHost (&fileChksumInp->addr, &rodsServerHost);
-    eirods::error ret = eirods::get_host_for_hier_string( fileChksumInp->rescHier, remoteFlag, rodsServerHost );
+    irods::error ret = irods::get_host_for_hier_string( fileChksumInp->rescHier, remoteFlag, rodsServerHost );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "failed in call to eirods::get_host_for_hier_string", ret ) );
+        irods::log( PASSMSG( "failed in call to irods::get_host_for_hier_string", ret ) );
         return -1;
     }
 
@@ -125,28 +124,28 @@ int fileChksum (
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - Empty logical path.";
-        eirods::log(LOG_ERROR, msg.str());
+        irods::log(LOG_ERROR, msg.str());
         return -1;
     }
     
     // =-=-=-=-=-=-=-
     // call resource plugin to open file
-    eirods::file_object_ptr file_obj( 
-                                new eirods::file_object( 
+    irods::file_object_ptr file_obj( 
+                                new irods::file_object( 
                                     rsComm, 
                                     objPath, 
                                     fileName, 
                                     rescHier, 
                                     -1, 0, O_RDONLY ) ); // FIXME :: hack until this is better abstracted - JMC
-    eirods::error ret = fileOpen( rsComm, file_obj );
+    irods::error ret = fileOpen( rsComm, file_obj );
     if( !ret.ok() ) {
-        if(ret.code() != EIRODS_DIRECT_ARCHIVE_ACCESS) {
+        if(ret.code() != DIRECT_ARCHIVE_ACCESS) {
             status = UNIX_FILE_OPEN_ERR - errno;
             std::stringstream msg;
             msg << "fileOpen failed for [";
             msg << fileName;
             msg << "]";
-            eirods::log( PASSMSG( msg.str(), ret ) );
+            irods::log( PASSMSG( msg.str(), ret ) );
         } else {
             status = ret.code();
         }
@@ -155,7 +154,7 @@ int fileChksum (
 
     MD5Init (&context);
 
-    eirods::error read_err = fileRead( rsComm, file_obj, buffer, SVR_MD5_BUF_SZ );      
+    irods::error read_err = fileRead( rsComm, file_obj, buffer, SVR_MD5_BUF_SZ );      
     bytes_read = read_err.code();
 
     while( read_err.ok() && bytes_read > 0 ) {
@@ -174,8 +173,8 @@ int fileChksum (
             msg << " - Failed to read buffer from file: \"";
             msg << fileName;
             msg << "\"";
-            eirods::error result = PASSMSG(msg.str(), ret);
-            eirods::log(result);
+            irods::error result = PASSMSG(msg.str(), ret);
+            irods::log(result);
             return result.code();
         }
 
@@ -185,8 +184,8 @@ int fileChksum (
 
     ret = fileClose( rsComm, file_obj );
     if( !ret.ok() ) {
-        eirods::error err = PASSMSG( "error on close", ret );
-        eirods::log( err );
+        irods::error err = PASSMSG( "error on close", ret );
+        irods::log( err );
     }
 
     md5ToStr (digest, chksumStr);

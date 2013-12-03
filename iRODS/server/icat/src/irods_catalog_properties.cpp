@@ -6,16 +6,15 @@
  */
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_error.hpp"
-#include "eirods_catalog_properties.hpp"
+#include "irods_error.hpp"
+#include "irods_catalog_properties.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
 #include "icatHighLevelRoutines.hpp"
 #include "icatMidLevelRoutines.hpp"
 
-namespace eirods {
+namespace irods {
 
 	// Access singleton through its getInstance() method
 	catalog_properties& catalog_properties::getInstance() {
@@ -33,7 +32,7 @@ namespace eirods {
 		std::string prop_name, prop_setting; // property name and setting
 
 		int i, status = 0;
-		eirods::error result = SUCCESS();
+		irods::error result = SUCCESS();
 
 #if ORA_ICAT
 		return ERROR(SYS_NOT_IMPLEMENTED, "Capturing catalog properties is not available for Oracle");
@@ -96,7 +95,7 @@ namespace eirods {
 	} // catalog_properties::capture()
 
 
-} // namespace eirods
+} // namespace irods
 
 
 

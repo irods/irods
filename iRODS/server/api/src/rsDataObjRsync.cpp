@@ -10,7 +10,7 @@
 #include "modDataObjMeta.hpp"
 #include "getRemoteZoneResc.hpp"
 
-#include "eirods_resource_redirect.hpp"
+#include "irods_resource_redirect.hpp"
 
 int
 rsDataObjRsync (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
@@ -44,7 +44,7 @@ rsDataObjRsync (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     resolveLinkedPath (rsComm, dataObjInp->objPath, &specCollCache,
                        &dataObjInp->condInput);
-    if (strcmp (rsyncMode, IRODS_TO_IRODS) == 0) {
+    if (strcmp (rsyncMode, TO_IRODS) == 0) {
         if (isLocalZone (dataObjInp->objPath) == 0) {
             dataObjInp_t myDataObjInp;
             char *destObjPath;
@@ -98,11 +98,11 @@ rsDataObjRsync (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         return status;
     }
 
-    if (strcmp (rsyncMode, IRODS_TO_LOCAL) == 0) {
+    if (strcmp (rsyncMode, TO_LOCAL) == 0) {
         status = rsRsyncFileToData (rsComm, dataObjInp);
     } else if (strcmp (rsyncMode, LOCAL_TO_IRODS) == 0) { 
         status = rsRsyncDataToFile (rsComm, dataObjInp);
-    } else if (strcmp (rsyncMode, IRODS_TO_IRODS) == 0) {
+    } else if (strcmp (rsyncMode, TO_IRODS) == 0) {
         status = rsRsyncDataToData (rsComm, dataObjInp);
     } else {
         rodsLog (LOG_ERROR, 
@@ -200,14 +200,14 @@ rsRsyncFileToData (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     // determine the resource hierarchy if one is not provided
     if( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
         std::string       hier;
-        eirods::error ret = eirods::resolve_resource_hierarchy( eirods::EIRODS_OPEN_OPERATION, 
+        irods::error ret = irods::resolve_resource_hierarchy( irods::OPEN_OPERATION, 
                                                                 rsComm, dataObjInp, hier );
         if( !ret.ok() ) { 
             std::stringstream msg;
             msg << __FUNCTION__;
-            msg << " :: failed in eirods::resolve_resource_hierarchy for [";
+            msg << " :: failed in irods::resolve_resource_hierarchy for [";
             msg << dataObjInp->objPath << "]";
-            eirods::log( PASSMSG( msg.str(), ret ) );
+            irods::log( PASSMSG( msg.str(), ret ) );
             return ret.code();
         }
            

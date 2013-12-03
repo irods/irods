@@ -17,9 +17,8 @@
 #include "apiHeaderAll.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_client_server_negotiation.hpp"
-#include "eirods_stacktrace.hpp"
+#include "irods_client_server_negotiation.hpp"
+#include "irods_stacktrace.hpp"
 
 /**
  * \fn rcDataObjGet (rcComm_t *conn, dataObjInp_t *dataObjInp,
@@ -160,7 +159,7 @@ rcDataObjGet (rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath)
         // if a secret has been negotiated then we must be using
         // encryption.  given that RBUDP is not supported in an
         // encrypted capacity this is considered an error
-        if( eirods::CS_NEG_USE_SSL == conn->negotiation_results ) {
+        if( irods::CS_NEG_USE_SSL == conn->negotiation_results ) {
             rodsLog( 
                 LOG_ERROR,
                 "getFileToPortal: Encryption is not supported with RBUDP" );

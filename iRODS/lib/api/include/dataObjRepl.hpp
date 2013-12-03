@@ -104,7 +104,7 @@ extern "C" {
  *              copy. (optional)
  *          RESC_NAME_KW - "value" = The source Resource (optional). 
  *          DEST_RESC_NAME_KW - "value" = The destination Resource. 
- *          IRODS_ADMIN_KW - Admin removing other users' files. Only files
+ *          ADMIN_KW - Admin removing other users' files. Only files
  *              in trash can be removed.
  *          BACKUP_RESC_NAME_KW - backup resource (backup mode).
  *   return value - The status of the operation.

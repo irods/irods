@@ -42,10 +42,10 @@ typedef struct rodsServerConfig {
 
     // =-=-=-=-=-=-=-
     // agent side pam configuration
-    bool   eirods_pam_auth_no_extend;
-    size_t eirods_pam_password_len;  
-    char   eirods_pam_password_min_time[ NAME_LEN ];
-    char   eirods_pam_password_max_time[ NAME_LEN ];
+    bool   irods_pam_auth_no_extend;
+    size_t irods_pam_password_len;
+    char   irods_pam_password_min_time[ NAME_LEN ];
+    char   irods_pam_password_max_time[ NAME_LEN ];
 
 } rodsServerConfig_t;
 

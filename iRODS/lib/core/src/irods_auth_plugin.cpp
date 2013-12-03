@@ -1,18 +1,18 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 
-#include "eirods_auth_plugin.hpp"
-#include "eirods_load_plugin.hpp"
-#include "eirods_auth_home.hpp"
+#include "irods_auth_plugin.hpp"
+#include "irods_load_plugin.hpp"
+#include "irods_auth_home.hpp"
 
-namespace eirods {
+namespace irods {
 
     auth::auth(
         const std::string& _inst,
         const std::string& _ctx) :
         plugin_base(_inst, _ctx),
-        start_operation_(eirods::auth::default_start_operation),
-        stop_operation_(eirods::auth::default_stop_operation)
+        start_operation_(irods::auth::default_start_operation),
+        stop_operation_(irods::auth::default_stop_operation)
     {
         
     }
@@ -143,7 +143,7 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // call generic plugin loader        
         auth* ath = 0;
-        error ret = load_plugin< auth >(ath, _plugin_name, EIRODS_AUTH_HOME, _inst_name, _context );
+        error ret = load_plugin< auth >(ath, _plugin_name, AUTH_HOME, _inst_name, _context );
         if((result = ASSERT_PASS(ret, "Failed to load plugin: \"%s\".", _plugin_name.c_str())).ok()) {
             if((result = ASSERT_ERROR(ath, SYS_INVALID_INPUT_PARAM, "Invalid auth plugin.")).ok()) {
                 _plugin.reset(ath);
@@ -154,4 +154,4 @@ namespace eirods {
         
     } // load_auth_plugin
 
-}; // namespace eirods
+}; // namespace irods

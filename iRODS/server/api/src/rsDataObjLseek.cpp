@@ -12,8 +12,7 @@
 #include "subStructFileUnlink.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_resource_backport.hpp"
+#include "irods_resource_backport.hpp"
 
 int
 rsDataObjLseek (rsComm_t *rsComm, openedDataObjInp_t *dataObjLseekInp, 
@@ -56,9 +55,9 @@ fileLseekOut_t **dataObjLseekOut)
     // =-=-=-=-=-=-=-
     // extract the host location from the resource hierarchy
     std::string location;
-    eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
+    irods::error ret = irods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "rsDataObjLseek - failed in get_loc_for_hier_String", ret ) );
+        irods::log( PASSMSG( "rsDataObjLseek - failed in get_loc_for_hier_String", ret ) );
         return -1;
     }
 

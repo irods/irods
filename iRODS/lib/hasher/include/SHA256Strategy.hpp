@@ -9,7 +9,7 @@
 
 #include <openssl/sha.h>
 
-namespace eirods {
+namespace irods {
     
     class SHA256Strategy : public HashStrategy
     {
@@ -29,6 +29,6 @@ namespace eirods {
         bool _finalized;
         std::string _digest;
     };
-}; // namespace eirods
+}; // namespace irods
 
 #endif // _SHA256Strategy_H_

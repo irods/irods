@@ -39,11 +39,10 @@
 #endif
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_resource_backport.hpp"
-#include "eirods_stacktrace.hpp"
-#include "eirods_hierarchy_parser.hpp"
-#include "eirods_file_object.hpp"
+#include "irods_resource_backport.hpp"
+#include "irods_stacktrace.hpp"
+#include "irods_hierarchy_parser.hpp"
+#include "irods_file_object.hpp"
 
 
 int
@@ -432,8 +431,8 @@ _rsDataObjClose (
         addKeyVal (&regParam, RESC_GROUP_NAME_KW, 
                    destDataObjInfo->rescGroupName);
         if (getValByKey (&L1desc[l1descInx].dataObjInp->condInput, 
-                         IRODS_ADMIN_KW) != NULL) {
-            addKeyVal (&regParam, IRODS_ADMIN_KW, "");
+                         ADMIN_KW) != NULL) {
+            addKeyVal (&regParam, ADMIN_KW, "");
         }
         char* pdmo_kw = getValByKey(&dataObjCloseInp->condInput, IN_PDMO_KW);
         if(pdmo_kw != NULL) {
@@ -489,8 +488,8 @@ _rsDataObjClose (
 	    } 
 
             if (getValByKey (&L1desc[l1descInx].dataObjInp->condInput,
-                             IRODS_ADMIN_KW) != NULL) {
-                addKeyVal (&regParam, IRODS_ADMIN_KW, "");
+                             ADMIN_KW) != NULL) {
+                addKeyVal (&regParam, ADMIN_KW, "");
             }
             if ((L1desc[l1descInx].replStatus & FILE_PATH_HAS_CHG) != 0) {
                 /* path has changed */ 
@@ -513,10 +512,10 @@ _rsDataObjClose (
             if (getValByKey (&L1desc[l1descInx].dataObjInp->condInput,
                              SU_CLIENT_USER_KW) != NULL) {
                 addKeyVal (&regReplicaInp.condInput, SU_CLIENT_USER_KW, "");
-                addKeyVal (&regReplicaInp.condInput, IRODS_ADMIN_KW, "");
+                addKeyVal (&regReplicaInp.condInput, ADMIN_KW, "");
             } else if (getValByKey (&L1desc[l1descInx].dataObjInp->condInput,
-                                    IRODS_ADMIN_KW) != NULL) {
-                addKeyVal (&regReplicaInp.condInput, IRODS_ADMIN_KW, "");
+                                    ADMIN_KW) != NULL) {
+                addKeyVal (&regReplicaInp.condInput, ADMIN_KW, "");
             }
 
             char* pdmo_kw = getValByKey(&dataObjCloseInp->condInput, IN_PDMO_KW);
@@ -686,9 +685,9 @@ l3Close (rsComm_t *rsComm, int l1descInx)
     dataObjInfo = L1desc[l1descInx].dataObjInfo;
 
     std::string location;
-    eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
+    irods::error ret = irods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "failed in get_loc_for_hier_string", ret ) );
+        irods::log( PASSMSG( "failed in get_loc_for_hier_string", ret ) );
         return -1;
     }
 
@@ -732,9 +731,9 @@ l3Stat (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, rodsStat_t **myStat)
     if (getStructFileType (dataObjInfo->specColl) >= 0) {
 
         std::string location;
-        eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
+        irods::error ret = irods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
         if( !ret.ok() ) {
-            eirods::log( PASSMSG( "l3Stat - failed in get_loc_for_hier_string", ret ) );
+            irods::log( PASSMSG( "l3Stat - failed in get_loc_for_hier_string", ret ) );
             return -1;
         }
 
@@ -790,7 +789,7 @@ procChksumForClose (
 
             if (status < 0) {
                 dataObjInfo->chksum[0] = '\0';
-                if(status == EIRODS_DIRECT_ARCHIVE_ACCESS) {
+                if(status == DIRECT_ARCHIVE_ACCESS) {
                     *chksumStr = strdup(srcDataObjInfo->chksum);
                     rstrcpy (dataObjInfo->chksum, *chksumStr, NAME_LEN);
                     return 0;

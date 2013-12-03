@@ -5,8 +5,7 @@
 #include "dataObjOpr.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_structured_object.hpp"
+#include "irods_structured_object.hpp"
 
 
 
@@ -71,21 +70,21 @@ _rsSubStructFileOpen(
     subFile_t* _sub_file ) {
     // =-=-=-=-=-=-=-
     // create first class structured object 
-    eirods::structured_object_ptr struct_obj( 
-                                      new eirods::structured_object( 
+    irods::structured_object_ptr struct_obj( 
+                                      new irods::structured_object( 
                                           *_sub_file ) );
     struct_obj->comm( _comm );
-    struct_obj->resc_hier( eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE );
+    struct_obj->resc_hier( irods::LOCAL_USE_ONLY_RESOURCE );
 
     // =-=-=-=-=-=-=-
     // call abstrcated interface to open a file
-    eirods::error open_err = fileOpen( _comm, struct_obj );
+    irods::error open_err = fileOpen( _comm, struct_obj );
     if( !open_err.ok() ) {
         std::stringstream msg;
         msg << "failed on call to fileOpen for [";
         msg << struct_obj->sub_file_path();
         msg << "]";
-        eirods::log( PASSMSG( msg.str(), open_err ) );
+        irods::log( PASSMSG( msg.str(), open_err ) );
         return open_err.code();
 
     } else {

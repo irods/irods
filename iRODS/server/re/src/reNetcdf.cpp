@@ -2621,7 +2621,7 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     if (adminParam != NULL) {
 	int adminFlag = parseMspForPosInt (adminParam);
         if (adminFlag > 0) {
-	    addKeyVal (&ncRegGlobalAttrInp.condInput, IRODS_ADMIN_KW, "");
+	    addKeyVal (&ncRegGlobalAttrInp.condInput, ADMIN_KW, "");
         }
     }
     rei->status = rsNcRegGlobalAttr (rsComm, &ncRegGlobalAttrInp);

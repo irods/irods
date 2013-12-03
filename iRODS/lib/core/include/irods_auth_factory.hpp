@@ -1,31 +1,30 @@
 
 
 
-#ifndef __EIRODS_AUTH_FACTORY_H__
-#define __EIRODS_AUTH_FACTORY_H__
+#ifndef __IRODS_AUTH_FACTORY_HPP__
+#define __IRODS_AUTH_FACTORY_HPP__
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_stacktrace.hpp"
-#include "eirods_auth_object.hpp"
+#include "irods_stacktrace.hpp"
+#include "irods_auth_object.hpp"
 
 // =-=-=-=-=-=-=-
 // boost includes
 #include <boost/shared_ptr.hpp>
 
-namespace eirods {
+namespace irods {
    /// =-=-=-=-=-=-=-
    /// @brief super basic free factory function to create an auth object
    ///        given the requested authentication scheme
-   eirods::error auth_factory( 
+   irods::error auth_factory( 
        const std::string&,         // auth scheme
        rError_t*,                  // error object for auth ctor
-       eirods::auth_object_ptr& ); // auth object pointer
+       irods::auth_object_ptr& ); // auth object pointer
     
-}; // namespace eirods
+}; // namespace irods
 
 
-#endif // __EIRODS_AUTH_FACTORY_H__
+#endif // __IRODS_AUTH_FACTORY_HPP__
 
 
 

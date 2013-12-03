@@ -1,9 +1,9 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 
-#include "eirods_object_oper.hpp"
+#include "irods_object_oper.hpp"
 
-namespace eirods {
+namespace irods {
 
     object_oper::object_oper(
         const file_object& _file_object,
@@ -17,4 +17,4 @@ namespace eirods {
         // TODO - stub
     }
 
-}; // namespace eirods
+}; // namespace irods

@@ -1,13 +1,12 @@
 
 
 
-#ifndef __EIRODS_CLIENT_SERVER_NEGOTIATION_H__
-#define __EIRODS_CLIENT_SERVER_NEGOTIATION_H__
+#ifndef __IRODS_CLIENT_SERVER_NEGOTIATION_HPP__
+#define __IRODS_CLIENT_SERVER_NEGOTIATION_HPP__
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_log.hpp"
-#include "eirods_network_object.hpp"
+#include "irods_log.hpp"
+#include "irods_network_object.hpp"
 
 // =-=-=-=-=-=-=-
 // boost includes
@@ -21,7 +20,7 @@
 // stl includes
 #include <string>
 
-namespace eirods {
+namespace irods {
     /// =-=-=-=-=-=-=-
     /// @brief key for use of ssl or not
     const char RODS_CS_NEG      [] = {"RODS_CS_NEG"};
@@ -62,30 +61,30 @@ namespace eirods {
     /// =-=-=-=-=-=-=-
     /// @brief function which manages the TLS and Auth negotiations with the client
     error client_server_negotiation_for_server( 
-        eirods::network_object_ptr, // server connection handle
+        irods::network_object_ptr, // server connection handle
         std::string& );             // results of negotiation
  
     /// =-=-=-=-=-=-=-
     /// @brief function which manages the TLS and Auth negotiations with the client
     error client_server_negotiation_for_client( 
-        eirods::network_object_ptr, // client connection handle
+        irods::network_object_ptr, // client connection handle
         std::string& );             // results of the negotiation
    
     /// =-=-=-=-=-=-=-
     /// @brief function which sends the negotiation message
     error send_client_server_negotiation_message( 
-        eirods::network_object_ptr, // socket
+        irods::network_object_ptr, // socket
         cs_neg_t& );                // message payload
  
     /// =-=-=-=-=-=-=-
     /// @brief function which sends the negotiation message
     error read_client_server_negotiation_message( 
-        eirods::network_object_ptr,       // socket
+        irods::network_object_ptr,       // socket
         boost::shared_ptr< cs_neg_t >& ); // message payload
 
-}; // namespace eirods
+}; // namespace irods
 
-#endif // __EIRODS_CLIENT_SERVER_NEGOTIATION_H__
+#endif // __IRODS_CLIENT_SERVER_NEGOTIATION_HPP__
 
 
 

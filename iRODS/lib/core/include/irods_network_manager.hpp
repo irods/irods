@@ -2,17 +2,16 @@
 
 
 
-#ifndef __EIRODS_NETWORK_MANAGER_H__
-#define __EIRODS_NETWORK_MANAGER_H__
+#ifndef __IRODS_NETWORK_MANAGER_HPP__
+#define __IRODS_NETWORK_MANAGER_HPP__
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_network_plugin.hpp"
+#include "irods_network_plugin.hpp"
 
-namespace eirods {
+namespace irods {
     /// =-=-=-=-=-=-=-
     /// @brief definition of the network interface
-    const std::string NETWORK_INTERFACE( "eirods_network_interface" );
+    const std::string NETWORK_INTERFACE( "irods_network_interface" );
 
     /// =-=-=-=-=-=-=-
     /// @brief singleton class which manages the lifetime of
@@ -54,9 +53,9 @@ namespace eirods {
 
     extern network_manager netwk_mgr;
 
-}; // namespace eirods
+}; // namespace irods
 
-#endif // __EIRODS_NETWORK_MANAGER_H__
+#endif // __IRODS_NETWORK_MANAGER_HPP__
 
 
 

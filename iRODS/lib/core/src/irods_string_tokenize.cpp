@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-namespace eirods {
+namespace irods {
     // =-=-=-=-=-=-=-
     // helper fcn to break up string into tokens for easy handling
     void string_tokenize( 
@@ -46,7 +46,7 @@ namespace eirods {
 
     } // string_tokenize
 
-}; // namespace eirods
+}; // namespace irods
 
 
 

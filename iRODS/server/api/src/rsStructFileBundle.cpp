@@ -14,11 +14,10 @@
 #include "reGlobalsExtern.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_log.hpp"
-#include "eirods_file_object.hpp"
-#include "eirods_stacktrace.hpp"
-#include "eirods_resource_redirect.hpp"
+#include "irods_log.hpp"
+#include "irods_file_object.hpp"
+#include "irods_stacktrace.hpp"
+#include "irods_resource_redirect.hpp"
 
 int
 rsStructFileBundle (rsComm_t *rsComm,
@@ -97,13 +96,13 @@ rsStructFileBundle (rsComm_t *rsComm,
     rstrcpy( data_inp.objPath, structFileBundleInp->objPath, MAX_NAME_LEN );
     copyKeyValPairStruct( &structFileBundleInp->condInput, &data_inp.condInput );
     if( getValByKey( &structFileBundleInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
-        eirods::error ret = eirods::resource_redirect( eirods::EIRODS_CREATE_OPERATION, rsComm, 
+        irods::error ret = irods::resource_redirect( irods::CREATE_OPERATION, rsComm, 
                                                        &data_inp, hier, host, local );
         if( !ret.ok() ) { 
             std::stringstream msg;
-            msg << "rsStructFileBundle :: failed in eirods::resource_redirect for [";
+            msg << "rsStructFileBundle :: failed in irods::resource_redirect for [";
             msg << &data_inp.objPath << "]";
-            eirods::log( PASSMSG( msg.str(), ret ) );
+            irods::log( PASSMSG( msg.str(), ret ) );
             return ret.code();
         }
        

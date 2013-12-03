@@ -10,8 +10,6 @@
 
 extern "C" {
 
-    double IRODS_PLUGIN_INTERFACE_VERSION=1.0;
-
 	// =-=-=-=-=-=-=-
 	// 1. Write a standard issue microservice
 	int irods_msvc_test( msParam_t* _a, msParam_t* _b, msParam_t* _c, ruleExecInfo_t* _rei ) {

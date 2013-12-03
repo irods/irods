@@ -10,7 +10,7 @@
 #include "rsGlobalExtern.hpp"
 
 static
-eirods::error strip_eirods_query_terms( 
+irods::error strip_irods_query_terms( 
     genQueryInp_t* _inp ) {
     // =-=-=-=-=-=-=-
     // cache pointers to the incoming inxIvalPair
@@ -21,11 +21,11 @@ eirods::error strip_eirods_query_terms(
     
     // =-=-=-=-=-=-=-
     // zero out the selectInp to copy
-    // fresh non-eirods indicies and values
+    // fresh non-irods indicies and values
     bzero( &_inp->selectInp, sizeof( _inp->selectInp ) );
      
     // =-=-=-=-=-=-=-
-    // iterate over the tmp and copy non eirods values
+    // iterate over the tmp and copy non irods values
     for( int i = 0; i < tmp.len; ++i ) {
         if( tmp.inx[ i ] == COL_R_RESC_CHILDREN ||
             tmp.inx[ i ] == COL_R_RESC_CONTEXT  ||
@@ -41,10 +41,10 @@ eirods::error strip_eirods_query_terms(
 
     return SUCCESS();
 
-} // strip_eirods_query_terms
+} // strip_irods_query_terms
 
 static
-eirods::error proc_query_terms_for_non_eirods_server( 
+irods::error proc_query_terms_for_non_irods_server( 
     const std::string& _zone_hint,
     genQueryInp_t*     _inp ) {
     bool        done     = false;
@@ -72,7 +72,7 @@ eirods::error proc_query_terms_for_non_eirods_server(
             tmp_zone->masterServerHost->conn              &&
             tmp_zone->masterServerHost->conn->svrVersion &&
             tmp_zone->masterServerHost->conn->svrVersion->cookie < 301 ) {
-            return strip_eirods_query_terms( _inp );
+            return strip_irods_query_terms( _inp );
 
         } else {
             tmp_zone = tmp_zone->next;
@@ -82,7 +82,7 @@ eirods::error proc_query_terms_for_non_eirods_server(
 
     return SUCCESS();
 
-} // proc_query_terms_for_non_eirods_server
+} // proc_query_terms_for_non_irods_server
 
 /* can be used for debug: */
 /* extern int printGenQI( genQueryInp_t *genQueryInp); */
@@ -109,11 +109,11 @@ genQueryOut_t **genQueryOut)
     }
 
     // =-=-=-=-=-=-=-
-    // handle non-eirods connections
+    // handle non-irods connections
     if( !zone_hint_str.empty() ) {
-        eirods::error ret = proc_query_terms_for_non_eirods_server( zone_hint_str, genQueryInp );
+        irods::error ret = proc_query_terms_for_non_irods_server( zone_hint_str, genQueryInp );
         if( !ret.ok() ) {
-            eirods::log( PASS( ret ) );
+            irods::log( PASS( ret ) );
         }
     } 
 

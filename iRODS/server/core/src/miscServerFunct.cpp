@@ -31,11 +31,10 @@ char *__loc1;
 #include "md5.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_stacktrace.hpp"
-#include "eirods_network_factory.hpp"
-#include "eirods_buffer_encryption.hpp"
-#include "eirods_client_server_negotiation.hpp"
+#include "irods_stacktrace.hpp"
+#include "irods_network_factory.hpp"
+#include "irods_buffer_encryption.hpp"
+#include "irods_client_server_negotiation.hpp"
 
 #include <iomanip>
 #include <fstream>
@@ -527,7 +526,7 @@ partialDataPut (portalTransferInp_t *myInput)
     // flag to determine if we need to use encryption
     bool use_encryption_flg = 
              ( myInput->rsComm->negotiation_results == 
-               eirods::CS_NEG_USE_SSL );
+               irods::CS_NEG_USE_SSL );
 
 #ifdef PARA_TIMING
     time_t startTime, afterSeek, afterTransfer,
@@ -564,12 +563,12 @@ partialDataPut (portalTransferInp_t *myInput)
     // =-=-=-=-=-=-=-
     // create an encryption context, initialization vector
     int iv_size = 0;
-    eirods::buffer_crypt::array_t iv;
-    eirods::buffer_crypt::array_t this_iv;
-    eirods::buffer_crypt::array_t cipher;
-    eirods::buffer_crypt::array_t plain;
-    eirods::buffer_crypt::array_t shared_secret;
-    eirods::buffer_crypt crypt( 
+    irods::buffer_crypt::array_t iv;
+    irods::buffer_crypt::array_t this_iv;
+    irods::buffer_crypt::array_t cipher;
+    irods::buffer_crypt::array_t plain;
+    irods::buffer_crypt::array_t shared_secret;
+    irods::buffer_crypt crypt( 
                              myInput->key_size,
                              myInput->salt_size,
                              myInput->num_hash_rounds,
@@ -667,13 +666,13 @@ partialDataPut (portalTransferInp_t *myInput)
                     cipher.assign( 
                         &buf[ iv_size ], 
                         &buf[ new_size ] ); 
-                    eirods::error ret = crypt.decrypt( 
+                    irods::error ret = crypt.decrypt( 
                                             shared_secret, 
                                             this_iv, 
                                             cipher, 
                                             plain );
                     if( !ret.ok() ) {
-                        eirods::log( PASS( ret ) );
+                        irods::log( PASS( ret ) );
                         myInput->status = SYS_COPY_LEN_ERR;
                         break;
                     }
@@ -792,16 +791,16 @@ void partialDataGet(
     // flag to determine if we need to use encryption
     bool use_encryption_flg = 
              ( myInput->rsComm->negotiation_results == 
-               eirods::CS_NEG_USE_SSL );
+               irods::CS_NEG_USE_SSL );
     
     // =-=-=-=-=-=-=-
     // create an encryption context
     int iv_size = 0;
-    eirods::buffer_crypt::array_t iv;
-    eirods::buffer_crypt::array_t cipher;
-    eirods::buffer_crypt::array_t in_buf;
-    eirods::buffer_crypt::array_t shared_secret;
-    eirods::buffer_crypt crypt( 
+    irods::buffer_crypt::array_t iv;
+    irods::buffer_crypt::array_t cipher;
+    irods::buffer_crypt::array_t in_buf;
+    irods::buffer_crypt::array_t shared_secret;
+    irods::buffer_crypt crypt( 
                              myInput->key_size,
                              myInput->salt_size,
                              myInput->num_hash_rounds,
@@ -874,7 +873,7 @@ void partialDataGet(
                 // it to encrypt this buffer
                 int new_size = bytesRead;
                 if( use_encryption_flg ) {
-                    eirods::error ret = crypt.initialization_vector( iv );
+                    irods::error ret = crypt.initialization_vector( iv );
                     if( !ret.ok() ) {
                         ret = PASS( ret );
                         printf( "%s", ret.result().c_str() );
@@ -1021,17 +1020,17 @@ remToLocPartialCopy (portalTransferInp_t *myInput)
     // flag to determine if we need to use encryption
     bool use_encryption_flg = 
              ( myInput->rsComm->negotiation_results == 
-               eirods::CS_NEG_USE_SSL );
+               irods::CS_NEG_USE_SSL );
 
     // =-=-=-=-=-=-=-
     // create an encryption context, initialization vector
     int iv_size = 0;
-    eirods::buffer_crypt::array_t iv;
-    eirods::buffer_crypt::array_t this_iv;
-    eirods::buffer_crypt::array_t cipher;
-    eirods::buffer_crypt::array_t plain;
-    eirods::buffer_crypt::array_t shared_secret;
-    eirods::buffer_crypt crypt( 
+    irods::buffer_crypt::array_t iv;
+    irods::buffer_crypt::array_t this_iv;
+    irods::buffer_crypt::array_t cipher;
+    irods::buffer_crypt::array_t plain;
+    irods::buffer_crypt::array_t shared_secret;
+    irods::buffer_crypt crypt( 
                              myInput->key_size,
                              myInput->salt_size,
                              myInput->num_hash_rounds,
@@ -1131,13 +1130,13 @@ remToLocPartialCopy (portalTransferInp_t *myInput)
                     &buf[ iv_size ], 
                     &buf[ new_size ] ); 
 
-                eirods::error ret = crypt.decrypt( 
+                irods::error ret = crypt.decrypt( 
                                         shared_secret, 
                                         this_iv, 
                                         cipher, 
                                         plain );
                 if( !ret.ok() ) {
-                    eirods::log( PASS( ret ) );
+                    irods::log( PASS( ret ) );
                     myInput->status = SYS_COPY_LEN_ERR;
                     break;
                 }
@@ -1703,16 +1702,16 @@ locToRemPartialCopy (portalTransferInp_t *myInput)
     // flag to determine if we need to use encryption
     bool use_encryption_flg = 
              ( myInput->rsComm->negotiation_results == 
-               eirods::CS_NEG_USE_SSL );
+               irods::CS_NEG_USE_SSL );
 
     // =-=-=-=-=-=-=-
     // create an encryption context
     int iv_size = 0;
-    eirods::buffer_crypt::array_t iv;
-    eirods::buffer_crypt::array_t cipher;
-    eirods::buffer_crypt::array_t in_buf;
-    eirods::buffer_crypt::array_t shared_secret;
-    eirods::buffer_crypt crypt( 
+    irods::buffer_crypt::array_t iv;
+    irods::buffer_crypt::array_t cipher;
+    irods::buffer_crypt::array_t in_buf;
+    irods::buffer_crypt::array_t shared_secret;
+    irods::buffer_crypt crypt( 
                              myInput->key_size,
                              myInput->salt_size,
                              myInput->num_hash_rounds,
@@ -1796,7 +1795,7 @@ locToRemPartialCopy (portalTransferInp_t *myInput)
             // it to encrypt this buffer
             int new_size = bytesRead;
             if( use_encryption_flg ) {
-                eirods::error ret = crypt.initialization_vector( iv );
+                irods::error ret = crypt.initialization_vector( iv );
                 if( !ret.ok() ) {
                     ret = PASS( ret );
                     printf( "%s", ret.result().c_str() );
@@ -2202,10 +2201,10 @@ reconnManager (rsComm_t *rsComm)
         
         // =-=-=-=-=-=-=-
         // create a network object
-        eirods::network_object_ptr net_obj;
-        eirods::error ret = eirods::network_factory( rsComm, net_obj );
+        irods::network_object_ptr net_obj;
+        irods::error ret = irods::network_factory( rsComm, net_obj );
         if( !ret.ok() ) {
-            eirods::log( PASS( ret ) );
+            irods::log( PASS( ret ) );
             return; 
         }
 
@@ -2215,7 +2214,7 @@ reconnManager (rsComm_t *rsComm)
  
         ret = readReconMsg( net_obj, &reconnMsg );
         if( !ret.ok() ) {
-            eirods::log( PASS( ret ) );
+            irods::log( PASS( ret ) );
             close (newSock);
             continue;
         } else if (reconnMsg->cookie != rsComm->cookie) {
@@ -2243,7 +2242,7 @@ reconnManager (rsComm_t *rsComm)
         ret = sendReconnMsg ( net_obj, reconnMsg);
         free (reconnMsg);
         if( !ret.ok() ) {
-            eirods::log( PASS( ret ) );          
+            irods::log( PASS( ret ) );          
             close (newSock);
             rsComm->reconnectedSock = 0;
             boost_lock.unlock();
@@ -2600,15 +2599,15 @@ singleLocToRemCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
 
 int
 readStartupPack(
-    eirods::network_object_ptr _ptr, 
+    irods::network_object_ptr _ptr, 
     startupPack_t**     startupPack, 
     struct timeval*     tv ) {
     int status;
     msgHeader_t myHeader;
     bytesBuf_t inputStructBBuf, bsBBuf, errorBBuf;
-    eirods::error ret = readMsgHeader( _ptr, &myHeader, tv );
+    irods::error ret = readMsgHeader( _ptr, &myHeader, tv );
    if( !ret.ok() ) {
-        eirods::log( PASS( ret ) );  
+        irods::log( PASS( ret ) );  
         return ret.code();
     }
 
@@ -2630,7 +2629,7 @@ readStartupPack(
               XML_PROT, 
               tv );
     if( !ret.ok() ) {
-        eirods::log( PASS( ret ) ); 
+        irods::log( PASS( ret ) ); 
         return ret.code();
     }
 

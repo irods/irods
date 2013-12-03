@@ -1,18 +1,17 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
-#ifndef __EIRODS_STRUCTURED_OBJECT_H__
-#define __EIRODS_STRUCTURED_OBJECT_H__
+#ifndef __IRODS_STRUCTURED_OBJECT_HPP__
+#define __IRODS_STRUCTURED_OBJECT_HPP__
 
 // =-=-=-=-=-=-=-
 // stl includes
 #include <string>
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_file_object.hpp"
-#include "eirods_log.hpp"
+#include "irods_file_object.hpp"
+#include "irods_log.hpp"
 
-namespace eirods {
+namespace irods {
 
     class structured_object : public file_object {
     public:
@@ -75,9 +74,9 @@ namespace eirods {
     /// @brief typedef for shared structured object pointer
     typedef boost::shared_ptr< structured_object > structured_object_ptr;
 
-}; // namespace eirods
+}; // namespace irods
 
-#endif // __EIRODS_STRUCTURED_OBJECT_H__
+#endif // __IRODS_STRUCTURED_OBJECT_HPP__
 
 
 

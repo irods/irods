@@ -21,8 +21,7 @@
 #include "apiHeaderAll.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_resource_backport.hpp"
+#include "irods_resource_backport.hpp"
 
 
 /*
@@ -274,13 +273,13 @@ int getDefaultLocalRescInfo(rescInfo_t **rescInfo)
     *rescInfo = new rescInfo_t;
   }
 
-  eirods::resource_ptr resc;
-  eirods::error err = eirods::get_resc_info( rescName, **rescInfo );
+  irods::resource_ptr resc;
+  irods::error err = irods::get_resc_info( rescName, **rescInfo );
   if( !err.ok() ) {
     std::stringstream msg;
     msg << "failed to resolve resource [";
     msg << rescName << "]";
-    eirods::log( PASSMSG( msg.str(), err ) );
+    irods::log( PASSMSG( msg.str(), err ) );
     return err.code();
   }
 

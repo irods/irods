@@ -9,7 +9,7 @@
 
 #include <string.h>
 
-namespace eirods {
+namespace irods {
     
     std::string SHA256Strategy::_name = "SHA256";
 
@@ -69,4 +69,4 @@ namespace eirods {
         messageDigest = _digest;
         return result;
     }
-}; // namespace eirods
+}; // namespace irods

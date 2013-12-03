@@ -9,11 +9,10 @@
 #include "miscServerFunct.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_log.hpp"
-#include "eirods_file_object.hpp"
-#include "eirods_stacktrace.hpp"
-#include "eirods_resource_backport.hpp"
+#include "irods_log.hpp"
+#include "irods_file_object.hpp"
+#include "irods_stacktrace.hpp"
+#include "irods_resource_backport.hpp"
 
 int
 rsFileTruncate (rsComm_t *rsComm, fileOpenInp_t *fileTruncateInp)
@@ -23,9 +22,9 @@ rsFileTruncate (rsComm_t *rsComm, fileOpenInp_t *fileTruncateInp)
     int status;
 
     //remoteFlag = resolveHost (&fileTruncateInp->addr, &rodsServerHost);
-    eirods::error ret = eirods::get_host_for_hier_string( fileTruncateInp->resc_hier_, remoteFlag, rodsServerHost );
+    irods::error ret = irods::get_host_for_hier_string( fileTruncateInp->resc_hier_, remoteFlag, rodsServerHost );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( " failed in call to eirods::get_host_for_hier_string", ret ) );
+        irods::log( PASSMSG( " failed in call to irods::get_host_for_hier_string", ret ) );
         return -1;
     }
     if (remoteFlag == LOCAL_HOST) {
@@ -87,21 +86,21 @@ int _rsFileTruncate(
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - Empty logical path.";
-        eirods::log(LOG_ERROR, msg.str());
+        irods::log(LOG_ERROR, msg.str());
         return -1;
     }
 
     // =-=-=-=-=-=-=-
     // make the call to rename via the resource plugin
-    eirods::file_object_ptr file_obj( 
-                                new eirods::file_object( 
+    irods::file_object_ptr file_obj( 
+                                new irods::file_object( 
                                     _comm, 
                                     _trunc_inp->objPath, 
                                     _trunc_inp->fileName, 
                                     _trunc_inp->resc_hier_, 
                                     0, 0, 0 ) );
     file_obj->size( _trunc_inp->dataSize );
-    eirods::error trunc_err = fileTruncate( _comm, file_obj );
+    irods::error trunc_err = fileTruncate( _comm, file_obj );
 
     // =-=-=-=-=-=-=-
     // report errors if any
@@ -111,8 +110,8 @@ int _rsFileTruncate(
         msg << _trunc_inp->fileName;
         msg << "]";
         msg << trunc_err.code();
-        eirods::error err = PASSMSG( msg.str(), trunc_err );
-        eirods::log ( err );
+        irods::error err = PASSMSG( msg.str(), trunc_err );
+        irods::log ( err );
     }
 
     return trunc_err.code();

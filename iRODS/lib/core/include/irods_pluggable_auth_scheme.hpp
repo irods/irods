@@ -2,14 +2,14 @@
 
 
 
-#ifndef __EIRODS_AUTH_SCHEME_H__
-#define __EIRODS_AUTH_SCHEME_H__
+#ifndef __IRODS_AUTH_SCHEME_HPP__
+#define __IRODS_AUTH_SCHEME_HPP__
 
 // =-=-=-=-=-=-=-
 // stl includs
 #include <string>
 
-namespace eirods {
+namespace irods {
     class pluggable_auth_scheme {
       private:
           pluggable_auth_scheme() {}
@@ -21,9 +21,9 @@ namespace eirods {
     }; 
 
 
-}; // namespace eirods
+}; // namespace irods
 
-#endif // __EIRODS_AUTH_SCHEME_H__
+#endif // __IRODS_AUTH_SCHEME_HPP__
 
 
 

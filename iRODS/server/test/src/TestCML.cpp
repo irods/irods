@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "TestBase.hpp"
 
-#include "../../icat/src/icatMidLevelRoutines.c"
+#include "../../icat/src/icatMidLevelRoutines.cpp"
 
 using namespace std;
 

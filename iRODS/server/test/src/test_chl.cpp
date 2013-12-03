@@ -328,7 +328,7 @@ int testDelFilePriv(rsComm_t *rsComm, char *name, char *dataId,
 
     rsComm->clientUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
     memset (&condInput, 0, sizeof (condInput));
-    addKeyVal(&condInput, IRODS_ADMIN_KW, " ");
+    addKeyVal(&condInput, ADMIN_KW, " ");
 
     memset(&dataObjInfo, 0, sizeof(dataObjInfo));
 
@@ -360,7 +360,7 @@ int testDelFileTrash(rsComm_t *rsComm, char *name, char *dataId) {
 
     rsComm->clientUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
     memset (&condInput, 0, sizeof (condInput));
-    addKeyVal(&condInput, IRODS_ADMIN_RMTRASH_KW, " ");
+    addKeyVal(&condInput, ADMIN_RMTRASH_KW, " ");
 
     memset(&dataObjInfo, 0, sizeof(dataObjInfo));
 

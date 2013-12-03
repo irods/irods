@@ -1,17 +1,16 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
-#ifndef ___EIRODS_RESC_PLUGIN_H__
-#define ___EIRODS_RESC_PLUGIN_H__
+#ifndef ___IRODS_RESC_PLUGIN_HPP__
+#define ___IRODS_RESC_PLUGIN_HPP__
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_resource_constants.hpp"
-#include "eirods_operation_wrapper.hpp"
-#include "eirods_resource_plugin_context.hpp"
+#include "irods_resource_constants.hpp"
+#include "irods_operation_wrapper.hpp"
+#include "irods_resource_plugin_context.hpp"
 
 #include <iostream>
 
-namespace eirods {
+namespace irods {
     /// =-=-=-=-=-=-=-
     /// @brief typedef for resource maintenance operation for start / stop operations
     typedef error (*resource_maintenance_operation)( 
@@ -107,7 +106,7 @@ namespace eirods {
         error call( 
             rsComm_t* _comm, 
             const std::string& _op, 
-            eirods::first_class_object_ptr _obj ) {
+            irods::first_class_object_ptr _obj ) {
             resource_plugin_context ctx( properties_, _obj, "", _comm, children_ );
             return operations_[ _op ].call( ctx );
         
@@ -119,7 +118,7 @@ namespace eirods {
         error call( 
             rsComm_t* _comm, 
             const std::string& _op, 
-            eirods::first_class_object_ptr _obj, 
+            irods::first_class_object_ptr _obj, 
             T1 _t1 ) {
             resource_plugin_context ctx( properties_, _obj, "", _comm, children_ );
             return operations_[ _op ].call< T1 >( ctx, _t1 );
@@ -132,7 +131,7 @@ namespace eirods {
         error call( 
             rsComm_t* _comm, 
             const std::string& _op, 
-            eirods::first_class_object_ptr _obj, 
+            irods::first_class_object_ptr _obj, 
             T1 _t1, 
             T2 _t2 ) {
             resource_plugin_context ctx( properties_, _obj, "", _comm, children_ );
@@ -146,7 +145,7 @@ namespace eirods {
         error call( 
             rsComm_t* _comm, 
             const std::string& _op, 
-            eirods::first_class_object_ptr _obj, 
+            irods::first_class_object_ptr _obj, 
             T1 _t1, 
             T2 _t2, 
             T3 _t3 ) {
@@ -162,7 +161,7 @@ namespace eirods {
         error call( 
             rsComm_t* _comm, 
             const std::string& _op, 
-            eirods::first_class_object_ptr _obj, 
+            irods::first_class_object_ptr _obj, 
             T1 _t1, 
             T2 _t2, 
             T3 _t3, 
@@ -179,7 +178,7 @@ namespace eirods {
         error call( 
             rsComm_t* _comm, 
             const std::string& _op, 
-            eirods::first_class_object_ptr _obj, 
+            irods::first_class_object_ptr _obj, 
             T1 _t1, 
             T2 _t2, 
             T3 _t3, 
@@ -197,7 +196,7 @@ namespace eirods {
         error call( 
             rsComm_t* _comm, 
             const std::string& _op, 
-            eirods::first_class_object_ptr _obj, 
+            irods::first_class_object_ptr _obj, 
             T1 _t1, 
             T2 _t2, 
             T3 _t3, 
@@ -216,7 +215,7 @@ namespace eirods {
         error call( 
             rsComm_t* _comm, 
             const std::string& _op, 
-            eirods::first_class_object_ptr _obj, 
+            irods::first_class_object_ptr _obj, 
             T1 _t1, 
             T2 _t2, 
             T3 _t3, 
@@ -236,7 +235,7 @@ namespace eirods {
         error call( 
             rsComm_t* _comm, 
             const std::string& _op, 
-            eirods::first_class_object_ptr _obj, 
+            irods::first_class_object_ptr _obj, 
             T1 _t1, 
             T2 _t2, 
             T3 _t3, 
@@ -281,10 +280,10 @@ namespace eirods {
                                 const std::string ); // context string
 
 
-}; // namespace eirods
+}; // namespace irods
 
 
-#endif // ___EIRODS_RESC_PLUGIN_H__
+#endif // ___IRODS_RESC_PLUGIN_HPP__
 
 
 

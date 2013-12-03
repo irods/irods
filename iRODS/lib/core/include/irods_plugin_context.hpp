@@ -1,19 +1,18 @@
 
 
 
-#ifndef __EIRODS_PLUGIN_CONTEXT_H__
-#define __EIRODS_PLUGIN_CONTEXT_H__
+#ifndef __IRODS_PLUGIN_CONTEXT_HPP__
+#define __IRODS_PLUGIN_CONTEXT_HPP__
 
 // =-=-=-=-=-=-=-
 // stl includes
 #include <string>
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_plugin_base.hpp"
-#include "eirods_first_class_object.hpp"
+#include "irods_plugin_base.hpp"
+#include "irods_first_class_object.hpp"
 
-namespace eirods {
+namespace irods {
     // =-=-=-=-=-=-=-
     // base context class for communicating to plugins
     class plugin_context {
@@ -80,9 +79,9 @@ namespace eirods {
     /// @brief type for the generic plugin operation
     typedef error (*plugin_operation)( plugin_context&, ... );
 
-}; // namespace eirods
+}; // namespace irods
 
-#endif // __EIRODS_PLUGIN_CONTEXT_H__
+#endif // __IRODS_PLUGIN_CONTEXT_HPP__
 
 
 

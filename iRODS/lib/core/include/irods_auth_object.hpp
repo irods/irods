@@ -3,15 +3,15 @@
 #ifndef _auth_object_H_
 #define _auth_object_H_
 
-#include "eirods_error.hpp"
-#include "eirods_first_class_object.hpp"
+#include "irods_error.hpp"
+#include "irods_first_class_object.hpp"
 
 #include "rcConnect.hpp"
 
 // boost includes
 #include <boost/shared_ptr.hpp>
 
-namespace eirods {
+namespace irods {
 /**
  * @brief Class for representing authorization scheme objects
  */
@@ -69,6 +69,6 @@ namespace eirods {
     /// @brief Helpful typedef
     typedef boost::shared_ptr<auth_object> auth_object_ptr;
     
-}; // namespace eirods
+}; // namespace irods
 
 #endif // _auth_object_H_

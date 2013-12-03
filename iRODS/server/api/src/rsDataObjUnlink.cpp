@@ -29,10 +29,9 @@
 #include "physPath.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_resource_backport.hpp"
-#include "eirods_resource_redirect.hpp"
-#include "eirods_hierarchy_parser.hpp"
+#include "irods_resource_backport.hpp"
+#include "irods_resource_redirect.hpp"
+#include "irods_hierarchy_parser.hpp"
 
 int
 rsDataObjUnlink (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp)
@@ -66,13 +65,13 @@ rsDataObjUnlink (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp)
     // determine the resource hierarchy if one is not provided
     if( getValByKey( &dataObjUnlinkInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
         std::string       hier;
-        eirods::error ret = eirods::resolve_resource_hierarchy( eirods::EIRODS_OPEN_OPERATION, 
+        irods::error ret = irods::resolve_resource_hierarchy( irods::OPEN_OPERATION, 
                                                                 rsComm, dataObjUnlinkInp, hier );
         if( !ret.ok() ) { 
             std::stringstream msg;
-            msg << "failed in eirods::resolve_resource_hierarchy for [";
+            msg << "failed in irods::resolve_resource_hierarchy for [";
             msg << dataObjUnlinkInp->objPath << "]";
-            eirods::log( PASSMSG( msg.str(), ret ) );
+            irods::log( PASSMSG( msg.str(), ret ) );
             return ret.code();
         }
            
@@ -84,9 +83,9 @@ rsDataObjUnlink (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp)
     } // if keyword
 
     if (getValByKey (
-            &dataObjUnlinkInp->condInput, IRODS_ADMIN_RMTRASH_KW) != NULL ||
+            &dataObjUnlinkInp->condInput, ADMIN_RMTRASH_KW) != NULL ||
         getValByKey (
-            &dataObjUnlinkInp->condInput, IRODS_RMTRASH_KW) != NULL) {
+            &dataObjUnlinkInp->condInput, RMTRASH_KW) != NULL) {
         if (isTrashPath (dataObjUnlinkInp->objPath) == False) {
             return (SYS_INVALID_FILE_PATH);
         }
@@ -104,8 +103,8 @@ rsDataObjUnlink (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp)
         msg << __FUNCTION__;
         msg << " - Failed to get data objects.";
         msg << " - " << rods_error << " " << sys_error;
-        eirods::error result = ERROR(status, msg.str());
-        eirods::log(result);
+        irods::error result = ERROR(status, msg.str());
+        irods::log(result);
         return (status);
     }
 
@@ -314,13 +313,13 @@ dataObjUnlinkS (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
 
                 /* unregistering but not an admin user */
                 std::string out_path;
-                eirods::error ret = resc_mgr.validate_vault_path( dataObjInfo->filePath, rodsServerHost, out_path );
+                irods::error ret = resc_mgr.validate_vault_path( dataObjInfo->filePath, rodsServerHost, out_path );
                 if( !ret.ok() ) {
                     /* in the vault */
                     std::stringstream msg;
                     msg << "unregistering a data object which is in a vault [";
                     msg << dataObjInfo->filePath << "]";
-                    eirods::log( PASSMSG( msg.str(), ret ) );
+                    irods::log( PASSMSG( msg.str(), ret ) );
                     return CANT_UNREG_IN_VAULT_FILE;
                 }
             }
@@ -400,12 +399,12 @@ l3Unlink (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
     // =-=-=-=-=-=-=-
     // JMC - legacy resource  if (getRescClass (dataObjInfo->rescInfo) == BUNDLE_CL) return 0;
     std::string resc_class;
-    eirods::error prop_err = eirods::get_resource_property<std::string>( 
+    irods::error prop_err = irods::get_resource_property<std::string>( 
                                  dataObjInfo->rescInfo->rescName, 
-                                 eirods::RESOURCE_CLASS,
+                                 irods::RESOURCE_CLASS,
                                  resc_class );
     if( prop_err.ok() ) {
-        if( resc_class == eirods::RESOURCE_CLASS_BUNDLE ) {//BUNDLE_CL ) {
+        if( resc_class == irods::RESOURCE_CLASS_BUNDLE ) {//BUNDLE_CL ) {
             return 0;
         }
     } else {
@@ -413,7 +412,7 @@ l3Unlink (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
         msg << "failed to get proprty [class] for resource [";
         msg << dataObjInfo->rescInfo->rescName;
         msg << "]";
-        eirods::log( PASSMSG( msg.str(), prop_err ) );
+        irods::log( PASSMSG( msg.str(), prop_err ) );
         return -1;
     }
     // =-=-=-=-=-=-=-
@@ -421,9 +420,9 @@ l3Unlink (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
     // =-=-=-=-=-=-=-
     // extract the host location from the resource hierarchy
     std::string location;
-    eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
+    irods::error ret = irods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "failed in get_loc_for_hier_String", ret ) );
+        irods::log( PASSMSG( "failed in get_loc_for_hier_String", ret ) );
         return -1;
     }
 

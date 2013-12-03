@@ -1,21 +1,21 @@
 
 
 
-#ifndef __EIRODS_HASH_HPP__
-#define __EIRODS_HASH_HPP__
+#ifndef __IRODS_HASH_HPP__
+#define __IRODS_HASH_HPP__
 
 // =-=-=-=-=-=-=-
 // hash_map include
 #include <boost/unordered_map.hpp>
-#define EIRODS_HASH_TYPE boost::unordered_map
+#define HASH_TYPE boost::unordered_map
 
 #include <string.h>
 #include <string>
 
-namespace eirods
+namespace irods
 {
 
-	struct eirods_char_str_hash
+	struct irods_char_str_hash
 	{
 		enum
 		{	// parameters for hash table
@@ -41,9 +41,9 @@ namespace eirods
 			return ( strcmp( s1, s2 ) < 0 );
 		}
 
-	}; // struct eirods_char_str_hash
+	}; // struct irods_char_str_hash
 
-	struct eirods_string_hash
+	struct irods_string_hash
 	{
 		enum
 		{	// parameters for hash table
@@ -69,8 +69,8 @@ namespace eirods
 			return ( s1 < s2 );
 		}
 
-	}; // struct eirods_string_hash
+	}; // struct irods_string_hash
 
-}; // namespace eirods
+}; // namespace irods
 
-#endif // __EIRODS_HASH_HPP__
+#endif // __IRODS_HASH_HPP__

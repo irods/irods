@@ -168,11 +168,11 @@ dataObjInp_t *dataObjInp, collInp_t *collInp)
     addKeyVal (&collInp->condInput, RECURSIVE_OPR__KW, "");
 
     if (rodsArgs->admin == True) {
-        addKeyVal (&dataObjInp->condInput, IRODS_ADMIN_RMTRASH_KW, "");
-        addKeyVal (&collInp->condInput, IRODS_ADMIN_RMTRASH_KW, "");
+        addKeyVal (&dataObjInp->condInput, ADMIN_RMTRASH_KW, "");
+        addKeyVal (&collInp->condInput, ADMIN_RMTRASH_KW, "");
     } else {
-        addKeyVal (&dataObjInp->condInput, IRODS_RMTRASH_KW, "");
-        addKeyVal (&collInp->condInput, IRODS_RMTRASH_KW, "");
+        addKeyVal (&dataObjInp->condInput, RMTRASH_KW, "");
+        addKeyVal (&collInp->condInput, RMTRASH_KW, "");
     }
 
     if (rodsArgs->zone == True) {

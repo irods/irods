@@ -10,7 +10,7 @@
 
 #include <string.h>
 
-namespace eirods {
+namespace irods {
     
     std::string MD5Strategy::_name = "MD5";
 
@@ -70,4 +70,4 @@ namespace eirods {
         messageDigest = _digest;
         return result;
     }
-}; //namespace eirods
+}; //namespace irods

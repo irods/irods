@@ -1,10 +1,9 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_network_manager.hpp"
+#include "irods_network_manager.hpp"
 
-namespace eirods {
+namespace irods {
     // =-=-=-=-=-=-=-
     // network manager singleton
     network_manager netwk_mgr;
@@ -77,7 +76,7 @@ namespace eirods {
 
     } // init_from_type  
 
-}; // namespace eirods
+}; // namespace irods
 
 
 
