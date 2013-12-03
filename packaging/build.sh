@@ -1001,25 +1001,29 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     fi
 
     # =-=-=-=-=-=-=-
-    # build fuse bindary
+    # build fuse binary
+    echo "${text_green}${text_bold}Building Fuse Client${text_reset}"
 	cd $BUILDDIR/iRODS/clients/fuse/
 	make -j$CPUCOUNT
 	cd $BUILDDIR
 
     # =-=-=-=-=-=-=-
     # build resource plugins
+    echo "${text_green}${text_bold}Building Resource Plugins${text_reset}"
 	cd $BUILDDIR/plugins/resources/
 	make -j$CPUCOUNT
 	cd $BUILDDIR
 
     # =-=-=-=-=-=-=-
     # build network plugins
+    echo "${text_green}${text_bold}Building Network Plugins${text_reset}"
 	cd $BUILDDIR/plugins/network/
 	make -j$CPUCOUNT
 	cd $BUILDDIR
 
     # =-=-=-=-=-=-=-
     # build auth plugins
+    echo "${text_green}${text_bold}Building Auth Plugins${text_reset}"
 	cd $BUILDDIR/plugins/auth/
 	make -j$CPUCOUNT
 	cd $BUILDDIR
