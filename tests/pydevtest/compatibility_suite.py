@@ -23,7 +23,7 @@ class Test_CompatibilitySuite(unittest.TestCase, ResourceBase):
 
   def test_imeta_set(self):
     assertiCmd(s.adminsession,"iadmin lu","LIST","rods")
-    assertiCmd(s.adminsession,"imeta ls -u " + s.users[1]["name"] + "att", "LIST", "None")
+    assertiCmd(s.adminsession,"imeta ls -u " + s.users[1]["name"] + " att", "LIST", "None")
     assertiCmd(s.adminsession,"imeta add -u " + s.users[1]["name"] + " att val")
     assertiCmd(s.adminsession,"imeta ls -u " + s.users[1]["name"] + " att","LIST","attribute: att")
     assertiCmd(s.adminsession,"imeta set -u " + s.users[1]["name"] + " att newval")
