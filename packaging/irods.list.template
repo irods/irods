@@ -307,18 +307,9 @@ f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/plugins/network/ ./plugins
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/plugins/auth -
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/plugins/auth/ ./plugins/auth/*.so
 
-
-d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/doc -
-d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/doc/html -
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/doc/html ./iRODS/doc/html/*.html
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/doc/html ./iRODS/doc/html/*.css
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/doc/html ./iRODS/doc/html/*.png
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/doc/html ./iRODS/doc/html/*.js
-
 f 644 root root /usr/share/man/man1 ./man/*.gz
 
 d 755 root root ${IRODS_DOC_DIR} -
-f 644 root root ${IRODS_DOC_DIR}/manual.pdf ./manual.pdf
 f 644 root root ${IRODS_DOC_DIR}/KNOWN_ISSUES ./KNOWN_ISSUES
 f 644 root root ${IRODS_DOC_DIR}/RELEASE_NOTES ./RELEASE_NOTES
 %if DEB

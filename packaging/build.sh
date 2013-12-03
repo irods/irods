@@ -18,6 +18,7 @@ IRODSPACKAGEDIR="./build"
 USAGE="
 
 Usage: $SCRIPTNAME [OPTIONS] <serverType> [databaseType]
+Usage: $SCRIPTNAME docs
 Usage: $SCRIPTNAME clean
 
 Options:
@@ -170,6 +171,168 @@ fi
 DETECTEDDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $DETECTEDDIR/../
 
+# begin self-awareness
+echo "${text_green}${text_bold}Detecting Build Environment${text_reset}"
+echo "Detected Packaging Directory [$DETECTEDDIR]"
+GITDIR=`pwd`
+BUILDDIR=$GITDIR  # we'll manipulate this later, depending on the coverage flag
+cd $BUILDDIR/iRODS
+echo "Build Directory set to [$BUILDDIR]"
+# read iRODS Version from file
+source ../VERSION
+echo "Detected iRODS Version to Build [$IRODSVERSION]"
+echo "Detected iRODS Version Integer [$IRODSVERSIONINT]"
+# detect operating system
+DETECTEDOS=`../packaging/find_os.sh`
+if [ "$PORTABLE" == "1" ] ; then
+  DETECTEDOS="Portable"
+fi
+echo "Detected OS [$DETECTEDOS]"
+DETECTEDOSVERSION=`../packaging/find_os_version.sh`
+echo "Detected OS Version [$DETECTEDOSVERSION]"
+
+
+
+
+############################################################
+# FUNCTIONS
+############################################################
+
+# download and compile RENCI version of EPM
+download_and_compile_EPM () {
+
+    # download
+    echo "${text_green}${text_bold}Downloading EPM from RENCI${text_reset}"
+    cd $BUILDDIR
+    RENCIEPM="epm42-renci.tar.gz"
+    rm -rf epm
+    rm -f $RENCIEPM
+    wget ftp://ftp.renci.org/pub/eirods/build/$RENCIEPM
+    tar -xf $RENCIEPM
+
+    # configure
+    echo "${text_green}${text_bold}Configuring EPM${text_reset}"
+    cd $BUILDDIR/epm
+    set +e
+    ./configure > /dev/null
+    if [ "$?" != "0" ] ; then
+        exit 1
+    fi
+
+    # build
+    echo "${text_green}${text_bold}Building EPM${text_reset}"
+    make > /dev/null
+    if [ "$?" != "0" ] ; then
+        exit 1
+    fi
+    set -e
+
+}
+
+
+# rename generated packages appropriately
+rename_generated_packages() {
+
+    # parameters
+    if [ "$1" == "" ] ; then
+        echo "rename_generated_packages() expected 1 parameter"
+        exit 1
+    fi
+    TARGET=$1
+
+    cd $BUILDDIR
+    SUFFIX=""
+    if   [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+	EXTENSION="rpm"
+	SUFFIX="-redhat"
+	if [ "$epmosversion" == "CENTOS6" ] ; then
+            SUFFIX="-centos6"
+	fi
+    elif [ "$DETECTEDOS" == "SuSE" ] ; then
+	EXTENSION="rpm"
+	SUFFIX="-suse"
+    elif [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
+	EXTENSION="deb"
+    elif [ "$DETECTEDOS" == "Solaris" ] ; then
+	EXTENSION="pkg"
+    elif [ "$DETECTEDOS" == "MacOSX" ] ; then
+	EXTENSION="dmg"
+    elif [ "$DETECTEDOS" == "Portable" ] ; then
+	EXTENSION="tar.gz"
+    fi
+    RENAME_SOURCE="./linux*/irods-*$IRODSVERSION*.$EXTENSION"
+    RENAME_SOURCE_DOCS=${RENAME_SOURCE/irods-/irods-docs-}
+    RENAME_SOURCE_DEV=${RENAME_SOURCE/irods-/irods-dev-}
+    RENAME_SOURCE_ICOMMANDS=${RENAME_SOURCE/irods-/irods-icommands-}
+    SOURCELIST=`ls $RENAME_SOURCE`
+    echo "EPM produced packages:"
+    echo "$SOURCELIST"
+    # prepare target build directory
+    mkdir -p $IRODSPACKAGEDIR
+    # vanilla construct
+    RENAME_DESTINATION="$IRODSPACKAGEDIR/irods-$IRODSVERSION-64bit.$EXTENSION"
+    # add OS-specific suffix
+    if [ "$SUFFIX" != "" ] ; then
+	RENAME_DESTINATION=${RENAME_DESTINATION/.$EXTENSION/$SUFFIX.$EXTENSION}
+    fi
+    # docs build
+    RENAME_DESTINATION_DOCS=${RENAME_DESTINATION/irods-/irods-docs-}
+    # release build (also building icommands)
+    RENAME_DESTINATION_DEV=${RENAME_DESTINATION/irods-/irods-dev-}
+    RENAME_DESTINATION_ICOMMANDS=${RENAME_DESTINATION/irods-/irods-icommands-}
+    # icat or resource
+    if [ "$TARGET" == "icat" ] ; then
+	RENAME_DESTINATION=${RENAME_DESTINATION/-64bit/-64bit-icat-postgres}
+    else
+	RENAME_DESTINATION=${RENAME_DESTINATION/-64bit/-64bit-resource}
+    fi
+    # coverage build
+    if [ "$COVERAGE" == "1" ] ; then
+	RENAME_DESTINATION=${RENAME_DESTINATION/-64bit/-64bit-coverage}
+    fi
+    # rename and tell me
+    if [ "$TARGET" == "docs" ] ; then
+	echo ""
+	echo "renaming    [$RENAME_SOURCE_DOCS]"
+	echo "         to [$RENAME_DESTINATION_DOCS]"
+	mv $RENAME_SOURCE_DOCS $RENAME_DESTINATION_DOCS
+    else
+	if [ "$RELEASE" == "1" ] ; then
+	    echo ""
+	    echo "renaming    [$RENAME_SOURCE_ICOMMANDS]"
+	    echo "         to [$RENAME_DESTINATION_ICOMMANDS]"
+	    mv $RENAME_SOURCE_ICOMMANDS $RENAME_DESTINATION_ICOMMANDS
+	fi
+	if [ "$TARGET" == "icat" ] ; then
+	    echo ""
+	    echo "renaming    [$RENAME_SOURCE_DEV]"
+	    echo "         to [$RENAME_DESTINATION_DEV]"
+	    mv $RENAME_SOURCE_DEV $RENAME_DESTINATION_DEV
+	fi
+	echo ""
+	echo "renaming    [$RENAME_SOURCE]"
+	echo "         to [$RENAME_DESTINATION]"
+	mv $RENAME_SOURCE $RENAME_DESTINATION
+    fi
+    # list new result set
+    echo ""
+    echo "Contents of $IRODSPACKAGEDIR:"
+    ls -l $IRODSPACKAGEDIR
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 # set up git commit hooks
 #if [ -d ".git" ] ; then
 #    cp ./packaging/pre-commit ./.git/hooks/pre-commit
@@ -208,14 +371,14 @@ if [ "$1" == "clean" ] ; then
     rm -rf $IRODSPACKAGEDIR
     set +e
     echo "Cleaning EPM residuals..."
-    cd $DETECTEDDIR/../
+    cd $BUILDDIR
     rm -rf linux-2.*
     rm -rf linux-3.*
     rm -rf macosx-10.*
     rm -rf epm
     rm -rf epm*
     echo "Cleaning external residuals..."
-    cd $DETECTEDDIR/../external
+    cd $BUILDDIR/external
     rm -rf __MACOSX
     rm -rf cJSON*
     rm -rf cmake*
@@ -223,10 +386,10 @@ if [ "$1" == "clean" ] ; then
     rm -rf libarchive*
     rm -rf boost*
     echo "Cleaning iRODS fuse residuals..."
-    cd $DETECTEDDIR/../iRODS/clients/fuse/
+    cd $BUILDDIR/iRODS/clients/fuse/
     make clean > /dev/null 2>&1
     echo "Cleaning iRODS residuals..."
-    cd $DETECTEDDIR/../iRODS
+    cd $BUILDDIR/iRODS
     make clean > /dev/null 2>&1
     rm -rf doc/html
     rm -f server/config/reConfigs/raja1.re
@@ -242,26 +405,97 @@ if [ "$1" == "clean" ] ; then
     exit 0
 fi
 
-# begin self-awareness
-echo "${text_green}${text_bold}Detecting Build Environment${text_reset}"
-echo "Detected Packaging Directory [$DETECTEDDIR]"
-GITDIR=`pwd`
-BUILDDIR=$GITDIR  # we'll manipulate this later, depending on the coverage flag
-cd $BUILDDIR/iRODS
-echo "Build Directory set to [$BUILDDIR]"
-# read iRODS Version from file
-source ../VERSION
-echo "Detected iRODS Version to Build [$IRODSVERSION]"
-echo "Detected iRODS Version Integer [$IRODSVERSIONINT]"
-# detect operating system
-DETECTEDOS=`../packaging/find_os.sh`
-if [ "$PORTABLE" == "1" ] ; then
-  DETECTEDOS="Portable"
-fi
-echo "Detected OS [$DETECTEDOS]"
-DETECTEDOSVERSION=`../packaging/find_os_version.sh`
-echo "Detected OS Version [$DETECTEDOSVERSION]"
+# check for docs
+if [ "$1" == "docs" ] ; then
+    # building documentation
+    BUILDDOCS="1"
+    echo ""
+    echo "${text_green}${text_bold}Building Docs...${text_reset}"
+    echo ""
+    
+    set +e
+    # generate manual in pdf format
+    echo "${text_green}${text_bold}Building E-iRODS Administration Manual${text_reset}"
+    cd $BUILDDIR
+    rst2pdf manual.rst -o manual.pdf
+    if [ "$?" != "0" ] ; then
+        echo "${text_red}#######################################################" 1>&2
+        echo "ERROR :: Failed generating manual.pdf" 1>&2
+        echo "#######################################################${text_reset}" 1>&2
+        exit 1
+    fi
+    set -e
+    # create a new copy of the manual which includes the version name
+    cp manual.pdf irods-manual-$IRODSVERSION.pdf
 
+    set +e
+    # generate doxygen for microservices
+    echo "${text_green}${text_bold}Building E-iRODS Doxygen Output${text_reset}"
+    cd $BUILDDIR/iRODS/
+    doxygen ./config/doxygen-saved.cfg
+    if [ "$?" != "0" ] ; then
+        echo "${text_red}#######################################################" 1>&2
+        echo "ERROR :: Failed generating doxygen output" 1>&2
+        echo "#######################################################${text_reset}" 1>&2
+        exit 1
+    fi
+    set -e
+
+    # get EPM
+    download_and_compile_EPM
+
+    # prepare list file from template
+    cd $BUILDDIR
+    LISTFILE="./packaging/irods-docs.list"
+    TMPFILE="/tmp/irodsdocslist.tmp"
+    sed -e "s,TEMPLATE_IRODSVERSIONINT,$IRODSVERSIONINT," $LISTFILE.template > $TMPFILE
+    mv $TMPFILE $LISTFILE
+    sed -e "s,TEMPLATE_IRODSVERSION,$IRODSVERSION," $LISTFILE > $TMPFILE
+    mv $TMPFILE $LISTFILE
+
+    # package them up
+    cd $BUILDDIR
+    unamem=`uname -m`
+    if [[ "$unamem" == "x86_64" || "$unamem" == "amd64" ]] ; then
+	arch="amd64"
+    else
+	arch="i386"
+    fi
+    if [ "$DETECTEDOS" == "RedHatCompatible" ] ; then # CentOS and RHEL and Fedora
+	echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS RPMs${text_reset}"
+	./epm/epm -f rpm irods-docs $LISTFILE
+    elif [ "$DETECTEDOS" == "SuSE" ] ; then # SuSE
+	echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS RPMs${text_reset}"
+	./epm/epm -f rpm irods-docs $LISTFILE
+    elif [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then  # Ubuntu
+	echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS DEBs${text_reset}"
+	./epm/epm -a $arch -f deb irods-docs $LISTFILE
+    elif [ "$DETECTEDOS" == "Solaris" ] ; then  # Solaris
+	echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS PKGs${text_reset}"
+	./epm/epm -f pkg irods-docs $LISTFILE
+    elif [ "$DETECTEDOS" == "MacOSX" ] ; then  # MacOSX
+	echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS DMGs${text_reset}"
+	./epm/epm -f osx irods-docs $LISTFILE
+    elif [ "$DETECTEDOS" == "Portable" ] ; then  # Portable
+	echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS TGZs${text_reset}"
+	./epm/epm -f portable irods-docs $LISTFILE
+    else
+	echo "${text_red}#######################################################" 1>&2
+	echo "ERROR :: Unknown OS, cannot generate packages with EPM" 1>&2
+	echo "#######################################################${text_reset}" 1>&2
+	exit 1
+    fi
+
+    # rename generated packages appropriately
+    rename_generated_packages $1
+
+    # done
+    echo "${text_green}${text_bold}Done.${text_reset}"
+    exit 0
+fi
+
+
+# check for invalid switch combinations
 if [[ $1 != "icat" && $1 != "resource" ]] ; then
     echo "${text_red}#######################################################" 1>&2
     echo "ERROR :: Invalid serverType [$1]" 1>&2
@@ -1071,17 +1305,6 @@ if [ "$BUILDIRODS" == "1" ] ; then
 
 
     set +e
-    # generate manual in pdf format
-    echo "${text_green}${text_bold}Building iRODS Manual${text_reset}"
-    cd $BUILDDIR
-    rst2pdf manual.rst -o manual.pdf
-    if [ "$?" != "0" ] ; then
-        echo "${text_red}#######################################################" 1>&2
-        echo "ERROR :: Failed generating manual.pdf" 1>&2
-        echo "#######################################################${text_reset}" 1>&2
-        exit 1
-    fi
-
     # generate microservice developers tutorial in pdf format
     echo "${text_green}${text_bold}Building iRODS Microservice Developers Tutorial${text_reset}"
     cd $BUILDDIR/examples/microservices
@@ -1089,17 +1312,6 @@ if [ "$BUILDIRODS" == "1" ] ; then
     if [ "$?" != "0" ] ; then
         echo "${text_red}#######################################################" 1>&2
         echo "ERROR :: Failed generating microservice_tutorial.pdf" 1>&2
-        echo "#######################################################${text_reset}" 1>&2
-        exit 1
-    fi
-
-    # generate doxygen for microservices
-    echo "${text_green}${text_bold}Building iRODS Doxygen Output${text_reset}"
-    cd $BUILDDIR/iRODS
-    doxygen ./config/doxygen-saved.cfg
-    if [ "$?" != "0" ] ; then
-        echo "${text_red}#######################################################" 1>&2
-        echo "ERROR :: Failed generating doxygen output" 1>&2
         echo "#######################################################${text_reset}" 1>&2
         exit 1
     fi
@@ -1215,29 +1427,7 @@ fi
 # prepare epm list files from templates
 
 if [ "$BUILDIRODS" == "1" ] ; then
-    # get RENCI updates to EPM from repository
-    echo "${text_green}${text_bold}Downloading EPM from RENCI${text_reset}"
-    cd $BUILDDIR
-    RENCIEPM="epm42-renci.tar.gz"
-    rm -rf epm
-    rm -f $RENCIEPM
-    wget ftp://ftp.renci.org/pub/eirods/build/$RENCIEPM
-    tar -xf $RENCIEPM
-    # configure
-    echo "${text_green}${text_bold}Configuring EPM${text_reset}"
-    cd $BUILDDIR/epm
-    set +e
-    ./configure > /dev/null
-    if [ "$?" != "0" ] ; then
-        exit 1
-    fi
-    # build
-    echo "${text_green}${text_bold}Building EPM${text_reset}"
-    make > /dev/null
-    if [ "$?" != "0" ] ; then
-        exit 1
-    fi
-    set -e
+    download_and_compile_EPM
 fi
 
 if [ "$COVERAGE" == "1" ] ; then
@@ -1332,74 +1522,7 @@ fi
 
 
 # rename generated packages appropriately
-cd $BUILDDIR
-SUFFIX=""
-if   [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-    EXTENSION="rpm"
-    SUFFIX="-redhat"
-    if [ "$epmosversion" == "CENTOS6" ] ; then
-        SUFFIX="-centos6"
-    fi
-elif [ "$DETECTEDOS" == "SuSE" ] ; then
-    EXTENSION="rpm"
-    SUFFIX="-suse"
-elif [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
-    EXTENSION="deb"
-elif [ "$DETECTEDOS" == "Solaris" ] ; then
-    EXTENSION="pkg"
-elif [ "$DETECTEDOS" == "MacOSX" ] ; then
-    EXTENSION="dmg"
-elif [ "$DETECTEDOS" == "Portable" ] ; then
-    EXTENSION="tar.gz"
-fi
-RENAME_SOURCE="./linux*/irods-*$IRODSVERSION*.$EXTENSION"
-RENAME_SOURCE_DEV=${RENAME_SOURCE/irods-/irods-dev-}
-RENAME_SOURCE_ICOMMANDS=${RENAME_SOURCE/irods-/irods-icommands-}
-SOURCELIST=`ls $RENAME_SOURCE`
-echo "EPM produced packages:"
-echo "$SOURCELIST"
-# prepare target build directory
-mkdir -p $IRODSPACKAGEDIR
-# vanilla construct
-RENAME_DESTINATION="$IRODSPACKAGEDIR/irods-$IRODSVERSION-64bit.$EXTENSION"
-# add OS-specific suffix
-if [ "$SUFFIX" != "" ] ; then
-    RENAME_DESTINATION=${RENAME_DESTINATION/.$EXTENSION/$SUFFIX.$EXTENSION}
-fi
-# release build (also building icommands and dev)
-RENAME_DESTINATION_DEV=${RENAME_DESTINATION/irods-/irods-dev-}
-RENAME_DESTINATION_ICOMMANDS=${RENAME_DESTINATION/irods-/irods-icommands-}
-# icat or resource
-if [ "$1" == "icat" ] ; then
-    RENAME_DESTINATION=${RENAME_DESTINATION/-64bit/-64bit-icat-postgres}
-else
-    RENAME_DESTINATION=${RENAME_DESTINATION/-64bit/-64bit-resource}
-fi
-# coverage build
-if [ "$COVERAGE" == "1" ] ; then
-    RENAME_DESTINATION=${RENAME_DESTINATION/-64bit/-64bit-coverage}
-fi
-# rename and tell me
-if [ "$RELEASE" == "1" ] ; then
-    echo ""
-    echo "renaming    [$RENAME_SOURCE_ICOMMANDS]"
-    echo "         to [$RENAME_DESTINATION_ICOMMANDS]"
-    mv $RENAME_SOURCE_ICOMMANDS $RENAME_DESTINATION_ICOMMANDS
-fi
-if [ "$1" == "icat" ] ; then
-    echo ""
-    echo "renaming    [$RENAME_SOURCE_DEV]"
-    echo "         to [$RENAME_DESTINATION_DEV]"
-    mv $RENAME_SOURCE_DEV $RENAME_DESTINATION_DEV
-fi
-echo ""
-echo "renaming    [$RENAME_SOURCE]"
-echo "         to [$RENAME_DESTINATION]"
-mv $RENAME_SOURCE $RENAME_DESTINATION
-# list new result set
-echo ""
-echo "Contents of $IRODSPACKAGEDIR:"
-ls -l $IRODSPACKAGEDIR
+rename_generated_packages $1
 
 # clean up coverage build
 if [ "$COVERAGE" == "1" ] ; then
@@ -1407,16 +1530,10 @@ if [ "$COVERAGE" == "1" ] ; then
     echo "${text_green}${text_bold}Copying generated packages back to original working directory...${text_reset}"
     # get packages
     for f in `find . -name "*.$EXTENSION"` ; do mkdir -p $GITDIR/`dirname $f`; cp $f $GITDIR/$f; done
-    # get generated manual
-    cp manual.pdf $GITDIR/
     # delete target build directory, so a package install can go there
     cd $GITDIR
     rm -rf $COVERAGEBUILDDIR
 fi
-
-# create a new copy of the manual which includes the version name
-# this is for ease of generating a release
-cp manual.pdf irods-manual-$IRODSVERSION.pdf
 
 # grant write permission to all, in case this was run via sudo
 cd $GITDIR
