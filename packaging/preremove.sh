@@ -30,7 +30,7 @@ DB_ADMIN_ROLE=$5
 DB_NAME=$6
 DB_USER=$7
 
-IRODS_HOME=$EIRODS_HOME_DIR/iRODS
+IRODS_HOME=$IRODS_HOME_DIR/iRODS
 
 #echo "THREE_OH_SCRIPT=[$THREE_OH_SCRIPT]"
 #echo "PACKAGER_COMMAND=[$PACKAGER_COMMAND]"
@@ -85,14 +85,14 @@ if [ "$PACKAGEUPGRADE" == "false" ] ; then
 	    # do a dryrun on the resource removal to determine if this resource server can
 	    # be safely removed without harming any data
             resources_to_remove=()
-	    for resc in `su -c "iadmin lr" $OS_EIRODS_ACCT`
+	    for resc in `su -c "iadmin lr" $OS_IRODS_ACCT`
 	    do
 		# =-=-=-=-=-=-=-
 		# for each resource determine its location.  if it is this server then dryrun
-		loc=$( su -c "iadmin lr $resc | grep resc_net | cut -d' ' -f2" $OS_EIRODS_ACCT )
+		loc=$( su -c "iadmin lr $resc | grep resc_net | cut -d' ' -f2" $OS_IRODS_ACCT )
 
 		if [[ $loc == $hn || $loc == $fhn ]]; then
-			rem=$( su -c "iadmin rmresc --dryrun $resc | grep SUCCESS" $OS_EIRODS_ACCT )
+			rem=$( su -c "iadmin rmresc --dryrun $resc | grep SUCCESS" $OS_IRODS_ACCT )
 			if [[ "x$rem" == "x" ]]; then
 				# =-=-=-=-=-=-=-
                                 # dryrun for a local resource was a failure, set a flag
@@ -116,7 +116,7 @@ if [ "$PACKAGEUPGRADE" == "false" ] ; then
                 for delresc in ${resources_to_remove[*]}
                 do
                     echo "  Removing Resource [$delresc]"
-                    su -c "iadmin rmresc $delresc" $OS_EIRODS_ACCT
+                    su -c "iadmin rmresc $delresc" $OS_IRODS_ACCT
                     if [ $? != 0 ] ; then
                         exit 1
                     fi
@@ -128,7 +128,7 @@ if [ "$PACKAGEUPGRADE" == "false" ] ; then
 	# stop any running iRODS Processes
 	echo "Stopping iRODS :: $IRODS_HOME/irodsctl stop"
 	cd $IRODS_HOME
-	su --shell=/bin/bash -c "$IRODS_HOME/irodsctl stop" $OS_EIRODS_ACCT
+	su --shell=/bin/bash -c "$IRODS_HOME/irodsctl stop" $OS_IRODS_ACCT
 	cd /tmp
 
 	# =-=-=-=-=-=-=-
@@ -138,7 +138,7 @@ if [ "$PACKAGEUPGRADE" == "false" ] ; then
 	#	if [ "$DB_TYPE" == "postgres" ] ; then
 	#		# =-=-=-=-=-=-=-
 	#		# determine if the database exists & remove
-	#		PSQL=`$EIRODS_HOME_DIR/packaging/find_postgres_bin.sh`
+	#		PSQL=`$IRODS_HOME_DIR/packaging/find_postgres_bin.sh`
 	#		PSQL="$PSQL/psql"
 	#
 	#		DB=$( su --shell=/bin/bash -c "$PSQL --list | grep $DB_NAME" $DB_ADMIN_ROLE )
@@ -149,7 +149,7 @@ if [ "$PACKAGEUPGRADE" == "false" ] ; then
 	#
 	#		# =-=-=-=-=-=-=-
 	#		# determine if the database role exists & remove
-	#		ROLE=$( su - $OS_EIRODS_ACCT --shell=/bin/bash -c "$PSQL $DB_ADMIN_ROLE -tAc \"SELECT 1 FROM pg_roles WHERE rolname='$DB_USER'\"" )
+	#		ROLE=$( su - $OS_IRODS_ACCT --shell=/bin/bash -c "$PSQL $DB_ADMIN_ROLE -tAc \"SELECT 1 FROM pg_roles WHERE rolname='$DB_USER'\"" )
 	#		if [ $ROLE ]; then
 	#			echo "Removing Database Role $DB_USER"
 	#			su --shell=/bin/bash -c "dropuser $DB_USER" $DB_ADMIN_ROLE &> /dev/null

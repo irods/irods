@@ -1,9 +1,9 @@
 // =-=-=-=-=-=-=-
 // E-iRODS Includes
-#include "apiHeaderAll.h"
-#include "msParam.h"
-#include "reGlobalsExtern.h"
-#include "eirods_ms_plugin.h"
+#include "apiHeaderAll.hpp"
+#include "msParam.hpp"
+#include "reGlobalsExtern.hpp"
+#include "irods_ms_plugin.hpp"
 
 
 // =-=-=-=-=-=-=-
@@ -156,19 +156,19 @@ extern "C" {
 
 // =-=-=-=-=-=-=-
 // 1. Write a standard issue microservice
-int eirods_curl_get(msParam_t* url, msParam_t* dest_obj, ruleExecInfo_t* rei) {
+int irods_curl_get(msParam_t* url, msParam_t* dest_obj, ruleExecInfo_t* rei) {
 	dataObjInp_t destObjInp, *myDestObjInp;		/* for parsing input object */
 
 	// Sanity checks
 	if (!rei || !rei->rsComm) {
-		rodsLog (LOG_ERROR, "eirods_curl_get: Input rei or rsComm is NULL.");
+		rodsLog (LOG_ERROR, "irods_curl_get: Input rei or rsComm is NULL.");
 		return (SYS_INTERNAL_NULL_INPUT_ERR);
 	}
 
 	// Get path of destination object
 	rei->status = parseMspForDataObjInp (dest_obj, &destObjInp, &myDestObjInp, 0);
 	if (rei->status < 0) {
-		rodsLog (LOG_ERROR, "eirods_curl_get: Input object error. status = %d", rei->status);
+		rodsLog (LOG_ERROR, "irods_curl_get: Input object error. status = %d", rei->status);
 		return (rei->status);
 	}
 
@@ -191,13 +191,13 @@ irods::ms_table_entry*  plugin_factory() {
     // =-=-=-=-=-=-=-
     // 3.  allocate a microservice plugin which takes the number of function
     //     params as a parameter to the constructor
-	irods::ms_table_entry* msvc = new eirods::ms_table_entry(2);
+	irods::ms_table_entry* msvc = new irods::ms_table_entry(2);
 
     // =-=-=-=-=-=-=-
     // 4. add the microservice function as an operation to the plugin
     //    the first param is the name / key of the operation, the second
     //    is the name of the function which will be the microservice
-    msvc->add_operation("eirods_curl_get", "eirods_curl_get");
+    msvc->add_operation("irods_curl_get", "irods_curl_get");
 
     // =-=-=-=-=-=-=-
     // 5. return the newly created microservice plugin

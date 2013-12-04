@@ -1,8 +1,8 @@
 // =-=-=-=-=-=-=-
 // E-iRODS Includes
-#include "msParam.h"
-#include "reGlobalsExtern.h"
-#include "eirods_ms_plugin.h"
+#include "msParam.hpp"
+#include "reGlobalsExtern.hpp"
+#include "irods_ms_plugin.hpp"
 
 // =-=-=-=-=-=-=-
 // STL Includes
@@ -16,8 +16,8 @@ extern "C" {
 	
     // =-=-=-=-=-=-=-
     // 2. Write a standard issue microservice	
-    int eirods_msvc_test( msParam_t* _a, msParam_t* _b, msParam_t* _c, ruleExecInfo_t* _rei ) {
-        std::cout << "eirods_msvc_test :: " << parseMspForStr( _a ) << " " << parseMspForStr( _b ) << " " << parseMspForStr( _c ) << std::endl;
+    int irods_msvc_test( msParam_t* _a, msParam_t* _b, msParam_t* _c, ruleExecInfo_t* _rei ) {
+        std::cout << "irods_msvc_test :: " << parseMspForStr( _a ) << " " << parseMspForStr( _b ) << " " << parseMspForStr( _c ) << std::endl;
         return 0;
     }
 
@@ -28,13 +28,13 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // 4.  allocate a microservice plugin which takes the number of function 
         //     params as a parameter to the constructor 
-        irods::ms_table_entry* msvc = new eirods::ms_table_entry( 3 );	
+        irods::ms_table_entry* msvc = new irods::ms_table_entry( 3 );	
 
         // =-=-=-=-=-=-=-
         // 5. add the microservice function as an operation to the plugin
         //    the first param is the name / key of the operation, the second
         //    is the name of the function which will be the microservice
-        msvc->add_operation( "eirods_msvc_test", "eirods_msvc_test" );
+        msvc->add_operation( "irods_msvc_test", "irods_msvc_test" );
         
         // =-=-=-=-=-=-=-
         // 6. return the newly created microservice plugin

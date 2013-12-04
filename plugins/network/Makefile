@@ -9,7 +9,7 @@ include ../../iRODS/config/config.mk
 
 GCC = g++ -DRODS_SERVER -DZIP_EXEC_PATH=\"$(ZIP_EXEC_PATH)\" -DUNZIP_EXEC_PATH=\"$(UNZIP_EXEC_PATH)\"
 
-ifeq ($(EIRODS_BUILD_COVERAGE), 1)
+ifeq ($(IRODS_BUILD_COVERAGE), 1)
 GCC += -fprofile-arcs -ftest-coverage -lgcov
 endif
 
@@ -20,7 +20,7 @@ export SOTOPDIR = .
 
 SUBS = ${BASEDIRS}
 
-ifeq ($(EIRODS_BUILD_DEBUG), 0)
+ifeq ($(IRODS_BUILD_DEBUG), 0)
 #SUBS += ${HPSSDIRS}
 endif
 
