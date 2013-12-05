@@ -219,6 +219,7 @@ if [ "$1" == "clean" ] ; then
     rm -rf __MACOSX
     rm -rf cJSON*
     rm -rf cmake*
+    rm -rf jansson*
     rm -rf libarchive*
     rm -rf boost*
     echo "Cleaning iRODS fuse residuals..."
