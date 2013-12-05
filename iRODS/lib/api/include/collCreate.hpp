@@ -19,11 +19,11 @@
 #define RS_COLL_CREATE rsCollCreate
 /* prototype for the server handler */
 int
-rsCollCreate (rsComm_t *rsComm, collInp_t *collCreateInp);
+rsCollCreate( rsComm_t *rsComm, collInp_t *collCreateInp );
 int
-remoteCollCreate (rsComm_t *rsComm, collInp_t *collCreateInp);
+remoteCollCreate( rsComm_t *rsComm, collInp_t *collCreateInp );
 int
-l3Mkdir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo);
+l3Mkdir( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo );
 #else
 #define RS_COLL_CREATE NULL
 #endif
@@ -33,7 +33,7 @@ l3Mkdir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo);
 #define RS_COLL_CREATE201 rsCollCreate201
 /* prototype for the server handler */
 int
-rsCollCreate201 (rsComm_t *rsComm, collInp201_t *collCreateInp);
+rsCollCreate201( rsComm_t *rsComm, collInp201_t *collCreateInp );
 #else
 #define RS_COLL_CREATE201 NULL
 #endif
@@ -43,20 +43,20 @@ rsCollCreate201 (rsComm_t *rsComm, collInp201_t *collCreateInp);
 extern "C" {
 #endif
 
-/* prototype for the client call */
-int
-rcCollCreate (rcComm_t *conn, collInp_t *collCreateInp);
+    /* prototype for the client call */
+    int
+    rcCollCreate( rcComm_t *conn, collInp_t *collCreateInp );
 
-/* rcCollCreate - Create a iRODS collection.
- * Input -
- *   rcComm_t *conn - The client connection handle.
- *   collInp_t *collInp - generic coll input. Relevant items are:
- *      collName - the collection to be registered.
- *      condInput - condition input (optional) - currently not used.
- *
- * OutPut -
- *   int status - status of the operation.
- */
+    /* rcCollCreate - Create a iRODS collection.
+     * Input -
+     *   rcComm_t *conn - The client connection handle.
+     *   collInp_t *collInp - generic coll input. Relevant items are:
+     *      collName - the collection to be registered.
+     *      condInput - condition input (optional) - currently not used.
+     *
+     * OutPut -
+     *   int status - status of the operation.
+     */
 #ifdef  __cplusplus
 }
 #endif

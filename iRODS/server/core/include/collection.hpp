@@ -19,26 +19,26 @@
 #include "reIn2p3SysRule.hpp"
 
 int
-checkCollAccessPerm (rsComm_t *rsComm, char *collection, char *accessPerm);
+checkCollAccessPerm( rsComm_t *rsComm, char *collection, char *accessPerm );
 int
-rsQueryDataObjInCollReCur (rsComm_t *rsComm, char *collection,
-genQueryInp_t *genQueryInp, genQueryOut_t **genQueryOut, char *accessPerm,
-int singleFlag);
+rsQueryDataObjInCollReCur( rsComm_t *rsComm, char *collection,
+                           genQueryInp_t *genQueryInp, genQueryOut_t **genQueryOut, char *accessPerm,
+                           int singleFlag );
 int
-rsQueryCollInColl (rsComm_t *rsComm, char *collection,
-genQueryInp_t *genQueryInp, genQueryOut_t **genQueryOut);
+rsQueryCollInColl( rsComm_t *rsComm, char *collection,
+                   genQueryInp_t *genQueryInp, genQueryOut_t **genQueryOut );
 int
-isCollEmpty (rsComm_t *rsComm, char *collection);
+isCollEmpty( rsComm_t *rsComm, char *collection );
 int
-collStat (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-rodsObjStat_t **rodsObjStatOut);
+collStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+          rodsObjStat_t **rodsObjStatOut );
 int
-collStatAllKinds (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-rodsObjStat_t **rodsObjStatOut);
+collStatAllKinds( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+                  rodsObjStat_t **rodsObjStatOut );
 int
-rsMkCollR (rsComm_t *rsComm, const char *startColl, const char *destColl);
+rsMkCollR( rsComm_t *rsComm, const char *startColl, const char *destColl );
 #ifdef FILESYSTEM_META
 int
-rsQueryDirectoryMeta (rsComm_t *rsComm, char *collection, keyValPair_t *condInput);
+rsQueryDirectoryMeta( rsComm_t *rsComm, char *collection, keyValPair_t *condInput );
 #endif
 #endif	/* COLLECTION_H */

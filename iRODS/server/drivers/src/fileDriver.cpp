@@ -16,19 +16,19 @@
 
 // =-=-=-=-=-=-=-
 // Top Level Inteface for Resource Plugin POSIX create
-irods::error fileCreate( 
-    rsComm_t*                      _comm, 
+irods::error fileCreate(
+    rsComm_t*                      _comm,
     irods::first_class_object_ptr _object ) {
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the object
     irods::plugin_ptr   ptr;
     irods::resource_ptr resc;
-    irods::error ret_err = _object->resolve( irods::RESOURCE_INTERFACE, ptr ); 
-    if( !ret_err.ok() ) {
+    irods::error ret_err = _object->resolve( irods::RESOURCE_INTERFACE, ptr );
+    if ( !ret_err.ok() ) {
         irods::log( ret_err );
         return PASSMSG( "failed to resolve resource", ret_err );
     }
-           
+
     // =-=-=-=-=-=-=-
     // make the call to the "create" interface
     resc    = boost::dynamic_pointer_cast< irods::resource >( ptr );
@@ -36,9 +36,10 @@ irods::error fileCreate(
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
-    if( !ret_err.ok() ) {
+    if ( !ret_err.ok() ) {
         return PASSMSG( "failed to call 'create'", ret_err );
-    } else {
+    }
+    else {
         return CODE( ret_err.code() );
     }
 
@@ -47,18 +48,18 @@ irods::error fileCreate(
 
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX open
-irods::error fileOpen( 
-    rsComm_t*                      _comm, 
+irods::error fileOpen(
+    rsComm_t*                      _comm,
     irods::first_class_object_ptr _object ) {
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the object
     irods::plugin_ptr   ptr;
     irods::resource_ptr resc;
-    irods::error ret_err = _object->resolve( irods::RESOURCE_INTERFACE, ptr ); 
-    if( !ret_err.ok() ) {
+    irods::error ret_err = _object->resolve( irods::RESOURCE_INTERFACE, ptr );
+    if ( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve resource", ret_err );
     }
-    
+
     // =-=-=-=-=-=-=-
     // make the call to the "open" interface
     resc    = boost::dynamic_pointer_cast< irods::resource >( ptr );
@@ -66,10 +67,11 @@ irods::error fileOpen(
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
-    if( !ret_err.ok() ) {
+    if ( !ret_err.ok() ) {
         return PASSMSG( "failed to call 'open'", ret_err );
-    
-    } else {
+
+    }
+    else {
         return CODE( ret_err.code() );
 
     }
@@ -78,17 +80,17 @@ irods::error fileOpen(
 
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX read
-irods::error fileRead( 
-    rsComm_t*                      _comm, 
-    irods::first_class_object_ptr _object, 
-    void*                          _buf, 
+irods::error fileRead(
+    rsComm_t*                      _comm,
+    irods::first_class_object_ptr _object,
+    void*                          _buf,
     int                            _len ) {
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the object
     irods::plugin_ptr   ptr;
     irods::resource_ptr resc;
-    irods::error ret_err = _object->resolve( irods::RESOURCE_INTERFACE, ptr ); 
-    if( !ret_err.ok() ) {
+    irods::error ret_err = _object->resolve( irods::RESOURCE_INTERFACE, ptr );
+    if ( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve resource", ret_err );
     }
 
@@ -99,9 +101,10 @@ irods::error fileRead(
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
-    if( !ret_err.ok() ) {
+    if ( !ret_err.ok() ) {
         return PASSMSG( "failed to call 'read'", ret_err );
-    } else {
+    }
+    else {
         return CODE( ret_err.code() );
     }
 
@@ -109,20 +112,20 @@ irods::error fileRead(
 
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX write
-irods::error fileWrite( 
-    rsComm_t*                      _comm, 
-    irods::first_class_object_ptr _object, 
-    void*                          _buf, 
+irods::error fileWrite(
+    rsComm_t*                      _comm,
+    irods::first_class_object_ptr _object,
+    void*                          _buf,
     int                            _len ) {
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the object
     irods::plugin_ptr   ptr;
     irods::resource_ptr resc;
-    irods::error ret_err = _object->resolve( irods::RESOURCE_INTERFACE, ptr ); 
-    if( !ret_err.ok() ) {
+    irods::error ret_err = _object->resolve( irods::RESOURCE_INTERFACE, ptr );
+    if ( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve resource", ret_err );
     }
-    
+
     // =-=-=-=-=-=-=-
     // make the call to the "write" interface
     resc    = boost::dynamic_pointer_cast< irods::resource >( ptr );
@@ -130,27 +133,28 @@ irods::error fileWrite(
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
-    if( !ret_err.ok() ) {
+    if ( !ret_err.ok() ) {
         return PASSMSG( "failed to call 'write'", ret_err );
-    } else {
+    }
+    else {
         std::stringstream msg;
         msg << "Write successful.";
-        return PASSMSG(msg.str(), ret_err);
+        return PASSMSG( msg.str(), ret_err );
     }
 
 } // fileWrite
 
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX close
-irods::error fileClose( 
-    rsComm_t*                      _comm, 
+irods::error fileClose(
+    rsComm_t*                      _comm,
     irods::first_class_object_ptr _object ) {
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the path
     irods::plugin_ptr   ptr;
     irods::resource_ptr resc;
-    irods::error ret_err = _object->resolve( irods::RESOURCE_INTERFACE, ptr ); 
-    if( !ret_err.ok() ) {
+    irods::error ret_err = _object->resolve( irods::RESOURCE_INTERFACE, ptr );
+    if ( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve resource", ret_err );
     }
 
@@ -161,9 +165,10 @@ irods::error fileClose(
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
-    if( !ret_err.ok() ) {
+    if ( !ret_err.ok() ) {
         return PASSMSG( "failed to call 'close'", ret_err );
-    } else {
+    }
+    else {
         return CODE( ret_err.code() );
     }
 
@@ -171,15 +176,15 @@ irods::error fileClose(
 
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX unlink
-irods::error fileUnlink( 
-    rsComm_t*                      _comm, 
+irods::error fileUnlink(
+    rsComm_t*                      _comm,
     irods::first_class_object_ptr _object ) {
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the path
     irods::plugin_ptr   ptr;
     irods::resource_ptr resc;
-    irods::error ret_err = _object->resolve( irods::RESOURCE_INTERFACE, ptr ); 
-    if( !ret_err.ok() ) {
+    irods::error ret_err = _object->resolve( irods::RESOURCE_INTERFACE, ptr );
+    if ( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve resource", ret_err );
     }
 
@@ -190,9 +195,10 @@ irods::error fileUnlink(
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
-    if( !ret_err.ok() ) {
+    if ( !ret_err.ok() ) {
         return PASSMSG( "failed to call 'unlink'", ret_err );
-    } else {
+    }
+    else {
         return CODE( ret_err.code() );
     }
 
@@ -200,16 +206,16 @@ irods::error fileUnlink(
 
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX stat
-irods::error fileStat( 
-    rsComm_t*                      _comm, 
-    irods::first_class_object_ptr _object, 
+irods::error fileStat(
+    rsComm_t*                      _comm,
+    irods::first_class_object_ptr _object,
     struct stat*                   _statbuf ) {
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the path
     irods::plugin_ptr   ptr;
     irods::resource_ptr resc;
-    irods::error ret_err = _object->resolve( irods::RESOURCE_INTERFACE, ptr ); 
-    if( !ret_err.ok() ) {
+    irods::error ret_err = _object->resolve( irods::RESOURCE_INTERFACE, ptr );
+    if ( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve resource", ret_err );
     }
 
@@ -220,9 +226,10 @@ irods::error fileStat(
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
-    if( !ret_err.ok() ) {
+    if ( !ret_err.ok() ) {
         return PASSMSG( "failed to call 'stat'", ret_err );
-    } else {
+    }
+    else {
         return CODE( ret_err.code() );
     }
 
@@ -230,17 +237,17 @@ irods::error fileStat(
 
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX lseek
-irods::error fileLseek( 
-    rsComm_t*                      _comm, 
-    irods::first_class_object_ptr _object, 
-    long long                      _offset, 
+irods::error fileLseek(
+    rsComm_t*                      _comm,
+    irods::first_class_object_ptr _object,
+    long long                      _offset,
     int                            _whence ) {
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the path
     irods::plugin_ptr   ptr;
     irods::resource_ptr resc;
-    irods::error ret_err = _object->resolve( irods::RESOURCE_INTERFACE, ptr ); 
-    if( !ret_err.ok() ) {
+    irods::error ret_err = _object->resolve( irods::RESOURCE_INTERFACE, ptr );
+    if ( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve resource", ret_err );
     }
 
@@ -251,9 +258,10 @@ irods::error fileLseek(
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
-    if( !ret_err.ok() ) {
+    if ( !ret_err.ok() ) {
         return PASSMSG( "failed to call 'lseek'", ret_err );
-    } else {
+    }
+    else {
         return CODE( ret_err.code() );
     }
 
@@ -261,15 +269,15 @@ irods::error fileLseek(
 
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX mkdir
-irods::error fileMkdir( 
-    rsComm_t*                      _comm, 
+irods::error fileMkdir(
+    rsComm_t*                      _comm,
     irods::first_class_object_ptr _object ) {
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the path
     irods::plugin_ptr   ptr;
     irods::resource_ptr resc;
-    irods::error ret_err = _object->resolve( irods::RESOURCE_INTERFACE, ptr ); 
-    if( !ret_err.ok() ) {
+    irods::error ret_err = _object->resolve( irods::RESOURCE_INTERFACE, ptr );
+    if ( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve resource", ret_err );
     }
 
@@ -280,9 +288,10 @@ irods::error fileMkdir(
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
-    if( !ret_err.ok() ) {
+    if ( !ret_err.ok() ) {
         return PASSMSG( "failed to call 'mkdir'", ret_err );
-    } else {
+    }
+    else {
         return CODE( ret_err.code() );
     }
 
@@ -291,16 +300,16 @@ irods::error fileMkdir(
 
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX chmod
-irods::error fileChmod( 
-    rsComm_t*                      _comm, 
+irods::error fileChmod(
+    rsComm_t*                      _comm,
     irods::first_class_object_ptr _object,
-    int                            _mode) {
+    int                            _mode ) {
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the path
     irods::plugin_ptr   ptr;
     irods::resource_ptr resc;
-    irods::error ret_err = _object->resolve( irods::RESOURCE_INTERFACE, ptr ); 
-    if( !ret_err.ok() ) {
+    irods::error ret_err = _object->resolve( irods::RESOURCE_INTERFACE, ptr );
+    if ( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve resource", ret_err );
     }
 
@@ -311,9 +320,10 @@ irods::error fileChmod(
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
-    if( !ret_err.ok() ) {
+    if ( !ret_err.ok() ) {
         return PASSMSG( "failed to call 'chmod'", ret_err );
-    } else {
+    }
+    else {
         return CODE( ret_err.code() );
     }
 
@@ -321,15 +331,15 @@ irods::error fileChmod(
 
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX rmdir
-irods::error fileRmdir( 
-    rsComm_t*                      _comm, 
+irods::error fileRmdir(
+    rsComm_t*                      _comm,
     irods::first_class_object_ptr _object ) {
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the path
     irods::plugin_ptr   ptr;
     irods::resource_ptr resc;
-    irods::error ret_err = _object->resolve( irods::RESOURCE_INTERFACE, ptr ); 
-    if( !ret_err.ok() ) {
+    irods::error ret_err = _object->resolve( irods::RESOURCE_INTERFACE, ptr );
+    if ( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve resource", ret_err );
     }
 
@@ -340,9 +350,10 @@ irods::error fileRmdir(
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
-    if( !ret_err.ok() ) {
+    if ( !ret_err.ok() ) {
         return PASSMSG( "failed to call 'rmdir'", ret_err );
-    } else {
+    }
+    else {
         return CODE( ret_err.code() );
     }
 
@@ -350,15 +361,15 @@ irods::error fileRmdir(
 
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX opendir
-irods::error fileOpendir( 
-    rsComm_t*                      _comm, 
+irods::error fileOpendir(
+    rsComm_t*                      _comm,
     irods::first_class_object_ptr _object ) {
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the path
     irods::plugin_ptr   ptr;
     irods::resource_ptr resc;
-    irods::error ret_err = _object->resolve( irods::RESOURCE_INTERFACE, ptr ); 
-    if( !ret_err.ok() ) {
+    irods::error ret_err = _object->resolve( irods::RESOURCE_INTERFACE, ptr );
+    if ( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve resource", ret_err );
     }
 
@@ -369,25 +380,26 @@ irods::error fileOpendir(
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
-    if( !ret_err.ok() ) {
+    if ( !ret_err.ok() ) {
         return PASSMSG( "failed to call 'opendir'", ret_err );
-    } else {
+    }
+    else {
         return CODE( ret_err.code() );
     }
-    
+
 } // fileOpendir
 
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX closedir
-irods::error fileClosedir( 
-    rsComm_t*                      _comm, 
+irods::error fileClosedir(
+    rsComm_t*                      _comm,
     irods::first_class_object_ptr _object ) {
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the path
     irods::plugin_ptr   ptr;
     irods::resource_ptr resc;
-    irods::error ret_err = _object->resolve( irods::RESOURCE_INTERFACE, ptr ); 
-    if( !ret_err.ok() ) {
+    irods::error ret_err = _object->resolve( irods::RESOURCE_INTERFACE, ptr );
+    if ( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve resource", ret_err );
     }
 
@@ -398,26 +410,27 @@ irods::error fileClosedir(
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
-    if( !ret_err.ok() ) {
+    if ( !ret_err.ok() ) {
         return PASSMSG( "failed to call 'closedir'", ret_err );
-    } else {
+    }
+    else {
         return CODE( ret_err.code() );
     }
-    
+
 } // fileClosedir
 
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX readdir
-irods::error fileReaddir( 
-    rsComm_t*                      _comm, 
-    irods::first_class_object_ptr _object, 
+irods::error fileReaddir(
+    rsComm_t*                      _comm,
+    irods::first_class_object_ptr _object,
     struct rodsDirent**            _dirent_ptr ) {
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the path
     irods::plugin_ptr   ptr;
     irods::resource_ptr resc;
-    irods::error ret_err = _object->resolve( irods::RESOURCE_INTERFACE, ptr ); 
-    if( !ret_err.ok() ) {
+    irods::error ret_err = _object->resolve( irods::RESOURCE_INTERFACE, ptr );
+    if ( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve resource", ret_err );
     }
 
@@ -428,9 +441,10 @@ irods::error fileReaddir(
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
-    if( !ret_err.ok() ) {
+    if ( !ret_err.ok() ) {
         return PASSMSG( "failed to call 'readdir'", ret_err );
-    } else {
+    }
+    else {
         return CODE( ret_err.code() );
     }
 
@@ -438,16 +452,16 @@ irods::error fileReaddir(
 
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX rename
-irods::error fileRename( 
-    rsComm_t*                      _comm, 
-    irods::first_class_object_ptr _object, 
+irods::error fileRename(
+    rsComm_t*                      _comm,
+    irods::first_class_object_ptr _object,
     const std::string&             _new_file_name ) {
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the path
     irods::plugin_ptr   ptr;
     irods::resource_ptr resc;
-    irods::error ret_err = _object->resolve( irods::RESOURCE_INTERFACE, ptr ); 
-    if( !ret_err.ok() ) {
+    irods::error ret_err = _object->resolve( irods::RESOURCE_INTERFACE, ptr );
+    if ( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve resource", ret_err );
     }
 
@@ -458,9 +472,10 @@ irods::error fileRename(
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
-    if( !ret_err.ok() ) {
+    if ( !ret_err.ok() ) {
         return PASSMSG( "failed to call 'rename'", ret_err );
-    } else {
+    }
+    else {
         return CODE( ret_err.code() );
     }
 
@@ -468,15 +483,15 @@ irods::error fileRename(
 
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin freespace
-irods::error fileGetFsFreeSpace( 
-    rsComm_t*                      _comm, 
+irods::error fileGetFsFreeSpace(
+    rsComm_t*                      _comm,
     irods::first_class_object_ptr _object ) {
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the path
     irods::plugin_ptr   ptr;
     irods::resource_ptr resc;
-    irods::error ret_err = _object->resolve( irods::RESOURCE_INTERFACE, ptr ); 
-    if( !ret_err.ok() ) {
+    irods::error ret_err = _object->resolve( irods::RESOURCE_INTERFACE, ptr );
+    if ( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve resource", ret_err );
     }
 
@@ -487,9 +502,10 @@ irods::error fileGetFsFreeSpace(
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
-    if( !ret_err.ok() ) {
+    if ( !ret_err.ok() ) {
         return PASSMSG( "failed to call 'stage'", ret_err );
-    } else {
+    }
+    else {
         return CODE( ret_err.code() );
     }
 
@@ -497,15 +513,15 @@ irods::error fileGetFsFreeSpace(
 
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin truncate
-irods::error fileTruncate( 
-    rsComm_t*                      _comm, 
+irods::error fileTruncate(
+    rsComm_t*                      _comm,
     irods::first_class_object_ptr _object ) {
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the path
     irods::plugin_ptr   ptr;
     irods::resource_ptr resc;
-    irods::error ret_err = _object->resolve( irods::RESOURCE_INTERFACE, ptr ); 
-    if( !ret_err.ok() ) {
+    irods::error ret_err = _object->resolve( irods::RESOURCE_INTERFACE, ptr );
+    if ( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve resource", ret_err );
     }
 
@@ -516,34 +532,35 @@ irods::error fileTruncate(
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
-    if( !ret_err.ok() ) {
+    if ( !ret_err.ok() ) {
         return PASSMSG( "failed to call 'truncate'", ret_err );
-    } else {
+    }
+    else {
         return CODE( ret_err.code() );
     }
-   
+
 } // fileTruncate
 
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin StageToCache
-irods::error fileStageToCache( 
-    rsComm_t*                      _comm, 
-    irods::first_class_object_ptr _object, 
+irods::error fileStageToCache(
+    rsComm_t*                      _comm,
+    irods::first_class_object_ptr _object,
     const std::string&             _cache_file_name ) {
     // =-=-=-=-=-=-=-
     // trap empty file name
-    if( _cache_file_name.empty() ) {
+    if ( _cache_file_name.empty() ) {
         irods::error ret_err = ERROR( SYS_INVALID_INPUT_PARAM, "fileStageToCache - File Name is Empty." );
         irods::log( ret_err );
         return ret_err;
     }
-    
+
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the path
     irods::plugin_ptr   ptr;
     irods::resource_ptr resc;
     irods::error ret_err = _object->resolve( irods::RESOURCE_INTERFACE, ptr );
-    if( !ret_err.ok() ) {
+    if ( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve resource", ret_err );
     }
 
@@ -554,9 +571,10 @@ irods::error fileStageToCache(
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
-    if( !ret_err.ok() ) {
+    if ( !ret_err.ok() ) {
         return PASSMSG( "failed to call 'stagetocache'", ret_err );
-    } else {
+    }
+    else {
         return SUCCESS();
     }
 
@@ -564,24 +582,24 @@ irods::error fileStageToCache(
 
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin SyncToArch
-irods::error fileSyncToArch( 
-    rsComm_t*                      _comm, 
-    irods::first_class_object_ptr _object, 
+irods::error fileSyncToArch(
+    rsComm_t*                      _comm,
+    irods::first_class_object_ptr _object,
     const std::string&             _cache_file_name ) {
     // =-=-=-=-=-=-=-
     // trap empty file name
-    if( _cache_file_name.empty() ) {
+    if ( _cache_file_name.empty() ) {
         irods::error ret_err = ERROR( SYS_INVALID_INPUT_PARAM, "fileSyncToArch - File Name is Empty." );
         irods::log( ret_err );
         return ret_err;
     }
-    
+
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the path
     irods::plugin_ptr   ptr;
     irods::resource_ptr resc;
     irods::error ret_err = _object->resolve( irods::RESOURCE_INTERFACE, ptr );
-    if( !ret_err.ok() ) {
+    if ( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve resource", ret_err );
     }
 
@@ -592,9 +610,10 @@ irods::error fileSyncToArch(
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
-    if( !ret_err.ok() ) {
+    if ( !ret_err.ok() ) {
         return PASSMSG( "failed to call 'synctoarch'", ret_err );
-    } else {
+    }
+    else {
         return SUCCESS();
     }
 
@@ -611,23 +630,24 @@ irods::error fileRegistered(
     // retrieve the resource name given the object
     irods::plugin_ptr   ptr;
     irods::resource_ptr resc;
-    ret = _object->resolve( irods::RESOURCE_INTERFACE, ptr ); 
-    if( !ret.ok() ) {
+    ret = _object->resolve( irods::RESOURCE_INTERFACE, ptr );
+    if ( !ret.ok() ) {
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - Failed to resolve resource.";
-        result = PASSMSG(msg.str(), ret);
+        result = PASSMSG( msg.str(), ret );
 
-    } else {
+    }
+    else {
         // =-=-=-=-=-=-=-
         // make the call to the "registered" interface
         resc = boost::dynamic_pointer_cast< irods::resource >( ptr );
         ret  = resc->call( _comm, irods::RESOURCE_OP_REGISTERED, _object );
-        if( !ret.ok() ) {
+        if ( !ret.ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - Failed to call registered interface.";
-            result = PASSMSG(msg.str(), ret);
+            result = PASSMSG( msg.str(), ret );
         }
     }
 
@@ -645,23 +665,24 @@ irods::error fileUnregistered(
     // retrieve the resource name given the object
     irods::plugin_ptr   ptr;
     irods::resource_ptr resc;
-    ret = _object->resolve( irods::RESOURCE_INTERFACE, ptr ); 
-    if( !ret.ok() ) {
+    ret = _object->resolve( irods::RESOURCE_INTERFACE, ptr );
+    if ( !ret.ok() ) {
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - Failed to resolve resource.";
-        result = PASSMSG(msg.str(), ret);
-    } else {
-    
+        result = PASSMSG( msg.str(), ret );
+    }
+    else {
+
         // =-=-=-=-=-=-=-
         // make the call to the "open" interface
         resc = boost::dynamic_pointer_cast< irods::resource >( ptr );
         ret  = resc->call( _comm, irods::RESOURCE_OP_UNREGISTERED, _object );
-        if( !ret.ok() ) {
+        if ( !ret.ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - Failed to call unregistered interface.";
-            result = PASSMSG(msg.str(), ret);
+            result = PASSMSG( msg.str(), ret );
         }
     }
 
@@ -679,31 +700,33 @@ irods::error fileModified(
     // downcast - this must be called on a decendant of data object
     irods::data_object_ptr data_obj = boost::dynamic_pointer_cast< irods::data_object >( _object );
     std::string resc_hier = data_obj->resc_hier();
-    if(!resc_hier.empty()) {
+    if ( !resc_hier.empty() ) {
         // =-=-=-=-=-=-=-
         // retrieve the resource name given the object
         irods::plugin_ptr   ptr;
         irods::resource_ptr resc;
-        ret = _object->resolve( irods::RESOURCE_INTERFACE, ptr ); 
-        if( !ret.ok() ) {
+        ret = _object->resolve( irods::RESOURCE_INTERFACE, ptr );
+        if ( !ret.ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - Failed to resolve resource.";
-            result = PASSMSG(msg.str(), ret);
-        } else {
-        
+            result = PASSMSG( msg.str(), ret );
+        }
+        else {
+
             // =-=-=-=-=-=-=-
             // make the call to the "open" interface
             resc = boost::dynamic_pointer_cast< irods::resource >( ptr );
             ret  = resc->call( _comm, irods::RESOURCE_OP_MODIFIED, _object );
-            if( !ret.ok() ) {
+            if ( !ret.ok() ) {
                 std::stringstream msg;
                 msg << __FUNCTION__;
                 msg << " - Failed to call modified interface.";
-                result = PASSMSG(msg.str(), ret);
+                result = PASSMSG( msg.str(), ret );
             }
         }
-    } else {
+    }
+    else {
         // NOOP okay for struct file objects
     }
 
@@ -723,33 +746,35 @@ irods::error fileNotify(
     // downcast - this must be called on a decendant of data object
     irods::data_object_ptr data_obj = boost::dynamic_pointer_cast< irods::data_object >( _object );
     std::string resc_hier = data_obj->resc_hier();
-    if(!resc_hier.empty()) {
+    if ( !resc_hier.empty() ) {
         // =-=-=-=-=-=-=-
         // retrieve the resource name given the object
         irods::plugin_ptr   ptr;
         irods::resource_ptr resc;
-        ret = _object->resolve( irods::RESOURCE_INTERFACE, ptr ); 
-        if( !ret.ok() ) {
+        ret = _object->resolve( irods::RESOURCE_INTERFACE, ptr );
+        if ( !ret.ok() ) {
             std::stringstream msg;
             msg << "Failed to resolve resource.";
-            result = PASSMSG(msg.str(), ret);
-        } else {
-        
+            result = PASSMSG( msg.str(), ret );
+        }
+        else {
+
             // =-=-=-=-=-=-=-
             // make the call to the "open" interface
             resc = boost::dynamic_pointer_cast< irods::resource >( ptr );
-            ret  = resc->call< const std::string* >( 
-                       _comm, 
-                       irods::RESOURCE_OP_NOTIFY, 
+            ret  = resc->call< const std::string* >(
+                       _comm,
+                       irods::RESOURCE_OP_NOTIFY,
                        _object,
                        &_operation );
-            if( !ret.ok() ) {
+            if ( !ret.ok() ) {
                 std::stringstream msg;
                 msg << "Failed to call notify interface.";
-                result = PASSMSG(msg.str(), ret);
+                result = PASSMSG( msg.str(), ret );
             }
         }
-    } else {
+    }
+    else {
         // NOOP okay for struct file objects
     }
 

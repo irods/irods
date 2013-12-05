@@ -1,6 +1,6 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
-/* subStructFileLseek.h  
+/* subStructFileLseek.h
  */
 
 #ifndef SUB_STRUCT_FILE_LSEEK_HPP
@@ -29,21 +29,21 @@ typedef struct SubStructFileLseekInp {
 #define RS_SUB_STRUCT_FILE_LSEEK rsSubStructFileLseek
 /* prototype for the server handler */
 int
-rsSubStructFileLseek (rsComm_t *rsComm, subStructFileLseekInp_t *subStructFileLseekInp,
-fileLseekOut_t **subStructFileLseekOut);
+rsSubStructFileLseek( rsComm_t *rsComm, subStructFileLseekInp_t *subStructFileLseekInp,
+                      fileLseekOut_t **subStructFileLseekOut );
 int
-_rsSubStructFileLseek (rsComm_t *rsComm, subStructFileLseekInp_t *subStructFileLseekInp,
-fileLseekOut_t **subStructFileLseekOut);
+_rsSubStructFileLseek( rsComm_t *rsComm, subStructFileLseekInp_t *subStructFileLseekInp,
+                       fileLseekOut_t **subStructFileLseekOut );
 int
-remoteSubStructFileLseek (rsComm_t *rsComm, subStructFileLseekInp_t *subStructFileLseekInp, 
-fileLseekOut_t **subStructFileLseekOut, rodsServerHost_t *rodsServerHost);
+remoteSubStructFileLseek( rsComm_t *rsComm, subStructFileLseekInp_t *subStructFileLseekInp,
+                          fileLseekOut_t **subStructFileLseekOut, rodsServerHost_t *rodsServerHost );
 #else
 #define RS_SUB_STRUCT_FILE_LSEEK NULL
 #endif
 
 /* prototype for the client call */
 int
-rcSubStructFileLseek (rcComm_t *conn, subStructFileLseekInp_t *subStructFileLseekInp,
-fileLseekOut_t **subStructFileLseekOut);
+rcSubStructFileLseek( rcComm_t *conn, subStructFileLseekInp_t *subStructFileLseekInp,
+                      fileLseekOut_t **subStructFileLseekOut );
 
 #endif	/* SUB_STRUCT_FILE_LSEEK_H */

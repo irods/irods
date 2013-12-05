@@ -13,158 +13,159 @@ rodsLong_t TotalSizeTrimmed = 0;
 int TotalTrimmed = 0;
 
 int
-trimUtil (rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
-rodsPathInp_t *rodsPathInp)
-{
+trimUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
+          rodsPathInp_t *rodsPathInp ) {
     int i;
-    int status; 
+    int status;
     int savedStatus = 0;
     dataObjInp_t dataObjInp;
     int collCnt = 0;
 
 
-    if (rodsPathInp == NULL) {
-	return (USER__NULL_INPUT_ERR);
+    if ( rodsPathInp == NULL ) {
+        return ( USER__NULL_INPUT_ERR );
     }
 
-    initCondForTrim (myRodsEnv, myRodsArgs, &dataObjInp);
+    initCondForTrim( myRodsEnv, myRodsArgs, &dataObjInp );
 
-    if (myRodsArgs->dryrun == True) {
-	printf ("====== This is a DRYRUN ======\n");
+    if ( myRodsArgs->dryrun == True ) {
+        printf( "====== This is a DRYRUN ======\n" );
     }
-    for (i = 0; i < rodsPathInp->numSrc; i++) {
-	if (rodsPathInp->srcPath[i].objType == UNKNOWN_OBJ_T) {
-	    getRodsObjType (conn, &rodsPathInp->srcPath[i]);
-	    if (rodsPathInp->srcPath[i].objState == NOT_EXIST_ST) {
-                rodsLog (LOG_ERROR,
-                  "trimUtil: srcPath %s does not exist",
-                  rodsPathInp->srcPath[i].outPath);
-		savedStatus = USER_INPUT_PATH_ERR;
-		continue;
-	    }
-	}
+    for ( i = 0; i < rodsPathInp->numSrc; i++ ) {
+        if ( rodsPathInp->srcPath[i].objType == UNKNOWN_OBJ_T ) {
+            getRodsObjType( conn, &rodsPathInp->srcPath[i] );
+            if ( rodsPathInp->srcPath[i].objState == NOT_EXIST_ST ) {
+                rodsLog( LOG_ERROR,
+                         "trimUtil: srcPath %s does not exist",
+                         rodsPathInp->srcPath[i].outPath );
+                savedStatus = USER_INPUT_PATH_ERR;
+                continue;
+            }
+        }
 
-	if (rodsPathInp->srcPath[i].objType == DATA_OBJ_T) {
-	    rmKeyVal (&dataObjInp.condInput, TRANSLATED_PATH_KW);
-	    status = trimDataObjUtil (conn, rodsPathInp->srcPath[i].outPath, 
-	     myRodsEnv, myRodsArgs, &dataObjInp);
-	} else if (rodsPathInp->srcPath[i].objType ==  COLL_OBJ_T) {
-	    collCnt ++;
-	    addKeyVal (&dataObjInp.condInput, TRANSLATED_PATH_KW, "");
-	    status = trimCollUtil (conn, rodsPathInp->srcPath[i].outPath,
-              myRodsEnv, myRodsArgs, &dataObjInp);
-	} else {
-	    /* should not be here */
-	    rodsLog (LOG_ERROR,
-	     "trimUtil: invalid trim objType %d for %s", 
-	     rodsPathInp->srcPath[i].objType, rodsPathInp->srcPath[i].outPath);
-	    return (USER_INPUT_PATH_ERR);
-	}
-	/* XXXX may need to return a global status */
-	if (status < 0) {
-	    rodsLogError (LOG_ERROR, status,
-             "trimUtil: trim error for %s, status = %d", 
-	      rodsPathInp->srcPath[i].outPath, status);
-	    savedStatus = status;
-	} 
+        if ( rodsPathInp->srcPath[i].objType == DATA_OBJ_T ) {
+            rmKeyVal( &dataObjInp.condInput, TRANSLATED_PATH_KW );
+            status = trimDataObjUtil( conn, rodsPathInp->srcPath[i].outPath,
+                                      myRodsEnv, myRodsArgs, &dataObjInp );
+        }
+        else if ( rodsPathInp->srcPath[i].objType ==  COLL_OBJ_T ) {
+            collCnt ++;
+            addKeyVal( &dataObjInp.condInput, TRANSLATED_PATH_KW, "" );
+            status = trimCollUtil( conn, rodsPathInp->srcPath[i].outPath,
+                                   myRodsEnv, myRodsArgs, &dataObjInp );
+        }
+        else {
+            /* should not be here */
+            rodsLog( LOG_ERROR,
+                     "trimUtil: invalid trim objType %d for %s",
+                     rodsPathInp->srcPath[i].objType, rodsPathInp->srcPath[i].outPath );
+            return ( USER_INPUT_PATH_ERR );
+        }
+        /* XXXX may need to return a global status */
+        if ( status < 0 ) {
+            rodsLogError( LOG_ERROR, status,
+                          "trimUtil: trim error for %s, status = %d",
+                          rodsPathInp->srcPath[i].outPath, status );
+            savedStatus = status;
+        }
     }
-    if (collCnt > 0) {
-        printf (
-          "Total size trimmed = %-.3f MB. Number of files trimmed = %d.\n",
-          (float) TotalSizeTrimmed/1048600.0, TotalTrimmed);
+    if ( collCnt > 0 ) {
+        printf(
+            "Total size trimmed = %-.3f MB. Number of files trimmed = %d.\n",
+            ( float ) TotalSizeTrimmed / 1048600.0, TotalTrimmed );
     }
-    if (savedStatus < 0) {
-        return (savedStatus);
-    } else if (status == CAT_NO_ROWS_FOUND) {
-        return (0);
-    } else {
-        return (status);
+    if ( savedStatus < 0 ) {
+        return ( savedStatus );
+    }
+    else if ( status == CAT_NO_ROWS_FOUND ) {
+        return ( 0 );
+    }
+    else {
+        return ( status );
     }
 }
 
 int
-trimDataObjUtil (rcComm_t *conn, char *srcPath, 
-rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, 
-dataObjInp_t *dataObjInp)
-{
+trimDataObjUtil( rcComm_t *conn, char *srcPath,
+                 rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
+                 dataObjInp_t *dataObjInp ) {
     int status;
- 
-    if (srcPath == NULL) {
-       rodsLog (LOG_ERROR,
-          "trimDataObjUtil: NULL srcPath input");
-        return (USER__NULL_INPUT_ERR);
+
+    if ( srcPath == NULL ) {
+        rodsLog( LOG_ERROR,
+                 "trimDataObjUtil: NULL srcPath input" );
+        return ( USER__NULL_INPUT_ERR );
     }
 
-    rstrcpy (dataObjInp->objPath, srcPath, MAX_NAME_LEN);
+    rstrcpy( dataObjInp->objPath, srcPath, MAX_NAME_LEN );
 
-    status = rcDataObjTrim (conn, dataObjInp);
+    status = rcDataObjTrim( conn, dataObjInp );
 
-    if (status >= 0 && rodsArgs->verbose == True) {
-	char myDir[MAX_NAME_LEN], myFile[MAX_NAME_LEN];
-        splitPathByKey (srcPath, myDir, myFile, '/');
-	if (status > 0) {
-	    printf ("%s - a copy trimmed\n", myFile);
-	} else {
-	     printf ("%s - No copy trimmed\n", myFile);
-	}
+    if ( status >= 0 && rodsArgs->verbose == True ) {
+        char myDir[MAX_NAME_LEN], myFile[MAX_NAME_LEN];
+        splitPathByKey( srcPath, myDir, myFile, '/' );
+        if ( status > 0 ) {
+            printf( "%s - a copy trimmed\n", myFile );
+        }
+        else {
+            printf( "%s - No copy trimmed\n", myFile );
+        }
     }
 
-    return (status);
+    return ( status );
 }
 
 int
-initCondForTrim (rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, 
-dataObjInp_t *dataObjInp)
-{
+initCondForTrim( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
+                 dataObjInp_t *dataObjInp ) {
     char tmpStr[NAME_LEN];
 
-    if (dataObjInp == NULL) {
-       rodsLog (LOG_ERROR,
-          "initCondForTrim: NULL dataObjInp input");
-        return (USER__NULL_INPUT_ERR);
+    if ( dataObjInp == NULL ) {
+        rodsLog( LOG_ERROR,
+                 "initCondForTrim: NULL dataObjInp input" );
+        return ( USER__NULL_INPUT_ERR );
     }
 
-    memset (dataObjInp, 0, sizeof (dataObjInp_t));
+    memset( dataObjInp, 0, sizeof( dataObjInp_t ) );
 
-    if (rodsArgs == NULL) {
-	return (0);
+    if ( rodsArgs == NULL ) {
+        return ( 0 );
     }
 
-    if (rodsArgs->number == True) {
-	snprintf (tmpStr, NAME_LEN, "%d", rodsArgs->numberValue);
-        addKeyVal (&dataObjInp->condInput, COPIES_KW, tmpStr);
+    if ( rodsArgs->number == True ) {
+        snprintf( tmpStr, NAME_LEN, "%d", rodsArgs->numberValue );
+        addKeyVal( &dataObjInp->condInput, COPIES_KW, tmpStr );
     }
 
-    if (rodsArgs->admin == True) {
-        addKeyVal (&dataObjInp->condInput, ADMIN_KW, "");
+    if ( rodsArgs->admin == True ) {
+        addKeyVal( &dataObjInp->condInput, ADMIN_KW, "" );
     }
 
-    if (rodsArgs->replNum == True) {
-        addKeyVal (&dataObjInp->condInput, REPL_NUM_KW, 
-	  rodsArgs->replNumValue);
+    if ( rodsArgs->replNum == True ) {
+        addKeyVal( &dataObjInp->condInput, REPL_NUM_KW,
+                   rodsArgs->replNumValue );
     }
 
-    if (rodsArgs->srcResc == True) {
-        addKeyVal (&dataObjInp->condInput, RESC_NAME_KW,
-          rodsArgs->srcRescString);
+    if ( rodsArgs->srcResc == True ) {
+        addKeyVal( &dataObjInp->condInput, RESC_NAME_KW,
+                   rodsArgs->srcRescString );
     }
 
-    if (rodsArgs->age == True) {
-        snprintf (tmpStr, NAME_LEN, "%d", rodsArgs->agevalue);
-        addKeyVal (&dataObjInp->condInput, AGE_KW, tmpStr);
+    if ( rodsArgs->age == True ) {
+        snprintf( tmpStr, NAME_LEN, "%d", rodsArgs->agevalue );
+        addKeyVal( &dataObjInp->condInput, AGE_KW, tmpStr );
     }
 
-    if (rodsArgs->dryrun == True) {
-        addKeyVal (&dataObjInp->condInput, DRYRUN_KW, "");
+    if ( rodsArgs->dryrun == True ) {
+        addKeyVal( &dataObjInp->condInput, DRYRUN_KW, "" );
     }
 
-    return (0);
+    return ( 0 );
 }
 
 int
-trimCollUtil (rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv, 
-rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp)
-{
+trimCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
+              rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp ) {
     int status;
     int savedStatus = 0;
     char srcChildPath[MAX_NAME_LEN];
@@ -174,87 +175,93 @@ rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp)
     collHandle_t collHandle;
     collEnt_t collEnt;
 
-    if (srcColl == NULL) {
-       rodsLog (LOG_ERROR,
-          "trimCollUtil: NULL srcColl input");
-        return (USER__NULL_INPUT_ERR);
+    if ( srcColl == NULL ) {
+        rodsLog( LOG_ERROR,
+                 "trimCollUtil: NULL srcColl input" );
+        return ( USER__NULL_INPUT_ERR );
     }
 
-    if (rodsArgs->recursive != True) {
-        rodsLog (LOG_ERROR,
-        "trimCollUtil: -r option must be used for getting %s collection",
-         srcColl);
-        return (USER_INPUT_OPTION_ERR);
+    if ( rodsArgs->recursive != True ) {
+        rodsLog( LOG_ERROR,
+                 "trimCollUtil: -r option must be used for getting %s collection",
+                 srcColl );
+        return ( USER_INPUT_OPTION_ERR );
     }
 
-    if (rodsArgs->verbose == True) {
-        fprintf (stdout, "C- %s:\n", srcColl);
+    if ( rodsArgs->verbose == True ) {
+        fprintf( stdout, "C- %s:\n", srcColl );
     }
 
 #if 0
-    status = rclOpenCollection (conn, srcColl, RECUR_QUERY_FG,
-      &collHandle);
+    status = rclOpenCollection( conn, srcColl, RECUR_QUERY_FG,
+                                &collHandle );
 #else
-    status = rclOpenCollection (conn, srcColl, 0, &collHandle);
+    status = rclOpenCollection( conn, srcColl, 0, &collHandle );
 #endif
 
-    if (status < 0) {
-        rodsLog (LOG_ERROR,
-          "trimCollUtil: rclOpenCollection of %s error. status = %d",
-          srcColl, status);
+    if ( status < 0 ) {
+        rodsLog( LOG_ERROR,
+                 "trimCollUtil: rclOpenCollection of %s error. status = %d",
+                 srcColl, status );
         return status;
     }
 #if 0
-    collLen = strlen (srcColl);
-    collLen = getOpenedCollLen (&collHandle);
+    collLen = strlen( srcColl );
+    collLen = getOpenedCollLen( &collHandle );
 #else
-    if (collHandle.rodsObjStat->specColl != NULL && 
-      collHandle.rodsObjStat->specColl->collClass != LINKED_COLL) {
-	/* no trim for mounted coll */
-	rclCloseCollection (&collHandle);
-	return 0;
+    if ( collHandle.rodsObjStat->specColl != NULL &&
+            collHandle.rodsObjStat->specColl->collClass != LINKED_COLL ) {
+        /* no trim for mounted coll */
+        rclCloseCollection( &collHandle );
+        return 0;
     }
 #endif
-    while ((status = rclReadCollection (conn, &collHandle, &collEnt)) >= 0) {
-        if (collEnt.objType == DATA_OBJ_T) {
-            snprintf (srcChildPath, MAX_NAME_LEN, "%s/%s",
-              collEnt.collName, collEnt.dataName);
-            status = trimDataObjUtil (conn, srcChildPath, myRodsEnv, rodsArgs,
-              dataObjInp);
-            if (status < 0) {
-                rodsLogError (LOG_ERROR, status,
-                  "trimCollUtil: trimDataObjUtil failed for %s. status = %d",
-                  srcChildPath, status);
+    while ( ( status = rclReadCollection( conn, &collHandle, &collEnt ) ) >= 0 ) {
+        if ( collEnt.objType == DATA_OBJ_T ) {
+            snprintf( srcChildPath, MAX_NAME_LEN, "%s/%s",
+                      collEnt.collName, collEnt.dataName );
+            status = trimDataObjUtil( conn, srcChildPath, myRodsEnv, rodsArgs,
+                                      dataObjInp );
+            if ( status < 0 ) {
+                rodsLogError( LOG_ERROR, status,
+                              "trimCollUtil: trimDataObjUtil failed for %s. status = %d",
+                              srcChildPath, status );
                 /* need to set global error here */
                 savedStatus = status;
                 status = 0;
-            } else if (status > 0) {
-		/* > 0 means the file got trimed */
-		TotalSizeTrimmed += collEnt.dataSize;
-		TotalTrimmed++;
-	    }
-        } else if (collEnt.objType == COLL_OBJ_T) {
+            }
+            else if ( status > 0 ) {
+                /* > 0 means the file got trimed */
+                TotalSizeTrimmed += collEnt.dataSize;
+                TotalTrimmed++;
+            }
+        }
+        else if ( collEnt.objType == COLL_OBJ_T ) {
             dataObjInp_t childDataObjInp;
             childDataObjInp = *dataObjInp;
-	    if (collEnt.specColl.collClass != NO_SPEC_COLL)
+            if ( collEnt.specColl.collClass != NO_SPEC_COLL ) {
                 childDataObjInp.specColl = &collEnt.specColl;
-            else 
+            }
+            else {
                 childDataObjInp.specColl = NULL;
-            status = trimCollUtil (conn, collEnt.collName, myRodsEnv, 
-	      rodsArgs, &childDataObjInp);
-            if (status < 0 && status != CAT_NO_ROWS_FOUND) {
-                return (status);
+            }
+            status = trimCollUtil( conn, collEnt.collName, myRodsEnv,
+                                   rodsArgs, &childDataObjInp );
+            if ( status < 0 && status != CAT_NO_ROWS_FOUND ) {
+                return ( status );
             }
         }
     }
-    rclCloseCollection (&collHandle);
+    rclCloseCollection( &collHandle );
 
-    if (savedStatus < 0) {
-	return (savedStatus);
-    } else if (status == CAT_NO_ROWS_FOUND) {
-	return (0);
-    } else {
-        return (status);
+    if ( savedStatus < 0 ) {
+        return ( savedStatus );
+    }
+    else if ( status == CAT_NO_ROWS_FOUND ) {
+        return ( 0 );
+    }
+    else {
+        return ( status );
     }
 }
 

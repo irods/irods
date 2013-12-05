@@ -16,21 +16,21 @@
 #include "icatDefines.hpp"
 
 typedef struct {
-   char *sql;
-   char *arg1;
-   char *arg2;
-   char *arg3;
-   char *arg4;
-   int control;
-   int form;   
-   int maxBufSize;
+    char *sql;
+    char *arg1;
+    char *arg2;
+    char *arg3;
+    char *arg4;
+    int control;
+    int form;
+    int maxBufSize;
 } simpleQueryInp_t;
-    
+
 #define simpleQueryInp_PI "str *sql; str *arg1; str *arg2; str *arg3; str *arg4; int control; int form; int maxBufSize;"
 
 typedef struct {
-   int control;
-   char *outBuf;
+    int control;
+    char *outBuf;
 } simpleQueryOut_t;
 
 #define simpleQueryOut_PI "int control; str *outBuf;"
@@ -39,11 +39,11 @@ typedef struct {
 #define RS_SIMPLE_QUERY rsSimpleQuery
 /* prototype for the server handler */
 int
-rsSimpleQuery (rsComm_t *rsComm, simpleQueryInp_t *simpleQueryInp, 
-simpleQueryOut_t **simpleQueryOut);
+rsSimpleQuery( rsComm_t *rsComm, simpleQueryInp_t *simpleQueryInp,
+               simpleQueryOut_t **simpleQueryOut );
 int
-_rsSimpleQuery (rsComm_t *rsComm, simpleQueryInp_t *simpleQueryInp,
-simpleQueryOut_t **simpleQueryOut);
+_rsSimpleQuery( rsComm_t *rsComm, simpleQueryInp_t *simpleQueryInp,
+                simpleQueryOut_t **simpleQueryOut );
 #else
 #define RS_SIMPLE_QUERY NULL
 #endif
@@ -52,10 +52,10 @@ simpleQueryOut_t **simpleQueryOut);
 extern "C" {
 #endif
 
-/* prototype for the client call */
-int
-rcSimpleQuery (rcComm_t *conn, simpleQueryInp_t *simpleQueryInp, 
-simpleQueryOut_t **simpleQueryOut);
+    /* prototype for the client call */
+    int
+    rcSimpleQuery( rcComm_t *conn, simpleQueryInp_t *simpleQueryInp,
+                   simpleQueryOut_t **simpleQueryOut );
 
 #ifdef  __cplusplus
 }

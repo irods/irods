@@ -41,7 +41,7 @@ This documentation is generated from the iRODS code.
   - #rcBulkDataObjPut - Bulk put (upload) a large number of data objects
   - #rcPhyPathReg
   - #rcObjStat
-  
+
  \subsection collectionOpr Collection Operations
   - #rcCollCreate
   - #rcRmColl

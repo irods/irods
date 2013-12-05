@@ -44,7 +44,7 @@ typedef struct l1desc {
     int copiesNeeded;
     rescGrpInfo_t *moreRescGrpInfo;
     rodsLong_t bytesWritten;    /* mark whether it has been written */
-    rodsLong_t dataSize;        /* this is the target size. The size in 
+    rodsLong_t dataSize;        /* this is the target size. The size in
                                  * dataObjInfo is the registered size */
     int replStatus;     /* the replica status */
     int chksumFlag;     /* parsed from condition */
@@ -69,56 +69,56 @@ extern "C" {
 #endif
 
     int
-    initL1Desc ();
+    initL1Desc();
 
     int
-    allocL1Desc ();
+    allocL1Desc();
 
     int
-    freeL1Desc(int fileInx);
+    freeL1Desc( int fileInx );
 
     int
-    fillL1desc (int l1descInx, dataObjInp_t *dataObjInp,
-                dataObjInfo_t *dataObjInfo, int replStatus, rodsLong_t dataSize);
+    fillL1desc( int l1descInx, dataObjInp_t *dataObjInp,
+                dataObjInfo_t *dataObjInfo, int replStatus, rodsLong_t dataSize );
     int
-    getNumThreads (rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr, 
-                   keyValPair_t *condInput, char *destRescName, char *srcRescName);
+    getNumThreads( rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
+                   keyValPair_t *condInput, char *destRescName, char *srcRescName );
     int
-    initDataOprInp (dataOprInp_t *dataOprInp, int l1descInx, int oprType);
+    initDataOprInp( dataOprInp_t *dataOprInp, int l1descInx, int oprType );
     int
-    initDataObjInfoForRepl (rsComm_t *rsComm, dataObjInfo_t *destDataObjInfo,
-                            dataObjInfo_t *srcDataObjInfo, rescInfo_t *destRescInfo, char *rescGroupName);
+    initDataObjInfoForRepl( rsComm_t *rsComm, dataObjInfo_t *destDataObjInfo,
+                            dataObjInfo_t *srcDataObjInfo, rescInfo_t *destRescInfo, char *rescGroupName );
     int
-    convL3descInx (int l3descInx);
+    convL3descInx( int l3descInx );
     int
-    initDataObjInfoWithInp (dataObjInfo_t *dataObjInfo, dataObjInp_t *dataObjInp);
+    initDataObjInfoWithInp( dataObjInfo_t *dataObjInfo, dataObjInp_t *dataObjInp );
     int
-    allocL1desc ();
+    allocL1desc();
     int
-    freeL1desc(int l1descInx);
+    freeL1desc( int l1descInx );
     int
-    closeAllL1desc (rsComm_t *rsComm);
+    closeAllL1desc( rsComm_t *rsComm );
     int
-    initSpecCollDesc ();
+    initSpecCollDesc();
     int
-    allocSpecCollDesc ();
+    allocSpecCollDesc();
     int
-    freeSpecCollDesc (int specCollInx);
+    freeSpecCollDesc( int specCollInx );
     int
-    initL1desc ();
+    initL1desc();
     int
-    initCollHandle ();
+    initCollHandle();
     int
-    allocCollHandle ();
+    allocCollHandle();
     int
-    freeCollHandle (int handleInx);
+    freeCollHandle( int handleInx );
     int
-    rsInitQueryHandle (queryHandle_t *queryHandle, rsComm_t *rsComm);
+    rsInitQueryHandle( queryHandle_t *queryHandle, rsComm_t *rsComm );
     int
-    allocAndSetL1descForZoneOpr (int l3descInx, dataObjInp_t *dataObjInp,
-                                 rodsServerHost_t *remoteZoneHost, openStat_t *openStat);
+    allocAndSetL1descForZoneOpr( int l3descInx, dataObjInp_t *dataObjInp,
+                                 rodsServerHost_t *remoteZoneHost, openStat_t *openStat );
     int
-    isL1descInuse ();
+    isL1descInuse();
 
 #ifdef  __cplusplus
 }

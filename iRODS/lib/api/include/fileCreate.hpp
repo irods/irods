@@ -25,19 +25,19 @@ typedef fileOpenInp_t fileCreateInp_t;
 #define RS_FILE_CREATE rsFileCreate
 /* prototype for the server handler */
 int
-rsFileCreate (rsComm_t *rsComm, fileCreateInp_t *fileCreateInp);
+rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp );
 int
-_rsFileCreate (rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,
-               rodsServerHost_t *rodsServerHost);
+_rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,
+               rodsServerHost_t *rodsServerHost );
 int
-remoteFileCreate (rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,
-                  rodsServerHost_t *rodsServerHost);
+remoteFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,
+                  rodsServerHost_t *rodsServerHost );
 #else
 #define RS_FILE_CREATE NULL
 #endif
 
 /* prototype for the client call */
 int
-rcFileCreate (rcComm_t *conn, fileCreateInp_t *fileCreateInp);
+rcFileCreate( rcComm_t *conn, fileCreateInp_t *fileCreateInp );
 
 #endif  /* FILE_CREATE_H */

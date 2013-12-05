@@ -19,10 +19,10 @@
 #define RE_RUNNING	"RE_RUNNING"
 #define RE_IN_QUEUE	"RE_IN_QUEUE"
 #define RE_FAILED	"RE_FAILED"
- 
+
 /* definition for the statusFlag in getNextQueuedRuleExec */
-#define RE_FAILED_STATUS	0x1	/* run the RE_FAILED too */ 
- 
+#define RE_FAILED_STATUS	0x1	/* run the RE_FAILED too */
+
 #define REI_BUF_LEN             (100 * 1024)
 
 #define REI_FILE_NAME	"rei"
@@ -51,10 +51,10 @@ typedef struct {
 #define RS_RULE_EXEC_SUBMIT rsRuleExecSubmit
 /* prototype for the server handler */
 int
-rsRuleExecSubmit (rsComm_t *rsComm, ruleExecSubmitInp_t *ruleExecSubmitInp,
-char **ruleExecId);
+rsRuleExecSubmit( rsComm_t *rsComm, ruleExecSubmitInp_t *ruleExecSubmitInp,
+                  char **ruleExecId );
 int
-_rsRuleExecSubmit (rsComm_t *rsComm, ruleExecSubmitInp_t *ruleExecSubmitInp);
+_rsRuleExecSubmit( rsComm_t *rsComm, ruleExecSubmitInp_t *ruleExecSubmitInp );
 #else
 #define RS_RULE_EXEC_SUBMIT NULL
 #endif
@@ -63,12 +63,12 @@ _rsRuleExecSubmit (rsComm_t *rsComm, ruleExecSubmitInp_t *ruleExecSubmitInp);
 extern "C" {
 #endif
 
-int
-rcRuleExecSubmit (rcComm_t *conn, ruleExecSubmitInp_t *ruleExecSubmitInp,
-char **ruleExecId);
+    int
+    rcRuleExecSubmit( rcComm_t *conn, ruleExecSubmitInp_t *ruleExecSubmitInp,
+                      char **ruleExecId );
 
-int 
-getReiFilePath (char *reiFilePath, char *userName);
+    int
+    getReiFilePath( char *reiFilePath, char *userName );
 #ifdef  __cplusplus
 }
 #endif

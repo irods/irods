@@ -1,6 +1,6 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* 
+/*
   Simple command to get the misc server info.
   Tests connecting to the server.
 */
@@ -8,89 +8,90 @@
 #include "rodsClient.hpp"
 #include "parseCommandLine.hpp"
 
-void usage ();
+void usage();
 
 int
-main(int argc, char **argv) {
-   int status;
-   rodsEnv myEnv;
-   rcComm_t *Conn;
-   rErrMsg_t errMsg;
-   miscSvrInfo_t *miscSvrInfo;
-   rodsArguments_t myRodsArgs;
+main( int argc, char **argv ) {
+    int status;
+    rodsEnv myEnv;
+    rcComm_t *Conn;
+    rErrMsg_t errMsg;
+    miscSvrInfo_t *miscSvrInfo;
+    rodsArguments_t myRodsArgs;
 
-   status = parseCmdLineOpt (argc, argv,  "hvV", 0, &myRodsArgs);
-   if (status) {
-      printf("Use -h for help.\n");
-      exit(1);
-   }
+    status = parseCmdLineOpt( argc, argv,  "hvV", 0, &myRodsArgs );
+    if ( status ) {
+        printf( "Use -h for help.\n" );
+        exit( 1 );
+    }
 
-   if (myRodsArgs.help==True) {
-      usage();
-      exit(0);
-   }
+    if ( myRodsArgs.help == True ) {
+        usage();
+        exit( 0 );
+    }
 
-   status = getRodsEnv (&myEnv);
+    status = getRodsEnv( &myEnv );
 
-   if (status < 0) {
-      rodsLog (LOG_ERROR, "main: getRodsEnv error. status = %d",
-	       status);
-      exit (1);
-   }
+    if ( status < 0 ) {
+        rodsLog( LOG_ERROR, "main: getRodsEnv error. status = %d",
+                 status );
+        exit( 1 );
+    }
 
-   Conn = rcConnect (myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
-                     myEnv.rodsZone, 0, &errMsg);
+    Conn = rcConnect( myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
+                      myEnv.rodsZone, 0, &errMsg );
 
-   if (Conn == NULL) {
-      exit (2);
-   }
-   
-   status = rcGetMiscSvrInfo(Conn, &miscSvrInfo);
-   if (status < 0) {
-      rodsLog (LOG_ERROR, "rcGetMiscSvrInfo failed");
-      exit (3);
-   }
+    if ( Conn == NULL ) {
+        exit( 2 );
+    }
 
-   if (miscSvrInfo->serverType==RCAT_NOT_ENABLED) {
-      printf("RCAT_NOT_ENABLED\n");
-   }
-   if (miscSvrInfo->serverType==RCAT_ENABLED) {
-      printf("RCAT_ENABLED\n");
-   }
-   printf("relVersion=%s\n",miscSvrInfo->relVersion);
-   printf("apiVersion=%s\n",miscSvrInfo->apiVersion);
-   printf("rodsZone=%s\n",miscSvrInfo->rodsZone);
+    status = rcGetMiscSvrInfo( Conn, &miscSvrInfo );
+    if ( status < 0 ) {
+        rodsLog( LOG_ERROR, "rcGetMiscSvrInfo failed" );
+        exit( 3 );
+    }
 
-   if (miscSvrInfo->serverBootTime > 0) {
-	uint upTimeSec, min, hr, day;
+    if ( miscSvrInfo->serverType == RCAT_NOT_ENABLED ) {
+        printf( "RCAT_NOT_ENABLED\n" );
+    }
+    if ( miscSvrInfo->serverType == RCAT_ENABLED ) {
+        printf( "RCAT_ENABLED\n" );
+    }
+    printf( "relVersion=%s\n", miscSvrInfo->relVersion );
+    printf( "apiVersion=%s\n", miscSvrInfo->apiVersion );
+    printf( "rodsZone=%s\n", miscSvrInfo->rodsZone );
 
-	upTimeSec = time (0) - miscSvrInfo->serverBootTime;
-	min = upTimeSec / 60;
-	hr = min / 60;
-	min = min % 60;
-	day = hr / 24;
-	hr = hr % 24;
-	printf ("up %d days, %d:%d\n", day, hr, min);
-   } 
-   rcDisconnect(Conn);
+    if ( miscSvrInfo->serverBootTime > 0 ) {
+        uint upTimeSec, min, hr, day;
 
-   exit(0);
+        upTimeSec = time( 0 ) - miscSvrInfo->serverBootTime;
+        min = upTimeSec / 60;
+        hr = min / 60;
+        min = min % 60;
+        day = hr / 24;
+        hr = hr % 24;
+        printf( "up %d days, %d:%d\n", day, hr, min );
+    }
+    rcDisconnect( Conn );
+
+    exit( 0 );
 }
 
 void
-usage () {
-   char *msgs[]={
-"Usage: imiscsrvinfo [-hvV]",
-" -v  verbose",
-" -V  Very verbose",
-" -h  this help",
-"Connect to the server and retrieve some basic server information.",
-"Can be used as a simple test for connecting to the server.",
-""};
-   int i;
-   for (i=0;;i++) {
-      if (strlen(msgs[i])==0) break;
-      printf("%s\n",msgs[i]);
-   }
-   printReleaseInfo("imiscsvrinfo"); 
+usage() {
+    char *msgs[] = {
+        "Usage: imiscsrvinfo [-hvV]",
+        " -v  verbose",
+        " -V  Very verbose",
+        " -h  this help",
+        "Connect to the server and retrieve some basic server information.",
+        "Can be used as a simple test for connecting to the server.",
+        ""
+    };
+    int i;
+    for ( i = 0;; i++ ) {
+        if ( strlen( msgs[i] ) == 0 ) { break; }
+        printf( "%s\n", msgs[i] );
+    }
+    printReleaseInfo( "imiscsvrinfo" );
 }

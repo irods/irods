@@ -13,7 +13,7 @@
 #include <string>
 
 namespace irods {
-class error;
+    class error;
     // =-=-=-=-=-=-=-
     // provide our own interface which will take our error which can
     // be refactored later
@@ -32,7 +32,7 @@ class error;
     ss << msg << " " << __FUNCTION__ << " " << __FILE__ << ":" << __LINE__; \
     irods::log(LOG_NOTICE, ss.str());                                  \
     }
-    
+
 #endif // __IRODS_LOG_HPP__
 
 

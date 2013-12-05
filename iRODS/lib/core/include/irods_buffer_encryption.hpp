@@ -23,7 +23,7 @@ namespace irods {
 
     /// =-=-=-=-=-=-=-
     /// @brief functor which manages buffer encryption
-    ///        used for parallel transfers.  based on 
+    ///        used for parallel transfers.  based on
     ///        SSL EVP library
     class buffer_crypt {
     public:
@@ -34,16 +34,16 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // con/de structors
         buffer_crypt();
-        buffer_crypt( 
+        buffer_crypt(
             int,           // key size in bytes
             int,           // salt size in bytes
             int,           // num hash rounds
             const char* ); // algorithm
         ~buffer_crypt();
-        
+
         /// =-=-=-=-=-=-=-
         /// @brief given a string, encrypt it
-        irods::error encrypt( 
+        irods::error encrypt(
             const array_t&, // key
             const array_t&, // initialization vector
             const array_t&, // plaintext buffer
@@ -51,7 +51,7 @@ namespace irods {
 
         /// =-=-=-=-=-=-=-
         /// @brief given a string, decrypt it
-        irods::error decrypt( 
+        irods::error decrypt(
             const array_t&, // key
             const array_t&, // initialization vector
             const array_t&, // encrypted buffer
@@ -66,7 +66,7 @@ namespace irods {
         /// @brief generate a random byte key
         irods::error generate_key(
             array_t& ); // random byte key
-        
+
         /// =-=-=-=-=-=-=-
         /// @brief accessors for attributes
         int         key_size()        { return key_size_;        };

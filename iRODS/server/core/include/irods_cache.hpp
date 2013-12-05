@@ -10,7 +10,7 @@ namespace irods {
     template <typename KeyType, typename ObjectType>
     class cache_fill_interface {
     public:
-        virtual bool get_object_from_source(KeyType _key, ObjectType& _object) = 0;
+        virtual bool get_object_from_source( KeyType _key, ObjectType& _object ) = 0;
     }; // class cache_fill_interface
 
     /**
@@ -20,21 +20,21 @@ namespace irods {
     template <typename KeyType, typename ObjectType>
     class cache {
     public:
-        cache(cache_fill_interface<KeyType, ObjectType>* _filler){
+        cache( cache_fill_interface<KeyType, ObjectType>* _filler ) {
             filler = filler_;
         }
-        virtual ~cache(void);
-        
-        bool contains(KeyType _key) {
+        virtual ~cache( void );
+
+        bool contains( KeyType _key ) {
             ObjectType object;
-            return fetch_object(_key, object);
-        }
-        
-        bool  get(KeyType _key, ObjectType& _object) {
-            return fetch_object(_key, _object);
+            return fetch_object( _key, object );
         }
 
-        void clear(void) {
+        bool  get( KeyType _key, ObjectType& _object ) {
+            return fetch_object( _key, _object );
+        }
+
+        void clear( void ) {
             cache_map_.clear();
         }
 
@@ -43,19 +43,20 @@ namespace irods {
         cache_map  cached_objects_;
         cache_fill_interface<KeyType, ObjectType>* filler_;
 
-        bool fetch_object(KeyType _key, ObjectType& _object) {
+        bool fetch_object( KeyType _key, ObjectType& _object ) {
             bool result = false;
-            cache_map::const_iterator it = cached_objects_.find(_key);
-            if(it == cached_objects_.end()) {
-                if(filler_->get_object_from_source(_key, _object)) {
+            cache_map::const_iterator it = cached_objects_.find( _key );
+            if ( it == cached_objects_.end() ) {
+                if ( filler_->get_object_from_source( _key, _object ) ) {
                     result = true;
                 }
-            } else {
+            }
+            else {
                 _object = *it;
                 result = true;
             }
             return result;
         }
     }; // class cache
-    
+
 }; // namespace irods

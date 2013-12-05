@@ -4,7 +4,7 @@
  */
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
- 
+
 /* Also see userAdmin.h for a description of this API call.*/
 
 #include "userAdmin.hpp"
@@ -48,11 +48,10 @@
 **/
 
 int
-rcUserAdmin (rcComm_t *conn, userAdminInp_t *userAdminInp)
-{
+rcUserAdmin( rcComm_t *conn, userAdminInp_t *userAdminInp ) {
     int status;
-    status = procApiRequest (conn, USER_ADMIN_AN,  userAdminInp, NULL, 
-        (void **) NULL, NULL);
+    status = procApiRequest( conn, USER_ADMIN_AN,  userAdminInp, NULL,
+                             ( void ** ) NULL, NULL );
 
-    return (status);
+    return ( status );
 }

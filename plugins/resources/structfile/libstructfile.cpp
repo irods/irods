@@ -82,15 +82,15 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // start operation used to allocate the FileDesc tables
     void tarfilesystem_resource_start() {
-        memset( PluginStructFileDesc, 0, sizeof(structFileDesc_t) * NUM_STRUCT_FILE_DESC  );
-        memset( PluginTarSubFileDesc, 0, sizeof(tarSubFileDesc_t) * NUM_TAR_SUB_FILE_DESC );
+        memset( PluginStructFileDesc, 0, sizeof( structFileDesc_t ) * NUM_STRUCT_FILE_DESC );
+        memset( PluginTarSubFileDesc, 0, sizeof( tarSubFileDesc_t ) * NUM_TAR_SUB_FILE_DESC );
     }
 
     // =-=-=-=-=-=-=-
     // stop operation used to free the FileDesc tables
     void tarfilesystem_resource_stop() {
-        memset( PluginStructFileDesc, 0, sizeof(structFileDesc_t) * NUM_STRUCT_FILE_DESC  );
-        memset( PluginTarSubFileDesc, 0, sizeof(tarSubFileDesc_t) * NUM_TAR_SUB_FILE_DESC );
+        memset( PluginStructFileDesc, 0, sizeof( structFileDesc_t ) * NUM_STRUCT_FILE_DESC );
+        memset( PluginTarSubFileDesc, 0, sizeof( tarSubFileDesc_t ) * NUM_TAR_SUB_FILE_DESC );
     }
 
     // =-=-=-=-=-=-=-
@@ -99,34 +99,34 @@ extern "C" {
     // =-=-=-=-=-=-=-
 
     // =-=-=-=-=-=-=-
-    // NOTE :: to access properties in the _prop_map do the 
+    // NOTE :: to access properties in the _prop_map do the
     //      :: following :
     //      :: double my_var = 0.0;
-    //      :: irods::error ret = _prop_map.get< double >( "my_key", my_var ); 
+    //      :: irods::error ret = _prop_map.get< double >( "my_key", my_var );
     // =-=-=-=-=-=-=-
-        
+
     // =-=-=-=-=-=-=-
     // helper function to check incoming parameters
-    inline irods::error tar_check_params( 
-        irods::resource_plugin_context& _ctx ) { 
+    inline irods::error tar_check_params(
+        irods::resource_plugin_context& _ctx ) {
         // =-=-=-=-=-=-=-
         // ask the context if it is valid
         irods::error ret = _ctx.valid< irods::structured_object >();
-        if( !ret.ok() ) {
+        if ( !ret.ok() ) {
             return PASSMSG( "resource context is invalid", ret );
 
         }
-       
+
         return SUCCESS();
-         
+
     } // tar_check_params
 
     // =-=-=-=-=-=-=-
-    // call archive file extraction for struct file 
+    // call archive file extraction for struct file
     irods::error extract_file( int _index ) {
         // =-=-=-=-=-=-=-
         // check struct desc table in use flag
-        if( PluginStructFileDesc[ _index ].inuseFlag <= 0 ) {
+        if ( PluginStructFileDesc[ _index ].inuseFlag <= 0 ) {
             std::stringstream msg;
             msg << "extract_file - struct file index: ";
             msg << _index;
@@ -137,9 +137,9 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // check struct desc table in use flag
         specColl_t* spec_coll = PluginStructFileDesc[ _index ].specColl;
-        if( spec_coll == NULL                  || 
-            strlen( spec_coll->cacheDir ) == 0 ||
-            strlen( spec_coll->phyPath  ) == 0) {
+        if ( spec_coll == NULL                  ||
+                strlen( spec_coll->cacheDir ) == 0 ||
+                strlen( spec_coll->phyPath ) == 0 ) {
             std::stringstream msg;
             msg << "extract_file - bad special collection for index: ";
             msg << _index;
@@ -163,25 +163,25 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // open the archive and and prepare to read
-        if( archive_read_open_filename( arch, spec_coll->phyPath, 16384 ) != ARCHIVE_OK ) {
+        if ( archive_read_open_filename( arch, spec_coll->phyPath, 16384 ) != ARCHIVE_OK ) {
             std::stringstream msg;
             msg << "extract_file - failed to open archive [";
             msg << spec_coll->phyPath;
             msg << "]";
             return ERROR( -1, msg.str() );
         }
- 
+
         // =-=-=-=-=-=-=-
         // build a cache directory string
         std::string cache_dir( spec_coll->cacheDir );
-        if( cache_dir[ cache_dir.size() - 1 ] != '/' ) {
+        if ( cache_dir[ cache_dir.size() - 1 ] != '/' ) {
             cache_dir += "/";
         }
 
         // =-=-=-=-=-=-=-
         // iterate over entries in the archive and write them do disk
         struct archive_entry* entry;
-        while( ARCHIVE_OK == archive_read_next_header( arch, &entry ) ) {
+        while ( ARCHIVE_OK == archive_read_next_header( arch, &entry ) ) {
             // =-=-=-=-=-=-=-
             // redirect the path to the cache directory
             std::string path = cache_dir + std::string( archive_entry_pathname( entry ) );
@@ -189,13 +189,13 @@ extern "C" {
 
             // =-=-=-=-=-=-=-
             // read data from entry and write it to disk
-            if( ARCHIVE_OK != archive_read_extract( arch, entry, flags ) ){
+            if ( ARCHIVE_OK != archive_read_extract( arch, entry, flags ) ) {
                 std::stringstream msg;
                 msg << "extract_file - failed to write [";
                 msg << path;
-                msg << "]"; 
-                rodsLog( LOG_NOTICE, msg.str().c_str() ); 
-            } 
+                msg << "]";
+                rodsLog( LOG_NOTICE, msg.str().c_str() );
+            }
 
         } // while
 
@@ -206,24 +206,24 @@ extern "C" {
         return SUCCESS();
 
     } // extract_file
-    
+
     // =-=-=-=-=-=-=-
-    // recursively create a cache directory for a spec coll via irods api 
+    // recursively create a cache directory for a spec coll via irods api
     irods::error make_tar_cache_dir( int _index, std::string _host ) {
         // =-=-=-=-=-=-=-
         // extract and test comm pointer
         rsComm_t* rs_comm = PluginStructFileDesc[ _index ].rsComm;
-        if( !rs_comm ) {
+        if ( !rs_comm ) {
             std::stringstream msg;
             msg << "make_tar_cache_dir - null rsComm pointer for index: ";
             msg << _index;
             return ERROR( SYS_INTERNAL_NULL_INPUT_ERR, msg.str() );
         }
-        
+
         // =-=-=-=-=-=-=-
         // extract and test special collection pointer
         specColl_t* spec_coll = PluginStructFileDesc[ _index ].specColl;
-        if( !spec_coll ) {
+        if ( !spec_coll ) {
             std::stringstream msg;
             msg << "make_tar_cache_dir - null specColl pointer for index: ";
             msg << _index;
@@ -235,14 +235,14 @@ extern "C" {
         fileMkdirInp_t fileMkdirInp;
         memset( &fileMkdirInp, 0, sizeof( fileMkdirInp ) );
         fileMkdirInp.mode     = DEFAULT_DIR_MODE;
-        strncpy( fileMkdirInp.addr.hostAddr, const_cast<char*>( _host.c_str() ), NAME_LEN ); 
-        strncpy( fileMkdirInp.rescHier, spec_coll->rescHier, MAX_NAME_LEN);
-        
+        strncpy( fileMkdirInp.addr.hostAddr, const_cast<char*>( _host.c_str() ), NAME_LEN );
+        strncpy( fileMkdirInp.rescHier, spec_coll->rescHier, MAX_NAME_LEN );
+
         // =-=-=-=-=-=-=-
         // loop over a series of indicies for the directory suffix and
         // try to make the directory until it succeeds
         int dir_index = 0;
-        while( true ) {
+        while ( true ) {
             // =-=-=-=-=-=-=-
             // build the cache directory name
             snprintf( fileMkdirInp.dirName, MAX_NAME_LEN, "%s.%s%d",
@@ -251,15 +251,17 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // system api call to create a directory
             int status = rsFileMkdir( rs_comm, &fileMkdirInp );
-            if( status >= 0 ) {
+            if ( status >= 0 ) {
                 break;
 
-            } else {
-                if( getErrno( status ) == EEXIST ) {
+            }
+            else {
+                if ( getErrno( status ) == EEXIST ) {
                     dir_index ++;
                     continue;
 
-                } else {
+                }
+                else {
                     return ERROR( status, "make_tar_cache_dir - failed to create cache directory" );
 
                 } // else
@@ -267,7 +269,7 @@ extern "C" {
             } // else
 
         } // while
-        
+
         // =-=-=-=-=-=-=-
         // copy successful cache dir out of mkdir struct
         strncpy( spec_coll->cacheDir, fileMkdirInp.dirName, MAX_NAME_LEN );
@@ -277,7 +279,7 @@ extern "C" {
         return SUCCESS();
 
     } // make_tar_cache_dir
-        
+
     // =-=-=-=-=-=-=-
     // extract the tar file into a cache dir
     irods::error stage_tar_struct_file( int _index, std::string _host ) {
@@ -286,30 +288,30 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // extract the special collection from the struct file table
         specColl_t* spec_coll = PluginStructFileDesc[_index].specColl;
-        if( spec_coll == NULL ) {
+        if ( spec_coll == NULL ) {
             return ERROR( SYS_INTERNAL_NULL_INPUT_ERR, "stage_tar_struct_file - null spec coll" );
         }
 
         rsComm_t* comm = PluginStructFileDesc[ _index ].rsComm;
-        if( comm == NULL ) {
+        if ( comm == NULL ) {
             return ERROR( SYS_INTERNAL_NULL_INPUT_ERR, "stage_tar_struct_file - null comm" );
         }
 
 
         // =-=-=-=-=-=-=-
         // check to see if we have a cache dir and make one if not
-        if( strlen( spec_coll->cacheDir ) == 0 ) {
+        if ( strlen( spec_coll->cacheDir ) == 0 ) {
             // =-=-=-=-=-=-=-
             // no cache. stage one. make the CacheDir first
             irods::error mk_err = make_tar_cache_dir( _index, _host );
-            if( !mk_err.ok() ) {
+            if ( !mk_err.ok() ) {
                 return PASSMSG( "failed to create cachedir", mk_err );
             }
 
             // =-=-=-=-=-=-=-
             // expand tar file into cache dir
             irods::error extract_err = extract_file( _index );
-            if( !extract_err.ok() ) {
+            if ( !extract_err.ok() ) {
                 std::stringstream msg;
                 msg << "stage_tar_struct_file - extract_file failed for [";
                 msg << spec_coll->objPath;
@@ -317,23 +319,23 @@ extern "C" {
                 msg << spec_coll->cacheDir << "]";
 
                 /* XXXX may need to remove the cacheDir too */
-                return PASSMSG( msg.str(), extract_err ); 
+                return PASSMSG( msg.str(), extract_err );
 
             } // if !ok
 
             // =-=-=-=-=-=-=-
-            // register the CacheDir 
+            // register the CacheDir
             status = modCollInfo2( comm, spec_coll, 0 );
-            if( status < 0 ) {
-                return ERROR( status, "stage_tar_struct_file - modCollInfo2 failed." ); 
+            if ( status < 0 ) {
+                return ERROR( status, "stage_tar_struct_file - modCollInfo2 failed." );
             }
 
             // =-=-=-=-=-=-=-
             // if the left over cache dir has a symlink in it, remove the
             // directory ( addresses Wisc Security Issue r4906 )
-            if( hasSymlinkInDir( spec_coll->cacheDir ) ) {
+            if ( hasSymlinkInDir( spec_coll->cacheDir ) ) {
                 rodsLog( LOG_ERROR, "extractTarFile: cacheDir %s has symlink in it",
-                spec_coll->cacheDir ); 
+                         spec_coll->cacheDir );
 
                 /* remove cache */
                 fileRmdirInp_t fileRmdirInp;
@@ -343,7 +345,7 @@ extern "C" {
                 rstrcpy( fileRmdirInp.rescHier,      spec_coll->rescHier,                MAX_NAME_LEN );
                 fileRmdirInp.flags = RMDIR_RECUR;
                 int status = rsFileRmdir( comm, &fileRmdirInp );
-                if (status < 0) {
+                if ( status < 0 ) {
                     std::stringstream msg;
                     msg << "stage_tar_struct_file - rmdir error for [";
                     msg << spec_coll->cacheDir << "]";
@@ -352,75 +354,75 @@ extern "C" {
 
             } // if hasSymlinkInDir
 
-        } // if empty cachedir  
+        } // if empty cachedir
 
         return SUCCESS();
 
     } // stage_tar_struct_file
-  
+
     // =-=-=-=-=-=-=-
     // find the next free PluginStructFileDesc slot, mark it in use and return the index
     int alloc_struct_file_desc() {
-        for( int i = 1; i < NUM_STRUCT_FILE_DESC; i++ ) {
-            if (PluginStructFileDesc[i].inuseFlag == FD_FREE) {
+        for ( int i = 1; i < NUM_STRUCT_FILE_DESC; i++ ) {
+            if ( PluginStructFileDesc[i].inuseFlag == FD_FREE ) {
                 PluginStructFileDesc[i].inuseFlag = FD_INUSE;
-                return (i);
+                return ( i );
             };
         } // for i
 
-        return (SYS_OUT_OF_FILE_DESC);
+        return ( SYS_OUT_OF_FILE_DESC );
 
     } // alloc_struct_file_desc
 
     int free_struct_file_desc( int _idx ) {
-        if( _idx  < 0 || _idx  >= NUM_STRUCT_FILE_DESC ) {
+        if ( _idx  < 0 || _idx  >= NUM_STRUCT_FILE_DESC ) {
             rodsLog( LOG_NOTICE,
                      "free_struct_file_desc: index %d out of range", _idx );
-            return (SYS_FILE_DESC_OUT_OF_RANGE);
+            return ( SYS_FILE_DESC_OUT_OF_RANGE );
         }
 
         memset( &PluginStructFileDesc[ _idx ], 0, sizeof( structFileDesc_t ) );
 
-        return (0);
-    
+        return ( 0 );
+
     } // free_struct_file_desc
 
     // =-=-=-=-=-=-=-
-    //  
+    //
     int match_struct_file_desc( specColl_t* _spec_coll ) {
 
-        for( int i = 1; i < NUM_STRUCT_FILE_DESC; i++) {
-            if( PluginStructFileDesc[i].inuseFlag == FD_INUSE &&
-                PluginStructFileDesc[i].specColl  != NULL     &&
-                strcmp( PluginStructFileDesc[i].specColl->collection, _spec_coll->collection ) == 0 &&
-                strcmp( PluginStructFileDesc[i].specColl->objPath,    _spec_coll->objPath    ) == 0 ) {
-                return (i);
+        for ( int i = 1; i < NUM_STRUCT_FILE_DESC; i++ ) {
+            if ( PluginStructFileDesc[i].inuseFlag == FD_INUSE &&
+                    PluginStructFileDesc[i].specColl  != NULL     &&
+                    strcmp( PluginStructFileDesc[i].specColl->collection, _spec_coll->collection ) == 0 &&
+                    strcmp( PluginStructFileDesc[i].specColl->objPath,    _spec_coll->objPath ) == 0 ) {
+                return ( i );
             };
         } // for
 
-        return (SYS_OUT_OF_FILE_DESC);
+        return ( SYS_OUT_OF_FILE_DESC );
 
     } // match_struct_file_desc
 
     // =-=-=-=-=-=-=-
-    // local function to manage the open of a tar file 
-    irods::error tar_struct_file_open( 
-                      rsComm_t*          _comm, 
-                      specColl_t*        _spec_coll, 
-                      int&               _struct_desc_index,
-                      const std::string& _resc_hier,
-                      std::string&       _resc_host ) {
+    // local function to manage the open of a tar file
+    irods::error tar_struct_file_open(
+        rsComm_t*          _comm,
+        specColl_t*        _spec_coll,
+        int&               _struct_desc_index,
+        const std::string& _resc_hier,
+        std::string&       _resc_host ) {
         int status                  = 0;
         specCollCache_t* spec_cache = 0;
 
         // =-=-=-=-=-=-=-
         // trap null parameters
-        if( 0 == _spec_coll ) {
+        if ( 0 == _spec_coll ) {
             std::string msg( "tar_struct_file_open - null special collection parameter" );
             return ERROR( SYS_INTERNAL_NULL_INPUT_ERR, msg );
         }
 
-        if( 0 == _comm ) {
+        if ( 0 == _comm ) {
             std::string msg( "tar_struct_file_open - null rsComm_t parameter" );
             return ERROR( SYS_INTERNAL_NULL_INPUT_ERR, msg );
         }
@@ -428,37 +430,38 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // look for opened PluginStructFileDesc
         _struct_desc_index = match_struct_file_desc( _spec_coll );
-        if( _struct_desc_index > 0 ) {
+        if ( _struct_desc_index > 0 ) {
             return SUCCESS();
         }
-    
+
         // =-=-=-=-=-=-=-
         // alloc and trap bad alloc
-        if( ( _struct_desc_index = alloc_struct_file_desc() ) < 0 ) {
+        if ( ( _struct_desc_index = alloc_struct_file_desc() ) < 0 ) {
             return ERROR( _struct_desc_index, "tar_struct_file_open - call to allocStructFileDesc failed." );
         }
-                 
+
         // =-=-=-=-=-=-=-
         // [ mwan? :: Have to do this because  _spec_coll could come from a remote host ]
         // NOTE :: i dont see any remote server to server comms here
-        if( ( status = getSpecCollCache( _comm,  _spec_coll->collection, 0, &spec_cache ) ) >= 0 ) {
+        if ( ( status = getSpecCollCache( _comm,  _spec_coll->collection, 0, &spec_cache ) ) >= 0 ) {
             // =-=-=-=-=-=-=-
             // copy pointer to cached special collection
             PluginStructFileDesc[ _struct_desc_index ].specColl = &spec_cache->specColl;
-            if( !PluginStructFileDesc[ _struct_desc_index ].specColl ) {
-                
+            if ( !PluginStructFileDesc[ _struct_desc_index ].specColl ) {
+
             }
 
             // =-=-=-=-=-=-=-
-            // copy over physical path and resource name since getSpecCollCache 
-            // does not give phyPath nor resource 
-            if( strlen(  _spec_coll->phyPath ) > 0 ) { // JMC - backport 4517
+            // copy over physical path and resource name since getSpecCollCache
+            // does not give phyPath nor resource
+            if ( strlen( _spec_coll->phyPath ) > 0 ) { // JMC - backport 4517
                 rstrcpy( spec_cache->specColl.phyPath,  _spec_coll->phyPath, MAX_NAME_LEN );
             }
-            if( strlen( spec_cache->specColl.resource ) == 0 ) {
+            if ( strlen( spec_cache->specColl.resource ) == 0 ) {
                 rstrcpy( spec_cache->specColl.resource,  _spec_coll->resource, NAME_LEN );
             }
-        } else {
+        }
+        else {
             // =-=-=-=-=-=-=-
             // special collection is local to this server ??
             PluginStructFileDesc[ _struct_desc_index ].specColl =  _spec_coll;
@@ -467,12 +470,12 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // cache pointer to comm struct
         PluginStructFileDesc[ _struct_desc_index ].rsComm = _comm;
-        
+
         // =-=-=-=-=-=-=-
         // resolve resource by name
         irods::resource_ptr resc;
         irods::error resc_err = resc_mgr.resolve( _resc_hier, resc );
-        if( !resc_err.ok() ) {
+        if ( !resc_err.ok() ) {
             std::stringstream msg;
             msg << "tar_struct_file_open - error returned from resolveResc for resource [";
             msg << _spec_coll->resource;
@@ -484,25 +487,25 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // extract the name of the host of the resource from the resource plugin
-        rodsServerHost_t* rods_host = 0; 
+        rodsServerHost_t* rods_host = 0;
         irods::error get_err = resc->get_property< rodsServerHost_t* >( irods::RESOURCE_HOST, rods_host );
-        if( !get_err.ok() ) {
+        if ( !get_err.ok() ) {
             return PASSMSG( "failed to call get_property", get_err );
         }
-        
-        if( !rods_host->hostName ) {
+
+        if ( !rods_host->hostName ) {
             return ERROR( -1, "null rods server host" );
         }
-        
+
         _resc_host = rods_host->hostName->name;
 
         // =-=-=-=-=-=-=-
-        // TODO :: need to deal with remote open here 
+        // TODO :: need to deal with remote open here
 
         // =-=-=-=-=-=-=-
         // stage the tar file so we can get at its tasty innards
         irods::error stage_err = stage_tar_struct_file( _struct_desc_index, _resc_host );
-        if( !stage_err.ok() ) {
+        if ( !stage_err.ok() ) {
             free_struct_file_desc( _struct_desc_index );
             return PASSMSG( "stage_tar_struct_file failed.", stage_err );
         }
@@ -515,15 +518,15 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // create the phy path to the cache dir
-    irods::error compose_cache_dir_physical_path( char*       _phy_path, 
-                                                   specColl_t* _spec_coll, 
-                                                   const char* _sub_file_path ) {
-        // =-=-=-=-=-=-=- 
+    irods::error compose_cache_dir_physical_path( char*       _phy_path,
+            specColl_t* _spec_coll,
+            const char* _sub_file_path ) {
+        // =-=-=-=-=-=-=-
         // subFilePath is composed by appending path to the objPath which is
         // the logical path of the tar file. So we need to substitude the
-        // objPath with cacheDir 
+        // objPath with cacheDir
         int len = strlen( _spec_coll->collection );
-        if( strncmp( _spec_coll->collection, _sub_file_path, len ) != 0 ) {
+        if ( strncmp( _spec_coll->collection, _sub_file_path, len ) != 0 ) {
             std::stringstream msg;
             msg << "compose_cache_dir_physical_path - collection [";
             msg << _spec_coll->collection;
@@ -533,55 +536,55 @@ extern "C" {
             return ERROR( SYS_STRUCT_FILE_PATH_ERR, msg.str() );
         }
 
-        // =-=-=-=-=-=-=- 
+        // =-=-=-=-=-=-=-
         // compose the path
         snprintf( _phy_path, MAX_NAME_LEN, "%s%s", _spec_coll->cacheDir, _sub_file_path + len );
-        
-        // =-=-=-=-=-=-=- 
+
+        // =-=-=-=-=-=-=-
         // Win!
         return SUCCESS();
 
     } // compose_cache_dir_physical_path
-    
+
     // =-=-=-=-=-=-=-
     // assign an new entry in the tar desc table
     int alloc_tar_sub_file_desc() {
-        for( int i = 1; i < NUM_TAR_SUB_FILE_DESC; i++ ) {
-            if (PluginTarSubFileDesc[i].inuseFlag == FD_FREE) {
+        for ( int i = 1; i < NUM_TAR_SUB_FILE_DESC; i++ ) {
+            if ( PluginTarSubFileDesc[i].inuseFlag == FD_FREE ) {
                 PluginTarSubFileDesc[i].inuseFlag = FD_INUSE;
-                return (i);
+                return ( i );
             };
         }
 
-        rodsLog (LOG_NOTICE,
-                 "alloc_tar_sub_file_desc: out of PluginTarSubFileDesc");
+        rodsLog( LOG_NOTICE,
+                 "alloc_tar_sub_file_desc: out of PluginTarSubFileDesc" );
 
-        return (SYS_OUT_OF_FILE_DESC);
+        return ( SYS_OUT_OF_FILE_DESC );
 
     } // alloc_tar_sub_file_desc
 
     // =-=-=-=-=-=-=-
     // free an entry in the tar desc table
     int free_tar_sub_file_desc( int _idx ) {
-        if( _idx < 0 || _idx >= NUM_TAR_SUB_FILE_DESC ) {
-            rodsLog (LOG_NOTICE,
+        if ( _idx < 0 || _idx >= NUM_TAR_SUB_FILE_DESC ) {
+            rodsLog( LOG_NOTICE,
                      "free_tar_sub_file_desc: index %d out of range", _idx );
-            return (SYS_FILE_DESC_OUT_OF_RANGE);
+            return ( SYS_FILE_DESC_OUT_OF_RANGE );
         }
 
         memset( &PluginTarSubFileDesc[ _idx ], 0, sizeof( tarSubFileDesc_t ) );
 
-        return (0);
+        return ( 0 );
     }
 
     // =-=-=-=-=-=-=-
     // interface for POSIX create
-    irods::error tar_file_create_plugin( 
-        irods::resource_plugin_context& _ctx ) { 
+    irods::error tar_file_create_plugin(
+        irods::resource_plugin_context& _ctx ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
         irods::error chk_err = tar_check_params( _ctx );
-        if( !chk_err.ok() ) {
+        if ( !chk_err.ok() ) {
             return PASSMSG( "tar_file_create_plugin", chk_err );
         }
 
@@ -592,14 +595,14 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // extract and check the special collection pointer
         specColl_t* spec_coll = fco->spec_coll();
-        if( !spec_coll ) {
+        if ( !spec_coll ) {
             return ERROR( -1, "tar_file_create_plugin - null spec_coll pointer in structure_object" );
         }
 
         // =-=-=-=-=-=-=-
         // extract and check the comm pointer
         rsComm_t* comm = fco->comm();
-        if( !comm ) {
+        if ( !comm ) {
             return ERROR( -1, "tar_file_create_plugin - null comm pointer in structure_object" );
         }
 
@@ -607,30 +610,30 @@ extern "C" {
         // open and stage the tar file, get its index
         int struct_file_index = 0;
         std::string resc_host;
-        irods::error open_err = tar_struct_file_open( comm, spec_coll, struct_file_index, 
-                                                        fco->resc_hier(), resc_host );
-        if( !open_err.ok() ) {
+        irods::error open_err = tar_struct_file_open( comm, spec_coll, struct_file_index,
+                                fco->resc_hier(), resc_host );
+        if ( !open_err.ok() ) {
             std::stringstream msg;
             msg << "tar_file_create_plugin - tar_struct_file_open error for [";
-            msg << spec_coll->objPath; 
+            msg << spec_coll->objPath;
             return PASSMSG( msg.str(), open_err );
         }
 
         // =-=-=-=-=-=-=-
-        // use the cached specColl. specColl may have changed 
+        // use the cached specColl. specColl may have changed
         spec_coll = PluginStructFileDesc[ struct_file_index ].specColl;
 
         // =-=-=-=-=-=-=-
         // allocate yet another index into another table
         int sub_index = alloc_tar_sub_file_desc();
-        if( sub_index < 0 ) {
+        if ( sub_index < 0 ) {
             return ERROR( sub_index, "tar_file_create_plugin - alloc_tar_sub_file_desc failed." );
         }
 
         // =-=-=-=-=-=-=-
         // cache struct file index into sub file index
         PluginTarSubFileDesc[ sub_index ].structFileInx = struct_file_index;
-        
+
         // =-=-=-=-=-=-=-
         // build a file create structure to pass off to the server api call
         fileCreateInp_t fileCreateInp;
@@ -638,12 +641,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // build a physical path name to the cache dir
-        irods::error comp_err = compose_cache_dir_physical_path( fileCreateInp.fileName, 
-                                                                  spec_coll, 
-                                                                  fco->sub_file_path().c_str() );
-        if( !comp_err.ok() ) {
-            return PASSMSG("compose_cache_dir_physical_path failed.", comp_err );
-                         
+        irods::error comp_err = compose_cache_dir_physical_path( fileCreateInp.fileName,
+                                spec_coll,
+                                fco->sub_file_path().c_str() );
+        if ( !comp_err.ok() ) {
+            return PASSMSG( "compose_cache_dir_physical_path failed.", comp_err );
+
         }
 
         fileCreateInp.mode       = fco->mode();
@@ -651,35 +654,36 @@ extern "C" {
         fileCreateInp.otherFlags = NO_CHK_PERM_FLAG; // JMC - backport 4768
         strncpy( fileCreateInp.addr.hostAddr, resc_host.c_str(), NAME_LEN );
         strncpy( fileCreateInp.resc_hier_, irods::LOCAL_USE_ONLY_RESOURCE.c_str(), MAX_NAME_LEN );
-        strncpy( fileCreateInp.objPath, fco->logical_path().c_str(), MAX_NAME_LEN);
-        
+        strncpy( fileCreateInp.objPath, fco->logical_path().c_str(), MAX_NAME_LEN );
+
         // =-=-=-=-=-=-=-
         // make the call to create a file
         int status = rsFileCreate( comm, &fileCreateInp );
-        if( status < 0 ) {
+        if ( status < 0 ) {
             std::stringstream msg;
             msg << "tar_file_create_plugin - rsFileCreate failed for [";
             msg << fileCreateInp.fileName;
             msg << "], status = ";
             msg << status;
             return ERROR( status, msg.str() );
-        } else {
+        }
+        else {
             PluginTarSubFileDesc[ sub_index ].fd = status;
             PluginStructFileDesc[ struct_file_index ].openCnt++;
             fco->file_descriptor( sub_index );
-            return CODE(  sub_index  );
+            return CODE( sub_index );
         }
 
     } // tar_file_create_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Open
-    irods::error tar_file_open_plugin( 
-        irods::resource_plugin_context& _ctx ) { 
+    irods::error tar_file_open_plugin(
+        irods::resource_plugin_context& _ctx ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
         irods::error chk_err = tar_check_params( _ctx );
-        if( !chk_err.ok() ) {
+        if ( !chk_err.ok() ) {
             return PASSMSG( "tar_file_open_plugin", chk_err );
         }
 
@@ -690,14 +694,14 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // extract and check the special collection pointer
         specColl_t* spec_coll = fco->spec_coll();
-        if( !spec_coll ) {
+        if ( !spec_coll ) {
             return ERROR( -1, "tar_file_open_plugin - null spec_coll pointer in structure_object" );
         }
 
         // =-=-=-=-=-=-=-
         // extract and check the comm pointer
         rsComm_t* comm = fco->comm();
-        if( !comm ) {
+        if ( !comm ) {
             return ERROR( -1, "tar_file_open_plugin - null comm pointer in structure_object" );
         }
 
@@ -705,30 +709,30 @@ extern "C" {
         // open and stage the tar file, get its index
         int struct_file_index = 0;
         std::string resc_host;
-        irods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index, 
-                                                        fco->resc_hier(), resc_host );
-        if( !open_err.ok() ) {
+        irods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index,
+                                 fco->resc_hier(), resc_host );
+        if ( !open_err.ok() ) {
             std::stringstream msg;
             msg << "tar_struct_file_open error for [";
-            msg << spec_coll->objPath; 
+            msg << spec_coll->objPath;
             return PASSMSG( msg.str(), open_err );
         }
 
         // =-=-=-=-=-=-=-
-        // use the cached specColl. specColl may have changed 
+        // use the cached specColl. specColl may have changed
         spec_coll = PluginStructFileDesc[ struct_file_index ].specColl;
 
         // =-=-=-=-=-=-=-
         // allocate yet another index into another table
         int sub_index = alloc_tar_sub_file_desc();
-        if( sub_index < 0 ) {
+        if ( sub_index < 0 ) {
             return ERROR( sub_index, "tar_file_open_plugin - alloc_tar_sub_file_desc failed." );
         }
 
         // =-=-=-=-=-=-=-
         // cache struct file index into sub file index
         PluginTarSubFileDesc[ sub_index ].structFileInx = struct_file_index;
-        
+
         // =-=-=-=-=-=-=-
         // build a file open structure to pass off to the server api call
         fileOpenInp_t fileOpenInp;
@@ -737,9 +741,9 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // build a physical path name to the cache dir
         irods::error comp_err = compose_cache_dir_physical_path( fileOpenInp.fileName, spec_coll, fco->sub_file_path().c_str() );
-        if( !comp_err.ok() ) {
+        if ( !comp_err.ok() ) {
             return PASSMSG( "compose_cache_dir_physical_path failed.", comp_err );
-                         
+
         }
 
         fileOpenInp.mode       = fco->mode();
@@ -748,48 +752,49 @@ extern "C" {
         strncpy( fileOpenInp.addr.hostAddr, resc_host.c_str(), NAME_LEN );
         strncpy( fileOpenInp.resc_hier_, irods::LOCAL_USE_ONLY_RESOURCE.c_str(), MAX_NAME_LEN );
         strncpy( fileOpenInp.objPath, fco->logical_path().c_str(), MAX_NAME_LEN );
-        
+
         // =-=-=-=-=-=-=-
         // make the call to create a file
         int status = rsFileOpen( comm, &fileOpenInp );
-        if( status < 0 ) {
+        if ( status < 0 ) {
             std::stringstream msg;
             msg << "tar_file_open_plugin - rsFileOpen failed for [";
             msg << fileOpenInp.fileName;
             msg << "], status = ";
             msg << status;
             return ERROR( status, msg.str() );
-        } else {
+        }
+        else {
             PluginTarSubFileDesc[ sub_index ].fd = status;
             PluginStructFileDesc[ struct_file_index ].openCnt++;
             fco->file_descriptor( sub_index );
-            return CODE(  sub_index  );
+            return CODE( sub_index );
         }
 
     } // tar_file_open_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Read
-    irods::error tar_file_read_plugin( 
-        irods::resource_plugin_context& _ctx, 
-        void*                               _buf, 
+    irods::error tar_file_read_plugin(
+        irods::resource_plugin_context& _ctx,
+        void*                               _buf,
         int                                 _len ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
         irods::error chk_err = tar_check_params( _ctx );
-        if( !chk_err.ok() ) {
+        if ( !chk_err.ok() ) {
             return PASSMSG( "tar_file_read_plugin", chk_err );
         }
-        
+
         // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
         irods::structured_object_ptr fco = boost::dynamic_pointer_cast< irods::structured_object >( _ctx.fco() );
 
         // =-=-=-=-=-=-=-
         // check range on the sub file index
-        if( fco->file_descriptor() < 1                      || 
-            fco->file_descriptor() >= NUM_TAR_SUB_FILE_DESC ||
-            PluginTarSubFileDesc[ fco->file_descriptor() ].inuseFlag == 0 ) {
+        if ( fco->file_descriptor() < 1                      ||
+                fco->file_descriptor() >= NUM_TAR_SUB_FILE_DESC ||
+                PluginTarSubFileDesc[ fco->file_descriptor() ].inuseFlag == 0 ) {
             std::stringstream msg;
             msg << "tar_file_read_plugin - sub file index ";
             msg << fco->file_descriptor();
@@ -801,8 +806,8 @@ extern "C" {
         // build a read structure and make the rs call
         fileReadInp_t fileReadInp;
         bytesBuf_t fileReadOutBBuf;
-        memset (&fileReadInp, 0, sizeof (fileReadInp));
-        memset (&fileReadOutBBuf, 0, sizeof (fileReadOutBBuf));
+        memset( &fileReadInp, 0, sizeof( fileReadInp ) );
+        memset( &fileReadOutBBuf, 0, sizeof( fileReadOutBBuf ) );
         fileReadInp.fileInx = PluginTarSubFileDesc[ fco->file_descriptor() ].fd;
         fileReadInp.len     = _len;
         fileReadOutBBuf.buf = _buf;
@@ -810,32 +815,32 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // make the call to read a file
         int status = rsFileRead( fco->comm(), &fileReadInp, &fileReadOutBBuf );
-        return CODE(status);
+        return CODE( status );
 
     } // tar_file_read_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Write
-    irods::error tar_file_write_plugin( 
+    irods::error tar_file_write_plugin(
         irods::resource_plugin_context& _ctx,
-        void*                               _buf, 
+        void*                               _buf,
         int                                 _len ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
         irods::error chk_err = tar_check_params( _ctx );
-        if( !chk_err.ok() ) {
+        if ( !chk_err.ok() ) {
             return PASSMSG( "tar_file_write_plugin", chk_err );
         }
-        
+
         // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
         irods::structured_object_ptr fco = boost::dynamic_pointer_cast< irods::structured_object >( _ctx.fco() );
 
         // =-=-=-=-=-=-=-
         // check range on the sub file index
-        if( fco->file_descriptor() < 1                      || 
-            fco->file_descriptor() >= NUM_TAR_SUB_FILE_DESC ||
-            PluginTarSubFileDesc[ fco->file_descriptor() ].inuseFlag == 0 ) {
+        if ( fco->file_descriptor() < 1                      ||
+                fco->file_descriptor() >= NUM_TAR_SUB_FILE_DESC ||
+                PluginTarSubFileDesc[ fco->file_descriptor() ].inuseFlag == 0 ) {
             std::stringstream msg;
             msg << "tar_file_write_plugin - sub file index ";
             msg << fco->file_descriptor();
@@ -847,8 +852,8 @@ extern "C" {
         // build a write structure and make the rs call
         fileWriteInp_t fileWriteInp;
         bytesBuf_t     fileWriteOutBBuf;
-        memset( &fileWriteInp,     0, sizeof (fileWriteInp) );
-        memset( &fileWriteOutBBuf, 0, sizeof (fileWriteOutBBuf) );
+        memset( &fileWriteInp,     0, sizeof( fileWriteInp ) );
+        memset( &fileWriteOutBBuf, 0, sizeof( fileWriteOutBBuf ) );
         fileWriteInp.len     = fileWriteOutBBuf.len = _len;
         fileWriteInp.fileInx = PluginTarSubFileDesc[ fco->file_descriptor() ].fd;
         fileWriteOutBBuf.buf = _buf;
@@ -856,16 +861,17 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // make the write api call
         int status = rsFileWrite( fco->comm(), &fileWriteInp, &fileWriteOutBBuf );
-        if( status > 0 ) {
+        if ( status > 0 ) {
             // =-=-=-=-=-=-=-
-            // cache has been written 
+            // cache has been written
             int         struct_idx = PluginTarSubFileDesc[ fco->file_descriptor() ].structFileInx;
             specColl_t* spec_coll   = PluginStructFileDesc[ struct_idx ].specColl;
-            if( spec_coll->cacheDirty == 0 ) {
-                spec_coll->cacheDirty = 1;    
+            if ( spec_coll->cacheDirty == 0 ) {
+                spec_coll->cacheDirty = 1;
                 int status1 = modCollInfo2( fco->comm(), spec_coll, 0 );
-                if( status1 < 0 ) 
+                if ( status1 < 0 ) {
                     return CODE( status1 );
+                }
             }
         }
 
@@ -875,24 +881,24 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Close
-    irods::error tar_file_close_plugin(  
+    irods::error tar_file_close_plugin(
         irods::resource_plugin_context& _ctx ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
         irods::error chk_err = tar_check_params( _ctx );
-        if( !chk_err.ok() ) {
+        if ( !chk_err.ok() ) {
             return PASSMSG( "tar_file_close_plugin", chk_err );
         }
-        
+
         // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
         irods::structured_object_ptr fco = boost::dynamic_pointer_cast< irods::structured_object >( _ctx.fco() );
 
         // =-=-=-=-=-=-=-
         // check range on the sub file index
-        if( fco->file_descriptor() < 1                      || 
-            fco->file_descriptor() >= NUM_TAR_SUB_FILE_DESC ||
-            PluginTarSubFileDesc[ fco->file_descriptor() ].inuseFlag == 0 ) {
+        if ( fco->file_descriptor() < 1                      ||
+                fco->file_descriptor() >= NUM_TAR_SUB_FILE_DESC ||
+                PluginTarSubFileDesc[ fco->file_descriptor() ].inuseFlag == 0 ) {
             std::stringstream msg;
             msg << "tar_file_close_plugin - sub file index ";
             msg << fco->file_descriptor();
@@ -905,7 +911,7 @@ extern "C" {
         fileCloseInp_t fileCloseInp;
         fileCloseInp.fileInx = PluginTarSubFileDesc[ fco->file_descriptor() ].fd;
         int status = rsFileClose( fco->comm(), &fileCloseInp );
-        if( status < 0 ) {
+        if ( status < 0 ) {
             std::stringstream msg;
             msg << "tar_file_close_plugin - failed in rsFileClose for fd [ ";
             msg << fco->file_descriptor();
@@ -926,12 +932,12 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Unlink
-    irods::error tar_file_unlink_plugin( 
-        irods::resource_plugin_context& _ctx ) { 
+    irods::error tar_file_unlink_plugin(
+        irods::resource_plugin_context& _ctx ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
         irods::error chk_err = tar_check_params( _ctx );
-        if( !chk_err.ok() ) {
+        if ( !chk_err.ok() ) {
             return PASSMSG( "tar_file_unlink_plugin", chk_err );
         }
 
@@ -942,14 +948,14 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // extract and check the special collection pointer
         specColl_t* spec_coll = fco->spec_coll();
-        if( !spec_coll ) {
+        if ( !spec_coll ) {
             return ERROR( -1, "tar_file_unlink_plugin - null spec_coll pointer in structure_object" );
         }
 
         // =-=-=-=-=-=-=-
         // extract and check the comm pointer
         rsComm_t* comm = fco->comm();
-        if( !comm ) {
+        if ( !comm ) {
             return ERROR( -1, "tar_file_unlink_plugin - null comm pointer in structure_object" );
         }
 
@@ -957,17 +963,17 @@ extern "C" {
         // open and stage the tar file, get its index
         int struct_file_index = 0;
         std::string resc_host;
-        irods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index, 
-                                                        fco->resc_hier(), resc_host );
-        if( !open_err.ok() ) {
+        irods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index,
+                                 fco->resc_hier(), resc_host );
+        if ( !open_err.ok() ) {
             std::stringstream msg;
             msg << "tar_file_unlink_plugin - tar_struct_file_open error for [";
-            msg << spec_coll->objPath; 
+            msg << spec_coll->objPath;
             return PASSMSG( msg.str(), open_err );
         }
 
         // =-=-=-=-=-=-=-
-        // use the cached specColl. specColl may have changed 
+        // use the cached specColl. specColl may have changed
         spec_coll = PluginStructFileDesc[ struct_file_index ].specColl;
 
         // =-=-=-=-=-=-=-
@@ -976,15 +982,15 @@ extern "C" {
         memset( &fileUnlinkInp, 0, sizeof( fileUnlinkInp ) );
         strncpy( fileUnlinkInp.rescHier, irods::LOCAL_USE_ONLY_RESOURCE.c_str(), MAX_NAME_LEN );
         strncpy( fileUnlinkInp.objPath, fco->logical_path().c_str(), MAX_NAME_LEN );
-        
+
         // =-=-=-=-=-=-=-
         // build a physical path name to the cache dir
-        irods::error comp_err = compose_cache_dir_physical_path( fileUnlinkInp.fileName, 
-                                                                  spec_coll, 
-                                                                  fco->sub_file_path().c_str() );
-        if( !comp_err.ok() ) {
+        irods::error comp_err = compose_cache_dir_physical_path( fileUnlinkInp.fileName,
+                                spec_coll,
+                                fco->sub_file_path().c_str() );
+        if ( !comp_err.ok() ) {
             return PASSMSG(
-                         "tar_file_unlink_plugin - compose_cache_dir_physical_path failed.", comp_err );
+                       "tar_file_unlink_plugin - compose_cache_dir_physical_path failed.", comp_err );
         }
 
         strncpy( fileUnlinkInp.addr.hostAddr, resc_host.c_str(), NAME_LEN );
@@ -992,15 +998,16 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // make the call to unlink a file
         int status = rsFileUnlink( comm, &fileUnlinkInp );
-        if( status >= 0 ) {
+        if ( status >= 0 ) {
             specColl_t* specColl;
             /* cache has been written */
             specColl_t* loc_spec_coll = PluginStructFileDesc[ struct_file_index ].specColl;
-            if (loc_spec_coll->cacheDirty == 0) {
+            if ( loc_spec_coll->cacheDirty == 0 ) {
                 loc_spec_coll->cacheDirty = 1;
-                int status1 = modCollInfo2 ( comm, loc_spec_coll, 0 );
-                if( status1 < 0 ) 
+                int status1 = modCollInfo2( comm, loc_spec_coll, 0 );
+                if ( status1 < 0 ) {
                     return CODE( status1 );
+                }
             }
         }
 
@@ -1010,13 +1017,13 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Stat
-    irods::error tar_file_stat_plugin( 
+    irods::error tar_file_stat_plugin(
         irods::resource_plugin_context& _ctx,
-        struct stat*                        _statbuf ) { 
+        struct stat*                        _statbuf ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
         irods::error chk_err = tar_check_params( _ctx );
-        if( !chk_err.ok() ) {
+        if ( !chk_err.ok() ) {
             return PASSMSG( "tar_file_stat_plugin", chk_err );
         }
 
@@ -1027,14 +1034,14 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // extract and check the special collection pointer
         specColl_t* spec_coll = fco->spec_coll();
-        if( !spec_coll ) {
+        if ( !spec_coll ) {
             return ERROR( -1, "tar_file_stat_plugin - null spec_coll pointer in structure_object" );
         }
 
         // =-=-=-=-=-=-=-
         // extract and check the comm pointer
         rsComm_t* comm = fco->comm();
-        if( !comm ) {
+        if ( !comm ) {
             return ERROR( -1, "tar_file_stat_plugin - null comm pointer in structure_object" );
         }
 
@@ -1042,49 +1049,50 @@ extern "C" {
         // open and stage the tar file, get its index
         int struct_file_index = 0;
         std::string resc_host;
-        irods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index, 
-                                                        fco->resc_hier(), resc_host );
-        if( !open_err.ok() ) {
+        irods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index,
+                                 fco->resc_hier(), resc_host );
+        if ( !open_err.ok() ) {
             std::stringstream msg;
             msg << "tar_file_stat_plugin - tar_struct_file_open error for [";
-            msg << spec_coll->objPath; 
+            msg << spec_coll->objPath;
             return PASSMSG( msg.str(), open_err );
         }
 
         // =-=-=-=-=-=-=-
-        // use the cached specColl. specColl may have changed 
+        // use the cached specColl. specColl may have changed
         spec_coll = PluginStructFileDesc[ struct_file_index ].specColl;
 
-    
+
         // =-=-=-=-=-=-=-
         // build a file stat structure to pass off to the server api call
         fileStatInp_t fileStatInp;
-        memset( &fileStatInp, 0, sizeof ( fileStatInp ) );
+        memset( &fileStatInp, 0, sizeof( fileStatInp ) );
         strncpy( fileStatInp.rescHier,
-                 irods::LOCAL_USE_ONLY_RESOURCE.c_str(), 
+                 irods::LOCAL_USE_ONLY_RESOURCE.c_str(),
                  MAX_NAME_LEN );
-        strncpy( fileStatInp.objPath, fco->logical_path().c_str(), MAX_NAME_LEN);
-        
+        strncpy( fileStatInp.objPath, fco->logical_path().c_str(), MAX_NAME_LEN );
+
         // =-=-=-=-=-=-=-
         // build a physical path name to the cache dir
         irods::error comp_err = compose_cache_dir_physical_path( fileStatInp.fileName, spec_coll, fco->sub_file_path().c_str() );
-        if( !comp_err.ok() ) {
+        if ( !comp_err.ok() ) {
             return PASSMSG(
-                         "tar_file_stat_plugin - compose_cache_dir_physical_path failed.", comp_err );
+                       "tar_file_stat_plugin - compose_cache_dir_physical_path failed.", comp_err );
         }
 
         strncpy( fileStatInp.addr.hostAddr, resc_host.c_str(), NAME_LEN );
         strncpy( fileStatInp.rescHier,
-                 irods::LOCAL_USE_ONLY_RESOURCE.c_str(), 
+                 irods::LOCAL_USE_ONLY_RESOURCE.c_str(),
                  MAX_NAME_LEN );
 
         // =-=-=-=-=-=-=-
         // make the call to stat a file
         rodsStat_t* rods_stat;
         int status = rsFileStat( comm, &fileStatInp, &rods_stat );
-        if( status >= 0 ) {
+        if ( status >= 0 ) {
             rodsStatToStat( _statbuf, rods_stat );
-        } else {
+        }
+        else {
             return ERROR( status, "tar_file_stat_plugin - rsFileStat failed." );
         }
 
@@ -1094,26 +1102,26 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX lseek
-    irods::error tar_file_lseek_plugin( 
-        irods::resource_plugin_context& _ctx, 
-        long long                        _offset, 
+    irods::error tar_file_lseek_plugin(
+        irods::resource_plugin_context& _ctx,
+        long long                        _offset,
         int                              _whence ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
         irods::error chk_err = tar_check_params( _ctx );
-        if( !chk_err.ok() ) {
+        if ( !chk_err.ok() ) {
             return PASSMSG( "tar_file_lseek_plugin", chk_err );
         }
-        
+
         // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
         irods::structured_object_ptr fco = boost::dynamic_pointer_cast< irods::structured_object >( _ctx.fco() );
 
         // =-=-=-=-=-=-=-
         // check range on the sub file index
-        if( fco->file_descriptor() < 1                      || 
-            fco->file_descriptor() >= NUM_TAR_SUB_FILE_DESC ||
-            PluginTarSubFileDesc[ fco->file_descriptor() ].inuseFlag == 0 ) {
+        if ( fco->file_descriptor() < 1                      ||
+                fco->file_descriptor() >= NUM_TAR_SUB_FILE_DESC ||
+                PluginTarSubFileDesc[ fco->file_descriptor() ].inuseFlag == 0 ) {
             std::stringstream msg;
             msg << "tar_file_lseek_plugin - sub file index ";
             msg << fco->file_descriptor();
@@ -1124,7 +1132,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // extract and check the comm pointer
         rsComm_t* comm = fco->comm();
-        if( !comm ) {
+        if ( !comm ) {
             return ERROR( -1, "tar_file_lseek_plugin - null comm pointer in structure_object" );
         }
 
@@ -1135,13 +1143,14 @@ extern "C" {
         fileLseekInp.fileInx = PluginTarSubFileDesc[ fco->file_descriptor() ].fd;
         fileLseekInp.offset  = _offset;
         fileLseekInp.whence  = _whence;
-        
+
         fileLseekOut_t *fileLseekOut = NULL;
         int status = rsFileLseek( comm, &fileLseekInp, &fileLseekOut );
 
-        if( status < 0 || NULL == fileLseekOut ) { // JMC cppcheck - nullptr
+        if ( status < 0 || NULL == fileLseekOut ) { // JMC cppcheck - nullptr
             return CODE( status );
-        } else {
+        }
+        else {
             rodsLong_t offset = fileLseekOut->offset;
             free( fileLseekOut );
             return CODE( offset );
@@ -1151,12 +1160,12 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX mkdir
-    irods::error tar_file_mkdir_plugin( 
-        irods::resource_plugin_context& _ctx ) { 
+    irods::error tar_file_mkdir_plugin(
+        irods::resource_plugin_context& _ctx ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
         irods::error chk_err = tar_check_params( _ctx );
-        if( !chk_err.ok() ) {
+        if ( !chk_err.ok() ) {
             return PASSMSG( "tar_file_mkdir_plugin", chk_err );
         }
 
@@ -1167,14 +1176,14 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // extract and check the special collection pointer
         specColl_t* spec_coll = fco->spec_coll();
-        if( !spec_coll ) {
+        if ( !spec_coll ) {
             return ERROR( -1, "tar_file_mkdir_plugin - null spec_coll pointer in structure_object" );
         }
 
         // =-=-=-=-=-=-=-
         // extract and check the comm pointer
         rsComm_t* comm = fco->comm();
-        if( !comm ) {
+        if ( !comm ) {
             return ERROR( -1, "tar_file_mkdir_plugin - null comm pointer in structure_object" );
         }
 
@@ -1182,48 +1191,48 @@ extern "C" {
         // open and stage the tar file, get its index
         int struct_file_index = 0;
         std::string resc_host;
-        irods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index, 
-                                                        fco->resc_hier(), resc_host );
-        if( !open_err.ok() ) {
+        irods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index,
+                                 fco->resc_hier(), resc_host );
+        if ( !open_err.ok() ) {
             std::stringstream msg;
             msg << "tar_file_mkdir_plugin - tar_struct_file_open error for [";
-            msg << spec_coll->objPath; 
+            msg << spec_coll->objPath;
             return PASSMSG( msg.str(), open_err );
         }
 
         // =-=-=-=-=-=-=-
-        // use the cached specColl. specColl may have changed 
+        // use the cached specColl. specColl may have changed
         spec_coll = PluginStructFileDesc[ struct_file_index ].specColl;
 
         // =-=-=-=-=-=-=-
         // build a file mkdir structure to pass off to the server api call
         fileMkdirInp_t fileMkdirInp;
         strncpy( fileMkdirInp.addr.hostAddr, resc_host.c_str(), NAME_LEN );
-        strncpy( fileMkdirInp.rescHier, spec_coll->rescHier, MAX_NAME_LEN);
+        strncpy( fileMkdirInp.rescHier, spec_coll->rescHier, MAX_NAME_LEN );
         fileMkdirInp.mode = fco->mode();
 
         // =-=-=-=-=-=-=-
         // build a physical path name to the cache dir
-        irods::error comp_err = compose_cache_dir_physical_path( fileMkdirInp.dirName, 
-                                                                  spec_coll, 
-                                                                  fco->sub_file_path().c_str() );
-        if( !comp_err.ok() ) {
+        irods::error comp_err = compose_cache_dir_physical_path( fileMkdirInp.dirName,
+                                spec_coll,
+                                fco->sub_file_path().c_str() );
+        if ( !comp_err.ok() ) {
             return PASSMSG(
-                         "tar_file_mkdir_plugin - compose_cache_dir_physical_path failed.", comp_err );
+                       "tar_file_mkdir_plugin - compose_cache_dir_physical_path failed.", comp_err );
         }
 
         // =-=-=-=-=-=-=-
         // make the call to the mkdir api
         int status = rsFileMkdir( comm, &fileMkdirInp );
-        if( status >= 0 ) {
-            // use the specColl in PluginStructFileDesc 
+        if ( status >= 0 ) {
+            // use the specColl in PluginStructFileDesc
             specColl_t* loc_spec_coll = PluginStructFileDesc[ struct_file_index ].specColl;
             // =-=-=-=-=-=-=-
-            // cache has been written 
-            if( loc_spec_coll->cacheDirty == 0 ) {
+            // cache has been written
+            if ( loc_spec_coll->cacheDirty == 0 ) {
                 loc_spec_coll->cacheDirty = 1;
                 int status1 = modCollInfo2( comm, loc_spec_coll, 0 );
-                if (status1 < 0) {
+                if ( status1 < 0 ) {
                     return ERROR( status1, "tar_file_mkdir_plugin - Failed to call modCollInfo2" );
                 }
             }
@@ -1236,12 +1245,12 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX mkdir
-    irods::error tar_file_rmdir_plugin( 
-        irods::resource_plugin_context& _ctx ) { 
+    irods::error tar_file_rmdir_plugin(
+        irods::resource_plugin_context& _ctx ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
         irods::error chk_err = tar_check_params( _ctx );
-        if( !chk_err.ok() ) {
+        if ( !chk_err.ok() ) {
             return PASSMSG( "tar_file_rmdir_plugin", chk_err );
         }
 
@@ -1252,14 +1261,14 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // extract and check the special collection pointer
         specColl_t* spec_coll = fco->spec_coll();
-        if( !spec_coll ) {
+        if ( !spec_coll ) {
             return ERROR( -1, "tar_file_rmdir_plugin - null spec_coll pointer in structure_object" );
         }
 
         // =-=-=-=-=-=-=-
         // extract and check the comm pointer
         rsComm_t* comm = fco->comm();
-        if( !comm ) {
+        if ( !comm ) {
             return ERROR( -1, "tar_file_rmdir_plugin - null comm pointer in structure_object" );
         }
 
@@ -1267,17 +1276,17 @@ extern "C" {
         // open and stage the tar file, get its index
         int struct_file_index = 0;
         std::string resc_host;
-        irods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index, 
-                                                        fco->resc_hier(), resc_host );
-        if( !open_err.ok() ) {
+        irods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index,
+                                 fco->resc_hier(), resc_host );
+        if ( !open_err.ok() ) {
             std::stringstream msg;
             msg << "tar_file_rmdir_plugin - tar_struct_file_open error for [";
-            msg << spec_coll->objPath; 
+            msg << spec_coll->objPath;
             return PASSMSG( msg.str(), open_err );
         }
 
         // =-=-=-=-=-=-=-
-        // use the cached specColl. specColl may have changed 
+        // use the cached specColl. specColl may have changed
         spec_coll = PluginStructFileDesc[ struct_file_index ].specColl;
 
         // =-=-=-=-=-=-=-
@@ -1285,29 +1294,29 @@ extern "C" {
         fileRmdirInp_t fileRmdirInp;
         strncpy( fileRmdirInp.addr.hostAddr, resc_host.c_str(), NAME_LEN );
         strncpy( fileRmdirInp.rescHier, spec_coll->rescHier, MAX_NAME_LEN );
-        
+
         // =-=-=-=-=-=-=-
         // build a physical path name to the cache dir
-        irods::error comp_err = compose_cache_dir_physical_path( fileRmdirInp.dirName, 
-                                                                  spec_coll, 
-                                                                  fco->sub_file_path().c_str() );
-        if( !comp_err.ok() ) {
+        irods::error comp_err = compose_cache_dir_physical_path( fileRmdirInp.dirName,
+                                spec_coll,
+                                fco->sub_file_path().c_str() );
+        if ( !comp_err.ok() ) {
             return PASSMSG(
-                         "tar_file_rmdir_plugin - compose_cache_dir_physical_path failed.", comp_err );
+                       "tar_file_rmdir_plugin - compose_cache_dir_physical_path failed.", comp_err );
         }
 
         // =-=-=-=-=-=-=-
         // make the call to the mkdir api
         int status = rsFileRmdir( comm, &fileRmdirInp );
-        if( status >= 0 ) {
-            // use the specColl in PluginStructFileDesc 
+        if ( status >= 0 ) {
+            // use the specColl in PluginStructFileDesc
             specColl_t* loc_spec_coll = PluginStructFileDesc[ struct_file_index ].specColl;
             // =-=-=-=-=-=-=-
-            // cache has been written 
-            if( loc_spec_coll->cacheDirty == 0 ) {
+            // cache has been written
+            if ( loc_spec_coll->cacheDirty == 0 ) {
                 loc_spec_coll->cacheDirty = 1;
                 int status1 = modCollInfo2( comm, loc_spec_coll, 0 );
-                if (status1 < 0) {
+                if ( status1 < 0 ) {
                     return ERROR( status1, "tar_file_rmdir_plugin - Failed to call modCollInfo2" );
                 }
             }
@@ -1320,12 +1329,12 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX opendir
-    irods::error tar_file_opendir_plugin( 
-        irods::resource_plugin_context& _ctx ) { 
+    irods::error tar_file_opendir_plugin(
+        irods::resource_plugin_context& _ctx ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
         irods::error chk_err = tar_check_params( _ctx );
-        if( !chk_err.ok() ) {
+        if ( !chk_err.ok() ) {
             return PASSMSG( "tar_file_opendir_plugin", chk_err );
         }
 
@@ -1336,14 +1345,14 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // extract and check the special collection pointer
         specColl_t* spec_coll = fco->spec_coll();
-        if( !spec_coll ) {
+        if ( !spec_coll ) {
             return ERROR( -1, "tar_file_opendir_plugin - null spec_coll pointer in structure_object" );
         }
 
         // =-=-=-=-=-=-=-
         // extract and check the comm pointer
         rsComm_t* comm = fco->comm();
-        if( !comm ) {
+        if ( !comm ) {
             return ERROR( -1, "tar_file_opendir_plugin - null comm pointer in structure_object" );
         }
 
@@ -1351,28 +1360,28 @@ extern "C" {
         // open and stage the tar file, get its index
         int struct_file_index = 0;
         std::string resc_host;
-        irods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index, 
-                                                        fco->resc_hier(), resc_host );
-        if( !open_err.ok() ) {
+        irods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index,
+                                 fco->resc_hier(), resc_host );
+        if ( !open_err.ok() ) {
             std::stringstream msg;
             msg << "tar_file_opendir_plugin - tar_struct_file_open error for [";
-            msg << spec_coll->objPath; 
+            msg << spec_coll->objPath;
             irods::error ret = PASSMSG( msg.str(), open_err );
             irods::log( ret );
             return ret;
         }
 
         // =-=-=-=-=-=-=-
-        // use the cached specColl. specColl may have changed 
+        // use the cached specColl. specColl may have changed
         spec_coll = PluginStructFileDesc[ struct_file_index ].specColl;
-        if( !spec_coll ) {
+        if ( !spec_coll ) {
             return ERROR( -1, "tar_file_opendir_plugin - null spec_coll pointer in PluginStructFileDesc" );
         }
 
         // =-=-=-=-=-=-=-
         // allocate yet another index into another table
         int sub_index = alloc_tar_sub_file_desc();
-        if( sub_index < 0 ) {
+        if ( sub_index < 0 ) {
             return ERROR( sub_index, "tar_file_opendir_plugin - alloc_tar_sub_file_desc failed." );
         }
 
@@ -1383,21 +1392,21 @@ extern "C" {
         strncpy( fileOpendirInp.addr.hostAddr, resc_host.c_str(),                 NAME_LEN );
         strncpy( fileOpendirInp.objPath,       fco->logical_path().c_str(), MAX_NAME_LEN );
         strncpy( fileOpendirInp.resc_hier_,    fco->resc_hier().c_str(),    MAX_NAME_LEN );
-        
+
         // =-=-=-=-=-=-=-
         // build a physical path name to the cache dir
-        irods::error comp_err = compose_cache_dir_physical_path( fileOpendirInp.dirName, 
-                                                                  spec_coll, 
-                                                                  fco->sub_file_path().c_str() );
-        if( !comp_err.ok() ) {
+        irods::error comp_err = compose_cache_dir_physical_path( fileOpendirInp.dirName,
+                                spec_coll,
+                                fco->sub_file_path().c_str() );
+        if ( !comp_err.ok() ) {
             return PASSMSG(
-                         "tarFileRmdirPlugin - compose_cache_dir_physical_path failed.", comp_err );
+                       "tarFileRmdirPlugin - compose_cache_dir_physical_path failed.", comp_err );
         }
-        
+
         // =-=-=-=-=-=-=-
-        // make the api call to open a directory 
+        // make the api call to open a directory
         int status = rsFileOpendir( comm, &fileOpendirInp );
-        if( status < 0 ) {
+        if ( status < 0 ) {
             std::stringstream msg;
             msg << "tar_file_opendir_plugin - error returned from rsFileOpendir for: [";
             msg << fileOpendirInp.dirName;
@@ -1406,7 +1415,8 @@ extern "C" {
             irods::error ret = ERROR( status, msg.str() );
             irods::log( ret );
             return ret;
-        } else {
+        }
+        else {
             PluginTarSubFileDesc[ sub_index ].fd = status;
             PluginStructFileDesc[ struct_file_index ].openCnt++;
             fco->file_descriptor( sub_index );
@@ -1418,12 +1428,12 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX closedir
-    irods::error tar_file_closedir_plugin( 
-        irods::resource_plugin_context& _ctx ) { 
+    irods::error tar_file_closedir_plugin(
+        irods::resource_plugin_context& _ctx ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
         irods::error chk_err = tar_check_params( _ctx );
-        if( !chk_err.ok() ) {
+        if ( !chk_err.ok() ) {
             return PASSMSG( "tar_file_closedir_plugin", chk_err );
         }
 
@@ -1433,9 +1443,9 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check range on the sub file index
-        if( fco->file_descriptor() < 1                      || 
-            fco->file_descriptor() >= NUM_TAR_SUB_FILE_DESC ||
-            PluginTarSubFileDesc[ fco->file_descriptor() ].inuseFlag == 0 ) {
+        if ( fco->file_descriptor() < 1                      ||
+                fco->file_descriptor() >= NUM_TAR_SUB_FILE_DESC ||
+                PluginTarSubFileDesc[ fco->file_descriptor() ].inuseFlag == 0 ) {
             std::stringstream msg;
             msg << "tar_file_closedir_plugin - sub file index ";
             msg << fco->file_descriptor();
@@ -1448,7 +1458,7 @@ extern "C" {
         fileClosedirInp_t fileClosedirInp;
         fileClosedirInp.fileInx = PluginTarSubFileDesc[ fco->file_descriptor() ].fd;
         int status = rsFileClosedir( _ctx.comm(), &fileClosedirInp );
-        if( status < 0 ) {
+        if ( status < 0 ) {
             return ERROR( status, "tar_file_closedir_plugin - failed on call to rsFileClosedir" );
         }
 
@@ -1465,13 +1475,13 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX readdir
-    irods::error tar_file_readdir_plugin( 
-        irods::resource_plugin_context& _ctx, 
+    irods::error tar_file_readdir_plugin(
+        irods::resource_plugin_context& _ctx,
         struct rodsDirent**              _dirent_ptr ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
         irods::error chk_err = tar_check_params( _ctx );
-        if( !chk_err.ok() ) {
+        if ( !chk_err.ok() ) {
             return PASSMSG( "tar_file_readdir_plugin", chk_err );
         }
 
@@ -1481,9 +1491,9 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check range on the sub file index
-        if( fco->file_descriptor() < 1                      || 
-            fco->file_descriptor() >= NUM_TAR_SUB_FILE_DESC ||
-            PluginTarSubFileDesc[ fco->file_descriptor() ].inuseFlag == 0 ) {
+        if ( fco->file_descriptor() < 1                      ||
+                fco->file_descriptor() >= NUM_TAR_SUB_FILE_DESC ||
+                PluginTarSubFileDesc[ fco->file_descriptor() ].inuseFlag == 0 ) {
             std::stringstream msg;
             msg << "tar_file_readdir_plugin - sub file index ";
             msg << fco->file_descriptor();
@@ -1493,13 +1503,13 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // build a file read dir structure to pass off to the server api call
-        fileReaddirInp_t fileReaddirInp; 
+        fileReaddirInp_t fileReaddirInp;
         fileReaddirInp.fileInx = PluginTarSubFileDesc[ fco->file_descriptor() ].fd;
 
         // =-=-=-=-=-=-=-
         // make the api call to read the directory
         int status = rsFileReaddir( _ctx.comm(), &fileReaddirInp, _dirent_ptr );
-        if( status < -1 ) {
+        if ( status < -1 ) {
             return ERROR( status, "tar_file_readdir_plugin - failed in call to rsFileReaddir" );
         }
 
@@ -1509,13 +1519,13 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX rename
-    irods::error tar_file_rename_plugin( 
+    irods::error tar_file_rename_plugin(
         irods::resource_plugin_context& _ctx,
         const char*                      _new_file_name ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
         irods::error chk_err = tar_check_params( _ctx );
-        if( !chk_err.ok() ) {
+        if ( !chk_err.ok() ) {
             return PASSMSG( "tar_file_rename_plugin", chk_err );
         }
 
@@ -1526,14 +1536,14 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // extract and check the special collection pointer
         specColl_t* spec_coll = fco->spec_coll();
-        if( !spec_coll ) {
+        if ( !spec_coll ) {
             return ERROR( -1, "tar_file_rename_plugin - null spec_coll pointer in structure_object" );
         }
 
         // =-=-=-=-=-=-=-
         // extract and check the comm pointer
         rsComm_t* comm = fco->comm();
-        if( !comm ) {
+        if ( !comm ) {
             return ERROR( -1, "tar_file_rename_plugin - null comm pointer in structure_object" );
         }
 
@@ -1541,61 +1551,61 @@ extern "C" {
         // open and stage the tar file, get its index
         int struct_file_index = 0;
         std::string resc_host;
-        irods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index, 
-                                                        fco->resc_hier(), resc_host );
-        if( !open_err.ok() ) {
+        irods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index,
+                                 fco->resc_hier(), resc_host );
+        if ( !open_err.ok() ) {
             std::stringstream msg;
             msg << "tar_file_rename_plugin - tar_struct_file_open error for [";
-            msg << spec_coll->objPath; 
+            msg << spec_coll->objPath;
             return PASSMSG( msg.str(), open_err );
         }
 
         // =-=-=-=-=-=-=-
-        // use the cached specColl. specColl may have changed 
+        // use the cached specColl. specColl may have changed
         spec_coll = PluginStructFileDesc[ struct_file_index ].specColl;
-        
+
         // =-=-=-=-=-=-=-
         // build a file rename structure to pass off to the server api call
         fileRenameInp_t fileRenameInp;
-        memset (&fileRenameInp, 0, sizeof (fileRenameInp));
+        memset( &fileRenameInp, 0, sizeof( fileRenameInp ) );
         strncpy( fileRenameInp.addr.hostAddr, resc_host.c_str(), NAME_LEN );
         strncpy( fileRenameInp.rescHier,
-                 irods::LOCAL_USE_ONLY_RESOURCE.c_str(), 
+                 irods::LOCAL_USE_ONLY_RESOURCE.c_str(),
                  MAX_NAME_LEN );
         strncpy( fileRenameInp.objPath, fco->logical_path().c_str(), MAX_NAME_LEN );
-        
+
         // =-=-=-=-=-=-=-
         // build a physical path name to the cache dir
-        irods::error comp_err_old = compose_cache_dir_physical_path( fileRenameInp.oldFileName, 
-                                                                      spec_coll, 
-                                                                      fco->sub_file_path().c_str() );
-        if( !comp_err_old.ok() ) {
+        irods::error comp_err_old = compose_cache_dir_physical_path( fileRenameInp.oldFileName,
+                                    spec_coll,
+                                    fco->sub_file_path().c_str() );
+        if ( !comp_err_old.ok() ) {
             return PASSMSG(
-                         "tar_file_rename_plugin - compose_cache_dir_physical_path failed for old file name.", 
-                         comp_err_old );
+                       "tar_file_rename_plugin - compose_cache_dir_physical_path failed for old file name.",
+                       comp_err_old );
         }
 
-        irods::error comp_err_new = compose_cache_dir_physical_path( fileRenameInp.newFileName, 
-                                                                      spec_coll, 
-                                                                      _new_file_name );
-        if( !comp_err_new.ok() ) {
+        irods::error comp_err_new = compose_cache_dir_physical_path( fileRenameInp.newFileName,
+                                    spec_coll,
+                                    _new_file_name );
+        if ( !comp_err_new.ok() ) {
             return PASSMSG(
-                         "tar_file_rename_plugin - compose_cache_dir_physical_path failed for new file name.", 
-                         comp_err_new );
+                       "tar_file_rename_plugin - compose_cache_dir_physical_path failed for new file name.",
+                       comp_err_new );
         }
 
         // =-=-=-=-=-=-=-
         // make the api call for rename
         int status = rsFileRename( comm, &fileRenameInp );
-        if( status >= 0 ) {
-            // use the specColl in PluginStructFileDesc 
+        if ( status >= 0 ) {
+            // use the specColl in PluginStructFileDesc
             specColl_t* loc_spec_coll = PluginStructFileDesc[ struct_file_index ].specColl;
             // =-=-=-=-=-=-=-
-            // cache has been written 
-            if( loc_spec_coll->cacheDirty == 0 ) {
+            // cache has been written
+            if ( loc_spec_coll->cacheDirty == 0 ) {
                 loc_spec_coll->cacheDirty = 1;
                 int status1 = modCollInfo2( comm, loc_spec_coll, 0 );
-                if (status1 < 0) {
+                if ( status1 < 0 ) {
                     return ERROR( status1, "tar_file_rename_plugin - Failed to call modCollInfo2" );
                 }
             }
@@ -1608,12 +1618,12 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX truncate
-    irods::error tar_file_truncate_plugin( 
-        irods::resource_plugin_context& _ctx ) { 
+    irods::error tar_file_truncate_plugin(
+        irods::resource_plugin_context& _ctx ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
         irods::error chk_err = tar_check_params( _ctx );
-        if( !chk_err.ok() ) {
+        if ( !chk_err.ok() ) {
             return PASSMSG( "tar_file_truncate_plugin", chk_err );
         }
 
@@ -1624,14 +1634,14 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // extract and check the special collection pointer
         specColl_t* spec_coll = struct_obj->spec_coll();
-        if( !spec_coll ) {
+        if ( !spec_coll ) {
             return ERROR( -1, "tar_file_truncate_plugin - null spec_coll pointer in structure_object" );
         }
 
         // =-=-=-=-=-=-=-
         // extract and check the comm pointer
         rsComm_t* comm = struct_obj->comm();
-        if( !comm ) {
+        if ( !comm ) {
             return ERROR( -1, "tar_file_truncate_plugin - null comm pointer in structure_object" );
         }
 
@@ -1639,30 +1649,30 @@ extern "C" {
         // open and stage the tar file, get its index
         int struct_file_index = 0;
         std::string resc_host;
-        irods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index, 
-                                                        struct_obj->resc_hier(), resc_host );
-        if( !open_err.ok() ) {
+        irods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index,
+                                 struct_obj->resc_hier(), resc_host );
+        if ( !open_err.ok() ) {
             std::stringstream msg;
             msg << "tar_file_truncate_plugin - tar_struct_file_open error for [";
-            msg << spec_coll->objPath; 
+            msg << spec_coll->objPath;
             return PASSMSG( msg.str(), open_err );
         }
 
         // =-=-=-=-=-=-=-
-        // use the cached specColl. specColl may have changed 
+        // use the cached specColl. specColl may have changed
         spec_coll = PluginStructFileDesc[ struct_file_index ].specColl;
 
         // =-=-=-=-=-=-=-
         // allocate yet another index into another table
         int sub_index = alloc_tar_sub_file_desc();
-        if( sub_index < 0 ) {
+        if ( sub_index < 0 ) {
             return ERROR( sub_index, "tar_file_truncate_plugin - alloc_tar_sub_file_desc failed." );
         }
 
         // =-=-=-=-=-=-=-
         // cache struct file index into sub file index
         PluginTarSubFileDesc[ sub_index ].structFileInx = struct_file_index;
-        
+
         // =-=-=-=-=-=-=-
         // build a file create structure to pass off to the server api call
         fileOpenInp_t fileTruncateInp;
@@ -1670,30 +1680,31 @@ extern "C" {
         strncpy( fileTruncateInp.addr.hostAddr,  resc_host.c_str(), NAME_LEN );
         strncpy( fileTruncateInp.objPath, struct_obj->logical_path().c_str(), MAX_NAME_LEN );
         fileTruncateInp.dataSize = struct_obj->offset();
-        
+
         // =-=-=-=-=-=-=-
         // build a physical path name to the cache dir
-        irods::error comp_err = compose_cache_dir_physical_path( fileTruncateInp.fileName, 
-                                                                  spec_coll, 
-                                                                  struct_obj->sub_file_path().c_str() );
-        if( !comp_err.ok() ) {
+        irods::error comp_err = compose_cache_dir_physical_path( fileTruncateInp.fileName,
+                                spec_coll,
+                                struct_obj->sub_file_path().c_str() );
+        if ( !comp_err.ok() ) {
             return PASSMSG(
-                         "tar_file_truncate_plugin - compose_cache_dir_physical_path failed.", comp_err );
+                       "tar_file_truncate_plugin - compose_cache_dir_physical_path failed.", comp_err );
         }
 
         // =-=-=-=-=-=-=-
         // make the truncate api call
         int status = rsFileTruncate( comm, &fileTruncateInp );
-        if( status > 0 ) {
+        if ( status > 0 ) {
             // =-=-=-=-=-=-=-
-            // cache has been written 
+            // cache has been written
             int         struct_idx = PluginTarSubFileDesc[ struct_obj->file_descriptor() ].structFileInx;
             specColl_t* spec_coll   = PluginStructFileDesc[ struct_idx ].specColl;
-            if( spec_coll->cacheDirty == 0 ) {
-                spec_coll->cacheDirty = 1;    
+            if ( spec_coll->cacheDirty == 0 ) {
+                spec_coll->cacheDirty = 1;
                 int status1 = modCollInfo2( struct_obj->comm(), spec_coll, 0 );
-                if( status1 < 0 ) 
+                if ( status1 < 0 ) {
                     return CODE( status1 );
+                }
             }
         }
 
@@ -1703,13 +1714,13 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface to extract a tar file
-    irods::error tar_file_extract_plugin( 
-        irods::resource_plugin_context& _ctx ) { 
+    irods::error tar_file_extract_plugin(
+        irods::resource_plugin_context& _ctx ) {
 
         // =-=-=-=-=-=-=-
         // check incoming parameters
         irods::error chk_err = tar_check_params( _ctx );
-        if( !chk_err.ok() ) {
+        if ( !chk_err.ok() ) {
             return PASSMSG( "tar_file_extract_plugin", chk_err );
         }
 
@@ -1720,21 +1731,21 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // extract and check the special collection pointer
         specColl_t* spec_coll = fco->spec_coll();
-        if( !spec_coll ) {
+        if ( !spec_coll ) {
             return ERROR( -1, "tar_file_extract_plugin - null spec_coll pointer in structure_object" );
         }
 
         // =-=-=-=-=-=-=-
         // extract and check the comm pointer
         rsComm_t* comm = fco->comm();
-        if( !comm ) {
+        if ( !comm ) {
             return ERROR( -1, "tar_file_extract_plugin - null comm pointer in structure_object" );
         }
 
         // =-=-=-=-=-=-=-
         // allocate a position in the struct table
         int struct_file_index = 0;
-        if( ( struct_file_index = alloc_struct_file_desc() ) < 0 ) {
+        if ( ( struct_file_index = alloc_struct_file_desc() ) < 0 ) {
             return ERROR( struct_file_index, "tar_file_extract_plugin - failed to allocate struct file descriptor" );
         }
 
@@ -1743,14 +1754,14 @@ extern "C" {
         PluginStructFileDesc[ struct_file_index ].inuseFlag = 1;
         PluginStructFileDesc[ struct_file_index ].specColl  = spec_coll;
         PluginStructFileDesc[ struct_file_index ].rsComm    = comm;
-        strncpy( PluginStructFileDesc[ struct_file_index ].dataType, 
+        strncpy( PluginStructFileDesc[ struct_file_index ].dataType,
                  fco->data_type().c_str(), NAME_LEN );
 
         // =-=-=-=-=-=-=-
         // extract the file
         irods::error ext_err = extract_file( struct_file_index );
-        if( !ext_err.ok() ) {
-            // NOTE:: may need to remove the cacheDir too 
+        if ( !ext_err.ok() ) {
+            // NOTE:: may need to remove the cacheDir too
             std::stringstream msg;
             msg << "tar_file_extract_plugin - failed to extact structure file for [";
             msg << spec_coll->objPath;
@@ -1764,12 +1775,12 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // if the left over cache dir has a symlink in it, remove the
         // directory ( addresses Wisc Security Issue r4906 )
-        if( hasSymlinkInDir( spec_coll->cacheDir ) ) {
+        if ( hasSymlinkInDir( spec_coll->cacheDir ) ) {
             rodsLog( LOG_ERROR, "extractTarFile: cacheDir %s has symlink in it",
-            spec_coll->cacheDir ); 
+                     spec_coll->cacheDir );
 
             rodsHostAddr_t* host_addr = 0;
-            _ctx.prop_map().get< rodsHostAddr_t* >( irods::RESOURCE_LOCATION, host_addr );    
+            _ctx.prop_map().get< rodsHostAddr_t* >( irods::RESOURCE_LOCATION, host_addr );
 
             /* remove cache */
             fileRmdirInp_t fileRmdirInp;
@@ -1777,10 +1788,10 @@ extern "C" {
             rstrcpy( fileRmdirInp.dirName,       spec_coll->cacheDir, MAX_NAME_LEN );
             rstrcpy( fileRmdirInp.addr.hostAddr, host_addr->hostAddr, NAME_LEN );
             rstrcpy( fileRmdirInp.rescHier,      spec_coll->rescHier, MAX_NAME_LEN );
-            
+
             fileRmdirInp.flags = RMDIR_RECUR;
             int status = rsFileRmdir( comm, &fileRmdirInp );
-            if (status < 0) {
+            if ( status < 0 ) {
                 std::stringstream msg;
                 msg << "tar_file_extract_plugin - rmdir error for [";
                 msg << spec_coll->cacheDir << "]";
@@ -1792,21 +1803,21 @@ extern "C" {
         return CODE( ext_err.code() );
 
     } // tar_file_extract_plugin
-    
+
     // =-=-=-=-=-=-=-
     // helper function to write an archive entry
     irods::error write_file_to_archive( const boost::filesystem::path _path,
-                                         const std::string&            _cache_dir, 
-                                         struct archive*               _archive ) {
+                                        const std::string&            _cache_dir,
+                                        struct archive*               _archive ) {
         namespace fs = boost::filesystem;
         struct archive_entry* entry = archive_entry_new();
 
         // =-=-=-=-=-=-=-
         // strip arch path from file name for header entry
         std::string path_name  = _path.string();
-        std::string strip_file = path_name.substr( _cache_dir.size()+1 ); // add one for the last '/'
+        std::string strip_file = path_name.substr( _cache_dir.size() + 1 ); // add one for the last '/'
         archive_entry_set_pathname( entry, strip_file.c_str() );
-        
+
         // =-=-=-=-=-=-=-
         // ask for the file size
         archive_entry_set_size( entry, fs::file_size( _path ) );
@@ -1825,7 +1836,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // write out the header to the archive
-        if( archive_write_header( _archive, entry ) != ARCHIVE_OK ) {
+        if ( archive_write_header( _archive, entry ) != ARCHIVE_OK ) {
             std::stringstream msg;
             msg << "write_file_to_archive - failed to write entry header for [";
             msg << path_name;
@@ -1841,7 +1852,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // open the file in question
         int fd = open( path_name.c_str(), O_RDONLY );
-        if( -1 == fd )  {
+        if ( -1 == fd )  {
             std::stringstream msg;
             msg << "write_file_to_archive - failed to open file for read [";
             msg << path_name;
@@ -1854,10 +1865,10 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // read in the file and add it to the archive
         char buff[ 16384 ];
-        int len = read( fd, buff, sizeof( buff ) );        
-        while( len > 0 ) {
+        int len = read( fd, buff, sizeof( buff ) );
+        while ( len > 0 ) {
             archive_write_data( _archive, buff, len );
-            len = read( fd, buff, sizeof( buff ) );        
+            len = read( fd, buff, sizeof( buff ) );
         }
 
         // =-=-=-=-=-=-=-
@@ -1868,20 +1879,20 @@ extern "C" {
         return SUCCESS();
 
     } // write_file_to_archive
-  
+
     // =-=-=-=-=-=-=-
     // helper function for recursive directory scanning
-    irods::error build_directory_listing( const boost::filesystem::path&          _path, 
-                                           std::vector< boost::filesystem::path >& _listing ) {
+    irods::error build_directory_listing( const boost::filesystem::path&          _path,
+                                          std::vector< boost::filesystem::path >& _listing ) {
         // =-=-=-=-=-=-=-
-        // namespace alias for brevity 
+        // namespace alias for brevity
         namespace fs = boost::filesystem;
         irods::error final_error = SUCCESS();
 
         // =-=-=-=-=-=-=-
         // begin iterating over the cache dir
         try {
-            if( fs::is_directory( _path ) ) {
+            if ( fs::is_directory( _path ) ) {
                 // =-=-=-=-=-=-=-
                 // iterate over the directory and archive it
                 fs::directory_iterator end_iter;
@@ -1890,7 +1901,7 @@ extern "C" {
                     // =-=-=-=-=-=-=-
                     // recurse on this new directory
                     irods::error ret = build_directory_listing( dir_itr->path(), _listing );
-                    if( !ret.ok() ) {
+                    if ( !ret.ok() ) {
                         std::stringstream msg;
                         msg << "build_directory_listing - failed on [";
                         msg << dir_itr->path().string();
@@ -1899,21 +1910,24 @@ extern "C" {
                     }
 
                 } // for dir_itr
-            
-            } else if( fs::is_regular_file( _path ) ) {
+
+            }
+            else if ( fs::is_regular_file( _path ) ) {
                 // =-=-=-=-=-=-=-
                 // add file path to the vector
                 _listing.push_back( _path );
 
-            } else {
+            }
+            else {
                 std::stringstream msg;
                 msg << "build_directory_listing - unhandled entry [";
                 msg << _path.filename();
-                msg << "]"; 
+                msg << "]";
                 rodsLog( LOG_NOTICE, msg.str().c_str() );
             }
 
-        } catch ( const std::exception & ex ) {
+        }
+        catch ( const std::exception & ex ) {
             std::stringstream msg;
             msg << "build_directory_listing - caught exception [";
             msg << ex.what();
@@ -1924,21 +1938,21 @@ extern "C" {
 
         }
 
-        return final_error; 
-  
-    } // build_directory_listing 
-   
+        return final_error;
+
+    } // build_directory_listing
+
     // =-=-=-=-=-=-=-
-    // create an archive from the cache directory 
-    irods::error bundle_cache_dir( int         _index, 
-                                    std::string _data_type ) {
+    // create an archive from the cache directory
+    irods::error bundle_cache_dir( int         _index,
+                                   std::string _data_type ) {
         // =-=-=-=-=-=-=-
-        // namespace alias for brevity 
+        // namespace alias for brevity
         namespace fs = boost::filesystem;
 
         // =-=-=-=-=-=-=-
         // check struct desc table in use flag
-        if( PluginStructFileDesc[ _index ].inuseFlag <= 0 ) {
+        if ( PluginStructFileDesc[ _index ].inuseFlag <= 0 ) {
             std::stringstream msg;
             msg << "bundle_cache_dir - struct file index: ";
             msg << _index;
@@ -1949,17 +1963,17 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // check struct desc table in use flag
         specColl_t* spec_coll = PluginStructFileDesc[ _index ].specColl;
-        if( spec_coll == NULL                   || 
-            spec_coll->cacheDirty <= 0          ||
-            strlen( spec_coll->cacheDir ) == 0  ||
-            strlen( spec_coll->phyPath  ) == 0 ) {
+        if ( spec_coll == NULL                   ||
+                spec_coll->cacheDirty <= 0          ||
+                strlen( spec_coll->cacheDir ) == 0  ||
+                strlen( spec_coll->phyPath ) == 0 ) {
             std::stringstream msg;
             msg << "bundle_cache_dir - bad special collection for index: ";
             msg << _index;
             return ERROR( SYS_STRUCT_FILE_DESC_ERR, msg.str() );
 
         }
-  
+
         // =-=-=-=-=-=-=-
         // create a boost filesystem path for the cache directory
         fs::path full_path;//( fs::initial_path<fs::path>() );
@@ -1967,7 +1981,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check if the path is really there, just in case
-        if( !fs::exists( full_path ) ) {
+        if ( !fs::exists( full_path ) ) {
             std::stringstream msg;
             msg << "bundle_cache_dir - cache directory does not exist [";
             msg << spec_coll->cacheDir;
@@ -1977,24 +1991,24 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // make sure it is a directory, just in case
-        if( !fs::is_directory( full_path ) ) {
+        if ( !fs::is_directory( full_path ) ) {
             std::stringstream msg;
             msg << "bundle_cache_dir - cache directory is not actually a directory [";
             msg << spec_coll->cacheDir;
             msg << "]";
             return ERROR( -1, msg.str() );
         }
- 
+
         // =-=-=-=-=-=-=-
-        // build a listing of all of the files in all of the subdirs 
+        // build a listing of all of the files in all of the subdirs
         // in the full_path
         std::vector< fs::path > listing;
         build_directory_listing( full_path, listing );
-         
+
         // =-=-=-=-=-=-=-
         // create the archive
         struct archive* arch = archive_write_new();
-        if( !arch ) {
+        if ( !arch ) {
             std::stringstream msg;
             msg << "bundle_cache_dir - failed to create archive struct for [";
             msg << spec_coll->cacheDir;
@@ -2002,13 +2016,13 @@ extern "C" {
             msg << spec_coll->phyPath;
             msg << "]";
             return ERROR( -1, msg.str() );
-            
+
         }
-   
+
         // =-=-=-=-=-=-=-
         // set the compression flags given data_type
-        if( _data_type == ZIP_DT_STR ) {
-            if( archive_write_add_filter_lzip( arch ) != ARCHIVE_OK ) {
+        if ( _data_type == ZIP_DT_STR ) {
+            if ( archive_write_add_filter_lzip( arch ) != ARCHIVE_OK ) {
                 std::stringstream msg;
                 msg << "bundle_cache_dir - failed to set compression to lzip for archive [";
                 msg << spec_coll->phyPath;
@@ -2018,9 +2032,10 @@ extern "C" {
                 return ERROR( -1, msg.str() );
 
             }
-             
-        } else if( _data_type == GZIP_TAR_DT_STR ) {
-            if( archive_write_add_filter_gzip( arch ) != ARCHIVE_OK ) {
+
+        }
+        else if ( _data_type == GZIP_TAR_DT_STR ) {
+            if ( archive_write_add_filter_gzip( arch ) != ARCHIVE_OK ) {
                 std::stringstream msg;
                 msg << "bundle_cache_dir - failed to set compression to gzip for archive [";
                 msg << spec_coll->phyPath;
@@ -2031,39 +2046,41 @@ extern "C" {
 
             }
 
-        } else if( _data_type == BZIP2_TAR_DT_STR ) {
-            if( archive_write_add_filter_bzip2( arch ) != ARCHIVE_OK ) {
-                std::stringstream msg;
-                msg << "bundle_cache_dir - failed to set compression to bzip2 for archive ["; 
-                msg << spec_coll->phyPath;
-                msg << "] with error string [";
-                msg << archive_error_string( arch );
-                msg << "]";
-                return ERROR( -1, msg.str() );
-
-            }
-        
-        } else {
-            if( archive_write_set_compression_none( arch ) != ARCHIVE_OK ) {
-                std::stringstream msg;
-                msg << "bundle_cache_dir - failed to set compression to none for archive ["; 
-                msg << spec_coll->phyPath;
-                msg << "] with error string [";
-                msg << archive_error_string( arch );
-                msg << "]";
-                return ERROR( -1, msg.str() );
-
-            }
-        
         }
-        
+        else if ( _data_type == BZIP2_TAR_DT_STR ) {
+            if ( archive_write_add_filter_bzip2( arch ) != ARCHIVE_OK ) {
+                std::stringstream msg;
+                msg << "bundle_cache_dir - failed to set compression to bzip2 for archive [";
+                msg << spec_coll->phyPath;
+                msg << "] with error string [";
+                msg << archive_error_string( arch );
+                msg << "]";
+                return ERROR( -1, msg.str() );
+
+            }
+
+        }
+        else {
+            if ( archive_write_set_compression_none( arch ) != ARCHIVE_OK ) {
+                std::stringstream msg;
+                msg << "bundle_cache_dir - failed to set compression to none for archive [";
+                msg << spec_coll->phyPath;
+                msg << "] with error string [";
+                msg << archive_error_string( arch );
+                msg << "]";
+                return ERROR( -1, msg.str() );
+
+            }
+
+        }
+
         // =-=-=-=-=-=-=-
         // set the format of the tar archive
         archive_write_set_format_ustar( arch );
 
         // =-=-=-=-=-=-=-
         // open the spec coll physical path for archival
-        if( archive_write_open_filename( arch, spec_coll->phyPath ) < ARCHIVE_OK ) {
+        if ( archive_write_open_filename( arch, spec_coll->phyPath ) < ARCHIVE_OK ) {
             std::stringstream msg;
             msg << "bundle_cache_dir - failed to open archive file [";
             msg << spec_coll->phyPath;
@@ -2077,19 +2094,19 @@ extern "C" {
         // iterate over the dir listing and archive the files
         std::string cache_dir( spec_coll->cacheDir );
         irods::error arch_err = SUCCESS();
-        for( size_t i = 0; i < listing.size(); ++i ) {
+        for ( size_t i = 0; i < listing.size(); ++i ) {
             // =-=-=-=-=-=-=-
             // strip off archive path from the filename
             irods::error ret = write_file_to_archive( listing[ i ].string(), cache_dir, arch );
 
-            if( !ret.ok() ) {
+            if ( !ret.ok() ) {
                 std::stringstream msg;
                 msg << "bundle_cache_dir - failed to archive file [";
                 msg << listing[ i ].string();
                 msg << "]";
                 arch_err = PASSMSG( msg.str(), arch_err );
                 irods::log( PASSMSG( msg.str(), ret ) );
-            } 
+            }
 
         } // for i
 
@@ -2097,10 +2114,10 @@ extern "C" {
         // close the archive and clean up
         archive_write_close( arch );
         archive_write_free( arch );
-        
+
         // =-=-=-=-=-=-=-
         // handle errors
-        if( !arch_err.ok() ) {
+        if ( !arch_err.ok() ) {
             std::stringstream msg;
             msg << "bundle_cache_dir - failed to archive [";
             msg << spec_coll->cacheDir;
@@ -2109,7 +2126,8 @@ extern "C" {
             msg << "]";
             return PASSMSG( msg.str(), arch_err );
 
-        } else {
+        }
+        else {
             return SUCCESS();
 
         }
@@ -2119,16 +2137,16 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for tar / zip up of cache dir which also updates
     // the icat with the new file size
-    irods::error sync_cache_dir_to_tar_file( int         _index, 
-                                              int         _opr_type,
-                                              std::string _host ) {
+    irods::error sync_cache_dir_to_tar_file( int         _index,
+            int         _opr_type,
+            std::string _host ) {
         specColl_t* spec_coll = PluginStructFileDesc[ _index ].specColl;
         rsComm_t*   comm      = PluginStructFileDesc[ _index ].rsComm;
 
         // =-=-=-=-=-=-=-
         // call bundle helper functions
         irods::error bundle_err = bundle_cache_dir( _index, PluginStructFileDesc[ _index ].dataType );
-        if( !bundle_err.ok() ) {
+        if ( !bundle_err.ok() ) {
             return PASSMSG( "sync_cache_dir_to_tar_file - failed in bundle.", bundle_err );
         }
 
@@ -2145,20 +2163,20 @@ extern "C" {
         // call file stat api to get the size of the new file
         rodsStat_t* file_stat_out = NULL;
         int status = rsFileStat( comm, &file_stat_inp, &file_stat_out );
-        if( status < 0 || NULL ==  file_stat_out ) { 
+        if ( status < 0 || NULL ==  file_stat_out ) {
             std::stringstream msg;
             msg << "sync_cache_dir_to_tar_file - failed on call to rsFileStat for [";
             msg << spec_coll->phyPath;
             msg << "] with status of ";
             msg << status;
             return ERROR( status, msg.str() );
-              
+
         }
 
         // =-=-=-=-=-=-=-
         // update icat with the new size of the file
-        if( ( _opr_type & NO_REG_COLL_INFO ) == 0 ) {
-            // NOTE :: for bundle opr, done at datObjClose 
+        if ( ( _opr_type & NO_REG_COLL_INFO ) == 0 ) {
+            // NOTE :: for bundle opr, done at datObjClose
             status = regNewObjSize( comm, spec_coll->objPath, spec_coll->replNum, file_stat_out->st_size );
 
         }
@@ -2170,13 +2188,13 @@ extern "C" {
     } // sync_cache_dir_to_tar_file
 
     // =-=-=-=-=-=-=-
-    // interface for sync up of cache dir 
+    // interface for sync up of cache dir
     irods::error tar_file_sync_plugin(
-        irods::resource_plugin_context& _ctx ) { 
+        irods::resource_plugin_context& _ctx ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
         irods::error chk_err = tar_check_params( _ctx );
-        if( !chk_err.ok() ) {
+        if ( !chk_err.ok() ) {
             return PASSMSG( "tar_file_sync_plugin", chk_err );
         }
 
@@ -2187,27 +2205,27 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // extract and check the special collection pointer
         specColl_t* spec_coll = fco->spec_coll();
-        if( !spec_coll ) {
+        if ( !spec_coll ) {
             return ERROR( -1, "tar_file_sync_plugin - null spec_coll pointer in structure_object" );
         }
 
         // =-=-=-=-=-=-=-
         // extract and check the comm pointer
         rsComm_t* comm = fco->comm();
-        if( !comm ) {
+        if ( !comm ) {
             return ERROR( -1, "tar_file_sync_plugin - null comm pointer in structure_object" );
         }
-        
+
         // =-=-=-=-=-=-=-
         // open and stage the tar file, get its index
         int struct_file_index = 0;
         std::string resc_host;
-        irods::error open_err = tar_struct_file_open( comm, spec_coll, struct_file_index, 
-                                                        fco->resc_hier(), resc_host );
-        if( !open_err.ok() ) {
+        irods::error open_err = tar_struct_file_open( comm, spec_coll, struct_file_index,
+                                fco->resc_hier(), resc_host );
+        if ( !open_err.ok() ) {
             std::stringstream msg;
             msg << "tar_file_sync_plugin - tar_struct_file_open error for [";
-            msg << spec_coll->objPath; 
+            msg << spec_coll->objPath;
             return PASSMSG( msg.str(), open_err );
         }
 
@@ -2216,18 +2234,18 @@ extern "C" {
         strncpy( PluginStructFileDesc[ struct_file_index ].dataType, fco->data_type().c_str(), NAME_LEN );
 
         // =-=-=-=-=-=-=-
-        // use the cached specColl. specColl may have changed 
+        // use the cached specColl. specColl may have changed
         spec_coll = PluginStructFileDesc[ struct_file_index ].specColl;
 
         // =-=-=-=-=-=-=-
         // we cant sync if the structured collection is currently in use
-        if( PluginStructFileDesc[ struct_file_index ].openCnt > 0 ) {
+        if ( PluginStructFileDesc[ struct_file_index ].openCnt > 0 ) {
             return ERROR( SYS_STRUCT_FILE_BUSY_ERR, "tar_file_sync_plugin - spec coll in use" );
         }
-        
+
         // =-=-=-=-=-=-=-
         // delete operation
-        if( ( fco->opr_type() & DELETE_STRUCT_FILE) != 0 ) {
+        if ( ( fco->opr_type() & DELETE_STRUCT_FILE ) != 0 ) {
             /* remove cache and the struct file */
             free_struct_file_desc( struct_file_index );
             return SUCCESS();
@@ -2236,44 +2254,44 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // check if there is a specified cache directory,
         // if not then any other operation isn't possible
-        if( strlen( spec_coll->cacheDir ) > 0 ) {
-            if( spec_coll->cacheDirty > 0) {
+        if ( strlen( spec_coll->cacheDir ) > 0 ) {
+            if ( spec_coll->cacheDirty > 0 ) {
                 // =-=-=-=-=-=-=-
-                // write the tar file and register no dirty 
-                irods::error sync_err = sync_cache_dir_to_tar_file( struct_file_index, 
-                                                                     fco->opr_type(), 
-                                                                     resc_host );
-                if( !sync_err.ok() ) {
+                // write the tar file and register no dirty
+                irods::error sync_err = sync_cache_dir_to_tar_file( struct_file_index,
+                                        fco->opr_type(),
+                                        resc_host );
+                if ( !sync_err.ok() ) {
                     std::stringstream msg;
                     msg << "tar_file_sync_plugin - failed in sync_cache_dir_to_tar_file for [";
                     msg << spec_coll->cacheDir;
                     msg << "] with status of ";
                     msg << sync_err.code() << "]";
 
-                    free_struct_file_desc ( struct_file_index );
+                    free_struct_file_desc( struct_file_index );
                     return PASSMSG( msg.str(), sync_err );
                 }
 
                 spec_coll->cacheDirty = 0;
-                if( ( fco->opr_type() & NO_REG_COLL_INFO ) == 0 ) {
+                if ( ( fco->opr_type() & NO_REG_COLL_INFO ) == 0 ) {
                     int status = modCollInfo2( comm,  spec_coll, 0 );
-                    if( status < 0 ) {
+                    if ( status < 0 ) {
                         free_struct_file_desc( struct_file_index );
                         return ERROR( status, "tar_file_sync_plugin - failed in modCollInfo2" );
-                    
+
                     } // if status
-                
+
                 }
 
             } // if cache is dirty
 
             // =-=-=-=-=-=-=-
             // remove cache dir if necessary
-            if( ( fco->opr_type() & PURGE_STRUCT_FILE_CACHE ) != 0 ) {
+            if ( ( fco->opr_type() & PURGE_STRUCT_FILE_CACHE ) != 0 ) {
                 // =-=-=-=-=-=-=-
                 // need to unregister the cache before removing it
                 int status = modCollInfo2( comm,  spec_coll, 1 );
-                if( status < 0 ) {
+                if ( status < 0 ) {
                     free_struct_file_desc( struct_file_index );
                     return ERROR( status, "tar_file_sync_plugin - failed in modCollInfo2" );
                 }
@@ -2286,27 +2304,27 @@ extern "C" {
                 rstrcpy( rmdir_inp.dirName,       spec_coll->cacheDir, MAX_NAME_LEN );
                 strncpy( rmdir_inp.addr.hostAddr, resc_host.c_str(),   NAME_LEN );
                 strncpy( rmdir_inp.rescHier,      spec_coll->rescHier, MAX_NAME_LEN );
-                
+
                 status = rsFileRmdir( comm, &rmdir_inp );
-                if( status < 0 ) {
+                if ( status < 0 ) {
                     free_struct_file_desc( struct_file_index );
                     return ERROR( status, "tar_file_sync_plugin - failed in call to rsFileRmdir" );
                 }
 
             } // if purge file cache
-        
+
         } // if we have a cache dir
 
         free_struct_file_desc( struct_file_index );
-        
+
         return SUCCESS();
 
     } // tar_file_sync_plugin
 
     // =-=-=-=-=-=-=-
     // interface for getting freespace of the fs
-    irods::error tar_file_getfsfreespace_plugin( 
-        irods::resource_plugin_context& _ctx ) { 
+    irods::error tar_file_getfsfreespace_plugin(
+        irods::resource_plugin_context& _ctx ) {
         return ERROR( SYS_NOT_SUPPORTED, "tar_file_getfsfreespace_plugin is not implemented" );
 
     } // tar_file_getfsfreespace_plugin
@@ -2314,23 +2332,23 @@ extern "C" {
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file registration
     irods::error tar_file_registered_plugin(
-        irods::resource_plugin_context& _ctx) {
+        irods::resource_plugin_context& _ctx ) {
         // NOOP
         return SUCCESS();
     }
-    
+
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file unregistration
     irods::error tar_file_unregistered_plugin(
-        irods::resource_plugin_context& _ctx) {
+        irods::resource_plugin_context& _ctx ) {
         // NOOP
         return SUCCESS();
     }
-    
+
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file modification
     irods::error tar_file_modified_plugin(
-        irods::resource_plugin_context& _ctx) {
+        irods::resource_plugin_context& _ctx ) {
         // NOOP
         return SUCCESS();
     }
@@ -2347,7 +2365,7 @@ extern "C" {
     // tar_file_notify - code which would notify the subtree of a change
     irods::error tar_file_notify(
         irods::resource_plugin_context& _ctx,
-        const std::string*               _opr  ) {
+        const std::string*               _opr ) {
         return SUCCESS();
 
     } // tar_file_rebalance
@@ -2360,22 +2378,22 @@ extern "C" {
     //    operations.  semicolon is the preferred delimiter
     class tarfilesystem_resource : public irods::resource {
     public:
-        tarfilesystem_resource( 
-            const std::string& _inst_name, 
+        tarfilesystem_resource(
+            const std::string& _inst_name,
             const std::string& _context ) :
             irods::resource( _inst_name, _context ) {
         } // ctor
 
     }; // class tarfilesystem_resource
-  
+
     // =-=-=-=-=-=-=-
     // 4. create the plugin factory function which will return a dynamically
     //    instantiated object of the previously defined derived resource.  use
     //    the add_operation member to associate a 'call name' to the interfaces
     //    defined above.  for resource plugins these call names are standardized
-    //    as used by the irods facing interface defined in 
+    //    as used by the irods facing interface defined in
     //    server/drivers/src/fileDriver.c
-    irods::resource* plugin_factory( const std::string& _inst_name, const std::string& _context  ) {
+    irods::resource* plugin_factory( const std::string& _inst_name, const std::string& _context ) {
 
         // =-=-=-=-=-=-=-
         // 4a. create tarfilesystem_resource
@@ -2384,11 +2402,11 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // 4b1. set start and stop operations for alloc / free of tables
         resc->set_start_operation( "tarfilesystem_resource_start" );
-        resc->set_stop_operation ( "tarfilesystem_resource_stop"  );
+        resc->set_stop_operation( "tarfilesystem_resource_stop" );
 
         // =-=-=-=-=-=-=-
         // 4b2. map function names to operations.  this map will be used to load
-        //     the symbols from the shared object in the delay_load stage of 
+        //     the symbols from the shared object in the delay_load stage of
         //     plugin loading.
         resc->add_operation( irods::RESOURCE_OP_CREATE,       "tar_file_create_plugin" );
         resc->add_operation( irods::RESOURCE_OP_OPEN,         "tar_file_open_plugin" );
@@ -2411,9 +2429,9 @@ extern "C" {
         resc->add_operation( irods::RESOURCE_OP_MODIFIED,     "tar_file_modified_plugin" );
         resc->add_operation( irods::RESOURCE_OP_REBALANCE,    "tar_file_rebalance" );
         resc->add_operation( irods::RESOURCE_OP_NOTIFY,       "tar_file_notify" );
-        
+
         // =-=-=-=-=-=-=-
-        // struct file specific operations 
+        // struct file specific operations
         resc->add_operation( "extract",      "tar_file_extract_plugin" );
         resc->add_operation( "sync",         "tar_file_sync_plugin" );
 
@@ -2421,10 +2439,10 @@ extern "C" {
         // 4c. return the pointer through the generic interface of an
         //     irods::resource pointer
         return dynamic_cast<irods::resource*>( resc );
-        
+
     } // plugin_factory
 
-}; // extern "C" 
+}; // extern "C"
 
 
 

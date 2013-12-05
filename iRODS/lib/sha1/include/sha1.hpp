@@ -24,12 +24,11 @@
 #ifndef _SHA1_HPP_
 #define _SHA1_HPP_
 
-/* 
+/*
  *  This structure will hold context information for the hashing
  *  operation
  */
-typedef struct SHA1Context
-{
+typedef struct SHA1Context {
     unsigned Message_Digest[5]; /* Message Digest (output)          */
 
     unsigned Length_Low;        /* Message length in bits           */
@@ -48,14 +47,14 @@ extern "C" {
 
 
 
-/*
- *  Function Prototypes
- */
-void SHA1Reset(SHA1Context *);
-int SHA1Result(SHA1Context *);
-void SHA1Input( SHA1Context *,
-                const unsigned char *,
-                unsigned);
+    /*
+     *  Function Prototypes
+     */
+    void SHA1Reset( SHA1Context * );
+    int SHA1Result( SHA1Context * );
+    void SHA1Input( SHA1Context *,
+                    const unsigned char *,
+                    unsigned );
 
 #ifdef __cplusplus
 }

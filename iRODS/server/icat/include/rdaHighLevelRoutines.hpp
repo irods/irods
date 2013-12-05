@@ -5,15 +5,15 @@
 #ifndef RDA_HIGHLEVEL_ROUTINES_HPP
 #define RDA_HIGHLEVEL_ROUTINES_HPP
 
-int rdaOpen(char *rdaName);
+int rdaOpen( char *rdaName );
 int rdaClose();
 int rdaCommit();
 int rdaRollback();
 int rdaIsConnected();
-int rdaSqlNoResults(char *sql, char *parm[], int nparms);
-int rdaSqlWithResults(char *sql, char *parm[], int nparms, char **outBuf);
-int rdaCheckAccess(char *rdaName, rsComm_t *rsComm);
+int rdaSqlNoResults( char *sql, char *parm[], int nparms );
+int rdaSqlWithResults( char *sql, char *parm[], int nparms, char **outBuf );
+int rdaCheckAccess( char *rdaName, rsComm_t *rsComm );
 
-int rdaDebug(char *debugMode);
+int rdaDebug( char *debugMode );
 
 #endif /* RDA_HIGHLEVEL_ROUTINES_H */

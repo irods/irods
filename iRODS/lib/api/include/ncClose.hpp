@@ -19,7 +19,7 @@
 typedef struct {
     int type;			/* not used */
     int ncid;
-    keyValPair_t condInput; 
+    keyValPair_t condInput;
 } ncCloseInp_t;
 
 #define NcCloseInp_PI "int type; int ncid; struct KeyValPair_PI;"
@@ -28,13 +28,13 @@ typedef struct {
 #define RS_NC_CLOSE rsNcClose
 /* prototype for the server handler */
 int
-rsNcClose (rsComm_t *rsComm, ncCloseInp_t *ncCloseInp);
+rsNcClose( rsComm_t *rsComm, ncCloseInp_t *ncCloseInp );
 int
-closeAggrFiles (rsComm_t *rsComm, int l1descInx);
+closeAggrFiles( rsComm_t *rsComm, int l1descInx );
 int
-ncCloseColl (rsComm_t *rsComm, int l1descInx);
+ncCloseColl( rsComm_t *rsComm, int l1descInx );
 int
-ncCloseDataObj (rsComm_t *rsComm, int l1descInx);
+ncCloseDataObj( rsComm_t *rsComm, int l1descInx );
 #else
 #define RS_NC_CLOSE NULL
 #endif
@@ -43,15 +43,15 @@ ncCloseDataObj (rsComm_t *rsComm, int l1descInx);
 extern "C" {
 #endif
 
-/* rcNcClose - netcdf close an iRODS data object (equivalent to nc_close.
- * Input - 
- *   rcComm_t *conn - The client connection handle.
- *   int the ncid of the opened object - an integer descriptor.   
- * OutPut - 
- */
-/* prototype for the client call */
-int
-rcNcClose (rcComm_t *conn, ncCloseInp_t *ncCloseInp);
+    /* rcNcClose - netcdf close an iRODS data object (equivalent to nc_close.
+     * Input -
+     *   rcComm_t *conn - The client connection handle.
+     *   int the ncid of the opened object - an integer descriptor.
+     * OutPut -
+     */
+    /* prototype for the client call */
+    int
+    rcNcClose( rcComm_t *conn, ncCloseInp_t *ncCloseInp );
 
 
 #ifdef  __cplusplus

@@ -6,7 +6,7 @@
   spawns this process and writes the input password on stdin.  You can
   also run this manually, entering the password after PamAuthCheck is
   started; which will be echoed:
-  $ ./PamAuthCheck testuser2 
+  $ ./PamAuthCheck testuser2
   asfkskdlfkd
   Authenticated
   $
@@ -14,7 +14,7 @@
   You may need to install PAM libraries, such as libpam0g-dev:
   sudo apt-get install libpam0g-dev
 
-  This is built when PAM is enabled (in config/config.mk, change 
+  This is built when PAM is enabled (in config/config.mk, change
   # PAM_AUTH = 1
   to
   PAM_AUTH = 1
@@ -43,73 +43,73 @@
 const char pam_service[] = "irods";
 struct pam_response *reply;
 
-int 
-null_conv(int num_msg, const struct pam_message **msg, 
-	  struct pam_response **resp, void *appdata_ptr) {
-  *resp = reply;
-  return PAM_SUCCESS;
+int
+null_conv( int num_msg, const struct pam_message **msg,
+           struct pam_response **resp, void *appdata_ptr ) {
+    *resp = reply;
+    return PAM_SUCCESS;
 }
- 
-int main(int argc, char *argv[])
-{
-    pam_handle_t *pamh=NULL;
+
+int main( int argc, char *argv[] ) {
+    pam_handle_t *pamh = NULL;
     int retval;
     int nb;
-    int debug=0;
+    int debug = 0;
 
     static char password[500];
 
-    static const char *username="nobody";
+    static const char *username = "nobody";
     static struct pam_conv conv = { null_conv, NULL };
- 
-    if(argc == 2) {
-	username = argv[1];
+
+    if ( argc == 2 ) {
+        username = argv[1];
     }
     else {
-	fprintf(stderr, "Usage: PamAuthCheck username\n");
-	exit(2);
+        fprintf( stderr, "Usage: PamAuthCheck username\n" );
+        exit( 2 );
     }
 
     /* read the pw from stdin */
-    nb = read(0, (void*)&password, sizeof(password));
-    if (debug>0) printf("nb=%d\n",nb);
-    if (password[nb-1]=='\n') password[nb-1]='\0';
+    nb = read( 0, ( void* )&password, sizeof( password ) );
+    if ( debug > 0 ) { printf( "nb=%d\n", nb ); }
+    if ( password[nb - 1] == '\n' ) { password[nb - 1] = '\0'; }
 
-    retval = pam_start(pam_service, username, &conv, &pamh);
-    if (debug>0) printf("retval 1=%d\n",retval);
+    retval = pam_start( pam_service, username, &conv, &pamh );
+    if ( debug > 0 ) { printf( "retval 1=%d\n", retval ); }
 
-    if (retval != PAM_SUCCESS) {
-	fprintf(stderr, "PamAuthCheck: pam_start error\n");
-        exit(3);
+    if ( retval != PAM_SUCCESS ) {
+        fprintf( stderr, "PamAuthCheck: pam_start error\n" );
+        exit( 3 );
     }
 
-    reply = (struct pam_response*)malloc(sizeof(struct pam_response));
-    if (reply == NULL) {
-	fprintf(stderr, "PamAuthCheck: malloc error\n");
-        exit(4);
+    reply = ( struct pam_response* )malloc( sizeof( struct pam_response ) );
+    if ( reply == NULL ) {
+        fprintf( stderr, "PamAuthCheck: malloc error\n" );
+        exit( 4 );
     }
-    
-    reply[0].resp = strdup(password);
+
+    reply[0].resp = strdup( password );
     reply[0].resp_retcode = 0;
-    	
-    retval = pam_authenticate(pamh, 0);    /* check username-password */
-    if (debug>0) printf("retval 2=%d\n",retval);
 
-    strcpy(password, "                    ");
+    retval = pam_authenticate( pamh, 0 );  /* check username-password */
+    if ( debug > 0 ) { printf( "retval 2=%d\n", retval ); }
 
-    if (retval == PAM_SUCCESS) {
-	fprintf(stdout, "Authenticated\n");
-    } else {
-	fprintf(stdout, "Not Authenticated\n");
+    strcpy( password, "                    " );
+
+    if ( retval == PAM_SUCCESS ) {
+        fprintf( stdout, "Authenticated\n" );
+    }
+    else {
+        fprintf( stdout, "Not Authenticated\n" );
     }
 
-    if (pam_end(pamh,retval) != PAM_SUCCESS) {   /* close Linux-PAM */
-	pamh = NULL;
-	fprintf(stderr, "PamAuthCheck: failed to release authenticator\n");
-	exit(5);
+    if ( pam_end( pamh, retval ) != PAM_SUCCESS ) { /* close Linux-PAM */
+        pamh = NULL;
+        fprintf( stderr, "PamAuthCheck: failed to release authenticator\n" );
+        exit( 5 );
     }
 
-    return ( retval == PAM_SUCCESS ? 0:1 );   /* indicate success (valid
+    return ( retval == PAM_SUCCESS ? 0 : 1 );   /* indicate success (valid
 						 username and password) or
 						 not */
 }

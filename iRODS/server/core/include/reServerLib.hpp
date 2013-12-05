@@ -26,7 +26,7 @@ typedef enum {
     RE_PROC_IDLE,
     RE_PROC_RUNNING,
 } procExecState_t;
-    
+
 typedef struct {
     rsComm_t reComm;
     procExecState_t procExecState;
@@ -44,46 +44,46 @@ typedef struct {
 } reExec_t;
 
 int
-getReInfo (rsComm_t *rsComm, genQueryOut_t **genQueryOut);
+getReInfo( rsComm_t *rsComm, genQueryOut_t **genQueryOut );
 int
-getReInfoById (rsComm_t *rsComm, char *ruleExecId, genQueryOut_t **genQueryOut);
+getReInfoById( rsComm_t *rsComm, char *ruleExecId, genQueryOut_t **genQueryOut );
 int
-getNextQueuedRuleExec (rsComm_t *rsComm, genQueryOut_t **inGenQueryOut,
-int startInx, ruleExecSubmitInp_t *queuedRuleExec, 
-reExec_t *reExec, int jobType);
+getNextQueuedRuleExec( rsComm_t *rsComm, genQueryOut_t **inGenQueryOut,
+                       int startInx, ruleExecSubmitInp_t *queuedRuleExec,
+                       reExec_t *reExec, int jobType );
 int
-regExeStatus (rsComm_t *rsComm, char *ruleExecId, char *exeStatus);
+regExeStatus( rsComm_t *rsComm, char *ruleExecId, char *exeStatus );
 int
-runQueuedRuleExec (rsComm_t *rsComm, reExec_t *reExec, 
-genQueryOut_t **genQueryOut, time_t endTime, int statusFlag);
+runQueuedRuleExec( rsComm_t *rsComm, reExec_t *reExec,
+                   genQueryOut_t **genQueryOut, time_t endTime, int statusFlag );
 int
-initReExec (rsComm_t *rsComm, reExec_t *reExec);
+initReExec( rsComm_t *rsComm, reExec_t *reExec );
 int
-allocReThr (rsComm_t *rsComm, reExec_t *reExec); // JMC - backport 4695
+allocReThr( rsComm_t *rsComm, reExec_t *reExec ); // JMC - backport 4695
 int
-freeReThr (reExec_t *reExec, int thrInx);
+freeReThr( reExec_t *reExec, int thrInx );
 int
-runRuleExec (reExecProc_t *reExecProc);
+runRuleExec( reExecProc_t *reExecProc );
 int
-postProcRunRuleExec (rsComm_t *rsComm, reExecProc_t *reExecProc);
+postProcRunRuleExec( rsComm_t *rsComm, reExecProc_t *reExecProc );
 int
-matchRuleExecId (reExec_t *eeExec, char *ruleExecIdStr,
-procExecState_t execState);
+matchRuleExecId( reExec_t *eeExec, char *ruleExecIdStr,
+                 procExecState_t execState );
 int
-matchPidInReExec (reExec_t *reExec, pid_t pid);
+matchPidInReExec( reExec_t *reExec, pid_t pid );
 int
-waitAndFreeReThr (rsComm_t *rsComm, reExec_t *reExec); // JMC - backport 4695
+waitAndFreeReThr( rsComm_t *rsComm, reExec_t *reExec ); // JMC - backport 4695
 int
-chkAndUpdateResc (rsComm_t *rsComm);
+chkAndUpdateResc( rsComm_t *rsComm );
 int
-postForkExecProc (rsComm_t *rsComm, reExecProc_t *reExecProc);
+postForkExecProc( rsComm_t *rsComm, reExecProc_t *reExecProc );
 int
-execRuleExec (reExecProc_t *reExecProc);
+execRuleExec( reExecProc_t *reExecProc );
 int
-fillExecSubmitInp (ruleExecSubmitInp_t *ruleExecSubmitInp,  char *exeStatus,
-char *exeTime, char *ruleExecId, char *reiFilePath, char *ruleName,
-char *userName, char *exeAddress, char *exeFrequency, char *priority,
-char *estimateExeTime, char *notificationAddr);
+fillExecSubmitInp( ruleExecSubmitInp_t *ruleExecSubmitInp,  char *exeStatus,
+                   char *exeTime, char *ruleExecId, char *reiFilePath, char *ruleName,
+                   char *userName, char *exeAddress, char *exeFrequency, char *priority,
+                   char *estimateExeTime, char *notificationAddr );
 int
-reServerSingleExec (rsComm_t *rsComm, char *ruleExecId, int jobType);
+reServerSingleExec( rsComm_t *rsComm, char *ruleExecId, int jobType );
 #endif	/* RE_SERVER_LIB_H */

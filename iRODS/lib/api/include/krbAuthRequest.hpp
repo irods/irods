@@ -19,26 +19,26 @@
 extern "C" {
 #endif
 
-typedef struct {
-   char *serverName;
-} krbAuthRequestOut_t;
-    
+    typedef struct {
+        char *serverName;
+    } krbAuthRequestOut_t;
+
 #define krbAuthRequestOut_PI "str *ServerName;"
 
 
 #if defined(RODS_SERVER)
 #define RS_KRB_AUTH_REQUEST rsKrbAuthRequest
-/* prototype for the server handler */
-int
-rsKrbAuthRequest (rsComm_t *rsComm, krbAuthRequestOut_t **krbAuthRequestOut );
+    /* prototype for the server handler */
+    int
+    rsKrbAuthRequest( rsComm_t *rsComm, krbAuthRequestOut_t **krbAuthRequestOut );
 
 #else
 #define RS_KRB_AUTH_REQUEST NULL
 #endif
 
-/* prototype for the client call */
-int
-rcKrbAuthRequest (rcComm_t *conn, krbAuthRequestOut_t **krbAuthRequestOut );
+    /* prototype for the client call */
+    int
+    rcKrbAuthRequest( rcComm_t *conn, krbAuthRequestOut_t **krbAuthRequestOut );
 
 #ifdef  __cplusplus
 }

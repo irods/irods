@@ -5,7 +5,7 @@
 
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code.  */ 
+/* This is script-generated code.  */
 /* See dataObjChksum.h for a description of this API call.*/
 
 #include "dataObjChksum.hpp"
@@ -14,7 +14,7 @@
  * \fn rcDataObjChksum (rcComm_t *conn, dataObjInp_t *dataObjInp,
  *       char **outChksum)
  *
- * \brief Compute the md5 checksum of a data object and register the checksum 
+ * \brief Compute the md5 checksum of a data object and register the checksum
  *      value with iCAT.
  *
  * \user client
@@ -31,7 +31,7 @@
  * \note none
  *
  * \usage
- * Chksum the data object /myZone/home/john/myfile if one does not already 
+ * Chksum the data object /myZone/home/john/myfile if one does not already
  * exist in iCAT.
  * \n dataObjInp_t dataObjInp;
  * \n char *outChksum = NULL;
@@ -46,10 +46,10 @@
  * \param[in] dataObjInp - Elements of dataObjInp_t used :
  *    \li char \b objPath[MAX_NAME_LEN] - full path of the data object.
  *    \li keyValPair_t \b condInput - keyword/value pair input. Valid keywords:
- *    \n VERIFY_CHKSUM_KW -  verify the checksum value in iCAT. If the 
+ *    \n VERIFY_CHKSUM_KW -  verify the checksum value in iCAT. If the
  *            checksum value does not exist, compute and register one.
  *            This keyWd has no value.
- *    \n FORCE_CHKSUM_KW -  checksum the data-object even if a checksum 
+ *    \n FORCE_CHKSUM_KW -  checksum the data-object even if a checksum
  *            already exists in iCAT. This keyWd has no value.
  *    \n CHKSUM_ALL_KW - checksum all replicas.
  *            This keyWd has no value.
@@ -68,13 +68,12 @@
 **/
 
 int
-rcDataObjChksum (rcComm_t *conn, dataObjInp_t *dataObjChksumInp, 
-char **outChksum)
-{
+rcDataObjChksum( rcComm_t *conn, dataObjInp_t *dataObjChksumInp,
+                 char **outChksum ) {
     int status;
-    status = procApiRequest (conn, DATA_OBJ_CHKSUM_AN,  dataObjChksumInp, NULL, 
-        (void **) outChksum, NULL);
+    status = procApiRequest( conn, DATA_OBJ_CHKSUM_AN,  dataObjChksumInp, NULL,
+                             ( void ** ) outChksum, NULL );
 
-    return (status);
+    return ( status );
 }
 

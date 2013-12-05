@@ -20,22 +20,21 @@ extern "C" {
 
     /// @brief Signal handler for seg faults
     static void segv_handler(
-        int signal)
-    {
+        int signal ) {
         irods::stacktrace st;
         st.trace();
         st.dump();
-        exit(signal);
+        exit( signal );
     }
 
 
-    void register_handlers(void) {
-        action = (struct sigaction*)malloc(sizeof(struct sigaction));
+    void register_handlers( void ) {
+        action = ( struct sigaction* )malloc( sizeof( struct sigaction ) );
         memset( action, 0, sizeof( struct sigaction ) );
         action->sa_handler = segv_handler;
-        sigaction(11, action, 0);
-        sigaction(6, action, 0);
-        sigaction(2, action, 0);
+        sigaction( 11, action, 0 );
+        sigaction( 6, action, 0 );
+        sigaction( 2, action, 0 );
     }
 
     void unregister_handlers() {

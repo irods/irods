@@ -20,7 +20,7 @@ typedef struct {
     int l1descInx;
     int len;
 } dataObjReadInp_t;
-    
+
 #define dataObjReadInp_PI "int l1descInx; int len;"
 #endif
 
@@ -28,14 +28,14 @@ typedef struct {
 #define RS_DATA_OBJ_READ rsDataObjRead
 /* prototype for the server handler */
 int
-rsDataObjRead (rsComm_t *rsComm, openedDataObjInp_t *dataObjReadInp, 
-bytesBuf_t *dataObjReadOutBBuf);
+rsDataObjRead( rsComm_t *rsComm, openedDataObjInp_t *dataObjReadInp,
+               bytesBuf_t *dataObjReadOutBBuf );
 int
-l3Read (rsComm_t *rsComm, int l1descInx, int len,
-bytesBuf_t *dataObjReadOutBBuf);
+l3Read( rsComm_t *rsComm, int l1descInx, int len,
+        bytesBuf_t *dataObjReadOutBBuf );
 int
-_l3Read (rsComm_t *rsComm, int rescTypeInx, int l3descInx,
-void *buf, int len);
+_l3Read( rsComm_t *rsComm, int rescTypeInx, int l3descInx,
+         void *buf, int len );
 #else
 #define RS_DATA_OBJ_READ NULL
 #endif
@@ -45,8 +45,8 @@ void *buf, int len);
 #define RS_DATA_OBJ_READ201 rsDataObjRead201
 /* prototype for the server handler */
 int
-rsDataObjRead201 (rsComm_t *rsComm, dataObjReadInp_t *dataObjReadInp,
-bytesBuf_t *dataObjReadOutBBuf);
+rsDataObjRead201( rsComm_t *rsComm, dataObjReadInp_t *dataObjReadInp,
+                  bytesBuf_t *dataObjReadOutBBuf );
 #else
 #define RS_DATA_OBJ_READ201 NULL
 #endif
@@ -56,22 +56,22 @@ bytesBuf_t *dataObjReadOutBBuf);
 extern "C" {
 #endif
 
-/* prototype for the client call */
-/* rcDataObjRead - Read an opened iRODS data object descriptor.
- * Input -
- *   rcComm_t *conn - The client connection handle.
- *   dataObjInp_t *fileReadInp - Relevant items are:
- *      l1descInx - the iRODS data object descriptor to read.
- *      len - the number of bytes to read
- *
- * OutPut -
- *   int status of the operation - >= 0 ==> success, < 0 ==> failure.
- *   bytesBuf_t *dataObjReadOutBBuf - the bytesBuf for the read output. 
- */
+    /* prototype for the client call */
+    /* rcDataObjRead - Read an opened iRODS data object descriptor.
+     * Input -
+     *   rcComm_t *conn - The client connection handle.
+     *   dataObjInp_t *fileReadInp - Relevant items are:
+     *      l1descInx - the iRODS data object descriptor to read.
+     *      len - the number of bytes to read
+     *
+     * OutPut -
+     *   int status of the operation - >= 0 ==> success, < 0 ==> failure.
+     *   bytesBuf_t *dataObjReadOutBBuf - the bytesBuf for the read output.
+     */
 
-int
-rcDataObjRead (rcComm_t *conn, openedDataObjInp_t *dataObjReadInp,
-bytesBuf_t *dataObjReadOutBBuf);
+    int
+    rcDataObjRead( rcComm_t *conn, openedDataObjInp_t *dataObjReadInp,
+                   bytesBuf_t *dataObjReadOutBBuf );
 
 #ifdef  __cplusplus
 }

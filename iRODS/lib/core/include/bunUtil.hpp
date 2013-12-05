@@ -13,13 +13,13 @@
 extern "C" {
 #endif
 
-int
-bunUtil (rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
-rodsPathInp_t *rodsPathInp);
-int
-initCondForBunOpr (rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
-structFileExtAndRegInp_t *structFileExtAndRegInp, 
-rodsPathInp_t *rodsPathInp);
+    int
+    bunUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
+             rodsPathInp_t *rodsPathInp );
+    int
+    initCondForBunOpr( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
+                       structFileExtAndRegInp_t *structFileExtAndRegInp,
+                       rodsPathInp_t *rodsPathInp );
 #ifdef  __cplusplus
 }
 #endif

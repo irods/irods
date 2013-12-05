@@ -23,11 +23,11 @@
 
 #define LOGFILE_CHK_INT 1800          /* Interval in sec for checking logFile */
 #define LOGFILE_CHK_CNT        50      /* number of times through the loop before 
-                                * chkLogfileName is called */ 
+* chkLogfileName is called */
 #define DEF_LOGFILE_PATTERN "%Y.%m.%d"  /* default pattern in strftime syntax */
 #define LOGFILE_PATTERN "logfilePattern" /* pattern for new name of log file */
 // =-=-=-=-=-=-=-
-  
+
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -35,10 +35,10 @@
 
 
 void
-getLogfileName (char **logFile, char *logDir, char *logFileName);
+getLogfileName( char **logFile, char *logDir, char *logFileName );
 
 #ifndef _WIN32
-int chkLogfileName (char *logDir, char *logFileName);
+int chkLogfileName( char *logDir, char *logFileName );
 #endif
 
 #endif	/* RS_LOG_H */

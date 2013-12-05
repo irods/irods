@@ -1,7 +1,7 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* getXmsgTicket.h
- * 
+ *
  */
 
 #ifndef GET_XMSG_TICKET_HPP
@@ -20,8 +20,8 @@
 #define RS_GET_XMSG_TICKET rsGetXmsgTicket
 /* prototype for the server handler */
 int
-rsGetXmsgTicket (rsComm_t *rsComm, getXmsgTicketInp_t *getXmsgTicketInp, 
-xmsgTicketInfo_t **outXmsgTicketInfo);
+rsGetXmsgTicket( rsComm_t *rsComm, getXmsgTicketInp_t *getXmsgTicketInp,
+                 xmsgTicketInfo_t **outXmsgTicketInfo );
 #else
 #define RS_GET_XMSG_TICKET NULL
 #endif
@@ -30,10 +30,10 @@ xmsgTicketInfo_t **outXmsgTicketInfo);
 extern "C" {
 #endif
 
-/* prototype for the client call */
-int
-rcGetXmsgTicket (rcComm_t *conn, getXmsgTicketInp_t *getXmsgTicketInp, 
-xmsgTicketInfo_t **outXmsgTicketInfo);
+    /* prototype for the client call */
+    int
+    rcGetXmsgTicket( rcComm_t *conn, getXmsgTicketInp_t *getXmsgTicketInp,
+                     xmsgTicketInfo_t **outXmsgTicketInfo );
 
 #ifdef  __cplusplus
 }

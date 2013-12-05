@@ -21,23 +21,23 @@ typedef struct DataCopyInp {
 } dataCopyInp_t;
 
 #define DataCopyInp_PI "struct DataOprInp_PI; struct PortalOprOut_PI;"
- 
+
 #if defined(RODS_SERVER)
 #define RS_DATA_COPY rsDataCopy
 /* prototype for the server handler */
 int
-rsDataCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp);
+rsDataCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp );
 int
-remoteDataCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp,
-rodsServerHost_t *rodsServerHost);
+remoteDataCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp,
+                rodsServerHost_t *rodsServerHost );
 int
-_rsDataCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp);
+_rsDataCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp );
 #else
 #define RS_DATA_COPY NULL
 #endif
 
 /* prototype for the client call */
 int
-rcDataCopy (rcComm_t *conn, dataCopyInp_t *dataCopyInp);
+rcDataCopy( rcComm_t *conn, dataCopyInp_t *dataCopyInp );
 
 #endif	/* DATA_COPY_H */

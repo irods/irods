@@ -20,28 +20,28 @@ typedef struct {
     int fileInx;
     int len;
 } fileWriteInp_t;
-    
+
 #define fileWriteInp_PI "int fileInx; int len;"
 
 #if defined(RODS_SERVER)
 #define RS_FILE_WRITE rsFileWrite
 /* prototype for the server handler */
 int
-rsFileWrite (rsComm_t *rsComm, fileWriteInp_t *fileWriteInp, 
-bytesBuf_t *fileWriteInpBBuf);
+rsFileWrite( rsComm_t *rsComm, fileWriteInp_t *fileWriteInp,
+             bytesBuf_t *fileWriteInpBBuf );
 int
-_rsFileWrite (rsComm_t *rsComm, fileWriteInp_t *fileWriteInp, 
-bytesBuf_t *fileWriteInpBBuf);
+_rsFileWrite( rsComm_t *rsComm, fileWriteInp_t *fileWriteInp,
+              bytesBuf_t *fileWriteInpBBuf );
 int
-remoteFileWrite (rsComm_t *rsComm, fileWriteInp_t *fileWriteInp,
-bytesBuf_t *fileWriteInpBBuf, rodsServerHost_t *rodsServerHost);
+remoteFileWrite( rsComm_t *rsComm, fileWriteInp_t *fileWriteInp,
+                 bytesBuf_t *fileWriteInpBBuf, rodsServerHost_t *rodsServerHost );
 #else
 #define RS_FILE_WRITE NULL
 #endif
 
 /* prototype for the client call */
 int
-rcFileWrite (rcComm_t *conn, fileWriteInp_t *fileWriteInp,
-bytesBuf_t *fileWriteInpBBuf);
+rcFileWrite( rcComm_t *conn, fileWriteInp_t *fileWriteInp,
+             bytesBuf_t *fileWriteInpBBuf );
 
 #endif	/* FILE_WRITE_H */

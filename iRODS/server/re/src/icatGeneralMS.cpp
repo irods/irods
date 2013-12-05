@@ -76,7 +76,7 @@ This documentation is generated from the iRODS code.
   - #msiDataObjOpen - Open a data object
   - #msiDataObjClose - Close an opened data object
   - #msiDataObjLseek - Repositions the read/write offset of an open data object
-  - #msiDataObjRead - Read an opened data object 
+  - #msiDataObjRead - Read an opened data object
   - #msiDataObjWrite - Write to an opened data object
 
  \subsection msidataobject Data Object Microservices
@@ -88,12 +88,12 @@ This documentation is generated from the iRODS code.
   - #msiDataObjPut - Put a data object
   - #msiDataObjChksum - Checksum a data object
   - #msiDataObjPhymv - Move a data object from one resource to another
-  - #msiDataObjRename - Rename a data object 
+  - #msiDataObjRename - Rename a data object
   - #msiDataObjTrim - Trim the replicas of a data object
   - #msiPhyPathReg - Register a physical file into iRODS
   - #msiObjStat - Stat an iRODS object
   - #msiDataObjRsync - Syncs a data object from a source to a destination
-  - #msiCollRsync - Recursively syncs a source collection to a target collection 
+  - #msiCollRsync - Recursively syncs a source collection to a target collection
   - #msiGetObjType - Finds if a given value is a data, coll, resc, ...
   - #msiCheckPermission - Check if a data object permission is the same as the one given
   - #msiCheckOwner - Check if the user is the owner of the data object
@@ -161,7 +161,7 @@ This documentation is generated from the iRODS code.
   - #msiStrlen   - Returns the length of a given string
   - #msiStrchop  - Removes the last character of a given string
   - #msiSubstr   - Returns a substring of the given string
- 
+
  \subsection msiemail Email Microservices
   - #msiSendMail   - Sends email
   - #msiSendStdoutAsEmail - Sends rei's stdout as email
@@ -175,7 +175,7 @@ This documentation is generated from the iRODS code.
   - #msiAssociateKeyValuePairsToObj  - Ingests object metadata into iCAT from a AVU structure
   - #msiRemoveKeyValuePairsFromObj  - Removes object metadata from iCAT using a AVU structure
   - #msiSetKeyValuePairsToObj - Ingests or overwrites object metadata into iCAT from a AVU structure
-  - #msiAddKeyVal - Adds a new key and value to a keyValPair_t 
+  - #msiAddKeyVal - Adds a new key and value to a keyValPair_t
 
  \subsection msinetcdf NETCDF Microservices
   - #msiNcOpen - Open an iRODS data object for netcdf operation (equivalent to nc_open)
@@ -237,7 +237,7 @@ This documentation is generated from the iRODS code.
   - #msiSetRescSortScheme - Sets the scheme for selecting the best resource to use
   - #msiSetMultiReplPerResc - Sets the number of copies per resource to unlimited
   - #msiSetDataObjPreferredResc - Specifies the preferred copy to use, if the data has multiple copies
-  - #msiSetDataObjAvoidResc - Specifies the copy to avoid 
+  - #msiSetDataObjAvoidResc - Specifies the copy to avoid
   - #msiSetGraftPathScheme - Sets the scheme for composing the physical path in the vault to GRAFT_PATH
   - #msiSetRandomScheme - Sets the the scheme for composing the physical path in the vault to RANDOM
   - #msiSetResource  - sets the resource from default
@@ -421,23 +421,22 @@ For Inclusion above, later
  * \sa none
 **/
 int
-msiGetIcatTime(msParam_t* timeOutParam,  msParam_t* typeInParam, ruleExecInfo_t *rei)
-{
-  char *type;
-  char tStr0[TIME_LEN],tStr[TIME_LEN];
-  int i;
+msiGetIcatTime( msParam_t* timeOutParam,  msParam_t* typeInParam, ruleExecInfo_t *rei ) {
+    char *type;
+    char tStr0[TIME_LEN], tStr[TIME_LEN];
+    int i;
 
-  type = (char*)typeInParam->inOutStruct;
+    type = ( char* )typeInParam->inOutStruct;
 
-  if (!strcmp(type,"icat") || !strcmp(type,"unix")) {
-    getNowStr(tStr);
-  }
-  else { /* !strcmp(type,"human") */
-    getNowStr(tStr0);
-    getLocalTimeFromRodsTime(tStr0,tStr);
-  }
-  i = fillStrInMsParam (timeOutParam,tStr);
-  return(i);
+    if ( !strcmp( type, "icat" ) || !strcmp( type, "unix" ) ) {
+        getNowStr( tStr );
+    }
+    else { /* !strcmp(type,"human") */
+        getNowStr( tStr0 );
+        getLocalTimeFromRodsTime( tStr0, tStr );
+    }
+    i = fillStrInMsParam( timeOutParam, tStr );
+    return( i );
 }
 
 /**
@@ -478,20 +477,19 @@ msiGetIcatTime(msParam_t* timeOutParam,  msParam_t* typeInParam, ruleExecInfo_t 
  * \sa none
 **/
 int
-msiVacuum(ruleExecInfo_t *rei)
-{
-   int i;
-   rodsLog(LOG_NOTICE, "msiVacuum called\n");
+msiVacuum( ruleExecInfo_t *rei ) {
+    int i;
+    rodsLog( LOG_NOTICE, "msiVacuum called\n" );
 
-   i = doForkExec("/usr/bin/perl", "./vacuumdb.pl");
+    i = doForkExec( "/usr/bin/perl", "./vacuumdb.pl" );
 
-   if (i) {
-      rodsLog(LOG_ERROR, "msiVacuum doForkExec failure\n");
-   }
+    if ( i ) {
+        rodsLog( LOG_ERROR, "msiVacuum doForkExec failure\n" );
+    }
 
-   rodsLog(LOG_NOTICE, "msiVacuum done\n");
+    rodsLog( LOG_NOTICE, "msiVacuum done\n" );
 
-   return(0);
+    return( 0 );
 }
 
 
@@ -529,17 +527,16 @@ msiVacuum(ruleExecInfo_t *rei)
  * \sa none
 **/
 int
-msiQuota(ruleExecInfo_t *rei)
-{
-   int status;
+msiQuota( ruleExecInfo_t *rei ) {
+    int status;
 
 #ifdef RODS_CAT
-   rodsLog(LOG_NOTICE, "msiQuota/chlCalcUsageAndQuota called\n");
-   status = chlCalcUsageAndQuota(rei->rsComm);
+    rodsLog( LOG_NOTICE, "msiQuota/chlCalcUsageAndQuota called\n" );
+    status = chlCalcUsageAndQuota( rei->rsComm );
 #else
-   status =  SYS_NO_RCAT_SERVER_ERR;
+    status =  SYS_NO_RCAT_SERVER_ERR;
 #endif
-   return(status);
+    return( status );
 }
 
 /**
@@ -575,18 +572,18 @@ msiQuota(ruleExecInfo_t *rei)
  * \post none
  * \sa none
 **/
-int  msiSetResource(msParam_t* xrescName, ruleExecInfo_t *rei)
-{
-  char *rescName;
+int  msiSetResource( msParam_t* xrescName, ruleExecInfo_t *rei ) {
+    char *rescName;
 
-  rescName = (char *) xrescName->inOutStruct;
-  if (reTestFlag > 0 ) {
-    if (reTestFlag == LOG_TEST_1) 
-      rodsLog (LOG_NOTICE,"   Calling msiSetResource\n");
-  }
+    rescName = ( char * ) xrescName->inOutStruct;
+    if ( reTestFlag > 0 ) {
+        if ( reTestFlag == LOG_TEST_1 ) {
+            rodsLog( LOG_NOTICE, "   Calling msiSetResource\n" );
+        }
+    }
 
-  strcpy(rei->doi->rescName,rescName);
-  return(0);
+    strcpy( rei->doi->rescName, rescName );
+    return( 0 );
 }
 
 
@@ -603,7 +600,7 @@ int  msiSetResource(msParam_t* xrescName, ruleExecInfo_t *rei)
  * \date    2008
  *
  * \usage See clients/icommands/test/rules3.0/
- *  
+ *
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
@@ -620,18 +617,20 @@ int  msiSetResource(msParam_t* xrescName, ruleExecInfo_t *rei)
  * \post none
  * \sa none
 **/
-int msiCheckOwner(ruleExecInfo_t *rei)
-{
-    if (reTestFlag > 0 ) {
-    if (reTestFlag == LOG_TEST_1) 
-      rodsLog (LOG_NOTICE,"   Calling msiCheckOwner\n");
-  }
+int msiCheckOwner( ruleExecInfo_t *rei ) {
+    if ( reTestFlag > 0 ) {
+        if ( reTestFlag == LOG_TEST_1 ) {
+            rodsLog( LOG_NOTICE, "   Calling msiCheckOwner\n" );
+        }
+    }
 
-  if (!strcmp(rei->doi->dataOwnerName,rei->uoic->userName) &&
-      !strcmp(rei->doi->dataOwnerZone,rei->uoic->rodsZone))
-    return(0);
-  else
-    return(ACTION_FAILED_ERR);
+    if ( !strcmp( rei->doi->dataOwnerName, rei->uoic->userName ) &&
+            !strcmp( rei->doi->dataOwnerZone, rei->uoic->rodsZone ) ) {
+        return( 0 );
+    }
+    else {
+        return( ACTION_FAILED_ERR );
+    }
 
 }
 
@@ -648,7 +647,7 @@ int msiCheckOwner(ruleExecInfo_t *rei)
  * \date    2008
  *
  * \usage See clients/icommands/test/rules3.0/
- *  
+ *
  * \param[in] xperm - a msParam of type STR_MS_T
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -666,19 +665,21 @@ int msiCheckOwner(ruleExecInfo_t *rei)
  * \post none
  * \sa none
 **/
-int msiCheckPermission(msParam_t* xperm, ruleExecInfo_t *rei)
-{
-  char *perm;
+int msiCheckPermission( msParam_t* xperm, ruleExecInfo_t *rei ) {
+    char *perm;
 
-  perm = (char *) xperm->inOutStruct;
-    if (reTestFlag > 0 ) {
-    if (reTestFlag == LOG_TEST_1) 
-      rodsLog (LOG_NOTICE,"   Calling msiCheckPermission\n");
-  }
-  if (strstr(rei->doi->dataAccess,perm) != NULL)
-    return(0);
-  else
-    return(ACTION_FAILED_ERR);
+    perm = ( char * ) xperm->inOutStruct;
+    if ( reTestFlag > 0 ) {
+        if ( reTestFlag == LOG_TEST_1 ) {
+            rodsLog( LOG_NOTICE, "   Calling msiCheckPermission\n" );
+        }
+    }
+    if ( strstr( rei->doi->dataAccess, perm ) != NULL ) {
+        return( 0 );
+    }
+    else {
+        return( ACTION_FAILED_ERR );
+    }
 
 }
 
@@ -696,9 +697,9 @@ int msiCheckPermission(msParam_t* xperm, ruleExecInfo_t *rei)
  * \date    July 2011
  *
  * \usage See clients/icommands/test/rules3.0/
- *  
+ *
  * \param[in] inObjName - name of Object. A param of type STR_MS_T
- * \param[in] inOperation - type of Operation that will be performed. A param of type STR_MS_T. 
+ * \param[in] inOperation - type of Operation that will be performed. A param of type STR_MS_T.
  * \param[out] outResult - result of the operation. 0 for failure and 1 for success. a param of type INT_MS_T.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -716,47 +717,52 @@ int msiCheckPermission(msParam_t* xperm, ruleExecInfo_t *rei)
  * \post none
  * \sa none
 **/
-int msiCheckAccess(msParam_t *inObjName, msParam_t * inOperation, 
-  msParam_t * outResult, ruleExecInfo_t *rei)
-{
-  char *objName, *oper;
-  char objType[MAX_NAME_LEN];
-  int i;
-  char *user;
-  char *zone;
- 
-  RE_TEST_MACRO ("  Calling msiCheckAccess");
+int msiCheckAccess( msParam_t *inObjName, msParam_t * inOperation,
+                    msParam_t * outResult, ruleExecInfo_t *rei ) {
+    char *objName, *oper;
+    char objType[MAX_NAME_LEN];
+    int i;
+    char *user;
+    char *zone;
 
-  if (inObjName == NULL || inObjName->inOutStruct == NULL ||
-      inObjName->type == NULL || strcmp(inObjName->type, STR_MS_T) != 0 )
-    return (USER_PARAM_TYPE_ERR);
+    RE_TEST_MACRO( "  Calling msiCheckAccess" );
 
-  if (inOperation == NULL || inOperation->inOutStruct == NULL ||
-      inOperation->type == NULL || strcmp(inOperation->type, STR_MS_T) != 0 )
-    return (USER_PARAM_TYPE_ERR);
+    if ( inObjName == NULL || inObjName->inOutStruct == NULL ||
+            inObjName->type == NULL || strcmp( inObjName->type, STR_MS_T ) != 0 ) {
+        return ( USER_PARAM_TYPE_ERR );
+    }
 
-  if (rei == NULL || rei->rsComm == NULL) 
-    return (SYS_INTERNAL_NULL_INPUT_ERR);
+    if ( inOperation == NULL || inOperation->inOutStruct == NULL ||
+            inOperation->type == NULL || strcmp( inOperation->type, STR_MS_T ) != 0 ) {
+        return ( USER_PARAM_TYPE_ERR );
+    }
 
-  if (strlen(rei->rsComm->clientUser.userName) == 0 ||
-      strlen(rei->rsComm->clientUser.rodsZone) == 0)
-    return (SYS_INTERNAL_NULL_INPUT_ERR);
+    if ( rei == NULL || rei->rsComm == NULL ) {
+        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+    }
 
-  oper = (char *) inOperation->inOutStruct;
-  objName = (char *) inObjName->inOutStruct; 
-  user = rei->rsComm->clientUser.userName;
-  zone = rei->rsComm->clientUser.rodsZone;
+    if ( strlen( rei->rsComm->clientUser.userName ) == 0 ||
+            strlen( rei->rsComm->clientUser.rodsZone ) == 0 ) {
+        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+    }
 
-  i = getObjType(rei->rsComm, objName, objType);
-  if (i < 0)
-    return(i);
+    oper = ( char * ) inOperation->inOutStruct;
+    objName = ( char * ) inObjName->inOutStruct;
+    user = rei->rsComm->clientUser.userName;
+    zone = rei->rsComm->clientUser.rodsZone;
 
-  i = checkPermissionByObjType(rei->rsComm, objName, objType, user, zone, oper);
-  if (i < 0)
-    return(i);
-  fillIntInMsParam (outResult, i);
+    i = getObjType( rei->rsComm, objName, objType );
+    if ( i < 0 ) {
+        return( i );
+    }
 
-  return(0);
+    i = checkPermissionByObjType( rei->rsComm, objName, objType, user, zone, oper );
+    if ( i < 0 ) {
+        return( i );
+    }
+    fillIntInMsParam( outResult, i );
+
+    return( 0 );
 
 }
 
@@ -781,7 +787,7 @@ int msiCheckAccess(msParam_t *inObjName, msParam_t * inOperation,
  * normal operations (in the 'C' code).
  *
  * \usage See clients/icommands/test/rules3.0/
- *  
+ *
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
@@ -799,24 +805,25 @@ int msiCheckAccess(msParam_t *inObjName, msParam_t * inOperation,
  * \sa none
 **/
 int
-msiCommit(ruleExecInfo_t *rei) {
-   int status;
+msiCommit( ruleExecInfo_t *rei ) {
+    int status;
 
-  /**** This is Just a Test Stub  ****/
-  if (reTestFlag > 0 ) {
-    if (reTestFlag == LOG_TEST_1) {
-      rodsLog (LOG_NOTICE,"   Calling msiCommit\n");
+    /**** This is Just a Test Stub  ****/
+    if ( reTestFlag > 0 ) {
+        if ( reTestFlag == LOG_TEST_1 ) {
+            rodsLog( LOG_NOTICE, "   Calling msiCommit\n" );
+        }
+        if ( reLoopBackFlag > 0 ) {
+            return( 0 );
+        }
     }
-    if (reLoopBackFlag > 0)
-      return(0);
-  }
-  /**** This is Just a Test Stub  ****/
+    /**** This is Just a Test Stub  ****/
 #ifdef RODS_CAT
-   status = chlCommit(rei->rsComm);
+    status = chlCommit( rei->rsComm );
 #else
-   status =  SYS_NO_RCAT_SERVER_ERR;
+    status =  SYS_NO_RCAT_SERVER_ERR;
 #endif
-   return(status);
+    return( status );
 }
 
 /**
@@ -837,7 +844,7 @@ msiCommit(ruleExecInfo_t *rei) {
  * rolled-back as part of the normal operations (in the 'C' code).
  *
  * \usage See clients/icommands/test/rules3.0/
- *  
+ *
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
@@ -855,26 +862,26 @@ msiCommit(ruleExecInfo_t *rei) {
  * \sa none
 **/
 int
-msiRollback(ruleExecInfo_t *rei)
-{
-   int status;
-  /**** This is Just a Test Stub  ****/
-  if (reTestFlag > 0 ) {
-    if (reTestFlag == LOG_TEST_1) {
-      rodsLog (LOG_NOTICE,"   Calling msiRollback\n");
+msiRollback( ruleExecInfo_t *rei ) {
+    int status;
+    /**** This is Just a Test Stub  ****/
+    if ( reTestFlag > 0 ) {
+        if ( reTestFlag == LOG_TEST_1 ) {
+            rodsLog( LOG_NOTICE, "   Calling msiRollback\n" );
+        }
+        if ( reLoopBackFlag > 0 ) {
+            return( 0 );
+        }
     }
-    if (reLoopBackFlag > 0)
-      return(0);
-  }
-  /**** This is Just a Test Stub  ****/
+    /**** This is Just a Test Stub  ****/
 
 
 #ifdef RODS_CAT
-   status = chlRollback(rei->rsComm);
+    status = chlRollback( rei->rsComm );
 #else
-   status =  SYS_NO_RCAT_SERVER_ERR;
+    status =  SYS_NO_RCAT_SERVER_ERR;
 #endif
-   return(status);
+    return( status );
 }
 
 /**
@@ -897,7 +904,7 @@ msiRollback(ruleExecInfo_t *rei)
  *    e.g: msiSetACL("default", "admin:read", "rods", *path)
  *
  * \usage See clients/icommands/test/rules3.0/
- * 
+ *
  * \param[in] recursiveFlag - a STR_MS_T, either "default" or "recursive".  "recursive"
  *    is only relevant if set with accessLevel set to "inherit".
  * \param[in] accessLevel - a STR_MS_T containing one of the following:
@@ -924,89 +931,89 @@ msiRollback(ruleExecInfo_t *rei)
  * \post N/A
  * \sa N/A
 **/
-int msiSetACL (msParam_t *recursiveFlag, msParam_t *accessLevel, msParam_t *userName, 
-      msParam_t *pathName, ruleExecInfo_t *rei) {
-	char *acl, *path, *recursiveFlg, *user, uname[NAME_LEN], *zone;
-	int recFlg, rc;
-	modAccessControlInp_t modAccessControlInp;
-	rsComm_t *rsComm = 0; // JMC cppcheck - uninit var
-  
-	RE_TEST_MACRO ("    Calling msiSetACL")
+int msiSetACL( msParam_t *recursiveFlag, msParam_t *accessLevel, msParam_t *userName,
+               msParam_t *pathName, ruleExecInfo_t *rei ) {
+    char *acl, *path, *recursiveFlg, *user, uname[NAME_LEN], *zone;
+    int recFlg, rc;
+    modAccessControlInp_t modAccessControlInp;
+    rsComm_t *rsComm = 0; // JMC cppcheck - uninit var
+
+    RE_TEST_MACRO( "    Calling msiSetACL" )
     /* the above line is needed for loop back testing using irule -i option */
-   
-	if ( recursiveFlag == NULL || accessLevel == NULL || userName == NULL ||
-		 pathName == NULL ) {
-		rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-							"msiSetACL: one of the input parameter is NULL");
-		return (SYS_INTERNAL_NULL_INPUT_ERR);
-	}
-  
-	recFlg = 0; /* non recursive mode */
-	if ( strcmp (recursiveFlag->type, STR_MS_T) == 0 ) {
-		recursiveFlg = (char *) recursiveFlag->inOutStruct;
-		if ( strcmp(recursiveFlg,"recursive") == 0 ) {
-			/* recursive mode */
-			recFlg = 1;
-		}
-	} 
-	else {
-		rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-							"msiSetACL: Unsupported input recursiveFlag type %i",
-							recursiveFlag->type);
-		return (USER_PARAM_TYPE_ERR);
-	}
-	
-	if ( strcmp (accessLevel->type, STR_MS_T) == 0 ) {
-		acl = (char *) accessLevel->inOutStruct;
-	} 
-	else {
-		rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-							"msiSetACL: Unsupported input accessLevel type %s",
-							accessLevel->type);
-		return (USER_PARAM_TYPE_ERR);
-	}
-  
-	if ( strcmp (userName->type, STR_MS_T) == 0 ) {
-		user = (char *) userName->inOutStruct;
-	} 
-	else {
-		rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-							"msiSetACL: Unsupported input userName type %s",
-							userName->type);
-		return (USER_PARAM_TYPE_ERR);
-	}
-	
-	if ( strcmp (pathName->type, STR_MS_T) == 0 ) {
-		path = (char *) pathName->inOutStruct;
-	} 
-	else {
-		rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-							"msiSetACL: Unsupported input pathName type %s",
-							pathName->type);
-		return (USER_PARAM_TYPE_ERR);
-	}
-	
-	rsComm = rei->rsComm;
-	modAccessControlInp.recursiveFlag = recFlg;
-	modAccessControlInp.accessLevel = acl;
-	if ( strchr(user, '#') == NULL ) {
-		modAccessControlInp.userName = user;
-		modAccessControlInp.zone = rei->uoic->rodsZone;
-	}
-	else {
-		zone = strchr(user, '#') + 1;
-		memset(uname, '\0', NAME_LEN);
-		strncpy(uname, user, strlen(user) - strlen(zone) - 1);
-		modAccessControlInp.userName = uname;
-		modAccessControlInp.zone = zone;
-	}
-	modAccessControlInp.path = path;
-	rc = rsModAccessControl(rsComm, &modAccessControlInp);
-	if ( rc < 0 ) {
-		rodsLog (LOG_NOTICE, "msiSetACL: ACL modifications has failed for user %s on object %s, error = %i\n", user, path, rc);
-	}
-  
-	return (rc);
+
+    if ( recursiveFlag == NULL || accessLevel == NULL || userName == NULL ||
+            pathName == NULL ) {
+        rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
+                            "msiSetACL: one of the input parameter is NULL" );
+        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+    }
+
+    recFlg = 0; /* non recursive mode */
+    if ( strcmp( recursiveFlag->type, STR_MS_T ) == 0 ) {
+        recursiveFlg = ( char * ) recursiveFlag->inOutStruct;
+        if ( strcmp( recursiveFlg, "recursive" ) == 0 ) {
+            /* recursive mode */
+            recFlg = 1;
+        }
+    }
+    else {
+        rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
+                            "msiSetACL: Unsupported input recursiveFlag type %i",
+                            recursiveFlag->type );
+        return ( USER_PARAM_TYPE_ERR );
+    }
+
+    if ( strcmp( accessLevel->type, STR_MS_T ) == 0 ) {
+        acl = ( char * ) accessLevel->inOutStruct;
+    }
+    else {
+        rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
+                            "msiSetACL: Unsupported input accessLevel type %s",
+                            accessLevel->type );
+        return ( USER_PARAM_TYPE_ERR );
+    }
+
+    if ( strcmp( userName->type, STR_MS_T ) == 0 ) {
+        user = ( char * ) userName->inOutStruct;
+    }
+    else {
+        rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
+                            "msiSetACL: Unsupported input userName type %s",
+                            userName->type );
+        return ( USER_PARAM_TYPE_ERR );
+    }
+
+    if ( strcmp( pathName->type, STR_MS_T ) == 0 ) {
+        path = ( char * ) pathName->inOutStruct;
+    }
+    else {
+        rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
+                            "msiSetACL: Unsupported input pathName type %s",
+                            pathName->type );
+        return ( USER_PARAM_TYPE_ERR );
+    }
+
+    rsComm = rei->rsComm;
+    modAccessControlInp.recursiveFlag = recFlg;
+    modAccessControlInp.accessLevel = acl;
+    if ( strchr( user, '#' ) == NULL ) {
+        modAccessControlInp.userName = user;
+        modAccessControlInp.zone = rei->uoic->rodsZone;
+    }
+    else {
+        zone = strchr( user, '#' ) + 1;
+        memset( uname, '\0', NAME_LEN );
+        strncpy( uname, user, strlen( user ) - strlen( zone ) - 1 );
+        modAccessControlInp.userName = uname;
+        modAccessControlInp.zone = zone;
+    }
+    modAccessControlInp.path = path;
+    rc = rsModAccessControl( rsComm, &modAccessControlInp );
+    if ( rc < 0 ) {
+        rodsLog( LOG_NOTICE, "msiSetACL: ACL modifications has failed for user %s on object %s, error = %i\n", user, path, rc );
+    }
+
+    return ( rc );
 }
 
 /**
@@ -1022,7 +1029,7 @@ int msiSetACL (msParam_t *recursiveFlag, msParam_t *accessLevel, msParam_t *user
  * \date    April 13, 2010
  *
  * \note See 'iadmin help rum'.  Do not call this directly.
- * 
+ *
  * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
@@ -1042,25 +1049,25 @@ int msiSetACL (msParam_t *recursiveFlag, msParam_t *accessLevel, msParam_t *user
  * \sa none
 **/
 int
-msiDeleteUnusedAVUs(ruleExecInfo_t *rei)
-{
-   int status;
+msiDeleteUnusedAVUs( ruleExecInfo_t *rei ) {
+    int status;
 
-  /**** This is Just a Test Stub  ****/
-  if (reTestFlag > 0 ) {
-    if (reTestFlag == LOG_TEST_1) {
-      rodsLog (LOG_NOTICE,"   Calling msiDeleteUnusedAVUs\n");
+    /**** This is Just a Test Stub  ****/
+    if ( reTestFlag > 0 ) {
+        if ( reTestFlag == LOG_TEST_1 ) {
+            rodsLog( LOG_NOTICE, "   Calling msiDeleteUnusedAVUs\n" );
+        }
+        if ( reLoopBackFlag > 0 ) {
+            return( 0 );
+        }
     }
-    if (reLoopBackFlag > 0)
-      return(0);
-  }
-  /**** This is Just a Test Stub  ****/
+    /**** This is Just a Test Stub  ****/
 
 #ifdef RODS_CAT
-   rodsLog(LOG_NOTICE, "msiDeleteUnusedAVUs/chlDelUnusedAVUs called\n");
-   status = chlDelUnusedAVUs(rei->rsComm);
+    rodsLog( LOG_NOTICE, "msiDeleteUnusedAVUs/chlDelUnusedAVUs called\n" );
+    status = chlDelUnusedAVUs( rei->rsComm );
 #else
-   status =  SYS_NO_RCAT_SERVER_ERR;
+    status =  SYS_NO_RCAT_SERVER_ERR;
 #endif
-   return(status);
+    return( status );
 }

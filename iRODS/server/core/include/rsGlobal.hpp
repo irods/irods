@@ -8,7 +8,7 @@
 #ifndef RS_GLOBAL_HPP
 #define RS_GLOBAL_HPP
 
-#include "apiTable.hpp"   /* contains global RsApiTable */ 
+#include "apiTable.hpp"   /* contains global RsApiTable */
 #include "initServer.hpp"
 #include "fileOpr.hpp"
 #include "dataObjOpr.hpp"

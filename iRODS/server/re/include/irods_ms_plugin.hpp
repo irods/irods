@@ -21,18 +21,18 @@ namespace irods {
     // =-=-=-=-=-=-=-
     /**
      * \class ms_table_entry - holds fcn call name, number of args for fcn and fcn pointer
-     * \author Jason M. Coposky 
+     * \author Jason M. Coposky
      * \date   June 2012
-     * \brief  This is to be used by a microservice developer to provide a dynamic plugin 
-               to the microservice table found in server/re/include/reActions.h.  
-               Reference server/re/src/rules.c for loading and 
+     * \brief  This is to be used by a microservice developer to provide a dynamic plugin
+               to the microservice table found in server/re/include/reActions.h.
+               Reference server/re/src/rules.c for loading and
                server/re/src/arithemetic.c for invokation.
-     * 
+     *
      **/
     class ms_table_entry : public plugin_base {
     public:
-		 
-        typedef int (*ms_func_ptr)( ... ); 
+
+        typedef int ( *ms_func_ptr )( ... );
 
         // =-=-=-=-=-=-=-
         // Attributes
@@ -42,22 +42,22 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // Constructors
         ms_table_entry( );
-        
+
         // =-=-=-=-=-=-=-
         // NOTE :: this ctor should be called by plugin authors
-        ms_table_entry( 
+        ms_table_entry(
             int ); // num ms args
-                        
+
         // =-=-=-=-=-=-=-
-        // NOTE :: called internally for static plugins 
-        ms_table_entry( 
+        // NOTE :: called internally for static plugins
+        ms_table_entry(
             const std::string&,  // ms name
-            int,                 // num ms args     
+            int,                 // num ms args
             ms_func_ptr );       // function pointer
 
         // =-=-=-=-=-=-=-
         // copy ctor
-        ms_table_entry( const ms_table_entry& _rhs ); 
+        ms_table_entry( const ms_table_entry& _rhs );
 
         // =-=-=-=-=-=-=-
         // Assignment Operator - necessary for stl containers
@@ -75,8 +75,8 @@ namespace irods {
 
     // =-=-=-=-=-=-=-
     // create a lookup table for ms_table_entry value type
-    typedef lookup_table<ms_table_entry*> ms_table;	
-	
+    typedef lookup_table<ms_table_entry*> ms_table;
+
     // =-=-=-=-=-=-=-
     // given the name of a microservice, try to load the shared object
     // and then register that ms with the table

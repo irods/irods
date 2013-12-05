@@ -5,7 +5,7 @@
 
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code.  */ 
+/* This is script-generated code.  */
 /* See ncOpen.h for a description of this API call.*/
 
 #include "ncOpen.hpp"
@@ -58,28 +58,26 @@
 **/
 
 int
-rcNcOpen (rcComm_t *conn, ncOpenInp_t *ncOpenInp, int *ncid)
-{
+rcNcOpen( rcComm_t *conn, ncOpenInp_t *ncOpenInp, int *ncid ) {
     int status;
     int *myncid = NULL;
 
-    status = procApiRequest (conn, NC_OPEN_AN,  ncOpenInp, NULL,
-        (void **) &myncid, NULL);
+    status = procApiRequest( conn, NC_OPEN_AN,  ncOpenInp, NULL,
+                             ( void ** ) &myncid, NULL );
 
-    if (myncid != NULL) {
-	*ncid = *myncid;
-	free (myncid);
+    if ( myncid != NULL ) {
+        *ncid = *myncid;
+        free( myncid );
     }
-    return (status);
+    return ( status );
 }
 
 int
-_rcNcOpen (rcComm_t *conn, ncOpenInp_t *ncOpenInp, int **ncid)
-{
+_rcNcOpen( rcComm_t *conn, ncOpenInp_t *ncOpenInp, int **ncid ) {
     int status;
-    status = procApiRequest (conn, NC_OPEN_AN,  ncOpenInp, NULL, 
-        (void **) ncid, NULL);
+    status = procApiRequest( conn, NC_OPEN_AN,  ncOpenInp, NULL,
+                             ( void ** ) ncid, NULL );
 
-    return (status);
+    return ( status );
 }
 

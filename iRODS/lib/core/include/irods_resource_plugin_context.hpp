@@ -19,12 +19,12 @@ namespace irods {
     //        without the need to rewrite plugin interfaces as well as
     //        pass along references rather than pointers
     class resource_plugin_context : public plugin_context {
-        public:
+    public:
         // =-=-=-=-=-=-=-
         // ctor
-        resource_plugin_context( 
-            plugin_property_map&    _prop_map,  
-            first_class_object_ptr  _fco,       
+        resource_plugin_context(
+            plugin_property_map&    _prop_map,
+            first_class_object_ptr  _fco,
             const std::string&      _results,
             rsComm_t*              _comm,
             resource_child_map&    _child_map )  :
@@ -33,18 +33,18 @@ namespace irods {
                             _results ),
             comm_( _comm ),
             child_map_( _child_map ) {
-        
+
         } // ctor
 
         // =-=-=-=-=-=-=-
         // test to determine if contents are valid
-        virtual error valid() { 
+        virtual error valid() {
             // =-=-=-=-=-=-=
             // trap case of bad comm pointer
-            if( 0 == comm_  ) {
+            if ( 0 == comm_ ) {
                 return ERROR( SYS_INVALID_INPUT_PARAM, "bad comm pointer" );
             }
- 
+
             return SUCCESS();
 
         } // valid
@@ -52,7 +52,7 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // test to determine if contents are valid
         template < typename OBJ_TYPE >
-        error valid() { 
+        error valid() {
             // =-=-=-=-=-=-=
             // trap case of non type related checks
             error ret = valid();
@@ -61,7 +61,8 @@ namespace irods {
             // trap case of incorrect type for first class object
             try {
                 boost::shared_ptr< OBJ_TYPE > ref = boost::dynamic_pointer_cast< OBJ_TYPE >( fco_ );
-            } catch( std::bad_cast exp ) {
+            }
+            catch ( std::bad_cast exp ) {
                 ret = PASSMSG( "invalid type for fco cast", ret );
             }
 
@@ -71,10 +72,10 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // accessors
-        virtual rsComm_t*            comm()      { return comm_;      } 
+        virtual rsComm_t*            comm()      { return comm_;      }
         virtual resource_child_map&  child_map() { return child_map_; }
-        
-        protected:
+
+    protected:
         // =-=-=-=-=-=-=-
         // attributes
         rsComm_t*             comm_;      // server side comm context

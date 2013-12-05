@@ -8,17 +8,16 @@
 #include "md5.hpp"
 
 namespace irods {
-    
-    class MD5Strategy : public HashStrategy
-    {
-    public:
-        MD5Strategy(void);
-        virtual ~MD5Strategy(void);
 
-        virtual std::string name(void) const { return _name; }
-        virtual unsigned int init(void);
-        virtual unsigned int update(char const* data, unsigned int size);
-        virtual unsigned int digest(std::string& messageDigest);
+    class MD5Strategy : public HashStrategy {
+    public:
+        MD5Strategy( void );
+        virtual ~MD5Strategy( void );
+
+        virtual std::string name( void ) const { return _name; }
+        virtual unsigned int init( void );
+        virtual unsigned int update( char const* data, unsigned int size );
+        virtual unsigned int digest( std::string& messageDigest );
 
     private:
         static std::string _name;

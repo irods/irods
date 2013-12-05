@@ -9,10 +9,10 @@ namespace irods {
     // =-=-=-=-=-=-=-
     // public - ctor
     data_object::data_object() :
-        physical_path_(""),
-        resc_hier_(""),
-        mode_(0),
-        flags_(0) {
+        physical_path_( "" ),
+        resc_hier_( "" ),
+        mode_( 0 ),
+        flags_( 0 ) {
     } // ctor
 
     // =-=-=-=-=-=-=-
@@ -30,7 +30,7 @@ namespace irods {
 
     // =-=-=-=-=-=-=-
     // public - cctor
-    data_object::data_object( 
+    data_object::data_object(
         const data_object& _rhs ) {
         physical_path_ = _rhs.physical_path_;
         resc_hier_     = _rhs.resc_hier_;
@@ -46,7 +46,7 @@ namespace irods {
 
     // =-=-=-=-=-=-=-
     // public - assignment operator
-    data_object& data_object::operator=( 
+    data_object& data_object::operator=(
         const data_object& _rhs ) {
         physical_path_ = _rhs.physical_path_;
         resc_hier_     = _rhs.resc_hier_;
@@ -58,7 +58,7 @@ namespace irods {
 
     // =-=-=-=-=-=-=-
     // public - copy attributes to irods kvp
-    error data_object::get_re_vars( 
+    error data_object::get_re_vars(
         keyValPair_t& _kvp ) {
 
         addKeyVal( &_kvp, PHYSICAL_PATH_KW, physical_path_.c_str() );

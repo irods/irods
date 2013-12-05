@@ -30,11 +30,11 @@ struct authPluginReqOut_t {
 // =-=-=-=-=-=-=-
 // prototype for server
 #if defined(RODS_SERVER)
-    #define RS_AUTH_PLUG_REQ rsAuthPluginRequest
-    int rsAuthPluginRequest(
-        rsComm_t*,              // server comm ptr
-        authPluginReqInp_t*,    // incoming struct with scheme
-        authPluginReqOut_t** ); // response from agent
+#define RS_AUTH_PLUG_REQ rsAuthPluginRequest
+int rsAuthPluginRequest(
+    rsComm_t*,              // server comm ptr
+    authPluginReqInp_t*,    // incoming struct with scheme
+    authPluginReqOut_t** ); // response from agent
 #else
 #define RS_AUTH_PLUG_REQ NULL
 #endif

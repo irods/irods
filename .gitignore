@@ -16,6 +16,7 @@ iRODS/lib/core/include/irods_resources_home.hpp
 iRODS/server/config/server.config
 iRODS/server/re/include/reAction.hpp
 packaging/irods.list
+packaging/irods-docs.list
 packaging/irods-dev.list
 packaging/irods-icommands.list
 plugins/auth/*/.deps

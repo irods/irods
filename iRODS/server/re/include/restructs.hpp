@@ -209,8 +209,8 @@ typedef struct condIndexVal {
 typedef struct ruleIndexListNode {
     struct ruleIndexListNode *next, *prev;
     int secondaryIndex;
-	int ruleIndex;
-	CondIndexVal *condIndex;
+    int ruleIndex;
+    CondIndexVal *condIndex;
 } RuleIndexListNode;
 
 typedef struct ruleIndexList {
@@ -225,7 +225,7 @@ struct env {
     Env *lower;
 };
 
-typedef Res *(SmsiFuncType)(Node **, int, Node *, ruleExecInfo_t *, int, Env *, rError_t *, Region *);
+typedef Res *( SmsiFuncType )( Node **, int, Node *, ruleExecInfo_t *, int, Env *, rError_t *, Region * );
 typedef SmsiFuncType *SmsiFuncTypePtr;
 
 
@@ -253,7 +253,7 @@ struct node {
     rodsLong_t lval;
     RuleIndexList *ruleIndexList;
     SmsiFuncTypePtr func;
-	msParam_t *param;
+    msParam_t *param;
 };
 
 typedef enum ruleType {
@@ -276,9 +276,9 @@ typedef struct {
 typedef RuleDesc *RuleDescPtr;
 
 typedef struct ruleSet {
-	int len;
-	RuleDesc* rules[MAX_NUM_RULES];
-	/* Region *region; */
+    int len;
+    RuleDesc* rules[MAX_NUM_RULES];
+    /* Region *region; */
 } RuleSet;
 
 typedef struct label {
@@ -288,92 +288,92 @@ typedef struct label {
 
 typedef struct token {
     NodeType type;
-    char text[MAX_TOKEN_TEXT_LEN+1];
+    char text[MAX_TOKEN_TEXT_LEN + 1];
     int vars[100];
     long exprloc;
 } Token;
 
 /* rule engine events */
 typedef enum ruleEngineEvent {
-	EXEC_RULE_BEGIN, /* execute a rule */
-	EXEC_ACTION_BEGIN, /* execute an action */
-	EXEC_MICRO_SERVICE_BEGIN, /* execute a microservice */
-	EXEC_RULE_END, /* execute a rule */
-	EXEC_ACTION_END, /* execute an action */
-	EXEC_MICRO_SERVICE_END, /* execute a microservice */
-	GOT_RULE, /* got a rule from rule index */
-	APPLY_RULE_BEGIN, /* apply a rule */
-	APPLY_RULE_END, /* apply a rule */
-	APPLY_ALL_RULES_BEGIN, /* apply all rules */
-	APPLY_ALL_RULES_END, /* apply all rules */
-	EXEC_MY_RULE_BEGIN, /* execute user submitted rule */
-	EXEC_MY_RULE_END /* execute user submitted rule */
+    EXEC_RULE_BEGIN, /* execute a rule */
+    EXEC_ACTION_BEGIN, /* execute an action */
+    EXEC_MICRO_SERVICE_BEGIN, /* execute a microservice */
+    EXEC_RULE_END, /* execute a rule */
+    EXEC_ACTION_END, /* execute an action */
+    EXEC_MICRO_SERVICE_END, /* execute a microservice */
+    GOT_RULE, /* got a rule from rule index */
+    APPLY_RULE_BEGIN, /* apply a rule */
+    APPLY_RULE_END, /* apply a rule */
+    APPLY_ALL_RULES_BEGIN, /* apply all rules */
+    APPLY_ALL_RULES_END, /* apply all rules */
+    EXEC_MY_RULE_BEGIN, /* execute user submitted rule */
+    EXEC_MY_RULE_END /* execute user submitted rule */
 } RuleEngineEvent;
 
 typedef struct ruleEngineEventParam {
-	int ruleIndex;
-	char *actionName;
+    int ruleIndex;
+    char *actionName;
 } RuleEngineEventParam;
 
-Node *newNode(NodeType type, char* text, Label * exprloc, Region *r);
-Node *newExprType(NodeType t, int degree, Node **subtrees, Region *r);
-ExprType *newTVar(Region *r);
-ExprType *newTVar2(int numDisjuncts, Node **disjuncts, Region *r);
-ExprType *newCollType(ExprType *elemType, Region *r);
-ExprType *newTupleType(int arity, ExprType **typeArgs, Region *r);
-ExprType *newUnaryType(NodeType nodeType, ExprType *typeArg, Region *r);
-ExprType *newFuncType(ExprType *paramType, ExprType *retType, Region *r);
-ExprType *newFuncTypeVarArg(int arity, int vararg, ExprType **paramTypes, ExprType *elemType, Region *r);
-ExprType *newConsType(int arity, char *cons, ExprType **paramTypes, Region *r);
-ExprType *newTupleTypeVarArg(int arity, int vararg, ExprType **paramTypes, Region *r);
-ExprType *newSimpType(NodeType t, Region *r);
-ExprType *newErrorType(int errcode, Region *r);
-ExprType *newIRODSType(char *name, Region *r);
-ExprType *newFlexKind(int arity, ExprType **typeArgs, Region *r);
-FunctionDesc *newFuncSymLink(char *fn , int nArgs, Region *r);
-Node *newPartialApplication(Node *func, Node *arg, int nArgsLeft, Region *r);
+Node *newNode( NodeType type, char* text, Label * exprloc, Region *r );
+Node *newExprType( NodeType t, int degree, Node **subtrees, Region *r );
+ExprType *newTVar( Region *r );
+ExprType *newTVar2( int numDisjuncts, Node **disjuncts, Region *r );
+ExprType *newCollType( ExprType *elemType, Region *r );
+ExprType *newTupleType( int arity, ExprType **typeArgs, Region *r );
+ExprType *newUnaryType( NodeType nodeType, ExprType *typeArg, Region *r );
+ExprType *newFuncType( ExprType *paramType, ExprType *retType, Region *r );
+ExprType *newFuncTypeVarArg( int arity, int vararg, ExprType **paramTypes, ExprType *elemType, Region *r );
+ExprType *newConsType( int arity, char *cons, ExprType **paramTypes, Region *r );
+ExprType *newTupleTypeVarArg( int arity, int vararg, ExprType **paramTypes, Region *r );
+ExprType *newSimpType( NodeType t, Region *r );
+ExprType *newErrorType( int errcode, Region *r );
+ExprType *newIRODSType( char *name, Region *r );
+ExprType *newFlexKind( int arity, ExprType **typeArgs, Region *r );
+FunctionDesc *newFuncSymLink( char *fn , int nArgs, Region *r );
+Node *newPartialApplication( Node *func, Node *arg, int nArgsLeft, Region *r );
 
 /** Res functions */
-Res* newRes(Region *r);
-Res* newIntRes(Region *r, int n);
-Res* newDoubleRes(Region *r, double a);
-Res* newBoolRes(Region *r, int n);
-Res* newErrorRes(Region *r, int errcode);
-Res* newUnspecifiedRes(Region *r);
-Res* newStringRes(Region *r, char *s);
-Res* newPathRes(Region *r, char *s);
-Res* newDatetimeRes(Region *r, long dt);
-Res* newCollRes(int size, ExprType *elemType, Region *r);
-Res* newUninterpretedRes(Region *r, char *typeName, void *ioStruct, bytesBuf_t *ioBuf);
-Res* newTupleRes(int arity, Res **compTypes, Region *r);
-msParam_t *newMsParam(char *typeName, void *ioStruct, bytesBuf_t *ioBuf, Region *r);
+Res* newRes( Region *r );
+Res* newIntRes( Region *r, int n );
+Res* newDoubleRes( Region *r, double a );
+Res* newBoolRes( Region *r, int n );
+Res* newErrorRes( Region *r, int errcode );
+Res* newUnspecifiedRes( Region *r );
+Res* newStringRes( Region *r, char *s );
+Res* newPathRes( Region *r, char *s );
+Res* newDatetimeRes( Region *r, long dt );
+Res* newCollRes( int size, ExprType *elemType, Region *r );
+Res* newUninterpretedRes( Region *r, char *typeName, void *ioStruct, bytesBuf_t *ioBuf );
+Res* newTupleRes( int arity, Res **compTypes, Region *r );
+msParam_t *newMsParam( char *typeName, void *ioStruct, bytesBuf_t *ioBuf, Region *r );
 
-Env *newEnv(Hashtable *current, Env *previous, Env *lower, Region *r);
+Env *newEnv( Hashtable *current, Env *previous, Env *lower, Region *r );
 /* void deleteEnv(Env *env, int deleteCurrent); */
 msParamArray_t *newMsParamArray();
-void deleteMsParamArray(msParamArray_t *msParamArray);
+void deleteMsParamArray( msParamArray_t *msParamArray );
 
-TypingConstraint *newTypingConstraint(ExprType *a, ExprType *b, NodeType type, Node *node, Region *r);
+TypingConstraint *newTypingConstraint( ExprType *a, ExprType *b, NodeType type, Node *node, Region *r );
 
-FunctionDesc *newFunctionFD(char* type, SmsiFuncTypePtr func, Region *r);
-FunctionDesc *newConstructorFD(char* type, Region *r);
-FunctionDesc *newExternalFD(Node* type, Region *r);
-FunctionDesc *newConstructorFD2(Node* type, Region *r);
-FunctionDesc *newDeconstructorFD(char *type, int proj, Region *r);
-FunctionDesc *newRuleIndexListFD(RuleIndexList *ruleIndexList, ExprType *, Region *r);
+FunctionDesc *newFunctionFD( char* type, SmsiFuncTypePtr func, Region *r );
+FunctionDesc *newConstructorFD( char* type, Region *r );
+FunctionDesc *newExternalFD( Node* type, Region *r );
+FunctionDesc *newConstructorFD2( Node* type, Region *r );
+FunctionDesc *newDeconstructorFD( char *type, int proj, Region *r );
+FunctionDesc *newRuleIndexListFD( RuleIndexList *ruleIndexList, ExprType *, Region *r );
 
-void setBase(Node *node, char *base, Region *r);
-Node **setDegree(Node *node, int d, Region *r);
-Node *createUnaryFunctionNode(char *fn, Node *a, Label * exprloc, Region *r);
-Node *createBinaryFunctionNode(char *fn, Node *a, Node *b, Label * exprloc, Region *r);
-Node *createFunctionNode(char *fn, Node **params, int paramsLen, Label * exprloc, Region *r);
-Node *createActionsNode(Node **params, int paramsLen, Label * exprloc, Region *r);
-Node *createTextNode(char *t, Label * exprloc, Region *r);
-Node *createNumberNode(char *t, Label * exprloc, Region *r);
-Node *createStringNode(char *t, Label * exprloc, Region *r);
-Node *createErrorNode(char *error, Label * exprloc, Region *r);
+void setBase( Node *node, char *base, Region *r );
+Node **setDegree( Node *node, int d, Region *r );
+Node *createUnaryFunctionNode( char *fn, Node *a, Label * exprloc, Region *r );
+Node *createBinaryFunctionNode( char *fn, Node *a, Node *b, Label * exprloc, Region *r );
+Node *createFunctionNode( char *fn, Node **params, int paramsLen, Label * exprloc, Region *r );
+Node *createActionsNode( Node **params, int paramsLen, Label * exprloc, Region *r );
+Node *createTextNode( char *t, Label * exprloc, Region *r );
+Node *createNumberNode( char *t, Label * exprloc, Region *r );
+Node *createStringNode( char *t, Label * exprloc, Region *r );
+Node *createErrorNode( char *error, Label * exprloc, Region *r );
 
-RuleSet *newRuleSet(Region *r);
-RuleDesc *newRuleDesc(RuleType rk, Node *n, int dynamictyping, Region *r);
+RuleSet *newRuleSet( Region *r );
+RuleDesc *newRuleDesc( RuleType rk, Node *n, int dynamictyping, Region *r );
 
 #endif

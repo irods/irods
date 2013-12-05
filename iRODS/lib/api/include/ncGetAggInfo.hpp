@@ -25,16 +25,16 @@
 #define NC_AGG_INFO_FILE_NAME	".aggInfo"
 
 /* data struct for aggregation of netcdf files. Our first attempt assumes
- * the aggregation is based on the time dimension - time series */ 
+ * the aggregation is based on the time dimension - time series */
 
 typedef struct {
     int numFiles;
     int flags;		/* not used */
     char ncObjectName[MAX_NAME_LEN];
-    ncAggElement_t *ncAggElement;	/* pointer to numFiles of 
+    ncAggElement_t *ncAggElement;	/* pointer to numFiles of
                                          * ncAggElement_t */
 } ncAggInfo_t;
-    
+
 #define NcAggInfo_PI "int numFiles; int flags; str  ncObjectName[MAX_NAME_LEN]; struct *NcAggElement_PI(numFiles);"
 
 typedef struct {
@@ -50,11 +50,11 @@ typedef struct {
 #define RS_NC_GET_AGG_INFO rsNcGetAggInfo
 /* prototype for the server handler */
 int
-rsNcGetAggInfo (rsComm_t *rsComm, ncOpenInp_t *ncOpenInp, 
-ncAggInfo_t **ncAggInfo);
+rsNcGetAggInfo( rsComm_t *rsComm, ncOpenInp_t *ncOpenInp,
+                ncAggInfo_t **ncAggInfo );
 int
-readAggInfo (rsComm_t *rsComm, char *aggColl, keyValPair_t *condInput,
-ncAggInfo_t **ncAggInfo);
+readAggInfo( rsComm_t *rsComm, char *aggColl, keyValPair_t *condInput,
+             ncAggInfo_t **ncAggInfo );
 #else
 #define RS_NC_GET_AGG_INFO NULL
 #endif
@@ -63,33 +63,33 @@ ncAggInfo_t **ncAggInfo);
 extern "C" {
 #endif
 
-/* rcNcGetAgInfo - get the ncAggInfo of a NETCDF file
- * Input - 
- *   rcComm_t *conn - The client connection handle.
- *   ncOpenInp_t *ncOpenInp - generic nc open/create input. Relevant items are:
- *	objPath - the path of the NETCDF aggregate collection.
- *      mode - NC_WRITE - write the ncAggInfo to a file named ncAggInfo.
- *	condInput - condition input (not used).
- * OutPut - 
- *   ncAggInfo_t **ncAggInfo - the ncAggInfo of the NETCDF data object.
- */
+    /* rcNcGetAgInfo - get the ncAggInfo of a NETCDF file
+     * Input -
+     *   rcComm_t *conn - The client connection handle.
+     *   ncOpenInp_t *ncOpenInp - generic nc open/create input. Relevant items are:
+     *	objPath - the path of the NETCDF aggregate collection.
+     *      mode - NC_WRITE - write the ncAggInfo to a file named ncAggInfo.
+     *	condInput - condition input (not used).
+     * OutPut -
+     *   ncAggInfo_t **ncAggInfo - the ncAggInfo of the NETCDF data object.
+     */
 
-/* prototype for the client call */
-int
-rcNcGetAggInfo (rcComm_t *conn, ncOpenInp_t *ncOpenInp, 
-ncAggInfo_t **ncAggInfo);
+    /* prototype for the client call */
+    int
+    rcNcGetAggInfo( rcComm_t *conn, ncOpenInp_t *ncOpenInp,
+                    ncAggInfo_t **ncAggInfo );
 
-int
-addNcAggElement (ncAggElement_t *ncAggElement, ncAggInfo_t *ncAggInfo);
-rodsLong_t
-sumAggElementArraylen (ncAggInfo_t *ncAggInfo, int aggElemetInx);
-int
-freeAggInfo (ncAggInfo_t **ncAggInfo);
-int
-getAggBasePath (char *aggCollection, char *basePath);
-int
-getNextAggEleObjPath (ncAggInfo_t *ncAggInfo, char *aggCollection,
-char *nextObjPath);
+    int
+    addNcAggElement( ncAggElement_t *ncAggElement, ncAggInfo_t *ncAggInfo );
+    rodsLong_t
+    sumAggElementArraylen( ncAggInfo_t *ncAggInfo, int aggElemetInx );
+    int
+    freeAggInfo( ncAggInfo_t **ncAggInfo );
+    int
+    getAggBasePath( char *aggCollection, char *basePath );
+    int
+    getNextAggEleObjPath( ncAggInfo_t *ncAggInfo, char *aggCollection,
+                          char *nextObjPath );
 #ifdef  __cplusplus
 }
 #endif

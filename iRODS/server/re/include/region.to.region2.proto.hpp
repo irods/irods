@@ -4,7 +4,7 @@
 #ifndef REGION_TO_REGION2_PROTO_HPP
 #define REGION_TO_REGION2_PROTO_HPP
 
-typedef void *(RegionRegion2CopyFuncType)(void *, Region *, Region *);
+typedef void *( RegionRegion2CopyFuncType )( void *, Region *, Region * );
 
 #endif
 

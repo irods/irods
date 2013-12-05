@@ -3,7 +3,7 @@
  *
  */
 
-/* This is script-generated code.  */ 
+/* This is script-generated code.  */
 /* See nccfGetVara.h for a description of this API call.*/
 
 #include "nccfGetVara.hpp"
@@ -13,7 +13,7 @@
  *
  * \brief libcf subsetting function. libcf function nccf_get_vara is called
  *         on the server. The iRODS software must be built with LIB_CF enabled
- *         (the line LIB_CF uncommented in config.mk). 
+ *         (the line LIB_CF uncommented in config.mk).
  *
  * \user client
  *
@@ -54,7 +54,7 @@
  * \n if (status < 0) {
  * \n .... handle the error
  * \n }
- * \n // pressure subset 
+ * \n // pressure subset
  * \n bzero (&nccfGetVarInp, sizeof (nccfGetVarInp));
  * \n nccfGetVarInp.ncid = ncid;
  * \n nccfGetVarInp.varid = ncInqOut->var->id;
@@ -97,29 +97,27 @@
 **/
 
 int
-rcNccfGetVara (rcComm_t *conn,   nccfGetVarInp_t *nccfGetVarInp, 
- nccfGetVarOut_t ** nccfGetVarOut)
-{
+rcNccfGetVara( rcComm_t *conn,   nccfGetVarInp_t *nccfGetVarInp,
+               nccfGetVarOut_t ** nccfGetVarOut ) {
     int status;
-    status = procApiRequest (conn, NCCF_GET_VARA_AN, nccfGetVarInp, NULL, 
-        (void **) nccfGetVarOut, NULL);
+    status = procApiRequest( conn, NCCF_GET_VARA_AN, nccfGetVarInp, NULL,
+                             ( void ** ) nccfGetVarOut, NULL );
 
-    return (status);
+    return ( status );
 }
 
 int
-freeNccfGetVarOut (nccfGetVarOut_t **nccfGetVarOut)
-{
-    if (nccfGetVarOut == NULL || *nccfGetVarOut == NULL) return
-      USER__NULL_INPUT_ERR;
+freeNccfGetVarOut( nccfGetVarOut_t **nccfGetVarOut ) {
+    if ( nccfGetVarOut == NULL || *nccfGetVarOut == NULL ) return
+            USER__NULL_INPUT_ERR;
 
-    if ((*nccfGetVarOut)->dataArray != NULL) {
-        if ((*nccfGetVarOut)->dataArray->buf != NULL) {
-            free ((*nccfGetVarOut)->dataArray->buf);
+    if ( ( *nccfGetVarOut )->dataArray != NULL ) {
+        if ( ( *nccfGetVarOut )->dataArray->buf != NULL ) {
+            free( ( *nccfGetVarOut )->dataArray->buf );
         }
-        free ((*nccfGetVarOut)->dataArray);
+        free( ( *nccfGetVarOut )->dataArray );
     }
-    free (*nccfGetVarOut);
+    free( *nccfGetVarOut );
     *nccfGetVarOut = NULL;
     return 0;
 }

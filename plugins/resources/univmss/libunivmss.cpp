@@ -36,15 +36,15 @@
 /// @brief Check the general parameters passed in to most plugin functions
 template< typename DEST_TYPE >
 inline irods::error univ_mss_check_param(
-    irods::resource_plugin_context& _ctx ) { 
+    irods::resource_plugin_context& _ctx ) {
     // =-=-=-=-=-=-=-
     // ask the context if it is valid
     irods::error ret = _ctx.valid< DEST_TYPE >();
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         return PASSMSG( "resource context is invalid", ret );
 
     }
-   
+
     return SUCCESS();
 
 } // univ_mss_check_param
@@ -61,71 +61,71 @@ extern "C" {
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX create
-    irods::error univ_mss_file_create( 
-        irods::resource_plugin_context& _ctx ) { 
+    irods::error univ_mss_file_create(
+        irods::resource_plugin_context& _ctx ) {
         return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
-   
+
     } // univ_mss_file_create
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Open
-    irods::error univ_mss_file_open( 
-        irods::resource_plugin_context& _ctx ) { 
+    irods::error univ_mss_file_open(
+        irods::resource_plugin_context& _ctx ) {
         return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
- 
+
     } // univ_mss_file_open
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX Read
     irods::error univ_mss_file_read(
         irods::resource_plugin_context& _ctx,
-        void*                               _buf, 
+        void*                               _buf,
         int                                 _len ) {
         return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
- 
+
     } // univ_mss_file_read
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX Write
-    irods::error univ_mss_file_write( 
+    irods::error univ_mss_file_write(
         irods::resource_plugin_context& _ctx,
-        void*                               _buf, 
+        void*                               _buf,
         int                                 _len ) {
         return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
- 
+
     } // univ_mss_file_write
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX Close
     irods::error univ_mss_file_close(
-        irods::resource_plugin_context& _ctx ) { 
+        irods::resource_plugin_context& _ctx ) {
         return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
- 
+
     } // univ_mss_file_close
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX Unlink
     irods::error univ_mss_file_unlink(
-        irods::resource_plugin_context& _ctx ) { 
+        irods::resource_plugin_context& _ctx ) {
         // =-=-=-=-=-=-=-
         // check context
         irods::error err = univ_mss_check_param< irods::data_object >( _ctx );
-        if( !err.ok() ) {
+        if ( !err.ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - invalid context";
             return PASSMSG( msg.str(), err );
 
         }
- 
+
         // =-=-=-=-=-=-=-
         // get the script property
         std::string script;
         err = _ctx.prop_map().get< std::string >( SCRIPT_PROP, script );
-        if( !err.ok() ) {
+        if ( !err.ok() ) {
             return PASSMSG( __FUNCTION__, err );
         }
-        
+
         // =-=-=-=-=-=-=-
         // snag a ref to the fco
         irods::data_object_ptr fco = boost::dynamic_pointer_cast< irods::data_object >( _ctx.fco() );
@@ -135,18 +135,18 @@ extern "C" {
         execCmd_t execCmdInp;
         char cmdArgv[HUGE_NAME_LEN] = "";
         execCmdOut_t *execCmdOut = NULL;
-        
-        bzero (&execCmdInp, sizeof (execCmdInp));
-        rstrcpy(execCmdInp.cmd, script.c_str(), LONG_NAME_LEN);
-        strcat(cmdArgv, "rm");
-        strcat(cmdArgv, " '");
-        strcat(cmdArgv, filename.c_str());
-        strcat(cmdArgv, "'");
-        rstrcpy(execCmdInp.cmdArgv, cmdArgv, HUGE_NAME_LEN);
-        rstrcpy(execCmdInp.execAddr, "localhost", LONG_NAME_LEN);
-        status = _rsExecCmd( _ctx.comm(), &execCmdInp, &execCmdOut);
 
-        if (status < 0) {
+        bzero( &execCmdInp, sizeof( execCmdInp ) );
+        rstrcpy( execCmdInp.cmd, script.c_str(), LONG_NAME_LEN );
+        strcat( cmdArgv, "rm" );
+        strcat( cmdArgv, " '" );
+        strcat( cmdArgv, filename.c_str() );
+        strcat( cmdArgv, "'" );
+        rstrcpy( execCmdInp.cmdArgv, cmdArgv, HUGE_NAME_LEN );
+        rstrcpy( execCmdInp.execAddr, "localhost", LONG_NAME_LEN );
+        status = _rsExecCmd( _ctx.comm(), &execCmdInp, &execCmdOut );
+
+        if ( status < 0 ) {
             status = UNIV_MSS_UNLINK_ERR - errno;
             std::stringstream msg;
             msg << "univ_mss_file_unlink - failed for [";
@@ -155,7 +155,7 @@ extern "C" {
             return ERROR( status, msg.str() );
         }
 
-        return CODE(status);
+        return CODE( status );
 
     } // univ_mss_file_unlink
 
@@ -167,22 +167,22 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // check context
         irods::error err = univ_mss_check_param< irods::data_object >( _ctx );
-        if( !err.ok() ) {
+        if ( !err.ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - invalid context";
             return PASSMSG( msg.str(), err );
 
         }
- 
+
         // =-=-=-=-=-=-=-
         // get the script property
         std::string script;
         err = _ctx.prop_map().get< std::string >( SCRIPT_PROP, script );
-        if( !err.ok() ) {
+        if ( !err.ok() ) {
             return PASSMSG( __FUNCTION__, err );
         }
-        
+
         // =-=-=-=-=-=-=-
         // snag a ref to the fco
         irods::data_object_ptr fco = boost::dynamic_pointer_cast< irods::data_object >( _ctx.fco() );
@@ -200,69 +200,69 @@ extern "C" {
         execCmdOut_t *execCmdOut = NULL;
         struct tm mytm;
         time_t myTime;
-        
-        bzero (&execCmdInp, sizeof (execCmdInp));
-        rstrcpy(execCmdInp.cmd, script.c_str(), LONG_NAME_LEN);
-        strcat(cmdArgv, "stat");
-        strcat(cmdArgv, " '");
-        strcat(cmdArgv, filename.c_str());
-        strcat(cmdArgv, "' ");
-        rstrcpy(execCmdInp.cmdArgv, cmdArgv, HUGE_NAME_LEN);
-        rstrcpy(execCmdInp.execAddr, "localhost", LONG_NAME_LEN);
+
+        bzero( &execCmdInp, sizeof( execCmdInp ) );
+        rstrcpy( execCmdInp.cmd, script.c_str(), LONG_NAME_LEN );
+        strcat( cmdArgv, "stat" );
+        strcat( cmdArgv, " '" );
+        strcat( cmdArgv, filename.c_str() );
+        strcat( cmdArgv, "' " );
+        rstrcpy( execCmdInp.cmdArgv, cmdArgv, HUGE_NAME_LEN );
+        rstrcpy( execCmdInp.execAddr, "localhost", LONG_NAME_LEN );
         status = _rsExecCmd( _ctx.comm(), &execCmdInp, &execCmdOut );
-        
-        if (status == 0 && NULL != execCmdOut ) { // JMC cppcheck - nullptr
-            if ( execCmdOut->stdoutBuf.buf != NULL) {
-                outputStr = (char*)execCmdOut->stdoutBuf.buf;
-                memset(&splchain1, 0, sizeof(splchain1));
-                strSplit(outputStr, delim1, splchain1);
-                _statbuf->st_dev = atoi(splchain1[0]);
-                _statbuf->st_ino = atoi(splchain1[1]);
-                _statbuf->st_mode = atoi(splchain1[2]);
-                _statbuf->st_nlink = atoi(splchain1[3]);
-                _statbuf->st_uid = atoi(splchain1[4]);
-                _statbuf->st_gid = atoi(splchain1[5]);
-                _statbuf->st_rdev = atoi(splchain1[6]);
-                _statbuf->st_size = atoll(splchain1[7]);
-                _statbuf->st_blksize = atoi(splchain1[8]);
-                _statbuf->st_blocks = atoi(splchain1[9]);
-                for (i = 0; i < 3; i++) {
-                    memset(&splchain2, 0, sizeof(splchain2));
-                    memset(&splchain3, 0, sizeof(splchain3));
-                    strSplit(splchain1[10+i], delim2, splchain2);
-                    mytm.tm_year = atoi(splchain2[0]) - 1900;
-                    mytm.tm_mon = atoi(splchain2[1]) - 1;
-                    mytm.tm_mday = atoi(splchain2[2]);
-                    strSplit(splchain2[3], delim3, splchain3);
-                    mytm.tm_hour = atoi(splchain3[0]);
-                    mytm.tm_min = atoi(splchain3[1]);
-                    mytm.tm_sec = atoi(splchain3[2]);
-                    myTime = mktime(&mytm);
-                    switch (i) {
-                        case 0:
-                            _statbuf->st_atime = myTime;
-                            break;
-                        case 1:
-                            _statbuf->st_mtime = myTime;
-                            break;
-                        case 2:
-                            _statbuf->st_ctime = myTime;
-                            break;
+
+        if ( status == 0 && NULL != execCmdOut ) { // JMC cppcheck - nullptr
+            if ( execCmdOut->stdoutBuf.buf != NULL ) {
+                outputStr = ( char* )execCmdOut->stdoutBuf.buf;
+                memset( &splchain1, 0, sizeof( splchain1 ) );
+                strSplit( outputStr, delim1, splchain1 );
+                _statbuf->st_dev = atoi( splchain1[0] );
+                _statbuf->st_ino = atoi( splchain1[1] );
+                _statbuf->st_mode = atoi( splchain1[2] );
+                _statbuf->st_nlink = atoi( splchain1[3] );
+                _statbuf->st_uid = atoi( splchain1[4] );
+                _statbuf->st_gid = atoi( splchain1[5] );
+                _statbuf->st_rdev = atoi( splchain1[6] );
+                _statbuf->st_size = atoll( splchain1[7] );
+                _statbuf->st_blksize = atoi( splchain1[8] );
+                _statbuf->st_blocks = atoi( splchain1[9] );
+                for ( i = 0; i < 3; i++ ) {
+                    memset( &splchain2, 0, sizeof( splchain2 ) );
+                    memset( &splchain3, 0, sizeof( splchain3 ) );
+                    strSplit( splchain1[10 + i], delim2, splchain2 );
+                    mytm.tm_year = atoi( splchain2[0] ) - 1900;
+                    mytm.tm_mon = atoi( splchain2[1] ) - 1;
+                    mytm.tm_mday = atoi( splchain2[2] );
+                    strSplit( splchain2[3], delim3, splchain3 );
+                    mytm.tm_hour = atoi( splchain3[0] );
+                    mytm.tm_min = atoi( splchain3[1] );
+                    mytm.tm_sec = atoi( splchain3[2] );
+                    myTime = mktime( &mytm );
+                    switch ( i ) {
+                    case 0:
+                        _statbuf->st_atime = myTime;
+                        break;
+                    case 1:
+                        _statbuf->st_mtime = myTime;
+                        break;
+                    case 2:
+                        _statbuf->st_ctime = myTime;
+                        break;
                     }
                 }
             }
-        } 
+        }
         else {
             status = UNIV_MSS_STAT_ERR - errno;
             std::stringstream msg;
             msg << "univ_mss_file_stat - failed for [";
             msg << filename;
             msg << "]";
-            return ERROR( status, msg.str() ); 
+            return ERROR( status, msg.str() );
 
         }
-     
-        return CODE(status);
+
+        return CODE( status );
 
     } // univ_mss_file_stat
 
@@ -270,100 +270,100 @@ extern "C" {
     /// @brief interface for POSIX lseek
     irods::error univ_mss_file_lseek(
         irods::resource_plugin_context& _ctx,
-        long long                        _offset, 
+        long long                        _offset,
         int                              _whence ) {
         return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
- 
+
     } // univ_mss_file_lseek
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX chmod
     irods::error univ_mss_file_chmod(
-        irods::resource_plugin_context& _ctx ) { 
+        irods::resource_plugin_context& _ctx ) {
         // =-=-=-=-=-=-=-
         // check context
         irods::error err = univ_mss_check_param< irods::data_object >( _ctx );
-        if( !err.ok() ) {
+        if ( !err.ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - invalid context";
             return PASSMSG( msg.str(), err );
 
         }
- 
+
         // =-=-=-=-=-=-=-
         // get the script property
         std::string script;
         err = _ctx.prop_map().get< std::string >( SCRIPT_PROP, script );
-        if( !err.ok() ) {
+        if ( !err.ok() ) {
             return PASSMSG( __FUNCTION__, err );
         }
-        
+
         // =-=-=-=-=-=-=-
         // snag a ref to the fco
         irods::data_object_ptr fco = boost::dynamic_pointer_cast< irods::data_object >( _ctx.fco() );
         std::string filename = fco->physical_path();
 
-        int mode = fco->mode(); 
+        int mode = fco->mode();
         int status = 0;
         execCmd_t execCmdInp;
         char cmdArgv[HUGE_NAME_LEN] = "";
         char strmode[4];
-        execCmdOut_t *execCmdOut = NULL;  
-        
+        execCmdOut_t *execCmdOut = NULL;
+
         if ( mode != getDefDirMode() ) {
             mode = getDefFileMode();
         }
-        
-        bzero (&execCmdInp, sizeof (execCmdInp));
-        rstrcpy(execCmdInp.cmd, script.c_str(), LONG_NAME_LEN);
-        strcat(cmdArgv, "chmod");
-        strcat(cmdArgv, " '");
-        strcat(cmdArgv, filename.c_str());
-        strcat(cmdArgv, "' ");
-        sprintf (strmode, "%o", mode);
-        strcat(cmdArgv, strmode);
-        rstrcpy(execCmdInp.cmdArgv, cmdArgv, HUGE_NAME_LEN);
-        rstrcpy(execCmdInp.execAddr, "localhost", LONG_NAME_LEN);
-        status = _rsExecCmd( _ctx.comm(), &execCmdInp, &execCmdOut);
-        
-        if (status < 0) {
+
+        bzero( &execCmdInp, sizeof( execCmdInp ) );
+        rstrcpy( execCmdInp.cmd, script.c_str(), LONG_NAME_LEN );
+        strcat( cmdArgv, "chmod" );
+        strcat( cmdArgv, " '" );
+        strcat( cmdArgv, filename.c_str() );
+        strcat( cmdArgv, "' " );
+        sprintf( strmode, "%o", mode );
+        strcat( cmdArgv, strmode );
+        rstrcpy( execCmdInp.cmdArgv, cmdArgv, HUGE_NAME_LEN );
+        rstrcpy( execCmdInp.execAddr, "localhost", LONG_NAME_LEN );
+        status = _rsExecCmd( _ctx.comm(), &execCmdInp, &execCmdOut );
+
+        if ( status < 0 ) {
             status = UNIV_MSS_CHMOD_ERR - errno;
             std::stringstream msg;
             msg << "univ_mss_file_chmod - failed for [";
             msg << filename;
             msg << "]";
-            return ERROR( status, msg.str() ); 
+            return ERROR( status, msg.str() );
 
         }
-        
-        return CODE(status);
+
+        return CODE( status );
 
     } // univ_mss_file_chmod
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX mkdir
     irods::error univ_mss_file_mkdir(
-        irods::resource_plugin_context& _ctx ) { 
+        irods::resource_plugin_context& _ctx ) {
         // =-=-=-=-=-=-=-
         // check context
         irods::error err = univ_mss_check_param< irods::collection_object >( _ctx );
-        if( !err.ok() ) {
+        if ( !err.ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - invalid context";
             return PASSMSG( msg.str(), err );
 
         }
- 
+
         // =-=-=-=-=-=-=-
         // get the script property
         std::string script;
         err = _ctx.prop_map().get< std::string >( SCRIPT_PROP, script );
-        if( !err.ok() ) {
+        if ( !err.ok() ) {
             return PASSMSG( __FUNCTION__, err );
         }
-        
+
         // =-=-=-=-=-=-=-
         // snag a ref to the fco
         irods::collection_object_ptr fco = boost::dynamic_pointer_cast< irods::collection_object >( _ctx.fco() );
@@ -372,30 +372,30 @@ extern "C" {
         int status = 0;
         execCmd_t execCmdInp;
         char cmdArgv[HUGE_NAME_LEN] = "";
-        execCmdOut_t *execCmdOut = NULL;  
+        execCmdOut_t *execCmdOut = NULL;
 
-        bzero (&execCmdInp, sizeof (execCmdInp));
+        bzero( &execCmdInp, sizeof( execCmdInp ) );
         rstrcpy( execCmdInp.cmd, script.c_str(), LONG_NAME_LEN );
-        strcat(cmdArgv, "mkdir");
-        strcat(cmdArgv, " '");
-        strcat(cmdArgv, dirname.c_str() );
-        strcat(cmdArgv, "'");
-        rstrcpy(execCmdInp.cmdArgv, cmdArgv, HUGE_NAME_LEN);
-        rstrcpy(execCmdInp.execAddr, "localhost", LONG_NAME_LEN);
+        strcat( cmdArgv, "mkdir" );
+        strcat( cmdArgv, " '" );
+        strcat( cmdArgv, dirname.c_str() );
+        strcat( cmdArgv, "'" );
+        rstrcpy( execCmdInp.cmdArgv, cmdArgv, HUGE_NAME_LEN );
+        rstrcpy( execCmdInp.execAddr, "localhost", LONG_NAME_LEN );
         status = _rsExecCmd( _ctx.comm(), &execCmdInp, &execCmdOut );
-        if (status < 0) {
+        if ( status < 0 ) {
             status = UNIV_MSS_MKDIR_ERR - errno;
             std::stringstream msg;
             msg << "univ_mss_file_mkdir - mkdir failed for [";
             msg << dirname;
             msg << "]";
-            return ERROR( status, msg.str() ); 
+            return ERROR( status, msg.str() );
         }
-        
-        int mode = getDefDirMode(); 
+
+        int mode = getDefDirMode();
         fco->mode( mode );
         err = univ_mss_file_chmod( _ctx );
-         
+
         return err;
 
     } // univ_mss_file_mkdir
@@ -403,7 +403,7 @@ extern "C" {
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX rmdir
     irods::error univ_mss_file_rmdir(
-        irods::resource_plugin_context& _ctx ) { 
+        irods::resource_plugin_context& _ctx ) {
         return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
 
     } // univ_mss_file_rmdir
@@ -411,7 +411,7 @@ extern "C" {
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX opendir
     irods::error univ_mss_file_opendir(
-        irods::resource_plugin_context& _ctx ) { 
+        irods::resource_plugin_context& _ctx ) {
         return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
 
     } // univ_mss_file_opendir
@@ -419,7 +419,7 @@ extern "C" {
     // =-=-=-=-=-=-=-
     /// @brief interface for POSIX closedir
     irods::error univ_mss_file_closedir(
-        irods::resource_plugin_context& _ctx ) { 
+        irods::resource_plugin_context& _ctx ) {
         return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
 
     } // univ_mss_file_closedir
@@ -441,22 +441,22 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // check context
         irods::error err = univ_mss_check_param< irods::file_object >( _ctx );
-        if( !err.ok() ) {
+        if ( !err.ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - invalid context";
             return PASSMSG( msg.str(), err );
 
         }
- 
+
         // =-=-=-=-=-=-=-
         // get the script property
         std::string script;
         err = _ctx.prop_map().get< std::string >( SCRIPT_PROP, script );
-        if( !err.ok() ) {
+        if ( !err.ok() ) {
             return PASSMSG( __FUNCTION__, err );
         }
-        
+
         // =-=-=-=-=-=-=-
         // snag a ref to the fco
         irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
@@ -465,23 +465,23 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // first create the directory name
         char  dirname[MAX_NAME_LEN] = "";
-        const char* lastpart = strrchr( _new_file_name, '/');
+        const char* lastpart = strrchr( _new_file_name, '/' );
         int   lenDir   = strlen( _new_file_name ) - strlen( lastpart );
         strncpy( dirname, _new_file_name, lenDir );
-        
+
         // =-=-=-=-=-=-=-
         // create a context to call the mkdir operation
-        irods::collection_object_ptr coll_obj( 
-                                          new irods::collection_object(
-                                              dirname, 
-                                              fco->resc_hier(), 
-                                              fco->mode(), 0 ) );
-        irods::resource_plugin_context context( 
-            _ctx.prop_map(), 
-            coll_obj, "", 
-            _ctx.comm(), 
+        irods::collection_object_ptr coll_obj(
+            new irods::collection_object(
+                dirname,
+                fco->resc_hier(),
+                fco->mode(), 0 ) );
+        irods::resource_plugin_context context(
+            _ctx.prop_map(),
+            coll_obj, "",
+            _ctx.comm(),
             _ctx.child_map() );
-                                                 
+
         // =-=-=-=-=-=-=-
         // create the directory on the MSS
         int status = 0;
@@ -490,37 +490,37 @@ extern "C" {
         execCmd_t execCmdInp;
         char cmdArgv[HUGE_NAME_LEN] = "";
         execCmdOut_t *execCmdOut = NULL;
-        
-        bzero (&execCmdInp, sizeof (execCmdInp));
-        rstrcpy(execCmdInp.cmd, script.c_str(), LONG_NAME_LEN);
-        strcat(cmdArgv, "mv");
-        strcat(cmdArgv, " '");
-        strcat(cmdArgv, filename.c_str());
-        strcat(cmdArgv, "' '");
-        strcat(cmdArgv, _new_file_name );
-        strcat(cmdArgv, "'");
-        rstrcpy(execCmdInp.cmdArgv, cmdArgv, HUGE_NAME_LEN);
-        rstrcpy(execCmdInp.execAddr, "localhost", LONG_NAME_LEN);
-        status = _rsExecCmd( _ctx.comm(), &execCmdInp, &execCmdOut);
 
-        if (status < 0) {
+        bzero( &execCmdInp, sizeof( execCmdInp ) );
+        rstrcpy( execCmdInp.cmd, script.c_str(), LONG_NAME_LEN );
+        strcat( cmdArgv, "mv" );
+        strcat( cmdArgv, " '" );
+        strcat( cmdArgv, filename.c_str() );
+        strcat( cmdArgv, "' '" );
+        strcat( cmdArgv, _new_file_name );
+        strcat( cmdArgv, "'" );
+        rstrcpy( execCmdInp.cmdArgv, cmdArgv, HUGE_NAME_LEN );
+        rstrcpy( execCmdInp.execAddr, "localhost", LONG_NAME_LEN );
+        status = _rsExecCmd( _ctx.comm(), &execCmdInp, &execCmdOut );
+
+        if ( status < 0 ) {
             status = UNIV_MSS_RENAME_ERR - errno;
             std::stringstream msg;
             msg << "univ_mss_file_rename - failed for [";
             msg << filename;
             msg << "]";
-            return ERROR( status, msg.str() ); 
+            return ERROR( status, msg.str() );
 
         }
 
-        return CODE(status);
+        return CODE( status );
 
     } // univ_mss_file_rename
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX truncate
     irods::error univ_mss_file_truncate(
-        irods::resource_plugin_context& _ctx ) { 
+        irods::resource_plugin_context& _ctx ) {
         return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
 
     } // univ_mss_file_truncate
@@ -528,7 +528,7 @@ extern "C" {
     /// =-=-=-=-=-=-=-
     /// @brief interface to determine free space on a device given a path
     irods::error univ_mss_file_getfs_freespace(
-        irods::resource_plugin_context& _ctx ) { 
+        irods::resource_plugin_context& _ctx ) {
         return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
 
     } // univ_mss_file_getfs_freespace
@@ -539,11 +539,11 @@ extern "C" {
     ///        is not used.
     irods::error univ_mss_file_stage_to_cache(
         irods::resource_plugin_context& _ctx,
-        const char*                         _cache_file_name ) { 
+        const char*                         _cache_file_name ) {
         // =-=-=-=-=-=-=-
         // check context
         irods::error err = univ_mss_check_param< irods::file_object >( _ctx );
-        if( !err.ok() ) {
+        if ( !err.ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - invalid context";
@@ -560,7 +560,7 @@ extern "C" {
         // get the script property
         std::string script;
         err = _ctx.prop_map().get< std::string >( SCRIPT_PROP, script );
-        if( !err.ok() ) {
+        if ( !err.ok() ) {
             return PASSMSG( __FUNCTION__, err );
         }
 
@@ -568,21 +568,21 @@ extern "C" {
         execCmd_t execCmdInp;
         char cmdArgv[HUGE_NAME_LEN] = "";
         execCmdOut_t *execCmdOut = NULL;
-        bzero (&execCmdInp, sizeof (execCmdInp));
+        bzero( &execCmdInp, sizeof( execCmdInp ) );
 
-        rstrcpy(execCmdInp.cmd, script.c_str(), LONG_NAME_LEN);
-        strcat(cmdArgv, "stageToCache");
-        strcat(cmdArgv, " '");
-        strcat(cmdArgv, filename.c_str() );
-        strcat(cmdArgv, "' '");
-        strcat(cmdArgv, _cache_file_name );
-        strcat(cmdArgv, "'");
-        rstrcpy(execCmdInp.cmdArgv, cmdArgv, HUGE_NAME_LEN);
-        rstrcpy(execCmdInp.execAddr, "localhost", LONG_NAME_LEN);
-        status = _rsExecCmd( _ctx.comm(), &execCmdInp, &execCmdOut);
-        
-        if (status < 0) {
-            status = UNIV_MSS_STAGETOCACHE_ERR - errno; 
+        rstrcpy( execCmdInp.cmd, script.c_str(), LONG_NAME_LEN );
+        strcat( cmdArgv, "stageToCache" );
+        strcat( cmdArgv, " '" );
+        strcat( cmdArgv, filename.c_str() );
+        strcat( cmdArgv, "' '" );
+        strcat( cmdArgv, _cache_file_name );
+        strcat( cmdArgv, "'" );
+        rstrcpy( execCmdInp.cmdArgv, cmdArgv, HUGE_NAME_LEN );
+        rstrcpy( execCmdInp.execAddr, "localhost", LONG_NAME_LEN );
+        status = _rsExecCmd( _ctx.comm(), &execCmdInp, &execCmdOut );
+
+        if ( status < 0 ) {
+            status = UNIV_MSS_STAGETOCACHE_ERR - errno;
             std::stringstream msg;
             msg << "univ_mss_file_stage_to_cache: staging from [";
             msg << _cache_file_name;
@@ -591,9 +591,9 @@ extern "C" {
             msg << "] failed.";
             return ERROR( status, msg.str() );
         }
-        
-        return CODE(status);
-	
+
+        return CODE( status );
+
     } // univ_mss_file_stage_to_cache
 
     /// =-=-=-=-=-=-=-
@@ -601,12 +601,12 @@ extern "C" {
     ///        Just copy the file from cacheFilename to filename. optionalInfo info
     ///        is not used.
     irods::error univ_mss_file_sync_to_arch(
-        irods::resource_plugin_context& _ctx, 
-        const char*                         _cache_file_name ) { 
+        irods::resource_plugin_context& _ctx,
+        const char*                         _cache_file_name ) {
         // =-=-=-=-=-=-=-
         // check context
         irods::error err = univ_mss_check_param< irods::file_object >( _ctx );
-        if( !err.ok() ) {
+        if ( !err.ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - invalid context";
@@ -622,59 +622,60 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // first create the directory name
         char  dirname[MAX_NAME_LEN] = "";
-        const char* lastpart = strrchr( filename.c_str(), '/');
+        const char* lastpart = strrchr( filename.c_str(), '/' );
         int   lenDir   = strlen( filename.c_str() ) - strlen( lastpart );
         strncpy( dirname, filename.c_str(), lenDir );
-        
+
         // =-=-=-=-=-=-=-
         // create a context to call the mkdir operation
-        irods::collection_object_ptr coll_obj( 
-                                          new irods::collection_object( 
-                                              dirname, 
-                                              fco->resc_hier(), 
-                                              fco->mode(), 0 ) );
-        irods::resource_plugin_context context( 
-            _ctx.prop_map(), 
+        irods::collection_object_ptr coll_obj(
+            new irods::collection_object(
+                dirname,
+                fco->resc_hier(),
+                fco->mode(), 0 ) );
+        irods::resource_plugin_context context(
+            _ctx.prop_map(),
             coll_obj, "",
-            _ctx.comm(), 
+            _ctx.comm(),
             _ctx.child_map() );
 
         // =-=-=-=-=-=-=-
         // create the directory on the MSS
         int status = 0;
         err = univ_mss_file_mkdir( context );
-        
+
         execCmdOut_t* execCmdOut = NULL;
         char  cmdArgv[HUGE_NAME_LEN] = "";
-    
+
         execCmd_t execCmdInp;
-        bzero (&execCmdInp, sizeof (execCmdInp));
+        bzero( &execCmdInp, sizeof( execCmdInp ) );
 
         // =-=-=-=-=-=-=-
         // get the script property
         std::string script;
         err = _ctx.prop_map().get< std::string >( SCRIPT_PROP, script );
-        if( !err.ok() ) {
+        if ( !err.ok() ) {
             return PASSMSG( __FUNCTION__, err );
         }
 
         rstrcpy( execCmdInp.cmd, script.c_str(), LONG_NAME_LEN );
-        strcat(cmdArgv, "syncToArch");
-        strcat(cmdArgv, " ");
-        strcat(cmdArgv, _cache_file_name);
-        strcat(cmdArgv, " ");
-        strcat(cmdArgv, filename.c_str() );
-        strcat(cmdArgv, "");
+        strcat( cmdArgv, "syncToArch" );
+        strcat( cmdArgv, " " );
+        strcat( cmdArgv, _cache_file_name );
+        strcat( cmdArgv, " " );
+        strcat( cmdArgv, filename.c_str() );
+        strcat( cmdArgv, "" );
 
-        rstrcpy(execCmdInp.cmdArgv, cmdArgv, HUGE_NAME_LEN);
-        rstrcpy(execCmdInp.execAddr, "localhost", LONG_NAME_LEN);
+        rstrcpy( execCmdInp.cmdArgv, cmdArgv, HUGE_NAME_LEN );
+        rstrcpy( execCmdInp.execAddr, "localhost", LONG_NAME_LEN );
         status = _rsExecCmd( _ctx.comm(), &execCmdInp, &execCmdOut );
         if ( status == 0 ) {
             err = univ_mss_file_chmod( _ctx );
-            if( !err.ok() ) {
+            if ( !err.ok() ) {
                 PASSMSG( "univ_mss_file_sync_to_arch - failed.", err );
             }
-        } else {
+        }
+        else {
             status = UNIV_MSS_SYNCTOARCH_ERR - errno;
             std::stringstream msg;
             msg << "univ_mss_file_sync_to_arch: copy of [";
@@ -688,7 +689,7 @@ extern "C" {
             msg << execCmdOut->stderrBuf.buf;
             msg << "]  status [";
             msg << execCmdOut->status << "]";
-            return ERROR( status, msg.str() );       
+            return ERROR( status, msg.str() );
         }
 
         return CODE( status );
@@ -698,43 +699,43 @@ extern "C" {
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file registration
     irods::error univ_mss_file_registered(
-        irods::resource_plugin_context& _ctx) {
+        irods::resource_plugin_context& _ctx ) {
         // Check the operation parameters and update the physical path
-        irods::error ret = univ_mss_check_param< irods::file_object >(_ctx);
-        if(!ret.ok()) {
+        irods::error ret = univ_mss_check_param< irods::file_object >( _ctx );
+        if ( !ret.ok() ) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
-            return PASSMSG(msg.str(), ret);
+            return PASSMSG( msg.str(), ret );
         }
         // NOOP
         return SUCCESS();
     } // univ_mss_file_registered
-    
+
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file unregistration
     irods::error univ_mss_file_unregistered(
-        irods::resource_plugin_context& _ctx) {
+        irods::resource_plugin_context& _ctx ) {
         // Check the operation parameters and update the physical path
-        irods::error ret = univ_mss_check_param< irods::file_object >(_ctx);
-        if(!ret.ok()) {
+        irods::error ret = univ_mss_check_param< irods::file_object >( _ctx );
+        if ( !ret.ok() ) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
-            return PASSMSG(msg.str(), ret);
+            return PASSMSG( msg.str(), ret );
         }
         // NOOP
         return SUCCESS();
     } // univ_mss_file_unregistered
-    
+
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file modification
     irods::error univ_mss_file_modified(
-        irods::resource_plugin_context& _ctx) {
+        irods::resource_plugin_context& _ctx ) {
         // Check the operation parameters and update the physical path
-        irods::error ret = univ_mss_check_param< irods::file_object >(_ctx);
-        if(!ret.ok()) {
+        irods::error ret = univ_mss_check_param< irods::file_object >( _ctx );
+        if ( !ret.ok() ) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
-            return PASSMSG(msg.str(), ret);
+            return PASSMSG( msg.str(), ret );
         }
         // NOOP
         return SUCCESS();
@@ -742,40 +743,41 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // redirect_get - code to determine redirection for get operation
-    irods::error univ_mss_file_redirect_create( 
+    irods::error univ_mss_file_redirect_create(
         irods::plugin_property_map& _prop_map,
         irods::file_object_ptr         _file_obj,
-        const std::string&           _resc_name, 
-        const std::string&           _curr_host, 
+        const std::string&           _resc_name,
+        const std::string&           _curr_host,
         float&                       _out_vote ) {
         // =-=-=-=-=-=-=-
-        // determine if the resource is down 
+        // determine if the resource is down
         int resc_status = 0;
         irods::error get_ret = _prop_map.get< int >( irods::RESOURCE_STATUS, resc_status );
-        if( !get_ret.ok() ) {
+        if ( !get_ret.ok() ) {
             return PASSMSG( "univ_mss_file_redirect_create - failed to get 'status' property", get_ret );
         }
 
         // =-=-=-=-=-=-=-
         // if the status is down, vote no.
-        if( INT_RESC_STATUS_DOWN == resc_status ) {
+        if ( INT_RESC_STATUS_DOWN == resc_status ) {
             _out_vote = 0.0;
-            return SUCCESS(); 
+            return SUCCESS();
         }
 
         // =-=-=-=-=-=-=-
         // get the resource host for comparison to curr host
         std::string host_name;
         get_ret = _prop_map.get< std::string >( irods::RESOURCE_LOCATION, host_name );
-        if( !get_ret.ok() ) {
+        if ( !get_ret.ok() ) {
             return PASSMSG( "univ_mss_file_redirect_create - failed to get 'location' property", get_ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // vote higher if we are on the same host
-        if( _curr_host == host_name ) {
+        if ( _curr_host == host_name ) {
             _out_vote = 1.0;
-        } else {
+        }
+        else {
             _out_vote = 0.5;
         }
 
@@ -785,35 +787,35 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // redirect_get - code to determine redirection for get operation
-    irods::error univ_mss_file_redirect_open( 
+    irods::error univ_mss_file_redirect_open(
         irods::plugin_property_map& _prop_map,
         irods::file_object_ptr         _file_obj,
-        const std::string&           _resc_name, 
-        const std::string&           _curr_host, 
+        const std::string&           _resc_name,
+        const std::string&           _curr_host,
         float&                       _out_vote ) {
         // =-=-=-=-=-=-=-
-        // determine if the resource is down 
+        // determine if the resource is down
         int resc_status = 0;
         irods::error get_ret = _prop_map.get< int >( irods::RESOURCE_STATUS, resc_status );
-        if( !get_ret.ok() ) {
+        if ( !get_ret.ok() ) {
             return PASSMSG( "univ_mss_file_redirect_open - failed to get 'status' property", get_ret );
         }
 
         // =-=-=-=-=-=-=-
         // if the status is down, vote no.
-        if( INT_RESC_STATUS_DOWN == resc_status ) {
+        if ( INT_RESC_STATUS_DOWN == resc_status ) {
             _out_vote = 0.0;
-            return SUCCESS(); 
+            return SUCCESS();
         }
 
         // =-=-=-=-=-=-=-
         // get the resource host for comparison to curr host
         std::string host_name;
         get_ret = _prop_map.get< std::string >( irods::RESOURCE_LOCATION, host_name );
-        if( !get_ret.ok() ) {
+        if ( !get_ret.ok() ) {
             return PASSMSG( "univ_mss_file_redirect_open - failed to get 'location' property", get_ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // set a flag to test if were at the curr host, if so we vote higher
         bool curr_host = ( _curr_host == host_name );
@@ -828,45 +830,46 @@ extern "C" {
         irods::error final_ret = SUCCESS();
         std::vector< irods::physical_object > objs = _file_obj->replicas();
         std::vector< irods::physical_object >::iterator itr = objs.begin();
-        
+
         // =-=-=-=-=-=-=-
         // initially set vote to 0.0
         _out_vote = 0.0;
 
         // =-=-=-=-=-=-=-
         // check to see if the replica is in this resource, if one is requested
-        for( ; itr != objs.end(); ++itr ) {
+        for ( ; itr != objs.end(); ++itr ) {
             // =-=-=-=-=-=-=-
             // run the hier string through the parser and get the last
             // entry.
             std::string last_resc;
             irods::hierarchy_parser parser;
             parser.set_string( itr->resc_hier() );
-            parser.last_resc( last_resc ); 
-          
+            parser.last_resc( last_resc );
+
             // =-=-=-=-=-=-=-
             // more flags to simplify decision making
-            bool repl_us = ( _file_obj->repl_requested() == itr->repl_num() ); 
+            bool repl_us = ( _file_obj->repl_requested() == itr->repl_num() );
             bool resc_us = ( _resc_name == last_resc );
 
             // =-=-=-=-=-=-=-
             // success - correct resource and dont need a specific
             //           replication, or the repl nums match
-            if( resc_us ) {
-                if( !need_repl || ( need_repl && repl_us ) ) {
+            if ( resc_us ) {
+                if ( !need_repl || ( need_repl && repl_us ) ) {
                     found = true;
-                    if( curr_host ) {
+                    if ( curr_host ) {
                         _out_vote = 1.0;
-                    } else {
+                    }
+                    else {
                         _out_vote = 0.5;
                     }
-                    break; 
+                    break;
                 }
 
             } // if resc_us
 
         } // for itr
-                             
+
         return SUCCESS();
 
     } // redirect_get
@@ -874,7 +877,7 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // used to allow the resource to determine which host
     // should provide the requested operation
-    irods::error univ_mss_file_redirect( 
+    irods::error univ_mss_file_redirect(
         irods::resource_plugin_context& _ctx,
         const std::string*                  _opr,
         const std::string*                  _curr_host,
@@ -882,28 +885,28 @@ extern "C" {
         float*                              _out_vote ) {
         // =-=-=-=-=-=-=-
         // check the context validity
-        irods::error ret = _ctx.valid< irods::file_object >(); 
-        if(!ret.ok()) {
+        irods::error ret = _ctx.valid< irods::file_object >();
+        if ( !ret.ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__ << " - resource context is invalid";
             return PASSMSG( msg.str(), ret );
         }
- 
+
         // =-=-=-=-=-=-=-
         // check incoming parameters
-        if( !_opr ) {
+        if ( !_opr ) {
             return ERROR( -1, "univ_mss_file_redirect- null operation" );
         }
-        if( !_curr_host ) {
+        if ( !_curr_host ) {
             return ERROR( -1, "univ_mss_file_redirect- null operation" );
         }
-        if( !_out_parser ) {
+        if ( !_out_parser ) {
             return ERROR( -1, "univ_mss_file_redirect- null outgoing hier parser" );
         }
-        if( !_out_vote ) {
+        if ( !_out_vote ) {
             return ERROR( -1, "univ_mss_file_redirect- null outgoing vote" );
         }
-        
+
         // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
         irods::file_object_ptr file_obj = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
@@ -912,7 +915,7 @@ extern "C" {
         // get the name of this resource
         std::string resc_name;
         ret = _ctx.prop_map().get< std::string >( irods::RESOURCE_NAME, resc_name );
-        if( !ret.ok() ) {
+        if ( !ret.ok() ) {
             std::stringstream msg;
             msg << "univ_mss_file_redirect- failed in get property for name";
             return ERROR( -1, msg.str() );
@@ -924,22 +927,23 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // test the operation to determine which choices to make
-        if( irods::OPEN_OPERATION == (*_opr) ) {
+        if ( irods::OPEN_OPERATION == ( *_opr ) ) {
             // =-=-=-=-=-=-=-
             // call redirect determination for 'get' operation
-            return univ_mss_file_redirect_open( _ctx.prop_map(), file_obj, resc_name, (*_curr_host), (*_out_vote)  );
+            return univ_mss_file_redirect_open( _ctx.prop_map(), file_obj, resc_name, ( *_curr_host ), ( *_out_vote ) );
 
-        } else if( irods::CREATE_OPERATION == (*_opr) ) {
+        }
+        else if ( irods::CREATE_OPERATION == ( *_opr ) ) {
             // =-=-=-=-=-=-=-
             // call redirect determination for 'create' operation
-            return univ_mss_file_redirect_create( _ctx.prop_map(), file_obj, resc_name, (*_curr_host), (*_out_vote)  );
+            return univ_mss_file_redirect_create( _ctx.prop_map(), file_obj, resc_name, ( *_curr_host ), ( *_out_vote ) );
         }
-      
+
         // =-=-=-=-=-=-=-
-        // must have been passed a bad operation 
+        // must have been passed a bad operation
         std::stringstream msg;
         msg << "univ_mss_file_redirect- operation not supported [";
-        msg << (*_opr) << "]";
+        msg << ( *_opr ) << "]";
         return ERROR( -1, msg.str() );
 
     } // univ_mss_file_redirect
@@ -950,7 +954,7 @@ extern "C" {
     irods::error univ_mss__file_rebalance(
         irods::resource_plugin_context& _ctx ) {
         return SUCCESS();
-    
+
     } // univ_mss__file_rebalancec
 
     // =-=-=-=-=-=-=-
@@ -958,13 +962,13 @@ extern "C" {
     //    context string will hold the script to be called.
     class univ_mss_resource : public irods::resource {
     public:
-        univ_mss_resource( const std::string& _inst_name, 
-                           const std::string& _context ) : 
+        univ_mss_resource( const std::string& _inst_name,
+                           const std::string& _context ) :
             irods::resource( _inst_name, _context ) {
-            
+
             // =-=-=-=-=-=-=-
             // check the context string for inappropriate path behavior
-            if( context_.find( "/" ) != std::string::npos ) {
+            if ( context_.find( "/" ) != std::string::npos ) {
                 std::stringstream msg;
                 msg << "univmss resource :: the path [";
                 msg << context_;
@@ -997,17 +1001,17 @@ extern "C" {
     //    instantiated object of the previously defined derived resource.  use
     //    the add_operation member to associate a 'call name' to the interfaces
     //    defined above.  for resource plugins these call names are standardized
-    //    as used by the irods facing interface defined in 
+    //    as used by the irods facing interface defined in
     //    server/drivers/src/fileDriver.c
-    irods::resource* plugin_factory( const std::string& _inst_name, 
-                                      const std::string& _context  ) {
+    irods::resource* plugin_factory( const std::string& _inst_name,
+                                     const std::string& _context ) {
         // =-=-=-=-=-=-=-
         // 4a. create univ_mss_resource object
         univ_mss_resource* resc = new univ_mss_resource( _inst_name, _context );
 
         // =-=-=-=-=-=-=-
         // 4b. map function names to operations.  this map will be used to load
-        //     the symbols from the shared object in the delay_load stage of 
+        //     the symbols from the shared object in the delay_load stage of
         //     plugin loading.
         resc->add_operation( irods::RESOURCE_OP_CREATE,            "univ_mss_file_create" );
         resc->add_operation( irods::RESOURCE_OP_OPEN,              "univ_mss_file_open" );
@@ -1038,15 +1042,15 @@ extern "C" {
         // set some properties necessary for backporting to iRODS legacy code
         resc->set_property< int >( irods::RESOURCE_CHECK_PATH_PERM, 2 );//DO_CHK_PATH_PERM );
         resc->set_property< int >( irods::RESOURCE_CREATE_PATH,     1 );//CREATE_PATH );
-        
+
         // =-=-=-=-=-=-=-
         // 4c. return the pointer through the generic interface of an
         //     irods::resource pointer
         return dynamic_cast<irods::resource*>( resc );
-        
+
     } // plugin_factory
 
-}; // extern "C" 
+}; // extern "C"
 
 
 

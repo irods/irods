@@ -9,15 +9,15 @@ namespace irods {
 
     class sql_logger {
     public:
-	sql_logger(const std::string& _function_name, bool logSQL);
-	virtual ~sql_logger(void);
+        sql_logger( const std::string& _function_name, bool logSQL );
+        virtual ~sql_logger( void );
 
-	void log(void);
-	
+        void log( void );
+
     private:
-	unsigned int count_;
-	std::string name_;
-	bool log_sql_;
+        unsigned int count_;
+        std::string name_;
+        bool log_sql_;
     };
 }; // namespace irods
 

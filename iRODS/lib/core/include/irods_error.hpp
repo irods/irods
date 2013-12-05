@@ -33,31 +33,31 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // Constructors
         error();
-        error( 
+        error(
             bool,          // status
-            long long,     // error code 
+            long long,     // error code
             std::string,   // message
             std::string,   // file name
             int,           // line number
-            std::string ); // function  
-        error( 
+            std::string ); // function
+        error(
             bool,           // status
             long long,      // error code
             std::string,    // message
-            std::string,    // file name 
-            int,            // line number     
+            std::string,    // file name
+            int,            // line number
             std::string,    // function
-            const error& ); // previous error 
-        error( const error& );   
+            const error& ); // previous error
+        error( const error& );
 
         // =-=-=-=-=-=-=-
         // Destructor
         ~error();
-		 
+
         // =-=-=-=-=-=-=-
         // Operators
         error& operator=( const error& );
-		
+
         // =-=-=-=-=-=-=-
         // Members
         bool        status() const;
@@ -67,9 +67,9 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // Mutators
-        void code  ( long long _code   ) { code_   = _code;   }
+        void code( long long _code ) { code_   = _code;   }
         void status( bool      _status ) { status_ = _status; }
-        
+
     private:
         // =-=-=-=-=-=-=-
         // Attributes
@@ -77,17 +77,17 @@ namespace irods {
         long long   code_;
         std::string message_;
         std::vector< std::string > result_stack_;
-        
+
         // =-=-=-=-=-=-=-
         // Members
         std::string build_result_string( std::string, int, std::string );
-		
+
     }; // class error
 
-    error assert_error(bool expr_, long long code_, const std::string& file_, const std::string& function_, int line_, const std::string& format_, ...);
-    error assert_pass(bool expr_, const error& _error, const std::string& _file, const std::string& _function, int _line, const std::string& _format, ...);
-    error assert_pass_msg(bool expr_, const error& _error, const std::string& _file, const std::string& _function, int _line, const std::string& _format, ...);
-    
+    error assert_error( bool expr_, long long code_, const std::string& file_, const std::string& function_, int line_, const std::string& format_, ... );
+    error assert_pass( bool expr_, const error& _error, const std::string& _file, const std::string& _function, int _line, const std::string& _format, ... );
+    error assert_pass_msg( bool expr_, const error& _error, const std::string& _file, const std::string& _function, int _line, const std::string& _format, ... );
+
 }; // namespace irods
 
 

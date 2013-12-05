@@ -31,97 +31,97 @@
 #define TRIM_UNMATCHED_OBJ_INFO         0x8
 
 int
-getDataObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                dataObjInfo_t **dataObjInfoHead, char *accessPerm, int ignoreCondInput);
+getDataObjInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+                dataObjInfo_t **dataObjInfoHead, char *accessPerm, int ignoreCondInput );
 int
-updateDataObjReplStatus (rsComm_t *rsComm, int l1descInx, int replStatus);
+updateDataObjReplStatus( rsComm_t *rsComm, int l1descInx, int replStatus );
 int
-dataObjExist (rsComm_t *rsComm, dataObjInp_t *dataObjInp);
+dataObjExist( rsComm_t *rsComm, dataObjInp_t *dataObjInp );
 int
-sortObjInfoForRepl (dataObjInfo_t **dataObjInfoHead, 
-                    dataObjInfo_t **oldDataObjInfoHead, 
+sortObjInfoForRepl( dataObjInfo_t **dataObjInfoHead,
+                    dataObjInfo_t **oldDataObjInfoHead,
                     int deleteOldFlag, const char* resc_hier,
                     const char* dst_resc_hier );
 int
-sortObjInfoForOpen (rsComm_t *rsComm, dataObjInfo_t **dataObjInfoHead, 
-                    keyValPair_t *condInput, int writeFlag);
+sortObjInfoForOpen( rsComm_t *rsComm, dataObjInfo_t **dataObjInfoHead,
+                    keyValPair_t *condInput, int writeFlag );
 int
-sortDataObjInfoRandom (dataObjInfo_t **dataObjInfoHead);
+sortDataObjInfoRandom( dataObjInfo_t **dataObjInfoHead );
 int
-requeDataObjInfoByResc (dataObjInfo_t **dataObjInfoHead, char *preferedResc,
-                        int writeFlag, int topFlag);
+requeDataObjInfoByResc( dataObjInfo_t **dataObjInfoHead, char *preferedResc,
+                        int writeFlag, int topFlag );
 int
-requeDataObjInfoByReplNum (dataObjInfo_t **dataObjInfoHead, int replNum);
+requeDataObjInfoByReplNum( dataObjInfo_t **dataObjInfoHead, int replNum );
 dataObjInfo_t *
-chkCopyInResc (dataObjInfo_t *&dataObjInfoHead, rescGrpInfo_t *myRescGrpInfo, const char* destRescHier);
+chkCopyInResc( dataObjInfo_t *&dataObjInfoHead, rescGrpInfo_t *myRescGrpInfo, const char* destRescHier );
 int
-chkAndTrimCopyInRescGrp (dataObjInfo_t **dataObjInfoHead, 
-                         rescGrpInfo_t **rescGrpInfoHead, int trimDataObjFlag);
+chkAndTrimCopyInRescGrp( dataObjInfo_t **dataObjInfoHead,
+                         rescGrpInfo_t **rescGrpInfoHead, int trimDataObjFlag );
 int
-initDataObjInfoQuery (dataObjInp_t *dataObjInp, genQueryInp_t *genQueryInp,
-                      int ignoreCondInput);
+initDataObjInfoQuery( dataObjInp_t *dataObjInp, genQueryInp_t *genQueryInp,
+                      int ignoreCondInput );
 int
-sortObjInfo (dataObjInfo_t **dataObjInfoHead,
+sortObjInfo( dataObjInfo_t **dataObjInfoHead,
              dataObjInfo_t **dirtyArchInfo, dataObjInfo_t **dirtyCacheInfo,
              dataObjInfo_t **oldArchInfo, dataObjInfo_t **oldCacheInfo,
-             dataObjInfo_t **downCurrentInfo, dataObjInfo_t **downOldInfo);
+             dataObjInfo_t **downCurrentInfo, dataObjInfo_t **downOldInfo );
 int
-chkOrphanFile (rsComm_t *rsComm, char *filePath, char *rescName,
-               dataObjInfo_t *dataObjInfo);
+chkOrphanFile( rsComm_t *rsComm, char *filePath, char *rescName,
+               dataObjInfo_t *dataObjInfo );
 int
-chkOrphanDir (rsComm_t *rsComm, char *dirPath, char *rescName);
+chkOrphanDir( rsComm_t *rsComm, char *dirPath, char *rescName );
 int
-getNumDataObjInfo (dataObjInfo_t *dataObjInfoHead);
+getNumDataObjInfo( dataObjInfo_t *dataObjInfoHead );
 int
-resolveSingleReplCopy (dataObjInfo_t **dataObjInfoHead,
+resolveSingleReplCopy( dataObjInfo_t **dataObjInfoHead,
                        dataObjInfo_t **oldDataObjInfoHead, rescGrpInfo_t **destRescGrpInfo,
-                       dataObjInfo_t **destDataObjInfo, keyValPair_t *condInput);
+                       dataObjInfo_t **destDataObjInfo, keyValPair_t *condInput );
 int
-matchDataObjInfoByCondInput (dataObjInfo_t **dataObjInfoHead,
+matchDataObjInfoByCondInput( dataObjInfo_t **dataObjInfoHead,
                              dataObjInfo_t **oldDataObjInfoHead, keyValPair_t *condInput,
-                             dataObjInfo_t **matchedDataObjInfo, dataObjInfo_t **matchedOldDataObjInfo);
+                             dataObjInfo_t **matchedDataObjInfo, dataObjInfo_t **matchedOldDataObjInfo );
 int
-resolveInfoForPhymv (dataObjInfo_t **dataObjInfoHead,
+resolveInfoForPhymv( dataObjInfo_t **dataObjInfoHead,
                      dataObjInfo_t **oldDataObjInfoHead, rescGrpInfo_t **destRescGrpInfo,
-                     keyValPair_t *condInput, int multiCopyFlag);
+                     keyValPair_t *condInput, int multiCopyFlag );
 int
-matchAndTrimRescGrp (dataObjInfo_t **dataObjInfoHead,
+matchAndTrimRescGrp( dataObjInfo_t **dataObjInfoHead,
                      rescGrpInfo_t **rescGrpInfoHead, int trimjFlag,
-                     dataObjInfo_t **trimmedDataObjInfo);
+                     dataObjInfo_t **trimmedDataObjInfo );
 int
-resolveInfoForTrim (dataObjInfo_t **dataObjInfoHead,
-                    keyValPair_t *condInput);
+resolveInfoForTrim( dataObjInfo_t **dataObjInfoHead,
+                    keyValPair_t *condInput );
 int
-requeDataObjInfoByDestResc (dataObjInfo_t **dataObjInfoHead,
-                            keyValPair_t *condInput, int writeFlag, int topFlag);
+requeDataObjInfoByDestResc( dataObjInfo_t **dataObjInfoHead,
+                            keyValPair_t *condInput, int writeFlag, int topFlag );
 int
-requeDataObjInfoBySrcResc (dataObjInfo_t **dataObjInfoHead,
-                           keyValPair_t *condInput, int writeFlag, int topFlag);
+requeDataObjInfoBySrcResc( dataObjInfo_t **dataObjInfoHead,
+                           keyValPair_t *condInput, int writeFlag, int topFlag );
 int
-getDataObjInfoIncSpecColl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                           dataObjInfo_t **dataObjInfo);
+getDataObjInfoIncSpecColl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+                           dataObjInfo_t **dataObjInfo );
 int
-regNewObjSize (rsComm_t *rsComm, char *objPath, int replNum,
-               rodsLong_t newSize);
+regNewObjSize( rsComm_t *rsComm, char *objPath, int replNum,
+               rodsLong_t newSize );
 #if 0 // JMC - legacy resource
 int
-getCacheDataInfoForRepl (rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfoHead,
+getCacheDataInfoForRepl( rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfoHead,
                          dataObjInfo_t *destDataObjInfoHead, dataObjInfo_t *compDataObjInfo,
-                         dataObjInfo_t **outDataObjInfo);
+                         dataObjInfo_t **outDataObjInfo );
 int
-getNonGrpCacheDataInfoInRescGrp (dataObjInfo_t *srcDataObjInfoHead,
+getNonGrpCacheDataInfoInRescGrp( dataObjInfo_t *srcDataObjInfoHead,
                                  dataObjInfo_t *destDataObjInfoHead, rescGrpInfo_t *rescGrpInfo,
-                                 dataObjInfo_t *compDataObjInfo, dataObjInfo_t **outDataObjInfo);
+                                 dataObjInfo_t *compDataObjInfo, dataObjInfo_t **outDataObjInfo );
 int
-getCacheDataInfoInRescGrp (dataObjInfo_t *srcDataObjInfoHead,
+getCacheDataInfoInRescGrp( dataObjInfo_t *srcDataObjInfoHead,
                            dataObjInfo_t *destDataObjInfoHead, char *rescGroupName,
-                           dataObjInfo_t *compDataObjInfo, dataObjInfo_t **outDataObjInfo);
+                           dataObjInfo_t *compDataObjInfo, dataObjInfo_t **outDataObjInfo );
 #endif // JMC - legacy resource
 int
-getDataObjByClass (dataObjInfo_t *dataObjInfoHead, int rescClass,
-                   dataObjInfo_t **outDataObjInfo);
+getDataObjByClass( dataObjInfo_t *dataObjInfoHead, int rescClass,
+                   dataObjInfo_t **outDataObjInfo );
 #ifdef FILESYSTEM_META
 int
-getDataObjFileMeta (rsComm_t *rsComm, char *data_id, keyValPair_t *condInput);
+getDataObjFileMeta( rsComm_t *rsComm, char *data_id, keyValPair_t *condInput );
 #endif
 #endif  /* DATA_OBJ_OPR_H */

@@ -1,15 +1,14 @@
-/* This is script-generated code.  */ 
+/* This is script-generated code.  */
 /* See phyBundleColl.h for a description of this API call.*/
 
 #include "phyBundleColl.hpp"
 
 int
-rcPhyBundleColl (rcComm_t *conn, 
-structFileExtAndRegInp_t *phyBundleCollInp)
-{
+rcPhyBundleColl( rcComm_t *conn,
+                 structFileExtAndRegInp_t *phyBundleCollInp ) {
     int status;
-    status = procApiRequest (conn, PHY_BUNDLE_COLL_AN, phyBundleCollInp, NULL, 
-        (void **) NULL, NULL);
+    status = procApiRequest( conn, PHY_BUNDLE_COLL_AN, phyBundleCollInp, NULL,
+                             ( void ** ) NULL, NULL );
 
-    return (status);
+    return ( status );
 }

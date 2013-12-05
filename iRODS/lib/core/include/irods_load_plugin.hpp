@@ -38,7 +38,7 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // tester to determine if delay load function exists -
         // bool (*)( void* ) signature.
-        template<error (T::*)(void*)> struct tester;
+        template<error( T::* )( void* )> struct tester;
 
         // =-=-=-=-=-=-=-
         // matching specialization of the determination function
@@ -52,7 +52,7 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // flag variable for result on which to assert - small_type == yes
-        static const bool value = ( sizeof( has_matching_member<T>(0) ) == sizeof( small_type ) );
+        static const bool value = ( sizeof( has_matching_member<T>( 0 ) ) == sizeof( small_type ) );
 
     }; // class_has_delay_load
 
@@ -81,11 +81,11 @@ namespace irods {
      * \retval non-null on success
      **/
     template< typename PluginType >
-    error load_plugin(  PluginType*&       _plugin,
-                        const std::string& _plugin_name,
-                        const std::string& _dir,
-                        const std::string& _instance_name,
-                        const std::string& _context  ) {
+    error load_plugin( PluginType*&       _plugin,
+                       const std::string& _plugin_name,
+                       const std::string& _dir,
+                       const std::string& _instance_name,
+                       const std::string& _context ) {
 
         // =-=-=-=-=-=-=-
         // static assertion to determine if the PluginType supports the delay_load interface properly
@@ -94,19 +94,19 @@ namespace irods {
         // Generate the shared lib name
         std::string so_name;
         plugin_name_generator name_gen;
-        error ret = name_gen(_plugin_name, _dir, so_name);
-        if(!ret.ok()) {
+        error ret = name_gen( _plugin_name, _dir, so_name );
+        if ( !ret.ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - Failed to generate an appropriate shared library name for plugin: \"";
             msg << _plugin_name << "\".";
-            return PASSMSG(msg.str(), ret);
+            return PASSMSG( msg.str(), ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // try to open the shared object
         void*  handle  = dlopen( so_name.c_str(), RTLD_LAZY );
-        if( !handle ) {
+        if ( !handle ) {
             std::stringstream msg;
             msg << "failed to open shared object file [" << so_name
                 << "] :: dlerror: is [" << dlerror() << "]";
@@ -120,15 +120,15 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // attempt to load the plugin version interface
         char* err = 0;
-        double (*get_version)() = reinterpret_cast< double(*)() >( 
-                                      dlsym( handle, "get_plugin_interface_version" ) );
-        if( !get_version ||( ( err = dlerror() ) != 0 ) ) {
+        double( *get_version )() = reinterpret_cast< double( * )() >(
+                                       dlsym( handle, "get_plugin_interface_version" ) );
+        if ( !get_version || ( ( err = dlerror() ) != 0 ) ) {
             std::stringstream msg;
             msg << "failed to get [get_plugin_interface_version]";
             msg << " dlerror is [" << err << "]";
             dlclose( handle );
             return ERROR( PLUGIN_ERROR, msg.str() );
-        } 
+        }
 
         // =-=-=-=-=-=-=-
         // extract value from pointer to version
@@ -136,17 +136,18 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // Here is where we decide how to load the plugins based on the version...
-        if( 1.0 == plugin_version ) {
+        if ( 1.0 == plugin_version ) {
             // do something particularly interesting here
-        } else {
+        }
+        else {
             // do something else even more interesting here
         }
 
         // =-=-=-=-=-=-=-
         // attempt to load the plugin factory function from the shared object
-        typedef PluginType* (*factory_type)( const std::string& , const std::string&  );
+        typedef PluginType* ( *factory_type )( const std::string& , const std::string& );
         factory_type factory = reinterpret_cast< factory_type >( dlsym( handle, "plugin_factory" ) );
-        if( ( err = dlerror() ) != 0 ) {
+        if ( ( err = dlerror() ) != 0 ) {
             std::stringstream msg;
             msg << "failed to load symbol from shared object handle - plugin_factory"
                 << " :: dlerror is [" << err << "]";
@@ -154,7 +155,7 @@ namespace irods {
             return ERROR( PLUGIN_ERROR, msg.str() );
         }
 
-        if( !factory ) {
+        if ( !factory ) {
             dlclose( handle );
             return ERROR( PLUGIN_ERROR, "failed to cast plugin factory" );
         }
@@ -162,27 +163,28 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // using the factory pointer create the plugin
         _plugin = factory( _instance_name, _context );
-        if( _plugin ) {
+        if ( _plugin ) {
             // =-=-=-=-=-=-=-
             // notify world of success
             // TODO :: add hash checking and provide hash value for log also
-            #ifdef DEBUG
+#ifdef DEBUG
             std::cout << "load_plugin :: loaded [" << clean_plugin_name << "]" << std::endl;
-            #endif
+#endif
 
             // =-=-=-=-=-=-=-
             // call the delayed loader to load any other symbols this plugin may need.
             error ret = _plugin->delay_load( handle );
-            if( !ret.ok() ) {
+            if ( !ret.ok() ) {
                 std::stringstream msg;
                 msg << "failed on delayed load for [" << _plugin_name << "]";
                 dlclose( handle );
                 return ERROR( PLUGIN_ERROR, msg.str() );
             }
-			
+
             return SUCCESS();;
 
-        } else {
+        }
+        else {
             std::stringstream msg;
             msg << "failed to create plugin object for [" << _plugin_name << "]";
             dlclose( handle );

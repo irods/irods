@@ -27,19 +27,19 @@ typedef struct {
     char name[MAX_NAME_LEN];
     keyValPair_t condInput;
 } ncInqIdInp_t;
-    
+
 #define NcInqIdInp_PI "int paramType; int ncid; int myId; int flags; str name[MAX_NAME_LEN]; struct KeyValPair_PI;"
 #if defined(RODS_SERVER) && defined(NETCDF_API)
 #define RS_NC_INQ_ID rsNcInqId
 /* prototype for the server handler */
 int
-rsNcInqId (rsComm_t *rsComm, ncInqIdInp_t *ncInqIdInp, int **outId);
+rsNcInqId( rsComm_t *rsComm, ncInqIdInp_t *ncInqIdInp, int **outId );
 int
-_rsNcInqId (int type, int ncid, char *name, int **outId);
+_rsNcInqId( int type, int ncid, char *name, int **outId );
 int
-rsNcInqIdDataObj (rsComm_t *rsComm, ncInqIdInp_t *ncInqIdInp, int **outId);
+rsNcInqIdDataObj( rsComm_t *rsComm, ncInqIdInp_t *ncInqIdInp, int **outId );
 int
-rsNcInqIdColl (rsComm_t *rsComm, ncInqIdInp_t *ncInqIdInp, int **outId);
+rsNcInqIdColl( rsComm_t *rsComm, ncInqIdInp_t *ncInqIdInp, int **outId );
 #else
 #define RS_NC_INQ_ID NULL
 #endif
@@ -48,19 +48,19 @@ rsNcInqIdColl (rsComm_t *rsComm, ncInqIdInp_t *ncInqIdInp, int **outId);
 extern "C" {
 #endif
 
-/* rcNcInqId - general netcdf inq for id (equivalent to nc_inq_dimid,
- *    nc_inq_varid, ....
- * Input - 
- *   rcComm_t *conn - The client connection handle.
- *   ncInqIdInp_t struct:
- *     paramType - parameter type - NC_VAR_T, NC_DIM_T, ....
- *     ncid - the the ncid.   
- * OutPut - 
- *     id - the nc location id. varid for NC_VAR_T, dimid for NC_DIM_T,
- */
-/* prototype for the client call */
-int
-rcNcInqId (rcComm_t *conn, ncInqIdInp_t *ncInqIdInp, int **outId);
+    /* rcNcInqId - general netcdf inq for id (equivalent to nc_inq_dimid,
+     *    nc_inq_varid, ....
+     * Input -
+     *   rcComm_t *conn - The client connection handle.
+     *   ncInqIdInp_t struct:
+     *     paramType - parameter type - NC_VAR_T, NC_DIM_T, ....
+     *     ncid - the the ncid.
+     * OutPut -
+     *     id - the nc location id. varid for NC_VAR_T, dimid for NC_DIM_T,
+     */
+    /* prototype for the client call */
+    int
+    rcNcInqId( rcComm_t *conn, ncInqIdInp_t *ncInqIdInp, int **outId );
 
 #ifdef  __cplusplus
 }

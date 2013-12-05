@@ -34,7 +34,7 @@ typedef struct MiscSvrInfo {
 #define RS_GET_MISC_SVR_INFO rsGetMiscSvrInfo
 /* prototype for the server handler */
 int
-rsGetMiscSvrInfo (rsComm_t *rsComm, miscSvrInfo_t **outSvrInfo);
+rsGetMiscSvrInfo( rsComm_t *rsComm, miscSvrInfo_t **outSvrInfo );
 #else
 #define RS_GET_MISC_SVR_INFO NULL
 #endif
@@ -43,18 +43,18 @@ rsGetMiscSvrInfo (rsComm_t *rsComm, miscSvrInfo_t **outSvrInfo);
 extern "C" {
 #endif
 
-/* prototype for the client call */
-/* rcGetMiscSvrInfo - get miscellenous server info
- * Input :
- *    rcComm_t *conn - The connection handle from the rcConnect () call
- * Output :
- *    miscSvrInfo_t **outSvrInfo - A struct that contains the requested
- *      info.
- * Returned value - 0 = no error. less than zero ==> error.
- */  
+    /* prototype for the client call */
+    /* rcGetMiscSvrInfo - get miscellenous server info
+     * Input :
+     *    rcComm_t *conn - The connection handle from the rcConnect () call
+     * Output :
+     *    miscSvrInfo_t **outSvrInfo - A struct that contains the requested
+     *      info.
+     * Returned value - 0 = no error. less than zero ==> error.
+     */
 
-int
-rcGetMiscSvrInfo (rcComm_t *conn, miscSvrInfo_t **outSvrInfo);
+    int
+    rcGetMiscSvrInfo( rcComm_t *conn, miscSvrInfo_t **outSvrInfo );
 
 #ifdef  __cplusplus
 }

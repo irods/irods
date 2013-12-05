@@ -15,61 +15,62 @@
 #include "irods_resource_backport.hpp"
 
 int
-rsFileTruncate (rsComm_t *rsComm, fileOpenInp_t *fileTruncateInp)
-{
+rsFileTruncate( rsComm_t *rsComm, fileOpenInp_t *fileTruncateInp ) {
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
     int status;
 
     //remoteFlag = resolveHost (&fileTruncateInp->addr, &rodsServerHost);
     irods::error ret = irods::get_host_for_hier_string( fileTruncateInp->resc_hier_, remoteFlag, rodsServerHost );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASSMSG( " failed in call to irods::get_host_for_hier_string", ret ) );
         return -1;
     }
-    if (remoteFlag == LOCAL_HOST) {
-        status = _rsFileTruncate (rsComm, fileTruncateInp);
-    } else if (remoteFlag == REMOTE_HOST) {
-        status = remoteFileTruncate (rsComm, fileTruncateInp, rodsServerHost);
-    } else {
-        if (remoteFlag < 0) {
-            return (remoteFlag);
-        } else {
-            rodsLog (LOG_NOTICE,
+    if ( remoteFlag == LOCAL_HOST ) {
+        status = _rsFileTruncate( rsComm, fileTruncateInp );
+    }
+    else if ( remoteFlag == REMOTE_HOST ) {
+        status = remoteFileTruncate( rsComm, fileTruncateInp, rodsServerHost );
+    }
+    else {
+        if ( remoteFlag < 0 ) {
+            return ( remoteFlag );
+        }
+        else {
+            rodsLog( LOG_NOTICE,
                      "rsFileTruncate: resolveHost returned unrecognized value %d",
-                     remoteFlag);
-            return (SYS_UNRECOGNIZED_REMOTE_FLAG);
+                     remoteFlag );
+            return ( SYS_UNRECOGNIZED_REMOTE_FLAG );
         }
     }
 
     /* Manually insert call-specific code here */
 
-    return (status);
+    return ( status );
 }
 
 int
-remoteFileTruncate (rsComm_t *rsComm, fileOpenInp_t *fileTruncateInp,
-                    rodsServerHost_t *rodsServerHost)
-{
+remoteFileTruncate( rsComm_t *rsComm, fileOpenInp_t *fileTruncateInp,
+                    rodsServerHost_t *rodsServerHost ) {
     int status;
 
-    if (rodsServerHost == NULL) {
-        rodsLog (LOG_NOTICE,
-                 "remoteFileTruncate: Invalid rodsServerHost");
+    if ( rodsServerHost == NULL ) {
+        rodsLog( LOG_NOTICE,
+                 "remoteFileTruncate: Invalid rodsServerHost" );
         return SYS_INVALID_SERVER_HOST;
     }
 
-    if ((status = svrToSvrConnect (rsComm, rodsServerHost)) < 0) {
+    if ( ( status = svrToSvrConnect( rsComm, rodsServerHost ) ) < 0 ) {
         return status;
     }
 
 
-    status = rcFileTruncate (rodsServerHost->conn, fileTruncateInp);
+    status = rcFileTruncate( rodsServerHost->conn, fileTruncateInp );
 
-    if (status < 0) {
-        rodsLog (LOG_NOTICE,
+    if ( status < 0 ) {
+        rodsLog( LOG_NOTICE,
                  "remoteFileTruncate: rcFileTruncate failed for %s, status = %d",
-                 fileTruncateInp->fileName, status);
+                 fileTruncateInp->fileName, status );
     }
 
     return status;
@@ -77,28 +78,28 @@ remoteFileTruncate (rsComm_t *rsComm, fileOpenInp_t *fileTruncateInp,
 
 // =-=-=-=-=-=-=-
 // local function which makes the call to truncate via the resource plugin
-int _rsFileTruncate( 
-    rsComm_t*      _comm, 
+int _rsFileTruncate(
+    rsComm_t*      _comm,
     fileOpenInp_t* _trunc_inp ) {
     // =-=-=-=-=-=-=-
     // trap bad object paths
-    if(_trunc_inp->objPath[0] == '\0') {
+    if ( _trunc_inp->objPath[0] == '\0' ) {
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - Empty logical path.";
-        irods::log(LOG_ERROR, msg.str());
+        irods::log( LOG_ERROR, msg.str() );
         return -1;
     }
 
     // =-=-=-=-=-=-=-
     // make the call to rename via the resource plugin
-    irods::file_object_ptr file_obj( 
-                                new irods::file_object( 
-                                    _comm, 
-                                    _trunc_inp->objPath, 
-                                    _trunc_inp->fileName, 
-                                    _trunc_inp->resc_hier_, 
-                                    0, 0, 0 ) );
+    irods::file_object_ptr file_obj(
+        new irods::file_object(
+            _comm,
+            _trunc_inp->objPath,
+            _trunc_inp->fileName,
+            _trunc_inp->resc_hier_,
+            0, 0, 0 ) );
     file_obj->size( _trunc_inp->dataSize );
     irods::error trunc_err = fileTruncate( _comm, file_obj );
 
@@ -111,7 +112,7 @@ int _rsFileTruncate(
         msg << "]";
         msg << trunc_err.code();
         irods::error err = PASSMSG( msg.str(), trunc_err );
-        irods::log ( err );
+        irods::log( err );
     }
 
     return trunc_err.code();

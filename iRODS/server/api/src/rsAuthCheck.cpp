@@ -17,21 +17,20 @@
 #include "irods_auth_constants.hpp"
 
 int
-rsAuthCheck (rsComm_t *rsComm, authCheckInp_t *authCheckInp, 
-		authCheckOut_t **authCheckOut)
-{
+rsAuthCheck( rsComm_t *rsComm, authCheckInp_t *authCheckInp,
+             authCheckOut_t **authCheckOut ) {
 #ifdef RODS_CAT
     int status;
     int privLevel;
     int clientPrivLevel;
     authCheckOut_t *result;
     unsigned char *digest;
-    char md5Buf[CHALLENGE_LEN+MAX_PASSWORD_LEN+2];
+    char md5Buf[CHALLENGE_LEN + MAX_PASSWORD_LEN + 2];
     MD5_CTX context;
-    char ServerID[MAX_PASSWORD_LEN+2];
+    char ServerID[MAX_PASSWORD_LEN + 2];
 
-    *authCheckOut = (authCheckOut_t*)malloc(sizeof(authCheckOut_t));
-    memset((char *)*authCheckOut, 0, sizeof(authCheckOut_t));
+    *authCheckOut = ( authCheckOut_t* )malloc( sizeof( authCheckOut_t ) );
+    memset( ( char * )*authCheckOut, 0, sizeof( authCheckOut_t ) );
 
     // =-=-=-=-=-=-=-
     // the incoming response string might be a kvp string
@@ -40,86 +39,87 @@ rsAuthCheck (rsComm_t *rsComm, authCheckInp_t *authCheckInp,
     std::string orig_resp = authCheckInp->response;
     irods::kvp_map_t kvp;
     irods::error ret = irods::parse_kvp_string(
-            orig_resp,
-            kvp );
+                           orig_resp,
+                           kvp );
     std::string scheme;
-    std::string response = authCheckInp->response; 
-    if( ret.ok() ) {
-        if( kvp.end() != kvp.find( irods::AUTH_SCHEME_KEY ) &&
-            kvp.end() != kvp.find( irods::AUTH_RESPONSE_KEY ) ) {
+    std::string response = authCheckInp->response;
+    if ( ret.ok() ) {
+        if ( kvp.end() != kvp.find( irods::AUTH_SCHEME_KEY ) &&
+                kvp.end() != kvp.find( irods::AUTH_RESPONSE_KEY ) ) {
             response = kvp[ irods::AUTH_RESPONSE_KEY ];
             scheme   = kvp[ irods::AUTH_SCHEME_KEY   ];
-        }   
+        }
     }
     status = chlCheckAuth(
-                 rsComm, 
+                 rsComm,
                  scheme.c_str(),
-                 authCheckInp->challenge, 
+                 authCheckInp->challenge,
                  const_cast< char* >( response.c_str() ),
                  authCheckInp->username,
-                 &privLevel, 
+                 &privLevel,
                  &clientPrivLevel );
-    if (status < 0) {
-        rodsLog (LOG_NOTICE, 
-                "rsAuthCheck: chlCheckAuth status = %d", status);
+    if ( status < 0 ) {
+        rodsLog( LOG_NOTICE,
+                 "rsAuthCheck: chlCheckAuth status = %d", status );
     }
 
-    if (status == 0) {
+    if ( status == 0 ) {
         int len, i;
         result = *authCheckOut;
         result->privLevel = privLevel;
         result->clientPrivLevel = clientPrivLevel;
 
         /* Add a hash to authenticate this server to the other server */
-        memset(md5Buf, 0, sizeof(md5Buf));
-        strncpy(md5Buf, authCheckInp->challenge, CHALLENGE_LEN);
+        memset( md5Buf, 0, sizeof( md5Buf ) );
+        strncpy( md5Buf, authCheckInp->challenge, CHALLENGE_LEN );
 
-        getZoneServerId("", ServerID); /* get our local zone SID */
-        len = strlen(ServerID);
-        digest = ( unsigned char* )malloc(RESPONSE_LEN+2);
-        if (len <=0) {
-            rodsLog (LOG_DEBUG, 
-                    "rsAuthCheck: Warning, cannot authenticate this server to remote server, no LocalZoneSID defined in server.config", status);
-            memset(digest, 0, RESPONSE_LEN);
+        getZoneServerId( "", ServerID ); /* get our local zone SID */
+        len = strlen( ServerID );
+        digest = ( unsigned char* )malloc( RESPONSE_LEN + 2 );
+        if ( len <= 0 ) {
+            rodsLog( LOG_DEBUG,
+                     "rsAuthCheck: Warning, cannot authenticate this server to remote server, no LocalZoneSID defined in server.config", status );
+            memset( digest, 0, RESPONSE_LEN );
         }
         else {
-            strncpy(md5Buf+CHALLENGE_LEN, ServerID, len);
+            strncpy( md5Buf + CHALLENGE_LEN, ServerID, len );
 
             obfMakeOneWayHash(
-                              HASH_TYPE_DEFAULT, 
-                              (unsigned char*)md5Buf, 
-                              CHALLENGE_LEN+MAX_PASSWORD_LEN,
-                              (unsigned char*)digest);
+                HASH_TYPE_DEFAULT,
+                ( unsigned char* )md5Buf,
+                CHALLENGE_LEN + MAX_PASSWORD_LEN,
+                ( unsigned char* )digest );
 
-            for (i=0;i<RESPONSE_LEN;i++) {
-                if (digest[i]=='\0') digest[i]++;  /* make sure 'string' doesn't
+            for ( i = 0; i < RESPONSE_LEN; i++ ) {
+                if ( digest[i] == '\0' ) { digest[i]++; }  /* make sure 'string' doesn't
                                                       end early */
             }
         }
-        result->serverResponse = (char*)digest;
+        result->serverResponse = ( char* )digest;
     }
 
-    return (status);
+    return ( status );
 #else
     /* this may be a gateway to the rcat host */
     rodsServerHost_t *rodsServerHost;
     int status;
 
-    status = getAndConnRcatHostNoLogin (rsComm, MASTER_RCAT,
-            rsComm->proxyUser.rodsZone, &rodsServerHost);
+    status = getAndConnRcatHostNoLogin( rsComm, MASTER_RCAT,
+                                        rsComm->proxyUser.rodsZone, &rodsServerHost );
 
-    if (status < 0) {
-        rodsLog (LOG_NOTICE,
-                "rsAuthCheck:getAndConnRcatHostNoLogin() failed. erro=%d", status);
-        return (status);
+    if ( status < 0 ) {
+        rodsLog( LOG_NOTICE,
+                 "rsAuthCheck:getAndConnRcatHostNoLogin() failed. erro=%d", status );
+        return ( status );
     }
 
-    if (rodsServerHost->localFlag == LOCAL_HOST) {
-        return ( SYS_NO_ICAT_SERVER_ERR);
-    } else {
-        status = rcAuthCheck (rodsServerHost->conn, authCheckInp, authCheckOut);
+    if ( rodsServerHost->localFlag == LOCAL_HOST ) {
+        return ( SYS_NO_ICAT_SERVER_ERR );
+    }
+    else {
+        status = rcAuthCheck( rodsServerHost->conn, authCheckInp, authCheckOut );
     }
     return status;
 #endif
-} 
+}
 

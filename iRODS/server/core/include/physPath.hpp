@@ -29,88 +29,88 @@
 #define LOCK_FILE_DIR  "lockFileDir"
 #define LOCK_FILE_TRAILER      "LOCK_FILE"     /* added to end of lock file */ // JMC - backport 4604
 // =-=-=-=-=-=-=-
- 
+
 
 #ifdef  __cplusplus
 extern "C" {
 #endif
 
     int
-    getFileMode (dataObjInp_t *dataObjInp);
+    getFileMode( dataObjInp_t *dataObjInp );
 
     int
-    getFileFlags (int l1descInx);
+    getFileFlags( int l1descInx );
 
     int
-    getFilePathName (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
-                     dataObjInp_t *dataObjInp);
+    getFilePathName( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
+                     dataObjInp_t *dataObjInp );
     int
-    getVaultPathPolicy (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
-                        vaultPathPolicy_t *outVaultPathPolicy);
+    getVaultPathPolicy( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
+                        vaultPathPolicy_t *outVaultPathPolicy );
     int
-    setPathForGraftPathScheme (char *objPath, const char *vaultPath, int addUserName,
-                               char *userName, int trimDirCnt, char *outPath);
-    int 
-    setPathForRandomScheme (char *objPath, const char *vaultPath, char *userName,
-                            char *outPath);
+    setPathForGraftPathScheme( char *objPath, const char *vaultPath, int addUserName,
+                               char *userName, int trimDirCnt, char *outPath );
     int
-    resolveDupFilePath (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
-                        dataObjInp_t *dataObjInp);
+    setPathForRandomScheme( char *objPath, const char *vaultPath, char *userName,
+                            char *outPath );
     int
-    getchkPathPerm (rsComm_t *rsComm, dataObjInp_t *dataObjInp, dataObjInfo_t *dataObjInfo);
-    int 
-    getCopiesFromCond (keyValPair_t *condInput);
+    resolveDupFilePath( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
+                        dataObjInp_t *dataObjInp );
     int
-    getWriteFlag (int openFlag);
+    getchkPathPerm( rsComm_t *rsComm, dataObjInp_t *dataObjInp, dataObjInfo_t *dataObjInfo );
     int
-    dataObjChksum (rsComm_t *rsComm, int l1descInx, keyValPair_t *regParam);
+    getCopiesFromCond( keyValPair_t *condInput );
     int
-    _dataObjChksum (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char **chksumStr);
-    rodsLong_t 
-    getSizeInVault (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo);
+    getWriteFlag( int openFlag );
     int
-    dataObjChksumAndReg (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
-                         char **chksumStr);
+    dataObjChksum( rsComm_t *rsComm, int l1descInx, keyValPair_t *regParam );
     int
-    chkAndHandleOrphanFile (rsComm_t *rsComm, char* objPath, char* rescHIer, char *filePath, 
-                            rescInfo_t *rescInfo, int replStatus);
+    _dataObjChksum( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char **chksumStr );
+    rodsLong_t
+    getSizeInVault( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo );
     int
-    renameFilePathToNewDir (rsComm_t *rsComm, char *newDir,
-                            fileRenameInp_t *fileRenameInp, rescInfo_t *rescInfo, int renameFlag);
+    dataObjChksumAndReg( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
+                         char **chksumStr );
     int
-    syncDataObjPhyPath (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                        dataObjInfo_t *dataObjInfoHead, char *acLCollection);
+    chkAndHandleOrphanFile( rsComm_t *rsComm, char* objPath, char* rescHIer, char *filePath,
+                            rescInfo_t *rescInfo, int replStatus );
     int
-    syncDataObjPhyPathS (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                         dataObjInfo_t *dataObjInfo, char *acLCollection);
+    renameFilePathToNewDir( rsComm_t *rsComm, char *newDir,
+                            fileRenameInp_t *fileRenameInp, rescInfo_t *rescInfo, int renameFlag );
     int
-    syncCollPhyPath (rsComm_t *rsComm, char *collection);
+    syncDataObjPhyPath( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+                        dataObjInfo_t *dataObjInfoHead, char *acLCollection );
     int
-    isInVault (dataObjInfo_t *dataObjInfo);
+    syncDataObjPhyPathS( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+                         dataObjInfo_t *dataObjInfo, char *acLCollection );
     int
-    initStructFileOprInp (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp,
+    syncCollPhyPath( rsComm_t *rsComm, char *collection );
+    int
+    isInVault( dataObjInfo_t *dataObjInfo );
+    int
+    initStructFileOprInp( rsComm_t *rsComm, structFileOprInp_t *structFileOprInp,
                           structFileExtAndRegInp_t *structFileExtAndRegInp,
-                          dataObjInfo_t *dataObjInfo);
+                          dataObjInfo_t *dataObjInfo );
     int
-    getDefFileMode ();
+    getDefFileMode();
     int
-    getDefDirMode ();
+    getDefDirMode();
     int
-    getLogPathFromPhyPath (char *phyPath, rescInfo_t *rescInfo, char *outLogPath);
+    getLogPathFromPhyPath( char *phyPath, rescInfo_t *rescInfo, char *outLogPath );
     int
-    rsMkOrphanPath (rsComm_t *rsComm, char *objPath, char *orphanPath);
+    rsMkOrphanPath( rsComm_t *rsComm, char *objPath, char *orphanPath );
 // =-=-=-=-=-=-=-
 // JMC - backport 4598
     int
-    getDataObjLockPath (char *objPath, char **outLockPath);
+    getDataObjLockPath( char *objPath, char **outLockPath );
     int
-    fsDataObjLock (char *objPath, int cmd, int type, int infd);
+    fsDataObjLock( char *objPath, int cmd, int type, int infd );
 // =-=-=-=-=-=-=-
-    int getLeafRescPathName(const std::string& _resc_hier, std::string& _ret_string);
+    int getLeafRescPathName( const std::string& _resc_hier, std::string& _ret_string );
 
 #ifdef FILESYSTEM_META
-rodsLong_t 
-getFileMetadataFromVault (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo);
+    rodsLong_t
+    getFileMetadataFromVault( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo );
 #endif
 #ifdef  __cplusplus
 }

@@ -11,117 +11,117 @@
 
 #include "irods_file_object.hpp"
 
-/* rsRegDataObj - This call is strictly an API handler and should not be 
+/* rsRegDataObj - This call is strictly an API handler and should not be
  * called directly in the server. For server calls, use svrRegDataObj
- */ 
+ */
 int
-rsRegDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, 
-              dataObjInfo_t **outDataObjInfo)
-{
+rsRegDataObj( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
+              dataObjInfo_t **outDataObjInfo ) {
     int status;
     rodsServerHost_t *rodsServerHost = NULL;
 
     *outDataObjInfo = NULL;
 
-    status = getAndConnRcatHost (rsComm, MASTER_RCAT, dataObjInfo->objPath,
-                                 &rodsServerHost);
-    if (status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
-        return(status);
+    status = getAndConnRcatHost( rsComm, MASTER_RCAT, dataObjInfo->objPath,
+                                 &rodsServerHost );
+    if ( status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
+        return( status );
     }
-    
-    if (rodsServerHost->localFlag == LOCAL_HOST) {
+
+    if ( rodsServerHost->localFlag == LOCAL_HOST ) {
 #ifdef RODS_CAT
-        status = _rsRegDataObj (rsComm, dataObjInfo);
-        if (status >= 0) {
-            *outDataObjInfo = (dataObjInfo_t *) malloc (sizeof (dataObjInfo_t));
+        status = _rsRegDataObj( rsComm, dataObjInfo );
+        if ( status >= 0 ) {
+            *outDataObjInfo = ( dataObjInfo_t * ) malloc( sizeof( dataObjInfo_t ) );
             /* fake pointers will be deleted by the packing */
             **outDataObjInfo = *dataObjInfo;
         }
 #else
         status = SYS_NO_RCAT_SERVER_ERR;
 #endif
-    } else {
-        status = rcRegDataObj (rodsServerHost->conn, dataObjInfo, 
-                               outDataObjInfo);
     }
-    return (status);
+    else {
+        status = rcRegDataObj( rodsServerHost->conn, dataObjInfo,
+                               outDataObjInfo );
+    }
+    return ( status );
 }
 
 int
-_rsRegDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
-{
+_rsRegDataObj( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
 #ifdef RODS_CAT
     int status;
     irods::error ret;
-    status = chlRegDataObj (rsComm, dataObjInfo);
-    if(status < 0) {
+    status = chlRegDataObj( rsComm, dataObjInfo );
+    if ( status < 0 ) {
         char* sys_error;
-        char* rods_error = rodsErrorName(status, &sys_error);
+        char* rods_error = rodsErrorName( status, &sys_error );
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - Failed to register data object \"" << dataObjInfo->objPath << "\"";
         msg << " - " << rods_error << " " << sys_error;
-        ret = ERROR(status, msg.str());
-        irods::log(ret);
-    } else {
+        ret = ERROR( status, msg.str() );
+        irods::log( ret );
+    }
+    else {
         irods::file_object_ptr file_obj(
-                                    new irods::file_object( 
-                                        rsComm, 
-                                        dataObjInfo ) );
-        ret = fileRegistered(rsComm, file_obj);
-        if(!ret.ok()) {
+            new irods::file_object(
+                rsComm,
+                dataObjInfo ) );
+        ret = fileRegistered( rsComm, file_obj );
+        if ( !ret.ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - Failed to signal resource that the data object \"";
             msg << dataObjInfo->objPath;
             msg << "\" was registered";
-            ret = PASSMSG(msg.str(), ret);
-            irods::log(ret);
+            ret = PASSMSG( msg.str(), ret );
+            irods::log( ret );
             status = ret.code();
         }
     }
-    return (status);
+    return ( status );
 #else
-    return (SYS_NO_RCAT_SERVER_ERR);
+    return ( SYS_NO_RCAT_SERVER_ERR );
 #endif
 
 }
 
 int
-svrRegDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
-{
+svrRegDataObj( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
     int status;
     rodsServerHost_t *rodsServerHost = NULL;
 
-    if (dataObjInfo->specColl != NULL) {
-        rodsLog (LOG_NOTICE,
+    if ( dataObjInfo->specColl != NULL ) {
+        rodsLog( LOG_NOTICE,
                  "svrRegDataObj: Reg path %s is in spec coll",
-                 dataObjInfo->objPath);
-        return (SYS_REG_OBJ_IN_SPEC_COLL);
+                 dataObjInfo->objPath );
+        return ( SYS_REG_OBJ_IN_SPEC_COLL );
     }
 
-    status = getAndConnRcatHost (rsComm, MASTER_RCAT, dataObjInfo->objPath,
-                                 &rodsServerHost);
-    if (status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
-        return(status);
+    status = getAndConnRcatHost( rsComm, MASTER_RCAT, dataObjInfo->objPath,
+                                 &rodsServerHost );
+    if ( status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
+        return( status );
     }
 
-    if (rodsServerHost->localFlag == LOCAL_HOST) {
+    if ( rodsServerHost->localFlag == LOCAL_HOST ) {
 #ifdef RODS_CAT
-        status = _rsRegDataObj (rsComm, dataObjInfo);
+        status = _rsRegDataObj( rsComm, dataObjInfo );
 #else
         status = SYS_NO_RCAT_SERVER_ERR;
 #endif
-    } else {
+    }
+    else {
         dataObjInfo_t *outDataObjInfo = NULL;
-        status = rcRegDataObj (rodsServerHost->conn, dataObjInfo,
-                               &outDataObjInfo);
-        if (status >= 0 && NULL != outDataObjInfo ) { // JMC cppcheck - nullptr
+        status = rcRegDataObj( rodsServerHost->conn, dataObjInfo,
+                               &outDataObjInfo );
+        if ( status >= 0 && NULL != outDataObjInfo ) { // JMC cppcheck - nullptr
             dataObjInfo->dataId = outDataObjInfo->dataId;
-            free (outDataObjInfo);
+            free( outDataObjInfo );
         }
     }
 
-    return (status);
+    return ( status );
 }
 

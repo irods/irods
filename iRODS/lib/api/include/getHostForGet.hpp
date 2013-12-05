@@ -29,17 +29,17 @@ typedef struct {
 #define RS_GET_HOST_FOR_GET rsGetHostForGet
 /* prototype for the server handler */
 int
-rsGetHostForGet (rsComm_t *rsComm, dataObjInp_t *dataObjInp, 
-char **outHost);
-int 
-getBestRescForGet (rsComm_t *rsComm, dataObjInp_t *dataObjInp, 
-rescInfo_t **outRescInfo);
+rsGetHostForGet( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+                 char **outHost );
 int
-getRescForGetInColl (rsComm_t *rsComm, collInp_t *collInp,
-hostSearchStat_t *hostSearchStat);
+getBestRescForGet( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+                   rescInfo_t **outRescInfo );
 int
-getRescForGetInDataObj (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-hostSearchStat_t *hostSearchStat);
+getRescForGetInColl( rsComm_t *rsComm, collInp_t *collInp,
+                     hostSearchStat_t *hostSearchStat );
+int
+getRescForGetInDataObj( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+                        hostSearchStat_t *hostSearchStat );
 #else
 #define RS_GET_HOST_FOR_GET NULL
 #endif
@@ -48,24 +48,24 @@ hostSearchStat_t *hostSearchStat);
 extern "C" {
 #endif
 
-/* prototype for the client call */
-/* rcGetHostForGet - get the best host the put operation.
- * Input -
- *   rcComm_t *conn - The client connection handle.
- *   dataObjInp_t *dataObjInp - generic dataObj input. Relevant items are:
- *      objPath - the path of the target collection.
- *      condInput - conditional Input
- *          REPL_NUM_KW  - "value" = The replica number of the copy to
- *              upload.
- *	    RESC_NAME_KW - "value" - The default dest resource. Only used
- *            to create a new file but no overwite existing file.
- *   return value - The status of the operation.
- *	    char **outHost - the address of the best host
- */
+    /* prototype for the client call */
+    /* rcGetHostForGet - get the best host the put operation.
+     * Input -
+     *   rcComm_t *conn - The client connection handle.
+     *   dataObjInp_t *dataObjInp - generic dataObj input. Relevant items are:
+     *      objPath - the path of the target collection.
+     *      condInput - conditional Input
+     *          REPL_NUM_KW  - "value" = The replica number of the copy to
+     *              upload.
+     *	    RESC_NAME_KW - "value" - The default dest resource. Only used
+     *            to create a new file but no overwite existing file.
+     *   return value - The status of the operation.
+     *	    char **outHost - the address of the best host
+     */
 
-int
-rcGetHostForGet (rcComm_t *conn, dataObjInp_t *dataObjInp,
-char **outHost);
+    int
+    rcGetHostForGet( rcComm_t *conn, dataObjInp_t *dataObjInp,
+                     char **outHost );
 #ifdef  __cplusplus
 }
 #endif

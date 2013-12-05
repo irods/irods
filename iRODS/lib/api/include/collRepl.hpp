@@ -21,8 +21,8 @@
 #define RS_COLL_REPL rsCollRepl
 /* prototype for the server handler */
 int
-rsCollRepl (rsComm_t *rsComm, collInp_t *collReplInp, 
-collOprStat_t **collOprStat);
+rsCollRepl( rsComm_t *rsComm, collInp_t *collReplInp,
+            collOprStat_t **collOprStat );
 #else
 #define RS_COLL_REPL NULL
 #endif
@@ -32,8 +32,8 @@ collOprStat_t **collOprStat);
 #define RS_COLL_REPL201 rsCollRepl201
 /* prototype for the server handler */
 int
-rsCollRepl201 (rsComm_t *rsComm, dataObjInp_t *collReplInp,
-collOprStat_t **collOprStat);
+rsCollRepl201( rsComm_t *rsComm, dataObjInp_t *collReplInp,
+               collOprStat_t **collOprStat );
 #else
 #define RS_COLL_REPL201 NULL
 #endif
@@ -43,12 +43,12 @@ collOprStat_t **collOprStat);
 extern "C" {
 #endif
 
-/* prototype for the client call */
-int
-rcCollRepl (rcComm_t *conn, collInp_t *collReplInp, int vFlag);
-int
-_rcCollRepl (rcComm_t *conn, collInp_t *collReplInp,
-collOprStat_t **collOprStat);
+    /* prototype for the client call */
+    int
+    rcCollRepl( rcComm_t *conn, collInp_t *collReplInp, int vFlag );
+    int
+    _rcCollRepl( rcComm_t *conn, collInp_t *collReplInp,
+                 collOprStat_t **collOprStat );
 
 #ifdef  __cplusplus
 }

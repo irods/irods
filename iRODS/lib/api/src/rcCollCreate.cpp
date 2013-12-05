@@ -5,7 +5,7 @@
 
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code.  */ 
+/* This is script-generated code.  */
 /* See collCreate.h for a description of this API call.*/
 
 #include "collCreate.hpp"
@@ -29,7 +29,7 @@
  * \note none
  *
  * \usage
- * Create a collection /myZone/home/john/coll1/coll2 and make parent collections as 
+ * Create a collection /myZone/home/john/coll1/coll2 and make parent collections as
  * needed:
  * \n int status;
  * \n collInp_t collCreateInp;
@@ -56,11 +56,10 @@
 **/
 
 int
-rcCollCreate (rcComm_t *conn, collInp_t *collCreateInp)
-{
+rcCollCreate( rcComm_t *conn, collInp_t *collCreateInp ) {
     int status;
-    status = procApiRequest (conn, COLL_CREATE_AN,  collCreateInp, NULL, 
-        (void **) NULL, NULL);
+    status = procApiRequest( conn, COLL_CREATE_AN,  collCreateInp, NULL,
+                             ( void ** ) NULL, NULL );
 
-    return (status);
+    return ( status );
 }

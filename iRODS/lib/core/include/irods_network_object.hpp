@@ -38,17 +38,17 @@ namespace irods {
         // =-=-=-=-=-=-=-
         /// @brief Comparison operator
         virtual bool operator==( const network_object& _rhs ) const;
-        
+
         // =-=-=-=-=-=-=-
         // plugin resolution operation
-        virtual error resolve( 
-                          const std::string&, // plugin interface
-                          plugin_ptr& ) = 0;  // resolved plugin
-        
+        virtual error resolve(
+            const std::string&, // plugin interface
+            plugin_ptr& ) = 0;  // resolved plugin
+
         // =-=-=-=-=-=-=-
         // convertion to client comm ptr
         virtual error to_client( rcComm_t* );
-         
+
         // =-=-=-=-=-=-=-
         // convertion to client comm ptr
         virtual error to_server( rsComm_t* );
@@ -67,7 +67,7 @@ namespace irods {
 
     private:
         // =-=-=-=-=-=-=-
-        // Attributes 
+        // Attributes
         int socket_handle_; // socket descriptor
 
     }; // network_object

@@ -30,10 +30,10 @@ namespace irods {
                      const std::string& _resc_hier,
                      int _fd,
                      int _mode,
-                     int _flags);
+                     int _flags );
         file_object( rsComm_t* _comm,
-                     const dataObjInfo_t* _dataObjInfo);
-        
+                     const dataObjInfo_t* _dataObjInfo );
+
         // =-=-=-=-=-=-=-
         // Destructor
         virtual ~file_object();
@@ -44,13 +44,13 @@ namespace irods {
 
         /// @brief Comparison operator
         virtual bool operator==( const file_object& _rhs ) const;
-        
+
         // =-=-=-=-=-=-=-
         // plugin resolution operation
-        virtual error resolve( 
-                          const std::string&, // plugin interface name
-                          plugin_ptr& );      // resolved plugin instance
-        
+        virtual error resolve(
+            const std::string&, // plugin interface name
+            plugin_ptr& );      // resolved plugin instance
+
         // =-=-=-=-=-=-=-
         // accessor for rule engine variables
         virtual error get_re_vars( keyValPair_t& );
@@ -67,25 +67,25 @@ namespace irods {
         virtual std::vector< physical_object > replicas()        const { return replicas_;        }
         virtual const std::string&             in_pdmo()         const { return in_pdmo_;         }
         virtual const keyValPair_t&            cond_input()      const { return cond_input_;      }
-        
+
         // =-=-=-=-=-=-=-
         // Mutators
         virtual void logical_path( const std::string& _s )   { logical_path_    = _s;  }
         virtual void file_descriptor( int _fd )              { file_descriptor_ = _fd; }
-        virtual void comm ( rsComm_t* _c )                   { comm_            = _c;  } 
+        virtual void comm( rsComm_t* _c )                   { comm_            = _c;  }
         virtual void size( size_t _v )                       { size_            = _v;  }
         virtual void repl_requested( int _v )                { repl_requested_  = _v;  }
         virtual void in_pdmo( const std::string& _v )        { in_pdmo_         = _v;  }
         virtual void replicas( const std::vector< physical_object >& _v ) {
             replicas_ = _v;
         }
-        inline void cond_input( const keyValPair_t& _cond_input ) { replKeyVal(&_cond_input, &cond_input_); }
-        
+        inline void cond_input( const keyValPair_t& _cond_input ) { replKeyVal( &_cond_input, &cond_input_ ); }
+
     protected:
         // =-=-=-=-=-=-=-
         // Attributes
         // NOTE :: These are not guaranteed to be properly populated right now
-        //      :: that will need be done later when these changes are pushed 
+        //      :: that will need be done later when these changes are pushed
         //      :: higher in the original design
         rsComm_t*                      comm_;            // connection to irods session
         std::string                    logical_path_;    // full logical path from icat
@@ -94,29 +94,29 @@ namespace irods {
         int                            l1_desc_idx_;     // index into irods L1 file decriptor table
         size_t                         size_;            // size of the file in bytes
         int                            repl_requested_;  // requested replica number
-        std::string                    in_pdmo_;         // hierarchy indicating the current operations are 
-                                                         // occurring from within a pdmo
-                                                         // call made from within the hierarchy
-        std::vector< physical_object > replicas_;        // structures holding replica info initialized 
-                                                         // by factory fcn from
-                                                         // dataObjInfoHead
+        std::string                    in_pdmo_;         // hierarchy indicating the current operations are
+        // occurring from within a pdmo
+        // call made from within the hierarchy
+        std::vector< physical_object > replicas_;        // structures holding replica info initialized
+        // by factory fcn from
+        // dataObjInfoHead
         keyValPair_t                  cond_input_;       // input keywords
-        
+
     }; // class file_object
-    
+
     /// =-=-=-=-=-=-=-
     /// @brief typedef for managed file object ptr
     typedef boost::shared_ptr< file_object > file_object_ptr;
 
     // =-=-=-=-=-=-=-
     // factory function which will take a dataObjInfo pointer and create a file_object
-    error file_object_factory( rsComm_t*,         // server network connection  
+    error file_object_factory( rsComm_t*,         // server network connection
                                dataObjInp_t*,     // incoming data object request struct
                                file_object_ptr ); // out var for file object
     // =-=-=-=-=-=-=-
     // function which will inform irods as to which server to select for a given operation
     error resource_redirect( const std::string&,   // operation in question
-                             rsComm_t*,            // server network connection  
+                             rsComm_t*,            // server network connection
                              dataObjInp_t*,        // incoming data object request struct
                              std::string&,         // chosen resource hierarchy string
                              rodsServerHost_t*&,   // svr2svr conn if redirecting

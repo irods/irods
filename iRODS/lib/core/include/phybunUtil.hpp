@@ -17,13 +17,13 @@
 extern "C" {
 #endif
 
-int
-phybunUtil (rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
-rodsPathInp_t *rodsPathInp);
-int
-initCondForPhybunOpr (rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
-structFileExtAndRegInp_t *phyBundleCollInp,
-rodsPathInp_t *rodsPathInp);
+    int
+    phybunUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
+                rodsPathInp_t *rodsPathInp );
+    int
+    initCondForPhybunOpr( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
+                          structFileExtAndRegInp_t *phyBundleCollInp,
+                          rodsPathInp_t *rodsPathInp );
 
 #ifdef  __cplusplus
 }

@@ -4,12 +4,11 @@
 #include "subStructFileTruncate.hpp"
 
 int
-rcSubStructFileTruncate (rcComm_t *conn, subFile_t *bunSubTruncateInp)
-{
+rcSubStructFileTruncate( rcComm_t *conn, subFile_t *bunSubTruncateInp ) {
     int status;
-    status = procApiRequest (conn, SUB_STRUCT_FILE_TRUNCATE_AN, bunSubTruncateInp,
-      NULL, (void **) NULL, NULL);
+    status = procApiRequest( conn, SUB_STRUCT_FILE_TRUNCATE_AN, bunSubTruncateInp,
+                             NULL, ( void ** ) NULL, NULL );
 
-    return (status);
+    return ( status );
 }
 

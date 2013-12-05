@@ -5,12 +5,12 @@
 #ifndef DBO_HIGHLEVEL_ROUTINES_HPP
 #define DBO_HIGHLEVEL_ROUTINES_HPP
 
-int dbrOpen(char *dbrName);
-int dboExecute(rsComm_t *rsComm, char *dbrName, char *dboName, char *dborName,
-	       int dobrOption, char *outBuf,
-	       int maxOutBuf, char *args[10]);
-int dbrClose(char *dbrName);
-int dbrCommit(rsComm_t *rsComm, char *dbrName);
-int dbrRollback(rsComm_t *rsComm, char *dbrName);
+int dbrOpen( char *dbrName );
+int dboExecute( rsComm_t *rsComm, char *dbrName, char *dboName, char *dborName,
+                int dobrOption, char *outBuf,
+                int maxOutBuf, char *args[10] );
+int dbrClose( char *dbrName );
+int dbrCommit( rsComm_t *rsComm, char *dbrName );
+int dbrRollback( rsComm_t *rsComm, char *dbrName );
 
 #endif /* DBO_HIGHLEVEL_ROUTINES_H */

@@ -22,27 +22,27 @@
 #define RS_UNBUN_AND_REG_PHY_BUNFILE rsUnbunAndRegPhyBunfile
 /* prototype for the server handler */
 int
-rsUnbunAndRegPhyBunfile (rsComm_t *rsComm, dataObjInp_t *dataObjInp); 
+rsUnbunAndRegPhyBunfile( rsComm_t *rsComm, dataObjInp_t *dataObjInp );
 int
-_rsUnbunAndRegPhyBunfile (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-rescInfo_t *rescInfo);
+_rsUnbunAndRegPhyBunfile( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+                          rescInfo_t *rescInfo );
 int
-remoteUnbunAndRegPhyBunfile (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-rodsServerHost_t *rodsServerHost);
+remoteUnbunAndRegPhyBunfile( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+                             rodsServerHost_t *rodsServerHost );
 int
-unbunPhyBunFile ( rsComm_t *rsComm, char *objPath,
-                  rescInfo_t *rescInfo, char *bunFilePath, char *phyBunDir, char *dataType,
-                  int saveLinkedFles, const char* resc_hier ); // JMC _ backport 4657, 4658
+unbunPhyBunFile( rsComm_t *rsComm, char *objPath,
+                 rescInfo_t *rescInfo, char *bunFilePath, char *phyBunDir, char *dataType,
+                 int saveLinkedFles, const char* resc_hier ); // JMC _ backport 4657, 4658
 int
-regUnbunPhySubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *phyBunDir,
-int rmBunCopyFlag);
+regUnbunPhySubfiles( rsComm_t *rsComm, rescInfo_t *rescInfo, char *phyBunDir,
+                     int rmBunCopyFlag );
 int
-regPhySubFile (rsComm_t *rsComm, char *subfilePath,
-dataObjInfo_t *bunDataObjInfo, rescInfo_t *rescInfo);
+regPhySubFile( rsComm_t *rsComm, char *subfilePath,
+               dataObjInfo_t *bunDataObjInfo, rescInfo_t *rescInfo );
 int
-rmLinkedFilesInUnixDir (char *phyBunDir);
+rmLinkedFilesInUnixDir( char *phyBunDir );
 int
-rmUnlinkedFilesInUnixDir (char *phyBunDir); // JMC _ backport 4657
+rmUnlinkedFilesInUnixDir( char *phyBunDir ); // JMC _ backport 4657
 #else
 #define RS_UNBUN_AND_REG_PHY_BUNFILE NULL
 #endif
@@ -51,21 +51,21 @@ rmUnlinkedFilesInUnixDir (char *phyBunDir); // JMC _ backport 4657
 extern "C" {
 #endif
 
-/* prototype for the client call */
-/* rcUnbunAndRegPhyBunfile - Unbundle a physical bundle file specified by
- * FILE_PATH_KW and register each subfile as replica. This call cannot be
- * called by normal users directly.
- * Input -
- *   rcComm_t *conn - The client connection handle.
- *   dataObjInp_t *dataObjInp - generic dataObj input. Relevant items are:
- *      objPath - the path of the data object.
- *      condInput - conditional Input
- *	    FILE_PATH_KW - the phyical path of the bundled file.
- *          DEST_RESC_NAME_KW - "value" = The destination Resource. 
- *   return value - The status of the operation.
- */
-int
-rcUnbunAndRegPhyBunfile (rcComm_t *conn, dataObjInp_t *dataObjInp);
+    /* prototype for the client call */
+    /* rcUnbunAndRegPhyBunfile - Unbundle a physical bundle file specified by
+     * FILE_PATH_KW and register each subfile as replica. This call cannot be
+     * called by normal users directly.
+     * Input -
+     *   rcComm_t *conn - The client connection handle.
+     *   dataObjInp_t *dataObjInp - generic dataObj input. Relevant items are:
+     *      objPath - the path of the data object.
+     *      condInput - conditional Input
+     *	    FILE_PATH_KW - the phyical path of the bundled file.
+     *          DEST_RESC_NAME_KW - "value" = The destination Resource.
+     *   return value - The status of the operation.
+     */
+    int
+    rcUnbunAndRegPhyBunfile( rcComm_t *conn, dataObjInp_t *dataObjInp );
 #ifdef  __cplusplus
 }
 #endif

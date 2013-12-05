@@ -20,7 +20,7 @@ namespace irods {
         structured_object();
         structured_object( const structured_object& );
         structured_object( subFile_t& _subfile );
-            
+
         // =-=-=-=-=-=-=-
         // Destructor
         virtual ~structured_object();
@@ -31,14 +31,14 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // plugin resolution operation
-        virtual error resolve( 
-                          const std::string&, // plugin interface name
-                          plugin_ptr& );      // resolved plugin instance
-                
+        virtual error resolve(
+            const std::string&, // plugin interface name
+            plugin_ptr& );      // resolved plugin instance
+
         // =-=-=-=-=-=-=-
         // accessor for rule engine variables
         virtual error get_re_vars( keyValPair_t& );
-         
+
         // =-=-=-=-=-=-=-
         // Accessors
         inline rodsHostAddr_t addr()          const { return addr_;          }
@@ -50,16 +50,16 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // Mutators
-        inline void addr     ( rodsHostAddr_t _addr ) { addr_      = _addr; }
+        inline void addr( rodsHostAddr_t _addr ) { addr_      = _addr; }
         inline void spec_coll( specColl_t*    _coll ) { spec_coll_ = _coll; }
-        inline void data_type( std::string    _dt   ) { data_type_ = _dt;   }
-        inline void opr_type(  int            _ot   ) {  opr_type_ = _ot;   }
-        
+        inline void data_type( std::string    _dt ) { data_type_ = _dt;   }
+        inline void opr_type( int            _ot ) {  opr_type_ = _ot;   }
+
     protected:
         // =-=-=-=-=-=-=-
         // Attributes
         // NOTE :: These are not guaranteed to be properly populated right now
-        //      :: that will need be done later when these changes are pushed 
+        //      :: that will need be done later when these changes are pushed
         //      :: higher in the original design
         rodsHostAddr_t addr_;
         std::string    sub_file_path_;

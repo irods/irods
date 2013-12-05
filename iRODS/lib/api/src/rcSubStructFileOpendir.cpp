@@ -1,14 +1,13 @@
-/* This is script-generated code.  */ 
+/* This is script-generated code.  */
 /* See bunSubOpendir.h for a description of this API call.*/
 
 #include "subStructFileOpendir.hpp"
 
 int
-rcSubStructFileOpendir (rcComm_t *conn, subFile_t *subFile)
-{
+rcSubStructFileOpendir( rcComm_t *conn, subFile_t *subFile ) {
     int status;
-    status = procApiRequest (conn, SUB_STRUCT_FILE_OPENDIR_AN, subFile, NULL, 
-        (void **) NULL, NULL);
+    status = procApiRequest( conn, SUB_STRUCT_FILE_OPENDIR_AN, subFile, NULL,
+                             ( void ** ) NULL, NULL );
 
-    return (status);
+    return ( status );
 }

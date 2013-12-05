@@ -12,7 +12,7 @@
 #include "rods.hpp"
 #include "rsGlobalExtern.hpp"   /* server global */
 #include "rcGlobalExtern.hpp"     /* client global */
-#include "rsLog.hpp" 
+#include "rsLog.hpp"
 #include "rodsLog.hpp"
 #include "sockComm.hpp"
 #include "rsMisc.hpp"
@@ -23,6 +23,6 @@
 #define v_FLAG  0x1
 
 int
-xmsgServerMain ();
-int usage (char *prog);
+xmsgServerMain();
+int usage( char *prog );
 #endif	/* XMSG_SERVER_H */

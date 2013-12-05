@@ -21,28 +21,28 @@ typedef struct FileReadInp {
     int fileInx;
     int len;
 } fileReadInp_t;
-    
+
 #define fileReadInp_PI "int fileInx; int len;"
 
 #if defined(RODS_SERVER)
 #define RS_FILE_READ rsFileRead
 /* prototype for the server handler */
 int
-rsFileRead (rsComm_t *rsComm, fileReadInp_t *fileReadInp, 
-bytesBuf_t *fileReadOutBBuf);
+rsFileRead( rsComm_t *rsComm, fileReadInp_t *fileReadInp,
+            bytesBuf_t *fileReadOutBBuf );
 int
-_rsFileRead (rsComm_t *rsComm, fileReadInp_t *fileReadInp, 
-bytesBuf_t *fileReadOutBBuf);
+_rsFileRead( rsComm_t *rsComm, fileReadInp_t *fileReadInp,
+             bytesBuf_t *fileReadOutBBuf );
 int
-remoteFileRead (rsComm_t *rsComm, fileReadInp_t *fileReadInp,
-bytesBuf_t *fileReadOutBBuf, rodsServerHost_t *rodsServerHost);
+remoteFileRead( rsComm_t *rsComm, fileReadInp_t *fileReadInp,
+                bytesBuf_t *fileReadOutBBuf, rodsServerHost_t *rodsServerHost );
 #else
 #define RS_FILE_READ NULL
 #endif
 
 /* prototype for the client call */
 int
-rcFileRead (rcComm_t *conn, fileReadInp_t *fileReadInp,
-bytesBuf_t *fileReadOutBBuf);
+rcFileRead( rcComm_t *conn, fileReadInp_t *fileReadInp,
+            bytesBuf_t *fileReadOutBBuf );
 
 #endif	/* FILE_READ_H */

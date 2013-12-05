@@ -10,16 +10,16 @@ namespace irods {
 
     class tmp_string {
     public:
-        tmp_string(const char* orig);
-        virtual ~tmp_string(void);
+        tmp_string( const char* orig );
+        virtual ~tmp_string( void );
 
         /// @brief provides the non-const char*. However its memory will be freed when the tmp_string goes out of scope
-        char* str(void) { return string_; }
-        
+        char* str( void ) { return string_; }
+
     private:
         char* string_;
     };
-    
+
 }; // namespace irods
 
 #endif // _tmp_string_H_

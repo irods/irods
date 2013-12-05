@@ -1,14 +1,13 @@
-/* This is script-generated code.  */ 
+/* This is script-generated code.  */
 /* See bunSubMkdir.h for a description of this API call.*/
 
 #include "subStructFileMkdir.hpp"
 
 int
-rcSubStructFileMkdir (rcComm_t *conn, subFile_t *subFile)
-{
+rcSubStructFileMkdir( rcComm_t *conn, subFile_t *subFile ) {
     int status;
-    status = procApiRequest (conn, SUB_STRUCT_FILE_MKDIR_AN, subFile, NULL, 
-        (void **) NULL, NULL);
+    status = procApiRequest( conn, SUB_STRUCT_FILE_MKDIR_AN, subFile, NULL,
+                             ( void ** ) NULL, NULL );
 
-    return (status);
+    return ( status );
 }

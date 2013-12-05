@@ -29,22 +29,22 @@
 #define PRINT(p, s, f, d) 	snprintf(*p, *s, f, d);*s -= strlen(*p); *p += strlen(*p);
 int newTVarId();
 
-char* getTVarName(int vid, char name[128]);
-char* getTVarNameRegion(int vid, Region *r);
-char* getTVarNameRegionFromExprType(ExprType *tvar, Region *r);
+char* getTVarName( int vid, char name[128] );
+char* getTVarNameRegion( int vid, Region *r );
+char* getTVarNameRegionFromExprType( ExprType *tvar, Region *r );
 
-ExprType *dupType(ExprType *ty, Region *r);
-int typeEqSyntatic(ExprType *a, ExprType *b);
+ExprType *dupType( ExprType *ty, Region *r );
+int typeEqSyntatic( ExprType *a, ExprType *b );
 
-Node **allocSubtrees(Region *r, int size);
-void setStringPair(ExprType *ty, Region *r);
-void replace(Hashtable *varTypes, int a, ExprType *b);
-void replaceCons(ExprType *consType, int a, ExprType *b);
-ExprType* dereference(ExprType *type, Hashtable *tt, Region *r);
-ExprType *instantiate(ExprType *type, Hashtable *type_table, int replaceFreeVars, Region *r);
+Node **allocSubtrees( Region *r, int size );
+void setStringPair( ExprType *ty, Region *r );
+void replace( Hashtable *varTypes, int a, ExprType *b );
+void replaceCons( ExprType *consType, int a, ExprType *b );
+ExprType* dereference( ExprType *type, Hashtable *tt, Region *r );
+ExprType *instantiate( ExprType *type, Hashtable *type_table, int replaceFreeVars, Region *r );
 
 
-ExprType *dupTypeAux(ExprType *ty, Region *r, Hashtable *varTable);
+ExprType *dupTypeAux( ExprType *ty, Region *r, Hashtable *varTable );
 
 #define cpRes(p, r) regionRegionCpNode(p, r)
 #define cpType(p, r) regionRegionCpNode(p, r)
@@ -53,47 +53,47 @@ ExprType *dupTypeAux(ExprType *ty, Region *r, Hashtable *varTable);
 
 /*Res *cpRes(Res *res, Region *r);*/
 /*ExprType *cpType(ExprType *type, Region *r); */
-char *cpString(char *res, Region *r);
-char *cpStringExt(char* str, Region* r);
-void cpHashtable(Hashtable *env, Region *r);
-void cpEnv(Env *env, Region *r);
+char *cpString( char *res, Region *r );
+char *cpStringExt( char* str, Region* r );
+void cpHashtable( Hashtable *env, Region *r );
+void cpEnv( Env *env, Region *r );
 /*Res *cpRes2(Res *res, Region *oldr, Region *newr);*/
 /*ExprType *cpType2(ExprType *type, Region *oldr, Region *newr);*/
-char *cpString2(char *res, Region *oldr, Region *newr);
-void cpHashtable2(Hashtable *env, Region *oldr, Region *newr);
-void cpEnv2(Env *env, Region *oldr, Region *newr);
+char *cpString2( char *res, Region *oldr, Region *newr );
+void cpHashtable2( Hashtable *env, Region *oldr, Region *newr );
+void cpEnv2( Env *env, Region *oldr, Region *newr );
 
-int occursIn(ExprType *var, ExprType *type);
-ExprType* unifyWith(ExprType *type, ExprType* expected, Hashtable *varTypes, Region *r);
-ExprType* unifyNonTvars(ExprType *type, ExprType *expected, Hashtable *varTypes, Region *r);
-ExprType* unifyTVarL(ExprType *type, ExprType* expected, Hashtable *varTypes, Region *r);
-ExprType* unifyTVarR(ExprType *type, ExprType* expected, Hashtable *varTypes, Region *r);
+int occursIn( ExprType *var, ExprType *type );
+ExprType* unifyWith( ExprType *type, ExprType* expected, Hashtable *varTypes, Region *r );
+ExprType* unifyNonTvars( ExprType *type, ExprType *expected, Hashtable *varTypes, Region *r );
+ExprType* unifyTVarL( ExprType *type, ExprType* expected, Hashtable *varTypes, Region *r );
+ExprType* unifyTVarR( ExprType *type, ExprType* expected, Hashtable *varTypes, Region *r );
 
-void printType(ExprType *type, Hashtable *var_types);
-char *typeToString(ExprType *type, Hashtable *var_types, char *buf, int bufsize);
-void typingConstraintsToString(List *typingConstraints, Hashtable *var_types, char *buf, int bufsize);
+void printType( ExprType *type, Hashtable *var_types );
+char *typeToString( ExprType *type, Hashtable *var_types, char *buf, int bufsize );
+void typingConstraintsToString( List *typingConstraints, Hashtable *var_types, char *buf, int bufsize );
 
-void *lookupFromEnv(Env *env, char *key);
-void updateInEnv(Env *env, char *varname, Res *res);
-void freeEnvUninterpretedStructs(Env *e);
-Env* globalEnv(Env *env);
+void *lookupFromEnv( Env *env, char *key );
+void updateInEnv( Env *env, char *varname, Res *res );
+void freeEnvUninterpretedStructs( Env *e );
+Env* globalEnv( Env *env );
 
-void listAppend(List *list, void *value, Region *r);
-void listAppendToNode(List *list, ListNode *node, void *value, Region *r);
-void listRemove(List *list, ListNode *node);
-void listAppendNoRegion(List *list, void *value);
-void listRemoveNoRegion(List *list, ListNode *node);
+void listAppend( List *list, void *value, Region *r );
+void listAppendToNode( List *list, ListNode *node, void *value, Region *r );
+void listRemove( List *list, ListNode *node );
+void listAppendNoRegion( List *list, void *value );
+void listRemoveNoRegion( List *list, ListNode *node );
 
-int appendToByteBufNew(bytesBuf_t *bytesBuf, char *str);
-void logErrMsg(rError_t *errmsg, rError_t *system);
-char *errMsgToString(rError_t *errmsg, char *buf, int buflen);
+int appendToByteBufNew( bytesBuf_t *bytesBuf, char *str );
+void logErrMsg( rError_t *errmsg, rError_t *system );
+char *errMsgToString( rError_t *errmsg, char *buf, int buflen );
 
-int isPattern(Node *pattern);
-int isRecursive(Node *rule);
-int invokedIn(char *fn, Node *expr);
-Node *lookupAVUFromMetadata(Node *metadata, char *a);
+int isPattern( Node *pattern );
+int isRecursive( Node *rule );
+int invokedIn( char *fn, Node *expr );
+Node *lookupAVUFromMetadata( Node *metadata, char *a );
 
-int isRuleGenSyntax(char *expr);
+int isRuleGenSyntax( char *expr );
 
 #define INC_MOD(x, m) (x) = (((x) == ((m) - 1)) ? 0 : ((x) + 1))
 #define DEC_MOD(x, m) (x) = (((x) == 0) ? ((m) - 1) : ((x) - 1))
@@ -111,7 +111,7 @@ int isRuleGenSyntax(char *expr);
 #include "restruct.templates.hpp"
 #include "end.instance.hpp"
 
-void keyBuf(unsigned char *buf, int size, char *keyBuf);
+void keyBuf( unsigned char *buf, int size, char *keyBuf );
 
 #undef KEY_PROTO
 
@@ -140,10 +140,10 @@ void keyBuf(unsigned char *buf, int size, char *keyBuf);
 #include "end.instance.hpp"*/
 
 /** debugging functions */
-int writeToTmp(char *fileName, char *text);
-void printMsParamArray(msParamArray_t *msParamArray, char *buf2);
-void printHashtable(Hashtable *env, char* buf2);
-void printVarTypeEnvToStdOut(Hashtable *env);
+int writeToTmp( char *fileName, char *text );
+void printMsParamArray( msParamArray_t *msParamArray, char *buf2 );
+void printHashtable( Hashtable *env, char* buf2 );
+void printVarTypeEnvToStdOut( Hashtable *env );
 
 
 #endif

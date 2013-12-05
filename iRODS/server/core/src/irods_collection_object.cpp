@@ -14,17 +14,17 @@ namespace irods {
     // public - ctor
     collection_object::collection_object() :
         data_object(),
-        directory_pointer_(0) {
+        directory_pointer_( 0 ) {
     } // collection_object
 
     // =-=-=-=-=-=-=-
     // public - cctor
-    collection_object::collection_object( 
+    collection_object::collection_object(
         const collection_object& _rhs ) :
         data_object( _rhs ) {
         directory_pointer_ = _rhs.directory_pointer_;
 
-    } // cctor 
+    } // cctor
 
     // =-=-=-=-=-=-=-
     // public - ctor
@@ -33,12 +33,12 @@ namespace irods {
         const std::string& _resc_hier,
         int _m,
         int _f ) :
-        data_object( 
-            _fn, 
-            _resc_hier, 
-            _m, 
+        data_object(
+            _fn,
+            _resc_hier,
+            _m,
             _f ),
-        directory_pointer_(0) {
+        directory_pointer_( 0 ) {
 
     } // collection_object
 
@@ -69,67 +69,70 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // check to see if this is for a resource plugin
         // resolution, otherwise it is an error
-        if( RESOURCE_INTERFACE != _interface ) {
+        if ( RESOURCE_INTERFACE != _interface ) {
             std::stringstream msg;
             msg << "collection_object does not support a [";
             msg << _interface;
             msg << "] for plugin resolution";
             return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
         }
- 
+
         error result = SUCCESS();
         error ret;
-    
+
         hierarchy_parser hparse;
-        ret = hparse.set_string(resc_hier());
-    
-        if(!ret.ok()) {
+        ret = hparse.set_string( resc_hier() );
+
+        if ( !ret.ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__ << " - ";
             msg << "error parsing resource hierarchy \"" << resc_hier() << "\"";
-            result = PASSMSG(msg.str(), ret);
-        } else {
+            result = PASSMSG( msg.str(), ret );
+        }
+        else {
             std::string resc;
-    
-            ret = hparse.first_resc(resc);
-            if(!ret.ok()) {
+
+            ret = hparse.first_resc( resc );
+            if ( !ret.ok() ) {
                 std::stringstream msg;
                 msg << __FUNCTION__ << " - ERROR getting first resource from hierarchy.";
-                result = PASSMSG(msg.str(), ret);
-            } else {
-    
-                if(resc.empty() && resc_hier().empty()) {
+                result = PASSMSG( msg.str(), ret );
+            }
+            else {
+
+                if ( resc.empty() && resc_hier().empty() ) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
                     msg << " - No resource hierarchy or resource specified.";
-                    return ERROR(HIERARCHY_ERROR, msg.str());
-                } else if(resc.empty()) {
-                    return ERROR( HIERARCHY_ERROR, "Hierarchy string is not empty but first resource is!");
+                    return ERROR( HIERARCHY_ERROR, msg.str() );
                 }
-    
-                resource_ptr resc_ptr; 
+                else if ( resc.empty() ) {
+                    return ERROR( HIERARCHY_ERROR, "Hierarchy string is not empty but first resource is!" );
+                }
+
+                resource_ptr resc_ptr;
                 ret = resc_mgr.resolve( resc, resc_ptr );
-                if(!ret.ok()) {
+                if ( !ret.ok() ) {
                     std::stringstream msg;
                     msg << __FUNCTION__ << " - ERROR resolving resource \"" << resc << "\"";
-                    result = PASSMSG(msg.str(), ret);
-                } 
-                
+                    result = PASSMSG( msg.str(), ret );
+                }
+
                 _ptr = boost::dynamic_pointer_cast< resource >( resc_ptr );
             }
         }
         return result;
 
     } // resolve
- 
+
     // =-=-=-=-=-=-=-
-    // public - get vars from object for rule engine 
-    error collection_object::get_re_vars( 
+    // public - get vars from object for rule engine
+    error collection_object::get_re_vars(
         keyValPair_t& _kvp ) {
         data_object::get_re_vars( _kvp );
         return SUCCESS();
 
-    } // get_re_vars 
+    } // get_re_vars
 
 
 }; // namespace irods

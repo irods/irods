@@ -18,6 +18,6 @@
 
 #define NARA_META_DATA_FILE	"naraMetaData.txt"
 int
-msiExtractNaraMetadata(ruleExecInfo_t *rei);
+msiExtractNaraMetadata( ruleExecInfo_t *rei );
 
 #endif	/* RE_NARA_META_DATA_H */

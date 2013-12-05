@@ -46,10 +46,10 @@
 
 typedef struct FileLseekInp {
     int fileInx;
-    rodsLong_t offset; 
+    rodsLong_t offset;
     int whence;
 } fileLseekInp_t;
-    
+
 /**
  * \var fileLseekOut_t
  * \brief Output struct for rcDataObjLseek and rsFileLseek operations
@@ -67,7 +67,7 @@ typedef struct FileLseekInp {
  */
 
 typedef struct FileLseekOut {
-    rodsLong_t offset; 
+    rodsLong_t offset;
 } fileLseekOut_t;
 
 #define fileLseekInp_PI "int fileInx; double offset; int whence;"
@@ -78,21 +78,21 @@ typedef struct FileLseekOut {
 #define RS_FILE_LSEEK rsFileLseek
 /* prototype for the server handler */
 int
-rsFileLseek (rsComm_t *rsComm, fileLseekInp_t *fileLseekInp, 
-fileLseekOut_t **fileLseekOut);
+rsFileLseek( rsComm_t *rsComm, fileLseekInp_t *fileLseekInp,
+             fileLseekOut_t **fileLseekOut );
 int
-_rsFileLseek (rsComm_t *rsComm, fileLseekInp_t *fileLseekInp, 
-fileLseekOut_t **fileLseekOut);
+_rsFileLseek( rsComm_t *rsComm, fileLseekInp_t *fileLseekInp,
+              fileLseekOut_t **fileLseekOut );
 int
-remoteFileLseek (rsComm_t *rsComm, fileLseekInp_t *fileLseekInp,
-fileLseekOut_t **fileLseekOut, rodsServerHost_t *rodsServerHost);
+remoteFileLseek( rsComm_t *rsComm, fileLseekInp_t *fileLseekInp,
+                 fileLseekOut_t **fileLseekOut, rodsServerHost_t *rodsServerHost );
 #else
 #define RS_FILE_LSEEK NULL
 #endif
 
 /* prototype for the client call */
 int
-rcFileLseek (rcComm_t *conn, fileLseekInp_t *fileLseekInp,
-fileLseekOut_t **fileLseekOut);
+rcFileLseek( rcComm_t *conn, fileLseekInp_t *fileLseekInp,
+             fileLseekOut_t **fileLseekOut );
 
 #endif	/* FILE_LSEEK_H */

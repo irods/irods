@@ -215,13 +215,13 @@ int rsApiHandler(
             clearAuthResponseInp( ( void * ) myInStruct );
 #ifdef NETCDF_API
         }
-        else if ( strcmp (RsApiTable[apiInx].inPackInstruct,
-             "NcGetVarInp_PI" )  == 0 ) {
-            clearNcGetVarInp ( ( ncGetVarInp_t * ) myInStruct );
+        else if ( strcmp( RsApiTable[apiInx].inPackInstruct,
+                          "NcGetVarInp_PI" )  == 0 ) {
+            clearNcGetVarInp( ( ncGetVarInp_t * ) myInStruct );
         }
-        else if ( strcmp (RsApiTable[apiInx].inPackInstruct,
-             "NcRegGlobalAttrInp_PI" )  == 0 ) {
-            clearRegGlobalAttrInp ( ( ncRegGlobalAttrInp_t * ) myInStruct );
+        else if ( strcmp( RsApiTable[apiInx].inPackInstruct,
+                          "NcRegGlobalAttrInp_PI" )  == 0 ) {
+            clearRegGlobalAttrInp( ( ncRegGlobalAttrInp_t * ) myInStruct );
 #endif
         }
         free( myInStruct );
@@ -430,8 +430,8 @@ chkApiPermission( rsComm_t * rsComm, int apiInx ) {
 
 #ifdef STORAGE_ADMIN_ROLE
     if ( ( strcmp( rsComm->proxyUser.userType, STORAGE_ADMIN_USER_TYPE ) == 0 )
-        && ( clientUserAuth & STORAGE_ADMIN_USER ) ) {
-      return ( 0 );
+            && ( clientUserAuth & STORAGE_ADMIN_USER ) ) {
+        return ( 0 );
     }
 #endif
 

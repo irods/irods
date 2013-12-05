@@ -19,19 +19,19 @@ namespace irods {
     // =-=-=-=-=-=-=-
     // class to manage tables of plugins.  employing a class in order to use
     // RAII for adding entries to the table now that it is not a static array
-    template< typename ValueType, 
-              typename KeyType=std::string, 
-              typename HashType=irods_string_hash >
+    template < typename ValueType,
+             typename KeyType = std::string,
+             typename HashType = irods_string_hash >
     class lookup_table {
     protected:
         typedef HASH_TYPE< KeyType, ValueType, HashType > irods_hash_map;
-        
+
         irods_hash_map table_;
-			
+
     public:
         typedef typename irods_hash_map::iterator       iterator;
         typedef typename irods_hash_map::const_iterator const_iterator;
-        lookup_table(){};
+        lookup_table() {};
         virtual ~lookup_table() {}
         ValueType& operator[]( KeyType _k ) {
             return table_[ _k ];
@@ -43,7 +43,7 @@ namespace irods {
             return !( table_.end() == table_.find( _k ) );
         }
         size_t erase( KeyType _k ) {
-            return table_.erase( _k );	
+            return table_.erase( _k );
         }
         void clear() {
             table_.clear();
@@ -55,12 +55,12 @@ namespace irods {
         iterator end()    { return table_.end();    }
         iterator cbegin() { return table_.cbegin(); }
         iterator cend()   { return table_.cend();   }
-        iterator find(KeyType _k) { return table_.find(_k); }
- 
+        iterator find( KeyType _k ) { return table_.find( _k ); }
+
         // =-=-=-=-=-=-=-
         // accessor function
         error get( std::string _key, ValueType& _val ) {
-            if( !has_entry( _key ) ) {
+            if ( !has_entry( _key ) ) {
                 return ERROR( KEY_NOT_FOUND, "key not found" );
             }
 
@@ -68,9 +68,9 @@ namespace irods {
 
             return SUCCESS();
         }
-            
+
         // =-=-=-=-=-=-=-
-        // mutator function 
+        // mutator function
         error set( std::string _key, const ValueType& _val ) {
             table_[ _key ] = _val;
             return SUCCESS();
@@ -81,17 +81,17 @@ namespace irods {
 
     // =-=-=-=-=-=-=-
     // partial specialization created to support templating the get/set
-    // functions which need to manage exception handling etc from 
+    // functions which need to manage exception handling etc from
     // a boost::any_cast
     template< typename KeyType, typename HashType >
     class lookup_table < boost::any, KeyType, HashType > {
     protected:
         typedef HASH_TYPE< KeyType, boost::any, HashType > irods_hash_map;
         irods_hash_map table_;
-			
+
     public:
         typedef typename irods_hash_map::iterator iterator;
-        lookup_table(){};
+        lookup_table() {};
         virtual ~lookup_table() {}
         boost::any& operator[]( KeyType _k ) {
             return table_[ _k ];
@@ -103,7 +103,7 @@ namespace irods {
             return !( table_.end() == table_.find( _k ) );
         }
         size_t erase( KeyType _k ) {
-            return table_.erase( _k );	
+            return table_.erase( _k );
         }
         void clear() {
             table_.clear();
@@ -113,8 +113,8 @@ namespace irods {
         }
         iterator begin() { return table_.begin(); }
         iterator end()   { return table_.end();   }
-        iterator find(KeyType _k) { return table_.find(_k); }
-        
+        iterator find( KeyType _k ) { return table_.find( _k ); }
+
         // =-=-=-=-=-=-=-
         // get a property from the table if it exists.  catch the exception in the case where
         // the template types may not match and return sucess/fail
@@ -122,16 +122,16 @@ namespace irods {
         error get( std::string _key, T& _val ) {
             // =-=-=-=-=-=-=-
             // check params
-            if( _key.empty() ) {
+            if ( _key.empty() ) {
                 return ERROR( KEY_NOT_FOUND, "empty key" );
             }
 
-            if( !has_entry( _key ) ) {
+            if ( !has_entry( _key ) ) {
                 std::stringstream msg;
                 msg << "failed to find key [";
                 msg << _key;
                 msg << "] in table.";
-                return ERROR(KEY_NOT_FOUND, msg.str());
+                return ERROR( KEY_NOT_FOUND, msg.str() );
             }
 
             // =-=-=-=-=-=-=-
@@ -140,16 +140,17 @@ namespace irods {
             try {
                 _val = boost::any_cast< T >( table_[ _key ] );
                 return SUCCESS();
-            } catch ( const boost::bad_any_cast & ) {
+            }
+            catch ( const boost::bad_any_cast & ) {
                 std::stringstream msg;
                 msg << "type and property key [";
                 msg << _key;
                 msg << "] mismatch";
                 return ERROR( KEY_TYPE_MISMATCH, msg.str() );
             }
-		
+
             // =-=-=-=-=-=-=-
-            // invalid locaiton in the code 
+            // invalid locaiton in the code
             return ERROR( INVALID_LOCATION, "shouldn't get here." );
 
         } // get_property
@@ -159,21 +160,21 @@ namespace irods {
         template< typename T >
         error set( std::string _key, const T& _val ) {
             // =-=-=-=-=-=-=-
-            // check params	
-            if( _key.empty() ) {
+            // check params
+            if ( _key.empty() ) {
                 return ERROR( KEY_NOT_FOUND, "empty key" );
             }
-                
+
             // =-=-=-=-=-=-=-
             // add property to map
             table_[ _key ] = _val;
-                        
+
             return SUCCESS() ;
 
         } // set_property
-            
+
     }; // class lookup_table
-	
+
 }; // namespace irods
 
 #endif // PLUGIN_TABLE_HPP

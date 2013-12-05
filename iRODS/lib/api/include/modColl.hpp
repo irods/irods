@@ -19,9 +19,9 @@
 #define RS_MOD_COLL rsModColl
 /* prototype for the server handler */
 int
-rsModColl (rsComm_t *rsComm, collInp_t *modCollInp);
+rsModColl( rsComm_t *rsComm, collInp_t *modCollInp );
 int
-_rsModColl (rsComm_t *rsComm, collInp_t *modCollInp);
+_rsModColl( rsComm_t *rsComm, collInp_t *modCollInp );
 #else
 #define RS_MOD_COLL NULL
 #endif
@@ -31,7 +31,7 @@ _rsModColl (rsComm_t *rsComm, collInp_t *modCollInp);
 #define RS_MOD_COLL201 rsModColl201
 /* prototype for the server handler */
 int
-rsModColl201 (rsComm_t *rsComm, collInp201_t *modCollInp);
+rsModColl201( rsComm_t *rsComm, collInp201_t *modCollInp );
 #else
 #define RS_MOD_COLL201 NULL
 #endif
@@ -41,21 +41,21 @@ rsModColl201 (rsComm_t *rsComm, collInp201_t *modCollInp);
 extern "C" {
 #endif
 
-/* prototype for the client call */
-int
-rcModColl (rcComm_t *conn, collInp_t *modCollInp);
+    /* prototype for the client call */
+    int
+    rcModColl( rcComm_t *conn, collInp_t *modCollInp );
 
-/* rcModColl - Modify the collType, collInfo1 and collInfo2 of a 
- * iRODS collection.
- * Input -
- *   rcComm_t *conn - The client connection handle.
- *   collInp_t *collInp - generic coll input. Relevant items are:
- *      collName - the collection to be registered.
- *      condInput - condition input (optional) - currently not used.
- *
- * OutPut -
- *   int status - status of the operation.
- */
+    /* rcModColl - Modify the collType, collInfo1 and collInfo2 of a
+     * iRODS collection.
+     * Input -
+     *   rcComm_t *conn - The client connection handle.
+     *   collInp_t *collInp - generic coll input. Relevant items are:
+     *      collName - the collection to be registered.
+     *      condInput - condition input (optional) - currently not used.
+     *
+     * OutPut -
+     *   int status - status of the operation.
+     */
 
 #ifdef  __cplusplus
 }

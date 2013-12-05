@@ -4,17 +4,15 @@
 #include "Hasher.hpp"
 
 namespace irods {
-    
+
     Hasher::
-    Hasher(void)
-    {
+    Hasher( void ) {
         // empty
     }
 
     Hasher::
-    ~Hasher(void)
-    {
-        for(std::vector<HashStrategy*>::iterator it = _strategies.begin(); it != _strategies.end(); ++it) {
+    ~Hasher( void ) {
+        for ( std::vector<HashStrategy*>::iterator it = _strategies.begin(); it != _strategies.end(); ++it ) {
             HashStrategy* strategy = *it;
             delete strategy;
         }
@@ -22,23 +20,21 @@ namespace irods {
 
     unsigned int Hasher::
     listStrategies(
-        std::vector<std::string>& strategies) const
-    {
+        std::vector<std::string>& strategies ) const {
         unsigned int result = 0;
-        for(std::vector<HashStrategy*>::const_iterator it = _strategies.begin(); it != _strategies.end(); ++it) {
+        for ( std::vector<HashStrategy*>::const_iterator it = _strategies.begin(); it != _strategies.end(); ++it ) {
             HashStrategy* strategy = *it;
-            strategies.push_back(strategy->name());
+            strategies.push_back( strategy->name() );
         }
         return result;
     }
 
     unsigned int Hasher::
-    init(void)
-    {
+    init( void ) {
         unsigned int result = 0;
-        for(std::vector<HashStrategy*>::iterator it = _strategies.begin();
-            result == 0 && it != _strategies.end();
-            ++it) {
+        for ( std::vector<HashStrategy*>::iterator it = _strategies.begin();
+                result == 0 && it != _strategies.end();
+                ++it ) {
             HashStrategy* strategy = *it;
             result = strategy->init();
         }
@@ -48,14 +44,13 @@ namespace irods {
     unsigned int Hasher::
     update(
         char const* data,
-        unsigned int size)
-    {
+        unsigned int size ) {
         unsigned int result = 0;
-        for(std::vector<HashStrategy*>::iterator it = _strategies.begin();
-            result == 0 && it != _strategies.end();
-            ++it) {
+        for ( std::vector<HashStrategy*>::iterator it = _strategies.begin();
+                result == 0 && it != _strategies.end();
+                ++it ) {
             HashStrategy* strategy = *it;
-            result = strategy->update(data, size);
+            result = strategy->update( data, size );
         }
         return result;
     }
@@ -63,20 +58,19 @@ namespace irods {
     unsigned int Hasher::
     digest(
         const std::string& name,
-        std::string& messageDigest)
-    {
+        std::string& messageDigest ) {
         unsigned result = 0;
         bool found = false;
-        for(std::vector<HashStrategy*>::iterator it = _strategies.begin();
-            !found && it != _strategies.end();
-            ++it) {
+        for ( std::vector<HashStrategy*>::iterator it = _strategies.begin();
+                !found && it != _strategies.end();
+                ++it ) {
             HashStrategy* strategy = *it;
-            if(name == strategy->name()) {
+            if ( name == strategy->name() ) {
                 found = true;
-                result = strategy->digest(messageDigest);
+                result = strategy->digest( messageDigest );
             }
         }
-        if(!found) {
+        if ( !found ) {
             result = 1;             // TODO - should be an enum or string
             // table value here
         }
@@ -85,16 +79,15 @@ namespace irods {
 
     unsigned int Hasher::
     catDigest(
-        std::string& messageDigest)
-    {
+        std::string& messageDigest ) {
         unsigned int result = 0;
-        for(std::vector<HashStrategy*>::iterator it = _strategies.begin();
-            result == 0 && it != _strategies.end();
-            ++it) {
+        for ( std::vector<HashStrategy*>::iterator it = _strategies.begin();
+                result == 0 && it != _strategies.end();
+                ++it ) {
             HashStrategy* strategy = *it;
             std::string tmpDigest;
-            result = strategy->digest(tmpDigest);
-            if(result == 0) {
+            result = strategy->digest( tmpDigest );
+            if ( result == 0 ) {
                 messageDigest += tmpDigest;
             }
         }

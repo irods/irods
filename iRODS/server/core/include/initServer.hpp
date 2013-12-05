@@ -29,7 +29,7 @@
 #define ALLOWED_USER_LIST_KW		"allowUserList"
 #define DISALLOWED_USER_LIST_KW	"disallowUserList"
 #define NO_MAX_CONNECTION_LIMIT	-1
-#define DEF_MAX_CONNECTION	NO_MAX_CONNECTION_LIMIT		 
+#define DEF_MAX_CONNECTION	NO_MAX_CONNECTION_LIMIT
 
 /* keywords for the RCAT_HOST_FILE */
 #define ICAT_HOST_KW		"icatHost"
@@ -130,149 +130,149 @@ struct allowedUser {
 };
 
 int
-resolveHost (rodsHostAddr_t *addr, rodsServerHost_t **rodsServerHost);
+resolveHost( rodsHostAddr_t *addr, rodsServerHost_t **rodsServerHost );
 int
-resolveHostByDataObjInfo (dataObjInfo_t *dataObjInfo,
-rodsServerHost_t **rodsServerHost);
+resolveHostByDataObjInfo( dataObjInfo_t *dataObjInfo,
+                          rodsServerHost_t **rodsServerHost );
 int
-resolveHostByRescInfo (rescInfo_t *rescInfo, rodsServerHost_t **rodsServerHost);
+resolveHostByRescInfo( rescInfo_t *rescInfo, rodsServerHost_t **rodsServerHost );
 int
-initServerInfo (rsComm_t *rsComm);
+initServerInfo( rsComm_t *rsComm );
 int
-initLocalServerHost (rsComm_t *rsComm);
+initLocalServerHost( rsComm_t *rsComm );
 int
-initRcatServerHostByFile (rsComm_t *rsComm);
+initRcatServerHostByFile( rsComm_t *rsComm );
 int
-queAddr (rodsServerHost_t *rodsServerHost, char *myHostName);
+queAddr( rodsServerHost_t *rodsServerHost, char *myHostName );
 int
-queHostName (rodsServerHost_t *rodsServerHost, char *myHostName, int topFlag);
+queHostName( rodsServerHost_t *rodsServerHost, char *myHostName, int topFlag );
 int
-queRodsServerHost (rodsServerHost_t **rodsServerHostHead,
-rodsServerHost_t *myRodsServerHost);
+queRodsServerHost( rodsServerHost_t **rodsServerHostHead,
+                   rodsServerHost_t *myRodsServerHost );
 int
-getAndConnRcatHost (rsComm_t *rsComm, int rcatType, char *rcatZoneHint,
-rodsServerHost_t **rodsServerHost);
+getAndConnRcatHost( rsComm_t *rsComm, int rcatType, char *rcatZoneHint,
+                    rodsServerHost_t **rodsServerHost );
 char *
 getConfigDir();
 char *
 getLogDir();
 rodsServerHost_t *
-mkServerHost (char *myHostAddr, char *zoneName);
+mkServerHost( char *myHostAddr, char *zoneName );
 int
-getRcatHost (int rcatType, char *rcatZoneHint,  
-rodsServerHost_t **rodsServerHost);
+getRcatHost( int rcatType, char *rcatZoneHint,
+             rodsServerHost_t **rodsServerHost );
 int
-initZone (rsComm_t *rsComm);
+initZone( rsComm_t *rsComm );
 int
-queZone (char *zoneName, int portNum, rodsServerHost_t *masterServerHost,
-rodsServerHost_t *slaveServerHost);
+queZone( char *zoneName, int portNum, rodsServerHost_t *masterServerHost,
+         rodsServerHost_t *slaveServerHost );
 int
-printZoneInfo ();
+printZoneInfo();
 int
-printServerHost (rodsServerHost_t *myServerHost);
+printServerHost( rodsServerHost_t *myServerHost );
 int
-printZoneInfo ();
+printZoneInfo();
 int
-getAndConnRcatHost (rsComm_t *rsComm, int rcatType, char *rcatZoneHint,
-rodsServerHost_t **rodsServerHost);
+getAndConnRcatHost( rsComm_t *rsComm, int rcatType, char *rcatZoneHint,
+                    rodsServerHost_t **rodsServerHost );
 int
-getAndConnRcatHostNoLogin (rsComm_t *rsComm, int rcatType, char *rcatZoneHint,
-rodsServerHost_t **rodsServerHost);
+getAndConnRcatHostNoLogin( rsComm_t *rsComm, int rcatType, char *rcatZoneHint,
+                           rodsServerHost_t **rodsServerHost );
 int
-getAndDisconnRcatHost (rsComm_t *rsComm, int rcatType, char *rcatZoneHint,
-rodsServerHost_t **rodsServerHost);
+getAndDisconnRcatHost( rsComm_t *rsComm, int rcatType, char *rcatZoneHint,
+                       rodsServerHost_t **rodsServerHost );
 int
-setExecArg (char *commandArgv, char *av[]);
+setExecArg( char *commandArgv, char *av[] );
 int
-initAgent (int processType, rsComm_t *rsComm);
-void cleanupAndExit (int status);
+initAgent( int processType, rsComm_t *rsComm );
+void cleanupAndExit( int status );
 #ifdef  __cplusplus
-void signalExit ( int );
+void signalExit( int );
 void
-rsPipSigalHandler ( int );
+rsPipSigalHandler( int );
 #else
-void signalExit ();
+void signalExit();
 void
-rsPipSigalHandler ();
+rsPipSigalHandler();
 #endif
 
 int
-initHostConfigByFile (rsComm_t *rsComm);
+initHostConfigByFile( rsComm_t *rsComm );
 int
-matchHostConfig (rodsServerHost_t *myRodsServerHost);
+matchHostConfig( rodsServerHost_t *myRodsServerHost );
 int
-queConfigName (rodsServerHost_t *configServerHost,
-rodsServerHost_t *myRodsServerHost);
+queConfigName( rodsServerHost_t *configServerHost,
+               rodsServerHost_t *myRodsServerHost );
 int
-disconnectAllSvrToSvrConn ();
+disconnectAllSvrToSvrConn();
 int
-disconnRcatHost (rsComm_t *rsComm, int rcatType, char *rcatZoneHint);
+disconnRcatHost( rsComm_t *rsComm, int rcatType, char *rcatZoneHint );
 int
-svrReconnect (rsComm_t *rsComm);
+svrReconnect( rsComm_t *rsComm );
 int
-initRsComm (rsComm_t *rsComm);
+initRsComm( rsComm_t *rsComm );
 void
-daemonize (int runMode, int logFd);
+daemonize( int runMode, int logFd );
 int
-logFileOpen (int runMode, char *logDir, char *logFileName);
+logFileOpen( int runMode, char *logDir, char *logFileName );
 int
-initRsCommWithStartupPack (rsComm_t *rsComm, startupPack_t *startupPack);
+initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack );
 int
-getLocalZoneInfo (zoneInfo_t **outZoneInfo);
+getLocalZoneInfo( zoneInfo_t **outZoneInfo );
 char *
-getLocalZoneName ();
+getLocalZoneName();
 int
-getZoneInfo (char *rcatZoneHint, zoneInfo_t **myZoneInfo);
+getZoneInfo( char *rcatZoneHint, zoneInfo_t **myZoneInfo );
 int
-getAndConnRemoteZone (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-rodsServerHost_t **rodsServerHost, char *remotZoneOpr);
+getAndConnRemoteZone( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+                      rodsServerHost_t **rodsServerHost, char *remotZoneOpr );
 int
-getRemoteZoneHost (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-rodsServerHost_t **rodsServerHost, char *remotZoneOpr);
+getRemoteZoneHost( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+                   rodsServerHost_t **rodsServerHost, char *remotZoneOpr );
 int
-isLocalZone (char *zoneHint);
+isLocalZone( char *zoneHint );
 int
-isSameZone (char *zoneHint1, char *zoneHint2);
+isSameZone( char *zoneHint1, char *zoneHint2 );
 int
-convZoneSockError (int inStatus);
+convZoneSockError( int inStatus );
 int
-resetRcatHost (rsComm_t *rsComm, int rcatType, char *rcatZoneHint);
+resetRcatHost( rsComm_t *rsComm, int rcatType, char *rcatZoneHint );
 int
-getReHost (rodsServerHost_t **rodsServerHost);
+getReHost( rodsServerHost_t **rodsServerHost );
 int
-getAndConnReHost (rsComm_t *rsComm, rodsServerHost_t **rodsServerHost);
+getAndConnReHost( rsComm_t *rsComm, rodsServerHost_t **rodsServerHost );
 int
-isLocalHost (char *hostAddr);
+isLocalHost( char *hostAddr );
 int
-initConnectControl ();
+initConnectControl();
 int
-chkAllowedUser (char *userName, char *rodsZone);
+chkAllowedUser( char *userName, char *rodsZone );
 int
-queAllowedUser (struct allowedUser *allowedUser,
-struct allowedUser **allowedUserHead);
+queAllowedUser( struct allowedUser *allowedUser,
+                struct allowedUser **allowedUserHead );
 int
-matchAllowedUser (char *userName, char *rodsZone,
-struct allowedUser *allowedUserHead);
+matchAllowedUser( char *userName, char *rodsZone,
+                  struct allowedUser *allowedUserHead );
 int
-freeAllAllowedUser (struct allowedUser *allowedUserHead);
+freeAllAllowedUser( struct allowedUser *allowedUserHead );
 int
-initAndClearProcLog ();
+initAndClearProcLog();
 int
-initProcLog ();
+initProcLog();
 int
-logAgentProc ( rsComm_t* );
+logAgentProc( rsComm_t* );
 int
-readProcLog (int pid, procLog_t *procLog);
+readProcLog( int pid, procLog_t *procLog );
 int
-rmProcLog (int pid);
+rmProcLog( int pid );
 int
-getXmsgHost (rodsServerHost_t **rodsServerHost);
+getXmsgHost( rodsServerHost_t **rodsServerHost );
 int
-setRsCommFromRodsEnv (rsComm_t *rsComm);
+setRsCommFromRodsEnv( rsComm_t *rsComm );
 int
-queAgentProc (agentProc_t *agentPorc, agentProc_t **agentPorcHead,
-irodsPosition_t position);
+queAgentProc( agentProc_t *agentPorc, agentProc_t **agentPorcHead,
+              irodsPosition_t position );
 int
-purgeLockFileDir (int chkLockFlag); // JMC - backport 4612
+purgeLockFileDir( int chkLockFlag ); // JMC - backport 4612
 
 #endif	/* INIT_SERVER_H */

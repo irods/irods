@@ -19,7 +19,7 @@ namespace irods {
         // Constructors
         collection_object();
         collection_object( const collection_object& );
-        collection_object( 
+        collection_object(
             const std::string&, // phy path
             const std::string&, // resc hier
             int,                // mode
@@ -32,30 +32,30 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // Operators
         virtual collection_object& operator=( const collection_object& );
-                
+
         // =-=-=-=-=-=-=-
         // plugin resolution operation
-        virtual error resolve( 
-                          const std::string&, // plugin interface name
-                          plugin_ptr& );      // resolved plugin instance
+        virtual error resolve(
+            const std::string&, // plugin interface name
+            plugin_ptr& );      // resolved plugin instance
 
         // =-=-=-=-=-=-=-
         // accessor for rule engine variables
-        virtual error get_re_vars( keyValPair_t& ); 
+        virtual error get_re_vars( keyValPair_t& );
 
         // =-=-=-=-=-=-=-
         // Accessors
         virtual DIR* directory_pointer() const { return directory_pointer_; }
-                
+
         // =-=-=-=-=-=-=-
-        // Mutators     
+        // Mutators
         virtual void directory_pointer( DIR* _p ) { directory_pointer_ = _p; }
 
     protected:
         // =-=-=-=-=-=-=-
         // Attributes
         // NOTE :: These are not guaranteed to be properly populated right now
-        //      :: that will need be done later when these changes are pushed 
+        //      :: that will need be done later when these changes are pushed
         //      :: higher in the original design
         DIR* directory_pointer_;    // pointer to open filesystem directory
 

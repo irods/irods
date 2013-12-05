@@ -23,11 +23,11 @@
 #define RS_DATA_OBJ_LSEEK rsDataObjLseek
 /* prototype for the server handler */
 int
-rsDataObjLseek (rsComm_t *rsComm, openedDataObjInp_t *dataObjLseekInp, 
-fileLseekOut_t **dataObjLseekOut);
+rsDataObjLseek( rsComm_t *rsComm, openedDataObjInp_t *dataObjLseekInp,
+                fileLseekOut_t **dataObjLseekOut );
 rodsLong_t
-_l3Lseek (rsComm_t *rsComm, int rescTypeInx, int l3descInx,
-rodsLong_t offset, int whence);
+_l3Lseek( rsComm_t *rsComm, int rescTypeInx, int l3descInx,
+          rodsLong_t offset, int whence );
 #else
 #define RS_DATA_OBJ_LSEEK NULL
 #endif
@@ -37,8 +37,8 @@ rodsLong_t offset, int whence);
 #define RS_DATA_OBJ_LSEEK201 rsDataObjLseek201
 /* prototype for the server handler */
 int
-rsDataObjLseek201 (rsComm_t *rsComm, fileLseekInp_t *dataObjLseekInp,
-fileLseekOut_t **dataObjLseekOut);
+rsDataObjLseek201( rsComm_t *rsComm, fileLseekInp_t *dataObjLseekInp,
+                   fileLseekOut_t **dataObjLseekOut );
 #else
 #define RS_DATA_OBJ_LSEEK201 NULL
 #endif
@@ -48,24 +48,24 @@ fileLseekOut_t **dataObjLseekOut);
 extern "C" {
 #endif
 
-/* prototype for the client call */
-/* rcDataObjLseek - Lseek an opened iRODS data object descriptor.
- * Input -
- *   rcComm_t *conn - The client connection handle.
- *   fileLseekInp_t *dataObjLseekInp - Relevant items are:
- *      l1descInx - the iRODS data object descriptor to lseek.
- *	offset - the offset
- *	whence - SEEK_SET, SEEK_CUR and SEEK_END
- *
- * OutPut -
- *   int status of the operation - >= 0 ==> success, < 0 ==> failure.
- *   fileLseekOut_t **dataObjLseekOut. Relevant items are:
- *	offset - the new offset
- */
+    /* prototype for the client call */
+    /* rcDataObjLseek - Lseek an opened iRODS data object descriptor.
+     * Input -
+     *   rcComm_t *conn - The client connection handle.
+     *   fileLseekInp_t *dataObjLseekInp - Relevant items are:
+     *      l1descInx - the iRODS data object descriptor to lseek.
+     *	offset - the offset
+     *	whence - SEEK_SET, SEEK_CUR and SEEK_END
+     *
+     * OutPut -
+     *   int status of the operation - >= 0 ==> success, < 0 ==> failure.
+     *   fileLseekOut_t **dataObjLseekOut. Relevant items are:
+     *	offset - the new offset
+     */
 
-int
-rcDataObjLseek (rcComm_t *conn, openedDataObjInp_t *dataObjLseekInp,
-fileLseekOut_t **dataObjLseekOut);
+    int
+    rcDataObjLseek( rcComm_t *conn, openedDataObjInp_t *dataObjLseekInp,
+                    fileLseekOut_t **dataObjLseekOut );
 
 #ifdef  __cplusplus
 }

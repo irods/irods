@@ -13,9 +13,9 @@
 #include "getRodsEnv.hpp"
 
 int
-connectRcat (rsComm_t *rsComm);
+connectRcat( rsComm_t *rsComm );
 int
-disconnectRcat (rsComm_t *rsComm);
+disconnectRcat( rsComm_t *rsComm );
 int
-resetRcat (rsComm_t *rsComm);
+resetRcat( rsComm_t *rsComm );
 #endif	/* RS_ICAT_OPR_H */

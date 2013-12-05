@@ -14,9 +14,9 @@
 
 /* Struct used to monitor transfer progress in getUtil and putUtil functions.*/
 typedef struct TransferProgress {
-	rodsLong_t bytesReceived;
-	rodsLong_t bytesExpected;
-	char currentFilePath[MAX_NAME_LEN];
+    rodsLong_t bytesReceived;
+    rodsLong_t bytesExpected;
+    char currentFilePath[MAX_NAME_LEN];
 } xferProgress_t;
 
 #endif	/* RODS_CLIENT_H */

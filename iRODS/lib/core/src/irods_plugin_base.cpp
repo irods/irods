@@ -16,7 +16,7 @@ extern "C" {
 namespace irods {
     // =-=-=-=-=-=-=-
     // public - constructor
-    plugin_base::plugin_base( 
+    plugin_base::plugin_base(
         const std::string& _n,
         const std::string& _c ) :
         context_( _c ),
@@ -26,7 +26,7 @@ namespace irods {
 
     // =-=-=-=-=-=-=-
     // public - copy constructor
-    plugin_base::plugin_base( 
+    plugin_base::plugin_base(
         const plugin_base& _rhs ) :
         context_( _rhs.context_ ),
         instance_name_( _rhs.instance_name_ ),
@@ -35,7 +35,7 @@ namespace irods {
 
     // =-=-=-=-=-=-=-
     // public - assignment operator
-    plugin_base& plugin_base::operator=( 
+    plugin_base& plugin_base::operator=(
         const plugin_base& _rhs ) {
         instance_name_     = _rhs.instance_name_;
         context_           = _rhs.context_;
@@ -47,13 +47,13 @@ namespace irods {
 
     // =-=-=-=-=-=-=-
     // public - destructor
-    plugin_base::~plugin_base(  ) {
+    plugin_base::~plugin_base( ) {
     } // dtor
 
     // =-=-=-=-=-=-=-
     // public - default implementation
     error plugin_base::post_disconnect_maintenance_operation( pdmo_type& _op ) {
-       return ERROR( NO_PDMO_DEFINED, "no defined operation" );
+        return ERROR( NO_PDMO_DEFINED, "no defined operation" );
 
     } // post_disconnect_maintenance_operation
 
@@ -73,13 +73,13 @@ namespace irods {
                                       std::string _fcn_name ) {
         // =-=-=-=-=-=-=-
         // check params
-        if( _op.empty() ) {
+        if ( _op.empty() ) {
             std::stringstream msg;
             msg << "empty operation [" << _op << "]";
             return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
         }
 
-        if( _fcn_name.empty() ) {
+        if ( _fcn_name.empty() ) {
             std::stringstream msg;
             msg << "empty function name [" << _fcn_name << "]";
             return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
@@ -96,11 +96,11 @@ namespace irods {
     // =-=-=-=-=-=-=-
     // public - get a list of all the available operations
     error plugin_base::enumerate_operations( std::vector< std::string >& _ops ) {
-       for( size_t i = 0; i < ops_for_delay_load_.size(); ++i ) {
-           _ops.push_back( ops_for_delay_load_[ i ].first );
-       }
+        for ( size_t i = 0; i < ops_for_delay_load_.size(); ++i ) {
+            _ops.push_back( ops_for_delay_load_[ i ].first );
+        }
 
-       return SUCCESS();
+        return SUCCESS();
 
     } // enumerate_operations
 

@@ -6,7 +6,7 @@
  */
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is was initially script-generated code.  */ 
+/* This is was initially script-generated code.  */
 /* Also see generalAdmin.h for a description of this API call.*/
 
 #include "generalAdmin.hpp"
@@ -30,8 +30,8 @@
  * \n The input is a set of text strings to be parsed on the server side.
  * \n This allows this same API to be easily extended with new functionality
  * \n and well managed backward compatability.  See rsGeneralAdmin.c (and
- * \n iadmin.c) for how this is parsed and how it interfaces to the 
- * \n catalog-high-level (chl*) functions.  
+ * \n iadmin.c) for how this is parsed and how it interfaces to the
+ * \n catalog-high-level (chl*) functions.
  * \n Primary results are changes to rows in the ICAT database.
  *
  * \note none
@@ -51,11 +51,10 @@
  **/
 
 int
-rcGeneralAdmin (rcComm_t *conn, generalAdminInp_t *generalAdminInp)
-{
+rcGeneralAdmin( rcComm_t *conn, generalAdminInp_t *generalAdminInp ) {
     int status;
-    status = procApiRequest (conn, GENERAL_ADMIN_AN,  generalAdminInp, NULL, 
-                             (void **) NULL, NULL);
+    status = procApiRequest( conn, GENERAL_ADMIN_AN,  generalAdminInp, NULL,
+                             ( void ** ) NULL, NULL );
 
-    return (status);
+    return ( status );
 }

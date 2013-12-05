@@ -5,7 +5,7 @@
 
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code.  */ 
+/* This is script-generated code.  */
 /* See phyPathReg.h for a description of this API call.*/
 
 #include "phyPathReg.hpp"
@@ -30,8 +30,8 @@
  * \note none
  *
  * \usage
- * Register a UNIX file /data/john/myfile as an iRODS data object 
- * /myZone/home/john/myfile. This file is located on the same server as 
+ * Register a UNIX file /data/john/myfile as an iRODS data object
+ * /myZone/home/john/myfile. This file is located on the same server as
  * "myRescource" resource:
  * \n dataObjInp_t phyPathRegInp;
  * \n bzero (&phyPathRegInp, sizeof (phyPathRegInp));
@@ -51,13 +51,13 @@
  *         UNIX user (the UNIX user that runs the server) must have read/write
  *         access to this file.
  *    \n DATA_TYPE_KW - the data type of the data object.
- *    \n DEST_RESC_NAME_KW - The resource where the physical file is located. 
+ *    \n DEST_RESC_NAME_KW - The resource where the physical file is located.
  *    \n RESC_GROUP_NAME_KW - The resource group of the resource. The resource
- *         given with DEST_RESC_NAME_KW must be a member of this resource group. 
- *    \n REG_REPL_KW - The file is registered as a replica of an existing data 
+ *         given with DEST_RESC_NAME_KW must be a member of this resource group.
+ *    \n REG_REPL_KW - The file is registered as a replica of an existing data
  *         object.
  *    \n REG_CHKSUM_KW - register the given checksum value with the iCAT.
- *    \n VERIFY_CHKSUM_KW -  calculate the checksum of the file on the iRODS 
+ *    \n VERIFY_CHKSUM_KW -  calculate the checksum of the file on the iRODS
  *        server and register the value with the iCAT. This keyWd has no value.
  *
  * \return integer
@@ -71,12 +71,11 @@
 **/
 
 int
-rcPhyPathReg (rcComm_t *conn, dataObjInp_t *phyPathRegInp)
-{
+rcPhyPathReg( rcComm_t *conn, dataObjInp_t *phyPathRegInp ) {
     int status;
-    status = procApiRequest (conn, PHY_PATH_REG_AN,  phyPathRegInp, NULL, 
-        (void **) NULL, NULL);
+    status = procApiRequest( conn, PHY_PATH_REG_AN,  phyPathRegInp, NULL,
+                             ( void ** ) NULL, NULL );
 
-    return (status);
+    return ( status );
 }
 

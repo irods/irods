@@ -24,7 +24,7 @@ namespace irods {
     // =-=-=-=-=-=-=-
     // fwd decl of network manager for fco resolve
     class network_manager;
-                                         
+
 }; // namespace
 
 #define __IRODS_NETWORK_TYPES_HPP__

@@ -29,7 +29,7 @@
 #define TICKET_TYPE_DATA "data"
 #define TICKET_TYPE_COLL "collection"
 
-/* 
+/*
    These are the access permissions known to the system, listed in
    order.  The defines are here to make it clear what these are and
    where in the code they are being used.
@@ -40,7 +40,7 @@
    Having a particular access permission implies that the user has
    all of the lower ones.  For example, if you have "own", you have
    all the rest.  And if you have "delete metadata", you have "modify
-   metadata".  The ICAT code generates sql that asks, essentially, 
+   metadata".  The ICAT code generates sql that asks, essentially,
    "does the user have ACCESS_x or better?"
 
  */

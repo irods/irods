@@ -15,8 +15,8 @@
 #include "reGlobalsExtern.hpp"
 
 typedef struct {
-   char ruleId[NAME_LEN];
-   keyValPair_t condInput;
+    char ruleId[NAME_LEN];
+    keyValPair_t condInput;
 } ruleExecModInp_t;
 
 #define RULE_EXEC_MOD_INP_PI "str ruleId[NAME_LEN];struct KeyValPair_PI;"
@@ -25,9 +25,9 @@ typedef struct {
 #define RS_RULE_EXEC_MOD rsRuleExecMod
 /* prototype for the server handler */
 int
-rsRuleExecMod (rsComm_t *rsComm, ruleExecModInp_t *ruleExecModInp);
+rsRuleExecMod( rsComm_t *rsComm, ruleExecModInp_t *ruleExecModInp );
 int
-_rsRuleExecMod (rsComm_t *rsComm, ruleExecModInp_t *ruleExecModInp);
+_rsRuleExecMod( rsComm_t *rsComm, ruleExecModInp_t *ruleExecModInp );
 #else
 #define RS_RULE_EXEC_MOD NULL
 #endif
@@ -36,9 +36,9 @@ _rsRuleExecMod (rsComm_t *rsComm, ruleExecModInp_t *ruleExecModInp);
 extern "C" {
 #endif
 
-/* prototype for the client */
-int
-rcRuleExecMod (rcComm_t *conn, ruleExecModInp_t *ruleExecModInp);
+    /* prototype for the client */
+    int
+    rcRuleExecMod( rcComm_t *conn, ruleExecModInp_t *ruleExecModInp );
 
 #ifdef  __cplusplus
 }

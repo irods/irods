@@ -80,11 +80,11 @@ typedef struct rodsStat {
 #define DIR_LEN 	256
 
 typedef struct rodsDirent {
-        unsigned int    d_offset;       /* offset after this entry */
-        unsigned int    d_ino;          /* inode number */
-        unsigned int    d_reclen;       /* length of this record */
-        unsigned int    d_namlen;       /* length of d_name */
-        char            d_name[DIR_LEN];
+    unsigned int    d_offset;       /* offset after this entry */
+    unsigned int    d_ino;          /* inode number */
+    unsigned int    d_reclen;       /* length of this record */
+    unsigned int    d_namlen;       /* length of d_name */
+    char            d_name[DIR_LEN];
 } rodsDirent_t;
 
 #endif	/* RODS_TYPE_H */

@@ -4,7 +4,7 @@
 #ifndef REGION_CHECK_PROTO_HPP
 #define REGION_CHECK_PROTO_HPP
 
-typedef int (ChkFuncType)(void *ptr, Region *r);
+typedef int ( ChkFuncType )( void *ptr, Region *r );
 #endif
 
 #include "proto.hpp"

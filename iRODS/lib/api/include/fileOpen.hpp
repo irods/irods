@@ -21,17 +21,17 @@
 /* definition for otherFlags */
 
 #define NO_CHK_PERM_FLAG                0x1 // JMC - backport 4758
-#define UNIQUE_REM_COMM_FLAG    0x2 
+#define UNIQUE_REM_COMM_FLAG    0x2
 #define FORCE_FLAG                      0x4
 
 #include <string>
 
 struct fileOpenInp_t {
-        
+
     char resc_name_[MAX_NAME_LEN];
     char resc_hier_[MAX_NAME_LEN];
     char objPath[MAX_NAME_LEN];
-    
+
     int otherFlags;     /* for chkPerm, uniqueRemoteConn */
     rodsHostAddr_t addr;
     char fileName[MAX_NAME_LEN];
@@ -41,28 +41,28 @@ struct fileOpenInp_t {
     keyValPair_t condInput;
     char in_pdmo[MAX_NAME_LEN];
 }; // struct fileOpenInp_t
-    
+
 #define fileOpenInp_PI "str resc_name_[MAX_NAME_LEN]; str resc_hier_[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN]; int otherFlags; struct RHostAddr_PI; str fileName[MAX_NAME_LEN]; int flags; int mode; double dataSize; struct KeyValPair_PI; str in_pdmo[MAX_NAME_LEN];"
 
 #if defined(RODS_SERVER)
 #define RS_FILE_OPEN rsFileOpen
 /* prototype for the server handler */
 int
-rsFileOpen (rsComm_t *rsComm, fileOpenInp_t *fileOpenInp);
+rsFileOpen( rsComm_t *rsComm, fileOpenInp_t *fileOpenInp );
 int
-rsFileOpenByHost (rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
-                  rodsServerHost_t *rodsServerHost);
+rsFileOpenByHost( rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
+                  rodsServerHost_t *rodsServerHost );
 int
-_rsFileOpen (rsComm_t *rsComm, fileOpenInp_t *fileOpenInp);
+_rsFileOpen( rsComm_t *rsComm, fileOpenInp_t *fileOpenInp );
 int
-remoteFileOpen (rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
-                rodsServerHost_t *rodsServerHost);
+remoteFileOpen( rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
+                rodsServerHost_t *rodsServerHost );
 #else
 #define RS_FILE_OPEN NULL
 #endif
 
 /* prototype for the client call */
 int
-rcFileOpen (rcComm_t *conn, fileOpenInp_t *fileOpenInp);
+rcFileOpen( rcComm_t *conn, fileOpenInp_t *fileOpenInp );
 
 #endif  /* FILE_OPEN_H */

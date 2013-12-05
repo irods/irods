@@ -3,13 +3,13 @@
  *
  */
 
-/* This is script-generated code.  */ 
+/* This is script-generated code.  */
 /* See ncOpenGroup.h for a description of this API call.*/
 
 /**
  * \fn rcNcOpenGroup (rcComm_t *conn, ncOpenInp_t *ncOpenGroupInp, int *grpncid)
  *
- * \brief Open a fully qualified group name and get the group id. On the 
+ * \brief Open a fully qualified group name and get the group id. On the
  *          server, nc_inq_grp_full_ncid is called to get the grpncid
  *
  * \user client
@@ -87,29 +87,27 @@
 #include "ncOpenGroup.hpp"
 
 int
-rcNcOpenGroup (rcComm_t *conn, ncOpenInp_t *ncOpenGroupInp, int *ncid)
-{
+rcNcOpenGroup( rcComm_t *conn, ncOpenInp_t *ncOpenGroupInp, int *ncid ) {
     int status;
-   int *myncid = NULL;
+    int *myncid = NULL;
 
-    status = procApiRequest (conn, NC_OPEN_GROUP_AN, ncOpenGroupInp, NULL, 
-        (void **) &myncid, NULL);
+    status = procApiRequest( conn, NC_OPEN_GROUP_AN, ncOpenGroupInp, NULL,
+                             ( void ** ) &myncid, NULL );
 
-    if (myncid != NULL) {
+    if ( myncid != NULL ) {
         *ncid = *myncid;
-        free (myncid);
+        free( myncid );
     }
 
-    return (status);
+    return ( status );
 }
 
 int
-_rcNcOpenGroup (rcComm_t *conn, ncOpenInp_t *ncOpenGroupInp, int **ncid)
-{
+_rcNcOpenGroup( rcComm_t *conn, ncOpenInp_t *ncOpenGroupInp, int **ncid ) {
     int status;
-    status = procApiRequest (conn, NC_OPEN_GROUP_AN,  ncOpenGroupInp, NULL,
-        (void **) ncid, NULL);
+    status = procApiRequest( conn, NC_OPEN_GROUP_AN,  ncOpenGroupInp, NULL,
+                             ( void ** ) ncid, NULL );
 
-    return (status);
+    return ( status );
 }
 

@@ -23,18 +23,18 @@
 
 
 int rsGetHostForPut(
-        rsComm_t*     rsComm, 
-        dataObjInp_t* dataObjInp,
-        char **       outHost ) {
+    rsComm_t*     rsComm,
+    dataObjInp_t* dataObjInp,
+    char **       outHost ) {
     // =-=-=-=-=-=-=-
     // working on the "home zone", determine if we need to redirect to a different
     // server in this zone for this operation.  if there is a RESC_HIER_STR_KW then
     // we know that the redirection decision has already been made
     std::string       hier;
-    if( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
-        irods::error ret = irods::resolve_resource_hierarchy( irods::CREATE_OPERATION, rsComm, 
-                                                       dataObjInp, hier );
-        if( !ret.ok() ) { 
+    if ( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
+        irods::error ret = irods::resolve_resource_hierarchy( irods::CREATE_OPERATION, rsComm,
+                           dataObjInp, hier );
+        if ( !ret.ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " :: failed in irods::resolve_resource_hierarchy for [";
@@ -53,7 +53,7 @@ int rsGetHostForPut(
     // extract the host location from the resource hierarchy
     std::string location;
     irods::error ret = irods::get_loc_for_hier_string( hier, location );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASSMSG( "rsGetHostForPut - failed in get_loc_for_hier_String", ret ) );
         return -1;
     }
@@ -74,40 +74,42 @@ int rsGetHostForPut(
     int remoteFlag = 0; // JMC -backport 4746
 
     *outHost = NULL;
-    if (getValByKey (&dataObjInp->condInput, ALL_KW) != NULL ||
-        getValByKey (&dataObjInp->condInput, FORCE_FLAG_KW) != NULL) {
-        /* going to ALL copies or overwriting files. not sure which is the 
-         * best */ 
-        *outHost = strdup (THIS_ADDRESS);
+    if ( getValByKey( &dataObjInp->condInput, ALL_KW ) != NULL ||
+            getValByKey( &dataObjInp->condInput, FORCE_FLAG_KW ) != NULL ) {
+        /* going to ALL copies or overwriting files. not sure which is the
+         * best */
+        *outHost = strdup( THIS_ADDRESS );
         return 0;
     }
 
-    resolveLinkedPath (rsComm, dataObjInp->objPath, &specCollCache, NULL);
-    if (isLocalZone (dataObjInp->objPath) == 0) {
-        resolveLinkedPath (rsComm, dataObjInp->objPath, &specCollCache,
-                           &dataObjInp->condInput);
-        remoteFlag = getAndConnRcatHost (rsComm, SLAVE_RCAT,
-                                         dataObjInp->objPath, &rodsServerHost);
-        if (remoteFlag < 0) {
-            return (remoteFlag);
-        } else if (remoteFlag == LOCAL_HOST) {
-            *outHost = strdup (THIS_ADDRESS);
+    resolveLinkedPath( rsComm, dataObjInp->objPath, &specCollCache, NULL );
+    if ( isLocalZone( dataObjInp->objPath ) == 0 ) {
+        resolveLinkedPath( rsComm, dataObjInp->objPath, &specCollCache,
+                           &dataObjInp->condInput );
+        remoteFlag = getAndConnRcatHost( rsComm, SLAVE_RCAT,
+                                         dataObjInp->objPath, &rodsServerHost );
+        if ( remoteFlag < 0 ) {
+            return ( remoteFlag );
+        }
+        else if ( remoteFlag == LOCAL_HOST ) {
+            *outHost = strdup( THIS_ADDRESS );
             return 0;
-        } else {
-            status = rcGetHostForPut (rodsServerHost->conn, dataObjInp,
-                                      outHost);
-            if (status >= 0 && *outHost != NULL &&
-                strcmp (*outHost, THIS_ADDRESS) == 0) {
-                free (*outHost);
-                *outHost = strdup (rodsServerHost->hostName->name);
+        }
+        else {
+            status = rcGetHostForPut( rodsServerHost->conn, dataObjInp,
+                                      outHost );
+            if ( status >= 0 && *outHost != NULL &&
+                    strcmp( *outHost, THIS_ADDRESS ) == 0 ) {
+                free( *outHost );
+                *outHost = strdup( rodsServerHost->hostName->name );
             }
-            return (status);
+            return ( status );
         }
     }
 
-    status = getSpecCollCache (rsComm, dataObjInp->objPath, 0, &specCollCache);
-    if (status >= 0 && NULL != specCollCache) { // JMC cppcheck - nullptr
-        if (specCollCache->specColl.collClass == MOUNTED_COLL) {
+    status = getSpecCollCache( rsComm, dataObjInp->objPath, 0, &specCollCache );
+    if ( status >= 0 && NULL != specCollCache ) { // JMC cppcheck - nullptr
+        if ( specCollCache->specColl.collClass == MOUNTED_COLL ) {
             /* JMC - legacy resource - status = resolveResc (specCollCache->specColl.resource, &myRescInfo);
                if (status < 0) {
                rodsLog( LOG_ERROR,"rsGetHostForPut: resolveResc error for %s, status = %d",
@@ -117,7 +119,7 @@ int rsGetHostForPut(
 
             myRescInfo = new rescInfo_t;
             irods::error err = irods::get_resc_info( specCollCache->specColl.resource, *myRescInfo );
-            if( !err.ok() ) {
+            if ( !err.ok() ) {
                 std::stringstream msg;
                 msg << "rsGetHostForPut - failed for [";
                 msg << specCollCache->specColl.resource;
@@ -127,36 +129,40 @@ int rsGetHostForPut(
 
 
             /* mounted coll will fall through */
-        } else {
-            *outHost = strdup (THIS_ADDRESS);
+        }
+        else {
+            *outHost = strdup( THIS_ADDRESS );
             return 0;
         }
-    } else {
+    }
+    else {
         /* normal type */
-        status = getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo);
-        if (status < 0) 
+        status = getRescGrpForCreate( rsComm, dataObjInp, &myRescGrpInfo );
+        if ( status < 0 ) {
             return status;
+        }
 
         myRescInfo = myRescGrpInfo->rescInfo;
-        freeAllRescGrpInfo (myRescGrpInfo);
+        freeAllRescGrpInfo( myRescGrpInfo );
     }
 
     /* get down here when we got a valid myRescInfo */
-    bzero (&addr, sizeof (addr));
+    bzero( &addr, sizeof( addr ) );
     //rstrcpy (addr.hostAddr, myRescInfo->rescLoc, NAME_LEN);
-    status = resolveHost (&addr, &rodsServerHost);
+    status = resolveHost( &addr, &rodsServerHost );
     delete myRescInfo;
-    if (status < 0) return status;
-    if (rodsServerHost->localFlag == LOCAL_HOST) {
-        *outHost = strdup (THIS_ADDRESS);
+    if ( status < 0 ) { return status; }
+    if ( rodsServerHost->localFlag == LOCAL_HOST ) {
+        *outHost = strdup( THIS_ADDRESS );
         return 0;
     }
 
-    myHost = getSvrAddr (rodsServerHost);
-    if (myHost != NULL) {
-        *outHost = strdup (myHost);
+    myHost = getSvrAddr( rodsServerHost );
+    if ( myHost != NULL ) {
+        *outHost = strdup( myHost );
         return 0;
-    } else {
+    }
+    else {
         *outHost = NULL;
         return SYS_INVALID_SERVER_HOST;
     }

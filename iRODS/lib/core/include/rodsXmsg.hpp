@@ -8,10 +8,10 @@
 #define DEF_EXPIRE_INT	(3600 * 4)	/* default expire interval */
 #define MAX_EXPIRE_INT  (3600 * 48)	/* max expire interval */
 #define INC_EXPIRE_INT  (3600 * 2)	/* minimum inteval after new inteval
-					 * was sent */ 
+* was sent */
 /* definition for msgNumber */
 #define ANY_MSG_NUMBER	0		/* get the msg with the smallest 
-					 * msgNumber */
+* msgNumber */
 typedef struct {
     uint expireTime;                    /* unix time of ticket expiration */
     uint flag;                          /* flag set to  XmsgTicketInfo.flag */
@@ -19,7 +19,7 @@ typedef struct {
 
 /* definition for XmsgTicketInfo.flag */
 #define SINGLE_MSG_TICKET  0	/* ticket for just a single msg. ticket will
-				 * be deleted after the msg is received */
+* be deleted after the msg is received */
 #define MULTI_MSG_TICKET   1	/* ticket for MULTIPLE MSG */
 typedef struct XmsgTicketInfo {
     uint sendTicket;
@@ -71,7 +71,7 @@ typedef struct XmsgQue {
 typedef struct TicketMsgStruct {
     xmsgTicketInfo_t ticket;
     xmsgQue_t xmsgQue;		/* the link list of msg with the same ticket */
-    struct TicketMsgStruct *hprev;    /* the hash link list. sort by rcvTicket 
+    struct TicketMsgStruct *hprev;    /* the hash link list. sort by rcvTicket
 				       */
     struct TicketMsgStruct *hnext;
     void *ticketHashQue;	/* points to the ticketHashQue_t this ticket

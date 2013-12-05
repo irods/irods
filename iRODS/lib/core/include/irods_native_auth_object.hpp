@@ -24,46 +24,46 @@ namespace irods {
     public:
         /// =-=-=-=-=-=-=-
         /// @brief Ctor
-        native_auth_object(rError_t* _r_error);
-        native_auth_object(const native_auth_object&);
+        native_auth_object( rError_t* _r_error );
+        native_auth_object( const native_auth_object& );
         virtual ~native_auth_object();
 
         /// =-=-=-=-=-=-=-
         /// @brief assignment operator
-        virtual native_auth_object&  operator=(const native_auth_object& );
+        virtual native_auth_object&  operator=( const native_auth_object& );
 
         /// =-=-=-=-=-=-=-
         /// @brief Comparison operator
-        virtual bool operator==(const native_auth_object& ) const;
+        virtual bool operator==( const native_auth_object& ) const;
 
         /// =-=-=-=-=-=-=-
         /// @brief Plugin resolution operation
         virtual error resolve(
-                          const std::string&, // interface for which to resolve
-                          plugin_ptr& );      // ptr to resolved plugin
-  
+            const std::string&, // interface for which to resolve
+            plugin_ptr& );      // ptr to resolved plugin
+
         /// =-=-=-=-=-=-=-
         /// @brief serialize object to key-value pairs
-        virtual error get_re_vars(keyValPair_t&); 
+        virtual error get_re_vars( keyValPair_t& );
 
         /// =-=-=-=-=-=-=-
         /// @brief accessors
-        std::string digest   () const { return digest_;    }
- 
+        std::string digest() const { return digest_;    }
+
         /// =-=-=-=-=-=-=-
         /// @brief mutators
-        void digest   ( const std::string& _dd ) { digest_ = _dd; }
-        
-        private:
+        void digest( const std::string& _dd ) { digest_ = _dd; }
+
+    private:
         /// =-=-=-=-=-=-=-
         /// @brief md5 digest computed
         std::string digest_;
-            
+
     }; // class native_auth_object
 
     /// @brief Helpful typedef
     typedef boost::shared_ptr<native_auth_object> native_auth_object_ptr;
-    
+
 }; // namespace irods
 
 #endif // __NATIVE_AUTH_OBJECT_HPP__

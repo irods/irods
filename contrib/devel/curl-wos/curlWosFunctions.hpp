@@ -18,7 +18,7 @@
  *
  * @section DESCRIPTION
  *
- * This file contains the definitions for the c code to exercise the DDN WOS 
+ * This file contains the definitions for the c code to exercise the DDN WOS
  * rest interface.  The code uses libcurl to access the interface.  The code
  * currently supports the get, put and delete operations.
  */
@@ -86,12 +86,12 @@
 
 
 /**
- * A structure to hold in memory the raw JSON results from the call to the 
+ * A structure to hold in memory the raw JSON results from the call to the
  * WOS management API used to get the management statistics.
  */
 typedef struct WOS_MEMORY_TYPE {
-   char  *data; /**< The actual in memory data */
-   size_t size; /**< data size */
+    char  *data; /**< The actual in memory data */
+    size_t size; /**< data size */
 } WOS_MEMORY, *WOS_MEMORY_P;
 
 /**
@@ -115,28 +115,28 @@ typedef struct WOS_HEADERS_TYPE {
  * fields map directly to the json returned by the call.
  */
 typedef struct WOS_STATISTICS_TYPE {
-   int    totalNodes;
-   int    activeNodes;
-   int    disconnected;
-   int    clients;
-   int    objectCount;
-   int    rawObjectCount;
-   double usableCapacity; /**< in Gigabytes */
-   double capacityUsed; /**< in Gigabytes */
-   char  *data;   /**< used for error reporting */
+    int    totalNodes;
+    int    activeNodes;
+    int    disconnected;
+    int    clients;
+    int    objectCount;
+    int    rawObjectCount;
+    double usableCapacity; /**< in Gigabytes */
+    double capacityUsed; /**< in Gigabytes */
+    char  *data;   /**< used for error reporting */
 } WOS_STATISTICS, *WOS_STATISTICS_P;
 
-int 
-putTheFile (char *resource, char *policy, char *file, WOS_HEADERS_P headerP);
-int 
-getTheFile (char *resource, char *file, char *destination, 
-            WOS_HEADERS_P headerP);
-int 
-getTheFileStatus (char *resource, char *file, WOS_HEADERS_P headerP);
-int 
-deleteTheFile (char *resource, char *file, WOS_HEADERS_P headerP);
 int
-getTheManagementData(char *resource, char *user, char *password, 
-                     WOS_STATISTICS_P statsP);
+putTheFile( char *resource, char *policy, char *file, WOS_HEADERS_P headerP );
+int
+getTheFile( char *resource, char *file, char *destination,
+            WOS_HEADERS_P headerP );
+int
+getTheFileStatus( char *resource, char *file, WOS_HEADERS_P headerP );
+int
+deleteTheFile( char *resource, char *file, WOS_HEADERS_P headerP );
+int
+getTheManagementData( char *resource, char *user, char *password,
+                      WOS_STATISTICS_P statsP );
 
 #endif

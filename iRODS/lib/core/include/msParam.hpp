@@ -27,16 +27,16 @@
 extern "C" {
 #endif
 
-/* some commonly used MS (micro service) type */
+    /* some commonly used MS (micro service) type */
 #define STR_MS_T                "STR_PI"
 #define INT_MS_T                "INT_PI"
 #define INT16_MS_T              "INT16_PI"
 #define CHAR_MS_T               "CHAR_PI"
 #define BUF_LEN_MS_T            "BUF_LEN_PI"    /* an integer indication the
-                                                 * length of BBuf */
+    * length of BBuf */
 #define STREAM_MS_T            "INT_PI"    /* value from bindStreamToIRods.
-                                            * Caller should use rcStreamRead 
-                                            * and rcStreamClose to read */
+    * Caller should use rcStreamRead
+    * and rcStreamClose to read */
 #define DOUBLE_MS_T             "DOUBLE_PI"
 #define FLOAT_MS_T              "FLOAT_PI"
 #define BOOL_MS_T               "BOOL_PI"
@@ -87,37 +87,37 @@ extern "C" {
 #define GenArray_MS_T          "GenArray_PI"
 #define DataObjInfo_MS_T       "DataObjInfo_PI"
 
-/* micro service input/output parameter */
-typedef struct MsParam {
-    char *label;
-    char *type;         /* this is the name of the packing instruction in
+    /* micro service input/output parameter */
+    typedef struct MsParam {
+        char *label;
+        char *type;         /* this is the name of the packing instruction in
                          * rodsPackTable.h */
-    void *inOutStruct;
-    bytesBuf_t *inpOutBuf;
-} msParam_t;
+        void *inOutStruct;
+        bytesBuf_t *inpOutBuf;
+    } msParam_t;
 
-typedef struct MsParamArray {
-    int len;
-    int oprType;
-    msParam_t **msParam;
-} msParamArray_t;
+    typedef struct MsParamArray {
+        int len;
+        int oprType;
+        msParam_t **msParam;
+    } msParamArray_t;
 
 #define MS_INP_SEP_STR	"++++"		/* the separator str for msInp */
 #define MS_NULL_STR	"null"		/* no input */
-typedef struct ParsedMsKeyValStr {
-    char *inpStr;
-    char *endPtr;	/* end pointer */
-    char *curPtr;	/* current position */
-    char *kwPtr;
-    char *valPtr;
-} parsedMsKeyValStr_t;
+    typedef struct ParsedMsKeyValStr {
+        char *inpStr;
+        char *endPtr;	/* end pointer */
+        char *curPtr;	/* current position */
+        char *kwPtr;
+        char *valPtr;
+    } parsedMsKeyValStr_t;
 
-typedef struct ValidKeyWd {
-    int flag;
-    char *keyWd; 
-} validKeyWd_t;
+    typedef struct ValidKeyWd {
+        int flag;
+        char *keyWd;
+    } validKeyWd_t;
 
-/* valid keyWd flags for dataObjInp_t */
+    /* valid keyWd flags for dataObjInp_t */
 
 #define RESC_NAME_FLAG		0x1
 #define DEST_RESC_NAME_FLAG 	0x2
@@ -151,127 +151,127 @@ typedef struct ValidKeyWd {
 #define UNREG_FLAG             0x8000000
 
 
-int
-resetMsParam (msParam_t *msParam);
-int
-clearMsParam (msParam_t *msParam, int freeStruct);
-int
-addMsParam (msParamArray_t *msParamArray, char *label,
-char *packInstruct, void *inOutStruct, bytesBuf_t *inpOutBuf);
-int
-addIntParamToArray (msParamArray_t *msParamArray, char *label, int inpInt);
-int
-addMsParamToArray (msParamArray_t *msParamArray, char *label,
-char *type, void *inOutStruct, bytesBuf_t *inpOutBuf, int replFlag);
-int
-replMsParamArray (msParamArray_t *msParamArray, 
-msParamArray_t *outMsParamArray);
-int
-replMsParam (msParam_t *msParam, msParam_t *outMsParam);
-int
-replInOutStruct (void *inStruct, void **outStruct, char *type);
-int
-fillMsParam (msParam_t *msParam, char *label,
-char *type, void *inOutStruct, bytesBuf_t *inpOutBuf);
-msParam_t *
-getMsParamByLabel (msParamArray_t *msParamArray, char *label);
-msParam_t *
-getMsParamByType (msParamArray_t *msParamArray, char *type);
-int
-rmMsParamByLabel (msParamArray_t *msParamArray, char *label, int freeStruct);
-int
-trimMsParamArray (msParamArray_t *msParamArray, char *outParamDesc);
-int
-printMsParam (msParamArray_t *msParamArray);
-int
-writeMsParam (char *buf, int len, msParam_t *msParam);
-int
-clearMsParamArray (msParamArray_t *msParamArray, int freeStruct);
-int 
-fillIntInMsParam (msParam_t *msParam, int myInt);
-int
-fillFloatInMsParam (msParam_t *msParam, float myFloat);
-int
-fillCharInMsParam (msParam_t *msParam, char myChar);
-int
-fillDoubleInMsParam (msParam_t *msParam, rodsLong_t myDouble);
-int
-fillStrInMsParam (msParam_t *msParam, const char *myStr);
-int
-fillBufLenInMsParam (msParam_t *msParam, int myInt, bytesBuf_t *bytesBuf);
-int
-parseMspForDataObjInp (msParam_t *inpParam, dataObjInp_t *dataObjInpCache, 
-dataObjInp_t **outDataObjInp, int writeToCache);
-int
-parseMspForCollInp (msParam_t *inpParam, collInp_t *collInpCache,
-collInp_t **outCollInp, int writeToCache);
-int
-parseMspForCondInp (msParam_t *inpParam, keyValPair_t *condInput,
-char *condKw);
-int
-parseMspForCondKw (msParam_t *inpParam, keyValPair_t *condInput);
-int
-parseMspForPhyPathReg (msParam_t *inpParam, keyValPair_t *condInput);
-int
-parseMspForPosInt (msParam_t *inpParam);
-char *
-parseMspForStr (msParam_t *inpParam);
-int
-parseMspForFloat (msParam_t *inpParam, float *floatout);
-int
-parseMspForDataObjCopyInp (msParam_t *inpParam,
-dataObjCopyInp_t *dataObjCopyInpCache, dataObjCopyInp_t **outDataObjCopyInp);
-int
-parseMspForExecCmdInp (msParam_t *inpParam,
-execCmd_t *execCmdInpCache, execCmd_t **ouExecCmdInp);
-void 
-*getMspInOutStructByLabel (msParamArray_t *msParamArray, char *label);
-int
-getStdoutInExecCmdOut (msParam_t *inpExecCmdOut, char **outStr);
-int
-getStderrInExecCmdOut (msParam_t *inpExecCmdOut, char **outStr);
-int
-initParsedMsKeyValStr (char *inpStr, parsedMsKeyValStr_t *parsedMsKeyValStr);
-int
-clearParsedMsKeyValStr (parsedMsKeyValStr_t *parsedMsKeyValStr);
-int
-getNextKeyValFromMsKeyValStr (parsedMsKeyValStr_t *parsedMsKeyValStr);
-int
-parseMsKeyValStrForDataObjInp (msParam_t *inpParam, dataObjInp_t *dataObjInp,
-char *hintForMissingKw, int validKwFlags, char **outBadKeyWd);
-int
-chkDataObjInpKw (char *keyWd, int validKwFlags);
-int
-parseMsKeyValStrForCollInp (msParam_t *inpParam, collInp_t *collInp,
-char *hintForMissingKw, int validKwFlags, char **outBadKeyWd);
-int
-chkCollInpKw (char *keyWd, int validKwFlags);
-int
-addKeyValToMspStr (msParam_t *keyStr, msParam_t *valStr, 
-msParam_t *msKeyValStr);
-int
-chkStructFileExtAndRegInpKw (char *keyWd, int validKwFlags);
-int
-parseMsKeyValStrForStructFileExtAndRegInp (msParam_t *inpParam,
-structFileExtAndRegInp_t *structFileExtAndRegInp,
-char *hintForMissingKw, int validKwFlags, char **outBadKeyWd);
+    int
+    resetMsParam( msParam_t *msParam );
+    int
+    clearMsParam( msParam_t *msParam, int freeStruct );
+    int
+    addMsParam( msParamArray_t *msParamArray, char *label,
+                char *packInstruct, void *inOutStruct, bytesBuf_t *inpOutBuf );
+    int
+    addIntParamToArray( msParamArray_t *msParamArray, char *label, int inpInt );
+    int
+    addMsParamToArray( msParamArray_t *msParamArray, char *label,
+                       char *type, void *inOutStruct, bytesBuf_t *inpOutBuf, int replFlag );
+    int
+    replMsParamArray( msParamArray_t *msParamArray,
+                      msParamArray_t *outMsParamArray );
+    int
+    replMsParam( msParam_t *msParam, msParam_t *outMsParam );
+    int
+    replInOutStruct( void *inStruct, void **outStruct, char *type );
+    int
+    fillMsParam( msParam_t *msParam, char *label,
+                 char *type, void *inOutStruct, bytesBuf_t *inpOutBuf );
+    msParam_t *
+    getMsParamByLabel( msParamArray_t *msParamArray, char *label );
+    msParam_t *
+    getMsParamByType( msParamArray_t *msParamArray, char *type );
+    int
+    rmMsParamByLabel( msParamArray_t *msParamArray, char *label, int freeStruct );
+    int
+    trimMsParamArray( msParamArray_t *msParamArray, char *outParamDesc );
+    int
+    printMsParam( msParamArray_t *msParamArray );
+    int
+    writeMsParam( char *buf, int len, msParam_t *msParam );
+    int
+    clearMsParamArray( msParamArray_t *msParamArray, int freeStruct );
+    int
+    fillIntInMsParam( msParam_t *msParam, int myInt );
+    int
+    fillFloatInMsParam( msParam_t *msParam, float myFloat );
+    int
+    fillCharInMsParam( msParam_t *msParam, char myChar );
+    int
+    fillDoubleInMsParam( msParam_t *msParam, rodsLong_t myDouble );
+    int
+    fillStrInMsParam( msParam_t *msParam, const char *myStr );
+    int
+    fillBufLenInMsParam( msParam_t *msParam, int myInt, bytesBuf_t *bytesBuf );
+    int
+    parseMspForDataObjInp( msParam_t *inpParam, dataObjInp_t *dataObjInpCache,
+                           dataObjInp_t **outDataObjInp, int writeToCache );
+    int
+    parseMspForCollInp( msParam_t *inpParam, collInp_t *collInpCache,
+                        collInp_t **outCollInp, int writeToCache );
+    int
+    parseMspForCondInp( msParam_t *inpParam, keyValPair_t *condInput,
+                        char *condKw );
+    int
+    parseMspForCondKw( msParam_t *inpParam, keyValPair_t *condInput );
+    int
+    parseMspForPhyPathReg( msParam_t *inpParam, keyValPair_t *condInput );
+    int
+    parseMspForPosInt( msParam_t *inpParam );
+    char *
+    parseMspForStr( msParam_t *inpParam );
+    int
+    parseMspForFloat( msParam_t *inpParam, float *floatout );
+    int
+    parseMspForDataObjCopyInp( msParam_t *inpParam,
+                               dataObjCopyInp_t *dataObjCopyInpCache, dataObjCopyInp_t **outDataObjCopyInp );
+    int
+    parseMspForExecCmdInp( msParam_t *inpParam,
+                           execCmd_t *execCmdInpCache, execCmd_t **ouExecCmdInp );
+    void
+    *getMspInOutStructByLabel( msParamArray_t *msParamArray, char *label );
+    int
+    getStdoutInExecCmdOut( msParam_t *inpExecCmdOut, char **outStr );
+    int
+    getStderrInExecCmdOut( msParam_t *inpExecCmdOut, char **outStr );
+    int
+    initParsedMsKeyValStr( char *inpStr, parsedMsKeyValStr_t *parsedMsKeyValStr );
+    int
+    clearParsedMsKeyValStr( parsedMsKeyValStr_t *parsedMsKeyValStr );
+    int
+    getNextKeyValFromMsKeyValStr( parsedMsKeyValStr_t *parsedMsKeyValStr );
+    int
+    parseMsKeyValStrForDataObjInp( msParam_t *inpParam, dataObjInp_t *dataObjInp,
+                                   char *hintForMissingKw, int validKwFlags, char **outBadKeyWd );
+    int
+    chkDataObjInpKw( char *keyWd, int validKwFlags );
+    int
+    parseMsKeyValStrForCollInp( msParam_t *inpParam, collInp_t *collInp,
+                                char *hintForMissingKw, int validKwFlags, char **outBadKeyWd );
+    int
+    chkCollInpKw( char *keyWd, int validKwFlags );
+    int
+    addKeyValToMspStr( msParam_t *keyStr, msParam_t *valStr,
+                       msParam_t *msKeyValStr );
+    int
+    chkStructFileExtAndRegInpKw( char *keyWd, int validKwFlags );
+    int
+    parseMsKeyValStrForStructFileExtAndRegInp( msParam_t *inpParam,
+            structFileExtAndRegInp_t *structFileExtAndRegInp,
+            char *hintForMissingKw, int validKwFlags, char **outBadKeyWd );
 #ifdef NETCDF_API
-int
-parseMspForNcInqIdInpName (msParam_t *inpParam, ncInqIdInp_t *ncInqIdInp);
-int
-parseMspForNcInqIdInpId (msParam_t *inpParam, ncInqIdInp_t *ncInqIdInp);
-int
-parseMspForNcGetVarInp (msParam_t *inpParam, ncGetVarInp_t *ncGetVarInp);
-int
-parseStrToNcType (char *myStr);
-int
-parseStrMspForLongArray (msParam_t *inpParam, int *ndim, 
-rodsLong_t **longArray);
-int
-parseMspForNccfGetVarInp (msParam_t *inpParam, nccfGetVarInp_t *nccfGetVarInp);
+    int
+    parseMspForNcInqIdInpName( msParam_t *inpParam, ncInqIdInp_t *ncInqIdInp );
+    int
+    parseMspForNcInqIdInpId( msParam_t *inpParam, ncInqIdInp_t *ncInqIdInp );
+    int
+    parseMspForNcGetVarInp( msParam_t *inpParam, ncGetVarInp_t *ncGetVarInp );
+    int
+    parseStrToNcType( char *myStr );
+    int
+    parseStrMspForLongArray( msParam_t *inpParam, int *ndim,
+                             rodsLong_t **longArray );
+    int
+    parseMspForNccfGetVarInp( msParam_t *inpParam, nccfGetVarInp_t *nccfGetVarInp );
 #endif
-int
-parseMsParamFromIRFile (msParamArray_t *inpParamArray, char *inBuf);
+    int
+    parseMsParamFromIRFile( msParamArray_t *inpParamArray, char *inBuf );
 
 #ifdef  __cplusplus
 }

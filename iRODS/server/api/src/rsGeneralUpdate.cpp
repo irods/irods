@@ -8,45 +8,43 @@
 #include "icatHighLevelRoutines.hpp"
 
 int
-rsGeneralUpdate (rsComm_t *rsComm, generalUpdateInp_t *generalUpdateInp )
-{
+rsGeneralUpdate( rsComm_t *rsComm, generalUpdateInp_t *generalUpdateInp ) {
     rodsServerHost_t *rodsServerHost;
     int status;
 
-    rodsLog(LOG_DEBUG, "generalUpdate");
+    rodsLog( LOG_DEBUG, "generalUpdate" );
 
-    status = getAndConnRcatHost(rsComm, MASTER_RCAT, NULL, &rodsServerHost);
-    if (status < 0) {
-       return(status);
+    status = getAndConnRcatHost( rsComm, MASTER_RCAT, NULL, &rodsServerHost );
+    if ( status < 0 ) {
+        return( status );
     }
 
-    if (rodsServerHost->localFlag == LOCAL_HOST) {
+    if ( rodsServerHost->localFlag == LOCAL_HOST ) {
 #ifdef RODS_CAT
-       status = _rsGeneralUpdate (rsComm, generalUpdateInp);
+        status = _rsGeneralUpdate( rsComm, generalUpdateInp );
 #else
-       status = SYS_NO_RCAT_SERVER_ERR;
+        status = SYS_NO_RCAT_SERVER_ERR;
 #endif
     }
     else {
-       status = rcGeneralUpdate(rodsServerHost->conn,
-			       generalUpdateInp);
+        status = rcGeneralUpdate( rodsServerHost->conn,
+                                  generalUpdateInp );
     }
 
-    if (status < 0) { 
-       rodsLog (LOG_NOTICE,
-		"rsGeneralUpdate: rcGeneralUpdate failed");
+    if ( status < 0 ) {
+        rodsLog( LOG_NOTICE,
+                 "rsGeneralUpdate: rcGeneralUpdate failed" );
     }
-    return (status);
+    return ( status );
 }
 
 #ifdef RODS_CAT
 int
-_rsGeneralUpdate(rsComm_t *rsComm, generalUpdateInp_t *generalUpdateInp )
-{
+_rsGeneralUpdate( rsComm_t *rsComm, generalUpdateInp_t *generalUpdateInp ) {
     int status;
 
-    status  = chlGeneralUpdate(*generalUpdateInp);
+    status  = chlGeneralUpdate( *generalUpdateInp );
 
-    return(status);
-} 
+    return( status );
+}
 #endif

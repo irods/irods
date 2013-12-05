@@ -15,7 +15,7 @@
 #define REG_CHKSUM_KW	"regChksum" 	/* register checksum */
 #define VERIFY_CHKSUM_KW "verifyChksum"	/* verify checksum */
 #define VERIFY_BY_SIZE_KW "verifyBySize" /* verify by size - used by irsync */
-#define OBJ_PATH_KW	"objPath"	/* logical path of the object */ 
+#define OBJ_PATH_KW	"objPath"	/* logical path of the object */
 #define RESC_NAME_KW	"rescName"	/* resource name */
 #define DEST_RESC_NAME_KW	"destRescName"	/* destination resource name */
 #define DEF_RESC_NAME_KW	"defRescName"	/* default resource name */
@@ -31,8 +31,8 @@
 #define REPL_STATUS_KW	"replStatus"	/* status of the replica */
 #define ALL_REPL_STATUS_KW	"allReplStatus"	/* update all replStatus */
 #define DATA_INCLUDED_KW "dataIncluded"	/* data included in the input buffer */
-#define DATA_OWNER_KW	"dataOwner"	
-#define DATA_OWNER_ZONE_KW	"dataOwnerZone" 
+#define DATA_OWNER_KW	"dataOwner"
+#define DATA_OWNER_ZONE_KW	"dataOwnerZone"
 #define DATA_EXPIRY_KW	"dataExpiry"
 #define DATA_COMMENTS_KW "dataComments"
 #define DATA_CREATE_KW	"dataCreate"
@@ -77,18 +77,18 @@
 #define REMOTE_ZONE_OPR_KW    	"remoteZoneOpr"
 #define REPL_DATA_OBJ_INP_KW   	"replDataObjInp"
 #define CROSS_ZONE_CREATE_KW   	"replDataObjInp"  /* use the same for backward
-						   * compatibility */
+* compatibility */
 #define QUERY_BY_DATA_ID_KW   	"queryByDataID"
 #define SU_CLIENT_USER_KW   	"suClientUser"
 #define RM_BUN_COPY_KW   	"rmBunCopy"
-#define KEY_WORD_KW   		"keyWord"   /* the msKeyValStr is a keyword */ 
-#define CREATE_MODE_KW   	"createMode" /* a msKeyValStr keyword */ 
-#define OPEN_FLAGS_KW   	"openFlags" /* a msKeyValStr keyword */ 
-#define OFFSET_KW   		"offset" /* a msKeyValStr keyword */ 
-/* DATA_SIZE_KW already defined */ 
-#define NUM_THREADS_KW   	"numThreads" /* a msKeyValStr keyword */ 
-#define OPR_TYPE_KW   		"oprType" /* a msKeyValStr keyword */ 
-#define COLL_FLAGS_KW  		"collFlags" /* a msKeyValStr keyword */ 
+#define KEY_WORD_KW   		"keyWord"   /* the msKeyValStr is a keyword */
+#define CREATE_MODE_KW   	"createMode" /* a msKeyValStr keyword */
+#define OPEN_FLAGS_KW   	"openFlags" /* a msKeyValStr keyword */
+#define OFFSET_KW   		"offset" /* a msKeyValStr keyword */
+/* DATA_SIZE_KW already defined */
+#define NUM_THREADS_KW   	"numThreads" /* a msKeyValStr keyword */
+#define OPR_TYPE_KW   		"oprType" /* a msKeyValStr keyword */
+#define COLL_FLAGS_KW  		"collFlags" /* a msKeyValStr keyword */
 #define TRANSLATED_PATH_KW	"translatedPath"  /* the path translated */
 #define NO_TRANSLATE_LINKPT_KW	"noTranslateMntpt"  /* don't translate mntpt */
 #define BULK_OPR_KW		"bulkOpr"  /* the bulk operation */
@@ -96,25 +96,25 @@
 #define EXEC_CMD_RULE_KW	"execCmdRule" /* the rule that invoke execCmd */
 #define EXEC_MY_RULE_KW	"execMyRule" /* the rule is invoked by rsExecMyRule */
 #define STREAM_STDOUT_KW	"streamStdout"   /* the stream stdout for 
-						  * execCmd */ 
+* execCmd */
 #define REG_REPL_KW		"regRepl"  /* register replica */
 #define AGE_KW			"age"  /* age of the file for itrim */
 #define DRYRUN_KW		"dryrun"  /* do a dry run */
 #define ACL_COLLECTION_KW	"aclCollection"  /* the collection from which 
-						  * the ACL should be used */
+* the ACL should be used */
 #define NO_CHK_COPY_LEN_KW	"noChkCopyLen"  /* Don't check the len 
-						  * when transfering  */
+* when transfering  */
 #define TICKET_KW               "ticket"        /* for ticket-based-access */
 #define PURGE_CACHE_KW         "purgeCache"    /* purge the cache copy right JMC - backport 4537
-                                                * after the operation */
+* after the operation */
 #define EMPTY_BUNDLE_ONLY_KW   "emptyBundleOnly" /* delete emptyBundleOnly */ // JMC - backport 4552
 
 // =-=-=-=-=-=-=-
 // JMC - backport 4599
 #define LOCK_TYPE_KW   "lockType"      /* valid values are READ_LOCK_TYPE
-                                        * WRITE_LOCK_TYPE and UNLOCK_TYPE */
+* WRITE_LOCK_TYPE and UNLOCK_TYPE */
 #define LOCK_CMD_KW    "lockCmd"       /* valid values are SET_LOCK_WAIT_CMD,
-                                        * SET_LOCK_CMD and GET_LOCK_CMD */
+* SET_LOCK_CMD and GET_LOCK_CMD */
 #define LOCK_FD_KW     "lockFd"        /* Lock file desc for unlock */
 #define NATIVE_NETCDF_CALL_KW "nativeNetcdfCall"  /* call netcdf natively */
 #define MAX_SUB_FILE_KW "maxSubFile" /* max number of files for tar file bundles */
@@ -125,7 +125,7 @@
 // =-=-=-=-=-=-=-
 #define MAX_SUB_FILE_KW "maxSubFile" /* max number of files for tar file bundles */ // JMC - backport 4771
 
- /* OBJ_PATH_KW already defined */
+/* OBJ_PATH_KW already defined */
 
 /* OBJ_PATH_KW already defined */
 /* COLL_NAME_KW already defined */
@@ -135,8 +135,8 @@
 #define FILE_GROUP_KW           "fileGroup"
 #define FILE_MODE_KW            "fileMode"
 #define FILE_CTIME_KW           "fileCtime"
-#define FILE_MTIME_KW           "fileMtime" 
-#define FILE_SOURCE_PATH_KW     "fileSourcePath"    
+#define FILE_MTIME_KW           "fileMtime"
+#define FILE_SOURCE_PATH_KW     "fileSourcePath"
 #define EXCLUDE_FILE_KW         "excludeFile"
 
 /* The following are the keyWord definition for the rescCond key/value pair */

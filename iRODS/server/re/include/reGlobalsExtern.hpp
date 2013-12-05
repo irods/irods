@@ -1,6 +1,6 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* reGlobalsExtern.h - header file for global extern declaration for the 
+/* reGlobalsExtern.h - header file for global extern declaration for the
  * rule engine modules
  */
 
@@ -13,9 +13,9 @@
    This can be useful in testing/debugging of memory allocation problems. * /
 #define MYMALLOC 1
 #define malloc(x) mymalloc(__FILE__, __LINE__ , x)
-extern void* mymalloc(char* file, int line, int x); 
+extern void* mymalloc(char* file, int line, int x);
 #define free(x) myfree(__FILE__, __LINE__ , x)
-extern void myfree(char* file, int line, void *x); 
+extern void myfree(char* file, int line, void *x);
 #endif
 ***/
 
@@ -46,36 +46,36 @@ extern void myfree(char* file, int line, void *x);
 /***** for more details.                      *****/
 /***** IMPORTANT    IMPORTANT    IMPORTANT    *****/
 typedef struct RuleExecInfo {
-  int status;
-  char statusStr[MAX_NAME_LEN];
-  char ruleName[NAME_LEN];	/* name of rule */
-  rsComm_t *rsComm;
-  char pluginInstanceName[MAX_NAME_LEN];
-  msParamArray_t *msParamArray;
-  msParamArray_t inOutMsParamArray;
-  int l1descInx;
-  dataObjInp_t *doinp;	/* data object type input */
+    int status;
+    char statusStr[MAX_NAME_LEN];
+    char ruleName[NAME_LEN];	/* name of rule */
+    rsComm_t *rsComm;
+    char pluginInstanceName[MAX_NAME_LEN];
+    msParamArray_t *msParamArray;
+    msParamArray_t inOutMsParamArray;
+    int l1descInx;
+    dataObjInp_t *doinp;	/* data object type input */
 #if 0
-  dataOprInp_t *dinp;   /* not used. data input */
-  fileOpenInp_t *finp;  /* not used. file type input */
+    dataOprInp_t *dinp;   /* not used. data input */
+    fileOpenInp_t *finp;  /* not used. file type input */
 #endif
-  dataObjInfo_t *doi;
-  rescGrpInfo_t *rgi; /* resource group */
-  userInfo_t *uoic;  /* client XXXX should get this from rsComm->clientUser */
-  userInfo_t *uoip;  /* proxy XXXX should get this from rsComm->proxyUser */
-  collInfo_t *coi;
+    dataObjInfo_t *doi;
+    rescGrpInfo_t *rgi; /* resource group */
+    userInfo_t *uoic;  /* client XXXX should get this from rsComm->clientUser */
+    userInfo_t *uoip;  /* proxy XXXX should get this from rsComm->proxyUser */
+    collInfo_t *coi;
 #if 0
-  dataObjInp_t *doinpo;  /* other data object type input. for copy operation */
-  dataOprInp_t *dinpo;   /* other data type input. for copy operation */
-  fileOpenInp_t *finpo;  /* other file type input. for copy operation */
-  rescGrpInfo_t *rgio; /* other resource group. for copy operation */
+    dataObjInp_t *doinpo;  /* other data object type input. for copy operation */
+    dataOprInp_t *dinpo;   /* other data type input. for copy operation */
+    fileOpenInp_t *finpo;  /* other file type input. for copy operation */
+    rescGrpInfo_t *rgio; /* other resource group. for copy operation */
 #endif
-  userInfo_t *uoio;     /* other user info */
-  keyValPair_t *condInputData;
-  /****        IF YOU ARE MAKING CHANGES CHECK BELOW
-               OR ABOVE FOR IMPORTANT INFORMATION  ****/
-  char ruleSet[RULE_SET_DEF_LENGTH];
-  struct RuleExecInfo *next;
+    userInfo_t *uoio;     /* other user info */
+    keyValPair_t *condInputData;
+    /****        IF YOU ARE MAKING CHANGES CHECK BELOW
+                 OR ABOVE FOR IMPORTANT INFORMATION  ****/
+    char ruleSet[RULE_SET_DEF_LENGTH];
+    struct RuleExecInfo *next;
 } ruleExecInfo_t;
 /***** IMPORTANT    IMPORTANT    IMPORTANT    *****/
 /***** If you are changing the RuleExecInfo   *****/
@@ -92,8 +92,8 @@ typedef struct RuleExecInfo {
 /***** IMPORTANT    IMPORTANT    IMPORTANT    *****/
 
 struct reDebugStack {
-	char *step;
-	int label;
+    char *step;
+    int label;
 };
 
 typedef struct ReArg {
@@ -107,47 +107,47 @@ typedef struct RuleExecInfoAndArg {
 } ruleExecInfoAndArg_t;
 
 typedef struct {
-  int MaxNumOfRules;
-  char    *ruleBase[MAX_NUM_OF_RULES];
-  char    *action[MAX_NUM_OF_RULES];
-  char    *ruleHead[MAX_NUM_OF_RULES];
-  char    *ruleCondition[MAX_NUM_OF_RULES];
-  char    *ruleAction[MAX_NUM_OF_RULES];
-  char    *ruleRecovery[MAX_NUM_OF_RULES];
-  long int      ruleId[MAX_NUM_OF_RULES]; 
+    int MaxNumOfRules;
+    char    *ruleBase[MAX_NUM_OF_RULES];
+    char    *action[MAX_NUM_OF_RULES];
+    char    *ruleHead[MAX_NUM_OF_RULES];
+    char    *ruleCondition[MAX_NUM_OF_RULES];
+    char    *ruleAction[MAX_NUM_OF_RULES];
+    char    *ruleRecovery[MAX_NUM_OF_RULES];
+    long int      ruleId[MAX_NUM_OF_RULES];
 } ruleStruct_t;
 
 typedef struct {
-  int MaxNumOfDVars;
-  char *varName[MAX_NUM_OF_DVARS];
-  char *action[MAX_NUM_OF_DVARS];
-  char *var2CMap[MAX_NUM_OF_DVARS];
-  long int   varId[MAX_NUM_OF_DVARS];
+    int MaxNumOfDVars;
+    char *varName[MAX_NUM_OF_DVARS];
+    char *action[MAX_NUM_OF_DVARS];
+    char *var2CMap[MAX_NUM_OF_DVARS];
+    long int   varId[MAX_NUM_OF_DVARS];
 } rulevardef_t;
 
 typedef rulevardef_t dvmStruct_t;
 
 typedef struct {
-  int MaxNumOfFMaps;
-  char *funcName[MAX_NUM_OF_FMAPS];
-  char *func2CMap[MAX_NUM_OF_FMAPS];
-  long int  fmapId[MAX_NUM_OF_FMAPS];
+    int MaxNumOfFMaps;
+    char *funcName[MAX_NUM_OF_FMAPS];
+    char *func2CMap[MAX_NUM_OF_FMAPS];
+    long int  fmapId[MAX_NUM_OF_FMAPS];
 } rulefmapdef_t;
 
 typedef rulefmapdef_t fnmapStruct_t;
 
 typedef struct {
-  int MaxNumOfMsrvcs;
-  long int   msrvcId[MAX_NUM_OF_MSRVCS];
-  char    *moduleName[MAX_NUM_OF_MSRVCS];
-  char    *msrvcName[MAX_NUM_OF_MSRVCS];
-  char    *msrvcSignature[MAX_NUM_OF_MSRVCS];
-  char    *msrvcVersion[MAX_NUM_OF_MSRVCS];
-  char    *msrvcHost[MAX_NUM_OF_MSRVCS];
-  char    *msrvcLocation[MAX_NUM_OF_MSRVCS];
-  char    *msrvcLanguage[MAX_NUM_OF_MSRVCS];
-  char    *msrvcTypeName[MAX_NUM_OF_MSRVCS];
-  long int   msrvcStatus[MAX_NUM_OF_MSRVCS];
+    int MaxNumOfMsrvcs;
+    long int   msrvcId[MAX_NUM_OF_MSRVCS];
+    char    *moduleName[MAX_NUM_OF_MSRVCS];
+    char    *msrvcName[MAX_NUM_OF_MSRVCS];
+    char    *msrvcSignature[MAX_NUM_OF_MSRVCS];
+    char    *msrvcVersion[MAX_NUM_OF_MSRVCS];
+    char    *msrvcHost[MAX_NUM_OF_MSRVCS];
+    char    *msrvcLocation[MAX_NUM_OF_MSRVCS];
+    char    *msrvcLanguage[MAX_NUM_OF_MSRVCS];
+    char    *msrvcTypeName[MAX_NUM_OF_MSRVCS];
+    long int   msrvcStatus[MAX_NUM_OF_MSRVCS];
 } msrvcStruct_t;
 
 extern ruleStruct_t coreRuleStrct;

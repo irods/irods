@@ -20,7 +20,7 @@ typedef struct ExecMyRuleInp {
     char myRule[META_STR_LEN];
     rodsHostAddr_t addr;
     keyValPair_t condInput;
-    char outParamDesc[LONG_NAME_LEN];  /* output labels separated by "%" */  
+    char outParamDesc[LONG_NAME_LEN];  /* output labels separated by "%" */
     msParamArray_t *inpParamArray;
 } execMyRuleInp_t;
 
@@ -30,11 +30,11 @@ typedef struct ExecMyRuleInp {
 #define RS_EXEC_MY_RULE rsExecMyRule
 /* prototype for the server handler */
 int
-rsExecMyRule (rsComm_t *rsComm, execMyRuleInp_t *execMyRuleInp, 
-msParamArray_t **outParamArray);
+rsExecMyRule( rsComm_t *rsComm, execMyRuleInp_t *execMyRuleInp,
+              msParamArray_t **outParamArray );
 int
-remoteExecMyRule (rsComm_t *rsComm, execMyRuleInp_t *execMyRuleInp,
-msParamArray_t **outParamArray, rodsServerHost_t *rodsServerHost);
+remoteExecMyRule( rsComm_t *rsComm, execMyRuleInp_t *execMyRuleInp,
+                  msParamArray_t **outParamArray, rodsServerHost_t *rodsServerHost );
 #else
 #define RS_EXEC_MY_RULE NULL
 #endif
@@ -43,10 +43,10 @@ msParamArray_t **outParamArray, rodsServerHost_t *rodsServerHost);
 extern "C" {
 #endif
 
-/* prototype for the client call */
-int
-rcExecMyRule (rcComm_t *conn, execMyRuleInp_t *execMyRuleInp, 
-msParamArray_t **outParamArray);
+    /* prototype for the client call */
+    int
+    rcExecMyRule( rcComm_t *conn, execMyRuleInp_t *execMyRuleInp,
+                  msParamArray_t **outParamArray );
 
 #ifdef  __cplusplus
 }

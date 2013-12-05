@@ -8,16 +8,16 @@
 
 namespace irods {
 
-/**
- * @brief Class to replicate the unlink operation
- */
+    /**
+     * @brief Class to replicate the unlink operation
+     */
     class unlink_replicator : public oper_replicator {
     public:
         /// @brief Constructs an unlink replicator with the specified unlinked child and with the specified resource.
-        unlink_replicator(const std::string& _child, const std::string& _resource);
-        virtual ~unlink_replicator(void);
+        unlink_replicator( const std::string& _child, const std::string& _resource );
+        virtual ~unlink_replicator( void );
 
-        error replicate(resource_plugin_context& _ctx, const child_list_t& _siblings, const object_oper& _object_oper);
+        error replicate( resource_plugin_context& _ctx, const child_list_t& _siblings, const object_oper& _object_oper );
     private:
         std::string child_;
         std::string resource_;

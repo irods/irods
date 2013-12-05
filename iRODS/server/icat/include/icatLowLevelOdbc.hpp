@@ -41,25 +41,25 @@ extern char *cllBindVars[MAX_BIND_VARS];
 /* The name in the various 'odbc.ini' files for the RDA: */
 #define RDA_ODBC_ENTRY_NAME "iRODS_RDA"
 
-int cllOpenEnv(icatSessionStruct *icss);
-int cllCloseEnv(icatSessionStruct *icss);
-int cllConnect(icatSessionStruct *icss);
-int cllConnectRda(icatSessionStruct *icss);
-int cllConnectDbr(icatSessionStruct *icss, char *odbcEntryName);
-int cllDisconnect(icatSessionStruct *icss);
-int cllExecSqlNoResult(icatSessionStruct *icss, const char *sql);
-int cllExecSqlWithResult(icatSessionStruct *icss, int *stmtNum, char *sql);
-int cllExecSqlWithResultBV(icatSessionStruct *icss, int *stmtNum, char *sql,
-			   const char *bindVar1, const char *bindVar2,
-			   const char *bindVar3, const char *bindVar4,
-			   const char *bindVar5, const char *bindVar6);
-int cllGetRow(icatSessionStruct *icss, int statementNumber);
-int cllFreeStatement(icatSessionStruct *icss, int statementNumber);
-int cllNextValueString(char *itemName, char *outString, int maxSize);
-int cllTest(char *userArg, char *pwArg);
-int cllCurrentValueString(char *itemName, char *outString, int maxSize);
-int cllGetRowCount(icatSessionStruct *icss, int statementNumber);
-int cllCheckPending(const char *sql, int option, int dbType);
-int cllGetLastErrorMessage(char *msg, int maxChars);
+int cllOpenEnv( icatSessionStruct *icss );
+int cllCloseEnv( icatSessionStruct *icss );
+int cllConnect( icatSessionStruct *icss );
+int cllConnectRda( icatSessionStruct *icss );
+int cllConnectDbr( icatSessionStruct *icss, char *odbcEntryName );
+int cllDisconnect( icatSessionStruct *icss );
+int cllExecSqlNoResult( icatSessionStruct *icss, const char *sql );
+int cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, char *sql );
+int cllExecSqlWithResultBV( icatSessionStruct *icss, int *stmtNum, char *sql,
+                            const char *bindVar1, const char *bindVar2,
+                            const char *bindVar3, const char *bindVar4,
+                            const char *bindVar5, const char *bindVar6 );
+int cllGetRow( icatSessionStruct *icss, int statementNumber );
+int cllFreeStatement( icatSessionStruct *icss, int statementNumber );
+int cllNextValueString( char *itemName, char *outString, int maxSize );
+int cllTest( char *userArg, char *pwArg );
+int cllCurrentValueString( char *itemName, char *outString, int maxSize );
+int cllGetRowCount( icatSessionStruct *icss, int statementNumber );
+int cllCheckPending( const char *sql, int option, int dbType );
+int cllGetLastErrorMessage( char *msg, int maxChars );
 
 #endif	/* CLL_PSQ_H */

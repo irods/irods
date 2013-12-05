@@ -12,7 +12,7 @@ namespace irods {
 
     // =-=-=-=-=-=-=-
     /// @brief delimiter used for parsing resource context strings
-    const std::string RESOURCE_DELIMITER(";");
+    const std::string RESOURCE_DELIMITER( ";" );
 
 
     // =-=-=-=-=-=-=-
@@ -24,17 +24,17 @@ namespace irods {
 
     // =-=-=-=-=-=-=-
     /// @brief key for compound resource cache staging policy
-    const std::string RESOURCE_STAGE_TO_CACHE_POLICY("compound_resource_cache_refresh_policy");
+    const std::string RESOURCE_STAGE_TO_CACHE_POLICY( "compound_resource_cache_refresh_policy" );
 
     // =-=-=-=-=-=-=-
     /// @brief value for compound resource cache staging policy :
     ///        prefer the copy in the Archive
-    const std::string RESOURCE_STAGE_PREFER_ARCHIVE("always");
+    const std::string RESOURCE_STAGE_PREFER_ARCHIVE( "always" );
 
     // =-=-=-=-=-=-=-
     /// @brief value for compound resource cache staging policy :
     ///        prefer the copy in the Cache
-    const std::string RESOURCE_STAGE_PREFER_CACHE("when_necessary");
+    const std::string RESOURCE_STAGE_PREFER_CACHE( "when_necessary" );
 
     // =-=-=-=-=-=-=-
     /// @brief value for a native file system type - this should be

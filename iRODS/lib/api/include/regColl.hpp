@@ -19,9 +19,9 @@
 #define RS_REG_COLL rsRegColl
 /* prototype for the server handler */
 int
-rsRegColl (rsComm_t *rsComm, collInp_t *regCollInp);
+rsRegColl( rsComm_t *rsComm, collInp_t *regCollInp );
 int
-_rsRegColl (rsComm_t *rsComm, collInp_t *regCollInp);
+_rsRegColl( rsComm_t *rsComm, collInp_t *regCollInp );
 #else
 #define RS_REG_COLL NULL
 #endif
@@ -31,7 +31,7 @@ _rsRegColl (rsComm_t *rsComm, collInp_t *regCollInp);
 #define RS_REG_COLL201 rsRegColl201
 /* prototype for the server handler */
 int
-rsRegColl201 (rsComm_t *rsComm, collInp201_t *regCollInp);
+rsRegColl201( rsComm_t *rsComm, collInp201_t *regCollInp );
 #else
 #define RS_REG_COLL201 NULL
 #endif
@@ -41,20 +41,20 @@ rsRegColl201 (rsComm_t *rsComm, collInp201_t *regCollInp);
 extern "C" {
 #endif
 
-/* prototype for the client call */
-int
-rcRegColl (rcComm_t *conn, collInp_t *regCollInp);
+    /* prototype for the client call */
+    int
+    rcRegColl( rcComm_t *conn, collInp_t *regCollInp );
 
-/* rcRegColl - Register a iRODS collection.
- * Input -
- *   rcComm_t *conn - The client connection handle.
- *   collInp_t *collInp - generic coll input. Relevant items are:
- *      collName - the collection to be registered.
- *      condInput - condition input (optional) - currently not used.
- *
- * OutPut -
- *   int status - status of the operation.
- */
+    /* rcRegColl - Register a iRODS collection.
+     * Input -
+     *   rcComm_t *conn - The client connection handle.
+     *   collInp_t *collInp - generic coll input. Relevant items are:
+     *      collName - the collection to be registered.
+     *      condInput - condition input (optional) - currently not used.
+     *
+     * OutPut -
+     *   int status - status of the operation.
+     */
 
 #ifdef  __cplusplus
 }

@@ -34,13 +34,13 @@ typedef struct {
 #define RS_NC_OPEN rsNcOpen
 /* prototype for the server handler */
 int
-rsNcOpen (rsComm_t *rsComm, ncOpenInp_t *ncOpenInp, int **ncid);
+rsNcOpen( rsComm_t *rsComm, ncOpenInp_t *ncOpenInp, int **ncid );
 int
-rsNcOpenDataObj (rsComm_t *rsComm, ncOpenInp_t *ncOpenInp, int **ncid);
+rsNcOpenDataObj( rsComm_t *rsComm, ncOpenInp_t *ncOpenInp, int **ncid );
 int
-rsNcOpenColl (rsComm_t *rsComm, ncOpenInp_t *ncOpenInp, int **ncid);
+rsNcOpenColl( rsComm_t *rsComm, ncOpenInp_t *ncOpenInp, int **ncid );
 int
-openAggrFile (rsComm_t *rsComm, int l1descInx, int aggElemetInx);
+openAggrFile( rsComm_t *rsComm, int l1descInx, int aggElemetInx );
 #else
 #define RS_NC_OPEN NULL
 #endif
@@ -49,23 +49,23 @@ openAggrFile (rsComm_t *rsComm, int l1descInx, int aggElemetInx);
 extern "C" {
 #endif
 
-/* prototype for the client call */
-/* rcNcOpen - netcdf open an iRODS data object (equivalent to nc_open.
- * Input - 
- *   rcComm_t *conn - The client connection handle.
- *   ncOpenInp_t *ncOpenInp - generic nc open/create input. Relevant items are:
- *	objPath - the path of the data object.
- *      mode - the mode of the open - valid values are given in netcdf.h -
- *       NC_NOWRITE (0), NC_WRITE (1), NC_NETCDF4, ...
- *	condInput - condition input (not used).
- * OutPut - 
- *   int the ncid of the opened object - an integer descriptor.   
- */
+    /* prototype for the client call */
+    /* rcNcOpen - netcdf open an iRODS data object (equivalent to nc_open.
+     * Input -
+     *   rcComm_t *conn - The client connection handle.
+     *   ncOpenInp_t *ncOpenInp - generic nc open/create input. Relevant items are:
+     *	objPath - the path of the data object.
+     *      mode - the mode of the open - valid values are given in netcdf.h -
+     *       NC_NOWRITE (0), NC_WRITE (1), NC_NETCDF4, ...
+     *	condInput - condition input (not used).
+     * OutPut -
+     *   int the ncid of the opened object - an integer descriptor.
+     */
 
-int
-rcNcOpen (rcComm_t *conn, ncOpenInp_t *ncOpenInp, int *ncid);
-int
-_rcNcOpen (rcComm_t *conn, ncOpenInp_t *ncOpenInp, int **ncid);
+    int
+    rcNcOpen( rcComm_t *conn, ncOpenInp_t *ncOpenInp, int *ncid );
+    int
+    _rcNcOpen( rcComm_t *conn, ncOpenInp_t *ncOpenInp, int **ncid );
 
 #ifdef  __cplusplus
 }

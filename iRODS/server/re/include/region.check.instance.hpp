@@ -18,9 +18,9 @@
 
 #define GENERIC(T) (ChkFuncType *) regionChk##T
 #define MK_TRANSIENT_VALUE(type, f, val) \
-
+ 
 #define MK_TRANSIENT_PTR(type, f) \
-
+ 
 #define MK_VAL(type, f)
 
 #define MK_PTR(type, f) \
@@ -129,10 +129,10 @@
 
 #define RE_STRUCT_BEGIN(T) \
     RE_STRUCT_FUNC_PROTO(T) {  \
-
+ 
 #define RE_STRUCT_GENERIC_BEGIN(T, cpfn) \
 	RE_STRUCT_GENERIC_FUNC_PROTO(T, cpfn) {	\
-
+ 
 #define RE_STRUCT_GENERIC_END(T, cpfn) \
 	RE_STRUCT_END(T)
 

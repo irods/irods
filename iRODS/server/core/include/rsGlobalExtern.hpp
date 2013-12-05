@@ -61,9 +61,9 @@ extern specCollCache_t *SpecCollCacheHead;
 //extern tarSubFileDesc_t TarSubFileDesc[];
 #endif
 
-int initRuleEngine(int processType, rsComm_t *svrComm, char *ruleSet, char *dvmSet, char* fnmSet);
-int clearCoreRule ();
-int finalzeRuleEngine(rsComm_t *rsComm);
+int initRuleEngine( int processType, rsComm_t *svrComm, char *ruleSet, char *dvmSet, char* fnmSet );
+int clearCoreRule();
+int finalzeRuleEngine( rsComm_t *rsComm );
 
 extern char localSID[];
 extern char remoteSID[MAX_FED_RSIDS][MAX_PASSWORD_LEN];

@@ -22,8 +22,8 @@
 #define RS_GET_REMOTE_ZONE_RESC rsGetRemoteZoneResc
 /* prototype for the server handler */
 int
-rsGetRemoteZoneResc (rsComm_t *rsComm, dataObjInp_t *dataObjInp, 
-rodsHostAddr_t **rescAddr);
+rsGetRemoteZoneResc( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+                     rodsHostAddr_t **rescAddr );
 #else
 #define RS_GET_REMOTE_ZONE_RESC NULL
 #endif
@@ -32,23 +32,23 @@ rodsHostAddr_t **rescAddr);
 extern "C" {
 #endif
 
-/* prototype for the client call */
-/* rcGetRemoteZoneResc - 
- * Input - 
- *   rcComm_t *conn - The client connection handle.
- *   dataObjInp_t *dataObjInp - generic dataObj input. Relevant items are:
- *	objPath - the path of the data object.
- *	condInput - condition input (optional).
- *	    REMOTE_ZONE_OPR_KW - specifies the type of remote zone operation.
- *	    currently, valid operations are REMOTE_CREATE and  REMOTE_OPEN 
- *
- * OutPut - 
- *   rodsHostAddr_t **rescAddr - the address of the resource.   
- */
+    /* prototype for the client call */
+    /* rcGetRemoteZoneResc -
+     * Input -
+     *   rcComm_t *conn - The client connection handle.
+     *   dataObjInp_t *dataObjInp - generic dataObj input. Relevant items are:
+     *	objPath - the path of the data object.
+     *	condInput - condition input (optional).
+     *	    REMOTE_ZONE_OPR_KW - specifies the type of remote zone operation.
+     *	    currently, valid operations are REMOTE_CREATE and  REMOTE_OPEN
+     *
+     * OutPut -
+     *   rodsHostAddr_t **rescAddr - the address of the resource.
+     */
 
-int
-rcGetRemoteZoneResc (rcComm_t *conn, dataObjInp_t *dataObjInp,
-rodsHostAddr_t **rescAddr);
+    int
+    rcGetRemoteZoneResc( rcComm_t *conn, dataObjInp_t *dataObjInp,
+                         rodsHostAddr_t **rescAddr );
 
 #ifdef  __cplusplus
 }

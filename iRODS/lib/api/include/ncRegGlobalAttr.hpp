@@ -32,9 +32,9 @@ typedef struct {
 #define RS_NC_REG_GLOBAL_ATTR rsNcRegGlobalAttr
 /* prototype for the server handler */
 int
-rsNcRegGlobalAttr (rsComm_t *rsComm, ncRegGlobalAttrInp_t *ncRegGlobalAttrInp);
+rsNcRegGlobalAttr( rsComm_t *rsComm, ncRegGlobalAttrInp_t *ncRegGlobalAttrInp );
 int
-_rsNcRegGlobalAttr (rsComm_t *rsComm, ncRegGlobalAttrInp_t *ncRegGlobalAttrInp);
+_rsNcRegGlobalAttr( rsComm_t *rsComm, ncRegGlobalAttrInp_t *ncRegGlobalAttrInp );
 #else
 #define RS_NC_REG_GLOBAL_ATTR NULL
 #endif
@@ -43,24 +43,24 @@ _rsNcRegGlobalAttr (rsComm_t *rsComm, ncRegGlobalAttrInp_t *ncRegGlobalAttrInp);
 extern "C" {
 #endif
 
-/* rcNcRegGlobalAttr - Register the NETCDF global variables as AUV in the
- * iRODS data object.
- * Input - 
- *   rcComm_t *conn - The client connection handle.
- *   ncRegGlobalAttrInp_t *ncRegGlobalAttrInp - Relevant items are:
- *	objPath - the path of the NETCDF data object.
- *	condInput - condition input.
- *        ADMIN_KW - admin reg on behalf of other users 
- * OutPut - 
- *   int the ncid of the opened object - an integer descriptor.   
- */
+    /* rcNcRegGlobalAttr - Register the NETCDF global variables as AUV in the
+     * iRODS data object.
+     * Input -
+     *   rcComm_t *conn - The client connection handle.
+     *   ncRegGlobalAttrInp_t *ncRegGlobalAttrInp - Relevant items are:
+     *	objPath - the path of the NETCDF data object.
+     *	condInput - condition input.
+     *        ADMIN_KW - admin reg on behalf of other users
+     * OutPut -
+     *   int the ncid of the opened object - an integer descriptor.
+     */
 
-/* prototype for the client call */
-int
-rcNcRegGlobalAttr (rcComm_t *conn, ncRegGlobalAttrInp_t *ncRegGlobalAttrInp);
+    /* prototype for the client call */
+    int
+    rcNcRegGlobalAttr( rcComm_t *conn, ncRegGlobalAttrInp_t *ncRegGlobalAttrInp );
 
-int
-clearRegGlobalAttrInp (ncRegGlobalAttrInp_t *ncRegGlobalAttrInp);
+    int
+    clearRegGlobalAttrInp( ncRegGlobalAttrInp_t *ncRegGlobalAttrInp );
 
 #ifdef  __cplusplus
 }

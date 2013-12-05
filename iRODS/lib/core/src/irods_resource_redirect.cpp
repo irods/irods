@@ -20,64 +20,64 @@ namespace irods {
     /// @breif function to handle collecting a vote from a resource
     ///        for a given operation and fco
     static
-    error request_vote_for_file_object( 
+    error request_vote_for_file_object(
         rsComm_t*                _comm,
         const std::string&       _oper,
         const std::string&       _resc_name,
         irods::file_object_ptr  _file_obj,
         std::string&             _out_hier,
-        float&                   _out_vote ) { 
+        float&                   _out_vote ) {
         // =-=-=-=-=-=-=-
         // request the resource by name
         irods::resource_ptr resc;
         error err = resc_mgr.resolve( _resc_name, resc );
-        if( !err.ok() ) {
+        if ( !err.ok() ) {
             return PASSMSG( "failed in resc_mgr.resolve", err );
 
         }
- 
+
         // =-=-=-=-=-=-=-
         // if the resource has a parent, bail as this is a grave, terrible error.
         resource_ptr parent;
         error p_err = resc->get_parent( parent );
-        if( p_err.ok() ) {
-            return ERROR( 
+        if ( p_err.ok() ) {
+            return ERROR(
                        DIRECT_CHILD_ACCESS,
                        "attempt to directly address a child resource" );
         }
-       
+
         // =-=-=-=-=-=-=-
         // get current hostname, which is also done by init local server host
         char host_name_str[ MAX_NAME_LEN ];
-        if( gethostname( host_name_str, MAX_NAME_LEN ) < 0 ) {
+        if ( gethostname( host_name_str, MAX_NAME_LEN ) < 0 ) {
             return ERROR( SYS_GET_HOSTNAME_ERR, "failed in gethostname" );
 
         }
         std::string host_name( host_name_str );
 
         // =-=-=-=-=-=-=-
-        // query the resc given the operation for a hier string which 
+        // query the resc given the operation for a hier string which
         // will determine the host
         hierarchy_parser parser;
         float            vote = 0.0;
         first_class_object_ptr ptr = boost::dynamic_pointer_cast< first_class_object >( _file_obj );
-        err = resc->call< const std::string*, const std::string*, hierarchy_parser*, float* >( 
-            _comm, RESOURCE_OP_RESOLVE_RESC_HIER, ptr, &_oper, &host_name, &parser, &vote );
-        if( !err.ok() || 0.0 == vote ) {
+        err = resc->call< const std::string*, const std::string*, hierarchy_parser*, float* >(
+                  _comm, RESOURCE_OP_RESOLVE_RESC_HIER, ptr, &_oper, &host_name, &parser, &vote );
+        if ( !err.ok() || 0.0 == vote ) {
             std::stringstream msg;
             msg << "failed in call to redirect";
             msg << "\thost [" << host_name      << "] ";
             msg << "\thier [" << _out_hier << "]";
             err.status( false );
-            if( err.code() == 0 ) {
+            if ( err.code() == 0 ) {
                 err.code( -1 );
             }
             return PASSMSG( msg.str(), err );
         }
-        
+
         // =-=-=-=-=-=-=-
         // extract the hier string from the parser, politely.
-        parser.str( _out_hier ); 
+        parser.str( _out_hier );
         _out_vote = vote;
 
         return SUCCESS();
@@ -87,7 +87,7 @@ namespace irods {
     /// =-=-=-=-=-=-=-
     /// @breif function to handle resolving the hier given votes of the
     ///        root resources for an open operation
-    static 
+    static
     error resolve_hier_for_open_without_keyword(
         rsComm_t*                _comm,
         irods::file_object_ptr  _file_obj,
@@ -101,44 +101,44 @@ namespace irods {
         // grid throught the list, get the root of the hiers and
         // place it into the map
         std::vector< physical_object > repls = _file_obj->replicas();
-        for( size_t i = 0; i < repls.size(); ++i ) {
+        for ( size_t i = 0; i < repls.size(); ++i ) {
             // =-=-=-=-=-=-=-
             // extract the root resource from the hierarchy
             hierarchy_parser parser;
             parser.set_string( repls[ i ].resc_hier() );
-            
+
             std::string      root_resc;
             parser.first_resc( root_resc );
             root_map[ root_resc ] = 0.0;
 
         } // for i
-        
+
         // =-=-=-=-=-=-=-
         // grind throught the map and get a vote for each root
         // cache that and keep track of the max
         std::string max_hier;
-        float       max_vote = -1.0; 
+        float       max_vote = -1.0;
         std::map< std::string, float >::iterator itr = root_map.begin();
-        for( ; itr != root_map.end(); ++itr ) {
+        for ( ; itr != root_map.end(); ++itr ) {
             // =-=-=-=-=-=-=-
             // request the vote
-            float       vote = 0.0; 
+            float       vote = 0.0;
             std::string voted_hier;
-            irods::error ret = request_vote_for_file_object( 
-                                    _comm,
-                                    OPEN_OPERATION,
-                                    itr->first,
-                                    _file_obj,
-                                    voted_hier,
-                                    vote );
-            if( ret.ok() ) {
+            irods::error ret = request_vote_for_file_object(
+                                   _comm,
+                                   OPEN_OPERATION,
+                                   itr->first,
+                                   _file_obj,
+                                   voted_hier,
+                                   vote );
+            if ( ret.ok() ) {
                 // =-=-=-=-=-=-=-
                 // assign the vote to the root
                 itr->second = vote;
 
                 // =-=-=-=-=-=-=-
                 // keep track of max vote, hier and resc name
-                if( vote > max_vote ) {
+                if ( vote > max_vote ) {
                     max_vote = vote;
                     max_hier = voted_hier;
                 }
@@ -150,12 +150,12 @@ namespace irods {
         // if we have a max vote of 0.0 then
         // this is an error
         double diff = ( max_vote - 0.00000001 );
-        if( diff <= 0.0 ) {
+        if ( diff <= 0.0 ) {
             return ERROR(
-                      HIERARCHY_ERROR, 
-                      "no valid resource found for data object" );
+                       HIERARCHY_ERROR,
+                       "no valid resource found for data object" );
         }
-        
+
         // =-=-=-=-=-=-=-
         // set out variables
         _out_hier = max_hier;
@@ -167,96 +167,96 @@ namespace irods {
     /// =-=-=-=-=-=-=-
     /// @breif function to handle resolving the hier given the fco and
     ///        resource keyword
-    static 
+    static
     error resolve_hier_for_open(
         rsComm_t*                _comm,
         irods::file_object_ptr  _file_obj,
         const char*              _key_word,
         std::string&             _out_hier ) {
+        // =-=-=-=-=-=-=-
+        // regardless we need to resolve the appropriate resource
+        // to do the voting so search the repls for the proper resc
+        std::vector< physical_object > repls = _file_obj->replicas();
+
+        bool kw_match_found = false;
+        if ( _key_word ) {
             // =-=-=-=-=-=-=-
-            // regardless we need to resolve the appropriate resource
-            // to do the voting so search the repls for the proper resc
-            std::vector< physical_object > repls = _file_obj->replicas();
-
-            bool kw_match_found = false;
-            if( _key_word ) {
+            // we have a kw present, compare against all the repls for a match
+            for ( size_t i = 0; i < repls.size(); ++i ) {
                 // =-=-=-=-=-=-=-
-                // we have a kw present, compare against all the repls for a match
-                for( size_t i = 0; i < repls.size(); ++i ) {
-                    // =-=-=-=-=-=-=-
-                    // extract the root resource from the hierarchy
-                    std::string      root_resc;
-                    hierarchy_parser parser;
-                    parser.set_string( repls[ i ].resc_hier() );
-                    parser.first_resc( root_resc );
-
-                    // =-=-=-=-=-=-=-
-                    // if we have a match then set open & break, otherwise continue
-                    if( root_resc == _key_word ) {
-                        _file_obj->resc_hier( repls[ i ].resc_hier() );
-                        kw_match_found = true;
-                        break; 
-                    }
-
-                } // for i
+                // extract the root resource from the hierarchy
+                std::string      root_resc;
+                hierarchy_parser parser;
+                parser.set_string( repls[ i ].resc_hier() );
+                parser.first_resc( root_resc );
 
                 // =-=-=-=-=-=-=-
-                // if a match is found, resolve it and get the hier string
-                if( kw_match_found ) {
-                    float vote = 0.0;
-                    error ret = request_vote_for_file_object( 
-                                    _comm,
-                                    OPEN_OPERATION,
-                                    _key_word,
-                                    _file_obj, 
-                                    _out_hier,
-                                    vote );
-                    if( 0.0 == vote ) {
-                        if( ret.code() == 0 ) {
-                            ret.code( -1 );
-                        }
-                        ret.status( false );
-                    }
+                // if we have a match then set open & break, otherwise continue
+                if ( root_resc == _key_word ) {
+                    _file_obj->resc_hier( repls[ i ].resc_hier() );
+                    kw_match_found = true;
+                    break;
+                }
 
-                    return PASS( ret );
-
-                } // if kw_match_found
-             
-                // =-=-=-=-=-=-=-
-                // NOTE:: if a kw match is not found is this an
-                //        error or is falling through acceptable    
-            } 
+            } // for i
 
             // =-=-=-=-=-=-=-
-            // either no kw match or no kw, so pick one...
-            return resolve_hier_for_open_without_keyword( 
-                       _comm,
-                       _file_obj,
-                       _out_hier );
-        
+            // if a match is found, resolve it and get the hier string
+            if ( kw_match_found ) {
+                float vote = 0.0;
+                error ret = request_vote_for_file_object(
+                                _comm,
+                                OPEN_OPERATION,
+                                _key_word,
+                                _file_obj,
+                                _out_hier,
+                                vote );
+                if ( 0.0 == vote ) {
+                    if ( ret.code() == 0 ) {
+                        ret.code( -1 );
+                    }
+                    ret.status( false );
+                }
+
+                return PASS( ret );
+
+            } // if kw_match_found
+
+            // =-=-=-=-=-=-=-
+            // NOTE:: if a kw match is not found is this an
+            //        error or is falling through acceptable
+        }
+
+        // =-=-=-=-=-=-=-
+        // either no kw match or no kw, so pick one...
+        return resolve_hier_for_open_without_keyword(
+                   _comm,
+                   _file_obj,
+                   _out_hier );
+
     } // resolve_hier_for_open
 
     /// =-=-=-=-=-=-=-
     /// @breif function to handle resolving the hier given the fco and
     ///        resource keyword
-    static 
+    static
     error resolve_hier_for_create(
         rsComm_t*                _comm,
         irods::file_object_ptr  _file_obj,
         const char*              _key_word,
-        dataObjInp_t*            _data_obj_inp, 
+        dataObjInp_t*            _data_obj_inp,
         std::string&             _out_hier ) {
         // =-=-=-=-=-=-=-
         // handle the create operation
         // check for incoming requested destination resource first
         std::string resc_name;
-        if( !_key_word ) {
+        if ( !_key_word ) {
             // =-=-=-=-=-=-=-
             // this is a 'create' operation and no resource is specified,
             // query the server for the default or other resource to use
             rescGrpInfo_t* grp_info = 0;
             int status = getRescGrpForCreate( _comm, _data_obj_inp, &grp_info );
-            if( status < 0 || !grp_info || !grp_info->rescInfo ) {
+            if ( status < 0 || !grp_info || !grp_info->rescInfo ) {
                 // =-=-=-=-=-=-=-
                 // clean up memory
                 delete grp_info->rescInfo;
@@ -271,7 +271,8 @@ namespace irods {
             delete grp_info->rescInfo;
             delete grp_info;
 
-        } else {
+        }
+        else {
             resc_name = _key_word;
 
         }
@@ -283,15 +284,15 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // get a vote and hier for the create
         float vote = 0.0;
-        error ret = request_vote_for_file_object( 
+        error ret = request_vote_for_file_object(
                         _comm,
                         CREATE_OPERATION,
                         resc_name,
-                        _file_obj, 
+                        _file_obj,
                         _out_hier,
                         vote );
-        if( 0.0 == vote ) {
-            if( ret.code() == 0 ) {
+        if ( 0.0 == vote ) {
+            if ( ret.code() == 0 ) {
                 ret.code( -1 );
             }
             ret.status( false );
@@ -304,92 +305,93 @@ namespace irods {
     /// =-=-=-=-=-=-=-
     /// @breif function to handle resolving the hier given the fco and
     ///        resource keyword for create or open depending on the keyword
-    static 
+    static
     error resolve_hier_for_create_or_open(
         rsComm_t*                _comm,
         irods::file_object_ptr  _file_obj,
         const char*              _key_word,
-        dataObjInp_t*            _data_obj_inp, 
+        dataObjInp_t*            _data_obj_inp,
         std::string&             _out_hier ) {
+        // =-=-=-=-=-=-=-
+        // regardless we need to resolve the appropriate resource
+        // to do the voting so search the repls for the proper resc
+        std::vector< physical_object > repls = _file_obj->replicas();
+        bool kw_match_found = false;
+        if ( _key_word ) {
             // =-=-=-=-=-=-=-
-            // regardless we need to resolve the appropriate resource
-            // to do the voting so search the repls for the proper resc
-            std::vector< physical_object > repls = _file_obj->replicas();
-            bool kw_match_found = false;
-            if( _key_word ) {
+            // we have a kw present, compare against all the repls for a match
+            for ( size_t i = 0; i < repls.size(); ++i ) {
                 // =-=-=-=-=-=-=-
-                // we have a kw present, compare against all the repls for a match
-                for( size_t i = 0; i < repls.size(); ++i ) {
-                    // =-=-=-=-=-=-=-
-                    // extract the root resource from the hierarchy
-                    std::string      root_resc;
-                    hierarchy_parser parser;
-                    parser.set_string( repls[ i ].resc_hier() );
-                    parser.first_resc( root_resc );
-
-                    // =-=-=-=-=-=-=-
-                    // if we have a match then set open & break, otherwise continue
-                    if( root_resc == _key_word ) {
-                        _file_obj->resc_hier( repls[ i ].resc_hier() );
-                        kw_match_found = true;
-                        break; 
-                    }
-
-                } // for i
+                // extract the root resource from the hierarchy
+                std::string      root_resc;
+                hierarchy_parser parser;
+                parser.set_string( repls[ i ].resc_hier() );
+                parser.first_resc( root_resc );
 
                 // =-=-=-=-=-=-=-
-                // if a match is found, resolve it and get the hier string
-                if( kw_match_found ) {
-                    float vote = 0.0;
-                    error ret = request_vote_for_file_object( 
-                                    _comm,
-                                    WRITE_OPERATION,
-                                    _key_word,
-                                    _file_obj, 
-                                    _out_hier,
-                                    vote );
-                    if( 0.0 == vote ) {
-                        if( ret.code() == 0 ) {
-                            ret.code( -1 );
-                        }
-                        ret.status( false );
-                    }
+                // if we have a match then set open & break, otherwise continue
+                if ( root_resc == _key_word ) {
+                    _file_obj->resc_hier( repls[ i ].resc_hier() );
+                    kw_match_found = true;
+                    break;
+                }
 
-                    return PASS( ret );
-
-                } // if kw_match_found
-             
-                // =-=-=-=-=-=-=-
-                // NOTE:: if a kw match is not found is this an
-                //        error or is falling through acceptable    
-            } 
+            } // for i
 
             // =-=-=-=-=-=-=-
-            // either no kw match or no kw, so pick one...
-            return resolve_hier_for_create( 
-                       _comm,
-                       _file_obj,
-                       _key_word,
-                       _data_obj_inp,
-                       _out_hier );
+            // if a match is found, resolve it and get the hier string
+            if ( kw_match_found ) {
+                float vote = 0.0;
+                error ret = request_vote_for_file_object(
+                                _comm,
+                                WRITE_OPERATION,
+                                _key_word,
+                                _file_obj,
+                                _out_hier,
+                                vote );
+                if ( 0.0 == vote ) {
+                    if ( ret.code() == 0 ) {
+                        ret.code( -1 );
+                    }
+                    ret.status( false );
+                }
+
+                return PASS( ret );
+
+            } // if kw_match_found
+
+            // =-=-=-=-=-=-=-
+            // NOTE:: if a kw match is not found is this an
+            //        error or is falling through acceptable
+        }
+
+        // =-=-=-=-=-=-=-
+        // either no kw match or no kw, so pick one...
+        return resolve_hier_for_create(
+                   _comm,
+                   _file_obj,
+                   _key_word,
+                   _data_obj_inp,
+                   _out_hier );
 
     } // resolve_hier_for_create_or_open
 
     /// =-=-=-=-=-=-=-
     /// @breif function to query resource for chosen server to which to redirect
     ///       for a given operation
-    error resolve_resource_hierarchy( 
+    error resolve_resource_hierarchy(
         const std::string&   _oper,
         rsComm_t*            _comm,
-        dataObjInp_t*        _data_obj_inp, 
+        dataObjInp_t*        _data_obj_inp,
         std::string&         _out_hier ) {
         // =-=-=-=-=-=-=-
         // validate incoming parameters
-        if( !_comm ) {
+        if ( !_comm ) {
             return ERROR(
                        SYS_INVALID_INPUT_PARAM,
                        "null comm pointer" );
-        } else if( !_data_obj_inp ) {
+        }
+        else if ( !_data_obj_inp ) {
             return ERROR(
                        SYS_INVALID_INPUT_PARAM,
                        "null data obj inp pointer" );
@@ -402,8 +404,8 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // if this is a put operation then we do not have a first class object
         resource_ptr resc;
-        file_object_ptr file_obj( 
-                            new file_object( ) );
+        file_object_ptr file_obj(
+            new file_object( ) );
         // =-=-=-=-=-=-=-
         // if this is a special collection then we need to get the hier
         // pass that along and bail as it is not a data object, or if
@@ -412,15 +414,16 @@ namespace irods {
         rodsObjStat_t *rodsObjStatOut = NULL;
         int spec_stat = collStat( _comm, _data_obj_inp, &rodsObjStatOut );
         file_obj->logical_path( _data_obj_inp->objPath );
-        if( spec_stat >= 0 ) {
-            if( rodsObjStatOut->specColl != NULL ) {
+        if ( spec_stat >= 0 ) {
+            if ( rodsObjStatOut->specColl != NULL ) {
                 _out_hier = rodsObjStatOut->specColl->rescHier;
                 free( rodsObjStatOut );
                 return SUCCESS();
             }
 
-        } else {
-            if( rodsObjStatOut ) {
+        }
+        else {
+            if ( rodsObjStatOut ) {
                 free( rodsObjStatOut );
             }
         }
@@ -428,19 +431,21 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // extract the resc name keyword from the conditional input
         char* back_up_resc_name  = getValByKey( &_data_obj_inp->condInput, BACKUP_RESC_NAME_KW );
-        char* dest_resc_name     = getValByKey( &_data_obj_inp->condInput, DEST_RESC_NAME_KW   );
-        char* default_resc_name  = getValByKey( &_data_obj_inp->condInput, DEF_RESC_NAME_KW    );
-        char* resc_name          = getValByKey( &_data_obj_inp->condInput, RESC_NAME_KW        );
+        char* dest_resc_name     = getValByKey( &_data_obj_inp->condInput, DEST_RESC_NAME_KW );
+        char* default_resc_name  = getValByKey( &_data_obj_inp->condInput, DEF_RESC_NAME_KW );
+        char* resc_name          = getValByKey( &_data_obj_inp->condInput, RESC_NAME_KW );
 
         // =-=-=-=-=-=-=-
         // assign the keyword in an order, if it applies
         char* key_word    = 0;
-        if( resc_name ) {
-             key_word = resc_name;
-        } else if( dest_resc_name ) {
-             key_word = dest_resc_name;
-        } else if( back_up_resc_name ) {
-             key_word = back_up_resc_name;
+        if ( resc_name ) {
+            key_word = resc_name;
+        }
+        else if ( dest_resc_name ) {
+            key_word = dest_resc_name;
+        }
+        else if ( back_up_resc_name ) {
+            key_word = back_up_resc_name;
         }
 
         // =-=-=-=-=-=-=-
@@ -448,42 +453,43 @@ namespace irods {
         error fac_err = file_object_factory( _comm, _data_obj_inp, file_obj );
 
         // =-=-=-=-=-=-=-
-        // perform an open operation if create is not specificied ( thats all we have for now ) 
-        if( OPEN_OPERATION  == oper || 
-            WRITE_OPERATION == oper ) {
+        // perform an open operation if create is not specificied ( thats all we have for now )
+        if ( OPEN_OPERATION  == oper ||
+                WRITE_OPERATION == oper ) {
             // =-=-=-=-=-=-=-
-            // factory has already been called, test for 
+            // factory has already been called, test for
             // success before proceeding
-            if( !fac_err.ok() ) {
+            if ( !fac_err.ok() ) {
                 std::stringstream msg;
                 msg << "resolve_resource_hierarchy :: failed in file_object_factory";
                 return PASSMSG( msg.str(), fac_err );
             }
 
             // =-=-=-=-=-=-=-
-            // consider force flag - we need to consider the default resc if -f 
+            // consider force flag - we need to consider the default resc if -f
             // is specified
             char* force_flag = getValByKey( &_data_obj_inp->condInput, FORCE_FLAG_KW );
-            if( force_flag &&
-                !key_word ) {
+            if ( force_flag &&
+                    !key_word ) {
                 key_word = default_resc_name;
             }
 
             // =-=-=-=-=-=-=-
             // attempt to resolve for an open
             _out_hier = "";
-            error ret = resolve_hier_for_open( 
-                       _comm,
-                       file_obj,
-                       key_word,
-                       _out_hier );
-            return ret; 
+            error ret = resolve_hier_for_open(
+                            _comm,
+                            file_obj,
+                            key_word,
+                            _out_hier );
+            return ret;
 
-        } else if( CREATE_OPERATION == oper ) {
+        }
+        else if ( CREATE_OPERATION == oper ) {
             // =-=-=-=-=-=-=-
             // include the default resc name if it applies
-            if( !key_word && default_resc_name ) {
-               key_word = default_resc_name;
+            if ( !key_word && default_resc_name ) {
+                key_word = default_resc_name;
 
             }
 
@@ -491,26 +497,27 @@ namespace irods {
             // if we have valid data objects then this could
             // be actually an open rather than a pure create
             error ret = SUCCESS();
-            if( fac_err.ok() ) {
-                ret = resolve_hier_for_create_or_open( 
-                           _comm,
-                           file_obj,
-                           key_word,
-                           _data_obj_inp,
-                           _out_hier );
-                
-            } else {
+            if ( fac_err.ok() ) {
+                ret = resolve_hier_for_create_or_open(
+                          _comm,
+                          file_obj,
+                          key_word,
+                          _data_obj_inp,
+                          _out_hier );
+
+            }
+            else {
                 // =-=-=-=-=-=-=-
                 // attempt to resolve for a create
-                ret = resolve_hier_for_create( 
-                                _comm,
-                                file_obj,
-                                key_word,
-                                _data_obj_inp,
-                                _out_hier );
+                ret = resolve_hier_for_create(
+                          _comm,
+                          file_obj,
+                          key_word,
+                          _data_obj_inp,
+                          _out_hier );
             }
 
-            return ret; 
+            return ret;
 
         } // else
 
@@ -523,15 +530,15 @@ namespace irods {
         return ERROR( -1, msg.str() );
 
     } // resolve_resource_hierarchy
-     
+
     // =-=-=-=-=-=-=-
     // static function to query resource for chosen server to which to redirect
     // for a given operation
     error resource_redirect( const std::string&   _oper,
                              rsComm_t*            _comm,
-                             dataObjInp_t*        _data_obj_inp, 
+                             dataObjInp_t*        _data_obj_inp,
                              std::string&         _out_hier,
-                             rodsServerHost_t*&   _out_host, 
+                             rodsServerHost_t*&   _out_host,
                              int&                 _out_flag ) {
         // =-=-=-=-=-=-=-
         // default to local host if there is a failure
@@ -540,25 +547,25 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // resolve the resource hierarchy for this given operation and dataobjinp
         std::string resc_hier;
-        error res_err = resolve_resource_hierarchy( 
-                            _oper, 
-                            _comm, 
-                            _data_obj_inp, 
-                            resc_hier ); 
-        if( !res_err.ok() ) {
+        error res_err = resolve_resource_hierarchy(
+                            _oper,
+                            _comm,
+                            _data_obj_inp,
+                            resc_hier );
+        if ( !res_err.ok() ) {
             std::stringstream msg;
             msg << "resource_redirect - failed to resolve resource hierarchy for [";
             msg << _data_obj_inp->objPath;
             msg << "]";
             return PASSMSG( msg.str(), res_err );
-        
+
         }
 
         // =-=-=-=-=-=-=-
         // we may have an empty hier due to special collections and other
         // unfortunate cases which we cannot control, check the hier string
         // and if it is empty return success ( for now )
-        if( resc_hier.empty() ) {
+        if ( resc_hier.empty() ) {
             return SUCCESS();
         }
 
@@ -568,27 +575,27 @@ namespace irods {
         hierarchy_parser parser;
         parser.set_string( resc_hier );
         parser.last_resc( last_resc );
-        
+
         // =-=-=-=-=-=-=-
         // get the host property from the last resc and get the
         // host name from that host
         rodsServerHost_t* last_resc_host = 0;
-        error err = get_resource_property< rodsServerHost_t* >( 
-                                last_resc, 
-                                RESOURCE_HOST,
-                                last_resc_host ); 
-        if( !err.ok() ) {
+        error err = get_resource_property< rodsServerHost_t* >(
+                        last_resc,
+                        RESOURCE_HOST,
+                        last_resc_host );
+        if ( !err.ok() ) {
             std::stringstream msg;
             msg << "resource_redirect :: failed in get_resource_property call ";
             msg << "for [" << last_resc << "]";
             return PASSMSG( msg.str(), err );
         }
-        
+
 
         // =-=-=-=-=-=-=-
         // get current hostname, which is also done by init local server host
         char host_name_char[ MAX_NAME_LEN ];
-        if( gethostname( host_name_char, MAX_NAME_LEN ) < 0 ) {
+        if ( gethostname( host_name_char, MAX_NAME_LEN ) < 0 ) {
             return ERROR( SYS_GET_HOSTNAME_ERR, "failed in gethostname" );
 
         }
@@ -600,13 +607,13 @@ namespace irods {
         // host name.  if we do, then were local
         bool        match_flg = false;
         hostName_t* tmp_host  = last_resc_host->hostName;
-        while( tmp_host ) {
+        while ( tmp_host ) {
             std::string name( tmp_host->name );
-            if( name.find( host_name ) != std::string::npos ) {
+            if ( name.find( host_name ) != std::string::npos ) {
                 match_flg = true;
                 break;
 
-            } 
+            }
 
             tmp_host = tmp_host->next;
 
@@ -614,7 +621,7 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // are we really, really local?
-        if( match_flg ) {
+        if ( match_flg ) {
             _out_hier = resc_hier;
             _out_flag = LOCAL_HOST;
             _out_host = 0;
@@ -624,17 +631,17 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // it was not a local resource so then do a svr to svr connection
         int conn_err = svrToSvrConnect( _comm, last_resc_host );
-        if( conn_err < 0 ) {
+        if ( conn_err < 0 ) {
             return ERROR( conn_err, "failed in svrToSvrConnect" );
         }
-        
+
 
         // =-=-=-=-=-=-=-
         // return with a hier string and new connection as remote host
         _out_hier = resc_hier;
         _out_host = last_resc_host;
         _out_flag = REMOTE_HOST;
-        
+
         return SUCCESS();
 
     } // resource_redirect

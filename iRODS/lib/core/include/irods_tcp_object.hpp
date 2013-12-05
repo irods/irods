@@ -33,22 +33,22 @@ namespace irods {
 
         /// @brief Comparison operator
         virtual bool operator==( const tcp_object& _rhs ) const;
-        
+
         // =-=-=-=-=-=-=-
         // plugin resolution operation
-        virtual error resolve( 
-                          const std::string&, // plugin interface
-                          plugin_ptr& );      // resolved plugin instance
- 
+        virtual error resolve(
+            const std::string&, // plugin interface
+            plugin_ptr& );      // resolved plugin instance
+
         // =-=-=-=-=-=-=-
         // accessor for rule engine variables
         virtual error get_re_vars( keyValPair_t& );
-         
+
         // =-=-=-=-=-=-=-
         // Accessors
 
     private:
-        
+
     }; // class tcp_object
 
     /// =-=-=-=-=-=-=-

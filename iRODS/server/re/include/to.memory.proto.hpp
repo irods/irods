@@ -4,7 +4,7 @@
 #ifndef TO_MEMORY_PROTO_HPP
 #define TO_MEMORY_PROTO_HPP
 
-typedef void *(MemCopyFuncType)(void *, Hashtable *);
+typedef void *( MemCopyFuncType )( void *, Hashtable * );
 
 #endif
 

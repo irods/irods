@@ -22,27 +22,25 @@
 #include "irods_resource_redirect.hpp"
 
 int
-rsDataObjCopy250 (rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
-                  transStat_t **transStat)
-{
+rsDataObjCopy250( rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
+                  transStat_t **transStat ) {
     int status;
     transferStat_t *transferStat = NULL;
 
-    status = rsDataObjCopy (rsComm, dataObjCopyInp, &transferStat);
+    status = rsDataObjCopy( rsComm, dataObjCopyInp, &transferStat );
 
-    if (transStat != NULL && status >= 0 && transferStat != NULL) {
-        *transStat = (transStat_t *) malloc (sizeof (transStat_t));
-        (*transStat)->numThreads = transferStat->numThreads;
-        (*transStat)->bytesWritten = transferStat->bytesWritten;
-        free (transferStat);
+    if ( transStat != NULL && status >= 0 && transferStat != NULL ) {
+        *transStat = ( transStat_t * ) malloc( sizeof( transStat_t ) );
+        ( *transStat )->numThreads = transferStat->numThreads;
+        ( *transStat )->bytesWritten = transferStat->bytesWritten;
+        free( transferStat );
     }
     return status;
 }
 
 int
-rsDataObjCopy (rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
-               transferStat_t **transStat)
-{
+rsDataObjCopy( rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
+               transferStat_t **transStat ) {
     dataObjInp_t *srcDataObjInp, *destDataObjInp;
     int srcL1descInx, destL1descInx;
     int status;
@@ -55,169 +53,171 @@ rsDataObjCopy (rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
     srcDataObjInp = &dataObjCopyInp->srcDataObjInp;
     destDataObjInp = &dataObjCopyInp->destDataObjInp;
 
-    resolveLinkedPath (rsComm, srcDataObjInp->objPath, &specCollCache, &srcDataObjInp->condInput);
-    resolveLinkedPath (rsComm, destDataObjInp->objPath, &specCollCache, &destDataObjInp->condInput);
+    resolveLinkedPath( rsComm, srcDataObjInp->objPath, &specCollCache, &srcDataObjInp->condInput );
+    resolveLinkedPath( rsComm, destDataObjInp->objPath, &specCollCache, &destDataObjInp->condInput );
 
-    remoteFlag = getAndConnRemoteZoneForCopy (rsComm, dataObjCopyInp, &rodsServerHost);
-    if (remoteFlag < 0) {
-        return (remoteFlag);
-    } else if (remoteFlag == REMOTE_HOST) {
-        status = _rcDataObjCopy (rodsServerHost->conn, dataObjCopyInp,
-                                 transStat);
+    remoteFlag = getAndConnRemoteZoneForCopy( rsComm, dataObjCopyInp, &rodsServerHost );
+    if ( remoteFlag < 0 ) {
+        return ( remoteFlag );
+    }
+    else if ( remoteFlag == REMOTE_HOST ) {
+        status = _rcDataObjCopy( rodsServerHost->conn, dataObjCopyInp,
+                                 transStat );
         return status;
     }
 
 #if 0 // this should be handled by rsDataObjCreate and rsDataObjOpen
     // =-=-=-=-=-=-=-
-    // pre-determine hier strings for the source 
-    if(getValByKey(&srcDataObjInp->condInput, RESC_HIER_STR_KW) == NULL) {
+    // pre-determine hier strings for the source
+    if ( getValByKey( &srcDataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
         std::string hier;
-        irods::error ret = irods::resolve_resource_hierarchy( irods::OPEN_OPERATION, rsComm, 
-                                                                srcDataObjInp, hier );
-        if( !ret.ok() ) { 
+        irods::error ret = irods::resolve_resource_hierarchy( irods::OPEN_OPERATION, rsComm,
+                           srcDataObjInp, hier );
+        if ( !ret.ok() ) {
             std::stringstream msg;
             msg << "rsDataObjCopy :: failed in irods::resolve_resource_hierarchy for [";
             msg << srcDataObjInp->objPath << "]";
             irods::log( PASSMSG( msg.str(), ret ) );
             return ret.code();
         }
-   
+
         // =-=-=-=-=-=-=-
         // we resolved the hier str for subsequent api calls, etc.
         addKeyVal( &srcDataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
     }
-    
+
     // =-=-=-=-=-=-=-
     // determine the hier string for the dest data obj inp
-    if(getValByKey(&destDataObjInp->condInput, RESC_HIER_STR_KW) == NULL) {
+    if ( getValByKey( &destDataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
         std::string hier;
-        irods::error ret = irods::resolve_resource_hierarchy( irods::CREATE_OPERATION, rsComm, 
-                                                                destDataObjInp, hier );
-        if( !ret.ok() ) { 
+        irods::error ret = irods::resolve_resource_hierarchy( irods::CREATE_OPERATION, rsComm,
+                           destDataObjInp, hier );
+        if ( !ret.ok() ) {
             std::stringstream msg;
             msg << "rsDataObjCopy :: failed in irods::resolve_resource_hierarchy for [";
             msg << destDataObjInp->objPath << "]";
             irods::log( PASSMSG( msg.str(), ret ) );
             return ret.code();
         }
-   
+
         // =-=-=-=-=-=-=-
         // we resolved the hier str for subsequent api calls, etc.
         addKeyVal( &destDataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
     }
-    
+
 #endif
 
 
 #if 0
-    *transStat = malloc (sizeof (transferStat_t));
-    memset (*transStat, 0, sizeof (transferStat_t));
+    *transStat = malloc( sizeof( transferStat_t ) );
+    memset( *transStat, 0, sizeof( transferStat_t ) );
 #endif
 
-    if (strcmp (srcDataObjInp->objPath, destDataObjInp->objPath) == 0) {
-        rodsLog (LOG_ERROR,
+    if ( strcmp( srcDataObjInp->objPath, destDataObjInp->objPath ) == 0 ) {
+        rodsLog( LOG_ERROR,
                  "rsDataObjCopy: same src and dest objPath %s not allowed",
-                 srcDataObjInp->objPath);
-        return (USER_INPUT_PATH_ERR);
+                 srcDataObjInp->objPath );
+        return ( USER_INPUT_PATH_ERR );
     }
-        
-    addKeyVal (&srcDataObjInp->condInput, PHYOPEN_BY_SIZE_KW, "");
 
-    srcL1descInx = rsDataObjOpen (rsComm, srcDataObjInp);
+    addKeyVal( &srcDataObjInp->condInput, PHYOPEN_BY_SIZE_KW, "" );
 
-    if (srcL1descInx < 0) {
+    srcL1descInx = rsDataObjOpen( rsComm, srcDataObjInp );
+
+    if ( srcL1descInx < 0 ) {
         std::stringstream msg;
         char* sys_error;
-        char* rods_error = rodsErrorName(srcL1descInx, &sys_error);
+        char* rods_error = rodsErrorName( srcL1descInx, &sys_error );
         msg << __FUNCTION__;
         msg << " - Failed to open source object: \"";
         msg << srcDataObjInp->objPath;
         msg << "\" - ";
         msg << rods_error << " " << sys_error;
-        irods::log(LOG_ERROR, msg.str());
+        irods::log( LOG_ERROR, msg.str() );
         return srcL1descInx;
     }
 
     /* have to set L1desc[srcL1descInx].dataSize because open set this to -1 */
     destDataObjInp->dataSize = L1desc[srcL1descInx].dataSize =
-        L1desc[srcL1descInx].dataObjInfo->dataSize;
+                                   L1desc[srcL1descInx].dataObjInfo->dataSize;
 
-    createMode = atoi (L1desc[srcL1descInx].dataObjInfo->dataMode);
-    
-    if (createMode >= 0100)
-        destDataObjInp->createMode = createMode; 
+    createMode = atoi( L1desc[srcL1descInx].dataObjInfo->dataMode );
+
+    if ( createMode >= 0100 ) {
+        destDataObjInp->createMode = createMode;
+    }
 
     L1desc[srcL1descInx].oprType = COPY_SRC;
 
-    if (L1desc[srcL1descInx].l3descInx <= 2) {
+    if ( L1desc[srcL1descInx].l3descInx <= 2 ) {
         /* dataSingleBuf */
-        addKeyVal (&destDataObjInp->condInput, NO_OPEN_FLAG_KW, "");
+        addKeyVal( &destDataObjInp->condInput, NO_OPEN_FLAG_KW, "" );
     }
 #ifdef FILESYSTEM_META
     /* copy file metadata if the source object has it */
-    copyFilesystemMetadata(&(L1desc[srcL1descInx].dataObjInfo->condInput),
-                            &destDataObjInp->condInput);
-#endif    
+    copyFilesystemMetadata( &( L1desc[srcL1descInx].dataObjInfo->condInput ),
+                            &destDataObjInp->condInput );
+#endif
 
 
-    destL1descInx = rsDataObjCreate (rsComm, destDataObjInp);
-    if (destL1descInx == CAT_UNKNOWN_COLLECTION) {
+    destL1descInx = rsDataObjCreate( rsComm, destDataObjInp );
+    if ( destL1descInx == CAT_UNKNOWN_COLLECTION ) {
         /* collection does not exist. make one */
         char parColl[MAX_NAME_LEN], child[MAX_NAME_LEN];
-        splitPathByKey (destDataObjInp->objPath, parColl, child, '/');
-        rsMkCollR (rsComm, "/", parColl);
-        destL1descInx = rsDataObjCreate (rsComm, destDataObjInp);
+        splitPathByKey( destDataObjInp->objPath, parColl, child, '/' );
+        rsMkCollR( rsComm, "/", parColl );
+        destL1descInx = rsDataObjCreate( rsComm, destDataObjInp );
     }
 
-    if (destL1descInx < 0) {
+    if ( destL1descInx < 0 ) {
         std::stringstream msg;
         char* sys_error;
-        char* rods_error = rodsErrorName(destL1descInx, &sys_error);
+        char* rods_error = rodsErrorName( destL1descInx, &sys_error );
         msg << __FUNCTION__;
         msg << " - Failed to create destination object: \"";
         msg << destDataObjInp->objPath;
         msg << "\" - ";
         msg << rods_error << " " << sys_error;
-        irods::log(LOG_ERROR, msg.str());
-        return (destL1descInx);
+        irods::log( LOG_ERROR, msg.str() );
+        return ( destL1descInx );
     }
 
-    if (L1desc[destL1descInx].replStatus == NEWLY_CREATED_COPY) {
+    if ( L1desc[destL1descInx].replStatus == NEWLY_CREATED_COPY ) {
         existFlag = 0;
-    } else {
+    }
+    else {
         existFlag = 1;
     }
-        
+
     L1desc[destL1descInx].oprType = COPY_DEST;
 
     L1desc[destL1descInx].srcL1descInx = srcL1descInx;
 
-    rstrcpy (L1desc[destL1descInx].dataObjInfo->dataType, 
+    rstrcpy( L1desc[destL1descInx].dataObjInfo->dataType,
 
-             L1desc[srcL1descInx].dataObjInfo->dataType, NAME_LEN);
+             L1desc[srcL1descInx].dataObjInfo->dataType, NAME_LEN );
     /* set dataSize for verification in _rsDataObjClose */
 
-    L1desc[destL1descInx].dataSize = 
+    L1desc[destL1descInx].dataSize =
         L1desc[srcL1descInx].dataObjInfo->dataSize;
 
 #if 0
-    (*transStat)->bytesWritten = L1desc[srcL1descInx].dataObjInfo->dataSize;
+    ( *transStat )->bytesWritten = L1desc[srcL1descInx].dataObjInfo->dataSize;
 #endif
-    status = _rsDataObjCopy (rsComm, destL1descInx, existFlag, transStat);
+    status = _rsDataObjCopy( rsComm, destL1descInx, existFlag, transStat );
 
 #if 0
-    if (status >= 0) {
-        (*transStat)->numThreads = destDataObjInp->numThreads;
+    if ( status >= 0 ) {
+        ( *transStat )->numThreads = destDataObjInp->numThreads;
     }
 #endif
 
-    return (status);
+    return ( status );
 }
 
 int
-_rsDataObjCopy (rsComm_t *rsComm, int destL1descInx, int existFlag,
-                transferStat_t **transStat)
-{
+_rsDataObjCopy( rsComm_t *rsComm, int destL1descInx, int existFlag,
+                transferStat_t **transStat ) {
     dataObjInp_t *srcDataObjInp, *destDataObjInp;
     openedDataObjInp_t dataObjCloseInp;
     dataObjInfo_t *srcDataObjInfo, *destDataObjInfo;
@@ -231,83 +231,84 @@ _rsDataObjCopy (rsComm_t *rsComm, int destL1descInx, int existFlag,
     srcDataObjInp  = L1desc[srcL1descInx].dataObjInp;
     srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
 
-    if( destDataObjInp == NULL ) { // JMC cppcheck - null ptr ref
+    if ( destDataObjInp == NULL ) { // JMC cppcheck - null ptr ref
         rodsLog( LOG_ERROR, "_rsDataObjCopy: :: destDataObjInp is NULL" );
         return -1;
     }
-    if( destDataObjInfo == NULL ) { // JMC cppcheck - null ptr ref
+    if ( destDataObjInfo == NULL ) { // JMC cppcheck - null ptr ref
         rodsLog( LOG_ERROR, "_rsDataObjCopy: :: destDataObjInfo is NULL" );
         return -1;
     }
-    if( srcDataObjInp == NULL ) { // JMC cppcheck - null ptr ref
+    if ( srcDataObjInp == NULL ) { // JMC cppcheck - null ptr ref
         rodsLog( LOG_ERROR, "_rsDataObjCopy: :: srcDataObjInp is NULL" );
         return -1;
     }
-    if( srcDataObjInfo == NULL ) { // JMC cppcheck - null ptr ref
+    if ( srcDataObjInfo == NULL ) { // JMC cppcheck - null ptr ref
         rodsLog( LOG_ERROR, "_rsDataObjCopy: :: srcDataObjInfo is NULL" );
         return -1;
     }
 
-    if (L1desc[srcL1descInx].l3descInx <= 2) {
+    if ( L1desc[srcL1descInx].l3descInx <= 2 ) {
 
         /* no physical file was opened */
-        status = l3DataCopySingleBuf (rsComm, destL1descInx);
+        status = l3DataCopySingleBuf( rsComm, destL1descInx );
 
         /* has not been registered yet because of NO_OPEN_FLAG_KW */
-        if( status    >= 0                    && 
-            existFlag == 0                    && 
-            destDataObjInfo->specColl == NULL &&
-            L1desc[destL1descInx].remoteZoneHost == NULL) {
+        if ( status    >= 0                    &&
+                existFlag == 0                    &&
+                destDataObjInfo->specColl == NULL &&
+                L1desc[destL1descInx].remoteZoneHost == NULL ) {
             /* If the dest is in remote zone, register in _rsDataObjClose there */
-            status = svrRegDataObj (rsComm, destDataObjInfo);
-            if (status == CAT_UNKNOWN_COLLECTION) {
+            status = svrRegDataObj( rsComm, destDataObjInfo );
+            if ( status == CAT_UNKNOWN_COLLECTION ) {
                 /* collection does not exist. make one */
                 char parColl[MAX_NAME_LEN], child[MAX_NAME_LEN];
-                splitPathByKey (destDataObjInfo->objPath, parColl, child, '/');
-                status = svrRegDataObj (rsComm, destDataObjInfo);
-                rsMkCollR (rsComm, "/", parColl);
-                status = svrRegDataObj (rsComm, destDataObjInfo);
+                splitPathByKey( destDataObjInfo->objPath, parColl, child, '/' );
+                status = svrRegDataObj( rsComm, destDataObjInfo );
+                rsMkCollR( rsComm, "/", parColl );
+                status = svrRegDataObj( rsComm, destDataObjInfo );
             }
-            if (status < 0) {    
-                rodsLog (LOG_NOTICE,
+            if ( status < 0 ) {
+                rodsLog( LOG_NOTICE,
                          "_rsDataObjCopy: svrRegDataObj for %s failed, status = %d",
-                         destDataObjInfo->objPath, status);
-                return (status);
+                         destDataObjInfo->objPath, status );
+                return ( status );
             }
         }
 
-    } else {
-        if( srcDataObjInfo != NULL ) {
+    }
+    else {
+        if ( srcDataObjInfo != NULL ) {
             destDataObjInp->numThreads = getNumThreads( rsComm, srcDataObjInfo->dataSize, destDataObjInp->numThreads, NULL,
-                                                        srcDataObjInfo->rescHier, destDataObjInfo->rescHier );//destRescName, srcRescName);
+                                         srcDataObjInfo->rescHier, destDataObjInfo->rescHier );//destRescName, srcRescName);
 
         }
-                
+
         srcDataObjInp->numThreads = destDataObjInp->numThreads;
 #if 0
         /* XXXX can't handle numThreads == 0 && size > MAX_SZ_FOR_SINGLE_BUF */
-        if (destDataObjInp->numThreads == 0 && 
-            srcDataObjInfo->dataSize > MAX_SZ_FOR_SINGLE_BUF) {
+        if ( destDataObjInp->numThreads == 0 &&
+                srcDataObjInfo->dataSize > MAX_SZ_FOR_SINGLE_BUF ) {
             destDataObjInp->numThreads = 1;
         }
 #endif
 
-        status = dataObjCopy (rsComm, destL1descInx);
+        status = dataObjCopy( rsComm, destL1descInx );
     }
 
-    memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
+    memset( &dataObjCloseInp, 0, sizeof( dataObjCloseInp ) );
     dataObjCloseInp.l1descInx = destL1descInx;
-    if (status >= 0) {
-        *transStat = (transferStat_t*)malloc (sizeof (transferStat_t));
-        memset (*transStat, 0, sizeof (transferStat_t));
-        (*transStat)->bytesWritten = srcDataObjInfo->dataSize;
-        (*transStat)->numThreads = destDataObjInp->numThreads;
+    if ( status >= 0 ) {
+        *transStat = ( transferStat_t* )malloc( sizeof( transferStat_t ) );
+        memset( *transStat, 0, sizeof( transferStat_t ) );
+        ( *transStat )->bytesWritten = srcDataObjInfo->dataSize;
+        ( *transStat )->numThreads = destDataObjInp->numThreads;
         dataObjCloseInp.bytesWritten = srcDataObjInfo->dataSize;
     }
 
-    status2 = rsDataObjClose (rsComm, &dataObjCloseInp);
+    status2 = rsDataObjClose( rsComm, &dataObjCloseInp );
 
-    if (status) return (status);
-    return(status2);
+    if ( status ) { return ( status ); }
+    return( status2 );
 }
 

@@ -24,7 +24,7 @@ namespace irods {
     // =-=-=-=-=-=-=-
     // fwd decl of network manager for fco resolve
     class auth_manager;
-                                         
+
 }; // namespace
 
 #define __IRODS_AUTH_TYPES_HPP__

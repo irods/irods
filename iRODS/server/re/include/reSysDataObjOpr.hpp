@@ -16,60 +16,60 @@
 #include "reGlobalsExtern.hpp"
 #include "rsGlobalExtern.hpp"
 #if 0
-#include "rcGlobalExtern.hpp" 
+#include "rcGlobalExtern.hpp"
 #endif
 
 #define MULTI_COPIES_PER_RESC "MULTI_COPIES_PER_RESC"
 
 /* the following are data object operation rule handler */
-int msiSetRescSortScheme (msParam_t *sortScheme, ruleExecInfo_t *rei);
+int msiSetRescSortScheme( msParam_t *sortScheme, ruleExecInfo_t *rei );
 int
-msiSysReplDataObj (msParam_t *xcacheResc, msParam_t *xallFlag,
-ruleExecInfo_t *rei);
+msiSysReplDataObj( msParam_t *xcacheResc, msParam_t *xallFlag,
+                   ruleExecInfo_t *rei );
 int
-msiStageDataObj (msParam_t *cacheResc, ruleExecInfo_t *rei);
+msiStageDataObj( msParam_t *cacheResc, ruleExecInfo_t *rei );
 int
-msiSetDataObjPreferredResc (msParam_t *preferredResc, ruleExecInfo_t *rei);
+msiSetDataObjPreferredResc( msParam_t *preferredResc, ruleExecInfo_t *rei );
 int
-msiSetDataObjAvoidResc (msParam_t *preferredResc, ruleExecInfo_t *rei);
+msiSetDataObjAvoidResc( msParam_t *preferredResc, ruleExecInfo_t *rei );
 int
-msiSortDataObj (msParam_t *sortScheme, ruleExecInfo_t *rei);
+msiSortDataObj( msParam_t *sortScheme, ruleExecInfo_t *rei );
 int
-msiSysChksumDataObj (ruleExecInfo_t *rei);
+msiSysChksumDataObj( ruleExecInfo_t *rei );
 int
-msiSetDataTypeFromExt (ruleExecInfo_t *rei);
+msiSetDataTypeFromExt( ruleExecInfo_t *rei );
 int
-msiSetNoDirectRescInp (msParam_t *rescList, ruleExecInfo_t *rei);
+msiSetNoDirectRescInp( msParam_t *rescList, ruleExecInfo_t *rei );
 int
-msiSetDefaultResc (msParam_t *defaultResc, msParam_t *forceStr, ruleExecInfo_t *rei);
+msiSetDefaultResc( msParam_t *defaultResc, msParam_t *forceStr, ruleExecInfo_t *rei );
 int
-msiSetNumThreads (msParam_t *sizePerThrInMbStr, msParam_t *maxNumThrStr,
-msParam_t *windowSizeStr, ruleExecInfo_t *rei);
+msiSetNumThreads( msParam_t *sizePerThrInMbStr, msParam_t *maxNumThrStr,
+                  msParam_t *windowSizeStr, ruleExecInfo_t *rei );
 int
-msiDeleteDisallowed (ruleExecInfo_t *rei);
+msiDeleteDisallowed( ruleExecInfo_t *rei );
 int
-msiOprDisallowed (ruleExecInfo_t *rei);
+msiOprDisallowed( ruleExecInfo_t *rei );
 int
-msiSetMultiReplPerResc (ruleExecInfo_t *rei);
+msiSetMultiReplPerResc( ruleExecInfo_t *rei );
 int
-msiNoChkFilePathPerm (ruleExecInfo_t *rei);
+msiNoChkFilePathPerm( ruleExecInfo_t *rei );
 int // JMC - backport 4774
-msiSetChkFilePathPerm (msParam_t *xchkType, ruleExecInfo_t *rei);
+msiSetChkFilePathPerm( msParam_t *xchkType, ruleExecInfo_t *rei );
 int
-msiNoTrashCan (ruleExecInfo_t *rei);
+msiNoTrashCan( ruleExecInfo_t *rei );
 int
-msiSetPublicUserOpr (msParam_t *xoprList, ruleExecInfo_t *rei);
+msiSetPublicUserOpr( msParam_t *xoprList, ruleExecInfo_t *rei );
 int
-setApiPerm (int apiNumber, int proxyPerm, int clientPerm);
+setApiPerm( int apiNumber, int proxyPerm, int clientPerm );
 int
-msiSetGraftPathScheme (msParam_t *xaddUserName, msParam_t *xtrimDirCnt,
-ruleExecInfo_t *rei);
+msiSetGraftPathScheme( msParam_t *xaddUserName, msParam_t *xtrimDirCnt,
+                       ruleExecInfo_t *rei );
 int
-msiSetRandomScheme (ruleExecInfo_t *rei);
+msiSetRandomScheme( ruleExecInfo_t *rei );
 int
-msiSetReServerNumProc (msParam_t *xnumProc, ruleExecInfo_t *rei);
+msiSetReServerNumProc( msParam_t *xnumProc, ruleExecInfo_t *rei );
 int
-msiSetRescQuotaPolicy (msParam_t *xflag, ruleExecInfo_t *rei);
+msiSetRescQuotaPolicy( msParam_t *xflag, ruleExecInfo_t *rei );
 int
-msiSysMetaModify (msParam_t *sysMetadata, msParam_t *value, ruleExecInfo_t *rei);
+msiSysMetaModify( msParam_t *sysMetadata, msParam_t *value, ruleExecInfo_t *rei );
 #endif	/* RE_SYS_DATA_OBJ_OPR_H */

@@ -6,7 +6,7 @@
 
 class TestBase : public ::testing::Test {
 
- protected:
+protected:
     icatSessionStruct _icss;
     rodsEnv _myEnv;
     char    _msg[1024];
@@ -15,8 +15,8 @@ class TestBase : public ::testing::Test {
     TestBase();
     virtual ~TestBase();
     virtual void SetUp();
-    virtual void setUserPass(const char *user, const char *pass);
+    virtual void setUserPass( const char *user, const char *pass );
     virtual void TearDown();
-    void PrintRows(int stmt);
+    void PrintRows( int stmt );
 };
 

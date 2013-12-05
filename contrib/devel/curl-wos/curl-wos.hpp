@@ -18,7 +18,7 @@
  *
  * @section DESCRIPTION
  *
- * This file contains the definitions for the c code to exercise the DDN WOS 
+ * This file contains the definitions for the c code to exercise the DDN WOS
  * rest interface.  The code uses libcurl to access the interface.  The code
  * currently supports the get, put and delete operations.
  */
@@ -29,11 +29,11 @@
  */
 ///@{
 enum WOS_OPERATION_TYPE {
-   WOS_PUT,
-   WOS_DELETE,
-   WOS_STATUS,
-   WOS_FILESTATUS,
-   WOS_GET
+    WOS_PUT,
+    WOS_DELETE,
+    WOS_STATUS,
+    WOS_FILESTATUS,
+    WOS_GET
 } WOS_OP;
 ///@}
 
@@ -43,9 +43,9 @@ enum WOS_OPERATION_TYPE {
 typedef struct WOS_ARG_TYPE {
     char   resource[WOS_RESOURCE_LENGTH]; /**< the http addr for the wos unit*/
     char   policy[WOS_POLICY_LENGTH]; /**< the policy for the file: put only*/
-    char   file[WOS_FILE_LENGTH]; /**< The OID for get/delete. 
+    char   file[WOS_FILE_LENGTH]; /**< The OID for get/delete.
                                        Otherwise the file name*/
-    char   destination[WOS_FILE_LENGTH]; /**< The path into which to store the 
+    char   destination[WOS_FILE_LENGTH]; /**< The path into which to store the
                                               file.  get only */
     enum   WOS_OPERATION_TYPE op; /**< The type of the operation */
     char   user[WOS_AUTH_LENGTH]; /**< user name for the admin ops */

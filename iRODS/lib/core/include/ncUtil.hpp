@@ -14,24 +14,24 @@ extern "C" {
 #endif
 
 
-int
-ncUtil (rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
-rodsPathInp_t *rodsPathInp);
-int
-ncOperDataObjUtil (rcComm_t *conn, char *srcPath,
-rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
-ncOpenInp_t *ncOpenInp, ncVarSubset_t *ncVarSubset);
-int
-initCondForNcOper (rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
-ncOpenInp_t *ncOpenInp, ncVarSubset_t *ncVarSubset);
-int
-ncOperCollUtil (rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
-rodsArguments_t *rodsArgs, ncOpenInp_t *ncOpenInp, ncVarSubset_t *ncVarSubset);
-int
-catAggInfo (rcComm_t *conn, char *srcColl);
-int
-setAggInfo (rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
-rodsArguments_t *rodsArgs, ncOpenInp_t *ncOpenInp);
+    int
+    ncUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
+            rodsPathInp_t *rodsPathInp );
+    int
+    ncOperDataObjUtil( rcComm_t *conn, char *srcPath,
+                       rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
+                       ncOpenInp_t *ncOpenInp, ncVarSubset_t *ncVarSubset );
+    int
+    initCondForNcOper( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
+                       ncOpenInp_t *ncOpenInp, ncVarSubset_t *ncVarSubset );
+    int
+    ncOperCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
+                    rodsArguments_t *rodsArgs, ncOpenInp_t *ncOpenInp, ncVarSubset_t *ncVarSubset );
+    int
+    catAggInfo( rcComm_t *conn, char *srcColl );
+    int
+    setAggInfo( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
+                rodsArguments_t *rodsArgs, ncOpenInp_t *ncOpenInp );
 #ifdef  __cplusplus
 }
 #endif

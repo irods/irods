@@ -12,16 +12,16 @@ namespace irods {
     // public - ctor
     structured_object::structured_object() :
         file_object(),
-        sub_file_path_(""),
-        offset_(0),
-        spec_coll_(0),
-        data_type_(""),
-        opr_type_(0) {
+        sub_file_path_( "" ),
+        offset_( 0 ),
+        spec_coll_( 0 ),
+        data_type_( "" ),
+        opr_type_( 0 ) {
     } // structured_object
 
     // =-=-=-=-=-=-=-
     // public - cctor
-    structured_object::structured_object( const structured_object& _rhs ) : 
+    structured_object::structured_object( const structured_object& _rhs ) :
         file_object( _rhs ) {
         addr_          = _rhs.addr_;
         sub_file_path_ = _rhs.sub_file_path_;
@@ -30,17 +30,17 @@ namespace irods {
         data_type_     = _rhs.data_type_;
         opr_type_      = _rhs.opr_type_;
 
-    } // cctor 
+    } // cctor
 
     // =-=-=-=-=-=-=-
     // public - cctor
     structured_object::structured_object( subFile_t& _sub ) :
         file_object(),
-        sub_file_path_(""),
-        offset_(0),
-        spec_coll_(0),
-        data_type_(""),
-        opr_type_(0) {
+        sub_file_path_( "" ),
+        offset_( 0 ),
+        spec_coll_( 0 ),
+        data_type_( "" ),
+        opr_type_( 0 ) {
 
         // =-=-=-=-=-=-=-
         // pull out subFile attributes
@@ -54,7 +54,7 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // file* functions will fail with an empty physical_path_
         physical_path_ = _sub.subFilePath;
-        logical_path(spec_coll_->objPath);
+        logical_path( spec_coll_->objPath );
 
     } // structured_object
 
@@ -83,42 +83,43 @@ namespace irods {
 
     // =-=-=-=-=-=-=-
     // plugin - resolve resource plugin for this object
-    error structured_object::resolve( 
-        const std::string& _interface, 
+    error structured_object::resolve(
+        const std::string& _interface,
         plugin_ptr&        _ptr ) {
         // =-=-=-=-=-=-=-
         // check to see if this is for a resource plugin
         // resolution, otherwise it is an error
-        if( RESOURCE_INTERFACE != _interface ) {
+        if ( RESOURCE_INTERFACE != _interface ) {
             std::stringstream msg;
             msg << "structured_object does not support a [";
             msg << _interface;
             msg << "] for plugin resolution";
             return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
         }
- 
+
         // =-=-=-=-=-=-=-
-        // try to find the resource based on the type 
+        // try to find the resource based on the type
         resource_ptr resc_ptr;
-        irods::error err = resc_mgr.resolve( 
-                                         "struct file", 
-                                         resc_ptr );
-        if( err.ok() ) {
+        irods::error err = resc_mgr.resolve(
+                               "struct file",
+                               resc_ptr );
+        if ( err.ok() ) {
             _ptr = boost::dynamic_pointer_cast< resource >( resc_ptr );
             return SUCCESS();
 
-        } else {
+        }
+        else {
             // =-=-=-=-=-=-=-
             // otherwise create a resource and add properties from this object
-            error init_err = resc_mgr.init_from_type( 
-                                          "structfile", 
-                                          "struct file", 
-                                          "struct_file_inst", 
-                                          "empty context", 
-                                          resc_ptr );
-            if( !init_err.ok() ) {
+            error init_err = resc_mgr.init_from_type(
+                                 "structfile",
+                                 "struct file",
+                                 "struct_file_inst",
+                                 "empty context",
+                                 resc_ptr );
+            if ( !init_err.ok() ) {
                 return PASSMSG( "failed to load resource plugin", init_err );
-            
+
             }
 
         } // if !ok
@@ -127,21 +128,21 @@ namespace irods {
         // found ourselves a plugin, fill in the properties
         rodsServerHost_t* tmpRodsServerHost = 0;
         int status = resolveHost( &addr_, &tmpRodsServerHost );
-        if( status < 0 ) {
+        if ( status < 0 ) {
             std::stringstream msg;
             msg << "resolveHost error for [";
             msg << addr_.hostAddr;
             return ERROR( status, msg.str() );
         }
-        
+
         resc_ptr->set_property< rodsServerHost_t* >( RESOURCE_HOST, tmpRodsServerHost );
 
         resc_ptr->set_property<long>( RESOURCE_ID, -1 );
         resc_ptr->set_property<long>( RESOURCE_FREESPACE, -1 );
         resc_ptr->set_property<long>( RESOURCE_QUOTA, -1 );
-        
+
         resc_ptr->set_property<int>( RESOURCE_STATUS, INT_RESC_STATUS_UP );
-        
+
         resc_ptr->set_property<std::string>( RESOURCE_ZONE,      addr_.zoneName );
         resc_ptr->set_property<std::string>( RESOURCE_NAME,      "structfile" );
         resc_ptr->set_property<std::string>( RESOURCE_LOCATION,  addr_.hostAddr );
@@ -157,17 +158,17 @@ namespace irods {
         return SUCCESS();
 
     } // resolve
-    
+
     // =-=-=-=-=-=-=-
-    // public - get vars from object for rule engine 
-    error structured_object::get_re_vars( 
+    // public - get vars from object for rule engine
+    error structured_object::get_re_vars(
         keyValPair_t& _kvp ) {
         file_object::get_re_vars( _kvp );
         // =-=-=-=-=-=-=-
         // host addr
         addKeyVal( &_kvp, HOST_ADDR_KW, addr_.hostAddr );
         addKeyVal( &_kvp, ZONE_NAME_KW, addr_.zoneName );
-     
+
         std::stringstream pn;
         pn << addr_.portNum;
         addKeyVal( &_kvp, PORT_NUM_KW, pn.str().c_str() );
@@ -179,7 +180,7 @@ namespace irods {
         std::stringstream off;
         off << offset_;
         addKeyVal( &_kvp, OFFSET_KW, off.str().c_str() );
-        
+
         addKeyVal( &_kvp, DATA_TYPE_KW,     data_type_.c_str() );
 
         std::stringstream opr;
@@ -187,8 +188,8 @@ namespace irods {
         addKeyVal( &_kvp, OPR_TYPE_KW, opr.str().c_str() );
 
         // =-=-=-=-=-=-=-
-        // spec coll 
-        if( spec_coll_ ) {
+        // spec coll
+        if ( spec_coll_ ) {
             std::stringstream coll_class;
             coll_class << spec_coll_->collClass;
             addKeyVal( &_kvp, SPEC_COLL_CLASS_KW, coll_class.str().c_str() );
@@ -197,25 +198,25 @@ namespace irods {
             type << spec_coll_->type;
             addKeyVal( &_kvp, SPEC_COLL_TYPE_KW, type.str().c_str() );
 
-            addKeyVal( &_kvp, SPEC_COLL_OBJ_PATH_KW,  spec_coll_->objPath  );
+            addKeyVal( &_kvp, SPEC_COLL_OBJ_PATH_KW,  spec_coll_->objPath );
             addKeyVal( &_kvp, SPEC_COLL_RESOURCE_KW,  spec_coll_->resource );
             addKeyVal( &_kvp, SPEC_COLL_RESC_HIER_KW, spec_coll_->rescHier );
-            addKeyVal( &_kvp, SPEC_COLL_PHY_PATH_KW,  spec_coll_->phyPath  );
+            addKeyVal( &_kvp, SPEC_COLL_PHY_PATH_KW,  spec_coll_->phyPath );
             addKeyVal( &_kvp, SPEC_COLL_CACHE_DIR_KW, spec_coll_->cacheDir );
 
             std::stringstream dirty;
             dirty << spec_coll_->cacheDirty;
             addKeyVal( &_kvp, SPEC_COLL_CACHE_DIRTY, dirty.str().c_str() );
-            
+
             std::stringstream repl;
             repl << spec_coll_->replNum;
             addKeyVal( &_kvp, SPEC_COLL_REPL_NUM, repl.str().c_str() );
-       
+
         }
-         
+
         return SUCCESS();
 
-    } // get_re_vars 
+    } // get_re_vars
 
 }; // namespace irods
 

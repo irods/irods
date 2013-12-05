@@ -127,9 +127,9 @@
 #define NO_SAVE_REI  0
 #define SAVE_REI  1
 
-#define SELECT_TIMEOUT_FOR_CONN	60	/* 60 sec wait for connection */ 
+#define SELECT_TIMEOUT_FOR_CONN	60	/* 60 sec wait for connection */
 /* this is the return value for the rcExecMyRule call indicating the
- * server is requesting the client to client to perform certain task */ 
+ * server is requesting the client to client to perform certain task */
 #define SYS_SVR_TO_CLI_MSI_REQUEST 99999995
 #define SYS_SVR_TO_CLI_COLL_STAT 99999996
 #define SYS_CLI_TO_SVR_COLL_STAT_REPLY 99999997
@@ -137,8 +137,8 @@
 #define SYS_SVR_TO_CLI_GET_ACTION 99999991
 #define SYS_RSYNC_TARGET_MODIFIED 99999992	/* target modified */
 
-/* definition for iRODS server to client action request from a microservice. 
- * these definitions are put in the "label" field of MsParam */  
+/* definition for iRODS server to client action request from a microservice.
+ * these definitions are put in the "label" field of MsParam */
 
 #define CL_PUT_ACTION	"CL_PUT_ACTION"
 #define CL_GET_ACTION	"CL_GET_ACTION"
@@ -229,11 +229,11 @@ typedef struct BytesBuf {   /* have to add BytesBuf to get Doxygen working */
 /* The msg header for all communication between client and server */
 
 typedef struct msgHeader {
-        char type[HEADER_TYPE_LEN];
-        int msgLen;     /* Length of the main msg */
-	int errorLen;   /* Length of the error struct */
-        int bsLen;      /* Length of optional byte stream */
-	int intInfo;    /* an additional integer info, for API, it is the
+    char type[HEADER_TYPE_LEN];
+    int msgLen;     /* Length of the main msg */
+    int errorLen;   /* Length of the error struct */
+    int bsLen;      /* Length of optional byte stream */
+    int intInfo;    /* an additional integer info, for API, it is the
 			 * apiReqNum */
 } msgHeader_t;
 
@@ -266,7 +266,7 @@ typedef struct startupPack {
 
 /* env variable for the client protocol */
 #define PROT	"irodsProt"
- 
+
 /* env variable for the startup pack */
 
 #define SP_NEW_SOCK	"spNewSock"
@@ -275,9 +275,9 @@ typedef struct startupPack {
 #define SP_PROTOCOL	"spProtocol"
 #define SP_RECONN_FLAG	"spReconnFlag"
 #define SP_PROXY_USER	"spProxyUser"
-#define SP_PROXY_RODS_ZONE "spProxyRodsZone" 
+#define SP_PROXY_RODS_ZONE "spProxyRodsZone"
 #define SP_CLIENT_USER	"spClientUser"
-#define SP_CLIENT_RODS_ZONE "spClientRodsZone" 
+#define SP_CLIENT_RODS_ZONE "spClientRodsZone"
 #define SP_REL_VERSION	"spRelVersion"
 #define SP_API_VERSION	"spApiVersion"
 #define SP_OPTION	"spOption"
@@ -303,7 +303,7 @@ typedef struct startupPack {
 /* The strct sent with RODS_VERSION type by server */
 
 typedef struct {
-    int status;		/* if > 0, contains the reconnection port */ 
+    int status;		/* if > 0, contains the reconnection port */
     char relVersion[NAME_LEN];
     char apiVersion[NAME_LEN];
     int reconnPort;
@@ -352,20 +352,20 @@ typedef struct {
     char oprType[NAME_LEN];	/* BULK_OPR_KW or NON_BULK_OPR_KW */
     int curCnt;
     int restartState;
-} rodsRestart_t;  
+} rodsRestart_t;
 
 /* definition for handler function */
 #ifdef windows_platform
 #ifdef __cplusplus
-typedef int((*funcPtr)(...));
+typedef int( ( *funcPtr )( ... ) );
 #else
-typedef int((*funcPtr)());
+typedef int( ( *funcPtr )() );
 #endif
 #else
 #ifdef __cplusplus /* JMC */
-    typedef int((*funcPtr)(...));
-#else    
-typedef int((*funcPtr)());
+typedef int( ( *funcPtr )( ... ) );
+#else
+typedef int( ( *funcPtr )() );
 #endif
 #endif
 
@@ -390,14 +390,14 @@ typedef enum {
 typedef struct {
     vaultPathScheme_t scheme;
     int addUserName;
-    int trimDirCnt;	/* for GRAFT_PATH_S only. Number of directories to 
+    int trimDirCnt;	/* for GRAFT_PATH_S only. Number of directories to
 			 * trim */
 } vaultPathPolicy_t;
 
 /* struct for proc (agent) logging */
 typedef struct {
     int pid;
-    unsigned int startTime; 
+    unsigned int startTime;
     char clientName[NAME_LEN];
     char clientZone[NAME_LEN];
     char proxyName[NAME_LEN];

@@ -25,7 +25,7 @@ namespace irods {
     /// @brief key for use of ssl or not
     const char RODS_CS_NEG      [] = {"RODS_CS_NEG"};
     const char CS_NEG_USE_SSL_KW[] = {"cs_neg_ssl_kw"};
-    
+
     /// =-=-=-=-=-=-=-
     /// @brief constants for sucess / failure status
     const int CS_NEG_STATUS_SUCCESS = 1;
@@ -35,7 +35,7 @@ namespace irods {
     /// @brief struct to hold the negotiation message
     struct cs_neg_t {
         int  status_;
-        char result_[MAX_NAME_LEN]; 
+        char result_[MAX_NAME_LEN];
     };
 
     /// =-=-=-=-=-=-=-
@@ -51,34 +51,34 @@ namespace irods {
     /// =-=-=-=-=-=-=-
     /// @brief function which determines if a client/server negotiation is needed
     ///        on the server side
-    bool do_client_server_negotiation_for_server(  );
-    
+    bool do_client_server_negotiation_for_server( );
+
     /// =-=-=-=-=-=-=-
     /// @brief function which determines if a client/server negotiation is needed
     ///        on the client side
-    bool do_client_server_negotiation_for_client(  );
+    bool do_client_server_negotiation_for_client( );
 
     /// =-=-=-=-=-=-=-
     /// @brief function which manages the TLS and Auth negotiations with the client
-    error client_server_negotiation_for_server( 
+    error client_server_negotiation_for_server(
         irods::network_object_ptr, // server connection handle
         std::string& );             // results of negotiation
- 
+
     /// =-=-=-=-=-=-=-
     /// @brief function which manages the TLS and Auth negotiations with the client
-    error client_server_negotiation_for_client( 
+    error client_server_negotiation_for_client(
         irods::network_object_ptr, // client connection handle
         std::string& );             // results of the negotiation
-   
+
     /// =-=-=-=-=-=-=-
     /// @brief function which sends the negotiation message
-    error send_client_server_negotiation_message( 
+    error send_client_server_negotiation_message(
         irods::network_object_ptr, // socket
         cs_neg_t& );                // message payload
- 
+
     /// =-=-=-=-=-=-=-
     /// @brief function which sends the negotiation message
-    error read_client_server_negotiation_message( 
+    error read_client_server_negotiation_message(
         irods::network_object_ptr,       // socket
         boost::shared_ptr< cs_neg_t >& ); // message payload
 

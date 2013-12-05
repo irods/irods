@@ -18,53 +18,54 @@ namespace irods {
     // public - Copy Constructor
     network_manager::network_manager( const network_manager& _rhs ) {
         plugins_ = _rhs.plugins_;
-    
+
     } // cctor
 
     // =-=-=-=-=-=-=-
     // public - Destructor
-    network_manager::~network_manager(  ) {
-    
+    network_manager::~network_manager( ) {
+
     } // dtor
 
     // =-=-=-=-=-=-=-
     // public - retrieve a network plugin given its key
-    error network_manager::resolve( 
-        std::string  _key, 
+    error network_manager::resolve(
+        std::string  _key,
         network_ptr& _value ) {
 
-        if( _key.empty() ) {
+        if ( _key.empty() ) {
             return ERROR( SYS_INVALID_INPUT_PARAM, "empty key" );
         }
 
-        if( plugins_.has_entry( _key ) ) {
+        if ( plugins_.has_entry( _key ) ) {
             _value = plugins_[ _key ];
-            return SUCCESS();   
+            return SUCCESS();
 
-        } else {
+        }
+        else {
             std::stringstream msg;
             msg << "no network plugin found for name ["
-                << _key 
+                << _key
                 << "]";
             return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
 
         }
 
     } // resolve
-    
+
     // =-=-=-=-=-=-=-
     // public - given a type, load up a network plugin
-    error network_manager::init_from_type( 
-        const std::string& _type, 
-        const std::string& _key,                                         
-        const std::string& _inst, 
-        const std::string& _ctx, 
-        network_ptr&       _net ) {                                     
-        // =-=-=-=-=-=-=-                                                                               
+    error network_manager::init_from_type(
+        const std::string& _type,
+        const std::string& _key,
+        const std::string& _inst,
+        const std::string& _ctx,
+        network_ptr&       _net ) {
+        // =-=-=-=-=-=-=-
         // create the network plugin and add it to the table
         network_ptr ptr;
         error ret = load_network_plugin( ptr, _type, _inst, _ctx );
-        if( !ret.ok() ) {                                                                               
+        if ( !ret.ok() ) {
             return PASSMSG( "Failed to load network plugin", ret );
         }
 
@@ -74,7 +75,7 @@ namespace irods {
 
         return SUCCESS();
 
-    } // init_from_type  
+    } // init_from_type
 
 }; // namespace irods
 

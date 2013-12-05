@@ -27,14 +27,14 @@ typedef struct {
 #define RS_DATA_OBJ_WRITE rsDataObjWrite
 /* prototype for the server handler */
 int
-rsDataObjWrite (rsComm_t *rsComm, openedDataObjInp_t *dataObjWriteInp, 
-bytesBuf_t *dataObjWriteInpBBuf);
+rsDataObjWrite( rsComm_t *rsComm, openedDataObjInp_t *dataObjWriteInp,
+                bytesBuf_t *dataObjWriteInpBBuf );
 int
-l3Write (rsComm_t *rsComm, int l1descInx, int len,                       
-bytesBuf_t *dataObjWriteInpBBuf);
+l3Write( rsComm_t *rsComm, int l1descInx, int len,
+         bytesBuf_t *dataObjWriteInpBBuf );
 int
-_l3Write (rsComm_t *rsComm, int destRescTypeInx, int l3descInx,
-void *buf, int len);
+_l3Write( rsComm_t *rsComm, int destRescTypeInx, int l3descInx,
+          void *buf, int len );
 #else
 #define RS_DATA_OBJ_WRITE NULL
 #endif
@@ -44,8 +44,8 @@ void *buf, int len);
 #define RS_DATA_OBJ_WRITE201 rsDataObjWrite201
 /* prototype for the server handler */
 int
-rsDataObjWrite201 (rsComm_t *rsComm, dataObjWriteInp_t *dataObjWriteInp,
-bytesBuf_t *dataObjWriteInpBBuf);
+rsDataObjWrite201( rsComm_t *rsComm, dataObjWriteInp_t *dataObjWriteInp,
+                   bytesBuf_t *dataObjWriteInpBBuf );
 #else
 #define RS_DATA_OBJ_WRITE201 NULL
 #endif
@@ -55,23 +55,23 @@ bytesBuf_t *dataObjWriteInpBBuf);
 extern "C" {
 #endif
 
-/* prototype for the client call */
-/* rcDataObjWrite - Write the content of dataObjWriteInpBBuf to 
- * an opened iRODS data object descriptor.
- * Input -
- *   rcComm_t *conn - The client connection handle.
- *   dataObjWriteInp_t *dataObjWriteInp - Relevant items are:
- *      l1descInx - the iRODS data object descriptor to write.
- *      len - the number of bytes to write
- *   bytesBuf_t *dataObjWriteInpBBuf - the bytesBuf for the write input.
- *
- * OutPut -
- *   int status of the operation - >= 0 ==> success, < 0 ==> failure.
- */
+    /* prototype for the client call */
+    /* rcDataObjWrite - Write the content of dataObjWriteInpBBuf to
+     * an opened iRODS data object descriptor.
+     * Input -
+     *   rcComm_t *conn - The client connection handle.
+     *   dataObjWriteInp_t *dataObjWriteInp - Relevant items are:
+     *      l1descInx - the iRODS data object descriptor to write.
+     *      len - the number of bytes to write
+     *   bytesBuf_t *dataObjWriteInpBBuf - the bytesBuf for the write input.
+     *
+     * OutPut -
+     *   int status of the operation - >= 0 ==> success, < 0 ==> failure.
+     */
 
-int
-rcDataObjWrite (rcComm_t *conn, openedDataObjInp_t *dataObjWriteInp,
-bytesBuf_t *dataObjWriteInpBBuf);
+    int
+    rcDataObjWrite( rcComm_t *conn, openedDataObjInp_t *dataObjWriteInp,
+                    bytesBuf_t *dataObjWriteInpBBuf );
 
 #ifdef  __cplusplus
 }

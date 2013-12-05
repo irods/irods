@@ -1,7 +1,7 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
-/* rodsGeneralUpdate.h - common header file for the generalized update 
+/* rodsGeneralUpdate.h - common header file for the generalized update
    (insert or delete) input.
  */
 
@@ -25,8 +25,8 @@
 
 #define GeneralUpdateInp_PI "int type; struct InxValPair_PI;"
 typedef struct GeneralUpdateInp {
-   int type;  /* GEN_UPDATE_INSERT or DELETE */
-   inxValPair_t values;  /* Column IDs (from rodsGenQuery.h) and values */
+    int type;  /* GEN_UPDATE_INSERT or DELETE */
+    inxValPair_t values;  /* Column IDs (from rodsGenQuery.h) and values */
 } generalUpdateInp_t;
 
 

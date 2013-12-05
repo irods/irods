@@ -28,7 +28,7 @@
 #if 0	/* just use OOI_ARRAY_TYPE */
 #define OOI_DICT_ARRAY_TYPE	2	/* array of dict */
 #define OOI_DICT_ARRAY_IN_ARRAY 3       /* An element in an array.
-                                         * outInx is the inx in this array */
+* outInx is the inx in this array */
 #endif
 typedef struct {
     char servName[NAME_LEN];
@@ -38,7 +38,7 @@ typedef struct {
     char irodsRescName[NAME_LEN];
     dictionary_t params;
 } ooiGenServReqInp_t;
-   
+
 #define OoiGenServReqInp_PI "str servName[NAME_LEN]; str servOpr[NAME_LEN]; int outType; int flags; str irodsRescName[NAME_LEN]; struct Dictionary_PI;"
 
 typedef struct {
@@ -60,16 +60,16 @@ typedef struct {
 #define RS_OOI_GEN_SERV_REQ rsOoiGenServReq
 /* prototype for the server handler */
 int
-rsOoiGenServReq (rsComm_t *rsComm, ooiGenServReqInp_t *ooiGenServReqInp, 
-ooiGenServReqOut_t **ooiGenServReqOut);
+rsOoiGenServReq( rsComm_t *rsComm, ooiGenServReqInp_t *ooiGenServReqInp,
+                 ooiGenServReqOut_t **ooiGenServReqOut );
 int
-_rsOoiGenServReq (rsComm_t *rsComm, ooiGenServReqInp_t *ooiGenServReqInp,
-ooiGenServReqOut_t **ooiGenServReqOut, rescGrpInfo_t *rescGrpInfo);
+_rsOoiGenServReq( rsComm_t *rsComm, ooiGenServReqInp_t *ooiGenServReqInp,
+                  ooiGenServReqOut_t **ooiGenServReqOut, rescGrpInfo_t *rescGrpInfo );
 size_t
-ooiGenServReqFunc (void *buffer, size_t size, size_t nmemb, void *userp);
+ooiGenServReqFunc( void *buffer, size_t size, size_t nmemb, void *userp );
 int
-remoteOoiGenServReq (rsComm_t *rsComm, ooiGenServReqInp_t *ooiGenServReqInp,
-ooiGenServReqOut_t **ooiGenServReqOut, rodsServerHost_t *rodsServerHost);
+remoteOoiGenServReq( rsComm_t *rsComm, ooiGenServReqInp_t *ooiGenServReqInp,
+                     ooiGenServReqOut_t **ooiGenServReqOut, rodsServerHost_t *rodsServerHost );
 #else
 #define RS_OOI_GEN_SERV_REQ NULL
 #endif
@@ -78,21 +78,21 @@ ooiGenServReqOut_t **ooiGenServReqOut, rodsServerHost_t *rodsServerHost);
 extern "C" {
 #endif
 
-/* rcOoiGenServReq - 
- * Input - 
- *   rcComm_t *conn - The client connection handle.
- *   ooiGenServReqInp_t struct:
- *     servName - OOI service name
- *     servOpr - which operation of the OOI service 
- *     params - input parameters in key/value dictionary 
- * OutPut - ncInqGrpOut_t.
- */
-/* prototype for the client call */
-int
-rcOoiGenServReq (rcComm_t *conn, ooiGenServReqInp_t *ooiGenServReqInp, 
-ooiGenServReqOut_t **ooiGenServReqOut);
-int
-freeOoiGenServReqOut (ooiGenServReqOut_t **ooiGenServReqOut);
+    /* rcOoiGenServReq -
+     * Input -
+     *   rcComm_t *conn - The client connection handle.
+     *   ooiGenServReqInp_t struct:
+     *     servName - OOI service name
+     *     servOpr - which operation of the OOI service
+     *     params - input parameters in key/value dictionary
+     * OutPut - ncInqGrpOut_t.
+     */
+    /* prototype for the client call */
+    int
+    rcOoiGenServReq( rcComm_t *conn, ooiGenServReqInp_t *ooiGenServReqInp,
+                     ooiGenServReqOut_t **ooiGenServReqOut );
+    int
+    freeOoiGenServReqOut( ooiGenServReqOut_t **ooiGenServReqOut );
 
 #ifdef  __cplusplus
 }

@@ -21,9 +21,10 @@ namespace irods {
     // provide our own interface which will take our error which can
     // be refactored later
     void log( irods::error _err ) {
-        if( _err.ok() ) {
+        if ( _err.ok() ) {
             log( LOG_NOTICE, _err.result() );
-        } else {
+        }
+        else {
             log( LOG_ERROR, _err.result() );
         }
     } // log

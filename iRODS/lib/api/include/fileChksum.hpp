@@ -26,7 +26,7 @@ typedef struct FileChksumInp {
     int flag;   /* not used for now */
     char in_pdmo[MAX_NAME_LEN]; // Flag indicating if we are being executed from a pdmo
 } fileChksumInp_t;
-    
+
 #define fileChksumInp_PI "struct RHostAddr_PI; str fileName[MAX_NAME_LEN]; str rescHier[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN]; int flags; str in_pdmo[MAX_NAME_LEN];"
 
 #define fileChksumOut_PI "str chksumStr[NAME_LEN];"
@@ -35,23 +35,23 @@ typedef struct FileChksumInp {
 #define RS_FILE_CHKSUM rsFileChksum
 /* prototype for the server handler */
 int
-rsFileChksum (rsComm_t *rsComm, fileChksumInp_t *fileChksumInp, 
-              char **chksumStr);
+rsFileChksum( rsComm_t *rsComm, fileChksumInp_t *fileChksumInp,
+              char **chksumStr );
 int
-_rsFileChksum (rsComm_t *rsComm, fileChksumInp_t *fileChksumInp,
-               char **chksumStr);
+_rsFileChksum( rsComm_t *rsComm, fileChksumInp_t *fileChksumInp,
+               char **chksumStr );
 int
-remoteFileChksum (rsComm_t *rsComm, fileChksumInp_t *fileChksumInp,
-                  char **chksumStr, rodsServerHost_t *rodsServerHost);
+remoteFileChksum( rsComm_t *rsComm, fileChksumInp_t *fileChksumInp,
+                  char **chksumStr, rodsServerHost_t *rodsServerHost );
 int
-fileChksum (rsComm_t *rsComm, char* objPath, char *fileName, char* rescHier, char *chksumStr);
+fileChksum( rsComm_t *rsComm, char* objPath, char *fileName, char* rescHier, char *chksumStr );
 #else
 #define RS_FILE_CHKSUM NULL
 #endif
 
 /* prototype for the client call */
 int
-rcFileChksum (rcComm_t *conn, fileChksumInp_t *fileChksumInp,
-              char **chksumStr);
+rcFileChksum( rcComm_t *conn, fileChksumInp_t *fileChksumInp,
+              char **chksumStr );
 
 #endif  /* FILE_CHKSUM_H */

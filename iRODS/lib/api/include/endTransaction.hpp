@@ -19,10 +19,10 @@
 #include "icatDefines.hpp"
 
 typedef struct {
-   char *arg0;
-   char *arg1;
+    char *arg0;
+    char *arg1;
 } endTransactionInp_t;
-    
+
 #define endTransactionInp_PI "str *arg0; str *arg1;"
 
 #ifdef  __cplusplus
@@ -31,19 +31,19 @@ extern "C" {
 
 #if defined(RODS_SERVER)
 #define RS_END_TRANSACTION rsEndTransaction
-/* prototype for the server handler */
-int
-rsEndTransaction (rsComm_t *rsComm, endTransactionInp_t *endTransactionInp );
+    /* prototype for the server handler */
+    int
+    rsEndTransaction( rsComm_t *rsComm, endTransactionInp_t *endTransactionInp );
 
-int
-_rsEndTransaction (rsComm_t *rsComm, endTransactionInp_t *endTransactionInp );
+    int
+    _rsEndTransaction( rsComm_t *rsComm, endTransactionInp_t *endTransactionInp );
 #else
 #define RS_END_TRANSACTION NULL
 #endif
 
-/* prototype for the client call */
-int
-rcEndTransaction (rcComm_t *conn, endTransactionInp_t *endTransactionInp);
+    /* prototype for the client call */
+    int
+    rcEndTransaction( rcComm_t *conn, endTransactionInp_t *endTransactionInp );
 
 #ifdef  __cplusplus
 }
