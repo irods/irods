@@ -338,6 +338,7 @@ main( int argc, char **argv ) {
         }
     }
 
+    rcDisconnect( Conn );
 
     /* Save updates to .irodsEnv. */
     if ( doingEnvFileUpdate == 1 ) {
