@@ -7,15 +7,14 @@
 #include "rcConnect.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_resource_plugin.hpp"
-#include "eirods_file_object.hpp"
-#include "eirods_physical_object.hpp"
-#include "eirods_collection_object.hpp"
-#include "eirods_string_tokenize.hpp"
-#include "eirods_hierarchy_parser.hpp"
-#include "eirods_resource_redirect.hpp"
-#include "eirods_stacktrace.hpp"
+#include "irods_resource_plugin.hpp"
+#include "irods_file_object.hpp"
+#include "irods_physical_object.hpp"
+#include "irods_collection_object.hpp"
+#include "irods_string_tokenize.hpp"
+#include "irods_hierarchy_parser.hpp"
+#include "irods_resource_redirect.hpp"
+#include "irods_stacktrace.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -51,10 +50,10 @@
 #include <fcntl.h>
 #ifndef _WIN32
 #include <sys/file.h>
-#include <unistd.h>  
+#include <unistd.h>
 #endif
 #include <dirent.h>
- 
+
 #if defined(solaris_platform)
 #include <sys/statvfs.h>
 #endif
@@ -70,62 +69,62 @@
 // 2. Define utility functions that the operations might need
 
 // =-=-=-=-=-=-=-
-// NOTE: All storage resources must do this on the physical path stored in the file object and then update 
+// NOTE: All storage resources must do this on the physical path stored in the file object and then update
 //       the file object's physical path with the full path
 
 // =-=-=-=-=-=-=-
 /// @brief Generates a full path name from the partial physical path and the specified resource's vault path
-eirods::error unix_generate_full_path(
-    eirods::plugin_property_map& _prop_map,
+irods::error unix_generate_full_path(
+    irods::plugin_property_map& _prop_map,
     const std::string&           _phy_path,
-    std::string&                 _ret_string )
-{
-    eirods::error result = SUCCESS();
-    eirods::error ret;
+    std::string&                 _ret_string ) {
+    irods::error result = SUCCESS();
+    irods::error ret;
     std::string vault_path;
-    
-    // TODO - getting vault path by property will not likely work for coordinating nodes
-    ret = _prop_map.get<std::string>( eirods::RESOURCE_PATH, vault_path);
-    if((result = ASSERT_PASS(ret, "Resource has no vault path.")).ok()) {
 
-        if(_phy_path.compare(0, 1, "/") != 0 &&
-           _phy_path.compare(0, vault_path.size(), vault_path) != 0) {
+    // TODO - getting vault path by property will not likely work for coordinating nodes
+    ret = _prop_map.get<std::string>( irods::RESOURCE_PATH, vault_path );
+    if ( ( result = ASSERT_PASS( ret, "Resource has no vault path." ) ).ok() ) {
+
+        if ( _phy_path.compare( 0, 1, "/" ) != 0 &&
+                _phy_path.compare( 0, vault_path.size(), vault_path ) != 0 ) {
             _ret_string  = vault_path;
             _ret_string += "/";
             _ret_string += _phy_path;
-        } else {
+        }
+        else {
             // The physical path already contains the vault path
             _ret_string = _phy_path;
         }
     }
-    
+
     return result;
 
 } // unix_generate_full_path
 
 // =-=-=-=-=-=-=-
 /// @brief update the physical path in the file object
-eirods::error unix_check_path( 
-    eirods::resource_plugin_context& _ctx )
-{
-    eirods::error result = SUCCESS();
+irods::error unix_check_path(
+    irods::resource_plugin_context& _ctx ) {
+    irods::error result = SUCCESS();
     try {
-        eirods::data_object_ptr data_obj = boost::dynamic_pointer_cast< eirods::data_object >( _ctx.fco() );
+        irods::data_object_ptr data_obj = boost::dynamic_pointer_cast< irods::data_object >( _ctx.fco() );
 
         // =-=-=-=-=-=-=-
         // NOTE: Must do this for all storage resources
         std::string full_path;
-        eirods::error ret = unix_generate_full_path( _ctx.prop_map(), 
-                                                     data_obj->physical_path(), 
-                                                     full_path );
-        if((result = ASSERT_PASS(ret, "Failed generating full path for object.")).ok()) {
+        irods::error ret = unix_generate_full_path( _ctx.prop_map(),
+                           data_obj->physical_path(),
+                           full_path );
+        if ( ( result = ASSERT_PASS( ret, "Failed generating full path for object." ) ).ok() ) {
 
             data_obj->physical_path( full_path );
         }
 
         return result;
 
-    } catch( std::bad_cast ) {
+    }
+    catch ( std::bad_cast ) {
         return ERROR( SYS_INVALID_INPUT_PARAM, "failed to cast fco to data_object" );
 
     }
@@ -135,17 +134,16 @@ eirods::error unix_check_path(
 // =-=-=-=-=-=-=-
 /// @brief Checks the basic operation parameters and updates the physical path in the file object
 template< typename DEST_TYPE >
-eirods::error unix_check_params_and_path(
-    eirods::resource_plugin_context& _ctx )
-{
-    
-    eirods::error result = SUCCESS();
-    eirods::error ret;
-  
+irods::error unix_check_params_and_path(
+    irods::resource_plugin_context& _ctx ) {
+
+    irods::error result = SUCCESS();
+    irods::error ret;
+
     // =-=-=-=-=-=-=-
-    // verify that the resc context is valid 
-    ret = _ctx.valid< DEST_TYPE >(); 
-    if((result = ASSERT_PASS(ret, "Resource context is invalid.")).ok() ) { 
+    // verify that the resc context is valid
+    ret = _ctx.valid< DEST_TYPE >();
+    if ( ( result = ASSERT_PASS( ret, "Resource context is invalid." ) ).ok() ) {
 
         result = unix_check_path( _ctx );
     }
@@ -161,49 +159,47 @@ extern "C" {
     // =-=-=-=-=-=-=-
 
     // =-=-=-=-=-=-=-
-    // NOTE :: to access properties in the _prop_map do the 
+    // NOTE :: to access properties in the _prop_map do the
     //      :: following :
     //      :: double my_var = 0.0;
-    //      :: eirods::error ret = _prop_map.get< double >( "my_key", my_var ); 
+    //      :: irods::error ret = _prop_map.get< double >( "my_key", my_var );
     // =-=-=-=-=-=-=-
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Unlink
-    eirods::error mock_archive_unlink_plugin( 
-        eirods::resource_plugin_context& _ctx )
-    {
-        eirods::error result = SUCCESS();
-        
+    irods::error mock_archive_unlink_plugin(
+        irods::resource_plugin_context& _ctx ) {
+        irods::error result = SUCCESS();
+
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path< eirods::file_object >( _ctx );
-        if((result = ASSERT_PASS(ret, "Invalid plugin context.")).ok()) {
-        
+        irods::error ret = unix_check_params_and_path< irods::file_object >( _ctx );
+        if ( ( result = ASSERT_PASS( ret, "Invalid plugin context." ) ).ok() ) {
+
             // =-=-=-=-=-=-=-
             // get ref to fco
-            eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
-        
+            irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
+
             // =-=-=-=-=-=-=-
-            // make the call to unlink      
+            // make the call to unlink
             int status = unlink( fco->physical_path().c_str() );
 
             // =-=-=-=-=-=-=-
             // error handling
             int err_status = UNIX_FILE_UNLINK_ERR - errno;
-            result = ASSERT_ERROR(status >= 0, err_status, "Unlink error for: \"%s\", errno = \"%s\", status = %d.",
-                                  fco->physical_path().c_str(), strerror(errno), err_status);
+            result = ASSERT_ERROR( status >= 0, err_status, "Unlink error for: \"%s\", errno = \"%s\", status = %d.",
+                                   fco->physical_path().c_str(), strerror( errno ), err_status );
         }
-        
+
         return result;
 
     } // mock_archive_unlink_plugin
 
     int
     mockArchiveCopyPlugin(
-        int         mode, 
-        const char* srcFileName, 
-        const char* destFileName )
-    {
+        int         mode,
+        const char* srcFileName,
+        const char* destFileName ) {
         int inFd, outFd;
         char myBuf[TRANS_BUF_SZ];
         rodsLong_t bytesCopied = 0;
@@ -212,60 +208,61 @@ extern "C" {
         int status;
         struct stat statbuf;
 
-        status = stat (srcFileName, &statbuf);
+        status = stat( srcFileName, &statbuf );
 
-        if (status < 0) {
+        if ( status < 0 ) {
             status = UNIX_FILE_STAT_ERR - errno;
-            rodsLog (LOG_ERROR, 
+            rodsLog( LOG_ERROR,
                      "mockArchiveCopyPlugin: stat of %s error, status = %d",
-                     srcFileName, status);
+                     srcFileName, status );
             return status;
         }
 
-        inFd = open (srcFileName, O_RDONLY, 0);
-        if (inFd < 0 || (statbuf.st_mode & S_IFREG) == 0) {
+        inFd = open( srcFileName, O_RDONLY, 0 );
+        if ( inFd < 0 || ( statbuf.st_mode & S_IFREG ) == 0 ) {
             status = UNIX_FILE_OPEN_ERR - errno;
-            rodsLog (LOG_ERROR,
+            rodsLog( LOG_ERROR,
                      "mockArchiveCopyPlugin: open error for srcFileName %s, status = %d",
                      srcFileName, status );
             close( inFd ); // JMC cppcheck - resource
             return status;
         }
 
-        outFd = open (destFileName, O_WRONLY | O_CREAT | O_TRUNC, mode);
-        if (outFd < 0) {
+        outFd = open( destFileName, O_WRONLY | O_CREAT | O_TRUNC, mode );
+        if ( outFd < 0 ) {
             status = UNIX_FILE_OPEN_ERR - errno;
-            rodsLog (LOG_ERROR,
+            rodsLog( LOG_ERROR,
                      "mockArchiveCopyPlugin: open error for destFileName %s, status = %d",
-                     destFileName, status);
-            close (inFd);
+                     destFileName, status );
+            close( inFd );
             return status;
         }
 
-        while ((bytesRead = read (inFd, (void *) myBuf, TRANS_BUF_SZ)) > 0) {
-            bytesWritten = write (outFd, (void *) myBuf, bytesRead);
-            if (bytesWritten <= 0) {
+        while ( ( bytesRead = read( inFd, ( void * ) myBuf, TRANS_BUF_SZ ) ) > 0 ) {
+            bytesWritten = write( outFd, ( void * ) myBuf, bytesRead );
+            if ( bytesWritten <= 0 ) {
                 status = UNIX_FILE_WRITE_ERR - errno;
-                rodsLog (LOG_ERROR,
+                rodsLog( LOG_ERROR,
                          "mockArchiveCopyPlugin: write error for srcFileName %s, status = %d",
-                         destFileName, status);
-                close (inFd);
-                close (outFd);
+                         destFileName, status );
+                close( inFd );
+                close( outFd );
                 return status;
             }
             bytesCopied += bytesWritten;
         }
 
-        close (inFd);
-        close (outFd);
+        close( inFd );
+        close( outFd );
 
-        if (bytesCopied != statbuf.st_size) {
-            rodsLog ( LOG_ERROR,
-                      "mockArchiveCopyPlugin: Copied size %lld does not match source \
+        if ( bytesCopied != statbuf.st_size ) {
+            rodsLog( LOG_ERROR,
+                     "mockArchiveCopyPlugin: Copied size %lld does not match source \
                              size %lld of %s",
-                      bytesCopied, statbuf.st_size, srcFileName );
+                     bytesCopied, statbuf.st_size, srcFileName );
             return SYS_COPY_LEN_ERR;
-        } else {
+        }
+        else {
             return 0;
         }
 
@@ -275,38 +272,37 @@ extern "C" {
     // unixStageToCache - This routine is for testing the TEST_STAGE_FILE_TYPE.
     // Just copy the file from filename to cacheFilename. optionalInfo info
     // is not used.
-    eirods::error mock_archive_stagetocache_plugin( 
-        eirods::resource_plugin_context& _ctx,
-        const char*                      _cache_file_name )
-    {
-        eirods::error result = SUCCESS();
-        
+    irods::error mock_archive_stagetocache_plugin(
+        irods::resource_plugin_context& _ctx,
+        const char*                      _cache_file_name ) {
+        irods::error result = SUCCESS();
+
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path< eirods::file_object >( _ctx );
-        if((result = ASSERT_PASS(ret, "Invalid plugin context.")).ok()) {
-        
+        irods::error ret = unix_check_params_and_path< irods::file_object >( _ctx );
+        if ( ( result = ASSERT_PASS( ret, "Invalid plugin context." ) ).ok() ) {
+
             // =-=-=-=-=-=-=-
             // get ref to fco
-            eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
-        
+            irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
+
             // =-=-=-=-=-=-=-
             // get the vault path for the resource
             std::string path;
-            ret = _ctx.prop_map().get< std::string >( eirods::RESOURCE_PATH, path ); 
-            if((result = ASSERT_PASS(ret, "Failed to retrieve vault path for resource.")).ok() ) {
-       
+            ret = _ctx.prop_map().get< std::string >( irods::RESOURCE_PATH, path );
+            if ( ( result = ASSERT_PASS( ret, "Failed to retrieve vault path for resource." ) ).ok() ) {
+
                 // =-=-=-=-=-=-=-
                 // append the hash to the path as the new 'cache file name'
                 path += "/";
                 path += fco->physical_path().c_str();
-        
+
                 int status = mockArchiveCopyPlugin( fco->mode(), fco->physical_path().c_str(), _cache_file_name );
-                result = ASSERT_ERROR(status >= 0, status, "Failed copying archive file: \"%s\" to cache file: \"%s\".",
-                                      fco->physical_path().c_str(), _cache_file_name);
+                result = ASSERT_ERROR( status >= 0, status, "Failed copying archive file: \"%s\" to cache file: \"%s\".",
+                                       fco->physical_path().c_str(), _cache_file_name );
             }
         }
-        
+
         return result;
     } // mock_archive_stagetocache_plugin
 
@@ -314,21 +310,20 @@ extern "C" {
     // unixSyncToArch - This routine is for testing the TEST_STAGE_FILE_TYPE.
     // Just copy the file from cacheFilename to filename. optionalInfo info
     // is not used.
-    eirods::error mock_archive_synctoarch_plugin( 
-        eirods::resource_plugin_context& _ctx,
-        char*                            _cache_file_name )
-    {
-        eirods::error result = SUCCESS();
-        
+    irods::error mock_archive_synctoarch_plugin(
+        irods::resource_plugin_context& _ctx,
+        char*                            _cache_file_name ) {
+        irods::error result = SUCCESS();
+
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path< eirods::file_object >( _ctx );
-        if((result = ASSERT_PASS(ret, "Invalid plugin context.")).ok()) {
-        
+        irods::error ret = unix_check_params_and_path< irods::file_object >( _ctx );
+        if ( ( result = ASSERT_PASS( ret, "Invalid plugin context." ) ).ok() ) {
+
             // =-=-=-=-=-=-=-
             // get ref to fco
-            eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
-       
+            irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
+
             // =-=-=-=-=-=-=-
             // hash the physical path to reflect object store behavior
             MD5_CTX context;
@@ -337,21 +332,21 @@ extern "C" {
 
             strncpy( md5Buf, fco->physical_path().c_str(), fco->physical_path().size() );
             MD5Init( &context );
-            MD5Update( &context, (unsigned char*)md5Buf, fco->physical_path().size() );
-            MD5Final( (unsigned char*)hash, &context );
-       
+            MD5Update( &context, ( unsigned char* )md5Buf, fco->physical_path().size() );
+            MD5Final( ( unsigned char* )hash, &context );
+
 
             std::stringstream ins;
-            for(int i = 0; i < 16; ++i) {
-                ins << std::setfill('0') << std::setw(2) << std::hex << (int)hash[i];
+            for ( int i = 0; i < 16; ++i ) {
+                ins << std::setfill( '0' ) << std::setw( 2 ) << std::hex << ( int )hash[i];
             }
 
             // =-=-=-=-=-=-=-
             // get the vault path for the resource
             std::string path;
-            ret = _ctx.prop_map().get< std::string >( eirods::RESOURCE_PATH, path ); 
-            if((result = ASSERT_PASS(ret, "Failed to get vault path for resource.")).ok() ) {
-       
+            ret = _ctx.prop_map().get< std::string >( irods::RESOURCE_PATH, path );
+            if ( ( result = ASSERT_PASS( ret, "Failed to get vault path for resource." ) ).ok() ) {
+
                 // =-=-=-=-=-=-=-
                 // append the hash to the path as the new 'cache file name'
                 path += "/";
@@ -361,11 +356,11 @@ extern "C" {
 
                 rodsLog( LOG_NOTICE, "mock archive :: new hashed file name for [%s] is [%s]",
                          fco->physical_path().c_str(), path.c_str() );
-        
+
                 // =-=-=-=-=-=-=-
                 // make the copy to the 'archive'
                 int status = mockArchiveCopyPlugin( fco->mode(), _cache_file_name, path.c_str() );
-                if((result = ASSERT_ERROR( status >= 0, status, "Sync to arch failed.")).ok()) {
+                if ( ( result = ASSERT_ERROR( status >= 0, status, "Sync to arch failed." ) ).ok() ) {
                     fco->physical_path( ins.str() );
                 }
             }
@@ -377,37 +372,36 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // redirect_create - code to determine redirection for get operation
     // Create never gets called on an archive.
-    
+
     // =-=-=-=-=-=-=-
     // redirect_get - code to determine redirection for get operation
-    eirods::error mock_archive_redirect_open( 
-        eirods::plugin_property_map& _prop_map,
-        eirods::file_object_ptr         _file_obj,
-        const std::string&           _resc_name, 
-        const std::string&           _curr_host, 
-        float&                       _out_vote )
-    {
-        eirods::error result = SUCCESS();
-        
+    irods::error mock_archive_redirect_open(
+        irods::plugin_property_map& _prop_map,
+        irods::file_object_ptr         _file_obj,
+        const std::string&           _resc_name,
+        const std::string&           _curr_host,
+        float&                       _out_vote ) {
+        irods::error result = SUCCESS();
+
         // =-=-=-=-=-=-=-
         // initially set a good default
         _out_vote = 0.0;
 
         // =-=-=-=-=-=-=-
-        // determine if the resource is down 
+        // determine if the resource is down
         int resc_status = 0;
-        eirods::error get_ret = _prop_map.get< int >( eirods::RESOURCE_STATUS, resc_status );
-        if((result = ASSERT_PASS(get_ret, "Failed to get \"status\" property.")).ok() ) {
+        irods::error get_ret = _prop_map.get< int >( irods::RESOURCE_STATUS, resc_status );
+        if ( ( result = ASSERT_PASS( get_ret, "Failed to get \"status\" property." ) ).ok() ) {
 
             // =-=-=-=-=-=-=-
             // if the status is down, vote no.
-            if( INT_RESC_STATUS_DOWN != resc_status ) {
+            if ( INT_RESC_STATUS_DOWN != resc_status ) {
 
                 // =-=-=-=-=-=-=-
                 // get the resource host for comparison to curr host
                 std::string host_name;
-                get_ret = _prop_map.get< std::string >( eirods::RESOURCE_LOCATION, host_name );
-                if((result = ASSERT_PASS(get_ret, "Failed to get \"location\" property.")).ok() ) {
+                get_ret = _prop_map.get< std::string >( irods::RESOURCE_LOCATION, host_name );
+                if ( ( result = ASSERT_PASS( get_ret, "Failed to get \"location\" property." ) ).ok() ) {
 
                     // =-=-=-=-=-=-=-
                     // set a flag to test if were at the curr host, if so we vote higher
@@ -420,35 +414,36 @@ extern "C" {
                     // =-=-=-=-=-=-=-
                     // set up variables for iteration
                     bool          found     = false;
-                    std::vector< eirods::physical_object > objs = _file_obj->replicas();
-                    std::vector< eirods::physical_object >::iterator itr = objs.begin();
-        
+                    std::vector< irods::physical_object > objs = _file_obj->replicas();
+                    std::vector< irods::physical_object >::iterator itr = objs.begin();
+
                     // =-=-=-=-=-=-=-
                     // check to see if the replica is in this resource, if one is requested
-                    for( ; !found && itr != objs.end(); ++itr ) {
+                    for ( ; !found && itr != objs.end(); ++itr ) {
 
                         // =-=-=-=-=-=-=-
                         // run the hier string through the parser and get the last
                         // entry.
                         std::string last_resc;
-                        eirods::hierarchy_parser parser;
+                        irods::hierarchy_parser parser;
                         parser.set_string( itr->resc_hier() );
-                        parser.last_resc( last_resc ); 
-          
+                        parser.last_resc( last_resc );
+
                         // =-=-=-=-=-=-=-
                         // more flags to simplify decision making
-                        bool repl_us = ( _file_obj->repl_requested() == itr->repl_num() ); 
+                        bool repl_us = ( _file_obj->repl_requested() == itr->repl_num() );
                         bool resc_us = ( _resc_name == last_resc );
 
                         // =-=-=-=-=-=-=-
                         // success - correct resource and dont need a specific
                         //           replication, or the repl nums match
-                        if( resc_us ) {
-                            if( !need_repl || ( need_repl && repl_us ) ) {
+                        if ( resc_us ) {
+                            if ( !need_repl || ( need_repl && repl_us ) ) {
                                 found = true;
-                                if( curr_host ) {
+                                if ( curr_host ) {
                                     _out_vote = 1.0;
-                                } else {
+                                }
+                                else {
                                     _out_vote = 0.5;
                                 }
                             }
@@ -459,7 +454,7 @@ extern "C" {
                 }
             }
         }
-        
+
         return result;
 
     } // mock_archive_redirect_open
@@ -467,32 +462,31 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // used to allow the resource to determine which host
     // should provide the requested operation
-    eirods::error mock_archive_redirect_plugin( 
-        eirods::resource_plugin_context& _ctx,
+    irods::error mock_archive_redirect_plugin(
+        irods::resource_plugin_context& _ctx,
         const std::string*                  _opr,
         const std::string*                  _curr_host,
-        eirods::hierarchy_parser*           _out_parser,
-        float*                              _out_vote )
-    {
-        eirods::error result = SUCCESS();
-        
+        irods::hierarchy_parser*           _out_parser,
+        float*                              _out_vote ) {
+        irods::error result = SUCCESS();
+
         // =-=-=-=-=-=-=-
         // check the context validity
-        eirods::error ret = _ctx.valid< eirods::file_object >(); 
-        if((result = ASSERT_PASS(ret, "Invalid plugin context.")).ok()) {
+        irods::error ret = _ctx.valid< irods::file_object >();
+        if ( ( result = ASSERT_PASS( ret, "Invalid plugin context." ) ).ok() ) {
 
-            if((result = ASSERT_ERROR(_opr && _curr_host && _out_parser && _out_vote, SYS_INVALID_INPUT_PARAM,
-                                      "Invalid input parameters.")).ok()) {
+            if ( ( result = ASSERT_ERROR( _opr && _curr_host && _out_parser && _out_vote, SYS_INVALID_INPUT_PARAM,
+                                          "Invalid input parameters." ) ).ok() ) {
 
                 // =-=-=-=-=-=-=-
                 // cast down the chain to our understood object type
-                eirods::file_object_ptr file_obj = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
+                irods::file_object_ptr file_obj = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
 
                 // =-=-=-=-=-=-=-
                 // get the name of this resource
                 std::string resc_name;
-                ret = _ctx.prop_map().get< std::string >( eirods::RESOURCE_NAME, resc_name );
-                if((result = ASSERT_PASS(ret, "Failed to get property for resource name.")).ok() ) {
+                ret = _ctx.prop_map().get< std::string >( irods::RESOURCE_NAME, resc_name );
+                if ( ( result = ASSERT_PASS( ret, "Failed to get property for resource name." ) ).ok() ) {
 
                     // =-=-=-=-=-=-=-
                     // add ourselves to the hierarchy parser by default
@@ -500,22 +494,23 @@ extern "C" {
 
                     // =-=-=-=-=-=-=-
                     // test the operation to determine which choices to make
-                    if( eirods::EIRODS_OPEN_OPERATION == (*_opr) ) {
+                    if ( irods::OPEN_OPERATION == ( *_opr ) ) {
                         // =-=-=-=-=-=-=-
                         // call redirect determination for 'get' operation
-                        result = mock_archive_redirect_open( _ctx.prop_map(), file_obj, resc_name, (*_curr_host), (*_out_vote) );
+                        result = mock_archive_redirect_open( _ctx.prop_map(), file_obj, resc_name, ( *_curr_host ), ( *_out_vote ) );
 
-                    } else if( eirods::EIRODS_CREATE_OPERATION == (*_opr) ) {
+                    }
+                    else if ( irods::CREATE_OPERATION == ( *_opr ) ) {
                         // =-=-=-=-=-=-=-
                         // call redirect determination for 'create' operation
-                        result = ASSERT_ERROR(false, SYS_INVALID_INPUT_PARAM, "Create operation not supported for an archive");
+                        result = ASSERT_ERROR( false, SYS_INVALID_INPUT_PARAM, "Create operation not supported for an archive" );
                     }
                     else {
-                        
+
                         // =-=-=-=-=-=-=-
                         // must have been passed a bad operation
-                        result = ASSERT_ERROR(false, SYS_INVALID_INPUT_PARAM, "Operation not supported: \"%s\".",
-                                              _opr->c_str());
+                        result = ASSERT_ERROR( false, SYS_INVALID_INPUT_PARAM, "Operation not supported: \"%s\".",
+                                               _opr->c_str() );
                     }
                 }
             }
@@ -526,8 +521,8 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // mock_archive_file_rebalance - code which would rebalance the subtree
-    eirods::error mock_archive_file_rebalance(
-        eirods::resource_plugin_context& _ctx ) {
+    irods::error mock_archive_file_rebalance(
+        irods::resource_plugin_context& _ctx ) {
         return SUCCESS();
 
     } // mock_archive_file_rebalancec
@@ -537,26 +532,26 @@ extern "C" {
     //    necessary to do custom parsing of the context string to place
     //    any useful values into the property map for reference in later
     //    operations.  semicolon is the preferred delimiter
-    class mockarchive_resource : public eirods::resource {
+    class mockarchive_resource : public irods::resource {
         // =-=-=-=-=-=-=-
         // 3a. create a class to provide maintenance operations, this is only for example
         //     and will not be called.
         class maintenance_operation {
         public:
-            maintenance_operation( const std::string& _n ) : name_(_n) {
+            maintenance_operation( const std::string& _n ) : name_( _n ) {
             }
 
             maintenance_operation( const maintenance_operation& _rhs ) {
-                name_ = _rhs.name_;    
+                name_ = _rhs.name_;
             }
 
             maintenance_operation& operator=( const maintenance_operation& _rhs ) {
-                name_ = _rhs.name_;    
+                name_ = _rhs.name_;
                 return *this;
             }
 
-            eirods::error operator()( rcComm_t* ) {
-                rodsLog( LOG_NOTICE, "mockarchive_resource::post_disconnect_maintenance_operation - [%s]", 
+            irods::error operator()( rcComm_t* ) {
+                rodsLog( LOG_NOTICE, "mockarchive_resource::post_disconnect_maintenance_operation - [%s]",
                          name_.c_str() );
                 return SUCCESS();
             }
@@ -567,13 +562,13 @@ extern "C" {
         }; // class maintenance_operation
 
     public:
-        mockarchive_resource( const std::string& _inst_name, 
-                              const std::string& _context ) : 
-            eirods::resource( _inst_name, _context ) {
+        mockarchive_resource( const std::string& _inst_name,
+                              const std::string& _context ) :
+            irods::resource( _inst_name, _context ) {
         } // ctor
 
 
-        eirods::error need_post_disconnect_maintenance_operation( bool& _b ) {
+        irods::error need_post_disconnect_maintenance_operation( bool& _b ) {
             _b = false;
             return SUCCESS();
         }
@@ -582,11 +577,11 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // 3b. pass along a functor for maintenance work after
         //     the client disconnects, uncomment the first two lines for effect.
-        eirods::error post_disconnect_maintenance_operation( eirods::pdmo_type& _op  ) {
+        irods::error post_disconnect_maintenance_operation( irods::pdmo_type& _op ) {
 #if 0
             std::string name;
-            eirods::error err = get_property< std::string >( eirods::RESOURCE_NAME, name );
-            if( !err.ok() ) {
+            irods::error err = get_property< std::string >( irods::RESOURCE_NAME, name );
+            if ( !err.ok() ) {
                 return PASSMSG( "mockarchive_resource::post_disconnect_maintenance_operation failed.", err );
             }
 
@@ -598,15 +593,15 @@ extern "C" {
         }
 
     }; // class mockarchive_resource
-  
+
     // =-=-=-=-=-=-=-
     // 4. create the plugin factory function which will return a dynamically
     //    instantiated object of the previously defined derived resource.  use
     //    the add_operation member to associate a 'call name' to the interfaces
     //    defined above.  for resource plugins these call names are standardized
-    //    as used by the eirods facing interface defined in 
+    //    as used by the irods facing interface defined in
     //    server/drivers/src/fileDriver.c
-    eirods::resource* plugin_factory( const std::string& _inst_name, const std::string& _context  ) {
+    irods::resource* plugin_factory( const std::string& _inst_name, const std::string& _context ) {
 
         // =-=-=-=-=-=-=-
         // 4a. create mockarchive_resource
@@ -614,27 +609,27 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // 4b. map function names to operations.  this map will be used to load
-        //     the symbols from the shared object in the delay_load stage of 
+        //     the symbols from the shared object in the delay_load stage of
         //     plugin loading.
-        resc->add_operation( eirods::RESOURCE_OP_UNLINK,       "mock_archive_unlink_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_STAGETOCACHE, "mock_archive_stagetocache_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_SYNCTOARCH,   "mock_archive_synctoarch_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER,     "mock_archive_redirect_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_REBALANCE,             "mock_archive_file_rebalance" );
+        resc->add_operation( irods::RESOURCE_OP_UNLINK,       "mock_archive_unlink_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_STAGETOCACHE, "mock_archive_stagetocache_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_SYNCTOARCH,   "mock_archive_synctoarch_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_RESOLVE_RESC_HIER,     "mock_archive_redirect_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_REBALANCE,             "mock_archive_file_rebalance" );
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code
-        resc->set_property< int >( eirods::RESOURCE_CHECK_PATH_PERM, 2 );//DO_CHK_PATH_PERM );
-        resc->set_property< int >( eirods::RESOURCE_CREATE_PATH,     1 );//CREATE_PATH );
+        resc->set_property< int >( irods::RESOURCE_CHECK_PATH_PERM, 2 );//DO_CHK_PATH_PERM );
+        resc->set_property< int >( irods::RESOURCE_CREATE_PATH,     1 );//CREATE_PATH );
 
         // =-=-=-=-=-=-=-
         // 4c. return the pointer through the generic interface of an
-        //     eirods::resource pointer
-        return dynamic_cast<eirods::resource*>( resc );
-        
+        //     irods::resource pointer
+        return dynamic_cast<irods::resource*>( resc );
+
     } // plugin_factory
 
-}; // extern "C" 
+}; // extern "C"
 
 
 

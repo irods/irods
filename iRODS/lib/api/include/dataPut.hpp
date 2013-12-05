@@ -21,21 +21,21 @@
 #define RS_DATA_PUT rsDataPut
 /* prototype for the server handler */
 int
-rsDataPut (rsComm_t *rsComm, dataOprInp_t *dataPutInp, 
-portalOprOut_t **portalOprOut);
+rsDataPut( rsComm_t *rsComm, dataOprInp_t *dataPutInp,
+           portalOprOut_t **portalOprOut );
 int
-remoteDataPut (rsComm_t *rsComm, dataOprInp_t *dataPutInp,
-portalOprOut_t **portalOprOut, rodsServerHost_t *rodsServerHost);
+remoteDataPut( rsComm_t *rsComm, dataOprInp_t *dataPutInp,
+               portalOprOut_t **portalOprOut, rodsServerHost_t *rodsServerHost );
 int
-_rsDataPut (rsComm_t *rsComm, dataOprInp_t *dataPutInp,
-portalOprOut_t **portalOprOut);
+_rsDataPut( rsComm_t *rsComm, dataOprInp_t *dataPutInp,
+            portalOprOut_t **portalOprOut );
 #else
 #define RS_DATA_PUT NULL
 #endif
 
 /* prototype for the client call */
 int
-rcDataPut (rcComm_t *conn, dataOprInp_t *dataPutInp,
-portalOprOut_t **portalOprOut);
+rcDataPut( rcComm_t *conn, dataOprInp_t *dataPutInp,
+           portalOprOut_t **portalOprOut );
 
 #endif	/* DATA_PUT_H */

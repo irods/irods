@@ -45,35 +45,35 @@ typedef struct RenamedPhyFiles {
 #define RS_BULK_DATA_OBJ_PUT rsBulkDataObjPut
 /* prototype for the server handler */
 int
-rsBulkDataObjPut (rsComm_t *rsComm, bulkOprInp_t *bulkOprInp, 
-                  bytesBuf_t *bulkOprInpBBuf);
+rsBulkDataObjPut( rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
+                  bytesBuf_t *bulkOprInpBBuf );
 int
-_rsBulkDataObjPut (rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
-                   bytesBuf_t *bulkOprInpBBuf);
+_rsBulkDataObjPut( rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
+                   bytesBuf_t *bulkOprInpBBuf );
 int
-createBunDirForBulkPut (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                        rescInfo_t *rescInfo, specColl_t *specColl, char *phyBunDir);
+createBunDirForBulkPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+                        rescInfo_t *rescInfo, specColl_t *specColl, char *phyBunDir );
 int
-initDataObjInpFromBulkOpr (dataObjInp_t *dataObjInp, bulkOprInp_t *bulkOprInp);
+initDataObjInpFromBulkOpr( dataObjInp_t *dataObjInp, bulkOprInp_t *bulkOprInp );
 int
-bulkRegUnbunSubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string& rescHier, 
-                      char *rescGroupName, char *collection, char *phyBunDir, int flags, 
-                      genQueryOut_t *attriArray);
+bulkRegUnbunSubfiles( rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string& rescHier,
+                      char *rescGroupName, char *collection, char *phyBunDir, int flags,
+                      genQueryOut_t *attriArray );
 int
-_bulkRegUnbunSubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string& rescHier,
-                       char *rescGroupName, char *collection, char *phyBunDir, int flags, 
-                       genQueryOut_t *bulkDataObjRegInp, renamedPhyFiles_t *renamedPhyFiles, 
-                       genQueryOut_t *attriArray);
+_bulkRegUnbunSubfiles( rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string& rescHier,
+                       char *rescGroupName, char *collection, char *phyBunDir, int flags,
+                       genQueryOut_t *bulkDataObjRegInp, renamedPhyFiles_t *renamedPhyFiles,
+                       genQueryOut_t *attriArray );
 int
-bulkProcAndRegSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string& rescHier,
+bulkProcAndRegSubfile( rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string& rescHier,
                        char *rescGroupName, char *subObjPath, char *subfilePath, rodsLong_t dataSize,
                        int dataMode, int flags, genQueryOut_t *bulkDataObjRegInp,
-                       renamedPhyFiles_t *renamedPhyFiles, genQueryOut_t *attriArray);
+                       renamedPhyFiles_t *renamedPhyFiles, genQueryOut_t *attriArray );
 int
-bulkRegSubfile (rsComm_t *rsComm, char *rescName, const std::string& rescHier, char *rescGroupName,
+bulkRegSubfile( rsComm_t *rsComm, char *rescName, const std::string& rescHier, char *rescGroupName,
                 char *subObjPath, char *subfilePath, rodsLong_t dataSize, int dataMode,
                 int modFlag, int replNum, char *chksum, genQueryOut_t *bulkDataObjRegInp,
-                renamedPhyFiles_t *renamedPhyFiles);
+                renamedPhyFiles_t *renamedPhyFiles );
 #else
 #define RS_BULK_DATA_OBJ_PUT NULL
 #endif
@@ -82,23 +82,23 @@ bulkRegSubfile (rsComm_t *rsComm, char *rescName, const std::string& rescHier, c
 extern "C" {
 #endif
 
-/* prototype for the client call */
-/* rcBulkDataObjPut - Bulk Put (upload) a number of local files to iRODS.
- * bulkOprInpBBuf contains the bundled local files in tar format.
- * Input -
- *   rcComm_t *conn - The client connection handle.
- *   bulkOprInp_t *bulkOprInp - generic dataObj input. Relevant items are:
- *      objPath - the collection path under which the files are to be untar.
- *      condInput - conditional Input
- *          FORCE_FLAG_KW - overwrite an existing data object
- *          DATA_TYPE_KW - "value" = the data type of the file. 
- *          DEST_RESC_NAME_KW - "value" = The destination Resource. 
- *   return value - The status of the operation.
- */
+    /* prototype for the client call */
+    /* rcBulkDataObjPut - Bulk Put (upload) a number of local files to iRODS.
+     * bulkOprInpBBuf contains the bundled local files in tar format.
+     * Input -
+     *   rcComm_t *conn - The client connection handle.
+     *   bulkOprInp_t *bulkOprInp - generic dataObj input. Relevant items are:
+     *      objPath - the collection path under which the files are to be untar.
+     *      condInput - conditional Input
+     *          FORCE_FLAG_KW - overwrite an existing data object
+     *          DATA_TYPE_KW - "value" = the data type of the file.
+     *          DEST_RESC_NAME_KW - "value" = The destination Resource.
+     *   return value - The status of the operation.
+     */
 
     int
-    rcBulkDataObjPut (rcComm_t *conn, bulkOprInp_t *bulkOprInp,
-                      bytesBuf_t *bulkOprInpBBuf);
+    rcBulkDataObjPut( rcComm_t *conn, bulkOprInp_t *bulkOprInp,
+                      bytesBuf_t *bulkOprInpBBuf );
 #ifdef  __cplusplus
 }
 #endif

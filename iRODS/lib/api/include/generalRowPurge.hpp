@@ -21,10 +21,10 @@
 #include "icatDefines.hpp"
 
 typedef struct {
-   char *tableName;
-   char *secondsAgo;
+    char *tableName;
+    char *secondsAgo;
 } generalRowPurgeInp_t;
-    
+
 #define generalRowPurgeInp_PI "str *tableName; str *secondsAgo;"
 
 #ifdef  __cplusplus
@@ -33,19 +33,19 @@ extern "C" {
 
 #if defined(RODS_SERVER)
 #define RS_GENERAL_ROW_PURGE rsGeneralRowPurge
-/* prototype for the server handler */
-int
-rsGeneralRowPurge (rsComm_t *rsComm, generalRowPurgeInp_t *generalRowPurgeInp );
+    /* prototype for the server handler */
+    int
+    rsGeneralRowPurge( rsComm_t *rsComm, generalRowPurgeInp_t *generalRowPurgeInp );
 
-int
-_rsGeneralRowPurge (rsComm_t *rsComm, generalRowPurgeInp_t *generalRowPurgeInp );
+    int
+    _rsGeneralRowPurge( rsComm_t *rsComm, generalRowPurgeInp_t *generalRowPurgeInp );
 #else
 #define RS_GENERAL_ROW_PURGE NULL
 #endif
 
-/* prototype for the client call */
-int
-rcGeneralRowPurge (rcComm_t *conn, generalRowPurgeInp_t *generalRowPurgeInp);
+    /* prototype for the client call */
+    int
+    rcGeneralRowPurge( rcComm_t *conn, generalRowPurgeInp_t *generalRowPurgeInp );
 
 #ifdef  __cplusplus
 }

@@ -1,6 +1,6 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
-/* subStructFileRead.h  
+/* subStructFileRead.h
  */
 
 #ifndef SUB_STRUCT_FILE_READ_HPP
@@ -27,21 +27,21 @@ typedef struct SubStructFileFdOpr {
 #define RS_SUB_STRUCT_FILE_READ rsSubStructFileRead
 /* prototype for the server handler */
 int
-rsSubStructFileRead (rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFileReadInp,
-bytesBuf_t *subStructFileReadOutBBuf);
+rsSubStructFileRead( rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFileReadInp,
+                     bytesBuf_t *subStructFileReadOutBBuf );
 int
-_rsSubStructFileRead (rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFileReadInp,
-bytesBuf_t *subStructFileReadOutBBuf);
+_rsSubStructFileRead( rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFileReadInp,
+                      bytesBuf_t *subStructFileReadOutBBuf );
 int
-remoteSubStructFileRead (rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFileReadInp,
-bytesBuf_t *subStructFileReadOutBBuf, rodsServerHost_t *rodsServerHost);
+remoteSubStructFileRead( rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFileReadInp,
+                         bytesBuf_t *subStructFileReadOutBBuf, rodsServerHost_t *rodsServerHost );
 #else
 #define RS_SUB_STRUCT_FILE_READ NULL
 #endif
 
 /* prototype for the client call */
 int
-rcSubStructFileRead (rcComm_t *conn, subStructFileFdOprInp_t *subStructFileReadInp,
-bytesBuf_t *subStructFileReadOutBBuf);
+rcSubStructFileRead( rcComm_t *conn, subStructFileFdOprInp_t *subStructFileReadInp,
+                     bytesBuf_t *subStructFileReadOutBBuf );
 
 #endif	/* SUB_STRUCT_FILE_READ_H */

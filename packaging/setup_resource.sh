@@ -23,7 +23,7 @@ fi
 
 echo "==================================================================="
 echo ""
-echo "You are installing an E-iRODS resource server.  Resource servers"
+echo "You are installing an iRODS resource server.  Resource servers"
 echo "cannot be started until they have been properly configured to"
 echo "communicate with a live iCAT server."
 echo ""
@@ -141,16 +141,16 @@ mv $IRODS_CONFIG_TEMPFILE $IRODS_CONFIG_FILE
 sed -e "/^\$RESOURCE_NAME/s/^.*$/\$RESOURCE_NAME = '$LOCAL_RESOURCE_NAME';/" $IRODS_CONFIG_FILE > $IRODS_CONFIG_TEMPFILE
 mv $IRODS_CONFIG_TEMPFILE $IRODS_CONFIG_FILE
 # set a default initial resource directory name (vault path)
-sed -e "/^\$RESOURCE_DIR/s/^.*$/\$RESOURCE_DIR = '\/var\/lib\/eirods\/iRODS\/$LOCAL_VAULT_NAME';/" $IRODS_CONFIG_FILE > $IRODS_CONFIG_TEMPFILE
+sed -e "/^\$RESOURCE_DIR/s/^.*$/\$RESOURCE_DIR = '\/var\/lib\/irods\/iRODS\/$LOCAL_VAULT_NAME';/" $IRODS_CONFIG_FILE > $IRODS_CONFIG_TEMPFILE
 mv $IRODS_CONFIG_TEMPFILE $IRODS_CONFIG_FILE
 
-echo "Running eirods_setup.pl..."
+echo "Running irods_setup.pl..."
 cd iRODS
 if [ $# -eq 1 ] ; then
     # for devtest in the cloud
-    perl ./scripts/perl/eirods_setup.pl $1
+    perl ./scripts/perl/irods_setup.pl $1
 else
     # manual
-    perl ./scripts/perl/eirods_setup.pl
+    perl ./scripts/perl/irods_setup.pl
 fi
 

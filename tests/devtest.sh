@@ -38,17 +38,17 @@ OPTS=" -v -b -f "
 
 # check for continuous integration parameter
 if [ "$1" == "ci" ] ; then
-    EIRODSDEVTESTCI="true"
+    IRODSDEVTESTCI="true"
 fi
 
 # if running as a human
-if [ "$EIRODSDEVTESTCI" != "true" ] ; then
+if [ "$IRODSDEVTESTCI" != "true" ] ; then
     # human user, allows keyboard interrupt to clean up
     OPTS="$OPTS -c "
 fi
 
 # pass any other parameters to the test framework
-if [ "$EIRODSDEVTESTCI" == "true" ] ; then
+if [ "$IRODSDEVTESTCI" == "true" ] ; then
     # trim the ci parameter
     shift
     PYTESTS=$@
@@ -60,8 +60,8 @@ fi
 # run tests
 #########################
 
-# detect E-iRODS root directory
-EIRODSROOT=$( dirname $( cd $(dirname $0) ; pwd -P ) )
+# detect iRODS root directory
+IRODSROOT=$( dirname $( cd $(dirname $0) ; pwd -P ) )
 
 # exit early if a command fails
 set -e
@@ -70,14 +70,14 @@ set -e
 set -x
 
 # restart the server, to exercise that code
-cd $EIRODSROOT
-$EIRODSROOT/iRODS/irodsctl stop
-$EIRODSROOT/tests/zombiereaper.sh
-$EIRODSROOT/iRODS/irodsctl start
+cd $IRODSROOT
+$IRODSROOT/iRODS/irodsctl stop
+$IRODSROOT/tests/zombiereaper.sh
+$IRODSROOT/iRODS/irodsctl start
 
 # run RENCI developed python-based devtest suite (or just specified tests)
 # ( equivalent of original icommands and irules )
-cd $EIRODSROOT/tests/pydevtest
+cd $IRODSROOT/tests/pydevtest
 if [ "$PYTHONVERSION" \< "2.7" ] ; then
     cp -r ../$UNITTEST2VERSION/unittest2 .
     cp ../$UNITTEST2VERSION/unit2 .
@@ -86,19 +86,19 @@ fi
 if [ "$PYTESTS" != "" ] ; then
     $PYTHONCMD $OPTS $PYTESTS
 else
-    $PYTHONCMD $OPTS test_eirods_resource_types iadmin_suite catalog_suite
+    $PYTHONCMD $OPTS test_irods_resource_types iadmin_suite catalog_suite
     nosetests -v test_allrules.py
     # run DICE developed perl-based devtest suite
-    cd $EIRODSROOT
-    $EIRODSROOT/iRODS/irodsctl devtesty
+    cd $IRODSROOT
+    $IRODSROOT/iRODS/irodsctl devtesty
 fi
 
 # run authentication tests
-cd $EIRODSROOT/tests/pydevtest
+cd $IRODSROOT/tests/pydevtest
 $PYTHONCMD $OPTS auth_suite.Test_Auth_Suite
 
 # run OSAuth test by itself
-if [ "$EIRODSDEVTESTCI" == "true" ] ; then
+if [ "$IRODSDEVTESTCI" == "true" ] ; then
     set +e
     passwd <<EOF
 temporarypasswordforci
@@ -119,16 +119,16 @@ EOF
         exit $PASSWDRESULT
     fi
     set -e
-    cd $EIRODSROOT/tests/pydevtest
+    cd $IRODSROOT/tests/pydevtest
     $PYTHONCMD $OPTS auth_suite.Test_OSAuth_Only
     ################################################
     # note:
     #   this test is run last to minimize the
     #   window of the following...
     # side effect:
-    #   unix eirods user now has a set password
+    #   unix irods user now has a set password
     # to remove, run:
-    #   sudo passwd -d eirods
+    #   sudo passwd -d irods
     ################################################
 fi
 

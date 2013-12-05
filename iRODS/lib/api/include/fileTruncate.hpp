@@ -21,18 +21,18 @@
 #define RS_FILE_TRUNCATE rsFileTruncate
 /* prototype for the server handler */
 int
-rsFileTruncate (rsComm_t *rsComm, fileOpenInp_t *fileTruncateInp);
+rsFileTruncate( rsComm_t *rsComm, fileOpenInp_t *fileTruncateInp );
 int
-_rsFileTruncate (rsComm_t *rsComm, fileOpenInp_t *fileTruncateInp);
+_rsFileTruncate( rsComm_t *rsComm, fileOpenInp_t *fileTruncateInp );
 int
-remoteFileTruncate (rsComm_t *rsComm, fileOpenInp_t *fileTruncateInp,
-rodsServerHost_t *rodsServerHost);
+remoteFileTruncate( rsComm_t *rsComm, fileOpenInp_t *fileTruncateInp,
+                    rodsServerHost_t *rodsServerHost );
 #else
 #define RS_FILE_TRUNCATE NULL
 #endif
 
 /* prototype for the client call */
 int
-rcFileTruncate (rcComm_t *conn, fileOpenInp_t *fileTruncateInp);
+rcFileTruncate( rcComm_t *conn, fileOpenInp_t *fileTruncateInp );
 
 #endif	/* FILE_TRUNCATE_H */

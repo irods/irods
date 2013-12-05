@@ -1,6 +1,6 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
-/* subStructFileCreate.h  
+/* subStructFileCreate.h
  */
 
 #ifndef SUB_STRUCT_FILE_CREATE_HPP
@@ -18,18 +18,18 @@
 #define RS_SUB_STRUCT_FILE_CREATE rsSubStructFileCreate
 /* prototype for the server handler */
 int
-rsSubStructFileCreate (rsComm_t *rsComm, subFile_t *subFile);
+rsSubStructFileCreate( rsComm_t *rsComm, subFile_t *subFile );
 int
-_rsSubStructFileCreate (rsComm_t *rsComm, subFile_t *subFile);
+_rsSubStructFileCreate( rsComm_t *rsComm, subFile_t *subFile );
 int
-remoteSubStructFileCreate (rsComm_t *rsComm, subFile_t *subFile,
-rodsServerHost_t *rodsServerHost);
+remoteSubStructFileCreate( rsComm_t *rsComm, subFile_t *subFile,
+                           rodsServerHost_t *rodsServerHost );
 #else
 #define RS_SUB_STRUCT_FILE_CREATE NULL
 #endif
 
 /* prototype for the client call */
 int
-rcSubStructFileCreate (rcComm_t *conn, subFile_t *subFile);
+rcSubStructFileCreate( rcComm_t *conn, subFile_t *subFile );
 
 #endif	/* SUB_STRUCT_FILE_CREATE_H */

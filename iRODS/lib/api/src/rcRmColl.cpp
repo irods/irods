@@ -3,27 +3,26 @@
  *
  */
 
-/* This is script-generated code.  */ 
+/* This is script-generated code.  */
 /* See rmColl.h for a description of this API call.*/
 
 #include "rmColl.hpp"
 
 int
-_rcRmColl (rcComm_t *conn, collInp_t *rmCollInp, 
-collOprStat_t **collOprStat)
-{
+_rcRmColl( rcComm_t *conn, collInp_t *rmCollInp,
+           collOprStat_t **collOprStat ) {
     int status;
-    status = procApiRequest (conn, RM_COLL_AN, rmCollInp, NULL, 
-        (void **) collOprStat, NULL);
+    status = procApiRequest( conn, RM_COLL_AN, rmCollInp, NULL,
+                             ( void ** ) collOprStat, NULL );
 
-    return (status);
+    return ( status );
 }
 
 /**
  * \fn rcRmColl (rcComm_t *conn, collInp_t *rmCollInp, int vFlag)
  *
  * \brief Delete a collection if the "forceFlag" is set. Otherwise,
- *      the collection is moved to trash. As an option, the collection can be deleted 
+ *      the collection is moved to trash. As an option, the collection can be deleted
  *      recursively meaning the collection and its contents are deleted.
  *
  * \user client
@@ -56,15 +55,15 @@ collOprStat_t **collOprStat)
  * \param[in] rmCollInp - Elements of collInp_t used :
  *    \li char \b collName[MAX_NAME_LEN] - full path of the collection.
  *    \li keyValPair_t \b condInput - keyword/value pair input. Valid keywords:
- *    \n RECURSIVE_OPR__KW - Recursively delete the collection and its content. 
+ *    \n RECURSIVE_OPR__KW - Recursively delete the collection and its content.
  *         This keyWd has no value.
  *    \n FORCE_FLAG_KW - delete the collection. If it is not set, the collection
  *         is moved to trash. This keyWd has no value.
- *    \n UNREG_COLL_KW - The collections and data objects in this collection is 
+ *    \n UNREG_COLL_KW - The collections and data objects in this collection is
  *         unregistered instead of deleted. i.e., physical files and directories
  *         in this collection are not deleted. This keyWd has no value.
- *    \n IRODS_RMTRASH_KW - delete the trash in this path.  This keyWd has no value.
- *    \n IRODS_ADMIN_RMTRASH_KW - ddmin user delete other user's trash in this path.
+ *    \n RMTRASH_KW - delete the trash in this path.  This keyWd has no value.
+ *    \n ADMIN_RMTRASH_KW - ddmin user delete other user's trash in this path.
  *         This keyWd has no value.
  * \param[in] vFlag - Verbose flag. Verbose output if set to greater than 0.
  *
@@ -78,15 +77,14 @@ collOprStat_t **collOprStat)
 **/
 
 int
-rcRmColl (rcComm_t *conn, collInp_t *rmCollInp, int vFlag)
-{
+rcRmColl( rcComm_t *conn, collInp_t *rmCollInp, int vFlag ) {
     int status, retval;
     collOprStat_t *collOprStat = NULL;
 
-    retval = _rcRmColl (conn, rmCollInp, &collOprStat);
+    retval = _rcRmColl( conn, rmCollInp, &collOprStat );
 
-    status = cliGetCollOprStat (conn, collOprStat, vFlag, retval);
+    status = cliGetCollOprStat( conn, collOprStat, vFlag, retval );
 
-    return (status);
+    return ( status );
 }
 

@@ -7,9 +7,9 @@
 
 #include "datetime.hpp"
 
-int getModifiedTime(char *fn, time_type *timestamp);
-char *getRuleBasePath(char *ruleBaseName, char rulesFileName[MAX_NAME_LEN]);
-void getResourceName(char buf[1024], char *rname);
+int getModifiedTime( char *fn, time_type *timestamp );
+char *getRuleBasePath( char *ruleBaseName, char rulesFileName[MAX_NAME_LEN] );
+void getResourceName( char buf[1024], char *rname );
 
 
 #endif /* FILESYSTEM_H_ */

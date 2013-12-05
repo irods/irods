@@ -14,20 +14,20 @@
 extern "C" {
 #endif
 
-int
-cpUtil (rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
-rodsPathInp_t *rodsPathInp);
-int
-cpFileUtil (rcComm_t *conn, char *srcPath, char *targPath, rodsLong_t srcSize,
-rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, 
-dataObjCopyInp_t *dataObjCopyInp);
-int
-initCondForCp (rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
-dataObjCopyInp_t *dataObjCopyInp, rodsRestart_t *rodsRestart);
-int
-cpCollUtil (rcComm_t *conn, char *srcColl, char *targColl,
-rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, 
-dataObjCopyInp_t *dataObjCopyInp, rodsRestart_t *rodsRestart);
+    int
+    cpUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
+            rodsPathInp_t *rodsPathInp );
+    int
+    cpFileUtil( rcComm_t *conn, char *srcPath, char *targPath, rodsLong_t srcSize,
+                rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
+                dataObjCopyInp_t *dataObjCopyInp );
+    int
+    initCondForCp( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
+                   dataObjCopyInp_t *dataObjCopyInp, rodsRestart_t *rodsRestart );
+    int
+    cpCollUtil( rcComm_t *conn, char *srcColl, char *targColl,
+                rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
+                dataObjCopyInp_t *dataObjCopyInp, rodsRestart_t *rodsRestart );
 
 #ifdef  __cplusplus
 }

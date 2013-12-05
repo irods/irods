@@ -7,45 +7,43 @@
 #include "icatHighLevelRoutines.hpp"
 
 int
-rsRuleExecMod (rsComm_t *rsComm, ruleExecModInp_t *ruleExecModInp )
-{
+rsRuleExecMod( rsComm_t *rsComm, ruleExecModInp_t *ruleExecModInp ) {
     rodsServerHost_t *rodsServerHost;
     int status;
 
-    status = getAndConnRcatHost(rsComm, MASTER_RCAT, NULL, &rodsServerHost);
-    if (status < 0) {
-       return(status);
+    status = getAndConnRcatHost( rsComm, MASTER_RCAT, NULL, &rodsServerHost );
+    if ( status < 0 ) {
+        return( status );
     }
 
-    if (rodsServerHost->localFlag == LOCAL_HOST) {
+    if ( rodsServerHost->localFlag == LOCAL_HOST ) {
 #ifdef RODS_CAT
-       status = _rsRuleExecMod (rsComm, ruleExecModInp);
+        status = _rsRuleExecMod( rsComm, ruleExecModInp );
 #else
-       status = SYS_NO_RCAT_SERVER_ERR;
+        status = SYS_NO_RCAT_SERVER_ERR;
 #endif
     }
     else {
-       status = rcRuleExecMod(rodsServerHost->conn,
-			       ruleExecModInp);
+        status = rcRuleExecMod( rodsServerHost->conn,
+                                ruleExecModInp );
     }
 
-    if (status < 0) { 
-       rodsLog (LOG_NOTICE,
-		"rsRuleExecMod: rcRuleExecMod failed");
+    if ( status < 0 ) {
+        rodsLog( LOG_NOTICE,
+                 "rsRuleExecMod: rcRuleExecMod failed" );
     }
-    return (status);
+    return ( status );
 }
 
 #ifdef RODS_CAT
 int
-_rsRuleExecMod (rsComm_t *rsComm, 
-		     ruleExecModInp_t *ruleExecModInp )
-{
+_rsRuleExecMod( rsComm_t *rsComm,
+                ruleExecModInp_t *ruleExecModInp ) {
     int status;
 
-    status = chlModRuleExec(rsComm, 
-			    ruleExecModInp->ruleId,
-			    &ruleExecModInp->condInput );
-    return(status);
-} 
+    status = chlModRuleExec( rsComm,
+                             ruleExecModInp->ruleId,
+                             &ruleExecModInp->condInput );
+    return( status );
+}
 #endif

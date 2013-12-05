@@ -18,11 +18,11 @@
 
 typedef struct {
     int ncid;
-    int flags;         
+    int flags;
     char name[MAX_NAME_LEN];  /* for NC_ALL_FLAG == 0, the name */
     keyValPair_t condInput;
 } ncInqGrpsInp_t;
-   
+
 #define NcInqGrpsInp_PI "int ncid; int flags; str name[MAX_NAME_LEN]; struct KeyValPair_PI;"
 
 typedef struct {
@@ -37,10 +37,10 @@ typedef struct {
 #define RS_NC_INQ_GRPS rsNcInqGrps
 /* prototype for the server handler */
 int
-rsNcInqGrps (rsComm_t *rsComm, ncInqGrpsInp_t *ncInqGrpsInp, 
-ncInqGrpsOut_t **ncInqGrpsOut);
+rsNcInqGrps( rsComm_t *rsComm, ncInqGrpsInp_t *ncInqGrpsInp,
+             ncInqGrpsOut_t **ncInqGrpsOut );
 int
-_rsNcInqGrps (int ncid, ncInqGrpsOut_t **ncInqGrpsOut);
+_rsNcInqGrps( int ncid, ncInqGrpsOut_t **ncInqGrpsOut );
 #else
 #define RS_NC_INQ_GRPS NULL
 #endif
@@ -49,21 +49,21 @@ _rsNcInqGrps (int ncid, ncInqGrpsOut_t **ncInqGrpsOut);
 extern "C" {
 #endif
 
-/* rcNcInqGrps - Given a location id or the root id and the absolute group
- * path, return the number of groups it contains, and an array of their ncids.
+    /* rcNcInqGrps - Given a location id or the root id and the absolute group
+     * path, return the number of groups it contains, and an array of their ncids.
 
- * Input - 
- *   rcComm_t *conn - The client connection handle.
- *   ncInqGrpInp_t struct:
- *     ncid - the the ncid.   
- * OutPut - ncInqGrpOut_t.
- */
-/* prototype for the client call */
-int
-rcNcInqGrps (rcComm_t *conn, ncInqGrpsInp_t *ncInqGrpsInp, 
-ncInqGrpsOut_t **ncInqGrpsOut);
-int
-freeNcInqGrpsOut (ncInqGrpsOut_t **ncInqGrpsOut);
+     * Input -
+     *   rcComm_t *conn - The client connection handle.
+     *   ncInqGrpInp_t struct:
+     *     ncid - the the ncid.
+     * OutPut - ncInqGrpOut_t.
+     */
+    /* prototype for the client call */
+    int
+    rcNcInqGrps( rcComm_t *conn, ncInqGrpsInp_t *ncInqGrpsInp,
+                 ncInqGrpsOut_t **ncInqGrpsOut );
+    int
+    freeNcInqGrpsOut( ncInqGrpsOut_t **ncInqGrpsOut );
 #ifdef  __cplusplus
 }
 #endif

@@ -5,7 +5,7 @@
 
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code.  */ 
+/* This is script-generated code.  */
 /* See dataObjCreate.h for a description of this API call.*/
 
 #include "dataObjCreate.hpp"
@@ -45,7 +45,7 @@
  * \param[in] dataObjInp - Elements of dataObjInp_t used :
  *    \li char \b objPath[MAX_NAME_LEN] - full path of the data object.
  *    \li int \b createMode - the file mode of the data object.
- *    \li rodsLong_t \b dataSize - the size of the data object. 
+ *    \li rodsLong_t \b dataSize - the size of the data object.
  *	Input 0 if not known.
  *    \li keyValPair_t \b condInput - keyword/value pair input. Valid keywords:
  *    \n DATA_TYPE_KW - the data type of the data object.
@@ -65,12 +65,11 @@
 **/
 
 int
-rcDataObjCreate (rcComm_t *conn, dataObjInp_t *dataObjInp)
-{
+rcDataObjCreate( rcComm_t *conn, dataObjInp_t *dataObjInp ) {
     int status;
-    status = procApiRequest (conn, DATA_OBJ_CREATE_AN,  dataObjInp, NULL, 
-        (void **) NULL, NULL);
+    status = procApiRequest( conn, DATA_OBJ_CREATE_AN,  dataObjInp, NULL,
+                             ( void ** ) NULL, NULL );
 
-    return (status);
+    return ( status );
 }
 

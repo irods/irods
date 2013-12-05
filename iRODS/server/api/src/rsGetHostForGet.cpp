@@ -21,12 +21,11 @@
 #include "dataObjOpr.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_resource_backport.hpp"
-#include "eirods_resource_redirect.hpp"
+#include "irods_resource_backport.hpp"
+#include "irods_resource_redirect.hpp"
 
 int rsGetHostForGet(
-    rsComm_t*     rsComm, 
+    rsComm_t*     rsComm,
     dataObjInp_t* dataObjInp,
     char**        outHost ) {
     // =-=-=-=-=-=-=-
@@ -37,17 +36,17 @@ int rsGetHostForGet(
     // working on the "home zone", determine if we need to redirect to a different
     // server in this zone for this operation.  if there is a RESC_HIER_STR_KW then
     // we know that the redirection decision has already been made
-    if( isColl( rsComm, dataObjInp->objPath, NULL ) < 0 ) {
+    if ( isColl( rsComm, dataObjInp->objPath, NULL ) < 0 ) {
         std::string       hier;
-        if( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
-            eirods::error ret = eirods::resolve_resource_hierarchy( eirods::EIRODS_OPEN_OPERATION, rsComm, 
-                                                           dataObjInp, hier );
-            if( !ret.ok() ) { 
+        if ( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
+            irods::error ret = irods::resolve_resource_hierarchy( irods::OPEN_OPERATION, rsComm,
+                               dataObjInp, hier );
+            if ( !ret.ok() ) {
                 std::stringstream msg;
                 msg << __FUNCTION__;
-                msg << " :: failed in eirods::resolve_resource_hierarchy for [";
+                msg << " :: failed in irods::resolve_resource_hierarchy for [";
                 msg << dataObjInp->objPath << "]";
-                eirods::log( PASSMSG( msg.str(), ret ) );
+                irods::log( PASSMSG( msg.str(), ret ) );
                 return ret.code();
             }
             // =-=-=-=-=-=-=-
@@ -60,9 +59,9 @@ int rsGetHostForGet(
         // =-=-=-=-=-=-=-
         // extract the host location from the resource hierarchy
         std::string location;
-        eirods::error ret = eirods::get_loc_for_hier_string( hier, location );
-        if( !ret.ok() ) {
-            eirods::log( PASSMSG( "rsGetHostForGet - failed in get_loc_for_hier_String", ret ) );
+        irods::error ret = irods::get_loc_for_hier_string( hier, location );
+        if ( !ret.ok() ) {
+            irods::log( PASSMSG( "rsGetHostForGet - failed in get_loc_for_hier_String", ret ) );
             return -1;
         }
 
@@ -71,7 +70,7 @@ int rsGetHostForGet(
         *outHost = strdup( location.c_str() );
 
     } // if not a collection
-       
+
     return 0;
 
 #if 0
@@ -86,46 +85,48 @@ int rsGetHostForGet(
 
     *outHost = NULL;
 #if 0 // JMC - backport 4746
-    if (isLocalZone (dataObjInp->objPath) == 0) {
-	/* it is a remote zone. better connect to this host */
-	*outHost = strdup (THIS_ADDRESS);
-	return 0;
+    if ( isLocalZone( dataObjInp->objPath ) == 0 ) {
+        /* it is a remote zone. better connect to this host */
+        *outHost = strdup( THIS_ADDRESS );
+        return 0;
     }
 #endif // JMC - backport 4746
 
-    resolveLinkedPath (rsComm, dataObjInp->objPath, &specCollCache, NULL);
-    if (isLocalZone (dataObjInp->objPath) == 0) {
+    resolveLinkedPath( rsComm, dataObjInp->objPath, &specCollCache, NULL );
+    if ( isLocalZone( dataObjInp->objPath ) == 0 ) {
 #if 0 // JMC - backport 4746
-		/* it is a remote zone. better connect to this host */
-		*outHost = strdup (THIS_ADDRESS);
-		return 0;
+        /* it is a remote zone. better connect to this host */
+        *outHost = strdup( THIS_ADDRESS );
+        return 0;
 #else // JMC - backport 4746
-        resolveLinkedPath (rsComm, dataObjInp->objPath, &specCollCache,
-          &dataObjInp->condInput);
-        remoteFlag = getAndConnRcatHost (rsComm, SLAVE_RCAT, 
-         dataObjInp->objPath, &rodsServerHost);
-        if (remoteFlag < 0) {
-            return (remoteFlag);
-        } else if (remoteFlag == LOCAL_HOST) {
-           *outHost = strdup (THIS_ADDRESS);
+        resolveLinkedPath( rsComm, dataObjInp->objPath, &specCollCache,
+                           &dataObjInp->condInput );
+        remoteFlag = getAndConnRcatHost( rsComm, SLAVE_RCAT,
+                                         dataObjInp->objPath, &rodsServerHost );
+        if ( remoteFlag < 0 ) {
+            return ( remoteFlag );
+        }
+        else if ( remoteFlag == LOCAL_HOST ) {
+            *outHost = strdup( THIS_ADDRESS );
             return 0;
-       } else {
-            status = rcGetHostForGet (rodsServerHost->conn, dataObjInp, 
-             outHost);
-           if (status >= 0 && *outHost != NULL && 
-             strcmp (*outHost, THIS_ADDRESS) == 0) {
-               free (*outHost);
-               *outHost = strdup (rodsServerHost->hostName->name);
-           }
-            return (status);
-       }
+        }
+        else {
+            status = rcGetHostForGet( rodsServerHost->conn, dataObjInp,
+                                      outHost );
+            if ( status >= 0 && *outHost != NULL &&
+                    strcmp( *outHost, THIS_ADDRESS ) == 0 ) {
+                free( *outHost );
+                *outHost = strdup( rodsServerHost->hostName->name );
+            }
+            return ( status );
+        }
 #endif     // JMC - backport 4746
-	}
+    }
 
-    eirods::resource_ptr resc;
-    status = getSpecCollCache (rsComm, dataObjInp->objPath, 0, &specCollCache);
-    if (status >= 0 && NULL != specCollCache ) { // JMC cppcheck - nullptr
-	    if (specCollCache->specColl.collClass == MOUNTED_COLL) {
+    irods::resource_ptr resc;
+    status = getSpecCollCache( rsComm, dataObjInp->objPath, 0, &specCollCache );
+    if ( status >= 0 && NULL != specCollCache ) { // JMC cppcheck - nullptr
+        if ( specCollCache->specColl.collClass == MOUNTED_COLL ) {
             //status = resolveResc (specCollCache->specColl.resource, &myRescInfo);
             /*if (status < 0) {
                 rodsLog (LOG_ERROR,
@@ -133,64 +134,67 @@ int rsGetHostForGet(
                  specCollCache->specColl.resource, status);
                 return status;
             }*/
-            eirods::error err = eirods::get_resc_info( specCollCache->specColl.resource, *myRescInfo );
-            if( !err.ok() ) {
+            irods::error err = irods::get_resc_info( specCollCache->specColl.resource, *myRescInfo );
+            if ( !err.ok() ) {
                 std::stringstream msg;
                 msg << "rsGetHostForGet - failed to get resc info for [";
                 msg << specCollCache->specColl.resource;
                 msg << "]";
-                eirods::log( PASS( false, -1, msg.str(), err ) );
+                irods::log( PASS( false, -1, msg.str(), err ) );
             }
 
             /* mounted coll will fall through with myRescInfo */
-        } else {
-            *outHost = strdup (THIS_ADDRESS);
+        }
+        else {
+            *outHost = strdup( THIS_ADDRESS );
             return 0;
         }
-    } else if( ( myResc = getValByKey( &dataObjInp->condInput, RESC_NAME_KW ) )  != NULL && 
-                eirods::get_resc_info( myResc, *myRescInfo ).ok() ) {
-	    /* user specified a resource. myRescInfo set and fall through */
-    } else {
-	    /* normal type */
-        status = getBestRescForGet (rsComm, dataObjInp, &myRescInfo);
-        if (myRescInfo == NULL) {
-            *outHost = strdup (THIS_ADDRESS);
-                return status;
+    }
+    else if ( ( myResc = getValByKey( &dataObjInp->condInput, RESC_NAME_KW ) )  != NULL &&
+              irods::get_resc_info( myResc, *myRescInfo ).ok() ) {
+        /* user specified a resource. myRescInfo set and fall through */
+    }
+    else {
+        /* normal type */
+        status = getBestRescForGet( rsComm, dataObjInp, &myRescInfo );
+        if ( myRescInfo == NULL ) {
+            *outHost = strdup( THIS_ADDRESS );
+            return status;
         }
     }
 
     /* get down here when we got a valid myRescInfo */
 #if 0 // JMC - legacy resource
-    if (getRescClass (myRescInfo) == COMPOUND_CL) {
-        *outHost = strdup (THIS_ADDRESS);
+    if ( getRescClass( myRescInfo ) == COMPOUND_CL ) {
+        *outHost = strdup( THIS_ADDRESS );
         return 0;
     }
 #endif // JMC - legacy resource
 
-    bzero (&addr, sizeof (addr));
+    bzero( &addr, sizeof( addr ) );
     //rstrcpy (addr.hostAddr, myRescInfo->rescLoc, NAME_LEN);
-    status = resolveHost (&addr, &rodsServerHost);
-    if (status < 0) return status;
-    if (rodsServerHost->localFlag == LOCAL_HOST) {
-        *outHost = strdup (THIS_ADDRESS);
+    status = resolveHost( &addr, &rodsServerHost );
+    if ( status < 0 ) { return status; }
+    if ( rodsServerHost->localFlag == LOCAL_HOST ) {
+        *outHost = strdup( THIS_ADDRESS );
         return 0;
     }
 
-    myHost = getSvrAddr (rodsServerHost);
-    if (myHost != NULL) {
-	*outHost = strdup (myHost);
+    myHost = getSvrAddr( rodsServerHost );
+    if ( myHost != NULL ) {
+        *outHost = strdup( myHost );
         return 0;
-    } else {
+    }
+    else {
         *outHost = NULL;
-	return SYS_INVALID_SERVER_HOST;
+        return SYS_INVALID_SERVER_HOST;
     }
 #endif
 }
 
-int 
-getBestRescForGet (rsComm_t *rsComm, dataObjInp_t *dataObjInp,  
-rescInfo_t **outRescInfo)
-{
+int
+getBestRescForGet( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+                   rescInfo_t **outRescInfo ) {
     collInp_t collInp;
     hostSearchStat_t hostSearchStat;
     int status, i;
@@ -198,111 +202,111 @@ rescInfo_t **outRescInfo)
 
     *outRescInfo = NULL;
 
-    if (dataObjInp == NULL || outRescInfo == NULL) return USER__NULL_INPUT_ERR;
-    bzero (&hostSearchStat, sizeof (hostSearchStat));
-    bzero (&collInp, sizeof (collInp));
-    rstrcpy (collInp.collName, dataObjInp->objPath, MAX_NAME_LEN);
+    if ( dataObjInp == NULL || outRescInfo == NULL ) { return USER__NULL_INPUT_ERR; }
+    bzero( &hostSearchStat, sizeof( hostSearchStat ) );
+    bzero( &collInp, sizeof( collInp ) );
+    rstrcpy( collInp.collName, dataObjInp->objPath, MAX_NAME_LEN );
     /* assume it is a collection */
-    status = getRescForGetInColl (rsComm, &collInp, &hostSearchStat);
-    if (status < 0) {
-	/* try dataObj */
-	status = getRescForGetInDataObj (rsComm, dataObjInp, &hostSearchStat);
+    status = getRescForGetInColl( rsComm, &collInp, &hostSearchStat );
+    if ( status < 0 ) {
+        /* try dataObj */
+        status = getRescForGetInDataObj( rsComm, dataObjInp, &hostSearchStat );
     }
 
-    for (i = 0; i < hostSearchStat.numHost; i++) {
-	if (maxInx < 0 ||
-	   hostSearchStat.count[i] > hostSearchStat.count[maxInx]) {
-	    maxInx = i;
-	}
+    for ( i = 0; i < hostSearchStat.numHost; i++ ) {
+        if ( maxInx < 0 ||
+                hostSearchStat.count[i] > hostSearchStat.count[maxInx] ) {
+            maxInx = i;
+        }
     }
-    if (maxInx >= 0) *outRescInfo = hostSearchStat.rescInfo[maxInx];
+    if ( maxInx >= 0 ) { *outRescInfo = hostSearchStat.rescInfo[maxInx]; }
 
     return status;
 }
 
 int
-getRescForGetInColl (rsComm_t *rsComm, collInp_t *collInp,
-hostSearchStat_t *hostSearchStat)
-{
+getRescForGetInColl( rsComm_t *rsComm, collInp_t *collInp,
+                     hostSearchStat_t *hostSearchStat ) {
     collEnt_t *collEnt;
     int handleInx;
     int status;
 
-    if (collInp == NULL || hostSearchStat == NULL) return USER__NULL_INPUT_ERR;
+    if ( collInp == NULL || hostSearchStat == NULL ) { return USER__NULL_INPUT_ERR; }
 
-    handleInx = rsOpenCollection (rsComm, collInp);
-    if (handleInx < 0) return handleInx;
+    handleInx = rsOpenCollection( rsComm, collInp );
+    if ( handleInx < 0 ) { return handleInx; }
 
-    while ((status = rsReadCollection (rsComm, &handleInx, &collEnt)) >= 0) {
-        if (collEnt->objType == DATA_OBJ_T) {
-	    dataObjInp_t dataObjInp;
-	    bzero (&dataObjInp, sizeof (dataObjInp));
-	    snprintf (dataObjInp.objPath, MAX_NAME_LEN, "%s/%s", 
-	      collEnt->collName, collEnt->dataName);
-	    status = getRescForGetInDataObj (rsComm, &dataObjInp, 
-	      hostSearchStat);
-	    if (status < 0) {
-                rodsLog (LOG_NOTICE,
-                 "getRescForGetInColl: getRescForGetInDataObj %s err, stat=%d",
-                 dataObjInp.objPath, status);
-	    }
-	} else if (collEnt->objType == COLL_OBJ_T) {
-	    collInp_t myCollInp;
-	    bzero (&myCollInp, sizeof (myCollInp));
-            rstrcpy (myCollInp.collName, collEnt->collName, MAX_NAME_LEN);
-	    status = getRescForGetInColl (rsComm, &myCollInp, hostSearchStat);
-            if (status < 0) {
-                rodsLog (LOG_NOTICE,
-                 "getRescForGetInColl: getRescForGetInColl %s err, stat=%d",
-                 collEnt->collName, status);
+    while ( ( status = rsReadCollection( rsComm, &handleInx, &collEnt ) ) >= 0 ) {
+        if ( collEnt->objType == DATA_OBJ_T ) {
+            dataObjInp_t dataObjInp;
+            bzero( &dataObjInp, sizeof( dataObjInp ) );
+            snprintf( dataObjInp.objPath, MAX_NAME_LEN, "%s/%s",
+                      collEnt->collName, collEnt->dataName );
+            status = getRescForGetInDataObj( rsComm, &dataObjInp,
+                                             hostSearchStat );
+            if ( status < 0 ) {
+                rodsLog( LOG_NOTICE,
+                         "getRescForGetInColl: getRescForGetInDataObj %s err, stat=%d",
+                         dataObjInp.objPath, status );
             }
-	}
-	free (collEnt);     /* just free collEnt but not content */
-	if (hostSearchStat->totalCount >= MAX_HOST_TO_SEARCH) {
-	    /* done */
-	    rsCloseCollection (rsComm, &handleInx);
+        }
+        else if ( collEnt->objType == COLL_OBJ_T ) {
+            collInp_t myCollInp;
+            bzero( &myCollInp, sizeof( myCollInp ) );
+            rstrcpy( myCollInp.collName, collEnt->collName, MAX_NAME_LEN );
+            status = getRescForGetInColl( rsComm, &myCollInp, hostSearchStat );
+            if ( status < 0 ) {
+                rodsLog( LOG_NOTICE,
+                         "getRescForGetInColl: getRescForGetInColl %s err, stat=%d",
+                         collEnt->collName, status );
+            }
+        }
+        free( collEnt );    /* just free collEnt but not content */
+        if ( hostSearchStat->totalCount >= MAX_HOST_TO_SEARCH ) {
+            /* done */
+            rsCloseCollection( rsComm, &handleInx );
             return 0;
         }
     }
-    rsCloseCollection (rsComm, &handleInx);
+    rsCloseCollection( rsComm, &handleInx );
     return 0;
 }
 
 int
-getRescForGetInDataObj (rsComm_t *rsComm, dataObjInp_t *dataObjInp, 
-hostSearchStat_t *hostSearchStat)
-{
+getRescForGetInDataObj( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+                        hostSearchStat_t *hostSearchStat ) {
     int status, i;
     dataObjInfo_t *dataObjInfoHead = NULL;
 
-    if (dataObjInp == NULL || hostSearchStat == NULL) 
-      return USER__NULL_INPUT_ERR;
-
-    status = getDataObjInfoIncSpecColl (rsComm, dataObjInp, &dataObjInfoHead);
-    if (status < 0) return status;
-
-    sortObjInfoForOpen (rsComm, &dataObjInfoHead, &dataObjInp->condInput, 0);
-    if (dataObjInfoHead != NULL && dataObjInfoHead->rescInfo != NULL) {
-	if (hostSearchStat->numHost >= MAX_HOST_TO_SEARCH ||
-	  hostSearchStat->totalCount >= MAX_HOST_TO_SEARCH) {
-	    freeAllDataObjInfo (dataObjInfoHead);
-            return 0;
-	}
-	for (i = 0; i < hostSearchStat->numHost; i++) {
-	    if (dataObjInfoHead->rescInfo == hostSearchStat->rescInfo[i]) {
-		hostSearchStat->count[i]++;
-		hostSearchStat->totalCount++;
-                freeAllDataObjInfo (dataObjInfoHead);
-                return 0;
-	    }
-	}
-	/* no match. add one */
-	hostSearchStat->rescInfo[hostSearchStat->numHost] =
-         dataObjInfoHead->rescInfo;
-	hostSearchStat->count[hostSearchStat->numHost] = 1;
-	hostSearchStat->numHost++;
-	hostSearchStat->totalCount++;
+    if ( dataObjInp == NULL || hostSearchStat == NULL ) {
+        return USER__NULL_INPUT_ERR;
     }
-    freeAllDataObjInfo (dataObjInfoHead);
+
+    status = getDataObjInfoIncSpecColl( rsComm, dataObjInp, &dataObjInfoHead );
+    if ( status < 0 ) { return status; }
+
+    sortObjInfoForOpen( rsComm, &dataObjInfoHead, &dataObjInp->condInput, 0 );
+    if ( dataObjInfoHead != NULL && dataObjInfoHead->rescInfo != NULL ) {
+        if ( hostSearchStat->numHost >= MAX_HOST_TO_SEARCH ||
+                hostSearchStat->totalCount >= MAX_HOST_TO_SEARCH ) {
+            freeAllDataObjInfo( dataObjInfoHead );
+            return 0;
+        }
+        for ( i = 0; i < hostSearchStat->numHost; i++ ) {
+            if ( dataObjInfoHead->rescInfo == hostSearchStat->rescInfo[i] ) {
+                hostSearchStat->count[i]++;
+                hostSearchStat->totalCount++;
+                freeAllDataObjInfo( dataObjInfoHead );
+                return 0;
+            }
+        }
+        /* no match. add one */
+        hostSearchStat->rescInfo[hostSearchStat->numHost] =
+            dataObjInfoHead->rescInfo;
+        hostSearchStat->count[hostSearchStat->numHost] = 1;
+        hostSearchStat->numHost++;
+        hostSearchStat->totalCount++;
+    }
+    freeAllDataObjInfo( dataObjInfoHead );
     return 0;
 }

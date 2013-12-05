@@ -9,12 +9,11 @@
 static time_t LogfileLastChkTime = 0;
 
 void
-getLogfileName (char **logFile, char *logDir, char *logFileName)
-{
+getLogfileName( char **logFile, char *logDir, char *logFileName ) {
 #ifndef _WIN32
     time_t myTime;
     struct tm *mytm;
-	char *logfilePattern; // JMC - backport 4793
+    char *logfilePattern; // JMC - backport 4793
     char *logfileIntStr;
     int logfileInt;
     int tm_mday = 1;
@@ -23,88 +22,91 @@ getLogfileName (char **logFile, char *logDir, char *logFileName)
 
     /* Put together the full pathname of the logFile */
 
-    if (logDir == NULL) {
-	snprintf (myLogDir, MAX_NAME_LEN, "%-s", getLogDir());
-    } else {
-	snprintf (myLogDir, MAX_NAME_LEN, "%-s", logDir);
+    if ( logDir == NULL ) {
+        snprintf( myLogDir, MAX_NAME_LEN, "%-s", getLogDir() );
     }
-    *logFile = (char *) malloc(strlen (myLogDir) + strlen (logFileName) + 24);
+    else {
+        snprintf( myLogDir, MAX_NAME_LEN, "%-s", logDir );
+    }
+    *logFile = ( char * ) malloc( strlen( myLogDir ) + strlen( logFileName ) + 24 );
 
-    LogfileLastChkTime = myTime = time (0);
-    mytm = localtime (&myTime);
-    if ((logfileIntStr = getenv (LOGFILE_INT)) == NULL) {
+    LogfileLastChkTime = myTime = time( 0 );
+    mytm = localtime( &myTime );
+    if ( ( logfileIntStr = getenv( LOGFILE_INT ) ) == NULL ) {
         logfileInt = DEF_LOGFILE_INT;
-    } else {
-        logfileInt = atoi (logfileIntStr);
+    }
+    else {
+        logfileInt = atoi( logfileIntStr );
     }
 
-    tm_mday = (mytm->tm_mday / logfileInt) * logfileInt + 1;
-    if (tm_mday > mytm->tm_mday)
-	    tm_mday -= logfileInt;
+    tm_mday = ( mytm->tm_mday / logfileInt ) * logfileInt + 1;
+    if ( tm_mday > mytm->tm_mday ) {
+        tm_mday -= logfileInt;
+    }
     // =-=-=-=-=-=-=-
-	// JMC - backport 4793
-    if ((logfilePattern = getenv(LOGFILE_PATTERN)) == NULL) {
-       logfilePattern = DEF_LOGFILE_PATTERN;
+    // JMC - backport 4793
+    if ( ( logfilePattern = getenv( LOGFILE_PATTERN ) ) == NULL ) {
+        logfilePattern = DEF_LOGFILE_PATTERN;
     }
     mytm->tm_mday = tm_mday;
-    strftime (logfileSuffix, MAX_NAME_LEN, logfilePattern, mytm);
-    sprintf (*logFile, "%-s/%-s.%-s", myLogDir, logFileName, logfileSuffix);
+    strftime( logfileSuffix, MAX_NAME_LEN, logfilePattern, mytm );
+    sprintf( *logFile, "%-s/%-s.%-s", myLogDir, logFileName, logfileSuffix );
     // =-=-=-=-=-=-=-
 
 
 #else /* for Windows */
-	char tmpstr[1024];
-	iRODSNtGetLogFilenameWithPath(tmpstr);
-	*logFile = _strdup(tmpstr);
+    char tmpstr[1024];
+    iRODSNtGetLogFilenameWithPath( tmpstr );
+    *logFile = _strdup( tmpstr );
 #endif
 }
 
 #ifndef _WIN32
 int
-chkLogfileName (char *logDir, char *logFileName)
-{
+chkLogfileName( char *logDir, char *logFileName ) {
     time_t myTime;
     char *logFile = NULL;
     int i;
 
-    myTime = time (0);
-    if (myTime < LogfileLastChkTime + LOGFILE_CHK_INT) {
+    myTime = time( 0 );
+    if ( myTime < LogfileLastChkTime + LOGFILE_CHK_INT ) {
         /* not time yet */
-        return (0);
+        return ( 0 );
     }
 
-    getLogfileName (&logFile, logDir, logFileName);
+    getLogfileName( &logFile, logDir, logFileName );
 
-    if (CurLogfileName != NULL && strcmp (CurLogfileName, logFile) == 0) {
-        free (logFile);
-        return (0);
+    if ( CurLogfileName != NULL && strcmp( CurLogfileName, logFile ) == 0 ) {
+        free( logFile );
+        return ( 0 );
     }
 
     /* open the logfile */
 
-    if ((i = open(logFile, O_CREAT|O_RDWR, 0644)) < 0) {
-        fprintf(stderr, "Unable to open logFile %s\n", logFile);
-        free (logFile);
-        return (-1);
-    } else {
-        lseek (i, 0, SEEK_END);
+    if ( ( i = open( logFile, O_CREAT | O_RDWR, 0644 ) ) < 0 ) {
+        fprintf( stderr, "Unable to open logFile %s\n", logFile );
+        free( logFile );
+        return ( -1 );
+    }
+    else {
+        lseek( i, 0, SEEK_END );
     }
 
-    if (CurLogfileName != NULL) {
-        free (CurLogfileName);
+    if ( CurLogfileName != NULL ) {
+        free( CurLogfileName );
     }
 
     CurLogfileName = logFile;
 
-    close (0);
-    close (1);
-    close (2);
-    (void) dup2(i, 0);
-    (void) dup2(i, 1);
-    (void) dup2(i, 2);
-    (void) close(i);
+    close( 0 );
+    close( 1 );
+    close( 2 );
+    ( void ) dup2( i, 0 );
+    ( void ) dup2( i, 1 );
+    ( void ) dup2( i, 2 );
+    ( void ) close( i );
 
-    return (0);
+    return ( 0 );
 }
 
 #endif

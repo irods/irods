@@ -1,6 +1,6 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
-/* subStructFileRmdir.h  
+/* subStructFileRmdir.h
  */
 
 #ifndef SUB_STRUCT_FILE_RMDIR_HPP
@@ -18,18 +18,18 @@
 #define RS_SUB_STRUCT_FILE_RMDIR rsSubStructFileRmdir
 /* prototype for the server handler */
 int
-rsSubStructFileRmdir (rsComm_t *rsComm, subFile_t *subFile);
+rsSubStructFileRmdir( rsComm_t *rsComm, subFile_t *subFile );
 int
-_rsSubStructFileRmdir (rsComm_t *rsComm, subFile_t *subFile);
+_rsSubStructFileRmdir( rsComm_t *rsComm, subFile_t *subFile );
 int
-remoteSubStructFileRmdir (rsComm_t *rsComm, subFile_t *subFile,
-rodsServerHost_t *rodsServerHost);
+remoteSubStructFileRmdir( rsComm_t *rsComm, subFile_t *subFile,
+                          rodsServerHost_t *rodsServerHost );
 #else
 #define RS_SUB_STRUCT_FILE_RMDIR NULL
 #endif
 
 /* prototype for the client call */
 int
-rcSubStructFileRmdir (rcComm_t *conn, subFile_t *subFile);
+rcSubStructFileRmdir( rcComm_t *conn, subFile_t *subFile );
 
 #endif	/* SUB_STRUCT_FILE_RMDIR_H */

@@ -28,6 +28,6 @@ typedef struct timespec time_type;
 #define time_type_initializer {0, 0}
 #endif*/
 
-int strttime(char* timestr, char* timeformat, rodsLong_t* t);
-int ttimestr(char* buf, int n, char* timeformat, rodsLong_t* t);
+int strttime( char* timestr, char* timeformat, rodsLong_t* t );
+int ttimestr( char* buf, int n, char* timeformat, rodsLong_t* t );
 #endif

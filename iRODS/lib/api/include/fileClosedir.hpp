@@ -19,25 +19,25 @@
 typedef struct {
     int fileInx;
 } fileClosedirInp_t;
-    
+
 #define fileClosedirInp_PI "int fileInx;"
 
 #if defined(RODS_SERVER)
 #define RS_FILE_CLOSEDIR rsFileClosedir
 /* prototype for the server handler */
 int
-rsFileClosedir (rsComm_t *rsComm, fileClosedirInp_t *fileClosedirInp);
+rsFileClosedir( rsComm_t *rsComm, fileClosedirInp_t *fileClosedirInp );
 int
-_rsFileClosedir (rsComm_t *rsComm, fileClosedirInp_t *fileClosedirInp);
+_rsFileClosedir( rsComm_t *rsComm, fileClosedirInp_t *fileClosedirInp );
 int
-remoteFileClosedir (rsComm_t *rsComm, fileClosedirInp_t *fileClosedirInp,
-rodsServerHost_t *rodsServerHost);
+remoteFileClosedir( rsComm_t *rsComm, fileClosedirInp_t *fileClosedirInp,
+                    rodsServerHost_t *rodsServerHost );
 #else
 #define RS_FILE_CLOSEDIR NULL
 #endif
 
 /* prototype for the client call */
 int
-rcFileClosedir (rcComm_t *conn, fileClosedirInp_t *fileClosedirInp);
+rcFileClosedir( rcComm_t *conn, fileClosedirInp_t *fileClosedirInp );
 
 #endif	/* FILE_CLOSEDIR_H */

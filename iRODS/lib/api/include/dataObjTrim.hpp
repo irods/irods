@@ -19,13 +19,13 @@
 
 #if defined(RODS_SERVER)
 
-#define DEF_MIN_COPY_CNT	2 
+#define DEF_MIN_COPY_CNT	2
 #define RS_DATA_OBJ_TRIM rsDataObjTrim
 /* prototype for the server handler */
 int
-rsDataObjTrim (rsComm_t *rsComm, dataObjInp_t *dataObjInp);
+rsDataObjTrim( rsComm_t *rsComm, dataObjInp_t *dataObjInp );
 int
-trimDataObjInfo (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo);
+trimDataObjInfo( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo );
 #else
 #define RS_DATA_OBJ_TRIM NULL
 #endif
@@ -34,21 +34,21 @@ trimDataObjInfo (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo);
 extern "C" {
 #endif
 
-/* prototype for the client call */
-/* rcDataObjTrim - Trim the copies (replica) of an iRODS data object.
- * Input -
- *   rcComm_t *conn - The client connection handle.
- *   dataObjInp_t *dataObjInp - generic dataObj input. Relevant items are:
- *      objPath - the path of the data object.
- *      condInput - conditional Input
- *	    COPIES_KW - The number of copies to retain. Default is 2. 
- *          REPL_NUM_KW  - "value" = The replica number to trim.
- *          RESC_NAME_KW - "value" = The Resource to trim.
- *          IRODS_ADMIN_KW - Admin trim other users' files.
- *   return value - The status of the operation.
- */
-int
-rcDataObjTrim (rcComm_t *conn, dataObjInp_t *dataObjInp);
+    /* prototype for the client call */
+    /* rcDataObjTrim - Trim the copies (replica) of an iRODS data object.
+     * Input -
+     *   rcComm_t *conn - The client connection handle.
+     *   dataObjInp_t *dataObjInp - generic dataObj input. Relevant items are:
+     *      objPath - the path of the data object.
+     *      condInput - conditional Input
+     *	    COPIES_KW - The number of copies to retain. Default is 2.
+     *          REPL_NUM_KW  - "value" = The replica number to trim.
+     *          RESC_NAME_KW - "value" = The Resource to trim.
+     *          ADMIN_KW - Admin trim other users' files.
+     *   return value - The status of the operation.
+     */
+    int
+    rcDataObjTrim( rcComm_t *conn, dataObjInp_t *dataObjInp );
 
 #ifdef  __cplusplus
 }

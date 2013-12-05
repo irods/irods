@@ -7,41 +7,41 @@
 #include "miscUtil.hpp"
 
 int
-mkdirUtil (rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
-rodsPathInp_t *rodsPathInp)
-{
+mkdirUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
+           rodsPathInp_t *rodsPathInp ) {
     int i;
-    int status; 
+    int status;
     int savedStatus = 0;
     collInp_t collCreateInp;
 
 
-    if (rodsPathInp == NULL) {
-	return (USER__NULL_INPUT_ERR);
+    if ( rodsPathInp == NULL ) {
+        return ( USER__NULL_INPUT_ERR );
     }
 
-    memset (&collCreateInp, 0, sizeof (collCreateInp));
+    memset( &collCreateInp, 0, sizeof( collCreateInp ) );
 
     /* -p for parent */
-    if (myRodsArgs->physicalPath == True) {
-	addKeyVal (&collCreateInp.condInput, RECURSIVE_OPR__KW, "");
+    if ( myRodsArgs->physicalPath == True ) {
+        addKeyVal( &collCreateInp.condInput, RECURSIVE_OPR__KW, "" );
     }
-    for (i = 0; i < rodsPathInp->numSrc; i++) {
-        rstrcpy (collCreateInp.collName, rodsPathInp->srcPath[i].outPath, 
-	  MAX_NAME_LEN);
-        status = rcCollCreate (conn, &collCreateInp);
-	if (status < 0) {
-	    rodsLogError (LOG_ERROR, status,
-	     "mkdirUtil: mkColl of %s error.", 
-	      rodsPathInp->srcPath[i].outPath);
-	    savedStatus = status;
-	}
+    for ( i = 0; i < rodsPathInp->numSrc; i++ ) {
+        rstrcpy( collCreateInp.collName, rodsPathInp->srcPath[i].outPath,
+                 MAX_NAME_LEN );
+        status = rcCollCreate( conn, &collCreateInp );
+        if ( status < 0 ) {
+            rodsLogError( LOG_ERROR, status,
+                          "mkdirUtil: mkColl of %s error.",
+                          rodsPathInp->srcPath[i].outPath );
+            savedStatus = status;
+        }
     }
 
-    if (savedStatus < 0) {
-        return (savedStatus);
-    } else {
-        return (status);
+    if ( savedStatus < 0 ) {
+        return ( savedStatus );
+    }
+    else {
+        return ( status );
     }
 }
 

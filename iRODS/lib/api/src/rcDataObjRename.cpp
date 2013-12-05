@@ -5,7 +5,7 @@
 
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code.  */ 
+/* This is script-generated code.  */
 /* See dataObjRename.h for a description of this API call.*/
 
 #include "dataObjRename.hpp"
@@ -49,7 +49,7 @@
  *         source path.
  *    \li char \b destDataObjInp.objPath[MAX_NAME_LEN] - full path of the
  *         target path.
- *    \li int \b srcDataObjInp.oprType - The operation type. 
+ *    \li int \b srcDataObjInp.oprType - The operation type.
  *        Valid values are:
  *      \n RENAME_DATA_OBJ  - renmame a data object.
  *      \n RENAME_COLL  - renmame a collection.
@@ -66,13 +66,12 @@
 **/
 
 int
-rcDataObjRename (rcComm_t *conn, dataObjCopyInp_t *dataObjRenameInp)
-{
+rcDataObjRename( rcComm_t *conn, dataObjCopyInp_t *dataObjRenameInp ) {
     int status;
 
 
-    status = procApiRequest (conn, DATA_OBJ_RENAME_AN,  dataObjRenameInp, NULL, 
-        (void **) NULL, NULL);
+    status = procApiRequest( conn, DATA_OBJ_RENAME_AN,  dataObjRenameInp, NULL,
+                             ( void ** ) NULL, NULL );
 
-    return (status);
+    return ( status );
 }

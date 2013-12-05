@@ -12,7 +12,7 @@
 #include "rods.hpp"
 #include "rsGlobalExtern.hpp"   /* server global */
 #include "rcGlobalExtern.hpp"     /* client global */
-#include "rsLog.hpp" 
+#include "rsLog.hpp"
 #include "rodsLog.hpp"
 #include "sockComm.hpp"
 #include "rsMisc.hpp"
@@ -24,54 +24,54 @@
 #define REQ_MSG_TIMEOUT_TIME	5	/* 5 sec timeout for req msg */
 
 #define NUM_HASH_SLOT		47	/* number of slots for the ticket
-					 * hash key */
+* hash key */
 #define NUM_XMSG_THR		40       /* used to be 10 */
 
-int 
-initThreadEnv ();
 int
-addXmsgToXmsgQue (irodsXmsg_t *xmsg, xmsgQue_t *xmsgQue);
+initThreadEnv();
 int
-rmXmsgFromXmsgQue (irodsXmsg_t *xmsg, xmsgQue_t *xmsgQue);
+addXmsgToXmsgQue( irodsXmsg_t *xmsg, xmsgQue_t *xmsgQue );
 int
-addTicketToHQue (xmsgTicketInfo_t *ticket, ticketHashQue_t *ticketHQue);
+rmXmsgFromXmsgQue( irodsXmsg_t *xmsg, xmsgQue_t *xmsgQue );
 int
-addTicketMsgStructToHQue (ticketMsgStruct_t *ticketMsgStruct, 
-ticketHashQue_t *ticketHQue);
+addTicketToHQue( xmsgTicketInfo_t *ticket, ticketHashQue_t *ticketHQue );
 int
-rmTicketMsgStructFromHQue (ticketMsgStruct_t *ticketMsgStruct,
-ticketHashQue_t *ticketHQue);
+addTicketMsgStructToHQue( ticketMsgStruct_t *ticketMsgStruct,
+                          ticketHashQue_t *ticketHQue );
 int
-addReqToQue (int sock);
-xmsgReq_t *getReqFromQue ();
+rmTicketMsgStructFromHQue( ticketMsgStruct_t *ticketMsgStruct,
+                           ticketHashQue_t *ticketHQue );
 int
-startXmsgThreads ();
+addReqToQue( int sock );
+xmsgReq_t *getReqFromQue();
+int
+startXmsgThreads();
 void
-procReqRoutine ();
+procReqRoutine();
 int
-ticketHashFunc (uint rcvTicket);
+ticketHashFunc( uint rcvTicket );
 int
-initXmsgHashQue ();
+initXmsgHashQue();
 int
-getTicketMsgStructByTicket (uint rcvTicket,
-ticketMsgStruct_t **outTicketMsgStruct);
+getTicketMsgStructByTicket( uint rcvTicket,
+                            ticketMsgStruct_t **outTicketMsgStruct );
 int
-addXmsgToTicketMsgStruct (irodsXmsg_t *xmsg,
-ticketMsgStruct_t *ticketMsgStruct);
+addXmsgToTicketMsgStruct( irodsXmsg_t *xmsg,
+                          ticketMsgStruct_t *ticketMsgStruct );
 
-int checkMsgCondition(irodsXmsg_t *irodsXmsg, char *msgCond);
+int checkMsgCondition( irodsXmsg_t *irodsXmsg, char *msgCond );
 
-int getIrodsXmsg (rcvXmsgInp_t *rcvXmsgInp, irodsXmsg_t **outIrodsXmsg);
+int getIrodsXmsg( rcvXmsgInp_t *rcvXmsgInp, irodsXmsg_t **outIrodsXmsg );
 
-int 
-getIrodsXmsgByMsgNum (int rcvTicket, int msgNumber,
-irodsXmsg_t **outIrodsXmsg);
 int
-_rsRcvXmsg (irodsXmsg_t *irodsXmsg, rcvXmsgOut_t *rcvXmsgOut);
+getIrodsXmsgByMsgNum( int rcvTicket, int msgNumber,
+                      irodsXmsg_t **outIrodsXmsg );
+int
+_rsRcvXmsg( irodsXmsg_t *irodsXmsg, rcvXmsgOut_t *rcvXmsgOut );
 
-int clearAllXMessages(ticketMsgStruct_t *ticketMsgStruct);
-int clearOneXMessage(ticketMsgStruct_t *ticketMsgStruct, int seqNum);
+int clearAllXMessages( ticketMsgStruct_t *ticketMsgStruct );
+int clearOneXMessage( ticketMsgStruct_t *ticketMsgStruct, int seqNum );
 
-int addXmsgToQues(irodsXmsg_t *irodsXmsg,  ticketMsgStruct_t *ticketMsgStruct); 
+int addXmsgToQues( irodsXmsg_t *irodsXmsg,  ticketMsgStruct_t *ticketMsgStruct );
 #endif	/* XMSG_LIB_H */
 

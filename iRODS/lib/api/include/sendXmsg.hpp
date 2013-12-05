@@ -1,7 +1,7 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* sendXmsg.h
- * 
+ *
  */
 
 #ifndef SEND_XMSG_HPP
@@ -20,7 +20,7 @@
 #define RS_SEND_XMSG rsSendXmsg
 /* prototype for the server handler */
 int
-rsSendXmsg (rsComm_t *rsComm, sendXmsgInp_t *sendXmsgInp); 
+rsSendXmsg( rsComm_t *rsComm, sendXmsgInp_t *sendXmsgInp );
 #else
 #define RS_SEND_XMSG NULL
 #endif
@@ -29,9 +29,9 @@ rsSendXmsg (rsComm_t *rsComm, sendXmsgInp_t *sendXmsgInp);
 extern "C" {
 #endif
 
-/* prototype for the client call */
-int
-rcSendXmsg (rcComm_t *conn, sendXmsgInp_t *sendXmsgInp);
+    /* prototype for the client call */
+    int
+    rcSendXmsg( rcComm_t *conn, sendXmsgInp_t *sendXmsgInp );
 
 #ifdef  __cplusplus
 }

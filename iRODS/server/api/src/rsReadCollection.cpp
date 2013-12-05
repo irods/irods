@@ -12,29 +12,28 @@
 #include "rsGlobalExtern.hpp"
 
 int
-rsReadCollection (rsComm_t *rsComm, int *handleInxInp,
-                  collEnt_t **collEnt)
-{
+rsReadCollection( rsComm_t *rsComm, int *handleInxInp,
+                  collEnt_t **collEnt ) {
     int status;
     collHandle_t *collHandle;
 
     int handleInx = *handleInxInp;
 
-    if (handleInx < 0 || handleInx >= NUM_COLL_HANDLE ||
-        CollHandle[handleInx].inuseFlag != FD_INUSE) {
-        rodsLog (LOG_NOTICE,
+    if ( handleInx < 0 || handleInx >= NUM_COLL_HANDLE ||
+            CollHandle[handleInx].inuseFlag != FD_INUSE ) {
+        rodsLog( LOG_NOTICE,
                  "rsReadCollection: handleInx %d out of range",
-                 handleInx);
-        return (SYS_FILE_DESC_OUT_OF_RANGE);
+                 handleInx );
+        return ( SYS_FILE_DESC_OUT_OF_RANGE );
     }
 
     collHandle = &CollHandle[handleInx];
-    *collEnt = (collEnt_t *) malloc (sizeof (collEnt_t));
+    *collEnt = ( collEnt_t * ) malloc( sizeof( collEnt_t ) );
 
-    status = readCollection (collHandle, *collEnt);
+    status = readCollection( collHandle, *collEnt );
 
-    if (status < 0) {
-        free (*collEnt);
+    if ( status < 0 ) {
+        free( *collEnt );
         *collEnt = NULL;
     }
 

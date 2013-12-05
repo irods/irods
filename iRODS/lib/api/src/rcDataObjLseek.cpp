@@ -5,7 +5,7 @@
 
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code.  */ 
+/* This is script-generated code.  */
 /* See dataObjLseek.h for a description of this API call.*/
 
 #include "dataObjLseek.hpp"
@@ -16,7 +16,7 @@ fileLseekOut_t **dataObjLseekOut)
  *
  * \brief Repositions the offset of the open file associated
  *     with the file descriptor to the argument offset according to the
- *     directive whence. This is equivalent to lseek of UNIX. 
+ *     directive whence. This is equivalent to lseek of UNIX.
  *
  * \user client
  *
@@ -32,7 +32,7 @@ fileLseekOut_t **dataObjLseekOut)
  * \note none
  *
  * \usage
- * Advance the offset 12345 bytes from current position of an open 
+ * Advance the offset 12345 bytes from current position of an open
  *    data object:
  * \n int status;
  * \n dataObjInp_t dataObjInp;
@@ -59,16 +59,16 @@ fileLseekOut_t **dataObjLseekOut)
  *      rcDataObjOpen or rcDataObjCreate.
  *    \li int \b whence - Similar to lseek of UNIX. Valid values are:
  *        \n SEEK_SET - The offset is set to offset bytes.
- *        \n SEEK_CUR - The offset is set to its current location plus 
+ *        \n SEEK_CUR - The offset is set to its current location plus
  *             offset bytes.
- *        \n SEEK_END - The offset is set to the size of the file plus 
- *             offset bytes. 
+ *        \n SEEK_END - The offset is set to the size of the file plus
+ *             offset bytes.
  *    \li rodsLong \b offset - the offset.
  * \param[out] fileLseekOut_t **dataObjLseekOut - pointer to a fileLseekOut_t
- *        containing the resulting offset location in bytes from the beginning 
+ *        containing the resulting offset location in bytes from the beginning
  *        of the file.
  * \return integer
- * \retval 0 on success. 
+ * \retval 0 on success.
  * \sideeffect none
  * \pre none
  * \post none
@@ -77,12 +77,11 @@ fileLseekOut_t **dataObjLseekOut)
 **/
 
 int
-rcDataObjLseek (rcComm_t *conn, openedDataObjInp_t *dataObjLseekInp,
-fileLseekOut_t **dataObjLseekOut)
-{
+rcDataObjLseek( rcComm_t *conn, openedDataObjInp_t *dataObjLseekInp,
+                fileLseekOut_t **dataObjLseekOut ) {
     int status;
-    status = procApiRequest (conn, DATA_OBJ_LSEEK_AN,  dataObjLseekInp, NULL, 
-        (void **) dataObjLseekOut, NULL);
+    status = procApiRequest( conn, DATA_OBJ_LSEEK_AN,  dataObjLseekInp, NULL,
+                             ( void ** ) dataObjLseekOut, NULL );
 
-    return (status);
+    return ( status );
 }

@@ -3,7 +3,7 @@
 ###################################################################
 #
 #  A script to kill all existing processes owned by the unix user
-#  "eirods".  This will assure that the continuous integration
+#  "irods".  This will assure that the continuous integration
 #  server can assume that all zombie processes are handled before
 #  starting any next step.
 #
@@ -15,7 +15,7 @@
 #
 ###################################################################
 
-pgrep -u eirods irods | xargs kill -9
+pgrep -u irods irods | xargs kill -9
 
 ##############
 # Zombies Dead

@@ -16,13 +16,13 @@
 #define MAX_SQL_ROWS   256
 
 /* In genQueryInp_t, selectInp is a int index, int value pair. The index
- * represents the attribute index. 
+ * represents the attribute index.
  * sqlCondInp is a int index, string value pair. The index
- * represents the attribute index. 
+ * represents the attribute index.
  */
 
 typedef struct GenQueryInp {
-    int maxRows;             /* max number of rows to return, if 0 
+    int maxRows;             /* max number of rows to return, if 0
                                 close out the SQL statement call (i.e. instead
                                 of getting more rows until it is finished). */
     int continueInx;         /* if non-zero, this is the value returned in
@@ -68,11 +68,11 @@ typedef struct GenQueryOut {
     int rowCnt;
     int attriCnt;
     int continueInx;
-    int totalRowCount; 
-    sqlResult_t sqlResult[MAX_SQL_ATTR]; 
-} genQueryOut_t; 
+    int totalRowCount;
+    sqlResult_t sqlResult[MAX_SQL_ATTR];
+} genQueryOut_t;
 
-/* 
+/*
 Bits to set in the value array (genQueryInp.selectInp.value[i]) to
 order the results by that column, either ascending or descending.  This
 is done in the order of the value array, so the first one will be the
@@ -90,7 +90,7 @@ primary ordering column.
 #define UPPER_CASE_WHERE  0x200
 
 
-/* 
+/*
   These are some operations (functions) that can be applied to columns
   being returned (selected) by setting the input array,
   genQueryInp.selectInp.value[i], to these values.  Values 0 and 1 (or
@@ -114,7 +114,7 @@ primary ordering column.
 #define MAX_CORE_TABLE_VALUE 10000
 
 
-/* 
+/*
   These are the Table Column names used with the GenQuery.  Also see
   the rcatGeneralQuerySetup routine which associates these values with
   tables and columns. */
@@ -416,7 +416,7 @@ primary ordering column.
 #define COL_RULE_BASE_MAP_COMMENT      1725
 #define COL_RULE_BASE_MAP_CREATE_TIME  1726
 #define COL_RULE_BASE_MAP_MODIFY_TIME  1727
-#define COL_RULE_BASE_MAP_PRIORITY     1728 
+#define COL_RULE_BASE_MAP_PRIORITY     1728
 
 /* R_RULE_DVM (Data Variable Mapping) */
 #define COL_DVM_ID            1800

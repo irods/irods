@@ -1,7 +1,7 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* rcvXmsg.h
- * 
+ *
  */
 
 #ifndef RCV_XMSG_HPP
@@ -20,8 +20,8 @@
 #define RS_RCV_XMSG rsRcvXmsg
 /* prototype for the server handler */
 int
-rsRcvXmsg (rsComm_t *rsComm, rcvXmsgInp_t *rcvXmsgInp, 
-rcvXmsgOut_t **rcvXmsgOut); 
+rsRcvXmsg( rsComm_t *rsComm, rcvXmsgInp_t *rcvXmsgInp,
+           rcvXmsgOut_t **rcvXmsgOut );
 #else
 #define RS_RCV_XMSG NULL
 #endif
@@ -30,10 +30,10 @@ rcvXmsgOut_t **rcvXmsgOut);
 extern "C" {
 #endif
 
-/* prototype for the client call */
-int
-rcRcvXmsg (rcComm_t *conn, rcvXmsgInp_t *rcvXmsgInp, 
-rcvXmsgOut_t **rcvXmsgOut);
+    /* prototype for the client call */
+    int
+    rcRcvXmsg( rcComm_t *conn, rcvXmsgInp_t *rcvXmsgInp,
+               rcvXmsgOut_t **rcvXmsgOut );
 
 #ifdef  __cplusplus
 }

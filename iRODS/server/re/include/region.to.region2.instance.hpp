@@ -15,7 +15,7 @@
 		memcpy(ptr1, ptr, sizeof(T)); \
 		ptr = ptr1; \
 	} \
-
+ 
 #define TRAVERSE_END(T) \
 	return ptr;
 
@@ -40,7 +40,7 @@
 		  l++; \
 	  } \
 	  int len = l - ptr->f + 1; \
-
+ 
 #define COPY_ONLY_FROM_REGION2(f) \
 	if(IN_REGION(ptr->f, oldr))
 

@@ -2,7 +2,7 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* l1test.c - test the high level api */
 
-#include "rodsClient.hpp" 
+#include "rodsClient.hpp"
 
 #define USER_NAME	"rods"
 #define RODS_ZONE	"tempZone"
@@ -22,8 +22,7 @@
 #define BUFSIZE	(1024*1024)
 
 int
-main(int argc, char **argv)
-{
+main( int argc, char **argv ) {
     rcComm_t *conn;
     rodsEnv myRodsEnv;
     int status;
@@ -52,98 +51,102 @@ main(int argc, char **argv)
     char myPath[MAX_NAME_LEN], myCwd[MAX_NAME_LEN];
 #endif
 
-    if (argc != 2) {
-        fprintf(stderr, "Usage: %s rods_dataObj\n",argv[0]);
-        exit(1);
+    if ( argc != 2 ) {
+        fprintf( stderr, "Usage: %s rods_dataObj\n", argv[0] );
+        exit( 1 );
     }
 
-    status = getRodsEnv (&myRodsEnv);
+    status = getRodsEnv( &myRodsEnv );
 
-    if (status < 0) {
-	fprintf (stderr, "getRodsEnv error, status = %d\n", status);
-	exit (1);
+    if ( status < 0 ) {
+        fprintf( stderr, "getRodsEnv error, status = %d\n", status );
+        exit( 1 );
     }
 
 
-    conn = rcConnect (myRodsEnv.rodsHost, myRodsEnv.rodsPort, 
-      myRodsEnv.rodsUserName, myRodsEnv.rodsZone, 0, &errMsg);
+    conn = rcConnect( myRodsEnv.rodsHost, myRodsEnv.rodsPort,
+                      myRodsEnv.rodsUserName, myRodsEnv.rodsZone, 0, &errMsg );
 
-    if (conn == NULL) {
-        fprintf (stderr, "rcConnect error\n");
-        exit (1);
+    if ( conn == NULL ) {
+        fprintf( stderr, "rcConnect error\n" );
+        exit( 1 );
     }
 
-    status = clientLogin(conn);
-    if (status != 0) {
-        fprintf (stderr, "clientLogin error\n");
-       rcDisconnect(conn);
-       exit (7);
+    status = clientLogin( conn );
+    if ( status != 0 ) {
+        fprintf( stderr, "clientLogin error\n" );
+        rcDisconnect( conn );
+        exit( 7 );
     }
 
-		printf("--------------open file for read -----------\n");
-		
-    memset (&dataObjOpenInp, 0, sizeof (dataObjOpenInp));
+    printf( "--------------open file for read -----------\n" );
 
-    snprintf (dataObjOpenInp.objPath, MAX_NAME_LEN, "%s/%s",
-      MY_HOME, argv[1]);
+    memset( &dataObjOpenInp, 0, sizeof( dataObjOpenInp ) );
+
+    snprintf( dataObjOpenInp.objPath, MAX_NAME_LEN, "%s/%s",
+              MY_HOME, argv[1] );
     dataObjOpenInp.openFlags = O_RDONLY;
 
-    l1descInx1 = rcDataObjOpen (conn, &dataObjOpenInp);
+    l1descInx1 = rcDataObjOpen( conn, &dataObjOpenInp );
 
-    if (l1descInx1 < 0) {
-        fprintf (stderr, "rcDataObjOpen error. status = %d\n", l1descInx1);
-        rcDisconnect (conn);
-        exit (1);
-    } else {
-        printf ("rcDataObjOpen: l1descInx1 = %d\n", l1descInx1);
+    if ( l1descInx1 < 0 ) {
+        fprintf( stderr, "rcDataObjOpen error. status = %d\n", l1descInx1 );
+        rcDisconnect( conn );
+        exit( 1 );
+    }
+    else {
+        printf( "rcDataObjOpen: l1descInx1 = %d\n", l1descInx1 );
     }
 
-		printf("--------------end of open file Read -----------\n");
+    printf( "--------------end of open file Read -----------\n" );
 
     /* close the files */
-    memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
+    memset( &dataObjCloseInp, 0, sizeof( dataObjCloseInp ) );
     dataObjCloseInp.l1descInx = l1descInx1;
 
-    status = rcDataObjClose (conn, &dataObjCloseInp);
-    if (status < 0 ) {
-        fprintf (stderr, "rcDataObjClose of %d error, status = %d\n",
-          l1descInx1, status);
-        exit (1);
-    } else {
-        printf ("rcDataObjClose: status = %d\n", status);
+    status = rcDataObjClose( conn, &dataObjCloseInp );
+    if ( status < 0 ) {
+        fprintf( stderr, "rcDataObjClose of %d error, status = %d\n",
+                 l1descInx1, status );
+        exit( 1 );
+    }
+    else {
+        printf( "rcDataObjClose: status = %d\n", status );
     }
 
 
-                printf("--------------open file for write ----------\n");
+    printf( "--------------open file for write ----------\n" );
 
-    memset (&dataObjOpenInp, 0, sizeof (dataObjOpenInp));
+    memset( &dataObjOpenInp, 0, sizeof( dataObjOpenInp ) );
 
-    snprintf (dataObjOpenInp.objPath, MAX_NAME_LEN, "%s/%s",
-      MY_HOME, argv[1]);
+    snprintf( dataObjOpenInp.objPath, MAX_NAME_LEN, "%s/%s",
+              MY_HOME, argv[1] );
     dataObjOpenInp.openFlags = O_WRONLY;
 
-    l1descInx1 = rcDataObjOpen (conn, &dataObjOpenInp);
+    l1descInx1 = rcDataObjOpen( conn, &dataObjOpenInp );
 
-    if (l1descInx1 < 0) {
-        fprintf (stderr, "rcDataObjOpen error. status = %d\n", l1descInx1);
-        rcDisconnect (conn);
-        exit (1);
-    } else {
-        printf ("rcDataObjOpen: l1descInx1 = %d\n", l1descInx1);
+    if ( l1descInx1 < 0 ) {
+        fprintf( stderr, "rcDataObjOpen error. status = %d\n", l1descInx1 );
+        rcDisconnect( conn );
+        exit( 1 );
+    }
+    else {
+        printf( "rcDataObjOpen: l1descInx1 = %d\n", l1descInx1 );
     }
 
-                printf("--------------end of open file for write ---------\n");
+    printf( "--------------end of open file for write ---------\n" );
 
-    status = rcDataObjClose (conn, &dataObjCloseInp);
-    if (status < 0 ) {
-        fprintf (stderr, "rcDataObjClose of %d error, status = %d\n",
-          l1descInx1, status);
-        exit (1);
-    } else {
-        printf ("rcDataObjClose: status = %d\n", status);
+    status = rcDataObjClose( conn, &dataObjCloseInp );
+    if ( status < 0 ) {
+        fprintf( stderr, "rcDataObjClose of %d error, status = %d\n",
+                 l1descInx1, status );
+        exit( 1 );
+    }
+    else {
+        printf( "rcDataObjClose: status = %d\n", status );
     }
 
-    rcDisconnect (conn);
-    exit (0);
-} 
+    rcDisconnect( conn );
+    exit( 0 );
+}
 

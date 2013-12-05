@@ -3,7 +3,7 @@
  *
  */
 
-/* This is script-generated code.  */ 
+/* This is script-generated code.  */
 /* See ncClose.h for a description of this API call.*/
 
 #include "ncClose.hpp"
@@ -45,7 +45,7 @@
  *
  * \param[in] conn - A rcComm_t connection handle to the server.
  * \param[in] ncCloseInp - Elements of ncCloseInp_t used :
- *    \li int \b ncid - the ncid to close 
+ *    \li int \b ncid - the ncid to close
  * \param[out] none
  *
  * \return integer
@@ -59,11 +59,10 @@
 **/
 
 int
-rcNcClose (rcComm_t *conn, ncCloseInp_t *ncCloseInp)
-{
+rcNcClose( rcComm_t *conn, ncCloseInp_t *ncCloseInp ) {
     int status;
-    status = procApiRequest (conn, NC_CLOSE_AN, ncCloseInp, NULL, 
-        (void **) NULL, NULL);
+    status = procApiRequest( conn, NC_CLOSE_AN, ncCloseInp, NULL,
+                             ( void ** ) NULL, NULL );
 
-    return (status);
+    return ( status );
 }

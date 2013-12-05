@@ -36,66 +36,66 @@
 /* Tokens.  */
 #ifndef YYTOKENTYPE
 # define YYTOKENTYPE
-   /* Put the tokens into the symbol table, so that GDB and other debuggers
-      know about them.  */
-   enum yytokentype {
-     LIT = 258,
-     CHAR_LIT = 259,
-     STR_LIT = 260,
-     NUM_LIT = 261,
-     Q_STR_LIT = 262,
-     EQ_OP = 263,
-     NE_OP = 264,
-     AND_OP = 265,
-     OR_OP = 266,
-     LE_OP = 267,
-     GE_OP = 268,
-     ACRAC_SEP = 269,
-     LIKE = 270,
-     NOT = 271,
-     PAREXP = 272,
-     BRAC = 273,
-     STLIST = 274,
-     IF = 275,
-     ELSE = 276,
-     THEN = 277,
-     WHILE = 278,
-     FOR = 279,
-     ASSIGN = 280,
-     ASLIST = 281,
-     TRUE = 282,
-     FALSE = 283,
-     ELSEIFELSEIF = 284,
-     IFELSEIF = 285,
-     DELAY = 286,
-     REMOTE = 287,
-     PARALLEL = 288,
-     ONEOF = 289,
-     SOMEOF = 290,
-     FOREACH = 291,
-     RLLIST = 292,
-     RULE = 293,
-     ACDEF = 294,
-     ARGVAL = 295,
-     AC_REAC = 296,
-     REL_EXP = 297,
-     EMPTYSTMT = 298,
-     MICSER = 299,
-     ON = 300,
-     ONORLIST = 301,
-     ORON = 302,
-     OR = 303,
-     ORONORLIST = 304,
-     ORORLIST = 305,
-     IFTHEN = 306,
-     IFTHENELSE = 307,
-     INPUT = 308,
-     OUTPUT = 309,
-     INPASS = 310,
-     INPASSLIST = 311,
-     OUTPASS = 312,
-     OUTPASSLIST = 313
-   };
+/* Put the tokens into the symbol table, so that GDB and other debuggers
+   know about them.  */
+enum yytokentype {
+    LIT = 258,
+    CHAR_LIT = 259,
+    STR_LIT = 260,
+    NUM_LIT = 261,
+    Q_STR_LIT = 262,
+    EQ_OP = 263,
+    NE_OP = 264,
+    AND_OP = 265,
+    OR_OP = 266,
+    LE_OP = 267,
+    GE_OP = 268,
+    ACRAC_SEP = 269,
+    LIKE = 270,
+    NOT = 271,
+    PAREXP = 272,
+    BRAC = 273,
+    STLIST = 274,
+    IF = 275,
+    ELSE = 276,
+    THEN = 277,
+    WHILE = 278,
+    FOR = 279,
+    ASSIGN = 280,
+    ASLIST = 281,
+    TRUE = 282,
+    FALSE = 283,
+    ELSEIFELSEIF = 284,
+    IFELSEIF = 285,
+    DELAY = 286,
+    REMOTE = 287,
+    PARALLEL = 288,
+    ONEOF = 289,
+    SOMEOF = 290,
+    FOREACH = 291,
+    RLLIST = 292,
+    RULE = 293,
+    ACDEF = 294,
+    ARGVAL = 295,
+    AC_REAC = 296,
+    REL_EXP = 297,
+    EMPTYSTMT = 298,
+    MICSER = 299,
+    ON = 300,
+    ONORLIST = 301,
+    ORON = 302,
+    OR = 303,
+    ORONORLIST = 304,
+    ORORLIST = 305,
+    IFTHEN = 306,
+    IFTHENELSE = 307,
+    INPUT = 308,
+    OUTPUT = 309,
+    INPASS = 310,
+    INPASSLIST = 311,
+    OUTPASS = 312,
+    OUTPASSLIST = 313
+};
 #endif
 /* Tokens.  */
 #define LIT 258
@@ -162,14 +162,14 @@
 typedef union YYSTYPE
 #line 20 "rulegen.y"
 {
-        int i;
-        long l;
-        struct symbol *s;
-        struct node *n;
+    int i;
+    long l;
+    struct symbol *s;
+    struct node *n;
 }
 /* Line 1529 of yacc.c.  */
 #line 172 "y.tab.h"
-	YYSTYPE;
+YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1

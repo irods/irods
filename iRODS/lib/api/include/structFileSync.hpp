@@ -1,6 +1,6 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
-/* structFileSync.h  
+/* structFileSync.h
  */
 
 #ifndef STRUCT_FILE_SYNC_HPP
@@ -30,18 +30,18 @@ typedef struct StructFileOprInp {
 #define RS_STRUCT_FILE_SYNC rsStructFileSync
 /* prototype for the server handler */
 int
-rsStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp);
+rsStructFileSync( rsComm_t *rsComm, structFileOprInp_t *structFileOprInp );
 int
-_rsStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp);
+_rsStructFileSync( rsComm_t *rsComm, structFileOprInp_t *structFileOprInp );
 int
-remoteStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp,
-rodsServerHost_t *rodsServerHost);
+remoteStructFileSync( rsComm_t *rsComm, structFileOprInp_t *structFileOprInp,
+                      rodsServerHost_t *rodsServerHost );
 #else
 #define RS_STRUCT_FILE_SYNC NULL
 #endif
 
 /* prototype for the client call */
 int
-rcStructFileSync (rcComm_t *conn, structFileOprInp_t *structFileOprInp);
+rcStructFileSync( rcComm_t *conn, structFileOprInp_t *structFileOprInp );
 
 #endif	/* STRUCT_FILE_SYNC_H */

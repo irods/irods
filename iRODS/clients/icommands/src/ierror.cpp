@@ -4,42 +4,40 @@
 #include "parseCommandLine.hpp"
 #include "rcMisc.hpp"
 
-void usage (char *prog);
+void usage( char *prog );
 
 int
-main(int argc, char **argv)
-{
+main( int argc, char **argv ) {
     char *myErrName;
     int errorCode;
     char *mySubErrName;
 
-    if (argc != 2) {
-       printf("Use -h for help\n");
-       exit(1);
+    if ( argc != 2 ) {
+        printf( "Use -h for help\n" );
+        exit( 1 );
     }
 
-    if (strcmp(argv[1],"-h") ==0) {
-       usage(argv[0]);
-       exit(0);
+    if ( strcmp( argv[1], "-h" ) == 0 ) {
+        usage( argv[0] );
+        exit( 0 );
     }
 
-    errorCode = atoi(argv[1]);
+    errorCode = atoi( argv[1] );
 
-    if (errorCode > 0) errorCode = -errorCode;
+    if ( errorCode > 0 ) { errorCode = -errorCode; }
 
-    myErrName = rodsErrorName(errorCode, &mySubErrName);
-    printf("irods error: %d %s %s\n",
-	       errorCode, myErrName, mySubErrName);
+    myErrName = rodsErrorName( errorCode, &mySubErrName );
+    printf( "irods error: %d %s %s\n",
+            errorCode, myErrName, mySubErrName );
 
-    exit (0);
+    exit( 0 );
 }
 
 
-void usage (char *prog)
-{
-  printf("Converts an irods error code to text.\n");
-  printf("Usage: %s [-vVh] errorNumber\n", prog);
-  printf("The errorNumber can be preceeded with minus sign (-) or not\n");
-  printf(" -h  this help\n");
-  printReleaseInfo("ierror");
+void usage( char *prog ) {
+    printf( "Converts an irods error code to text.\n" );
+    printf( "Usage: %s [-vVh] errorNumber\n", prog );
+    printf( "The errorNumber can be preceeded with minus sign (-) or not\n" );
+    printf( " -h  this help\n" );
+    printReleaseInfo( "ierror" );
 }

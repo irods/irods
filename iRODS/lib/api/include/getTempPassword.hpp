@@ -14,7 +14,7 @@
 #include "apiNumber.hpp"
 
 typedef struct {
-   char stringToHashWith[MAX_PASSWORD_LEN];
+    char stringToHashWith[MAX_PASSWORD_LEN];
 } getTempPasswordOut_t;
 
 /* #define getTempPasswordOut_PI "str stringToHashWith[NAME_LEN];" */
@@ -24,17 +24,17 @@ typedef struct {
 #define RS_GET_TEMP_PASSWORD rsGetTempPassword
 /* prototype for the server handler */
 int
-rsGetTempPassword (rsComm_t *rsComm, 
-		   getTempPasswordOut_t **getTempPasswordOut);
+rsGetTempPassword( rsComm_t *rsComm,
+                   getTempPasswordOut_t **getTempPasswordOut );
 int
-_rsGetTempPassword (rsComm_t *rsComm, 
-		    getTempPasswordOut_t **getTempPasswordOut);
+_rsGetTempPassword( rsComm_t *rsComm,
+                    getTempPasswordOut_t **getTempPasswordOut );
 #else
 #define RS_GET_TEMP_PASSWORD NULL
 #endif
 
 /* prototype for the client call */
 int
-rcGetTempPassword (rcComm_t *conn, getTempPasswordOut_t **getTempPasswordOut);
+rcGetTempPassword( rcComm_t *conn, getTempPasswordOut_t **getTempPasswordOut );
 
 #endif	/* GET_TEMP_PASSWORD_H */

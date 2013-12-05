@@ -19,30 +19,29 @@
 #include "msParam.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_error.hpp"
-#include "eirods_first_class_object.hpp"
-eirods::error fileCreate  ( rsComm_t*, eirods::first_class_object_ptr );
-eirods::error fileOpen    ( rsComm_t*, eirods::first_class_object_ptr );
-eirods::error fileRead    ( rsComm_t*, eirods::first_class_object_ptr, void*, int );
-eirods::error fileWrite   ( rsComm_t*, eirods::first_class_object_ptr, void*, int );
-eirods::error fileClose   ( rsComm_t*, eirods::first_class_object_ptr );
-eirods::error fileUnlink  ( rsComm_t*, eirods::first_class_object_ptr );
-eirods::error fileStat    ( rsComm_t*, eirods::first_class_object_ptr, struct stat* );
-eirods::error fileLseek   ( rsComm_t*, eirods::first_class_object_ptr, long long, int ); 
-eirods::error fileMkdir   ( rsComm_t*, eirods::first_class_object_ptr );
-eirods::error fileChmod   ( rsComm_t*, eirods::first_class_object_ptr, int );
-eirods::error fileRmdir   ( rsComm_t*, eirods::first_class_object_ptr );
-eirods::error fileOpendir ( rsComm_t*, eirods::first_class_object_ptr );
-eirods::error fileClosedir( rsComm_t*, eirods::first_class_object_ptr );
-eirods::error fileReaddir ( rsComm_t*, eirods::first_class_object_ptr, struct rodsDirent** );
-eirods::error fileRename  ( rsComm_t*, eirods::first_class_object_ptr, const std::string& );
-eirods::error fileGetFsFreeSpace( rsComm_t*, eirods::first_class_object_ptr );
-eirods::error fileTruncate( rsComm_t*, eirods::first_class_object_ptr );
-eirods::error fileStageToCache( rsComm_t*, eirods::first_class_object_ptr, const std::string& );
-eirods::error fileSyncToArch  ( rsComm_t*, eirods::first_class_object_ptr, const std::string& );
-eirods::error fileRegistered(rsComm_t* _comm, eirods::first_class_object_ptr _object );
-eirods::error fileUnregistered(rsComm_t* _comm, eirods::first_class_object_ptr _object );
-eirods::error fileModified(rsComm_t* _comm, eirods::first_class_object_ptr _object );
-eirods::error fileNotify(rsComm_t* _comm, eirods::first_class_object_ptr _object , const std::string& );
+#include "irods_error.hpp"
+#include "irods_first_class_object.hpp"
+irods::error fileCreate( rsComm_t*, irods::first_class_object_ptr );
+irods::error fileOpen( rsComm_t*, irods::first_class_object_ptr );
+irods::error fileRead( rsComm_t*, irods::first_class_object_ptr, void*, int );
+irods::error fileWrite( rsComm_t*, irods::first_class_object_ptr, void*, int );
+irods::error fileClose( rsComm_t*, irods::first_class_object_ptr );
+irods::error fileUnlink( rsComm_t*, irods::first_class_object_ptr );
+irods::error fileStat( rsComm_t*, irods::first_class_object_ptr, struct stat* );
+irods::error fileLseek( rsComm_t*, irods::first_class_object_ptr, long long, int );
+irods::error fileMkdir( rsComm_t*, irods::first_class_object_ptr );
+irods::error fileChmod( rsComm_t*, irods::first_class_object_ptr, int );
+irods::error fileRmdir( rsComm_t*, irods::first_class_object_ptr );
+irods::error fileOpendir( rsComm_t*, irods::first_class_object_ptr );
+irods::error fileClosedir( rsComm_t*, irods::first_class_object_ptr );
+irods::error fileReaddir( rsComm_t*, irods::first_class_object_ptr, struct rodsDirent** );
+irods::error fileRename( rsComm_t*, irods::first_class_object_ptr, const std::string& );
+irods::error fileGetFsFreeSpace( rsComm_t*, irods::first_class_object_ptr );
+irods::error fileTruncate( rsComm_t*, irods::first_class_object_ptr );
+irods::error fileStageToCache( rsComm_t*, irods::first_class_object_ptr, const std::string& );
+irods::error fileSyncToArch( rsComm_t*, irods::first_class_object_ptr, const std::string& );
+irods::error fileRegistered( rsComm_t* _comm, irods::first_class_object_ptr _object );
+irods::error fileUnregistered( rsComm_t* _comm, irods::first_class_object_ptr _object );
+irods::error fileModified( rsComm_t* _comm, irods::first_class_object_ptr _object );
+irods::error fileNotify( rsComm_t* _comm, irods::first_class_object_ptr _object , const std::string& );
 #endif	/* FILE_DRIVER_H */

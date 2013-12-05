@@ -49,14 +49,14 @@ SVR_CORE_OBJS =	\
 		$(svrCoreObjDir)/specColl.o	\
 		$(svrCoreObjDir)/reServerLib.o	\
 		$(svrCoreObjDir)/physPath.o \
-		$(svrCoreObjDir)/eirods_resource_manager.o \
-		$(svrCoreObjDir)/eirods_resource_backport.o \
-		$(svrCoreObjDir)/eirods_server_negotiation.o \
-		$(svrCoreObjDir)/eirods_collection_object.o \
-		$(svrCoreObjDir)/eirods_structured_object.o \
-		$(svrCoreObjDir)/eirods_physical_object.o \
-		$(svrCoreObjDir)/eirods_data_object.o \
-		$(svrCoreObjDir)/eirods_file_object.o 
+		$(svrCoreObjDir)/irods_resource_manager.o \
+		$(svrCoreObjDir)/irods_resource_backport.o \
+		$(svrCoreObjDir)/irods_server_negotiation.o \
+		$(svrCoreObjDir)/irods_collection_object.o \
+		$(svrCoreObjDir)/irods_structured_object.o \
+		$(svrCoreObjDir)/irods_physical_object.o \
+		$(svrCoreObjDir)/irods_data_object.o \
+		$(svrCoreObjDir)/irods_file_object.o 
 
 INCLUDES +=	-I$(svrCoreIncDir)
 
@@ -89,16 +89,16 @@ INCLUDES +=	-I$(svrIcatIncDir)
 ifdef RODS_CAT
 CFLAGS +=	-DRODS_CAT
 SVR_ICAT_OBJS =	\
-		$(svrIcatObjDir)/eirods_catalog_properties.o \
+		$(svrIcatObjDir)/irods_catalog_properties.o \
 		$(svrIcatObjDir)/icatMidLevelHelpers.o \
 		$(svrIcatObjDir)/icatMidLevelRoutines.o \
 		$(svrIcatObjDir)/icatHighLevelRoutines.o \
 		$(svrIcatObjDir)/icatGeneralQuery.o \
 		$(svrIcatObjDir)/icatGeneralQuerySetup.o \
 		$(svrIcatObjDir)/icatGeneralUpdate.o \
-		$(svrIcatObjDir)/eirods_zone_info.o \
-		$(svrIcatObjDir)/eirods_sql_logger.o \
-		$(svrIcatObjDir)/eirods_tmp_string.o
+		$(svrIcatObjDir)/irods_zone_info.o \
+		$(svrIcatObjDir)/irods_sql_logger.o \
+		$(svrIcatObjDir)/irods_tmp_string.o
 INCLUDES +=	-I$(svrIcatIncDir)
 
 SERVER_BINS +=  $(serverBinDir)/irodsXmsgServer
@@ -242,8 +242,8 @@ SVR_RE_OBJS =	\
 		$(svrReObjDir)/configuration.o \
 		$(svrReObjDir)/reAutoReplicateService.o \
 		$(svrReObjDir)/sysBackupMS.o \
-		$(svrReObjDir)/eirods_ms_plugin.o \
-		$(svrReObjDir)/eirods_operation_rule_execution_manager.o
+		$(svrReObjDir)/irods_ms_plugin.o \
+		$(svrReObjDir)/irods_operation_rule_execution_manager.o
 
 ifdef NETCDF_API
 SVR_RE_OBJS+=  $(svrReObjDir)/reNetcdf.o

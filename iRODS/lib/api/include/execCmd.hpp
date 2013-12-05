@@ -45,30 +45,30 @@ typedef struct ExecCmdOut {
 
 #define ExecCmd241_PI "str cmd[LONG_NAME_LEN]; str cmdArgv[HUGE_NAME_LEN]; str execAddr[LONG_NAME_LEN]; str hintPath[MAX_NAME_LEN]; int addPathToArgv; struct KeyValPair_PI;"
 #define ExecCmd_PI "str cmd[LONG_NAME_LEN]; str cmdArgv[HUGE_NAME_LEN]; str execAddr[LONG_NAME_LEN]; str hintPath[MAX_NAME_LEN]; int addPathToArgv; int dummy; struct KeyValPair_PI;"
-#define ExecCmdOut_PI "struct BinBytesBuf_PI; struct BinBytesBuf_PI; int status;" 
+#define ExecCmdOut_PI "struct BinBytesBuf_PI; struct BinBytesBuf_PI; int status;"
 
 #if defined(RODS_SERVER)
 #define RS_EXEC_CMD241 rsExecCmd241
 #define RS_EXEC_CMD rsExecCmd
 /* prototype for the server handler */
 int
-rsExecCmd241 (rsComm_t *rsComm, execCmd241_t *execCmdInp, 
-execCmdOut_t **execCmdOut);
+rsExecCmd241( rsComm_t *rsComm, execCmd241_t *execCmdInp,
+              execCmdOut_t **execCmdOut );
 int
-rsExecCmd (rsComm_t *rsComm, execCmd_t *execCmdInp, 
-execCmdOut_t **execCmdOut);
+rsExecCmd( rsComm_t *rsComm, execCmd_t *execCmdInp,
+           execCmdOut_t **execCmdOut );
 int
-initExecCmdMutex ();
+initExecCmdMutex();
 int
-_rsExecCmd (rsComm_t *rsComm, execCmd_t *execCmdInp, 
-execCmdOut_t **execCmdOut);
+_rsExecCmd( rsComm_t *rsComm, execCmd_t *execCmdInp,
+            execCmdOut_t **execCmdOut );
 int
-remoteExecCmd (rsComm_t *rsComm, execCmd_t *execCmdInp,
-execCmdOut_t **execCmdOut, rodsServerHost_t *rodsServerHost);
+remoteExecCmd( rsComm_t *rsComm, execCmd_t *execCmdInp,
+               execCmdOut_t **execCmdOut, rodsServerHost_t *rodsServerHost );
 int
-execCmd (execCmd_t *execCmdInp, int stdOutFd, int stdErrFd);
+execCmd( execCmd_t *execCmdInp, int stdOutFd, int stdErrFd );
 int
-initCmdArg (char *av[], char *cmdArgv, char *cmdPath);
+initCmdArg( char *av[], char *cmdArgv, char *cmdPath );
 #else
 #define RS_EXEC_CMD241 NULL
 #define RS_EXEC_CMD NULL
@@ -78,23 +78,23 @@ initCmdArg (char *av[], char *cmdArgv, char *cmdPath);
 extern "C" {
 #endif
 
-/* prototype for the client call */
-int
-rcExecCmd (rcComm_t *conn, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut);
+    /* prototype for the client call */
+    int
+    rcExecCmd( rcComm_t *conn, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut );
 
-/* rcExecCmd - Execute a command on the server.
- * Input -
- *   rcComm_t *conn - The client connection handle.
- *   execCmd_t *execCmdInp - the execCmd input
- *
- * OutPut -
- *   bytesBuf_t *cmdOutBBuf - The stdout and stderr of the command is stored
- *    int this bytesBuf.
- *   int status - status of the operation.
- */
-int
-rcExecCmd241 (rcComm_t *conn, execCmd241_t *execCmdInp, 
-execCmdOut_t **execCmdOut);
+    /* rcExecCmd - Execute a command on the server.
+     * Input -
+     *   rcComm_t *conn - The client connection handle.
+     *   execCmd_t *execCmdInp - the execCmd input
+     *
+     * OutPut -
+     *   bytesBuf_t *cmdOutBBuf - The stdout and stderr of the command is stored
+     *    int this bytesBuf.
+     *   int status - status of the operation.
+     */
+    int
+    rcExecCmd241( rcComm_t *conn, execCmd241_t *execCmdInp,
+                  execCmdOut_t **execCmdOut );
 
 #ifdef  __cplusplus
 }

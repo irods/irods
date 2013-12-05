@@ -15,23 +15,24 @@
 #include "getRemoteZoneResc.hpp"
 
 int
-rsL3FileGetSingleBuf (rsComm_t *rsComm, int *l1descInx,
-bytesBuf_t *dataObjOutBBuf)
-{
+rsL3FileGetSingleBuf( rsComm_t *rsComm, int *l1descInx,
+                      bytesBuf_t *dataObjOutBBuf ) {
     int bytesRead;
 
-    if (L1desc[*l1descInx].dataObjInfo->dataSize > 0) {
-        if (L1desc[*l1descInx].remoteZoneHost != NULL) {
-	    bytesRead = rcL3FileGetSingleBuf (
-	      L1desc[*l1descInx].remoteZoneHost->conn,
-	      L1desc[*l1descInx].remoteL1descInx, dataObjOutBBuf);
-        } else {
-	    bytesRead = l3FileGetSingleBuf (rsComm, *l1descInx, dataObjOutBBuf);
-	}
-    } else {
-	bytesRead = 0;
-	bzero (dataObjOutBBuf, sizeof (bytesBuf_t));
+    if ( L1desc[*l1descInx].dataObjInfo->dataSize > 0 ) {
+        if ( L1desc[*l1descInx].remoteZoneHost != NULL ) {
+            bytesRead = rcL3FileGetSingleBuf(
+                            L1desc[*l1descInx].remoteZoneHost->conn,
+                            L1desc[*l1descInx].remoteL1descInx, dataObjOutBBuf );
+        }
+        else {
+            bytesRead = l3FileGetSingleBuf( rsComm, *l1descInx, dataObjOutBBuf );
+        }
     }
-    return (bytesRead);
+    else {
+        bytesRead = 0;
+        bzero( dataObjOutBBuf, sizeof( bytesBuf_t ) );
+    }
+    return ( bytesRead );
 }
 

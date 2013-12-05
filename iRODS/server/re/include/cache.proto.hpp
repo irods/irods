@@ -3,7 +3,7 @@
 #ifndef CACHE_PROTO_HPP
 #define CACHE_PROTO_HPP
 
-typedef void * (CacheCopyFuncType)(unsigned char *, unsigned char **, unsigned char **, void *, Hashtable *, int);
+typedef void * ( CacheCopyFuncType )( unsigned char *, unsigned char **, unsigned char **, void *, Hashtable *, int );
 
 #endif
 

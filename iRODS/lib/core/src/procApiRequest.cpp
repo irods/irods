@@ -7,8 +7,7 @@
  */
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_network_factory.hpp"
+#include "irods_network_factory.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
@@ -25,7 +24,7 @@
 #include <boost/shared_ptr.hpp>
 
 /* procApiRequest - This is the main function used by the client API
- * function to issue API requests and recieve output returned from 
+ * function to issue API requests and recieve output returned from
  * the server.
  * rcComm_t *conn - the client communication handle.
  * int apiNumber - the API number of this call defined in apiNumber.h.
@@ -33,168 +32,168 @@
  *     is no input struct, a NULL should be entered
  * bytesBuf_t *inputBsBBuf - pointer to the input byte stream. If there
  *     is no input byte stream, a NULL should be entered
- * void **outStruct - Pointer to pointer to the output struct. The outStruct 
+ * void **outStruct - Pointer to pointer to the output struct. The outStruct
  *     will be allocated by this function and the pointer to this struct is
  *     passed back to the caller through this pointer. If there
  *     is no output struct, a NULL should be entered
  * bytesBuf_t *outBsBBuf - pointer to the output byte stream. If there
  *     is no output byte stream, a NULL should be entered
- * 
+ *
  */
 
 int
-procApiRequest (rcComm_t *conn, int apiNumber, void *inputStruct,
-                bytesBuf_t *inputBsBBuf, void **outStruct, bytesBuf_t *outBsBBuf)
-{
+procApiRequest( rcComm_t *conn, int apiNumber, void *inputStruct,
+                bytesBuf_t *inputBsBBuf, void **outStruct, bytesBuf_t *outBsBBuf ) {
     int status;
     int apiInx;
 
-    if (conn == NULL) {
-        return (USER__NULL_INPUT_ERR);
+    if ( conn == NULL ) {
+        return ( USER__NULL_INPUT_ERR );
     }
 
-    freeRError (conn->rError);
+    freeRError( conn->rError );
     conn->rError = NULL;
 
-    apiInx = apiTableLookup (apiNumber);
-    if (apiInx < 0) {
-        rodsLog (LOG_ERROR,
-                 "procApiRequest: apiTableLookup of apiNumber %d failed", apiNumber);
-        return (apiInx);
+    apiInx = apiTableLookup( apiNumber );
+    if ( apiInx < 0 ) {
+        rodsLog( LOG_ERROR,
+                 "procApiRequest: apiTableLookup of apiNumber %d failed", apiNumber );
+        return ( apiInx );
     }
 
-    status = sendApiRequest (conn, apiInx, inputStruct, inputBsBBuf);
-    if (status < 0) {
-        rodsLogError (LOG_DEBUG, status,
-                      "procApiRequest: sendApiRequest failed. status = %d", status);
-        return (status);
+    status = sendApiRequest( conn, apiInx, inputStruct, inputBsBBuf );
+    if ( status < 0 ) {
+        rodsLogError( LOG_DEBUG, status,
+                      "procApiRequest: sendApiRequest failed. status = %d", status );
+        return ( status );
     }
 
     conn->apiInx = apiInx;
 
-    status = readAndProcApiReply (conn, apiInx, outStruct, outBsBBuf);
-    if (status < 0) {
-        rodsLogError (LOG_DEBUG, status,
-                      "procApiRequest: readAndProcApiReply failed. status = %d", status);
+    status = readAndProcApiReply( conn, apiInx, outStruct, outBsBBuf );
+    if ( status < 0 ) {
+        rodsLogError( LOG_DEBUG, status,
+                      "procApiRequest: readAndProcApiReply failed. status = %d", status );
     }
 
-    return (status);
+    return ( status );
 }
 
 int
-branchReadAndProcApiReply (rcComm_t *conn, int apiNumber,
-                           void **outStruct, bytesBuf_t *outBsBBuf)
-{
+branchReadAndProcApiReply( rcComm_t *conn, int apiNumber,
+                           void **outStruct, bytesBuf_t *outBsBBuf ) {
     int status;
     int apiInx;
 
-    if (conn == NULL) {
-        return (USER__NULL_INPUT_ERR);
+    if ( conn == NULL ) {
+        return ( USER__NULL_INPUT_ERR );
     }
 
-    apiInx = apiTableLookup (apiNumber);
-    if (apiInx < 0) {
-        rodsLog (LOG_ERROR,
-                 "branchReadAndProcApiReply: apiTableLookup of apiNum %d failed", 
-                 apiNumber);
-        return (apiInx);
+    apiInx = apiTableLookup( apiNumber );
+    if ( apiInx < 0 ) {
+        rodsLog( LOG_ERROR,
+                 "branchReadAndProcApiReply: apiTableLookup of apiNum %d failed",
+                 apiNumber );
+        return ( apiInx );
     }
 
     conn->apiInx = apiInx;
 
-    status = readAndProcApiReply (conn, apiInx, outStruct, outBsBBuf);
-    if (status < 0) {
-        rodsLogError (LOG_DEBUG, status,
+    status = readAndProcApiReply( conn, apiInx, outStruct, outBsBBuf );
+    if ( status < 0 ) {
+        rodsLogError( LOG_DEBUG, status,
                       "branchReadAndProcApiReply: readAndProcApiReply failed. status = %d",
-                      status);
+                      status );
     }
-    return (status);
+    return ( status );
 }
 
 int
-sendApiRequest (rcComm_t *conn, int apiInx, void *inputStruct,
-                bytesBuf_t *inputBsBBuf)
-{
+sendApiRequest( rcComm_t *conn, int apiInx, void *inputStruct,
+                bytesBuf_t *inputBsBBuf ) {
     int status;
     bytesBuf_t *inputStructBBuf = NULL;
     bytesBuf_t *myInputStructBBuf;
 
-    cliChkReconnAtSendStart (conn);
+    cliChkReconnAtSendStart( conn );
 
-    if (RcApiTable[apiInx].inPackInstruct != NULL) {
-        if (inputStruct == NULL) {
-            cliChkReconnAtSendEnd (conn);
-            return (USER_API_INPUT_ERR);
+    if ( RcApiTable[apiInx].inPackInstruct != NULL ) {
+        if ( inputStruct == NULL ) {
+            cliChkReconnAtSendEnd( conn );
+            return ( USER_API_INPUT_ERR );
         }
-        status = packStruct ((void *) inputStruct, &inputStructBBuf,
-                             RcApiTable[apiInx].inPackInstruct, RodsPackTable, 0, conn->irodsProt);
-        if (status < 0) {
-            rodsLogError (LOG_ERROR, status,
-                          "sendApiRequest: packStruct error, status = %d", status);
-            cliChkReconnAtSendEnd (conn);
+        status = packStruct( ( void * ) inputStruct, &inputStructBBuf,
+                             RcApiTable[apiInx].inPackInstruct, RodsPackTable, 0, conn->irodsProt );
+        if ( status < 0 ) {
+            rodsLogError( LOG_ERROR, status,
+                          "sendApiRequest: packStruct error, status = %d", status );
+            cliChkReconnAtSendEnd( conn );
             return status;
         }
 
         myInputStructBBuf = inputStructBBuf;
-    } else {
+    }
+    else {
         myInputStructBBuf = NULL;
     };
 
 
-    if (RcApiTable[apiInx].inBsFlag <= 0) {
+    if ( RcApiTable[apiInx].inBsFlag <= 0 ) {
         inputBsBBuf = NULL;
     }
 
-    eirods::network_object_ptr net_obj;
-    eirods::error ret = eirods::network_factory( conn, net_obj );
-    if( !ret.ok() ) {
-        eirods::log( PASS( ret ) );
+    irods::network_object_ptr net_obj;
+    irods::error ret = irods::network_factory( conn, net_obj );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
         return ret.code();
     }
- 
-    ret = sendRodsMsg( 
-              net_obj, 
-              RODS_API_REQ_T, 
+
+    ret = sendRodsMsg(
+              net_obj,
+              RODS_API_REQ_T,
               myInputStructBBuf,
-              inputBsBBuf, 
-              NULL, 
-              RcApiTable[apiInx].apiNumber, 
+              inputBsBBuf,
+              NULL,
+              RcApiTable[apiInx].apiNumber,
               conn->irodsProt );
-    if( !ret.ok() ) {
-        eirods::log( PASS( ret ) ); 
-        if( conn->svrVersion != NULL && 
-            conn->svrVersion->reconnPort > 0 ) {
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        if ( conn->svrVersion != NULL &&
+                conn->svrVersion->reconnPort > 0 ) {
             int status1;
             int savedStatus = ret.code() ;
             conn->lock->lock();
-            status1 = cliSwitchConnect (conn);
-            rodsLog (LOG_DEBUG,
+            status1 = cliSwitchConnect( conn );
+            rodsLog( LOG_DEBUG,
                      "sendApiRequest: svrSwitchConnect. cliState = %d,agState=%d",
-                     conn->clientState, conn->agentState);
+                     conn->clientState, conn->agentState );
             conn->lock->unlock();
-            if (status1 > 0) {
+            if ( status1 > 0 ) {
                 /* should not be here */
-                rodsLog (LOG_NOTICE,
-                         "sendApiRequest: Switch connection and retry sendRodsMsg");
-                ret = sendRodsMsg( 
-                          net_obj, 
-                          RODS_API_REQ_T, 
+                rodsLog( LOG_NOTICE,
+                         "sendApiRequest: Switch connection and retry sendRodsMsg" );
+                ret = sendRodsMsg(
+                          net_obj,
+                          RODS_API_REQ_T,
                           myInputStructBBuf,
-                          inputBsBBuf, 
-                          NULL, 
-                          RcApiTable[apiInx].apiNumber, 
+                          inputBsBBuf,
+                          NULL,
+                          RcApiTable[apiInx].apiNumber,
                           conn->irodsProt );
-                if( !ret.ok() ) {
-                    eirods::log( PASS( ret ) ); 
-                } else {
+                if ( !ret.ok() ) {
+                    irods::log( PASS( ret ) );
+                }
+                else {
                     status = savedStatus;
                 }
-            
+
             } // if status1 > 0
 
         } // if svrVersion != NULL ...
 
-    } else {
+    }
+    else {
         // =-=-=-=-=-=-=-
         // be sure to pass along the return code from the
         // plugin call
@@ -202,71 +201,71 @@ sendApiRequest (rcComm_t *conn, int apiInx, void *inputStruct,
 
     }
 
-    freeBBuf (inputStructBBuf);
+    freeBBuf( inputStructBBuf );
 
-    return (status);
+    return ( status );
 }
 
 int
-readAndProcApiReply (rcComm_t *conn, int apiInx, void **outStruct, 
-                     bytesBuf_t *outBsBBuf)
-{
+readAndProcApiReply( rcComm_t *conn, int apiInx, void **outStruct,
+                     bytesBuf_t *outBsBBuf ) {
     int status = 0;
     msgHeader_t myHeader;
     /* bytesBuf_t outStructBBuf, errorBBuf, myOutBsBBuf; */
     bytesBuf_t outStructBBuf, errorBBuf;
 
-    cliChkReconnAtReadStart (conn);
+    cliChkReconnAtReadStart( conn );
 
-    memset (&outStructBBuf, 0, sizeof (bytesBuf_t));
-    memset (&outStructBBuf, 0, sizeof (bytesBuf_t));
+    memset( &outStructBBuf, 0, sizeof( bytesBuf_t ) );
+    memset( &outStructBBuf, 0, sizeof( bytesBuf_t ) );
     /* memset (&myOutBsBBuf, 0, sizeof (bytesBuf_t)); */
 
     /* some sanity check */
 
-    if (RcApiTable[apiInx].outPackInstruct != NULL && outStruct == NULL) {
-        rodsLog (LOG_ERROR,
-                 "readAndProcApiReply: outStruct error for A apiNumber %d", 
-                 RcApiTable[apiInx].apiNumber);
-        cliChkReconnAtReadEnd (conn);
-        return (USER_API_INPUT_ERR);
+    if ( RcApiTable[apiInx].outPackInstruct != NULL && outStruct == NULL ) {
+        rodsLog( LOG_ERROR,
+                 "readAndProcApiReply: outStruct error for A apiNumber %d",
+                 RcApiTable[apiInx].apiNumber );
+        cliChkReconnAtReadEnd( conn );
+        return ( USER_API_INPUT_ERR );
     }
 
-    if (RcApiTable[apiInx].outBsFlag > 0 && outBsBBuf == NULL) {
-        rodsLog (LOG_ERROR,
+    if ( RcApiTable[apiInx].outBsFlag > 0 && outBsBBuf == NULL ) {
+        rodsLog( LOG_ERROR,
                  "readAndProcApiReply: outBsBBuf error for B apiNumber %d",
-                 RcApiTable[apiInx].apiNumber);
-        cliChkReconnAtReadEnd (conn);
-        return (USER_API_INPUT_ERR);
+                 RcApiTable[apiInx].apiNumber );
+        cliChkReconnAtReadEnd( conn );
+        return ( USER_API_INPUT_ERR );
     }
 
-    eirods::network_object_ptr net_obj;
-    eirods::error ret = eirods::network_factory( conn, net_obj );
-    if( !ret.ok() ) {
-        eirods::log( PASS( ret ) );
+    irods::network_object_ptr net_obj;
+    irods::error ret = irods::network_factory( conn, net_obj );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
         return ret.code();
     }
 
     ret = readMsgHeader( net_obj, &myHeader, NULL );
-    if( !ret.ok() ) {
-        eirods::log( PASS( ret ) );
-        if (conn->svrVersion != NULL && conn->svrVersion->reconnPort > 0) {
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        if ( conn->svrVersion != NULL && conn->svrVersion->reconnPort > 0 ) {
             int savedStatus = ret.code();
             /* try again. the socket might have changed */
             conn->lock->lock();
-            rodsLog (LOG_DEBUG,
+            rodsLog( LOG_DEBUG,
                      "readAndProcClientMsg:svrSwitchConnect.cliState = %d,agState=%d",
-                     conn->clientState, conn->agentState);
-            cliSwitchConnect (conn);
+                     conn->clientState, conn->agentState );
+            cliSwitchConnect( conn );
             conn->lock->unlock();
-            eirods::error ret = readMsgHeader( net_obj, &myHeader, NULL );
+            irods::error ret = readMsgHeader( net_obj, &myHeader, NULL );
 
-            if( !ret.ok() ) {
-                cliChkReconnAtReadEnd (conn);
-                return (savedStatus);
+            if ( !ret.ok() ) {
+                cliChkReconnAtReadEnd( conn );
+                return ( savedStatus );
             }
-        } else {
-            cliChkReconnAtReadEnd (conn);
+        }
+        else {
+            cliChkReconnAtReadEnd( conn );
             return ( ret.code() );
         }
 
@@ -274,42 +273,41 @@ readAndProcApiReply (rcComm_t *conn, int apiInx, void **outStruct,
 
     ret = readMsgBody( net_obj, &myHeader, &outStructBBuf, outBsBBuf,
                        &errorBBuf, conn->irodsProt, NULL );
-    if( !ret.ok() ) {
-        eirods::log( PASS( ret ) );
-        cliChkReconnAtReadEnd (conn);
-        return (status);
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        cliChkReconnAtReadEnd( conn );
+        return ( status );
     } // if !ret.ok
 
-    cliChkReconnAtReadEnd (conn);
+    cliChkReconnAtReadEnd( conn );
 
-    if (strcmp (myHeader.type, RODS_API_REPLY_T) == 0) {
-        status = procApiReply (conn, apiInx, outStruct, outBsBBuf,
-                               &myHeader, &outStructBBuf, NULL, &errorBBuf); 
+    if ( strcmp( myHeader.type, RODS_API_REPLY_T ) == 0 ) {
+        status = procApiReply( conn, apiInx, outStruct, outBsBBuf,
+                               &myHeader, &outStructBBuf, NULL, &errorBBuf );
     }
 
-    clearBBuf (&outStructBBuf);
+    clearBBuf( &outStructBBuf );
     /* clearBBuf (&myOutBsBBuf); */
-    clearBBuf (&errorBBuf);
+    clearBBuf( &errorBBuf );
 
-    return (status);
+    return ( status );
 }
 
 int
-procApiReply (rcComm_t *conn, int apiInx, void **outStruct,
+procApiReply( rcComm_t *conn, int apiInx, void **outStruct,
               bytesBuf_t *outBsBBuf,
-              msgHeader_t *myHeader, bytesBuf_t *outStructBBuf, bytesBuf_t *myOutBsBBuf, 
-              bytesBuf_t *errorBBuf)
-{
+              msgHeader_t *myHeader, bytesBuf_t *outStructBBuf, bytesBuf_t *myOutBsBBuf,
+              bytesBuf_t *errorBBuf ) {
     int status;
     int retVal;
 
-    if (errorBBuf->len > 0) {
-        status = unpackStruct (errorBBuf->buf, (void **) &conn->rError,
-                               "RError_PI", RodsPackTable, conn->irodsProt);
-        if (status < 0) {
-            rodsLogError (LOG_ERROR, status,
+    if ( errorBBuf->len > 0 ) {
+        status = unpackStruct( errorBBuf->buf, ( void ** ) &conn->rError,
+                               "RError_PI", RodsPackTable, conn->irodsProt );
+        if ( status < 0 ) {
+            rodsLogError( LOG_ERROR, status,
                           "readAndProcApiReply:unpackStruct error. status = %d",
-                          status);
+                          status );
         }
     }
 
@@ -317,108 +315,113 @@ procApiReply (rcComm_t *conn, int apiInx, void **outStruct,
 
     /* some sanity check */
 
-    if (RcApiTable[apiInx].outPackInstruct != NULL && outStruct == NULL) {
-        rodsLog (LOG_ERROR,
+    if ( RcApiTable[apiInx].outPackInstruct != NULL && outStruct == NULL ) {
+        rodsLog( LOG_ERROR,
                  "readAndProcApiReply: outStruct error for C apiNumber %d",
-                 RcApiTable[apiInx].apiNumber);
-        if (retVal < 0)
+                 RcApiTable[apiInx].apiNumber );
+        if ( retVal < 0 ) {
             return retVal;
+        }
         else {
-            return (USER_API_INPUT_ERR);
+            return ( USER_API_INPUT_ERR );
         }
     }
 
-    if (RcApiTable[apiInx].outBsFlag > 0 && outBsBBuf == NULL) {
-        rodsLog (LOG_ERROR,
+    if ( RcApiTable[apiInx].outBsFlag > 0 && outBsBBuf == NULL ) {
+        rodsLog( LOG_ERROR,
                  "readAndProcApiReply: outBsBBuf error for D apiNumber %d",
-                 RcApiTable[apiInx].apiNumber);
-        if (retVal < 0)
+                 RcApiTable[apiInx].apiNumber );
+        if ( retVal < 0 ) {
             return retVal;
+        }
         else {
-            return (USER_API_INPUT_ERR);
+            return ( USER_API_INPUT_ERR );
         }
     }
 
     /* handle outStruct */
-    if (outStructBBuf->len > 0) {
-        if (outStruct != NULL) {
-            status = unpackStruct (outStructBBuf->buf, (void **) outStruct,
-                                   RcApiTable[apiInx].outPackInstruct, RodsPackTable, 
-                                   conn->irodsProt);
-            if (status < 0) {
-                rodsLogError (LOG_ERROR, status,
+    if ( outStructBBuf->len > 0 ) {
+        if ( outStruct != NULL ) {
+            status = unpackStruct( outStructBBuf->buf, ( void ** ) outStruct,
+                                   RcApiTable[apiInx].outPackInstruct, RodsPackTable,
+                                   conn->irodsProt );
+            if ( status < 0 ) {
+                rodsLogError( LOG_ERROR, status,
                               "readAndProcApiReply:unpackStruct error. status = %d",
-                              status);
-                if (retVal < 0)
+                              status );
+                if ( retVal < 0 ) {
                     return retVal;
-                else
-                    return (status);
+                }
+                else {
+                    return ( status );
+                }
             }
-        } else {
-            rodsLog (LOG_ERROR,
+        }
+        else {
+            rodsLog( LOG_ERROR,
                      "readAndProcApiReply: got unneeded outStruct for apiNumber %d",
-                     RcApiTable[apiInx].apiNumber);
+                     RcApiTable[apiInx].apiNumber );
         }
     }
 
-    if (myOutBsBBuf != NULL && myOutBsBBuf->len > 0) {
-        if (outBsBBuf != NULL) {
+    if ( myOutBsBBuf != NULL && myOutBsBBuf->len > 0 ) {
+        if ( outBsBBuf != NULL ) {
             /* copy to out */
             *outBsBBuf = *myOutBsBBuf;
-            memset (myOutBsBBuf, 0, sizeof (bytesBuf_t));
-        } else {
-            rodsLog (LOG_ERROR,
+            memset( myOutBsBBuf, 0, sizeof( bytesBuf_t ) );
+        }
+        else {
+            rodsLog( LOG_ERROR,
                      "readAndProcApiReply: got unneeded outBsBBuf for apiNumber %d",
-                     RcApiTable[apiInx].apiNumber);
+                     RcApiTable[apiInx].apiNumber );
         }
     }
 
     return retVal;
 }
 
-int 
-cliGetCollOprStat (rcComm_t *conn, collOprStat_t *collOprStat, int vFlag, 
-                   int retval)
-{
+int
+cliGetCollOprStat( rcComm_t *conn, collOprStat_t *collOprStat, int vFlag,
+                   int retval ) {
     int status = retval;
 
-    while (status == SYS_SVR_TO_CLI_COLL_STAT) {
+    while ( status == SYS_SVR_TO_CLI_COLL_STAT ) {
         /* more to come */
-        if (collOprStat != NULL) {
-            if (vFlag != 0) {
-                printf ("num files done = %d, ", collOprStat->filesCnt);
-                if (collOprStat->totalFileCnt <= 0) {
-                    printf ("totalFileCnt = UNKNOWN, ");
-                } else {
-                    printf ("totalFileCnt = %d, ", collOprStat->totalFileCnt);
+        if ( collOprStat != NULL ) {
+            if ( vFlag != 0 ) {
+                printf( "num files done = %d, ", collOprStat->filesCnt );
+                if ( collOprStat->totalFileCnt <= 0 ) {
+                    printf( "totalFileCnt = UNKNOWN, " );
                 }
-                printf ("bytesWritten = %lld, last file done: %s\n",
-                        collOprStat->bytesWritten, collOprStat->lastObjPath);
+                else {
+                    printf( "totalFileCnt = %d, ", collOprStat->totalFileCnt );
+                }
+                printf( "bytesWritten = %lld, last file done: %s\n",
+                        collOprStat->bytesWritten, collOprStat->lastObjPath );
             }
-            free (collOprStat);
+            free( collOprStat );
             collOprStat = NULL;
         }
-        status = _cliGetCollOprStat (conn, &collOprStat);
+        status = _cliGetCollOprStat( conn, &collOprStat );
     }
 
-    if (collOprStat != NULL) {
-        free (collOprStat);
+    if ( collOprStat != NULL ) {
+        free( collOprStat );
     }
 
-    return (status);
+    return ( status );
 }
 
 int
-_cliGetCollOprStat (rcComm_t *conn, collOprStat_t **collOprStat)
-{
+_cliGetCollOprStat( rcComm_t *conn, collOprStat_t **collOprStat ) {
     int myBuf;
     int status;
 
-    myBuf = htonl (SYS_CLI_TO_SVR_COLL_STAT_REPLY);
-    status = myWrite (conn->sock, (void *) &myBuf, 4, SOCK_TYPE, NULL);
-    status = readAndProcApiReply (conn, conn->apiInx,
-                                  (void **) collOprStat, NULL);
+    myBuf = htonl( SYS_CLI_TO_SVR_COLL_STAT_REPLY );
+    status = myWrite( conn->sock, ( void * ) &myBuf, 4, SOCK_TYPE, NULL );
+    status = readAndProcApiReply( conn, conn->apiInx,
+                                  ( void ** ) collOprStat, NULL );
 
-    return (status);
+    return ( status );
 }
 

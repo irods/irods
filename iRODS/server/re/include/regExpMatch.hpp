@@ -75,14 +75,14 @@ Wildcard Pattern Matching
 * and match the character exactly, precede it with a `\'.
 *
 ----------------------------------------------------------------------------*/
-BOOLEAN match (char *pattern, char *text);
-int matche(register char *pattern, register char *text);
+BOOLEAN match( char *pattern, char *text );
+int matche( register char *pattern, register char *text );
 /*----------------------------------------------------------------------------
 *
 * Return TRUE if PATTERN has any special wildcard characters
 *
 ----------------------------------------------------------------------------*/
-BOOLEAN is_pattern (char *pattern);
+BOOLEAN is_pattern( char *pattern );
 /*----------------------------------------------------------------------------
 *
 * Return TRUE if PATTERN has is a well formed regular expression according
@@ -99,6 +99,6 @@ BOOLEAN is_pattern (char *pattern);
 *PATTERN_EMPTY - [..] construct is empty (ie [])
 *
 ----------------------------------------------------------------------------*/
-BOOLEAN is_valid_pattern (char *pattern, int *error_type);
+BOOLEAN is_valid_pattern( char *pattern, int *error_type );
 #endif /* MATCH__H */
 

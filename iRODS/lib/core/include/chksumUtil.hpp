@@ -13,19 +13,19 @@
 extern "C" {
 #endif
 
-int
-chksumUtil (rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
-rodsPathInp_t *rodsPathInp);
-int
-chksumDataObjUtil (rcComm_t *conn, char *srcPath,
-rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
-dataObjInp_t *dataObjInp);
-int
-initCondForChksum (rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
-dataObjInp_t *dataObjInp, collInp_t *collInp);
-int
-chksumCollUtil (rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
-rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp, collInp_t *collInp);
+    int
+    chksumUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
+                rodsPathInp_t *rodsPathInp );
+    int
+    chksumDataObjUtil( rcComm_t *conn, char *srcPath,
+                       rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
+                       dataObjInp_t *dataObjInp );
+    int
+    initCondForChksum( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
+                       dataObjInp_t *dataObjInp, collInp_t *collInp );
+    int
+    chksumCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
+                    rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp, collInp_t *collInp );
 
 #ifdef  __cplusplus
 }

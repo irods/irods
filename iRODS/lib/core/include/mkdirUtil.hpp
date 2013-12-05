@@ -13,9 +13,9 @@
 extern "C" {
 #endif
 
-int
-mkdirUtil (rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
-rodsPathInp_t *rodsPathInp);
+    int
+    mkdirUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
+               rodsPathInp_t *rodsPathInp );
 
 #ifdef  __cplusplus
 }

@@ -3,7 +3,7 @@
  *
  */
 
-/* This is script-generated code.  */ 
+/* This is script-generated code.  */
 /* See bulkDataObjPut.h for a description of this API call.*/
 
 #include "bulkDataObjPut.hpp"
@@ -31,7 +31,7 @@
  * \note none
  *
  * \usage
- * Upload two local files - myfile1 and myfile2 to iRODS in the  
+ * Upload two local files - myfile1 and myfile2 to iRODS in the
  * /myZone/home/john/mydir collection and myRescource resource.
  * \n
  * \n bulkOprInp_t bulkOprInp;
@@ -75,7 +75,7 @@
  * \n }
  * \n close (fd);
  * \n # add myfile1 to the input array
- * \n status = fillAttriArrayOfBulkOprInp ("/myZone/home/john/mydir/myfile1", 
+ * \n status = fillAttriArrayOfBulkOprInp ("/myZone/home/john/mydir/myfile1",
  * \n      mode1, NULL, (int) size1, &bulkOprInp);
  * \n if (status < 0) {
  * \n .... handle the error
@@ -92,7 +92,7 @@
  * \n }
  * \n close (fd);
  * \n # add myfile2 to the input array
- * \n status = fillAttriArrayOfBulkOprInp ("/myZone/home/john/mydir/myfile2", 
+ * \n status = fillAttriArrayOfBulkOprInp ("/myZone/home/john/mydir/myfile2",
  * \n      mode2, NULL, (int) size2, &bulkOprInp);
  * \n if (status < 0) {
  * \n .... handle the error
@@ -105,16 +105,16 @@
  *
  * \param[in] conn - A rcComm_t connection handle to the server.
  * \param[in] bulkOprInp - Elements of bulkOprInp_t used :
- *    \li char \b objPath[MAX_NAME_LEN] - full path of the top target 
+ *    \li char \b objPath[MAX_NAME_LEN] - full path of the top target
  *         collection.
  *    \li attriArray - a genQueryOut_t containing arrays on info on the files
  *         being uploaded. The initAttriArrayOfBulkOprInp() call initializes
  *         this struct for bulk operations. Arrays needed for bulk operations
  *         are:
- *    \n COL_DATA_NAME - the full paths of each data object. 
+ *    \n COL_DATA_NAME - the full paths of each data object.
  *    \n COL_DATA_MODE - the createMode of each data object.
- *    \n OFFSET_INX - The accummulative size of the data objects. e.g., 
- *          suppose we are bulk loading 2 files with sizes s1 and s2 
+ *    \n OFFSET_INX - The accummulative size of the data objects. e.g.,
+ *          suppose we are bulk loading 2 files with sizes s1 and s2
  *          repectively,. The 2 elements of this array are, s1 and s1+s2.
  *    \n COL_D_DATA_CHECKSUM - The checksum values of each data object.
  *           This array is only needed if REG_CHKSUM_KW or VERIFY_CHKSUM_KW
@@ -140,12 +140,11 @@
 **/
 
 int
-rcBulkDataObjPut (rcComm_t *conn, bulkOprInp_t *bulkOprInp,
-bytesBuf_t *bulkOprInpBBuf)
-{
+rcBulkDataObjPut( rcComm_t *conn, bulkOprInp_t *bulkOprInp,
+                  bytesBuf_t *bulkOprInpBBuf ) {
     int status;
-    status = procApiRequest (conn, BULK_DATA_OBJ_PUT_AN, bulkOprInp, 
-      bulkOprInpBBuf, (void **) NULL, NULL);
+    status = procApiRequest( conn, BULK_DATA_OBJ_PUT_AN, bulkOprInp,
+                             bulkOprInpBBuf, ( void ** ) NULL, NULL );
 
-    return (status);
+    return ( status );
 }

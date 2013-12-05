@@ -21,8 +21,7 @@
 #include "apiHeaderAll.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_resource_backport.hpp"
+#include "irods_resource_backport.hpp"
 
 
 /*
@@ -33,44 +32,40 @@
  * 			directory and copies some of its content to the local resource
  *
  */
-int loadDirToLocalResc(ruleExecInfo_t *rei, char *dirPath, size_t offset,
-		char *resDirPath, char *timestamp, char *dbPath)
-{
-	DIR *myDir;
-	struct dirent *de;
-	struct stat s;
-	char absPath[MAX_NAME_LEN], *subPath;
-	char sysCopyCmd[2*MAX_NAME_LEN];
-	int filecount = 0, status;
-	char *dirname;
+int loadDirToLocalResc( ruleExecInfo_t *rei, char *dirPath, size_t offset,
+                        char *resDirPath, char *timestamp, char *dbPath ) {
+    DIR *myDir;
+    struct dirent *de;
+    struct stat s;
+    char absPath[MAX_NAME_LEN], *subPath;
+    char sysCopyCmd[2 * MAX_NAME_LEN];
+    int filecount = 0, status;
+    char *dirname;
 
 
 
-	/* Get name of directory */
-	if ((dirname = strrchr(dirPath, '/') + 1) == NULL)
-	{
-		rei->status = SYS_INVALID_FILE_PATH;
-		return 0;
-	}
+    /* Get name of directory */
+    if ( ( dirname = strrchr( dirPath, '/' ) + 1 ) == NULL ) {
+        rei->status = SYS_INVALID_FILE_PATH;
+        return 0;
+    }
 
 
-	/* Stuff we'll ignore */
-	/* Make sure to skip the vault, which by default is
-	 * installed under the main iRODS home directory */
-	if (!strcmp(dirname, ".")
-			|| !strcmp(dirname, "..")
+    /* Stuff we'll ignore */
+    /* Make sure to skip the vault, which by default is
+     * installed under the main iRODS home directory */
+    if ( !strcmp( dirname, "." )
+            || !strcmp( dirname, ".." )
 //			|| !strcmp(dirname, ".svn")
-			|| !strcmp(dirPath, resDirPath)  /* the vault */ )
-	{
-		return 0;
-	}
+            || !strcmp( dirPath, resDirPath )  /* the vault */ ) {
+        return 0;
+    }
 
 
-	/* Also skip iCAT directory */
-	if (dbPath && !strcmp(dirPath,dbPath))
-	{
-		return 0;
-	}
+    /* Also skip iCAT directory */
+    if ( dbPath && !strcmp( dirPath, dbPath ) ) {
+        return 0;
+    }
 
 //	/* For later, an option to create certain collections without content */
 //	if ( !strcmp(dirname, "obj") || !strcmp(dirname, "log"))
@@ -79,84 +74,77 @@ int loadDirToLocalResc(ruleExecInfo_t *rei, char *dirPath, size_t offset,
 //	}
 
 
-	/* Create new dir on resource */
+    /* Create new dir on resource */
 
-	/* Separated for clarity. Typically this chunk is 'home/$username' */
-	subPath = rei->rsComm->myEnv.rodsHome + strlen(rei->rsComm->myEnv.rodsZone) + 2;
+    /* Separated for clarity. Typically this chunk is 'home/$username' */
+    subPath = rei->rsComm->myEnv.rodsHome + strlen( rei->rsComm->myEnv.rodsZone ) + 2;
 
-	/* The target directory should look like something like this:
-	 * '$resource_dir/home/$username/system_backups/$hostname_$timestamp/iRODS/...' */
-	snprintf(sysCopyCmd, 2*MAX_NAME_LEN, "mkdir -p \"%s/%s/%s/%s_%s/%s\"",
-			resDirPath, subPath, BCKP_COLL_NAME, rei->rsComm->myEnv.rodsHost, timestamp,
-			dirPath + offset);
-
-
-	/* Make new directory on resource */
-	status = system(sysCopyCmd);
-	if (status < 0)
-	{
-		rodsLog (LOG_ERROR, "loadDirToLocalResc: mkdir error %d.", status);
-		rei->status = UNIX_FILE_MKDIR_ERR;
-	}
+    /* The target directory should look like something like this:
+     * '$resource_dir/home/$username/system_backups/$hostname_$timestamp/iRODS/...' */
+    snprintf( sysCopyCmd, 2 * MAX_NAME_LEN, "mkdir -p \"%s/%s/%s/%s_%s/%s\"",
+              resDirPath, subPath, BCKP_COLL_NAME, rei->rsComm->myEnv.rodsHost, timestamp,
+              dirPath + offset );
 
 
-	/* Read our directory */
-	myDir = opendir(dirPath);
-
-	while ((de = readdir(myDir)) != NULL)
-	{
-		/* Ignored */
-		if (!strcmp(de->d_name, ".DS_Store"))
-		{
-			continue;
-		}
-
-		/* Stat our directory entry */
-		snprintf(absPath, MAX_NAME_LEN, "%s/%s", dirPath, de->d_name);
-		if (lstat(absPath, &s) != 0)
-		{
-			rodsLog(LOG_ERROR, "putDir error: cannot lstat %s, %s", absPath, strerror(errno));
-			rei->status = UNIX_FILE_STAT_ERR;
-			continue;
-		}
+    /* Make new directory on resource */
+    status = system( sysCopyCmd );
+    if ( status < 0 ) {
+        rodsLog( LOG_ERROR, "loadDirToLocalResc: mkdir error %d.", status );
+        rei->status = UNIX_FILE_MKDIR_ERR;
+    }
 
 
-		if (S_ISDIR(s.st_mode))
-		{
+    /* Read our directory */
+    myDir = opendir( dirPath );
 
-			/* Recursively process directories */
-			filecount += loadDirToLocalResc(rei, absPath, offset,
-					resDirPath, timestamp, dbPath);
+    while ( ( de = readdir( myDir ) ) != NULL ) {
+        /* Ignored */
+        if ( !strcmp( de->d_name, ".DS_Store" ) ) {
+            continue;
+        }
 
-		}
-		else
-		{
-			/* Copy file to new dir on resource */
-			memset(sysCopyCmd, 0, 2*MAX_NAME_LEN);
+        /* Stat our directory entry */
+        snprintf( absPath, MAX_NAME_LEN, "%s/%s", dirPath, de->d_name );
+        if ( lstat( absPath, &s ) != 0 ) {
+            rodsLog( LOG_ERROR, "putDir error: cannot lstat %s, %s", absPath, strerror( errno ) );
+            rei->status = UNIX_FILE_STAT_ERR;
+            continue;
+        }
 
-			snprintf(sysCopyCmd, 2*MAX_NAME_LEN, "cp \"%s\" \"%s/%s/%s/%s_%s/%s/%s\"",
-					absPath, resDirPath, subPath, BCKP_COLL_NAME, rei->rsComm->myEnv.rodsHost,
-					timestamp, dirPath + offset, de->d_name);
 
-			status = system(sysCopyCmd);
-			if (status < 0)
-			{
-				rodsLog (LOG_ERROR, "loadDirToLocalResc: cp error, status = %d.", status);
-				rei->status = status + FILE_OPEN_ERR; /* Meh... */
-			}
+        if ( S_ISDIR( s.st_mode ) ) {
 
-			filecount++;
-		}
+            /* Recursively process directories */
+            filecount += loadDirToLocalResc( rei, absPath, offset,
+                                             resDirPath, timestamp, dbPath );
+
+        }
+        else {
+            /* Copy file to new dir on resource */
+            memset( sysCopyCmd, 0, 2 * MAX_NAME_LEN );
+
+            snprintf( sysCopyCmd, 2 * MAX_NAME_LEN, "cp \"%s\" \"%s/%s/%s/%s_%s/%s/%s\"",
+                      absPath, resDirPath, subPath, BCKP_COLL_NAME, rei->rsComm->myEnv.rodsHost,
+                      timestamp, dirPath + offset, de->d_name );
+
+            status = system( sysCopyCmd );
+            if ( status < 0 ) {
+                rodsLog( LOG_ERROR, "loadDirToLocalResc: cp error, status = %d.", status );
+                rei->status = status + FILE_OPEN_ERR; /* Meh... */
+            }
+
+            filecount++;
+        }
 
 
 
-	}
+    }
 
 
 
-	closedir(myDir);
+    closedir( myDir );
 
-	return filecount;
+    return filecount;
 }
 
 
@@ -168,52 +156,46 @@ int loadDirToLocalResc(ruleExecInfo_t *rei, char *dirPath, size_t offset,
  *
  *
  */
-char *getDBHomeDir()
-{
-	char configFilePath[MAX_PATH_ALLOWED + 1];
-	char buf[LONG_NAME_LEN * 5];
-	char *dbPath = NULL;
-	FILE *configFile;
+char *getDBHomeDir() {
+    char configFilePath[MAX_PATH_ALLOWED + 1];
+    char buf[LONG_NAME_LEN * 5];
+    char *dbPath = NULL;
+    FILE *configFile;
 
 #ifndef RODS_CAT
-       return NULL;
+    return NULL;
 #endif
 
-	/* Open server configuration file */
-	snprintf (configFilePath, MAX_PATH_ALLOWED, "%s/config/%s", getenv("irodsHomeDir"), "irods.config");
-    configFile = fopen(configFilePath, "r");
-    if (configFile == NULL)
-    {
-    	rodsLog (LOG_ERROR, "getDefaultLocalRescInfo: Cannot open configuration file %s",
-    			configFilePath);
-    	return NULL;
+    /* Open server configuration file */
+    snprintf( configFilePath, MAX_PATH_ALLOWED, "%s/config/%s", getenv( "irodsHomeDir" ), "irods.config" );
+    configFile = fopen( configFilePath, "r" );
+    if ( configFile == NULL ) {
+        rodsLog( LOG_ERROR, "getDefaultLocalRescInfo: Cannot open configuration file %s",
+                 configFilePath );
+        return NULL;
     }
 
     /* Read one line at a time */
-    while (fgets (buf, LONG_NAME_LEN * 5, configFile) != NULL)
-    {
-    	/* Find line that starts with $DATABASE_HOME */
-    	if (strstr(buf,"$DATABASE_HOME") == buf)
-    	{
-    		/* DB path starts after the first single quote */
-    		dbPath = strchr(buf,'\'') + 1;
+    while ( fgets( buf, LONG_NAME_LEN * 5, configFile ) != NULL ) {
+        /* Find line that starts with $DATABASE_HOME */
+        if ( strstr( buf, "$DATABASE_HOME" ) == buf ) {
+            /* DB path starts after the first single quote */
+            dbPath = strchr( buf, '\'' ) + 1;
 
-    		/* Replace 2d single quote with null char */
-    		strchr(dbPath,'\'')[0] = '\0';
+            /* Replace 2d single quote with null char */
+            strchr( dbPath, '\'' )[0] = '\0';
 
-    		break;
-    	}
+            break;
+        }
     }
 
-    fclose(configFile);
+    fclose( configFile );
 
-    if (dbPath != NULL)
-    {
-    	return (strdup(dbPath));
+    if ( dbPath != NULL ) {
+        return ( strdup( dbPath ) );
     }
-    else
-    {
-    	return NULL;
+    else {
+        return NULL;
     }
 }
 
@@ -226,65 +208,60 @@ char *getDBHomeDir()
  *
  *
  */
-int getDefaultLocalRescInfo(rescInfo_t **rescInfo)
-{
-  char configFilePath[MAX_PATH_ALLOWED + 1];
-  char buf[LONG_NAME_LEN * 5];
-  char *rescName = NULL;
-  FILE *configFile;
+int getDefaultLocalRescInfo( rescInfo_t **rescInfo ) {
+    char configFilePath[MAX_PATH_ALLOWED + 1];
+    char buf[LONG_NAME_LEN * 5];
+    char *rescName = NULL;
+    FILE *configFile;
 
-  /* Open server configuration file */
-  snprintf (configFilePath, MAX_PATH_ALLOWED, "%s/config/%s", getenv("irodsHomeDir"), "irods.config");
-  configFile = fopen(configFilePath, "r");
-  if (configFile == NULL)
-  {
-    rodsLog (LOG_ERROR, "getDefaultLocalRescInfo: Cannot open configuration file %s",
-        configFilePath);
-    return FILE_OPEN_ERR;
-  }
-
-  /* Read one line at a time */
-  while (fgets (buf, LONG_NAME_LEN * 5, configFile) != NULL)
-  {
-    /* Find line that starts with $RESOURCE_NAME */
-    if (strstr(buf,"$RESOURCE_NAME") == buf)
-    {
-      /* Resource name starts after the first single quote */
-      rescName = strchr(buf,'\'') + 1;
-
-      /* Replace 2d single quote with null char */
-      strchr(rescName,'\'')[0] = '\0';
-
-      break;
+    /* Open server configuration file */
+    snprintf( configFilePath, MAX_PATH_ALLOWED, "%s/config/%s", getenv( "irodsHomeDir" ), "irods.config" );
+    configFile = fopen( configFilePath, "r" );
+    if ( configFile == NULL ) {
+        rodsLog( LOG_ERROR, "getDefaultLocalRescInfo: Cannot open configuration file %s",
+                 configFilePath );
+        return FILE_OPEN_ERR;
     }
-  }
 
-  fclose(configFile);
+    /* Read one line at a time */
+    while ( fgets( buf, LONG_NAME_LEN * 5, configFile ) != NULL ) {
+        /* Find line that starts with $RESOURCE_NAME */
+        if ( strstr( buf, "$RESOURCE_NAME" ) == buf ) {
+            /* Resource name starts after the first single quote */
+            rescName = strchr( buf, '\'' ) + 1;
 
-  if (rescName == NULL)
-  {
-    rodsLog (LOG_ERROR,
-        "getDefaultLocalRescInfo: Local resource not found in configuration file.");
-    return SYS_CONFIG_FILE_ERR;
-  }
+            /* Replace 2d single quote with null char */
+            strchr( rescName, '\'' )[0] = '\0';
 
-  /* Resolve resource if resource name was found */
+            break;
+        }
+    }
 
-  if( !(*rescInfo ) ) {
-    *rescInfo = new rescInfo_t;
-  }
+    fclose( configFile );
 
-  eirods::resource_ptr resc;
-  eirods::error err = eirods::get_resc_info( rescName, **rescInfo );
-  if( !err.ok() ) {
-    std::stringstream msg;
-    msg << "failed to resolve resource [";
-    msg << rescName << "]";
-    eirods::log( PASSMSG( msg.str(), err ) );
-    return err.code();
-  }
+    if ( rescName == NULL ) {
+        rodsLog( LOG_ERROR,
+                 "getDefaultLocalRescInfo: Local resource not found in configuration file." );
+        return SYS_CONFIG_FILE_ERR;
+    }
 
-  return 0;
+    /* Resolve resource if resource name was found */
+
+    if ( !( *rescInfo ) ) {
+        *rescInfo = new rescInfo_t;
+    }
+
+    irods::resource_ptr resc;
+    irods::error err = irods::get_resc_info( rescName, **rescInfo );
+    if ( !err.ok() ) {
+        std::stringstream msg;
+        msg << "failed to resolve resource [";
+        msg << rescName << "]";
+        irods::log( PASSMSG( msg.str(), err ) );
+        return err.code();
+    }
+
+    return 0;
 }
 
 
@@ -329,182 +306,174 @@ int getDefaultLocalRescInfo(rescInfo_t **rescInfo)
  * \sa None
 **/
 int
-msiServerBackup(msParam_t *options, msParam_t *keyValOut, ruleExecInfo_t *rei)
-{
-	keyValPair_t *myKeyVal;						/* for storing results */
-	collInp_t collInp;							/* for creating and opening collections */
+msiServerBackup( msParam_t *options, msParam_t *keyValOut, ruleExecInfo_t *rei ) {
+    keyValPair_t *myKeyVal;						/* for storing results */
+    collInp_t collInp;							/* for creating and opening collections */
 
-	dataObjInp_t dataObjInp;					/* for collection registration */
+    dataObjInp_t dataObjInp;					/* for collection registration */
 
-	char tStr0[TIME_LEN], tStr[TIME_LEN];		/* for timestamp */
+    char tStr0[TIME_LEN], tStr[TIME_LEN];		/* for timestamp */
 
-	char newDirPath[MAX_NAME_LEN];				/* physical path of new directory on resource */
+    char newDirPath[MAX_NAME_LEN];				/* physical path of new directory on resource */
 
-	rescInfo_t *rescInfo;						/* for local resource info */
-	char *dbPath;								/* local iCAT home dir */
+    rescInfo_t *rescInfo;						/* for local resource info */
+    char *dbPath;								/* local iCAT home dir */
 
-	char *rodsDirPath, *subPath;
-	size_t offset;
+    char *rodsDirPath, *subPath;
+    size_t offset;
 
-	int fileCount, status;						/* counters, status, etc... */
-	char fileCountStr[21];
-
+    int fileCount, status;						/* counters, status, etc... */
+    char fileCountStr[21];
 
 
-	/* For testing mode when used with irule --test */
-	RE_TEST_MACRO ("    Calling msiServerBackup")
 
-	/* Sanity checks */
-	if (rei == NULL || rei->rsComm == NULL)
-	{
-		rodsLog (LOG_ERROR, "msiServerBackup: input rei or rsComm is NULL.");
-		return (SYS_INTERNAL_NULL_INPUT_ERR);
-	}
+    /* For testing mode when used with irule --test */
+    RE_TEST_MACRO( "    Calling msiServerBackup" )
 
-
-	/* Must be called from an admin account */
-	if (rei->uoic->authInfo.authFlag < LOCAL_PRIV_USER_AUTH)
-	{
-		status = CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
-		rodsLog (LOG_ERROR, "msiServerBackup: User %s is not local admin. Status = %d",
-				rei->uoic->userName, status);
-		return(status);
-	}
+    /* Sanity checks */
+    if ( rei == NULL || rei->rsComm == NULL ) {
+        rodsLog( LOG_ERROR, "msiServerBackup: input rei or rsComm is NULL." );
+        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+    }
 
 
-	/* Get icat home dir, if applicable */
-       dbPath = getDBHomeDir();
-
-	/* Get local resource info */
-	status = getDefaultLocalRescInfo(&rescInfo);
-	if (status < 0)
-	{
-		rodsLog (LOG_ERROR, "msiServerBackup: Could not resolve local resource, status = %d",
-				status);
-		if (dbPath) {
-			free(dbPath);
-		}
-        return (status);
-	}
+    /* Must be called from an admin account */
+    if ( rei->uoic->authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        status = CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
+        rodsLog( LOG_ERROR, "msiServerBackup: User %s is not local admin. Status = %d",
+                 rei->uoic->userName, status );
+        return( status );
+    }
 
 
-	/* Get path of iRODS home directory */
-	if  ((rodsDirPath = getenv("irodsHomeDir")) == NULL)
-	{
-		rodsLog (LOG_ERROR, "msiServerBackup: Cannot find directory to back up.");
-		if (dbPath) {
-			free(dbPath);
-		}
-        return (USER_INPUT_PATH_ERR);
-	}
+    /* Get icat home dir, if applicable */
+    dbPath = getDBHomeDir();
+
+    /* Get local resource info */
+    status = getDefaultLocalRescInfo( &rescInfo );
+    if ( status < 0 ) {
+        rodsLog( LOG_ERROR, "msiServerBackup: Could not resolve local resource, status = %d",
+                 status );
+        if ( dbPath ) {
+            free( dbPath );
+        }
+        return ( status );
+    }
 
 
-	/***** Create target directory for copy, whose name is made
-	 ****** of the hostname and timestamp ********************/
+    /* Get path of iRODS home directory */
+    if ( ( rodsDirPath = getenv( "irodsHomeDir" ) ) == NULL ) {
+        rodsLog( LOG_ERROR, "msiServerBackup: Cannot find directory to back up." );
+        if ( dbPath ) {
+            free( dbPath );
+        }
+        return ( USER_INPUT_PATH_ERR );
+    }
+
+
+    /***** Create target directory for copy, whose name is made
+     ****** of the hostname and timestamp ********************/
 
     /* get timestamp */
-	getNowStr (tStr0);
-	getLocalTimeFromRodsTime (tStr0,tStr);
+    getNowStr( tStr0 );
+    getLocalTimeFromRodsTime( tStr0, tStr );
 
-	/**********************************/
-
-
-	/* Prepare myKeyVal so that we can dump
-	 * data in it throughout the microservice */
-	myKeyVal = (keyValPair_t*) malloc (sizeof(keyValPair_t));
-	memset (myKeyVal, 0, sizeof(keyValPair_t));
-	keyValOut->type = strdup(KeyValPair_MS_T);
+    /**********************************/
 
 
-
-	/* Store local and target directories in myKeyVal, along with other useful stuff */
-
-	/* Calculate offset */
-	offset = strrchr(rodsDirPath,'/') - rodsDirPath + 1;
-
-
-	/*******************************************/
+    /* Prepare myKeyVal so that we can dump
+     * data in it throughout the microservice */
+    myKeyVal = ( keyValPair_t* ) malloc( sizeof( keyValPair_t ) );
+    memset( myKeyVal, 0, sizeof( keyValPair_t ) );
+    keyValOut->type = strdup( KeyValPair_MS_T );
 
 
-	/************ invoke loadDirToLocalResc ***************************/
 
-	fileCount = loadDirToLocalResc(rei, rodsDirPath, offset, rescInfo->rescVaultPath, tStr, dbPath);
+    /* Store local and target directories in myKeyVal, along with other useful stuff */
 
-	/* get some cleanup out of the way */
-	if (dbPath) {
-		free(dbPath);
-	}
-
-	if (rei->status < 0)
-	{
-		rodsLog (LOG_ERROR, "msiServerBackup: loadDirToLocalResc() error, status = %d",
-				rei->status);
-		free(myKeyVal);
-		return rei->status;
-	}
-
-	/******************************************************/
+    /* Calculate offset */
+    offset = strrchr( rodsDirPath, '/' ) - rodsDirPath + 1;
 
 
-	/* We need to create a parent collection prior to registering our directory */
-	/* set up collection creation input */
-	memset (&collInp, 0, sizeof(collInp_t));
-	addKeyVal (&collInp.condInput, RECURSIVE_OPR__KW, "");
-
-	/* build path of target collection */
-	snprintf(collInp.collName, MAX_NAME_LEN, "%s/%s/%s_%s", rei->rsComm->myEnv.rodsHome,
-			BCKP_COLL_NAME, rei->rsComm->myEnv.rodsHost, tStr);
-
-	/* make target collection */
-	rei->status = rsCollCreate (rei->rsComm, &collInp);
-	if (rei->status < 0)
-	{
-		rodsLog (LOG_ERROR, "msiServerBackup: rsCollCreate failed for %s, status = %d",
-				collInp.collName, rei->status);
-		free(myKeyVal);
-		return (rei->status);
-	}
+    /*******************************************/
 
 
-	/* Register our new directory in the vault */
+    /************ invoke loadDirToLocalResc ***************************/
 
-	/* Input setup */
-	memset(&dataObjInp, 0, sizeof(dataObjInp_t));
-	addKeyVal (&dataObjInp.condInput, COLLECTION_KW, "");
-	addKeyVal (&dataObjInp.condInput, DEST_RESC_NAME_KW, rescInfo->rescName);
+    fileCount = loadDirToLocalResc( rei, rodsDirPath, offset, rescInfo->rescVaultPath, tStr, dbPath );
 
-	/* Separated for clarity. Typically this chunk is 'home/$username' */
-	subPath = rei->rsComm->myEnv.rodsHome + strlen(rei->rsComm->myEnv.rodsZone) + 2;
+    /* get some cleanup out of the way */
+    if ( dbPath ) {
+        free( dbPath );
+    }
 
-	/* Reconstruct path of new dir on resource */
-	snprintf(newDirPath, MAX_NAME_LEN, "%s/%s/%s/%s_%s/%s", rescInfo->rescVaultPath,
-			subPath, BCKP_COLL_NAME, rei->rsComm->myEnv.rodsHost, tStr, rodsDirPath + offset);
+    if ( rei->status < 0 ) {
+        rodsLog( LOG_ERROR, "msiServerBackup: loadDirToLocalResc() error, status = %d",
+                 rei->status );
+        free( myKeyVal );
+        return rei->status;
+    }
 
-	addKeyVal (&dataObjInp.condInput, FILE_PATH_KW, newDirPath);
-
-	/* Similarly, reconstruct iRODS path of (target) new collection */
-	snprintf(dataObjInp.objPath, MAX_NAME_LEN, "%s/%s/%s_%s/%s", rei->rsComm->myEnv.rodsHome,
-			BCKP_COLL_NAME, rei->rsComm->myEnv.rodsHost, tStr, rodsDirPath + offset);
+    /******************************************************/
 
 
-	/* Registration happens here */
-	rei->status = rsPhyPathReg (rei->rsComm, &dataObjInp);
-	if (rei->status < 0)
-	{
-		rodsLog (LOG_ERROR, "msiServerBackup: rsPhyPathReg() failed with status %d", rei->status);
-		free(myKeyVal);
-		return rei->status;
-	}
+    /* We need to create a parent collection prior to registering our directory */
+    /* set up collection creation input */
+    memset( &collInp, 0, sizeof( collInp_t ) );
+    addKeyVal( &collInp.condInput, RECURSIVE_OPR__KW, "" );
+
+    /* build path of target collection */
+    snprintf( collInp.collName, MAX_NAME_LEN, "%s/%s/%s_%s", rei->rsComm->myEnv.rodsHome,
+              BCKP_COLL_NAME, rei->rsComm->myEnv.rodsHost, tStr );
+
+    /* make target collection */
+    rei->status = rsCollCreate( rei->rsComm, &collInp );
+    if ( rei->status < 0 ) {
+        rodsLog( LOG_ERROR, "msiServerBackup: rsCollCreate failed for %s, status = %d",
+                 collInp.collName, rei->status );
+        free( myKeyVal );
+        return ( rei->status );
+    }
 
 
-	/* Add file count to myKeyVal */
-	snprintf(fileCountStr, 21, "%d", fileCount);
-	addKeyVal(myKeyVal, "object_count", fileCountStr);  // stub
+    /* Register our new directory in the vault */
 
-	/* Return myKeyVal through keyValOut */
-	keyValOut->inOutStruct = (void*) myKeyVal;
+    /* Input setup */
+    memset( &dataObjInp, 0, sizeof( dataObjInp_t ) );
+    addKeyVal( &dataObjInp.condInput, COLLECTION_KW, "" );
+    addKeyVal( &dataObjInp.condInput, DEST_RESC_NAME_KW, rescInfo->rescName );
+
+    /* Separated for clarity. Typically this chunk is 'home/$username' */
+    subPath = rei->rsComm->myEnv.rodsHome + strlen( rei->rsComm->myEnv.rodsZone ) + 2;
+
+    /* Reconstruct path of new dir on resource */
+    snprintf( newDirPath, MAX_NAME_LEN, "%s/%s/%s/%s_%s/%s", rescInfo->rescVaultPath,
+              subPath, BCKP_COLL_NAME, rei->rsComm->myEnv.rodsHost, tStr, rodsDirPath + offset );
+
+    addKeyVal( &dataObjInp.condInput, FILE_PATH_KW, newDirPath );
+
+    /* Similarly, reconstruct iRODS path of (target) new collection */
+    snprintf( dataObjInp.objPath, MAX_NAME_LEN, "%s/%s/%s_%s/%s", rei->rsComm->myEnv.rodsHome,
+              BCKP_COLL_NAME, rei->rsComm->myEnv.rodsHost, tStr, rodsDirPath + offset );
 
 
-	/* Done! */
-	return 0;
+    /* Registration happens here */
+    rei->status = rsPhyPathReg( rei->rsComm, &dataObjInp );
+    if ( rei->status < 0 ) {
+        rodsLog( LOG_ERROR, "msiServerBackup: rsPhyPathReg() failed with status %d", rei->status );
+        free( myKeyVal );
+        return rei->status;
+    }
+
+
+    /* Add file count to myKeyVal */
+    snprintf( fileCountStr, 21, "%d", fileCount );
+    addKeyVal( myKeyVal, "object_count", fileCountStr ); // stub
+
+    /* Return myKeyVal through keyValOut */
+    keyValOut->inOutStruct = ( void* ) myKeyVal;
+
+
+    /* Done! */
+    return 0;
 }

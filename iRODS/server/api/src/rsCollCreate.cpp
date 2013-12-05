@@ -2,7 +2,7 @@
 
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code (for the most part).  */ 
+/* This is script-generated code (for the most part).  */
 /* See collCreate.h for a description of this API call.*/
 
 #include "collCreate.hpp"
@@ -19,14 +19,13 @@
 #include "physPath.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_resource_backport.hpp"
-#include "eirods_hierarchy_parser.hpp"
+#include "irods_resource_backport.hpp"
+#include "irods_hierarchy_parser.hpp"
 
 
 // =-=-=-=-=-=-=-
 /// @brief function which determines if a collection is created at the root level
-eirods::error validate_collection_path( 
+irods::error validate_collection_path(
     const std::string& _path ) {
     // =-=-=-=-=-=-=-
     // set up a default error structure
@@ -34,26 +33,27 @@ eirods::error validate_collection_path(
     msg << "a valid zone name does not appear at the root of the collection path [";
     msg << _path;
     msg << "]";
-    eirods::error ret_val = ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
+    irods::error ret_val = ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
 
     // =-=-=-=-=-=-=-
     // loop over the ZoneInfo linked list and see if the path
     // has a root collection which matches any zone
-    zoneInfo_t* zone_info = ZoneInfoHead; 
-    while( zone_info ) {
+    zoneInfo_t* zone_info = ZoneInfoHead;
+    while ( zone_info ) {
         // =-=-=-=-=-=-=-
         // build a root zone name
         std::string zone_name( "/" );
         zone_name += zone_info->zoneName;
-     
+
         // =-=-=-=-=-=-=-
         // if the zone name appears at the root
         // then this is a good path
         size_t pos = _path.find( zone_name );
-        if( 0 == pos ) {
+        if ( 0 == pos ) {
             ret_val = SUCCESS();
             zone_info = 0;
-        } else {
+        }
+        else {
             zone_info = zone_info->next;
 
         }
@@ -66,8 +66,7 @@ eirods::error validate_collection_path(
 
 
 int
-rsCollCreate (rsComm_t *rsComm, collInp_t *collCreateInp)
-{
+rsCollCreate( rsComm_t *rsComm, collInp_t *collCreateInp ) {
     int status;
     rodsServerHost_t *rodsServerHost = NULL;
     ruleExecInfo_t rei;
@@ -76,98 +75,102 @@ rsCollCreate (rsComm_t *rsComm, collInp_t *collCreateInp)
 #ifdef RODS_CAT
     dataObjInfo_t *dataObjInfo = NULL;
 #endif
-   
-    eirods::error ret = validate_collection_path( collCreateInp->collName ); 
-    if( !ret.ok() ) {
-        eirods::log( ret );
-        return SYS_INVALID_INPUT_PARAM;    
+
+    irods::error ret = validate_collection_path( collCreateInp->collName );
+    if ( !ret.ok() ) {
+        irods::log( ret );
+        return SYS_INVALID_INPUT_PARAM;
     }
 
-    resolveLinkedPath (rsComm, collCreateInp->collName, &specCollCache,
-                       &collCreateInp->condInput);
-    status = getAndConnRcatHost (rsComm, MASTER_RCAT, collCreateInp->collName,
-                                 &rodsServerHost);
-    if (status < 0 || rodsServerHost == NULL ) { // JMC cppcheck
-        return(status);
+    resolveLinkedPath( rsComm, collCreateInp->collName, &specCollCache,
+                       &collCreateInp->condInput );
+    status = getAndConnRcatHost( rsComm, MASTER_RCAT, collCreateInp->collName,
+                                 &rodsServerHost );
+    if ( status < 0 || rodsServerHost == NULL ) { // JMC cppcheck
+        return( status );
     }
 
-    if (rodsServerHost->localFlag == LOCAL_HOST) {
-        initReiWithCollInp (&rei, rsComm, collCreateInp, &collInfo);
+    if ( rodsServerHost->localFlag == LOCAL_HOST ) {
+        initReiWithCollInp( &rei, rsComm, collCreateInp, &collInfo );
 
-        status = applyRule ("acPreprocForCollCreate", NULL, &rei, NO_SAVE_REI);
+        status = applyRule( "acPreprocForCollCreate", NULL, &rei, NO_SAVE_REI );
 
-        if (status < 0) {
-            if (rei.status < 0) {
+        if ( status < 0 ) {
+            if ( rei.status < 0 ) {
                 status = rei.status;
             }
-            rodsLog (LOG_ERROR,
+            rodsLog( LOG_ERROR,
                      "rsCollCreate:acPreprocForCollCreate error for %s,stat=%d",
-                     collCreateInp->collName, status);
+                     collCreateInp->collName, status );
             return status;
         }
 
-        if (getValByKey (&collCreateInp->condInput, RECURSIVE_OPR__KW) != 
-            NULL) {
-            status = rsMkCollR (rsComm, "/", collCreateInp->collName);
-            return (status);
+        if ( getValByKey( &collCreateInp->condInput, RECURSIVE_OPR__KW ) !=
+                NULL ) {
+            status = rsMkCollR( rsComm, "/", collCreateInp->collName );
+            return ( status );
         }
 #ifdef RODS_CAT
 
         /* for STRUCT_FILE_COLL to make a directory in the structFile, the
          * COLLECTION_TYPE_KW must be set */
 
-        status = resolvePathInSpecColl (rsComm, collCreateInp->collName, 
-                                        WRITE_COLL_PERM, 0, &dataObjInfo);
-        if (status >= 0) {
-            freeDataObjInfo (dataObjInfo);
-            if (status == COLL_OBJ_T) {
-                return (0);
-            } else if (status == DATA_OBJ_T) {
-                return (USER_INPUT_PATH_ERR);
+        status = resolvePathInSpecColl( rsComm, collCreateInp->collName,
+                                        WRITE_COLL_PERM, 0, &dataObjInfo );
+        if ( status >= 0 ) {
+            freeDataObjInfo( dataObjInfo );
+            if ( status == COLL_OBJ_T ) {
+                return ( 0 );
             }
-        } else if (status == SYS_SPEC_COLL_OBJ_NOT_EXIST) { 
+            else if ( status == DATA_OBJ_T ) {
+                return ( USER_INPUT_PATH_ERR );
+            }
+        }
+        else if ( status == SYS_SPEC_COLL_OBJ_NOT_EXIST ) {
             /* for STRUCT_FILE_COLL to make a directory in the structFile, the
              * COLLECTION_TYPE_KW must be set */
-            if (dataObjInfo != NULL && dataObjInfo->specColl != NULL &&
-                dataObjInfo->specColl->collClass == LINKED_COLL) {
+            if ( dataObjInfo != NULL && dataObjInfo->specColl != NULL &&
+                    dataObjInfo->specColl->collClass == LINKED_COLL ) {
                 /*  should not be here because if has been translated */
                 return SYS_COLL_LINK_PATH_ERR;
-            } else {
-                status = l3Mkdir (rsComm, dataObjInfo);
             }
-            freeDataObjInfo (dataObjInfo);
-            return (status);
-        } else {
-            if (isColl (rsComm, collCreateInp->collName, NULL) >= 0) {
+            else {
+                status = l3Mkdir( rsComm, dataObjInfo );
+            }
+            freeDataObjInfo( dataObjInfo );
+            return ( status );
+        }
+        else {
+            if ( isColl( rsComm, collCreateInp->collName, NULL ) >= 0 ) {
                 return CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME;
             }
-            status = _rsRegColl (rsComm, collCreateInp);
+            status = _rsRegColl( rsComm, collCreateInp );
         }
         rei.status = status;
-        if (status >= 0) {
-            rei.status = applyRule ("acPostProcForCollCreate", NULL, &rei, 
-                                    NO_SAVE_REI);
+        if ( status >= 0 ) {
+            rei.status = applyRule( "acPostProcForCollCreate", NULL, &rei,
+                                    NO_SAVE_REI );
 
-            if (rei.status < 0) {
-                rodsLog (LOG_ERROR,
+            if ( rei.status < 0 ) {
+                rodsLog( LOG_ERROR,
                          "rsCollCreate:acPostProcForCollCreate error for %s,stat=%d",
-                         collCreateInp->collName, status);
+                         collCreateInp->collName, status );
             }
         }
 
 #else
         status = SYS_NO_RCAT_SERVER_ERR;
 #endif
-    } else {
-        status = rcCollCreate (rodsServerHost->conn, collCreateInp);
+    }
+    else {
+        status = rcCollCreate( rodsServerHost->conn, collCreateInp );
     }
 
-    return (status);
+    return ( status );
 }
 
 int
-l3Mkdir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
-{
+l3Mkdir( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
     //int rescTypeInx;
     fileMkdirInp_t fileMkdirInp;
     int status;
@@ -175,59 +178,59 @@ l3Mkdir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
     // =-=-=-=-=-=-=-
     // extract the host location from the resource hierarchy
     std::string location;
-    eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
-    if( !ret.ok() ) {
-        eirods::log( PASSMSG( "l3Mkdir - failed in get_loc_for_hier_String", ret ) );
+    irods::error ret = irods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
+    if ( !ret.ok() ) {
+        irods::log( PASSMSG( "l3Mkdir - failed in get_loc_for_hier_String", ret ) );
         return -1;
     }
 
-    if (getStructFileType (dataObjInfo->specColl) >= 0) {
+    if ( getStructFileType( dataObjInfo->specColl ) >= 0 ) {
         subFile_t subFile;
-        memset (&subFile, 0, sizeof (subFile));
-        rstrcpy (subFile.subFilePath, dataObjInfo->subPath, MAX_NAME_LEN);
-        subFile.mode = getDefDirMode ();
+        memset( &subFile, 0, sizeof( subFile ) );
+        rstrcpy( subFile.subFilePath, dataObjInfo->subPath, MAX_NAME_LEN );
+        subFile.mode = getDefDirMode();
         //rstrcpy (subFile.addr.hostAddr, dataObjInfo->rescInfo->rescLoc, NAME_LEN );
-        rstrcpy (subFile.addr.hostAddr, location.c_str(), NAME_LEN );
+        rstrcpy( subFile.addr.hostAddr, location.c_str(), NAME_LEN );
         subFile.specColl = dataObjInfo->specColl;
-        status = rsSubStructFileMkdir (rsComm, &subFile);
-    } else {
-       #if 0 // JMC legacy resource 
+        status = rsSubStructFileMkdir( rsComm, &subFile );
+    }
+    else {
+#if 0 // JMC legacy resource 
         rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
 
-        switch (RescTypeDef[rescTypeInx].rescCat) {
-          case FILE_CAT:
-       #endif // JMC legacy resource 
-            memset (&fileMkdirInp, 0, sizeof (fileMkdirInp));
-            rstrcpy (fileMkdirInp.dirName, dataObjInfo->filePath, MAX_NAME_LEN);
-            rstrcpy (fileMkdirInp.rescHier, dataObjInfo->rescHier, MAX_NAME_LEN);
-            rstrcpy (fileMkdirInp.addr.hostAddr, location.c_str(), NAME_LEN);
-            fileMkdirInp.mode = getDefDirMode ();
-            status = rsFileMkdir (rsComm, &fileMkdirInp);
-       #if 0 // JMC legacy resource 
+        switch ( RescTypeDef[rescTypeInx].rescCat ) {
+        case FILE_CAT:
+#endif // JMC legacy resource 
+            memset( &fileMkdirInp, 0, sizeof( fileMkdirInp ) );
+            rstrcpy( fileMkdirInp.dirName, dataObjInfo->filePath, MAX_NAME_LEN );
+            rstrcpy( fileMkdirInp.rescHier, dataObjInfo->rescHier, MAX_NAME_LEN );
+            rstrcpy( fileMkdirInp.addr.hostAddr, location.c_str(), NAME_LEN );
+            fileMkdirInp.mode = getDefDirMode();
+            status = rsFileMkdir( rsComm, &fileMkdirInp );
+#if 0 // JMC legacy resource 
             break;
 
         default:
-            rodsLog (LOG_NOTICE,
+            rodsLog( LOG_NOTICE,
                      "l3Mkdir: rescCat type %d is not recognized",
-                     RescTypeDef[rescTypeInx].rescCat);
+                     RescTypeDef[rescTypeInx].rescCat );
             status = SYS_INVALID_RESC_TYPE;
             break;
         }
-       #endif // JMC legacy resource 
+#endif // JMC legacy resource 
     }
-    return (status);
+    return ( status );
 }
 
 #ifdef COMPAT_201
 int
-rsCollCreate201 (rsComm_t *rsComm, collInp201_t *collCreateInp)
-{
+rsCollCreate201( rsComm_t *rsComm, collInp201_t *collCreateInp ) {
     collInp_t collInp;
-    int status; 
+    int status;
 
-    collInp201ToCollInp (collCreateInp, &collInp);
+    collInp201ToCollInp( collCreateInp, &collInp );
 
-    status = rsCollCreate (rsComm, &collInp);
+    status = rsCollCreate( rsComm, &collInp );
 
     return status;
 }

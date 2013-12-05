@@ -10,15 +10,13 @@
 #include "rsGlobalExtern.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_log.hpp"
-#include "eirods_collection_object.hpp"
-#include "eirods_resource_backport.hpp"
-#include "eirods_stacktrace.hpp"
+#include "irods_log.hpp"
+#include "irods_collection_object.hpp"
+#include "irods_resource_backport.hpp"
+#include "irods_stacktrace.hpp"
 
 int
-rsFileOpendir (rsComm_t *rsComm, fileOpendirInp_t *fileOpendirInp)
-{
+rsFileOpendir( rsComm_t *rsComm, fileOpendirInp_t *fileOpendirInp ) {
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
     int fileInx;
@@ -26,61 +24,63 @@ rsFileOpendir (rsComm_t *rsComm, fileOpendirInp_t *fileOpendirInp)
     void *dirPtr = NULL;
 
     //remoteFlag = resolveHost (&fileOpendirInp->addr, &rodsServerHost);
-    eirods::error ret = eirods::get_host_for_hier_string( fileOpendirInp->resc_hier_, remoteFlag, rodsServerHost );
-    if( !ret.ok() ) {
-        eirods::log( PASSMSG( "failed in call to eirods::get_host_for_hier_string", ret ) );
+    irods::error ret = irods::get_host_for_hier_string( fileOpendirInp->resc_hier_, remoteFlag, rodsServerHost );
+    if ( !ret.ok() ) {
+        irods::log( PASSMSG( "failed in call to irods::get_host_for_hier_string", ret ) );
         return -1;
     }
 
-    if (remoteFlag == LOCAL_HOST) {
-	    status = _rsFileOpendir (rsComm, fileOpendirInp, &dirPtr);
-    } else if (remoteFlag == REMOTE_HOST) {
-        status = remoteFileOpendir (rsComm, fileOpendirInp, rodsServerHost);
-    } else {
-        if (remoteFlag < 0) {
-            return (remoteFlag);
-        } else {
-            rodsLog (LOG_NOTICE,
-              "rsFileOpendir: resolveHost returned unrecognized value %d",
-               remoteFlag);
-            return (SYS_UNRECOGNIZED_REMOTE_FLAG);
+    if ( remoteFlag == LOCAL_HOST ) {
+        status = _rsFileOpendir( rsComm, fileOpendirInp, &dirPtr );
+    }
+    else if ( remoteFlag == REMOTE_HOST ) {
+        status = remoteFileOpendir( rsComm, fileOpendirInp, rodsServerHost );
+    }
+    else {
+        if ( remoteFlag < 0 ) {
+            return ( remoteFlag );
+        }
+        else {
+            rodsLog( LOG_NOTICE,
+                     "rsFileOpendir: resolveHost returned unrecognized value %d",
+                     remoteFlag );
+            return ( SYS_UNRECOGNIZED_REMOTE_FLAG );
         }
     }
 
-    if (status < 0) {
-	    return (status);
+    if ( status < 0 ) {
+        return ( status );
     }
-    
+
     fileInx = allocAndFillFileDesc( rodsServerHost, fileOpendirInp->objPath, fileOpendirInp->dirName, fileOpendirInp->resc_hier_,
-				    status, 0);
+                                    status, 0 );
     FileDesc[fileInx].driverDep = dirPtr;
 
-    return (fileInx);
+    return ( fileInx );
 }
 
 int
-remoteFileOpendir (rsComm_t *rsComm, fileOpendirInp_t *fileOpendirInp, 
-rodsServerHost_t *rodsServerHost)
-{
+remoteFileOpendir( rsComm_t *rsComm, fileOpendirInp_t *fileOpendirInp,
+                   rodsServerHost_t *rodsServerHost ) {
     int fileInx;
     int status;
 
-    if (rodsServerHost == NULL) {
-        rodsLog (LOG_NOTICE,
-	  "remoteFileOpendir: Invalid rodsServerHost");
+    if ( rodsServerHost == NULL ) {
+        rodsLog( LOG_NOTICE,
+                 "remoteFileOpendir: Invalid rodsServerHost" );
         return SYS_INVALID_SERVER_HOST;
     }
 
-    if ((status = svrToSvrConnect (rsComm, rodsServerHost)) < 0) {
+    if ( ( status = svrToSvrConnect( rsComm, rodsServerHost ) ) < 0 ) {
         return status;
     }
 
-    fileInx = rcFileOpendir (rodsServerHost->conn, fileOpendirInp);
+    fileInx = rcFileOpendir( rodsServerHost->conn, fileOpendirInp );
 
-    if (fileInx < 0) { 
-        rodsLog (LOG_NOTICE,
-	 "remoteFileOpendir: rcFileOpendir failed for %s",
-	  fileOpendirInp->dirName);
+    if ( fileInx < 0 ) {
+        rodsLog( LOG_NOTICE,
+                 "remoteFileOpendir: rcFileOpendir failed for %s",
+                 fileOpendirInp->dirName );
     }
 
     return fileInx;
@@ -88,37 +88,37 @@ rodsServerHost_t *rodsServerHost)
 
 // =-=-=-=-=-=-=-
 // _rsFileOpendir - this the local version of rsFileOpendir.
-int _rsFileOpendir( 
-    rsComm_t*         _comm, 
-    fileOpendirInp_t* _opendir_inp, 
+int _rsFileOpendir(
+    rsComm_t*         _comm,
+    fileOpendirInp_t* _opendir_inp,
     void**            _dir_ptr ) {
     // =-=-=-=-=-=-=-
     // FIXME:: XXXX need to check resource permission and vault permission
-    // when RCAT is available 
-     
-    // =-=-=-=-=-=-=-
-	// make the call to opendir via resource plugin
-    eirods::collection_object_ptr coll_obj( 
-                                      new eirods::collection_object( 
-                                          _opendir_inp->dirName, 
-                                          _opendir_inp->resc_hier_, 
-                                          0, 0 ) );
-    eirods::error opendir_err = fileOpendir( _comm, coll_obj );
+    // when RCAT is available
 
     // =-=-=-=-=-=-=-
-	// log an error, if any
-    if( !opendir_err.ok() ) {
-		std::stringstream msg;
-		msg << "fileOpendir failed for [";
-		msg <<_opendir_inp->dirName; 
-		msg << "]";
-		eirods::error err = PASSMSG( msg.str(), opendir_err );
-		eirods::log ( err );
-	}
+    // make the call to opendir via resource plugin
+    irods::collection_object_ptr coll_obj(
+        new irods::collection_object(
+            _opendir_inp->dirName,
+            _opendir_inp->resc_hier_,
+            0, 0 ) );
+    irods::error opendir_err = fileOpendir( _comm, coll_obj );
 
-    (*_dir_ptr) = coll_obj->directory_pointer(); // JMC -- TEMPORARY 
+    // =-=-=-=-=-=-=-
+    // log an error, if any
+    if ( !opendir_err.ok() ) {
+        std::stringstream msg;
+        msg << "fileOpendir failed for [";
+        msg << _opendir_inp->dirName;
+        msg << "]";
+        irods::error err = PASSMSG( msg.str(), opendir_err );
+        irods::log( err );
+    }
 
-    return (opendir_err.code());
+    ( *_dir_ptr ) = coll_obj->directory_pointer(); // JMC -- TEMPORARY
+
+    return ( opendir_err.code() );
 
 } // _rsFileOpendir
- 
+

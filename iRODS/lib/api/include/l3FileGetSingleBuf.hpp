@@ -19,8 +19,8 @@
 #define RS_L3_FILE_GET_SINGLE_BUF rsL3FileGetSingleBuf
 /* prototype for the server handler */
 int
-rsL3FileGetSingleBuf (rsComm_t *rsComm, int *l1descInx, 
-bytesBuf_t *dataObjOutBBuf);
+rsL3FileGetSingleBuf( rsComm_t *rsComm, int *l1descInx,
+                      bytesBuf_t *dataObjOutBBuf );
 #else
 #define RS_L3_FILE_GET_SINGLE_BUF NULL
 #endif
@@ -29,16 +29,16 @@ bytesBuf_t *dataObjOutBBuf);
 extern "C" {
 #endif
 
-/* prototype for the client call */
-/* rcL3FileGetSingleBuf - remote call for l3FileGetSingleBuf for cross zone
- * single buffer get.
- * Input -
- *   rcComm_t *conn - The client connection handle.
- *   return value - The status of the operation.
- */
-int
-rcL3FileGetSingleBuf (rcComm_t *conn, int l1descInx,
-bytesBuf_t *dataObjOutBBuf);
+    /* prototype for the client call */
+    /* rcL3FileGetSingleBuf - remote call for l3FileGetSingleBuf for cross zone
+     * single buffer get.
+     * Input -
+     *   rcComm_t *conn - The client connection handle.
+     *   return value - The status of the operation.
+     */
+    int
+    rcL3FileGetSingleBuf( rcComm_t *conn, int l1descInx,
+                          bytesBuf_t *dataObjOutBBuf );
 
 #ifdef  __cplusplus
 }

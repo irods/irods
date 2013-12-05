@@ -1,7 +1,7 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
-/* rodsUser.h - common header file for rods user info 
+/* rodsUser.h - common header file for rods user info
  */
 
 
@@ -42,20 +42,20 @@
 
 #define XMSG_SVR_ONLY		0x4000   /* execute only xmsgServer only */
 #define XMSG_SVR_ALSO		0x8000   /* execute on xmsgServer server also
-					  * in addition to agent server */
+* in addition to agent server */
 typedef struct {
     char authScheme[NAME_LEN];     /* Authentication scheme */
     int authFlag;	/* the status of authentication */
-    int flag;		
+    int flag;
     int ppid;		/* session ppid */
     char host[NAME_LEN]; /* session host */
     char authStr[NAME_LEN];      /* for gsi, the dn */
 } authInfo_t;
 
 typedef struct {
-    char userInfo[NAME_LEN]; 
-    char userComments[NAME_LEN]; 
-    char userCreate[TIME_LEN]; 
+    char userInfo[NAME_LEN];
+    char userComments[NAME_LEN];
+    char userCreate[TIME_LEN];
     char userModify[TIME_LEN];
 } userOtherInfo_t;
 

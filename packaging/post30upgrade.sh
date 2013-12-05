@@ -24,17 +24,18 @@ rpm -U --replacepkgs --replacefiles $1 > /dev/null
 # cleanly recover from the upgrade mechanism from 3.0
 if [ -d /var/lib/eirods_new ] ; then
     rm -rf /var/lib/eirods
-    mv /var/lib/eirods_new /var/lib/eirods
+    rm -rf /var/lib/irods
+    mv /var/lib/eirods_new /var/lib/irods
 fi
 
 # restart the server
-su - eirods -c "cd iRODS; ./irodsctl restart"
+su - irods -c "cd iRODS; ./irodsctl restart"
 
 # report to the admin
 echo ""
 echo "#########################################################"
 echo "#"
-echo "#  E-iRODS RPM installation has been upgraded from 3.0"
+echo "#  iRODS RPM installation has been upgraded from 3.0"
 echo "#"
 echo "#########################################################"
 echo ""

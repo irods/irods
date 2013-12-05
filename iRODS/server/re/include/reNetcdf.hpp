@@ -14,118 +14,118 @@
 #include "rsGlobalExtern.hpp"
 
 int
-msiNcOpen (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam,
-ruleExecInfo_t *rei);
+msiNcOpen( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam,
+           ruleExecInfo_t *rei );
 int
-msiNcCreate (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam,
-ruleExecInfo_t *rei);
+msiNcCreate( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam,
+             ruleExecInfo_t *rei );
 int
-msiNcClose (msParam_t *inpParam1, ruleExecInfo_t *rei);
+msiNcClose( msParam_t *inpParam1, ruleExecInfo_t *rei );
 int
-msiNcInqId (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3,
-msParam_t *outParam, ruleExecInfo_t *rei);
+msiNcInqId( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3,
+            msParam_t *outParam, ruleExecInfo_t *rei );
 int
-msiNcInqWithId (msParam_t *inpParam1, msParam_t *inpParam2,
-msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei);
+msiNcInqWithId( msParam_t *inpParam1, msParam_t *inpParam2,
+                msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei );
 int
-msiNcGetVarsByType (msParam_t *dataTypeParam, msParam_t *ncidParam,
-msParam_t *varidParam, msParam_t *ndimParam, msParam_t *startParam,
-msParam_t *countParam, msParam_t *strideParam,
-msParam_t *outParam, ruleExecInfo_t *rei);
+msiNcGetVarsByType( msParam_t *dataTypeParam, msParam_t *ncidParam,
+                    msParam_t *varidParam, msParam_t *ndimParam, msParam_t *startParam,
+                    msParam_t *countParam, msParam_t *strideParam,
+                    msParam_t *outParam, ruleExecInfo_t *rei );
 #ifdef LIB_CF
 int
-msiNccfGetVara (msParam_t *ncidParam, msParam_t *varidParam,
-msParam_t *lvlIndexParam, msParam_t *timestepParam,
-msParam_t *latRange0Param, msParam_t *latRange1Param,
-msParam_t *lonRange0Param, msParam_t *lonRange1Param,
-msParam_t *maxOutArrayLenParam, msParam_t *outParam, ruleExecInfo_t *rei);
+msiNccfGetVara( msParam_t *ncidParam, msParam_t *varidParam,
+                msParam_t *lvlIndexParam, msParam_t *timestepParam,
+                msParam_t *latRange0Param, msParam_t *latRange1Param,
+                msParam_t *lonRange0Param, msParam_t *lonRange1Param,
+                msParam_t *maxOutArrayLenParam, msParam_t *outParam, ruleExecInfo_t *rei );
 #endif
 int
-msiNcGetArrayLen (msParam_t *inpParam, msParam_t *outParam,
-ruleExecInfo_t *rei);
+msiNcGetArrayLen( msParam_t *inpParam, msParam_t *outParam,
+                  ruleExecInfo_t *rei );
 int
-msiNcGetNumDim (msParam_t *inpParam, msParam_t *outParam,
-ruleExecInfo_t *rei);
+msiNcGetNumDim( msParam_t *inpParam, msParam_t *outParam,
+                ruleExecInfo_t *rei );
 int
-msiNcGetDataType (msParam_t *inpParam, msParam_t *outParam,
-ruleExecInfo_t *rei);
+msiNcGetDataType( msParam_t *inpParam, msParam_t *outParam,
+                  ruleExecInfo_t *rei );
 int
-msiNcGetElementInArray (msParam_t *arrayStructParam, msParam_t *indexParam,
-msParam_t *outParam, ruleExecInfo_t *rei);
+msiNcGetElementInArray( msParam_t *arrayStructParam, msParam_t *indexParam,
+                        msParam_t *outParam, ruleExecInfo_t *rei );
 int
-msiFloatToString (msParam_t *floatParam, msParam_t *stringParam,
-ruleExecInfo_t *rei);
+msiFloatToString( msParam_t *floatParam, msParam_t *stringParam,
+                  ruleExecInfo_t *rei );
 int
-msiNcInq (msParam_t *ncidParam, msParam_t *outParam, ruleExecInfo_t *rei);
+msiNcInq( msParam_t *ncidParam, msParam_t *outParam, ruleExecInfo_t *rei );
 int
-msiNcGetNdimsInInqOut (msParam_t *ncInqOutParam, msParam_t *varNameParam,
-msParam_t *outParam, ruleExecInfo_t *rei);
+msiNcGetNdimsInInqOut( msParam_t *ncInqOutParam, msParam_t *varNameParam,
+                       msParam_t *outParam, ruleExecInfo_t *rei );
 int
-msiNcGetNattsInInqOut (msParam_t *ncInqOutParam, msParam_t *varNameParam,
-msParam_t *outParam, ruleExecInfo_t *rei);
+msiNcGetNattsInInqOut( msParam_t *ncInqOutParam, msParam_t *varNameParam,
+                       msParam_t *outParam, ruleExecInfo_t *rei );
 int
-msiNcGetNvarsInInqOut (msParam_t *ncInqOutParam, msParam_t *outParam,
-ruleExecInfo_t *rei);
+msiNcGetNvarsInInqOut( msParam_t *ncInqOutParam, msParam_t *outParam,
+                       ruleExecInfo_t *rei );
 int
-msiNcGetFormatInInqOut (msParam_t *ncInqOutParam, msParam_t *outParam,
-ruleExecInfo_t *rei);
+msiNcGetFormatInInqOut( msParam_t *ncInqOutParam, msParam_t *outParam,
+                        ruleExecInfo_t *rei );
 int
-msiNcGetVarNameInInqOut (msParam_t *ncInqOutParam, msParam_t *inxParam,
-msParam_t *outParam, ruleExecInfo_t *rei);
+msiNcGetVarNameInInqOut( msParam_t *ncInqOutParam, msParam_t *inxParam,
+                         msParam_t *outParam, ruleExecInfo_t *rei );
 int
-msiNcGetDimNameInInqOut (msParam_t *ncInqOutParam, msParam_t *inxParam,
-msParam_t *varNameParam, msParam_t *outParam, ruleExecInfo_t *rei);
+msiNcGetDimNameInInqOut( msParam_t *ncInqOutParam, msParam_t *inxParam,
+                         msParam_t *varNameParam, msParam_t *outParam, ruleExecInfo_t *rei );
 int
-msiNcGetAttNameInInqOut (msParam_t *ncInqOutParam, msParam_t *inxParam,
-msParam_t *varNameParam, msParam_t *outParam, ruleExecInfo_t *rei);
+msiNcGetAttNameInInqOut( msParam_t *ncInqOutParam, msParam_t *inxParam,
+                         msParam_t *varNameParam, msParam_t *outParam, ruleExecInfo_t *rei );
 int
-msiNcGetVarTypeInInqOut (msParam_t *ncInqOutParam, msParam_t *varNameParam,
-msParam_t *outParam, ruleExecInfo_t *rei);
+msiNcGetVarTypeInInqOut( msParam_t *ncInqOutParam, msParam_t *varNameParam,
+                         msParam_t *outParam, ruleExecInfo_t *rei );
 int
-msiNcIntDataTypeToStr (msParam_t *dataTypeParam, msParam_t *outParam,
-ruleExecInfo_t *rei);
+msiNcIntDataTypeToStr( msParam_t *dataTypeParam, msParam_t *outParam,
+                       ruleExecInfo_t *rei );
 int
-msiNcGetAttValStrInInqOut (msParam_t *ncInqOutParam, msParam_t *whichAttParam,
-msParam_t *varNameParam, msParam_t *outParam, ruleExecInfo_t *rei);
+msiNcGetAttValStrInInqOut( msParam_t *ncInqOutParam, msParam_t *whichAttParam,
+                           msParam_t *varNameParam, msParam_t *outParam, ruleExecInfo_t *rei );
 int
-_msiNcGetAttValInInqOut (msParam_t *ncInqOutParam, msParam_t *whichAttParam,
-msParam_t *varNameParam, ncGetVarOut_t **ncGetVarOut);
+_msiNcGetAttValInInqOut( msParam_t *ncInqOutParam, msParam_t *whichAttParam,
+                         msParam_t *varNameParam, ncGetVarOut_t **ncGetVarOut );
 int
-msiAddToNcArray (msParam_t *elementParam, msParam_t *inxParam,
-msParam_t *ncArrayParam, ruleExecInfo_t *rei);
+msiAddToNcArray( msParam_t *elementParam, msParam_t *inxParam,
+                 msParam_t *ncArrayParam, ruleExecInfo_t *rei );
 int
-msiNcGetDimLenInInqOut (msParam_t *ncInqOutParam, msParam_t *inxParam,
-msParam_t *varNameParam, msParam_t *outParam, ruleExecInfo_t *rei);
+msiNcGetDimLenInInqOut( msParam_t *ncInqOutParam, msParam_t *inxParam,
+                        msParam_t *varNameParam, msParam_t *outParam, ruleExecInfo_t *rei );
 int
-msiNcGetVarIdInInqOut (msParam_t *ncInqOutParam, msParam_t *whichVarParam,
-msParam_t *outParam, ruleExecInfo_t *rei);
+msiNcGetVarIdInInqOut( msParam_t *ncInqOutParam, msParam_t *whichVarParam,
+                       msParam_t *outParam, ruleExecInfo_t *rei );
 int
-msiFreeNcStruct (msParam_t *inpParam, ruleExecInfo_t *rei);
+msiFreeNcStruct( msParam_t *inpParam, ruleExecInfo_t *rei );
 int
-msiNcOpenGroup (msParam_t *rootNcidParam, msParam_t *fullGrpNameParam,
-msParam_t *outParam, ruleExecInfo_t *rei);
+msiNcOpenGroup( msParam_t *rootNcidParam, msParam_t *fullGrpNameParam,
+                msParam_t *outParam, ruleExecInfo_t *rei );
 int
-msiNcInqGrps (msParam_t *ncidParam, msParam_t *outParam, ruleExecInfo_t *rei);
+msiNcInqGrps( msParam_t *ncidParam, msParam_t *outParam, ruleExecInfo_t *rei );
 int
-msiNcGetNGrpsInInqOut (msParam_t *ncInqGrpsOutParam, msParam_t *outParam,
-ruleExecInfo_t *rei);
+msiNcGetNGrpsInInqOut( msParam_t *ncInqGrpsOutParam, msParam_t *outParam,
+                       ruleExecInfo_t *rei );
 int
-msiNcGetGrpInInqOut (msParam_t *ncInqGrpsOutParam,
-msParam_t *inxParam, msParam_t *outParam, ruleExecInfo_t *rei);
+msiNcGetGrpInInqOut( msParam_t *ncInqGrpsOutParam,
+                     msParam_t *inxParam, msParam_t *outParam, ruleExecInfo_t *rei );
 int
-msiNcRegGlobalAttr (msParam_t *objPathParam, msParam_t *adminParam,
-msParam_t *outParam, ruleExecInfo_t *rei);
+msiNcRegGlobalAttr( msParam_t *objPathParam, msParam_t *adminParam,
+                    msParam_t *outParam, ruleExecInfo_t *rei );
 int
-msiNcSubsetVar (msParam_t *varNameParam, msParam_t *ncidParam,
-msParam_t *ncInqOutParam, msParam_t *subsetStrParam,
-msParam_t *outParam, ruleExecInfo_t *rei);
+msiNcSubsetVar( msParam_t *varNameParam, msParam_t *ncidParam,
+                msParam_t *ncInqOutParam, msParam_t *subsetStrParam,
+                msParam_t *outParam, ruleExecInfo_t *rei );
 int
-ncSubsetVar (rsComm_t *rsComm, int ncid, ncInqOut_t *ncInqOut,
-ncVarSubset_t *ncVarSubset, ncGetVarOut_t **ncGetVarOut);
+ncSubsetVar( rsComm_t *rsComm, int ncid, ncInqOut_t *ncInqOut,
+             ncVarSubset_t *ncVarSubset, ncGetVarOut_t **ncGetVarOut );
 int
-msiNcVarStat (msParam_t *ncGetVarOutParam, msParam_t *statOutStr,
-ruleExecInfo_t *rei);
+msiNcVarStat( msParam_t *ncGetVarOutParam, msParam_t *statOutStr,
+              ruleExecInfo_t *rei );
 int
-procMaxMinAve (float myfloat, float *mymax, float *mymin, float *mytotal);
+procMaxMinAve( float myfloat, float *mymax, float *mymin, float *mytotal );
 
 #endif	/* RE_NETCDF_H */

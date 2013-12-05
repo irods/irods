@@ -8,7 +8,7 @@
 
 /* This is a metadata type API call */
 
-/* 
+/*
    This call performs either a generalInsert or generalDelete call,
    which can add or remove specified rows from tables using input
    parameters similar to the generalQuery.  This is restricted to
@@ -23,15 +23,15 @@
 #include "icatDefines.hpp"
 
 #include "rodsGeneralUpdate.hpp"  /* for input/output structs, etc */
-    
+
 #if defined(RODS_SERVER)
 #define RS_GENERAL_UPDATE rsGeneralUpdate
 /* prototype for the server handler */
 int
-rsGeneralUpdate (rsComm_t *rsComm, generalUpdateInp_t *generalUpdateInp );
+rsGeneralUpdate( rsComm_t *rsComm, generalUpdateInp_t *generalUpdateInp );
 
 int
-_rsGeneralUpdate (rsComm_t *rsComm, generalUpdateInp_t *generalUpdateInp );
+_rsGeneralUpdate( rsComm_t *rsComm, generalUpdateInp_t *generalUpdateInp );
 #else
 #define RS_GENERAL_UPDATE NULL
 #endif
@@ -40,9 +40,9 @@ _rsGeneralUpdate (rsComm_t *rsComm, generalUpdateInp_t *generalUpdateInp );
 extern "C" {
 #endif
 
-/* prototype for the client call */
-int
-rcGeneralUpdate (rcComm_t *conn, generalUpdateInp_t *generalUpdateInp);
+    /* prototype for the client call */
+    int
+    rcGeneralUpdate( rcComm_t *conn, generalUpdateInp_t *generalUpdateInp );
 
 #ifdef  __cplusplus
 }

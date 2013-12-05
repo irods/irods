@@ -5,7 +5,7 @@
 
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code.  */ 
+/* This is script-generated code.  */
 /* See ncCreate.h for a description of this API call.*/
 
 #include "ncCreate.hpp"
@@ -58,28 +58,26 @@
 **/
 
 int
-rcNcCreate (rcComm_t *conn, ncOpenInp_t *ncCreateInp, int *ncid)
-{
+rcNcCreate( rcComm_t *conn, ncOpenInp_t *ncCreateInp, int *ncid ) {
     int status;
     int *myncid = NULL;
 
-    status = procApiRequest (conn, NC_CREATE_AN,  ncCreateInp, NULL,
-        (void **) &myncid, NULL);
+    status = procApiRequest( conn, NC_CREATE_AN,  ncCreateInp, NULL,
+                             ( void ** ) &myncid, NULL );
 
-    if (myncid != NULL) {
-	*ncid = *myncid;
-	free (myncid);
+    if ( myncid != NULL ) {
+        *ncid = *myncid;
+        free( myncid );
     }
-    return (status);
+    return ( status );
 }
 
 int
-_rcNcCreate (rcComm_t *conn, ncOpenInp_t *ncCreateInp, int **ncid)
-{
+_rcNcCreate( rcComm_t *conn, ncOpenInp_t *ncCreateInp, int **ncid ) {
     int status;
-    status = procApiRequest (conn, NC_CREATE_AN,  ncCreateInp, NULL, 
-        (void **) ncid, NULL);
+    status = procApiRequest( conn, NC_CREATE_AN,  ncCreateInp, NULL,
+                             ( void ** ) ncid, NULL );
 
-    return (status);
+    return ( status );
 }
 

@@ -24,24 +24,24 @@ extern "C" {
 
 #if defined(RODS_SERVER)
 #define RS_CHK_NV_PATH_PERM rsChkNVPathPerm
-/* prototype for the server handler */
+    /* prototype for the server handler */
     int
-    rsChkNVPathPerm (rsComm_t *rsComm, fileOpenInp_t *chkNVPathPermInp);
+    rsChkNVPathPerm( rsComm_t *rsComm, fileOpenInp_t *chkNVPathPermInp );
     int
-    rsChkNVPathPermByHost (rsComm_t *rsComm, fileOpenInp_t *chkNVPathPermInp,
-                           rodsServerHost_t *rodsServerHost);
+    rsChkNVPathPermByHost( rsComm_t *rsComm, fileOpenInp_t *chkNVPathPermInp,
+                           rodsServerHost_t *rodsServerHost );
     int
-    _rsChkNVPathPerm (rsComm_t *rsComm, fileOpenInp_t *chkNVPathPermInp);
+    _rsChkNVPathPerm( rsComm_t *rsComm, fileOpenInp_t *chkNVPathPermInp );
     int
-    remoteChkNVPathPerm (rsComm_t *rsComm, fileOpenInp_t *chkNVPathPermInp,
-                         rodsServerHost_t *rodsServerHost);
+    remoteChkNVPathPerm( rsComm_t *rsComm, fileOpenInp_t *chkNVPathPermInp,
+                         rodsServerHost_t *rodsServerHost );
 #else
 #define RS_CHK_NV_PATH_PERM NULL
 #endif
 
-/* prototype for the client call */
+    /* prototype for the client call */
     int
-    rcChkNVPathPerm (rcComm_t *conn, fileOpenInp_t *chkNVPathPermInp);
+    rcChkNVPathPerm( rcComm_t *conn, fileOpenInp_t *chkNVPathPermInp );
 
 #ifdef  __cplusplus
 }

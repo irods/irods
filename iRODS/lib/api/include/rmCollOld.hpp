@@ -20,28 +20,28 @@
 #define RS_RM_COLL_OLD rsRmCollOld
 /* prototype for the server handler */
 int
-rsRmCollOld (rsComm_t *rsComm, collInp_t *rmCollInp);
+rsRmCollOld( rsComm_t *rsComm, collInp_t *rmCollInp );
 int
-remoteRmCollOld (rsComm_t *rsComm, collInp_t *rmCollInp);
+remoteRmCollOld( rsComm_t *rsComm, collInp_t *rmCollInp );
 int
-_rsRmCollOld (rsComm_t *rsComm, collInp_t *rmCollInp);
+_rsRmCollOld( rsComm_t *rsComm, collInp_t *rmCollInp );
 int
-_rsRmCollRecurOld (rsComm_t *rsComm, collInp_t *rmCollInp); 
+_rsRmCollRecurOld( rsComm_t *rsComm, collInp_t *rmCollInp );
 int
-rsMvCollToTrash (rsComm_t *rsComm, collInp_t *rmCollInp);
+rsMvCollToTrash( rsComm_t *rsComm, collInp_t *rmCollInp );
 int
-rsMkTrashPath (rsComm_t *rsComm, char *objPath, char *trashPath);
+rsMkTrashPath( rsComm_t *rsComm, char *objPath, char *trashPath );
 int
-rsPhyRmCollRecurOld (rsComm_t *rsComm, collInp_t *rmCollInp);
+rsPhyRmCollRecurOld( rsComm_t *rsComm, collInp_t *rmCollInp );
 int
-svrRmCollOld (rsComm_t *rsComm, collInp_t *rmCollInp);
+svrRmCollOld( rsComm_t *rsComm, collInp_t *rmCollInp );
 int
-svrRmSpecColl (rsComm_t *rsComm, collInp_t *rmCollInp, 
-dataObjInfo_t *dataObjInfo);
+svrRmSpecColl( rsComm_t *rsComm, collInp_t *rmCollInp,
+               dataObjInfo_t *dataObjInfo );
 int
-svrRmSpecCollRecur (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo);
+svrRmSpecCollRecur( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo );
 int
-l3Rmdir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo);
+l3Rmdir( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo );
 #else
 #define RS_RM_COLL_OLD NULL
 #endif
@@ -51,7 +51,7 @@ l3Rmdir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo);
 #define RS_RM_COLL_OLD201 rsRmCollOld201
 /* prototype for the server handler */
 int
-rsRmCollOld201 (rsComm_t *rsComm, collInp201_t *rmCollInp);
+rsRmCollOld201( rsComm_t *rsComm, collInp201_t *rmCollInp );
 #else
 #define RS_RM_COLL_OLD201 NULL
 #endif
@@ -61,20 +61,20 @@ rsRmCollOld201 (rsComm_t *rsComm, collInp201_t *rmCollInp);
 extern "C" {
 #endif
 
-/* prototype for the client call */
-int
-rcRmCollOld (rcComm_t *conn, collInp_t *rmCollInp);
+    /* prototype for the client call */
+    int
+    rcRmCollOld( rcComm_t *conn, collInp_t *rmCollInp );
 
-/* rcRmCollOld - Remove a iRODS collection.
- * Input -
- *   rcComm_t *conn - The client connection handle.
- *   collInp_t *collInp - generic coll input. Relevant items are:
- *      collName - the collection to be registered.
- *      condInput - condition input (optional) - currently not used.
- *
- * OutPut -
- *   int status - status of the operation.
- */
+    /* rcRmCollOld - Remove a iRODS collection.
+     * Input -
+     *   rcComm_t *conn - The client connection handle.
+     *   collInp_t *collInp - generic coll input. Relevant items are:
+     *      collName - the collection to be registered.
+     *      condInput - condition input (optional) - currently not used.
+     *
+     * OutPut -
+     *   int status - status of the operation.
+     */
 
 #ifdef  __cplusplus
 }

@@ -7,24 +7,25 @@ SCRIPTPATH=$( cd $(dirname $0) ; pwd -P )
 FULLPATHSCRIPTNAME=$SCRIPTPATH/$SCRIPTNAME
 COVERAGE="0"
 RELEASE="0"
-BUILDEIRODS="1"
+BUILDIRODS="1"
 PORTABLE="0"
-COVERAGEBUILDDIR="/var/lib/eirods"
+COVERAGEBUILDDIR="/var/lib/irods"
 PREFLIGHT=""
 PREFLIGHTDOWNLOAD=""
 PYPREFLIGHT=""
-EIRODSPACKAGEDIR="./build"
+IRODSPACKAGEDIR="./build"
 
 USAGE="
 
 Usage: $SCRIPTNAME [OPTIONS] <serverType> [databaseType]
+Usage: $SCRIPTNAME docs
 Usage: $SCRIPTNAME clean
 
 Options:
 -c      Build with coverage support (gcov)
 -h      Show this help
 -r      Build a release package (no debugging information, optimized)
--s      Skip compilation of E-iRODS source
+-s      Skip compilation of iRODS source
 -p      Portable option, ignores OS and builds a tar.gz
 
 Examples:
@@ -60,7 +61,7 @@ fi
 # boilerplate
 echo "${text_cyan}${text_bold}"
 echo "+------------------------------------+"
-echo "| RENCI E-iRODS Build Script         |"
+echo "| RENCI iRODS Build Script           |"
 echo "+------------------------------------+"
 date
 echo "${text_reset}"
@@ -87,18 +88,18 @@ while getopts ":chrsp" opt; do
     case $opt in
         c)
         COVERAGE="1"
-        echo "-c detected -- Building E-iRODS with coverage support (gcov)"
+        echo "-c detected -- Building iRODS with coverage support (gcov)"
         ;;
         h)
         echo "$USAGE"
         ;;
         r)
         RELEASE="1"
-        echo "-r detected -- Building a RELEASE package of E-iRODS"
+        echo "-r detected -- Building a RELEASE package of iRODS"
         ;;
         s)
-        BUILDEIRODS="0"
-        echo "-s detected -- Skipping E-iRODS compilation"
+        BUILDIRODS="0"
+        echo "-s detected -- Skipping iRODS compilation"
         ;;
         p)
         PORTABLE="1"
@@ -112,7 +113,7 @@ done
 echo ""
 
 # detect illogical combinations, and exit
-if [ "$BUILDEIRODS" == "0" -a "$RELEASE" == "1" ] ; then
+if [ "$BUILDIRODS" == "0" -a "$RELEASE" == "1" ] ; then
     echo "${text_red}#######################################################" 1>&2
     echo "ERROR :: Incompatible options:" 1>&2
     echo "      :: -s   skip compilation" 1>&2
@@ -120,7 +121,7 @@ if [ "$BUILDEIRODS" == "0" -a "$RELEASE" == "1" ] ; then
     echo "#######################################################${text_reset}" 1>&2
     exit 1
 fi
-if [ "$BUILDEIRODS" == "0" -a "$COVERAGE" == "1" ] ; then
+if [ "$BUILDIRODS" == "0" -a "$COVERAGE" == "1" ] ; then
     echo "${text_red}#######################################################" 1>&2
     echo "ERROR :: Incompatible options:" 1>&2
     echo "      :: -s   skip compilation" 1>&2
@@ -142,7 +143,7 @@ if [ "$COVERAGE" == "1" ] ; then
         echo "${text_red}#######################################################" 1>&2
         echo "ERROR :: $COVERAGEBUILDDIR/ already exists" 1>&2
         echo "      :: Cannot build in place with coverage enabled" 1>&2
-        echo "      :: Try uninstalling the eirods package" 1>&2
+        echo "      :: Try uninstalling the irods package" 1>&2
         echo "#######################################################${text_reset}" 1>&2
         exit 1
     fi
@@ -170,10 +171,173 @@ fi
 DETECTEDDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $DETECTEDDIR/../
 
+# begin self-awareness
+echo "${text_green}${text_bold}Detecting Build Environment${text_reset}"
+echo "Detected Packaging Directory [$DETECTEDDIR]"
+GITDIR=`pwd`
+BUILDDIR=$GITDIR  # we'll manipulate this later, depending on the coverage flag
+cd $BUILDDIR/iRODS
+echo "Build Directory set to [$BUILDDIR]"
+# read iRODS Version from file
+source ../VERSION
+echo "Detected iRODS Version to Build [$IRODSVERSION]"
+echo "Detected iRODS Version Integer [$IRODSVERSIONINT]"
+# detect operating system
+DETECTEDOS=`../packaging/find_os.sh`
+if [ "$PORTABLE" == "1" ] ; then
+  DETECTEDOS="Portable"
+fi
+echo "Detected OS [$DETECTEDOS]"
+DETECTEDOSVERSION=`../packaging/find_os_version.sh`
+echo "Detected OS Version [$DETECTEDOSVERSION]"
+
+
+
+
+############################################################
+# FUNCTIONS
+############################################################
+
+# download and compile RENCI version of EPM
+download_and_compile_EPM () {
+
+    # download
+    echo "${text_green}${text_bold}Downloading EPM from RENCI${text_reset}"
+    cd $BUILDDIR
+    RENCIEPM="epm42-renci.tar.gz"
+    rm -rf epm
+    rm -f $RENCIEPM
+    wget ftp://ftp.renci.org/pub/eirods/build/$RENCIEPM
+    tar -xf $RENCIEPM
+
+    # configure
+    echo "${text_green}${text_bold}Configuring EPM${text_reset}"
+    cd $BUILDDIR/epm
+    set +e
+    ./configure > /dev/null
+    if [ "$?" != "0" ] ; then
+        exit 1
+    fi
+
+    # build
+    echo "${text_green}${text_bold}Building EPM${text_reset}"
+    make > /dev/null
+    if [ "$?" != "0" ] ; then
+        exit 1
+    fi
+    set -e
+
+}
+
+
+# rename generated packages appropriately
+rename_generated_packages() {
+
+    # parameters
+    if [ "$1" == "" ] ; then
+        echo "rename_generated_packages() expected 1 parameter"
+        exit 1
+    fi
+    TARGET=$1
+
+    cd $BUILDDIR
+    SUFFIX=""
+    if   [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+	EXTENSION="rpm"
+	SUFFIX="-redhat"
+	if [ "$epmosversion" == "CENTOS6" ] ; then
+            SUFFIX="-centos6"
+	fi
+    elif [ "$DETECTEDOS" == "SuSE" ] ; then
+	EXTENSION="rpm"
+	SUFFIX="-suse"
+    elif [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
+	EXTENSION="deb"
+    elif [ "$DETECTEDOS" == "Solaris" ] ; then
+	EXTENSION="pkg"
+    elif [ "$DETECTEDOS" == "MacOSX" ] ; then
+	EXTENSION="dmg"
+    elif [ "$DETECTEDOS" == "Portable" ] ; then
+	EXTENSION="tar.gz"
+    fi
+    RENAME_SOURCE="./linux*/irods-*$IRODSVERSION*.$EXTENSION"
+    RENAME_SOURCE_DOCS=${RENAME_SOURCE/irods-/irods-docs-}
+    RENAME_SOURCE_DEV=${RENAME_SOURCE/irods-/irods-dev-}
+    RENAME_SOURCE_ICOMMANDS=${RENAME_SOURCE/irods-/irods-icommands-}
+    SOURCELIST=`ls $RENAME_SOURCE`
+    echo "EPM produced packages:"
+    echo "$SOURCELIST"
+    # prepare target build directory
+    mkdir -p $IRODSPACKAGEDIR
+    # vanilla construct
+    RENAME_DESTINATION="$IRODSPACKAGEDIR/irods-$IRODSVERSION-64bit.$EXTENSION"
+    # add OS-specific suffix
+    if [ "$SUFFIX" != "" ] ; then
+	RENAME_DESTINATION=${RENAME_DESTINATION/.$EXTENSION/$SUFFIX.$EXTENSION}
+    fi
+    # docs build
+    RENAME_DESTINATION_DOCS=${RENAME_DESTINATION/irods-/irods-docs-}
+    # release build (also building icommands)
+    RENAME_DESTINATION_DEV=${RENAME_DESTINATION/irods-/irods-dev-}
+    RENAME_DESTINATION_ICOMMANDS=${RENAME_DESTINATION/irods-/irods-icommands-}
+    # icat or resource
+    if [ "$TARGET" == "icat" ] ; then
+	RENAME_DESTINATION=${RENAME_DESTINATION/-64bit/-64bit-icat-postgres}
+    else
+	RENAME_DESTINATION=${RENAME_DESTINATION/-64bit/-64bit-resource}
+    fi
+    # coverage build
+    if [ "$COVERAGE" == "1" ] ; then
+	RENAME_DESTINATION=${RENAME_DESTINATION/-64bit/-64bit-coverage}
+    fi
+    # rename and tell me
+    if [ "$TARGET" == "docs" ] ; then
+	echo ""
+	echo "renaming    [$RENAME_SOURCE_DOCS]"
+	echo "         to [$RENAME_DESTINATION_DOCS]"
+	mv $RENAME_SOURCE_DOCS $RENAME_DESTINATION_DOCS
+    else
+	if [ "$RELEASE" == "1" ] ; then
+	    echo ""
+	    echo "renaming    [$RENAME_SOURCE_ICOMMANDS]"
+	    echo "         to [$RENAME_DESTINATION_ICOMMANDS]"
+	    mv $RENAME_SOURCE_ICOMMANDS $RENAME_DESTINATION_ICOMMANDS
+	fi
+	if [ "$TARGET" == "icat" ] ; then
+	    echo ""
+	    echo "renaming    [$RENAME_SOURCE_DEV]"
+	    echo "         to [$RENAME_DESTINATION_DEV]"
+	    mv $RENAME_SOURCE_DEV $RENAME_DESTINATION_DEV
+	fi
+	echo ""
+	echo "renaming    [$RENAME_SOURCE]"
+	echo "         to [$RENAME_DESTINATION]"
+	mv $RENAME_SOURCE $RENAME_DESTINATION
+    fi
+    # list new result set
+    echo ""
+    echo "Contents of $IRODSPACKAGEDIR:"
+    ls -l $IRODSPACKAGEDIR
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 # set up git commit hooks
-#if [ -d ".git" ] ; then
-#    cp ./packaging/pre-commit ./.git/hooks/pre-commit
-#fi
+cd $BUILDDIR
+if [ -d ".git" ] ; then
+    cp ./packaging/pre-commit ./.git/hooks/pre-commit
+fi
 
 MANDIR=man
 # check for clean
@@ -184,9 +348,9 @@ if [ "$1" == "clean" ] ; then
     rm -f changelog.gz
     rm -rf $MANDIR
     rm -f manual.pdf
-    rm -f eirods-manual*.pdf
+    rm -f irods-manual*.pdf
     rm -f examples/microservices/*.pdf
-    rm -f libeirods.a
+    rm -f libirods.a
     echo "Cleaning Authentication plugins..."
     cd plugins/auth
     set +e
@@ -205,62 +369,134 @@ if [ "$1" == "clean" ] ; then
     make clean > /dev/null 2>&1
     set -e
     cd ../..
-    rm -rf $EIRODSPACKAGEDIR
+    rm -rf $IRODSPACKAGEDIR
     set +e
     echo "Cleaning EPM residuals..."
-    cd $DETECTEDDIR/../
+    cd $BUILDDIR
     rm -rf linux-2.*
     rm -rf linux-3.*
     rm -rf macosx-10.*
     rm -rf epm
     rm -rf epm*
     echo "Cleaning external residuals..."
-    cd $DETECTEDDIR/../external
+    cd $BUILDDIR/external
     rm -rf __MACOSX
     rm -rf cJSON*
     rm -rf cmake*
+    rm -rf jansson*
     rm -rf libarchive*
     rm -rf boost*
     echo "Cleaning iRODS fuse residuals..."
-    cd $DETECTEDDIR/../iRODS/clients/fuse/
+    cd $BUILDDIR/iRODS/clients/fuse/
     make clean > /dev/null 2>&1
     echo "Cleaning iRODS residuals..."
-    cd $DETECTEDDIR/../iRODS
+    cd $BUILDDIR/iRODS
     make clean > /dev/null 2>&1
     rm -rf doc/html
     rm -f server/config/reConfigs/raja1.re
     rm -f server/config/scriptMonPerf.config
     rm -f server/icat/src/icatCoreTables.sql
     rm -f server/icat/src/icatSysTables.sql
-    rm -f lib/core/include/eirods_ms_home.hpp
-    rm -f lib/core/include/eirods_network_home.hpp
-    rm -f lib/core/include/eirods_auth_home.hpp
-    rm -f lib/core/include/eirods_resources_home.hpp
+    rm -f lib/core/include/irods_ms_home.hpp
+    rm -f lib/core/include/irods_network_home.hpp
+    rm -f lib/core/include/irods_auth_home.hpp
+    rm -f lib/core/include/irods_resources_home.hpp
     set -e
     echo "${text_green}${text_bold}Done.${text_reset}"
     exit 0
 fi
 
-# begin self-awareness
-echo "${text_green}${text_bold}Detecting Build Environment${text_reset}"
-echo "Detected Packaging Directory [$DETECTEDDIR]"
-GITDIR=`pwd`
-BUILDDIR=$GITDIR  # we'll manipulate this later, depending on the coverage flag
-cd $BUILDDIR/iRODS
-echo "Build Directory set to [$BUILDDIR]"
-# read E-iRODS Version from file
-source ../VERSION
-echo "Detected E-iRODS Version to Build [$EIRODSVERSION]"
-echo "Detected E-iRODS Version Integer [$EIRODSVERSIONINT]"
-# detect operating system
-DETECTEDOS=`../packaging/find_os.sh`
-if [ "$PORTABLE" == "1" ] ; then
-  DETECTEDOS="Portable"
-fi
-echo "Detected OS [$DETECTEDOS]"
-DETECTEDOSVERSION=`../packaging/find_os_version.sh`
-echo "Detected OS Version [$DETECTEDOSVERSION]"
+# check for docs
+if [ "$1" == "docs" ] ; then
+    # building documentation
+    BUILDDOCS="1"
+    echo ""
+    echo "${text_green}${text_bold}Building Docs...${text_reset}"
+    echo ""
+    
+    set +e
+    # generate manual in pdf format
+    echo "${text_green}${text_bold}Building E-iRODS Administration Manual${text_reset}"
+    cd $BUILDDIR
+    rst2pdf manual.rst -o manual.pdf
+    if [ "$?" != "0" ] ; then
+        echo "${text_red}#######################################################" 1>&2
+        echo "ERROR :: Failed generating manual.pdf" 1>&2
+        echo "#######################################################${text_reset}" 1>&2
+        exit 1
+    fi
+    set -e
+    # create a new copy of the manual which includes the version name
+    cp manual.pdf irods-manual-$IRODSVERSION.pdf
 
+    set +e
+    # generate doxygen for microservices
+    echo "${text_green}${text_bold}Building E-iRODS Doxygen Output${text_reset}"
+    cd $BUILDDIR/iRODS/
+    doxygen ./config/doxygen-saved.cfg
+    if [ "$?" != "0" ] ; then
+        echo "${text_red}#######################################################" 1>&2
+        echo "ERROR :: Failed generating doxygen output" 1>&2
+        echo "#######################################################${text_reset}" 1>&2
+        exit 1
+    fi
+    set -e
+
+    # get EPM
+    download_and_compile_EPM
+
+    # prepare list file from template
+    cd $BUILDDIR
+    LISTFILE="./packaging/irods-docs.list"
+    TMPFILE="/tmp/irodsdocslist.tmp"
+    sed -e "s,TEMPLATE_IRODSVERSIONINT,$IRODSVERSIONINT," $LISTFILE.template > $TMPFILE
+    mv $TMPFILE $LISTFILE
+    sed -e "s,TEMPLATE_IRODSVERSION,$IRODSVERSION," $LISTFILE > $TMPFILE
+    mv $TMPFILE $LISTFILE
+
+    # package them up
+    cd $BUILDDIR
+    unamem=`uname -m`
+    if [[ "$unamem" == "x86_64" || "$unamem" == "amd64" ]] ; then
+	arch="amd64"
+    else
+	arch="i386"
+    fi
+    if [ "$DETECTEDOS" == "RedHatCompatible" ] ; then # CentOS and RHEL and Fedora
+	echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS RPMs${text_reset}"
+	./epm/epm -f rpm irods-docs $LISTFILE
+    elif [ "$DETECTEDOS" == "SuSE" ] ; then # SuSE
+	echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS RPMs${text_reset}"
+	./epm/epm -f rpm irods-docs $LISTFILE
+    elif [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then  # Ubuntu
+	echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS DEBs${text_reset}"
+	./epm/epm -a $arch -f deb irods-docs $LISTFILE
+    elif [ "$DETECTEDOS" == "Solaris" ] ; then  # Solaris
+	echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS PKGs${text_reset}"
+	./epm/epm -f pkg irods-docs $LISTFILE
+    elif [ "$DETECTEDOS" == "MacOSX" ] ; then  # MacOSX
+	echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS DMGs${text_reset}"
+	./epm/epm -f osx irods-docs $LISTFILE
+    elif [ "$DETECTEDOS" == "Portable" ] ; then  # Portable
+	echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS TGZs${text_reset}"
+	./epm/epm -f portable irods-docs $LISTFILE
+    else
+	echo "${text_red}#######################################################" 1>&2
+	echo "ERROR :: Unknown OS, cannot generate packages with EPM" 1>&2
+	echo "#######################################################${text_reset}" 1>&2
+	exit 1
+    fi
+
+    # rename generated packages appropriately
+    rename_generated_packages $1
+
+    # done
+    echo "${text_green}${text_bold}Done.${text_reset}"
+    exit 0
+fi
+
+
+# check for invalid switch combinations
 if [[ $1 != "icat" && $1 != "resource" ]] ; then
     echo "${text_red}#######################################################" 1>&2
     echo "ERROR :: Invalid serverType [$1]" 1>&2
@@ -665,27 +901,27 @@ sleep 1
 ################################################################################
 
 # LOCAL COMPILATIONS - in ./external
-if [ "$BUILDEIRODS" == "1" ] ; then
+if [ "$BUILDIRODS" == "1" ] ; then
 
     # build a copy of jansson
-    EIRODS_BUILD_JANSSONVERSIONNUMBER="2.5"
-    EIRODS_BUILD_JANSSONVERSION="jansson-$EIRODS_BUILD_JANSSONVERSIONNUMBER"
+    IRODS_BUILD_JANSSONVERSIONNUMBER="2.5"
+    IRODS_BUILD_JANSSONVERSION="jansson-$IRODS_BUILD_JANSSONVERSIONNUMBER"
     cd $BUILDDIR/external/
-    if [ -d "$EIRODS_BUILD_JANSSONVERSION" ] ; then
-        echo "${text_green}${text_bold}Detected copy of [$EIRODS_BUILD_JANSSONVERSION]${text_reset}"
+    if [ -d "$IRODS_BUILD_JANSSONVERSION" ] ; then
+        echo "${text_green}${text_bold}Detected copy of [$IRODS_BUILD_JANSSONVERSION]${text_reset}"
     else
-        echo "${text_green}${text_bold}Downloading [$EIRODS_BUILD_JANSSONVERSION] from ftp.renci.org${text_reset}"
-        if [ -e "$EIRODS_BUILD_JANSSONVERSION.tar.gz" ] ; then
+        echo "${text_green}${text_bold}Downloading [$IRODS_BUILD_JANSSONVERSION] from ftp.renci.org${text_reset}"
+        if [ -e "$IRODS_BUILD_JANSSONVERSION.tar.gz" ] ; then
             echo "Using existing copy"
         else
 #            http://www.digip.org/jansson/
-            wget ftp://ftp.renci.org/pub/eirods/external/$EIRODS_BUILD_JANSSONVERSION.tar.gz
+            wget ftp://ftp.renci.org/pub/eirods/external/$IRODS_BUILD_JANSSONVERSION.tar.gz
         fi
-        gunzip $EIRODS_BUILD_JANSSONVERSION.tar.gz
-        tar xf $EIRODS_BUILD_JANSSONVERSION.tar
+        gunzip $IRODS_BUILD_JANSSONVERSION.tar.gz
+        tar xf $IRODS_BUILD_JANSSONVERSION.tar
     fi
-    echo "${text_green}${text_bold}Building [$EIRODS_BUILD_JANSSONVERSION]${text_reset}"
-    cd $BUILDDIR/external/$EIRODS_BUILD_JANSSONVERSION
+    echo "${text_green}${text_bold}Building [$IRODS_BUILD_JANSSONVERSION]${text_reset}"
+    cd $BUILDDIR/external/$IRODS_BUILD_JANSSONVERSION
     if [[ ( ! -e "Makefile" ) || ( "$FULLPATHSCRIPTNAME" -nt "Makefile" ) ]] ; then
         ./configure
         $MAKEJCMD
@@ -694,42 +930,42 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     fi
 
     # get a copy of cjson
-    EIRODS_BUILD_CJSONVERSIONNUMBER="58"
-    EIRODS_BUILD_CJSONVERSION="cJSONFiles-r$EIRODS_BUILD_CJSONVERSIONNUMBER"
+    IRODS_BUILD_CJSONVERSIONNUMBER="58"
+    IRODS_BUILD_CJSONVERSION="cJSONFiles-r$IRODS_BUILD_CJSONVERSIONNUMBER"
     cd $BUILDDIR/external/
     if [ -d "cJSON" ] ; then
-        echo "${text_green}${text_bold}Detected copy of [$EIRODS_BUILD_CJSONVERSION]${text_reset}"
+        echo "${text_green}${text_bold}Detected copy of [$IRODS_BUILD_CJSONVERSION]${text_reset}"
     else
-        echo "${text_green}${text_bold}Downloading [$EIRODS_BUILD_CJSONVERSION] from ftp.renci.org${text_reset}"
-        if [ -e "$EIRODS_BUILD_CJSONVERSION.zip" ] ; then
+        echo "${text_green}${text_bold}Downloading [$IRODS_BUILD_CJSONVERSION] from ftp.renci.org${text_reset}"
+        if [ -e "$IRODS_BUILD_CJSONVERSION.zip" ] ; then
             echo "Using existing copy"
         else
 #            wget http://sourceforge.net/projects/cjson/files/cJSONFiles.zip/download
-            wget ftp://ftp.renci.org/pub/eirods/external/$EIRODS_BUILD_CJSONVERSION.zip
+            wget ftp://ftp.renci.org/pub/eirods/external/$IRODS_BUILD_CJSONVERSION.zip
         fi
-        echo "${text_green}${text_bold}Unzipping [$EIRODS_BUILD_CJSONVERSION]${text_reset}"
-        unzip -o $EIRODS_BUILD_CJSONVERSION.zip
+        echo "${text_green}${text_bold}Unzipping [$IRODS_BUILD_CJSONVERSION]${text_reset}"
+        unzip -o $IRODS_BUILD_CJSONVERSION.zip
     fi
 
     # build a copy of cmake
-    EIRODS_BUILD_CMAKEVERSIONNUMBER="2.8.11.2"
-    EIRODS_BUILD_CMAKEVERSION="cmake-$EIRODS_BUILD_CMAKEVERSIONNUMBER"
+    IRODS_BUILD_CMAKEVERSIONNUMBER="2.8.11.2"
+    IRODS_BUILD_CMAKEVERSION="cmake-$IRODS_BUILD_CMAKEVERSIONNUMBER"
     cd $BUILDDIR/external/
-    if [ -d "$EIRODS_BUILD_CMAKEVERSION" ] ; then
-        echo "${text_green}${text_bold}Detected copy of [$EIRODS_BUILD_CMAKEVERSION]${text_reset}"
+    if [ -d "$IRODS_BUILD_CMAKEVERSION" ] ; then
+        echo "${text_green}${text_bold}Detected copy of [$IRODS_BUILD_CMAKEVERSION]${text_reset}"
     else
-        echo "${text_green}${text_bold}Downloading [$EIRODS_BUILD_CMAKEVERSION] from ftp.renci.org${text_reset}"
-        if [ -e "$EIRODS_BUILD_CMAKEVERSION.tar.gz" ] ; then
+        echo "${text_green}${text_bold}Downloading [$IRODS_BUILD_CMAKEVERSION] from ftp.renci.org${text_reset}"
+        if [ -e "$IRODS_BUILD_CMAKEVERSION.tar.gz" ] ; then
             echo "Using existing copy"
         else
-#            wget http://www.cmake.org/files/v2.8/$EIRODS_BUILD_CMAKEVERSION.tar.gz
-            wget ftp://ftp.renci.org/pub/eirods/external/$EIRODS_BUILD_CMAKEVERSION.tar.gz
+#            wget http://www.cmake.org/files/v2.8/$IRODS_BUILD_CMAKEVERSION.tar.gz
+            wget ftp://ftp.renci.org/pub/eirods/external/$IRODS_BUILD_CMAKEVERSION.tar.gz
         fi
-#        gunzip $EIRODS_BUILD_CMAKEVERSION.tar.gz
-        tar xf $EIRODS_BUILD_CMAKEVERSION.tar.gz # this version wasn't zipped
+#        gunzip $IRODS_BUILD_CMAKEVERSION.tar.gz
+        tar xf $IRODS_BUILD_CMAKEVERSION.tar.gz # this version wasn't zipped
     fi
-    echo "${text_green}${text_bold}Building [$EIRODS_BUILD_CMAKEVERSION]${text_reset}"
-    cd $BUILDDIR/external/$EIRODS_BUILD_CMAKEVERSION
+    echo "${text_green}${text_bold}Building [$IRODS_BUILD_CMAKEVERSION]${text_reset}"
+    cd $BUILDDIR/external/$IRODS_BUILD_CMAKEVERSION
     if [[ ( ! -e "Makefile" ) || ( "$FULLPATHSCRIPTNAME" -nt "Makefile" ) ]] ; then
         ./bootstrap -- -DBUILD_TESTING=FALSE
         $MAKEJCMD
@@ -738,24 +974,24 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     fi
 
     # build a copy of libarchive
-    EIRODS_BUILD_LIBARCHIVEVERSIONNUMBER="3.1.2"
-    EIRODS_BUILD_LIBARCHIVEVERSION="libarchive-$EIRODS_BUILD_LIBARCHIVEVERSIONNUMBER"
+    IRODS_BUILD_LIBARCHIVEVERSIONNUMBER="3.1.2"
+    IRODS_BUILD_LIBARCHIVEVERSION="libarchive-$IRODS_BUILD_LIBARCHIVEVERSIONNUMBER"
     cd $BUILDDIR/external/
-    if [ -d "$EIRODS_BUILD_LIBARCHIVEVERSION" ] ; then
-        echo "${text_green}${text_bold}Detected copy of [$EIRODS_BUILD_LIBARCHIVEVERSION]${text_reset}"
+    if [ -d "$IRODS_BUILD_LIBARCHIVEVERSION" ] ; then
+        echo "${text_green}${text_bold}Detected copy of [$IRODS_BUILD_LIBARCHIVEVERSION]${text_reset}"
     else
-        echo "${text_green}${text_bold}Downloading [$EIRODS_BUILD_LIBARCHIVEVERSION] from ftp.renci.org${text_reset}"
-        if [ -e "$EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz" ] ; then
+        echo "${text_green}${text_bold}Downloading [$IRODS_BUILD_LIBARCHIVEVERSION] from ftp.renci.org${text_reset}"
+        if [ -e "$IRODS_BUILD_LIBARCHIVEVERSION.tar.gz" ] ; then
             echo "Using existing copy"
         else
-#            wget -O $EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz https://github.com/libarchive/libarchive/archive/v$EIRODS_BUILD_LIBARCHIVEVERSIONNUMBER.tar.gz
-            wget ftp://ftp.renci.org/pub/eirods/external/$EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz
+#            wget -O $IRODS_BUILD_LIBARCHIVEVERSION.tar.gz https://github.com/libarchive/libarchive/archive/v$IRODS_BUILD_LIBARCHIVEVERSIONNUMBER.tar.gz
+            wget ftp://ftp.renci.org/pub/eirods/external/$IRODS_BUILD_LIBARCHIVEVERSION.tar.gz
         fi
-        gunzip $EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz
-        tar xf $EIRODS_BUILD_LIBARCHIVEVERSION.tar
+        gunzip $IRODS_BUILD_LIBARCHIVEVERSION.tar.gz
+        tar xf $IRODS_BUILD_LIBARCHIVEVERSION.tar
     fi
-    echo "${text_green}${text_bold}Building [$EIRODS_BUILD_LIBARCHIVEVERSION]${text_reset}"
-    cd $BUILDDIR/external/$EIRODS_BUILD_LIBARCHIVEVERSION
+    echo "${text_green}${text_bold}Building [$IRODS_BUILD_LIBARCHIVEVERSION]${text_reset}"
+    cd $BUILDDIR/external/$IRODS_BUILD_LIBARCHIVEVERSION
     if [[ ( ! -e "Makefile" ) || ( "$FULLPATHSCRIPTNAME" -nt "Makefile" ) ]] ; then
         sed '/^#ifdef HAVE_LINUX_FIEMAP_H$/i \
 #ifdef HAVE_LINUX_TYPES_H\
@@ -763,30 +999,30 @@ if [ "$BUILDEIRODS" == "1" ] ; then
 #endif\
 ' ./libarchive/test/test_sparse_basic.c > /tmp/libarchive-test-test_sparse_basic.c
         cp /tmp/libarchive-test-test_sparse_basic.c ./libarchive/test/test_sparse_basic.c
-        ../$EIRODS_BUILD_CMAKEVERSION/bin/cmake -D CMAKE_C_FLAGS:STRING=-fPIC .
+        ../$IRODS_BUILD_CMAKEVERSION/bin/cmake -D CMAKE_C_FLAGS:STRING=-fPIC .
         $MAKEJCMD
     else
         echo "Nothing to build - all files up to date."
     fi
 
     # build a copy of boost
-    EIRODS_BUILD_BOOSTVERSION="boost_1_55_0"
+    IRODS_BUILD_BOOSTVERSION="boost_1_55_0"
     cd $BUILDDIR/external/
-    if [ -d "$EIRODS_BUILD_BOOSTVERSION" ] ; then
-        echo "${text_green}${text_bold}Detected copy of [$EIRODS_BUILD_BOOSTVERSION]${text_reset}"
+    if [ -d "$IRODS_BUILD_BOOSTVERSION" ] ; then
+        echo "${text_green}${text_bold}Detected copy of [$IRODS_BUILD_BOOSTVERSION]${text_reset}"
     else
-        echo "${text_green}${text_bold}Downloading [$EIRODS_BUILD_BOOSTVERSION] from ftp.renci.org${text_reset}"
-        if [ -e "$EIRODS_BUILD_BOOSTVERSION.tar.gz" ] ; then
+        echo "${text_green}${text_bold}Downloading [$IRODS_BUILD_BOOSTVERSION] from ftp.renci.org${text_reset}"
+        if [ -e "$IRODS_BUILD_BOOSTVERSION.tar.gz" ] ; then
             echo "Using existing copy"
         else
-#            wget -O $EIRODS_BUILD_BOOSTVERSION.tar.gz http://sourceforge.net/projects/boost/files/boost/1.55.0/$EIRODS_BUILD_BOOSTVERSION.tar.gz/download
-            wget ftp://ftp.renci.org/pub/eirods/external/$EIRODS_BUILD_BOOSTVERSION.tar.gz
+#            wget -O $IRODS_BUILD_BOOSTVERSION.tar.gz http://sourceforge.net/projects/boost/files/boost/1.55.0/$IRODS_BUILD_BOOSTVERSION.tar.gz/download
+            wget ftp://ftp.renci.org/pub/eirods/external/$IRODS_BUILD_BOOSTVERSION.tar.gz
         fi
-        gunzip $EIRODS_BUILD_BOOSTVERSION.tar.gz
-        tar xf $EIRODS_BUILD_BOOSTVERSION.tar
+        gunzip $IRODS_BUILD_BOOSTVERSION.tar.gz
+        tar xf $IRODS_BUILD_BOOSTVERSION.tar
     fi
-    echo "${text_green}${text_bold}Building [$EIRODS_BUILD_BOOSTVERSION]${text_reset}"
-    cd $BUILDDIR/external/$EIRODS_BUILD_BOOSTVERSION
+    echo "${text_green}${text_bold}Building [$IRODS_BUILD_BOOSTVERSION]${text_reset}"
+    cd $BUILDDIR/external/$IRODS_BUILD_BOOSTVERSION
     sed -i "s/defined(__GLIBC_HAVE_LONG_LONG)/(defined(__GLIBC_HAVE_LONG_LONG) || (defined(__GLIBC__) \&\& ((__GLIBC__ > 2) || ((__GLIBC__ == 2) \&\& (__GLIBC_MINOR__ >= 17)))))/" ./boost/cstdint.hpp
     ./bootstrap.sh --with-libraries=filesystem,system,thread,regex
     ./bjam link=static threading=multi cxxflags="-fPIC" -j$CPUCOUNT
@@ -812,7 +1048,7 @@ if [ $1 == "icat" ] ; then
     DB_TYPE=$2
     EPMFILE="../packaging/irods.config.icat.epm"
 
-    if [ "$BUILDEIRODS" == "1" ] ; then
+    if [ "$BUILDIRODS" == "1" ] ; then
         # =-=-=-=-=-=-=-
         # bake SQL files for different database types
         # NOTE:: icatSysInserts.sql is handled by the packager as we rely on the default zone name
@@ -831,15 +1067,15 @@ if [ $1 == "icat" ] ; then
         if [ "$DB_TYPE" == "postgres" ] ; then
             # need to do a dirname here, as the irods.config is expected to have a path
             # which will be appended with a /bin
-            EIRODSPOSTGRESPATH=`../packaging/find_postgres_bin.sh`
-            if [ "$EIRODSPOSTGRESPATH" == "FAIL" ] ; then
+            IRODSPOSTGRESPATH=`../packaging/find_postgres_bin.sh`
+            if [ "$IRODSPOSTGRESPATH" == "FAIL" ] ; then
                 exit 1
             fi
-            EIRODSPOSTGRESPATH=`dirname $EIRODSPOSTGRESPATH`
-            EIRODSPOSTGRESPATH="$EIRODSPOSTGRESPATH/"
+            IRODSPOSTGRESPATH=`dirname $IRODSPOSTGRESPATH`
+            IRODSPOSTGRESPATH="$IRODSPOSTGRESPATH/"
 
-            echo "Detected PostgreSQL path [$EIRODSPOSTGRESPATH]"
-            sed -e s,EIRODSPOSTGRESPATH,$EIRODSPOSTGRESPATH, $EPMFILE > $TMPCONFIGFILE
+            echo "Detected PostgreSQL path [$IRODSPOSTGRESPATH]"
+            sed -e s,IRODSPOSTGRESPATH,$IRODSPOSTGRESPATH, $EPMFILE > $TMPCONFIGFILE
         else
             echo "TODO: irods.config for DBTYPE other than postgres"
         fi
@@ -852,7 +1088,7 @@ else
 fi
 
 
-if [ "$BUILDEIRODS" == "1" ] ; then
+if [ "$BUILDIRODS" == "1" ] ; then
 
     if [ "$COVERAGE" == "1" ] ; then
         # change context for BUILDDIR - we're building in place for gcov linking
@@ -885,29 +1121,29 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     chmod 755 ./irodsctl
 
     # update libarchive_dir to our external path
-    EIRODS_LIBARCHIVE_DIR=$BUILDDIR/external/$EIRODS_BUILD_LIBARCHIVEVERSION
-    sed -e "\,^LIBARCHIVE_DIR=,s,^.*$,LIBARCHIVE_DIR=$EIRODS_LIBARCHIVE_DIR," ./config/config.mk > /tmp/eirods-config.mk
-    mv /tmp/eirods-config.mk ./config/config.mk
+    IRODS_LIBARCHIVE_DIR=$BUILDDIR/external/$IRODS_BUILD_LIBARCHIVEVERSION
+    sed -e "\,^LIBARCHIVE_DIR=,s,^.*$,LIBARCHIVE_DIR=$IRODS_LIBARCHIVE_DIR," ./config/config.mk > /tmp/irods-config.mk
+    mv /tmp/irods-config.mk ./config/config.mk
 
     # update boost_dir to our external path
-    EIRODS_BOOST_DIR=$BUILDDIR/external/$EIRODS_BUILD_BOOSTVERSION
-    sed -e "\,^BOOST_DIR=,s,^.*$,BOOST_DIR=$EIRODS_BOOST_DIR," ./config/config.mk > /tmp/eirods-config.mk
-    mv /tmp/eirods-config.mk ./config/config.mk
+    IRODS_BOOST_DIR=$BUILDDIR/external/$IRODS_BUILD_BOOSTVERSION
+    sed -e "\,^BOOST_DIR=,s,^.*$,BOOST_DIR=$IRODS_BOOST_DIR," ./config/config.mk > /tmp/irods-config.mk
+    mv /tmp/irods-config.mk ./config/config.mk
 
 #    # turn on irods boost flag
-#    sed -e "s,^# USE_BOOST=1,USE_BOOST=1," ./config/config.mk > /tmp/eirods-config.mk
-#    mv /tmp/eirods-config.mk ./config/config.mk
+#    sed -e "s,^# USE_BOOST=1,USE_BOOST=1," ./config/config.mk > /tmp/irods-config.mk
+#    mv /tmp/irods-config.mk ./config/config.mk
 
     # twiddle coverage flag in platform.mk based on whether this is a coverage (gcov) build
     if [ "$COVERAGE" == "1" ] ; then
-        sed -e "s,EIRODS_BUILD_COVERAGE=0,EIRODS_BUILD_COVERAGE=1," ./config/platform.mk > /tmp/eirods-platform.mk
-        mv /tmp/eirods-platform.mk ./config/platform.mk
+        sed -e "s,IRODS_BUILD_COVERAGE=0,IRODS_BUILD_COVERAGE=1," ./config/platform.mk > /tmp/irods-platform.mk
+        mv /tmp/irods-platform.mk ./config/platform.mk
     fi
 
     # twiddle debug flag in platform.mk based on whether this is a release build
     if [ "$RELEASE" == "1" ] ; then
-        sed -e "s,EIRODS_BUILD_DEBUG=1,EIRODS_BUILD_DEBUG=0," ./config/platform.mk > /tmp/eirods-platform.mk
-        mv /tmp/eirods-platform.mk ./config/platform.mk
+        sed -e "s,IRODS_BUILD_DEBUG=1,IRODS_BUILD_DEBUG=0," ./config/platform.mk > /tmp/irods-platform.mk
+        mv /tmp/irods-platform.mk ./config/platform.mk
     fi
 
     # update resources Makefiles to find system shared libraries
@@ -926,47 +1162,47 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     cd $CWD
     # libz
     found_so=`../packaging/find_so.sh libz.so`
-    sed -e s,SYSTEM_LIBZ_SO,$found_so, ../plugins/resources/structfile/Makefile.in > /tmp/eirods_p_r_Makefile
-    mv /tmp/eirods_p_r_Makefile ../plugins/resources/structfile/Makefile
+    sed -e s,SYSTEM_LIBZ_SO,$found_so, ../plugins/resources/structfile/Makefile.in > /tmp/irods_p_r_Makefile
+    mv /tmp/irods_p_r_Makefile ../plugins/resources/structfile/Makefile
     # bzip2
     found_so=`../packaging/find_so.sh libbz2.so`
-    sed -e s,SYSTEM_LIBBZ2_SO,$found_so, ../plugins/resources/structfile/Makefile > /tmp/eirods_p_r_Makefile
-    mv /tmp/eirods_p_r_Makefile ../plugins/resources/structfile/Makefile
+    sed -e s,SYSTEM_LIBBZ2_SO,$found_so, ../plugins/resources/structfile/Makefile > /tmp/irods_p_r_Makefile
+    mv /tmp/irods_p_r_Makefile ../plugins/resources/structfile/Makefile
 #    # libarchive
 #    found_so=`../packaging/find_so.sh libarchive.so`
-#    sed -e s,SYSTEM_LIBARCHIVE_SO,$found_so, ../plugins/resources/Makefile > /tmp/eirods_p_r_Makefile
-#    mv /tmp/eirods_p_r_Makefile ../plugins/resources/Makefile
+#    sed -e s,SYSTEM_LIBARCHIVE_SO,$found_so, ../plugins/resources/Makefile > /tmp/irods_p_r_Makefile
+#    mv /tmp/irods_p_r_Makefile ../plugins/resources/Makefile
 #    # boost filesystem
 #    found_so=`../packaging/find_so.sh libboost_filesystem.so`
-#    sed -e s,SYSTEM_LIBBOOST_FILESYSTEM_SO,$found_so, ../plugins/resources/Makefile > /tmp/eirods_p_r_Makefile
-#    mv /tmp/eirods_p_r_Makefile ../plugins/resources/Makefile
+#    sed -e s,SYSTEM_LIBBOOST_FILESYSTEM_SO,$found_so, ../plugins/resources/Makefile > /tmp/irods_p_r_Makefile
+#    mv /tmp/irods_p_r_Makefile ../plugins/resources/Makefile
 #    # boost system
 #    found_so=`../packaging/find_so.sh libboost_system.so`
-#    sed -e s,SYSTEM_LIBBOOST_SYSTEM_SO,$found_so, ../plugins/resources/Makefile > /tmp/eirods_p_r_Makefile
-#    mv /tmp/eirods_p_r_Makefile ../plugins/resources/Makefile
+#    sed -e s,SYSTEM_LIBBOOST_SYSTEM_SO,$found_so, ../plugins/resources/Makefile > /tmp/irods_p_r_Makefile
+#    mv /tmp/irods_p_r_Makefile ../plugins/resources/Makefile
 
     # =-=-=-=-=-=-=-
-    # modify the eirods_ms_home.hpp file with the proper path to the binary directory
+    # modify the irods_ms_home.hpp file with the proper path to the binary directory
     detected_irods_home=`./scripts/find_irods_home.sh`
     detected_irods_home=`dirname $detected_irods_home`
     irods_msvc_home="$detected_irods_home/plugins/microservices/"
-    sed -e s,EIRODSMSVCPATH,$irods_msvc_home, ./lib/core/include/eirods_ms_home.hpp.src > /tmp/eirods_ms_home.hpp
-    mv /tmp/eirods_ms_home.hpp ./lib/core/include/
+    sed -e s,IRODSMSVCPATH,$irods_msvc_home, ./lib/core/include/irods_ms_home.hpp.src > /tmp/irods_ms_home.hpp
+    mv /tmp/irods_ms_home.hpp ./lib/core/include/
     # =-=-=-=-=-=-=-
-    # modify the eirods_network_home.hpp file with the proper path to the binary directory
+    # modify the irods_network_home.hpp file with the proper path to the binary directory
     irods_network_home="$detected_irods_home/plugins/network/"
-    sed -e s,EIRODSNETWORKPATH,$irods_network_home, ./lib/core/include/eirods_network_home.hpp.src > /tmp/eirods_network_home.hpp
-    mv /tmp/eirods_network_home.hpp ./lib/core/include/
+    sed -e s,IRODSNETWORKPATH,$irods_network_home, ./lib/core/include/irods_network_home.hpp.src > /tmp/irods_network_home.hpp
+    mv /tmp/irods_network_home.hpp ./lib/core/include/
     # =-=-=-=-=-=-=-
-    # modify the eirods_auth_home.hpp file with the proper path to the binary directory
+    # modify the irods_auth_home.hpp file with the proper path to the binary directory
     irods_auth_home="$detected_irods_home/plugins/auth/"
-    sed -e s,EIRODSAUTHPATH,$irods_auth_home, ./lib/core/include/eirods_auth_home.hpp.src > /tmp/eirods_auth_home.hpp
-    mv /tmp/eirods_auth_home.hpp ./lib/core/include/
+    sed -e s,IRODSAUTHPATH,$irods_auth_home, ./lib/core/include/irods_auth_home.hpp.src > /tmp/irods_auth_home.hpp
+    mv /tmp/irods_auth_home.hpp ./lib/core/include/
     # =-=-=-=-=-=-=-
-    # modify the eirods_resources_home.hpp file with the proper path to the binary directory
+    # modify the irods_resources_home.hpp file with the proper path to the binary directory
     irods_resources_home="$detected_irods_home/plugins/resources/"
-    sed -e s,EIRODSRESOURCESPATH,$irods_resources_home, ./lib/core/include/eirods_resources_home.hpp.src > /tmp/eirods_resources_home.hpp
-    mv /tmp/eirods_resources_home.hpp ./lib/core/include/
+    sed -e s,IRODSRESOURCESPATH,$irods_resources_home, ./lib/core/include/irods_resources_home.hpp.src > /tmp/irods_resources_home.hpp
+    mv /tmp/irods_resources_home.hpp ./lib/core/include/
 
 
     ###########################################
@@ -1033,72 +1269,50 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     cd $BUILDDIR
     #   database name
     NEW_DB_NAME=`awk -F\' '/^\\$DB_NAME / {print $2}' iRODS/config/irods.config`
-    sed -e "s,TEMPLATE_DB_NAME,$NEW_DB_NAME," ./packaging/eirods.list.template > /tmp/eirodslist.tmp
-    mv /tmp/eirodslist.tmp ./packaging/eirods.list
+    sed -e "s,TEMPLATE_DB_NAME,$NEW_DB_NAME," ./packaging/irods.list.template > /tmp/irodslist.tmp
+    mv /tmp/irodslist.tmp ./packaging/irods.list
     #   database type
     NEW_DB_TYPE=`awk -F\' '/^\\$DATABASE_TYPE/ {print $2}' iRODS/config/irods.config`
-    sed -e "s,TEMPLATE_DB_TYPE,$NEW_DB_TYPE," ./packaging/eirods.list > /tmp/eirodslist.tmp
-    mv /tmp/eirodslist.tmp ./packaging/eirods.list
+    sed -e "s,TEMPLATE_DB_TYPE,$NEW_DB_TYPE," ./packaging/irods.list > /tmp/irodslist.tmp
+    mv /tmp/irodslist.tmp ./packaging/irods.list
     #   database host
     NEW_DB_HOST=`awk -F\' '/^\\$DATABASE_HOST/ {print $2}' iRODS/config/irods.config`
-    sed -e "s,TEMPLATE_DB_HOST,$NEW_DB_HOST," ./packaging/eirods.list > /tmp/eirodslist.tmp
-    mv /tmp/eirodslist.tmp ./packaging/eirods.list
+    sed -e "s,TEMPLATE_DB_HOST,$NEW_DB_HOST," ./packaging/irods.list > /tmp/irodslist.tmp
+    mv /tmp/irodslist.tmp ./packaging/irods.list
     #   database port
     NEW_DB_PORT=`awk -F\' '/^\\$DATABASE_PORT/ {print $2}' iRODS/config/irods.config`
-    sed -e "s,TEMPLATE_DB_PORT,$NEW_DB_PORT," ./packaging/eirods.list > /tmp/eirodslist.tmp
-    mv /tmp/eirodslist.tmp ./packaging/eirods.list
+    sed -e "s,TEMPLATE_DB_PORT,$NEW_DB_PORT," ./packaging/irods.list > /tmp/irodslist.tmp
+    mv /tmp/irodslist.tmp ./packaging/irods.list
 
 
     # =-=-=-=-=-=-=-
-    # populate EIRODSVERSIONINT and EIRODSVERSION in all EPM list files
+    # populate IRODSVERSIONINT and IRODSVERSION in all EPM list files
 
-    # eirods main package
-    sed -e "s,TEMPLATE_EIRODSVERSIONINT,$EIRODSVERSIONINT," ./packaging/eirods.list > /tmp/eirodslist.tmp
-    mv /tmp/eirodslist.tmp ./packaging/eirods.list
-    sed -e "s,TEMPLATE_EIRODSVERSION,$EIRODSVERSION," ./packaging/eirods.list > /tmp/eirodslist.tmp
-    mv /tmp/eirodslist.tmp ./packaging/eirods.list
-    # eirods-dev package
-    sed -e "s,TEMPLATE_EIRODSVERSIONINT,$EIRODSVERSIONINT," ./packaging/eirods-dev.list.template > /tmp/eirodsdevlist.tmp
-    mv /tmp/eirodsdevlist.tmp ./packaging/eirods-dev.list
-    sed -e "s,TEMPLATE_EIRODSVERSION,$EIRODSVERSION," ./packaging/eirods-dev.list > /tmp/eirodsdevlist.tmp
-    mv /tmp/eirodsdevlist.tmp ./packaging/eirods-dev.list
-    # eirods-icommands package
-    sed -e "s,TEMPLATE_EIRODSVERSIONINT,$EIRODSVERSIONINT," ./packaging/eirods-icommands.list.template > /tmp/eirodsicommandslist.tmp
-    mv /tmp/eirodsicommandslist.tmp ./packaging/eirods-icommands.list
-    sed -e "s,TEMPLATE_EIRODSVERSION,$EIRODSVERSION," ./packaging/eirods-icommands.list > /tmp/eirodsicommandslist.tmp
-    mv /tmp/eirodsicommandslist.tmp ./packaging/eirods-icommands.list
+    # irods main package
+    sed -e "s,TEMPLATE_IRODSVERSIONINT,$IRODSVERSIONINT," ./packaging/irods.list > /tmp/irodslist.tmp
+    mv /tmp/irodslist.tmp ./packaging/irods.list
+    sed -e "s,TEMPLATE_IRODSVERSION,$IRODSVERSION," ./packaging/irods.list > /tmp/irodslist.tmp
+    mv /tmp/irodslist.tmp ./packaging/irods.list
+    # irods-dev package
+    sed -e "s,TEMPLATE_IRODSVERSIONINT,$IRODSVERSIONINT," ./packaging/irods-dev.list.template > /tmp/irodsdevlist.tmp
+    mv /tmp/irodsdevlist.tmp ./packaging/irods-dev.list
+    sed -e "s,TEMPLATE_IRODSVERSION,$IRODSVERSION," ./packaging/irods-dev.list > /tmp/irodsdevlist.tmp
+    mv /tmp/irodsdevlist.tmp ./packaging/irods-dev.list
+    # irods-icommands package
+    sed -e "s,TEMPLATE_IRODSVERSIONINT,$IRODSVERSIONINT," ./packaging/irods-icommands.list.template > /tmp/irodsicommandslist.tmp
+    mv /tmp/irodsicommandslist.tmp ./packaging/irods-icommands.list
+    sed -e "s,TEMPLATE_IRODSVERSION,$IRODSVERSION," ./packaging/irods-icommands.list > /tmp/irodsicommandslist.tmp
+    mv /tmp/irodsicommandslist.tmp ./packaging/irods-icommands.list
 
 
     set +e
-    # generate manual in pdf format
-    echo "${text_green}${text_bold}Building E-iRODS Manual${text_reset}"
-    cd $BUILDDIR
-    rst2pdf manual.rst -o manual.pdf
-    if [ "$?" != "0" ] ; then
-        echo "${text_red}#######################################################" 1>&2
-        echo "ERROR :: Failed generating manual.pdf" 1>&2
-        echo "#######################################################${text_reset}" 1>&2
-        exit 1
-    fi
-
     # generate microservice developers tutorial in pdf format
-    echo "${text_green}${text_bold}Building E-iRODS Microservice Developers Tutorial${text_reset}"
+    echo "${text_green}${text_bold}Building iRODS Microservice Developers Tutorial${text_reset}"
     cd $BUILDDIR/examples/microservices
     rst2pdf microservice_tutorial.rst -o microservice_tutorial.pdf
     if [ "$?" != "0" ] ; then
         echo "${text_red}#######################################################" 1>&2
         echo "ERROR :: Failed generating microservice_tutorial.pdf" 1>&2
-        echo "#######################################################${text_reset}" 1>&2
-        exit 1
-    fi
-
-    # generate doxygen for microservices
-    echo "${text_green}${text_bold}Building E-iRODS Doxygen Output${text_reset}"
-    cd $BUILDDIR/iRODS
-    doxygen ./config/doxygen-saved.cfg
-    if [ "$?" != "0" ] ; then
-        echo "${text_red}#######################################################" 1>&2
-        echo "ERROR :: Failed generating doxygen output" 1>&2
         echo "#######################################################${text_reset}" 1>&2
         exit 1
     fi
@@ -1121,10 +1335,10 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     if [ "$1" == "icat" ] ; then
         echo "${text_green}${text_bold}Building development package archive file...${text_reset}"
         cd $BUILDDIR
-        ./packaging/make_eirods_dev_archive.sh
+        ./packaging/make_irods_dev_archive.sh
     fi
 
-fi # if $BUILDEIRODS
+fi # if $BUILDIRODS
 
 
 # prepare changelog for various platforms
@@ -1141,7 +1355,7 @@ if [ "$H2MVERSION" \< "1.37" ] ; then
     echo "     :: (or, add --version capability to all iCommands)"
     echo "     :: (installed here: help2man version $H2MVERSION)"
 else
-    EIRODSMANVERSION=`grep "^%version" ./packaging/eirods.list | awk '{print $2}'`
+    IRODSMANVERSION=`grep "^%version" ./packaging/irods.list | awk '{print $2}'`
     ICMDDIR="iRODS/clients/icommands/bin"
     ICMDS=(
     genOSAuth     
@@ -1195,7 +1409,7 @@ else
     )
     for ICMD in "${ICMDS[@]}"
     do
-        help2man -h -h -N -n "an E-iRODS iCommand" --version-string="E-iRODS-$EIRODSMANVERSION" $ICMDDIR/$ICMD > $MANDIR/$ICMD.1
+        help2man -h -h -N -n "an iRODS iCommand" --version-string="iRODS-$IRODSMANVERSION" $ICMDDIR/$ICMD > $MANDIR/$ICMD.1
     done
     for manfile in `ls $MANDIR`
     do
@@ -1213,30 +1427,8 @@ fi
 
 # prepare epm list files from templates
 
-if [ "$BUILDEIRODS" == "1" ] ; then
-    # get RENCI updates to EPM from repository
-    echo "${text_green}${text_bold}Downloading EPM from RENCI${text_reset}"
-    cd $BUILDDIR
-    RENCIEPM="epm42-renci.tar.gz"
-    rm -rf epm
-    rm -f $RENCIEPM
-    wget ftp://ftp.renci.org/pub/eirods/build/$RENCIEPM
-    tar -xf $RENCIEPM
-    # configure
-    echo "${text_green}${text_bold}Configuring EPM${text_reset}"
-    cd $BUILDDIR/epm
-    set +e
-    ./configure > /dev/null
-    if [ "$?" != "0" ] ; then
-        exit 1
-    fi
-    # build
-    echo "${text_green}${text_bold}Building EPM${text_reset}"
-    make > /dev/null
-    if [ "$?" != "0" ] ; then
-        exit 1
-    fi
-    set -e
+if [ "$BUILDIRODS" == "1" ] ; then
+    download_and_compile_EPM
 fi
 
 if [ "$COVERAGE" == "1" ] ; then
@@ -1265,62 +1457,62 @@ if [ "$DETECTEDOS" == "RedHatCompatible" ] ; then # CentOS and RHEL and Fedora
     else
         epmosversion="NOTCENTOS6"
     fi
-    ./epm/epm $EPMOPTS -f rpm eirods $epmvar=true $epmosversion=true ./packaging/eirods.list
+    ./epm/epm $EPMOPTS -f rpm irods $epmvar=true $epmosversion=true ./packaging/irods.list
     if [ "$1" == "icat" ] ; then
-        ./epm/epm $EPMOPTS -f rpm eirods-dev $epmvar=true ./packaging/eirods-dev.list
+        ./epm/epm $EPMOPTS -f rpm irods-dev $epmvar=true ./packaging/irods-dev.list
     fi
     if [ "$RELEASE" == "1" ] ; then
-        ./epm/epm $EPMOPTS -f rpm eirods-icommands $epmvar=true ./packaging/eirods-icommands.list
+        ./epm/epm $EPMOPTS -f rpm irods-icommands $epmvar=true ./packaging/irods-icommands.list
     fi
 elif [ "$DETECTEDOS" == "SuSE" ] ; then # SuSE
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS RPMs${text_reset}"
     epmvar="SUSERPM$SERVER_TYPE"
-    ./epm/epm $EPMOPTS -f rpm eirods $epmvar=true ./packaging/eirods.list
+    ./epm/epm $EPMOPTS -f rpm irods $epmvar=true ./packaging/irods.list
     if [ "$1" == "icat" ] ; then
-        ./epm/epm $EPMOPTS -f rpm eirods-dev $epmvar=true ./packaging/eirods-dev.list
+        ./epm/epm $EPMOPTS -f rpm irods-dev $epmvar=true ./packaging/irods-dev.list
     fi
     if [ "$RELEASE" == "1" ] ; then
-        ./epm/epm $EPMOPTS -f rpm eirods-icommands $epmvar=true ./packaging/eirods-icommands.list
+        ./epm/epm $EPMOPTS -f rpm irods-icommands $epmvar=true ./packaging/irods-icommands.list
     fi
 elif [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then  # Ubuntu
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS DEBs${text_reset}"
     epmvar="DEB$SERVER_TYPE"
-    ./epm/epm $EPMOPTS -a $arch -f deb eirods $epmvar=true ./packaging/eirods.list
+    ./epm/epm $EPMOPTS -a $arch -f deb irods $epmvar=true ./packaging/irods.list
     if [ "$1" == "icat" ] ; then
-        ./epm/epm $EPMOPTS -a $arch -f deb eirods-dev $epmvar=true ./packaging/eirods-dev.list
+        ./epm/epm $EPMOPTS -a $arch -f deb irods-dev $epmvar=true ./packaging/irods-dev.list
     fi
     if [ "$RELEASE" == "1" ] ; then
-        ./epm/epm $EPMOPTS -a $arch -f deb eirods-icommands $epmvar=true ./packaging/eirods-icommands.list
+        ./epm/epm $EPMOPTS -a $arch -f deb irods-icommands $epmvar=true ./packaging/irods-icommands.list
     fi
 elif [ "$DETECTEDOS" == "Solaris" ] ; then  # Solaris
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS PKGs${text_reset}"
     epmvar="PKG$SERVER_TYPE"
-    ./epm/epm $EPMOPTS -f pkg eirods $epmvar=true ./packaging/eirods.list
+    ./epm/epm $EPMOPTS -f pkg irods $epmvar=true ./packaging/irods.list
     if [ "$1" == "icat" ] ; then
-        ./epm/epm $EPMOPTS -f pkg eirods-dev $epmvar=true ./packaging/eirods-dev.list
+        ./epm/epm $EPMOPTS -f pkg irods-dev $epmvar=true ./packaging/irods-dev.list
     fi
     if [ "$RELEASE" == "1" ] ; then
-        ./epm/epm $EPMOPTS -f pkg eirods-icommands $epmvar=true ./packaging/eirods-icommands.list
+        ./epm/epm $EPMOPTS -f pkg irods-icommands $epmvar=true ./packaging/irods-icommands.list
     fi
 elif [ "$DETECTEDOS" == "MacOSX" ] ; then  # MacOSX
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS DMGs${text_reset}"
     epmvar="OSX$SERVER_TYPE"
-    ./epm/epm $EPMOPTS -f osx eirods $epmvar=true ./packaging/eirods.list
+    ./epm/epm $EPMOPTS -f osx irods $epmvar=true ./packaging/irods.list
     if [ "$1" == "icat" ] ; then
-        ./epm/epm $EPMOPTS -f osx eirods-dev $epmvar=true ./packaging/eirods-dev.list
+        ./epm/epm $EPMOPTS -f osx irods-dev $epmvar=true ./packaging/irods-dev.list
     fi
     if [ "$RELEASE" == "1" ] ; then
-        ./epm/epm $EPMOPTS -f osx eirods-icommands $epmvar=true ./packaging/eirods-icommands.list
+        ./epm/epm $EPMOPTS -f osx irods-icommands $epmvar=true ./packaging/irods-icommands.list
     fi
 elif [ "$DETECTEDOS" == "Portable" ] ; then  # Portable
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS TGZs${text_reset}"
     epmvar="PORTABLE$SERVER_TYPE"
-    ./epm/epm $EPMOPTS -f portable eirods $epmvar=true ./packaging/eirods.list
+    ./epm/epm $EPMOPTS -f portable irods $epmvar=true ./packaging/irods.list
     if [ "$1" == "icat" ] ; then
-        ./epm/epm $EPMOPTS -f portable eirods-dev $epmvar=true ./packaging/eirods-dev.list
+        ./epm/epm $EPMOPTS -f portable irods-dev $epmvar=true ./packaging/irods-dev.list
     fi
     if [ "$RELEASE" == "1" ] ; then
-        ./epm/epm $EPMOPTS -f portable eirods-icommands $epmvar=true ./packaging/eirods-icommands.list
+        ./epm/epm $EPMOPTS -f portable irods-icommands $epmvar=true ./packaging/irods-icommands.list
     fi
 else
     echo "${text_red}#######################################################" 1>&2
@@ -1331,74 +1523,7 @@ fi
 
 
 # rename generated packages appropriately
-cd $BUILDDIR
-SUFFIX=""
-if   [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-    EXTENSION="rpm"
-    SUFFIX="-redhat"
-    if [ "$epmosversion" == "CENTOS6" ] ; then
-        SUFFIX="-centos6"
-    fi
-elif [ "$DETECTEDOS" == "SuSE" ] ; then
-    EXTENSION="rpm"
-    SUFFIX="-suse"
-elif [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
-    EXTENSION="deb"
-elif [ "$DETECTEDOS" == "Solaris" ] ; then
-    EXTENSION="pkg"
-elif [ "$DETECTEDOS" == "MacOSX" ] ; then
-    EXTENSION="dmg"
-elif [ "$DETECTEDOS" == "Portable" ] ; then
-    EXTENSION="tar.gz"
-fi
-RENAME_SOURCE="./linux*/eirods-*$EIRODSVERSION*.$EXTENSION"
-RENAME_SOURCE_DEV=${RENAME_SOURCE/eirods-/eirods-dev-}
-RENAME_SOURCE_ICOMMANDS=${RENAME_SOURCE/eirods-/eirods-icommands-}
-SOURCELIST=`ls $RENAME_SOURCE`
-echo "EPM produced packages:"
-echo "$SOURCELIST"
-# prepare target build directory
-mkdir -p $EIRODSPACKAGEDIR
-# vanilla construct
-RENAME_DESTINATION="$EIRODSPACKAGEDIR/eirods-$EIRODSVERSION-64bit.$EXTENSION"
-# add OS-specific suffix
-if [ "$SUFFIX" != "" ] ; then
-    RENAME_DESTINATION=${RENAME_DESTINATION/.$EXTENSION/$SUFFIX.$EXTENSION}
-fi
-# release build (also building icommands and dev)
-RENAME_DESTINATION_DEV=${RENAME_DESTINATION/eirods-/eirods-dev-}
-RENAME_DESTINATION_ICOMMANDS=${RENAME_DESTINATION/eirods-/eirods-icommands-}
-# icat or resource
-if [ "$1" == "icat" ] ; then
-    RENAME_DESTINATION=${RENAME_DESTINATION/-64bit/-64bit-icat-postgres}
-else
-    RENAME_DESTINATION=${RENAME_DESTINATION/-64bit/-64bit-resource}
-fi
-# coverage build
-if [ "$COVERAGE" == "1" ] ; then
-    RENAME_DESTINATION=${RENAME_DESTINATION/-64bit/-64bit-coverage}
-fi
-# rename and tell me
-if [ "$RELEASE" == "1" ] ; then
-    echo ""
-    echo "renaming    [$RENAME_SOURCE_ICOMMANDS]"
-    echo "         to [$RENAME_DESTINATION_ICOMMANDS]"
-    mv $RENAME_SOURCE_ICOMMANDS $RENAME_DESTINATION_ICOMMANDS
-fi
-if [ "$1" == "icat" ] ; then
-    echo ""
-    echo "renaming    [$RENAME_SOURCE_DEV]"
-    echo "         to [$RENAME_DESTINATION_DEV]"
-    mv $RENAME_SOURCE_DEV $RENAME_DESTINATION_DEV
-fi
-echo ""
-echo "renaming    [$RENAME_SOURCE]"
-echo "         to [$RENAME_DESTINATION]"
-mv $RENAME_SOURCE $RENAME_DESTINATION
-# list new result set
-echo ""
-echo "Contents of $EIRODSPACKAGEDIR:"
-ls -l $EIRODSPACKAGEDIR
+rename_generated_packages $1
 
 # clean up coverage build
 if [ "$COVERAGE" == "1" ] ; then
@@ -1406,16 +1531,10 @@ if [ "$COVERAGE" == "1" ] ; then
     echo "${text_green}${text_bold}Copying generated packages back to original working directory...${text_reset}"
     # get packages
     for f in `find . -name "*.$EXTENSION"` ; do mkdir -p $GITDIR/`dirname $f`; cp $f $GITDIR/$f; done
-    # get generated manual
-    cp manual.pdf $GITDIR/
     # delete target build directory, so a package install can go there
     cd $GITDIR
     rm -rf $COVERAGEBUILDDIR
 fi
-
-# create a new copy of the manual which includes the version name
-# this is for ease of generating a release
-cp manual.pdf eirods-manual-$EIRODSVERSION.pdf
 
 # grant write permission to all, in case this was run via sudo
 cd $GITDIR
@@ -1425,7 +1544,7 @@ chmod -R a+w .
 TOTALTIME="$(($(date +%s)-STARTTIME))"
 echo "${text_cyan}${text_bold}"
 echo "+------------------------------------+"
-echo "| RENCI E-iRODS Build Script         |"
+echo "| RENCI iRODS Build Script           |"
 echo "|                                    |"
 printf "|   Completed in %02dm%02ds              |\n" "$((TOTALTIME/60))" "$((TOTALTIME%60))"
 echo "+------------------------------------+"

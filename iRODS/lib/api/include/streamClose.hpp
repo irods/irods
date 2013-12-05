@@ -21,13 +21,13 @@
 #define RS_STREAM_CLOSE rsStreamClose
 /* prototype for the server handler */
 int
-rsStreamClose (rsComm_t *rsComm, fileCloseInp_t *fileCloseInp);
+rsStreamClose( rsComm_t *rsComm, fileCloseInp_t *fileCloseInp );
 #else
 #define RS_STREAM_CLOSE NULL
 #endif
 
 /* prototype for the client call */
 int
-rcStreamClose (rcComm_t *conn, fileCloseInp_t *fileCloseInp);
+rcStreamClose( rcComm_t *conn, fileCloseInp_t *fileCloseInp );
 
 #endif	/* STREAM_CLOSE_H */

@@ -1,12 +1,11 @@
-/* This is script-generated code.  */ 
+/* This is script-generated code.  */
 /* See regDataObj.h for a description of this API call.*/
 
 #include "regDataObj.hpp"
 
 int
-rcRegDataObj (rcComm_t *conn, dataObjInfo_t *dataObjInfo, 
-dataObjInfo_t **outDataObjInfo)
-{
+rcRegDataObj( rcComm_t *conn, dataObjInfo_t *dataObjInfo,
+              dataObjInfo_t **outDataObjInfo ) {
     int            status      = 0;
     rescInfo_t*    srcRescInfo = 0;
     dataObjInfo_t* srcNext     = 0;
@@ -16,24 +15,24 @@ dataObjInfo_t **outDataObjInfo)
     srcNext     = dataObjInfo->next;
     dataObjInfo->rescInfo = NULL;
     dataObjInfo->next     = NULL;
-    status = procApiRequest (conn, REG_DATA_OBJ_AN, dataObjInfo, NULL, 
-        (void **) outDataObjInfo, NULL);
+    status = procApiRequest( conn, REG_DATA_OBJ_AN, dataObjInfo, NULL,
+                             ( void ** ) outDataObjInfo, NULL );
 
     /* restore */
     dataObjInfo->rescInfo = srcRescInfo;
     dataObjInfo->next     = srcNext;
     /* cleanup fake pointers */
-    if (status >= 0 && *outDataObjInfo != NULL) {
-        if ((*outDataObjInfo)->rescInfo != NULL) {
-            free ((*outDataObjInfo)->rescInfo);
-            (*outDataObjInfo)->rescInfo = NULL;
+    if ( status >= 0 && *outDataObjInfo != NULL ) {
+        if ( ( *outDataObjInfo )->rescInfo != NULL ) {
+            free( ( *outDataObjInfo )->rescInfo );
+            ( *outDataObjInfo )->rescInfo = NULL;
         }
 
-        if ((*outDataObjInfo)->next != NULL) {
-            free ((*outDataObjInfo)->next);
-            (*outDataObjInfo)->next = NULL;
+        if ( ( *outDataObjInfo )->next != NULL ) {
+            free( ( *outDataObjInfo )->next );
+            ( *outDataObjInfo )->next = NULL;
         }
 
     }
-    return (status);
+    return ( status );
 }

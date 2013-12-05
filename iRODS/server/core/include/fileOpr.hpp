@@ -38,37 +38,37 @@ typedef struct {
 } fileDesc_t;
 
 int
-initFileDesc ();
+initFileDesc();
 
 int
-allocFileDesc ();
+allocFileDesc();
 
 int
-allocAndFillFileDesc (rodsServerHost_t *rodsServerHost, char* objPath, char *fileName,
-                      char* rescHier, int fd, int mode);
+allocAndFillFileDesc( rodsServerHost_t *rodsServerHost, char* objPath, char *fileName,
+                      char* rescHier, int fd, int mode );
 
 int
-freeFileDesc (int fileInx);
+freeFileDesc( int fileInx );
 
 int
-getServerHostByFileInx (int fileInx, rodsServerHost_t **rodsServerHost);
+getServerHostByFileInx( int fileInx, rodsServerHost_t **rodsServerHost );
 int
-mkDirForFilePath (rsComm_t *rsComm, const char *startDir, const char *filePath, int mode);
+mkDirForFilePath( rsComm_t *rsComm, const char *startDir, const char *filePath, int mode );
 int
-mkFileDirR (rsComm_t *rsComm, const char *startDir, const char *destDir, int mode);
+mkFileDirR( rsComm_t *rsComm, const char *startDir, const char *destDir, int mode );
 int
-chkFilePathPerm (rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
-                 rodsServerHost_t *rodsServerHost, int chkType); // JMC - backport 4774
+chkFilePathPerm( rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
+                 rodsServerHost_t *rodsServerHost, int chkType ); // JMC - backport 4774
 int // JMC - backport 4766
-isValidFilePath (char *path);
+isValidFilePath( char *path );
 int
-matchCliVaultPath( rsComm_t*, 
+matchCliVaultPath( rsComm_t*,
                    const std::string&,
                    rodsServerHost_t* );
 int
-chkEmptyDir (rsComm_t *rsComm, char *cacheDir);
+chkEmptyDir( rsComm_t *rsComm, char *cacheDir );
 int
-filePathTypeInResc (rsComm_t *rsComm, char* objPath, char *fileName, char* rescHier, rescInfo_t *rescInfo);
+filePathTypeInResc( rsComm_t *rsComm, char* objPath, char *fileName, char* rescHier, rescInfo_t *rescInfo );
 int
-bindStreamToIRods (rodsServerHost_t *rodsServerHost, int fd);
+bindStreamToIRods( rodsServerHost_t *rodsServerHost, int fd );
 #endif  /* FILE_OPR_H */

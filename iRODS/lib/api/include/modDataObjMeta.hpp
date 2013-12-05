@@ -28,9 +28,9 @@ typedef struct {
 #define RS_MOD_DATA_OBJ_META rsModDataObjMeta
 /* prototype for the server handler */
 int
-rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp);
+rsModDataObjMeta( rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp );
 int
-_rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp);
+_rsModDataObjMeta( rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp );
 #else
 #define RS_MOD_DATA_OBJ_META NULL
 #endif
@@ -39,21 +39,21 @@ _rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp);
 extern "C" {
 #endif
 
-/* prototype for the client call */
+    /* prototype for the client call */
     int
-    rcModDataObjMeta (rcComm_t *conn, modDataObjMeta_t *modDataObjMetaInp);
+    rcModDataObjMeta( rcComm_t *conn, modDataObjMeta_t *modDataObjMetaInp );
 
-/* rcModDataObjMeta - Modify the metadata of a iRODS dataObject.
- * Input -
- *   rcComm_t *conn - The client connection handle.
- *   dataObjInfo_t *dataObjInfo - the dataObjInfo to register
- *
- * OutPut -
- *   int status - status of the operation.
- */
+    /* rcModDataObjMeta - Modify the metadata of a iRODS dataObject.
+     * Input -
+     *   rcComm_t *conn - The client connection handle.
+     *   dataObjInfo_t *dataObjInfo - the dataObjInfo to register
+     *
+     * OutPut -
+     *   int status - status of the operation.
+     */
 
     int
-    clearModDataObjMetaInp (modDataObjMeta_t *modDataObjMetaInp);
+    clearModDataObjMetaInp( modDataObjMeta_t *modDataObjMetaInp );
 #ifdef  __cplusplus
 }
 #endif

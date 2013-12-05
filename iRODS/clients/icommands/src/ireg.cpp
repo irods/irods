@@ -2,7 +2,7 @@
 
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* 
+/*
  * ireg - The irods reg utility
  */
 
@@ -10,10 +10,10 @@
 #include "parseCommandLine.hpp"
 #include "rodsPath.hpp"
 #include "regUtil.hpp"
-void usage ();
+void usage();
 
 int
-main(int argc, char **argv) {
+main( int argc, char **argv ) {
     int status;
     rodsEnv myEnv;
     rErrMsg_t errMsg;
@@ -22,81 +22,81 @@ main(int argc, char **argv) {
     char *optStr;
     rodsPathInp_t rodsPathInp;
     int nArgv;
-    
+
 
     optStr = "D:fhkKCG:R:vVZ";
-   
-    status = parseCmdLineOpt (argc, argv, optStr, 1, &myRodsArgs);
 
-    if (status < 0) {
-        printf("use -h for help.\n");
-        exit (1);
+    status = parseCmdLineOpt( argc, argv, optStr, 1, &myRodsArgs );
+
+    if ( status < 0 ) {
+        printf( "use -h for help.\n" );
+        exit( 1 );
     }
 
-    if (myRodsArgs.help==True) {
+    if ( myRodsArgs.help == True ) {
         usage();
-        exit(0);
+        exit( 0 );
     }
 
     nArgv = argc - optind;
 
-    if (nArgv != 2) {      /* must have 2 inputs */
-        usage ();
-        exit (1);
+    if ( nArgv != 2 ) {    /* must have 2 inputs */
+        usage();
+        exit( 1 );
     }
 
-    status = getRodsEnv (&myEnv);
-    if (status < 0) {
-        rodsLogError (LOG_ERROR, status, "main: getRodsEnv error. ");
-        exit (1);
+    status = getRodsEnv( &myEnv );
+    if ( status < 0 ) {
+        rodsLogError( LOG_ERROR, status, "main: getRodsEnv error. " );
+        exit( 1 );
     }
 
-    if ((*argv[optind] != '/' && strcmp (argv[optind], UNMOUNT_STR) != 0) || 
-        *argv[optind + 1] != '/') { 
-        rodsLog (LOG_ERROR,
-                 "Input path must be absolute");
-        exit (1);
+    if ( ( *argv[optind] != '/' && strcmp( argv[optind], UNMOUNT_STR ) != 0 ) ||
+            *argv[optind + 1] != '/' ) {
+        rodsLog( LOG_ERROR,
+                 "Input path must be absolute" );
+        exit( 1 );
     }
 
-    status = parseCmdLinePath (argc, argv, optind, &myEnv,
-                               UNKNOWN_FILE_T, UNKNOWN_OBJ_T, 0, &rodsPathInp);
+    status = parseCmdLinePath( argc, argv, optind, &myEnv,
+                               UNKNOWN_FILE_T, UNKNOWN_OBJ_T, 0, &rodsPathInp );
 
-    if (status < 0) {
-        rodsLogError (LOG_ERROR, status, "main: parseCmdLinePath error. "); 
-        printf("use -h for help.\n");
-        exit (1);
+    if ( status < 0 ) {
+        rodsLogError( LOG_ERROR, status, "main: parseCmdLinePath error. " );
+        printf( "use -h for help.\n" );
+        exit( 1 );
     }
 
-    conn = rcConnect (myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
-                      myEnv.rodsZone, 1, &errMsg);
+    conn = rcConnect( myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
+                      myEnv.rodsZone, 1, &errMsg );
 
-    if (conn == NULL) {
-        exit (2);
-    }
-   
-    status = clientLogin(conn);
-    if (status != 0) {
-        rcDisconnect(conn);
-        exit (7);
+    if ( conn == NULL ) {
+        exit( 2 );
     }
 
-    status = regUtil (conn, &myEnv, &myRodsArgs, &rodsPathInp);
+    status = clientLogin( conn );
+    if ( status != 0 ) {
+        rcDisconnect( conn );
+        exit( 7 );
+    }
 
-    printErrorStack(conn->rError);
-    rcDisconnect(conn);
+    status = regUtil( conn, &myEnv, &myRodsArgs, &rodsPathInp );
 
-    if (status < 0) {
-        exit (3);
-    } else {
-        exit(0);
+    printErrorStack( conn->rError );
+    rcDisconnect( conn );
+
+    if ( status < 0 ) {
+        exit( 3 );
+    }
+    else {
+        exit( 0 );
     }
 
 }
 
-void 
-usage ()
-{
-    char *msgs[]={
+void
+usage() {
+    char *msgs[] = {
         "Usage : ireg [-hfCkKvV] [--repl] [-D dataType] [-R resource]",
         "               physicalFilePath, irodsPath",
         " ",
@@ -112,11 +112,11 @@ usage ()
         "    ireg -C /tmp/src1 /tempZone/home/myUser/src1",
         " ",
         "grafts all files and subdirectories beneath the directory /tmp/src1 to",
-        "the collection /tempZone/home/myUser/src1", 
+        "the collection /tempZone/home/myUser/src1",
         " ",
         "By default, only rodsAdmin users are allowed to register files or directories.",
-	"More permissive registration policies can be set in the server's rule base",
-	"using the acNoChkFilePathPerm() rule.",
+        "More permissive registration policies can be set in the server's rule base",
+        "using the acNoChkFilePathPerm() rule.",
         " ",
         "It is considered best practice for the target resource be a single local",
         "storage resource.  A side effect of not following this best practice could be",
@@ -139,11 +139,12 @@ usage ()
         " -v  verbose",
         " -V  Very verbose",
         " -h  this help",
-        ""};
+        ""
+    };
     int i;
-    for (i=0;;i++) {
-        if (strlen(msgs[i])==0) break;
-        printf("%s\n",msgs[i]);
+    for ( i = 0;; i++ ) {
+        if ( strlen( msgs[i] ) == 0 ) { break; }
+        printf( "%s\n", msgs[i] );
     }
-    printReleaseInfo("ireg");
+    printReleaseInfo( "ireg" );
 }

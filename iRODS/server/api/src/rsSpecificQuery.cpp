@@ -10,72 +10,70 @@
 /* can be used for debug: */
 
 int
-rsSpecificQuery (rsComm_t *rsComm, specificQueryInp_t *specificQueryInp, 
-		 genQueryOut_t **genQueryOut)
-{
+rsSpecificQuery( rsComm_t *rsComm, specificQueryInp_t *specificQueryInp,
+                 genQueryOut_t **genQueryOut ) {
     rodsServerHost_t *rodsServerHost;
     int status;
-    char *zoneHint="";
+    char *zoneHint = "";
 
-/*  zoneHint = getZoneHintForGenQuery (genQueryInp); (need something like this?) */
-    zoneHint = getValByKey (&specificQueryInp->condInput, ZONE_KW);
- 
-    status = getAndConnRcatHost(rsComm, SLAVE_RCAT, zoneHint,
-				&rodsServerHost);
-    if (status < 0) {
-       return(status);
+    /*  zoneHint = getZoneHintForGenQuery (genQueryInp); (need something like this?) */
+    zoneHint = getValByKey( &specificQueryInp->condInput, ZONE_KW );
+
+    status = getAndConnRcatHost( rsComm, SLAVE_RCAT, zoneHint,
+                                 &rodsServerHost );
+    if ( status < 0 ) {
+        return( status );
     }
 
-    if (rodsServerHost->localFlag == LOCAL_HOST) {
+    if ( rodsServerHost->localFlag == LOCAL_HOST ) {
 #ifdef RODS_CAT
-       status = _rsSpecificQuery (rsComm, specificQueryInp, genQueryOut);
+        status = _rsSpecificQuery( rsComm, specificQueryInp, genQueryOut );
 #else
-       rodsLog(LOG_NOTICE, 
-	       "rsSpecificQuery error. RCAT is not configured on this host");
-       return (SYS_NO_RCAT_SERVER_ERR);
-#endif 
-    } else {
-        status = rcSpecificQuery(rodsServerHost->conn,
-			   specificQueryInp, genQueryOut);
+        rodsLog( LOG_NOTICE,
+                 "rsSpecificQuery error. RCAT is not configured on this host" );
+        return ( SYS_NO_RCAT_SERVER_ERR );
+#endif
     }
-    if (status < 0  && status != CAT_NO_ROWS_FOUND) {
-        rodsLog (LOG_NOTICE,
-		 "rsSpecificQuery: rcSpecificQuery failed, status = %d", status);
+    else {
+        status = rcSpecificQuery( rodsServerHost->conn,
+                                  specificQueryInp, genQueryOut );
     }
-    return (status);
+    if ( status < 0  && status != CAT_NO_ROWS_FOUND ) {
+        rodsLog( LOG_NOTICE,
+                 "rsSpecificQuery: rcSpecificQuery failed, status = %d", status );
+    }
+    return ( status );
 }
 
 #ifdef RODS_CAT
 int
-_rsSpecificQuery (rsComm_t *rsComm, specificQueryInp_t *specificQueryInp,
-	     genQueryOut_t **genQueryOut)
-{
+_rsSpecificQuery( rsComm_t *rsComm, specificQueryInp_t *specificQueryInp,
+                  genQueryOut_t **genQueryOut ) {
     int status;
 
-    *genQueryOut = (genQueryOut_t*)malloc(sizeof(genQueryOut_t));
-    memset((char *)*genQueryOut, 0, sizeof(genQueryOut_t));
+    *genQueryOut = ( genQueryOut_t* )malloc( sizeof( genQueryOut_t ) );
+    memset( ( char * )*genQueryOut, 0, sizeof( genQueryOut_t ) );
 
-    status = chlSpecificQuery(*specificQueryInp, *genQueryOut);
+    status = chlSpecificQuery( *specificQueryInp, *genQueryOut );
 
-    if (status == CAT_UNKNOWN_SPECIFIC_QUERY) {
-       int i;
-       i = addRErrorMsg (&rsComm->rError, 0, "The SQL is not pre-defined.\n  See 'iadmin h asq' (add specific query)");
-       if (i < 0)
-       {
-         eirods::log ( i, "addErrorMsg failed");
-       }
+    if ( status == CAT_UNKNOWN_SPECIFIC_QUERY ) {
+        int i;
+        i = addRErrorMsg( &rsComm->rError, 0, "The SQL is not pre-defined.\n  See 'iadmin h asq' (add specific query)" );
+        if ( i < 0 ) {
+            irods::log( i, "addErrorMsg failed" );
+        }
     }
-    
-    if (status < 0) {
-       clearGenQueryOut (*genQueryOut);
-       free (*genQueryOut);
-       *genQueryOut = NULL;
-       if (status != CAT_NO_ROWS_FOUND) {
-	  rodsLog (LOG_NOTICE, 
-		   "_rsSpecificQuery: specificQuery status = %d", status);
-       }
-       return (status);
+
+    if ( status < 0 ) {
+        clearGenQueryOut( *genQueryOut );
+        free( *genQueryOut );
+        *genQueryOut = NULL;
+        if ( status != CAT_NO_ROWS_FOUND ) {
+            rodsLog( LOG_NOTICE,
+                     "_rsSpecificQuery: specificQuery status = %d", status );
+        }
+        return ( status );
     }
-    return (status);
-} 
+    return ( status );
+}
 #endif

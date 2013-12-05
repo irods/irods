@@ -15,7 +15,7 @@
 	insertIntoHashTable(objectMap, key, ptr1); \
 	memcpy(ptr1, ptr, sizeof(T)); \
 	ptr = ptr1; \
-
+ 
 #define TRAVERSE_END(T) \
 	return ptr;
 
@@ -31,15 +31,15 @@
 		CASCADE_NULL(ptr->f = (T *) region_alloc(r, sizeof(T) * size)); \
 		memcpy(ptr->f, oldf, sizeof(T) * size); \
 		insertIntoHashTable(objectMap, key0, ptr->f); \
-
+ 
 #define TRAVERSE_ARRAY_END(T, size, f) \
 	} \
-
+ 
 #define GET_VAR_ARRAY_LEN(T, len, f) \
 	  T* l = ptr->f; \
 	  while(*l != (T) 0) { \
 		  l++; \
 	  } \
 	  int len = l - ptr->f + 1; \
-
+ 
 #endif

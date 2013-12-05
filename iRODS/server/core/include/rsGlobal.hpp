@@ -8,19 +8,18 @@
 #ifndef RS_GLOBAL_HPP
 #define RS_GLOBAL_HPP
 
-#include "apiTable.hpp"   /* contains global RsApiTable */ 
+#include "apiTable.hpp"   /* contains global RsApiTable */
 #include "initServer.hpp"
 #include "fileOpr.hpp"
 #include "dataObjOpr.hpp"
 #include "miscUtil.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_resource_manager.hpp"
+#include "irods_resource_manager.hpp"
 
 // =-=-=-=-=-=-=-
 // externs to singleton plugin managers
-extern eirods::resource_manager resc_mgr;
+extern irods::resource_manager resc_mgr;
 
 #define CACHE_DIR_STR "cacheDir"
 

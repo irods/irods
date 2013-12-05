@@ -23,21 +23,21 @@
 #define RS_FILE_PUT rsFilePut
 /* prototype for the server handler */
 int
-rsFilePut (rsComm_t *rsComm, fileOpenInp_t *filePutInp, 
-           bytesBuf_t *filePutInpBBuf);
+rsFilePut( rsComm_t *rsComm, fileOpenInp_t *filePutInp,
+           bytesBuf_t *filePutInpBBuf );
 int
-_rsFilePut (rsComm_t *rsComm, fileOpenInp_t *filePutInp, 
-            bytesBuf_t *filePutInpBBuf, rodsServerHost_t *rodsServerHost);
+_rsFilePut( rsComm_t *rsComm, fileOpenInp_t *filePutInp,
+            bytesBuf_t *filePutInpBBuf, rodsServerHost_t *rodsServerHost );
 int
-remoteFilePut (rsComm_t *rsComm, fileOpenInp_t *filePutInp, 
-               bytesBuf_t *filePutInpBBuf, rodsServerHost_t *rodsServerHost);
+remoteFilePut( rsComm_t *rsComm, fileOpenInp_t *filePutInp,
+               bytesBuf_t *filePutInpBBuf, rodsServerHost_t *rodsServerHost );
 #else
 #define RS_FILE_PUT NULL
 #endif
 
 /* prototype for the client call */
 int
-rcFilePut (rcComm_t *conn, fileOpenInp_t *filePutInp, 
-           bytesBuf_t *filePutInpBBuf);
+rcFilePut( rcComm_t *conn, fileOpenInp_t *filePutInp,
+           bytesBuf_t *filePutInpBBuf );
 
 #endif  /* FILE_PUT_H */

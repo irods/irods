@@ -24,11 +24,11 @@
 #define RS_GEN_QUERY rsGenQuery
 /* prototype for the server handler */
 int
-rsGenQuery (rsComm_t *rsComm, genQueryInp_t *genQueryInp, 
-genQueryOut_t **genQueryOut);
+rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
+            genQueryOut_t **genQueryOut );
 int
-_rsGenQuery (rsComm_t *rsComm, genQueryInp_t *genQueryInp,
-genQueryOut_t **genQueryOut);
+_rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
+             genQueryOut_t **genQueryOut );
 #else
 #define RS_GEN_QUERY NULL
 #endif
@@ -37,10 +37,10 @@ genQueryOut_t **genQueryOut);
 extern "C" {
 #endif
 
-/* prototype for the client call */
-int
-rcGenQuery (rcComm_t *conn, genQueryInp_t *genQueryInp, 
-genQueryOut_t **genQueryOut);
+    /* prototype for the client call */
+    int
+    rcGenQuery( rcComm_t *conn, genQueryInp_t *genQueryInp,
+                genQueryOut_t **genQueryOut );
 
 #ifdef  __cplusplus
 }

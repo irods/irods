@@ -6,16 +6,15 @@
 #include "sslEnd.hpp"
 
 int
-rsSslEnd(rsComm_t *rsComm, sslEndInp_t *sslEndInp)
-{
+rsSslEnd( rsComm_t *rsComm, sslEndInp_t *sslEndInp ) {
 #if defined(USE_SSL)
 
     /* if SSL isn't on, just return success */
-    if (!rsComm->ssl_on) {
+    if ( !rsComm->ssl_on ) {
         return 0;
     }
 
-    /* let the agent service loop know that it needs to shut 
+    /* let the agent service loop know that it needs to shut
        down SSL after this API call completes */
     rsComm->ssl_do_shutdown = 1;
 
@@ -24,4 +23,4 @@ rsSslEnd(rsComm_t *rsComm, sslEndInp_t *sslEndInp)
     return SSL_NOT_BUILT_INTO_SERVER;
 #endif
 }
-    
+

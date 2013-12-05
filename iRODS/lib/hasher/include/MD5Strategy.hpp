@@ -7,18 +7,17 @@
 #include "global.hpp"             // cause md5.h needs it
 #include "md5.hpp"
 
-namespace eirods {
-    
-    class MD5Strategy : public HashStrategy
-    {
-    public:
-        MD5Strategy(void);
-        virtual ~MD5Strategy(void);
+namespace irods {
 
-        virtual std::string name(void) const { return _name; }
-        virtual unsigned int init(void);
-        virtual unsigned int update(char const* data, unsigned int size);
-        virtual unsigned int digest(std::string& messageDigest);
+    class MD5Strategy : public HashStrategy {
+    public:
+        MD5Strategy( void );
+        virtual ~MD5Strategy( void );
+
+        virtual std::string name( void ) const { return _name; }
+        virtual unsigned int init( void );
+        virtual unsigned int update( char const* data, unsigned int size );
+        virtual unsigned int digest( std::string& messageDigest );
 
     private:
         static std::string _name;
@@ -27,6 +26,6 @@ namespace eirods {
         bool _finalized;
         std::string _digest;
     };
-}; // namespace eirods
+}; // namespace irods
 
 #endif // _MD5Strategy_H_

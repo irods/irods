@@ -59,7 +59,7 @@ sub runCmd {
     my($option, $cmd, $stdoutVal) = @_;
     use File::Basename;
     my $thescriptname = basename($0);    
-    chomp(my $therodslog = `ls -t /var/lib/eirods/iRODS/server/log/rodsLog* | head -n1`);
+    chomp(my $therodslog = `ls -t /var/lib/irods/iRODS/server/log/rodsLog* | head -n1`);
     open THERODSLOG, ">>$therodslog" or die "could not open [$therodslog]";
     print THERODSLOG " --- $thescriptname [$cmd] --- \n";
     close THERODSLOG;
@@ -646,7 +646,7 @@ runCmd(0, "iadmin modresc $Resc2 info 'this is info field'");
 #runCmd(2, "iadmin modresc $Resc2 class 'badClass'");
 #runCmd(0, "iadmin modresc $Resc2 class 'archive'");
 #runCmd(0, "iadmin modresc $Resc2 class cache");
-#runCmd(2, "iadmin modresc $Resc2 type 'badType'"); # eirods no longer checks/cares
+#runCmd(2, "iadmin modresc $Resc2 type 'badType'"); # irods no longer checks/cares
 runCmd(0, "iadmin modresc $Resc2 type 'unix file system'");
 runCmd(0, "iadmin modresc $Resc2 path /tmp/v1");
 runCmd(0, "iadmin modresc $Resc2 path $Resc2Path");

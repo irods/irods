@@ -15,7 +15,7 @@ namespace irods {
     //     :: not provide a pure interface base class wich didnt
     //     :: have associated template parameters so one needed to
     //     :: be provided.  unfortuately the inteface needs redefined.
-    class socket_wrapper { 
+    class socket_wrapper {
 
     public:
         // =-=-=-=-=-=-=-
@@ -40,7 +40,7 @@ namespace irods {
         ~socket_wrapper_tcp();
         virtual bool open( int, char* );
 
-    }; // class socket_wrapper_tcp 
+    }; // class socket_wrapper_tcp
 
     // =-=-=-=-=-=-=-
     // derived class for handling udp style sockets
@@ -53,7 +53,7 @@ namespace irods {
         ~socket_wrapper_udp();
         virtual bool open( int, const char* );
 
-    }; // class socket_wrapper_udp 
+    }; // class socket_wrapper_udp
 
 }; // namespace irods
 

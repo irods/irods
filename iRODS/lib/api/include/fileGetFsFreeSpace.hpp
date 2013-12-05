@@ -25,7 +25,7 @@ typedef struct {
     char objPath[MAX_NAME_LEN];
     int flag;
 } fileGetFsFreeSpaceInp_t;
-    
+
 typedef struct {
     rodsLong_t size;
 } fileGetFsFreeSpaceOut_t;
@@ -38,26 +38,26 @@ typedef struct {
 #define RS_FILE_GET_FS_FREE_SPACE rsFileGetFsFreeSpace
 /* prototype for the server handler */
 int
-rsFileGetFsFreeSpace (rsComm_t *rsComm, 
-                      fileGetFsFreeSpaceInp_t *fileGetFsFreeSpaceInp, 
-                      fileGetFsFreeSpaceOut_t **fileGetFsFreeSpaceOut);
+rsFileGetFsFreeSpace( rsComm_t *rsComm,
+                      fileGetFsFreeSpaceInp_t *fileGetFsFreeSpaceInp,
+                      fileGetFsFreeSpaceOut_t **fileGetFsFreeSpaceOut );
 int
-_rsFileGetFsFreeSpace (rsComm_t *rsComm, 
-                       fileGetFsFreeSpaceInp_t *fileGetFsFreeSpaceInp, 
-                       fileGetFsFreeSpaceOut_t **fileGetFsFreeSpaceOut);
+_rsFileGetFsFreeSpace( rsComm_t *rsComm,
+                       fileGetFsFreeSpaceInp_t *fileGetFsFreeSpaceInp,
+                       fileGetFsFreeSpaceOut_t **fileGetFsFreeSpaceOut );
 int
-remoteFileGetFsFreeSpace (rsComm_t *rsComm, 
-                          fileGetFsFreeSpaceInp_t *fileGetFsFreeSpaceInp, 
+remoteFileGetFsFreeSpace( rsComm_t *rsComm,
+                          fileGetFsFreeSpaceInp_t *fileGetFsFreeSpaceInp,
                           fileGetFsFreeSpaceOut_t **fileGetFsFreeSpaceOut,
-                          rodsServerHost_t *rodsServerHost);
+                          rodsServerHost_t *rodsServerHost );
 #else
 #define RS_FILE_GET_FS_FREE_SPACE NULL
 #endif
 
 /* prototype for the client call */
 int
-rcFileGetFsFreeSpace (rcComm_t *conn, 
-                      fileGetFsFreeSpaceInp_t *fileGetFsFreeSpaceInp, 
-                      fileGetFsFreeSpaceOut_t **fileGetFsFreeSpaceOut);
+rcFileGetFsFreeSpace( rcComm_t *conn,
+                      fileGetFsFreeSpaceInp_t *fileGetFsFreeSpaceInp,
+                      fileGetFsFreeSpaceOut_t **fileGetFsFreeSpaceOut );
 
 #endif  /* FILE_GET_FS_FREESPACE_H */

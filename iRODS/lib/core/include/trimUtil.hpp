@@ -13,19 +13,19 @@
 extern "C" {
 #endif
 
-int
-trimUtil (rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
-rodsPathInp_t *rodsPathInp);
-int
-trimDataObjUtil (rcComm_t *conn, char *srcPath,
-rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
-dataObjInp_t *dataObjInp);
-int
-initCondForTrim (rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
-dataObjInp_t *dataObjInp);
-int
-trimCollUtil (rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
-rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp);
+    int
+    trimUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
+              rodsPathInp_t *rodsPathInp );
+    int
+    trimDataObjUtil( rcComm_t *conn, char *srcPath,
+                     rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
+                     dataObjInp_t *dataObjInp );
+    int
+    initCondForTrim( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
+                     dataObjInp_t *dataObjInp );
+    int
+    trimCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
+                  rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp );
 
 #ifdef  __cplusplus
 }

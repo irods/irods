@@ -9,18 +9,17 @@
 
 #include <openssl/sha.h>
 
-namespace eirods {
-    
-    class SHA256Strategy : public HashStrategy
-    {
-    public:
-        SHA256Strategy(void);
-        virtual ~SHA256Strategy(void);
+namespace irods {
 
-        virtual std::string name(void) const { return _name; }
-        virtual unsigned int init(void);
-        virtual unsigned int update(char const* data, unsigned int size);
-        virtual unsigned int digest(std::string& messageDigest);
+    class SHA256Strategy : public HashStrategy {
+    public:
+        SHA256Strategy( void );
+        virtual ~SHA256Strategy( void );
+
+        virtual std::string name( void ) const { return _name; }
+        virtual unsigned int init( void );
+        virtual unsigned int update( char const* data, unsigned int size );
+        virtual unsigned int digest( std::string& messageDigest );
 
     private:
         static std::string _name;
@@ -29,6 +28,6 @@ namespace eirods {
         bool _finalized;
         std::string _digest;
     };
-}; // namespace eirods
+}; // namespace irods
 
 #endif // _SHA256Strategy_H_

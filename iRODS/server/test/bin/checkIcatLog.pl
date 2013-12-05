@@ -14,7 +14,7 @@
 # DBMS, and anytime we make changes.
 
 $onlyZero=1;
-$srcFiles="../../icat/src/icatHighLevelRoutines.c ../../icat/src/icatGeneralQuery.c ../../icat/src/icatMidLevelRoutines.c ../../icat/src/icatGeneralUpdate.c";
+$srcFiles="../../icat/src/icatHighLevelRoutines.cpp ../../icat/src/icatGeneralQuery.cpp ../../icat/src/icatMidLevelRoutines.cpp ../../icat/src/icatGeneralUpdate.cpp";
 
 if ($#ARGV < 0) {
 # No filename, use default

@@ -9,27 +9,24 @@
 
 #include <string.h>
 
-namespace eirods {
-    
+namespace irods {
+
     std::string SHA256Strategy::_name = "SHA256";
 
     SHA256Strategy::
-    SHA256Strategy(void)
-    {
+    SHA256Strategy( void ) {
         _finalized = false;
     }
 
     SHA256Strategy::
-    ~SHA256Strategy(void)
-    {
+    ~SHA256Strategy( void ) {
         // TODO - stub
     }
 
     unsigned int SHA256Strategy::
-    init(void)
-    {
+    init( void ) {
         unsigned int result = 0;
-        SHA256_Init(&_context);
+        SHA256_Init( &_context );
         _finalized = false;
         return result;
     }
@@ -37,15 +34,15 @@ namespace eirods {
     unsigned int SHA256Strategy::
     update(
         char const* data,
-        unsigned int size)
-    {
+        unsigned int size ) {
         unsigned int result = 0;
-        if(!_finalized) {
+        if ( !_finalized ) {
             unsigned char* charData = new unsigned char[size];
-            memcpy(charData, data, size);
-            SHA256_Update(&_context, charData, size);
+            memcpy( charData, data, size );
+            SHA256_Update( &_context, charData, size );
             delete [] charData;
-        } else {
+        }
+        else {
             result = 1;             // TODO - should be an enum or string
             // table value here
         }
@@ -54,19 +51,18 @@ namespace eirods {
 
     unsigned int SHA256Strategy::
     digest(
-        std::string& messageDigest)
-    {
+        std::string& messageDigest ) {
         unsigned int result = 0;
-        if(!_finalized) {
+        if ( !_finalized ) {
             unsigned char buffer[SHA256_DIGEST_LENGTH];
-            SHA256_Final(buffer, &_context);
+            SHA256_Final( buffer, &_context );
             std::stringstream ins;
-            for(int i = 0; i < SHA256_DIGEST_LENGTH; ++i) {
-                ins << std::setfill('0') << std::setw(2) << std::hex << (int)buffer[i];
+            for ( int i = 0; i < SHA256_DIGEST_LENGTH; ++i ) {
+                ins << std::setfill( '0' ) << std::setw( 2 ) << std::hex << ( int )buffer[i];
             }
             _digest = ins.str();
         }
         messageDigest = _digest;
         return result;
     }
-}; // namespace eirods
+}; // namespace irods

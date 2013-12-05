@@ -14,12 +14,12 @@
 extern "C" {
 #endif
 
-int
-fsckObj (rcComm_t *conn, rodsArguments_t *myRodsArgs, rodsPathInp_t *rodsPathInp, char hostname[LONG_NAME_LEN]);
-int 
-fsckObjDir (rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, char *hostname);
-int
-chkObjConsistency (rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, char *hostname);
+    int
+    fsckObj( rcComm_t *conn, rodsArguments_t *myRodsArgs, rodsPathInp_t *rodsPathInp, char hostname[LONG_NAME_LEN] );
+    int
+    fsckObjDir( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, char *hostname );
+    int
+    chkObjConsistency( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, char *hostname );
 
 #ifdef  __cplusplus
 }

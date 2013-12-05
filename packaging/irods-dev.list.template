@@ -1,0 +1,100 @@
+# =-=-=-=-=-=-=-
+# EPM Variables
+# =-=-=-=-=-=-=-
+%product iRODS - Development Library
+%copyright 2012-2013 by Renaissance Computing Institute, All Rights Reserved.
+%vendor Renaissance Computing Institute <info@eirods.org>
+%license LICENSE
+%readme README
+%description The integrated Rule-Oriented Data System
+%version TEMPLATE_IRODSVERSION TEMPLATE_IRODSVERSIONINT
+
+
+
+
+# =-=-=-=-=-=-=-
+# Required Packages for specific systems
+# and
+# Setting environment variables for EPM
+# =-=-=-=-=-=-=-
+
+
+%elseif REDHATRPM
+$REDHAT=true
+$RPM=true
+
+%elseif SUSERPM
+$SUSE=true
+$RPM=true
+
+%endif
+
+
+
+%if DEB
+%requires libc6
+%endif
+
+
+
+
+%format all
+
+
+
+# =-=-=-=-=-=-=-
+# preinstall
+# =-=-=-=-=-=-=-
+#%preinstall 
+
+
+
+
+# =-=-=-=-=-=-=-
+# post install
+# =-=-=-=-=-=-=-
+#%postinstall
+
+
+# =-=-=-=-=-=-=-
+# preremove
+# =-=-=-=-=-=-=-
+#%preremove 
+
+
+
+
+# =-=-=-=-=-=-=-
+# post remove
+# =-=-=-=-=-=-=-
+#%postremove 
+
+
+
+
+
+# =-=-=-=-=-=-=-
+# Full File Listing
+# =-=-=-=-=-=-=-
+
+f 644 root root /usr/lib/libirods.a ./libirods.a
+
+d 755 root root /usr/include/irods/
+f 644 root root /usr/include/irods/ ./iRODS/lib/core/include/*.h
+f 644 root root /usr/include/irods/ ./iRODS/lib/api/include/*.h
+f 644 root root /usr/include/irods/ ./iRODS/lib/md5/include/*.h 
+f 644 root root /usr/include/irods/ ./iRODS/server/core/include/*.h 
+f 644 root root /usr/include/irods/ ./iRODS/server/icat/include/*.h
+f 644 root root /usr/include/irods/ ./iRODS/server/re/include/*.h
+f 644 root root /usr/include/irods/ ./iRODS/server/drivers/include/*.h
+
+d 755 root root /usr/share/irods/
+d 755 root root /usr/share/irods/examples
+d 755 root root /usr/share/irods/examples/microservices
+d 755 root root /usr/share/irods/examples/resources
+f 644 root root /usr/share/irods/examples/microservices ./examples/microservices/*
+f 644 root root /usr/share/irods/examples/resources ./examples/resources/*
+f 644 root root /usr/share/irods/examples/resources/libpassthru.cpp ./plugins/resources/passthru/libpassthru.cpp
+
+
+

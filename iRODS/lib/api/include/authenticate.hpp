@@ -25,38 +25,38 @@
 extern "C" {
 #endif
 
-typedef struct {
-   char *subOp;
-   char *response;
-   char *username;
-} AuthenticateInp_t;
-    
+    typedef struct {
+        char *subOp;
+        char *response;
+        char *username;
+    } AuthenticateInp_t;
+
 #define AuthenticateInp_PI "str *subOp; str *response; str *username;"
 
-typedef struct {
-   char *challenge;
-} AuthenticateOut_t;
-    
+    typedef struct {
+        char *challenge;
+    } AuthenticateOut_t;
+
 #define AuthenticateOut_PI "str *challenge;"
 
 #if defined(RODS_SERVER)
 #define RS_AUTHENTICATE rsAuthenticate
-/* prototype for the server handler */
-int
-rsAuthenticate (rsComm_t *rsComm, AuthenticateInp_t *authenticateInp,
-		AuthenticateOut_t **authenticateOut );
+    /* prototype for the server handler */
+    int
+    rsAuthenticate( rsComm_t *rsComm, AuthenticateInp_t *authenticateInp,
+                    AuthenticateOut_t **authenticateOut );
 
-int
-_rsAuthenticate (rsComm_t *rsComm, AuthenticateInp_t *authenticateInp,
-		 AuthenticateOut_t **authenticateOut );
+    int
+    _rsAuthenticate( rsComm_t *rsComm, AuthenticateInp_t *authenticateInp,
+                     AuthenticateOut_t **authenticateOut );
 #else
 #define RS_AUTHENTICATE NULL
 #endif
 
-/* prototype for the client call */
-int
-rcAuthenticate (rcComm_t *conn, AuthenticateInp_t *authenticateInp, 
-		AuthenticateOut_t **authenticateOut );
+    /* prototype for the client call */
+    int
+    rcAuthenticate( rcComm_t *conn, AuthenticateInp_t *authenticateInp,
+                    AuthenticateOut_t **authenticateOut );
 
 #ifdef  __cplusplus
 }

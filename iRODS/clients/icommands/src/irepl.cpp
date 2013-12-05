@@ -2,7 +2,7 @@
 
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* 
+/*
  * irepl - The irods repl utility
  */
 
@@ -10,10 +10,10 @@
 #include "parseCommandLine.hpp"
 #include "rodsPath.hpp"
 #include "replUtil.hpp"
-void usage ();
+void usage();
 
 int
-main(int argc, char **argv) {
+main( int argc, char **argv ) {
     int status;
     rodsEnv myEnv;
     rErrMsg_t errMsg;
@@ -22,85 +22,86 @@ main(int argc, char **argv) {
     char *optStr;
     rodsPathInp_t rodsPathInp;
     int reconnFlag;
-    
+
 
     optStr = "aBG:QMhrvVn:PR:S:TX:UZ"; // JMC - backport 4549
 
-    status = parseCmdLineOpt (argc, argv, optStr, 1, &myRodsArgs);// JMC - backport 4549
+    status = parseCmdLineOpt( argc, argv, optStr, 1, &myRodsArgs ); // JMC - backport 4549
 
-    if (status < 0) {
-        printf("Use -h for help.\n");
-        exit (1);
+    if ( status < 0 ) {
+        printf( "Use -h for help.\n" );
+        exit( 1 );
     }
 
-    if (myRodsArgs.help==True) {
+    if ( myRodsArgs.help == True ) {
         usage();
-        exit(0);
+        exit( 0 );
     }
 
-    if (argc - optind <= 0) {
-        rodsLog (LOG_ERROR, "irepl: no input");
-        printf("Use -h for help.\n");
-        exit (2);
+    if ( argc - optind <= 0 ) {
+        rodsLog( LOG_ERROR, "irepl: no input" );
+        printf( "Use -h for help.\n" );
+        exit( 2 );
     }
 
-    status = getRodsEnv (&myEnv);
+    status = getRodsEnv( &myEnv );
 
-    if (status < 0) {
-        rodsLogError (LOG_ERROR, status, "main: getRodsEnv error. ");
-        exit (1);
+    if ( status < 0 ) {
+        rodsLogError( LOG_ERROR, status, "main: getRodsEnv error. " );
+        exit( 1 );
     }
 
-    status = parseCmdLinePath (argc, argv, optind, &myEnv,
-                               UNKNOWN_OBJ_T, NO_INPUT_T, 0, &rodsPathInp);
+    status = parseCmdLinePath( argc, argv, optind, &myEnv,
+                               UNKNOWN_OBJ_T, NO_INPUT_T, 0, &rodsPathInp );
 
-    if (status < 0) {
-        rodsLogError (LOG_ERROR, status, "main: parseCmdLinePath error. ");
-        printf("Use -h for help.\n");
-        exit (1);
+    if ( status < 0 ) {
+        rodsLogError( LOG_ERROR, status, "main: parseCmdLinePath error. " );
+        printf( "Use -h for help.\n" );
+        exit( 1 );
     }
 
-    if (myRodsArgs.reconnect == True) {
+    if ( myRodsArgs.reconnect == True ) {
         reconnFlag = RECONN_TIMEOUT;
-    } else {
+    }
+    else {
         reconnFlag = NO_RECONN;
     }
 
-    conn = rcConnect (myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
-                      myEnv.rodsZone, reconnFlag, &errMsg);
+    conn = rcConnect( myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
+                      myEnv.rodsZone, reconnFlag, &errMsg );
 
-    if (conn == NULL) {
-        exit (2);
-    }
-   
-    status = clientLogin(conn);
-    if (status != 0) {
-        rcDisconnect(conn);
-        exit (7);
+    if ( conn == NULL ) {
+        exit( 2 );
     }
 
-    if (myRodsArgs.progressFlag == True) {
-        gGuiProgressCB = (irodsGuiProgressCallbak) iCommandProgStat;
+    status = clientLogin( conn );
+    if ( status != 0 ) {
+        rcDisconnect( conn );
+        exit( 7 );
     }
 
-    status = replUtil (conn, &myEnv, &myRodsArgs, &rodsPathInp);
+    if ( myRodsArgs.progressFlag == True ) {
+        gGuiProgressCB = ( irodsGuiProgressCallbak ) iCommandProgStat;
+    }
 
-    printErrorStack(conn->rError);
-    rcDisconnect(conn);
+    status = replUtil( conn, &myEnv, &myRodsArgs, &rodsPathInp );
 
-    if (status < 0) {
-        exit (3);
-    } else {
-        exit(0);
+    printErrorStack( conn->rError );
+    rcDisconnect( conn );
+
+    if ( status < 0 ) {
+        exit( 3 );
+    }
+    else {
+        exit( 0 );
     }
 
 }
 
-void 
-usage ()
-{
+void
+usage() {
 
-    char *msgs[]={
+    char *msgs[] = {
         "Usage : irepl [-aBMPQrTvV] [-n replNum] [-R destResource] [-S srcResource]",
         "[-X restartFile] [--purgec]  [--rlock]dataObj|collection ... ",
         " ",
@@ -127,7 +128,7 @@ usage ()
         "sockets getting timed out by the firewall as reported by some users.",
         " ",
         "Note that if -a and -U options are used together, it means update all",
-        "stale copies.", 
+        "stale copies.",
         "Note that if the source copy has a checksum value associated with it,",
         "a checksum will be computed for the replicated copy and compare with",
         "the source value for verification.",
@@ -145,7 +146,7 @@ usage ()
         " -r  recursive - copy the whole subtree",
         " -n  replNum  - the replica to copy, typically not needed",
         " -R  destResource - specifies the destination resource to store to.",
-        "     This can also be specified in your environment or via a rule set up", 
+        "     This can also be specified in your environment or via a rule set up",
         "     by the administrator.",
         " -S  srcResource - specifies the source resource of the data object to be",
         "     replicated. If specified, only copies stored in this resource will",
@@ -161,11 +162,12 @@ usage ()
         " -h  this help",
         " ",
         "Also see 'irsync' for other types of iRODS/local synchronization.",
-        ""};
+        ""
+    };
     int i;
-    for (i=0;;i++) {
-        if (strlen(msgs[i])==0) break;
-        printf("%s\n",msgs[i]);
+    for ( i = 0;; i++ ) {
+        if ( strlen( msgs[i] ) == 0 ) { break; }
+        printf( "%s\n", msgs[i] );
     }
-    printReleaseInfo("irepl");
+    printReleaseInfo( "irepl" );
 }

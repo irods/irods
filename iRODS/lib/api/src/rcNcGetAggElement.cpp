@@ -5,7 +5,7 @@
 
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code.  */ 
+/* This is script-generated code.  */
 /* See ncOpen.h for a description of this API call.*/
 
 #include "ncGetAggElement.hpp"
@@ -59,14 +59,13 @@ ncAggElement_t **ncAggElement)
 **/
 
 int
-rcNcGetAggElement (rcComm_t *conn, ncOpenInp_t *ncOpenInp,
-ncAggElement_t **ncAggElement)
-{
+rcNcGetAggElement( rcComm_t *conn, ncOpenInp_t *ncOpenInp,
+                   ncAggElement_t **ncAggElement ) {
     int status;
 
-    status = procApiRequest (conn, NC_GET_AGG_ELEMENT_AN,  ncOpenInp, NULL,
-        (void **) ncAggElement, NULL);
+    status = procApiRequest( conn, NC_GET_AGG_ELEMENT_AN,  ncOpenInp, NULL,
+                             ( void ** ) ncAggElement, NULL );
 
-    return (status);
+    return ( status );
 }
 

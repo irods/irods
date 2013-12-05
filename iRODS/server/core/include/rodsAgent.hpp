@@ -20,9 +20,9 @@
 #include "rcConnect.hpp"
 #include "initServer.hpp"
 
-#define MAX_MSG_READ_RETRY	1	
-#define READ_RETRY_SLEEP_TIME	1	
+#define MAX_MSG_READ_RETRY	1
+#define READ_RETRY_SLEEP_TIME	1
 
-int agentMain (rsComm_t *rsComm);
+int agentMain( rsComm_t *rsComm );
 
 #endif	/* RODS_AGENT_H */

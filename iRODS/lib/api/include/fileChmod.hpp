@@ -23,25 +23,25 @@ typedef struct {
     char rescHier[MAX_NAME_LEN];
     char objPath[MAX_NAME_LEN];
 } fileChmodInp_t;
-    
+
 #define fileChmodInp_PI "struct RHostAddr_PI; str fileName[MAX_NAME_LEN]; int mode; str rescHier[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN];"
 
 #if defined(RODS_SERVER)
 #define RS_FILE_CHMOD rsFileChmod
 /* prototype for the server handler */
 int
-rsFileChmod (rsComm_t *rsComm, fileChmodInp_t *fileChmodInp);
+rsFileChmod( rsComm_t *rsComm, fileChmodInp_t *fileChmodInp );
 int
-_rsFileChmod (rsComm_t *rsComm, fileChmodInp_t *fileChmodInp);
+_rsFileChmod( rsComm_t *rsComm, fileChmodInp_t *fileChmodInp );
 int
-remoteFileChmod (rsComm_t *rsComm, fileChmodInp_t *fileChmodInp,
-rodsServerHost_t *rodsServerHost);
+remoteFileChmod( rsComm_t *rsComm, fileChmodInp_t *fileChmodInp,
+                 rodsServerHost_t *rodsServerHost );
 #else
 #define RS_FILE_CHMOD NULL
 #endif
 
 /* prototype for the client call */
 int
-rcFileChmod (rcComm_t *conn, fileChmodInp_t *fileChmodInp);
+rcFileChmod( rcComm_t *conn, fileChmodInp_t *fileChmodInp );
 
 #endif	/* FILE_CHMOD_H */

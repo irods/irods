@@ -27,28 +27,28 @@ typedef struct {
     char rescHier[MAX_NAME_LEN];
     keyValPair_t condInput;
 } fileStageSyncInp_t;
-    
+
 #define fileStageSyncInp_PI "int mode; int flags; double dataSize; struct RHostAddr_PI; str filename[MAX_NAME_LEN]; str cacheFilename[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN]; str rescHier[MAX_NAME_LEN]; struct KeyValPair_PI;"
 
 #if defined(RODS_SERVER)
 #define RS_FILE_STAGE_TO_CACHE rsFileStageToCache
 /* prototype for the server handler */
 int
-rsFileStageToCache (rsComm_t *rsComm, fileStageSyncInp_t *fileStageToCacheInp);
+rsFileStageToCache( rsComm_t *rsComm, fileStageSyncInp_t *fileStageToCacheInp );
 int
-rsFileStageToCacheByHost (rsComm_t *rsComm, fileStageSyncInp_t *fileStageToCacheInp,
-rodsServerHost_t *rodsServerHost);
+rsFileStageToCacheByHost( rsComm_t *rsComm, fileStageSyncInp_t *fileStageToCacheInp,
+                          rodsServerHost_t *rodsServerHost );
 int
-_rsFileStageToCache (rsComm_t *rsComm, fileStageSyncInp_t *fileStageToCacheInp);
+_rsFileStageToCache( rsComm_t *rsComm, fileStageSyncInp_t *fileStageToCacheInp );
 int
-remoteFileStageToCache (rsComm_t *rsComm, fileStageSyncInp_t *fileStageToCacheInp,
-rodsServerHost_t *rodsServerHost);
+remoteFileStageToCache( rsComm_t *rsComm, fileStageSyncInp_t *fileStageToCacheInp,
+                        rodsServerHost_t *rodsServerHost );
 #else
 #define RS_FILE_STAGE_TO_CACHE NULL
 #endif
 
 /* prototype for the client call */
 int
-rcFileStageToCache (rcComm_t *conn, fileStageSyncInp_t *fileStageToCacheInp);
+rcFileStageToCache( rcComm_t *conn, fileStageSyncInp_t *fileStageToCacheInp );
 
 #endif	/* FILE_STAGE_TO_CACHE_H */

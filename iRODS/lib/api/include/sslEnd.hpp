@@ -3,7 +3,7 @@
 /* sslEnd.h
  */
 
-/* This call is used to ask the agent to turn SSL off for the 
+/* This call is used to ask the agent to turn SSL off for the
    communication socket. */
 
 #ifndef SSL_END_HPP
@@ -22,25 +22,25 @@
 extern "C" {
 #endif
 
-typedef struct {
-    char *arg0;
-} sslEndInp_t;
-    
+    typedef struct {
+        char *arg0;
+    } sslEndInp_t;
+
 #define sslEndInp_PI "str *arg0;"
 
 
 #if defined(RODS_SERVER)
 #define RS_SSL_END rsSslEnd
-/* prototype for the server handler */
-int
-rsSslEnd (rsComm_t *rsComm, sslEndInp_t *sslEndInp );
+    /* prototype for the server handler */
+    int
+    rsSslEnd( rsComm_t *rsComm, sslEndInp_t *sslEndInp );
 #else
 #define RS_SSL_END NULL
 #endif
 
-/* prototype for the client call */
-int
-rcSslEnd (rcComm_t *conn, sslEndInp_t *sslEndInp);
+    /* prototype for the client call */
+    int
+    rcSslEnd( rcComm_t *conn, sslEndInp_t *sslEndInp );
 
 #ifdef  __cplusplus
 }

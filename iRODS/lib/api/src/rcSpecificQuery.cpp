@@ -47,12 +47,11 @@
 **/
 
 int
-rcSpecificQuery (rcComm_t *conn, specificQueryInp_t *specificQueryInp, 
-genQueryOut_t **genQueryOut)
-{
+rcSpecificQuery( rcComm_t *conn, specificQueryInp_t *specificQueryInp,
+                 genQueryOut_t **genQueryOut ) {
     int status;
-    status = procApiRequest (conn, SPECIFIC_QUERY_AN,  specificQueryInp, NULL, 
-        (void **)genQueryOut, NULL);
+    status = procApiRequest( conn, SPECIFIC_QUERY_AN,  specificQueryInp, NULL,
+                             ( void ** )genQueryOut, NULL );
 
-    return (status);
+    return ( status );
 }

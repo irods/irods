@@ -6,16 +6,16 @@
 extern "C" {
 #endif
 
-int igsiSetupCreds(rcComm_t *Comm, rsComm_t *rsComm, char *specifiedName,
-		   char **returnedName);
+    int igsiSetupCreds( rcComm_t *Comm, rsComm_t *rsComm, char *specifiedName,
+                        char **returnedName );
 
-int igsiEstablishContextClientside(rcComm_t *Comm, char *service_name,
-			       int deleg_flag);
+    int igsiEstablishContextClientside( rcComm_t *Comm, char *service_name,
+                                        int deleg_flag );
 
-int igsiEstablishContextServerside(rsComm_t *Comm, char *clientName, 
-			       int max_len_clientName);
+    int igsiEstablishContextServerside( rsComm_t *Comm, char *clientName,
+                                        int max_len_clientName );
 
-int igsiServersideAuth(rsComm_t *Comm);
+    int igsiServersideAuth( rsComm_t *Comm );
 
 #ifdef  __cplusplus
 }

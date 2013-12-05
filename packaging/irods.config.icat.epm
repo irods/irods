@@ -67,13 +67,13 @@
 $DATABASE_TYPE = 'postgres';
 $DATABASE_ODBC_TYPE = 'unix';
 $DATABASE_EXCLUSIVE_TO_IRODS = '0';
-$DATABASE_HOME = 'EIRODSPOSTGRESPATH';
+$DATABASE_HOME = 'IRODSPOSTGRESPATH';
 $DATABASE_LIB = '';
 
 $DATABASE_HOST = 'localhost';
 $DATABASE_PORT = '5432';
 $DATABASE_ADMIN_PASSWORD = 'TEMPLATE_DB_PASS';
-$DATABASE_ADMIN_NAME = 'eirods';
+$DATABASE_ADMIN_NAME = 'irods';
 
 
 
@@ -113,7 +113,7 @@ $DATABASE_ADMIN_NAME = 'eirods';
 #  $GLOBUS_LOCATION is then the GLOBUS_LOCATION, and
 #  $GSI_INSTALL_TYPE is the Globus/GSI install type to use.
 #
-$IRODS_HOME = '/var/lib/eirods/iRODS';
+$IRODS_HOME = '/var/lib/irods/iRODS';
 $IRODS_PORT = '1247';
 $SVR_PORT_RANGE_START = '20000';
 $SVR_PORT_RANGE_END = '20199';
@@ -123,7 +123,7 @@ $IRODS_ICAT_HOST = '';
 
 $DB_NAME = 'EICAT';
 $RESOURCE_NAME = 'demoResc';
-$RESOURCE_DIR = '/var/lib/eirods/iRODS/Vault';
+$RESOURCE_DIR = '/var/lib/irods/iRODS/Vault';
 $ZONE_NAME = 'tempZone';
 $DB_KEY = '123';
 

@@ -5,7 +5,7 @@
 
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code.  */ 
+/* This is script-generated code.  */
 /* See dataObjUnlink.h for a description of this API call.*/
 
 #include "dataObjUnlink.hpp"
@@ -30,7 +30,7 @@
  * \note none
  *
  * \usage
- * Unlink the data object /myZone/home/john/myfile 
+ * Unlink the data object /myZone/home/john/myfile
  * \n dataObjInp_t dataObjInp;
  * \n bzero (&dataObjInp, sizeof (dataObjInp));
  * \n rstrcpy (dataObjInp.objPath, "/myZone/home/john/myfile", MAX_NAME_LEN);
@@ -61,11 +61,10 @@
 **/
 
 int
-rcDataObjUnlink (rcComm_t *conn, dataObjInp_t *dataObjUnlinkInp)
-{
+rcDataObjUnlink( rcComm_t *conn, dataObjInp_t *dataObjUnlinkInp ) {
     int status;
-    status = procApiRequest (conn, DATA_OBJ_UNLINK_AN,  dataObjUnlinkInp, NULL, 
-        (void **) NULL, NULL);
+    status = procApiRequest( conn, DATA_OBJ_UNLINK_AN,  dataObjUnlinkInp, NULL,
+                             ( void ** ) NULL, NULL );
 
-    return (status);
+    return ( status );
 }

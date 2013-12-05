@@ -19,12 +19,12 @@
 #define RS_OPR_COMPLETE rsOprComplete
 /* prototype for the server handler */
 int
-rsOprComplete (rsComm_t *rsComm, int *retval);
+rsOprComplete( rsComm_t *rsComm, int *retval );
 #else
 #define RS_OPR_COMPLETE NULL
 #endif
 
 int
-rcOprComplete (rcComm_t *conn, int retval);
+rcOprComplete( rcComm_t *conn, int retval );
 
 #endif	/* OPR_COMPLETE_H */

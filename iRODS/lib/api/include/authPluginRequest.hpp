@@ -1,8 +1,8 @@
 
 
 
-#ifndef __AUTH_PLUGIN_REQUEST_H__
-#define __AUTH_PLUGIN_REQUEST_H__
+#ifndef __AUTH_PLUGIN_REQUEST_HPP__
+#define __AUTH_PLUGIN_REQUEST_HPP__
 
 // =-=-=-=-=-=-=-
 // irods includes
@@ -30,11 +30,11 @@ struct authPluginReqOut_t {
 // =-=-=-=-=-=-=-
 // prototype for server
 #if defined(RODS_SERVER)
-    #define RS_AUTH_PLUG_REQ rsAuthPluginRequest
-    int rsAuthPluginRequest(
-        rsComm_t*,              // server comm ptr
-        authPluginReqInp_t*,    // incoming struct with scheme
-        authPluginReqOut_t** ); // response from agent
+#define RS_AUTH_PLUG_REQ rsAuthPluginRequest
+int rsAuthPluginRequest(
+    rsComm_t*,              // server comm ptr
+    authPluginReqInp_t*,    // incoming struct with scheme
+    authPluginReqOut_t** ); // response from agent
 #else
 #define RS_AUTH_PLUG_REQ NULL
 #endif
@@ -46,7 +46,7 @@ int rcAuthPluginRequest(
     authPluginReqInp_t*,    // incoming struct with scheme
     authPluginReqOut_t** ); // response from agent
 
-#endif // __AUTH_PLUGIN_REQUEST_H__
+#endif // __AUTH_PLUGIN_REQUEST_HPP__
 
 
 

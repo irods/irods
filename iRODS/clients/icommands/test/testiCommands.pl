@@ -744,7 +744,7 @@ sub runCmd {
 	printf( "%3d - cmd executed: $cmd\n", $ntests );
 	use File::Basename;
 	my $thescriptname = basename($0);
-	chomp(my $therodslog = `ls -t /var/lib/eirods/iRODS/server/log/rodsLog* | head -n1`);
+	chomp(my $therodslog = `ls -t /var/lib/irods/iRODS/server/log/rodsLog* | head -n1`);
 	open THERODSLOG, ">>$therodslog" or die "could not open [$therodslog]";
 	print THERODSLOG " --- $thescriptname $ntests [$cmd] --- \n";
 	close THERODSLOG;

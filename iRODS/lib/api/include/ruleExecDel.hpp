@@ -16,7 +16,7 @@
 #include "reGlobalsExtern.hpp"
 
 typedef struct {
-    char ruleExecId[NAME_LEN];	
+    char ruleExecId[NAME_LEN];
 } ruleExecDelInp_t;
 
 #define RULE_EXEC_DEL_INP_PI "str ruleExecId[NAME_LEN];"
@@ -25,9 +25,9 @@ typedef struct {
 #define RS_RULE_EXEC_DEL rsRuleExecDel
 /* prototype for the server handler */
 int
-rsRuleExecDel (rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp);
+rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp );
 int
-_rsRuleExecDel (rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp);
+_rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp );
 #else
 #define RS_RULE_EXEC_DEL NULL
 #endif
@@ -36,8 +36,8 @@ _rsRuleExecDel (rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp);
 extern "C" {
 #endif
 
-int
-rcRuleExecDel (rcComm_t *conn, ruleExecDelInp_t *ruleExecDelInp);
+    int
+    rcRuleExecDel( rcComm_t *conn, ruleExecDelInp_t *ruleExecDelInp );
 
 #ifdef  __cplusplus
 }

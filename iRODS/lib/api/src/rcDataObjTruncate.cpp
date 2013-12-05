@@ -3,7 +3,7 @@
  *
  */
 
-/* This is script-generated code.  */ 
+/* This is script-generated code.  */
 /* See dataObjTruncate.h for a description of this API call.*/
 
 #include "dataObjTruncate.hpp"
@@ -11,7 +11,7 @@
 /**
  * \fn rcDataObjTruncate (rcComm_t *conn, dataObjInp_t *dataObjInp)
  *
- * \brief Truncate a data object to the specified size and register the 
+ * \brief Truncate a data object to the specified size and register the
  *       new size with iCAT. The old checksum value associated with the
  *       the data object will be cleared.
  *
@@ -54,11 +54,10 @@
 **/
 
 int
-rcDataObjTruncate (rcComm_t *conn, dataObjInp_t *dataObjInp)
-{
+rcDataObjTruncate( rcComm_t *conn, dataObjInp_t *dataObjInp ) {
     int status;
-    status = procApiRequest (conn, DATA_OBJ_TRUNCATE_AN, dataObjInp, NULL, 
-        (void **) NULL, NULL);
+    status = procApiRequest( conn, DATA_OBJ_TRUNCATE_AN, dataObjInp, NULL,
+                             ( void ** ) NULL, NULL );
 
-    return (status);
+    return ( status );
 }

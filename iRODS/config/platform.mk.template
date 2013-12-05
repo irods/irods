@@ -36,7 +36,7 @@ CCFLAGS += -Wno-deprecated
 #CCFLAGS += -Wunreachable-code
 
 # =-=-=-=-=-=-=-
-# JMC :: build using E-iRODS Extensions
+# JMC :: build using iRODS Extensions
 #     :: currently this is only the microservice plugins
 #     :: also enable C++ 0x capabilities
 CCFLAGS += -fPIC
@@ -52,16 +52,16 @@ CCFLAGS+=-DUSE_BOOST -DUSE_BOOST_COND -DUSE_BOOST_FS
 
 # =-=-=-=-=-=-=-
 # TGR :: debugging and coverage
-EIRODS_BUILD_DEBUG=1
-ifeq ($(EIRODS_BUILD_DEBUG), 1)
+IRODS_BUILD_DEBUG=1
+ifeq ($(IRODS_BUILD_DEBUG), 1)
 CCFLAGS += -g
 else
 # we'll change this to -O3 later to optimize... hit errors on first attempt
 CCFLAGS += -O3
 endif
 
-EIRODS_BUILD_COVERAGE=0
-ifeq ($(EIRODS_BUILD_COVERAGE), 1)
+IRODS_BUILD_COVERAGE=0
+ifeq ($(IRODS_BUILD_COVERAGE), 1)
 CCFLAGS += -fprofile-arcs -ftest-coverage
 LDRFLAGS += -lgcov
 endif

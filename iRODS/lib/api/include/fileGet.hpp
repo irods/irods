@@ -21,21 +21,21 @@
 #define RS_FILE_GET rsFileGet
 /* prototype for the server handler */
 int
-rsFileGet (rsComm_t *rsComm, fileOpenInp_t *fileGetInp, 
-bytesBuf_t *fileGetOutBBuf);
+rsFileGet( rsComm_t *rsComm, fileOpenInp_t *fileGetInp,
+           bytesBuf_t *fileGetOutBBuf );
 int
-_rsFileGet (rsComm_t *rsComm, fileOpenInp_t *fileGetInp, 
-bytesBuf_t *fileGetOutBBuf);
+_rsFileGet( rsComm_t *rsComm, fileOpenInp_t *fileGetInp,
+            bytesBuf_t *fileGetOutBBuf );
 int
-remoteFileGet (rsComm_t *rsComm, fileOpenInp_t *fileGetInp, 
-bytesBuf_t *fileGetOutBBuf, rodsServerHost_t *rodsServerHost);
+remoteFileGet( rsComm_t *rsComm, fileOpenInp_t *fileGetInp,
+               bytesBuf_t *fileGetOutBBuf, rodsServerHost_t *rodsServerHost );
 #else
 #define RS_FILE_GET NULL
 #endif
 
 /* prototype for the client call */
 int
-rcFileGet (rcComm_t *conn, fileOpenInp_t *fileGetInp, 
-bytesBuf_t *fileGetOutBBuf);
+rcFileGet( rcComm_t *conn, fileOpenInp_t *fileGetInp,
+           bytesBuf_t *fileGetOutBBuf );
 
 #endif	/* FILE_GET_H */

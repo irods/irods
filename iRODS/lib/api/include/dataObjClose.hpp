@@ -13,7 +13,7 @@
 #include "apiNumber.hpp"
 #include "initServer.hpp"
 #include "fileClose.hpp"
-#include "fileStat.hpp" 
+#include "fileStat.hpp"
 
 #ifdef COMPAT_201
 typedef struct {
@@ -28,20 +28,20 @@ typedef struct {
 #define RS_DATA_OBJ_CLOSE rsDataObjClose
 /* prototype for the server handler */
 int
-rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp);
+rsDataObjClose( rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp );
 int
-irsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp,
-dataObjInfo_t **outDataObjInfo);
+irsDataObjClose( rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp,
+                 dataObjInfo_t **outDataObjInfo );
 int
-_rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp);
+_rsDataObjClose( rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp );
 int
-l3Close (rsComm_t *rsComm, int l1descInx);
+l3Close( rsComm_t *rsComm, int l1descInx );
 int
-_l3Close (rsComm_t *rsComm, int rescTypeInx, int l3descInx);
+_l3Close( rsComm_t *rsComm, int rescTypeInx, int l3descInx );
 int
-l3Stat (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, rodsStat_t **myStat);
+l3Stat( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, rodsStat_t **myStat );
 int
-procChksumForClose (rsComm_t *rsComm, int l1descInx, char **chksumStr);
+procChksumForClose( rsComm_t *rsComm, int l1descInx, char **chksumStr );
 #else
 #define RS_DATA_OBJ_CLOSE NULL
 #endif
@@ -51,7 +51,7 @@ procChksumForClose (rsComm_t *rsComm, int l1descInx, char **chksumStr);
 #define RS_DATA_OBJ_CLOSE201 rsDataObjClose201
 /* prototype for the server handler */
 int
-rsDataObjClose201 (rsComm_t *rsComm, dataObjCloseInp_t *dataObjCloseInp);
+rsDataObjClose201( rsComm_t *rsComm, dataObjCloseInp_t *dataObjCloseInp );
 #else
 #define RS_DATA_OBJ_CLOSE201 NULL
 #endif
@@ -61,19 +61,19 @@ rsDataObjClose201 (rsComm_t *rsComm, dataObjCloseInp_t *dataObjCloseInp);
 extern "C" {
 #endif
 
-/* prototype for the client call */
-/* rcDataObjClose - Close an opened iRODS data object descriptor.
- * Input -
- *   rcComm_t *conn - The client connection handle.
- *   dataObjCloseInp_t *dataObjCloseInp - Relevant items are:
- *	l1descInx - the iRODS data object descriptor to close.
- *
- * OutPut -
- *   int status of the operation - >= 0 ==> success, < 0 ==> failure.
- */
+    /* prototype for the client call */
+    /* rcDataObjClose - Close an opened iRODS data object descriptor.
+     * Input -
+     *   rcComm_t *conn - The client connection handle.
+     *   dataObjCloseInp_t *dataObjCloseInp - Relevant items are:
+     *	l1descInx - the iRODS data object descriptor to close.
+     *
+     * OutPut -
+     *   int status of the operation - >= 0 ==> success, < 0 ==> failure.
+     */
 
-int
-rcDataObjClose (rcComm_t *conn, openedDataObjInp_t *dataObjCloseInp);
+    int
+    rcDataObjClose( rcComm_t *conn, openedDataObjInp_t *dataObjCloseInp );
 
 #ifdef  __cplusplus
 }

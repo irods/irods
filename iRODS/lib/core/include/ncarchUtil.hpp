@@ -14,12 +14,12 @@ extern "C" {
 #endif
 
 
-int
-ncarchUtil (rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
-rodsPathInp_t *rodsPathInp);
-int
-initCondForNcarch (rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
-ncArchTimeSeriesInp_t *ncArchTimeSeriesInp);
+    int
+    ncarchUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
+                rodsPathInp_t *rodsPathInp );
+    int
+    initCondForNcarch( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
+                       ncArchTimeSeriesInp_t *ncArchTimeSeriesInp );
 #ifdef  __cplusplus
 }
 #endif

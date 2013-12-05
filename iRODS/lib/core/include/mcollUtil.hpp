@@ -13,12 +13,12 @@
 extern "C" {
 #endif
 
-int
-mcollUtil (rcComm_t *conn, rodsEnv *myEnv, rodsArguments_t *myRodsArgs, 
-rodsPathInp_t *rodsPathInp);
-int
-initCondForMcoll (rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
-dataObjInp_t *dataObjOprInp, rodsPathInp_t *rodsPathInp);
+    int
+    mcollUtil( rcComm_t *conn, rodsEnv *myEnv, rodsArguments_t *myRodsArgs,
+               rodsPathInp_t *rodsPathInp );
+    int
+    initCondForMcoll( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
+                      dataObjInp_t *dataObjOprInp, rodsPathInp_t *rodsPathInp );
 
 #ifdef  __cplusplus
 }

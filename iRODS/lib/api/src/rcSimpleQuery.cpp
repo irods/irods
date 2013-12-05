@@ -20,7 +20,7 @@
 * \since 1.0
 *
 * \author  Wayne Schroeder
-* \date    2007 
+* \date    2007
 *
 * \remark none
 *
@@ -45,12 +45,11 @@
 **/
 
 int
-rcSimpleQuery (rcComm_t *conn, simpleQueryInp_t *simpleQueryInp, 
-simpleQueryOut_t **simpleQueryOut)
-{
+rcSimpleQuery( rcComm_t *conn, simpleQueryInp_t *simpleQueryInp,
+               simpleQueryOut_t **simpleQueryOut ) {
     int status;
-    status = procApiRequest (conn, SIMPLE_QUERY_AN,  simpleQueryInp, NULL, 
-        (void **) simpleQueryOut, NULL);
+    status = procApiRequest( conn, SIMPLE_QUERY_AN,  simpleQueryInp, NULL,
+                             ( void ** ) simpleQueryOut, NULL );
 
-    return (status);
+    return ( status );
 }

@@ -49,60 +49,60 @@ extern int optind, opterr, optopt;
 #define NUM_READ_WORKER_THR	5
 
 #define AGENT_QUE_CHK_INT	600	/* check the agent queue every 600 sec
-					 * for consistence */
-int serverize (char *logDir);
-int serverMain (char *logDir);
+* for consistence */
+int serverize( char *logDir );
+int serverMain( char *logDir );
 int
-procChildren (agentProc_t **agentProcHead);
+procChildren( agentProc_t **agentProcHead );
 agentProc_t *
-getAgentProcByPid (int childPid, agentProc_t **agentProcHead);
+getAgentProcByPid( int childPid, agentProc_t **agentProcHead );
 
 void
 #if defined(linux_platform) || defined(aix_platform) || defined(solaris_platform) || defined(linux_platform) || defined(osx_platform)
-serverExit (int sig);
+serverExit( int sig );
 #else
 void
-serverExit ();
+serverExit();
 #endif
 
 void
-usage (char *prog);
+usage( char *prog );
 
 int
-initServer (rsComm_t *svrComm);
+initServer( rsComm_t *svrComm );
 int
-spawnAgent (agentProc_t *connReq, agentProc_t **agentProcHead);
+spawnAgent( agentProc_t *connReq, agentProc_t **agentProcHead );
 int
-execAgent (int newSock, startupPack_t *startupPack);
+execAgent( int newSock, startupPack_t *startupPack );
 int
-queConnectedAgentProc (int childPid, agentProc_t *connReq, 
-agentProc_t **agentProcHead);
+queConnectedAgentProc( int childPid, agentProc_t *connReq,
+                       agentProc_t **agentProcHead );
 int
-getAgentProcCnt ();
+getAgentProcCnt();
 int
-chkAgentProcCnt ();
+chkAgentProcCnt();
 int
-chkConnectedAgentProcQue ();
+chkConnectedAgentProcQue();
 int
-recordServerProcess(rsComm_t *svrComm);
+recordServerProcess( rsComm_t *svrComm );
 int
-initServerMain (rsComm_t *svrComm);
+initServerMain( rsComm_t *svrComm );
 int
-addConnReqToQue (rsComm_t *rsComm, int sock);
+addConnReqToQue( rsComm_t *rsComm, int sock );
 int
-initConnThreadEnv ();
+initConnThreadEnv();
 agentProc_t *
-getConnReqFromQue ();
+getConnReqFromQue();
 void
-readWorkerTask ();
+readWorkerTask();
 int
-procSingleConnReq (agentProc_t *connReq);
+procSingleConnReq( agentProc_t *connReq );
 int
-startProcConnReqThreads ();
+startProcConnReqThreads();
 void
-spawnManagerTask ();
+spawnManagerTask();
 int
-procBadReq ();
+procBadReq();
 void
-purgeLockFileWorkerTask (); // JMC - backport 4612
+purgeLockFileWorkerTask();  // JMC - backport 4612
 #endif	/* RODS_SERVER_H */

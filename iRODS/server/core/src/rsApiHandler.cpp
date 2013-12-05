@@ -27,8 +27,7 @@ jmp_buf Jenv;
 #endif
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_network_factory.hpp"
+#include "irods_network_factory.hpp"
 
 
 int rsApiHandler(
@@ -53,10 +52,10 @@ int rsApiHandler(
 
     // =-=-=-=-=-=-=-
     // create a network object
-    eirods::network_object_ptr net_obj;
-    eirods::error ret = eirods::network_factory( rsComm, net_obj );
+    irods::network_object_ptr net_obj;
+    irods::error ret = irods::network_factory( rsComm, net_obj );
     if ( !ret.ok() ) {
-        eirods::log( PASS( ret ) );
+        irods::log( PASS( ret ) );
         return apiInx;
     }
 
@@ -216,13 +215,13 @@ int rsApiHandler(
             clearAuthResponseInp( ( void * ) myInStruct );
 #ifdef NETCDF_API
         }
-        else if ( strcmp (RsApiTable[apiInx].inPackInstruct,
-             "NcGetVarInp_PI" )  == 0 ) {
-            clearNcGetVarInp ( ( ncGetVarInp_t * ) myInStruct );
+        else if ( strcmp( RsApiTable[apiInx].inPackInstruct,
+                          "NcGetVarInp_PI" )  == 0 ) {
+            clearNcGetVarInp( ( ncGetVarInp_t * ) myInStruct );
         }
-        else if ( strcmp (RsApiTable[apiInx].inPackInstruct,
-             "NcRegGlobalAttrInp_PI" )  == 0 ) {
-            clearRegGlobalAttrInp ( ( ncRegGlobalAttrInp_t * ) myInStruct );
+        else if ( strcmp( RsApiTable[apiInx].inPackInstruct,
+                          "NcRegGlobalAttrInp_PI" )  == 0 ) {
+            clearRegGlobalAttrInp( ( ncRegGlobalAttrInp_t * ) myInStruct );
 #endif
         }
         free( myInStruct );
@@ -294,10 +293,10 @@ sendApiReply( rsComm_t * rsComm, int apiInx, int retVal,
 
     // =-=-=-=-=-=-=-
     // create a network object
-    eirods::network_object_ptr net_obj;
-    eirods::error ret = eirods::network_factory( rsComm, net_obj );
+    irods::network_object_ptr net_obj;
+    irods::error ret = irods::network_factory( rsComm, net_obj );
     if ( !ret.ok() ) {
-        eirods::log( PASS( ret ) );
+        irods::log( PASS( ret ) );
         return ret.code();
 
     }
@@ -350,7 +349,7 @@ sendApiReply( rsComm_t * rsComm, int apiInx, int retVal,
                        myOutBsBBuf, myRErrorBBuf, retVal, rsComm->irodsProt );
     if ( !ret.ok() ) {
         int status1;
-        eirods::log( PASS( ret ) );
+        irods::log( PASS( ret ) );
 
         if ( rsComm->reconnSock > 0 ) {
             int savedStatus = ret.code();
@@ -431,8 +430,8 @@ chkApiPermission( rsComm_t * rsComm, int apiInx ) {
 
 #ifdef STORAGE_ADMIN_ROLE
     if ( ( strcmp( rsComm->proxyUser.userType, STORAGE_ADMIN_USER_TYPE ) == 0 )
-        && ( clientUserAuth & STORAGE_ADMIN_USER ) ) {
-      return ( 0 );
+            && ( clientUserAuth & STORAGE_ADMIN_USER ) ) {
+        return ( 0 );
     }
 #endif
 
@@ -495,10 +494,10 @@ readAndProcClientMsg( rsComm_t * rsComm, int flags ) {
 
     // =-=-=-=-=-=-=-
     // create a network object
-    eirods::network_object_ptr net_obj;
-    eirods::error ret = eirods::network_factory( rsComm, net_obj );
+    irods::network_object_ptr net_obj;
+    irods::error ret = irods::network_factory( rsComm, net_obj );
     if ( !ret.ok() ) {
-        eirods::log( PASS( ret ) );
+        irods::log( PASS( ret ) );
         return ret.code();
 
     }
@@ -534,7 +533,7 @@ readAndProcClientMsg( rsComm_t * rsComm, int flags ) {
     }
 
     if ( !ret.ok() ) {
-        eirods::log( PASS( ret ) );
+        irods::log( PASS( ret ) );
         /* attempt to accept reconnect. ENOENT result  from
                      * user cntl-C */
         if ( rsComm->reconnSock > 0 ) {
@@ -569,7 +568,7 @@ readAndProcClientMsg( rsComm_t * rsComm, int flags ) {
     ret = readMsgBody( net_obj, &myHeader, &inputStructBBuf,
                        &bsBBuf, &errorBBuf, rsComm->irodsProt, NULL );
     if ( !ret.ok() ) {
-        eirods::log( PASS( ret ) );
+        irods::log( PASS( ret ) );
         svrChkReconnAtReadEnd( rsComm );
         return ( ret.code() );
     }

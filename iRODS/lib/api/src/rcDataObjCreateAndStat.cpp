@@ -3,7 +3,7 @@
  *
  */
 
-/* This is script-generated code.  */ 
+/* This is script-generated code.  */
 /* See dataObjCreateAndStat.h for a description of this API call.*/
 
 #include "dataObjCreateAndStat.hpp"
@@ -12,8 +12,8 @@
  * \fn rcDataObjCreateAndStat (rcComm_t *conn, dataObjInp_t *dataObjInp,
  * openStat_t **openStat)
  *
- * \brief Create a data object in the iCAT. This API is the same as 
- *	the rcDataObjCreate API except an additional openStat_t struct 
+ * \brief Create a data object in the iCAT. This API is the same as
+ *	the rcDataObjCreate API except an additional openStat_t struct
  *	containing the stat of the just created object is returned.
  *
  * \user client
@@ -69,14 +69,13 @@
 **/
 
 int
-rcDataObjCreateAndStat (rcComm_t *conn, dataObjInp_t *dataObjInp,
-openStat_t **openStat)
-{
+rcDataObjCreateAndStat( rcComm_t *conn, dataObjInp_t *dataObjInp,
+                        openStat_t **openStat ) {
     int status;
-    status = procApiRequest (conn, DATA_OBJ_CREATE_AND_STAT_AN, dataObjInp, NULL,
-        (void **) openStat, NULL);
+    status = procApiRequest( conn, DATA_OBJ_CREATE_AND_STAT_AN, dataObjInp, NULL,
+                             ( void ** ) openStat, NULL );
 
-    return (status);
+    return ( status );
 }
 
 

@@ -21,15 +21,15 @@
 #define RS_STREAM_READ rsStreamRead
 /* prototype for the server handler */
 int
-rsStreamRead (rsComm_t *rsComm, fileReadInp_t *streamReadInp, 
-bytesBuf_t *streamReadOutBBuf);
+rsStreamRead( rsComm_t *rsComm, fileReadInp_t *streamReadInp,
+              bytesBuf_t *streamReadOutBBuf );
 #else
 #define RS_STREAM_READ NULL
 #endif
 
 /* prototype for the client call */
 int
-rcStreamRead (rcComm_t *conn, fileReadInp_t *streamReadInp,
-bytesBuf_t *streamReadOutBBuf);
+rcStreamRead( rcComm_t *conn, fileReadInp_t *streamReadInp,
+              bytesBuf_t *streamReadOutBBuf );
 
 #endif	/* STREAM_READ_H */

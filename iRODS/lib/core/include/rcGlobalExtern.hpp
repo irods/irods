@@ -42,7 +42,7 @@ extern struct timeval SysTimingVal;
 extern "C" {
 #endif
 
-extern irodsGuiProgressCallbak gGuiProgressCB;
+    extern irodsGuiProgressCallbak gGuiProgressCB;
 
 #ifdef  __cplusplus
 }

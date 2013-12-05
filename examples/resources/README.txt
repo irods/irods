@@ -5,11 +5,11 @@ basic unix file system operations
 
 To install this example plugin:
  $ make
- $ cp libexamplefilesystem.so /var/lib/eirods/plugins/resources
- $ chown eirods:eirods /var/lib/eirods/plugins/resources/libexamplefilesystem.so
+ $ cp libexamplefilesystem.so /var/lib/irods/plugins/resources
+ $ chown irods:irods /var/lib/irods/plugins/resources/libexamplefilesystem.so
 
 Running make will generate the plugin, which will then
 need be copied to the appropriate plugin directory
-and chown'ed to eirods:eirods by the Data Grid Administrator for the
+and chown'ed to irods:irods by the Data Grid Administrator for the
 plugin to be loadable and the resource made available to the server.
 

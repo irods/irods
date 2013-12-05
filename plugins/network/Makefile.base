@@ -20,7 +20,7 @@ INC = -I${IRODSDIR}/lib/core/include/ -I${IRODSDIR}/lib/api/include/ -I${IRODSDI
       -I/usr/include/openssl -I${IRODSDIR}/lib/sha1/include \
       -I/opt/hpss/include  -L/opt/hpss/lib
 
-ifeq ($(EIRODS_BUILD_COVERAGE), 1)
+ifeq ($(IRODS_BUILD_COVERAGE), 1)
 GCC += -fprofile-arcs -ftest-coverage -lgcov
 OBJS = $(patsubst %.cpp, %.o, ${SRCS})
 %.o: %.cpp

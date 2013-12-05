@@ -19,19 +19,19 @@
 #define RS_STRUCT_FILE_EXTRACT rsStructFileExtract
 /* prototype for the server handler */
 int
-rsStructFileExtract (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp);
+rsStructFileExtract( rsComm_t *rsComm, structFileOprInp_t *structFileOprInp );
 int
-_rsStructFileExtract (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp);
+_rsStructFileExtract( rsComm_t *rsComm, structFileOprInp_t *structFileOprInp );
 int
-remoteStructFileExtract (rsComm_t *rsComm, 
-structFileOprInp_t *structFileOprInp, rodsServerHost_t *rodsServerHost);
+remoteStructFileExtract( rsComm_t *rsComm,
+                         structFileOprInp_t *structFileOprInp, rodsServerHost_t *rodsServerHost );
 #else
 #define RS_STRUCT_FILE_EXTRACT NULL
 #endif
 
 /* prototype for the client call */
 int
-rcStructFileExtract (rcComm_t *conn, structFileOprInp_t *structFileOprInp);
+rcStructFileExtract( rcComm_t *conn, structFileOprInp_t *structFileOprInp );
 int
-procCacheDir (rsComm_t *rsComm, char *cacheDir, char *resource, int oprType); // JMC - backport 4657
+procCacheDir( rsComm_t *rsComm, char *cacheDir, char *resource, int oprType ); // JMC - backport 4657
 #endif	/* STRUCT_FILE_EXTRACT_H */

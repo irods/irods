@@ -143,7 +143,7 @@ $currentStep = 0;
 setPrintVerbose( 1 );
 
 ########################
-# Commenting out this block so that E-iRODS build.sh
+# Commenting out this block so that iRODS build.sh
 # can complete when run as sudo.
 ########################
 #if ( $thisUserID == 0 )

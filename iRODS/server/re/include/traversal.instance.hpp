@@ -9,13 +9,13 @@
 	  for(i=0;i<size;i++) { \
 		  MK_PTR(type, f[i]); \
 	  } \
-
+ 
 #define TRAVERSE_PTR_TAPP_ARRAY(type, size, f, cpfn) \
 	  int i; \
 	  for(i=0;i<size;i++) { \
 		  MK_PTR_TAPP(type, f[i], cpfn); \
 	  } \
-
+ 
 #define TRAVERSE_CYCLIC(T, key, objectMap) \
 	T *shared; \
 	char key[KEY_SIZE]; \
@@ -23,7 +23,7 @@
 	if((shared = (T *)lookupFromHashTable(objectMap, key)) != NULL) { \
 		return shared; \
 	} \
-
+ 
 #define TRAVERSE_ARRAY_CYCLIC(T, size, f, tgt, key, objectMap) \
 	T *shared0; \
 	char key[KEY_SIZE]; \
@@ -31,7 +31,7 @@
 	if((shared0 = (T *)lookupFromHashTable(objectMap, key)) != NULL) { \
 		tgt = shared0; \
 	} else \
-
+ 
 #endif
 
 #define PARAM(T) (RE_STRUCT_FUNC_TYPE *)RE_STRUCT_FUNC(T)

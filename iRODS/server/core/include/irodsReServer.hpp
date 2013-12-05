@@ -6,8 +6,8 @@
 
 
 
-#ifndef IRODS_RE_SERVER_HPP
-#define IRODS_RE_SERVER_HPP
+#ifndef RE_SERVER_HPP
+#define RE_SERVER_HPP
 
 #include "rods.hpp"
 #include "rsGlobal.hpp"   /* server global */
@@ -30,9 +30,9 @@ uint CoreIrbTimeStamp = 0;
 #define v_FLAG  0x1
 
 void
-reServerMain (rsComm_t *rsComm, char* logDir);
+reServerMain( rsComm_t *rsComm, char* logDir );
 int
-reSvrSleep (rsComm_t *rsComm);
+reSvrSleep( rsComm_t *rsComm );
 int
-chkAndResetRule (rsComm_t *rsComm);
-#endif	/* IRODS_RE_SERVER_H */
+chkAndResetRule( rsComm_t *rsComm );
+#endif	/* RE_SERVER_H */

@@ -17,13 +17,13 @@
 #include "apiNumber.hpp"
 
 typedef struct {
-   int  ttl;
-   char *unused1;  /* currently unused, but available without protocol
+    int  ttl;
+    char *unused1;  /* currently unused, but available without protocol
 		    * change if needed */
 } getLimitedPasswordInp_t;
 
 typedef struct {
-   char stringToHashWith[MAX_PASSWORD_LEN];
+    char stringToHashWith[MAX_PASSWORD_LEN];
 } getLimitedPasswordOut_t;
 
 #define getLimitedPasswordInp_PI "int ttl; str *unused1;"
@@ -34,21 +34,21 @@ typedef struct {
 #define RS_GET_LIMITED_PASSWORD rsGetLimitedPassword
 /* prototype for the server handler */
 int
-rsGetLimitedPassword (rsComm_t *rsComm, 
-		      getLimitedPasswordInp_t *getLimitedPasswordInp,
-		      getLimitedPasswordOut_t **getLimitedPasswordOut);
+rsGetLimitedPassword( rsComm_t *rsComm,
+                      getLimitedPasswordInp_t *getLimitedPasswordInp,
+                      getLimitedPasswordOut_t **getLimitedPasswordOut );
 int
-_rsGetLimitedPassword (rsComm_t *rsComm, 
-		       getLimitedPasswordInp_t *getLimitedPasswordInp,
-		       getLimitedPasswordOut_t **getLimitedPasswordOut);
+_rsGetLimitedPassword( rsComm_t *rsComm,
+                       getLimitedPasswordInp_t *getLimitedPasswordInp,
+                       getLimitedPasswordOut_t **getLimitedPasswordOut );
 #else
 #define RS_GET_LIMITED_PASSWORD NULL
 #endif
 
 /* prototype for the client call */
 int
-rcGetLimitedPassword (rcComm_t *conn, 
-		      getLimitedPasswordInp_t *getLimitedPasswordInp,
-		      getLimitedPasswordOut_t **getLimitedPasswordOut);
+rcGetLimitedPassword( rcComm_t *conn,
+                      getLimitedPasswordInp_t *getLimitedPasswordInp,
+                      getLimitedPasswordOut_t **getLimitedPasswordOut );
 
 #endif	/* GET_LIMITED_PASSWORD_H */

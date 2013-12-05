@@ -20,23 +20,23 @@
 #define RS_DATA_OBJ_UNLINK rsDataObjUnlink
 /* prototype for the server handler */
 int
-rsDataObjUnlink (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp);
+rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp );
 int
-dataObjUnlinkS (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
-dataObjInfo_t *dataObjInfo);
+dataObjUnlinkS( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
+                dataObjInfo_t *dataObjInfo );
 int
-l3Unlink (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo);
+l3Unlink( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo );
 int
-_rsDataObjUnlink (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
-dataObjInfo_t **dataObjInfoHead);
+_rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
+                  dataObjInfo_t **dataObjInfoHead );
 int
-rsMvDataObjToTrash (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-dataObjInfo_t **dataObjInfoHead);
+rsMvDataObjToTrash( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+                    dataObjInfo_t **dataObjInfoHead );
 int
-resolveDataObjReplStatus (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp);
+resolveDataObjReplStatus( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp );
 int
-chkPreProcDeleteRule (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
-dataObjInfo_t *dataObjInfoHead);
+chkPreProcDeleteRule( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
+                      dataObjInfo_t *dataObjInfoHead );
 #else
 #define RS_DATA_OBJ_UNLINK NULL
 #endif
@@ -45,24 +45,24 @@ dataObjInfo_t *dataObjInfoHead);
 extern "C" {
 #endif
 
-/* prototype for the client call */
-int
-rcDataObjUnlink (rcComm_t *conn, dataObjInp_t *dataObjUnlinkInp);
+    /* prototype for the client call */
+    int
+    rcDataObjUnlink( rcComm_t *conn, dataObjInp_t *dataObjUnlinkInp );
 
-/* rcDataObjUnlink - Unlink a iRODS data object. By defult, the file will
- * be moved to the trash, but the FORCE_FLAG_KW will force the removal. 
- * Input - 
- *   rcComm_t *conn - The client connection handle.
- *   dataObjInp_t *dataObjInp - generic dataObj input. Relevant items are:
- *	objPath - the path of the data object.
- *      condInput - conditional Input
- *          FORCE_FLAG_KW - remove data object instead of moving it to trash.
- *          REPL_NUM_KW  - "value" = The replica number of the copy to
- *              remove.
- *
- * OutPut - 
- *   int status - The status of the operation.   
- */
+    /* rcDataObjUnlink - Unlink a iRODS data object. By defult, the file will
+     * be moved to the trash, but the FORCE_FLAG_KW will force the removal.
+     * Input -
+     *   rcComm_t *conn - The client connection handle.
+     *   dataObjInp_t *dataObjInp - generic dataObj input. Relevant items are:
+     *	objPath - the path of the data object.
+     *      condInput - conditional Input
+     *          FORCE_FLAG_KW - remove data object instead of moving it to trash.
+     *          REPL_NUM_KW  - "value" = The replica number of the copy to
+     *              remove.
+     *
+     * OutPut -
+     *   int status - The status of the operation.
+     */
 
 #ifdef  __cplusplus
 }

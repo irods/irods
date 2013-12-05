@@ -12,38 +12,38 @@
 /* this is a debug routine; it just prints the genQueryInp
    structure */
 int
-printGenQI( genQueryInp_t *genQueryInp) {
-   int i, len;
-   int *ip1, *ip2;
-   char *cp;
-   char **cpp;
+printGenQI( genQueryInp_t *genQueryInp ) {
+    int i, len;
+    int *ip1, *ip2;
+    char *cp;
+    char **cpp;
 
-   printf ("maxRows=%d\n", genQueryInp->maxRows);
+    printf( "maxRows=%d\n", genQueryInp->maxRows );
 
-   len = genQueryInp->selectInp.len;
-   printf ("sel len=%d\n",len);
-   ip1 = genQueryInp->selectInp.inx;
-   ip2 = genQueryInp->selectInp.value;
-   for (i=0;i<len;i++) {
-      printf("sel inx [%d]=%d\n",i, *ip1);
-      printf("sel val [%d]=%d\n",i, *ip2);
-      ip1++;
-      ip2++;
-   }
+    len = genQueryInp->selectInp.len;
+    printf( "sel len=%d\n", len );
+    ip1 = genQueryInp->selectInp.inx;
+    ip2 = genQueryInp->selectInp.value;
+    for ( i = 0; i < len; i++ ) {
+        printf( "sel inx [%d]=%d\n", i, *ip1 );
+        printf( "sel val [%d]=%d\n", i, *ip2 );
+        ip1++;
+        ip2++;
+    }
 
-   len = genQueryInp->sqlCondInp.len;
-   printf ("sqlCond len=%d\n",len);
-   ip1 = genQueryInp->sqlCondInp.inx;
-   cpp = genQueryInp->sqlCondInp.value;
-   cp = *cpp;
-   for (i=0;i<len;i++) {
-      printf("sel inx [%d]=%d\n",i, *ip1);
-      printf("sel val [%d]=:%s:\n",i, cp);
-      ip1++;
-      cpp++;
-      cp = *cpp;
-   }
-   return (0);
+    len = genQueryInp->sqlCondInp.len;
+    printf( "sqlCond len=%d\n", len );
+    ip1 = genQueryInp->sqlCondInp.inx;
+    cpp = genQueryInp->sqlCondInp.value;
+    cp = *cpp;
+    for ( i = 0; i < len; i++ ) {
+        printf( "sel inx [%d]=%d\n", i, *ip1 );
+        printf( "sel val [%d]=:%s:\n", i, cp );
+        ip1++;
+        cpp++;
+        cp = *cpp;
+    }
+    return ( 0 );
 }
 
 /**
@@ -66,7 +66,7 @@ printGenQI( genQueryInp_t *genQueryInp) {
  * \n Provides a simplified interface to query the iRODS database (ICAT).
  * \n Although the inputs and controls are a bit complicated, it allows
  * \n SQL-like queries but without the caller needing to know the structure
- * \n of the database (schema).  SQL is generated for each call on the 
+ * \n of the database (schema).  SQL is generated for each call on the
  * \n server-side (in the ICAT code).
  *
  * \note none
@@ -87,14 +87,13 @@ printGenQI( genQueryInp_t *genQueryInp) {
 **/
 
 int
-rcGenQuery (rcComm_t *conn, genQueryInp_t *genQueryInp, 
-genQueryOut_t **genQueryOut)
-{
+rcGenQuery( rcComm_t *conn, genQueryInp_t *genQueryInp,
+            genQueryOut_t **genQueryOut ) {
     int status;
     /*    printGenQI(genQueryInp); */
-    status = procApiRequest (conn, GEN_QUERY_AN,  genQueryInp, NULL, 
-        (void **)genQueryOut, NULL);
+    status = procApiRequest( conn, GEN_QUERY_AN,  genQueryInp, NULL,
+                             ( void ** )genQueryOut, NULL );
 
-    return (status);
+    return ( status );
 }
 

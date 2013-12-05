@@ -4,44 +4,42 @@
 #include "parseCommandLine.hpp"
 #include "rcMisc.hpp"
 
-void usage (char *prog);
+void usage( char *prog );
 
 int
-main(int argc, char **argv)
-{
+main( int argc, char **argv ) {
     int status;
     rodsArguments_t myRodsArgs;
     rodsEnv myEnv;
 
-    status = parseCmdLineOpt(argc, argv, "vVh", 0, &myRodsArgs);
-    if (status) {
-       printf("Use -h for help\n");
-       exit(1);
+    status = parseCmdLineOpt( argc, argv, "vVh", 0, &myRodsArgs );
+    if ( status ) {
+        printf( "Use -h for help\n" );
+        exit( 1 );
     }
 
-    if (myRodsArgs.help==True) {
-       usage(argv[0]);
-       exit(0);
+    if ( myRodsArgs.help == True ) {
+        usage( argv[0] );
+        exit( 0 );
     }
 
-    status = getRodsEnv (&myEnv);
-    if (status != 0) {
-      printf("Failed with error %d\n", status);
-      exit(2);
+    status = getRodsEnv( &myEnv );
+    if ( status != 0 ) {
+        printf( "Failed with error %d\n", status );
+        exit( 2 );
     }
 
-    printf ("%s\n", myEnv.rodsCwd);
+    printf( "%s\n", myEnv.rodsCwd );
 
-    exit (0);
+    exit( 0 );
 }
 
 
-void usage (char *prog)
-{
-  printf("Shows your iRODS Current Working Directory.\n");
-  printf("Usage: %s [-vVh]\n", prog);
-  printf(" -v  verbose\n");
-  printf(" -V  very verbose\n");
-  printf(" -h  this help\n");
-  printReleaseInfo("ipwd");
+void usage( char *prog ) {
+    printf( "Shows your iRODS Current Working Directory.\n" );
+    printf( "Usage: %s [-vVh]\n", prog );
+    printf( " -v  verbose\n" );
+    printf( " -V  very verbose\n" );
+    printf( " -h  this help\n" );
+    printReleaseInfo( "ipwd" );
 }

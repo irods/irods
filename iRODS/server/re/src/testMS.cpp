@@ -4,102 +4,96 @@
 #include "icatHighLevelRoutines.hpp"
 
 int
-print_hello(ruleExecInfo_t *rei)
-{
-  /***
-  rodsLog(LOG_NOTICE, "TTTTT Hello\n");
-  rodsLogAndErrorMsg(LOG_NOTICE, &(rei->rsComm->rError),-1, "VVVVV Hello\n");
-  ***/
-  RE_TEST_MACRO ("Test for print_hello\n");
-  fprintf(stdout, "Hello\n");
-  _writeString("stdout", "Hello\n", rei);
-  return(0);
+print_hello( ruleExecInfo_t *rei ) {
+    /***
+    rodsLog(LOG_NOTICE, "TTTTT Hello\n");
+    rodsLogAndErrorMsg(LOG_NOTICE, &(rei->rsComm->rError),-1, "VVVVV Hello\n");
+    ***/
+    RE_TEST_MACRO( "Test for print_hello\n" );
+    fprintf( stdout, "Hello\n" );
+    _writeString( "stdout", "Hello\n", rei );
+    return( 0 );
 }
 int
-recover_print_hello(ruleExecInfo_t *rei)
-{
-  RE_TEST_MACRO ("\b\b\b\b\b     \b\b\b\b\b");
-    fprintf(stdout,"\b\b\b\b\b     \b\b\b\b\b");
-  return(0);
+recover_print_hello( ruleExecInfo_t *rei ) {
+    RE_TEST_MACRO( "\b\b\b\b\b     \b\b\b\b\b" );
+    fprintf( stdout, "\b\b\b\b\b     \b\b\b\b\b" );
+    return( 0 );
 }
 
 int
-print_doi(dataObjInfo_t *doi)
-{
-  if (reTestFlag == COMMAND_TEST_1) {
-    fprintf(stdout,"     objPath = %s\n",doi->objPath);
-    fprintf(stdout,"     rescName= %s\n",doi->rescName);
-    fprintf(stdout,"     dataType= %s\n",doi->dataType);
-    fprintf(stdout,"     dataSize= %lld\n",doi->dataSize);
-  }
-  else if(reTestFlag == HTML_TEST_1) {
-    fprintf(stdout," <UL>\n");
-    fprintf(stdout,"  <LI>     objPath = %s\n",doi->objPath);
-    fprintf(stdout,"  <LI>     rescName= %s\n",doi->rescName);
-    fprintf(stdout,"  <LI>     dataType= %s\n",doi->dataType);
-    fprintf(stdout,"  <LI>     dataSize= %lld\n",doi->dataSize);
-    fprintf(stdout," </UL>\n");
-  }
-  else {
-    rodsLog (LOG_NOTICE,"     objPath = %s\n",doi->objPath);
-    rodsLog (LOG_NOTICE,"     rescName= %s\n",doi->rescName);
-    rodsLog (LOG_NOTICE,"     dataType= %s\n",doi->dataType);
-    rodsLog (LOG_NOTICE,"     dataSize= %lld\n",doi->dataSize);
-  }
-  return(0);
+print_doi( dataObjInfo_t *doi ) {
+    if ( reTestFlag == COMMAND_TEST_1 ) {
+        fprintf( stdout, "     objPath = %s\n", doi->objPath );
+        fprintf( stdout, "     rescName= %s\n", doi->rescName );
+        fprintf( stdout, "     dataType= %s\n", doi->dataType );
+        fprintf( stdout, "     dataSize= %lld\n", doi->dataSize );
+    }
+    else if ( reTestFlag == HTML_TEST_1 ) {
+        fprintf( stdout, " <UL>\n" );
+        fprintf( stdout, "  <LI>     objPath = %s\n", doi->objPath );
+        fprintf( stdout, "  <LI>     rescName= %s\n", doi->rescName );
+        fprintf( stdout, "  <LI>     dataType= %s\n", doi->dataType );
+        fprintf( stdout, "  <LI>     dataSize= %lld\n", doi->dataSize );
+        fprintf( stdout, " </UL>\n" );
+    }
+    else {
+        rodsLog( LOG_NOTICE, "     objPath = %s\n", doi->objPath );
+        rodsLog( LOG_NOTICE, "     rescName= %s\n", doi->rescName );
+        rodsLog( LOG_NOTICE, "     dataType= %s\n", doi->dataType );
+        rodsLog( LOG_NOTICE, "     dataSize= %lld\n", doi->dataSize );
+    }
+    return( 0 );
 }
 
 
 int
-print_uoi(userInfo_t *uoi)
-{
-  if (reTestFlag == COMMAND_TEST_1) {
-    fprintf(stdout,"     userName = %s\n",uoi->userName);
-    fprintf(stdout,"     rodsZone= %s\n",uoi->rodsZone);
-    fprintf(stdout,"     userType= %s\n",uoi->userType);
-  }
-  else if(reTestFlag == HTML_TEST_1) {
-    fprintf(stdout," <UL>\n");
-    fprintf(stdout,"  <LI>     userName= %s\n",uoi->userName);
-    fprintf(stdout,"  <LI>     rodsZone= %s\n",uoi->rodsZone);
-    fprintf(stdout,"  <LI>     userType= %s\n",uoi->userType);
+print_uoi( userInfo_t *uoi ) {
+    if ( reTestFlag == COMMAND_TEST_1 ) {
+        fprintf( stdout, "     userName = %s\n", uoi->userName );
+        fprintf( stdout, "     rodsZone= %s\n", uoi->rodsZone );
+        fprintf( stdout, "     userType= %s\n", uoi->userType );
+    }
+    else if ( reTestFlag == HTML_TEST_1 ) {
+        fprintf( stdout, " <UL>\n" );
+        fprintf( stdout, "  <LI>     userName= %s\n", uoi->userName );
+        fprintf( stdout, "  <LI>     rodsZone= %s\n", uoi->rodsZone );
+        fprintf( stdout, "  <LI>     userType= %s\n", uoi->userType );
 
-    fprintf(stdout," </UL>\n");
-  }
-  else {
-    rodsLog (LOG_NOTICE,"     userName= %s\n",uoi->userName);
-    rodsLog (LOG_NOTICE,"     rodsZone= %s\n",uoi->rodsZone);
-    rodsLog (LOG_NOTICE,"     userType= %s\n",uoi->userType);
+        fprintf( stdout, " </UL>\n" );
+    }
+    else {
+        rodsLog( LOG_NOTICE, "     userName= %s\n", uoi->userName );
+        rodsLog( LOG_NOTICE, "     rodsZone= %s\n", uoi->rodsZone );
+        rodsLog( LOG_NOTICE, "     userType= %s\n", uoi->userType );
 
-  }
-  return(0);
+    }
+    return( 0 );
 }
 
-int msiAW1(msParam_t* mPIn, msParam_t* mPOut2, ruleExecInfo_t *rei)
-{
-  char *In;
+int msiAW1( msParam_t* mPIn, msParam_t* mPOut2, ruleExecInfo_t *rei ) {
+    char *In;
 
-  In  = (char *) mPIn->inOutStruct;
+    In  = ( char * ) mPIn->inOutStruct;
 
-  rodsLog (LOG_NOTICE,"ALPHA: ------>  In:%s\n", In);
-  mPOut2->type = strdup(STR_MS_T);
-  mPOut2->inOutStruct = strdup("Microservice_1");
-  return(0);
+    rodsLog( LOG_NOTICE, "ALPHA: ------>  In:%s\n", In );
+    mPOut2->type = strdup( STR_MS_T );
+    mPOut2->inOutStruct = strdup( "Microservice_1" );
+    return( 0 );
 
 }
 
 
-int msiCutBufferInHalf(msParam_t* mPIn, ruleExecInfo_t *rei)
-{
+int msiCutBufferInHalf( msParam_t* mPIn, ruleExecInfo_t *rei ) {
 
-  RE_TEST_MACRO ("Test for msiCutBufferInHalf\n");
+    RE_TEST_MACRO( "Test for msiCutBufferInHalf\n" );
 
-  if (mPIn == NULL || mPIn->inpOutBuf == NULL ) {
-    rodsLog (LOG_ERROR, "msiCutBufferInHalf: input is NULL.");
-    return (USER__NULL_INPUT_ERR);
-  }
-  mPIn->inpOutBuf->len = (mPIn->inpOutBuf->len) / 2;
-  return(0);
+    if ( mPIn == NULL || mPIn->inpOutBuf == NULL ) {
+        rodsLog( LOG_ERROR, "msiCutBufferInHalf: input is NULL." );
+        return ( USER__NULL_INPUT_ERR );
+    }
+    mPIn->inpOutBuf->len = ( mPIn->inpOutBuf->len ) / 2;
+    return( 0 );
 
 }
 
@@ -153,32 +147,30 @@ int msiCutBufferInHalf(msParam_t* mPIn, ruleExecInfo_t *rei)
  * \bug  no known bugs
 **/
 int
-msiDoSomething(msParam_t *inParam, msParam_t *outParam, ruleExecInfo_t *rei)
-{
-	keyValPair_t *myKeyVal;						/* will contain results */
+msiDoSomething( msParam_t *inParam, msParam_t *outParam, ruleExecInfo_t *rei ) {
+    keyValPair_t *myKeyVal;						/* will contain results */
 
-	/* For testing mode when used with irule --test */
-	RE_TEST_MACRO ("    Calling msiDoSomething")
+    /* For testing mode when used with irule --test */
+    RE_TEST_MACRO( "    Calling msiDoSomething" )
 
-	/* Sanity checks */
-	if (rei == NULL || rei->rsComm == NULL)
-	{
-		rodsLog (LOG_ERROR, "msiDoSomething: input rei or rsComm is NULL.");
-		return (SYS_INTERNAL_NULL_INPUT_ERR);
-	}
+    /* Sanity checks */
+    if ( rei == NULL || rei->rsComm == NULL ) {
+        rodsLog( LOG_ERROR, "msiDoSomething: input rei or rsComm is NULL." );
+        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+    }
 
-	/* myKeyVal init */
-	myKeyVal = (keyValPair_t*) malloc (sizeof(keyValPair_t));
-	memset (myKeyVal, 0, sizeof(keyValPair_t));
+    /* myKeyVal init */
+    myKeyVal = ( keyValPair_t* ) malloc( sizeof( keyValPair_t ) );
+    memset( myKeyVal, 0, sizeof( keyValPair_t ) );
 
 
-	/***************************/
-	/******** YOUR CODE ********/
-	/***************************/
+    /***************************/
+    /******** YOUR CODE ********/
+    /***************************/
 
-	/* Return myKeyVal through outParam */
-	outParam->type = strdup(KeyValPair_MS_T);
-	outParam->inOutStruct = (void*) myKeyVal;
+    /* Return myKeyVal through outParam */
+    outParam->type = strdup( KeyValPair_MS_T );
+    outParam->inOutStruct = ( void* ) myKeyVal;
 
-	return 0;
+    return 0;
 }

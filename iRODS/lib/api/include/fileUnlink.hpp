@@ -25,25 +25,25 @@ typedef struct {
     char objPath[MAX_NAME_LEN];
     char in_pdmo[MAX_NAME_LEN];;
 } fileUnlinkInp_t;
-    
+
 #define fileUnlinkInp_PI "struct RHostAddr_PI; str fileName[MAX_NAME_LEN]; str rescHier[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN]; str in_pdmo[MAX_NAME_LEN];"
 
 #if defined(RODS_SERVER)
 #define RS_FILE_UNLINK rsFileUnlink
 /* prototype for the server handler */
 int
-rsFileUnlink (rsComm_t *rsComm, fileUnlinkInp_t *fileUnlinkInp);
+rsFileUnlink( rsComm_t *rsComm, fileUnlinkInp_t *fileUnlinkInp );
 int
-_rsFileUnlink (rsComm_t *rsComm, fileUnlinkInp_t *fileUnlinkInp);
+_rsFileUnlink( rsComm_t *rsComm, fileUnlinkInp_t *fileUnlinkInp );
 int
-remoteFileUnlink (rsComm_t *rsComm, fileUnlinkInp_t *fileUnlinkInp,
-                  rodsServerHost_t *rodsServerHost);
+remoteFileUnlink( rsComm_t *rsComm, fileUnlinkInp_t *fileUnlinkInp,
+                  rodsServerHost_t *rodsServerHost );
 #else
 #define RS_FILE_UNLINK NULL
 #endif
 
 /* prototype for the client call */
 int
-rcFileUnlink (rcComm_t *conn, fileUnlinkInp_t *fileUnlinkInp);
+rcFileUnlink( rcComm_t *conn, fileUnlinkInp_t *fileUnlinkInp );
 
 #endif  /* FILE_UNLINK_H */

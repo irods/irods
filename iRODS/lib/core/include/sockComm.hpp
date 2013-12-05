@@ -13,8 +13,7 @@
 #include "rodsPackInstruct.hpp"
 
 // =-=-=-=-=-=-=
-// eirods includes
-#include "eirods_network_object.hpp"
+#include "irods_network_object.hpp"
 
 #define MAX_LISTEN_QUE	50
 #define SOCK_WINDOW_SIZE	(1*1024*1024)   /* sock window size = 1 Mb */
@@ -42,8 +41,8 @@
 #endif
 
 #define RECONNECT_ENV "irodsReconnect"		/* reconnFlag will be set to
-						 * RECONN_TIMEOUT if this
-						 * env is set */
+* RECONN_TIMEOUT if this
+* env is set */
 
 /* definition for socket close function */
 #define READING_FROM_CLI	0
@@ -61,94 +60,94 @@ extern "C" {
 
 // =-=-=-=-=-=-=-
 // network plugin interface functions
-eirods::error readMsgHeader ( 
-    eirods::network_object_ptr, // network object
+irods::error readMsgHeader(
+    irods::network_object_ptr, // network object
     msgHeader_t*,                   // header
     struct timeval* );              // time value
-eirods::error readMsgBody( 
-    eirods::network_object_ptr, // network object
-    msgHeader_t*,                   // header
-    bytesBuf_t*,                    // input struct buf
-    bytesBuf_t*,                    // stream buf 
-    bytesBuf_t*,                    // error buf 
-    irodsProt_t,                    // protocol
-    struct timeval* );              // time value
-eirods::error writeMsgHeader(
-    eirods::network_object_ptr, // network object
-    msgHeader_t* );                 // header structure
-eirods::error sendRodsMsg( 
-    eirods::network_object_ptr, // network object, 
-    char*,                          // message type
-    bytesBuf_t*,                    // message buffer 
-    bytesBuf_t*,                    // stream buffer
-    bytesBuf_t*,                    // error buffer
-    int,                            // internal info?
-    irodsProt_t );                  // protocol
-eirods::error readReconMsg(
-    eirods::network_object_ptr, 
-    reconnMsg_t** );
-eirods::error sendReconnMsg(
-    eirods::network_object_ptr, 
-    reconnMsg_t* );
+    irods::error readMsgBody(
+        irods::network_object_ptr, // network object
+        msgHeader_t*,                   // header
+        bytesBuf_t*,                    // input struct buf
+        bytesBuf_t*,                    // stream buf
+        bytesBuf_t*,                    // error buf
+        irodsProt_t,                    // protocol
+        struct timeval* );              // time value
+    irods::error writeMsgHeader(
+        irods::network_object_ptr, // network object
+        msgHeader_t* );                 // header structure
+    irods::error sendRodsMsg(
+        irods::network_object_ptr, // network object,
+        char*,                          // message type
+        bytesBuf_t*,                    // message buffer
+        bytesBuf_t*,                    // stream buffer
+        bytesBuf_t*,                    // error buffer
+        int,                            // internal info?
+        irodsProt_t );                  // protocol
+    irods::error readReconMsg(
+        irods::network_object_ptr,
+        reconnMsg_t** );
+    irods::error sendReconnMsg(
+        irods::network_object_ptr,
+        reconnMsg_t* );
 
 // =-=-=-=-=-=-=-
 // additional interfaces for network plugin support
 // start and stop the network interface, client side
-eirods::error sockClientStart( 
-    eirods::network_object_ptr,
-    rodsEnv* );
-eirods::error sockClientStop( 
-    eirods::network_object_ptr,
-    rodsEnv* );
+    irods::error sockClientStart(
+        irods::network_object_ptr,
+        rodsEnv* );
+    irods::error sockClientStop(
+        irods::network_object_ptr,
+        rodsEnv* );
 
 // =-=-=-=-=-=-=-
 // start and stop the network interface, agent side
-eirods::error sockAgentStart( eirods::network_object_ptr );
-eirods::error sockAgentStop( eirods::network_object_ptr );
+    irods::error sockAgentStart( irods::network_object_ptr );
+    irods::error sockAgentStop( irods::network_object_ptr );
 
 // =-=-=-=-=-=-=-
 // other dependent functions
-eirods::error readVersion(
-    eirods::network_object_ptr, // network object 
-    version_t** );                  // version info
-eirods::error sendVersion (
-    eirods::network_object_ptr, // network object
-    int,                            // version status
-    int,                            // port for reconnection
-    char*,                          // address for reconnection
-    int );                          // shared cookie
+    irods::error readVersion(
+        irods::network_object_ptr, // network object
+        version_t** );                  // version info
+    irods::error sendVersion(
+        irods::network_object_ptr, // network object
+        int,                            // version status
+        int,                            // port for reconnection
+        char*,                          // address for reconnection
+        int );                          // shared cookie
 
 // =-=-=-=-=-=-=-
 // other legacy functions
-int sockOpenForInConn (rsComm_t *rsComm, int *portNum, char **addr, int proto);
-int rodsSetSockOpt (int sock, int windowSize);
-int myRead (int sock, void *buf, int len, irodsDescType_t irodsDescType, int *bytesRead, struct timeval *tv);
-int myWrite (int sock, void *buf, int len, irodsDescType_t irodsDescType, int *bytesWritten );
-int connectToRhost (rcComm_t *conn, int connectCnt, int reconnFlag);
-int connectToRhostWithRaddr (struct sockaddr_in *remoteAddr, int windowSize,
-int timeoutFlag);
-int connectToRhostWithTout (int sock, struct sockaddr *sin);
-int rodsSleep (int sec, int microSec);
-int setConnAddr (rcComm_t *conn);
-int setRemoteAddr (int sock, struct sockaddr_in *remoteAddr);
-int setLocalAddr (int sock, struct sockaddr_in *localAddr);
-int sendStartupPack (rcComm_t *conn, int connectCnt, int reconnFlag);
-int connectToRhostPortal (char *rodsHost, int rodsPort, int cookie, int windowSize);
-int rsAcceptConn (rsComm_t *svrComm);
-char* rods_inet_ntoa (struct in_addr in);
-int irodsCloseSock (int sock);
-int addUdpPortToPortList (portList_t *thisPortList, int udpport);
-int getUdpPortFromPortList (portList_t *thisPortList);
-int getTcpPortFromPortList (portList_t *thisPortList);
-int addUdpSockToPortList (portList_t *thisPortList, int udpsock);
-int getUdpSockFromPortList (portList_t *thisPortList);
-int getTcpSockFromPortList (portList_t *thisPortList);
-int isReadMsgError (int status);
-int svrSwitchConnect (rsComm_t *rsComm);
-int cliSwitchConnect (rcComm_t *conn);
-int redirectConnToRescSvr (rcComm_t **conn, dataObjInp_t *dataObjInp, rodsEnv *myEnv, int reconnFlag);
-int rcReconnect (rcComm_t **conn, char *newHost, rodsEnv *myEnv, int reconnFlag);
-int mySockClose (int sock); // server stop fcn <==> rsAccept?
+    int sockOpenForInConn( rsComm_t *rsComm, int *portNum, char **addr, int proto );
+    int rodsSetSockOpt( int sock, int windowSize );
+    int myRead( int sock, void *buf, int len, irodsDescType_t irodsDescType, int *bytesRead, struct timeval *tv );
+    int myWrite( int sock, void *buf, int len, irodsDescType_t irodsDescType, int *bytesWritten );
+    int connectToRhost( rcComm_t *conn, int connectCnt, int reconnFlag );
+    int connectToRhostWithRaddr( struct sockaddr_in *remoteAddr, int windowSize,
+                                 int timeoutFlag );
+    int connectToRhostWithTout( int sock, struct sockaddr *sin );
+    int rodsSleep( int sec, int microSec );
+    int setConnAddr( rcComm_t *conn );
+    int setRemoteAddr( int sock, struct sockaddr_in *remoteAddr );
+    int setLocalAddr( int sock, struct sockaddr_in *localAddr );
+    int sendStartupPack( rcComm_t *conn, int connectCnt, int reconnFlag );
+    int connectToRhostPortal( char *rodsHost, int rodsPort, int cookie, int windowSize );
+    int rsAcceptConn( rsComm_t *svrComm );
+    char* rods_inet_ntoa( struct in_addr in );
+    int irodsCloseSock( int sock );
+    int addUdpPortToPortList( portList_t *thisPortList, int udpport );
+    int getUdpPortFromPortList( portList_t *thisPortList );
+    int getTcpPortFromPortList( portList_t *thisPortList );
+    int addUdpSockToPortList( portList_t *thisPortList, int udpsock );
+    int getUdpSockFromPortList( portList_t *thisPortList );
+    int getTcpSockFromPortList( portList_t *thisPortList );
+    int isReadMsgError( int status );
+    int svrSwitchConnect( rsComm_t *rsComm );
+    int cliSwitchConnect( rcComm_t *conn );
+    int redirectConnToRescSvr( rcComm_t **conn, dataObjInp_t *dataObjInp, rodsEnv *myEnv, int reconnFlag );
+    int rcReconnect( rcComm_t **conn, char *newHost, rodsEnv *myEnv, int reconnFlag );
+    int mySockClose( int sock ); // server stop fcn <==> rsAccept?
 #ifdef  __cplusplus
 }
 #endif

@@ -33,11 +33,11 @@ typedef struct op {
 extern Op new_ops[];
 
 typedef struct pointer {
-	FILE *fp; /* file */
-	char buf[POINTER_BUF_SIZE]; /* buffer */
-	unsigned int len; /* len of string in buf */
-	unsigned int p; /* pointer to next char in buf */
-	unsigned long fpos; /* position of the beginning of the buffer in file */
+    FILE *fp; /* file */
+    char buf[POINTER_BUF_SIZE]; /* buffer */
+    unsigned int len; /* len of string in buf */
+    unsigned int p; /* pointer to next char in buf */
+    unsigned long fpos; /* position of the beginning of the buffer in file */
     unsigned int strp; /* pointer to next char in strbuf */
     char *strbuf; /* string buffer */
     unsigned int strlen;
@@ -115,7 +115,7 @@ typedef struct {
 		BUILD_NODE(TK_TEXT, cons, loc, 0, 0); \
 		SWAP; \
 		BUILD_NODE(N_APPLICATION, APPLICATION, loc, 2, 2); \
-
+ 
 #define PARSER_FUNC_PROTO(l) \
 void CONCAT(nextRuleGen, l)(Pointer* e, ParserContext *context)
 #define PARSER_FUNC_PROTO1(l, p) \
@@ -316,7 +316,7 @@ goto CONCAT(exit, l);
 int COUNTER(l) = 0; \
 LOOP_BEGIN(l) \
 	TRY(l) \
-
+ 
 #define REPEAT_END(l) \
 		COUNTER(l)++; \
 	OR(l) \
@@ -327,11 +327,11 @@ LOOP_END(l)
 #define LIST_BEGIN(l) \
 	int COUNTER(l) = 0; \
 	LOOP_BEGIN(l) \
-
+ 
 #define LIST_DELIM(l) \
 	COUNTER(l)++; \
 	TRY(l) \
-
+ 
 #define LIST_END(l) \
 	OR(l) \
 		DONE(l); \
@@ -339,102 +339,102 @@ LOOP_END(l)
 LOOP_END(l)
 
 /** utility functions */
-ParserContext *newParserContext(rError_t *errmsg, Region *r);
-void deleteParserContext(ParserContext *t);
+ParserContext *newParserContext( rError_t *errmsg, Region *r );
+void deleteParserContext( ParserContext *t );
 
-Token *nextTokenRuleGen(Pointer* expr, ParserContext* pc, int rulegen, int ext);
-int nextString(Pointer *e, char *value, int vars[]);
-int nextString2(Pointer *e, char *value, int vars[]);
-int eol(char ch);
-int isOp(char *token);
-int isUnaryOp(Token* token);
-int getUnaryPrecedence(Token* token);
-int isBinaryOp(Token *token);
-int getBinaryPrecedence(Token* token);
-void getCoor(Pointer *p, Label * errloc, int coor[2]);
-int getLineRange(Pointer *p, int line, rodsLong_t range[2]);
+Token *nextTokenRuleGen( Pointer* expr, ParserContext* pc, int rulegen, int ext );
+int nextString( Pointer *e, char *value, int vars[] );
+int nextString2( Pointer *e, char *value, int vars[] );
+int eol( char ch );
+int isOp( char *token );
+int isUnaryOp( Token* token );
+int getUnaryPrecedence( Token* token );
+int isBinaryOp( Token *token );
+int getBinaryPrecedence( Token* token );
+void getCoor( Pointer *p, Label * errloc, int coor[2] );
+int getLineRange( Pointer *p, int line, rodsLong_t range[2] );
 
 /**
  * skip a token of type TK_TEXT, TK_OP, or TK_MISC_OP and text text, token will has type N_ERROR if the token does not match
  */
-int skip(Pointer *expr, char *text, Token **token, ParserContext *pc, int rulegen);
-void skipWhitespace(Pointer *expr);
-char *findLineCont(char *expr);
+int skip( Pointer *expr, char *text, Token **token, ParserContext *pc, int rulegen );
+void skipWhitespace( Pointer *expr );
+char *findLineCont( char *expr );
 
-int parseRuleSet(Pointer *e, RuleSet *ruleSet, Env *funcDesc, int *errloc, rError_t *errmsg, Region *r);
+int parseRuleSet( Pointer *e, RuleSet *ruleSet, Env *funcDesc, int *errloc, rError_t *errmsg, Region *r );
 /**
  * Parse a rule, create a rule pack.
  * If error, either ret==NULL or ret->type=N_ERROR.
  */
-Node *parseRuleRuleGen(Pointer *expr, int backwardCompatible, ParserContext *pc);
-Node *parseTermRuleGen(Pointer *expr, int rulegn, ParserContext *pc);
-Node *parseActionsRuleGen(Pointer *expr, int rulegn, int backwardCompatible, ParserContext *pc);
-void pushback(Pointer *e, Token *token, ParserContext *pc);
-void initPointer(Pointer *p, FILE* fp, char* ruleBaseName);
-void initPointer2(Pointer *p, char* buf);
-Pointer *newPointer(FILE* buf, char *ruleBaseName);
-Pointer *newPointer2(char* buf);
-void deletePointer(Pointer* buf);
+Node *parseRuleRuleGen( Pointer *expr, int backwardCompatible, ParserContext *pc );
+Node *parseTermRuleGen( Pointer *expr, int rulegn, ParserContext *pc );
+Node *parseActionsRuleGen( Pointer *expr, int rulegn, int backwardCompatible, ParserContext *pc );
+void pushback( Pointer *e, Token *token, ParserContext *pc );
+void initPointer( Pointer *p, FILE* fp, char* ruleBaseName );
+void initPointer2( Pointer *p, char* buf );
+Pointer *newPointer( FILE* buf, char *ruleBaseName );
+Pointer *newPointer2( char* buf );
+void deletePointer( Pointer* buf );
 
-void skipComments(Pointer *e);
-int nextChar(Pointer *p);
-int lookAhead(Pointer *p, unsigned int n);
+void skipComments( Pointer *e );
+int nextChar( Pointer *p );
+int lookAhead( Pointer *p, unsigned int n );
 
-char* trim(char* str);
-void trimquotes(char *string);
-int isLocalVariableNode(Node *node);
-int isSessionVariableNode(Node *node);
-int isVariableNode(Node *node);
+char* trim( char* str );
+void trimquotes( char *string );
+int isLocalVariableNode( Node *node );
+int isSessionVariableNode( Node *node );
+int isVariableNode( Node *node );
 
-void ruleNameToString(char **p, int *s, int indent, Node *rn);
-void ruleToString(char *buf, int size, RuleDesc *rd);
-void actionsToString(char **p, int *s, int indent, Node *na, Node *nr);
-void indentToString(char **p, int *s, int indent);
-void termToString(char **p, int *s, int indent, int prec, Node *n, int quote);
-void patternToString(char **p, int *s, int indent, int prec, Node *n);
-void typeToStringParser(char **p, int *s, int indent, int lifted, Node *n);
-void functionApplicationToString(char *buf, int size, char *fn, Node **args, int n);
+void ruleNameToString( char **p, int *s, int indent, Node *rn );
+void ruleToString( char *buf, int size, RuleDesc *rd );
+void actionsToString( char **p, int *s, int indent, Node *na, Node *nr );
+void indentToString( char **p, int *s, int indent );
+void termToString( char **p, int *s, int indent, int prec, Node *n, int quote );
+void patternToString( char **p, int *s, int indent, int prec, Node *n );
+void typeToStringParser( char **p, int *s, int indent, int lifted, Node *n );
+void functionApplicationToString( char *buf, int size, char *fn, Node **args, int n );
 
-char *nextRuleSection(char *expr, char* section);
-char *parseFunctionParameters(char *e, char *args[], int *argc);
-char *functionParameters(char *expr, char* param);
-ExprType *parseFuncTypeFromString(char *string, Region *r);
-Node* parseTypingConstraintsFromString(char *string, Region *r);
-ExprType *parseType(Pointer *e, int prec, Env *vtable, int lifted, Region *r);
+char *nextRuleSection( char *expr, char* section );
+char *parseFunctionParameters( char *e, char *args[], int *argc );
+char *functionParameters( char *expr, char* param );
+ExprType *parseFuncTypeFromString( char *string, Region *r );
+Node* parseTypingConstraintsFromString( char *string, Region *r );
+ExprType *parseType( Pointer *e, int prec, Env *vtable, int lifted, Region *r );
 
-Label *getFPos(Label *label, Pointer *p, ParserContext *context);
-void clearBuffer(Pointer *p);
-void seekInFile(Pointer *p, unsigned long x);
-void nextChars(Pointer *p, int len);
+Label *getFPos( Label *label, Pointer *p, ParserContext *context );
+void clearBuffer( Pointer *p );
+void seekInFile( Pointer *p, unsigned long x );
+void nextChars( Pointer *p, int len );
 
-void syncTokenQueue(Pointer *e, ParserContext *context);
+void syncTokenQueue( Pointer *e, ParserContext *context );
 
-int dupLine(Pointer *p, Label * start, int n, char *buf);
-int dupString(Pointer *p, Label * start, int n, char *buf);
+int dupLine( Pointer *p, Label * start, int n, char *buf );
+int dupString( Pointer *p, Label * start, int n, char *buf );
 
-StringList *getVarNamesInExprNode(Node *expr, Region *r);
-StringList *getVarNamesInExprNodeAux(Node *expr, StringList* varnames, Region *r);
-int eqExprNodeSyntactic(Node *a, Node *b);
-int eqExprNodeSyntacticVarMapping(Node *a, Node *b, Hashtable *varMapping /* from a to b */);
+StringList *getVarNamesInExprNode( Node *expr, Region *r );
+StringList *getVarNamesInExprNodeAux( Node *expr, StringList* varnames, Region *r );
+int eqExprNodeSyntactic( Node *a, Node *b );
+int eqExprNodeSyntacticVarMapping( Node *a, Node *b, Hashtable *varMapping /* from a to b */ );
 
-int nextStringBase(Pointer *e, char *value, char* delim, int consumeDelim, char escape, int cntOffset, int vars[]);
-int nextStringBase2(Pointer *e, char *value, char* delim);
-Node *convertStringToExpression(Token *token, char *base, Node **node, Region *r);
-Node *nextActionBackwardCompatible(Pointer *e, Node **node, rError_t *errmsg, Region *r);
-Node *parseActionArgumentBackwardCompatible(Pointer *e, Node **node, rError_t *errmsg, Region *r);
-void nextActionArgumentStringBackwardCompatible(Pointer *e, Token *token);
+int nextStringBase( Pointer *e, char *value, char* delim, int consumeDelim, char escape, int cntOffset, int vars[] );
+int nextStringBase2( Pointer *e, char *value, char* delim );
+Node *convertStringToExpression( Token *token, char *base, Node **node, Region *r );
+Node *nextActionBackwardCompatible( Pointer *e, Node **node, rError_t *errmsg, Region *r );
+Node *parseActionArgumentBackwardCompatible( Pointer *e, Node **node, rError_t *errmsg, Region *r );
+void nextActionArgumentStringBackwardCompatible( Pointer *e, Token *token );
 
-char* typeName_Res(Res *s);
-char* typeName_ExprType(ExprType *s);
-char* typeName_NodeType(NodeType s);
-char* typeName_Parser(NodeType s);
-void printTree(Node *n, int indent);
-void printIndent(int indent);
+char* typeName_Res( Res *s );
+char* typeName_ExprType( ExprType *s );
+char* typeName_NodeType( NodeType s );
+char* typeName_Parser( NodeType s );
+void printTree( Node *n, int indent );
+void printIndent( int indent );
 
-void generateErrMsgFromFile(char *msg, long errloc, char *ruleBaseName, char* ruleBasePath, char errbuf[ERR_MSG_LEN]);
-void generateErrMsgFromSource(char *msg, long errloc, char *src, char errbuf[ERR_MSG_LEN]);
-void generateErrMsgFromPointer(char *msg, Label *l, Pointer *e, char errbuf[ERR_MSG_LEN]);
-char *generateErrMsg(char *msg, long errloc, char* ruleBaseName, char errbuf[ERR_MSG_LEN]);
-void generateAndAddErrMsg(char *msg, Node *node, int errcode, rError_t *errmsg);
+void generateErrMsgFromFile( char *msg, long errloc, char *ruleBaseName, char* ruleBasePath, char errbuf[ERR_MSG_LEN] );
+void generateErrMsgFromSource( char *msg, long errloc, char *src, char errbuf[ERR_MSG_LEN] );
+void generateErrMsgFromPointer( char *msg, Label *l, Pointer *e, char errbuf[ERR_MSG_LEN] );
+char *generateErrMsg( char *msg, long errloc, char* ruleBaseName, char errbuf[ERR_MSG_LEN] );
+void generateAndAddErrMsg( char *msg, Node *node, int errcode, rError_t *errmsg );
 
 #endif

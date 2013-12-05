@@ -20,7 +20,7 @@
 #endif
 
 /* data struct for aggregation of netcdf files. Our first attempt assumes
- * the aggregation is based on the time dimension - time series */ 
+ * the aggregation is based on the time dimension - time series */
 typedef struct {
     unsigned int startTime;
     unsigned int endTime;
@@ -36,11 +36,11 @@ typedef struct {
 #define RS_NC_GET_AGG_ELEMENT rsNcGetAggElement
 /* prototype for the server handler */
 int
-rsNcGetAggElement (rsComm_t *rsComm, ncOpenInp_t *ncOpenInp, 
-ncAggElement_t **ncAggElement);
+rsNcGetAggElement( rsComm_t *rsComm, ncOpenInp_t *ncOpenInp,
+                   ncAggElement_t **ncAggElement );
 int
-_rsNcGetAggElement (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, 
-ncAggElement_t **ncAggElement);
+_rsNcGetAggElement( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
+                    ncAggElement_t **ncAggElement );
 #else
 #define RS_NC_GET_AGG_ELEMENT NULL
 #endif
@@ -49,20 +49,20 @@ ncAggElement_t **ncAggElement);
 extern "C" {
 #endif
 
-/* rcNcGetAggElement - get the ncAggElement of a NETCDF file
- * Input - 
- *   rcComm_t *conn - The client connection handle.
- *   ncOpenInp_t *ncOpenInp - generic nc open/create input. Relevant items are:
- *	objPath - the path of the NETCDF data object.
- *	condInput - condition input (not used).
- * OutPut - 
- *   ncAggElement_t **ncAggElement - the ncAggElement of the NETCDF data object.
- */
+    /* rcNcGetAggElement - get the ncAggElement of a NETCDF file
+     * Input -
+     *   rcComm_t *conn - The client connection handle.
+     *   ncOpenInp_t *ncOpenInp - generic nc open/create input. Relevant items are:
+     *	objPath - the path of the NETCDF data object.
+     *	condInput - condition input (not used).
+     * OutPut -
+     *   ncAggElement_t **ncAggElement - the ncAggElement of the NETCDF data object.
+     */
 
-/* prototype for the client call */
-int
-rcNcGetAggElement (rcComm_t *conn, ncOpenInp_t *ncOpenInp, 
-ncAggElement_t **ncAggElement);
+    /* prototype for the client call */
+    int
+    rcNcGetAggElement( rcComm_t *conn, ncOpenInp_t *ncOpenInp,
+                       ncAggElement_t **ncAggElement );
 
 #ifdef  __cplusplus
 }

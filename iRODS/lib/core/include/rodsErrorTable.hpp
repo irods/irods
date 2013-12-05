@@ -87,9 +87,9 @@
 #define SYS_UNKNOWN_SPEC_COLL_CLASS                 -60000
 #define SYS_DUPLICATE_XMSG_TICKET                   -61000
 #define SYS_UNMATCHED_XMSG_TICKET                   -62000
-#define SYS_NO_XMSG_FOR_MSG_NUMBER                  -63000 
-#define SYS_COLLINFO_2_FORMAT_ERR                   -64000 
-#define SYS_CACHE_STRUCT_FILE_RESC_ERR              -65000 
+#define SYS_NO_XMSG_FOR_MSG_NUMBER                  -63000
+#define SYS_COLLINFO_2_FORMAT_ERR                   -64000
+#define SYS_CACHE_STRUCT_FILE_RESC_ERR              -65000
 #define SYS_NOT_SUPPORTED                           -66000
 #define SYS_TAR_STRUCT_FILE_EXTRACT_ERR             -67000
 #define SYS_STRUCT_FILE_DESC_ERR                    -68000
@@ -219,29 +219,29 @@
 #define USER_INVALID_RESC_INPUT		                  -361000
 
 /* 500,000 to 800,000 - file driver error */
-#define FILE_INDEX_LOOKUP_ERR                       -500000 
-#define UNIX_FILE_OPEN_ERR                          -510000 
-#define UNIX_FILE_CREATE_ERR                        -511000 
-#define UNIX_FILE_READ_ERR                          -512000 
-#define UNIX_FILE_WRITE_ERR                         -513000 
-#define UNIX_FILE_CLOSE_ERR                         -514000 
-#define UNIX_FILE_UNLINK_ERR                        -515000 
-#define UNIX_FILE_STAT_ERR                          -516000 
-#define UNIX_FILE_FSTAT_ERR                         -517000 
-#define UNIX_FILE_LSEEK_ERR                         -518000 
-#define UNIX_FILE_FSYNC_ERR                         -519000 
-#define UNIX_FILE_MKDIR_ERR                         -520000 
-#define UNIX_FILE_RMDIR_ERR                         -521000 
-#define UNIX_FILE_OPENDIR_ERR                       -522000 
-#define UNIX_FILE_CLOSEDIR_ERR                      -523000 
-#define UNIX_FILE_READDIR_ERR                       -524000 
-#define UNIX_FILE_STAGE_ERR                         -525000 
-#define UNIX_FILE_GET_FS_FREESPACE_ERR              -526000 
-#define UNIX_FILE_CHMOD_ERR                         -527000 
-#define UNIX_FILE_RENAME_ERR                        -528000 
-#define UNIX_FILE_TRUNCATE_ERR                      -529000 
-#define UNIX_FILE_LINK_ERR                          -530000 
-#define UNIX_FILE_OPR_TIMEOUT_ERR                   -540000 
+#define FILE_INDEX_LOOKUP_ERR                       -500000
+#define UNIX_FILE_OPEN_ERR                          -510000
+#define UNIX_FILE_CREATE_ERR                        -511000
+#define UNIX_FILE_READ_ERR                          -512000
+#define UNIX_FILE_WRITE_ERR                         -513000
+#define UNIX_FILE_CLOSE_ERR                         -514000
+#define UNIX_FILE_UNLINK_ERR                        -515000
+#define UNIX_FILE_STAT_ERR                          -516000
+#define UNIX_FILE_FSTAT_ERR                         -517000
+#define UNIX_FILE_LSEEK_ERR                         -518000
+#define UNIX_FILE_FSYNC_ERR                         -519000
+#define UNIX_FILE_MKDIR_ERR                         -520000
+#define UNIX_FILE_RMDIR_ERR                         -521000
+#define UNIX_FILE_OPENDIR_ERR                       -522000
+#define UNIX_FILE_CLOSEDIR_ERR                      -523000
+#define UNIX_FILE_READDIR_ERR                       -524000
+#define UNIX_FILE_STAGE_ERR                         -525000
+#define UNIX_FILE_GET_FS_FREESPACE_ERR              -526000
+#define UNIX_FILE_CHMOD_ERR                         -527000
+#define UNIX_FILE_RENAME_ERR                        -528000
+#define UNIX_FILE_TRUNCATE_ERR                      -529000
+#define UNIX_FILE_LINK_ERR                          -530000
+#define UNIX_FILE_OPR_TIMEOUT_ERR                   -540000
 
 /* universal MSS driver error */
 #define UNIV_MSS_SYNCTOARCH_ERR                     -550000
@@ -299,29 +299,29 @@
 #define WOS_CONNECT_ERR                             -757000
 
 /* Hadoop HDFS error */
- 
-#define HDFS_FILE_OPEN_ERR                          -730000 
-#define HDFS_FILE_CREATE_ERR                        -731000 
-#define HDFS_FILE_READ_ERR                          -732000 
-#define HDFS_FILE_WRITE_ERR                         -733000 
-#define HDFS_FILE_CLOSE_ERR                         -734000 
-#define HDFS_FILE_UNLINK_ERR                        -735000 
-#define HDFS_FILE_STAT_ERR                          -736000 
-#define HDFS_FILE_FSTAT_ERR                         -737000 
-#define HDFS_FILE_LSEEK_ERR                         -738000 
-#define HDFS_FILE_FSYNC_ERR                         -739000 
-#define HDFS_FILE_MKDIR_ERR                         -741000 
-#define HDFS_FILE_RMDIR_ERR                         -742000 
-#define HDFS_FILE_OPENDIR_ERR                       -743000 
-#define HDFS_FILE_CLOSEDIR_ERR                      -744000 
-#define HDFS_FILE_READDIR_ERR                       -745000 
-#define HDFS_FILE_STAGE_ERR                         -746000 
-#define HDFS_FILE_GET_FS_FREESPACE_ERR              -746000 
-#define HDFS_FILE_CHMOD_ERR                         -748000 
-#define HDFS_FILE_RENAME_ERR                        -749000 
-#define HDFS_FILE_TRUNCATE_ERR                      -760000 
-#define HDFS_FILE_LINK_ERR                          -761000 
-#define HDFS_FILE_OPR_TIMEOUT_ERR                   -762000 
+
+#define HDFS_FILE_OPEN_ERR                          -730000
+#define HDFS_FILE_CREATE_ERR                        -731000
+#define HDFS_FILE_READ_ERR                          -732000
+#define HDFS_FILE_WRITE_ERR                         -733000
+#define HDFS_FILE_CLOSE_ERR                         -734000
+#define HDFS_FILE_UNLINK_ERR                        -735000
+#define HDFS_FILE_STAT_ERR                          -736000
+#define HDFS_FILE_FSTAT_ERR                         -737000
+#define HDFS_FILE_LSEEK_ERR                         -738000
+#define HDFS_FILE_FSYNC_ERR                         -739000
+#define HDFS_FILE_MKDIR_ERR                         -741000
+#define HDFS_FILE_RMDIR_ERR                         -742000
+#define HDFS_FILE_OPENDIR_ERR                       -743000
+#define HDFS_FILE_CLOSEDIR_ERR                      -744000
+#define HDFS_FILE_READDIR_ERR                       -745000
+#define HDFS_FILE_STAGE_ERR                         -746000
+#define HDFS_FILE_GET_FS_FREESPACE_ERR              -746000
+#define HDFS_FILE_CHMOD_ERR                         -748000
+#define HDFS_FILE_RENAME_ERR                        -749000
+#define HDFS_FILE_TRUNCATE_ERR                      -760000
+#define HDFS_FILE_LINK_ERR                          -761000
+#define HDFS_FILE_OPR_TIMEOUT_ERR                   -762000
 
 /* Direct Access vault error */
 #define DIRECT_ACCESS_FILE_USER_INVALID_ERR         -770000
@@ -649,24 +649,24 @@
 #define DBO_WRITABLE_BY_NON_PRIVILEGED              -1718000
 
 // e-irods errors
-#define EIRODS_KEY_NOT_FOUND                        -1800000
-#define EIRODS_KEY_TYPE_MISMATCH                    -1801000
-#define EIRODS_CHILD_EXISTS                         -1802000
-#define EIRODS_HIERARCHY_ERROR                      -1803000
-#define EIRODS_CHILD_NOT_FOUND                      -1804000
-#define EIRODS_NO_NEXT_RESC_FOUND                   -1805000
-#define EIRODS_NO_PDMO_DEFINED                      -1806000
-#define EIRODS_INVALID_LOCATION                     -1807000
-#define EIRODS_PLUGIN_ERROR                         -1808000
-#define EIRODS_INVALID_RESC_CHILD_CONTEXT           -1809000
-#define EIRODS_INVALID_FILE_OBJECT                  -1810000
-#define EIRODS_INVALID_OPERATION                    -1811000
-#define EIRODS_CHILD_HAS_PARENT                     -1812000
-#define EIRODS_FILE_NOT_IN_VAULT                    -1813000
-#define EIRODS_DIRECT_ARCHIVE_ACCESS                -1814000
-#define EIRODS_ADVANCED_NEGOTIATION_NOT_SUPPORTED   -1815000
-#define EIRODS_DIRECT_CHILD_ACCESS                  -1816000
-#define EIRODS_INVALID_DYNAMIC_CAST                 -1816000
+#define KEY_NOT_FOUND                        -1800000
+#define KEY_TYPE_MISMATCH                    -1801000
+#define CHILD_EXISTS                         -1802000
+#define HIERARCHY_ERROR                      -1803000
+#define CHILD_NOT_FOUND                      -1804000
+#define NO_NEXT_RESC_FOUND                   -1805000
+#define NO_PDMO_DEFINED                      -1806000
+#define INVALID_LOCATION                     -1807000
+#define PLUGIN_ERROR                         -1808000
+#define INVALID_RESC_CHILD_CONTEXT           -1809000
+#define INVALID_FILE_OBJECT                  -1810000
+#define INVALID_OPERATION                    -1811000
+#define CHILD_HAS_PARENT                     -1812000
+#define FILE_NOT_IN_VAULT                    -1813000
+#define DIRECT_ARCHIVE_ACCESS                -1814000
+#define ADVANCED_NEGOTIATION_NOT_SUPPORTED   -1815000
+#define DIRECT_CHILD_ACCESS                  -1816000
+#define INVALID_DYNAMIC_CAST                 -1816000
 
 
 /* NetCDF error code */

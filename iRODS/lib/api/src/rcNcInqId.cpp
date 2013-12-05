@@ -3,7 +3,7 @@
  *
  */
 
-/* This is script-generated code.  */ 
+/* This is script-generated code.  */
 /* See ncInqId.h for a description of this API call.*/
 
 #include "ncInqId.hpp"
@@ -60,7 +60,7 @@
  *    \li int \b paramType - what to inquire - valid values are defined in ncInqId.h - NC_VAR_T or NC_DIM_T.
  *    \li int \b ncid - the ncid from ncNcOpen.
  *    \li char \b name[MAX_NAME_LEN] - the name of the item to inquire.
- * \param[out] outId - the returned id of the inquiry 
+ * \param[out] outId - the returned id of the inquiry
  * \return integer
  * \retval status of the call. success if greater or equal 0. error if negative. * \sideeffect none
  * \pre none
@@ -70,12 +70,11 @@
 **/
 
 int
-rcNcInqId (rcComm_t *conn, ncInqIdInp_t *ncInqIdInp, int **outId)
-{
+rcNcInqId( rcComm_t *conn, ncInqIdInp_t *ncInqIdInp, int **outId ) {
     int status;
 
-    status = procApiRequest (conn, NC_INQ_ID_AN, ncInqIdInp, NULL, 
-        (void **) outId, NULL);
+    status = procApiRequest( conn, NC_INQ_ID_AN, ncInqIdInp, NULL,
+                             ( void ** ) outId, NULL );
 
-    return (status);
+    return ( status );
 }

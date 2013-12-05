@@ -16,12 +16,11 @@
 #include "miscUtil.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_resource_manager.hpp"
+#include "irods_resource_manager.hpp"
 
 // =-=-=-=-=-=-=-
 // externs to singleton plugin managers
-extern eirods::resource_manager resc_mgr;
+extern irods::resource_manager resc_mgr;
 
 extern int LogFd;         		/* the log file descriptor */
 extern char *CurLogfileName;         	/* the path of the current logfile */
@@ -62,9 +61,9 @@ extern specCollCache_t *SpecCollCacheHead;
 //extern tarSubFileDesc_t TarSubFileDesc[];
 #endif
 
-int initRuleEngine(int processType, rsComm_t *svrComm, char *ruleSet, char *dvmSet, char* fnmSet);
-int clearCoreRule ();
-int finalzeRuleEngine(rsComm_t *rsComm);
+int initRuleEngine( int processType, rsComm_t *svrComm, char *ruleSet, char *dvmSet, char* fnmSet );
+int clearCoreRule();
+int finalzeRuleEngine( rsComm_t *rsComm );
 
 extern char localSID[];
 extern char remoteSID[MAX_FED_RSIDS][MAX_PASSWORD_LEN];

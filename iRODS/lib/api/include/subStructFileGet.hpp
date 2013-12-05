@@ -1,6 +1,6 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
-/* subStructFileGet.h  
+/* subStructFileGet.h
  */
 
 #ifndef SUB_STRUCT_FILE_GET_HPP
@@ -18,21 +18,21 @@
 #define RS_SUB_STRUCT_FILE_GET rsSubStructFileGet
 /* prototype for the server handler */
 int
-rsSubStructFileGet (rsComm_t *rsComm, subFile_t *subFile, 
-bytesBuf_t *subFileGetOutBBuf);
+rsSubStructFileGet( rsComm_t *rsComm, subFile_t *subFile,
+                    bytesBuf_t *subFileGetOutBBuf );
 int
-_rsSubStructFileGet (rsComm_t *rsComm, subFile_t *subFile,
-bytesBuf_t *subFileGetOutBBuf);
+_rsSubStructFileGet( rsComm_t *rsComm, subFile_t *subFile,
+                     bytesBuf_t *subFileGetOutBBuf );
 int
-remoteSubStructFileGet (rsComm_t *rsComm, subFile_t *subFile,
-bytesBuf_t *subFileGetOutBBuf, rodsServerHost_t *rodsServerHost);
+remoteSubStructFileGet( rsComm_t *rsComm, subFile_t *subFile,
+                        bytesBuf_t *subFileGetOutBBuf, rodsServerHost_t *rodsServerHost );
 #else
 #define RS_SUB_STRUCT_FILE_GET NULL
 #endif
 
 /* prototype for the client call */
 int
-rcSubStructFileGet (rcComm_t *conn, subFile_t *subFile, 
-bytesBuf_t *subFileGetOutBBuf);
+rcSubStructFileGet( rcComm_t *conn, subFile_t *subFile,
+                    bytesBuf_t *subFileGetOutBBuf );
 
 #endif	/* SUB_STRUCT_FILE_GET_H */

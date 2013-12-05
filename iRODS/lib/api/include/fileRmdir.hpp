@@ -25,25 +25,25 @@ typedef struct {
     char dirName[MAX_NAME_LEN];
     char rescHier[MAX_NAME_LEN];
 } fileRmdirInp_t;
-    
+
 #define fileRmdirInp_PI "int flag; struct RHostAddr_PI; str dirName[MAX_NAME_LEN]; str rescHier[MAX_NAME_LEN];"
 
 #if defined(RODS_SERVER)
 #define RS_FILE_RMDIR rsFileRmdir
 /* prototype for the server handler */
 int
-rsFileRmdir (rsComm_t *rsComm, fileRmdirInp_t *fileRmdirInp);
+rsFileRmdir( rsComm_t *rsComm, fileRmdirInp_t *fileRmdirInp );
 int
-_rsFileRmdir (rsComm_t *rsComm, fileRmdirInp_t *fileRmdirInp);
+_rsFileRmdir( rsComm_t *rsComm, fileRmdirInp_t *fileRmdirInp );
 int
-remoteFileRmdir (rsComm_t *rsComm, fileRmdirInp_t *fileRmdirInp,
-rodsServerHost_t *rodsServerHost);
+remoteFileRmdir( rsComm_t *rsComm, fileRmdirInp_t *fileRmdirInp,
+                 rodsServerHost_t *rodsServerHost );
 #else
 #define RS_FILE_RMDIR NULL
 #endif
 
 /* prototype for the client call */
 int
-rcFileRmdir (rcComm_t *conn, fileRmdirInp_t *fileRmdirInp);
+rcFileRmdir( rcComm_t *conn, fileRmdirInp_t *fileRmdirInp );
 
 #endif	/* FILE_RMDIR_H */

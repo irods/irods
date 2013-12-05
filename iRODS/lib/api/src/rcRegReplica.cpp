@@ -1,11 +1,10 @@
-/* This is script-generated code.  */ 
+/* This is script-generated code.  */
 /* See regReplica.h for a description of this API call.*/
 
 #include "regReplica.hpp"
 
 int
-rcRegReplica (rcComm_t *conn, regReplica_t *regReplicaInp)
-{
+rcRegReplica( rcComm_t *conn, regReplica_t *regReplicaInp ) {
     int status;
     rescInfo_t *srcRescInfo, *destRescInfo;
     dataObjInfo_t *srcNext, *destNext;
@@ -19,12 +18,12 @@ rcRegReplica (rcComm_t *conn, regReplica_t *regReplicaInp)
     regReplicaInp->destDataObjInfo->rescInfo = NULL;
     regReplicaInp->srcDataObjInfo->next = NULL;
     regReplicaInp->destDataObjInfo->next = NULL;
-    status = procApiRequest (conn, REG_REPLICA_AN, regReplicaInp, NULL, 
-        (void **) NULL, NULL);
+    status = procApiRequest( conn, REG_REPLICA_AN, regReplicaInp, NULL,
+                             ( void ** ) NULL, NULL );
     regReplicaInp->srcDataObjInfo->rescInfo = srcRescInfo;
     regReplicaInp->destDataObjInfo->rescInfo = destRescInfo;
     regReplicaInp->srcDataObjInfo->next = srcNext;
     regReplicaInp->destDataObjInfo->next = destNext;
 
-    return (status);
+    return ( status );
 }
