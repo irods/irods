@@ -56,7 +56,12 @@ SVR_CORE_OBJS =	\
 		$(svrCoreObjDir)/irods_structured_object.o \
 		$(svrCoreObjDir)/irods_physical_object.o \
 		$(svrCoreObjDir)/irods_data_object.o \
-		$(svrCoreObjDir)/irods_file_object.o 
+		$(svrCoreObjDir)/irods_file_object.o \
+	    $(svrCoreObjDir)/irods_database_factory.o \
+   		$(svrCoreObjDir)/irods_database_manager.o \
+   		$(svrCoreObjDir)/irods_database_object.o  \
+   		$(svrCoreObjDir)/irods_database_plugin.o  \
+   		$(svrCoreObjDir)/irods_postgres_object.o  
 
 INCLUDES +=	-I$(svrCoreIncDir)
 
@@ -99,6 +104,7 @@ SVR_ICAT_OBJS =	\
 		$(svrIcatObjDir)/irods_zone_info.o \
 		$(svrIcatObjDir)/irods_sql_logger.o \
 		$(svrIcatObjDir)/irods_tmp_string.o
+
 INCLUDES +=	-I$(svrIcatIncDir)
 
 SERVER_BINS +=  $(serverBinDir)/irodsXmsgServer
@@ -552,11 +558,11 @@ $(svrTestBinDir)/reTest: $(svrTestObjDir)/reTest.o $(OBJS) $(BOOST_LIBS) $(BOOST
 	@$(LDR) -o $@ $^ $(LDFLAGS) $(BOOST_LIBS) -lrt
 
 # cll and chl
-$(svrTestBinDir)/test_cll: $(svrTestObjDir)/test_cll.o $(SVR_ICAT_OBJS) $(LIBRARY) $(BOOST_LIBS)
+$(svrTestBinDir)/test_cll: $(svrTestObjDir)/test_cll.o $(SVR_ICAT_OBJS) $(LIBRARY) $(BOOST_LIBS) 
 	@echo "Link server test `basename $@`..."
 	@$(LDR) -o $@ $^ $(LIBRARY) $(LDFLAGS) $(BOOST_LIBS) -lrt
 
-$(svrTestBinDir)/test_chl: $(svrTestObjDir)/test_chl.o $(SVR_ICAT_OBJS) $(LIBRARY) $(svrCoreObjDir)/readServerConfig.o $(BOOST_LIBS)
+$(svrTestBinDir)/test_chl: $(svrTestObjDir)/test_chl.o $(SVR_ICAT_OBJS) $(LIBRARY) $(svrCoreObjDir)/readServerConfig.o $(BOOST_LIBS)  
 	@echo "Link server test `basename $@`..."
 	@$(LDR) -o $@ $^ $(LIBRARY) $(LDFLAGS) $(BOOST_LIBS) -lrt
 

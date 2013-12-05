@@ -1,0 +1,35 @@
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
+
+#ifndef __EIRODS_DATABASE_TYPES_H__
+#define __EIRODS_DATABASE_TYPES_H__
+
+// =-=-=-=-=-=-=-
+// Boost Includes
+#include <boost/shared_ptr.hpp>
+#include <boost/any.hpp>
+
+// =-=-=-=-=-=-=-
+// irods includes
+#include "irods_plugin_base.hpp"
+#include "irods_lookup_table.hpp"
+
+// =-=-=-=-=-=-=-
+// irods includes
+#include "rcConnect.hpp"
+
+namespace irods {
+    // =-=-=-=-=-=-=-
+    // database plugin pointer type
+    class database;
+    typedef boost::shared_ptr< database > database_ptr;
+
+    // =-=-=-=-=-=-=-
+    // fwd decl of database manager for fco resolve
+    class database_manager;
+
+}; // namespace
+
+#endif // __EIRODS_DATABASE_TYPES_H__
+
+
+
