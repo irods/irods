@@ -83,37 +83,51 @@ if [ "$SERVER_TYPE" == "icat" ] ; then
 
     # =-=-=-=-=-=-=-
     # make sure postgres is running on this machine
+    set +e
     PSQLSTATUS="notrunning"
     if [ "$DETECTEDOS" == "SuSE" ] ; then
+        # openSuSE 12.1
         PSQLSTATE=`/etc/init.d/postgresql status 2>&1 | grep "Active" | awk '{print $2}'`
         if [ "$PSQLSTATE" == "active" ] ; then
             PSQLSTATUS="running"
         else
-            PSQLSTATE=`/etc/init.d/postgresql status 2>&1 | grep "running" | awk '{print $4}'`
-            if [ "$PSQLSTATE" == "..running" ] ; then
+            # SLES 11sp1 and 11sp2
+            PSQLSTATE=`/etc/init.d/postgresql status 2>&1 | grep "running"`
+            if [ "$PSQLSTATE" != "" ] ; then
                 PSQLSTATUS="running"
             fi
         fi
     elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+        # CentOS 5 and 6 w/ postgresql 8.x
         PSQLSTATE=`/etc/init.d/postgresql status 2>&1 | grep "postmaster" | awk '{print $NF}'`
         if [ "$PSQLSTATE" == "running..." ] ; then
             PSQLSTATUS="running"
         else
+            # Fedora 17 w/ postgresql 9.1
             PSQLSTATE=`service postgresql status 2>&1 | grep "running"`
             if [ "$PSQLSTATE" != "" ] ; then
                 PSQLSTATUS="running"
+            else
+                # CentOS 5 and 6 w/ postgresql 9.1
+                PSQLSTATE=`service postgresql-9.1 status 2>&1 | grep "running"`
+                if [ "$PSQLSTATE" != "" ] ; then
+                    PSQLSTATUS="running"
+                fi
             fi
         fi
     elif [ "$DETECTEDOS" == "Ubuntu" ] ; then
+        # Ubuntu 10.04
         PSQLSTATE=`/etc/init.d/postgresql-8.4 status 2>&1 | grep "clusters" | awk '{print $3}'`
         if [ "$PSQLSTATE" != "" ] ; then
             PSQLSTATUS="running"
         else
+            # Ubuntu 12.04
             PSQLSTATE=`/etc/init.d/postgresql status 2>&1 | grep "clusters" | awk '{print $3}'`
             if [ "$PSQLSTATE" != "" ] ; then
                 PSQLSTATUS="running"
             else
-                PSQLSTATE=`/etc/init.d/postgresql status 2>&1 | grep "online" | awk '{print $4}'`
+                # Ubuntu 13.04
+                PSQLSTATE=`/etc/init.d/postgresql status 2>&1 | grep "online"`
                 if [ "$PSQLSTATE" != "" ] ; then
                     PSQLSTATUS="running"
                 fi
@@ -122,6 +136,7 @@ if [ "$SERVER_TYPE" == "icat" ] ; then
     else
         PSQLSTATUS="running"
     fi
+    set -e
     if [ "$PSQLSTATUS" != "running" ] ; then
         echo "ERROR :: Installed PostgreSQL database server needs to be running, Aborting."
         if [ "$DETECTEDOS" == "SuSE" ] ; then
