@@ -44,7 +44,6 @@ class Test_OSAuth_Only(unittest.TestCase, ResourceBase):
 
         # do the reauth
         assertiCmd(s.adminsession,"iexit full" )             # exit out entirely
-        time.sleep(2);      # let's see if this fixes intermittent timing issues
         assertiCmd(s.adminsession,"iinit %s" % authTestPass) # reinitialize
         # connect and list some files
         assertiCmd(s.adminsession,"icd") # home directory
