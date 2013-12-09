@@ -1541,7 +1541,7 @@ msiBytesBufToStr( msParam_t* buf_msp, msParam_t* str_msp, ruleExecInfo_t *rei ) 
  * \author  Antoine de Torcy
  * \date    2009-02-12
  *
- * \note This microservice looks at reAction.h and returns the list of compiled
+ * \note This microservice looks at reAction.hpp and returns the list of compiled
  *  microservices on the local iRODS server.
  *      The results are written to a KeyValPair_MS_T. For each pair the keyword is the MS name
  *  while the value is the module where the microservice belongs.
@@ -1568,9 +1568,9 @@ msiBytesBufToStr( msParam_t* buf_msp, msParam_t* str_msp, ruleExecInfo_t *rei ) 
 **/
 int
 msiListEnabledMS( msParam_t *outKVPairs, ruleExecInfo_t *rei ) {
-    FILE *radh;						/* reAction(dot)h */
+    FILE *radhpp = 0;			/* reAction(dot)hpp */
 
-    keyValPair_t *results;			/* the output data structure */
+    keyValPair_t *results;		/* the output data structure */
 
     char lineStr[LONG_NAME_LEN];	/* for line and string parsing */
     char modName[NAME_LEN];
@@ -1588,16 +1588,16 @@ msiListEnabledMS( msParam_t *outKVPairs, ruleExecInfo_t *rei ) {
     }
 
 
-    /* Open reAction.h for reading */
-    radh = fopen( "../re/include/reAction.h", "r" );
-    if ( !radh ) {
-        rodsLog( LOG_ERROR, "msiListEnabledMS: unable to open reAction.h for reading." );
+    /* Open reAction.hpp for reading */
+    radhpp = fopen( "../re/include/reAction.hpp", "r" );
+    if ( !radhpp ) {
+        rodsLog( LOG_ERROR, "msiListEnabledMS: unable to open reAction.hpp for reading." );
         return ( UNIX_FILE_READ_ERR );
     }
 
 
     /* Skip the first part of the file */
-    while ( fgets( lineStr, LONG_NAME_LEN, radh ) != NULL ) {
+    while ( fgets( lineStr, LONG_NAME_LEN, radhpp ) != NULL ) {
         if ( strstr( lineStr, "microsdef_t MicrosTable[]" ) == lineStr ) {
             break;
         }
@@ -1614,7 +1614,7 @@ msiListEnabledMS( msParam_t *outKVPairs, ruleExecInfo_t *rei ) {
 
 
     /* Scan microservice table one line at a time*/
-    while ( fgets( lineStr, LONG_NAME_LEN, radh ) != NULL ) {
+    while ( fgets( lineStr, LONG_NAME_LEN, radhpp ) != NULL ) {
         /* End of the table? */
         if ( strstr( lineStr, "};" ) == lineStr ) {
             break;
@@ -1640,7 +1640,7 @@ msiListEnabledMS( msParam_t *outKVPairs, ruleExecInfo_t *rei ) {
 
 
     /* Done */
-    fclose( radh );
+    fclose( radhpp );
 
 
     /* Send results out to outKVPairs */

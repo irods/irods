@@ -72,7 +72,7 @@ _rcConnect( char *rodsHost, int rodsPort,
         memset( errMsg, 0, sizeof( rErrMsg_t ) );
     }
 
-    if ( ( tmpStr = getenv( PROT ) ) != NULL ) {
+    if ( ( tmpStr = getenv( IRODS_PROT ) ) != NULL ) {
         conn->irodsProt = ( irodsProt_t )atoi( tmpStr );
     }
     else {

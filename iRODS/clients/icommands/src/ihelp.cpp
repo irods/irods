@@ -8,11 +8,13 @@
 #include "parseCommandLine.hpp"
 
 char *icmds[] = {
-    "iadmin", "ibun", "icd", "ichksum", "ichmod", "icp", "idbo", "idbug", "ienv",
+    "iadmin", "ibun", "icd", "ichksum", "ichmod", "icp",
+    /*    "idbo", */
+    "idbug", "ienv",
     "ierror", "iexecmd", "iexit", "ifsck", "iget", "igetwild", "igroupadmin",
     "ihelp", "iinit", "ilocate", "ils", "ilsresc",
     "imcoll", "imeta", "imiscsvrinfo", "imkdir", "imv",
-    "inc", "incarch", "incattr",
+    /*    "inc", "incarch", "incattr", */
     "ipasswd",
     "iphybun", "iphymv", "ips", "iput", "ipwd", "iqdel", "iqmod", "iqstat",
     "iquest", "iquota", "ireg", "irepl", "irm", "irmtrash", "irsync", "irule",
@@ -34,7 +36,7 @@ printMainHelp() {
         "ichksum  - checksum one or more data-objects or collections.",
         "ichmod   - change access permissions to collections or data-objects.",
         "icp      - copy a data-object (file) or collection (directory) to another.",
-        "idbo     - execute Database Objects on Database Resources, etc." ,
+        /*        "idbo     - execute Database Objects on Database Resources, etc." , */
         "idbug    - interactively debug rules.",
         "ienv     - display current irods environment.",
         "ierror   - convert an irods error code to text.",
@@ -54,9 +56,11 @@ printMainHelp() {
         "imiscsvrinfo - retrieve basic server information.",
         "imkdir   - make an irods directory (collection).",
         "imv      - move/rename an irods data-object (file) or collection (directory).",
-        "inc      - perform NetCDF operations on data objects (available if configured).",
-        "incarch  - archive open ended NETCDF time series data. (if configured).",
-        "incattr  - perform NetCDF attribute operations (if configured).",
+        /*
+                "inc      - perform NetCDF operations on data objects (available if configured).",
+                "incarch  - archive open ended NETCDF time series data. (if configured).",
+                "incattr  - perform NetCDF attribute operations (if configured).",
+        */
         "ipasswd  - change your irods password.",
         "iphybun  - physically bundle files (admin only).",
         "iphymv   - physically move a data-object to another storage resource.",

@@ -146,9 +146,9 @@
 
 /* the following defines the RSYNC_MODE_KW */
 #define LOCAL_TO_IRODS	"LOCAL_TO_IRODS"
-#define TO_LOCAL	"TO_LOCAL"
-#define TO_IRODS	"TO_IRODS"
-#define TO_COLLECTION	"TO_COLLECTION"
+#define IRODS_TO_LOCAL	"IRODS_TO_LOCAL"
+#define IRODS_TO_IRODS	"IRODS_TO_IRODS"
+#define IRODS_TO_COLLECTION	"IRODS_TO_COLLECTION"
 
 /* definition for public user */
 #define PUBLIC_USER_NAME	"public"
@@ -265,7 +265,7 @@ typedef struct startupPack {
 } startupPack_t;
 
 /* env variable for the client protocol */
-#define PROT	"irodsProt"
+#define IRODS_PROT	"irodsProt"
 
 /* env variable for the startup pack */
 
