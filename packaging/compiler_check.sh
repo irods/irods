@@ -1,4 +1,5 @@
 #!/bin/bash
+exit 0
 
 ver=`g++ --version | grep g++ | cut -d' ' -f4`
 

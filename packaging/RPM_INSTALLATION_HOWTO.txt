@@ -51,6 +51,6 @@
 
         sudo service iptables restart
 
-7.  Install the E-iRODS RPM ::
+7.  Install the iRODS RPM ::
 
-      rpm -i eirods-XXX.rpm
+      rpm -i irods-XXX.rpm

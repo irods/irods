@@ -4,8 +4,8 @@
 #
 #  A basic test to show functionality of an HPSS resource
 #
-#  Requires eirods ownership of the keytab:
-#  $ sudo chown eirods:eirods /var/hpss/etc/hpss.eirods.keytab
+#  Requires irods ownership of the keytab:
+#  $ sudo chown irods:irods /var/hpss/etc/hpss.irods.keytab
 #
 ###################################################################
 
@@ -21,7 +21,7 @@ iadmin lr
 # create hpss resource
 RESCNAME="basictest_hpss_resc"
 HOSTNAME=`hostname`
-iadmin mkresc $RESCNAME hpss $HOSTNAME:/VaultPath "user=eirods;keytab=/var/hpss/etc/hpss.eirods.keytab"
+iadmin mkresc $RESCNAME hpss $HOSTNAME:/VaultPath "user=irods;keytab=/var/hpss/etc/hpss.irods.keytab"
 
 # show resource
 iadmin lr $RESCNAME

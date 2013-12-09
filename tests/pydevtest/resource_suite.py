@@ -218,9 +218,9 @@ class ResourceSuite(ResourceBase):
         os.system("openssl dhparam -2 -out dhparams.pem 100") # normally 2048, but smaller size here for speed
 
         # server side environment variables
-        os.environ['irodsSSLCertificateChainFile'] = "/var/lib/eirods/tests/pydevtest/chain.pem"
-        os.environ['irodsSSLCertificateKeyFile'] = "/var/lib/eirods/tests/pydevtest/server.key"
-        os.environ['irodsSSLDHParamsFile'] = "/var/lib/eirods/tests/pydevtest/dhparams.pem"
+        os.environ['irodsSSLCertificateChainFile'] = "/var/lib/irods/tests/pydevtest/chain.pem"
+        os.environ['irodsSSLCertificateKeyFile'] = "/var/lib/irods/tests/pydevtest/server.key"
+        os.environ['irodsSSLDHParamsFile'] = "/var/lib/irods/tests/pydevtest/dhparams.pem"
 
         # client side environment variables
         os.environ['irodsSSLVerifyServer'] = "none"
@@ -231,9 +231,9 @@ class ResourceSuite(ResourceBase):
         os.system("echo \"irodsClientServerPolicy 'CS_NEG_REQUIRE'\" >> %s" % clientEnvFile)
 
         # server reboot to pick up new irodsEnv settings
-        os.system("/var/lib/eirods/iRODS/irodsctl stop")
-        os.system("/var/lib/eirods/tests/zombiereaper.sh")
-        os.system("/var/lib/eirods/iRODS/irodsctl start")
+        os.system("/var/lib/irods/iRODS/irodsctl stop")
+        os.system("/var/lib/irods/tests/zombiereaper.sh")
+        os.system("/var/lib/irods/iRODS/irodsctl start")
 
         # do the encrypted put
         filename = "encryptedfile.txt"
@@ -401,7 +401,7 @@ class ResourceSuite(ResourceBase):
         f.write("TESTFILE -- ["+datafilename+"]")
         f.close()
         # assertions
-        fullpath = "/var/lib/eirods/newphysicalpath.txt"
+        fullpath = "/var/lib/irods/newphysicalpath.txt"
         assertiCmd(s.adminsession,"iput -p "+fullpath+" "+datafilename) # should complete
         assertiCmd(s.adminsession,"ils -L "+datafilename,"LIST",datafilename) # should be listed
         assertiCmd(s.adminsession,"ils -L "+datafilename,"LIST",fullpath) # should be listed

@@ -17,7 +17,7 @@ include ../../iRODS/config/config.mk
 
 GCC = g++ -DRODS_SERVER -DZIP_EXEC_PATH=\"$(ZIP_EXEC_PATH)\" -DUNZIP_EXEC_PATH=\"$(UNZIP_EXEC_PATH)\" 
 
-ifeq ($(EIRODS_BUILD_COVERAGE), 1)
+ifeq ($(IRODS_BUILD_COVERAGE), 1)
 GCC += -fprofile-arcs -ftest-coverage -lgcov
 endif
 
@@ -28,7 +28,7 @@ export SOTOPDIR = .
 
 SUBS = ${BASEDIRS}
 
-ifeq ($(EIRODS_BUILD_DEBUG), 0)
+ifeq ($IRODS_BUILD_DEBUG), 0)
 #SUBS += ${HPSSDIRS}
 endif
 
@@ -46,6 +46,7 @@ clean:
 	echo "Cleaning $$dir"; \
 	rm -f $$dir/${OBJDIR}/*.o > /dev/null 2>&1; \
         rm -f $$dir/${DEPDIR}/*.d > /dev/null 2>&1; \
+        rm -f $$dir/.depends > /dev/null 2>&1; \
 	rm -f $$dir/*.o > /dev/null 2>&1; \
 	done
 	@-rm -f ${SOTOPDIR}/*.so > /dev/null 2>&1

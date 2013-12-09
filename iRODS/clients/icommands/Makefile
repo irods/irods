@@ -242,7 +242,7 @@ clients: icommands
 icommands:	print_cflags print_ldflags $(OBJS) $(BINS) $(BOOST_LIBS)
 	@true
 
-$(objDir)/%.o:	$(srcDir)/%.c $(LIBRARY) $(BOOST_LIBS)
+$(objDir)/%.o:	$(srcDir)/%.cpp $(LIBRARY) $(BOOST_LIBS)
 	@echo "Compile icommand `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 

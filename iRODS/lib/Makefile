@@ -19,7 +19,7 @@ include $(buildDir)/config/platform.mk
 include $(buildDir)/config/directories.mk
 include $(buildDir)/config/common.mk
 
-extendedICAT.h =	$(buildDir)/modules/extendedICAT/extendedICAT.h
+extendedICAT.hpp =	$(buildDir)/modules/extendedICAT/extendedICAT.hpp
 
 CFLAGS += `../../packaging/compiler_check.sh 4 2`
 
@@ -71,36 +71,36 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/fsckUtil.o \
 		$(libCoreObjDir)/osauth.o \
 		$(libCoreObjDir)/sslSockComm.o \
-		$(libCoreObjDir)/eirods_auth_factory.o \
-		$(libCoreObjDir)/eirods_operation_wrapper.o \
-		$(libCoreObjDir)/eirods_string_tokenize.o \
-		$(libCoreObjDir)/eirods_plugin_base.o \
-		$(libCoreObjDir)/eirods_resource_plugin.o \
-		$(libCoreObjDir)/eirods_error.o  \
-		$(libCoreObjDir)/eirods_log.o \
-		$(libCoreObjDir)/eirods_children_parser.o \
-		$(libCoreObjDir)/eirods_hierarchy_parser.o \
-		$(libCoreObjDir)/eirods_stacktrace.o \
-		$(libCoreObjDir)/eirods_signal.o \
-		$(libCoreObjDir)/eirods_resource_redirect.o \
-		$(libCoreObjDir)/eirods_plugin_name_generator.o \
-		$(libCoreObjDir)/eirods_client_negotiation.o \
-		$(libCoreObjDir)/eirods_network_object.o \
-		$(libCoreObjDir)/eirods_network_plugin.o \
-		$(libCoreObjDir)/eirods_ssl_object.o \
-		$(libCoreObjDir)/eirods_tcp_object.o \
-		$(libCoreObjDir)/eirods_network_factory.o \
-		$(libCoreObjDir)/eirods_network_manager.o \
-		$(libCoreObjDir)/eirods_buffer_encryption.o \
-		$(libCoreObjDir)/eirods_auth_object.o \
-		$(libCoreObjDir)/eirods_auth_plugin.o \
-		$(libCoreObjDir)/eirods_auth_manager.o \
-		$(libCoreObjDir)/eirods_virtual_path.o \
-		$(libCoreObjDir)/eirods_native_auth_object.o \
-		$(libCoreObjDir)/eirods_pam_auth_object.o \
-		$(libCoreObjDir)/eirods_osauth_auth_object.o \
-		$(libCoreObjDir)/eirods_pluggable_auth_scheme.o \
-		$(libCoreObjDir)/eirods_kvp_string_parser.o
+		$(libCoreObjDir)/irods_auth_factory.o \
+		$(libCoreObjDir)/irods_operation_wrapper.o \
+		$(libCoreObjDir)/irods_string_tokenize.o \
+		$(libCoreObjDir)/irods_plugin_base.o \
+		$(libCoreObjDir)/irods_resource_plugin.o \
+		$(libCoreObjDir)/irods_error.o  \
+		$(libCoreObjDir)/irods_log.o \
+		$(libCoreObjDir)/irods_children_parser.o \
+		$(libCoreObjDir)/irods_hierarchy_parser.o \
+		$(libCoreObjDir)/irods_stacktrace.o \
+		$(libCoreObjDir)/irods_signal.o \
+		$(libCoreObjDir)/irods_resource_redirect.o \
+		$(libCoreObjDir)/irods_plugin_name_generator.o \
+		$(libCoreObjDir)/irods_client_negotiation.o \
+		$(libCoreObjDir)/irods_network_object.o \
+		$(libCoreObjDir)/irods_network_plugin.o \
+		$(libCoreObjDir)/irods_ssl_object.o \
+		$(libCoreObjDir)/irods_tcp_object.o \
+		$(libCoreObjDir)/irods_network_factory.o \
+		$(libCoreObjDir)/irods_network_manager.o \
+		$(libCoreObjDir)/irods_buffer_encryption.o \
+		$(libCoreObjDir)/irods_auth_object.o \
+		$(libCoreObjDir)/irods_auth_plugin.o \
+		$(libCoreObjDir)/irods_auth_manager.o \
+		$(libCoreObjDir)/irods_virtual_path.o \
+		$(libCoreObjDir)/irods_native_auth_object.o \
+		$(libCoreObjDir)/irods_pam_auth_object.o \
+		$(libCoreObjDir)/irods_osauth_auth_object.o \
+		$(libCoreObjDir)/irods_pluggable_auth_scheme.o \
+		$(libCoreObjDir)/irods_kvp_string_parser.o
 
 ifdef NETCDF_CLIENT
 LIB_CORE_OBJS += $(libCoreObjDir)/ncattrUtil.o $(libCoreObjDir)/ncUtil.o  \
@@ -134,7 +134,7 @@ LIB_CORE_OBJS += $(libCoreObjDir)/ooiCi.o
 endif
 
 # Logging (automatically generated source)
-LOG_SRC =	$(libCoreSrcDir)/rodsLog.c
+LOG_SRC =	$(libCoreSrcDir)/rodsLog.cpp
 
 
 # MD5
@@ -298,44 +298,44 @@ clean:
 # Compilation Targets
 #
 # Build core
-$(LIB_CORE_OBJS):  $(libCoreObjDir)/%.o: $(libCoreSrcDir)/%.c $(extendedICAT.h) $(DEPEND) $(BOOST_LIBS)
+$(LIB_CORE_OBJS):  $(libCoreObjDir)/%.o: $(libCoreSrcDir)/%.cpp $(extendedICAT.hpp) $(DEPEND) $(BOOST_LIBS)
 	@echo "Compile core `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
-$(extendedICAT.h): 
-	@touch $(extendedICAT.h)
+$(extendedICAT.hpp): 
+	@touch $(extendedICAT.hpp)
 
 # Build API
-$(LIB_API_OBJS):  $(libApiObjDir)/%.o: $(libApiSrcDir)/%.c $(DEPEND) $(BOOST_LIBS)
+$(LIB_API_OBJS):  $(libApiObjDir)/%.o: $(libApiSrcDir)/%.cpp $(DEPEND) $(BOOST_LIBS)
 	@echo "Compile api `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
 # Build MD5
 #	Requires -O3 for optimization
-$(LIB_MD5_OBJS):  $(libMd5ObjDir)/%.o: $(libMd5SrcDir)/%.c $(configMk) $(platformMk)
+$(LIB_MD5_OBJS):  $(libMd5ObjDir)/%.o: $(libMd5SrcDir)/%.cpp $(configMk) $(platformMk)
 	@echo "Compile md5 `basename $@`..."
 	@$(CC) -c $(MD5_CFLAGS) -o $@ $<
 
 # Build SHA1
-$(LIB_SHA1_OBJS):  $(libSha1ObjDir)/%.o: $(libSha1SrcDir)/%.c $(configMk) $(platformMk)
+$(LIB_SHA1_OBJS):  $(libSha1ObjDir)/%.o: $(libSha1SrcDir)/%.cpp $(configMk) $(platformMk)
 	@echo "Compile sha1 `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
 # Build Hasher
-$(LIB_HASHER_OBJS): $(libHasherObjDir)/%.o: $(libHasherSrcDir)/%.c $(configMk) $(platformMk)
+$(LIB_HASHER_OBJS): $(libHasherObjDir)/%.o: $(libHasherSrcDir)/%.cpp $(configMk) $(platformMk)
 	@echo "Compile Hasher `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
 ifdef RBUDP_TRANSFER
-$(LIB_RBUDP_OBJS):  $(libRbudpObjDir)/%.o: $(libRbudpSrcDir)/%.c $(configMk) $(platformMk)
+$(LIB_RBUDP_OBJS):  $(libRbudpObjDir)/%.o: $(libRbudpSrcDir)/%.cpp $(configMk) $(platformMk)
 	@echo "Compile rbudp `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 endif
 
 # Build logging source
-rodslog:  $(libCoreSrcDir)/rodsLog.c
+rodslog:  $(libCoreSrcDir)/rodsLog.cpp
 	@true
 
-$(libCoreSrcDir)/rodsLog.c:  $(libCoreIncDir)/rodsErrorTable.h
+$(libCoreSrcDir)/rodsLog.cpp:  $(libCoreIncDir)/rodsErrorTable.hpp
 	@$(PERL) $(perlScriptsDir)/updateRodsLog.pl
 
 

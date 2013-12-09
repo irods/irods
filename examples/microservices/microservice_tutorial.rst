@@ -1,4 +1,4 @@
-.. header:: Enterprise iRODS (E-iRODS) Microservice Developers Tutorial
+.. header:: iRODS Microservice Developers Tutorial
 .. footer:: page ###Page###
 
 .. |todaysdate| date::
@@ -22,13 +22,13 @@ This tutorial covers two built-in examples: "Hello World!" and "CURL Get".
 
 To run this tutorial:
 
-#. Download E-iRODS binary package and Development Tools from http://www.eirods.org/download
-#. Install E-iRODS
-#. Install the E-iRODS Development Tools
+#. Download iRODS binary package and Development Tools from http://www.eirods.org/download
+#. Install iRODS
+#. Install the iRODS Development Tools
 #. Install package libboost1.xx-dev
 #. If you want to run the curl based example, install the libcurl and libcurl-dev packages
 
-After installing the E-iRODS dev tools, make a test directory on your system and copy the contents of /usr/share/eirods/examples/microservices into it. This will be our current working directory for the rest of the tutorial.
+After installing the iRODS dev tools, make a test directory on your system and copy the contents of /usr/share/irods/examples/microservices into it. This will be our current working directory for the rest of the tutorial.
 
 
 
@@ -55,7 +55,7 @@ For more information on iRODS microservices and related helper functions see htt
 - https://www.irods.org/index.php/iRODS_Introduction#iRODS_Micro-services
 - https://www.irods.org/index.php/iRODS_Introduction#Extending_iRODS
 
-E-iRODS allows microservices to be dynamically loaded as plugins, without the need to rebuild the iRODS server.
+iRODS allows microservices to be dynamically loaded as plugins, without the need to rebuild the iRODS server.
 
 
 
@@ -66,10 +66,10 @@ Generic template for writing a microservice plugin
 .. code-block:: c++
 
   // =-=-=-=-=-=-=-
-  // E-iRODS Includes
+  // iRODS Includes
   #include "msParam.h"
   #include "reGlobalsExtern.h"
-  #include "eirods_ms_plugin.h"
+  #include "irods_ms_plugin.h"
 
   // =-=-=-=-=-=-=-
   // STL Includes
@@ -87,13 +87,13 @@ Generic template for writing a microservice plugin
       // =-=-=-=-=-=-=-
       // 2.  Create the plugin factory function which will
       //     return a microservice table entry
-      eirods::ms_table_entry* plugin_factory() {
+      irods::ms_table_entry* plugin_factory() {
 
           // =-=-=-=-=-=-=-
           // 3. Allocate a microservice plugin which takes the number of function
           //    params as a parameter to the constructor, not including _rei. With
           //    N as the total number of arguments of my_microservice() we would have:
-          eirods::ms_table_entry* msvc = new eirods::ms_table_entry( N-1 );
+          irods::ms_table_entry* msvc = new irods::ms_table_entry( N-1 );
 
           // =-=-=-=-=-=-=-
           // 4. Add the microservice function as an operation to the plugin
@@ -114,15 +114,15 @@ Generic template for writing a microservice plugin
 "Hello World!" as a microservice plugin
 ---------------------------------------
 
-Given the above template we can write a simple microservice plugin that returns a string to the client. That string needs to be passed out via a microservice parameter (msParam_t*). A simple microservice plugin would then look like this (``eirods_hello.cpp``):
+Given the above template we can write a simple microservice plugin that returns a string to the client. That string needs to be passed out via a microservice parameter (msParam_t*). A simple microservice plugin would then look like this (``irods_hello.cpp``):
 
 .. code-block:: c++
 
   // =-=-=-=-=-=-=-
-  // E-iRODS Includes
+  // iRODS Includes
   #include "msParam.h"
   #include "reGlobalsExtern.h"
-  #include "eirods_ms_plugin.h"
+  #include "irods_ms_plugin.h"
 
   // =-=-=-=-=-=-=-
   // STL Includes
@@ -132,7 +132,7 @@ Given the above template we can write a simple microservice plugin that returns 
 
       // =-=-=-=-=-=-=-
       // 1. Write a standard issue microservice
-      int eirods_hello( msParam_t* _out, ruleExecInfo_t* _rei ) {
+      int irods_hello( msParam_t* _out, ruleExecInfo_t* _rei ) {
           std::string my_str = "Hello World!";
           fillStrInMsParam( _out, my_str.c_str() );
           return 0;
@@ -141,18 +141,18 @@ Given the above template we can write a simple microservice plugin that returns 
       // =-=-=-=-=-=-=-
       // 2. Create the plugin factory function which will
       //    return a microservice table entry
-      eirods::ms_table_entry* plugin_factory() {
+      irods::ms_table_entry* plugin_factory() {
 
           // =-=-=-=-=-=-=-
           // 3. Allocate a microservice plugin which takes the number of function
           //    params as a parameter to the constructor, not including _rei.
-          eirods::ms_table_entry* msvc = new eirods::ms_table_entry( 1 );
+          irods::ms_table_entry* msvc = new irods::ms_table_entry( 1 );
 
           // =-=-=-=-=-=-=-
           // 4. Add the microservice function as an operation to the plugin
           //    the first param is the name / key of the operation, the second
           //    is the name of the function which will be the microservice
-          msvc->add_operation( "eirods_hello", "eirods_hello" );
+          msvc->add_operation( "irods_hello", "irods_hello" );
 
           // =-=-=-=-=-=-=-
           // 5. Return the newly created microservice plugin
@@ -166,15 +166,15 @@ To run this example from your test directory type::
 
  $ make hello
 
-This should create a shared object: ``libeirods_hello.so``
+This should create a shared object: ``libirods_hello.so``
 
-Copy ``libeirods_hello.so`` to the microservices plugin directory (as eirods)::
+Copy ``libirods_hello.so`` to the microservices plugin directory (as irods)::
 
- $ sudo -u eirods cp -f libeirods_hello.so /var/lib/eirods/plugins/microservices/
+ $ sudo -u irods cp -f libirods_hello.so /var/lib/irods/plugins/microservices/
 
 Now that you have "loaded" your new microservice plugin you can test it with its corresponding rule::
 
- $ irule -F eirods_hello.r
+ $ irule -F irods_hello.r
 
 
 
@@ -182,7 +182,7 @@ Now that you have "loaded" your new microservice plugin you can test it with its
 "CURL Get" as a microservice plugin
 -----------------------------------
 
-In this second example we are using libcurl to make a GET request and write the result to an E-iRODS object. For the full source see ``eirods_curl_get.cpp``.
+In this second example we are using libcurl to make a GET request and write the result to an iRODS object. For the full source see ``irods_curl_get.cpp``.
 
 While the previous example simply returned an arbitrary string, this microservice is manipulating iRODS content and therefore needs an iRODS connection context. This connection context is provided to our microservice via its ruleExecInfo_t* parameter and is required when making iRODS API calls to create and write to iRODS objects. In our example this is done by the CURL write function that writes blocks of data to a new iRODS object, using ``rsDataObjCreate()``, ``rsDataObjWrite()``, and ``rsDataObjClose()``. For this reason the iRODS connection context needs to be passed all the way to the CURL write function.
 
@@ -198,17 +198,17 @@ To run this example from your test directory type::
 
  $ make curl_get
 
-This should create a shared object: ``libeirods_curl_get.so``
+This should create a shared object: ``libirods_curl_get.so``
 
-Copy ``libeirods_curl_get.so`` to the microservices plugin directory (as eirods)::
+Copy ``libirods_curl_get.so`` to the microservices plugin directory (as irods)::
 
- $ sudo -u eirods cp -f libeirods_curl_get.so /var/lib/eirods/plugins/microservices/
+ $ sudo -u irods cp -f libirods_curl_get.so /var/lib/irods/plugins/microservices/
 
-Edit the rulefile ``eirods_curl_get.r`` to make sure that the destination object path (\*dest_object) is valid in your environment
+Edit the rulefile ``irods_curl_get.r`` to make sure that the destination object path (\*dest_object) is valid in your environment
 
 Run the rulefile::
 
- $ irule -F eirods_hello.r
+ $ irule -F irods_hello.r
 
 Check if the new object is there::
 

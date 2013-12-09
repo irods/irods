@@ -1,0 +1,856 @@
+# =-=-=-=-=-=-=-
+# EPM Variables
+# =-=-=-=-=-=-=-
+%product iRODS
+%copyright 2005-2013, Regents of the University of California, the University of North Carolina at Chapel Hill, and the Data Intensive Cyberinfrastructure Foundation, All Rights Reserved.
+%vendor Renaissance Computing Institute <info@eirods.org>
+%license LICENSE
+%readme README
+%description The integrated Rule-Oriented Data System
+%version TEMPLATE_IRODSVERSION TEMPLATE_IRODSVERSIONINT
+
+
+
+
+# =-=-=-=-=-=-=-
+# Required Packages for specific systems
+# and
+# Setting environment variables for EPM
+# =-=-=-=-=-=-=-
+
+%if DEBICAT
+$DEB=true
+$ICAT=true
+%requires postgresql 8.4
+%requires unixodbc
+%requires odbc-postgresql
+%requires super
+
+%elseif DEBRESOURCE
+$DEB=true
+$RESOURCE=true
+
+%elseif REDHATRPMICAT
+$REDHAT=true
+$RPM=true
+$ICAT=true
+%requires postgresql 
+%requires postgresql-server
+%requires unixODBC
+%requires authd
+
+%elseif SUSERPMICAT
+$SUSE=true
+$RPM=true
+$ICAT=true
+%requires postgresql 
+%requires postgresql-server
+%requires psqlODBC
+%requires unixODBC
+
+%elseif REDHATRPMRESOURCE
+$REDHAT=true
+$RPM=true
+$RESOURCE=true
+
+%elseif SUSERPMRESOURCE
+$SUSE=true
+$RPM=true
+$RESOURCE=true
+
+%endif
+
+
+%if CENTOS6
+%requires postgresql-odbc
+%requires openssl098e
+%endif
+
+
+
+%if DEB
+%requires libc6
+%requires libssl0.9.8
+%endif
+
+%if SUSE
+%requires libopenssl0_9_8
+%endif
+
+# =-=-=-=-=-=-=-
+# Required Packages for all systems
+# (have a common name across packaging universes)
+# =-=-=-=-=-=-=-
+
+%requires perl
+%requires python
+%requires openssl
+
+%format all
+
+
+
+
+
+
+# =-=-=-=-=-=-=-
+# Configuration Variables
+# =-=-=-=-=-=-=-
+
+# =-=-=-=-=-=-=-
+# Install variables
+# =-=-=-=-=-=-=-
+$IRODS_PACKAGENAME=irods
+$IRODS_DOC_DIR=/usr/share/doc/$IRODS_PACKAGENAME
+$IRODS_HOME_DIR=/var/lib/$IRODS_PACKAGENAME
+$OS_IRODS_ACCT=irods
+$IRODS_HOME=$IRODS_HOME_DIR/iRODS
+$DB_NAME=TEMPLATE_DB_NAME
+
+# =-=-=-=-=-=-=-
+# iRODS variables
+# =-=-=-=-=-=-=-
+$DB_ADMIN_ROLE=postgres
+$DB_TYPE=TEMPLATE_DB_TYPE
+$DB_HOST=TEMPLATE_DB_HOST
+$DB_PORT=TEMPLATE_DB_PORT
+$DB_USER=$OS_IRODS_ACCT
+
+
+
+
+
+# =-=-=-=-=-=-=-
+# preinstall
+# =-=-=-=-=-=-=-
+%preinstall << END_PREINSTALL
+
+# determine whether this is an upgrade
+if [ "$$1" -eq "$$1" ] 2>/dev/null ; then
+  # integer, therefore rpm
+  if [ $$1 -gt 1 ] ; then
+    PACKAGEUPGRADE="true"
+  else
+    PACKAGEUPGRADE="false"
+  fi
+else
+  # string, therefore deb
+  if [ "$$1" = "upgrade" ] ; then
+    PACKAGEUPGRADE="true"
+  else
+    PACKAGEUPGRADE="false"
+  fi
+fi
+
+if [ "$$PACKAGEUPGRADE" = "true" ] ; then
+  # Upgrade
+  echo "Upgrading Existing iRODS Installation"
+  mkdir -p $IRODS_HOME_DIR
+  # write version information down for postinstall
+  UPGRADE_TEMP_FILE="$IRODS_HOME_DIR/upgrade.tmp"
+  if [ -f $IRODS_HOME_DIR/VERSION ] ; then
+    cp $IRODS_HOME_DIR/VERSION $$UPGRADE_TEMP_FILE
+  else
+    touch $$UPGRADE_TEMP_FILE
+    echo "IRODSVERSION=3.0" >> $$UPGRADE_TEMP_FILE
+    echo "IRODSVERSIONINT=300005" >> $$UPGRADE_TEMP_FILE
+  fi
+  
+else
+  # New Install
+  echo "Creating Service Group and Account: $OS_IRODS_ACCT at $IRODS_HOME_DIR "
+
+  set +e
+  CHECKGROUP=`getent group $OS_IRODS_ACCT `
+  CHECKACCT=`getent passwd $OS_IRODS_ACCT `
+  set -e
+  if [ "$$CHECKGROUP" = "" ]; then
+    /usr/sbin/groupadd -r $OS_IRODS_ACCT
+  else
+    echo "ERROR :: Please delete the existing Service Group $OS_IRODS_ACCT before proceeding."
+    if [ "$$CHECKACCT" = "" ]; then
+      echo "      :: The $OS_IRODS_ACCT Service Account must be deleted prior to deleting the $OS_IRODS_ACCT Service Group."
+    fi
+    exit 1
+  fi
+
+  if [ "$$CHECKACCT" = "" ]; then
+    useradd -r -d $IRODS_HOME_DIR -M -s /bin/bash -g $OS_IRODS_ACCT -c "iRODS Administrator" $OS_IRODS_ACCT
+  else
+    echo "ERROR :: Please delete the existing Service Account $OS_IRODS_ACCT before proceeding."
+    exit 1
+  fi
+
+  ACCT=$OS_IRODS_ACCT
+  mkdir -p $IRODS_HOME_DIR
+  chown $$ACCT:$$ACCT $IRODS_HOME_DIR
+fi
+END_PREINSTALL
+
+
+
+
+
+
+
+# =-=-=-=-=-=-=-
+# post install
+# =-=-=-=-=-=-=-
+%if ICAT
+%postinstall $IRODS_HOME_DIR/packaging/postinstall.sh $IRODS_HOME_DIR $OS_IRODS_ACCT icat $DB_TYPE $DB_ADMIN_ROLE $DB_NAME $DB_HOST $DB_PORT $DB_USER
+%else
+%postinstall $IRODS_HOME_DIR/packaging/postinstall.sh $IRODS_HOME_DIR $OS_IRODS_ACCT resource
+%endif
+
+
+
+
+
+
+# =-=-=-=-=-=-=-
+# preremove
+# =-=-=-=-=-=-=-
+%if ICAT
+%preremove $IRODS_HOME_DIR/packaging/preremove.sh $$1 $IRODS_HOME_DIR $OS_IRODS_ACCT icat $DB_TYPE $DB_ADMIN_ROLE $DB_NAME $DB_USER
+%else
+%preremove $IRODS_HOME_DIR/packaging/preremove.sh $$1 $IRODS_HOME_DIR $OS_IRODS_ACCT resource
+%endif
+
+
+
+
+
+
+# =-=-=-=-=-=-=-
+# post remove
+# =-=-=-=-=-=-=-
+%postremove << END_POSTREMOVE
+
+# determine whether this is an upgrade
+if [ "$$1" -eq "$$1" ] 2>/dev/null ; then
+  # integer, therefore rpm
+  if [ $$1 -gt 0 ] ; then
+    PACKAGEUPGRADE="true"
+  else
+    PACKAGEUPGRADE="false"
+  fi
+else
+  # string, therefore deb
+  if [ "$$1" = "upgrade" ] ; then
+    PACKAGEUPGRADE="true"
+  else
+    PACKAGEUPGRADE="false"
+  fi
+fi
+
+# on remove or purge
+if [ "$$PACKAGEUPGRADE" = "false" ] ; then
+  rm -rf $IRODS_HOME_DIR
+fi
+
+END_POSTREMOVE
+
+
+
+
+
+
+
+# =-=-=-=-=-=-=-
+# Full File Listing
+# =-=-=-=-=-=-=-
+
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/VERSION ./VERSION
+
+d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/tests -
+d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/tests/pydevtest -
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/tests/pydevtest ./tests/pydevtest/*.py
+#f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/tests/pydevtest/topology_tests.tar ./tests/pydevtest/topology_tests.tar
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/tests/pydevtest/README ./tests/pydevtest/README
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/tests/devtest.sh ./tests/devtest.sh
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/tests/zombiereaper.sh ./tests/zombiereaper.sh
+
+%if COVERAGE
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/gcovfiles.tgz ./gcovfiles.tgz
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/tests/coverage-pre.sh ./tests/coverage-pre.sh
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/tests/coverage-post.sh ./tests/coverage-post.sh
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/tests/pydevtest/run_pydevtest_coverage.sh ./tests/pydevtest/run_pydevtest_coverage.sh
+%endif
+
+d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging -
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/find_os.sh ./packaging/find_os.sh
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/find_postgres_bin.sh ./packaging/find_postgres_bin.sh
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/find_psqlodbc.sh ./packaging/find_psqlodbc.sh
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/post30upgrade.sh ./packaging/post30upgrade.sh
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/postinstall.sh ./packaging/postinstall.sh
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/preremove.sh ./packaging/preremove.sh
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/user_irodsenv.txt ./packaging/user_irodsenv.txt
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/user_resource.txt ./packaging/user_resource.txt
+
+%if DEB
+c 755 $OS_IRODS_ACCT $OS_IRODS_ACCT /etc/init.d/irods ./packaging/irods
+%else
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT /etc/init.d/irods ./packaging/irods
+%endif
+
+%if RESOURCE
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/setup_resource.sh ./packaging/setup_resource.sh
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/get_icat_server_password.sh ./packaging/get_icat_server_password.sh
+%endif
+
+d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/plugins -
+d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/plugins/microservices -
+d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/plugins/resources -
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/plugins/resources/ ./plugins/resources/*.so
+d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/plugins/network -
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/plugins/network/ ./plugins/network/*.so
+d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/plugins/auth -
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/plugins/auth/ ./plugins/auth/*.so
+
+f 644 root root /usr/share/man/man1 ./man/*.gz
+
+d 755 root root ${IRODS_DOC_DIR} -
+f 644 root root ${IRODS_DOC_DIR}/KNOWN_ISSUES ./KNOWN_ISSUES
+f 644 root root ${IRODS_DOC_DIR}/RELEASE_NOTES ./RELEASE_NOTES
+%if DEB
+f 644 root root ${IRODS_DOC_DIR}/copyright ./LICENSE
+#f 644 root root ${IRODS_DOC_DIR}/copyright ./iRODS/COPYRIGHT/Copyright.txt
+#f 644 root root ${IRODS_DOC_DIR}/copyright_addendum ./iRODS/COPYRIGHT/Copyright_Addendum.txt
+f 644 root root ${IRODS_DOC_DIR}/changelog.gz ./changelog.gz
+%else
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/LICENSE ./LICENSE
+%endif
+
+d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/installLogs -
+
+d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts -
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/find_irods_home.sh ./iRODS/scripts/find_irods_home.sh
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/finishSetup ./iRODS/scripts/finishSetup
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/runperl ./iRODS/scripts/runperl
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/installPostgres ./iRODS/scripts/installPostgres
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/izoneinfo.sh ./iRODS/scripts/izoneinfo.sh
+d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/notify -
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/notify/notify.config ./iRODS/scripts/notify/notify.config
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/notify/notify.pl ./iRODS/scripts/notify/notify.pl
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/notify/cront ./iRODS/scripts/notify/cront
+d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/perl -
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/perl/configure.pl ./iRODS/scripts/perl/configure.pl
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/perl/irodssetup.pl ./iRODS/scripts/perl/irodssetup.pl
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/perl/utils_file.pl ./iRODS/scripts/perl/utils_file.pl
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/perl/utils_platform.pl ./iRODS/scripts/perl/utils_platform.pl
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/perl/finishSetup.pl ./iRODS/scripts/perl/finishSetup.pl
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/perl/irodsprompt.pl ./iRODS/scripts/perl/irodsprompt.pl
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/perl/utils_paths.pl ./iRODS/scripts/perl/utils_paths.pl
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/perl/irodsctl.pl ./iRODS/scripts/perl/irodsctl.pl
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/perl/utils_prompt.pl ./iRODS/scripts/perl/utils_prompt.pl
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/perl/irods_setup.pl ./iRODS/scripts/perl/irods_setup.pl
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/perl/updateRodsLog.pl ./iRODS/scripts/perl/updateRodsLog.pl
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/perl/uninstallPostgres.pl ./iRODS/scripts/perl/uninstallPostgres.pl
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/perl/installPostgres.pl ./iRODS/scripts/perl/installPostgres.pl
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/perl/utils_print.pl ./iRODS/scripts/perl/utils_print.pl
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/perl/utils_config.pl ./iRODS/scripts/perl/utils_config.pl
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/perl/joinlines.pl ./iRODS/scripts/perl/joinlines.pl
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/perl/README.txt ./iRODS/scripts/perl/README.txt
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/uninstallPostgres ./iRODS/scripts/uninstallPostgres
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/irodsprompt ./iRODS/scripts/irodsprompt
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/configure ./iRODS/scripts/configure
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/README.txt ./iRODS/scripts/README.txt
+d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server -
+d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/log -
+d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config -
+d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/lockFileDir -
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/connectControl.config.template ./iRODS/server/config/connectControl.config.template
+c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/dbr.config ./iRODS/server/config/dbr.config
+c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/HostAccessControl ./iRODS/server/config/HostAccessControl
+d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/reConfigs -
+c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core.dvm ./iRODS/server/config/reConfigs/core.dvm
+c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core.fnm ./iRODS/server/config/reConfigs/core.fnm
+c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core.re ./iRODS/server/config/reConfigs/core.re
+c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/rda.config ./iRODS/server/config/rda.config
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/irodsMonPerf.config.in ./iRODS/server/config/irodsMonPerf.config.in
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/server.config.in ./iRODS/server/config/server.config.in
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/irodsHost.in ./iRODS/server/config/irodsHost.in
+d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/packedRei -
+c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/irodsHost ./iRODS/server/config/irodsHost
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/s3Auth.template ./iRODS/server/config/s3Auth.template
+c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/server.config ./iRODS/server/config/server.config
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/README.txt ./iRODS/server/config/README.txt
+d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/bin -
+d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/bin/cmd -
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/bin/cmd/irodsServerMonPerf ./iRODS/server/bin/cmd/irodsServerMonPerf
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/bin/cmd/test_execstream.py ./iRODS/server/bin/cmd/test_execstream.py
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/bin/cmd/hello ./iRODS/server/bin/cmd/hello
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/bin/cmd/univMSSInterface.sh ./iRODS/server/bin/cmd/univMSSInterface.sh
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/bin/vacuumdb.pl ./iRODS/server/bin/vacuumdb.pl
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/bin/irodsServer ./iRODS/server/bin/irodsServer
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/bin/irodsReServer ./iRODS/server/bin/irodsReServer
+%if ICAT
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/bin/irodsXmsgServer ./iRODS/server/bin/irodsXmsgServer
+%endif
+#f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/bin/ ./external/boost*/stage/lib/*.so
+#f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/bin/ ./external/libarchive*/.libs/libarchive*.so*
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/bin/list.pl ./iRODS/server/bin/list.pl
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/bin/irodsAgent ./iRODS/server/bin/irodsAgent
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/bin/PamAuthCheck ./iRODS/server/bin/PamAuthCheck
+d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/re -
+d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/re/include -
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/re/include/reAction.hpp ./iRODS/server/re/include/reAction.hpp
+d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test -
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/dbo4.ir ./iRODS/server/test/dbo4.ir
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/rdaToDataObj.ir ./iRODS/server/test/rdaToDataObj.ir
+d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/tbox -
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/tbox/start_tinderbox ./iRODS/server/test/tbox/start_tinderbox
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/tbox/checkfiles.sh ./iRODS/server/test/tbox/checkfiles.sh
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/tbox/checkps.pl ./iRODS/server/test/tbox/checkps.pl
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/tbox/input1.txt.no.pg.mysql ./iRODS/server/test/tbox/input1.txt.no.pg.mysql
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/tbox/input1.txt.no.pg ./iRODS/server/test/tbox/input1.txt.no.pg
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/tbox/irods2.sh ./iRODS/server/test/tbox/irods2.sh
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/tbox/boostTest.sh ./iRODS/server/test/tbox/boostTest.sh
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/tbox/irods1.sh ./iRODS/server/test/tbox/irods1.sh
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/tbox/ch.pl ./iRODS/server/test/tbox/ch.pl
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/tbox/input1.txt.reuse.pg ./iRODS/server/test/tbox/input1.txt.reuse.pg
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/tbox/README.txt ./iRODS/server/test/tbox/README.txt
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/rdaNoResult1.ir ./iRODS/server/test/rdaNoResult1.ir
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/rdaNoResult2.ir ./iRODS/server/test/rdaNoResult2.ir
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/dbo2.ir ./iRODS/server/test/dbo2.ir
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/rdaToStdout.ir ./iRODS/server/test/rdaToStdout.ir
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/dbo1.ir ./iRODS/server/test/dbo1.ir
+d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin -
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/checkIcatLog.pl ./iRODS/server/test/bin/checkIcatLog.pl
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/dataTest.pl ./iRODS/server/test/bin/dataTest.pl
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/icatMiscTest.pl ./iRODS/server/test/bin/icatMiscTest.pl
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/icatTicketTest.pl ./iRODS/server/test/bin/icatTicketTest.pl
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/icatTest.pl ./iRODS/server/test/bin/icatTest.pl
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/moveTest.pl ./iRODS/server/test/bin/moveTest.pl
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/quotaTest.pl ./iRODS/server/test/bin/quotaTest.pl
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/specNameTest.pl ./iRODS/server/test/bin/specNameTest.pl
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/timeTest.pl ./iRODS/server/test/bin/timeTest.pl
+%if ICAT
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_chl ./iRODS/server/test/bin/test_chl
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_cll ./iRODS/server/test/bin/test_cll
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_genq ./iRODS/server/test/bin/test_genq
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_genu ./iRODS/server/test/bin/test_genu
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_rda ./iRODS/server/test/bin/test_rda
+%endif
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/dbo3.ir ./iRODS/server/test/dbo3.ir
+d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/s3 -
+d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/s3/irodss3 -
+d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/s3/irodss3/src -
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/s3/irodss3/src/gets3.cpp ./iRODS/server/test/s3/irodss3/src/gets3.cpp
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/s3/irodss3/src/puts3.cpp ./iRODS/server/test/s3/irodss3/src/puts3.cpp
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/s3/libs3-1.4.tar ./iRODS/server/test/s3/libs3-1.4.tar
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/s3/README.txt ./iRODS/server/test/s3/README.txt
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/ltest.sh ./iRODS/server/test/ltest.sh
+d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/obj -
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/dbo5.ir ./iRODS/server/test/dbo5.ir
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/README.txt ./iRODS/server/test/README.txt
+d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/src -
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/src/test_genq.cpp ./iRODS/server/test/src/test_genq.cpp
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/src/test_genu.cpp ./iRODS/server/test/src/test_genu.cpp
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/src/test_cll.cpp ./iRODS/server/test/src/test_cll.cpp
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/src/reTest.cpp ./iRODS/server/test/src/reTest.cpp
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/src/test_chl.cpp ./iRODS/server/test/src/test_chl.cpp
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/src/test_rda.cpp ./iRODS/server/test/src/test_rda.cpp
+d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat -
+d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src -
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatDropCoreTables.sql ./iRODS/server/icat/src/icatDropCoreTables.sql
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/m2icat.pl ./iRODS/server/icat/src/m2icat.pl
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatHighLevelRoutines.cpp ./iRODS/server/icat/src/icatHighLevelRoutines.cpp
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatLowLevelOdbc.cpp ./iRODS/server/icat/src/icatLowLevelOdbc.cpp
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatGeneralQuery.cpp ./iRODS/server/icat/src/icatGeneralQuery.cpp
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatLowLevelOracle.cpp ./iRODS/server/icat/src/icatLowLevelOracle.cpp
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatMidLevelHelpers.cpp ./iRODS/server/icat/src/icatMidLevelHelpers.cpp
+%if ICAT
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatSysTables.sql ./iRODS/server/icat/src/icatSysTables.sql
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatCoreTables.sql ./iRODS/server/icat/src/icatCoreTables.sql
+%endif
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatCoreInserts.sql ./iRODS/server/icat/src/icatCoreInserts.sql
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatDropSysTables.sql ./iRODS/server/icat/src/icatDropSysTables.sql
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatGeneralUpdate.cpp ./iRODS/server/icat/src/icatGeneralUpdate.cpp
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/rodsEnvInitLib.cpp ./iRODS/server/icat/src/rodsEnvInitLib.cpp
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/m2icatd.cpp ./iRODS/server/icat/src/m2icatd.cpp
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatSysInserts.sql ./iRODS/server/icat/src/icatSysInserts.sql
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatMidLevelRoutines.cpp ./iRODS/server/icat/src/icatMidLevelRoutines.cpp
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/makeSql.pl ./iRODS/server/icat/src/makeSql.pl
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/rdaHighLevelRoutines.cpp ./iRODS/server/icat/src/rdaHighLevelRoutines.cpp
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatPurgeRecycleBin.sql ./iRODS/server/icat/src/icatPurgeRecycleBin.sql
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatGeneralQuerySetup.cpp ./iRODS/server/icat/src/icatGeneralQuerySetup.cpp
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/convertSql.pl ./iRODS/server/icat/src/convertSql.pl
+d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/config -
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/config/platform.mk ./iRODS/config/platform.mk
+c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/config/irods.config ./iRODS/config/irods.config
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/config/doxygen-msi.config ./iRODS/config/doxygen-msi.config
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/config/irodsEnv.boot ./iRODS/config/irodsEnv.boot
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/config/installPostgres.config.template ./iRODS/config/installPostgres.config.template
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/config/api.mk ./iRODS/config/api.mk
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/config/directories.mk ./iRODS/config/directories.mk
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/config/config.mk ./iRODS/config/config.mk
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/config/config.mk.in ./iRODS/config/config.mk.in
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/config/workflow.html ./iRODS/config/workflow.html
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/config/doxygen.config ./iRODS/config/doxygen.config
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/config/common.mk ./iRODS/config/common.mk
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/config/platform.mk.template ./iRODS/config/platform.mk.template
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/irodsctl ./iRODS/irodsctl
+
+
+d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients -
+d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands -
+d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/bin -
+
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/chgCoreToCore1.ir    ./iRODS/clients/icommands/bin/chgCoreToCore1.ir
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/chgCoreToCore2.ir    ./iRODS/clients/icommands/bin/chgCoreToCore2.ir
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/chgCoreToOrig.ir     ./iRODS/clients/icommands/bin/chgCoreToOrig.ir
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/delUnusedAVUs.ir     ./iRODS/clients/icommands/bin/delUnusedAVUs.ir
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/runQuota.ir          ./iRODS/clients/icommands/bin/runQuota.ir
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/runQuota.r           ./iRODS/clients/icommands/bin/runQuota.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/showCore.ir          ./iRODS/clients/icommands/bin/showCore.ir
+
+# igetwild.sh - shouldn't have a binary with an extension, lintian complained it's not as future-proof
+f 755 root root /usr/bin/igetwild             ./iRODS/clients/icommands/bin/igetwild
+
+f 755 root root /usr/bin/genOSAuth            ./iRODS/clients/icommands/bin/genOSAuth
+f 755 root root /usr/bin/iadmin               ./iRODS/clients/icommands/bin/iadmin
+f 755 root root /usr/bin/ibun                 ./iRODS/clients/icommands/bin/ibun
+f 755 root root /usr/bin/icd                  ./iRODS/clients/icommands/bin/icd
+f 755 root root /usr/bin/ichksum              ./iRODS/clients/icommands/bin/ichksum
+f 755 root root /usr/bin/ichmod               ./iRODS/clients/icommands/bin/ichmod
+f 755 root root /usr/bin/icp                  ./iRODS/clients/icommands/bin/icp
+f 755 root root /usr/bin/idbug                ./iRODS/clients/icommands/bin/idbug
+f 755 root root /usr/bin/ienv                 ./iRODS/clients/icommands/bin/ienv
+f 755 root root /usr/bin/ierror               ./iRODS/clients/icommands/bin/ierror
+f 755 root root /usr/bin/iexecmd              ./iRODS/clients/icommands/bin/iexecmd
+f 755 root root /usr/bin/iexit                ./iRODS/clients/icommands/bin/iexit
+f 755 root root /usr/bin/ifsck                ./iRODS/clients/icommands/bin/ifsck
+f 755 root root /usr/bin/iget                 ./iRODS/clients/icommands/bin/iget
+f 755 root root /usr/bin/igroupadmin          ./iRODS/clients/icommands/bin/igroupadmin
+f 755 root root /usr/bin/ihelp                ./iRODS/clients/icommands/bin/ihelp
+f 755 root root /usr/bin/iinit                ./iRODS/clients/icommands/bin/iinit
+f 755 root root /usr/bin/ilocate              ./iRODS/clients/icommands/bin/ilocate
+f 755 root root /usr/bin/ils                  ./iRODS/clients/icommands/bin/ils
+f 755 root root /usr/bin/ilsresc              ./iRODS/clients/icommands/bin/ilsresc
+f 755 root root /usr/bin/imcoll               ./iRODS/clients/icommands/bin/imcoll
+f 755 root root /usr/bin/imeta                ./iRODS/clients/icommands/bin/imeta
+f 755 root root /usr/bin/imiscsvrinfo         ./iRODS/clients/icommands/bin/imiscsvrinfo
+f 755 root root /usr/bin/imkdir               ./iRODS/clients/icommands/bin/imkdir
+f 755 root root /usr/bin/imv                  ./iRODS/clients/icommands/bin/imv
+f 755 root root /usr/bin/ipasswd              ./iRODS/clients/icommands/bin/ipasswd
+f 755 root root /usr/bin/iphybun              ./iRODS/clients/icommands/bin/iphybun
+f 755 root root /usr/bin/iphymv               ./iRODS/clients/icommands/bin/iphymv
+f 755 root root /usr/bin/ips                  ./iRODS/clients/icommands/bin/ips
+f 755 root root /usr/bin/iput                 ./iRODS/clients/icommands/bin/iput
+f 755 root root /usr/bin/ipwd                 ./iRODS/clients/icommands/bin/ipwd
+f 755 root root /usr/bin/iqdel                ./iRODS/clients/icommands/bin/iqdel
+f 755 root root /usr/bin/iqmod                ./iRODS/clients/icommands/bin/iqmod
+f 755 root root /usr/bin/iqstat               ./iRODS/clients/icommands/bin/iqstat
+f 755 root root /usr/bin/iquest               ./iRODS/clients/icommands/bin/iquest
+f 755 root root /usr/bin/iquota               ./iRODS/clients/icommands/bin/iquota
+f 755 root root /usr/bin/ireg                 ./iRODS/clients/icommands/bin/ireg
+f 755 root root /usr/bin/irepl                ./iRODS/clients/icommands/bin/irepl
+f 755 root root /usr/bin/irm                  ./iRODS/clients/icommands/bin/irm
+f 755 root root /usr/bin/irmtrash             ./iRODS/clients/icommands/bin/irmtrash
+f 755 root root /usr/bin/irsync               ./iRODS/clients/icommands/bin/irsync
+f 755 root root /usr/bin/irule                ./iRODS/clients/icommands/bin/irule
+f 755 root root /usr/bin/iscan                ./iRODS/clients/icommands/bin/iscan
+f 755 root root /usr/bin/isysmeta             ./iRODS/clients/icommands/bin/isysmeta
+f 755 root root /usr/bin/iticket              ./iRODS/clients/icommands/bin/iticket
+f 755 root root /usr/bin/itrim                ./iRODS/clients/icommands/bin/itrim
+f 755 root root /usr/bin/iuserinfo            ./iRODS/clients/icommands/bin/iuserinfo
+f 755 root root /usr/bin/ixmsg                ./iRODS/clients/icommands/bin/ixmsg
+
+f 755 root root /usr/bin/irodsFs               ./iRODS/clients/fuse/bin/irodsFs
+
+d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test -
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/testallrules.pl ./iRODS/clients/icommands/test/testallrules.pl
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/icommand_test1.sh ./iRODS/clients/icommands/test/icommand_test1.sh
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/stresstest1.sh ./iRODS/clients/icommands/test/stresstest1.sh
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rmstresstest.sh ./iRODS/clients/icommands/test/rmstresstest.sh
+d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/stresstest.dir -
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/stresstest.dir/makeTestFiles.sh ./iRODS/clients/icommands/test/stresstest.dir/makeTestFiles.sh
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/stresstest.dir/file.0 ./iRODS/clients/icommands/test/stresstest.dir/file.0
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/repeatiPutTest.sh ./iRODS/clients/icommands/test/repeatiPutTest.sh
+d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0 -
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/ruleprint_hello.r ./iRODS/clients/icommands/test/rules3.0/ruleprint_hello.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiGetSessionVarValue.r ./iRODS/clients/icommands/test/rules3.0/rulemsiGetSessionVarValue.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiDataObjPutWithOptions.r ./iRODS/clients/icommands/test/rules3.0/rulemsiDataObjPutWithOptions.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiCommit.r ./iRODS/clients/icommands/test/rules3.0/rulemsiCommit.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiDataObjRename.r ./iRODS/clients/icommands/test/rules3.0/rulemsiDataObjRename.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiMergeDataCopies.r ./iRODS/clients/icommands/test/rules3.0/rulemsiMergeDataCopies.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/ruleworkflowfail.r ./iRODS/clients/icommands/test/rules3.0/ruleworkflowfail.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/ruleworkflowdelay.r ./iRODS/clients/icommands/test/rules3.0/ruleworkflowdelay.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/ruleintegrityDataType.r ./iRODS/clients/icommands/test/rules3.0/ruleintegrityDataType.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiRollback.r ./iRODS/clients/icommands/test/rules3.0/rulemsiRollback.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiPropertiesFromString.r ./iRODS/clients/icommands/test/rules3.0/rulemsiPropertiesFromString.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiFlagDataObjwithAVU.r ./iRODS/clients/icommands/test/rules3.0/rulemsiFlagDataObjwithAVU.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiConvertCurrency.r ./iRODS/clients/icommands/test/rules3.0/rulemsiConvertCurrency.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiAdmShowIRB.r ./iRODS/clients/icommands/test/rules3.0/rulemsiAdmShowIRB.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiRdaNoResults.r ./iRODS/clients/icommands/test/rules3.0/rulemsiRdaNoResults.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiIsData.r ./iRODS/clients/icommands/test/rules3.0/rulemsiIsData.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulewriteKeyValPairs.r ./iRODS/clients/icommands/test/rules3.0/rulewriteKeyValPairs.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiGetDiffTime.r ./iRODS/clients/icommands/test/rules3.0/rulemsiGetDiffTime.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiDataObjPhymv.r ./iRODS/clients/icommands/test/rules3.0/rulemsiDataObjPhymv.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiCopyAVUMetadata.r ./iRODS/clients/icommands/test/rules3.0/rulemsiCopyAVUMetadata.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiGetUserACL.r ./iRODS/clients/icommands/test/rules3.0/rulemsiGetUserACL.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiobjget_slink.r ./iRODS/clients/icommands/test/rules3.0/rulemsiobjget_slink.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiHumanToSystemTime.r ./iRODS/clients/icommands/test/rules3.0/rulemsiHumanToSystemTime.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/ruleintegrityFileOwner.r ./iRODS/clients/icommands/test/rules3.0/ruleintegrityFileOwner.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiDeleteUser.r ./iRODS/clients/icommands/test/rules3.0/rulemsiDeleteUser.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiWriteRodsLog.r ./iRODS/clients/icommands/test/rules3.0/rulemsiWriteRodsLog.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiRdaToStdout.r ./iRODS/clients/icommands/test/rules3.0/rulemsiRdaToStdout.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiobjput_http.r ./iRODS/clients/icommands/test/rules3.0/rulemsiobjput_http.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiCollRsync.r ./iRODS/clients/icommands/test/rules3.0/rulemsiCollRsync.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiServerBackup.r ./iRODS/clients/icommands/test/rules3.0/rulemsiServerBackup.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiobjput_z3950.r ./iRODS/clients/icommands/test/rules3.0/rulemsiobjput_z3950.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiGetCollectionPSmeta.r ./iRODS/clients/icommands/test/rules3.0/rulemsiGetCollectionPSmeta.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiMakeQuery.r ./iRODS/clients/icommands/test/rules3.0/rulemsiMakeQuery.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiGetCollectionPSmeta-null.r ./iRODS/clients/icommands/test/rules3.0/rulemsiGetCollectionPSmeta-null.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiDbrCommit.r ./iRODS/clients/icommands/test/rules3.0/rulemsiDbrCommit.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiGetAuditTrailInfoByKeywords.r ./iRODS/clients/icommands/test/rules3.0/rulemsiGetAuditTrailInfoByKeywords.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/ruleintegrityAVUvalue.r ./iRODS/clients/icommands/test/rules3.0/ruleintegrityAVUvalue.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/ruleintegrityFileSize.r ./iRODS/clients/icommands/test/rules3.0/ruleintegrityFileSize.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiRemoveKeyValuePairsFromObj.r ./iRODS/clients/icommands/test/rules3.0/rulemsiRemoveKeyValuePairsFromObj.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiSetDataTypeFromExt.r ./iRODS/clients/icommands/test/rules3.0/rulemsiSetDataTypeFromExt.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiSysChksumDataObj.r ./iRODS/clients/icommands/test/rules3.0/rulemsiSysChksumDataObj.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiobjget_dbo.r ./iRODS/clients/icommands/test/rules3.0/rulemsiobjget_dbo.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiImageConvert-no-properties.r ./iRODS/clients/icommands/test/rules3.0/rulemsiImageConvert-no-properties.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiPhyBundleColl.r ./iRODS/clients/icommands/test/rules3.0/rulemsiPhyBundleColl.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiString2StrArray.r ./iRODS/clients/icommands/test/rules3.0/rulemsiString2StrArray.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/ruleworkflowbreak.r ./iRODS/clients/icommands/test/rules3.0/ruleworkflowbreak.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiDataObjAutoMove.r ./iRODS/clients/icommands/test/rules3.0/rulemsiDataObjAutoMove.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiAdmChangeCoreIRB.r ./iRODS/clients/icommands/test/rules3.0/rulemsiAdmChangeCoreIRB.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiDbrRollback.r ./iRODS/clients/icommands/test/rules3.0/rulemsiDbrRollback.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiFlushMonStat.r ./iRODS/clients/icommands/test/rules3.0/rulemsiFlushMonStat.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiSetDataType.r ./iRODS/clients/icommands/test/rules3.0/rulemsiSetDataType.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiSetDataObjPreferredResc.r ./iRODS/clients/icommands/test/rules3.0/rulemsiSetDataObjPreferredResc.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiPropertiesClear.r ./iRODS/clients/icommands/test/rules3.0/rulemsiPropertiesClear.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiCollRepl.r ./iRODS/clients/icommands/test/rules3.0/rulemsiCollRepl.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiRenameCollection.r ./iRODS/clients/icommands/test/rules3.0/rulemsiRenameCollection.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/ruleworkflowif.r ./iRODS/clients/icommands/test/rules3.0/ruleworkflowif.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiDataObjChksum.r ./iRODS/clients/icommands/test/rules3.0/rulemsiDataObjChksum.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiSetReplComment.r ./iRODS/clients/icommands/test/rules3.0/rulemsiSetReplComment.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiStripAVUs.r ./iRODS/clients/icommands/test/rules3.0/rulemsiStripAVUs.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiAdmShowFNM.r ./iRODS/clients/icommands/test/rules3.0/rulemsiAdmShowFNM.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiAddKeyVal.r ./iRODS/clients/icommands/test/rules3.0/rulemsiAddKeyVal.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiRmColl.r ./iRODS/clients/icommands/test/rules3.0/rulemsiRmColl.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiSetNoDirectRescInp.r ./iRODS/clients/icommands/test/rules3.0/rulemsiSetNoDirectRescInp.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiReadMDTemplateIntoTagStruct.r ./iRODS/clients/icommands/test/rules3.0/rulemsiReadMDTemplateIntoTagStruct.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiGetStdoutInExecCmdOut.r ./iRODS/clients/icommands/test/rules3.0/rulemsiGetStdoutInExecCmdOut.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiGetAuditTrailInfoByObjectID.r ./iRODS/clients/icommands/test/rules3.0/rulemsiGetAuditTrailInfoByObjectID.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiPropertiesSet.r ./iRODS/clients/icommands/test/rules3.0/rulemsiPropertiesSet.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiAdmShowDVM.r ./iRODS/clients/icommands/test/rules3.0/rulemsiAdmShowDVM.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiListEnabledMS.r ./iRODS/clients/icommands/test/rules3.0/rulemsiListEnabledMS.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiImageConvert.r ./iRODS/clients/icommands/test/rules3.0/rulemsiImageConvert.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiobjput_test.r ./iRODS/clients/icommands/test/rules3.0/rulemsiobjput_test.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiGetTaggedValueFromString.r ./iRODS/clients/icommands/test/rules3.0/rulemsiGetTaggedValueFromString.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiobjget_z3950.r ./iRODS/clients/icommands/test/rules3.0/rulemsiobjget_z3950.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiRdaRollback.r ./iRODS/clients/icommands/test/rules3.0/rulemsiRdaRollback.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiImageGetProperties.r ./iRODS/clients/icommands/test/rules3.0/rulemsiImageGetProperties.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiRdaCommit.r ./iRODS/clients/icommands/test/rules3.0/rulemsiRdaCommit.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiCreateUser.r ./iRODS/clients/icommands/test/rules3.0/rulemsiCreateUser.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiSetGraftPathScheme.r ./iRODS/clients/icommands/test/rules3.0/rulemsiSetGraftPathScheme.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/ruleintegrityACL.r ./iRODS/clients/icommands/test/rules3.0/ruleintegrityACL.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiDeleteUsersFromDataObj.r ./iRODS/clients/icommands/test/rules3.0/rulemsiDeleteUsersFromDataObj.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiAdmClearAppRuleStruct.r ./iRODS/clients/icommands/test/rules3.0/rulemsiAdmClearAppRuleStruct.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiGetFormattedSystemTime.r ./iRODS/clients/icommands/test/rules3.0/rulemsiGetFormattedSystemTime.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/ruleworkflownop.r ./iRODS/clients/icommands/test/rules3.0/ruleworkflownop.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiPropertiesGet.r ./iRODS/clients/icommands/test/rules3.0/rulemsiPropertiesGet.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiOprDisallowed.r ./iRODS/clients/icommands/test/rules3.0/rulemsiOprDisallowed.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiGetObjType.r ./iRODS/clients/icommands/test/rules3.0/rulemsiGetObjType.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiApplyDCMetadataTemplate.r ./iRODS/clients/icommands/test/rules3.0/rulemsiApplyDCMetadataTemplate.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiExecStrCondQueryWithOptions.r ./iRODS/clients/icommands/test/rules3.0/rulemsiExecStrCondQueryWithOptions.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiSetRandomScheme.r ./iRODS/clients/icommands/test/rules3.0/rulemsiSetRandomScheme.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiTarFileExtract.r ./iRODS/clients/icommands/test/rules3.0/rulemsiTarFileExtract.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiSetQuota.r ./iRODS/clients/icommands/test/rules3.0/rulemsiSetQuota.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiSetReServerNumProc.r ./iRODS/clients/icommands/test/rules3.0/rulemsiSetReServerNumProc.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiGetDataObjPSmeta.r ./iRODS/clients/icommands/test/rules3.0/rulemsiGetDataObjPSmeta.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiSubstr.r ./iRODS/clients/icommands/test/rules3.0/rulemsiSubstr.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiobjget_http.r ./iRODS/clients/icommands/test/rules3.0/rulemsiobjget_http.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiTwitterPost.r ./iRODS/clients/icommands/test/rules3.0/rulemsiTwitterPost.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiExtractTemplateMDFromBuf.r ./iRODS/clients/icommands/test/rules3.0/rulemsiExtractTemplateMDFromBuf.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulewriteBytesBuf.r ./iRODS/clients/icommands/test/rules3.0/rulewriteBytesBuf.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiGetCollectionContentsReport.r ./iRODS/clients/icommands/test/rules3.0/rulemsiGetCollectionContentsReport.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiXmsgServerConnect.r ./iRODS/clients/icommands/test/rules3.0/rulemsiXmsgServerConnect.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiGetCollectionACL.r ./iRODS/clients/icommands/test/rules3.0/rulemsiGetCollectionACL.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiSetRescSortScheme.r ./iRODS/clients/icommands/test/rules3.0/rulemsiSetRescSortScheme.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiAdmRetrieveRulesFromDBIntoStruct.r ./iRODS/clients/icommands/test/rules3.0/rulemsiAdmRetrieveRulesFromDBIntoStruct.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiFreeBuffer.r ./iRODS/clients/icommands/test/rules3.0/rulemsiFreeBuffer.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/ruleintegrityExpiry.r ./iRODS/clients/icommands/test/rules3.0/ruleintegrityExpiry.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/ruleworkflowremote.r ./iRODS/clients/icommands/test/rules3.0/ruleworkflowremote.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiDataObjGet.r ./iRODS/clients/icommands/test/rules3.0/rulemsiDataObjGet.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiPhyPathReg.r ./iRODS/clients/icommands/test/rules3.0/rulemsiPhyPathReg.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiGetObjectPath.r ./iRODS/clients/icommands/test/rules3.0/rulemsiGetObjectPath.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiAdmInsertRulesFromStructIntoDB.r ./iRODS/clients/icommands/test/rules3.0/rulemsiAdmInsertRulesFromStructIntoDB.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiSendXmsg.r ./iRODS/clients/icommands/test/rules3.0/rulemsiSendXmsg.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiIp2location.r ./iRODS/clients/icommands/test/rules3.0/rulemsiIp2location.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiImageConvert-compression.r ./iRODS/clients/icommands/test/rules3.0/rulemsiImageConvert-compression.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiDataObjOpen.r ./iRODS/clients/icommands/test/rules3.0/rulemsiDataObjOpen.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiGuessDataType.r ./iRODS/clients/icommands/test/rules3.0/rulemsiGuessDataType.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiPrintKeyValPair.r ./iRODS/clients/icommands/test/rules3.0/rulemsiPrintKeyValPair.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiStrArray2String.r ./iRODS/clients/icommands/test/rules3.0/rulemsiStrArray2String.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiobjput_irods.r ./iRODS/clients/icommands/test/rules3.0/rulemsiobjput_irods.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiAclPolicy.r ./iRODS/clients/icommands/test/rules3.0/rulemsiAclPolicy.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/ruleworkflowforeach.r ./iRODS/clients/icommands/test/rules3.0/ruleworkflowforeach.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulewritePosInt.r ./iRODS/clients/icommands/test/rules3.0/rulewritePosInt.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiAddKeyValToMspStr.r ./iRODS/clients/icommands/test/rules3.0/rulemsiAddKeyValToMspStr.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiExecStrCondQuery.r ./iRODS/clients/icommands/test/rules3.0/rulemsiExecStrCondQuery.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiServerMonPerf.r ./iRODS/clients/icommands/test/rules3.0/rulemsiServerMonPerf.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiStrchop.r ./iRODS/clients/icommands/test/rules3.0/rulemsiStrchop.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiString2KeyValPair.r ./iRODS/clients/icommands/test/rules3.0/rulemsiString2KeyValPair.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiExtractNaraMetadata.r ./iRODS/clients/icommands/test/rules3.0/rulemsiExtractNaraMetadata.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/ruleworkflowcut.r ./iRODS/clients/icommands/test/rules3.0/ruleworkflowcut.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiobjget_srb.r ./iRODS/clients/icommands/test/rules3.0/rulemsiobjget_srb.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulereadXMsg.r ./iRODS/clients/icommands/test/rules3.0/rulereadXMsg.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiAssociateKeyValuePairsToObj.r ./iRODS/clients/icommands/test/rules3.0/rulemsiAssociateKeyValuePairsToObj.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiCheckPermission.r ./iRODS/clients/icommands/test/rules3.0/rulemsiCheckPermission.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiFlagInfectedObjs.r ./iRODS/clients/icommands/test/rules3.0/rulemsiFlagInfectedObjs.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiGetAuditTrailInfoByActionID.r ./iRODS/clients/icommands/test/rules3.0/rulemsiGetAuditTrailInfoByActionID.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiReplColl.r ./iRODS/clients/icommands/test/rules3.0/rulemsiReplColl.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiExecGenQuery.r ./iRODS/clients/icommands/test/rules3.0/rulemsiExecGenQuery.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiSetDefaultResc.r ./iRODS/clients/icommands/test/rules3.0/rulemsiSetDefaultResc.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiGetCollectionSize.r ./iRODS/clients/icommands/test/rules3.0/rulemsiGetCollectionSize.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiSetBulkPutPostProcPolicy.r ./iRODS/clients/icommands/test/rules3.0/rulemsiSetBulkPutPostProcPolicy.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiXmsgServerDisConnect.r ./iRODS/clients/icommands/test/rules3.0/rulemsiXmsgServerDisConnect.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiGetDataObjAIP.r ./iRODS/clients/icommands/test/rules3.0/rulemsiGetDataObjAIP.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiGetValByKey.r ./iRODS/clients/icommands/test/rules3.0/rulemsiGetValByKey.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiSdssImgCutout_GetJpeg.r ./iRODS/clients/icommands/test/rules3.0/rulemsiSdssImgCutout_GetJpeg.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiCollCreate.r ./iRODS/clients/icommands/test/rules3.0/rulemsiCollCreate.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiAdmChangeCoreRE.r ./iRODS/clients/icommands/test/rules3.0/rulemsiAdmChangeCoreRE.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiCollectionSpider.r ./iRODS/clients/icommands/test/rules3.0/rulemsiCollectionSpider.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiDigestMonStat.r ./iRODS/clients/icommands/test/rules3.0/rulemsiDigestMonStat.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiGetStderrInExecCmdOut.r ./iRODS/clients/icommands/test/rules3.0/rulemsiGetStderrInExecCmdOut.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiCreateXmsgInp.r ./iRODS/clients/icommands/test/rules3.0/rulemsiCreateXmsgInp.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiAddUserToGroup.r ./iRODS/clients/icommands/test/rules3.0/rulemsiAddUserToGroup.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiMakeGenQuery.r ./iRODS/clients/icommands/test/rules3.0/rulemsiMakeGenQuery.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/ruleworkflowfor.r ./iRODS/clients/icommands/test/rules3.0/ruleworkflowfor.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiAdmAppendToTopOfCoreRE.r ./iRODS/clients/icommands/test/rules3.0/rulemsiAdmAppendToTopOfCoreRE.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiPropertiesRemove.r ./iRODS/clients/icommands/test/rules3.0/rulemsiPropertiesRemove.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiSetRescQuotaPolicy.r ./iRODS/clients/icommands/test/rules3.0/rulemsiSetRescQuotaPolicy.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiNoChkFilePathPerm.r ./iRODS/clients/icommands/test/rules3.0/rulemsiNoChkFilePathPerm.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiPrintGenQueryInp.r ./iRODS/clients/icommands/test/rules3.0/rulemsiPrintGenQueryInp.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiobjput_srb.r ./iRODS/clients/icommands/test/rules3.0/rulemsiobjput_srb.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiSysMetaModify.r ./iRODS/clients/icommands/test/rules3.0/rulemsiSysMetaModify.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiDeleteUnusedAVUs.r ./iRODS/clients/icommands/test/rules3.0/rulemsiDeleteUnusedAVUs.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiSendStdoutAsEmail.r ./iRODS/clients/icommands/test/rules3.0/rulemsiSendStdoutAsEmail.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiXsltApply.r ./iRODS/clients/icommands/test/rules3.0/rulemsiXsltApply.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiRecursiveCollCopy.r ./iRODS/clients/icommands/test/rules3.0/rulemsiRecursiveCollCopy.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiVacuum.r ./iRODS/clients/icommands/test/rules3.0/rulemsiVacuum.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiCreateCollByAdmin.r ./iRODS/clients/icommands/test/rules3.0/rulemsiCreateCollByAdmin.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiStrToBytesBuf.r ./iRODS/clients/icommands/test/rules3.0/rulemsiStrToBytesBuf.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiAdmAppendToTopOfCoreIRB.r ./iRODS/clients/icommands/test/rules3.0/rulemsiAdmAppendToTopOfCoreIRB.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiCheckOwner.r ./iRODS/clients/icommands/test/rules3.0/rulemsiCheckOwner.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiRdaToDataObj.r ./iRODS/clients/icommands/test/rules3.0/rulemsiRdaToDataObj.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiExit.r ./iRODS/clients/icommands/test/rules3.0/rulemsiExit.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiAdmShowCoreRE.r ./iRODS/clients/icommands/test/rules3.0/rulemsiAdmShowCoreRE.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiDeleteDisallowed.r ./iRODS/clients/icommands/test/rules3.0/rulemsiDeleteDisallowed.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiPropertiesNew.r ./iRODS/clients/icommands/test/rules3.0/rulemsiPropertiesNew.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/ruleintegrityAVU.r ./iRODS/clients/icommands/test/rules3.0/ruleintegrityAVU.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiGoodFailure.r ./iRODS/clients/icommands/test/rules3.0/rulemsiGoodFailure.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiGetAuditTrailInfoByUserID.r ./iRODS/clients/icommands/test/rules3.0/rulemsiGetAuditTrailInfoByUserID.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiExecCmd.r ./iRODS/clients/icommands/test/rules3.0/rulemsiExecCmd.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/nqueens.r ./iRODS/clients/icommands/test/rules3.0/nqueens.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiSetPublicUserOpr.r ./iRODS/clients/icommands/test/rules3.0/rulemsiSetPublicUserOpr.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiGetDataObjACL.r ./iRODS/clients/icommands/test/rules3.0/rulemsiGetDataObjACL.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiDataObjLseek.r ./iRODS/clients/icommands/test/rules3.0/rulemsiDataObjLseek.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiDataObjTrim.r ./iRODS/clients/icommands/test/rules3.0/rulemsiDataObjTrim.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiTarFileCreate.r ./iRODS/clients/icommands/test/rules3.0/rulemsiTarFileCreate.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/ruleworkflowassign.r ./iRODS/clients/icommands/test/rules3.0/ruleworkflowassign.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiSortDataObj.r ./iRODS/clients/icommands/test/rules3.0/rulemsiSortDataObj.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/ruleworkflowapplyAllRules.r ./iRODS/clients/icommands/test/rules3.0/ruleworkflowapplyAllRules.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiAdmReadRulesFromFileIntoStruct.r ./iRODS/clients/icommands/test/rules3.0/rulemsiAdmReadRulesFromFileIntoStruct.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiDataObjUnlink.r ./iRODS/clients/icommands/test/rules3.0/rulemsiDataObjUnlink.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiSetNumThreads.r ./iRODS/clients/icommands/test/rules3.0/rulemsiSetNumThreads.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiAutoReplicateService.r ./iRODS/clients/icommands/test/rules3.0/rulemsiAutoReplicateService.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiCheckHostAccessControl.r ./iRODS/clients/icommands/test/rules3.0/rulemsiCheckHostAccessControl.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiRcvXmsg.r ./iRODS/clients/icommands/test/rules3.0/rulemsiRcvXmsg.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiIsColl.r ./iRODS/clients/icommands/test/rules3.0/rulemsiIsColl.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiDataObjWrite.r ./iRODS/clients/icommands/test/rules3.0/rulemsiDataObjWrite.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/ruleworkflowsucceed.r ./iRODS/clients/icommands/test/rules3.0/ruleworkflowsucceed.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiGetDataObjAVUs.r ./iRODS/clients/icommands/test/rules3.0/rulemsiGetDataObjAVUs.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiSetACL.r ./iRODS/clients/icommands/test/rules3.0/rulemsiSetACL.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulewriteString.r ./iRODS/clients/icommands/test/rules3.0/rulewriteString.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiGetContInxFromGenQueryOut.r ./iRODS/clients/icommands/test/rules3.0/rulemsiGetContInxFromGenQueryOut.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiRegisterData.r ./iRODS/clients/icommands/test/rules3.0/rulemsiRegisterData.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiSetDataObjAvoidResc.r ./iRODS/clients/icommands/test/rules3.0/rulemsiSetDataObjAvoidResc.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiDataObjChksumWithOptions.r ./iRODS/clients/icommands/test/rules3.0/rulemsiDataObjChksumWithOptions.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiAdmAddAppRuleStruct.r ./iRODS/clients/icommands/test/rules3.0/rulemsiAdmAddAppRuleStruct.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiGetSystemTime.r ./iRODS/clients/icommands/test/rules3.0/rulemsiGetSystemTime.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiDataObjGetWithOptions.r ./iRODS/clients/icommands/test/rules3.0/rulemsiDataObjGetWithOptions.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiDataObjReplWithOptions.r ./iRODS/clients/icommands/test/rules3.0/rulemsiDataObjReplWithOptions.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiDataObjRsync.r ./iRODS/clients/icommands/test/rules3.0/rulemsiDataObjRsync.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiRenameLocalZone.r ./iRODS/clients/icommands/test/rules3.0/rulemsiRenameLocalZone.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiObjByName.r ./iRODS/clients/icommands/test/rules3.0/rulemsiObjByName.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiDataObjPut.r ./iRODS/clients/icommands/test/rules3.0/rulemsiDataObjPut.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiSplitPath.r ./iRODS/clients/icommands/test/rules3.0/rulemsiSplitPath.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiStructFileBundle.r ./iRODS/clients/icommands/test/rules3.0/rulemsiStructFileBundle.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiz3950Submit.r ./iRODS/clients/icommands/test/rules3.0/rulemsiz3950Submit.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiSetMultiReplPerResc.r ./iRODS/clients/icommands/test/rules3.0/rulemsiSetMultiReplPerResc.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiPropertiesExists.r ./iRODS/clients/icommands/test/rules3.0/rulemsiPropertiesExists.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiDeleteCollByAdmin.r ./iRODS/clients/icommands/test/rules3.0/rulemsiDeleteCollByAdmin.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiAddConditionToGenQuery.r ./iRODS/clients/icommands/test/rules3.0/rulemsiAddConditionToGenQuery.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiPropertiesToString.r ./iRODS/clients/icommands/test/rules3.0/rulemsiPropertiesToString.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiGetFormattedSystemTime-human.r ./iRODS/clients/icommands/test/rules3.0/rulemsiGetFormattedSystemTime-human.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiGetAuditTrailInfoByTimeStamp.r ./iRODS/clients/icommands/test/rules3.0/rulemsiGetAuditTrailInfoByTimeStamp.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiPropertiesClone.r ./iRODS/clients/icommands/test/rules3.0/rulemsiPropertiesClone.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiGetUserInfo.r ./iRODS/clients/icommands/test/rules3.0/rulemsiGetUserInfo.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiGetMoreRows.r ./iRODS/clients/icommands/test/rules3.0/rulemsiGetMoreRows.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiGetQuote.r ./iRODS/clients/icommands/test/rules3.0/rulemsiGetQuote.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiLoadMetadataFromXml.r ./iRODS/clients/icommands/test/rules3.0/rulemsiLoadMetadataFromXml.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiSetResource.r ./iRODS/clients/icommands/test/rules3.0/rulemsiSetResource.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiGetIcatTime.r ./iRODS/clients/icommands/test/rules3.0/rulemsiGetIcatTime.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiGetRulesFromDBIntoStruct.r ./iRODS/clients/icommands/test/rules3.0/rulemsiGetRulesFromDBIntoStruct.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiDataObjCopy.r ./iRODS/clients/icommands/test/rules3.0/rulemsiDataObjCopy.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiStageDataObj.r ./iRODS/clients/icommands/test/rules3.0/rulemsiStageDataObj.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiAdmWriteRulesFromStructIntoFile.r ./iRODS/clients/icommands/test/rules3.0/rulemsiAdmWriteRulesFromStructIntoFile.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiDoSomething.r ./iRODS/clients/icommands/test/rules3.0/rulemsiDoSomething.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/ruleworkflowwhile.r ./iRODS/clients/icommands/test/rules3.0/ruleworkflowwhile.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiDataObjRead.r ./iRODS/clients/icommands/test/rules3.0/rulemsiDataObjRead.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiLoadUserModsFromDataObj.r ./iRODS/clients/icommands/test/rules3.0/rulemsiLoadUserModsFromDataObj.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiStrlen.r ./iRODS/clients/icommands/test/rules3.0/rulemsiStrlen.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiDataObjUnlink-trash.r ./iRODS/clients/icommands/test/rules3.0/rulemsiDataObjUnlink-trash.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulewriteLine.r ./iRODS/clients/icommands/test/rules3.0/rulewriteLine.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiSleep.r ./iRODS/clients/icommands/test/rules3.0/rulemsiSleep.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiExportRecursiveCollMeta.r ./iRODS/clients/icommands/test/rules3.0/rulemsiExportRecursiveCollMeta.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiXmlDocSchemaValidate.r ./iRODS/clients/icommands/test/rules3.0/rulemsiXmlDocSchemaValidate.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiObjStat.r ./iRODS/clients/icommands/test/rules3.0/rulemsiObjStat.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiobjput_dbo.r ./iRODS/clients/icommands/test/rules3.0/rulemsiobjput_dbo.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiPrintGenQueryOutToBuffer.r ./iRODS/clients/icommands/test/rules3.0/rulemsiPrintGenQueryOutToBuffer.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiLoadMetadataFromDataObj.r ./iRODS/clients/icommands/test/rules3.0/rulemsiLoadMetadataFromDataObj.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiDataObjClose.r ./iRODS/clients/icommands/test/rules3.0/rulemsiDataObjClose.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiFtpGet.r ./iRODS/clients/icommands/test/rules3.0/rulemsiFtpGet.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiXmsgCreateStream.r ./iRODS/clients/icommands/test/rules3.0/rulemsiXmsgCreateStream.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiobjput_slink.r ./iRODS/clients/icommands/test/rules3.0/rulemsiobjput_slink.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiLoadACLFromDataObj.r ./iRODS/clients/icommands/test/rules3.0/rulemsiLoadACLFromDataObj.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiDataObjCreate.r ./iRODS/clients/icommands/test/rules3.0/rulemsiDataObjCreate.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiSendMail.r ./iRODS/clients/icommands/test/rules3.0/rulemsiSendMail.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiPropertiesAdd.r ./iRODS/clients/icommands/test/rules3.0/rulemsiPropertiesAdd.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiSysReplDataObj.r ./iRODS/clients/icommands/test/rules3.0/rulemsiSysReplDataObj.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulegenerateBagIt.r ./iRODS/clients/icommands/test/rules3.0/rulegenerateBagIt.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulewriteXMsg.r ./iRODS/clients/icommands/test/rules3.0/rulewriteXMsg.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiAddSelectFieldToGenQuery.r ./iRODS/clients/icommands/test/rules3.0/rulemsiAddSelectFieldToGenQuery.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiNoTrashCan.r ./iRODS/clients/icommands/test/rules3.0/rulemsiNoTrashCan.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiCheckAccess.r ./iRODS/clients/icommands/test/rules3.0/rulemsiCheckAccess.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/ruleworkflowerrorcode.r ./iRODS/clients/icommands/test/rules3.0/ruleworkflowerrorcode.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiQuota.r ./iRODS/clients/icommands/test/rules3.0/rulemsiQuota.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiDboExec.r ./iRODS/clients/icommands/test/rules3.0/rulemsiDboExec.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiDataObjRepl.r ./iRODS/clients/icommands/test/rules3.0/rulemsiDataObjRepl.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiobjget_irods.r ./iRODS/clients/icommands/test/rules3.0/rulemsiobjget_irods.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiCreateUserAccountsFromDataObj.r ./iRODS/clients/icommands/test/rules3.0/rulemsiCreateUserAccountsFromDataObj.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiobjget_test.r ./iRODS/clients/icommands/test/rules3.0/rulemsiobjget_test.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/testsuite1.r ./iRODS/clients/icommands/test/rules3.0/testsuite1.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/testsuite2.r ./iRODS/clients/icommands/test/rules3.0/testsuite2.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/testsuite3.r ./iRODS/clients/icommands/test/rules3.0/testsuite3.r
+d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/misc -
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/misc/switchuser.py ./iRODS/clients/icommands/test/misc/switchuser.py
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/misc/sample.email ./iRODS/clients/icommands/test/misc/sample.email
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/misc/HELP.looptest ./iRODS/clients/icommands/test/misc/HELP.looptest
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/misc/iTestGenQuery.cpp ./iRODS/clients/icommands/test/misc/iTestGenQuery.cpp
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/misc/i.cpp ./iRODS/clients/icommands/test/misc/i.cpp
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/misc/email.tag ./iRODS/clients/icommands/test/misc/email.tag
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/misc/addRepeatTest.txt ./iRODS/clients/icommands/test/misc/addRepeatTest.txt
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/misc/repeatTest.txt ./iRODS/clients/icommands/test/misc/repeatTest.txt
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/misc/devtestuser-account-ACL.txt ./iRODS/clients/icommands/test/misc/devtestuser-account-ACL.txt
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/misc/load-metadata.txt ./iRODS/clients/icommands/test/misc/load-metadata.txt
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/misc/load-usermods.txt ./iRODS/clients/icommands/test/misc/load-usermods.txt
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/submit_time.pl ./iRODS/clients/icommands/test/submit_time.pl
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/stresstest2.sh ./iRODS/clients/icommands/test/stresstest2.sh
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/testiCommands.pl ./iRODS/clients/icommands/test/testiCommands.pl
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/submit.pl ./iRODS/clients/icommands/test/submit.pl

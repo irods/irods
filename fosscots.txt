@@ -1,16 +1,16 @@
-This file contains a comprehensive listing of Free / Open Source Software (FOSS) and Commercial Off-the-Shelf (COTS) software utilized by iRODS/E-iRODS and the packaging and development of iRODS/E-iRODS.
+This file contains a comprehensive listing of Free / Open Source Software (FOSS) and Commercial Off-the-Shelf (COTS) software utilized by iRODS and the packaging and development of iRODS.
 
 
 ----------------------------------------------
 
-iRODS/E-iRODS COTS
+iRODS COTS
 ------------------
 Oracle
 DDN WOS
 Amazon S3
 HPSS
 
-iRODS/E-iRODS FOSS
+iRODS FOSS
 ------------------
 c
 c++
@@ -45,12 +45,12 @@ DEVELOPMENT COTS
 VMWare VSphere
 Microsoft Windows
 Mac OS X
+github.com
 
 DEVELOPMENT FOSS
 ----------------
 git
 hudson
-gforge
 cppcheck
 valgrind
 suse

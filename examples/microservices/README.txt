@@ -6,14 +6,14 @@ the screen.
 
 To install this example plugin:
  $ make msvc_test
- $ cp libeirods_msvc_test.so /var/lib/eirods/plugins/microservices
- $ chown eirods:eirods /var/lib/eirods/plugins/microservices/libeirods_msvc_test.so
+ $ cp libirods_msvc_test.so /var/lib/irods/plugins/microservices
+ $ chown irods:irods /var/lib/irods/plugins/microservices/libirods_msvc_test.so
 
 Running make will generate the plugin, which will then
-need be copied to the /var/lib/eirods/plugins/microservices directory
-and chown'ed to eirods:eirods by the Data Grid Administrator for the
+need be copied to the /var/lib/irods/plugins/microservices directory
+and chown'ed to irods:irods by the Data Grid Administrator for the
 plugin to be loadable and the microservice made available to be
 executed.
 
 The example can then be run with the command:
- $ irule -F run_eirods_msvc_test.r
+ $ irule -F run_irods_msvc_test.r

@@ -1,12 +1,12 @@
 
 =======================================================================
 
-Welcome to E-iRODS.
+Welcome to iRODS.
 
 This installation of a resource server is currently incomplete and
-needs the following steps executed as the service account "eirods":
+needs the following steps executed as the service account "irods":
 
-  sudo su - eirods
+  sudo su - irods
 
 As the service account user, executing the following script will
 prompt for necessary iRODS iCAT server information and then
@@ -16,7 +16,7 @@ populate your irods.config accordingly:
 
 This will result in a running resource server with a default
 resource named with your hostname concatenated with "Resource"
-and a local vault in ~/eirods/iRODS/Vault.
+and a local vault in ~/iRODS/Vault.
 
 Please consult the manual for further configuration details.
 

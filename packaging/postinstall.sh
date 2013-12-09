@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
-EIRODS_HOME_DIR=$1
-OS_EIRODS_ACCT=$2
+IRODS_HOME_DIR=$1
+OS_IRODS_ACCT=$2
 SERVER_TYPE=$3
 DB_TYPE=$4
 DB_ADMIN_ROLE=$5
@@ -10,11 +10,11 @@ DB_HOST=$7
 DB_PORT=$8
 DB_USER=$9
 
-IRODS_HOME=$EIRODS_HOME_DIR/iRODS
+IRODS_HOME=$IRODS_HOME_DIR/iRODS
 
 # =-=-=-=-=-=-=-
 # detect whether this is an upgrade
-UPGRADE_FLAG_FILE=$EIRODS_HOME_DIR/upgrade.tmp
+UPGRADE_FLAG_FILE=$IRODS_HOME_DIR/upgrade.tmp
 if [ -f "$UPGRADE_FLAG_FILE" ] ; then
     UPGRADE_FLAG="true"
 else
@@ -25,15 +25,15 @@ fi
 # database password
 if [ "$UPGRADE_FLAG" == "true" ] ; then
     # read existing database password
-    DB_PASS=`grep DATABASE_ADMIN_PASSWORD $EIRODS_HOME_DIR/iRODS/config/irods.config | awk -F\' '{print $2}'`
+    DB_PASS=`grep DATABASE_ADMIN_PASSWORD $IRODS_HOME_DIR/iRODS/config/irods.config | awk -F\' '{print $2}'`
     DB_PASS=`echo $DB_PASS | tr -d ' '`
 else
     # generate new database password
     DB_PASS=`cat /dev/urandom | base64 | head -c16`
 fi
 #echo "UPGRADE_FLAG=[$UPGRADE_FLAG]"
-#echo "EIRODS_HOME_DIR=[$EIRODS_HOME_DIR]"
-#echo "OS_EIRODS_ACCT=[$OS_EIRODS_ACCT]"
+#echo "IRODS_HOME_DIR=[$IRODS_HOME_DIR]"
+#echo "OS_IRODS_ACCT=[$OS_IRODS_ACCT]"
 #echo "SERVER_TYPE=[$SERVER_TYPE]"
 #echo "DB_TYPE=[$DB_TYPE]"
 #echo "DB_ADMIN_ROLE=[$DB_ADMIN_ROLE]"
@@ -46,7 +46,7 @@ fi
 
 # =-=-=-=-=-=-=-
 # detect operating system
-DETECTEDOS=`$EIRODS_HOME_DIR/packaging/find_os.sh`
+DETECTEDOS=`$IRODS_HOME_DIR/packaging/find_os.sh`
 
 # =-=-=-=-=-=-=-
 # clean up any stray iRODS files in /tmp which will cause problems
@@ -56,8 +56,8 @@ fi
 
 # =-=-=-=-=-=-=-
 # explode tarball of necessary coverage files if it exists
-if [ -f "$EIRODS_HOME_DIR/gcovfiles.tgz" ] ; then
-    cd $EIRODS_HOME_DIR
+if [ -f "$IRODS_HOME_DIR/gcovfiles.tgz" ] ; then
+    cd $IRODS_HOME_DIR
     tar xzf gcovfiles.tgz
 fi
 
@@ -70,7 +70,7 @@ if [ "$SERVER_TYPE" == "icat" ] ; then
 
     # =-=-=-=-=-=-=-
     # detect database path and update installed irods.config accordingly
-    PGPATH=`$EIRODS_HOME_DIR/packaging/find_postgres_bin.sh`
+    PGPATH=`$IRODS_HOME_DIR/packaging/find_postgres_bin.sh`
 	if [ $PGPATH == "FAIL" ]; then
 		echo "ERROR :: Multiple Versions of postgres found, Aborting."
 		echo `find /usr -name "psql" -print 2> /dev/null`
@@ -83,37 +83,51 @@ if [ "$SERVER_TYPE" == "icat" ] ; then
 
     # =-=-=-=-=-=-=-
     # make sure postgres is running on this machine
+    set +e
     PSQLSTATUS="notrunning"
     if [ "$DETECTEDOS" == "SuSE" ] ; then
+        # openSuSE 12.1
         PSQLSTATE=`/etc/init.d/postgresql status 2>&1 | grep "Active" | awk '{print $2}'`
         if [ "$PSQLSTATE" == "active" ] ; then
             PSQLSTATUS="running"
         else
-            PSQLSTATE=`/etc/init.d/postgresql status 2>&1 | grep "running" | awk '{print $4}'`
-            if [ "$PSQLSTATE" == "..running" ] ; then
+            # SLES 11sp1 and 11sp2
+            PSQLSTATE=`/etc/init.d/postgresql status 2>&1 | grep "running"`
+            if [ "$PSQLSTATE" != "" ] ; then
                 PSQLSTATUS="running"
             fi
         fi
     elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+        # CentOS 5 and 6 w/ postgresql 8.x
         PSQLSTATE=`/etc/init.d/postgresql status 2>&1 | grep "postmaster" | awk '{print $NF}'`
         if [ "$PSQLSTATE" == "running..." ] ; then
             PSQLSTATUS="running"
         else
+            # Fedora 17 w/ postgresql 9.1
             PSQLSTATE=`service postgresql status 2>&1 | grep "running"`
             if [ "$PSQLSTATE" != "" ] ; then
                 PSQLSTATUS="running"
+            else
+                # CentOS 5 and 6 w/ postgresql 9.1
+                PSQLSTATE=`service postgresql-9.1 status 2>&1 | grep "running"`
+                if [ "$PSQLSTATE" != "" ] ; then
+                    PSQLSTATUS="running"
+                fi
             fi
         fi
     elif [ "$DETECTEDOS" == "Ubuntu" ] ; then
+        # Ubuntu 10.04
         PSQLSTATE=`/etc/init.d/postgresql-8.4 status 2>&1 | grep "clusters" | awk '{print $3}'`
         if [ "$PSQLSTATE" != "" ] ; then
             PSQLSTATUS="running"
         else
+            # Ubuntu 12.04
             PSQLSTATE=`/etc/init.d/postgresql status 2>&1 | grep "clusters" | awk '{print $3}'`
             if [ "$PSQLSTATE" != "" ] ; then
                 PSQLSTATUS="running"
             else
-                PSQLSTATE=`/etc/init.d/postgresql status 2>&1 | grep "online" | awk '{print $4}'`
+                # Ubuntu 13.04
+                PSQLSTATE=`/etc/init.d/postgresql status 2>&1 | grep "online"`
                 if [ "$PSQLSTATE" != "" ] ; then
                     PSQLSTATUS="running"
                 fi
@@ -122,6 +136,7 @@ if [ "$SERVER_TYPE" == "icat" ] ; then
     else
         PSQLSTATUS="running"
     fi
+    set -e
     if [ "$PSQLSTATUS" != "running" ] ; then
         echo "ERROR :: Installed PostgreSQL database server needs to be running, Aborting."
         if [ "$DETECTEDOS" == "SuSE" ] ; then
@@ -148,9 +163,9 @@ if [ "$SERVER_TYPE" == "icat" ] ; then
     if [ "$UPGRADE_FLAG" == "false" ] ; then
         # =-=-=-=-=-=-=-
         # find postgres path & psql - modify config/irods.config accordingly
-        EIRODSPOSTGRESDIR="$PGPATH/"
-        echo "Detecting PostgreSQL Path: [$EIRODSPOSTGRESDIR]"
-        sed -e "\,^\$DATABASE_HOME,s,^.*$,\$DATABASE_HOME = '$EIRODSPOSTGRESDIR';," $IRODS_HOME/config/irods.config > /tmp/irods.config.tmp
+        IRODSPOSTGRESDIR="$PGPATH/"
+        echo "Detecting PostgreSQL Path: [$IRODSPOSTGRESDIR]"
+        sed -e "\,^\$DATABASE_HOME,s,^.*$,\$DATABASE_HOME = '$IRODSPOSTGRESDIR';," $IRODS_HOME/config/irods.config > /tmp/irods.config.tmp
         mv /tmp/irods.config.tmp $IRODS_HOME/config/irods.config
 
         # =-=-=-=-=-=-=-
@@ -197,22 +212,22 @@ fi
 
 # =-=-=-=-=-=-=-
 # set permissions on the installed files
-chown -R $OS_EIRODS_ACCT:$OS_EIRODS_ACCT $IRODS_HOME
+chown -R $OS_IRODS_ACCT:$OS_IRODS_ACCT $IRODS_HOME
 
 # =-=-=-=-=-=-=-
 # touch odbc file so it exists for the install script to update
-touch $EIRODS_HOME_DIR/.odbc.ini
-chown $OS_EIRODS_ACCT:$OS_EIRODS_ACCT $EIRODS_HOME_DIR/.odbc.ini
+touch $IRODS_HOME_DIR/.odbc.ini
+chown $OS_IRODS_ACCT:$OS_IRODS_ACCT $IRODS_HOME_DIR/.odbc.ini
 
 
 # =-=-=-=-=-=-=-
 # setup runlevels and aliases (use os-specific tools)
 if [ "$DETECTEDOS" == "Ubuntu" ] ; then
-    update-rc.d eirods defaults
+    update-rc.d irods defaults
 elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-    /sbin/chkconfig --add eirods
+    /sbin/chkconfig --add irods
 elif [ "$DETECTEDOS" == "SuSE" ] ; then
-    /sbin/chkconfig --add eirods
+    /sbin/chkconfig --add irods
 fi
 
 
@@ -292,28 +307,28 @@ cd $PWD
 if [ "$UPGRADE_FLAG" == "true" ] ; then
     # =-=-=-=-=-=-=-
     # start the upgraded server
-    # (instead of running eirods_setup.pl which would have started it)
+    # (instead of running irods_setup.pl which would have started it)
     set +e
-    su --shell=/bin/bash -c "cd $IRODS_HOME; ./irodsctl start" $OS_EIRODS_ACCT
+    su --shell=/bin/bash -c "cd $IRODS_HOME; ./irodsctl start" $OS_IRODS_ACCT
     set -e
 else
     # =-=-=-=-=-=-=-
     # run setup script to configure an ICAT server
     if [ "$SERVER_TYPE" == "icat" ] ; then
         cd $IRODS_HOME
-        su --shell=/bin/bash -c "perl $IRODS_HOME/scripts/perl/eirods_setup.pl $DB_TYPE $DB_HOST $DB_PORT $DB_USER $DB_PASS" $OS_EIRODS_ACCT
+        su --shell=/bin/bash -c "perl $IRODS_HOME/scripts/perl/irods_setup.pl $DB_TYPE $DB_HOST $DB_PORT $DB_USER $DB_PASS" $OS_IRODS_ACCT
     fi
 
     # =-=-=-=-=-=-=-
     # remove setup 'rodsBoot' account - reduce potential attack surface
     if [ "$SERVER_TYPE" == "icat" ] ; then
-        su --shell=/bin/bash -c "/usr/bin/iadmin rmuser rodsBoot" $OS_EIRODS_ACCT
+        su --shell=/bin/bash -c "/usr/bin/iadmin rmuser rodsBoot" $OS_IRODS_ACCT
     fi
 fi
 
 # =-=-=-=-=-=-=-
-# really make sure everything is owned by the eirods service account
-chown -R $OS_EIRODS_ACCT:$OS_EIRODS_ACCT $EIRODS_HOME_DIR
+# really make sure everything is owned by the irods service account
+chown -R $OS_IRODS_ACCT:$OS_IRODS_ACCT $IRODS_HOME_DIR
 
 # =-=-=-=-=-=-=-
 # set permissions on iRODS authentication mechanisms
@@ -323,18 +338,18 @@ chmod 4755 /usr/bin/genOSAuth
 
 # =-=-=-=-=-=-=-
 # remove the password from the service account
-passwd -d $OS_EIRODS_ACCT > /dev/null
+passwd -d $OS_IRODS_ACCT > /dev/null
 
 
 if [ "$UPGRADE_FLAG" == "false" ] ; then
     # =-=-=-=-=-=-=-
     if [ "$SERVER_TYPE" == "icat" ] ; then
         # tell user about their irodsenv
-        cat $EIRODS_HOME_DIR/packaging/user_irodsenv.txt
-        cat $EIRODS_HOME_DIR/.irods/.irodsEnv
+        cat $IRODS_HOME_DIR/packaging/user_irodsenv.txt
+        cat $IRODS_HOME_DIR/.irods/.irodsEnv
     elif [ "$SERVER_TYPE" == "resource" ] ; then
         # give user some guidance regarding resource configuration
-        cat $EIRODS_HOME_DIR/packaging/user_resource.txt
+        cat $IRODS_HOME_DIR/packaging/user_resource.txt
     fi
 fi
 
@@ -345,61 +360,61 @@ fi
 # RPM runs old 3.0 uninstall script last, which removed everything
 # Detect this case and protect the existing data
 if [ "$UPGRADE_FLAG" == "true" ] ; then
-    EIRODSVERSIONINT=`grep EIRODSVERSIONINT $UPGRADE_FLAG_FILE | awk -F\= '{print $2}' | tr -d ' '`
+    IRODSVERSIONINT=`grep IRODSVERSIONINT $UPGRADE_FLAG_FILE | awk -F\= '{print $2}' | tr -d ' '`
     # delete temp file
     rm -f $UPGRADE_FLAG_FILE
     # check against version integer
-    if [ $EIRODSVERSIONINT -lt 301002 ] ; then
+    if [ $IRODSVERSIONINT -lt 301002 ] ; then
         # Check for RPM-based systems
         if [ "$DETECTEDOS" == "RedHatCompatible" -o "$DETECTEDOS" == "SuSE" ] ; then
             # stop the running server
-            su --shell=/bin/bash -c "cd $IRODS_HOME; ./irodsctl stop" $OS_EIRODS_ACCT
-            # detect whether eirods home directory is a mount point
+            su --shell=/bin/bash -c "cd $IRODS_HOME; ./irodsctl stop" $OS_IRODS_ACCT
+            # detect whether irods home directory is a mount point
             set +e
-            mountpoint $EIRODS_HOME_DIR > /dev/null
+            mountpoint $IRODS_HOME_DIR > /dev/null
             ISMOUNTPOINT=$?
             set -e
             # if a mount point
             if [ $ISMOUNTPOINT -eq 0 ] ; then
                 # detect current mounted device
-                MOUNTED_DEVICE=`df | grep " $EIRODS_HOME_DIR$" | awk '{print $1}'`
-                # unmount eirods home directory
+                MOUNTED_DEVICE=`df | grep " $IRODS_HOME_DIR$" | awk '{print $1}'`
+                # unmount irods home directory
                 set +e
-                umount $EIRODS_HOME_DIR
+                umount $IRODS_HOME_DIR
                 set -e
                 # report to the admin what happened
-                echo "$EIRODS_HOME_DIR has been unmounted from $MOUNTED_DEVICE"
+                echo "$IRODS_HOME_DIR has been unmounted from $MOUNTED_DEVICE"
                 echo "#########################################################"
                 echo "#"
-                echo "#  E-iRODS PostInstall Script"
+                echo "#  iRODS PostInstall Script"
                 echo "#"
-                echo "#  $EIRODS_HOME_DIR has been unmounted from $MOUNTED_DEVICE"
+                echo "#  $IRODS_HOME_DIR has been unmounted from $MOUNTED_DEVICE"
                 echo "#"
                 echo "#  Due to upgrading from E-iRODS 3.0, your upgrade is"
                 echo "#  not yet fully complete.  Your files and database are"
-                echo "#  safe and awaiting the remounting of $EIRODS_HOME_DIR."
+                echo "#  safe and awaiting the remounting of $IRODS_HOME_DIR."
                 echo "#"
-                echo "#  Once $EIRODS_HOME_DIR is mounted again,"
+                echo "#  Once $IRODS_HOME_DIR is mounted again,"
                 echo "#  start the server:"
                 echo "#"
-                echo "#    sudo su - eirods -c 'cd $IRODS_HOME; ./irodsctl start'"
+                echo "#    sudo su - irods -c 'cd $IRODS_HOME; ./irodsctl start'"
                 echo "#"
                 echo "#########################################################"
             else
                 # if not, move it aside
-                mv $EIRODS_HOME_DIR ${EIRODS_HOME_DIR}_new
+                mv $IRODS_HOME_DIR ${IRODS_HOME_DIR}_new
                 # create a passable directory in its place, which will be deleted by existing 3.0 postun script
-                mkdir -p $EIRODS_HOME_DIR
-                cp -r ${EIRODS_HOME_DIR}_new/packaging $EIRODS_HOME_DIR/packaging
-                mkdir $EIRODS_HOME_DIR/iRODS
-                cp -r ${EIRODS_HOME_DIR}_new/iRODS/irodsctl $EIRODS_HOME_DIR/iRODS/irodsctl
-                cp -r ${EIRODS_HOME_DIR}_new/iRODS/scripts $EIRODS_HOME_DIR/iRODS/scripts
-                mkdir -p $EIRODS_HOME_DIR/iRODS/clients/icommands
-                cp -r ${EIRODS_HOME_DIR}_new/iRODS/clients/icommands/bin $EIRODS_HOME_DIR/iRODS/clients/icommands/bin
+                mkdir -p $IRODS_HOME_DIR
+                cp -r ${IRODS_HOME_DIR}_new/packaging $IRODS_HOME_DIR/packaging
+                mkdir $IRODS_HOME_DIR/iRODS
+                cp -r ${IRODS_HOME_DIR}_new/iRODS/irodsctl $IRODS_HOME_DIR/iRODS/irodsctl
+                cp -r ${IRODS_HOME_DIR}_new/iRODS/scripts $IRODS_HOME_DIR/iRODS/scripts
+                mkdir -p $IRODS_HOME_DIR/iRODS/clients/icommands
+                cp -r ${IRODS_HOME_DIR}_new/iRODS/clients/icommands/bin $IRODS_HOME_DIR/iRODS/clients/icommands/bin
                 # report to the admin what happened
                 echo "#########################################################"
                 echo "#"
-                echo "#  E-iRODS PostInstall Script"
+                echo "#  iRODS PostInstall Script"
                 echo "#"
                 echo "#  Due to upgrading from E-iRODS 3.0, your upgrade is"
                 echo "#  not yet fully complete.  Your files and database are"
@@ -409,7 +424,7 @@ if [ "$UPGRADE_FLAG" == "true" ] ; then
                 echo "#  Please run the recovery script with the RPM file you"
                 echo "#  just used to upgrade:"
                 echo "#"
-                echo "#    sudo ${EIRODS_HOME_DIR}_new/packaging/post30upgrade.sh newfile.rpm"
+                echo "#    sudo ${IRODS_HOME_DIR}_new/packaging/post30upgrade.sh newfile.rpm"
                 echo "#"
                 echo "#########################################################"
             fi

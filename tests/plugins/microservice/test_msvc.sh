@@ -14,33 +14,33 @@ cd $cwd
 # =-=-=-=-=-=-=-
 # copy msvc bin to proper directory and set ownership
 #echo "copy & chown"
-cp ./libeirods_msvc_test.so $irods_msvc_home
-chown eirods:eirods $irods_msvc_home/libeirods_msvc_test.so
+cp ./libirods_msvc_test.so $irods_msvc_home
+chown irods:irods $irods_msvc_home/libirods_msvc_test.so
 
 # =-=-=-=-=-=-=-
-# run rule to properly exec msvc 
+# run rule to properly exec msvc
 #echo "run msvc"
-irule -F ./run_eirods_msvc_test.r &> /dev/null
+irule -F ./run_irods_msvc_test.r &> /dev/null
 
 # =-=-=-=-=-=-=-
 # verify that it loaded and ran properly
 
-msvc_run=$(grep "eirods_msvc_test :: 1 2 3" $irods_home/server/log/rodsLog* )
+msvc_run=$(grep "irods_msvc_test :: 1 2 3" $irods_home/server/log/rodsLog* )
 #echo "msvc_run - $msvc_run"
 
 # =-=-=-=-=-=-=-
 # check that rule didnt load twice
-dupe_load=$(grep "loaded \[eirods_msvc_test\]" $irods_home/server/log/rodsLog*)
+dupe_load=$(grep "loaded \[irods_msvc_test\]" $irods_home/server/log/rodsLog*)
 #echo "dupe_load - $dupe_load"
 
 # =-=-=-=-=-=-=-
 # run a rule to try to load a nonexistent msvc
 #echo "run missing"
-irule -F ./run_eirods_missing_msvc_test.r &> /dev/null
+irule -F ./run_irods_missing_msvc_test.r &> /dev/null
 
 # =-=-=-=-=-=-=-
 # test to see that it failed properly
-miss_msvc=$(grep "missing_micro_service" /var/lib/eirods/iRODS/server/log/rodsLog* | grep NO_MICROSERVICE_FOUND_ERR )
+miss_msvc=$(grep "missing_micro_service" /var/lib/irods/iRODS/server/log/rodsLog* | grep NO_MICROSERVICE_FOUND_ERR )
 #echo "miss_msvc - $miss_msvc"
 
 

@@ -1,23 +1,23 @@
-E-iRODS Test Suite
-==================
+iRODS Test Suite
+================
 
-The tests in this directory have been designed to run with E-iRODS.
+The tests in this directory have been designed to run with iRODS.
 
 Warning
 =======
 
-These tests are assumed to be run as the "eirods" unix user.  These are for development and should not be run on a production system as they make many assumptions about resource names, trash behavior, and deletion policy.
+These tests are assumed to be run as the "irods" unix user.  These are for development and should not be run on a production system as they make many assumptions about resource names, trash behavior, and deletion policy.
 
 * Please do not run this suite on a grid with data that you care about. *
 
 Overview
 ========
 
-This test suite is based on the Python unittest framework.  It uses inheritance to provide an extensible mechanism for coverage for the plugin model that underpins E-iRODS.  This is best explained with a short example from the resource tests.
+This test suite is based on the Python unittest framework.  It uses inheritance to provide an extensible mechanism for coverage for the plugin model that underpins iRODS.  This is best explained with a short example from the resource tests.
 
-The file test_eirods_resource_types.py provides many classes, one of which is the Test_Random_Resource.  The Test_Random_Resource class defines the resource standup and teardown steps that should run before and after each test in the class.  Mostly, this involves a shuffling of the default "demoResc" resource and replacing it with a resource of the type being tested.  For coordinating resources, this could be a multilevel hierarchy that requires the creation and wiring up of multiple parent and children resources (as well as their teardown, in reverse).  The intent is to provide test coverage for the composite nature of the resource model.
+The file test_irods_resource_types.py provides many classes, one of which is the Test_Random_Resource.  The Test_Random_Resource class defines the resource standup and teardown steps that should run before and after each test in the class.  Mostly, this involves a shuffling of the default "demoResc" resource and replacing it with a resource of the type being tested.  For coordinating resources, this could be a multilevel hierarchy that requires the creation and wiring up of multiple parent and children resources (as well as their teardown, in reverse).  The intent is to provide test coverage for the composite nature of the resource model.
 
-The Test_Random_Resource class, defined in test_eirods_resource_types.py, only has to override the tests that would fail because the intended behavior of the new resource type is different from the behavior defined in the base class's test.  In addition, any new test functionality can also be defined in Test_Random_Resource.
+The Test_Random_Resource class, defined in test_irods_resource_types.py, only has to override the tests that would fail because the intended behavior of the new resource type is different from the behavior defined in the base class's test.  In addition, any new test functionality can also be defined in Test_Random_Resource.
 
 
   class Test_Random_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
@@ -37,8 +37,8 @@ def test_ireg_as_rodsuser_in_vault(self):
 The test_ireg_as_rodsuser_in_vault test as inherited from ResourceSuite needs to be overriden since it assumes a vault path exists, and coordinating resources do not have vault paths.
 
 
-Run the test suite as eirods
-============================
+Run the test suite as irods
+===========================
 
 * For test grids only *
 
@@ -52,11 +52,11 @@ The following command will run all the tests in a particular module (python file
 
 The following command will run all the tests in a particular class (including all the tests it inherits from its base class(es)):
 
-  ./devtest.sh test_eirods_resource_types.Test_Replication_Resource
+  ./devtest.sh test_irods_resource_types.Test_Replication_Resource
 
 The following command will run a single test (in this case, inherited from the ResourceBase (resource_base.py) base class):
 
-  ./devtest.sh test_eirods_resource_types.Test_Replication_Resource.test_local_iput
+  ./devtest.sh test_irods_resource_types.Test_Replication_Resource.test_local_iput
 
 
 The devtest.sh script can run on systems with Python both older and newer than 2.7 (when the unittest2 module was included by default).

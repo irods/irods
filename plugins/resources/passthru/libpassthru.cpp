@@ -7,17 +7,16 @@
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "msParam.h"
-#include "reGlobalsExtern.h"
+#include "msParam.hpp"
+#include "reGlobalsExtern.hpp"
 
 // =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_resource_plugin.h"
-#include "eirods_file_object.h"
-#include "eirods_collection_object.h"
-#include "eirods_string_tokenize.h"
-#include "eirods_hierarchy_parser.h"
-#include "eirods_error.h"
+#include "irods_resource_plugin.hpp"
+#include "irods_file_object.hpp"
+#include "irods_collection_object.hpp"
+#include "irods_string_tokenize.hpp"
+#include "irods_hierarchy_parser.hpp"
+#include "irods_error.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -47,10 +46,10 @@
 #include <fcntl.h>
 #ifndef _WIN32
 #include <sys/file.h>
-#include <unistd.h>  
+#include <unistd.h>
 #endif
 #include <dirent.h>
- 
+
 #if defined(solaris_platform)
 #include <sys/statvfs.h>
 #endif
@@ -72,10 +71,10 @@ extern "C" {
     // =-=-=-=-=-=-=-
 
     // =-=-=-=-=-=-=-
-    // NOTE :: to access properties in the _prop_map do the 
+    // NOTE :: to access properties in the _prop_map do the
     //      :: following :
     //      :: double my_var = 0.0;
-    //      :: eirods::error ret = _prop_map.get< double >( "my_key", my_var ); 
+    //      :: irods::error ret = _prop_map.get< double >( "my_key", my_var );
     // =-=-=-=-=-=-=-
 
     /////////////////
@@ -83,17 +82,18 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     /// @brief Returns the first child resource of the specified resource
-    eirods::error pass_thru_get_first_chid_resc(
-        eirods::resource_child_map& _cmap,
-        eirods::resource_ptr& _resc) {
+    irods::error pass_thru_get_first_chid_resc(
+        irods::resource_child_map& _cmap,
+        irods::resource_ptr& _resc ) {
 
-        eirods::error result = SUCCESS();
-        std::pair<std::string, eirods::resource_ptr> child_pair;
-        if(_cmap.size() != 1) {
+        irods::error result = SUCCESS();
+        std::pair<std::string, irods::resource_ptr> child_pair;
+        if ( _cmap.size() != 1 ) {
             std::stringstream msg;
             msg << "pass_thru_get_first_chid_resc - Passthru resource can have 1 and only 1 child. This resource has " << _cmap.size();
-            result = ERROR(-1, msg.str());
-        } else {
+            result = ERROR( -1, msg.str() );
+        }
+        else {
             child_pair = _cmap.begin()->second;
             _resc = child_pair.second;
         }
@@ -103,16 +103,16 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     /// @brief Check the general parameters passed in to most plugin functions
-    eirods::error pass_thru_check_params(
-        eirods::resource_plugin_context& _ctx ) {
+    irods::error pass_thru_check_params(
+        irods::resource_plugin_context& _ctx ) {
         // =-=-=-=-=-=-=-
-        // verify that the resc context is valid 
-        eirods::error ret = _ctx.valid(); 
-        if( !ret.ok() ) { 
+        // verify that the resc context is valid
+        irods::error ret = _ctx.valid();
+        if ( !ret.ok() ) {
             std::stringstream msg;
             msg << " - resource context is invalid.";
             return PASSMSG( msg.str(), ret );
-        }     
+        }
 
         return SUCCESS();
 
@@ -120,23 +120,25 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX create
-    eirods::error pass_thru_file_create_plugin( 
-        eirods::resource_plugin_context& _ctx ) {
-        eirods::error result = SUCCESS();
-        eirods::error ret;
+    irods::error pass_thru_file_create_plugin(
+        irods::resource_plugin_context& _ctx ) {
+        irods::error result = SUCCESS();
+        irods::error ret;
         ret = pass_thru_check_params( _ctx );
-        if(!ret.ok()) {
-            result = PASSMSG("bad params.", ret);
-        } else {
-            eirods::resource_ptr resc;
-            ret = pass_thru_get_first_chid_resc(_ctx.child_map(), resc);
-            if(!ret.ok()) {
-                result = PASSMSG( "failed getting the first child resource pointer.", ret);
-            } else {
-                ret = resc->call( _ctx.comm(), eirods::RESOURCE_OP_CREATE, _ctx.fco());
-                if(!ret.ok()) {
-                    result = PASSMSG("failed calling child create.", ret);
-                } 
+        if ( !ret.ok() ) {
+            result = PASSMSG( "bad params.", ret );
+        }
+        else {
+            irods::resource_ptr resc;
+            ret = pass_thru_get_first_chid_resc( _ctx.child_map(), resc );
+            if ( !ret.ok() ) {
+                result = PASSMSG( "failed getting the first child resource pointer.", ret );
+            }
+            else {
+                ret = resc->call( _ctx.comm(), irods::RESOURCE_OP_CREATE, _ctx.fco() );
+                if ( !ret.ok() ) {
+                    result = PASSMSG( "failed calling child create.", ret );
+                }
             }
         }
         return result;
@@ -144,22 +146,24 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Open
-    eirods::error pass_thru_file_open_plugin( 
-        eirods::resource_plugin_context& _ctx ) {
-        eirods::error result = SUCCESS();
-        eirods::error ret;
-        
+    irods::error pass_thru_file_open_plugin(
+        irods::resource_plugin_context& _ctx ) {
+        irods::error result = SUCCESS();
+        irods::error ret;
+
         ret = pass_thru_check_params( _ctx );
-        if(!ret.ok()) {
-            result = PASSMSG( "bad params.", ret);
-        } else {
-            eirods::resource_ptr resc;
-            ret = pass_thru_get_first_chid_resc(_ctx.child_map(), resc);
-            if(!ret.ok()) {
-                result = PASSMSG( "failed getting the first child resource pointer.", ret);
-            } else {
-                ret = resc->call( _ctx.comm(), eirods::RESOURCE_OP_OPEN, _ctx.fco());
-                result = PASSMSG("pass_thru_file_open_plugin - failed calling child open.", ret);
+        if ( !ret.ok() ) {
+            result = PASSMSG( "bad params.", ret );
+        }
+        else {
+            irods::resource_ptr resc;
+            ret = pass_thru_get_first_chid_resc( _ctx.child_map(), resc );
+            if ( !ret.ok() ) {
+                result = PASSMSG( "failed getting the first child resource pointer.", ret );
+            }
+            else {
+                ret = resc->call( _ctx.comm(), irods::RESOURCE_OP_OPEN, _ctx.fco() );
+                result = PASSMSG( "pass_thru_file_open_plugin - failed calling child open.", ret );
             }
         }
         return result;
@@ -167,24 +171,26 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Read
-    eirods::error pass_thru_file_read_plugin(  
-        eirods::resource_plugin_context& _ctx,
-        void*                               _buf, 
+    irods::error pass_thru_file_read_plugin(
+        irods::resource_plugin_context& _ctx,
+        void*                               _buf,
         int                                 _len ) {
-        eirods::error result = SUCCESS();
-        eirods::error ret;
-        
+        irods::error result = SUCCESS();
+        irods::error ret;
+
         ret = pass_thru_check_params( _ctx );
-        if(!ret.ok()) {
-            result = PASSMSG( "bad params.", ret);
-        } else {
-            eirods::resource_ptr resc;
-            ret = pass_thru_get_first_chid_resc(_ctx.child_map(), resc);
-            if(!ret.ok()) {
-                result = PASSMSG( "failed getting the first child resource pointer.", ret);
-            } else {
-                ret = resc->call<void*, int>( _ctx.comm(), eirods::RESOURCE_OP_READ, _ctx.fco(), _buf, _len);
-                result = PASSMSG("pass_thru_file_read_plugin - failed calling child read.", ret);
+        if ( !ret.ok() ) {
+            result = PASSMSG( "bad params.", ret );
+        }
+        else {
+            irods::resource_ptr resc;
+            ret = pass_thru_get_first_chid_resc( _ctx.child_map(), resc );
+            if ( !ret.ok() ) {
+                result = PASSMSG( "failed getting the first child resource pointer.", ret );
+            }
+            else {
+                ret = resc->call<void*, int>( _ctx.comm(), irods::RESOURCE_OP_READ, _ctx.fco(), _buf, _len );
+                result = PASSMSG( "pass_thru_file_read_plugin - failed calling child read.", ret );
             }
         }
         return result;
@@ -192,24 +198,26 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Write
-    eirods::error pass_thru_file_write_plugin( 
-        eirods::resource_plugin_context& _ctx,
-        void*                               _buf, 
+    irods::error pass_thru_file_write_plugin(
+        irods::resource_plugin_context& _ctx,
+        void*                               _buf,
         int                                 _len ) {
-        eirods::error result = SUCCESS();
-        eirods::error ret;
-        
+        irods::error result = SUCCESS();
+        irods::error ret;
+
         ret = pass_thru_check_params( _ctx );
-        if(!ret.ok()) {
-            result = PASSMSG( "bad params.", ret);
-        } else {
-            eirods::resource_ptr resc;
-            ret = pass_thru_get_first_chid_resc(_ctx.child_map(), resc);
-            if(!ret.ok()) {
-                result = PASSMSG( "failed getting the first child resource pointer.", ret);
-            } else {
-                ret = resc->call<void*, int>( _ctx.comm(), eirods::RESOURCE_OP_WRITE, _ctx.fco(), _buf, _len);
-                result = PASSMSG("pass_thru_file_write_plugin - failed calling child write.", ret);
+        if ( !ret.ok() ) {
+            result = PASSMSG( "bad params.", ret );
+        }
+        else {
+            irods::resource_ptr resc;
+            ret = pass_thru_get_first_chid_resc( _ctx.child_map(), resc );
+            if ( !ret.ok() ) {
+                result = PASSMSG( "failed getting the first child resource pointer.", ret );
+            }
+            else {
+                ret = resc->call<void*, int>( _ctx.comm(), irods::RESOURCE_OP_WRITE, _ctx.fco(), _buf, _len );
+                result = PASSMSG( "pass_thru_file_write_plugin - failed calling child write.", ret );
             }
         }
         return result;
@@ -217,22 +225,24 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Close
-    eirods::error pass_thru_file_close_plugin(  
-        eirods::resource_plugin_context& _ctx ) {
-        eirods::error result = SUCCESS();
-        eirods::error ret;
-        
+    irods::error pass_thru_file_close_plugin(
+        irods::resource_plugin_context& _ctx ) {
+        irods::error result = SUCCESS();
+        irods::error ret;
+
         ret = pass_thru_check_params( _ctx );
-        if(!ret.ok()) {
-            result = PASSMSG( "pass_thru_file_close_plugin - bad params.", ret);
-        } else {
-            eirods::resource_ptr resc;
-            ret = pass_thru_get_first_chid_resc(_ctx.child_map(), resc);
-            if(!ret.ok()) {
-                result = PASSMSG( "pass_thru_file_close_plugin - failed getting the first child resource pointer.", ret);
-            } else {
-                ret = resc->call( _ctx.comm(), eirods::RESOURCE_OP_CLOSE, _ctx.fco());
-                result = PASSMSG("pass_thru_file_close_plugin - failed calling child close.", ret);
+        if ( !ret.ok() ) {
+            result = PASSMSG( "pass_thru_file_close_plugin - bad params.", ret );
+        }
+        else {
+            irods::resource_ptr resc;
+            ret = pass_thru_get_first_chid_resc( _ctx.child_map(), resc );
+            if ( !ret.ok() ) {
+                result = PASSMSG( "pass_thru_file_close_plugin - failed getting the first child resource pointer.", ret );
+            }
+            else {
+                ret = resc->call( _ctx.comm(), irods::RESOURCE_OP_CLOSE, _ctx.fco() );
+                result = PASSMSG( "pass_thru_file_close_plugin - failed calling child close.", ret );
             }
         }
         return result;
@@ -241,22 +251,24 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Unlink
-    eirods::error pass_thru_file_unlink_plugin(  
-        eirods::resource_plugin_context& _ctx ) {
-        eirods::error result = SUCCESS();
-        eirods::error ret;
-        
+    irods::error pass_thru_file_unlink_plugin(
+        irods::resource_plugin_context& _ctx ) {
+        irods::error result = SUCCESS();
+        irods::error ret;
+
         ret = pass_thru_check_params( _ctx );
-        if(!ret.ok()) {
-            result = PASSMSG( "pass_thru_file_unlink_plugin - bad params.", ret);
-        } else {
-            eirods::resource_ptr resc;
-            ret = pass_thru_get_first_chid_resc(_ctx.child_map(), resc);
-            if(!ret.ok()) {
-                result = PASSMSG( "pass_thru_file_unlink_plugin - failed getting the first child resource pointer.", ret);
-            } else {
-                ret = resc->call( _ctx.comm(), eirods::RESOURCE_OP_UNLINK, _ctx.fco());
-                result = PASSMSG("pass_thru_file_unlink_plugin - failed calling child unlink.", ret);
+        if ( !ret.ok() ) {
+            result = PASSMSG( "pass_thru_file_unlink_plugin - bad params.", ret );
+        }
+        else {
+            irods::resource_ptr resc;
+            ret = pass_thru_get_first_chid_resc( _ctx.child_map(), resc );
+            if ( !ret.ok() ) {
+                result = PASSMSG( "pass_thru_file_unlink_plugin - failed getting the first child resource pointer.", ret );
+            }
+            else {
+                ret = resc->call( _ctx.comm(), irods::RESOURCE_OP_UNLINK, _ctx.fco() );
+                result = PASSMSG( "pass_thru_file_unlink_plugin - failed calling child unlink.", ret );
             }
         }
         return result;
@@ -264,23 +276,25 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Stat
-    eirods::error pass_thru_file_stat_plugin(  
-        eirods::resource_plugin_context& _ctx,
+    irods::error pass_thru_file_stat_plugin(
+        irods::resource_plugin_context& _ctx,
         struct stat*                        _statbuf ) {
-        eirods::error result = SUCCESS();
-        eirods::error ret;
-        
+        irods::error result = SUCCESS();
+        irods::error ret;
+
         ret = pass_thru_check_params( _ctx );
-        if(!ret.ok()) {
-            result = PASSMSG( "pass_thru_file_stat_plugin - bad params.", ret);
-        } else {
-            eirods::resource_ptr resc;
-            ret = pass_thru_get_first_chid_resc(_ctx.child_map(), resc);
-            if(!ret.ok()) {
-                result = PASSMSG( "pass_thru_file_stat_plugin - failed getting the first child resource pointer.", ret);
-            } else {
-                ret = resc->call<struct stat*>( _ctx.comm(), eirods::RESOURCE_OP_STAT, _ctx.fco(), _statbuf);
-                result = PASSMSG("pass_thru_file_stat_plugin - failed calling child stat.", ret);
+        if ( !ret.ok() ) {
+            result = PASSMSG( "pass_thru_file_stat_plugin - bad params.", ret );
+        }
+        else {
+            irods::resource_ptr resc;
+            ret = pass_thru_get_first_chid_resc( _ctx.child_map(), resc );
+            if ( !ret.ok() ) {
+                result = PASSMSG( "pass_thru_file_stat_plugin - failed getting the first child resource pointer.", ret );
+            }
+            else {
+                ret = resc->call<struct stat*>( _ctx.comm(), irods::RESOURCE_OP_STAT, _ctx.fco(), _statbuf );
+                result = PASSMSG( "pass_thru_file_stat_plugin - failed calling child stat.", ret );
             }
         }
         return result;
@@ -288,24 +302,26 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX lseek
-    eirods::error pass_thru_file_lseek_plugin(
-        eirods::resource_plugin_context& _ctx,
-        long long                        _offset, 
+    irods::error pass_thru_file_lseek_plugin(
+        irods::resource_plugin_context& _ctx,
+        long long                        _offset,
         int                              _whence ) {
-        eirods::error result = SUCCESS();
-        eirods::error ret;
-        
+        irods::error result = SUCCESS();
+        irods::error ret;
+
         ret = pass_thru_check_params( _ctx );
-        if(!ret.ok()) {
-            result = PASSMSG( "pass_thru_file_lseek_plugin - bad params.", ret);
-        } else {
-            eirods::resource_ptr resc;
-            ret = pass_thru_get_first_chid_resc(_ctx.child_map(), resc);
-            if(!ret.ok()) {
-                result = PASSMSG( "pass_thru_file_lseek_plugin - failed getting the first child resource pointer.", ret);
-            } else {
-                ret = resc->call<long long, int>( _ctx.comm(), eirods::RESOURCE_OP_LSEEK, _ctx.fco(), _offset, _whence);
-                result = PASSMSG("pass_thru_file_lseek_plugin - failed calling child lseek.", ret);
+        if ( !ret.ok() ) {
+            result = PASSMSG( "pass_thru_file_lseek_plugin - bad params.", ret );
+        }
+        else {
+            irods::resource_ptr resc;
+            ret = pass_thru_get_first_chid_resc( _ctx.child_map(), resc );
+            if ( !ret.ok() ) {
+                result = PASSMSG( "pass_thru_file_lseek_plugin - failed getting the first child resource pointer.", ret );
+            }
+            else {
+                ret = resc->call<long long, int>( _ctx.comm(), irods::RESOURCE_OP_LSEEK, _ctx.fco(), _offset, _whence );
+                result = PASSMSG( "pass_thru_file_lseek_plugin - failed calling child lseek.", ret );
             }
         }
         return result;
@@ -313,22 +329,24 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX mkdir
-    eirods::error pass_thru_file_mkdir_plugin(  
-        eirods::resource_plugin_context& _ctx ) {
-        eirods::error result = SUCCESS();
-        eirods::error ret;
-        
+    irods::error pass_thru_file_mkdir_plugin(
+        irods::resource_plugin_context& _ctx ) {
+        irods::error result = SUCCESS();
+        irods::error ret;
+
         ret = pass_thru_check_params( _ctx );
-        if(!ret.ok()) {
-            result = PASSMSG( "pass_thru_file_mkdir_plugin - bad params.", ret);
-        } else {
-            eirods::resource_ptr resc;
-            ret = pass_thru_get_first_chid_resc(_ctx.child_map(), resc);
-            if(!ret.ok()) {
-                result = PASSMSG( "pass_thru_file_mkdir_plugin - failed getting the first child resource pointer.", ret);
-            } else {
-                ret = resc->call( _ctx.comm(), eirods::RESOURCE_OP_MKDIR, _ctx.fco());
-                result = PASSMSG("pass_thru_file_mkdir_plugin - failed calling child mkdir.", ret);
+        if ( !ret.ok() ) {
+            result = PASSMSG( "pass_thru_file_mkdir_plugin - bad params.", ret );
+        }
+        else {
+            irods::resource_ptr resc;
+            ret = pass_thru_get_first_chid_resc( _ctx.child_map(), resc );
+            if ( !ret.ok() ) {
+                result = PASSMSG( "pass_thru_file_mkdir_plugin - failed getting the first child resource pointer.", ret );
+            }
+            else {
+                ret = resc->call( _ctx.comm(), irods::RESOURCE_OP_MKDIR, _ctx.fco() );
+                result = PASSMSG( "pass_thru_file_mkdir_plugin - failed calling child mkdir.", ret );
             }
         }
         return result;
@@ -336,22 +354,24 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX mkdir
-    eirods::error pass_thru_file_rmdir_plugin( 
-        eirods::resource_plugin_context& _ctx ) {
-        eirods::error result = SUCCESS();
-        eirods::error ret;
-        
+    irods::error pass_thru_file_rmdir_plugin(
+        irods::resource_plugin_context& _ctx ) {
+        irods::error result = SUCCESS();
+        irods::error ret;
+
         ret = pass_thru_check_params( _ctx );
-        if(!ret.ok()) {
-            result = PASSMSG( "pass_thru_file_rmdir_plugin - bad params.", ret);
-        } else {
-            eirods::resource_ptr resc;
-            ret = pass_thru_get_first_chid_resc(_ctx.child_map(), resc);
-            if(!ret.ok()) {
-                result = PASSMSG( "pass_thru_file_rmdir_plugin - failed getting the first child resource pointer.", ret);
-            } else {
-                ret = resc->call( _ctx.comm(), eirods::RESOURCE_OP_RMDIR, _ctx.fco());
-                result = PASSMSG("pass_thru_file_rmdir_plugin - failed calling child rmdir.", ret);
+        if ( !ret.ok() ) {
+            result = PASSMSG( "pass_thru_file_rmdir_plugin - bad params.", ret );
+        }
+        else {
+            irods::resource_ptr resc;
+            ret = pass_thru_get_first_chid_resc( _ctx.child_map(), resc );
+            if ( !ret.ok() ) {
+                result = PASSMSG( "pass_thru_file_rmdir_plugin - failed getting the first child resource pointer.", ret );
+            }
+            else {
+                ret = resc->call( _ctx.comm(), irods::RESOURCE_OP_RMDIR, _ctx.fco() );
+                result = PASSMSG( "pass_thru_file_rmdir_plugin - failed calling child rmdir.", ret );
             }
         }
         return result;
@@ -359,22 +379,24 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX opendir
-    eirods::error pass_thru_file_opendir_plugin( 
-        eirods::resource_plugin_context& _ctx ) {
-        eirods::error result = SUCCESS();
-        eirods::error ret;
-        
+    irods::error pass_thru_file_opendir_plugin(
+        irods::resource_plugin_context& _ctx ) {
+        irods::error result = SUCCESS();
+        irods::error ret;
+
         ret = pass_thru_check_params( _ctx );
-        if(!ret.ok()) {
-            result = PASSMSG( "pass_thru_file_opendir_plugin - bad params.", ret);
-        } else {
-            eirods::resource_ptr resc;
-            ret = pass_thru_get_first_chid_resc(_ctx.child_map(), resc);
-            if(!ret.ok()) {
-                result = PASSMSG( "pass_thru_file_opendir_plugin - failed getting the first child resource pointer.", ret);
-            } else {
-                ret = resc->call( _ctx.comm(), eirods::RESOURCE_OP_OPENDIR, _ctx.fco());
-                result = PASSMSG("pass_thru_file_opendir_plugin - failed calling child opendir.", ret);
+        if ( !ret.ok() ) {
+            result = PASSMSG( "pass_thru_file_opendir_plugin - bad params.", ret );
+        }
+        else {
+            irods::resource_ptr resc;
+            ret = pass_thru_get_first_chid_resc( _ctx.child_map(), resc );
+            if ( !ret.ok() ) {
+                result = PASSMSG( "pass_thru_file_opendir_plugin - failed getting the first child resource pointer.", ret );
+            }
+            else {
+                ret = resc->call( _ctx.comm(), irods::RESOURCE_OP_OPENDIR, _ctx.fco() );
+                result = PASSMSG( "pass_thru_file_opendir_plugin - failed calling child opendir.", ret );
             }
         }
         return result;
@@ -382,22 +404,24 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX closedir
-    eirods::error pass_thru_file_closedir_plugin(  
-        eirods::resource_plugin_context& _ctx ) {
-        eirods::error result = SUCCESS();
-        eirods::error ret;
-        
+    irods::error pass_thru_file_closedir_plugin(
+        irods::resource_plugin_context& _ctx ) {
+        irods::error result = SUCCESS();
+        irods::error ret;
+
         ret = pass_thru_check_params( _ctx );
-        if(!ret.ok()) {
-            result = PASSMSG( "pass_thru_file_closedir_plugin - bad params.", ret);
-        } else {
-            eirods::resource_ptr resc;
-            ret = pass_thru_get_first_chid_resc(_ctx.child_map(), resc);
-            if(!ret.ok()) {
-                result = PASSMSG( "pass_thru_file_closedir_plugin - failed getting the first child resource pointer.", ret);
-            } else {
-                ret = resc->call( _ctx.comm(), eirods::RESOURCE_OP_CLOSEDIR, _ctx.fco());
-                result = PASSMSG("pass_thru_file_closedir_plugin - failed calling child closedir.", ret);
+        if ( !ret.ok() ) {
+            result = PASSMSG( "pass_thru_file_closedir_plugin - bad params.", ret );
+        }
+        else {
+            irods::resource_ptr resc;
+            ret = pass_thru_get_first_chid_resc( _ctx.child_map(), resc );
+            if ( !ret.ok() ) {
+                result = PASSMSG( "pass_thru_file_closedir_plugin - failed getting the first child resource pointer.", ret );
+            }
+            else {
+                ret = resc->call( _ctx.comm(), irods::RESOURCE_OP_CLOSEDIR, _ctx.fco() );
+                result = PASSMSG( "pass_thru_file_closedir_plugin - failed calling child closedir.", ret );
             }
         }
         return result;
@@ -405,23 +429,25 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX readdir
-    eirods::error pass_thru_file_readdir_plugin(  
-        eirods::resource_plugin_context& _ctx,
+    irods::error pass_thru_file_readdir_plugin(
+        irods::resource_plugin_context& _ctx,
         struct rodsDirent**                 _dirent_ptr ) {
-        eirods::error result = SUCCESS();
-        eirods::error ret;
-        
+        irods::error result = SUCCESS();
+        irods::error ret;
+
         ret = pass_thru_check_params( _ctx );
-        if(!ret.ok()) {
-            result = PASSMSG( "pass_thru_file_readdir_plugin - bad params.", ret);
-        } else {
-            eirods::resource_ptr resc;
-            ret = pass_thru_get_first_chid_resc(_ctx.child_map(), resc);
-            if(!ret.ok()) {
-                result = PASSMSG( "pass_thru_file_readdir_plugin - failed getting the first child resource pointer.", ret);
-            } else {
-                ret = resc->call<struct rodsDirent**>( _ctx.comm(), eirods::RESOURCE_OP_READDIR, _ctx.fco(), _dirent_ptr);
-                result = PASSMSG("pass_thru_file_readdir_plugin - failed calling child readdir.", ret);
+        if ( !ret.ok() ) {
+            result = PASSMSG( "pass_thru_file_readdir_plugin - bad params.", ret );
+        }
+        else {
+            irods::resource_ptr resc;
+            ret = pass_thru_get_first_chid_resc( _ctx.child_map(), resc );
+            if ( !ret.ok() ) {
+                result = PASSMSG( "pass_thru_file_readdir_plugin - failed getting the first child resource pointer.", ret );
+            }
+            else {
+                ret = resc->call<struct rodsDirent**>( _ctx.comm(), irods::RESOURCE_OP_READDIR, _ctx.fco(), _dirent_ptr );
+                result = PASSMSG( "pass_thru_file_readdir_plugin - failed calling child readdir.", ret );
             }
         }
         return result;
@@ -429,47 +455,51 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX readdir
-    eirods::error pass_thru_file_rename_plugin(  
-        eirods::resource_plugin_context& _ctx,
+    irods::error pass_thru_file_rename_plugin(
+        irods::resource_plugin_context& _ctx,
         const char*                         _new_file_name ) {
-        eirods::error result = SUCCESS();
-        eirods::error ret;
-        
+        irods::error result = SUCCESS();
+        irods::error ret;
+
         ret = pass_thru_check_params( _ctx );
-        if(!ret.ok()) {
-            result = PASSMSG( "pass_thru_file_rename_plugin - bad params.", ret);
-        } else {
-            eirods::resource_ptr resc;
-            ret = pass_thru_get_first_chid_resc(_ctx.child_map(), resc);
-            if(!ret.ok()) {
-                result = PASSMSG( "pass_thru_file_rename_plugin - failed getting the first child resource pointer.", ret);
-            } else {
-                ret = resc->call<const char*>( _ctx.comm(), eirods::RESOURCE_OP_RENAME, _ctx.fco(), _new_file_name);
-                result = PASSMSG("pass_thru_file_rename_plugin - failed calling child rename.", ret);
+        if ( !ret.ok() ) {
+            result = PASSMSG( "pass_thru_file_rename_plugin - bad params.", ret );
+        }
+        else {
+            irods::resource_ptr resc;
+            ret = pass_thru_get_first_chid_resc( _ctx.child_map(), resc );
+            if ( !ret.ok() ) {
+                result = PASSMSG( "pass_thru_file_rename_plugin - failed getting the first child resource pointer.", ret );
+            }
+            else {
+                ret = resc->call<const char*>( _ctx.comm(), irods::RESOURCE_OP_RENAME, _ctx.fco(), _new_file_name );
+                result = PASSMSG( "pass_thru_file_rename_plugin - failed calling child rename.", ret );
             }
         }
         return result;
     } // pass_thru_file_rename_plugin
-    
+
     // =-=-=-=-=-=-=-
     // interface for POSIX truncate
-    eirods::error pass_thru_file_truncate_plugin(  
-        eirods::resource_plugin_context& _ctx ) {
+    irods::error pass_thru_file_truncate_plugin(
+        irods::resource_plugin_context& _ctx ) {
         // =-=-=-=-=-=-=-
-        eirods::error result = SUCCESS();
-        eirods::error ret;
-        
+        irods::error result = SUCCESS();
+        irods::error ret;
+
         ret = pass_thru_check_params( _ctx );
-        if(!ret.ok()) {
-            result = PASSMSG( "pass_thru_file_truncate_plugin - bad params.", ret);
-        } else {
-            eirods::resource_ptr resc;
-            ret = pass_thru_get_first_chid_resc(_ctx.child_map(), resc);
-            if(!ret.ok()) {
-                result = PASSMSG( "pass_thru_file_truncate_plugin - failed getting the first child resource pointer.", ret);
-            } else {
-                ret = resc->call( _ctx.comm(), eirods::RESOURCE_OP_TRUNCATE, _ctx.fco());
-                result = PASSMSG("pass_thru_file_truncate_plugin - failed calling child truncate.", ret);
+        if ( !ret.ok() ) {
+            result = PASSMSG( "pass_thru_file_truncate_plugin - bad params.", ret );
+        }
+        else {
+            irods::resource_ptr resc;
+            ret = pass_thru_get_first_chid_resc( _ctx.child_map(), resc );
+            if ( !ret.ok() ) {
+                result = PASSMSG( "pass_thru_file_truncate_plugin - failed getting the first child resource pointer.", ret );
+            }
+            else {
+                ret = resc->call( _ctx.comm(), irods::RESOURCE_OP_TRUNCATE, _ctx.fco() );
+                result = PASSMSG( "pass_thru_file_truncate_plugin - failed calling child truncate.", ret );
             }
         }
         return result;
@@ -477,22 +507,24 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface to determine free space on a device given a path
-    eirods::error pass_thru_file_getfsfreespace_plugin( 
-        eirods::resource_plugin_context& _ctx ) {
-        eirods::error result = SUCCESS();
-        eirods::error ret;
-        
+    irods::error pass_thru_file_getfsfreespace_plugin(
+        irods::resource_plugin_context& _ctx ) {
+        irods::error result = SUCCESS();
+        irods::error ret;
+
         ret = pass_thru_check_params( _ctx );
-        if(!ret.ok()) {
-            result = PASSMSG( "pass_thru_file_getfsfreespace_plugin - bad params.", ret);
-        } else {
-            eirods::resource_ptr resc;
-            ret = pass_thru_get_first_chid_resc(_ctx.child_map(), resc);
-            if(!ret.ok()) {
-                result = PASSMSG( "pass_thru_file_getfsfreespace_plugin - failed getting the first child resource pointer.", ret);
-            } else {
-                ret = resc->call( _ctx.comm(), eirods::RESOURCE_OP_FREESPACE, _ctx.fco());
-                result = PASSMSG("pass_thru_file_getfsfreespace_plugin - failed calling child freespace.", ret);
+        if ( !ret.ok() ) {
+            result = PASSMSG( "pass_thru_file_getfsfreespace_plugin - bad params.", ret );
+        }
+        else {
+            irods::resource_ptr resc;
+            ret = pass_thru_get_first_chid_resc( _ctx.child_map(), resc );
+            if ( !ret.ok() ) {
+                result = PASSMSG( "pass_thru_file_getfsfreespace_plugin - failed getting the first child resource pointer.", ret );
+            }
+            else {
+                ret = resc->call( _ctx.comm(), irods::RESOURCE_OP_FREESPACE, _ctx.fco() );
+                result = PASSMSG( "pass_thru_file_getfsfreespace_plugin - failed calling child freespace.", ret );
             }
         }
         return result;
@@ -502,23 +534,25 @@ extern "C" {
     // passthruStageToCache - This routine is for testing the TEST_STAGE_FILE_TYPE.
     // Just copy the file from filename to cacheFilename. optionalInfo info
     // is not used.
-    eirods::error pass_thru_stage_to_cache_plugin( 
-        eirods::resource_plugin_context& _ctx,
-        const char*                         _cache_file_name ) { 
-        eirods::error result = SUCCESS();
-        eirods::error ret;
- 
+    irods::error pass_thru_stage_to_cache_plugin(
+        irods::resource_plugin_context& _ctx,
+        const char*                         _cache_file_name ) {
+        irods::error result = SUCCESS();
+        irods::error ret;
+
         ret = pass_thru_check_params( _ctx );
-        if(!ret.ok()) {
-            result = PASSMSG( "pass_thru_stage_to_cache_plugin - bad params.", ret);
-        } else { 
-            eirods::resource_ptr resc;
-            ret = pass_thru_get_first_chid_resc(_ctx.child_map(), resc);
-            if(!ret.ok()) {
-                result = PASSMSG( "pass_thru_stage_to_cache_plugin - failed getting the first child resource pointer.", ret);
-            } else {
-                ret = resc->call<const char*>( _ctx.comm(), eirods::RESOURCE_OP_STAGETOCACHE, _ctx.fco(), _cache_file_name );
-                result = PASSMSG("pass_thru_stage_to_cache_plugin - failed calling child stagetocache.", ret);
+        if ( !ret.ok() ) {
+            result = PASSMSG( "pass_thru_stage_to_cache_plugin - bad params.", ret );
+        }
+        else {
+            irods::resource_ptr resc;
+            ret = pass_thru_get_first_chid_resc( _ctx.child_map(), resc );
+            if ( !ret.ok() ) {
+                result = PASSMSG( "pass_thru_stage_to_cache_plugin - failed getting the first child resource pointer.", ret );
+            }
+            else {
+                ret = resc->call<const char*>( _ctx.comm(), irods::RESOURCE_OP_STAGETOCACHE, _ctx.fco(), _cache_file_name );
+                result = PASSMSG( "pass_thru_stage_to_cache_plugin - failed calling child stagetocache.", ret );
             }
         }
         return result;
@@ -528,24 +562,26 @@ extern "C" {
     // passthruSyncToArch - This routine is for testing the TEST_STAGE_FILE_TYPE.
     // Just copy the file from cacheFilename to filename. optionalInfo info
     // is not used.
-    eirods::error pass_thru_sync_to_arch_plugin( 
-        eirods::resource_plugin_context& _ctx,
-        const char*                         _cache_file_name ) { 
-        eirods::error result = SUCCESS();
-        eirods::error ret;
-        
+    irods::error pass_thru_sync_to_arch_plugin(
+        irods::resource_plugin_context& _ctx,
+        const char*                         _cache_file_name ) {
+        irods::error result = SUCCESS();
+        irods::error ret;
+
         ret = pass_thru_check_params( _ctx );
-        if(!ret.ok()) {
-            result = PASSMSG( "pass_thru_sync_to_arch_plugin - bad params.", ret);
-        } else {
-            eirods::resource_ptr resc;
-            ret = pass_thru_get_first_chid_resc(_ctx.child_map(), resc);
-            if(!ret.ok()) {
-                result = PASSMSG( "pass_thru_sync_to_arch_plugin - failed getting the first child resource pointer.", ret);
-            } else {
-                ret = resc->call<const char*>( _ctx.comm(), eirods::RESOURCE_OP_SYNCTOARCH, _ctx.fco(), _cache_file_name );
-                    
-                result = PASSMSG("pass_thru_sync_to_arch_plugin - failed calling child synctoarch.", ret);
+        if ( !ret.ok() ) {
+            result = PASSMSG( "pass_thru_sync_to_arch_plugin - bad params.", ret );
+        }
+        else {
+            irods::resource_ptr resc;
+            ret = pass_thru_get_first_chid_resc( _ctx.child_map(), resc );
+            if ( !ret.ok() ) {
+                result = PASSMSG( "pass_thru_sync_to_arch_plugin - failed getting the first child resource pointer.", ret );
+            }
+            else {
+                ret = resc->call<const char*>( _ctx.comm(), irods::RESOURCE_OP_SYNCTOARCH, _ctx.fco(), _cache_file_name );
+
+                result = PASSMSG( "pass_thru_sync_to_arch_plugin - failed calling child synctoarch.", ret );
             }
         }
         return result;
@@ -553,110 +589,116 @@ extern "C" {
 
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file registration
-    eirods::error pass_thru_file_registered(
-        eirods::resource_plugin_context& _ctx ) {
-        eirods::error result = SUCCESS();
-        eirods::error ret;
-        
+    irods::error pass_thru_file_registered(
+        irods::resource_plugin_context& _ctx ) {
+        irods::error result = SUCCESS();
+        irods::error ret;
+
         ret = pass_thru_check_params( _ctx );
-        if(!ret.ok()) {
-            result = PASSMSG( "bad params.", ret);
-        } else {
-            eirods::resource_ptr resc;
-            ret = pass_thru_get_first_chid_resc(_ctx.child_map(), resc);
-            if(!ret.ok()) {
-                result = PASSMSG( "failed getting the first child resource pointer.", ret);
-            } else {
-                ret = resc->call( _ctx.comm(), eirods::RESOURCE_OP_REGISTERED, _ctx.fco() );
-                    
-                result = PASSMSG("failed calling child registered.", ret);
+        if ( !ret.ok() ) {
+            result = PASSMSG( "bad params.", ret );
+        }
+        else {
+            irods::resource_ptr resc;
+            ret = pass_thru_get_first_chid_resc( _ctx.child_map(), resc );
+            if ( !ret.ok() ) {
+                result = PASSMSG( "failed getting the first child resource pointer.", ret );
+            }
+            else {
+                ret = resc->call( _ctx.comm(), irods::RESOURCE_OP_REGISTERED, _ctx.fco() );
+
+                result = PASSMSG( "failed calling child registered.", ret );
             }
         }
         return result;
     } // pass_thru_file_registered
- 
+
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file unregistration
-    eirods::error pass_thru_file_unregistered(
-        eirods::resource_plugin_context& _ctx ) {
-        eirods::error result = SUCCESS();
-        eirods::error ret;
-        
+    irods::error pass_thru_file_unregistered(
+        irods::resource_plugin_context& _ctx ) {
+        irods::error result = SUCCESS();
+        irods::error ret;
+
         ret = pass_thru_check_params( _ctx );
-        if(!ret.ok()) {
-            result = PASSMSG( "bad params.", ret);
-        } else {
-            eirods::resource_ptr resc;
-            ret = pass_thru_get_first_chid_resc(_ctx.child_map(), resc);
-            if(!ret.ok()) {
-                result = PASSMSG( "failed getting the first child resource pointer.", ret);
-            } else {
-                ret = resc->call( _ctx.comm(), eirods::RESOURCE_OP_UNREGISTERED, _ctx.fco() );
-                    
-                result = PASSMSG("failed calling child unregistered.", ret);
+        if ( !ret.ok() ) {
+            result = PASSMSG( "bad params.", ret );
+        }
+        else {
+            irods::resource_ptr resc;
+            ret = pass_thru_get_first_chid_resc( _ctx.child_map(), resc );
+            if ( !ret.ok() ) {
+                result = PASSMSG( "failed getting the first child resource pointer.", ret );
+            }
+            else {
+                ret = resc->call( _ctx.comm(), irods::RESOURCE_OP_UNREGISTERED, _ctx.fco() );
+
+                result = PASSMSG( "failed calling child unregistered.", ret );
             }
         }
         return result;
     } // pass_thru_file_unregistered
- 
+
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file modification
-    eirods::error pass_thru_file_modified(
-        eirods::resource_plugin_context& _ctx ) {
-        eirods::error result = SUCCESS();
-        eirods::error ret;
-        
+    irods::error pass_thru_file_modified(
+        irods::resource_plugin_context& _ctx ) {
+        irods::error result = SUCCESS();
+        irods::error ret;
+
         ret = pass_thru_check_params( _ctx );
-        if(!ret.ok()) {
-            result = PASSMSG( "bad params.", ret);
-        } else {
-            eirods::resource_ptr resc;
-            ret = pass_thru_get_first_chid_resc(_ctx.child_map(), resc);
-            if(!ret.ok()) {
-                result = PASSMSG( "failed getting the first child resource pointer.", ret);
-            } else {
-                ret = resc->call( _ctx.comm(), eirods::RESOURCE_OP_MODIFIED, _ctx.fco() );
-                    
-                result = PASSMSG("failed calling child modified.", ret);
+        if ( !ret.ok() ) {
+            result = PASSMSG( "bad params.", ret );
+        }
+        else {
+            irods::resource_ptr resc;
+            ret = pass_thru_get_first_chid_resc( _ctx.child_map(), resc );
+            if ( !ret.ok() ) {
+                result = PASSMSG( "failed getting the first child resource pointer.", ret );
+            }
+            else {
+                ret = resc->call( _ctx.comm(), irods::RESOURCE_OP_MODIFIED, _ctx.fco() );
+
+                result = PASSMSG( "failed calling child modified.", ret );
             }
         }
         return result;
     } // pass_thru_file_modified
- 
+
     // =-=-=-=-=-=-=-
     // unixRedirectPlugin - used to allow the resource to determine which host
     //                      should provide the requested operation
-    eirods::error pass_thru_redirect_plugin( 
-        eirods::resource_plugin_context& _ctx,
+    irods::error pass_thru_redirect_plugin(
+        irods::resource_plugin_context& _ctx,
         const std::string*                  _opr,
         const std::string*                  _curr_host,
-        eirods::hierarchy_parser*           _out_parser,
+        irods::hierarchy_parser*           _out_parser,
         float*                              _out_vote ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
-        eirods::error result = SUCCESS();
-        eirods::error ret = pass_thru_check_params( _ctx );
-        if(!ret.ok()) {
+        irods::error result = SUCCESS();
+        irods::error ret = pass_thru_check_params( _ctx );
+        if ( !ret.ok() ) {
             result = PASSMSG( "pass_thru_redirect_plugin - invalid resource context.", ret );
         }
-        if( !_opr ) {
+        if ( !_opr ) {
             return ERROR( SYS_INVALID_INPUT_PARAM, "pass_thru_redirect_plugin - null operation" );
         }
-        if( !_curr_host ) {
+        if ( !_curr_host ) {
             return ERROR( SYS_INVALID_INPUT_PARAM, "pass_thru_redirect_plugin - null operation" );
         }
-        if( !_out_parser ) {
+        if ( !_out_parser ) {
             return ERROR( SYS_INVALID_INPUT_PARAM, "pass_thru_redirect_plugin - null outgoing hier parser" );
         }
-        if( !_out_vote ) {
+        if ( !_out_vote ) {
             return ERROR( SYS_INVALID_INPUT_PARAM, "pass_thru_redirect_plugin - null outgoing vote" );
         }
-        
+
         // =-=-=-=-=-=-=-
         // get the name of this resource
         std::string resc_name;
-        ret = _ctx.prop_map().get< std::string >( eirods::RESOURCE_NAME, resc_name );
-        if( !ret.ok() ) {
+        ret = _ctx.prop_map().get< std::string >( irods::RESOURCE_NAME, resc_name );
+        if ( !ret.ok() ) {
             std::stringstream msg;
             msg << "pass_thru_redirect_plugin - failed in get property for name";
             return ERROR( -1, msg.str() );
@@ -666,41 +708,41 @@ extern "C" {
         // add ourselves to the hierarchy parser by default
         _out_parser->add_child( resc_name );
 
-        eirods::resource_ptr resc; 
-        ret = pass_thru_get_first_chid_resc(_ctx.child_map(), resc);
-        if(!ret.ok()) {
-            return PASSMSG( "pass_thru_redirect_plugin - failed getting the first child resource pointer.", ret);
-        } 
+        irods::resource_ptr resc;
+        ret = pass_thru_get_first_chid_resc( _ctx.child_map(), resc );
+        if ( !ret.ok() ) {
+            return PASSMSG( "pass_thru_redirect_plugin - failed getting the first child resource pointer.", ret );
+        }
 
-        return resc->call< const std::string*, 
-                           const std::string*, 
-                           eirods::hierarchy_parser*, 
-                           float* >( 
-                   _ctx.comm(), 
-                   eirods::RESOURCE_OP_RESOLVE_RESC_HIER, 
-                   _ctx.fco(), 
-                   _opr, 
-                   _curr_host, 
-                   _out_parser, 
+        return resc->call < const std::string*,
+               const std::string*,
+               irods::hierarchy_parser*,
+               float* > (
+                   _ctx.comm(),
+                   irods::RESOURCE_OP_RESOLVE_RESC_HIER,
+                   _ctx.fco(),
+                   _opr,
+                   _curr_host,
+                   _out_parser,
                    _out_vote );
 
     } // pass_thru_redirect_plugin
 
     // =-=-=-=-=-=-=-
     // pass_thru_file_rebalance - code which would rebalance the subtree
-    eirods::error pass_thru_file_rebalance(
-        eirods::resource_plugin_context& _ctx ) {
+    irods::error pass_thru_file_rebalance(
+        irods::resource_plugin_context& _ctx ) {
         // =-=-=-=-=-=-=-
         // forward request for rebalance to children
-        eirods::error result = SUCCESS();
-        eirods::resource_child_map::iterator itr = _ctx.child_map().begin();
-        for( ; itr != _ctx.child_map().end(); ++itr ) {
-            eirods::error ret = itr->second.second->call( 
-                                    _ctx.comm(), 
-                                    eirods::RESOURCE_OP_REBALANCE, 
-                                    _ctx.fco() );
-            if( !ret.ok() ) {
-                eirods::log( PASS( ret ) );
+        irods::error result = SUCCESS();
+        irods::resource_child_map::iterator itr = _ctx.child_map().begin();
+        for ( ; itr != _ctx.child_map().end(); ++itr ) {
+            irods::error ret = itr->second.second->call(
+                                   _ctx.comm(),
+                                   irods::RESOURCE_OP_REBALANCE,
+                                   _ctx.fco() );
+            if ( !ret.ok() ) {
+                irods::log( PASS( ret ) );
                 result = ret;
             }
         }
@@ -711,21 +753,21 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // pass_thru_file_rebalance - code which would notify the subtree of a change
-    eirods::error pass_thru_file_notify(
-        eirods::resource_plugin_context& _ctx,
+    irods::error pass_thru_file_notify(
+        irods::resource_plugin_context& _ctx,
         const std::string*               _opr ) {
         // =-=-=-=-=-=-=-
         // forward request for notify to children
-        eirods::error result = SUCCESS();
-        eirods::resource_child_map::iterator itr = _ctx.child_map().begin();
-        for( ; itr != _ctx.child_map().end(); ++itr ) {
-            eirods::error ret = itr->second.second->call( 
-                                    _ctx.comm(), 
-                                    eirods::RESOURCE_OP_NOTIFY, 
-                                    _ctx.fco(),
-                                    _opr );
-            if( !ret.ok() ) {
-                eirods::log( PASS( ret ) );
+        irods::error result = SUCCESS();
+        irods::resource_child_map::iterator itr = _ctx.child_map().begin();
+        for ( ; itr != _ctx.child_map().end(); ++itr ) {
+            irods::error ret = itr->second.second->call(
+                                   _ctx.comm(),
+                                   irods::RESOURCE_OP_NOTIFY,
+                                   _ctx.fco(),
+                                   _opr );
+            if ( !ret.ok() ) {
+                irods::log( PASS( ret ) );
                 result = ret;
             }
         }
@@ -740,26 +782,26 @@ extern "C" {
     //    necessary to do custom parsing of the context string to place
     //    any useful values into the property map for reference in later
     //    operations.  semicolon is the preferred delimiter
-    class passthru_resource : public eirods::resource {
+    class passthru_resource : public irods::resource {
     public:
-        passthru_resource( 
-            const std::string& _inst_name, 
-            const std::string& _context ) : 
-                eirods::resource( 
-                    _inst_name, 
-                    _context ) {
+        passthru_resource(
+            const std::string& _inst_name,
+            const std::string& _context ) :
+            irods::resource(
+                _inst_name,
+                _context ) {
         } // ctor
 
     }; // class passthru_resource
-  
+
     // =-=-=-=-=-=-=-
     // 4. create the plugin factory function which will return a dynamically
     //    instantiated object of the previously defined derived resource.  use
     //    the add_operation member to associate a 'call name' to the interfaces
     //    defined above.  for resource plugins these call names are standardized
-    //    as used by the eirods facing interface defined in 
+    //    as used by the irods facing interface defined in
     //    server/drivers/src/fileDriver.c
-    eirods::resource* plugin_factory( const std::string& _inst_name, const std::string& _context  ) {
+    irods::resource* plugin_factory( const std::string& _inst_name, const std::string& _context ) {
 
         // =-=-=-=-=-=-=-
         // 4a. create passthru_resource
@@ -767,46 +809,46 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // 4b. map function names to operations.  this map will be used to load
-        //     the symbols from the shared object in the delay_load stage of 
+        //     the symbols from the shared object in the delay_load stage of
         //     plugin loading.
-        resc->add_operation( eirods::RESOURCE_OP_CREATE,       "pass_thru_file_create_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_OPEN,         "pass_thru_file_open_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_READ,         "pass_thru_file_read_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_WRITE,        "pass_thru_file_write_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_CLOSE,        "pass_thru_file_close_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_UNLINK,       "pass_thru_file_unlink_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_STAT,         "pass_thru_file_stat_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_MKDIR,        "pass_thru_file_mkdir_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_OPENDIR,      "pass_thru_file_opendir_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_READDIR,      "pass_thru_file_readdir_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_RENAME,       "pass_thru_file_rename_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_FREESPACE,    "pass_thru_file_getfsfreespace_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_LSEEK,        "pass_thru_file_lseek_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_RMDIR,        "pass_thru_file_rmdir_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_CLOSEDIR,     "pass_thru_file_closedir_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_STAGETOCACHE, "pass_thru_stage_to_cache_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_SYNCTOARCH,   "pass_thru_sync_to_arch_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_REGISTERED,   "pass_thru_file_registered" );
-        resc->add_operation( eirods::RESOURCE_OP_UNREGISTERED, "pass_thru_file_unregistered" );
-        resc->add_operation( eirods::RESOURCE_OP_MODIFIED,     "pass_thru_file_modified" );
-        
-        resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER,     "pass_thru_redirect_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_REBALANCE,             "pass_thru_file_rebalance" );
-        resc->add_operation( eirods::RESOURCE_OP_NOTIFY,             "pass_thru_file_notify" );
+        resc->add_operation( irods::RESOURCE_OP_CREATE,       "pass_thru_file_create_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_OPEN,         "pass_thru_file_open_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_READ,         "pass_thru_file_read_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_WRITE,        "pass_thru_file_write_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_CLOSE,        "pass_thru_file_close_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_UNLINK,       "pass_thru_file_unlink_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_STAT,         "pass_thru_file_stat_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_MKDIR,        "pass_thru_file_mkdir_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_OPENDIR,      "pass_thru_file_opendir_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_READDIR,      "pass_thru_file_readdir_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_RENAME,       "pass_thru_file_rename_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_FREESPACE,    "pass_thru_file_getfsfreespace_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_LSEEK,        "pass_thru_file_lseek_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_RMDIR,        "pass_thru_file_rmdir_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_CLOSEDIR,     "pass_thru_file_closedir_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_STAGETOCACHE, "pass_thru_stage_to_cache_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_SYNCTOARCH,   "pass_thru_sync_to_arch_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_REGISTERED,   "pass_thru_file_registered" );
+        resc->add_operation( irods::RESOURCE_OP_UNREGISTERED, "pass_thru_file_unregistered" );
+        resc->add_operation( irods::RESOURCE_OP_MODIFIED,     "pass_thru_file_modified" );
+
+        resc->add_operation( irods::RESOURCE_OP_RESOLVE_RESC_HIER,     "pass_thru_redirect_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_REBALANCE,             "pass_thru_file_rebalance" );
+        resc->add_operation( irods::RESOURCE_OP_NOTIFY,             "pass_thru_file_notify" );
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code
-        resc->set_property< int >( eirods::RESOURCE_CHECK_PATH_PERM, 2 );//DO_CHK_PATH_PERM );
-        resc->set_property< int >( eirods::RESOURCE_CREATE_PATH,     1 );//CREATE_PATH );
+        resc->set_property< int >( irods::RESOURCE_CHECK_PATH_PERM, 2 );//DO_CHK_PATH_PERM );
+        resc->set_property< int >( irods::RESOURCE_CREATE_PATH,     1 );//CREATE_PATH );
 
         // =-=-=-=-=-=-=-
         // 4c. return the pointer through the generic interface of an
-        //     eirods::resource pointer
-        return dynamic_cast<eirods::resource*>( resc );
-        
+        //     irods::resource pointer
+        return dynamic_cast<irods::resource*>( resc );
+
     } // plugin_factory
 
-}; // extern "C" 
+}; // extern "C"
 
 
 
