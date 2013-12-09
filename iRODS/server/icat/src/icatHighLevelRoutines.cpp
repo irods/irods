@@ -7150,7 +7150,7 @@ int chlRegUserRE( rsComm_t *rsComm, userInfo_t *userInfo ) {
     irods::error ret = validate_user_name( userName2 );
     if ( !ret.ok() ) {
         irods::log( ret );
-        return SYS_INVALID_INPUT_PARAM;
+        return (int)ret.code();
     }
     // =-=-=-=-=-=-=-
 
