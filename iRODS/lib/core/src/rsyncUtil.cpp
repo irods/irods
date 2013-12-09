@@ -274,7 +274,6 @@ int
 rsyncFileToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
                      rodsPath_t *targPath, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
                      dataObjInp_t *dataObjOprInp ) {
-    rodsLog( LOG_NOTICE, "XXXx - rsyncFileToDataUtil :: START" );
     int status;
     struct timeval startTime, endTime;
     int putFlag = 0;
@@ -369,7 +368,6 @@ rsyncFileToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
     if ( putFlag == 1 ) {
         /* only do the sync if no -l option specified */
         if ( myRodsArgs->longOption != True ) {
-            rodsLog( LOG_NOTICE, "XXXx - rsyncFileToDataUtil :: calling rcDataObjPut" );
             status = rcDataObjPut( conn, dataObjOprInp, srcPath->outPath );
         }
         else {
@@ -381,10 +379,9 @@ rsyncFileToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
     else if ( syncFlag == 1 ) {
         addKeyVal( &dataObjOprInp->condInput, RSYNC_DEST_PATH_KW,
                    srcPath->outPath );
-        addKeyVal( &dataObjOprInp->condInput, RSYNC_MODE_KW, TO_LOCAL );
+        addKeyVal( &dataObjOprInp->condInput, RSYNC_MODE_KW, IRODS_TO_LOCAL );
         /* only do the sync if no -l option specified */
         if ( myRodsArgs->longOption != True ) {
-            rodsLog( LOG_NOTICE, "XXXx - rsyncFileToDataUtil :: calling rcDataObjRsync" );
             status = rcDataObjRsync( conn, dataObjOprInp );
         }
         else {
@@ -496,7 +493,7 @@ rsyncDataToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
         dataObjOprInp->dataSize = srcPath->size;
         addKeyVal( &dataObjOprInp->condInput, RSYNC_DEST_PATH_KW,
                    targPath->outPath );
-        addKeyVal( &dataObjOprInp->condInput, RSYNC_MODE_KW, TO_IRODS );
+        addKeyVal( &dataObjOprInp->condInput, RSYNC_MODE_KW, IRODS_TO_IRODS );
         /* only do the sync if no -l option specified */
         if ( myRodsArgs->longOption != True ) {
             status = rcDataObjRsync( conn, dataObjOprInp );

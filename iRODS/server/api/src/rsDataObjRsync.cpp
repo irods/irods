@@ -44,7 +44,7 @@ rsDataObjRsync( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     resolveLinkedPath( rsComm, dataObjInp->objPath, &specCollCache,
                        &dataObjInp->condInput );
-    if ( strcmp( rsyncMode, TO_IRODS ) == 0 ) {
+    if ( strcmp( rsyncMode, IRODS_TO_IRODS ) == 0 ) {
         if ( isLocalZone( dataObjInp->objPath ) == 0 ) {
             dataObjInp_t myDataObjInp;
             char *destObjPath;
@@ -101,13 +101,13 @@ rsDataObjRsync( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         return status;
     }
 
-    if ( strcmp( rsyncMode, TO_LOCAL ) == 0 ) {
+    if ( strcmp( rsyncMode, IRODS_TO_LOCAL ) == 0 ) {
         status = rsRsyncFileToData( rsComm, dataObjInp );
     }
     else if ( strcmp( rsyncMode, LOCAL_TO_IRODS ) == 0 ) {
         status = rsRsyncDataToFile( rsComm, dataObjInp );
     }
-    else if ( strcmp( rsyncMode, TO_IRODS ) == 0 ) {
+    else if ( strcmp( rsyncMode, IRODS_TO_IRODS ) == 0 ) {
         status = rsRsyncDataToData( rsComm, dataObjInp );
     }
     else {
