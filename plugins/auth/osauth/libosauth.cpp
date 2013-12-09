@@ -67,7 +67,7 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // given the client connection and context string, set up the
-    // native auth object with relevant informaiton: user, zone, etc
+    // native auth object with relevant information: user, zone, etc
     irods::error osauth_auth_client_start(
         irods::auth_plugin_context& _ctx,
         rcComm_t*                    _comm,
@@ -159,7 +159,7 @@ extern "C" {
         }
         else {
             // =-=-=-=-=-=-=-
-            // do os authenticaiton
+            // do os authentication
             need_password = osauthGetAuth(
                                 const_cast< char* >( ptr->request_result().c_str() ),
                                 const_cast< char* >( ptr->user_name().c_str() ),
@@ -226,7 +226,7 @@ extern "C" {
     } // osauth_auth_establish_context
 
     // =-=-=-=-=-=-=-
-    // handle an client-side auth request call
+    // handle a client-side auth request call
     irods::error osauth_auth_client_request(
         irods::auth_plugin_context& _ctx,
         rcComm_t*                    _comm ) {

@@ -1772,7 +1772,7 @@ initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack ) {
     static char tmpStr2[LONG_NAME_LEN]; /** RAJA added to take care of memory
                                          * leak Nov 15 2010 found by J-Y **/
     /* always use NATIVE_PROT as a client. e.g., server to server comm */
-    snprintf( tmpStr2, LONG_NAME_LEN, "%s=%d", PROT, NATIVE_PROT );
+    snprintf( tmpStr2, LONG_NAME_LEN, "%s=%d", IRODS_PROT, NATIVE_PROT );
     putenv( tmpStr2 );
 
     if ( startupPack != NULL ) {

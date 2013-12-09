@@ -14,7 +14,7 @@
 |
 |
 
-.. figure:: ./iRODS/images/iRODS-Logo-Tagline.jpg
+.. figure:: ./iRODS/images/E-iRODS-Logo-Tagline.jpg
    :width: 6 in
    :align: center
 
@@ -407,39 +407,39 @@ The following operations are available for dynamic PEP evaluation.  At this time
  | Plugin Type             | Plugin Operation                  |
  +=========================+===================================+
  |                         |                                   |
- | Resource                | | resource_create                 |
- |                         | | resource_open                   |
- |                         | | resource_read                   |
- |                         | | resource_write                  |
- |                         | | resource_stagetocache           |
- |                         | | resource_synctoarch             |
- |                         | | resource_registered             |
- |                         | | resource_unregistered           |
- |                         | | resource_modified               |
- |                         | | resource_resolve_hierarchy      |
- |                         | | resource_rebalance              |
+ | Resource                |  resource_create		       |
+ |                         |  resource_open		       |
+ |                         |  resource_read		       |
+ |                         |  resource_write		       |
+ |                         |  resource_stagetocache	       |
+ |                         |  resource_synctoarch	       |
+ |                         |  resource_registered	       |
+ |                         |  resource_unregistered	       |
+ |                         |  resource_modified 	       |
+ |                         |  resource_resolve_hierarchy       |
+ |                         |  resource_rebalance	       |
  |                         |                                   |
  +-------------------------+-----------------------------------+
  |                         |                                   |
- | Authentication          | | auth_client_start               |
- |                         | | auth_agent_start                |
- |                         | | auth_establish_context          |
- |                         | | auth_agent_client_request       |
- |                         | | auth_agent_auth_request         |
- |                         | | auth_agent_client_response      |
- |                         | | auth_agent_auth_response        |
- |                         | | auth_agent_auth_verify          |
+ | Authentication          |  auth_client_start 	       |
+ |                         |  auth_agent_start  	       |
+ |                         |  auth_establish_context	       |
+ |                         |  auth_agent_client_request        |
+ |                         |  auth_agent_auth_request	       |
+ |                         |  auth_agent_client_response       |
+ |                         |  auth_agent_auth_response         |
+ |                         |  auth_agent_auth_verify	       |
  |                         |                                   |
  +-------------------------+-----------------------------------+
  |                         |                                   |
- | Network                 | | network_client_start            |
- |                         | | network_client_stop             |
- |                         | | network_agent_start             |
- |                         | | network_agent_stop              |
- |                         | | network_read_header             |
- |                         | | network_read_body               |
- |                         | | network_write_header            |
- |                         | | network_write_body              |
+ | Network                 |  network_client_start	       |
+ |                         |  network_client_stop	       |
+ |                         |  network_agent_start	       |
+ |                         |  network_agent_stop	       |
+ |                         |  network_read_header	       |
+ |                         |  network_read_body 	       |
+ |                         |  network_write_header	       |
+ |                         |  network_write_body	       |
  |                         |                                   |
  +-------------------------+-----------------------------------+
 
@@ -454,41 +454,41 @@ The following Key-Value Pairs are made available within the running context of e
  | Plugin Type    | First Class Object  | Variable Name           |
  +================+=====================+=========================+
  |                |                     |                         |
- | Resource       | Data Object         | | physical_path         |
- |                |                     | | mode_kw               |
- |                |                     | | flags_kw              |
- |                |                     | | resc_hier             |
+ | Resource       | Data Object         | physical_path           |
+ |                |                     | mode_kw	          |
+ |                |                     | flags_kw	          |
+ |                |                     | resc_hier	          |
  |                |                     |                         |
  |                +---------------------+-------------------------+
  |                |                     |                         |
- |                | File Object         | | logical_path          |
- |                |                     | | file_descriptor       |
- |                |                     | | l1_desc_idx           |
- |                |                     | | file_size             |
- |                |                     | | repl_requested        |
- |                |                     | | in_pdmo               |
+ |                | File Object         | logical_path  	  |
+ |                |                     | file_descriptor	  |
+ |                |                     | l1_desc_idx		  |
+ |                |                     | file_size		  |
+ |                |                     | repl_requested  	  |
+ |                |                     | in_pdmo		  |
  |                |                     |                         |
  |                +---------------------+-------------------------+
  |                |                     |                         |
- |                | Structured Object   | | host_addr             |
- |                |                     | | zone_name             |
- |                |                     | | port_num              |
- |                |                     | | sub_file_path         |
- |                |                     | | offset                |
- |                |                     | | dataType              |
- |                |                     | | oprType               |
+ |                | Structured Object   | host_addr		  |
+ |                |                     | zone_name	 	  |
+ |                |                     | port_num		  |
+ |                |                     | sub_file_path 	  |
+ |                |                     | offset		  |
+ |                |                     | dataType		  |
+ |                |                     | oprType		  |
  |                |                     |                         |
  |                +---------------------+-------------------------+
  |                |                     |                         |
- |                | Special Collection  | | spec_coll_class       |
- |                |                     | | spec_coll_type        |
- |                |                     | | spec_coll_obj_path    |
- |                |                     | | spec_coll_resource    |
- |                |                     | | spec_coll_resc_hier   |
- |                |                     | | spec_coll_phy_path    |
- |                |                     | | spec_coll_cache_dir   |
- |                |                     | | spec_coll_cache_dirty |
- |                |                     | | spec_coll_repl_num    |
+ |                | Special Collection  | spec_coll_class	  |
+ |                |                     | spec_coll_type	  |
+ |                |                     | spec_coll_obj_path	  |
+ |                |                     | spec_coll_resource	  |
+ |                |                     | spec_coll_resc_hier	  |
+ |                |                     | spec_coll_phy_path	  |
+ |                |                     | spec_coll_cache_dir	  |
+ |                |                     | spec_coll_cache_dirty   |
+ |                |                     | spec_coll_repl_num	  |
  |                |                     |                         |
  +----------------+---------------------+-------------------------+
 
@@ -496,9 +496,9 @@ The following Key-Value Pairs are made available within the running context of e
  | Plugin Type    | First Class Object  | Variable Name           |
  +================+=====================+=========================+
  |                |                     |                         |
- | Authentication | | Native Password   | | zone_name             |
- |                | | OS Auth           | | user_name             |
- |                | | PAM               | | digest                |
+ | Authentication | | Native Password   |  zone_name              |
+ |                | | OS Auth           |  user_name              |
+ |                | | PAM               |  digest                 |
  |                |                     |                         |
  +----------------+---------------------+-------------------------+
 
@@ -506,16 +506,16 @@ The following Key-Value Pairs are made available within the running context of e
  | Plugin Type    | First Class Object  | Variable Name           |
  +================+=====================+=========================+
  |                |                     |                         |
- | Network        | TCP                 | | tcp_socket_handle     |
+ | Network        | TCP                 |  tcp_socket_handle      |
  |                |                     |                         |
  |                +---------------------+-------------------------+
  |                |                     |                         |
- |                | SSL                 | | ssl_host              |
- |                |                     | | ssl_shared_secret     |
- |                |                     | | ssl_key_size          |
- |                |                     | | ssl_salt_size         |
- |                |                     | | ssl_num_hash_rounds   |
- |                |                     | | ssl_algorithm         |
+ |                | SSL                 |  ssl_host		  |
+ |                |                     |  ssl_shared_secret	  |
+ |                |                     |  ssl_key_size 	  |
+ |                |                     |  ssl_salt_size	  |
+ |                |                     |  ssl_num_hash_rounds    |
+ |                |                     |  ssl_algorithm	  |
  |                |                     |                         |
  +----------------+---------------------+-------------------------+
 

@@ -44,10 +44,15 @@ rsAuthCheck( rsComm_t *rsComm, authCheckInp_t *authCheckInp,
     std::string scheme;
     std::string response = authCheckInp->response;
     if ( ret.ok() ) {
-        if ( kvp.end() != kvp.find( irods::AUTH_SCHEME_KEY ) &&
-                kvp.end() != kvp.find( irods::AUTH_RESPONSE_KEY ) ) {
-            response = kvp[ irods::AUTH_RESPONSE_KEY ];
+        if ( kvp.end() != kvp.find( irods::AUTH_SCHEME_KEY ) ) {
             scheme   = kvp[ irods::AUTH_SCHEME_KEY   ];
+
+            std::size_t response_key_pos = response.find(irods::AUTH_RESPONSE_KEY, 0);
+            if (response_key_pos != std::string::npos) {
+                    char *response_ptr = authCheckInp->response + response_key_pos + irods::AUTH_RESPONSE_KEY.length() + irods::KVP_DEF_ASSOC.length();
+                    response.assign(response_ptr, RESPONSE_LEN+2);
+            }
+
         }
     }
     status = chlCheckAuth(

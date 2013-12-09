@@ -335,7 +335,7 @@ rename_generated_packages() {
 
 # set up git commit hooks
 cd $BUILDDIR
-if [ -d ".git" ] ; then
+if [ -d ".git/hooks" ] ; then
     cp ./packaging/pre-commit ./.git/hooks/pre-commit
 fi
 
