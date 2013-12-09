@@ -13,6 +13,8 @@
 
 #include "eirods_stacktrace.h"
 
+#include <fstream>
+
 /* VERIFY_DIV - contributed by g.soudlenkov@auckland.ac.nz */
 #define VERIFY_DIV(_v1_,_v2_) ((_v2_)? (float)(_v1_)/(_v2_):0.0)
 
@@ -2260,6 +2262,9 @@ getFileMetaFromPath(char *srcPath, keyValPair_t *condInput)
             else {
                 snprintf(fullSrcPath, MAX_NAME_LEN, "%s/%s", cwd, srcPath);
             }
+        }
+        else {
+            strncpy(fullSrcPath, srcPath, MAX_NAME_LEN);
         }
         addKeyVal(condInput, FILE_SOURCE_PATH_KW, fullSrcPath);
     }

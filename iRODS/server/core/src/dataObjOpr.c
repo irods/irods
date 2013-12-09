@@ -872,9 +872,8 @@ requeDataObjInfoByResc (dataObjInfo_t **dataObjInfoHead,
     prevDataObjInfo = NULL;
     while (tmpDataObjInfo != NULL) {
         if (tmpDataObjInfo->rescInfo != NULL) {
-            if (strcmp (preferredResc, tmpDataObjInfo->rescInfo->rescName) 
-                == 0 || strcmp (preferredResc, tmpDataObjInfo->rescGroupName) 
-                == 0) {
+            if (strcmp (preferredResc, tmpDataObjInfo->rescInfo->rescName) == 0 ||
+                strcmp (preferredResc, tmpDataObjInfo->rescGroupName) == 0) {
                 if (writeFlag > 0 || tmpDataObjInfo->replStatus > 0) {
                     if (prevDataObjInfo != NULL) {
                         prevDataObjInfo->next = tmpDataObjInfo->next;
@@ -1901,8 +1900,7 @@ chkOrphanDir (rsComm_t *rsComm, char *dirPath, char *rescName)
                         /* if it is linked, it already has been resolved */
                         status = resolvePathInSpecColl (rsComm, dataObjInp->objPath,
                                                         specCollPerm, 0, dataObjInfo);
-                        if (status == SYS_SPEC_COLL_OBJ_NOT_EXIST &&
-                            dataObjInfo != NULL) {
+                        if (status == SYS_SPEC_COLL_OBJ_NOT_EXIST && dataObjInfo != NULL) {
                             freeDataObjInfo (*dataObjInfo);
                             dataObjInfo = NULL;
                         }
@@ -1927,8 +1925,7 @@ chkOrphanDir (rsComm_t *rsComm, char *dirPath, char *rescName)
                         status2 = resolvePathInSpecColl (rsComm, dataObjInp->objPath,
                                                          specCollPerm, 0, dataObjInfo);
                         if (status2 < 0) {
-                            if (status2 == SYS_SPEC_COLL_OBJ_NOT_EXIST &&
-                                dataObjInfo != NULL) {
+                            if (status2 == SYS_SPEC_COLL_OBJ_NOT_EXIST && dataObjInfo != NULL) {
                                 freeDataObjInfo (*dataObjInfo);
                                 *dataObjInfo = NULL;
                             }

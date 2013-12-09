@@ -34,6 +34,7 @@
 
 #include "eirods_tmp_string.h"
 #include "eirods_log.h"
+#include "eirods_stacktrace.h"
 
 int _cllFreeStatementColumns(icatSessionStruct *icss, int statementNumber);
 

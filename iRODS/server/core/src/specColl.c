@@ -546,10 +546,9 @@ specCollSubStat (rsComm_t *rsComm, specColl_t *specColl,
         }
 
         if (strlen (specColl->resource) > 0) {
-            if (requeDataObjInfoByResc (dataObjInfo, specColl->resource,
-                                        0, 1) >= 0) {
-                if (strcmp (specColl->resource,
-                            (*dataObjInfo)->rescName) != 0) {
+            status = requeDataObjInfoByResc (dataObjInfo, specColl->resource, 0, 1);
+            if (status >= 0) {
+                if (strcmp (specColl->resource, (*dataObjInfo)->rescName) != 0) {
                     rodsLog (LOG_ERROR,
                              "specCollSubStat: %s in %s does not match cache resc %s",
                              myDataObjInp.objPath, (*dataObjInfo)->rescName,
@@ -560,8 +559,8 @@ specCollSubStat (rsComm_t *rsComm, specColl_t *specColl,
                 }
             } else {
                 rodsLog (LOG_ERROR,
-                         "specCollSubStat: requeDataObjInfoByResc %s, resc %s error",
-                         myDataObjInp.objPath, specColl->resource);
+                         "specCollSubStat: requeDataObjInfoByResc %s, resc %s error, %d",
+                         myDataObjInp.objPath, specColl->resource, status);
                 freeAllDataObjInfo (*dataObjInfo);
                 *dataObjInfo = NULL;
                 return (SYS_CACHE_STRUCT_FILE_RESC_ERR);

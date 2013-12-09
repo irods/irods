@@ -69,15 +69,12 @@ _rsRegColl (rsComm_t *rsComm, collInp_t *collCreateInp)
 
     rstrcpy (collInfo.collName, collCreateInp->collName, MAX_NAME_LEN);
 
-    if ((tmpStr = getValByKey (&collCreateInp->condInput,
-      COLLECTION_TYPE_KW)) != NULL) {
+    if ((tmpStr = getValByKey (&collCreateInp->condInput, COLLECTION_TYPE_KW)) != NULL) {
         rstrcpy (collInfo.collType, tmpStr, NAME_LEN);
-	if ((tmpStr = getValByKey (&collCreateInp->condInput,
-          COLLECTION_INFO1_KW)) != NULL) {
+	if ((tmpStr = getValByKey (&collCreateInp->condInput, COLLECTION_INFO1_KW)) != NULL) {
 	    rstrcpy (collInfo.collInfo1, tmpStr, NAME_LEN);
 	}
-        if ((tmpStr = getValByKey (&collCreateInp->condInput,
-          COLLECTION_INFO2_KW)) != NULL) {
+        if ((tmpStr = getValByKey (&collCreateInp->condInput, COLLECTION_INFO2_KW)) != NULL) {
             rstrcpy (collInfo.collInfo2, tmpStr, NAME_LEN);
         }
     }

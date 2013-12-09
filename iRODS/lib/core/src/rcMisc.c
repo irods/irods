@@ -3235,7 +3235,7 @@ getNextRepeatTime(char *currTime, char *delayStr, char *nextTime)
                         parse.first_resc( first_resc );
 
                         rstrcpy (specColl->resource, first_resc.c_str(), NAME_LEN);
-                        rstrcpy (specColl->rescHier, collInfo2, NAME_LEN);
+                        rstrcpy (specColl->rescHier, collInfo2, MAX_NAME_LEN);
 
                         return (0);
                     } else if (strcmp (type, LINK_POINT_STR) == 0) {
@@ -3301,7 +3301,8 @@ getNextRepeatTime(char *currTime, char *delayStr, char *nextTime)
                     }
 
                     len = (int) (tmpPtr2 - tmpPtr1);
-
+                    *tmpPtr2 = '\0';
+                    
                     eirods::hierarchy_parser parse;
                     parse.set_string( tmpPtr1 );
 

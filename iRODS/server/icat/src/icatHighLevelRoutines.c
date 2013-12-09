@@ -2297,7 +2297,8 @@ int chlRegResc(rsComm_t *rsComm,
     }
 
     if (logSQL!=0) rodsLog(LOG_SQL, "chlRegResc SQL 2");
-status = cmlCheckNameToken("resc_type", rescInfo->rescType, &icss);
+#if 0   // commented out in pre-merge code.
+    status = cmlCheckNameToken("resc_type", rescInfo->rescType, &icss);
     if (status !=0 ) {
         char errMsg[105];
         snprintf(errMsg, 100, "resource_type '%s' is not valid", 
@@ -2305,7 +2306,8 @@ status = cmlCheckNameToken("resc_type", rescInfo->rescType, &icss);
         addRErrorMsg (&rsComm->rError, 0, errMsg);
         return(CAT_INVALID_RESOURCE_TYPE);
     }
-
+#endif
+    
 // =-=-=-=-=-=-=-
 // JMC :: resources may now have an empty location if they
 //     :: are coordinating nodes
@@ -3357,7 +3359,13 @@ int chlRegColl(rsComm_t *rsComm, collInfo_t *collInfo) {
         cllBindVars[cllBindVarCount++]=getValByKey(&collInfo->condInput, FILE_MODE_KW);
         cllBindVars[cllBindVarCount++]=getValByKey(&collInfo->condInput, FILE_CTIME_KW);
         cllBindVars[cllBindVarCount++]=getValByKey(&collInfo->condInput, FILE_MTIME_KW);
-        cllBindVars[cllBindVarCount++]=getValByKey(&collInfo->condInput, FILE_SOURCE_PATH_KW);
+        char* source_path = getValByKey(&collInfo->condInput, FILE_SOURCE_PATH_KW);
+        int bind_var = cllBindVarCount;
+        if(source_path == NULL) {
+            cllBindVars[cllBindVarCount++] = "NO SOURCE PATH";
+        } else {
+            cllBindVars[cllBindVarCount++] = source_path;
+        }
         cllBindVars[cllBindVarCount++]=myTime;
         cllBindVars[cllBindVarCount++]=myTime;
         snprintf(tSQL, MAX_SQL_SIZE,

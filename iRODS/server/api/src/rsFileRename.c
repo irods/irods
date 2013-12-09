@@ -95,7 +95,7 @@ int _rsFileRename(
         msg << __FUNCTION__;
         msg << " - Empty logical path.";
         eirods::log(LOG_ERROR, msg.str());
-        return -1;
+        return SYS_INVALID_INPUT_PARAM;
     }
     
     // =-=-=-=-=-=-=-

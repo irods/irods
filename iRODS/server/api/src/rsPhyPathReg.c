@@ -503,7 +503,9 @@ dirPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
         memset (&fileStatInp, 0, sizeof (fileStatInp));
         rstrcpy (fileStatInp.fileName, filePath, MAX_NAME_LEN);
         rstrcpy (fileStatInp.addr.hostAddr, rescInfo->rescLoc, NAME_LEN);
-
+        rstrcpy (fileStatInp.rescHier, resc_hier, MAX_NAME_LEN);
+        rstrcpy (fileStatInp.objPath, phyPathRegInp->objPath, MAX_NAME_LEN);
+        
         status = rsFileStat (rsComm, &fileStatInp, &myStat);
         if (status != 0) {
             rodsLog (LOG_ERROR,

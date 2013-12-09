@@ -30,7 +30,7 @@ rsFileStat (rsComm_t *rsComm, fileStatInp_t *fileStatInp,
     eirods::error ret = eirods::get_host_for_hier_string( fileStatInp->rescHier, remoteFlag, rodsServerHost );
     if( !ret.ok() ) {
         eirods::log( PASSMSG( "rsFileStat - failed in call to eirods::get_host_for_hier_string", ret ) );
-        return -1;
+        return ret.code();
     }
 
     if (remoteFlag < 0) {
@@ -115,9 +115,10 @@ int _rsFileStat(
     struct stat myFileStat;
     if(_stat_inp->objPath[0] == '\0') {
         std::stringstream msg;
-        msg << "Empty logical path.";
+        msg << __FUNCTION__;
+        msg << " - Empty logical path.";
         eirods::log(LOG_ERROR, msg.str());
-        return -1;
+        return SYS_INVALID_INPUT_PARAM;
     }
 
     // =-=-=-=-=-=-=-

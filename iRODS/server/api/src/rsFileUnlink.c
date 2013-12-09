@@ -86,7 +86,7 @@ int _rsFileUnlink(
         msg << __FUNCTION__;
         msg << " - empty logical path.";
         eirods::log(LOG_ERROR, msg.str());
-        return -1;
+        return SYS_INVALID_INPUT_PARAM;
     }
     
     // =-=-=-=-=-=-=-
