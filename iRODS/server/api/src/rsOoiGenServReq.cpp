@@ -93,7 +93,9 @@ _rsOoiGenServReq( rsComm_t *rsComm, ooiGenServReqInp_t *ooiGenServReqInp,
     int rescTypeInx;
 
     if ( ooiGenServReqInp == NULL || ooiGenServReqOut == NULL ||
-            rescGrpInfo == NULL ) { return USER__NULL_INPUT_ERR; }
+            rescGrpInfo == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
 
     rescTypeInx = rescGrpInfo->rescInfo->rescTypeInx;
     if ( RescTypeDef[rescTypeInx].driverType != OOICI_FILE_TYPE ) {
@@ -244,7 +246,9 @@ ooiGenServReqFunc( void *buffer, size_t size, size_t nmemb, void *userp ) {
         status = OOI_JSON_TYPE_ERR;
     }
     json_decref( root );
-    if ( status < 0 ) { return 0; }
+    if ( status < 0 ) {
+        return 0;
+    }
 
     ooiGenServReqStruct->ooiGenServReqOut =
         ( ooiGenServReqOut_t * ) calloc( 1, sizeof( ooiGenServReqOut_t ) );

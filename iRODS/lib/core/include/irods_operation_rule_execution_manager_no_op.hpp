@@ -8,9 +8,9 @@
 #include "irods_operation_rule_execution_manager_base.hpp"
 
 namespace irods {
-    /// =-=-=-=-=-=-=-
-    /// @brief base class for rule execution which will allow
-    ///        the use of a stub for client side network plugins
+/// =-=-=-=-=-=-=-
+/// @brief base class for rule execution which will allow
+///        the use of a stub for client side network plugins
     class operation_rule_execution_manager_no_op : public operation_rule_execution_manager_base {
     public:
         /// =-=-=-=-=-=-=-

@@ -6,9 +6,9 @@
 #include "irods_client_server_negotiation.hpp"
 
 namespace irods {
-    // =-=-=-=-=-=-=-
-    // super basic free factory function to create either a tcp
-    // object or an ssl object based on wether ssl has been enabled
+// =-=-=-=-=-=-=-
+// super basic free factory function to create either a tcp
+// object or an ssl object based on wether ssl has been enabled
     irods::error network_factory(
         rcComm_t*                   _comm,
         irods::network_object_ptr& _ptr ) {
@@ -59,8 +59,8 @@ namespace irods {
 
     } // network_factory
 
-    // =-=-=-=-=-=-=-
-    // version for server connection as well
+// =-=-=-=-=-=-=-
+// version for server connection as well
     irods::error network_factory(
         rsComm_t*                   _comm,
         irods::network_object_ptr& _ptr ) {

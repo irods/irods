@@ -35,7 +35,9 @@ rsNcInqWithId( rsComm_t *rsComm, ncInqIdInp_t *ncInqWithIdInp,
                  l1descInx );
         return ( SYS_FILE_DESC_OUT_OF_RANGE );
     }
-    if ( L1desc[l1descInx].inuseFlag != FD_INUSE ) { return BAD_INPUT_DESC_INDEX; }
+    if ( L1desc[l1descInx].inuseFlag != FD_INUSE ) {
+        return BAD_INPUT_DESC_INDEX;
+    }
     if ( L1desc[l1descInx].remoteZoneHost != NULL ) {
         bzero( &myNcInqWithIdInp, sizeof( myNcInqWithIdInp ) );
         myNcInqWithIdInp.paramType = ncInqWithIdInp->paramType;
@@ -71,7 +73,9 @@ _rsNcInqWithId( int paramType, int ncid, int myid, char *name,
     int intArray[NC_MAX_VAR_DIMS];
 
     myname[0] = '\0';
-    if ( name == NULL || ncInqWithIdOut == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( name == NULL || ncInqWithIdOut == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
 
     switch ( paramType ) {
     case NC_DIM_T:

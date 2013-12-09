@@ -40,7 +40,9 @@ sendIxmsg( rcComm_t **inconn, sendXmsgInp_t *sendXmsgInp ) {
         if ( conn == NULL ) {
             sleep( sleepSec );
             sleepSec = 2 * sleepSec;
-            if ( sleepSec > 10 ) { sleepSec = 10; }
+            if ( sleepSec > 10 ) {
+                sleepSec = 10;
+            }
             continue;
         }
         status = clientLogin( conn );
@@ -49,7 +51,9 @@ sendIxmsg( rcComm_t **inconn, sendXmsgInp_t *sendXmsgInp ) {
             fprintf( stderr, "clientLogin error...Will try again\n" );
             sleep( sleepSec );
             sleepSec = 2 * sleepSec;
-            if ( sleepSec > 10 ) { sleepSec = 10; }
+            if ( sleepSec > 10 ) {
+                sleepSec = 10;
+            }
             continue;
         }
         *inconn = conn;
@@ -173,7 +177,9 @@ main( int argc, char **argv ) {
                 exit( 0 );
             }
             sendXmsgInp.sendXmsgInfo.msgNumber = mNum;
-            if ( mNum != 0 ) { mNum++; }
+            if ( mNum != 0 ) {
+                mNum++;
+            }
             sendXmsgInp.sendXmsgInfo.msg = msgBuf;
             status = sendIxmsg( &conn, &sendXmsgInp );
             if ( status < 0 ) {
@@ -192,7 +198,9 @@ main( int argc, char **argv ) {
         rcvXmsgInp.rcvTicket = tNum;
         /*      rcvXmsgInp.msgNumber = mNum; */
 
-        if ( mNum == 0 ) { mNum--; }
+        if ( mNum == 0 ) {
+            mNum--;
+        }
 
         while ( mNum != 0 ) {
             if ( connectFlag == 0 ) {
@@ -200,7 +208,9 @@ main( int argc, char **argv ) {
                 if ( conn == NULL ) {
                     sleep( sleepSec );
                     sleepSec = 2 * sleepSec;
-                    if ( sleepSec > 10 ) { sleepSec = 10; }
+                    if ( sleepSec > 10 ) {
+                        sleepSec = 10;
+                    }
                     continue;
                 }
                 status = clientLogin( conn );
@@ -208,7 +218,9 @@ main( int argc, char **argv ) {
                     rcDisconnect( conn );
                     sleep( sleepSec );
                     sleepSec = 2 * sleepSec;
-                    if ( sleepSec > 10 ) { sleepSec = 10; }
+                    if ( sleepSec > 10 ) {
+                        sleepSec = 10;
+                    }
                     continue;
                 }
                 connectFlag = 1;
@@ -239,7 +251,9 @@ main( int argc, char **argv ) {
             else {
                 sleep( sleepSec );
                 sleepSec = 2 * sleepSec;
-                if ( sleepSec > 10 ) { sleepSec = 10; }
+                if ( sleepSec > 10 ) {
+                    sleepSec = 10;
+                }
             }
 
         }

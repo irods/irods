@@ -513,6 +513,8 @@ dirPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
         memset( &fileStatInp, 0, sizeof( fileStatInp ) );
         rstrcpy( fileStatInp.fileName, filePath, MAX_NAME_LEN );
         rstrcpy( fileStatInp.addr.hostAddr, rescInfo->rescLoc, NAME_LEN );
+        rstrcpy( fileStatInp.rescHier, resc_hier, MAX_NAME_LEN );
+        rstrcpy( fileStatInp.objPath, phyPathRegInp->objPath, MAX_NAME_LEN );
 
         status = rsFileStat( rsComm, &fileStatInp, &myStat );
         if ( status != 0 ) {
@@ -529,7 +531,9 @@ dirPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
         /* create the coll just in case it does not exist */
         status = rsCollCreate( rsComm, &collCreateInp );
         clearKeyVal( &collCreateInp.condInput ); // JMC - backport 4835
-        if ( status < 0 ) { return status; }
+        if ( status < 0 ) {
+            return status;
+        }
     }
     else if ( rodsObjStatOut->specColl != NULL ) {
         freeRodsObjStat( rodsObjStatOut );
@@ -568,7 +572,9 @@ dirPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
         fileStatInp_t fileStatInp;
         rodsStat_t *myStat = NULL;
 
-        if ( strlen( rodsDirent->d_name ) == 0 ) { break; }
+        if ( strlen( rodsDirent->d_name ) == 0 ) {
+            break;
+        }
 
         if ( strcmp( rodsDirent->d_name, "." ) == 0 ||
                 strcmp( rodsDirent->d_name, ".." ) == 0 ) {
@@ -877,7 +883,9 @@ int structFileReg(
     }
 
     status = collStat( rsComm, phyPathRegInp, &rodsObjStatOut );
-    if ( status < 0 || NULL == rodsObjStatOut ) { return status; } // JMC cppcheck - nullptr
+    if ( status < 0 || NULL == rodsObjStatOut ) {
+        return status;    // JMC cppcheck - nullptr
+    }
 
     if ( rodsObjStatOut->specColl != NULL ) {
         freeRodsObjStat( rodsObjStatOut );
@@ -968,7 +976,9 @@ structFileSupport( rsComm_t *rsComm, char *collection, char *collType,
     specColl_t specColl;
 
     if ( rsComm == NULL || collection == NULL || collType == NULL ||
-            resc_hier == NULL ) { return 0; }
+            resc_hier == NULL ) {
+        return 0;
+    }
 
     memset( &subFile, 0, sizeof( subFile ) );
     memset( &specColl, 0, sizeof( specColl ) );
@@ -1090,7 +1100,9 @@ linkCollReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
             return status;
         }
         status = collStat( rsComm, phyPathRegInp, &rodsObjStatOut );
-        if ( status < 0 ) { return status; }
+        if ( status < 0 ) {
+            return status;
+        }
 
     }
 

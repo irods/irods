@@ -69,7 +69,9 @@ usage() {
     };
     int i;
     for ( i = 0;; i++ ) {
-        if ( strlen( msgs[i] ) == 0 ) { break; }
+        if ( strlen( msgs[i] ) == 0 ) {
+            break;
+        }
         printf( "%s\n", msgs[i] );
     }
     printReleaseInfo( "iquest" );
@@ -119,7 +121,9 @@ printBasicGenQueryOut( genQueryOut_t *genQueryOut, char *format ) {
     int i, j;
     if ( format == NULL || strlen( format ) == 0 ) {
         for ( i = 0; i < genQueryOut->rowCnt; i++ ) {
-            if ( i > 0 ) { printf( "----\n" ); }
+            if ( i > 0 ) {
+                printf( "----\n" );
+            }
             for ( j = 0; j < genQueryOut->attriCnt; j++ ) {
                 char *tResult;
                 tResult = genQueryOut->sqlResult[j].value;
@@ -190,7 +194,9 @@ queryAndShowStrCond( rcComm_t *conn, char *hint, char *format,
             char inbuf[100];
             printf( "Continue? [Y/n]" );
             fgets( inbuf, 90, stdin );
-            if ( strncmp( inbuf, "n", 1 ) == 0 ) { break; }
+            if ( strncmp( inbuf, "n", 1 ) == 0 ) {
+                break;
+            }
         }
         genQueryInp.continueInx = genQueryOut->continueInx;
         i = rcGenQuery( conn, &genQueryInp, &genQueryOut );
@@ -227,7 +233,9 @@ execAndShowSpecificQuery( rcComm_t *conn, char *sql,
     cp = specificQueryInp.sql;
     nQuestionMarks = 0;
     while ( *cp != '\0' ) {
-        if ( *cp++ == '?' ) { nQuestionMarks++; }
+        if ( *cp++ == '?' ) {
+            nQuestionMarks++;
+        }
     }
     i = argsOffset;
     nArgs = 0;
@@ -269,7 +277,9 @@ execAndShowSpecificQuery( rcComm_t *conn, char *sql,
             char inbuf[100];
             printf( "Continue? [Y/n]" );
             fgets( inbuf, 90, stdin );
-            if ( strncmp( inbuf, "n", 1 ) == 0 ) { break; }
+            if ( strncmp( inbuf, "n", 1 ) == 0 ) {
+                break;
+            }
         }
         specificQueryInp.continueInx = genQueryOut->continueInx;
         status = rcSpecificQuery( conn, &specificQueryInp, &genQueryOut );

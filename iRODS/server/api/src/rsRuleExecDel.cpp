@@ -120,7 +120,9 @@ _rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp ) {
         /* Try to unregister it anyway */
         status = chlDelRuleExec( rsComm, ruleExecDelInp->ruleExecId );
 
-        if ( status ) { return( status ); } /* that failed too, report it */
+        if ( status ) {
+            return( status );    /* that failed too, report it */
+        }
 
         /* Add a message to the error stack for the client user */
         snprintf( errMsg, sizeof errMsg, "Rule was removed but reiPath was invalid: %s",
@@ -175,7 +177,9 @@ _rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp ) {
                   "rei file: %s",
                   reiFilePath->value );
         i = addRErrorMsg( &rsComm->rError, 1, errMsg );
-        if ( status == 0 ) { status = unlinkStatus; }  /* return this error if
+        if ( status == 0 ) {
+            status = unlinkStatus;
+        }  /* return this error if
 					          no other error occurred */
 
     }

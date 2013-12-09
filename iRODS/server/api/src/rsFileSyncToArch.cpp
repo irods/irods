@@ -114,9 +114,10 @@ int _rsFileSyncToArch(
     // prep
     if ( _sync_inp->objPath[0] == '\0' ) {
         std::stringstream msg;
-        msg << "Empty logical path.";
+        msg << __FUNCTION__;
+        msg << " - Empty logical path.";
         irods::log( LOG_ERROR, msg.str() );
-        return -1;
+        return SYS_INVALID_INPUT_PARAM;
     }
 
     // =-=-=-=-=-=-=-

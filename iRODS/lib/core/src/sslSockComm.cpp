@@ -527,7 +527,9 @@ sslRead( int sock, void *buf, int len, irodsDescType_t irodsDescType,
     /* Initialize the file descriptor set. */
     FD_ZERO( &set );
     FD_SET( sock, &set );
-    if ( tv != NULL ) { timeout = *tv; }
+    if ( tv != NULL ) {
+        timeout = *tv;
+    }
 
     toRead = len;
     tmpPtr = ( char * ) buf;

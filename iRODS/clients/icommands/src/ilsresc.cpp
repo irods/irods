@@ -60,7 +60,9 @@ printGenQueryResults( rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
     else {
         if ( status != CAT_NO_ROWS_FOUND ) {
             for ( i = 0; i < genQueryOut->rowCnt; i++ ) {
-                if ( i > 0 && doDashes ) { printf( "----\n" ); }
+                if ( i > 0 && doDashes ) {
+                    printf( "----\n" );
+                }
                 for ( j = 0; j < genQueryOut->attriCnt; j++ ) {
                     char *tResult;
                     tResult = genQueryOut->sqlResult[j].value;
@@ -583,7 +585,9 @@ main( int argc, char **argv ) {
     rcDisconnect( Conn );
 
     /* Exit 0 if one or more items were displayed */
-    if ( status > 0 ) { exit( 0 ); }
+    if ( status > 0 ) {
+        exit( 0 );
+    }
     exit( 4 );
 }
 
@@ -609,7 +613,9 @@ void usage() {
     };
     int i;
     for ( i = 0;; i++ ) {
-        if ( strlen( msgs[i] ) == 0 ) { break; }
+        if ( strlen( msgs[i] ) == 0 ) {
+            break;
+        }
         printf( "%s\n", msgs[i] );
     }
     printReleaseInfo( "ilsresc" );

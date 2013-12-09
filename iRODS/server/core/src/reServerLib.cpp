@@ -51,7 +51,9 @@ getReInfo( rsComm_t *rsComm, genQueryOut_t **genQueryOut ) {
 
     status =  rsGenQuery( rsComm, &genQueryInp, genQueryOut );
 
-    if ( status >= 0 ) { svrCloseQueryOut( rsComm, *genQueryOut ); }
+    if ( status >= 0 ) {
+        svrCloseQueryOut( rsComm, *genQueryOut );
+    }
     clearGenQueryInp( &genQueryInp );
     /* take care of mem leak */
     if ( *genQueryOut != NULL ) {
@@ -306,7 +308,9 @@ getNextQueuedRuleExec( rsComm_t *rsComm, genQueryOut_t **inGenQueryOut,
                                     &priority->value[priority->len * i],
                                     &estimateExeTime->value[estimateExeTime->len * i],
                                     &notificationAddr->value[notificationAddr->len * i] );
-        if ( status < 0 ) { continue; }
+        if ( status < 0 ) {
+            continue;
+        }
 #endif
         return ( i );
     }
@@ -323,7 +327,9 @@ modExeInfoForRepeat( rsComm_t *rsComm, char *ruleExecId, char* pastTime,
     ruleExecModInp_t ruleExecModInp;
     ruleExecDelInp_t ruleExecDelInp;
 
-    if ( opStatus > 0 ) { opStatus = 0; }
+    if ( opStatus > 0 ) {
+        opStatus = 0;
+    }
 
     rstrcpy( myTimeNext, pastTime, 200 );
     getOffsetTimeStr( ( char* )&myTimeNow, "                      " );
@@ -515,7 +521,9 @@ runQueuedRuleExec( rsComm_t *rsComm, reExec_t *reExec,
     if ( reExec->doFork == 1 ) {
         /* wait for all jobs to finish */
         while ( reExec->runCnt + 1 >= reExec->maxRunCnt &&
-                waitAndFreeReThr( rsComm, reExec ) >= 0 ) { ; } // JMC - backport 4695
+                waitAndFreeReThr( rsComm, reExec ) >= 0 ) {
+            ;    // JMC - backport 4695
+        }
     }
 
     return ( runCnt );
@@ -590,7 +598,9 @@ initReExec( rsComm_t * rsComm, reExec_t * reExec ) {
     ruleExecInfo_t rei;
     int status;
 
-    if ( reExec == NULL ) { return SYS_INTERNAL_NULL_INPUT_ERR; }
+    if ( reExec == NULL ) {
+        return SYS_INTERNAL_NULL_INPUT_ERR;
+    }
 
     bzero( reExec, sizeof( reExec_t ) );
     bzero( &rei, sizeof( ruleExecInfo_t ) ); /* RAJA ADDED June 17. 2009 */
@@ -638,7 +648,9 @@ allocReThr( rsComm_t * rsComm, reExec_t * reExec ) { // JMC - backport 4695
     int i;
     int thrInx = SYS_NO_FREE_RE_THREAD;
 
-    if ( reExec == NULL ) { return SYS_INTERNAL_NULL_INPUT_ERR; }
+    if ( reExec == NULL ) {
+        return SYS_INTERNAL_NULL_INPUT_ERR;
+    }
 
     if ( reExec->doFork == 0 ) {
         /* single thread */
@@ -744,7 +756,9 @@ matchPidInReExec( reExec_t * reExec, pid_t pid ) {
     int i;
 
     for ( i = 0; i < reExec->maxRunCnt; i++ ) {
-        if ( reExec->reExecProc[i].pid == pid ) { return i; }
+        if ( reExec->reExecProc[i].pid == pid ) {
+            return i;
+        }
     }
     rodsLog( LOG_ERROR,
              "matchPidInReExec: no match for pid %d", pid );
@@ -879,7 +893,9 @@ postProcRunRuleExec( rsComm_t * rsComm, reExecProc_t * reExecProc ) {
                      myRuleExecInp->ruleExecId, status );
         }
     }
-    if ( status >= 0 && savedStatus < 0 ) { return savedStatus; }
+    if ( status >= 0 && savedStatus < 0 ) {
+        return savedStatus;
+    }
 
     return status;
 }
@@ -890,7 +906,9 @@ matchRuleExecId( reExec_t * reExec, char * ruleExecIdStr,
     int i;
 
     if ( reExec == NULL || ruleExecIdStr == NULL ||
-            execState == RE_PROC_IDLE ) { return 0; }
+            execState == RE_PROC_IDLE ) {
+        return 0;
+    }
 
     for ( i = 0; i < reExec->maxRunCnt; i++ ) {
         if ( reExec->reExecProc[i].procExecState == execState &&
@@ -1107,7 +1125,9 @@ reServerSingleExec( rsComm_t * rsComm, char * ruleExecId, int jobType ) {
                                 ruleName->value, userName->value, exeAddress->value, exeFrequency->value,
                                 priority->value, estimateExeTime->value, notificationAddr->value );
 
-    if ( status < 0 ) { return status; }
+    if ( status < 0 ) {
+        return status;
+    }
     seedRandom();
     status = runRuleExec( &reExecProc );
     postProcRunRuleExec( rsComm, &reExecProc );

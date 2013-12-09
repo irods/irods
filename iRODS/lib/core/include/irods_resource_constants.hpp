@@ -10,47 +10,47 @@
 
 namespace irods {
 
-    // =-=-=-=-=-=-=-
-    /// @brief delimiter used for parsing resource context strings
+// =-=-=-=-=-=-=-
+/// @brief delimiter used for parsing resource context strings
     const std::string RESOURCE_DELIMITER( ";" );
 
 
-    // =-=-=-=-=-=-=-
-    /// @brief key for the replicating resource node which defines the
-    ///        maximum number of data objects to rebalance per iteration
-    ///        (defaults to 500)
-    ///        used in the "resource_rebalance" operation below
+// =-=-=-=-=-=-=-
+/// @brief key for the replicating resource node which defines the
+///        maximum number of data objects to rebalance per iteration
+///        (defaults to 500)
+///        used in the "resource_rebalance" operation below
     const std::string REPL_LIMIT_KEY( "replication_rebalance_limit" );
 
-    // =-=-=-=-=-=-=-
-    /// @brief key for compound resource cache staging policy
+// =-=-=-=-=-=-=-
+/// @brief key for compound resource cache staging policy
     const std::string RESOURCE_STAGE_TO_CACHE_POLICY( "compound_resource_cache_refresh_policy" );
 
-    // =-=-=-=-=-=-=-
-    /// @brief value for compound resource cache staging policy :
-    ///        prefer the copy in the Archive
+// =-=-=-=-=-=-=-
+/// @brief value for compound resource cache staging policy :
+///        prefer the copy in the Archive
     const std::string RESOURCE_STAGE_PREFER_ARCHIVE( "always" );
 
-    // =-=-=-=-=-=-=-
-    /// @brief value for compound resource cache staging policy :
-    ///        prefer the copy in the Cache
+// =-=-=-=-=-=-=-
+/// @brief value for compound resource cache staging policy :
+///        prefer the copy in the Cache
     const std::string RESOURCE_STAGE_PREFER_CACHE( "when_necessary" );
 
-    // =-=-=-=-=-=-=-
-    /// @brief value for a native file system type - this should be
-    ///        modified for different platforms ( windows vs linux, etc. )
+// =-=-=-=-=-=-=-
+/// @brief value for a native file system type - this should be
+///        modified for different platforms ( windows vs linux, etc. )
     const std::string RESOURCE_TYPE_NATIVE( "unixfilesystem" );
 
-    // =-=-=-=-=-=-=-
-    /// @brief value for a bundle file system class
+// =-=-=-=-=-=-=-
+/// @brief value for a bundle file system class
     const std::string RESOURCE_CLASS_BUNDLE( "bundle" );
 
-    // =-=-=-=-=-=-=-
-    /// @brief value for a cache file system class
+// =-=-=-=-=-=-=-
+/// @brief value for a cache file system class
     const std::string RESOURCE_CLASS_CACHE( "cache" );
 
-    // =-=-=-=-=-=-=-
-    /// @brief constants for resource operation indexing
+// =-=-=-=-=-=-=-
+/// @brief constants for resource operation indexing
     const std::string RESOURCE_OP_CREATE( "resource_create" );
     const std::string RESOURCE_OP_OPEN( "resource_open" );
     const std::string RESOURCE_OP_READ( "resource_read" );
@@ -80,8 +80,8 @@ namespace irods {
     const std::string RESOURCE_OP_REBALANCE( "resource_rebalance" );
     const std::string RESOURCE_OP_NOTIFY( "resource_notify" );
 
-    // =-=-=-=-=-=-=-
-    /// @brief constants for icat resource properties
+// =-=-=-=-=-=-=-
+/// @brief constants for icat resource properties
     const std::string RESOURCE_HOST( "resource_property_host" );
     const std::string RESOURCE_ID( "resource_property_id" );
     const std::string RESOURCE_FREESPACE( "resource_property_freespace" );

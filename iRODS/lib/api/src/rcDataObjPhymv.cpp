@@ -88,7 +88,9 @@ rcDataObjPhymv( rcComm_t *conn, dataObjInp_t *dataObjInp ) {
             conn->transStat.bytesWritten = transStat->bytesWritten;
             conn->transStat.flags = 0;
         }
-        if ( transStat != NULL ) { free( transStat ); }
+        if ( transStat != NULL ) {
+            free( transStat );
+        }
         return status;
     }
     if ( transferStat != NULL ) {

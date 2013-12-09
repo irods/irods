@@ -99,7 +99,9 @@ _rsNcArchTimeSeries( rsComm_t *rsComm,
     tmpRescGrpInfo = myRescGrpInfo;
     while ( tmpRescGrpInfo != NULL ) {
         tmpRescInfo = tmpRescGrpInfo->rescInfo;
-        if ( isLocalHost( tmpRescInfo->rescLoc ) ) { break; }
+        if ( isLocalHost( tmpRescInfo->rescLoc ) ) {
+            break;
+        }
         tmpRescGrpInfo = tmpRescGrpInfo->next;
     }
     if ( tmpRescGrpInfo == NULL ) {
@@ -167,7 +169,9 @@ _rsNcArchTimeSeries( rsComm_t *rsComm,
         return status;
     }
     for ( dimInx = 0; dimInx < ncInqOut->ndims; dimInx++ ) {
-        if ( strcasecmp( ncInqOut->dim[dimInx].name, "time" ) == 0 ) { break; }
+        if ( strcasecmp( ncInqOut->dim[dimInx].name, "time" ) == 0 ) {
+            break;
+        }
     }
     if ( dimInx >= ncInqOut->ndims ) {
         /* no match */
@@ -304,11 +308,15 @@ archPartialTimeSeries( rsComm_t *rsComm, ncInqOut_t *ncInqOut,
     if ( ncAggInfo == NULL ) {
         nextNumber = 0;
         status = getAggBasePath( aggCollection, basePath );
-        if ( status < 0 ) { return status; }
+        if ( status < 0 ) {
+            return status;
+        }
     }
     else {
         nextNumber = getNextAggEleObjPath( ncAggInfo, aggCollection, basePath );
-        if ( nextNumber < 0 ) { return nextNumber; }
+        if ( nextNumber < 0 ) {
+            return nextNumber;
+        }
     }
     while ( curTimeInx < endTimeInx ) {
         rodsLong_t remainingInx;
@@ -423,7 +431,9 @@ getTimeInxForArch( rsComm_t *rsComm, int ncid, ncInqOut_t *ncInqOut,
                 /* XXXX close and clear */
                 return myTime;
             }
-            if ( myTime > prevEndTime ) { break; }
+            if ( myTime > prevEndTime ) {
+                break;
+            }
             goodInx = i;
         }
         if ( goodInx >= 0 ) {

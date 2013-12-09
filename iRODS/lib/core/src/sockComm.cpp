@@ -477,7 +477,9 @@ myRead( int sock, void *buf, int len, irodsDescType_t irodsDescType,
     /* Initialize the file descriptor set. */
     FD_ZERO( &set );
     FD_SET( sock, &set );
-    if ( tv != NULL ) { timeout = *tv; }
+    if ( tv != NULL ) {
+        timeout = *tv;
+    }
 
     toRead = len;
     tmpPtr = ( char * ) buf;
@@ -940,7 +942,9 @@ connectToRhostWithRaddr( struct sockaddr_in *remoteAddr, int windowSize,
     }
 
     if ( status < 0 ) {
-        if ( status == -1 ) { status = USER_SOCK_CONNECT_ERR - errno; }
+        if ( status == -1 ) {
+            status = USER_SOCK_CONNECT_ERR - errno;
+        }
 #ifdef _WIN32
         closesocket( sock );
 #else
@@ -1036,7 +1040,9 @@ connectToRhostWithTout( int sock, struct sockaddr *sin ) {
 
     while ( timeoutCnt < MAX_CONN_RETRY_CNT ) {
         status = connect( sock, sin, sizeof( struct sockaddr ) );
-        if ( status >= 0 ) { break; }
+        if ( status >= 0 ) {
+            break;
+        }
         if ( errno == EISCONN ) {
             /* already connected. seen this error on AIX */
             status = 0;

@@ -33,7 +33,9 @@ rsNcGetVarsByType( rsComm_t *rsComm, ncGetVarInp_t *ncGetVarInp,
                  l1descInx );
         return ( SYS_FILE_DESC_OUT_OF_RANGE );
     }
-    if ( L1desc[l1descInx].inuseFlag != FD_INUSE ) { return BAD_INPUT_DESC_INDEX; }
+    if ( L1desc[l1descInx].inuseFlag != FD_INUSE ) {
+        return BAD_INPUT_DESC_INDEX;
+    }
     if ( L1desc[l1descInx].openedAggInfo.ncAggInfo != NULL ) {
         status = rsNcGetVarsByTypeForColl( rsComm, ncGetVarInp, ncGetVarOut );
     }
@@ -163,9 +165,13 @@ rsNcGetVarsByTypeForColl( rsComm_t *rsComm, ncGetVarInp_t *ncGetVarInp,
         myNcGetVarInp.count[i] = ncGetVarInp->count[i];
     }
     len = getSizeForGetVars( ncGetVarInp );
-    if ( len <= 0 ) { return len; }
+    if ( len <= 0 ) {
+        return len;
+    }
     dataTypeSize = getDataTypeSize( ncGetVarInp->dataType );
-    if ( dataTypeSize < 0 ) { return dataTypeSize; }
+    if ( dataTypeSize < 0 ) {
+        return dataTypeSize;
+    }
     buf = bufPos = ( char * ) calloc( len, dataTypeSize );
     curLen = 0;
     for ( i = 0; i < openedAggInfo->ncAggInfo->numFiles; i++ ) {
@@ -270,11 +276,15 @@ rsNcGetVarsByTypeForColl( rsComm_t *rsComm, ncGetVarInp_t *ncGetVarInp,
                 freeNcGetVarOut( &myNcGetVarOut );
             }
         }
-        if ( curPos > timeEnd0 ) { break; }
+        if ( curPos > timeEnd0 ) {
+            break;
+        }
         eleStart = eleEnd + 1;
     }
     if ( status >= 0 ) {
-        if ( strlen( dataType_PI ) == 0 ) { return status; }
+        if ( strlen( dataType_PI ) == 0 ) {
+            return status;
+        }
         *ncGetVarOut = ( ncGetVarOut_t * ) calloc( 1, sizeof( ncGetVarOut_t ) );
         ( *ncGetVarOut )->dataArray = ( dataArray_t * )
                                       calloc( 1, sizeof( dataArray_t ) );

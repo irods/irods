@@ -216,7 +216,9 @@ copyStrFromBuf( char **buf, char *outStr, int maxOutLen ) {
     /* skip over any space */
 
     while ( 1 ) {
-        if ( *bufPtr == '\0' || *bufPtr == '\n' ) { return 0; }
+        if ( *bufPtr == '\0' || *bufPtr == '\n' ) {
+            return 0;
+        }
         /* '#' must be preceded by a space to be a valid comment.
          * the calling routine must check if the line starts with a # */
 
@@ -339,13 +341,17 @@ copyStrFromBuf( char **buf, char *outStr, int maxOutLen ) {
         int len;
         char *tmpPtr;
 
-        if ( path == NULL ) { return 0; }
+        if ( path == NULL ) {
+            return 0;
+        }
         len = strlen( path );
 
         tmpPtr = path + len;
 
         while ( len >= 0 ) {
-            if ( *tmpPtr == '/' ) { break; }
+            if ( *tmpPtr == '/' ) {
+                break;
+            }
             len --;
             tmpPtr --;
         }
@@ -357,12 +363,16 @@ copyStrFromBuf( char **buf, char *outStr, int maxOutLen ) {
         char *t;
 
         t = s;
-        while ( isspace( *t ) ) { t++; }
+        while ( isspace( *t ) ) {
+            t++;
+        }
         if ( s != t ) {
             memmove( s, t, strlen( t ) + 1 );
         }
         t = s + strlen( s ) - 1;
-        while ( isspace( *t ) ) { t--; }
+        while ( isspace( *t ) ) {
+            t--;
+        }
         *( t + 1 ) = '\0';
 
         /*TODO Please return appropriate value*/
@@ -389,7 +399,9 @@ copyStrFromBuf( char **buf, char *outStr, int maxOutLen ) {
 #if 0
         // JMC :: TODO - revisit and implement with mail string standard
         char c;
-        if ( inString == NULL ) { return( 0 ); }
+        if ( inString == NULL ) {
+            return( 0 );
+        }
         c = *inString;
         while ( c != '\0' ) {
             if ( ( c >= 'a' && c <= 'z' ) || ( c >= 'A' && c <= 'Z' ) ||
@@ -416,7 +428,9 @@ copyStrFromBuf( char **buf, char *outStr, int maxOutLen ) {
     int
     checkStringForEmailAddress( char * inString ) {
         char c;
-        if ( inString == NULL ) { return( 0 ); }
+        if ( inString == NULL ) {
+            return( 0 );
+        }
         c = *inString;
         while ( c != '\0' ) {
             if ( ( c >= 'a' && c <= 'z' ) || ( c >= 'A' && c <= 'Z' ) ||

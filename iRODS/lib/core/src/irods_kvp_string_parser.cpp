@@ -9,21 +9,21 @@
 #include "rodsErrorTable.hpp"
 
 namespace irods {
-    /// =-=-=-=-=-=-=-
-    /// @brief function to return defined delimiter
+/// =-=-=-=-=-=-=-
+/// @brief function to return defined delimiter
     std::string kvp_delimiter() {
         return KVP_DEF_DELIM;
     }
 
-    /// =-=-=-=-=-=-=-
-    /// @brief function to return defined delimiter
+/// =-=-=-=-=-=-=-
+/// @brief function to return defined delimiter
     std::string kvp_association() {
         return KVP_DEF_ASSOC;
     }
 
-    /// =-=-=-=-=-=-=-
-    /// @brief given a string, break the string along the kvp association and then
-    ///        place the pair into the map
+/// =-=-=-=-=-=-=-
+/// @brief given a string, break the string along the kvp association and then
+///        place the pair into the map
     static
     error parse_token_into_kvp(
         const std::string& _token,
@@ -49,9 +49,9 @@ namespace irods {
 
     } // parse_token_into_kvp
 
-    /// =-=-=-=-=-=-=-
-    /// @brief given a string, break the string along the delimiter and then
-    ///        break the tokens along the assignment for key-value pairs
+/// =-=-=-=-=-=-=-
+/// @brief given a string, break the string along the delimiter and then
+///        break the tokens along the assignment for key-value pairs
     error parse_kvp_string(
         const std::string& _string,
         kvp_map_t&         _kvp,

@@ -13,6 +13,8 @@
 
 #include "irods_stacktrace.hpp"
 
+#include <fstream>
+
 /* VERIFY_DIV - contributed by g.soudlenkov@auckland.ac.nz */
 #define VERIFY_DIV(_v1_,_v2_) ((_v2_)? (float)(_v1_)/(_v2_):0.0)
 
@@ -108,7 +110,9 @@ mkdirR( char *startDir, char *destDir, int mode ) {
 
     while ( tmpLen > startLen ) {
         path p( tmpPath );
-        if ( exists( p ) ) { break; }
+        if ( exists( p ) ) {
+            break;
+        }
 
         /* Go backward */
 
@@ -732,19 +736,27 @@ genQueryOutToCollRes( genQueryOut_t **genQueryOut,
         /* myGenQueryOut could came from rcQuerySpecColl call */
         if ( ( tmpSqlResult = getSqlResultByInx( myGenQueryOut, COL_DATA_NAME ) )
                 != NULL ) {
-            if ( tmpSqlResult->value != NULL ) { free( tmpSqlResult->value ); }
+            if ( tmpSqlResult->value != NULL ) {
+                free( tmpSqlResult->value );
+            }
         }
         if ( ( tmpSqlResult = getSqlResultByInx( myGenQueryOut, COL_D_CREATE_TIME ) )
                 != NULL ) {
-            if ( tmpSqlResult->value != NULL ) { free( tmpSqlResult->value ); }
+            if ( tmpSqlResult->value != NULL ) {
+                free( tmpSqlResult->value );
+            }
         }
         if ( ( tmpSqlResult = getSqlResultByInx( myGenQueryOut, COL_D_MODIFY_TIME ) )
                 != NULL ) {
-            if ( tmpSqlResult->value != NULL ) { free( tmpSqlResult->value ); }
+            if ( tmpSqlResult->value != NULL ) {
+                free( tmpSqlResult->value );
+            }
         }
         if ( ( tmpSqlResult = getSqlResultByInx( myGenQueryOut, COL_DATA_SIZE ) )
                 != NULL ) {
-            if ( tmpSqlResult->value != NULL ) { free( tmpSqlResult->value ); }
+            if ( tmpSqlResult->value != NULL ) {
+                free( tmpSqlResult->value );
+            }
         }
     }
     else {
@@ -805,7 +817,9 @@ genQueryOutToCollRes( genQueryOut_t **genQueryOut,
 int
 setSqlResultValue( sqlResult_t *sqlResult, int attriInx, char *valueStr,
                    int rowCnt ) {
-    if ( sqlResult == NULL || rowCnt <= 0 ) { return ( 0 ); }
+    if ( sqlResult == NULL || rowCnt <= 0 ) {
+        return ( 0 );
+    }
 
     sqlResult->attriInx = attriInx;
     if ( valueStr == NULL ) {
@@ -832,7 +846,9 @@ setSqlResultValue( sqlResult_t *sqlResult, int attriInx, char *valueStr,
 
 int
 clearCollSqlResult( collSqlResult_t *collSqlResult ) {
-    if ( collSqlResult == NULL ) { return ( USER__NULL_INPUT_ERR ); }
+    if ( collSqlResult == NULL ) {
+        return ( USER__NULL_INPUT_ERR );
+    }
 
     if ( collSqlResult->collName.value != NULL ) {
         free( collSqlResult->collName.value );
@@ -863,7 +879,9 @@ clearCollSqlResult( collSqlResult_t *collSqlResult ) {
 
 int
 clearDataObjSqlResult( dataObjSqlResult_t *dataObjSqlResult ) {
-    if ( dataObjSqlResult == NULL ) { return ( USER__NULL_INPUT_ERR ); }
+    if ( dataObjSqlResult == NULL ) {
+        return ( USER__NULL_INPUT_ERR );
+    }
 
     if ( dataObjSqlResult->collName.value != NULL ) {
         free( dataObjSqlResult->collName.value );
@@ -1098,7 +1116,9 @@ rclOpenCollection( rcComm_t *conn, char *collection, int flags,
     status = rcObjStat( conn, &collHandle->dataObjInp, &rodsObjStatOut );
 
 
-    if ( status < 0 ) { return status; }
+    if ( status < 0 ) {
+        return status;
+    }
 
     if ( rodsObjStatOut->objType != COLL_OBJ_T ) {
         free( rodsObjStatOut );
@@ -1120,7 +1140,9 @@ rclOpenCollection( rcComm_t *conn, char *collection, int flags,
     collHandle->flags = flags;
     /* the collection exist. now query the data in it */
     status = rclInitQueryHandle( &collHandle->queryHandle, conn );
-    if ( status < 0 ) { return status; }
+    if ( status < 0 ) {
+        return status;
+    }
 
     return ( 0 );
 }
@@ -1370,7 +1392,9 @@ rclCloseCollection( collHandle_t *collHandle ) {
 
 int
 clearCollHandle( collHandle_t *collHandle, int freeSpecColl ) {
-    if ( collHandle == NULL ) { return 0; }
+    if ( collHandle == NULL ) {
+        return 0;
+    }
     if ( collHandle->dataObjInp.specColl == NULL ) {
         clearGenQueryInp( &collHandle->genQueryInp );
     }
@@ -1572,12 +1596,16 @@ getNextDataObjMetaInfo( collHandle_t *collHandle, collEnt_t *outCollEnt ) {
                 if ( strcmp( prevdataId, &dataId[dataIdLen * i] ) != 0 ) {
                     rstrcpy( prevdataId, &dataId[dataIdLen * i], NAME_LEN );
                     selectedInx = i;
-                    if ( atoi( &dataId[dataIdLen * i] ) != 0 ) { gotCopy = 1; }
+                    if ( atoi( &dataId[dataIdLen * i] ) != 0 ) {
+                        gotCopy = 1;
+                    }
                 }
             }
             else {
                 /* skip i to the next object */
-                if ( strcmp( prevdataId, &dataId[dataIdLen * i] ) != 0 ) { break; }
+                if ( strcmp( prevdataId, &dataId[dataIdLen * i] ) != 0 ) {
+                    break;
+                }
                 if ( gotCopy == 0 &&
                         atoi( &replStatus[replStatusLen * i] ) > 0 ) {
                     /* pick a good copy */
@@ -1708,7 +1736,9 @@ rclInitQueryHandle( queryHandle_t *queryHandle, rcComm_t *conn ) {
 
 int
 freeCollEnt( collEnt_t *collEnt ) {
-    if ( collEnt == NULL ) { return ( 0 ); }
+    if ( collEnt == NULL ) {
+        return ( 0 );
+    }
 
     clearCollEnt( collEnt );
 
@@ -1719,25 +1749,49 @@ freeCollEnt( collEnt_t *collEnt ) {
 
 int
 clearCollEnt( collEnt_t *collEnt ) {
-    if ( collEnt == NULL ) { return ( 0 ); }
+    if ( collEnt == NULL ) {
+        return ( 0 );
+    }
 
-    if ( collEnt->collName != NULL ) { free( collEnt->collName ); }
-    if ( collEnt->dataName != NULL ) { free( collEnt->dataName ); }
-    if ( collEnt->dataId != NULL ) { free( collEnt->dataId ); }
-    if ( collEnt->createTime != NULL ) { free( collEnt->createTime ); }
-    if ( collEnt->modifyTime != NULL ) { free( collEnt->modifyTime ); }
-    if ( collEnt->chksum != NULL ) { free( collEnt->chksum ); }
-    if ( collEnt->resource != NULL ) { free( collEnt->resource ); }
-    if ( collEnt->phyPath != NULL ) { free( collEnt->phyPath ); }
-    if ( collEnt->ownerName != NULL ) { free( collEnt->ownerName ); }
-    if ( collEnt->dataType != NULL ) { free( collEnt->dataType ); } // JMC - backport 4636
+    if ( collEnt->collName != NULL ) {
+        free( collEnt->collName );
+    }
+    if ( collEnt->dataName != NULL ) {
+        free( collEnt->dataName );
+    }
+    if ( collEnt->dataId != NULL ) {
+        free( collEnt->dataId );
+    }
+    if ( collEnt->createTime != NULL ) {
+        free( collEnt->createTime );
+    }
+    if ( collEnt->modifyTime != NULL ) {
+        free( collEnt->modifyTime );
+    }
+    if ( collEnt->chksum != NULL ) {
+        free( collEnt->chksum );
+    }
+    if ( collEnt->resource != NULL ) {
+        free( collEnt->resource );
+    }
+    if ( collEnt->phyPath != NULL ) {
+        free( collEnt->phyPath );
+    }
+    if ( collEnt->ownerName != NULL ) {
+        free( collEnt->ownerName );
+    }
+    if ( collEnt->dataType != NULL ) {
+        free( collEnt->dataType );    // JMC - backport 4636
+    }
     return ( 0 );
 }
 
 
 int
 myChmod( char *inPath, uint dataMode ) {
-    if ( dataMode < 0100 ) { return ( 0 ); }
+    if ( dataMode < 0100 ) {
+        return ( 0 );
+    }
 
     if ( Myumask == INIT_UMASK_VAL ) {
         Myumask = umask( 0022 );
@@ -1754,7 +1808,9 @@ getZoneHintForGenQuery( genQueryInp_t *genQueryInp ) {
     char *zoneHint;
     int i;
 
-    if ( genQueryInp == NULL ) { return NULL; }
+    if ( genQueryInp == NULL ) {
+        return NULL;
+    }
 
     if ( ( zoneHint = getValByKey( &genQueryInp->condInput, ZONE_KW ) ) != NULL ) {
         return ( zoneHint );
@@ -1767,7 +1823,9 @@ getZoneHintForGenQuery( genQueryInp_t *genQueryInp ) {
                 inx == COL_ZONE_NAME ) {
             char *tmpPtr;
             zoneHint = genQueryInp->sqlCondInp.value[i];
-            if ( ( tmpPtr = strchr( zoneHint, '/' ) ) != NULL ) { zoneHint = tmpPtr; }
+            if ( ( tmpPtr = strchr( zoneHint, '/' ) ) != NULL ) {
+                zoneHint = tmpPtr;
+            }
             return ( zoneHint );
         }
     }
@@ -1855,7 +1913,9 @@ getCollSizeForProgStat( rcComm_t *conn, char *srcColl,
                 /* the child is a spec coll. need to drill down */
                 status = getCollSizeForProgStat( conn, collEnt.collName,
                                                  operProgress );
-                if ( status < 0 && status != CAT_NO_ROWS_FOUND ) { return ( status ); }
+                if ( status < 0 && status != CAT_NO_ROWS_FOUND ) {
+                    return ( status );
+                }
             }
         }
     }
@@ -1879,7 +1939,9 @@ getDirSizeForProgStat( rodsArguments_t *rodsArgs, char *srcDir,
     int status = 0;
     char srcChildPath[MAX_NAME_LEN];
 
-    if ( isPathSymlink( rodsArgs, srcDir ) > 0 ) { return 0; }
+    if ( isPathSymlink( rodsArgs, srcDir ) > 0 ) {
+        return 0;
+    }
 
     path srcDirPath( srcDir );
     if ( !exists( srcDirPath ) || !is_directory( srcDirPath ) ) {
@@ -1912,7 +1974,9 @@ getDirSizeForProgStat( rodsArguments_t *rodsArgs, char *srcDir,
         else if ( is_directory( p ) ) {
             status = getDirSizeForProgStat( rodsArgs, srcChildPath,
                                             operProgress );
-            if ( status < 0 ) { return ( status ); }
+            if ( status < 0 ) {
+                return ( status );
+            }
 
         }
     }
@@ -2322,6 +2386,9 @@ getFileMetaFromPath( char *srcPath, keyValPair_t *condInput ) {
             else {
                 snprintf( fullSrcPath, MAX_NAME_LEN, "%s/%s", cwd, srcPath );
             }
+        }
+        else {
+            strncpy( fullSrcPath, srcPath, MAX_NAME_LEN );
         }
         addKeyVal( condInput, FILE_SOURCE_PATH_KW, fullSrcPath );
     }

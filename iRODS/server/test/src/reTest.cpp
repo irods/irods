@@ -209,7 +209,9 @@ time_t time_offset( const time_t *base, const struct tm *off ) {
     struct tm *t;
 
     t = localtime( base );
-    if ( !t ) { return ( time_t )( -1 ); }
+    if ( !t ) {
+        return ( time_t )( -1 );
+    }
 
     t->tm_sec += off->tm_sec;
     t->tm_min += off->tm_min;

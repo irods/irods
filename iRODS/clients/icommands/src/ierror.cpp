@@ -24,7 +24,9 @@ main( int argc, char **argv ) {
 
     errorCode = atoi( argv[1] );
 
-    if ( errorCode > 0 ) { errorCode = -errorCode; }
+    if ( errorCode > 0 ) {
+        errorCode = -errorCode;
+    }
 
     myErrName = rodsErrorName( errorCode, &mySubErrName );
     printf( "irods error: %d %s %s\n",

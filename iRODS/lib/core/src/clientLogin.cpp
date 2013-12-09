@@ -513,7 +513,9 @@ clientLoginWithPassword( rcComm_t *Conn, char* password ) {
     MD5Update( &context, ( unsigned char* )md5Buf, CHALLENGE_LEN + MAX_PASSWORD_LEN );
     MD5Final( ( unsigned char* )digest, &context );
     for ( i = 0; i < RESPONSE_LEN; i++ ) {
-        if ( digest[i] == '\0' ) { digest[i]++; }  /* make sure 'string' doesn't
+        if ( digest[i] == '\0' ) {
+            digest[i]++;
+        }  /* make sure 'string' doesn't
 					    end early*/
     }
 

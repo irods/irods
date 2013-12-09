@@ -71,11 +71,17 @@ int main( int argc, char *argv[] ) {
 
     /* read the pw from stdin */
     nb = read( 0, ( void* )&password, sizeof( password ) );
-    if ( debug > 0 ) { printf( "nb=%d\n", nb ); }
-    if ( password[nb - 1] == '\n' ) { password[nb - 1] = '\0'; }
+    if ( debug > 0 ) {
+        printf( "nb=%d\n", nb );
+    }
+    if ( password[nb - 1] == '\n' ) {
+        password[nb - 1] = '\0';
+    }
 
     retval = pam_start( pam_service, username, &conv, &pamh );
-    if ( debug > 0 ) { printf( "retval 1=%d\n", retval ); }
+    if ( debug > 0 ) {
+        printf( "retval 1=%d\n", retval );
+    }
 
     if ( retval != PAM_SUCCESS ) {
         fprintf( stderr, "PamAuthCheck: pam_start error\n" );
@@ -92,7 +98,9 @@ int main( int argc, char *argv[] ) {
     reply[0].resp_retcode = 0;
 
     retval = pam_authenticate( pamh, 0 );  /* check username-password */
-    if ( debug > 0 ) { printf( "retval 2=%d\n", retval ); }
+    if ( debug > 0 ) {
+        printf( "retval 2=%d\n", retval );
+    }
 
     strcpy( password, "                    " );
 

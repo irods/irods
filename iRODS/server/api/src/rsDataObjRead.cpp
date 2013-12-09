@@ -22,7 +22,9 @@ applyRuleForPostProcForRead( rsComm_t *rsComm, bytesBuf_t *dataObjReadOutBBuf, c
     msParamArray_t msParamArray;
     int *myInOutStruct;
 
-    if ( ReadWriteRuleState != ON_STATE ) { return 0; }
+    if ( ReadWriteRuleState != ON_STATE ) {
+        return 0;
+    }
 
     memset( ( char* )&rei2, 0, sizeof( ruleExecInfo_t ) );
     memset( ( char* )&msParamArray, 0, sizeof( msParamArray_t ) );

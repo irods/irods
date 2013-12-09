@@ -9,7 +9,7 @@
 
 namespace irods {
 
-    // constant key for gsi auth object
+// constant key for gsi auth object
     const std::string GSI_AUTH_PLUGIN( "GSI" );
 
     /**
@@ -24,12 +24,16 @@ namespace irods {
         // Accessors
 
         /// @brief Returns the GSI credentials
-        virtual gss_cred_id_t creds( void ) const { return creds_; }
+        virtual gss_cred_id_t creds( void ) const {
+            return creds_;
+        }
 
         // Mutators
 
         /// @brief Sets the GSI credentials
-        virtual void creds( gss_cred_id_t _creds ) { creds_ = _creds; }
+        virtual void creds( gss_cred_id_t _creds ) {
+            creds_ = _creds;
+        }
 
         // Methods
 

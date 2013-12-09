@@ -8,16 +8,16 @@
 #include "irods_plugin_context.hpp"
 
 namespace irods {
-    /// =-=-=-=-=-=-=-
-    /// @brief typedef for resource child map
+/// =-=-=-=-=-=-=-
+/// @brief typedef for resource child map
     class resource;
     typedef lookup_table< std::pair< std::string, resource_ptr > > resource_child_map;
 
-    // =-=-=-=-=-=-=-
-    // @brief class which holds default values passed to resource plugin
-    //        operations.  this allows for easy extension in the future
-    //        without the need to rewrite plugin interfaces as well as
-    //        pass along references rather than pointers
+// =-=-=-=-=-=-=-
+// @brief class which holds default values passed to resource plugin
+//        operations.  this allows for easy extension in the future
+//        without the need to rewrite plugin interfaces as well as
+//        pass along references rather than pointers
     class resource_plugin_context : public plugin_context {
     public:
         // =-=-=-=-=-=-=-
@@ -72,8 +72,12 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // accessors
-        virtual rsComm_t*            comm()      { return comm_;      }
-        virtual resource_child_map&  child_map() { return child_map_; }
+        virtual rsComm_t*            comm()      {
+            return comm_;
+        }
+        virtual resource_child_map&  child_map() {
+            return child_map_;
+        }
 
     protected:
         // =-=-=-=-=-=-=-

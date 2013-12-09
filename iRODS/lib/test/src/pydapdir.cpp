@@ -103,7 +103,9 @@ pydapOpendir( rsComm_t *rsComm, char *dirUrl, void **outDirPtr ) {
     CURL *easyhandle;
     httpDirStruct_t *httpDirStruct = NULL;
 
-    if ( dirUrl == NULL || outDirPtr == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( dirUrl == NULL || outDirPtr == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
 
     *outDirPtr = NULL;
     easyhandle = curl_easy_init();
@@ -143,12 +145,18 @@ pydapReaddir( rsComm_t *rsComm, void *dirPtr, struct dirent *direntPtr ) {
 
     while ( ( status = getNextHlink( httpDirStruct, hlink ) ) >= 0 ) {
 
-        if ( strcmp( hlink, PARENT_HLINK_DIR ) == 0 ) { continue; }
-        if ( strncmp( hlink, HTTP_PREFIX, strlen( HTTP_PREFIX ) ) == 0 ) { continue; }
+        if ( strcmp( hlink, PARENT_HLINK_DIR ) == 0 ) {
+            continue;
+        }
+        if ( strncmp( hlink, HTTP_PREFIX, strlen( HTTP_PREFIX ) ) == 0 ) {
+            continue;
+        }
         /* end with .html ? */
         len = strlen( hlink );
         ptr = hlink + len - 5;
-        if ( strcmp( ptr, ".html" ) == 0 ) { continue; }
+        if ( strcmp( ptr, ".html" ) == 0 ) {
+            continue;
+        }
         rstrcpy( direntPtr->d_name, hlink, MAX_NAME_LEN );
         break;
     }
@@ -160,13 +168,19 @@ getNextHlink( httpDirStruct_t *httpDirStruct, char *hlink ) {
     char *ptr, *endPtr;
 
     ptr = strcasestr( httpDirStruct->curPtr, HLINK_PREFIX );
-    if ( ptr == NULL ) { return -1; }
+    if ( ptr == NULL ) {
+        return -1;
+    }
     ptr += strlen( HLINK_PREFIX );
     ptr = strchr( ptr, '\"' );
-    if ( ptr == NULL ) { return -1; }
+    if ( ptr == NULL ) {
+        return -1;
+    }
     ptr++;
     endPtr = strchr( ptr, '\"' );
-    if ( endPtr == NULL ) { return -1; }
+    if ( endPtr == NULL ) {
+        return -1;
+    }
     *endPtr = '\0';
     rstrcpy( hlink, ptr, MAX_NAME_LEN );
     *endPtr = '\"';
@@ -177,7 +191,9 @@ getNextHlink( httpDirStruct_t *httpDirStruct, char *hlink ) {
 
 int
 freeHttpDirStruct( httpDirStruct_t **httpDirStruct ) {
-    if ( httpDirStruct == NULL || *httpDirStruct == NULL ) { return 0; }
+    if ( httpDirStruct == NULL || *httpDirStruct == NULL ) {
+        return 0;
+    }
 
     if ( ( *httpDirStruct )->httpResponse != NULL ) {
         free( ( *httpDirStruct )->httpResponse );
@@ -222,7 +238,9 @@ int
 pydapClosedir( rsComm_t *rsComm, void *dirPtr ) {
     httpDirStruct_t *httpDirStruct = ( httpDirStruct_t * ) dirPtr;
 
-    if ( httpDirStruct == NULL ) { return 0; }
+    if ( httpDirStruct == NULL ) {
+        return 0;
+    }
 
     if ( httpDirStruct->easyhandle != NULL ) {
         curl_easy_cleanup( httpDirStruct->easyhandle );
@@ -236,7 +254,9 @@ int
 pydapStat( rsComm_t *rsComm, char *urlPath, struct stat *statbuf ) {
     int len;
 
-    if ( urlPath == NULL || statbuf == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( urlPath == NULL || statbuf == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
     bzero( statbuf, sizeof( struct stat ) );
     len = strlen( urlPath );
     /* end with "/" ? */

@@ -57,29 +57,63 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // Accessors
-        virtual rsComm_t*                      comm()            const { return comm_;            }
-        virtual std::string                    logical_path()    const { return logical_path_;    }
-        virtual std::string                    data_type()       const { return data_type_;       }
-        virtual int                            file_descriptor() const { return file_descriptor_; }
-        virtual int                            l1_desc_idx()     const { return l1_desc_idx_;     }
-        virtual size_t                         size()            const { return size_;            }
-        virtual int                            repl_requested()  const { return repl_requested_;  }
-        virtual std::vector< physical_object > replicas()        const { return replicas_;        }
-        virtual const std::string&             in_pdmo()         const { return in_pdmo_;         }
-        virtual const keyValPair_t&            cond_input()      const { return cond_input_;      }
+        virtual rsComm_t*                      comm()            const {
+            return comm_;
+        }
+        virtual std::string                    logical_path()    const {
+            return logical_path_;
+        }
+        virtual std::string                    data_type()       const {
+            return data_type_;
+        }
+        virtual int                            file_descriptor() const {
+            return file_descriptor_;
+        }
+        virtual int                            l1_desc_idx()     const {
+            return l1_desc_idx_;
+        }
+        virtual size_t                         size()            const {
+            return size_;
+        }
+        virtual int                            repl_requested()  const {
+            return repl_requested_;
+        }
+        virtual std::vector< physical_object > replicas()        const {
+            return replicas_;
+        }
+        virtual const std::string&             in_pdmo()         const {
+            return in_pdmo_;
+        }
+        virtual const keyValPair_t&            cond_input()      const {
+            return cond_input_;
+        }
 
         // =-=-=-=-=-=-=-
         // Mutators
-        virtual void logical_path( const std::string& _s )   { logical_path_    = _s;  }
-        virtual void file_descriptor( int _fd )              { file_descriptor_ = _fd; }
-        virtual void comm( rsComm_t* _c )                   { comm_            = _c;  }
-        virtual void size( size_t _v )                       { size_            = _v;  }
-        virtual void repl_requested( int _v )                { repl_requested_  = _v;  }
-        virtual void in_pdmo( const std::string& _v )        { in_pdmo_         = _v;  }
+        virtual void logical_path( const std::string& _s )   {
+            logical_path_    = _s;
+        }
+        virtual void file_descriptor( int _fd )              {
+            file_descriptor_ = _fd;
+        }
+        virtual void comm( rsComm_t* _c )                   {
+            comm_            = _c;
+        }
+        virtual void size( size_t _v )                       {
+            size_            = _v;
+        }
+        virtual void repl_requested( int _v )                {
+            repl_requested_  = _v;
+        }
+        virtual void in_pdmo( const std::string& _v )        {
+            in_pdmo_         = _v;
+        }
         virtual void replicas( const std::vector< physical_object >& _v ) {
             replicas_ = _v;
         }
-        inline void cond_input( const keyValPair_t& _cond_input ) { replKeyVal( &_cond_input, &cond_input_ ); }
+        inline void cond_input( const keyValPair_t& _cond_input ) {
+            replKeyVal( &_cond_input, &cond_input_ );
+        }
 
     protected:
         // =-=-=-=-=-=-=-
@@ -104,17 +138,17 @@ namespace irods {
 
     }; // class file_object
 
-    /// =-=-=-=-=-=-=-
-    /// @brief typedef for managed file object ptr
+/// =-=-=-=-=-=-=-
+/// @brief typedef for managed file object ptr
     typedef boost::shared_ptr< file_object > file_object_ptr;
 
-    // =-=-=-=-=-=-=-
-    // factory function which will take a dataObjInfo pointer and create a file_object
+// =-=-=-=-=-=-=-
+// factory function which will take a dataObjInfo pointer and create a file_object
     error file_object_factory( rsComm_t*,         // server network connection
                                dataObjInp_t*,     // incoming data object request struct
                                file_object_ptr ); // out var for file object
-    // =-=-=-=-=-=-=-
-    // function which will inform irods as to which server to select for a given operation
+// =-=-=-=-=-=-=-
+// function which will inform irods as to which server to select for a given operation
     error resource_redirect( const std::string&,   // operation in question
                              rsComm_t*,            // server network connection
                              dataObjInp_t*,        // incoming data object request struct

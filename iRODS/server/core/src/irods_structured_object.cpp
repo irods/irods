@@ -8,8 +8,8 @@ extern irods::resource_manager resc_mgr;
 
 namespace irods {
 
-    // =-=-=-=-=-=-=-
-    // public - ctor
+// =-=-=-=-=-=-=-
+// public - ctor
     structured_object::structured_object() :
         file_object(),
         sub_file_path_( "" ),
@@ -19,8 +19,8 @@ namespace irods {
         opr_type_( 0 ) {
     } // structured_object
 
-    // =-=-=-=-=-=-=-
-    // public - cctor
+// =-=-=-=-=-=-=-
+// public - cctor
     structured_object::structured_object( const structured_object& _rhs ) :
         file_object( _rhs ) {
         addr_          = _rhs.addr_;
@@ -32,8 +32,8 @@ namespace irods {
 
     } // cctor
 
-    // =-=-=-=-=-=-=-
-    // public - cctor
+// =-=-=-=-=-=-=-
+// public - cctor
     structured_object::structured_object( subFile_t& _sub ) :
         file_object(),
         sub_file_path_( "" ),
@@ -58,13 +58,13 @@ namespace irods {
 
     } // structured_object
 
-    // =-=-=-=-=-=-=-
-    // public - dtor
+// =-=-=-=-=-=-=-
+// public - dtor
     structured_object::~structured_object() {
     } // dtor
 
-    // =-=-=-=-=-=-=-
-    // public - assignment operator
+// =-=-=-=-=-=-=-
+// public - assignment operator
     structured_object& structured_object::operator=( const structured_object& _rhs ) {
         // =-=-=-=-=-=-=-
         // call base class assignment first
@@ -81,8 +81,8 @@ namespace irods {
 
     }  // operator=
 
-    // =-=-=-=-=-=-=-
-    // plugin - resolve resource plugin for this object
+// =-=-=-=-=-=-=-
+// plugin - resolve resource plugin for this object
     error structured_object::resolve(
         const std::string& _interface,
         plugin_ptr&        _ptr ) {
@@ -159,8 +159,8 @@ namespace irods {
 
     } // resolve
 
-    // =-=-=-=-=-=-=-
-    // public - get vars from object for rule engine
+// =-=-=-=-=-=-=-
+// public - get vars from object for rule engine
     error structured_object::get_re_vars(
         keyValPair_t& _kvp ) {
         file_object::get_re_vars( _kvp );

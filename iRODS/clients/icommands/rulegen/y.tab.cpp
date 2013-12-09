@@ -1172,7 +1172,8 @@ yytnamerr( char *yyres, const char *yystr ) {
                 }
                 return yyn;
             }
-do_not_strip_quotes: ;
+do_not_strip_quotes:
+        ;
     }
 
     if ( ! yyres ) {
@@ -1972,7 +1973,8 @@ yyreduce:
 
     /* Line 1267 of yacc.c.  */
 #line 1985 "y.tab.c"
-    default: break;
+    default:
+        break;
     }
     YY_SYMBOL_PRINT( "-> $$ =", yyr1[yyn], &yyval, &yyloc );
 
@@ -2370,8 +2372,12 @@ void *stitch( int typ, void *inarg1, void  *inarg2, void  *inarg3, void  *inarg4
         }
         break;
     case FOR:
-        if ( ( u =  strstr( arg1, ":::" ) ) != NULL ) { *u = '\0'; }
-        if ( ( v =  strstr( arg3, ":::" ) ) != NULL ) { *v = '\0'; }
+        if ( ( u =  strstr( arg1, ":::" ) ) != NULL ) {
+            *u = '\0';
+        }
+        if ( ( v =  strstr( arg3, ":::" ) ) != NULL ) {
+            *v = '\0';
+        }
         if ( ( t = strstr( arg4, ":::" ) ) != NULL ) {
             *t = '\0';
             sprintf( tmpStr, "forExec(%s,%s,%s,%s,%s):::nop",
@@ -2382,8 +2388,12 @@ void *stitch( int typ, void *inarg1, void  *inarg2, void  *inarg3, void  *inarg4
             sprintf( tmpStr, "forExec(%s,%s,%s,%s,%s):::nop",
                      arg1, arg2, arg3, arg4, "''" );
         }
-        if ( u != NULL ) { *u = ':'; }
-        if ( v != NULL ) { *v = ':'; }
+        if ( u != NULL ) {
+            *u = ':';
+        }
+        if ( v != NULL ) {
+            *v = ':';
+        }
         break;
     case ASLIST:
         break;

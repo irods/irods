@@ -6,8 +6,8 @@
 
 namespace irods {
 
-    // =-=-=-=-=-=-=-
-    // public - default constructor
+// =-=-=-=-=-=-=-
+// public - default constructor
     physical_object::physical_object() : is_dirty_( -1 ),
         repl_num_( -1 ),
         map_id_( -1 ),
@@ -16,8 +16,8 @@ namespace irods {
         coll_id_( -1 ) {
     } // ctor
 
-    // =-=-=-=-=-=-=-
-    // public - copy constructor
+// =-=-=-=-=-=-=-
+// public - copy constructor
     physical_object::physical_object( const physical_object& _rhs ) {
         is_dirty_        = _rhs.is_dirty_;
         repl_num_        = _rhs.repl_num_;
@@ -44,13 +44,13 @@ namespace irods {
 
     } // cctor
 
-    // =-=-=-=-=-=-=-
-    // public - destructor
+// =-=-=-=-=-=-=-
+// public - destructor
     physical_object::~physical_object() {
     } // dtor
 
-    // =-=-=-=-=-=-=-
-    // public - assignment operator
+// =-=-=-=-=-=-=-
+// public - assignment operator
     physical_object& physical_object::operator=( const physical_object& _rhs ) {
         if ( this != &_rhs ) {
             is_dirty_        = _rhs.is_dirty_;

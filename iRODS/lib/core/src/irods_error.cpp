@@ -16,8 +16,8 @@
 #include <iostream>
 
 namespace irods {
-    // =-=-=-=-=-=-=-
-    // private - helper fcn to build the result string
+// =-=-=-=-=-=-=-
+// private - helper fcn to build the result string
     std::string error::build_result_string(
         std::string _file,
         int         _line,
@@ -55,13 +55,13 @@ namespace irods {
 
     } // build_result_string
 
-    // =-=-=-=-=-=-=-
-    // public - default constructor
+// =-=-=-=-=-=-=-
+// public - default constructor
     error::error( ) : status_( false ), code_( 0 ), message_( "" ) {
     } // ctor
 
-    // =-=-=-=-=-=-=-
-    // public - useful constructor
+// =-=-=-=-=-=-=-
+// public - useful constructor
     error::error(
         bool        _status,
         long long   _code,
@@ -81,8 +81,8 @@ namespace irods {
 
     } // ctor
 
-    // =-=-=-=-=-=-=-
-    // public - useful constructor
+// =-=-=-=-=-=-=-
+// public - useful constructor
     error::error(
         bool         _status,
         long long    _code,
@@ -104,8 +104,8 @@ namespace irods {
 
     } // ctor
 
-    // =-=-=-=-=-=-=-
-    // public - copy constructor
+// =-=-=-=-=-=-=-
+// public - copy constructor
     error::error( const error& _rhs ) {
         status_           = _rhs.status_;
         code_             = _rhs.code_;
@@ -113,13 +113,13 @@ namespace irods {
         result_stack_     = _rhs.result_stack_;
     } // cctor
 
-    // =-=-=-=-=-=-=-
-    // public - Destructor
+// =-=-=-=-=-=-=-
+// public - Destructor
     error::~error() {
     } // dtor
 
-    // =-=-=-=-=-=-=-
-    // public - Assignment Operator
+// =-=-=-=-=-=-=-
+// public - Assignment Operator
     error& error::operator=( const error& _rhs ) {
         status_           = _rhs.status_;
         code_             = _rhs.code_;
@@ -128,22 +128,22 @@ namespace irods {
         return *this;
     } // assignment operator
 
-    // =-=-=-=-=-=-=-
-    // public - return the status of this error object
+// =-=-=-=-=-=-=-
+// public - return the status of this error object
     bool error::status( ) const {
         return status_;
 
     } // status
 
-    // =-=-=-=-=-=-=-
-    // public - return the code of this error object
+// =-=-=-=-=-=-=-
+// public - return the code of this error object
     long long error::code( ) const {
         return code_;
 
     } // code
 
-    // =-=-=-=-=-=-=-
-    // public - return the composite result for logging, etc.
+// =-=-=-=-=-=-=-
+// public - return the composite result for logging, etc.
     std::string error::result( ) {
         // =-=-=-=-=-=-=-
         // tack on tabs based on stack depth
@@ -182,8 +182,8 @@ namespace irods {
 
     } // result
 
-    // =-=-=-=-=-=-=-
-    // public - return the status_
+// =-=-=-=-=-=-=-
+// public - return the status_
     bool error::ok( ) {
         return status_;
 

@@ -37,7 +37,9 @@ int check_proxy_user_privelges(
     rsComm_t *rsComm,
     int proxyUserPriv ) {
     if ( strcmp( rsComm->proxyUser.userName, rsComm->clientUser.userName )
-            == 0 ) { return 0; }
+            == 0 ) {
+        return 0;
+    }
 
     /* remote privileged user can only do things on behalf of users from
      * the same zone */
@@ -496,13 +498,17 @@ extern "C" {
                                    CHALLENGE_LEN + MAX_PASSWORD_LEN );
                         MD5Final( ( unsigned char* )digest, &context );
                         for ( i = 0; i < RESPONSE_LEN; i++ ) {
-                            if ( digest[i] == '\0' ) { digest[i]++; }  /* make sure 'string' doesn't
+                            if ( digest[i] == '\0' ) {
+                                digest[i]++;
+                            }  /* make sure 'string' doesn't
                                                                   end early*/
                         }
                         cp = authCheckOut->serverResponse;
                         OK = 1;
                         for ( i = 0; i < RESPONSE_LEN; i++ ) {
-                            if ( *cp++ != digest[i] ) { OK = 0; }
+                            if ( *cp++ != digest[i] ) {
+                                OK = 0;
+                            }
                         }
                         rodsLog( LOG_DEBUG, "serverResponse is OK/Not: %d", OK );
                         if ( OK == 0 ) {
@@ -611,7 +617,9 @@ extern "C" {
         }
 
         /*** Added by RAJA Nov 16 2010 **/
-        if ( authCheckOut->serverResponse != NULL ) { free( authCheckOut->serverResponse ); }
+        if ( authCheckOut->serverResponse != NULL ) {
+            free( authCheckOut->serverResponse );
+        }
         /*** Added by RAJA Nov 16 2010 **/
         free( authCheckOut );
 

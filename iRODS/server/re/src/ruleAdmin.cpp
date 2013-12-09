@@ -45,7 +45,8 @@ performAction( paramIn *Sentries );
 int
 webErrorExit( char *msg, int status ) {
     if ( !heading ) {
-        printf( "Content-type: text/html%c%c", 10, 10 ); fflush( stdout );
+        printf( "Content-type: text/html%c%c", 10, 10 );
+        fflush( stdout );
         printf( "<html>" );
         printf( "<body>" );
     }
@@ -79,7 +80,9 @@ void unescape_url( char *url ) {
 void plustospace( char *str ) {
     register int x;
 
-    for ( x = 0; str[x]; x++ ) if ( str[x] == '+' ) { str[x] = ' '; }
+    for ( x = 0; str[x]; x++ ) if ( str[x] == '+' ) {
+            str[x] = ' ';
+        }
 }
 
 int
@@ -234,10 +237,14 @@ void getword( char *word, char *line, char stop ) {
     }
 
     word[x] = '\0';
-    if ( line[x] ) { ++x; }
+    if ( line[x] ) {
+        ++x;
+    }
     y = 0;
 
-    while ( line[y++] = line[x++] ) { ; }
+    while ( line[y++] = line[x++] ) {
+        ;
+    }
 }
 
 char *makeword( char *line, char stop ) {
@@ -249,10 +256,14 @@ char *makeword( char *line, char stop ) {
     }
 
     word[x] = '\0';
-    if ( line[x] ) { ++x; }
+    if ( line[x] ) {
+        ++x;
+    }
     y = 0;
 
-    while ( line[y++] = line[x++] ) { ; }
+    while ( line[y++] = line[x++] ) {
+        ;
+    }
     return word;
 }
 
@@ -266,7 +277,8 @@ char *fmakeword( FILE *f, char stop, int *cl ) {
     word = ( char * ) malloc( sizeof( char ) * ( wsize + 1 ) );
 
     while ( 1 ) {
-        word[ll] = ( char )fgetc( f ); printf( "%c", word[ll] );
+        word[ll] = ( char )fgetc( f );
+        printf( "%c", word[ll] );
         if ( ll == wsize ) {
             word[ll + 1] = '\0';
             wsize += 102400;
@@ -282,7 +294,9 @@ char *fmakeword( FILE *f, char stop, int *cl ) {
         }
         --( *cl );
         if ( ( word[ll] == stop ) || ( feof( f ) ) || ( !( *cl ) ) ) {
-            if ( word[ll] != stop ) { ll++; }
+            if ( word[ll] != stop ) {
+                ll++;
+            }
             word[ll] = '\0';
             return word;
         }
@@ -294,7 +308,9 @@ char *fmakeword( FILE *f, char stop, int *cl ) {
 int rind( char *s, char c ) {
     register int x;
     for ( x = strlen( s ) - 1; x != -1; x-- )
-        if ( s[x] == c ) { return x; }
+        if ( s[x] == c ) {
+            return x;
+        }
     return -1;
 }
 
@@ -400,7 +416,9 @@ int getEntries( inStruct Sentries ) {
         getBoundary( &stquery, boundary );
         /***     printf("Boundary:**%s**<BR>\n",boundary);fflush(stdout); ***/
         for ( x = 0;  *stquery != '\0'; x++ ) {
-            if ( x == MAX_ENTRIES ) { webErrorExit( "MaxEntries Exceeded", x ); }
+            if ( x == MAX_ENTRIES ) {
+                webErrorExit( "MaxEntries Exceeded", x );
+            }
             Sentries->m = x;
             /***     printf("GettingX:%i....\n",x);fflush(stdout); ***/
             tmpPtr = stquery;
@@ -421,7 +439,9 @@ int getEntries( inStruct Sentries ) {
         /******************************************************/
 
         for ( x = 0;  stquery[0] != '\0'; x++ ) {
-            if ( x == MAX_ENTRIES ) { webErrorExit( "MaxEntries Exceeded", x ); }
+            if ( x == MAX_ENTRIES ) {
+                webErrorExit( "MaxEntries Exceeded", x );
+            }
             Sentries->m = x;
             Sentries->entries[x].val =  malloc( HUGE_STRING );
             getword( Sentries->entries[x].val, stquery, '&' );
@@ -519,7 +539,8 @@ showRules( inStruct Sentries ) {
     char oldRuleBase[MAX_ACTION_SIZE];
     strcpy( ruleSet, "" );
     strcpy( oldRuleBase, "" );
-    fprintf( stdout, "Content-type: text/html%c%c", 10, 10 ); fflush( stdout );
+    fprintf( stdout, "Content-type: text/html%c%c", 10, 10 );
+    fflush( stdout );
     fprintf( stdout, "<HTML>\n<HEAD>\n<TITLE>iRODS Rule Administration</TITLE>\n</HEAD>\n<BODY bgcolor=#FFFFFF>\n" );
     fprintf( stdout, "<CENTER> <B><FONT COLOR=#FF0000>iRODS Rule Base</FONT></B></CENTER>\n" );
     fflush( stdout );
@@ -612,7 +633,8 @@ performAction( inStruct Sentries ) {
     sprintf( reloopbackflagEV, "RELOOPBACKFLAG=%i", LOOP_BACK_1 );
     putenv( reloopbackflagEV );
 
-    fprintf( stdout, "Content-type: text/html%c%c", 10, 10 ); fflush( stdout );
+    fprintf( stdout, "Content-type: text/html%c%c", 10, 10 );
+    fflush( stdout );
     fprintf( stdout, "<HTML>\n<HEAD>\n<TITLE>iRODS Rule Administration</TITLE>\n</HEAD>\n<BODY bgcolor=#FFFFFF>\n" );
     fprintf( stdout, "<CENTER> <B><FONT COLOR=#FF0000>iRODS Rule Application</FONT></B></CENTER>\n" );
     fflush( stdout );

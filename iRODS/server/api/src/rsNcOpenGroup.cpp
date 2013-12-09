@@ -50,7 +50,9 @@ rsNcOpenGroup( rsComm_t *rsComm, ncOpenInp_t *ncOpenGroupInp, int **ncid ) {
                  rl1descInx );
         return ( SYS_FILE_DESC_OUT_OF_RANGE );
     }
-    if ( L1desc[rl1descInx].inuseFlag != FD_INUSE ) { return BAD_INPUT_DESC_INDEX; }
+    if ( L1desc[rl1descInx].inuseFlag != FD_INUSE ) {
+        return BAD_INPUT_DESC_INDEX;
+    }
     if ( L1desc[rl1descInx].remoteZoneHost != NULL ) {
         ncOpenInp_t myNcOpenGroupInp;
         bzero( &myNcOpenGroupInp, sizeof( myNcOpenGroupInp ) );

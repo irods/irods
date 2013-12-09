@@ -10,15 +10,15 @@ extern irods::resource_manager resc_mgr;
 
 namespace irods {
 
-    // =-=-=-=-=-=-=-
-    // public - ctor
+// =-=-=-=-=-=-=-
+// public - ctor
     collection_object::collection_object() :
         data_object(),
         directory_pointer_( 0 ) {
     } // collection_object
 
-    // =-=-=-=-=-=-=-
-    // public - cctor
+// =-=-=-=-=-=-=-
+// public - cctor
     collection_object::collection_object(
         const collection_object& _rhs ) :
         data_object( _rhs ) {
@@ -26,8 +26,8 @@ namespace irods {
 
     } // cctor
 
-    // =-=-=-=-=-=-=-
-    // public - ctor
+// =-=-=-=-=-=-=-
+// public - ctor
     collection_object::collection_object(
         const std::string& _fn,
         const std::string& _resc_hier,
@@ -42,14 +42,14 @@ namespace irods {
 
     } // collection_object
 
-    // =-=-=-=-=-=-=-
-    // public - dtor
+// =-=-=-=-=-=-=-
+// public - dtor
     collection_object::~collection_object() {
 
     } // dtor
 
-    // =-=-=-=-=-=-=-
-    // public - assignment operator
+// =-=-=-=-=-=-=-
+// public - assignment operator
     collection_object& collection_object::operator=( const collection_object& _rhs ) {
         // =-=-=-=-=-=-=-
         // call base class assignment first
@@ -61,8 +61,8 @@ namespace irods {
 
     }  // operator=
 
-    // =-=-=-=-=-=-=-
-    // plugin - resolve resource plugin for this object
+// =-=-=-=-=-=-=-
+// plugin - resolve resource plugin for this object
     error collection_object::resolve(
         const std::string& _interface,
         plugin_ptr&        _ptr ) {
@@ -125,8 +125,8 @@ namespace irods {
 
     } // resolve
 
-    // =-=-=-=-=-=-=-
-    // public - get vars from object for rule engine
+// =-=-=-=-=-=-=-
+// public - get vars from object for rule engine
     error collection_object::get_re_vars(
         keyValPair_t& _kvp ) {
         data_object::get_re_vars( _kvp );

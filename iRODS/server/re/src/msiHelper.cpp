@@ -47,7 +47,9 @@ msiGetStdoutInExecCmdOut( msParam_t *inpExecCmdOut, msParam_t *outStr,
 
     rei->status = getStdoutInExecCmdOut( inpExecCmdOut, &strPtr );
 
-    if ( rei->status < 0 ) { return rei->status; }
+    if ( rei->status < 0 ) {
+        return rei->status;
+    }
 
     fillStrInMsParam( outStr, strPtr );
 
@@ -436,7 +438,9 @@ msiGetSessionVarValue( msParam_t *inpVar,  msParam_t *outputMode, ruleExecInfo_t
                 addRErrorMsg( &rsComm->rError, 0, errMsg );
             }
         }
-        if ( outStr != NULL ) { free( outStr ); }
+        if ( outStr != NULL ) {
+            free( outStr );
+        }
     }
     return ( rei->status );
 }
@@ -825,8 +829,12 @@ msiStrCat( msParam_t *targParam, msParam_t *srcParam, ruleExecInfo_t *rei ) {
     targLen = strlen( targ );
     srcLen = strlen( src );
     newTarg = ( char * ) calloc( 1, targLen + srcLen + 10 );
-    if ( targLen > 0 ) { rstrcpy( newTarg, targ, targLen + 1 ); }
-    if ( srcLen > 0 ) { rstrcpy( newTarg + targLen, src, srcLen + 1 ); }
+    if ( targLen > 0 ) {
+        rstrcpy( newTarg, targ, targLen + 1 );
+    }
+    if ( srcLen > 0 ) {
+        rstrcpy( newTarg + targLen, src, srcLen + 1 );
+    }
     free( targParam->inOutStruct );
     targParam->inOutStruct = newTarg;
 

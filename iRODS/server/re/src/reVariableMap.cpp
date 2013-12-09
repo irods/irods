@@ -39,7 +39,9 @@ int setStrLeafValue( char *leafPtr, size_t len, Res *newVarValue ) {
     return 0;
 }
 int setStrDupLeafValue( char **leafPtr, Res *newVarValue ) {
-    if ( *leafPtr != NULL ) { free( *leafPtr ); }
+    if ( *leafPtr != NULL ) {
+        free( *leafPtr );
+    }
     *leafPtr = strdup( newVarValue->text );
     return 0;
 }
@@ -182,7 +184,9 @@ setVarValue( char *varMap, ruleExecInfo_t *rei, Res *newVarValue ) {
     }
     if ( !strcmp( varName, "rei" ) ) {
         i = setValFromRuleExecInfo( varMapCPtr, &rei, newVarValue );
-        if ( varValue != NULL ) { free( varValue ); }
+        if ( varValue != NULL ) {
+            free( varValue );
+        }
         return( i );
     }
     else {

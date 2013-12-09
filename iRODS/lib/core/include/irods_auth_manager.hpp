@@ -8,7 +8,7 @@
 
 namespace irods {
 
-    /// @brief String identifying this as an auth plugin interface
+/// @brief String identifying this as an auth plugin interface
     const std::string AUTH_INTERFACE( "irods_auth_interface" );
 
     /**
@@ -40,7 +40,7 @@ namespace irods {
         lookup_table<auth_ptr> plugins_;
     };
 
-    /// @brief The global auth_manager instance
+/// @brief The global auth_manager instance
     extern auth_manager auth_mgr;
 
 }; // namespace irods

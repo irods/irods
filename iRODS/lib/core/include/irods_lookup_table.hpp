@@ -16,9 +16,9 @@
 
 namespace irods {
 
-    // =-=-=-=-=-=-=-
-    // class to manage tables of plugins.  employing a class in order to use
-    // RAII for adding entries to the table now that it is not a static array
+// =-=-=-=-=-=-=-
+// class to manage tables of plugins.  employing a class in order to use
+// RAII for adding entries to the table now that it is not a static array
     template < typename ValueType,
              typename KeyType = std::string,
              typename HashType = irods_string_hash >
@@ -51,11 +51,21 @@ namespace irods {
         bool empty() const {
             return table_.empty();
         }
-        iterator begin()  { return table_.begin();  }
-        iterator end()    { return table_.end();    }
-        iterator cbegin() { return table_.cbegin(); }
-        iterator cend()   { return table_.cend();   }
-        iterator find( KeyType _k ) { return table_.find( _k ); }
+        iterator begin()  {
+            return table_.begin();
+        }
+        iterator end()    {
+            return table_.end();
+        }
+        iterator cbegin() {
+            return table_.cbegin();
+        }
+        iterator cend()   {
+            return table_.cend();
+        }
+        iterator find( KeyType _k ) {
+            return table_.find( _k );
+        }
 
         // =-=-=-=-=-=-=-
         // accessor function
@@ -79,10 +89,10 @@ namespace irods {
     }; // class lookup_table
 
 
-    // =-=-=-=-=-=-=-
-    // partial specialization created to support templating the get/set
-    // functions which need to manage exception handling etc from
-    // a boost::any_cast
+// =-=-=-=-=-=-=-
+// partial specialization created to support templating the get/set
+// functions which need to manage exception handling etc from
+// a boost::any_cast
     template< typename KeyType, typename HashType >
     class lookup_table < boost::any, KeyType, HashType > {
     protected:
@@ -111,9 +121,15 @@ namespace irods {
         bool empty() {
             return table_.empty();
         }
-        iterator begin() { return table_.begin(); }
-        iterator end()   { return table_.end();   }
-        iterator find( KeyType _k ) { return table_.find( _k ); }
+        iterator begin() {
+            return table_.begin();
+        }
+        iterator end()   {
+            return table_.end();
+        }
+        iterator find( KeyType _k ) {
+            return table_.find( _k );
+        }
 
         // =-=-=-=-=-=-=-
         // get a property from the table if it exists.  catch the exception in the case where

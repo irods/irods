@@ -78,7 +78,9 @@ rsNcOpenDataObj( rsComm_t *rsComm, ncOpenInp_t *ncOpenInp, int **ncid ) {
 
         l1descInx = _rsDataObjOpen( rsComm, &dataObjInp );
         clearKeyVal( &dataObjInp.condInput );
-        if ( l1descInx < 0 ) { return l1descInx; }
+        if ( l1descInx < 0 ) {
+            return l1descInx;
+        }
         remoteFlag = resoAndConnHostByDataObjInfo( rsComm,
                      L1desc[l1descInx].dataObjInfo, &rodsServerHost );
         if ( remoteFlag < 0 ) {
@@ -154,7 +156,9 @@ rsNcOpenColl( rsComm_t *rsComm, ncOpenInp_t *ncOpenInp, int **ncid ) {
 
     status = readAggInfo( rsComm, ncOpenInp->objPath, &ncOpenInp->condInput,
                           &ncAggInfo );
-    if ( status < 0 ) { return status; }
+    if ( status < 0 ) {
+        return status;
+    }
 #if 0
     /* get the aggInfo from file */
     bzero( &dataObjInp, sizeof( dataObjInp ) );
@@ -165,9 +169,13 @@ rsNcOpenColl( rsComm_t *rsComm, ncOpenInp_t *ncOpenInp, int **ncid ) {
     dataObjInp.oprType = GET_OPR;
     status = rsDataObjGet( rsComm, &dataObjInp, &portalOprOut, &packedBBuf );
     clearKeyVal( &dataObjInp.condInput );
-    if ( portalOprOut != NULL ) { free( portalOprOut ); }
+    if ( portalOprOut != NULL ) {
+        free( portalOprOut );
+    }
     if ( status < 0 ) {
-        if ( status == CAT_NO_ROWS_FOUND ) { status = NETCDF_AGG_INFO_FILE_ERR; }
+        if ( status == CAT_NO_ROWS_FOUND ) {
+            status = NETCDF_AGG_INFO_FILE_ERR;
+        }
         rodsLogError( LOG_ERROR, status,
                       "rsNcOpenColl: rsDataObjGet error for %s", dataObjInp.objPath );
         return status;
@@ -189,13 +197,17 @@ rsNcOpenColl( rsComm_t *rsComm, ncOpenInp_t *ncOpenInp, int **ncid ) {
 #endif
 
     l1descInx = allocL1desc();
-    if ( l1descInx < 0 ) { return l1descInx; }
+    if ( l1descInx < 0 ) {
+        return l1descInx;
+    }
     bzero( &L1desc[l1descInx].openedAggInfo, sizeof( openedAggInfo_t ) );
     L1desc[l1descInx].openedAggInfo.ncAggInfo = ncAggInfo;
     L1desc[l1descInx].openedAggInfo.objNcid = -1;	/* not opened */
     L1desc[l1descInx].openedAggInfo.objNcid0 = -1;	/* not opened */
     status = openAggrFile( rsComm, l1descInx, 0 );
-    if ( status < 0 ) { return status; }
+    if ( status < 0 ) {
+        return status;
+    }
     *ncid = ( int * ) malloc( sizeof( int ) );
     *( *ncid ) = l1descInx;
 

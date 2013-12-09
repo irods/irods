@@ -1372,7 +1372,9 @@ rodsLog( int level, const char *formatStr, ... ) {
         okToLog = 1;
     }
 
-    if ( !okToLog ) { return; }
+    if ( !okToLog ) {
+        return;
+    }
 
     va_start( ap, formatStr );
     vsnprintf( bigString, BIG_STRING_LEN - 1, formatStr, ap );
@@ -1393,28 +1395,56 @@ rodsLog( int level, const char *formatStr, ... ) {
     }
     else {
 #ifndef windows_platform
-        if ( level <= LOG_ERROR || level == LOG_SQL ) { errOrOut = stderr; }
+        if ( level <= LOG_ERROR || level == LOG_SQL ) {
+            errOrOut = stderr;
+        }
 #endif
     }
 
     prefix = "";
-    if ( level == LOG_SQL ) { prefix = "LOG_SQL"; }
-    if ( level == LOG_SYS_FATAL ) { prefix = "SYSTEM FATAL"; }
-    if ( level == LOG_SYS_WARNING ) { prefix = "SYSTEM WARNING"; }
-    if ( level == LOG_ERROR ) { prefix = "ERROR"; }
-    if ( level == LOG_NOTICE ) { prefix = "NOTICE"; }
+    if ( level == LOG_SQL ) {
+        prefix = "LOG_SQL";
+    }
+    if ( level == LOG_SYS_FATAL ) {
+        prefix = "SYSTEM FATAL";
+    }
+    if ( level == LOG_SYS_WARNING ) {
+        prefix = "SYSTEM WARNING";
+    }
+    if ( level == LOG_ERROR ) {
+        prefix = "ERROR";
+    }
+    if ( level == LOG_NOTICE ) {
+        prefix = "NOTICE";
+    }
 #ifdef SYSLOG
-    if ( level == LOG_DEBUG ) { prefix = "DEBUG"; }
-    if ( level == LOG_DEBUG1 ) { prefix = "DEBUG1"; }
-    if ( level == LOG_DEBUG2 ) { prefix = "DEBUG2"; }
-    if ( level == LOG_DEBUG3 ) { prefix = "DEBUG3"; }
+    if ( level == LOG_DEBUG ) {
+        prefix = "DEBUG";
+    }
+    if ( level == LOG_DEBUG1 ) {
+        prefix = "DEBUG1";
+    }
+    if ( level == LOG_DEBUG2 ) {
+        prefix = "DEBUG2";
+    }
+    if ( level == LOG_DEBUG3 ) {
+        prefix = "DEBUG3";
+    }
     if ( ProcessType == SERVER_PT || ProcessType == AGENT_PT ||
             ProcessType == RE_SERVER_PT )
 #else
-    if ( level == LOG_DEBUG ) { prefix = "DEBUG"; }
-    if ( level == LOG_DEBUG1 ) { prefix = "DEBUG1"; }
-    if ( level == LOG_DEBUG2 ) { prefix = "DEBUG2"; }
-    if ( level == LOG_DEBUG3 ) { prefix = "DEBUG3"; }
+    if ( level == LOG_DEBUG ) {
+        prefix = "DEBUG";
+    }
+    if ( level == LOG_DEBUG1 ) {
+        prefix = "DEBUG1";
+    }
+    if ( level == LOG_DEBUG2 ) {
+        prefix = "DEBUG2";
+    }
+    if ( level == LOG_DEBUG3 ) {
+        prefix = "DEBUG3";
+    }
     if ( bigString[strlen( bigString ) - 1] == '\n' )
 #endif
     {
@@ -1465,7 +1495,9 @@ rodsLogAndErrorMsg( int level, rError_t *myError, int status,
     char nt_log_msg[2048];
 #endif
 
-    if ( level > verbosityLevel ) { return; }
+    if ( level > verbosityLevel ) {
+        return;
+    }
 
 
     va_start( ap, formatStr );
@@ -1484,16 +1516,30 @@ rodsLogAndErrorMsg( int level, rError_t *myError, int status,
         snprintf( extraInfo, 100 - 1, "%s pid:%d ", timeBuf + 4, myPid );
     }
     else {
-        if ( level <= LOG_ERROR || level == LOG_SQL ) { errOrOut = stderr; }
+        if ( level <= LOG_ERROR || level == LOG_SQL ) {
+            errOrOut = stderr;
+        }
     }
 
     prefix = "";
-    if ( level == LOG_SQL ) { prefix = "LOG_SQL"; }
-    if ( level == LOG_SYS_FATAL ) { prefix = "SYSTEM FATAL"; }
-    if ( level == LOG_SYS_WARNING ) { prefix = "SYSTEM WARNING"; }
-    if ( level == LOG_ERROR ) { prefix = "ERROR"; }
-    if ( level == LOG_NOTICE ) { prefix = "NOTICE"; }
-    if ( level <= LOG_DEBUG ) { prefix = "DEBUG"; }
+    if ( level == LOG_SQL ) {
+        prefix = "LOG_SQL";
+    }
+    if ( level == LOG_SYS_FATAL ) {
+        prefix = "SYSTEM FATAL";
+    }
+    if ( level == LOG_SYS_WARNING ) {
+        prefix = "SYSTEM WARNING";
+    }
+    if ( level == LOG_ERROR ) {
+        prefix = "ERROR";
+    }
+    if ( level == LOG_NOTICE ) {
+        prefix = "NOTICE";
+    }
+    if ( level <= LOG_DEBUG ) {
+        prefix = "DEBUG";
+    }
     if ( bigString[strlen( bigString ) - 1] == '\n' ) {
 #ifndef windows_platform
         fprintf( errOrOut, "%s%s: %s", extraInfo, prefix, bigString );
@@ -1597,7 +1643,9 @@ rodsLogErrorOld( int level, int rodsErrorCode, char *textStr ) {
     char *errName;
     char *errSubName;
 
-    if ( level < verbosityLevel ) { return; }
+    if ( level < verbosityLevel ) {
+        return;
+    }
 
     errName = rodsErrorName( rodsErrorCode, &errSubName );
     if ( textStr && strlen( textStr ) > 0 ) {
@@ -1622,7 +1670,9 @@ rodsLogError( int level, int rodsErrorCode, char *formatStr, ... ) {
     char *errSubName;
     va_list ap;
 
-    if ( level > verbosityLevel ) { return; }
+    if ( level > verbosityLevel ) {
+        return;
+    }
 
 
     va_start( ap, formatStr );

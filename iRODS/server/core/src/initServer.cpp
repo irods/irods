@@ -919,7 +919,9 @@ getZoneInfo( char *rcatZoneHint, zoneInfo_t **myZoneInfo ) {
                 *myZoneInfo = tmpZoneInfo;
             }
         }
-        if ( *myZoneInfo != NULL ) { return 0; }
+        if ( *myZoneInfo != NULL ) {
+            return 0;
+        }
         tmpZoneInfo = tmpZoneInfo->next;
     }
 
@@ -948,7 +950,9 @@ getRcatHost( int rcatType, char *rcatZoneHint,
     zoneInfo_t *myZoneInfo = NULL;
 
     status = getZoneInfo( rcatZoneHint, &myZoneInfo );
-    if ( status < 0 ) { return status; }
+    if ( status < 0 ) {
+        return status;
+    }
 
     if ( rcatType == MASTER_RCAT ||
             myZoneInfo->slaveServerHost == NULL ) {
@@ -1000,7 +1004,9 @@ getAndDisconnRcatHost( rsComm_t *rsComm, int rcatType, char *rcatZoneHint,
 
     status = getRcatHost( rcatType, rcatZoneHint, rodsServerHost );
 
-    if ( status < 0 ) { return( status ); }
+    if ( status < 0 ) {
+        return( status );
+    }
 
     if ( ( *rodsServerHost )->conn != NULL ) { /* a connection exists */
         status = rcDisconnect( ( *rodsServerHost )->conn );
@@ -1170,7 +1176,9 @@ initZone( rsComm_t *rsComm ) {
         memset( &addr, 0, sizeof( addr ) );
         /* assume address:port */
         parseHostAddrStr( tmpZoneConn, &addr );
-        if ( addr.portNum == 0 ) { addr.portNum = ZoneInfoHead->portNum; }
+        if ( addr.portNum == 0 ) {
+            addr.portNum = ZoneInfoHead->portNum;
+        }
         rstrcpy( addr.zoneName, tmpZoneName, NAME_LEN ); // JMC - bacport 4562
         status = resolveHost( &addr, &tmpRodsServerHost );
         if ( status < 0 ) {
@@ -1921,7 +1929,9 @@ initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack ) {
     } /* added by RAJA Nov 16 2010 to remove error messages from xmsLog */
 
     tmpStr = inet_ntoa( rsComm->remoteAddr.sin_addr );
-    if ( tmpStr == NULL || *tmpStr == '\0' ) { tmpStr = "UNKNOWN"; }
+    if ( tmpStr == NULL || *tmpStr == '\0' ) {
+        tmpStr = "UNKNOWN";
+    }
     rstrcpy( rsComm->clientAddr, tmpStr, NAME_LEN );
 
     return ( 0 );
@@ -2043,7 +2053,9 @@ int
 isSameZone( char *zoneHint1, char *zoneHint2 ) {
     char zoneName1[NAME_LEN], zoneName2[NAME_LEN];
 
-    if ( zoneHint1 == NULL || zoneHint2 == NULL ) { return 0; }
+    if ( zoneHint1 == NULL || zoneHint2 == NULL ) {
+        return 0;
+    }
 
     getZoneNameFromHint( zoneHint1, zoneName1, NAME_LEN );
     getZoneNameFromHint( zoneHint2, zoneName2, NAME_LEN );
@@ -2463,7 +2475,9 @@ logAgentProc( rsComm_t *rsComm ) {
     char *progName;
     char *clientZone, *proxyZone;
 
-    if ( rsComm->procLogFlag == PROC_LOG_DONE ) { return 0; }
+    if ( rsComm->procLogFlag == PROC_LOG_DONE ) {
+        return 0;
+    }
 
     if ( *rsComm->clientUser.userName == '\0' ||
             *rsComm->proxyUser.userName == '\0' ) {
@@ -2489,7 +2503,9 @@ logAgentProc( rsComm_t *rsComm ) {
     }
 
     remoteAddr = inet_ntoa( rsComm->remoteAddr.sin_addr );
-    if ( remoteAddr == NULL || *remoteAddr == '\0' ) { remoteAddr = "UNKNOWN"; }
+    if ( remoteAddr == NULL || *remoteAddr == '\0' ) {
+        remoteAddr = "UNKNOWN";
+    }
     if ( *rsComm->option == '\0' ) {
         progName = "UNKNOWN";
     }
@@ -2533,7 +2549,9 @@ readProcLog( int pid, procLog_t *procLog ) {
     char procPath[MAX_NAME_LEN];
     int status;
 
-    if ( procLog == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( procLog == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
 
     snprintf( procPath, MAX_NAME_LEN, "%s/%-d", ProcLogDir, pid );
 
@@ -2582,7 +2600,9 @@ setRsCommFromRodsEnv( rsComm_t *rsComm ) {
 int
 queAgentProc( agentProc_t *agentProc, agentProc_t **agentProcHead,
               irodsPosition_t position ) {
-    if ( agentProc == NULL || agentProcHead == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( agentProc == NULL || agentProcHead == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
 
     if ( *agentProcHead == NULL ) {
         *agentProcHead = agentProc;
@@ -2649,10 +2669,14 @@ purgeLockFileDir( int chkLockFlag ) {
             unlink( lockFilePath );
             continue;
         }
-        if ( ( statbuf.st_mode & S_IFREG ) == 0 ) { continue; }
+        if ( ( statbuf.st_mode & S_IFREG ) == 0 ) {
+            continue;
+        }
         if ( chkLockFlag ) {
             int myFd;
-            if ( ( int )purgeTime < statbuf.st_mtime ) { continue; }
+            if ( ( int )purgeTime < statbuf.st_mtime ) {
+                continue;
+            }
             myFd = open( lockFilePath, O_RDWR | O_CREAT, 0644 );
             if ( myFd < 0 ) {
                 savedStatus = FILE_OPEN_ERR - errno;
@@ -2664,7 +2688,9 @@ purgeLockFileDir( int chkLockFlag ) {
             fcntl( myFd, F_GETLK, &myflock );
             close( myFd );
             /* some process is locking it */
-            if ( myflock.l_type != F_UNLCK ) { continue; }
+            if ( myflock.l_type != F_UNLCK ) {
+                continue;
+            }
         }
         unlink( lockFilePath );
     }

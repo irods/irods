@@ -21,13 +21,17 @@ rsOpenCollection( rsComm_t *rsComm, collInp_t *openCollInp ) {
 
     handleInx = allocCollHandle();
 
-    if ( handleInx < 0 ) { return ( handleInx ); }
+    if ( handleInx < 0 ) {
+        return ( handleInx );
+    }
 
     collHandle = &CollHandle[handleInx];
 
     status = rsInitQueryHandle( &collHandle->queryHandle, rsComm );
 
-    if ( status < 0 ) { return status; }
+    if ( status < 0 ) {
+        return status;
+    }
 
     rstrcpy( collHandle->dataObjInp.objPath, openCollInp->collName, MAX_NAME_LEN );
 

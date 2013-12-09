@@ -11,20 +11,20 @@
 
 namespace irods {
 
-    // =-=-=-=-=-=-=-
-    // public - ctor
+// =-=-=-=-=-=-=-
+// public - ctor
     osauth_auth_object::osauth_auth_object(
         rError_t* _r_error ) :
         auth_object( _r_error ) {
     } // ctor
 
-    // =-=-=-=-=-=-=-
-    // public - dtor
+// =-=-=-=-=-=-=-
+// public - dtor
     osauth_auth_object::~osauth_auth_object() {
     } // dtor
 
-    // =-=-=-=-=-=-=-
-    // public - cctor
+// =-=-=-=-=-=-=-
+// public - cctor
     osauth_auth_object::osauth_auth_object(
         const osauth_auth_object& _rhs ) :
         auth_object( _rhs ) {
@@ -33,8 +33,8 @@ namespace irods {
         digest_    = _rhs.digest_;
     } // cctor
 
-    // =-=-=-=-=-=-=-
-    // public - assignment operator
+// =-=-=-=-=-=-=-
+// public - assignment operator
     osauth_auth_object& osauth_auth_object::operator=(
         const osauth_auth_object& _rhs ) {
         auth_object::operator=( _rhs );
@@ -44,15 +44,15 @@ namespace irods {
         return *this;
     }
 
-    // =-=-=-=-=-=-=-
-    // public - equality operator
+// =-=-=-=-=-=-=-
+// public - equality operator
     bool osauth_auth_object::operator==(
         const osauth_auth_object& _rhs ) const {
         return false;
     }
 
-    // =-=-=-=-=-=-=-
-    // public - resolve a plugin given an interface
+// =-=-=-=-=-=-=-
+// public - resolve a plugin given an interface
     error osauth_auth_object::resolve(
         const std::string& _interface,
         plugin_ptr&        _ptr ) {
@@ -108,8 +108,8 @@ namespace irods {
 
     } // resolve
 
-    // =-=-=-=-=-=-=-
-    // public - serialize object to kvp
+// =-=-=-=-=-=-=-
+// public - serialize object to kvp
     error osauth_auth_object::get_re_vars(
         keyValPair_t& _kvp ) {
         // =-=-=-=-=-=-=-

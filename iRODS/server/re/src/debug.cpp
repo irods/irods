@@ -33,7 +33,9 @@ int writeLine( msParam_t* out, msParam_t *str, ruleExecInfo_t *rei ) {
     return 0;
 }
 
-char * getConfigDir() { return "."; }
+char * getConfigDir() {
+    return ".";
+}
 
 int msiMakeGenQuery( msParam_t* selectListStr, msParam_t* condStr, msParam_t* genQueryInpParam, ruleExecInfo_t *rei ) {
     genQueryInp_t *genQueryInp;
@@ -689,15 +691,29 @@ int rSplitStr( char *all, char *head, int headLen, char *tail, int tailLen, char
 }
 
 /* mock functions */
-int reDebug( RuleEngineEvent label, int flag, RuleEngineEventParam *param, Node *node, Env *env, ruleExecInfo_t *rei ) { return 0; }
+int reDebug( RuleEngineEvent label, int flag, RuleEngineEventParam *param, Node *node, Env *env, ruleExecInfo_t *rei ) {
+    return 0;
+}
 
-int copyRuleExecInfo( ruleExecInfo_t *a, ruleExecInfo_t *b ) {return 0;}
-void *mallocAndZero( int size ) { return NULL; }
-int freeRuleExecInfoStruct( ruleExecInfo_t *rei, int i ) { return 0; }
+int copyRuleExecInfo( ruleExecInfo_t *a, ruleExecInfo_t *b ) {
+    return 0;
+}
+void *mallocAndZero( int size ) {
+    return NULL;
+}
+int freeRuleExecInfoStruct( ruleExecInfo_t *rei, int i ) {
+    return 0;
+}
 
-int addKeyVal( keyValPair_t *k, char * key, char *val ) { return 0;}
-int clearKeyVal( keyValPair_t *k ) { return 0; }
-char * getAttrNameFromAttrId( int id ) {return NULL;}
+int addKeyVal( keyValPair_t *k, char * key, char *val ) {
+    return 0;
+}
+int clearKeyVal( keyValPair_t *k ) {
+    return 0;
+}
+char * getAttrNameFromAttrId( int id ) {
+    return NULL;
+}
 int msiExecGenQuery( msParam_t* genQueryInParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei ) {
     return 0;
 }

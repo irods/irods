@@ -37,8 +37,8 @@ namespace irods {
         return ss.str();
     }
 
-    // =-=-=-=-=-=-=-
-    // public - constructor
+// =-=-=-=-=-=-=-
+// public - constructor
     buffer_crypt::buffer_crypt() :
         key_size_( 32 ),
         salt_size_( 8 ),
@@ -81,14 +81,14 @@ namespace irods {
 
     } // ctor
 
-    // =-=-=-=-=-=-=-
-    // public - destructor
+// =-=-=-=-=-=-=-
+// public - destructor
     buffer_crypt::~buffer_crypt() {
 
     } // dtor
 
-    // =-=-=-=-=-=-=-
-    // public - generate a random 32 byte key
+// =-=-=-=-=-=-=-
+// public - generate a random 32 byte key
     irods::error buffer_crypt::generate_key(
         array_t& _out_key ) {
         // =-=-=-=-=-=-=-
@@ -117,8 +117,8 @@ namespace irods {
 
     } // buffer_crypt::generate_key
 
-    // =-=-=-=-=-=-=-
-    // public - create a hashed key and initialization vector
+// =-=-=-=-=-=-=-
+// public - create a hashed key and initialization vector
     irods::error buffer_crypt::initialization_vector(
         array_t& _out_iv ) {
         // =-=-=-=-=-=-=-
@@ -150,8 +150,8 @@ namespace irods {
 
     } // buffer_crypt::initialization_vector
 
-    // =-=-=-=-=-=-=-
-    // public - encryptor
+// =-=-=-=-=-=-=-
+// public - encryptor
     irods::error buffer_crypt::encrypt(
         const array_t& _key,
         const array_t& _iv,
@@ -227,8 +227,8 @@ namespace irods {
 
     } // encrypt
 
-    // =-=-=-=-=-=-=-
-    // public - decryptor
+// =-=-=-=-=-=-=-
+// public - decryptor
     irods::error buffer_crypt::decrypt(
         const array_t& _key,
         const array_t& _iv,

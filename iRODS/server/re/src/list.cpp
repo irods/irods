@@ -123,7 +123,9 @@ void deleteListNoRegion( List *list ) {
     free( list );
 }
 void clearListNoRegion( List *list ) {
-    while ( list->head != NULL ) { listRemoveNoRegion( list, list->head ); }
+    while ( list->head != NULL ) {
+        listRemoveNoRegion( list, list->head );
+    }
 }
 
 

@@ -47,7 +47,9 @@ main( int argc, char **argv ) {
     curl_easy_setopt( easyhandle, CURLOPT_FOLLOWLOCATION, 1 );
 
     res = curl_easy_perform( easyhandle );
-    if ( getStruct.outFd > 0 ) { close( getStruct.outFd ); }
+    if ( getStruct.outFd > 0 ) {
+        close( getStruct.outFd );
+    }
 
     return 0;
 }

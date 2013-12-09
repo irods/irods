@@ -314,7 +314,9 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             rei.uoic = &rsComm->clientUser;
             rei.uoip = &rsComm->proxyUser;
             status = applyRuleArg( "acCreateUser", args, 0, &rei, SAVE_REI );
-            if ( status != 0 ) { chlRollback( rsComm ); }
+            if ( status != 0 ) {
+                chlRollback( rsComm );
+            }
             return( status );
         }
         if ( strcmp( generalAdminInp->arg1, "dir" ) == 0 ) {
@@ -334,7 +336,9 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             else {
                 status = chlRegColl( rsComm, &collInfo );
             }
-            if ( status != 0 ) { chlRollback( rsComm ); }
+            if ( status != 0 ) {
+                chlRollback( rsComm );
+            }
             return( status );
         }
         if ( strcmp( generalAdminInp->arg1, "zone" ) == 0 ) {
@@ -412,7 +416,9 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             }
             /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
 
-            if ( status != 0 ) { chlRollback( rsComm ); }
+            if ( status != 0 ) {
+                chlRollback( rsComm );
+            }
             return( status );
         } // token
 
@@ -469,7 +475,9 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                 }
             }
             /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
-            if ( status != 0 ) { chlRollback( rsComm ); }
+            if ( status != 0 ) {
+                chlRollback( rsComm );
+            }
             return( status );
         }
         if ( strcmp( generalAdminInp->arg1, "group" ) == 0 ) {
@@ -513,13 +521,17 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             }
             /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
 
-            if ( status != 0 ) { chlRollback( rsComm ); }
+            if ( status != 0 ) {
+                chlRollback( rsComm );
+            }
             return( status );
         }
         if ( strcmp( generalAdminInp->arg1, "zone" ) == 0 ) {
             status = chlModZone( rsComm, generalAdminInp->arg2,
                                  generalAdminInp->arg3, generalAdminInp->arg4 );
-            if ( status != 0 ) { chlRollback( rsComm ); }
+            if ( status != 0 ) {
+                chlRollback( rsComm );
+            }
             if ( status == 0 &&
                     strcmp( generalAdminInp->arg3, "name" ) == 0 ) {
                 char oldName[MAX_NAME_LEN];
@@ -528,7 +540,9 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                 strncat( oldName, generalAdminInp->arg2, sizeof oldName );
                 strncpy( newName, generalAdminInp->arg4, sizeof newName );
                 status = chlRenameColl( rsComm, oldName, newName );
-                if ( status == 0 ) { chlCommit( rsComm ); }
+                if ( status == 0 ) {
+                    chlCommit( rsComm );
+                }
             }
             return( status );
         }
@@ -621,7 +635,9 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             }
             /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
 
-            if ( status != 0 ) { chlRollback( rsComm ); }
+            if ( status != 0 ) {
+                chlRollback( rsComm );
+            }
             return( status );
         }
 #ifdef RESC_GROUP
@@ -657,7 +673,9 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                 }
             }
 
-            if ( status != 0 ) { chlRollback( rsComm ); }
+            if ( status != 0 ) {
+                chlRollback( rsComm );
+            }
             return( status );
         }
 #endif
@@ -676,7 +694,9 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             rei.uoic = &rsComm->clientUser;
             rei.uoip = &rsComm->proxyUser;
             status = applyRuleArg( "acDeleteUser", args, 0, &rei, SAVE_REI );
-            if ( status != 0 ) { chlRollback( rsComm ); }
+            if ( status != 0 ) {
+                chlRollback( rsComm );
+            }
             return( status );
         }
         if ( strcmp( generalAdminInp->arg1, "dir" ) == 0 ) {
@@ -684,7 +704,9 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             strncpy( collInfo.collName, generalAdminInp->arg2,
                      sizeof collInfo.collName );
             status = chlDelColl( rsComm, &collInfo );
-            if ( status != 0 ) { chlRollback( rsComm ); }
+            if ( status != 0 ) {
+                chlRollback( rsComm );
+            }
             return( status );
         }
         if ( strcmp( generalAdminInp->arg1, "resource" ) == 0 ) {
@@ -742,7 +764,9 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             }
             /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
 
-            if ( status != 0 ) { chlRollback( rsComm ); }
+            if ( status != 0 ) {
+                chlRollback( rsComm );
+            }
             return( status );
         }
 
@@ -801,7 +825,9 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             }
             /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
 
-            if ( status != 0 ) { chlRollback( rsComm ); }
+            if ( status != 0 ) {
+                chlRollback( rsComm );
+            }
             return( status );
         }
         if ( strcmp( generalAdminInp->arg1, "unusedAVUs" ) == 0 ) {

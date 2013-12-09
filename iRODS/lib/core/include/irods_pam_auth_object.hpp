@@ -14,12 +14,12 @@
 
 namespace irods {
 
-    /// =-=-=-=-=-=-=-
-    /// @brief constant defining the native auth scheme string
+/// =-=-=-=-=-=-=-
+/// @brief constant defining the native auth scheme string
     const std::string AUTH_PAM_SCHEME( "pam" );
 
-    /// =-=-=-=-=-=-=-
-    /// @brief object for a native irods authenticaion sceheme
+/// =-=-=-=-=-=-=-
+/// @brief object for a native irods authenticaion sceheme
     class pam_auth_object : public auth_object {
     public:
         /// =-=-=-=-=-=-=-
@@ -50,7 +50,7 @@ namespace irods {
 
     }; // class pam_auth_object
 
-    /// @brief Helpful typedef
+/// @brief Helpful typedef
     typedef boost::shared_ptr<pam_auth_object> pam_auth_object_ptr;
 
 }; // namespace irods

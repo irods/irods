@@ -24,23 +24,23 @@
 irods::resource_manager resc_mgr;
 
 namespace irods {
-    // =-=-=-=-=-=-=-
-    // public - Constructor
+// =-=-=-=-=-=-=-
+// public - Constructor
     resource_manager::resource_manager() {
     } // ctor
 
-    // =-=-=-=-=-=-=-
-    // public - Copy Constructor
+// =-=-=-=-=-=-=-
+// public - Copy Constructor
     resource_manager::resource_manager( const resource_manager& _rhs ) {
     } // cctor
 
-    // =-=-=-=-=-=-=-
-    // public - Destructor
+// =-=-=-=-=-=-=-
+// public - Destructor
     resource_manager::~resource_manager( ) {
     } // cctor
 
-    // =-=-=-=-=-=-=-
-    // public - retrieve a resource given its key
+// =-=-=-=-=-=-=-
+// public - retrieve a resource given its key
     error resource_manager::resolve( std::string _key, resource_ptr& _value ) {
 
         if ( _key.empty() ) {
@@ -62,8 +62,8 @@ namespace irods {
 
     } // resolve
 
-    // =-=-=-=-=-=-=-
-    // public - retrieve a resource given a vault path
+// =-=-=-=-=-=-=-
+// public - retrieve a resource given a vault path
     error resource_manager::validate_vault_path(
         std::string       _physical_path,
         rodsServerHost_t* _svr_host,
@@ -146,9 +146,9 @@ namespace irods {
 
     } // validate_vault_path
 
-    // =-=-=-=-=-=-=-
-    // public - connect to the catalog and query for all the
-    //          attached resources and instantiate them
+// =-=-=-=-=-=-=-
+// public - connect to the catalog and query for all the
+//          attached resources and instantiate them
     error resource_manager::init_from_catalog( rsComm_t* _comm ) {
         // =-=-=-=-=-=-=-
         // clear existing resource map and initialize
@@ -275,8 +275,8 @@ namespace irods {
 
     } // init_from_catalog
 
-    // =-=-=-=-=-=-=-
-    /// @brief call shutdown on resources before destruction
+// =-=-=-=-=-=-=-
+/// @brief call shutdown on resources before destruction
     error resource_manager::shut_down_resources( ) {
         // =-=-=-=-=-=-=-
         // iterate over all resources in the table
@@ -292,8 +292,8 @@ namespace irods {
 
     } // shut_down_resources
 
-    // =-=-=-=-=-=-=-
-    /// @brief create a list of resources who do not have parents ( roots )
+// =-=-=-=-=-=-=-
+/// @brief create a list of resources who do not have parents ( roots )
     error resource_manager::get_root_resources(
         std::vector< std::string >& _list ) {
         // =-=-=-=-=-=-=-
@@ -322,8 +322,8 @@ namespace irods {
 
     } // get_root_resources
 
-    // =-=-=-=-=-=-=-
-    // public - take results from genQuery, extract values and create resources
+// =-=-=-=-=-=-=-
+// public - take results from genQuery, extract values and create resources
     error resource_manager::process_init_results( genQueryOut_t* _result ) {
         // =-=-=-=-=-=-=-
         // extract results from query
@@ -495,8 +495,8 @@ namespace irods {
 
     } // process_init_results
 
-    // =-=-=-=-=-=-=-
-    // public - given a type, load up a resource plugin
+// =-=-=-=-=-=-=-
+// public - given a type, load up a resource plugin
     error resource_manager::init_from_type( std::string   _type,
                                             std::string   _key,
                                             std::string   _inst,
@@ -516,8 +516,8 @@ namespace irods {
     } // init_from_type
 
 
-    // =-=-=-=-=-=-=-
-    // public - initialize the special local file system resource
+// =-=-=-=-=-=-=-
+// public - initialize the special local file system resource
     error resource_manager::init_local_file_system_resource( void ) {
         // =-=-=-=-=-=-=-
         // init the local fs resource
@@ -586,8 +586,8 @@ namespace irods {
 
     } // init_local_file_system_resource
 
-    // =-=-=-=-=-=-=-
-    // private - walk the resource map and wire children up to parents
+// =-=-=-=-=-=-=-
+// private - walk the resource map and wire children up to parents
     error resource_manager::init_child_map( void ) {
         error result = SUCCESS();
 
@@ -652,8 +652,8 @@ namespace irods {
         return result;
     } // init_child_map
 
-    // =-=-=-=-=-=-=-
-    // public - print the list of local resources out to stderr
+// =-=-=-=-=-=-=-
+// public - print the list of local resources out to stderr
     void resource_manager::print_local_resources() {
         lookup_table< boost::shared_ptr< resource > >::iterator itr;
         for ( itr = resources_.begin(); itr != resources_.end(); ++itr ) {
@@ -669,9 +669,9 @@ namespace irods {
 
     } // print_local_resources
 
-    // =-=-=-=-=-=-=-
-    // private - gather the post disconnect maintenance operations
-    //           from the resource plugins
+// =-=-=-=-=-=-=-
+// private - gather the post disconnect maintenance operations
+//           from the resource plugins
     error resource_manager::gather_operations() {
         // =-=-=-=-=-=-=-
         // vector of already processed resources
@@ -738,9 +738,9 @@ namespace irods {
 
     } // gather_operations
 
-    // =-=-=-=-=-=-=-
-    /// private - lower level recursive call to gather the post disconnect
-    //            maintenance operations from the resources, in breadth first order
+// =-=-=-=-=-=-=-
+/// private - lower level recursive call to gather the post disconnect
+//            maintenance operations from the resources, in breadth first order
     error resource_manager::gather_operations_recursive( const std::string&          _children,
             std::vector< std::string >& _proc_vec,
             std::vector< pdmo_type  >&  _resc_ops ) {
@@ -819,8 +819,8 @@ namespace irods {
 
     } // gather_operations_recursive
 
-    // =-=-=-=-=-=-=-
-    // public - call the start op on the resource plugins
+// =-=-=-=-=-=-=-
+// public - call the start op on the resource plugins
     error resource_manager::start_resource_plugins( ) {
         // =-=-=-=-=-=-=-
         // iterate through resource plugins
@@ -842,8 +842,8 @@ namespace irods {
     } // start_resource_operations
 
 
-    // =-=-=-=-=-=-=-
-    // public - exec the pdmos ( post disconnect maintenance operations ) in order
+// =-=-=-=-=-=-=-
+// public - exec the pdmos ( post disconnect maintenance operations ) in order
     bool resource_manager::need_maintenance_operations( ) {
         bool need_pdmo = false;
 
@@ -868,8 +868,8 @@ namespace irods {
 
     } // need_maintenance_operations
 
-    // =-=-=-=-=-=-=-
-    // public - exec the pdmos ( post disconnect maintenance operations ) in order
+// =-=-=-=-=-=-=-
+// public - exec the pdmos ( post disconnect maintenance operations ) in order
     int resource_manager::call_maintenance_operations( rcComm_t* _comm ) {
         int result = 0;
 

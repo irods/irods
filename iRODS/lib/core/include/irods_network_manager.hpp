@@ -9,13 +9,13 @@
 #include "irods_network_plugin.hpp"
 
 namespace irods {
-    /// =-=-=-=-=-=-=-
-    /// @brief definition of the network interface
+/// =-=-=-=-=-=-=-
+/// @brief definition of the network interface
     const std::string NETWORK_INTERFACE( "irods_network_interface" );
 
-    /// =-=-=-=-=-=-=-
-    /// @brief singleton class which manages the lifetime of
-    ///        network plugins
+/// =-=-=-=-=-=-=-
+/// @brief singleton class which manages the lifetime of
+///        network plugins
     class network_manager {
     public:
         // =-=-=-=-=-=-=-

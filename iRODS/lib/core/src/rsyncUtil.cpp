@@ -170,7 +170,9 @@ rsyncDataToFileUtil( rcComm_t *conn, rodsPath_t *srcPath,
         if ( srcPath->rodsObjStat != NULL ) {
             if ( ageExceeded( myRodsArgs->agevalue,
                               atoi( srcPath->rodsObjStat->modifyTime ), myRodsArgs->verbose,
-                              srcPath->outPath, srcPath->size ) ) { return 0; }
+                              srcPath->outPath, srcPath->size ) ) {
+                return 0;
+            }
         }
     }
 
@@ -301,7 +303,9 @@ rsyncFileToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
             return ( USER_INPUT_PATH_ERR );
         }
         if ( ageExceeded( myRodsArgs->agevalue, statbuf.st_mtime,
-                          myRodsArgs->verbose, srcPath->outPath, srcPath->size ) ) { return 0; }
+                          myRodsArgs->verbose, srcPath->outPath, srcPath->size ) ) {
+            return 0;
+        }
     }
 
     if ( myRodsArgs->verbose == True ) {
@@ -428,7 +432,9 @@ rsyncDataToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
         if ( srcPath->rodsObjStat != NULL ) {
             if ( ageExceeded( myRodsArgs->agevalue,
                               atoi( srcPath->rodsObjStat->modifyTime ), myRodsArgs->verbose,
-                              srcPath->outPath, srcPath->size ) ) { return 0; }
+                              srcPath->outPath, srcPath->size ) ) {
+                return 0;
+            }
         }
     }
 
@@ -587,7 +593,9 @@ rsyncCollToDirUtil( rcComm_t *conn, rodsPath_t *srcPath,
             if ( rodsArgs->age == True ) {
                 if ( ageExceeded( rodsArgs->agevalue,
                                   atoi( collEnt.modifyTime ), rodsArgs->verbose,
-                                  collEnt.dataName, collEnt.dataSize ) ) { continue; }
+                                  collEnt.dataName, collEnt.dataSize ) ) {
+                    continue;
+                }
             }
 #if 0
             snprintf( myTargPath.outPath, MAX_NAME_LEN, "%s%s/%s",
@@ -699,7 +707,9 @@ rsyncDirToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
     srcDir = srcPath->outPath;
     targColl = targPath->outPath;
 
-    if ( isPathSymlink( rodsArgs, srcDir ) > 0 ) { return 0; }
+    if ( isPathSymlink( rodsArgs, srcDir ) > 0 ) {
+        return 0;
+    }
 
     if ( rodsArgs->recursive != True ) {
         rodsLog( LOG_ERROR,
@@ -732,7 +742,9 @@ rsyncDirToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
         path p = itr->path();
         snprintf( mySrcPath.outPath, MAX_NAME_LEN, "%s", p.c_str() );
 
-        if ( isPathSymlink( rodsArgs, mySrcPath.outPath ) > 0 ) { continue; }
+        if ( isPathSymlink( rodsArgs, mySrcPath.outPath ) > 0 ) {
+            continue;
+        }
 
         if ( !exists( p ) ) {
             rodsLog( LOG_ERROR,
@@ -906,7 +918,9 @@ rsyncCollToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
             if ( rodsArgs->age == True ) {
                 if ( ageExceeded( rodsArgs->agevalue,
                                   atoi( collEnt.modifyTime ), rodsArgs->verbose,
-                                  collEnt.dataName, collEnt.dataSize ) ) { continue; }
+                                  collEnt.dataName, collEnt.dataSize ) ) {
+                    continue;
+                }
             }
 
             snprintf( myTargPath.outPath, MAX_NAME_LEN, "%s/%s",
@@ -1133,7 +1147,9 @@ ageExceeded( int ageLimit, int myTime, int verbose, char *objPath,
              rodsLong_t fileSize ) {
     int age;
 
-    if ( CurrentTime == 0 ) { CurrentTime = time( 0 ); }
+    if ( CurrentTime == 0 ) {
+        CurrentTime = time( 0 );
+    }
     age = CurrentTime - myTime;
     if ( age > ageLimit * 60 ) {
         printNoSync( objPath, fileSize, "age" );

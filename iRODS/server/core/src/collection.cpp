@@ -289,7 +289,9 @@ collStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                 else {
                     status = queueSpecCollCache( rsComm, genQueryOut, // JMC - backport 4680?
                                                  dataObjInp->objPath );
-                    if ( status < 0 ) { return ( status ); }
+                    if ( status < 0 ) {
+                        return ( status );
+                    }
                     replSpecColl( &SpecCollCacheHead->specColl,
                                   &( *rodsObjStatOut )->specColl );
                 }

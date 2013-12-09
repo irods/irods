@@ -85,12 +85,16 @@ obftestmain( int argc, char *argv[] ) {
 
     if ( strcmp( argv[1], "-d" ) == 0 ) {
         i = obfGetPw( p3 );
-        if ( obfDebug ) { printf( "val  = %d \n", i ); }
+        if ( obfDebug ) {
+            printf( "val  = %d \n", i );
+        }
     }
 
     if ( strcmp( argv[1], "-e" ) == 0 ) {
         i = obfSavePw( 1, 0, 1, "" );
-        if ( obfDebug ) { printf( "val  = %d \n", i ); }
+        if ( obfDebug ) {
+            printf( "val  = %d \n", i );
+        }
     }
     return ( 0 );
 }
@@ -156,16 +160,24 @@ obfGetPw( char *pw ) {
     envVal = obfiGetEnvKey();
 
     i = obfiGetFilename( fileName );
-    if ( i < 0 ) { return( i ); }
+    if ( i < 0 ) {
+        return( i );
+    }
 
     i = obfiGetTv( fileName );
-    if ( i < 0 ) { return( i ); }
+    if ( i < 0 ) {
+        return( i );
+    }
 
     i = obfiGetPw( fileName, myPw );
-    if ( i < 0 ) { return( i ); }
+    if ( i < 0 ) {
+        return( i );
+    }
 
     i = obfiDecode( myPw, myPwD, envVal );
-    if ( i < 0 ) { return( i ); }
+    if ( i < 0 ) {
+        return( i );
+    }
 
     isTemp = 0;
     cp = strstr( myPwD, TMP_FLAG );
@@ -174,7 +186,9 @@ obfGetPw( char *pw ) {
         *cp = '\0';
     }
 
-    if ( obfDebug ) { printf( "out:%s\n", myPwD ); }
+    if ( obfDebug ) {
+        printf( "out:%s\n", myPwD );
+    }
     strcpy( pw, myPwD );
 
     return 0;
@@ -192,7 +206,9 @@ obfRmPw( int opt ) {
     int fd;
 
     i = obfiGetFilename( fileName );
-    if ( i != 0 ) { return( i ); }
+    if ( i != 0 ) {
+        return( i );
+    }
 
 #ifdef windows_platform
     fd = iRODSNt_open( fileName, O_RDONLY, 1 );
@@ -200,7 +216,9 @@ obfRmPw( int opt ) {
     fd = open( fileName, O_RDONLY, 0 );
 #endif
     if ( fd < 0 ) {
-        if ( opt == 0 ) { printf( "%s does not exist\n", fileName ); }
+        if ( opt == 0 ) {
+            printf( "%s does not exist\n", fileName );
+        }
         return( AUTH_FILE_DOES_NOT_EXIST );
     }
     close( fd );
@@ -208,7 +226,9 @@ obfRmPw( int opt ) {
         printf( "Remove %s?:", fileName );
         fgets( inbuf, MAX_NAME_LEN, stdin );
         i = strlen( inbuf );
-        if ( i < 2 ) { return 0; }
+        if ( i < 2 ) {
+            return 0;
+        }
         if ( inbuf[0] == 'y' ) {
             i = unlink( fileName );
         }
@@ -216,7 +236,9 @@ obfRmPw( int opt ) {
     else {
         i = unlink( fileName );
     }
-    if ( i == 0 ) { return( 0 ); }
+    if ( i == 0 ) {
+        return( 0 );
+    }
     return ( UNLINK_FAILED );
 }
 
@@ -232,7 +254,9 @@ obfiSetTimeFromFile( int fd ) {
 #endif
     int wval, fval, lval;
     wval = write( fd, " ", 1 );
-    if ( wval != 1 ) { return FILE_WRITE_ERR; }
+    if ( wval != 1 ) {
+        return FILE_WRITE_ERR;
+    }
 #ifndef windows_platform
     fval = fstat( fd, &statBuf );
 #else
@@ -243,7 +267,9 @@ obfiSetTimeFromFile( int fd ) {
         return UNABLE_TO_STAT_FILE;
     }
     lval = lseek( fd, 0, SEEK_SET );
-    if ( lval < 0 ) { return UNABLE_TO_STAT_FILE; }
+    if ( lval < 0 ) {
+        return UNABLE_TO_STAT_FILE;
+    }
 
     timeVal = statBuf.st_mtime & 0xffff;   /* keep it bounded */
     return 0;
@@ -266,7 +292,9 @@ obfSavePw( int promptOpt, int fileOpt, int printOpt, char *pwArg ) {
 #endif
 
     i = obfiGetFilename( fileName );
-    if ( i != 0 ) { return( i ); }
+    if ( i != 0 ) {
+        return( i );
+    }
 
     envVal = obfiGetEnvKey();
 
@@ -299,29 +327,47 @@ obfSavePw( int promptOpt, int fileOpt, int printOpt, char *pwArg ) {
         strncpy( inbuf, pwArg, MAX_PASSWORD_LEN );
     }
     i = strlen( inbuf );
-    if ( i < 1 ) { return NO_PASSWORD_ENTERED; }
-    if ( strlen( inbuf ) > MAX_PASSWORD_LEN - 2 ) { return ( PASSWORD_EXCEEDS_MAX_SIZE ); }
-    if ( inbuf[i - 1] == '\n' ) { inbuf[i - 1] = '\0'; } /* remove trailing \n */
+    if ( i < 1 ) {
+        return NO_PASSWORD_ENTERED;
+    }
+    if ( strlen( inbuf ) > MAX_PASSWORD_LEN - 2 ) {
+        return ( PASSWORD_EXCEEDS_MAX_SIZE );
+    }
+    if ( inbuf[i - 1] == '\n' ) {
+        inbuf[i - 1] = '\0';    /* remove trailing \n */
+    }
 
     if ( doTemp ) {
         strcat( inbuf, TMP_FLAG );
     }
 
     fd = obfiOpenOutFile( fileName, fileOpt );
-    if ( fd < 0 ) { return ( FILE_OPEN_ERR ); }
+    if ( fd < 0 ) {
+        return ( FILE_OPEN_ERR );
+    }
 
-    if ( fd == 0 ) { return( 0 ); } /* user canceled */
+    if ( fd == 0 ) {
+        return( 0 );    /* user canceled */
+    }
 
     i = obfiSetTimeFromFile( fd );
-    if ( i < 0 ) { return( i ); }
+    if ( i < 0 ) {
+        return( i );
+    }
 
     obfiEncode( inbuf, myPw, envVal );
-    if ( obfDebug > 1 ) { printf( " in:%s out:%s\n", inbuf, myPw ); }
+    if ( obfDebug > 1 ) {
+        printf( " in:%s out:%s\n", inbuf, myPw );
+    }
 
     i = obfiWritePw( fd, myPw );
-    if ( i < 0 ) { return ( i ); }
+    if ( i < 0 ) {
+        return ( i );
+    }
 
-    if ( obfDebug || printOpt ) { printf( "Successfully wrote %s\n", fileName ); }
+    if ( obfDebug || printOpt ) {
+        printf( "Successfully wrote %s\n", fileName );
+    }
 
     return 0;
 }
@@ -338,10 +384,14 @@ int obfTempOps( int tmpOpt ) {
     if ( tmpOpt == 2 ) { /* remove the pw file if temporary */
         i = obfGetPw( pw );
         strcpy( pw, "           " );
-        if ( i != 0 ) { return i; }
+        if ( i != 0 ) {
+            return i;
+        }
         if ( isTemp ) {
             i = obfiGetFilename( fileName );
-            if ( i != 0 ) { return( i ); }
+            if ( i != 0 ) {
+                return( i );
+            }
             unlink( fileName );
         }
     }
@@ -422,7 +472,9 @@ obfiOpenOutFile( char *fileName, int fileOpt ) {
             printf( "Overwrite '%s'?:", fileName );
             fgets( inbuf, MAX_NAME_LEN, stdin );
             i = strlen( inbuf );
-            if ( i < 2 ) { return 0; }
+            if ( i < 2 ) {
+                return 0;
+            }
         }
         else {
             strcpy( inbuf, "y" );
@@ -433,7 +485,9 @@ obfiOpenOutFile( char *fileName, int fileOpt ) {
 #else
             fd_out = open( fileName, O_CREAT | O_WRONLY | O_TRUNC, 0600 );
 #endif
-            if ( fd_out < 0 ) { return FILE_OPEN_ERR; }
+            if ( fd_out < 0 ) {
+                return FILE_OPEN_ERR;
+            }
         }
         else {
             return 0;
@@ -465,7 +519,9 @@ int obfiTimeval() {
 
     val = sec;
     val = val & 0xffff;      /* keep it bounded */
-    if ( obfDebug > 1 ) { printf( "val  = %d %x\n", val, val ); }
+    if ( obfDebug > 1 ) {
+        printf( "val  = %d %x\n", val, val );
+    }
     return( val );
 }
 
@@ -498,10 +554,18 @@ obfiEncode( char *in, char *out, int extra ) {
 
     wheel_len = 26 + 26 + 10 + 15;
     j = 0;
-    for ( i = 0; i < 10; i++ ) { wheel[j++] = ( int )'0' + i; }
-    for ( i = 0; i < 26; i++ ) { wheel[j++] = ( int )'A' + i; }
-    for ( i = 0; i < 26; i++ ) { wheel[j++] = ( int )'a' + i; }
-    for ( i = 0; i < 15; i++ ) { wheel[j++] = ( int )'!' + i; }
+    for ( i = 0; i < 10; i++ ) {
+        wheel[j++] = ( int )'0' + i;
+    }
+    for ( i = 0; i < 26; i++ ) {
+        wheel[j++] = ( int )'A' + i;
+    }
+    for ( i = 0; i < 26; i++ ) {
+        wheel[j++] = ( int )'a' + i;
+    }
+    for ( i = 0; i < 15; i++ ) {
+        wheel[j++] = ( int )'!' + i;
+    }
 
     /*
      get uid to use as part of the key
@@ -522,22 +586,54 @@ obfiEncode( char *in, char *out, int extra ) {
      and use it to pick a pattern for ascii offsets
     */
     seq = 0;
-    if ( rval == 0 ) { seq = 0xd768b678; }
-    if ( rval == 1 ) { seq = 0xedfdaf56; }
-    if ( rval == 2 ) { seq = 0x2420231b; }
-    if ( rval == 3 ) { seq = 0x987098d8; }
-    if ( rval == 4 ) { seq = 0xc1bdfeee; }
-    if ( rval == 5 ) { seq = 0xf572341f; }
-    if ( rval == 6 ) { seq = 0x478def3a; }
-    if ( rval == 7 ) { seq = 0xa830d343; }
-    if ( rval == 8 ) { seq = 0x774dfa2a; }
-    if ( rval == 9 ) { seq = 0x6720731e; }
-    if ( rval == 10 ) { seq = 0x346fa320; }
-    if ( rval == 11 ) { seq = 0x6ffdf43a; }
-    if ( rval == 12 ) { seq = 0x7723a320; }
-    if ( rval == 13 ) { seq = 0xdf67d02e; }
-    if ( rval == 14 ) { seq = 0x86ad240a; }
-    if ( rval == 15 ) { seq = 0xe76d342e; }
+    if ( rval == 0 ) {
+        seq = 0xd768b678;
+    }
+    if ( rval == 1 ) {
+        seq = 0xedfdaf56;
+    }
+    if ( rval == 2 ) {
+        seq = 0x2420231b;
+    }
+    if ( rval == 3 ) {
+        seq = 0x987098d8;
+    }
+    if ( rval == 4 ) {
+        seq = 0xc1bdfeee;
+    }
+    if ( rval == 5 ) {
+        seq = 0xf572341f;
+    }
+    if ( rval == 6 ) {
+        seq = 0x478def3a;
+    }
+    if ( rval == 7 ) {
+        seq = 0xa830d343;
+    }
+    if ( rval == 8 ) {
+        seq = 0x774dfa2a;
+    }
+    if ( rval == 9 ) {
+        seq = 0x6720731e;
+    }
+    if ( rval == 10 ) {
+        seq = 0x346fa320;
+    }
+    if ( rval == 11 ) {
+        seq = 0x6ffdf43a;
+    }
+    if ( rval == 12 ) {
+        seq = 0x7723a320;
+    }
+    if ( rval == 13 ) {
+        seq = 0xdf67d02e;
+    }
+    if ( rval == 14 ) {
+        seq = 0x86ad240a;
+    }
+    if ( rval == 15 ) {
+        seq = 0xe76d342e;
+    }
 
     /*
      get the timestamp and other id
@@ -574,13 +670,19 @@ obfiEncode( char *in, char *out, int extra ) {
 #else
         addin_i += 2;
 #endif
-        if ( addin_i > 28 ) { addin_i = 0; }
+        if ( addin_i > 28 ) {
+            addin_i = 0;
+        }
         for ( i = 0; i < wheel_len; i++ ) {
             if ( *my_in == ( char )wheel[i] ) {
                 j = i + addin;
-                if ( obfDebug > 1 ) { printf( "j1=%d ", j ); }
+                if ( obfDebug > 1 ) {
+                    printf( "j1=%d ", j );
+                }
                 j = j % wheel_len;
-                if ( obfDebug > 1 ) { printf( "j2=%d \n", j ); }
+                if ( obfDebug > 1 ) {
+                    printf( "j2=%d \n", j );
+                }
                 *out++ = ( char )wheel[j];
                 found = 1;
                 break;
@@ -591,7 +693,9 @@ obfiEncode( char *in, char *out, int extra ) {
                 *out++ = '\0';
                 return;
             }
-            else {*out++ = *my_in;}
+            else {
+                *out++ = *my_in;
+            }
         }
         my_in++;
     }
@@ -606,15 +710,27 @@ obfiTimeCheck( int time1, int time2 ) {
     /*  printf("time1=%d time2=%d\n",time1, time2); */
 
     delta = time1 - time2;
-    if ( delta < 0 ) { delta = 0 - delta; }
-    if ( delta < fudge ) { return( 0 ); }
+    if ( delta < 0 ) {
+        delta = 0 - delta;
+    }
+    if ( delta < fudge ) {
+        return( 0 );
+    }
 
-    if ( time1 < 65000 ) { time1 += 65535; }
-    if ( time2 < 65000 ) { time2 += 65535; }
+    if ( time1 < 65000 ) {
+        time1 += 65535;
+    }
+    if ( time2 < 65000 ) {
+        time2 += 65535;
+    }
 
     delta = time1 - time2;
-    if ( delta < 0 ) { delta = 0 - delta; }
-    if ( delta < fudge ) { return( 0 ); }
+    if ( delta < 0 ) {
+        delta = 0 - delta;
+    }
+    if ( delta < fudge ) {
+        return( 0 );
+    }
 
     return( 1 );
 }
@@ -653,44 +769,90 @@ obfiDecode( char *in, char *out, int extra ) {
      Set up an array of characters that we will transpose.
     */
     j = 0;
-    for ( i = 0; i < 10; i++ ) { wheel[j++] = ( int )'0' + i; }
-    for ( i = 0; i < 26; i++ ) { wheel[j++] = ( int )'A' + i; }
-    for ( i = 0; i < 26; i++ ) { wheel[j++] = ( int )'a' + i; }
-    for ( i = 0; i < 15; i++ ) { wheel[j++] = ( int )'!' + i; }
+    for ( i = 0; i < 10; i++ ) {
+        wheel[j++] = ( int )'0' + i;
+    }
+    for ( i = 0; i < 26; i++ ) {
+        wheel[j++] = ( int )'A' + i;
+    }
+    for ( i = 0; i < 26; i++ ) {
+        wheel[j++] = ( int )'a' + i;
+    }
+    for ( i = 0; i < 15; i++ ) {
+        wheel[j++] = ( int )'!' + i;
+    }
 
     too_short = 0;
     for ( p1 = in, i = 0; i < 6; i++ ) {
-        if ( *p1++ == '\0' ) { too_short = 1; }
+        if ( *p1++ == '\0' ) {
+            too_short = 1;
+        }
     }
 
     kpos = 6;
     p1 = in;
-    for ( i = 0; i < kpos; i++, p1++ ) { ; }
+    for ( i = 0; i < kpos; i++, p1++ ) {
+        ;
+    }
     rval = ( int ) * p1;
     rval = rval - 'e';
 
     if ( rval > 15 || rval < 0 || too_short == 1 ) { /* invalid key or too short */
-        while ( ( *out++ = *in++ ) != '\0' ) { ; } /* return input string */
+        while ( ( *out++ = *in++ ) != '\0' ) {
+            ;    /* return input string */
+        }
         return AUTH_FILE_NOT_ENCRYPTED;
     }
 
     seq = 0;
-    if ( rval == 0 ) { seq = 0xd768b678; }
-    if ( rval == 1 ) { seq = 0xedfdaf56; }
-    if ( rval == 2 ) { seq = 0x2420231b; }
-    if ( rval == 3 ) { seq = 0x987098d8; }
-    if ( rval == 4 ) { seq = 0xc1bdfeee; }
-    if ( rval == 5 ) { seq = 0xf572341f; }
-    if ( rval == 6 ) { seq = 0x478def3a; }
-    if ( rval == 7 ) { seq = 0xa830d343; }
-    if ( rval == 8 ) { seq = 0x774dfa2a; }
-    if ( rval == 9 ) { seq = 0x6720731e; }
-    if ( rval == 10 ) { seq = 0x346fa320; }
-    if ( rval == 11 ) { seq = 0x6ffdf43a; }
-    if ( rval == 12 ) { seq = 0x7723a320; }
-    if ( rval == 13 ) { seq = 0xdf67d02e; }
-    if ( rval == 14 ) { seq = 0x86ad240a; }
-    if ( rval == 15 ) { seq = 0xe76d342e; }
+    if ( rval == 0 ) {
+        seq = 0xd768b678;
+    }
+    if ( rval == 1 ) {
+        seq = 0xedfdaf56;
+    }
+    if ( rval == 2 ) {
+        seq = 0x2420231b;
+    }
+    if ( rval == 3 ) {
+        seq = 0x987098d8;
+    }
+    if ( rval == 4 ) {
+        seq = 0xc1bdfeee;
+    }
+    if ( rval == 5 ) {
+        seq = 0xf572341f;
+    }
+    if ( rval == 6 ) {
+        seq = 0x478def3a;
+    }
+    if ( rval == 7 ) {
+        seq = 0xa830d343;
+    }
+    if ( rval == 8 ) {
+        seq = 0x774dfa2a;
+    }
+    if ( rval == 9 ) {
+        seq = 0x6720731e;
+    }
+    if ( rval == 10 ) {
+        seq = 0x346fa320;
+    }
+    if ( rval == 11 ) {
+        seq = 0x6ffdf43a;
+    }
+    if ( rval == 12 ) {
+        seq = 0x7723a320;
+    }
+    if ( rval == 13 ) {
+        seq = 0xdf67d02e;
+    }
+    if ( rval == 14 ) {
+        seq = 0x86ad240a;
+    }
+    if ( rval == 15 ) {
+        seq = 0xe76d342e;
+    }
 
     addin_i = 0;
     my_out = headstring;
@@ -705,7 +867,9 @@ obfiDecode( char *in, char *out, int extra ) {
             }
             if ( headstring[0] != 'S' - ( ( rval & 0x7 ) * 2 ) ) {
                 not_en = 1;
-                if ( obfDebug ) { printf( "not s\n" ); }
+                if ( obfDebug ) {
+                    printf( "not s\n" );
+                }
             }
 
             if ( timeVal == 0 ) {
@@ -715,16 +879,22 @@ obfiDecode( char *in, char *out, int extra ) {
                           ( ( headstring[3] - 'a' ) << 12 ) + ( ( headstring[4] - 'a' ) << 8 );
 
 #ifndef _WIN32
-            if ( obfiTimeCheck( encodedTime, timeVal ) ) { not_en = 1; }
+            if ( obfiTimeCheck( encodedTime, timeVal ) ) {
+                not_en = 1;
+            }
 #else    /* The file always contains an encrypted password in Windows. */
             not_en = 0;
 #endif
 
-            if ( obfDebug ) { printf( "timeVal=%d encodedTime=%d\n", timeVal, encodedTime ); }
+            if ( obfDebug ) {
+                printf( "timeVal=%d encodedTime=%d\n", timeVal, encodedTime );
+            }
 
             my_out = out;   /* start outputing for real */
             if ( not_en == 1 ) {
-                while ( ( *out++ = *in++ ) != '\0' ) { ; } /* return input string */
+                while ( ( *out++ = *in++ ) != '\0' ) {
+                    ;    /* return input string */
+                }
                 return AUTH_FILE_NOT_ENCRYPTED;
             }
             my_in++;   /* skip key */
@@ -739,16 +909,22 @@ obfiDecode( char *in, char *out, int extra ) {
 #else
             addin_i += 2;
 #endif
-            if ( addin_i > 28 ) { addin_i = 0; }
+            if ( addin_i > 28 ) {
+                addin_i = 0;
+            }
             for ( i = 0; i < wheel_len; i++ ) {
                 if ( *my_in == ( char )wheel[i] ) {
                     j = i - addin;
-                    if ( obfDebug ) { printf( "j=%d ", j ); }
+                    if ( obfDebug ) {
+                        printf( "j=%d ", j );
+                    }
 
                     while ( j < 0 ) {
                         j += wheel_len;
                     }
-                    if ( obfDebug ) { printf( "j2=%d \n", j ); }
+                    if ( obfDebug ) {
+                        printf( "j2=%d \n", j );
+                    }
 
                     *my_out++ = ( char )wheel[j];
                     nout++;
@@ -761,7 +937,10 @@ obfiDecode( char *in, char *out, int extra ) {
                     *my_out++ = '\0';
                     return 0;
                 }
-                else {*my_out++ = *my_in; nout++;}
+                else {
+                    *my_out++ = *my_in;
+                    nout++;
+                }
             }
             my_in++;
         }
@@ -782,7 +961,9 @@ obfiGetEnvKey() {
 void
 obfSetDefaultHashType( int type ) {
     defaultHashType = type;
-    if ( obfDebug ) { printf( "hashType now %d\n", defaultHashType ); }
+    if ( obfDebug ) {
+        printf( "hashType now %d\n", defaultHashType );
+    }
 }
 
 int
@@ -802,14 +983,18 @@ obfMakeOneWayHash( int hashType,
 
     if ( hashType == HASH_TYPE_SHA1 ||
             ( hashType == HASH_TYPE_DEFAULT && defaultHashType == HASH_TYPE_SHA1 ) ) {
-        if ( obfDebug ) { printf( "obfMakeOneWayHash sha1\n" ); }
+        if ( obfDebug ) {
+            printf( "obfMakeOneWayHash sha1\n" );
+        }
         SHA1Reset( &sha1Context );
         SHA1Input( &sha1Context, inBuf, inBufSize );
         SHA1Result( &sha1Context );
         memcpy( ( void * )outHash, ( void * )&sha1Context.Message_Digest[0], 16 );
     }
     else {
-        if ( obfDebug ) { printf( "obfMakeOneWayHash md5\n" ); }
+        if ( obfDebug ) {
+            printf( "obfMakeOneWayHash md5\n" );
+        }
         MD5Init( &md5Context );
         MD5Update( &md5Context, inBuf, inBufSize );
         MD5Final( outHash, &md5Context );
@@ -842,13 +1027,23 @@ obfEncodeByKey( char *in, char *key, char *out ) {
     char *cpIn, *cpOut;
     unsigned char *cpKey;
 
-    if ( obfDebug ) { printf( "obfEncodeByKey enter key:%s:in:%s\n", key, in ); }
+    if ( obfDebug ) {
+        printf( "obfEncodeByKey enter key:%s:in:%s\n", key, in );
+    }
 
     j = 0;
-    for ( i = 0; i < 10; i++ ) { wheel[j++] = ( int )'0' + i; }
-    for ( i = 0; i < 26; i++ ) { wheel[j++] = ( int )'A' + i; }
-    for ( i = 0; i < 26; i++ ) { wheel[j++] = ( int )'a' + i; }
-    for ( i = 0; i < 15; i++ ) { wheel[j++] = ( int )'!' + i; }
+    for ( i = 0; i < 10; i++ ) {
+        wheel[j++] = ( int )'0' + i;
+    }
+    for ( i = 0; i < 26; i++ ) {
+        wheel[j++] = ( int )'A' + i;
+    }
+    for ( i = 0; i < 26; i++ ) {
+        wheel[j++] = ( int )'a' + i;
+    }
+    for ( i = 0; i < 15; i++ ) {
+        wheel[j++] = ( int )'!' + i;
+    }
 
     memset( keyBuf, 0, 100 );
     strncpy( keyBuf, key, 100 );
@@ -884,7 +1079,9 @@ obfEncodeByKey( char *in, char *key, char *out ) {
     for ( ;; cpIn++ ) {
         int k, found;
         k = ( int ) * cpKey++;
-        if ( cpKey > buffer + 60 ) { cpKey = buffer; }
+        if ( cpKey > buffer + 60 ) {
+            cpKey = buffer;
+        }
         found = 0;
         for ( i = 0; i < wheel_len; i++ ) {
             if ( *cpIn == ( char )wheel[i] ) {
@@ -906,7 +1103,9 @@ obfEncodeByKey( char *in, char *key, char *out ) {
                                             key, in, out );
                 return;
             }
-            else {*cpOut++ = *cpIn;}
+            else {
+                *cpOut++ = *cpIn;
+            }
         }
     }
 }
@@ -974,23 +1173,37 @@ obfDecodeByKey( char *in, char *key, char *out ) {
 
     int myHashType;
 
-    if ( obfDebug ) { printf( "obfDecodeByKey enter key:%s: in:%s\n", key, in ); }
+    if ( obfDebug ) {
+        printf( "obfDecodeByKey enter key:%s: in:%s\n", key, in );
+    }
 
     if ( strncmp( in, "sha1", 4 ) == 0 ) {
         in += 4;
-        if ( obfDebug ) { printf( "using sha1 for decodebykey\n" ); }
+        if ( obfDebug ) {
+            printf( "using sha1 for decodebykey\n" );
+        }
         myHashType = HASH_TYPE_SHA1;
     }
     else {
-        if ( obfDebug ) { printf( "using md5 for decodebykey\n" ); }
+        if ( obfDebug ) {
+            printf( "using md5 for decodebykey\n" );
+        }
         myHashType = HASH_TYPE_MD5;
     }
 
     j = 0;
-    for ( i = 0; i < 10; i++ ) { wheel[j++] = ( int )'0' + i; }
-    for ( i = 0; i < 26; i++ ) { wheel[j++] = ( int )'A' + i; }
-    for ( i = 0; i < 26; i++ ) { wheel[j++] = ( int )'a' + i; }
-    for ( i = 0; i < 15; i++ ) { wheel[j++] = ( int )'!' + i; }
+    for ( i = 0; i < 10; i++ ) {
+        wheel[j++] = ( int )'0' + i;
+    }
+    for ( i = 0; i < 26; i++ ) {
+        wheel[j++] = ( int )'A' + i;
+    }
+    for ( i = 0; i < 26; i++ ) {
+        wheel[j++] = ( int )'a' + i;
+    }
+    for ( i = 0; i < 15; i++ ) {
+        wheel[j++] = ( int )'!' + i;
+    }
 
     memset( keyBuf, 0, 100 );
     strncpy( keyBuf, key, 100 );
@@ -1019,7 +1232,9 @@ obfDecodeByKey( char *in, char *key, char *out ) {
     for ( ;; cpIn++ ) {
         int k, found;
         k = ( int ) * cpKey++;
-        if ( cpKey > buffer + 60 ) { cpKey = buffer; }
+        if ( cpKey > buffer + 60 ) {
+            cpKey = buffer;
+        }
         found = 0;
         for ( i = 0; i < wheel_len; i++ ) {
             if ( *cpIn == ( char )wheel[i] ) {
@@ -1043,7 +1258,9 @@ obfDecodeByKey( char *in, char *key, char *out ) {
                                             key, in, out );
                 return;
             }
-            else {*cpOut++ = *cpIn;}
+            else {
+                *cpOut++ = *cpIn;
+            }
         }
     }
 }
@@ -1071,7 +1288,9 @@ obfDecodeByKeyV2( char *in, char *key, char *key2, char *out ) {
     len = strlen( V2_Prefix );
     matches = 1;
     for ( i = 1; i < len; i++ ) {
-        if ( match[i] != myOut[i] ) { matches = 0; }
+        if ( match[i] != myOut[i] ) {
+            matches = 0;
+        }
     }
     if ( matches == 0 ) {
         obfDecodeByKey( in, key, out );

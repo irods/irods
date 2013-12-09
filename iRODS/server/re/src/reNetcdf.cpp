@@ -81,7 +81,9 @@ msiNcOpen( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam,
     if ( inpParam2 != NULL ) {
         /* parse for mode */
         ncOpenInp.mode = parseMspForPosInt( inpParam2 );
-        if ( ncOpenInp.mode < 0 ) { return ( ncOpenInp.mode ); }
+        if ( ncOpenInp.mode < 0 ) {
+            return ( ncOpenInp.mode );
+        }
     }
 
     rei->status = rsNcOpen( rsComm, &ncOpenInp, &ncid );
@@ -171,7 +173,9 @@ msiNcCreate( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam,
     if ( inpParam2 != NULL ) {
         /* parse for mode */
         ncOpenInp.mode = parseMspForPosInt( inpParam2 );
-        if ( ncOpenInp.mode < 0 ) { return ( ncOpenInp.mode ); }
+        if ( ncOpenInp.mode < 0 ) {
+            return ( ncOpenInp.mode );
+        }
     }
 
     rei->status = rsNcCreate( rsComm, &ncOpenInp, &ncid );
@@ -318,7 +322,9 @@ msiNcInqId( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3,
     /* parse for name or ncInqWithIdInp_t */
     rei->status = parseMspForNcInqIdInpName( inpParam1, &ncInqIdInp );
 
-    if ( rei->status < 0 ) { return rei->status; }
+    if ( rei->status < 0 ) {
+        return rei->status;
+    }
 
     if ( inpParam2 != NULL ) {
         /* parse for paramType */
@@ -413,7 +419,9 @@ msiNcInqWithId( msParam_t *inpParam1, msParam_t *inpParam2,
     /* parse for myid or ncInqWithIdInp_t */
     rei->status = parseMspForNcInqIdInpId( inpParam1, &ncInqWithIdInp );
 
-    if ( rei->status < 0 ) { return rei->status; }
+    if ( rei->status < 0 ) {
+        return rei->status;
+    }
 
     if ( inpParam2 != NULL ) {
         /* parse for paramType */
@@ -504,31 +512,41 @@ msiNcGetVarsByType( msParam_t *dataTypeParam, msParam_t *ncidParam,
     /* parse for dataType or ncGetVarInp_t */
     rei->status = parseMspForNcGetVarInp( dataTypeParam, &ncGetVarInp );
 
-    if ( rei->status < 0 ) { return rei->status; }
+    if ( rei->status < 0 ) {
+        return rei->status;
+    }
 
     if ( ncidParam != NULL ) {
         /* parse for ncid */
         ncGetVarInp.ncid = parseMspForPosInt( ncidParam );
-        if ( ncGetVarInp.ncid < 0 ) { return ncGetVarInp.ncid; }
+        if ( ncGetVarInp.ncid < 0 ) {
+            return ncGetVarInp.ncid;
+        }
     }
 
     if ( varidParam != NULL ) {
         /* parse for varid */
         ncGetVarInp.varid = parseMspForPosInt( varidParam );
-        if ( ncGetVarInp.varid < 0 ) { return ncGetVarInp.varid; }
+        if ( ncGetVarInp.varid < 0 ) {
+            return ncGetVarInp.varid;
+        }
     }
 
     if ( ndimParam != NULL ) {
         /* parse for ndim */
         ncGetVarInp.ndim = parseMspForPosInt( ndimParam );
-        if ( ncGetVarInp.ndim < 0 ) { return ncGetVarInp.ndim; }
+        if ( ncGetVarInp.ndim < 0 ) {
+            return ncGetVarInp.ndim;
+        }
     }
 
     if ( startParam != NULL ) {
         /* parse for start */
         rei->status = parseStrMspForLongArray( startParam, &ndimOut,
                                                &ncGetVarInp.start );
-        if ( rei->status < 0 ) { return rei->status; }
+        if ( rei->status < 0 ) {
+            return rei->status;
+        }
         if ( ndimOut != ncGetVarInp.ndim ) {
             rei->status = NETCDF_DIM_MISMATCH_ERR;
             rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
@@ -542,7 +560,9 @@ msiNcGetVarsByType( msParam_t *dataTypeParam, msParam_t *ncidParam,
         /* parse for count */
         rei->status = parseStrMspForLongArray( countParam, &ndimOut,
                                                &ncGetVarInp.count );
-        if ( rei->status < 0 ) { return rei->status; }
+        if ( rei->status < 0 ) {
+            return rei->status;
+        }
         if ( ndimOut != ncGetVarInp.ndim ) {
             rei->status = NETCDF_DIM_MISMATCH_ERR;
             rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
@@ -556,7 +576,9 @@ msiNcGetVarsByType( msParam_t *dataTypeParam, msParam_t *ncidParam,
         /* parse for stride */
         rei->status = parseStrMspForLongArray( strideParam, &ndimOut,
                                                &ncGetVarInp.stride );
-        if ( rei->status < 0 ) { return rei->status; }
+        if ( rei->status < 0 ) {
+            return rei->status;
+        }
         if ( ndimOut != ncGetVarInp.ndim ) {
             rei->status = NETCDF_DIM_MISMATCH_ERR;
             rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
@@ -614,48 +636,64 @@ msiNccfGetVara( msParam_t *ncidParam, msParam_t *varidParam,
     /* parse for dataType or nccfGetVarInp_t */
     rei->status = parseMspForNccfGetVarInp( ncidParam, &nccfGetVarInp );
 
-    if ( rei->status < 0 ) { return rei->status; }
+    if ( rei->status < 0 ) {
+        return rei->status;
+    }
 
     if ( varidParam != NULL ) {
         /* parse for varid */
         nccfGetVarInp.varid = parseMspForPosInt( varidParam );
-        if ( nccfGetVarInp.varid < 0 ) { return nccfGetVarInp.varid; }
+        if ( nccfGetVarInp.varid < 0 ) {
+            return nccfGetVarInp.varid;
+        }
     }
 
     if ( lvlIndexParam != NULL ) {
         /* parse for ndim */
         nccfGetVarInp.lvlIndex = parseMspForPosInt( lvlIndexParam );
-        if ( nccfGetVarInp.lvlIndex < 0 ) { return nccfGetVarInp.lvlIndex; }
+        if ( nccfGetVarInp.lvlIndex < 0 ) {
+            return nccfGetVarInp.lvlIndex;
+        }
     }
 
     if ( timestepParam != NULL ) {
         /* parse for ndim */
         nccfGetVarInp.timestep = parseMspForPosInt( timestepParam );
-        if ( nccfGetVarInp.timestep < 0 ) { return nccfGetVarInp.timestep; }
+        if ( nccfGetVarInp.timestep < 0 ) {
+            return nccfGetVarInp.timestep;
+        }
     }
 
     if ( latRange0Param != NULL ) {
         rei->status = parseMspForFloat( latRange0Param,
                                         &nccfGetVarInp.latRange[0] );
-        if ( rei->status < 0 ) { return rei->status; }
+        if ( rei->status < 0 ) {
+            return rei->status;
+        }
     }
 
     if ( latRange1Param != NULL ) {
         rei->status = parseMspForFloat( latRange1Param,
                                         &nccfGetVarInp.latRange[1] );
-        if ( rei->status < 0 ) { return rei->status; }
+        if ( rei->status < 0 ) {
+            return rei->status;
+        }
     }
 
     if ( lonRange0Param != NULL ) {
         rei->status  = parseMspForFloat( lonRange0Param,
                                          &nccfGetVarInp.lonRange[0] );
-        if ( rei->status < 0 ) { return rei->status; }
+        if ( rei->status < 0 ) {
+            return rei->status;
+        }
     }
 
     if ( lonRange1Param != NULL ) {
         rei->status = parseMspForFloat( lonRange1Param,
                                         &nccfGetVarInp.lonRange[1] );
-        if ( rei->status < 0 ) { return rei->status; }
+        if ( rei->status < 0 ) {
+            return rei->status;
+        }
     }
 
     if ( maxOutArrayLenParam != NULL ) {
@@ -718,7 +756,9 @@ msiNcGetArrayLen( msParam_t *inpParam, msParam_t *outParam,
 
     RE_TEST_MACRO( "    Calling msiNcGetArrayLen" )
 
-    if ( inpParam == NULL || outParam == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( inpParam == NULL || outParam == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
 
     if ( strcmp( inpParam->type, NcInqWithIdOut_MS_T ) == 0 ) {
         ncInqWithIdOut_t *ncInqWithIdOut;
@@ -785,7 +825,9 @@ msiNcGetNumDim( msParam_t *inpParam, msParam_t *outParam,
 
     RE_TEST_MACRO( "    Calling msiNcGetNumDim" )
 
-    if ( inpParam == NULL || outParam == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( inpParam == NULL || outParam == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
 
     if ( strcmp( inpParam->type, NcInqWithIdOut_MS_T ) == 0 ) {
         ncInqWithIdOut_t *ncInqWithIdOut;
@@ -841,7 +883,9 @@ msiNcGetDataType( msParam_t *inpParam, msParam_t *outParam,
 
     RE_TEST_MACRO( "    Calling msiNcGetDataType" )
 
-    if ( inpParam == NULL || outParam == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( inpParam == NULL || outParam == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
 
     if ( strcmp( inpParam->type, NcInqWithIdOut_MS_T ) == 0 ) {
         ncInqWithIdOut_t *ncInqWithIdOut;
@@ -922,7 +966,9 @@ msiNcGetElementInArray( msParam_t *arrayStructParam, msParam_t *indexParam,
     RE_TEST_MACRO( "    Calling msiNcGetElementInArray" )
 
     if ( arrayStructParam == NULL || indexParam == NULL ||
-            outParam == NULL ) { return USER__NULL_INPUT_ERR; }
+            outParam == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
 
     if ( strcmp( arrayStructParam->type, NcInqWithIdOut_MS_T ) == 0 ) {
         /* intArray for the id array */
@@ -1035,7 +1081,9 @@ msiFloatToString( msParam_t *floatParam, msParam_t *stringParam,
 
     RE_TEST_MACRO( "    Calling msiFloatToString" )
 
-    if ( floatParam == NULL || stringParam == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( floatParam == NULL || stringParam == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
 
     if ( strcmp( floatParam->type, FLOAT_MS_T ) != 0 ) {
         rodsLog( LOG_ERROR,
@@ -1618,7 +1666,9 @@ msiNcGetDimNameInInqOut( msParam_t *ncInqOutParam, msParam_t *inxParam,
 
     if ( inx == UNLIMITED_DIM_INX ) {
         /* get the name of unlimdim */
-        if ( ncInqOut->unlimdimid < 0 ) { return NETCDF_NO_UNLIMITED_DIM; }
+        if ( ncInqOut->unlimdimid < 0 ) {
+            return NETCDF_NO_UNLIMITED_DIM;
+        }
         for ( i = 0; i < ncInqOut->ndims; i++ ) {
             if ( ncInqOut->unlimdimid == ncInqOut->dim[i].id ) {
                 name = ncInqOut->dim[i].name;
@@ -1634,7 +1684,9 @@ msiNcGetDimNameInInqOut( msParam_t *ncInqOutParam, msParam_t *inxParam,
     }
     else {
         char *varName;
-        if ( varNameParam == NULL ) { return USER__NULL_INPUT_ERR; }
+        if ( varNameParam == NULL ) {
+            return USER__NULL_INPUT_ERR;
+        }
         if ( strcmp( varNameParam->type, STR_MS_T ) != 0 ) {
             rodsLog( LOG_ERROR,
                      "msiNcGetDimNameInInqOut: nameParam must be STR_MS_T. %s",
@@ -1738,7 +1790,9 @@ msiNcGetDimLenInInqOut( msParam_t *ncInqOutParam, msParam_t *inxParam,
 
     if ( inx == UNLIMITED_DIM_INX ) {
         /* get the name of unlimdim */
-        if ( ncInqOut->unlimdimid < 0 ) { return NETCDF_NO_UNLIMITED_DIM; }
+        if ( ncInqOut->unlimdimid < 0 ) {
+            return NETCDF_NO_UNLIMITED_DIM;
+        }
         for ( i = 0; i < ncInqOut->ndims; i++ ) {
             if ( ncInqOut->unlimdimid == ncInqOut->dim[i].id ) {
                 arrayLen = ncInqOut->dim[i].arrayLen;
@@ -1754,7 +1808,9 @@ msiNcGetDimLenInInqOut( msParam_t *ncInqOutParam, msParam_t *inxParam,
     }
     else {
         char *varName;
-        if ( varNameParam == NULL ) { return USER__NULL_INPUT_ERR; }
+        if ( varNameParam == NULL ) {
+            return USER__NULL_INPUT_ERR;
+        }
         if ( strcmp( varNameParam->type, STR_MS_T ) != 0 ) {
             rodsLog( LOG_ERROR,
                      "msiNcGetDimLenInInqOut: nameParam must be STR_MS_T. %s",
@@ -1852,7 +1908,9 @@ msiNcGetAttNameInInqOut( msParam_t *ncInqOutParam, msParam_t *inxParam,
     }
     inx = parseMspForPosInt( inxParam );
 
-    if ( varNameParam == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( varNameParam == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
 
     if ( strcmp( varNameParam->type, STR_MS_T ) != 0 ) {
         rodsLog( LOG_ERROR,
@@ -1942,7 +2000,9 @@ msiNcGetAttValStrInInqOut( msParam_t *ncInqOutParam, msParam_t *whichAttParam,
     status = _msiNcGetAttValInInqOut( ncInqOutParam, whichAttParam,
                                       varNameParam, &value );
 
-    if ( status < 0 ) { return status; }
+    if ( status < 0 ) {
+        return status;
+    }
 
     bufPtr = value->dataArray->buf;
     if ( value->dataArray->type == NC_CHAR && value->dataArray->len > 0 ) {
@@ -1952,7 +2012,9 @@ msiNcGetAttValStrInInqOut( msParam_t *ncInqOutParam, msParam_t *whichAttParam,
     else {
         status = ncValueToStr( value->dataArray->type, &bufPtr, tempStr );
     }
-    if ( status < 0 ) { return status; }
+    if ( status < 0 ) {
+        return status;
+    }
 
     fillStrInMsParam( outParam, tempStr );
 
@@ -1998,7 +2060,9 @@ _msiNcGetAttValInInqOut( msParam_t *ncInqOutParam, msParam_t *whichAttParam,
                  whichAttParam->type );
         return ( USER_PARAM_TYPE_ERR );
     }
-    if ( varNameParam == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( varNameParam == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
 
     if ( strcmp( varNameParam->type, STR_MS_T ) != 0 ) {
         rodsLog( LOG_ERROR,
@@ -2195,7 +2259,9 @@ msiNcIntDataTypeToStr( msParam_t *dataTypeParam, msParam_t *outParam,
 
     RE_TEST_MACRO( "    Calling msiNcIntDataTypeToStr" )
 
-    if ( dataTypeParam == NULL || outParam == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( dataTypeParam == NULL || outParam == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
 
     if ( strcmp( dataTypeParam->type, INT_MS_T ) != 0 ) {
         rodsLog( LOG_ERROR,
@@ -2206,7 +2272,9 @@ msiNcIntDataTypeToStr( msParam_t *dataTypeParam, msParam_t *outParam,
 
     dataType = *( ( int * ) dataTypeParam->inOutStruct );
 
-    if ( ( status = getNcTypeStr( dataType, dataTypeStr ) ) < 0 ) { return status; }
+    if ( ( status = getNcTypeStr( dataType, dataTypeStr ) ) < 0 ) {
+        return status;
+    }
 
     fillStrInMsParam( outParam, dataTypeStr );
 
@@ -2333,7 +2401,9 @@ msiFreeNcStruct( msParam_t *inpParam, ruleExecInfo_t *rei ) {
 
     RE_TEST_MACRO( "    Calling msiFreeNcStruct" )
 
-    if ( inpParam == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( inpParam == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
 
     if ( strcmp( inpParam->type, NcGetVarOut_MS_T ) == 0 ) {
         ncArray = ( ncGetVarOut_t * ) inpParam->inOutStruct;
@@ -2752,7 +2822,9 @@ msiNcSubsetVar( msParam_t *varNameParam, msParam_t *ncidParam,
     }
     else {
         ncid = parseMspForPosInt( ncidParam );
-        if ( ncid < 0 ) { return ncid; }
+        if ( ncid < 0 ) {
+            return ncid;
+        }
     }
     if ( ncInqOutParam == NULL ) {
         rodsLog( LOG_ERROR,
@@ -2784,7 +2856,9 @@ msiNcSubsetVar( msParam_t *varNameParam, msParam_t *ncidParam,
     ncVarSubset.numVar = 1;
     rstrcpy( ( char * ) ncVarSubset.varName, name, LONG_NAME_LEN );
     rei->status = parseSubsetStr( subsetStr, &ncVarSubset );
-    if ( rei->status < 0 ) { return rei->status; }
+    if ( rei->status < 0 ) {
+        return rei->status;
+    }
     rei->status = ncSubsetVar( rsComm, ncid, ncInqOut, &ncVarSubset,
                                &ncGetVarOut );
     if ( rei->status >= 0 ) {
@@ -3027,8 +3101,12 @@ msiNcVarStat( msParam_t *ncGetVarOutParam, msParam_t *statOutStr,
 int
 procMaxMinAve( float myfloat, float *mymax, float *mymin, float *mytotal ) {
     *mytotal += myfloat;
-    if ( myfloat < *mymin ) { *mymin = myfloat; }
-    if ( myfloat > *mymax ) { *mymax = myfloat; }
+    if ( myfloat < *mymin ) {
+        *mymin = myfloat;
+    }
+    if ( myfloat > *mymax ) {
+        *mymax = myfloat;
+    }
     return 0;
 }
 
@@ -3068,14 +3146,18 @@ msiPrVarInNcGetVarOut( msParam_t *ncGetVarOutParam, msParam_t *prefixParam,
     }
     else {
         prefix = ( char * ) prefixParam->inOutStruct;
-        if ( prefix == NULL ) { return USER__NULL_INPUT_ERR; }
+        if ( prefix == NULL ) {
+            return USER__NULL_INPUT_ERR;
+        }
     }
     if ( itemsPerLineParam == NULL ) {
         itemsPerLine = 1;
     }
     else {
         itemsPerLine = parseMspForPosInt( itemsPerLineParam );
-        if ( itemsPerLine <= 0 ) { itemsPerLine = 1; }
+        if ( itemsPerLine <= 0 ) {
+            itemsPerLine = 1;
+        }
     }
     bufPtr = ncGetVarOut->dataArray->buf;
     bzero( tempStr, sizeof( tempStr ) );
@@ -3085,7 +3167,9 @@ msiPrVarInNcGetVarOut( msParam_t *ncGetVarOutParam, msParam_t *prefixParam,
             int len;
             char *nextBufPtr;
             /* treat it as strings */
-            if ( outCnt == 0 ) { _writeString( "stdout", prefix, rei ); }
+            if ( outCnt == 0 ) {
+                _writeString( "stdout", prefix, rei );
+            }
             len = strlen( bufPtr );
             totalLen += ( len + 1 );
 
@@ -3093,7 +3177,9 @@ msiPrVarInNcGetVarOut( msParam_t *ncGetVarOutParam, msParam_t *prefixParam,
             while ( isspace( *nextBufPtr ) || *nextBufPtr = '\0' ) {
                 bufPtr++;
                 totalLen++;
-                if ( totalLen >= ncGetVarOut->dataArray->len ) { break; }
+                if ( totalLen >= ncGetVarOut->dataArray->len ) {
+                    break;
+                }
             }
             if ( totalLen >= ncGetVarOut->dataArray->len ) {
                 /* last one */
@@ -3111,7 +3197,8 @@ msiPrVarInNcGetVarOut( msParam_t *ncGetVarOutParam, msParam_t *prefixParam,
                 outCnt ++;
                 bufPtr = nextBufPtr;
             }
-        } else {
+        }
+        else {
             for ( j = 0; j < ncGetVarOut->dataArray->len; j++ ) {
                 ncValueToStr( ncInqOut->var[varInx].dataType, &bufPtr, tempStr );
                 outCnt++;

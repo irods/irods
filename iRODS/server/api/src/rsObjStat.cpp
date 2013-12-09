@@ -97,7 +97,9 @@ _rsObjStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     if ( ( tmpStr = getValByKey( &dataObjInp->condInput, SEL_OBJ_TYPE_KW ) ) ==
             NULL || strcmp( tmpStr, "dataObj" ) == 0 ) {
         status = dataObjStat( rsComm, dataObjInp, rodsObjStatOut );
-        if ( status >= 0 ) { return ( status ); }
+        if ( status >= 0 ) {
+            return ( status );
+        }
     }
 
     if ( tmpStr == NULL || strcmp( tmpStr, "collection" ) == 0 ) {
@@ -244,7 +246,8 @@ dataObjStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
             *rodsObjStatOut = ( rodsObjStat_t * ) malloc( sizeof( rodsObjStat_t ) );
             memset( *rodsObjStatOut, 0, sizeof( rodsObjStat_t ) );
-            ( *rodsObjStatOut )->objType = DATA_OBJ_T; status = ( int )DATA_OBJ_T;
+            ( *rodsObjStatOut )->objType = DATA_OBJ_T;
+            status = ( int )DATA_OBJ_T;
             /* XXXXXX . dont have numCopies anymore. Replaced by dataMode
             * (*rodsObjStatOut)->numCopies = genQueryOut->rowCnt; */
 

@@ -127,7 +127,9 @@ rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     status = rsObjStat( rsComm, dataObjInp, &rodsObjStatOut );
 
     if ( rodsObjStatOut != NULL && rodsObjStatOut->objType == COLL_OBJ_T ) {
-        if ( lockFd >= 0 ) { rsDataObjUnlock( rsComm, dataObjInp, lockFd ); } // JMC - backport 4604
+        if ( lockFd >= 0 ) {
+            rsDataObjUnlock( rsComm, dataObjInp, lockFd );    // JMC - backport 4604
+        }
         return ( USER_INPUT_PATH_ERR );
     }
 
@@ -313,7 +315,9 @@ specCollSubCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
 
     l1descInx = allocL1desc();
 
-    if ( l1descInx < 0 ) { return l1descInx; }
+    if ( l1descInx < 0 ) {
+        return l1descInx;
+    }
 
     dataObjInfo->replStatus = NEWLY_CREATED_COPY;
     fillL1desc( l1descInx, dataObjInp, dataObjInfo, NEWLY_CREATED_COPY,
@@ -348,7 +352,9 @@ _rsDataObjCreateWithRescInfo(
     int status;
 
     l1descInx = allocL1desc();
-    if ( l1descInx < 0 ) { return l1descInx; }
+    if ( l1descInx < 0 ) {
+        return l1descInx;
+    }
 
     dataObjInfo = ( dataObjInfo_t* )malloc( sizeof( dataObjInfo_t ) );
     initDataObjInfoWithInp( dataObjInfo, dataObjInp );

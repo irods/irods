@@ -73,14 +73,18 @@ int rdaOpen( char *rdaName ) {
     char *DBUser;
     char *DBPasswd;
 
-    if ( rdaLogSQL ) { rodsLog( LOG_SQL, "rdaOpen" ); }
+    if ( rdaLogSQL ) {
+        rodsLog( LOG_SQL, "rdaOpen" );
+    }
 
     if ( strcmp( openRdaName, rdaName ) == 0 ) {
         return( 0 ); /* already open */
     }
 
     status =  readRdaConfig( rdaName, &DBUser, &DBPasswd );
-    if ( status ) { return( status ); }
+    if ( status ) {
+        return( status );
+    }
 
     strncpy( rda_icss.databaseUsername, DBUser, DB_USERNAME_LEN );
     strncpy( rda_icss.databasePassword, DBPasswd, DB_PASSWORD_LEN );
@@ -175,7 +179,9 @@ int rdaRollback() {
 
 int rdaIsConnected() {
 #if defined(BUILD_RDA)
-    if ( rdaLogSQL ) { rodsLog( LOG_SQL, "rdaIsConnected" ); }
+    if ( rdaLogSQL ) {
+        rodsLog( LOG_SQL, "rdaIsConnected" );
+    }
     return( rda_icss.status );
 #else
     return( RDA_NOT_COMPILED_IN );
@@ -247,8 +253,12 @@ int rdaSqlNoResults( char *sql, char *parm[], int nParms ) {
     i = cllExecSqlNoResult( &rda_icss, sql );
     /*   if (i <= CAT_ENV_ERR) return(i); ? already an iRODS error code */
     printf( "i=%d\n", i );
-    if ( i == CAT_SUCCESS_BUT_WITH_NO_INFO ) { return( 0 ); }
-    if ( i ) { return( RDA_SQL_ERR ); }
+    if ( i == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
+        return( 0 );
+    }
+    if ( i ) {
+        return( RDA_SQL_ERR );
+    }
     return( 0 );
 #else
     return( RDA_NOT_COMPILED_IN );
@@ -272,7 +282,9 @@ int rdaSqlWithResults( char *sql, char *parm[], int nParms, char **outBuf ) {
     i = cllExecSqlWithResult( &rda_icss, &statement, sql );
     printf( "i=%d\n", i );
     /* ?   if (i==CAT_SUCCESS_BUT_WITH_NO_INFO) return(0); */
-    if ( i ) { return( RDA_SQL_ERR ); }
+    if ( i ) {
+        return( RDA_SQL_ERR );
+    }
 
     myBuf = resultBuf1; /* Initially, use this buffer */
     maxOutBuf = RESULT_BUF1_SIZE;
@@ -282,14 +294,18 @@ int rdaSqlWithResults( char *sql, char *parm[], int nParms, char **outBuf ) {
         i = cllGetRow( &rda_icss, statement );
         if ( i != 0 )  {
             ii = cllFreeStatement( &rda_icss, statement );
-            if ( rowCount == 0 ) { return( CAT_GET_ROW_ERR ); }
+            if ( rowCount == 0 ) {
+                return( CAT_GET_ROW_ERR );
+            }
             *outBuf = myBuf;
             return( 0 );
         }
 
         if ( rda_icss.stmtPtr[statement]->numOfCols == 0 ) {
             i = cllFreeStatement( &rda_icss, statement );
-            if ( rowCount == 0 ) { return( CAT_NO_ROWS_FOUND ); }
+            if ( rowCount == 0 ) {
+                return( CAT_NO_ROWS_FOUND );
+            }
             *outBuf = myBuf;
             return( 0 );
         }
@@ -313,14 +329,19 @@ int rdaSqlWithResults( char *sql, char *parm[], int nParms, char **outBuf ) {
             rowSize = strlen( myBuf );
             totalRows = cllGetRowCount( &rda_icss, statement );
             printf( "rowSize=%d, totalRows=%d\n", rowSize, totalRows );
-            if ( totalRows < 0 ) { return( totalRows ); }
+            if ( totalRows < 0 ) {
+                return( totalRows );
+            }
             if ( totalRows == 0 ) {
                 /* Unknown number of rows available (Oracle) */
                 totalRows = 10; /* to start with */
             }
             toMalloc = ( ( totalRows + 1 ) * rowSize ) * 3;
             myBuf = malloc( toMalloc );
-            if ( myBuf <= 0 ) { free( myBuf ); return( SYS_MALLOC_ERR ); } // JMC cppcheck - leak
+            if ( myBuf <= 0 ) {
+                free( myBuf );    // JMC cppcheck - leak
+                return( SYS_MALLOC_ERR );
+            }
             maxOutBuf = toMalloc;
             memset( myBuf, 0, maxOutBuf );
             rstrcpy( myBuf, resultBuf1, RESULT_BUF1_SIZE );
@@ -337,7 +358,10 @@ int rdaSqlWithResults( char *sql, char *parm[], int nParms, char **outBuf ) {
             pbuf = myBuf;
             toMalloc = ( ( totalRows + 1 ) * rowSize ) * 3;
             myBuf = malloc( toMalloc );
-            if ( myBuf <= 0 ) { free( myBuf ); return( SYS_MALLOC_ERR ); } // JMC cppcheck - leak
+            if ( myBuf <= 0 ) {
+                free( myBuf );    // JMC cppcheck - leak
+                return( SYS_MALLOC_ERR );
+            }
             maxOutBuf = toMalloc;
             memset( myBuf, 0, maxOutBuf );
             strcpy( myBuf, pbuf );
@@ -403,15 +427,23 @@ readRdaConfig( char *rdaName, char **DBUser, char**DBPasswd ) {
                 if ( foundLine[i] == ' ' || foundLine[i] == '\n' ) {
                     int endOfLine;
                     endOfLine = 0;
-                    if ( foundLine[i] == '\n' ) { endOfLine = 1; }
+                    if ( foundLine[i] == '\n' ) {
+                        endOfLine = 1;
+                    }
                     foundLine[i] = '\0';
                     if ( endOfLine && state < 6 ) {
                         fclose( fptr ); // JMC cppcheck - resource
                         return( 0 );
                     }
-                    if ( state == 0 ) { state = 1; }
-                    if ( state == 2 ) { state = 3; }
-                    if ( state == 4 ) { state = 5; }
+                    if ( state == 0 ) {
+                        state = 1;
+                    }
+                    if ( state == 2 ) {
+                        state = 3;
+                    }
+                    if ( state == 4 ) {
+                        state = 5;
+                    }
                     if ( state == 6 ) {
                         static char unscrambledPw[NAME_LEN];
                         obfDecodeByKey( *DBPasswd, DBKey, unscrambledPw );

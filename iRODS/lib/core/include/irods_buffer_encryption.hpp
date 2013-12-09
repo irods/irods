@@ -21,10 +21,10 @@
 
 namespace irods {
 
-    /// =-=-=-=-=-=-=-
-    /// @brief functor which manages buffer encryption
-    ///        used for parallel transfers.  based on
-    ///        SSL EVP library
+/// =-=-=-=-=-=-=-
+/// @brief functor which manages buffer encryption
+///        used for parallel transfers.  based on
+///        SSL EVP library
     class buffer_crypt {
     public:
         // =-=-=-=-=-=-=-
@@ -69,10 +69,18 @@ namespace irods {
 
         /// =-=-=-=-=-=-=-
         /// @brief accessors for attributes
-        int         key_size()        { return key_size_;        };
-        int         salt_size()       { return salt_size_;       };
-        int         num_hash_rounds() { return num_hash_rounds_; };
-        std::string algorithm()       { return algorithm_;       };
+        int         key_size()        {
+            return key_size_;
+        };
+        int         salt_size()       {
+            return salt_size_;
+        };
+        int         num_hash_rounds() {
+            return num_hash_rounds_;
+        };
+        std::string algorithm()       {
+            return algorithm_;
+        };
 
         static std::string gen_hash( unsigned char*, int );
 

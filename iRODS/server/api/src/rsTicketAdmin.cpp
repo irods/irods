@@ -54,7 +54,9 @@ _rsTicketAdmin( rsComm_t *rsComm, ticketAdminInp_t *ticketAdminInp ) {
         rei.uoip = &rsComm->proxyUser;
         status = applyRule( "acTicketPolicy", NULL, &rei, NO_SAVE_REI );
         rodsLog( LOG_DEBUG, "debug ticket rule status:%d", status );
-        if ( status != 0 ) { return( status ); }
+        if ( status != 0 ) {
+            return( status );
+        }
     }
     status = chlModTicket( rsComm, ticketAdminInp->arg1,
                            ticketAdminInp->arg2, ticketAdminInp->arg3,

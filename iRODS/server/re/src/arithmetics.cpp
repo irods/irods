@@ -109,7 +109,8 @@ Res* evaluateExpression3( Node *expr, int applyAll, int force, ruleExecInfo_t *r
             						printf("start execing %s\n", oper1);
             						printEnvToStdOut(env);
 
-            */			funcRes = evaluateExpression3( expr->subtrees[0], applyAll > 1 ? applyAll : 0, 0, rei, reiSaveFlag, env, errmsg, r );
+            */
+            funcRes = evaluateExpression3( expr->subtrees[0], applyAll > 1 ? applyAll : 0, 0, rei, reiSaveFlag, env, errmsg, r );
             if ( getNodeType( funcRes ) == N_ERROR ) {
                 res = funcRes;
                 break;
@@ -798,7 +799,9 @@ Res* getSessionVar( char *action,  Node *node, char *varName,  ruleExecInfo_t *r
         }
         else {   /* On error, return 0. */
             free( varMap );
-            if ( varValue != NULL ) { free( varValue ); }
+            if ( varValue != NULL ) {
+                free( varValue );
+            }
             return NULL;
         }
     }

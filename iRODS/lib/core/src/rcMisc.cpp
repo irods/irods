@@ -200,7 +200,9 @@ parseUserName( char *fullUserNameIn, char *userName, char *userZone ) {
         strncpy( userName, fullUserNameIn, ix );
         *( userName + ix ) = '\0';
         strncpy( userZone, fullUserNameIn + ix + 1, NAME_LEN );
-        if ( strstr( userZone, "#" ) ) { return( USER_INVALID_USERNAME_FORMAT ); }
+        if ( strstr( userZone, "#" ) ) {
+            return( USER_INVALID_USERNAME_FORMAT );
+        }
     }
     else {
         strncpy( userName, fullUserNameIn, NAME_LEN );
@@ -210,7 +212,9 @@ parseUserName( char *fullUserNameIn, char *userName, char *userZone ) {
     if ( cp ) {
         char *cp2;
         cp2 = strstr( cp + 1, "@" );
-        if ( cp2 ) { return( USER_INVALID_USERNAME_FORMAT ); }
+        if ( cp2 ) {
+            return( USER_INVALID_USERNAME_FORMAT );
+        }
     }
     return( 0 );
 }
@@ -509,7 +513,9 @@ freeDataObjInfo( dataObjInfo_t *dataObjInfo ) {
     }
 
     /* separate specColl */
-    if ( dataObjInfo->specColl != NULL ) { free( dataObjInfo->specColl ); }
+    if ( dataObjInfo->specColl != NULL ) {
+        free( dataObjInfo->specColl );
+    }
     if ( false && dataObjInfo->rescInfo != NULL ) {
         delete dataObjInfo->rescInfo;
         dataObjInfo->rescInfo = 0;
@@ -734,7 +740,9 @@ replDataObjInp( dataObjInp_t *srcDataObjInp, dataObjInp_t *destDataObjInp ) {
 
 int
 replSpecColl( specColl_t *inSpecColl, specColl_t **outSpecColl ) {
-    if ( inSpecColl == NULL || outSpecColl == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( inSpecColl == NULL || outSpecColl == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
     *outSpecColl = ( specColl_t * )malloc( sizeof( specColl_t ) );
     *( *outSpecColl ) = *inSpecColl;
 
@@ -1134,7 +1142,9 @@ catGenQueryOut( genQueryOut_t *targGenQueryOut, genQueryOut_t *genQueryOut,
         return USER__NULL_INPUT_ERR;
     }
 
-    if ( genQueryOut->rowCnt == 0 ) { return 0; }
+    if ( genQueryOut->rowCnt == 0 ) {
+        return 0;
+    }
 
     if ( ( totalRowCnt = targGenQueryOut->rowCnt + genQueryOut->rowCnt ) >
             maxRowCnt ) {
@@ -1174,7 +1184,9 @@ catGenQueryOut( genQueryOut_t *targGenQueryOut, genQueryOut_t *genQueryOut,
         char *tmpValue;
         int len;
 
-        if ( ( len = genQueryOut->sqlResult[i].len ) <= 0 ) { continue; }
+        if ( ( len = genQueryOut->sqlResult[i].len ) <= 0 ) {
+            continue;
+        }
         if ( ( tmpValue = ( char * )malloc( totalRowCnt * len ) ) == 0 ) {
             return ( SYS_MALLOC_ERR - errno );
         }
@@ -1231,7 +1243,9 @@ getUnixUid( char *userName ) {
     else {
         myuid = ( int ) pw->pw_uid;
     }
-    if ( splitPos != NULL ) { *splitPos = '@'; }
+    if ( splitPos != NULL ) {
+        *splitPos = '@';
+    }
     return ( myuid );
 #else
     return ( -1 );
@@ -1503,7 +1517,9 @@ clearDataObjInp( dataObjInp_t *dataObjInp ) {
     }
 
     clearKeyVal( &dataObjInp->condInput );
-    if ( dataObjInp->specColl != NULL ) { free( dataObjInp->specColl ); }
+    if ( dataObjInp->specColl != NULL ) {
+        free( dataObjInp->specColl );
+    }
 
     memset( dataObjInp, 0, sizeof( dataObjInp_t ) );
 
@@ -1591,7 +1607,8 @@ parseMultiStr( char *strInput, strArray_t *strArray ) {
         }
         if ( *endPtr == '%' ) {
             if ( *( endPtr + 1 ) == '%' ) {
-                endPtr ++; endPtr ++;
+                endPtr ++;
+                endPtr ++;
                 continue;
             }
             *endPtr = '\0';
@@ -1811,7 +1828,9 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
     int n;
 
     t = delayStr;
-    while ( isdigit( *t ) ) { t++; }
+    while ( isdigit( *t ) ) {
+        t++;
+    }
     u = *t;
     *t = '\0';
     dt = atol( delayStr );
@@ -1837,7 +1856,9 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
         break;
     }
 
-    while ( isspace( *t ) ) { t++; }
+    while ( isspace( *t ) ) {
+        t++;
+    }
     if ( strlen( t ) == 0 || !strcmp( t, "REPEAT FOR EVER" ) ) {
         dt = dt   + atol( currTime );
         sprintf( nextTime, "%lld", dt );
@@ -1851,7 +1872,9 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
     }
     if ( ( s = strstr( t, "REPEAT UNTIL SUCCESS OR UNTIL " ) ) != NULL ) {
         s = s + strlen( "REPEAT UNTIL SUCCESS OR UNTIL " );
-        while ( isspace( *s ) ) { s++; }
+        while ( isspace( *s ) ) {
+            s++;
+        }
         strcpy( tstr, s );
         convertDateFormat( tstr, currTime );
         dt = dt   + atol( currTime );
@@ -1865,7 +1888,9 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
     }
     if ( ( s = strstr( t, "DOUBLE UNTIL SUCCESS OR UNTIL " ) ) != NULL ) {
         s = s + strlen( "DOUBLE UNTIL SUCCESS OR UNTIL " );
-        while ( isspace( *s ) ) { s++; }
+        while ( isspace( *s ) ) {
+            s++;
+        }
         strcpy( tstr, s );
         convertDateFormat( tstr, currTime );
         dt = dt   + atol( currTime );
@@ -1880,10 +1905,14 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
     }
     if ( ( s = strstr( t, "REPEAT UNTIL SUCCESS OR " ) ) != NULL ) {
         s = s + strlen( "REPEAT UNTIL SUCCESS OR " );
-        while ( isspace( *s ) ) { s++; }
+        while ( isspace( *s ) ) {
+            s++;
+        }
         strcpy( tstr, s );
         s = tstr;
-        while ( isdigit( *s ) ) { s++; }
+        while ( isdigit( *s ) ) {
+            s++;
+        }
         *s = '\0';
         n = atoi( tstr );
         n--;
@@ -1904,10 +1933,14 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
     }
     if ( ( s = strstr( t, "DOUBLE UNTIL SUCCESS OR " ) ) != NULL ) {
         s = s + strlen( "DOUBLE UNTIL SUCCESS OR " );
-        while ( isspace( *s ) ) { s++; }
+        while ( isspace( *s ) ) {
+            s++;
+        }
         strcpy( tstr, s );
         s = tstr;
-        while ( isdigit( *s ) ) { s++; }
+        while ( isdigit( *s ) ) {
+            s++;
+        }
         *s = '\0';
         n = atoi( tstr );
         n--;
@@ -1928,7 +1961,9 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
     }
     if ( ( s = strstr( t, "DOUBLE UNTIL SUCCESS UPTO " ) ) != NULL ) {
         s = s + strlen( "DOUBLE UNTIL SUCCESS UPTO " );
-        while ( isspace( *s ) ) { s++; }
+        while ( isspace( *s ) ) {
+            s++;
+        }
         strcpy( tstr, s );
         convertDateFormat( tstr, currTime );
         dt = dt   + atol( currTime );
@@ -1961,7 +1996,9 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
             }
             if ( ( s = strstr( t, "REPEAT UNTIL " ) ) != NULL ) {
                 s = s + strlen( "REPEAT UNTIL " );
-                while ( isspace( *s ) ) { s++; }
+                while ( isspace( *s ) ) {
+                    s++;
+                }
                 strcpy( tstr, s );
                 convertDateFormat( tstr, currTime );
                 dt = dt   + atol( currTime );
@@ -1976,7 +2013,9 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
 
             if ( ( s = strstr( t, "DOUBLE UNTIL " ) ) != NULL ) {
                 s = s + strlen( "DOUBLE UNTIL " );
-                while ( isspace( *s ) ) { s++; }
+                while ( isspace( *s ) ) {
+                    s++;
+                }
                 strcpy( tstr, s );
                 convertDateFormat( tstr, currTime );
                 dt = dt   + atol( currTime );
@@ -1993,10 +2032,14 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
             }
             if ( ( s = strstr( t, "REPEAT " ) ) != NULL ) {
                 s = s + strlen( "REPEAT " );
-                while ( isspace( *s ) ) { s++; }
+                while ( isspace( *s ) ) {
+                    s++;
+                }
                 strcpy( tstr, s );
                 s = tstr;
-                while ( isdigit( *s ) ) { s++; }
+                while ( isdigit( *s ) ) {
+                    s++;
+                }
                 *s = '\0';
                 n = atoi( tstr );
                 n--;
@@ -2018,10 +2061,14 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
             }
             if ( ( s = strstr( t, "DOUBLE " ) ) != NULL ) {
                 s = s + strlen( "DOUBLE " );
-                while ( isspace( *s ) ) { s++; }
+                while ( isspace( *s ) ) {
+                    s++;
+                }
                 strcpy( tstr, s );
                 s = tstr;
-                while ( isdigit( *s ) ) { s++; }
+                while ( isdigit( *s ) ) {
+                    s++;
+                }
                 *s = '\0';
                 n = atoi( tstr );
                 n--;
@@ -2222,7 +2269,9 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
 
                         mypos--;
                         if ( mypos >= 0 )
-                            if ( s[mypos] != ':' ) { return ( DATE_FORMAT_ERR ); }
+                            if ( s[mypos] != ':' ) {
+                                return ( DATE_FORMAT_ERR );
+                            }
 
                         /* min */
                         mypos--;
@@ -2251,7 +2300,9 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
 
                         mypos--;
                         if ( mypos >= 0 )
-                            if ( s[mypos] != ':' ) { return ( DATE_FORMAT_ERR ); }
+                            if ( s[mypos] != ':' ) {
+                                return ( DATE_FORMAT_ERR );
+                            }
 
                         /* hour */
                         mypos--;
@@ -2280,7 +2331,9 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
 
                         mypos--;
                         if ( mypos >= 0 )
-                            if ( s[mypos] != '.' ) { return ( DATE_FORMAT_ERR ); }
+                            if ( s[mypos] != '.' ) {
+                                return ( DATE_FORMAT_ERR );
+                            }
 
                         /* day */
 
@@ -2751,7 +2804,9 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
         procAndWrriteRestartFile( rodsRestart_t * rodsRestart, char * donePath ) {
             int status;
 
-            if ( rodsRestart->fd <= 0 ) { return 0; }
+            if ( rodsRestart->fd <= 0 ) {
+                return 0;
+            }
 
             rodsRestart->curCnt ++;
             status = writeRestartFile( rodsRestart, donePath );
@@ -2976,16 +3031,32 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
             int inqq =  0;
             while ( expr[i] != '\0' ) {
                 if ( inq ) {
-                    if ( expr[i] == '\'' ) { inq--; qcnt++;}
+                    if ( expr[i] == '\'' ) {
+                        inq--;
+                        qcnt++;
+                    }
                 }
                 else if ( inqq ) {
-                    if ( expr[i] == '"' ) { inqq--; qqcnt++;}
+                    if ( expr[i] == '"' ) {
+                        inqq--;
+                        qqcnt++;
+                    }
                 }
-                else if ( expr[i] == '\'' ) { inq++; qcnt++; }
-                else if ( expr[i] == '"' ) { inqq++; qqcnt++; }
-                else if ( expr[i] == '(' ) { bcnt++; }
+                else if ( expr[i] == '\'' ) {
+                    inq++;
+                    qcnt++;
+                }
+                else if ( expr[i] == '"' ) {
+                    inqq++;
+                    qqcnt++;
+                }
+                else if ( expr[i] == '(' ) {
+                    bcnt++;
+                }
                 else if ( expr[i] == ')' )
-                    if ( bcnt > 0 ) { bcnt--; }
+                    if ( bcnt > 0 ) {
+                        bcnt--;
+                    }
                 i++;
             }
             if ( bcnt != 0 || qcnt % 2 != 0 || qqcnt % 2 != 0 ) {
@@ -3008,9 +3079,13 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
                 u1 = strstr( s, " and " );
                 u2 = strstr( s, " AND " );
                 u = u1;
-                if ( u1 == NULL ) { u = u2; }
+                if ( u1 == NULL ) {
+                    u = u2;
+                }
                 if ( u1 != NULL && u2 != NULL ) {
-                    if ( strlen( u2 ) > strlen( u1 ) ) { u = u2; } /* both are present, use the first */
+                    if ( strlen( u2 ) > strlen( u1 ) ) {
+                        u = u2;    /* both are present, use the first */
+                    }
                 }
 
                 if ( u != NULL ) {
@@ -3279,7 +3354,9 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
                              char * collInfo2, specColl_t * specColl ) {
             int i;
 
-            if ( specColl == NULL ) { return ( USER__NULL_INPUT_ERR ); }
+            if ( specColl == NULL ) {
+                return ( USER__NULL_INPUT_ERR );
+            }
 
             if ( *type == '\0' ) {
                 specColl->collClass = NO_SPEC_COLL;
@@ -3367,6 +3444,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
             }
 
             len = ( int )( tmpPtr2 - tmpPtr1 );
+            *tmpPtr2 = '\0';
 
             irods::hierarchy_parser parse;
             parse.set_string( tmpPtr1 );
@@ -3421,9 +3499,13 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
 
         structFileOprType_t
         getSpecCollOpr( keyValPair_t * condInput, specColl_t * specColl ) {
-            if ( specColl == NULL ) { return ( NOT_SPEC_COLL_OPR ); }
+            if ( specColl == NULL ) {
+                return ( NOT_SPEC_COLL_OPR );
+            }
 
-            if ( specColl->collClass != STRUCT_FILE_COLL ) { return ( NON_STRUCT_FILE_SPEC_COLL_OPR ); }
+            if ( specColl->collClass != STRUCT_FILE_COLL ) {
+                return ( NON_STRUCT_FILE_SPEC_COLL_OPR );
+            }
 
             if ( getValByKey( condInput, STRUCT_FILE_OPR_KW ) == NULL ) {
                 return ( NORMAL_OPR_ON_STRUCT_FILE_COLL );
@@ -3437,7 +3519,9 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
         void
         resolveStatForStructFileOpr( keyValPair_t * condInput,
                                      rodsObjStat_t * rodsObjStatOut ) {
-            if ( rodsObjStatOut == NULL ) { return; }
+            if ( rodsObjStatOut == NULL ) {
+                return;
+            }
 
             if ( getSpecCollOpr( condInput, rodsObjStatOut->specColl ) ==
                     NORMAL_OPR_ON_STRUCT_FILE_COLL ) {
@@ -3626,13 +3710,21 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
 
         int
         clearSendXmsgInfo( sendXmsgInfo_t * sendXmsgInfo ) {
-            if ( sendXmsgInfo == NULL ) { return 0; }
+            if ( sendXmsgInfo == NULL ) {
+                return 0;
+            }
 
-            if ( sendXmsgInfo->msg != NULL ) { free( sendXmsgInfo->msg ); }
+            if ( sendXmsgInfo->msg != NULL ) {
+                free( sendXmsgInfo->msg );
+            }
 
-            if ( sendXmsgInfo->deliPort != NULL ) { free( sendXmsgInfo->deliPort ); }
+            if ( sendXmsgInfo->deliPort != NULL ) {
+                free( sendXmsgInfo->deliPort );
+            }
 
-            if ( sendXmsgInfo->miscInfo != NULL ) { free( sendXmsgInfo->miscInfo ); }
+            if ( sendXmsgInfo->miscInfo != NULL ) {
+                free( sendXmsgInfo->miscInfo );
+            }
 
             if ( sendXmsgInfo->deliAddress != NULL &&
                     *sendXmsgInfo->deliAddress != NULL ) {
@@ -3650,7 +3742,9 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
 
         void
         freeStringIfNotNull( char * str ) {
-            if ( str != NULL ) { free( str ); }
+            if ( str != NULL ) {
+                free( str );
+            }
         }
 
         int
@@ -3675,9 +3769,13 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
          */
         int
         freeRodsObjStat( rodsObjStat_t * rodsObjStat ) {
-            if ( rodsObjStat == NULL ) { return 0; }
+            if ( rodsObjStat == NULL ) {
+                return 0;
+            }
 
-            if ( rodsObjStat->specColl != NULL ) { free( rodsObjStat->specColl ); }
+            if ( rodsObjStat->specColl != NULL ) {
+                free( rodsObjStat->specColl );
+            }
 
             free( rodsObjStat );
 
@@ -3688,7 +3786,9 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
         parseHostAddrStr( char * hostAddr, rodsHostAddr_t * addr ) {
             char port[NAME_LEN];
 
-            if ( hostAddr == NULL || addr == NULL ) { return SYS_INTERNAL_NULL_INPUT_ERR; }
+            if ( hostAddr == NULL || addr == NULL ) {
+                return SYS_INTERNAL_NULL_INPUT_ERR;
+            }
 
             if ( splitPathByKey( hostAddr, addr->hostAddr, port, ':' ) < 0 ) {
                 rstrcpy( addr->hostAddr, hostAddr, LONG_NAME_LEN );
@@ -3742,7 +3842,9 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
 
         int
         initBulkDataObjRegInp( genQueryOut_t * bulkDataObjRegInp ) {
-            if ( bulkDataObjRegInp == NULL ) { return USER__NULL_INPUT_ERR; }
+            if ( bulkDataObjRegInp == NULL ) {
+                return USER__NULL_INPUT_ERR;
+            }
 
             memset( bulkDataObjRegInp, 0, sizeof( genQueryOut_t ) );
 
@@ -3825,10 +3927,14 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
         initBulkDataObjRegOut( genQueryOut_t **bulkDataObjRegOut ) {
             genQueryOut_t *myBulkDataObjRegOut;
 
-            if ( bulkDataObjRegOut == NULL ) { return USER__NULL_INPUT_ERR; }
+            if ( bulkDataObjRegOut == NULL ) {
+                return USER__NULL_INPUT_ERR;
+            }
 
             myBulkDataObjRegOut = *bulkDataObjRegOut = ( genQueryOut_t* )malloc( sizeof( genQueryOut_t ) );
-            if ( myBulkDataObjRegOut == NULL ) { return SYS_MALLOC_ERR; }
+            if ( myBulkDataObjRegOut == NULL ) {
+                return SYS_MALLOC_ERR;
+            }
 
             memset( myBulkDataObjRegOut, 0, sizeof( genQueryOut_t ) );
 
@@ -3853,11 +3959,15 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
             int rowCnt;
 
             if ( bulkDataObjRegInp == NULL || rescName == NULL || objPath == NULL ||
-                    filePath == NULL ) { return USER__NULL_INPUT_ERR; }
+                    filePath == NULL ) {
+                return USER__NULL_INPUT_ERR;
+            }
 
             rowCnt = bulkDataObjRegInp->rowCnt;
 
-            if ( rowCnt >= MAX_NUM_BULK_OPR_FILES ) { return SYS_BULK_REG_COUNT_EXCEEDED; }
+            if ( rowCnt >= MAX_NUM_BULK_OPR_FILES ) {
+                return SYS_BULK_REG_COUNT_EXCEEDED;
+            }
 
             rstrcpy( &bulkDataObjRegInp->sqlResult[0].value[MAX_NAME_LEN * rowCnt],
                      objPath, MAX_NAME_LEN );
@@ -3902,7 +4012,9 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
             genQueryOut_t *attriArray;
             int i;
 
-            if ( bulkOprInp == NULL ) { return USER__NULL_INPUT_ERR; }
+            if ( bulkOprInp == NULL ) {
+                return USER__NULL_INPUT_ERR;
+            }
 
             attriArray = &bulkOprInp->attriArray;
 
@@ -3949,13 +4061,17 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
             int rowCnt;
             sqlResult_t *chksum = NULL;
 
-            if ( bulkOprInp == NULL || objPath == NULL ) { return USER__NULL_INPUT_ERR; }
+            if ( bulkOprInp == NULL || objPath == NULL ) {
+                return USER__NULL_INPUT_ERR;
+            }
 
             attriArray = &bulkOprInp->attriArray;
 
             rowCnt = attriArray->rowCnt;
 
-            if ( rowCnt >= MAX_NUM_BULK_OPR_FILES ) { return SYS_BULK_REG_COUNT_EXCEEDED; }
+            if ( rowCnt >= MAX_NUM_BULK_OPR_FILES ) {
+                return SYS_BULK_REG_COUNT_EXCEEDED;
+            }
 
             chksum = getSqlResultByInx( attriArray, COL_D_DATA_CHECKSUM );
             if ( inpChksum != NULL && strlen( inpChksum ) > 0 ) {
@@ -3994,7 +4110,9 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
             char *tmpObjPath, *tmpDataMode, *tmpChksum;
 
             if ( inpObjPath == NULL || attriArray == NULL || outDataMode == NULL ||
-                    outChksum == NULL ) { return USER__NULL_INPUT_ERR; }
+                    outChksum == NULL ) {
+                return USER__NULL_INPUT_ERR;
+            }
 
             if ( ( objPath =
                         getSqlResultByInx( attriArray, COL_DATA_NAME ) ) == NULL ) {
@@ -4013,7 +4131,9 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
             chksum = getSqlResultByInx( attriArray, COL_D_DATA_CHECKSUM );
 
             startInx = attriArray->continueInx;
-            if ( startInx >= attriArray->rowCnt || startInx < 0 ) { startInx = 0; }
+            if ( startInx >= attriArray->rowCnt || startInx < 0 ) {
+                startInx = 0;
+            }
 
             for ( i = startInx; i < attriArray->rowCnt; i++ ) {
                 tmpObjPath = &objPath->value[objPath->len * i];
@@ -4075,9 +4195,13 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
             int childStatus = 0;
             char *av[NAME_LEN];
 
-            if ( tarBBuf == NULL || phyBunDir == NULL ) { return USER__NULL_INPUT_ERR; }
+            if ( tarBBuf == NULL || phyBunDir == NULL ) {
+                return USER__NULL_INPUT_ERR;
+            }
 
-            if ( tarBBuf->len <= 0 ) { return 0; }
+            if ( tarBBuf->len <= 0 ) {
+                return 0;
+            }
 
 #ifdef windows_platform
             if ( tarBBuf->len > META_STR_LEN ) {
@@ -4163,7 +4287,9 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
             int intOffset[MAX_NUM_BULK_OPR_FILES];
             char phyBunPath[MAX_NAME_LEN];
 
-            if ( phyBunDir == NULL || bulkOprInp == NULL ) { return USER__NULL_INPUT_ERR; }
+            if ( phyBunDir == NULL || bulkOprInp == NULL ) {
+                return USER__NULL_INPUT_ERR;
+            }
 
             if ( ( objPath =
                         getSqlResultByInx( attriArray, COL_DATA_NAME ) ) == NULL ) {
@@ -4204,7 +4330,9 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
                 }
                 status = getPhyBunPath( bulkOprInp->objPath, tmpObjPath, phyBunDir,
                                         phyBunPath );
-                if ( status < 0 ) { return status; }
+                if ( status < 0 ) {
+                    return status;
+                }
 
                 mkdirForFilePath( phyBunPath );
 
@@ -4222,7 +4350,9 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
 
                 status = myWrite( out_fd, bufPtr, size, FILE_DESC_TYPE, NULL );
                 if ( status != size ) {
-                    if ( status >= 0 ) { status = SYS_COPY_LEN_ERR - errno; }
+                    if ( status >= 0 ) {
+                        status = SYS_COPY_LEN_ERR - errno;
+                    }
                     rodsLog( LOG_ERROR,
                              "unbunBulkBuf: Bytes written %d does not match size %d for %s",
                              status, size, phyBunPath );
@@ -4246,9 +4376,13 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
             int childStatus = 0;
             char *av[NAME_LEN];
 
-            if ( tarBBuf == NULL || phyBunDir == NULL ) { return USER__NULL_INPUT_ERR; }
+            if ( tarBBuf == NULL || phyBunDir == NULL ) {
+                return USER__NULL_INPUT_ERR;
+            }
 
-            if ( tarBBuf->len <= 0 ) { return 0; }
+            if ( tarBBuf->len <= 0 ) {
+                return 0;
+            }
 
 #ifdef windows_platform
             if ( tarBBuf->len > META_STR_LEN ) {
@@ -4336,7 +4470,9 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
             else {
                 /* sanity check */
                 buflen = bytesBuf->len;
-                if ( buflen > MAX_SZ_FOR_EXECMD_BUF ) { return SYS_REQUESTED_BUF_TOO_LARGE; }
+                if ( buflen > MAX_SZ_FOR_EXECMD_BUF ) {
+                    return SYS_REQUESTED_BUF_TOO_LARGE;
+                }
             }
             bytesBuf->len = 0;
             bytesBuf->buf = bufptr = ( char * )malloc( buflen );
@@ -4401,7 +4537,9 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
             while ( ( nbytes = myWrite( fd, bufptr, toWrite, SOCK_TYPE, NULL ) ) >= 0 ) {
                 toWrite -= nbytes;
                 bufptr += nbytes;
-                if ( toWrite <= 0 ) { break; }
+                if ( toWrite <= 0 ) {
+                    break;
+                }
             }
             close( fd );
 
@@ -4415,7 +4553,9 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
 
         int
         setForceFlagForRestart( bulkOprInp_t * bulkOprInp, bulkOprInfo_t * bulkOprInfo ) {
-            if ( bulkOprInp == NULL || bulkOprInfo == NULL ) { return USER__NULL_INPUT_ERR; }
+            if ( bulkOprInp == NULL || bulkOprInfo == NULL ) {
+                return USER__NULL_INPUT_ERR;
+            }
 
             if ( getValByKey( &bulkOprInp->condInput, FORCE_FLAG_KW ) != NULL ) {
                 /* already has FORCE_FLAG_KW */
@@ -4449,13 +4589,17 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
             int status;
 
 #if defined(linux_platform)||defined(osx_platform)
-            if ( envname == NULL || envval == NULL ) { return USER__NULL_INPUT_ERR; }
+            if ( envname == NULL || envval == NULL ) {
+                return USER__NULL_INPUT_ERR;
+            }
             status = setenv( envname, envval, 1 );
 #else
             char *myBuf;
             int len;
 
-            if ( envname == NULL || envval == NULL ) { return USER__NULL_INPUT_ERR; }
+            if ( envname == NULL || envval == NULL ) {
+                return USER__NULL_INPUT_ERR;
+            }
             len = strlen( envname ) + strlen( envval ) + 16;
             myBuf = ( char * )malloc( len );
             snprintf( myBuf, len, "%s=%s", envname, envval );
@@ -4471,13 +4615,17 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
 
 #if defined(linux_platform)||defined(osx_platform)
             char myIntStr[NAME_LEN];
-            if ( envname == NULL ) { return USER__NULL_INPUT_ERR; }
+            if ( envname == NULL ) {
+                return USER__NULL_INPUT_ERR;
+            }
             snprintf( myIntStr, NAME_LEN, "%d", envval );
             status = setenv( envname, myIntStr, 1 );
 #else
             char *myBuf;
             int len;
-            if ( envname == NULL ) { return USER__NULL_INPUT_ERR; }
+            if ( envname == NULL ) {
+                return USER__NULL_INPUT_ERR;
+            }
             len = strlen( envname ) + 20;
             myBuf = ( char * )malloc( len );
             snprintf( myBuf, len, "%s=%d", envname, envval );
@@ -4509,7 +4657,9 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
                     if ( myArray[j] == 0 ) {
                         k++;
                     }
-                    if ( k > ranNum ) { break; }
+                    if ( k > ranNum ) {
+                        break;
+                    }
                 }
                 myArray[j] = i;
             }
@@ -4521,7 +4671,9 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
         int
         isPathSymlink( rodsArguments_t * rodsArgs, char * myPath ) {
             path p( myPath );
-            if ( rodsArgs != NULL && rodsArgs->link != True ) { return 0; }
+            if ( rodsArgs != NULL && rodsArgs->link != True ) {
+                return 0;
+            }
             if ( exists( p ) && is_symlink( p ) ) {
                 return 1;
             }
@@ -4708,7 +4860,8 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
                 }
                 if ( *endPtr == '%' ) {
                     if ( *( endPtr + 1 ) == '%' ) {
-                        endPtr ++; endPtr ++;
+                        endPtr ++;
+                        endPtr ++;
                         continue;
                     }
                     *endPtr = '\0';
@@ -4721,7 +4874,9 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
                 char *p = str;
                 char *psrc = str;
                 while ( *psrc != '\0' ) {
-                    while ( *psrc != '%' && *psrc != '\0' ) { *( p++ ) = *( psrc++ ); }
+                    while ( *psrc != '%' && *psrc != '\0' ) {
+                        *( p++ ) = *( psrc++ );
+                    }
                     if ( *psrc == '%' ) {
                         *( p++ ) = *( psrc++ );
                         psrc++;
@@ -4778,9 +4933,13 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
             struct dirent *myDirent;
             struct stat statbuf;
 
-            if ( mydir == NULL ) { return 0; }
+            if ( mydir == NULL ) {
+                return 0;
+            }
             dirPtr = opendir( mydir );
-            if ( dirPtr == NULL ) { return 0; }
+            if ( dirPtr == NULL ) {
+                return 0;
+            }
 
             while ( ( myDirent = readdir( dirPtr ) ) != NULL ) {
                 if ( strcmp( myDirent->d_name, "." ) == 0 ||
@@ -4863,8 +5022,12 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
             int lastSlashPos = 0;
 
             for ( i = 0; i < MAX_NAME_LEN; i++ ) {
-                if ( lastCheckedPath[i] != myPath[i] ) { break; }
-                if ( lastCheckedPath[i] == '/' ) { lastSlashPos = i; }
+                if ( lastCheckedPath[i] != myPath[i] ) {
+                    break;
+                }
+                if ( lastCheckedPath[i] == '/' ) {
+                    lastSlashPos = i;
+                }
             }
             status = hasSymlinkInPartialPath( myPath, lastSlashPos + 1 );
             if ( status == 0 ) {

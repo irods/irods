@@ -380,7 +380,9 @@ _rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
             status =  applyRuleArg( "acPostProcForObjRename", args, argc,
                                     &rei2, NO_SAVE_REI );
             if ( status < 0 ) {
-                if ( rei2.status < 0 ) { status = rei2.status; }
+                if ( rei2.status < 0 ) {
+                    status = rei2.status;
+                }
                 rodsLog( LOG_ERROR,
                          "rsDataObjRename: acPostProc err for src %s dest %s,stat=%d",
                          args[0], args[1], status );

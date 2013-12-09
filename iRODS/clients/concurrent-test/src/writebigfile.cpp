@@ -11,7 +11,9 @@ int main( int argc, char** argv ) {
     if ( argc > 1 ) {
         int j;
         j = atoi( argv[1] );
-        if ( j > 0 ) { limit = j; }
+        if ( j > 0 ) {
+            limit = j;
+        }
     }
 
     fp = fopen( "bigfile", "w" );

@@ -452,7 +452,9 @@ spawnAgent( agentProc_t *connReq, agentProc_t **agentProcHead ) {
     int newSock;
     startupPack_t *startupPack;
 
-    if ( connReq == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( connReq == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
 
     newSock = connReq->sock;
     startupPack = &connReq->startupPack;
@@ -477,14 +479,18 @@ spawnAgent( agentProc_t *connReq, agentProc_t **agentProcHead ) {
              * of the parent. set sock to -1 if it has been closed */
         tmpAgentProc = ConnReqHead;
         while ( tmpAgentProc != NULL ) {
-            if ( tmpAgentProc->sock == -1 ) { break; }
+            if ( tmpAgentProc->sock == -1 ) {
+                break;
+            }
             close( tmpAgentProc->sock );
             tmpAgentProc->sock = -1;
             tmpAgentProc = tmpAgentProc->next;
         }
         tmpAgentProc = SpawnReqHead;
         while ( tmpAgentProc != NULL ) {
-            if ( tmpAgentProc->sock == -1 ) { break; }
+            if ( tmpAgentProc->sock == -1 ) {
+                break;
+            }
             close( tmpAgentProc->sock );
             tmpAgentProc->sock = -1;
             tmpAgentProc = tmpAgentProc->next;
@@ -684,7 +690,9 @@ int
 chkAgentProcCnt() {
     int count;
 
-    if ( MaxConnections == NO_MAX_CONNECTION_LIMIT ) { return 0; }
+    if ( MaxConnections == NO_MAX_CONNECTION_LIMIT ) {
+        return 0;
+    }
     count = getAgentProcCnt();
     if ( count >= MaxConnections ) {
         chkConnectedAgentProcQue();
@@ -1153,7 +1161,9 @@ procSingleConnReq( agentProc_t *connReq ) {
     int newSock;
     int status;
 
-    if ( connReq == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( connReq == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
 
     newSock = connReq->sock;
 

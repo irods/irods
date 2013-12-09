@@ -334,7 +334,9 @@ int ptohseq( rbudpBase_t *rbudpBase, int origseq ) {
     if ( seq < 0 || ( seq >> 3 ) >= rbudpBase->sizeofErrorBitmap - 1 ) {
         if ( !rbudpBase->peerswap ) {
             rbudpBase->peerswap = RB_TRUE;
-            if ( rbudpBase->verbose ) { fprintf( stderr, "peer has different endian-ness from ours\n" ); }
+            if ( rbudpBase->verbose ) {
+                fprintf( stderr, "peer has different endian-ness from ours\n" );
+            }
             return ptohseq( rbudpBase, seq );
         }
         else {
@@ -356,7 +358,9 @@ void updateErrorBitmap( rbudpBase_t *rbudpBase, long long seq ) {
     if ( seq < 0 || ( seq >> 3 ) >= rbudpBase->sizeofErrorBitmap - 1 ) {
         if ( !rbudpBase->peerswap ) {
             rbudpBase->peerswap = RB_TRUE;
-            if ( rbudpBase->verbose ) { fprintf( stderr, "peer has opposite endian-ness to ours, swapping seqno bytes\n" ); }
+            if ( rbudpBase->verbose ) {
+                fprintf( stderr, "peer has opposite endian-ness to ours, swapping seqno bytes\n" );
+            }
         }
         seq = swab32( seq );
     }

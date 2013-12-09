@@ -108,7 +108,9 @@ parseTopTDSDir( char *fileName, char *dirUrl ) {
     int status;
 
     doc = xmlParseFile( fileName );
-    if ( doc == NULL ) { return ( -1 ); }
+    if ( doc == NULL ) {
+        return ( -1 );
+    }
 
     mynode = xmlDocGetRootElement( doc );
 
@@ -135,7 +137,9 @@ parseXmlDirNode( xmlDocPtr doc, xmlNodePtr mynode, char *dirUrl ) {
     char myurl[MAX_NAME_LEN];
     int status = 0;
 
-    if ( doc == NULL || mynode == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( doc == NULL || mynode == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
 
     while ( mynode ) {
         if ( xmlIsBlankNode( mynode ) ) {
@@ -227,14 +231,18 @@ getTDSUrl( char *dirUrl, char *urlPath, char *outurl, int isDir ) {
         rstrcpy( outurl, dirUrl, MAX_NAME_LEN );
         tmpPtr = strcasestr( outurl, THREDDS_DIR );
         /* start with /thredds/ */
-        if ( tmpPtr == NULL ) { return -1; }
+        if ( tmpPtr == NULL ) {
+            return -1;
+        }
         snprintf( tmpPtr, MAX_NAME_LEN, "%s", urlPath );
         return 0;
     }
     else {
         char myFile[MAX_NAME_LEN], mydir[MAX_NAME_LEN];
         status = splitPathByKey( dirUrl, mydir, myFile, '/' );
-        if ( status < 0 ) { return status; }
+        if ( status < 0 ) {
+            return status;
+        }
         snprintf( outurl, MAX_NAME_LEN, "%s/%s", mydir, urlPath );
         return 0;
     }
@@ -291,7 +299,9 @@ tdsOpendir( rsComm_t *rsComm, char *dirUrl, void **outDirPtr ) {
     CURL *easyhandle;
     tdsDirStruct_t *tdsDirStruct = NULL;
 
-    if ( dirUrl == NULL || outDirPtr == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( dirUrl == NULL || outDirPtr == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
 
     *outDirPtr = NULL;
     easyhandle = curl_easy_init();
@@ -400,7 +410,9 @@ tdsReaddir( rsComm_t *rsComm, void *dirPtr, struct dirent *direntPtr ) {
                 }
                 rstrcpy( direntPtr->d_name, ( char * ) tmpname, NAME_MAX );
                 status = setTDSUrl( tdsDirStruct, ( char * )myurlPath, False );
-                if ( status >= 0 ) { direntPtr->d_ino = status; }
+                if ( status >= 0 ) {
+                    direntPtr->d_ino = status;
+                }
                 return status;
             }
         }
@@ -423,7 +435,9 @@ tdsReaddir( rsComm_t *rsComm, void *dirPtr, struct dirent *direntPtr ) {
                 }
                 myprop = myprop->next;
             }
-            if ( myhref == NULL ) { continue; }
+            if ( myhref == NULL ) {
+                continue;
+            }
             if ( ( char * )myname != NULL && strlen( ( char * )myname ) > 0 ) {
                 tmpname = myname;
             }
@@ -439,7 +453,9 @@ tdsReaddir( rsComm_t *rsComm, void *dirPtr, struct dirent *direntPtr ) {
             }
             snprintf( direntPtr->d_name, NAME_MAX, "%s", ( char * ) tmpname );
             status = setTDSUrl( tdsDirStruct, ( char * )myhref, True );
-            if ( status >= 0 ) { direntPtr->d_ino = status; }
+            if ( status >= 0 ) {
+                direntPtr->d_ino = status;
+            }
             return status;
         }
     }
@@ -448,7 +464,9 @@ tdsReaddir( rsComm_t *rsComm, void *dirPtr, struct dirent *direntPtr ) {
 
 int
 getNextNode( tdsDirStruct_t *tdsDirStruct ) {
-    if ( tdsDirStruct == NULL || tdsDirStruct->curnode == NULL ) { return False; }
+    if ( tdsDirStruct == NULL || tdsDirStruct->curnode == NULL ) {
+        return False;
+    }
     if ( tdsDirStruct->curnode == tdsDirStruct->rootnode ) {
         tdsDirStruct->curnode = tdsDirStruct->curnode->children;
         if ( tdsDirStruct->curnode == NULL ) {
@@ -520,7 +538,9 @@ setTdsDirentName( char *myname, char *mytitle, char *myurlPath, int isDir,
 
 int
 freeTdsDirStruct( tdsDirStruct_t **tdsDirStruct ) {
-    if ( tdsDirStruct == NULL || *tdsDirStruct == NULL ) { return 0; }
+    if ( tdsDirStruct == NULL || *tdsDirStruct == NULL ) {
+        return 0;
+    }
 
     if ( ( *tdsDirStruct )->httpResponse != NULL ) {
         free( ( *tdsDirStruct )->httpResponse );
@@ -566,7 +586,9 @@ int
 tdsClosedir( rsComm_t *rsComm, void *dirPtr ) {
     tdsDirStruct_t *tdsDirStruct = ( tdsDirStruct_t * ) dirPtr;
 
-    if ( tdsDirStruct == NULL ) { return 0; }
+    if ( tdsDirStruct == NULL ) {
+        return 0;
+    }
 
     if ( tdsDirStruct->easyhandle != NULL ) {
         curl_easy_cleanup( tdsDirStruct->easyhandle );
@@ -580,7 +602,9 @@ int
 tdsStat( rsComm_t *rsComm, char *urlPath, struct stat *statbuf ) {
     int len;
 
-    if ( urlPath == NULL || statbuf == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( urlPath == NULL || statbuf == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
     bzero( statbuf, sizeof( struct stat ) );
     len = strlen( urlPath );
     /* end with "/" ? */
@@ -623,7 +647,9 @@ setTDSUrl( tdsDirStruct_t *tdsDirStruct, char *urlPath, int isDir ) {
     int status;
 
     inx = allocUrlPath( tdsDirStruct );
-    if ( inx < 0 ) { return inx; }
+    if ( inx < 0 ) {
+        return inx;
+    }
 
     if ( isDir == True ) {
         tdsDirStruct->urlPath[inx].st_mode = S_IFDIR;
@@ -650,14 +676,18 @@ setTDSUrl( tdsDirStruct_t *tdsDirStruct, char *urlPath, int isDir ) {
         rstrcpy( outurl, tdsDirStruct->dirUrl, MAX_NAME_LEN );
         tmpPtr = strcasestr( outurl, THREDDS_DIR );
         /* start with /thredds/ */
-        if ( tmpPtr == NULL ) { return -1; }
+        if ( tmpPtr == NULL ) {
+            return -1;
+        }
         snprintf( tmpPtr, MAX_NAME_LEN, "%s", urlPath );
         return inx;
     }
     else {
         char myFile[MAX_NAME_LEN], mydir[MAX_NAME_LEN];
         status = splitPathByKey( tdsDirStruct->dirUrl, mydir, myFile, '/' );
-        if ( status < 0 ) { return status; }
+        if ( status < 0 ) {
+            return status;
+        }
         snprintf( outurl, MAX_NAME_LEN, "%s/%s", mydir, urlPath );
         return inx;
     }
@@ -678,7 +708,9 @@ allocUrlPath( tdsDirStruct_t *tdsDirStruct ) {
 
 int
 freeUrlPath( tdsDirStruct_t *tdsDirStruct, int inx ) {
-    if ( inx < 0 || inx >= NUM_URL_PATH ) { return URL_PATH_INX_OUT_OF_RANGE; }
+    if ( inx < 0 || inx >= NUM_URL_PATH ) {
+        return URL_PATH_INX_OUT_OF_RANGE;
+    }
 
     tdsDirStruct->urlPath[inx].inuse = False;
     return 0;
@@ -691,7 +723,9 @@ setTdsCurdir( tdsDirStruct_t *tdsDirStruct, char *name ) {
     char *tmpPtr;
     int level = 0;
 
-    if ( name == NULL || *name == '\0' ) { return 0; }
+    if ( name == NULL || *name == '\0' ) {
+        return 0;
+    }
 
     rstrcpy( myname, name, MAX_NAME_LEN );
 

@@ -650,7 +650,9 @@ svrRmSpecCollRecur( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
     }
 
     status = l3Rmdir( rsComm, dataObjInfo );
-    if ( status < 0 ) { savedStatus = status; }
+    if ( status < 0 ) {
+        savedStatus = status;
+    }
 
     return ( savedStatus );
 }

@@ -9,8 +9,8 @@
 // NOTE :: eventually move all knowledge of path management
 //      :: policy, validation etc here
 namespace irods {
-    /// =-=-=-=-=-=-=-
-    /// @brief interface to get virtual path separator
+/// =-=-=-=-=-=-=-
+/// @brief interface to get virtual path separator
     std::string get_virtual_path_separator() {
         const std::string PATH_SEPARATOR( "/" );
         return PATH_SEPARATOR;

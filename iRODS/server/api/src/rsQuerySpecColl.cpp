@@ -467,7 +467,9 @@ l3Opendir( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
     fileOpendirInp_t fileOpendirInp;
     int status;
 
-    if ( dataObjInfo == NULL ) { return ( SYS_INTERNAL_NULL_INPUT_ERR ); }
+    if ( dataObjInfo == NULL ) {
+        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+    }
 
     // =-=-=-=-=-=-=-
     // get the resc location of the hier leaf

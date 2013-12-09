@@ -26,9 +26,9 @@
 extern "C" double get_plugin_interface_version();
 
 namespace irods {
-    /// =-=-=-=-=-=-=-
-    /// @brief abstraction for post disconnect functor - plugins can bind
-    ///        functors, free functions or member functions as necessary
+/// =-=-=-=-=-=-=-
+/// @brief abstraction for post disconnect functor - plugins can bind
+///        functors, free functions or member functions as necessary
     typedef boost::function< irods::error( rcComm_t* ) > pdmo_type;
     typedef lookup_table<boost::any>                      plugin_property_map;
 
@@ -79,8 +79,12 @@ namespace irods {
 
         /// =-=-=-=-=-=-=-
         /// @brief accessor for context string
-        const std::string& context_string( )     const { return context_;           }
-        double             interface_version( ) const { return interface_version_; }
+        const std::string& context_string( )     const {
+            return context_;
+        }
+        double             interface_version( ) const {
+            return interface_version_;
+        }
 
     protected:
         std::string                       context_;           // context string for this plugin
@@ -97,8 +101,8 @@ namespace irods {
 
     }; // class plugin_base
 
-    // =-=-=-=-=-=-=-
-    // helpful typedef for sock comm interface & factory
+// =-=-=-=-=-=-=-
+// helpful typedef for sock comm interface & factory
     typedef boost::shared_ptr< plugin_base > plugin_ptr;
 
 }; // namespace irods

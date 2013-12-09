@@ -141,14 +141,18 @@ _rsPamAuthRequest( rsComm_t *rsComm, pamAuthRequestInp_t *pamAuthRequestInp,
     }
     else {
         /* the exec failed or something (PamAuthCheck not built perhaps) */
-        if ( status != 0 ) { status = PAM_AUTH_NOT_BUILT_INTO_SERVER; }
+        if ( status != 0 ) {
+            status = PAM_AUTH_NOT_BUILT_INTO_SERVER;
+        }
     }
 
     if ( status ) {
         return( status );
     }
     result->irodsPamPassword = ( char* )malloc( 100 );
-    if ( result->irodsPamPassword == 0 ) { return ( SYS_MALLOC_ERR ); }
+    if ( result->irodsPamPassword == 0 ) {
+        return ( SYS_MALLOC_ERR );
+    }
     status = chlUpdateIrodsPamPassword( rsComm,
                                         pamAuthRequestInp->pamUser,
                                         pamAuthRequestInp->timeToLive,

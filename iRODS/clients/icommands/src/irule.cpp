@@ -46,7 +46,9 @@ int extractVarNames( char **varNames, char *outBuf ) {
             *psrc = '\0';
             varNames[n++] = strdup( p );
             *psrc = '=';
-            while ( *psrc != '\0' && *psrc != '%' ) { psrc++; }
+            while ( *psrc != '\0' && *psrc != '%' ) {
+                psrc++;
+            }
             if ( *psrc == '\0' ) {
                 break;
             }
@@ -761,7 +763,9 @@ usage() {
     };
     int i;
     for ( i = 0;; i++ ) {
-        if ( strlen( msgs[i] ) == 0 ) { break; }
+        if ( strlen( msgs[i] ) == 0 ) {
+            break;
+        }
         printf( "%s\n", msgs[i] );
     }
     printReleaseInfo( "irule" );

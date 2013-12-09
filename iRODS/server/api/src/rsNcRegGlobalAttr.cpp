@@ -104,7 +104,9 @@ _rsNcRegGlobalAttr( rsComm_t *rsComm, ncRegGlobalAttrInp_t *ncRegGlobalAttrInp )
                     break;
                 }
             }
-            if ( amatch == False ) { continue; }
+            if ( amatch == False ) {
+                continue;
+            }
         }
         if ( ncInqOut->gatt[i].dataType == NC_CHAR ) {
             /* assume it is a string */

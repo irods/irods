@@ -369,7 +369,9 @@ int writeBytesBuf( msParam_t* where, msParam_t* inBuf, ruleExecInfo_t *rei ) {
 
     status = _writeString( writeId, writeStr, rei );
 
-    if ( writeStr != NULL ) { free( writeStr ); }
+    if ( writeStr != NULL ) {
+        free( writeStr );
+    }
 
     return ( status );
 }

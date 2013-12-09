@@ -8,15 +8,15 @@
 #include "irods_plugin_context.hpp"
 
 namespace irods {
-    /// =-=-=-=-=-=-=-
-    /// @brief forward decl of auth
+/// =-=-=-=-=-=-=-
+/// @brief forward decl of auth
     class auth;
 
-    // =-=-=-=-=-=-=-
-    // @brief class which holds default values passed to auth plugin
-    //        operations.  this allows for easy extension in the future
-    //        without the need to rewrite plugin interfaces as well as
-    //        pass along references rather than pointers
+// =-=-=-=-=-=-=-
+// @brief class which holds default values passed to auth plugin
+//        operations.  this allows for easy extension in the future
+//        without the need to rewrite plugin interfaces as well as
+//        pass along references rather than pointers
     class auth_plugin_context : public plugin_context {
     public:
         // =-=-=-=-=-=-=-

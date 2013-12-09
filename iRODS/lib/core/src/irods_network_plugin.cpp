@@ -20,8 +20,8 @@
 
 namespace irods {
 
-    // =-=-=-=-=-=-=-
-    // public - ctor
+// =-=-=-=-=-=-=-
+// public - ctor
     network::network(
         const std::string& _inst,
         const std::string& _ctx ) :
@@ -32,14 +32,14 @@ namespace irods {
         stop_operation_( irods::network::default_stop_operation ) {
     } // ctor
 
-    // =-=-=-=-=-=-=-
-    // public - dtor
+// =-=-=-=-=-=-=-
+// public - dtor
     network::~network( ) {
 
     } // dtor
 
-    // =-=-=-=-=-=-=-
-    // public - cctor
+// =-=-=-=-=-=-=-
+// public - cctor
     network::network(
         const network& _rhs ) :
         plugin_base( _rhs ) {
@@ -53,8 +53,8 @@ namespace irods {
         properties_ = _rhs.properties_; // NOTE:: memory leak repaving old containers?
     } // cctor
 
-    // =-=-=-=-=-=-=-
-    // public - assignment
+// =-=-=-=-=-=-=-
+// public - assignment
     network& network::operator=(
         const network& _rhs ) {
         if ( &_rhs == this ) {
@@ -77,9 +77,9 @@ namespace irods {
 
     } // operator=
 
-    // =-=-=-=-=-=-=-
-    // public - function which pulls all of the symbols out of the shared object and
-    //          associates them with their keys in the operations table
+// =-=-=-=-=-=-=-
+// public - function which pulls all of the symbols out of the shared object and
+//          associates them with their keys in the operations table
     error network::delay_load(
         void* _handle ) {
         // =-=-=-=-=-=-=-
@@ -194,25 +194,25 @@ namespace irods {
 
     } // delay_load
 
-    // =-=-=-=-=-=-=-
-    // public - set a name for the developer provided start op
+// =-=-=-=-=-=-=-
+// public - set a name for the developer provided start op
     void network::set_start_operation(
         const std::string& _op ) {
         start_opr_name_ = _op;
     } // network::set_start_operation
 
-    // =-=-=-=-=-=-=-
-    // public - set a name for the developer provided stop op
+// =-=-=-=-=-=-=-
+// public - set a name for the developer provided stop op
     void network::set_stop_operation(
         const std::string& _op ) {
         stop_opr_name_ = _op;
     } // network::set_stop_operation
 
-    // END network
-    // =-=-=-=-=-=-=-
+// END network
+// =-=-=-=-=-=-=-
 
-    // =-=-=-=-=-=-=-
-    // function to load and return an initialized network plugin
+// =-=-=-=-=-=-=-
+// function to load and return an initialized network plugin
     error load_network_plugin(
         network_ptr&       _plugin,
         const std::string& _plugin_name,

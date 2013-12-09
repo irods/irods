@@ -17,8 +17,8 @@
 #include <boost/shared_ptr.hpp>
 
 namespace irods {
-    // =-=-=-=-=-=-=-
-    // base class for all object types
+// =-=-=-=-=-=-=-
+// base class for all object types
     class first_class_object {
     public:
         // =-=-=-=-=-=-=-
@@ -41,8 +41,8 @@ namespace irods {
 
     }; // class first_class_object
 
-    /// =-=-=-=-=-=-=-
-    /// @brief shared pointer to first_class_object
+/// =-=-=-=-=-=-=-
+/// @brief shared pointer to first_class_object
     typedef boost::shared_ptr< first_class_object > first_class_object_ptr;
 
 }; // namespace irods

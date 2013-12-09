@@ -176,7 +176,9 @@ rsDataObjRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         rodsLog( LOG_NOTICE, "%s - Failed to replicate data object.", __FUNCTION__ );
     }
 
-    if ( lockFd > 0 ) { rsDataObjUnlock( rsComm, dataObjInp, lockFd ); } // JMC - backport 4609
+    if ( lockFd > 0 ) {
+        rsDataObjUnlock( rsComm, dataObjInp, lockFd );    // JMC - backport 4609
+    }
 
     // =-=-=-=-=-=-=-
     // specifically ignore this error as it should not cause
@@ -389,7 +391,9 @@ _rsDataObjRepl(
 
 
     status = applyPreprocRuleForOpen( rsComm, dataObjInp, &dataObjInfoHead );
-    if ( status < 0 ) { return status; }
+    if ( status < 0 ) {
+        return status;
+    }
 
     /* If destDataObjInfo is not NULL, we will overwrite it. Otherwise
      * replicate to myRescGrpInfo */
@@ -426,7 +430,9 @@ _rsDataObjRepl(
         status = _rsDataObjReplNewCopy( rsComm, dataObjInp, dataObjInfoHead,
                                         myRescGrpInfo, transStat, oldDataObjInfoHead,
                                         outDataObjInfo );
-        if ( status < 0 ) { savedStatus = status; }
+        if ( status < 0 ) {
+            savedStatus = status;
+        }
     }
 
     freeAllDataObjInfo( dataObjInfoHead );
@@ -797,7 +803,10 @@ _rsDataObjReplNewCopy(
                 cacheDataObjInfo = ( dataObjInfo_t* )calloc( 1, sizeof( dataObjInfo_t ) );
                 status = stageDataFromCompToCache( rsComm, inpSrcDataObjInfo,
                                                    cacheDataObjInfo );
-                if ( status < 0 ) { free( cacheDataObjInfo ); return status; } // JMC cppcheck - leak
+                if ( status < 0 ) {
+                    free( cacheDataObjInfo );    // JMC cppcheck - leak
+                    return status;
+                }
                 /* srcRescClass is now CACHE_CL */
                 srcRescClass = getRescClass( cacheDataObjInfo->rescInfo );
             }
@@ -825,7 +834,9 @@ _rsDataObjReplNewCopy(
 
         destL1descInx = allocL1desc();
 
-        if ( destL1descInx < 0 ) { return destL1descInx; }
+        if ( destL1descInx < 0 ) {
+            return destL1descInx;
+        }
 
 
         // =-=-=-=-=-=-=-=-
@@ -995,7 +1006,9 @@ _rsDataObjReplNewCopy(
         rstrcpy( srcDataObjInfo->rescHier, inpSrcDataObjInfo->rescHier, MAX_NAME_LEN );
 
         srcL1descInx = allocL1desc();
-        if ( srcL1descInx < 0 ) { return srcL1descInx; }
+        if ( srcL1descInx < 0 ) {
+            return srcL1descInx;
+        }
         fillL1desc( srcL1descInx, &myDataObjInp, srcDataObjInfo, srcDataObjInfo->replStatus, srcDataObjInfo->dataSize );
         l1DataObjInp = L1desc[srcL1descInx].dataObjInp;
         l1DataObjInp->numThreads = dataObjInp->numThreads;
@@ -1160,7 +1173,9 @@ _rsDataObjReplNewCopy(
             /* update numThreads since it could be chnages by remote server */
             L1desc[l1descInx].dataObjInp->numThreads = portalOprOut->numThreads;
         }
-        if ( portalOprOut != NULL ) { free( portalOprOut ); }
+        if ( portalOprOut != NULL ) {
+            free( portalOprOut );
+        }
         clearKeyVal( &dataOprInp->condInput );
 
         return ( status );
@@ -1480,7 +1495,9 @@ _rsDataObjReplNewCopy(
             char tmpStr[NAME_LEN];
 
 #if 0 // JMC - legacy resource
-            if ( getRescClass( compObjInfo->rescInfo ) != COMPOUND_CL ) { return 0; }
+            if ( getRescClass( compObjInfo->rescInfo ) != COMPOUND_CL ) {
+                return 0;
+            }
 #endif // JMC - legacy resource
 
             status = getCacheRescInGrp( rsComm, compObjInfo->rescGroupName, compObjInfo->rescInfo, &cacheResc );
@@ -1605,13 +1622,17 @@ _rsDataObjReplNewCopy(
             dataObjInfo_t *cacheObjInfo;
 
 #if 0 // JMC - legacy resource
-            if ( getRescClass( dataObjInfoHead->rescInfo ) != BUNDLE_CL ) { return 0; }
+            if ( getRescClass( dataObjInfoHead->rescInfo ) != BUNDLE_CL ) {
+                return 0;
+            }
 #endif // JMC - legacy resource
 
             status = unbunAndStageBunfileObj( rsComm, dataObjInfoHead->filePath,
                                               &cacheResc );
 
-            if ( status < 0 ) { return status; }
+            if ( status < 0 ) {
+                return status;
+            }
 
             /* query the bundle dataObj */
             bzero( &dataObjInp, sizeof( dataObjInp ) );
@@ -1671,7 +1692,9 @@ _rsDataObjReplNewCopy(
             status = sortObjInfoForOpen( rsComm, bunfileObjInfoHead, condInput, 0 );
 
             addKeyVal( &dataObjInp.condInput, RESC_HIER_STR_KW, ( *bunfileObjInfoHead )->rescHier );
-            if ( status < 0 ) { return status; }
+            if ( status < 0 ) {
+                return status;
+            }
 
 #if 0 // JMC - legacy resource
             if ( getRescClass( ( *bunfileObjInfoHead )->rescInfo ) != CACHE_CL ) {

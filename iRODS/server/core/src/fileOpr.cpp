@@ -321,7 +321,9 @@ chkFilePathPerm( rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
     // =-=-=-=-=-=-=-
 
     status = isValidFilePath( fileOpenInp->fileName ); // JMC - backport 4766
-    if ( status < 0 ) { return status; } // JMC - backport 4766
+    if ( status < 0 ) {
+        return status;    // JMC - backport 4766
+    }
 
 
     if ( rodsServerHost == NULL ) {
@@ -478,7 +480,9 @@ int matchCliVaultPath(
 
     tmpPath = filePath + len + 1;    /* skip the vault path */
 
-    if ( strncmp( tmpPath, "home/", 5 ) != 0 ) { return -1; }
+    if ( strncmp( tmpPath, "home/", 5 ) != 0 ) {
+        return -1;
+    }
     tmpPath += 5;
     if ( strncmp( tmpPath, rsComm->clientUser.userName, nameLen ) == 0 &&
             ( tmpPath[nameLen] == '/' || tmpPath[len] == '\0' ) ) {
@@ -522,7 +526,9 @@ filePathTypeInResc(
     rstrcpy( fileStatInp.addr.hostAddr,  location.c_str(), NAME_LEN );
     status = rsFileStat( rsComm, &fileStatInp, &myStat );
 
-    if ( status < 0 || NULL == myStat ) { return status; } // JMC cppcheck - nullptr
+    if ( status < 0 || NULL == myStat ) {
+        return status;    // JMC cppcheck - nullptr
+    }
     if ( myStat->st_mode & S_IFREG ) {
         free( myStat );
         return LOCAL_FILE_T;

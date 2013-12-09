@@ -114,11 +114,15 @@ main( int argc, char **argv ) {
         }
     }
     if ( myRodsArgs.force != True ) {
-        if ( !echoFlag ) { printf( "\n" ); }
+        if ( !echoFlag ) {
+            printf( "\n" );
+        }
         printf( "Reenter your new iRODS password:" );
         fgets( newPw2, MAX_PASSWORD_LEN, stdin );
         if ( strncmp( newPw, newPw2, MAX_PASSWORD_LEN ) != 0 ) {
-            if ( !echoFlag ) { printf( "\n" ); }
+            if ( !echoFlag ) {
+                printf( "\n" );
+            }
             printf( "Entered passwords do not match\n" );
             if ( doStty ) {
                 system( "/bin/stty echo" );

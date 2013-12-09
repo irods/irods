@@ -128,8 +128,12 @@ char *findLineCont( char *expr ) {
     char *e = expr + strlen( expr );
     while ( e != expr ) {
         e--;
-        if ( *e == ' ' || *e == '\t' || *e == '\r' || *e == '\n' ) { continue; }
-        if ( *e == '\\' || *e == ',' || *e == ';' || *e == '|' || *e == '#' ) { return e; }
+        if ( *e == ' ' || *e == '\t' || *e == '\r' || *e == '\n' ) {
+            continue;
+        }
+        if ( *e == '\\' || *e == ',' || *e == ';' || *e == '|' || *e == '#' ) {
+            return e;
+        }
         break;
     }
     return NULL;
@@ -877,7 +881,8 @@ if ( strtoken.type != TK_STRING ) {
 }
 else {
     BUILD_NODE( TK_STRING, strtoken.text, &pos, 0, 0 );
-} TTEXT( "," );
+}
+TTEXT( "," );
 nextActionArgumentStringBackwardCompatible( e, &strtoken );
 if ( strtoken.type != TK_STRING ) {
     BUILD_NODE( N_ERROR, "reached the end of stream while parsing an action argument", FPOS, 0, 0 );
@@ -1073,7 +1078,9 @@ while ( strToken->vars[i] != -1 ) {
     }
     int ve;
     ve = vs + 2;
-    while ( isalnum( str[ve] ) || str[ve] == '_' ) { ve++; }
+    while ( isalnum( str[ve] ) || str[ve] == '_' ) {
+        ve++;
+    }
     end[noi] = end[noi - 1];
     end[noi - 1] = vs;
     st[noi] = ve;
@@ -1669,7 +1676,9 @@ int isUnaryOp( Token *token ) {
     int i;
     for ( i = 0; i < num_ops; i++ ) {
         if ( strcmp( token->text, new_ops[i].string ) == 0 ) {
-            if ( new_ops[i].arity == 1 ) { return 1; }
+            if ( new_ops[i].arity == 1 ) {
+                return 1;
+            }
         }
     }
     return 0;
@@ -1678,7 +1687,9 @@ int isBinaryOp( Token *token ) {
     int i;
     for ( i = 0; i < num_ops; i++ ) {
         if ( strcmp( token->text, new_ops[i].string ) == 0 ) {
-            if ( new_ops[i].arity == 2 ) { return 1; }
+            if ( new_ops[i].arity == 2 ) {
+                return 1;
+            }
         }
     }
     return 0;
@@ -2666,7 +2677,8 @@ char *functionParameters( char *e, char *value ) {
         case 4:
             mode -= 2;
         }
-        e++; value ++;
+        e++;
+        value ++;
     }
     *value = 0;
     return e;
@@ -2696,7 +2708,8 @@ char *nextStringString( char *e, char *value ) {
         case 3:
             mode -= 2;
         }
-        e++; value ++;
+        e++;
+        value ++;
     }
     return e0;
 }
@@ -2725,7 +2738,8 @@ char *nextString2String( char *e, char *value ) {
         case 3:
             mode -= 2;
         }
-        e++; value ++;
+        e++;
+        value ++;
     }
     return e0;
 }
@@ -2773,7 +2787,8 @@ char * nextRuleSection( char* buf, char* value ) {
         case 4:
             mode -= 2;
         }
-        e++; value ++;
+        e++;
+        value ++;
     }
     *value = 0;
     return e;
@@ -3200,7 +3215,8 @@ int parseRuleSet( Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc,
             RuleType rk;
             /*                if(strcmp(node->text, "UNPARSED") == 0) {
                             	pushRule(ruleSet, newRuleDesc(RK_UNPARSED, nodes[0], r));
-                            } else */ if ( strcmp( node->text, "INDUCT" ) == 0 ) {
+                            } else */
+            if ( strcmp( node->text, "INDUCT" ) == 0 ) {
                 int k;
                 pushRule( ruleSet, newRuleDesc( RK_DATA, nodes[0], 0, r ) );
                 for ( k = 1; k < n; k++ ) {

@@ -77,16 +77,36 @@ int
 convertLogLevel( char *inputStr ) {
     int i;
     i = atoi( inputStr );
-    if ( i > 0 && i <= LOG_SQL ) { return( i ); }
-    if ( strcmp( inputStr, "LOG_SQL" ) == 0 ) { return( LOG_SQL ); }
-    if ( strcmp( inputStr, "LOG_SYS_FATAL" ) == 0 ) { return( LOG_SYS_FATAL ); }
-    if ( strcmp( inputStr, "LOG_SYS_WARNING" ) == 0 ) { return( LOG_SYS_WARNING ); }
-    if ( strcmp( inputStr, "LOG_ERROR" ) == 0 ) { return( LOG_ERROR ); }
-    if ( strcmp( inputStr, "LOG_NOTICE" ) == 0 ) { return( LOG_NOTICE ); }
-    if ( strcmp( inputStr, "LOG_DEBUG" ) == 0 ) { return( LOG_DEBUG ); }
-    if ( strcmp( inputStr, "LOG_DEBUG3" ) == 0 ) { return( LOG_DEBUG3 ); }
-    if ( strcmp( inputStr, "LOG_DEBUG2" ) == 0 ) { return( LOG_DEBUG2 ); }
-    if ( strcmp( inputStr, "LOG_DEBUG1" ) == 0 ) { return( LOG_DEBUG1 ); }
+    if ( i > 0 && i <= LOG_SQL ) {
+        return( i );
+    }
+    if ( strcmp( inputStr, "LOG_SQL" ) == 0 ) {
+        return( LOG_SQL );
+    }
+    if ( strcmp( inputStr, "LOG_SYS_FATAL" ) == 0 ) {
+        return( LOG_SYS_FATAL );
+    }
+    if ( strcmp( inputStr, "LOG_SYS_WARNING" ) == 0 ) {
+        return( LOG_SYS_WARNING );
+    }
+    if ( strcmp( inputStr, "LOG_ERROR" ) == 0 ) {
+        return( LOG_ERROR );
+    }
+    if ( strcmp( inputStr, "LOG_NOTICE" ) == 0 ) {
+        return( LOG_NOTICE );
+    }
+    if ( strcmp( inputStr, "LOG_DEBUG" ) == 0 ) {
+        return( LOG_DEBUG );
+    }
+    if ( strcmp( inputStr, "LOG_DEBUG3" ) == 0 ) {
+        return( LOG_DEBUG3 );
+    }
+    if ( strcmp( inputStr, "LOG_DEBUG2" ) == 0 ) {
+        return( LOG_DEBUG2 );
+    }
+    if ( strcmp( inputStr, "LOG_DEBUG1" ) == 0 ) {
+        return( LOG_DEBUG1 );
+    }
     return( 0 );
 }
 
@@ -640,7 +660,9 @@ char *findNextTokenAndTerm( char *inPtr ) {
                         return( savePtr );
                     }
                 }
-                if ( *myPtr == '\n' ) { *myPtr = '\0'; }
+                if ( *myPtr == '\n' ) {
+                    *myPtr = '\0';
+                }
                 if ( *myPtr == '\0' ) {
                     /* terminated without a corresponding ", so backup and
                        put the starting one back */
@@ -663,7 +685,9 @@ char *findNextTokenAndTerm( char *inPtr ) {
                         return( savePtr );
                     }
                 }
-                if ( *myPtr == '\n' ) { *myPtr = '\0'; }
+                if ( *myPtr == '\n' ) {
+                    *myPtr = '\0';
+                }
                 if ( *myPtr == '\0' ) {
                     /* terminated without a corresponding ", so backup and
                        put the starting one back */
@@ -674,10 +698,16 @@ char *findNextTokenAndTerm( char *inPtr ) {
                 myPtr++;
             }
         }
-        if ( whiteSpace ) { savePtr = myPtr; }
+        if ( whiteSpace ) {
+            savePtr = myPtr;
+        }
         whiteSpace = 0;
-        if ( *myPtr == '\n' ) { *myPtr = '\0'; }
-        if ( *myPtr == '\r' ) { *myPtr = '\0'; }
+        if ( *myPtr == '\n' ) {
+            *myPtr = '\0';
+        }
+        if ( *myPtr == '\r' ) {
+            *myPtr = '\0';
+        }
         if ( *myPtr == '\0' ) {
             return( savePtr );
         }

@@ -41,7 +41,9 @@ _irodsGetattr( iFuseConn_t *iFuseConn, const char *path, struct stat *stbuf,
     rodsLog( LOG_DEBUG, "_irodsGetattr: %s", path );
 
 #ifdef CACHE_FUSE_PATH
-    if ( outPathCache != NULL ) { *outPathCache = NULL; }
+    if ( outPathCache != NULL ) {
+        *outPathCache = NULL;
+    }
     if ( matchPathInPathCache( ( char * ) path, NonExistPathArray,
                                &nonExistPathCache ) == 1 ) {
         rodsLog( LOG_DEBUG, "irodsGetattr: a match for non existing path %s",
@@ -58,7 +60,9 @@ _irodsGetattr( iFuseConn_t *iFuseConn, const char *path, struct stat *stbuf,
         }
         else {
             *stbuf = tmpPathCache->stbuf;
-            if ( outPathCache != NULL ) { *outPathCache = tmpPathCache; }
+            if ( outPathCache != NULL ) {
+                *outPathCache = tmpPathCache;
+            }
             return ( 0 );
         }
     }
@@ -107,7 +111,9 @@ _irodsGetattr( iFuseConn_t *iFuseConn, const char *path, struct stat *stbuf,
 #ifdef CACHE_FUSE_PATH
         addPathToCache( ( char * ) path, NonExistPathArray, stbuf, NULL );
 #endif
-        if ( rodsObjStatOut != NULL ) { freeRodsObjStat( rodsObjStatOut ); }
+        if ( rodsObjStatOut != NULL ) {
+            freeRodsObjStat( rodsObjStatOut );
+        }
         return -ENOENT;
     }
     else {

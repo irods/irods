@@ -114,10 +114,14 @@ msiRdaToStdout( msParam_t *inpRdaName, msParam_t *inpSQL,
     }
 
     status = rdaCheckAccess( rdaName, rsComm );
-    if ( status ) { return( status ); }
+    if ( status ) {
+        return( status );
+    }
 
     status = rdaOpen( rdaName );
-    if ( status ) { return( status ); }
+    if ( status ) {
+        return( status );
+    }
 
     if ( p1 != NULL ) {
         parms[nParm++] = p1;
@@ -257,10 +261,14 @@ msiRdaToDataObj( msParam_t *inpRdaName, msParam_t *inpSQL,
     }
 
     status = rdaCheckAccess( rdaName, rsComm );
-    if ( status ) { return( status ); }
+    if ( status ) {
+        return( status );
+    }
 
     status = rdaOpen( rdaName );
-    if ( status ) { return( status ); }
+    if ( status ) {
+        return( status );
+    }
 
     if ( p1 != NULL ) {
         parms[nParm++] = p1;
@@ -404,10 +412,14 @@ msiRdaNoResults( msParam_t *inpRdaName, msParam_t *inpSQL,
     }
 
     status = rdaCheckAccess( rdaName, rsComm );
-    if ( status ) { return( status ); }
+    if ( status ) {
+        return( status );
+    }
 
     status = rdaOpen( rdaName );
-    if ( status ) { return( status ); }
+    if ( status ) {
+        return( status );
+    }
 
     if ( p1 != NULL ) {
         parms[nParm++] = p1;

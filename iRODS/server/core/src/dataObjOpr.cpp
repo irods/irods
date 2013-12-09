@@ -892,9 +892,8 @@ requeDataObjInfoByResc( dataObjInfo_t **dataObjInfoHead,
     prevDataObjInfo = NULL;
     while ( tmpDataObjInfo != NULL ) {
         if ( tmpDataObjInfo->rescInfo != NULL ) {
-            if ( strcmp( preferredResc, tmpDataObjInfo->rescInfo->rescName )
-                    == 0 || strcmp( preferredResc, tmpDataObjInfo->rescGroupName )
-                    == 0 ) {
+            if ( strcmp( preferredResc, tmpDataObjInfo->rescInfo->rescName ) == 0 ||
+                    strcmp( preferredResc, tmpDataObjInfo->rescGroupName ) == 0 ) {
                 if ( writeFlag > 0 || tmpDataObjInfo->replStatus > 0 ) {
                     if ( prevDataObjInfo != NULL ) {
                         prevDataObjInfo->next = tmpDataObjInfo->next;
@@ -1004,7 +1003,9 @@ matchAndTrimRescGrp( dataObjInfo_t **dataObjInfoHead,
     int matchFlag;
     char rescGroupName[NAME_LEN];
 
-    if ( trimmedDataObjInfo != NULL ) { *trimmedDataObjInfo = NULL; }
+    if ( trimmedDataObjInfo != NULL ) {
+        *trimmedDataObjInfo = NULL;
+    }
 
     if ( *rescGrpInfoHead != NULL ) {
         rstrcpy( rescGroupName, ( *rescGrpInfoHead )->rescGroupName, NAME_LEN );
@@ -2002,7 +2003,9 @@ getDataObjInfoIncSpecColl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                 *dataObjInfo = NULL;
             }
         }
-        if ( status2 >= 0 ) { status = 0; }
+        if ( status2 >= 0 ) {
+            status = 0;
+        }
     }
     if ( status >= 0 ) {
         if ( ( *dataObjInfo )->specColl != NULL ) {
@@ -2029,7 +2032,9 @@ int regNewObjSize( rsComm_t *rsComm, char *objPath, int replNum,
     char tmpStr[MAX_NAME_LEN];
     int status;
 
-    if ( objPath == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( objPath == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
 
     memset( &dataObjInfo, 0, sizeof( dataObjInfo ) );
     memset( &regParam, 0, sizeof( regParam ) );
@@ -2163,7 +2168,9 @@ getCacheDataInfoForRepl( rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfoHead,
 
                         srcDataObjInfo = destDataObjInfoHead;
                         while ( srcDataObjInfo != NULL ) {
-                            if ( srcDataObjInfo == compDataObjInfo ) { break; }
+                            if ( srcDataObjInfo == compDataObjInfo ) {
+                                break;
+                            }
                             // every resource is a cache now, and there are no resource groups
                             // JMC - legacy resource if (getRescClass (srcDataObjInfo->rescInfo) == CACHE_CL) {
                             tmpRescGrpInfo = rescGrpInfo;
@@ -2206,7 +2213,9 @@ getCacheDataInfoForRepl( rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfoHead,
 
                         srcDataObjInfo = destDataObjInfoHead;
                         while ( srcDataObjInfo != NULL ) {
-                            if ( srcDataObjInfo == compDataObjInfo ) { break; }
+                            if ( srcDataObjInfo == compDataObjInfo ) {
+                                break;
+                            }
                             if ( strcmp( srcDataObjInfo->rescGroupName, rescGroupName ) == 0 ) {
                                 /* same group */
                                 // JMC - legacy resource if (getRescClass (srcDataObjInfo->rescInfo) == CACHE_CL) {
@@ -2222,7 +2231,9 @@ getCacheDataInfoForRepl( rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfoHead,
                     int // JMC - backport 4547
                     getDataObjByClass( dataObjInfo_t * dataObjInfoHead, int rescClass,
                                        dataObjInfo_t **outDataObjInfo ) {
-                        if ( outDataObjInfo == NULL ) { return USER__NULL_INPUT_ERR; }
+                        if ( outDataObjInfo == NULL ) {
+                            return USER__NULL_INPUT_ERR;
+                        }
                         *outDataObjInfo = NULL;
                         while ( tmpDataObjInfo != NULL ) {
 

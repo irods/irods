@@ -10,7 +10,7 @@
 
 namespace irods {
 
-    /// @brief Type of an operation for start / stop
+/// @brief Type of an operation for start / stop
     typedef error( *auth_maintenance_operation )( plugin_property_map& );
 
     /**
@@ -56,14 +56,22 @@ namespace irods {
         error set_stop_operation( const std::string& _name );
 
         /// @brief interface to call start / stop functions
-        error start_operation( void ) { return ( *start_operation_ )( properties_ ); }
-        error stop_operation( void ) { return ( *stop_operation_ )( properties_ ); }
+        error start_operation( void ) {
+            return ( *start_operation_ )( properties_ );
+        }
+        error stop_operation( void ) {
+            return ( *stop_operation_ )( properties_ );
+        }
 
         /// @brief default start operation
-        static error default_start_operation( plugin_property_map& _map ) {return SUCCESS();}
+        static error default_start_operation( plugin_property_map& _map ) {
+            return SUCCESS();
+        }
 
         /// @brief default stop operation
-        static error default_stop_operation( plugin_property_map& _map ) {return SUCCESS();}
+        static error default_stop_operation( plugin_property_map& _map ) {
+            return SUCCESS();
+        }
 
         // =-=-=-=-=-=-=-
         /// @brief delegate the call to the operation in question to the operation wrapper, with 0 param
@@ -223,7 +231,7 @@ namespace irods {
 
     };
 
-    /// @brief Given the name of an auth , try to load the shared object
+/// @brief Given the name of an auth , try to load the shared object
     error load_auth_plugin(
         auth_ptr&,              // plugin
         const std::string&,     // plugin name

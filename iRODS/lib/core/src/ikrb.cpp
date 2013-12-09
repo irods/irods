@@ -505,8 +505,12 @@ int ikrbSetupCreds( rcComm_t *Comm, rsComm_t *rsComm, char *specifiedName,
     ( void ) gettimeofday( &startTimeFunc, ( struct timezone * ) 0 );
 #endif
 
-    if ( Comm != NULL ) { ikrb_rErrorPtr = Comm->rError; }
-    if ( rsComm != NULL ) { ikrb_rErrorPtr = &rsComm->rError; }
+    if ( Comm != NULL ) {
+        ikrb_rErrorPtr = Comm->rError;
+    }
+    if ( rsComm != NULL ) {
+        ikrb_rErrorPtr = &rsComm->rError;
+    }
 
     if ( specifiedName != NULL ) {
         name_buf.value = specifiedName;

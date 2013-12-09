@@ -196,13 +196,17 @@ applyAllRules( char *inAction, msParamArray_t *inMsParamArray,
 
     if ( strstr( inAction, "##" ) != NULL ) { /* seems to be multiple actions */
         i = execMyRuleWithSaveFlag( inAction, inMsParamArray, rei, reiSaveFlag );
-        if ( GlobalAllRuleExecFlag != 9 ) { GlobalAllRuleExecFlag = 0; }
+        if ( GlobalAllRuleExecFlag != 9 ) {
+            GlobalAllRuleExecFlag = 0;
+        }
         return( i );
     }
 
     i = parseAction( inAction, action, args, &argc );
     if ( i != 0 ) {
-        if ( GlobalAllRuleExecFlag != 9 ) { GlobalAllRuleExecFlag = 0; }
+        if ( GlobalAllRuleExecFlag != 9 ) {
+            GlobalAllRuleExecFlag = 0;
+        }
         return( i );
     }
 
@@ -215,7 +219,9 @@ applyAllRules( char *inAction, msParamArray_t *inMsParamArray,
         i = executeMicroServiceNew( action, inMsParamArray, rei );
 #endif
         i = executeMicroServiceNew( inAction, inMsParamArray, rei );
-        if ( GlobalAllRuleExecFlag != 9 ) { GlobalAllRuleExecFlag = 0; }
+        if ( GlobalAllRuleExecFlag != 9 ) {
+            GlobalAllRuleExecFlag = 0;
+        }
         return( i );
     }
 
@@ -228,7 +234,9 @@ applyAllRules( char *inAction, msParamArray_t *inMsParamArray,
         if ( outMsParamArray == NULL ) {
             i  = initializeMsParamNew( ruleHead, args, argc, inMsParamArray, rei );
             if ( i != 0 ) {
-                if ( GlobalAllRuleExecFlag != 9 ) { GlobalAllRuleExecFlag = 0; }
+                if ( GlobalAllRuleExecFlag != 9 ) {
+                    GlobalAllRuleExecFlag = 0;
+                }
                 return( i );
             }
             outMsParamArray = rei->msParamArray;
@@ -291,7 +299,9 @@ applyAllRules( char *inAction, msParamArray_t *inMsParamArray,
                     freeRuleExecInfoStruct( saveRei, 0 );
                 }
                 finalizeMsParamNew( inAction, ruleHead, inMsParamArray,  outMsParamArray, rei, status );
-                if ( GlobalAllRuleExecFlag != 9 ) { GlobalAllRuleExecFlag = 0; }
+                if ( GlobalAllRuleExecFlag != 9 ) {
+                    GlobalAllRuleExecFlag = 0;
+                }
                 return( status );
             }
             else if ( status == CUT_ACTION_ON_SUCCESS_PROCESSED_ERR ) {
@@ -299,7 +309,9 @@ applyAllRules( char *inAction, msParamArray_t *inMsParamArray,
                     freeRuleExecInfoStruct( saveRei, 0 );
                 }
                 finalizeMsParamNew( inAction, ruleHead, inMsParamArray,  outMsParamArray, rei, status );
-                if ( GlobalAllRuleExecFlag != 9 ) { GlobalAllRuleExecFlag = 0; }
+                if ( GlobalAllRuleExecFlag != 9 ) {
+                    GlobalAllRuleExecFlag = 0;
+                }
                 return( 0 );
             }
             else if ( status == RETRY_WITHOUT_RECOVERY_ERR ) {
@@ -325,7 +337,9 @@ applyAllRules( char *inAction, msParamArray_t *inMsParamArray,
         }
     }
     if ( i == NO_MORE_RULES_ERR ) {
-        if ( GlobalAllRuleExecFlag != 9 ) { GlobalAllRuleExecFlag = 0; }
+        if ( GlobalAllRuleExecFlag != 9 ) {
+            GlobalAllRuleExecFlag = 0;
+        }
         if ( success == 1 ) {
             finalizeMsParamNew( inAction, ruleHead, inMsParamArray, outMsParamArray, rei, status );
             return( 0 );
@@ -341,7 +355,9 @@ applyAllRules( char *inAction, msParamArray_t *inMsParamArray,
     if ( status < 0 ) {
         rodsLog( LOG_NOTICE, "applyRule Failed for action 4: %s with status %i", action, status );
     }
-    if ( GlobalAllRuleExecFlag != 9 ) { GlobalAllRuleExecFlag = 0; }
+    if ( GlobalAllRuleExecFlag != 9 ) {
+        GlobalAllRuleExecFlag = 0;
+    }
     if ( success == 1 ) {
         return( 0 );
     }
@@ -1206,7 +1222,9 @@ readDVarStructFromFile( char *dvarBaseName, rulevardef_t *inRuleVarDef ) {
     }
     buf[MAX_DVAR_LENGTH - 1] = '\0';
     while ( fgets( buf, MAX_DVAR_LENGTH - 1, file ) != NULL ) {
-        if ( buf[strlen( buf ) - 1] == '\n' ) { buf[strlen( buf ) - 1] = '\0'; }
+        if ( buf[strlen( buf ) - 1] == '\n' ) {
+            buf[strlen( buf ) - 1] = '\0';
+        }
         if ( buf[0] == '#' || strlen( buf ) < 4 ) {
             continue;
         }
@@ -1260,7 +1278,9 @@ readFuncMapStructFromFile( char *fmapBaseName, rulefmapdef_t* inRuleFuncMapDef )
     }
     buf[MAX_FMAP_LENGTH - 1] = '\0';
     while ( fgets( buf, MAX_FMAP_LENGTH - 1, file ) != NULL ) {
-        if ( buf[strlen( buf ) - 1] == '\n' ) { buf[strlen( buf ) - 1] = '\0'; }
+        if ( buf[strlen( buf ) - 1] == '\n' ) {
+            buf[strlen( buf ) - 1] = '\0';
+        }
         if ( buf[0] == '#' || strlen( buf ) < 4 ) {
             continue;
         }
@@ -1318,7 +1338,9 @@ readMsrvcStructFromFile( char *msrvcFileName, msrvcStruct_t* inMsrvcStruct ) {
     }
     buf[MAX_RULE_LENGTH - 1] = '\0';
     while ( fgets( buf, MAX_RULE_LENGTH - 1, file ) != NULL ) {
-        if ( buf[strlen( buf ) - 1] == '\n' ) { buf[strlen( buf ) - 1] = '\0'; }
+        if ( buf[strlen( buf ) - 1] == '\n' ) {
+            buf[strlen( buf ) - 1] = '\0';
+        }
         if ( buf[0] == '#' || strlen( buf ) < 4 ) {
             continue;
         }

@@ -64,7 +64,9 @@ main( int argc, char **argv ) {
 
     flag = setQueryFlag( &rodsArgs );
 
-    if ( rodsArgs.all == True ) { nativeAPI = 1; }
+    if ( rodsArgs.all == True ) {
+        nativeAPI = 1;
+    }
 
     if ( nativeAPI == 1 ) {
         status = printCollectionNat( conn, argv[optind], flag );

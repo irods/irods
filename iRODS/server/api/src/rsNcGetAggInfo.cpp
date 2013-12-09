@@ -111,7 +111,9 @@ rsNcGetAggInfo( rsComm_t *rsComm, ncOpenInp_t *ncOpenInp,
         status = rsDataObjPut( rsComm, &dataObjInp, packedBBuf, &portalOprOut );
         clearBBuf( packedBBuf );
         clearKeyVal( &dataObjInp.condInput );
-        if ( portalOprOut != NULL ) { free( portalOprOut ); }
+        if ( portalOprOut != NULL ) {
+            free( portalOprOut );
+        }
         if ( status < 0 ) {
             rodsLogError( LOG_ERROR, status,
                           "rsNcGetAggInfo: rsDataObjPut error for %s", dataObjInp.objPath );
@@ -143,9 +145,13 @@ readAggInfo( rsComm_t *rsComm, char *aggColl, keyValPair_t *condInput,
     dataObjInp.oprType = GET_OPR;
     status = rsDataObjGet( rsComm, &dataObjInp, &portalOprOut, &packedBBuf );
     clearKeyVal( &dataObjInp.condInput );
-    if ( portalOprOut != NULL ) { free( portalOprOut ); }
+    if ( portalOprOut != NULL ) {
+        free( portalOprOut );
+    }
     if ( status < 0 ) {
-        if ( status == CAT_NO_ROWS_FOUND ) { status = NETCDF_AGG_INFO_FILE_ERR; }
+        if ( status == CAT_NO_ROWS_FOUND ) {
+            status = NETCDF_AGG_INFO_FILE_ERR;
+        }
         rodsLogError( LOG_ERROR, status,
                       "readAggInfo: rsDataObjGet error for %s", dataObjInp.objPath );
         return status;

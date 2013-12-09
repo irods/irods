@@ -12,8 +12,8 @@
 
 
 namespace irods {
-    /// =-=-=-=-=-=-=-
-    /// @brief function which manages the TLS and Auth negotiations with the client
+/// =-=-=-=-=-=-=-
+/// @brief function which manages the TLS and Auth negotiations with the client
     error client_server_negotiation_for_server(
         irods::network_object_ptr _ptr,
         std::string&               _result ) {

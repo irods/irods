@@ -990,7 +990,9 @@ clearMsParam( msParam_t *msParam, int freeStruct ) {
     int
     parseMspForFloat( msParam_t * inpParam, float * floatout ) {
 
-        if ( inpParam == NULL || floatout == NULL ) { return SYS_NULL_INPUT; }
+        if ( inpParam == NULL || floatout == NULL ) {
+            return SYS_NULL_INPUT;
+        }
         if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
             /* str input */
             if ( strcmp( ( char * ) inpParam->inOutStruct, "null" ) == 0 ) {
@@ -1055,7 +1057,9 @@ clearMsParam( msParam_t *msParam, int freeStruct ) {
 
         if ( strcmp( inpExecCmdOut->type, ExecCmdOut_MS_T ) == 0 ) {
             execCmdOut = ( execCmdOut_t * ) inpExecCmdOut->inOutStruct;
-            if ( execCmdOut == NULL ) { return SYS_INTERNAL_NULL_INPUT_ERR; }
+            if ( execCmdOut == NULL ) {
+                return SYS_INTERNAL_NULL_INPUT_ERR;
+            }
             *outStr = ( char * ) malloc( execCmdOut->stdoutBuf.len + 1 );
             memcpy( *outStr, ( char * )execCmdOut->stdoutBuf.buf, execCmdOut->stdoutBuf.len );
             ( *outStr )[execCmdOut->stdoutBuf.len] = '\0';
@@ -1081,7 +1085,9 @@ clearMsParam( msParam_t *msParam, int freeStruct ) {
 
         if ( strcmp( inpExecCmdOut->type, ExecCmdOut_MS_T ) == 0 ) {
             execCmdOut = ( execCmdOut_t * ) inpExecCmdOut->inOutStruct;
-            if ( execCmdOut == NULL ) { return SYS_INTERNAL_NULL_INPUT_ERR; }
+            if ( execCmdOut == NULL ) {
+                return SYS_INTERNAL_NULL_INPUT_ERR;
+            }
             *outStr = ( char * ) malloc( execCmdOut->stderrBuf.len + 1 );
             memcpy( *outStr, ( char * )execCmdOut->stderrBuf.buf, execCmdOut->stderrBuf.len );
             ( *outStr )[execCmdOut->stderrBuf.len] = '\0';
@@ -1205,13 +1211,17 @@ clearMsParam( msParam_t *msParam, int freeStruct ) {
             return ( SYS_INTERNAL_NULL_INPUT_ERR );
         }
 
-        if ( strcmp( inpParam->type, STR_MS_T ) != 0 ) { return USER_PARAM_TYPE_ERR; }
+        if ( strcmp( inpParam->type, STR_MS_T ) != 0 ) {
+            return USER_PARAM_TYPE_ERR;
+        }
 
         msKeyValStr = ( char * ) inpParam->inOutStruct;
 
         condInput = &dataObjInp->condInput;
 
-        if ( outBadKeyWd != NULL ) { *outBadKeyWd = NULL; }
+        if ( outBadKeyWd != NULL ) {
+            *outBadKeyWd = NULL;
+        }
 
         if ( ( status = initParsedMsKeyValStr( msKeyValStr, &parsedMsKeyValStr ) ) < 0 ) {
             return status;
@@ -1302,7 +1312,9 @@ clearMsParam( msParam_t *msParam, int freeStruct ) {
     chkDataObjInpKw( char * keyWd, int validKwFlags ) {
         int i;
 
-        if ( keyWd == NULL ) { return SYS_INTERNAL_NULL_INPUT_ERR; }
+        if ( keyWd == NULL ) {
+            return SYS_INTERNAL_NULL_INPUT_ERR;
+        }
         for ( i = 0; i < NumDataObjInpKeyWd; i++ ) {
             if ( strcmp( DataObjInpKeyWd[i].keyWd, keyWd ) == 0 ) {
                 if ( ( DataObjInpKeyWd[i].flag & validKwFlags ) == 0 ) {
@@ -1333,13 +1345,17 @@ clearMsParam( msParam_t *msParam, int freeStruct ) {
             return ( SYS_INTERNAL_NULL_INPUT_ERR );
         }
 
-        if ( strcmp( inpParam->type, STR_MS_T ) != 0 ) { return USER_PARAM_TYPE_ERR; }
+        if ( strcmp( inpParam->type, STR_MS_T ) != 0 ) {
+            return USER_PARAM_TYPE_ERR;
+        }
 
         msKeyValStr = ( char * ) inpParam->inOutStruct;
 
         condInput = &collInp->condInput;
 
-        if ( outBadKeyWd != NULL ) { *outBadKeyWd = NULL; }
+        if ( outBadKeyWd != NULL ) {
+            *outBadKeyWd = NULL;
+        }
 
         if ( ( status = initParsedMsKeyValStr( msKeyValStr, &parsedMsKeyValStr ) ) < 0 ) {
             return status;
@@ -1400,7 +1416,9 @@ clearMsParam( msParam_t *msParam, int freeStruct ) {
     chkCollInpKw( char * keyWd, int validKwFlags ) {
         int i;
 
-        if ( keyWd == NULL ) { return SYS_INTERNAL_NULL_INPUT_ERR; }
+        if ( keyWd == NULL ) {
+            return SYS_INTERNAL_NULL_INPUT_ERR;
+        }
         for ( i = 0; i < NumCollInpKeyWd; i++ ) {
             if ( strcmp( CollInpKeyWd[i].keyWd, keyWd ) == 0 ) {
                 if ( ( CollInpKeyWd[i].flag & validKwFlags ) == 0 ) {
@@ -1427,7 +1445,9 @@ clearMsParam( msParam_t *msParam, int freeStruct ) {
             return SYS_INTERNAL_NULL_INPUT_ERR;
         }
 
-        if ( msKeyValStr->type == NULL ) { fillStrInMsParam( msKeyValStr, NULL ); }
+        if ( msKeyValStr->type == NULL ) {
+            fillStrInMsParam( msKeyValStr, NULL );
+        }
 
         keyPtr = parseMspForStr( keyStr );
         if ( keyPtr == NULL || strcmp( keyPtr, MS_NULL_STR ) == 0 ) {
@@ -1444,7 +1464,9 @@ clearMsParam( msParam_t *msParam, int freeStruct ) {
         else {
             valLen = strlen( valPtr );
         }
-        if ( valLen + keyLen <= 0 ) { return 0; }
+        if ( valLen + keyLen <= 0 ) {
+            return 0;
+        }
 
         oldKeyValPtr = parseMspForStr( msKeyValStr );
         if ( oldKeyValPtr == NULL ) {
@@ -1491,13 +1513,17 @@ clearMsParam( msParam_t *msParam, int freeStruct ) {
             return ( SYS_INTERNAL_NULL_INPUT_ERR );
         }
 
-        if ( strcmp( inpParam->type, STR_MS_T ) != 0 ) { return USER_PARAM_TYPE_ERR; }
+        if ( strcmp( inpParam->type, STR_MS_T ) != 0 ) {
+            return USER_PARAM_TYPE_ERR;
+        }
 
         msKeyValStr = ( char * ) inpParam->inOutStruct;
 
         condInput = &structFileExtAndRegInp->condInput;
 
-        if ( outBadKeyWd != NULL ) { *outBadKeyWd = NULL; }
+        if ( outBadKeyWd != NULL ) {
+            *outBadKeyWd = NULL;
+        }
 
         if ( ( status = initParsedMsKeyValStr( msKeyValStr, &parsedMsKeyValStr ) ) < 0 ) {
             return status;
@@ -1562,7 +1588,9 @@ clearMsParam( msParam_t *msParam, int freeStruct ) {
     chkStructFileExtAndRegInpKw( char * keyWd, int validKwFlags ) {
         int i;
 
-        if ( keyWd == NULL ) { return SYS_INTERNAL_NULL_INPUT_ERR; }
+        if ( keyWd == NULL ) {
+            return SYS_INTERNAL_NULL_INPUT_ERR;
+        }
         for ( i = 0; i < NumStructFileExtAndRegInpKeyWd; i++ ) {
             if ( strcmp( StructFileExtAndRegInpKeyWd[i].keyWd, keyWd ) == 0 ) {
                 if ( ( StructFileExtAndRegInpKeyWd[i].flag & validKwFlags )
@@ -1678,7 +1706,9 @@ clearMsParam( msParam_t *msParam, int freeStruct ) {
             /* str input */
             bzero( ncGetVarInp, sizeof( ncGetVarInp_t ) );
             ncGetVarInp->dataType = parseStrToNcType( ( char* )inpParam->inOutStruct );
-            if ( ncGetVarInp->dataType < 0 ) { return ncGetVarInp->dataType; }
+            if ( ncGetVarInp->dataType < 0 ) {
+                return ncGetVarInp->dataType;
+            }
         }
         else if ( strcmp( inpParam->type, INT_MS_T ) == 0 ) {
             bzero( ncGetVarInp, sizeof( ncGetVarInp_t ) );
@@ -1758,7 +1788,9 @@ clearMsParam( msParam_t *msParam, int freeStruct ) {
 
             status = parseMultiStr( strPtr, &strArray );
 
-            if ( status <= 0 ) { return ( SYS_INVALID_INPUT_PARAM ); }
+            if ( status <= 0 ) {
+                return ( SYS_INVALID_INPUT_PARAM );
+            }
 
             *ndimOut = strArray.len;
             value = strArray.value;
@@ -1767,7 +1799,9 @@ clearMsParam( msParam_t *msParam, int freeStruct ) {
             for ( i = 0; i < strArray.len; i++ ) {
                 longArray[i] = atoi( &value[i * strArray.size] );
             }
-            if ( value != NULL ) { free( value ); }
+            if ( value != NULL ) {
+                free( value );
+            }
         }
         else if ( strcmp( inpParam->type, NcGetVarOut_MS_T ) == 0 ) {
             ncGetVarOut_t *ncArray;
@@ -1775,10 +1809,14 @@ clearMsParam( msParam_t *msParam, int freeStruct ) {
             int len;
             ncArray = ( ncGetVarOut_t * ) inpParam->inOutStruct;
             if ( ncArray == NULL || ncArray->dataArray == NULL ||
-                    ncArray->dataArray->buf == NULL ) { return USER__NULL_INPUT_ERR; }
+                    ncArray->dataArray->buf == NULL ) {
+                return USER__NULL_INPUT_ERR;
+            }
             inArray = ( int * ) ncArray->dataArray->buf;
             len = ncArray->dataArray->len;
-            if ( len <= 0 ) { return SYS_INVALID_INPUT_PARAM; }
+            if ( len <= 0 ) {
+                return SYS_INVALID_INPUT_PARAM;
+            }
             *longArrayOut = longArray = ( rodsLong_t * )
                                         calloc( 1, len * sizeof( rodsLong_t ) );
             for ( i = 0; i < len; i++ ) {
@@ -1802,7 +1840,9 @@ clearMsParam( msParam_t *msParam, int freeStruct ) {
             /* str input */
             bzero( nccfGetVarInp, sizeof( nccfGetVarInp_t ) );
             nccfGetVarInp->ncid = atoi( ( char* )inpParam->inOutStruct );
-            if ( nccfGetVarInp->ncid < 0 ) { return nccfGetVarInp->ncid; }
+            if ( nccfGetVarInp->ncid < 0 ) {
+                return nccfGetVarInp->ncid;
+            }
         }
         else if ( strcmp( inpParam->type, INT_MS_T ) == 0 ) {
             bzero( nccfGetVarInp, sizeof( nccfGetVarInp_t ) );

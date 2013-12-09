@@ -602,7 +602,9 @@ char* typeToString( ExprType *type, Hashtable *var_types, char *buf, int bufsize
     }
 
     int i = strlen( buf ) - 1;
-    while ( buf[i] == ' ' ) { i--; }
+    while ( buf[i] == ' ' ) {
+        i--;
+    }
     buf[i + 1] = '\0';
 
     region_free( r );

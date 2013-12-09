@@ -44,7 +44,9 @@ void region_free( Region *r ) {
         struct region_node *node = r->head;
         r->head = node->next;
         memset( node->ptr, 0, node->size );
-        if ( node->ptr != NULL ) { free( node->ptr ); }
+        if ( node->ptr != NULL ) {
+            free( node->ptr );
+        }
         free( node );
     }
     free( r );

@@ -103,7 +103,9 @@ showGroup( char *groupName ) {
     while ( status == 0 && genQueryOut->continueInx > 0 ) {
         genQueryInp.continueInx = genQueryOut->continueInx;
         status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
-        if ( status == 0 ) { printGenQueryResultsForGroup( genQueryOut ); }
+        if ( status == 0 ) {
+            printGenQueryResultsForGroup( genQueryOut );
+        }
     }
     return;
 }
@@ -126,7 +128,9 @@ getInput( char *cmdToken[], int maxTokens ) {
     if ( stat == 0 ) {
         printf( "\n" );
         rcDisconnect( Conn );
-        if ( lastCommandStatus != 0 ) { exit( 4 ); }
+        if ( lastCommandStatus != 0 ) {
+            exit( 4 );
+        }
         exit( 0 );
     }
     lenstr = strlen( ttybuf );
@@ -404,9 +408,13 @@ main( int argc, char **argv ) {
     while ( keepGoing ) {
         int status;
         status = doCommand( cmdToken );
-        if ( status == -1 ) { keepGoing = 0; }
+        if ( status == -1 ) {
+            keepGoing = 0;
+        }
         if ( firstTime ) {
-            if ( status == 0 ) { keepGoing = 0; }
+            if ( status == 0 ) {
+                keepGoing = 0;
+            }
             if ( status == -2 ) {
                 keepGoing = 0;
                 lastCommandStatus = -1;
@@ -421,7 +429,9 @@ main( int argc, char **argv ) {
     printErrorStack( Conn->rError );
     rcDisconnect( Conn );
 
-    if ( lastCommandStatus != 0 ) { exit( 4 ); }
+    if ( lastCommandStatus != 0 ) {
+        exit( 4 );
+    }
     exit( 0 );
 }
 
@@ -429,7 +439,9 @@ void
 printMsgs( char *msgs[] ) {
     int i;
     for ( i = 0;; i++ ) {
-        if ( strlen( msgs[i] ) == 0 ) { return; }
+        if ( strlen( msgs[i] ) == 0 ) {
+            return;
+        }
         printf( "%s\n", msgs[i] );
     }
 }
@@ -540,7 +552,9 @@ usage( char *subOpt ) {
     else {
         int i;
         for ( i = 0;; i++ ) {
-            if ( strlen( subCmds[i] ) == 0 ) { break; }
+            if ( strlen( subCmds[i] ) == 0 ) {
+                break;
+            }
             if ( strcmp( subOpt, subCmds[i] ) == 0 ) {
                 printMsgs( pMsgs[i] );
             }

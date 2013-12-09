@@ -185,7 +185,9 @@ _rsRmCollRecur( rsComm_t *rsComm, collInp_t *rmCollInp,
     /* got here. will recursively phy delete the collection */
     status = _rsPhyRmColl( rsComm, rmCollInp, dataObjInfo, collOprStat );
 
-    if ( dataObjInfo != NULL ) { freeDataObjInfo( dataObjInfo ); }
+    if ( dataObjInfo != NULL ) {
+        freeDataObjInfo( dataObjInfo );
+    }
     return ( status );
 }
 
@@ -327,7 +329,9 @@ _rsPhyRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
             rstrcpy( tmpCollInp.collName, collEnt->collName, MAX_NAME_LEN );
             if ( collEnt->specColl.collClass != NO_SPEC_COLL ) {
                 if ( strcmp( collEnt->collName, collEnt->specColl.collection )
-                        == 0 ) { continue; }      /* no mount point */
+                        == 0 ) {
+                    continue;    /* no mount point */
+                }
             }
             initReiWithCollInp( &rei, rsComm, &tmpCollInp, &collInfo );
             status = applyRule( "acPreprocForRmColl", NULL, &rei, NO_SAVE_REI );
@@ -350,7 +354,9 @@ _rsPhyRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
                          tmpCollInp.collName, status );
             }
         }
-        if ( status < 0 ) { savedStatus = status; }
+        if ( status < 0 ) {
+            savedStatus = status;
+        }
         free( collEnt );    /* just free collEnt but not content */
     }
     rsCloseCollection( rsComm, &handleInx );
@@ -375,7 +381,9 @@ _rsPhyRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
         }
         else {
             status = svrUnregColl( rsComm, rmCollInp );
-            if ( status < 0 ) { savedStatus = status; }
+            if ( status < 0 ) {
+                savedStatus = status;
+            }
         }
     }
     clearKeyVal( &tmpCollInp.condInput );
@@ -421,7 +429,9 @@ svrUnregColl( rsComm_t *rsComm, collInp_t *rmCollInp ) {
         collOprStat_t *collOprStat = NULL;;
         addKeyVal( &rmCollInp->condInput, UNREG_COLL_KW, "" );
         status = _rcRmColl( rodsServerHost->conn, rmCollInp, &collOprStat );
-        if ( collOprStat != NULL ) { free( collOprStat ); }
+        if ( collOprStat != NULL ) {
+            free( collOprStat );
+        }
     }
 
     return status;

@@ -16,14 +16,14 @@
 
 namespace irods {
 
-    // Access singleton through its getInstance() method
+// Access singleton through its getInstance() method
     catalog_properties& catalog_properties::getInstance() {
         static catalog_properties instance;
         return instance;
     }
 
 
-    // Query iCAT settings and fill catalog_properties::properties
+// Query iCAT settings and fill catalog_properties::properties
     error catalog_properties::capture() {
         rodsLong_t row_count = 0; 	// total number of rows to get
         int col_nbr = 2;	// 2 columns for now: pg_settings.name, pg_settings.setting

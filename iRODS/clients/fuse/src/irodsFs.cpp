@@ -161,7 +161,9 @@ main( int argc, char **argv ) {
     srandom( ( unsigned int ) time( 0 ) % getpid() );
 
 #ifdef CACHE_FILE_FOR_READ
-    if ( setAndMkFileCacheDir() < 0 ) { exit( 1 ); }
+    if ( setAndMkFileCacheDir() < 0 ) {
+        exit( 1 );
+    }
 #endif
 
     initPathCache();
@@ -192,7 +194,9 @@ usage() {
     };
     int i;
     for ( i = 0;; i++ ) {
-        if ( strlen( msgs[i] ) == 0 ) { return; }
+        if ( strlen( msgs[i] ) == 0 ) {
+            return;
+        }
         printf( "%s\n", msgs[i] );
     }
 }

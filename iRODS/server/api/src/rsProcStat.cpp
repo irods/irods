@@ -202,7 +202,9 @@ localProcStat( rsComm_t *rsComm, procStatInp_t *procStatInp,
     for ( directory_iterator itr( srcDirPath ); itr != end_itr; ++itr ) {
         path p = itr->path();
         path cp = p.filename();
-        if ( !isdigit( *cp.c_str() ) ) { continue; } /* not a pid */
+        if ( !isdigit( *cp.c_str() ) ) {
+            continue;    /* not a pid */
+        }
         snprintf( childPath, MAX_NAME_LEN, "%s",
                   p.c_str() );
         if ( !exists( p ) ) {
@@ -217,9 +219,13 @@ localProcStat( rsComm_t *rsComm, procStatInp_t *procStatInp,
                 break;
             }
             procLog.pid = atoi( cp.c_str() );
-            if ( readProcLog( procLog.pid, &procLog ) < 0 ) { continue; }
+            if ( readProcLog( procLog.pid, &procLog ) < 0 ) {
+                continue;
+            }
             status = addProcToProcStatOut( &procLog, *procStatOut );
-            if ( status < 0 ) { continue; }
+            if ( status < 0 ) {
+                continue;
+            }
             count++;
         }
         else {
@@ -241,7 +247,9 @@ remoteProcStat( rsComm_t *rsComm, procStatInp_t *procStatInp,
         return SYS_INVALID_SERVER_HOST;
     }
 
-    if ( procStatInp == NULL || procStatOut == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( procStatInp == NULL || procStatOut == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
 
     status = svrToSvrConnect( rsComm, rodsServerHost );
 
@@ -263,7 +271,9 @@ int
 initProcStatOut( genQueryOut_t **procStatOut, int numProc ) {
     genQueryOut_t *myProcStatOut;
 
-    if ( procStatOut == NULL || numProc <= 0 ) { return USER__NULL_INPUT_ERR; }
+    if ( procStatOut == NULL || numProc <= 0 ) {
+        return USER__NULL_INPUT_ERR;
+    }
 
     myProcStatOut = *procStatOut = ( genQueryOut_t* )malloc( sizeof( genQueryOut_t ) );
     bzero( myProcStatOut, sizeof( genQueryOut_t ) );
@@ -334,7 +344,9 @@ int
 addProcToProcStatOut( procLog_t *procLog, genQueryOut_t *procStatOut ) {
     int rowCnt;
 
-    if ( procLog == NULL || procStatOut == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( procLog == NULL || procStatOut == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
     rowCnt = procStatOut->rowCnt;
 
     snprintf( &procStatOut->sqlResult[0].value[NAME_LEN * rowCnt],

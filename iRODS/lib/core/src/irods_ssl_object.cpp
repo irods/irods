@@ -5,8 +5,8 @@
 #include "irods_network_manager.hpp"
 
 namespace irods {
-    // =-=-=-=-=-=-=-
-    // public - ctor
+// =-=-=-=-=-=-=-
+// public - ctor
     ssl_object::ssl_object() :
         network_object(),
         ssl_ctx_( 0 ),
@@ -14,8 +14,8 @@ namespace irods {
 
     } // ctor
 
-    // =-=-=-=-=-=-=-
-    // public - ctor
+// =-=-=-=-=-=-=-
+// public - ctor
     ssl_object::ssl_object(
         const rcComm_t& _comm ) :
         network_object( _comm ),
@@ -24,8 +24,8 @@ namespace irods {
         host_( _comm.host ) {
     } // ctor
 
-    // =-=-=-=-=-=-=-
-    // public - ctor
+// =-=-=-=-=-=-=-
+// public - ctor
     ssl_object::ssl_object(
         const rsComm_t& _comm ) :
         network_object( _comm ),
@@ -34,8 +34,8 @@ namespace irods {
         host_( "" ) {
     } // ctor
 
-    // =-=-=-=-=-=-=-
-    // public - cctor
+// =-=-=-=-=-=-=-
+// public - cctor
     ssl_object::ssl_object(
         const ssl_object& _rhs ) :
         network_object( _rhs ) {
@@ -44,13 +44,13 @@ namespace irods {
 
     } // cctor
 
-    // =-=-=-=-=-=-=-
-    // public - dtor
+// =-=-=-=-=-=-=-
+// public - dtor
     ssl_object::~ssl_object() {
     } // dtor
 
-    // =-=-=-=-=-=-=-
-    // public - assignment operator
+// =-=-=-=-=-=-=-
+// public - assignment operator
     ssl_object& ssl_object::operator=(
         const ssl_object& _rhs ) {
         network_object::operator=( _rhs );
@@ -61,8 +61,8 @@ namespace irods {
 
     } // operator=
 
-    // =-=-=-=-=-=-=-
-    // public - assignment operator
+// =-=-=-=-=-=-=-
+// public - assignment operator
     bool ssl_object::operator==(
         const ssl_object& _rhs ) const {
         bool ret = network_object::operator==( _rhs );
@@ -73,8 +73,8 @@ namespace irods {
 
     } // operator==
 
-    // =-=-=-=-=-=-=-
-    // public - resolver for ssl_manager
+// =-=-=-=-=-=-=-
+// public - resolver for ssl_manager
     error ssl_object::resolve(
         const std::string& _interface,
         plugin_ptr&        _ptr ) {
@@ -128,8 +128,8 @@ namespace irods {
 
     } // resolve
 
-    // =-=-=-=-=-=-=-
-    // accessor for rule engine variables
+// =-=-=-=-=-=-=-
+// accessor for rule engine variables
     error ssl_object::get_re_vars(
         keyValPair_t& _kvp ) {
         network_object::get_re_vars( _kvp );
@@ -169,8 +169,8 @@ namespace irods {
 
     } // get_re_vars
 
-    // =-=-=-=-=-=-=-
-    // convertion to client comm ptr
+// =-=-=-=-=-=-=-
+// convertion to client comm ptr
     error ssl_object::to_client( rcComm_t* _comm ) {
         if ( !_comm ) {
             return ERROR( SYS_INVALID_INPUT_PARAM, "null comm ptr" );
@@ -193,8 +193,8 @@ namespace irods {
 
     } // to_client
 
-    // =-=-=-=-=-=-=-
-    // convertion to client comm ptr
+// =-=-=-=-=-=-=-
+// convertion to client comm ptr
     error ssl_object::to_server( rsComm_t* _comm ) {
         if ( !_comm ) {
             return ERROR( SYS_INVALID_INPUT_PARAM, "null comm ptr" );

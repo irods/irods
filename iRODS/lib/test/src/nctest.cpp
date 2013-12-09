@@ -275,16 +275,24 @@ nctestold( rcComm_t *conn, char *ncpath ) {
 
     /* do the variables */
     lonvarid1 = myInqVar( conn, ncid1, "longitude", &lontype1, &lonndim );
-    if ( lonvarid1 < 0 ) { return status; }
+    if ( lonvarid1 < 0 ) {
+        return status;
+    }
 
     latvarid1 = myInqVar( conn, ncid1, "latitude", &lattype1, &latndim );
-    if ( latvarid1 < 0 ) { return status; }
+    if ( latvarid1 < 0 ) {
+        return status;
+    }
 
     tempvarid1 = myInqVar( conn, ncid1, "temperature", &temptype1, &tempndim );
-    if ( tempvarid1 < 0 ) { return status; }
+    if ( tempvarid1 < 0 ) {
+        return status;
+    }
 
     presvarid1 = myInqVar( conn, ncid1, "pressure", &prestype1, &presndim );
-    if ( presvarid1 < 0 ) { return status; }
+    if ( presvarid1 < 0 ) {
+        return status;
+    }
 
     /* get the variable values */
     start[0] = 0;
@@ -433,10 +441,14 @@ nctestold( rcComm_t *conn, char *ncpath ) {
     }
 
     tempvarid1 = myInqVar( conn, ncid1, "temperature", &temptype1, &tempndim );
-    if ( tempvarid1 < 0 ) { return status; }
+    if ( tempvarid1 < 0 ) {
+        return status;
+    }
 
     presvarid1 = myInqVar( conn, ncid1, "pressure", &prestype1, &presndim );
-    if ( presvarid1 < 0 ) { return status; }
+    if ( presvarid1 < 0 ) {
+        return status;
+    }
 
     /* pressure subset */
     bzero( &nccfGetVarInp, sizeof( nccfGetVarInp ) );
@@ -673,7 +685,9 @@ myInqVar( rcComm_t *conn, int ncid, char *name, int *dataType, int *ndim ) {
         printf( "\n" );
         *dataType = ncInqWithIdOut->dataType;
         *ndim = ncInqWithIdOut->ndim;
-        if ( ncInqWithIdOut->intArray != NULL ) { free( ncInqWithIdOut->intArray ); }
+        if ( ncInqWithIdOut->intArray != NULL ) {
+            free( ncInqWithIdOut->intArray );
+        }
         free( ncInqWithIdOut );
         ncInqWithIdOut = NULL;
     }
@@ -981,10 +995,14 @@ nctest2( rcComm_t *conn, char *ncpath ) {
 
 #if 0
     tempvarid1 = myInqVar( conn, ncid1, "temperature", &temptype1, &tempndim );
-    if ( tempvarid1 < 0 ) { return status; }
+    if ( tempvarid1 < 0 ) {
+        return status;
+    }
 
     presvarid1 = myInqVar( conn, ncid1, "pressure", &prestype1, &presndim );
-    if ( presvarid1 < 0 ) { return status; }
+    if ( presvarid1 < 0 ) {
+        return status;
+    }
 #endif
 
     /* pressure subset */

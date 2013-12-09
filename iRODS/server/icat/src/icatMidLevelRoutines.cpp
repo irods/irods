@@ -42,12 +42,16 @@ int checkObjIdByTicket( char *dataId, char *accessLevel,
 int cmlDebug( int mode ) {
     logSQL_CML = mode;
     if ( mode > 1 ) {
-        if ( auditEnabled == 0 ) { auditEnabled = 1; }
+        if ( auditEnabled == 0 ) {
+            auditEnabled = 1;
+        }
         /* This is needed for testing each sql form, which is needed for
         the 'irodsctl devtest' to pass */
     }
     else {
-        if ( auditEnabled == 1 ) { auditEnabled = 0; }
+        if ( auditEnabled == 1 ) {
+            auditEnabled = 0;
+        }
     }
     return( 0 );
 }
@@ -76,11 +80,15 @@ int cmlOpen( icatSessionStruct *icss ) {
 
     /* Open Environment */
     i = cllOpenEnv( icss );
-    if ( i != 0 ) { return( CAT_ENV_ERR ); }
+    if ( i != 0 ) {
+        return( CAT_ENV_ERR );
+    }
 
     /* Connect to the DBMS */
     i = cllConnect( icss );
-    if ( i != 0 ) { return( CAT_CONNECT_ERR ); }
+    if ( i != 0 ) {
+        return( CAT_CONNECT_ERR );
+    }
 
     return( 0 );
 }
@@ -89,7 +97,9 @@ int cmlClose( icatSessionStruct *icss ) {
     int status, stat2;
     static int pending = 0;
 
-    if ( pending == 1 ) { return( 0 ); } /* avoid hang if stuck doing this */
+    if ( pending == 1 ) {
+        return( 0 );    /* avoid hang if stuck doing this */
+    }
     pending = 1;
 
     status = cllDisconnect( icss );
@@ -113,7 +123,9 @@ int cmlExecuteNoAnswerSql( const char *sql,
 
     i = cllExecSqlNoResult( icss, sql );
     if ( i ) {
-        if ( i <= CAT_ENV_ERR ) { return( i ); } /* already an iRODS error code */
+        if ( i <= CAT_ENV_ERR ) {
+            return( i );    /* already an iRODS error code */
+        }
         return( CAT_SQL_ERR );
     }
     return( 0 );
@@ -151,7 +163,9 @@ int cmlGetOneRowFromSqlBV( char *sql,
                                 bindVar1, bindVar2, bindVar3, bindVar4,
                                 bindVar5, 0 );
     if ( i != 0 ) {
-        if ( i <= CAT_ENV_ERR ) { return( i ); } /* already an iRODS error code */
+        if ( i <= CAT_ENV_ERR ) {
+            return( i );    /* already an iRODS error code */
+        }
         return ( CAT_SQL_ERR );
     }
     i = cllGetRow( icss, stmtNum );
@@ -198,7 +212,9 @@ int cmlGetOneRowFromSql( char *sql,
     i = cllExecSqlWithResultBV( icss, &stmtNum, updatedSql,
                                 0, 0, 0, 0, 0, 0 );
     if ( i != 0 ) {
-        if ( i <= CAT_ENV_ERR ) { return( i ); } /* already an iRODS error code */
+        if ( i <= CAT_ENV_ERR ) {
+            return( i );    /* already an iRODS error code */
+        }
         return ( CAT_SQL_ERR );
     }
     i = cllGetRow( icss, stmtNum );
@@ -250,7 +266,9 @@ int cmlGetOneRowFromSqlV2( char *sql,
                                 bindVar1, bindVar2, 0, 0, 0, 0 );
 
     if ( i != 0 ) {
-        if ( i <= CAT_ENV_ERR ) { return( i ); } /* already an iRODS error code */
+        if ( i <= CAT_ENV_ERR ) {
+            return( i );    /* already an iRODS error code */
+        }
         return ( CAT_SQL_ERR );
     }
     i = cllGetRow( icss, stmtNum );
@@ -299,7 +317,9 @@ int cmlGetOneRowFromSqlV3( char *sql,
     i = cllExecSqlWithResult( icss, &stmtNum, updatedSql );
 
     if ( i != 0 ) {
-        if ( i <= CAT_ENV_ERR ) { return( i ); } /* already an iRODS error code */
+        if ( i <= CAT_ENV_ERR ) {
+            return( i );    /* already an iRODS error code */
+        }
         return ( CAT_SQL_ERR );
     }
     i = cllGetRow( icss, stmtNum );
@@ -341,7 +361,9 @@ int cmlGetFirstRowFromSql( char *sql,
     i = cllExecSqlWithResult( icss, &stmtNum, sql );
 
     if ( i != 0 ) {
-        if ( i <= CAT_ENV_ERR ) { return( i ); } /* already an iRODS error code */
+        if ( i <= CAT_ENV_ERR ) {
+            return( i );    /* already an iRODS error code */
+        }
         return ( CAT_SQL_ERR );
     }
 
@@ -388,7 +410,9 @@ int cmlGetFirstRowFromSqlBV( char *sql,
                                 arg1, arg2, arg3, arg4, 0, 0 );
 
     if ( i != 0 ) {
-        if ( i <= CAT_ENV_ERR ) { return( i ); } /* already an iRODS error code */
+        if ( i <= CAT_ENV_ERR ) {
+            return( i );    /* already an iRODS error code */
+        }
         return ( CAT_SQL_ERR );
     }
     i = cllGetRow( icss, stmtNum );
@@ -480,12 +504,16 @@ int cmlGetMultiRowStringValuesFromSql( char *sql,
     int tsg; /* total strings gotten */
     char *pString;
 
-    if ( maxNumberOfStringsToGet <= 0 ) { return( CAT_INVALID_ARGUMENT ); }
+    if ( maxNumberOfStringsToGet <= 0 ) {
+        return( CAT_INVALID_ARGUMENT );
+    }
 
     i = cllExecSqlWithResultBV( icss, &stmtNum, sql,
                                 bindVar1, bindVar2, bindVar3, 0, 0, 0 );
     if ( i != 0 ) {
-        if ( i <= CAT_ENV_ERR ) { return( i ); } /* already an iRODS error code */
+        if ( i <= CAT_ENV_ERR ) {
+            return( i );    /* already an iRODS error code */
+        }
         return ( CAT_SQL_ERR );
     }
     tsg = 0;
@@ -494,12 +522,16 @@ int cmlGetMultiRowStringValuesFromSql( char *sql,
         i = cllGetRow( icss, stmtNum );
         if ( i != 0 )  {
             cllFreeStatement( icss, stmtNum );
-            if ( tsg > 0 ) { return( tsg ); }
+            if ( tsg > 0 ) {
+                return( tsg );
+            }
             return( CAT_GET_ROW_ERR );
         }
         if ( icss->stmtPtr[stmtNum]->numOfCols == 0 ) {
             cllFreeStatement( icss, stmtNum );
-            if ( tsg > 0 ) { return( tsg ); }
+            if ( tsg > 0 ) {
+                return( tsg );
+            }
             return( CAT_NO_ROWS_FOUND );
         }
         for ( j = 0; j < icss->stmtPtr[stmtNum]->numOfCols; j++ ) {
@@ -572,7 +604,9 @@ int cmlCheckNameToken( char *nameSpace, char *tokenName, icatSessionStruct *icss
     rodsLong_t iVal;
     int status;
 
-    if ( logSQL_CML != 0 ) { rodsLog( LOG_SQL, "cmlCheckNameToken SQL 1 " ); }
+    if ( logSQL_CML != 0 ) {
+        rodsLog( LOG_SQL, "cmlCheckNameToken SQL 1 " );
+    }
     status = cmlGetIntegerValueFromSql(
                  "select token_id from  R_TOKN_MAIN where token_namespace=? and token_name=?",
                  &iVal, nameSpace, tokenName, 0, 0, 0, icss );
@@ -592,7 +626,9 @@ int cmlModifySingleTable( char *tableName,
     int i, l;
     char *rsql;
 
-    if ( logSQL_CML != 0 ) { rodsLog( LOG_SQL, "cmlModifySingleTable SQL 1 " ); }
+    if ( logSQL_CML != 0 ) {
+        rodsLog( LOG_SQL, "cmlModifySingleTable SQL 1 " );
+    }
 
     snprintf( tsql, MAX_SQL_SIZE, "update %s set ", tableName );
     l = strlen( tsql );
@@ -617,7 +653,9 @@ cmlGetNextSeqVal( icatSessionStruct *icss ) {
     int status;
     rodsLong_t iVal;
 
-    if ( logSQL_CML != 0 ) { rodsLog( LOG_SQL, "cmlGetNextSeqVal SQL 1 " ); }
+    if ( logSQL_CML != 0 ) {
+        rodsLog( LOG_SQL, "cmlGetNextSeqVal SQL 1 " );
+    }
 
     nextStr[0] = '\0';
 
@@ -649,7 +687,9 @@ cmlGetCurrentSeqVal( icatSessionStruct *icss ) {
     int status;
     rodsLong_t iVal;
 
-    if ( logSQL_CML != 0 ) { rodsLog( LOG_SQL, "cmlGetCurrentSeqVal SQL 1 " ); }
+    if ( logSQL_CML != 0 ) {
+        rodsLog( LOG_SQL, "cmlGetCurrentSeqVal SQL 1 " );
+    }
 
     nextStr[0] = '\0';
 
@@ -681,7 +721,9 @@ cmlGetNextSeqStr( char *seqStr, int maxSeqStrLen, icatSessionStruct *icss ) {
     char sql[STR_LEN];
     int status;
 
-    if ( logSQL_CML != 0 ) { rodsLog( LOG_SQL, "cmlGetNextSeqStr SQL 1 " ); }
+    if ( logSQL_CML != 0 ) {
+        rodsLog( LOG_SQL, "cmlGetNextSeqStr SQL 1 " );
+    }
 
     nextStr[0] = '\0';
     cllNextValueString( "R_ObjectID", nextStr, STR_LEN );
@@ -712,7 +754,9 @@ int cmlTest( icatSessionStruct *icss ) {
     strncpy( icss->databaseUsername, "schroede", DB_USERNAME_LEN );
     strncpy( icss->databasePassword, "", DB_PASSWORD_LEN );
     i = cmlOpen( icss );
-    if ( i != 0 ) { return( i ); }
+    if ( i != 0 ) {
+        return( i );
+    }
 
     cVal[0] = cValStr;
     cValSize = MAX_INTEGER_SIZE;
@@ -752,7 +796,9 @@ cmlCheckResc( char *rescName, char *userName, char *userZone, char *accessLevel,
     int status;
     rodsLong_t iVal;
 
-    if ( logSQL_CML != 0 ) { rodsLog( LOG_SQL, "cmlCheckResc SQL 1 " ); }
+    if ( logSQL_CML != 0 ) {
+        rodsLog( LOG_SQL, "cmlCheckResc SQL 1 " );
+    }
 
     status = cmlGetIntegerValueFromSql(
                  "select resc_id from R_RESC_MAIN RM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where RM.resc_name=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = RM.resc_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = ?",
@@ -761,7 +807,9 @@ cmlCheckResc( char *rescName, char *userName, char *userZone, char *accessLevel,
         /* There was an error, so do another sql to see which
            of the two likely cases is problem. */
 
-        if ( logSQL_CML != 0 ) { rodsLog( LOG_SQL, "cmlCheckResc SQL 2 " ); }
+        if ( logSQL_CML != 0 ) {
+            rodsLog( LOG_SQL, "cmlCheckResc SQL 2 " );
+        }
 
         status = cmlGetIntegerValueFromSql(
                      "select resc_id from R_RESC_MAIN where resc_name=?",
@@ -787,7 +835,9 @@ cmlCheckDir( char *dirName, char *userName, char *userZone, char *accessLevel,
     int status;
     rodsLong_t iVal;
 
-    if ( logSQL_CML != 0 ) { rodsLog( LOG_SQL, "cmlCheckDir SQL 1 " ); }
+    if ( logSQL_CML != 0 ) {
+        rodsLog( LOG_SQL, "cmlCheckDir SQL 1 " );
+    }
 
     status = cmlGetIntegerValueFromSql(
                  "select coll_id from R_COLL_MAIN CM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where CM.coll_name=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = CM.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = ?",
@@ -796,7 +846,9 @@ cmlCheckDir( char *dirName, char *userName, char *userZone, char *accessLevel,
         /* There was an error, so do another sql to see which
            of the two likely cases is problem. */
 
-        if ( logSQL_CML != 0 ) { rodsLog( LOG_SQL, "cmlCheckDir SQL 2 " ); }
+        if ( logSQL_CML != 0 ) {
+            rodsLog( LOG_SQL, "cmlCheckDir SQL 2 " );
+        }
 
         status = cmlGetIntegerValueFromSql(
                      "select coll_id from R_COLL_MAIN where coll_name=?",
@@ -838,11 +890,15 @@ cmlCheckDirAndGetInheritFlag( char *dirName, char *userName, char *userZone,
     *inheritFlag = 0;
 
     if ( ticketStr != NULL && *ticketStr != '\0' ) {
-        if ( logSQL_CML != 0 ) { rodsLog( LOG_SQL, "cmlCheckDirAndGetInheritFlag SQL 1 " ); }
+        if ( logSQL_CML != 0 ) {
+            rodsLog( LOG_SQL, "cmlCheckDirAndGetInheritFlag SQL 1 " );
+        }
         status = cmlGetOneRowFromSqlBV( "select coll_id, coll_inheritance from R_COLL_MAIN CM, R_TICKET_MAIN TM where CM.coll_name=? and TM.ticket_string=? and TM.ticket_type = 'write' and TM.object_id = CM.coll_id", cVal, cValSize, 2, dirName, ticketStr, 0, 0, 0, icss );
     }
     else {
-        if ( logSQL_CML != 0 ) { rodsLog( LOG_SQL, "cmlCheckDirAndGetInheritFlag SQL 2 " ); }
+        if ( logSQL_CML != 0 ) {
+            rodsLog( LOG_SQL, "cmlCheckDirAndGetInheritFlag SQL 2 " );
+        }
         status = cmlGetOneRowFromSqlBV( "select coll_id, coll_inheritance from R_COLL_MAIN CM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where CM.coll_name=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = CM.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = ?", cVal, cValSize, 2, dirName, userName, userZone, accessLevel, 0, icss );
     }
     if ( status == 2 ) {
@@ -850,7 +906,9 @@ cmlCheckDirAndGetInheritFlag( char *dirName, char *userName, char *userZone,
             return( CAT_NO_ROWS_FOUND );
         }
         iVal = strtoll( *cVal, NULL, 0 );
-        if ( cValStr2[0] == '1' ) { *inheritFlag = 1; }
+        if ( cValStr2[0] == '1' ) {
+            *inheritFlag = 1;
+        }
         status = 0;
     }
 
@@ -858,7 +916,9 @@ cmlCheckDirAndGetInheritFlag( char *dirName, char *userName, char *userZone,
         /* There was an error, so do another sql to see which
            of the two likely cases is problem. */
 
-        if ( logSQL_CML != 0 ) { rodsLog( LOG_SQL, "cmlCheckDirAndGetInheritFlag SQL 3 " ); }
+        if ( logSQL_CML != 0 ) {
+            rodsLog( LOG_SQL, "cmlCheckDirAndGetInheritFlag SQL 3 " );
+        }
 
         status = cmlGetIntegerValueFromSql(
                      "select coll_id from R_COLL_MAIN where coll_name=?",
@@ -876,7 +936,9 @@ cmlCheckDirAndGetInheritFlag( char *dirName, char *userName, char *userZone,
         status = checkObjIdByTicket( cValStr1, accessLevel, ticketStr,
                                      ticketHost, userName, userZone,
                                      icss );
-        if ( status != 0 ) { return ( status ); }
+        if ( status != 0 ) {
+            return ( status );
+        }
     }
 
     return( iVal );
@@ -894,7 +956,9 @@ cmlCheckDirId( char *dirId, char *userName, char *userZone,
     int status;
     rodsLong_t iVal;
 
-    if ( logSQL_CML != 0 ) { rodsLog( LOG_SQL, "cmlCheckDirId SQL 1 " ); }
+    if ( logSQL_CML != 0 ) {
+        rodsLog( LOG_SQL, "cmlCheckDirId SQL 1 " );
+    }
 
     status = cmlGetIntegerValueFromSql(
                  "select object_id from R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = ? and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = ?",
@@ -903,7 +967,9 @@ cmlCheckDirId( char *dirId, char *userName, char *userZone,
         /* There was an error, so do another sql to see which
            of the two likely cases is problem. */
 
-        if ( logSQL_CML != 0 ) { rodsLog( LOG_SQL, "cmlCheckDirId SQL 2 " ); }
+        if ( logSQL_CML != 0 ) {
+            rodsLog( LOG_SQL, "cmlCheckDirId SQL 2 " );
+        }
 
         status = cmlGetIntegerValueFromSql(
                      "select coll_id from R_COLL_MAIN where coll_id=?",
@@ -926,12 +992,16 @@ cmlCheckDirOwn( char *dirName, char *userName, char *userZone,
     int status;
     rodsLong_t iVal;
 
-    if ( logSQL_CML != 0 ) { rodsLog( LOG_SQL, "cmlCheckDirOwn SQL 1 " ); }
+    if ( logSQL_CML != 0 ) {
+        rodsLog( LOG_SQL, "cmlCheckDirOwn SQL 1 " );
+    }
 
     status = cmlGetIntegerValueFromSql(
                  "select coll_id from R_COLL_MAIN where coll_name=? and coll_owner_name=? and coll_owner_zone=?",
                  &iVal, dirName, userName, userZone, 0, 0, icss );
-    if ( status < 0 ) { return( status ); }
+    if ( status < 0 ) {
+        return( status );
+    }
     return( iVal );
 }
 
@@ -948,7 +1018,9 @@ cmlCheckDataObjOnly( char *dirName, char *dataName,
     int status;
     rodsLong_t iVal;
 
-    if ( logSQL_CML != 0 ) { rodsLog( LOG_SQL, "cmlCheckDataObjOnly SQL 1 " ); }
+    if ( logSQL_CML != 0 ) {
+        rodsLog( LOG_SQL, "cmlCheckDataObjOnly SQL 1 " );
+    }
 
     status = cmlGetIntegerValueFromSql(
                  "select data_id from R_DATA_MAIN DM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM, R_COLL_MAIN CM where DM.data_name=? and DM.coll_id=CM.coll_id and CM.coll_name=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = ?",
@@ -958,7 +1030,9 @@ cmlCheckDataObjOnly( char *dirName, char *dataName,
     if ( status ) {
         /* There was an error, so do another sql to see which
            of the two likely cases is problem. */
-        if ( logSQL_CML != 0 ) { rodsLog( LOG_SQL, "cmlCheckDataObjOnly SQL 2 " ); }
+        if ( logSQL_CML != 0 ) {
+            rodsLog( LOG_SQL, "cmlCheckDataObjOnly SQL 2 " );
+        }
 
         status = cmlGetIntegerValueFromSql(
                      "select data_id from R_DATA_MAIN DM, R_COLL_MAIN CM where DM.data_name=? and DM.coll_id=CM.coll_id and CM.coll_name=?",
@@ -983,15 +1057,21 @@ cmlCheckDataObjOwn( char *dirName, char *dataName, char *userName,
     rodsLong_t iVal, collId;
     char collIdStr[MAX_NAME_LEN];
 
-    if ( logSQL_CML != 0 ) { rodsLog( LOG_SQL, "cmlCheckDataObjOwn SQL 1 " ); }
+    if ( logSQL_CML != 0 ) {
+        rodsLog( LOG_SQL, "cmlCheckDataObjOwn SQL 1 " );
+    }
     status = cmlGetIntegerValueFromSql(
                  "select coll_id from R_COLL_MAIN where coll_name=?",
                  &iVal, dirName, 0, 0, 0, 0, icss );
-    if ( status < 0 ) { return( status ); }
+    if ( status < 0 ) {
+        return( status );
+    }
     collId = iVal;
     snprintf( collIdStr, MAX_NAME_LEN, "%lld", collId );
 
-    if ( logSQL_CML != 0 ) { rodsLog( LOG_SQL, "cmlCheckDataObjOwn SQL 2 " ); }
+    if ( logSQL_CML != 0 ) {
+        rodsLog( LOG_SQL, "cmlCheckDataObjOwn SQL 2 " );
+    }
     status = cmlGetIntegerValueFromSql(
                  "select data_id from R_DATA_MAIN where data_name=? and coll_id=? and data_owner_name=? and data_owner_zone=?",
                  &iVal, dataName, collIdStr, userName, userZone, 0, icss );
@@ -1009,20 +1089,30 @@ int cmlCheckUserInGroup( char *userName, char *userZone,
     char sVal[MAX_NAME_LEN];
     rodsLong_t iVal;
 
-    if ( logSQL_CML != 0 ) { rodsLog( LOG_SQL, "cmlCheckUserInGroup SQL 1 " ); }
+    if ( logSQL_CML != 0 ) {
+        rodsLog( LOG_SQL, "cmlCheckUserInGroup SQL 1 " );
+    }
 
     status = cmlGetStringValueFromSql(
                  "select user_id from R_USER_MAIN where user_name=? and zone_name=? and user_type_name!='rodsgroup'",
                  sVal, MAX_NAME_LEN, userName, userZone, 0, icss );
-    if ( status == CAT_NO_ROWS_FOUND ) { return ( CAT_INVALID_USER ); }
-    if ( status ) { return( status ); }
+    if ( status == CAT_NO_ROWS_FOUND ) {
+        return ( CAT_INVALID_USER );
+    }
+    if ( status ) {
+        return( status );
+    }
 
-    if ( logSQL_CML != 0 ) { rodsLog( LOG_SQL, "cmlCheckUserInGroup SQL 2 " ); }
+    if ( logSQL_CML != 0 ) {
+        rodsLog( LOG_SQL, "cmlCheckUserInGroup SQL 2 " );
+    }
 
     status = cmlGetIntegerValueFromSql(
                  "select group_user_id from R_USER_GROUP where user_id=? and group_user_id = (select user_id from R_USER_MAIN where user_type_name='rodsgroup' and user_name=?)",
                  &iVal, sVal,  groupName, 0, 0, 0, icss );
-    if ( status ) { return( status ); }
+    if ( status ) {
+        return( status );
+    }
     return( 0 );
 }
 
@@ -1046,7 +1136,9 @@ cmlCheckTicketRestrictions( char *ticketId, char *ticketHost,
 
     /* first, check if there are any host restrictions, and if so
        return error if the connected client host is not in the list */
-    if ( logSQL_CML != 0 ) { rodsLog( LOG_SQL, "cmlCheckTicketRestrictions SQL 1" ); }
+    if ( logSQL_CML != 0 ) {
+        rodsLog( LOG_SQL, "cmlCheckTicketRestrictions SQL 1" );
+    }
     status = cmlGetFirstRowFromSqlBV(
                  "select host from R_TICKET_ALLOWED_HOSTS where ticket_id=?",
                  ticketId, "", "", "",  &stmtNum, icss );
@@ -1054,7 +1146,9 @@ cmlCheckTicketRestrictions( char *ticketId, char *ticketHost,
         hostOK = 1;
     }
     else {
-        if ( status != 0 ) { return( status ); }
+        if ( status != 0 ) {
+            return( status );
+        }
     }
     for ( ; status != CAT_NO_ROWS_FOUND; ) {
         if ( strncmp( ticketHost,
@@ -1063,12 +1157,18 @@ cmlCheckTicketRestrictions( char *ticketId, char *ticketHost,
             hostOK = 1;
         }
         status = cmlGetNextRowFromStatement( stmtNum, icss );
-        if ( status != 0 && status != CAT_NO_ROWS_FOUND ) { return( status ); }
+        if ( status != 0 && status != CAT_NO_ROWS_FOUND ) {
+            return( status );
+        }
     }
-    if ( hostOK == 0 ) { return( CAT_TICKET_HOST_EXCLUDED ); }
+    if ( hostOK == 0 ) {
+        return( CAT_TICKET_HOST_EXCLUDED );
+    }
 
     /* Now check on user restrictions */
-    if ( logSQL_CML != 0 ) { rodsLog( LOG_SQL, "cmlCheckTicketRestrictions SQL 2" ); }
+    if ( logSQL_CML != 0 ) {
+        rodsLog( LOG_SQL, "cmlCheckTicketRestrictions SQL 2" );
+    }
     status = cmlGetFirstRowFromSqlBV(
                  "select user_name from R_TICKET_ALLOWED_USERS where ticket_id=?",
                  ticketId, "", "", "",  &stmtNum, icss );
@@ -1076,7 +1176,9 @@ cmlCheckTicketRestrictions( char *ticketId, char *ticketHost,
         userOK = 1;
     }
     else {
-        if ( status != 0 ) { return( status ); }
+        if ( status != 0 ) {
+            return( status );
+        }
     }
     for ( ; status != CAT_NO_ROWS_FOUND; ) {
         if ( strncmp( userName,
@@ -1093,12 +1195,18 @@ cmlCheckTicketRestrictions( char *ticketId, char *ticketHost,
             }
         }
         status = cmlGetNextRowFromStatement( stmtNum, icss );
-        if ( status != 0 && status != CAT_NO_ROWS_FOUND ) { return( status ); }
+        if ( status != 0 && status != CAT_NO_ROWS_FOUND ) {
+            return( status );
+        }
     }
-    if ( userOK == 0 ) { return( CAT_TICKET_USER_EXCLUDED ); }
+    if ( userOK == 0 ) {
+        return( CAT_TICKET_USER_EXCLUDED );
+    }
 
     /* Now check on group restrictions */
-    if ( logSQL_CML != 0 ) { rodsLog( LOG_SQL, "cmlCheckTicketRestrictions SQL 3" ); }
+    if ( logSQL_CML != 0 ) {
+        rodsLog( LOG_SQL, "cmlCheckTicketRestrictions SQL 3" );
+    }
     status = cmlGetFirstRowFromSqlBV(
                  "select group_name from R_TICKET_ALLOWED_GROUPS where ticket_id=?",
                  ticketId, "", "", "",  &stmtNum, icss );
@@ -1106,7 +1214,9 @@ cmlCheckTicketRestrictions( char *ticketId, char *ticketHost,
         groupOK = 1;
     }
     else {
-        if ( status != 0 ) { return( status ); }
+        if ( status != 0 ) {
+            return( status );
+        }
     }
     for ( ; status != CAT_NO_ROWS_FOUND; ) {
         int status2;
@@ -1117,9 +1227,13 @@ cmlCheckTicketRestrictions( char *ticketId, char *ticketHost,
             groupOK = 1;
         }
         status = cmlGetNextRowFromStatement( stmtNum, icss );
-        if ( status != 0 && status != CAT_NO_ROWS_FOUND ) { return( status ); }
+        if ( status != 0 && status != CAT_NO_ROWS_FOUND ) {
+            return( status );
+        }
     }
-    if ( groupOK == 0 ) { return( CAT_TICKET_GROUP_EXCLUDED ); }
+    if ( groupOK == 0 ) {
+        return( CAT_TICKET_GROUP_EXCLUDED );
+    }
     return( 0 );
 }
 
@@ -1159,7 +1273,9 @@ int checkObjIdByTicket( char *dataId, char *accessLevel,
              accessLevel );
 #endif
 
-    for ( i = 0; i < 10; i++ ) { iVal[i] = NAME_LEN; }
+    for ( i = 0; i < 10; i++ ) {
+        iVal[i] = NAME_LEN;
+    }
 
     cVal[0] = ticketId;
     cVal[1] = usesLimit;
@@ -1167,7 +1283,9 @@ int checkObjIdByTicket( char *dataId, char *accessLevel,
     cVal[3] = ticketExpiry;
     cVal[4] = restrictions;
     if ( strncmp( accessLevel, "modify", 6 ) == 0 ) {
-        if ( logSQL_CML != 0 ) { rodsLog( LOG_SQL, "checkObjIdByTicket SQL 1 " ); }
+        if ( logSQL_CML != 0 ) {
+            rodsLog( LOG_SQL, "checkObjIdByTicket SQL 1 " );
+        }
         /* ticket must also be of type 'write', and get the
             writeFileCount and writeFileLimit  */
         cVal[5] = writeFileCount;
@@ -1182,20 +1300,26 @@ int checkObjIdByTicket( char *dataId, char *accessLevel,
     }
     else {
         /* don't check ticket type, 'read' or 'write' is fine */
-        if ( logSQL_CML != 0 ) { rodsLog( LOG_SQL, "checkObjIdByTicket SQL 2 " ); }
+        if ( logSQL_CML != 0 ) {
+            rodsLog( LOG_SQL, "checkObjIdByTicket SQL 2 " );
+        }
         status = cmlGetStringValuesFromSql(
                      "select ticket_id, uses_limit, uses_count, ticket_expiry_ts, restrictions from R_TICKET_MAIN where ticket_string = ? and (object_id = ? or object_id in (select coll_id from R_DATA_MAIN where data_id = ?))",
                      cVal, iVal, 5,
                      ticketStr, dataId, dataId, icss );
     }
 
-    if ( status != 0 ) { return ( CAT_TICKET_INVALID ); }
+    if ( status != 0 ) {
+        return ( CAT_TICKET_INVALID );
+    }
 
     if ( strncmp( ticketId, prevTicketId, sizeof( prevTicketId ) ) != 0 ) {
         strncpy( prevTicketId, ticketId, sizeof( prevTicketId ) );
         status = cmlAudit3( AU_USE_TICKET, ticketId, userName, userZone,
                             ticketStr, icss );
-        if ( status != 0 ) { return( status ); }
+        if ( status != 0 ) {
+            return( status );
+        }
     }
 
     if ( ticketExpiry[0] != '\0' ) {
@@ -1214,7 +1338,9 @@ int checkObjIdByTicket( char *dataId, char *accessLevel,
 
     status = cmlCheckTicketRestrictions( ticketId, ticketHost,
                                          userName, userZone, icss );
-    if ( status != 0 ) { return( status ); }
+    if ( status != 0 ) {
+        return( status );
+    }
 
     if ( strncmp( accessLevel, "modify", 6 ) == 0 ) {
         iWriteByteLimit = atoi( writeByteLimit );
@@ -1239,11 +1365,15 @@ int checkObjIdByTicket( char *dataId, char *accessLevel,
                           iWriteFileCount );
                 cllBindVars[cllBindVarCount++] = myWriteFileCount;
                 cllBindVars[cllBindVarCount++] = ticketId;
-                if ( logSQL_CML != 0 ) { rodsLog( LOG_SQL, "checkObjIdByTicket SQL 3 " ); }
+                if ( logSQL_CML != 0 ) {
+                    rodsLog( LOG_SQL, "checkObjIdByTicket SQL 3 " );
+                }
                 status =  cmlExecuteNoAnswerSql(
                               "update R_TICKET_MAIN set write_file_count=? where ticket_id=?",
                               icss );
-                if ( status != 0 ) { return( status ); }
+                if ( status != 0 ) {
+                    return( status );
+                }
 #ifndef ORA_ICAT
                 /* as with auditing, do a commit on disconnect if needed */
                 cllCheckPending( "", 2, icss->databaseType );
@@ -1266,10 +1396,14 @@ int checkObjIdByTicket( char *dataId, char *accessLevel,
             snprintf( myUsesCount, sizeof myUsesCount, "%d", iUsesCount );
             cllBindVars[cllBindVarCount++] = myUsesCount;
             cllBindVars[cllBindVarCount++] = ticketId;
-            if ( logSQL_CML != 0 ) { rodsLog( LOG_SQL, "checkObjIdByTicket SQL 4 " ); }
+            if ( logSQL_CML != 0 ) {
+                rodsLog( LOG_SQL, "checkObjIdByTicket SQL 4 " );
+            }
             status =  cmlExecuteNoAnswerSql(
                           "update R_TICKET_MAIN set uses_count=? where ticket_id=?", icss );
-            if ( status != 0 ) { return( status ); }
+            if ( status != 0 ) {
+                return( status );
+            }
 #ifndef ORA_ICAT
             /* as with auditing, do a commit on disconnect if needed*/
             cllCheckPending( "", 2, icss->databaseType );
@@ -1297,33 +1431,47 @@ cmlTicketUpdateWriteBytes( char *ticketStr,
     rodsLong_t iNewByteCount;
 
     iDataSize = atoll( dataSize );
-    if ( iDataSize == 0 ) { return( 0 ); }
+    if ( iDataSize == 0 ) {
+        return( 0 );
+    }
 
-    for ( i = 0; i < 10; i++ ) { iVal[i] = NAME_LEN; }
+    for ( i = 0; i < 10; i++ ) {
+        iVal[i] = NAME_LEN;
+    }
 
     cVal[0] = ticketId;
     cVal[1] = writeByteCount;
     cVal[2] = writeByteLimit;
 
-    if ( logSQL_CML != 0 ) { rodsLog( LOG_SQL, "cmlTicketUpdateWriteBytes SQL 1 " ); }
+    if ( logSQL_CML != 0 ) {
+        rodsLog( LOG_SQL, "cmlTicketUpdateWriteBytes SQL 1 " );
+    }
     status = cmlGetStringValuesFromSql(
                  "select ticket_id, write_byte_count, write_byte_limit from R_TICKET_MAIN where ticket_type = 'write' and ticket_string = ? and (object_id = ? or object_id in (select coll_id from R_DATA_MAIN where data_id = ?))",
                  cVal, iVal, 3,
                  ticketStr, objectId, objectId, icss );
-    if ( status != 0 ) { return( status ); }
+    if ( status != 0 ) {
+        return( status );
+    }
     iWriteByteLimit = atoll( writeByteLimit );
     iWriteByteCount = atoll( writeByteCount );
 
-    if ( iWriteByteLimit == 0 ) { return( 0 ); }
+    if ( iWriteByteLimit == 0 ) {
+        return( 0 );
+    }
 
     iNewByteCount = iWriteByteCount + iDataSize;
     snprintf( myWriteByteCount, sizeof myWriteByteCount, "%lld", iNewByteCount );
     cllBindVars[cllBindVarCount++] = myWriteByteCount;
     cllBindVars[cllBindVarCount++] = ticketId;
-    if ( logSQL_CML != 0 ) { rodsLog( LOG_SQL, "cmlTicketUpdateWriteBytes SQL 2 " ); }
+    if ( logSQL_CML != 0 ) {
+        rodsLog( LOG_SQL, "cmlTicketUpdateWriteBytes SQL 2 " );
+    }
     status =  cmlExecuteNoAnswerSql(
                   "update R_TICKET_MAIN set write_byte_count=? where ticket_id=?", icss );
-    if ( status != 0 ) { return( status ); }
+    if ( status != 0 ) {
+        return( status );
+    }
 #ifndef ORA_ICAT
     /* as with auditing, do a commit on disconnect if needed */
     cllCheckPending( "", 2, icss->databaseType );
@@ -1349,10 +1497,14 @@ int cmlCheckDataObjId( char *dataId, char *userName,  char *zoneName,
         status = checkObjIdByTicket( dataId, accessLevel, ticketStr,
                                      ticketHost, userName, zoneName,
                                      icss );
-        if ( status != 0 ) { return ( status ); }
+        if ( status != 0 ) {
+            return ( status );
+        }
     }
     else {
-        if ( logSQL_CML != 0 ) { rodsLog( LOG_SQL, "cmlCheckDataObjId SQL 1 " ); }
+        if ( logSQL_CML != 0 ) {
+            rodsLog( LOG_SQL, "cmlCheckDataObjId SQL 1 " );
+        }
         status = cmlGetIntegerValueFromSql(
                      "select object_id from R_OBJT_ACCESS OA, R_DATA_MAIN DM, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where OA.object_id=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = ?",
                      &iVal,
@@ -1362,9 +1514,13 @@ int cmlCheckDataObjId( char *dataId, char *userName,  char *zoneName,
                      accessLevel,
                      0,
                      icss );
-        if ( iVal == 0 ) { return ( CAT_NO_ACCESS_PERMISSION ); }
+        if ( iVal == 0 ) {
+            return ( CAT_NO_ACCESS_PERMISSION );
+        }
     }
-    if ( status != 0 ) { return ( CAT_NO_ACCESS_PERMISSION ); }
+    if ( status != 0 ) {
+        return ( CAT_NO_ACCESS_PERMISSION );
+    }
     cmlAudit2( AU_ACCESS_GRANTED, dataId, userName, zoneName, accessLevel, icss );
     return( status );
 }
@@ -1379,13 +1535,19 @@ int cmlCheckGroupAdminAccess( char *userName, char *userZone,
     char sVal[MAX_NAME_LEN];
     rodsLong_t iVal;
 
-    if ( logSQL_CML != 0 ) { rodsLog( LOG_SQL, "cmlCheckGroupAdminAccess SQL 1 " ); }
+    if ( logSQL_CML != 0 ) {
+        rodsLog( LOG_SQL, "cmlCheckGroupAdminAccess SQL 1 " );
+    }
 
     status = cmlGetStringValueFromSql(
                  "select user_id from R_USER_MAIN where user_name=? and zone_name=? and user_type_name='groupadmin'",
                  sVal, MAX_NAME_LEN, userName, userZone, 0, icss );
-    if ( status == CAT_NO_ROWS_FOUND ) { return ( CAT_INSUFFICIENT_PRIVILEGE_LEVEL ); }
-    if ( status ) { return( status ); }
+    if ( status == CAT_NO_ROWS_FOUND ) {
+        return ( CAT_INSUFFICIENT_PRIVILEGE_LEVEL );
+    }
+    if ( status ) {
+        return( status );
+    }
 
     // =-=-=-=-=-=-=-
     // JMC - backport 4772
@@ -1397,13 +1559,19 @@ int cmlCheckGroupAdminAccess( char *userName, char *userZone,
              so if the above check passed, the user is OK */
     }
     // =-=-=-=-=-=-=-
-    if ( logSQL_CML != 0 ) { rodsLog( LOG_SQL, "cmlCheckGroupAdminAccess SQL 2 " ); }
+    if ( logSQL_CML != 0 ) {
+        rodsLog( LOG_SQL, "cmlCheckGroupAdminAccess SQL 2 " );
+    }
 
     status = cmlGetIntegerValueFromSql(
                  "select group_user_id from R_USER_GROUP where user_id=? and group_user_id = (select user_id from R_USER_MAIN where user_type_name='rodsgroup' and user_name=?)",
                  &iVal, sVal,  groupName, 0, 0, 0, icss );
-    if ( status == CAT_NO_ROWS_FOUND ) { return ( CAT_INSUFFICIENT_PRIVILEGE_LEVEL ); }
-    if ( status ) { return( status ); }
+    if ( status == CAT_NO_ROWS_FOUND ) {
+        return ( CAT_INSUFFICIENT_PRIVILEGE_LEVEL );
+    }
+    if ( status ) {
+        return( status );
+    }
     return( 0 );
 }
 
@@ -1442,9 +1610,13 @@ cmlAudit1( int actionId, char *clientUser, char *zone, char *targetUser,
     char actionIdStr[50];
     int status;
 
-    if ( auditEnabled == 0 ) { return( 0 ); }
+    if ( auditEnabled == 0 ) {
+        return( 0 );
+    }
 
-    if ( logSQL_CML != 0 ) { rodsLog( LOG_SQL, "cmlAudit1 SQL 1 " ); }
+    if ( logSQL_CML != 0 ) {
+        rodsLog( LOG_SQL, "cmlAudit1 SQL 1 " );
+    }
 
     getNowStr( myTime );
 
@@ -1483,9 +1655,13 @@ cmlAudit2( int actionId, char *dataId, char *userName, char *zoneName,
     char actionIdStr[50];
     int status;
 
-    if ( auditEnabled == 0 ) { return( 0 ); }
+    if ( auditEnabled == 0 ) {
+        return( 0 );
+    }
 
-    if ( logSQL_CML != 0 ) { rodsLog( LOG_SQL, "cmlAudit2 SQL 1 " ); }
+    if ( logSQL_CML != 0 ) {
+        rodsLog( LOG_SQL, "cmlAudit2 SQL 1 " );
+    }
 
     getNowStr( myTime );
 
@@ -1526,7 +1702,9 @@ cmlAudit3( int actionId, char *dataId, char *userName, char *zoneName,
     int status;
     char myComment[AUDIT_COMMENT_MAX_SIZE + 10];
 
-    if ( auditEnabled == 0 ) { return( 0 ); }
+    if ( auditEnabled == 0 ) {
+        return( 0 );
+    }
 
     getNowStr( myTime );
 
@@ -1553,7 +1731,9 @@ cmlAudit3( int actionId, char *dataId, char *userName, char *zoneName,
                      "insert into R_OBJT_AUDIT (object_id, user_id, action_id, r_comment, create_ts, modify_ts) values (?, (select user_id from R_USER_MAIN where user_name=? and zone_name=(select zone_name from R_ZONE_MAIN where zone_type_name='local')), ?, ?, ?, ?)", icss );
     }
     else {
-        if ( logSQL_CML != 0 ) { rodsLog( LOG_SQL, "cmlAudit3 SQL 2 " ); }
+        if ( logSQL_CML != 0 ) {
+            rodsLog( LOG_SQL, "cmlAudit3 SQL 2 " );
+        }
         cllBindVars[0] = dataId;
         cllBindVars[1] = userName;
         cllBindVars[2] = zoneName;
@@ -1592,7 +1772,9 @@ cmlAudit4( int actionId, char *sql, char *sqlParm, char *userName,
     int status;
     int i;
 
-    if ( auditEnabled == 0 ) { return( 0 ); }
+    if ( auditEnabled == 0 ) {
+        return( 0 );
+    }
 
     getNowStr( myTime );
 
@@ -1626,7 +1808,9 @@ cmlAudit4( int actionId, char *sql, char *sqlParm, char *userName,
         status = cmlExecuteNoAnswerSql( mySQL, icss );
     }
     else {
-        if ( logSQL_CML != 0 ) { rodsLog( LOG_SQL, "cmlAudit4 SQL 2 " ); }
+        if ( logSQL_CML != 0 ) {
+            rodsLog( LOG_SQL, "cmlAudit4 SQL 2 " );
+        }
         snprintf( mySQL, MAX_SQL_SIZE,
                   "insert into R_OBJT_AUDIT (object_id, user_id, action_id, r_comment, create_ts, modify_ts) values ((%s), (select user_id from R_USER_MAIN where user_name=? and zone_name=?), ?, ?, ?, ?)",
                   sql );
@@ -1670,7 +1854,9 @@ cmlAudit5( int actionId, char *objId, char *userId, char *comment,
     char actionIdStr[50];
     int status;
 
-    if ( auditEnabled == 0 ) { return( 0 ); }
+    if ( auditEnabled == 0 ) {
+        return( 0 );
+    }
 
     getNowStr( myTime );
 

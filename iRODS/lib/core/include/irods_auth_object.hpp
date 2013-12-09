@@ -26,15 +26,33 @@ namespace irods {
         virtual auth_object&  operator=( const auth_object& _rhs );
 
         /// @brief Accessor for the rError pointer
-        virtual rError_t* r_error( void ) const { return r_error_; }
-        virtual std::string request_result() const { return request_result_; }
-        virtual void request_result( const std::string& _r ) { request_result_ = _r; }
-        virtual std::string context() const { return context_; }
-        virtual void context( const std::string& _c ) { context_ = _c; }
-        virtual std::string user_name() const { return user_name_; }
-        virtual std::string zone_name() const { return zone_name_; }
-        virtual void user_name( const std::string& _un ) { user_name_ = _un; }
-        virtual void zone_name( const std::string& _zn ) { zone_name_ = _zn; }
+        virtual rError_t* r_error( void ) const {
+            return r_error_;
+        }
+        virtual std::string request_result() const {
+            return request_result_;
+        }
+        virtual void request_result( const std::string& _r ) {
+            request_result_ = _r;
+        }
+        virtual std::string context() const {
+            return context_;
+        }
+        virtual void context( const std::string& _c ) {
+            context_ = _c;
+        }
+        virtual std::string user_name() const {
+            return user_name_;
+        }
+        virtual std::string zone_name() const {
+            return zone_name_;
+        }
+        virtual void user_name( const std::string& _un ) {
+            user_name_ = _un;
+        }
+        virtual void zone_name( const std::string& _zn ) {
+            zone_name_ = _zn;
+        }
 
         /// @brief Comparison operator
         virtual bool operator==( const auth_object& _rhs ) const;
@@ -66,7 +84,7 @@ namespace irods {
         std::string context_;
     };
 
-    /// @brief Helpful typedef
+/// @brief Helpful typedef
     typedef boost::shared_ptr<auth_object> auth_object_ptr;
 
 }; // namespace irods

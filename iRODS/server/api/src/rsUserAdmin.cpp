@@ -84,7 +84,9 @@ _rsUserAdmin( rsComm_t *rsComm, userAdminInp_t *userAdminInp ) {
                              userAdminInp->arg1,
                              userAdminInp->arg2,
                              userAdminInp->arg3 );
-        if ( status != 0 ) { chlRollback( rsComm ); }
+        if ( status != 0 ) {
+            chlRollback( rsComm );
+        }
 
         status2 = applyRuleArg( "acPostProcForModifyUser", args, argc,
                                 &rei2, NO_SAVE_REI );
@@ -159,7 +161,9 @@ _rsUserAdmin( rsComm_t *rsComm, userAdminInp_t *userAdminInp ) {
                              userAdminInp->arg1,
                              "password",
                              userAdminInp->arg2 );
-        if ( status != 0 ) { chlRollback( rsComm ); }
+        if ( status != 0 ) {
+            chlRollback( rsComm );
+        }
         return( status );
     }
     if ( strcmp( userAdminInp->arg0, "mkgroup" ) == 0 ) {
@@ -181,7 +185,9 @@ _rsUserAdmin( rsComm_t *rsComm, userAdminInp_t *userAdminInp ) {
         rei.uoic = &rsComm->clientUser;
         rei.uoip = &rsComm->proxyUser;
         status = applyRuleArg( "acCreateUser", args, 0, &rei, SAVE_REI );
-        if ( status != 0 ) { chlRollback( rsComm ); }
+        if ( status != 0 ) {
+            chlRollback( rsComm );
+        }
         return( status );
     }
 

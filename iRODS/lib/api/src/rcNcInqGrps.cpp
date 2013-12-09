@@ -95,13 +95,17 @@ freeNcInqGrpsOut( ncInqGrpsOut_t **ncInqGrpsOut ) {
     ncInqGrpsOut_t *myNInqGrpsOut;
     int i;
 
-    if ( ncInqGrpsOut == NULL || *ncInqGrpsOut == NULL ) { return 0; }
+    if ( ncInqGrpsOut == NULL || *ncInqGrpsOut == NULL ) {
+        return 0;
+    }
 
     myNInqGrpsOut = *ncInqGrpsOut;
     for ( i = 0; i < myNInqGrpsOut->ngrps; i++ ) {
         free( myNInqGrpsOut->grpName[i] );
     }
-    if ( myNInqGrpsOut->grpName != NULL ) { free( myNInqGrpsOut->grpName ); }
+    if ( myNInqGrpsOut->grpName != NULL ) {
+        free( myNInqGrpsOut->grpName );
+    }
     free( myNInqGrpsOut );
     *ncInqGrpsOut = NULL;
     return 0;

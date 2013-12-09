@@ -124,8 +124,8 @@ namespace irods {
         return result;
     }
 
-    // =-=-=-=-=-=-=-
-    // function to load and return an initialized auth plugin
+// =-=-=-=-=-=-=-
+// function to load and return an initialized auth plugin
     error load_auth_plugin(
         auth_ptr&       _plugin,
         const std::string& _plugin_name,

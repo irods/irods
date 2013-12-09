@@ -97,7 +97,9 @@ unbunBulkBuf(
     int intOffset[MAX_NUM_BULK_OPR_FILES];
     char phyBunPath[MAX_NAME_LEN];
 
-    if ( bulkOprInp == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( bulkOprInp == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
 
     if ( ( objPath = getSqlResultByInx( attriArray, COL_DATA_NAME ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
@@ -326,8 +328,12 @@ createBunDirForBulkPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         snprintf( phyBunDir, MAX_NAME_LEN, "%s/%s.%d", dataObjInfo.filePath,
                   TMP_PHY_BUN_DIR, ( int ) random() );
         path p( phyBunDir );
-        if ( exists( p ) ) { status = 0; }
-        else { status = -1; }
+        if ( exists( p ) ) {
+            status = 0;
+        }
+        else {
+            status = -1;
+        }
     }
     while ( status == 0 );
 
@@ -360,7 +366,9 @@ bulkRegUnbunSubfiles( rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string&
     bzero( &renamedPhyFiles, sizeof( renamedPhyFiles ) );
     initBulkDataObjRegInp( &bulkDataObjRegInp );
     /* the continueInx is used for the matching of objPath */
-    if ( attriArray != NULL ) { attriArray->continueInx = 0; }
+    if ( attriArray != NULL ) {
+        attriArray->continueInx = 0;
+    }
 
     status = _bulkRegUnbunSubfiles( rsComm, rescInfo, rescHier, rescGroupName, collection,
                                     phyBunDir, flags, &bulkDataObjRegInp, &renamedPhyFiles, attriArray );
@@ -533,7 +541,9 @@ bulkProcAndRegSubfile( rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string
         if ( modFlag > 0 ) {
             status = addRenamedPhyFile( subObjPath, fileRenameInp.oldFileName,
                                         fileRenameInp.newFileName, renamedPhyFiles );
-            if ( status < 0 ) { return status; }
+            if ( status < 0 ) {
+                return status;
+            }
         }
     }
     else {
@@ -629,7 +639,9 @@ int
 addRenamedPhyFile( char *subObjPath, char *oldFileName, char *newFileName,
                    renamedPhyFiles_t *renamedPhyFiles ) {
     if ( subObjPath == NULL || oldFileName == NULL || newFileName == NULL ||
-            renamedPhyFiles == NULL ) { return USER__NULL_INPUT_ERR; }
+            renamedPhyFiles == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
 
     if ( renamedPhyFiles->count >= MAX_NUM_BULK_OPR_FILES ) {
         rodsLog( LOG_ERROR,
@@ -653,7 +665,9 @@ postProcRenamedPhyFiles( renamedPhyFiles_t *renamedPhyFiles, int regStatus ) {
     int status = 0;
     int savedStatus = 0;
 
-    if ( renamedPhyFiles == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( renamedPhyFiles == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
 
     if ( regStatus >= 0 ) {
         for ( i = 0; i < renamedPhyFiles->count; i++ ) {
@@ -686,7 +700,9 @@ cleanupBulkRegFiles( rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp ) {
     char *tmpFilePath, *tmpRescName;
     int i;
 
-    if ( bulkDataObjRegInp == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( bulkDataObjRegInp == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
 
     if ( ( filePath =
                 getSqlResultByInx( bulkDataObjRegInp, COL_D_DATA_PATH ) ) == NULL ) {
@@ -739,7 +755,9 @@ postProcBulkPut( rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
         return status;
     }
 
-    if ( rei.status == POLICY_OFF ) { return 0; }
+    if ( rei.status == POLICY_OFF ) {
+        return 0;
+    }
 
     if ( ( objPath =
                 getSqlResultByInx( bulkDataObjRegInp, COL_DATA_NAME ) ) == NULL ) {
@@ -840,7 +858,9 @@ postProcBulkPut( rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
         dataObjInfo_t *tmpDataObjInfo;
 
         tmpDataObjInfo = ( dataObjInfo_t * )malloc( sizeof( dataObjInfo_t ) );
-        if ( tmpDataObjInfo == NULL ) { return SYS_MALLOC_ERR; }
+        if ( tmpDataObjInfo == NULL ) {
+            return SYS_MALLOC_ERR;
+        }
 
         *tmpDataObjInfo = dataObjInfo;
 
@@ -872,7 +892,9 @@ postProcBulkPut( rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
         rei.doi = tmpDataObjInfo;
 
         status = applyRule( "acPostProcForPut", NULL, &rei, NO_SAVE_REI );
-        if ( status < 0 ) { savedStatus = status; }
+        if ( status < 0 ) {
+            savedStatus = status;
+        }
 
         freeAllDataObjInfo( rei.doi );
     }

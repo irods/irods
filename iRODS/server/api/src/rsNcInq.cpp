@@ -31,7 +31,9 @@ rsNcInq( rsComm_t *rsComm, ncInqInp_t *ncInqInp, ncInqOut_t **ncInqOut ) {
                  l1descInx );
         return ( SYS_FILE_DESC_OUT_OF_RANGE );
     }
-    if ( L1desc[l1descInx].inuseFlag != FD_INUSE ) { return BAD_INPUT_DESC_INDEX; }
+    if ( L1desc[l1descInx].inuseFlag != FD_INUSE ) {
+        return BAD_INPUT_DESC_INDEX;
+    }
     if ( L1desc[l1descInx].openedAggInfo.ncAggInfo != NULL ) {
         status = rsNcInqColl( rsComm, ncInqInp, ncInqOut );
     }
@@ -158,7 +160,9 @@ if ( status != NC_NOERR ) {
     return status;
 }
 
-if ( ncInqInp->paramType == 0 ) { ncInqInp->paramType = NC_ALL_TYPE; }
+if ( ncInqInp->paramType == 0 ) {
+    ncInqInp->paramType = NC_ALL_TYPE;
+}
 if ( ( ncInqInp->paramType & NC_DIM_TYPE ) == 0 ) {
     dimType = ndims = 0;
 }
@@ -189,9 +193,15 @@ else {
 
 if ( allFlag == 0 ) {
     /* indiviudal query. get only a single result */
-    if ( ndims > 0 ) { ndims = 1; }
-    else if ( ngatts > 0 ) { ngatts = 1; }
-    else if ( nvars > 0 ) { nvars = 1; }
+    if ( ndims > 0 ) {
+        ndims = 1;
+    }
+    else if ( ngatts > 0 ) {
+        ngatts = 1;
+    }
+    else if ( nvars > 0 ) {
+        nvars = 1;
+    }
 }
 
 status = nc_inq_format( ncid, &format );
@@ -312,9 +322,13 @@ inqAtt( int ncid, int varid, int natt, char *name, int id, int allFlag,
     size_t length;
 
 
-    if ( natt <= 0 ) { return 0; }
+    if ( natt <= 0 ) {
+        return 0;
+    }
 
-    if ( attOut == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( attOut == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
 
     for ( i = 0; i < natt; i++ ) {
         if ( allFlag != 0 ) {

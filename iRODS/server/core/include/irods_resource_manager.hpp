@@ -8,12 +8,12 @@
 #include "irods_first_class_object.hpp"
 
 namespace irods {
-    // =-=-=-=-=-=-=-
-    /// @brief definition of the resource interface
+// =-=-=-=-=-=-=-
+/// @brief definition of the resource interface
     const std::string RESOURCE_INTERFACE( "irods_resource_interface" );
 
-    // =-=-=-=-=-=-=-
-    /// @brief special resource for local file system operations only
+// =-=-=-=-=-=-=-
+/// @brief special resource for local file system operations only
     const std::string LOCAL_USE_ONLY_RESOURCE( "LOCAL_USE_ONLY_RESOURCE" );
     const std::string LOCAL_USE_ONLY_RESOURCE_VAULT( "/var/lib/irods/LOCAL_USE_ONLY_RESOURCE_VAULT" );
     const std::string LOCAL_USE_ONLY_RESOURCE_TYPE( "unixfilesystem" );

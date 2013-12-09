@@ -368,7 +368,9 @@ getIrodsXmsgByMsgNum( int rcvTicket, int msgNumber,
 
     if ( msgNumber != ANY_MSG_NUMBER ) {
         while ( tmpIrodsXmsg != NULL ) {
-            if ( ( int ) tmpIrodsXmsg->sendXmsgInfo->msgNumber == msgNumber ) { break; }
+            if ( ( int ) tmpIrodsXmsg->sendXmsgInfo->msgNumber == msgNumber ) {
+                break;
+            }
             tmpIrodsXmsg = tmpIrodsXmsg->tnext;
         }
     }
@@ -607,7 +609,9 @@ procReqRoutine() {
         }
         initRsCommWithStartupPack( &rsComm, startupPack );
         /***** added by RAJA Nov 12, 2010 to take care of memory leak  found by J-Y **/
-        if ( startupPack != NULL ) { free( startupPack ); }
+        if ( startupPack != NULL ) {
+            free( startupPack );
+        }
         /***** added by RAJA Nov 12, 2010 to take care of memory leak  found by J-Y **/
 
 
@@ -636,9 +640,13 @@ procReqRoutine() {
                     break;	/* timedout or something */
                 }
             }
-            if ( numSock < 0 ) { break; }
+            if ( numSock < 0 ) {
+                break;
+            }
             status = readAndProcClientMsg( &rsComm, 0 );
-            if ( status < 0 ) { break; }
+            if ( status < 0 ) {
+                break;
+            }
         }
         close( rsComm.sock );
         free( myXmsgReq );

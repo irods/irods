@@ -41,19 +41,39 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // Accessors
-        inline rodsHostAddr_t addr()          const { return addr_;          }
-        inline std::string    sub_file_path() const { return sub_file_path_; }
-        inline size_t         offset()        const { return offset_;        }
-        inline specColl_t*    spec_coll()     const { return spec_coll_;     }
-        inline std::string    data_type()     const { return data_type_;     }
-        inline int            opr_type()      const { return opr_type_;      }
+        inline rodsHostAddr_t addr()          const {
+            return addr_;
+        }
+        inline std::string    sub_file_path() const {
+            return sub_file_path_;
+        }
+        inline size_t         offset()        const {
+            return offset_;
+        }
+        inline specColl_t*    spec_coll()     const {
+            return spec_coll_;
+        }
+        inline std::string    data_type()     const {
+            return data_type_;
+        }
+        inline int            opr_type()      const {
+            return opr_type_;
+        }
 
         // =-=-=-=-=-=-=-
         // Mutators
-        inline void addr( rodsHostAddr_t _addr ) { addr_      = _addr; }
-        inline void spec_coll( specColl_t*    _coll ) { spec_coll_ = _coll; }
-        inline void data_type( std::string    _dt ) { data_type_ = _dt;   }
-        inline void opr_type( int            _ot ) {  opr_type_ = _ot;   }
+        inline void addr( rodsHostAddr_t _addr ) {
+            addr_      = _addr;
+        }
+        inline void spec_coll( specColl_t*    _coll ) {
+            spec_coll_ = _coll;
+        }
+        inline void data_type( std::string    _dt ) {
+            data_type_ = _dt;
+        }
+        inline void opr_type( int            _ot ) {
+            opr_type_ = _ot;
+        }
 
     protected:
         // =-=-=-=-=-=-=-
@@ -70,8 +90,8 @@ namespace irods {
 
     }; // class structured_object
 
-    /// =-=-=-=-=-=-=-
-    /// @brief typedef for shared structured object pointer
+/// =-=-=-=-=-=-=-
+/// @brief typedef for shared structured object pointer
     typedef boost::shared_ptr< structured_object > structured_object_ptr;
 
 }; // namespace irods

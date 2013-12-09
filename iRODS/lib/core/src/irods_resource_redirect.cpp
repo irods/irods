@@ -16,9 +16,9 @@
 
 
 namespace irods {
-    /// =-=-=-=-=-=-=-
-    /// @breif function to handle collecting a vote from a resource
-    ///        for a given operation and fco
+/// =-=-=-=-=-=-=-
+/// @breif function to handle collecting a vote from a resource
+///        for a given operation and fco
     static
     error request_vote_for_file_object(
         rsComm_t*                _comm,
@@ -84,9 +84,9 @@ namespace irods {
 
     } // request_vote_for_file_object
 
-    /// =-=-=-=-=-=-=-
-    /// @breif function to handle resolving the hier given votes of the
-    ///        root resources for an open operation
+/// =-=-=-=-=-=-=-
+/// @breif function to handle resolving the hier given votes of the
+///        root resources for an open operation
     static
     error resolve_hier_for_open_without_keyword(
         rsComm_t*                _comm,
@@ -164,9 +164,9 @@ namespace irods {
 
     } // resolve_hier_for_open_without_keyword
 
-    /// =-=-=-=-=-=-=-
-    /// @breif function to handle resolving the hier given the fco and
-    ///        resource keyword
+/// =-=-=-=-=-=-=-
+/// @breif function to handle resolving the hier given the fco and
+///        resource keyword
     static
     error resolve_hier_for_open(
         rsComm_t*                _comm,
@@ -236,9 +236,9 @@ namespace irods {
 
     } // resolve_hier_for_open
 
-    /// =-=-=-=-=-=-=-
-    /// @breif function to handle resolving the hier given the fco and
-    ///        resource keyword
+/// =-=-=-=-=-=-=-
+/// @breif function to handle resolving the hier given the fco and
+///        resource keyword
     static
     error resolve_hier_for_create(
         rsComm_t*                _comm,
@@ -302,9 +302,9 @@ namespace irods {
 
     } // resolve_hier_for_create
 
-    /// =-=-=-=-=-=-=-
-    /// @breif function to handle resolving the hier given the fco and
-    ///        resource keyword for create or open depending on the keyword
+/// =-=-=-=-=-=-=-
+/// @breif function to handle resolving the hier given the fco and
+///        resource keyword for create or open depending on the keyword
     static
     error resolve_hier_for_create_or_open(
         rsComm_t*                _comm,
@@ -376,9 +376,9 @@ namespace irods {
 
     } // resolve_hier_for_create_or_open
 
-    /// =-=-=-=-=-=-=-
-    /// @breif function to query resource for chosen server to which to redirect
-    ///       for a given operation
+/// =-=-=-=-=-=-=-
+/// @breif function to query resource for chosen server to which to redirect
+///       for a given operation
     error resolve_resource_hierarchy(
         const std::string&   _oper,
         rsComm_t*            _comm,
@@ -531,9 +531,9 @@ namespace irods {
 
     } // resolve_resource_hierarchy
 
-    // =-=-=-=-=-=-=-
-    // static function to query resource for chosen server to which to redirect
-    // for a given operation
+// =-=-=-=-=-=-=-
+// static function to query resource for chosen server to which to redirect
+// for a given operation
     error resource_redirect( const std::string&   _oper,
                              rsComm_t*            _comm,
                              dataObjInp_t*        _data_obj_inp,

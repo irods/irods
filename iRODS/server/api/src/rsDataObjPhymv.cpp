@@ -109,7 +109,9 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     /* query rcat for resource info and sort it */
     status = getRescGrpForCreate( rsComm, dataObjInp, &myRescGrpInfo );
-    if ( status < 0 ) { return status; }
+    if ( status < 0 ) {
+        return status;
+    }
 
     initReiWithDataObjInp( &rei, rsComm, dataObjInp );
     status = applyRule( "acSetMultiReplPerResc", NULL, &rei, NO_SAVE_REI );

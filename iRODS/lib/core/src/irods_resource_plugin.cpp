@@ -18,8 +18,8 @@
 #include <dlfcn.h>
 
 namespace irods {
-    // =-=-=-=-=-=-=-
-    // public - ctor
+// =-=-=-=-=-=-=-
+// public - ctor
     resource::resource(
         const std::string& _inst,
         const std::string& _ctx ) :
@@ -30,14 +30,14 @@ namespace irods {
         stop_operation_( default_stop_operation ) {
     } // ctor
 
-    // =-=-=-=-=-=-=-
-    // public - dtor
+// =-=-=-=-=-=-=-
+// public - dtor
     resource::~resource( ) {
 
     } // dtor
 
-    // =-=-=-=-=-=-=-
-    // public - cctor
+// =-=-=-=-=-=-=-
+// public - cctor
     resource::resource( const resource& _rhs ) :
         plugin_base( _rhs ) {
         children_           = _rhs.children_;
@@ -51,8 +51,8 @@ namespace irods {
         properties_ = _rhs.properties_; // NOTE:: memory leak repaving old containers?
     } // cctor
 
-    // =-=-=-=-=-=-=-
-    // public - assignment
+// =-=-=-=-=-=-=-
+// public - assignment
     resource& resource::operator=( const resource& _rhs ) {
         if ( &_rhs == this ) {
             return *this;
@@ -73,9 +73,9 @@ namespace irods {
         return *this;
     } // operator=
 
-    // =-=-=-=-=-=-=-
-    // public - function which pulls all of the symbols out of the shared object and
-    //          associates them with their keys in the operations table
+// =-=-=-=-=-=-=-
+// public - function which pulls all of the symbols out of the shared object and
+//          associates them with their keys in the operations table
     error resource::delay_load( void* _handle ) {
         // =-=-=-=-=-=-=-
         // check params
@@ -183,9 +183,9 @@ namespace irods {
 
     } // delay_load
 
-    // =-=-=-=-=-=-=-
-    // public - add a child resource to this resource.  this is virtual in case a developer wants to
-    //          do something fancier.
+// =-=-=-=-=-=-=-
+// public - add a child resource to this resource.  this is virtual in case a developer wants to
+//          do something fancier.
     error resource::add_child( const std::string& _name, const std::string& _data, resource_ptr _resc ) {
         // =-=-=-=-=-=-=-
         // check params
@@ -205,9 +205,9 @@ namespace irods {
 
     } // add_child
 
-    // =-=-=-=-=-=-=-
-    // public - remove a child resource to this resource.  this is virtual in case a developer wants to
-    //          do something fancier.
+// =-=-=-=-=-=-=-
+// public - remove a child resource to this resource.  this is virtual in case a developer wants to
+//          do something fancier.
     error resource::remove_child( const std::string& _name ) {
         // =-=-=-=-=-=-=-
         // check params
@@ -231,16 +231,16 @@ namespace irods {
 
     } // remove_child
 
-    // =-=-=-=-=-=-=-
-    // public - mutator for parent pointer
+// =-=-=-=-=-=-=-
+// public - mutator for parent pointer
     error resource::set_parent( const resource_ptr& _resc ) {
         parent_ = _resc;
         return SUCCESS();
 
     } // set_parent
 
-    // =-=-=-=-=-=-=-
-    // public - accessor for parent pointer.  return value based on validity of the pointer
+// =-=-=-=-=-=-=-
+// public - accessor for parent pointer.  return value based on validity of the pointer
     error resource::get_parent( resource_ptr& _resc ) {
         _resc = parent_;
         if ( _resc.get() ) {
@@ -252,23 +252,23 @@ namespace irods {
 
     } // get_parent
 
-    // =-=-=-=-=-=-=-
-    // public - set a name for the developer provided start op
+// =-=-=-=-=-=-=-
+// public - set a name for the developer provided start op
     void resource::set_start_operation( const std::string& _op ) {
         start_opr_name_ = _op;
     } // resource::set_start_operation
 
-    // =-=-=-=-=-=-=-
-    // public - set a name for the developer provided stop op
+// =-=-=-=-=-=-=-
+// public - set a name for the developer provided stop op
     void resource::set_stop_operation( const std::string& _op ) {
         stop_opr_name_ = _op;
     } // resource::set_stop_operation
 
-    // END resource
-    // =-=-=-=-=-=-=-
+// END resource
+// =-=-=-=-=-=-=-
 
-    // =-=-=-=-=-=-=-
-    // function to load and return an initialized resource plugin
+// =-=-=-=-=-=-=-
+// function to load and return an initialized resource plugin
     error load_resource_plugin( resource_ptr&     _plugin,
                                 const std::string _plugin_name,
                                 const std::string _inst_name,

@@ -22,7 +22,9 @@ phybunUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
     status = initCondForPhybunOpr( myRodsEnv, myRodsArgs, &phyBundleCollInp,
                                    rodsPathInp );
 
-    if ( status < 0 ) { return status; }
+    if ( status < 0 ) {
+        return status;
+    }
 
     for ( i = 0; i < rodsPathInp->numSrc; i++ ) {
         collPath = &rodsPathInp->srcPath[i];	/* iRODS Collection */

@@ -20,7 +20,9 @@ rsBulkDataObjReg( rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
     int status;
     rodsServerHost_t *rodsServerHost = NULL;
 
-    if ( bulkDataObjRegInp->rowCnt <= 0 ) { return 0; }
+    if ( bulkDataObjRegInp->rowCnt <= 0 ) {
+        return 0;
+    }
 
     if ( ( objPath =
                 getSqlResultByInx( bulkDataObjRegInp, COL_DATA_NAME ) ) == NULL ) {

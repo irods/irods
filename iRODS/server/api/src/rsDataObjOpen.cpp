@@ -50,10 +50,14 @@ rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         openStat_t *openStat = NULL;
         status = rcDataObjOpenAndStat( rodsServerHost->conn, dataObjInp,
                                        &openStat );
-        if ( status < 0 ) { return status; }
+        if ( status < 0 ) {
+            return status;
+        }
         l1descInx = allocAndSetL1descForZoneOpr( status, dataObjInp,
                     rodsServerHost, openStat );
-        if ( openStat != NULL ) { free( openStat ); }
+        if ( openStat != NULL ) {
+            free( openStat );
+        }
         return ( l1descInx );
     }
     else {
@@ -205,7 +209,9 @@ _rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
                          "_rsDataObjOpen: stageBundledData of %s failed stat=%d",
                          dataObjInfoHead->objPath, status );
                 freeAllDataObjInfo( dataObjInfoHead );
-                if ( lockFd >= 0 ) { rsDataObjUnlock( rsComm, dataObjInp, lockFd ); } // JMC - backport 4604
+                if ( lockFd >= 0 ) {
+                    rsDataObjUnlock( rsComm, dataObjInp, lockFd );    // JMC - backport 4604
+                }
                 return status;
             }
         }
@@ -291,7 +297,9 @@ _rsDataObjOpenWithObjInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     int l1descInx;
     l1descInx = allocL1desc();
 
-    if ( l1descInx < 0 ) { return l1descInx; }
+    if ( l1descInx < 0 ) {
+        return l1descInx;
+    }
 
     replStatus = dataObjInfo->replStatus | OPEN_EXISTING_COPY;
 
@@ -483,7 +491,9 @@ createEmptyRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     }
 
     status = getRescGrpForCreate( rsComm, dataObjInp, &myRescGrpInfo );
-    if ( status < 0 || myRescGrpInfo == NULL ) { return status; } // JMC cppcheck
+    if ( status < 0 || myRescGrpInfo == NULL ) {
+        return status;    // JMC cppcheck
+    }
 
     myDataObjInfo = ( dataObjInfo_t* )malloc( sizeof( dataObjInfo_t ) );
     *myDataObjInfo = *( *dataObjInfoHead );
@@ -564,7 +574,9 @@ procDataObjOpenForWrite( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             getValByKey( &dataObjInp->condInput, DEST_RESC_NAME_KW ) != NULL ) {
         /* we don't have a copy in the DEST_RESC_NAME */
         status = getRescGrpForCreate( rsComm, dataObjInp, &myRescGrpInfo );
-        if ( status < 0 ) { return status; }
+        if ( status < 0 ) {
+            return status;
+        }
 
         /* we don't have a copy, so create an empty dataObjInfo */
         status = createEmptyRepl( rsComm, dataObjInp, dataObjInfoHead );

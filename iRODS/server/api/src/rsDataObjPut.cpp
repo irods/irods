@@ -102,7 +102,9 @@ rsDataObjPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
              * rsComplete knows what to do */
             l1descInx = allocAndSetL1descForZoneOpr(
                             ( *portalOprOut )->l1descInx, dataObjInp, rodsServerHost, NULL );
-            if ( l1descInx < 0 ) { return l1descInx; }
+            if ( l1descInx < 0 ) {
+                return l1descInx;
+            }
             ( *portalOprOut )->l1descInx = l1descInx;
             return status;
         }
@@ -143,7 +145,9 @@ _rsDataObjPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             /* update the rest of copies */
             addKeyVal( &dataObjInp->condInput, UPDATE_REPL_KW, "" );
             status = rsDataObjRepl( rsComm, dataObjInp, &transStat );
-            if ( transStat != NULL ) { free( transStat ); }
+            if ( transStat != NULL ) {
+                free( transStat );
+            }
         }
         if ( status >= 0 ) {
             int status2;
@@ -210,11 +214,15 @@ _rsDataObjPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         dataObjCloseInp.l1descInx = l1descInx;
         L1desc[l1descInx].oprStatus = retval;
         rsDataObjClose( rsComm, &dataObjCloseInp );
-        if ( allFlag == 1 ) { clearKeyVal( &replDataObjInp.condInput ); }
+        if ( allFlag == 1 ) {
+            clearKeyVal( &replDataObjInp.condInput );
+        }
     }
     else if ( allFlag == 1 ) {
         status = rsDataObjRepl( rsComm, &replDataObjInp, &transStat );
-        if ( transStat != NULL ) { free( transStat ); }
+        if ( transStat != NULL ) {
+            free( transStat );
+        }
         clearKeyVal( &replDataObjInp.condInput );
     }
 
@@ -329,7 +337,9 @@ l3DataPutSingleBuf( rsComm_t*     rsComm,
     /* get here when Put failed. and rescGroupName is a valid resc group.
      * Try other resc in the resc group */
     status = getRescGrpForCreate( rsComm, dataObjInp, &myRescGrpInfo );
-    if ( status < 0 ) { return bytesWritten; }
+    if ( status < 0 ) {
+        return bytesWritten;
+    }
     tmpRescGrpInfo = myRescGrpInfo;
     while ( tmpRescGrpInfo != NULL ) {
         tmpRescInfo = tmpRescGrpInfo->rescInfo;

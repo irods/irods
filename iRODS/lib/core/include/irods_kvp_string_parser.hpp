@@ -22,26 +22,26 @@
 #include <boost/algorithm/string.hpp>
 
 namespace irods {
-    /// =-=-=-=-=-=-=-
-    /// @brief default delimiter and key-value association
+/// =-=-=-=-=-=-=-
+/// @brief default delimiter and key-value association
     static const std::string KVP_DEF_DELIM( ";" );
     static const std::string KVP_DEF_ASSOC( "=" );
 
-    /// =-=-=-=-=-=-=-
-    /// @brief typeedef of key-value map
+/// =-=-=-=-=-=-=-
+/// @brief typeedef of key-value map
     typedef std::map< std::string, std::string > kvp_map_t;
 
-    /// =-=-=-=-=-=-=-
-    /// @brief function to return defined delimiter
+/// =-=-=-=-=-=-=-
+/// @brief function to return defined delimiter
     std::string kvp_delimiter();
 
-    /// =-=-=-=-=-=-=-
-    /// @brief function to return defined delimiter
+/// =-=-=-=-=-=-=-
+/// @brief function to return defined delimiter
     std::string kvp_association();
 
-    /// =-=-=-=-=-=-=-
-    /// @brief given a string, break the string along the delimiter and then
-    ///        break the tokens along the assignment for key-value pairs
+/// =-=-=-=-=-=-=-
+/// @brief given a string, break the string along the delimiter and then
+///        break the tokens along the assignment for key-value pairs
     error parse_kvp_string(
         const std::string& _str,                    // string to be parsed
         kvp_map_t&         _kvp,                    // map of kvp

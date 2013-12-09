@@ -18,7 +18,7 @@
 
 namespace irods {
 
-    // =-=-=-=-=-=-=-
+// =-=-=-=-=-=-=-
     /**
       * \class  operation_rule_execution_manager
       * \author Jason M. Coposky

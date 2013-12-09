@@ -168,7 +168,9 @@ initCondForNcattr( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
             ncRegGlobalAttrInp->attrNameArray[ncRegGlobalAttrInp->numAttrName] =
                 strdup( outBuf );
             ncRegGlobalAttrInp->numAttrName++;
-            if ( ncRegGlobalAttrInp->numAttrName >= MAX_NAME_LEN ) { break; }
+            if ( ncRegGlobalAttrInp->numAttrName >= MAX_NAME_LEN ) {
+                break;
+            }
         }
     }
 
@@ -233,7 +235,9 @@ regAttrCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
         else if ( collEnt.objType == COLL_OBJ_T ) {
             ncRegGlobalAttrInp_t childNcRegGlobalAttr;
             childNcRegGlobalAttr = *ncRegGlobalAttrInp;
-            if ( collEnt.specColl.collClass != NO_SPEC_COLL ) { continue; }
+            if ( collEnt.specColl.collClass != NO_SPEC_COLL ) {
+                continue;
+            }
             status = regAttrCollUtil( conn, collEnt.collName, myRodsEnv,
                                       rodsArgs, &childNcRegGlobalAttr );
             if ( status < 0 && status != CAT_NO_ROWS_FOUND ) {
@@ -301,7 +305,9 @@ rmAttrDataObjUtil( rcComm_t *conn, char *srcPath,
         modAVUMetadataInp.arg3 = "%";
         status = rcModAVUMetadata( conn, &modAVUMetadataInp );
 
-        if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) { status = 0; }
+        if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
+            status = 0;
+        }
         if ( status >= 0 && rodsArgs->verbose == True ) {
             ( void ) gettimeofday( &endTime, ( struct timezone * )0 );
             printTime( conn, srcPath, &startTime, &endTime );
@@ -366,7 +372,9 @@ rmAttrCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
             }
         }
         else if ( collEnt.objType == COLL_OBJ_T ) {
-            if ( collEnt.specColl.collClass != NO_SPEC_COLL ) { continue; }
+            if ( collEnt.specColl.collClass != NO_SPEC_COLL ) {
+                continue;
+            }
             status = rmAttrCollUtil( conn, collEnt.collName, myRodsEnv,
                                      rodsArgs, ncRegGlobalAttrInp );
             if ( status < 0 && status != CAT_NO_ROWS_FOUND ) {
@@ -416,7 +424,9 @@ listAttrDataObjUtil( rcComm_t *conn, char *srcPath,
     status = queryDataObjForAUV( conn, srcPath, rodsArgs, &genQueryOut );
 
     if ( status < 0 ) {
-        if ( status == CAT_NO_ROWS_FOUND ) { return 0; }
+        if ( status == CAT_NO_ROWS_FOUND ) {
+            return 0;
+        }
         rodsLogError( LOG_ERROR, status,
                       "listAttrDataObjUtil: svrQueryDataObjMetadata error for  %s",
                       srcPath );
@@ -454,7 +464,9 @@ listAttrDataObjUtil( rcComm_t *conn, char *srcPath,
             printf( "\n" );
         }
         else {
-            if ( i == 0 ) { printf( "        " ); }
+            if ( i == 0 ) {
+                printf( "        " );
+            }
             if ( i >= genQueryOut->rowCnt - 1 ) {
                 printf( "%s\n", metaAttrStr );
             }
@@ -528,7 +540,9 @@ listAttrCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
             }
         }
         else if ( collEnt.objType == COLL_OBJ_T ) {
-            if ( collEnt.specColl.collClass != NO_SPEC_COLL ) { continue; }
+            if ( collEnt.specColl.collClass != NO_SPEC_COLL ) {
+                continue;
+            }
             status = listAttrCollUtil( conn, collEnt.collName, myRodsEnv,
                                        rodsArgs );
             if ( status < 0 && status != CAT_NO_ROWS_FOUND ) {
@@ -614,7 +628,9 @@ queryAUVForDataObj( rcComm_t *conn, char *collPath, rodsEnv *myRodsEnv, rodsArgu
     int continueInx = 1;
 
     inPtr = rodsArgs->queryStr;
-    if ( inPtr == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( inPtr == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
 
     memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
 

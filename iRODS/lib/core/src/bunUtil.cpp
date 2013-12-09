@@ -22,7 +22,9 @@ bunUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
     status = initCondForBunOpr( myRodsEnv, myRodsArgs, &structFileExtAndRegInp,
                                 rodsPathInp );
 
-    if ( status < 0 ) { return status; }
+    if ( status < 0 ) {
+        return status;
+    }
 
     for ( i = 0; i < rodsPathInp->numSrc; i++ ) {
         collPath = &rodsPathInp->destPath[i];	/* iRODS Collection */

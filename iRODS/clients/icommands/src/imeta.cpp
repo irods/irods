@@ -37,17 +37,23 @@ printGenQueryResults( rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
     int i, j;
     char localTime[20];
     lastCommandStatus = status;
-    if ( status == CAT_NO_ROWS_FOUND ) { lastCommandStatus = 0; }
+    if ( status == CAT_NO_ROWS_FOUND ) {
+        lastCommandStatus = 0;
+    }
     if ( status != 0 && status != CAT_NO_ROWS_FOUND ) {
         printError( Conn, status, "rcGenQuery" );
     }
     else {
         if ( status == CAT_NO_ROWS_FOUND ) {
-            if ( printCount == 0 ) { printf( "No rows found\n" ); }
+            if ( printCount == 0 ) {
+                printf( "No rows found\n" );
+            }
         }
         else {
             for ( i = 0; i < genQueryOut->rowCnt; i++ ) {
-                if ( i > 0 ) { printf( "----\n" ); }
+                if ( i > 0 ) {
+                    printf( "----\n" );
+                }
                 for ( j = 0; j < genQueryOut->attriCnt; j++ ) {
                     char *tResult;
                     tResult = genQueryOut->sqlResult[j].value;
@@ -197,7 +203,9 @@ showDataObj( char *name, char *attrName, int wild ) {
     while ( status == 0 && genQueryOut->continueInx > 0 ) {
         genQueryInp.continueInx = genQueryOut->continueInx;
         status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
-        if ( genQueryOut->rowCnt > 0 ) { printf( "----\n" ); }
+        if ( genQueryOut->rowCnt > 0 ) {
+            printf( "----\n" );
+        }
         printGenQueryResults( Conn, status, genQueryOut,
                               columnNames );
     }
@@ -313,7 +321,9 @@ showColl( char *name, char *attrName, int wild ) {
     while ( status == 0 && genQueryOut->continueInx > 0 ) {
         genQueryInp.continueInx = genQueryOut->continueInx;
         status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
-        if ( genQueryOut->rowCnt > 0 ) { printf( "----\n" ); }
+        if ( genQueryOut->rowCnt > 0 ) {
+            printf( "----\n" );
+        }
         printGenQueryResults( Conn, status, genQueryOut,
                               columnNames );
     }
@@ -408,7 +418,9 @@ showResc( char *name, char *attrName, int wild ) {
     while ( status == 0 && genQueryOut->continueInx > 0 ) {
         genQueryInp.continueInx = genQueryOut->continueInx;
         status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
-        if ( genQueryOut->rowCnt > 0 ) { printf( "----\n" ); }
+        if ( genQueryOut->rowCnt > 0 ) {
+            printf( "----\n" );
+        }
         printGenQueryResults( Conn, status, genQueryOut,
                               columnNames );
     }
@@ -520,7 +532,9 @@ showUser( char *name, char *attrName, int wild ) {
     while ( status == 0 && genQueryOut->continueInx > 0 ) {
         genQueryInp.continueInx = genQueryOut->continueInx;
         status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
-        if ( genQueryOut->rowCnt > 0 ) { printf( "----\n" ); }
+        if ( genQueryOut->rowCnt > 0 ) {
+            printf( "----\n" );
+        }
         printGenQueryResults( Conn, status, genQueryOut,
                               columnNames );
     }
@@ -621,7 +635,9 @@ int queryDataObj( char *cmdToken[] ) {
     while ( status == 0 && genQueryOut->continueInx > 0 ) {
         genQueryInp.continueInx = genQueryOut->continueInx;
         status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
-        if ( genQueryOut->rowCnt > 0 ) { printf( "----\n" ); }
+        if ( genQueryOut->rowCnt > 0 ) {
+            printf( "----\n" );
+        }
         printGenQueryResults( Conn, status, genQueryOut,
                               columnNames );
     }
@@ -719,7 +735,9 @@ int queryCollection( char *cmdToken[] ) {
     while ( status == 0 && genQueryOut->continueInx > 0 ) {
         genQueryInp.continueInx = genQueryOut->continueInx;
         status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
-        if ( genQueryOut->rowCnt > 0 ) { printf( "----\n" ); }
+        if ( genQueryOut->rowCnt > 0 ) {
+            printf( "----\n" );
+        }
         printGenQueryResults( Conn, status, genQueryOut,
                               columnNames );
     }
@@ -782,7 +800,9 @@ int queryResc( char *attribute, char *op, char *value ) {
     while ( status == 0 && genQueryOut->continueInx > 0 ) {
         genQueryInp.continueInx = genQueryOut->continueInx;
         status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
-        if ( genQueryOut->rowCnt > 0 ) { printf( "----\n" ); }
+        if ( genQueryOut->rowCnt > 0 ) {
+            printf( "----\n" );
+        }
         printGenQueryResults( Conn, status, genQueryOut,
                               columnNames );
     }
@@ -850,7 +870,9 @@ int queryUser( char *attribute, char *op, char *value ) {
     while ( status == 0 && genQueryOut->continueInx > 0 ) {
         genQueryInp.continueInx = genQueryOut->continueInx;
         status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
-        if ( genQueryOut->rowCnt > 0 ) { printf( "----\n" ); }
+        if ( genQueryOut->rowCnt > 0 ) {
+            printf( "----\n" );
+        }
         printGenQueryResults( Conn, status, genQueryOut,
                               columnNames );
     }
@@ -1036,7 +1058,9 @@ getInput( char *cmdToken[], int maxTokens ) {
     if ( stat == 0 ) {
         printf( "\n" );
         rcDisconnect( Conn );
-        if ( lastCommandStatus != 0 ) { exit( 4 ); }
+        if ( lastCommandStatus != 0 ) {
+            exit( 4 );
+        }
         exit( 0 );
     }
     lenstr = strlen( ttybuf );
@@ -1107,7 +1131,9 @@ getInput( char *cmdToken[], int maxTokens ) {
 void
 handleMinusL( char *token ) {
     char *cptr, *cptr2;
-    if ( *token != '-' ) { return; }
+    if ( *token != '-' ) {
+        return;
+    }
     for ( cptr = token++; *cptr != '\0'; cptr++ ) {
         if ( *cptr == 'l' ) {
             longMode = 1;
@@ -1142,12 +1168,24 @@ doCommand( char *cmdToken[] ) {
     handleMinusL( cmdToken[1] );
     handleMinusL( cmdToken[2] );
 
-    if ( strcmp( cmdToken[1], "-C" ) == 0 ) { cmdToken[1][1] = 'c'; }
-    if ( strcmp( cmdToken[1], "-D" ) == 0 ) { cmdToken[1][1] = 'd'; }
-    if ( strcmp( cmdToken[1], "-R" ) == 0 ) { cmdToken[1][1] = 'r'; }
-    if ( strcmp( cmdToken[2], "-C" ) == 0 ) { cmdToken[2][1] = 'c'; }
-    if ( strcmp( cmdToken[2], "-D" ) == 0 ) { cmdToken[2][1] = 'd'; }
-    if ( strcmp( cmdToken[2], "-R" ) == 0 ) { cmdToken[2][1] = 'r'; }
+    if ( strcmp( cmdToken[1], "-C" ) == 0 ) {
+        cmdToken[1][1] = 'c';
+    }
+    if ( strcmp( cmdToken[1], "-D" ) == 0 ) {
+        cmdToken[1][1] = 'd';
+    }
+    if ( strcmp( cmdToken[1], "-R" ) == 0 ) {
+        cmdToken[1][1] = 'r';
+    }
+    if ( strcmp( cmdToken[2], "-C" ) == 0 ) {
+        cmdToken[2][1] = 'c';
+    }
+    if ( strcmp( cmdToken[2], "-D" ) == 0 ) {
+        cmdToken[2][1] = 'd';
+    }
+    if ( strcmp( cmdToken[2], "-R" ) == 0 ) {
+        cmdToken[2][1] = 'r';
+    }
 
     if ( strcmp( cmdToken[0], "adda" ) == 0 ) {
         modAVUMetadata( "adda", cmdToken[1], cmdToken[2],
@@ -1237,12 +1275,16 @@ doCommand( char *cmdToken[] ) {
         int status;
         if ( strcmp( cmdToken[1], "-d" ) == 0 ) {
             status = queryDataObj( cmdToken );
-            if ( status < 0 ) { return( -2 ); }
+            if ( status < 0 ) {
+                return( -2 );
+            }
             return( 0 );
         }
         if ( strcmp( cmdToken[1], "-C" ) == 0 || strcmp( cmdToken[1], "-c" ) == 0 ) {
             status = queryCollection( cmdToken );
-            if ( status < 0 ) { return( -2 ); }
+            if ( status < 0 ) {
+                return( -2 );
+            }
             return( 0 );
         }
         if ( strcmp( cmdToken[1], "-R" ) == 0 || strcmp( cmdToken[1], "-r" ) == 0 ) {
@@ -1447,7 +1489,9 @@ main( int argc, char **argv ) {
 
     status = clientLogin( Conn );
     if ( status != 0 ) {
-        if ( !debug ) { exit( 3 ); }
+        if ( !debug ) {
+            exit( 3 );
+        }
     }
 
     keepGoing = 1;
@@ -1455,9 +1499,13 @@ main( int argc, char **argv ) {
     while ( keepGoing ) {
         int status;
         status = doCommand( cmdToken );
-        if ( status == -1 ) { keepGoing = 0; }
+        if ( status == -1 ) {
+            keepGoing = 0;
+        }
         if ( firstTime ) {
-            if ( status == 0 ) { keepGoing = 0; }
+            if ( status == 0 ) {
+                keepGoing = 0;
+            }
             if ( status == -2 ) {
                 keepGoing = 0;
                 lastCommandStatus = -1;
@@ -1477,7 +1525,9 @@ main( int argc, char **argv ) {
 
     rcDisconnect( Conn );
 
-    if ( lastCommandStatus != 0 ) { exit( 4 ); }
+    if ( lastCommandStatus != 0 ) {
+        exit( 4 );
+    }
     exit( 0 );
 }
 
@@ -1547,7 +1597,9 @@ void usageMain() {
     };
     int i;
     for ( i = 0;; i++ ) {
-        if ( strlen( msgs[i] ) == 0 ) { break; }
+        if ( strlen( msgs[i] ) == 0 ) {
+            break;
+        }
         printf( "%s\n", msgs[i] );
     }
     printReleaseInfo( "imeta" );
@@ -1577,7 +1629,9 @@ usage( char *subOpt ) {
                 ""
             };
             for ( i = 0;; i++ ) {
-                if ( strlen( msgs[i] ) == 0 ) { return( 0 ); }
+                if ( strlen( msgs[i] ) == 0 ) {
+                    return( 0 );
+                }
                 printf( "%s\n", msgs[i] );
             }
         }
@@ -1600,7 +1654,9 @@ usage( char *subOpt ) {
                 ""
             };
             for ( i = 0;; i++ ) {
-                if ( strlen( msgs[i] ) == 0 ) { return( 0 ); }
+                if ( strlen( msgs[i] ) == 0 ) {
+                    return( 0 );
+                }
                 printf( "%s\n", msgs[i] );
             }
         }
@@ -1615,7 +1671,9 @@ usage( char *subOpt ) {
                 ""
             };
             for ( i = 0;; i++ ) {
-                if ( strlen( msgs[i] ) == 0 ) { return( 0 ); }
+                if ( strlen( msgs[i] ) == 0 ) {
+                    return( 0 );
+                }
                 printf( "%s\n", msgs[i] );
             }
         }
@@ -1639,7 +1697,9 @@ usage( char *subOpt ) {
                 ""
             };
             for ( i = 0;; i++ ) {
-                if ( strlen( msgs[i] ) == 0 ) { return( 0 ); }
+                if ( strlen( msgs[i] ) == 0 ) {
+                    return( 0 );
+                }
                 printf( "%s\n", msgs[i] );
             }
         }
@@ -1656,7 +1716,9 @@ usage( char *subOpt ) {
                 ""
             };
             for ( i = 0;; i++ ) {
-                if ( strlen( msgs[i] ) == 0 ) { return( 0 ); }
+                if ( strlen( msgs[i] ) == 0 ) {
+                    return( 0 );
+                }
                 printf( "%s\n", msgs[i] );
             }
         }
@@ -1674,7 +1736,9 @@ usage( char *subOpt ) {
                 ""
             };
             for ( i = 0;; i++ ) {
-                if ( strlen( msgs[i] ) == 0 ) { return( 0 ); }
+                if ( strlen( msgs[i] ) == 0 ) {
+                    return( 0 );
+                }
                 printf( "%s\n", msgs[i] );
             }
         }
@@ -1693,7 +1757,9 @@ usage( char *subOpt ) {
                 ""
             };
             for ( i = 0;; i++ ) {
-                if ( strlen( msgs[i] ) == 0 ) { return( 0 ); }
+                if ( strlen( msgs[i] ) == 0 ) {
+                    return( 0 );
+                }
                 printf( "%s\n", msgs[i] );
             }
         }
@@ -1714,7 +1780,9 @@ usage( char *subOpt ) {
                 ""
             };
             for ( i = 0;; i++ ) {
-                if ( strlen( msgs[i] ) == 0 ) { return( 0 ); }
+                if ( strlen( msgs[i] ) == 0 ) {
+                    return( 0 );
+                }
                 printf( "%s\n", msgs[i] );
             }
         }
@@ -1747,7 +1815,9 @@ usage( char *subOpt ) {
                 ""
             };
             for ( i = 0;; i++ ) {
-                if ( strlen( msgs[i] ) == 0 ) { return( 0 ); }
+                if ( strlen( msgs[i] ) == 0 ) {
+                    return( 0 );
+                }
                 printf( "%s\n", msgs[i] );
             }
         }
@@ -1758,7 +1828,9 @@ usage( char *subOpt ) {
                 ""
             };
             for ( i = 0;; i++ ) {
-                if ( strlen( msgs[i] ) == 0 ) { return( 0 ); }
+                if ( strlen( msgs[i] ) == 0 ) {
+                    return( 0 );
+                }
                 printf( "%s\n", msgs[i] );
             }
         }
@@ -1775,7 +1847,9 @@ usage( char *subOpt ) {
                 ""
             };
             for ( i = 0;; i++ ) {
-                if ( strlen( msgs[i] ) == 0 ) { return( 0 ); }
+                if ( strlen( msgs[i] ) == 0 ) {
+                    return( 0 );
+                }
                 printf( "%s\n", msgs[i] );
             }
         }

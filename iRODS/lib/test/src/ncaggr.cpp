@@ -168,7 +168,9 @@ testGetAggInfo( rcComm_t *conn, char *collPath ) {
                       "rcNcInq error for %s", ncOpenInp.objPath );
         return status;
     }
-    if ( status < 0 ) { return status; }
+    if ( status < 0 ) {
+        return status;
+    }
 
     /* rcNcGetVarsByType - do the last var and 3 */
     var =  &ncInqOut->var[ncInqOut->nvars - 1];
@@ -220,7 +222,9 @@ testAggNcOpr( rcComm_t *conn, char *collPath ) {
     ncOpenInp.mode = NC_NOWRITE | NC_NETCDF4;
     addKeyVal( &ncOpenInp.condInput, DEST_RESC_NAME_KW, "hpResc1" );
     status = rcNcOpen( conn, &ncOpenInp, &ncid );
-    if ( status < 0 ) { return status; }
+    if ( status < 0 ) {
+        return status;
+    }
     bzero( &ncCloseInp, sizeof( ncCloseInp_t ) );
     ncCloseInp.ncid = ncid;
     rcNcClose( conn, &ncCloseInp );
@@ -255,7 +259,9 @@ genNcAggInfo( char *dirPath, ncAggInfo_t *ncAggInfo ) {
     int ncid;
     ncAggElement_t ncAggElement;
 
-    if ( dirPath == NULL || ncAggInfo == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( dirPath == NULL || ncAggInfo == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
 
     dirPtr = opendir( dirPath );
     if ( dirPtr == NULL ) {
@@ -308,10 +314,14 @@ genNcAggInfo( char *dirPath, ncAggInfo_t *ncAggInfo ) {
         }
         status = setNcAggElement( ncid, ncInqOut, &ncAggElement );
         nc_close( ncid );
-        if ( status < 0 ) { break; }
+        if ( status < 0 ) {
+            break;
+        }
         rstrcpy( ncAggElement.objPath, childPath, MAX_NAME_LEN );
         status = addNcAggElement( &ncAggElement, ncAggInfo );
-        if ( status < 0 ) { break; }
+        if ( status < 0 ) {
+            break;
+        }
         bzero( &ncAggElement, sizeof( ncAggElement ) );
     }
     closedir( dirPtr );
@@ -322,10 +332,14 @@ int
 setNcAggElement( int ncid, ncInqOut_t *ncInqOut, ncAggElement_t *ncAggElement ) {
     int i, j;
 
-    if ( ncInqOut == NULL || ncAggElement == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( ncInqOut == NULL || ncAggElement == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
 
     for ( i = 0; i < ncInqOut->ndims; i++ ) {
-        if ( strcasecmp( ncInqOut->dim[i].name, "time" ) == 0 ) { break; }
+        if ( strcasecmp( ncInqOut->dim[i].name, "time" ) == 0 ) {
+            break;
+        }
     }
     if ( i >= ncInqOut->ndims ) {
         /* no match */
@@ -436,7 +450,9 @@ addNcAggElement( ncAggElement_t *ncAggElement, ncAggInfo_t *ncAggInfo ) {
     int newNumFiles, i, j;
     ncAggElement_t *newElement;
 
-    if ( ncAggInfo == NULL || ncAggElement == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( ncAggInfo == NULL || ncAggElement == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
 
     if ( ( ncAggInfo->numFiles % PTR_ARRAY_MALLOC_LEN ) == 0 ) {
         newNumFiles =  ncAggInfo->numFiles + PTR_ARRAY_MALLOC_LEN;

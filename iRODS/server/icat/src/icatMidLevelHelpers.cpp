@@ -38,11 +38,19 @@ char *cmlArrToSepStr( char *str,
     }
     for ( i = 1; i < arrLen; i++ ) {
         rstrcat( str, sep, maxLen );
-        if ( opt == 1 ) { rstrcat( str, "'", maxLen ); }
-        if ( opt == 2 && *arr[i] != '(' ) { rstrcat( str, "'", maxLen ); }
+        if ( opt == 1 ) {
+            rstrcat( str, "'", maxLen );
+        }
+        if ( opt == 2 && *arr[i] != '(' ) {
+            rstrcat( str, "'", maxLen );
+        }
         rstrcat( str, arr[i], maxLen );
-        if ( opt == 1 ) { rstrcat( str, "'", maxLen ); }
-        if ( opt == 2 && *arr[i] != '(' ) { rstrcat( str, "'", maxLen ); }
+        if ( opt == 1 ) {
+            rstrcat( str, "'", maxLen );
+        }
+        if ( opt == 2 && *arr[i] != '(' ) {
+            rstrcat( str, "'", maxLen );
+        }
     }
     return( str );
 
@@ -53,18 +61,42 @@ char *cmlArrToSepStr( char *str,
    particular table column is a string field or not */
 #if 0 // JMC - backport 4535
 int columnIsText( char *column ) {
-    if ( strstr( column, "_id" ) != NULL ) { return( 0 ); } /* integer */
-    if ( strstr( column, "maxsize" ) != NULL ) { return( 0 ); } /* integer */
-    if ( strstr( column, "data_size" ) != NULL ) { return( 0 ); } /* integer */
-    if ( strstr( column, "data_map_id" ) != NULL ) { return( 0 ); } /* integer */
-    if ( strstr( column, "attr_expose" ) != NULL ) { return( 0 ); } /* integer */
-    if ( strstr( column, "fk_owner" ) != NULL ) { return( 0 ); } /* integer */
-    if ( strstr( column, "uschema_owner" ) != NULL ) { return( 0 ); } /* integer */
-    if ( strstr( column, "schema_owner" ) != NULL ) { return( 0 ); } /* integer */
-    if ( strstr( column, "data_repl_num" ) != NULL ) { return( 0 ); } /* integer */
-    if ( strstr( column, "data_is_dirty" ) != NULL ) { return( 0 ); } /* integer */
-    if ( strstr( column, "data_map_id" ) != NULL ) { return( 0 ); } /* integer */
-    if ( strstr( column, "rule_seq_num" ) != NULL ) { return( 0 ); } /* integer */
+    if ( strstr( column, "_id" ) != NULL ) {
+        return( 0 );    /* integer */
+    }
+    if ( strstr( column, "maxsize" ) != NULL ) {
+        return( 0 );    /* integer */
+    }
+    if ( strstr( column, "data_size" ) != NULL ) {
+        return( 0 );    /* integer */
+    }
+    if ( strstr( column, "data_map_id" ) != NULL ) {
+        return( 0 );    /* integer */
+    }
+    if ( strstr( column, "attr_expose" ) != NULL ) {
+        return( 0 );    /* integer */
+    }
+    if ( strstr( column, "fk_owner" ) != NULL ) {
+        return( 0 );    /* integer */
+    }
+    if ( strstr( column, "uschema_owner" ) != NULL ) {
+        return( 0 );    /* integer */
+    }
+    if ( strstr( column, "schema_owner" ) != NULL ) {
+        return( 0 );    /* integer */
+    }
+    if ( strstr( column, "data_repl_num" ) != NULL ) {
+        return( 0 );    /* integer */
+    }
+    if ( strstr( column, "data_is_dirty" ) != NULL ) {
+        return( 0 );    /* integer */
+    }
+    if ( strstr( column, "data_map_id" ) != NULL ) {
+        return( 0 );    /* integer */
+    }
+    if ( strstr( column, "rule_seq_num" ) != NULL ) {
+        return( 0 );    /* integer */
+    }
     return( 1 ); /* the rest are strings */
 }
 #endif
@@ -121,7 +153,9 @@ char *cmlArr2ToSep2Str( char *str,
         isText = columnIsText( arr[i] );
         cp = arr[i];
         hasQuote = 0;
-        if ( *cp == '\'' ) { hasQuote = 1; }
+        if ( *cp == '\'' ) {
+            hasQuote = 1;
+        }
         if ( isText && !hasQuote ) {
             rstrcat( str, "'", maxLen );
             rstrcat( str, arr2[i], maxLen );
@@ -300,7 +334,9 @@ int cmlGetUserIdUnused( char *userName, icatSessionStruct *icss ) {
     snprintf( tsql, MAX_SQL_SIZE,
               "select user_id from R_USER_MAIN where user_name = ?" );
     status = cmlGetIntegerValueFromSql( tsql, &iVal, userName, 0, 0, 0, 0, icss );
-    if ( status == 0 ) { return( iVal ); }
+    if ( status == 0 ) {
+        return( iVal );
+    }
 
     /* need to cache a few and skip the sql if found */
 

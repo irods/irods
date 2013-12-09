@@ -31,7 +31,9 @@ irods_connect_() {
     char *mySubName;
     char *myName;
 
-    if ( debug ) { printf( "irods_connect_\n" ); }
+    if ( debug ) {
+        printf( "irods_connect_\n" );
+    }
 
     status = getRodsEnv( &myRodsEnv );
     if ( status < 0 ) {
@@ -67,7 +69,9 @@ int irods_file_open_( char *filename, char *mode ) {
     char *cp1, *cp2;
     int nameLen;
 
-    if ( debug ) { printf( "irods_file_open filename input:%s:\n", filename ); }
+    if ( debug ) {
+        printf( "irods_file_open filename input:%s:\n", filename );
+    }
 
     /* Remove trailing blanks from the filename */
     cp1 = filename;
@@ -75,14 +79,18 @@ int irods_file_open_( char *filename, char *mode ) {
     for ( ; *cp2 == ' ' && cp2 > cp1; cp2-- ) {
     }
     cp2++;
-    if ( cp2 > cp1 ) { *cp2 = '\0'; }
+    if ( cp2 > cp1 ) {
+        *cp2 = '\0';
+    }
 
     if ( debug ) printf( "irods_file_open filename w/o trailing blanks:%s:\n",
                              filename );
 
     if ( setupFlag == 0 ) {
         status = irods_connect_();
-        if ( status ) { return( -1 ); }
+        if ( status ) {
+            return( -1 );
+        }
     }
 
     memset( &dataObjInp, 0, sizeof( dataObjInp ) );
@@ -122,7 +130,9 @@ int irods_file_create_( char *filename ) {
     char *cp1, *cp2;
     int nameLen;
 
-    if ( debug ) { printf( "irods_file_create filename input:%s:\n", filename ); }
+    if ( debug ) {
+        printf( "irods_file_create filename input:%s:\n", filename );
+    }
 
     /* Remove trailing blanks from the filename */
     cp1 = filename;
@@ -130,14 +140,18 @@ int irods_file_create_( char *filename ) {
     for ( ; *cp2 == ' ' && cp2 > cp1; cp2-- ) {
     }
     cp2++;
-    if ( cp2 > cp1 ) { *cp2 = '\0'; }
+    if ( cp2 > cp1 ) {
+        *cp2 = '\0';
+    }
 
     if ( debug ) printf( "irods_file_create filename w/o trailing blanks:%s:\n",
                              filename );
 
     if ( setupFlag == 0 ) {
         status = irods_connect_();
-        if ( status ) { return( -1 ); }
+        if ( status ) {
+            return( -1 );
+        }
     }
 
     memset( &dataObjInp, 0, sizeof( dataObjInp ) );
@@ -164,7 +178,9 @@ int irods_file_close_( int *fd ) {
     int status;
     openedDataObjInp_t dataObjCloseInp;
 
-    if ( debug ) { printf( "irods_file_close fd: %d\n", *fd ); }
+    if ( debug ) {
+        printf( "irods_file_close fd: %d\n", *fd );
+    }
 
     memset( &dataObjCloseInp, 0, sizeof( dataObjCloseInp ) );
     dataObjCloseInp.l1descInx = *fd;
@@ -181,7 +197,9 @@ irods_file_read_( int *fd, void *buffer, int *size ) {
     int status;
     char *cp1;
 
-    if ( debug ) { printf( "irods_file_read_\n" ); }
+    if ( debug ) {
+        printf( "irods_file_read_\n" );
+    }
 
     dataObjReadOutBBuf.buf = buffer;
     dataObjReadOutBBuf.len = *size;
@@ -194,7 +212,9 @@ irods_file_read_( int *fd, void *buffer, int *size ) {
     status = rcDataObjRead( Comm, &dataObjReadInp,
                             &dataObjReadOutBBuf );
 
-    if ( debug ) { printf( "irods_file_read_ rcDataObjRead stat: %d\n", status ); }
+    if ( debug ) {
+        printf( "irods_file_read_ rcDataObjRead stat: %d\n", status );
+    }
 
 #if 0
     // Doesn't do any good, fortran's strings are not null terminated,
@@ -220,7 +240,9 @@ irods_file_write_( int *fd, void *buffer, int *size ) {
     int status;
     char *cp1;
 
-    if ( debug ) { printf( "irods_file_write_\n" ); }
+    if ( debug ) {
+        printf( "irods_file_write_\n" );
+    }
 
     dataObjWriteOutBBuf.buf = buffer;
     dataObjWriteOutBBuf.len = *size;
@@ -233,7 +255,9 @@ irods_file_write_( int *fd, void *buffer, int *size ) {
     status = rcDataObjWrite( Comm, &dataObjWriteInp,
                              &dataObjWriteOutBBuf );
 
-    if ( debug ) { printf( "irods_file_write_ rcDataObjWrite stat: %d\n", status ); }
+    if ( debug ) {
+        printf( "irods_file_write_ rcDataObjWrite stat: %d\n", status );
+    }
 
     return( status );
 }
@@ -244,11 +268,19 @@ irods_file_seek_( int *fd, long *offset, char *whence ) {
     fileLseekOut_t* seekResult = NULL;
     int status;
     int myWhence = 0;
-    if ( strstr( whence, "SEEK_SET" ) != NULL ) { myWhence = SEEK_SET; }
-    if ( strstr( whence, "SEEK_CUR" ) != NULL ) { myWhence = SEEK_CUR; }
-    if ( strstr( whence, "SEEK_END" ) != NULL ) { myWhence = SEEK_END; }
+    if ( strstr( whence, "SEEK_SET" ) != NULL ) {
+        myWhence = SEEK_SET;
+    }
+    if ( strstr( whence, "SEEK_CUR" ) != NULL ) {
+        myWhence = SEEK_CUR;
+    }
+    if ( strstr( whence, "SEEK_END" ) != NULL ) {
+        myWhence = SEEK_END;
+    }
 
-    if ( debug ) { printf( "irods_file_seek_: %d\n", *fd ); }
+    if ( debug ) {
+        printf( "irods_file_seek_: %d\n", *fd );
+    }
     memset( &seekParam,  0, sizeof( openedDataObjInp_t ) );
     seekParam.l1descInx = *fd;
     seekParam.offset  = *offset;
@@ -263,7 +295,9 @@ irods_file_seek_( int *fd, long *offset, char *whence ) {
 int
 irods_disconnect_() {
     int status;
-    if ( debug ) { printf( "irods_disconnect_" ); }
+    if ( debug ) {
+        printf( "irods_disconnect_" );
+    }
     status = 0;
     if ( setupFlag > 0 ) {
         status = rcDisconnect( Comm );

@@ -545,7 +545,9 @@ phyBundle( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *phyBunDir,
             status = unbunPhyBunFile( rsComm, dataObjInfo->objPath,
                                       dataObjInfo->rescInfo,  dataObjInfo->filePath, phyBunDir,
                                       dataType, PRESERVE_DIR_CONT );
-            if ( status < 0 ) { return status; }
+            if ( status < 0 ) {
+                return status;
+            }
             /* take out ADD_TO_TAR_OPR */
             myOprType = myOprType ^ ADD_TO_TAR_OPR;
         }

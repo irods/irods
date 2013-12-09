@@ -619,7 +619,9 @@ fillSubmitConditions( char *action, char *inDelayCondition,
         }
         getOffsetTimeStr( ruleSubmitInfo->exeTime, kwp );
     }
-    if ( i != 0 && i != UNMATCHED_KEY_OR_INDEX ) { return( i ); }
+    if ( i != 0 && i != UNMATCHED_KEY_OR_INDEX ) {
+        return( i );
+    }
     i = copyTaggedValue( delayCondition, "KVALPR", kwp, NAME_LEN * 2 );
     while ( i >= 0 ) {
         if ( ( t = strstr( kwp, "=" ) ) == NULL ) {
@@ -628,11 +630,15 @@ fillSubmitConditions( char *action, char *inDelayCondition,
         }
         *t = '\0';
         s = t - 1;
-        while ( *s == ' ' ) { s--; }
+        while ( *s == ' ' ) {
+            s--;
+        }
         *( s + 1 ) = '\0';
         ruleSubmitInfo->condInput.keyWord[j] = strdup( kwp );
         t++;
-        while ( *t == ' ' ) { t++; }
+        while ( *t == ' ' ) {
+            t++;
+        }
         ruleSubmitInfo->condInput.value[j] = t;
         j++;
         i = copyTaggedValue( delayCondition, "KWVAL", kwp, NAME_LEN * 2 );

@@ -64,7 +64,9 @@ int ikrbServersideAuth( rsComm_t *rsComm ) {
     status = ikrbEstablishContextServerside( rsComm, clientName,
              500 );
 #ifdef KRB_DEBUG
-    if ( status == 0 ) { printf( "clientName:%s\n", clientName ); }
+    if ( status == 0 ) {
+        printf( "clientName:%s\n", clientName );
+    }
 #endif
 
     if ( status ) {

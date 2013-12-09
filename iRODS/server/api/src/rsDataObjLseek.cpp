@@ -30,7 +30,9 @@ rsDataObjLseek( rsComm_t *rsComm, openedDataObjInp_t *dataObjLseekInp,
                  l1descInx );
         return ( SYS_FILE_DESC_OUT_OF_RANGE );
     }
-    if ( L1desc[l1descInx].inuseFlag != FD_INUSE ) { return BAD_INPUT_DESC_INDEX; }
+    if ( L1desc[l1descInx].inuseFlag != FD_INUSE ) {
+        return BAD_INPUT_DESC_INDEX;
+    }
     if ( L1desc[l1descInx].remoteZoneHost != NULL ) {
         /* cross zone operation */
         dataObjLseekInp->l1descInx = L1desc[l1descInx].remoteL1descInx;

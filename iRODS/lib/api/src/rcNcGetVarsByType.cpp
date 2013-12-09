@@ -75,7 +75,9 @@ freeNcGetVarOut( ncGetVarOut_t **ncGetVarOut ) {
 
 int
 clearNcGetVarOut( ncGetVarOut_t *ncGetVarOut ) {
-    if ( ncGetVarOut == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( ncGetVarOut == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
 
     if ( ( ncGetVarOut )->dataArray != NULL ) {
         if ( ( ncGetVarOut )->dataArray->buf != NULL ) {
@@ -88,7 +90,9 @@ clearNcGetVarOut( ncGetVarOut_t *ncGetVarOut ) {
 
 int
 clearNcGetVarInp( ncGetVarInp_t *ncGetVarInp ) {
-    if ( ncGetVarInp == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( ncGetVarInp == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
     if ( ncGetVarInp->start != NULL ) {
         free( ncGetVarInp->start );
         ncGetVarInp->start = NULL;
@@ -119,7 +123,9 @@ _rsNcGetVarsByType( int ncid, ncGetVarInp_t *ncGetVarInp,
     int len = 1;
     int hasStride = 0;
 
-    if ( ncGetVarInp == NULL || ncGetVarOut == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( ncGetVarInp == NULL || ncGetVarOut == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
 
     bzero( start, sizeof( start ) );
     bzero( count, sizeof( count ) );
@@ -130,7 +136,9 @@ _rsNcGetVarsByType( int ncid, ncGetVarInp_t *ncGetVarInp,
         stride[i] = ncGetVarInp->stride[i];
     }
     len = getSizeForGetVars( ncGetVarInp );
-    if ( len <= 0 ) { return len; }
+    if ( len <= 0 ) {
+        return len;
+    }
     *ncGetVarOut = ( ncGetVarOut_t * ) calloc( 1, sizeof( ncGetVarOut_t ) );
     ( *ncGetVarOut )->dataArray = ( dataArray_t * ) calloc( 1, sizeof( dataArray_t ) );
     ( *ncGetVarOut )->dataArray->len = len;
@@ -295,7 +303,9 @@ getSizeForGetVars( ncGetVarInp_t *ncGetVarInp ) {
     int hasStride = 0;
 
     for ( i = 0; i < ncGetVarInp->ndim; i++ ) {
-        if ( ncGetVarInp->count[i] <= 0 ) { return NETCDF_VAR_COUNT_OUT_OF_RANGE; }
+        if ( ncGetVarInp->count[i] <= 0 ) {
+            return NETCDF_VAR_COUNT_OUT_OF_RANGE;
+        }
         /* cal dataArray->len */
         if ( ncGetVarInp->stride[i] <= 0 ) {
             ncGetVarInp->stride[i] = 1;

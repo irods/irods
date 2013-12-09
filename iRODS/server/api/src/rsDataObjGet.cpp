@@ -87,7 +87,9 @@ rsDataObjGet( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
              * rsComplete knows what to do */
             l1descInx = allocAndSetL1descForZoneOpr(
                             ( *portalOprOut )->l1descInx, dataObjInp, rodsServerHost, NULL );
-            if ( l1descInx < 0 ) { return l1descInx; }
+            if ( l1descInx < 0 ) {
+                return l1descInx;
+            }
             ( *portalOprOut )->l1descInx = l1descInx;
             return status;
         }

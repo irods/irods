@@ -49,7 +49,9 @@ int
 logOraError( int level, OCIError *errhp, sword status ) {
     sb4 errcode;
     int errorVal = -1;
-    if ( status == OCI_SUCCESS ) { return( 0 ); }
+    if ( status == OCI_SUCCESS ) {
+        return( 0 );
+    }
     switch ( status )  {
     case OCI_SUCCESS_WITH_INFO:
         rodsLog( level, "OCI_SUCCESS_WITH_INFO" );
@@ -380,7 +382,9 @@ convertSqlToOra( char *sql, char *sqlOut ) {
     cpEnd = cp2 + MAX_SQL_SIZE - 2;
     i = 1;
     while ( *cp1 != '\0' ) {
-        if ( *cp1 != '?' ) { *cp2++ = *cp1++; }
+        if ( *cp1 != '?' ) {
+            *cp2++ = *cp1++;
+        }
         else {
             *cp2++ = ':';
             /* handle cases with up to 999 bind variables */
@@ -398,7 +402,9 @@ convertSqlToOra( char *sql, char *sqlOut ) {
             cp1++;
             i++;
         }
-        if ( cp2 > cpEnd ) { return( -1 ); }
+        if ( cp2 > cpEnd ) {
+            return( -1 );
+        }
     }
     *cp2 = '\0';
     return( 0 );
@@ -448,7 +454,9 @@ bindTheVariables( OCIStmt *p_statement, const char *sql ) {
     cllBindVarCount = 0; /* reset for next call */
 
     if ( myBindVarCount > 0 ) {
-        if ( myBindVarCount > MAX_BIND_VARS ) { return( CAT_INVALID_ARGUMENT ); }
+        if ( myBindVarCount > MAX_BIND_VARS ) {
+            return( CAT_INVALID_ARGUMENT );
+        }
         for ( i = 0; i < myBindVarCount; i++ ) {
             int len, len2;
             len = strlen( ( char* )&bindName[i * 5] );
@@ -479,11 +487,21 @@ logExecuteStatus( int stat, char *sql, char *funcName ) {
     char * status;
     int stat2;
     status = "UNKNOWN";
-    if ( stat == OCI_SUCCESS ) { status = "SUCCESS"; }
-    if ( stat == OCI_SUCCESS_WITH_INFO ) { status = "SUCCESS_WITH_INFO"; }
-    if ( stat == OCI_NO_DATA ) { status = "NO_DATA"; }
-    if ( stat == OCI_ERROR ) { status = "SQL_ERROR"; }
-    if ( stat == OCI_INVALID_HANDLE ) { status = "HANDLE_ERROR"; }
+    if ( stat == OCI_SUCCESS ) {
+        status = "SUCCESS";
+    }
+    if ( stat == OCI_SUCCESS_WITH_INFO ) {
+        status = "SUCCESS_WITH_INFO";
+    }
+    if ( stat == OCI_NO_DATA ) {
+        status = "NO_DATA";
+    }
+    if ( stat == OCI_ERROR ) {
+        status = "SQL_ERROR";
+    }
+    if ( stat == OCI_INVALID_HANDLE ) {
+        status = "HANDLE_ERROR";
+    }
     rodsLogSqlResult( status );
 
     if ( stat == OCI_SUCCESS ||
@@ -599,7 +617,9 @@ cllExecSqlNoResult( icatSessionStruct *icss, const char *sqlInput ) {
         rodsLog( LOG_ERROR, "cllExecSqlNoResult: OCIStmtExecute failed: %d", stat );
         logOraError( LOG_ERROR, p_err, stat );
         free( pUb4 );
-        if ( stat2 == CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME ) { return( stat2 ); }
+        if ( stat2 == CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME ) {
+            return( stat2 );
+        }
         return( CAT_OCI_ERROR );
     }
 
@@ -829,7 +849,9 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, char *sql ) {
         i = counter - 1;
         columnLength[i] = col_width;
 
-        if ( strlen( ( char * )colName ) > col_width ) { columnLength[i] = strlen( ( char* )colName ); }
+        if ( strlen( ( char * )colName ) > col_width ) {
+            columnLength[i] = strlen( ( char* )colName );
+        }
 
         myStatement->resultColName[i] = ( char * )malloc( ( int )columnLength[i] + 2 );
         strncpy( myStatement->resultColName[i],
@@ -853,9 +875,15 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, char *sql ) {
         /* convert the column name to lower case to match postgres */
         cptr = ( char* )myStatement->resultColName[i];
         for ( j = 0; j < columnLength[i]; j++ ) {
-            if ( *cptr == '\0' ) { break; }
-            if ( *cptr == ':' ) { break; }
-            if ( *cptr >= 'A' && *cptr <= 'Z' ) { *cptr += ( ( int )'a' - ( int )'A' ); }
+            if ( *cptr == '\0' ) {
+                break;
+            }
+            if ( *cptr == ':' ) {
+                break;
+            }
+            if ( *cptr >= 'A' && *cptr <= 'Z' ) {
+                *cptr += ( ( int )'a' - ( int )'A' );
+            }
             cptr++;
         }
 
@@ -1093,7 +1121,9 @@ int cllTest( char *userArg, char *pwArg ) {
     rodsLogSqlReq( 1 );
     OK = 1;
     i = cllOpenEnv( &icss );
-    if ( i != 0 ) { OK = 0; }
+    if ( i != 0 ) {
+        OK = 0;
+    }
 
     if ( userArg == 0 || *userArg == '\0' ) {
         ppasswd = getpwuid( getuid() );  /* get user passwd entry             */
@@ -1114,37 +1144,57 @@ int cllTest( char *userArg, char *pwArg ) {
     }
 
     i = cllConnect( &icss );
-    if ( i != 0 ) { exit( -1 ); }
+    if ( i != 0 ) {
+        exit( -1 );
+    }
 
     i = cllExecSqlNoResult( &icss, "drop table test" );
 
     i = cllExecSqlNoResult( &icss, "create table test (i integer, a2345678901234567890123456789j integer, a varchar(50) )" );
-    if ( i != 0 && i != CAT_SUCCESS_BUT_WITH_NO_INFO ) { OK = 0; }
+    if ( i != 0 && i != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
+        OK = 0;
+    }
 
     i = cllExecSqlNoResult( &icss,
                             "insert into test values ('1', '2', 'asdfas')" );
-    if ( i != 0 ) { OK = 0; }
+    if ( i != 0 ) {
+        OK = 0;
+    }
 
     i = cllExecSqlNoResult( &icss, "commit" );
-    if ( i != 0 ) { OK = 0; }
+    if ( i != 0 ) {
+        OK = 0;
+    }
 
     i = cllExecSqlNoResult( &icss, "insert into test values (2, 3, 'a')" );
-    if ( i != 0 ) { OK = 0; }
+    if ( i != 0 ) {
+        OK = 0;
+    }
 
     i = cllExecSqlNoResult( &icss, "commit" );
-    if ( i != 0 ) { OK = 0; }
+    if ( i != 0 ) {
+        OK = 0;
+    }
 
     i = cllExecSqlNoResult( &icss, "bad sql" );
-    if ( i == 0 ) { OK = 0; } /* should fail, if not it's not OK */
+    if ( i == 0 ) {
+        OK = 0;    /* should fail, if not it's not OK */
+    }
 
     i = cllExecSqlNoResult( &icss, "delete from test where i = '1'" );
-    if ( i != 0 && i != CAT_SUCCESS_BUT_WITH_NO_INFO ) { OK = 0; }
+    if ( i != 0 && i != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
+        OK = 0;
+    }
 
     i = cllExecSqlNoResult( &icss, "commit" );
-    if ( i != 0 ) { OK = 0; }
+    if ( i != 0 ) {
+        OK = 0;
+    }
 
     i = cllExecSqlWithResult( &icss, &stmt, "select * from test where a = 'a'" );
-    if ( i != 0 ) { OK = 0; }
+    if ( i != 0 ) {
+        OK = 0;
+    }
 
     if ( i == 0 ) {
         numOfCols = 1;
@@ -1173,7 +1223,9 @@ int cllTest( char *userArg, char *pwArg ) {
     cllBindVars[cllBindVarCount++] = "a";
     i = cllExecSqlWithResult( &icss, &stmt,
                               "select * from test where a = ?" );
-    if ( i != 0 ) { OK = 0; }
+    if ( i != 0 ) {
+        OK = 0;
+    }
 
     numRows = 0;
     if ( i == 0 ) {
@@ -1206,16 +1258,24 @@ int cllTest( char *userArg, char *pwArg ) {
     }
 
     i = cllExecSqlNoResult( &icss, "drop table test" );
-    if ( i != 0 && i != CAT_SUCCESS_BUT_WITH_NO_INFO ) { OK = 0; }
+    if ( i != 0 && i != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
+        OK = 0;
+    }
 
     i = cllExecSqlNoResult( &icss, "commit" );
-    if ( i != 0 ) { OK = 0; }
+    if ( i != 0 ) {
+        OK = 0;
+    }
 
     i = cllDisconnect( &icss );
-    if ( i != 0 ) { OK = 0; }
+    if ( i != 0 ) {
+        OK = 0;
+    }
 
     i = cllCloseEnv( &icss );
-    if ( i != 0 ) { OK = 0; }
+    if ( i != 0 ) {
+        OK = 0;
+    }
 
     if ( OK ) {
         printf( "The tests all completed normally\n" );

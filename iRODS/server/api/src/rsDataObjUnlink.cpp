@@ -170,7 +170,9 @@ _rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
     dataObjInfo_t *tmpDataObjInfo, *myDataObjInfoHead;
 
     status = chkPreProcDeleteRule( rsComm, dataObjUnlinkInp, *dataObjInfoHead );
-    if ( status < 0 ) { return status; }
+    if ( status < 0 ) {
+        return status;
+    }
 
 
     myDataObjInfoHead = *dataObjInfoHead;
@@ -206,7 +208,9 @@ _rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
                 *dataObjInfoHead = NULL;
                 status = getDataObjInfoIncSpecColl( rsComm, dataObjUnlinkInp, dataObjInfoHead );
 
-                if ( status < 0 ) { return ( status ); }
+                if ( status < 0 ) {
+                    return ( status );
+                }
             } // else
         } // if numSubfiles
     } // if strcmp
@@ -250,7 +254,9 @@ resolveDataObjReplStatus( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
     status = getDataObjInfo( rsComm, dataObjUnlinkInp,
                              &dataObjInfoHead, ACCESS_DELETE_OBJECT, 1 );
 
-    if ( status < 0 ) { return status; }
+    if ( status < 0 ) {
+        return status;
+    }
 
     tmpDataObjInfo = dataObjInfoHead;
     while ( tmpDataObjInfo != NULL ) {
@@ -370,7 +376,9 @@ dataObjUnlinkS( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
                         /* don't rename orphan path */
                         status1 = rsMkOrphanPath( rsComm, dataObjInfo->objPath,
                                                   orphanPath );
-                        if ( status1 < 0 ) { break; }
+                        if ( status1 < 0 ) {
+                            break;
+                        }
                         /* reg the orphan path */
                         rstrcpy( dataObjInfo->objPath, orphanPath, MAX_NAME_LEN );
                     }
@@ -500,7 +508,9 @@ rsMvDataObjToTrash( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     }
 
     status = chkPreProcDeleteRule( rsComm, dataObjInp, *dataObjInfoHead );
-    if ( status < 0 ) { return status; }
+    if ( status < 0 ) {
+        return status;
+    }
 
 
     status = rsMkTrashPath( rsComm, dataObjInp->objPath, trashPath );

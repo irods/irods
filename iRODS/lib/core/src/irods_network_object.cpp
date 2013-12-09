@@ -6,44 +6,44 @@
 
 namespace irods {
 
-    // =-=-=-=-=-=-=-
-    // public - ctor
+// =-=-=-=-=-=-=-
+// public - ctor
     network_object::network_object() :
         socket_handle_( 0 ) {
 
     } // ctor
 
-    // =-=-=-=-=-=-=-
-    // public - ctor
+// =-=-=-=-=-=-=-
+// public - ctor
     network_object::network_object(
         const rcComm_t& _comm ) :
         socket_handle_( _comm.sock ) {
 
     } // ctor
 
-    // =-=-=-=-=-=-=-
-    // public - ctor
+// =-=-=-=-=-=-=-
+// public - ctor
     network_object::network_object(
         const rsComm_t& _comm ) :
         socket_handle_( _comm.sock ) {
 
     } // ctor
 
-    // =-=-=-=-=-=-=-
-    // public - cctor
+// =-=-=-=-=-=-=-
+// public - cctor
     network_object::network_object(
         const network_object& _rhs ) {
         socket_handle_ = _rhs.socket_handle_;
 
     } // cctor
 
-    // =-=-=-=-=-=-=-
-    // public - dtor
+// =-=-=-=-=-=-=-
+// public - dtor
     network_object::~network_object() {
     } // dtor
 
-    // =-=-=-=-=-=-=-
-    // public - assignment operator
+// =-=-=-=-=-=-=-
+// public - assignment operator
     network_object& network_object::operator=(
         const network_object& _rhs ) {
         socket_handle_ = _rhs.socket_handle_;
@@ -51,16 +51,16 @@ namespace irods {
 
     } // operator=
 
-    // =-=-=-=-=-=-=-
-    // public - equivalence operator
+// =-=-=-=-=-=-=-
+// public - equivalence operator
     bool network_object::operator==(
         const network_object& _rhs ) const {
         return ( socket_handle_ == _rhs.socket_handle_ );
 
     } // operator==
 
-    // =-=-=-=-=-=-=-
-    // public - get rule engine kvp
+// =-=-=-=-=-=-=-
+// public - get rule engine kvp
     error network_object::get_re_vars(
         keyValPair_t& _kvp ) {
 
@@ -71,8 +71,8 @@ namespace irods {
         return SUCCESS();
     } // get_re_vars
 
-    // =-=-=-=-=-=-=-
-    // convertion to client comm ptr
+// =-=-=-=-=-=-=-
+// convertion to client comm ptr
     error network_object::to_client( rcComm_t* _comm ) {
         if ( !_comm ) {
             return ERROR( SYS_INVALID_INPUT_PARAM, "null comm ptr" );
@@ -84,8 +84,8 @@ namespace irods {
 
     } // to_client
 
-    // =-=-=-=-=-=-=-
-    // convertion to client comm ptr
+// =-=-=-=-=-=-=-
+// convertion to client comm ptr
     error network_object::to_server( rsComm_t* _comm ) {
         if ( !_comm ) {
             return ERROR( SYS_INVALID_INPUT_PARAM, "null comm ptr" );
