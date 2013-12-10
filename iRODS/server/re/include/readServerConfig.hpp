@@ -35,6 +35,8 @@
 #define PAM_PW_MIN_TIME_KW "pam_password_min_time"
 #define PAM_PW_MAX_TIME_KW "pam_password_max_time"
 
+#define CATALOG_DATABASE_TYPE_KW "catalog_database_type"
+
 typedef struct rodsServerConfig {
     char DBUsername[NAME_LEN];
     char DBPassword[MAX_PASSWORD_LEN];
@@ -46,6 +48,10 @@ typedef struct rodsServerConfig {
     size_t irods_pam_password_len;
     char   irods_pam_password_min_time[ NAME_LEN ];
     char   irods_pam_password_max_time[ NAME_LEN ];
+
+    // =-=-=-=-=-=-=-
+    // agent side database plugin configuration
+    char   catalog_database_type[ NAME_LEN ];
 
 } rodsServerConfig_t;
 

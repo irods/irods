@@ -34,6 +34,11 @@
 #include "irods_auth_manager.hpp"
 #include "irods_auth_constants.hpp"
 
+#include "irods_database_object.hpp"
+#include "irods_database_factory.hpp"
+#include "irods_database_manager.hpp"
+#include "irods_database_constants.hpp"
+
 // =-=-=-=-=-=-=-
 // irods includes
 #include "rods.hpp"
@@ -142,7 +147,6 @@ char irods_pam_password_max_time[ NAME_LEN ]     = { "1209600" };
 char irods_pam_password_default_time[ NAME_LEN ] = { "1209600" };
 
 
-
 int logSQL = 0;
 
 static int _delColl( rsComm_t *rsComm, collInfo_t *collInfo );
@@ -156,31 +160,13 @@ int creatingUserByGroupAdmin = 0; // JMC - backport 4772
 char mySessionTicket[NAME_LEN] = "";
 char mySessionClientAddr[NAME_LEN] = "";
 
-/*
-  Enable or disable some debug logging.
-  By default this is off.
-*/
-int chlDebug( char *debugMode ) {
-    if ( strstr( debugMode, "SQL" ) ) {
-        logSQL = 1;
-        chlDebugGenQuery( 1 );
-        chlDebugGenUpdate( 1 );
-        cmlDebug( 2 );
-    }
-    else {
-        if ( strstr( debugMode, "sql" ) ) {
-            logSQL = 1;
-            chlDebugGenQuery( 1 );
-            chlDebugGenUpdate( 1 );
-            cmlDebug( 1 );
-        }
-        else {
-            logSQL = 0;
-            chlDebugGenQuery( 0 );
-            chlDebugGenUpdate( 0 );
-            cmlDebug( 0 );
-        }
-    }
+// =-=-=-=-=-=-=-
+//
+int chlDebug(
+    char* _mode ) {
+
+
+
     return( 0 );
 }
 
@@ -235,49 +221,64 @@ icatScramble( char *pw ) {
     return 0;
 }
 
-/*
-  Open a connection to the database.  This has to be called first.  The
-  server/agent and Rule-Engine Server call this when initializing.
-*/
+/// =-=-=-=-=-=-=-
+/// @brief Open a connection to the database.  This has to be called first.
+///        The server/agent and Rule-Engine Server call this when initializing.
 int chlOpen(
-    rodsServerConfig* _config ) {
-
-    int i;
-    if ( logSQL != 0 ) { rodsLog( LOG_SQL, "chlOpen" ); }
-    strncpy( icss.databaseUsername, _config->DBUsername, DB_USERNAME_LEN );
-    strncpy( icss.databasePassword, _config->DBPassword, DB_PASSWORD_LEN );
-    i = cmlOpen( &icss );
-    if ( i != 0 ) {
-        rodsLog( LOG_NOTICE, "chlOpen cmlOpen failure %d", i );
-    }
-    else {
-        icss.status = 1;
-
-        // Capture ICAT properties
-        irods::catalog_properties::getInstance().capture();
+    rodsServerConfig* _cfg ) {
+    // =-=-=-=-=-=-=-
+    // check incoming params
+    if ( !_cfg ) {
+        rodsLog(
+            LOG_ERROR,
+            "null config parameter" );
+        return SYS_INVALID_INPUT_PARAM;
     }
 
     // =-=-=-=-=-=-=-
-    // set pam properties
-    irods_pam_auth_no_extend    = _config->irods_pam_auth_no_extend;
-    irods_pam_password_len      = _config->irods_pam_password_len;
+    // cache the database type for subsequent calls
     strncpy(
-        irods_pam_password_min_time,
-        _config->irods_pam_password_min_time,
+        icss.database_plugin_type,
+        _cfg->catalog_database_type,
         NAME_LEN );
-    strncpy(
-        irods_pam_password_max_time,
-        _config->irods_pam_password_max_time,
-        NAME_LEN );
-    if ( irods_pam_auth_no_extend ) {
-        strncpy(
-            irods_pam_password_default_time,
-            "28800",
-            NAME_LEN );
+
+    // =-=-=-=-=-=-=-
+    // call factory for database object
+    irods::database_object_ptr db_ptr;
+    irods::error ret = irods::database_factory(
+                           icss.database_plugin_type,
+                           db_ptr );
+    // =-=-=-=-=-=-=-
+    // resolve a plugin for that object
+    irods::plugin_ptr p_ptr;
+    ret = db_ptr->resolve(
+              irods::DATABASE_INTERFACE,
+              p_ptr );
+    if ( !ret.ok() ) {
+        irods::log(
+            PASSMSG(
+                "failed to resolve database interface",
+                ret ) );
+        return ret.code();
     }
 
-    return( i );
-}
+    // =-=-=-=-=-=-=-
+    // cast plugin and object to db and fco for call
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
+                                        irods::first_class_object > ( ptr );
+    irods::database_ptr           db = boost::dynamic_pointer_cast <
+                                       irods::database > ( p_ptr );
+
+    // =-=-=-=-=-=-=-
+    // call the open operation on the plugin
+    ret = db->call< rodsServerConfig* >(
+              irods::DATABASE_OP_OPEN,
+              ptr,
+              _cfg );
+
+    return ret.code();
+
+} // chlOpen
 
 /*
   Close an open connection to the database.
