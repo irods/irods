@@ -1046,8 +1046,18 @@ TMPCONFIGFILE=/tmp/$USER/irods.config.epm
 mkdir -p $(dirname $TMPCONFIGFILE)
 
 
+# =-=-=-=-=-=-=-
+# generate canonical version information for the code from top level VERSION file
+cd $BUILDDIR
+TEMPLATE_RODS_RELEASE_VERSION=`grep "\<IRODSVERSION\>" VERSION | awk -F= '{print $2}'`
+TEMPLATE_RODS_RELEASE_DATE=`date +"%b %Y"`
+sed -e "s,TEMPLATE_RODS_RELEASE_VERSION,$TEMPLATE_RODS_RELEASE_VERSION," ./iRODS/lib/core/include/rodsVersion.hpp.template > /tmp/rodsVersion.tmp
+mv /tmp/rodsVersion.tmp ./iRODS/lib/core/include/rodsVersion.hpp
+sed -e "s,TEMPLATE_RODS_RELEASE_DATE,$TEMPLATE_RODS_RELEASE_DATE," ./iRODS/lib/core/include/rodsVersion.hpp > /tmp/rodsVersion.tmp
+mv /tmp/rodsVersion.tmp ./iRODS/lib/core/include/rodsVersion.hpp
 
 # set up variables for icat configuration
+cd $BUILDDIR/iRODS
 if [ $1 == "icat" ] ; then
     SERVER_TYPE="ICAT"
     DB_TYPE=$2
