@@ -75,8 +75,8 @@ static char prevChalSig[200]; /* a 'signature' of the previous
  * If you want, you can also define METADATA_CLEANUP so this will
  * run each time a user-defined metadata association is deleted.  It may,
  * however, be quite slow.
- #define METADATA_CLEANUP "EACH TIME"
 */
+#define METADATA_CLEANUP "EACH TIME"
 
 /*
    Legal values for accessLevel in  chlModAccessControl (Access Parameter).
@@ -9346,7 +9346,12 @@ int chlDeleteAVUMetadata( rsComm_t *rsComm, int option, char *type,
 }
 
 /*
-  Copy an Attribute-Value [Units] pair/triple from one object to another  */
+  Copy an Attribute-Value [Units] pair/triple from one object to another.
+  Currently this does a full copy of the metadata from one object to another,
+  with a strict one-to-many relationship. Either copy (or perhaps link?)
+  may eventually use the R_OBJT_METAMAP table to allow for true sharing of
+  metadata, but not yet.
+  */
 int chlCopyAVUMetadata( rsComm_t *rsComm, char *type1,  char *type2,
                         char *name1, char *name2 ) {
     char myTime[50];
