@@ -413,7 +413,7 @@ if [ "$1" == "docs" ] ; then
     echo ""
     echo "${text_green}${text_bold}Building Docs...${text_reset}"
     echo ""
-    
+
     set +e
     # generate manual in pdf format
     echo "${text_green}${text_bold}Building E-iRODS Administration Manual${text_reset}"
@@ -531,7 +531,12 @@ fi
 cp $BUILDDIR/plugins/resources/unixfilesystem/libunixfilesystem.cpp /tmp/libunixfilesystem.cpp
 sed -e s,unix,example,g /tmp/libunixfilesystem.cpp > $BUILDDIR/examples/resources/libexamplefilesystem.cpp
 rm /tmp/libunixfilesystem.cpp
-
+. $BUILDDIR/packaging/astyleparams
+if [ "`which astyle`" != "" ] ; then
+    astyle $ASTYLE_PARAMETERS examples/resources/libexamplefilesystem.cpp
+else
+    echo "Skipping formatting --- Artistic Style (astyle) not available"
+fi
 
 ################################################################################
 # use error codes to determine dependencies
