@@ -5199,7 +5199,7 @@ int chlCheckAuth(
         goodPwTs[0] = '\0';
         goodPwModTs[0] = '\0';
 
-        if ( nPasswords != MAX_PASSWORDS ) {
+        if ( MAX_PASSWORDS == 0 || nPasswords != MAX_PASSWORDS ) {
             doMore = 0;
         }  /* End the loop if
                                                       less than the max has
