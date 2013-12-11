@@ -31,7 +31,7 @@ typedef struct {
     char databaseUsername[DB_USERNAME_LEN];  /* username for accessing the db */
     char databasePassword[DB_PASSWORD_LEN];  /* password for accessing the db */
     int         databaseType;     /* DB type, DB_TYPE_POSTGRES, etc */
-    char        database_plugin_type[ NAME_LEN ];
+    char        database_plugin_type[ DB_TYPENAME_LEN ];
 } icatSessionStruct;
 
 
