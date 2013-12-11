@@ -53,9 +53,9 @@ freeFileDesc( int fileInx );
 int
 getServerHostByFileInx( int fileInx, rodsServerHost_t **rodsServerHost );
 int
-mkDirForFilePath( rsComm_t *rsComm, const char *startDir, const char *filePath, int mode );
+mkDirForFilePath( rsComm_t *rsComm, const char *startDir, const char *filePath,  const char* hier, int mode );
 int
-mkFileDirR( rsComm_t *rsComm, const char *startDir, const char *destDir, int mode );
+mkFileDirR( rsComm_t *rsComm, const char *startDir, const char *destDir, const char* hier, int mode );
 int
 chkFilePathPerm( rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
                  rodsServerHost_t *rodsServerHost, int chkType ); // JMC - backport 4774
