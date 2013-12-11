@@ -85,12 +85,16 @@ int  receiveBuf( rbudpReceiver_t *rbudpReceiver, void * buffer, int bufSize,
         reportTime( &curTime );
 
         status = udpReceive( rbudpReceiver );
-        if ( status < 0 ) { return status; }
+        if ( status < 0 ) {
+            return status;
+        }
 
         reportTime( &curTime );
 
         gettimeofday( &curTime, NULL );
-        if ( verbose > 1 ) { TRACE_DEBUG( "Current time: %d %ld", curTime.tv_sec, curTime.tv_usec ); }
+        if ( verbose > 1 ) {
+            TRACE_DEBUG( "Current time: %d %ld", curTime.tv_sec, curTime.tv_usec );
+        }
 
         if ( updateHashTable( &rbudpReceiver->rbudpBase ) == 0 ) {
             done = 1;
@@ -131,7 +135,8 @@ void  udpReceiveReadv() {
     struct timeval timeout;
     fd_set rset;
     int maxfdpl;
-    done = 0; packetno = 0;
+    done = 0;
+    packetno = 0;
 
     timeout.tv_sec = 100;
     timeout.tv_usec = 0;
@@ -168,7 +173,9 @@ void  udpReceiveReadv() {
                 bcopy( iovRecv[1].iov_base, ( char * )mainBuffer + ( rcvseq * payloadSize ) , iovRecv[1].iov_len );
                 updateErrorBitmap( rcvseq );
                 // missed some packets, next expected packet
-                do { packetno ++; }
+                do {
+                    packetno ++;
+                }
                 while ( ( rcvseq != hashTable[packetno] ) && ( packetno <= remainNumberOfPackets ) );
                 if ( packetno > remainNumberOfPackets ) {
                     fprintf( stderr, "recv error\n" );
@@ -180,7 +187,9 @@ void  udpReceiveReadv() {
         //receive end of UDP signal
         else if ( FD_ISSET( tcpSockfd, &rset ) ) {
             done = 1;
-            if ( verbose ) { TRACE_DEBUG( "received TCP signal" ); }
+            if ( verbose ) {
+                TRACE_DEBUG( "received TCP signal" );
+            }
             readn( tcpSockfd, ( char * )&endOfUdp, sizeof( struct _endOfUdp ) );
         }
         else { // time out
@@ -200,7 +209,8 @@ int  udpReceive( rbudpReceiver_t *rbudpReceiver ) {
     int maxfdpl;
     float prog;
     int oldprog = 0;
-    done = 0; seqno = 0;
+    done = 0;
+    seqno = 0;
 
     timeout.tv_sec = 10;
     timeout.tv_usec = 0;
@@ -270,7 +280,9 @@ int  udpReceive( rbudpReceiver_t *rbudpReceiver ) {
                    * 100;
             if ( ( int )prog > oldprog ) {
                 oldprog = ( int )prog;
-                if ( oldprog > 100 ) { oldprog = 100; }
+                if ( oldprog > 100 ) {
+                    oldprog = 100;
+                }
                 if ( rbudpReceiver->rbudpBase.progress != 0 ) {
                     fseek( rbudpReceiver->rbudpBase.progress,
                            0, SEEK_SET );
@@ -330,7 +342,9 @@ int  getstream( rbudpReceiver_t *rbudpReceiver, int tofd, int packetSize ) {
         }
 
         if ( buf == 0 && bufSize != curSize ) {
-            if ( buf ) { free( buf ); }
+            if ( buf ) {
+                free( buf );
+            }
             buf = ( char * )malloc( bufSize );
             if ( buf == 0 ) {
                 fprintf( stderr, " getstream: Couldn't malloc %lld bytes for buffer\n", bufSize );
@@ -370,7 +384,9 @@ int  getfile( rbudpReceiver_t *rbudpReceiver, char * origFName,
 
     int fd = open( destFName, O_RDWR | O_CREAT | O_TRUNC, 0666 );
 
-    if ( fd < 0 ) { return ( errno ? ( -1 * errno ) : -1 ); }
+    if ( fd < 0 ) {
+        return ( errno ? ( -1 * errno ) : -1 );
+    }
     status = getfileByFd( rbudpReceiver, fd, packetSize );
     close( fd );
 
@@ -394,7 +410,9 @@ getfileByFd( rbudpReceiver_t *rbudpReceiver, int fd, int packetSize ) {
 
     /* Can't use ntohl() on long longs! */
     filesize = rb_ntohll( filesize );
-    if ( verbose > 0 ) { fprintf( stderr, "The size of the file is %lld.\n", filesize ); }
+    if ( verbose > 0 ) {
+        fprintf( stderr, "The size of the file is %lld.\n", filesize );
+    }
 
     ftruncate( fd, filesize );
 
@@ -580,13 +598,17 @@ void  initReceiver( rbudpReceiver_t *rbudpReceiver, char *remoteHost ) {
     // connectUDP (&rbudpReceiver->rbudpBase, remoteHost);
 
     if ( !rbudpReceiver->rbudpBase.hasTcpSock ) {
-        if ( verbose ) { TRACE_DEBUG( "try to connect the sender via TCP ..." ); }
+        if ( verbose ) {
+            TRACE_DEBUG( "try to connect the sender via TCP ..." );
+        }
         n = connectTCP( &rbudpReceiver->rbudpBase, remoteHost );
         if ( n < 0 ) {
             fprintf( stderr, "connecting TCP failed, make sure the sender has been started\n" );
             exit( 1 );
         }
-        if ( verbose ) { TRACE_DEBUG( "tcp connected." ); }
+        if ( verbose ) {
+            TRACE_DEBUG( "tcp connected." );
+        }
     }
 
     rbudpReceiver->msgRecv.msg_name = NULL;

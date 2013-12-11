@@ -37,7 +37,9 @@ rsGetRemoteZoneResc( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     if ( strcmp( remoteOprType, REMOTE_CREATE ) == 0 ) {
         status = getRescGrpForCreate( rsComm, dataObjInp, &myRescGrpInfo );
-        if ( status < 0 || NULL == myRescGrpInfo ) { return status; } // JMC cppcheck - nullptr
+        if ( status < 0 || NULL == myRescGrpInfo ) {
+            return status;    // JMC cppcheck - nullptr
+        }
         rescInfo = myRescGrpInfo->rescInfo;
     }
     else if ( strcmp( remoteOprType, REMOTE_OPEN ) == 0 ) {
@@ -46,7 +48,9 @@ rsGetRemoteZoneResc( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         if ( status < 0 ) {
             /* does not exist */
             status = getRescGrpForCreate( rsComm, dataObjInp, &myRescGrpInfo );
-            if ( status < 0 || NULL == myRescGrpInfo ) { return status; } // JMC cppcheck - nullptr
+            if ( status < 0 || NULL == myRescGrpInfo ) {
+                return status;    // JMC cppcheck - nullptr
+            }
             rescInfo = myRescGrpInfo->rescInfo;
         }
         else {
@@ -73,7 +77,9 @@ rsGetRemoteZoneResc( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             writeFlag = getWriteFlag( dataObjInp->openFlags );
             status = sortObjInfoForOpen( rsComm, &dataObjInfoHead, &dataObjInp->condInput, writeFlag );
 
-            if ( status < 0 ) { return status; }
+            if ( status < 0 ) {
+                return status;
+            }
             status = applyPreprocRuleForOpen( rsComm, dataObjInp,
                                               &dataObjInfoHead );
             if ( status < 0 || NULL == dataObjInfoHead ) { // JMC cppcheck - nullptr
@@ -96,7 +102,9 @@ rsGetRemoteZoneResc( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     bzero( *rescAddr, sizeof( rodsHostAddr_t ) );
     rstrcpy( ( *rescAddr )->hostAddr, rescInfo->rescLoc, NAME_LEN );
     rstrcpy( ( *rescAddr )->zoneName, ZoneInfoHead->zoneName, NAME_LEN );
-    if ( myRescGrpInfo != NULL ) { freeAllRescGrpInfo( myRescGrpInfo ); }
+    if ( myRescGrpInfo != NULL ) {
+        freeAllRescGrpInfo( myRescGrpInfo );
+    }
 
     return ( 0 );
 }

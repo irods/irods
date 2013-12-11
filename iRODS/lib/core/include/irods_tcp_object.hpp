@@ -8,12 +8,12 @@
 #include "irods_network_object.hpp"
 
 namespace irods {
-    // =-=-=-=-=-=-=-
-    // constant key for tcp network object
+// =-=-=-=-=-=-=-
+// constant key for tcp network object
     const std::string TCP_NETWORK_PLUGIN( "tcp" );
 
-    // =-=-=-=-=-=-=-
-    // TCP Network Object
+// =-=-=-=-=-=-=-
+// TCP Network Object
     class tcp_object : public network_object {
     public:
         // =-=-=-=-=-=-=-
@@ -51,8 +51,8 @@ namespace irods {
 
     }; // class tcp_object
 
-    /// =-=-=-=-=-=-=-
-    /// @brief typedef for shared tcp object ptr
+/// =-=-=-=-=-=-=-
+/// @brief typedef for shared tcp object ptr
     typedef boost::shared_ptr< tcp_object > tcp_object_ptr;
 
 }; // namespace irods

@@ -85,7 +85,9 @@ int connectToX() {
             fprintf( stderr, "rcConnectXmsg error...Will try again\n" );
             sleep( sleepSec );
             sleepSec = 2 * sleepSec;
-            if ( sleepSec > 10 ) { sleepSec = 10; }
+            if ( sleepSec > 10 ) {
+                sleepSec = 10;
+            }
             continue;
         }
         status = clientLogin( conn );
@@ -95,7 +97,9 @@ int connectToX() {
             fprintf( stderr, "clientLogin error...Will try again\n" );
             sleep( sleepSec );
             sleepSec = 2 * sleepSec;
-            if ( sleepSec > 10 ) { sleepSec = 10; }
+            if ( sleepSec > 10 ) {
+                sleepSec = 10;
+            }
             continue;
         }
     }
@@ -292,7 +296,9 @@ int processUserInput( char *buf ) {
     if ( ( t = strstr( buf, " for " ) ) != NULL ) {
         *t = '\0';
         t = t + 5;
-        while ( *t == ' ' ) { t++; }
+        while ( *t == ' ' ) {
+            t++;
+        }
         if ( ( strstr( t, "all" ) == t ) ) {
             snprintf( hdr, 99, "CMSG:ALL" );
         }
@@ -572,7 +578,9 @@ main( int argc, char **argv ) {
             sleep( sleepSec );
             sleepSec = 2 * sleepSec;
             /* if (sleepSec > 10) sleepSec = 10; */
-            if ( sleepSec > 1 ) { sleepSec = 1; }
+            if ( sleepSec > 1 ) {
+                sleepSec = 1;
+            }
         }
     }
 }

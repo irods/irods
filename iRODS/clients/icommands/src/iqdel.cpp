@@ -87,7 +87,9 @@ main( int argc, char **argv ) {
     status = clientLogin( Conn );
     if ( status != 0 ) {
         printError( Conn, status, "clientLogin" );
-        if ( !debug ) { exit( 3 ); }
+        if ( !debug ) {
+            exit( 3 );
+        }
     }
 
     if ( myRodsArgs.all ) {
@@ -106,7 +108,9 @@ main( int argc, char **argv ) {
     printErrorStack( Conn->rError );
     rcDisconnect( Conn );
 
-    if ( status ) { exit( 4 ); }
+    if ( status ) {
+        exit( 4 );
+    }
     exit( 0 );
 }
 
@@ -138,7 +142,9 @@ qdelUtil( rcComm_t *conn, char *userName, int allFlag, rodsEnv *myEnv,
     while ( continueInx > 0 ) {
         status =  rcGenQuery( conn, &genQueryInp, &genQueryOut );
         if ( status < 0 ) {
-            if ( status != CAT_NO_ROWS_FOUND ) { savedStatus = status; }
+            if ( status != CAT_NO_ROWS_FOUND ) {
+                savedStatus = status;
+            }
             break;
         }
 
@@ -150,7 +156,9 @@ qdelUtil( rcComm_t *conn, char *userName, int allFlag, rodsEnv *myEnv,
         }
         for ( i = 0; i < genQueryOut->rowCnt; i++ ) {
             execIdStr = &execId->value[execId->len * i];
-            if ( myRodsArgs->verbose ) { printf( "Deleting %s\n", execIdStr ); }
+            if ( myRodsArgs->verbose ) {
+                printf( "Deleting %s\n", execIdStr );
+            }
             status = rmDelayedRule( execIdStr );
             if ( status < 0 ) {
                 rodsLog( LOG_ERROR,

@@ -230,7 +230,9 @@ setPathForGraftPathScheme( char *objPath, const char *vaultPath, int addUserName
             /* skip over '/' */
             objPathPtr = tmpPtr + 1;
             /* don't skip over the trash path */
-            if ( i == 0 && strncmp( objPathPtr, "trash/", 6 ) == 0 ) { break; }
+            if ( i == 0 && strncmp( objPathPtr, "trash/", 6 ) == 0 ) {
+                break;
+            }
         }
     }
 
@@ -1188,14 +1190,20 @@ getLogPathFromPhyPath( char *phyPath, rescInfo_t *rescInfo, char *outLogPath ) {
     }
 
     len = strlen( rescInfo->rescVaultPath );
-    if ( strncmp( rescInfo->rescVaultPath, phyPath, len ) != 0 ) { return -1; }
+    if ( strncmp( rescInfo->rescVaultPath, phyPath, len ) != 0 ) {
+        return -1;
+    }
     tmpPtr = phyPath + len;
 
-    if ( *tmpPtr != '/' ) { return -1; }
+    if ( *tmpPtr != '/' ) {
+        return -1;
+    }
 
     tmpPtr ++;
     status = getLocalZoneInfo( &tmpZoneInfo );
-    if ( status < 0 || NULL == tmpZoneInfo ) { return status; } // JMC cppcheck - nullptr
+    if ( status < 0 || NULL == tmpZoneInfo ) {
+        return status;    // JMC cppcheck - nullptr
+    }
 
     len = strlen( tmpZoneInfo->zoneName );
     if ( strncmp( tmpZoneInfo->zoneName, tmpPtr, len ) == 0 &&
@@ -1278,7 +1286,9 @@ getDataObjLockPath( char *objPath, char **outLockPath ) {
     int c;
     int len;
 
-    if ( objPath == NULL || outLockPath == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( objPath == NULL || outLockPath == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
     objPathPtr = objPath; // JMC - backport 4604
 
     /* skip over the first 3 '/' */
@@ -1357,13 +1367,17 @@ fsDataObjLock( char *objPath, int cmd, int type, int infd ) {
         rodsLogError( LOG_DEBUG, status, "fsDataObjLock: fcntl error for %s, cmd = %d, type = %d",
                       objPath, cmd, type ); // JMC - backport 4604
 
-        if ( path != NULL ) { free( path ); } // JMC - backport 4604
+        if ( path != NULL ) {
+            free( path );    // JMC - backport 4604
+        }
 
         close( myFd );
         return ( status );
     }
 #endif
-    if ( path != NULL ) { free( path ); } // JMC - backport 4604
+    if ( path != NULL ) {
+        free( path );    // JMC - backport 4604
+    }
     if ( type == F_UNLCK ) {
         close( myFd );
         myFd = 0;

@@ -60,7 +60,9 @@ rsNcCreate( rsComm_t *rsComm, ncOpenInp_t *ncCreateInp, int **ncid ) {
         addKeyVal( &dataObjInp.condInput, NO_OPEN_FLAG_KW, "" );
         l1descInx = _rsDataObjCreate( rsComm, &dataObjInp );
         clearKeyVal( &dataObjInp.condInput );
-        if ( l1descInx < 0 ) { return l1descInx; }
+        if ( l1descInx < 0 ) {
+            return l1descInx;
+        }
         remoteFlag = resoAndConnHostByDataObjInfo( rsComm,
                      L1desc[l1descInx].dataObjInfo, &rodsServerHost );
         if ( remoteFlag < 0 ) {

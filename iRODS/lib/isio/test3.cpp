@@ -63,7 +63,9 @@ void main( int argc, char **argv ) {
             for ( i = 0; i < writeCount; i++ ) {
                 wval = fwrite( userWriteString,
                                userWriteStringLen, 1, FI );
-                if ( wval <= 0 ) { break; }
+                if ( wval <= 0 ) {
+                    break;
+                }
             }
         }
         else {

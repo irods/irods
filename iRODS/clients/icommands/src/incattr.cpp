@@ -132,7 +132,9 @@ usage() {
     };
     int i;
     for ( i = 0;; i++ ) {
-        if ( strlen( msgs[i] ) == 0 ) { break; }
+        if ( strlen( msgs[i] ) == 0 ) {
+            break;
+        }
         printf( "%s\n", msgs[i] );
     }
     printReleaseInfo( "incattr" );

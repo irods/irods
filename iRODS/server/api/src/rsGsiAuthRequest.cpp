@@ -70,7 +70,9 @@ int igsiServersideAuth( rsComm_t *rsComm ) {
     status = igsiEstablishContextServerside( rsComm, clientName,
              500 );
 #ifdef GSI_DEBUG
-    if ( status == 0 ) { printf( "clientName:%s\n", clientName ); }
+    if ( status == 0 ) {
+        printf( "clientName:%s\n", clientName );
+    }
 #endif
 
     memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
@@ -267,7 +269,9 @@ int igsiServersideAuth( rsComm_t *rsComm ) {
 
     status = chkProxyUserPriv( rsComm, privLevel );
 
-    if ( status < 0 ) { return status; }
+    if ( status < 0 ) {
+        return status;
+    }
 
     rsComm->proxyUser.authInfo.authFlag = privLevel;
     rsComm->clientUser.authInfo.authFlag = clientPrivLevel;

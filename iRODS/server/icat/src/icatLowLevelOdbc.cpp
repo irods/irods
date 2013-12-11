@@ -412,22 +412,30 @@ cllCheckPending( const char *sql, int option, int dbType ) {
             /* For mySQL, may have a few SET SESSION sql too, which we
                should ignore */
             skip = 1;
-            if ( strncmp( ( char * )&pBuffer[0], "begin", 5 ) != 0 ) { skip = 0; }
+            if ( strncmp( ( char * )&pBuffer[0], "begin", 5 ) != 0 ) {
+                skip = 0;
+            }
             max = maxPendingToRecord;
-            if ( pendingIx < max ) { max = pendingIx; }
+            if ( pendingIx < max ) {
+                max = pendingIx;
+            }
             for ( i = 1; i < max && skip == 1; i++ ) {
                 if ( strncmp( ( char * )&pBuffer[i * pendingRecordSize],
                               "SET SESSION", 11 ) != 0 ) {
                     skip = 0;
                 }
             }
-            if ( skip ) { return( 0 ); }
+            if ( skip ) {
+                return( 0 );
+            }
         }
 
         rodsLog( LOG_NOTICE, "Warning, pending SQL at cllDisconnect, count: %d",
                  pendingCount );
         max = maxPendingToRecord;
-        if ( pendingIx < max ) { max = pendingIx; }
+        if ( pendingIx < max ) {
+            max = pendingIx;
+        }
         for ( i = 0; i < max; i++ ) {
             rodsLog( LOG_NOTICE, "Warning, pending SQL: %s ...",
                      ( char * )&pBuffer[i * pendingRecordSize] );
@@ -496,7 +504,9 @@ cllExecSqlNoResult( icatSessionStruct *icss, const char *sql ) {
     else {
         if ( didBegin == 0 ) {
             status = _cllExecSqlNoResult( icss, "begin", 1 );
-            if ( status != SQL_SUCCESS ) { return( status ); }
+            if ( status != SQL_SUCCESS ) {
+                return( status );
+            }
         }
         didBegin = 1;
     }
@@ -568,15 +578,21 @@ bindTheVariables( HSTMT myHstmt, const char *sql ) {
 #ifdef NEW_ODBC
 static int cmp_stmt( const char *str1, const char *str2 ) {
     /* skip leading spaces */
-    while ( isspace( *str1 ) ) { ++str1 ; }
+    while ( isspace( *str1 ) ) {
+        ++str1 ;
+    }
 
     /* start comparing */
     for ( ; *str1 && *str2 ; ++str1, ++str2 ) {
-        if ( tolower( *str1 ) != *str2 ) { return 0 ; }
+        if ( tolower( *str1 ) != *str2 ) {
+            return 0 ;
+        }
     }
 
     /* skip trailing spaces */
-    while ( isspace( *str1 ) ) { ++str1 ; }
+    while ( isspace( *str1 ) ) {
+        ++str1 ;
+    }
 
     /* if we are at the end of the strings then they are equal */
     return *str1 == *str2 ;
@@ -624,25 +640,39 @@ _cllExecSqlNoResult( icatSessionStruct *icss, const char *sql,
 #endif
 
     if ( option == 0 ) {
-        if ( bindTheVariables( myHstmt, sql ) != 0 ) { return( -1 ); }
+        if ( bindTheVariables( myHstmt, sql ) != 0 ) {
+            return( -1 );
+        }
     }
 
     rodsLogSql( sql );
 
     stat = SQLExecDirect( myHstmt, ( unsigned char * )sql, SQL_NTS );
     status = "UNKNOWN";
-    if ( stat == SQL_SUCCESS ) { status = "SUCCESS"; }
-    if ( stat == SQL_SUCCESS_WITH_INFO ) { status = "SUCCESS_WITH_INFO"; }
-    if ( stat == SQL_NO_DATA_FOUND ) { status = "NO_DATA"; }
-    if ( stat == SQL_ERROR ) { status = "SQL_ERROR"; }
-    if ( stat == SQL_INVALID_HANDLE ) { status = "HANDLE_ERROR"; }
+    if ( stat == SQL_SUCCESS ) {
+        status = "SUCCESS";
+    }
+    if ( stat == SQL_SUCCESS_WITH_INFO ) {
+        status = "SUCCESS_WITH_INFO";
+    }
+    if ( stat == SQL_NO_DATA_FOUND ) {
+        status = "NO_DATA";
+    }
+    if ( stat == SQL_ERROR ) {
+        status = "SQL_ERROR";
+    }
+    if ( stat == SQL_INVALID_HANDLE ) {
+        status = "HANDLE_ERROR";
+    }
     rodsLogSqlResult( status );
 
     if ( stat == SQL_SUCCESS || stat == SQL_SUCCESS_WITH_INFO ||
             stat == SQL_NO_DATA_FOUND ) {
         cllCheckPending( sql, 0, icss->databaseType );
         result = 0;
-        if ( stat == SQL_NO_DATA_FOUND ) { result = CAT_SUCCESS_BUT_WITH_NO_INFO; }
+        if ( stat == SQL_NO_DATA_FOUND ) {
+            result = CAT_SUCCESS_BUT_WITH_NO_INFO;
+        }
 #ifdef NEW_ODBC
         /* ODBC says that if statement is not UPDATE, INSERT, or DELETE then
            SQLRowCount may return anything. So for BEGIN, COMMIT and ROLLBACK
@@ -655,7 +685,9 @@ _cllExecSqlNoResult( icatSessionStruct *icss, const char *sql,
                 /* error getting rowCount???, just call it no_info */
                 result = CAT_SUCCESS_BUT_WITH_NO_INFO;
             }
-            if ( rowCount == 0 ) { result = CAT_SUCCESS_BUT_WITH_NO_INFO; }
+            if ( rowCount == 0 ) {
+                result = CAT_SUCCESS_BUT_WITH_NO_INFO;
+            }
         }
 #else
         rowCount = 0; /* avoid compiler warning */
@@ -743,17 +775,29 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, char *sql ) {
 
     myStatement->stmtPtr = hstmt;
 
-    if ( bindTheVariables( hstmt, sql ) != 0 ) { return( -1 ); }
+    if ( bindTheVariables( hstmt, sql ) != 0 ) {
+        return( -1 );
+    }
 
     rodsLogSql( sql );
     stat = SQLExecDirect( hstmt, ( unsigned char * )sql, SQL_NTS );
 
     status = "UNKNOWN";
-    if ( stat == SQL_SUCCESS ) { status = "SUCCESS"; }
-    if ( stat == SQL_SUCCESS_WITH_INFO ) { status = "SUCCESS_WITH_INFO"; }
-    if ( stat == SQL_NO_DATA_FOUND ) { status = "NO_DATA"; }
-    if ( stat == SQL_ERROR ) { status = "SQL_ERROR"; }
-    if ( stat == SQL_INVALID_HANDLE ) { status = "HANDLE_ERROR"; }
+    if ( stat == SQL_SUCCESS ) {
+        status = "SUCCESS";
+    }
+    if ( stat == SQL_SUCCESS_WITH_INFO ) {
+        status = "SUCCESS_WITH_INFO";
+    }
+    if ( stat == SQL_NO_DATA_FOUND ) {
+        status = "NO_DATA";
+    }
+    if ( stat == SQL_ERROR ) {
+        status = "SQL_ERROR";
+    }
+    if ( stat == SQL_INVALID_HANDLE ) {
+        status = "HANDLE_ERROR";
+    }
     rodsLogSqlResult( status );
 
     if ( stat == SQL_SUCCESS ||
@@ -1021,11 +1065,21 @@ cllExecSqlWithResultBV(
     }
 
     status = "UNKNOWN";
-    if ( stat == SQL_SUCCESS ) { status = "SUCCESS"; }
-    if ( stat == SQL_SUCCESS_WITH_INFO ) { status = "SUCCESS_WITH_INFO"; }
-    if ( stat == SQL_NO_DATA_FOUND ) { status = "NO_DATA"; }
-    if ( stat == SQL_ERROR ) { status = "SQL_ERROR"; }
-    if ( stat == SQL_INVALID_HANDLE ) { status = "HANDLE_ERROR"; }
+    if ( stat == SQL_SUCCESS ) {
+        status = "SUCCESS";
+    }
+    if ( stat == SQL_SUCCESS_WITH_INFO ) {
+        status = "SUCCESS_WITH_INFO";
+    }
+    if ( stat == SQL_NO_DATA_FOUND ) {
+        status = "NO_DATA";
+    }
+    if ( stat == SQL_ERROR ) {
+        status = "SQL_ERROR";
+    }
+    if ( stat == SQL_INVALID_HANDLE ) {
+        status = "HANDLE_ERROR";
+    }
     rodsLogSqlResult( status );
 
     if ( stat == SQL_SUCCESS ||
@@ -1184,13 +1238,17 @@ cllGetRowCount( icatSessionStruct *icss, int statementNumber ) {
     icatStmtStrct *myStatement;
     SQL_INT_OR_LEN RowCount;
 
-    if ( statementNumber < 0 ) { return( noResultRowCount ); }
+    if ( statementNumber < 0 ) {
+        return( noResultRowCount );
+    }
 
     myStatement = icss->stmtPtr[statementNumber];
     hstmt = myStatement->stmtPtr;
 
     i = SQLRowCount( hstmt, ( SQL_INT_OR_LEN * )&RowCount );
-    if ( i ) { return( i ); }
+    if ( i ) {
+        return( i );
+    }
     return( RowCount );
 }
 
@@ -1282,7 +1340,9 @@ int cllTest( char *userArg, char *pwArg ) {
     rodsLogSqlReq( 1 );
     OK = 1;
     i = cllOpenEnv( &icss );
-    if ( i != 0 ) { OK = 0; }
+    if ( i != 0 ) {
+        OK = 0;
+    }
 
     if ( userArg == 0 || *userArg == '\0' ) {
         ppasswd = getpwuid( getuid() );  /* get user passwd entry             */
@@ -1304,31 +1364,47 @@ int cllTest( char *userArg, char *pwArg ) {
     }
 
     i = cllConnect( &icss );
-    if ( i != 0 ) { exit( -1 ); }
+    if ( i != 0 ) {
+        exit( -1 );
+    }
 
     i = cllExecSqlNoResult( &icss, "create table test (i integer, j integer, a varchar(32))" );
-    if ( i != 0 && i != CAT_SUCCESS_BUT_WITH_NO_INFO ) { OK = 0; }
+    if ( i != 0 && i != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
+        OK = 0;
+    }
 
     i = cllExecSqlNoResult( &icss, "insert into test values (2, 3, 'a')" );
-    if ( i != 0 ) { OK = 0; }
+    if ( i != 0 ) {
+        OK = 0;
+    }
 
     i = cllExecSqlNoResult( &icss, "commit" );
-    if ( i != 0 ) { OK = 0; }
+    if ( i != 0 ) {
+        OK = 0;
+    }
 
     i = cllExecSqlNoResult( &icss, "bad sql" );
-    if ( i == 0 ) { OK = 0; } /* should fail, if not it's not OK */
+    if ( i == 0 ) {
+        OK = 0;    /* should fail, if not it's not OK */
+    }
     i = cllExecSqlNoResult( &icss, "rollback" ); /* close the bad transaction*/
 
     i = cllExecSqlNoResult( &icss, "delete from test where i = 1" );
-    if ( i != 0 && i != CAT_SUCCESS_BUT_WITH_NO_INFO ) { OK = 0; }
+    if ( i != 0 && i != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
+        OK = 0;
+    }
 
     i = cllExecSqlNoResult( &icss, "commit" );
-    if ( i != 0 ) { OK = 0; }
+    if ( i != 0 ) {
+        OK = 0;
+    }
 
     i = cllExecSqlWithResultBV( &icss, &stmt,
                                 "select * from test where a = ?",
                                 "a", 0 , 0, 0, 0, 0 );
-    if ( i != 0 ) { OK = 0; }
+    if ( i != 0 ) {
+        OK = 0;
+    }
 
     if ( i == 0 ) {
         numOfCols = 1;
@@ -1356,7 +1432,9 @@ int cllTest( char *userArg, char *pwArg ) {
     i = cllExecSqlWithResultBV( &icss, &stmt,
                                 "select * from test where i = ?",
                                 "2", 0, 0, 0, 0, 0 );
-    if ( i != 0 ) { OK = 0; }
+    if ( i != 0 ) {
+        OK = 0;
+    }
 
     if ( i == 0 ) {
         numOfCols = 1;
@@ -1382,16 +1460,24 @@ int cllTest( char *userArg, char *pwArg ) {
     }
 
     i = cllExecSqlNoResult( &icss, "drop table test;" );
-    if ( i != 0 && i != CAT_SUCCESS_BUT_WITH_NO_INFO ) { OK = 0; }
+    if ( i != 0 && i != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
+        OK = 0;
+    }
 
     i = cllExecSqlNoResult( &icss, "commit" );
-    if ( i != 0 ) { OK = 0; }
+    if ( i != 0 ) {
+        OK = 0;
+    }
 
     i = cllDisconnect( &icss );
-    if ( i != 0 ) { OK = 0; }
+    if ( i != 0 ) {
+        OK = 0;
+    }
 
     i = cllCloseEnv( &icss );
-    if ( i != 0 ) { OK = 0; }
+    if ( i != 0 ) {
+        OK = 0;
+    }
 
     if ( OK ) {
         printf( "The tests all completed normally\n" );

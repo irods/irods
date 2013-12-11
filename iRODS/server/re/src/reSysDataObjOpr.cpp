@@ -565,11 +565,15 @@ msiSetDataTypeFromExt( ruleExecInfo_t *rei ) {
 
     status = splitPathByKey( dataObjInfoHead->objPath,
                              logicalCollName, logicalFileName, '/' );
-    if ( strlen( logicalFileName ) <= 0 ) { return( 0 ); }
+    if ( strlen( logicalFileName ) <= 0 ) {
+        return( 0 );
+    }
 
     status = splitPathByKey( logicalFileName,
                              logicalFileName1, logicalFileNameExt, '.' );
-    if ( strlen( logicalFileNameExt ) <= 0 ) { return( 0 ); }
+    if ( strlen( logicalFileNameExt ) <= 0 ) {
+        return( 0 );
+    }
 
     /* see if there's an entry in the catalog for this extension */
     memset( &genQueryInp, 0, sizeof( genQueryInp ) );
@@ -586,12 +590,16 @@ msiSetDataTypeFromExt( ruleExecInfo_t *rei ) {
     genQueryInp.maxRows = 1;
 
     status =  rsGenQuery( rei->rsComm, &genQueryInp, &genQueryOut );
-    if ( status != 0 || genQueryOut == NULL ) { return( 0 ); }
+    if ( status != 0 || genQueryOut == NULL ) {
+        return( 0 );
+    }
 
     rodsLog( LOG_NOTICE,
              "query status %d rowCnt=%d", status, genQueryOut->rowCnt );
 
-    if ( genQueryOut->rowCnt != 1 ) { return( 0 ); }
+    if ( genQueryOut->rowCnt != 1 ) {
+        return( 0 );
+    }
 
     status = svrCloseQueryOut( rei->rsComm, genQueryOut );
 

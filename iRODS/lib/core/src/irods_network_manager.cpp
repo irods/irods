@@ -4,31 +4,31 @@
 #include "irods_network_manager.hpp"
 
 namespace irods {
-    // =-=-=-=-=-=-=-
-    // network manager singleton
+// =-=-=-=-=-=-=-
+// network manager singleton
     network_manager netwk_mgr;
 
-    // =-=-=-=-=-=-=-
-    // public - Constructor
+// =-=-=-=-=-=-=-
+// public - Constructor
     network_manager::network_manager() {
 
     } // ctor
 
-    // =-=-=-=-=-=-=-
-    // public - Copy Constructor
+// =-=-=-=-=-=-=-
+// public - Copy Constructor
     network_manager::network_manager( const network_manager& _rhs ) {
         plugins_ = _rhs.plugins_;
 
     } // cctor
 
-    // =-=-=-=-=-=-=-
-    // public - Destructor
+// =-=-=-=-=-=-=-
+// public - Destructor
     network_manager::~network_manager( ) {
 
     } // dtor
 
-    // =-=-=-=-=-=-=-
-    // public - retrieve a network plugin given its key
+// =-=-=-=-=-=-=-
+// public - retrieve a network plugin given its key
     error network_manager::resolve(
         std::string  _key,
         network_ptr& _value ) {
@@ -53,8 +53,8 @@ namespace irods {
 
     } // resolve
 
-    // =-=-=-=-=-=-=-
-    // public - given a type, load up a network plugin
+// =-=-=-=-=-=-=-
+// public - given a type, load up a network plugin
     error network_manager::init_from_type(
         const std::string& _type,
         const std::string& _key,

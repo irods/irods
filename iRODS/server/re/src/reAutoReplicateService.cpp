@@ -69,15 +69,25 @@ void UnixSendEmail( char *toAddr, char *subjectLine, char *msgBody ) {
     sprintf( mailStr, "cat %s| mail  %s", fileName, toAddr );
 #else /* tested for linux - not sure how other platforms operate for subject */
     if ( ( subjectLine != NULL ) && ( strlen( subjectLine ) > 0 ) ) {
-        if ( checkStringForSystem( fileName ) ) { return; }
-        if ( checkStringForSystem( subjectLine ) ) { return; }
-        if ( checkStringForEmailAddress( toAddr ) ) { return; }
+        if ( checkStringForSystem( fileName ) ) {
+            return;
+        }
+        if ( checkStringForSystem( subjectLine ) ) {
+            return;
+        }
+        if ( checkStringForEmailAddress( toAddr ) ) {
+            return;
+        }
         sprintf( mailStr, "cat %s| mail -s '%s'  %s", fileName,
                  subjectLine, toAddr );
     }
     else {
-        if ( checkStringForSystem( fileName ) ) { return; }
-        if ( checkStringForEmailAddress( toAddr ) ) { return; }
+        if ( checkStringForSystem( fileName ) ) {
+            return;
+        }
+        if ( checkStringForEmailAddress( toAddr ) ) {
+            return;
+        }
         sprintf( mailStr, "cat %s| mail  %s", fileName, toAddr );
     }
 #endif
@@ -577,7 +587,9 @@ static int process_single_obj( rsComm_t *conn, char *parColl, char *fileName,
                 free( pReplicaStatus ); // JMc cppcheck - leak
                 return t;
             }
-            if ( transStat != NULL ) { free( transStat ); }
+            if ( transStat != NULL ) {
+                free( transStat );
+            }
         }
     }
 

@@ -10,11 +10,11 @@
 
 namespace irods {
 
-    // =-=-=-=-=-=-=-
-    // JMC :: simple wrapper for boost::asio sockets.  they did
-    //     :: not provide a pure interface base class wich didnt
-    //     :: have associated template parameters so one needed to
-    //     :: be provided.  unfortuately the inteface needs redefined.
+// =-=-=-=-=-=-=-
+// JMC :: simple wrapper for boost::asio sockets.  they did
+//     :: not provide a pure interface base class wich didnt
+//     :: have associated template parameters so one needed to
+//     :: be provided.  unfortuately the inteface needs redefined.
     class socket_wrapper {
 
     public:
@@ -29,8 +29,8 @@ namespace irods {
 
     }; // class socket_wrapper
 
-    // =-=-=-=-=-=-=-
-    // derived class for handling tcp style sockets
+// =-=-=-=-=-=-=-
+// derived class for handling tcp style sockets
     class socket_wrapper_tcp : public socket_wrapper {
         boost::asio::ip::tcp::socket* sock_;
     public:
@@ -42,8 +42,8 @@ namespace irods {
 
     }; // class socket_wrapper_tcp
 
-    // =-=-=-=-=-=-=-
-    // derived class for handling udp style sockets
+// =-=-=-=-=-=-=-
+// derived class for handling udp style sockets
     class socket_wrapper_udp : public socket_wrapper {
         boost::asio::ip::udp::socket* sock_;
     public:

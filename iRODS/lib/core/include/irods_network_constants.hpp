@@ -9,8 +9,8 @@
 #include <string>
 
 namespace irods {
-    /// =-=-=-=-=-=-=-
-    /// @brief constants for network object indexing
+/// =-=-=-=-=-=-=-
+/// @brief constants for network object indexing
     const std::string NETWORK_OP_CLIENT_START( "network_client_start" );
     const std::string NETWORK_OP_CLIENT_STOP( "network_client_stop" );
     const std::string NETWORK_OP_AGENT_START( "network_agent_start" );

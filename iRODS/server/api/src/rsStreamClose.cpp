@@ -21,9 +21,13 @@ rsStreamClose( rsComm_t *rsComm, fileCloseInp_t *streamCloseInp ) {
                  "rsStreamClose: fileInx %d out of range", fileInx );
         return ( SYS_FILE_DESC_OUT_OF_RANGE );
     }
-    if ( FileDesc[fileInx].inuseFlag != FD_INUSE ) { return SYS_BAD_FILE_DESCRIPTOR; }
+    if ( FileDesc[fileInx].inuseFlag != FD_INUSE ) {
+        return SYS_BAD_FILE_DESCRIPTOR;
+    }
 
-    if ( FileDesc[fileInx].fileName == NULL ) { return SYS_INVALID_FILE_PATH; }
+    if ( FileDesc[fileInx].fileName == NULL ) {
+        return SYS_INVALID_FILE_PATH;
+    }
     if ( strcmp( FileDesc[fileInx].fileName, STREAM_FILE_NAME ) != 0 ) {
         rodsLog( LOG_ERROR,
                  "rsStreamClose: fileName %s is invalid for stream",

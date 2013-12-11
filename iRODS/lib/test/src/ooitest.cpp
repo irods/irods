@@ -83,16 +83,22 @@ runBankTest() {
 
     status = doNewAccount( easyhandle, "Savings", "John", &account_id );
 
-    if ( status < 0 ) { return status; }
+    if ( status < 0 ) {
+        return status;
+    }
 
     status = doDeposit( easyhandle, account_id, 500.0 );
 
-    if ( status < 0 ) { return status; }
+    if ( status < 0 ) {
+        return status;
+    }
 
     status = doBuyBond( easyhandle, account_id, 200.0 );
     free( account_id );
 
-    if ( status < 0 ) { return status; }
+    if ( status < 0 ) {
+        return status;
+    }
 
     status = doListAccounts( easyhandle );
 

@@ -36,7 +36,9 @@ printNice( char *inArg, int minLen, char *Units ) {
     if ( inArg[0] == '-' ) {
         nextComma = ( len - 1 ) % 3;
     }
-    if ( nextComma == 0 ) { nextComma = 3; }
+    if ( nextComma == 0 ) {
+        nextComma = 3;
+    }
     n = 0;
     k = 0;
     firstComma = 0;
@@ -59,15 +61,33 @@ printNice( char *inArg, int minLen, char *Units ) {
     niceString[n] = '\0';
     firstPart[k] = '\0';
     numberName = "";
-    if ( commaCount == 1 ) { numberName = "thousand"; }
-    if ( commaCount == 2 ) { numberName = "million"; }
-    if ( commaCount == 3 ) { numberName = "billion"; }
-    if ( commaCount == 4 ) { numberName = "trillion"; }
-    if ( commaCount == 5 ) { numberName = "quadrillion"; }
-    if ( commaCount == 6 ) { numberName = "quintillion"; }
-    if ( commaCount == 7 ) { numberName = "sextillion"; }
-    if ( commaCount == 8 ) { numberName = "septillion"; }
-    if ( commaCount > 8 ) { numberName = "very many"; }
+    if ( commaCount == 1 ) {
+        numberName = "thousand";
+    }
+    if ( commaCount == 2 ) {
+        numberName = "million";
+    }
+    if ( commaCount == 3 ) {
+        numberName = "billion";
+    }
+    if ( commaCount == 4 ) {
+        numberName = "trillion";
+    }
+    if ( commaCount == 5 ) {
+        numberName = "quadrillion";
+    }
+    if ( commaCount == 6 ) {
+        numberName = "quintillion";
+    }
+    if ( commaCount == 7 ) {
+        numberName = "sextillion";
+    }
+    if ( commaCount == 8 ) {
+        numberName = "septillion";
+    }
+    if ( commaCount > 8 ) {
+        numberName = "very many";
+    }
     len = strlen( niceString );
     if ( len < minLen ) {
         i = minLen - len;
@@ -367,7 +387,9 @@ showUserUsage( char *userName, char *usersZone ) {
                 printNice( tResult, 14, "" );
                 k = strlen( tResult );
             }
-            if ( k < 14 ) { printf( "%s", pad[k] ); }
+            if ( k < 14 ) {
+                printf( "%s", pad[k] );
+            }
             printCount++;
         }
         printf( "\n" );
@@ -504,12 +526,18 @@ main( int argc, char **argv ) {
 
     status = clientLogin( Conn );
     if ( status != 0 ) {
-        if ( !debug ) { exit( 3 ); }
+        if ( !debug ) {
+            exit( 3 );
+        }
     }
 
     strncpy( userName, myEnv.rodsUserName, NAME_LEN );
-    if ( myRodsArgs.user ) { strncpy( userName, myRodsArgs.userString, NAME_LEN ); }
-    if ( myRodsArgs.all ) { userName[0] = '\0'; }
+    if ( myRodsArgs.user ) {
+        strncpy( userName, myRodsArgs.userString, NAME_LEN );
+    }
+    if ( myRodsArgs.all ) {
+        userName[0] = '\0';
+    }
 
     nArgs = argc - myRodsArgs.optind;
 
@@ -588,7 +616,9 @@ void usage() {
     };
     int i;
     for ( i = 0;; i++ ) {
-        if ( strlen( msgs[i] ) == 0 ) { break; }
+        if ( strlen( msgs[i] ) == 0 ) {
+            break;
+        }
         printf( "%s\n", msgs[i] );
     }
     printReleaseInfo( "iquota" );

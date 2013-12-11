@@ -151,7 +151,9 @@ int rsGetHostForPut(
     //rstrcpy (addr.hostAddr, myRescInfo->rescLoc, NAME_LEN);
     status = resolveHost( &addr, &rodsServerHost );
     delete myRescInfo;
-    if ( status < 0 ) { return status; }
+    if ( status < 0 ) {
+        return status;
+    }
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
         *outHost = strdup( THIS_ADDRESS );
         return 0;

@@ -326,9 +326,15 @@ msiChkRechkRecompChkSum4DatObjVol2( msParam_t *coll, msParam_t * inpParam2, msPa
                 // status7 = rsObjStat(rsComm, &dataObjInp, &rodsObjStatOut);
 
                 // if (status7 == 0  && status7 == 1) {
-                if ( ( long )rodsObjStatOut->objSize <= lMin ) { iCountMin++; }
-                if ( ( long )rodsObjStatOut->objSize >= lMax ) { iCountMax++; }
-                if ( ( long )rodsObjStatOut->objSize > lMin && ( long )rodsObjStatOut->objSize < lMax ) { iCountMid++; }
+                if ( ( long )rodsObjStatOut->objSize <= lMin ) {
+                    iCountMin++;
+                }
+                if ( ( long )rodsObjStatOut->objSize >= lMax ) {
+                    iCountMax++;
+                }
+                if ( ( long )rodsObjStatOut->objSize > lMin && ( long )rodsObjStatOut->objSize < lMax ) {
+                    iCountMid++;
+                }
 
 //}
                 //printf ("GJK-P P.007.2.2c dataObjInp.objPath=(%s), size=(%ld), createTime=(%s), status7=(%d)\n", dataObjInp.objPath, (long)rodsObjStatOut->objSize, rodsObjStatOut->createTime, status7);

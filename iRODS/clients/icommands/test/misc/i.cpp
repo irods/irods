@@ -146,7 +146,9 @@ int doAuth2( rcComm_t *Conn, char *userName ) {
     MD5Update( &context, md5Buf, CHALLENGE_LEN + MAX_PASSWORD_LEN );
     MD5Final( digest, &context );
     for ( i = 0; i < RESPONSE_LEN; i++ ) {
-        if ( digest[i] == '\0' ) { digest[i]++; }  /* make sure 'string' doesn't
+        if ( digest[i] == '\0' ) {
+            digest[i]++;
+        }  /* make sure 'string' doesn't
 					    end early*/
     }
     authRespIn.response = digest;
@@ -183,7 +185,9 @@ doEncode( char *textIn, char *key ) {
     strncpy( rand15, rand, 15 );
     rand15[15] = '\0';
     cp = strstr( redone, rand15 );
-    if ( cp != NULL ) { *cp = '\0'; }
+    if ( cp != NULL ) {
+        *cp = '\0';
+    }
     printf( "reconverted=%s\n", redone );
 }
 
@@ -218,7 +222,9 @@ int doAuthT( rcComm_t *Conn, char *userName ) {
     MD5Update( &context, md5Buf, CHALLENGE_LEN + MAX_PASSWORD_LEN );
     MD5Final( digest, &context );
     for ( i = 0; i < RESPONSE_LEN; i++ ) {
-        if ( digest[i] == '\0' ) { digest[i]++; }  /* make sure 'string' doesn't
+        if ( digest[i] == '\0' ) {
+            digest[i]++;
+        }  /* make sure 'string' doesn't
 					    end early*/
     }
 
@@ -268,7 +274,9 @@ int doAuth( rcComm_t *Conn, char *userName ) {
     MD5Final( digest, &context );
 
     for ( i = 0; i < RESPONSE_LEN; i++ ) {
-        if ( digest[i] == '\0' ) { digest[i]++; }  /* make sure 'string' doesn't
+        if ( digest[i] == '\0' ) {
+            digest[i]++;
+        }  /* make sure 'string' doesn't
 					    end early*/
     }
     authIn.subOp = AUTH_SUBOP_RESP;
@@ -526,7 +534,9 @@ int doLongLs( rcComm_t *Conn, char *inStr, char *inRepl ) {
     genQueryInp.sqlCondInp.inx = i2a;
     strcpy( comboStr, cwd );
     if ( strlen( inStr ) > 0 ) {
-        if ( comboStr[strlen( comboStr ) - 1] != '/' ) { strncat( comboStr, "/", BIG_STR ); }
+        if ( comboStr[strlen( comboStr ) - 1] != '/' ) {
+            strncat( comboStr, "/", BIG_STR );
+        }
         strncat( comboStr, inStr, BIG_STR );
     }
     sprintf( v1, "='%s'", comboStr );
@@ -623,7 +633,9 @@ int doLongLs( rcComm_t *Conn, char *inStr, char *inRepl ) {
                     tResult = genQueryOut->sqlResult[i].value;
                     tResult += j * genQueryOut->sqlResult[i].len;
                     printf( "%s: %s\n", dataColNames[colNameIx], tResult );
-                    if ( colNameIx == 0 ) { strncpy( dataId, tResult, MAX_NAME_LEN ); }
+                    if ( colNameIx == 0 ) {
+                        strncpy( dataId, tResult, MAX_NAME_LEN );
+                    }
                 }
                 colNameIx++;
             }
@@ -940,16 +952,36 @@ main( int argc, char **argv ) {
             else {
                 if ( blankFlag ) {
                     ntokens++;
-                    if ( ntokens == 2 ) { tok2 = ( char * )&ttybuf[i]; }
-                    if ( ntokens == 3 ) { tok3 = ( char * )&ttybuf[i]; }
-                    if ( ntokens == 4 ) { tok4 = ( char * )&ttybuf[i]; }
-                    if ( ntokens == 5 ) { tok5 = ( char * )&ttybuf[i]; }
-                    if ( ntokens == 6 ) { tok6 = ( char * )&ttybuf[i]; }
-                    if ( ntokens == 7 ) { tok7 = ( char * )&ttybuf[i]; }
-                    if ( ntokens == 8 ) { tok8 = ( char * )&ttybuf[i]; }
-                    if ( ntokens == 9 ) { tok9 = ( char * )&ttybuf[i]; }
-                    if ( ntokens == 10 ) { tok10 = ( char * )&ttybuf[i]; }
-                    if ( ntokens == 11 ) { tok11 = ( char * )&ttybuf[i]; }
+                    if ( ntokens == 2 ) {
+                        tok2 = ( char * )&ttybuf[i];
+                    }
+                    if ( ntokens == 3 ) {
+                        tok3 = ( char * )&ttybuf[i];
+                    }
+                    if ( ntokens == 4 ) {
+                        tok4 = ( char * )&ttybuf[i];
+                    }
+                    if ( ntokens == 5 ) {
+                        tok5 = ( char * )&ttybuf[i];
+                    }
+                    if ( ntokens == 6 ) {
+                        tok6 = ( char * )&ttybuf[i];
+                    }
+                    if ( ntokens == 7 ) {
+                        tok7 = ( char * )&ttybuf[i];
+                    }
+                    if ( ntokens == 8 ) {
+                        tok8 = ( char * )&ttybuf[i];
+                    }
+                    if ( ntokens == 9 ) {
+                        tok9 = ( char * )&ttybuf[i];
+                    }
+                    if ( ntokens == 10 ) {
+                        tok10 = ( char * )&ttybuf[i];
+                    }
+                    if ( ntokens == 11 ) {
+                        tok11 = ( char * )&ttybuf[i];
+                    }
                 }
                 blankFlag = 0;
             }
@@ -961,7 +993,9 @@ main( int argc, char **argv ) {
             exit( 0 );
         }
         if ( strcmp( tok1, "debug" ) == 0 ) {
-            if ( debug == 1 ) { debug = 0; }
+            if ( debug == 1 ) {
+                debug = 0;
+            }
             else {
                 debug = 1;
             }
@@ -1063,11 +1097,17 @@ main( int argc, char **argv ) {
                     cwd[1] = '\0';
                 }
                 i = strlen( cwd );
-                if ( cwd[i - 1] != '/' ) { rstrcat( cwd, "/", BIG_STR ); }
+                if ( cwd[i - 1] != '/' ) {
+                    rstrcat( cwd, "/", BIG_STR );
+                }
                 mycp = tok2;
-                if ( *mycp == '/' ) { mycp++; }
+                if ( *mycp == '/' ) {
+                    mycp++;
+                }
                 k = strlen( tok2 );
-                if ( *( tok2 + k ) == '/' ) { k--; } /* back up past trailing / */
+                if ( *( tok2 + k ) == '/' ) {
+                    k--;    /* back up past trailing / */
+                }
                 *( tok2 + k ) = '\0';
                 rstrcat( cwd, mycp, BIG_STR );
             }

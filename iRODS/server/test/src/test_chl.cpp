@@ -69,7 +69,9 @@ int testRename( rsComm_t *rsComm, char *id, char *newName ) {
     rsComm->proxyUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
     intId = strtoll( id, 0, 0 );
     status = chlRenameObject( rsComm, intId, newName );
-    if ( status ) { return( status ); }
+    if ( status ) {
+        return( status );
+    }
     return( chlCommit( rsComm ) );
 }
 
@@ -107,7 +109,9 @@ int testMove( rsComm_t *rsComm, char *id, char *destId ) {
     intId = strtoll( id, 0, 0 );
     intDestId = strtoll( destId, 0, 0 );
     status = chlMoveObject( rsComm, intId, intDestId );
-    if ( status ) { return( status ); }
+    if ( status ) {
+        return( status );
+    }
     return( chlCommit( rsComm ) );
 }
 
@@ -181,7 +185,9 @@ int testTempPwCombined( rsComm_t *rsComm, char *s1 ) {
     char digestStr[100];
 
     status = chlMakeTempPw( rsComm, pwValueToHash, "" );
-    if ( status ) { return( status ); }
+    if ( status ) {
+        return( status );
+    }
 
     printf( "pwValueToHash: %s\n", pwValueToHash );
 
@@ -214,7 +220,9 @@ int testTempPwForOther( rsComm_t *rsComm, char *s1, char *otherUser ) {
     rsComm->proxyUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
 
     status = chlMakeTempPw( rsComm, pwValueToHash, otherUser );
-    if ( status ) { return( status ); }
+    if ( status ) {
+        return( status );
+    }
 
     printf( "pwValueToHash: %s\n", pwValueToHash );
 
@@ -252,7 +260,9 @@ int testCheckAuth( rsComm_t *rsComm, char *testAdminUser,  char *testUser,
     strncpy( rsComm->clientUser.rodsZone, testUserZone,
              sizeof rsComm->clientUser.rodsZone );
 
-    for ( i = 0; i < CHALLENGE_LEN + 2; i++ ) { challenge[i] = ' '; }
+    for ( i = 0; i < CHALLENGE_LEN + 2; i++ ) {
+        challenge[i] = ' ';
+    }
 
     i = 0;
     response[i++] = 0xd6; /* found to be a valid response */
@@ -468,7 +478,9 @@ int testRegDataMulti( rsComm_t *rsComm, char *count,
     for ( i = 0; i < myCount; i++ ) {
         snprintf( myName, sizeof myName, "%s.%d", nameBase, i );
         status = testRegDataObj( rsComm, myName, dataType, filePath );
-        if ( status ) { return( status ); }
+        if ( status ) {
+            return( status );
+        }
     }
 
     status = chlCommit( rsComm );
@@ -578,7 +590,9 @@ int testModColl( rsComm_t *rsComm, char *name, char *type,
 
     status = chlModColl( rsComm, &collInp );
 
-    if ( status != 0 ) { return( status ); }
+    if ( status != 0 ) {
+        return( status );
+    }
 
     status = chlCommit( rsComm );
     return( status );
@@ -610,12 +624,16 @@ int testModRuleMeta( rsComm_t *rsComm, char *id,
 int testModResourceFreeSpace( rsComm_t *rsComm, char *rescName,
                               char *numberString, char *option ) {
     int number, status;
-    if ( *numberString == '\\' ) { numberString++; }
+    if ( *numberString == '\\' ) {
+        numberString++;
+    }
     number = atoi( numberString );
     rsComm->clientUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
     rsComm->proxyUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
     status = chlModRescFreeSpace( rsComm, rescName, number );
-    if ( status != 0 ) { return( status ); }
+    if ( status != 0 ) {
+        return( status );
+    }
     if ( option != NULL && strcmp( option, "rollback" ) == 0 ) {
         status = chlRollback( rsComm );
     }
@@ -665,16 +683,22 @@ int testSimpleQ( rsComm_t *rsComm, char *sql, char *arg1, char *format ) {
 
     control = 0;
     form = 1;
-    if ( format != NULL ) { form = atoi( format ); }
+    if ( format != NULL ) {
+        form = atoi( format );
+    }
 
     status = chlSimpleQuery( rsComm, sql, arg1, 0, 0, 0,
                              form, &control, bigBuf, 1000 );
-    if ( status == 0 ) { printf( "%s", bigBuf ); }
+    if ( status == 0 ) {
+        printf( "%s", bigBuf );
+    }
 
     while ( control && ( status == 0 ) ) {
         status = chlSimpleQuery( rsComm, sql, 0, 0, 0, 0,
                                  form, &control, bigBuf, 1000 );
-        if ( status == 0 ) { printf( "%s", bigBuf ); }
+        if ( status == 0 ) {
+            printf( "%s", bigBuf );
+        }
     }
     return( status );
 }
@@ -761,11 +785,15 @@ int testCheckQuota( rsComm_t *rsComm, char *userName, char *rescName,
                 i = atoll( ( char * )&expectedQuota[1] );
                 iExpectedQuota = -i;
             }
-            if ( iExpectedQuota != userQuota ) { status = -1; }
+            if ( iExpectedQuota != userQuota ) {
+                status = -1;
+            }
         }
         if ( expectedStatus != NULL && strlen( expectedStatus ) > 0 ) {
             iExpectedStatus = atoi( expectedStatus );
-            if ( iExpectedStatus != quotaStatus ) { status = -2; }
+            if ( iExpectedStatus != quotaStatus ) {
+                status = -2;
+            }
         }
     }
     return( status );
@@ -1199,7 +1227,9 @@ main( int argc, char **argv ) {
                  status, myName, mySubName );
     }
     else {
-        if ( didOne ) { printf( "Completed successfully\n" ); }
+        if ( didOne ) {
+            printf( "Completed successfully\n" );
+        }
     }
 
     if ( didOne == 0 ) {

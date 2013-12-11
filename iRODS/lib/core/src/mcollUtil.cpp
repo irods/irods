@@ -25,7 +25,9 @@ mcollUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
     status = initCondForMcoll( myRodsEnv, myRodsArgs, &dataObjOprInp,
                                rodsPathInp );
 
-    if ( status < 0 ) { return status; }
+    if ( status < 0 ) {
+        return status;
+    }
 
     for ( i = 0; i < rodsPathInp->numSrc; i++ ) {
         if ( myRodsArgs->mountCollection == True ) {

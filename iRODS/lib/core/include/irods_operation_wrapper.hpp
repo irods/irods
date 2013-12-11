@@ -28,11 +28,11 @@
 #include <iostream>
 
 namespace irods {
-    // =-=-=-=-=-=-=-
-    // const signifying failure of operation call for post dynPEP
+// =-=-=-=-=-=-=-
+// const signifying failure of operation call for post dynPEP
     static std::string OP_FAILED( "OPERATION_FAILED" );
 
-    // =-=-=-=-=-=-=-
+// =-=-=-=-=-=-=-
     /**
      * \class
      * \author Jason M. Coposky

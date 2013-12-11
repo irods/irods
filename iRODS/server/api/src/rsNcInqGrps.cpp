@@ -54,7 +54,9 @@ rsNcInqGrps( rsComm_t *rsComm, ncInqGrpsInp_t *ncInqGrpsInp,
                  l1descInx );
         return ( SYS_FILE_DESC_OUT_OF_RANGE );
     }
-    if ( L1desc[l1descInx].inuseFlag != FD_INUSE ) { return BAD_INPUT_DESC_INDEX; }
+    if ( L1desc[l1descInx].inuseFlag != FD_INUSE ) {
+        return BAD_INPUT_DESC_INDEX;
+    }
     if ( L1desc[l1descInx].remoteZoneHost != NULL ) {
         ncInqGrpsInp_t myNcInqGrpsInp;
         bzero( &myNcInqGrpsInp, sizeof( myNcInqGrpsInp ) );
@@ -124,7 +126,9 @@ _rsNcInqGrps( int ncid, ncInqGrpsOut_t **ncInqGrpsOut ) {
     myNInqGrpsOut = *ncInqGrpsOut = ( ncInqGrpsOut_t * )
                                     calloc( 1, sizeof( ncInqGrpsOut_t ) );
 
-    if ( numgrps <= 0 ) { return 0; }
+    if ( numgrps <= 0 ) {
+        return 0;
+    }
 
     grpNcid = ( int * ) calloc( 1, numgrps * sizeof( int ) );
 

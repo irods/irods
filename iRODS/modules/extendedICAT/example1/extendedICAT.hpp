@@ -21,47 +21,47 @@
 
 #ifdef EXTENDED_ICAT_TABLES_1
 typedef struct {
-   int columnId;
-   char *columnName;
+    int columnId;
+    char *columnName;
 } extColumnName_t;
 
 /* These are used by 'iquest' to know which names are valid and how
    they map to the above COL_* defined values */
 extColumnName_t extColumnNames[] = {
-   { COL_TEST_ID,  "TEST_ID", }, 
-   { COL_TEST_NAME,     "TEST_NAME", }, 
-   { COL_TEST_TIME,     "TEST_TIME", }, 
+    { COL_TEST_ID,  "TEST_ID", },
+    { COL_TEST_NAME,     "TEST_NAME", },
+    { COL_TEST_TIME,     "TEST_TIME", },
 };
 
-int NumOfExtColumnNames = sizeof(extColumnNames) / sizeof(extColumnName_t);
+int NumOfExtColumnNames = sizeof( extColumnNames ) / sizeof( extColumnName_t );
 #endif  /* EXTENDED_ICAT_TABLES_1 */
 
 #ifdef EXTENDED_ICAT_TABLES_2
 
 typedef struct {
-   char *tableName;
-   char *tableAlias;
+    char *tableName;
+    char *tableAlias;
 } extTables_t;
 
 extTables_t extTables[] = {
-   { "test",  "test", },
+    { "test",  "test", },
 };
 
-int NumOfExtTables = sizeof(extTables) / sizeof(extTables_t);
+int NumOfExtTables = sizeof( extTables ) / sizeof( extTables_t );
 
 typedef struct {
-   int column_id;
-   char *column_table_name;
-   char *column_name;
+    int column_id;
+    char *column_table_name;
+    char *column_name;
 } extColumns_t;
 
-extColumns_t extColumns[] = { 
-   { COL_TEST_ID, "test", "id", },
-   { COL_TEST_NAME, "test", "name", },
-   { COL_TEST_TIME, "test", "time_stamp", },
+extColumns_t extColumns[] = {
+    { COL_TEST_ID, "test", "id", },
+    { COL_TEST_NAME, "test", "name", },
+    { COL_TEST_TIME, "test", "time_stamp", },
 };
 
-int NumOfExtColumns = sizeof(extColumns) / sizeof(extColumns_t);
+int NumOfExtColumns = sizeof( extColumns ) / sizeof( extColumns_t );
 
 #endif  /* EXTENDED_ICAT_TABLES_2 */
 

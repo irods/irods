@@ -692,7 +692,9 @@ void printMsParamArray( msParamArray_t *msParamArray, char *buf2 ) {
     int i;
     for ( i = 0; i < msParamArray->len; i++ ) {
         msParam_t *mP = msParamArray->msParam[i];
-        if ( i != 0 ) { strncat( buf2, ",", MAX_NAME_LEN - strlen( buf2 ) ); }
+        if ( i != 0 ) {
+            strncat( buf2, ",", MAX_NAME_LEN - strlen( buf2 ) );
+        }
         strncat( buf2, mP->label, MAX_NAME_LEN - strlen( buf2 ) );
         strncat( buf2, "=", MAX_NAME_LEN - strlen( buf2 ) );
         if ( mP->inOutStruct == NULL ) {
@@ -730,7 +732,9 @@ void printHashtable( Hashtable *env, char* buf2 ) {
         struct bucket *b = env->buckets[i];
         while ( b != NULL ) {
             Res *res = ( Res * ) b->value;
-            if ( k != 0 ) { strncat( buf2, "\n", MAX_NAME_LEN - strlen( buf2 ) ); }
+            if ( k != 0 ) {
+                strncat( buf2, "\n", MAX_NAME_LEN - strlen( buf2 ) );
+            }
             strncat( buf2, b->key, MAX_NAME_LEN - strlen( buf2 ) );
             strncat( buf2, "=", MAX_NAME_LEN - strlen( buf2 ) );
             if ( res == NULL ) {

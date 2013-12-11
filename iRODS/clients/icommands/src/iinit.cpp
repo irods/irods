@@ -168,7 +168,9 @@ main( int argc, char **argv ) {
         rstrcat( updateText, "irodsHost ", UPDATE_TEXT_LEN );
         rstrcat( updateText, ttybuf, UPDATE_TEXT_LEN );
         i = strlen( ttybuf );
-        if ( i > 0 ) { ttybuf[i - 1] = '\0'; } /* chop off trailing \n */
+        if ( i > 0 ) {
+            ttybuf[i - 1] = '\0';    /* chop off trailing \n */
+        }
         strncpy( myEnv.rodsHost, ttybuf, NAME_LEN );
     }
     if ( myEnv.rodsPort == 0 ) {
@@ -183,7 +185,9 @@ main( int argc, char **argv ) {
         rstrcat( updateText, "irodsPort ", UPDATE_TEXT_LEN );
         rstrcat( updateText, ttybuf, UPDATE_TEXT_LEN );
         i = strlen( ttybuf );
-        if ( i > 0 ) { ttybuf[i - 1] = '\0'; }
+        if ( i > 0 ) {
+            ttybuf[i - 1] = '\0';
+        }
         myEnv.rodsPort = atoi( ttybuf );
     }
     if ( myEnv.rodsUserName == NULL || strlen( myEnv.rodsUserName ) == 0 ) {
@@ -198,7 +202,9 @@ main( int argc, char **argv ) {
         rstrcat( updateText, "irodsUserName ", UPDATE_TEXT_LEN );
         rstrcat( updateText, ttybuf, UPDATE_TEXT_LEN );
         i = strlen( ttybuf );
-        if ( i > 0 ) { ttybuf[i - 1] = '\0'; }
+        if ( i > 0 ) {
+            ttybuf[i - 1] = '\0';
+        }
         strncpy( myEnv.rodsUserName, ttybuf, NAME_LEN );
     }
     if ( myEnv.rodsZone == NULL || strlen( myEnv.rodsZone ) == 0 ) {
@@ -213,7 +219,9 @@ main( int argc, char **argv ) {
         rstrcat( updateText, "irodsZone ", UPDATE_TEXT_LEN );
         rstrcat( updateText, ttybuf, UPDATE_TEXT_LEN );
         i = strlen( ttybuf );
-        if ( i > 0 ) { ttybuf[i - 1] = '\0'; }
+        if ( i > 0 ) {
+            ttybuf[i - 1] = '\0';
+        }
         strncpy( myEnv.rodsZone, ttybuf, NAME_LEN );
     }
     if ( doingEnvFileUpdate ) {
@@ -288,7 +296,8 @@ main( int argc, char **argv ) {
 
         // =-=-=-=-=-=-=-
         // build a context string which includes the ttl and password
-        std::stringstream ttl_str;  ttl_str << ttl;
+        std::stringstream ttl_str;
+        ttl_str << ttl;
         std::string context = irods::AUTH_TTL_KEY      +
                               irods::kvp_association() +
                               ttl_str.str()             +

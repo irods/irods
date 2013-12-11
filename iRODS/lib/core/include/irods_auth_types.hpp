@@ -16,13 +16,13 @@
 #include "rcConnect.hpp"
 
 namespace irods {
-    // =-=-=-=-=-=-=-
-    // auth plugin pointer type
+// =-=-=-=-=-=-=-
+// auth plugin pointer type
     class auth;
     typedef boost::shared_ptr< auth > auth_ptr;
 
-    // =-=-=-=-=-=-=-
-    // fwd decl of network manager for fco resolve
+// =-=-=-=-=-=-=-
+// fwd decl of network manager for fco resolve
     class auth_manager;
 
 }; // namespace

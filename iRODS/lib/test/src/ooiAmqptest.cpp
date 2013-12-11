@@ -157,16 +157,22 @@ int main( int argc, char const * const *argv ) {
     msgpack_packer_free( pk );
     clearProp( &props );
     status = initRecvApiReply( conn, &frame );
-    if ( status < 0 ) { return status; }
+    if ( status < 0 ) {
+        return status;
+    }
 
     status = recvApiReplyProp( conn, &frame );
-    if ( status < 0 ) { return status; }
+    if ( status < 0 ) {
+        return status;
+    }
 
     p = ( amqp_basic_properties_t * ) frame.payload.properties.decoded;
     printAmqpHeaders( &p->headers );
 
     status = recvApiReplyBody( conn, CONS_CHAN, &frame, &extBytesBuf );
-    if ( status < 0 ) { return status; }
+    if ( status < 0 ) {
+        return status;
+    }
 
     msgpack_unpacked_init( &unpackedRes );
     offset = 0;
@@ -235,16 +241,22 @@ int main( int argc, char const * const *argv ) {
     clearProp( &props );
 
     status = initRecvApiReply( conn, &frame );
-    if ( status < 0 ) { return status; }
+    if ( status < 0 ) {
+        return status;
+    }
 
     status = recvApiReplyProp( conn, &frame );
-    if ( status < 0 ) { return status; }
+    if ( status < 0 ) {
+        return status;
+    }
 
     p = ( amqp_basic_properties_t * ) frame.payload.properties.decoded;
     printAmqpHeaders( &p->headers );
 
     status = recvApiReplyBody( conn, CONS_CHAN, &frame, &extBytesBuf );
-    if ( status < 0 ) { return status; }
+    if ( status < 0 ) {
+        return status;
+    }
 
     msgpack_unpacked_init( &unpackedRes );
 
@@ -306,15 +318,21 @@ int main( int argc, char const * const *argv ) {
     msgpack_packer_free( pk );
     clearProp( &props );
     status = initRecvApiReply( conn, &frame );
-    if ( status < 0 ) { return status; }
+    if ( status < 0 ) {
+        return status;
+    }
 
     status = recvApiReplyProp( conn, &frame );
-    if ( status < 0 ) { return status; }
+    if ( status < 0 ) {
+        return status;
+    }
     p = ( amqp_basic_properties_t * ) frame.payload.properties.decoded;
     printAmqpHeaders( &p->headers );
 
     status = recvApiReplyBody( conn, CONS_CHAN, &frame, &extBytesBuf );
-    if ( status < 0 ) { return status; }
+    if ( status < 0 ) {
+        return status;
+    }
 
     msgpack_unpacked_init( &unpackedRes );
     offset = 0;
@@ -595,7 +613,9 @@ int initOoiReqProp( amqp_basic_properties_t *props, char *replyToStr,
 }
 
 int clearProp( amqp_basic_properties_t *props ) {
-    if ( props->headers.entries != NULL ) { free( props->headers.entries ); }
+    if ( props->headers.entries != NULL ) {
+        free( props->headers.entries );
+    }
     return 0;
 }
 
@@ -606,7 +626,9 @@ printAmqpHeaders( amqp_table_t *headers ) {
     int len;
     char *ptr;
 
-    if ( headers < 0 ) { return -1; }
+    if ( headers < 0 ) {
+        return -1;
+    }
 
     printf( "headers: { " );
     for ( i = 0; i < headers->num_entries; i++ ) {
@@ -660,7 +682,9 @@ printAmqpHeaders( amqp_table_t *headers ) {
         default:
             printf( "UNKNOW type %d", headers->entries[i].value.kind );
         }
-        if ( i < headers->num_entries - 1 ) { printf( ", " ); }
+        if ( i < headers->num_entries - 1 ) {
+            printf( ", " );
+        }
     }
     printf( "  }\n" );
     return 0;

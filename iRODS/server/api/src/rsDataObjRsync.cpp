@@ -90,7 +90,9 @@ rsDataObjRsync( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             /* server request to client */
             l1descInx = allocAndSetL1descForZoneOpr( 0, dataObjInp,
                         rodsServerHost, NULL );
-            if ( l1descInx < 0 ) { return l1descInx; }
+            if ( l1descInx < 0 ) {
+                return l1descInx;
+            }
             if ( *outParamArray == NULL ) {
                 *outParamArray = malloc( sizeof( msParamArray_t ) );
                 bzero( *outParamArray, sizeof( msParamArray_t ) );

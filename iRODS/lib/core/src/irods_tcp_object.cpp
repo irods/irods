@@ -5,45 +5,45 @@
 #include "irods_network_manager.hpp"
 
 namespace irods {
-    // =-=-=-=-=-=-=-
-    // public - ctor
+// =-=-=-=-=-=-=-
+// public - ctor
     tcp_object::tcp_object() :
         network_object() {
 
     } // ctor
 
-    // =-=-=-=-=-=-=-
-    // public - ctor
+// =-=-=-=-=-=-=-
+// public - ctor
     tcp_object::tcp_object(
         const rcComm_t& _comm ) :
         network_object( _comm ) {
 
     } // ctor
 
-    // =-=-=-=-=-=-=-
-    // public - ctor
+// =-=-=-=-=-=-=-
+// public - ctor
     tcp_object::tcp_object(
         const rsComm_t& _comm ) :
         network_object( _comm ) {
 
     } // ctor
 
-    // =-=-=-=-=-=-=-
-    // public - cctor
+// =-=-=-=-=-=-=-
+// public - cctor
     tcp_object::tcp_object(
         const tcp_object& _rhs ) :
         network_object( _rhs ) {
 
     } // cctor
 
-    // =-=-=-=-=-=-=-
-    // public - dtor
+// =-=-=-=-=-=-=-
+// public - dtor
     tcp_object::~tcp_object() {
 
     } // dtor
 
-    // =-=-=-=-=-=-=-
-    // public - assignment operator
+// =-=-=-=-=-=-=-
+// public - assignment operator
     tcp_object& tcp_object::operator=(
         const tcp_object& _rhs ) {
         network_object::operator=( _rhs );
@@ -52,16 +52,16 @@ namespace irods {
 
     } // operator=
 
-    // =-=-=-=-=-=-=-
-    // public - assignment operator
+// =-=-=-=-=-=-=-
+// public - assignment operator
     bool tcp_object::operator==(
         const tcp_object& _rhs ) const {
         return network_object::operator==( _rhs );
 
     } // operator=
 
-    // =-=-=-=-=-=-=-
-    // public - resolver for tcp_manager
+// =-=-=-=-=-=-=-
+// public - resolver for tcp_manager
     error tcp_object::resolve(
         const std::string& _interface,
         plugin_ptr&        _ptr ) {
@@ -114,8 +114,8 @@ namespace irods {
 
     } // resolve
 
-    // =-=-=-=-=-=-=-
-    // accessor for rule engine variables
+// =-=-=-=-=-=-=-
+// accessor for rule engine variables
     error tcp_object::get_re_vars(
         keyValPair_t& _kvp ) {
         return network_object::get_re_vars( _kvp );

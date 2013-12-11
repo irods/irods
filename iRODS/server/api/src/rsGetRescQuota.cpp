@@ -24,7 +24,9 @@ rsGetRescQuota( rsComm_t *rsComm, getRescQuotaInp_t *getRescQuotaInp,
     status = getAndConnRcatHost( rsComm, SLAVE_RCAT,
                                  getRescQuotaInp->zoneHint, &rodsServerHost );
 
-    if ( status < 0 ) { return( status ); }
+    if ( status < 0 ) {
+        return( status );
+    }
 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
         status = _rsGetRescQuota( rsComm, getRescQuotaInp, rescQuota );
@@ -106,7 +108,9 @@ getQuotaByResc( rsComm_t *rsComm, char *userName, char *rescName,
     char condition1[MAX_NAME_LEN];
     char condition2[MAX_NAME_LEN];
 
-    if ( genQueryOut == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( genQueryOut == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
 
     *genQueryOut = NULL;
     memset( &genQueryInp, 0, sizeof( genQueryInp ) );
@@ -224,9 +228,13 @@ setRescQuota( rsComm_t *rsComm, char *zoneHint,
     int status = 0;
 
     status = chkRescQuotaPolicy( rsComm );
-    if ( status != RESC_QUOTA_ON ) { return 0; }
+    if ( status != RESC_QUOTA_ON ) {
+        return 0;
+    }
 
-    if ( rescGrpInfoHead == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( rescGrpInfoHead == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
     tmpRescGrpInfo = *rescGrpInfoHead;
     while ( tmpRescGrpInfo != NULL ) {
         if ( tmpRescGrpInfo->rescInfo->quotaLimit == RESC_QUOTA_UNINIT ) {
@@ -253,7 +261,9 @@ setRescQuota( rsComm_t *rsComm, char *zoneHint,
     snprintf( getRescQuotaInp.userName, NAME_LEN, "%s#%s",
               rsComm->clientUser.userName, rsComm->clientUser.rodsZone );
     status = rsGetRescQuota( rsComm, &getRescQuotaInp, &rescQuota );
-    if ( status < 0 ) { return status; }
+    if ( status < 0 ) {
+        return status;
+    }
 
     /* process the quota */
     tmpRescQuota = rescQuota;
@@ -295,13 +305,17 @@ int
 chkRescGrpInfoForQuota( rescGrpInfo_t **rescGrpInfoHead, rodsLong_t dataSize ) {
     rescGrpInfo_t *tmpRescGrpInfo, *prevRescGrpInfo;
 
-    if ( dataSize < 0 ) { dataSize = 0; }
+    if ( dataSize < 0 ) {
+        dataSize = 0;
+    }
     if ( GlobalQuotaLimit == RESC_QUOTA_UNINIT ) {
         /* indicate we have already query quota */
         GlobalQuotaLimit = 0;
     }
     else if ( GlobalQuotaLimit > 0 ) {
-        if ( GlobalQuotaOverrun + dataSize >= 0 ) { return SYS_RESC_QUOTA_EXCEEDED; }
+        if ( GlobalQuotaOverrun + dataSize >= 0 ) {
+            return SYS_RESC_QUOTA_EXCEEDED;
+        }
     }
 
     /* take out resc that has been overrun and indicate that the quota has
@@ -348,7 +362,9 @@ updatequotaOverrun( rescInfo_t *rescInfo, rodsLong_t dataSize, int flags ) {
         GlobalQuotaOverrun += dataSize;
     }
 
-    if ( rescInfo == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( rescInfo == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
     if ( ( flags & RESC_QUOTA ) > 0 && rescInfo->quotaLimit > 0 ) {
         rescInfo->quotaOverrun += dataSize;
     }

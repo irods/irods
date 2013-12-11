@@ -114,7 +114,9 @@ doSimpleQuery( simpleQueryInp_t simpleQueryInp ) {
     }
 
     printSimpleQuery( simpleQueryOut->outBuf );
-    if ( debug ) { printf( "control=%d\n", simpleQueryOut->control ); }
+    if ( debug ) {
+        printf( "control=%d\n", simpleQueryOut->control );
+    }
     if ( simpleQueryOut->control > 0 ) {
         simpleQueryInp.control = simpleQueryOut->control;
         for ( ; simpleQueryOut->control > 0 && status == 0; ) {
@@ -128,7 +130,9 @@ doSimpleQuery( simpleQueryInp_t simpleQueryInp ) {
             }
             if ( status == 0 ) {
                 printSimpleQuery( simpleQueryOut->outBuf );
-                if ( debug ) { printf( "control=%d\n", simpleQueryOut->control ); }
+                if ( debug ) {
+                    printf( "control=%d\n", simpleQueryOut->control );
+                }
             }
         }
     }
@@ -332,7 +336,9 @@ showGroup( char *groupName ) { // JMC - backport 4742
     while ( status == 0 && genQueryOut->continueInx > 0 ) {
         genQueryInp.continueInx = genQueryOut->continueInx;
         status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
-        if ( status == 0 ) { printGenQueryResultsForGroup( genQueryOut ); }
+        if ( status == 0 ) {
+            printGenQueryResultsForGroup( genQueryOut );
+        }
     }
     return 0;
     // =-=-=-=-=-=-=-
@@ -372,7 +378,9 @@ showDir( char *dir ) {
     simpleQueryInp.sql = "select data_name, data_id, data_repl_num from R_DATA_MAIN where coll_id =(select coll_id from R_COLL_MAIN where coll_name=?)";
     simpleQueryInp.arg1 = dir;
     simpleQueryInp.maxBufSize = 1024;
-    if ( debug ) { simpleQueryInp.maxBufSize = 20; }
+    if ( debug ) {
+        simpleQueryInp.maxBufSize = 20;
+    }
 
     printf( "Files (data objects) (name, data_id, repl_num):\n" );
     status = doSimpleQuery( simpleQueryInp );
@@ -488,7 +496,9 @@ simpleQueryCheck() {
 
     status = rcSimpleQuery( Conn, &simpleQueryInp, &simpleQueryOut );
 
-    if ( status == CAT_NO_ROWS_FOUND ) { status = 0; } /* success */
+    if ( status == CAT_NO_ROWS_FOUND ) {
+        status = 0;    /* success */
+    }
 
     return( status );
 }
@@ -517,7 +527,9 @@ showGlobalQuotas( char *inputUserOrGroup ) {
     }
     else {
         status = getLocalZone();
-        if ( status ) { return( status ); }
+        if ( status ) {
+            return( status );
+        }
         status = parseUserName( inputUserOrGroup, userName, zoneName );
         if ( zoneName[0] == '\0' ) {
             strncpy( zoneName, localZone, sizeof zoneName );
@@ -556,7 +568,9 @@ showResourceQuotas( char *inputUserOrGroup ) {
     }
     else {
         status = getLocalZone();
-        if ( status ) { return( status ); }
+        if ( status ) {
+            return( status );
+        }
         status = parseUserName( inputUserOrGroup, userName, zoneName );
         if ( zoneName[0] == '\0' ) {
             strncpy( zoneName, localZone, sizeof zoneName );
@@ -826,7 +840,9 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
             return( USER_INVALID_USERNAME_FORMAT );
         }
         status = getLocalZone();
-        if ( status ) { return( status ); }
+        if ( status ) {
+            return( status );
+        }
         if ( strcmp( zoneName, localZone ) == 0 ) {
             /* User entered user#localZone but call generalAdmin
                without #localZone as is needed to differentiate
@@ -1372,7 +1388,9 @@ main( int argc, char **argv ) {
 
     status = clientLogin( Conn );
     if ( status != 0 ) {
-        if ( !debug ) { exit( 3 ); }
+        if ( !debug ) {
+            exit( 3 );
+        }
     }
 
     keepGoing = 1;
@@ -1380,10 +1398,16 @@ main( int argc, char **argv ) {
     while ( keepGoing ) {
         int status;
         status = doCommand( cmdToken, &myRodsArgs );
-        if ( status == -1 ) { keepGoing = 0; }
+        if ( status == -1 ) {
+            keepGoing = 0;
+        }
         if ( firstTime ) {
-            if ( status == 0 ) { keepGoing = 0; }
-            if ( status == -2 ) { keepGoing = 0; }
+            if ( status == 0 ) {
+                keepGoing = 0;
+            }
+            if ( status == -2 ) {
+                keepGoing = 0;
+            }
             firstTime = 0;
         }
         if ( keepGoing ) {
@@ -1394,7 +1418,9 @@ main( int argc, char **argv ) {
     printErrorStack( Conn->rError );
     rcDisconnect( Conn );
 
-    if ( lastCommandStatus != 0 ) { exit( 4 ); }
+    if ( lastCommandStatus != 0 ) {
+        exit( 4 );
+    }
     exit( 0 );
 }
 
@@ -1402,7 +1428,9 @@ void
 printMsgs( char *msgs[] ) {
     int i;
     for ( i = 0;; i++ ) {
-        if ( strlen( msgs[i] ) == 0 ) { return; }
+        if ( strlen( msgs[i] ) == 0 ) {
+            return;
+        }
         printf( "%s\n", msgs[i] );
     }
 }
@@ -2011,7 +2039,9 @@ usage( char *subOpt ) {
     else {
         int i;
         for ( i = 0;; i++ ) {
-            if ( strlen( subCmds[i] ) == 0 ) { break; }
+            if ( strlen( subCmds[i] ) == 0 ) {
+                break;
+            }
             if ( strcmp( subOpt, subCmds[i] ) == 0 ) {
                 printMsgs( pMsgs[i] );
             }

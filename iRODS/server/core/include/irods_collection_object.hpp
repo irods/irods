@@ -45,11 +45,15 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // Accessors
-        virtual DIR* directory_pointer() const { return directory_pointer_; }
+        virtual DIR* directory_pointer() const {
+            return directory_pointer_;
+        }
 
         // =-=-=-=-=-=-=-
         // Mutators
-        virtual void directory_pointer( DIR* _p ) { directory_pointer_ = _p; }
+        virtual void directory_pointer( DIR* _p ) {
+            directory_pointer_ = _p;
+        }
 
     protected:
         // =-=-=-=-=-=-=-
@@ -61,8 +65,8 @@ namespace irods {
 
     }; // class collection_object
 
-    /// =-=-=-=-=-=-=-
-    /// @brief typedef for managed collection object pointer
+/// =-=-=-=-=-=-=-
+/// @brief typedef for managed collection object pointer
     typedef boost::shared_ptr< collection_object > collection_object_ptr;
 
 }; // namespace irods

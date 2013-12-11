@@ -108,7 +108,9 @@ int base64_decode( const unsigned char *in,  unsigned long inlen,
     g = 3;
     for ( x = y = z = t = 0; x < inlen; x++ ) {
         c = mymap[in[x] & 0xFF];
-        if ( c == 255 ) { continue; }
+        if ( c == 255 ) {
+            continue;
+        }
         /* the final = symbols are read and used to trim the remaining bytes */
         if ( c == 254 ) {
             c = 0;
@@ -129,8 +131,12 @@ int base64_decode( const unsigned char *in,  unsigned long inlen,
                 return BASE64_BUFFER_OVERFLOW;
             }
             out[z++] = ( unsigned char )( ( t >> 16 ) & 255 );
-            if ( g > 1 ) { out[z++] = ( unsigned char )( ( t >> 8 ) & 255 ); }
-            if ( g > 2 ) { out[z++] = ( unsigned char )( t & 255 ); }
+            if ( g > 1 ) {
+                out[z++] = ( unsigned char )( ( t >> 8 ) & 255 );
+            }
+            if ( g > 2 ) {
+                out[z++] = ( unsigned char )( t & 255 );
+            }
             y = t = 0;
         }
     }

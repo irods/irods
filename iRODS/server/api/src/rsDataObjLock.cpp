@@ -56,7 +56,9 @@ _rsDataObjLock( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     int cmd, type, fd;
 
     fd = getLockCmdAndType( &dataObjInp->condInput, &cmd, &type );
-    if ( fd < 0 ) { return fd; }
+    if ( fd < 0 ) {
+        return fd;
+    }
 
     status = fsDataObjLock( dataObjInp->objPath, cmd, type, fd );
     return status;
@@ -72,7 +74,9 @@ getLockCmdAndType( keyValPair_t *condInput, int *cmd, int *type ) {
     }
 
     lockType = getValByKey( condInput, LOCK_TYPE_KW );
-    if ( lockType == NULL ) { return SYS_LOCK_TYPE_INP_ERR; }
+    if ( lockType == NULL ) {
+        return SYS_LOCK_TYPE_INP_ERR;
+    }
 
     if ( strcmp( lockType, READ_LOCK_TYPE ) == 0 ) {
         *type = F_RDLCK;

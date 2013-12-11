@@ -14,9 +14,9 @@
 #include "dataObjRepl.hpp"
 
 namespace irods {
-    /// =-=-=-=-=-=-=-
-    /// @brief local function to replicate a new copy for
-    ///        proc_results_for_rebalance
+/// =-=-=-=-=-=-=-
+/// @brief local function to replicate a new copy for
+///        proc_results_for_rebalance
     static
     error repl_for_rebalance(
         rsComm_t*          _comm,
@@ -65,8 +65,8 @@ namespace irods {
 
     } // repl_for_rebalance
 
-    /// =-=-=-=-=-=-=-
-    /// @brief
+/// =-=-=-=-=-=-=-
+/// @brief
     error gather_dirty_replicas_for_child(
         rsComm_t*          _comm,
         const std::string& _parent_resc,
@@ -196,8 +196,8 @@ namespace irods {
 
     } // gather_dirty_replicas_for_child
 
-    /// =-=-=-=-=-=-=-
-    /// @brief
+/// =-=-=-=-=-=-=-
+/// @brief
     error get_source_data_object_attributes(
         const int    _data_id,
         rsComm_t*    _comm,
@@ -227,7 +227,8 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // add condition string matching data name
-        std::stringstream id_str; id_str << _data_id;
+        std::stringstream id_str;
+        id_str << _data_id;
         std::string cond_str = "='" + id_str.str() + "'";
         addInxVal( &gen_inp.sqlCondInp,
                    COL_D_DATA_ID,
@@ -340,9 +341,9 @@ namespace irods {
 
     } // get_source_data_object_attributes
 
-    /// =-=-=-=-=-=-=-
-    /// @brief high level function to gather all of the data objects
-    ///        which need rereplicated
+/// =-=-=-=-=-=-=-
+/// @brief high level function to gather all of the data objects
+///        which need rereplicated
     error gather_data_objects_for_rebalance(
         rsComm_t*            _comm,
         const std::string&   _parent_resc,
@@ -388,9 +389,9 @@ namespace irods {
 
     } // gather_data_objects_for_rebalance
 
-    /// =-=-=-=-=-=-=-
-    /// @brief high level function which process a result set from
-    ///        the above gathering function for a rebalancing operation
+/// =-=-=-=-=-=-=-
+/// @brief high level function which process a result set from
+///        the above gathering function for a rebalancing operation
     error proc_results_for_rebalance(
         rsComm_t*                  _comm,
         const std::string&         _parent_resc_name,

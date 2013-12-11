@@ -58,9 +58,13 @@ int msiSendMail( msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, 
     body = ( char * ) xbody->inOutStruct;
 
     status = checkStringForEmailAddress( toAddr );
-    if ( status ) { return( status ); }
+    if ( status ) {
+        return( status );
+    }
     status = checkStringForSystem( subjectLine );
-    if ( status ) { return( status ); }
+    if ( status ) {
+        return( status );
+    }
 
     if ( reTestFlag > 0 ) {
         if ( reTestFlag == COMMAND_TEST_1 ) {
@@ -107,7 +111,9 @@ int msiSendMail( msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, 
     }
     fclose( fd );
     mailStr = ( char* )malloc( strlen( toAddr ) + strlen( subjectLine ) + 100 );
-    if ( mailStr == NULL ) { return SYS_MALLOC_ERR; }
+    if ( mailStr == NULL ) {
+        return SYS_MALLOC_ERR;
+    }
 
 #ifdef solaris_platform
     sprintf( mailStr, "cat %s| mail  '%s'", fName, toAddr );

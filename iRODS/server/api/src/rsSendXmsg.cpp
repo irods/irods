@@ -44,7 +44,9 @@ rsSendXmsg( rsComm_t *rsComm, sendXmsgInp_t *sendXmsgInp ) {
         else if ( !strcmp( miscInfo, "DROP_STREAM" ) ) {
             if ( sendXmsgInp->ticket.rcvTicket > 5 ) {
                 i = clearAllXMessages( ticketMsgStruct );
-                if ( i < 0 ) { return ( i ); }
+                if ( i < 0 ) {
+                    return ( i );
+                }
                 i = rmTicketMsgStructFromHQue( ticketMsgStruct,
                                                ( ticketHashQue_t * ) ticketMsgStruct->ticketHashQue );
                 return( i );

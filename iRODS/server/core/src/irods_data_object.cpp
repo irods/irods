@@ -6,8 +6,8 @@
 
 namespace irods {
 
-    // =-=-=-=-=-=-=-
-    // public - ctor
+// =-=-=-=-=-=-=-
+// public - ctor
     data_object::data_object() :
         physical_path_( "" ),
         resc_hier_( "" ),
@@ -15,8 +15,8 @@ namespace irods {
         flags_( 0 ) {
     } // ctor
 
-    // =-=-=-=-=-=-=-
-    // public - ctor
+// =-=-=-=-=-=-=-
+// public - ctor
     data_object::data_object(
         const std::string& _phy_path,
         const std::string& _resc_hier,
@@ -28,8 +28,8 @@ namespace irods {
         flags_( _flags ) {
     } // ctor
 
-    // =-=-=-=-=-=-=-
-    // public - cctor
+// =-=-=-=-=-=-=-
+// public - cctor
     data_object::data_object(
         const data_object& _rhs ) {
         physical_path_ = _rhs.physical_path_;
@@ -39,13 +39,13 @@ namespace irods {
 
     } // cctor
 
-    // =-=-=-=-=-=-=-
-    // public - dtor
+// =-=-=-=-=-=-=-
+// public - dtor
     data_object::~data_object() {
     } // dtor
 
-    // =-=-=-=-=-=-=-
-    // public - assignment operator
+// =-=-=-=-=-=-=-
+// public - assignment operator
     data_object& data_object::operator=(
         const data_object& _rhs ) {
         physical_path_ = _rhs.physical_path_;
@@ -56,8 +56,8 @@ namespace irods {
         return *this;
     } // operator=
 
-    // =-=-=-=-=-=-=-
-    // public - copy attributes to irods kvp
+// =-=-=-=-=-=-=-
+// public - copy attributes to irods kvp
     error data_object::get_re_vars(
         keyValPair_t& _kvp ) {
 

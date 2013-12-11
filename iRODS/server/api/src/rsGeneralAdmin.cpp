@@ -36,7 +36,7 @@ rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
 
     status = getAndConnRcatHost( rsComm, MASTER_RCAT, NULL, &rodsServerHost );
     if ( status < 0 ) {
-        return( status );
+        return ( status );
     }
 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
@@ -293,7 +293,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
         }
         args[0] = argStr;
         status = applyRuleArg( "acVacuum", args, 1, &rei, SAVE_REI );
-        return( status );
+        return ( status );
     }
 
     if ( strcmp( generalAdminInp->arg0, "add" ) == 0 ) {
@@ -303,27 +303,45 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             memset( ( char* )&rei, 0, sizeof( rei ) );
             rei.rsComm = rsComm;
             strncpy( userInfo.userName, generalAdminInp->arg2,
-                     sizeof userInfo.userName );
+                     sizeof( userInfo.userName ) );
+            if ( userInfo.userName[sizeof( userInfo.userName ) - 1] ) {
+                return SYS_INVALID_INPUT_PARAM;
+            }
             strncpy( userInfo.userType, generalAdminInp->arg3,
-                     sizeof userInfo.userType );
+                     sizeof( userInfo.userType ) );
+            if ( userInfo.userType[sizeof( userInfo.userType ) - 1] ) {
+                return SYS_INVALID_INPUT_PARAM;
+            }
             strncpy( userInfo.rodsZone, generalAdminInp->arg4,
-                     sizeof userInfo.rodsZone );
+                     sizeof( userInfo.rodsZone ) );
+            if ( userInfo.rodsZone[sizeof( userInfo.rodsZone ) - 1] ) {
+                return SYS_INVALID_INPUT_PARAM;
+            }
             strncpy( userInfo.authInfo.authStr, generalAdminInp->arg5,
-                     sizeof userInfo.authInfo.authStr );
+                     sizeof( userInfo.authInfo.authStr ) );
+            if ( userInfo.authInfo.authStr[sizeof( userInfo.authInfo.authStr ) - 1] ) {
+                return SYS_INVALID_INPUT_PARAM;
+            }
             rei.uoio = &userInfo;
             rei.uoic = &rsComm->clientUser;
             rei.uoip = &rsComm->proxyUser;
             status = applyRuleArg( "acCreateUser", args, 0, &rei, SAVE_REI );
             if ( status != 0 ) { chlRollback( rsComm ); }
-            return( status );
+            return ( status );
         }
         if ( strcmp( generalAdminInp->arg1, "dir" ) == 0 ) {
             memset( ( char* )&collInfo, 0, sizeof( collInfo ) );
             strncpy( collInfo.collName, generalAdminInp->arg2,
-                     sizeof collInfo.collName );
+                     sizeof( collInfo.collName ) );
+            if ( collInfo.collName[sizeof( collInfo.collName ) - 1] ) {
+                return SYS_INVALID_INPUT_PARAM;
+            }
             if ( strlen( generalAdminInp->arg3 ) > 0 ) {
                 strncpy( collInfo.collOwnerName, generalAdminInp->arg3,
-                         sizeof collInfo.collOwnerName );
+                         sizeof( collInfo.collOwnerName ) );
+                if ( collInfo.collOwnerName[sizeof( collInfo.collOwnerName ) - 1] ) {
+                    return SYS_INVALID_INPUT_PARAM;
+                }
                 status = chlRegCollByAdmin( rsComm, &collInfo );
                 if ( status == 0 ) {
                     if ( !chlCommit( rsComm ) ) {
@@ -335,7 +353,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                 status = chlRegColl( rsComm, &collInfo );
             }
             if ( status != 0 ) { chlRollback( rsComm ); }
-            return( status );
+            return ( status );
         }
         if ( strcmp( generalAdminInp->arg1, "zone" ) == 0 ) {
             status = chlRegZone( rsComm, generalAdminInp->arg2,
@@ -345,18 +363,24 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             if ( status == 0 ) {
                 if ( strcmp( generalAdminInp->arg3, "remote" ) == 0 ) {
                     memset( ( char* )&collInfo, 0, sizeof( collInfo ) );
-                    strncpy( collInfo.collName, "/", sizeof collInfo.collName );
+                    strncpy( collInfo.collName, "/", sizeof( collInfo.collName ) );
                     strncat( collInfo.collName, generalAdminInp->arg2,
-                             sizeof collInfo.collName );
+                             sizeof( collInfo.collName ) );
+                    if ( collInfo.collName[sizeof( collInfo.collName ) - 1] ) {
+                        return SYS_INVALID_INPUT_PARAM;
+                    }
                     strncpy( collInfo.collOwnerName, rsComm->proxyUser.userName,
-                             sizeof collInfo.collOwnerName );
+                             sizeof( collInfo.collOwnerName ) );
+                    if ( collInfo.collOwnerName[sizeof( collInfo.collOwnerName ) - 1] ) {
+                        return SYS_INVALID_INPUT_PARAM;
+                    }
                     status = chlRegCollByAdmin( rsComm, &collInfo );
                     if ( status == 0 ) {
                         chlCommit( rsComm );
                     }
                 }
             }
-            return( status );
+            return ( status );
         } // add user
 
         // =-=-=-=-=-=-=-
@@ -411,15 +435,14 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                 }
             }
             /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
-
             if ( status != 0 ) { chlRollback( rsComm ); }
-            return( status );
+            return ( status );
         } // token
 
         if ( strcmp( generalAdminInp->arg1, "specificQuery" ) == 0 ) {
             status = chlAddSpecificQuery( rsComm, generalAdminInp->arg2,
                                           generalAdminInp->arg3 );
-            return( status );
+            return ( status );
         }
 
     } // add
@@ -470,7 +493,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             }
             /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
             if ( status != 0 ) { chlRollback( rsComm ); }
-            return( status );
+            return ( status );
         }
         if ( strcmp( generalAdminInp->arg1, "group" ) == 0 ) {
             userInfo_t ui;
@@ -512,25 +535,34 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                 }
             }
             /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
-
             if ( status != 0 ) { chlRollback( rsComm ); }
-            return( status );
+            return ( status );
         }
         if ( strcmp( generalAdminInp->arg1, "zone" ) == 0 ) {
             status = chlModZone( rsComm, generalAdminInp->arg2,
                                  generalAdminInp->arg3, generalAdminInp->arg4 );
-            if ( status != 0 ) { chlRollback( rsComm ); }
+            if ( status != 0 ) {
+                chlRollback( rsComm );
+            }
             if ( status == 0 &&
                     strcmp( generalAdminInp->arg3, "name" ) == 0 ) {
                 char oldName[MAX_NAME_LEN];
                 char newName[MAX_NAME_LEN];
-                strncpy( oldName, "/", sizeof oldName );
-                strncat( oldName, generalAdminInp->arg2, sizeof oldName );
-                strncpy( newName, generalAdminInp->arg4, sizeof newName );
+                strncpy( oldName, "/", sizeof( oldName ) );
+                strncat( oldName, generalAdminInp->arg2, sizeof( oldName ) );
+                if ( oldName[sizeof( oldName ) - 1] ) {
+                    return SYS_INVALID_INPUT_PARAM;
+                }
+                strncpy( newName, generalAdminInp->arg4, sizeof( newName ) );
+                if ( newName[sizeof( newName ) - 1] ) {
+                    return SYS_INVALID_INPUT_PARAM;
+                }
                 status = chlRenameColl( rsComm, oldName, newName );
-                if ( status == 0 ) { chlCommit( rsComm ); }
+                if ( status == 0 ) {
+                    chlCommit( rsComm );
+                }
             }
-            return( status );
+            return ( status );
         }
         if ( strcmp( generalAdminInp->arg1, "localzonename" ) == 0 ) {
             /* run the acRenameLocalZone rule */
@@ -545,14 +577,14 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             args[1] = generalAdminInp->arg3;
             status = applyRuleArg( "acRenameLocalZone", args, 2, &rei,
                                    NO_SAVE_REI );
-            return( status );
+            return ( status );
         }
         if ( strcmp( generalAdminInp->arg1, "resourcedatapaths" ) == 0 ) {
             status = chlModRescDataPaths( rsComm, generalAdminInp->arg2,
                                           generalAdminInp->arg3, generalAdminInp->arg4,
                                           generalAdminInp->arg5 );
 
-            return( status );
+            return ( status );
         }
         if ( strcmp( generalAdminInp->arg1, "resource" ) == 0 ) {
 
@@ -620,9 +652,8 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                 }
             }
             /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
-
             if ( status != 0 ) { chlRollback( rsComm ); }
-            return( status );
+            return ( status );
         }
 #ifdef RESC_GROUP
         if ( strcmp( generalAdminInp->arg1, "resourcegroup" ) == 0 ) {
@@ -656,9 +687,8 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                     return i;
                 }
             }
-
             if ( status != 0 ) { chlRollback( rsComm ); }
-            return( status );
+            return ( status );
         }
 #endif
     }
@@ -669,23 +699,32 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             memset( ( char* )&rei, 0, sizeof( rei ) );
             rei.rsComm = rsComm;
             strncpy( userInfo.userName, generalAdminInp->arg2,
-                     sizeof userInfo.userName );
+                     sizeof( userInfo.userName ) );
+            if ( userInfo.userName[sizeof( userInfo.userName ) - 1] ) {
+                return SYS_INVALID_INPUT_PARAM;
+            }
             strncpy( userInfo.rodsZone, generalAdminInp->arg3,
-                     sizeof userInfo.rodsZone );
+                     sizeof( userInfo.rodsZone ) );
+            if ( userInfo.rodsZone[sizeof( userInfo.rodsZone ) - 1] ) {
+                return SYS_INVALID_INPUT_PARAM;
+            }
             rei.uoio = &userInfo;
             rei.uoic = &rsComm->clientUser;
             rei.uoip = &rsComm->proxyUser;
             status = applyRuleArg( "acDeleteUser", args, 0, &rei, SAVE_REI );
             if ( status != 0 ) { chlRollback( rsComm ); }
-            return( status );
+            return ( status );
         }
         if ( strcmp( generalAdminInp->arg1, "dir" ) == 0 ) {
             memset( ( char* )&collInfo, 0, sizeof( collInfo ) );
             strncpy( collInfo.collName, generalAdminInp->arg2,
-                     sizeof collInfo.collName );
+                     sizeof( collInfo.collName ) );
+            if ( collInfo.collName[sizeof( collInfo.collName ) - 1] ) {
+                return SYS_INVALID_INPUT_PARAM;
+            }
             status = chlDelColl( rsComm, &collInfo );
             if ( status != 0 ) { chlRollback( rsComm ); }
-            return( status );
+            return ( status );
         }
         if ( strcmp( generalAdminInp->arg1, "resource" ) == 0 ) {
 
@@ -694,6 +733,10 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             //                :: basically run chlDelResc then run a rollback immediately after
             if ( strcmp( generalAdminInp->arg3, "--dryrun" ) == 0 ) {
                 strncpy( rescInfo.rescName,  generalAdminInp->arg2, sizeof rescInfo.rescName );
+                if ( rescInfo.rescName[sizeof( rescInfo.rescName ) - 1] ) {
+                    return SYS_INVALID_INPUT_PARAM;
+                }
+
                 rodsLog( LOG_STATUS, "Executing a dryrun of removal of resource [%s]", generalAdminInp->arg2 );
 
                 status = chlDelResc( rsComm, &rescInfo, 1 );
@@ -709,7 +752,10 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             // =-=-=-=-=-=-=-
 
             strncpy( rescInfo.rescName,  generalAdminInp->arg2,
-                     sizeof rescInfo.rescName );
+                     sizeof( rescInfo.rescName ) );
+            if ( rescInfo.rescName[sizeof( rescInfo.rescName ) - 1] ) {
+                return SYS_INVALID_INPUT_PARAM;
+            }
 
             /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
             args[0] = rescInfo.rescName;
@@ -743,7 +789,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
 
             if ( status != 0 ) { chlRollback( rsComm ); }
-            return( status );
+            return ( status );
         }
 
         /* remove a child resource from the specified parent resource */
@@ -757,13 +803,16 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                 memset( ( char* )&collInfo, 0, sizeof( collInfo ) );
                 strncpy( collInfo.collName, "/", sizeof collInfo.collName );
                 strncat( collInfo.collName, generalAdminInp->arg2,
-                         sizeof collInfo.collName );
+                         sizeof( collInfo.collName ) );
+                if ( collInfo.collName[sizeof( collInfo.collName ) - 1] ) {
+                    return SYS_INVALID_INPUT_PARAM;
+                }
                 status = chlDelCollByAdmin( rsComm, &collInfo );
             }
             if ( status == 0 ) {
                 status = chlCommit( rsComm );
             }
-            return( status );
+            return ( status );
         }
         if ( strcmp( generalAdminInp->arg1, "token" ) == 0 ) {
 
@@ -802,20 +851,20 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
 
             if ( status != 0 ) { chlRollback( rsComm ); }
-            return( status );
+            return ( status );
         }
         if ( strcmp( generalAdminInp->arg1, "unusedAVUs" ) == 0 ) {
             status = chlDelUnusedAVUs( rsComm );
-            return( status );
+            return ( status );
         }
         if ( strcmp( generalAdminInp->arg1, "specificQuery" ) == 0 ) {
             status = chlDelSpecificQuery( rsComm, generalAdminInp->arg2 );
-            return( status );
+            return ( status );
         }
     }
     if ( strcmp( generalAdminInp->arg0, "calculate-usage" ) == 0 ) {
         status = chlCalcUsageAndQuota( rsComm );
-        return( status );
+        return ( status );
     }
     if ( strcmp( generalAdminInp->arg0, "set-quota" ) == 0 ) {
         status = chlSetQuota( rsComm,
@@ -824,7 +873,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                               generalAdminInp->arg3,
                               generalAdminInp->arg4 );
 
-        return( status );
+        return ( status );
     }
 
     if ( strcmp( generalAdminInp->arg0, "lt" ) == 0 ) {
@@ -835,6 +884,6 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
         return status;
     }
 
-    return( CAT_INVALID_ARGUMENT );
+    return ( CAT_INVALID_ARGUMENT );
 }
 #endif

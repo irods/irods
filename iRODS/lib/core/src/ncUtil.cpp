@@ -254,7 +254,9 @@ initCondForNcOper( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
     addKeyVal( &ncOpenInp->condInput, NO_STAGING_KW, "" );
     if ( rodsArgs->var == True ) {
         status = parseVarStrForSubset( rodsArgs->varStr, ncVarSubset );
-        if ( status < 0 ) { return status; }
+        if ( status < 0 ) {
+            return status;
+        }
 #if 0
         i = 0;
         inLen = strlen( rodsArgs->varStr );
@@ -264,13 +266,17 @@ initCondForNcOper( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                                  &inLen, LONG_NAME_LEN ) > 0 ) {
             ncVarSubset->numVar++;
             i++;
-            if ( ncVarSubset->numVar >= MAX_NUM_VAR ) { break; }
+            if ( ncVarSubset->numVar >= MAX_NUM_VAR ) {
+                break;
+            }
         }
 #endif
     }
     if ( rodsArgs->subset == True || rodsArgs->subsetByVal ) {
         status = parseSubsetStr( rodsArgs->subsetStr, ncVarSubset );
-        if ( status < 0 ) { return status; }
+        if ( status < 0 ) {
+            return status;
+        }
 #if 0
         i = 0;
         inLen = strlen( rodsArgs->subsetStr );
@@ -279,10 +285,14 @@ initCondForNcOper( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                                  ncVarSubset->ncSubset[i].subsetVarName,
                                  &inLen, LONG_NAME_LEN ) > 0 ) {
             status = parseNcSubset( &ncVarSubset->ncSubset[i] );
-            if ( status < 0 ) { return status; }
+            if ( status < 0 ) {
+                return status;
+            }
             ncVarSubset->numSubset++;
             i++;
-            if ( ncVarSubset->numSubset >= MAX_NUM_VAR ) { break; }
+            if ( ncVarSubset->numSubset >= MAX_NUM_VAR ) {
+                break;
+            }
         }
 #endif
     }
@@ -347,7 +357,9 @@ ncOperCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
         else if ( collEnt.objType == COLL_OBJ_T ) {
             ncOpenInp_t childNcOpen;
             childNcOpen = *ncOpenInp;
-            if ( collEnt.specColl.collClass != NO_SPEC_COLL ) { continue; }
+            if ( collEnt.specColl.collClass != NO_SPEC_COLL ) {
+                continue;
+            }
             status = ncOperCollUtil( conn, collEnt.collName, myRodsEnv,
                                      rodsArgs, &childNcOpen, ncVarSubset );
             if ( status < 0 && status != CAT_NO_ROWS_FOUND ) {

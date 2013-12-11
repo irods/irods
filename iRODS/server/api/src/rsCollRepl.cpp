@@ -51,14 +51,18 @@ rsCollRepl( rsComm_t *rsComm, collInp_t *collReplInp,
     else if ( remoteFlag == REMOTE_HOST ) {
         int retval;
         retval = _rcCollRepl( rodsServerHost->conn, collReplInp, collOprStat );
-        if ( retval < 0 ) { return retval; }
+        if ( retval < 0 ) {
+            return retval;
+        }
         status = svrSendZoneCollOprStat( rsComm, rodsServerHost->conn,
                                          *collOprStat, retval );
         return status;
     }
 
     fileCntPerStatOut = FILE_CNT_PER_STAT_OUT;
-    if ( collOprStat != NULL ) { *collOprStat = NULL; }
+    if ( collOprStat != NULL ) {
+        *collOprStat = NULL;
+    }
     collReplInp->flags = RECUR_QUERY_FG;
     handleInx = rsOpenCollection( rsComm, collReplInp );
     if ( handleInx < 0 ) {

@@ -18,7 +18,7 @@
 
 namespace irods {
 
-    // =-=-=-=-=-=-=-
+// =-=-=-=-=-=-=-
     /**
      * \class ms_table_entry - holds fcn call name, number of args for fcn and fcn pointer
      * \author Jason M. Coposky
@@ -73,13 +73,13 @@ namespace irods {
 
     }; // class ms_table_entry
 
-    // =-=-=-=-=-=-=-
-    // create a lookup table for ms_table_entry value type
+// =-=-=-=-=-=-=-
+// create a lookup table for ms_table_entry value type
     typedef lookup_table<ms_table_entry*> ms_table;
 
-    // =-=-=-=-=-=-=-
-    // given the name of a microservice, try to load the shared object
-    // and then register that ms with the table
+// =-=-=-=-=-=-=-
+// given the name of a microservice, try to load the shared object
+// and then register that ms with the table
     error load_microservice_plugin( ms_table& _table, const std::string _ms );
 
 

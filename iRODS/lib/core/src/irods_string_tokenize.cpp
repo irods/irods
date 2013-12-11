@@ -6,8 +6,8 @@
 #include <vector>
 
 namespace irods {
-    // =-=-=-=-=-=-=-
-    // helper fcn to break up string into tokens for easy handling
+// =-=-=-=-=-=-=-
+// helper fcn to break up string into tokens for easy handling
     void string_tokenize(
         const std::string&          _str,
         const std::string&          _delim,

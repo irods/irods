@@ -136,7 +136,9 @@ rsStructFileExtAndReg( rsComm_t *rsComm,
 
     status = chkCollForExtAndReg( rsComm, structFileExtAndRegInp->collection, NULL );
 
-    if ( status < 0 ) { return status; }
+    if ( status < 0 ) {
+        return status;
+    }
 
 
     dataObjInfo = L1desc[l1descInx].dataObjInfo;

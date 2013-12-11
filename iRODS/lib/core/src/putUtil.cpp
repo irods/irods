@@ -62,7 +62,9 @@ putUtil( rcComm_t **myConn, rodsEnv *myRodsEnv,
     status = initCondForPut( conn, myRodsEnv, myRodsArgs, &dataObjOprInp,
                              &bulkOprInp, &rodsRestart );
 
-    if ( status < 0 ) { return status; }
+    if ( status < 0 ) {
+        return status;
+    }
 
     if ( rodsPathInp->resolved == False ) {
         status = resolveRodsTarget( conn, myRodsEnv, rodsPathInp, 1 );
@@ -107,7 +109,9 @@ putUtil( rcComm_t **myConn, rodsEnv *myRodsEnv,
                         conn->fileRestart.info.objPath );
                 unlink( conn->fileRestart.infoFile );
             }
-            if ( info != NULL ) { free( info ); }
+            if ( info != NULL ) {
+                free( info );
+            }
         }
     }
     for ( i = 0; i < rodsPathInp->numSrc; i++ ) {
@@ -254,7 +258,9 @@ putFileUtil( rcComm_t *conn, char *srcPath, char *targPath, rodsLong_t srcSize,
             return ( status );
         }
     }
-    if ( strlen( targPath ) >= MAX_PATH_ALLOWED - 1 ) { return( USER_PATH_EXCEEDS_MAX ); }
+    if ( strlen( targPath ) >= MAX_PATH_ALLOWED - 1 ) {
+        return( USER_PATH_EXCEEDS_MAX );
+    }
     rstrcpy( dataObjOprInp->objPath, targPath, MAX_NAME_LEN );
     dataObjOprInp->dataSize = srcSize;
     status = rcDataObjPut( conn, dataObjOprInp, srcPath );
@@ -541,7 +547,9 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
         return ( USER__NULL_INPUT_ERR );
     }
 
-    if ( isPathSymlink( rodsArgs, srcDir ) > 0 ) { return 0; }
+    if ( isPathSymlink( rodsArgs, srcDir ) > 0 ) {
+        return 0;
+    }
 
     if ( rodsArgs->recursive != True ) {
         rodsLog( LOG_ERROR,
@@ -591,7 +599,9 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
         snprintf( srcChildPath, MAX_NAME_LEN, "%s",
                   p.c_str() );
 
-        if ( isPathSymlink( rodsArgs, srcChildPath ) > 0 ) { continue; }
+        if ( isPathSymlink( rodsArgs, srcChildPath ) > 0 ) {
+            continue;
+        }
         if ( !exists( p ) ) {
             rodsLog( LOG_ERROR,
                      "putDirUtil: stat error for %s, errno = %d\n",
@@ -703,7 +713,9 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
                           "putDirUtil: put %s failed. status = %d",
                           srcChildPath, status );
             savedStatus = status;
-            if ( rodsRestart->fd > 0 ) { break; }
+            if ( rodsRestart->fd > 0 ) {
+                break;
+            }
         }
     }
 
@@ -816,7 +828,9 @@ getPhyBunDir( char *phyBunRootDir, char *userName, char *outPhyBunDir ) {
         snprintf( outPhyBunDir, MAX_NAME_LEN, "%s/%s.phybun.%d", phyBunRootDir,
                   userName, ( int ) random() );
         path p( outPhyBunDir );
-        if ( !exists( p ) ) { break; }
+        if ( !exists( p ) ) {
+            break;
+        }
     }
     return 0;
 }
@@ -836,7 +850,9 @@ bulkPutFileUtil( rcComm_t *conn, char *srcPath, char *targPath,
     phyBunPath =  &bulkOprInfo->phyBunPath[bulkOprInfo->count][0];
     status = getPhyBunPath( bulkOprInp->objPath, targPath,
                             bulkOprInfo->phyBunDir, phyBunPath );
-    if ( status < 0 ) { return status; }
+    if ( status < 0 ) {
+        return status;
+    }
 
     /* need to create the subPhyBunDir */
     if ( ( status = splitPathByKey( phyBunPath, subPhyBunDir, tmpSrcPath,
@@ -894,7 +910,9 @@ bulkPutFileUtil( rcComm_t *conn, char *srcPath, char *targPath,
 
     status = myRead( in_fd, bufPtr, srcSize, FILE_DESC_TYPE, &bytesRead, NULL );
     if ( status != srcSize ) {
-        if ( status >= 0 ) { status = SYS_COPY_LEN_ERR - errno; }
+        if ( status >= 0 ) {
+            status = SYS_COPY_LEN_ERR - errno;
+        }
         status = USER_INPUT_PATH_ERR - errno;
         rodsLog( LOG_ERROR,
                  "bulkPutFileUtil: Bytes read %d does not match size %d for %s",
@@ -958,7 +976,9 @@ tarAndBulkPut( rcComm_t *conn, bulkOprInp_t *bulkOprInp,
                bulkOprInfo_t *bulkOprInfo, rodsArguments_t *rodsArgs ) {
     int status;
 
-    if ( bulkOprInfo == NULL || bulkOprInfo->count <= 0 ) { return 0; }
+    if ( bulkOprInfo == NULL || bulkOprInfo->count <= 0 ) {
+        return 0;
+    }
 
     bulkOprInfo->bytesBuf.len = BULK_OPR_BUF_SIZE;
     bulkOprInfo->bytesBuf.buf = NULL;
@@ -980,7 +1000,9 @@ sendBulkPut( rcComm_t *conn, bulkOprInp_t *bulkOprInp,
     struct timeval startTime, endTime;
     int status = 0;
 
-    if ( bulkOprInfo == NULL || bulkOprInfo->count <= 0 ) { return 0; }
+    if ( bulkOprInfo == NULL || bulkOprInfo->count <= 0 ) {
+        return 0;
+    }
 
     if ( rodsArgs->verbose == True ) {
         ( void ) gettimeofday( &startTime, ( struct timezone * )0 );
@@ -1018,7 +1040,9 @@ sendBulkPut( rcComm_t *conn, bulkOprInp_t *bulkOprInp,
 
 int
 clearBulkOprInfo( bulkOprInfo_t *bulkOprInfo ) {
-    if ( bulkOprInfo == NULL || bulkOprInfo->count <= 0 ) { return 0; }
+    if ( bulkOprInfo == NULL || bulkOprInfo->count <= 0 ) {
+        return 0;
+    }
     bulkOprInfo->bytesBuf.len = 0;
 #ifdef BULK_OPR_WITH_TAR
     if ( bulkOprInfo->bytesBuf.buf != NULL ) {

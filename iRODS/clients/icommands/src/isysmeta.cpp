@@ -21,7 +21,9 @@ printGenQueryResults( rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
     else {
         if ( status != CAT_NO_ROWS_FOUND ) {
             for ( i = 0; i < genQueryOut->rowCnt; i++ ) {
-                if ( i > 0 && doDashes ) { printf( "----\n" ); }
+                if ( i > 0 && doDashes ) {
+                    printf( "----\n" );
+                }
                 for ( j = 0; j < genQueryOut->attriCnt; j++ ) {
                     char *tResult;
                     tResult = genQueryOut->sqlResult[j].value;
@@ -29,7 +31,9 @@ printGenQueryResults( rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
                     if ( descriptions != 0 && *descriptions[j] != '\0' ) {
                         if ( strstr( descriptions[j], "_ts" ) != 0 ) {
                             getLocalTimeFromRodsTime( tResult, localTime );
-                            if ( atoll( tResult ) == 0 ) { rstrcpy( localTime, "None", 20 ); }
+                            if ( atoll( tResult ) == 0 ) {
+                                rstrcpy( localTime, "None", 20 );
+                            }
                             printf( "%s: %s: %s\n", descriptions[j], tResult,
                                     localTime );
                         }
@@ -379,8 +383,12 @@ main( int argc, char **argv ) {
     didOne = 0;
     if ( strcmp( cmdToken[0], "ls" ) == 0 ) {
         int longOption;
-        if ( myRodsArgs.longOption ) { longOption = 1; }
-        if ( myRodsArgs.verbose ) { longOption = 1; }
+        if ( myRodsArgs.longOption ) {
+            longOption = 1;
+        }
+        if ( myRodsArgs.verbose ) {
+            longOption = 1;
+        }
         doLs( Conn, objPath, longOption );
         didOne = 1;
     }
@@ -454,7 +462,9 @@ void
 printMsgs( char *msgs[] ) {
     int i;
     for ( i = 0;; i++ ) {
-        if ( strlen( msgs[i] ) == 0 ) { return; }
+        if ( strlen( msgs[i] ) == 0 ) {
+            return;
+        }
         printf( "%s\n", msgs[i] );
     }
 }

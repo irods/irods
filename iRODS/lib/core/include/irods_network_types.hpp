@@ -16,13 +16,13 @@
 #include "rcConnect.hpp"
 
 namespace irods {
-    // =-=-=-=-=-=-=-
-    // network plugin pointer type
+// =-=-=-=-=-=-=-
+// network plugin pointer type
     class network;
     typedef boost::shared_ptr< network > network_ptr;
 
-    // =-=-=-=-=-=-=-
-    // fwd decl of network manager for fco resolve
+// =-=-=-=-=-=-=-
+// fwd decl of network manager for fco resolve
     class network_manager;
 
 }; // namespace

@@ -25,9 +25,9 @@
 
 namespace irods {
 
-    // =-=-=-=-=-=-=-
-    // machinery using SFINAE to determine if PluginType supports delay_load
-    // yes / no types
+// =-=-=-=-=-=-=-
+// machinery using SFINAE to determine if PluginType supports delay_load
+// yes / no types
     typedef char small_type;
     struct large_type {
         small_type dummy[2];

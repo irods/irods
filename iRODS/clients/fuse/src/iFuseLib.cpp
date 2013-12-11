@@ -81,7 +81,9 @@ isSpecialPath( char *inPath ) {
     len = strlen( inPath );
     endPtr = inPath + len;
     for ( i = 0; i < NumSpecialPath; i++ ) {
-        if ( len < SpecialPath[i].len ) { continue; }
+        if ( len < SpecialPath[i].len ) {
+            continue;
+        }
         if ( strcmp( SpecialPath[i].path, endPtr - SpecialPath[i].len ) == 0 ) {
             return ( 1 );
         }
@@ -267,7 +269,9 @@ addToCacheSlot( char *inPath, pathCacheQue_t *pathCacheQue,
         return ( SYS_INTERNAL_NULL_INPUT_ERR );
     }
     tmpPathCache = ( pathCache_t * ) malloc( sizeof( pathCache_t ) );
-    if ( outPathCache != NULL ) { *outPathCache = tmpPathCache; }
+    if ( outPathCache != NULL ) {
+        *outPathCache = tmpPathCache;
+    }
     bzero( tmpPathCache, sizeof( pathCache_t ) );
     tmpPathCache->filePath = strdup( inPath );
     tmpPathCache->cachedTime = time( 0 );
@@ -374,10 +378,14 @@ iFuseConnInuse( iFuseConn_t *iFuseConn ) {
     int i;
     int inuseCnt = 0;
 
-    if ( iFuseConn == NULL ) { return 0; }
+    if ( iFuseConn == NULL ) {
+        return 0;
+    }
     DescLock.lock();
     for ( i = 3; i < MAX_IFUSE_DESC; i++ ) {
-        if ( inuseCnt >= IFuseDescInuseCnt ) { break; }
+        if ( inuseCnt >= IFuseDescInuseCnt ) {
+            break;
+        }
         if ( IFuseDesc[i].inuseFlag == INUSE ) {
             inuseCnt++;
             if ( IFuseDesc[i].iFuseConn != NULL &&
@@ -393,8 +401,12 @@ iFuseConnInuse( iFuseConn_t *iFuseConn ) {
 
 int
 freePathCache( pathCache_t *tmpPathCache ) {
-    if ( tmpPathCache == NULL ) { return 0; }
-    if ( tmpPathCache->filePath != NULL ) { free( tmpPathCache->filePath ); }
+    if ( tmpPathCache == NULL ) {
+        return 0;
+    }
+    if ( tmpPathCache->filePath != NULL ) {
+        free( tmpPathCache->filePath );
+    }
     if ( tmpPathCache->locCacheState != NO_FILE_CACHE &&
             tmpPathCache->locCachePath != NULL ) {
         freeFileCache( tmpPathCache );
@@ -531,7 +543,9 @@ _ifuseClose( char *path, int descInx ) {
             if ( matchPathInPathCache( ( char * ) path, PathArray,
                                        &tmpPathCache ) == 1 && tmpPathCache->locCachePath != NULL ) {
                 status = updatePathCacheStat( tmpPathCache );
-                if ( status >= 0 ) { goodStat = 1; }
+                if ( status >= 0 ) {
+                    goodStat = 1;
+                }
                 status = ifusePut( IFuseDesc[descInx].iFuseConn->conn,
                                    path, tmpPathCache->locCachePath,
                                    IFuseDesc[descInx].createMode,
@@ -646,7 +660,9 @@ ifuseWrite( char *path, int descInx, char *buf, size_t size,
     else {
         status = write( IFuseDesc[descInx].iFd, buf, size );
 
-        if ( status < 0 ) { return ( errno ? ( -1 * errno ) : -1 ); }
+        if ( status < 0 ) {
+            return ( errno ? ( -1 * errno ) : -1 );
+        }
         IFuseDesc[descInx].offset += status;
         if ( IFuseDesc[descInx].offset >= MAX_NEWLY_CREATED_CACHE_SIZE ) {
             int irodsFd;
@@ -799,7 +815,9 @@ ifuseRead( char *path, int descInx, char *buf, size_t size,
     else {
         status = read( IFuseDesc[descInx].iFd, buf, size );
 
-        if ( status < 0 ) { return ( errno ? ( -1 * errno ) : -1 ); }
+        if ( status < 0 ) {
+            return ( errno ? ( -1 * errno ) : -1 );
+        }
     }
     IFuseDesc[descInx].offset += status;
 
@@ -826,7 +844,9 @@ ifuseLseek( char *path, int descInx, off_t offset ) {
                 status = rcDataObjLseek( IFuseDesc[descInx].iFuseConn->conn,
                                          &dataObjLseekInp, &dataObjLseekOut );
                 unuseIFuseConn( IFuseDesc[descInx].iFuseConn );
-                if ( dataObjLseekOut != NULL ) { free( dataObjLseekOut ); }
+                if ( dataObjLseekOut != NULL ) {
+                    free( dataObjLseekOut );
+                }
             }
             else {
                 rodsLog( LOG_ERROR,
@@ -867,7 +887,9 @@ getIFuseConnByPath( iFuseConn_t **iFuseConn, char *localPath,
     int inuseCnt = 0;
     DescLock.lock();
     for ( i = 3; i < MAX_IFUSE_DESC; i++ ) {
-        if ( inuseCnt >= IFuseDescInuseCnt ) { break; }
+        if ( inuseCnt >= IFuseDescInuseCnt ) {
+            break;
+        }
         if ( IFuseDesc[i].inuseFlag == INUSE ) {
             inuseCnt++;
             if ( IFuseDesc[i].iFuseConn != NULL &&
@@ -964,7 +986,9 @@ getIFuseConn( iFuseConn_t **iFuseConn, rodsEnv *myRodsEnv ) {
         tmpIFuseConn->mutex = new boost::mutex;
 
         status = ifuseConnect( tmpIFuseConn, myRodsEnv );
-        if ( status < 0 ) { return status; }
+        if ( status < 0 ) {
+            return status;
+        }
 
         useIFuseConn( tmpIFuseConn );
 
@@ -1025,7 +1049,9 @@ _useIFuseConn( iFuseConn_t *iFuseConn ) {
 
 int
 useFreeIFuseConn( iFuseConn_t *iFuseConn ) {
-    if ( iFuseConn == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( iFuseConn == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
     iFuseConn->actTime = time( NULL );
     iFuseConn->status = INUSE;
     iFuseConn->inuseCnt++;
@@ -1083,7 +1109,9 @@ int
 relIFuseConn( iFuseConn_t *iFuseConn ) {
     int status;
 
-    if ( iFuseConn == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( iFuseConn == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
     unuseIFuseConn( iFuseConn );
     status = _relIFuseConn( iFuseConn );
     return status;
@@ -1093,7 +1121,9 @@ relIFuseConn( iFuseConn_t *iFuseConn ) {
  * is not called */
 int
 _relIFuseConn( iFuseConn_t *iFuseConn ) {
-    if ( iFuseConn == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( iFuseConn == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
     ConnLock.lock();
     iFuseConn->actTime = time( NULL );
     if ( iFuseConn->conn == NULL ) {
@@ -1177,7 +1207,9 @@ connManager() {
         connCnt = 0;
         prevIFuseConn = NULL;
         while ( tmpIFuseConn != NULL ) {
-            if ( tmpIFuseConn->status == FREE ) { freeCnt ++; }
+            if ( tmpIFuseConn->status == FREE ) {
+                freeCnt ++;
+            }
             if ( curTime - tmpIFuseConn->actTime > IFUSE_CONN_TIMEOUT ) {
                 if ( tmpIFuseConn->status == FREE ) {
                     /* can be disconnected */
@@ -1330,14 +1362,18 @@ int
 closeNewlyCreatedCache( newlyCreatedFile_t *newlyCreatedFile ) {
     int status = 0;
 
-    if ( newlyCreatedFile == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( newlyCreatedFile == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
     if ( strlen( newlyCreatedFile->filePath ) > 0 ) {
         int descInx = newlyCreatedFile->descInx;
 
         /* should not call irodsRelease because it will call
          * getIFuseConn which will result in deadlock
          * irodsRelease (newlyCreatedFile->filePath, &fi); */
-        if ( checkFuseDesc( descInx ) < 0 ) { return -EBADF; }
+        if ( checkFuseDesc( descInx ) < 0 ) {
+            return -EBADF;
+        }
         status = ifuseClose( ( char * ) newlyCreatedFile->filePath, descInx );
         freeIFuseDesc( descInx );
         bzero( newlyCreatedFile, sizeof( newlyCreatedFile_t ) );
@@ -1468,13 +1504,19 @@ irodsOpenWithReadCache( iFuseConn_t *iFuseConn, char *path, int flags ) {
     int fd, descInx;
 
     /* do only O_RDONLY (0) */
-    if ( ( flags & ( O_WRONLY | O_RDWR ) ) != 0 ) { return -1; }
+    if ( ( flags & ( O_WRONLY | O_RDWR ) ) != 0 ) {
+        return -1;
+    }
 
     if ( _irodsGetattr( iFuseConn, path, &stbuf, &tmpPathCache ) < 0 ||
-            tmpPathCache == NULL ) { return -1; }
+            tmpPathCache == NULL ) {
+        return -1;
+    }
 
     /* too big to cache */
-    if ( stbuf.st_size > MAX_READ_CACHE_SIZE ) { return -1; }
+    if ( stbuf.st_size > MAX_READ_CACHE_SIZE ) {
+        return -1;
+    }
 
     if ( tmpPathCache->locCachePath == NULL ) {
 
@@ -1550,7 +1592,9 @@ getFileCachePath( char *inPath, char *cacehPath ) {
     while ( 1 ) {
         snprintf( cacehPath, MAX_NAME_LEN, "%s/%s.%d", FuseCacheDir,
                   myFile, ( int ) random() );
-        if ( stat( cacehPath, &statbuf ) < 0 ) { break; }
+        if ( stat( cacehPath, &statbuf ) < 0 ) {
+            break;
+        }
     }
     return 0;
 }
@@ -1626,7 +1670,9 @@ getNewlyCreatedDescByPath( char *path ) {
 
     DescLock.lock();
     for ( i = 3; i < MAX_IFUSE_DESC; i++ ) {
-        if ( inuseCnt >= IFuseDescInuseCnt ) { break; }
+        if ( inuseCnt >= IFuseDescInuseCnt ) {
+            break;
+        }
         if ( IFuseDesc[i].inuseFlag == INUSE ) {
             inuseCnt++;
             if ( IFuseDesc[i].locCacheState != HAVE_NEWLY_CREATED_CACHE ||

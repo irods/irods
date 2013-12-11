@@ -96,7 +96,9 @@ int rsAuthResponse(
 int
 chkProxyUserPriv( rsComm_t *rsComm, int proxyUserPriv ) {
     if ( strcmp( rsComm->proxyUser.userName, rsComm->clientUser.userName )
-            == 0 ) { return 0; }
+            == 0 ) {
+        return 0;
+    }
 
 #ifdef STORAGE_ADMIN_ROLE
     /* if the proxy is a storageadmin, and is from the local zone,

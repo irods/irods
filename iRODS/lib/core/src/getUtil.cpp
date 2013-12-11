@@ -105,7 +105,9 @@ getUtil( rcComm_t **myConn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
                         conn->fileRestart.info.objPath );
                 unlink( conn->fileRestart.infoFile );
             }
-            if ( info != NULL ) { free( info ); }
+            if ( info != NULL ) {
+                free( info );
+            }
         }
     }
 
@@ -507,7 +509,9 @@ getCollUtil( rcComm_t **myConn, char *srcColl, char *targDir,
                               "getCollUtil: getDataObjUtil failed for %s. status = %d",
                               srcChildPath, status );
                 savedStatus = status;
-                if ( rodsRestart->fd > 0 ) { break; }
+                if ( rodsRestart->fd > 0 ) {
+                    break;
+                }
             }
             else {
                 status = procAndWrriteRestartFile( rodsRestart, targChildPath );
@@ -541,7 +545,9 @@ getCollUtil( rcComm_t **myConn, char *srcColl, char *targDir,
                               "getCollUtil: getCollUtil failed for %s. status = %d",
                               collEnt.collName, status );
                 savedStatus = status;
-                if ( rodsRestart->fd > 0 ) { break; }
+                if ( rodsRestart->fd > 0 ) {
+                    break;
+                }
             }
         }
     }

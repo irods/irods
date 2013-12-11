@@ -15,7 +15,10 @@ namespace irods {
         Hasher( void );
         virtual ~Hasher( void );
 
-        unsigned int addStrategy( HashStrategy* strategy ) { _strategies.push_back( strategy ); return 0; }
+        unsigned int addStrategy( HashStrategy* strategy ) {
+            _strategies.push_back( strategy );
+            return 0;
+        }
         unsigned int listStrategies( std::vector<std::string>& strategies ) const;
 
         unsigned int init( void );

@@ -14,7 +14,9 @@ namespace irods {
         MD5Strategy( void );
         virtual ~MD5Strategy( void );
 
-        virtual std::string name( void ) const { return _name; }
+        virtual std::string name( void ) const {
+            return _name;
+        }
         virtual unsigned int init( void );
         virtual unsigned int update( char const* data, unsigned int size );
         virtual unsigned int digest( std::string& messageDigest );

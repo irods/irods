@@ -12,8 +12,8 @@
 
 
 namespace irods {
-    // =-=-=-=-=-=-=-
-    // base class for all object types
+// =-=-=-=-=-=-=-
+// base class for all object types
     class data_object : public first_class_object {
     public:
         // =-=-=-=-=-=-=-
@@ -47,17 +47,33 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // Accessors
 
-        virtual std::string physical_path()   const { return physical_path_;   }
-        virtual std::string resc_hier()       const { return resc_hier_;       }
-        virtual int         mode()            const { return mode_;            }
-        virtual int         flags()           const { return flags_;           }
+        virtual std::string physical_path()   const {
+            return physical_path_;
+        }
+        virtual std::string resc_hier()       const {
+            return resc_hier_;
+        }
+        virtual int         mode()            const {
+            return mode_;
+        }
+        virtual int         flags()           const {
+            return flags_;
+        }
 
         // =-=-=-=-=-=-=-
         // Mutators
-        virtual void physical_path( const std::string& _path ) { physical_path_   = _path; }
-        virtual void resc_hier( const std::string& _hier )     { resc_hier_       = _hier; }
-        virtual void mode( int _m )                         { mode_            = _m;    }
-        virtual void flags( int _f )                         { flags_           = _f;    }
+        virtual void physical_path( const std::string& _path ) {
+            physical_path_   = _path;
+        }
+        virtual void resc_hier( const std::string& _hier )     {
+            resc_hier_       = _hier;
+        }
+        virtual void mode( int _m )                         {
+            mode_            = _m;
+        }
+        virtual void flags( int _f )                         {
+            flags_           = _f;
+        }
 
     protected:
         // =-=-=-=-=-=-=-
@@ -72,8 +88,8 @@ namespace irods {
 
     }; // class data_object
 
-    /// =-=-=-=-=-=-=-
-    /// @brief typedef for managed data object pointer
+/// =-=-=-=-=-=-=-
+/// @brief typedef for managed data object pointer
     typedef boost::shared_ptr< data_object > data_object_ptr;
 
 }; // namespace irods

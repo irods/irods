@@ -94,7 +94,9 @@ printMainHelp() {
     };
     int i;
     for ( i = 0;; i++ ) {
-        if ( strlen( msgs[i] ) == 0 ) { break; }
+        if ( strlen( msgs[i] ) == 0 ) {
+            break;
+        }
         printf( "%s\n", msgs[i] );
     }
     printReleaseInfo( "ihelp" );
@@ -123,11 +125,15 @@ main( int argc, char **argv ) {
 
     if ( myRodsArgs.all == True ) {
         for ( i = 0;; i++ ) {
-            if ( strlen( icmds[i] ) == 0 ) { break; }
+            if ( strlen( icmds[i] ) == 0 ) {
+                break;
+            }
             strncpy( myExe, icmds[i], 40 );
             strncat( myExe, " -h", 40 );
             status = system( myExe );
-            if ( status ) { printf( "error %d running %s\n", status, myExe ); }
+            if ( status ) {
+                printf( "error %d running %s\n", status, myExe );
+            }
         }
         exit( 0 );
     }
@@ -138,7 +144,9 @@ main( int argc, char **argv ) {
     if ( argc == 2 ) {
         int OK = 0;
         for ( i = 0;; i++ ) {
-            if ( strlen( icmds[i] ) == 0 ) { break; }
+            if ( strlen( icmds[i] ) == 0 ) {
+                break;
+            }
             if ( strcmp( argv[1], icmds[i] ) == 0 ) {
                 OK = 1;
                 break;
@@ -148,10 +156,13 @@ main( int argc, char **argv ) {
             printf( "%s is not an i-command\n", argv[1] );
         }
         else {
-            strncpy( myExe, argv[1], 40 );  myExe[ strlen( argv[1] ) ] = '\0'; // JMC cppcheck
+            strncpy( myExe, argv[1], 40 );
+            myExe[ strlen( argv[1] ) ] = '\0'; // JMC cppcheck
             strncat( myExe, " -h", 40 );
             status = system( myExe );
-            if ( status ) { printf( "error %d running %s\n", status, myExe ); }
+            if ( status ) {
+                printf( "error %d running %s\n", status, myExe );
+            }
         }
     }
 
@@ -172,7 +183,9 @@ usage() {
     };
     int i;
     for ( i = 0;; i++ ) {
-        if ( strlen( msgs[i] ) == 0 ) { break; }
+        if ( strlen( msgs[i] ) == 0 ) {
+            break;
+        }
         printf( "%s\n", msgs[i] );
     }
     printReleaseInfo( "ihelp" );

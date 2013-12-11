@@ -174,7 +174,9 @@ int rsGetHostForGet(
     bzero( &addr, sizeof( addr ) );
     //rstrcpy (addr.hostAddr, myRescInfo->rescLoc, NAME_LEN);
     status = resolveHost( &addr, &rodsServerHost );
-    if ( status < 0 ) { return status; }
+    if ( status < 0 ) {
+        return status;
+    }
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
         *outHost = strdup( THIS_ADDRESS );
         return 0;
@@ -202,7 +204,9 @@ getBestRescForGet( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     *outRescInfo = NULL;
 
-    if ( dataObjInp == NULL || outRescInfo == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( dataObjInp == NULL || outRescInfo == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
     bzero( &hostSearchStat, sizeof( hostSearchStat ) );
     bzero( &collInp, sizeof( collInp ) );
     rstrcpy( collInp.collName, dataObjInp->objPath, MAX_NAME_LEN );
@@ -219,7 +223,9 @@ getBestRescForGet( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             maxInx = i;
         }
     }
-    if ( maxInx >= 0 ) { *outRescInfo = hostSearchStat.rescInfo[maxInx]; }
+    if ( maxInx >= 0 ) {
+        *outRescInfo = hostSearchStat.rescInfo[maxInx];
+    }
 
     return status;
 }
@@ -231,10 +237,14 @@ getRescForGetInColl( rsComm_t *rsComm, collInp_t *collInp,
     int handleInx;
     int status;
 
-    if ( collInp == NULL || hostSearchStat == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( collInp == NULL || hostSearchStat == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
 
     handleInx = rsOpenCollection( rsComm, collInp );
-    if ( handleInx < 0 ) { return handleInx; }
+    if ( handleInx < 0 ) {
+        return handleInx;
+    }
 
     while ( ( status = rsReadCollection( rsComm, &handleInx, &collEnt ) ) >= 0 ) {
         if ( collEnt->objType == DATA_OBJ_T ) {
@@ -283,7 +293,9 @@ getRescForGetInDataObj( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     }
 
     status = getDataObjInfoIncSpecColl( rsComm, dataObjInp, &dataObjInfoHead );
-    if ( status < 0 ) { return status; }
+    if ( status < 0 ) {
+        return status;
+    }
 
     sortObjInfoForOpen( rsComm, &dataObjInfoHead, &dataObjInp->condInput, 0 );
     if ( dataObjInfoHead != NULL && dataObjInfoHead->rescInfo != NULL ) {

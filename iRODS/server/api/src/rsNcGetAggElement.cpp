@@ -42,7 +42,9 @@ rsNcGetAggElement( rsComm_t *rsComm, ncOpenInp_t *ncOpenInp,
 
         l1descInx = _rsDataObjOpen( rsComm, &dataObjInp );
         clearKeyVal( &dataObjInp.condInput );
-        if ( l1descInx < 0 ) { return l1descInx; }
+        if ( l1descInx < 0 ) {
+            return l1descInx;
+        }
         remoteFlag = resoAndConnHostByDataObjInfo( rsComm,
                      L1desc[l1descInx].dataObjInfo, &rodsServerHost );
         if ( remoteFlag < 0 ) {
@@ -106,7 +108,9 @@ _rsNcGetAggElement( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
         return NETCDF_INQ_ERR + status;
     }
     for ( i = 0; i < ncInqOut->ndims; i++ ) {
-        if ( strcasecmp( ncInqOut->dim[i].name, "time" ) == 0 ) { break; }
+        if ( strcasecmp( ncInqOut->dim[i].name, "time" ) == 0 ) {
+            break;
+        }
     }
     if ( i >= ncInqOut->ndims ) {
         /* no match */

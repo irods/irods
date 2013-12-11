@@ -110,7 +110,9 @@ rsDataObjTrim( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     if ( ( tmpStr = getValByKey( &dataObjInp->condInput, AGE_KW ) ) != NULL ) {
         myAge = atoi( tmpStr );
         /* age value is in minutes */
-        if ( myAge > 0 ) { myTime = time( 0 ) - myAge * 60; }
+        if ( myAge > 0 ) {
+            myTime = time( 0 ) - myAge * 60;
+        }
     }
 
     tmpDataObjInfo = dataObjInfoHead;

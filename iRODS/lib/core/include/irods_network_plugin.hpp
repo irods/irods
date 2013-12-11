@@ -12,7 +12,7 @@
 
 namespace irods {
     typedef error( *network_maintenance_operation )( plugin_property_map& );
-    // =-=-=-=-=-=-=-
+// =-=-=-=-=-=-=-
     /**
      * \class
      * \author Jason M. Coposky
@@ -67,8 +67,12 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         /// @brief interface to call start / stop functions
-        error start_operation( void ) { return ( *start_operation_ )( properties_ ); }
-        error stop_operation( void ) { return ( *stop_operation_ )( properties_ ); }
+        error start_operation( void ) {
+            return ( *start_operation_ )( properties_ );
+        }
+        error stop_operation( void ) {
+            return ( *stop_operation_ )( properties_ );
+        }
 
         // =-=-=-=-=-=-=-
         /// @brief default start operation
@@ -242,8 +246,8 @@ namespace irods {
 
     }; // class network
 
-    // =-=-=-=-=-=-=-
-    // given the name of a network, try to load the shared object
+// =-=-=-=-=-=-=-
+// given the name of a network, try to load the shared object
     error load_network_plugin(
         network_ptr&,         // plugin
         const std::string&,   // plugin name

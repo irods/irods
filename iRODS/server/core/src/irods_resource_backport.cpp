@@ -8,9 +8,9 @@
 
 namespace irods {
 
-    // =-=-=-=-=-=-=-
-    // helper function to convert properties from a resource plugin
-    // the a standard irods rescInfo_t
+// =-=-=-=-=-=-=-
+// helper function to convert properties from a resource plugin
+// the a standard irods rescInfo_t
     error resource_to_resc_info( rescInfo_t& _info, resource_ptr& _resc ) {
         error err;
         std::string prop_name;
@@ -229,9 +229,9 @@ namespace irods {
 
     } // resource_to_resc_info
 
-    // =-=-=-=-=-=-=-
-    // helper function to extract useful bits from a resource plugin and fill in a
-    // resource group info structure.
+// =-=-=-=-=-=-=-
+// helper function to extract useful bits from a resource plugin and fill in a
+// resource group info structure.
     error resource_to_resc_grp_info( rescGrpInfo_t& _grp_info, resource_ptr& _resc ) {
         // =-=-=-=-=-=-=-
         // end the linked lists and ensure sane values
@@ -266,12 +266,12 @@ namespace irods {
 
     } // resource_to_resc_grp_info
 
-    // =-=-=-=-=-=-=-
-    // given a list of resource names from a rule, make some decisions
-    // about which resource should be set to default and used.  store
-    // that information in the rescGrpInfo structure
-    // NOTE :: this is a reimplementation of setDefaultResc in resource.c but
-    //      :: with the composite resource spin
+// =-=-=-=-=-=-=-
+// given a list of resource names from a rule, make some decisions
+// about which resource should be set to default and used.  store
+// that information in the rescGrpInfo structure
+// NOTE :: this is a reimplementation of setDefaultResc in resource.c but
+//      :: with the composite resource spin
     error set_default_resource( rsComm_t*      _comm,   std::string   _resc_list,
                                 std::string    _option, keyValPair_t* _cond_input,
                                 rescGrpInfo_t& _resc_grp ) {
@@ -416,9 +416,9 @@ namespace irods {
 
     } // set_default_resource
 
-    // =-=-=-=-=-=-=-
-    // function which determines resource name based on
-    // keyval pair and a given string
+// =-=-=-=-=-=-=-
+// function which determines resource name based on
+// keyval pair and a given string
     error resolve_resource_name( std::string _resc_name, keyValPair_t* _cond_input, std::string& _out ) {
         if ( _resc_name.empty() ) {
             char* name = 0;
@@ -450,9 +450,9 @@ namespace irods {
 
     } // resolve_resource_name
 
-    // =-=-=-=-=-=-=-
-    // helper function - get the status property of a resource given a
-    // match to the incoming pointer
+// =-=-=-=-=-=-=-
+// helper function - get the status property of a resource given a
+// match to the incoming pointer
     error get_host_status_by_host_info( rodsServerHost_t* _info ) {
         // =-=-=-=-=-=-=-
         // idiot check pointer
@@ -480,9 +480,9 @@ namespace irods {
 
     } // get_host_status_by_host_info
 
-    // =-=-=-=-=-=-=-
-    // helper function to save on typing - get legacy data struct
-    // for resource given a resource name
+// =-=-=-=-=-=-=-
+// helper function to save on typing - get legacy data struct
+// for resource given a resource name
     error get_resc_info( std::string _name, rescInfo_t& _info ) {
 
         resource_ptr resc;
@@ -514,9 +514,9 @@ namespace irods {
 
     } // get_resc_info
 
-    // =-=-=-=-=-=-=-
-    // helper function to save on typing - get legacy data struct
-    // for resource group given a resource name
+// =-=-=-=-=-=-=-
+// helper function to save on typing - get legacy data struct
+// for resource group given a resource name
     error get_resc_grp_info( std::string _name, rescGrpInfo_t& _info ) {
         if ( _name.empty() ) {
             return ERROR( SYS_INVALID_INPUT_PARAM, "empty key" );
@@ -607,8 +607,8 @@ namespace irods {
 
     } // get_host_for_hier_string
 
-    // =-=-=-=-=-=-=-
-    // function which returns the host name for a given hier string
+// =-=-=-=-=-=-=-
+// function which returns the host name for a given hier string
     error get_loc_for_hier_string(
         const std::string& _hier,
         std::string& _loc ) {
@@ -635,7 +635,7 @@ namespace irods {
 
     } // get_loc_for_hier_string
 
-    /// @brief Returns the vault path of the leaf resource of the specified hierarchy string
+/// @brief Returns the vault path of the leaf resource of the specified hierarchy string
     error get_vault_path_for_hier_string(
         const std::string& _hier_string,
         std::string& _rtn_vault_path ) {

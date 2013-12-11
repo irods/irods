@@ -34,7 +34,9 @@ namespace irods {
         std::string&      _rtn_local_zone ) {
         error result = SUCCESS();
         if ( local_zone_.empty() ) {
-            if ( _logSQL != 0 ) { rodsLog( LOG_SQL, "getLocalZone SQL 1 " ); }
+            if ( _logSQL != 0 ) {
+                rodsLog( LOG_SQL, "getLocalZone SQL 1 " );
+            }
             char localZone[MAX_NAME_LEN];
             int status = cmlGetStringValueFromSql( "select zone_name from R_ZONE_MAIN where zone_type_name=?",
                                                    localZone, MAX_NAME_LEN, "local", 0, 0, &_icss );

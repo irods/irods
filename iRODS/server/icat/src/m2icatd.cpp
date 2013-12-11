@@ -126,10 +126,14 @@ findIndex( char *inLine, char *inItem ) {
     }
     ix = 0;
     for ( cp2 = inLine; cp2 < cp1; cp2++ ) {
-        if ( *cp2 == '|' ) { ix++; }
+        if ( *cp2 == '|' ) {
+            ix++;
+        }
     }
     printf( "%d %s\n", ix, inItem );
-    if ( ix > g_max_ix ) { g_max_ix = ix; }
+    if ( ix > g_max_ix ) {
+        g_max_ix = ix;
+    }
     return( ix );
 }
 
@@ -360,7 +364,9 @@ char **argv;
             ixFTL[0] = &buf[0];
             nIxFTL = 1;
             for ( i = 0; i < sizeof( buf ); i++ ) {
-                if ( buf[i] == '\0' ) { break; }
+                if ( buf[i] == '\0' ) {
+                    break;
+                }
                 if ( buf[i] == '\n' ) {
                     buf[i] = '\0';
                     break;
@@ -626,7 +632,9 @@ checkDateFormat( char *s ) {
 
                 mypos--;
                 if ( mypos >= 0 )
-                    if ( s[mypos] != ':' ) { return ( DATE_FORMAT_ERR ); }
+                    if ( s[mypos] != ':' ) {
+                        return ( DATE_FORMAT_ERR );
+                    }
 
                 /* min */
                 mypos--;
@@ -655,7 +663,9 @@ checkDateFormat( char *s ) {
 
                 mypos--;
                 if ( mypos >= 0 )
-                    if ( s[mypos] != ':' ) { return ( DATE_FORMAT_ERR ); }
+                    if ( s[mypos] != ':' ) {
+                        return ( DATE_FORMAT_ERR );
+                    }
 
                 /* hour */
                 mypos--;
@@ -684,7 +694,9 @@ checkDateFormat( char *s ) {
 
                 mypos--;
                 if ( mypos >= 0 )
-                    if ( s[mypos] != '.' ) { return ( DATE_FORMAT_ERR ); }
+                    if ( s[mypos] != '.' ) {
+                        return ( DATE_FORMAT_ERR );
+                    }
 
                 /* day */
 

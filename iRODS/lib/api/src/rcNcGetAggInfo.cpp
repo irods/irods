@@ -18,7 +18,9 @@ addNcAggElement( ncAggElement_t *ncAggElement, ncAggInfo_t *ncAggInfo ) {
     int newNumFiles, i, j;
     ncAggElement_t *newElement;
 
-    if ( ncAggInfo == NULL || ncAggElement == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( ncAggInfo == NULL || ncAggElement == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
 
     if ( ( ncAggInfo->numFiles % PTR_ARRAY_MALLOC_LEN ) == 0 ) {
         newNumFiles =  ncAggInfo->numFiles + PTR_ARRAY_MALLOC_LEN;
@@ -83,9 +85,13 @@ sumAggElementArraylen( ncAggInfo_t *ncAggInfo, int aggElemetInx ) {
 
 int
 freeAggInfo( ncAggInfo_t **ncAggInfo ) {
-    if ( ncAggInfo == NULL || *ncAggInfo == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( ncAggInfo == NULL || *ncAggInfo == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
 
-    if ( ( *ncAggInfo )->ncAggElement != NULL ) { free( ( *ncAggInfo )->ncAggElement ); }
+    if ( ( *ncAggInfo )->ncAggElement != NULL ) {
+        free( ( *ncAggInfo )->ncAggElement );
+    }
     free( *ncAggInfo );
     *ncAggInfo = NULL;
     return 0;
@@ -115,14 +121,18 @@ getNextAggEleObjPath( ncAggInfo_t *ncAggInfo, char *aggCollection,
     int lastNum = 0;
 
     status = getAggBasePath( aggCollection, basePath );
-    if ( status < 0 ) { return status; }
+    if ( status < 0 ) {
+        return status;
+    }
     len = strlen( basePath );
     for ( i = 0; i < ncAggInfo->numFiles; i++ ) {
         if ( strncmp( basePath,  ncAggInfo->ncAggElement[i].objPath, len ) == 0 ) {
             tmpPtr = ncAggInfo->ncAggElement[i].objPath + len;
             if ( isdigit( *tmpPtr ) ) {
                 int myInt = atoi( tmpPtr );
-                if ( myInt > lastNum ) { lastNum = myInt; }
+                if ( myInt > lastNum ) {
+                    lastNum = myInt;
+                }
             }
         }
     }

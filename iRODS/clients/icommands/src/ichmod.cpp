@@ -47,7 +47,10 @@ main( int argc, char **argv ) {
 
     nArgs = argc - myRodsArgs.optind;
 
-    if ( nArgs < 2 ) {usage(); exit( 3 );}
+    if ( nArgs < 2 ) {
+        usage();
+        exit( 3 );
+    }
 
     status = getRodsEnv( &myEnv );
 
@@ -211,7 +214,9 @@ usage() {
     };
     int i;
     for ( i = 0;; i++ ) {
-        if ( strlen( msgs[i] ) == 0 ) { break; }
+        if ( strlen( msgs[i] ) == 0 ) {
+            break;
+        }
         printf( "%s\n", msgs[i] );
     }
     printReleaseInfo( "ichmod" );

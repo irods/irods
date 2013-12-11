@@ -82,7 +82,9 @@ irsDataObjClose(
         return ( SYS_FILE_DESC_OUT_OF_RANGE );
     }
 
-    if ( outDataObjInfo != NULL ) { *outDataObjInfo = NULL; }
+    if ( outDataObjInfo != NULL ) {
+        *outDataObjInfo = NULL;
+    }
     if ( L1desc[l1descInx].remoteZoneHost != NULL ) {
         /* cross zone operation */
         dataObjCloseInp->l1descInx = L1desc[l1descInx].remoteL1descInx;

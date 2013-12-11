@@ -117,7 +117,9 @@ rcDataObjGet( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
     status = _rcDataObjGet( conn, dataObjInp, &portalOprOut, &dataObjOutBBuf );
 
     if ( status < 0 ) {
-        if ( portalOprOut != NULL ) { free( portalOprOut ); }
+        if ( portalOprOut != NULL ) {
+            free( portalOprOut );
+        }
         return ( status );
     }
 

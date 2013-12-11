@@ -13,9 +13,9 @@
 #include <boost/shared_ptr.hpp>
 
 namespace irods {
-    /// =-=-=-=-=-=-=-
-    /// @brief super basic free factory function to create an auth object
-    ///        given the requested authentication scheme
+/// =-=-=-=-=-=-=-
+/// @brief super basic free factory function to create an auth object
+///        given the requested authentication scheme
     irods::error auth_factory(
         const std::string&,         // auth scheme
         rError_t*,                  // error object for auth ctor

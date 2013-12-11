@@ -28,7 +28,9 @@ parseRodsPathStr( char *inPath, rodsEnv *myRodsEnv, char *outPath ) {
 
     status = parseRodsPath( &rodsPath, myRodsEnv );
 
-    if ( status < 0 ) { return status; }
+    if ( status < 0 ) {
+        return status;
+    }
 
     rstrcpy( outPath, rodsPath.outPath, MAX_NAME_LEN );
 
@@ -722,9 +724,13 @@ getLastPathElement( char *inInPath, char *lastElement ) {
 
 void
 clearRodsPath( rodsPath_t *rodsPath ) {
-    if ( rodsPath == NULL ) { return; }
+    if ( rodsPath == NULL ) {
+        return;
+    }
 
-    if ( rodsPath->rodsObjStat == NULL ) { return; }
+    if ( rodsPath->rodsObjStat == NULL ) {
+        return;
+    }
 
 #if 0   /* this is freed in freeRodsObjStat */
     if ( rodsPath->rodsObjStat->specColl != NULL ) {

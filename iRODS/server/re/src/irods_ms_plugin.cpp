@@ -13,8 +13,8 @@
 #include <sstream>
 
 namespace irods {
-    // =-=-=-=-=-=-=-
-    // ms_table_entry definition
+// =-=-=-=-=-=-=-
+// ms_table_entry definition
     ms_table_entry::ms_table_entry( ) :
         plugin_base(
             "",
@@ -95,9 +95,9 @@ namespace irods {
 
     } // delay_load
 
-    // =-=-=-=-=-=-=-
-    // given the name of a microservice, try to load the shared object
-    // and then register that ms with the table
+// =-=-=-=-=-=-=-
+// given the name of a microservice, try to load the shared object
+// and then register that ms with the table
     error load_microservice_plugin( ms_table& _table, const std::string _ms ) {
 
         ms_table_entry* entry = 0;

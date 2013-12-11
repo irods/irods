@@ -1944,7 +1944,9 @@ getZoneServerId( char *zoneName, char *zoneSID ) {
     char *localZoneName = NULL;
     char matchStr[MAX_NAME_LEN + 2];
 
-    if ( zoneName != NULL ) { zoneNameLen = strlen( zoneName ); }
+    if ( zoneName != NULL ) {
+        zoneNameLen = strlen( zoneName );
+    }
     if ( zoneNameLen == 0 ) {
         strncpy( zoneSID, localSID, MAX_PASSWORD_LEN );
         return;
@@ -2390,7 +2392,9 @@ svrSockOpenForInConn( rsComm_t *rsComm, int *portNum, char **addr, int proto ) {
     int status;
 
     status = sockOpenForInConn( rsComm, portNum, addr, proto );
-    if ( status < 0 ) { return status; }
+    if ( status < 0 ) {
+        return status;
+    }
 
     if ( addr != NULL && *addr != NULL &&
             ( strcmp( *addr, "127.0.0.1" ) == 0 || strcmp( *addr, "0.0.0.0" ) == 0 ||
@@ -2423,7 +2427,9 @@ char *
 _getSvrAddr( rodsServerHost_t *rodsServerHost ) {
     hostName_t *tmpHostName;
 
-    if ( rodsServerHost == NULL ) { return NULL; }
+    if ( rodsServerHost == NULL ) {
+        return NULL;
+    }
 
     tmpHostName = rodsServerHost->hostName;
     while ( tmpHostName != NULL ) {
@@ -2454,7 +2460,9 @@ int
 setLocalSrvAddr( char *outLocalAddr ) {
     char *myHost;
 
-    if ( outLocalAddr == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( outLocalAddr == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
 
     myHost = getSvrAddr( LocalServerHost );
 

@@ -242,7 +242,9 @@ chkCollForBundleOpr( rsComm_t *rsComm,
  */
 int
 saveCollEntForChkColl( collEnt_t *collEnt ) {
-    if ( collEnt == NULL ) { return 0; }
+    if ( collEnt == NULL ) {
+        return 0;
+    }
     if ( collEnt->collName != NULL ) {
         collEnt->collName = strdup( collEnt->collName );
     }
@@ -257,10 +259,18 @@ saveCollEntForChkColl( collEnt_t *collEnt ) {
 
 int
 freeCollEntForChkColl( collEnt_t *collEnt ) {
-    if ( collEnt == NULL ) { return 0; }
-    if ( collEnt->collName != NULL ) { free( collEnt->collName ); }
-    if ( collEnt->dataName != NULL ) { free( collEnt->dataName ); }
-    if ( collEnt->resource != NULL ) { free( collEnt->resource ); }
+    if ( collEnt == NULL ) {
+        return 0;
+    }
+    if ( collEnt->collName != NULL ) {
+        free( collEnt->collName );
+    }
+    if ( collEnt->dataName != NULL ) {
+        free( collEnt->dataName );
+    }
+    if ( collEnt->resource != NULL ) {
+        free( collEnt->resource );
+    }
 
     free( collEnt );
     return 0;

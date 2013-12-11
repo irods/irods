@@ -41,7 +41,8 @@ extern "C" {
         RECEIVING_STATE,
         SENDING_STATE,
         CONN_WAIT_STATE
-    } procState_t;
+    }
+    procState_t;
 
     typedef struct reconnMsg {
         int status;

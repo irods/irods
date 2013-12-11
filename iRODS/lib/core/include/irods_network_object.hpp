@@ -16,8 +16,8 @@
 #include <boost/shared_ptr.hpp>
 
 namespace irods {
-    // =-=-=-=-=-=-=-
-    // network object base class
+// =-=-=-=-=-=-=-
+// network object base class
     class network_object : public first_class_object {
     public:
         // =-=-=-=-=-=-=-
@@ -59,11 +59,15 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // Accessors
-        virtual int socket_handle() const { return socket_handle_; }
+        virtual int socket_handle() const {
+            return socket_handle_;
+        }
 
         // =-=-=-=-=-=-=-
         // Mutators
-        virtual void socket_handle( int _s ) { socket_handle_ = _s; }
+        virtual void socket_handle( int _s ) {
+            socket_handle_ = _s;
+        }
 
     private:
         // =-=-=-=-=-=-=-
@@ -72,8 +76,8 @@ namespace irods {
 
     }; // network_object
 
-    // =-=-=-=-=-=-=-
-    // helpful typedef for sock comm interface & factory
+// =-=-=-=-=-=-=-
+// helpful typedef for sock comm interface & factory
     typedef boost::shared_ptr< network_object > network_object_ptr;
 
 }; // namespace irods

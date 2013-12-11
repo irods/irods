@@ -182,7 +182,9 @@ sTable( char *tableName, char *tableAlias, int cycler ) {
     strncpy( Tables[nTables].tableName, tableName, NAME_LEN );
     strncpy( Tables[nTables].tableAlias, tableAlias, MAX_TSQL );
     Tables[nTables].cycler = cycler;
-    if ( debug > 1 ) { printf( "table %d is %s\n", nTables, tableName ); }
+    if ( debug > 1 ) {
+        printf( "table %d is %s\n", nTables, tableName );
+    }
     nTables++;
     return( 0 );
 }
@@ -229,11 +231,17 @@ tablePresent( char *table, char *sqlText ) {
     int tokens, blank;
     char *cp1, *cp2;
 
-    if ( debug > 1 ) { printf( "tablePresent table:%s:\n", table ); }
-    if ( debug > 1 ) { printf( "tablePresent sqlText:%s:\n", sqlText ); }
+    if ( debug > 1 ) {
+        printf( "tablePresent table:%s:\n", table );
+    }
+    if ( debug > 1 ) {
+        printf( "tablePresent sqlText:%s:\n", sqlText );
+    }
 
     if ( strstr( sqlText, table ) == NULL ) {
-        if ( debug > 1 ) { printf( "tablePresent return 0 (simple)\n" ); }
+        if ( debug > 1 ) {
+            printf( "tablePresent return 0 (simple)\n" );
+        }
         return( 0 ); /* simple case */
     }
 
@@ -242,16 +250,22 @@ tablePresent( char *table, char *sqlText ) {
     cp1 = table;
     for ( ; *cp1 != '\0' && *cp1 != ','; cp1++ ) {
         if ( *cp1 == ' ' ) {
-            if ( blank == 0 ) { tokens++; }
+            if ( blank == 0 ) {
+                tokens++;
+            }
             blank = 1;
         }
         else {
             blank = 0;
         }
     }
-    if ( blank == 0 ) { tokens++; }
+    if ( blank == 0 ) {
+        tokens++;
+    }
 
-    if ( debug > 1 ) { printf( "tablePresent tokens=%d\n", tokens ); }
+    if ( debug > 1 ) {
+        printf( "tablePresent tokens=%d\n", tokens );
+    }
     if ( tokens == 2 ) {
         return( 1 ); /* 2 tokens and did match, is present */
     }
@@ -267,15 +281,21 @@ tablePresent( char *table, char *sqlText ) {
         tokens = 0;
         for ( ; *cp2 != '\0' && *cp2 != ','; cp2++ ) {
             if ( *cp2 == ' ' ) {
-                if ( blank == 0 ) { tokens++; }
+                if ( blank == 0 ) {
+                    tokens++;
+                }
                 blank = 1;
             }
             else {
                 blank = 0;
             }
         }
-        if ( blank == 0 ) { tokens++; }
-        if ( tokens == 1 ) { return( 1 ); }
+        if ( blank == 0 ) {
+            tokens++;
+        }
+        if ( tokens == 1 ) {
+            return( 1 );
+        }
         cp1 = cp2;
     }
 }
@@ -289,25 +309,35 @@ tScan( int table, int link ) {
     int subKeep;
     int i;
 
-    if ( debug > 1 ) { printf( "%d tScan\n", table ); }
+    if ( debug > 1 ) {
+        printf( "%d tScan\n", table );
+    }
 
     thisKeep = 0;
     if ( Tables[table].flag == 1 ) {
         thisKeep = 1;
         Tables[table].flag = 2;
         nToFind--;
-        if ( debug > 1 ) { printf( "nToFind decremented, now=%d\n", nToFind ); }
+        if ( debug > 1 ) {
+            printf( "nToFind decremented, now=%d\n", nToFind );
+        }
         thisKeep = 1;
-        if ( nToFind <= 0 ) { return( thisKeep ); }
+        if ( nToFind <= 0 ) {
+            return( thisKeep );
+        }
     }
     else {
         if ( Tables[table].flag != 0 ) { /* not still seeking this one */
-            if ( debug > 1 ) { printf( "%d returning flag=%d\n", table, Tables[table].flag ); }
+            if ( debug > 1 ) {
+                printf( "%d returning flag=%d\n", table, Tables[table].flag );
+            }
             return( 0 );
         }
     }
     if ( Tables[table].cycler == 1 ) {
-        if ( debug > 1 ) { printf( "%d returning cycler\n", table ); }
+        if ( debug > 1 ) {
+            printf( "%d returning cycler\n", table );
+        }
         return( thisKeep ); /* do no more for cyclers */
     }
 
@@ -315,14 +345,20 @@ tScan( int table, int link ) {
 
     for ( i = 0; i < nLinks; i++ ) {
         if ( Links[i].table1 == table && link != i ) {
-            if ( debug > 1 ) { printf( "%d trying link %d forward\n", table, i ); }
+            if ( debug > 1 ) {
+                printf( "%d trying link %d forward\n", table, i );
+            }
             subKeep = tScan( Links[i].table2, i );
             if ( debug > 1 ) printf( "subKeep %d, this table %d, link %d, table2 %d\n",
                                          subKeep, table, i, Links[i].table2 );
             if ( subKeep ) {
                 thisKeep = 1;
-                if ( debug > 1 ) { printf( "%d use link %d\n", table, i ); }
-                if ( strlen( whereSQL ) > 6 ) { rstrcat( whereSQL, " AND ", MAX_SQL_SIZE_GQ ); }
+                if ( debug > 1 ) {
+                    printf( "%d use link %d\n", table, i );
+                }
+                if ( strlen( whereSQL ) > 6 ) {
+                    rstrcat( whereSQL, " AND ", MAX_SQL_SIZE_GQ );
+                }
                 rstrcat( whereSQL, Links[i].connectingSQL, MAX_SQL_SIZE_GQ );
                 rstrcat( whereSQL, " ", MAX_SQL_SIZE_GQ );
                 if ( tablePresent( Tables[Links[i].table2].tableAlias, fromSQL ) == 0 ) {
@@ -337,21 +373,31 @@ tScan( int table, int link ) {
                              MAX_SQL_SIZE_GQ );
                     rstrcat( fromSQL, " ", MAX_SQL_SIZE_GQ );
                 }
-                if ( debug > 1 ) { printf( "added (2) to fromSQL: %s\n", fromSQL ); }
-                if ( nToFind <= 0 ) { return( thisKeep ); }
+                if ( debug > 1 ) {
+                    printf( "added (2) to fromSQL: %s\n", fromSQL );
+                }
+                if ( nToFind <= 0 ) {
+                    return( thisKeep );
+                }
             }
         }
     }
     for ( i = 0; i < nLinks; i++ ) {
         if ( Links[i].table2 == table && link != i ) {
-            if ( debug > 1 ) { printf( "%d trying link %d backward\n", table, i ); }
+            if ( debug > 1 ) {
+                printf( "%d trying link %d backward\n", table, i );
+            }
             subKeep = tScan( Links[i].table1, i );
             if ( debug > 1 ) printf( "subKeep %d, this table %d, link %d, table1 %d\n",
                                          subKeep, table, i, Links[i].table1 );
             if ( subKeep ) {
                 thisKeep = 1;
-                if ( debug > 1 ) { printf( "%d use link %d\n", table, i ); }
-                if ( strlen( whereSQL ) > 6 ) { rstrcat( whereSQL, " AND ", MAX_SQL_SIZE_GQ ); }
+                if ( debug > 1 ) {
+                    printf( "%d use link %d\n", table, i );
+                }
+                if ( strlen( whereSQL ) > 6 ) {
+                    rstrcat( whereSQL, " AND ", MAX_SQL_SIZE_GQ );
+                }
                 rstrcat( whereSQL, Links[i].connectingSQL, MAX_SQL_SIZE_GQ );
                 rstrcat( whereSQL, " ", MAX_SQL_SIZE_GQ );
                 if ( tablePresent( Tables[Links[i].table2].tableAlias, fromSQL ) == 0 ) {
@@ -366,12 +412,18 @@ tScan( int table, int link ) {
                              MAX_SQL_SIZE_GQ );
                     rstrcat( fromSQL, " ", MAX_SQL_SIZE_GQ );
                 }
-                if ( debug > 1 ) { printf( "added (3) to fromSQL: %s\n", fromSQL ); }
-                if ( nToFind <= 0 ) { return( thisKeep ); }
+                if ( debug > 1 ) {
+                    printf( "added (3) to fromSQL: %s\n", fromSQL );
+                }
+                if ( nToFind <= 0 ) {
+                    return( thisKeep );
+                }
             }
         }
     }
-    if ( debug > 1 ) { printf( "%d returning %d\n", table, thisKeep ); }
+    if ( debug > 1 ) {
+        printf( "%d returning %d\n", table, thisKeep );
+    }
     return( thisKeep );
 }
 
@@ -388,7 +440,9 @@ sTest( int i1, int i2 ) {
 
     for ( i = 0; i < nTables; i++ ) {
         Tables[i].flag = 0;
-        if ( i == i1 || i == i2 ) { Tables[i].flag = 1; }
+        if ( i == i1 || i == i2 ) {
+            Tables[i].flag = 1;
+        }
     }
     nToFind = 2;
     keepVal = tScan( i1, -1 );
@@ -412,7 +466,9 @@ int sTest2( int i1, int i2, int i3 ) {
 
     for ( i = 0; i < nTables; i++ ) {
         Tables[i].flag = 0;
-        if ( i == i1 || i == i2 || i == i3 ) { Tables[i].flag = 1; }
+        if ( i == i1 || i == i2 || i == i3 ) {
+            Tables[i].flag = 1;
+        }
     }
     nToFind = 3;
     keepVal = tScan( i1, -1 );
@@ -435,26 +491,34 @@ tCycleChk( int table, int link, int thisTreeNum ) {
     int subKeep;
     int i;
 
-    if ( debug > 1 ) { printf( "%d tCycleChk\n", table ); }
+    if ( debug > 1 ) {
+        printf( "%d tCycleChk\n", table );
+    }
 
     thisKeep = 0;
 
     if ( Tables[table].flag != 0 ) {
         if ( Tables[table].flag == thisTreeNum ) {
-            if ( debug > 1 ) { printf( "Found cycle at node %d\n", table ); }
+            if ( debug > 1 ) {
+                printf( "Found cycle at node %d\n", table );
+            }
             return( 1 );
         }
     }
     Tables[table].flag = thisTreeNum;
 
     if ( Tables[table].cycler == 1 ) {
-        if ( debug > 1 ) { printf( "%d returning cycler\n", table ); }
+        if ( debug > 1 ) {
+            printf( "%d returning cycler\n", table );
+        }
         return( thisKeep ); /* do no more for cyclers */
     }
 
     for ( i = 0; i < nLinks; i++ ) {
         if ( Links[i].table1 == table && link != i ) {
-            if ( debug > 1 ) { printf( "%d trying link %d forward\n", table, i ); }
+            if ( debug > 1 ) {
+                printf( "%d trying link %d forward\n", table, i );
+            }
             subKeep = tCycleChk( Links[i].table2, i, thisTreeNum );
             if ( subKeep ) {
                 thisKeep = 1;
@@ -466,16 +530,22 @@ tCycleChk( int table, int link, int thisTreeNum ) {
     }
     for ( i = 0; i < nLinks; i++ ) {
         if ( Links[i].table2 == table && link != i ) {
-            if ( debug > 1 ) { printf( "%d trying link %d backward\n", table, i ); }
+            if ( debug > 1 ) {
+                printf( "%d trying link %d backward\n", table, i );
+            }
             subKeep = tCycleChk( Links[i].table1, i, thisTreeNum );
             if ( subKeep ) {
                 thisKeep = 1;
-                if ( debug > 1 ) { printf( "%d use link %d\n", table, i ); }
+                if ( debug > 1 ) {
+                    printf( "%d use link %d\n", table, i );
+                }
                 return( thisKeep );
             }
         }
     }
-    if ( debug > 1 ) { printf( "%d returning %d\n", table, thisKeep ); }
+    if ( debug > 1 ) {
+        printf( "%d returning %d\n", table, thisKeep );
+    }
     return( thisKeep );
 }
 
@@ -501,19 +571,29 @@ int findCycles( int startTable ) {
     treeNum = 0;
 
     if ( startTable != 0 ) {
-        if ( startTable > nTables ) { return( CAT_INVALID_ARGUMENT ); }
+        if ( startTable > nTables ) {
+            return( CAT_INVALID_ARGUMENT );
+        }
         treeNum++;
         status = tCycleChk( startTable, -1, treeNum );
-        if ( debug > 1 ) { printf( "tree %d status %d\n", treeNum, status ); }
-        if ( status ) { return( status ); }
+        if ( debug > 1 ) {
+            printf( "tree %d status %d\n", treeNum, status );
+        }
+        if ( status ) {
+            return( status );
+        }
     }
 
     for ( i = 0; i < nTables; i++ ) {
         if ( Tables[i].flag == 0 ) {
             treeNum++;
             status = tCycleChk( i, -1, treeNum );
-            if ( debug > 1 ) { printf( "tree %d status %d\n", treeNum, status ); }
-            if ( status ) { return( status ); }
+            if ( debug > 1 ) {
+                printf( "tree %d status %d\n", treeNum, status );
+            }
+            if ( status ) {
+                return( status );
+            }
         }
     }
     return( 0 );
@@ -534,9 +614,13 @@ int setTable( int column, int sel, int selectOption, int castOption ) {
 
     colIx = -1;
     for ( i = 0; i < nColumns; i++ ) {
-        if ( Columns[i].defineValue == column ) { colIx = i; }
+        if ( Columns[i].defineValue == column ) {
+            colIx = i;
+        }
     }
-    if ( colIx == -1 ) { return( CAT_UNKNOWN_TABLE ); }
+    if ( colIx == -1 ) {
+        return( CAT_UNKNOWN_TABLE );
+    }
 
     for ( i = 0; i < nTables; i++ ) {
         if ( strcmp( Tables[i].tableName, Columns[colIx].tableName ) == 0 ) {
@@ -548,7 +632,9 @@ int setTable( int column, int sel, int selectOption, int castOption ) {
             }
             Tables[i].flag = 1;
             if ( sel ) {
-                if ( selectSQLInitFlag == 0 ) { rstrcat( selectSQL, ",", MAX_SQL_SIZE_GQ ); }
+                if ( selectSQLInitFlag == 0 ) {
+                    rstrcat( selectSQL, ",", MAX_SQL_SIZE_GQ );
+                }
                 selectSQLInitFlag = 0; /* no longer empty of columns */
 
                 selectOptFlag = 0;
@@ -583,7 +669,9 @@ int setTable( int column, int sel, int selectOption, int castOption ) {
                     mightNeedGroupBy = 1;
                 }
                 else {
-                    if ( strlen( groupBySQL ) > 10 ) { rstrcat( groupBySQL, ",", MAX_SQL_SIZE_GQ ); }
+                    if ( strlen( groupBySQL ) > 10 ) {
+                        rstrcat( groupBySQL, ",", MAX_SQL_SIZE_GQ );
+                    }
                     rstrcat( groupBySQL, Tables[i].tableName, MAX_SQL_SIZE_GQ );
                     rstrcat( groupBySQL, ".", MAX_SQL_SIZE_GQ );
                     rstrcat( groupBySQL, Columns[colIx].columnName, MAX_SQL_SIZE_GQ );
@@ -601,11 +689,15 @@ int setTable( int column, int sel, int selectOption, int castOption ) {
                     rstrcat( fromSQL, Tables[i].tableAlias, MAX_SQL_SIZE_GQ );
                     rstrcat( fromSQL, " ", MAX_SQL_SIZE_GQ );
                 }
-                if ( debug > 1 ) { printf( "added (1) to fromSQL: %s\n", fromSQL ); }
+                if ( debug > 1 ) {
+                    printf( "added (1) to fromSQL: %s\n", fromSQL );
+                }
             }
             else {
 
-                if ( strlen( whereSQL ) > 6 ) { rstrcat( whereSQL, " AND ", MAX_SQL_SIZE_GQ ); }
+                if ( strlen( whereSQL ) > 6 ) {
+                    rstrcat( whereSQL, " AND ", MAX_SQL_SIZE_GQ );
+                }
                 if ( castOption == 1 ) {
                     rstrcat( whereSQL, "cast (", MAX_SQL_SIZE_GQ );
                 }
@@ -633,7 +725,9 @@ int setTable( int column, int sel, int selectOption, int castOption ) {
 #endif
                 }
             }
-            if ( debug > 1 ) { printf( "table index=%d, nToFind=%d\n", i, nToFind ); }
+            if ( debug > 1 ) {
+                printf( "table index=%d, nToFind=%d\n", i, nToFind );
+            }
             return( i );
         }
     }
@@ -810,8 +904,12 @@ compoundConditionSpecified( char *condition ) {
     strncpy( myCondition, condition, MAX_NAME_LEN * 2 );
     for ( cptr = myCondition, quote = 0; *cptr != '\0'; cptr++ ) {
         if ( *cptr == '\'' ) {
-            if ( quote == 0 ) { quote = 1; }
-            else { quote = 0; }
+            if ( quote == 0 ) {
+                quote = 1;
+            }
+            else {
+                quote = 0;
+            }
             *cptr = ' ';
         }
         if ( quote == 1 ) {
@@ -872,8 +970,12 @@ handleCompoundCondition( char *condition, int prevWhereLen ) {
         if ( first ) {
             /* If there's an AND that was appended, need to include it */
             i = prevWhereLen;
-            if ( whereSQL[i] == ' ' ) { i++; }
-            if ( whereSQL[i] == ' ' ) { i++; }
+            if ( whereSQL[i] == ' ' ) {
+                i++;
+            }
+            if ( whereSQL[i] == ' ' ) {
+                i++;
+            }
             if ( whereSQL[i] == 'A' ) {
                 i++;
                 if ( whereSQL[i] == 'N' ) {
@@ -893,7 +995,9 @@ handleCompoundCondition( char *condition, int prevWhereLen ) {
         rstrcpy( ( char* )&conditionsForBind[conditionsForBindIx], condPart1,
                  ( MAX_SQL_SIZE_GQ * 2 ) - conditionsForBindIx );
         status = insertWhere( ( char* )&conditionsForBind[conditionsForBindIx], 0 );
-        if ( status ) { return( status ); }
+        if ( status ) {
+            return( status );
+        }
         conditionsForBindIx += strlen( condPart1 ) + 1;
 
         if ( type == 1 ) {
@@ -907,7 +1011,9 @@ handleCompoundCondition( char *condition, int prevWhereLen ) {
                 strstr( condPart2, "&&" ) == NULL ) {
             rstrcat( whereSQL, tabAndColumn, MAX_SQL_SIZE_GQ );
             status = insertWhere( condPart2, 0 );
-            if ( status ) { return( status ); }
+            if ( status ) {
+                return( status );
+            }
             keepGoing = 0;
         }
         else {
@@ -929,11 +1035,21 @@ setOrderBy( genQueryInp_t genQueryInp, int column ) {
         if ( genQueryInp.selectInp.inx[i] == column ) {
             selectOpt = genQueryInp.selectInp.value[i] & 0xf;
             isAggregated = 0;
-            if ( selectOpt == SELECT_MIN ) { isAggregated = 1; }
-            if ( selectOpt == SELECT_MAX ) { isAggregated = 1; }
-            if ( selectOpt == SELECT_SUM ) { isAggregated = 1; }
-            if ( selectOpt == SELECT_AVG ) { isAggregated = 1; }
-            if ( selectOpt == SELECT_COUNT ) { isAggregated = 1; }
+            if ( selectOpt == SELECT_MIN ) {
+                isAggregated = 1;
+            }
+            if ( selectOpt == SELECT_MAX ) {
+                isAggregated = 1;
+            }
+            if ( selectOpt == SELECT_SUM ) {
+                isAggregated = 1;
+            }
+            if ( selectOpt == SELECT_AVG ) {
+                isAggregated = 1;
+            }
+            if ( selectOpt == SELECT_COUNT ) {
+                isAggregated = 1;
+            }
             if ( isAggregated == 0 ) {
                 for ( j = 0; j < nColumns; j++ ) {
                     if ( Columns[j].defineValue == column ) {
@@ -999,34 +1115,64 @@ checkCondition( char *condition ) {
 
     rstrcpy( tmpStr, condition, 20 );
     for ( cp = tmpStr; *cp != '\0'; cp++ ) {
-        if ( *cp == '<' ) { *cp = ' '; }
-        if ( *cp == '>' ) { *cp = ' '; }
-        if ( *cp == '=' ) { *cp = ' '; }
-        if ( *cp == '!' ) { *cp = ' '; }
+        if ( *cp == '<' ) {
+            *cp = ' ';
+        }
+        if ( *cp == '>' ) {
+            *cp = ' ';
+        }
+        if ( *cp == '=' ) {
+            *cp = ' ';
+        }
+        if ( *cp == '!' ) {
+            *cp = ' ';
+        }
     }
     cp = strstr( tmpStr, "begin_of" );
-    if ( cp != NULL ) { setBlank( cp, 8 ); }
+    if ( cp != NULL ) {
+        setBlank( cp, 8 );
+    }
     cp = strstr( tmpStr, "parent_of" );
-    if ( cp != NULL ) { setBlank( cp, 9 ); }
+    if ( cp != NULL ) {
+        setBlank( cp, 9 );
+    }
     cp = strstr( tmpStr, "not" );
-    if ( cp != NULL ) { setBlank( cp, 3 ); }
+    if ( cp != NULL ) {
+        setBlank( cp, 3 );
+    }
     cp = strstr( tmpStr, "NOT" );
-    if ( cp != NULL ) { setBlank( cp, 3 ); }
+    if ( cp != NULL ) {
+        setBlank( cp, 3 );
+    }
     cp = strstr( tmpStr, "between" );
-    if ( cp != NULL ) { setBlank( cp, 7 ); }
+    if ( cp != NULL ) {
+        setBlank( cp, 7 );
+    }
     cp = strstr( tmpStr, "BETWEEN" );
-    if ( cp != NULL ) { setBlank( cp, 7 ); }
+    if ( cp != NULL ) {
+        setBlank( cp, 7 );
+    }
     cp = strstr( tmpStr, "like" );
-    if ( cp != NULL ) { setBlank( cp, 4 ); }
+    if ( cp != NULL ) {
+        setBlank( cp, 4 );
+    }
     cp = strstr( tmpStr, "LIKE" );
-    if ( cp != NULL ) { setBlank( cp, 4 ); }
+    if ( cp != NULL ) {
+        setBlank( cp, 4 );
+    }
     cp = strstr( tmpStr, "in" );
-    if ( cp != NULL ) { setBlank( cp, 2 ); }
+    if ( cp != NULL ) {
+        setBlank( cp, 2 );
+    }
     cp = strstr( tmpStr, "IN" );
-    if ( cp != NULL ) { setBlank( cp, 2 ); }
+    if ( cp != NULL ) {
+        setBlank( cp, 2 );
+    }
 
     for ( cp = tmpStr; *cp != '\0'; cp++ ) {
-        if ( *cp != ' ' ) { return( CAT_INVALID_ARGUMENT ); }
+        if ( *cp != ' ' ) {
+            return( CAT_INVALID_ARGUMENT );
+        }
     }
     return( 0 );
 }
@@ -1048,7 +1194,9 @@ addInClauseToWhereForParentOf( char *inArg ) {
     for ( i = 0; i < len + 1; i++ ) {
         if ( inArg[i] == '/' || inArg[i] == ' ' || inArg[i] == '\0' ) {
             int ncopy = i;
-            if ( nput == 0 ) { ncopy++; }
+            if ( nput == 0 ) {
+                ncopy++;
+            }
             if ( nput == 0 ) {
                 rstrcat( whereSQL, "?", MAX_SQL_SIZE_GQ );
             }
@@ -1130,7 +1278,9 @@ addInClauseToWhereForIn( char *inArg, int option ) {
         }
     }
     rstrcat( whereSQL, ")", MAX_SQL_SIZE_GQ );
-    if ( nput == 0 ) { return( CAT_INVALID_ARGUMENT ); }
+    if ( nput == 0 ) {
+        return( CAT_INVALID_ARGUMENT );
+    }
     return( 0 );
 }
 
@@ -1183,7 +1333,9 @@ addBetweenClauseToWhere( char *inArg ) {
             }
         }
     }
-    if ( nput != 2 ) { return( CAT_INVALID_ARGUMENT ); }
+    if ( nput != 2 ) {
+        return( CAT_INVALID_ARGUMENT );
+    }
     return( 0 );
 }
 
@@ -1209,16 +1361,22 @@ insertWhere( char *condition, int option ) {
     }
 
     condStart = condition;
-    while ( *condStart == ' ' ) {condStart++;}
+    while ( *condStart == ' ' ) {
+        condStart++;
+    }
 
     cp = strstr( condition, "in" );
-    if ( cp == NULL ) { cp = strstr( condition, "IN" ); }
+    if ( cp == NULL ) {
+        cp = strstr( condition, "IN" );
+    }
     if ( cp != NULL && cp == condStart ) {
         return ( addInClauseToWhereForIn( condition, 0 ) );
     }
 
     cp = strstr( condition, "between" );
-    if ( cp == NULL ) { cp = strstr( condition, "BETWEEN" ); }
+    if ( cp == NULL ) {
+        cp = strstr( condition, "BETWEEN" );
+    }
     if ( cp != NULL && cp == condStart ) {
         return ( addBetweenClauseToWhere( condition ) );
     }
@@ -1267,13 +1425,17 @@ insertWhere( char *condition, int option ) {
     cllBindVars[cllBindVarCount++] = thisBindVar;
 
     /* basic legality check on the condition */
-    if ( ( cpFirstQuote - condition ) > 10 ) { return( CAT_INVALID_ARGUMENT ); }
+    if ( ( cpFirstQuote - condition ) > 10 ) {
+        return( CAT_INVALID_ARGUMENT );
+    }
 
     tmpStr[0] = ' ';
     i = 1;
     for ( cp1 = condition;; ) {
         tmpStr[i++] = *cp1++;
-        if ( cp1 == cpFirstQuote ) { break; }
+        if ( cp1 == cpFirstQuote ) {
+            break;
+        }
     }
     tmpStr[i] = '\0';
     rstrcpy( myCondition, tmpStr, 20 );
@@ -1282,7 +1444,9 @@ insertWhere( char *condition, int option ) {
     if ( cp != NULL ) {
         char tmpStr2[MAX_SQL_SIZE_GQ];
         cp1 = whereSQL + strlen( whereSQL ) - 1;
-        while ( *cp1 != ' ' ) { cp1--; }
+        while ( *cp1 != ' ' ) {
+            cp1--;
+        }
         cp1++;
         rstrcpy( tmpStr2, cp1, MAX_SQL_SIZE_GQ ); /*use table/column name just added*/
 #if ORA_ICAT
@@ -1308,7 +1472,9 @@ insertWhere( char *condition, int option ) {
                    this is faster, sometimes very much faster. */
             cllBindVarCount--; /* undo bind-var as it is not included now */
             int status = addInClauseToWhereForParentOf( thisBindVar ); // JMC - backport 4848
-            if ( status < 0 ) { return( status ); }	 // JMC - backport 4848
+            if ( status < 0 ) {
+                return( status );    // JMC - backport 4848
+            }
         }
         else {
             tmpStr[i++] = '?';
@@ -1332,9 +1498,13 @@ genqAppendAccessCheck() {
     int ACDebug = 0;
     int addedTicketCheck = 0;
 
-    if ( ACDebug ) { printf( "genqAC 1\n" ); }
+    if ( ACDebug ) {
+        printf( "genqAC 1\n" );
+    }
 
-    if ( accessControlPriv == LOCAL_PRIV_USER_AUTH ) { return( 0 ); }
+    if ( accessControlPriv == LOCAL_PRIV_USER_AUTH ) {
+        return( 0 );
+    }
 
     if ( ACDebug ) printf( "genqAC 2 accessControlControlFlag=%d\n",
                                accessControlControlFlag );
@@ -1343,7 +1513,9 @@ genqAppendAccessCheck() {
         doCheck = 1;
     }
 
-    if ( ACDebug ) { printf( "genqAC 3\n" ); }
+    if ( ACDebug ) {
+        printf( "genqAC 3\n" );
+    }
 
     if ( doCheck == 0 ) {
         if ( strncmp( accessControlUserName, ANONYMOUS_USER, MAX_NAME_LEN ) == 0 ) {
@@ -1361,22 +1533,30 @@ genqAppendAccessCheck() {
     if ( strstr( selectSQL, "ticket_string" ) != NULL &&
             strstr( selectSQL, "R_TICKET_MAIN" ) != NULL
        ) {
-        if ( strlen( whereSQL ) > 6 ) { rstrcat( whereSQL, " AND ", MAX_SQL_SIZE_GQ ); }
+        if ( strlen( whereSQL ) > 6 ) {
+            rstrcat( whereSQL, " AND ", MAX_SQL_SIZE_GQ );
+        }
         cllBindVars[cllBindVarCount++] = accessControlUserName;
         cllBindVars[cllBindVarCount++] = accessControlZone;
         rstrcat( whereSQL, "R_TICKET_MAIN.user_id in (select user_id from R_USER_MAIN UM where UM.user_name = ? AND UM.zone_name=?)", MAX_SQL_SIZE_GQ );
     }
 
-    if ( doCheck == 0 ) { return( 0 ); }
+    if ( doCheck == 0 ) {
+        return( 0 );
+    }
 
-    if ( ACDebug ) { printf( "genqAC 4\n" ); }
+    if ( ACDebug ) {
+        printf( "genqAC 4\n" );
+    }
 
     /* if an item in R_DATA_MAIN is being accessed, add a
        (complicated) addition to the where clause to check access */
     if ( strstr( selectSQL, "R_DATA_MAIN" ) != NULL ||
             strstr( whereSQL, "R_DATA_MAIN" ) != NULL ) {
 
-        if ( strlen( whereSQL ) > 6 ) { rstrcat( whereSQL, " AND ", MAX_SQL_SIZE_GQ ); }
+        if ( strlen( whereSQL ) > 6 ) {
+            rstrcat( whereSQL, " AND ", MAX_SQL_SIZE_GQ );
+        }
         if ( sessionTicket[0] == '\0' ) {
             /* Normal access control */
 
@@ -1399,7 +1579,9 @@ genqAppendAccessCheck() {
             strstr( whereSQL, "R_COLL_MAIN" ) != NULL ) {
         if ( sessionTicket[0] == '\0' ) {
             /* Normal access control */
-            if ( strlen( whereSQL ) > 6 ) { rstrcat( whereSQL, " AND ", MAX_SQL_SIZE_GQ ); }
+            if ( strlen( whereSQL ) > 6 ) {
+                rstrcat( whereSQL, " AND ", MAX_SQL_SIZE_GQ );
+            }
             cllBindVars[cllBindVarCount++] = accessControlUserName;
             cllBindVars[cllBindVarCount++] = accessControlZone;
             rstrcat( whereSQL, "R_COLL_MAIN.coll_id in (select object_id from R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = R_COLL_MAIN.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = 'read object')", MAX_SQL_SIZE_GQ );
@@ -1409,7 +1591,9 @@ genqAppendAccessCheck() {
             /* We add this unless we already added the SQL check a few
               lines above that includes this */
             if ( addedTicketCheck != 1 ) {
-                if ( strlen( whereSQL ) > 6 ) { rstrcat( whereSQL, " AND ", MAX_SQL_SIZE_GQ ); }
+                if ( strlen( whereSQL ) > 6 ) {
+                    rstrcat( whereSQL, " AND ", MAX_SQL_SIZE_GQ );
+                }
                 cllBindVars[cllBindVarCount++] = sessionTicket;
                 if ( strstr( whereSQL, "parent_coll_name =" ) != NULL ) {
                     /*
@@ -1434,11 +1618,21 @@ genqAppendAccessCheck() {
  Return the columns returned via the generateSpecialQuery's query.
  */
 int specialQueryIx( int ix ) {
-    if ( ix == 0 ) { return( COL_QUOTA_USER_ID ); }
-    if ( ix == 1 ) { return( COL_R_RESC_NAME ); }
-    if ( ix == 2 ) { return( COL_QUOTA_LIMIT ); }
-    if ( ix == 3 ) { return( COL_QUOTA_OVER ); }
-    if ( ix == 4 ) { return( COL_QUOTA_RESC_ID ); }
+    if ( ix == 0 ) {
+        return( COL_QUOTA_USER_ID );
+    }
+    if ( ix == 1 ) {
+        return( COL_R_RESC_NAME );
+    }
+    if ( ix == 2 ) {
+        return( COL_QUOTA_LIMIT );
+    }
+    if ( ix == 3 ) {
+        return( COL_QUOTA_OVER );
+    }
+    if ( ix == 4 ) {
+        return( COL_QUOTA_RESC_ID );
+    }
     return( 0 );
 }
 
@@ -1493,7 +1687,9 @@ generateSpecialQuery( genQueryInp_t genQueryInp, char *resultingSQL ) {
             valid = 1;
         }
     }
-    if ( valid == 0 ) { return( CAT_INVALID_ARGUMENT ); }
+    if ( valid == 0 ) {
+        return( CAT_INVALID_ARGUMENT );
+    }
     for ( i = 0; i < genQueryInp.sqlCondInp.len; i++ ) {
         if ( genQueryInp.sqlCondInp.inx[i] == COL_R_RESC_NAME ) {
             rodsLog( LOG_DEBUG, "spQuery(2) userZone2=:%s:\n", userZone );
@@ -1623,7 +1819,9 @@ generateSQL( genQueryInp_t genQueryInp, char *resultingSQL,
          */
         castOption = 0;
         cptr = genQueryInp.sqlCondInp.value[i];
-        while ( *cptr == ' ' ) { cptr++; }
+        while ( *cptr == ' ' ) {
+            cptr++;
+        }
         if ( ( *cptr == 'n' && *( cptr + 1 ) == '<' ) ||
                 ( *cptr == 'n' && *( cptr + 1 ) == '>' ) ||
                 ( *cptr == 'n' && *( cptr + 1 ) == '=' ) ) {
@@ -1644,11 +1842,15 @@ generateSQL( genQueryInp_t genQueryInp, char *resultingSQL,
         condition = genQueryInp.sqlCondInp.value[i];
         if ( compoundConditionSpecified( condition ) ) {
             status = handleCompoundCondition( condition, prevWhereLen );
-            if ( status ) { return( status ); }
+            if ( status ) {
+                return( status );
+            }
         }
         else {
             status = insertWhere( condition, 0 );
-            if ( status ) { return( status ); }
+            if ( status ) {
+                return( status );
+            }
         }
 #ifdef LIMIT_AUDIT_ACCESS
         if ( genQueryInp.sqlCondInp.inx[i] >= COL_AUDIT_RANGE_START &&
@@ -1666,7 +1868,9 @@ generateSQL( genQueryInp_t genQueryInp, char *resultingSQL,
         return( CAT_FAILED_TO_LINK_TABLES );
     }
     else {
-        if ( debug > 1 ) { printf( "SUCCESS linking tables\n" ); }
+        if ( debug > 1 ) {
+            printf( "SUCCESS linking tables\n" );
+        }
     }
 
     if ( N_col_meta_data_attr_name > 1 ) {
@@ -1692,14 +1896,24 @@ generateSQL( genQueryInp_t genQueryInp, char *resultingSQL,
         return( CAT_INVALID_ARGUMENT );
     }
 
-    if ( debug ) { printf( "selectSQL: %s\n", selectSQL ); }
-    if ( debug ) { printf( "fromSQL: %s\n", fromSQL ); }
-    if ( debug ) { printf( "whereSQL: %s\n", whereSQL ); }
+    if ( debug ) {
+        printf( "selectSQL: %s\n", selectSQL );
+    }
+    if ( debug ) {
+        printf( "fromSQL: %s\n", fromSQL );
+    }
+    if ( debug ) {
+        printf( "whereSQL: %s\n", whereSQL );
+    }
     useGroupBy = 0;
     if ( mightNeedGroupBy ) {
-        if ( strlen( groupBySQL ) > 10 ) { useGroupBy = 1; }
+        if ( strlen( groupBySQL ) > 10 ) {
+            useGroupBy = 1;
+        }
     }
-    if ( debug && useGroupBy ) { printf( "groupBySQL: %s\n", groupBySQL ); }
+    if ( debug && useGroupBy ) {
+        printf( "groupBySQL: %s\n", groupBySQL );
+    }
 
     combinedSQL[0] = '\0';
     rstrcat( combinedSQL, selectSQL, MAX_SQL_SIZE_GQ );
@@ -1746,7 +1960,9 @@ generateSQL( genQueryInp_t genQueryInp, char *resultingSQL,
 #endif
     }
 
-    if ( debug ) { printf( "combinedSQL=:%s:\n", combinedSQL ); }
+    if ( debug ) {
+        printf( "combinedSQL=:%s:\n", combinedSQL );
+    }
     strncpy( resultingSQL, combinedSQL, MAX_SQL_SIZE_GQ );
 
 #if ORA_ICAT
@@ -1759,7 +1975,9 @@ generateSQL( genQueryInp_t genQueryInp, char *resultingSQL,
         rstrcat( countSQL, whereSQL, MAX_SQL_SIZE_GQ );
     }
 
-    if ( debug ) { printf( "countSQL=:%s:\n", countSQL ); }
+    if ( debug ) {
+        printf( "countSQL=:%s:\n", countSQL );
+    }
     strncpy( resultingCountSQL, countSQL, MAX_SQL_SIZE_GQ );
 #endif
     return( 0 );
@@ -1787,11 +2005,17 @@ checkCondInputAccess( genQueryInp_t genQueryInp, int statementNum,
 
     for ( i = 0; i < genQueryInp.condInput.len; i++ ) {
         if ( strcmp( genQueryInp.condInput.keyWord[i],
-                     USER_NAME_CLIENT_KW ) == 0 ) { userIx = i; }
+                     USER_NAME_CLIENT_KW ) == 0 ) {
+            userIx = i;
+        }
         if ( strcmp( genQueryInp.condInput.keyWord[i],
-                     RODS_ZONE_CLIENT_KW ) == 0 ) { zoneIx = i; }
+                     RODS_ZONE_CLIENT_KW ) == 0 ) {
+            zoneIx = i;
+        }
         if ( strcmp( genQueryInp.condInput.keyWord[i],
-                     ACCESS_PERMISSION_KW ) == 0 ) { accessIx = i; }
+                     ACCESS_PERMISSION_KW ) == 0 ) {
+            accessIx = i;
+        }
         if ( strcmp( genQueryInp.condInput.keyWord[i],
                      TICKET_KW ) == 0 ) {
             /* for now, log it but the one used is the session ticket */
@@ -1805,7 +2029,9 @@ checkCondInputAccess( genQueryInp_t genQueryInp, int statementNum,
         return( 0 );
     }
 
-    if ( userIx < 0 || zoneIx < 0 || accessIx < 0 ) { return( CAT_INVALID_ARGUMENT ); }
+    if ( userIx < 0 || zoneIx < 0 || accessIx < 0 ) {
+        return( CAT_INVALID_ARGUMENT );
+    }
 
     /* Try to find the dataId and/or collID in the output */
     nCols = icss->stmtPtr[statementNum]->numOfCols;
@@ -1825,7 +2051,9 @@ checkCondInputAccess( genQueryInp_t genQueryInp, int statementNum,
             collIx = i;
         }
     }
-    if ( dataIx < 0 && collIx < 0 ) { return( CAT_INVALID_ARGUMENT ); }
+    if ( dataIx < 0 && collIx < 0 ) {
+        return( CAT_INVALID_ARGUMENT );
+    }
 
     if ( dataIx >= 0 ) {
         if ( continueFlag == 1 ) {
@@ -1935,7 +2163,9 @@ chlGenQuery( genQueryInp_t genQueryInp, genQueryOut_t *result ) {
     char *tResult, *tResult2;
     static int recursiveCall = 0;
 
-    if ( logSQLGenQuery ) { rodsLog( LOG_SQL, "chlGenQuery" ); }
+    if ( logSQLGenQuery ) {
+        rodsLog( LOG_SQL, "chlGenQuery" );
+    }
 
     icatSessionStruct *icss;
 
@@ -1946,11 +2176,17 @@ chlGenQuery( genQueryInp_t genQueryInp, genQueryOut_t *result ) {
     currentMaxColSize = 0;
 
     icss = chlGetRcs();
-    if ( icss == NULL ) { return( CAT_NOT_OPEN ); }
+    if ( icss == NULL ) {
+        return( CAT_NOT_OPEN );
+    }
 #ifdef ADDR_64BITS
-    if ( debug ) { printf( "icss=%ld\n", ( long int )icss ); }
+    if ( debug ) {
+        printf( "icss=%ld\n", ( long int )icss );
+    }
 #else
-    if ( debug ) { printf( "icss=%d\n", ( int )icss ); }
+    if ( debug ) {
+        printf( "icss=%d\n", ( int )icss );
+    }
 #endif
 
     if ( genQueryInp.continueInx == 0 ) {
@@ -1961,7 +2197,9 @@ chlGenQuery( genQueryInp_t genQueryInp, genQueryOut_t *result ) {
         else {
             status = generateSQL( genQueryInp, combinedSQL, countSQL );
         }
-        if ( status != 0 ) { return( status ); }
+        if ( status != 0 ) {
+            return( status );
+        }
         if ( logSQLGenQuery ) {
             if ( genQueryInp.rowOffset == 0 ) {
                 rodsLog( LOG_SQL, "chlGenQuery SQL 1" );
@@ -1976,7 +2214,9 @@ chlGenQuery( genQueryInp_t genQueryInp, genQueryOut_t *result ) {
 
         if ( genQueryInp.options & RETURN_TOTAL_ROW_COUNT ) {
             /* For Oracle, done just below, for Postgres a little later */
-            if ( logSQLGenQuery ) { rodsLog( LOG_SQL, "chlGenQuery SQL 3" ); }
+            if ( logSQLGenQuery ) {
+                rodsLog( LOG_SQL, "chlGenQuery SQL 3" );
+            }
         }
 
 #if ORA_ICAT
@@ -1994,7 +2234,9 @@ chlGenQuery( genQueryInp_t genQueryInp, genQueryOut_t *result ) {
                 }
                 return( status );
             }
-            if ( iVal >= 0 ) { result->totalRowCount = iVal; }
+            if ( iVal >= 0 ) {
+                result->totalRowCount = iVal;
+            }
             cllBindVarCount = cllBindVarCountSave;
         }
 #endif
@@ -2030,7 +2272,9 @@ chlGenQuery( genQueryInp_t genQueryInp, genQueryOut_t *result ) {
 #else
         if ( genQueryInp.options & RETURN_TOTAL_ROW_COUNT ) {
             i = cllGetRowCount( icss, statementNum );
-            if ( i >= 0 ) { result->totalRowCount = i + genQueryInp.rowOffset; }
+            if ( i >= 0 ) {
+                result->totalRowCount = i + genQueryInp.rowOffset;
+            }
             if ( recursiveCall == 1 ) {
                 recursiveCall = 0;
                 return( status );
@@ -2040,10 +2284,14 @@ chlGenQuery( genQueryInp_t genQueryInp, genQueryOut_t *result ) {
 
         if ( genQueryInp.condInput.len > 0 ) {
             status = checkCondInputAccess( genQueryInp, statementNum, icss, 0 );
-            if ( status != 0 ) { return( status ); }
+            if ( status != 0 ) {
+                return( status );
+            }
         }
         result->continueInx = statementNum + 1;
-        if ( debug ) { printf( "statement number =%d\n", statementNum ); }
+        if ( debug ) {
+            printf( "statement number =%d\n", statementNum );
+        }
         needToGetNextRow = 0;
     }
     else {
@@ -2060,22 +2308,32 @@ chlGenQuery( genQueryInp_t genQueryInp, genQueryOut_t *result ) {
             if ( status == CAT_NO_ROWS_FOUND ) {
                 cmlFreeStatement( statementNum, icss );
                 result->continueInx = 0;
-                if ( result->rowCnt == 0 ) { return( status ); } /* NO ROWS; in this
+                if ( result->rowCnt == 0 ) {
+                    return( status );
+                } /* NO ROWS; in this
                        case a continuation call is finding no more rows */
                 return( 0 );
             }
-            if ( status < 0 ) { return( status ); }
+            if ( status < 0 ) {
+                return( status );
+            }
             if ( genQueryInp.condInput.len > 0 ) {
                 status = checkCondInputAccess( genQueryInp, statementNum, icss, 1 );
-                if ( status != 0 ) { return( status ); }
+                if ( status != 0 ) {
+                    return( status );
+                }
             }
         }
         needToGetNextRow = 1;
 
         result->rowCnt++;
-        if ( debug ) { printf( "result->rowCnt=%d\n", result->rowCnt ); }
+        if ( debug ) {
+            printf( "result->rowCnt=%d\n", result->rowCnt );
+        }
         numOfCols = icss->stmtPtr[statementNum]->numOfCols;
-        if ( debug ) { printf( "numOfCols=%d\n", numOfCols ); }
+        if ( debug ) {
+            printf( "numOfCols=%d\n", numOfCols );
+        }
         result->attriCnt = numOfCols;
         result->continueInx = statementNum + 1;
 
@@ -2083,21 +2341,29 @@ chlGenQuery( genQueryInp_t genQueryInp, genQueryOut_t *result ) {
 
         for ( k = 0; k < numOfCols; k++ ) {
             j = strlen( icss->stmtPtr[statementNum]->resultValue[k] );
-            if ( maxColSize <= j ) { maxColSize = j; }
+            if ( maxColSize <= j ) {
+                maxColSize = j;
+            }
         }
         maxColSize++; /* for the null termination */
         if ( maxColSize < MINIMUM_COL_SIZE ) {
             maxColSize = MINIMUM_COL_SIZE; /* make it a reasonable size */
         }
-        if ( debug ) { printf( "maxColSize=%d\n", maxColSize ); }
+        if ( debug ) {
+            printf( "maxColSize=%d\n", maxColSize );
+        }
 
         if ( i == 0 ) { /* first time thru, allocate and initialize */
             attriTextLen = numOfCols * maxColSize;
-            if ( debug ) { printf( "attriTextLen=%d\n", attriTextLen ); }
+            if ( debug ) {
+                printf( "attriTextLen=%d\n", attriTextLen );
+            }
             totalLen = attriTextLen * genQueryInp.maxRows;
             for ( j = 0; j < numOfCols; j++ ) {
                 tResult = ( char* )malloc( totalLen );
-                if ( tResult == NULL ) { return( SYS_MALLOC_ERR ); }
+                if ( tResult == NULL ) {
+                    return( SYS_MALLOC_ERR );
+                }
                 memset( tResult, 0, totalLen );
                 if ( genQueryInp.options & QUOTA_QUERY ) {
                     result->sqlResult[j].attriInx = specialQueryIx( j );
@@ -2122,13 +2388,17 @@ chlGenQuery( genQueryInp_t genQueryInp, genQueryOut_t *result ) {
             if ( debug ) printf( "Bumping %d to %d\n",
                                      currentMaxColSize, maxColSize );
             attriTextLen = numOfCols * maxColSize;
-            if ( debug ) { printf( "attriTextLen=%d\n", attriTextLen ); }
+            if ( debug ) {
+                printf( "attriTextLen=%d\n", attriTextLen );
+            }
             totalLen = attriTextLen * genQueryInp.maxRows;
             for ( j = 0; j < numOfCols; j++ ) {
                 char *cp1, *cp2;
                 int k;
                 tResult = ( char* )malloc( totalLen );
-                if ( tResult == NULL ) { return( SYS_MALLOC_ERR ); }
+                if ( tResult == NULL ) {
+                    return( SYS_MALLOC_ERR );
+                }
                 memset( tResult, 0, totalLen );
                 cp1 = result->sqlResult[j].value;
                 cp2 = tResult;

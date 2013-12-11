@@ -495,8 +495,12 @@ int igsiSetupCreds( rcComm_t *Comm, rsComm_t *rsComm, char *specifiedName,
     ( void ) gettimeofday( &startTimeFunc, ( struct timezone * ) 0 );
 #endif
 
-    if ( Comm != NULL ) { igsi_rErrorPtr = Comm->rError; }
-    if ( rsComm != NULL ) { igsi_rErrorPtr = &rsComm->rError; }
+    if ( Comm != NULL ) {
+        igsi_rErrorPtr = Comm->rError;
+    }
+    if ( rsComm != NULL ) {
+        igsi_rErrorPtr = &rsComm->rError;
+    }
 
     if ( specifiedName != NULL ) {
         name_buf.value = specifiedName;

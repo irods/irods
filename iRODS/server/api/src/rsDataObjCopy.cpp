@@ -308,7 +308,9 @@ _rsDataObjCopy( rsComm_t *rsComm, int destL1descInx, int existFlag,
 
     status2 = rsDataObjClose( rsComm, &dataObjCloseInp );
 
-    if ( status ) { return ( status ); }
+    if ( status ) {
+        return ( status );
+    }
     return( status2 );
 }
 

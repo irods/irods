@@ -320,7 +320,9 @@ doTest5( rcComm_t *Conn,
     status =  rcGenQuery( Conn, &genQueryInp, &genQueryOut );
 
     printf( "GenQuery status=%d\n", status );
-    if ( status ) { printError( Conn, status, "rcGenQuery" ); }
+    if ( status ) {
+        printError( Conn, status, "rcGenQuery" );
+    }
 
     if ( status == 0 ) {
         printf( "genQueryOut->totalRowCount=%d\n", genQueryOut->totalRowCount );
@@ -391,8 +393,12 @@ doTest6( rcComm_t *Conn,
 //	 sleep(20);
         }
         status = chkObjExist( Conn, inpPath, hostname );
-        if ( status == CAT_NO_ROWS_FOUND ) { status = 0; }
-        if ( status ) { break; }
+        if ( status == CAT_NO_ROWS_FOUND ) {
+            status = 0;
+        }
+        if ( status ) {
+            break;
+        }
     }
     return( status );
 }
@@ -425,7 +431,9 @@ doTest7( rcComm_t *Conn,
     status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
 
     printf( "GenQuery status=%d\n", status );
-    if ( status ) { printError( Conn, status, "rcGenQuery" ); }
+    if ( status ) {
+        printError( Conn, status, "rcGenQuery" );
+    }
 
     if ( status == 0 ) {
         printf( "genQueryOut->totalRowCount=%d\n", genQueryOut->totalRowCount );
@@ -552,7 +560,9 @@ void usage( char *prog ) {
     };
     int i;
     for ( i = 0;; i++ ) {
-        if ( strlen( msgs[i] ) == 0 ) { break; }
+        if ( strlen( msgs[i] ) == 0 ) {
+            break;
+        }
         printf( "%s\n", msgs[i] );
     }
     printReleaseInfo( "iTestGenQuery.c" );

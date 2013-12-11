@@ -14,12 +14,12 @@
 
 namespace irods {
 
-    /// =-=-=-=-=-=-=-
-    /// @brief constant defining the native auth scheme string
+/// =-=-=-=-=-=-=-
+/// @brief constant defining the native auth scheme string
     const std::string AUTH_NATIVE_SCHEME( "native" );
 
-    /// =-=-=-=-=-=-=-
-    /// @brief object for a native irods authenticaion sceheme
+/// =-=-=-=-=-=-=-
+/// @brief object for a native irods authenticaion sceheme
     class native_auth_object : public auth_object {
     public:
         /// =-=-=-=-=-=-=-
@@ -48,11 +48,15 @@ namespace irods {
 
         /// =-=-=-=-=-=-=-
         /// @brief accessors
-        std::string digest() const { return digest_;    }
+        std::string digest() const {
+            return digest_;
+        }
 
         /// =-=-=-=-=-=-=-
         /// @brief mutators
-        void digest( const std::string& _dd ) { digest_ = _dd; }
+        void digest( const std::string& _dd ) {
+            digest_ = _dd;
+        }
 
     private:
         /// =-=-=-=-=-=-=-
@@ -61,7 +65,7 @@ namespace irods {
 
     }; // class native_auth_object
 
-    /// @brief Helpful typedef
+/// @brief Helpful typedef
     typedef boost::shared_ptr<native_auth_object> native_auth_object_ptr;
 
 }; // namespace irods

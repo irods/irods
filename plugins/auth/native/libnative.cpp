@@ -405,13 +405,17 @@ extern "C" {
                                         MD5Update( &context, ( unsigned char* )md5Buf, CHALLENGE_LEN + MAX_PASSWORD_LEN );
                                         MD5Final( ( unsigned char* )digest, &context );
                                         for ( i = 0; i < RESPONSE_LEN; i++ ) {
-                                            if ( digest[i] == '\0' ) { digest[i]++; }  /* make sure 'string' doesn't
+                                            if ( digest[i] == '\0' ) {
+                                                digest[i]++;
+                                            }  /* make sure 'string' doesn't
                                                                                   end early*/
                                         }
                                         cp = authCheckOut->serverResponse;
                                         OK = 1;
                                         for ( i = 0; i < RESPONSE_LEN; i++ ) {
-                                            if ( *cp++ != digest[i] ) { OK = 0; }
+                                            if ( *cp++ != digest[i] ) {
+                                                OK = 0;
+                                            }
                                         }
                                         rodsLog( LOG_DEBUG, "serverResponse is OK/Not: %d", OK );
                                         result = ASSERT_ERROR( OK != 0, REMOTE_SERVER_AUTHENTICATION_FAILURE, "Authentication disallowed, server response incorrect." );

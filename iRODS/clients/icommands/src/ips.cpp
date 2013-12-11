@@ -93,7 +93,9 @@ printProcStat( rodsArguments_t *myRodsArgs, genQueryOut_t *procStatOut ) {
                 *proxyZone, *remoteAddr, *serverAddr, *progName;
     uint curTime;
 
-    if ( myRodsArgs == NULL || procStatOut == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( myRodsArgs == NULL || procStatOut == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
 
     curTime = time( 0 );
 
@@ -194,7 +196,9 @@ int
 getUptimeStr( uint startTime, uint curTime, char *outStr ) {
     uint upTimeSec, hr, min, sec;
 
-    if ( outStr == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( outStr == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
 
     if ( startTime >= curTime ) {
         sec = min = hr = 0;
@@ -293,7 +297,9 @@ usage() {
     };
     int i;
     for ( i = 0;; i++ ) {
-        if ( strlen( msgs[i] ) == 0 ) { break; }
+        if ( strlen( msgs[i] ) == 0 ) {
+            break;
+        }
         printf( "%s\n", msgs[i] );
     }
     printReleaseInfo( "ips" );

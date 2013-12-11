@@ -514,7 +514,9 @@ rcPartialDataPut( rcPortalTransferInp_t *myInput ) {
         /* should lock this. but it is info only */
         if ( gGuiProgressCB != NULL ) {
             conn->operProgress.curFileSizeDone += myHeader.length;
-            if ( myInput->threadNum == 0 ) { gGuiProgressCB( &conn->operProgress ); }
+            if ( myInput->threadNum == 0 ) {
+                gGuiProgressCB( &conn->operProgress );
+            }
         }
     }
 
@@ -556,7 +558,9 @@ putFile( rcComm_t *conn, int l1descInx, char *locFilePath, char *objPath,
     dataObjWriteInp.l1descInx = l1descInx;
     initFileRestart( conn, locFilePath, objPath, dataSize, 1 );
 
-    if ( gGuiProgressCB != NULL ) { conn->operProgress.flag = 1; }
+    if ( gGuiProgressCB != NULL ) {
+        conn->operProgress.flag = 1;
+    }
 
     while ( ( dataObjWriteInpBBuf.len =
                   myRead( in_fd, dataObjWriteInpBBuf.buf, TRANS_BUF_SZ, FILE_DESC_TYPE,
@@ -717,7 +721,9 @@ getFile( rcComm_t *conn, int l1descInx, char *locFilePath, char *objPath,
     dataObjReadInp.l1descInx = l1descInx;
     initFileRestart( conn, locFilePath, objPath, dataSize, 1 );
 
-    if ( gGuiProgressCB != NULL ) { conn->operProgress.flag = 1; }
+    if ( gGuiProgressCB != NULL ) {
+        conn->operProgress.flag = 1;
+    }
 
     while ( ( bytesRead = rcDataObjRead( conn, &dataObjReadInp,
                                          &dataObjReadInpBBuf ) ) > 0 ) {
@@ -758,7 +764,9 @@ getFile( rcComm_t *conn, int l1descInx, char *locFilePath, char *objPath,
                                  "getFile: writeLfRestartFile for %s, status = %d",
                                  locFilePath, status );
                         free( dataObjReadInpBBuf.buf );
-                        if ( out_fd != 1 ) { close( out_fd ); }
+                        if ( out_fd != 1 ) {
+                            close( out_fd );
+                        }
                         return status;
                     }
                     lastUpdateSize = totalWritten;
@@ -1190,7 +1198,9 @@ rcPartialDataGet( rcPortalTransferInp_t *myInput ) {
         /* should lock this. but it is info only */
         if ( gGuiProgressCB != NULL ) {
             conn->operProgress.curFileSizeDone += myHeader.length;
-            if ( myInput->threadNum == 0 ) { gGuiProgressCB( &conn->operProgress ); }
+            if ( myInput->threadNum == 0 ) {
+                gGuiProgressCB( &conn->operProgress );
+            }
         }
     }
 
@@ -1631,7 +1641,9 @@ lfRestartPutWithInfo( rcComm_t *conn, fileRestartInfo_t *info ) {
             status = putSeg( conn, gap, localFd, &dataObjWriteInp,
                              &dataObjWriteInpBBuf, TRANS_BUF_SZ, &writtenSinceUpdated,
                              info, lenToUpdate );
-            if ( status < 0 ) { break; }
+            if ( status < 0 ) {
+                break;
+            }
             curOffset += gap;
         }
         if ( info->dataSeg[i].len > 0 ) {
@@ -1653,7 +1665,9 @@ lfRestartPutWithInfo( rcComm_t *conn, fileRestartInfo_t *info ) {
                 break;
             }
             else {
-                if ( dataObjLseekOut != NULL ) { free( dataObjLseekOut ); }
+                if ( dataObjLseekOut != NULL ) {
+                    free( dataObjLseekOut );
+                }
             }
         }
     }
@@ -1786,7 +1800,9 @@ lfRestartGetWithInfo( rcComm_t *conn, fileRestartInfo_t *info ) {
             status = getSeg( conn, gap, localFd, &dataObjReadInp,
                              &dataObjReadInpBBuf, TRANS_BUF_SZ, &writtenSinceUpdated,
                              info, lenToUpdate );
-            if ( status < 0 ) { break; }
+            if ( status < 0 ) {
+                break;
+            }
             curOffset += gap;
         }
         if ( info->dataSeg[i].len > 0 ) {
@@ -1807,7 +1823,9 @@ lfRestartGetWithInfo( rcComm_t *conn, fileRestartInfo_t *info ) {
                 break;
             }
             else {
-                if ( dataObjLseekOut != NULL ) { free( dataObjLseekOut ); }
+                if ( dataObjLseekOut != NULL ) {
+                    free( dataObjLseekOut );
+                }
             }
         }
     }

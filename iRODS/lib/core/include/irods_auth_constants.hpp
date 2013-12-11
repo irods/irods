@@ -9,8 +9,8 @@
 #include <string>
 
 namespace irods {
-    /// =-=-=-=-=-=-=-
-    /// @brief constants for auth object indexing
+/// =-=-=-=-=-=-=-
+/// @brief constants for auth object indexing
     const std::string AUTH_CLIENT_START( "auth_client_start" );
     const std::string AUTH_AGENT_START( "auth_agent_start" );
     const std::string AUTH_ESTABLISH_CONTEXT( "auth_establish_context" );
@@ -20,8 +20,8 @@ namespace irods {
     const std::string AUTH_AGENT_AUTH_RESPONSE( "auth_agent_auth_response" );
     const std::string AUTH_AGENT_AUTH_VERIFY( "auth_agent_auth_verify" );
 
-    /// =-=-=-=-=-=-=-
-    /// @brief keys for key-value association
+/// =-=-=-=-=-=-=-
+/// @brief keys for key-value association
     const std::string AUTH_USER_KEY( "a_user" );
     const std::string AUTH_SCHEME_KEY( "a_scheme" );
     const std::string AUTH_TTL_KEY( "a_ttl" );

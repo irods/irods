@@ -225,7 +225,9 @@ main( int argc, char **argv ) {
 
     status = clientLogin( Conn );
     if ( status != 0 ) {
-        if ( !debug ) { exit( 3 ); }
+        if ( !debug ) {
+            exit( 3 );
+        }
     }
 
     nArgs = argc - myRodsArgs.optind;
@@ -256,7 +258,9 @@ void usage() {
     };
     int i;
     for ( i = 0;; i++ ) {
-        if ( strlen( msgs[i] ) == 0 ) { break; }
+        if ( strlen( msgs[i] ) == 0 ) {
+            break;
+        }
         printf( "%s\n", msgs[i] );
     }
     printReleaseInfo( "iuserinfo" );

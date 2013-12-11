@@ -7,8 +7,8 @@
 #include <string>
 
 namespace irods {
-    /// =-=-=-=-=-=-=-
-    /// @brief interface to get virtual path separator
+/// =-=-=-=-=-=-=-
+/// @brief interface to get virtual path separator
     std::string get_virtual_path_separator();
 
 }; // namespace irods

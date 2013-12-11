@@ -68,7 +68,9 @@ int assign( msParam_t* var, msParam_t* value, ruleExecInfo_t *rei ) {
     varValue = ( char * ) var->inOutStruct;
     if ( varValue != NULL && varValue[0] == '$' ) {
         i = getVarMap( "", var->inOutStruct, &varMap, 0 );
-        if ( i < 0 ) { return( i ); }
+        if ( i < 0 ) {
+            return( i );
+        }
         rstrcpy( aVal, value->inOutStruct, MAX_COND_LEN * 2 );
         i = evaluateExpression( aVal, eaVal, rei );
         if ( i < 0 ) {
@@ -886,14 +888,20 @@ doForkExec( char *prog, char *arg1 ) {
     int pid, i;
 
     i = checkFilePerms( prog );
-    if ( i ) { return( i ); }
+    if ( i ) {
+        return( i );
+    }
 
     i = checkFilePerms( arg1 );
-    if ( i ) { return( i ); }
+    if ( i ) {
+        return( i );
+    }
 
 #ifndef windows_platform
     pid = fork();
-    if ( pid == -1 ) { return -1; }
+    if ( pid == -1 ) {
+        return -1;
+    }
 
     if ( pid ) {
         /*  This is still the parent.  */

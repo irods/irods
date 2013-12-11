@@ -388,7 +388,9 @@ getNumThreads( rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
             }
             else {
                 numSrcThr = rei.status;
-                if ( numSrcThr == 0 ) { return 0; }
+                if ( numSrcThr == 0 ) {
+                    return 0;
+                }
             }
         }
     }
@@ -695,7 +697,9 @@ allocAndSetL1descForZoneOpr( int remoteL1descInx, dataObjInp_t *dataObjInp,
     dataObjInfo_t *dataObjInfo;
 
     l1descInx = allocL1desc();
-    if ( l1descInx < 0 ) { return l1descInx; }
+    if ( l1descInx < 0 ) {
+        return l1descInx;
+    }
     L1desc[l1descInx].remoteL1descInx = remoteL1descInx;
     L1desc[l1descInx].oprType = REMOTE_ZONE_OPR;
     L1desc[l1descInx].remoteZoneHost = remoteZoneHost;

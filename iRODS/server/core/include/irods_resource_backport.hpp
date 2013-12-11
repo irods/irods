@@ -13,8 +13,8 @@
 
 namespace irods {
 
-    // =-=-=-=-=-=-=-
-    // helper functions for knitting back into legacy irods code
+// =-=-=-=-=-=-=-
+// helper functions for knitting back into legacy irods code
     error resource_to_resc_info( rescInfo_t&, resource_ptr& );
     error resource_to_resc_grp_info( rescGrpInfo_t&, resource_ptr& );
     error set_default_resource( rsComm_t*, std::string, std::string, keyValPair_t*, rescGrpInfo_t& );
@@ -28,8 +28,8 @@ namespace irods {
         int&,                 // local flag
         rodsServerHost_t*& ); // server host
 
-    // =-=-=-=-=-=-=-
-    /// @brief function which returns the host name for a given hier string
+// =-=-=-=-=-=-=-
+/// @brief function which returns the host name for a given hier string
     error get_loc_for_hier_string(
         const std::string& _hier, // hier string
         std::string& _loc );// location

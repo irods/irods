@@ -113,10 +113,16 @@ int
 freeNcInqOut( ncInqOut_t **ncInqOut ) {
     int i;
 
-    if ( ncInqOut == NULL || *ncInqOut == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( ncInqOut == NULL || *ncInqOut == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
 
-    if ( ( *ncInqOut )->dim != NULL ) { free( ( *ncInqOut )->dim ); }
-    if ( ( *ncInqOut )->gatt != NULL ) { free( ( *ncInqOut )->gatt ); }
+    if ( ( *ncInqOut )->dim != NULL ) {
+        free( ( *ncInqOut )->dim );
+    }
+    if ( ( *ncInqOut )->gatt != NULL ) {
+        free( ( *ncInqOut )->gatt );
+    }
     if ( ( *ncInqOut )->var != NULL ) {
         for ( i = 0; i < ( *ncInqOut )->nvars; i++ ) {
             if ( ( *ncInqOut )->var[i].att != NULL ) {
@@ -147,7 +153,9 @@ prFirstNcLine( char *objPath ) {
     else {
         int len = strlen( myFile );
         char *myptr = myFile + len - 3;
-        if ( strcmp( myptr, ".nc" ) == 0 ) { *myptr = '\0'; }
+        if ( strcmp( myptr, ".nc" ) == 0 ) {
+            *myptr = '\0';
+        }
         printf( "netcdf %s {\n", myFile );
     }
     return 0;
@@ -167,7 +175,9 @@ prNcHeader( rcComm_t *conn, int ncid, int noattr, ncInqOut_t *ncInqOut ) {
     else {
         int len = strlen( myFile );
         char *myptr = myFile + len - 3;
-        if ( strcmp( myptr, ".nc" ) == 0 ) { *myptr = '\0'; }
+        if ( strcmp( myptr, ".nc" ) == 0 ) {
+            *myptr = '\0';
+        }
         printf( "netcdf %s {\n", myFile );
     }
 #endif
@@ -217,7 +227,9 @@ prNcHeader( rcComm_t *conn, int ncid, int noattr, ncInqOut_t *ncInqOut ) {
     printf( "variables:\n" );
     for ( i = 0; i < ncInqOut->nvars; i++ ) {
         status = getNcTypeStr( ncInqOut->var[i].dataType, tempStr );
-        if ( status < 0 ) { return status; }
+        if ( status < 0 ) {
+            return status;
+        }
         printf( "   %s %s(", tempStr, ncInqOut->var[i].name );
         for ( j = 0; j < ncInqOut->var[i].nvdims - 1; j++ ) {
             dimId = ncInqOut->var[i].dimId[j];
@@ -439,7 +451,9 @@ dumpNcInqOut( rcComm_t *conn, char *fileName, int ncid, int dumpVarLen,
 
     prFirstNcLine( fileName );
     status = prNcHeader( conn, ncid, False, ncInqOut );
-    if ( status < 0 ) { return status; }
+    if ( status < 0 ) {
+        return status;
+    }
 
     if ( dumpVarLen > 0 ) {
         int i;
@@ -485,12 +499,18 @@ prNcVarData( rcComm_t *conn, char *fileName, int ncid, int printAsciTime,
             /* only do those that match */
             for ( j = 0; j < ncVarSubset->numVar; j++ ) {
                 if ( strcmp( &ncVarSubset->varName[j][LONG_NAME_LEN],
-                             ncInqOut->var[i].name ) == 0 ) { break; }
+                             ncInqOut->var[i].name ) == 0 ) {
+                    break;
+                }
             }
-            if ( j >= ncVarSubset->numVar ) { continue; }  /* no match */
+            if ( j >= ncVarSubset->numVar ) {
+                continue;    /* no match */
+            }
         }
         printf( " %s = ", ncInqOut->var[i].name );
-        if ( ncInqOut->var[i].nvdims > 1 ) { printf( "\n  " ); }
+        if ( ncInqOut->var[i].nvdims > 1 ) {
+            printf( "\n  " );
+        }
         status = getSingleNcVarData( conn, ncid, i, ncInqOut, ncVarSubset,
                                      &ncGetVarOut, start, stride, count );
         if ( status < 0 ) {
@@ -1169,8 +1189,12 @@ dumpSubsetToFile( rcComm_t *conn, int srcNcid, int noattrFlag,
             return NETCDF_PUT_VARS_ERR;
         }
     }
-    if ( subsetNcInqOut.dim != NULL ) { free( subsetNcInqOut.dim ); }
-    if ( subsetNcInqOut.var != NULL ) { free( subsetNcInqOut.var ); }
+    if ( subsetNcInqOut.dim != NULL ) {
+        free( subsetNcInqOut.dim );
+    }
+    if ( subsetNcInqOut.var != NULL ) {
+        free( subsetNcInqOut.var );
+    }
     nc_close( ncid );
     return 0;
 }
@@ -1221,7 +1245,9 @@ printNice( char *str, char *margin, int charPerLine ) {
     int len = strlen( str );
     int c;
 
-    if ( len > META_STR_LEN ) { return USER_STRLEN_TOOLONG; }
+    if ( len > META_STR_LEN ) {
+        return USER_STRLEN_TOOLONG;
+    }
 
     rstrcpy( tmpStr, str, META_STR_LEN );
     while ( len > 0 ) {
@@ -1310,7 +1336,9 @@ parseVarStrForSubset( char *varStr, ncVarSubset_t *ncVarSubset ) {
                              &inLen, LONG_NAME_LEN ) > 0 ) {
         ncVarSubset->numVar++;
         i++;
-        if ( ncVarSubset->numVar >= MAX_NUM_VAR ) { break; }
+        if ( ncVarSubset->numVar >= MAX_NUM_VAR ) {
+            break;
+        }
     }
     return 0;
 }
@@ -1326,10 +1354,14 @@ parseSubsetStr( char *subsetStr, ncVarSubset_t *ncVarSubset ) {
                              ncVarSubset->ncSubset[i].subsetVarName,
                              &inLen, LONG_NAME_LEN ) > 0 ) {
         status = parseNcSubset( &ncVarSubset->ncSubset[i] );
-        if ( status < 0 ) { return status; }
+        if ( status < 0 ) {
+            return status;
+        }
         ncVarSubset->numSubset++;
         i++;
-        if ( ncVarSubset->numSubset >= MAX_NUM_VAR ) { break; }
+        if ( ncVarSubset->numSubset >= MAX_NUM_VAR ) {
+            break;
+        }
     }
     return 0;
 }
@@ -1398,7 +1430,9 @@ resolveSubsetVar( rcComm_t *conn, int ncid, ncInqOut_t *ncInqOut,
     for ( j = 0; j < ncVarSubset->numSubset; j++ ) {
         for ( i = 0; i < ncInqOut->nvars; i++ ) {
             if ( strcmp( ncVarSubset->ncSubset[j].subsetVarName,
-                         ncInqOut->var[i].name ) == 0 ) { break; }
+                         ncInqOut->var[i].name ) == 0 ) {
+                break;
+            }
         }
         if ( i >= ncInqOut->nvars ) {
             rodsLog( LOG_ERROR,
@@ -1551,7 +1585,9 @@ ncInq( ncInqInp_t *ncInqInp, ncInqOut_t **ncInqOut ) {
         return status;
     }
 
-    if ( ncInqInp->paramType == 0 ) { ncInqInp->paramType = NC_ALL_TYPE; }
+    if ( ncInqInp->paramType == 0 ) {
+        ncInqInp->paramType = NC_ALL_TYPE;
+    }
     if ( ( ncInqInp->paramType & NC_DIM_TYPE ) == 0 ) {
         dimType = ndims = 0;
     }
@@ -1582,9 +1618,15 @@ ncInq( ncInqInp_t *ncInqInp, ncInqOut_t **ncInqOut ) {
 
     if ( allFlag == 0 ) {
         /* indiviudal query. get only a single result */
-        if ( ndims > 0 ) { ndims = 1; }
-        else if ( ngatts > 0 ) { ngatts = 1; }
-        else if ( nvars > 0 ) { nvars = 1; }
+        if ( ndims > 0 ) {
+            ndims = 1;
+        }
+        else if ( ngatts > 0 ) {
+            ngatts = 1;
+        }
+        else if ( nvars > 0 ) {
+            nvars = 1;
+        }
     }
 
     status = nc_inq_format( ncid, &format );
@@ -1705,9 +1747,13 @@ inqAtt( int ncid, int varid, int natt, char *name, int id, int allFlag,
     size_t length;
 
 
-    if ( natt <= 0 ) { return 0; }
+    if ( natt <= 0 ) {
+        return 0;
+    }
 
-    if ( attOut == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( attOut == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
 
     for ( i = 0; i < natt; i++ ) {
         if ( allFlag != 0 ) {
@@ -1941,14 +1987,18 @@ getTimeInxInVar( ncInqOut_t *ncInqOut, int varid ) {
             break;
         }
     }
-    if ( timeDimId < 0 ) { return NETCDF_AGG_ELE_FILE_NO_TIME_DIM; }
+    if ( timeDimId < 0 ) {
+        return NETCDF_AGG_ELE_FILE_NO_TIME_DIM;
+    }
     for ( i = 0; i < ncInqOut->nvars; i++ ) {
         if ( ncInqOut->var[i].id == varid ) {
             varInx = i;
             break;
         }
     }
-    if ( varInx < 0 ) { return NETCDF_DEF_VAR_ERR; }
+    if ( varInx < 0 ) {
+        return NETCDF_DEF_VAR_ERR;
+    }
     /* try to fine the time range */
     for ( i = 0; i < ncInqOut->var[varInx].nvdims; i++ ) {
         if ( ncInqOut->var[varInx].dimId[i] == timeDimId ) {
@@ -2011,7 +2061,9 @@ getTimeStepSize( ncInqOut_t *ncInqOut ) {
     rodsLong_t  totalSize = 0;
 
     for ( timeDimInx = 0; timeDimInx < ncInqOut->ndims; timeDimInx++ ) {
-        if ( strcasecmp( ncInqOut->dim[timeDimInx].name, "time" ) == 0 ) { break; }
+        if ( strcasecmp( ncInqOut->dim[timeDimInx].name, "time" ) == 0 ) {
+            break;
+        }
     }
     if ( timeDimInx >= ncInqOut->ndims ) {
         /* no match */
@@ -2025,7 +2077,9 @@ getTimeStepSize( ncInqOut_t *ncInqOut ) {
         for ( j = 0; j < ncInqOut->var[i].nvdims; j++ ) {
             int dimId = ncInqOut->var[i].dimId[j];
             /* skip time dim */
-            if ( dimId == timeDimInx ) { continue; }
+            if ( dimId == timeDimInx ) {
+                continue;
+            }
             varSize *= ncInqOut->dim[dimId].arrayLen;
         }
         totalSize += varSize;

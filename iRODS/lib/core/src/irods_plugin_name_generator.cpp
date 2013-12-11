@@ -17,8 +17,8 @@
 
 namespace irods {
 
-    // =-=-=-=-=-=-=-
-    // predicate to determine if a char is not alphanumeric
+// =-=-=-=-=-=-=-
+// predicate to determine if a char is not alphanumeric
     static bool not_allowed_char( char _c ) {
         return ( !std::isalnum( _c ) && !( '_' == _c ) );
     } // not_allowed_char

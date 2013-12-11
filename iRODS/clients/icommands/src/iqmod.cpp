@@ -93,7 +93,9 @@ main( int argc, char **argv ) {
     status = clientLogin( Conn );
     if ( status != 0 ) {
         printError( Conn, status, "clientLogin" );
-        if ( !debug ) { exit( 3 ); }
+        if ( !debug ) {
+            exit( 3 );
+        }
     }
 
     status = modDelayedRule( argv[argOffset], argv[argOffset + 1],
@@ -102,7 +104,9 @@ main( int argc, char **argv ) {
     printErrorStack( Conn->rError );
     rcDisconnect( Conn );
 
-    if ( status != 0 ) { exit( 4 ); }
+    if ( status != 0 ) {
+        exit( 4 );
+    }
     exit( 0 );
 }
 

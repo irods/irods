@@ -8,9 +8,9 @@
 #include "irods_osauth_auth_object.hpp"
 
 namespace irods {
-    /// =-=-=-=-=-=-=-
-    /// @brief super basic free factory function to create an auth object
-    ///        given the requested authentication scheme
+/// =-=-=-=-=-=-=-
+/// @brief super basic free factory function to create an auth object
+///        given the requested authentication scheme
     error auth_factory(
         const std::string& _scheme,
         rError_t*          _r_error,

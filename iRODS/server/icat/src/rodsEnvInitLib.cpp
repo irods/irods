@@ -28,7 +28,9 @@ removeblanks( char *Str ) {
     k = 0;
     j = strlen( Str );
     for ( i = 0; i < j ; i++ ) {
-        if ( Str[i] != ' ' ) { Str[k++] = Str[i]; }
+        if ( Str[i] != ' ' ) {
+            Str[k++] = Str[i];
+        }
     }
     Str[k] = '\0';
 }
@@ -38,9 +40,13 @@ splitListString( char *List, char Array[][MAX_TOKEN], char Key ) {
     int i, j, k, ln,  b;
 
     ln = strlen( List );
-    j = 0; b = 1; k = 0;
+    j = 0;
+    b = 1;
+    k = 0;
     for ( i = 0; i < ln ; i++ ) {
-        if ( b == 1 && List[i] == ' ' ) { continue; }
+        if ( b == 1 && List[i] == ' ' ) {
+            continue;
+        }
         b = 0;
         if ( List[i] == ',' ) {
             Array[j][k] = '\0';
@@ -71,7 +77,9 @@ getFkrelEntrySet( char *schemaset,
              RCATSCHEMENAME, schemaset, schemaset );
 
     i = exec_sql_db( henv, hdbc,  &hstmt, ( unsigned char * ) sqlq );
-    if ( i != 0 ) { return ( i ); }
+    if ( i != 0 ) {
+        return ( i );
+    }
     i = get_no_of_columns_db( hstmt, &num_of_cols );
     if ( i < 0 ) {
         done_with_result_db( hstmt );
@@ -103,21 +111,45 @@ getFkrelEntrySet( char *schemaset,
         truncate_end_blanks( data_size[21], data[21] );
         truncate_end_blanks( data_size[22], data[22] );
         strcpy( tmpStr, " " );
-        if ( strlen( ( char * ) data[20] ) != 0 ) { sprintf( &tmpStr[strlen( tmpStr )], "%s(", data[20] ); }
+        if ( strlen( ( char * ) data[20] ) != 0 ) {
+            sprintf( &tmpStr[strlen( tmpStr )], "%s(", data[20] );
+        }
         sprintf( &tmpStr[strlen( tmpStr )], "%i", atoi( ( char * ) data[1] ) );
-        if ( atoi( ( char * )data[5] ) >= 0 ) { sprintf( &tmpStr[strlen( tmpStr )], ",%i", atoi( ( char * ) data[5] ) ); }
-        if ( atoi( ( char * )data[9] ) >= 0 ) { sprintf( &tmpStr[strlen( tmpStr )], ",%i", atoi( ( char * ) data[9] ) ); }
-        if ( atoi( ( char * )data[13] ) >= 0 ) { sprintf( &tmpStr[strlen( tmpStr )], ",%i", atoi( ( char * ) data[13] ) ); }
-        if ( atoi( ( char * )data[17] ) >= 0 ) { sprintf( &tmpStr[strlen( tmpStr )], ",%i", atoi( ( char * ) data[17] ) ); }
-        if ( strlen( ( char * )data[20] ) != 0 ) { sprintf( &tmpStr[strlen( tmpStr )], ")" ); }
+        if ( atoi( ( char * )data[5] ) >= 0 ) {
+            sprintf( &tmpStr[strlen( tmpStr )], ",%i", atoi( ( char * ) data[5] ) );
+        }
+        if ( atoi( ( char * )data[9] ) >= 0 ) {
+            sprintf( &tmpStr[strlen( tmpStr )], ",%i", atoi( ( char * ) data[9] ) );
+        }
+        if ( atoi( ( char * )data[13] ) >= 0 ) {
+            sprintf( &tmpStr[strlen( tmpStr )], ",%i", atoi( ( char * ) data[13] ) );
+        }
+        if ( atoi( ( char * )data[17] ) >= 0 ) {
+            sprintf( &tmpStr[strlen( tmpStr )], ",%i", atoi( ( char * ) data[17] ) );
+        }
+        if ( strlen( ( char * )data[20] ) != 0 ) {
+            sprintf( &tmpStr[strlen( tmpStr )], ")" );
+        }
         sprintf( &tmpStr[strlen( tmpStr )], " %s ", data[22] );
-        if ( strlen( ( char * )data[21] ) != 0 ) { sprintf( &tmpStr[strlen( tmpStr )], "%s(", data[21] ); }
+        if ( strlen( ( char * )data[21] ) != 0 ) {
+            sprintf( &tmpStr[strlen( tmpStr )], "%s(", data[21] );
+        }
         sprintf( &tmpStr[strlen( tmpStr )], "%i", atoi( ( char * ) data[3] ) );
-        if ( atoi( ( char * )data[7] ) >= 0 ) { sprintf( &tmpStr[strlen( tmpStr )], ",%i", atoi( ( char * ) data[7] ) ); }
-        if ( atoi( ( char * )data[11] ) >= 0 ) { sprintf( &tmpStr[strlen( tmpStr )], ",%i", atoi( ( char * ) data[11] ) ); }
-        if ( atoi( ( char * )data[15] ) >= 0 ) { sprintf( &tmpStr[strlen( tmpStr )], ",%i", atoi( ( char * ) data[15] ) ); }
-        if ( atoi( ( char * )data[19] ) >= 0 ) { sprintf( &tmpStr[strlen( tmpStr )], ",%i", atoi( ( char * ) data[19] ) ); }
-        if ( strlen( ( char * )data[21] ) != 0 ) { sprintf( &tmpStr[strlen( tmpStr )], ") " ); }
+        if ( atoi( ( char * )data[7] ) >= 0 ) {
+            sprintf( &tmpStr[strlen( tmpStr )], ",%i", atoi( ( char * ) data[7] ) );
+        }
+        if ( atoi( ( char * )data[11] ) >= 0 ) {
+            sprintf( &tmpStr[strlen( tmpStr )], ",%i", atoi( ( char * ) data[11] ) );
+        }
+        if ( atoi( ( char * )data[15] ) >= 0 ) {
+            sprintf( &tmpStr[strlen( tmpStr )], ",%i", atoi( ( char * ) data[15] ) );
+        }
+        if ( atoi( ( char * )data[19] ) >= 0 ) {
+            sprintf( &tmpStr[strlen( tmpStr )], ",%i", atoi( ( char * ) data[19] ) );
+        }
+        if ( strlen( ( char * )data[21] ) != 0 ) {
+            sprintf( &tmpStr[strlen( tmpStr )], ") " );
+        }
         fkrel_info[max_fkrel_entries].pred =
             ( char * ) malloc( ( strlen( tmpStr ) + 1 ) * sizeof( char ) );
         strcpy( fkrel_info[max_fkrel_entries].pred, tmpStr );
@@ -146,7 +178,9 @@ getGraphPathEntrySet( char *schemaset,
              RCATSCHEMENAME, RCATSCHEMENAME, RCATSCHEMENAME, schemaset, schemaset );
 
     i = exec_sql_db( henv, hdbc,  &hstmt, ( unsigned char * ) sqlq );
-    if ( i != 0 ) { return ( i ); }
+    if ( i != 0 ) {
+        return ( i );
+    }
     i = get_no_of_columns_db( hstmt, &num_of_cols );
     if ( i < 0 ) {
         done_with_result_db( hstmt );
@@ -251,7 +285,9 @@ getAttrEntrySet( char *schemaset,
 
 
     i = exec_sql_db( henv, hdbc,  &hstmt, ( unsigned char * ) sqlq );
-    if ( i != 0 ) { return ( i ); }
+    if ( i != 0 ) {
+        return ( i );
+    }
     i = get_no_of_columns_db( hstmt, &num_of_cols );
     if ( i < 0 ) {
         done_with_result_db( hstmt );
@@ -408,23 +444,35 @@ printGraphPathEntrySet( rcat_metadata_graph_entry graph_info[],
 
 int
 allocAttrEntrySet( rcat_metadata_attr_entry **attr_info,  int max_entries ) {
-    if ( attr_info == NULL ) { return ( MEMORY_ALLOCATION_ERROR ); } // JMC cppcheck - nullptr
+    if ( attr_info == NULL ) {
+        return ( MEMORY_ALLOCATION_ERROR );    // JMC cppcheck - nullptr
+    }
 
     *attr_info = ( rcat_metadata_attr_entry * )
                  malloc( max_entries * sizeof( rcat_metadata_attr_entry ) );
-    if ( *attr_info == NULL ) { return ( MEMORY_ALLOCATION_ERROR ); } // JMC cppcheck - nullptr
-    else { return ( RCAT_SUCCESS ); }
+    if ( *attr_info == NULL ) {
+        return ( MEMORY_ALLOCATION_ERROR );    // JMC cppcheck - nullptr
+    }
+    else {
+        return ( RCAT_SUCCESS );
+    }
 
 }
 
 
 int
 allocFkrelEntrySet( rcat_metadata_fkrel_entry **fkrel_info,  int max_entries ) {
-    if ( fkrel_info == NULL ) { return ( MEMORY_ALLOCATION_ERROR ); } // JMC cppcheck - nullptr
+    if ( fkrel_info == NULL ) {
+        return ( MEMORY_ALLOCATION_ERROR );    // JMC cppcheck - nullptr
+    }
     *fkrel_info = ( rcat_metadata_fkrel_entry * )
                   malloc( max_entries * sizeof( rcat_metadata_fkrel_entry ) );
-    if ( *fkrel_info == NULL ) { return ( MEMORY_ALLOCATION_ERROR ); } // JMC cppcheck - nullptr
-    else { return ( RCAT_SUCCESS ); }
+    if ( *fkrel_info == NULL ) {
+        return ( MEMORY_ALLOCATION_ERROR );    // JMC cppcheck - nullptr
+    }
+    else {
+        return ( RCAT_SUCCESS );
+    }
 
 }
 
@@ -433,11 +481,17 @@ allocFkrelEntrySet( rcat_metadata_fkrel_entry **fkrel_info,  int max_entries ) {
 int
 allocGraphPathEntrySet( rcat_metadata_graph_entry **graph_info,
                         int max_entries ) {
-    if ( graph_info == NULL ) { return ( MEMORY_ALLOCATION_ERROR ); } // JMC cppcheck - nullptr
+    if ( graph_info == NULL ) {
+        return ( MEMORY_ALLOCATION_ERROR );    // JMC cppcheck - nullptr
+    }
     *graph_info = ( rcat_metadata_graph_entry * )
                   malloc( max_entries * sizeof( rcat_metadata_graph_entry ) );
-    if ( *graph_info == NULL ) { return ( MEMORY_ALLOCATION_ERROR ); } // JMC cppcheck - nullptr
-    else { return ( RCAT_SUCCESS ); }
+    if ( *graph_info == NULL ) {
+        return ( MEMORY_ALLOCATION_ERROR );    // JMC cppcheck - nullptr
+    }
+    else {
+        return ( RCAT_SUCCESS );
+    }
 
 }
 
@@ -508,7 +562,9 @@ getAttrCountinSchemaSet( char *schemaset, char *known ) {
     }
 
     i = exec_sql_db( henv, hdbc,  &hstmt, ( unsigned char * ) sqlq );
-    if ( i != 0 ) { return ( i ); }
+    if ( i != 0 ) {
+        return ( i );
+    }
     num_of_cols = 1;
     i = bind_default_row_db( hstmt, data,  data_size, &num_of_cols );
     if ( i != 0 ) {
@@ -533,7 +589,9 @@ getFkrelCountinSchemaSet( char *schemaset ) {
              RCATSCHEMENAME, schemaset, schemaset );
 
     i = exec_sql_db( henv, hdbc,  &hstmt, ( unsigned char * ) sqlq );
-    if ( i != 0 ) { return ( i ); }
+    if ( i != 0 ) {
+        return ( i );
+    }
     num_of_cols = 1;
     i = bind_default_row_db( hstmt, data,  data_size, &num_of_cols );
     if ( i != 0 ) {
@@ -558,7 +616,9 @@ getGraphPathCountinSchemaSet( char *schemaset ) {
              RCATSCHEMENAME, schemaset, schemaset );
 
     i = exec_sql_db( henv, hdbc,  &hstmt, ( unsigned char * ) sqlq );
-    if ( i != 0 ) { return ( i ); }
+    if ( i != 0 ) {
+        return ( i );
+    }
     num_of_cols = 1;
     i = bind_default_row_db( hstmt, data,  data_size, &num_of_cols );
     if ( i != 0 ) {
@@ -582,7 +642,9 @@ getFreeMcatContxtDesc() {
     int i;
 
     for ( i = 0; i < MAX_NO_OF_MCAT_CONTEXTS ; i++ ) {
-        if ( svrMcatContext[i].used == 0 ) { return ( i ); }
+        if ( svrMcatContext[i].used == 0 ) {
+            return ( i );
+        }
     }
     return ( MCAT_NO_MORE_CONTEXTS );
 
@@ -597,8 +659,12 @@ getParentSchemaSet( char *parschemaset, char *schemaset ) {
 
     sprintf( sqlq, "select PARENT_SCHEMA from %sRCORE_USER_SCHEMAS where user_schema_name in (%s)", RCATSCHEMENAME, schemaset );
     i = get_ctype_list_from_query( cval, &colcount, sqlq );
-    if ( i != RCAT_SUCCESS ) { return( i ); }
-    if ( colcount == 0 ) { return ( UNKNOWN_USER_SCHEMASET ); }
+    if ( i != RCAT_SUCCESS ) {
+        return( i );
+    }
+    if ( colcount == 0 ) {
+        return ( UNKNOWN_USER_SCHEMASET );
+    }
     strcpy( parschemaset, "" );
     for ( jj = 0; jj < colcount; jj++ ) {
         if ( jj == 0 ) {
@@ -622,7 +688,9 @@ initializeMcatContext( char *schemaset ) {
 
     i =   getParentSchemaSet( parschemaset, schemaset );
 
-    if ( i != RCAT_SUCCESS ) { return( i ); }
+    if ( i != RCAT_SUCCESS ) {
+        return( i );
+    }
     return( initializeMcatContextInternal( parschemaset, schemaset ) );
 }
 
@@ -636,7 +704,9 @@ initializeMcatContextInternal( char *schemaset, char *userschemaset ) {
     rcat_metadata_graph_entry *graph_info;
 
     cnta = getAttrCountinSchemaSet( schemaset, "all" );
-    if ( cnta < 0 ) { return ( cnta ); }
+    if ( cnta < 0 ) {
+        return ( cnta );
+    }
     i = allocAttrEntrySet( &attr_info,  cnta );
     if ( i < 0 )  {
         free( attr_info ); // JMC cppcheck - leak
@@ -660,9 +730,16 @@ initializeMcatContextInternal( char *schemaset, char *userschemaset ) {
     }
     ****/
     cntg = getGraphPathCountinSchemaSet( schemaset );
-    if ( cntg < 0 ) { free( attr_info ); return ( cntg ); } // JMC cppcheck - leak
+    if ( cntg < 0 ) {
+        free( attr_info );    // JMC cppcheck - leak
+        return ( cntg );
+    }
     i = allocGraphPathEntrySet( &graph_info,  cntg );
-    if ( i < 0 )  { free( attr_info ); free( graph_info ); return ( i ); } // JMC cppcheck - leak
+    if ( i < 0 )  {
+        free( attr_info );    // JMC cppcheck - leak
+        free( graph_info );
+        return ( i );
+    }
     i = getGraphPathEntrySet( schemaset, graph_info, cntg );
     if ( i < 0 ) {
         freeGraphPathEntrySet( graph_info, cntg );
@@ -671,7 +748,11 @@ initializeMcatContextInternal( char *schemaset, char *userschemaset ) {
     }
 
     cd = getFreeMcatContxtDesc();
-    if ( cd < 0 ) { free( attr_info ); free( graph_info ); return( cd ); } // JMC cppcheck - leak
+    if ( cd < 0 ) {
+        free( attr_info );    // JMC cppcheck - leak
+        free( graph_info );
+        return( cd );
+    }
 
     svrMcatContext[cd].userContext = ( char * )
                                      malloc( sizeof( char ) * ( strlen( userschemaset ) + 1 ) );
@@ -902,7 +983,9 @@ updateInSchemaByUser( int  cd,
     int i, user_id;
 
     user_id = get_user_id_in_domain( userName, userDomain );
-    if ( user_id < 0 ) { return ( USER_NOT_IN_DOMN );}
+    if ( user_id < 0 ) {
+        return ( USER_NOT_IN_DOMN );
+    }
     i = updateInSchema( cd, attrId, attrValue, attrCnt,
                         qattrval, qval, qcount, user_id );
     return( i );
@@ -930,7 +1013,9 @@ int deleteFromClusterByUser( int  cd,
     int i, user_id;
 
     user_id = get_user_id_in_domain( userName, userDomain );
-    if ( user_id < 0 ) { return ( USER_NOT_IN_DOMN );}
+    if ( user_id < 0 ) {
+        return ( USER_NOT_IN_DOMN );
+    }
     i = deleteFromCluster( cd, clusterName,
                            qattrval, qval, qcount, user_id, delDimen );
     return( i );
@@ -953,7 +1038,9 @@ updateAttrValueByUser( int cd, char *userName, char *userDomain,
     int i, user_id;
 
     user_id = get_user_id_in_domain( userName, userDomain );
-    if ( user_id < 0 ) { return ( USER_NOT_IN_DOMN );}
+    if ( user_id < 0 ) {
+        return ( USER_NOT_IN_DOMN );
+    }
     i = updateAttrValue( cd,
                          attr_id, attr_value, attr_cnt, user_id, updDimen );
     return( i );
@@ -982,7 +1069,10 @@ updateAttrValue( int cd,
     in_rsrcid = malloc( sizeof( int )  * attr_cnt );
 
     i = checkAccessMetaDataAttr( real_user_id, attr_id, attr_cnt );
-    if ( i != 0 ) { free( in_rsrcid ); return( i ); } // JMC cppcheck - leak
+    if ( i != 0 ) {
+        free( in_rsrcid );    // JMC cppcheck - leak
+        return( i );
+    }
     tabcnt = 0;
     for ( i = 0; i < attr_cnt; i++ )  {
         for ( j = 0; j < svrMcatContext[cd].max_attr_entries; j++ ) {
@@ -990,8 +1080,10 @@ updateAttrValue( int cd,
                 attr_name[i] = svrMcatContext[cd].attr_info[j].attr_name;
                 tabflag = 0;
                 for ( k = 0 ; k < tabcnt; k++ ) {
-                    if ( table_name[k] == svrMcatContext[cd].attr_info[j].extended_table_name )
-                        { tabflag = 1; break;}
+                    if ( table_name[k] == svrMcatContext[cd].attr_info[j].extended_table_name ) {
+                        tabflag = 1;
+                        break;
+                    }
                 }
                 if ( tabflag == 0 ) {
                     table_name[tabcnt] = svrMcatContext[cd].attr_info[j].extended_table_name;
@@ -1003,18 +1095,24 @@ updateAttrValue( int cd,
         }
     }
     if ( debugging4 ) {
-        printf( "Calling convert_to_updatesql\n" ); fflush( stdout );
+        printf( "Calling convert_to_updatesql\n" );
+        fflush( stdout );
     }
 
 
     for ( i = 0; i < attr_cnt; i++ ) {
         iisAttrVal[i] = malloc( sizeof( char ) * ( strlen( attr_value[i] ) * 4 + 3 ) );
-        if ( iisAttrVal[i] == NULL ) { free( in_rsrcid ); return( MEMORY_ALLOCATION_ERROR ); } // JMC cppcheck
+        if ( iisAttrVal[i] == NULL ) {
+            free( in_rsrcid );    // JMC cppcheck
+            return( MEMORY_ALLOCATION_ERROR );
+        }
         strcpy( iisAttrVal[i], attr_value[i] );
     }
     ii = castDimension( cd, updDimen, iisAttrVal, attr_id, attr_cnt );
     if ( ii < 0 ) {
-        for ( i = 0; i < attr_cnt; i++ ) { free( iisAttrVal[i] ); }
+        for ( i = 0; i < attr_cnt; i++ ) {
+            free( iisAttrVal[i] );
+        }
         free( in_rsrcid ); // JMC cppcheck - leak
         return( ii );
     }
@@ -1022,7 +1120,9 @@ updateAttrValue( int cd,
                                attr_id, iisAttrVal, attr_cnt, qs );
     strcpy( GENERATEDSQL, qs );
     if ( ii < 0 ) {
-        for ( i = 0; i < attr_cnt; i++ ) { free( iisAttrVal[i] ); }
+        for ( i = 0; i < attr_cnt; i++ ) {
+            free( iisAttrVal[i] );
+        }
         return ( ii );
     }
     i = ExecSqlDb( henv, hdbc, qs );
@@ -1043,7 +1143,9 @@ insertIntoSchemaByUser( int cd, char *userName, char *userDomain,
     int i, user_id;
 
     user_id = get_user_id_in_domain( userName, userDomain );
-    if ( user_id < 0 ) { return ( USER_NOT_IN_DOMN );}
+    if ( user_id < 0 ) {
+        return ( USER_NOT_IN_DOMN );
+    }
     i = insertIntoSchema( cd,
                           attr_id, attr_value, attr_cnt, user_id, insDimen );
     return( i );
@@ -1074,7 +1176,8 @@ insertIntoSchema( int cd,
 
     i = checkAccessMetaDataAttr( real_user_id, attr_id, attr_cnt );
     if ( i != 0 ) {
-        free( in_rsrcid ); return( i );
+        free( in_rsrcid );
+        return( i );
     } // JMC cppcheck - leak
 
     tabcnt = 0;
@@ -1106,16 +1209,22 @@ insertIntoSchema( int cd,
 
     if ( debugging4 ) {
         printf( "Calling convert_to_insertsql\n" );
-    } fflush( stdout );
+    }
+    fflush( stdout );
 
     for ( i = 0; i < attr_cnt; i++ ) {
         iisAttrVal[i] = malloc( sizeof( char ) * ( strlen( attr_value[i] ) * 4 + 3 ) );
-        if ( iisAttrVal[i] == NULL ) { free( in_rsrcid ); return( MEMORY_ALLOCATION_ERROR ); } // JMC cppcheck - leak
+        if ( iisAttrVal[i] == NULL ) {
+            free( in_rsrcid );    // JMC cppcheck - leak
+            return( MEMORY_ALLOCATION_ERROR );
+        }
         strcpy( iisAttrVal[i], attr_value[i] );
     }
     ii = castDimension( cd, insDimen, iisAttrVal, attr_id, attr_cnt );
     if ( ii < 0 ) {
-        for ( i = 0; i < attr_cnt; i++ ) { free( iisAttrVal[i] ); }
+        for ( i = 0; i < attr_cnt; i++ ) {
+            free( iisAttrVal[i] );
+        }
         free( in_rsrcid ); // JMC cppcheck - leak
         return( ii );
     }
@@ -1124,7 +1233,9 @@ insertIntoSchema( int cd,
                                iisAttrVal, attr_cnt, query_string );
     strcpy( GENERATEDSQL, query_string );
     if ( ii < 0 ) {
-        for ( i = 0; i < attr_cnt; i++ ) { free( iisAttrVal[i] ); }
+        for ( i = 0; i < attr_cnt; i++ ) {
+            free( iisAttrVal[i] );
+        }
         return( ii );
     }
     /*  printf("QS:%s\n", query_string);*/
@@ -1137,7 +1248,9 @@ insertIntoSchema( int cd,
         query_stringptr++;
     }
     qs[qsptr] = '\0';
-    if ( query_string[query_stringptr] == '\n' ) { query_stringptr++; }
+    if ( query_string[query_stringptr] == '\n' ) {
+        query_stringptr++;
+    }
     while ( strlen( qs ) > 0 ) {
         i = ExecSqlDb( henv, hdbc, qs );
         if ( i < 0 ) {
@@ -1152,7 +1265,9 @@ insertIntoSchema( int cd,
             query_stringptr++;
         }
         qs[qsptr] = '\0';
-        if ( query_string[query_stringptr] == '\n' ) { query_stringptr++; }
+        if ( query_string[query_stringptr] == '\n' ) {
+            query_stringptr++;
+        }
     }
     return( 0 );
 }
@@ -1460,7 +1575,9 @@ queryMcatInfo( mcatContextDesc incd,
     outer_join_flag = OuterJoin;
     rcatC_db_info_inquire( &serverhndl[0], ( rcatC_infoh* ) info1 ,
                            ( rcatC_infoh* )  result1,  status, numrows, incd );
-    distinct_flag = 1; outer_join_flag = 0; best_response_flag = 0;
+    distinct_flag = 1;
+    outer_join_flag = 0;
+    best_response_flag = 0;
 
 
     for ( i = 0; i < qcount; i++ ) {
@@ -1494,7 +1611,9 @@ int queryMcatInfoArrays( mcatContextDesc incd,
     result1 = queryMcatInfo( incd, selval, aggrval, qattrval, qval,
                              selcount, qcount, numrows, OuterJoin,
                              qDimen, selDimen );
-    if ( result1 == NULL ) { return( failure ); }
+    if ( result1 == NULL ) {
+        return( failure );
+    }
 
     i = translateSqlRStructToArraysR( result1, colcount, rowcount,
                                       rattrval, resval, rattrvalsize,
@@ -1523,9 +1642,13 @@ getAttributesfromMcatContext( mcatContextDesc cd, int *counta,
     int i, cnta;
 
     cnta = getAttrCountinSchemaSet( svrMcatContext[cd].userContext, "known" );
-    if ( cnta < 0 ) { return ( cnta ); }
+    if ( cnta < 0 ) {
+        return ( cnta );
+    }
     i = allocAttrEntrySet( AttrEntries,  cnta );
-    if ( i < 0 ) { return ( i ); }
+    if ( i < 0 ) {
+        return ( i );
+    }
     i = getAttrEntrySet( svrMcatContext[cd].userContext,
                          *AttrEntries, cnta, "known" );
     if ( i < 0 ) {
@@ -1570,7 +1693,9 @@ checkforuniqueschemaname( char *schemaName ) {
     sprintf( sqlq, "select schema_name from %sRCORE_SCHEMAS  where \
 schema_name =  '%s'",
              RCATSCHEMENAME, schemaName );
-    if ( check_exists( sqlq ) != 0 ) { return ( UNKNOWN_SCHEMA_NAME ); }
+    if ( check_exists( sqlq ) != 0 ) {
+        return ( UNKNOWN_SCHEMA_NAME );
+    }
     return( RCAT_SUCCESS );
 
 }
@@ -1584,14 +1709,30 @@ getMaxSize( char *attrDataType ) {
     unsigned long int n = 0;
     char numb[20];
     j = strlen( attrDataType );
-    if ( strstr( attrDataType, "int" ) != NULL ) { return ( DEFAULT_INTEGER_SPACE_SIZE ); }
-    if ( strstr( attrDataType, "integer" ) != NULL ) { return ( DEFAULT_INTEGER_SPACE_SIZE ); }
-    if ( strstr( attrDataType, "INT" ) != NULL ) { return ( DEFAULT_INTEGER_SPACE_SIZE ); }
-    if ( strstr( attrDataType, "INTEGER" ) != NULL ) { return ( DEFAULT_INTEGER_SPACE_SIZE ); }
-    if ( strstr( attrDataType, "float" ) != NULL ) { return ( DEFAULT_FLOAT_SPACE_SIZE ); }
-    if ( strstr( attrDataType, "FLOAT" ) != NULL ) { return ( DEFAULT_FLOAT_SPACE_SIZE ); }
-    if ( strstr( attrDataType, "date" ) != NULL ) { return ( DEFAULT_DATE_SPACE_SIZE ); }
-    if ( strstr( attrDataType, "DATE" ) != NULL ) { return ( DEFAULT_DATE_SPACE_SIZE ); }
+    if ( strstr( attrDataType, "int" ) != NULL ) {
+        return ( DEFAULT_INTEGER_SPACE_SIZE );
+    }
+    if ( strstr( attrDataType, "integer" ) != NULL ) {
+        return ( DEFAULT_INTEGER_SPACE_SIZE );
+    }
+    if ( strstr( attrDataType, "INT" ) != NULL ) {
+        return ( DEFAULT_INTEGER_SPACE_SIZE );
+    }
+    if ( strstr( attrDataType, "INTEGER" ) != NULL ) {
+        return ( DEFAULT_INTEGER_SPACE_SIZE );
+    }
+    if ( strstr( attrDataType, "float" ) != NULL ) {
+        return ( DEFAULT_FLOAT_SPACE_SIZE );
+    }
+    if ( strstr( attrDataType, "FLOAT" ) != NULL ) {
+        return ( DEFAULT_FLOAT_SPACE_SIZE );
+    }
+    if ( strstr( attrDataType, "date" ) != NULL ) {
+        return ( DEFAULT_DATE_SPACE_SIZE );
+    }
+    if ( strstr( attrDataType, "DATE" ) != NULL ) {
+        return ( DEFAULT_DATE_SPACE_SIZE );
+    }
 
     if ( !strcmp( RCATDBTYPE, "oracle" ) ) {
         if ( ( strstr( attrDataType, "blob" ) != NULL ) ||
@@ -1608,7 +1749,9 @@ getMaxSize( char *attrDataType ) {
     while ( i < j && attrDataType[i] != '(' ) {
         i++;
     }
-    if ( i == j ) { return ( SIZE_OF_ATTRIBUTE_UNKNOWN ); }
+    if ( i == j ) {
+        return ( SIZE_OF_ATTRIBUTE_UNKNOWN );
+    }
     i++;
     while ( attrDataType[i] != ')'
             && attrDataType[i] != 'K'
@@ -1621,14 +1764,22 @@ getMaxSize( char *attrDataType ) {
         i++;
         k++;
     }
-    if ( k == 0 ) { return ( SIZE_OF_ATTRIBUTE_UNKNOWN ); }
+    if ( k == 0 ) {
+        return ( SIZE_OF_ATTRIBUTE_UNKNOWN );
+    }
     for ( i = k - 1; i >= 0; i -- ) {
         n = n + ( m * ( int )( numb[i] - '0' ) );
         m = m * 10;
     }
-    if ( attrDataType[i] == 'K' ) { n = n * 1024 ; }
-    else if ( attrDataType[i] == 'M' ) { n = n * 1024 * 1024 ; }
-    else if ( attrDataType[i] == 'G' ) { n = n * 1024 * 1024 * 1024 ; }
+    if ( attrDataType[i] == 'K' ) {
+        n = n * 1024 ;
+    }
+    else if ( attrDataType[i] == 'M' ) {
+        n = n * 1024 * 1024 ;
+    }
+    else if ( attrDataType[i] == 'G' ) {
+        n = n * 1024 * 1024 * 1024 ;
+    }
     return ( n );
 
 }
@@ -1755,14 +1906,20 @@ getNewAttrName( char *attrExterName, char *tableName,
     strcpy( newattrName, attrExterName );
     if ( strlen( attrExterName ) < MAX_SQL_NAME_LIMIT ) {
         for ( i = 0; i < strlen( newattrName ) ; i++ ) {
-            if ( attrExterName[i] == ' ' ) { attrName[i] = '_'; }
-            else { attrName[i] = attrExterName[i]; }
+            if ( attrExterName[i] == ' ' ) {
+                attrName[i] = '_';
+            }
+            else {
+                attrName[i] = attrExterName[i];
+            }
         }
         attrName[i] = '\0';
         return( RCAT_SUCCESS );
     }
     for ( i = 0, j = 0; i < strlen( newattrName ) ; i++ ) {
-        if ( newattrName[i] == ' ' || newattrName[i] == '_' ) { continue; }
+        if ( newattrName[i] == ' ' || newattrName[i] == '_' ) {
+            continue;
+        }
         newattrName[j] = newattrName[i];
         j++;
     }
@@ -1773,7 +1930,9 @@ getNewAttrName( char *attrExterName, char *tableName,
 t1.attr_name = '%s' and t2.table_name = '%s' and t1.table_id = t2.table_id",
              RCATSCHEMENAME, RCATSCHEMENAME, attrName, tableName );
     while ( check_exists( sqlq ) == RCAT_SUCCESS ) {
-        if ( strlen( attrName ) < 1 ) { return ( UNABLE_TO_MAKE_UNIQUE_ATTRIBUTE_NAME ); }
+        if ( strlen( attrName ) < 1 ) {
+            return ( UNABLE_TO_MAKE_UNIQUE_ATTRIBUTE_NAME );
+        }
         failure = 0;
         i = random() % strlen( attrName );
         strcpy( ( char * ) &attrName[i], ( char * ) &attrName[i + 1] );
@@ -1859,7 +2018,9 @@ getNewTableName( char *schemaName,
         strcpy( tmpStr, ( char * )( tmpStr + 2 ) );
     }
     for ( i = 0; i < strlen( newattrName ) ; i++ ) {
-        if ( newattrName[i] == ' ' ) { newattrName[i] = '_'; }
+        if ( newattrName[i] == ' ' ) {
+            newattrName[i] = '_';
+        }
         if ( ( newattrName[i] == '_' && newattrName[i + 1] == '_' ) ||
                 ( newattrName[i] == '_' && newattrName[i + 1] == ' ' ) ) {
             strcpy( ( char * ) &newattrName[i], ( char * ) &newattrName[i + 1] );
@@ -1891,7 +2052,9 @@ getNewTableName( char *schemaName,
 t1.table_name = '%s' and t1.schema_name =  '%s'",
              RCATSCHEMENAME, tableName, schemaName );
     while ( check_exists( sqlq ) == RCAT_SUCCESS ) {
-        if ( strlen( tableName ) < 1 ) { return ( UNABLE_TO_MAKE_UNIQUE_TABLE_NAME ); }
+        if ( strlen( tableName ) < 1 ) {
+            return ( UNABLE_TO_MAKE_UNIQUE_TABLE_NAME );
+        }
         failure = 0;
 
         if ( ( ( tmpPtr = strstr( tableName, "_TD_" ) ) != NULL ) ||
@@ -2014,7 +2177,8 @@ insert_into_rcore_attributes( char *schema_name,
 
 
     if ( debugging4 ) {
-        printf( "Entering insert_into_rcore_attributes\n" ); fflush( stdout );
+        printf( "Entering insert_into_rcore_attributes\n" );
+        fflush( stdout );
     }
 
     failure = 0;
@@ -2034,7 +2198,8 @@ at_comments,presentation,primary_key,expose,exter_attrib_id,maxsize, attr_dimens
              at_comments, presentation, primary_key, expose, exter_attrib_id, maxsize,
              attr_dimension );
     if ( debugging4 ) {
-        printf( "Insert Statement:%s\n", sqlq ); fflush( stdout );
+        printf( "Insert Statement:%s\n", sqlq );
+        fflush( stdout );
     }
 
     res = ExecSqlDb( henv, hdbc, sqlq );
@@ -2092,7 +2257,9 @@ createNewTable( int numattrs,            char *tableName,
             strcpy( GENERATEDSQL, sqlq );
             return( MCAT_TABLE_CREATION_ERROR );
         }
-        else { return( RCAT_SUCCESS ); }
+        else {
+            return( RCAT_SUCCESS );
+        }
     }
     else  {
         return ( INSERT_INTO_NONLOCAL_MCAT_DATABASE );
@@ -2110,7 +2277,9 @@ addTokenAttrInSchemaByUser( char *schemaName, int attrCount,
     int user_id;
 
     user_id = get_user_id_in_domain( user, domain );
-    if ( user_id < 0 ) { return ( USER_NOT_IN_DOMN );}
+    if ( user_id < 0 ) {
+        return ( USER_NOT_IN_DOMN );
+    }
     return( addTokenAttrInSchema( schemaName, attrCount, attrExtrName,
                                   attrDataType, attrIdenType, defaultVal,
                                   attrComments, attrPresentation, subjects,
@@ -2135,22 +2304,30 @@ addTokenAttrInSchema( char *schemaName, int attrCount,
     /* register a table */
 
     i = checkforuniqueschemaname( schemaName ) ;
-    if ( i != 0 ) { return ( i ); }
+    if ( i != 0 ) {
+        return ( i );
+    }
 
     i = checkforownershipofschema( schemaName, realUserId );
-    if ( i != 0 ) { return ( i ); }
+    if ( i != 0 ) {
+        return ( i );
+    }
 
 
     i = getNewTableName( schemaName, attrIdenType[0],
                          attrExtrName[0], tableName );
-    if ( i < 0 ) { return( i ); }
+    if ( i < 0 ) {
+        return( i );
+    }
 
     tabid = insert_into_rcore_tables( tableName, RCATDBNAME, schemaName,
                                       attrExtrName[0],
                                       RCATSCHEMENAME, RCATTABLESPACENAME,
                                       MCATUSERID , RCATRESOURCEID,
                                       0, subjects, attrComments[0], constraints, 0 );
-    if ( tabid < 0 ) { return( tabid ); }
+    if ( tabid < 0 ) {
+        return( tabid );
+    }
 
     startk = 0;
 
@@ -2170,7 +2347,9 @@ addTokenAttrInSchema( char *schemaName, int attrCount,
         return ( TOKEN_IDEN_TYPE_ERROR );
     }
     attrName[0] = ( char * )malloc( sizeof( char ) * MAX_TOKEN );
-    if ( attrName[0] == NULL ) { return ( MEMORY_ALLOCATION_ERROR ); }
+    if ( attrName[0] == NULL ) {
+        return ( MEMORY_ALLOCATION_ERROR );
+    }
     startk = 1;
     i = getNewAttrName( attrExtrName[0], tableName, attrName[0] );
     if ( i < 0 ) {
@@ -2210,7 +2389,9 @@ addTokenAttrInSchema( char *schemaName, int attrCount,
             return( maxsize );
         }
         attrName[k + startk] = ( char * )malloc( sizeof( char ) * MAX_TOKEN );
-        if ( attrName[k + startk] == NULL ) { return ( MEMORY_ALLOCATION_ERROR ); }
+        if ( attrName[k + startk] == NULL ) {
+            return ( MEMORY_ALLOCATION_ERROR );
+        }
         LocattrDataType[k + startk] = attrDataType[k];
         j = getNewAttrName( attrExtrName[k], tableName, attrName[k + startk] );
         if ( i < 0 ) {
@@ -2254,7 +2435,9 @@ registerLinkInSchemaByUser( char *schemaName, char *clusterName,
     int user_id;
 
     user_id = get_user_id_in_domain( user, domain );
-    if ( user_id < 0 ) { return ( USER_NOT_IN_DOMN );}
+    if ( user_id < 0 ) {
+        return ( USER_NOT_IN_DOMN );
+    }
     return( registerLinkInSchema( schemaName, clusterName, rfschemaName,
                                   rfCluster, rfdbSchema, rftabName,
                                   forKeyAttr, referAttr, rfCount, user_id ) );
@@ -2272,25 +2455,35 @@ registerLinkInSchema( char *schemaName, char *clusterName,
     char  exterSchemaName[MAX_TOKEN];
 
     i = checkforownershipofschema( schemaName, realUserId );
-    if ( i != 0 ) { return ( i ); }
+    if ( i != 0 ) {
+        return ( i );
+    }
 
     tabIdList[0] = getTabIdFromSchemaCluster( schemaName, clusterName );
-    if ( tabIdList[0] < 0 ) { return ( tabIdList[0] ); }
+    if ( tabIdList[0] < 0 ) {
+        return ( tabIdList[0] );
+    }
 
 
     if ( rfCluster != NULL && strlen( rfCluster ) > 0 ) {
         tabIdList[1] = getTabIdFromSchemaCluster( rfschemaName, rfCluster );
-        if ( tabIdList[1] < 0 ) { return ( tabIdList[1] ); }
+        if ( tabIdList[1] < 0 ) {
+            return ( tabIdList[1] );
+        }
     }
     else if ( rftabName != NULL && strlen( rftabName ) > 0 ) {
         tabIdList[1] = getTabIdFromDBSchemaTabName( rfdbSchema, rftabName );
-        if ( tabIdList[1] < 0 ) { return ( tabIdList[1] ); }
+        if ( tabIdList[1] < 0 ) {
+            return ( tabIdList[1] );
+        }
     }
     else {
         return( FK_REL_TABLE_ID_ERROR );
     }
     i = getSchemaNameFromTabId( exterSchemaName, tabIdList[1] );
-    if ( i != 0 ) { return ( i ); }
+    if ( i != 0 ) {
+        return ( i );
+    }
 
     for ( i = 1; i < rfCount; i++ ) {
         tabIdList[2 * i] = tabIdList[0];
@@ -2300,7 +2493,9 @@ registerLinkInSchema( char *schemaName, char *clusterName,
     for ( i = 0; i < rfCount; i++ ) {
         attrIdList[2 * i] =  getAttrIdFromTabIdAttrName( tabIdList[2 * i],
                              forKeyAttr[i] );
-        if ( attrIdList[2 * i] < 0 ) { return ( attrIdList[2 * i] ); }
+        if ( attrIdList[2 * i] < 0 ) {
+            return ( attrIdList[2 * i] );
+        }
         if ( rftabName != NULL && strlen( rftabName ) > 0 )
             attrIdList[( 2 * i ) + 1] = getAttrIdFromTabIdAttrName( tabIdList[( 2 * i ) + 1],
                                         referAttr[i] );
@@ -2308,7 +2503,9 @@ registerLinkInSchema( char *schemaName, char *clusterName,
             attrIdList[( 2 * i ) + 1] = getAttrIdFromTabIdExterAttrName( tabIdList[( 2 * i ) + 1],
                                         referAttr[i] );
 
-        if ( attrIdList[( 2 * i ) + 1] < 0 ) { return ( attrIdList[( 2 * i ) + 1] ); }
+        if ( attrIdList[( 2 * i ) + 1] < 0 ) {
+            return ( attrIdList[( 2 * i ) + 1] );
+        }
     }
 
     j = insert_into_rcore_fk_relations( rfCount, tabIdList, attrIdList, "", "",
@@ -2328,7 +2525,9 @@ registerTokenAttrInSchemaByUser( char *resourceName, char *dbSchemeName,
     int user_id;
 
     user_id = get_user_id_in_domain( user, domain );
-    if ( user_id < 0 ) { return ( USER_NOT_IN_DOMN );}
+    if ( user_id < 0 ) {
+        return ( USER_NOT_IN_DOMN );
+    }
     return( registerTokenAttrInSchema( resourceName, dbSchemeName,
                                        tableSpaceName, tableName,
                                        schemaName, clusterName, attrCount, attrExtrName,
@@ -2359,18 +2558,26 @@ registerTokenAttrInSchema( char *resourceName, char *dbSchemeName,
     int  resourceId;
 
     i = checkforuniqueschemaname( schemaName ) ;
-    if ( i != 0 ) { return ( i ); }
+    if ( i != 0 ) {
+        return ( i );
+    }
 
     i = checkforownershipofschema( schemaName, realUserId );
-    if ( i != 0 ) { return ( i ); }
+    if ( i != 0 ) {
+        return ( i );
+    }
 
     i = getDBResourceInfo( resourceName, &resourceId,
                            databaseName );
-    if ( i != 0 ) { return ( i ); }
+    if ( i != 0 ) {
+        return ( i );
+    }
 
     i = checkforexistsclusterNameinSchemaResourceId( clusterName, schemaName,
             resourceId );
-    if ( i != 0 ) { return ( i ); }
+    if ( i != 0 ) {
+        return ( i );
+    }
 
 
 
@@ -2379,7 +2586,9 @@ registerTokenAttrInSchema( char *resourceName, char *dbSchemeName,
                                       dbSchemeName, tableSpaceName,
                                       realUserId, resourceId,
                                       0, subjects, attrComments[0], constraints, 0 );
-    if ( tabid < 0 ) { return( tabid ); }
+    if ( tabid < 0 ) {
+        return( tabid );
+    }
 
     startk = 0;
 
@@ -2395,7 +2604,9 @@ registerTokenAttrInSchema( char *resourceName, char *dbSchemeName,
             maxsize = DEFAULT_INTEGER_SPACE_SIZE;
             strcpy( idAttrDataType, "int" );
         }
-        else { return ( TOKEN_IDEN_TYPE_ERROR ); }
+        else {
+            return ( TOKEN_IDEN_TYPE_ERROR );
+        }
     }
     else if ( strstr( attrDataType[0], "char" ) != NULL ) {
         if ( !strcmp( attrIdenType[0], "HR" ) ||
@@ -2472,7 +2683,9 @@ addAttrClusterInSchemaByUser( char *schemaName, char *clusterName,
     int user_id;
 
     user_id = get_user_id_in_domain( user, domain );
-    if ( user_id < 0 ) { return ( USER_NOT_IN_DOMN );}
+    if ( user_id < 0 ) {
+        return ( USER_NOT_IN_DOMN );
+    }
     return( addAttrClusterInSchema( schemaName, clusterName,
                                     attrCount, attrExtrName,
                                     attrDataType, attrIdenType, defaultVal,
@@ -2510,10 +2723,14 @@ addAttrClusterInSchema( char *schemaName, char *clusterName, int attrCount,
     /* register a table */
 
     i = checkforuniqueschemaname( schemaName ) ;
-    if ( i != 0 ) { return ( i ); }
+    if ( i != 0 ) {
+        return ( i );
+    }
 
     i = checkforownershipofschema( schemaName, realUserId );
-    if ( i != 0 ) { return ( i ); }
+    if ( i != 0 ) {
+        return ( i );
+    }
     if ( debugging4 ) {
         printf( "Calling getNewTableName:%s:%s\n", schemaName, clusterName );
         fflush( stdout );
@@ -2521,9 +2738,12 @@ addAttrClusterInSchema( char *schemaName, char *clusterName, int attrCount,
 
     i = getNewTableName( schemaName, attrIdenType[0],
                          clusterName, tableName );
-    if ( i < 0 ) { return( i ); }
+    if ( i < 0 ) {
+        return( i );
+    }
     if ( debugging4 ) {
-        printf( "Calling insert_into_rcore_tables:%s\n", tableName ); fflush( stdout );
+        printf( "Calling insert_into_rcore_tables:%s\n", tableName );
+        fflush( stdout );
     }
 
     tabid = insert_into_rcore_tables( tableName, RCATDBNAME, schemaName,
@@ -2532,7 +2752,9 @@ addAttrClusterInSchema( char *schemaName, char *clusterName, int attrCount,
                                       MCATUSERID , RCATRESOURCEID,
                                       0, subjects, attrComments[0], constraints, 0 );
 
-    if ( tabid < 0 ) { return( tabid ); }
+    if ( tabid < 0 ) {
+        return( tabid );
+    }
 
 
     startk = 0;
@@ -2540,7 +2762,9 @@ addAttrClusterInSchema( char *schemaName, char *clusterName, int attrCount,
     maxsize = DEFAULT_INTEGER_SPACE_SIZE;
     strcpy( idAttrDataType, "int" );
     attrName[0] = ( char * )malloc( sizeof( char ) * MAX_TOKEN );
-    if ( attrName[0] == NULL ) { return ( MEMORY_ALLOCATION_ERROR ); }
+    if ( attrName[0] == NULL ) {
+        return ( MEMORY_ALLOCATION_ERROR );
+    }
     startk = 1;
     i = getNewAttrName( attrExtrName[0], tableName, attrName[0] );
 
@@ -2556,7 +2780,8 @@ addAttrClusterInSchema( char *schemaName, char *clusterName, int attrCount,
     }
     if ( debugging4 ) {
         printf( "Calling insert_into_rcore_attributes:%s\n", attrName[0] );
-    } fflush( stdout );
+    }
+    fflush( stdout );
 
     attrid1 = insert_into_rcore_attributes( schemaName, tabid, attrName[0],
                                             idAttrDataType,
@@ -2580,7 +2805,9 @@ addAttrClusterInSchema( char *schemaName, char *clusterName, int attrCount,
 
 
         attrName[k + startk] = ( char * )malloc( sizeof( char ) * MAX_TOKEN );
-        if ( attrName[k + startk] == NULL ) { return ( MEMORY_ALLOCATION_ERROR ); }
+        if ( attrName[k + startk] == NULL ) {
+            return ( MEMORY_ALLOCATION_ERROR );
+        }
         LocattrDataType[k + startk] = attrDataType[k];
 
 
@@ -2594,9 +2821,12 @@ addAttrClusterInSchema( char *schemaName, char *clusterName, int attrCount,
 
 
             LocattrDataType[k + startk] = ( char * )malloc( sizeof( char ) * MAX_TOKEN );
-            if ( LocattrDataType[k + startk] == NULL ) { return ( MEMORY_ALLOCATION_ERROR ); }
+            if ( LocattrDataType[k + startk] == NULL ) {
+                return ( MEMORY_ALLOCATION_ERROR );
+            }
             if ( debugging4 ) {
-                printf( "Calling getAttrInfoForToken:%s<BR>\n", attrName[k + startk] ); fflush( stdout );
+                printf( "Calling getAttrInfoForToken:%s<BR>\n", attrName[k + startk] );
+                fflush( stdout );
             }
             j = getAttrInfoForToken( attrExtrName[k], schemaName,
                                      attrName[k + startk],
@@ -2612,7 +2842,9 @@ addAttrClusterInSchema( char *schemaName, char *clusterName, int attrCount,
                 }
                 return( j );
             }
-            if ( !strcmp( exterSchemaName, schemaName ) ) { expose = 0; }
+            if ( !strcmp( exterSchemaName, schemaName ) ) {
+                expose = 0;
+            }
 
             if ( attrPresentation[k] != NULL && strlen( attrPresentation[k] ) != 0 ) {
                 strcpy( presentation, attrPresentation[k] );
@@ -2621,7 +2853,8 @@ addAttrClusterInSchema( char *schemaName, char *clusterName, int attrCount,
                 strcpy( dimension, attrDimension[k] );
             }
             if ( debugging4 ) {
-                printf( "Calling insert_into_rcore_attributes:%s\n", attrName[k + startk] ); fflush( stdout );
+                printf( "Calling insert_into_rcore_attributes:%s\n", attrName[k + startk] );
+                fflush( stdout );
             }
             attrid1 = insert_into_rcore_attributes( schemaName, tabid,
                                                     attrName[k + startk], LocattrDataType[k + startk], "FK",
@@ -2684,7 +2917,8 @@ addAttrClusterInSchema( char *schemaName, char *clusterName, int attrCount,
                 return( i );
             }
             if ( debugging4 ) {
-                printf( "Calling insert_into_rcore_attributes:%s\n", attrName[k + startk] ); fflush( stdout );
+                printf( "Calling insert_into_rcore_attributes:%s\n", attrName[k + startk] );
+                fflush( stdout );
             }
             attrid1 = insert_into_rcore_attributes( schemaName, tabid,
                                                     attrName[k + startk], attrDataType[k], attrIdenType[k],
@@ -2734,7 +2968,9 @@ registerClusterInSchemaByUser( char *resourceName, char *dbSchemeName,
     int user_id;
 
     user_id = get_user_id_in_domain( user, domain );
-    if ( user_id < 0 ) { return ( USER_NOT_IN_DOMN );}
+    if ( user_id < 0 ) {
+        return ( USER_NOT_IN_DOMN );
+    }
     return( registerClusterInSchema( resourceName, dbSchemeName,
                                      tableSpaceName, tableName, schemaName,
                                      clusterName, attrCount, attrExtrName,
@@ -2778,25 +3014,41 @@ registerClusterInSchema( char *resourceName, char *dbSchemeName,
     int  resourceId;
 
     if ( debugging4 ) {
-        printf( "RN=%s:\n", resourceName ); fflush( stdout );
-        printf( "DSN=%s:\n", dbSchemeName ); fflush( stdout );
-        printf( "TSN=%s:\n", tableSpaceName ); fflush( stdout );
-        printf( "TN=%s:\n", tableName ); fflush( stdout );
-        printf( "SN=%s:\n", schemaName ); fflush( stdout );
-        printf( "CN=%s:\n", clusterName ); fflush( stdout );
-        printf( "ACN=%i:\n", attrCount ); fflush( stdout );
-        printf( "AEN0=%s:\n", attrExtrName[0] ); fflush( stdout );
-        printf( "ADT0=%s:\n", attrDataType[0] ); fflush( stdout );
-        printf( "AEN1=%s:\n", attrExtrName[1] ); fflush( stdout );
-        printf( "ADT1=%s:\n", attrDataType[1] ); fflush( stdout );
-        printf( "UI=%i\n", realUserId ); fflush( stdout );
+        printf( "RN=%s:\n", resourceName );
+        fflush( stdout );
+        printf( "DSN=%s:\n", dbSchemeName );
+        fflush( stdout );
+        printf( "TSN=%s:\n", tableSpaceName );
+        fflush( stdout );
+        printf( "TN=%s:\n", tableName );
+        fflush( stdout );
+        printf( "SN=%s:\n", schemaName );
+        fflush( stdout );
+        printf( "CN=%s:\n", clusterName );
+        fflush( stdout );
+        printf( "ACN=%i:\n", attrCount );
+        fflush( stdout );
+        printf( "AEN0=%s:\n", attrExtrName[0] );
+        fflush( stdout );
+        printf( "ADT0=%s:\n", attrDataType[0] );
+        fflush( stdout );
+        printf( "AEN1=%s:\n", attrExtrName[1] );
+        fflush( stdout );
+        printf( "ADT1=%s:\n", attrDataType[1] );
+        fflush( stdout );
+        printf( "UI=%i\n", realUserId );
+        fflush( stdout );
     }
     /* register a table */
     i = checkforuniqueschemaname( schemaName ) ;
-    if ( i != 0 ) { return ( i ); }
+    if ( i != 0 ) {
+        return ( i );
+    }
 
     i = checkforownershipofschema( schemaName, realUserId );
-    if ( i != 0 ) { return ( i ); }
+    if ( i != 0 ) {
+        return ( i );
+    }
     if ( debugging4 ) {
         printf( "Calling getDBResourceInfo:%s\n", resourceName );
         fflush( stdout );
@@ -2804,15 +3056,20 @@ registerClusterInSchema( char *resourceName, char *dbSchemeName,
 
     i = getDBResourceInfo( resourceName, &resourceId,
                            databaseName );
-    if ( i != 0 ) { return ( i ); }
+    if ( i != 0 ) {
+        return ( i );
+    }
 
     i = checkforexistsclusterNameinSchemaResourceId( clusterName, schemaName,
             resourceId );
-    if ( i != 0 ) { return ( i ); }
+    if ( i != 0 ) {
+        return ( i );
+    }
 
 
     if ( debugging4 ) {
-        printf( "Calling insert_into_rcore_tables:%s\n", tableName ); fflush( stdout );
+        printf( "Calling insert_into_rcore_tables:%s\n", tableName );
+        fflush( stdout );
     }
     tabid = insert_into_rcore_tables( tableName, databaseName, schemaName,
                                       clusterName,
@@ -2821,14 +3078,20 @@ registerClusterInSchema( char *resourceName, char *dbSchemeName,
                                       0, subjects, attrComments[0], constraints, 0 );
 
 
-    if ( tabid < 0 ) { return( tabid ); }
+    if ( tabid < 0 ) {
+        return( tabid );
+    }
     for ( k = 0; k < attrCount ; k++ ) {
         maxsize = getMaxSize( attrDataType[k] );
-        if ( maxsize < 0 ) { return( maxsize ); }
+        if ( maxsize < 0 ) {
+            return( maxsize );
+        }
         attrTokenId =  0;
         if ( sameas[k] != NULL && strlen( sameas[k] ) != 0 ) {
             attrTokenId = getAttrIdForName( sameas[k], schemaName );
-            if ( attrTokenId < 0 ) { return( attrTokenId ); }
+            if ( attrTokenId < 0 ) {
+                return( attrTokenId );
+            }
         }
         if ( debugging4 ) {
             printf( "Calling insert_into_rcore_attributes:%s\n", attrExtrName[k] );
@@ -2845,7 +3108,9 @@ registerClusterInSchema( char *resourceName, char *dbSchemeName,
                                                 attrComments[k], attrPresentation[k], primaryKey[k],
                                                 expose[k], -1, maxsize, attrDimension[k] );
 
-        if ( attrid1 < 0 ) { return( attrid1 ); }
+        if ( attrid1 < 0 ) {
+            return( attrid1 );
+        }
     }
     return( RCAT_SUCCESS );
 
@@ -2860,7 +3125,9 @@ createNewSchemaByUser( char *schemaName,
     int user_id;
 
     user_id = get_user_id_in_domain( user, domain );
-    if ( user_id < 0 ) { return ( USER_NOT_IN_DOMN );}
+    if ( user_id < 0 ) {
+        return ( USER_NOT_IN_DOMN );
+    }
     return( createNewSchema( schemaName, subjects, comments,
                              constraints, similarto, user_id ) );
 
@@ -2877,7 +3144,9 @@ createNewSchema( char *schema_name,
     int i, j;
     char sqlq[HUGE_STRING];
     i = checkforuniqueschemaname( schema_name );
-    if ( i == RCAT_SUCCESS ) { return ( SCHEMA_NAME_NOT_UNIQUE_IN_CAT ); }
+    if ( i == RCAT_SUCCESS ) {
+        return ( SCHEMA_NAME_NOT_UNIQUE_IN_CAT );
+    }
 
     i = checkifallowedtocreateschema( user_id );
     if ( i != RCAT_SUCCESS ) {
@@ -2919,7 +3188,9 @@ createVuSchemaByUser( int cnt, int *AttrList, char *par_schema_list,
     int user_id;
 
     user_id = get_user_id_in_domain( user, domain );
-    if ( user_id < 0 ) { return ( USER_NOT_IN_DOMN );}
+    if ( user_id < 0 ) {
+        return ( USER_NOT_IN_DOMN );
+    }
     return( createVuSchema( cnt, AttrList, par_schema_list,
                             schema_name, subject, comments, user_id ) );
 
@@ -2932,7 +3203,9 @@ createVuSchema( int cnt, int *AttrList, char *par_schema_list,
     char sqlq[HUGE_STRING];
     char scList[SMALL_TOKEN][MAX_TOKEN];
     i = checkforuniqueschemaname( schema_name );
-    if ( i == RCAT_SUCCESS ) { return ( SCHEMA_NAME_NOT_UNIQUE_IN_CAT ); }
+    if ( i == RCAT_SUCCESS ) {
+        return ( SCHEMA_NAME_NOT_UNIQUE_IN_CAT );
+    }
 
 
     sprintf( sqlq,
@@ -2980,7 +3253,9 @@ dropClusterinCoreSchemaByUser( char  *clusterName, char *schema_name,
     int user_id;
 
     user_id = get_user_id_in_domain( user, domain );
-    if ( user_id < 0 ) { return ( USER_NOT_IN_DOMN );}
+    if ( user_id < 0 ) {
+        return ( USER_NOT_IN_DOMN );
+    }
     return( dropClusterinCoreSchema( clusterName, schema_name, user_id ) );
 }
 
@@ -2996,7 +3271,9 @@ dropAttrinCoreSchemaByUser( int AttrId, char *schema_name,
     int user_id;
 
     user_id = get_user_id_in_domain( user, domain );
-    if ( user_id < 0 ) { return ( USER_NOT_IN_DOMN );}
+    if ( user_id < 0 ) {
+        return ( USER_NOT_IN_DOMN );
+    }
     return( dropAttrinCoreSchema( AttrId, schema_name, user_id ) );
 }
 
@@ -3007,7 +3284,9 @@ dropAttrinCoreSchema( int AttrId, char *schema_name, int  user_id ) {
     int  colcount, jj;
 
     i = checkforownershipofschema( schema_name, user_id ) ;
-    if ( i != 0 ) { return ( i ); }
+    if ( i != 0 ) {
+        return ( i );
+    }
 
 
     if ( strstr( user, "rods" ) != NULL ) {
@@ -3048,7 +3327,9 @@ dropCoreSchemaByUser( char *schema_name,
         return( INNER_CORE_SCHEMA_CANNOT_BE_DELETED );
     }
     user_id = get_user_id_in_domain( user, domain );
-    if ( user_id < 0 ) { return ( USER_NOT_IN_DOMN );}
+    if ( user_id < 0 ) {
+        return ( USER_NOT_IN_DOMN );
+    }
     return( dropCoreSchema( schema_name, user_id ) );
 }
 
@@ -3076,7 +3357,9 @@ dropCoreSchema( char *schema_name, int user_id ) {
     }
 
     i = checkforownershipofschema( schema_name, user_id );
-    if ( i != 0 ) { return ( i ); }
+    if ( i != 0 ) {
+        return ( i );
+    }
 
 
     /*
@@ -3100,7 +3383,9 @@ dropCoreSchema( char *schema_name, int user_id ) {
         }
     }
     if ( noTablesFound == 0 ) {
-        if ( colcount == 0 ) { return ( UNKNOWN_USER_SCHEMASET ); }
+        if ( colcount == 0 ) {
+            return ( UNKNOWN_USER_SCHEMASET );
+        }
         for ( jj = 0; jj < colcount; jj++ ) {
             sprintf( sqlq, "drop table %s%s ", cval[jj], cval2[jj] );
             res = ExecSqlDb( henv, hdbc, sqlq );
@@ -3198,7 +3483,9 @@ dropVuSchemaByUser( char *schema_name,
     int user_id;
 
     user_id = get_user_id_in_domain( user, domain );
-    if ( user_id < 0 ) { return ( USER_NOT_IN_DOMN );}
+    if ( user_id < 0 ) {
+        return ( USER_NOT_IN_DOMN );
+    }
     return( dropVuSchema( schema_name, user_id ) );
 }
 
@@ -3210,18 +3497,24 @@ dropVuSchema( char *schema_name, int user_id ) {
     char attrSet[HUGE_STRING];
 
     i = checkforownershipofschema( schema_name, user_id ) ;
-    if ( i != 0 ) { return ( i ); }
+    if ( i != 0 ) {
+        return ( i );
+    }
 
     sprintf( sqlq,
              "delete from %s%s where  user_schema_name ='%s'",
              RCATSCHEMENAME, "RCORE_USCHEMA_ATTR", schema_name );
     res = ExecSqlDb( henv, hdbc, sqlq );
-    if ( res != RCAT_SUCCESS ) { return( DELETE_SCHEMA_ERROR ); }
+    if ( res != RCAT_SUCCESS ) {
+        return( DELETE_SCHEMA_ERROR );
+    }
     sprintf( sqlq,
              "delete from %s%s where  user_schema_name ='%s'",
              RCATSCHEMENAME, "RCORE_USER_SCHEMAS", schema_name );
     res = ExecSqlDb( henv, hdbc, sqlq );
-    if ( res != RCAT_SUCCESS ) { return( DELETE_SCHEMA_ERROR ); }
+    if ( res != RCAT_SUCCESS ) {
+        return( DELETE_SCHEMA_ERROR );
+    }
     sprintf( sqlq,
              "delete from %s%s where  schema_name ='%s'",
              RCATSCHEMENAME, "RCORE_SCHEMAS", schema_name );
@@ -3242,7 +3535,9 @@ dropAttrinVuSchemaByUser( int cnt, int *AttrList, char *schema_name,
     int user_id;
 
     user_id = get_user_id_in_domain( user, domain );
-    if ( user_id < 0 ) { return ( USER_NOT_IN_DOMN );}
+    if ( user_id < 0 ) {
+        return ( USER_NOT_IN_DOMN );
+    }
     return( dropAttrinVuSchema( cnt, AttrList, schema_name, user_id ) );
 }
 
@@ -3255,7 +3550,9 @@ dropAttrinVuSchema( int cnt, int *AttrList, char *schema_name,
 
 
     i = checkforownershipofschema( schema_name, user_id ) ;
-    if ( i != 0 ) { return ( i ); }
+    if ( i != 0 ) {
+        return ( i );
+    }
 
     sprintf( attrSet, "%i", AttrList[0] );
 
@@ -3280,7 +3577,9 @@ addAttrinVuSchemaByUser( int cnt, int *AttrList, char *schema_name,
     int user_id;
 
     user_id = get_user_id_in_domain( user, domain );
-    if ( user_id < 0 ) { return ( USER_NOT_IN_DOMN );}
+    if ( user_id < 0 ) {
+        return ( USER_NOT_IN_DOMN );
+    }
     return( addAttrinVuSchema( cnt, AttrList, schema_name, user_id ) );
 }
 int
@@ -3291,7 +3590,9 @@ addAttrinVuSchema( int cnt, int *AttrList, char *schema_name,
     char attrSet[HUGE_STRING];
 
     i = checkforownershipofschema( schema_name, user_id ) ;
-    if ( i != 0 ) { return ( i ); }
+    if ( i != 0 ) {
+        return ( i );
+    }
 
 
     for ( i = 0; i < cnt ; i++ ) {
@@ -3316,9 +3617,12 @@ getOutDimensions( char *inDim, char outDim[][MAX_TOKEN], int *rowcount ) {
     sprintf( sqlq, "select distinct OUT_ATTR_DIMEN from %sRCORE_ATTRDIMN11_FN where IN_ATTR_DIMEN = '%s'", RCATSCHEMENAME, inDim );
     i = get_ctype_list_from_query( outDim, &j, sqlq );
     if ( i != RCAT_SUCCESS ) {
-        strcpy( GENERATEDSQL, sqlq ); return( i );
+        strcpy( GENERATEDSQL, sqlq );
+        return( i );
     }
-    if ( j == 0 ) { return ( UNKNOWN_USER_SCHEMASET ); }
+    if ( j == 0 ) {
+        return ( UNKNOWN_USER_SCHEMASET );
+    }
     *rowcount = j;
     return( RCAT_SUCCESS );
 }
@@ -3338,13 +3642,18 @@ getSchemaNames( char *type, char cval[][], int *rowcount ) {
     else if ( !strcmp( type, "all" ) ) {
         sprintf( sqlq, "select distinct USER_SCHEMA_NAME from %sRCORE_USER_SCHEMAS", RCATSCHEMENAME );
     }
-    else { return ( UNKNOWN_USER_SCHEMASET ); }
+    else {
+        return ( UNKNOWN_USER_SCHEMASET );
+    }
 
     i = get_ctype_list_from_query( cval, &j, sqlq );
     if ( i != RCAT_SUCCESS ) {
-        strcpy( GENERATEDSQL, sqlq ); return( i );
+        strcpy( GENERATEDSQL, sqlq );
+        return( i );
     }
-    if ( j == 0 ) { return ( UNKNOWN_USER_SCHEMASET ); }
+    if ( j == 0 ) {
+        return ( UNKNOWN_USER_SCHEMASET );
+    }
     *rowcount = j;
 
     return( RCAT_SUCCESS );
@@ -3390,7 +3699,9 @@ t42.table_id = t40.table_id and t41.table_id = t40.table_id and t40.expose = 1",
         strcpy( GENERATEDSQL, sqlq );
         return( i );
     }
-    if ( colcount == 0 ) { return ( ATTRIBUTE_SET_EMPTY ); }
+    if ( colcount == 0 ) {
+        return ( ATTRIBUTE_SET_EMPTY );
+    }
     for ( jj = 0; jj < colcount; jj++ ) {
         sprintf( AttrOutList[jj], "%s#%s.%s###%s####%s",
                  cval[jj], cval2[jj], cval3[jj], cval4[jj], cval5[jj] );
@@ -3411,13 +3722,16 @@ getStylesForSchema( char *schemaset, char **styleName,
     i = get_ctype_list_from_query( styleName, &j, sqlq );
 
     if ( i != RCAT_SUCCESS ) {
-        strcpy( GENERATEDSQL, sqlq ); return( i );
+        strcpy( GENERATEDSQL, sqlq );
+        return( i );
     }
     /*printf("GG:%s<BR>\n",sqlq);
       printf("RR:%i:%s:%s:%s<BR>", styleName[0],styleName[1],styleName[2]);
     */
 
-    if ( j == 0 ) { return ( MCAT_NO_DATA_FOUND ); }
+    if ( j == 0 ) {
+        return ( MCAT_NO_DATA_FOUND );
+    }
     *rowcount = j;
 
     return( RCAT_SUCCESS );
@@ -3449,8 +3763,12 @@ getRelatedContexts( char *idList, char *context ) {
     sprintf( sqlq, "select distinct t0.schema_name from %srcore_tables t0, %srcore_attributes t1 where t1.attr_id in (%s) and t0.table_id = t1.table_id",
              RCATSCHEMENAME, RCATSCHEMENAME, idList );
     i = get_ctype_list_from_query( cval, &colcount, sqlq );
-    if ( i != RCAT_SUCCESS ) { return( i ); }
-    if ( colcount == 0 ) { return ( UNKNOWN_USER_SCHEMASET ); }
+    if ( i != RCAT_SUCCESS ) {
+        return( i );
+    }
+    if ( colcount == 0 ) {
+        return ( UNKNOWN_USER_SCHEMASET );
+    }
     strcpy( context, "" );
     for ( jj = 0; jj < colcount; jj++ ) {
         if ( jj == 0 ) {
@@ -3472,7 +3790,9 @@ getTabIdFromDBSchemaTabName( char *dbSchema, char *tableName ) {
     sprintf( sqlq, "select table_id from %srcore_tables where DBSCHEMA_NAME = '%s' and TABLE_NAME ='%s'", RCATSCHEMENAME, dbSchema, tableName );
 
     i = get_itype_value_from_query( sqlq );
-    if ( i < 0 ) { strcpy( GENERATEDSQL, sqlq ); }
+    if ( i < 0 ) {
+        strcpy( GENERATEDSQL, sqlq );
+    }
     return( i );
 }
 
@@ -3515,7 +3835,9 @@ getAttrIdFromTabIdAttrName( int tableId, char *AttrName ) {
     sprintf( sqlq, "select attr_id from %srcore_attributes where TABLE_ID  = %i and ATTR_NAME ='%s'", RCATSCHEMENAME, tableId, AttrName );
 
     i = get_itype_value_from_query( sqlq );
-    if ( i < 0 ) { strcpy( GENERATEDSQL, sqlq ); }
+    if ( i < 0 ) {
+        strcpy( GENERATEDSQL, sqlq );
+    }
     return( i );
 }
 
@@ -3527,7 +3849,9 @@ getAttrIdFromTabIdExterAttrName( int tableId, char *AttrName ) {
     sprintf( sqlq, "select attr_id from %srcore_attributes where TABLE_ID  = %i and EXTERNAL_ATTR_NAME ='%s'", RCATSCHEMENAME, tableId, AttrName );
 
     i = get_itype_value_from_query( sqlq );
-    if ( i < 0 ) { strcpy( GENERATEDSQL, sqlq ); }
+    if ( i < 0 ) {
+        strcpy( GENERATEDSQL, sqlq );
+    }
     return( i );
 }
 
@@ -3539,7 +3863,9 @@ getTabIdFromSchemaCluster( char * schemaName, char *clusterName ) {
     sprintf( sqlq, "select table_id from %srcore_tables where SCHEMA_NAME = '%s' and CLUSTER_NAME ='%s'", RCATSCHEMENAME, schemaName, clusterName );
 
     i = get_itype_value_from_query( sqlq );
-    if ( i < 0 ) { strcpy( GENERATEDSQL, sqlq ); }
+    if ( i < 0 ) {
+        strcpy( GENERATEDSQL, sqlq );
+    }
     return( i );
 }
 
@@ -3554,7 +3880,9 @@ getSchemaNameFromTabId( char *schemaName, int tableId ) {
 
     colcount = 1;
     i = get_row_from_query( cval, &colcount, sqlq );
-    if ( i < 0 ) { strcpy( GENERATEDSQL, sqlq ); }
+    if ( i < 0 ) {
+        strcpy( GENERATEDSQL, sqlq );
+    }
     if ( i == 0 ) {
         strcpy( schemaName, cval[0] );
     }
@@ -3570,7 +3898,9 @@ checkforexistsclusterNameinSchemaResourceId( char *clusterName,
 schema_name =  '%s' and cluster_name = '%s' and rsrc_id = %i",
              RCATSCHEMENAME, schemaName, clusterName, resourceId );
     strcpy( GENERATEDSQL, sqlq );
-    if ( check_exists( sqlq ) != 0 ) { return ( RCAT_SUCCESS ); }
+    if ( check_exists( sqlq ) != 0 ) {
+        return ( RCAT_SUCCESS );
+    }
 
     return( CLUSTER_SCHEMA_EXISTS );
 

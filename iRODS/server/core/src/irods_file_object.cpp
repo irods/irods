@@ -19,8 +19,8 @@
 #include <boost/asio/ip/host_name.hpp>
 
 namespace irods {
-    // =-=-=-=-=-=-=-
-    // public - ctor
+// =-=-=-=-=-=-=-
+// public - ctor
     file_object::file_object() :
         data_object(),
         size_( 0 ),
@@ -28,8 +28,8 @@ namespace irods {
         memset( &cond_input_, 0, sizeof( keyValPair_t ) );
     } // file_object
 
-    // =-=-=-=-=-=-=-
-    // public - cctor
+// =-=-=-=-=-=-=-
+// public - cctor
     file_object::file_object(
         const file_object& _rhs ) :
         data_object( _rhs ) {
@@ -48,8 +48,8 @@ namespace irods {
 
     } // cctor
 
-    // =-=-=-=-=-=-=-
-    // public - ctor
+// =-=-=-=-=-=-=-
+// public - ctor
     file_object::file_object(
         rsComm_t* _c,
         const std::string& _logical_path,
@@ -76,7 +76,7 @@ namespace irods {
         memset( &cond_input_, 0, sizeof( keyValPair_t ) );
     } // file_object
 
-    // from dataObjInfo
+// from dataObjInfo
     file_object::file_object(
         rsComm_t*            _rsComm,
         const dataObjInfo_t* _dataObjInfo ) {
@@ -92,14 +92,14 @@ namespace irods {
         memset( &cond_input_, 0, sizeof( keyValPair_t ) );
     }
 
-    // =-=-=-=-=-=-=-
-    // public - dtor
+// =-=-=-=-=-=-=-
+// public - dtor
     file_object::~file_object() {
         clearKeyVal( &cond_input_ );
     } // dtor
 
-    // =-=-=-=-=-=-=-
-    // public - assignment operator
+// =-=-=-=-=-=-=-
+// public - assignment operator
     file_object& file_object::operator=(
         const file_object& _rhs ) {
         // =-=-=-=-=-=-=-
@@ -121,7 +121,7 @@ namespace irods {
 
     }  // operator=
 
-    // public comparison operator
+// public comparison operator
     bool file_object::operator==(
         const file_object& _rhs ) const {
         bool result = true;
@@ -132,8 +132,8 @@ namespace irods {
         return result;
     }
 
-    // =-=-=-=-=-=-=-
-    // plugin - resolve resource plugin for this object
+// =-=-=-=-=-=-=-
+// plugin - resolve resource plugin for this object
     error file_object::resolve(
         const std::string& _interface,
         plugin_ptr&        _ptr ) {
@@ -196,8 +196,8 @@ namespace irods {
 
     } // resolve
 
-    // =-=-=-=-=-=-=-
-    // public - get vars from object for rule engine
+// =-=-=-=-=-=-=-
+// public - get vars from object for rule engine
     error file_object::get_re_vars(
         keyValPair_t& _kvp ) {
         data_object::get_re_vars( _kvp );
@@ -231,8 +231,8 @@ namespace irods {
 
     } // get_re_vars
 
-    // =-=-=-=-=-=-=-
-    // static factory to create file_object from dataobjinfo linked list
+// =-=-=-=-=-=-=-
+// static factory to create file_object from dataobjinfo linked list
     error file_object_factory( rsComm_t*        _comm,
                                dataObjInp_t*    _data_obj_inp,
                                file_object_ptr  _file_obj ) {

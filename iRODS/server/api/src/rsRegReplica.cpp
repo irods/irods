@@ -35,7 +35,9 @@ rsRegReplica( rsComm_t *rsComm, regReplica_t *regReplicaInp ) {
     }
     else {
         status = rcRegReplica( rodsServerHost->conn, regReplicaInp );
-        if ( status >= 0 ) { regReplicaInp->destDataObjInfo->replNum = status; }
+        if ( status >= 0 ) {
+            regReplicaInp->destDataObjInfo->replNum = status;
+        }
 
     }
 

@@ -23,7 +23,9 @@ fsckObj( rcComm_t *conn, rodsArguments_t *myRodsArgs, rodsPathInp_t *rodsPathInp
         path p( inpPathO );
         if ( exists( p ) ) {
             /* don't do anything if it is symlink */
-            if ( is_symlink( p ) ) { return 0; }
+            if ( is_symlink( p ) ) {
+                return 0;
+            }
             /* remove any trailing "/" from inpPathO */
             lenInpPath = strlen( inpPathO );
             lastChar = strrchr( inpPathO, '/' );
@@ -98,7 +100,9 @@ chkObjConsistency( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, c
     /* retrieve the local file size */
     path p( inpPath );
     /* don't do anything if it is symlink */
-    if ( is_symlink( p ) ) { return 0; }
+    if ( is_symlink( p ) ) {
+        return 0;
+    }
     srcSize = file_size( p );
 
     /* retrieve object size and checksum in iRODS */

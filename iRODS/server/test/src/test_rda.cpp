@@ -105,7 +105,9 @@ main( int argc, char **argv ) {
             printf( "rdaClose error %d\n", status );
         }
         else {
-            if ( didOne ) { printf( "Completed successfully\n" ); }
+            if ( didOne ) {
+                printf( "Completed successfully\n" );
+            }
         }
     }
 

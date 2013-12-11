@@ -41,19 +41,25 @@ printResultsAndSubQuery( rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
     int i, j;
     char localTime[20];
     lastCommandStatus = status;
-    if ( status == CAT_NO_ROWS_FOUND ) { lastCommandStatus = 0; }
+    if ( status == CAT_NO_ROWS_FOUND ) {
+        lastCommandStatus = 0;
+    }
     if ( status != 0 && status != CAT_NO_ROWS_FOUND ) {
         printError( Conn, status, "rcGenQuery" );
     }
     else {
         if ( status == CAT_NO_ROWS_FOUND ) {
-            if ( printCount == 0 ) { printf( "No rows found\n" ); }
+            if ( printCount == 0 ) {
+                printf( "No rows found\n" );
+            }
         }
         else {
             for ( i = 0; i < genQueryOut->rowCnt; i++ ) {
                 printedRows++;
                 char *subCol;
-                if ( i > 0 && dashOpt > 0 ) { printf( "----\n" ); }
+                if ( i > 0 && dashOpt > 0 ) {
+                    printf( "----\n" );
+                }
                 for ( j = 0; j < genQueryOut->attriCnt; j++ ) {
                     char *tResult;
                     tResult = genQueryOut->sqlResult[j].value;
@@ -76,7 +82,9 @@ printResultsAndSubQuery( rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
                         }
                     }
                 }
-                if ( subColumn >= 0 ) { showRestrictions( subCol ); }
+                if ( subColumn >= 0 ) {
+                    showRestrictions( subCol );
+                }
             }
         }
     }
@@ -402,7 +410,9 @@ showTickets1( char *inOption, char *inName ) {
     while ( status == 0 && genQueryOut->continueInx > 0 ) {
         genQueryInp.continueInx = genQueryOut->continueInx;
         status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
-        if ( genQueryOut->rowCnt > 0 ) { printf( "----\n" ); }
+        if ( genQueryOut->rowCnt > 0 ) {
+            printf( "----\n" );
+        }
         printResultsAndSubQuery( Conn, status, genQueryOut,
                                  columnNames, 0, 1 );
     }
@@ -414,7 +424,9 @@ void
 showTickets( char *inName ) {
     printedRows = 0;
     showTickets1( "data", inName );
-    if ( printedRows > 0 ) { printf( "----\n" ); }
+    if ( printedRows > 0 ) {
+        printf( "----\n" );
+    }
     showTickets1( "collection", inName );
     if ( printedRows == 0 ) {
         /* try a more basic query in case the data obj or collection is gone */
@@ -496,9 +508,15 @@ makeTicket( char *newTicket ) {
     */
     characterSet_len = 26 + 26 + 10;
     j = 0;
-    for ( i = 0; i < 26; i++ ) { characterSet[j++] = ( int )'A' + i; }
-    for ( i = 0; i < 26; i++ ) { characterSet[j++] = ( int )'a' + i; }
-    for ( i = 0; i < 10; i++ ) { characterSet[j++] = ( int )'0' + i; }
+    for ( i = 0; i < 26; i++ ) {
+        characterSet[j++] = ( int )'A' + i;
+    }
+    for ( i = 0; i < 26; i++ ) {
+        characterSet[j++] = ( int )'a' + i;
+    }
+    for ( i = 0; i < 10; i++ ) {
+        characterSet[j++] = ( int )'0' + i;
+    }
 
     for ( i = 0, j = 0; j < 15; i++ ) {
         ix = ( int )buf1[i];
@@ -532,7 +550,9 @@ getInput( char *cmdToken[], int maxTokens ) {
     if ( stat == 0 ) {
         printf( "\n" );
         rcDisconnect( Conn );
-        if ( lastCommandStatus != 0 ) { exit( 4 ); }
+        if ( lastCommandStatus != 0 ) {
+            exit( 4 );
+        }
         exit( 0 );
     }
     lenstr = strlen( ttybuf );
@@ -806,7 +826,9 @@ main( int argc, char **argv ) {
 
     status = clientLogin( Conn );
     if ( status != 0 ) {
-        if ( !debug ) { exit( 3 ); }
+        if ( !debug ) {
+            exit( 3 );
+        }
     }
 
     keepGoing = 1;
@@ -814,9 +836,13 @@ main( int argc, char **argv ) {
     while ( keepGoing ) {
         int status;
         status = doCommand( cmdToken );
-        if ( status == -1 ) { keepGoing = 0; }
+        if ( status == -1 ) {
+            keepGoing = 0;
+        }
         if ( firstTime ) {
-            if ( status == 0 ) { keepGoing = 0; }
+            if ( status == 0 ) {
+                keepGoing = 0;
+            }
             if ( status == -2 ) {
                 keepGoing = 0;
                 lastCommandStatus = -1;
@@ -832,7 +858,9 @@ main( int argc, char **argv ) {
 
     rcDisconnect( Conn );
 
-    if ( lastCommandStatus != 0 ) { exit( 4 ); }
+    if ( lastCommandStatus != 0 ) {
+        exit( 4 );
+    }
     exit( 0 );
 }
 
@@ -871,7 +899,9 @@ void usageMain() {
     };
     int i;
     for ( i = 0;; i++ ) {
-        if ( strlen( msgs[i] ) == 0 ) { break; }
+        if ( strlen( msgs[i] ) == 0 ) {
+            break;
+        }
         printf( "%s\n", msgs[i] );
     }
     printReleaseInfo( "iticket" );
@@ -900,7 +930,9 @@ usage( char *subOpt ) {
                 ""
             };
             for ( i = 0;; i++ ) {
-                if ( strlen( msgs[i] ) == 0 ) { return( 0 ); }
+                if ( strlen( msgs[i] ) == 0 ) {
+                    return( 0 );
+                }
                 printf( "%s\n", msgs[i] );
             }
         }
@@ -946,7 +978,9 @@ usage( char *subOpt ) {
                 ""
             };
             for ( i = 0;; i++ ) {
-                if ( strlen( msgs[i] ) == 0 ) { return( 0 ); }
+                if ( strlen( msgs[i] ) == 0 ) {
+                    return( 0 );
+                }
                 printf( "%s\n", msgs[i] );
             }
         }
@@ -958,7 +992,9 @@ usage( char *subOpt ) {
                 ""
             };
             for ( i = 0;; i++ ) {
-                if ( strlen( msgs[i] ) == 0 ) { return( 0 ); }
+                if ( strlen( msgs[i] ) == 0 ) {
+                    return( 0 );
+                }
                 printf( "%s\n", msgs[i] );
             }
         }
@@ -972,7 +1008,9 @@ usage( char *subOpt ) {
                 ""
             };
             for ( i = 0;; i++ ) {
-                if ( strlen( msgs[i] ) == 0 ) { return( 0 ); }
+                if ( strlen( msgs[i] ) == 0 ) {
+                    return( 0 );
+                }
                 printf( "%s\n", msgs[i] );
             }
         }
@@ -985,7 +1023,9 @@ usage( char *subOpt ) {
                 ""
             };
             for ( i = 0;; i++ ) {
-                if ( strlen( msgs[i] ) == 0 ) { return( 0 ); }
+                if ( strlen( msgs[i] ) == 0 ) {
+                    return( 0 );
+                }
                 printf( "%s\n", msgs[i] );
             }
         }

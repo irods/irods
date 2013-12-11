@@ -276,7 +276,9 @@ void deleteBucket( struct bucket *b0, void ( *f )( void * ) ) {
     }
     /* todo do not delete keys if they are allocated in regions */
     free( b0->key );
-    if ( f != NULL ) { f( b0->value ); }
+    if ( f != NULL ) {
+        f( b0->value );
+    }
     free( b0 );
 }
 void nop( void *a ) {

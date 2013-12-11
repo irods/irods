@@ -103,7 +103,9 @@ usage( char *program ) {
     };
     printf( "Usage : %s [-hvV] srcDataObj|srcColl ...  destDataObj|destColl\n", program );
     for ( i = 0;; i++ ) {
-        if ( strlen( msgs[i] ) == 0 ) { break; }
+        if ( strlen( msgs[i] ) == 0 ) {
+            break;
+        }
         printf( "%s\n", msgs[i] );
     }
     printReleaseInfo( "imv" );

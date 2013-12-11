@@ -16,9 +16,9 @@
 
 namespace irods {
 
-    // =-=-=-=-=-=-=-
-    /// @brief This setting controls how backslashes in strings literals are treated.
-    // See http://www.postgresql.org/docs/9.3/static/runtime-config-compatible.html#GUC-STANDARD-CONFORMING-STRINGS
+// =-=-=-=-=-=-=-
+/// @brief This setting controls how backslashes in strings literals are treated.
+// See http://www.postgresql.org/docs/9.3/static/runtime-config-compatible.html#GUC-STANDARD-CONFORMING-STRINGS
     const std::string STANDARD_CONFORMING_STRINGS( "standard_conforming_strings" );
 
 

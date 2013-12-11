@@ -16,7 +16,9 @@ rcOoiGenServReq( rcComm_t *conn, ooiGenServReqInp_t *ooiGenServReqInp,
 int
 freeOoiGenServReqOut( ooiGenServReqOut_t **ooiGenServReqOut ) {
     if ( ooiGenServReqOut == NULL || *ooiGenServReqOut == NULL ||
-            ( *ooiGenServReqOut )->ptr == NULL ) { return 0; }
+            ( *ooiGenServReqOut )->ptr == NULL ) {
+        return 0;
+    }
 
     free( ( *ooiGenServReqOut )->ptr );
     free( *ooiGenServReqOut );

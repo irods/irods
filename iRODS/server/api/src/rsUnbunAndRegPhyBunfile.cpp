@@ -164,7 +164,9 @@ regUnbunPhySubfiles( rsComm_t *rsComm, rescInfo_t *rescInfo, char *phyBunDir,
             return ( UNIX_FILE_STAT_ERR - errno );
         }
 
-        if ( !is_regular_file( p ) ) { continue; }
+        if ( !is_regular_file( p ) ) {
+            continue;
+        }
 
         path childPath = p.filename();
         /* do the registration */
@@ -411,7 +413,9 @@ rmLinkedFilesInUnixDir( char *phyBunDir ) {
     int linkCnt;
 
     path srcDirPath( phyBunDir );
-    if ( !exists( srcDirPath ) || !is_directory( srcDirPath ) ) { return 0; }
+    if ( !exists( srcDirPath ) || !is_directory( srcDirPath ) ) {
+        return 0;
+    }
 
     directory_iterator end_itr; // default construction yields past-the-end
     for ( directory_iterator itr( srcDirPath ); itr != end_itr; ++itr ) {
@@ -455,7 +459,9 @@ rmUnlinkedFilesInUnixDir( char *phyBunDir ) {
     time_t myTime = time( 0 ) - UNLINK_FILE_AGE; // JMC - backport 4666
 
     dirPtr = opendir( phyBunDir );
-    if ( dirPtr == NULL ) { return 0; }
+    if ( dirPtr == NULL ) {
+        return 0;
+    }
     while ( ( myDirent = readdir( dirPtr ) ) != NULL ) {
         if ( strcmp( myDirent->d_name, "." ) == 0 ||
                 strcmp( myDirent->d_name, ".." ) == 0 ) {

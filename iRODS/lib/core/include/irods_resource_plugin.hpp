@@ -11,13 +11,13 @@
 #include <iostream>
 
 namespace irods {
-    /// =-=-=-=-=-=-=-
-    /// @brief typedef for resource maintenance operation for start / stop operations
+/// =-=-=-=-=-=-=-
+/// @brief typedef for resource maintenance operation for start / stop operations
     typedef error( *resource_maintenance_operation )(
         plugin_property_map&,
         resource_child_map& );
 
-    // =-=-=-=-=-=-=-
+// =-=-=-=-=-=-=-
     /**
      * \class
      * \author Jason M. Coposky
@@ -70,7 +70,9 @@ namespace irods {
         /// @brief interface to add and remove children using the zone_name::resource_name
         virtual error add_child( const std::string&, const std::string&, resource_ptr );
         virtual error remove_child( const std::string& );
-        virtual int   num_children() { return children_.size(); }
+        virtual int   num_children() {
+            return children_.size();
+        }
 
         // =-=-=-=-=-=-=-
         /// @brief interface to get and set a resource's parent pointer
@@ -84,8 +86,12 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         /// @brief interface to call start / stop functions
-        error start_operation( void ) { return ( *start_operation_ )( properties_, children_ ); }
-        error stop_operation( void ) { return ( *stop_operation_ )( properties_, children_ ); }
+        error start_operation( void ) {
+            return ( *start_operation_ )( properties_, children_ );
+        }
+        error stop_operation( void ) {
+            return ( *stop_operation_ )( properties_, children_ );
+        }
 
         // =-=-=-=-=-=-=-
         /// @brief default start operation
@@ -272,8 +278,8 @@ namespace irods {
 
     }; // class resource
 
-    // =-=-=-=-=-=-=-
-    // given the name of a resource, try to load the shared object
+// =-=-=-=-=-=-=-
+// given the name of a resource, try to load the shared object
     error load_resource_plugin( resource_ptr&,       // plugin
                                 const std::string,   // plugin name
                                 const std::string,   // instance name

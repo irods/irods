@@ -26,8 +26,8 @@
 #include <boost/assert.hpp>
 
 namespace irods {
-    /// =-=-=-=-=-=-=-
-    /// @brief error stack object which holds error history
+/// =-=-=-=-=-=-=-
+/// @brief error stack object which holds error history
     class error {
     public:
         // =-=-=-=-=-=-=-
@@ -67,8 +67,12 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // Mutators
-        void code( long long _code ) { code_   = _code;   }
-        void status( bool      _status ) { status_ = _status; }
+        void code( long long _code ) {
+            code_   = _code;
+        }
+        void status( bool      _status ) {
+            status_ = _status;
+        }
 
     private:
         // =-=-=-=-=-=-=-

@@ -13,13 +13,13 @@
 
 namespace irods {
 
-    // =-=-=-=-=-=-=-
-    // public - ctor
+// =-=-=-=-=-=-=-
+// public - ctor
     operation_wrapper::operation_wrapper( ) : operation_( 0 ) {
     } // default ctor
 
-    // =-=-=-=-=-=-=-
-    // public - ctor with opreation
+// =-=-=-=-=-=-=-
+// public - ctor with opreation
     operation_wrapper::operation_wrapper(
         oper_rule_exec_mgr_ptr _rule_exec,
         const std::string&     _inst_name,
@@ -31,8 +31,8 @@ namespace irods {
         operation_( _op ) {
     } // ctor
 
-    // =-=-=-=-=-=-=-
-    // public - cctor
+// =-=-=-=-=-=-=-
+// public - cctor
     operation_wrapper::operation_wrapper(
         const operation_wrapper& _rhs ) {
         rule_exec_mgr_  = _rhs.rule_exec_mgr_;
@@ -41,13 +41,13 @@ namespace irods {
         operation_name_ = _rhs.operation_name_;
     } // cctor
 
-    // =-=-=-=-=-=-=-
-    // public - dtor
+// =-=-=-=-=-=-=-
+// public - dtor
     operation_wrapper::~operation_wrapper( ) {
     } // dtor
 
-    // =-=-=-=-=-=-=-
-    // public - assignment for stl container
+// =-=-=-=-=-=-=-
+// public - assignment for stl container
     operation_wrapper& operation_wrapper::operator=(
         const operation_wrapper& _rhs ) {
         rule_exec_mgr_  = _rhs.rule_exec_mgr_;
@@ -57,8 +57,8 @@ namespace irods {
         return *this;
     } // operator=
 
-    // END operation_wrapper
-    // =-=-=-=-=-=-=-
+// END operation_wrapper
+// =-=-=-=-=-=-=-
 
 }; // namespace irods
 

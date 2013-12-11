@@ -187,7 +187,9 @@ jsonPackDictionary( dictionary_t *dictionary, json_t **outObj ) {
     json_t *paramObj;
     int i, status;
 
-    if ( dictionary == NULL || outObj == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( dictionary == NULL || outObj == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
 
     paramObj = json_object();
 
@@ -275,11 +277,15 @@ jsonPackOoiServReq( char *servName, char *servOpr, dictionary_t *params,
     int status;
 
     if ( servName == NULL || servOpr == NULL || params == NULL ||
-            outStr == NULL ) { return USER__NULL_INPUT_ERR; }
+            outStr == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
 
     status = jsonPackDictionary( params, &paramObj );
 
-    if ( status < 0 ) { return status; }
+    if ( status < 0 ) {
+        return status;
+    }
 
     obj = json_pack( "{s:{s:s,s:s,s:o}}",
                      SERVICE_REQUEST_STR,
@@ -308,7 +314,9 @@ jsonPackOoiServReqForPost( char *servName, char *servOpr, dictionary_t *params,
 
     status = jsonPackOoiServReq( servName, servOpr, params, &tmpOutStr );
 
-    if ( status < 0 ) { return status; }
+    if ( status < 0 ) {
+        return status;
+    }
 
     len = strlen( tmpOutStr ) + 20;
     *outStr = ( char * )malloc( len );
@@ -419,7 +427,9 @@ jsonUnpackOoiRespDict( json_t *responseObj, dictionary_t **outDict ) {
     }
     *outDict = ( dictionary_t * ) calloc( 1, sizeof( dictionary_t ) );
     status = jsonUnpackDict( responseObj, *outDict );
-    if ( status < 0 ) { free( *outDict ); }
+    if ( status < 0 ) {
+        free( *outDict );
+    }
 
     return status;
 }
@@ -436,7 +446,9 @@ jsonUnpackOoiRespArray( json_t *responseObj, genArray_t **outArray ) {
     }
     *outArray = ( genArray_t * ) calloc( 1, sizeof( genArray_t ) );
     status = jsonUnpackArray( responseObj, *outArray );
-    if ( status < 0 ) { free( *outArray ); }
+    if ( status < 0 ) {
+        free( *outArray );
+    }
 
     return status;
 }
@@ -525,7 +537,9 @@ jsonUnpackDict( json_t *dictObj, dictionary_t *outDict ) {
         }
         iter = json_object_iter_next( dictObj, iter );
     }
-    if ( status < 0 ) { clearDictionary( outDict ); }
+    if ( status < 0 ) {
+        clearDictionary( outDict );
+    }
 
     return status;
 }
@@ -614,7 +628,9 @@ jsonUnpackArray( json_t *genArrayObj, genArray_t *genArray ) {
             status = OOI_JSON_TYPE_ERR;
         }
     }
-    if ( status < 0 ) { clearGenArray( genArray ); }
+    if ( status < 0 ) {
+        clearGenArray( genArray );
+    }
 
     return status;
 }
@@ -634,7 +650,9 @@ jsonUnpackOoiRespDictArray( json_t *responseObj, dictArray_t **outDictArray ) {
     }
     arrayLen = ( int ) json_array_size( responseObj );
 
-    if ( arrayLen <= 0 ) { return OOI_JSON_NO_ANSWER_ERR; }
+    if ( arrayLen <= 0 ) {
+        return OOI_JSON_NO_ANSWER_ERR;
+    }
 
     dictArray = ( dictionary_t * ) calloc( arrayLen, sizeof( dictionary_t ) );
     for ( i = 0; i < arrayLen; i++ ) {
@@ -679,7 +697,9 @@ jsonUnpackOoiRespDictArrInArr( json_t *responseObj, dictArray_t **outDictArray,
     }
     arrayLen = ( int ) json_array_size( responseObj );
 
-    if ( arrayLen <= 0 ) { return OOI_JSON_NO_ANSWER_ERR; }
+    if ( arrayLen <= 0 ) {
+        return OOI_JSON_NO_ANSWER_ERR;
+    }
 
     if ( outInx >= arrayLen ) {
         rodsLog( LOG_ERROR,
@@ -691,7 +711,9 @@ jsonUnpackOoiRespDictArrInArr( json_t *responseObj, dictArray_t **outDictArray,
     myDictArrayObj = json_array_get( responseObj, outInx );
     arrayLen = ( int ) json_array_size( myDictArrayObj );
 
-    if ( arrayLen <= 0 ) { return OOI_JSON_NO_ANSWER_ERR; }
+    if ( arrayLen <= 0 ) {
+        return OOI_JSON_NO_ANSWER_ERR;
+    }
 
 
     dictArray = ( dictionary_t * ) calloc( arrayLen, sizeof( dictionary_t ) );
@@ -736,7 +758,9 @@ int
 _clearDictArray( dictionary_t *dictArray, int len ) {
     int i;
 
-    if ( dictArray == NULL ) { return 0; }
+    if ( dictArray == NULL ) {
+        return 0;
+    }
 
     for ( i = 0; i < len; i++ ) {
         clearDictionary( &dictArray[i] );
@@ -748,7 +772,9 @@ int
 printDictArray( dictArray_t *dictArray ) {
     int i;
 
-    if ( dictArray == NULL ) { return 0; }
+    if ( dictArray == NULL ) {
+        return 0;
+    }
 
     for ( i = 0; i < dictArray->len; i++ ) {
         printDict( &dictArray->dictionary[i] );
@@ -843,7 +869,9 @@ getObjIdFromArray( genArray_t *genArray, char *outObjId ) {
 
 int
 getStrByType_PI( char *type_PI, void *valuePtr, char *valueStr ) {
-    if ( type_PI == NULL || valuePtr == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( type_PI == NULL || valuePtr == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
 
     if ( strcmp( type_PI, STR_MS_T ) == 0 ) {
         snprintf( valueStr, NAME_LEN, "%s", ( char * )valuePtr );

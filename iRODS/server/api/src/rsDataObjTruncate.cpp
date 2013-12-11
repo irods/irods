@@ -47,7 +47,9 @@ rsDataObjTruncate( rsComm_t *rsComm, dataObjInp_t *dataObjTruncateInp ) {
     status = getDataObjInfoIncSpecColl( rsComm, dataObjTruncateInp,
                                         &dataObjInfoHead );
 
-    if ( status < 0 ) { return ( status ); }
+    if ( status < 0 ) {
+        return ( status );
+    }
 
     status = _rsDataObjTruncate( rsComm, dataObjTruncateInp, dataObjInfoHead );
 
@@ -88,10 +90,14 @@ int dataObjTruncateS( rsComm_t *rsComm, dataObjInp_t *dataObjTruncateInp,
     modDataObjMeta_t modDataObjMetaInp;
     char tmpStr[MAX_NAME_LEN];
 
-    if ( dataObjInfo->dataSize == dataObjTruncateInp->dataSize ) { return 0; }
+    if ( dataObjInfo->dataSize == dataObjTruncateInp->dataSize ) {
+        return 0;
+    }
 
     /* don't do anything for BUNDLE_RESC for now */
-    if ( strcmp( dataObjInfo->rescInfo->rescName, BUNDLE_RESC ) == 0 ) { return 0; }
+    if ( strcmp( dataObjInfo->rescInfo->rescName, BUNDLE_RESC ) == 0 ) {
+        return 0;
+    }
 
     status = l3Truncate( rsComm, dataObjTruncateInp, dataObjInfo );
 

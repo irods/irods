@@ -463,7 +463,9 @@ lsCollUtil( rcComm_t *conn, rodsPath_t *srcPath, rodsEnv *myRodsEnv,
                 memset( &tmpPath, 0, sizeof( tmpPath ) );
                 rstrcpy( tmpPath.outPath, collEnt.collName, MAX_NAME_LEN );
                 status = lsCollUtil( conn, &tmpPath, myRodsEnv, rodsArgs );
-                if ( status < 0 ) { savedStatus = status; }
+                if ( status < 0 ) {
+                    savedStatus = status;
+                }
             }
         }
     }
@@ -748,7 +750,9 @@ printCollOrDir( char *myName, objType_t myType, rodsArguments_t *rodsArgs,
                 specColl_t *specColl ) {
     char *typeStr;
 
-    if ( rodsArgs->verbose == False ) { return; }
+    if ( rodsArgs->verbose == False ) {
+        return;
+    }
 
     if ( myType == COLL_OBJ_T ) {
         typeStr = "C";
@@ -761,7 +765,9 @@ printCollOrDir( char *myName, objType_t myType, rodsArguments_t *rodsArgs,
         char objType[NAME_LEN];
         int status;
         status = getSpecCollTypeStr( specColl, objType );
-        if ( status < 0 ) { objType[0] = '\0'; }
+        if ( status < 0 ) {
+            objType[0] = '\0';
+        }
         fprintf( stdout, "%s- %s    %-5.5s :\n", typeStr, myName, objType );
     }
     else {

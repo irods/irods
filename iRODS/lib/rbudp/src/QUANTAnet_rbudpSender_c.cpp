@@ -88,7 +88,9 @@ int  sendBuf( rbudpSender_t *rbudpSender, void * buffer, int bufSize,
         }
         reportTime( &curTime );
         status = udpSend( rbudpSender );
-        if ( status < 0 ) { return status; }
+        if ( status < 0 ) {
+            return status;
+        }
 
         srate = ( double ) rbudpSender->rbudpBase.remainNumberOfPackets *
                 rbudpSender->rbudpBase.payloadSize * 8 /
@@ -184,7 +186,8 @@ void  udpSendWritev() {
     int i, done, actualPayloadSize;
     struct timeval start, now;
 
-    done = 0; i = 0;
+    done = 0;
+    i = 0;
     gettimeofday( &start, NULL );
     while ( !done ) {
         gettimeofday( &now, NULL );
@@ -206,7 +209,9 @@ void  udpSendWritev() {
 
             iovSend[1].iov_base = ( char* )mainBuffer + ( sendHeader.seq * payloadSize );
             iovSend[1].iov_len = actualPayloadSize;
-            if ( verbose > 1 ) { fprintf( stderr, "sent %d, %d %d\n", sendHeader.seq, now.tv_sec, now.tv_usec ); }
+            if ( verbose > 1 ) {
+                fprintf( stderr, "sent %d, %d %d\n", sendHeader.seq, now.tv_sec, now.tv_usec );
+            }
             if ( sendmsg( udpSockfd, &msgSend, 0 ) < 0 ) {
                 perror( "sendmsg" );
                 exit( 1 );
@@ -229,7 +234,8 @@ udpSend( rbudpSender_t *rbudpSender ) {
     char *msg = ( char * ) malloc( rbudpSender->rbudpBase.packetSize );
     int sendErrCnt = 0;
 
-    done = 0; i = 0;
+    done = 0;
+    i = 0;
     gettimeofday( &start, NULL );
     while ( !done ) {
         gettimeofday( &now, NULL );
@@ -330,7 +336,9 @@ int  sendstream( rbudpSender_t *rbudpSender, int fromfd, int sendRate,
                 return( FAILED );
             }
         }
-        if ( verbose > 1 ) { fprintf( stderr, "sending %lld bytes\n", bytesread ); }
+        if ( verbose > 1 ) {
+            fprintf( stderr, "sending %lld bytes\n", bytesread );
+        }
         sendBuf( rbudpSender, buf, bytesread, sendRate, packetSize );
     }
     close( fromfd );
@@ -357,7 +365,9 @@ int  rbSendfile( rbudpSender_t *rbudpSender, int sendRate, int packetSize,
         }
     }
 
-    if ( verbose > 0 ) { fprintf( stderr, "Send file %s\n", fname ); }
+    if ( verbose > 0 ) {
+        fprintf( stderr, "Send file %s\n", fname );
+    }
 
     int fd = open( fname, O_RDONLY );
     if ( fd < 0 ) {
@@ -385,10 +395,14 @@ int  sendfileByFd( rbudpSender_t *rbudpSender, int sendRate, int packetSize,
     }
 
     long long filesize = filestat.st_size;
-    if ( verbose > 0 ) { fprintf( stderr, "The size of the file is %lld\n", filesize ); }
+    if ( verbose > 0 ) {
+        fprintf( stderr, "The size of the file is %lld\n", filesize );
+    }
 
     long long nfilesize = rb_htonll( filesize );
-    if ( verbose > 0 ) { fprintf( stderr, "write %d bytess.\n", ( int ) sizeof( nfilesize ) ); }
+    if ( verbose > 0 ) {
+        fprintf( stderr, "write %d bytess.\n", ( int ) sizeof( nfilesize ) );
+    }
 
     // Send the file size to the receiver.
     if ( writen( tcpSockfd, ( char * )&nfilesize, sizeof( nfilesize ) ) != sizeof( nfilesize ) ) {
@@ -454,7 +468,9 @@ int  sendfilelist( rbudpSender_t *rbudpSender, int sendRate, int packetSize ) {
         bzero( ( void* )test, SIZEOFFILENAME );
         if ( strcmp( test, fname ) != 0 ) {
 
-            if ( verbose > 0 ) { fprintf( stderr, "Send file %s\n", fname ); }
+            if ( verbose > 0 ) {
+                fprintf( stderr, "Send file %s\n", fname );
+            }
 
             struct stat filestat;
             if ( stat( fname, &filestat ) < 0 ) {
@@ -463,7 +479,9 @@ int  sendfilelist( rbudpSender_t *rbudpSender, int sendRate, int packetSize ) {
             }
 
             long long filesize = filestat.st_size;
-            if ( verbose > 0 ) { fprintf( stderr, "The size of the file is %lld\n", filesize ); }
+            if ( verbose > 0 ) {
+                fprintf( stderr, "The size of the file is %lld\n", filesize );
+            }
 
             long long nfilesize = rb_htonll( filesize );
 

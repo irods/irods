@@ -259,12 +259,16 @@ getSpecCollCache( rsComm_t *rsComm, char *objPath,
     }
 
     status = querySpecColl( rsComm, objPath, &genQueryOut );
-    if ( status < 0 ) { return ( status ); }
+    if ( status < 0 ) {
+        return ( status );
+    }
 
     status = queueSpecCollCache( rsComm, genQueryOut, objPath ); // JMC - backport 4680
     freeGenQueryOut( &genQueryOut );
 
-    if ( status < 0 ) { return ( status ); }
+    if ( status < 0 ) {
+        return ( status );
+    }
     *specCollCache = SpecCollCacheHead;  /* queued at top */
 
     return ( 0 );
@@ -402,7 +406,9 @@ specCollSubStat( rsComm_t *rsComm, specColl_t *specColl,
     rodsStat_t *rodsStat = NULL;
     dataObjInfo_t *myDataObjInfo = NULL;;
 
-    if ( dataObjInfo == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( dataObjInfo == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
     *dataObjInfo = NULL;
 
     if ( specColl->collClass == MOUNTED_COLL ) {
@@ -470,7 +476,9 @@ specCollSubStat( rsComm_t *rsComm, specColl_t *specColl,
         }
 
         status = resolveLinkedPath( rsComm, newPath, &specCollCache, NULL );
-        if ( status < 0 ) { return status; }
+        if ( status < 0 ) {
+            return status;
+        }
         if ( specCollCache != NULL &&
                 specCollCache->specColl.collClass != LINKED_COLL ) {
 
@@ -740,7 +748,9 @@ resolveLinkedPath( rsComm_t *rsComm, char *objPath,
             return ( status );
         }
     }
-    if ( *specCollCache == NULL ) { *specCollCache = oldSpecCollCache; }
+    if ( *specCollCache == NULL ) {
+        *specCollCache = oldSpecCollCache;
+    }
     return linkCnt;
 }
 

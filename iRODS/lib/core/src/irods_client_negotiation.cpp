@@ -17,8 +17,8 @@
 
 
 namespace irods {
-    /// =-=-=-=-=-=-=-
-    /// @brief convenience class to initialize the table and index map for negotiations
+/// =-=-=-=-=-=-=-
+/// @brief convenience class to initialize the table and index map for negotiations
     class client_server_negotiations_context {
         typedef std::map < std::string, int > negotiation_map_t;
         typedef std::pair< std::string, int > negotiation_pair_t;
@@ -87,9 +87,9 @@ namespace irods {
 
     }; // class client_server_negotiations_context
 
-    /// =-=-=-=-=-=-=-
-    /// @brief function which determines if a client/server negotiation is needed
-    ///        on the client side
+/// =-=-=-=-=-=-=-
+/// @brief function which determines if a client/server negotiation is needed
+///        on the client side
     bool do_client_server_negotiation_for_client( ) {
         // =-=-=-=-=-=-=-
         // get the irods environment so we can compare the
@@ -120,9 +120,9 @@ namespace irods {
 
     } // do_client_server_negotiation_for_client
 
-    /// =-=-=-=-=-=-=-
-    /// @brief function which determines if a client/server negotiation is needed
-    ///        on the server side
+/// =-=-=-=-=-=-=-
+/// @brief function which determines if a client/server negotiation is needed
+///        on the server side
     bool do_client_server_negotiation_for_server( ) {
         // =-=-=-=-=-=-=-
         // check the SP_OPTION for the string stating a negotiation is requested
@@ -148,8 +148,8 @@ namespace irods {
 
     } // do_client_server_negotiation_for_server
 
-    /// =-=-=-=-=-=-=-
-    /// @brief function which manages the TLS and Auth negotiations with the client
+/// =-=-=-=-=-=-=-
+/// @brief function which manages the TLS and Auth negotiations with the client
     error client_server_negotiation_for_client(
         irods::network_object_ptr _ptr,
         std::string&               _result ) {
@@ -246,8 +246,8 @@ namespace irods {
 
     } // client_server_negotiation_for_client
 
-    /// =-=-=-=-=-=-=-
-    /// @brief function which sends the negotiation message
+/// =-=-=-=-=-=-=-
+/// @brief function which sends the negotiation message
     error send_client_server_negotiation_message(
         irods::network_object_ptr _ptr,
         cs_neg_t&                  _cs_neg_msg ) {
@@ -280,8 +280,8 @@ namespace irods {
 
     } // send_client_server_negotiation_message
 
-    /// =-=-=-=-=-=-=-
-    /// @brief function which sends the negotiation message
+/// =-=-=-=-=-=-=-
+/// @brief function which sends the negotiation message
     error read_client_server_negotiation_message(
         irods::network_object_ptr      _ptr,
         boost::shared_ptr< cs_neg_t >&  _cs_neg_msg ) {

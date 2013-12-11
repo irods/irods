@@ -877,10 +877,14 @@ ExprType* typeFunction3( Node* node, int dynamictyping, Env* funcDesc, Hashtable
     }
     else {
         ExprType *fnType = typeExpression3( fn, dynamictyping, funcDesc, var_type_table, typingConstraints, errmsg, errnode, r );
-        if ( getNodeType( fnType ) == T_ERROR ) { return fnType; }
+        if ( getNodeType( fnType ) == T_ERROR ) {
+            return fnType;
+        }
         N_TUPLE_CONSTRUCT_TUPLE( arg ) = 1; /* arg must be a N_TUPLE node */
         ExprType *argType = typeExpression3( arg, dynamictyping, funcDesc, var_type_table, typingConstraints, errmsg, errnode, r );
-        if ( getNodeType( argType ) == T_ERROR ) { return argType; }
+        if ( getNodeType( argType ) == T_ERROR ) {
+            return argType;
+        }
 
         ExprType *fType = getNodeType( fnType ) == T_CONS && strcmp( fnType->text, FUNC ) == 0 ? fnType : unifyWith( fnType, newFuncType( newTVar( r ), newTVar( r ), r ), var_type_table, r );
 

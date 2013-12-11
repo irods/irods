@@ -315,15 +315,21 @@ int checkIPaddress( char *IP, unsigned char IPcomp[IPV4] ) {
 
     strcpy( IPclone, IP );
     i = atoi( strtok( IPclone, delimIP ) );
-    if ( i < 0 || i > 255 ) { return -1; }
+    if ( i < 0 || i > 255 ) {
+        return -1;
+    }
     IPcomp[0] = i;
     while ( ( eltstrIP = strtok( NULL, delimIP ) ) ) {
         nelt++;
         i = atoi( eltstrIP );
-        if ( i < 0 || i > 255 ) { return -1; }
+        if ( i < 0 || i > 255 ) {
+            return -1;
+        }
         IPcomp[nelt] = i;
     }
-    if ( ( nelt + 1 ) != IPV4 ) { return -1; }
+    if ( ( nelt + 1 ) != IPV4 ) {
+        return -1;
+    }
     return ( 0 );
 
 }
@@ -388,7 +394,10 @@ int checkHostAccessControl( char *username, char *hostclient, char *groupsname )
                                     iok = 0;
                                 }
                             }
-                            if ( iok == 1 ) { fclose( fp ); return ( 0 ); } // JMC cppcheck - resource
+                            if ( iok == 1 ) {
+                                fclose( fp );    // JMC cppcheck - resource
+                                return ( 0 );
+                            }
                         }
                     }
                 }

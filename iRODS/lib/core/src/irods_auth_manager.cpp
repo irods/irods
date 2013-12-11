@@ -5,8 +5,8 @@
 #include "irods_auth_plugin.hpp"
 
 namespace irods {
-    // =-=-=-=-=-=-=-
-    // globally available auth manager
+// =-=-=-=-=-=-=-
+// globally available auth manager
     auth_manager auth_mgr;
 
     auth_manager::auth_manager( void ) {

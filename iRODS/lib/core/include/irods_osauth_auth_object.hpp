@@ -14,12 +14,12 @@
 
 namespace irods {
 
-    /// =-=-=-=-=-=-=-
-    /// @brief constant defining the native auth scheme string
+/// =-=-=-=-=-=-=-
+/// @brief constant defining the native auth scheme string
     const std::string AUTH_OSAUTH_SCHEME( "osauth" );
 
-    /// =-=-=-=-=-=-=-
-    /// @brief object for a native irods authenticaion sceheme
+/// =-=-=-=-=-=-=-
+/// @brief object for a native irods authenticaion sceheme
     class osauth_auth_object : public auth_object {
     public:
         /// =-=-=-=-=-=-=-
@@ -48,15 +48,27 @@ namespace irods {
 
         /// =-=-=-=-=-=-=-
         /// @brief accessors
-        std::string user_name() const { return user_name_; }
-        std::string zone_name() const { return zone_name_; }
-        std::string digest() const { return digest_;    }
+        std::string user_name() const {
+            return user_name_;
+        }
+        std::string zone_name() const {
+            return zone_name_;
+        }
+        std::string digest() const {
+            return digest_;
+        }
 
         /// =-=-=-=-=-=-=-
         /// @brief mutators
-        void user_name( const std::string& _un ) { user_name_ = _un; }
-        void zone_name( const std::string& _zn ) { zone_name_ = _zn; }
-        void digest( const std::string& _dd ) { digest_    = _dd; }
+        void user_name( const std::string& _un ) {
+            user_name_ = _un;
+        }
+        void zone_name( const std::string& _zn ) {
+            zone_name_ = _zn;
+        }
+        void digest( const std::string& _dd ) {
+            digest_    = _dd;
+        }
 
     private:
         /// =-=-=-=-=-=-=-
@@ -73,7 +85,7 @@ namespace irods {
 
     }; // class osauth_auth_object
 
-    /// @brief Helpful typedef
+/// @brief Helpful typedef
     typedef boost::shared_ptr<osauth_auth_object> osauth_auth_object_ptr;
 
 }; // namespace irods

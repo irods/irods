@@ -169,7 +169,9 @@ int doLs3( char *repCount ) {
     iRepCount = atoi( repCount );
     for ( i = 0; i < iRepCount; i++ ) {
         status = doLs3a();
-        if ( status ) { break; }
+        if ( status ) {
+            break;
+        }
     }
     return( status );
 }
@@ -504,11 +506,21 @@ doTest9( char *testString, char *testString2 ) {
 
     type = 0;
     if ( testString2 != NULL ) {
-        if ( strcmp( testString2, "min" ) == 0 ) { type = 1; }
-        if ( strcmp( testString2, "max" ) == 0 ) { type = 2; }
-        if ( strcmp( testString2, "sum" ) == 0 ) { type = 3; }
-        if ( strcmp( testString2, "avg" ) == 0 ) { type = 4; }
-        if ( strcmp( testString2, "count" ) == 0 ) { type = 5; }
+        if ( strcmp( testString2, "min" ) == 0 ) {
+            type = 1;
+        }
+        if ( strcmp( testString2, "max" ) == 0 ) {
+            type = 2;
+        }
+        if ( strcmp( testString2, "sum" ) == 0 ) {
+            type = 3;
+        }
+        if ( strcmp( testString2, "avg" ) == 0 ) {
+            type = 4;
+        }
+        if ( strcmp( testString2, "count" ) == 0 ) {
+            type = 5;
+        }
     }
 
     if ( type == 0 ) {
@@ -834,22 +846,54 @@ main( int argc, char **argv ) {
     done = 0;
     mode = 0;
     if ( argc >= 2 ) {
-        if ( strcmp( argv[1], "gen" ) == 0 ) { mode = 1; }
-        if ( strcmp( argv[1], "ls" ) == 0 ) { mode = 2; }
-        if ( strcmp( argv[1], "gen2" ) == 0 ) { mode = 3; }
-        if ( strcmp( argv[1], "gen3" ) == 0 ) { mode = 4; }
-        if ( strcmp( argv[1], "gen4" ) == 0 ) { mode = 5; }
-        if ( strcmp( argv[1], "gen5" ) == 0 ) { mode = 6; }
-        if ( strcmp( argv[1], "gen6" ) == 0 ) { mode = 7; }
-        if ( strcmp( argv[1], "gen7" ) == 0 ) { mode = 8; }
-        if ( strcmp( argv[1], "gen8" ) == 0 ) { mode = 9; }
-        if ( strcmp( argv[1], "gen9" ) == 0 ) { mode = 10; }
-        if ( strcmp( argv[1], "gen10" ) == 0 ) { mode = 11; }
-        if ( strcmp( argv[1], "gen11" ) == 0 ) { mode = 12; }
-        if ( strcmp( argv[1], "gen12" ) == 0 ) { mode = 13; }
-        if ( strcmp( argv[1], "gen13" ) == 0 ) { mode = 14; }
-        if ( strcmp( argv[1], "lsr" ) == 0 ) { mode = 15; }
-        if ( strcmp( argv[1], "gen15" ) == 0 ) { mode = 16; }
+        if ( strcmp( argv[1], "gen" ) == 0 ) {
+            mode = 1;
+        }
+        if ( strcmp( argv[1], "ls" ) == 0 ) {
+            mode = 2;
+        }
+        if ( strcmp( argv[1], "gen2" ) == 0 ) {
+            mode = 3;
+        }
+        if ( strcmp( argv[1], "gen3" ) == 0 ) {
+            mode = 4;
+        }
+        if ( strcmp( argv[1], "gen4" ) == 0 ) {
+            mode = 5;
+        }
+        if ( strcmp( argv[1], "gen5" ) == 0 ) {
+            mode = 6;
+        }
+        if ( strcmp( argv[1], "gen6" ) == 0 ) {
+            mode = 7;
+        }
+        if ( strcmp( argv[1], "gen7" ) == 0 ) {
+            mode = 8;
+        }
+        if ( strcmp( argv[1], "gen8" ) == 0 ) {
+            mode = 9;
+        }
+        if ( strcmp( argv[1], "gen9" ) == 0 ) {
+            mode = 10;
+        }
+        if ( strcmp( argv[1], "gen10" ) == 0 ) {
+            mode = 11;
+        }
+        if ( strcmp( argv[1], "gen11" ) == 0 ) {
+            mode = 12;
+        }
+        if ( strcmp( argv[1], "gen12" ) == 0 ) {
+            mode = 13;
+        }
+        if ( strcmp( argv[1], "gen13" ) == 0 ) {
+            mode = 14;
+        }
+        if ( strcmp( argv[1], "lsr" ) == 0 ) {
+            mode = 15;
+        }
+        if ( strcmp( argv[1], "gen15" ) == 0 ) {
+            mode = 16;
+        }
     }
 
     if ( argc == 3 && mode == 0 ) {
@@ -992,51 +1036,69 @@ main( int argc, char **argv ) {
 
         if ( mode == 8 ) {
             status = doTest7( argv[2], argv[3], argv[4], argv[5] );
-            if ( status < 0 ) { exit( 1 ); }
+            if ( status < 0 ) {
+                exit( 1 );
+            }
             exit( 0 );
         }
 
         if ( mode == 9 ) {
             status = doTest8( argv[2], argv[3], argv[4] );
-            if ( status < 0 ) { exit( 2 ); }
+            if ( status < 0 ) {
+                exit( 2 );
+            }
             exit( 0 );
         }
 
         if ( mode == 10 ) {
             status = doTest9( argv[2], argv[3] );
-            if ( status < 0 ) { exit( 2 ); }
+            if ( status < 0 ) {
+                exit( 2 );
+            }
             exit( 0 );
         }
 
         if ( mode == 11 ) {
             status = doTest10( argv[2], argv[3], argv[4], argv[5] );
-            if ( status < 0 ) { exit( 2 ); }
+            if ( status < 0 ) {
+                exit( 2 );
+            }
             exit( 0 );
         }
 
         if ( mode == 12 ) {
             status = doTest11( argv[2], argv[3], argv[4], argv[5], argv[6] );
-            if ( status < 0 ) { exit( 2 ); }
+            if ( status < 0 ) {
+                exit( 2 );
+            }
             exit( 0 );
         }
         if ( mode == 13 ) {
             status = doTest12( argv[2], argv[3], argv[4], argv[5] );
-            if ( status < 0 ) { exit( 2 ); }
+            if ( status < 0 ) {
+                exit( 2 );
+            }
             exit( 0 );
         }
         if ( mode == 14 ) {
             status = doTest13( argv[2], argv[3], argv[4], argv[5], argv[6] );
-            if ( status < 0 ) { exit( 2 ); }
+            if ( status < 0 ) {
+                exit( 2 );
+            }
             exit( 0 );
         }
         if ( mode == 15 ) {
             status = doLs3( argv[2] );
-            if ( status < 0 ) { exit( 2 ); }
+            if ( status < 0 ) {
+                exit( 2 );
+            }
             exit( 0 );
         }
         if ( mode == 16 ) {
             status = doTest15( argv[2], argv[3], argv[4] );
-            if ( status < 0 ) { exit( 2 ); }
+            if ( status < 0 ) {
+                exit( 2 );
+            }
             exit( 0 );
         }
 

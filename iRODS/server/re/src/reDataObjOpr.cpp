@@ -2973,7 +2973,9 @@ _rsCollRsync( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                                    destChildPath );
         }
         free( collEnt );    /* just free collEnt but not content */
-        if ( status < 0 ) { break; }
+        if ( status < 0 ) {
+            break;
+        }
     }
     rsCloseCollection( rsComm, &handleInx );
     if ( status1 < 0 && status1 != CAT_NO_ROWS_FOUND ) {

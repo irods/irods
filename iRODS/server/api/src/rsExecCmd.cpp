@@ -101,7 +101,9 @@ rsExecCmd( rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut ) 
 
         status = sortObjInfoForOpen( rsComm, &dataObjInfoHead, &execCmdInp->condInput, 0 );
 
-        if ( status < 0 || NULL == dataObjInfoHead ) { return status; } // JMC cppcheck nullptr
+        if ( status < 0 || NULL == dataObjInfoHead ) {
+            return status;    // JMC cppcheck nullptr
+        }
 
         if ( execCmdInp->addPathToArgv > 0 ) {
             char tmpArgv[LONG_NAME_LEN];

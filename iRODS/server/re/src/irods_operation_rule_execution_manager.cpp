@@ -9,8 +9,8 @@
 #include "irods_operation_rule_execution_manager.hpp"
 
 namespace irods {
-    // =-=-=-=-=-=-=-
-    // public - Constructor
+// =-=-=-=-=-=-=-
+// public - Constructor
     operation_rule_execution_manager::operation_rule_execution_manager(
         const std::string& _instance,
         const std::string& _op_name ) :
@@ -21,8 +21,8 @@ namespace irods {
 
     } // ctor
 
-    // =-=-=-=-=-=-=-
-    // public - execute rule for pre operation
+// =-=-=-=-=-=-=-
+// public - execute rule for pre operation
     error operation_rule_execution_manager::exec_pre_op(
         keyValPair_t& _kvp,
         std::string&  _res ) {
@@ -36,8 +36,8 @@ namespace irods {
 
     } // exec_post_op
 
-    // =-=-=-=-=-=-=-
-    // public - execute rule for post operation
+// =-=-=-=-=-=-=-
+// public - execute rule for post operation
     error operation_rule_execution_manager::exec_post_op(
         keyValPair_t& _kvp,
         std::string&  _res ) {
@@ -51,8 +51,8 @@ namespace irods {
 
     } // exec_post_op
 
-    // =-=-=-=-=-=-=-
-    // private - execute rule for pre operation
+// =-=-=-=-=-=-=-
+// private - execute rule for pre operation
     error operation_rule_execution_manager::exec_op(
         keyValPair_t&      _kvp,
         const std::string& _name,

@@ -36,7 +36,9 @@ printGenQueryResults( rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
     else {
         if ( status != CAT_NO_ROWS_FOUND ) {
             for ( i = 0; i < genQueryOut->rowCnt; i++ ) {
-                if ( i > 0 && descriptions ) { printf( "----\n" ); }
+                if ( i > 0 && descriptions ) {
+                    printf( "----\n" );
+                }
                 for ( j = 0; j < genQueryOut->attriCnt; j++ ) {
                     char *tResult;
                     tResult = genQueryOut->sqlResult[j].value;
@@ -61,7 +63,9 @@ printGenQueryResults( rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
                     }
                     printCount++;
                 }
-                if ( formatFlag == 1 ) { printf( "\n" ); }
+                if ( formatFlag == 1 ) {
+                    printf( "\n" );
+                }
             }
         }
     }
@@ -172,7 +176,9 @@ showRuleExec( char *name, char *ruleName, int allFlag ) {
     while ( status == 0 && genQueryOut->continueInx > 0 ) {
         genQueryInp.continueInx = genQueryOut->continueInx;
         status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
-        if ( genQueryOut->rowCnt > 0 ) { printf( "----\n" ); }
+        if ( genQueryOut->rowCnt > 0 ) {
+            printf( "----\n" );
+        }
         printCount += printGenQueryResults( Conn, status, genQueryOut,
                                             columnNames, 0 );
     }
@@ -281,7 +287,9 @@ main( int argc, char **argv ) {
     }
 
     strncpy( userName, myEnv.rodsUserName, NAME_LEN );
-    if ( myRodsArgs.user ) { strncpy( userName, myRodsArgs.userString, NAME_LEN ); }
+    if ( myRodsArgs.user ) {
+        strncpy( userName, myRodsArgs.userString, NAME_LEN );
+    }
 
     Conn = rcConnect( myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
                       myEnv.rodsZone, 0, &errMsg );
@@ -292,7 +300,9 @@ main( int argc, char **argv ) {
 
     status = clientLogin( Conn );
     if ( status != 0 ) {
-        if ( !debug ) { exit( 3 ); }
+        if ( !debug ) {
+            exit( 3 );
+        }
     }
 
     nArgs = argc - myRodsArgs.optind;
@@ -334,7 +344,9 @@ void usage() {
     };
     int i;
     for ( i = 0;; i++ ) {
-        if ( strlen( msgs[i] ) == 0 ) { break; }
+        if ( strlen( msgs[i] ) == 0 ) {
+            break;
+        }
         printf( "%s\n", msgs[i] );
     }
     printReleaseInfo( "iqstat" );

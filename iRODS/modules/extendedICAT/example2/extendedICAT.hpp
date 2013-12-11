@@ -36,61 +36,61 @@
 
 #ifdef EXTENDED_ICAT_TABLES_1
 typedef struct {
-   int columnId;
-   char *columnName;
+    int columnId;
+    char *columnName;
 } extColumnName_t;
 
 /* These are used by 'iquest' to know which names are valid and how
    they map to the above COL_* defined values */
 extColumnName_t extColumnNames[] = {
-   { COL_ARCHIVE_KEYWORD,  "ARCHIVE_KEYWORD", }, 
-   { COL_ARCHIVE_NAME,     "ARCHIVE_NAME", }, 
-   { COL_ARCHIVE_CASE,     "ARCHIVE_CASE", }, 
-   { COL_COMPRESSION_KEYWORD,       "COMPRESSION_KEYWORD", }, 
-   { COL_COMPRESSION_TYPE,          "COMPRESSION_TYPE", }, 
-   { COL_COMPRESSION_EXTENSION,     "COMPRESSION_EXTENSION", }, 
-   { COL_COMPRESSION_MIME_ENCODING, "COMPRESSION_MIME_ENCODING", }, 
-   { COL_COMPRESSION_ARCHIVE_LIST,  "COMPRESSION_ARCHIVE_LIST", }, 
-   { COL_FORMAT_KEYWORD,       "FORMAT_KEYWORD", }, 
-   { COL_FORMAT_TYPE,          "FORMAT_TYPE", }, 
-   { COL_FORMAT_NAME,          "FORMAT_NAME", }, 
-   { COL_FORMAT_EXTENSION,     "FORMAT_EXTENSION", }, 
-   { COL_FORMAT_MIME_TYPES,    "FORMAT_MIME_TYPES", }, 
-   { COL_FORMAT_ARCHIVE_LIST,  "FORMAT_ARCHIVE_LIST", }, 
+    { COL_ARCHIVE_KEYWORD,  "ARCHIVE_KEYWORD", },
+    { COL_ARCHIVE_NAME,     "ARCHIVE_NAME", },
+    { COL_ARCHIVE_CASE,     "ARCHIVE_CASE", },
+    { COL_COMPRESSION_KEYWORD,       "COMPRESSION_KEYWORD", },
+    { COL_COMPRESSION_TYPE,          "COMPRESSION_TYPE", },
+    { COL_COMPRESSION_EXTENSION,     "COMPRESSION_EXTENSION", },
+    { COL_COMPRESSION_MIME_ENCODING, "COMPRESSION_MIME_ENCODING", },
+    { COL_COMPRESSION_ARCHIVE_LIST,  "COMPRESSION_ARCHIVE_LIST", },
+    { COL_FORMAT_KEYWORD,       "FORMAT_KEYWORD", },
+    { COL_FORMAT_TYPE,          "FORMAT_TYPE", },
+    { COL_FORMAT_NAME,          "FORMAT_NAME", },
+    { COL_FORMAT_EXTENSION,     "FORMAT_EXTENSION", },
+    { COL_FORMAT_MIME_TYPES,    "FORMAT_MIME_TYPES", },
+    { COL_FORMAT_ARCHIVE_LIST,  "FORMAT_ARCHIVE_LIST", },
 };
 
-int NumOfExtColumnNames = sizeof(extColumnNames) / sizeof(extColumnName_t);
+int NumOfExtColumnNames = sizeof( extColumnNames ) / sizeof( extColumnName_t );
 #endif  /* EXTENDED_ICAT_TABLES_1 */
 
 #ifdef EXTENDED_ICAT_TABLES_2
 
 typedef struct {
-   char *tableName;
-   char *tableAlias;
+    char *tableName;
+    char *tableAlias;
 } extTables_t;
 
 extTables_t extTables[] = {
-   { "cadc_config_archive_case",  "cadc_config_archive_case", },
-   { "cadc_config_compression",  "cadc_config_compression", },
-   { "cadc_config_format",  "cadc_config_format", },
+    { "cadc_config_archive_case",  "cadc_config_archive_case", },
+    { "cadc_config_compression",  "cadc_config_compression", },
+    { "cadc_config_format",  "cadc_config_format", },
 };
 
-int NumOfExtTables = sizeof(extTables) / sizeof(extTables_t);
+int NumOfExtTables = sizeof( extTables ) / sizeof( extTables_t );
 
 typedef struct {
-   int column_id;
-   char *column_table_name;
-   char *column_name;
+    int column_id;
+    char *column_table_name;
+    char *column_name;
 } extColumns_t;
 
-extColumns_t extColumns[] = { 
-   { COL_ARCHIVE_KEYWORD, "cadc_config_archive_case", "archive_keyword", },
-   { COL_ARCHIVE_NAME, "cadc_config_archive_case", "archive_name", },
-   { COL_ARCHIVE_CASE, "cadc_config_archive_case", "archive_case", },
-   { COL_COMPRESSION_KEYWORD, "cadc_config_compression", "compression_keyword", },
+extColumns_t extColumns[] = {
+    { COL_ARCHIVE_KEYWORD, "cadc_config_archive_case", "archive_keyword", },
+    { COL_ARCHIVE_NAME, "cadc_config_archive_case", "archive_name", },
+    { COL_ARCHIVE_CASE, "cadc_config_archive_case", "archive_case", },
+    { COL_COMPRESSION_KEYWORD, "cadc_config_compression", "compression_keyword", },
 };
 
-int NumOfExtColumns = sizeof(extColumns) / sizeof(extColumns_t);
+int NumOfExtColumns = sizeof( extColumns ) / sizeof( extColumns_t );
 
 #endif  /* EXTENDED_ICAT_TABLES_2 */
 

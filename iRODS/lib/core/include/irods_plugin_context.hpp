@@ -13,8 +13,8 @@
 #include "irods_first_class_object.hpp"
 
 namespace irods {
-    // =-=-=-=-=-=-=-
-    // base context class for communicating to plugins
+// =-=-=-=-=-=-=-
+// base context class for communicating to plugins
     class plugin_context {
     public:
         // =-=-=-=-=-=-=-
@@ -59,13 +59,21 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // accessors
-        virtual plugin_property_map&   prop_map()     { return prop_map_;  }
-        virtual first_class_object_ptr fco()          { return fco_;       }
-        virtual const std::string      rule_results() { return results_;   }
+        virtual plugin_property_map&   prop_map()     {
+            return prop_map_;
+        }
+        virtual first_class_object_ptr fco()          {
+            return fco_;
+        }
+        virtual const std::string      rule_results() {
+            return results_;
+        }
 
         // =-=-=-=-=-=-=-
         // mutators
-        virtual void rule_results( const std::string& _s ) { results_ = _s; }
+        virtual void rule_results( const std::string& _s ) {
+            results_ = _s;
+        }
 
     protected:
         // =-=-=-=-=-=-=-
@@ -76,8 +84,8 @@ namespace irods {
 
     }; // class plugin_context
 
-    /// =-=-=-=-=-=-=-
-    /// @brief type for the generic plugin operation
+/// =-=-=-=-=-=-=-
+/// @brief type for the generic plugin operation
     typedef error( *plugin_operation )( plugin_context&, ... );
 
 }; // namespace irods
