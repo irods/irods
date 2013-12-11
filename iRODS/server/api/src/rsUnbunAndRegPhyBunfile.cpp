@@ -272,8 +272,15 @@ regPhySubFile( rsComm_t *rsComm, char *subfilePath,
             return ( status );
         }
     }
+
     /* make the necessary dir */
-    mkDirForFilePath( rsComm, "/", stageDataObjInfo.filePath, getDefDirMode() );
+    mkDirForFilePath(
+        rsComm,
+        "/",
+        stageDataObjInfo.filePath,
+        stageDataObjInfo.rescHier,
+        getDefDirMode() );
+
     /* add a link */
     status = link( subfilePath, stageDataObjInfo.filePath );
     if ( status < 0 ) {

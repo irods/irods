@@ -117,7 +117,12 @@ int _rsFileStageToCache(
     // =-=-=-=-=-=-=-
     // need to make this now. It will be difficult to do it with
     // parallel I/O
-    mkDirForFilePath( _comm, "/", _stage_inp->cacheFilename, getDefDirMode() );
+    mkDirForFilePath(
+        _comm,
+        "/",
+        _stage_inp->cacheFilename,
+        _stage_inp->rescHier,
+        getDefDirMode() );
 
     if ( _stage_inp->objPath[0] == '\0' ) {
         std::stringstream msg;

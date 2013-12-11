@@ -113,6 +113,7 @@ mkDirForFilePath(
     rsComm_t *rsComm,
     const char *startDir,
     const char *filePath,
+    const char *hier,
     int mode ) {
     int status;
 
@@ -125,7 +126,7 @@ mkDirForFilePath(
         return ( status );
     }
 
-    status = mkFileDirR( rsComm, startDir, myDir, mode );
+    status = mkFileDirR( rsComm, startDir, myDir, hier, mode );
 
     return ( status );
 }
@@ -136,6 +137,7 @@ int mkFileDirR(
     rsComm_t *rsComm,
     const char *startDir,
     const char *destDir,
+    const char *hier,
     int mode ) {
 
     int startLen;
@@ -151,8 +153,15 @@ int mkFileDirR(
     tmpLen = pathLen;
 
     while ( tmpLen > startLen ) {
-        irods::collection_object_ptr tmp_coll_obj( new irods::collection_object( tmpPath, irods::LOCAL_USE_ONLY_RESOURCE, 0, 0 ) );
-        irods::error stat_err = fileStat( rsComm, tmp_coll_obj, &statbuf );
+        irods::collection_object_ptr tmp_coll_obj(
+            new irods::collection_object(
+                tmpPath,
+                hier,
+                0, 0 ) );
+        irods::error stat_err = fileStat(
+                                    rsComm,
+                                    tmp_coll_obj,
+                                    &statbuf );
         if ( stat_err.code() >= 0 ) {
             if ( statbuf.st_mode & S_IFDIR ) {
                 break;

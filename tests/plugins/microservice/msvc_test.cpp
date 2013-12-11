@@ -1,5 +1,4 @@
 // =-=-=-=-=-=-=-
-// E-iRODS Includes
 #include "msParam.h"
 #include "reGlobalsExtern.h"
 #include "irods_ms_plugin.h"

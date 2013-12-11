@@ -2952,7 +2952,7 @@ int chlDelResc( rsComm_t *rsComm, rescInfo_t *rescInfo, int _dryrun ) {
 int chlRollback( rsComm_t *rsComm ) {
     int status;
     if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlRollback - SQL 1 " );
+        rodsLog( LOG_SQL, "chlRollback SQL 1 " );
     }
     status =  cmlExecuteNoAnswerSql( "rollback", &icss );
     if ( status != 0 ) {
@@ -2973,7 +2973,7 @@ int chlRollback( rsComm_t *rsComm ) {
 int chlCommit( rsComm_t *rsComm ) {
     int status;
     if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlCommit - SQL 1 " );
+        rodsLog( LOG_SQL, "chlCommit SQL 1 " );
     }
     status =  cmlExecuteNoAnswerSql( "commit", &icss );
     if ( status != 0 ) {
@@ -5803,7 +5803,7 @@ int decodePw( rsComm_t *rsComm, char *in, char *out ) {
     int pwLen1, pwLen2;
 
     if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "decodePw - SQL 1 " );
+        rodsLog( LOG_SQL, "decodePw SQL 1 " );
     }
     status = cmlGetStringValueFromSql(
                  "select rcat_password from R_USER_PASSWORD, R_USER_MAIN where user_name=? and R_USER_MAIN.zone_name=? and R_USER_MAIN.user_id = R_USER_PASSWORD.user_id",
