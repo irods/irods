@@ -647,7 +647,7 @@ generalAdmin( int userOption, char *arg0, char *arg1, char *arg2, char *arg3,
             printf( "DRYRUN REMOVING RESOURCE [%s - %d] :: FAILURE\n", arg2, status );
         } // else
     }
-    else if ( status < 0 ) {
+    else if ( status < 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
         myName = rodsErrorName( status, &mySubName );
         rodsLog( LOG_ERROR, "%s failed with error %d %s %s", funcName, status, myName, mySubName );
         if ( status == CAT_INVALID_USER_TYPE ) {
@@ -1231,6 +1231,7 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
                 "SQL succeeded but there were no rows removed; there were no unused\n" );
             printf(
                 "AVUs to remove.\n" );
+            lastCommandStatus = 0;
 
         }
         return( 0 );
