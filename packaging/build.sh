@@ -416,7 +416,7 @@ if [ "$1" == "docs" ] ; then
 
     set +e
     # generate manual in pdf format
-    echo "${text_green}${text_bold}Building E-iRODS Administration Manual${text_reset}"
+    echo "${text_green}${text_bold}Building iRODS Administration Manual${text_reset}"
     cd $BUILDDIR
     rst2pdf manual.rst -o manual.pdf
     if [ "$?" != "0" ] ; then
@@ -431,7 +431,7 @@ if [ "$1" == "docs" ] ; then
 
     set +e
     # generate doxygen for microservices
-    echo "${text_green}${text_bold}Building E-iRODS Doxygen Output${text_reset}"
+    echo "${text_green}${text_bold}Building iRODS Doxygen Output${text_reset}"
     cd $BUILDDIR/iRODS/
     doxygen ./config/doxygen-saved.cfg
     if [ "$?" != "0" ] ; then
