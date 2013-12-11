@@ -7701,7 +7701,7 @@ int chlRegUserRE( rsComm_t *rsComm, userInfo_t *userInfo ) {
     irods::error ret = validate_user_name( userName2 );
     if ( !ret.ok() ) {
         irods::log( ret );
-        return (int)ret.code();
+        return ( int )ret.code();
     }
     // =-=-=-=-=-=-=-
 
