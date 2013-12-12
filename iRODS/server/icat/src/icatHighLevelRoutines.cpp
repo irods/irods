@@ -5182,7 +5182,7 @@ int chlCheckAuth(
                 rstrcpy( lastPwModTs, "00000000000", sizeof( lastPwModTs ) );
             }
             if ( logSQL != 0 ) {
-                rodsLog( LOG_SQL, "chlCheckAuth SQL 8" );
+                rodsLog( LOG_SQL, "chlCheckAuth S Q L 8" );
             }
             status = cmlGetMultiRowStringValuesFromSql(
                          "select rcat_password, pass_expiry_ts, R_USER_PASSWORD.create_ts, R_USER_PASSWORD.modify_ts from R_USER_PASSWORD, R_USER_MAIN where user_name=? and zone_name=? and R_USER_MAIN.user_id = R_USER_PASSWORD.user_id and R_USER_PASSWORD.modify_ts >=? order by R_USER_PASSWORD.modify_ts",
