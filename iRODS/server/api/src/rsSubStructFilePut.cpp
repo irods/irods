@@ -79,7 +79,7 @@ _rsSubStructFilePut( rsComm_t*   _comm,
         new irods::structured_object(
             *_sub_file ) );
     struct_obj->comm( _comm );
-    struct_obj->resc_hier( irods::LOCAL_USE_ONLY_RESOURCE );
+    struct_obj->resc_hier( _sub_file->specColl->rescHier );
 
     // =-=-=-=-=-=-=-
     // force the opening of a file?

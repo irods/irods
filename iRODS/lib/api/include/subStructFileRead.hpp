@@ -19,6 +19,7 @@ typedef struct SubStructFileFdOpr {
     structFileType_t type;
     int fd;
     int len;
+    char resc_hier[ MAX_NAME_LEN ];
 } subStructFileFdOprInp_t;
 
 #define SubStructFileFdOpr_PI "struct RHostAddr_PI; int type; int fd; int len;"

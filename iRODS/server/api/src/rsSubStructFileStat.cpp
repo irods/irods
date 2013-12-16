@@ -74,8 +74,7 @@ int _rsSubStructFileStat( rsComm_t*    _comm,
         new irods::structured_object(
             *_sub_file ) );
     struct_obj->comm( _comm );
-    struct_obj->resc_hier( irods::LOCAL_USE_ONLY_RESOURCE );
-
+    struct_obj->resc_hier( _sub_file->specColl->rescHier );
 
     // =-=-=-=-=-=-=-
     // call abstracted interface to stat
@@ -84,13 +83,13 @@ int _rsSubStructFileStat( rsComm_t*    _comm,
 
     if ( !stat_err.ok() ) {
         // errors are expected
-#if 0
+        #if 0
         std::stringstream msg;
         msg << "_rsSubStructFileStat - failed on call to fileStat for [";
         msg << struct_obj.physical_path();
         msg << "]";
         irods::log( PASS( false, -1, msg.str(), stat_err ) );
-#endif
+        #endif
         return stat_err.code();
 
     }

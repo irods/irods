@@ -447,6 +447,7 @@ l3Rename( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *newFileName ) {
                  MAX_NAME_LEN );
         rstrcpy( subStructFileRenameInp.newSubFilePath, newFileName, MAX_NAME_LEN );
         rstrcpy( subStructFileRenameInp.subFile.addr.hostAddr, location.c_str(), NAME_LEN );
+        rstrcpy( subStructFileRenameInp.resc_hier, dataObjInfo->rescHier, MAX_NAME_LEN );
         subStructFileRenameInp.subFile.specColl = dataObjInfo->specColl;
         status = rsSubStructFileRename( rsComm, &subStructFileRenameInp );
     }

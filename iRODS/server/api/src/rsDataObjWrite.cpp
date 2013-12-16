@@ -164,6 +164,7 @@ l3Write( rsComm_t *rsComm, int l1descInx, int len,
         subStructFileWriteInp.fd = L1desc[l1descInx].l3descInx;
         subStructFileWriteInp.len = len;
         rstrcpy( subStructFileWriteInp.addr.hostAddr, location.c_str(), NAME_LEN );
+        rstrcpy( subStructFileWriteInp.resc_hier, dataObjInfo->rescHier, MAX_NAME_LEN );
         bytesWritten = rsSubStructFileWrite( rsComm, &subStructFileWriteInp, dataObjWriteInpBBuf );
 
     }

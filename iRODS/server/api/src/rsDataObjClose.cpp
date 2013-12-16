@@ -716,6 +716,7 @@ l3Close( rsComm_t *rsComm, int l1descInx ) {
         subStructFileCloseInp.type = dataObjInfo->specColl->type;
         subStructFileCloseInp.fd = L1desc[l1descInx].l3descInx;
         rstrcpy( subStructFileCloseInp.addr.hostAddr, location.c_str(), NAME_LEN );
+        rstrcpy( subStructFileCloseInp.resc_hier, dataObjInfo->rescHier, MAX_NAME_LEN );
         status = rsSubStructFileClose( rsComm, &subStructFileCloseInp );
     }
     else {

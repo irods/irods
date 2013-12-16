@@ -1012,7 +1012,7 @@ structFileSupport( rsComm_t *rsComm, char *collection, char *collType,
 
     snprintf( specColl.objPath, MAX_NAME_LEN, "%s/myFakeFile", collection );
     rstrcpy( specColl.resource, first_resc.c_str(), NAME_LEN );
-    rstrcpy( specColl.rescHier, resc_hier, NAME_LEN );
+    rstrcpy( specColl.rescHier, resc_hier, MAX_NAME_LEN );
     rstrcpy( specColl.phyPath, "/fakeDir1/fakeDir2/myFakeStructFile", MAX_NAME_LEN );
     rstrcpy( subFile.subFilePath, "/fakeDir1/fakeDir2/myFakeFile", MAX_NAME_LEN );
     rstrcpy( subFile.addr.hostAddr, location.c_str(), NAME_LEN );

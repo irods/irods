@@ -21,6 +21,7 @@ typedef struct SubStructFileLseekInp {
     int fd;
     rodsLong_t offset;
     int whence;
+    char resc_hier[ MAX_NAME_LEN ];
 } subStructFileLseekInp_t;
 
 #define SubStructFileLseekInp_PI "struct RHostAddr_PI; int type; int fd; double offset; int whence;"

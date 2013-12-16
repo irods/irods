@@ -66,7 +66,7 @@ matchCliVaultPath( rsComm_t*,
                    const std::string&,
                    rodsServerHost_t* );
 int
-chkEmptyDir( rsComm_t *rsComm, char *cacheDir );
+chkEmptyDir( rsComm_t *rsComm, char *cacheDir, char* hier );
 int
 filePathTypeInResc( rsComm_t *rsComm, char* objPath, char *fileName, char* rescHier, rescInfo_t *rescInfo );
 int
