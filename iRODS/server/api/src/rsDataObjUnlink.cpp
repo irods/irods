@@ -125,6 +125,7 @@ rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
     if ( dataObjUnlinkInp->oprType == UNREG_OPR ||
             getValByKey( &dataObjUnlinkInp->condInput, FORCE_FLAG_KW ) != NULL ||
             getValByKey( &dataObjUnlinkInp->condInput, REPL_NUM_KW ) != NULL ||
+            getValByKey( &dataObjUnlinkInp->condInput, EMPTY_BUNDLE_ONLY_KW ) != NULL ||
             dataObjInfoHead->specColl != NULL || rmTrashFlag == 1 ) {
         status = _rsDataObjUnlink( rsComm, dataObjUnlinkInp, &dataObjInfoHead );
     }

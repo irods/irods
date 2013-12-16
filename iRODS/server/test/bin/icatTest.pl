@@ -568,18 +568,18 @@ runCmd(0, "ils");
 # MAX_PASSWORDS in icatHighLevelRoutines.c is 40 so make more than
 # that to exercise the SQL that handles that case.
 $count=42;
-#for ($i=0;$i<$count;$i++) {
-#    runCmd(0,"test_chl tpw rods > /dev/null 2>&1");
-#}
+for ($i=0;$i<$count;$i++) {
+    runCmd(0,"test_chl tpw rods > /dev/null 2>&1");
+}
 # https://github.com/irods/irods/issues/1855
 # break up the timestamps to avoid infinite loop
-for ($i=0;$i<$count/2;$i++) {
-    runCmd(0,"test_chl tpw rods > /dev/null 2>&1");
-}
-runCmd(0,"sleep 1");
-for ($i=0;$i<$count/2;$i++) {
-    runCmd(0,"test_chl tpw rods > /dev/null 2>&1");
-}
+#for ($i=0;$i<$count/2;$i++) {
+#    runCmd(0,"test_chl tpw rods > /dev/null 2>&1");
+#}
+#runCmd(0,"sleep 1");
+#for ($i=0;$i<$count/2;$i++) {
+#    runCmd(0,"test_chl tpw rods > /dev/null 2>&1");
+#}
 
 # Also make sure the new SQL works: that the password can be used.
 # This uses 'iinit' with the temp password, which normally isn't done,
