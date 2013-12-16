@@ -112,11 +112,11 @@ namespace irods {
     // =-=-=-=-=-=-=-
     // helper fcn to handle cast to pg object
     error make_pg_ptr(
-        const database_object_ptr& _db,
-        postgres_object_ptr&       _pg ) {
+        const first_class_object_ptr& _fc,
+        postgres_object_ptr&          _pg ) {
         _pg = boost::dynamic_pointer_cast <
               irods::postgres_object > (
-                  _db );
+                  _fc );
         if ( !_pg.get() ) {
             return SUCCESS();
 

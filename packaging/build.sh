@@ -1203,6 +1203,11 @@ if [ "$BUILDIRODS" == "1" ] ; then
     irods_resources_home="$detected_irods_home/plugins/resources/"
     sed -e s,IRODSRESOURCESPATH,$irods_resources_home, ./lib/core/include/irods_resources_home.hpp.src > /tmp/irods_resources_home.hpp
     mv /tmp/irods_resources_home.hpp ./lib/core/include/
+    # =-=-=-=-=-=-=-
+    # modify the irods_database_home.hpp file with the proper path to the binary directory
+    irods_database_home="$detected_irods_home/plugins/database/"
+    sed -e s,IRODSDATABASEPATH,$irods_database_home, ./server/core/include/irods_database_home.hpp.src > /tmp/irods_database_home.hpp
+    mv /tmp/irods_database_home.hpp ./server/core/include/
 
 
     ###########################################
@@ -1261,6 +1266,13 @@ if [ "$BUILDIRODS" == "1" ] ; then
     # build auth plugins
     echo "${text_green}${text_bold}Building Auth Plugins${text_reset}"
 	cd $BUILDDIR/plugins/auth/
+	make -j$CPUCOUNT
+	cd $BUILDDIR
+
+    # =-=-=-=-=-=-=-
+    # build database plugins
+    echo "${text_green}${text_bold}Building Database Plugins${text_reset}"
+	cd $BUILDDIR/plugins/database/
 	make -j$CPUCOUNT
 	cd $BUILDDIR
 

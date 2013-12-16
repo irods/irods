@@ -68,7 +68,7 @@ namespace irods {
     // =-=-=-=-=-=-=-
     // helper fcn to handle cast to pg object
     error make_pg_ptr(
-        const database_object_ptr&,
+        const first_class_object_ptr&,
         postgres_object_ptr& );
 
 }; // namespace irods

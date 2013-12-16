@@ -165,13 +165,13 @@ namespace irods {
 
             // =-=-=-=-=-=-=-
             // add the operation via a wrapper to the operation map
-#ifdef RODS_SERVER
+#ifdef LINK_NO_OP_RE_MGR
             oper_rule_exec_mgr_ptr rex_mgr(
-                new operation_rule_execution_manager(
+                new operation_rule_execution_manager_no_op(
                     instance_name_, key ) );
 #else
             oper_rule_exec_mgr_ptr rex_mgr(
-                new operation_rule_execution_manager_no_op(
+                new operation_rule_execution_manager(
                     instance_name_, key ) );
 #endif
             // =-=-=-=-=-=-=-
@@ -214,21 +214,21 @@ namespace irods {
     // =-=-=-=-=-=-=-
     // function to load and return an initialized database plugin
     error load_database_plugin(
-        database_ptr&       _plugin,
+        database_ptr&      _plugin,
         const std::string& _plugin_name,
         const std::string& _inst_name,
         const std::string& _context ) {
         // =-=-=-=-=-=-=-
         // call generic plugin loader
-        database* net = 0;
+        database* db = 0;
         error ret = load_plugin< database >(
-                        net,
+                        db,
                         _plugin_name,
-                        EIRODS_DATABASE_HOME,
+                        IRODS_DATABASE_HOME,
                         _inst_name,
                         _context );
-        if ( ret.ok() && net ) {
-            _plugin.reset( net );
+        if ( ret.ok() && db ) {
+            _plugin.reset( db );
             return SUCCESS();
 
         }

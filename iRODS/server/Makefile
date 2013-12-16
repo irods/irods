@@ -38,7 +38,6 @@ SVR_CORE_OBJS =	\
 		$(svrCoreObjDir)/initServer.o \
 		$(svrCoreObjDir)/miscServerFunct.o \
 		$(svrCoreObjDir)/objMetaOpr.o \
-		$(svrCoreObjDir)/readServerConfig.o \
 		$(svrCoreObjDir)/rsApiHandler.o \
 		$(svrCoreObjDir)/rsIcatOpr.o \
 		$(svrCoreObjDir)/rsLog.o \
@@ -53,15 +52,21 @@ SVR_CORE_OBJS =	\
 		$(svrCoreObjDir)/irods_resource_backport.o \
 		$(svrCoreObjDir)/irods_server_negotiation.o \
 		$(svrCoreObjDir)/irods_collection_object.o \
+        $(svrCoreObjDir)/irods_data_object.o \
 		$(svrCoreObjDir)/irods_structured_object.o \
 		$(svrCoreObjDir)/irods_physical_object.o \
-		$(svrCoreObjDir)/irods_data_object.o \
-		$(svrCoreObjDir)/irods_file_object.o \
+		$(svrCoreObjDir)/irods_file_object.o 
+
+DB_IFACE_OBJS = \
 	    $(svrCoreObjDir)/irods_database_factory.o \
    		$(svrCoreObjDir)/irods_database_manager.o \
    		$(svrCoreObjDir)/irods_database_object.o  \
-   		$(svrCoreObjDir)/irods_database_plugin.o  \
-   		$(svrCoreObjDir)/irods_postgres_object.o  
+   		$(svrCoreObjDir)/irods_postgres_object.o  \
+        $(svrCoreObjDir)/readServerConfig.o
+
+DB_PLUGIN_OBJ = $(svrCoreObjDir)/irods_database_plugin.o 
+DB_PLUGIN_OBJ_WITH_NO_RE = $(svrCoreObjDir)/irods_database_plugin_with_no_re.o 
+   		
 
 INCLUDES +=	-I$(svrCoreIncDir)
 
@@ -458,6 +463,15 @@ BOOST_LIBS = $(BOOST_DIR)/stage/lib/libboost_system.a \
              $(BOOST_DIR)/stage/lib/libboost_regex.a \
              $(BOOST_DIR)/stage/lib/libboost_thread.a 
 
+db_plugin_with_re: $(DB_PLUGIN_OBJ)
+	@echo "Compile With RE `basename $@`..."
+	@$(CC) -c $(CFLAGS) $(buildDir)/server/core/src/irods_database_plugin.cpp -o $(DB_PLUGIN_OBJ)
+
+db_plugin_with_no_re: $(DB_PLUGIN_OBJ_WITH_NO_RE)
+	@echo "Compile Without RE `basename $@`..."
+	@$(CC) -c -DLINK_NO_OP_RE_MGR $(CFLAGS) $(buildDir)/server/core/src/irods_database_plugin.cpp -o $(DB_PLUGIN_OBJ_WITH_NO_RE)
+
+
 # Compilation Targets
 #
 # Build server API
@@ -501,27 +515,27 @@ $(svrCoreObjDir)/rodsAgent.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.cpp $(LIB
 	@echo "Compile agent server `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
-$(serverBinDir)/irodsAgent: $(svrCoreObjDir)/rodsAgent.o $(LIBRARY) $(OBJS) $(MODULE_OBJS) $(BOOST_LIBS)
+$(serverBinDir)/irodsAgent: db_plugin_with_re $(svrCoreObjDir)/rodsAgent.o $(LIBRARY) $(OBJS) $(MODULE_OBJS) $(BOOST_LIBS) 
 	@echo "Link agent server `basename $@`..."
-	@$(LDR) -o $@ $(svrCoreObjDir)/rodsAgent.o $(LIBRARY) $(MODULE_LDFLAGS) $(OBJS) $(BOOST_LIBS) $(LDFLAGS) $(AG_LDADD)
+	@$(LDR) -o $@ $(svrCoreObjDir)/rodsAgent.o $(LIBRARY) $(MODULE_LDFLAGS) $(OBJS)  $(DB_PLUGIN_OBJ) $(DB_IFACE_OBJS) $(BOOST_LIBS) $(LDFLAGS) $(AG_LDADD)
 
 # Rule engine
-$(svrCoreObjDir)/irodsReServer.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.cpp $(LIBRARY) $(OBJS)
+$(svrCoreObjDir)/irodsReServer.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.cpp $(LIBRARY) $(OBJS) $(DB_PLUGIN_OBJ)
 	@echo "Compile rule engine server `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
-$(serverBinDir)/irodsReServer: $(svrCoreObjDir)/irodsReServer.o $(LIBRARY) $(OBJS) $(MODULE_OBJS) $(BOOST_LIBS)
+$(serverBinDir)/irodsReServer: db_plugin_with_re $(svrCoreObjDir)/irodsReServer.o $(LIBRARY) $(OBJS) $(MODULE_OBJS) $(BOOST_LIBS)
 	@echo "Link rule engine server `basename $@`..."
-	@$(LDR) -o $@ $(svrCoreObjDir)/irodsReServer.o $(LIBRARY) $(MODULE_LDFLAGS) $(OBJS) $(BOOST_LIBS) $(LDFLAGS)
+	@$(LDR) -o $@ $(svrCoreObjDir)/irodsReServer.o $(LIBRARY) $(MODULE_LDFLAGS) $(OBJS) $(DB_PLUGIN_OBJ) $(DB_IFACE_OBJS) $(BOOST_LIBS) $(LDFLAGS)
 
 # RODS
 $(svrCoreObjDir)/rodsServer.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.cpp $(LIBRARY) $(OBJS) $(BOOST_LIBS)
 	@echo "Compile rods server `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
-$(serverBinDir)/irodsServer: $(svrCoreObjDir)/rodsServer.o $(LIBRARY) $(OBJS) $(MODULE_OBJS) $(BOOST_LIBS)
+$(serverBinDir)/irodsServer: db_plugin_with_re $(svrCoreObjDir)/rodsServer.o $(LIBRARY) $(OBJS) $(MODULE_OBJS) $(BOOST_LIBS)
 	@echo "Link rods server `basename $@`..."
-	@$(LDR) -o $@ $(svrCoreObjDir)/rodsServer.o $(LIBRARY) $(OBJS) $(BOOST_LIBS) $(MODULE_LDFLAGS) $(LDFLAGS)
+	@$(LDR) -o $@ $(svrCoreObjDir)/rodsServer.o $(LIBRARY) $(OBJS)  $(DB_PLUGIN_OBJ) $(DB_IFACE_OBJS) $(BOOST_LIBS) $(MODULE_LDFLAGS) $(LDFLAGS)
 
 
 # xmsg server
@@ -529,9 +543,9 @@ $(svrCoreObjDir)/irodsXmsgServer.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.cpp
 	@echo "Compile xmsg server `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
-$(serverBinDir)/irodsXmsgServer: $(svrCoreObjDir)/irodsXmsgServer.o $(LIBRARY) $(OBJS) $(MODULE_OBJS) $(BOOST_LIBS)
+$(serverBinDir)/irodsXmsgServer: db_plugin_with_re $(svrCoreObjDir)/irodsXmsgServer.o $(LIBRARY) $(OBJS) $(MODULE_OBJS) $(BOOST_LIBS)
 	@echo "Link xmsg server `basename $@`..."
-	@$(LDR) -o $@ $(svrCoreObjDir)/irodsXmsgServer.o $(LIBRARY) $(OBJS) $(BOOST_LIBS) $(MODULE_LDFLAGS) $(LDFLAGS)
+	@$(LDR) -o $@ $(svrCoreObjDir)/irodsXmsgServer.o $(LIBRARY) $(OBJS) $(DB_PLUGIN_OBJ) $(DB_IFACE_OBJS) $(BOOST_LIBS) $(MODULE_LDFLAGS) $(LDFLAGS)
 
 
 #
@@ -560,24 +574,24 @@ $(svrTestBinDir)/reTest: $(svrTestObjDir)/reTest.o $(OBJS) $(BOOST_LIBS) $(BOOST
 # cll and chl
 $(svrTestBinDir)/test_cll: $(svrTestObjDir)/test_cll.o $(SVR_ICAT_OBJS) $(LIBRARY) $(BOOST_LIBS) 
 	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $^ $(LIBRARY) $(LDFLAGS) $(BOOST_LIBS) -lrt
+	@$(LDR) -o $@ $^ $(LIBRARY) $(LDFLAGS) $(BOOST_LIBS) -lrt $(DB_IFACE_OBJS) $(DB_PLUGIN_OBJ_WITH_NO_RE)
 
-$(svrTestBinDir)/test_chl: $(svrTestObjDir)/test_chl.o $(SVR_ICAT_OBJS) $(LIBRARY) $(svrCoreObjDir)/readServerConfig.o $(BOOST_LIBS)  
+$(svrTestBinDir)/test_chl: db_plugin_with_no_re $(svrTestObjDir)/test_chl.o $(SVR_ICAT_OBJS) $(LIBRARY) $(BOOST_LIBS)
 	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $^ $(LIBRARY) $(LDFLAGS) $(BOOST_LIBS) -lrt
+	@$(LDR) -o $@ $(svrTestObjDir)/test_chl.o $(LIBRARY) $(SVR_ICAT_OBJS) $(DB_PLUGIN_OBJ_WITH_NO_RE) $(DB_IFACE_OBJS) $(BOOST_LIBS) $(LDFLAGS) -lrt
 
 # genq and genu
-$(svrTestBinDir)/test_genq: $(svrTestObjDir)/test_genq.o $(SVR_ICAT_OBJS) $(LIBRARY) $(svrCoreObjDir)/readServerConfig.o $(BOOST_LIBS)
+$(svrTestBinDir)/test_genq: db_plugin_with_no_re $(svrTestObjDir)/test_genq.o $(SVR_ICAT_OBJS) $(LIBRARY) $(BOOST_LIBS)
 	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $^ $(LIBRARY) $(LDFLAGS) $(BOOST_LIBS) -lrt
+	@$(LDR) -o $@ $(svrTestObjDir)/test_genq.o $(LIBRARY) $(SVR_ICAT_OBJS) $(LDFLAGS) $(DB_PLUGIN_OBJ_WITH_NO_RE) $(DB_IFACE_OBJS) $(BOOST_LIBS) -lrt
 
-$(svrTestBinDir)/test_genu: $(svrTestObjDir)/test_genu.o $(SVR_ICAT_OBJS) $(LIBRARY) $(svrCoreObjDir)/readServerConfig.o $(BOOST_LIBS)
+$(svrTestBinDir)/test_genu: db_plugin_with_no_re $(svrTestObjDir)/test_genu.o $(SVR_ICAT_OBJS) $(LIBRARY) $(BOOST_LIBS)
 	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $^ $(LIBRARY) $(LDFLAGS) $(BOOST_LIBS) -lrt
+	@$(LDR) -o $@ $(svrTestObjDir)/test_genu.o $(LIBRARY) $(SVR_ICAT_OBJS) $(LDFLAGS) $(DB_PLUGIN_OBJ_WITH_NO_RE) $(DB_IFACE_OBJS) $(BOOST_LIBS) -lrt
 
-$(svrTestBinDir)/test_rda: $(svrTestObjDir)/test_rda.o $(SVR_ICAT_OBJS) $(LIBRARY) $(BOOST_LIBS)
+$(svrTestBinDir)/test_rda: db_plugin_with_no_re $(svrTestObjDir)/test_rda.o $(SVR_ICAT_OBJS) $(LIBRARY) $(BOOST_LIBS)
 	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $^ $(LIBRARY) $(LDFLAGS) $(BOOST_LIBS) -lrt
+	@$(LDR) -o $@ $(svrTestObjDir)/test_rda.o $(LIBRARY) $(SVR_ICAT_OBJS) $(LDFLAGS) $(DB_PLUGIN_OBJ_WITH_NO_RE) $(DB_IFACE_OBJS) $(BOOST_LIBS) -lrt
 
 
 

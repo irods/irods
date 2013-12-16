@@ -986,8 +986,8 @@ extern "C" {
 
     irods::error
     exampleFileCopyPlugin( int         mode,
-                           const char* srcFileName,
-                           const char* destFileName ) {
+                        const char* srcFileName,
+                        const char* destFileName ) {
         irods::error result = SUCCESS();
 
         int inFd, outFd;
