@@ -192,11 +192,11 @@ int mkFileDirR(
         /* Put back the '/' */
         tmpPath[tmpLen] = '/';
 
-        irods::collection_object_ptr tmp_coll_obj( 
-                                         new irods::collection_object( 
-                                             tmpPath, 
-                                             hier, 
-                                             mode, 0 ) );
+        irods::collection_object_ptr tmp_coll_obj(
+            new irods::collection_object(
+                tmpPath,
+                hier,
+                mode, 0 ) );
         irods::error mkdir_err = fileMkdir( rsComm, tmp_coll_obj );
         if ( !mkdir_err.ok() && ( getErrno( mkdir_err.code() ) != EEXIST ) ) { // JMC - backport 4834
             std::stringstream msg;
@@ -217,9 +217,9 @@ int mkFileDirR(
 
 // =-=-=-=-=-=-=-
 //
-int chkEmptyDir( 
-    rsComm_t* rsComm, 
-    char*    cacheDir, 
+int chkEmptyDir(
+    rsComm_t* rsComm,
+    char*    cacheDir,
     char*    hier ) {
 
     int status;
@@ -229,11 +229,11 @@ int chkEmptyDir(
 
     // =-=-=-=-=-=-=-
     // call opendir via resource plugin
-    irods::collection_object_ptr cacheDir_obj( 
-                                     new irods::collection_object( 
-                                         cacheDir, 
-                                         hier, 
-                                         0, 0 ) );
+    irods::collection_object_ptr cacheDir_obj(
+        new irods::collection_object(
+            cacheDir,
+            hier,
+            0, 0 ) );
     irods::error opendir_err = fileOpendir( rsComm, cacheDir_obj );
 
     // =-=-=-=-=-=-=-
@@ -258,12 +258,12 @@ int chkEmptyDir(
         // =-=-=-=-=-=-=-
         // get status of path
         snprintf( childPath, MAX_NAME_LEN, "%s/%s", cacheDir, myFileDirent->d_name );
-        irods::collection_object_ptr tmp_coll_obj( 
-                                         new irods::collection_object( 
-                                             childPath, 
-                                             hier, 
-                                             0, 0 ) );
-                                             
+        irods::collection_object_ptr tmp_coll_obj(
+            new irods::collection_object(
+                childPath,
+                hier,
+                0, 0 ) );
+
         irods::error stat_err = fileStat( rsComm, tmp_coll_obj, &myFileStat );
 
         // =-=-=-=-=-=-=-
@@ -312,10 +312,10 @@ int chkEmptyDir(
     }
 
     if ( status != SYS_DIR_IN_VAULT_NOT_EMPTY ) {
-        irods::collection_object_ptr coll_obj( 
-                                         new irods::collection_object( 
-                                             cacheDir, 
-                                             hier, 0, 0 ) );
+        irods::collection_object_ptr coll_obj(
+            new irods::collection_object(
+                cacheDir,
+                hier, 0, 0 ) );
         irods::error rmdir_err = fileRmdir( rsComm, coll_obj );
         if ( !rmdir_err.ok() ) {
             std::stringstream msg;

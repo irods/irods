@@ -42,8 +42,8 @@ namespace irods {
 
 // =-=-=-=-=-=-=-
 // public - retrieve a resource given its key
-    error resource_manager::resolve( 
-        std::string   _key, 
+    error resource_manager::resolve(
+        std::string   _key,
         resource_ptr& _value ) {
 
         if ( _key.empty() ) {
@@ -54,7 +54,8 @@ namespace irods {
             _value = resources_[ _key ];
             return SUCCESS();
 
-        } else {
+        }
+        else {
             std::stringstream msg;
             msg << "no resource found for name ["
                 << _key << "]";

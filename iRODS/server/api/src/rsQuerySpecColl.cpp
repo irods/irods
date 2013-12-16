@@ -448,7 +448,7 @@ specCollClosedir( rsComm_t *rsComm, int specCollInx ) {
         subStructFileClosedirInp.type = dataObjInfo->specColl->type;
         subStructFileClosedirInp.fd = SpecCollDesc[specCollInx].l3descInx;
         rstrcpy( subStructFileClosedirInp.addr.hostAddr,
-                 location.c_str(), 
+                 location.c_str(),
                  NAME_LEN );
         rstrcpy( subStructFileClosedirInp.resc_hier,
                  dataObjInfo->rescHier,
