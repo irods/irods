@@ -33,5 +33,5 @@ remoteStructFileExtract( rsComm_t *rsComm,
 int
 rcStructFileExtract( rcComm_t *conn, structFileOprInp_t *structFileOprInp );
 int
-procCacheDir( rsComm_t *rsComm, char *cacheDir, char *resource, int oprType ); // JMC - backport 4657
+procCacheDir( rsComm_t *rsComm, char *cacheDir, char *resource, int oprType, char* hier ); // JMC - backport 4657
 #endif	/* STRUCT_FILE_EXTRACT_H */

@@ -567,6 +567,7 @@ phyBundle( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *phyBunDir,
     structFileOprInp.specColl->collClass = STRUCT_FILE_COLL;
     rstrcpy( structFileOprInp.specColl->resource, dataObjInfo->rescName, NAME_LEN );
     rstrcpy( structFileOprInp.specColl->phyPath, dataObjInfo->filePath, MAX_NAME_LEN );
+    rstrcpy( structFileOprInp.specColl->rescHier, dataObjInfo->rescHier, MAX_NAME_LEN );
     addKeyVal( &structFileOprInp.condInput, RESC_HIER_STR_KW, dataObjInfo->rescHier );
 
     rstrcpy( structFileOprInp.specColl->cacheDir, phyBunDir, MAX_NAME_LEN );

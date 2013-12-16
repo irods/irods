@@ -132,6 +132,7 @@ l3Read( rsComm_t *rsComm, int l1descInx, int len,
         subStructFileReadInp.fd = L1desc[l1descInx].l3descInx;
         subStructFileReadInp.len = len;
         rstrcpy( subStructFileReadInp.addr.hostAddr, location.c_str(), NAME_LEN );
+        rstrcpy( subStructFileReadInp.resc_hier, dataObjInfo->rescHier, MAX_NAME_LEN );
         bytesRead = rsSubStructFileRead( rsComm, &subStructFileReadInp, dataObjReadOutBBuf );
     }
     else {

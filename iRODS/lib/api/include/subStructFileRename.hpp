@@ -19,6 +19,7 @@
 typedef struct SubStructFileRenameInp {
     subFile_t subFile;
     char newSubFilePath[MAX_NAME_LEN];
+    char resc_hier[ MAX_NAME_LEN ];
 } subStructFileRenameInp_t;
 
 #define SubStructFileRenameInp_PI "struct SubFile_PI; str newSubFilePath[MAX_NAME_LEN];"

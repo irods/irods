@@ -417,7 +417,12 @@ regSubfile( rsComm_t *rsComm, rescInfo_t *rescInfo, const char* rescHier, char *
         }
     }
     /* make the necessary dir */
-    mkDirForFilePath( rsComm, "/", dataObjInfo.filePath, getDefDirMode() );
+    mkDirForFilePath(
+        rsComm,
+        "/",
+        dataObjInfo.filePath,
+        dataObjInfo.rescHier,
+        getDefDirMode() );
     /* add a link */
 
 #ifndef windows_platform   /* Windows does not support link */

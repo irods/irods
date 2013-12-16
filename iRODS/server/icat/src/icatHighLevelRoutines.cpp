@@ -50,6 +50,7 @@
 #include <sstream>
 #include <vector>
 #include <boost/regex.hpp>
+#include <boost/shared_ptr.hpp>
 
 extern int get64RandomBytes( char *buf );
 extern int icatApplyRule( rsComm_t *rsComm, char *ruleName, char *arg1 );
@@ -87,7 +88,8 @@ static char prevChalSig[200]; /* a 'signature' of the previous
 #define AP_OWN "own"
 #define AP_NULL "null"
 
-#define MAX_PASSWORDS 40
+static rodsLong_t MAX_PASSWORDS = 40;
+
 /* TEMP_PASSWORD_TIME is the number of seconds the temporary, one-time
    password can be used.  chlCheckAuth also checks for this column
    to be < TEMP_PASSWORD_MAX_TIME (1000) to differentiate the row
@@ -2950,7 +2952,7 @@ int chlDelResc( rsComm_t *rsComm, rescInfo_t *rescInfo, int _dryrun ) {
 int chlRollback( rsComm_t *rsComm ) {
     int status;
     if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlRollback - SQL 1 " );
+        rodsLog( LOG_SQL, "chlRollback SQL 1 " );
     }
     status =  cmlExecuteNoAnswerSql( "rollback", &icss );
     if ( status != 0 ) {
@@ -2971,7 +2973,7 @@ int chlRollback( rsComm_t *rsComm ) {
 int chlCommit( rsComm_t *rsComm ) {
     int status;
     if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlCommit - SQL 1 " );
+        rodsLog( LOG_SQL, "chlCommit SQL 1 " );
     }
     status =  cmlExecuteNoAnswerSql( "commit", &icss );
     if ( status != 0 ) {
@@ -5064,7 +5066,7 @@ int chlCheckAuth(
     int i, OK, k;
     char userType[MAX_NAME_LEN];
     static int prevFailure = 0;
-    char pwInfoArray[MAX_PASSWORD_LEN * MAX_PASSWORDS * 4];
+    boost::shared_ptr<char> pwInfoArray;
     char goodPw[MAX_PASSWORD_LEN + 10];
     char lastPw[MAX_PASSWORD_LEN + 10];
     char goodPwExpiry[MAX_PASSWORD_LEN + 10];
@@ -5149,6 +5151,8 @@ int chlCheckAuth(
         goto checkLevel;
     }
 
+    status = cmlGetIntegerValueFromSql( "select count(UP.user_id) from R_USER_PASSWORD UP, R_USER_MAIN where user_name=?", &MAX_PASSWORDS, userName2, 0, 0, 0, 0, &icss );
+    pwInfoArray.reset( new char[MAX_PASSWORD_LEN * MAX_PASSWORDS * 4] );
 
     doMore = 1;
     for ( queryCount = 0; doMore == 1; queryCount++ ) {
@@ -5160,7 +5164,7 @@ int chlCheckAuth(
 
             status = cmlGetMultiRowStringValuesFromSql(
                          "select rcat_password, pass_expiry_ts, R_USER_PASSWORD.create_ts, R_USER_PASSWORD.modify_ts from R_USER_PASSWORD, R_USER_MAIN where user_name=? and zone_name=? and R_USER_MAIN.user_id = R_USER_PASSWORD.user_id",
-                         pwInfoArray, MAX_PASSWORD_LEN,
+                         pwInfoArray.get(), MAX_PASSWORD_LEN,
                          MAX_PASSWORDS * 4, /* four strings per password returned */
                          userName2, myUserZone, 0, &icss );
         }
@@ -5170,11 +5174,11 @@ int chlCheckAuth(
                 rstrcpy( lastPwModTs, "00000000000", sizeof( lastPwModTs ) );
             }
             if ( logSQL != 0 ) {
-                rodsLog( LOG_SQL, "chlCheckAuth SQL 8" );
+                rodsLog( LOG_SQL, "chlCheckAuth S Q L 8" );
             }
             status = cmlGetMultiRowStringValuesFromSql(
                          "select rcat_password, pass_expiry_ts, R_USER_PASSWORD.create_ts, R_USER_PASSWORD.modify_ts from R_USER_PASSWORD, R_USER_MAIN where user_name=? and zone_name=? and R_USER_MAIN.user_id = R_USER_PASSWORD.user_id and R_USER_PASSWORD.modify_ts >=? order by R_USER_PASSWORD.modify_ts",
-                         pwInfoArray, MAX_PASSWORD_LEN,
+                         pwInfoArray.get(), MAX_PASSWORD_LEN,
                          MAX_PASSWORDS * 4, /* four strings per password returned */
                          userName2, myUserZone, lastPwModTs, &icss );
         }
@@ -5195,13 +5199,13 @@ int chlCheckAuth(
         goodPwTs[0] = '\0';
         goodPwModTs[0] = '\0';
 
-        if ( nPasswords != MAX_PASSWORDS ) {
+        if ( MAX_PASSWORDS == 0 || nPasswords != MAX_PASSWORDS ) {
             doMore = 0;
         }  /* End the loop if
                                                       less than the max has
                                                       been returned. */
 
-        cpw = pwInfoArray;
+        cpw = pwInfoArray.get();
         for ( k = 0; k < MAX_PASSWORDS && k < nPasswords; k++ ) {
             memset( md5Buf, 0, sizeof( md5Buf ) );
             strncpy( md5Buf, challenge, CHALLENGE_LEN );
@@ -5255,7 +5259,7 @@ int chlCheckAuth(
 
             cpw += MAX_PASSWORD_LEN * 4;
         }
-        memset( pwInfoArray, 0, sizeof( pwInfoArray ) );
+        memset( pwInfoArray.get(), 0, sizeof( pwInfoArray.get() ) );
     }
     if ( OK == 0 ) {
         prevFailure++;
@@ -5791,7 +5795,7 @@ int decodePw( rsComm_t *rsComm, char *in, char *out ) {
     int pwLen1, pwLen2;
 
     if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "decodePw - SQL 1 " );
+        rodsLog( LOG_SQL, "decodePw SQL 1 " );
     }
     status = cmlGetStringValueFromSql(
                  "select rcat_password from R_USER_PASSWORD, R_USER_MAIN where user_name=? and R_USER_MAIN.zone_name=? and R_USER_MAIN.user_id = R_USER_PASSWORD.user_id",
@@ -7675,7 +7679,7 @@ int chlRegUserRE( rsComm_t *rsComm, userInfo_t *userInfo ) {
     irods::error ret = validate_user_name( userName2 );
     if ( !ret.ok() ) {
         irods::log( ret );
-        return (int)ret.code();
+        return ( int )ret.code();
     }
     // =-=-=-=-=-=-=-
 

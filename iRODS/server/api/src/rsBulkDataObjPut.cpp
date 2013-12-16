@@ -548,7 +548,12 @@ bulkProcAndRegSubfile( rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string
     }
     else {
         /* make the necessary dir */
-        mkDirForFilePath( rsComm, "/", dataObjInfo.filePath, getDefDirMode() );
+        mkDirForFilePath(
+            rsComm,
+            "/",
+            dataObjInfo.filePath,
+            dataObjInfo.rescHier,
+            getDefDirMode() );
     }
     /* add a link */
 #ifndef windows_platform

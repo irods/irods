@@ -53,9 +53,9 @@ freeFileDesc( int fileInx );
 int
 getServerHostByFileInx( int fileInx, rodsServerHost_t **rodsServerHost );
 int
-mkDirForFilePath( rsComm_t *rsComm, const char *startDir, const char *filePath, int mode );
+mkDirForFilePath( rsComm_t *rsComm, const char *startDir, const char *filePath,  const char* hier, int mode );
 int
-mkFileDirR( rsComm_t *rsComm, const char *startDir, const char *destDir, int mode );
+mkFileDirR( rsComm_t *rsComm, const char *startDir, const char *destDir, const char* hier, int mode );
 int
 chkFilePathPerm( rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
                  rodsServerHost_t *rodsServerHost, int chkType ); // JMC - backport 4774
@@ -66,7 +66,7 @@ matchCliVaultPath( rsComm_t*,
                    const std::string&,
                    rodsServerHost_t* );
 int
-chkEmptyDir( rsComm_t *rsComm, char *cacheDir );
+chkEmptyDir( rsComm_t *rsComm, char *cacheDir, char* hier );
 int
 filePathTypeInResc( rsComm_t *rsComm, char* objPath, char *fileName, char* rescHier, rescInfo_t *rescInfo );
 int

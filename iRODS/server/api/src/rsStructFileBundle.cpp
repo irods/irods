@@ -291,13 +291,26 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
         // entry is a data object
         if ( collEnt->objType == DATA_OBJ_T ) {
             if ( collEnt->collName[collLen] == '\0' ) {
-                snprintf( tmpPath, MAX_NAME_LEN, "%s/%s", phyBunDir, collEnt->dataName );
-
+                snprintf(
+                    tmpPath,
+                    MAX_NAME_LEN,
+                    "%s/%s",
+                    phyBunDir,
+                    collEnt->dataName );
             }
             else {
-                snprintf( tmpPath, MAX_NAME_LEN, "%s/%s/%s", phyBunDir, collEnt->collName + collLen + 1, collEnt->dataName );
-                mkDirForFilePath( rsComm, phyBunDir, tmpPath, getDefDirMode() );
-
+                snprintf(
+                    tmpPath,
+                    MAX_NAME_LEN, "%s/%s/%s",
+                    phyBunDir,
+                    collEnt->collName + collLen + 1,
+                    collEnt->dataName );
+                mkDirForFilePath(
+                    rsComm,
+                    phyBunDir,
+                    tmpPath,
+                    collEnt->resc_hier,
+                    getDefDirMode() );
             }
 
             // =-=-=-=-=-=-=-

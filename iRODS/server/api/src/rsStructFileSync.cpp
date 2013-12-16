@@ -93,7 +93,7 @@ int _rsStructFileSync( rsComm_t*           _comm,
     struct_obj->flags( _struct_inp->flags );
     struct_obj->comm( _comm );
     struct_obj->opr_type( _struct_inp->oprType );
-    struct_obj->resc_hier( irods::LOCAL_USE_ONLY_RESOURCE );
+    struct_obj->resc_hier( _struct_inp->specColl->rescHier );
 
     // =-=-=-=-=-=-=-
     // cache data type for selection of tasty compression options

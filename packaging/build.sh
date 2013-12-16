@@ -416,7 +416,7 @@ if [ "$1" == "docs" ] ; then
 
     set +e
     # generate manual in pdf format
-    echo "${text_green}${text_bold}Building E-iRODS Administration Manual${text_reset}"
+    echo "${text_green}${text_bold}Building iRODS Administration Manual${text_reset}"
     cd $BUILDDIR
     rst2pdf manual.rst -o manual.pdf
     if [ "$?" != "0" ] ; then
@@ -431,7 +431,7 @@ if [ "$1" == "docs" ] ; then
 
     set +e
     # generate doxygen for microservices
-    echo "${text_green}${text_bold}Building E-iRODS Doxygen Output${text_reset}"
+    echo "${text_green}${text_bold}Building iRODS Doxygen Output${text_reset}"
     cd $BUILDDIR/iRODS/
     doxygen ./config/doxygen-saved.cfg
     if [ "$?" != "0" ] ; then
@@ -1339,7 +1339,7 @@ if [ "$BUILDIRODS" == "1" ] ; then
         GCOVFILELIST="gcovfilelist.txt"
         GCOVFILENAME="gcovfiles.tgz"
         cd $BUILDDIR
-        find ./plugins ./iRODS -name "*.h" -o -name "*.c" -o -name "*.cpp" -o -name "*.gcno" > $GCOVFILELIST
+        find ./plugins ./iRODS -name "*.h" -o -name "*.c" -o -name "*.hpp" -o -name "*.cpp" -o -name "*.gcno" > $GCOVFILELIST
         tar czf $GCOVFILENAME -T $GCOVFILELIST
         ls -al $GCOVFILELIST
         ls -al $GCOVFILENAME

@@ -303,7 +303,7 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
 
         # A few examples of valid and invalid usernames
         valid = ['bob',
-                'e-irods',
+                'jim-bob',
                 'boB',
                 '123.456', 
                 '___haysoos___']
@@ -311,7 +311,7 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         invalid = ['bo',
                 '.bob',
                 'bob.',
-                'e--irods', 
+                'jim--bob',
                 'jamesbond..007',  
                 '________________________________longer_than_NAME_LEN________________________________________________']
 

@@ -33,7 +33,7 @@ if (-e "icatMiscTest.log") {
     $fileName = $fileName . " icatMiscTest.log";
 }
 
-$theLines = `grep logSQL $srcFiles | grep " SQL "`;
+$theLines = `grep -E "\\" *[A-Za-z0-9_]+ +SQL +[0-9]+ *\\"" $srcFiles`;
 
 $_=$theLines;
 @lines=split("\n", $_);
