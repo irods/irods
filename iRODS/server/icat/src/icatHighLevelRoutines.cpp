@@ -5152,14 +5152,6 @@ int chlCheckAuth(
     }
 
     status = cmlGetIntegerValueFromSql( "select count(UP.user_id) from R_USER_PASSWORD UP, R_USER_MAIN where user_name=?", &MAX_PASSWORDS, userName2, 0, 0, 0, 0, &icss );
-
-    if ( true ) {
-        std::stringstream msg;
-        msg << "qqq - MAX_PASSWORDS: ";
-        msg << MAX_PASSWORDS;
-        DEBUGMSG( msg.str() );
-    }
-
     pwInfoArray.reset( new char[MAX_PASSWORD_LEN * MAX_PASSWORDS * 4] );
 
     doMore = 1;
