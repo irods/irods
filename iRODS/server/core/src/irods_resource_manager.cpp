@@ -10,6 +10,7 @@
 // irods includes
 #include "getRescQuota.hpp"
 #include "irods_children_parser.hpp"
+#include "irods_hierarchy_parser.hpp"
 #include "rsGlobalExtern.hpp"
 #include "generalAdmin.hpp"
 #include "phyBundleColl.hpp"
@@ -41,7 +42,9 @@ namespace irods {
 
 // =-=-=-=-=-=-=-
 // public - retrieve a resource given its key
-    error resource_manager::resolve( std::string _key, resource_ptr& _value ) {
+    error resource_manager::resolve( 
+        std::string   _key, 
+        resource_ptr& _value ) {
 
         if ( _key.empty() ) {
             return ERROR( SYS_INVALID_INPUT_PARAM, "empty key" );
@@ -51,8 +54,7 @@ namespace irods {
             _value = resources_[ _key ];
             return SUCCESS();
 
-        }
-        else {
+        } else {
             std::stringstream msg;
             msg << "no resource found for name ["
                 << _key << "]";
@@ -257,10 +259,11 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // initialize the special local file system resource
-        error spec_ret = init_local_file_system_resource();
-        if ( !spec_ret.ok() ) {
-            return PASSMSG( "init_local_file_system_resource failed.", op_ret );
-        }
+        // JMC :: no longer needed
+        //error spec_ret = init_local_file_system_resource();
+        //if ( !spec_ret.ok() ) {
+        //    return PASSMSG( "init_local_file_system_resource failed.", op_ret );
+        //}
 
         // =-=-=-=-=-=-=-
         // call start for plugins
@@ -275,8 +278,8 @@ namespace irods {
 
     } // init_from_catalog
 
-// =-=-=-=-=-=-=-
-/// @brief call shutdown on resources before destruction
+    // =-=-=-=-=-=-=-
+    /// @brief call shutdown on resources before destruction
     error resource_manager::shut_down_resources( ) {
         // =-=-=-=-=-=-=-
         // iterate over all resources in the table
@@ -292,8 +295,8 @@ namespace irods {
 
     } // shut_down_resources
 
-// =-=-=-=-=-=-=-
-/// @brief create a list of resources who do not have parents ( roots )
+    // =-=-=-=-=-=-=-
+    /// @brief create a list of resources who do not have parents ( roots )
     error resource_manager::get_root_resources(
         std::vector< std::string >& _list ) {
         // =-=-=-=-=-=-=-

@@ -72,6 +72,7 @@ _rsSubStructFileRename( rsComm_t*                 _comm,
         new irods::structured_object(
             _rename_inp->subFile ) );
     struct_obj->comm( _comm );
+    struct_obj->resc_hier( _rename_inp->resc_hier );
 
     // =-=-=-=-=-=-=-
     // call abstrcated interface to rename

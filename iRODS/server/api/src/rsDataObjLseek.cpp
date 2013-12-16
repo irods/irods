@@ -70,7 +70,11 @@ rsDataObjLseek( rsComm_t *rsComm, openedDataObjInp_t *dataObjLseekInp,
         subStructFileLseekInp.fd = L1desc[l1descInx].l3descInx;
         subStructFileLseekInp.offset = dataObjLseekInp->offset;
         subStructFileLseekInp.whence = dataObjLseekInp->whence;
-        rstrcpy( subStructFileLseekInp.addr.hostAddr, location.c_str(),
+        rstrcpy( subStructFileLseekInp.addr.hostAddr, 
+                 location.c_str(),
+                 NAME_LEN );
+        rstrcpy( subStructFileLseekInp.resc_hier, 
+                 dataObjInfo->rescHier,
                  NAME_LEN );
         status = rsSubStructFileLseek( rsComm, &subStructFileLseekInp, dataObjLseekOut );
     }

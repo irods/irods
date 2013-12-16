@@ -402,6 +402,9 @@ specCollReaddir( rsComm_t *rsComm, int specCollInx, rodsDirent_t **rodsDirent ) 
         subStructFileReaddirInp.fd = SpecCollDesc[specCollInx].l3descInx;
         rstrcpy( subStructFileReaddirInp.addr.hostAddr,
                  location.c_str(), NAME_LEN );
+        rstrcpy( subStructFileReaddirInp.resc_hier,
+                 dataObjInfo->rescHier,
+                 MAX_NAME_LEN );
         status = rsSubStructFileReaddir( rsComm, &subStructFileReaddirInp,
                                          rodsDirent );
     }
@@ -445,7 +448,11 @@ specCollClosedir( rsComm_t *rsComm, int specCollInx ) {
         subStructFileClosedirInp.type = dataObjInfo->specColl->type;
         subStructFileClosedirInp.fd = SpecCollDesc[specCollInx].l3descInx;
         rstrcpy( subStructFileClosedirInp.addr.hostAddr,
-                 location.c_str(), NAME_LEN );
+                 location.c_str(), 
+                 NAME_LEN );
+        rstrcpy( subStructFileClosedirInp.resc_hier,
+                 dataObjInfo->rescHier,
+                 MAX_NAME_LEN );
         status = rsSubStructFileClosedir( rsComm, &subStructFileClosedirInp );
     }
     else if ( specColl->collClass == MOUNTED_COLL ) {

@@ -8,6 +8,7 @@
 #include "irods_structured_object.hpp"
 #include "irods_string_tokenize.hpp"
 #include "irods_resource_manager.hpp"
+#include "irods_hierarchy_parser.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -472,9 +473,13 @@ extern "C" {
         PluginStructFileDesc[ _struct_desc_index ].rsComm = _comm;
 
         // =-=-=-=-=-=-=-
-        // resolve resource by name
+        // resolve the child resource by name
         irods::resource_ptr resc;
-        irods::error resc_err = resc_mgr.resolve( _resc_hier, resc );
+        std::string last_resc;
+        irods::hierarchy_parser parser;
+        parser.set_string( _resc_hier );
+        parser.last_resc( last_resc );
+        irods::error resc_err = resc_mgr.resolve( last_resc, resc );
         if ( !resc_err.ok() ) {
             std::stringstream msg;
             msg << "tar_struct_file_open - error returned from resolveResc for resource [";
@@ -653,7 +658,7 @@ extern "C" {
         fileCreateInp.flags      = fco->flags();
         fileCreateInp.otherFlags = NO_CHK_PERM_FLAG; // JMC - backport 4768
         strncpy( fileCreateInp.addr.hostAddr, resc_host.c_str(), NAME_LEN );
-        strncpy( fileCreateInp.resc_hier_, irods::LOCAL_USE_ONLY_RESOURCE.c_str(), MAX_NAME_LEN );
+        strncpy( fileCreateInp.resc_hier_, fco->resc_hier().c_str(), MAX_NAME_LEN );
         strncpy( fileCreateInp.objPath, fco->logical_path().c_str(), MAX_NAME_LEN );
 
         // =-=-=-=-=-=-=-
@@ -750,7 +755,7 @@ extern "C" {
         fileOpenInp.flags      = fco->flags();
         fileOpenInp.otherFlags = NO_CHK_PERM_FLAG; // JMC - backport 4768
         strncpy( fileOpenInp.addr.hostAddr, resc_host.c_str(), NAME_LEN );
-        strncpy( fileOpenInp.resc_hier_, irods::LOCAL_USE_ONLY_RESOURCE.c_str(), MAX_NAME_LEN );
+        strncpy( fileOpenInp.resc_hier_, fco->resc_hier().c_str(), MAX_NAME_LEN );
         strncpy( fileOpenInp.objPath, fco->logical_path().c_str(), MAX_NAME_LEN );
 
         // =-=-=-=-=-=-=-
@@ -980,7 +985,7 @@ extern "C" {
         // build a file unlink structure to pass off to the server api call
         fileUnlinkInp_t fileUnlinkInp;
         memset( &fileUnlinkInp, 0, sizeof( fileUnlinkInp ) );
-        strncpy( fileUnlinkInp.rescHier, irods::LOCAL_USE_ONLY_RESOURCE.c_str(), MAX_NAME_LEN );
+        strncpy( fileUnlinkInp.rescHier, fco->resc_hier().c_str(), MAX_NAME_LEN );
         strncpy( fileUnlinkInp.objPath, fco->logical_path().c_str(), MAX_NAME_LEN );
 
         // =-=-=-=-=-=-=-
@@ -1068,7 +1073,7 @@ extern "C" {
         fileStatInp_t fileStatInp;
         memset( &fileStatInp, 0, sizeof( fileStatInp ) );
         strncpy( fileStatInp.rescHier,
-                 irods::LOCAL_USE_ONLY_RESOURCE.c_str(),
+                 fco->resc_hier().c_str(),
                  MAX_NAME_LEN );
         strncpy( fileStatInp.objPath, fco->logical_path().c_str(), MAX_NAME_LEN );
 
@@ -1082,7 +1087,7 @@ extern "C" {
 
         strncpy( fileStatInp.addr.hostAddr, resc_host.c_str(), NAME_LEN );
         strncpy( fileStatInp.rescHier,
-                 irods::LOCAL_USE_ONLY_RESOURCE.c_str(),
+                 fco->resc_hier().c_str(),
                  MAX_NAME_LEN );
 
         // =-=-=-=-=-=-=-
@@ -1521,7 +1526,7 @@ extern "C" {
     // interface for POSIX rename
     irods::error tar_file_rename_plugin(
         irods::resource_plugin_context& _ctx,
-        const char*                      _new_file_name ) {
+        const char*                     _new_file_name ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
         irods::error chk_err = tar_check_params( _ctx );
@@ -1570,7 +1575,7 @@ extern "C" {
         memset( &fileRenameInp, 0, sizeof( fileRenameInp ) );
         strncpy( fileRenameInp.addr.hostAddr, resc_host.c_str(), NAME_LEN );
         strncpy( fileRenameInp.rescHier,
-                 irods::LOCAL_USE_ONLY_RESOURCE.c_str(),
+                 fco->resc_hier().c_str(),
                  MAX_NAME_LEN );
         strncpy( fileRenameInp.objPath, fco->logical_path().c_str(), MAX_NAME_LEN );
 
@@ -2154,10 +2159,10 @@ extern "C" {
         // create a file stat structure for the rs call
         fileStatInp_t file_stat_inp;
         memset( &file_stat_inp, 0, sizeof( file_stat_inp ) );
-        rstrcpy( file_stat_inp.fileName, spec_coll->phyPath, MAX_NAME_LEN );
-        strncpy( file_stat_inp.addr.hostAddr, _host.c_str(), NAME_LEN );
-        strncpy( file_stat_inp.rescHier, irods::LOCAL_USE_ONLY_RESOURCE.c_str(), MAX_NAME_LEN );
-        strncpy( file_stat_inp.objPath, spec_coll->objPath, MAX_NAME_LEN );
+        rstrcpy( file_stat_inp.fileName,      spec_coll->phyPath,  MAX_NAME_LEN );
+        strncpy( file_stat_inp.addr.hostAddr, _host.c_str(),       NAME_LEN );
+        strncpy( file_stat_inp.rescHier,      spec_coll->rescHier, MAX_NAME_LEN );
+        strncpy( file_stat_inp.objPath,       spec_coll->objPath,  MAX_NAME_LEN );
 
         // =-=-=-=-=-=-=-
         // call file stat api to get the size of the new file
