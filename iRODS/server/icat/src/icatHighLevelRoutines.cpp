@@ -5155,12 +5155,12 @@ int chlCheckAuth(
     if ( logSQL != 0 ) {
         rodsLog( LOG_SQL, "chlCheckAuth SQL 1 " );
     }
-    
-    status = cmlGetMultiRowStringValuesFromSql("select rcat_password, pass_expiry_ts, R_USER_PASSWORD.create_ts, R_USER_PASSWORD.modify_ts from R_USER_PASSWORD, "
-                                               "R_USER_MAIN where user_name=? and zone_name=? and R_USER_MAIN.user_id = R_USER_PASSWORD.user_id",
-                                               pwInfoArray.get(), MAX_PASSWORD_LEN,
-                                               MAX_PASSWORDS * 4, /* four strings per password returned */
-                                               userName2, myUserZone, 0, &icss );
+
+    status = cmlGetMultiRowStringValuesFromSql( "select rcat_password, pass_expiry_ts, R_USER_PASSWORD.create_ts, R_USER_PASSWORD.modify_ts from R_USER_PASSWORD, "
+             "R_USER_MAIN where user_name=? and zone_name=? and R_USER_MAIN.user_id = R_USER_PASSWORD.user_id",
+             pwInfoArray.get(), MAX_PASSWORD_LEN,
+             MAX_PASSWORDS * 4, /* four strings per password returned */
+             userName2, myUserZone, 0, &icss );
 
     if ( status < 4 ) {
         if ( status == CAT_NO_ROWS_FOUND ) {
@@ -5177,21 +5177,21 @@ int chlCheckAuth(
     goodPwExpiry[0] = '\0';
     goodPwTs[0] = '\0';
     goodPwModTs[0] = '\0';
-    
+
     if ( nPasswords == MAX_PASSWORDS ) {
-        // There are more than MAX_PASSWORDS in the database take the extra time to get them all. 
+        // There are more than MAX_PASSWORDS in the database take the extra time to get them all.
         status = cmlGetIntegerValueFromSql( "select count(UP.user_id) from R_USER_PASSWORD UP, R_USER_MAIN where user_name=?", &MAX_PASSWORDS, userName2, 0, 0, 0, 0,
                                             &icss );
         nPasswords = MAX_PASSWORDS;
         pwInfoArray.reset( new char[MAX_PASSWORD_LEN * MAX_PASSWORDS * 4] );
-        
-        status = cmlGetMultiRowStringValuesFromSql("select rcat_password, pass_expiry_ts, R_USER_PASSWORD.create_ts, R_USER_PASSWORD.modify_ts from R_USER_PASSWORD, "
-                                                   "R_USER_MAIN where user_name=? and zone_name=? and R_USER_MAIN.user_id = R_USER_PASSWORD.user_id",
-                                                   pwInfoArray.get(), MAX_PASSWORD_LEN,
-                                                   MAX_PASSWORDS * 4, /* four strings per password returned */
-                                                   userName2, myUserZone, 0, &icss );
+
+        status = cmlGetMultiRowStringValuesFromSql( "select rcat_password, pass_expiry_ts, R_USER_PASSWORD.create_ts, R_USER_PASSWORD.modify_ts from R_USER_PASSWORD, "
+                 "R_USER_MAIN where user_name=? and zone_name=? and R_USER_MAIN.user_id = R_USER_PASSWORD.user_id",
+                 pwInfoArray.get(), MAX_PASSWORD_LEN,
+                 MAX_PASSWORDS * 4, /* four strings per password returned */
+                 userName2, myUserZone, 0, &icss );
     }
-    
+
     cpw = pwInfoArray.get();
     for ( k = 0; OK == 0 && k < MAX_PASSWORDS && k < nPasswords; k++ ) {
         memset( md5Buf, 0, sizeof( md5Buf ) );
@@ -5199,18 +5199,18 @@ int chlCheckAuth(
         rstrcpy( lastPw, cpw, MAX_PASSWORD_LEN );
         icatDescramble( cpw );
         strncpy( md5Buf + CHALLENGE_LEN, cpw, MAX_PASSWORD_LEN );
-        
+
         obfMakeOneWayHash( hashType,
                            ( unsigned char * )md5Buf, CHALLENGE_LEN + MAX_PASSWORD_LEN,
                            ( unsigned char * )digest );
-        
+
         for ( i = 0; i < RESPONSE_LEN; i++ ) {
             if ( digest[i] == '\0' ) {
                 digest[i]++;
             }  /* make sure 'string' doesn't end
                   early (this matches client code) */
         }
-        
+
         cp = response;
         OK = 1;
         for ( i = 0; i < RESPONSE_LEN; i++ ) {
@@ -5218,7 +5218,7 @@ int chlCheckAuth(
                 OK = 0;
             }
         }
-        
+
         memset( md5Buf, 0, sizeof( md5Buf ) );
         if ( OK == 1 ) {
             rstrcpy( goodPw, cpw, MAX_PASSWORD_LEN );
@@ -5242,7 +5242,7 @@ int chlCheckAuth(
                 /* normal case */
                 rstrcpy( lastPwModTs, cPwTs, sizeof( lastPwModTs ) );
             }
-            
+
             cpw += MAX_PASSWORD_LEN * 4;
         }
     }
@@ -5251,15 +5251,15 @@ int chlCheckAuth(
         prevFailure++;
         return( CAT_INVALID_AUTHENTICATION );
     }
-    
+
     expireTime = atoll( goodPwExpiry );
     getNowStr( myTime );
     nowTime = atoll( myTime );
-    
+
     /* Check for PAM_AUTH type passwords */
     pamMaxTime = atoll( irods_pam_password_max_time );
     pamMinTime = atoll( irods_pam_password_min_time );
-    
+
     if ( ( strncmp( goodPwExpiry, "9999", 4 ) != 0 ) &&
             expireTime >=  pamMinTime &&
             expireTime <= pamMaxTime ) {
