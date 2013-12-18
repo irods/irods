@@ -55,10 +55,7 @@ typedef struct rodsServerConfig {
 
 } rodsServerConfig_t;
 
-int
-readServerConfig( rodsServerConfig_t *rodsServerConfig );
-
-char *
-findNextTokenAndTerm( char *inPtr );
+int   readServerConfig( rodsServerConfig_t *rodsServerConfig );
+char* findNextTokenAndTerm( char *inPtr );
 
 #endif	/* READ_SERVER_CONFIG_H */

@@ -65,12 +65,6 @@ namespace irods {
     // helpful typedef for sock comm interface & factory
     typedef boost::shared_ptr< postgres_object > postgres_object_ptr;
 
-    // =-=-=-=-=-=-=-
-    // helper fcn to handle cast to pg object
-    error make_pg_ptr(
-        const first_class_object_ptr&,
-        postgres_object_ptr& );
-
 }; // namespace irods
 
 #endif // __EIRODS_POSTGRES_OBJECT_H__

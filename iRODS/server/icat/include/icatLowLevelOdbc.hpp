@@ -8,19 +8,8 @@
 #ifndef CLL_PSQ_HPP
 #define CLL_PSQ_HPP
 
-#ifdef NEW_ODBC
 #include "sql.h"
 #include "sqlext.h"
-#else
-/*
- These two are in the postgresql include directory, for example
- ../../../pgsql/include :
-*/
-#include "iodbc.h"
-#include "isqlext.h"
-/* Seems to be missing: */
-#define SQL_SQLSTATE_SIZE     6
-#endif
 
 #include "rods.hpp"
 #include "icatMidLevelRoutines.hpp"

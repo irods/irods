@@ -16,6 +16,8 @@ namespace irods {
 
     const std::string DATABASE_OP_DEBUG( "database_debug" );
     const std::string DATABASE_OP_OPEN( "database_open" );
+    const std::string DATABASE_OP_CLOSE( "database_close" );
+    const std::string DATABASE_OP_GET_LOCAL_ZONE( "database_get_local_zone" );
 
 }; // namespace irods
 

@@ -109,26 +109,6 @@ namespace irods {
 
     } // get_re_vars
 
-    // =-=-=-=-=-=-=-
-    // helper fcn to handle cast to pg object
-    error make_pg_ptr(
-        const first_class_object_ptr& _fc,
-        postgres_object_ptr&          _pg ) {
-        _pg = boost::dynamic_pointer_cast <
-              irods::postgres_object > (
-                  _fc );
-        if ( !_pg.get() ) {
-            return SUCCESS();
-
-        }
-        else {
-            return ERROR(
-                       INVALID_DYNAMIC_CAST,
-                       "failed to dynamic cast to postgres_object_ptr" );
-        }
-
-    } // make_pg_ptr
-
 }; // namespace irods
 
 

@@ -244,16 +244,21 @@ int chlOpen(
 
     // =-=-=-=-=-=-=-
     // call factory for database object
-    irods::database_object_ptr db_ptr;
+    irods::database_object_ptr db_obj_ptr;
     irods::error ret = irods::database_factory(
                            icss.database_plugin_type,
-                           db_ptr );
+                           db_obj_ptr );
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+
     // =-=-=-=-=-=-=-
     // resolve a plugin for that object
-    irods::plugin_ptr p_ptr;
-    ret = db_ptr->resolve(
+    irods::plugin_ptr db_plug_ptr;
+    ret = db_obj_ptr->resolve(
               irods::DATABASE_INTERFACE,
-              p_ptr );
+              db_plug_ptr );
     if ( !ret.ok() ) {
         irods::log(
             PASSMSG(
@@ -265,9 +270,9 @@ int chlOpen(
     // =-=-=-=-=-=-=-
     // cast plugin and object to db and fco for call
     irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
-                                        irods::first_class_object > ( ptr );
+                                            irods::first_class_object > ( db_obj_ptr );
     irods::database_ptr           db = boost::dynamic_pointer_cast <
-                                       irods::database > ( p_ptr );
+                                           irods::database > ( db_plug_ptr );
 
     // =-=-=-=-=-=-=-
     // call the open operation on the plugin
@@ -280,19 +285,51 @@ int chlOpen(
 
 } // chlOpen
 
-/*
-  Close an open connection to the database.
-  Clean up and shutdown the connection.
-*/
+/// =-=-=-=-=-=-=-
+///  @breif Close an open connection to the database.
+///         Clean up and shutdown the connection.
 int chlClose() {
-    int i;
-
-    i = cmlClose( &icss );
-    if ( i == 0 ) {
-        icss.status = 0;
+    // =-=-=-=-=-=-=-
+    // call factory for database object
+    irods::database_object_ptr db_obj_ptr;
+    irods::error ret = irods::database_factory(
+                           icss.database_plugin_type,
+                           db_obj_ptr );
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
     }
-    return( i );
-}
+
+    // =-=-=-=-=-=-=-
+    // resolve a plugin for that object
+    irods::plugin_ptr db_plug_ptr;
+    ret = db_obj_ptr->resolve(
+              irods::DATABASE_INTERFACE,
+              db_plug_ptr );
+    if ( !ret.ok() ) {
+        irods::log(
+            PASSMSG(
+                "failed to resolve database interface",
+                ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // cast plugin and object to db and fco for call
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
+                                            irods::first_class_object > ( db_obj_ptr );
+    irods::database_ptr           db = boost::dynamic_pointer_cast <
+                                           irods::database > ( db_plug_ptr );
+
+    // =-=-=-=-=-=-=-
+    // call the open operation on the plugin
+    ret = db->call(
+              irods::DATABASE_OP_CLOSE,
+              ptr );
+
+    return ret.code();
+
+} // chlClose
 
 int chlIsConnected() {
     if ( logSQL != 0 ) {
@@ -5879,7 +5916,7 @@ int chlUpdateIrodsPamPassword( rsComm_t *rsComm,
                                char **irodsPassword ) {
     char myTime[50];
     char rBuf[200];
-    int i, j;
+    size_t i, j;
     char randomPw[50];
     char randomPwEncoded[50];
     int status;
