@@ -248,7 +248,7 @@ int chlOpen(
     irods::error ret = irods::database_factory(
                            icss.database_plugin_type,
                            db_obj_ptr );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
     }
@@ -270,9 +270,9 @@ int chlOpen(
     // =-=-=-=-=-=-=-
     // cast plugin and object to db and fco for call
     irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
-                                            irods::first_class_object > ( db_obj_ptr );
+                                        irods::first_class_object > ( db_obj_ptr );
     irods::database_ptr           db = boost::dynamic_pointer_cast <
-                                           irods::database > ( db_plug_ptr );
+                                       irods::database > ( db_plug_ptr );
 
     // =-=-=-=-=-=-=-
     // call the open operation on the plugin
@@ -295,7 +295,7 @@ int chlClose() {
     irods::error ret = irods::database_factory(
                            icss.database_plugin_type,
                            db_obj_ptr );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
     }
@@ -317,9 +317,9 @@ int chlClose() {
     // =-=-=-=-=-=-=-
     // cast plugin and object to db and fco for call
     irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
-                                            irods::first_class_object > ( db_obj_ptr );
+                                        irods::first_class_object > ( db_obj_ptr );
     irods::database_ptr           db = boost::dynamic_pointer_cast <
-                                           irods::database > ( db_plug_ptr );
+                                       irods::database > ( db_plug_ptr );
 
     // =-=-=-=-=-=-=-
     // call the open operation on the plugin
