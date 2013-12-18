@@ -94,11 +94,14 @@ else
 fi
 
 # run authentication tests
-cd $IRODSROOT/tests/pydevtest
-$PYTHONCMD $OPTS auth_suite.Test_Auth_Suite
+if [ "$IRODSDEVTESTCI" == "true" ] ; then
+    cd $IRODSROOT/tests/pydevtest
+    $PYTHONCMD $OPTS auth_suite.Test_Auth_Suite
+fi
 
 # run OSAuth test by itself
 if [ "$IRODSDEVTESTCI" == "true" ] ; then
+    cd $IRODSROOT/tests/pydevtest
     set +e
     passwd <<EOF
 temporarypasswordforci
