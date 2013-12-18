@@ -5842,7 +5842,7 @@ int chlUpdateIrodsPamPassword( rsComm_t *rsComm,
                                char **irodsPassword ) {
     char myTime[50];
     char rBuf[200];
-    int i, j;
+    size_t i, j;
     char randomPw[50];
     char randomPwEncoded[50];
     int status;
@@ -13176,8 +13176,7 @@ int chlModTicket( rsComm_t *rsComm, char *opName, char *ticketString,
                  0, 0, 0, &icss );
     if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ||
             status == CAT_NO_ROWS_FOUND ) {
-        int i;
-        i = addRErrorMsg( &rsComm->rError, 0, "Invalid user" );
+        addRErrorMsg( &rsComm->rError, 0, "Invalid user" );
         return( CAT_INVALID_USER );
     }
     if ( status < 0 ) {

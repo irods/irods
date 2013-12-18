@@ -863,7 +863,7 @@ ROMAN=`python -c "import roman"`
 if [ "$?" != "0" ] ; then
     PYPREFLIGHT="$PYPREFLIGHT roman"
 else
-    ROMANLOCATION=`python -c "import roman; print roman.__file__"` # expecting ".../roman.pyc"
+    ROMANLOCATION=`python -c "import roman; print (roman.__file__)"` # expecting ".../roman.pyc"
     echo "Detected python module 'roman' [$ROMANLOCATION]"
 fi
 
@@ -1011,7 +1011,7 @@ if [ "$BUILDIRODS" == "1" ] ; then
     fi
 
     # build a copy of boost
-    IRODS_BUILD_BOOSTVERSION="boost_1_55_0"
+    IRODS_BUILD_BOOSTVERSION="boost_1_55_0z"
     cd $BUILDDIR/external/
     if [ -d "$IRODS_BUILD_BOOSTVERSION" ] ; then
         echo "${text_green}${text_bold}Detected copy of [$IRODS_BUILD_BOOSTVERSION]${text_reset}"
@@ -1020,7 +1020,7 @@ if [ "$BUILDIRODS" == "1" ] ; then
         if [ -e "$IRODS_BUILD_BOOSTVERSION.tar.gz" ] ; then
             echo "Using existing copy"
         else
-#            wget -O $IRODS_BUILD_BOOSTVERSION.tar.gz http://sourceforge.net/projects/boost/files/boost/1.55.0/$IRODS_BUILD_BOOSTVERSION.tar.gz/download
+#            wget -O $IRODS_BUILD_BOOSTVERSION.tar.gz http://sourceforge.net/projects/boost/files/boost/1.55.0z/$IRODS_BUILD_BOOSTVERSION.tar.gz/download
             wget ftp://ftp.renci.org/pub/eirods/external/$IRODS_BUILD_BOOSTVERSION.tar.gz
         fi
         gunzip $IRODS_BUILD_BOOSTVERSION.tar.gz
@@ -1030,7 +1030,7 @@ if [ "$BUILDIRODS" == "1" ] ; then
     cd $BUILDDIR/external/$IRODS_BUILD_BOOSTVERSION
     sed -i "s/defined(__GLIBC_HAVE_LONG_LONG)/(defined(__GLIBC_HAVE_LONG_LONG) || (defined(__GLIBC__) \&\& ((__GLIBC__ > 2) || ((__GLIBC__ == 2) \&\& (__GLIBC_MINOR__ >= 17)))))/" ./boost/cstdint.hpp
     ./bootstrap.sh --with-libraries=filesystem,system,thread,regex
-    ./bjam link=static threading=multi cxxflags="-fPIC" -j$CPUCOUNT
+    ./bjam link=static threading=multi cxxflags="-fPIC -DBOOST_SYSTEM_NO_DEPRECATED" -j$CPUCOUNT
 
 fi
 

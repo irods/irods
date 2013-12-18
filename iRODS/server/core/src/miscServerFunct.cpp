@@ -836,7 +836,8 @@ void partialDataGet(
             &myInput->shared_secret[iv_size] );
     }
 
-    buf = ( unsigned char* )malloc( ( 2 * TRANS_BUF_SZ ) * sizeof( unsigned char ) );
+    size_t buf_size =  ( 2 * TRANS_BUF_SZ ) * sizeof( unsigned char ) ;
+    buf = ( unsigned char* )malloc(buf_size);
 
 #ifdef PARA_TIMING
     afterSeek = time( 0 );
@@ -924,7 +925,7 @@ void partialDataGet(
 
                     // =-=-=-=-=-=-=-
                     // capture the iv with the cipher text
-                    bzero( buf, sizeof( buf ) );
+                    memset( buf, 0,  buf_size);
                     std::copy(
                         iv.begin(),
                         iv.end(),
