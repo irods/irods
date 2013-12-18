@@ -85,8 +85,8 @@ class Test_Auth_Suite(unittest.TestCase, ResourceBase):
 
         # server side certificate setup
         os.system("openssl genrsa -out server.key")
-        os.system("openssl req -batch -new -key server.key -out server.csr")
-        os.system("openssl req -batch -new -x509 -key server.key -out server.crt -days 365")
+        #os.system("openssl req -batch -new -key server.key -out server.csr")    # if use external CA
+        os.system("openssl req -batch -new -x509 -key server.key -out server.crt -days 365")    # self-signed certificate
         os.system("mv server.crt chain.pem")
         os.system("openssl dhparam -2 -out dhparams.pem 100") # normally 2048, but smaller size here for speed
 
@@ -127,7 +127,7 @@ class Test_Auth_Suite(unittest.TestCase, ResourceBase):
         assertiCmd(s.adminsession,"iadmin rmuser %s" % authTestUser)
 
         # clean up
-        os.system("rm server.key server.csr chain.pem dhparams.pem")
+        os.system("rm server.key chain.pem dhparams.pem")
 
     #@unittest.skip("TODO: Seeing inconsistent behavior in CI")
     def test_authentication_PAM_with_server_params(self):
@@ -140,8 +140,8 @@ class Test_Auth_Suite(unittest.TestCase, ResourceBase):
 
         # server side certificate setup
         os.system("openssl genrsa -out server.key")
-        os.system("openssl req -batch -new -key server.key -out server.csr")
-        os.system("openssl req -batch -new -x509 -key server.key -out server.crt -days 365")
+        # os.system("openssl req -batch -new -key server.key -out server.csr")    # if use external CA
+        os.system("openssl req -batch -new -x509 -key server.key -out server.crt -days 365")    # self-signed certificate
         os.system("mv server.crt chain.pem")
         os.system("openssl dhparam -2 -out dhparams.pem 100") # normally 2048, but smaller size here for speed
 
@@ -191,7 +191,7 @@ class Test_Auth_Suite(unittest.TestCase, ResourceBase):
         assertiCmd(s.adminsession,"iadmin rmuser %s" % authTestUser)
 
         # clean up
-        os.system("rm server.key server.csr chain.pem dhparams.pem")
+        os.system("rm server.key chain.pem dhparams.pem")
         
         # reset server.config to original
         os.system("mv %sOrig %s" % (serverConfigFile, serverConfigFile))
