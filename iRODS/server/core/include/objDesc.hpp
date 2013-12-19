@@ -64,9 +64,7 @@ typedef struct l1desc {
     char in_pdmo[MAX_NAME_LEN];
 } l1desc_t;
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     int
     initL1Desc();
@@ -120,9 +118,7 @@ extern "C" {
     int
     isL1descInuse();
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif  /* OBJ_DESC_H */
 

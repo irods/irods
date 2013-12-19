@@ -37,9 +37,7 @@ _rsDataObjChksum( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 #define RS_DATA_OBJ_RSYNC NULL
 #endif
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* prototype for the client call */
     /* rcDataObjRsync - Synchronize the data between a  local  copy  (local file
@@ -71,8 +69,6 @@ extern "C" {
     _rcDataObjRsync( rcComm_t *conn, dataObjInp_t *dataObjInp,
                      msParamArray_t **outParamArray );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* DATA_OBJ_RSYNC_H */

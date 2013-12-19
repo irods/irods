@@ -30,9 +30,7 @@ rsNcOpenGroup( rsComm_t *rsComm, ncOpenInp_t *ncOpenGroupInp, int **ncid );
 #define RS_NC_OPEN_GROUP NULL
 #endif
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* rcNcOpenGroup - open a HDF5 group. On the server, the nc_inq_grp_full_ncid
      * is call to get the grp_ncid which will be used for future processing.
@@ -52,8 +50,6 @@ extern "C" {
     int
     _rcNcOpenGroup( rcComm_t *conn, ncOpenInp_t *ncOpenGroupInp, int **ncid );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* NC_OPEN_GROUP_H */

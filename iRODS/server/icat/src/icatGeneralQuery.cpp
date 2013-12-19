@@ -1997,7 +1997,6 @@ checkCondInputAccess( genQueryInp_t genQueryInp, int statementNum,
     int userIx = -1, zoneIx = -1, accessIx = -1, dataIx = -1, collIx = -1;
     int status;
     char *zoneName;
-    char *ticketString = NULL;
     static char prevDataId[LONG_NAME_LEN];
     static char prevUser[LONG_NAME_LEN];
     static char prevAccess[LONG_NAME_LEN];
@@ -2021,7 +2020,6 @@ checkCondInputAccess( genQueryInp_t genQueryInp, int statementNum,
             /* for now, log it but the one used is the session ticket */
             rodsLog( LOG_NOTICE, "ticket input, value: %s",
                      genQueryInp.condInput.value[i] );
-            ticketString = genQueryInp.condInput.value[i];
         }
     }
     if ( genQueryInp.condInput.len == 1 &&
@@ -2087,7 +2085,6 @@ checkCondInputAccess( genQueryInp_t genQueryInp, int statementNum,
                      genQueryInp.condInput.value[userIx],
                      zoneName,
                      genQueryInp.condInput.value[accessIx],
-                     /*                  ticketString, accessControlHost, icss); */
                      /*                  sessionTicket, accessControlHost, icss); */
                      sessionTicket, sessionClientAddr, icss );
         prevStatus = status;

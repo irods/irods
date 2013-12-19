@@ -39,9 +39,7 @@ _rsNcRegGlobalAttr( rsComm_t *rsComm, ncRegGlobalAttrInp_t *ncRegGlobalAttrInp )
 #define RS_NC_REG_GLOBAL_ATTR NULL
 #endif
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* rcNcRegGlobalAttr - Register the NETCDF global variables as AUV in the
      * iRODS data object.
@@ -62,8 +60,6 @@ extern "C" {
     int
     clearRegGlobalAttrInp( ncRegGlobalAttrInp_t *ncRegGlobalAttrInp );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* NC_REG_GLOBAL_ATTR_H */

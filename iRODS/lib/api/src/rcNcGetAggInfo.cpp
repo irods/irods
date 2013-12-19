@@ -30,6 +30,7 @@ addNcAggElement( ncAggElement_t *ncAggElement, ncAggInfo_t *ncAggInfo ) {
             if ( ncAggInfo->ncAggElement == NULL ) {
                 rodsLog( LOG_ERROR,
                          "addNcAggElement: numFiles > 0 but cAggElement == NULL" );
+                free( newElement );
                 return ( NETCDF_VAR_COUNT_OUT_OF_RANGE );
             }
             memcpy( newElement, ncAggInfo->ncAggElement,

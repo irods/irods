@@ -207,7 +207,7 @@ download_and_compile_EPM () {
     RENCIEPM="epm42-renci.tar.gz"
     rm -rf epm
     rm -f $RENCIEPM
-    wget ftp://ftp.renci.org/pub/eirods/build/$RENCIEPM
+    wget ftp://ftp.renci.org/pub/irods/build/$RENCIEPM
     tar -xf $RENCIEPM
 
     # configure
@@ -863,7 +863,7 @@ ROMAN=`python -c "import roman"`
 if [ "$?" != "0" ] ; then
     PYPREFLIGHT="$PYPREFLIGHT roman"
 else
-    ROMANLOCATION=`python -c "import roman; print roman.__file__"` # expecting ".../roman.pyc"
+    ROMANLOCATION=`python -c "import roman; print (roman.__file__)"` # expecting ".../roman.pyc"
     echo "Detected python module 'roman' [$ROMANLOCATION]"
 fi
 
@@ -920,7 +920,7 @@ if [ "$BUILDIRODS" == "1" ] ; then
             echo "Using existing copy"
         else
 #            http://www.digip.org/jansson/
-            wget ftp://ftp.renci.org/pub/eirods/external/$IRODS_BUILD_JANSSONVERSION.tar.gz
+            wget ftp://ftp.renci.org/pub/irods/external/$IRODS_BUILD_JANSSONVERSION.tar.gz
         fi
         gunzip $IRODS_BUILD_JANSSONVERSION.tar.gz
         tar xf $IRODS_BUILD_JANSSONVERSION.tar
@@ -946,7 +946,7 @@ if [ "$BUILDIRODS" == "1" ] ; then
             echo "Using existing copy"
         else
 #            wget http://sourceforge.net/projects/cjson/files/cJSONFiles.zip/download
-            wget ftp://ftp.renci.org/pub/eirods/external/$IRODS_BUILD_CJSONVERSION.zip
+            wget ftp://ftp.renci.org/pub/irods/external/$IRODS_BUILD_CJSONVERSION.zip
         fi
         echo "${text_green}${text_bold}Unzipping [$IRODS_BUILD_CJSONVERSION]${text_reset}"
         unzip -o $IRODS_BUILD_CJSONVERSION.zip
@@ -964,7 +964,7 @@ if [ "$BUILDIRODS" == "1" ] ; then
             echo "Using existing copy"
         else
 #            wget http://www.cmake.org/files/v2.8/$IRODS_BUILD_CMAKEVERSION.tar.gz
-            wget ftp://ftp.renci.org/pub/eirods/external/$IRODS_BUILD_CMAKEVERSION.tar.gz
+            wget ftp://ftp.renci.org/pub/irods/external/$IRODS_BUILD_CMAKEVERSION.tar.gz
         fi
 #        gunzip $IRODS_BUILD_CMAKEVERSION.tar.gz
         tar xf $IRODS_BUILD_CMAKEVERSION.tar.gz # this version wasn't zipped
@@ -990,7 +990,7 @@ if [ "$BUILDIRODS" == "1" ] ; then
             echo "Using existing copy"
         else
 #            wget -O $IRODS_BUILD_LIBARCHIVEVERSION.tar.gz https://github.com/libarchive/libarchive/archive/v$IRODS_BUILD_LIBARCHIVEVERSIONNUMBER.tar.gz
-            wget ftp://ftp.renci.org/pub/eirods/external/$IRODS_BUILD_LIBARCHIVEVERSION.tar.gz
+            wget ftp://ftp.renci.org/pub/irods/external/$IRODS_BUILD_LIBARCHIVEVERSION.tar.gz
         fi
         gunzip $IRODS_BUILD_LIBARCHIVEVERSION.tar.gz
         tar xf $IRODS_BUILD_LIBARCHIVEVERSION.tar
@@ -1011,7 +1011,7 @@ if [ "$BUILDIRODS" == "1" ] ; then
     fi
 
     # build a copy of boost
-    IRODS_BUILD_BOOSTVERSION="boost_1_55_0"
+    IRODS_BUILD_BOOSTVERSION="boost_1_55_0z"
     cd $BUILDDIR/external/
     if [ -d "$IRODS_BUILD_BOOSTVERSION" ] ; then
         echo "${text_green}${text_bold}Detected copy of [$IRODS_BUILD_BOOSTVERSION]${text_reset}"
@@ -1020,8 +1020,8 @@ if [ "$BUILDIRODS" == "1" ] ; then
         if [ -e "$IRODS_BUILD_BOOSTVERSION.tar.gz" ] ; then
             echo "Using existing copy"
         else
-#            wget -O $IRODS_BUILD_BOOSTVERSION.tar.gz http://sourceforge.net/projects/boost/files/boost/1.55.0/$IRODS_BUILD_BOOSTVERSION.tar.gz/download
-            wget ftp://ftp.renci.org/pub/eirods/external/$IRODS_BUILD_BOOSTVERSION.tar.gz
+#            wget -O $IRODS_BUILD_BOOSTVERSION.tar.gz http://sourceforge.net/projects/boost/files/boost/1.55.0z/$IRODS_BUILD_BOOSTVERSION.tar.gz/download
+            wget ftp://ftp.renci.org/pub/irods/external/$IRODS_BUILD_BOOSTVERSION.tar.gz
         fi
         gunzip $IRODS_BUILD_BOOSTVERSION.tar.gz
         tar xf $IRODS_BUILD_BOOSTVERSION.tar
@@ -1030,7 +1030,7 @@ if [ "$BUILDIRODS" == "1" ] ; then
     cd $BUILDDIR/external/$IRODS_BUILD_BOOSTVERSION
     sed -i "s/defined(__GLIBC_HAVE_LONG_LONG)/(defined(__GLIBC_HAVE_LONG_LONG) || (defined(__GLIBC__) \&\& ((__GLIBC__ > 2) || ((__GLIBC__ == 2) \&\& (__GLIBC_MINOR__ >= 17)))))/" ./boost/cstdint.hpp
     ./bootstrap.sh --with-libraries=filesystem,system,thread,regex
-    ./bjam link=static threading=multi cxxflags="-fPIC" -j$CPUCOUNT
+    ./bjam link=static threading=multi cxxflags="-fPIC -DBOOST_SYSTEM_NO_DEPRECATED" -j$CPUCOUNT
 
 fi
 

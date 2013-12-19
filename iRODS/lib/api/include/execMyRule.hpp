@@ -39,17 +39,13 @@ remoteExecMyRule( rsComm_t *rsComm, execMyRuleInp_t *execMyRuleInp,
 #define RS_EXEC_MY_RULE NULL
 #endif
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* prototype for the client call */
     int
     rcExecMyRule( rcComm_t *conn, execMyRuleInp_t *execMyRuleInp,
                   msParamArray_t **outParamArray );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* EXEC_MY_RULE_H */

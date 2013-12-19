@@ -32,9 +32,7 @@ typedef struct {
 
 #define generalAdminInp_PI "str *arg0; str *arg1; str *arg2; str *arg3; str *arg4; str *arg5; str *arg6; str *arg7;  str *arg8;  str *arg9;"
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
 #if defined(RODS_SERVER)
 #define RS_GENERAL_ADMIN rsGeneralAdmin
@@ -52,8 +50,6 @@ extern "C" {
     int
     rcGeneralAdmin( rcComm_t *conn, generalAdminInp_t *generalAdminInp );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif  /* GENERAL_ADMIN_H */

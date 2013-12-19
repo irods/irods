@@ -12,9 +12,7 @@
 #include "rodsType.hpp"
 #endif
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
 #define True 1
 #define False 0
@@ -144,8 +142,6 @@ extern "C" {
     parseCmdLineOpt( int argc, char **argv, char *optString, int includeLong,
                      rodsArguments_t *rodsArgs );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif /* RODS_PARSE_COMMAND_LINE */

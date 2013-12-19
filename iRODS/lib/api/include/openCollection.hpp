@@ -48,9 +48,7 @@ rsOpenCollection201( rsComm_t *rsComm, openCollInp_t *openCollInp );
 #endif
 #endif
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* prototype for the client call */
 
@@ -68,8 +66,6 @@ extern "C" {
      * OutPut -
      *   int status - status of the operation.
      */
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* OPEN_COLLECTION_H */

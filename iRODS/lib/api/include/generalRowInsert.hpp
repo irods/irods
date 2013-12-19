@@ -36,9 +36,7 @@ typedef struct {
 
 #define generalRowInsertInp_PI "str *tableName; str *arg1; str *arg2; str *arg3; str *arg4; str *arg5; str *arg6; str *arg7;  str *arg8;  str *arg9;"
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
 #if defined(RODS_SERVER)
 #define RS_GENERAL_ROW_INSERT rsGeneralRowInsert
@@ -56,8 +54,6 @@ extern "C" {
     int
     rcGeneralRowInsert( rcComm_t *conn, generalRowInsertInp_t *generalRowInsertInp );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* GENERAL_ROW_INSERT_H */

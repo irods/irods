@@ -45,9 +45,7 @@ _rsNcInqGrps( int ncid, ncInqGrpsOut_t **ncInqGrpsOut );
 #define RS_NC_INQ_GRPS NULL
 #endif
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* rcNcInqGrps - Given a location id or the root id and the absolute group
      * path, return the number of groups it contains, and an array of their ncids.
@@ -64,8 +62,6 @@ extern "C" {
                  ncInqGrpsOut_t **ncInqGrpsOut );
     int
     freeNcInqGrpsOut( ncInqGrpsOut_t **ncInqGrpsOut );
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* NC_INQ_GRPS_H */

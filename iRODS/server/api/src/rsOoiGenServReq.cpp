@@ -14,7 +14,7 @@
 int
 rsOoiGenServReq( rsComm_t *rsComm, ooiGenServReqInp_t *ooiGenServReqInp,
                  ooiGenServReqOut_t **ooiGenServReqOut ) {
-    int status;
+    int status = 0;
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
     rodsHostAddr_t rescAddr;

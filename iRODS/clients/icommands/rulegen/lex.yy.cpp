@@ -11,56 +11,11 @@
 #include <stdio.h>
 #include <unistd.h>
 
-
-/* cfront 1.2 defines "c_plusplus" instead of "__cplusplus" */
-#ifdef c_plusplus
-#ifndef __cplusplus
-#define __cplusplus
-#endif
-#endif
-
-
-#ifdef __cplusplus
-
 #include <stdlib.h>
 
-/* Use prototypes in function declarations. */
-#define YY_USE_PROTOS
-
-/* The "const" storage-class-modifier is valid. */
-#define YY_USE_CONST
-
-#else	/* ! __cplusplus */
-
-#if __STDC__
-
-#define YY_USE_PROTOS
-#define YY_USE_CONST
-
-#endif	/* __STDC__ */
-#endif	/* ! __cplusplus */
-
-#ifdef __TURBOC__
-#pragma warn -rch
-#pragma warn -use
-#include <io.h>
-#include <stdlib.h>
-#define YY_USE_CONST
-#define YY_USE_PROTOS
-#endif
-
-#ifdef YY_USE_CONST
 #define yyconst const
-#else
-#define yyconst
-#endif
 
-
-#ifdef YY_USE_PROTOS
 #define YY_PROTO(proto) proto
-#else
-#define YY_PROTO(proto) ()
-#endif
 
 /* Returned upon end-of-file. */
 #define YY_NULL 0
@@ -587,11 +542,7 @@ void count();
  */
 
 #ifndef YY_SKIP_YYWRAP
-#ifdef __cplusplus
 extern "C" int yywrap YY_PROTO( ( void ) );
-#else
-extern int yywrap YY_PROTO( ( void ) );
-#endif
 #endif
 
 #ifndef YY_NO_UNPUT
@@ -607,11 +558,7 @@ static int yy_flex_strlen YY_PROTO( ( yyconst char * ) );
 #endif
 
 #ifndef YY_NO_INPUT
-#ifdef __cplusplus
 static int yyinput YY_PROTO( ( void ) );
-#else
-static int input YY_PROTO( ( void ) );
-#endif
 #endif
 
 #if YY_STACK_USED
@@ -637,16 +584,10 @@ static int yy_top_state YY_PROTO( ( void ) );
 #ifdef YY_MALLOC_DECL
 YY_MALLOC_DECL
 #else
-#if __STDC__
-#ifndef __cplusplus
-#include <stdlib.h>
-#endif
-#else
 /* Just try to get by without declaring the routines.  This will fail
  * miserably on non-ANSI systems for which sizeof(size_t) != sizeof(int)
  * or sizeof(void*) != sizeof(int).
  */
-#endif
 #endif
 
 /* Amount of stuff to slurp up with each read. */
@@ -1500,12 +1441,7 @@ static yy_state_type yy_get_previous_state() {
  *	next_state = yy_try_NUL_trans( current_state );
  */
 
-#ifdef YY_USE_PROTOS
 static yy_state_type yy_try_NUL_trans( yy_state_type yy_current_state )
-#else
-static yy_state_type yy_try_NUL_trans( yy_current_state )
-yy_state_type yy_current_state;
-#endif
 {
     register int yy_is_jam;
     register char *yy_cp = yy_c_buf_p;
@@ -1529,13 +1465,7 @@ yy_state_type yy_current_state;
 
 
 #ifndef YY_NO_UNPUT
-#ifdef YY_USE_PROTOS
 static void yyunput( int c, register char *yy_bp )
-#else
-static void yyunput( c, yy_bp )
-int c;
-register char *yy_bp;
-#endif
 {
     register char *yy_cp = yy_c_buf_p;
 
@@ -1576,11 +1506,7 @@ register char *yy_bp;
 
 
 #ifndef YY_NO_INPUT
-#ifdef __cplusplus
 static int yyinput()
-#else
-static int input()
-#endif
 {
     int c;
 
@@ -1627,11 +1553,7 @@ static int input()
                 if ( ! yy_did_buffer_switch_on_eof ) {
                     YY_NEW_FILE;
                 }
-#ifdef __cplusplus
                 return yyinput();
-#else
-                return input();
-#endif
             }
 
             case EOB_ACT_CONTINUE_SCAN:
@@ -1651,12 +1573,7 @@ static int input()
 }
 #endif /* YY_NO_INPUT */
 
-#ifdef YY_USE_PROTOS
 void yyrestart( FILE *input_file )
-#else
-void yyrestart( input_file )
-FILE *input_file;
-#endif
 {
     if ( ! yy_current_buffer ) {
         yy_current_buffer = yy_create_buffer( yyin, YY_BUF_SIZE );
@@ -1667,12 +1584,7 @@ FILE *input_file;
 }
 
 
-#ifdef YY_USE_PROTOS
 void yy_switch_to_buffer( YY_BUFFER_STATE new_buffer )
-#else
-void yy_switch_to_buffer( new_buffer )
-YY_BUFFER_STATE new_buffer;
-#endif
 {
     if ( yy_current_buffer == new_buffer ) {
         return;
@@ -1697,11 +1609,7 @@ YY_BUFFER_STATE new_buffer;
 }
 
 
-#ifdef YY_USE_PROTOS
 void yy_load_buffer_state( void )
-#else
-void yy_load_buffer_state()
-#endif
 {
     yy_n_chars = yy_current_buffer->yy_n_chars;
     yytext_ptr = yy_c_buf_p = yy_current_buffer->yy_buf_pos;
@@ -1710,13 +1618,7 @@ void yy_load_buffer_state()
 }
 
 
-#ifdef YY_USE_PROTOS
 YY_BUFFER_STATE yy_create_buffer( FILE *file, int size )
-#else
-YY_BUFFER_STATE yy_create_buffer( file, size )
-FILE *file;
-int size;
-#endif
 {
     YY_BUFFER_STATE b;
 
@@ -1743,12 +1645,7 @@ int size;
 }
 
 
-#ifdef YY_USE_PROTOS
 void yy_delete_buffer( YY_BUFFER_STATE b )
-#else
-void yy_delete_buffer( b )
-YY_BUFFER_STATE b;
-#endif
 {
     if ( ! b ) {
         return;
@@ -1767,15 +1664,7 @@ YY_BUFFER_STATE b;
 
 
 
-#ifdef YY_USE_PROTOS
 void yy_init_buffer( YY_BUFFER_STATE b, FILE *file )
-#else
-void yy_init_buffer( b, file )
-YY_BUFFER_STATE b;
-FILE *file;
-#endif
-
-
 {
     yy_flush_buffer( b );
 
@@ -1794,13 +1683,7 @@ FILE *file;
 }
 
 
-#ifdef YY_USE_PROTOS
 void yy_flush_buffer( YY_BUFFER_STATE b )
-#else
-void yy_flush_buffer( b )
-YY_BUFFER_STATE b;
-#endif
-
 {
     if ( ! b ) {
         return;
@@ -1827,13 +1710,7 @@ YY_BUFFER_STATE b;
 
 
 #ifndef YY_NO_SCAN_BUFFER
-#ifdef YY_USE_PROTOS
 YY_BUFFER_STATE yy_scan_buffer( char *base, yy_size_t size )
-#else
-YY_BUFFER_STATE yy_scan_buffer( base, size )
-char *base;
-yy_size_t size;
-#endif
 {
     YY_BUFFER_STATE b;
 
@@ -1868,12 +1745,7 @@ yy_size_t size;
 
 
 #ifndef YY_NO_SCAN_STRING
-#ifdef YY_USE_PROTOS
 YY_BUFFER_STATE yy_scan_string( yyconst char *yy_str )
-#else
-YY_BUFFER_STATE yy_scan_string( yy_str )
-yyconst char *yy_str;
-#endif
 {
     int len;
     for ( len = 0; yy_str[len]; ++len ) {
@@ -1886,13 +1758,7 @@ yyconst char *yy_str;
 
 
 #ifndef YY_NO_SCAN_BYTES
-#ifdef YY_USE_PROTOS
 YY_BUFFER_STATE yy_scan_bytes( yyconst char *bytes, int len )
-#else
-YY_BUFFER_STATE yy_scan_bytes( bytes, len )
-yyconst char *bytes;
-int len;
-#endif
 {
     YY_BUFFER_STATE b;
     char *buf;
@@ -1928,12 +1794,7 @@ int len;
 
 
 #ifndef YY_NO_PUSH_STATE
-#ifdef YY_USE_PROTOS
 static void yy_push_state( int new_state )
-#else
-static void yy_push_state( new_state )
-int new_state;
-#endif
 {
     if ( yy_start_stack_ptr >= yy_start_stack_depth ) {
         yy_size_t new_size;
@@ -1982,12 +1843,7 @@ static int yy_top_state() {
 #define YY_EXIT_FAILURE 2
 #endif
 
-#ifdef YY_USE_PROTOS
 static void yy_fatal_error( yyconst char msg[] )
-#else
-static void yy_fatal_error( msg )
-char msg[];
-#endif
 {
     ( void ) fprintf( stderr, "%s\n", msg );
     exit( YY_EXIT_FAILURE );
@@ -2014,14 +1870,7 @@ char msg[];
 /* Internal utility routines. */
 
 #ifndef yytext_ptr
-#ifdef YY_USE_PROTOS
 static void yy_flex_strncpy( char *s1, yyconst char *s2, int n )
-#else
-static void yy_flex_strncpy( s1, s2, n )
-char *s1;
-yyconst char *s2;
-int n;
-#endif
 {
     register int i;
     for ( i = 0; i < n; ++i ) {
@@ -2031,12 +1880,7 @@ int n;
 #endif
 
 #ifdef YY_NEED_STRLEN
-#ifdef YY_USE_PROTOS
 static int yy_flex_strlen( yyconst char *s )
-#else
-static int yy_flex_strlen( s )
-yyconst char *s;
-#endif
 {
     register int n;
     for ( n = 0; s[n]; ++n ) {
@@ -2048,23 +1892,12 @@ yyconst char *s;
 #endif
 
 
-#ifdef YY_USE_PROTOS
 static void *yy_flex_alloc( yy_size_t size )
-#else
-static void *yy_flex_alloc( size )
-yy_size_t size;
-#endif
 {
     return ( void * ) malloc( size );
 }
 
-#ifdef YY_USE_PROTOS
 static void *yy_flex_realloc( void *ptr, yy_size_t size )
-#else
-static void *yy_flex_realloc( ptr, size )
-void *ptr;
-yy_size_t size;
-#endif
 {
     /* The cast to (char *) in the following accommodates both
      * implementations that use char* generic pointers, and those
@@ -2076,12 +1909,7 @@ yy_size_t size;
     return ( void * ) realloc( ( char * ) ptr, size );
 }
 
-#ifdef YY_USE_PROTOS
 static void yy_flex_free( void *ptr )
-#else
-static void yy_flex_free( ptr )
-void *ptr;
-#endif
 {
     free( ptr );
 }

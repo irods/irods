@@ -23,9 +23,7 @@
 #endif
 
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* some commonly used MS (micro service) type */
 #define STR_MS_T                "STR_PI"
@@ -273,8 +271,6 @@ extern "C" {
     int
     parseMsParamFromIRFile( msParamArray_t *inpParamArray, char *inBuf );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* MS_PARAM_H */

@@ -31,9 +31,7 @@
 // =-=-=-=-=-=-=-
 
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     int
     getFileMode( dataObjInp_t *dataObjInp );
@@ -112,9 +110,6 @@ extern "C" {
     rodsLong_t
     getFileMetadataFromVault( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo );
 #endif
-#ifdef  __cplusplus
 }
-#endif
 
 #endif  /* PHYS_PATH_H */
-

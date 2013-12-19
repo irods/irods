@@ -746,7 +746,7 @@ obfiDecode( char *in, char *out, int extra ) {
     int rval;
     int wheel_len;
     int wheel[26 + 26 + 10 + 15];
-    int j, addin, addin_i, kpos, found, nout;
+    int j, addin, addin_i, kpos, found, nout = 0;
     char headstring[10];
     int ii, too_short;
     char *my_out, *my_in;
@@ -1134,6 +1134,7 @@ obfEncodeByKeyV2( char *in, char *key, char *key2, char *out ) {
     strncat( myIn, in, 150 );
 
     strncpy( myKey, key, 90 );
+    myKey[90] = '\0';
     strncat( myKey, key2, 100 );
 
     /*
@@ -1277,6 +1278,7 @@ obfDecodeByKeyV2( char *in, char *key, char *key2, char *out ) {
     char myKey[200];
 
     strncpy( myKey, key, 90 );
+    myKey[90] = '\0';
     strncat( myKey, key2, 100 );
 
     myKey2 = obfGetMD5Hash( myKey );

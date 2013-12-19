@@ -39,9 +39,7 @@ rsCollCreate201( rsComm_t *rsComm, collInp201_t *collCreateInp );
 #endif
 #endif
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* prototype for the client call */
     int
@@ -57,8 +55,6 @@ extern "C" {
      * OutPut -
      *   int status - status of the operation.
      */
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* COLL_CREATE_H */

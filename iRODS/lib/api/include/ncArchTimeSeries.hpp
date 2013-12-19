@@ -51,9 +51,7 @@ archPartialTimeSeries( rsComm_t *rsComm, ncInqOut_t *ncInqOut,
 #define RS_NC_ARCH_TIME_SERIES NULL
 #endif
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* prototype for the client call */
     /* rcNcArchTimeSeries - Archive a time series data set given in objPath to
@@ -76,8 +74,6 @@ extern "C" {
     int
     rcNcArchTimeSeries( rcComm_t *conn, ncArchTimeSeriesInp_t *ncArchTimeSeriesInp );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* NC_ARCH_TIME_SERIES_H */

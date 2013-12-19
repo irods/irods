@@ -51,9 +51,7 @@ rsDataObjWrite201( rsComm_t *rsComm, dataObjWriteInp_t *dataObjWriteInp,
 #endif
 #endif
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* prototype for the client call */
     /* rcDataObjWrite - Write the content of dataObjWriteInpBBuf to
@@ -73,8 +71,6 @@ extern "C" {
     rcDataObjWrite( rcComm_t *conn, openedDataObjInp_t *dataObjWriteInp,
                     bytesBuf_t *dataObjWriteInpBBuf );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* DATA_OBJ_WRITE_H */

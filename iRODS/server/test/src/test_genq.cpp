@@ -26,6 +26,8 @@ int doLs() {
     int i;
     char cwd[] = "/";
 
+    memset(&genQueryInp, 0, sizeof(genQueryInp_t));
+
     i1a[0] = COL_DATA_NAME;
     i1a[1] = COL_COLL_NAME;
     i1b[0] = 0;

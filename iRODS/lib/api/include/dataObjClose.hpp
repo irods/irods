@@ -57,9 +57,7 @@ rsDataObjClose201( rsComm_t *rsComm, dataObjCloseInp_t *dataObjCloseInp );
 #endif
 #endif
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* prototype for the client call */
     /* rcDataObjClose - Close an opened iRODS data object descriptor.
@@ -75,8 +73,6 @@ extern "C" {
     int
     rcDataObjClose( rcComm_t *conn, openedDataObjInp_t *dataObjCloseInp );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* DATA_OBJ_CLOSE_H */

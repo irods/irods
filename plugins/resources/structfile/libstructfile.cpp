@@ -158,9 +158,8 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // initialize archive struct and set flags for format etc
         struct archive* arch = archive_read_new();
-        archive_read_support_compression_all( arch );
-        archive_read_support_format_all( arch );
         archive_read_support_filter_all( arch );
+        archive_read_support_format_all( arch );
 
         // =-=-=-=-=-=-=-
         // open the archive and and prepare to read
@@ -2066,7 +2065,7 @@ extern "C" {
 
         }
         else {
-            if ( archive_write_set_compression_none( arch ) != ARCHIVE_OK ) {
+            if ( archive_write_add_filter_none( arch ) != ARCHIVE_OK ) {
                 std::stringstream msg;
                 msg << "bundle_cache_dir - failed to set compression to none for archive [";
                 msg << spec_coll->phyPath;

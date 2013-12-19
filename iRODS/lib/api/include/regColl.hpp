@@ -37,9 +37,7 @@ rsRegColl201( rsComm_t *rsComm, collInp201_t *regCollInp );
 #endif
 #endif
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* prototype for the client call */
     int
@@ -56,8 +54,6 @@ extern "C" {
      *   int status - status of the operation.
      */
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* REG_COLL_H */

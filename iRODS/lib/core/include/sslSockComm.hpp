@@ -6,7 +6,6 @@
 #ifndef SSL_SOCK_COMM_HPP
 #define SSL_SOCK_COMM_HPP
 
-#ifdef USE_SSL
 #include <openssl/ssl.h>
 #include <openssl/x509v3.h>
 #include <openssl/err.h>
@@ -17,9 +16,7 @@
 
 #define SSL_CIPHER_LIST "ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH"
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     int
     sslStart( rcComm_t *rcComm );
@@ -48,9 +45,6 @@ extern "C" {
     sslWrite( int sock, void *buf, int len, irodsDescType_t irodsDescType,
               int *bytesWritten, SSL *ssl );
 
-#ifdef  __cplusplus
 }
-#endif
 
-#endif /* USE_SSL */
 #endif	/* SSL_SOCK_COMM_H */

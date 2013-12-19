@@ -52,9 +52,7 @@ rsDataObjRead201( rsComm_t *rsComm, dataObjReadInp_t *dataObjReadInp,
 #endif
 #endif
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* prototype for the client call */
     /* rcDataObjRead - Read an opened iRODS data object descriptor.
@@ -73,8 +71,6 @@ extern "C" {
     rcDataObjRead( rcComm_t *conn, openedDataObjInp_t *dataObjReadInp,
                    bytesBuf_t *dataObjReadOutBBuf );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* DATA_OBJ_READ_H */

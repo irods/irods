@@ -9,9 +9,7 @@
 #include "parseCommandLine.hpp"
 #include "rodsPath.hpp"
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
 #define MAX_ATTR_NAME_PER_LINE		4
 
@@ -46,8 +44,6 @@ extern "C" {
                         genQueryOut_t **genQueryOut );
     int
     queryAUVForDataObj( rcComm_t *conn, char *collPath, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs );
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* NCATTRUTIL_H */

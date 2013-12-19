@@ -44,9 +44,7 @@ rsNcInqIdColl( rsComm_t *rsComm, ncInqIdInp_t *ncInqIdInp, int **outId );
 #define RS_NC_INQ_ID NULL
 #endif
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* rcNcInqId - general netcdf inq for id (equivalent to nc_inq_dimid,
      *    nc_inq_varid, ....
@@ -62,8 +60,6 @@ extern "C" {
     int
     rcNcInqId( rcComm_t *conn, ncInqIdInp_t *ncInqIdInp, int **outId );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* NC_INQ_ID_H */

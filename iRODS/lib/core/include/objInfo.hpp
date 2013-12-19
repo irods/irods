@@ -35,9 +35,7 @@ namespace irods {
 /* this defines the "copies" condition */
 #define ALL_COPIES      -1      /* "all" */
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* defines some commonly used dataTypes */
 #define GENERIC_DT_STR    "generic"
@@ -402,9 +400,7 @@ extern "C" {
         structFileType_t type;
     } structFileTypeDef_t;
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif  /* OBJ_INFO_H */
 
