@@ -159,7 +159,6 @@ rcDataObjPut( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
     if ( portalOprOut->numThreads <= 0 ) {
         status = putFile( conn, portalOprOut->l1descInx,
                           locFilePath, dataObjInp->objPath, dataObjInp->dataSize );
-#ifdef RBUDP_TRANSFER
     }
     else if ( getUdpPortFromPortList( &portalOprOut->portList ) != 0 ) {
         int veryVerbose;
@@ -201,7 +200,6 @@ rcDataObjPut( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
                          veryVerbose,
                          0, 0 );
         }
-#endif  /* RBUDP_TRANSFER */
     }
     else {
         if ( getValByKey( &dataObjInp->condInput, VERY_VERBOSE_KW ) != NULL ) {

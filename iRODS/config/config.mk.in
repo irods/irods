@@ -297,10 +297,6 @@ GSI_SSL=
 GSI_CRYPTO=
 endif
 
-# RBUDP_TRANSFER - specify whether RBUDP file transfer mechanism will be
-# supported (iget/iget -U)
-RBUDP_TRANSFER = 1
-
 # UNI_CODE - support UTF-8 on linux and UTF-16 on windows
 # UNI_CODE = 1
 

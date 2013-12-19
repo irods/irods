@@ -13,11 +13,9 @@
 #include "rodsError.hpp"
 #include "objInfo.hpp"
 #include "dataObjInpOut.hpp"
-#ifdef RBUDP_TRANSFER
 #include "QUANTAnet_rbudpBase_c.hpp"
 #include "QUANTAnet_rbudpSender_c.hpp"
 #include "QUANTAnet_rbudpReceiver_c.hpp"
-#endif
 extern "C" {
 
 #define MAX_PROGRESS_CNT	8
@@ -67,7 +65,6 @@ extern "C" {
     int
     getFile( rcComm_t *conn, int l1descInx, char *locFilePath, char *objPath,
              rodsLong_t dataSize );
-#ifdef RBUDP_TRANSFER
     int
     putFileToPortalRbudp( portalOprOut_t *portalOprOut,
                           char *locFilePath, char *objPath, int locFd, rodsLong_t dataSize,
@@ -78,7 +75,6 @@ extern "C" {
                           int packetSize );
     int
     initRbudpClient( rbudpBase_t *rbudpBase, portList_t *myPortList );
-#endif  /* RBUDP_TRANSFER */
     int
     initFileRestart( rcComm_t *conn, char *fileName, char *objPath,
                      rodsLong_t fileSize, int numThr );

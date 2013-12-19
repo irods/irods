@@ -23,11 +23,9 @@
 #include "fileOpen.hpp"
 #include "dataObjInpOut.hpp"
 #include "dataCopy.hpp"
-#ifdef RBUDP_TRANSFER
 #include "QUANTAnet_rbudpBase_c.hpp"
 #include "QUANTAnet_rbudpSender_c.hpp"
 #include "QUANTAnet_rbudpReceiver_c.hpp"
-#endif	/* RBUDP_TRANSFER */
 
 #include "structFileSync.hpp" /* JMC */
 
@@ -104,10 +102,8 @@ char *regex( char *rec, char *text, ... );
 int intNoSupport( ... );
 rodsLong_t longNoSupport( ... );
 void getZoneServerId( char *zoneName, char *zoneSID );
-#ifdef RBUDP_TRANSFER
 int
 svrPortalPutGetRbudp( rsComm_t *rsComm );
-#endif	/* RBUDP_TRANSFER */
 #ifndef windows_platform
 void
 reconnManager( rsComm_t *rsComm );

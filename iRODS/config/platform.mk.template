@@ -216,10 +216,8 @@ MY_CFLAG+= -DUNZIP_EXEC_PATH=\"$(UNZIP_EXEC_PATH)\"
 endif
 
 
-ifdef RBUDP_TRANSFER
-MY_CFLAG+= -DRBUDP_TRANSFER -I$(libCoreIncDir) -I$(libApiIncDir)        \
+MY_CFLAG+= -I$(libCoreIncDir) -I$(libApiIncDir)        \
 		-I$(libMd5IncDir) -I$(libSha1IncDir) -I$(libRbudpIncDir)
-endif
 
 ifdef UNI_CODE
 MY_CFLAG+= -DUNI_CODE

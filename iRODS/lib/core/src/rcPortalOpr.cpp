@@ -1211,7 +1211,6 @@ rcPartialDataGet( rcPortalTransferInp_t *myInput ) {
     CLOSE_SOCK( srcFd );
 }
 
-#ifdef RBUDP_TRANSFER
 /* putFileToPortalRbudp - The client side of putting a file using
  * Rbudp. If locFilePath is NULL, the local file has already been opned
  * and locFd should be used. If sendRate and packetSize are 0, it will
@@ -1435,7 +1434,6 @@ initRbudpClient( rbudpBase_t *rbudpBase, portList_t *myPortList ) {
 
     return 0;
 }
-#endif  /* RBUDP_TRANSFER */
 
 int
 initFileRestart( rcComm_t *conn, char *fileName, char *objPath,

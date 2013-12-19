@@ -169,9 +169,7 @@ cpFileUtil( rcComm_t *conn, char *srcPath, char *targPath, rodsLong_t srcSize,
 int
 initCondForCp( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                dataObjCopyInp_t *dataObjCopyInp, rodsRestart_t *rodsRestart ) {
-#ifdef RBUDP_TRANSFER
     char *tmpStr;
-#endif  /* RBUDP_TRANSFER */
 
     if ( dataObjCopyInp == NULL ) {
         rodsLog( LOG_ERROR,
@@ -242,7 +240,6 @@ initCondForCp( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                    myRodsEnv->rodsDefResource );
     }
 
-#ifdef RBUDP_TRANSFER
     if ( rodsArgs->rbudp == True ) {
         /* use -Q for rbudp transfer */
         addKeyVal( &dataObjCopyInp->destDataObjInp.condInput,
@@ -269,12 +266,6 @@ initCondForCp( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
         addKeyVal( &dataObjCopyInp->srcDataObjInp.condInput,
                    RBUDP_PACK_SIZE_KW, tmpStr );
     }
-#else   /* RBUDP_TRANSFER */
-    if ( rodsArgs->rbudp == True ) {
-        rodsLog( LOG_NOTICE,
-                 "initCondForCp: RBUDP_TRANSFER (-d) not supported" );
-    }
-#endif  /* RBUDP_TRANSFER */
 
     memset( rodsRestart, 0, sizeof( rodsRestart_t ) );
     if ( rodsArgs->restart == True ) {

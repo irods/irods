@@ -11,9 +11,7 @@
 #include "miscServerFunct.hpp"
 #include "getHostForPut.hpp"
 #include "getHostForGet.hpp"
-#ifdef RBUDP_TRANSFER
 #include "QUANTAnet_rbudpBase_c.hpp"
-#endif  /* RBUDP_TRANSFER */
 
 #ifdef windows_platform
 #include "irodsntutil.hpp"
@@ -30,13 +28,6 @@ MMRESULT win_connect_timer_id;
 #include <setjmp.h>
 jmp_buf Jcenv;
 
-#if 0 // JMC - UNUSED
-void
-connToutHandler( int sig ) {
-    alarm( 0 );
-    longjmp( Jcenv, 1 );
-}
-#endif // JMC - UNUSED
 #endif  /* _WIN32 */
 
 // =-=-=-=-=-=-=-

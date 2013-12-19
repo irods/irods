@@ -110,16 +110,12 @@ setupSrvPortalForParaOpr( rsComm_t *rsComm, dataOprInp_t *dataOprInp,
     int portalSock;
     int proto;
 
-#ifdef RBUDP_TRANSFER
     if ( getValByKey( &dataOprInp->condInput, RBUDP_TRANSFER_KW ) != NULL ) {
         proto = SOCK_DGRAM;
     }
     else {
         proto = SOCK_STREAM;
     }
-#else
-    proto = SOCK_STREAM;
-#endif  /* RBUDP_TRANSFER */
 
     myDataObjPutOut = ( portalOprOut_t * ) malloc( sizeof( portalOprOut_t ) );
     memset( myDataObjPutOut, 0, sizeof( portalOprOut_t ) );
@@ -323,13 +319,9 @@ svrPortalPutGet( rsComm_t *rsComm ) {
     }
 
     if ( getUdpPortFromPortList( thisPortList ) != 0 ) {
-#ifdef RBUDP_TRANSFER
         /* rbudp transfer */
         retVal = svrPortalPutGetRbudp( rsComm );
         return retVal;
-#else
-        return SYS_UDP_NO_SUPPORT_ERR;
-#endif  /* RBUDP_TRANSFER */
     }
 
     oprType = myPortalOpr->oprType;
@@ -1218,7 +1210,6 @@ remToLocPartialCopy( portalTransferInp_t *myInput ) {
 /* rbudpRemLocCopy - The rbudp version of remLocCopy.
  */
 
-#ifdef RBUDP_TRANSFER
 int
 rbudpRemLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     portalOprOut_t *portalOprOut;
@@ -1278,7 +1269,6 @@ rbudpRemLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     }
     return ( status );
 }
-#endif	/* RBUDP_TRANSFER */
 
 /* remLocCopy - This routine is very similar to rcPartialDataGet.
  */
@@ -1317,12 +1307,8 @@ remLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
 
     if ( getUdpPortFromPortList( &portalOprOut->portList ) != 0 ) {
         /* rbudp transfer */
-#ifdef RBUDP_TRANSFER
         retVal = rbudpRemLocCopy( rsComm, dataCopyInp );
         return ( retVal );
-#else
-        return ( SYS_UDP_NO_SUPPORT_ERR );
-#endif
     }
 
     if ( numThreads > MAX_NUM_CONFIG_TRAN_THR || numThreads <= 0 ) {
@@ -2023,7 +2009,6 @@ longNoSupport( ... )
     return ( rodsLong_t ) SYS_NOT_SUPPORTED;
 }
 
-#ifdef RBUDP_TRANSFER
 int
 svrPortalPutGetRbudp( rsComm_t *rsComm ) {
     portalOpr_t *myPortalOpr;
@@ -2185,7 +2170,6 @@ svrPortalPutGetRbudp( rsComm_t *rsComm ) {
 
     return ( status );
 }
-#endif  /* RBUDP_TRANSFER */
 #ifndef windows_platform
 void
 reconnManager( rsComm_t *rsComm ) {
