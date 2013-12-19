@@ -253,7 +253,6 @@ extern "C" {
     rmFilesInDir( char *mydir );
     int
     mkdirForFilePath( char* filePath );
-#ifdef FILESYSTEM_META
     int
     mkCollWithDirMeta( rcComm_t *conn, char *collection, char *dirname );
     int
@@ -268,7 +267,6 @@ extern "C" {
     getFileMetaFromStat( rodsStat_t *statbuf, keyValPair_t *condInput );
     int
     copyFilesystemMetadata( keyValPair_t *src, keyValPair_t *dest );
-#endif /* FILESYSTEM_META */
     pathnamePatterns_t *
     readPathnamePatterns( char *buf, int buflen );
     void

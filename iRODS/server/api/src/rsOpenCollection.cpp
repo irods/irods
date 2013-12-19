@@ -51,11 +51,7 @@ rsOpenCollection( rsComm_t *rsComm, collInp_t *openCollInp ) {
         return CAT_NAME_EXISTS_AS_DATAOBJ;
     }
 
-#if 0
-    collHandle->dataObjInp.specColl = rodsObjStatOut->specColl;
-#else
     replSpecColl( rodsObjStatOut->specColl, &collHandle->dataObjInp.specColl );
-#endif
     if ( rodsObjStatOut->specColl != NULL &&
             rodsObjStatOut->specColl->collClass == LINKED_COLL ) {
         /* save the linked path */
@@ -69,22 +65,3 @@ rsOpenCollection( rsComm_t *rsComm, collInp_t *openCollInp ) {
     /* the collection exist. now query the data in it */
     return ( handleInx );
 }
-
-#ifdef COMPAT_201
-int
-rsOpenCollection201( rsComm_t *rsComm, openCollInp_t *openCollInp ) {
-    collInp_t collInp;
-    int status;
-
-    bzero( &collInp, sizeof( collInp ) );
-
-    rstrcpy( collInp.collName, openCollInp->collName, MAX_NAME_LEN );
-    collInp.flags = openCollInp->flags;
-    collInp.condInput = openCollInp->condInput;
-
-    status = rsOpenCollection( rsComm, &collInp );
-
-    return status;
-}
-#endif
-

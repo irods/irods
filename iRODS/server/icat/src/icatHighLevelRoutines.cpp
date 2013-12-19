@@ -1030,7 +1030,6 @@ int chlRegDataObj( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
         }
     }
 
-#ifdef FILESYSTEM_META
     /* we can track the filesystem metadata from the file which
        this data object was put or registered from */
     if ( getValByKey( &dataObjInfo->condInput, FILE_UID_KW ) ) {
@@ -1060,7 +1059,6 @@ int chlRegDataObj( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
             return( status );
         }
     }
-#endif /* FILESYSTEM_META */
 
 
     status = cmlAudit3( AU_REGISTER_DATA_OBJ, dataIdNum,
@@ -1565,7 +1563,6 @@ int chlUnregDataObj( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
                      "delete from R_OBJT_ACCESS where object_id=? and not exists (select * from R_DATA_MAIN where data_id=?)", &icss );
         if ( status == 0 ) {
             removeMetaMapAndAVU( dataObjNumber ); /* remove AVU metadata, if any */
-#ifdef FILESYSTEM_META
             /* and remove source file OS metadata */
             cllBindVars[0] = dataObjNumber;
             cllBindVarCount = 1;
@@ -1574,7 +1571,6 @@ int chlUnregDataObj( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
             }
             status = cmlExecuteNoAnswerSql(
                          "delete from R_OBJT_FILESYSTEM_META where object_id=?", &icss );
-#endif
         }
     }
 
@@ -3532,7 +3528,6 @@ int chlRegColl( rsComm_t *rsComm, collInfo_t *collInfo ) {
         return( status );
     }
 
-#ifdef FILESYSTEM_META
     /* we can track the filesystem metadata from the directory
        from which this collection was put or registered from */
     if ( getValByKey( &collInfo->condInput, FILE_UID_KW ) != NULL ) {
@@ -3561,7 +3556,6 @@ int chlRegColl( rsComm_t *rsComm, collInfo_t *collInfo ) {
             return( status );
         }
     }
-#endif /* FILESYSTEM_META */
 
     /* Audit */
     status = cmlAudit4( AU_REGISTER_COLL,
@@ -4619,7 +4613,6 @@ int chlDelCollByAdmin( rsComm_t *rsComm, collInfo_t *collInfo ) {
     snprintf( collIdNum, MAX_NAME_LEN, "%lld", iVal );
     removeMetaMapAndAVU( collIdNum );
 
-#ifdef FILESYSTEM_META
     /* remove any filesystem metadata entries */
     cllBindVars[cllBindVarCount++] = collIdNum;
     if ( logSQL ) {
@@ -4635,8 +4628,6 @@ int chlDelCollByAdmin( rsComm_t *rsComm, collInfo_t *collInfo ) {
                  "chlDelCollByAdmin delete filesystem meta failure %d",
                  status );
     }
-#endif
-
 
     /* Audit (before it's deleted) */
     status = cmlAudit4( AU_DELETE_COLL_BY_ADMIN,
@@ -4815,7 +4806,6 @@ static int _delColl( rsComm_t *rsComm, collInfo_t *collInfo ) {
     /* Remove associated AVUs, if any */
     removeMetaMapAndAVU( collIdNum );
 
-#ifdef FILESYSTEM_META
     /* remove any filesystem metadata entries */
     cllBindVars[cllBindVarCount++] = collIdNum;
     if ( logSQL ) {
@@ -4831,7 +4821,6 @@ static int _delColl( rsComm_t *rsComm, collInfo_t *collInfo ) {
                  "_delColl delete filesystem meta failure %d",
                  status );
     }
-#endif
     /* Audit */
     status = cmlAudit3( AU_DELETE_COLL,
                         collIdNum,

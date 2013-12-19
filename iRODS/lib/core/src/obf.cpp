@@ -287,9 +287,6 @@ obfSavePw( int promptOpt, int fileOpt, int printOpt, char *pwArg ) {
     char inbuf[MAX_PASSWORD_LEN + 100];
     char myPw[MAX_PASSWORD_LEN + 10];
     int i, fd, envVal;
-#ifndef USE_BOOST_FS
-    struct stat statbuf;
-#endif
 
     i = obfiGetFilename( fileName );
     if ( i != 0 ) {
@@ -304,12 +301,8 @@ obfSavePw( int promptOpt, int fileOpt, int printOpt, char *pwArg ) {
         iRODSNtGetUserPasswdInputInConsole( inbuf, "Enter your current iRODS password:", promptOpt );
 #else
         if ( promptOpt != 1 ) {
-#ifdef USE_BOOST_FS
             path p( "/bin/stty" );
             if ( exists( p ) )
-#else
-            if ( stat( "/bin/stty", &statbuf ) == 0 )
-#endif
                 system( "/bin/stty -echo" );
         }
 

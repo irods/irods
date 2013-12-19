@@ -122,10 +122,8 @@ putUtil( rcComm_t **myConn, rodsEnv *myRodsEnv,
                 continue;
             }
             dataObjOprInp.createMode = rodsPathInp->srcPath[i].objMode;
-#ifdef FILESYSTEM_META
             getFileMetaFromPath( rodsPathInp->srcPath[i].outPath,
                                  &dataObjOprInp.condInput );
-#endif
             status = putFileUtil( conn, rodsPathInp->srcPath[i].outPath,
                                   targPath->outPath, rodsPathInp->srcPath[i].size, myRodsEnv,
                                   myRodsArgs, &dataObjOprInp );
@@ -633,9 +631,7 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
         path childPath = p.filename();
         snprintf( targChildPath, MAX_NAME_LEN, "%s/%s",
                   targColl, childPath.c_str() );
-#ifdef FILESYSTEM_META
         getFileMetaFromPath( srcChildPath, &dataObjOprInp->condInput );
-#endif
         if ( childObjType == DATA_OBJ_T ) {
             if ( bulkFlag == BULK_OPR_SMALL_FILES &&
                     file_size( p ) > MAX_BULK_OPR_FILE_SIZE ) {
@@ -693,11 +689,7 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
             }
         }
         else {        /* a directory */
-#ifdef FILESYSTEM_META
             status = mkCollWithDirMeta( conn, targChildPath, srcChildPath );
-#else
-            status = mkColl( conn, targChildPath );
-#endif
             if ( status < 0 ) {
                 rodsLogError( LOG_ERROR, status,
                               "putDirUtil: mkColl error for %s", targChildPath );

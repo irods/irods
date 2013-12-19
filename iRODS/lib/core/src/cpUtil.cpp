@@ -387,14 +387,6 @@ cpCollUtil( rcComm_t *conn, char *srcColl, char *targColl,
             }
         }
         else if ( collEnt.objType == COLL_OBJ_T ) {
-#if 0
-            if ( strlen( collEnt.collName ) <= collLen ) {
-                continue;
-            }
-
-            snprintf( targChildPath, MAX_NAME_LEN, "%s%s",
-                      targColl, collEnt.collName + collLen );
-#else
             if ( ( status = splitPathByKey(
                                 collEnt.collName, parPath, childPath, '/' ) ) < 0 ) {
                 rodsLogError( LOG_ERROR, status,
@@ -405,20 +397,12 @@ cpCollUtil( rcComm_t *conn, char *srcColl, char *targColl,
 
             snprintf( targChildPath, MAX_NAME_LEN, "%s/%s",
                       targColl, childPath );
-#endif
-#ifdef FILESYSTEM_META
             mkCollRWithSrcCollMeta( conn, targColl, targChildPath, collEnt.collName );
-#else
-            mkCollR( conn, targColl, targChildPath );
-#endif
 
             if ( rodsArgs->verbose == True ) {
                 fprintf( stdout, "C- %s:\n", targChildPath );
             }
 
-#if 0
-            if ( collEnt.specColl.collClass != NO_SPEC_COLL ) {
-#endif
                 /* the child is a spec coll. need to drill down */
                 childDataObjCopyInp = *dataObjCopyInp;
                 if ( collEnt.specColl.collClass != NO_SPEC_COLL )
@@ -432,9 +416,6 @@ cpCollUtil( rcComm_t *conn, char *srcColl, char *targColl,
                         status != SYS_SPEC_COLL_OBJ_NOT_EXIST ) {
                     savedStatus = status;
                 }
-#if 0
-            }
-#endif
         }
     }
     rclCloseCollection( &collHandle );

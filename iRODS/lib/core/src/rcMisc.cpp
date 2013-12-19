@@ -3800,18 +3800,6 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
             return 0;
         }
 
-#ifdef COMPAT_201
-        int
-        collInp201ToCollInp( collInp201_t * collInp201, collInp_t * collInp ) {
-            bzero( collInp, sizeof( collInp_t ) );
-
-            rstrcpy( collInp->collName, collInp201->collName, MAX_NAME_LEN );
-            collInp->condInput = collInp201->condInput;
-
-            return 0;
-        }
-#endif
-
         /*
            Print some release information.
            Used by the i-commands when printting the help text.

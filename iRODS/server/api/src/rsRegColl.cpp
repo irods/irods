@@ -5,9 +5,7 @@
 
 #include "regColl.hpp"
 #include "icatHighLevelRoutines.hpp"
-#ifdef FILESYSTEM_META
 #include "collection.hpp"
-#endif
 
 int
 rsRegColl( rsComm_t *rsComm, collInp_t *regCollInp ) {
@@ -20,9 +18,6 @@ rsRegColl( rsComm_t *rsComm, collInp_t *regCollInp ) {
     memset( &dataObjInp, 0, sizeof( dataObjInp ) );
 
     rstrcpy( dataObjInp.objPath, regCollInp->collName, MAX_NAME_LEN );
-#if 0   /* separate specColl */
-    status = __rsObjStat( rsComm, &dataObjInp, 1, &rodsObjStatOut );
-#endif
     status = rsObjStat( rsComm, &dataObjInp, &rodsObjStatOut );
     if ( status >= 0 ) {
         if ( rodsObjStatOut != NULL ) {
@@ -78,7 +73,6 @@ _rsRegColl( rsComm_t *rsComm, collInp_t *collCreateInp ) {
         }
     }
 
-#ifdef FILESYSTEM_META
     /* if the "collection" keyword has been set, it provides the
        name of another collection to retrieve directory metadata
        from (usually during a icp or irsync operation */
@@ -90,7 +84,6 @@ _rsRegColl( rsComm_t *rsComm, collInp_t *collCreateInp ) {
         /* otherwise copy over the source directory metadata if provided */
         copyFilesystemMetadata( &collCreateInp->condInput, &collInfo.condInput );
     }
-#endif /* FILESYSTEM_META */
 
     status = chlRegColl( rsComm, &collInfo );
     return ( status );
@@ -98,18 +91,3 @@ _rsRegColl( rsComm_t *rsComm, collInp_t *collCreateInp ) {
     return ( SYS_NO_RCAT_SERVER_ERR );
 #endif
 }
-
-#ifdef COMPAT_201
-int
-rsRegColl201( rsComm_t *rsComm, collInp201_t *regCollInp ) {
-    collInp_t collInp;
-    int status;
-
-    collInp201ToCollInp( regCollInp, &collInp );
-
-    status = rsRegColl( rsComm, &collInp );
-
-    return status;
-}
-#endif
-

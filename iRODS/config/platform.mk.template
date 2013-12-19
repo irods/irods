@@ -46,7 +46,7 @@ LDRFLAGS += -ldl -rdynamic
 # JMC :: BOOST Include & Linking
 # use our locally built Boost on the include line
 CCFLAGS+=-I$(BOOST_DIR)
-CCFLAGS+=-DUSE_BOOST -DUSE_BOOST_COND -DUSE_BOOST_FS 
+CCFLAGS+=-DUSE_BOOST -DUSE_BOOST_COND
 
 # =-=-=-=-=-=-=-
 
@@ -225,10 +225,6 @@ ifdef UNI_CODE
 MY_CFLAG+= -DUNI_CODE
 endif
 
-ifdef COMPAT_201
-MY_CFLAG+= -DCOMPAT_201
-endif
-
 # server specific LDADD
 
 ifdef NETCDF4_API
@@ -249,16 +245,13 @@ ifdef NETCDF_CLIENT
 MY_CFLAG += -DNETCDF_CLIENT
 endif
 
-ifdef USE_SSL
 MY_CFLAG+= -I/usr/include/openssl
-MY_CFLAG+= -DUSE_SSL
 ifeq ($(OS_platform), linux_platform)
 LDADD+=-L/usr/lib/x86_64-linux-gnu/
 CL_LDADD+=-L/usr/lib/x86_64-linux-gnu/
 endif
 LDADD+=-lssl -lcrypto
 CL_LDADD+=-lssl -lcrypto
-endif
 
 ifdef PAM_AUTH
 MY_CFLAG+= -DPAM_AUTH
@@ -280,10 +273,6 @@ endif
 ifdef OS_AUTH_NO_UID
 MY_CFLAG+= -DOS_AUTH_NO_UID
 endif
-endif
-
-ifdef FILESYSTEM_META
-MY_CFLAG+= -DFILESYSTEM_META
 endif
 
 ifdef DIRECT_ACCESS_VAULT

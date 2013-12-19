@@ -63,7 +63,6 @@ ifndef ORACLE_HOME
 ORACLE_HOME=
 endif
 PAM_AUTH=1
-USE_SSL=1
 
 BOOST_DIR=TOBEFILLEDBYBUILDSH
 LIBARCHIVE_DIR=TOBEFILLEDBYBUILDSH
@@ -305,12 +304,6 @@ RBUDP_TRANSFER = 1
 # UNI_CODE - support UTF-8 on linux and UTF-16 on windows
 # UNI_CODE = 1
 
-# COMPAT_201 - The data structures of many APIs have been consolidated
-# after version 2.0.1. If this flag is set, the server API handle
-# will be made to handle the 2.0.1 client request in addition to the
-# new data structures. This flag is set by default
-COMPAT_201=1
-
 # Kerberos authentication
 # KRB_AUTH = 1
 ifdef KRB_AUTH
@@ -380,14 +373,6 @@ PAM_AUTH_CHECK_PROG=/var/lib/irods/iRODS/server/bin/PamAuthCheck
 # PAM_AUTH_NO_EXTEND = 1
 endif
 
-# USE_SSL - build in support for using SSL over the client/server 
-# communication socket. This support consists of two iRODS API calls 
-# that ask the server to "turn on" and "turn off" the SSL protocol 
-# on a given connection. Right now this is only used for the PAM_AUTH 
-# mode, so must be turned on for the PAM_AUTH support to function properly.
-USE_SSL = 1
-
-
 # NETCDF_API - specify whether to build iRODS with the NETCDF API. This 
 # option requires the installation of the NETCDF C library and header files.
 # NETCDF4_API - specify whether the NETCDF library supports NETCDF4 APIs -
@@ -410,18 +395,12 @@ NETCDF_CLIENT=1
 NETCDF_DIR=/usr/local
 endif
 
-# FILESYSTEM_META - turn on functionality that collects the 
-# filesystem meta-data (i.e. 'stat' information) from files 
-# and directories added to iRODS via iput and ireg. Only supported
-# on UNIX/Linux-type systems. 
-FILESYSTEM_META = 1
-
 # DIRECT_ACCESS_VAULT - build in support for a resource type that
 # will allow users to directly access files in the vault of this 
 # type of resource. Intended for use in environments where there is a
 # need for an "iRODS overlay" of an existing high-performance
 # filesystem (e.g. a parallel file system NAS). It requires that the
-# RUN_SERVER_AS_ROOT and FILESYSTEM_META features are turned on.
+# RUN_SERVER_AS_ROOT feature is turned on.
 # DIRECT_ACCESS_VAULT = 1
 
 # OOI_CI - specify whether to compile the OOI CI modules
