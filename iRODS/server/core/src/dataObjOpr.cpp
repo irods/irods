@@ -30,7 +30,6 @@
 #include "irods_log.hpp"
 #include "irods_stacktrace.hpp"
 
-#ifdef FILESYSTEM_META
 int
 getDataObjFileMeta( rsComm_t *rsComm, char *data_id, keyValPair_t *condInput ) {
     static char fname[] = "getDataObjFileMeta";
@@ -155,7 +154,6 @@ getDataObjFileMeta( rsComm_t *rsComm, char *data_id, keyValPair_t *condInput ) {
 
     return status;
 }
-#endif /* FILESYSTEM_META */
 
 int
 getDataObjInfo(
@@ -458,16 +456,6 @@ getDataObjInfo(
         snprintf( dataObjInfo->objPath, MAX_NAME_LEN, "%s/%s", tmpCollName, tmpDataName );
         rstrcpy( dataObjInfo->rescName, tmpRescName, NAME_LEN );
         rstrcpy( dataObjInfo->rescHier, tmpHierString, MAX_NAME_LEN );
-        //status = resolveResc (tmpRescName, &dataObjInfo->rescInfo);
-        /*if (status < 0) {
-          rodsLog( LOG_DEBUG,"getDataObjInfo: resolveResc error for %s, status = %d",
-          tmpRescName, status);
-          #if 0       // this could happen for remote zone resource
-          return (status);
-          #endif
-          }*/
-        // =-=-=-=-=-=-=-
-        // get the resource info struct given a resource name
         dataObjInfo->rescInfo = new rescInfo_t;
         irods::error err = irods::get_resc_info( dataObjInfo->rescName, *dataObjInfo->rescInfo );
         if ( !err.ok() ) {
@@ -503,9 +491,7 @@ getDataObjInfo(
         dataObjInfo->writeFlag = writeFlag;
 
 
-#ifdef FILESYSTEM_META
         getDataObjFileMeta( rsComm, tmpDataId, &dataObjInfo->condInput );
-#endif
 
         dataObjInfo->next = 0;
 
@@ -716,83 +702,6 @@ int sortObjInfoForOpen(
     }
     return result;
 
-#if 0
-    dataObjInfo_t *currentArchInfo, *currentCacheInfo, *oldArchInfo,
-                  *oldCacheInfo, *downCurrentInfo, *downOldInfo;
-    int status = 0;
-    sortObjInfo( dataObjInfoHead, &currentArchInfo, &currentCacheInfo,
-                 &oldArchInfo, &oldCacheInfo, &downCurrentInfo, &downOldInfo );
-
-    *dataObjInfoHead = currentCacheInfo;
-    queDataObjInfo( dataObjInfoHead, currentArchInfo, 0, 0 );
-    if ( writeFlag == 0 ) {
-        /* For read only */
-        if ( *dataObjInfoHead != NULL ) {
-            /* we already have a good copy */
-            freeAllDataObjInfo( oldCacheInfo );
-            freeAllDataObjInfo( oldArchInfo );
-        }
-        else if ( downCurrentInfo != NULL ) {
-            /* don't have a good copy */
-            /* the old current copy is not available */
-            freeAllDataObjInfo( oldCacheInfo );
-            freeAllDataObjInfo( oldArchInfo );
-            status = SYS_RESC_IS_DOWN;
-        }
-        else {
-            /* don't have a good copy. use the old one */
-            queDataObjInfo( dataObjInfoHead, oldCacheInfo, 0, 0 );
-            queDataObjInfo( dataObjInfoHead, oldArchInfo, 0, 0 );
-        }
-        freeAllDataObjInfo( downCurrentInfo );
-        freeAllDataObjInfo( downOldInfo );
-    }
-    else {      /* write */
-        char *rescName;
-        queDataObjInfo( dataObjInfoHead, oldCacheInfo, 0, 0 );
-        queDataObjInfo( dataObjInfoHead, oldArchInfo, 0, 0 );
-
-        if ( *dataObjInfoHead == NULL ) {
-            /* no working copy. */
-            std::string resc_name;
-            irods::error name_err = irods::resolve_resource_name( "", condInput, resc_name );
-            if ( !name_err.ok() ) {
-                freeAllDataObjInfo( downCurrentInfo );
-                freeAllDataObjInfo( downOldInfo );
-                status = SYS_RESC_IS_DOWN;
-
-            }
-            else {
-                int resc_status = -1;
-                irods::error prop_err = irods::get_resource_property<int>(
-                                            resc_name,
-                                            irods::RESOURCE_STATUS,
-                                            resc_status );
-                // JMC - legacy resource if (getRescStatus (rsComm, NULL, condInput) == INT_RESC_STATUS_DOWN) {
-                if ( resc_status == INT_RESC_STATUS_DOWN ) {
-                    freeAllDataObjInfo( downCurrentInfo );
-                    freeAllDataObjInfo( downOldInfo );
-                    status = SYS_RESC_IS_DOWN;
-                }
-                else {
-                    queDataObjInfo( dataObjInfoHead, downCurrentInfo, 0, 0 );
-                    queDataObjInfo( dataObjInfoHead, downOldInfo, 0, 0 );
-                }
-            }
-        }
-        else {
-            freeAllDataObjInfo( downCurrentInfo );
-            freeAllDataObjInfo( downOldInfo );
-            if ( ( rescName = getValByKey( condInput, DEST_RESC_NAME_KW ) ) != NULL ||
-                    ( rescName = getValByKey( condInput, DEF_RESC_NAME_KW ) ) != NULL ||
-                    ( rescName = getValByKey( condInput, BACKUP_RESC_NAME_KW ) ) != NULL ) {
-
-                requeDataObjInfoByResc( dataObjInfoHead, rescName, writeFlag, 1 );
-            }
-        }
-    }
-    return ( status );
-#endif // #if 0
 }
 
 int
@@ -1052,22 +961,7 @@ matchAndTrimRescGrp( dataObjInfo_t **dataObjInfoHead,
             }
             else if ( trimjFlag & REQUE_MATCHED_RESC_INFO ) {
                 if ( tmpRescGrpInfo->next != NULL ) {
-#if 0 // JMC - legacy resource
-                    /* queue to bottom */
-                    if ( tmpRescGrpInfo == *rescGrpInfoHead ) {
-                        *rescGrpInfoHead = tmpRescGrpInfo->next;
-
-                    }
-                    else {
-                        prevRescGrpInfo->next = tmpRescGrpInfo->next;
-
-                    }
-
-                    queRescGrp( rescGrpInfoHead, tmpRescGrpInfo, BOTTOM_FLAG );
-
-#else
                     rodsLog( LOG_ERROR, "matchAndTrimRescGrp - calling REQUE_MATCHED_RESC_INFO with non null next ptr." );
-#endif
                 } // if tmpRescGrpInfo->next
 
             }
@@ -1238,39 +1132,6 @@ sortObjInfoForRepl(
     }
 }
 
-#if 0 // JMC - UNUSED
-/* dataObjExist - check whether the data object given in dataObjInp exist.
-   Returns 1 if exists, 0 ==> does not exist
-*/
-
-int
-dataObjExist( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
-    genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
-    int status;
-
-    status = initDataObjInfoQuery( dataObjInp, &genQueryInp, 0 );
-
-    if ( status < 0 ) {
-        return ( status );
-    }
-
-    addInxIval( &genQueryInp.selectInp, COL_D_DATA_ID, 1 );
-    genQueryInp.maxRows = MAX_SQL_ROWS;
-
-    status =  rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
-
-    clearGenQueryInp( &genQueryInp );
-    freeGenQueryOut( &genQueryOut );
-
-    if ( status < 0 ) {
-        return ( 0 );
-    }
-    else {
-        return ( 1 );
-    }
-}
-#endif // JMC - UNUSED
 
 /* initDataObjInfoQuery - initialize the genQueryInp based on dataObjInp.
  * returns the qcondCnt - count of sqlCondInp based on condition input.
@@ -1930,18 +1791,6 @@ requeDataObjInfoByDestResc( dataObjInfo_t **dataObjInfoHead,
     }
     return ( status );
 }
-#if 0 // JMC - UNUSED
-int
-requeDataObjInfoBySrcResc( dataObjInfo_t **dataObjInfoHead,
-                           keyValPair_t *condInput, int writeFlag, int topFlag ) {
-    char *rescName;
-
-    if ( ( rescName = getValByKey( condInput, RESC_NAME_KW ) ) != NULL ) {
-        requeDataObjInfoByResc( dataObjInfoHead, rescName, writeFlag, topFlag );
-    }
-    return ( 0 );
-}
-#endif // JMC - UNUSED
 int
 getDataObjInfoIncSpecColl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                            dataObjInfo_t **dataObjInfo ) {
@@ -2056,212 +1905,4 @@ int regNewObjSize( rsComm_t *rsComm, char *objPath, int replNum,
 
     return ( status );
 }
-
-#if 0 // JMC - legacy resource
-int
-getCacheDataInfoForRepl( rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfoHead,
-                         dataObjInfo_t *destDataObjInfoHead, dataObjInfo_t *compDataObjInfo,
-                         dataObjInfo_t **outDataObjInfo ) {
-    char *rescGroupName;
-    int status;
-
-    rescGroupName = compDataObjInfo->rescGroupName;
-
-    if ( strlen( rescGroupName ) == 0 ) {
-        rescGrpInfo_t *rescGrpInfo = NULL;
-        rescGrpInfo_t *tmpRescGrpInfo;
-
-        /* no input rescGrp. Try to find one that matches rescInfo. */
-        status = getRescGrpOfResc( rsComm, compDataObjInfo->rescInfo, &rescGrpInfo );
-
-        if ( status < 0 ) {
-            rodsLog( LOG_NOTICE,
-                     "getCacheDataInfoForRepl:getRescGrpOfResc err for %s. stat=%d",
-                     compDataObjInfo->rescInfo->rescName, status );
-            return status;
-        }
-        tmpRescGrpInfo = rescGrpInfo;
-
-        while ( tmpRescGrpInfo != NULL ) {
-            status = getCacheDataInfoInRescGrp( srcDataObjInfoHead,
-                                                destDataObjInfoHead, tmpRescGrpInfo->rescGroupName,
-                                                compDataObjInfo, outDataObjInfo );
-            if ( status >= 0 ) {
-                /* update the rescGroupName */
-                rstrcpy( compDataObjInfo->rescGroupName,
-                         tmpRescGrpInfo->rescGroupName, NAME_LEN );
-                rstrcpy( ( *outDataObjInfo )->rescGroupName,
-                         tmpRescGrpInfo->rescGroupName, NAME_LEN );
-                freeAllRescGrpInfo( rescGrpInfo );
-                return 0;
-            }
-            else {
-                status = getNonGrpCacheDataInfoInRescGrp( srcDataObjInfoHead, destDataObjInfoHead, tmpRescGrpInfo, compDataObjInfo, outDataObjInfo );
-                if ( status >= 0 ) {
-                    // =-=-=-=-=-=-=-
-                    // JMC - backport 4549
-                    /* see if we are in the same resource grp as cache */
-                    if ( strlen( ( *outDataObjInfo )->rescGroupName ) > 0 ) {
-                        rescInfo_t *myRescInfo = NULL;
-                        if ( getRescInGrp( rsComm, compDataObjInfo->rescInfo->rescName,
-                                           ( *outDataObjInfo )->rescGroupName, &myRescInfo ) >= 0 ) {
-                            rstrcpy( compDataObjInfo->rescGroupName, ( *outDataObjInfo )->rescGroupName, NAME_LEN );
-                            freeAllRescGrpInfo( rescGrpInfo );
-                            status = SYS_NO_CACHE_RESC_IN_GRP;
-                        }
-                        else {
-                            status = getCacheDataInfoInRescGrp( srcDataObjInfoHead,
-                                                                destDataObjInfoHead, rescGroupName, compDataObjInfo, outDataObjInfo );
-                            if ( status < 0 ) {
-                                rescGrpInfo_t *tmpRescGrpInfo;
-                                /* maybe the cache copy does not have a group associated with it */
-                                status = resolveRescGrp( rsComm, rescGroupName, &tmpRescGrpInfo );
-                                if ( status >= 0 ) {
-                                    status = getNonGrpCacheDataInfoInRescGrp( srcDataObjInfoHead,
-                                             destDataObjInfoHead, tmpRescGrpInfo,
-                                             compDataObjInfo, outDataObjInfo );
-                                    if ( status >= 0 ) {
-                                        /* update the rescGroupName */
-                                        rstrcpy( compDataObjInfo->rescGroupName,
-                                                 tmpRescGrpInfo->rescGroupName, NAME_LEN );
-                                        rstrcpy( ( *outDataObjInfo )->rescGroupName,
-                                                 tmpRescGrpInfo->rescGroupName, NAME_LEN );
-                                    }
-                                    freeAllRescGrpInfo( tmpRescGrpInfo );
-                                }
-                            }
-                        }
-                        return status;
-                    }
-
-                    /* getNonGrpCacheDataInfoInRescGrp - get the cache dataObjInfo even
-                     * if it does not belong to the same group */
-
-                    int
-                    getNonGrpCacheDataInfoInRescGrp( dataObjInfo_t * srcDataObjInfoHead,
-                                                     dataObjInfo_t * destDataObjInfoHead, rescGrpInfo_t * rescGrpInfo,
-                                                     dataObjInfo_t * compDataObjInfo, dataObjInfo_t **outDataObjInfo ) {
-
-                        dataObjInfo_t *srcDataObjInfo;
-                        rescGrpInfo_t *tmpRescGrpInfo;
-
-                        srcDataObjInfo = srcDataObjInfoHead;
-                        while ( srcDataObjInfo != NULL ) {
-                            // every resource is a cache now, and there are no resource groups
-                            // JMC - legacy resource if (getRescClass (srcDataObjInfo->rescInfo) == CACHE_CL) {
-                            tmpRescGrpInfo = rescGrpInfo;
-                            while ( tmpRescGrpInfo != NULL ) {
-                                if ( strcmp( srcDataObjInfo->rescInfo->rescName,
-                                             tmpRescGrpInfo->rescInfo->rescName ) == 0 ) {
-                                    *outDataObjInfo = srcDataObjInfo;
-                                    return 0;
-                                }
-                                tmpRescGrpInfo = tmpRescGrpInfo->next;
-                            }
-                            // JMC - legacy resource }
-
-                            srcDataObjInfo = srcDataObjInfo->next;
-                        }
-
-                        /* try destDataObjInfoHead but up to compDataObjInfo because
-                         * they have been updated and are good copies */
-
-                        srcDataObjInfo = destDataObjInfoHead;
-                        while ( srcDataObjInfo != NULL ) {
-                            if ( srcDataObjInfo == compDataObjInfo ) {
-                                break;
-                            }
-                            // every resource is a cache now, and there are no resource groups
-                            // JMC - legacy resource if (getRescClass (srcDataObjInfo->rescInfo) == CACHE_CL) {
-                            tmpRescGrpInfo = rescGrpInfo;
-                            while ( tmpRescGrpInfo != NULL ) {
-                                if ( strcmp( srcDataObjInfo->rescInfo->rescName,
-                                             tmpRescGrpInfo->rescInfo->rescName ) == 0 ) {
-                                    *outDataObjInfo = srcDataObjInfo;
-                                    return 0;
-                                }
-                                tmpRescGrpInfo = tmpRescGrpInfo->next;
-                            }
-                            // JMC - legacy resource }
-                            srcDataObjInfo = srcDataObjInfo->next;
-                        }
-                        return SYS_NO_CACHE_RESC_IN_GRP;
-
-                    }
-
-                    int
-                    getCacheDataInfoInRescGrp( dataObjInfo_t * srcDataObjInfoHead,
-                                               dataObjInfo_t * destDataObjInfoHead, char * rescGroupName,
-                                               dataObjInfo_t * compDataObjInfo, dataObjInfo_t **outDataObjInfo ) {
-                        dataObjInfo_t *srcDataObjInfo;
-
-                        srcDataObjInfo = srcDataObjInfoHead;
-                        while ( srcDataObjInfo != NULL ) {
-                            if ( strcmp( srcDataObjInfo->rescGroupName, rescGroupName ) == 0 ) {
-                                /* same group */
-                                // JMC - legacy resource - if (getRescClass (srcDataObjInfo->rescInfo) == CACHE_CL) {
-                                *outDataObjInfo = srcDataObjInfo;
-                                return 0;
-                                // JMC - legacy resource }
-                            }
-
-                            srcDataObjInfo = srcDataObjInfo->next;
-                        }
-
-                        /* try destDataObjInfoHead but up to compDataObjInfo because
-                         * they have been updated and are good copies */
-
-                        srcDataObjInfo = destDataObjInfoHead;
-                        while ( srcDataObjInfo != NULL ) {
-                            if ( srcDataObjInfo == compDataObjInfo ) {
-                                break;
-                            }
-                            if ( strcmp( srcDataObjInfo->rescGroupName, rescGroupName ) == 0 ) {
-                                /* same group */
-                                // JMC - legacy resource if (getRescClass (srcDataObjInfo->rescInfo) == CACHE_CL) {
-                                *outDataObjInfo = srcDataObjInfo;
-                                return 0;
-                                // JMC - legacy resource }
-                            }
-                            srcDataObjInfo = srcDataObjInfo->next;
-                        }
-                        return SYS_NO_CACHE_RESC_IN_GRP;
-                    }
-
-                    int // JMC - backport 4547
-                    getDataObjByClass( dataObjInfo_t * dataObjInfoHead, int rescClass,
-                                       dataObjInfo_t **outDataObjInfo ) {
-                        if ( outDataObjInfo == NULL ) {
-                            return USER__NULL_INPUT_ERR;
-                        }
-                        *outDataObjInfo = NULL;
-                        while ( tmpDataObjInfo != NULL ) {
-
-                            std::string resc_class;
-                            irods::error ret =  irods::get_resource_property(
-                                                    tmpDataObjInfo->rescInfo->rescName,
-                                                    irods::RESOURCE_CLASS,
-                                                    resc_class );
-                            if ( !ret.ok() ) {
-                                irods::log( PASS( ret ) );
-                                return -1;
-                            }
-
-                            for ( int i = 0; i < NumRescClass; ++i ) {
-                                if ( resc_class == std::string( RescClass[i].className ) &&
-                                        RescClass[i].classType == rescClass ) {
-                                    // JMC - legacy resource - if (getRescClass (tmpDataObjInfo->rescInfo) == rescClass) {
-                                    *outDataObjInfo = tmpDataObjInfo;
-                                    return 0;
-                                }
-
-                            } // for i
-
-                            tmpDataObjInfo = tmpDataObjInfo->next;
-
-                        } // while
-                        return -1;
-                    }
-
-#endif // JMC - legacy resource
 

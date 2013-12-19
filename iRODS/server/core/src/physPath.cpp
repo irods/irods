@@ -1390,7 +1390,6 @@ fsDataObjLock( char *objPath, int cmd, int type, int infd ) {
     return ( myFd );
 }
 
-#ifdef FILESYSTEM_META
 rodsLong_t
 getFileMetadataFromVault( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo )
 
@@ -1451,7 +1450,6 @@ getFileMetadataFromVault( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo )
     free( myStat );
     return ( mysize );
 }
-#endif /* FILESYSTEM_META */
 
 int
 getLeafRescPathName(

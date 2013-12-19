@@ -2173,7 +2173,6 @@ getNumFilesInDir( char *mydir ) {
     }
     return count;
 }
-#ifdef FILESYSTEM_META
 
 /* make the collection and track original
    directory filesystem meta-data         */
@@ -2488,9 +2487,6 @@ copyFilesystemMetadata( keyValPair_t *src, keyValPair_t *dest ) {
 
     return 0;
 }
-
-
-#endif /* FILESYSTEM_META */
 
 
 pathnamePatterns_t *
