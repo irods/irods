@@ -164,13 +164,6 @@ typedef struct CollInp {
     keyValPair_t condInput;
 } collInp_t;
 
-#ifdef COMPAT_201
-typedef struct CollInp201 {
-    char collName[MAX_NAME_LEN];
-    keyValPair_t condInput;
-} collInp201_t;
-#endif
-
 /* definition for oprType in dataObjInp_t, portalOpr_t and l1desc_t */
 
 #define DONE_OPR                9999

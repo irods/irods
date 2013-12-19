@@ -91,18 +91,3 @@ _rsRegColl( rsComm_t *rsComm, collInp_t *collCreateInp ) {
     return ( SYS_NO_RCAT_SERVER_ERR );
 #endif
 }
-
-#ifdef COMPAT_201
-int
-rsRegColl201( rsComm_t *rsComm, collInp201_t *regCollInp ) {
-    collInp_t collInp;
-    int status;
-
-    collInp201ToCollInp( regCollInp, &collInp );
-
-    status = rsRegColl( rsComm, &collInp );
-
-    return status;
-}
-#endif
-

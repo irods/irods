@@ -950,21 +950,3 @@ procChksumForClose(
     }
     return status;
 }
-
-#ifdef COMPAT_201
-int
-rsDataObjClose201( rsComm_t *rsComm, dataObjCloseInp_t *dataObjCloseInp ) {
-    openedDataObjInp_t openedDataObjInp;
-    int status;
-
-    bzero( &openedDataObjInp, sizeof( openedDataObjInp ) );
-
-    openedDataObjInp.l1descInx = dataObjCloseInp->l1descInx;
-    openedDataObjInp.bytesWritten = dataObjCloseInp->bytesWritten;
-
-    status = rsDataObjClose( rsComm, &openedDataObjInp );
-
-    return status;
-}
-#endif
-

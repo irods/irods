@@ -107,18 +107,3 @@ _rsModColl( rsComm_t *rsComm, collInp_t *modCollInp ) {
     return ( SYS_NO_RCAT_SERVER_ERR );
 #endif
 }
-
-#ifdef COMPAT_201
-int
-rsModColl201( rsComm_t *rsComm, collInp201_t *modCollInp ) {
-    collInp_t collInp;
-    int status;
-
-    collInp201ToCollInp( modCollInp, &collInp );
-
-    status = rsModColl( rsComm, &collInp );
-
-    return status;
-}
-#endif
-

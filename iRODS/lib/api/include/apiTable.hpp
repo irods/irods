@@ -126,32 +126,14 @@ apidef_t RcApiTable[] = {
         DATA_OBJ_READ_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "OpenedDataObjInp_PI", 0, NULL, 1, ( funcPtr ) RS_DATA_OBJ_READ
     },
-#ifdef COMPAT_201
-    {
-        DATA_OBJ_READ201_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "dataObjReadInp_PI", 0, NULL, 1, ( funcPtr ) RS_DATA_OBJ_READ201
-    },
-#endif
     {
         DATA_OBJ_WRITE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "OpenedDataObjInp_PI", 1, NULL, 0, ( funcPtr ) RS_DATA_OBJ_WRITE
     },
-#ifdef COMPAT_201
-    {
-        DATA_OBJ_WRITE201_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "dataObjWriteInp_PI", 1, NULL, 0, ( funcPtr ) RS_DATA_OBJ_WRITE201
-    },
-#endif
     {
         DATA_OBJ_CLOSE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "OpenedDataObjInp_PI", 0, NULL, 0, ( funcPtr ) RS_DATA_OBJ_CLOSE
     },
-#ifdef COMPAT_201
-    {
-        DATA_OBJ_CLOSE201_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "dataObjCloseInp_PI", 0, NULL, 0, ( funcPtr ) RS_DATA_OBJ_CLOSE201
-    },
-#endif
     {
         DATA_OBJ_PUT_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "DataObjInp_PI", 1,  "PortalOprOut_PI", 0, ( funcPtr ) RS_DATA_OBJ_PUT
@@ -173,12 +155,6 @@ apidef_t RcApiTable[] = {
         "OpenedDataObjInp_PI", 0, "fileLseekOut_PI", 0,
         ( funcPtr ) RS_DATA_OBJ_LSEEK
     },
-#ifdef COMPAT_201
-    {
-        DATA_OBJ_LSEEK201_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "fileLseekInp_PI", 0, "fileLseekOut_PI", 0, ( funcPtr ) RS_DATA_OBJ_LSEEK201
-    },
-#endif
     {
         DATA_OBJ_COPY250_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "DataObjCopyInp_PI", 0, "TransStat_PI", 0, ( funcPtr ) RS_DATA_OBJ_COPY250
@@ -284,12 +260,6 @@ apidef_t RcApiTable[] = {
         OPEN_COLLECTION_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "CollInpNew_PI", 0, NULL, 0, ( funcPtr ) RS_OPEN_COLLECTION
     },
-#ifdef COMPAT_201
-    {
-        OPEN_COLLECTION201_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "OpenCollInp_PI", 0, NULL, 0, ( funcPtr ) RS_OPEN_COLLECTION201
-    },
-#endif
     {
         READ_COLLECTION_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "INT_PI", 0, "CollEnt_PI", 0, ( funcPtr ) RS_READ_COLLECTION
@@ -316,22 +286,10 @@ apidef_t RcApiTable[] = {
         COLL_REPL_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "CollInpNew_PI", 0, "CollOprStat_PI", 0, ( funcPtr ) RS_COLL_REPL
     },
-#ifdef COMPAT_201
-    {
-        COLL_REPL201_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "DataObjInp_PI", 0, "CollOprStat_PI", 0, ( funcPtr ) RS_COLL_REPL201
-    },
-#endif
     {
         RM_COLL_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "CollInpNew_PI", 0, "CollOprStat_PI", 0, ( funcPtr ) RS_RM_COLL
     },
-#ifdef COMPAT_201
-    {
-        RM_COLL201_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "CollInp_PI", 0, "CollOprStat_PI", 0, ( funcPtr ) RS_RM_COLL201
-    },
-#endif
     {
         MOD_AVU_METADATA_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "ModAVUMetadataInp_PI", 0, NULL, 0, ( funcPtr ) RS_MOD_AVU_METADATA
@@ -479,12 +437,6 @@ apidef_t RcApiTable[] = {
         MOD_COLL_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "CollInpNew_PI", 0, NULL, 0, ( funcPtr ) RS_MOD_COLL
     },
-#ifdef COMPAT_201
-    {
-        MOD_COLL201_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "CollInp_PI", 0, NULL, 0, ( funcPtr ) RS_MOD_COLL201
-    },
-#endif
     {
         SUB_STRUCT_FILE_MKDIR_AN, RODS_API_VERSION, REMOTE_USER_AUTH,
         REMOTE_PRIV_USER_AUTH, "SubFile_PI", 0, NULL, 0,
@@ -553,22 +505,10 @@ apidef_t RcApiTable[] = {
         COLL_CREATE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "CollInpNew_PI", 0, NULL, 0, ( funcPtr ) RS_COLL_CREATE
     },
-#ifdef COMPAT_201
-    {
-        COLL_CREATE201_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "CollInp_PI", 0, NULL, 0, ( funcPtr ) RS_COLL_CREATE201
-    },
-#endif
     {
         RM_COLL_OLD_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "CollInpNew_PI", 0, NULL, 0, ( funcPtr ) RS_RM_COLL_OLD
     },
-#ifdef COMPAT_201
-    {
-        RM_COLL_OLD201_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "CollInp_PI", 0, NULL, 0, ( funcPtr ) RS_RM_COLL_OLD201
-    },
-#endif
     {
         STRUCT_FILE_EXTRACT_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "StructFileOprInp_PI", 0, NULL, 0, ( funcPtr ) RS_STRUCT_FILE_EXTRACT
@@ -641,12 +581,6 @@ apidef_t RcApiTable[] = {
         REG_COLL_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "CollInpNew_PI", 0, NULL, 0, ( funcPtr ) RS_REG_COLL
     },
-#ifdef COMPAT_201
-    {
-        REG_COLL201_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "CollInp_PI", 0, NULL, 0, ( funcPtr ) RS_REG_COLL201
-    },
-#endif
     {
         REG_DATA_OBJ_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "DataObjInfo_PI", 0, "DataObjInfo_PI", 0, ( funcPtr ) RS_REG_DATA_OBJ

@@ -32,18 +32,6 @@ _l3Lseek( rsComm_t *rsComm, int rescTypeInx, int l3descInx,
 #define RS_DATA_OBJ_LSEEK NULL
 #endif
 
-#ifdef COMPAT_201
-#if defined(RODS_SERVER)
-#define RS_DATA_OBJ_LSEEK201 rsDataObjLseek201
-/* prototype for the server handler */
-int
-rsDataObjLseek201( rsComm_t *rsComm, fileLseekInp_t *dataObjLseekInp,
-                   fileLseekOut_t **dataObjLseekOut );
-#else
-#define RS_DATA_OBJ_LSEEK201 NULL
-#endif
-#endif
-
 extern "C" {
 
     /* prototype for the client call */

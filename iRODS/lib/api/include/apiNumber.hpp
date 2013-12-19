@@ -157,19 +157,6 @@
 #define GET_LIMITED_PASSWORD_AN                     726
 
 #define EXEC_CMD241_AN                  634
-#ifdef COMPAT_201
-#define DATA_OBJ_READ201_AN             603
-#define DATA_OBJ_WRITE201_AN            604
-#define DATA_OBJ_CLOSE201_AN            605
-#define DATA_OBJ_LSEEK201_AN            612
-#define COLL_CREATE201_AN               616
-#define RM_COLL_OLD201_AN               617
-#define REG_COLL201_AN                  618
-#define MOD_COLL201_AN                  646
-#define COLL_REPL201_AN                 662
-#define RM_COLL201_AN                   663
-#define OPEN_COLLECTION201_AN           712
-#endif
 
 /* 1000 - 1059 - NETCDF API calls */
 #define NC_OPEN_AN                      1000

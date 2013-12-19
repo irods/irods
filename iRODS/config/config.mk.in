@@ -305,12 +305,6 @@ RBUDP_TRANSFER = 1
 # UNI_CODE - support UTF-8 on linux and UTF-16 on windows
 # UNI_CODE = 1
 
-# COMPAT_201 - The data structures of many APIs have been consolidated
-# after version 2.0.1. If this flag is set, the server API handle
-# will be made to handle the 2.0.1 client request in addition to the
-# new data structures. This flag is set by default
-COMPAT_201=1
-
 # Kerberos authentication
 # KRB_AUTH = 1
 ifdef KRB_AUTH

@@ -141,24 +141,3 @@ rsCollRepl( rsComm_t *rsComm, collInp_t *collReplInp,
 
     return ( savedStatus );
 }
-
-#ifdef COMPAT_201
-int
-rsCollRepl201( rsComm_t *rsComm, dataObjInp_t *collReplInp,
-               collOprStat_t **collOprStat ) {
-    collInp_t collInp;
-    int status;
-
-    bzero( &collInp, sizeof( collInp ) );
-
-    rstrcpy( collInp.collName, collReplInp->objPath, MAX_NAME_LEN );
-    collInp.flags = collReplInp->openFlags;
-    collInp.oprType = collReplInp->oprType;
-    collInp.condInput = collReplInp->condInput;
-
-    status = rsCollRepl( rsComm, &collInp, collOprStat );
-
-    return status;
-}
-#endif
-

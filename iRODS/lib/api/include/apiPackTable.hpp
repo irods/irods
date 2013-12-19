@@ -18,14 +18,6 @@ packInstruct_t MiscSvrInfo_PIG = MiscSvrInfo_PI;
 packInstructArray_t ApiPackTable[] = {
     {"DataObjInp_PI", DataObjInp_PI},
     {"OpenedDataObjInp_PI", OpenedDataObjInp_PI},
-#ifdef COMPAT_201
-    {"dataObjReadInp_PI", dataObjReadInp_PI},
-    {"dataObjWriteInp_PI", dataObjWriteInp_PI},
-    {"dataObjCloseInp_PI", dataObjCloseInp_PI},
-    {"OpenCollInp_PI", OpenCollInp_PI},
-    {"CollInp_PI", CollInp_PI},
-#endif
-
     {"DataCopyInp_PI", DataCopyInp_PI},
     {"DataObjCopyInp_PI", DataObjCopyInp_PI},
     {"fileOpenInp_PI", fileOpenInp_PI},
