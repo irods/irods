@@ -7,7 +7,6 @@
 
 int
 rsSslStart( rsComm_t *rsComm, sslStartInp_t *sslStartInp ) {
-#if defined(USE_SSL)
     /* if SSL is on already, just return success */
     if ( rsComm->ssl_on ) {
         return 0;
@@ -18,8 +17,5 @@ rsSslStart( rsComm_t *rsComm, sslStartInp_t *sslStartInp ) {
     rsComm->ssl_do_accept = 1;
 
     return 0;
-#else
-    return SSL_NOT_BUILT_INTO_SERVER;
-#endif
 }
 

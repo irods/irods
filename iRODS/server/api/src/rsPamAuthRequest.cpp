@@ -33,7 +33,6 @@ rsPamAuthRequest( rsComm_t *rsComm, pamAuthRequestInp_t *pamAuthRequestInp,
 #endif
     }
     else {
-#ifdef USE_SSL
         /* protect the PAM plain text password by
            using an SSL connection to the remote ICAT */
         status = sslStart( rodsServerHost->conn );
@@ -42,16 +41,10 @@ rsPamAuthRequest( rsComm_t *rsComm, pamAuthRequestInp_t *pamAuthRequestInp,
                      status );
             return( status );
         }
-#else
-        rodsLog( LOG_ERROR, "iRODS doesn't include SSL support, required for PAM authentication." );
-        return SSL_NOT_BUILT_INTO_SERVER;
-#endif /* USE_SSL */
 
         status = rcPamAuthRequest( rodsServerHost->conn, pamAuthRequestInp,
                                    pamAuthRequestOut );
-#ifdef USE_SSL
         sslEnd( rodsServerHost->conn );
-#endif
         rcDisconnect( rodsServerHost->conn );
         rodsServerHost->conn = NULL;
         if ( status < 0 ) {
