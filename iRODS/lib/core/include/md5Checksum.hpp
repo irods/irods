@@ -13,9 +13,7 @@
 #include "md5.hpp"
 #include "sha1.hpp"
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     int
     chksumLocFile( char *fileName, char *chksumStr );
@@ -26,8 +24,6 @@ extern "C" {
     int
     rcChksumLocFile( char *fileName, char *chksumFlag, keyValPair_t *condInput );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* MD5_CHECKSUM_H */

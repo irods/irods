@@ -29,9 +29,7 @@ typedef struct StructFileExtAndRegInp {
 
 #define StructFileExtAndRegInp_PI "str objPath[MAX_NAME_LEN]; str collection[MAX_NAME_LEN]; int oprType; int flags; struct KeyValPair_PI;"
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
 #if defined(RODS_SERVER)
 #define RS_STRUCT_FILE_EXT_AND_REG rsStructFileExtAndReg
@@ -71,8 +69,6 @@ extern "C" {
     rcStructFileExtAndReg( rcComm_t *conn,
                            structFileExtAndRegInp_t *structFileExtAndRegInp );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* STRUCT_FILE_EXT_AND_REG_H */

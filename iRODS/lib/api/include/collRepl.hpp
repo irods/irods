@@ -39,9 +39,7 @@ rsCollRepl201( rsComm_t *rsComm, dataObjInp_t *collReplInp,
 #endif
 #endif  /* COMPAT_201 */
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* prototype for the client call */
     int
@@ -50,8 +48,6 @@ extern "C" {
     _rcCollRepl( rcComm_t *conn, collInp_t *collReplInp,
                  collOprStat_t **collOprStat );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* COLL_REPL_H */

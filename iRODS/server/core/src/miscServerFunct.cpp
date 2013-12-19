@@ -2012,21 +2012,13 @@ char *regex( char *rec, char *text, ... ) {
 /* generic functions to return SYS_NOT_SUPPORTED */
 
 int
-#ifdef  __cplusplus
 intNoSupport( ... )
-#else
-intNoSupport()
-#endif
 {
     return SYS_NOT_SUPPORTED;
 }
 
 rodsLong_t
-#ifdef  __cplusplus
 longNoSupport( ... )
-#else
-longNoSupport()
-#endif
 {
     return ( rodsLong_t ) SYS_NOT_SUPPORTED;
 }

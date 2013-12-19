@@ -24,9 +24,7 @@ rsCloseCollection( rsComm_t *rsComm, int *handleInxInp );
 #define RS_CLOSE_COLLECTION NULL
 #endif
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* prototype for the client call */
 
@@ -41,8 +39,6 @@ extern "C" {
      * OutPut -
      *   int status - status of the operation.
      */
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* CLOSE_COLLECTION_H */

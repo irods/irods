@@ -28,9 +28,7 @@ rsGetHostForPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 #define RS_GET_HOST_FOR_PUT NULL
 #endif
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* prototype for the client call */
     /* rcGetHostForPut - get the best host the put operation.
@@ -53,8 +51,6 @@ extern "C" {
     int
     rcGetHostForPut( rcComm_t *conn, dataObjInp_t *dataObjInp,
                      char **outHost );
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* GET_HOST_FOR_PUT_H */

@@ -21,9 +21,7 @@ struct */
 #define END_TAG_FL	1
 #define LF_FL		2	/* line feed */
 
-#ifdef  __cplusplus
         extern "C" {
-#endif
 
     typedef char* packInstruct_t;
 
@@ -302,8 +300,6 @@ struct */
                        packItem_t *myPackedItem, irodsProt_t irodsProt );
     int
     ovStrcpy( char *outStr, char *inStr );
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* PACK_STRUCT_H */

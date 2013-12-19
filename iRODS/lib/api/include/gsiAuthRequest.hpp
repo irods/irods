@@ -15,9 +15,7 @@
 #include "initServer.hpp"
 #include "icatDefines.hpp"
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     typedef struct {
         char *serverDN;
@@ -40,8 +38,6 @@ extern "C" {
     int
     rcGsiAuthRequest( rcComm_t *conn, gsiAuthRequestOut_t **gsiAuthRequestOut );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* GSI_AUTH_REQUEST_H */

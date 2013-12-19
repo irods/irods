@@ -12,9 +12,7 @@
 #include "procApiRequest.hpp"
 #include "apiNumber.hpp"
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     typedef struct specCollDesc {
         int l3descInx;
@@ -58,8 +56,6 @@ extern "C" {
     rcQuerySpecColl( rcComm_t *conn, dataObjInp_t *querySpecCollInp,
                      genQueryOut_t **genQueryOut );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* QUERY_SPEC_COLL_H */

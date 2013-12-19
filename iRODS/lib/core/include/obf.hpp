@@ -2,9 +2,7 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* definitions for obf routines */
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
 #define HASH_TYPE_MD5     1
 #define HASH_TYPE_SHA1    2
@@ -33,6 +31,4 @@ extern "C" {
 
 
     char *obfGetMD5Hash( char *stringToHash );
-#ifdef  __cplusplus
 }
-#endif

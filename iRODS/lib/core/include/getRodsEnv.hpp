@@ -3,9 +3,7 @@
 #ifndef GET_RODS_ENV
 #define GET_RODS_ENV
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     typedef struct {
         char rodsUserName[NAME_LEN];
@@ -41,8 +39,6 @@ extern "C" {
 
     int appendRodsEnv( char *appendText );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* GET_RODS_ENV */

@@ -25,9 +25,7 @@ typedef struct {
 
 #define endTransactionInp_PI "str *arg0; str *arg1;"
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
 #if defined(RODS_SERVER)
 #define RS_END_TRANSACTION rsEndTransaction
@@ -45,8 +43,6 @@ extern "C" {
     int
     rcEndTransaction( rcComm_t *conn, endTransactionInp_t *endTransactionInp );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* END_TRANSACTION_H */

@@ -59,9 +59,7 @@ readAggInfo( rsComm_t *rsComm, char *aggColl, keyValPair_t *condInput,
 #define RS_NC_GET_AGG_INFO NULL
 #endif
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* rcNcGetAgInfo - get the ncAggInfo of a NETCDF file
      * Input -
@@ -90,8 +88,6 @@ extern "C" {
     int
     getNextAggEleObjPath( ncAggInfo_t *ncAggInfo, char *aggCollection,
                           char *nextObjPath );
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* NC_GET_AGG_INFO_H */

@@ -32,9 +32,7 @@
 #include <openssl/x509v3.h>
 #include <openssl/err.h>
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     typedef enum {
         PROCESSING_STATE,	 /* the process is not sending nor receiving */
@@ -253,8 +251,6 @@ extern "C" {
     int
     cliChkReconnAtReadEnd( rcComm_t *conn );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* RC_CONNECT_H */

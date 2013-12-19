@@ -28,9 +28,7 @@ rsGetRemoteZoneResc( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 #define RS_GET_REMOTE_ZONE_RESC NULL
 #endif
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* prototype for the client call */
     /* rcGetRemoteZoneResc -
@@ -50,8 +48,6 @@ extern "C" {
     rcGetRemoteZoneResc( rcComm_t *conn, dataObjInp_t *dataObjInp,
                          rodsHostAddr_t **rescAddr );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* GET_REMOTE_ZONE_RESC_H */

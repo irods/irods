@@ -44,9 +44,7 @@ rsDataObjLseek201( rsComm_t *rsComm, fileLseekInp_t *dataObjLseekInp,
 #endif
 #endif
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* prototype for the client call */
     /* rcDataObjLseek - Lseek an opened iRODS data object descriptor.
@@ -67,8 +65,6 @@ extern "C" {
     rcDataObjLseek( rcComm_t *conn, openedDataObjInp_t *dataObjLseekInp,
                     fileLseekOut_t **dataObjLseekOut );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* DATA_OBJ_LSEEK_H */

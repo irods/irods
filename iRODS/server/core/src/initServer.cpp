@@ -1472,11 +1472,7 @@ cleanupAndExit( int status ) {
 }
 
 void
-#ifdef  __cplusplus
 signalExit( int )
-#else
-signalExit()
-#endif
 {
     rodsLog( LOG_NOTICE,
              "caught a signal and exiting\n" );
@@ -1484,11 +1480,7 @@ signalExit()
 }
 
 void
-#ifdef  __cplusplus
 rsPipSigalHandler( int )
-#else
-rsPipSigalHandler()
-#endif
 {
     time_t curTime;
 

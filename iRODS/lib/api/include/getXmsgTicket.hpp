@@ -26,17 +26,13 @@ rsGetXmsgTicket( rsComm_t *rsComm, getXmsgTicketInp_t *getXmsgTicketInp,
 #define RS_GET_XMSG_TICKET NULL
 #endif
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* prototype for the client call */
     int
     rcGetXmsgTicket( rcComm_t *conn, getXmsgTicketInp_t *getXmsgTicketInp,
                      xmsgTicketInfo_t **outXmsgTicketInfo );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* GET_XMSG_TICKET_H */

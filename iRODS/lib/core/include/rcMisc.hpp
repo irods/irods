@@ -19,9 +19,7 @@
 #include "rodsPath.hpp"
 #include "bulkDataObjPut.hpp"
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     int isPath( char *path );
     rodsLong_t
@@ -312,8 +310,6 @@ extern "C" {
     int
     getPathStMode( path & p );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif  /* RC_MISC_H */

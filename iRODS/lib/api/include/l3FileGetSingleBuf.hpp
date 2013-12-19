@@ -25,9 +25,7 @@ rsL3FileGetSingleBuf( rsComm_t *rsComm, int *l1descInx,
 #define RS_L3_FILE_GET_SINGLE_BUF NULL
 #endif
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* prototype for the client call */
     /* rcL3FileGetSingleBuf - remote call for l3FileGetSingleBuf for cross zone
@@ -40,8 +38,6 @@ extern "C" {
     rcL3FileGetSingleBuf( rcComm_t *conn, int l1descInx,
                           bytesBuf_t *dataObjOutBBuf );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* L3_FILE_GET_SINGLE_BUF_H */

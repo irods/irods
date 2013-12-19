@@ -38,15 +38,11 @@ extern validKeyWd_t StructFileExtAndRegInpKeyWd[];
 extern int NumStructFileExtAndRegInpKeyWd;
 extern struct timeval SysTimingVal;
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     extern irodsGuiProgressCallbak gGuiProgressCB;
 
-#ifdef  __cplusplus
 }
-#endif
 
 
 #endif	/* RC_GLOBAL_EXTERN_H */

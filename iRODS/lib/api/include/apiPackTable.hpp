@@ -13,10 +13,6 @@
 /* need to include a header for for each API */
 #include "apiHeaderAll.hpp"
 
-//#ifdef  __cplusplus
-//extern "C" {
-//#endif
-
 packInstruct_t MiscSvrInfo_PIG = MiscSvrInfo_PI;
 
 packInstructArray_t ApiPackTable[] = {
@@ -135,9 +131,5 @@ packInstructArray_t ApiPackTable[] = {
     {"getLimitedPasswordOut_PI", getLimitedPasswordOut_PI},
     {PACK_TABLE_END_PI, ( char * ) NULL},
 };
-
-//#ifdef  __cplusplus
-//}
-//#endif
 
 #endif	/* API_PACK_TABLE_H */

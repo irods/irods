@@ -103,9 +103,7 @@ typedef struct newlyCreatedFile {
     uint cachedTime;
 } newlyCreatedFile_t;
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     int
     initIFuseDesc();
@@ -241,8 +239,6 @@ extern "C" {
     getNewlyCreatedDescByPath( char *path );
     int
     renmeOpenedIFuseDesc( pathCache_t *fromPathCache, char *to );
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* I_FUSE_LIB_H */

@@ -61,9 +61,7 @@ getAndConnRemoteZoneForCopy( rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
 #define RS_DATA_OBJ_COPY250 NULL
 #endif
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* prototype for the client call */
     /* rcDataObjCopy - Copy a iRODS data object.
@@ -100,8 +98,6 @@ extern "C" {
                        transStat_t **transStat );
     int
     clearDataObjCopyInp( dataObjCopyInp_t *dataObjCopyInp );
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* DATA_OBJ_COPY_H */

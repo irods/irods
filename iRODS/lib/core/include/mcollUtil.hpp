@@ -9,9 +9,7 @@
 #include "parseCommandLine.hpp"
 #include "rodsPath.hpp"
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     int
     mcollUtil( rcComm_t *conn, rodsEnv *myEnv, rodsArguments_t *myRodsArgs,
@@ -20,8 +18,6 @@ extern "C" {
     initCondForMcoll( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                       dataObjInp_t *dataObjOprInp, rodsPathInp_t *rodsPathInp );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* MCOLL_UTIL_H */

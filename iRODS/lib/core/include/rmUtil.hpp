@@ -13,9 +13,7 @@
 #include "sys/timeb.h"
 #endif
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     int
     rmUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
@@ -37,8 +35,6 @@ extern "C" {
     int
     mvCollToTrash( rcComm_t *conn, dataObjInp_t *dataObjInp );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* RM_UTIL_H */

@@ -47,9 +47,7 @@ rsNcInqWithIdDataObj( rsComm_t *rsComm, ncInqIdInp_t *ncInqWithIdInp,
 #define RS_NC_INQ_WITH_ID NULL
 #endif
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* rcNcInqWithId - general netcdf inq with id (equivalent to nc_inq_dim,
      *    ....
@@ -68,8 +66,6 @@ extern "C" {
     rcNcInqWithId( rcComm_t *conn, ncInqIdInp_t *ncInqWithIdInp,
                    ncInqWithIdOut_t **ncInqWithIdOut );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* NC_INQ_WITH_ID_H */

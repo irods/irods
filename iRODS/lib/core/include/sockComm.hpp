@@ -54,9 +54,7 @@
 #define CLOSE_SOCK       close
 #endif
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
 // =-=-=-=-=-=-=-
 // network plugin interface functions
@@ -148,8 +146,6 @@ irods::error readMsgHeader(
     int redirectConnToRescSvr( rcComm_t **conn, dataObjInp_t *dataObjInp, rodsEnv *myEnv, int reconnFlag );
     int rcReconnect( rcComm_t **conn, char *newHost, rodsEnv *myEnv, int reconnFlag );
     int mySockClose( int sock ); // server stop fcn <==> rsAccept?
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* SOCK_COMM_H */

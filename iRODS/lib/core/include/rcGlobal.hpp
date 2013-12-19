@@ -205,14 +205,10 @@ int NumStructFileExtAndRegInpKeyWd = sizeof
 
 struct timeval SysTimingVal;
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     irodsGuiProgressCallbak gGuiProgressCB = NULL;
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* RC_GLOBAL_H */

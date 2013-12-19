@@ -49,9 +49,7 @@ rsRmColl201( rsComm_t *rsComm, collInp201_t *rmCollInp,
 #endif
 #endif
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* prototype for the client call */
     int
@@ -71,8 +69,6 @@ extern "C" {
      *   int status - status of the operation.
      */
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* RM_COLL_H */
