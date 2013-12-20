@@ -191,11 +191,7 @@ apidef_t RcApiTable[] = {
     },
     {
         GEN_QUERY_AN, RODS_API_VERSION,
-#ifdef STORAGE_ADMIN_ROLE
         REMOTE_USER_AUTH | STORAGE_ADMIN_USER, REMOTE_USER_AUTH | STORAGE_ADMIN_USER,
-#else
-        REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-#endif
         "GenQueryInp_PI", 0, "GenQueryOut_PI", 0, ( funcPtr ) RS_GEN_QUERY
     },
     {

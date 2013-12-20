@@ -5441,7 +5441,6 @@ checkLevel:
         }
     }
 
-#ifdef STORAGE_ADMIN_ROLE
     else if ( strcmp( userType, STORAGE_ADMIN_USER_TYPE ) == 0 ) {
         /* Add a bit to the userPrivLevel to indicate that
           this user has the storageadmin role */
@@ -5475,7 +5474,6 @@ checkLevel:
             }
         }
     }
-#endif
 
     prevFailure = 0;
     return( 0 );
