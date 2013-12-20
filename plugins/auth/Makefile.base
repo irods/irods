@@ -8,8 +8,8 @@ DEPFILE = .depends
 OBJS = $(patsubst %.cpp, ${OBJDIR}/%.o, ${SRCS})
 DEPS = $(patsubst %.cpp, ${DEPDIR}/%.d, ${SRCS})
 
-include ${IRODSDIR}/config/platform.mk
 include ${IRODSDIR}/config/config.mk
+include ${IRODSDIR}/config/platform.mk
 
 GCC = g++ -DRODS_SERVER -DZIP_EXEC_PATH=\"$(ZIP_EXEC_PATH)\" -DUNZIP_EXEC_PATH=\"$(UNZIP_EXEC_PATH)\"
 GCC += `../../../packaging/compiler_check.sh 4 2`
@@ -17,14 +17,15 @@ GCC += `../../../packaging/compiler_check.sh 4 2`
 INC = -I${IRODSDIR}/lib/core/include/ -I${IRODSDIR}/lib/api/include/ -I${IRODSDIR}/lib/md5/include \
       -I${IRODSDIR}/server/core/include/ -I${IRODSDIR}/server/icat/include/ -I${IRODSDIR}/server/re/include/ \
       -I${IRODSDIR}/server/drivers/include/ -I$(LIBARCHIVE_DIR)/libarchive/ -I$(BOOST_DIR) \
-      -I/usr/include/openssl -I${IRODSDIR}/lib/sha1/include -I${IRODSDIR}/lib/rbudp/include \
-      -I/opt/hpss/include  -L/opt/hpss/lib
+      -I${IRODSDIR}/lib/sha1/include -I${IRODSDIR}/lib/rbudp/include
+
+MY_CFLAG += ${INC}
 
 ifeq ($(IRODS_BUILD_COVERAGE), 1)
 GCC += -fprofile-arcs -ftest-coverage -lgcov
 OBJS = $(patsubst %.cpp, %.o, ${SRCS})
 %.o: %.cpp
-	${GCC} ${INC} -D${OS_platform} -fPIC -c -g -o $@ $<
+	${GCC} ${MY_CFLAG} -D${OS_platform} -fPIC -c -g -o $@ $<
 endif
 
 .PHONY: clean
@@ -38,7 +39,7 @@ clean:
 
 ${FULLTARGET}: ${OBJS} ${DEPFILE}
 	@-mkdir -p ${SODIR} > /dev/null 2>&1
-	${GCC} ${INC} -D${OS_platform} -fPIC "-Wl,-E" -shared -o ${FULLTARGET} ${OBJS} ${EXTRALIBS} ../../../iRODS/lib/api/obj/rcAuthCheck.o
+	${GCC} ${MY_CFLAG} ${LDRFLAGS} -D${OS_platform} -fPIC "-Wl,-E" -shared -o ${FULLTARGET} ${OBJS} ${EXTRALIBS} ../../../iRODS/lib/api/obj/rcAuthCheck.o
 
 ${DEPFILE}: ${DEPS}
 	@-rm -f ${DEPFILE} > /dev/null 2>&1
@@ -47,9 +48,9 @@ ${DEPFILE}: ${DEPS}
 	done
 
 ${DEPS}: ${SRCS} ${HEADERS}
-	${GCC} ${INC} -MM $< -MT $(patsubst %.cpp, ${OBJDIR}/%.o, $<) -MF $@
+	${GCC} ${MY_CFLAG} -MM $< -MT $(patsubst %.cpp, ${OBJDIR}/%.o, $<) -MF $@
 
 ${OBJDIR}/%.o: %.cpp
-	${GCC} ${INC} -D${OS_platform} -fPIC -c -g -o $@ $<
+	${GCC} ${MY_CFLAG} -D${OS_platform} -fPIC -c -g -o $@ $<
 
 include ${DEPFILE}
