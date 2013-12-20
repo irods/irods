@@ -2739,10 +2739,12 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
                         addKeyVal( &dataObjInp.condInput, FORCE_FLAG_KW, "" );
                         rstrcpy( dataObjInp.objPath, restartPath, MAX_NAME_LEN );
                         int status = rcDataObjUnlink( conn, & dataObjInp );
-//                            if(status < 0)
-//                            {
-// FIXME                         irods::log( ERROR ( status, "rcDataObjUnlink failed."));
-//                            }
+                        if(status < 0)
+                        {
+                            std::string notice = std::string("rcDataObjUnlink returned with code: ");
+                            notice.append(boost::to_string(status));
+                            irods::log( LOG_NOTICE, notice );
+                        }
                         clearKeyVal( &dataObjInp.condInput );
                     }
                 }

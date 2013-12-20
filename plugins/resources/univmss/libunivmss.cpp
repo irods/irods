@@ -826,7 +826,6 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // set up variables for iteration
-        bool          found     = false;
         irods::error final_ret = SUCCESS();
         std::vector< irods::physical_object > objs = _file_obj->replicas();
         std::vector< irods::physical_object >::iterator itr = objs.begin();
@@ -856,7 +855,6 @@ extern "C" {
             //           replication, or the repl nums match
             if ( resc_us ) {
                 if ( !need_repl || ( need_repl && repl_us ) ) {
-                    found = true;
                     if ( curr_host ) {
                         _out_vote = 1.0;
                     }

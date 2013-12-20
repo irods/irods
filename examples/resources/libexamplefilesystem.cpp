@@ -882,6 +882,10 @@ extern "C" {
                 // =-=-=-=-=-=-=-
                 // convert standard dirent to rods dirent struct
                 int status = direntToRodsDirent( ( *_dirent_ptr ), tmp_dirent );
+                if ( status < 0 ) {
+                    irods::log( ERROR( status, "direntToRodsDirent failed." ) );
+                }
+
 
 #if defined(solaris_platform)
                 rstrcpy( ( *_dirent_ptr )->d_name, tmp_dirent->d_name, MAX_NAME_LEN );
@@ -1175,7 +1179,6 @@ extern "C" {
 
                     // =-=-=-=-=-=-=-
                     // set up variables for iteration
-                    bool          found     = false;
                     irods::error final_ret = SUCCESS();
                     std::vector< irods::physical_object > objs = _file_obj->replicas();
                     std::vector< irods::physical_object >::iterator itr = objs.begin();
@@ -1236,7 +1239,6 @@ extern "C" {
                                 }
                             }
 
-                            found = true;
                             break;
 
                         } // if resc_us

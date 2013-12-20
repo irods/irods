@@ -1577,10 +1577,6 @@ extern "C" {
         }
 
         // =-=-=-=-=-=-=-
-        // extract the number of children -> num replicas
-        int num_children = _ctx.child_map().size();
-
-        // =-=-=-=-=-=-=-
         // determine limit size
         int limit = DEFAULT_LIMIT;
         if ( !_ctx.rule_results().empty() ) {
