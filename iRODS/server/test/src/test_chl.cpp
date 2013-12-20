@@ -128,7 +128,6 @@ int testTempPwConvert( char *s1, char *s2 ) {
     char md5Buf[100];
     unsigned char digest[RESPONSE_LEN + 2];
     char digestStr[100];
-    MD5_CTX context;
 
     /*
        Calcuate the temp password: a hash of s1 (the user's main

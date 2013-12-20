@@ -41,16 +41,11 @@ applyRuleForPostProcForWrite( rsComm_t *rsComm, bytesBuf_t *dataObjWriteInpBBuf,
     rei2.doi = ( dataObjInfo_t* )mallocAndZero( sizeof( dataObjInfo_t ) );
     strcpy( rei2.doi->objPath, objPath );
 
-#if 0
-    addMsParam( &msParamArray, "*WriteBuf", BUF_LEN_MS_T,
-                ( void * ) dataObjWriteInpBBuf->len , dataObjWriteInpBBuf );
-#else
     bzero( &msParamArray, sizeof( msParamArray ) );
     myInOutStruct = ( int* )malloc( sizeof( int ) );
     *myInOutStruct = dataObjWriteInpBBuf->len;
     addMsParamToArray( &msParamArray, "*WriteBuf", BUF_LEN_MS_T, myInOutStruct,
                        dataObjWriteInpBBuf, 0 );
-#endif
     i =  applyRule( "acPostProcForDataObjWrite(*WriteBuf)", &msParamArray, &rei2, NO_SAVE_REI );
     free( rei2.doi );
     if ( i < 0 ) {
@@ -197,22 +192,3 @@ _l3Write( rsComm_t *rsComm, int rescTypeInx, int l3descInx,
                                 &dataObjWriteInpBBuf );
     return ( bytesWritten );
 }
-
-#ifdef COMPAT_201
-int
-rsDataObjWrite201( rsComm_t *rsComm, dataObjWriteInp_t *dataObjWriteInp,
-                   bytesBuf_t *dataObjWriteInpBBuf ) {
-    openedDataObjInp_t openedDataObjInp;
-    int status;
-
-    bzero( &openedDataObjInp, sizeof( openedDataObjInp ) );
-
-    openedDataObjInp.l1descInx = dataObjWriteInp->l1descInx;
-    openedDataObjInp.len = dataObjWriteInp->len;
-
-    status = rsDataObjWrite( rsComm, &openedDataObjInp, dataObjWriteInpBBuf );
-
-    return status;
-}
-#endif
-

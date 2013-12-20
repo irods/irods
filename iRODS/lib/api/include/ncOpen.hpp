@@ -45,9 +45,7 @@ openAggrFile( rsComm_t *rsComm, int l1descInx, int aggElemetInx );
 #define RS_NC_OPEN NULL
 #endif
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* prototype for the client call */
     /* rcNcOpen - netcdf open an iRODS data object (equivalent to nc_open.
@@ -67,8 +65,6 @@ extern "C" {
     int
     _rcNcOpen( rcComm_t *conn, ncOpenInp_t *ncOpenInp, int **ncid );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* NC_OPEN_H */

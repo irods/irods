@@ -356,7 +356,8 @@ rcPartialDataPut( rcPortalTransferInp_t *myInput ) {
 
     // =-=-=-=-=-=-=-
     // allocate a buffer for writing
-    unsigned char* buf = ( unsigned char* )malloc( 2 * TRANS_BUF_SZ + sizeof( unsigned char ) );
+    size_t buf_size = 2 * TRANS_BUF_SZ * sizeof( unsigned char );
+    unsigned char* buf = ( unsigned char* )malloc( buf_size );
 
     while ( myInput->status >= 0 ) {
         rodsLong_t toPut;
@@ -445,7 +446,7 @@ rcPartialDataPut( rcPortalTransferInp_t *myInput ) {
 
                 // =-=-=-=-=-=-=-
                 // capture the iv with the cipher text
-                bzero( buf, sizeof( buf ) );
+                memset( buf, 0,  buf_size );
                 std::copy(
                     iv.begin(),
                     iv.end(),
@@ -1045,7 +1046,8 @@ rcPartialDataGet( rcPortalTransferInp_t *myInput ) {
             &myInput->shared_secret[iv_size] );
     }
 
-    buf = ( unsigned char* )malloc( ( 2 * TRANS_BUF_SZ ) * sizeof( unsigned char ) );
+    size_t buf_size = ( 2 * TRANS_BUF_SZ ) * sizeof( unsigned char );
+    buf = ( unsigned char* )malloc( buf_size );
 
     while ( myInput->status >= 0 ) {
         rodsLong_t toGet;
@@ -1148,7 +1150,7 @@ rcPartialDataGet( rcPortalTransferInp_t *myInput ) {
                     break;
                 }
 
-                bzero( buf, sizeof( buf ) );
+                memset( buf, 0, buf_size );
                 std::copy(
                     plain.begin(),
                     plain.end(),
@@ -1209,7 +1211,6 @@ rcPartialDataGet( rcPortalTransferInp_t *myInput ) {
     CLOSE_SOCK( srcFd );
 }
 
-#ifdef RBUDP_TRANSFER
 /* putFileToPortalRbudp - The client side of putting a file using
  * Rbudp. If locFilePath is NULL, the local file has already been opned
  * and locFd should be used. If sendRate and packetSize are 0, it will
@@ -1433,7 +1434,6 @@ initRbudpClient( rbudpBase_t *rbudpBase, portList_t *myPortList ) {
 
     return 0;
 }
-#endif  /* RBUDP_TRANSFER */
 
 int
 initFileRestart( rcComm_t *conn, char *fileName, char *objPath,

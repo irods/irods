@@ -9,9 +9,7 @@
 #include "parseCommandLine.hpp"
 #include "rodsPath.hpp"
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
 
     int
@@ -20,8 +18,6 @@ extern "C" {
     int
     initCondForNcarch( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                        ncArchTimeSeriesInp_t *ncArchTimeSeriesInp );
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* NCARCHUTIL_H */

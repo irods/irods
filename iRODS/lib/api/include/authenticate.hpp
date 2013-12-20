@@ -21,9 +21,7 @@
 #define CHALLENGE_LEN 64 /* 64 bytes of data and terminating null */
 #define RESPONSE_LEN 16  /* 16 bytes of data and terminating null */
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     typedef struct {
         char *subOp;
@@ -58,8 +56,6 @@ extern "C" {
     rcAuthenticate( rcComm_t *conn, AuthenticateInp_t *authenticateInp,
                     AuthenticateOut_t **authenticateOut );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* AUTHENTICATE_H */

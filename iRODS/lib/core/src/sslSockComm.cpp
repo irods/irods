@@ -3,7 +3,6 @@
 /* sslSockComm.c - SSL socket communication routines
  */
 
-#ifdef USE_SSL
 
 #include "rodsClient.hpp"
 #include "sslSockComm.hpp"
@@ -898,5 +897,3 @@ sslPostConnectionCheck( SSL *ssl, char *peer ) {
         return 0;
     }
 }
-
-#endif /* USE_SSL */

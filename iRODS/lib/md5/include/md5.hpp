@@ -36,9 +36,7 @@ Removed PROTO_LIST macro for C++ compatability.
 #ifndef __MD5_HPP__
 #define __MD5_HPP__
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
 
     /* MD5 context. */
@@ -48,26 +46,12 @@ extern "C" {
         unsigned char buffer[64];                         /* input buffer */
     } MD5_CTX;
 
-#ifdef  __cplusplus
 
     /* C++ safe declarations */
     void MD5Init( MD5_CTX * );
     void MD5Update( MD5_CTX *, unsigned char *, unsigned int );
     void MD5Final( unsigned char [16], MD5_CTX * );
 
-#else
-
-    /* RSA C declarations */
-    void MD5Init PROTO_LIST( ( MD5_CTX * ) );
-    void MD5Update PROTO_LIST
-    ( ( MD5_CTX *, unsigned char *, unsigned int ) );
-    void MD5Final PROTO_LIST( ( unsigned char [16], MD5_CTX * ) );
-
-#endif
-
-
-#ifdef  __cplusplus
 }
-#endif
 
 #endif // __MD5_HPP__

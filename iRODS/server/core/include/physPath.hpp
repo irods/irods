@@ -31,9 +31,7 @@
 // =-=-=-=-=-=-=-
 
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     int
     getFileMode( dataObjInp_t *dataObjInp );
@@ -108,13 +106,8 @@ extern "C" {
 // =-=-=-=-=-=-=-
     int getLeafRescPathName( const std::string& _resc_hier, std::string& _ret_string );
 
-#ifdef FILESYSTEM_META
     rodsLong_t
     getFileMetadataFromVault( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo );
-#endif
-#ifdef  __cplusplus
 }
-#endif
 
 #endif  /* PHYS_PATH_H */
-

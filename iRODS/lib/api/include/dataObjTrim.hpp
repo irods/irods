@@ -30,9 +30,7 @@ trimDataObjInfo( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo );
 #define RS_DATA_OBJ_TRIM NULL
 #endif
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* prototype for the client call */
     /* rcDataObjTrim - Trim the copies (replica) of an iRODS data object.
@@ -50,8 +48,6 @@ extern "C" {
     int
     rcDataObjTrim( rcComm_t *conn, dataObjInp_t *dataObjInp );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* DATA_OBJ_TRIM_H */

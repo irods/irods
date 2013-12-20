@@ -18,9 +18,7 @@
 #include "initServer.hpp"
 #include "icatDefines.hpp"
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     typedef struct {
         char *arg0;
@@ -42,8 +40,6 @@ extern "C" {
     int
     rcSslEnd( rcComm_t *conn, sslEndInp_t *sslEndInp );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* SSL_END_H */

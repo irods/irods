@@ -18,9 +18,7 @@
 #include "rsGlobalExtern.hpp"
 #include "reIn2p3SysRule.hpp"
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     int
     modCollInfo2( rsComm_t *rsComm, specColl_t *specColl, int clearFlag );
@@ -48,8 +46,6 @@ extern "C" {
     resolveLinkedPath( rsComm_t *rsComm, char *objPath,
                        specCollCache_t **specCollCache, keyValPair_t *condInput );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* SPEC_COLL_H */

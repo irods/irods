@@ -7,7 +7,6 @@
 
 int
 rsSslEnd( rsComm_t *rsComm, sslEndInp_t *sslEndInp ) {
-#if defined(USE_SSL)
 
     /* if SSL isn't on, just return success */
     if ( !rsComm->ssl_on ) {
@@ -19,8 +18,5 @@ rsSslEnd( rsComm_t *rsComm, sslEndInp_t *sslEndInp ) {
     rsComm->ssl_do_shutdown = 1;
 
     return 0;
-#else
-    return SSL_NOT_BUILT_INTO_SERVER;
-#endif
 }
 

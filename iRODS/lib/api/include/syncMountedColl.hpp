@@ -39,9 +39,7 @@ _rsSyncMountedColl( rsComm_t *rsComm, specColl_t *specColl, int oprType );
 #define ADD_TO_TAR_OPR          0x10   /* add to a tar file */ // JMC - backport 4643
 #define PRESERVE_COLL_PATH      0x20   /* preserver the last entry of coll */ // JMC - backport 4644
 #define PRESERVE_DIR_CONT      0x40    /* preserve the content of cachrdir */ // JMC - backport 4657
-#ifdef  __cplusplus
         extern "C" {
-#endif
 
     /* prototype for the client call */
     int
@@ -60,8 +58,6 @@ _rsSyncMountedColl( rsComm_t *rsComm, specColl_t *specColl, int oprType );
      *   int status - The status of the operation.
      */
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* SYNC_MOUNTED_COLL_H */

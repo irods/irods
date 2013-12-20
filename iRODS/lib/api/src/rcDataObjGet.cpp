@@ -136,7 +136,6 @@ rcDataObjGet( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
         ****/
         status = getIncludeFile( conn, &dataObjOutBBuf, locFilePath );
         free( dataObjOutBBuf.buf );
-#ifdef RBUDP_TRANSFER
     }
     else if ( getUdpPortFromPortList( &portalOprOut->portList ) != 0 ) {
         int veryVerbose;
@@ -184,7 +183,6 @@ rcDataObjGet( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
         else {
             status = rcOprComplete( conn, portalOprOut->l1descInx );
         }
-#endif  /* RBUDP_TRANSFER */
     }
     else {
 

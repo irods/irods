@@ -41,9 +41,7 @@
    server, client, or user) cannot continue.  An example is when the
    server is unable to talk to the database. */
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     void rodsLog( int level, const char *formatStr, ... );
     void rodsLogAndErrorMsg( int level, rError_t *myError, int status,
@@ -58,7 +56,5 @@ extern "C" {
     int getRodsLogLevel();
     void generateLogTimestamp( char *ts, int tsLen );
 
-#ifdef  __cplusplus
 }
-#endif
 

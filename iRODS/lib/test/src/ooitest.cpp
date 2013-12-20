@@ -84,6 +84,7 @@ runBankTest() {
     status = doNewAccount( easyhandle, "Savings", "John", &account_id );
 
     if ( status < 0 ) {
+        free(account_id);
         return status;
     }
 
@@ -368,7 +369,7 @@ newAccountOut( void *buffer, size_t size, size_t nmemb, void *userp ) {
     }
     responseStr = json_string_value( responseObj );
     bankOprOut = ( bankOprOut_t * ) userp;
-    strncpy( bankOprOut->account_id, responseStr, MAX_NAME_LEN );
+    strncpy( bankOprOut->account_id, responseStr, NAME_LEN );
     json_decref( root );
 
     return nmemb * size;

@@ -19,33 +19,7 @@
 
 extern rodsEnv MyRodsEnv;
 
-#ifdef  __cplusplus
 struct fuse_operations irodsOper;
-#else
-static struct fuse_operations irodsOper = {
-    .getattr = irodsGetattr,
-    .readlink = irodsReadlink,
-    .readdir = irodsReaddir,
-    .mknod = irodsMknod,
-    .mkdir = irodsMkdir,
-    .symlink = irodsSymlink,
-    .unlink = irodsUnlink,
-    .rmdir = irodsRmdir,
-    .rename = irodsRename,
-    .link = irodsLink,
-    .chmod = irodsChmod,
-    .chown = irodsChown,
-    .truncate = irodsTruncate,
-    .utimens = irodsUtimens,
-    .open = irodsOpen,
-    .read = irodsRead,
-    .write = irodsWrite,
-    .statfs = irodsStatfs,
-    .release = irodsRelease,
-    .fsync = irodsFsync,
-    .flush = irodsFlush,
-};
-#endif
 
 void usage();
 
@@ -114,7 +88,6 @@ main( int argc, char **argv ) {
     rodsArguments_t myRodsArgs;
     char *optStr;
 
-#ifdef  __cplusplus
     bzero( &irodsOper, sizeof( irodsOper ) );
     irodsOper.getattr = irodsGetattr;
     irodsOper.readlink = irodsReadlink;
@@ -137,7 +110,6 @@ main( int argc, char **argv ) {
     irodsOper.release = irodsRelease;
     irodsOper.fsync = irodsFsync;
     irodsOper.flush = irodsFlush;
-#endif
     optStr = "hdo:";
 
     status = parseCmdLineOpt( argc, argv, optStr, 0, &myRodsArgs );
@@ -200,5 +172,3 @@ usage() {
         printf( "%s\n", msgs[i] );
     }
 }
-
-

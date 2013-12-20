@@ -25,9 +25,7 @@ rsNcCreate( rsComm_t *rsComm, ncOpenInp_t *ncCreateInp, int **ncid );
 #define RS_NC_CREATE NULL
 #endif
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* prototype for the client call */
     /* rcNcCreate - netcdf create an iRODS data object (equivalent to nc_open.
@@ -48,8 +46,6 @@ extern "C" {
     int
     _rcNcCreate( rcComm_t *conn, ncOpenInp_t *ncCreateInp, int **ncid );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* NC_CREATE_H */

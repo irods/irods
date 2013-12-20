@@ -511,13 +511,6 @@ l3CreateByObjInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                    dataObjInfo_t *dataObjInfo ) {
     int l3descInx;
 
-#if 0 // JMC legacy resource 
-    // rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
-
-    // switch (RescTypeDef[rescTypeInx].rescCat)
-    // case FILE_CAT:
-
-#endif // JMC legacy resource 
     int retryCnt = 0;
     int chkType = 0; // JMC - backport 4774
 
@@ -543,10 +536,8 @@ l3CreateByObjInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     // =-=-=-=-=-=-=-
     // JMC - backport 4774
     chkType = getchkPathPerm( rsComm, dataObjInp, dataObjInfo );
-#ifdef FILESYSTEM_META
     copyFilesystemMetadata( &dataObjInfo->condInput,
                             &fileCreateInp.condInput );
-#endif
     if ( chkType == DISALLOW_PATH_REG ) {
         return PATH_REG_NOT_ALLOWED;
     }

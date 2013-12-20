@@ -65,10 +65,6 @@
 
 #define CollInpNew_PI "str collName[MAX_NAME_LEN]; int flags; int oprType; struct KeyValPair_PI;"
 
-#ifdef COMPAT_201
-#define CollInp_PI "str collName[MAX_NAME_LEN]; struct KeyValPair_PI;"
-#endif
-
 #define GenQueryInp_PI "int maxRows; int continueInx; int partialStartIndex; int options; struct KeyValPair_PI; struct InxIvalPair_PI; struct InxValPair_PI;"
 #define SqlResult_PI "int attriInx; int reslen; str *value(rowCnt)(reslen);"
 

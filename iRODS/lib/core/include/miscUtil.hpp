@@ -140,9 +140,7 @@ typedef struct {
 } pathnamePatterns_t;
 
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
     int
     mkdirR( char *startDir, char *destDir, int mode );
     int
@@ -255,7 +253,6 @@ extern "C" {
     rmFilesInDir( char *mydir );
     int
     mkdirForFilePath( char* filePath );
-#ifdef FILESYSTEM_META
     int
     mkCollWithDirMeta( rcComm_t *conn, char *collection, char *dirname );
     int
@@ -270,15 +267,12 @@ extern "C" {
     getFileMetaFromStat( rodsStat_t *statbuf, keyValPair_t *condInput );
     int
     copyFilesystemMetadata( keyValPair_t *src, keyValPair_t *dest );
-#endif /* FILESYSTEM_META */
     pathnamePatterns_t *
     readPathnamePatterns( char *buf, int buflen );
     void
     freePathnamePatterns( pathnamePatterns_t *pp );
     int
     matchPathname( pathnamePatterns_t *pp, char *name, char *dirname );
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* MISC_UTIL_H */

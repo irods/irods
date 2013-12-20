@@ -25,11 +25,6 @@
 #define OOI_FLOAT_TYPE		4
 #define OOI_BOOL_TYPE		5
 
-#if 0	/* just use OOI_ARRAY_TYPE */
-#define OOI_DICT_ARRAY_TYPE	2	/* array of dict */
-#define OOI_DICT_ARRAY_IN_ARRAY 3       /* An element in an array.
-* outInx is the inx in this array */
-#endif
 typedef struct {
     char servName[NAME_LEN];
     char servOpr[NAME_LEN];
@@ -74,9 +69,7 @@ remoteOoiGenServReq( rsComm_t *rsComm, ooiGenServReqInp_t *ooiGenServReqInp,
 #define RS_OOI_GEN_SERV_REQ NULL
 #endif
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* rcOoiGenServReq -
      * Input -
@@ -94,8 +87,6 @@ extern "C" {
     int
     freeOoiGenServReqOut( ooiGenServReqOut_t **ooiGenServReqOut );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* OOI_GEN_SERV_REQ_H */

@@ -45,9 +45,7 @@ _rsNcGetAggElement( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
 #define RS_NC_GET_AGG_ELEMENT NULL
 #endif
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* rcNcGetAggElement - get the ncAggElement of a NETCDF file
      * Input -
@@ -64,8 +62,6 @@ extern "C" {
     rcNcGetAggElement( rcComm_t *conn, ncOpenInp_t *ncOpenInp,
                        ncAggElement_t **ncAggElement );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* NC_GET_AGG_ELEMENT_H */

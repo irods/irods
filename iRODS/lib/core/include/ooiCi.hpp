@@ -11,9 +11,7 @@
 #include <jansson.h>
 #include <curl/curl.h>
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
 #define SERVICE_REQUEST_STR	"serviceRequest"
 #define SERVICE_NAME_STR	"serviceName"
@@ -117,9 +115,6 @@ extern "C" {
     getRevIdFromArray( genArray_t *genArray, char *objectId, char *outRevId );
     int
     getObjIdFromArray( genArray_t *genArray, char *outObjId );
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* OOI_CI_H */
-

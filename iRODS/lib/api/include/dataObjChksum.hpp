@@ -35,9 +35,7 @@ verifyDatObjChksum( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
 #define RS_DATA_OBJ_CHKSUM NULL
 #endif
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* prototype for the client call */
     int
@@ -60,8 +58,6 @@ extern "C" {
      *   return value - The status of the operation.
      */
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* DATA_OBJ_CHKSUM_H */

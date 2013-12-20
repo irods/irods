@@ -14,15 +14,6 @@
 #include "initServer.hpp"
 #include "fileWrite.hpp"
 
-#ifdef COMPAT_201
-typedef struct {
-    int l1descInx;
-    int len;
-} dataObjWriteInp_t;
-
-#define dataObjWriteInp_PI "int dataObjInx; int len;"
-#endif
-
 #if defined(RODS_SERVER)
 #define RS_DATA_OBJ_WRITE rsDataObjWrite
 /* prototype for the server handler */
@@ -39,21 +30,7 @@ _l3Write( rsComm_t *rsComm, int destRescTypeInx, int l3descInx,
 #define RS_DATA_OBJ_WRITE NULL
 #endif
 
-#ifdef COMPAT_201
-#if defined(RODS_SERVER)
-#define RS_DATA_OBJ_WRITE201 rsDataObjWrite201
-/* prototype for the server handler */
-int
-rsDataObjWrite201( rsComm_t *rsComm, dataObjWriteInp_t *dataObjWriteInp,
-                   bytesBuf_t *dataObjWriteInpBBuf );
-#else
-#define RS_DATA_OBJ_WRITE201 NULL
-#endif
-#endif
-
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* prototype for the client call */
     /* rcDataObjWrite - Write the content of dataObjWriteInpBBuf to
@@ -73,8 +50,6 @@ extern "C" {
     rcDataObjWrite( rcComm_t *conn, openedDataObjInp_t *dataObjWriteInp,
                     bytesBuf_t *dataObjWriteInpBBuf );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* DATA_OBJ_WRITE_H */

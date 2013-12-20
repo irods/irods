@@ -261,10 +261,8 @@ initDataObjInfoWithInp( dataObjInfo_t *dataObjInfo, dataObjInp_t *dataObjInp ) {
         rstrcpy( dataObjInfo->filePath, filePath, MAX_NAME_LEN );
     }
 
-#ifdef FILESYSTEM_META
     /* copy over the source file metadata if provided */
     copyFilesystemMetadata( condInput, &dataObjInfo->condInput );
-#endif /* FILESYSTEM_META */
 
     return ( 0 );
 }
@@ -434,9 +432,7 @@ int
 initDataOprInp( dataOprInp_t *dataOprInp, int l1descInx, int oprType ) {
     dataObjInfo_t *dataObjInfo;
     dataObjInp_t  *dataObjInp;
-#ifdef RBUDP_TRANSFER
     char *tmpStr;
-#endif
 
 
     dataObjInfo = L1desc[l1descInx].dataObjInfo;
@@ -509,30 +505,6 @@ initDataOprInp( dataOprInp_t *dataOprInp, int l1descInx, int oprType ) {
             dataOprInp->destRescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
         }
     }
-#if 0
-    if ( oprType == PUT_OPR && dataObjInp->dataSize > 0 ) {
-        dataOprInp->dataSize = dataObjInp->dataSize;
-    }
-    else if ( dataObjInfo->dataSize > 0 ) {
-        dataOprInp->dataSize = dataObjInfo->dataSize;
-    }
-    else {
-        dataOprInp->dataSize = dataObjInp->dataSize;
-    }
-    if ( oprType == PUT_OPR || oprType == COPY_TO_LOCAL_OPR ||
-            oprType == SAME_HOST_COPY_OPR ) {
-        dataOprInp->destL3descInx = L1desc[l1descInx].l3descInx;
-        if ( L1desc[l1descInx].remoteZoneHost == NULL ) {
-            dataOprInp->destRescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
-        }
-    }
-    else if ( oprType == GET_OPR || COPY_TO_REM_OPR ) {
-        dataOprInp->srcL3descInx = L1desc[l1descInx].l3descInx;
-        if ( L1desc[l1descInx].remoteZoneHost == NULL ) {
-            dataOprInp->srcRescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
-        }
-    }
-#endif
     if ( getValByKey( &dataObjInp->condInput, STREAMING_KW ) != NULL ) {
         addKeyVal( &dataOprInp->condInput, STREAMING_KW, "" );
     }
@@ -541,7 +513,6 @@ initDataOprInp( dataOprInp_t *dataOprInp, int l1descInx, int oprType ) {
         addKeyVal( &dataOprInp->condInput, NO_PARA_OP_KW, "" );
     }
 
-#ifdef RBUDP_TRANSFER
     if ( getValByKey( &dataObjInp->condInput, RBUDP_TRANSFER_KW ) != NULL ) {
         if ( dataObjInfo->rescInfo != NULL ) {
             /* only do unix fs */
@@ -574,8 +545,6 @@ initDataOprInp( dataOprInp_t *dataOprInp, int l1descInx, int oprType ) {
             NULL ) {
         addKeyVal( &dataOprInp->condInput, RBUDP_PACK_SIZE_KW, tmpStr );
     }
-#endif
-
 
     return ( 0 );
 }

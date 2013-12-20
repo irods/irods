@@ -264,9 +264,7 @@ getDataObjUtil( rcComm_t *conn, char *srcPath, char *targPath,
 int
 initCondForGet( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                 dataObjInp_t *dataObjOprInp, rodsRestart_t *rodsRestart ) {
-#ifdef RBUDP_TRANSFER
     char *tmpStr;
-#endif  /* RBUDP_TRANSFER */
 
     if ( dataObjOprInp == NULL ) {
         rodsLog( LOG_ERROR,
@@ -333,7 +331,6 @@ initCondForGet( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
     }
 
 
-#ifdef RBUDP_TRANSFER
     if ( rodsArgs->rbudp == True ) {
         /* use -Q for rbudp transfer */
         addKeyVal( &dataObjOprInp->condInput, RBUDP_TRANSFER_KW, "" );
@@ -350,12 +347,6 @@ initCondForGet( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
     if ( ( tmpStr = getenv( RBUDP_PACK_SIZE_KW ) ) != NULL ) {
         addKeyVal( &dataObjOprInp->condInput, RBUDP_PACK_SIZE_KW, tmpStr );
     }
-#else   /* RBUDP_TRANSFER */
-    if ( rodsArgs->rbudp == True ) {
-        rodsLog( LOG_NOTICE,
-                 "initCondForGet: RBUDP_TRANSFER (-d) not supported" );
-    }
-#endif  /* RBUDP_TRANSFER */
 
     if ( rodsArgs->purgeCache == True ) { // JMC - backport 4537
         addKeyVal( &dataObjOprInp->condInput, PURGE_CACHE_KW, "" );

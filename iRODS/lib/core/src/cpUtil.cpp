@@ -169,9 +169,7 @@ cpFileUtil( rcComm_t *conn, char *srcPath, char *targPath, rodsLong_t srcSize,
 int
 initCondForCp( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                dataObjCopyInp_t *dataObjCopyInp, rodsRestart_t *rodsRestart ) {
-#ifdef RBUDP_TRANSFER
     char *tmpStr;
-#endif  /* RBUDP_TRANSFER */
 
     if ( dataObjCopyInp == NULL ) {
         rodsLog( LOG_ERROR,
@@ -242,7 +240,6 @@ initCondForCp( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                    myRodsEnv->rodsDefResource );
     }
 
-#ifdef RBUDP_TRANSFER
     if ( rodsArgs->rbudp == True ) {
         /* use -Q for rbudp transfer */
         addKeyVal( &dataObjCopyInp->destDataObjInp.condInput,
@@ -269,12 +266,6 @@ initCondForCp( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
         addKeyVal( &dataObjCopyInp->srcDataObjInp.condInput,
                    RBUDP_PACK_SIZE_KW, tmpStr );
     }
-#else   /* RBUDP_TRANSFER */
-    if ( rodsArgs->rbudp == True ) {
-        rodsLog( LOG_NOTICE,
-                 "initCondForCp: RBUDP_TRANSFER (-d) not supported" );
-    }
-#endif  /* RBUDP_TRANSFER */
 
     memset( rodsRestart, 0, sizeof( rodsRestart_t ) );
     if ( rodsArgs->restart == True ) {
@@ -387,14 +378,6 @@ cpCollUtil( rcComm_t *conn, char *srcColl, char *targColl,
             }
         }
         else if ( collEnt.objType == COLL_OBJ_T ) {
-#if 0
-            if ( strlen( collEnt.collName ) <= collLen ) {
-                continue;
-            }
-
-            snprintf( targChildPath, MAX_NAME_LEN, "%s%s",
-                      targColl, collEnt.collName + collLen );
-#else
             if ( ( status = splitPathByKey(
                                 collEnt.collName, parPath, childPath, '/' ) ) < 0 ) {
                 rodsLogError( LOG_ERROR, status,
@@ -405,20 +388,12 @@ cpCollUtil( rcComm_t *conn, char *srcColl, char *targColl,
 
             snprintf( targChildPath, MAX_NAME_LEN, "%s/%s",
                       targColl, childPath );
-#endif
-#ifdef FILESYSTEM_META
             mkCollRWithSrcCollMeta( conn, targColl, targChildPath, collEnt.collName );
-#else
-            mkCollR( conn, targColl, targChildPath );
-#endif
 
             if ( rodsArgs->verbose == True ) {
                 fprintf( stdout, "C- %s:\n", targChildPath );
             }
 
-#if 0
-            if ( collEnt.specColl.collClass != NO_SPEC_COLL ) {
-#endif
                 /* the child is a spec coll. need to drill down */
                 childDataObjCopyInp = *dataObjCopyInp;
                 if ( collEnt.specColl.collClass != NO_SPEC_COLL )
@@ -432,9 +407,6 @@ cpCollUtil( rcComm_t *conn, char *srcColl, char *targColl,
                         status != SYS_SPEC_COLL_OBJ_NOT_EXIST ) {
                     savedStatus = status;
                 }
-#if 0
-            }
-#endif
         }
     }
     rclCloseCollection( &collHandle );

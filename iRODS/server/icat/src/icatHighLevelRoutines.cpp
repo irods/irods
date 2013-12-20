@@ -1030,7 +1030,6 @@ int chlRegDataObj( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
         }
     }
 
-#ifdef FILESYSTEM_META
     /* we can track the filesystem metadata from the file which
        this data object was put or registered from */
     if ( getValByKey( &dataObjInfo->condInput, FILE_UID_KW ) ) {
@@ -1060,7 +1059,6 @@ int chlRegDataObj( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
             return( status );
         }
     }
-#endif /* FILESYSTEM_META */
 
 
     status = cmlAudit3( AU_REGISTER_DATA_OBJ, dataIdNum,
@@ -1565,7 +1563,6 @@ int chlUnregDataObj( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
                      "delete from R_OBJT_ACCESS where object_id=? and not exists (select * from R_DATA_MAIN where data_id=?)", &icss );
         if ( status == 0 ) {
             removeMetaMapAndAVU( dataObjNumber ); /* remove AVU metadata, if any */
-#ifdef FILESYSTEM_META
             /* and remove source file OS metadata */
             cllBindVars[0] = dataObjNumber;
             cllBindVarCount = 1;
@@ -1574,7 +1571,6 @@ int chlUnregDataObj( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
             }
             status = cmlExecuteNoAnswerSql(
                          "delete from R_OBJT_FILESYSTEM_META where object_id=?", &icss );
-#endif
         }
     }
 
@@ -3532,7 +3528,6 @@ int chlRegColl( rsComm_t *rsComm, collInfo_t *collInfo ) {
         return( status );
     }
 
-#ifdef FILESYSTEM_META
     /* we can track the filesystem metadata from the directory
        from which this collection was put or registered from */
     if ( getValByKey( &collInfo->condInput, FILE_UID_KW ) != NULL ) {
@@ -3561,7 +3556,6 @@ int chlRegColl( rsComm_t *rsComm, collInfo_t *collInfo ) {
             return( status );
         }
     }
-#endif /* FILESYSTEM_META */
 
     /* Audit */
     status = cmlAudit4( AU_REGISTER_COLL,
@@ -4619,7 +4613,6 @@ int chlDelCollByAdmin( rsComm_t *rsComm, collInfo_t *collInfo ) {
     snprintf( collIdNum, MAX_NAME_LEN, "%lld", iVal );
     removeMetaMapAndAVU( collIdNum );
 
-#ifdef FILESYSTEM_META
     /* remove any filesystem metadata entries */
     cllBindVars[cllBindVarCount++] = collIdNum;
     if ( logSQL ) {
@@ -4635,8 +4628,6 @@ int chlDelCollByAdmin( rsComm_t *rsComm, collInfo_t *collInfo ) {
                  "chlDelCollByAdmin delete filesystem meta failure %d",
                  status );
     }
-#endif
-
 
     /* Audit (before it's deleted) */
     status = cmlAudit4( AU_DELETE_COLL_BY_ADMIN,
@@ -4815,7 +4806,6 @@ static int _delColl( rsComm_t *rsComm, collInfo_t *collInfo ) {
     /* Remove associated AVUs, if any */
     removeMetaMapAndAVU( collIdNum );
 
-#ifdef FILESYSTEM_META
     /* remove any filesystem metadata entries */
     cllBindVars[cllBindVarCount++] = collIdNum;
     if ( logSQL ) {
@@ -4831,7 +4821,6 @@ static int _delColl( rsComm_t *rsComm, collInfo_t *collInfo ) {
                  "_delColl delete filesystem meta failure %d",
                  status );
     }
-#endif
     /* Audit */
     status = cmlAudit3( AU_DELETE_COLL,
                         collIdNum,
@@ -5842,7 +5831,7 @@ int chlUpdateIrodsPamPassword( rsComm_t *rsComm,
                                char **irodsPassword ) {
     char myTime[50];
     char rBuf[200];
-    int i, j;
+    size_t i, j;
     char randomPw[50];
     char randomPwEncoded[50];
     int status;
@@ -7348,193 +7337,6 @@ int chlModRescFreeSpace( rsComm_t *rsComm, char *rescName, int updateValue ) {
     return( 0 );
 }
 
-#ifdef RESC_GROUP
-/* Add or remove a resource to/from a Resource Group */
-int chlModRescGroup( rsComm_t *rsComm, char *rescGroupName, char *option,
-                     char *rescName ) {
-    int status, OK;
-    char myTime[50];
-    char rescId[MAX_NAME_LEN];
-    rodsLong_t seqNum;
-    char rescGroupId[MAX_NAME_LEN];
-    char dataObjNumber[MAX_NAME_LEN];
-    char commentStr[200];
-
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chl-Mod-Resc-Group" );
-    }
-
-    if ( rescGroupName == NULL || option == NULL || rescName == NULL ) {
-        return ( CAT_INVALID_ARGUMENT );
-    }
-
-    if ( *rescGroupName == '\0' || *option == '\0' || *rescName == '\0' ) {
-        return ( CAT_INVALID_ARGUMENT );
-    }
-
-    if ( rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-        return( CAT_INSUFFICIENT_PRIVILEGE_LEVEL );
-    }
-    if ( rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-        return( CAT_INSUFFICIENT_PRIVILEGE_LEVEL );
-    }
-
-    status = getLocalZone();
-    if ( status != 0 ) {
-        return( status );
-    }
-
-    rescId[0] = '\0';
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chl-Mod-Resc-Group S Q L 1 " );
-    }
-    status = cmlGetStringValueFromSql(
-                 "select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
-                 rescId, MAX_NAME_LEN, rescName, localZone, 0, &icss );
-    if ( status != 0 ) {
-        if ( status == CAT_NO_ROWS_FOUND ) {
-            return( CAT_INVALID_RESOURCE );
-        }
-        _rollback( "chlModRescGroup" );
-        return( status );
-    }
-
-    getNowStr( myTime );
-    OK = 0;
-    if ( strcmp( option, "add" ) == 0 ) {
-        /* First try to look for a resc_group id with the same rescGrpName */
-        rescGroupId[0] = '\0';
-        if ( logSQL != 0 ) {
-            rodsLog( LOG_SQL, "chl-Mod-Resc-Group S Q L 2a " );
-        }
-        status = cmlGetStringValueFromSql(
-                     "select distinct resc_group_id from R_RESC_GROUP where resc_group_name=?",
-                     rescGroupId, MAX_NAME_LEN, rescGroupName, 0, 0, &icss );
-        if ( status != 0 ) {
-            if ( status == CAT_NO_ROWS_FOUND ) {
-                /* Generate a new id */
-                if ( logSQL != 0 ) {
-                    rodsLog( LOG_SQL, "chl-Mod-Resc-Group S Q L 2b " );
-                }
-                seqNum = cmlGetNextSeqVal( &icss );
-                if ( seqNum < 0 ) {
-                    rodsLog( LOG_NOTICE, "chlModRescGroup cmlGetNextSeqVal failure %d",
-                             seqNum );
-                    _rollback( "chlModRescGroup" );
-                    return( seqNum );
-                }
-                snprintf( rescGroupId, MAX_NAME_LEN, "%lld", seqNum );
-            }
-            else {
-                _rollback( "chlModRescGroup" );
-                return( status );
-            }
-        }
-
-        cllBindVars[cllBindVarCount++] = rescGroupName;
-        cllBindVars[cllBindVarCount++] = rescGroupId;
-        cllBindVars[cllBindVarCount++] = rescId;
-        cllBindVars[cllBindVarCount++] = myTime;
-        cllBindVars[cllBindVarCount++] = myTime;
-        if ( logSQL != 0 ) {
-            rodsLog( LOG_SQL, "chl-Mod-Resc-Group S Q L 2" );
-        }
-        status =  cmlExecuteNoAnswerSql(
-                      "insert into R_RESC_GROUP (resc_group_name, resc_group_id, resc_id , create_ts, modify_ts) values (?, ?, ?, ?, ?)",
-                      &icss );
-        if ( status != 0 ) {
-            rodsLog( LOG_NOTICE,
-                     "chlModRescGroup cmlExecuteNoAnswerSql insert failure %d",
-                     status );
-            _rollback( "chlModRescGroup" );
-            return( status );
-        }
-        OK = 1;
-    }
-
-    if ( strcmp( option, "remove" ) == 0 ) {
-        /* Step 1 : get the resc_group_id as a dataObjNumber*/
-        dataObjNumber[0] = '\0';
-        if ( logSQL != 0 ) {
-            rodsLog( LOG_SQL, "chl-Mod-Resc-Group S Q L 3a " );
-        }
-        status = cmlGetStringValueFromSql(
-                     "select distinct resc_group_id from R_RESC_GROUP where resc_id=? and resc_group_name=?",
-                     dataObjNumber, MAX_NAME_LEN, rescId, rescGroupName, 0, &icss );
-        if ( status != 0 ) {
-            _rollback( "chlModRescGroup" );
-            if ( status == CAT_NO_ROWS_FOUND ) {
-                return( CAT_INVALID_RESOURCE );
-            }
-            return( status );
-        }
-
-        /* Step 2 : remove the (resc_group,resc) couple */
-        cllBindVars[cllBindVarCount++] = rescGroupName;
-        cllBindVars[cllBindVarCount++] = rescId;
-        if ( logSQL != 0 ) {
-            rodsLog( LOG_SQL, "chl-Mod-Resc-Group S Q L 3b" );
-        }
-        status =  cmlExecuteNoAnswerSql(
-                      "delete from R_RESC_GROUP where resc_group_name=? and resc_id=?",
-                      &icss );
-        if ( status != 0 ) {
-            rodsLog( LOG_NOTICE,
-                     "chlModRescGroup cmlExecuteNoAnswerSql delete failure %d",
-                     status );
-            _rollback( "chlModRescGroup" );
-            return( status );
-        }
-
-        /* Step 3 : look if the resc_group_name is still refered to */
-        rescGroupId[0] = '\0';
-        if ( logSQL != 0 ) {
-            rodsLog( LOG_SQL, "chl-Mod-Resc-Group S Q L 3c " );
-        }
-        status = cmlGetStringValueFromSql(
-                     "select distinct resc_group_id from R_RESC_GROUP where resc_group_name=?",
-                     rescGroupId, MAX_NAME_LEN, rescGroupName, 0, 0, &icss );
-        if ( status != 0 ) {
-            if ( status == CAT_NO_ROWS_FOUND ) {
-                /* The resource group exists no more */
-                removeMetaMapAndAVU( dataObjNumber ); /* remove AVU metadata, if any */
-            }
-        }
-        OK = 1;
-    }
-
-    if ( OK == 0 ) {
-        return ( CAT_INVALID_ARGUMENT );
-    }
-
-    /* Audit */
-    snprintf( commentStr, sizeof commentStr, "%s %s", option, rescGroupName );
-    status = cmlAudit3( AU_MOD_RESC_GROUP,
-                        rescId,
-                        rsComm->clientUser.userName,
-                        rsComm->clientUser.rodsZone,
-                        commentStr,
-                        &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlModRescGroup cmlAudit3 failure %d",
-                 status );
-        _rollback( "chlModRescGroup" );
-        return( status );
-    }
-
-    status =  cmlExecuteNoAnswerSql( "commit", &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlModRescGroup cmlExecuteNoAnswerSql commit failure %d",
-                 status );
-        return( status );
-    }
-    return( 0 );
-}
-
-#endif
-
 /// @brief function for validating a username
 irods::error validate_user_name( std::string _user_name ) {
 
@@ -7817,14 +7619,6 @@ convertTypeOption( char *typeStr ) {
     if ( strcmp( typeStr, "-U" ) == 0 ) {
         return( 4 );    /* user */
     }
-#ifdef RESC_GROUP
-    if ( strcmp( typeStr, "-g" ) == 0 ) {
-        return( 5 );    /* resource group */
-    }
-    if ( strcmp( typeStr, "-G" ) == 0 ) {
-        return( 5 );    /* resource group */
-    }
-#endif
     return ( 0 );
 }
 
@@ -7962,34 +7756,6 @@ rodsLong_t checkAndGetObjectId( rsComm_t *rsComm, char *type,
             return( status );
         }
     }
-
-#ifdef RESC_GROUP
-    if ( itype == 5 ) {
-        if ( rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-            return( CAT_INSUFFICIENT_PRIVILEGE_LEVEL );
-        }
-
-        status = getLocalZone();
-        if ( status != 0 ) {
-            return( status );
-        }
-
-        objId = 0;
-        if ( logSQL != 0 ) {
-            rodsLog( LOG_SQL, "checkAndGetObjectId S Q L 5" );
-        }
-        status = cmlGetIntegerValueFromSql(
-                     "select distinct resc_group_id from R_RESC_GROUP where resc_group_name=?",
-                     &objId, name, 0, 0, 0, 0, &icss );
-        if ( status != 0 ) {
-            if ( status == CAT_NO_ROWS_FOUND ) {
-                return( CAT_INVALID_RESOURCE );
-            }
-            _rollback( "checkAndGetObjectId" );
-            return( status );
-        }
-    }
-#endif
 
     return( objId );
 }
@@ -13176,8 +12942,7 @@ int chlModTicket( rsComm_t *rsComm, char *opName, char *ticketString,
                  0, 0, 0, &icss );
     if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ||
             status == CAT_NO_ROWS_FOUND ) {
-        int i;
-        i = addRErrorMsg( &rsComm->rError, 0, "Invalid user" );
+        addRErrorMsg( &rsComm->rError, 0, "Invalid user" );
         return( CAT_INVALID_USER );
     }
     if ( status < 0 ) {

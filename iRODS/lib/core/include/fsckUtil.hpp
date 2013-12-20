@@ -10,9 +10,7 @@
 #include "rodsPath.hpp"
 #include "scanUtil.hpp"
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     int
     fsckObj( rcComm_t *conn, rodsArguments_t *myRodsArgs, rodsPathInp_t *rodsPathInp, char hostname[LONG_NAME_LEN] );
@@ -21,8 +19,6 @@ extern "C" {
     int
     chkObjConsistency( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, char *hostname );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif  /* FSCK_UTIL_H */

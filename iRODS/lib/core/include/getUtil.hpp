@@ -9,9 +9,7 @@
 #include "parseCommandLine.hpp"
 #include "rodsPath.hpp"
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     int
     getUtil( rcComm_t **myConn, rodsEnv *myEnv, rodsArguments_t *myRodsArgs,
@@ -30,8 +28,6 @@ extern "C" {
                  rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, dataObjInp_t *dataObjOprInp,
                  rodsRestart_t *rodsRestart );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* GET_UTIL_H */

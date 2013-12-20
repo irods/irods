@@ -40,9 +40,7 @@ l3FilePutSingleBuf( rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf 
 #define RS_DATA_OBJ_PUT NULL
 #endif
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* prototype for the client call */
     /* rcDataObjPut - Put (upload) a local file to iRODS.
@@ -72,8 +70,6 @@ extern "C" {
     int
     _rcDataObjPut( rcComm_t *conn, dataObjInp_t *dataObjInp,
                    bytesBuf_t *dataObjInpBBuf, portalOprOut_t **portalOprOut );
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* DATA_OBJ_PUT_H */

@@ -15,15 +15,6 @@
 #include "initServer.hpp"
 #include "fileRead.hpp"
 
-#ifdef COMPAT_201
-typedef struct {
-    int l1descInx;
-    int len;
-} dataObjReadInp_t;
-
-#define dataObjReadInp_PI "int l1descInx; int len;"
-#endif
-
 #if defined(RODS_SERVER)
 #define RS_DATA_OBJ_READ rsDataObjRead
 /* prototype for the server handler */
@@ -40,21 +31,7 @@ _l3Read( rsComm_t *rsComm, int rescTypeInx, int l3descInx,
 #define RS_DATA_OBJ_READ NULL
 #endif
 
-#ifdef COMPAT_201
-#if defined(RODS_SERVER)
-#define RS_DATA_OBJ_READ201 rsDataObjRead201
-/* prototype for the server handler */
-int
-rsDataObjRead201( rsComm_t *rsComm, dataObjReadInp_t *dataObjReadInp,
-                  bytesBuf_t *dataObjReadOutBBuf );
-#else
-#define RS_DATA_OBJ_READ201 NULL
-#endif
-#endif
-
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* prototype for the client call */
     /* rcDataObjRead - Read an opened iRODS data object descriptor.
@@ -73,8 +50,6 @@ extern "C" {
     rcDataObjRead( rcComm_t *conn, openedDataObjInp_t *dataObjReadInp,
                    bytesBuf_t *dataObjReadOutBBuf );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* DATA_OBJ_READ_H */

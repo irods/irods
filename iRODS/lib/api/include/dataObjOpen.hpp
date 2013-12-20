@@ -67,9 +67,7 @@ irods::error selectObjInfo( dataObjInfo_t * _dataObjInfoHead, keyValPair_t* _con
 #define RS_DATA_OBJ_OPEN NULL
 #endif
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* prototype for the client call */
     /* rcDataObjOpen - Open a iRODS data object.
@@ -99,8 +97,6 @@ extern "C" {
     int
     rcDataObjOpen( rcComm_t *conn, dataObjInp_t *dataObjInp );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* DATA_OBJ_OPEN_H */

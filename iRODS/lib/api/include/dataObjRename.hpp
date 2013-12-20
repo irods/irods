@@ -15,9 +15,7 @@
 #include "apiNumber.hpp"
 #include "dataObjCopy.hpp"
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
 #if defined(RODS_SERVER)
 #define RS_DATA_OBJ_RENAME rsDataObjRename
@@ -64,8 +62,6 @@ extern "C" {
     int
     rcDataObjRename( rcComm_t *conn, dataObjCopyInp_t *dataObjRenameInp );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif  /* DATA_OBJ_RENAME_H */

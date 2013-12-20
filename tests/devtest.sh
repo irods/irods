@@ -18,7 +18,7 @@ if [ "$PYTHONVERSION" \< "2.7" ] ; then
     # get unittest2 package
     UNITTEST2VERSION="unittest2-0.5.1"
     if [ ! -e $UNITTEST2VERSION.tar.gz ] ; then
-        wget -nc ftp://ftp.renci.org/pub/eirods/external/$UNITTEST2VERSION.tar.gz
+        wget -nc ftp://ftp.renci.org/pub/irods/external/$UNITTEST2VERSION.tar.gz
     fi
     if [ ! -e $UNITTEST2VERSION.tar ] ; then
         gunzip $UNITTEST2VERSION.tar.gz

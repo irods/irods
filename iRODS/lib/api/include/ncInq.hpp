@@ -124,9 +124,7 @@ _rsNcInq( rsComm_t *rsComm, ncInqInp_t *ncInqInp, ncInqOut_t **ncInqOut );
 #define RS_NC_INQ NULL
 #endif
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* rcNcInq - general netcdf inq for id (equivalent to nc_inq + nc_inq_format
      * Input -
@@ -214,8 +212,6 @@ extern "C" {
     ncValueToInt( int dataType, void **invalue );
     rodsLong_t
     getTimeStepSize( ncInqOut_t *ncInqOut );
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* NC_INQ_H */

@@ -19,9 +19,7 @@
 #include "rodsPath.hpp"
 #include "bulkDataObjPut.hpp"
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     int isPath( char *path );
     rodsLong_t
@@ -245,10 +243,6 @@ extern "C" {
     freeRodsObjStat( rodsObjStat_t *rodsObjStat );
     int
     parseHostAddrStr( char *hostAddr, rodsHostAddr_t *addr );
-#ifdef COMPAT_201
-    int
-    collInp201ToCollInp( collInp201_t *collInp201, collInp_t *collInp );
-#endif
     void
     printReleaseInfo( char *cmdName );
     unsigned int
@@ -312,8 +306,6 @@ extern "C" {
     int
     getPathStMode( path & p );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif  /* RC_MISC_H */

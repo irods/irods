@@ -13,9 +13,7 @@
 #include "sys/timeb.h"
 #endif
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     int
     phybunUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
@@ -25,8 +23,6 @@ extern "C" {
                           structFileExtAndRegInp_t *phyBundleCollInp,
                           rodsPathInp_t *rodsPathInp );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* PHYBUN_UTIL_H */

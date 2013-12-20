@@ -66,9 +66,7 @@ _rsNccfGetVara( int ncid,  nccfGetVarInp_t * nccfGetVarInp,
 #define RS_NCCF_GET_VARA NULL
 #endif
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* rcNccfGetVara - libcf subsetting function nccf_get_vara implementation
      *    ....
@@ -103,8 +101,6 @@ extern "C" {
 
     int
     freeNccfGetVarOut( nccfGetVarOut_t **nccfGetVarOut );
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* NCCF_GET_VARA_H */

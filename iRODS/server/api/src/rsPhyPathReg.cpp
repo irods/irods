@@ -413,25 +413,15 @@ filePathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
     rodsLog( LOG_NOTICE, "XXXX - filePathReg :: resc_hier [%s]", resc_hier );
 
     if ( dataObjInfo.dataSize <= 0 &&
-#ifdef FILESYSTEM_META
             ( dataObjInfo.dataSize = getFileMetadataFromVault( rsComm, &dataObjInfo ) ) < 0 &&
-#else
-            ( dataObjInfo.dataSize = getSizeInVault( rsComm, &dataObjInfo ) ) < 0 &&
-#endif
             dataObjInfo.dataSize != UNKNOWN_FILE_SZ ) {
         status = ( int ) dataObjInfo.dataSize;
         rodsLog( LOG_ERROR,
-#ifdef FILESYSTEM_META
                  "filePathReg: getFileMetadataFromVault for %s failed, status = %d",
-#else
-                 "filePathReg: getSizeInVault for %s failed, status = %d",
-#endif
                  dataObjInfo.objPath, status );
         return ( status );
     }
-#ifdef FILESYSTEM_META
     addKeyVal( &dataObjInfo.condInput, FILE_SOURCE_PATH_KW, filePath );
-#endif
 
     if ( ( chksum = getValByKey( &phyPathRegInp->condInput,
                                  REG_CHKSUM_KW ) ) != NULL ) {
@@ -507,7 +497,6 @@ dirPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
         /* no need to resolve sym link */ // JMC - backport 4845
         addKeyVal( &collCreateInp.condInput, TRANSLATED_PATH_KW, "" ); // JMC - backport 4845
 
-#ifdef FILESYSTEM_META
         /* stat the source directory to track the         */
         /* original directory meta-data                   */
         memset( &fileStatInp, 0, sizeof( fileStatInp ) );
@@ -526,7 +515,6 @@ dirPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
         getFileMetaFromStat( myStat, &collCreateInp.condInput );
         addKeyVal( &collCreateInp.condInput, FILE_SOURCE_PATH_KW, filePath );
         free( myStat );
-#endif /* FILESYSTEM_META */
 
         /* create the coll just in case it does not exist */
         status = rsCollCreate( rsComm, &collCreateInp );

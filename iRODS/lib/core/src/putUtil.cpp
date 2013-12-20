@@ -122,10 +122,8 @@ putUtil( rcComm_t **myConn, rodsEnv *myRodsEnv,
                 continue;
             }
             dataObjOprInp.createMode = rodsPathInp->srcPath[i].objMode;
-#ifdef FILESYSTEM_META
             getFileMetaFromPath( rodsPathInp->srcPath[i].outPath,
                                  &dataObjOprInp.condInput );
-#endif
             status = putFileUtil( conn, rodsPathInp->srcPath[i].outPath,
                                   targPath->outPath, rodsPathInp->srcPath[i].size, myRodsEnv,
                                   myRodsArgs, &dataObjOprInp );
@@ -284,9 +282,7 @@ int
 initCondForPut( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                 dataObjInp_t *dataObjOprInp, bulkOprInp_t *bulkOprInp,
                 rodsRestart_t *rodsRestart ) {
-#ifdef RBUDP_TRANSFER
     char *tmpStr;
-#endif  /* RBUDP_TRANSFER */
 
     if ( rodsArgs == NULL ) { // JMC cppcheck - nullptr
         rodsLog( LOG_ERROR, "initCondForPut :: NULL rodsArgs" );
@@ -427,7 +423,6 @@ initCondForPut( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
     }
 
 
-#ifdef RBUDP_TRANSFER
     if ( rodsArgs->rbudp == True ) {
         /* use -Q for rbudp transfer */
         addKeyVal( &dataObjOprInp->condInput, RBUDP_TRANSFER_KW, "" );
@@ -444,12 +439,6 @@ initCondForPut( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
     if ( ( tmpStr = getenv( RBUDP_PACK_SIZE_KW ) ) != NULL ) {
         addKeyVal( &dataObjOprInp->condInput, RBUDP_PACK_SIZE_KW, tmpStr );
     }
-#else   /* RBUDP_TRANSFER */
-    if ( rodsArgs->rbudp == True ) {
-        rodsLog( LOG_NOTICE,
-                 "initCondForPut: RBUDP_TRANSFER (-d) not supported" );
-    }
-#endif  /* RBUDP_TRANSFER */
 
     memset( rodsRestart, 0, sizeof( rodsRestart_t ) );
     if ( rodsArgs->restart == True ) {
@@ -633,9 +622,7 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
         path childPath = p.filename();
         snprintf( targChildPath, MAX_NAME_LEN, "%s/%s",
                   targColl, childPath.c_str() );
-#ifdef FILESYSTEM_META
         getFileMetaFromPath( srcChildPath, &dataObjOprInp->condInput );
-#endif
         if ( childObjType == DATA_OBJ_T ) {
             if ( bulkFlag == BULK_OPR_SMALL_FILES &&
                     file_size( p ) > MAX_BULK_OPR_FILE_SIZE ) {
@@ -693,11 +680,7 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
             }
         }
         else {        /* a directory */
-#ifdef FILESYSTEM_META
             status = mkCollWithDirMeta( conn, targChildPath, srcChildPath );
-#else
-            status = mkColl( conn, targChildPath );
-#endif
             if ( status < 0 ) {
                 rodsLogError( LOG_ERROR, status,
                               "putDirUtil: mkColl error for %s", targChildPath );

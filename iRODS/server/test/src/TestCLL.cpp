@@ -8,7 +8,8 @@ using namespace std;
 
 #DEFINE EXPECTED_COMMAND_LINE_ARGS 2
 
-static char * g_argv[EXPECTED_COMMAND_LINE_ARGS];
+static char * user = NULL;
+static char * pass = NULL;
 
 /*
 Tests the most basic cll calls.
@@ -46,7 +47,7 @@ TEST_F( TestCllEnv, HandlesBadUserPass ) {
 }
 
 TEST_F( TestCllEnv, HandlesGoodUserPass ) {
-    TestBase::setUserPass( g_argv[0], g_argv[1] );
+    TestBase::setUserPass( user, pass );
     EXPECT_EQ( 0, cllConnect( &_icss ) );
     EXPECT_EQ( 0, cllDisconnect( &_icss ) );
 }
@@ -58,7 +59,7 @@ class TestCllFunctions : public ::TestCllEnv {
 protected:
     virtual void SetUp() {
         TestCllEnv::SetUp();
-        TestBase::setUserPass( g_argv[0], g_argv[1] );
+        TestBase::setUserPass( user, pass );
         cllConnect( &_icss );
     }
 
@@ -129,14 +130,15 @@ TEST_F( TestCllFunctions, HandlesSQL ) {
 }
 
 int main( int argc, char **argv ) {
-    int i;
-    for ( i = 0; i < EXPECTED_COMMAND_LINE_ARGS; i++ ) {
-        if ( i < argc - 1 ) {
-            g_argv[i] = argv[i + 1];
-        }
-        else {
-            g_argv[i] = NULL;
-        }
+    if(argc < EXPECTED_COMMAND_LINE_ARGS + 1)
+    {
+      user = "no_user";
+      pass = "no_pass";
+    }
+    else
+    {
+      user = argv[1];
+      user = argv[2];
     }
     ::testing::GTEST_FLAG( output ) = "xml:icatLowLevelOdbc.xml";
     ::testing::InitGoogleTest( &argc, argv );

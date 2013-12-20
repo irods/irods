@@ -37,8 +37,6 @@ collStatAllKinds( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                   rodsObjStat_t **rodsObjStatOut );
 int
 rsMkCollR( rsComm_t *rsComm, const char *startColl, const char *destColl );
-#ifdef FILESYSTEM_META
 int
 rsQueryDirectoryMeta( rsComm_t *rsComm, char *collection, keyValPair_t *condInput );
-#endif
 #endif	/* COLLECTION_H */
