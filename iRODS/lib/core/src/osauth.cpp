@@ -210,6 +210,7 @@ extern "C" {
             rodsLog( LOG_ERROR,
                      "%s: couldn't open %s for reading. errno = %d",
                      fname, keyfile, errno );
+            free(keybuf);
             return FILE_OPEN_ERR;
         }
         nb = read( key_fd, keybuf, buflen );
@@ -217,6 +218,7 @@ extern "C" {
             rodsLog( LOG_ERROR,
                      "%s: couldn't read key from %s. errno = %d",
                      fname, keyfile, errno );
+            free(keybuf);
             return FILE_READ_ERR;
         }
         close( key_fd );

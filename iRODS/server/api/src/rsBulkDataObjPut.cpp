@@ -211,7 +211,6 @@ _rsBulkDataObjPut( rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
             freeRodsObjStat( myRodsObjStat );
             return err.code();
         }
-
     }
     else {
         status = getRescGrpForCreate( rsComm, &dataObjInp, &myRescGrpInfo );
@@ -219,31 +218,9 @@ _rsBulkDataObjPut( rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
             freeRodsObjStat( myRodsObjStat );
             return status;
         }
-
-        /* just take the top one */
-        rescInfo = myRescGrpInfo->rescInfo;
     }
-#if 0 // JMC :: we did this above with the resc hier redirect
-    remoteFlag = resolveHostByRescInfo( rescInfo, &rodsServerHost );
-
-    if ( remoteFlag == REMOTE_HOST ) {
-        addKeyVal( &bulkOprInp->condInput, DEST_RESC_NAME_KW,
-                   rescInfo->rescName );
-        if ( myRodsObjStat->specColl == NULL && inpRescGrpName == NULL &&
-                strlen( myRescGrpInfo->rescGroupName ) > 0 ) {
-            addKeyVal( &bulkOprInp->condInput, RESC_GROUP_NAME_KW,
-                       myRescGrpInfo->rescGroupName );
-        }
-        freeRodsObjStat( myRodsObjStat );
-        if ( ( status = svrToSvrConnect( rsComm, rodsServerHost ) ) < 0 ) {
-            return status;
-        }
-        status = rcBulkDataObjPut( rodsServerHost->conn, bulkOprInp,
-                                   bulkOprInpBBuf );
-        freeAllRescGrpInfo( myRescGrpInfo );
-        return status;
-    }
-#endif
+    /* just take the top one */
+    rescInfo = myRescGrpInfo->rescInfo;
     status = createBunDirForBulkPut( rsComm, &dataObjInp, rescInfo, myRodsObjStat->specColl, phyBunDir );
     if ( status < 0 ) {
         std::stringstream msg;

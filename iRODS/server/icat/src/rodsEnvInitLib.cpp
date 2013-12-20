@@ -1071,6 +1071,8 @@ updateAttrValue( int cd,
     i = checkAccessMetaDataAttr( real_user_id, attr_id, attr_cnt );
     if ( i != 0 ) {
         free( in_rsrcid );    // JMC cppcheck - leak
+        free(attr_name);
+        free(table_name);
         return( i );
     }
     tabcnt = 0;
@@ -1104,6 +1106,8 @@ updateAttrValue( int cd,
         iisAttrVal[i] = malloc( sizeof( char ) * ( strlen( attr_value[i] ) * 4 + 3 ) );
         if ( iisAttrVal[i] == NULL ) {
             free( in_rsrcid );    // JMC cppcheck
+            free(table_name);
+            free(attr_name);
             return( MEMORY_ALLOCATION_ERROR );
         }
         strcpy( iisAttrVal[i], attr_value[i] );
@@ -1114,6 +1118,8 @@ updateAttrValue( int cd,
             free( iisAttrVal[i] );
         }
         free( in_rsrcid ); // JMC cppcheck - leak
+        free(table_name);
+        free(attr_name);
         return( ii );
     }
     ii = convert_to_updatesql( cd, tabcnt, table_name, in_rsrcid,
@@ -1123,14 +1129,17 @@ updateAttrValue( int cd,
         for ( i = 0; i < attr_cnt; i++ ) {
             free( iisAttrVal[i] );
         }
+        free(attr_name);
         return ( ii );
     }
     i = ExecSqlDb( henv, hdbc, qs );
 
     if ( i < 0 ) {
         strcpy( GENERATEDSQL, qs );
+        free(attr_name);
         return( i );
     }
+    free(attr_name);
     return( 0 );
 }
 
@@ -1177,6 +1186,8 @@ insertIntoSchema( int cd,
     i = checkAccessMetaDataAttr( real_user_id, attr_id, attr_cnt );
     if ( i != 0 ) {
         free( in_rsrcid );
+        free(table_name);
+        free(attr_name);
         return( i );
     } // JMC cppcheck - leak
 
@@ -1216,6 +1227,8 @@ insertIntoSchema( int cd,
         iisAttrVal[i] = malloc( sizeof( char ) * ( strlen( attr_value[i] ) * 4 + 3 ) );
         if ( iisAttrVal[i] == NULL ) {
             free( in_rsrcid );    // JMC cppcheck - leak
+            free(table_name);
+            free(attr_name);
             return( MEMORY_ALLOCATION_ERROR );
         }
         strcpy( iisAttrVal[i], attr_value[i] );
@@ -1226,6 +1239,8 @@ insertIntoSchema( int cd,
             free( iisAttrVal[i] );
         }
         free( in_rsrcid ); // JMC cppcheck - leak
+        free(table_name);
+        free(attr_name);
         return( ii );
     }
 
@@ -1236,6 +1251,7 @@ insertIntoSchema( int cd,
         for ( i = 0; i < attr_cnt; i++ ) {
             free( iisAttrVal[i] );
         }
+        free(attr_name);
         return( ii );
     }
     /*  printf("QS:%s\n", query_string);*/
@@ -1255,6 +1271,7 @@ insertIntoSchema( int cd,
         i = ExecSqlDb( henv, hdbc, qs );
         if ( i < 0 ) {
             strcpy( GENERATEDSQL, qs );
+            free(attr_name);
             return( i );
         }
         qsptr = 0;
@@ -1269,6 +1286,7 @@ insertIntoSchema( int cd,
             query_stringptr++;
         }
     }
+    free(attr_name);
     return( 0 );
 }
 

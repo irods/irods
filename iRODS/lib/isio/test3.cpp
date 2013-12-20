@@ -53,6 +53,7 @@ void main( int argc, char **argv ) {
 
     memset( buf, 0, sizeof( buf ) );
     rval = fread( &buf[0], 1, readCount, FI );
+    fflush(FI);
     printf( "rval=%d\n", rval );
     if ( rval < 0 ) {
         perror( "read stream message" );
