@@ -146,7 +146,7 @@ int chlDelUnusedAVUs( rsComm_t *rsComm );
 int chlAddSpecificQuery( rsComm_t *rsComm, char *alias, char *sql );
 int chlDelSpecificQuery( rsComm_t *rsComm, char *sqlOrAlias );
 
-char *chlGetLocalZone();
+int chlGetLocalZone( std::string& );
 
 int sTableInit();
 int sFklink( char *table1, char *table2, char *connectingSQL );

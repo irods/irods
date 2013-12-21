@@ -16,6 +16,7 @@
 #include "icatMidLevelRoutines.hpp"
 
 #include <string.h>
+#include <string>
 
 extern icatSessionStruct *chlGetRcs();
 
@@ -128,7 +129,7 @@ int testTempPwConvert( char *s1, char *s2 ) {
     char md5Buf[100];
     unsigned char digest[RESPONSE_LEN + 2];
     char digestStr[100];
-    MD5_CTX context;
+    //MD5_CTX context;
 
     /*
        Calcuate the temp password: a hash of s1 (the user's main
@@ -150,10 +151,10 @@ int testTempPwConvert( char *s1, char *s2 ) {
 
 int
 testGetLocalZone( rsComm_t *rsComm, char *expectedZone ) {
-    char *zone;
-    zone = chlGetLocalZone();
-    printf( "Zone is %s\n", zone );
-    if ( strcmp( zone, expectedZone ) != 0 ) {
+    std::string zone;
+    chlGetLocalZone( zone );
+    printf( "Zone is %s\n", zone.c_str() );
+    if ( zone != expectedZone ) {
         return( -1 );
     }
     return( 0 );
