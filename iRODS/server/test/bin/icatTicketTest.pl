@@ -20,7 +20,7 @@
 
 
 use Net::Domain qw (hostname hostfqdn hostdomain);
-use Net::Address::IP::Local;	# 4NT TEST
+#use Net::Address::IP::Local;	# 4NT TEST
 
 
 $G1="GROUP1";
@@ -65,8 +65,8 @@ $F3="TicketTestFile3";
 $Future_Date="2040-12-12";	# Valid ticket
 $Past_Date="1970-01-01";	# Expired ticket
 
-#$This_Host=hostfqdn();
-$This_Host=Net::Address::IP::Local->public;	# 4NT TEST
+$This_Host=hostfqdn();
+#$This_Host=Net::Address::IP::Local->public;	# 4NT TEST
 
 #$Other_Host="shiny.irods.renci.org";
 $Other_Host="jargontest.irods.renci.org";
