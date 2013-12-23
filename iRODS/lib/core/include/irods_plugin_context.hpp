@@ -30,6 +30,12 @@ namespace irods {
         } // ctor
 
         // =-=-=-=-=-=-=-
+        // dtor
+        virtual ~plugin_context() {
+
+        } // dtor
+
+        // =-=-=-=-=-=-=-
         // test to determine if contents are valid
         virtual error valid() {
             return SUCCESS();
