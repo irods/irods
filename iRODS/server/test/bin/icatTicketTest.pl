@@ -52,7 +52,7 @@ $G1="GROUP1";
 #write coll strict     x      x      x     x     x    x      x          x
 
 
-$tmpAuthFile="/tmp/testAuthFile.56789352";
+$tmpAuthFile="/tmp/testAuthFile." . time;
 $user2="user2";
 $user2_Password="SUPERS3CR37";
 
