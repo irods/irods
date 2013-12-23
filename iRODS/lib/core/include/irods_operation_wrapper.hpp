@@ -19,6 +19,7 @@
 #include "irods_plugin_context.hpp"
 #include "irods_error.hpp"
 #include "irods_operation_rule_execution_manager_factory.hpp"
+#include "irods_stacktrace.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
@@ -205,6 +206,9 @@ namespace irods {
 
             }
             else {
+irods::stacktrace st;
+st.trace();
+st.dump();
                 return ERROR( NULL_VALUE_ERR, "null resource operation." );
             }
 

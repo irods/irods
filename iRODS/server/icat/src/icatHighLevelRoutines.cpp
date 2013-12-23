@@ -220,80 +220,6 @@ _rollback( const char *functionName ) {
 
 
 
-// =-=-=-=-=-=-=-
-// @brief Updates the specified resources object count by the specified amount
-static int
-_updateRescObjCount(
-    icatSessionStruct* _icss, 
-    const std::string& _resc_name,
-    const std::string& _zone,
-    int _amount ) {
-
-    int result = 0;
-    int status;
-    char resc_id[MAX_NAME_LEN];
-    char myTime[50];
-    irods::sql_logger logger( __FUNCTION__, logSQL );
-    irods::hierarchy_parser hparse;
-
-    resc_id[0] = '\0';
-//    logger.log();
-    std::stringstream ss;
-    if ( ( status = cmlGetStringValueFromSql( 
-                        (char*)"select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
-                        resc_id, MAX_NAME_LEN, _resc_name.c_str(), _zone.c_str(), 0,
-                        _icss ) ) != 0 ) {
-        if ( status == CAT_NO_ROWS_FOUND ) {
-            result = CAT_INVALID_RESOURCE;
-        }
-        else {
-            _rollback( __FUNCTION__ );
-            result = status;
-        }
-    }
-    else {
-        std::stringstream ss;
-        ss << "update R_RESC_MAIN set resc_objcount=resc_objcount+";
-        ss << _amount;
-        ss << ", modify_ts=? where resc_id=?";
-        getNowStr( myTime );
-        cllBindVarCount = 0;
-        cllBindVars[cllBindVarCount++] = myTime;
-        cllBindVars[cllBindVarCount++] = resc_id;
-        if ( ( status = cmlExecuteNoAnswerSql( ss.str().c_str(), &icss ) ) != 0 ) {
-            std::stringstream ss;
-            ss << __FUNCTION__ << " cmlExecuteNoAnswerSql update failure " << status;
-            irods::log( LOG_NOTICE, ss.str() );
-            _rollback( __FUNCTION__ );
-            result = status;
-        }
-    }
-
-    return result;
-}
-
-
-
-// =-=-=-=-=-=-=-
-// @brief Traverses the specified resource hierarchy updating the object counts of each resource
-static int
-_updateObjCountOfResources(
-    const std::string  _resc_hier,
-    const std::string  _zone,
-    int _amount ) {
-    int result = 0;
-    irods::hierarchy_parser hparse;
-
-    hparse.set_string( _resc_hier );
-    for ( irods::hierarchy_parser::const_iterator it = hparse.begin();
-            result == 0 && it != hparse.end(); ++it ) {
-        result = _updateRescObjCount(&icss, *it, _zone, _amount );
-    }
-    return result;
-}
-
-
-
 
 /*
    Possibly descramble a password (for user passwords stored in the ICAT).
@@ -851,34 +777,6 @@ static int removeAVUs() {
     return status;
 }
 
-/**
- * @brief Returns true if there is only one repl associated with this data object
- */
-bool
-_dataIsLastRepl(
-    dataObjInfo_t* _dataObjInfo ) {
-
-    bool result = true;
-    int status;
-    irods::sql_logger logger( "_dataIsLastRepl", logSQL );
-    static const unsigned int length = 30;
-    char cVal[length];
-
-    logger.log();
-    std::stringstream id_stream;
-    id_stream << _dataObjInfo->dataId;
-    std::string id_string = id_stream.str();
-    std::stringstream repl_stream;
-    repl_stream << _dataObjInfo->replNum;
-    std::string repl_string = repl_stream.str();
-    status = cmlGetStringValueFromSql( "select data_repl_num from R_DATA_MAIN where data_id=? and data_repl_num!=?",
-                                       cVal, length, id_string.c_str(), repl_string.c_str(), 0, &icss );
-    if ( status != 0 ) {
-        result = false;
-    }
-    return result;
-}
-
 /*
  * unregDataObj - Unregister a data object
  * Input - rsComm_t *rsComm  - the server handle
@@ -1393,170 +1291,56 @@ _childHasData(
  */
 int
 chlAddChildResc(
-    rsComm_t* rsComm,
-    rescInfo_t* rescInfo ) {
-    int result = 0;
-
-    int status;
-    static const char* func_name = "chlAddChildResc";
-    irods::sql_logger logger( func_name, logSQL );
-    std::string new_child_string( rescInfo->rescChildren );
-    std::string hierarchy, child_resc, root_resc;
-    irods::children_parser parser;
-    irods::hierarchy_parser hier_parser;
-    rodsLong_t obj_count;
-    char resc_id[MAX_NAME_LEN];
-
-
-    logger.log();
-
-    if ( !( result = _canConnectToCatalog( rsComm ) ) ) {
-
-        if ( ( status = getLocalZone() ) ) {
-            result = status;
-
-        }
-        else if ( rescInfo->zoneName != NULL && strlen( rescInfo->zoneName ) > 0 && strcmp( rescInfo->zoneName, localZone ) != 0 ) {
-            addRErrorMsg( &rsComm->rError, 0,
-                          "Currently, resources must be in the local zone" );
-            result = CAT_INVALID_ZONE;
-
-        }
-        else {
-
-            logger.log();
-
-            resc_id[0] = '\0';
-            if ( ( status = cmlGetStringValueFromSql( "select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
-                            resc_id, MAX_NAME_LEN, rescInfo->rescName, localZone, 0,
-                            &icss ) ) != 0 ) {
-                if ( status == CAT_NO_ROWS_FOUND ) {
-                    result = CAT_INVALID_RESOURCE;
-                }
-                else {
-                    _rollback( func_name );
-                    result = status;
-                }
-            }
-            else if ( ( status = _childIsValid( new_child_string ) ) == 0 ) {
-                if ( ( status = _updateRescChildren( resc_id, new_child_string ) ) != 0 ) {
-                    result = status;
-                }
-                else if ( ( status = _updateChildParent( new_child_string, rescInfo->rescName ) ) != 0 ) {
-                    result = status;
-                }
-                else {
-
-                    // IF CHILD HAZ DATA
-                    if ( _childHasData( new_child_string ) ) {
-
-                        // =-=-=-=-=-=-=-
-                        // Resolve resource hierarchy
-
-                        status = chlGetHierarchyForResc( rescInfo->rescName, localZone, hierarchy );
-                        if ( status < 0 ) {
-                            std::stringstream ss;
-                            ss << func_name << ": chlGetHierarchyForResc failed, status = " << status;
-                            irods::log( LOG_NOTICE, ss.str() );
-                            _rollback( func_name );
-                            return status;
-                        }
-
-
-                        // =-=-=-=-=-=-=-
-                        // Update object count for resources up the tree
-
-                        // Get the resource name from the child string
-                        parser.set_string( new_child_string );
-                        parser.first_child( child_resc );
-
-                        if ( _get_resc_obj_count( child_resc, obj_count ).ok() ) {
-                            status = _updateObjCountOfResources( hierarchy, localZone, obj_count );
-                        }
-                        else {
-                            status = CAT_INVALID_OBJ_COUNT;
-                        }
-
-                        if ( status < 0 ) {
-                            // rollback
-                            std::stringstream ss;
-                            ss << func_name << " aborted. Object count update error, status = " << status;
-                            irods::log( LOG_NOTICE, ss.str() );
-                            _rollback( func_name );
-                            return status;
-                        }
-
-
-                        // =-=-=-=-=-=-=-
-                        // Update resource hierarchy for objects down the tree
-
-                        // Add child resource to hierarchy for substitution
-                        hierarchy += irods::hierarchy_parser::delimiter() + child_resc;
-
-                        // Substitute 'child' with '...;parent;child'
-                        status = chlSubstituteResourceHierarchies( rsComm, child_resc.c_str(), hierarchy.c_str() );
-
-
-                        // =-=-=-=-=-=-=-
-                        // Update resource name for objects in child
-                        // All objects formerly in child resource must now be in hierarchy's root resource
-
-                        // get root resource
-                        hier_parser.set_string( hierarchy );
-                        hier_parser.first_resc( root_resc );
-
-                        cllBindVars[cllBindVarCount++] = ( char* )root_resc.c_str();
-                        cllBindVars[cllBindVarCount++] = ( char* )root_resc.c_str();
-                        cllBindVars[cllBindVarCount++] = ( char* )child_resc.c_str();
-                        status = cmlExecuteNoAnswerSql( "update R_DATA_MAIN set resc_name = ?, resc_group_name = ? where resc_name = ?", &icss );
-
-                        if ( status < 0 ) {
-                            // rollback
-                            std::stringstream ss;
-                            ss << func_name << " aborted. Resource update error, status = " << status;
-                            irods::log( LOG_NOTICE, ss.str() );
-                            _rollback( func_name );
-                            return status;
-                        }
-
-                    }  // IF CHILD HAZ DATA
-
-
-                    /* Audit */
-                    char commentStr[1024]; // this prolly should be better sized
-                    snprintf( commentStr, sizeof commentStr, "%s %s", rescInfo->rescName, new_child_string.c_str() );
-                    if ( ( status = cmlAudit3( AU_ADD_CHILD_RESOURCE, resc_id, rsComm->clientUser.userName, rsComm->clientUser.rodsZone,
-                                               commentStr, &icss ) ) != 0 ) {
-                        std::stringstream ss;
-                        ss << func_name << " cmlAudit3 failure " << status;
-                        irods::log( LOG_NOTICE, ss.str() );
-                        _rollback( func_name );
-                        result = status;
-                    }
-                    else if ( ( status =  cmlExecuteNoAnswerSql( "commit", &icss ) ) != 0 ) {
-                        std::stringstream ss;
-                        ss << func_name << " cmlExecuteNoAnswerSql commit failure " << status;
-                        irods::log( LOG_NOTICE, ss.str() );
-                        result = status;
-                    }
-                }
-            }
-            else {
-                std::string resc_name;
-                irods::children_parser parser;
-                parser.set_string( new_child_string );
-                parser.first_child( resc_name );
-
-                std::stringstream msg;
-                msg << __FUNCTION__;
-                msg << " - Resource '" << resc_name << "' already has a parent.";
-                addRErrorMsg( &rsComm->rError, 0, msg.str().c_str() );
-                result = status;
-            }
-        }
+    rsComm_t*   _comm,
+    rescInfo_t* _resc_info ) {
+    // =-=-=-=-=-=-=-
+    // call factory for database object
+    irods::database_object_ptr db_obj_ptr;
+    irods::error ret = irods::database_factory(
+                           icss.database_plugin_type,
+                           db_obj_ptr );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
     }
-    return result;
-}
+
+    // =-=-=-=-=-=-=-
+    // resolve a plugin for that object
+    irods::plugin_ptr db_plug_ptr;
+    ret = db_obj_ptr->resolve(
+              irods::DATABASE_INTERFACE,
+              db_plug_ptr );
+    if ( !ret.ok() ) {
+        irods::log(
+            PASSMSG(
+                "failed to resolve database interface",
+                ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // cast plugin and object to db and fco for call
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
+                                        irods::first_class_object > ( db_obj_ptr );
+    irods::database_ptr           db = boost::dynamic_pointer_cast <
+                                       irods::database > ( db_plug_ptr );
+
+    // =-=-=-=-=-=-=-
+    // call the operation on the plugin
+    ret = db->call<
+              rsComm_t*,
+              rescInfo_t* >(
+              irods::DATABASE_OP_ADD_CHILD_RESC,
+              ptr,
+              _comm,
+              _resc_info );
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+    }
+
+    return ret.code();
+
+} // chlAddChildResc
 
 
 /// @brief function for validating a resource name
@@ -1581,238 +1365,57 @@ irods::error validate_resource_name( std::string _resc_name ) {
 
 
 /* register a Resource */
-int chlRegResc( rsComm_t *rsComm,
-                rescInfo_t *rescInfo ) {
-    rodsLong_t seqNum;
-    char idNum[MAX_SQL_SIZE];
-    int status;
-    char myTime[50];
-    struct hostent *myHostEnt; // JMC - backport 4597
-
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlRegResc" );
-    }
-
+int chlRegResc( 
+    rsComm_t*   _comm,
+    rescInfo_t* _resc_info ) {
     // =-=-=-=-=-=-=-
-    // error trap empty resc name
-    if ( strlen( rescInfo->rescName ) < 1 ) {
-        addRErrorMsg( &rsComm->rError, 0, "resource name is empty" );
-        return CAT_INVALID_RESOURCE_NAME;
-    }
-
-    // =-=-=-=-=-=-=-
-    // error trap empty resc type
-    if ( strlen( rescInfo->rescType ) < 1 ) {
-        addRErrorMsg( &rsComm->rError, 0, "resource type is empty" );
-        return CAT_INVALID_RESOURCE_TYPE;
-    }
-
-    if ( !icss.status ) {
-        return( CATALOG_NOT_CONNECTED );
-    }
-
-    if ( rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-        return( CAT_INSUFFICIENT_PRIVILEGE_LEVEL );
-    }
-    if ( rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-        return( CAT_INSUFFICIENT_PRIVILEGE_LEVEL );
-    }
-
-
-    // =-=-=-=-=-=-=-
-    // Validate user name format
-    irods::error ret = validate_resource_name( rescInfo->rescName );
+    // call factory for database object
+    irods::database_object_ptr db_obj_ptr;
+    irods::error ret = irods::database_factory(
+                           icss.database_plugin_type,
+                           db_obj_ptr );
     if ( !ret.ok() ) {
-        irods::log( ret );
-        return SYS_INVALID_INPUT_PARAM;
+        irods::log( PASS( ret ) );
+        return ret.code();
     }
+
     // =-=-=-=-=-=-=-
-
-
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlRegResc SQL 1 " );
-    }
-    seqNum = cmlGetNextSeqVal( &icss );
-    if ( seqNum < 0 ) {
-        rodsLog( LOG_NOTICE, "chlRegResc cmlGetNextSeqVal failure %d",
-                 seqNum );
-        _rollback( "chlRegResc" );
-        return( seqNum );
-    }
-    snprintf( idNum, MAX_SQL_SIZE, "%lld", seqNum );
-
-    status = getLocalZone();
-    if ( status != 0 ) {
-        return( status );
+    // resolve a plugin for that object
+    irods::plugin_ptr db_plug_ptr;
+    ret = db_obj_ptr->resolve(
+              irods::DATABASE_INTERFACE,
+              db_plug_ptr );
+    if ( !ret.ok() ) {
+        irods::log(
+            PASSMSG(
+                "failed to resolve database interface",
+                ret ) );
+        return ret.code();
     }
 
-    if ( rescInfo->zoneName != NULL && strlen( rescInfo->zoneName ) > 0 ) {
-        if ( strcmp( rescInfo->zoneName, localZone ) != 0 ) {
-            addRErrorMsg( &rsComm->rError, 0,
-                          "Currently, resources must be in the local zone" );
-            return( CAT_INVALID_ZONE );
-        }
-    }
-// =-=-=-=-=-=-=-
-// JMC :: resources may now have an empty location if they
-//     :: are coordinating nodes
-//    if (strlen(rescInfo->rescLoc)<1) {
-//        return(CAT_INVALID_RESOURCE_NET_ADDR);
-//    }
     // =-=-=-=-=-=-=-
-    // if the resource is not the 'empty resource' test it
-    if ( irods::EMPTY_RESC_HOST != rescInfo->rescLoc ) {
-        // =-=-=-=-=-=-=-
-        // JMC - backport 4597
-        myHostEnt = gethostbyname( rescInfo->rescLoc );
-        if ( myHostEnt <= 0 ) {
-            char errMsg[155];
-            snprintf( errMsg, 150,
-                      "Warning, resource host address '%s' is not a valid DNS entry, gethostbyname failed.",
-                      rescInfo->rescLoc );
-            addRErrorMsg( &rsComm->rError, 0, errMsg );
-        }
-        if ( strcmp( rescInfo->rescLoc, "localhost" ) == 0 ) { // JMC - backport 4650
-            addRErrorMsg( &rsComm->rError, 0,
-                          "Warning, resource host address 'localhost' will not work properly as it maps to the local host from each client." );
-        }
+    // cast plugin and object to db and fco for call
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
+                                        irods::first_class_object > ( db_obj_ptr );
+    irods::database_ptr           db = boost::dynamic_pointer_cast <
+                                       irods::database > ( db_plug_ptr );
 
-    }
-#if 0
-    if ( false &&               // hcj - disable checking for vault path. this needs to be checked from the plugins
-            ( strcmp( rescInfo->rescType, "database" ) != 0 ) &&
-            ( strcmp( rescInfo->rescType, "mso" ) != 0 ) ) {
-        if ( strlen( rescInfo->rescVaultPath ) < 1 ) {
-            return( CAT_INVALID_RESOURCE_VAULT_PATH );
-        }
-    }
-#endif
-
-    status = getLocalZone();
-    if ( status != 0 ) {
-        return( status );
+    // =-=-=-=-=-=-=-
+    // call the operation on the plugin
+    ret = db->call<
+              rsComm_t*,
+              rescInfo_t* >(
+              irods::DATABASE_OP_REG_RESC,
+              ptr,
+              _comm,
+              _resc_info );
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
     }
 
-    getNowStr( myTime );
+    return ret.code();
 
-    cllBindVars[0] = idNum;
-    cllBindVars[1] = rescInfo->rescName;
-    cllBindVars[2] = localZone;
-    cllBindVars[3] = rescInfo->rescType;
-    cllBindVars[4] = rescInfo->rescClass;
-    cllBindVars[5] = rescInfo->rescLoc;
-    cllBindVars[6] = rescInfo->rescVaultPath;
-    cllBindVars[7] = myTime;
-    cllBindVars[8] = myTime;
-    cllBindVars[9] = rescInfo->rescChildren;
-    cllBindVars[10] = rescInfo->rescContext;
-    cllBindVars[11] = rescInfo->rescParent;
-    cllBindVars[12] = "0";
-    cllBindVarCount = 13;
-
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlRegResc SQL 4" );
-    }
-    status =  cmlExecuteNoAnswerSql(
-                  "insert into R_RESC_MAIN (resc_id, resc_name, zone_name, resc_type_name, resc_class_name, resc_net, resc_def_path, create_ts, modify_ts, resc_children, resc_context, resc_parent, resc_objcount) values (?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                  &icss );
-
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlRegResc cmlExectuteNoAnswerSql(insert) failure %d",
-                 status );
-        _rollback( "chlRegResc" );
-        return( status );
-    }
-
-    /* Audit */
-    status = cmlAudit3( AU_REGISTER_RESOURCE,  idNum,
-                        rsComm->clientUser.userName,
-                        rsComm->clientUser.rodsZone,
-                        rescInfo->rescName, &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlRegResc cmlAudit3 failure %d",
-                 status );
-        _rollback( "chlRegResc" );
-        return( status );
-    }
-
-    status =  cmlExecuteNoAnswerSql( "commit", &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlRegResc cmlExecuteNoAnswerSql commit failure %d", status );
-        return( status );
-    }
-    return( status );
-}
-
-int
-_removeRescChild(
-    char* _resc_id,
-    const std::string& _child_string ) {
-
-    int result = 0;
-    int status;
-    char children[MAX_PATH_ALLOWED];
-    char myTime[50];
-    irods::sql_logger logger( "_removeRescChild", logSQL );
-
-    // Get the resources current children string
-    if ( ( status = cmlGetStringValueFromSql( "select resc_children from R_RESC_MAIN where resc_id=?",
-                    children, MAX_PATH_ALLOWED, _resc_id, 0, 0, &icss ) ) != 0 ) {
-        _rollback( "_updateRescChildren" );
-        result = status;
-    }
-    else {
-
-        // Parse the children string
-        irods::children_parser parser;
-        irods::error ret = parser.set_string( children );
-        if ( !ret.ok() ) {
-            std::stringstream ss;
-            ss << "_removeChildFromResource resource has invalid children string \"" << children << "\'";
-            ss << ret.result();
-            irods::log( LOG_NOTICE, ss.str() );
-            result = CAT_INVALID_CHILD;
-        }
-        else {
-
-            // Remove the specified child from the children
-            ret = parser.remove_child( _child_string );
-            if ( !ret.ok() ) {
-                std::stringstream ss;
-                ss << "_removeChildFromResource parent has no child \"" << _child_string << "\'";
-                ss << ret.result();
-                irods::log( LOG_NOTICE, ss.str() );
-                result = CAT_INVALID_CHILD;
-            }
-            else {
-                // Update the database with the new children string
-
-                // have to do this to avoid const issues
-                std::string children_string;
-                parser.str( children_string );
-                irods::tmp_string tmp_children( children_string.c_str() );
-                getNowStr( myTime );
-                cllBindVarCount = 0;
-                cllBindVars[cllBindVarCount++] = tmp_children.str();
-                cllBindVars[cllBindVarCount++] = myTime;
-                cllBindVars[cllBindVarCount++] = _resc_id;
-                logger.log();
-                if ( ( status = cmlExecuteNoAnswerSql( "update R_RESC_MAIN set resc_children=?, modify_ts=? "
-                                                       "where resc_id=?", &icss ) ) != 0 ) {
-                    std::stringstream ss;
-                    ss << "_removeRescChild cmlExecuteNoAnswerSql update failure " << status;
-                    irods::log( LOG_NOTICE, ss.str() );
-                    _rollback( "_removeRescChild" );
-                    result = status;
-                }
-            }
-        }
-    }
-    return result;
-}
+} // chlRegResc
 
 /**
  * @brief Returns true if the specified resource already has children
@@ -1847,1239 +1450,522 @@ _rescHasChildren(
  */
 int
 chlDelChildResc(
-    rsComm_t* rsComm,
-    rescInfo_t* rescInfo ) {
-
-    irods::sql_logger logger( "chlDelChildResc", logSQL );
-    int result = 0;
-    int status;
-    rodsLong_t obj_count;
-    char resc_id[MAX_NAME_LEN];
-    std::string child_string( rescInfo->rescChildren );
-    std::string child, hierarchy, partial_hier;
-    irods::children_parser parser;
-
-    parser.set_string( child_string );
-    parser.first_child( child );
-
-    if ( !( result = _canConnectToCatalog( rsComm ) ) ) {
-        if ( ( status = getLocalZone() ) ) {
-            result = status;
-        }
-        else {
-            logger.log();
-
-            resc_id[0] = '\0';
-            if ( ( status = cmlGetStringValueFromSql( "select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
-                            resc_id, MAX_NAME_LEN, rescInfo->rescName, localZone, 0,
-                            &icss ) ) != 0 ) {
-                if ( status == CAT_NO_ROWS_FOUND ) {
-                    result = CAT_INVALID_RESOURCE;
-                }
-                else {
-                    _rollback( "chlDelChildResc" );
-                    result = status;
-                }
-
-            }
-            else if ( ( status = _updateChildParent( child, std::string( "" ) ) ) != 0 ) {
-                result = status;
-            }
-            else if ( ( status = _removeRescChild( resc_id, child ) ) != 0 ) {
-                result = status;
-            }
-            else {
-
-                // IF CHILD HAZ DATA
-                if ( _childHasData( child_string ) ) {
-
-                    // =-=-=-=-=-=-=-
-                    // Resolve resource hierarchy (of parent)
-
-                    status = chlGetHierarchyForResc( rescInfo->rescName, localZone, hierarchy );
-                    if ( status < 0 ) {
-                        std::stringstream ss;
-                        ss << "chlDelChildResc: chlGetHierarchyForResc failed, status = " << status;
-                        irods::log( LOG_NOTICE, ss.str() );
-                        _rollback( "chlDelChildResc" );
-                        return status;
-                    }
-
-                    // =-=-=-=-=-=-=-
-                    // Update object count for resources up the tree
-
-                    if ( _get_resc_obj_count( child, obj_count ).ok() ) {
-                        status = _updateObjCountOfResources( hierarchy, localZone, -obj_count );
-                    }
-                    else {
-                        status = CAT_INVALID_OBJ_COUNT;
-                    }
-
-                    if ( status < 0 ) {
-                        // rollback
-                        std::stringstream ss;
-                        ss << "chlDelChildResc aborted. Object count update error, status = " << status;
-                        irods::log( LOG_NOTICE, ss.str() );
-                        _rollback( "chlDelChildResc" );
-                        return status;
-                    }
-
-
-                    // =-=-=-=-=-=-=-
-                    // Update resource hierarchy for objects down the tree
-
-                    // Add child resource to hierarchy for substitution
-                    hierarchy += irods::hierarchy_parser::delimiter() + child;
-
-                    // Substitute '...;parent;child' with 'child
-                    status = chlSubstituteResourceHierarchies( rsComm, hierarchy.c_str(), child.c_str() );
-
-                    // =-=-=-=-=-=-=-
-                    // Update resource name for objects in child
-                    // If B is removed from A, all files whose resc_hier starts with B are now on B
-                    partial_hier = child + irods::hierarchy_parser::delimiter() + "%";
-
-                    cllBindVars[cllBindVarCount++] = ( char* )child.c_str();
-                    cllBindVars[cllBindVarCount++] = ( char* )child.c_str();
-                    cllBindVars[cllBindVarCount++] = ( char* )child.c_str();
-                    cllBindVars[cllBindVarCount++] = ( char* )partial_hier.c_str();
-                    status = cmlExecuteNoAnswerSql( "update R_DATA_MAIN set resc_name = ?, resc_group_name = ? where resc_hier = ? or resc_hier like ?", &icss );
-
-                    if ( status < 0 ) {
-                        // rollback
-                        std::stringstream ss;
-                        ss << "chlDelChildResc" << " aborted. Resource update error, status = " << status;
-                        irods::log( LOG_NOTICE, ss.str() );
-                        _rollback( "chlDelChildResc" );
-                        return status;
-                    }
-
-                }  // IF CHILD HAZ DATA
-
-
-
-
-                /* Audit */
-                char commentStr[1024]; // this prolly should be better sized
-                snprintf( commentStr, sizeof commentStr, "%s %s", rescInfo->rescName, child_string.c_str() );
-                if ( ( status = cmlAudit3( AU_DEL_CHILD_RESOURCE, resc_id, rsComm->clientUser.userName, rsComm->clientUser.rodsZone,
-                                           commentStr, &icss ) ) != 0 ) {
-                    std::stringstream ss;
-                    ss << "chlDelChildResc cmlAudit3 failure " << status;
-                    irods::log( LOG_NOTICE, ss.str() );
-                    _rollback( "chlDelChildResc" );
-                    result = status;
-                }
-                else if ( ( status =  cmlExecuteNoAnswerSql( "commit", &icss ) ) != 0 ) {
-                    std::stringstream ss;
-                    ss << "chlDelChildResc cmlExecuteNoAnswerSql commit failure " << status;
-                    irods::log( LOG_NOTICE, ss.str() );
-                    result = status;
-                }
-            }
-        }
-    }
-    return result;
-}
-
-bool
-_rescHasParentOrChild(
-    char* rescId ) {
-
-    bool result = false;
-    char parent[MAX_NAME_LEN];
-    char children[MAX_NAME_LEN];
-    int status;
-    irods::sql_logger logger( "_rescHasParentOrChild", logSQL );
-
-    logger.log();
-    parent[0] = '\0';
-    children[0] = '\0';
-    if ( ( status = cmlGetStringValueFromSql( "select resc_parent from R_RESC_MAIN where resc_id=?",
-                    parent, MAX_NAME_LEN, rescId, 0, 0, &icss ) ) != 0 ) {
-        if ( status == CAT_NO_ROWS_FOUND ) {
-            std::stringstream ss;
-            ss << "Resource \"" << rescId << "\" not found";
-            irods::log( LOG_NOTICE, ss.str() );
-        }
-        else {
-            _rollback( "_rescHasParentOrChild" );
-        }
-        result = false;
-    }
-    else if ( strlen( parent ) != 0 ) {
-        result = true;
-    }
-    else if ( ( status = cmlGetStringValueFromSql( "select resc_children from R_RESC_MAIN where resc_id=?",
-                         children, MAX_NAME_LEN, rescId, 0, 0, &icss ) ) != 0 ) {
-        if ( status != CAT_NO_ROWS_FOUND ) {
-            _rollback( "_rescHasParentOrChild" );
-        }
-        result = false;
-    }
-    else if ( strlen( children ) != 0 ) {
-        result = true;
-    }
-    return result;
-
-}
-
-/* delete a Resource */
-int chlDelResc( rsComm_t *rsComm, rescInfo_t *rescInfo, int _dryrun ) {
-
-    int status;
-    char rescId[MAX_NAME_LEN];
-
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlDelResc" );
-    }
-
-    if ( !icss.status ) {
-        return( CATALOG_NOT_CONNECTED );
-    }
-
-    if ( rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-        return( CAT_INSUFFICIENT_PRIVILEGE_LEVEL );
-    }
-    if ( rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-        return( CAT_INSUFFICIENT_PRIVILEGE_LEVEL );
-    }
-
+    rsComm_t*   _comm,
+    rescInfo_t* _resc_info ) {
     // =-=-=-=-=-=-=-
-    // JMC - backport 4629
-    if ( strncmp( rescInfo->rescName, BUNDLE_RESC, strlen( BUNDLE_RESC ) ) == 0 ) {
-        char errMsg[155];
-        snprintf( errMsg, 150,
-                  "%s is a built-in resource needed for bundle operations.",
-                  BUNDLE_RESC );
-        addRErrorMsg( &rsComm->rError, 0, errMsg );
-        return( CAT_PSEUDO_RESC_MODIFY_DISALLOWED );
-    }
-    // =-=-=-=-=-=-=-
-
-    if ( _rescHasData( rescInfo->rescName ) ) {
-        char errMsg[105];
-        snprintf( errMsg, 100,
-                  "resource '%s' contains one or more dataObjects",
-                  rescInfo->rescName );
-        addRErrorMsg( &rsComm->rError, 0, errMsg );
-        return( CAT_RESOURCE_NOT_EMPTY );
-    }
-
-    status = getLocalZone();
-    if ( status != 0 ) {
-        return( status );
-    }
-
-    /* get rescId for possible audit call; won't be available after delete */
-    rescId[0] = '\0';
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlDelResc SQL 2 " );
-    }
-    status = cmlGetStringValueFromSql(
-                 "select resc_id from R_RESC_MAIN where resc_name=?",
-                 rescId, MAX_NAME_LEN, rescInfo->rescName, 0, 0, &icss );
-    if ( status != 0 ) {
-        if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-            char errMsg[105];
-            snprintf( errMsg, 100,
-                      "resource '%s' does not exist",
-                      rescInfo->rescName );
-            addRErrorMsg( &rsComm->rError, 0, errMsg );
-            return( status );
-        }
-        _rollback( "chlDelResc" );
-        return( status );
-    }
-
-    if ( _rescHasParentOrChild( rescId ) ) {
-        char errMsg[105];
-        snprintf( errMsg, 100,
-                  "resource '%s' has a parent or child",
-                  rescInfo->rescName );
-        addRErrorMsg( &rsComm->rError, 0, errMsg );
-        return( CAT_RESOURCE_NOT_EMPTY );
-    }
-
-    cllBindVars[cllBindVarCount++] = rescInfo->rescName;
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlDelResc SQL 3" );
-    }
-    status = cmlExecuteNoAnswerSql(
-                 "delete from R_RESC_MAIN where resc_name=?",
-                 &icss );
-    if ( status != 0 ) {
-        if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-            char errMsg[105];
-            snprintf( errMsg, 100,
-                      "resource '%s' does not exist",
-                      rescInfo->rescName );
-            addRErrorMsg( &rsComm->rError, 0, errMsg );
-            return( status );
-        }
-        _rollback( "chlDelResc" );
-        return( status );
-    }
-
-    /* Remove it from resource groups, if any */
-    cllBindVars[cllBindVarCount++] = rescId;
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlDelResc SQL 4" );
-    }
-    status =  cmlExecuteNoAnswerSql(
-                  "delete from R_RESC_GROUP where resc_id=?",
-                  &icss );
-    if ( status != 0 &&
-            status != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-        rodsLog( LOG_NOTICE,
-                 "chlDelResc delete from R_RESC_GROUP failure %d",
-                 status );
-        _rollback( "chlDelResc" );
-        return( status );
-    }
-
-
-    /* Remove associated AVUs, if any */
-    removeMetaMapAndAVU( rescId );
-
-
-    /* Audit */
-    status = cmlAudit3( AU_DELETE_RESOURCE,
-                        rescId,
-                        rsComm->clientUser.userName,
-                        rsComm->clientUser.rodsZone,
-                        rescInfo->rescName,
-                        &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlDelResc cmlAudit3 failure %d",
-                 status );
-        _rollback( "chlDelResc" );
-        return( status );
-    }
-
-    if ( _dryrun ) { // JMC
-        _rollback( "chlDelResc" );
-        return status;
-    }
-
-    status =  cmlExecuteNoAnswerSql( "commit", &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlDelResc cmlExecuteNoAnswerSql commit failure %d",
-                 status );
-        return( status );
-    }
-    return( status );
-}
-
-/*
-   Issue a rollback command.
-
-   If we don't do a commit, the updates will not be saved in the
-   database but will still exist during the current connection.  Since
-   iadmin connects once and then can issue multiple commands there are
-   situations where we need to rollback.
-
-   For example, if the user's zone is wrong the code will first remove the
-   home collection and then fail when removing the user and we need to
-   rollback or the next attempt will show the collection as missing.
-
-*/
-int chlRollback( rsComm_t *rsComm ) {
-    int status;
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlRollback - SQL 1 " );
-    }
-    status =  cmlExecuteNoAnswerSql( "rollback", &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlRollback cmlExecuteNoAnswerSql failure %d",
-                 status );
-    }
-    return( status );
-}
-
-/*
-  Issue a commit command.
-  This is called to commit changes to the database.
-  Some of the chl functions also commit changes upon success but some
-  do not, having the caller (microservice, perhaps) either commit or
-  rollback.
-*/
-int chlCommit( rsComm_t *rsComm ) {
-    int status;
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlCommit - SQL 1 " );
-    }
-    status =  cmlExecuteNoAnswerSql( "commit", &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlCommit cmlExecuteNoAnswerSql failure %d",
-                 status );
-    }
-    return( status );
-}
-
-/* Delete a User, Rule Engine version */
-int chlDelUserRE( rsComm_t *rsComm, userInfo_t *userInfo ) {
-    int status;
-    char iValStr[200];
-    char zoneToUse[MAX_NAME_LEN];
-    char userStr[200];
-    char userName2[NAME_LEN];
-    char zoneName[NAME_LEN];
-
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlDelUserRE" );
-    }
-
-    if ( rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-        return( CAT_INSUFFICIENT_PRIVILEGE_LEVEL );
-    }
-    if ( rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-        return( CAT_INSUFFICIENT_PRIVILEGE_LEVEL );
-    }
-
-    status = getLocalZone();
-    if ( status != 0 ) {
-        return( status );
-    }
-
-    strncpy( zoneToUse, localZone, MAX_NAME_LEN );
-    if ( strlen( userInfo->rodsZone ) > 0 ) {
-        strncpy( zoneToUse, userInfo->rodsZone, MAX_NAME_LEN );
-    }
-
-    status = parseUserName( userInfo->userName, userName2, zoneName );
-    if ( zoneName[0] != '\0' ) {
-        rstrcpy( zoneToUse, zoneName, NAME_LEN );
-    }
-
-    if ( strncmp( rsComm->clientUser.userName, userName2, sizeof( userName2 ) ) == 0 &&
-            strncmp( rsComm->clientUser.rodsZone, zoneToUse, sizeof( zoneToUse ) ) == 0 ) {
-        addRErrorMsg( &rsComm->rError, 0, "Cannot remove your own admin account, probably unintended" );
-        return( CAT_INVALID_USER );
-    }
-
-
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlDelUserRE SQL 1 " );
-    }
-    status = cmlGetStringValueFromSql(
-                 "select user_id from R_USER_MAIN where user_name=? and zone_name=?",
-                 iValStr, 200, userName2, zoneToUse, 0, &icss );
-    if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ||
-            status == CAT_NO_ROWS_FOUND ) {
-        addRErrorMsg( &rsComm->rError, 0, "Invalid user" );
-        return( CAT_INVALID_USER );
-    }
-    if ( status != 0 ) {
-        _rollback( "chlDelUserRE" );
-        return( status );
-    }
-
-    cllBindVars[cllBindVarCount++] = userName2;
-    cllBindVars[cllBindVarCount++] = zoneToUse;
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlDelUserRE SQL 2" );
-    }
-    status = cmlExecuteNoAnswerSql(
-                 "delete from R_USER_MAIN where user_name=? and zone_name=?",
-                 &icss );
-    if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-        return( CAT_INVALID_USER );
-    }
-    if ( status != 0 ) {
-        _rollback( "chlDelUserRE" );
-        return( status );
-    }
-
-    cllBindVars[cllBindVarCount++] = iValStr;
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlDelUserRE SQL 3" );
-    }
-    status = cmlExecuteNoAnswerSql(
-                 "delete from R_USER_PASSWORD where user_id=?",
-                 &icss );
-    if ( status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-        char errMsg[MAX_NAME_LEN + 40];
-        rodsLog( LOG_NOTICE,
-                 "chlDelUserRE delete password failure %d",
-                 status );
-        snprintf( errMsg, sizeof errMsg, "Error removing password entry" );
-        addRErrorMsg( &rsComm->rError, 0, errMsg );
-        _rollback( "chlDelUserRE" );
-        return( status );
-    }
-
-    /* Remove both the special user_id = group_user_id entry and any
-       other access entries for this user (or group) */
-    cllBindVars[cllBindVarCount++] = iValStr;
-    cllBindVars[cllBindVarCount++] = iValStr;
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlDelUserRE SQL 4" );
-    }
-    status = cmlExecuteNoAnswerSql(
-                 "delete from R_USER_GROUP where user_id=? or group_user_id=?",
-                 &icss );
-    if ( status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-        char errMsg[MAX_NAME_LEN + 40];
-        rodsLog( LOG_NOTICE,
-                 "chlDelUserRE delete user_group entry failure %d",
-                 status );
-        snprintf( errMsg, sizeof errMsg, "Error removing user_group entry" );
-        addRErrorMsg( &rsComm->rError, 0, errMsg );
-        _rollback( "chlDelUserRE" );
-        return( status );
-    }
-
-    /* Remove any R_USER_AUTH rows for this user */
-    cllBindVars[cllBindVarCount++] = iValStr;
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlDelUserRE SQL 4" );
-    }
-    status = cmlExecuteNoAnswerSql(
-                 "delete from R_USER_AUTH where user_id=?",
-                 &icss );
-    if ( status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-        char errMsg[MAX_NAME_LEN + 40];
-        rodsLog( LOG_NOTICE,
-                 "chlDelUserRE delete user_auth entries failure %d",
-                 status );
-        snprintf( errMsg, sizeof errMsg, "Error removing user_auth entries" );
-        addRErrorMsg( &rsComm->rError, 0, errMsg );
-        _rollback( "chlDelUserRE" );
-        return( status );
-    }
-
-    /* Remove associated AVUs, if any */
-    removeMetaMapAndAVU( iValStr );
-
-    /* Audit */
-    snprintf( userStr, sizeof userStr, "%s#%s",
-              userName2, zoneToUse );
-    status = cmlAudit3( AU_DELETE_USER_RE,
-                        iValStr,
-                        rsComm->clientUser.userName,
-                        rsComm->clientUser.rodsZone,
-                        userStr,
-                        &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlDelUserRE cmlAudit3 failure %d",
-                 status );
-        _rollback( "chlDelUserRE" );
-        return( status );
-    }
-
-    return( 0 );
-}
-
-/*
-  Register a Collection by the admin.
-  There are cases where the irods admin needs to create collections,
-  for a new user, for example; thus the create user rule/microservices
-  make use of this.
-*/
-int chlRegCollByAdmin( rsComm_t *rsComm, collInfo_t *collInfo ) {
-    char myTime[50];
-    char logicalEndName[MAX_NAME_LEN];
-    char logicalParentDirName[MAX_NAME_LEN];
-    rodsLong_t iVal;
-    char collIdNum[MAX_NAME_LEN];
-    char nextStr[MAX_NAME_LEN];
-    char currStr[MAX_NAME_LEN];
-    char currStr2[MAX_SQL_SIZE];
-    int status;
-    char tSQL[MAX_SQL_SIZE];
-    char userName2[NAME_LEN];
-    char zoneName[NAME_LEN];
-
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlRegCollByAdmin" );
-    }
-
-    if ( !icss.status ) {
-        return( CATALOG_NOT_CONNECTED );
-    }
-
-    // =-=-=-=-=-=-=-
-    // JMC - backport 4772
-    if ( rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ||
-            rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-        int status2;
-        status2  = cmlCheckGroupAdminAccess(
-                       rsComm->clientUser.userName,
-                       rsComm->clientUser.rodsZone,
-                       "", &icss );
-        if ( status2 != 0 ) {
-            return( status2 );
-        }
-        if ( creatingUserByGroupAdmin == 0 ) {
-            return( CAT_INSUFFICIENT_PRIVILEGE_LEVEL );
-        }
-        // =-=-=-=-=-=-=-
-    }
-
-    if ( collInfo == 0 ) {
-        return( CAT_INVALID_ARGUMENT );
-    }
-
-    status = splitPathByKey( collInfo->collName,
-                             logicalParentDirName, logicalEndName, '/' );
-
-    if ( strlen( logicalParentDirName ) == 0 ) {
-        strcpy( logicalParentDirName, "/" );
-        strcpy( logicalEndName, collInfo->collName + 1 );
-    }
-
-    /* Check that the parent collection exists */
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlRegCollByAdmin SQL 1 " );
-    }
-    status = cmlGetIntegerValueFromSql(
-                 "select coll_id from R_COLL_MAIN where coll_name=?",
-                 &iVal, logicalParentDirName, 0, 0, 0, 0, &icss );
-    if ( status < 0 ) {
-        char errMsg[MAX_NAME_LEN + 40];
-        if ( status == CAT_NO_ROWS_FOUND ) {
-            snprintf( errMsg, sizeof errMsg,
-                      "collection '%s' is unknown, cannot create %s under it",
-                      logicalParentDirName, logicalEndName );
-            addRErrorMsg( &rsComm->rError, 0, errMsg );
-            return( status );
-        }
-        _rollback( "chlRegCollByAdmin" );
-        return( status );
-    }
-
-    snprintf( collIdNum, MAX_NAME_LEN, "%d", status );
-
-    /* String to get next sequence item for objects */
-    cllNextValueString( "R_ObjectID", nextStr, MAX_NAME_LEN );
-
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlRegCollByAdmin SQL 2" );
-    }
-    snprintf( tSQL, MAX_SQL_SIZE,
-              "insert into R_COLL_MAIN (coll_id, parent_coll_name, coll_name, coll_owner_name, coll_owner_zone, coll_type, coll_info1, coll_info2, create_ts, modify_ts) values (%s, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-              nextStr );
-
-    getNowStr( myTime );
-
-    status = getLocalZone();
-    if ( status != 0 ) {
-        return( status );
-    }
-
-    /* Parse input name into user and zone */
-    status = parseUserName( collInfo->collOwnerName, userName2, zoneName );
-    if ( zoneName[0] == '\0' ) {
-        rstrcpy( zoneName, localZone, NAME_LEN );
-    }
-
-    cllBindVars[cllBindVarCount++] = logicalParentDirName;
-    cllBindVars[cllBindVarCount++] = collInfo->collName;
-    cllBindVars[cllBindVarCount++] = userName2;
-    if ( strlen( collInfo->collOwnerZone ) > 0 ) {
-        cllBindVars[cllBindVarCount++] = collInfo->collOwnerZone;
-    }
-    else {
-        cllBindVars[cllBindVarCount++] = zoneName;
-    }
-    if ( collInfo->collType != NULL ) {
-        cllBindVars[cllBindVarCount++] = collInfo->collType;
-    }
-    else {
-        cllBindVars[cllBindVarCount++] = "";
-    }
-    if ( collInfo->collInfo1 != NULL ) {
-        cllBindVars[cllBindVarCount++] = collInfo->collInfo1;
-    }
-    else {
-        cllBindVars[cllBindVarCount++] = "";
-    }
-    if ( collInfo->collInfo2 != NULL ) {
-        cllBindVars[cllBindVarCount++] = collInfo->collInfo2;
-    }
-    else {
-        cllBindVars[cllBindVarCount++] = "";
-    }
-    cllBindVars[cllBindVarCount++] = myTime;
-    cllBindVars[cllBindVarCount++] = myTime;
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlRegCollByAdmin SQL 3" );
-    }
-    status =  cmlExecuteNoAnswerSql( tSQL,
-                                     &icss );
-    if ( status != 0 ) {
-        char errMsg[105];
-        if ( status == CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME ) {
-            snprintf( errMsg, 100, "Error %d %s",
-                      status,
-                      "CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME"
-                    );
-            addRErrorMsg( &rsComm->rError, 0, errMsg );
-        }
-
-        rodsLog( LOG_NOTICE,
-                 "chlRegCollByAdmin cmlExecuteNoAnswerSQL(insert) failure %d"
-                 , status );
-        _rollback( "chlRegCollByAdmin" );
-        return( status );
-    }
-
-    /* String to get current sequence item for objects */
-    cllCurrentValueString( "R_ObjectID", currStr, MAX_NAME_LEN );
-    snprintf( currStr2, MAX_SQL_SIZE, " %s ", currStr );
-
-    cllBindVars[cllBindVarCount++] = userName2;
-    cllBindVars[cllBindVarCount++] = zoneName;
-    cllBindVars[cllBindVarCount++] = ACCESS_OWN;
-    cllBindVars[cllBindVarCount++] = myTime;
-    cllBindVars[cllBindVarCount++] = myTime;
-
-    snprintf( tSQL, MAX_SQL_SIZE,
-              "insert into R_OBJT_ACCESS values (%s, (select user_id from R_USER_MAIN where user_name=? and zone_name=?), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ?)",
-              currStr2 );
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlRegCollByAdmin SQL 4" );
-    }
-    status =  cmlExecuteNoAnswerSql( tSQL, &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlRegCollByAdmin cmlExecuteNoAnswerSql(insert access) failure %d",
-                 status );
-        _rollback( "chlRegCollByAdmin" );
-        return( status );
-    }
-
-    /* Audit */
-    status = cmlAudit4( AU_REGISTER_COLL_BY_ADMIN,
-                        currStr2,
-                        "",
-                        userName2,
-                        zoneName,
-                        rsComm->clientUser.userName,
-                        &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlRegCollByAdmin cmlAudit4 failure %d",
-                 status );
-        _rollback( "chlRegCollByAdmin" );
-        return( status );
-    }
-
-    return( 0 );
-}
-
-/*
- * chlRegColl - register a collection
- * Input -
- *   rcComm_t *conn - The client connection handle.
- *   collInfo_t *collInfo - generic coll input. Relevant items are:
- *      collName - the collection to be registered, and optionally
- *      collType, collInfo1 and/or collInfo2.
- *   We may need a kevValPair_t sometime, but currently not used.
- */
-int chlRegColl( rsComm_t *rsComm, collInfo_t *collInfo ) {
-    char myTime[50];
-    char logicalEndName[MAX_NAME_LEN];
-    char logicalParentDirName[MAX_NAME_LEN];
-    rodsLong_t iVal;
-    char collIdNum[MAX_NAME_LEN];
-    char nextStr[MAX_NAME_LEN];
-    char currStr[MAX_NAME_LEN];
-    char currStr2[MAX_SQL_SIZE];
-    rodsLong_t status;
-    char tSQL[MAX_SQL_SIZE];
-    int inheritFlag;
-
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlRegColl" );
-    }
-
-    if ( !icss.status ) {
-        return( CATALOG_NOT_CONNECTED );
-    }
-
-    status = splitPathByKey( collInfo->collName,
-                             logicalParentDirName, logicalEndName, '/' );
-
-    if ( strlen( logicalParentDirName ) == 0 ) {
-        strcpy( logicalParentDirName, "/" );
-        strcpy( logicalEndName, collInfo->collName + 1 );
-    }
-
-    /* Check that the parent collection exists and user has write permission,
-       and get the collectionID.  Also get the inherit flag */
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlRegColl SQL 1 " );
-    }
-    status = cmlCheckDirAndGetInheritFlag( logicalParentDirName,
-                                           rsComm->clientUser.userName,
-                                           rsComm->clientUser.rodsZone,
-                                           ACCESS_MODIFY_OBJECT, &inheritFlag,
-                                           mySessionTicket, mySessionClientAddr, &icss );
-    if ( status < 0 ) {
-        char errMsg[105];
-        if ( status == CAT_UNKNOWN_COLLECTION ) {
-            snprintf( errMsg, 100, "collection '%s' is unknown",
-                      logicalParentDirName );
-            addRErrorMsg( &rsComm->rError, 0, errMsg );
-            return( status );
-        }
-        _rollback( "chlRegColl" );
-        return( status );
-    }
-    snprintf( collIdNum, MAX_NAME_LEN, "%lld", status );
-
-    /* Check that the path is not already a dataObj */
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlRegColl SQL 2" );
-    }
-    status = cmlGetIntegerValueFromSql(
-                 "select data_id from R_DATA_MAIN where data_name=? and coll_id=?",
-                 &iVal, logicalEndName, collIdNum, 0, 0, 0, &icss );
-
-    if ( status == 0 ) {
-        return( CAT_NAME_EXISTS_AS_DATAOBJ );
-    }
-
-
-    /* String to get next sequence item for objects */
-    cllNextValueString( "R_ObjectID", nextStr, MAX_NAME_LEN );
-
-    getNowStr( myTime );
-
-    cllBindVars[cllBindVarCount++] = logicalParentDirName;
-    cllBindVars[cllBindVarCount++] = collInfo->collName;
-    cllBindVars[cllBindVarCount++] = rsComm->clientUser.userName;
-    cllBindVars[cllBindVarCount++] = rsComm->clientUser.rodsZone;
-    if ( collInfo->collType != NULL ) {
-        cllBindVars[cllBindVarCount++] = collInfo->collType;
-    }
-    else {
-        cllBindVars[cllBindVarCount++] = "";
-    }
-    if ( collInfo->collInfo1 != NULL ) {
-        cllBindVars[cllBindVarCount++] = collInfo->collInfo1;
-    }
-    else {
-        cllBindVars[cllBindVarCount++] = "";
-    }
-    if ( collInfo->collInfo2 != NULL ) {
-        cllBindVars[cllBindVarCount++] = collInfo->collInfo2;
-    }
-    else {
-        cllBindVars[cllBindVarCount++] = "";
-    }
-    cllBindVars[cllBindVarCount++] = myTime;
-    cllBindVars[cllBindVarCount++] = myTime;
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlRegColl SQL 3" );
-    }
-    snprintf( tSQL, MAX_SQL_SIZE,
-              "insert into R_COLL_MAIN (coll_id, parent_coll_name, coll_name, coll_owner_name, coll_owner_zone, coll_type, coll_info1, coll_info2, create_ts, modify_ts) values (%s, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-              nextStr );
-    status =  cmlExecuteNoAnswerSql( tSQL,
-                                     &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlRegColl cmlExecuteNoAnswerSql(insert) failure %d", status );
-        _rollback( "chlRegColl" );
-        return( status );
-    }
-
-    /* String to get current sequence item for objects */
-    cllCurrentValueString( "R_ObjectID", currStr, MAX_NAME_LEN );
-    snprintf( currStr2, MAX_SQL_SIZE, " %s ", currStr );
-
-    if ( inheritFlag ) {
-        /* If inherit is set (sticky bit), then add access rows for this
-           collection that match those of the parent collection */
-        cllBindVars[0] = myTime;
-        cllBindVars[1] = myTime;
-        cllBindVars[2] = collIdNum;
-        cllBindVarCount = 3;
-        if ( logSQL != 0 ) {
-            rodsLog( LOG_SQL, "chlRegColl SQL 4" );
-        }
-        snprintf( tSQL, MAX_SQL_SIZE,
-                  "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts) (select %s, user_id, access_type_id, ?, ? from R_OBJT_ACCESS where object_id = ?)",
-                  currStr2 );
-        status =  cmlExecuteNoAnswerSql( tSQL, &icss );
-
-        if ( status == 0 ) {
-            if ( logSQL != 0 ) {
-                rodsLog( LOG_SQL, "chlRegColl SQL 5" );
-            }
-#if ORA_ICAT
-            char newCollectionID[MAX_NAME_LEN];
-            /*
-               For Oracle, we can't use currStr2 string in a where clause so
-               do another query to get the new collection id.
-            */
-            status = cmlGetCurrentSeqVal( &icss );
-
-            if ( status > 0 ) {
-                /* And then use it in the where clause for the update */
-                snprintf( newCollectionID, MAX_NAME_LEN, "%lld", status );
-                cllBindVars[cllBindVarCount++] = "1";
-                cllBindVars[cllBindVarCount++] = myTime;
-                cllBindVars[cllBindVarCount++] = newCollectionID;
-                status =  cmlExecuteNoAnswerSql(
-                              "update R_COLL_MAIN set coll_inheritance=?, modify_ts=? where coll_id=?",
-                              &icss );
-            }
-#else
-            /*
-              For Postgres we can, use the currStr2 to get the current id
-              and save a SQL interaction.
-            */
-            cllBindVars[cllBindVarCount++] = "1";
-            cllBindVars[cllBindVarCount++] = myTime;
-            snprintf( tSQL, MAX_SQL_SIZE,
-                      "update R_COLL_MAIN set coll_inheritance=?, modify_ts=? where coll_id=%s",
-                      currStr2 );
-            status =  cmlExecuteNoAnswerSql( tSQL, &icss );
-#endif
-        }
-    }
-    else {
-        cllBindVars[cllBindVarCount++] = rsComm->clientUser.userName;
-        cllBindVars[cllBindVarCount++] = rsComm->clientUser.rodsZone;
-        cllBindVars[cllBindVarCount++] = ACCESS_OWN;
-        cllBindVars[cllBindVarCount++] = myTime;
-        cllBindVars[cllBindVarCount++] = myTime;
-        snprintf( tSQL, MAX_SQL_SIZE,
-                  "insert into R_OBJT_ACCESS values (%s, (select user_id from R_USER_MAIN where user_name=? and zone_name=?), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ?)",
-                  currStr2 );
-        if ( logSQL != 0 ) {
-            rodsLog( LOG_SQL, "chlRegColl SQL 6" );
-        }
-        status =  cmlExecuteNoAnswerSql( tSQL, &icss );
-    }
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlRegColl cmlExecuteNoAnswerSql(insert access) failure %d",
-                 status );
-        _rollback( "chlRegColl" );
-        return( status );
-    }
-
-#ifdef FILESYSTEM_META
-    /* we can track the filesystem metadata from the directory
-       from which this collection was put or registered from */
-    if ( getValByKey( &collInfo->condInput, FILE_UID_KW ) != NULL ) {
-        cllBindVars[cllBindVarCount++] = getValByKey( &collInfo->condInput, FILE_UID_KW );
-        cllBindVars[cllBindVarCount++] = getValByKey( &collInfo->condInput, FILE_GID_KW );
-        cllBindVars[cllBindVarCount++] = getValByKey( &collInfo->condInput, FILE_OWNER_KW );
-        cllBindVars[cllBindVarCount++] = getValByKey( &collInfo->condInput, FILE_GROUP_KW );
-        cllBindVars[cllBindVarCount++] = getValByKey( &collInfo->condInput, FILE_MODE_KW );
-        cllBindVars[cllBindVarCount++] = getValByKey( &collInfo->condInput, FILE_CTIME_KW );
-        cllBindVars[cllBindVarCount++] = getValByKey( &collInfo->condInput, FILE_MTIME_KW );
-        cllBindVars[cllBindVarCount++] = getValByKey( &collInfo->condInput, FILE_SOURCE_PATH_KW );
-        cllBindVars[cllBindVarCount++] = myTime;
-        cllBindVars[cllBindVarCount++] = myTime;
-        snprintf( tSQL, MAX_SQL_SIZE,
-                  "insert into R_OBJT_FILESYSTEM_META (object_id, file_uid, file_gid, file_owner, file_group, file_mode, file_ctime, file_mtime, file_source_path, create_ts, modify_ts) values (%s, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                  currStr2 );
-        if ( logSQL ) {
-            rodsLog( LOG_SQL, "chlRegColl xSQL 1" );
-        }
-        status = cmlExecuteNoAnswerSql( tSQL, &icss );
-        if ( status != 0 ) {
-            rodsLog( LOG_NOTICE,
-                     "chlRegColl cmlExecuteNoAnswerSql insert filesystem_meta failure %d",
-                     status );
-            _rollback( "chlRegColl" );
-            return( status );
-        }
-    }
-#endif /* FILESYSTEM_META */
-
-    /* Audit */
-    status = cmlAudit4( AU_REGISTER_COLL,
-                        currStr2,
-                        "",
-                        rsComm->clientUser.userName,
-                        rsComm->clientUser.rodsZone,
-                        collInfo->collName,
-                        &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlRegColl cmlAudit4 failure %d",
-                 status );
-        _rollback( "chlRegColl" );
-        return( status );
-    }
-
-    status =  cmlExecuteNoAnswerSql( "commit", &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlRegColl cmlExecuteNoAnswerSql commit failure %d",
-                 status );
-        return( status );
-    }
-
-    return( status );
-}
-
-/*
- * chlModColl - modify attributes of a collection
- * Input -
- *   rcComm_t *conn - The client connection handle.
- *   collInfo_t *collInfo - generic coll input. Relevant items are:
- *      collName - the collection to be updated, and one or more of:
- *      collType, collInfo1 and/or collInfo2.
- *   We may need a kevValPair_t sometime, but currently not used.
- */
-int chlModColl( rsComm_t *rsComm, collInfo_t *collInfo ) {
-    char myTime[50];
-    rodsLong_t status;
-    char tSQL[MAX_SQL_SIZE];
-    int count;
-    rodsLong_t iVal;
-    char iValStr[60];
-
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlModColl" );
-    }
-
-    if ( NULL == collInfo ) { // JMC cppcheck - nullptr
-        rodsLog( LOG_ERROR, "chlModColl :: null input parameter collInfo" );
-        return -1;
-    }
-
-    if ( !icss.status ) {
-        return( CATALOG_NOT_CONNECTED );
-    }
-
-    /* Check that collection exists and user has write permission */
-    iVal = cmlCheckDir( collInfo->collName,  rsComm->clientUser.userName,
-                        rsComm->clientUser.rodsZone,
-                        ACCESS_MODIFY_OBJECT, &icss );
-
-    if ( iVal < 0 ) {
-        char errMsg[105];
-        if ( iVal == CAT_UNKNOWN_COLLECTION ) {
-            snprintf( errMsg, 100, "collection '%s' is unknown",
-                      collInfo->collName );
-            addRErrorMsg( &rsComm->rError, 0, errMsg );
-            return( CAT_UNKNOWN_COLLECTION );
-        }
-        if ( iVal == CAT_NO_ACCESS_PERMISSION ) {
-            snprintf( errMsg, 100, "no permission to update collection '%s'",
-                      collInfo->collName );
-            addRErrorMsg( &rsComm->rError, 0, errMsg );
-            return ( CAT_NO_ACCESS_PERMISSION );
-        }
-        return( iVal );
-    }
-
-    //if (collInfo==0) { // JMC - cppcheck null ref above
-    //   return(CAT_INVALID_ARGUMENT);
-    //}
-
-    strncpy( tSQL, "update R_COLL_MAIN set ", MAX_SQL_SIZE );
-    count = 0;
-    if ( collInfo->collType != NULL && strlen( collInfo->collType ) > 0 ) {
-        if ( strcmp( collInfo->collType, "NULL_SPECIAL_VALUE" ) == 0 ) {
-            /* A special value to indicate NULL */
-            cllBindVars[cllBindVarCount++] = "";
-        }
-        else {
-            cllBindVars[cllBindVarCount++] = collInfo->collType;
-        }
-        strncat( tSQL, "coll_type=? ", MAX_SQL_SIZE );
-        count++;
-    }
-    if ( collInfo->collInfo1 != NULL && strlen( collInfo->collInfo1 ) > 0 ) {
-        if ( strcmp( collInfo->collInfo1, "NULL_SPECIAL_VALUE" ) == 0 ) {
-            /* A special value to indicate NULL */
-            cllBindVars[cllBindVarCount++] = "";
-        }
-        else {
-            cllBindVars[cllBindVarCount++] = collInfo->collInfo1;
-        }
-        if ( count > 0 ) {
-            strncat( tSQL, ",", MAX_SQL_SIZE );
-        }
-        strncat( tSQL, "coll_info1=? ", MAX_SQL_SIZE );
-        count++;
-    }
-    if ( collInfo->collInfo2 != NULL && strlen( collInfo->collInfo2 ) > 0 ) {
-        if ( strcmp( collInfo->collInfo2, "NULL_SPECIAL_VALUE" ) == 0 ) {
-            /* A special value to indicate NULL */
-            cllBindVars[cllBindVarCount++] = "";
-        }
-        else {
-            cllBindVars[cllBindVarCount++] = collInfo->collInfo2;
-        }
-        if ( count > 0 ) {
-            strncat( tSQL, ",", MAX_SQL_SIZE );
-        }
-        strncat( tSQL, "coll_info2=? ", MAX_SQL_SIZE );
-        count++;
-    }
-    if ( count == 0 ) {
-        return( CAT_INVALID_ARGUMENT );
-    }
-    getNowStr( myTime );
-    cllBindVars[cllBindVarCount++] = myTime;
-    cllBindVars[cllBindVarCount++] = collInfo->collName;
-    strncat( tSQL, ", modify_ts=? where coll_name=?", MAX_SQL_SIZE );
-
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlModColl SQL 1" );
-    }
-    status =  cmlExecuteNoAnswerSql( tSQL,
-                                     &icss );
-
-    /* Audit */
-    snprintf( iValStr, sizeof iValStr, "%lld", iVal );
-    status = cmlAudit3( AU_REGISTER_COLL,
-                        iValStr,
-                        rsComm->clientUser.userName,
-                        rsComm->clientUser.rodsZone,
-                        collInfo->collName,
-                        &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlModColl cmlAudit3 failure %d",
-                 status );
-        return( status );
-    }
-
-
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlModColl cmlExecuteNoAnswerSQL(update) failure %d", status );
-        return( status );
-    }
-    return( 0 );
-}
-
-// =-=-=-=-=-=-=-
-/// @brief function which determines if a char is allowed in a zone name
-static bool allowed_zone_char( const char _c ) {
-    return ( !std::isalnum( _c ) &&
-             !( '_' == _c )      &&
-             !( '-' == _c ) );
-} // allowed_zone_char
-
-// =-=-=-=-=-=-=-
-/// @brief function for validing the name of a zone
-irods::error validate_zone_name(
-    std::string _zone_name ) {
-    std::string::iterator itr = std::find_if( _zone_name.begin(),
-                                _zone_name.end(),
-                                allowed_zone_char );
-    if ( itr != _zone_name.end() ) {
-        std::stringstream msg;
-        msg << "validate_zone_name failed for zone [";
-        msg << _zone_name;
-        msg << "]";
-        return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
-    }
-
-    return SUCCESS();
-
-} // validate_zone_name
-
-/* register a Zone */
-int chlRegZone( rsComm_t *rsComm,
-                char *zoneName, char *zoneType, char *zoneConnInfo,
-                char *zoneComment ) {
-    char nextStr[MAX_NAME_LEN];
-    char tSQL[MAX_SQL_SIZE];
-    int status;
-    char myTime[50];
-
-    if ( !rsComm || !zoneName || !zoneType || !zoneConnInfo || !zoneComment ) {
-        return SYS_INVALID_INPUT_PARAM;
-    }
-
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlRegZone" );
-    }
-
-    if ( !icss.status ) {
-        return( CATALOG_NOT_CONNECTED );
-    }
-
-    if ( rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-        return( CAT_INSUFFICIENT_PRIVILEGE_LEVEL );
-    }
-    if ( rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-        return( CAT_INSUFFICIENT_PRIVILEGE_LEVEL );
-    }
-
-    if ( strncmp( zoneType, "remote", 6 ) != 0 ) {
-        addRErrorMsg( &rsComm->rError, 0,
-                      "Currently, only zones of type 'remote' are allowed" );
-        return( CAT_INVALID_ARGUMENT );
-    }
-
-    // =-=-=-=-=-=-=-
-    // validate the zone name does not include improper characters
-    irods::error ret = validate_zone_name( zoneName );
+    // call factory for database object
+    irods::database_object_ptr db_obj_ptr;
+    irods::error ret = irods::database_factory(
+                           icss.database_plugin_type,
+                           db_obj_ptr );
     if ( !ret.ok() ) {
-        irods::log( ret );
-        return SYS_INVALID_INPUT_PARAM;
+        irods::log( PASS( ret ) );
+        return ret.code();
     }
 
-    /* String to get next sequence item for objects */
-    cllNextValueString( "R_ObjectID", nextStr, MAX_NAME_LEN );
-
-    getNowStr( myTime );
-
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlRegZone SQL 1 " );
-    }
-    cllBindVars[cllBindVarCount++] = zoneName;
-    cllBindVars[cllBindVarCount++] = zoneConnInfo;
-    cllBindVars[cllBindVarCount++] = zoneComment;
-    cllBindVars[cllBindVarCount++] = myTime;
-    cllBindVars[cllBindVarCount++] = myTime;
-
-    snprintf( tSQL, MAX_SQL_SIZE,
-              "insert into R_ZONE_MAIN (zone_id, zone_name, zone_type_name, zone_conn_string, r_comment, create_ts, modify_ts) values (%s, ?, 'remote', ?, ?, ?, ?)",
-              nextStr );
-    status =  cmlExecuteNoAnswerSql( tSQL,
-                                     &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlRegZone cmlExecuteNoAnswerSql(insert) failure %d", status );
-        _rollback( "chlRegZone" );
-        return( status );
+    // =-=-=-=-=-=-=-
+    // resolve a plugin for that object
+    irods::plugin_ptr db_plug_ptr;
+    ret = db_obj_ptr->resolve(
+              irods::DATABASE_INTERFACE,
+              db_plug_ptr );
+    if ( !ret.ok() ) {
+        irods::log(
+            PASSMSG(
+                "failed to resolve database interface",
+                ret ) );
+        return ret.code();
     }
 
-    /* Audit */
-    status = cmlAudit3( AU_REGISTER_ZONE,  "0",
-                        rsComm->clientUser.userName,
-                        rsComm->clientUser.rodsZone,
-                        "", &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlRegResc cmlAudit3 failure %d",
-                 status );
-        return( status );
+    // =-=-=-=-=-=-=-
+    // cast plugin and object to db and fco for call
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
+                                        irods::first_class_object > ( db_obj_ptr );
+    irods::database_ptr           db = boost::dynamic_pointer_cast <
+                                       irods::database > ( db_plug_ptr );
+
+    // =-=-=-=-=-=-=-
+    // call the operation on the plugin
+    ret = db->call<
+              rsComm_t*,
+              rescInfo_t* >(
+              irods::DATABASE_OP_DEL_CHILD_RESC,
+              ptr,
+              _comm,
+              _resc_info );
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
     }
 
+    return ret.code();
+    
+} // chlDelChildResc
 
-    status =  cmlExecuteNoAnswerSql( "commit", &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlRegZone cmlExecuteNoAnswerSql commit failure %d",
-                 status );
-        return( status );
+// =-=-=-=-=-=-=-
+// delete a Resource 
+int chlDelResc( 
+    rsComm_t*   _comm, 
+    rescInfo_t* _resc_info, 
+    int         _dry_run ) {
+    // =-=-=-=-=-=-=-
+    // call factory for database object
+    irods::database_object_ptr db_obj_ptr;
+    irods::error ret = irods::database_factory(
+                           icss.database_plugin_type,
+                           db_obj_ptr );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
     }
 
-    return( 0 );
-}
+    // =-=-=-=-=-=-=-
+    // resolve a plugin for that object
+    irods::plugin_ptr db_plug_ptr;
+    ret = db_obj_ptr->resolve(
+              irods::DATABASE_INTERFACE,
+              db_plug_ptr );
+    if ( !ret.ok() ) {
+        irods::log(
+            PASSMSG(
+                "failed to resolve database interface",
+                ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // cast plugin and object to db and fco for call
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
+                                        irods::first_class_object > ( db_obj_ptr );
+    irods::database_ptr           db = boost::dynamic_pointer_cast <
+                                       irods::database > ( db_plug_ptr );
+
+    // =-=-=-=-=-=-=-
+    // call the operation on the plugin
+    ret = db->call<
+              rsComm_t*,
+              rescInfo_t*,
+              int >(
+              irods::DATABASE_OP_DEL_RESC,
+              ptr,
+              _comm,
+              _resc_info,
+              _dry_run );
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+    }
+
+    return ret.code();
+
+} // chlDelResc
+
+// =-=-=-=-=-=-=-
+// Issue a rollback command.
+//
+// If we don't do a commit, the updates will not be saved in the
+// database but will still exist during the current connection.  Since
+// iadmin connects once and then can issue multiple commands there are
+// situations where we need to rollback.
+//
+// For example, if the user's zone is wrong the code will first remove the
+// home collection and then fail when removing the user and we need to
+// rollback or the next attempt will show the collection as missing.
+int chlRollback( 
+    rsComm_t* _comm ) {
+    // =-=-=-=-=-=-=-
+    // call factory for database object
+    irods::database_object_ptr db_obj_ptr;
+    irods::error ret = irods::database_factory(
+                           icss.database_plugin_type,
+                           db_obj_ptr );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // resolve a plugin for that object
+    irods::plugin_ptr db_plug_ptr;
+    ret = db_obj_ptr->resolve(
+              irods::DATABASE_INTERFACE,
+              db_plug_ptr );
+    if ( !ret.ok() ) {
+        irods::log(
+            PASSMSG(
+                "failed to resolve database interface",
+                ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // cast plugin and object to db and fco for call
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
+                                        irods::first_class_object > ( db_obj_ptr );
+    irods::database_ptr           db = boost::dynamic_pointer_cast <
+                                       irods::database > ( db_plug_ptr );
+
+    // =-=-=-=-=-=-=-
+    // call the operation on the plugin
+    ret = db->call<
+              rsComm_t* >(
+              irods::DATABASE_OP_ROLLBACK,
+              ptr,
+              _comm );
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+    }
+
+    return ret.code();
+
+} // chlRollback
+
+// =-=-=-=-=-=-=-
+// Issue a commit command.
+// This is called to commit changes to the database.
+// Some of the chl functions also commit changes upon success but some
+// do not, having the caller (microservice, perhaps) either commit or
+// rollback.
+int chlCommit( 
+    rsComm_t* _comm ) {
+    // =-=-=-=-=-=-=-
+    // call factory for database object
+    irods::database_object_ptr db_obj_ptr;
+    irods::error ret = irods::database_factory(
+                           icss.database_plugin_type,
+                           db_obj_ptr );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // resolve a plugin for that object
+    irods::plugin_ptr db_plug_ptr;
+    ret = db_obj_ptr->resolve(
+              irods::DATABASE_INTERFACE,
+              db_plug_ptr );
+    if ( !ret.ok() ) {
+        irods::log(
+            PASSMSG(
+                "failed to resolve database interface",
+                ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // cast plugin and object to db and fco for call
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
+                                        irods::first_class_object > ( db_obj_ptr );
+    irods::database_ptr           db = boost::dynamic_pointer_cast <
+                                       irods::database > ( db_plug_ptr );
+
+    // =-=-=-=-=-=-=-
+    // call the operation on the plugin
+    ret = db->call<
+              rsComm_t* >(
+              irods::DATABASE_OP_COMMIT,
+              ptr,
+              _comm );
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+    }
+
+    return ret.code();
+
+} // chlCommit
+
+// =-=-=-=-=-=-=-
+// Delete a User, Rule Engine version 
+int chlDelUserRE( 
+    rsComm_t*   _comm, 
+    userInfo_t* _user_info ) {
+    // =-=-=-=-=-=-=-
+    // call factory for database object
+    irods::database_object_ptr db_obj_ptr;
+    irods::error ret = irods::database_factory(
+                           icss.database_plugin_type,
+                           db_obj_ptr );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // resolve a plugin for that object
+    irods::plugin_ptr db_plug_ptr;
+    ret = db_obj_ptr->resolve(
+              irods::DATABASE_INTERFACE,
+              db_plug_ptr );
+    if ( !ret.ok() ) {
+        irods::log(
+            PASSMSG(
+                "failed to resolve database interface",
+                ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // cast plugin and object to db and fco for call
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
+                                        irods::first_class_object > ( db_obj_ptr );
+    irods::database_ptr           db = boost::dynamic_pointer_cast <
+                                       irods::database > ( db_plug_ptr );
+
+    // =-=-=-=-=-=-=-
+    // call the operation on the plugin
+    ret = db->call<
+              rsComm_t*,
+              userInfo_t* >(
+              irods::DATABASE_OP_DEL_USER_RE,
+              ptr,
+              _comm,
+              _user_info );
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+    }
+
+    return ret.code();
+
+} // chlDelUserRE
+
+// =-=-=-=-=-=-=-
+//  Register a Collection by the admin.
+//  There are cases where the irods admin needs to create collections,
+//  for a new user, for example; thus the create user rule/microservices
+//  make use of this.
+int chlRegCollByAdmin( 
+    rsComm_t*   _comm, 
+    collInfo_t* _coll_info ) {
+    // =-=-=-=-=-=-=-
+    // call factory for database object
+    irods::database_object_ptr db_obj_ptr;
+    irods::error ret = irods::database_factory(
+                           icss.database_plugin_type,
+                           db_obj_ptr );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // resolve a plugin for that object
+    irods::plugin_ptr db_plug_ptr;
+    ret = db_obj_ptr->resolve(
+              irods::DATABASE_INTERFACE,
+              db_plug_ptr );
+    if ( !ret.ok() ) {
+        irods::log(
+            PASSMSG(
+                "failed to resolve database interface",
+                ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // cast plugin and object to db and fco for call
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
+                                        irods::first_class_object > ( db_obj_ptr );
+    irods::database_ptr           db = boost::dynamic_pointer_cast <
+                                       irods::database > ( db_plug_ptr );
+
+    // =-=-=-=-=-=-=-
+    // call the operation on the plugin
+    ret = db->call<
+              rsComm_t*,
+              collInfo_t* >(
+              irods::DATABASE_OP_REG_COLL_BY_ADMIN,
+              ptr,
+              _comm,
+              _coll_info );
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+    }
+
+    return ret.code();
+
+} // chlRegCollByAdmin
+
+// =-=-=-=-=-=-=-
+// chlRegColl - register a collection
+// Input -
+//   rcComm_t *conn - The client connection handle.
+//   collInfo_t *collInfo - generic coll input. Relevant items are:
+//      collName - the collection to be registered, and optionally
+//      collType, collInfo1 and/or collInfo2.
+//   We may need a kevValPair_t sometime, but currently not used.
+int chlRegColl( 
+    rsComm_t*   _comm, 
+    collInfo_t* _coll_info ) {
+    // =-=-=-=-=-=-=-
+    // call factory for database object
+    irods::database_object_ptr db_obj_ptr;
+    irods::error ret = irods::database_factory(
+                           icss.database_plugin_type,
+                           db_obj_ptr );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // resolve a plugin for that object
+    irods::plugin_ptr db_plug_ptr;
+    ret = db_obj_ptr->resolve(
+              irods::DATABASE_INTERFACE,
+              db_plug_ptr );
+    if ( !ret.ok() ) {
+        irods::log(
+            PASSMSG(
+                "failed to resolve database interface",
+                ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // cast plugin and object to db and fco for call
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
+                                        irods::first_class_object > ( db_obj_ptr );
+    irods::database_ptr           db = boost::dynamic_pointer_cast <
+                                       irods::database > ( db_plug_ptr );
+
+    // =-=-=-=-=-=-=-
+    // call the operation on the plugin
+    ret = db->call<
+              rsComm_t*,
+              collInfo_t* >(
+              irods::DATABASE_OP_REG_COLL,
+              ptr,
+              _comm,
+              _coll_info );
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+    }
+
+    return ret.code();
+
+} // chlRegColl
+
+// =-=-=-=-=-=-=-
+// chlModColl - modify attributes of a collection
+// Input -
+//   rcComm_t *conn - The client connection handle.
+//   collInfo_t *collInfo - generic coll input. Relevant items are:
+//      collName - the collection to be updated, and one or more of:
+//      collType, collInfo1 and/or collInfo2.
+//   We may need a kevValPair_t sometime, but currently not used.
+int chlModColl( 
+    rsComm_t*   _comm, 
+    collInfo_t* _coll_info ) {
+    // =-=-=-=-=-=-=-
+    // call factory for database object
+    irods::database_object_ptr db_obj_ptr;
+    irods::error ret = irods::database_factory(
+                           icss.database_plugin_type,
+                           db_obj_ptr );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // resolve a plugin for that object
+    irods::plugin_ptr db_plug_ptr;
+    ret = db_obj_ptr->resolve(
+              irods::DATABASE_INTERFACE,
+              db_plug_ptr );
+    if ( !ret.ok() ) {
+        irods::log(
+            PASSMSG(
+                "failed to resolve database interface",
+                ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // cast plugin and object to db and fco for call
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
+                                        irods::first_class_object > ( db_obj_ptr );
+    irods::database_ptr           db = boost::dynamic_pointer_cast <
+                                       irods::database > ( db_plug_ptr );
+
+    // =-=-=-=-=-=-=-
+    // call the operation on the plugin
+    ret = db->call<
+              rsComm_t*,
+              collInfo_t* >(
+              irods::DATABASE_OP_MOD_COLL,
+              ptr,
+              _comm,
+              _coll_info );
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+    }
+
+    return ret.code();
+
+} // chlModColl
+
+// =-=-=-=-=-=-=-
+// register a Zone
+int chlRegZone( 
+    rsComm_t* _comm,
+    char*     _zone_name, 
+    char*     _zone_type, 
+    char*     _zone_conn_info,
+    char*     _zone_comment ) {
+    // =-=-=-=-=-=-=-
+    // call factory for database object
+    irods::database_object_ptr db_obj_ptr;
+    irods::error ret = irods::database_factory(
+                           icss.database_plugin_type,
+                           db_obj_ptr );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // resolve a plugin for that object
+    irods::plugin_ptr db_plug_ptr;
+    ret = db_obj_ptr->resolve(
+              irods::DATABASE_INTERFACE,
+              db_plug_ptr );
+    if ( !ret.ok() ) {
+        irods::log(
+            PASSMSG(
+                "failed to resolve database interface",
+                ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // cast plugin and object to db and fco for call
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
+                                        irods::first_class_object > ( db_obj_ptr );
+    irods::database_ptr           db = boost::dynamic_pointer_cast <
+                                       irods::database > ( db_plug_ptr );
+
+    // =-=-=-=-=-=-=-
+    // call the operation on the plugin
+    ret = db->call<
+              rsComm_t*,
+              char*,
+              char*,
+              char*,
+              char* >(
+              irods::DATABASE_OP_REG_ZONE,
+              ptr,
+              _comm,
+              _zone_name,
+              _zone_type,
+              _zone_conn_info,
+              _zone_comment );
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+    }
+
+    return ret.code();
+
+} // chlRegZone
 
 
 /* Modify a Zone (certain fields) */
