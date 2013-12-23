@@ -204,7 +204,6 @@ main( int argc, char *argv[] ) {
     while ( !done ) {
         sleep( 1 );
     }
-#if 1
     // =-=-=-=-=-=-=-
     // call initialization for network plugin as negotiated
     irods::network_object_ptr new_net_obj;
@@ -220,10 +219,8 @@ main( int argc, char *argv[] ) {
     }
 
     new_net_obj->to_server( &rsComm );
-#endif
     status = agentMain( &rsComm );
 
-#if 1
     // =-=-=-=-=-=-=-
     // call initialization for network plugin as negotiated
     ret = sockAgentStop( new_net_obj );
@@ -233,7 +230,6 @@ main( int argc, char *argv[] ) {
     }
 
     new_net_obj->to_server( &rsComm );
-#endif
     unregister_handlers();
     cleanupAndExit( status );
 

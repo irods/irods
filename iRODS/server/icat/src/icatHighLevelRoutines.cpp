@@ -39,7 +39,6 @@
 #include "rods.hpp"
 #include "rcMisc.hpp"
 #include "icatMidLevelRoutines.hpp"
-#include "icatMidLevelHelpers.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "icatLowLevel.hpp"
 
@@ -100,34 +99,6 @@ static rodsLong_t MAX_PASSWORDS = 40;
    reduce the number of open connections and active agents.  */
 #define TEMP_PASSWORD_TIME 120
 #define TEMP_PASSWORD_MAX_TIME 1000
-
-
-#if 0
-/* PAM_PASSWORD_DEFAULT_TIME (the default iRODS-PAM password
-   lifetime) PAM_PASSWORD_MIN_TIME must be greater than
-   TEMP_PASSWORD_TIME to avoid the possibility that the logic for
-   temporary passwords would be applied.  This should be fine as
-   IRODS-PAM passwords will typically be valid on the order of a
-   couple weeks compared to a couple minutes for temporary one-time
-   passwords.
- */
-#define PAM_PASSWORD_LEN 20
-
-/* The PAM_PASSWORD_MIN_TIME must be greater than
-   TEMP_PASSWORD_TIME so the logic can deal with each password type
-   differently.  If they overlap, SQL errors can result */
-#define PAM_PASSWORD_MIN_TIME "121"  /* must be > TEMP_PASSWORD_TIME */
-#define PAM_PASSWORD_MAX_TIME "1209600"    /* two weeks in seconds */
-#define TTL_PASSWORD_MIN_TIME 121  /* must be > TEMP_PASSWORD_TIME */
-#define TTL_PASSWORD_MAX_TIME 1209600    /* two weeks in seconds */
-/* For batch jobs that should run "forever", TTL_PASSWORD_MAX_TIME
-   can be set very large, for example to 2147483647 to allow 68 years TTL. */
-#ifdef PAM_AUTH_NO_EXTEND
-#define PAM_PASSWORD_DEFAULT_TIME "28800"  /* 8 hours in seconds */
-#else
-#define PAM_PASSWORD_DEFAULT_TIME "1209600" /* two weeks in seconds */
-#endif
-#endif
 
 #define PASSWORD_SCRAMBLE_PREFIX ".E_"
 #define PASSWORD_KEY_ENV_VAR "irodsPKey"
@@ -2437,15 +2408,6 @@ int chlRegResc( rsComm_t *rsComm,
         }
 
     }
-#if 0
-    if ( false &&               // hcj - disable checking for vault path. this needs to be checked from the plugins
-            ( strcmp( rescInfo->rescType, "database" ) != 0 ) &&
-            ( strcmp( rescInfo->rescType, "mso" ) != 0 ) ) {
-        if ( strlen( rescInfo->rescVaultPath ) < 1 ) {
-            return( CAT_INVALID_RESOURCE_VAULT_PATH );
-        }
-    }
-#endif
 
     status = getLocalZone();
     if ( status != 0 ) {
@@ -2572,34 +2534,6 @@ _removeRescChild(
     }
     return result;
 }
-
-/**
- * @brief Returns true if the specified resource already has children
- */
-#if 0 // currently unused
-static bool
-_rescHasChildren(
-    const std::string _resc_name ) {
-
-    bool result = false;
-    int status;
-    char children[MAX_NAME_LEN];
-    irods::sql_logger logger( "_rescHasChildren", logSQL );
-
-    logger.log();
-    if ( ( status = cmlGetStringValueFromSql( "select resc_children from R_RESC_MAIN where resc_name=?",
-                    children, MAX_NAME_LEN, _resc_name.c_str(), 0, 0, &icss ) ) != 0 ) {
-        if ( status != CAT_NO_ROWS_FOUND ) {
-            _rollback( "_rescHasChildren" );
-        }
-        result = false;
-    }
-    else if ( strlen( children ) != 0 ) {
-        result = true;
-    }
-    return result;
-}
-#endif
 
 /**
  * @brief Remove a child from its parent
@@ -6096,25 +6030,6 @@ int chlModUser( rsComm_t *rsComm, char *userName, char *option,
         return ( CAT_INVALID_ARGUMENT );
     }
 
-#if 0
-    /* no longer allow modifying the user's name since it would
-       require moving the home and trash/home collections too */
-    if ( strcmp( option, "name" ) == 0 ||
-            strcmp( option, "user_name" ) == 0 ) {
-        snprintf( tSQL, MAX_SQL_SIZE, form1,
-                  "user_name" );
-        cllBindVars[cllBindVarCount++] = newValue;
-        cllBindVars[cllBindVarCount++] = myTime;
-        cllBindVars[cllBindVarCount++] = userName2;
-        cllBindVars[cllBindVarCount++] = zoneName;
-        if ( logSQL != 0 ) {
-            rodsLog( LOG_SQL, "chlModUserSQLxx1x" );
-        }
-        auditId = AU_MOD_USER_NAME;
-        strncpy( auditComment, userName, 100 );
-        strncpy( auditUserName, newValue, 100 );
-    }
-#endif
     if ( strcmp( option, "type" ) == 0 ||
             strcmp( option, "user_type_name" ) == 0 ) {
         char tsubSQL[MAX_SQL_SIZE];
@@ -6506,104 +6421,6 @@ int chlModGroup( rsComm_t *rsComm, char *groupName, char *option,
     return( 0 );
 }
 
-#if 0
-/*
- Modify a resource host (location) string.  This is used for the new
-WOS resources which may have multiple addresses.  A series or comma
-separated DNS names is maintained.
- */
-int
-modRescHostStr( rsComm_t *rsComm, char *rescId, char * option, char * optionValue ) {
-    char hostStr[MAX_HOST_STR];
-    int status;
-    struct hostent *myHostEnt;
-    int i;
-    char errMsg[155], myTime[50];
-
-    memset( hostStr, 0, sizeof( hostStr ) );
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "modRescHostStr S Q L 1 " );
-    }
-    status = cmlGetStringValueFromSql(
-                 "select resc_net from R_RESC_MAIN where resc_id=?",
-                 hostStr, MAX_HOST_STR, rescId, 0, 0, &icss );
-    if ( status != 0 ) {
-        return( status );
-    }
-    if ( strcmp( option, "host-add" ) == 0 ) {
-        myHostEnt = gethostbyname( optionValue );
-        if ( myHostEnt == 0 ) {
-            snprintf( errMsg, 150,
-                      "Warning, resource host address '%s' is not a valid DNS entry, gethostbyname failed.",
-                      optionValue );
-            i = addRErrorMsg( &rsComm->rError, 0, errMsg );
-        }
-        if ( strstr( hostStr, optionValue ) != NULL ) {
-            snprintf( errMsg, 150,
-                      "Error, input DNS name, %s, already in the list for this resource.",
-                      optionValue );
-            i = addRErrorMsg( &rsComm->rError, 0, errMsg );
-            return( CAT_INVALID_ARGUMENT );
-        }
-        strncat( hostStr, ",", sizeof( hostStr ) );
-        strncat( hostStr, optionValue, sizeof( hostStr ) );
-    }
-    if ( strcmp( option, "host-rm" ) == 0 ) {
-        char *cp, *cp2, *cp3;
-        int len;
-        len = strlen( optionValue );
-        cp = strstr( hostStr, "," );
-        if ( cp == NULL ) {
-            i = addRErrorMsg( &rsComm->rError, 0,
-                              "Error, removal of last location/host for this resource not allowed." );
-            return( CAT_INVALID_ARGUMENT );
-        }
-
-
-        cp = strstr( hostStr, optionValue );
-        if ( cp == NULL ||
-                ( cp > hostStr && *( cp - 1 ) != ',' ) ||
-                ( *( cp + len ) != ',' && *( cp + len ) != '\0' ) ) {
-            snprintf( errMsg, 150,
-                      "Error, input DNS location/host, %s, being removed is not in the list for this resource.",
-                      optionValue );
-            i = addRErrorMsg( &rsComm->rError, 0, errMsg );
-            return( CAT_INVALID_ARGUMENT );
-        }
-        cp2 = cp + len + 1;
-        cp3 = cp;
-        if ( *cp2 == '\0' ) {
-            *( cp3 - 1 ) = '\0';    /* it's the last in the list, remove trailing ',' */
-        }
-        while ( cp3 < cp2 ) {
-            *cp3++ = '\0'; /* clear out the entry */
-        }
-        while ( cp2 < hostStr + sizeof( hostStr ) ) {
-            *cp++ = *cp2++; /* slide up the other items, if any */
-        }
-    }
-    getNowStr( myTime );
-    cllBindVars[cllBindVarCount++] = hostStr;
-    cllBindVars[cllBindVarCount++] = myTime;
-    cllBindVars[cllBindVarCount++] = rescId;
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "modRescHostStr S Q L 2" );
-    }
-    status =  cmlExecuteNoAnswerSql(
-                  "update R_RESC_MAIN set resc_net = ?, modify_ts=? where resc_id=?",
-                  &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "modRescHostStr cmlExecuteNoAnswerSql update failure %d",
-                 status );
-        _rollback( "modRescHostStr" );
-        return( status );
-    }
-    return status;
-}
-#endif //if 0
-
-
 /* Modify a Resource (certain fields) */
 int chlModResc(
     rsComm_t* rsComm,
@@ -6771,15 +6588,6 @@ int chlModResc(
         }
         OK = 1;
     }
-#if 0
-    if ( strncmp( option, "host-", 5 ) == 0 ) {
-        status = modRescHostStr( rsComm, rescId, option, optionValue );
-        if ( status ) {
-            return( status );
-        }
-        OK = 1;
-    }
-#endif //if 0
     if ( strcmp( option, "host" ) == 0 ) {
         // =-=-=-=-=-=-=-
         // JMC - backport 4597
@@ -6819,16 +6627,6 @@ int chlModResc(
         if ( logSQL != 0 ) {
             rodsLog( LOG_SQL, "chlModResc SQL 6" );
         }
-#if 0 // JMC :: resource type is now dynamic
-        status = cmlCheckNameToken( "resc_type", optionValue, &icss );
-        if ( status != 0 ) {
-            char errMsg[105];
-            snprintf( errMsg, 100, "resource_type '%s' is not valid",
-                      optionValue );
-            addRErrorMsg( &rsComm->rError, 0, errMsg );
-            return( CAT_INVALID_RESOURCE_TYPE );
-        }
-#endif
         cllBindVars[cllBindVarCount++] = optionValue;
         cllBindVars[cllBindVarCount++] = myTime;
         cllBindVars[cllBindVarCount++] = rescId;
@@ -6848,39 +6646,6 @@ int chlModResc(
         OK = 1;
     }
 
-#if 0 // JMC - no longer support resource classes
-    if ( strcmp( option, "class" ) == 0 ) {
-        if ( logSQL != 0 ) {
-            rodsLog( LOG_SQL, "chlModResc S---Q---L 8" );
-        }
-        status = cmlCheckNameToken( "resc_class", optionValue, &icss );
-        if ( status != 0 ) {
-            char errMsg[105];
-            snprintf( errMsg, 100, "resource_class '%s' is not valid",
-                      optionValue );
-            addRErrorMsg( &rsComm->rError, 0, errMsg );
-            return( CAT_INVALID_RESOURCE_CLASS );
-        }
-
-        cllBindVars[cllBindVarCount++] = optionValue;
-        cllBindVars[cllBindVarCount++] = myTime;
-        cllBindVars[cllBindVarCount++] = rescId;
-        if ( logSQL != 0 ) {
-            rodsLog( LOG_SQL, "chlModResc S---Q---L 9" );
-        }
-        status =  cmlExecuteNoAnswerSql(
-                      "update R_RESC_MAIN set resc_class_name = ?, modify_ts=? where resc_id=?",
-                      &icss );
-        if ( status != 0 ) {
-            rodsLog( LOG_NOTICE,
-                     "chlModResc cmlExecuteNoAnswerSql update failure %d",
-                     status );
-            _rollback( "chlModResc" );
-            return( status );
-        }
-        OK = 1;
-    }
-#endif
     if ( strcmp( option, "path" ) == 0 ) {
         if ( logSQL != 0 ) {
             rodsLog( LOG_SQL, "chlModResc SQL 10" );
@@ -11460,13 +11225,6 @@ chlCheckQuota( rsComm_t *rsComm, char *userName, char *rescName,
     if ( status != 0 ) {
         return( status );
     }
-
-#if 0
-    for ( i = 0; i < 4; i++ ) {
-        rodsLog( LOG_NOTICE, "checkvalue: %s",
-                 icss.stmtPtr[statementNum]->resultValue[i] );
-    }
-#endif
 
     /* For now, log it */
     rodsLog( LOG_NOTICE, "checkQuota: inUser:%s inResc:%s RescId:%s Quota:%s",

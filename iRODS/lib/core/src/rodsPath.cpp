@@ -700,17 +700,6 @@ getLastPathElement( char *inInPath, char *lastElement ) {
         }
     }
 
-#if 0
-    if ( len == 1 && ( *lastElement == '.' || *lastElement == '~' ||
-                       *lastElement == '^' || *lastElement == '/' ) ) {
-        *lastElement = '\0';
-    }
-    else if ( len == 2 && *lastElement == '.' && *( lastElement + 1 ) == '.' ) {
-        /* ".." */
-        *lastElement = '\0';
-    }
-#endif
-
     return ( 0 );
 }
 
@@ -723,12 +712,6 @@ clearRodsPath( rodsPath_t *rodsPath ) {
     if ( rodsPath->rodsObjStat == NULL ) {
         return;
     }
-
-#if 0   /* this is freed in freeRodsObjStat */
-    if ( rodsPath->rodsObjStat->specColl != NULL ) {
-        free( rodsPath->rodsObjStat->specColl );
-    }
-#endif
 
     freeRodsObjStat( rodsPath->rodsObjStat );
 

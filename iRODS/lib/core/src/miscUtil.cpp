@@ -1402,9 +1402,6 @@ clearCollHandle( collHandle_t *collHandle, int freeSpecColl ) {
         free( collHandle->dataObjInp.specColl );
     }
     if ( collHandle->rodsObjStat != NULL ) {
-#if 0
-        free( collHandle->rodsObjStat );
-#endif
         freeRodsObjStat( collHandle->rodsObjStat );
         collHandle->rodsObjStat = NULL;
     }
@@ -1697,9 +1694,6 @@ getNextDataObjMetaInfo( collHandle_t *collHandle, collEnt_t *outCollEnt ) {
     len = dataObjSqlResult->rescGrp.len;
     outCollEnt->rescGrp = &value[len * selectedInx];
 
-#if 0
-    collHandle->rowInx = nextInx;
-#endif
     return ( 0 );
 }
 
@@ -2013,12 +2007,8 @@ iCommandProgStat( operProgress_t *operProgress ) {
         printf(
             "%-lld/%-lld - %5.2f%% of files done   ",
             operProgress->totalNumFilesDone, operProgress->totalNumFiles,
-#if 0
-            ( float ) operProgress->totalNumFilesDone / operProgress->totalNumFiles *
-#else
             VERIFY_DIV
             ( operProgress->totalNumFilesDone, operProgress->totalNumFiles ) *
-#endif
             100.0 );
         printf( "%-.3f/%-.3f MB - %5.2f%% of file sizes done\n",
                 ( float ) operProgress->totalFileSizeDone / 1048600.0,

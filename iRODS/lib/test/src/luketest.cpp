@@ -30,26 +30,6 @@ main( int argc, char **argv ) {
     int l1descInx1;
     dataObjInp_t dataObjOpenInp;
     openedDataObjInp_t dataObjCloseInp;
-#if 0
-    dataObjInp_t dataObjCreateInp;
-    openedDataObjInp_t dataObjWriteInp;
-    bytesBuf_t dataObjWriteInpBBuf;
-    openedDataObjInp_t dataObjReadInp;
-    bytesBuf_t dataObjReadOutBBuf;
-    dataObjInp_t dataObjOprInp;
-    bytesBuf_t dataObjInpBBuf;
-    struct stat statbuf;
-    int bytesWritten, bytesRead, total;
-    int in_fd, out_fd;
-    openedDataObjInp_t dataObjLseekInp;
-    fileLseekOut_t *dataObjLseekOut = NULL;
-    dataObjCopyInp_t dataObjCopyInp;
-    collInp_t collCreateInp;
-    execCmd_t execCmd;
-    execCmdOut_t *execCmdOut = NULL;
-    char *chksumStr;
-    char myPath[MAX_NAME_LEN], myCwd[MAX_NAME_LEN];
-#endif
 
     if ( argc != 2 ) {
         fprintf( stderr, "Usage: %s rods_dataObj\n", argv[0] );

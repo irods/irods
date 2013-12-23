@@ -31,11 +31,6 @@ rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp ) {
     }
     else {
         status = rcRuleExecDel( rodsServerHost->conn, ruleExecDelInp );
-#if 0   /* an example of using replErrorStack */
-        if ( status < 0 ) {
-            replErrorStack( rodsServerHost->conn->rError, &rsComm->rError );
-        }
-#endif
     }
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,

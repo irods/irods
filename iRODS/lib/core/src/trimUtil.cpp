@@ -169,9 +169,6 @@ trimCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
     int status;
     int savedStatus = 0;
     char srcChildPath[MAX_NAME_LEN];
-#if 0
-    int collLen;
-#endif
     collHandle_t collHandle;
     collEnt_t collEnt;
 
@@ -192,12 +189,7 @@ trimCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
         fprintf( stdout, "C- %s:\n", srcColl );
     }
 
-#if 0
-    status = rclOpenCollection( conn, srcColl, RECUR_QUERY_FG,
-                                &collHandle );
-#else
     status = rclOpenCollection( conn, srcColl, 0, &collHandle );
-#endif
 
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
@@ -205,17 +197,12 @@ trimCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
                  srcColl, status );
         return status;
     }
-#if 0
-    collLen = strlen( srcColl );
-    collLen = getOpenedCollLen( &collHandle );
-#else
     if ( collHandle.rodsObjStat->specColl != NULL &&
             collHandle.rodsObjStat->specColl->collClass != LINKED_COLL ) {
         /* no trim for mounted coll */
         rclCloseCollection( &collHandle );
         return 0;
     }
-#endif
     while ( ( status = rclReadCollection( conn, &collHandle, &collEnt ) ) >= 0 ) {
         if ( collEnt.objType == DATA_OBJ_T ) {
             snprintf( srcChildPath, MAX_NAME_LEN, "%s/%s",

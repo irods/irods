@@ -408,11 +408,7 @@ getCollUtil( rcComm_t **myConn, char *srcColl, char *targDir,
     int status = 0;
     int savedStatus = 0;
     char srcChildPath[MAX_NAME_LEN], targChildPath[MAX_NAME_LEN];
-#if 0
-    int collLen;
-#else
     char parPath[MAX_NAME_LEN], childPath[MAX_NAME_LEN];
-#endif
     collHandle_t collHandle;
     collEnt_t collEnt;
     dataObjInp_t childDataObjInp;
@@ -447,12 +443,7 @@ getCollUtil( rcComm_t **myConn, char *srcColl, char *targDir,
     conn = *myConn;
 
     printCollOrDir( targDir, LOCAL_DIR_T, rodsArgs, dataObjOprInp->specColl );
-#if 0
-    status = rclOpenCollection( conn, srcColl, RECUR_QUERY_FG,
-                                &collHandle );
-#else
     status = rclOpenCollection( conn, srcColl, 0, &collHandle );
-#endif
 
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
@@ -460,24 +451,14 @@ getCollUtil( rcComm_t **myConn, char *srcColl, char *targDir,
                  srcColl, status );
         return status;
     }
-#if 0
-    collLen = strlen( srcColl );
-    collLen = getOpenedCollLen( &collHandle );
-#endif
     while ( ( status = rclReadCollection( conn, &collHandle, &collEnt ) ) >= 0 ) {
         if ( collEnt.objType == DATA_OBJ_T ) {
             rodsLong_t mySize;
 
             mySize = collEnt.dataSize;    /* have to save it. May be freed */
 
-#if 0
-            snprintf( targChildPath, MAX_NAME_LEN, "%s%s/%s",
-                      targDir, collEnt.collName + collLen,
-                      collEnt.dataName );
-#else
             snprintf( targChildPath, MAX_NAME_LEN, "%s/%s",
                       targDir, collEnt.dataName );
-#endif
             snprintf( srcChildPath, MAX_NAME_LEN, "%s/%s",
                       collEnt.collName, collEnt.dataName );
 

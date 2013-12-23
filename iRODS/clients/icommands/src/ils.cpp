@@ -26,23 +26,6 @@ main( int argc, char **argv ) {
     char *optStr;
     rodsPathInp_t rodsPathInp;
 
-#if 0
-    std::string key, hkey, iv;
-    irods::buffer_crypt crypt;
-    crypt.generate_key( key );
-    crypt.initialization_vector( key, hkey, iv );
-
-    std::string plain( "there once was a man from nantucket" ), cipher;
-    crypt.encrypt( key, iv, plain, cipher );
-
-    std::cout << "cipher [" << cipher << "]" << std::endl;
-
-    std::string new_plain;
-    crypt.decrypt( key, iv, cipher, new_plain );
-
-    std::cout << "new plain [" << new_plain << "]" << std::endl;
-#endif
-
     // -=-=-=-=-=- JMC - backport 4536 -=-=-=-=-=-
     optStr = "hArlLvt:VZ";
     status = parseCmdLineOpt( argc, argv, optStr, 1, &myRodsArgs );

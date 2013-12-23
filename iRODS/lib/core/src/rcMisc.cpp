@@ -496,9 +496,6 @@ getZoneNameFromHint( char *rcatZoneHint, char *zoneName, int len ) {
     else {
         /* just a zoneName. use strncpy instead of rstrcpy to avoid error
          * msg */
-#if 0
-        rstrcpy( zoneName, rcatZoneHint, len );
-#endif
         strncpy( zoneName, rcatZoneHint, len );
         zoneName[len - 1] = '\0';
     }
@@ -1977,17 +1974,11 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
         }
         return( 4 );
     }
-#if 0   /* the string to compare is "REPEAT UNTIL SUCCESS " */
-    if ( !strcmp( t, "REPEAT UNTIL SUCCESS" ) ) {
-#endif
         if ( strstr( t, "REPEAT UNTIL SUCCESS" ) != NULL ) {
             dt = dt   + atol( currTime );
             sprintf( nextTime, "%lld", dt );
             return( 1 );
         }
-#if 0   /* the string to compare is "DOUBLE UNTIL SUCCESS " */
-        if ( !strcmp( t, "DOUBLE UNTIL SUCCESS" ) ) {
-#endif
             if ( strstr( t, "DOUBLE UNTIL SUCCESS" ) != NULL ) {
                 dt = dt   + atol( currTime );
                 sprintf( nextTime, "%lld", dt );
@@ -3517,22 +3508,6 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
             }
         }
 
-#if 0 // JMC - UNUSED
-        void
-        resolveStatForStructFileOpr( keyValPair_t * condInput,
-                                     rodsObjStat_t * rodsObjStatOut ) {
-            if ( rodsObjStatOut == NULL ) {
-                return;
-            }
-
-            if ( getSpecCollOpr( condInput, rodsObjStatOut->specColl ) ==
-                    NORMAL_OPR_ON_STRUCT_FILE_COLL ) {
-                /* it is in a structFile but not trying to do operation in the structFile. */
-            }
-            return;
-        }
-#endif // JMC - UNUSED
-
 
         /**
          * Output a list of keyword-value pairs as a property string.
@@ -4267,93 +4242,6 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
         }
 #endif  /* BULK_OPR_WITH_TAR */
 
-#if 0
-        int
-        unbunBulkBuf( char * phyBunDir, bu0lkOprInp_t * bulkOprInp, bytesBuf_t * bulkBBuf ) {
-            sqlResult_t *objPath, *offset;
-            char *tmpObjPath;
-            char *bufPtr;
-            int status, i;
-            genQueryOut_t *attriArray = &bulkOprInp->attriArray;
-            int intOffset[MAX_NUM_BULK_OPR_FILES];
-            char phyBunPath[MAX_NAME_LEN];
-
-            if ( phyBunDir == NULL || bulkOprInp == NULL ) {
-                return USER__NULL_INPUT_ERR;
-            }
-
-            if ( ( objPath =
-                        getSqlResultByInx( attriArray, COL_DATA_NAME ) ) == NULL ) {
-                rodsLog( LOG_NOTICE,
-                         "unbunBulkBuf: getSqlResultByInx for COL_DATA_NAME failed" );
-                return ( UNMATCHED_KEY_OR_INDEX );
-            }
-
-            if ( ( offset =
-                        getSqlResultByInx( attriArray, OFFSET_INX ) ) == NULL ) {
-                rodsLog( LOG_NOTICE,
-                         "unbunBulkBuf: getSqlResultByInx for OFFSET_INX failed" );
-                return ( UNMATCHED_KEY_OR_INDEX );
-            }
-            if ( attriArray->rowCnt > MAX_NUM_BULK_OPR_FILES ) {
-                rodsLog( LOG_NOTICE,
-                         "unbunBulkBuf: rowCnt %d too large",
-                         attriArray->rowCnt );
-                return ( SYS_REQUESTED_BUF_TOO_LARGE );
-            }
-
-            for ( i = 0; i < attriArray->rowCnt; i++ ) {
-                intOffset[i] = atoi( &offset->value[offset->len * i] );
-            }
-
-            for ( i = 0; i < attriArray->rowCnt; i++ ) {
-                int size;
-                int out_fd;
-
-                tmpObjPath = &objPath->value[objPath->len * i];
-                if ( i == 0 ) {
-                    bufPtr = ( char * )bulkBBuf->buf;
-                    size = intOffset[0];
-                }
-                else {
-                    bufPtr = ( char * )bulkBBuf->buf + intOffset[i - 1];
-                    size = intOffset[i] - intOffset[i - 1];
-                }
-                status = getPhyBunPath( bulkOprInp->objPath, tmpObjPath, phyBunDir,
-                                        phyBunPath );
-                if ( status < 0 ) {
-                    return status;
-                }
-
-                mkdirForFilePath( phyBunPath );
-
-#ifdef windows_platform
-                out_fd = iRODSNt_bopen( phyBunPath, O_WRONLY | O_CREAT | O_TRUNC, 0640 );
-#else
-                out_fd = open( phyBunPath, O_WRONLY | O_CREAT | O_TRUNC, 0640 );
-#endif
-                if ( out_fd < 0 ) {
-                    status = UNIX_FILE_OPEN_ERR - errno;
-                    rodsLogError( LOG_ERROR, status,
-                                  "unbunBulkBuf: open error for %s", phyBunPath );
-                    return status;
-                }
-
-                status = myWrite( out_fd, bufPtr, size, FILE_DESC_TYPE, NULL );
-                if ( status != size ) {
-                    if ( status >= 0 ) {
-                        status = SYS_COPY_LEN_ERR - errno;
-                    }
-                    rodsLog( LOG_ERROR,
-                             "unbunBulkBuf: Bytes written %d does not match size %d for %s",
-                             status, size, phyBunPath );
-                    return status;
-                }
-                close( out_fd );
-            }
-            return 0;
-        }
-#endif
 
 #ifdef BULK_OPR_WITH_TAR
         int
@@ -4496,14 +4384,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
                         bytesBuf->len += nbytes;
                         bufptr += nbytes;
                     }
-                    if ( bytesBuf->len > 0 ) {
-#if 0   /* not needed */
-                        /* add NULL termination */
-                        *bufptr = '\0';
-                        bytesBuf->len++;
-#endif
-                    }
-                    else {
+                    if ( bytesBuf->len <= 0 ) {
                         free( bytesBuf->buf );
                         bytesBuf->buf = NULL;
                     }

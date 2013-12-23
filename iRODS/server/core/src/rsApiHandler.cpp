@@ -183,10 +183,6 @@ int rsApiHandler(
         }
         else if ( strcmp( RsApiTable[apiInx].inPackInstruct,
                           "DataObjInp_PI" )  == 0 ) {
-#if 0	/* XXXXXXX Done in clearDataObjInp. this could be trouble */
-            if ( apiNumber == QUERY_SPEC_COLL_AN &&
-                    ( ( dataObjInp_t * ) myInStruct )->specColl != NULL ) [curlybrace here]
-#endif
                 clearDataObjInp( ( dataObjInp_t * ) myInStruct );
         }
         else if ( strcmp( RsApiTable[apiInx].inPackInstruct,

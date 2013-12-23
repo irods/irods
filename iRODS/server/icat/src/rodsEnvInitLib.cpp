@@ -1335,25 +1335,7 @@ insertIntoPhysicalTable( char **attr_name,
                          char  *dbschema_name,
                          char  *table_name,
                          int    attr_count ) {
-#if 0 // JMC cppcheck - src & dest sprintf
-    char sqlq[HUGE_STRING];
-    int i;
-
-    sprintf( sqlq, "insert into %s%s (", dbschema_name, table_name );
-    sprintf( sqlq, "%s  %s", sqlq, attr_name[0] );
-
-    for ( i = 1; i < attr_count; i++ ) {
-        sprintf( sqlq, "%s , %s", sqlq, attr_name[i] );
-    }
-    sprintf( sqlq, "%s ) values (", sqlq );
-    sprintf( sqlq, "%s %s", sqlq, attr_val[0] );
-    for ( i = 1; i < attr_count; i++ ) {
-        sprintf( sqlq, "%s , %s", sqlq, attr_val[i] );
-    }
-    sprintf( sqlq, "%s )", sqlq );
-#else
     const char* sqlq = buildPhyiscalTableQuery( attr_name, attr_val, dbschema_name, table_name, attr_count );
-#endif
     i = ExecSqlDb( henv, hdbc,  sqlq );
     if ( i != 0 ) {
         sprintf( errmess, "Data Insertion Error: %s", sqlq );
@@ -1370,24 +1352,7 @@ insertIntoPhysicalTableDontCare( char **attr_name,
                                  char  *dbschema_name,
                                  char  *table_name,
                                  int    attr_count ) {
-#if 0 // JMC cppcheck - src & dest sprintf
-    char sqlq[HUGE_STRING];
-    int i;
-
-    sprintf( sqlq, "insert into %s%s (", dbschema_name, table_name );
-    sprintf( sqlq, "%s  %s", sqlq, attr_name[0] );
-    for ( i = 1; i < attr_count; i++ ) {
-        sprintf( sqlq, "%s , %s", sqlq, attr_name[i] );
-    }
-    sprintf( sqlq, "%s ) values (", sqlq );
-    sprintf( sqlq, "%s %s", sqlq, attr_val[0] );
-    for ( i = 1; i < attr_count; i++ ) {
-        sprintf( sqlq, "%s , %s", sqlq, attr_val[i] );
-    }
-    sprintf( sqlq, "%s )", sqlq );
-#else
     const char* sqlq = buildPhyiscalTableQuery( attr_name, attr_val, dbschema_name, table_name, attr_count );
-#endif
     i = ExecSqlDb( henv, hdbc,  sqlq );
     if ( i != 0 ) {
         return( METADATA_INSERTION_ERROR );
@@ -1424,22 +1389,7 @@ int deleteFromPhysicalTable( char **attr_name,
                              char  *dbschema_name,
                              char  *table_name,
                              int    attr_count ) {
-#if 0
-    char sqlq[HUGE_STRING];
-    int i;
-
-    sprintf( sqlq, "delete from %s%s ", dbschema_name, table_name );
-    for ( i = 0; i < attr_count; i++ ) {
-        if ( i > 0 ) {
-            sprintf( sqlq, "%s AND %s = %s", sqlq, attr_name[i], attr_val[i] );
-        }
-        else {
-            sprintf( sqlq, "%s WHERE %s = %s", sqlq, attr_name[i], attr_val[i] );
-        }
-    }
-#else
     const char* sqlq = buildDeleteFRomPhysicalTableQuery( attr_name, attr_val, dbschema_name, table_name, attr_count );
-#endif
 
     i = ExecSqlDb( henv, hdbc, sqlq );
     if ( i != 0 ) {
@@ -1455,22 +1405,7 @@ int deleteFromPhysicalTableDontCare( char **attr_name,
                                      char  *dbschema_name,
                                      char  *table_name,
                                      int    attr_count ) {
-#if 0
-    char sqlq[HUGE_STRING];
-    int i;
-
-    sprintf( sqlq, "delete from %s%s ", dbschema_name, table_name );
-    for ( i = 0; i < attr_count; i++ ) {
-        if ( i > 0 ) {
-            sprintf( sqlq, "%s AND %s = %s", sqlq, attr_name[i], attr_val[i] );
-        }
-        else {
-            sprintf( sqlq, "%s WHERE %s = %s", sqlq, attr_name[i], attr_val[i] );
-        }
-    }
-#else
     const char* sqlq = buildDeleteFRomPhysicalTableQuery( attr_name, attr_val, dbschema_name, table_name, attr_count );
-#endif
     i = ExecSqlDb( henv, hdbc, sqlq );
     if ( i != 0 ) {
         return( METADATA_DELETION_ERROR );

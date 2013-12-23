@@ -165,24 +165,12 @@ _rsDataObjChksum( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             irods::log( PASSMSG( "failed in get_resource_property [class]", err ) );
         }
 
-#if 0 // JMC - legacy resource 
-        if ( rescClass  == COMPOUND_CL ) {
-            /* do we have a good cache copy ? */
-            if ( ( status = getCacheDataInfoForRepl( rsComm, *dataObjInfoHead,
-                            NULL, tmpDataObjInfo, &outDataObjInfo ) ) >= 0 ) {
-                tmpDataObjInfo = tmpDataObjInfo->next;
-                status = 0;
-                continue;
-            }
+        if ( resc_class == irods::RESOURCE_CLASS_BUNDLE ) { // (rescClass == BUNDLE_CL) {
+            /* don't do BUNDLE_CL. should be done on the bundle file */
+            tmpDataObjInfo = tmpDataObjInfo->next;
+            status = 0;
+            continue;
         }
-        else
-#endif // JMC - legacy resource 
-            if ( resc_class == irods::RESOURCE_CLASS_BUNDLE ) { // (rescClass == BUNDLE_CL) {
-                /* don't do BUNDLE_CL. should be done on the bundle file */
-                tmpDataObjInfo = tmpDataObjInfo->next;
-                status = 0;
-                continue;
-            }
         if ( strlen( tmpDataObjInfo->chksum ) == 0 ) {
             /* need to chksum no matter what */
             status = dataObjChksumAndRegInfo( rsComm, tmpDataObjInfo,

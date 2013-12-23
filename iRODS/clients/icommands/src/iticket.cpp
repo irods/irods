@@ -355,18 +355,6 @@ showTickets1( char *inOption, char *inName ) {
     genQueryInp.selectInp.value = i1b;
     genQueryInp.selectInp.len = i;
 
-#if 0
-    i2a[0] = COL_USER_NAME;
-    snprintf( v1, sizeof( v1 ), "='%s'", myEnv.rodsUserName );
-    condVal[0] = v1;
-    i2a[1] = COL_USER_ZONE;
-    snprintf( v2, sizeof( v2 ), "='%s'", myEnv.rodsZone );
-    condVal[1] = v2;
-    genQueryInp.sqlCondInp.inx = i2a;
-    genQueryInp.sqlCondInp.value = condVal;
-    /*   genQueryInp.sqlCondInp.len=2; */
-    genQueryInp.sqlCondInp.len = 0;
-#endif
     genQueryInp.condInput.len = 0;
 
     if ( inName != NULL && *inName != '\0' ) {

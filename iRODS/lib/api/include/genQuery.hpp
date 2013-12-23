@@ -10,9 +10,6 @@
 /* This is a high level file type API call */
 
 #include "rods.hpp"
-#if 0
-#include "rcMisc.hpp"
-#endif
 #include "procApiRequest.hpp"
 #include "apiNumber.hpp"
 #include "initServer.hpp"

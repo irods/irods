@@ -942,11 +942,6 @@ obfiDecode( char *in, char *out, int extra ) {
 
 int
 obfiGetEnvKey() {
-#if 0
-    char *envVar;
-    char *chr;
-    int i;
-#endif
     /* May want to do this someday, but at least not for now */
     return 0;
 }

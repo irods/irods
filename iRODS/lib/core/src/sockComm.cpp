@@ -1676,24 +1676,8 @@ redirectConnToRescSvr( rcComm_t **conn, dataObjInp_t *dataObjInp,
         return status;
     }
 
-#if 0
-    newConn =  rcConnect( outHost, myEnv->rodsPort, myEnv->rodsUserName,
-                          myEnv->rodsZone, reconnFlag, &errMsg );
-
-    if ( newConn != NULL ) {
-        status = clientLogin( newConn );
-        if ( status != 0 ) {
-            rcDisconnect( newConn );
-            return status;
-        }
-        rcDisconnect( *conn );
-        *conn = newConn;
-    }
-    return 0;
-#else
     status = rcReconnect( conn, outHost, myEnv, reconnFlag );
     return status;
-#endif
 }
 
 int

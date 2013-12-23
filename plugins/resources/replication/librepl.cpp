@@ -535,17 +535,6 @@ extern "C" {
                     msg << " - Failed while calling child operation.";
                     result = PASSMSG( msg.str(), ret );
                 }
-#if 0
-                else {
-                    ret = replUpdateObjectAndOperProperties( _ctx, create_oper );
-                    if ( !ret.ok() ) {
-                        std::stringstream msg;
-                        msg << __FUNCTION__;
-                        msg << " - Failed to update the properties with the object and operation.";
-                        result = PASSMSG( msg.str(), ret );
-                    }
-                }
-#endif
             }
         }
         return result;
@@ -678,18 +667,6 @@ extern "C" {
                     result = CODE( ret.code() );
 
                 }
-#if 0
-                else {
-                    // Have to return the actual code value here because it contains the bytes written
-                    ret = replUpdateObjectAndOperProperties( _ctx, write_oper );
-                    if ( !ret.ok() ) {
-                        std::stringstream msg;
-                        msg << __FUNCTION__;
-                        msg << " - Failed to update the object and operation properties.";
-                        result = PASSMSG( msg.str(), ret );
-                    }
-                }
-#endif
             }
         }
         return result;
@@ -761,32 +738,6 @@ extern "C" {
                     result = CODE( ret.code() );
 
                 }
-#if 0
-                else {
-                    if ( false ) { // dont replicate unlink as it automagically deletes everything
-                        ret = replUpdateObjectAndOperProperties( _ctx, unlink_oper );
-                        if ( !ret.ok() ) {
-                            std::stringstream msg;
-                            msg << __FUNCTION__;
-                            msg << " - Failed to update the object and operation properties.";
-                            result = PASSMSG( msg.str(), ret );
-                        }
-                        else {
-                            if ( false ) {
-                                ret = replReplicateUnlink( _ctx );
-                                if ( !ret.ok() ) {
-                                    std::stringstream msg;
-                                    msg << __FUNCTION__;
-                                    msg << " - Failed to replicate the unlink operation for file \"";
-                                    msg << data_obj->physical_path();
-                                    msg << "\"";
-                                    result = PASSMSG( msg.str(), ret );
-                                }
-                            }
-                        }
-                    }
-                }
-#endif
             }
         }
         return result;
@@ -1526,15 +1477,7 @@ extern "C" {
 
         else if ( irods::WRITE_OPERATION  == ( *_operation ) ||
                   irods::CREATE_OPERATION == ( *_operation ) ) {
-#if 0
-            if ( !( ret = replUpdateObjectAndOperProperties( _ctx, *_operation ) ).ok() ) {
-                std::stringstream msg;
-                msg << "Failed to select an appropriate child.";
-                result = PASSMSG( msg.str(), ret );
-            }
-#else
             result = ASSERT_PASS( _ctx.prop_map().set< std::string >( operation_type_prop, *_operation ), "failed to set opetion_type property" );
-#endif
         }
 
         return result;

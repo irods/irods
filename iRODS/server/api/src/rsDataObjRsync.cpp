@@ -80,26 +80,6 @@ rsDataObjRsync( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
         status = _rcDataObjRsync( rodsServerHost->conn, dataObjInp,
                                   outParamArray );
-#if 0
-        int l1descInx;
-        if ( status < 0 ) {
-            return ( status );
-        }
-
-        if ( status == SYS_SVR_TO_CLI_MSI_REQUEST ) {
-            /* server request to client */
-            l1descInx = allocAndSetL1descForZoneOpr( 0, dataObjInp,
-                        rodsServerHost, NULL );
-            if ( l1descInx < 0 ) {
-                return l1descInx;
-            }
-            if ( *outParamArray == NULL ) {
-                *outParamArray = malloc( sizeof( msParamArray_t ) );
-                bzero( *outParamArray, sizeof( msParamArray_t ) );
-            }
-            addIntParamToArray( *outParamArray, CL_ZONE_OPR_INX, l1descInx );
-        }
-#endif
         return status;
     }
 
@@ -160,31 +140,6 @@ rsRsyncDataToFile( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     }
 
     return SYS_SVR_TO_CLI_GET_ACTION;
-#if 0
-    msParamArray_t *myMsParamArray;
-    dataObjInp_t *myDataObjInp;
-
-    myMsParamArray = malloc( sizeof( msParamArray_t ) );
-    memset( myMsParamArray, 0, sizeof( msParamArray_t ) );
-    /* have to get its own dataObjInp_t */
-    myDataObjInp = malloc( sizeof( dataObjInp_t ) );
-    replDataObjInp( dataObjInp, myDataObjInp );
-
-    status = addMsParam( myMsParamArray, CL_GET_ACTION, DataObjInp_MS_T,
-                         ( void * ) myDataObjInp, NULL );
-
-    if ( status < 0 ) {
-        rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, status,
-                            "rsRsyncDataToFile: addMsParam error. status = %d", status );
-        return ( status );
-    }
-
-    /* tell the client to do the put */
-    status = sendAndRecvBranchMsg( rsComm, rsComm->apiInx,
-                                   SYS_SVR_TO_CLI_MSI_REQUEST, ( void * ) myMsParamArray, NULL );
-
-    return ( status );
-#endif
 }
 
 int
@@ -245,32 +200,6 @@ rsRsyncFileToData( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         return ( 0 );
     }
     return SYS_SVR_TO_CLI_PUT_ACTION;
-#if 0
-    msParamArray_t *myMsParamArray;
-    dataObjInp_t *myDataObjInp;
-
-    myMsParamArray = malloc( sizeof( msParamArray_t ) );
-    memset( myMsParamArray, 0, sizeof( msParamArray_t ) );
-    /* have to get its own dataObjInp_t */
-    myDataObjInp = malloc( sizeof( dataObjInp_t ) );
-    replDataObjInp( dataObjInp, myDataObjInp );
-    addKeyVal( &myDataObjInp->condInput, REG_CHKSUM_KW, fileChksumStr );
-
-    status = addMsParam( myMsParamArray, CL_PUT_ACTION, DataObjInp_MS_T,
-                         ( void * ) myDataObjInp, NULL );
-
-    if ( status < 0 ) {
-        rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, status,
-                            "rsRsyncDataToFile: addMsParam error. status = %d", status );
-        return ( status );
-    }
-
-    /* tell the client to do the put */
-    status = sendAndRecvBranchMsg( rsComm, rsComm->apiInx,
-                                   SYS_SVR_TO_CLI_MSI_REQUEST, ( void * ) myMsParamArray, NULL );
-
-    return ( status );
-#endif
 }
 
 int
@@ -278,10 +207,6 @@ rsRsyncDataToData( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     int status;
     char *srcChksumStr = NULL;
     char *destChksumStr = NULL;
-#if 0
-    dataObjInfo_t *srcDataObjInfoHead = NULL;
-    dataObjInfo_t *destDataObjInfoHead = NULL;
-#endif
     dataObjCopyInp_t dataObjCopyInp;
     char *destObjPath;
     transferStat_t *transStat = NULL;

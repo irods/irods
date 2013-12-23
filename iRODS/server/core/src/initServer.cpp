@@ -86,28 +86,6 @@ resolveHost( rodsHostAddr_t *addr, rodsServerHost_t **rodsServerHost ) {
 
     return ( tmpRodsServerHost->localFlag );
 }
-#if 0 // JMC - UNUSED
-int
-resolveHostByDataObjInfo( dataObjInfo_t *dataObjInfo,
-                          rodsServerHost_t **rodsServerHost ) {
-    rodsHostAddr_t addr;
-    int remoteFlag;
-
-    if ( dataObjInfo == NULL || dataObjInfo->rescInfo == NULL ||
-            dataObjInfo->rescInfo->rescLoc == NULL ) {
-        rodsLog( LOG_NOTICE,
-                 "resolveHostByDataObjInfo: NULL input" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
-    }
-
-    memset( &addr, 0, sizeof( addr ) );
-    //rstrcpy (addr.hostAddr, dataObjInfo->rescInfo->rescLoc, NAME_LEN);
-
-    remoteFlag = resolveHost( &addr, rodsServerHost );
-
-    return ( remoteFlag );
-}
-#endif // JMC - UNUSED
 int
 resolveHostByRescInfo( rescInfo_t *rescInfo, rodsServerHost_t **rodsServerHost ) {
     rodsHostAddr_t addr;
@@ -135,14 +113,6 @@ mkServerHost( char *myHostAddr, char *zoneName ) {
     tmpRodsServerHost = ( rodsServerHost_t* )malloc( sizeof( rodsServerHost_t ) );
     memset( tmpRodsServerHost, 0, sizeof( rodsServerHost_t ) );
 
-#if 0
-    if ( portNum > 0 ) {
-        tmpRodsServerHost->portNum = portNum;
-    }
-    else {
-        tmpRodsServerHost->portNum = ServerHostHead->portNum;
-    }
-#endif
     /* XXXXX need to lookup the zone table when availiable */
     status = queHostName( tmpRodsServerHost, myHostAddr, 0 );
     if ( status < 0 ) {
@@ -272,13 +242,6 @@ initLocalServerHost( rsComm_t *rsComm ) {
                  status );
         status = 0;
     }
-
-#if 0
-    if ( myEnv != NULL ) {
-        /* ServerHostHead->portNum = myEnv->rodsPort; */
-        ZoneInfoHead->portNum = myEnv->rodsPort;
-    }
-#endif
 
     if ( ProcessType == SERVER_PT ) {
         printServerHost( LocalServerHost );
@@ -1440,29 +1403,6 @@ cleanupAndExit( int status ) {
         disconnectAllSvrToSvrConn();
     }
 
-#if 0 // JMC - fixes double free on resource server, fixes lean on icat server... ?
-    // =-=-=-=-=-=-=-
-    // clean up server host list
-    if ( ServerHostHead ) {
-        rodsServerHost_t* tmp_host = ServerHostHead;
-        while ( tmp_host ) {
-            rodsServerHost_t* free_me = tmp_host;
-            tmp_host = tmp_host->next;
-
-            hostName_t* tmp_name = free_me->hostName;
-            while ( tmp_name ) {
-                hostName_t* free_name = tmp_name;
-                tmp_name = free_name->next;
-                free( free_name->name );
-                free( free_name );
-            }
-
-            free( free_me->zoneInfo );
-            free( free_me );
-        }
-    }
-#endif
-
     if ( status >= 0 ) {
         exit( 0 );
     }
@@ -2005,14 +1945,6 @@ getAndConnRemoteZoneForCopy( rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
         return ( LOCAL_HOST );
     }
 
-#if 0
-    if ( srcIcatServerHost != destIcatServerHost ) {
-        return ( LOCAL_HOST );
-    }
-
-    /* from the same remote zone */
-#endif
-
     status = getAndConnRemoteZone( rsComm, destDataObjInp, rodsServerHost,
                                    REMOTE_CREATE );
 
@@ -2105,34 +2037,6 @@ getRemoteZoneHost( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     return ( status );
 }
 
-#if 0 // JMC - UNUSED
-int
-resolveAndConnHost( rsComm_t *rsComm, rodsHostAddr_t *addr,
-                    rodsServerHost_t **rodsServerHost ) {
-    int remoteFlag;
-    int status;
-
-    remoteFlag = resolveHost( addr, rodsServerHost );
-
-    if ( remoteFlag == LOCAL_HOST ) {
-        return LOCAL_HOST;
-    }
-
-    status = svrToSvrConnect( rsComm, *rodsServerHost );
-
-    if ( status < 0 ) {
-        rodsLog( LOG_ERROR,
-                 "resolveAndConnHost: svrToSvrConnect to %s failed",
-                 ( *rodsServerHost )->hostName->name );
-    }
-    if ( status >= 0 ) {
-        return ( REMOTE_HOST );
-    }
-    else {
-        return ( status );
-    }
-}
-#endif // JMC - UNUSED
 int
 isLocalHost( char *hostAddr ) {
     int remoteFlag;

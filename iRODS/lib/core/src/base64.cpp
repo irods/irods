@@ -47,12 +47,6 @@ int base64_encode( const unsigned char *in,  unsigned long inlen,
     unsigned long i, len2, leven;
     unsigned char *p;
 
-#if 0
-    LTC_ARGCHK( in     != NULL );
-    LTC_ARGCHK( out    != NULL );
-    LTC_ARGCHK( outlen != NULL );
-#endif
-
     /* valid output size ? */
     len2 = 4 * ( ( inlen + 2 ) / 3 );
     if ( *outlen < len2 + 1 ) {
@@ -99,11 +93,6 @@ int base64_decode( const unsigned char *in,  unsigned long inlen,
     unsigned long t, x, y, z;
     unsigned char c;
     int           g;
-#if 0
-    LTC_ARGCHK( in     != NULL );
-    LTC_ARGCHK( out    != NULL );
-    LTC_ARGCHK( outlen != NULL );
-#endif
 
     g = 3;
     for ( x = y = z = t = 0; x < inlen; x++ ) {

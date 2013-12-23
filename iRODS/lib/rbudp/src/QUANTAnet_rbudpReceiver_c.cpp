@@ -42,16 +42,6 @@
   }  while(0)
 */
 
-#if 0
-inline void TRACE_DEBUG( char *format, ... ) {
-    va_list arglist;
-    va_start( arglist, format );
-    vfprintf( stderr, format, arglist );
-    fprintf( stderr, "\n" );
-    va_end( arglist );
-}
-#endif
-
 void
 QUANTAnet_rbudpReceiver_c( rbudpReceiver_t *rbudpReceiver, int port ) {
     rbudpReceiver->rbudpBase.tcpPort = port;
@@ -127,77 +117,6 @@ int  receiveBuf( rbudpReceiver_t *rbudpReceiver, void * buffer, int bufSize,
     free( rbudpReceiver->rbudpBase.hashTable );
     return ( 0 );
 }
-
-#if 0	/* not used */
-void  udpReceiveReadv() {
-    int done;
-    long long seqno, packetno;
-    struct timeval timeout;
-    fd_set rset;
-    int maxfdpl;
-    done = 0;
-    packetno = 0;
-
-    timeout.tv_sec = 100;
-    timeout.tv_usec = 0;
-#define QMAX(x, y) ((x)>(y)?(x):(y))
-    maxfdpl = QMAX( udpSockfd, tcpSockfd ) + 1;
-    FD_ZERO( &rset );
-    while ( !done ) {
-        // These two FD_SET cannot be put outside the while, don't why though
-        FD_SET( udpSockfd, &rset );
-        FD_SET( tcpSockfd, &rset );
-        select( maxfdpl, &rset, NULL, NULL, &timeout );
-
-        // receiving a packet
-        if ( FD_ISSET( udpSockfd, &rset ) ) {
-            // set seqno to expected sequence number
-            seqno = hashTable[packetno];
-            //fprintf(log, "expect %d\t", seqno);
-            iovRecv[1].iov_base = ( char * )mainBuffer + ( seqno * payloadSize );
-            iovRecv[1].iov_len = payloadSize;
-            if ( recvmsg( udpSockfd, &msgRecv, 0 ) < 0 ) {
-                perror( "recvmsg error\n" );
-                exit( 1 );
-            }
-
-            int rcvseq = ptohseq( recvHeader.seq );
-            // make sure it is the expected packet
-            if ( rcvseq == seqno ) {
-                updateErrorBitmap( rcvseq );
-                // next expected packet
-                packetno ++;
-            }
-            // if some packets lost before this packet, move this packet backward
-            else if ( rcvseq > seqno ) {
-                bcopy( iovRecv[1].iov_base, ( char * )mainBuffer + ( rcvseq * payloadSize ) , iovRecv[1].iov_len );
-                updateErrorBitmap( rcvseq );
-                // missed some packets, next expected packet
-                do {
-                    packetno ++;
-                }
-                while ( ( rcvseq != hashTable[packetno] ) && ( packetno <= remainNumberOfPackets ) );
-                if ( packetno > remainNumberOfPackets ) {
-                    fprintf( stderr, "recv error\n" );
-                }
-                packetno ++;
-            }
-            //TRACE_DEBUG("received %d -> %d", recvHeader.seq, rcvseq);
-        }
-        //receive end of UDP signal
-        else if ( FD_ISSET( tcpSockfd, &rset ) ) {
-            done = 1;
-            if ( verbose ) {
-                TRACE_DEBUG( "received TCP signal" );
-            }
-            readn( tcpSockfd, ( char * )&endOfUdp, sizeof( struct _endOfUdp ) );
-        }
-        else { // time out
-            done = 1;
-        }
-    }
-}
-#endif
 
 int  udpReceive( rbudpReceiver_t *rbudpReceiver ) {
     int done, actualPayloadSize, retval;
