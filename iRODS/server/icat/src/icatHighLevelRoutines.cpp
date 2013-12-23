@@ -424,7 +424,7 @@ getLocalZone() {
    Used by icatGeneralQuery.c
 */
 int
-chlGetLocalZone( 
+chlGetLocalZone(
     std::string& _zone ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -460,17 +460,17 @@ chlGetLocalZone(
 
     // =-=-=-=-=-=-=-
     // call the get local zone operation on the plugin
-    ret = db->call< 
-              const std::string* >(
-                  irods::DATABASE_OP_GET_LOCAL_ZONE,
-                  ptr,
-                  &_zone );
-    if( !ret.ok() ) {
+    ret = db->call <
+          const std::string* > (
+              irods::DATABASE_OP_GET_LOCAL_ZONE,
+              ptr,
+              &_zone );
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
 
     return ret.code();
-    
+
 } // chlGetLocalZone
 
 
@@ -513,14 +513,14 @@ int chlUpdateRescObjCount(
 
     // =-=-=-=-=-=-=-
     // call the open operation on the plugin
-    ret = db->call< 
-              const std::string*,
-              int >(
-                  irods::DATABASE_OP_UPDATE_RESC_OBJ_COUNT,
-                  ptr,
-                  &_resc,
-                  _delta );
-    if( !ret.ok() ) {
+    ret = db->call <
+          const std::string*,
+          int > (
+              irods::DATABASE_OP_UPDATE_RESC_OBJ_COUNT,
+              ptr,
+              &_resc,
+              _delta );
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
 
@@ -540,8 +540,8 @@ int chlUpdateRescObjCount(
 //         the replStatus of the copy specified by dataObjInfo
 //         is marked NEWLY_CREATED_COPY and all other copies are
 //         be marked OLD_COPY.
-int chlModDataObjMeta( 
-    rsComm_t*      _comm, 
+int chlModDataObjMeta(
+    rsComm_t*      _comm,
     dataObjInfo_t* _data_obj_info,
     keyValPair_t*  _reg_param ) {
     // =-=-=-=-=-=-=-
@@ -578,16 +578,16 @@ int chlModDataObjMeta(
 
     // =-=-=-=-=-=-=-
     // call the open operation on the plugin
-    ret = db->call<
-              rsComm_t*,
-              dataObjInfo_t*,
-              keyValPair_t* >(
+    ret = db->call <
+          rsComm_t*,
+          dataObjInfo_t*,
+          keyValPair_t* > (
               irods::DATABASE_OP_MOD_DATA_OBJ_META,
               ptr,
               _comm,
               _data_obj_info,
               _reg_param );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
 
@@ -599,8 +599,8 @@ int chlModDataObjMeta(
 // chlRegDataObj - Register a new iRODS file (data object)
 // Input - rsComm_t *rsComm  - the server handle
 //         dataObjInfo_t *dataObjInfo - contains info about the data object.
-int chlRegDataObj( 
-    rsComm_t*      _comm, 
+int chlRegDataObj(
+    rsComm_t*      _comm,
     dataObjInfo_t* _data_obj_info ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -636,14 +636,14 @@ int chlRegDataObj(
 
     // =-=-=-=-=-=-=-
     // call the open operation on the plugin
-    ret = db->call<
-              rsComm_t*,
-              dataObjInfo_t* >(
+    ret = db->call <
+          rsComm_t*,
+          dataObjInfo_t* > (
               irods::DATABASE_OP_REG_DATA_OBJ,
               ptr,
               _comm,
               _data_obj_info );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
 
@@ -658,10 +658,10 @@ int chlRegDataObj(
 //         about the object.
 // The src dataId and replNum are used in a query, a few fields are updated
 // from dstDataObjInfo, and a new row inserted.
-int chlRegReplica( 
-    rsComm_t*      _comm, 
+int chlRegReplica(
+    rsComm_t*      _comm,
     dataObjInfo_t* _src_data_obj_info,
-    dataObjInfo_t* _dst_data_obj_info, 
+    dataObjInfo_t* _dst_data_obj_info,
     keyValPair_t*  _cond_input ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -697,18 +697,18 @@ int chlRegReplica(
 
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
-    ret = db->call<
-              rsComm_t*,
-              dataObjInfo_t*,
-              dataObjInfo_t*,
-              keyValPair_t* >(
+    ret = db->call <
+          rsComm_t*,
+          dataObjInfo_t*,
+          dataObjInfo_t*,
+          keyValPair_t* > (
               irods::DATABASE_OP_REG_REPLICA,
               ptr,
               _comm,
               _src_data_obj_info,
               _dst_data_obj_info,
               _cond_input );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
 
@@ -783,9 +783,9 @@ static int removeAVUs() {
  *         dataObjInfo_t *dataObjInfo - contains info about the data object.
  *         keyValPair_t *condInput - used to specify a admin-mode.
  */
-int chlUnregDataObj( 
-    rsComm_t*      _comm, 
-    dataObjInfo_t* _data_obj_info, 
+int chlUnregDataObj(
+    rsComm_t*      _comm,
+    dataObjInfo_t* _data_obj_info,
     keyValPair_t*  _cond_input ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -821,16 +821,16 @@ int chlUnregDataObj(
 
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
-    ret = db->call<
-              rsComm_t*,
-              dataObjInfo_t*,
-              keyValPair_t* >(
+    ret = db->call <
+          rsComm_t*,
+          dataObjInfo_t*,
+          keyValPair_t* > (
               irods::DATABASE_OP_UNREG_REPLICA,
               ptr,
               _comm,
               _data_obj_info,
               _cond_input );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
 
@@ -843,7 +843,7 @@ int chlUnregDataObj(
 // Input - rsComm_t *rsComm  - the server handle
 //         ruleExecSubmitInp_t *ruleExecSubmitInp - contains info about the
 //             delayed rule.
-int chlRegRuleExec( 
+int chlRegRuleExec(
     rsComm_t*            _comm,
     ruleExecSubmitInp_t* _re_sub_inp ) {
     // =-=-=-=-=-=-=-
@@ -880,14 +880,14 @@ int chlRegRuleExec(
 
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
-    ret = db->call<
-              rsComm_t*,
-              ruleExecSubmitInp_t* >(
+    ret = db->call <
+          rsComm_t*,
+          ruleExecSubmitInp_t* > (
               irods::DATABASE_OP_REG_RULE_EXEC,
               ptr,
               _comm,
               _re_sub_inp );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
 
@@ -902,8 +902,8 @@ int chlRegRuleExec(
 //         char *ruleExecId - the id of the object to change
 //         keyValPair_t *regParam - the keyword/value pair of items to be
 //         modified.
-int chlModRuleExec( 
-    rsComm_t*     _comm, 
+int chlModRuleExec(
+    rsComm_t*     _comm,
     char*         _re_id,
     keyValPair_t* _reg_param ) {
     // =-=-=-=-=-=-=-
@@ -940,16 +940,16 @@ int chlModRuleExec(
 
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
-    ret = db->call<
-              rsComm_t*,
-              char*,
-              keyValPair_t* >(
+    ret = db->call <
+          rsComm_t*,
+          char*,
+          keyValPair_t* > (
               irods::DATABASE_OP_MOD_RULE_EXEC,
               ptr,
               _comm,
               _re_id,
               _reg_param );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
 
@@ -958,7 +958,7 @@ int chlModRuleExec(
 } // chlModRuleExec
 
 /* delete a delayed rule execution entry */
-int chlDelRuleExec( 
+int chlDelRuleExec(
     rsComm_t* _comm,
     char*     _re_id ) {
     // =-=-=-=-=-=-=-
@@ -995,15 +995,15 @@ int chlDelRuleExec(
 
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
-    ret = db->call<
-              rsComm_t*,
-              char* >(
+    ret = db->call <
+          rsComm_t*,
+          char* > (
               irods::DATABASE_OP_DEL_RULE_EXEC,
               ptr,
               _comm,
               _re_id );
-              
-    if( !ret.ok() ) {
+
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
 
@@ -1327,14 +1327,14 @@ chlAddChildResc(
 
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
-    ret = db->call<
-              rsComm_t*,
-              rescInfo_t* >(
+    ret = db->call <
+          rsComm_t*,
+          rescInfo_t* > (
               irods::DATABASE_OP_ADD_CHILD_RESC,
               ptr,
               _comm,
               _resc_info );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
 
@@ -1365,7 +1365,7 @@ irods::error validate_resource_name( std::string _resc_name ) {
 
 
 /* register a Resource */
-int chlRegResc( 
+int chlRegResc(
     rsComm_t*   _comm,
     rescInfo_t* _resc_info ) {
     // =-=-=-=-=-=-=-
@@ -1402,14 +1402,14 @@ int chlRegResc(
 
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
-    ret = db->call<
-              rsComm_t*,
-              rescInfo_t* >(
+    ret = db->call <
+          rsComm_t*,
+          rescInfo_t* > (
               irods::DATABASE_OP_REG_RESC,
               ptr,
               _comm,
               _resc_info );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
 
@@ -1486,26 +1486,26 @@ chlDelChildResc(
 
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
-    ret = db->call<
-              rsComm_t*,
-              rescInfo_t* >(
+    ret = db->call <
+          rsComm_t*,
+          rescInfo_t* > (
               irods::DATABASE_OP_DEL_CHILD_RESC,
               ptr,
               _comm,
               _resc_info );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
 
     return ret.code();
-    
+
 } // chlDelChildResc
 
 // =-=-=-=-=-=-=-
-// delete a Resource 
-int chlDelResc( 
-    rsComm_t*   _comm, 
-    rescInfo_t* _resc_info, 
+// delete a Resource
+int chlDelResc(
+    rsComm_t*   _comm,
+    rescInfo_t* _resc_info,
     int         _dry_run ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -1541,16 +1541,16 @@ int chlDelResc(
 
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
-    ret = db->call<
-              rsComm_t*,
-              rescInfo_t*,
-              int >(
+    ret = db->call <
+          rsComm_t*,
+          rescInfo_t*,
+          int > (
               irods::DATABASE_OP_DEL_RESC,
               ptr,
               _comm,
               _resc_info,
               _dry_run );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
 
@@ -1569,7 +1569,7 @@ int chlDelResc(
 // For example, if the user's zone is wrong the code will first remove the
 // home collection and then fail when removing the user and we need to
 // rollback or the next attempt will show the collection as missing.
-int chlRollback( 
+int chlRollback(
     rsComm_t* _comm ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -1605,12 +1605,12 @@ int chlRollback(
 
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
-    ret = db->call<
-              rsComm_t* >(
+    ret = db->call <
+          rsComm_t* > (
               irods::DATABASE_OP_ROLLBACK,
               ptr,
               _comm );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
 
@@ -1624,7 +1624,7 @@ int chlRollback(
 // Some of the chl functions also commit changes upon success but some
 // do not, having the caller (microservice, perhaps) either commit or
 // rollback.
-int chlCommit( 
+int chlCommit(
     rsComm_t* _comm ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -1660,12 +1660,12 @@ int chlCommit(
 
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
-    ret = db->call<
-              rsComm_t* >(
+    ret = db->call <
+          rsComm_t* > (
               irods::DATABASE_OP_COMMIT,
               ptr,
               _comm );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
 
@@ -1674,9 +1674,9 @@ int chlCommit(
 } // chlCommit
 
 // =-=-=-=-=-=-=-
-// Delete a User, Rule Engine version 
-int chlDelUserRE( 
-    rsComm_t*   _comm, 
+// Delete a User, Rule Engine version
+int chlDelUserRE(
+    rsComm_t*   _comm,
     userInfo_t* _user_info ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -1712,14 +1712,14 @@ int chlDelUserRE(
 
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
-    ret = db->call<
-              rsComm_t*,
-              userInfo_t* >(
+    ret = db->call <
+          rsComm_t*,
+          userInfo_t* > (
               irods::DATABASE_OP_DEL_USER_RE,
               ptr,
               _comm,
               _user_info );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
 
@@ -1732,8 +1732,8 @@ int chlDelUserRE(
 //  There are cases where the irods admin needs to create collections,
 //  for a new user, for example; thus the create user rule/microservices
 //  make use of this.
-int chlRegCollByAdmin( 
-    rsComm_t*   _comm, 
+int chlRegCollByAdmin(
+    rsComm_t*   _comm,
     collInfo_t* _coll_info ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -1769,14 +1769,14 @@ int chlRegCollByAdmin(
 
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
-    ret = db->call<
-              rsComm_t*,
-              collInfo_t* >(
+    ret = db->call <
+          rsComm_t*,
+          collInfo_t* > (
               irods::DATABASE_OP_REG_COLL_BY_ADMIN,
               ptr,
               _comm,
               _coll_info );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
 
@@ -1792,8 +1792,8 @@ int chlRegCollByAdmin(
 //      collName - the collection to be registered, and optionally
 //      collType, collInfo1 and/or collInfo2.
 //   We may need a kevValPair_t sometime, but currently not used.
-int chlRegColl( 
-    rsComm_t*   _comm, 
+int chlRegColl(
+    rsComm_t*   _comm,
     collInfo_t* _coll_info ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -1829,14 +1829,14 @@ int chlRegColl(
 
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
-    ret = db->call<
-              rsComm_t*,
-              collInfo_t* >(
+    ret = db->call <
+          rsComm_t*,
+          collInfo_t* > (
               irods::DATABASE_OP_REG_COLL,
               ptr,
               _comm,
               _coll_info );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
 
@@ -1852,8 +1852,8 @@ int chlRegColl(
 //      collName - the collection to be updated, and one or more of:
 //      collType, collInfo1 and/or collInfo2.
 //   We may need a kevValPair_t sometime, but currently not used.
-int chlModColl( 
-    rsComm_t*   _comm, 
+int chlModColl(
+    rsComm_t*   _comm,
     collInfo_t* _coll_info ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -1889,14 +1889,14 @@ int chlModColl(
 
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
-    ret = db->call<
-              rsComm_t*,
-              collInfo_t* >(
+    ret = db->call <
+          rsComm_t*,
+          collInfo_t* > (
               irods::DATABASE_OP_MOD_COLL,
               ptr,
               _comm,
               _coll_info );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
 
@@ -1906,10 +1906,10 @@ int chlModColl(
 
 // =-=-=-=-=-=-=-
 // register a Zone
-int chlRegZone( 
+int chlRegZone(
     rsComm_t* _comm,
-    char*     _zone_name, 
-    char*     _zone_type, 
+    char*     _zone_name,
+    char*     _zone_type,
     char*     _zone_conn_info,
     char*     _zone_comment ) {
     // =-=-=-=-=-=-=-
@@ -1946,12 +1946,12 @@ int chlRegZone(
 
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
-    ret = db->call<
-              rsComm_t*,
-              char*,
-              char*,
-              char*,
-              char* >(
+    ret = db->call <
+          rsComm_t*,
+          char*,
+          char*,
+          char*,
+          char* > (
               irods::DATABASE_OP_REG_ZONE,
               ptr,
               _comm,
@@ -1959,7 +1959,7 @@ int chlRegZone(
               _zone_type,
               _zone_conn_info,
               _zone_comment );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
 
@@ -11334,7 +11334,7 @@ int chlModTicket( rsComm_t *rsComm, char *opName, char *ticketString,
                  0, 0, 0, &icss );
     if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ||
             status == CAT_NO_ROWS_FOUND ) {
-        if( !addRErrorMsg( &rsComm->rError, 0, "Invalid user" ) ) {
+        if ( !addRErrorMsg( &rsComm->rError, 0, "Invalid user" ) ) {
         }
         return( CAT_INVALID_USER );
     }
