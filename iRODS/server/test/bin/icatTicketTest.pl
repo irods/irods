@@ -65,8 +65,16 @@ $F3="TicketTestFile3";
 $Future_Date="2040-12-12";	# Valid ticket
 $Past_Date="1970-01-01";	# Expired ticket
 
-$This_Host=hostfqdn();
+#$This_Host=hostfqdn();	# not always correct
 #$This_Host=Net::Address::IP::Local->public;	# 4NT TEST
+
+my $hostname = hostname();
+my $domain = hostdomain();
+chomp(my $hostname_d = `hostname -d`);
+if (index($hostname_d, $domain) >= 0) {
+	$domain = $hostname_d;
+}
+$This_Host = $hostname . "." . $domain;
 
 #$Other_Host="shiny.irods.renci.org";
 $Other_Host="jargontest.irods.renci.org";
