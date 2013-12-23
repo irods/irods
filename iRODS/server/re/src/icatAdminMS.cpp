@@ -502,27 +502,11 @@ msiRenameCollection( msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei
  **/
 int
 msiAclPolicy( msParam_t *msParam, ruleExecInfo_t *rei ) {
-#if 0
-    msParamArray_t *myMsParamArray;
-    int flag = 1;
-#endif
     char *inputArg;
 
     inputArg = ( char * ) msParam->inOutStruct;
     if ( inputArg != NULL ) {
         if ( strncmp( inputArg, "STRICT", 6 ) == 0 ) {
-#if 0
-            /* No longer need this as we're calling
-               chlGenQueryAccessControlSetup directly below (in case
-               msiAclPolicy will be called in a different manner than via
-               acAclPolicy sometime).
-               Leaving it in (ifdef'ed out tho) in case needed later.
-            */
-            myMsParamArray = mallocAndZero( sizeof( msParamArray_t ) );
-            addMsParamToArray( myMsParamArray, "STRICT", INT_MS_T, &flag,
-                               NULL, 0 );
-            rei->inOutMsParamArray = *myMsParamArray;
-#endif
 #ifdef RODS_CAT
             chlGenQueryAccessControlSetup( NULL, NULL, NULL, 0, 2 );
 #endif

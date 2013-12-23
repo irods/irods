@@ -34,11 +34,7 @@
 #define RECONN_NOTUSED	1	/* this has been depricated */
 #define RECONN_TIMEOUT	200
 
-#if 0	/* XXXXXXXXXX testing only */
 #define RECONN_TIMEOUT_TIME  600   /* re-connection timeout time in sec */
-#else
-#define RECONN_TIMEOUT_TIME  600   /* re-connection timeout time in sec */
-#endif
 
 #define RECONNECT_ENV "irodsReconnect"		/* reconnFlag will be set to
 * RECONN_TIMEOUT if this

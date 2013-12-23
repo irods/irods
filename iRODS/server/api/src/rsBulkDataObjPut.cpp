@@ -857,10 +857,6 @@ postProcBulkPut( rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
         rstrcpy( dataObjInp.objPath, tmpObjPath, MAX_NAME_LEN );
         rstrcpy( tmpDataObjInfo->dataType, tmpDataType, NAME_LEN );
         tmpDataObjInfo->dataSize = strtoll( tmpDataSize, 0, 0 );
-#if 0   /* not needed. from dataObjInfo ? */
-        rstrcpy( tmpDataObjInfo->rescName, tmpRescName, NAME_LEN );
-        rstrcpy( tmpDataObjInfo->rescGroupName, tmpRescGroupName, NAME_LEN );
-#endif
         rstrcpy( tmpDataObjInfo->filePath, tmpFilePath, MAX_NAME_LEN );
         rstrcpy( tmpDataObjInfo->dataMode, tmpDataMode, NAME_LEN );
         tmpDataObjInfo->replNum = atoi( tmpReplNum );

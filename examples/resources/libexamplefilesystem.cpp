@@ -1381,17 +1381,7 @@ extern "C" {
         //     the client disconnects, uncomment the first two lines for effect.
         irods::error post_disconnect_maintenance_operation( irods::pdmo_type& _op ) {
             irods::error result = SUCCESS();
-#if 0
-            std::string name;
-            irods::error err = get_property< std::string >( "name", name );
-            if ( ( result = ASSERT_PASS( err, "post_disconnect_maintenance_operation failed." ) ).ok() ) {
-
-                _op = maintenance_operation( name );
-            }
-            return result;
-#else
             return ERROR( -1, "nop" );
-#endif
         }
     }; // class examplefilesystem_resource
 

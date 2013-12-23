@@ -216,20 +216,6 @@ irods_file_read_( int *fd, void *buffer, int *size ) {
         printf( "irods_file_read_ rcDataObjRead stat: %d\n", status );
     }
 
-#if 0
-    // Doesn't do any good, fortran's strings are not null terminated,
-    // And if the data is not strings, we wouldn't want to do this.
-    printf( "buffer=%s\n", ( char * )buffer );
-    if ( status > 0 && status < *size ) {
-        cp1 = ( char* ) buffer;
-        printf( "cp1=%d\n", cp1 );
-        cp1 += status;
-        printf( "cp1=%d\n", cp1 );
-        *cp1 = '\0';
-    }
-    printf( "buffer=%s\n", ( char * )buffer );
-#endif
-
     return( status );
 }
 

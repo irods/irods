@@ -2204,9 +2204,6 @@ chlGenQuery( genQueryInp_t genQueryInp, genQueryOut_t *result ) {
             else {
                 rodsLog( LOG_SQL, "chlGenQuery SQL 2" );
             }
-#if 0
-            rodsLog( LOG_NOTICE, "combinedSQL: %s", combinedSQL );
-#endif
         }
 
         if ( genQueryInp.options & RETURN_TOTAL_ROW_COUNT ) {

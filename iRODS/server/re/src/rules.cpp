@@ -364,10 +364,6 @@ ExprType *typeRule( RuleDesc *rule, Env *funcDesc, Hashtable *varTypes, List *ty
     char buf[ERR_MSG_LEN];
     Node *node = rule->node;
     int dynamictyping = rule->dynamictyping;
-#if 0
-    int arity = RULE_NODE_NUM_PARAMS( node ); /* subtrees[0] = param list */
-    Node *type = node->subtrees[0]->subtrees[1]; /* subtrees[1] = return type */
-#endif
 
     ExprType *resType = typeExpression3( node->subtrees[1], dynamictyping, funcDesc, varTypes, typingConstraints, errmsg, errnode, r );
     /*printf("Type %d\n",resType->t); */

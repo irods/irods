@@ -151,9 +151,5 @@
 #define FNMapStruct_PI "int maxNumOfFMaps; str *funcName[maxNumOfFMaps]; str *func2CMap[maxNumOfFMaps]; double fmapId[maxNumOfFMaps];"
 #define MsrvcStruct_PI "int maxNumOfMsrvcs; double msrvcId[maxNumOfMsrvcs]; str moduleName[maxNumOfMsrvcs]; str msrvcName[maxNumOfMsrvcs];  str msrvcSiganture[maxNumOfMsrvcs];  str msrvcVersion[maxNumOfMsrvcs];  str msrvcHost[maxNumOfMsrvcs];  str msrvcLocation[maxNumOfMsrvcs];  str msrvcLanguage[maxNumOfMsrvcs];  str msrvcTypeName[maxNumOfMsrvcs];  double msrvcStatus[maxNumOfMsrvcs];"
 #define DataSeg_PI "double len; double offset;"
-#if 0
-#define FileRestartInfo_PI "str fileName[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN]; int numSeg; int status; double fileSize; struct DataSeg_PI[MAX_NUM_CONFIG_TRAN_THR];"
-#else
 #define FileRestartInfo_PI "str fileName[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN]; int numSeg; int flags; double fileSize; struct DataSeg_PI[numSeg];"
-#endif
 #endif	/* PACK_INSTRUCT_H */

@@ -18,12 +18,7 @@ rsRuleExecSubmit( rsComm_t *rsComm, ruleExecSubmitInp_t *ruleExecSubmitInp,
         return ( SYS_INTERNAL_NULL_INPUT_ERR );
     }
 
-#if 0
-    status = getAndConnRcatHost( rsComm, MASTER_RCAT, NULL,
-                                 &rodsServerHost );
-#else
     status = getAndConnReHost( rsComm, &rodsServerHost );
-#endif
     if ( status < 0 ) {
         return( status );
     }
@@ -76,9 +71,6 @@ _rsRuleExecSubmit( rsComm_t *rsComm, ruleExecSubmitInp_t *ruleExecSubmitInp ) {
                      "rsRuleExecSubmit: getReiFilePath failed, status = %d", status );
             return ( status );
         }
-#if 0
-        reiFd = creat( ruleExecSubmitInp->reiFilePath, 0640 );
-#endif
         reiFd = open( ruleExecSubmitInp->reiFilePath, O_CREAT | O_EXCL | O_RDWR,
                       0640 );
         if ( reiFd < 0 ) {

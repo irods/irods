@@ -84,15 +84,10 @@ msiDataObjCreate( msParam_t *inpParam1, msParam_t *msKeyValStr,
         return ( rei->status );
     }
 
-#if 0
-    rei->status = parseMspForCondInp( inpParam2, &myDataObjInp->condInput,
-                                      DEST_RESC_NAME_KW );
-#else
     validKwFlags = DEST_RESC_NAME_FLAG | CREATE_MODE_FLAG | DATA_TYPE_FLAG |
                    FORCE_FLAG_FLAG | DATA_SIZE_FLAGS | OBJ_PATH_FLAG;
     rei->status = parseMsKeyValStrForDataObjInp( msKeyValStr, myDataObjInp,
                   DEST_RESC_NAME_KW, validKwFlags, &outBadKeyWd );
-#endif
 
     if ( rei->status < 0 ) {
         if ( outBadKeyWd != NULL ) {
@@ -223,11 +218,6 @@ msiDataObjOpen( msParam_t *inpParam, msParam_t *outParam,
         return ( rei->status );
     }
 
-#if 0	/* not needed with ability to input openFlags */
-    if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
-        myDataObjInp->openFlags = O_RDWR;
-    }
-#endif
     rei->status = rsDataObjOpen( rsComm, myDataObjInp );
     if ( rei->status >= 0 ) {
         fillIntInMsParam( outParam, rei->status );
@@ -953,17 +943,12 @@ msiDataObjRepl( msParam_t *inpParam1, msParam_t *msKeyValStr,
         return ( rei->status );
     }
 
-#if 0
-    rei->status = parseMspForCondInp( inpParam2, &myDataObjInp->condInput,
-                                      DEST_RESC_NAME_KW );
-#else
     validKwFlags = OBJ_PATH_FLAG | DEST_RESC_NAME_FLAG | NUM_THREADS_FLAG |
                    BACKUP_RESC_NAME_FLAG | RESC_NAME_FLAG | UPDATE_REPL_FLAG |
                    REPL_NUM_FLAG | ALL_FLAG | ADMIN_FLAG | VERIFY_CHKSUM_FLAG |
                    RBUDP_TRANSFER_FLAG | RBUDP_SEND_RATE_FLAG | RBUDP_PACK_SIZE_FLAG;
     rei->status = parseMsKeyValStrForDataObjInp( msKeyValStr, myDataObjInp,
                   DEST_RESC_NAME_KW, validKwFlags, &outBadKeyWd );
-#endif
 
     if ( rei->status < 0 ) {
         if ( outBadKeyWd != NULL ) {
@@ -1096,17 +1081,11 @@ msiDataObjCopy( msParam_t *inpParam1, msParam_t *inpParam2,
         return ( rei->status );
     }
 
-#if 0
-    rei->status = parseMspForCondInp( inpParam3,
-                                      &myDataObjCopyInp->destDataObjInp.condInput, DEST_RESC_NAME_KW );
-#else
     validKwFlags = OBJ_PATH_FLAG   | DEST_RESC_NAME_FLAG | FILE_PATH_FLAG |
                    DATA_TYPE_FLAG  | VERIFY_CHKSUM_FLAG  |
                    FORCE_FLAG_FLAG | NUM_THREADS_FLAG;
     rei->status = parseMsKeyValStrForDataObjInp( msKeyValStr, &myDataObjCopyInp->destDataObjInp,
                   DEST_RESC_NAME_KW, validKwFlags, &outBadKeyWd );
-
-#endif
 
     if ( rei->status < 0 ) {
         if ( outBadKeyWd != NULL ) {
@@ -1252,16 +1231,11 @@ msiDataObjPut( msParam_t *inpParam1, msParam_t *inpParam2,
         return ( rei->status );
     }
 
-#if 0
-    rei->status = parseMspForCondInp( inpParam3, &dataObjInp->condInput,
-                                      LOCAL_PATH_KW );
-#else
     validKwFlags = LOCAL_PATH_FLAG | DEST_RESC_NAME_FLAG | FILE_PATH_FLAG |
                    REPL_NUM_FLAG | DATA_TYPE_FLAG | VERIFY_CHKSUM_FLAG |
                    ALL_FLAG | FORCE_FLAG_FLAG | NUM_THREADS_FLAG | OBJ_PATH_FLAG;
     rei->status = parseMsKeyValStrForDataObjInp( msKeyValStr, dataObjInp,
                   LOCAL_PATH_KW, validKwFlags, &outBadKeyWd );
-#endif
 
     if ( rei->status < 0 ) {
         if ( outBadKeyWd != NULL ) {
@@ -1393,15 +1367,10 @@ msiDataObjGet( msParam_t *inpParam1, msParam_t *msKeyValStr,
         return ( rei->status );
     }
 
-#if 0
-    rei->status = parseMspForCondInp( inpParam2, &dataObjInp->condInput,
-                                      LOCAL_PATH_KW );
-#else
     validKwFlags = LOCAL_PATH_FLAG | FORCE_FLAG_FLAG | NUM_THREADS_FLAG |
                    RESC_NAME_FLAG | REPL_NUM_FLAG | VERIFY_CHKSUM_FLAG | OBJ_PATH_FLAG;
     rei->status = parseMsKeyValStrForDataObjInp( msKeyValStr, dataObjInp,
                   LOCAL_PATH_KW, validKwFlags, &outBadKeyWd );
-#endif
 
     if ( rei->status < 0 ) {
         if ( outBadKeyWd != NULL ) {
@@ -1642,15 +1611,10 @@ msiDataObjChksum( msParam_t *inpParam1, msParam_t *msKeyValStr,
         return ( rei->status );
     }
 
-#if 0
-    if ( ( rei->status = parseMspForCondKw( inpParam2, &myDataObjInp->condInput ) )
-            < 0 ) {
-#else
     validKwFlags = CHKSUM_ALL_FLAG | FORCE_CHKSUM_FLAG | REPL_NUM_FLAG |
                    OBJ_PATH_FLAG | VERIFY_CHKSUM_FLAG;
     if ( ( rei->status = parseMsKeyValStrForDataObjInp( msKeyValStr,
                          myDataObjInp, KEY_WORD_KW, validKwFlags, &outBadKeyWd ) ) < 0 ) {
-#endif
         if ( outBadKeyWd != NULL ) {
             rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                                 "msiDataObjChksum: input keyWd - %s error. status = %d",
@@ -2172,14 +2136,6 @@ msiRmColl( msParam_t *inpParam1, msParam_t *msKeyValStr, msParam_t *outParam, ru
         return ( rei->status );
     }
 
-#if 0
-    if ( ( rei->status = parseMspForCondKw( inpParam2, &myRmCollInp->condInput ) )
-            < 0 ) {
-        rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
-                            "msiRmColl: input inpParam2 error. status = %d", rei->status );
-        return ( rei->status );
-    }
-#else
     validKwFlags = RMTRASH_FLAG | ADMIN_RMTRASH_FLAG |
                    FORCE_FLAG_FLAG | COLL_NAME_FLAG;
     if ( ( rei->status = parseMsKeyValStrForCollInp( msKeyValStr,
@@ -2197,7 +2153,6 @@ msiRmColl( msParam_t *inpParam1, msParam_t *msKeyValStr, msParam_t *outParam, ru
         }
         return ( rei->status );
     }
-#endif
 
     addKeyVal( &myRmCollInp->condInput, RECURSIVE_OPR__KW, "" );
 
@@ -2592,9 +2547,6 @@ msiObjStat( msParam_t *inpParam1, msParam_t *outParam, ruleExecInfo_t *rei ) {
         return ( rei->status );
     }
 
-#if 0	/* separate specColl */
-    rei->status = __rsObjStat( rsComm, myDataObjInp, 1, &rodsObjStatOut );
-#endif
     rei->status = rsObjStat( rsComm, myDataObjInp, &rodsObjStatOut );
 
     if ( rei->status >= 0 ) {
@@ -2700,11 +2652,6 @@ msiDataObjRsync( msParam_t *inpParam1, msParam_t *inpParam2,
 
     if ( ( rei->status = parseMspForCondInp( inpParam3, &myDataObjInp->condInput,
                          DEST_RESC_NAME_KW ) ) < 0 ) {
-#if 0	/* OK to have no resource */
-        rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
-                            "msiDataObjRsync: input inpParam3 error. status = %d", rei->status );
-        return ( rei->status );
-#endif
     }
 
     if ( ( rei->status = parseMspForCondInp( inpParam4, &myDataObjInp->condInput,
@@ -2933,15 +2880,6 @@ _rsCollRsync( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                  openCollInp.collName, handleInx );
         return ( handleInx );
     }
-
-#if 0
-    if ( CollHandle[handleInx].rodsObjStat->specColl != NULL ) {
-        rodsLog( LOG_ERROR,
-                 "_rsCollRsync: unable to rsync mounted collection %s", srcColl );
-        rsCloseCollection( rsComm, &handleInx );
-        return ( 0 );
-    }
-#endif
 
     rsMkCollR( rsComm, "/", destColl );
     while ( ( status1 = rsReadCollection( rsComm, &handleInx, &collEnt ) ) >= 0 ) {
@@ -3205,16 +3143,11 @@ msiCollRepl( msParam_t *collection, msParam_t *msKeyValStr, msParam_t *status,
 
 
     /* Parse resource name and directly write to collReplInp */
-#if 0
-    rei->status = parseMspForCondInp( targetResc,
-                                      &collInp->condInput, DEST_RESC_NAME_KW );
-#else
     validKwFlags = COLL_NAME_FLAG | DEST_RESC_NAME_FLAG |
                    BACKUP_RESC_NAME_FLAG | RESC_NAME_FLAG | UPDATE_REPL_FLAG |
                    REPL_NUM_FLAG | ALL_FLAG | ADMIN_FLAG | VERIFY_CHKSUM_FLAG;
     rei->status = parseMsKeyValStrForCollInp( msKeyValStr, collInp,
                   DEST_RESC_NAME_KW, validKwFlags, &outBadKeyWd );
-#endif
 
     if ( rei->status < 0 ) {
         if ( outBadKeyWd != NULL ) {

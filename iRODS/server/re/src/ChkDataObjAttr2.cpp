@@ -176,9 +176,6 @@ msiChkRechkRecompChkSum4DatObjVol2( msParam_t *coll, msParam_t * inpParam2, msPa
 
     }
 
-#if 0	/* separate specColl */
-    rei->status = __rsObjStat( rsComm, myDataObjInp, 1, &rodsObjStatOut );
-#endif
     rei->status = rsObjStat( rsComm, myDataObjInp, &rodsObjStatOut );
 
     if ( rei->status >= 0 ) {

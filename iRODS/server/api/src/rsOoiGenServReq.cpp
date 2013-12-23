@@ -211,18 +211,6 @@ ooiGenServReqFunc( void *buffer, size_t size, size_t nmemb, void *userp ) {
         type_PI = Dictionary_MS_T;
         status = jsonUnpackOoiRespDict( responseObj, ( dictionary_t ** ) &ptr );
         break;
-#if 0	/* use OOI_ARRAY_TYPE */
-    case OOI_DICT_ARRAY_TYPE:
-        type_PI = DictArray_MS_T;
-        status = jsonUnpackOoiRespDictArray( responseObj,
-                                             ( dictArray_t ** ) &ptr );
-        break;
-    case OOI_DICT_ARRAY_IN_ARRAY:
-        type_PI = DictArray_MS_T;
-        status = jsonUnpackOoiRespDictArrInArr( responseObj,
-                                                ( dictArray_t ** ) &ptr, ooiGenServReqStruct->outInx );
-        break;
-#endif
     case OOI_ARRAY_TYPE:
         type_PI = GenArray_MS_T;
         status = jsonUnpackOoiRespArray( responseObj, ( genArray_t ** ) &ptr );

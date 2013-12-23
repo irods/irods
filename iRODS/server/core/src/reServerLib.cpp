@@ -8,12 +8,6 @@
 #include <sys/wait.h>
 #endif
 #include "reServerLib.hpp"
-#if 0
-#include "resource.hpp"
-#include "collection.hpp"
-#include "specColl.hpp"
-#include "modDataObjMeta.hpp"
-#endif
 #include "ruleExecSubmit.hpp"
 #include "ruleExecDel.hpp"
 #include "genQuery.hpp"
@@ -200,10 +194,6 @@ getNextQueuedRuleExec( rsComm_t *rsComm, genQueryOut_t **inGenQueryOut,
 
     for ( i = startInx; i < genQueryOut->rowCnt; i++ ) {
         char *exeStatusStr, *exeTimeStr, *ruleExecIdStr;
-#if 0
-        struct stat statbuf;
-        int fd;
-#endif
 
 
         exeStatusStr = &exeStatus->value[exeStatus->len * i];
@@ -232,72 +222,6 @@ getNextQueuedRuleExec( rsComm_t *rsComm, genQueryOut_t **inGenQueryOut,
                          ruleExecIdStr );
             }
         }
-#if 0
-        rstrcpy( queuedRuleExec->reiFilePath,
-                 &reiFilePath->value[reiFilePath->len * i], MAX_NAME_LEN );
-        if ( stat( queuedRuleExec->reiFilePath, &statbuf ) < 0 ) {
-            status = UNIX_FILE_STAT_ERR - errno;
-            rodsLog( LOG_ERROR,
-                     "getNextQueuedRuleExec: stat error for rei file %s, status = %d",
-                     queuedRuleExec->reiFilePath, status );
-            continue;
-        }
-
-        if ( statbuf.st_size > queuedRuleExec->packedReiAndArgBBuf->len ) {
-            free( queuedRuleExec->packedReiAndArgBBuf->buf );
-            queuedRuleExec->packedReiAndArgBBuf->buf =
-                malloc( ( int ) statbuf.st_size );
-            queuedRuleExec->packedReiAndArgBBuf->len = statbuf.st_size;
-        }
-
-        fd = open( queuedRuleExec->reiFilePath, O_RDONLY, 0 );
-        if ( fd < 0 ) {
-            status = UNIX_FILE_OPEN_ERR - errno;
-            rodsLog( LOG_ERROR,
-                     "getNextQueuedRuleExec: open error for rei file %s, status = %d",
-                     queuedRuleExec->reiFilePath, status );
-            return ( status );
-        }
-
-        status = read( fd, queuedRuleExec->packedReiAndArgBBuf->buf,
-                       queuedRuleExec->packedReiAndArgBBuf->len );
-
-        close( fd );
-        if ( status != statbuf.st_size ) {
-            if ( status < 0 ) {
-                status = UNIX_FILE_READ_ERR - errno;
-                rodsLog( LOG_ERROR,
-                         "getNextQueuedRuleExec: read error for file %s, status = %d",
-                         queuedRuleExec->reiFilePath, status );
-            }
-            else {
-                rodsLog( LOG_ERROR,
-                         "getNextQueuedRuleExec:read error for %s,toRead %d, read %d",
-                         queuedRuleExec->reiFilePath,
-                         queuedRuleExec->packedReiAndArgBBuf->len, status );
-                return ( SYS_COPY_LEN_ERR );
-            }
-        }
-
-        rstrcpy( queuedRuleExec->exeTime, exeTimeStr, NAME_LEN );
-        rstrcpy( queuedRuleExec->exeStatus, exeStatusStr, NAME_LEN );
-        rstrcpy( queuedRuleExec->ruleExecId, ruleExecIdStr, NAME_LEN );
-
-        rstrcpy( queuedRuleExec->ruleName,
-                 &ruleName->value[ruleName->len * i], META_STR_LEN );
-        rstrcpy( queuedRuleExec->userName,
-                 &userName->value[userName->len * i], NAME_LEN );
-        rstrcpy( queuedRuleExec->exeAddress,
-                 &exeAddress->value[exeAddress->len * i], NAME_LEN );
-        rstrcpy( queuedRuleExec->exeFrequency,
-                 &exeFrequency->value[exeFrequency->len * i], NAME_LEN );
-        rstrcpy( queuedRuleExec->priority,
-                 &priority->value[priority->len * i], NAME_LEN );
-        rstrcpy( queuedRuleExec->estimateExeTime,
-                 &estimateExeTime->value[estimateExeTime->len * i], NAME_LEN );
-        rstrcpy( queuedRuleExec->notificationAddr,
-                 &notificationAddr->value[notificationAddr->len * i], NAME_LEN );
-#else
         status = fillExecSubmitInp( queuedRuleExec, exeStatusStr, exeTimeStr,
                                     ruleExecIdStr,
                                     &reiFilePath->value[reiFilePath->len * i],
@@ -311,7 +235,6 @@ getNextQueuedRuleExec( rsComm_t *rsComm, genQueryOut_t **inGenQueryOut,
         if ( status < 0 ) {
             continue;
         }
-#endif
         return ( i );
     }
     return ( -1 );

@@ -31,21 +31,6 @@ rsNcInqGrps( rsComm_t *rsComm, ncInqGrpsInp_t *ncInqGrpsInp,
         }
         status = _rsNcInqGrps( ncInqGrpsInp->ncid, ncInqGrpsOut );
         return status;
-#if 0
-        status = nc_inq_grp_full_ncid( ncInqGrpsInp->ncid,
-                                       ncInqGrpsInp->objPath, &myncid );
-        if ( status == NC_NOERR ) {
-            *ncid = ( int * ) malloc( sizeof( int ) );
-            *( *ncid ) = myncid;
-            return 0;
-        }
-        else {
-            rodsLog( LOG_ERROR,
-                     "rsNcInqGrps: nc_open %s error, status = %d, %s",
-                     ncInqGrpsInp->objPath, status, nc_strerror( status ) );
-            return ( NETCDF_OPEN_ERR - status );
-        }
-#endif
     }
     l1descInx = ncInqGrpsInp->ncid;
     if ( l1descInx < 2 || l1descInx >= NUM_L1_DESC ) {
@@ -78,16 +63,6 @@ rsNcInqGrps( rsComm_t *rsComm, ncInqGrpsInp_t *ncInqGrpsInp,
             return ( remoteFlag );
         }
         else if ( remoteFlag == LOCAL_HOST ) {
-#if 0
-            status = nc_inq_grp_full_ncid( ncid,
-                                           ncInqGrpsInp->objPath, &myncid );
-            if ( status != NC_NOERR ) {
-                rodsLog( LOG_ERROR,
-                         "rsNcInqGrps: nc_inq_grp_full_ncid %s err, stat = %d, %s",
-                         ncInqGrpsInp->objPath, status, nc_strerror( status ) );
-                return ( NETCDF_OPEN_ERR - status );
-            }
-#endif
             status = _rsNcInqGrps( ncid, ncInqGrpsOut );
         }
         else {

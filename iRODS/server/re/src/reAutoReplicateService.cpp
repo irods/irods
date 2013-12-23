@@ -933,38 +933,6 @@ int msiDataObjAutoMove( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *i
         rodsLog( LOG_ERROR, "msiDataObjAutoMove: rsModAccessControl() remove user for '%s' failed. errStatus=%d.", obj_path, t );
     }
 
-    /* set new owner for the irods file */
-#if 0
-    if ( new_owner != NULL ) {
-        if ( strlen( new_obj_parent ) > strlen( mdest_coll ) ) { /* a collection */
-            char *ta, *tb;
-            char ttab_coll[MAX_NAME_LEN];
-            char ttab[MAX_NAME_LEN];
-
-            strcpy( ttab, new_obj_parent );
-            t = strlen( mdest_coll );
-            ta = &( ttab[t + 1] );
-            tb = strchr( ta, '/' );
-            if ( tb != NULL ) {
-                *tb = '\0';
-            }
-            sprintf( ttab_coll, "%s/%s", mdest_coll, ta ); /* ta has the first coll name under 'mdest_coll'. */
-
-            memset( &myModAccessCntlInp, 0, sizeof( modAccessControlInp_t ) );
-            myModAccessCntlInp.recursiveFlag = True;
-            myModAccessCntlInp.accessLevel = own_perm;
-            myModAccessCntlInp.userName = user_name;
-            myModAccessCntlInp.zone = zone_name;
-            myModAccessCntlInp.path = ttab_coll;
-            t = rsModAccessControl( rsconn, &myModAccessCntlInp );
-            if ( t < 0 ) {
-                rodsLog( LOG_ERROR, "msiDataObjAutoMove: rsModAccessControl() for '%s' failed. errStatus=%d.", ttab_coll, t );
-                return t;
-            }
-        }
-    }
-#endif
-
     free( new_truct_path ); // JMC cppcheck - leak
     return 0;
 }

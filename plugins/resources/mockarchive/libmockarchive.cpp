@@ -622,18 +622,7 @@ extern "C" {
         // 3b. pass along a functor for maintenance work after
         //     the client disconnects, uncomment the first two lines for effect.
         irods::error post_disconnect_maintenance_operation( irods::pdmo_type& _op ) {
-#if 0
-            std::string name;
-            irods::error err = get_property< std::string >( irods::RESOURCE_NAME, name );
-            if ( !err.ok() ) {
-                return PASSMSG( "mockarchive_resource::post_disconnect_maintenance_operation failed.", err );
-            }
-
-            _op = maintenance_operation( name );
-            return SUCCESS();
-#else
             return ERROR( -1, "nop" );
-#endif
         }
 
     }; // class mockarchive_resource

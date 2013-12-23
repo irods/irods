@@ -49,12 +49,6 @@ main( int argc, char **argv ) {
     }
 
     php_embed_module.executable_location = argv[0];
-#if 0
-    if ( php_embed_module.startup( &php_embed_module ) == FAILURE ) {
-        fprintf( stderr, "startup failed\n" );
-        exit( 1 );
-    }
-#endif
 
     for ( i = 0; i < numLoop; i++ ) {
         status = execPhpScript( scrFile, scrArgc, &argv[2] );

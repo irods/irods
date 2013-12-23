@@ -173,32 +173,6 @@ rSplitStr( char *inStr, char* outStr1, int maxOutLen1,
         return ( 0 );
     }
 }
-#if 0 // JMC - UNUSED
-int
-rSplitStrByStrKey( char *inStr, char* outStr1, int maxOutLen1,
-                   char* outStr2, int maxOutLen2, char* key ) {
-    char *i;
-
-    if ( ( i = strstr( inStr, key ) ) != NULL ) {
-        *i = '\0';
-        if ( rstrcpy( outStr1, inStr, maxOutLen1 ) == NULL ) {
-            return ( USER_STRLEN_TOOLONG );
-        }
-        *i = key[0];
-        i += strlen( key );
-        if ( rstrcpy( outStr2, i, maxOutLen2 ) == NULL ) {
-            return ( USER_STRLEN_TOOLONG );
-        }
-    }
-    else {
-        if ( rstrcpy( outStr1, inStr, maxOutLen1 ) == NULL ) {
-            return ( USER_STRLEN_TOOLONG );
-        }
-        *outStr2 = '\0';
-    }
-    return( 0 );
-}
-#endif // JMC - UNUSED
 /* copyStrFromBuf - copy a string from buf to outStr, skipping white space
  * and comment. also advance buf pointer
  * returns the len of string copied
@@ -239,9 +213,6 @@ copyStrFromBuf( char **buf, char *outStr, int maxOutLen ) {
 
     len = 0;
     outPtr = outStr;
-#if 0	/* allow # in string as long as it is not preceded by a space */
-    while ( !isspace( *bufPtr ) && *bufPtr != '\0' && *bufPtr != '#' ) {
-#endif
         while ( !isspace( *bufPtr ) && *bufPtr != '\0' ) {
             len++;
             if ( len >= maxOutLen ) {
@@ -332,32 +303,6 @@ copyStrFromBuf( char **buf, char *outStr, int maxOutLen ) {
         rstrcpy( file, srcPath, MAX_NAME_LEN );
         return ( SYS_INVALID_FILE_PATH );
     }
-#if 0 // JMC - UNUSED
-    /* get the strlen of the parent, including the last '/'
-     */
-
-    int
-    getParentPathlen( char * path ) {
-        int len;
-        char *tmpPtr;
-
-        if ( path == NULL ) {
-            return 0;
-        }
-        len = strlen( path );
-
-        tmpPtr = path + len;
-
-        while ( len >= 0 ) {
-            if ( *tmpPtr == '/' ) {
-                break;
-            }
-            len --;
-            tmpPtr --;
-        }
-        return ( len + 1 );
-    }
-#endif // JMC - UNUSED
     int
     trimWS( char * s ) {
         char *t;
@@ -396,28 +341,10 @@ copyStrFromBuf( char **buf, char *outStr, int maxOutLen ) {
 
     int
     checkStringForSystem( char * inString ) {
-#if 0
-        // JMC :: TODO - revisit and implement with mail string standard
-        char c;
-        if ( inString == NULL ) {
-            return( 0 );
-        }
-        c = *inString;
-        while ( c != '\0' ) {
-            if ( ( c >= 'a' && c <= 'z' ) || ( c >= 'A' && c <= 'Z' ) ||
-                    ( c >= '0' && c <= '9' ) ||  c == ',' || c == '.' ||
-                    c == '/' || c == ' ' || c == '-', c == '@' ) {
-            }
-            else {
-                rodsLog( LOG_ERROR, "checkStringForSystem - invalid character %c", c );
-                return ( USER_INPUT_STRING_ERR );
-            }
-            c = *inString++;
-        }
-#endif
+        // .zZZZz. :: TODO - Make this do something. Sanitize strings to be 
+        // passed as arguments to system calls, I think?
         return( 0 );
     }
-
 
     /*
      * Check if inString is a valid email address.

@@ -209,13 +209,6 @@ cllConnect( icatSessionStruct *icss ) {
         return( CAT_INVALID_ARGUMENT );
     }
 
-#if 0
-    stat = OCILogon( p_env, p_err, &p_svc, icss->databaseUsername,
-                     strlen( icss->databaseUsername ),
-                     icss->databasePassword,
-                     strlen( icss->databasePassword ),
-                     ORACLE_DATABASE_NAME, strlen( ORACLE_DATABASE_NAME ) );
-#endif
     stat = OCILogon( p_env, p_err, &p_svc, ( OraText * )userName,
                      strlen( userName ),
                      ( OraText * )icss->databasePassword,

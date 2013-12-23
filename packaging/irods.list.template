@@ -459,7 +459,6 @@ f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatHighLevelR
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatLowLevelOdbc.cpp ./iRODS/server/icat/src/icatLowLevelOdbc.cpp
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatGeneralQuery.cpp ./iRODS/server/icat/src/icatGeneralQuery.cpp
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatLowLevelOracle.cpp ./iRODS/server/icat/src/icatLowLevelOracle.cpp
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatMidLevelHelpers.cpp ./iRODS/server/icat/src/icatMidLevelHelpers.cpp
 %if ICAT
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatSysTables.sql ./iRODS/server/icat/src/icatSysTables.sql
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatCoreTables.sql ./iRODS/server/icat/src/icatCoreTables.sql

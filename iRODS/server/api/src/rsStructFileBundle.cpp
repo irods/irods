@@ -22,9 +22,6 @@
 int
 rsStructFileBundle( rsComm_t *rsComm,
                     structFileExtAndRegInp_t *structFileBundleInp ) {
-#if 0
-    char *destRescName = NULL;
-#endif
     int status;
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
@@ -48,44 +45,6 @@ rsStructFileBundle( rsComm_t *rsComm,
         return status;
     }
 
-#if 0
-    if ( ( destRescName =
-                getValByKey( &structFileBundleInp->condInput, DEST_RESC_NAME_KW ) ) == NULL
-            && ( destRescName =
-                     getValByKey( &structFileBundleInp->condInput, DEF_RESC_NAME_KW ) ) == NULL ) {
-        return USER_NO_RESC_INPUT_ERR;
-    }
-
-    status = _getRescInfo( rsComm, destRescName, &rescGrpInfo );
-    if ( status < 0 ) {
-        rodsLog( LOG_ERROR,
-                 "rsStructFileBundle: _getRescInfo of %s error for %s. stat = %d",
-                 destRescName, structFileBundleInp->collection, status );
-        return status;
-    }
-#else
-    /* borrow conInput */
-    //dataObjInp.condInput = structFileBundleInp->condInput;
-    //status = getRescGrpForCreate (rsComm, &dataObjInp, &rescGrpInfo);
-    //if (status < 0 || NULL == rescGrpInfo ) return status; // JMC cppcheck - nullptr
-#endif
-#if 0
-    bzero( &rescAddr, sizeof( rescAddr ) );
-    //rstrcpy (rescAddr.hostAddr, rescGrpInfo->rescInfo->rescLoc, NAME_LEN);
-    remoteFlag = resolveHost( &rescAddr, &rodsServerHost );
-
-    if ( remoteFlag == LOCAL_HOST ) {
-        status = _rsStructFileBundle( rsComm, structFileBundleInp );
-    }
-    else if ( remoteFlag == REMOTE_HOST ) {
-        status = remoteStructFileBundle( rsComm, structFileBundleInp,
-                                         rodsServerHost );
-    }
-    else if ( remoteFlag < 0 ) {
-        status = remoteFlag;
-    }
-    freeAllRescGrpInfo( rescGrpInfo );
-#endif
     // =-=-=-=-=-=-=-
     // working on the "home zone", determine if we need to redirect to a different
     // server in this zone for this operation.  if there is a RESC_HIER_STR_KW then

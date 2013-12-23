@@ -63,15 +63,6 @@ main( int argc, char **argv ) {
     addMsParam( &msParamArray, "*B", "DataObjInp_PI", &dataObjCreateInp, NULL );
     addMsParam( &msParamArray, "*C", "DataObjInp_PI", &dataObjCopyInp, NULL );
 
-#if 0
-    memset( &dataObjLseekInp, 0, sizeof( dataObjLseekInp ) );
-    dataObjLseekInp.fileInx = 101;
-    dataObjLseekInp.offset = 1000;
-    dataObjLseekInp.whence = SEEK_SET;
-    addMsParam( &msParamArray, "C", "fileLseekInp_PI",
-                &dataObjLseekInp, NULL );
-#endif
-
     memset( &errMsg, 0, sizeof( rErrMsg_t ) );
 
     conn = rcConnect( myRodsEnv.rodsHost, myRodsEnv.rodsPort, USER_NAME,
@@ -89,11 +80,6 @@ main( int argc, char **argv ) {
     }
 
     memset( &execMyRuleInp, 0, sizeof( execMyRuleInp ) );
-#if 0
-    rstrcpy( execMyRuleInp.myRule, "myTestRule||msiDataObjOpen(*A,*X)##|msiDataObjLseek(*X,*B,*Y)##msiDataObjClose(*C,*Z)", META_STR_LEN );
-    rstrcpy( execMyRuleInp.myRule, "myTestRule||msiDataObjOpen(*A,*X)##msiDataObjCreate(*B,null,*Y)##msiDataObjClose(*X,*Z1)##msiDataObjClose(*Y,*Z2)", META_STR_LEN );
-    rstrcpy( execMyRuleInp.outParamDesc, "*X%*Y%*Z1%*Z2", LONG_NAME_LEN );
-#endif
     rstrcpy( execMyRuleInp.myRule, "myTestRule||msiDataObjOpen(*A,*S_FD)##msiDataObjCreate(*B,null,*D_FD)##msiDataObjLseek(*S_FD,10,SEEK_SET,*junk1)##msiDataObjRead(*S_FD,10000,*R_BUF)##msiDataObjWrite(*D_FD,*R_BUF,*W_LEN)##msiDataObjClose(*S_FD,*junk2)##msiDataObjClose(*D_FD,*junk3)##msiDataObjCopy(*B,*C,null,*junk4)##delayExec(msiDataObjRepl(*C,demoResc8,*junk5),<A></A>)##msiDataObjUnlink(*B,*junk6)", META_STR_LEN );
     rstrcpy( execMyRuleInp.outParamDesc, "*R_BUF%*W_LEN", LONG_NAME_LEN );
 

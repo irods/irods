@@ -137,13 +137,6 @@ freeL1desc( int l1descInx ) {
         if ( L1desc[l1descInx].remoteZoneHost != NULL &&
                 L1desc[l1descInx].dataObjInfo->rescInfo != NULL )
             // free (L1desc[l1descInx].dataObjInfo->rescInfo);
-#if 0   /* no longer need this with irsDataObjClose */
-            /* will be freed in _rsDataObjReplS since it needs the new
-             * replNum and dataID */
-            if ( L1desc[l1descInx].oprType != REPLICATE_DEST ) {
-                freeDataObjInfo( L1desc[l1descInx].dataObjInfo );
-            }
-#endif
         if ( L1desc[l1descInx].dataObjInfo != NULL ) {
             freeDataObjInfo( L1desc[l1descInx].dataObjInfo );
         }
@@ -484,18 +477,6 @@ initDataOprInp( dataOprInp_t *dataOprInp, int l1descInx, int oprType ) {
             dataOprInp->srcRescTypeInx =
                 L1desc[srcL1descInx].dataObjInfo->rescInfo->rescTypeInx;
         }
-#if 0
-        if ( dataObjInfo->dataSize > 0 ) {
-            dataOprInp->dataSize = dataObjInfo->dataSize;
-        }
-        else {
-            dataOprInp->dataSize = dataObjInp->dataSize;
-        }
-        dataOprInp->srcL3descInx = L1desc[l1descInx].l3descInx;
-        if ( L1desc[l1descInx].remoteZoneHost == NULL ) {
-            dataOprInp->srcRescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
-        }
-#endif
     }
     else if ( oprType == COPY_TO_LOCAL_OPR ) {
         int srcL1descInx = L1desc[l1descInx].srcL1descInx;
@@ -635,11 +616,7 @@ freeCollHandle( int handleInx ) {
     }
 
     /* don't free specColl. It is in cache */
-#if 0
-    clearCollHandle( &CollHandle[handleInx], 0 );
-#else
     clearCollHandle( &CollHandle[handleInx], 1 );
-#endif
     memset( &CollHandle[handleInx], 0, sizeof( collHandle_t ) );
 
     return ( 0 );
@@ -672,14 +649,10 @@ allocAndSetL1descForZoneOpr( int remoteL1descInx, dataObjInp_t *dataObjInp,
     L1desc[l1descInx].remoteL1descInx = remoteL1descInx;
     L1desc[l1descInx].oprType = REMOTE_ZONE_OPR;
     L1desc[l1descInx].remoteZoneHost = remoteZoneHost;
-#if 0
-    L1desc[l1descInx].dataObjInp = dataObjInp;
-#else
     /* always repl the .dataObjInp */
     L1desc[l1descInx].dataObjInp = ( dataObjInp_t* )malloc( sizeof( dataObjInp_t ) );
     replDataObjInp( dataObjInp, L1desc[l1descInx].dataObjInp );
     L1desc[l1descInx].dataObjInpReplFlag = 1;
-#endif
     dataObjInfo = L1desc[l1descInx].dataObjInfo =
                       ( dataObjInfo_t* )malloc( sizeof( dataObjInfo_t ) );
     bzero( dataObjInfo, sizeof( dataObjInfo_t ) );

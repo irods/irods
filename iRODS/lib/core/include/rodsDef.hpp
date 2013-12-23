@@ -67,16 +67,8 @@
 #define MAX_NAME_LEN   (MAX_PATH_ALLOWED+64)
 #define HUGE_NAME_LEN 100000
 
-#if 0
-/* XXXXX have to change it from 2700 to 2704 (8 bytes boundary) to get
- * packing of execMyRuleInp_t working for 64 bit address. need to reviit
- * later
- */
-#define META_STR_LEN  2704
-#else
 /* increase to 20K because the French Lib rules are very long */
 #define META_STR_LEN  (1024*20)
-#endif
 
 #define SHORT_STR_LEN 32  /* for dataMode, perhaps others */
 

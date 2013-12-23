@@ -265,19 +265,6 @@ l3DataGetSingleBuf( rsComm_t *rsComm, int l1descInx,
         bytesRead = 0;
     }
 
-#if 0   /* tested in _rsFileGet. don't need to go it again */
-    if ( bytesRead != dataObjInfo->dataSize ) {
-        free( dataObjOutBBuf->buf );
-        memset( dataObjOutBBuf, 0, sizeof( bytesBuf_t ) );
-        if ( bytesRead >= 0 ) {
-            rodsLog( LOG_NOTICE,
-                     "l3DataGetSingleBuf:Bytes toread %d don't match read %d",
-                     dataObjInfo->dataSize, bytesRead );
-            bytesRead = SYS_COPY_LEN_ERR - errno;
-        }
-    }
-#endif
-
     memset( &dataObjCloseInp, 0, sizeof( dataObjCloseInp ) );
     dataObjCloseInp.l1descInx = l1descInx;
     status = rsDataObjClose( rsComm, &dataObjCloseInp );
@@ -338,34 +325,18 @@ l3FileGetSingleBuf( rsComm_t *rsComm, int l1descInx,
         return ( bytesRead );
     }
 
-#if 0 // JMC - legacy resource 
-    rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
-
-    switch ( RescTypeDef[rescTypeInx].rescCat ) {
-    case FILE_CAT:
-#endif // JMC - legacy resource 
-        memset( &fileGetInp, 0, sizeof( fileGetInp ) );
-        dataObjInp = L1desc[l1descInx].dataObjInp;
-        rstrcpy( fileGetInp.addr.hostAddr,  location.c_str(), NAME_LEN );
-        rstrcpy( fileGetInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN );
-        rstrcpy( fileGetInp.resc_name_, dataObjInfo->rescInfo->rescName, MAX_NAME_LEN );
-        rstrcpy( fileGetInp.resc_hier_, dataObjInfo->rescHier, MAX_NAME_LEN );
-        rstrcpy( fileGetInp.objPath,    dataObjInfo->objPath,  MAX_NAME_LEN );
-        fileGetInp.mode = getFileMode( dataObjInp );
-        fileGetInp.flags = O_RDONLY;
-        fileGetInp.dataSize = dataObjInfo->dataSize;
-        /* XXXXX need to be able to handle structured file */
-        bytesRead = rsFileGet( rsComm, &fileGetInp, dataObjOutBBuf );
-#if 0 // JMC - legacy resource 
-        break;
-    default:
-        rodsLog( LOG_NOTICE,
-                 "l3Open: rescCat type %d is not recognized",
-                 RescTypeDef[rescTypeInx].rescCat );
-        bytesRead = SYS_INVALID_RESC_TYPE;
-        break;
-    }
-#endif // JMC - legacy resource 
+    memset( &fileGetInp, 0, sizeof( fileGetInp ) );
+    dataObjInp = L1desc[l1descInx].dataObjInp;
+    rstrcpy( fileGetInp.addr.hostAddr,  location.c_str(), NAME_LEN );
+    rstrcpy( fileGetInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN );
+    rstrcpy( fileGetInp.resc_name_, dataObjInfo->rescInfo->rescName, MAX_NAME_LEN );
+    rstrcpy( fileGetInp.resc_hier_, dataObjInfo->rescHier, MAX_NAME_LEN );
+    rstrcpy( fileGetInp.objPath,    dataObjInfo->objPath,  MAX_NAME_LEN );
+    fileGetInp.mode = getFileMode( dataObjInp );
+    fileGetInp.flags = O_RDONLY;
+    fileGetInp.dataSize = dataObjInfo->dataSize;
+    /* XXXXX need to be able to handle structured file */
+    bytesRead = rsFileGet( rsComm, &fileGetInp, dataObjOutBBuf );
     return ( bytesRead );
 }
 

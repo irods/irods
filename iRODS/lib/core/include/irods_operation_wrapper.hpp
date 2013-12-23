@@ -18,7 +18,8 @@
 #include "irods_lookup_table.hpp"
 #include "irods_plugin_context.hpp"
 #include "irods_error.hpp"
-#include "irods_operation_rule_execution_manager_factory.hpp"
+#include "irods_operation_rule_execution_manager.hpp"
+#include "irods_operation_rule_execution_manager_no_op.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes

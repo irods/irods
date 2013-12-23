@@ -522,18 +522,6 @@ l3FilePutSingleBuf( rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf 
         rstrcpy( dataObjInfo->filePath, filePutInp.fileName, MAX_NAME_LEN );
         retryCnt ++;
     } // while
-#if 0 // JMC - legacy resource
-    break;
-
-default:
-    rodsLog( LOG_NOTICE, "l3Open: rescCat type %d is not recognized",
-             RescTypeDef[rescTypeInx].rescCat );
-    bytesWritten = SYS_INVALID_RESC_TYPE;
-    break;
-
-    // switch
-
-#endif // JMC - legacy resource
     return ( bytesWritten );
 
 } // l3FilePutSingleBuf
