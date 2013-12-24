@@ -273,10 +273,10 @@ Res* processCoercion( Node *node, Res *res, ExprType *type, Hashtable *tvarEnv, 
         case T_BOOL:
             switch ( TYPE( res ) ) {
             case T_INT:
-                nres = newBoolRes( r, RES_INT_VAL( res ) );
+                nres = newIntRes( r, RES_INT_VAL( res ) );
                 break;
             case T_DOUBLE:
-                nres = newBoolRes( r, RES_DOUBLE_VAL( res ) );
+                nres = newDoubleRes( r, RES_DOUBLE_VAL( res ) );
                 break;
             case T_STRING:
                 if ( strcmp( res->text, "true" ) == 0 ) {
