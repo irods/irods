@@ -1907,9 +1907,9 @@ int chlRegZone(
 
 // =-=-=-=-=-=-=-
 // Modify a Zone (certain fields)
-int chlModZone( 
-    rsComm_t* _comm, 
-    char*     _zone_name, 
+int chlModZone(
+    rsComm_t* _comm,
+    char*     _zone_name,
     char*     _option,
     char*     _option_value ) {
     // =-=-=-=-=-=-=-
@@ -1967,9 +1967,9 @@ int chlModZone(
 
 // =-=-=-=-=-=-=-
 // rename a collection
-int chlRenameColl( 
-    rsComm_t* _comm, 
-    char*     _old_coll, 
+int chlRenameColl(
+    rsComm_t* _comm,
+    char*     _old_coll,
     char*     _new_coll ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -2023,10 +2023,10 @@ int chlRenameColl(
 } // chlRenameColl
 
 // =-=-=-=-=-=-=-
-// Modify a Zone Collection ACL 
-int chlModZoneCollAcl( 
-    rsComm_t* _comm, 
-    char*     _access_level, 
+// Modify a Zone Collection ACL
+int chlModZoneCollAcl(
+    rsComm_t* _comm,
+    char*     _access_level,
     char*     _user_name,
     char*     _path_name ) {
     // =-=-=-=-=-=-=-
@@ -2083,10 +2083,10 @@ int chlModZoneCollAcl(
 } // chlModZoneCollAcl
 
 // =-=-=-=-=-=-=-
-// rename the local zone 
-int chlRenameLocalZone( 
-    rsComm_t* _comm, 
-    char*     _old_zone, 
+// rename the local zone
+int chlRenameLocalZone(
+    rsComm_t* _comm,
+    char*     _old_zone,
     char*     _new_zone ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -2140,8 +2140,8 @@ int chlRenameLocalZone(
 } // chlRenameLocalZone
 
 /* delete a Zone */
-int chlDelZone( 
-    rsComm_t* _comm, 
+int chlDelZone(
+    rsComm_t* _comm,
     char*     _zone_name ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -2215,16 +2215,16 @@ int chlDelZone(
 // continued.
 // format 1: column-name : column value, and with CR after each column
 // format 2: column headings CR, rows and col values with CR
-int chlSimpleQuery( 
-    rsComm_t* _comm, 
+int chlSimpleQuery(
+    rsComm_t* _comm,
     char*     _sql,
-    char*     _arg1, 
-    char*     _arg2, 
-    char*     _arg3, 
+    char*     _arg1,
+    char*     _arg2,
+    char*     _arg3,
     char*     _arg4,
-    int       _format, 
+    int       _format,
     int*      _control,
-    char*     _out_buf, 
+    char*     _out_buf,
     int       _max_out_buf ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -2282,7 +2282,7 @@ int chlSimpleQuery(
               _format,
               _control,
               _out_buf,
-              _max_out_buf ); 
+              _max_out_buf );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
@@ -2292,10 +2292,10 @@ int chlSimpleQuery(
 } // chlSimpleQuery
 
 // =-=-=-=-=-=-=-
-// Delete a Collection by Administrator, 
-// if it is empty. 
-int chlDelCollByAdmin( 
-    rsComm_t*   _comm, 
+// Delete a Collection by Administrator,
+// if it is empty.
+int chlDelCollByAdmin(
+    rsComm_t*   _comm,
     collInfo_t* _coll_info ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -2347,9 +2347,9 @@ int chlDelCollByAdmin(
 } // chlDelCollByAdmin
 
 // =-=-=-=-=-=-=-
-// Delete a Collection 
-int chlDelColl( 
-    rsComm_t*   _comm, 
+// Delete a Collection
+int chlDelColl(
+    rsComm_t*   _comm,
     collInfo_t* _coll_info ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -2490,9 +2490,9 @@ int chlCheckAuth(
 
 // If otherUser is non-blank, then create a password for the
 // specified user, and the caller must be a local admin.
-int chlMakeTempPw( 
-    rsComm_t* _comm, 
-    char*     _pw_value_to_hash, 
+int chlMakeTempPw(
+    rsComm_t* _comm,
+    char*     _pw_value_to_hash,
     char*     _other_user ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -2531,7 +2531,7 @@ int chlMakeTempPw(
     ret = db->call <
           rsComm_t*,
           char*,
-          char* >(
+          char* > (
               irods::DATABASE_OP_MAKE_TEMP_PW,
               ptr,
               _comm,
@@ -2546,9 +2546,9 @@ int chlMakeTempPw(
 } // chlMakeTempPw
 
 int
-chlMakeLimitedPw( 
-    rsComm_t* _comm, 
-    int       _ttl, 
+chlMakeLimitedPw(
+    rsComm_t* _comm,
+    int       _ttl,
     char*     _pw_value_to_hash ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -2587,7 +2587,7 @@ chlMakeLimitedPw(
     ret = db->call <
           rsComm_t*,
           int,
-          char* >(
+          char* > (
               irods::DATABASE_OP_MAKE_LIMITED_PW,
               ptr,
               _comm,
@@ -2609,9 +2609,9 @@ chlMakeLimitedPw(
 // If one already exists, the expire time is updated, and it's value is returned.
 // Passwords created are pseudo-random strings, unrelated to the PAM password.
 // If testTime is non-null, use that as the create-time, as a testing aid.
-int chlUpdateIrodsPamPassword( 
+int chlUpdateIrodsPamPassword(
     rsComm_t* _comm,
-    char*     _user_name, 
+    char*     _user_name,
     int       _ttl,
     char*     _test_time,
     char**    _irods_password ) {
@@ -2654,7 +2654,7 @@ int chlUpdateIrodsPamPassword(
           char*,
           int,
           char*,
-          char** >(
+          char** > (
               irods::DATABASE_OP_UPDATE_PAM_PASSWORD,
               ptr,
               _comm,
@@ -2673,9 +2673,9 @@ int chlUpdateIrodsPamPassword(
 // =-=-=-=-=-=-=-
 // Admin Only Fcn -- Modify an existing user
 // Called from rsGeneralAdmin which is used by iadmin
-int chlModUser( 
-    rsComm_t* _comm, 
-    char*     _user_name, 
+int chlModUser(
+    rsComm_t* _comm,
+    char*     _user_name,
     char*     _option,
     char*     _new_value ) {
     // =-=-=-=-=-=-=-
@@ -2716,7 +2716,7 @@ int chlModUser(
           rsComm_t*,
           char*,
           char*,
-          char* >(
+          char* > (
               irods::DATABASE_OP_MOD_USER,
               ptr,
               _comm,
