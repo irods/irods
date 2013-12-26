@@ -17,7 +17,7 @@ rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp ) {
 
     status = getAndConnReHost( rsComm, &rodsServerHost );
     if ( status < 0 ) {
-        return( status );
+        return ( status );
     }
 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
@@ -43,7 +43,7 @@ rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp ) {
 int
 _rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp ) {
     genQueryOut_t *genQueryOut = NULL;
-    int status, unlinkStatus;
+    int status;
     sqlResult_t *reiFilePath;
     sqlResult_t *ruleUserName;
 
@@ -91,7 +91,7 @@ _rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp ) {
             }
             if ( strncmp( ruleUserName->value,
                           rsComm->clientUser.userName, MAX_NAME_LEN ) != 0 ) {
-                return( USER_ACCESS_DENIED );
+                return ( USER_ACCESS_DENIED );
             }
         }
         else {
@@ -116,7 +116,7 @@ _rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp ) {
         status = chlDelRuleExec( rsComm, ruleExecDelInp->ruleExecId );
 
         if ( status ) {
-            return( status );    /* that failed too, report it */
+            return ( status );   /* that failed too, report it */
         }
 
         /* Add a message to the error stack for the client user */
@@ -147,10 +147,10 @@ _rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp ) {
             return ( status );
         }
     }
-    unlinkStatus = status;
+#ifdef RODS_CAT
+    int unlinkStatus = status;
 
     /* unregister it */
-#ifdef RODS_CAT
     status = chlDelRuleExec( rsComm, ruleExecDelInp->ruleExecId );
 
     if ( status < 0 ) {
