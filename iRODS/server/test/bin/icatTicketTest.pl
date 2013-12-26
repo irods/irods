@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+
 # Copyright UCSD and UNC.
 # For more information please refer to files in the COPYRIGHT directory ***
 #
@@ -287,9 +287,9 @@ sub testPutAndWriteBytes() {
     `ls -l >> $F1`;
     runCmd(0, "iticket mod $T1 write-byte 2500");
     runCmd(0, "cp $F1 $F2");
-    runCmd(0, "truncate -s 1000 $F2"); # make a 1000-byte file
+    runCmd(0, "head -c 1000 /dev/zero > $F2"); # make a 1000-byte file
     runCmd(0, "cp $F1 $F3");
-    runCmd(0, "truncate -s 1020 $F3"); # make a somewhat larger one (same
+    runCmd(0, "head -c 1020 /dev/zero > $F3"); # make a somewhat larger one (same
                                        # size file isn't counted).
     becomeuser2();
     runCmd(2,"iput -f $F2 $D1/$F1");
