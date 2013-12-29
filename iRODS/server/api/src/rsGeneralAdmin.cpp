@@ -655,7 +655,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             if ( status != 0 ) { chlRollback( rsComm ); }
             return ( status );
         }
-#ifdef RESC_GROUP
+#if 0
         if ( strcmp( generalAdminInp->arg1, "resourcegroup" ) == 0 ) {
             args[0] = generalAdminInp->arg2; /* rescgroupname */
             args[1] = generalAdminInp->arg3; /* option */

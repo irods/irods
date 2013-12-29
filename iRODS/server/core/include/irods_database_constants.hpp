@@ -61,6 +61,7 @@ namespace irods {
     const std::string DATABASE_OP_COPY_AVU_METADATA( "database_copy_avu_metadata" );
     const std::string DATABASE_OP_MOD_AVU_METADATA( "database_mod_avu_metadata" );
     const std::string DATABASE_OP_MOD_ACCESS_CONTROL( "database_mod_access_control" );
+    const std::string DATABASE_OP_MOD_ACCESS_CONTROL_RESC( "database_mod_access_control_resc" );
 
     const std::string DATABASE_OP_RENAME_OBJECT( "database_rename_object" );
     const std::string DATABASE_OP_MOVE_OBJECT( "database_move_object" );
