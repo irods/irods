@@ -1906,9 +1906,9 @@ int chlRegZone(
 
 // =-=-=-=-=-=-=-
 // Modify a Zone (certain fields)
-int chlModZone( 
-    rsComm_t* _comm, 
-    char*     _zone_name, 
+int chlModZone(
+    rsComm_t* _comm,
+    char*     _zone_name,
     char*     _option,
     char*     _option_value ) {
     // =-=-=-=-=-=-=-
@@ -1966,9 +1966,9 @@ int chlModZone(
 
 // =-=-=-=-=-=-=-
 // rename a collection
-int chlRenameColl( 
-    rsComm_t* _comm, 
-    char*     _old_coll, 
+int chlRenameColl(
+    rsComm_t* _comm,
+    char*     _old_coll,
     char*     _new_coll ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -2022,10 +2022,10 @@ int chlRenameColl(
 } // chlRenameColl
 
 // =-=-=-=-=-=-=-
-// Modify a Zone Collection ACL 
-int chlModZoneCollAcl( 
-    rsComm_t* _comm, 
-    char*     _access_level, 
+// Modify a Zone Collection ACL
+int chlModZoneCollAcl(
+    rsComm_t* _comm,
+    char*     _access_level,
     char*     _user_name,
     char*     _path_name ) {
     // =-=-=-=-=-=-=-
@@ -2082,10 +2082,10 @@ int chlModZoneCollAcl(
 } // chlModZoneCollAcl
 
 // =-=-=-=-=-=-=-
-// rename the local zone 
-int chlRenameLocalZone( 
-    rsComm_t* _comm, 
-    char*     _old_zone, 
+// rename the local zone
+int chlRenameLocalZone(
+    rsComm_t* _comm,
+    char*     _old_zone,
     char*     _new_zone ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -2139,8 +2139,8 @@ int chlRenameLocalZone(
 } // chlRenameLocalZone
 
 /* delete a Zone */
-int chlDelZone( 
-    rsComm_t* _comm, 
+int chlDelZone(
+    rsComm_t* _comm,
     char*     _zone_name ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -2214,16 +2214,16 @@ int chlDelZone(
 // continued.
 // format 1: column-name : column value, and with CR after each column
 // format 2: column headings CR, rows and col values with CR
-int chlSimpleQuery( 
-    rsComm_t* _comm, 
+int chlSimpleQuery(
+    rsComm_t* _comm,
     char*     _sql,
-    char*     _arg1, 
-    char*     _arg2, 
-    char*     _arg3, 
+    char*     _arg1,
+    char*     _arg2,
+    char*     _arg3,
     char*     _arg4,
-    int       _format, 
+    int       _format,
     int*      _control,
-    char*     _out_buf, 
+    char*     _out_buf,
     int       _max_out_buf ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -2281,7 +2281,7 @@ int chlSimpleQuery(
               _format,
               _control,
               _out_buf,
-              _max_out_buf ); 
+              _max_out_buf );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
@@ -2291,10 +2291,10 @@ int chlSimpleQuery(
 } // chlSimpleQuery
 
 // =-=-=-=-=-=-=-
-// Delete a Collection by Administrator, 
-// if it is empty. 
-int chlDelCollByAdmin( 
-    rsComm_t*   _comm, 
+// Delete a Collection by Administrator,
+// if it is empty.
+int chlDelCollByAdmin(
+    rsComm_t*   _comm,
     collInfo_t* _coll_info ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -2346,9 +2346,9 @@ int chlDelCollByAdmin(
 } // chlDelCollByAdmin
 
 // =-=-=-=-=-=-=-
-// Delete a Collection 
-int chlDelColl( 
-    rsComm_t*   _comm, 
+// Delete a Collection
+int chlDelColl(
+    rsComm_t*   _comm,
     collInfo_t* _coll_info ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -2489,9 +2489,9 @@ int chlCheckAuth(
 
 // If otherUser is non-blank, then create a password for the
 // specified user, and the caller must be a local admin.
-int chlMakeTempPw( 
-    rsComm_t* _comm, 
-    char*     _pw_value_to_hash, 
+int chlMakeTempPw(
+    rsComm_t* _comm,
+    char*     _pw_value_to_hash,
     char*     _other_user ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -2530,7 +2530,7 @@ int chlMakeTempPw(
     ret = db->call <
           rsComm_t*,
           char*,
-          char* >(
+          char* > (
               irods::DATABASE_OP_MAKE_TEMP_PW,
               ptr,
               _comm,
@@ -2545,9 +2545,9 @@ int chlMakeTempPw(
 } // chlMakeTempPw
 
 int
-chlMakeLimitedPw( 
-    rsComm_t* _comm, 
-    int       _ttl, 
+chlMakeLimitedPw(
+    rsComm_t* _comm,
+    int       _ttl,
     char*     _pw_value_to_hash ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -2586,7 +2586,7 @@ chlMakeLimitedPw(
     ret = db->call <
           rsComm_t*,
           int,
-          char* >(
+          char* > (
               irods::DATABASE_OP_MAKE_LIMITED_PW,
               ptr,
               _comm,
@@ -2608,9 +2608,9 @@ chlMakeLimitedPw(
 // If one already exists, the expire time is updated, and it's value is returned.
 // Passwords created are pseudo-random strings, unrelated to the PAM password.
 // If testTime is non-null, use that as the create-time, as a testing aid.
-int chlUpdateIrodsPamPassword( 
+int chlUpdateIrodsPamPassword(
     rsComm_t* _comm,
-    char*     _user_name, 
+    char*     _user_name,
     int       _ttl,
     char*     _test_time,
     char**    _irods_password ) {
@@ -2653,7 +2653,7 @@ int chlUpdateIrodsPamPassword(
           char*,
           int,
           char*,
-          char** >(
+          char** > (
               irods::DATABASE_OP_UPDATE_PAM_PASSWORD,
               ptr,
               _comm,
@@ -2672,9 +2672,9 @@ int chlUpdateIrodsPamPassword(
 // =-=-=-=-=-=-=-
 // Admin Only Fcn -- Modify an existing user
 // Called from rsGeneralAdmin which is used by iadmin
-int chlModUser( 
-    rsComm_t* _comm, 
-    char*     _user_name, 
+int chlModUser(
+    rsComm_t* _comm,
+    char*     _user_name,
     char*     _option,
     char*     _new_value ) {
     // =-=-=-=-=-=-=-
@@ -2715,7 +2715,7 @@ int chlModUser(
           rsComm_t*,
           char*,
           char*,
-          char* >(
+          char* > (
               irods::DATABASE_OP_MOD_USER,
               ptr,
               _comm,
@@ -2734,11 +2734,11 @@ int chlModUser(
 // Modify an existing group (membership).
 // Groups are also users in the schema, so chlModUser can also
 // modify other group attibutes. */
-int chlModGroup( 
-    rsComm_t* _comm, 
-    char*     _group_name, 
+int chlModGroup(
+    rsComm_t* _comm,
+    char*     _group_name,
     char*     _option,
-    char*     _user_name, 
+    char*     _user_name,
     char*     _user_zone ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -2778,7 +2778,7 @@ int chlModGroup(
           rsComm_t*,
           char*,
           char*,
-          char* >(
+          char* > (
               irods::DATABASE_OP_MOD_GROUP,
               ptr,
               _comm,
@@ -2795,7 +2795,7 @@ int chlModGroup(
 } // chlModGroup
 
 // =-=-=-=-=-=-=-
-// Modify a Resource (certain fields) 
+// Modify a Resource (certain fields)
 int chlModResc(
     rsComm_t* _comm,
     char*     _resc_name,
@@ -2839,7 +2839,7 @@ int chlModResc(
           rsComm_t*,
           char*,
           char*,
-          char* >(
+          char* > (
               irods::DATABASE_OP_MOD_RESC,
               ptr,
               _comm,
@@ -2856,11 +2856,11 @@ int chlModResc(
 
 // =-=-=-=-=-=-=-
 // Modify a Resource Data Paths
-int chlModRescDataPaths( 
-    rsComm_t* _comm, 
-    char*     _resc_name, 
+int chlModRescDataPaths(
+    rsComm_t* _comm,
+    char*     _resc_name,
     char*     _old_path,
-    char*     _new_path, 
+    char*     _new_path,
     char*     _user_name ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -2901,7 +2901,7 @@ int chlModRescDataPaths(
           char*,
           char*,
           char*,
-          char* >(
+          char* > (
               irods::DATABASE_OP_MOD_RESC_DATA_PATHS,
               ptr,
               _comm,
@@ -2920,9 +2920,9 @@ int chlModRescDataPaths(
 
 // =-=-=-=-=-=-=-
 // Add or substract to the resource free_space
-int chlModRescFreeSpace( 
-    rsComm_t* _comm, 
-    char*     _resc_name, 
+int chlModRescFreeSpace(
+    rsComm_t* _comm,
+    char*     _resc_name,
     int       _update_value ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -2961,7 +2961,7 @@ int chlModRescFreeSpace(
     ret = db->call <
           rsComm_t*,
           char*,
-          int >(
+          int > (
               irods::DATABASE_OP_MOD_RESC_FREESPACE,
               ptr,
               _comm,
@@ -3163,9 +3163,9 @@ int chlModRescGroup( rsComm_t *rsComm, char *rescGroupName, char *option,
 #endif
 
 // =-=-=-=-=-=-=-
-// Register a User, RuleEngine version 
-int chlRegUserRE( 
-    rsComm_t*   _comm, 
+// Register a User, RuleEngine version
+int chlRegUserRE(
+    rsComm_t*   _comm,
     userInfo_t* _user_info ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -3509,11 +3509,11 @@ findOrInsertAVU( char *attribute, char *value, char *units ) {
 // =-=-=-=-=-=-=-
 // JMC - backport 4836
 /* Add or modify an Attribute-Value pair metadata item of an object*/
-int chlSetAVUMetadata( 
-    rsComm_t* _comm, 
+int chlSetAVUMetadata(
+    rsComm_t* _comm,
     char*     _type,
-    char*     _name, 
-    char*     _attribute, 
+    char*     _name,
+    char*     _attribute,
     char*     _new_value,
     char*     _new_unit ) {
     // =-=-=-=-=-=-=-
@@ -3526,11 +3526,12 @@ int chlSetAVUMetadata(
         irods::log( PASS( ret ) );
         return ret.code();
     }
-if( !_type ) {
-    rodsLog( LOG_NOTICE, "XXXX - chlSetAVUMetadata :: type is null" );
-} else {
-    rodsLog( LOG_NOTICE, "XXXX - chlSetAVUMetadata :: type is not null [%s]", _type );
-}
+    if ( !_type ) {
+        rodsLog( LOG_NOTICE, "XXXX - chlSetAVUMetadata :: type is null" );
+    }
+    else {
+        rodsLog( LOG_NOTICE, "XXXX - chlSetAVUMetadata :: type is not null [%s]", _type );
+    }
 
     // =-=-=-=-=-=-=-
     // resolve a plugin for that object
@@ -3585,13 +3586,13 @@ if( !_type ) {
 
 // The return value is error code (negative) or the number of objects
 // to which the AVU was associated.
-int chlAddAVUMetadataWild( 
-    rsComm_t* _comm, 
-    int       _admin_mode, 
+int chlAddAVUMetadataWild(
+    rsComm_t* _comm,
+    int       _admin_mode,
     char*     _type,
-    char*     _name, 
-    char*     _attribute, 
-    char*     _value,  
+    char*     _name,
+    char*     _attribute,
+    char*     _value,
     char*     _units ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -3653,14 +3654,14 @@ int chlAddAVUMetadataWild(
 } // chlAddAVUMetadataWild
 
 // =-=-=-=-=-=-=-
-// Add an Attribute-Value [Units] pair/triple metadata item to an object 
-int chlAddAVUMetadata( 
-    rsComm_t* _comm, 
-    int       _admin_mode, 
+// Add an Attribute-Value [Units] pair/triple metadata item to an object
+int chlAddAVUMetadata(
+    rsComm_t* _comm,
+    int       _admin_mode,
     char*     _type,
-    char*     _name, 
-    char*     _attribute, 
-    char*     _value,  
+    char*     _name,
+    char*     _attribute,
+    char*     _value,
     char*     _units ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -3722,15 +3723,15 @@ int chlAddAVUMetadata(
 } // chlAddAVUMetadata
 
 /* Modify an Attribute-Value [Units] pair/triple metadata item of an object*/
-int chlModAVUMetadata( 
-    rsComm_t* _comm, 
+int chlModAVUMetadata(
+    rsComm_t* _comm,
     char*     _type,
-    char*     _name, 
-    char*     _attribute, 
+    char*     _name,
+    char*     _attribute,
     char*     _value,
-    char*     _unitsOrArg0, 
-    char*     _arg1, 
-    char*     _arg2, 
+    char*     _unitsOrArg0,
+    char*     _arg1,
+    char*     _arg2,
     char*     _arg3 ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -3798,14 +3799,14 @@ int chlModAVUMetadata(
 /* Delete an Attribute-Value [Units] pair/triple metadata item from an object*/
 /* option is 0: normal, 1: use wildcards, 2: input is id not type,name,units */
 /* noCommit: if 1: skip the commit (only used by chlModAVUMetadata) */
-int chlDeleteAVUMetadata( 
-    rsComm_t* _comm, 
-    int       _option, 
+int chlDeleteAVUMetadata(
+    rsComm_t* _comm,
+    int       _option,
     char*     _type,
-    char*     _name, 
-    char*     _attribute, 
+    char*     _name,
+    char*     _attribute,
     char*     _value,
-    char*     _units, 
+    char*     _units,
     int       _nocommit ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -3870,11 +3871,11 @@ int chlDeleteAVUMetadata(
 
 // =-=-=-=-=-=-=-
 // Copy an Attribute-Value [Units] pair/triple from one object to another
-int chlCopyAVUMetadata( 
-    rsComm_t* _comm, 
-    char*     _type1,  
+int chlCopyAVUMetadata(
+    rsComm_t* _comm,
+    char*     _type1,
     char*     _type2,
-    char*     _name1, 
+    char*     _name1,
     char*     _name2 ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -3931,11 +3932,11 @@ int chlCopyAVUMetadata(
 
 } // chlCopyAVUMetadata
 
-int chlModAccessControlResc( 
-    rsComm_t* _comm, 
+int chlModAccessControlResc(
+    rsComm_t* _comm,
     int       _recursive_flag,
-    char*     _access_level, 
-    char*     _user_name, 
+    char*     _access_level,
+    char*     _user_name,
     char*     _zone,
     char*     _resc_name ) {
     // =-=-=-=-=-=-=-
@@ -4098,10 +4099,10 @@ int _modInheritance( int inheritFlag, int recursiveFlag, char *collIdStr, char *
 //                       of an existing dataObj or collection.
 // "n" (null or none) used to remove access.
 int chlModAccessControl(
-    rsComm_t* _comm, 
+    rsComm_t* _comm,
     int       _recursive_flag,
-    char*     _access_level, 
-    char*     _user_name, 
+    char*     _access_level,
+    char*     _user_name,
     char*     _zone,
     char*     _path_name ) {
     // =-=-=-=-=-=-=-
@@ -4163,8 +4164,8 @@ int chlModAccessControl(
 
 // =-=-=-=-=-=-=-
 // chlRenameObject - Rename a dataObject or collection.
-int chlRenameObject( 
-    rsComm_t*  _comm, 
+int chlRenameObject(
+    rsComm_t*  _comm,
     rodsLong_t _obj_id,
     char*      _new_name ) {
     // =-=-=-=-=-=-=-
@@ -4221,8 +4222,8 @@ int chlRenameObject(
 // =-=-=-=-=-=-=-
 // chlMoveObject - Move a dataObject or collection to another
 // collection.
-int chlMoveObject( 
-    rsComm_t*  _comm, 
+int chlMoveObject(
+    rsComm_t*  _comm,
     rodsLong_t _obj_id,
     rodsLong_t _target_coll_id ) {
     // =-=-=-=-=-=-=-
@@ -4278,13 +4279,13 @@ int chlMoveObject(
 
 // =-=-=-=-=-=-=-
 // chlRegToken - Register a new token
-int chlRegToken( 
-    rsComm_t* _comm, 
-    char*     _name_space, 
-    char*     _name, 
+int chlRegToken(
+    rsComm_t* _comm,
+    char*     _name_space,
+    char*     _name,
     char*     _value,
-    char*     _value2, 
-    char*     _value3, 
+    char*     _value2,
+    char*     _value3,
     char*     _comment ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -4336,7 +4337,7 @@ int chlRegToken(
               _value,
               _value2,
               _value3,
-              _comment );    
+              _comment );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
@@ -4348,9 +4349,9 @@ int chlRegToken(
 
 // =-=-=-=-=-=-=-
 // chlDelToken - Delete a token
-int chlDelToken( 
-    rsComm_t* _comm, 
-    char*     _name_space, 
+int chlDelToken(
+    rsComm_t* _comm,
+    char*     _name_space,
     char*     _name ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
