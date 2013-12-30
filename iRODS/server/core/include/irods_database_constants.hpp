@@ -97,6 +97,7 @@ namespace irods {
     const std::string DATABASE_OP_IS_RULE_IN_TABLE( "database_is_rule_in_table" );
     const std::string DATABASE_OP_VERSION_RULE_BASE( "database_version_rule_base" );
     const std::string DATABASE_OP_VERSION_DVM_BASE( "database_version_dvm_base" );
+    const std::string DATABASE_OP_INS_RULE_TABLE( "database_ins_rule_table" );
     const std::string DATABASE_OP_INS_DVM_TABLE( "database_ins_dvm_table" );
     const std::string DATABASE_OP_INS_FNM_TABLE( "database_ins_fnm_table" );
     const std::string DATABASE_OP_INS_MSRVC_TABLE( "database_ins_msrvc_table" );

@@ -142,8 +142,6 @@ char irods_pam_password_default_time[ NAME_LEN ] = { "1209600" };
 
 int logSQL = 0;
 
-static int removeAVUs();
-
 icatSessionStruct icss = {0};
 char localZone[MAX_NAME_LEN] = {""};
 
@@ -681,37 +679,6 @@ void removeMetaMapAndAVU( char *dataObjNumber ) {
 #endif
     }
     return;
-}
-
-/*
- * removeAVUs - remove unused AVUs (user defined metadata), if any.
- */
-static int removeAVUs() {
-    char tSQL[MAX_SQL_SIZE];
-    int status;
-
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "removeAVUs SQL 1 " );
-    }
-    cllBindVarCount = 0;
-
-#if ORA_ICAT
-    snprintf( tSQL, MAX_SQL_SIZE,
-              "delete from R_META_MAIN where meta_id in (select meta_id from R_META_MAIN minus select meta_id from R_OBJT_METAMAP)" );
-#elif MY_ICAT
-    /* MYSQL does not have 'minus' or 'except' (to my knowledge) so
-     * use previous version of the SQL, which is very slow */
-    snprintf( tSQL, MAX_SQL_SIZE,
-              "delete from R_META_MAIN where meta_id not in (select meta_id from R_OBJT_METAMAP)" );
-#else
-    /* Postgres */
-    snprintf( tSQL, MAX_SQL_SIZE,
-              "delete from R_META_MAIN where meta_id in (select meta_id from R_META_MAIN except select meta_id from R_OBJT_METAMAP)" );
-#endif
-    status =  cmlExecuteNoAnswerSql( tSQL, &icss );
-    rodsLog( LOG_NOTICE, "removeAVUs status=%d\n", status );
-
-    return status;
 }
 
 /*
@@ -4404,218 +4371,258 @@ int chlDelToken(
 
 } // chlDelToken
 
-
-/*
- * chlRegServerLoad - Register a new iRODS server load row.
- * Input - rsComm_t *rsComm  - the server handle,
- *    input values.
- */
-int chlRegServerLoad( rsComm_t *rsComm,
-                      char *hostName, char *rescName,
-                      char *cpuUsed, char *memUsed, char *swapUsed,
-                      char *runqLoad, char *diskSpace, char *netInput,
-                      char *netOutput ) {
-    char myTime[50];
-    int status;
-    int i;
-
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlRegServerLoad" );
+// =-=-=-=-=-=-=-
+// chlRegServerLoad - Register a new iRODS server load row.
+// Input - rsComm_t *rsComm  - the server handle,
+//    input values.
+int chlRegServerLoad( 
+    rsComm_t* _comm,
+    char*     _host_name, 
+    char*     _resc_name,
+    char*     _cpu_used, 
+    char*     _mem_used, 
+    char*     _swap_used,
+    char*     _run_q_load, 
+    char*     _disk_space, 
+    char*     _net_input,
+    char*     _net_output ) {
+    // =-=-=-=-=-=-=-
+    // call factory for database object
+    irods::database_object_ptr db_obj_ptr;
+    irods::error ret = irods::database_factory(
+                           icss.database_plugin_type,
+                           db_obj_ptr );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
     }
 
-    if ( rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-        return( CAT_INSUFFICIENT_PRIVILEGE_LEVEL );
+    // =-=-=-=-=-=-=-
+    // resolve a plugin for that object
+    irods::plugin_ptr db_plug_ptr;
+    ret = db_obj_ptr->resolve(
+              irods::DATABASE_INTERFACE,
+              db_plug_ptr );
+    if ( !ret.ok() ) {
+        irods::log(
+            PASSMSG(
+                "failed to resolve database interface",
+                ret ) );
+        return ret.code();
     }
 
-    if ( !icss.status ) {
-        return( CATALOG_NOT_CONNECTED );
+    // =-=-=-=-=-=-=-
+    // cast plugin and object to db and fco for call
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
+                                        irods::first_class_object > ( db_obj_ptr );
+    irods::database_ptr           db = boost::dynamic_pointer_cast <
+                                       irods::database > ( db_plug_ptr );
+
+    // =-=-=-=-=-=-=-
+    // call the operation on the plugin
+    ret = db->call <
+          rsComm_t*,
+          char*,
+          char*,
+          char*,
+          char*,
+          char*,
+          char*,
+          char*,
+          char*,
+          char* > (
+              irods::DATABASE_OP_REG_SERVER_LOAD,
+              ptr,
+              _comm,
+              _host_name, 
+              _resc_name,
+              _cpu_used, 
+              _mem_used, 
+              _swap_used,
+              _run_q_load, 
+              _disk_space, 
+              _net_input,
+              _net_output );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
     }
 
-    getNowStr( myTime );
+    return ret.code();
 
-    i = 0;
-    cllBindVars[i++] = hostName;
-    cllBindVars[i++] = rescName;
-    cllBindVars[i++] = cpuUsed;
-    cllBindVars[i++] = memUsed;
-    cllBindVars[i++] = swapUsed;
-    cllBindVars[i++] = runqLoad;
-    cllBindVars[i++] = diskSpace;
-    cllBindVars[i++] = netInput;
-    cllBindVars[i++] = netOutput;
-    cllBindVars[i++] = myTime;
-    cllBindVarCount = i;
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlRegServerLoad SQL 1" );
-    }
-    status =  cmlExecuteNoAnswerSql(
-                  "insert into R_SERVER_LOAD (host_name, resc_name, cpu_used, mem_used, swap_used, runq_load, disk_space, net_input, net_output, create_ts) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                  &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlRegServerLoad cmlExecuteNoAnswerSql failure %d", status );
-        _rollback( "chlRegServerLoad" );
-        return( status );
+} // chlRegServerLoad
+
+// =-=-=-=-=-=-=-
+// chlPurgeServerLoad - Purge some rows from iRODS server load table
+// that are older than secondsAgo seconds ago.
+// Input - rsComm_t *rsComm - the server handle,
+//    char *secondsAgo (age in seconds).
+int chlPurgeServerLoad( 
+    rsComm_t* _comm, 
+    char*     _seconds_ago ) {
+    // =-=-=-=-=-=-=-
+    // call factory for database object
+    irods::database_object_ptr db_obj_ptr;
+    irods::error ret = irods::database_factory(
+                           icss.database_plugin_type,
+                           db_obj_ptr );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
     }
 
-    status =  cmlExecuteNoAnswerSql( "commit", &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlRegServerLoad cmlExecuteNoAnswerSql commit failure %d",
-                 status );
-        return( status );
+    // =-=-=-=-=-=-=-
+    // resolve a plugin for that object
+    irods::plugin_ptr db_plug_ptr;
+    ret = db_obj_ptr->resolve(
+              irods::DATABASE_INTERFACE,
+              db_plug_ptr );
+    if ( !ret.ok() ) {
+        irods::log(
+            PASSMSG(
+                "failed to resolve database interface",
+                ret ) );
+        return ret.code();
     }
 
-    return( 0 );
-}
+    // =-=-=-=-=-=-=-
+    // cast plugin and object to db and fco for call
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
+                                        irods::first_class_object > ( db_obj_ptr );
+    irods::database_ptr           db = boost::dynamic_pointer_cast <
+                                       irods::database > ( db_plug_ptr );
 
-/*
- * chlPurgeServerLoad - Purge some rows from iRODS server load table
- * that are older than secondsAgo seconds ago.
- * Input - rsComm_t *rsComm - the server handle,
- *    char *secondsAgo (age in seconds).
- */
-int chlPurgeServerLoad( rsComm_t *rsComm, char *secondsAgo ) {
-
-    /* delete from R_LOAD_SERVER where (%i -exe_time) > %i */
-    int status;
-    char nowStr[50];
-    static char thenStr[50];
-    time_t nowTime;
-    time_t thenTime;
-    time_t secondsAgoTime;
-
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlPurgeServerLoad" );
+    // =-=-=-=-=-=-=-
+    // call the operation on the plugin
+    ret = db->call <
+          rsComm_t*,
+          char* > (
+              irods::DATABASE_OP_PURGE_SERVER_LOAD,
+              ptr,
+              _comm,
+              _seconds_ago );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
     }
 
-    if ( rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-        return( CAT_INSUFFICIENT_PRIVILEGE_LEVEL );
+    return ret.code();
+
+} // chlPurgeServerLoad
+
+// =-=-=-=-=-=-=-
+// chlRegServerLoadDigest - Register a new iRODS server load-digest row.
+// Input - rsComm_t *rsComm  - the server handle,
+//    input values.
+int chlRegServerLoadDigest( 
+    rsComm_t* _comm,
+    char*     _resc_name, 
+    char*     _load_factor ) {
+    // =-=-=-=-=-=-=-
+    // call factory for database object
+    irods::database_object_ptr db_obj_ptr;
+    irods::error ret = irods::database_factory(
+                           icss.database_plugin_type,
+                           db_obj_ptr );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
     }
 
-    getNowStr( nowStr );
-    nowTime = atoll( nowStr );
-    secondsAgoTime = atoll( secondsAgo );
-    thenTime = nowTime - secondsAgoTime;
-    snprintf( thenStr, sizeof thenStr, "%011d", ( uint ) thenTime );
-
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlPurgeServerLoad SQL 1" );
+    // =-=-=-=-=-=-=-
+    // resolve a plugin for that object
+    irods::plugin_ptr db_plug_ptr;
+    ret = db_obj_ptr->resolve(
+              irods::DATABASE_INTERFACE,
+              db_plug_ptr );
+    if ( !ret.ok() ) {
+        irods::log(
+            PASSMSG(
+                "failed to resolve database interface",
+                ret ) );
+        return ret.code();
     }
 
-    cllBindVars[cllBindVarCount++] = thenStr;
-    status =  cmlExecuteNoAnswerSql(
-                  "delete from R_SERVER_LOAD where create_ts <?",
-                  &icss );
-    if ( status != 0 ) {
-        _rollback( "chlPurgeServerLoad" );
-        return( status );
+    // =-=-=-=-=-=-=-
+    // cast plugin and object to db and fco for call
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
+                                        irods::first_class_object > ( db_obj_ptr );
+    irods::database_ptr           db = boost::dynamic_pointer_cast <
+                                       irods::database > ( db_plug_ptr );
+
+    // =-=-=-=-=-=-=-
+    // call the operation on the plugin
+    ret = db->call <
+          rsComm_t*,
+          char*,
+          char* > (
+              irods::DATABASE_OP_REG_SERVER_LOAD_DIGEST,
+              ptr,
+              _comm,
+              _resc_name,
+              _load_factor );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
     }
 
-    status =  cmlExecuteNoAnswerSql( "commit", &icss );
-    return( status );
-}
+    return ret.code();
 
-/*
- * chlRegServerLoadDigest - Register a new iRODS server load-digest row.
- * Input - rsComm_t *rsComm  - the server handle,
- *    input values.
- */
-int chlRegServerLoadDigest( rsComm_t *rsComm,
-                            char *rescName, char *loadFactor ) {
-    char myTime[50];
-    int status;
-    int i;
+} // chlRegServerLoadDigest
 
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlRegServerLoadDigest" );
+// =-=-=-=-=-=-=-
+// chlPurgeServerLoadDigest - Purge some rows from iRODS server LoadDigest table
+// that are older than secondsAgo seconds ago.
+// Input - rsComm_t *rsComm - the server handle,
+//    int secondsAgo (age in seconds).
+int chlPurgeServerLoadDigest( 
+    rsComm_t* _comm, 
+    char*     _seconds_ago ) {
+    // =-=-=-=-=-=-=-
+    // call factory for database object
+    irods::database_object_ptr db_obj_ptr;
+    irods::error ret = irods::database_factory(
+                           icss.database_plugin_type,
+                           db_obj_ptr );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
     }
 
-    if ( rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-        return( CAT_INSUFFICIENT_PRIVILEGE_LEVEL );
+    // =-=-=-=-=-=-=-
+    // resolve a plugin for that object
+    irods::plugin_ptr db_plug_ptr;
+    ret = db_obj_ptr->resolve(
+              irods::DATABASE_INTERFACE,
+              db_plug_ptr );
+    if ( !ret.ok() ) {
+        irods::log(
+            PASSMSG(
+                "failed to resolve database interface",
+                ret ) );
+        return ret.code();
     }
 
-    if ( !icss.status ) {
-        return( CATALOG_NOT_CONNECTED );
+    // =-=-=-=-=-=-=-
+    // cast plugin and object to db and fco for call
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
+                                        irods::first_class_object > ( db_obj_ptr );
+    irods::database_ptr           db = boost::dynamic_pointer_cast <
+                                       irods::database > ( db_plug_ptr );
+
+    // =-=-=-=-=-=-=-
+    // call the operation on the plugin
+    ret = db->call <
+          rsComm_t*,
+          char* > (
+              irods::DATABASE_OP_PURGE_SERVER_LOAD_DIGEST,
+              ptr,
+              _comm,
+              _seconds_ago );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
     }
 
-    getNowStr( myTime );
+    return ret.code();
 
-    i = 0;
-    cllBindVars[i++] = rescName;
-    cllBindVars[i++] = loadFactor;
-    cllBindVars[i++] = myTime;
-    cllBindVarCount = i;
-
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlRegServerLoadDigest SQL 1" );
-    }
-    status =  cmlExecuteNoAnswerSql(
-                  "insert into R_SERVER_LOAD_DIGEST (resc_name, load_factor, create_ts) values (?, ?, ?)",
-                  &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlRegServerLoadDigest cmlExecuteNoAnswerSql failure %d", status );
-        _rollback( "chlRegServerLoadDigest" );
-        return( status );
-    }
-
-    status =  cmlExecuteNoAnswerSql( "commit", &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlRegServerLoadDigest cmlExecuteNoAnswerSql commit failure %d",
-                 status );
-        return( status );
-    }
-
-    return( 0 );
-}
-
-/*
- * chlPurgeServerLoadDigest - Purge some rows from iRODS server LoadDigest table
- * that are older than secondsAgo seconds ago.
- * Input - rsComm_t *rsComm - the server handle,
- *    int secondsAgo (age in seconds).
- */
-int chlPurgeServerLoadDigest( rsComm_t *rsComm, char *secondsAgo ) {
-    /* delete from R_SERVER_LOAD_DIGEST where (%i -exe_time) > %i */
-    int status;
-    char nowStr[50];
-    static char thenStr[50];
-    time_t nowTime;
-    time_t thenTime;
-    time_t secondsAgoTime;
-
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlPurgeServerLoadDigest" );
-    }
-
-    if ( rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-        return( CAT_INSUFFICIENT_PRIVILEGE_LEVEL );
-    }
-
-    getNowStr( nowStr );
-    nowTime = atoll( nowStr );
-    secondsAgoTime = atoll( secondsAgo );
-    thenTime = nowTime - secondsAgoTime;
-    snprintf( thenStr, sizeof thenStr, "%011d", ( uint ) thenTime );
-
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlPurgeServerLoadDigest SQL 1" );
-    }
-
-    cllBindVars[cllBindVarCount++] = thenStr;
-    status =  cmlExecuteNoAnswerSql(
-                  "delete from R_SERVER_LOAD_DIGEST where create_ts <?",
-                  &icss );
-    if ( status != 0 ) {
-        _rollback( "chlPurgeServerLoadDigest" );
-        return( status );
-    }
-
-    status =  cmlExecuteNoAnswerSql( "commit", &icss );
-    return( status );
-}
+} // chlPurgeServerLoadDigest
 
 /*
   Set the over_quota values (if any) using the limits and
@@ -4821,1342 +4828,928 @@ int setOverQuota( rsComm_t *rsComm ) {
 }
 
 
-int chlCalcUsageAndQuota( rsComm_t *rsComm ) {
-    int status;
-    char myTime[50];
-
-    status = 0;
-    if ( rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-        return( CAT_INSUFFICIENT_PRIVILEGE_LEVEL );
-    }
-
-    rodsLog( LOG_NOTICE,
-             "chlCalcUsageAndQuota called" );
-
-
-    getNowStr( myTime );
-
-    /* Delete the old rows from R_QUOTA_USAGE */
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlCalcUsageAndQuota SQL 1" );
-    }
-    cllBindVars[cllBindVarCount++] = myTime;
-    status =  cmlExecuteNoAnswerSql(
-                  "delete from R_QUOTA_USAGE where modify_ts < ?", &icss );
-    if ( status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-        _rollback( "chlCalcUsageAndQuota" );
-        return( status );
-    }
-
-    /* Add a row to R_QUOTA_USAGE for each user's usage on each resource */
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlCalcUsageAndQuota SQL 2" );
-    }
-    cllBindVars[cllBindVarCount++] = myTime;
-    status =  cmlExecuteNoAnswerSql(
-                  "insert into R_QUOTA_USAGE (quota_usage, resc_id, user_id, modify_ts) (select sum(R_DATA_MAIN.data_size), R_RESC_MAIN.resc_id, R_USER_MAIN.user_id, ? from R_DATA_MAIN, R_USER_MAIN, R_RESC_MAIN where R_USER_MAIN.user_name = R_DATA_MAIN.data_owner_name and R_USER_MAIN.zone_name = R_DATA_MAIN.data_owner_zone and R_RESC_MAIN.resc_name = R_DATA_MAIN.resc_name group by R_RESC_MAIN.resc_id, user_id)",
-                  &icss );
-    if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-        status = 0;    /* no files, OK */
-    }
-    if ( status != 0 ) {
-        _rollback( "chlCalcUsageAndQuota" );
-        return( status );
-    }
-
-    /* Set the over_quota flags where appropriate */
-    status = setOverQuota( rsComm );
-    if ( status != 0 ) {
-        _rollback( "chlCalcUsageAndQuota" );
-        return( status );
-    }
-
-    status =  cmlExecuteNoAnswerSql( "commit", &icss );
-    return( status );
-}
-
-int chlSetQuota( rsComm_t *rsComm, char *type, char *name,
-                 char *rescName, char* limit ) {
-    int status;
-    rodsLong_t rescId;
-    rodsLong_t userId;
-    char userZone[NAME_LEN];
-    char userName[NAME_LEN];
-    char rescIdStr[60];
-    char userIdStr[60];
-    char myTime[50];
-    int itype = 0;
-
-    if ( strncmp( type, "user", 4 ) == 0 ) {
-        itype = 1;
-    }
-    if ( strncmp( type, "group", 5 ) == 0 ) {
-        itype = 2;
-    }
-    if ( itype == 0 ) {
-        return ( CAT_INVALID_ARGUMENT );
-    }
-
-    status = getLocalZone();
-    if ( status != 0 ) {
-        return( status );
-    }
-
-    /* Get the resource id; use rescId=0 for 'total' */
-    rescId = 0;
-    if ( strncmp( rescName, "total", 5 ) != 0 ) {
-        if ( logSQL != 0 ) {
-            rodsLog( LOG_SQL, "chlSetQuota SQL 1" );
-        }
-        status = cmlGetIntegerValueFromSql(
-                     "select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
-                     &rescId, rescName, localZone, 0, 0, 0, &icss );
-        if ( status != 0 ) {
-            if ( status == CAT_NO_ROWS_FOUND ) {
-                return( CAT_INVALID_RESOURCE );
-            }
-            _rollback( "chlSetQuota" );
-            return( status );
-        }
-    }
-
-
-    status = parseUserName( name, userName, userZone );
-    if ( userZone[0] == '\0' ) {
-        strncpy( userZone, localZone, NAME_LEN );
-    }
-
-    if ( itype == 1 ) {
-        userId = 0;
-        if ( logSQL != 0 ) {
-            rodsLog( LOG_SQL, "chlSetQuota SQL 2" );
-        }
-        status = cmlGetIntegerValueFromSql(
-                     "select user_id from R_USER_MAIN where user_name=? and zone_name=?",
-                     &userId, userName, userZone, 0, 0, 0, &icss );
-        if ( status != 0 ) {
-            if ( status == CAT_NO_ROWS_FOUND ) {
-                return( CAT_INVALID_USER );
-            }
-            _rollback( "chlSetQuota" );
-            return( status );
-        }
-    }
-    else {
-        userId = 0;
-        if ( logSQL != 0 ) {
-            rodsLog( LOG_SQL, "chlSetQuota SQL 3" );
-        }
-        status = cmlGetIntegerValueFromSql(
-                     "select user_id from R_USER_MAIN where user_name=? and zone_name=? and user_type_name='rodsgroup'",
-                     &userId, userName, userZone, 0, 0, 0, &icss );
-        if ( status != 0 ) {
-            if ( status == CAT_NO_ROWS_FOUND ) {
-                return( CAT_INVALID_GROUP );
-            }
-            _rollback( "chlSetQuota" );
-            return( status );
-        }
-    }
-
-    snprintf( userIdStr, sizeof userIdStr, "%lld", userId );
-    snprintf( rescIdStr, sizeof rescIdStr, "%lld", rescId );
-
-    /* first delete previous one, if any */
-    cllBindVars[cllBindVarCount++] = userIdStr;
-    cllBindVars[cllBindVarCount++] = rescIdStr;
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlSetQuota SQL 4" );
-    }
-    status =  cmlExecuteNoAnswerSql(
-                  "delete from R_QUOTA_MAIN where user_id=? and resc_id=?",
-                  &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_DEBUG,
-                 "chlSetQuota cmlExecuteNoAnswerSql delete failure %d",
-                 status );
-    }
-    if ( atol( limit ) > 0 ) {
-        getNowStr( myTime );
-        cllBindVars[cllBindVarCount++] = userIdStr;
-        cllBindVars[cllBindVarCount++] = rescIdStr;
-        cllBindVars[cllBindVarCount++] = limit;
-        cllBindVars[cllBindVarCount++] = myTime;
-        if ( logSQL != 0 ) {
-            rodsLog( LOG_SQL, "chlSetQuota SQL 5" );
-        }
-        status =  cmlExecuteNoAnswerSql(
-                      "insert into R_QUOTA_MAIN (user_id, resc_id, quota_limit, modify_ts) values (?, ?, ?, ?)",
-                      &icss );
-        if ( status != 0 ) {
-            rodsLog( LOG_NOTICE,
-                     "chlSetQuota cmlExecuteNoAnswerSql insert failure %d",
-                     status );
-            _rollback( "chlSetQuota" );
-            return( status );
-        }
-    }
-
-    /* Reset the over_quota flags based on previous usage info.  The
-       usage info may take a while to set, but setting the OverQuota
-       should be quick.  */
-    status = setOverQuota( rsComm );
-    if ( status != 0 ) {
-        _rollback( "chlSetQuota" );
-        return( status );
-    }
-
-    status =  cmlExecuteNoAnswerSql( "commit", &icss );
-    return( status );
-}
-
-
-int
-chlCheckQuota( rsComm_t *rsComm, char *userName, char *rescName,
-               rodsLong_t *userQuota, int *quotaStatus ) {
-    /*
-       Check on a user's quota status, returning the most-over or
-       nearest-over value.
-
-       A single query is done which gets the four possible types of quotas
-       for this user on this resource (and ordered so the first row is the
-       result).  The types of quotas are: user per-resource, user global,
-       group per-resource, and group global.
-    */
-    int status;
-    int statementNum;
-
-    char mySQL[] = "select distinct QM.user_id, QM.resc_id, QM.quota_limit, QM.quota_over from R_QUOTA_MAIN QM, R_USER_MAIN UM, R_RESC_MAIN RM, R_USER_GROUP UG, R_USER_MAIN UM2 where ( (QM.user_id = UM.user_id and UM.user_name = ?) or (QM.user_id = UG.group_user_id and UM2.user_name = ? and UG.user_id = UM2.user_id) ) and ((QM.resc_id = RM.resc_id and RM.resc_name = ?) or QM.resc_id = '0') order by quota_over desc";
-
-    *userQuota = 0;
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlCheckQuota SQL 1" );
-    }
-    cllBindVars[cllBindVarCount++] = userName;
-    cllBindVars[cllBindVarCount++] = userName;
-    cllBindVars[cllBindVarCount++] = rescName;
-
-    status = cmlGetFirstRowFromSql( mySQL, &statementNum,
-                                    0, &icss );
-
-    if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-        rodsLog( LOG_NOTICE,
-                 "chlCheckQuota - CAT_SUCCESS_BUT_WITH_NO_INFO" );
-        *quotaStatus = QUOTA_UNRESTRICTED;
-        return( 0 );
-    }
-
-    if ( status == CAT_NO_ROWS_FOUND ) {
-        rodsLog( LOG_NOTICE,
-                 "chlCheckQuota - CAT_NO_ROWS_FOUND" );
-        *quotaStatus = QUOTA_UNRESTRICTED;
-        return( 0 );
-    }
-
-    if ( status != 0 ) {
-        return( status );
-    }
-
-#if 0
-    for ( i = 0; i < 4; i++ ) {
-        rodsLog( LOG_NOTICE, "checkvalue: %s",
-                 icss.stmtPtr[statementNum]->resultValue[i] );
-    }
-#endif
-
-    /* For now, log it */
-    rodsLog( LOG_NOTICE, "checkQuota: inUser:%s inResc:%s RescId:%s Quota:%s",
-             userName, rescName,
-             icss.stmtPtr[statementNum]->resultValue[1],  /* resc_id column */
-             icss.stmtPtr[statementNum]->resultValue[3] ); /* quota_over column */
-
-    *userQuota = atoll( icss.stmtPtr[statementNum]->resultValue[3] );
-    if ( atoi( icss.stmtPtr[statementNum]->resultValue[1] ) == 0 ) {
-        *quotaStatus = QUOTA_GLOBAL;
-    }
-    else {
-        *quotaStatus = QUOTA_RESOURCE;
-    }
-    cmlFreeStatement( statementNum, &icss ); /* only need the one row */
-
-    return( status );
-}
-
-int
-chlDelUnusedAVUs( rsComm_t *rsComm ) {
-    /*
-       Remove any AVUs that are currently not associated with any object.
-       This is done as a separate operation for efficiency.  See
-       'iadmin h rum'.
-    */
-    int status;
-    status = removeAVUs();
-
-    if ( status == 0 ) {
-        status =  cmlExecuteNoAnswerSql( "commit", &icss );
-    }
-    return( status );
-
-}
-
-
-/*
- * chlInsRuleTable - Insert  a new iRODS Rule Base table row.
- * Input - rsComm_t *rsComm  - the server handle,
- *    input values.
- */
-int
-chlInsRuleTable( rsComm_t *rsComm,
-                 char *baseName, char *mapPriorityStr,  char *ruleName,
-                 char *ruleHead, char *ruleCondition, char *ruleAction,
-                 char *ruleRecovery, char *ruleIdStr, char *myTime ) {
-    int status;
-    int i;
-    rodsLong_t seqNum = -1;
-
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlInsRuleTable" );
-    }
-
-    if ( rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-        return( CAT_INSUFFICIENT_PRIVILEGE_LEVEL );
-    }
-
-    if ( !icss.status ) {
-        return( CATALOG_NOT_CONNECTED );
-    }
-
-    /* first check if the  rule already exists */
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlInsRuleTable SQL 1" );
-    }
-    i = 0;
-    cllBindVars[i++] = baseName;
-    cllBindVars[i++] = ruleName;
-    cllBindVars[i++] = ruleHead;
-    cllBindVars[i++] = ruleCondition;
-    cllBindVars[i++] = ruleAction;
-    cllBindVars[i++] = ruleRecovery;
-    cllBindVarCount = i;
-    status =  cmlGetIntegerValueFromSqlV3(
-                  "select rule_id from R_RULE_MAIN where  rule_base_name = ? and  rule_name = ? and rule_event = ? and rule_condition = ? and rule_body = ? and  rule_recovery = ?",
-                  &seqNum,
-                  &icss );
-    if ( status != 0 &&  status != CAT_NO_ROWS_FOUND ) {
-        rodsLog( LOG_NOTICE,
-                 "chlInsRuleTable cmlGetIntegerValueFromSqlV3 find rule if any failure %d", status );
-        return( status );
-    }
-    if ( seqNum < 0 ) {
-        seqNum = cmlGetNextSeqVal( &icss );
-        if ( seqNum < 0 ) {
-            rodsLog( LOG_NOTICE, "chlInsRuleTable cmlGetNextSeqVal failure %d",
-                     seqNum );
-            _rollback( "chlInsRuleTable" );
-            return( seqNum );
-        }
-        snprintf( ruleIdStr, MAX_NAME_LEN, "%lld", seqNum );
-
-        i = 0;
-        cllBindVars[i++] = ruleIdStr;
-        cllBindVars[i++] = baseName;
-        cllBindVars[i++] = ruleName;
-        cllBindVars[i++] = ruleHead;
-        cllBindVars[i++] = ruleCondition;
-        cllBindVars[i++] = ruleAction;
-        cllBindVars[i++] = ruleRecovery;
-        cllBindVars[i++] = rsComm->clientUser.userName;
-        cllBindVars[i++] = rsComm->clientUser.rodsZone;
-        cllBindVars[i++] = myTime;
-        cllBindVars[i++] = myTime;
-        cllBindVarCount = i;
-        if ( logSQL != 0 ) {
-            rodsLog( LOG_SQL, "chlInsRuleTable SQL 2" );
-        }
-        status =  cmlExecuteNoAnswerSql(
-                      "insert into R_RULE_MAIN(rule_id, rule_base_name, rule_name, rule_event, rule_condition, rule_body, rule_recovery, rule_owner_name, rule_owner_zone, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                      &icss );
-        if ( status != 0 ) {
-            rodsLog( LOG_NOTICE,
-                     "chlInsRuleTable cmlExecuteNoAnswerSql Rule Main Insert failure %d", status );
-            return( status );
-        }
-    }
-    else {
-        snprintf( ruleIdStr, MAX_NAME_LEN, "%lld", seqNum );
-    }
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlInsRuleTable SQL 3" );
-    }
-    i = 0;
-    cllBindVars[i++] = baseName;
-    cllBindVars[i++] = mapPriorityStr;
-    cllBindVars[i++] = ruleIdStr;
-    cllBindVars[i++] = rsComm->clientUser.userName;
-    cllBindVars[i++] = rsComm->clientUser.rodsZone;
-    cllBindVars[i++] = myTime;
-    cllBindVars[i++] = myTime;
-    cllBindVarCount = i;
-    status =  cmlExecuteNoAnswerSql(
-                  "insert into R_RULE_BASE_MAP  (map_base_name, map_priority, rule_id, map_owner_name,map_owner_zone, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?, ?)",
-                  &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlInsRuleTable cmlExecuteNoAnswerSql Rule Map insert failure %d" , status );
-
-        return( status );
-    }
-
-    return( 0 );
-}
-
-/*
- * chlInsDvmTable - Insert  a new iRODS DVM table row.
- * Input - rsComm_t *rsComm  - the server handle,
- *    input values.
- */
-int
-chlInsDvmTable( rsComm_t *rsComm,
-                char *baseName, char *varName, char *action,
-                char *var2CMap, char *myTime ) {
-    int status;
-    int i;
-    rodsLong_t seqNum = -1;
-    char dvmIdStr[MAX_NAME_LEN];
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlInsDvmTable" );
-    }
-
-    if ( rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-        return( CAT_INSUFFICIENT_PRIVILEGE_LEVEL );
-    }
-
-    if ( !icss.status ) {
-        return( CATALOG_NOT_CONNECTED );
-    }
-
-    /* first check if the DVM already exists */
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlInsDvmTable SQL 1" );
-    }
-    i = 0;
-    cllBindVars[i++] = baseName;
-    cllBindVars[i++] = varName;
-    cllBindVars[i++] = action;
-    cllBindVars[i++] = var2CMap;
-    cllBindVarCount = i;
-    status =  cmlGetIntegerValueFromSqlV3(
-                  "select dvm_id from R_RULE_DVM where  dvm_base_name = ? and  dvm_ext_var_name = ? and  dvm_condition = ? and dvm_int_map_path = ? ",
-                  &seqNum,
-                  &icss );
-    if ( status != 0 &&  status != CAT_NO_ROWS_FOUND ) {
-        rodsLog( LOG_NOTICE,
-                 "chlInsDvmTable cmlGetIntegerValueFromSqlV3 find DVM if any failure %d", status );
-        return( status );
-    }
-    if ( seqNum < 0 ) {
-        seqNum = cmlGetNextSeqVal( &icss );
-        if ( seqNum < 0 ) {
-            rodsLog( LOG_NOTICE, "chlInsDvmTable cmlGetNextSeqVal failure %d",
-                     seqNum );
-            _rollback( "chlInsDvmTable" );
-            return( seqNum );
-        }
-        snprintf( dvmIdStr, MAX_NAME_LEN, "%lld", seqNum );
-
-        i = 0;
-        cllBindVars[i++] = dvmIdStr;
-        cllBindVars[i++] = baseName;
-        cllBindVars[i++] = varName;
-        cllBindVars[i++] = action;
-        cllBindVars[i++] = var2CMap;
-        cllBindVars[i++] = rsComm->clientUser.userName;
-        cllBindVars[i++] = rsComm->clientUser.rodsZone;
-        cllBindVars[i++] = myTime;
-        cllBindVars[i++] = myTime;
-        cllBindVarCount = i;
-        if ( logSQL != 0 ) {
-            rodsLog( LOG_SQL, "chlInsDvmTable SQL 2" );
-        }
-        status =  cmlExecuteNoAnswerSql(
-                      "insert into R_RULE_DVM(dvm_id, dvm_base_name, dvm_ext_var_name, dvm_condition, dvm_int_map_path, dvm_owner_name, dvm_owner_zone, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                      &icss );
-        if ( status != 0 ) {
-            rodsLog( LOG_NOTICE,
-                     "chlInsDvmTable cmlExecuteNoAnswerSql DVM Main Insert failure %d", status );
-            return( status );
-        }
-    }
-    else {
-        snprintf( dvmIdStr, MAX_NAME_LEN, "%lld", seqNum );
-    }
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlInsDvmTable SQL 3" );
-    }
-    i = 0;
-    cllBindVars[i++] = baseName;
-    cllBindVars[i++] = dvmIdStr;
-    cllBindVars[i++] = rsComm->clientUser.userName;
-    cllBindVars[i++] = rsComm->clientUser.rodsZone;
-    cllBindVars[i++] = myTime;
-    cllBindVars[i++] = myTime;
-    cllBindVarCount = i;
-    status =  cmlExecuteNoAnswerSql(
-                  "insert into R_RULE_DVM_MAP  (map_dvm_base_name, dvm_id, map_owner_name,map_owner_zone, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?)",
-                  &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlInsDvmTable cmlExecuteNoAnswerSql DVM Map insert failure %d" , status );
-
-        return( status );
-    }
-
-    return( 0 );
-}
-
-
-
-/*
- * chlInsFnmTable - Insert  a new iRODS FNM table row.
- * Input - rsComm_t *rsComm  - the server handle,
- *    input values.
- */
-int
-chlInsFnmTable( rsComm_t *rsComm,
-                char *baseName, char *funcName,
-                char *func2CMap, char *myTime ) {
-    int status;
-    int i;
-    rodsLong_t seqNum = -1;
-    char fnmIdStr[MAX_NAME_LEN];
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlInsFnmTable" );
-    }
-
-    if ( rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-        return( CAT_INSUFFICIENT_PRIVILEGE_LEVEL );
-    }
-
-    if ( !icss.status ) {
-        return( CATALOG_NOT_CONNECTED );
-    }
-
-    /* first check if the FNM already exists */
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlInsFnmTable SQL 1" );
-    }
-    i = 0;
-    cllBindVars[i++] = baseName;
-    cllBindVars[i++] = funcName;
-    cllBindVars[i++] = func2CMap;
-    cllBindVarCount = i;
-    status =  cmlGetIntegerValueFromSqlV3(
-                  "select fnm_id from R_RULE_FNM where  fnm_base_name = ? and  fnm_ext_func_name = ? and  fnm_int_func_name = ? ",
-                  &seqNum,
-                  &icss );
-    if ( status != 0 &&  status != CAT_NO_ROWS_FOUND ) {
-        rodsLog( LOG_NOTICE,
-                 "chlInsFnmTable cmlGetIntegerValueFromSqlV3 find FNM if any failure %d", status );
-        return( status );
-    }
-    if ( seqNum < 0 ) {
-        seqNum = cmlGetNextSeqVal( &icss );
-        if ( seqNum < 0 ) {
-            rodsLog( LOG_NOTICE, "chlInsFnmTable cmlGetNextSeqVal failure %d",
-                     seqNum );
-            _rollback( "chlInsFnmTable" );
-            return( seqNum );
-        }
-        snprintf( fnmIdStr, MAX_NAME_LEN, "%lld", seqNum );
-
-        i = 0;
-        cllBindVars[i++] = fnmIdStr;
-        cllBindVars[i++] = baseName;
-        cllBindVars[i++] = funcName;
-        cllBindVars[i++] = func2CMap;
-        cllBindVars[i++] = rsComm->clientUser.userName;
-        cllBindVars[i++] = rsComm->clientUser.rodsZone;
-        cllBindVars[i++] = myTime;
-        cllBindVars[i++] = myTime;
-        cllBindVarCount = i;
-        if ( logSQL != 0 ) {
-            rodsLog( LOG_SQL, "chlInsFnmTable SQL 2" );
-        }
-        status =  cmlExecuteNoAnswerSql(
-                      "insert into R_RULE_FNM(fnm_id, fnm_base_name, fnm_ext_func_name, fnm_int_func_name, fnm_owner_name, fnm_owner_zone, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?, ?, ?)",
-                      &icss );
-        if ( status != 0 ) {
-            rodsLog( LOG_NOTICE,
-                     "chlInsFnmTable cmlExecuteNoAnswerSql FNM Main Insert failure %d", status );
-            return( status );
-        }
-    }
-    else {
-        snprintf( fnmIdStr, MAX_NAME_LEN, "%lld", seqNum );
-    }
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlInsFnmTable SQL 3" );
-    }
-    i = 0;
-    cllBindVars[i++] = baseName;
-    cllBindVars[i++] = fnmIdStr;
-    cllBindVars[i++] = rsComm->clientUser.userName;
-    cllBindVars[i++] = rsComm->clientUser.rodsZone;
-    cllBindVars[i++] = myTime;
-    cllBindVars[i++] = myTime;
-    cllBindVarCount = i;
-    status =  cmlExecuteNoAnswerSql(
-                  "insert into R_RULE_FNM_MAP  (map_fnm_base_name, fnm_id, map_owner_name,map_owner_zone, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?)",
-                  &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlInsFnmTable cmlExecuteNoAnswerSql FNM Map insert failure %d" , status );
-
-        return( status );
-    }
-
-    return( 0 );
-}
-
-
-
-
-
-/*
- * chlInsMsrvcTable - Insert  a new iRODS MSRVC table row (actually in two tables).
- * Input - rsComm_t *rsComm  - the server handle,
- *    input values.
- */
-int chlInsMsrvcTable( rsComm_t *rsComm,
-                      char *moduleName, char *msrvcName,
-                      char *msrvcSignature,  char *msrvcVersion,
-                      char *msrvcHost, char *msrvcLocation,
-                      char *msrvcLanguage,  char *msrvcTypeName, char *msrvcStatus,
-                      char *myTime ) {
-    int status;
-    int i;
-    rodsLong_t seqNum = -1;
-    char msrvcIdStr[MAX_NAME_LEN];
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlInsMsrvcTable" );
-    }
-
-    if ( rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-        return( CAT_INSUFFICIENT_PRIVILEGE_LEVEL );
-    }
-
-    if ( !icss.status ) {
-        return( CATALOG_NOT_CONNECTED );
-    }
-
-    /* first check if the MSRVC already exists */
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlInsMsrvcTable SQL 1" );
-    }
-    i = 0;
-    cllBindVars[i++] = moduleName;
-    cllBindVars[i++] = msrvcName;
-    cllBindVarCount = i;
-    status =  cmlGetIntegerValueFromSqlV3(
-                  "select msrvc_id from R_MICROSRVC_MAIN where  msrvc_module_name = ? and  msrvc_name = ? ",
-                  &seqNum,
-                  &icss );
-    if ( status != 0 &&  status != CAT_NO_ROWS_FOUND ) {
-        rodsLog( LOG_NOTICE,
-                 "chlInsMsrvcTable cmlGetIntegerValueFromSqlV3 find MSRVC if any failure %d", status );
-        return( status );
-    }
-    if ( seqNum < 0 ) { /* No micro-service found */
-        seqNum = cmlGetNextSeqVal( &icss );
-        if ( seqNum < 0 ) {
-            rodsLog( LOG_NOTICE, "chlInsMsrvcTable cmlGetNextSeqVal failure %d",
-                     seqNum );
-            _rollback( "chlInsMsrvcTable" );
-            return( seqNum );
-        }
-        snprintf( msrvcIdStr, MAX_NAME_LEN, "%lld", seqNum );
-        /* inserting in R_MICROSRVC_MAIN */
-        i = 0;
-        cllBindVars[i++] = msrvcIdStr;
-        cllBindVars[i++] = msrvcName;
-        cllBindVars[i++] = moduleName;
-        cllBindVars[i++] = msrvcSignature;
-        cllBindVars[i++] = rsComm->clientUser.userName;
-        cllBindVars[i++] = rsComm->clientUser.rodsZone;
-        cllBindVars[i++] = myTime;
-        cllBindVars[i++] = myTime;
-        cllBindVarCount = i;
-        if ( logSQL != 0 ) {
-            rodsLog( LOG_SQL, "chlInsMsrvcTable SQL 2" );
-        }
-        status =  cmlExecuteNoAnswerSql(
-                      "insert into R_MICROSRVC_MAIN(msrvc_id, msrvc_name, msrvc_module_name, msrvc_signature, msrvc_doxygen, msrvc_variations, msrvc_owner_name, msrvc_owner_zone, create_ts, modify_ts) values (?, ?, ?, ?,   'NONE', 'NONE',  ?, ?, ?, ?)",
-                      &icss );
-        if ( status != 0 ) {
-            rodsLog( LOG_NOTICE,
-                     "chlInsMsrvcTable cmlExecuteNoAnswerSql R_MICROSRVC_MAIN Insert failure %d", status );
-            return( status );
-        }
-        /* inserting in R_MICROSRVC_VER */
-        i = 0;
-        cllBindVars[i++] = msrvcIdStr;
-        cllBindVars[i++] = msrvcVersion;
-        cllBindVars[i++] = msrvcHost;
-        cllBindVars[i++] = msrvcLocation;
-        cllBindVars[i++] = msrvcLanguage;
-        cllBindVars[i++] = msrvcTypeName;
-        cllBindVars[i++] = msrvcStatus;
-        cllBindVars[i++] = rsComm->clientUser.userName;
-        cllBindVars[i++] = rsComm->clientUser.rodsZone;
-        cllBindVars[i++] = myTime;
-        cllBindVars[i++] = myTime;
-        cllBindVarCount = i;
-        if ( logSQL != 0 ) {
-            rodsLog( LOG_SQL, "chlInsMsrvcTable SQL 3" );
-        }
-        status =  cmlExecuteNoAnswerSql(
-                      "insert into R_MICROSRVC_VER(msrvc_id, msrvc_version, msrvc_host, msrvc_location, msrvc_language, msrvc_type_name, msrvc_status, msrvc_owner_name, msrvc_owner_zone, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?,  ?, ?, ?, ?, ?)",
-                      &icss );
-        if ( status != 0 ) {
-            rodsLog( LOG_NOTICE,
-                     "chlInsMsrvcTable cmlExecuteNoAnswerSql R_MICROSRVC_VER Insert failure %d", status );
-            return( status );
-        }
-    }
-    else { /* micro-service already there */
-        snprintf( msrvcIdStr, MAX_NAME_LEN, "%lld", seqNum );
-        /* Check if same host and location exists - if so no need to insert a new row */
-        if ( logSQL != 0 ) {
-            rodsLog( LOG_SQL, "chlInsMsrvcTable SQL 4" );
-        }
-        i = 0;
-        cllBindVars[i++] = msrvcIdStr;
-        cllBindVars[i++] = msrvcHost;
-        cllBindVars[i++] = msrvcLocation;
-        cllBindVarCount = i;
-        status =  cmlGetIntegerValueFromSqlV3(
-                      "select msrvc_id from R_MICROSRVC_VER where  msrvc_id = ? and  msrvc_host = ? and  msrvc_location = ? ",
-                      &seqNum, &icss );
-        if ( status != 0 &&  status != CAT_NO_ROWS_FOUND ) {
-            rodsLog( LOG_NOTICE,
-                     "chlInsMsrvcTable cmlGetIntegerValueFromSqlV4 find MSRVC_HOST if any failure %d", status );
-            return( status );
-        }
-        /* insert a new row into version table */
-        i = 0;
-        cllBindVars[i++] = msrvcIdStr;
-        cllBindVars[i++] = msrvcVersion;
-        cllBindVars[i++] = msrvcHost;
-        cllBindVars[i++] = msrvcLocation;
-        cllBindVars[i++] = msrvcLanguage;
-        cllBindVars[i++] = msrvcTypeName;
-        cllBindVars[i++] = rsComm->clientUser.userName;
-        cllBindVars[i++] = rsComm->clientUser.rodsZone;
-        cllBindVars[i++] = myTime;
-        cllBindVars[i++] = myTime;
-        cllBindVarCount = i;
-        if ( logSQL != 0 ) {
-            rodsLog( LOG_SQL, "chlInsMsrvcTable SQL 3" );
-        }
-        status =  cmlExecuteNoAnswerSql(
-                      "insert into R_MICROSRVC_VER(msrvc_id, msrvc_version, msrvc_host, msrvc_location, msrvc_language, msrvc_type_name, msrvc_owner_name, msrvc_owner_zone, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?,  ?, ?, ?, ?)",
-                      &icss );
-        if ( status != 0 ) {
-            rodsLog( LOG_NOTICE,
-                     "chlInsMsrvcTable cmlExecuteNoAnswerSql R_MICROSRVC_VER Insert failure %d", status );
-            return( status );
-        }
-    }
-
-    return( 0 );
-}
-
-
-/*
- * chlVersionRuleBase - Version out the old base maps with timestamp
- * Input - rsComm_t *rsComm  - the server handle,
- *    input values.
- */
-int
-chlVersionRuleBase( rsComm_t *rsComm,
-                    char *baseName, char *myTime ) {
-
-    int i, status;
-
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlVersionRuleBase" );
-    }
-
-    if ( rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-        return( CAT_INSUFFICIENT_PRIVILEGE_LEVEL );
-    }
-
-    if ( !icss.status ) {
-        return( CATALOG_NOT_CONNECTED );
-    }
-
-    i = 0;
-    cllBindVars[i++] = myTime;
-    cllBindVars[i++] = myTime;
-    cllBindVars[i++] = baseName;
-    cllBindVarCount = i;
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlVersionRuleBase SQL 1" );
-    }
-
-    status =  cmlExecuteNoAnswerSql(
-                  "update R_RULE_BASE_MAP set map_version = ?, modify_ts = ? where map_base_name = ? and map_version = '0'", &icss );
-    if ( status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-        rodsLog( LOG_NOTICE,
-                 "chlVersionRuleBase cmlExecuteNoAnswerSql Rule Map version update  failure %d" , status );
-        return( status );
-
-    }
-
-    return( 0 );
-}
-
-
-/*
- * chlVersionDvmBase - Version out the old dvm base maps with timestamp
- * Input - rsComm_t *rsComm  - the server handle,
- *    input values.
- */
-int
-chlVersionDvmBase( rsComm_t *rsComm,
-                   char *baseName, char *myTime ) {
-    int i, status;
-
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlVersionDvmBase" );
-    }
-
-    if ( rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-        return( CAT_INSUFFICIENT_PRIVILEGE_LEVEL );
-    }
-
-    if ( !icss.status ) {
-        return( CATALOG_NOT_CONNECTED );
-    }
-
-    i = 0;
-    cllBindVars[i++] = myTime;
-    cllBindVars[i++] = myTime;
-    cllBindVars[i++] = baseName;
-    cllBindVarCount = i;
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlVersionDvmBase SQL 1" );
-    }
-
-    status =  cmlExecuteNoAnswerSql(
-                  "update R_RULE_DVM_MAP set map_dvm_version = ?, modify_ts = ? where map_dvm_base_name = ? and map_dvm_version = '0'", &icss );
-    if ( status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-        rodsLog( LOG_NOTICE,
-                 "chlVersionDvmBase cmlExecuteNoAnswerSql DVM Map version update  failure %d" , status );
-        return( status );
-
-    }
-
-    return( 0 );
-}
-
-
-/*
- * chlVersionFnmBase - Version out the old fnm base maps with timestamp
- * Input - rsComm_t *rsComm  - the server handle,
- *    input values.
- */
-int
-chlVersionFnmBase( rsComm_t *rsComm,
-                   char *baseName, char *myTime ) {
-
-    int i, status;
-
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlVersionFnmBase" );
-    }
-
-    if ( rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-        return( CAT_INSUFFICIENT_PRIVILEGE_LEVEL );
-    }
-
-    if ( !icss.status ) {
-        return( CATALOG_NOT_CONNECTED );
-    }
-
-    i = 0;
-    cllBindVars[i++] = myTime;
-    cllBindVars[i++] = myTime;
-    cllBindVars[i++] = baseName;
-    cllBindVarCount = i;
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlVersionFnmBase SQL 1" );
-    }
-
-    status =  cmlExecuteNoAnswerSql(
-                  "update R_RULE_FNM_MAP set map_fnm_version = ?, modify_ts = ? where map_fnm_base_name = ? and map_fnm_version = '0'", &icss );
-    if ( status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-        rodsLog( LOG_NOTICE,
-                 "chlVersionFnmBase cmlExecuteNoAnswerSql FNM Map version update  failure %d" , status );
-        return( status );
-
-    }
-
-    return( 0 );
-}
-
-
-
-
-
-
-
-int
-icatCheckResc( char *rescName ) {
-    int status;
-    rodsLong_t rescId;
-    status = getLocalZone();
-    if ( status != 0 ) {
-        return( status );
-    }
-
-    rescId = 0;
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "icatCheckResc SQxL 1" );
-    }
-    status = cmlGetIntegerValueFromSql(
-                 "select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
-                 &rescId, rescName, localZone, 0, 0, 0, &icss );
-    if ( status != 0 ) {
-        if ( status == CAT_NO_ROWS_FOUND ) {
-            return( CAT_INVALID_RESOURCE );
-        }
-        _rollback( "icatCheckResc" );
-    }
-    return( status );
-}
-
-int
-chlAddSpecificQuery( rsComm_t *rsComm, char *sql, char *alias ) {
-    int status, i;
-    char myTime[50];
-    char tsCreateTime[50];
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlAddSpecificQuery" );
-    }
-
-    if ( rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-        return( CAT_INSUFFICIENT_PRIVILEGE_LEVEL );
-    }
-
-    if ( strlen( sql ) < 5 ) {
-        return( CAT_INVALID_ARGUMENT );
-    }
-
-    if ( !icss.status ) {
-        return( CATALOG_NOT_CONNECTED );
-    }
-
-    getNowStr( myTime );
-
-    if ( alias != NULL && strlen( alias ) > 0 ) {
-        if ( logSQL != 0 ) {
-            rodsLog( LOG_SQL, "chlAddSpecificQuery SQL 1" );
-        }
-        status = cmlGetStringValueFromSql(
-                     "select create_ts from R_SPECIFIC_QUERY where alias=?",
-                     tsCreateTime, 50,
-                     alias, "" , "", &icss );
-        if ( status == 0 ) {
-            i = addRErrorMsg( &rsComm->rError, 0, "Alias is not unique" );
-            return( CAT_INVALID_ARGUMENT );
-        }
-        i = 0;
-        cllBindVars[i++] = sql;
-        cllBindVars[i++] = alias;
-        cllBindVars[i++] = myTime;
-        cllBindVarCount = i;
-        if ( logSQL != 0 ) {
-            rodsLog( LOG_SQL, "chlAddSpecificQuery SQL 2" );
-        }
-        status =  cmlExecuteNoAnswerSql(
-                      "insert into R_SPECIFIC_QUERY  (sqlStr, alias, create_ts) values (?, ?, ?)",
-                      &icss );
-    }
-    else {
-        i = 0;
-        cllBindVars[i++] = sql;
-        cllBindVars[i++] = myTime;
-        cllBindVarCount = i;
-        if ( logSQL != 0 ) {
-            rodsLog( LOG_SQL, "chlAddSpecificQuery SQL 3" );
-        }
-        status =  cmlExecuteNoAnswerSql(
-                      "insert into R_SPECIFIC_QUERY  (sqlStr, create_ts) values (?, ?)",
-                      &icss );
-    }
-
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlAddSpecificQuery cmlExecuteNoAnswerSql insert failure %d",
-                 status );
-        return( status );
-    }
-
-    status =  cmlExecuteNoAnswerSql( "commit", &icss );
-    return( status );
-}
-
-int
-chlDelSpecificQuery( rsComm_t *rsComm, char *sqlOrAlias ) {
-    int status, i;
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlDelSpecificQuery" );
-    }
-
-    if ( rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-        return( CAT_INSUFFICIENT_PRIVILEGE_LEVEL );
-    }
-
-    if ( !icss.status ) {
-        return( CATALOG_NOT_CONNECTED );
-    }
-
-    i = 0;
-    cllBindVars[i++] = sqlOrAlias;
-    cllBindVarCount = i;
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlDelSpecificQuery SQL 1" );
-    }
-    status =  cmlExecuteNoAnswerSql(
-                  "delete from R_SPECIFIC_QUERY where sqlStr = ?",
-                  &icss );
-
-    if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-        if ( logSQL != 0 ) {
-            rodsLog( LOG_SQL, "chlDelSpecificQuery SQL 2" );
-        }
-        i = 0;
-        cllBindVars[i++] = sqlOrAlias;
-        cllBindVarCount = i;
-        status =  cmlExecuteNoAnswerSql(
-                      "delete from R_SPECIFIC_QUERY where alias = ?",
-                      &icss );
-    }
-
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlDelSpecificQuery cmlExecuteNoAnswerSql delete failure %d",
-                 status );
-        return( status );
-    }
-
-    status =  cmlExecuteNoAnswerSql( "commit", &icss );
-    return( status );
-}
-
-/*
-    This is the Specific Query, also known as a sql-based query or
-    predefined query.  These are some specific queries (admin
-    defined/allowed) that can be performed.  The caller provides the SQL
-    which must match one that is pre-defined, along with input parameters
-    (bind variables) in some cases.  The output is the same as for a
-    general-query.
-*/
-#define MINIMUM_COL_SIZE 50
-
-int
-chlSpecificQuery( specificQueryInp_t specificQueryInp, genQueryOut_t *result ) {
-    int i, j, k;
-    int needToGetNextRow;
-
-    char combinedSQL[MAX_SQL_SIZE];
-
-    int status, statementNum;
-    int numOfCols;
-    int attriTextLen;
-    int totalLen;
-    int maxColSize;
-    int currentMaxColSize;
-    char *tResult, *tResult2;
-    char tsCreateTime[50];
-
-    int debug = 0;
-
-    icatSessionStruct *icss;
-
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlSpecificQuery" );
-    }
-
-    result->attriCnt = 0;
-    result->rowCnt = 0;
-    result->totalRowCount = 0;
-
-    currentMaxColSize = 0;
-
-    icss = chlGetRcs();
-    if ( icss == NULL ) {
-        return( CAT_NOT_OPEN );
-    }
-#ifdef ADDR_64BITS
-    if ( debug ) {
-        printf( "icss=%ld\n", ( long int )icss );
-    }
-#else
-    if ( debug ) {
-        printf( "icss=%d\n", ( int )icss );
-    }
-#endif
-
-    if ( specificQueryInp.continueInx == 0 ) {
-        if ( specificQueryInp.sql == NULL ) {
-            return( CAT_INVALID_ARGUMENT );
-        }
-        /*
-          First check that this SQL is one of the allowed forms.
-        */
-        if ( logSQL != 0 ) {
-            rodsLog( LOG_SQL, "chlSpecificQuery SQL 1" );
-        }
-        status = cmlGetStringValueFromSql(
-                     "select create_ts from R_SPECIFIC_QUERY where sqlStr=?",
-                     tsCreateTime, 50,
-                     specificQueryInp.sql, "" , "", icss );
-        if ( status == CAT_NO_ROWS_FOUND ) {
-            int status2;
-            if ( logSQL != 0 ) {
-                rodsLog( LOG_SQL, "chlSpecificQuery SQL 2" );
-            }
-            status2 = cmlGetStringValueFromSql(
-                          "select sqlStr from R_SPECIFIC_QUERY where alias=?",
-                          combinedSQL, sizeof( combinedSQL ),
-                          specificQueryInp.sql, "" , "", icss );
-            if ( status2 == CAT_NO_ROWS_FOUND ) {
-                return( CAT_UNKNOWN_SPECIFIC_QUERY );
-            }
-            if ( status2 != 0 ) {
-                return( status2 );
-            }
-        }
-        else {
-            if ( status != 0 ) {
-                return( status );
-            }
-            strncpy( combinedSQL, specificQueryInp.sql, sizeof( combinedSQL ) );
-        }
-
-        i = 0;
-        while ( specificQueryInp.args[i] != NULL && strlen( specificQueryInp.args[i] ) > 0 ) {
-            cllBindVars[cllBindVarCount++] = specificQueryInp.args[i++];
-        }
-
-        if ( logSQL != 0 ) {
-            rodsLog( LOG_SQL, "chlSpecificQuery SQL 3" );
-        }
-        status = cmlGetFirstRowFromSql( combinedSQL, &statementNum,
-                                        specificQueryInp.rowOffset, icss );
-        if ( status < 0 ) {
-            if ( status != CAT_NO_ROWS_FOUND ) {
-                rodsLog( LOG_NOTICE,
-                         "chlSpecificQuery cmlGetFirstRowFromSql failure %d",
-                         status );
-            }
-            return( status );
-        }
-
-        result->continueInx = statementNum + 1;
-        if ( debug ) {
-            printf( "statement number =%d\n", statementNum );
-        }
-        needToGetNextRow = 0;
-    }
-    else {
-        statementNum = specificQueryInp.continueInx - 1;
-        needToGetNextRow = 1;
-        if ( specificQueryInp.maxRows <= 0 ) { /* caller is closing out the query */
-            status = cmlFreeStatement( statementNum, icss );
-            return( status );
-        }
-    }
-    for ( i = 0; i < specificQueryInp.maxRows; i++ ) {
-        if ( needToGetNextRow ) {
-            status = cmlGetNextRowFromStatement( statementNum, icss );
-            if ( status == CAT_NO_ROWS_FOUND ) {
-                cmlFreeStatement( statementNum, icss );
-                result->continueInx = 0;
-                if ( result->rowCnt == 0 ) {
-                    return( status );
-                } /* NO ROWS; in this
-                                                          case a continuation call is finding no more rows */
-                return( 0 );
-            }
-            if ( status < 0 ) {
-                return( status );
-            }
-        }
-        needToGetNextRow = 1;
-
-        result->rowCnt++;
-        if ( debug ) {
-            printf( "result->rowCnt=%d\n", result->rowCnt );
-        }
-        numOfCols = icss->stmtPtr[statementNum]->numOfCols;
-        if ( debug ) {
-            printf( "numOfCols=%d\n", numOfCols );
-        }
-        result->attriCnt = numOfCols;
-        result->continueInx = statementNum + 1;
-
-        maxColSize = 0;
-
-        for ( k = 0; k < numOfCols; k++ ) {
-            j = strlen( icss->stmtPtr[statementNum]->resultValue[k] );
-            if ( maxColSize <= j ) {
-                maxColSize = j;
-            }
-        }
-        maxColSize++; /* for the null termination */
-        if ( maxColSize < MINIMUM_COL_SIZE ) {
-            maxColSize = MINIMUM_COL_SIZE; /* make it a reasonable size */
-        }
-        if ( debug ) {
-            printf( "maxColSize=%d\n", maxColSize );
-        }
-
-        if ( i == 0 ) { /* first time thru, allocate and initialize */
-            attriTextLen = numOfCols * maxColSize;
-            if ( debug ) {
-                printf( "attriTextLen=%d\n", attriTextLen );
-            }
-            totalLen = attriTextLen * specificQueryInp.maxRows;
-            for ( j = 0; j < numOfCols; j++ ) {
-                tResult = ( char * ) malloc( totalLen );
-                if ( tResult == NULL ) {
-                    return( SYS_MALLOC_ERR );
-                }
-                memset( tResult, 0, totalLen );
-                result->sqlResult[j].attriInx = 0;
-                /* In Gen-query this would be set to specificQueryInp.selectInp.inx[j]; */
-
-                result->sqlResult[j].len = maxColSize;
-                result->sqlResult[j].value = tResult;
-            }
-            currentMaxColSize = maxColSize;
-        }
-
-
-        /* Check to see if the current row has a max column size that
-           is larger than what we've been using so far.  If so, allocate
-           new result strings, copy each row value over, and free the
-           old one. */
-        if ( maxColSize > currentMaxColSize ) {
-            maxColSize += MINIMUM_COL_SIZE; /* bump it up to try to avoid
-                                               some multiple resizes */
-            if ( debug ) printf( "Bumping %d to %d\n",
-                                     currentMaxColSize, maxColSize );
-            attriTextLen = numOfCols * maxColSize;
-            if ( debug ) {
-                printf( "attriTextLen=%d\n", attriTextLen );
-            }
-            totalLen = attriTextLen * specificQueryInp.maxRows;
-            for ( j = 0; j < numOfCols; j++ ) {
-                char *cp1, *cp2;
-                int k;
-                tResult = ( char * ) malloc( totalLen );
-                if ( tResult == NULL ) {
-                    return( SYS_MALLOC_ERR );
-                }
-                memset( tResult, 0, totalLen );
-                cp1 = result->sqlResult[j].value;
-                cp2 = tResult;
-                for ( k = 0; k < result->rowCnt; k++ ) {
-                    strncpy( cp2, cp1, result->sqlResult[j].len );
-                    cp1 += result->sqlResult[j].len;
-                    cp2 += maxColSize;
-                }
-                free( result->sqlResult[j].value );
-                result->sqlResult[j].len = maxColSize;
-                result->sqlResult[j].value = tResult;
-            }
-            currentMaxColSize = maxColSize;
-        }
-
-        /* Store the current row values into the appropriate spots in
-           the attribute string */
-        for ( j = 0; j < numOfCols; j++ ) {
-            tResult2 = result->sqlResult[j].value; /* ptr to value str */
-            tResult2 += currentMaxColSize * ( result->rowCnt - 1 );  /* skip forward
-                                                                  for this row */
-            strncpy( tResult2, icss->stmtPtr[statementNum]->resultValue[j],
-                     currentMaxColSize ); /* copy in the value text */
-        }
-
-    }
-
-    result->continueInx = statementNum + 1;  /* the statementnumber but
-                                            always >0 */
-    return( 0 );
-
-}
-
-
-/*
- * chlSubstituteResourceHierarchies - Given an old resource hierarchy string and a new one,
- * replaces all r_data_main.resc_hier rows that match the old string with the new one.
- *
- */
-int chlSubstituteResourceHierarchies( rsComm_t *rsComm, const char *old_hier, const char *new_hier ) {
-    int status = 0;
-    char old_hier_partial[MAX_NAME_LEN];
-    irods::sql_logger logger( "chlSubstituteResourceHierarchies", logSQL );
-
-    logger.log();
-
+int chlCalcUsageAndQuota( 
+    rsComm_t* _comm ) {
     // =-=-=-=-=-=-=-
-    // Sanity and permission checks
-    if ( !icss.status ) {
-        return( CATALOG_NOT_CONNECTED );
-    }
-    if ( !rsComm || !old_hier || !new_hier ) {
-        return( SYS_INTERNAL_NULL_INPUT_ERR );
-    }
-    if ( rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH || rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-        return( CAT_INSUFFICIENT_PRIVILEGE_LEVEL );
+    // call factory for database object
+    irods::database_object_ptr db_obj_ptr;
+    irods::error ret = irods::database_factory(
+                           icss.database_plugin_type,
+                           db_obj_ptr );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
     }
 
     // =-=-=-=-=-=-=-
-    // String to match partial hierarchies
-    snprintf( old_hier_partial, MAX_NAME_LEN, "%s%s%%", old_hier, irods::hierarchy_parser::delimiter().c_str() );
-
-    // =-=-=-=-=-=-=-
-    // Update r_data_main
-    cllBindVars[cllBindVarCount++] = ( char* )new_hier;
-    cllBindVars[cllBindVarCount++] = ( char* )old_hier;
-    cllBindVars[cllBindVarCount++] = ( char* )old_hier;
-    cllBindVars[cllBindVarCount++] = old_hier_partial;
-#if ORA_ICAT // Oracle
-    status = cmlExecuteNoAnswerSql( "update R_DATA_MAIN set resc_hier = ? || substr(resc_hier, (length(?)+1)) where resc_hier = ? or resc_hier like ?", &icss );
-#else // Postgres and MySQL
-    status = cmlExecuteNoAnswerSql( "update R_DATA_MAIN set resc_hier = ? || substring(resc_hier from (char_length(?)+1)) where resc_hier = ? or resc_hier like ?", &icss );
-#endif
-
-    // Nothing was modified
-    if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-        return 0;
+    // resolve a plugin for that object
+    irods::plugin_ptr db_plug_ptr;
+    ret = db_obj_ptr->resolve(
+              irods::DATABASE_INTERFACE,
+              db_plug_ptr );
+    if ( !ret.ok() ) {
+        irods::log(
+            PASSMSG(
+                "failed to resolve database interface",
+                ret ) );
+        return ret.code();
     }
 
     // =-=-=-=-=-=-=-
-    // Roll back if error
-    if ( status < 0 ) {
-        std::stringstream ss;
-        ss << "chlSubstituteResourceHierarchies: cmlExecuteNoAnswerSql update failure " << status;
-        irods::log( LOG_NOTICE, ss.str() );
-        _rollback( "chlSubstituteResourceHierarchies" );
+    // cast plugin and object to db and fco for call
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
+                                        irods::first_class_object > ( db_obj_ptr );
+    irods::database_ptr           db = boost::dynamic_pointer_cast <
+                                       irods::database > ( db_plug_ptr );
+
+    // =-=-=-=-=-=-=-
+    // call the operation on the plugin
+    ret = db->call <
+          rsComm_t* >(
+              irods::DATABASE_OP_CALC_USAGE_AND_QUOTA,
+              ptr,
+              _comm );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
     }
 
-    return status;
-}
+    return ret.code();
+
+} // chlCalcUsageAndQuota
+
+int chlSetQuota( 
+    rsComm_t* _comm, 
+    char*     _type, 
+    char*     _name,
+    char*     _resc_name, 
+    char*     _limit ) {
+    // =-=-=-=-=-=-=-
+    // call factory for database object
+    irods::database_object_ptr db_obj_ptr;
+    irods::error ret = irods::database_factory(
+                           icss.database_plugin_type,
+                           db_obj_ptr );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // resolve a plugin for that object
+    irods::plugin_ptr db_plug_ptr;
+    ret = db_obj_ptr->resolve(
+              irods::DATABASE_INTERFACE,
+              db_plug_ptr );
+    if ( !ret.ok() ) {
+        irods::log(
+            PASSMSG(
+                "failed to resolve database interface",
+                ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // cast plugin and object to db and fco for call
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
+                                        irods::first_class_object > ( db_obj_ptr );
+    irods::database_ptr           db = boost::dynamic_pointer_cast <
+                                       irods::database > ( db_plug_ptr );
+
+    // =-=-=-=-=-=-=-
+    // call the operation on the plugin
+    ret = db->call <
+          rsComm_t*,
+          char*,
+          char*,
+          char*,
+          char* >(
+              irods::DATABASE_OP_SET_QUOTA,
+              ptr,
+              _comm,
+              _type,
+              _name,
+              _resc_name,
+              _limit );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+    }
+
+    return ret.code();
+
+} // chlSetQuota
+
+int chlCheckQuota( 
+    rsComm_t*   _comm, 
+    char*       _user_name, 
+    char*       _resc_name,
+    rodsLong_t* _user_quota, 
+    int*        _quota_status ) {
+    // =-=-=-=-=-=-=-
+    // call factory for database object
+    irods::database_object_ptr db_obj_ptr;
+    irods::error ret = irods::database_factory(
+                           icss.database_plugin_type,
+                           db_obj_ptr );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // resolve a plugin for that object
+    irods::plugin_ptr db_plug_ptr;
+    ret = db_obj_ptr->resolve(
+              irods::DATABASE_INTERFACE,
+              db_plug_ptr );
+    if ( !ret.ok() ) {
+        irods::log(
+            PASSMSG(
+                "failed to resolve database interface",
+                ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // cast plugin and object to db and fco for call
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
+                                        irods::first_class_object > ( db_obj_ptr );
+    irods::database_ptr           db = boost::dynamic_pointer_cast <
+                                       irods::database > ( db_plug_ptr );
+
+    // =-=-=-=-=-=-=-
+    // call the operation on the plugin
+    ret = db->call <
+          rsComm_t*,
+          char*,
+          char*,
+          rodsLong_t*,
+          int* >(
+              irods::DATABASE_OP_CHECK_QUOTA,
+              ptr,
+              _comm,
+              _user_name, 
+              _resc_name,
+              _user_quota, 
+              _quota_status );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+    }
+
+    return ret.code();
+
+} // chlCheckQuota
+
+int
+chlDelUnusedAVUs( 
+    rsComm_t* _comm ) {
+    // =-=-=-=-=-=-=-
+    // call factory for database object
+    irods::database_object_ptr db_obj_ptr;
+    irods::error ret = irods::database_factory(
+                           icss.database_plugin_type,
+                           db_obj_ptr );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // resolve a plugin for that object
+    irods::plugin_ptr db_plug_ptr;
+    ret = db_obj_ptr->resolve(
+              irods::DATABASE_INTERFACE,
+              db_plug_ptr );
+    if ( !ret.ok() ) {
+        irods::log(
+            PASSMSG(
+                "failed to resolve database interface",
+                ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // cast plugin and object to db and fco for call
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
+                                        irods::first_class_object > ( db_obj_ptr );
+    irods::database_ptr           db = boost::dynamic_pointer_cast <
+                                       irods::database > ( db_plug_ptr );
+
+    // =-=-=-=-=-=-=-
+    // call the operation on the plugin
+    ret = db->call <
+          rsComm_t* >(
+              irods::DATABASE_OP_DEL_UNUSED_AVUS,
+              ptr,
+              _comm );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+    }
+
+    return ret.code();
+
+} // chlDelUnusedAVUs
+
+
+// =-=-=-=-=-=-=-
+// chlInsRuleTable - Insert  a new iRODS Rule Base table row.
+// Input - rsComm_t *rsComm  - the server handle,
+//    input values.
+int chlInsRuleTable( 
+    rsComm_t* _comm,
+    char*     _base_name, 
+    char*     _map_priority_str,  
+    char*     _rule_name,
+    char*     _rule_head, 
+    char*     _rule_condition, 
+    char*     _rule_action,
+    char*     _rule_recovery, 
+    char*     _rule_id_str, 
+    char*     _my_time ) {
+    // =-=-=-=-=-=-=-
+    // call factory for database object
+    irods::database_object_ptr db_obj_ptr;
+    irods::error ret = irods::database_factory(
+                           icss.database_plugin_type,
+                           db_obj_ptr );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // resolve a plugin for that object
+    irods::plugin_ptr db_plug_ptr;
+    ret = db_obj_ptr->resolve(
+              irods::DATABASE_INTERFACE,
+              db_plug_ptr );
+    if ( !ret.ok() ) {
+        irods::log(
+            PASSMSG(
+                "failed to resolve database interface",
+                ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // cast plugin and object to db and fco for call
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
+                                        irods::first_class_object > ( db_obj_ptr );
+    irods::database_ptr           db = boost::dynamic_pointer_cast <
+                                       irods::database > ( db_plug_ptr );
+
+    // =-=-=-=-=-=-=-
+    // call the operation on the plugin
+    ret = db->call <
+          rsComm_t*,
+          char*,
+          char*,
+          char*,
+          char*,
+          char*,
+          char*,
+          char*,
+          char*,
+          char* >(
+              irods::DATABASE_OP_INS_RULE_TABLE,
+              ptr,
+              _comm,
+              _base_name, 
+              _map_priority_str,  
+              _rule_name,
+              _rule_head, 
+              _rule_condition, 
+              _rule_action,
+              _rule_recovery, 
+              _rule_id_str, 
+              _my_time );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+    }
+
+    return ret.code();
+
+} // chlInsRuleTable
+
+// =-=-=-=-=-=-=-
+// chlInsDvmTable - Insert  a new iRODS DVM table row.
+// Input - rsComm_t *rsComm  - the server handle,
+//    input values.
+int chlInsDvmTable( 
+    rsComm_t* _comm,
+    char*     _base_name, 
+    char*     _var_name, 
+    char*     _action,
+    char*     _var_2_cmap, 
+    char*     _my_time ) {
+    // =-=-=-=-=-=-=-
+    // call factory for database object
+    irods::database_object_ptr db_obj_ptr;
+    irods::error ret = irods::database_factory(
+                           icss.database_plugin_type,
+                           db_obj_ptr );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // resolve a plugin for that object
+    irods::plugin_ptr db_plug_ptr;
+    ret = db_obj_ptr->resolve(
+              irods::DATABASE_INTERFACE,
+              db_plug_ptr );
+    if ( !ret.ok() ) {
+        irods::log(
+            PASSMSG(
+                "failed to resolve database interface",
+                ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // cast plugin and object to db and fco for call
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
+                                        irods::first_class_object > ( db_obj_ptr );
+    irods::database_ptr           db = boost::dynamic_pointer_cast <
+                                       irods::database > ( db_plug_ptr );
+
+    // =-=-=-=-=-=-=-
+    // call the operation on the plugin
+    ret = db->call <
+          rsComm_t*,
+          char*,
+          char*,
+          char*,
+          char*,
+          char* >(
+              irods::DATABASE_OP_INS_DVM_TABLE,
+              ptr,
+              _comm,
+              _base_name, 
+              _var_name, 
+              _action,
+              _var_2_cmap, 
+              _my_time );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+    }
+
+    return ret.code();
+
+} // chlInsDVMTable
+
+// =-=-=-=-=-=-=-
+// chlInsFnmTable - Insert  a new iRODS FNM table row.
+// Input - rsComm_t *rsComm  - the server handle,
+//    input values.
+int chlInsFnmTable( 
+    rsComm_t* _comm,
+    char*     _base_name, 
+    char*     _func_name,
+    char*     _func_2_cmap, 
+    char*     _my_time ) {
+    // =-=-=-=-=-=-=-
+    // call factory for database object
+    irods::database_object_ptr db_obj_ptr;
+    irods::error ret = irods::database_factory(
+                           icss.database_plugin_type,
+                           db_obj_ptr );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // resolve a plugin for that object
+    irods::plugin_ptr db_plug_ptr;
+    ret = db_obj_ptr->resolve(
+              irods::DATABASE_INTERFACE,
+              db_plug_ptr );
+    if ( !ret.ok() ) {
+        irods::log(
+            PASSMSG(
+                "failed to resolve database interface",
+                ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // cast plugin and object to db and fco for call
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
+                                        irods::first_class_object > ( db_obj_ptr );
+    irods::database_ptr           db = boost::dynamic_pointer_cast <
+                                       irods::database > ( db_plug_ptr );
+
+    // =-=-=-=-=-=-=-
+    // call the operation on the plugin
+    ret = db->call <
+          rsComm_t*,
+          char*,
+          char*,
+          char*,
+          char* >(
+              irods::DATABASE_OP_INS_FNM_TABLE,
+              ptr,
+              _comm,
+              _base_name, 
+              _func_name, 
+              _func_2_cmap, 
+              _my_time );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+    }
+
+    return ret.code();
+
+} // chlInsFnmTable
+
+// =-=-=-=-=-=-=-
+// chlInsMsrvcTable - Insert  a new iRODS MSRVC table row (actually in two tables).
+// Input - rsComm_t *rsComm  - the server handle,
+//    input values.
+int chlInsMsrvcTable( 
+    rsComm_t* _comm,
+    char*     _module_name, 
+    char*     _msrvc_name,
+    char*     _msrvc_signature,  
+    char*     _msrvc_version,
+    char*     _msrvc_host, 
+    char*     _msrvc_location,
+    char*     _msrvc_language,  
+    char*     _msrvc_typeName, 
+    char*     _msrvc_status,
+    char*     _my_time ) {
+    // =-=-=-=-=-=-=-
+    // call factory for database object
+    irods::database_object_ptr db_obj_ptr;
+    irods::error ret = irods::database_factory(
+                           icss.database_plugin_type,
+                           db_obj_ptr );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // resolve a plugin for that object
+    irods::plugin_ptr db_plug_ptr;
+    ret = db_obj_ptr->resolve(
+              irods::DATABASE_INTERFACE,
+              db_plug_ptr );
+    if ( !ret.ok() ) {
+        irods::log(
+            PASSMSG(
+                "failed to resolve database interface",
+                ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // cast plugin and object to db and fco for call
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
+                                        irods::first_class_object > ( db_obj_ptr );
+    irods::database_ptr           db = boost::dynamic_pointer_cast <
+                                       irods::database > ( db_plug_ptr );
+
+    // =-=-=-=-=-=-=-
+    // call the operation on the plugin
+    ret = db->call <
+          rsComm_t*,
+          char*,
+          char*,
+          char*,
+          char*,
+          char*,
+          char*,
+          char*,
+          char*,
+          char*,
+          char* >(
+              irods::DATABASE_OP_INS_MSRVC_TABLE,
+              ptr,
+              _comm,
+              _module_name, 
+              _msrvc_name,
+              _msrvc_signature,  
+              _msrvc_version,
+              _msrvc_host, 
+              _msrvc_location,
+              _msrvc_language,  
+              _msrvc_typeName, 
+              _msrvc_status,
+              _my_time );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+    }
+
+    return ret.code();
+
+} // chlInsMsrvcTable
+
+// =-=-=-=-=-=-=-
+// chlVersionRuleBase - Version out the old base maps with timestamp
+// Input - rsComm_t *rsComm  - the server handle,
+//    input values.
+int chlVersionRuleBase( 
+    rsComm_t* _comm,
+    char*     _base_name, 
+    char*     _my_time ) {
+    // =-=-=-=-=-=-=-
+    // call factory for database object
+    irods::database_object_ptr db_obj_ptr;
+    irods::error ret = irods::database_factory(
+                           icss.database_plugin_type,
+                           db_obj_ptr );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // resolve a plugin for that object
+    irods::plugin_ptr db_plug_ptr;
+    ret = db_obj_ptr->resolve(
+              irods::DATABASE_INTERFACE,
+              db_plug_ptr );
+    if ( !ret.ok() ) {
+        irods::log(
+            PASSMSG(
+                "failed to resolve database interface",
+                ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // cast plugin and object to db and fco for call
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
+                                        irods::first_class_object > ( db_obj_ptr );
+    irods::database_ptr           db = boost::dynamic_pointer_cast <
+                                       irods::database > ( db_plug_ptr );
+
+    // =-=-=-=-=-=-=-
+    // call the operation on the plugin
+    ret = db->call <
+          rsComm_t*,
+          char*,
+          char* >(
+              irods::DATABASE_OP_VERSION_RULE_BASE,
+              ptr,
+              _comm,
+              _base_name, 
+              _my_time );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+    }
+
+    return ret.code();
+
+} // chlVersionRuleBase
+
+
+// =-=-=-=-=-=-=-
+// chlVersionDvmBase - Version out the old dvm base maps with timestamp
+// Input - rsComm_t *rsComm  - the server handle,
+//    input values.
+int chlVersionDvmBase( 
+    rsComm_t* _comm,
+    char*     _base_name, 
+    char*     _my_time ) {
+    // =-=-=-=-=-=-=-
+    // call factory for database object
+    irods::database_object_ptr db_obj_ptr;
+    irods::error ret = irods::database_factory(
+                           icss.database_plugin_type,
+                           db_obj_ptr );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // resolve a plugin for that object
+    irods::plugin_ptr db_plug_ptr;
+    ret = db_obj_ptr->resolve(
+              irods::DATABASE_INTERFACE,
+              db_plug_ptr );
+    if ( !ret.ok() ) {
+        irods::log(
+            PASSMSG(
+                "failed to resolve database interface",
+                ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // cast plugin and object to db and fco for call
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
+                                        irods::first_class_object > ( db_obj_ptr );
+    irods::database_ptr           db = boost::dynamic_pointer_cast <
+                                       irods::database > ( db_plug_ptr );
+
+    // =-=-=-=-=-=-=-
+    // call the operation on the plugin
+    ret = db->call <
+          rsComm_t*,
+          char*,
+          char* >(
+              irods::DATABASE_OP_VERSION_DVM_BASE,
+              ptr,
+              _comm,
+              _base_name, 
+              _my_time );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+    }
+
+    return ret.code();
+
+} // chlVersionDvmBase
+
+
+// =-=-=-=-=-=-=-
+// chlVersionFnmBase - Version out the old fnm base maps with timestamp
+// Input - rsComm_t *rsComm  - the server handle,
+//    input values.
+int chlVersionFnmBase( 
+    rsComm_t* _comm,
+    char*     _base_name, 
+    char*     _my_time ) {
+    // =-=-=-=-=-=-=-
+    // call factory for database object
+    irods::database_object_ptr db_obj_ptr;
+    irods::error ret = irods::database_factory(
+                           icss.database_plugin_type,
+                           db_obj_ptr );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // resolve a plugin for that object
+    irods::plugin_ptr db_plug_ptr;
+    ret = db_obj_ptr->resolve(
+              irods::DATABASE_INTERFACE,
+              db_plug_ptr );
+    if ( !ret.ok() ) {
+        irods::log(
+            PASSMSG(
+                "failed to resolve database interface",
+                ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // cast plugin and object to db and fco for call
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
+                                        irods::first_class_object > ( db_obj_ptr );
+    irods::database_ptr           db = boost::dynamic_pointer_cast <
+                                       irods::database > ( db_plug_ptr );
+
+    // =-=-=-=-=-=-=-
+    // call the operation on the plugin
+    ret = db->call <
+          rsComm_t*,
+          char*,
+          char* >(
+              irods::DATABASE_OP_VERSION_FNM_BASE,
+              ptr,
+              _comm,
+              _base_name, 
+              _my_time );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+    }
+
+    return ret.code();
+
+} // chlVersionFnmBase
+
+int chlAddSpecificQuery( 
+    rsComm_t* _comm, 
+    char*     _sql, 
+    char*     _alias ) {
+    // =-=-=-=-=-=-=-
+    // call factory for database object
+    irods::database_object_ptr db_obj_ptr;
+    irods::error ret = irods::database_factory(
+                           icss.database_plugin_type,
+                           db_obj_ptr );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // resolve a plugin for that object
+    irods::plugin_ptr db_plug_ptr;
+    ret = db_obj_ptr->resolve(
+              irods::DATABASE_INTERFACE,
+              db_plug_ptr );
+    if ( !ret.ok() ) {
+        irods::log(
+            PASSMSG(
+                "failed to resolve database interface",
+                ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // cast plugin and object to db and fco for call
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
+                                        irods::first_class_object > ( db_obj_ptr );
+    irods::database_ptr           db = boost::dynamic_pointer_cast <
+                                       irods::database > ( db_plug_ptr );
+
+    // =-=-=-=-=-=-=-
+    // call the operation on the plugin
+    ret = db->call <
+          rsComm_t*,
+          char*,
+          char* >(
+              irods::DATABASE_OP_ADD_SPECIFIC_QUERY,
+              ptr,
+              _comm,
+              _sql, 
+              _alias );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+    }
+
+    return ret.code();
+
+} // chlAddSpecificQuery
+
+int chlDelSpecificQuery( 
+    rsComm_t* _comm, 
+    char*     _sql_or_alias ) {
+    // =-=-=-=-=-=-=-
+    // call factory for database object
+    irods::database_object_ptr db_obj_ptr;
+    irods::error ret = irods::database_factory(
+                           icss.database_plugin_type,
+                           db_obj_ptr );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // resolve a plugin for that object
+    irods::plugin_ptr db_plug_ptr;
+    ret = db_obj_ptr->resolve(
+              irods::DATABASE_INTERFACE,
+              db_plug_ptr );
+    if ( !ret.ok() ) {
+        irods::log(
+            PASSMSG(
+                "failed to resolve database interface",
+                ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // cast plugin and object to db and fco for call
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
+                                        irods::first_class_object > ( db_obj_ptr );
+    irods::database_ptr           db = boost::dynamic_pointer_cast <
+                                       irods::database > ( db_plug_ptr );
+
+    // =-=-=-=-=-=-=-
+    // call the operation on the plugin
+    ret = db->call <
+          rsComm_t*,
+          char* >(
+              irods::DATABASE_OP_DEL_SPECIFIC_QUERY,
+              ptr,
+              _comm,
+              _sql_or_alias );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+    }
+
+    return ret.code();
+
+} // chlDelSpecificQuery
+
+// =-=-=-=-=-=-=-
+//  This is the Specific Query, also known as a sql-based query or
+//  predefined query.  These are some specific queries (admin
+//  defined/allowed) that can be performed.  The caller provides the SQL
+//  which must match one that is pre-defined, along with input parameters
+//  (bind variables) in some cases.  The output is the same as for a
+//  general-query.
+
+int chlSpecificQuery( 
+    specificQueryInp_t _spec_query_inp, 
+    genQueryOut_t*     _result ) {
+    // =-=-=-=-=-=-=-
+    // call factory for database object
+    irods::database_object_ptr db_obj_ptr;
+    irods::error ret = irods::database_factory(
+                           icss.database_plugin_type,
+                           db_obj_ptr );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // resolve a plugin for that object
+    irods::plugin_ptr db_plug_ptr;
+    ret = db_obj_ptr->resolve(
+              irods::DATABASE_INTERFACE,
+              db_plug_ptr );
+    if ( !ret.ok() ) {
+        irods::log(
+            PASSMSG(
+                "failed to resolve database interface",
+                ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // cast plugin and object to db and fco for call
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
+                                        irods::first_class_object > ( db_obj_ptr );
+    irods::database_ptr           db = boost::dynamic_pointer_cast <
+                                       irods::database > ( db_plug_ptr );
+
+    // =-=-=-=-=-=-=-
+    // call the operation on the plugin
+    ret = db->call <
+          specificQueryInp_t*,
+          genQueryOut_t* >(
+              irods::DATABASE_OP_SPECIFIC_QUERY,
+              ptr,
+              &_spec_query_inp,
+              _result );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+    }
+
+    return ret.code();
+
+} // chlSpecificQuery
+
+
+// =-=-=-=-=-=-=-
+// chlSubstituteResourceHierarchies - Given an old resource hierarchy string and a new one,
+// replaces all r_data_main.resc_hier rows that match the old string with the new one.
+int chlSubstituteResourceHierarchies( 
+    rsComm_t*   _comm, 
+    const char* _old_hier, 
+    const char* _new_hier ) {
+    // =-=-=-=-=-=-=-
+    // call factory for database object
+    irods::database_object_ptr db_obj_ptr;
+    irods::error ret = irods::database_factory(
+                           icss.database_plugin_type,
+                           db_obj_ptr );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // resolve a plugin for that object
+    irods::plugin_ptr db_plug_ptr;
+    ret = db_obj_ptr->resolve(
+              irods::DATABASE_INTERFACE,
+              db_plug_ptr );
+    if ( !ret.ok() ) {
+        irods::log(
+            PASSMSG(
+                "failed to resolve database interface",
+                ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // cast plugin and object to db and fco for call
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
+                                        irods::first_class_object > ( db_obj_ptr );
+    irods::database_ptr           db = boost::dynamic_pointer_cast <
+                                       irods::database > ( db_plug_ptr );
+
+    // =-=-=-=-=-=-=-
+    // call the operation on the plugin
+    ret = db->call <
+              rsComm_t*,
+              const char*,
+              const char* >( 
+                  irods::DATABASE_OP_SUBSTITUTE_RESOURCE_HIERARCHIES,
+                  ptr,
+                  _comm,
+                  _old_hier,
+                  _new_hier );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+    }
+
+    return ret.code();
+
+} // chlSubstituteResourceHierarchies
 
 
 /// =-=-=-=-=-=-=-
@@ -6165,30 +5758,51 @@ int chlGetDistinctDataObjCountOnResource(
     const std::string&   _resc_name,
     long long&           _count ) {
     // =-=-=-=-=-=-=-
-    // the basic query string
-    char query[ MAX_NAME_LEN ];
-    std::string base_query = "select count(distinct data_id) from r_data_main where resc_hier like '%s;%s' or resc_hier like '%s;%s;%s' or resc_hier like '%s;%s';";
-    sprintf(
-        query,
-        base_query.c_str(),
-        _resc_name.c_str(), "%",      // root node
-        "%", _resc_name.c_str(), "%", // mid node
-        "%", _resc_name.c_str() );    // leaf node
-
-    // =-=-=-=-=-=-=-
-    // invoke the query
-    int statement_num = 0;
-    int status = cmlGetFirstRowFromSql(
-                     query,
-                     &statement_num,
-                     0, &icss );
-    if ( status != 0 ) {
-        return status;
+    // call factory for database object
+    irods::database_object_ptr db_obj_ptr;
+    irods::error ret = irods::database_factory(
+                           icss.database_plugin_type,
+                           db_obj_ptr );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
     }
 
-    _count = atol( icss.stmtPtr[ statement_num ]->resultValue[0] );
+    // =-=-=-=-=-=-=-
+    // resolve a plugin for that object
+    irods::plugin_ptr db_plug_ptr;
+    ret = db_obj_ptr->resolve(
+              irods::DATABASE_INTERFACE,
+              db_plug_ptr );
+    if ( !ret.ok() ) {
+        irods::log(
+            PASSMSG(
+                "failed to resolve database interface",
+                ret ) );
+        return ret.code();
+    }
 
-    return 0;
+    // =-=-=-=-=-=-=-
+    // cast plugin and object to db and fco for call
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
+                                        irods::first_class_object > ( db_obj_ptr );
+    irods::database_ptr           db = boost::dynamic_pointer_cast <
+                                       irods::database > ( db_plug_ptr );
+
+    // =-=-=-=-=-=-=-
+    // call the operation on the plugin
+    ret = db->call <
+              const char*,
+              long long* >( 
+                  irods::DATABASE_OP_GET_DISTINCT_DATA_OBJ_COUNT_ON_RESOURCE,
+                  ptr,
+                  _resc_name.c_str(),
+                  &_count );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+    }
+
+    return ret.code();
 
 } // chlGetDistinctDataObjCountOnResource
 
@@ -6202,782 +5816,178 @@ int chlGetDistinctDataObjsMissingFromChildGivenParent(
     int                  _limit,
     dist_child_result_t& _results ) {
     // =-=-=-=-=-=-=-
-    // the basic query string
-    char query[ MAX_NAME_LEN ];
-    std::string base_query = "select distinct data_id from r_data_main where resc_hier like '%s;%s' or resc_hier like '%s;%s;%s' or resc_hier like '%s;%s' except ( select distinct data_id from r_data_main where resc_hier like '%s;%s' or resc_hier like '%s;%s;%s' or resc_hier like '%s;%s' ) limit %d;";
-    sprintf(
-        query,
-        base_query.c_str(),
-        _parent.c_str(), "%",      // root
-        "%", _parent.c_str(), "%", // mid tier
-        "%", _parent.c_str(),      // leaf
-        _child.c_str(), "%",       // root
-        "%", _child.c_str(), "%",  // mid tier
-        "%", _child.c_str(),       // leaf
-        _limit );
+    // call factory for database object
+    irods::database_object_ptr db_obj_ptr;
+    irods::error ret = irods::database_factory(
+                           icss.database_plugin_type,
+                           db_obj_ptr );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
 
     // =-=-=-=-=-=-=-
-    // snag the first row from the resulting query
-    int statement_num = 0;
+    // resolve a plugin for that object
+    irods::plugin_ptr db_plug_ptr;
+    ret = db_obj_ptr->resolve(
+              irods::DATABASE_INTERFACE,
+              db_plug_ptr );
+    if ( !ret.ok() ) {
+        irods::log(
+            PASSMSG(
+                "failed to resolve database interface",
+                ret ) );
+        return ret.code();
+    }
 
     // =-=-=-=-=-=-=-
-    // iterate over resulting rows
-    for ( int i = 0; ; i++ ) {
-        // =-=-=-=-=-=-=-
-        // extract either the first or next row
-        int status = 0;
-        if ( 0 == i ) {
-            status = cmlGetFirstRowFromSql(
-                         query,
-                         &statement_num,
-                         0, &icss );
-        }
-        else {
-            status = cmlGetNextRowFromStatement( statement_num, &icss );
-        }
+    // cast plugin and object to db and fco for call
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
+                                        irods::first_class_object > ( db_obj_ptr );
+    irods::database_ptr           db = boost::dynamic_pointer_cast <
+                                       irods::database > ( db_plug_ptr );
 
-        if ( status != 0 ) {
-            return status;
-        }
+    // =-=-=-=-=-=-=-
+    // call the operation on the plugin
+    ret = db->call <
+              const std::string*,
+              const std::string*,
+              int,
+              dist_child_result_t* >(
+                  irods::DATABASE_OP_GET_DISTINCT_DATA_OBJS_MISSING_FROM_CHILD_GIVEN_PARENT,
+                  ptr,
+                  &_parent,
+                  &_child,
+                  _limit,
+                  &_results );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+    }
 
-        _results.push_back( atoi( icss.stmtPtr[ statement_num ]->resultValue[0] ) );
-
-    } // for i
-
-    cmlFreeStatement( statement_num, &icss );
-
-    return 0;
+    return ret.code();
 
 } // chlGetDistinctDataObjsMissingFromChildGivenParent
 
-/*
- * @brief Given a resource, resolves the hierarchy down to said resource
- */
-int chlGetHierarchyForResc( const std::string& resc_name, const std::string& zone_name, std::string& hierarchy ) {
-    char *current_node;
-    char parent[MAX_NAME_LEN];
-    int status;
-
-
-    irods::sql_logger logger( "chlGetHierarchyForResc", logSQL );
-    logger.log();
-
-    if ( !icss.status ) {
-        return( CATALOG_NOT_CONNECTED );
+/// =-=-=-=-=-=-=-
+/// @brief Given a resource, resolves the hierarchy down to said resource
+int chlGetHierarchyForResc( 
+    const std::string& _resc_name, 
+    const std::string& _zone_name, 
+    std::string&       _hierarchy ) {
+    // =-=-=-=-=-=-=-
+    // call factory for database object
+    irods::database_object_ptr db_obj_ptr;
+    irods::error ret = irods::database_factory(
+                           icss.database_plugin_type,
+                           db_obj_ptr );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
     }
 
-    hierarchy = resc_name; // Initialize hierarchy string with resource
-
-    current_node = ( char * )resc_name.c_str();
-    while ( current_node ) {
-        // Ask for parent of current node
-        status = cmlGetStringValueFromSql( "select resc_parent from R_RESC_MAIN where resc_name=? and zone_name=?",
-                                           parent, MAX_NAME_LEN, current_node, zone_name.c_str(), NULL, &icss );
-
-        if ( status == CAT_NO_ROWS_FOUND ) { // Resource doesn't exist
-            return CAT_UNKNOWN_RESOURCE;
-        }
-
-        if ( status < 0 ) { // Other error
-            return status;
-        }
-
-        if ( strlen( parent ) ) {
-            hierarchy = parent + irods::hierarchy_parser::delimiter() + hierarchy;        // Add parent to hierarchy string
-            current_node = parent;
-        }
-        else {
-            current_node = NULL;
-        }
+    // =-=-=-=-=-=-=-
+    // resolve a plugin for that object
+    irods::plugin_ptr db_plug_ptr;
+    ret = db_obj_ptr->resolve(
+              irods::DATABASE_INTERFACE,
+              db_plug_ptr );
+    if ( !ret.ok() ) {
+        irods::log(
+            PASSMSG(
+                "failed to resolve database interface",
+                ret ) );
+        return ret.code();
     }
 
-    return 0;
-}
+    // =-=-=-=-=-=-=-
+    // cast plugin and object to db and fco for call
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
+                                        irods::first_class_object > ( db_obj_ptr );
+    irods::database_ptr           db = boost::dynamic_pointer_cast <
+                                       irods::database > ( db_plug_ptr );
 
-int
-icatGetTicketUserId( char *userName, char *userIdStr ) {
-    char userId[NAME_LEN];
-    char userZone[NAME_LEN];
-    char zoneToUse[NAME_LEN];
-    char userName2[NAME_LEN];
-    int status;
-
-    status = getLocalZone();
-    if ( status != 0 ) {
-        return( status );
+    // =-=-=-=-=-=-=-
+    // call the operation on the plugin
+    ret = db->call <
+              const std::string*,
+              const std::string*,
+              std::string* >(
+                  irods::DATABASE_OP_GET_HIERARCHY_FOR_RESC,
+                  ptr,
+                  &_resc_name,
+                  &_zone_name,
+                  &_hierarchy );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
     }
 
-    strncpy( zoneToUse, localZone, NAME_LEN );
-    status = parseUserName( userName, userName2, userZone );
-    if ( userZone[0] != '\0' ) {
-        rstrcpy( zoneToUse, userZone, NAME_LEN );
+    return ret.code();
+
+} // chlGetHierarchyForResc
+
+/// =-=-=-=-=-=-=-
+/// @brief Administrative operations on a ticket.
+///        create, modify, and remove.
+///        ticketString is either the ticket-string or ticket-id.
+int chlModTicket( 
+    rsComm_t* _comm, 
+    char*     _op_name, 
+    char*     _ticket_string,
+    char*     _arg3, 
+    char*     _arg4, 
+    char*     _arg5 ) {
+    // =-=-=-=-=-=-=-
+    // call factory for database object
+    irods::database_object_ptr db_obj_ptr;
+    irods::error ret = irods::database_factory(
+                           icss.database_plugin_type,
+                           db_obj_ptr );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
     }
 
-    userId[0] = '\0';
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "icatGetTicketUserId SQL 1 " );
-    }
-    status = cmlGetStringValueFromSql(
-                 "select user_id from R_USER_MAIN where user_name=? and R_USER_MAIN.zone_name=? and user_type_name!='rodsgroup'",
-                 userId, NAME_LEN, userName2, zoneToUse, 0, &icss );
-    if ( status != 0 ) {
-        if ( status == CAT_NO_ROWS_FOUND ) {
-            return( CAT_INVALID_USER );
-        }
-        return( status );
-    }
-    strncpy( userIdStr, userId, NAME_LEN );
-    return( 0 );
-}
-
-int
-icatGetTicketGroupId( char *groupName, char *groupIdStr ) {
-    char groupId[NAME_LEN];
-    char groupZone[NAME_LEN];
-    char zoneToUse[NAME_LEN];
-    char groupName2[NAME_LEN];
-    int status;
-
-    status = getLocalZone();
-    if ( status != 0 ) {
-        return( status );
+    // =-=-=-=-=-=-=-
+    // resolve a plugin for that object
+    irods::plugin_ptr db_plug_ptr;
+    ret = db_obj_ptr->resolve(
+              irods::DATABASE_INTERFACE,
+              db_plug_ptr );
+    if ( !ret.ok() ) {
+        irods::log(
+            PASSMSG(
+                "failed to resolve database interface",
+                ret ) );
+        return ret.code();
     }
 
-    strncpy( zoneToUse, localZone, NAME_LEN );
-    status = parseUserName( groupName, groupName2, groupZone );
-    if ( groupZone[0] != '\0' ) {
-        rstrcpy( zoneToUse, groupZone, NAME_LEN );
+    // =-=-=-=-=-=-=-
+    // cast plugin and object to db and fco for call
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
+                                        irods::first_class_object > ( db_obj_ptr );
+    irods::database_ptr           db = boost::dynamic_pointer_cast <
+                                       irods::database > ( db_plug_ptr );
+
+    // =-=-=-=-=-=-=-
+    // call the operation on the plugin
+    ret = db->call <
+              rsComm_t*,
+              char*,
+              char*,
+              char*,
+              char* >(    
+                  irods::DATABASE_OP_MOD_TICKET,
+                  ptr,
+                  _comm,
+                  _op_name,
+                  _ticket_string,
+                  _arg3,
+                  _arg4,
+                  _arg5 );              
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
     }
 
-    groupId[0] = '\0';
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "icatGetTicketGroupId SQL 1 " );
-    }
-    status = cmlGetStringValueFromSql(
-                 "select user_id from R_USER_MAIN where user_name=? and R_USER_MAIN.zone_name=? and user_type_name='rodsgroup'",
-                 groupId, NAME_LEN, groupName2, zoneToUse, 0, &icss );
-    if ( status != 0 ) {
-        if ( status == CAT_NO_ROWS_FOUND ) {
-            return( CAT_INVALID_GROUP );
-        }
-        return( status );
-    }
-    strncpy( groupIdStr, groupId, NAME_LEN );
-    return( 0 );
-}
+    return ret.code();
 
-char *
-convertHostToIp( char *inputName ) {
-    struct hostent *myHostent;
-    static char ipAddr[50];
-    myHostent = gethostbyname( inputName );
-    if ( myHostent == NULL || myHostent->h_addrtype != AF_INET ) {
-        printf( "unknown hostname: %s\n", inputName );
-        return( NULL );
-    }
-    snprintf( ipAddr, sizeof( ipAddr ), "%s",
-              ( char * )inet_ntoa( *( struct in_addr* )( myHostent->h_addr_list[0] ) ) );
-    return( ipAddr );
-}
-
-
-/* Administrative operations on a ticket.
-   create, modify, and remove.
-   ticketString is either the ticket-string or ticket-id.
-*/
-int chlModTicket( rsComm_t *rsComm, char *opName, char *ticketString,
-                  char *arg3, char *arg4, char *arg5 ) {
-    rodsLong_t status, status2, status3;
-    char logicalEndName[MAX_NAME_LEN];
-    char logicalParentDirName[MAX_NAME_LEN];
-    rodsLong_t objId = 0;
-    rodsLong_t userId;
-    rodsLong_t ticketId;
-    rodsLong_t seqNum;
-    char seqNumStr[NAME_LEN];
-    char objIdStr[NAME_LEN];
-    char objTypeStr[NAME_LEN];
-    char userIdStr[NAME_LEN];
-    char user2IdStr[MAX_NAME_LEN];
-    char group2IdStr[NAME_LEN];
-    char ticketIdStr[NAME_LEN];
-    char ticketType[NAME_LEN];
-    int i;
-    char myTime[50];
-
-    status = 0;
-
-    /* session ticket */
-    if ( strcmp( opName, "session" ) == 0 ) {
-        if ( strlen( arg3 ) > 0 ) {
-            /* for 2 server hops, arg3 is the original client addr */
-            status = chlGenQueryTicketSetup( ticketString, arg3 );
-            strncpy( mySessionTicket, ticketString, sizeof( mySessionTicket ) );
-            strncpy( mySessionClientAddr, arg3, sizeof( mySessionClientAddr ) );
-        }
-        else {
-            /* for direct connections, rsComm has the original client addr */
-            status = chlGenQueryTicketSetup( ticketString, rsComm->clientAddr );
-            strncpy( mySessionTicket, ticketString, sizeof( mySessionTicket ) );
-            strncpy( mySessionClientAddr, rsComm->clientAddr,
-                     sizeof( mySessionClientAddr ) );
-        }
-        status = cmlAudit3( AU_USE_TICKET, "0",
-                            rsComm->clientUser.userName,
-                            rsComm->clientUser.rodsZone, ticketString, &icss );
-        if ( status != 0 ) {
-            return( status );
-        }
-        return( 0 );
-    }
-
-    /* create */
-    if ( strcmp( opName, "create" ) == 0 ) {
-        status = splitPathByKey( arg4,
-                                 logicalParentDirName, logicalEndName, '/' );
-        if ( strlen( logicalParentDirName ) == 0 ) {
-            strcpy( logicalParentDirName, "/" );
-            strcpy( logicalEndName, arg4 + 1 );
-        }
-        status2 = cmlCheckDataObjOnly( logicalParentDirName, logicalEndName,
-                                       rsComm->clientUser.userName,
-                                       rsComm->clientUser.rodsZone,
-                                       ACCESS_OWN, &icss );
-        if ( status2 > 0 ) {
-            strncpy( objTypeStr, TICKET_TYPE_DATA, sizeof( objTypeStr ) );
-            objId = status2;
-        }
-        else {
-            status3 = cmlCheckDir( arg4,   rsComm->clientUser.userName,
-                                   rsComm->clientUser.rodsZone,
-                                   ACCESS_OWN, &icss );
-            if ( status3 == CAT_NO_ROWS_FOUND && status2 == CAT_NO_ROWS_FOUND ) {
-                return( CAT_UNKNOWN_COLLECTION );
-            }
-            if ( status3 < 0 ) {
-                return( status3 );
-            }
-            strncpy( objTypeStr, TICKET_TYPE_COLL, sizeof( objTypeStr ) );
-            objId = status3;
-        }
-
-        if ( logSQL != 0 ) {
-            rodsLog( LOG_SQL, "chlModTicket SQL 1" );
-        }
-        status = cmlGetIntegerValueFromSql(
-                     "select user_id from R_USER_MAIN where user_name=? and zone_name=?",
-                     &userId, rsComm->clientUser.userName, rsComm->clientUser.rodsZone,
-                     0, 0, 0, &icss );
-        if ( status != 0 ) {
-            return( CAT_INVALID_USER );
-        }
-
-        seqNum = cmlGetNextSeqVal( &icss );
-        if ( seqNum < 0 ) {
-            rodsLog( LOG_NOTICE, "chlModTicket failure %ld",
-                     seqNum );
-            return( seqNum );
-        }
-        snprintf( seqNumStr, NAME_LEN, "%lld", seqNum );
-        snprintf( objIdStr, NAME_LEN, "%lld", objId );
-        snprintf( userIdStr, NAME_LEN, "%lld", userId );
-        if ( strncmp( arg3, "write", 5 ) == 0 ) {
-            strncpy( ticketType, "write", sizeof( ticketType ) );
-        }
-        else {
-            strncpy( ticketType, "read", sizeof( ticketType ) );
-        }
-        getNowStr( myTime );
-        i = 0;
-        cllBindVars[i++] = seqNumStr;
-        cllBindVars[i++] = ticketString;
-        cllBindVars[i++] = ticketType;
-        cllBindVars[i++] = userIdStr;
-        cllBindVars[i++] = objIdStr;
-        cllBindVars[i++] = objTypeStr;
-        cllBindVars[i++] = myTime;
-        cllBindVars[i++] = myTime;
-        cllBindVarCount = i;
-        if ( logSQL != 0 ) {
-            rodsLog( LOG_SQL, "chlModTicket SQL 2" );
-        }
-        status =  cmlExecuteNoAnswerSql(
-                      "insert into R_TICKET_MAIN (ticket_id, ticket_string, ticket_type, user_id, object_id, object_type, modify_ts, create_ts) values (?, ?, ?, ?, ?, ?, ?, ?)",
-                      &icss );
-
-        if ( status != 0 ) {
-            rodsLog( LOG_NOTICE,
-                     "chlModTicket cmlExecuteNoAnswerSql insert failure %d",
-                     status );
-            return( status );
-        }
-        status = cmlAudit3( AU_CREATE_TICKET, seqNumStr,
-                            rsComm->clientUser.userName,
-                            rsComm->clientUser.rodsZone, ticketString, &icss );
-        if ( status != 0 ) {
-            return( status );
-        }
-        status = cmlAudit3( AU_CREATE_TICKET, seqNumStr,
-                            rsComm->clientUser.userName,
-                            rsComm->clientUser.rodsZone, objIdStr, &icss ); /* target obj */
-        if ( status != 0 ) {
-            return( status );
-        }
-        status =  cmlExecuteNoAnswerSql( "commit", &icss );
-        return( status );
-    }
-
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlModTicket SQL 3" );
-    }
-    status = cmlGetIntegerValueFromSql(
-                 "select user_id from R_USER_MAIN where user_name=? and zone_name=?",
-                 &userId, rsComm->clientUser.userName, rsComm->clientUser.rodsZone,
-                 0, 0, 0, &icss );
-    if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ||
-            status == CAT_NO_ROWS_FOUND ) {
-        if ( !addRErrorMsg( &rsComm->rError, 0, "Invalid user" ) ) {
-        }
-        return( CAT_INVALID_USER );
-    }
-    if ( status < 0 ) {
-        return( status );
-    }
-    snprintf( userIdStr, sizeof userIdStr, "%lld", userId );
-
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlModTicket SQL 4" );
-    }
-    status = cmlGetIntegerValueFromSql(
-                 "select ticket_id from R_TICKET_MAIN where user_id=? and ticket_string=?",
-                 &ticketId, userIdStr, ticketString,
-                 0, 0, 0, &icss );
-    if ( status != 0 ) {
-        if ( logSQL != 0 ) {
-            rodsLog( LOG_SQL, "chlModTicket SQL 5" );
-        }
-        status = cmlGetIntegerValueFromSql(
-                     "select ticket_id from R_TICKET_MAIN where user_id=? and ticket_id=?",
-                     &ticketId, userIdStr, ticketString,
-                     0, 0, 0, &icss );
-        if ( status != 0 ) {
-            return( CAT_TICKET_INVALID );
-        }
-    }
-    snprintf( ticketIdStr, NAME_LEN, "%lld", ticketId );
-
-    /* delete */
-    if ( strcmp( opName, "delete" ) == 0 ) {
-        i = 0;
-        cllBindVars[i++] = ticketIdStr;
-        cllBindVars[i++] = userIdStr;
-        cllBindVarCount = i;
-        if ( logSQL != 0 ) {
-            rodsLog( LOG_SQL, "chlModTicket SQL 6" );
-        }
-        status =  cmlExecuteNoAnswerSql(
-                      "delete from R_TICKET_MAIN where ticket_id = ? and user_id = ?",
-                      &icss );
-        if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-            return( status );
-        }
-        if ( status != 0 ) {
-            rodsLog( LOG_NOTICE,
-                     "chlModTicket cmlExecuteNoAnswerSql delete failure %d",
-                     status );
-            return( status );
-        }
-
-        i = 0;
-        cllBindVars[i++] = ticketIdStr;
-        cllBindVarCount = i;
-        status =  cmlExecuteNoAnswerSql(
-                      "delete from R_TICKET_ALLOWED_HOSTS where ticket_id = ?",
-                      &icss );
-        if ( status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-            rodsLog( LOG_NOTICE,
-                     "chlModTicket cmlExecuteNoAnswerSql delete 2 failure %d",
-                     status );
-        }
-
-        i = 0;
-        cllBindVars[i++] = ticketIdStr;
-        cllBindVarCount = i;
-        status =  cmlExecuteNoAnswerSql(
-                      "delete from R_TICKET_ALLOWED_USERS where ticket_id = ?",
-                      &icss );
-        if ( status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-            rodsLog( LOG_NOTICE,
-                     "chlModTicket cmlExecuteNoAnswerSql delete 3 failure %d",
-                     status );
-        }
-
-        i = 0;
-        cllBindVars[i++] = ticketIdStr;
-        cllBindVarCount = i;
-        status =  cmlExecuteNoAnswerSql(
-                      "delete from R_TICKET_ALLOWED_GROUPS where ticket_id = ?",
-                      &icss );
-        if ( status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-            rodsLog( LOG_NOTICE,
-                     "chlModTicket cmlExecuteNoAnswerSql delete 4 failure %d",
-                     status );
-        }
-        status = cmlAudit3( AU_DELETE_TICKET, ticketIdStr,
-                            rsComm->clientUser.userName,
-                            rsComm->clientUser.rodsZone, ticketString, &icss );
-        if ( status != 0 ) {
-            return( status );
-        }
-        status =  cmlExecuteNoAnswerSql( "commit", &icss );
-        return( status );
-    }
-
-    /* mod */
-    if ( strcmp( opName, "mod" ) == 0 ) {
-        if ( strcmp( arg3, "uses" ) == 0 ) {
-            i = 0;
-            cllBindVars[i++] = arg4;
-            cllBindVars[i++] = ticketIdStr;
-            cllBindVars[i++] = userIdStr;
-            cllBindVarCount = i;
-            if ( logSQL != 0 ) {
-                rodsLog( LOG_SQL, "chlModTicket SQL 7" );
-            }
-            status =  cmlExecuteNoAnswerSql(
-                          "update R_TICKET_MAIN set uses_limit=? where ticket_id = ? and user_id = ?",
-                          &icss );
-            if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-                return( status );
-            }
-            if ( status != 0 ) {
-                rodsLog( LOG_NOTICE,
-                         "chlModTicket cmlExecuteNoAnswerSql update failure %d",
-                         status );
-                return( status );
-            }
-            status = cmlAudit3( AU_MOD_TICKET, ticketIdStr,
-                                rsComm->clientUser.userName,
-                                rsComm->clientUser.rodsZone, "uses", &icss );
-            if ( status != 0 ) {
-                return( status );
-            }
-            status =  cmlExecuteNoAnswerSql( "commit", &icss );
-            return( status );
-        }
-
-        if ( strncmp( arg3, "write", 5 ) == 0 ) {
-            if ( strstr( arg3, "file" ) != NULL ) {
-                i = 0;
-                cllBindVars[i++] = arg4;
-                cllBindVars[i++] = ticketIdStr;
-                cllBindVars[i++] = userIdStr;
-                cllBindVarCount = i;
-                if ( logSQL != 0 ) {
-                    rodsLog( LOG_SQL, "chlModTicket SQL 8" );
-                }
-                status =  cmlExecuteNoAnswerSql(
-                              "update R_TICKET_MAIN set write_file_limit=? where ticket_id = ? and user_id = ?",
-                              &icss );
-                if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-                    return( status );
-                }
-                if ( status != 0 ) {
-                    rodsLog( LOG_NOTICE,
-                             "chlModTicket cmlExecuteNoAnswerSql update failure %d",
-                             status );
-                    return( status );
-                }
-                status = cmlAudit3( AU_MOD_TICKET, ticketIdStr,
-                                    rsComm->clientUser.userName,
-                                    rsComm->clientUser.rodsZone, "write file",
-                                    &icss );
-                if ( status != 0 ) {
-                    return( status );
-                }
-                status =  cmlExecuteNoAnswerSql( "commit", &icss );
-                return( status );
-            }
-            if ( strstr( arg3, "byte" ) != NULL ) {
-                i = 0;
-                cllBindVars[i++] = arg4;
-                cllBindVars[i++] = ticketIdStr;
-                cllBindVars[i++] = userIdStr;
-                cllBindVarCount = i;
-                if ( logSQL != 0 ) {
-                    rodsLog( LOG_SQL, "chlModTicket SQL 9" );
-                }
-                status =  cmlExecuteNoAnswerSql(
-                              "update R_TICKET_MAIN set write_byte_limit=? where ticket_id = ? and user_id = ?",
-                              &icss );
-                if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-                    return( status );
-                }
-                if ( status != 0 ) {
-                    rodsLog( LOG_NOTICE,
-                             "chlModTicket cmlExecuteNoAnswerSql update failure %d",
-                             status );
-                    return( status );
-                }
-                status = cmlAudit3( AU_MOD_TICKET, ticketIdStr,
-                                    rsComm->clientUser.userName,
-                                    rsComm->clientUser.rodsZone, "write byte",
-                                    &icss );
-                if ( status != 0 ) {
-                    return( status );
-                }
-                status =  cmlExecuteNoAnswerSql( "commit", &icss );
-                return( status );
-            }
-        }
-
-        if ( strncmp( arg3, "expir", 5 ) == 0 ) {
-            status = checkDateFormat( arg4 );
-            if ( status != 0 ) {
-                return( status );
-            }
-            i = 0;
-            cllBindVars[i++] = arg4;
-            cllBindVars[i++] = ticketIdStr;
-            cllBindVars[i++] = userIdStr;
-            cllBindVarCount = i;
-            if ( logSQL != 0 ) {
-                rodsLog( LOG_SQL, "chlModTicket SQL 10" );
-            }
-            status =  cmlExecuteNoAnswerSql(
-                          "update R_TICKET_MAIN set ticket_expiry_ts=? where ticket_id = ? and user_id = ?",
-                          &icss );
-            if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-                return( status );
-            }
-            if ( status != 0 ) {
-                rodsLog( LOG_NOTICE,
-                         "chlModTicket cmlExecuteNoAnswerSql update failure %d",
-                         status );
-                return( status );
-            }
-            status = cmlAudit3( AU_MOD_TICKET, ticketIdStr,
-                                rsComm->clientUser.userName,
-                                rsComm->clientUser.rodsZone, "expire",
-                                &icss );
-            if ( status != 0 ) {
-                return( status );
-            }
-            status =  cmlExecuteNoAnswerSql( "commit", &icss );
-            return( status );
-        }
-
-        if ( strcmp( arg3, "add" ) == 0 ) {
-            if ( strcmp( arg4, "host" ) == 0 ) {
-                char *hostIp;
-                hostIp = convertHostToIp( arg5 );
-                if ( hostIp == NULL ) {
-                    return( CAT_HOSTNAME_INVALID );
-                }
-                i = 0;
-                cllBindVars[i++] = ticketIdStr;
-                cllBindVars[i++] = hostIp;
-                cllBindVarCount = i;
-                if ( logSQL != 0 ) {
-                    rodsLog( LOG_SQL, "chlModTicket SQL 11" );
-                }
-                status =  cmlExecuteNoAnswerSql(
-                              "insert into R_TICKET_ALLOWED_HOSTS (ticket_id, host) values (? , ?)",
-                              &icss );
-                if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-                    return( status );
-                }
-                if ( status != 0 ) {
-                    rodsLog( LOG_NOTICE,
-                             "chlModTicket cmlExecuteNoAnswerSql insert host failure %d",
-                             status );
-                    return( status );
-                }
-                status = cmlAudit3( AU_MOD_TICKET, ticketIdStr,
-                                    rsComm->clientUser.userName,
-                                    rsComm->clientUser.rodsZone, "add host",
-                                    &icss );
-                if ( status != 0 ) {
-                    return( status );
-                }
-                status =  cmlExecuteNoAnswerSql( "commit", &icss );
-                return( status );
-            }
-            if ( strcmp( arg4, "user" ) == 0 ) {
-                status = icatGetTicketUserId( arg5, user2IdStr );
-                if ( status != 0 ) {
-                    return( status );
-                }
-                i = 0;
-                cllBindVars[i++] = ticketIdStr;
-                cllBindVars[i++] = arg5;
-                cllBindVarCount = i;
-                if ( logSQL != 0 ) {
-                    rodsLog( LOG_SQL, "chlModTicket SQL 12" );
-                }
-                status =  cmlExecuteNoAnswerSql(
-                              "insert into R_TICKET_ALLOWED_USERS (ticket_id, user_name) values (? , ?)",
-                              &icss );
-                if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-                    return( status );
-                }
-                if ( status != 0 ) {
-                    rodsLog( LOG_NOTICE,
-                             "chlModTicket cmlExecuteNoAnswerSql insert user failure %d",
-                             status );
-                    return( status );
-                }
-                status = cmlAudit3( AU_MOD_TICKET, ticketIdStr,
-                                    rsComm->clientUser.userName,
-                                    rsComm->clientUser.rodsZone, "add user",
-                                    &icss );
-                if ( status != 0 ) {
-                    return( status );
-                }
-                status =  cmlExecuteNoAnswerSql( "commit", &icss );
-                return( status );
-            }
-            if ( strcmp( arg4, "group" ) == 0 ) {
-                status = icatGetTicketGroupId( arg5, user2IdStr );
-                if ( status != 0 ) {
-                    return( status );
-                }
-                i = 0;
-                cllBindVars[i++] = ticketIdStr;
-                cllBindVars[i++] = arg5;
-                cllBindVarCount = i;
-                if ( logSQL != 0 ) {
-                    rodsLog( LOG_SQL, "chlModTicket SQL 13" );
-                }
-                status =  cmlExecuteNoAnswerSql(
-                              "insert into R_TICKET_ALLOWED_GROUPS (ticket_id, group_name) values (? , ?)",
-                              &icss );
-                if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-                    return( status );
-                }
-                if ( status != 0 ) {
-                    rodsLog( LOG_NOTICE,
-                             "chlModTicket cmlExecuteNoAnswerSql insert user failure %d",
-                             status );
-                    return( status );
-                }
-                status = cmlAudit3( AU_MOD_TICKET, ticketIdStr,
-                                    rsComm->clientUser.userName,
-                                    rsComm->clientUser.rodsZone, "add group",
-                                    &icss );
-                if ( status != 0 ) {
-                    return( status );
-                }
-                status =  cmlExecuteNoAnswerSql( "commit", &icss );
-                return( status );
-            }
-        }
-        if ( strcmp( arg3, "remove" ) == 0 ) {
-            if ( strcmp( arg4, "host" ) == 0 ) {
-                char *hostIp;
-                hostIp = convertHostToIp( arg5 );
-                if ( hostIp == NULL ) {
-                    return( CAT_HOSTNAME_INVALID );
-                }
-                i = 0;
-                cllBindVars[i++] = ticketIdStr;
-                cllBindVars[i++] = hostIp;
-                cllBindVarCount = i;
-                if ( logSQL != 0 ) {
-                    rodsLog( LOG_SQL, "chlModTicket SQL 14" );
-                }
-                status =  cmlExecuteNoAnswerSql(
-                              "delete from R_TICKET_ALLOWED_HOSTS where ticket_id=? and host=?",
-                              &icss );
-                if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-                    return( status );
-                }
-                if ( status != 0 ) {
-                    rodsLog( LOG_NOTICE,
-                             "chlModTicket cmlExecuteNoAnswerSql delete host failure %d",
-                             status );
-                    return( status );
-                }
-                status = cmlAudit3( AU_MOD_TICKET, ticketIdStr,
-                                    rsComm->clientUser.userName,
-                                    rsComm->clientUser.rodsZone, "remove host",
-                                    &icss );
-                if ( status != 0 ) {
-                    return( status );
-                }
-                status =  cmlExecuteNoAnswerSql( "commit", &icss );
-                return( status );
-            }
-            if ( strcmp( arg4, "user" ) == 0 ) {
-                status = icatGetTicketUserId( arg5, user2IdStr );
-                if ( status != 0 ) {
-                    return( status );
-                }
-                i = 0;
-                cllBindVars[i++] = ticketIdStr;
-                cllBindVars[i++] = arg5;
-                cllBindVarCount = i;
-                if ( logSQL != 0 ) {
-                    rodsLog( LOG_SQL, "chlModTicket SQL 15" );
-                }
-                status =  cmlExecuteNoAnswerSql(
-                              "delete from R_TICKET_ALLOWED_USERS where ticket_id=? and user_name=?",
-                              &icss );
-                if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-                    return( status );
-                }
-                if ( status != 0 ) {
-                    rodsLog( LOG_NOTICE,
-                             "chlModTicket cmlExecuteNoAnswerSql delete user failure %d",
-                             status );
-                    return( status );
-                }
-                status = cmlAudit3( AU_MOD_TICKET, ticketIdStr,
-                                    rsComm->clientUser.userName,
-                                    rsComm->clientUser.rodsZone, "remove user",
-                                    &icss );
-                if ( status != 0 ) {
-                    return( status );
-                }
-                status =  cmlExecuteNoAnswerSql( "commit", &icss );
-                return( status );
-            }
-            if ( strcmp( arg4, "group" ) == 0 ) {
-                status = icatGetTicketGroupId( arg5, group2IdStr );
-                if ( status != 0 ) {
-                    return( status );
-                }
-                i = 0;
-                cllBindVars[i++] = ticketIdStr;
-                cllBindVars[i++] = arg5;
-                cllBindVarCount = i;
-                if ( logSQL != 0 ) {
-                    rodsLog( LOG_SQL, "chlModTicket SQL 16" );
-                }
-                status =  cmlExecuteNoAnswerSql(
-                              "delete from R_TICKET_ALLOWED_GROUPS where ticket_id=? and group_name=?",
-                              &icss );
-                if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-                    return( status );
-                }
-                if ( status != 0 ) {
-                    rodsLog( LOG_NOTICE,
-                             "chlModTicket cmlExecuteNoAnswerSql delete group failure %d",
-                             status );
-                    return( status );
-                }
-                status = cmlAudit3( AU_MOD_TICKET, ticketIdStr,
-                                    rsComm->clientUser.userName,
-                                    rsComm->clientUser.rodsZone, "remove group",
-                                    &icss );
-                if ( status != 0 ) {
-                    return( status );
-                }
-                status =  cmlExecuteNoAnswerSql( "commit", &icss );
-                return( status );
-            }
-        }
-    }
-
-    return ( CAT_INVALID_ARGUMENT );
-}
+} // chlModTicket
