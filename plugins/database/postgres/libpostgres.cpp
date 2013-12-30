@@ -117,12 +117,12 @@ char irods_pam_password_max_time[ NAME_LEN ]     = { "1209600" };
 char irods_pam_password_default_time[ NAME_LEN ] = { "1209600" };
 
 size_t log_sql_flg = 0;
-extern icatSessionStruct icss; // JMC :: only for testing!!! 
+extern icatSessionStruct icss; // JMC :: only for testing!!!
 extern int logSQL;
 
 extern int  creatingUserByGroupAdmin; // JMC - backport 4772
 extern char mySessionTicket[NAME_LEN];
-extern char mySessionClientAddr[NAME_LEN]; 
+extern char mySessionClientAddr[NAME_LEN];
 
 // =-=-=-=-=-=-=-
 // property constants
@@ -134,7 +134,7 @@ const std::string ZONE_PROP( "irods_zone_property" );
 irods::error make_pg_ptr(
     const irods::first_class_object_ptr& _fc,
     irods::postgres_object_ptr&          _pg ) {
-    if( !_fc.get() ) {
+    if ( !_fc.get() ) {
         return ERROR(
                    SYS_INVALID_INPUT_PARAM,
                    "incoming fco is null" );
@@ -148,7 +148,8 @@ irods::error make_pg_ptr(
     if ( _pg.get() ) {
         return SUCCESS();
 
-    } else {
+    }
+    else {
         return ERROR(
                    INVALID_DYNAMIC_CAST,
                    "failed to dynamic cast to postgres_object_ptr" );
@@ -181,22 +182,22 @@ int _rollback( const char *functionName ) {
 //  Internal function to return the local zone (which is the default
 //  zone).  The first time it's called, it gets the zone from the DB and
 //  subsequent calls just return that value.
-irods::error getLocalZone( 
-    irods::plugin_property_map& _prop_map, 
+irods::error getLocalZone(
+    irods::plugin_property_map& _prop_map,
     icatSessionStruct*          _icss,
     std::string&                _zone ) {
     // =-=-=-=-=-=-=-
     // try to get the zone prop, if it is not cached
     // then we hit the catalog and request it
     irods::error ret = _prop_map.get< std::string >( ZONE_PROP, _zone );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         char local_zone[ MAX_NAME_LEN ];
-        int status = cmlGetStringValueFromSql( 
-                         (char*)"select zone_name from R_ZONE_MAIN where zone_type_name=?",
-                         local_zone, 
-                         MAX_NAME_LEN, 
-                         (char*)"local", 
-                         0, 0, 
+        int status = cmlGetStringValueFromSql(
+                         ( char* )"select zone_name from R_ZONE_MAIN where zone_type_name=?",
+                         local_zone,
+                         MAX_NAME_LEN,
+                         ( char* )"local",
+                         0, 0,
                          _icss );
         if ( status != 0 ) {
             _rollback( "getLocalZone" );
@@ -207,7 +208,7 @@ irods::error getLocalZone(
         // set the zone property
         _zone = local_zone;
         ret = _prop_map.set< std::string >( ZONE_PROP, _zone );
-        if( !ret.ok() ) {
+        if ( !ret.ok() ) {
             return PASS( ret );
 
         }
@@ -223,7 +224,7 @@ irods::error getLocalZone(
 // @brief Updates the specified resources object count by the specified amount
 static int
 _updateRescObjCount(
-    icatSessionStruct* _icss, 
+    icatSessionStruct* _icss,
     const std::string& _resc_name,
     const std::string& _zone,
     int _amount ) {
@@ -238,8 +239,8 @@ _updateRescObjCount(
     resc_id[0] = '\0';
 //    logger.log();
     std::stringstream ss;
-    if ( ( status = cmlGetStringValueFromSql( 
-                        (char*)"select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
+    if ( ( status = cmlGetStringValueFromSql(
+                        ( char* )"select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
                         resc_id, MAX_NAME_LEN, _resc_name.c_str(), _zone.c_str(), 0,
                         _icss ) ) != 0 ) {
         if ( status == CAT_NO_ROWS_FOUND ) {
@@ -391,9 +392,9 @@ _resolveHostName(
 }
 
 // =-=-=-=-=-=-=-
-// 
+//
 irods::error _childIsValid(
-    irods::plugin_property_map& _prop_map, 
+    irods::plugin_property_map& _prop_map,
     const std::string&          _new_child ) {
     // =-=-=-=-=-=-=-
     // Lookup the child resource and make sure its parent field is empty
@@ -406,22 +407,22 @@ irods::error _childIsValid(
     irods::children_parser parser;
     parser.set_string( _new_child );
     parser.first_child( resc_name );
-  
-    std::string zone; 
+
+    std::string zone;
     irods::error ret = getLocalZone( _prop_map, &icss, zone );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         return PASS( ret );
     }
-      
+
     // Get resources parent
     irods::sql_logger logger( "_childIsValid", logSQL );
     logger.log();
     parent[0] = '\0';
-    if ( ( status = cmlGetStringValueFromSql( 
+    if ( ( status = cmlGetStringValueFromSql(
                         "select resc_parent from R_RESC_MAIN where resc_name=? and zone_name=?",
-                        parent, 
-                        MAX_NAME_LEN, 
-                        resc_name.c_str(), 
+                        parent,
+                        MAX_NAME_LEN,
+                        resc_name.c_str(),
                         zone.c_str(), 0, &icss ) ) != 0 ) {
         if ( status == CAT_NO_ROWS_FOUND ) {
             std::stringstream ss;
@@ -507,16 +508,16 @@ irods::error _updateChildParent(
     std::string child;
     parser.set_string( _new_child );
     parser.first_child( child );
- 
-    std::string zone; 
+
+    std::string zone;
     irods::error ret = getLocalZone( _prop_map, &icss, zone );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         return PASS( ret );
     }
 
     // Get the resource id for the child resource
     resc_id[0] = '\0';
-    if ( ( status = cmlGetStringValueFromSql( 
+    if ( ( status = cmlGetStringValueFromSql(
                         "select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
                         resc_id, MAX_NAME_LEN, child.c_str(), zone.c_str(), 0,
                         &icss ) ) != 0 ) {
@@ -1286,12 +1287,12 @@ convertTypeOption( char *typeStr ) {
   Check object - get an object's ID and check that the user has access.
   Called internally.
 */
-rodsLong_t checkAndGetObjectId( 
-     rsComm_t*                   rsComm, 
-     irods::plugin_property_map& _prop_map,
-     char*                       type,
-     char*                       name, 
-     char*                       access ) {
+rodsLong_t checkAndGetObjectId(
+    rsComm_t*                   rsComm,
+    irods::plugin_property_map& _prop_map,
+    char*                       type,
+    char*                       name,
+    char*                       access ) {
     int itype;
     char logicalEndName[MAX_NAME_LEN];
     char logicalParentDirName[MAX_NAME_LEN];
@@ -1321,7 +1322,7 @@ rodsLong_t checkAndGetObjectId(
     if ( name == NULL ) {
         return ( CAT_INVALID_ARGUMENT );
     }
-    
+
     if ( *name == '\0' ) {
         return ( CAT_INVALID_ARGUMENT );
     }
@@ -1382,7 +1383,7 @@ rodsLong_t checkAndGetObjectId(
 
         std::string zone;
         irods::error ret = getLocalZone( _prop_map, &icss, zone );
-        if( !ret.ok() ) {
+        if ( !ret.ok() ) {
             return PASS( ret ).code();
         }
 
@@ -1411,7 +1412,7 @@ rodsLong_t checkAndGetObjectId(
         if ( userZone[0] == '\0' ) {
             std::string zone;
             irods::error ret = getLocalZone( _prop_map, &icss, zone );
-            if( !ret.ok() ) {
+            if ( !ret.ok() ) {
                 return PASS( ret ).code();
             }
             strncpy( userZone, zone.c_str(), NAME_LEN );
@@ -1878,7 +1879,7 @@ int setOverQuota( rsComm_t *rsComm ) {
 
 int
 icatGetTicketUserId( irods::plugin_property_map& _prop_map, char *userName, char *userIdStr ) {
-     
+
     char userId[NAME_LEN];
     char userZone[NAME_LEN];
     char zoneToUse[NAME_LEN];
@@ -1887,7 +1888,7 @@ icatGetTicketUserId( irods::plugin_property_map& _prop_map, char *userName, char
 
     std::string zone;
     irods::error ret = getLocalZone( _prop_map, &icss, zone );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         return ret.code();
     }
 
@@ -1921,10 +1922,10 @@ icatGetTicketGroupId( irods::plugin_property_map& _prop_map, char *groupName, ch
     char zoneToUse[NAME_LEN];
     char groupName2[NAME_LEN];
     int status;
-    
+
     std::string zone;
     irods::error ret = getLocalZone( _prop_map, &icss, zone );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         return ret.code();
     }
 
@@ -2110,7 +2111,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // log as appropriate
         if ( logSQL != 0 ) { rodsLog( LOG_SQL, "chlOpen" ); }
-        
+
         // =-=-=-=-=-=-=-
         // extract the icss property
 //        icatSessionStruct icss;
@@ -2205,7 +2206,7 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // return the local zone
     irods::error pg_get_local_zone_op(
-        irods::plugin_context& _ctx, 
+        irods::plugin_context& _ctx,
         std::string*           _zone ) {
         // =-=-=-=-=-=-=-
         // check the context
@@ -2218,13 +2219,14 @@ extern "C" {
         // extract the icss property
 //        icatSessionStruct icss;
 //        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
-        ret = getLocalZone( _ctx.prop_map(), &icss, (*_zone ) );
-        if( !ret.ok() ) {
+        ret = getLocalZone( _ctx.prop_map(), &icss, ( *_zone ) );
+        if ( !ret.ok() ) {
             return PASS( ret );
-            
-        } else {
+
+        }
+        else {
             return SUCCESS();
- 
+
         }
 
     } // pg_get_local_zone_op
@@ -2244,8 +2246,8 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_resc ) {
-            return ERROR( 
+        if ( !_resc ) {
+            return ERROR(
                        CAT_INVALID_ARGUMENT,
                        "null parameter" );
         }
@@ -2269,22 +2271,22 @@ extern "C" {
         // get the local zone name
         std::string zone;
         ret = getLocalZone( _ctx.prop_map(), &icss, zone );
-        if( !ret.ok() ) {
+        if ( !ret.ok() ) {
             return PASS( ret );
-        } 
-       
-        int status = _updateRescObjCount( 
-                         &icss, 
-                         (*_resc), 
-                         zone, 
+        }
+
+        int status = _updateRescObjCount(
+                         &icss,
+                         ( *_resc ),
+                         zone,
                          _delta );
-        if( 0 != status ) {
+        if ( 0 != status ) {
             std::stringstream msg;
-            msg << "Failed to update the object count for resource \"" 
-                << (*_resc) 
+            msg << "Failed to update the object count for resource \""
+                << ( *_resc )
                 << "\"";
-            return ERROR( 
-                       status, 
+            return ERROR(
+                       status,
                        msg.str() );
         }
 
@@ -2296,7 +2298,7 @@ extern "C" {
     // update the data obj count of a resource
     irods::error pg_mod_data_obj_meta_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm, 
+        rsComm_t*              _comm,
         dataObjInfo_t*         _data_obj_info,
         keyValPair_t*          _reg_param ) {
         // =-=-=-=-=-=-=-
@@ -2305,13 +2307,13 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
- 
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm          || 
-            !_data_obj_info ||
-            !_reg_param ) {
-            return ERROR( 
+        if ( !_comm          ||
+                !_data_obj_info ||
+                !_reg_param ) {
+            return ERROR(
                        CAT_INVALID_ARGUMENT,
                        "null parameter" );
         }
@@ -2361,10 +2363,10 @@ extern "C" {
         // Using the keyword defines so there is one point of truth - hcj
         char *regParamNames[] = {
             REPL_NUM_KW,        DATA_TYPE_KW,       DATA_SIZE_KW,
-            RESC_NAME_KW,       FILE_PATH_KW,       DATA_OWNER_KW, 
-            DATA_OWNER_ZONE_KW, REPL_STATUS_KW,     CHKSUM_KW, 
-            DATA_EXPIRY_KW,     DATA_COMMENTS_KW,   DATA_CREATE_KW, 
-            DATA_MODIFY_KW,     RESC_GROUP_NAME_KW, DATA_MODE_KW, 
+            RESC_NAME_KW,       FILE_PATH_KW,       DATA_OWNER_KW,
+            DATA_OWNER_ZONE_KW, REPL_STATUS_KW,     CHKSUM_KW,
+            DATA_EXPIRY_KW,     DATA_COMMENTS_KW,   DATA_CREATE_KW,
+            DATA_MODIFY_KW,     RESC_GROUP_NAME_KW, DATA_MODE_KW,
             RESC_HIER_STR_KW,   "END"
         };
 
@@ -2372,10 +2374,10 @@ extern "C" {
          * you add items before "data_expiry_ts" and */
         char *colNames[] = {
             "data_repl_num",   "data_type_name",  "data_size",
-            "resc_name",       "data_path",       "data_owner_name", 
-            "data_owner_zone", "data_is_dirty",   "data_checksum",  
-            "data_expiry_ts",  "r_comment",       "create_ts", 
-            "modify_ts",       "resc_group_name", "data_mode", 
+            "resc_name",       "data_path",       "data_owner_name",
+            "data_owner_zone", "data_is_dirty",   "data_checksum",
+            "data_expiry_ts",  "r_comment",       "create_ts",
+            "modify_ts",       "resc_group_name", "data_mode",
             "resc_hier"
         };
         int DATA_EXPIRY_TS_IX = 9; /* must match index in above colNames table */
@@ -2392,7 +2394,7 @@ extern "C" {
         }
 
         if ( _reg_param == NULL || _data_obj_info == NULL ) {
-            return ERROR( 
+            return ERROR(
                        CAT_INVALID_ARGUMENT,
                        "_reg_param or _data_obj_info are null" );
         }
@@ -2457,7 +2459,7 @@ extern "C" {
                         msg << __FUNCTION__;
                         msg << " - Invalid data type specified.";
                         addRErrorMsg( &_comm->rError, 0, msg.str().c_str() );
-                        return ERROR( 
+                        return ERROR(
                                    CAT_INVALID_DATA_TYPE,
                                    msg.str() );
                     }
@@ -2501,8 +2503,8 @@ extern "C" {
                           logicalDirName );
                 addRErrorMsg( &_comm->rError, 0, errMsg );
                 _rollback( "chlModDataObjMeta" );
-                return ERROR( 
-                           CAT_UNKNOWN_COLLECTION, 
+                return ERROR(
+                           CAT_UNKNOWN_COLLECTION,
                            "failed with unknown collection" );
             }
             snprintf( objIdString, MAX_NAME_LEN, "%lld", iVal );
@@ -2519,8 +2521,8 @@ extern "C" {
                 msg << " - Failed to find file in database by its logical path.";
                 addRErrorMsg( &_comm->rError, 0, msg.str().c_str() );
                 _rollback( "chlModDataObjMeta" );
-                return ERROR( 
-                           CAT_UNKNOWN_FILE, 
+                return ERROR(
+                           CAT_UNKNOWN_FILE,
                            "failed with unknown file" );
             }
 
@@ -2532,7 +2534,7 @@ extern "C" {
 
         if ( adminMode ) {
             if ( _comm->clientUser.authInfo.authFlag != LOCAL_PRIV_USER_AUTH ) {
-                return ERROR( 
+                return ERROR(
                            CAT_INSUFFICIENT_PRIVILEGE_LEVEL,
                            "failed with insufficient privilege" );
             }
@@ -2543,19 +2545,19 @@ extern "C" {
                                                     dataSizeString,
                                                     objIdString, &icss );
                 if ( status != 0 ) {
-                    return ERROR( 
+                    return ERROR(
                                status,
                                "cmlTicketUpdateWriteBytes failed" );
                 }
             }
-            
-            status = cmlCheckDataObjId( 
-                         objIdString, 
+
+            status = cmlCheckDataObjId(
+                         objIdString,
                          _comm->clientUser.userName,
-                         _comm->clientUser.rodsZone, 
+                         _comm->clientUser.rodsZone,
                          neededAccess,
-                         mySessionTicket, 
-                         mySessionClientAddr, 
+                         mySessionTicket,
+                         mySessionClientAddr,
                          &icss );
 
             if ( status != 0 ) {
@@ -2586,7 +2588,7 @@ extern "C" {
                 }
                 if ( status ) {
                     _rollback( "chlModDataObjMeta" );
-                    return ERROR( 
+                    return ERROR(
                                CAT_NO_ACCESS_PERMISSION,
                                "failed with no permission" );
                 }
@@ -2616,13 +2618,13 @@ extern "C" {
             mode = 1;
             /* mark this one as NEWLY_CREATED_COPY and others as OLD_COPY */
         }
-       
-        std::string zone; 
-        ret = getLocalZone( 
-                  _ctx.prop_map(), 
+
+        std::string zone;
+        ret = getLocalZone(
+                  _ctx.prop_map(),
                   &icss,
                   zone );
-        if( !ret.ok() ) {
+        if ( !ret.ok() ) {
             rodsLog( LOG_ERROR, "chlModObjMeta - failed in getLocalZone with status [%d]", status );
             return PASS( ret );
         }
@@ -2636,11 +2638,11 @@ extern "C" {
             std::stringstream repl_stream;
             repl_stream << _data_obj_info->replNum;
             char resc_hier[MAX_NAME_LEN];
-            if ( ( status = cmlGetStringValueFromSql( 
+            if ( ( status = cmlGetStringValueFromSql(
                                 "select resc_hier from R_DATA_MAIN where data_id=? and data_repl_num=?",
-                                resc_hier, 
-                                MAX_NAME_LEN, 
-                                id_stream.str().c_str(), 
+                                resc_hier,
+                                MAX_NAME_LEN,
+                                id_stream.str().c_str(),
                                 repl_stream.str().c_str(),
                                 0, &icss ) ) != 0 ) {
                 std::stringstream msg;
@@ -2650,19 +2652,19 @@ extern "C" {
                 msg << " and replNum: ";
                 msg << repl_stream.str();
                 irods::log( LOG_NOTICE, msg.str() );
-                return ERROR( 
+                return ERROR(
                            status,
                            msg.str() );
             }
             // TODO - Address this in terms of resource hierarchies
             else if ( ( status = _updateObjCountOfResources( &icss, resc_hier, zone.c_str(), -1 ) ) != 0 ) {
-                return ERROR( 
-                           status, 
+                return ERROR(
+                           status,
                            "_updateObjCountOfResources failed" );
             }
             else if ( ( status = _updateObjCountOfResources( &icss, new_resc_hier, zone.c_str(), +1 ) ) != 0 ) {
-                return ERROR( 
-                           status, 
+                return ERROR(
+                           status,
                            "_updateObjCountOfResources failed" );
             }
         }
@@ -2671,14 +2673,14 @@ extern "C" {
             if ( logSQL != 0 ) {
                 rodsLog( LOG_SQL, "chlModDataObjMeta SQL 4" );
             }
-            status = cmlModifySingleTable( 
-                         "R_DATA_MAIN", 
-                         updateCols, 
+            status = cmlModifySingleTable(
+                         "R_DATA_MAIN",
+                         updateCols,
                          updateVals,
-                         whereColsAndConds, 
-                         whereValues, 
+                         whereColsAndConds,
+                         whereValues,
                          upCols,
-                         numConditions, 
+                         numConditions,
                          &icss );
         }
         else {
@@ -2691,14 +2693,14 @@ extern "C" {
             if ( logSQL != 0 ) {
                 rodsLog( LOG_SQL, "chlModDataObjMeta SQL 5" );
             }
-            status = cmlModifySingleTable( 
-                         "R_DATA_MAIN", 
-                         updateCols, 
+            status = cmlModifySingleTable(
+                         "R_DATA_MAIN",
+                         updateCols,
                          updateVals,
-                         whereColsAndConds, 
-                         whereValues, 
+                         whereColsAndConds,
+                         whereValues,
                          upCols,
-                         numConditions, 
+                         numConditions,
                          &icss );
             if ( status == 0 ) {
                 j = numConditions - 1;
@@ -2722,7 +2724,7 @@ extern "C" {
                              "chlModDataObjMeta cmlModifySingleTable failure for other replicas %d",
                              status2 );
                     _rollback( "chlModDataObjMeta" );
-                    return ERROR( 
+                    return ERROR(
                                status2,
                                "cmlModifySingleTable failure for other replicas" );
                 }
@@ -2734,7 +2736,7 @@ extern "C" {
             rodsLog( LOG_NOTICE,
                      "chlModDataObjMeta cmlModifySingleTable failure %d",
                      status );
-            return ERROR( 
+            return ERROR(
                        status,
                        "cmlModifySingleTable failure" );
         }
@@ -2745,12 +2747,12 @@ extern "C" {
                 rodsLog( LOG_NOTICE,
                          "chlModDataObjMeta cmlExecuteNoAnswerSql commit failure %d",
                          status );
-                return ERROR( 
+                return ERROR(
                            status,
                            "commit failure" );
             }
         }
-        
+
         return CODE( status );
 
     } // pg_mod_data_obj_meta_op
@@ -2760,7 +2762,7 @@ extern "C" {
     // update the data obj count of a resource
     irods::error pg_reg_data_obj_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm, 
+        rsComm_t*              _comm,
         dataObjInfo_t*         _data_obj_info ) {
         // =-=-=-=-=-=-=-
         // check the context
@@ -2768,12 +2770,12 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
- 
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm       || 
-            !_data_obj_info ) {
-            return ERROR( 
+        if ( !_comm       ||
+                !_data_obj_info ) {
+            return ERROR(
                        CAT_INVALID_ARGUMENT,
                        "null parameter" );
         }
@@ -2793,7 +2795,7 @@ extern "C" {
 //        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
 
         // =-=-=-=-=-=-=-
-        // 
+        //
         char myTime[50];
         char logicalFileName[MAX_NAME_LEN];
         char logicalDirName[MAX_NAME_LEN];
@@ -2836,10 +2838,10 @@ extern "C" {
         iVal = cmlCheckDirAndGetInheritFlag( logicalDirName,
                                              _comm->clientUser.userName,
                                              _comm->clientUser.rodsZone,
-                                             ACCESS_MODIFY_OBJECT, 
+                                             ACCESS_MODIFY_OBJECT,
                                              &inheritFlag,
-                                             mySessionTicket, 
-                                             mySessionClientAddr, 
+                                             mySessionTicket,
+                                             mySessionClientAddr,
                                              &icss );
         if ( iVal < 0 ) {
             char errMsg[105];
@@ -2914,9 +2916,9 @@ extern "C" {
             _rollback( "chlRegDataObj" );
             return ERROR( status, "chlRegDataObj cmlExecuteNoAnswerSql failure" );
         }
-        std::string zone; 
-        ret = getLocalZone( 
-                  _ctx.prop_map(), 
+        std::string zone;
+        ret = getLocalZone(
+                  _ctx.prop_map(),
                   &icss,
                   zone );
         if ( !ret.ok() ) {
@@ -3037,7 +3039,7 @@ extern "C" {
     // register a data object into the catalog
     irods::error pg_reg_replica_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm, 
+        rsComm_t*              _comm,
         dataObjInfo_t*         _src_data_obj_info,
         dataObjInfo_t*         _dst_data_obj_info,
         keyValPair_t*          _cond_input ) {
@@ -3047,14 +3049,14 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm              || 
-            !_src_data_obj_info || 
-            !_dst_data_obj_info || 
-            !_cond_input ) {
-            return ERROR( 
+        if ( !_comm              ||
+                !_src_data_obj_info ||
+                !_dst_data_obj_info ||
+                !_cond_input ) {
+            return ERROR(
                        CAT_INVALID_ARGUMENT,
                        "null parameter" );
         }
@@ -3073,7 +3075,7 @@ extern "C" {
 //        icatSessionStruct icss;
 //        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
 
-     
+
         char myTime[50];
         char logicalFileName[MAX_NAME_LEN];
         char logicalDirName[MAX_NAME_LEN];
@@ -3256,14 +3258,14 @@ extern "C" {
         }
 
         return SUCCESS();
- 
+
     } // pg_reg_replica_op
 
     // =-=-=-=-=-=-=-
     // unregister a data object
     irods::error pg_unreg_replica_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm, 
+        rsComm_t*              _comm,
         dataObjInfo_t*         _data_obj_info,
         keyValPair_t*          _cond_input ) {
         // =-=-=-=-=-=-=-
@@ -3272,12 +3274,12 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm          || 
-            !_data_obj_info  ) {
-            return ERROR( 
+        if ( !_comm          ||
+                !_data_obj_info ) {
+            return ERROR(
                        CAT_INVALID_ARGUMENT,
                        "null parameter" );
         }
@@ -3403,7 +3405,7 @@ extern "C" {
                     addRErrorMsg( &_comm->rError, 0,
                                   "dataId and replNum required" );
                     _rollback( "chlUnregDataObj" );
-                    return ERROR( CAT_INVALID_ARGUMENT, "dataId and replNum required"  );
+                    return ERROR( CAT_INVALID_ARGUMENT, "dataId and replNum required" );
                 }
             }
         }
@@ -3535,10 +3537,10 @@ extern "C" {
     } // pg_unreg_replica_op
 
     // =-=-=-=-=-=-=-
-    // 
+    //
     irods::error pg_reg_rule_exec_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm, 
+        rsComm_t*              _comm,
         ruleExecSubmitInp_t*   _re_sub_inp ) {
         // =-=-=-=-=-=-=-
         // check the context
@@ -3546,12 +3548,12 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm          || 
-            !_re_sub_inp ) {
-            return ERROR( 
+        if ( !_comm          ||
+                !_re_sub_inp ) {
+            return ERROR(
                        CAT_INVALID_ARGUMENT,
                        "null parameter" );
         }
@@ -3623,7 +3625,7 @@ extern "C" {
             rodsLog( LOG_NOTICE,
                      "chlRegRuleExec cmlExecuteNoAnswerSql(insert) failure %d", status );
             _rollback( "chlRegRuleExec" );
-            return ERROR( status, "cmlExecuteNoAnswerSql(insert) failure"  );
+            return ERROR( status, "cmlExecuteNoAnswerSql(insert) failure" );
 
         }
 
@@ -3656,7 +3658,7 @@ extern "C" {
     // unregister a data object
     irods::error pg_mod_rule_exec_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm, 
+        rsComm_t*              _comm,
         char*                  _re_id,
         keyValPair_t*          _reg_param ) {
         // =-=-=-=-=-=-=-
@@ -3665,13 +3667,13 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm   || 
-            !_re_id  || 
-            !_reg_param ) {
-            return ERROR( 
+        if ( !_comm   ||
+                !_re_id  ||
+                !_reg_param ) {
+            return ERROR(
                        CAT_INVALID_ARGUMENT,
                        "null parameter" );
         }
@@ -3786,7 +3788,7 @@ extern "C" {
                      status );
             return ERROR( status, "cmlExecuteNoAnswerSql commit failure" );
         }
-        
+
         return CODE( status );
 
     } // pg_mod_rule_exec_op
@@ -3795,7 +3797,7 @@ extern "C" {
     // unregister a data object
     irods::error pg_del_rule_exec_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm, 
+        rsComm_t*              _comm,
         char*                  _re_id ) {
         // =-=-=-=-=-=-=-
         // check the context
@@ -3803,12 +3805,12 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm || 
-            !_re_id ) {
-            return ERROR( 
+        if ( !_comm ||
+                !_re_id ) {
+            return ERROR(
                        CAT_INVALID_ARGUMENT,
                        "null parameter" );
         }
@@ -3890,13 +3892,13 @@ extern "C" {
                      status );
             return ERROR( status, "cmlExecuteNoAnswerSql commit failure" );
         }
-        
+
         return CODE( status );
 
     } // pg_del_rule_exec_op
 
     // =-=-=-=-=-=-=-
-    // 
+    //
     irods::error pg_add_child_resc_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
@@ -3907,12 +3909,12 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm   || 
-            !_resc_info ) {
-            return ERROR( 
+        if ( !_comm   ||
+                !_resc_info ) {
+            return ERROR(
                        CAT_INVALID_ARGUMENT,
                        "null parameter" );
         }
@@ -3951,8 +3953,8 @@ extern "C" {
                 result = ret.code();
 
             }
-            else if ( _resc_info->zoneName != NULL && 
-                      strlen( _resc_info->zoneName ) > 0 && 
+            else if ( _resc_info->zoneName != NULL &&
+                      strlen( _resc_info->zoneName ) > 0 &&
                       strcmp( _resc_info->zoneName, zone.c_str() ) != 0 ) {
                 addRErrorMsg( &_comm->rError, 0,
                               "Currently, resources must be in the local zone" );
@@ -3964,13 +3966,13 @@ extern "C" {
                 logger.log();
 
                 resc_id[0] = '\0';
-                if ( ( status = cmlGetStringValueFromSql( 
-                                "select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
-                                resc_id, 
-                                MAX_NAME_LEN, 
-                                _resc_info->rescName, 
-                                zone.c_str(), 0,
-                                &icss ) ) != 0 ) {
+                if ( ( status = cmlGetStringValueFromSql(
+                                    "select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
+                                    resc_id,
+                                    MAX_NAME_LEN,
+                                    _resc_info->rescName,
+                                    zone.c_str(), 0,
+                                    &icss ) ) != 0 ) {
                     if ( status == CAT_NO_ROWS_FOUND ) {
                         result = CAT_INVALID_RESOURCE;
                     }
@@ -3980,15 +3982,15 @@ extern "C" {
                     }
                 }
                 else if ( ( ret = _childIsValid( _ctx.prop_map(), new_child_string ) ).code() == 0 ) {
-                    if ( ( status = _updateRescChildren( 
-                                        resc_id, 
+                    if ( ( status = _updateRescChildren(
+                                        resc_id,
                                         new_child_string ) ) != 0 ) {
                         result = status;
                     }
                     else if ( ( ret = _updateChildParent(
-                                             _ctx.prop_map(), 
-                                             new_child_string, 
-                                             _resc_info->rescName ) ).code() != 0 ) {
+                                          _ctx.prop_map(),
+                                          new_child_string,
+                                          _resc_info->rescName ) ).code() != 0 ) {
                         result = ret.code();
                     }
                     else {
@@ -3998,14 +4000,14 @@ extern "C" {
 
                             // =-=-=-=-=-=-=-
                             // Resolve resource hierarchy
-                            status = chlGetHierarchyForResc( 
-                                         _resc_info->rescName, 
-                                         zone.c_str(), 
+                            status = chlGetHierarchyForResc(
+                                         _resc_info->rescName,
+                                         zone.c_str(),
                                          hierarchy );
                             if ( status < 0 ) {
                                 std::stringstream ss;
-                                ss << func_name 
-                                   << ": chlGetHierarchyForResc failed, status = " 
+                                ss << func_name
+                                   << ": chlGetHierarchyForResc failed, status = "
                                    << status;
                                 irods::log( LOG_NOTICE, ss.str() );
                                 _rollback( func_name );
@@ -4030,8 +4032,8 @@ extern "C" {
                             if ( status < 0 ) {
                                 // rollback
                                 std::stringstream ss;
-                                ss << func_name 
-                                   << " aborted. Object count update error, status = " 
+                                ss << func_name
+                                   << " aborted. Object count update error, status = "
                                    << status;
                                 irods::log( LOG_NOTICE, ss.str() );
                                 _rollback( func_name );
@@ -4046,9 +4048,9 @@ extern "C" {
                             hierarchy += irods::hierarchy_parser::delimiter() + child_resc;
 
                             // Substitute 'child' with '...;parent;child'
-                            status = chlSubstituteResourceHierarchies( 
-                                         _comm, 
-                                         child_resc.c_str(), 
+                            status = chlSubstituteResourceHierarchies(
+                                         _comm,
+                                         child_resc.c_str(),
                                          hierarchy.c_str() );
 
                             // =-=-=-=-=-=-=-
@@ -4062,14 +4064,14 @@ extern "C" {
                             cllBindVars[cllBindVarCount++] = ( char* )root_resc.c_str();
                             cllBindVars[cllBindVarCount++] = ( char* )root_resc.c_str();
                             cllBindVars[cllBindVarCount++] = ( char* )child_resc.c_str();
-                            status = cmlExecuteNoAnswerSql( 
+                            status = cmlExecuteNoAnswerSql(
                                          "update R_DATA_MAIN set resc_name = ?, resc_group_name = ? where resc_name = ?", &icss );
 
                             if ( status < 0 ) {
                                 // rollback
                                 std::stringstream ss;
-                                ss << func_name 
-                                   << " aborted. Resource update error, status = " 
+                                ss << func_name
+                                   << " aborted. Resource update error, status = "
                                    << status;
                                 irods::log( LOG_NOTICE, ss.str() );
                                 _rollback( func_name );
@@ -4081,18 +4083,18 @@ extern "C" {
 
                         /* Audit */
                         char commentStr[1024]; // this prolly should be better sized
-                        snprintf( 
-                            commentStr, 
-                            sizeof commentStr, 
-                            "%s %s", 
-                            _resc_info->rescName, 
+                        snprintf(
+                            commentStr,
+                            sizeof commentStr,
+                            "%s %s",
+                            _resc_info->rescName,
                             new_child_string.c_str() );
-                        if ( ( status = cmlAudit3( 
-                                            AU_ADD_CHILD_RESOURCE, 
-                                            resc_id, 
-                                            _comm->clientUser.userName, 
+                        if ( ( status = cmlAudit3(
+                                            AU_ADD_CHILD_RESOURCE,
+                                            resc_id,
+                                            _comm->clientUser.userName,
                                             _comm->clientUser.rodsZone,
-                                            commentStr, 
+                                            commentStr,
                                             &icss ) ) != 0 ) {
                             std::stringstream ss;
                             ss << func_name << " cmlAudit3 failure " << status;
@@ -4128,7 +4130,7 @@ extern "C" {
     } // pg_add_child_resc_op
 
     // =-=-=-=-=-=-=-
-    // 
+    //
     irods::error pg_reg_resc_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
@@ -4139,12 +4141,12 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm   || 
-            !_resc_info ) {
-            return ERROR( 
+        if ( !_comm   ||
+                !_resc_info ) {
+            return ERROR(
                        CAT_INVALID_ARGUMENT,
                        "null parameter" );
         }
@@ -4234,12 +4236,12 @@ extern "C" {
                 return ERROR( CAT_INVALID_ZONE, "resources must be in the local zone" );
             }
         }
-    // =-=-=-=-=-=-=-
-    // JMC :: resources may now have an empty location if they
-    //     :: are coordinating nodes
-    //    if (strlen(_resc_info->rescLoc)<1) {
-    //        return(CAT_INVALID_RESOURCE_NET_ADDR);
-    //    }
+        // =-=-=-=-=-=-=-
+        // JMC :: resources may now have an empty location if they
+        //     :: are coordinating nodes
+        //    if (strlen(_resc_info->rescLoc)<1) {
+        //        return(CAT_INVALID_RESOURCE_NET_ADDR);
+        //    }
         // =-=-=-=-=-=-=-
         // if the resource is not the 'empty resource' test it
         if ( irods::EMPTY_RESC_HOST != _resc_info->rescLoc ) {
@@ -4279,7 +4281,7 @@ extern "C" {
 
         cllBindVars[0] = idNum;
         cllBindVars[1] = _resc_info->rescName;
-        cllBindVars[2] = (char*)zone.c_str();
+        cllBindVars[2] = ( char* )zone.c_str();
         cllBindVars[3] = _resc_info->rescType;
         cllBindVars[4] = _resc_info->rescClass;
         cllBindVars[5] = _resc_info->rescLoc;
@@ -4317,7 +4319,7 @@ extern "C" {
                      "chlRegResc cmlAudit3 failure %d",
                      status );
             _rollback( "chlRegResc" );
-            return ERROR ( status, "chlRegResc cmlAudit3 failure" );
+            return ERROR( status, "chlRegResc cmlAudit3 failure" );
         }
 
         status =  cmlExecuteNoAnswerSql( "commit", &icss );
@@ -4326,13 +4328,13 @@ extern "C" {
                      "chlRegResc cmlExecuteNoAnswerSql commit failure %d", status );
             return ERROR( status, "cmlExecuteNoAnswerSql commit failure" );
         }
-        
+
         return CODE( status );
 
     } // pg_reg_resc_op
 
     // =-=-=-=-=-=-=-
-    // 
+    //
     irods::error pg_del_child_resc_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
@@ -4343,12 +4345,12 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm   || 
-            !_resc_info ) {
-            return ERROR( 
+        if ( !_comm   ||
+                !_resc_info ) {
+            return ERROR(
                        CAT_INVALID_ARGUMENT,
                        "null parameter" );
         }
@@ -4380,14 +4382,14 @@ extern "C" {
 
         std::string zone;
         if ( !( status = _canConnectToCatalog( _comm ) ) ) {
-            if ( !( result = getLocalZone( _ctx.prop_map(), &icss, zone) ).ok() ) {
+            if ( !( result = getLocalZone( _ctx.prop_map(), &icss, zone ) ).ok() ) {
                 result = result;
             }
             else {
                 logger.log();
 
                 resc_id[0] = '\0';
-                if ( ( status = cmlGetStringValueFromSql( 
+                if ( ( status = cmlGetStringValueFromSql(
                                     "select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
                                     resc_id, MAX_NAME_LEN, _resc_info->rescName, zone.c_str(), 0,
                                     &icss ) ) != 0 ) {
@@ -4402,10 +4404,10 @@ extern "C" {
                     }
 
                 }
-                else if ( !( result = _updateChildParent( 
-                                         _ctx.prop_map(), 
-                                         child, 
-                                         std::string( "" ) ) ).ok() ) {
+                else if ( !( result = _updateChildParent(
+                                          _ctx.prop_map(),
+                                          child,
+                                          std::string( "" ) ) ).ok() ) {
                     result = PASS( result );
                 }
                 else if ( ( status = _removeRescChild( resc_id, child ) ) != 0 ) {
@@ -4418,9 +4420,9 @@ extern "C" {
 
                         // =-=-=-=-=-=-=-
                         // Resolve resource hierarchy (of parent)
-                        status = chlGetHierarchyForResc( 
-                                     _resc_info->rescName, 
-                                     zone.c_str(), 
+                        status = chlGetHierarchyForResc(
+                                     _resc_info->rescName,
+                                     zone.c_str(),
                                      hierarchy );
                         if ( status < 0 ) {
                             std::stringstream ss;
@@ -4434,15 +4436,15 @@ extern "C" {
                         // Update object count for resources up the tree
 
                         if ( _get_resc_obj_count( child, obj_count ).ok() ) {
-                            status = _updateObjCountOfResources( 
+                            status = _updateObjCountOfResources(
                                          &icss,
-                                         hierarchy, 
-                                         zone.c_str(), 
+                                         hierarchy,
+                                         zone.c_str(),
                                          -obj_count );
                         }
                         else {
                             status = CAT_INVALID_OBJ_COUNT;
-                        
+
                         }
 
                         if ( status < 0 ) {
@@ -4473,7 +4475,7 @@ extern "C" {
                         cllBindVars[cllBindVarCount++] = ( char* )child.c_str();
                         cllBindVars[cllBindVarCount++] = ( char* )child.c_str();
                         cllBindVars[cllBindVarCount++] = ( char* )partial_hier.c_str();
-                        status = cmlExecuteNoAnswerSql( 
+                        status = cmlExecuteNoAnswerSql(
                                      "update R_DATA_MAIN set resc_name = ?, resc_group_name = ? where resc_hier = ? or resc_hier like ?", &icss );
 
                         if ( status < 0 ) {
@@ -4525,12 +4527,12 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm   || 
-            !_resc_info ) {
-            return ERROR( 
+        if ( !_comm   ||
+                !_resc_info ) {
+            return ERROR(
                        CAT_INVALID_ARGUMENT,
                        "null parameter" );
         }
@@ -4590,7 +4592,7 @@ extern "C" {
 
         std::string zone;
         ret = getLocalZone( _ctx.prop_map(), &icss, zone );
-        if( !ret.ok() ) {
+        if ( !ret.ok() ) {
             return PASS( ret );
         }
 
@@ -4708,11 +4710,11 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm ) {
-            return ERROR( 
+        if ( !_comm ) {
+            return ERROR(
                        CAT_INVALID_ARGUMENT,
                        "null parameter" );
         }
@@ -4757,11 +4759,11 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm ) {
-            return ERROR( 
+        if ( !_comm ) {
+            return ERROR(
                        CAT_INVALID_ARGUMENT,
                        "null parameter" );
         }
@@ -4806,12 +4808,12 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm   ||
-            !_user_info ) {
-            return ERROR( 
+        if ( !_comm   ||
+                !_user_info ) {
+            return ERROR(
                        CAT_INVALID_ARGUMENT,
                        "null parameter" );
         }
@@ -4849,7 +4851,7 @@ extern "C" {
 
         std::string zone;
         ret = getLocalZone( _ctx.prop_map(), &icss, zone );
-        if( !ret.ok() ) {
+        if ( !ret.ok() ) {
             return PASS( ret );
         }
 
@@ -4857,9 +4859,9 @@ extern "C" {
         if ( strlen( _user_info->rodsZone ) > 0 ) {
             strncpy( zoneToUse, _user_info->rodsZone, MAX_NAME_LEN );
         }
-        
+
         status = parseUserName( _user_info->userName, userName2, zoneName );
-        if( zoneName[0]!='\0' ) {
+        if ( zoneName[0] != '\0' ) {
             rstrcpy( zoneToUse, zoneName, NAME_LEN );
         }
 
@@ -4957,7 +4959,7 @@ extern "C" {
             snprintf( errMsg, sizeof errMsg, "Error removing user_auth entries" );
             addRErrorMsg( &_comm->rError, 0, errMsg );
             _rollback( "chlDelUserRE" );
-            return ERROR( status, "Error removing user_auth entries"  );
+            return ERROR( status, "Error removing user_auth entries" );
         }
 
         /* Remove associated AVUs, if any */
@@ -4996,12 +4998,12 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm   ||
-            !_coll_info ) {
-            return ERROR( 
+        if ( !_comm   ||
+                !_coll_info ) {
+            return ERROR(
                        CAT_INVALID_ARGUMENT,
                        "null parameter" );
         }
@@ -5102,7 +5104,7 @@ extern "C" {
 
         std::string zone;
         ret = getLocalZone( _ctx.prop_map(), &icss, zone );
-        if( !ret.ok() ) {
+        if ( !ret.ok() ) {
             return PASS( ret );
         }
 
@@ -5160,7 +5162,7 @@ extern "C" {
                      "chlRegCollByAdmin cmlExecuteNoAnswerSQL(insert) failure %d"
                      , status );
             _rollback( "chlRegCollByAdmin" );
-            return ERROR( status, "cmlExecuteNoAnswerSQL(insert) failure"  );
+            return ERROR( status, "cmlExecuteNoAnswerSQL(insert) failure" );
         }
 
         /* String to get current sequence item for objects */
@@ -5185,7 +5187,7 @@ extern "C" {
                      "chlRegCollByAdmin cmlExecuteNoAnswerSql(insert access) failure %d",
                      status );
             _rollback( "chlRegCollByAdmin" );
-            return ERROR( status, "cmlExecuteNoAnswerSql(insert access) failure"  );
+            return ERROR( status, "cmlExecuteNoAnswerSql(insert access) failure" );
         }
 
         /* Audit */
@@ -5201,7 +5203,7 @@ extern "C" {
                      "chlRegCollByAdmin cmlAudit4 failure %d",
                      status );
             _rollback( "chlRegCollByAdmin" );
-            return ERROR( status, "cmlAudit4 failure"  );
+            return ERROR( status, "cmlAudit4 failure" );
         }
 
         return SUCCESS();
@@ -5220,12 +5222,12 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm   ||
-            !_coll_info ) {
-            return ERROR( 
+        if ( !_comm   ||
+                !_coll_info ) {
+            return ERROR(
                        CAT_INVALID_ARGUMENT,
                        "null parameter" );
         }
@@ -5499,12 +5501,12 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm   ||
-            !_coll_info ) {
-            return ERROR( 
+        if ( !_comm   ||
+                !_coll_info ) {
+            return ERROR(
                        CAT_INVALID_ARGUMENT,
                        "null parameter" );
         }
@@ -5626,7 +5628,7 @@ extern "C" {
             rodsLog( LOG_NOTICE,
                      "chlModColl cmlAudit3 failure %d",
                      status );
-            return ERROR( status, "cmlAudit3 failure"  );
+            return ERROR( status, "cmlAudit3 failure" );
         }
 
 
@@ -5635,9 +5637,9 @@ extern "C" {
                      "chlModColl cmlExecuteNoAnswerSQL(update) failure %d", status );
             return ERROR( status, "cmlExecuteNoAnswerSQL(update) failure" );
         }
-   
+
         return SUCCESS();
-    
+
     } // pg_mod_coll_op
 
     // =-=-=-=-=-=-=-
@@ -5645,25 +5647,25 @@ extern "C" {
     irods::error pg_reg_zone_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
-        char*                  _zone_name, 
-        char*                  _zone_type, 
+        char*                  _zone_name,
+        char*                  _zone_type,
         char*                  _zone_conn_info,
         char*                  _zone_comment ) {
-       // =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // check the context
         irods::error ret = _ctx.valid< irods::postgres_object >();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm   ||
-            !_zone_name,
-            !_zone_type,
-            !_zone_conn_info,
-            !_zone_comment ) {
-            return ERROR( 
+        if ( !_comm   ||
+                !_zone_name,
+                !_zone_type,
+                !_zone_conn_info,
+                !_zone_comment ) {
+            return ERROR(
                        CAT_INVALID_ARGUMENT,
                        "null parameter" );
         }
@@ -5771,8 +5773,8 @@ extern "C" {
     irods::error pg_mod_zone_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
-        char*                  _zone_name, 
-        char*                  _option, 
+        char*                  _zone_name,
+        char*                  _option,
         char*                  _option_value ) {
         // =-=-=-=-=-=-=-
         // check the context
@@ -5780,14 +5782,14 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm   ||
-            !_zone_name,
-            !_option,
-            !_option_value ) {
-            return ERROR( 
+        if ( !_comm   ||
+                !_zone_name,
+                !_option,
+                !_option_value ) {
+            return ERROR(
                        CAT_INVALID_ARGUMENT,
                        "null parameter" );
         }
@@ -5827,7 +5829,7 @@ extern "C" {
 
         std::string zone;
         ret = getLocalZone( _ctx.prop_map(), &icss, zone );
-        if( !ret.ok() ) {
+        if ( !ret.ok() ) {
             return PASS( ret );
         }
 
@@ -5932,7 +5934,7 @@ extern "C" {
                      status );
             return ERROR( status, "cmlExecuteNoAnswerSql commit failure" );
         }
-        
+
         return SUCCESS();
 
     } // pg_mod_zone_op
@@ -5942,7 +5944,7 @@ extern "C" {
     irods::error pg_rename_coll_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
-        char*                  _old_coll, 
+        char*                  _old_coll,
         char*                  _new_coll ) {
         // =-=-=-=-=-=-=-
         // check the context
@@ -5950,13 +5952,13 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm   ||
-            !_old_coll,
-            !_new_coll ) {
-            return ERROR( 
+        if ( !_comm   ||
+                !_old_coll,
+                !_new_coll ) {
+            return ERROR(
                        CAT_INVALID_ARGUMENT,
                        "null parameter" );
         }
@@ -5995,7 +5997,7 @@ extern "C" {
 
         /* call chlRenameObject to rename */
         status = chlRenameObject( _comm, status1, _new_coll );
-        if( !status ) {
+        if ( !status ) {
             return ERROR( status, "chlRenameObject failed" );
         }
 
@@ -6008,8 +6010,8 @@ extern "C" {
     irods::error pg_mod_zone_coll_acl_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
-        char*                  _access_level, 
-        char*                  _user_name, 
+        char*                  _access_level,
+        char*                  _user_name,
         char*                  _path_name ) {
         // =-=-=-=-=-=-=-
         // check the context
@@ -6017,14 +6019,14 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm   ||
-            !_access_level,
-            !_user_name,
-            !_path_name ) {
-            return ERROR( 
+        if ( !_comm   ||
+                !_access_level,
+                !_user_name,
+                !_path_name ) {
+            return ERROR(
                        CAT_INVALID_ARGUMENT,
                        "null parameter" );
         }
@@ -6056,7 +6058,7 @@ extern "C" {
                                        _user_name,
                                        _comm->clientUser.rodsZone,
                                        _path_name );
-        if( !status ) {
+        if ( !status ) {
             return ERROR( status, "chlModAccessControl failed" );
         }
 
@@ -6069,7 +6071,7 @@ extern "C" {
     irods::error pg_rename_local_zone_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
-        char*                  _old_zone, 
+        char*                  _old_zone,
         char*                  _new_zone ) {
         // =-=-=-=-=-=-=-
         // check the context
@@ -6077,13 +6079,13 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm   ||
-            !_old_zone,
-            !_new_zone ) {
-            return ERROR( 
+        if ( !_comm   ||
+                !_old_zone,
+                !_new_zone ) {
+            return ERROR(
                        CAT_INVALID_ARGUMENT,
                        "null parameter" );
         }
@@ -6124,10 +6126,10 @@ extern "C" {
         if ( logSQL != 0 ) {
             rodsLog( LOG_SQL, "chlRenameLocalZone SQL 1 " );
         }
-       
-        std::string zone; 
+
+        std::string zone;
         ret = getLocalZone( _ctx.prop_map(), &icss, zone );
-        if( !ret.ok() ) {
+        if ( !ret.ok() ) {
             return PASS( ret );
         }
 
@@ -6286,12 +6288,12 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm   ||
-            !_zone_name ) {
-            return ERROR( 
+        if ( !_comm   ||
+                !_zone_name ) {
+            return ERROR(
                        CAT_INVALID_ARGUMENT,
                        "null parameter" );
         }
@@ -6394,13 +6396,13 @@ extern "C" {
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         char*                  _sql,
-        char*                  _arg1, 
-        char*                  _arg2, 
-        char*                  _arg3, 
+        char*                  _arg1,
+        char*                  _arg2,
+        char*                  _arg3,
         char*                  _arg4,
-        int                    _format, 
+        int                    _format,
         int*                   _control,
-        char*                  _out_buf, 
+        char*                  _out_buf,
         int                    _max_out_buf ) {
         // =-=-=-=-=-=-=-
         // check the context
@@ -6411,8 +6413,8 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm  ) {
-            return ERROR( 
+        if ( !_comm ) {
+            return ERROR(
                        CAT_INVALID_ARGUMENT,
                        "null parameter" );
         }
@@ -6466,7 +6468,7 @@ extern "C" {
             "select user_name, R_USER_MAIN.zone_name, quota_limit, quota_over, R_QUOTA_MAIN.modify_ts from R_QUOTA_MAIN, R_USER_MAIN where R_USER_MAIN.user_id = R_QUOTA_MAIN.user_id and R_QUOTA_MAIN.resc_id = 0 and user_name=? and R_USER_MAIN.zone_name=?",
             ""
         };
-    //rodsLog( LOG_NOTICE, "JMC :: sql - %s", sql );
+        //rodsLog( LOG_NOTICE, "JMC :: sql - %s", sql );
         if ( logSQL != 0 ) {
             rodsLog( LOG_SQL, "chlSimpleQuery" );
         }
@@ -6665,7 +6667,7 @@ extern "C" {
                 return CODE( 0 ); /* success so far, but more rows available */
             }
         }
-        
+
         return SUCCESS();
 
     } // pg_simple_query_op
@@ -6682,12 +6684,12 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm   ||
-            !_coll_info ) {
-            return ERROR( 
+        if ( !_comm   ||
+                !_coll_info ) {
+            return ERROR(
                        CAT_INVALID_ARGUMENT,
                        "null parameter" );
         }
@@ -6841,12 +6843,12 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm   ||
-            !_coll_info ) {
-            return ERROR( 
+        if ( !_comm   ||
+                !_coll_info ) {
+            return ERROR(
                        CAT_INVALID_ARGUMENT,
                        "null parameter" );
         }
@@ -6883,9 +6885,9 @@ extern "C" {
             _rollback( "chlDelColl" );
             return ERROR( status, "commit failed" );
         }
-        
+
         return SUCCESS();
-    
+
     } // pg_del_coll_op
 
     // =-=-=-=-=-=-=-
@@ -6905,17 +6907,17 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm            ||
-            //!_scheme          ||
-            !_challenge       ||
-            !_response        ||
-            !_user_name       ||
-            !_user_priv_level ||
-            !_client_priv_level ) {
-            return ERROR( 
+        if ( !_comm            ||
+                //!_scheme          ||
+                !_challenge       ||
+                !_response        ||
+                !_user_name       ||
+                !_user_priv_level ||
+                !_client_priv_level ) {
+            return ERROR(
                        CAT_INVALID_ARGUMENT,
                        "null parameter" );
         }
@@ -7011,7 +7013,7 @@ extern "C" {
         if ( userZone[0] == '\0' ) {
             std::string zone;
             ret = getLocalZone( _ctx.prop_map(), &icss, zone );
-            if( !ret.ok() ) {
+            if ( !ret.ok() ) {
                 return PASS( ret );
             }
             strncpy( myUserZone, zone.c_str(), MAX_NAME_LEN );
@@ -7276,7 +7278,7 @@ extern "C" {
         }
 
         /* Get the user type so privilege level can be set */
-    checkLevel:
+checkLevel:
 
         if ( logSQL != 0 ) {
             rodsLog( LOG_SQL, "chlCheckAuth SQL 5" );
@@ -7382,7 +7384,7 @@ extern "C" {
 #endif
 
         prevFailure = 0;
-    
+
         return SUCCESS();
 
     } // pg_check_auth_op
@@ -7400,13 +7402,13 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm             ||
-            !_pw_value_to_hash ||
-            !_other_user ) {
-            return ERROR( 
+        if ( !_comm             ||
+                !_pw_value_to_hash ||
+                !_other_user ) {
+            return ERROR(
                        CAT_INVALID_ARGUMENT,
                        "null parameter" );
         }
@@ -7564,12 +7566,12 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm             ||
-            !_pw_value_to_hash ) {
-            return ERROR( 
+        if ( !_comm             ||
+                !_pw_value_to_hash ) {
+            return ERROR(
                        CAT_INVALID_ARGUMENT,
                        "null parameter" );
         }
@@ -7717,7 +7719,7 @@ extern "C" {
         }
 
         memset( newPw, 0, MAX_PASSWORD_LEN );
-        
+
         return SUCCESS();
 
     } // pg_make_limited_pw_op
@@ -7727,7 +7729,7 @@ extern "C" {
     irods::error pg_update_pam_password_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
-        char*                  _user_name, 
+        char*                  _user_name,
         int                    _ttl,
         char*                  _test_time,
         char**                 _irods_password ) {
@@ -7737,13 +7739,13 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm      ||
-            !_user_name ||
-            !_irods_password ) {
-            return ERROR( 
+        if ( !_comm      ||
+                !_user_name ||
+                !_irods_password ) {
+            return ERROR(
                        CAT_INVALID_ARGUMENT,
                        "null parameter" );
         }
@@ -7777,7 +7779,7 @@ extern "C" {
 
         std::string zone;
         ret = getLocalZone( _ctx.prop_map(), &icss, zone );
-        if( !ret.ok() ) {
+        if ( !ret.ok() ) {
             return PASS( ret );
         }
 
@@ -7938,7 +7940,7 @@ extern "C" {
     irods::error pg_mod_user_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
-        char*                  _user_name, 
+        char*                  _user_name,
         char*                  _option,
         char*                  _new_value ) {
         // =-=-=-=-=-=-=-
@@ -7947,14 +7949,14 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm      ||
-            !_user_name ||
-            !_option    ||
-            !_new_value ) {
-            return ERROR( 
+        if ( !_comm      ||
+                !_user_name ||
+                !_option    ||
+                !_new_value ) {
+            return ERROR(
                        CAT_INVALID_ARGUMENT,
                        "null parameter" );
         }
@@ -8013,7 +8015,7 @@ extern "C" {
         // JMC - backport 4772
         groupAdminSettingPassword = 0;
         if ( _comm->clientUser.authInfo.authFlag >= LOCAL_PRIV_USER_AUTH && // JMC - backport 4773
-             _comm->proxyUser.authInfo.authFlag >= LOCAL_PRIV_USER_AUTH ) {
+                _comm->proxyUser.authInfo.authFlag >= LOCAL_PRIV_USER_AUTH ) {
             /* user is OK */
         }
         else {
@@ -8044,7 +8046,7 @@ extern "C" {
 
         std::string zone;
         ret = getLocalZone( _ctx.prop_map(), &icss, zone );
-        if( !ret.ok() ) { 
+        if ( !ret.ok() ) {
             return PASS( ret );
         }
 
@@ -8185,7 +8187,7 @@ extern "C" {
             int i;
             char userIdStr[MAX_NAME_LEN];
             i = decodePw( _comm, _new_value, decoded );
-            int status2 = icatApplyRule( _comm, (char*)"acCheckPasswordStrength", decoded );
+            int status2 = icatApplyRule( _comm, ( char* )"acCheckPasswordStrength", decoded );
             if ( status2 ) {
                 return ERROR( status2, "icatApplyRule failed" );
             }
@@ -8283,7 +8285,7 @@ extern "C" {
         }
 
         status = cmlAudit1( auditId, _comm->clientUser.userName,
-                            (char*)zone.c_str(), auditUserName, auditComment, &icss );
+                            ( char* )zone.c_str(), auditUserName, auditComment, &icss );
         if ( status != 0 ) {
             rodsLog( LOG_NOTICE,
                      "chlModUser cmlAudit1 failure %d",
@@ -8299,7 +8301,7 @@ extern "C" {
                      status );
             return ERROR( status, "commit failed" );
         }
-        
+
         return SUCCESS();
 
     } // pg_mod_user_op
@@ -8311,7 +8313,7 @@ extern "C" {
         rsComm_t*              _comm,
         char*                  _group_name,
         char*                  _option,
-        char*                  _user_name, 
+        char*                  _user_name,
         char*                  _user_zone ) {
         // =-=-=-=-=-=-=-
         // check the context
@@ -8319,14 +8321,14 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm       ||
-            !_group_name ||
-            !_option     ||
-            !_user_name ) {
-            return ERROR( 
+        if ( !_comm       ||
+                !_group_name ||
+                !_option     ||
+                !_user_name ) {
+            return ERROR(
                        CAT_INVALID_ARGUMENT,
                        "null parameter" );
         }
@@ -8363,7 +8365,7 @@ extern "C" {
         }
 
         if ( _comm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ||
-             _comm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+                _comm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             int status2;
             status2  = cmlCheckGroupAdminAccess(
                            _comm->clientUser.userName,
@@ -8391,7 +8393,7 @@ extern "C" {
 
         std::string zone;
         ret = getLocalZone( _ctx.prop_map(), &icss, zone );
-        if( !ret.ok() ) {
+        if ( !ret.ok() ) {
             return PASS( ret );
         }
 
@@ -8522,14 +8524,14 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm       ||
-            !_resc_name ||
-            !_option     ||
-            !_option_value ) {
-            return ERROR( 
+        if ( !_comm       ||
+                !_resc_name ||
+                !_option     ||
+                !_option_value ) {
+            return ERROR(
                        CAT_INVALID_ARGUMENT,
                        "null parameter" );
         }
@@ -9019,7 +9021,7 @@ extern "C" {
         rsComm_t*              _comm,
         char*                  _resc_name,
         char*                  _old_path,
-        char*                  _new_path, 
+        char*                  _new_path,
         char*                  _user_name ) {
         // =-=-=-=-=-=-=-
         // check the context
@@ -9027,14 +9029,14 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm      ||
-            !_resc_name ||
-            !_old_path  ||
-            !_new_path  ) {
-            return ERROR( 
+        if ( !_comm      ||
+                !_resc_name ||
+                !_old_path  ||
+                !_new_path ) {
+            return ERROR(
                        CAT_INVALID_ARGUMENT,
                        "null parameter" );
         }
@@ -9055,7 +9057,7 @@ extern "C" {
         char rescId[MAX_NAME_LEN];
         int status, len, rows;
         char *cptr;
-    //   char userId[NAME_LEN]="";
+        //   char userId[NAME_LEN]="";
         char userZone[NAME_LEN];
         char zoneToUse[NAME_LEN];
         char userName2[NAME_LEN];
@@ -9094,7 +9096,7 @@ extern "C" {
 
         std::string zone;
         ret = getLocalZone( _ctx.prop_map(), &icss, zone );
-        if( !ret.ok() ) {
+        if ( !ret.ok() ) {
             return PASS( ret );
         }
 
@@ -9177,7 +9179,7 @@ extern "C" {
         }
 
         return SUCCESS();
-       
+
     } // pg_mod_resc_data_paths_op
 
     // =-=-=-=-=-=-=-
@@ -9193,12 +9195,12 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm      ||
-            !_resc_name ) {
-            return ERROR( 
+        if ( !_comm      ||
+                !_resc_name ) {
+            return ERROR(
                        CAT_INVALID_ARGUMENT,
                        "null parameter" );
         }
@@ -9293,12 +9295,12 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm   ||
-            !_user_info ) {
-            return ERROR( 
+        if ( !_comm   ||
+                !_user_info ) {
+            return ERROR(
                        CAT_INVALID_ARGUMENT,
                        "null parameter" );
         }
@@ -9348,7 +9350,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // JMC - backport 4772
         if ( _comm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ||
-             _comm->proxyUser.authInfo.authFlag  < LOCAL_PRIV_USER_AUTH ) {
+                _comm->proxyUser.authInfo.authFlag  < LOCAL_PRIV_USER_AUTH ) {
             int status2;
             status2  = cmlCheckGroupAdminAccess(
                            _comm->clientUser.userName,
@@ -9388,7 +9390,7 @@ extern "C" {
 
         std::string zone;
         ret = getLocalZone( _ctx.prop_map(), &icss, zone );
-        if( !ret.ok() ) {
+        if ( !ret.ok() ) {
             return PASS( ret );
         }
 
@@ -9547,8 +9549,8 @@ extern "C" {
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         char*                  _type,
-        char*                  _name, 
-        char*                  _attribute, 
+        char*                  _name,
+        char*                  _attribute,
         char*                  _new_value,
         char*                  _new_unit ) {
         // =-=-=-=-=-=-=-
@@ -9560,12 +9562,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm   ||
-            !_type   ||
-            !_name   ||
-            !_attribute ) {
+        if ( !_comm   ||
+                !_type   ||
+                !_name   ||
+                !_attribute ) {
             return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-                       
+
         }
 
         // =-=-=-=-=-=-=-
@@ -9774,45 +9776,45 @@ extern "C" {
                      status );
             return ERROR( status, "commit failed" );
         }
-        
+
         return CODE( status );
-    
+
     } // pg_set_avu_metadata_op
 
 #define ACCESS_MAX 999999  /* A large access value (larger than the
-                              maximum used (i.e. for fail safe)) and
-                              also indicates not initialized*/
-    // =-=-=-=-=-=-=-
-    // Add an Attribute-Value [Units] pair/triple metadata item to one or
-    // more data objects.  This is the Wildcard version, where the
-    // collection/data-object name can match multiple objects).
+    maximum used (i.e. for fail safe)) and
+        also indicates not initialized*/
+        // =-=-=-=-=-=-=-
+        // Add an Attribute-Value [Units] pair/triple metadata item to one or
+        // more data objects.  This is the Wildcard version, where the
+        // collection/data-object name can match multiple objects).
 
-    // The return value is error code (negative) or the number of objects
-    // to which the AVU was associated.
-    irods::error pg_add_avu_metadata_wild_op(
-        irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
-        int                    _admin_mode,
-        char*                  _type,
-        char*                  _name, 
-        char*                  _attribute, 
-        char*                  _value,
-        char*                  _units ) {
+        // The return value is error code (negative) or the number of objects
+        // to which the AVU was associated.
+        irods::error pg_add_avu_metadata_wild_op(
+            irods::plugin_context& _ctx,
+                  rsComm_t*              _comm,
+                  int                    _admin_mode,
+                  char*                  _type,
+                  char*                  _name,
+                  char*                  _attribute,
+                  char*                  _value,
+                  char*                  _units ) {
         // =-=-=-=-=-=-=-
         // check the context
         irods::error ret = _ctx.valid< irods::postgres_object >();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm   ||
-            !_type   ||
-            !_name   ||
-            !_attribute ) {
+        if ( !_comm   ||
+                !_type   ||
+                !_name   ||
+                !_attribute ) {
             return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-                       
+
         }
 
         // =-=-=-=-=-=-=-
@@ -10146,7 +10148,7 @@ extern "C" {
         if ( status != 0 ) {
             return ERROR( status, "commit failed" );
         }
-        
+
         return CODE( numObjects );
 
     } // pg_add_avu_metadata_wild_op
@@ -10156,8 +10158,8 @@ extern "C" {
         rsComm_t*              _comm,
         int                    _admin_mode,
         char*                  _type,
-        char*                  _name, 
-        char*                  _attribute, 
+        char*                  _name,
+        char*                  _attribute,
         char*                  _value,
         char*                  _units ) {
         // =-=-=-=-=-=-=-
@@ -10166,15 +10168,15 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm   ||
-            !_type   ||
-            !_name   ||
-            !_attribute ) {
+        if ( !_comm   ||
+                !_type   ||
+                !_name   ||
+                !_attribute ) {
             return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-                       
+
         }
 
         // =-=-=-=-=-=-=-
@@ -10320,7 +10322,7 @@ extern "C" {
 
             std::string zone;
             ret = getLocalZone( _ctx.prop_map(), &icss, zone );
-            if( !ret.ok() ) { 
+            if ( !ret.ok() ) {
                 return PASS( ret );
             }
 
@@ -10349,7 +10351,7 @@ extern "C" {
             if ( userZone[0] == '\0' ) {
                 std::string zone;
                 ret = getLocalZone( _ctx.prop_map(), &icss, zone );
-                if( !ret.ok() ) { 
+                if ( !ret.ok() ) {
                     return PASS( ret );
                 }
                 strncpy( userZone, zone.c_str(), NAME_LEN );
@@ -10378,7 +10380,7 @@ extern "C" {
 
             std::string zone;
             ret = getLocalZone( _ctx.prop_map(), &icss, zone );
-            if( !ret.ok() ) {
+            if ( !ret.ok() ) {
                 return PASS( ret );
             }
 
@@ -10460,8 +10462,8 @@ extern "C" {
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         char*                  _type,
-        char*                  _name, 
-        char*                  _attribute, 
+        char*                  _name,
+        char*                  _attribute,
         char*                  _value,
         char*                  _unitsOrArg0,
         char*                  _arg1,
@@ -10473,15 +10475,15 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm   ||
-            !_type   ||
-            !_name   ||
-            !_attribute ) {
+        if ( !_comm   ||
+                !_type   ||
+                !_name   ||
+                !_attribute ) {
             return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-                       
+
         }
 
         // =-=-=-=-=-=-=-
@@ -10561,8 +10563,8 @@ extern "C" {
         }
 
         if ( *addAttr  == '\0' &&
-             *addValue == '\0' &&
-             *addUnits == '\0' ) {
+                *addValue == '\0' &&
+                *addUnits == '\0' ) {
             _rollback( "chlModAVUMetadata" );
             return ERROR( CAT_INVALID_ARGUMENT, "arg check failed" );
         }
@@ -10588,8 +10590,8 @@ extern "C" {
         rsComm_t*              _comm,
         int                    _option,
         char*                  _type,
-        char*                  _name, 
-        char*                  _attribute, 
+        char*                  _name,
+        char*                  _attribute,
         char*                  _value,
         char*                  _unit,
         int                    _nocommit ) {
@@ -10599,15 +10601,15 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm   ||
-            !_type   ||
-            !_name   ||
-            !_attribute ) {
+        if ( !_comm   ||
+                !_type   ||
+                !_name   ||
+                !_attribute ) {
             return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-                       
+
         }
 
         // =-=-=-=-=-=-=-
@@ -10659,7 +10661,7 @@ extern "C" {
             }
         }
 
-        if( _unit == NULL ) {
+        if ( _unit == NULL ) {
             _unit = "";
         }
 
@@ -10720,7 +10722,7 @@ extern "C" {
 
             std::string zone;
             ret = getLocalZone( _ctx.prop_map(), &icss, zone );
-            if( !ret.ok() ) {
+            if ( !ret.ok() ) {
                 return PASS( ret );
             }
 
@@ -10738,7 +10740,7 @@ extern "C" {
                 if ( _nocommit != 1 ) {
                     _rollback( "chlDeleteAVUMetadata" );
                 }
-                return ERROR( status, "select resc_id failed");
+                return ERROR( status, "select resc_id failed" );
             }
         }
 
@@ -10751,7 +10753,7 @@ extern "C" {
             if ( userZone[0] == '\0' ) {
                 std::string zone;
                 ret = getLocalZone( _ctx.prop_map(), &icss, zone );
-                if( !ret.ok() ) {
+                if ( !ret.ok() ) {
                     return PASS( ret );
                 }
                 strncpy( userZone, zone.c_str(), NAME_LEN );
@@ -10782,7 +10784,7 @@ extern "C" {
 
             std::string zone;
             ret = getLocalZone( _ctx.prop_map(), &icss, zone );
-            if( !ret.ok() ) {
+            if ( !ret.ok() ) {
                 return PASS( ret );
             }
 
@@ -10963,7 +10965,7 @@ extern "C" {
         rsComm_t*              _comm,
         char*                  _type1,
         char*                  _type2,
-        char*                  _name1, 
+        char*                  _name1,
         char*                  _name2 ) {
         // =-=-=-=-=-=-=-
         // check the context
@@ -10971,16 +10973,16 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm   ||
-            !_type1  ||
-            !_type2  ||
-            !_name1  ||
-            !_name2 ) {
+        if ( !_comm   ||
+                !_type1  ||
+                !_type2  ||
+                !_name1  ||
+                !_name2 ) {
             return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-                       
+
         }
 
         // =-=-=-=-=-=-=-
@@ -11080,8 +11082,8 @@ extern "C" {
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         int                    _recursive_flag,
-        char*                  _access_level, 
-        char*                  _user_name, 
+        char*                  _access_level,
+        char*                  _user_name,
         char*                  _zone,
         char*                  _resc_name ) {
         // check the context
@@ -11089,13 +11091,13 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm   
-            ) {
+        if ( !_comm
+           ) {
             return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-                       
+
         }
 
         // =-=-=-=-=-=-=-
@@ -11182,7 +11184,7 @@ extern "C" {
         /* Check that the receiving user exists and if so get the userId */
         std::string zone;
         ret = getLocalZone( _ctx.prop_map(), &icss, zone );
-        if( !ret.ok() ) {
+        if ( !ret.ok() ) {
             return PASS( ret );
         }
 
@@ -11255,7 +11257,7 @@ extern "C" {
         }
 
         status =  cmlExecuteNoAnswerSql( "commit", &icss );
-        if( status < 0 ) {
+        if ( status < 0 ) {
             return ERROR( status, "commit failure" );
         }
 
@@ -11267,8 +11269,8 @@ extern "C" {
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         int                    _recursive_flag,
-        char*                  _access_level, 
-        char*                  _user_name, 
+        char*                  _access_level,
+        char*                  _user_name,
         char*                  _zone,
         char*                  _path_name ) {
         // check the context
@@ -11276,13 +11278,13 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm   
-            ) {
+        if ( !_comm
+           ) {
             return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-                       
+
         }
 
         // =-=-=-=-=-=-=-
@@ -11322,13 +11324,13 @@ extern "C" {
 
         if ( strncmp( _access_level, MOD_RESC_PREFIX, strlen( MOD_RESC_PREFIX ) ) == 0 ) {
             ret = pg_mod_access_control_resc_op(
-                          _ctx, 
-                          _comm, 
-                          _recursive_flag,
-                          _access_level, 
-                          _user_name, 
-                          _zone, 
-                          _path_name );
+                      _ctx,
+                      _comm,
+                      _recursive_flag,
+                      _access_level,
+                      _user_name,
+                      _zone,
+                      _path_name );
             return PASS( ret );
         }
 
@@ -11510,7 +11512,7 @@ extern "C" {
         /* Check that the receiving user exists and if so get the userId */
         std::string zone;
         ret = getLocalZone( _ctx.prop_map(), &icss, zone );
-        if( !ret.ok() ) { 
+        if ( !ret.ok() ) {
             return PASS( ret );
         }
 
@@ -11616,7 +11618,7 @@ extern "C" {
                              "chlModAccessControl cmlAudit5 failure %d",
                              status );
                     _rollback( "chlModAccessControl" );
-                    return ERROR( status, "cmlAudit5 failure");
+                    return ERROR( status, "cmlAudit5 failure" );
                 }
                 status =  cmlExecuteNoAnswerSql( "commit", &icss );
                 return ERROR( status, "commit failure" );
@@ -11810,7 +11812,7 @@ extern "C" {
         }
 
         status =  cmlExecuteNoAnswerSql( "commit", &icss );
-        if( status < 0 ) {
+        if ( status < 0 ) {
             return ERROR( status, "commit failed" );
         }
 
@@ -11828,13 +11830,13 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm   
-            ) {
+        if ( !_comm
+           ) {
             return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-                       
+
         }
 
         // =-=-=-=-=-=-=-
@@ -12173,13 +12175,13 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm   
-            ) {
+        if ( !_comm
+           ) {
             return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-                       
+
         }
 
         // =-=-=-=-=-=-=-
@@ -12548,11 +12550,11 @@ extern "C" {
     irods::error pg_reg_token_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
-        char*                  _name_space, 
-        char*                  _name, 
+        char*                  _name_space,
+        char*                  _name,
         char*                  _value,
-        char*                  _value2, 
-        char*                  _value3, 
+        char*                  _value2,
+        char*                  _value3,
         char*                  _comment ) {
         // =-=-=-=-=-=-=-
         // check the context
@@ -12560,13 +12562,13 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm   
-            ) {
+        if ( !_comm
+           ) {
             return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-                       
+
         }
 
         // =-=-=-=-=-=-=-
@@ -12694,18 +12696,19 @@ extern "C" {
         }
 
         status =  cmlExecuteNoAnswerSql( "commit", &icss );
-        if( status < 0 ) {
+        if ( status < 0 ) {
             return ERROR( status, "commit error" );
-        } else {
+        }
+        else {
             return CODE( status );
         }
 
     } // pg_reg_token_op
-    
+
     irods::error pg_del_token_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
-        char*                  _name_space, 
+        char*                  _name_space,
         char*                  _name ) {
         // =-=-=-=-=-=-=-
         // check the context
@@ -12713,13 +12716,13 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm   
-            ) {
+        if ( !_comm
+           ) {
             return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-                       
+
         }
 
         // =-=-=-=-=-=-=-
@@ -12735,7 +12738,7 @@ extern "C" {
         // extract the icss property
 //        icatSessionStruct icss;
 //        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
-        
+
 
         int status;
         rodsLong_t objId;
@@ -12797,24 +12800,25 @@ extern "C" {
         }
 
         status =  cmlExecuteNoAnswerSql( "commit", &icss );
-        if( status < 0 ) {
+        if ( status < 0 ) {
             return ERROR( status, "commit failed" );
-        } else {
+        }
+        else {
             return SUCCESS();
         }
-    
+
     } // pg_del_token_op
-    
+
     irods::error pg_reg_server_load_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
-        char*                  _host_name, 
+        char*                  _host_name,
         char*                  _resc_name,
-        char*                  _cpu_used, 
-        char*                  _mem_used, 
+        char*                  _cpu_used,
+        char*                  _mem_used,
         char*                  _swap_used,
-        char*                  _run_q_load, 
-        char*                  _disk_space, 
+        char*                  _run_q_load,
+        char*                  _disk_space,
         char*                  _net_input,
         char*                  _net_output ) {
         // =-=-=-=-=-=-=-
@@ -12823,13 +12827,13 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm   
-            ) {
+        if ( !_comm
+           ) {
             return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-                       
+
         }
 
         // =-=-=-=-=-=-=-
@@ -12897,26 +12901,26 @@ extern "C" {
         }
 
         return SUCCESS();
-    
+
     } // pg_reg_server_load_op
-  
+
     irods::error pg_purge_server_load_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
-        char*                  _seconds_ago ) { 
+        char*                  _seconds_ago ) {
         // =-=-=-=-=-=-=-
         // check the context
         irods::error ret = _ctx.valid< irods::postgres_object >();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm   
-            ) {
+        if ( !_comm
+           ) {
             return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-                       
+
         }
 
         // =-=-=-=-=-=-=-
@@ -12931,10 +12935,10 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // extract the icss property
 //        icatSessionStruct icss;
-//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );      
-        
+//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
+
         // =-=-=-=-=-=-=-
-        // delete from R_LOAD_SERVER where (%i -exe_time) > %i 
+        // delete from R_LOAD_SERVER where (%i -exe_time) > %i
         int status;
         char nowStr[50];
         static char thenStr[50];
@@ -12970,32 +12974,33 @@ extern "C" {
         }
 
         status =  cmlExecuteNoAnswerSql( "commit", &icss );
-        if( status < 0 ) {
+        if ( status < 0 ) {
             return ERROR( status, "commit failed" );
-        } else {
+        }
+        else {
             return SUCCESS();
         }
-        
+
     } // pg_purge_server_load_op
-  
+
     irods::error pg_reg_server_load_digest_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         char*                  _resc_name,
-        char*                  _load_factor ) { 
+        char*                  _load_factor ) {
         // =-=-=-=-=-=-=-
         // check the context
         irods::error ret = _ctx.valid< irods::postgres_object >();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm   
-            ) {
+        if ( !_comm
+           ) {
             return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-                       
+
         }
 
         // =-=-=-=-=-=-=-
@@ -13010,7 +13015,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // extract the icss property
 //        icatSessionStruct icss;
-//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );      
+//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
         char myTime[50];
         int status;
         int i;
@@ -13057,26 +13062,26 @@ extern "C" {
         }
 
         return SUCCESS();
-      
+
     } // pg_reg_server_load_digest_op
-     
+
     irods::error pg_purge_server_load_digest_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
-        char*                  _seconds_ago ) { 
+        char*                  _seconds_ago ) {
         // =-=-=-=-=-=-=-
         // check the context
         irods::error ret = _ctx.valid< irods::postgres_object >();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm   
-            ) {
+        if ( !_comm
+           ) {
             return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-                       
+
         }
 
         // =-=-=-=-=-=-=-
@@ -13091,7 +13096,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // extract the icss property
 //        icatSessionStruct icss;
-//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );      
+//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
         // =-=-=-=-=-=-=-
         /* delete from R_SERVER_LOAD_DIGEST where (%i -exe_time) > %i */
         int status;
@@ -13129,14 +13134,15 @@ extern "C" {
         }
 
         status =  cmlExecuteNoAnswerSql( "commit", &icss );
-        if( status < 0 ) {
+        if ( status < 0 ) {
             return ERROR( status, "commit failed" );
-        } else {
+        }
+        else {
             return SUCCESS();
         }
 
     } // pg_purge_server_load_digest_op
-   
+
     irods::error pg_calc_usage_and_quota_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm ) {
@@ -13146,13 +13152,13 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm   
-            ) {
+        if ( !_comm
+           ) {
             return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-                       
+
         }
 
         // =-=-=-=-=-=-=-
@@ -13167,7 +13173,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // extract the icss property
 //        icatSessionStruct icss;
-//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );      
+//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
         int status;
         char myTime[50];
 
@@ -13218,20 +13224,21 @@ extern "C" {
         }
 
         status =  cmlExecuteNoAnswerSql( "commit", &icss );
-        if( status < 0 ) {
+        if ( status < 0 ) {
             return ERROR( status, "commit failed" );
-        } else {
+        }
+        else {
             return SUCCESS();
         }
-    
+
     } // pg_calc_usage_and_quota_op
 
     irods::error pg_set_quota_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
-        char*                  _type, 
+        char*                  _type,
         char*                  _name,
-        char*                  _resc_name, 
+        char*                  _resc_name,
         char*                  _limit ) {
         // =-=-=-=-=-=-=-
         // check the context
@@ -13239,13 +13246,13 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm   
-            ) {
+        if ( !_comm
+           ) {
             return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-                       
+
         }
 
         // =-=-=-=-=-=-=-
@@ -13260,7 +13267,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // extract the icss property
 //        icatSessionStruct icss;
-//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );      
+//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
         int status;
         rodsLong_t rescId;
         rodsLong_t userId;
@@ -13283,7 +13290,7 @@ extern "C" {
 
         std::string zone;
         ret = getLocalZone( _ctx.prop_map(), &icss, zone );
-        if( !ret.ok() ) {
+        if ( !ret.ok() ) {
             return PASS( ret );
         }
 
@@ -13324,7 +13331,7 @@ extern "C" {
                     return ERROR( CAT_INVALID_USER, userName );
                 }
                 _rollback( "chlSetQuota" );
-                return ERROR( status, "select user_id failed");
+                return ERROR( status, "select user_id failed" );
             }
         }
         else {
@@ -13392,20 +13399,21 @@ extern "C" {
         }
 
         status =  cmlExecuteNoAnswerSql( "commit", &icss );
-        if( status < 0 ) {
+        if ( status < 0 ) {
             return ERROR( status, "commit failure" );
-        } else {
+        }
+        else {
             return SUCCESS();
         }
 
     } // pg_set_quota_op
-    
+
     irods::error pg_check_quota_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
-        char*                  _user_name, 
+        char*                  _user_name,
         char*                  _resc_name,
-        rodsLong_t*            _user_quota, 
+        rodsLong_t*            _user_quota,
         int*                   _quota_status ) {
         // =-=-=-=-=-=-=-
         // check the context
@@ -13413,13 +13421,13 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm   
-            ) {
+        if ( !_comm
+           ) {
             return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-                       
+
         }
 
         // =-=-=-=-=-=-=-
@@ -13434,7 +13442,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // extract the icss property
 //        icatSessionStruct icss;
-//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );      
+//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
         /*
            Check on a user's quota status, returning the most-over or
            nearest-over value.
@@ -13496,7 +13504,7 @@ extern "C" {
         return SUCCESS();
 
     } // pg_check_quota_op
-    
+
     irods::error pg_del_unused_avus_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm ) {
@@ -13506,13 +13514,13 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm   
-            ) {
+        if ( !_comm
+           ) {
             return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-                       
+
         }
 
         // =-=-=-=-=-=-=-
@@ -13527,7 +13535,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // extract the icss property
 //        icatSessionStruct icss;
-//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );       
+//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
         /*
            Remove any AVUs that are currently not associated with any object.
            This is done as a separate operation for efficiency.  See
@@ -13535,14 +13543,15 @@ extern "C" {
         */
         int status;
         status = removeAVUs();
-        if( status < 0 ) {
+        if ( status < 0 ) {
             return ERROR( status, "removeAVUs failed" );
         }
 
         if ( status == 0 ) {
             status =  cmlExecuteNoAnswerSql( "commit", &icss );
             return SUCCESS();
-        } else {
+        }
+        else {
             return ERROR( status, "commit failed" );
         }
 
@@ -13551,14 +13560,14 @@ extern "C" {
     irods::error pg_ins_rule_table_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
-        char*                  _base_name, 
-        char*                  _map_priority_str,  
+        char*                  _base_name,
+        char*                  _map_priority_str,
         char*                  _rule_name,
-        char*                  _rule_head, 
-        char*                  _rule_condition, 
+        char*                  _rule_head,
+        char*                  _rule_condition,
         char*                  _rule_action,
-        char*                  _rule_recovery, 
-        char*                  _rule_id_str, 
+        char*                  _rule_recovery,
+        char*                  _rule_id_str,
         char*                  _my_time ) {
         // =-=-=-=-=-=-=-
         // check the context
@@ -13566,13 +13575,13 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm   
-            ) {
+        if ( !_comm
+           ) {
             return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-                       
+
         }
 
         // =-=-=-=-=-=-=-
@@ -13587,7 +13596,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // extract the icss property
 //        icatSessionStruct icss;
-//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );                 
+//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
         int status;
         int i;
         rodsLong_t seqNum = -1;
@@ -13686,16 +13695,16 @@ extern "C" {
         }
 
         return SUCCESS();
-   
+
     } // pg_ins_rule_table_op
 
     irods::error pg_ins_dvm_table_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
-        char*                  _base_name, 
-        char*                  _var_name, 
+        char*                  _base_name,
+        char*                  _var_name,
         char*                  _action,
-        char*                  _var_2_cmap, 
+        char*                  _var_2_cmap,
         char*                  _my_time ) {
         // =-=-=-=-=-=-=-
         // check the context
@@ -13703,13 +13712,13 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm   
-            ) {
+        if ( !_comm
+           ) {
             return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-                       
+
         }
 
         // =-=-=-=-=-=-=-
@@ -13724,7 +13733,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // extract the icss property
 //        icatSessionStruct icss;
-//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );                 
+//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
         int status;
         int i;
         rodsLong_t seqNum = -1;
@@ -13824,9 +13833,9 @@ extern "C" {
     irods::error pg_ins_fnm_table_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
-        char*                  _base_name, 
-        char*                  _func_name, 
-        char*                  _func_2_cmap, 
+        char*                  _base_name,
+        char*                  _func_name,
+        char*                  _func_2_cmap,
         char*                  _my_time ) {
         // =-=-=-=-=-=-=-
         // check the context
@@ -13834,13 +13843,13 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm   
-            ) {
+        if ( !_comm
+           ) {
             return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-                       
+
         }
 
         // =-=-=-=-=-=-=-
@@ -13855,7 +13864,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // extract the icss property
 //        icatSessionStruct icss;
-//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );                 
+//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
         int status;
         int i;
         rodsLong_t seqNum = -1;
@@ -13953,29 +13962,29 @@ extern "C" {
     irods::error pg_ins_msrvc_table_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
-        char*                  _module_name, 
+        char*                  _module_name,
         char*                  _msrvc_name,
-        char*                  _msrvc_signature,  
+        char*                  _msrvc_signature,
         char*                  _msrvc_version,
-        char*                  _msrvc_host, 
+        char*                  _msrvc_host,
         char*                  _msrvc_location,
-        char*                  _msrvc_language,  
-        char*                  _msrvc_type_name, 
+        char*                  _msrvc_language,
+        char*                  _msrvc_type_name,
         char*                  _msrvc_status,
-        char*                  _my_time ) {       
+        char*                  _my_time ) {
         // =-=-=-=-=-=-=-
         // check the context
         irods::error ret = _ctx.valid< irods::postgres_object >();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm   
-            ) {
+        if ( !_comm
+           ) {
             return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-                       
+
         }
 
         // =-=-=-=-=-=-=-
@@ -13990,7 +13999,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // extract the icss property
 //        icatSessionStruct icss;
-//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );                 
+//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
         int status;
         int i;
         rodsLong_t seqNum = -1;
@@ -14133,21 +14142,21 @@ extern "C" {
     irods::error pg_version_rule_base_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
-        char*                  _base_name, 
-        char*                  _my_time ) {       
+        char*                  _base_name,
+        char*                  _my_time ) {
         // =-=-=-=-=-=-=-
         // check the context
         irods::error ret = _ctx.valid< irods::postgres_object >();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm   
-            ) {
+        if ( !_comm
+           ) {
             return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-                       
+
         }
 
         // =-=-=-=-=-=-=-
@@ -14162,7 +14171,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // extract the icss property
 //        icatSessionStruct icss;
-//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );                 
+//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
         int i, status;
 
         if ( logSQL != 0 ) {
@@ -14202,21 +14211,21 @@ extern "C" {
     irods::error pg_version_dvm_base_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
-        char*                  _base_name, 
-        char*                  _my_time ) {       
+        char*                  _base_name,
+        char*                  _my_time ) {
         // =-=-=-=-=-=-=-
         // check the context
         irods::error ret = _ctx.valid< irods::postgres_object >();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm   
-            ) {
+        if ( !_comm
+           ) {
             return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-                       
+
         }
 
         // =-=-=-=-=-=-=-
@@ -14231,7 +14240,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // extract the icss property
 //        icatSessionStruct icss;
-//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );                 
+//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
         int i, status;
 
         if ( logSQL != 0 ) {
@@ -14271,21 +14280,21 @@ extern "C" {
     irods::error pg_version_fnm_base_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
-        char*                  _base_name, 
-        char*                  _my_time ) {       
+        char*                  _base_name,
+        char*                  _my_time ) {
         // =-=-=-=-=-=-=-
         // check the context
         irods::error ret = _ctx.valid< irods::postgres_object >();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm   
-            ) {
+        if ( !_comm
+           ) {
             return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-                       
+
         }
 
         // =-=-=-=-=-=-=-
@@ -14300,7 +14309,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // extract the icss property
 //        icatSessionStruct icss;
-//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );                 
+//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
         int i, status;
 
         if ( logSQL != 0 ) {
@@ -14340,21 +14349,21 @@ extern "C" {
     irods::error pg_add_specific_query_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
-        char*                  _sql, 
-        char*                  _alias ) {       
+        char*                  _sql,
+        char*                  _alias ) {
         // =-=-=-=-=-=-=-
         // check the context
         irods::error ret = _ctx.valid< irods::postgres_object >();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm   
-            ) {
+        if ( !_comm
+           ) {
             return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-                       
+
         }
 
         // =-=-=-=-=-=-=-
@@ -14369,7 +14378,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // extract the icss property
 //        icatSessionStruct icss;
-//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );                 
+//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
         int status, i;
         char myTime[50];
         char tsCreateTime[50];
@@ -14436,31 +14445,32 @@ extern "C" {
         }
 
         status = cmlExecuteNoAnswerSql( "commit", &icss );
-        if( status < 0 ) {
+        if ( status < 0 ) {
             return ERROR( status, "commit failed" );
-        } else {
+        }
+        else {
             return SUCCESS();
         }
-   
+
     } // pg_add_specific_query_op
 
     irods::error pg_del_specific_query_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
-        char*                  _sql_or_alias ) {       
+        char*                  _sql_or_alias ) {
         // =-=-=-=-=-=-=-
         // check the context
         irods::error ret = _ctx.valid< irods::postgres_object >();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_comm   
-            ) {
+        if ( !_comm
+           ) {
             return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-                       
+
         }
 
         // =-=-=-=-=-=-=-
@@ -14475,7 +14485,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // extract the icss property
 //        icatSessionStruct icss;
-//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );                 
+//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
         int status, i;
         if ( logSQL != 0 ) {
             rodsLog( LOG_SQL, "chlDelSpecificQuery" );
@@ -14519,9 +14529,10 @@ extern "C" {
         }
 
         status =  cmlExecuteNoAnswerSql( "commit", &icss );
-        if( status < 0 ) {
+        if ( status < 0 ) {
             return ERROR( status, "commit failed" );
-        } else {
+        }
+        else {
             return SUCCESS();
         }
 
@@ -14530,7 +14541,7 @@ extern "C" {
 #define MINIMUM_COL_SIZE 50
     irods::error pg_specific_query_op(
         irods::plugin_context& _ctx,
-        specificQueryInp_t*    _spec_query_inp, 
+        specificQueryInp_t*    _spec_query_inp,
         genQueryOut_t*         _result ) {
         // =-=-=-=-=-=-=-
         // check the context
@@ -14538,13 +14549,13 @@ extern "C" {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-        
+
         // =-=-=-=-=-=-=-
         // check the params
-        if( !_spec_query_inp   
-            ) {
+        if ( !_spec_query_inp
+           ) {
             return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-                       
+
         }
 
         // =-=-=-=-=-=-=-
@@ -14559,7 +14570,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // extract the icss property
 //        icatSessionStruct icss;
-//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );                 
+//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
         int i, j, k;
         int needToGetNextRow;
 
@@ -14586,7 +14597,7 @@ extern "C" {
 
         currentMaxColSize = 0;
 
-rodsLog( LOG_NOTICE, "XXXX - spec query sql [%s]", _spec_query_inp->sql );
+        rodsLog( LOG_NOTICE, "XXXX - spec query sql [%s]", _spec_query_inp->sql );
 
 #ifdef ADDR_64BITS
         if ( debug ) {
@@ -14665,9 +14676,10 @@ rodsLog( LOG_NOTICE, "XXXX - spec query sql [%s]", _spec_query_inp->sql );
             needToGetNextRow = 1;
             if ( _spec_query_inp->maxRows <= 0 ) { /* caller is closing out the query */
                 status = cmlFreeStatement( statementNum, &icss );
-                if( status < 0 ) {
+                if ( status < 0 ) {
                     return ERROR( status, "failed in free statement" );
-                } else {
+                }
+                else {
                     return CODE( status );
                 }
             }
@@ -14795,8 +14807,8 @@ rodsLog( LOG_NOTICE, "XXXX - spec query sql [%s]", _spec_query_inp->sql );
 
     irods::error pg_substitute_resource_hierarchies_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm, 
-        const char*            _old_hier, 
+        rsComm_t*              _comm,
+        const char*            _old_hier,
         const char*            _new_hier ) {
         // =-=-=-=-=-=-=-
         // check the context
@@ -14817,7 +14829,7 @@ rodsLog( LOG_NOTICE, "XXXX - spec query sql [%s]", _spec_query_inp->sql );
         // =-=-=-=-=-=-=-
         // extract the icss property
 //        icatSessionStruct icss;
-//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );                 
+//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
         int status = 0;
         char old_hier_partial[MAX_NAME_LEN];
         irods::sql_logger logger( "chlSubstituteResourceHierarchies", logSQL );
@@ -14884,13 +14896,13 @@ rodsLog( LOG_NOTICE, "XXXX - spec query sql [%s]", _spec_query_inp->sql );
 
         // =-=-=-=-=-=-=-
         // check incoming pointers
-        if( !_resc_name ||
-            !_count ) {
-            return ERROR( 
+        if ( !_resc_name ||
+                !_count ) {
+            return ERROR(
                        SYS_INVALID_INPUT_PARAM,
                        "null input param" );
         }
-         
+
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
         irods::postgres_object_ptr pg;
@@ -14903,7 +14915,7 @@ rodsLog( LOG_NOTICE, "XXXX - spec query sql [%s]", _spec_query_inp->sql );
         // =-=-=-=-=-=-=-
         // extract the icss property
 //        icatSessionStruct icss;
-//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );                 
+//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
         // =-=-=-=-=-=-=-
         // the basic query string
         char query[ MAX_NAME_LEN ];
@@ -14926,7 +14938,7 @@ rodsLog( LOG_NOTICE, "XXXX - spec query sql [%s]", _spec_query_inp->sql );
             return ERROR( status, "cmlGetFirstRowFromSql failed" );
         }
 
-        (*_count) = atol( icss.stmtPtr[ statement_num ]->resultValue[0] );
+        ( *_count ) = atol( icss.stmtPtr[ statement_num ]->resultValue[0] );
 
         return SUCCESS();
 
@@ -14947,15 +14959,15 @@ rodsLog( LOG_NOTICE, "XXXX - spec query sql [%s]", _spec_query_inp->sql );
 
         // =-=-=-=-=-=-=-
         // check incoming pointers
-        if( !_parent    ||
-            !_child     ||
-            _limit <= 0 ||
-            !_results ) {
-            return ERROR( 
+        if ( !_parent    ||
+                !_child     ||
+                _limit <= 0 ||
+                !_results ) {
+            return ERROR(
                        SYS_INVALID_INPUT_PARAM,
                        "null or invalid input param" );
         }
-         
+
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
         irods::postgres_object_ptr pg;
@@ -14968,7 +14980,7 @@ rodsLog( LOG_NOTICE, "XXXX - spec query sql [%s]", _spec_query_inp->sql );
         // =-=-=-=-=-=-=-
         // extract the icss property
 //        icatSessionStruct icss;
-//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );                 
+//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
 
         // =-=-=-=-=-=-=-
         // the basic query string
@@ -15033,14 +15045,14 @@ rodsLog( LOG_NOTICE, "XXXX - spec query sql [%s]", _spec_query_inp->sql );
 
         // =-=-=-=-=-=-=-
         // check incoming pointers
-        if( !_resc_name    ||
-            !_zone_name    ||
-            !_hierarchy ) {
-            return ERROR( 
+        if ( !_resc_name    ||
+                !_zone_name    ||
+                !_hierarchy ) {
+            return ERROR(
                        SYS_INVALID_INPUT_PARAM,
                        "null or invalid input param" );
         }
-         
+
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
         irods::postgres_object_ptr pg;
@@ -15053,7 +15065,7 @@ rodsLog( LOG_NOTICE, "XXXX - spec query sql [%s]", _spec_query_inp->sql );
         // =-=-=-=-=-=-=-
         // extract the icss property
 //        icatSessionStruct icss;
-//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );                 
+//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
 
         char *current_node;
         char parent[MAX_NAME_LEN];
@@ -15067,7 +15079,7 @@ rodsLog( LOG_NOTICE, "XXXX - spec query sql [%s]", _spec_query_inp->sql );
             return ERROR( CATALOG_NOT_CONNECTED, "catalog not connected" );
         }
 
-        (*_hierarchy) = (*_resc_name); // Initialize hierarchy string with resource
+        ( *_hierarchy ) = ( *_resc_name ); // Initialize hierarchy string with resource
 
         current_node = ( char * )_resc_name->c_str();
         while ( current_node ) {
@@ -15084,7 +15096,7 @@ rodsLog( LOG_NOTICE, "XXXX - spec query sql [%s]", _spec_query_inp->sql );
             }
 
             if ( strlen( parent ) ) {
-                (*_hierarchy) = parent + irods::hierarchy_parser::delimiter() + (*_hierarchy);        // Add parent to hierarchy string
+                ( *_hierarchy ) = parent + irods::hierarchy_parser::delimiter() + ( *_hierarchy );    // Add parent to hierarchy string
                 current_node = parent;
             }
             else {
@@ -15098,11 +15110,11 @@ rodsLog( LOG_NOTICE, "XXXX - spec query sql [%s]", _spec_query_inp->sql );
 
     irods::error pg_mod_ticket_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm, 
-        char*                  _op_name, 
+        rsComm_t*              _comm,
+        char*                  _op_name,
         char*                  _ticket_string,
-        char*                  _arg3, 
-        char*                  _arg4, 
+        char*                  _arg3,
+        char*                  _arg4,
         char*                  _arg5 ) {
         // =-=-=-=-=-=-=-
         // check the context
@@ -15113,12 +15125,12 @@ rodsLog( LOG_NOTICE, "XXXX - spec query sql [%s]", _spec_query_inp->sql );
 
         // =-=-=-=-=-=-=-
         // check incoming pointers
-        if( !_comm ) {
-            return ERROR( 
+        if ( !_comm ) {
+            return ERROR(
                        SYS_INVALID_INPUT_PARAM,
                        "null or invalid input param" );
         }
-         
+
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
         irods::postgres_object_ptr pg;
@@ -15131,7 +15143,7 @@ rodsLog( LOG_NOTICE, "XXXX - spec query sql [%s]", _spec_query_inp->sql );
         // =-=-=-=-=-=-=-
         // extract the icss property
 //        icatSessionStruct icss;
-//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );                 
+//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
         rodsLong_t status, status2, status3;
         char logicalEndName[MAX_NAME_LEN];
         char logicalParentDirName[MAX_NAME_LEN];
@@ -15269,9 +15281,10 @@ rodsLog( LOG_NOTICE, "XXXX - spec query sql [%s]", _spec_query_inp->sql );
                 return ERROR( status, "cmlAudit3 target obj failed" );
             }
             status =  cmlExecuteNoAnswerSql( "commit", &icss );
-            if( status < 0 ) {
+            if ( status < 0 ) {
                 return ERROR( status, "commit failed" );
-            } else {
+            }
+            else {
                 return SUCCESS();
             }
         }
@@ -15379,9 +15392,10 @@ rodsLog( LOG_NOTICE, "XXXX - spec query sql [%s]", _spec_query_inp->sql );
                 return ERROR( status, "cmlAudit3 ticket string failure" );
             }
             status =  cmlExecuteNoAnswerSql( "commit", &icss );
-            if( status < 0 ) {
+            if ( status < 0 ) {
                 return ERROR( status, "commit failed" );
-            } else {
+            }
+            else {
                 return SUCCESS();
             }
         }
@@ -15416,9 +15430,10 @@ rodsLog( LOG_NOTICE, "XXXX - spec query sql [%s]", _spec_query_inp->sql );
                     return ERROR( status, "cmlAudit3 uses failed" );
                 }
                 status =  cmlExecuteNoAnswerSql( "commit", &icss );
-                if( status < 0 ) {
+                if ( status < 0 ) {
                     return ERROR( status, "commit failed" );
-                } else {
+                }
+                else {
                     return SUCCESS();
                 }
             }
@@ -15453,9 +15468,10 @@ rodsLog( LOG_NOTICE, "XXXX - spec query sql [%s]", _spec_query_inp->sql );
                         return ERROR( status, "cmlAudit3 write file failure" );
                     }
                     status =  cmlExecuteNoAnswerSql( "commit", &icss );
-                    if( status < 0 ) {
+                    if ( status < 0 ) {
                         return ERROR( status, "commit failed" );
-                    } else {
+                    }
+                    else {
                         return SUCCESS();
                     }
                 }
@@ -15488,9 +15504,10 @@ rodsLog( LOG_NOTICE, "XXXX - spec query sql [%s]", _spec_query_inp->sql );
                         return ERROR( status, "cmlAudit3 write byte failed" );
                     }
                     status =  cmlExecuteNoAnswerSql( "commit", &icss );
-                    if( status < 0 ) {
+                    if ( status < 0 ) {
                         return ERROR( status, "commit failed" );
-                    } else {
+                    }
+                    else {
                         return SUCCESS();
                     }
                 }
@@ -15529,9 +15546,10 @@ rodsLog( LOG_NOTICE, "XXXX - spec query sql [%s]", _spec_query_inp->sql );
                     return ERROR( status, "cmlAudit3 expire failed" );
                 }
                 status =  cmlExecuteNoAnswerSql( "commit", &icss );
-                if( status < 0 ) {
+                if ( status < 0 ) {
                     return ERROR( status, "commit failed" );
-                } else {
+                }
+                else {
                     return SUCCESS();
                 }
             }
@@ -15570,9 +15588,10 @@ rodsLog( LOG_NOTICE, "XXXX - spec query sql [%s]", _spec_query_inp->sql );
                         return ERROR( status, "cmlAudit3 failed" );
                     }
                     status =  cmlExecuteNoAnswerSql( "commit", &icss );
-                    if( status < 0 ) {
+                    if ( status < 0 ) {
                         return ERROR( status, "commit failed" );
-                    } else {
+                    }
+                    else {
                         return SUCCESS();
                     }
                 }
@@ -15608,9 +15627,10 @@ rodsLog( LOG_NOTICE, "XXXX - spec query sql [%s]", _spec_query_inp->sql );
                         return ERROR( status, "cmlAudit3 failed" );
                     }
                     status =  cmlExecuteNoAnswerSql( "commit", &icss );
-                    if( status < 0 ) {
+                    if ( status < 0 ) {
                         return ERROR( status, "commit failed" );
-                    } else {
+                    }
+                    else {
                         return SUCCESS();
                     }
                 }
@@ -15643,12 +15663,13 @@ rodsLog( LOG_NOTICE, "XXXX - spec query sql [%s]", _spec_query_inp->sql );
                                         _comm->clientUser.rodsZone, "add group",
                                         &icss );
                     if ( status != 0 ) {
-                        return ERROR( status, "cmlAudit3 failed");
+                        return ERROR( status, "cmlAudit3 failed" );
                     }
                     status =  cmlExecuteNoAnswerSql( "commit", &icss );
-                    if( status < 0 ) {
+                    if ( status < 0 ) {
                         return ERROR( status, "commit failed" );
-                    } else {
+                    }
+                    else {
                         return SUCCESS();
                     }
                 }
@@ -15687,12 +15708,13 @@ rodsLog( LOG_NOTICE, "XXXX - spec query sql [%s]", _spec_query_inp->sql );
                         return ERROR( status, "cmlAudit3 failed" );
                     }
                     status =  cmlExecuteNoAnswerSql( "commit", &icss );
-                    if( status < 0 ) {
+                    if ( status < 0 ) {
                         return ERROR( status, "commit failed" );
-                    } else {
+                    }
+                    else {
                         return SUCCESS();
                     }
-                    
+
                 }
                 if ( strcmp( _arg4, "user" ) == 0 ) {
                     status = icatGetTicketUserId( _ctx.prop_map(), _arg5, user2IdStr );
@@ -15726,9 +15748,10 @@ rodsLog( LOG_NOTICE, "XXXX - spec query sql [%s]", _spec_query_inp->sql );
                         return ERROR( status, "cmlAudit3 failed" );
                     }
                     status =  cmlExecuteNoAnswerSql( "commit", &icss );
-                    if( status < 0 ) {
+                    if ( status < 0 ) {
                         return ERROR( status, "commit failed" );
-                    } else {
+                    }
+                    else {
                         return SUCCESS();
                     }
                 }
@@ -15764,9 +15787,10 @@ rodsLog( LOG_NOTICE, "XXXX - spec query sql [%s]", _spec_query_inp->sql );
                         return ERROR( status, "cmlAudit3 failed" );
                     }
                     status =  cmlExecuteNoAnswerSql( "commit", &icss );
-                    if( status < 0 ) {
+                    if ( status < 0 ) {
                         return ERROR( status, "commit failed" );
-                    } else {
+                    }
+                    else {
                         return SUCCESS();
                     }
                 }
@@ -15812,7 +15836,7 @@ rodsLog( LOG_NOTICE, "XXXX - spec query sql [%s]", _spec_query_inp->sql );
     // factory function to provide instance of the plugin
     irods::database* plugin_factory(
         const std::string& _inst_name,
-        const std::string& _context ) {
+              const std::string& _context ) {
         // =-=-=-=-=-=-=-
         // create a postgres database plugin instance
         postgres_database_plugin* pg = new postgres_database_plugin(
@@ -15828,7 +15852,7 @@ rodsLog( LOG_NOTICE, "XXXX - spec query sql [%s]", _spec_query_inp->sql );
         // names to function names
         pg->add_operation( irods::DATABASE_OP_START,                 "pg_start_op" );
         pg->add_operation( irods::DATABASE_OP_DEBUG,                 "pg_debug_op" );
-        pg->add_operation( irods::DATABASE_OP_OPEN,                  "pg_open_op"  );
+        pg->add_operation( irods::DATABASE_OP_OPEN,                  "pg_open_op" );
         pg->add_operation( irods::DATABASE_OP_CLOSE,                 "pg_close_op" );
         pg->add_operation( irods::DATABASE_OP_GET_LOCAL_ZONE,        "pg_get_local_zone_op" );
         pg->add_operation( irods::DATABASE_OP_UPDATE_RESC_OBJ_COUNT, "pg_update_resc_obj_count_op" );
@@ -15898,11 +15922,11 @@ rodsLog( LOG_NOTICE, "XXXX - spec query sql [%s]", _spec_query_inp->sql );
         pg->add_operation( irods::DATABASE_OP_ADD_SPECIFIC_QUERY,      "pg_add_specific_query_op" );
         pg->add_operation( irods::DATABASE_OP_DEL_SPECIFIC_QUERY,      "pg_del_specific_query_op" );
         pg->add_operation( irods::DATABASE_OP_SPECIFIC_QUERY,          "pg_specific_query_op" );
-        pg->add_operation( irods::DATABASE_OP_SUBSTITUTE_RESOURCE_HIERARCHIES,      
+        pg->add_operation( irods::DATABASE_OP_SUBSTITUTE_RESOURCE_HIERARCHIES,
                            "pg_substitute_resource_hierarchies_op" );
-        pg->add_operation( irods::DATABASE_OP_GET_DISTINCT_DATA_OBJ_COUNT_ON_RESOURCE,      
+        pg->add_operation( irods::DATABASE_OP_GET_DISTINCT_DATA_OBJ_COUNT_ON_RESOURCE,
                            "pg_get_distinct_data_obj_count_on_resource_op" );
-        pg->add_operation( irods::DATABASE_OP_GET_DISTINCT_DATA_OBJS_MISSING_FROM_CHILD_GIVEN_PARENT,      
+        pg->add_operation( irods::DATABASE_OP_GET_DISTINCT_DATA_OBJS_MISSING_FROM_CHILD_GIVEN_PARENT,
                            "pg_get_distinct_data_objs_missing_from_child_given_parent_op" );
         pg->add_operation( irods::DATABASE_OP_GET_HIERARCHY_FOR_RESC,          "pg_get_hierarchy_for_resc_op" );
         pg->add_operation( irods::DATABASE_OP_MOD_TICKET,              "pg_mod_ticket_op" );
