@@ -805,7 +805,7 @@ testCurrent( rsComm_t *rsComm ) {
     rodsLong_t status;
     icatSessionStruct *icss;
 
-    icss = chlGetRcs();
+    chlGetRcs( &icss );
 
     status = cmlGetCurrentSeqVal( icss );
     return( status );

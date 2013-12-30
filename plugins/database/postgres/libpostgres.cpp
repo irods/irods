@@ -54,6 +54,25 @@ static char prevChalSig[200]; /* a 'signature' of the previous
 
 // =-=-=-=-=-=-=-
 // NOTE :: yanked directly from icatHighLevelRoutines
+/* In 2.3, the METADATA_CLEANUP logic (SQL) (via a
+ * 'DISABLE_METADATA_CLEANUP' define) was on by default but it was
+ * found to be too slow when moderate amounts of user-defined metadata
+ * (AVUs) were defined.  Now, we've improved the SQL to be much faster
+ * but also decided to have this off by default.  When AVUs are
+ * deleted, the association between the object and the AVU is removed,
+ * but the actual AVU triplet remains (and may be associated with
+ * other objects).
+ *
+ * Admins can run the new 'iadmin rum' (remove unused metadata)
+ * command if large numbers of rows accumulate (which can slow down
+ * meta-data functions), which will remove any AVU triplets not
+ * associated with any object.
+ *
+ * If you want, you can also define METADATA_CLEANUP so this will
+ * run each time a user-defined metadata association is deleted.  It may,
+ * however, be quite slow.
+ #define METADATA_CLEANUP "EACH TIME"
+*/
 
 //   Legal values for accessLevel in  chlModAccessControl (Access Parameter).
 //   Defined here since other code does not need them (except for help messages)
@@ -117,12 +136,12 @@ char irods_pam_password_max_time[ NAME_LEN ]     = { "1209600" };
 char irods_pam_password_default_time[ NAME_LEN ] = { "1209600" };
 
 size_t log_sql_flg = 0;
-extern icatSessionStruct icss; // JMC :: only for testing!!!
+icatSessionStruct icss; // JMC :: only for testing!!!
 extern int logSQL;
 
-extern int  creatingUserByGroupAdmin; // JMC - backport 4772
-extern char mySessionTicket[NAME_LEN];
-extern char mySessionClientAddr[NAME_LEN];
+int  creatingUserByGroupAdmin; // JMC - backport 4772
+char mySessionTicket[NAME_LEN];
+char mySessionClientAddr[NAME_LEN];
 
 // =-=-=-=-=-=-=-
 // property constants
@@ -2136,7 +2155,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // Capture ICAT properties
-        irods::catalog_properties::getInstance().capture();
+        irods::catalog_properties::getInstance().capture( &icss );
 
         // =-=-=-=-=-=-=-
         // set pam properties
@@ -2202,6 +2221,40 @@ extern "C" {
         return CODE( status );
 
     } // pg_close_op
+
+    // =-=-=-=-=-=-=-
+    // return the local zone
+    irods::error pg_check_and_get_object_id_op(
+        irods::plugin_context& _ctx,
+        rsComm_t*              _comm,
+        char*                  _type,
+        char*                  _name,
+        char*                  _access ) {
+        // =-=-=-=-=-=-=-
+        // check the context
+        irods::error ret = _ctx.valid< irods::postgres_object >();
+        if ( !ret.ok() ) {
+            return PASS( ret );
+        }
+
+        // =-=-=-=-=-=-=-
+        // extract the icss property
+//        icatSessionStruct icss;
+//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
+        rodsLong_t status = checkAndGetObjectId( 
+                                _comm, 
+                                _ctx.prop_map(),
+                                _type,
+                                _name,
+                                _access );
+        if( status < 0 ) {
+            return ERROR( status, "checkAndGetObjectId failed" );
+        } else {
+            return SUCCESS();
+
+        }
+
+    } // pg_check_and_get_object_id_op
 
     // =-=-=-=-=-=-=-
     // return the local zone
@@ -11015,7 +11068,7 @@ checkLevel:
         if ( logSQL != 0 ) {
             rodsLog( LOG_SQL, "chlCopyAVUMetadata SQL 1 " );
         }
-        objId1 = checkAndGetObjectId( _comm, _type1, _name1, ACCESS_READ_METADATA );
+        objId1 = checkAndGetObjectId( _comm, _ctx.prop_map(), _type1, _name1, ACCESS_READ_METADATA );
         if ( objId1 < 0 ) {
             return ERROR( objId1, "checkAndGetObjectId failure" );
         }
@@ -11023,7 +11076,7 @@ checkLevel:
         if ( logSQL != 0 ) {
             rodsLog( LOG_SQL, "chlCopyAVUMetadata SQL 2" );
         }
-        objId2 = checkAndGetObjectId( _comm, _type2, _name2, ACCESS_CREATE_METADATA );
+        objId2 = checkAndGetObjectId( _comm, _ctx.prop_map(), _type2, _name2, ACCESS_CREATE_METADATA );
 
         if ( objId2 < 0 ) {
             return ERROR( objId2, "checkAndGetObjectId failure" );
@@ -15801,6 +15854,51 @@ checkLevel:
 
     } // pg_mod_ticket_op
 
+    irods::error pg_get_icss_op(
+        irods::plugin_context& _ctx,
+        icatSessionStruct**    _icss ) {
+        // =-=-=-=-=-=-=-
+        // check the context
+        irods::error ret = _ctx.valid< irods::postgres_object >();
+        if ( !ret.ok() ) {
+            return PASS( ret );
+        }
+
+        // =-=-=-=-=-=-=-
+        // check incoming pointers
+        if ( !_icss ) {
+            return ERROR(
+                       SYS_INVALID_INPUT_PARAM,
+                       "null or invalid input param" );
+        }
+
+        // =-=-=-=-=-=-=-
+        // get a postgres object from the context
+        irods::postgres_object_ptr pg;
+        ret = make_pg_ptr( _ctx.fco(), pg );
+        if ( !ret.ok() ) {
+            return PASS( ret );
+
+        }
+
+        // =-=-=-=-=-=-=-
+        // extract the icss property
+//        icatSessionStruct icss;
+//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
+        if ( logSQL != 0 ) {
+            rodsLog( LOG_SQL, "chlGetRcs" );
+        }
+        if ( icss.status != 1 ) {
+            (*_icss) = 0;
+            return ERROR( icss.status, "catalog not connected" );
+        }
+
+        (*_icss) = &icss;
+        return SUCCESS();
+
+    } // pg_get_icss_op
+
+
 
 
 // qqq - OPS END
@@ -15850,86 +15948,88 @@ checkLevel:
         // =-=-=-=-=-=-=-
         // fill in the operation table mapping call
         // names to function names
-        pg->add_operation( irods::DATABASE_OP_START,                 "pg_start_op" );
-        pg->add_operation( irods::DATABASE_OP_DEBUG,                 "pg_debug_op" );
-        pg->add_operation( irods::DATABASE_OP_OPEN,                  "pg_open_op" );
-        pg->add_operation( irods::DATABASE_OP_CLOSE,                 "pg_close_op" );
-        pg->add_operation( irods::DATABASE_OP_GET_LOCAL_ZONE,        "pg_get_local_zone_op" );
-        pg->add_operation( irods::DATABASE_OP_UPDATE_RESC_OBJ_COUNT, "pg_update_resc_obj_count_op" );
-        pg->add_operation( irods::DATABASE_OP_MOD_DATA_OBJ_META,     "pg_mod_data_obj_meta_op" );
-        pg->add_operation( irods::DATABASE_OP_REG_DATA_OBJ,          "pg_reg_data_obj_op" );
-        pg->add_operation( irods::DATABASE_OP_REG_REPLICA,           "pg_reg_replica_op" );
-        pg->add_operation( irods::DATABASE_OP_UNREG_REPLICA,         "pg_unreg_replica_op" );
-        pg->add_operation( irods::DATABASE_OP_REG_RULE_EXEC,         "pg_reg_rule_exec_op" );
-        pg->add_operation( irods::DATABASE_OP_MOD_RULE_EXEC,         "pg_mod_rule_exec_op" );
-        pg->add_operation( irods::DATABASE_OP_DEL_RULE_EXEC,         "pg_del_rule_exec_op" );
-        pg->add_operation( irods::DATABASE_OP_ADD_CHILD_RESC,        "pg_add_child_resc_op" );
-        pg->add_operation( irods::DATABASE_OP_REG_RESC,              "pg_reg_resc_op" );
-        pg->add_operation( irods::DATABASE_OP_DEL_CHILD_RESC,        "pg_del_child_resc_op" );
-        pg->add_operation( irods::DATABASE_OP_DEL_RESC,              "pg_del_resc_op" );
-        pg->add_operation( irods::DATABASE_OP_ROLLBACK,              "pg_rollback_op" );
-        pg->add_operation( irods::DATABASE_OP_COMMIT,                "pg_commit_op" );
-        pg->add_operation( irods::DATABASE_OP_DEL_USER_RE,           "pg_del_user_re_op" );
-        pg->add_operation( irods::DATABASE_OP_REG_COLL_BY_ADMIN,     "pg_reg_coll_by_admin_op" );
-        pg->add_operation( irods::DATABASE_OP_REG_COLL,              "pg_reg_coll_op" );
-        pg->add_operation( irods::DATABASE_OP_MOD_COLL,              "pg_mod_coll_op" );
-        pg->add_operation( irods::DATABASE_OP_REG_ZONE,              "pg_reg_zone_op" );
-        pg->add_operation( irods::DATABASE_OP_MOD_ZONE,              "pg_mod_zone_op" );
-        pg->add_operation( irods::DATABASE_OP_RENAME_COLL,           "pg_rename_coll_op" );
-        pg->add_operation( irods::DATABASE_OP_MOD_ZONE_COLL_ACL,     "pg_mod_zone_coll_acl_op" );
-        pg->add_operation( irods::DATABASE_OP_RENAME_LOCAL_ZONE,     "pg_rename_local_zone_op" );
-        pg->add_operation( irods::DATABASE_OP_DEL_ZONE,              "pg_del_zone_op" );
-        pg->add_operation( irods::DATABASE_OP_SIMPLE_QUERY,          "pg_simple_query_op" );
-        pg->add_operation( irods::DATABASE_OP_DEL_COLL_BY_ADMIN,     "pg_del_coll_by_admin_op" );
-        pg->add_operation( irods::DATABASE_OP_DEL_COLL,              "pg_del_coll_op" );
-        pg->add_operation( irods::DATABASE_OP_CHECK_AUTH,            "pg_check_auth_op" );
-        pg->add_operation( irods::DATABASE_OP_MAKE_TEMP_PW,          "pg_make_temp_pw_op" );
-        pg->add_operation( irods::DATABASE_OP_UPDATE_PAM_PASSWORD,   "pg_update_pam_password_op" );
-        pg->add_operation( irods::DATABASE_OP_MOD_USER,              "pg_mod_user_op" );
-        pg->add_operation( irods::DATABASE_OP_MAKE_LIMITED_PW,       "pg_make_limited_pw_op" );
-        pg->add_operation( irods::DATABASE_OP_MOD_GROUP,             "pg_mod_group_op" );
-        pg->add_operation( irods::DATABASE_OP_MOD_RESC,              "pg_mod_resc_op" );
-        pg->add_operation( irods::DATABASE_OP_MOD_RESC_DATA_PATHS,   "pg_mod_resc_data_paths_op" );
-        pg->add_operation( irods::DATABASE_OP_MOD_RESC_FREESPACE,    "pg_mod_resc_freespace_op" );
-        pg->add_operation( irods::DATABASE_OP_REG_USER_RE,           "pg_reg_user_re_op" );
-        pg->add_operation( irods::DATABASE_OP_SET_AVU_METADATA,      "pg_set_avu_metadata_op" );
-        pg->add_operation( irods::DATABASE_OP_ADD_AVU_METADATA_WILD, "pg_add_avu_metadata_wild_op" );
-        pg->add_operation( irods::DATABASE_OP_ADD_AVU_METADATA,      "pg_add_avu_metadata_op" );
-        pg->add_operation( irods::DATABASE_OP_MOD_AVU_METADATA,      "pg_mod_avu_metadata_op" );
-        pg->add_operation( irods::DATABASE_OP_DEL_AVU_METADATA,      "pg_del_avu_metadata_op" );
-        pg->add_operation( irods::DATABASE_OP_COPY_AVU_METADATA,     "pg_copy_avu_metadata_op" );
-        pg->add_operation( irods::DATABASE_OP_MOD_ACCESS_CONTROL_RESC, "pg_mod_access_control_resc_op" );
-        pg->add_operation( irods::DATABASE_OP_MOD_ACCESS_CONTROL,      "pg_mod_access_control_op" );
-        pg->add_operation( irods::DATABASE_OP_RENAME_OBJECT,           "pg_rename_object_op" );
-        pg->add_operation( irods::DATABASE_OP_MOVE_OBJECT,             "pg_move_object_op" );
-        pg->add_operation( irods::DATABASE_OP_REG_TOKEN,               "pg_reg_token_op" );
-        pg->add_operation( irods::DATABASE_OP_DEL_TOKEN,               "pg_del_token_op" );
-        pg->add_operation( irods::DATABASE_OP_REG_SERVER_LOAD,         "pg_reg_server_load_op" );
-        pg->add_operation( irods::DATABASE_OP_PURGE_SERVER_LOAD,       "pg_purge_server_load_op" );
-        pg->add_operation( irods::DATABASE_OP_REG_SERVER_LOAD_DIGEST,  "pg_reg_server_load_digest_op" );
+        pg->add_operation( irods::DATABASE_OP_START,                    "pg_start_op" );
+        pg->add_operation( irods::DATABASE_OP_DEBUG,                    "pg_debug_op" );
+        pg->add_operation( irods::DATABASE_OP_OPEN,                     "pg_open_op" );
+        pg->add_operation( irods::DATABASE_OP_CLOSE,                    "pg_close_op" );
+        pg->add_operation( irods::DATABASE_OP_GET_LOCAL_ZONE,           "pg_get_local_zone_op" );
+        pg->add_operation( irods::DATABASE_OP_UPDATE_RESC_OBJ_COUNT,    "pg_update_resc_obj_count_op" );
+        pg->add_operation( irods::DATABASE_OP_MOD_DATA_OBJ_META,        "pg_mod_data_obj_meta_op" );
+        pg->add_operation( irods::DATABASE_OP_REG_DATA_OBJ,             "pg_reg_data_obj_op" );
+        pg->add_operation( irods::DATABASE_OP_REG_REPLICA,              "pg_reg_replica_op" );
+        pg->add_operation( irods::DATABASE_OP_UNREG_REPLICA,            "pg_unreg_replica_op" );
+        pg->add_operation( irods::DATABASE_OP_REG_RULE_EXEC,            "pg_reg_rule_exec_op" );
+        pg->add_operation( irods::DATABASE_OP_MOD_RULE_EXEC,            "pg_mod_rule_exec_op" );
+        pg->add_operation( irods::DATABASE_OP_DEL_RULE_EXEC,            "pg_del_rule_exec_op" );
+        pg->add_operation( irods::DATABASE_OP_ADD_CHILD_RESC,           "pg_add_child_resc_op" );
+        pg->add_operation( irods::DATABASE_OP_REG_RESC,                 "pg_reg_resc_op" );
+        pg->add_operation( irods::DATABASE_OP_DEL_CHILD_RESC,           "pg_del_child_resc_op" );
+        pg->add_operation( irods::DATABASE_OP_DEL_RESC,                 "pg_del_resc_op" );
+        pg->add_operation( irods::DATABASE_OP_ROLLBACK,                 "pg_rollback_op" );
+        pg->add_operation( irods::DATABASE_OP_COMMIT,                   "pg_commit_op" );
+        pg->add_operation( irods::DATABASE_OP_DEL_USER_RE,              "pg_del_user_re_op" );
+        pg->add_operation( irods::DATABASE_OP_REG_COLL_BY_ADMIN,        "pg_reg_coll_by_admin_op" );
+        pg->add_operation( irods::DATABASE_OP_REG_COLL,                 "pg_reg_coll_op" );
+        pg->add_operation( irods::DATABASE_OP_MOD_COLL,                 "pg_mod_coll_op" );
+        pg->add_operation( irods::DATABASE_OP_REG_ZONE,                 "pg_reg_zone_op" );
+        pg->add_operation( irods::DATABASE_OP_MOD_ZONE,                 "pg_mod_zone_op" );
+        pg->add_operation( irods::DATABASE_OP_RENAME_COLL,              "pg_rename_coll_op" );
+        pg->add_operation( irods::DATABASE_OP_MOD_ZONE_COLL_ACL,        "pg_mod_zone_coll_acl_op" );
+        pg->add_operation( irods::DATABASE_OP_RENAME_LOCAL_ZONE,        "pg_rename_local_zone_op" );
+        pg->add_operation( irods::DATABASE_OP_DEL_ZONE,                 "pg_del_zone_op" );
+        pg->add_operation( irods::DATABASE_OP_SIMPLE_QUERY,             "pg_simple_query_op" );
+        pg->add_operation( irods::DATABASE_OP_DEL_COLL_BY_ADMIN,        "pg_del_coll_by_admin_op" );
+        pg->add_operation( irods::DATABASE_OP_DEL_COLL,                 "pg_del_coll_op" );
+        pg->add_operation( irods::DATABASE_OP_CHECK_AUTH,               "pg_check_auth_op" );
+        pg->add_operation( irods::DATABASE_OP_MAKE_TEMP_PW,             "pg_make_temp_pw_op" );
+        pg->add_operation( irods::DATABASE_OP_UPDATE_PAM_PASSWORD,      "pg_update_pam_password_op" );
+        pg->add_operation( irods::DATABASE_OP_MOD_USER,                 "pg_mod_user_op" );
+        pg->add_operation( irods::DATABASE_OP_MAKE_LIMITED_PW,          "pg_make_limited_pw_op" );
+        pg->add_operation( irods::DATABASE_OP_MOD_GROUP,                "pg_mod_group_op" );
+        pg->add_operation( irods::DATABASE_OP_MOD_RESC,                 "pg_mod_resc_op" );
+        pg->add_operation( irods::DATABASE_OP_MOD_RESC_DATA_PATHS,      "pg_mod_resc_data_paths_op" );
+        pg->add_operation( irods::DATABASE_OP_MOD_RESC_FREESPACE,       "pg_mod_resc_freespace_op" );
+        pg->add_operation( irods::DATABASE_OP_REG_USER_RE,              "pg_reg_user_re_op" );
+        pg->add_operation( irods::DATABASE_OP_SET_AVU_METADATA,         "pg_set_avu_metadata_op" );
+        pg->add_operation( irods::DATABASE_OP_ADD_AVU_METADATA_WILD,    "pg_add_avu_metadata_wild_op" );
+        pg->add_operation( irods::DATABASE_OP_ADD_AVU_METADATA,         "pg_add_avu_metadata_op" );
+        pg->add_operation( irods::DATABASE_OP_MOD_AVU_METADATA,         "pg_mod_avu_metadata_op" );
+        pg->add_operation( irods::DATABASE_OP_DEL_AVU_METADATA,         "pg_del_avu_metadata_op" );
+        pg->add_operation( irods::DATABASE_OP_COPY_AVU_METADATA,        "pg_copy_avu_metadata_op" );
+        pg->add_operation( irods::DATABASE_OP_MOD_ACCESS_CONTROL_RESC,  "pg_mod_access_control_resc_op" );
+        pg->add_operation( irods::DATABASE_OP_MOD_ACCESS_CONTROL,       "pg_mod_access_control_op" );
+        pg->add_operation( irods::DATABASE_OP_RENAME_OBJECT,            "pg_rename_object_op" );
+        pg->add_operation( irods::DATABASE_OP_MOVE_OBJECT,              "pg_move_object_op" );
+        pg->add_operation( irods::DATABASE_OP_REG_TOKEN,                "pg_reg_token_op" );
+        pg->add_operation( irods::DATABASE_OP_DEL_TOKEN,                "pg_del_token_op" );
+        pg->add_operation( irods::DATABASE_OP_REG_SERVER_LOAD,          "pg_reg_server_load_op" );
+        pg->add_operation( irods::DATABASE_OP_PURGE_SERVER_LOAD,        "pg_purge_server_load_op" );
+        pg->add_operation( irods::DATABASE_OP_REG_SERVER_LOAD_DIGEST,   "pg_reg_server_load_digest_op" );
         pg->add_operation( irods::DATABASE_OP_PURGE_SERVER_LOAD_DIGEST, "pg_purge_server_load_digest_op" );
-        pg->add_operation( irods::DATABASE_OP_CALC_USAGE_AND_QUOTA,    "pg_calc_usage_and_quota_op" );
-        pg->add_operation( irods::DATABASE_OP_SET_QUOTA,               "pg_set_quota_op" );
-        pg->add_operation( irods::DATABASE_OP_CHECK_QUOTA,             "pg_check_quota_op" );
-        pg->add_operation( irods::DATABASE_OP_DEL_UNUSED_AVUS,         "pg_del_unused_avus_op" );
-        pg->add_operation( irods::DATABASE_OP_INS_RULE_TABLE,          "pg_ins_rule_table_op" );
-        pg->add_operation( irods::DATABASE_OP_INS_DVM_TABLE,           "pg_ins_dvm_table_op" );
-        pg->add_operation( irods::DATABASE_OP_INS_FNM_TABLE,           "pg_ins_fnm_table_op" );
-        pg->add_operation( irods::DATABASE_OP_INS_MSRVC_TABLE,         "pg_ins_msrvc_table_op" );
-        pg->add_operation( irods::DATABASE_OP_VERSION_RULE_BASE,       "pg_version_rule_base_op" );
-        pg->add_operation( irods::DATABASE_OP_VERSION_DVM_BASE,        "pg_version_dvm_base_op" );
-        pg->add_operation( irods::DATABASE_OP_VERSION_FNM_BASE,        "pg_version_fnm_base_op" );
-        pg->add_operation( irods::DATABASE_OP_ADD_SPECIFIC_QUERY,      "pg_add_specific_query_op" );
-        pg->add_operation( irods::DATABASE_OP_DEL_SPECIFIC_QUERY,      "pg_del_specific_query_op" );
-        pg->add_operation( irods::DATABASE_OP_SPECIFIC_QUERY,          "pg_specific_query_op" );
+        pg->add_operation( irods::DATABASE_OP_CALC_USAGE_AND_QUOTA,     "pg_calc_usage_and_quota_op" );
+        pg->add_operation( irods::DATABASE_OP_SET_QUOTA,                "pg_set_quota_op" );
+        pg->add_operation( irods::DATABASE_OP_CHECK_QUOTA,              "pg_check_quota_op" );
+        pg->add_operation( irods::DATABASE_OP_DEL_UNUSED_AVUS,          "pg_del_unused_avus_op" );
+        pg->add_operation( irods::DATABASE_OP_INS_RULE_TABLE,           "pg_ins_rule_table_op" );
+        pg->add_operation( irods::DATABASE_OP_INS_DVM_TABLE,            "pg_ins_dvm_table_op" );
+        pg->add_operation( irods::DATABASE_OP_INS_FNM_TABLE,            "pg_ins_fnm_table_op" );
+        pg->add_operation( irods::DATABASE_OP_INS_MSRVC_TABLE,          "pg_ins_msrvc_table_op" );
+        pg->add_operation( irods::DATABASE_OP_VERSION_RULE_BASE,        "pg_version_rule_base_op" );
+        pg->add_operation( irods::DATABASE_OP_VERSION_DVM_BASE,         "pg_version_dvm_base_op" );
+        pg->add_operation( irods::DATABASE_OP_VERSION_FNM_BASE,         "pg_version_fnm_base_op" );
+        pg->add_operation( irods::DATABASE_OP_ADD_SPECIFIC_QUERY,       "pg_add_specific_query_op" );
+        pg->add_operation( irods::DATABASE_OP_DEL_SPECIFIC_QUERY,       "pg_del_specific_query_op" );
+        pg->add_operation( irods::DATABASE_OP_SPECIFIC_QUERY,           "pg_specific_query_op" );
+        pg->add_operation( irods::DATABASE_OP_GET_HIERARCHY_FOR_RESC,   "pg_get_hierarchy_for_resc_op" );
+        pg->add_operation( irods::DATABASE_OP_MOD_TICKET,               "pg_mod_ticket_op" );
+        pg->add_operation( irods::DATABASE_OP_CHECK_AND_GET_OBJ_ID,     "pg_check_and_get_object_id_op" );
+        pg->add_operation( irods::DATABASE_OP_GET_RCS,                  "pg_get_icss_op" );
         pg->add_operation( irods::DATABASE_OP_SUBSTITUTE_RESOURCE_HIERARCHIES,
                            "pg_substitute_resource_hierarchies_op" );
         pg->add_operation( irods::DATABASE_OP_GET_DISTINCT_DATA_OBJ_COUNT_ON_RESOURCE,
                            "pg_get_distinct_data_obj_count_on_resource_op" );
         pg->add_operation( irods::DATABASE_OP_GET_DISTINCT_DATA_OBJS_MISSING_FROM_CHILD_GIVEN_PARENT,
                            "pg_get_distinct_data_objs_missing_from_child_given_parent_op" );
-        pg->add_operation( irods::DATABASE_OP_GET_HIERARCHY_FOR_RESC,          "pg_get_hierarchy_for_resc_op" );
-        pg->add_operation( irods::DATABASE_OP_MOD_TICKET,              "pg_mod_ticket_op" );
 
         // =-=-=-=-=-=-=-
         // upcast for return

@@ -111,7 +111,8 @@ namespace irods {
     const std::string DATABASE_OP_GET_DISTINCT_DATA_OBJS_MISSING_FROM_CHILD_GIVEN_PARENT( "database_get_distinct_data_objs_missing_from_child_given_parent" );
     const std::string DATABASE_OP_GET_DISTINCT_DATA_OBJ_COUNT_ON_RESOURCE( "database_get_distinct_data_obj_count_on_resource" );
     const std::string DATABASE_OP_GET_HIERARCHY_FOR_RESC( "database_get_hierarchy_for_resc" );
-     
+    const std::string DATABASE_OP_CHECK_AND_GET_OBJ_ID( "database_check_and_get_obj_id" ); 
+    const std::string DATABASE_OP_GET_RCS( "database_get_rcs" ); 
 
 
 

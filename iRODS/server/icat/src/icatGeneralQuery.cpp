@@ -43,8 +43,6 @@ int insertWhere( char *condition, int option );
 /* use a column size of at least this many characters: */
 #define MINIMUM_COL_SIZE 50
 
-extern icatSessionStruct *chlGetRcs();
-
 #ifdef EXTENDED_ICAT
 #define MAX_LINKS_TABLES_OR_COLUMNS 500+EXTENDED_TABLES_AND_COLUMNS
 #else
@@ -2172,7 +2170,7 @@ chlGenQuery( genQueryInp_t genQueryInp, genQueryOut_t *result ) {
         rodsLog( LOG_SQL, "chlGenQuery" );
     }
 
-    icatSessionStruct *icss;
+    icatSessionStruct *icss = 0;
 
     result->attriCnt = 0;
     result->rowCnt = 0;
@@ -2180,8 +2178,8 @@ chlGenQuery( genQueryInp_t genQueryInp, genQueryOut_t *result ) {
 
     currentMaxColSize = 0;
 
-    icss = chlGetRcs();
-    if ( icss == NULL ) {
+    status = chlGetRcs( &icss );
+    if( status < 0 || icss == NULL ) {
         return( CAT_NOT_OPEN );
     }
 #ifdef ADDR_64BITS

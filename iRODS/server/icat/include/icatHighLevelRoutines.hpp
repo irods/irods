@@ -224,5 +224,12 @@ int chlGetHierarchyForResc(
     const std::string&	zone_name,
     std::string& hierarchy );
 
+int chlCheckAndGetObjectID(
+    rsComm_t*, // comm
+    char*,     // type
+    char*,     // name
+    char* );   // access
+
+int chlGetRcs( icatSessionStruct** );
 
 #endif /* ICAT_HIGHLEVEL_ROUTINES_H */

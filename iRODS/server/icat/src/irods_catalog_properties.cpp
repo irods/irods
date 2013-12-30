@@ -24,7 +24,7 @@ namespace irods {
 
 
 // Query iCAT settings and fill catalog_properties::properties
-    error catalog_properties::capture() {
+    error catalog_properties::capture( icatSessionStruct* _icss ) {
         rodsLong_t row_count = 0; 	// total number of rows to get
         int col_nbr = 2;	// 2 columns for now: pg_settings.name, pg_settings.setting
         char *sql_out = NULL;	// sql result string
@@ -42,7 +42,7 @@ namespace irods {
 
 
         // First query to get number of rows
-        status = cmlGetIntegerValueFromSqlV3( "select count(*) from pg_settings", &row_count, &icss );
+        status = cmlGetIntegerValueFromSqlV3( "select count(*) from pg_settings", &row_count, _icss );
 
         if ( status < 0 ) {
             return ERROR( status, "Unable to get row count from pg_settings" );
@@ -56,7 +56,7 @@ namespace irods {
 
         // Main query to get settings
         status = cmlGetMultiRowStringValuesFromSql( "select name, setting from pg_settings",
-                 sql_out, MAX_NAME_LEN, row_count * col_nbr, NULL, NULL, NULL, &icss );
+                 sql_out, MAX_NAME_LEN, row_count * col_nbr, NULL, NULL, NULL, _icss );
 
         if ( status < 0 ) {
             free( sql_out );

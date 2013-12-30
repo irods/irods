@@ -15,11 +15,11 @@
 #include "rodsGeneralUpdate.hpp"
 
 #include "rodsClient.hpp"
+#include "icatHighLevelRoutines.hpp"
 #include "icatMidLevelRoutines.hpp"
 #include "icatLowLevel.hpp"
 
 extern int sGetColumnInfo( int defineVal, char **tableName, char **columnName );
-extern icatSessionStruct *chlGetRcs();
 
 extern int icatGeneralQuerySetup();
 
@@ -187,7 +187,11 @@ chlGeneralUpdate( generalUpdateInp_t generalUpdateInp ) {
     static int firstCall = 1;
     icatSessionStruct *icss;
 
-    icss = chlGetRcs();
+    status = chlGetRcs( &icss );
+    if( status < 0 || !icss ) {
+        return( CAT_NOT_OPEN );
+    }
+
     /*   result->rowCount=0; */
 
     if ( firstCall ) {
