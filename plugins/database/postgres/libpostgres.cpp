@@ -2241,15 +2241,16 @@ extern "C" {
         // extract the icss property
 //        icatSessionStruct icss;
 //        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
-        rodsLong_t status = checkAndGetObjectId( 
-                                _comm, 
+        rodsLong_t status = checkAndGetObjectId(
+                                _comm,
                                 _ctx.prop_map(),
                                 _type,
                                 _name,
                                 _access );
-        if( status < 0 ) {
+        if ( status < 0 ) {
             return ERROR( status, "checkAndGetObjectId failed" );
-        } else {
+        }
+        else {
             return SUCCESS();
 
         }
@@ -15889,11 +15890,11 @@ checkLevel:
             rodsLog( LOG_SQL, "chlGetRcs" );
         }
         if ( icss.status != 1 ) {
-            (*_icss) = 0;
+            ( *_icss ) = 0;
             return ERROR( icss.status, "catalog not connected" );
         }
 
-        (*_icss) = &icss;
+        ( *_icss ) = &icss;
         return SUCCESS();
 
     } // pg_get_icss_op
