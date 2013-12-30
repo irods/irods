@@ -2206,7 +2206,7 @@ chlGenQuery( genQueryInp_t genQueryInp, genQueryOut_t *result ) {
                 rodsLog( LOG_SQL, "chlGenQuery SQL 1" );
             }
             else {
-                rodsLog( LOG_SQL, "chlGenQuery SQL 2" );
+                rodsLog( LOG_SQL, "chlGenQuery S-Q-L 2" );
             }
         }
 

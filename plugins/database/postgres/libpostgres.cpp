@@ -15896,6 +15896,200 @@ checkLevel:
 
     } // pg_get_icss_op
 
+    // =-=-=-=-=-=-=-
+    // from general_query.cpp ::
+    int chl_gen_query_impl( genQueryInp_t, genQueryOut_t* );
+
+    irods::error pg_gen_query_op(
+        irods::plugin_context& _ctx,
+        genQueryInp_t*         _gen_query_inp,
+        genQueryOut_t*         _result ) {
+        // =-=-=-=-=-=-=-
+        // check the context
+        irods::error ret = _ctx.valid< irods::postgres_object >();
+        if ( !ret.ok() ) {
+            return PASS( ret );
+        }
+
+        // =-=-=-=-=-=-=-
+        // check the params
+        if ( !_gen_query_inp
+           ) {
+            return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
+
+        }
+
+        // =-=-=-=-=-=-=-
+        // get a postgres object from the context
+        irods::postgres_object_ptr pg;
+        ret = make_pg_ptr( _ctx.fco(), pg );
+        if ( !ret.ok() ) {
+            return PASS( ret );
+
+        }
+
+        // =-=-=-=-=-=-=-
+        // extract the icss property
+//        icatSessionStruct icss;
+//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
+        int status = chl_gen_query_impl(
+                         *_gen_query_inp,
+                         _result );
+//         if( status < 0 ) {
+//             return ERROR( status, "chl_gen_query_impl failed" );
+//         } else {
+//             return SUCCESS();
+//         }
+        return CODE( status );
+
+    } // pg_gen_query_op
+
+    // =-=-=-=-=-=-=-
+    // from general_query.cpp ::
+    int chl_gen_query_access_control_setup_impl( char*, char*, char*, int, int );
+
+    irods::error pg_gen_query_access_control_setup_op(
+        irods::plugin_context& _ctx,
+        char*                  _user,
+        char*                  _zone,
+        char*                  _host,
+        int                    _priv,
+        int                    _control_flag ) {
+        // =-=-=-=-=-=-=-
+        // check the context
+        irods::error ret = _ctx.valid< irods::postgres_object >();
+        if ( !ret.ok() ) {
+            return PASS( ret );
+        }
+
+        // =-=-=-=-=-=-=-
+        // check the params
+        //if ( ) {
+        //    return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
+        //
+        //}
+
+        // =-=-=-=-=-=-=-
+        // get a postgres object from the context
+        irods::postgres_object_ptr pg;
+        ret = make_pg_ptr( _ctx.fco(), pg );
+        if ( !ret.ok() ) {
+            return PASS( ret );
+
+        }
+
+        // =-=-=-=-=-=-=-
+        // extract the icss property
+//        icatSessionStruct icss;
+//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
+        int status = chl_gen_query_access_control_setup_impl(
+                         _user,
+                         _zone,
+                         _host,
+                         _priv,
+                         _control_flag );
+        if ( status < 0 ) {
+            return ERROR( status, "chl_gen_query_access_control_setup_impl failed" );
+        }
+        else {
+            return SUCCESS();
+        }
+
+    } // pg_gen_query_access_control_setup_op
+
+    // =-=-=-=-=-=-=-
+    // from general_query.cpp ::
+    int chl_gen_query_ticket_setup_impl( char*, char* );
+
+    irods::error pg_gen_query_ticket_setup_op(
+        irods::plugin_context& _ctx,
+        char*                  _ticket,
+        char*                  _client_addr ) {
+        // =-=-=-=-=-=-=-
+        // check the context
+        irods::error ret = _ctx.valid< irods::postgres_object >();
+        if ( !ret.ok() ) {
+            return PASS( ret );
+        }
+
+        // =-=-=-=-=-=-=-
+        // check the params
+        if ( !_ticket ||
+                !_client_addr ) {
+            return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
+
+        }
+
+        // =-=-=-=-=-=-=-
+        // get a postgres object from the context
+        irods::postgres_object_ptr pg;
+        ret = make_pg_ptr( _ctx.fco(), pg );
+        if ( !ret.ok() ) {
+            return PASS( ret );
+
+        }
+
+        // =-=-=-=-=-=-=-
+        // extract the icss property
+//        icatSessionStruct icss;
+//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
+        int status = chl_gen_query_ticket_setup_impl(
+                         _ticket,
+                         _client_addr );
+        if ( status < 0 ) {
+            return ERROR( status, "chl_gen_query_ticket_setup_impl failed" );
+        }
+        else {
+            return SUCCESS();
+        }
+
+    } // pg_gen_query_ticket_setup_op
+
+    // =-=-=-=-=-=-=-
+    // from general_query.cpp ::
+    int chl_general_update_impl( generalUpdateInp_t );
+
+    irods::error pg_general_update_op(
+        irods::plugin_context& _ctx,
+        generalUpdateInp_t*    _update_inp ) {
+        // =-=-=-=-=-=-=-
+        // check the context
+        irods::error ret = _ctx.valid< irods::postgres_object >();
+        if ( !ret.ok() ) {
+            return PASS( ret );
+        }
+
+        // =-=-=-=-=-=-=-
+        // check the params
+        if ( !_update_inp ) {
+            return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
+
+        }
+
+        // =-=-=-=-=-=-=-
+        // get a postgres object from the context
+        irods::postgres_object_ptr pg;
+        ret = make_pg_ptr( _ctx.fco(), pg );
+        if ( !ret.ok() ) {
+            return PASS( ret );
+
+        }
+
+        // =-=-=-=-=-=-=-
+        // extract the icss property
+//        icatSessionStruct icss;
+//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
+        int status = chl_general_update_impl(
+                         *_update_inp );
+        if ( status < 0 ) {
+            return ERROR( status, "chl_general_update_impl( failed" );
+        }
+        else {
+            return SUCCESS();
+        }
+
+    } // pg_general_update_op
+
 
 
 
@@ -16022,6 +16216,12 @@ checkLevel:
         pg->add_operation( irods::DATABASE_OP_MOD_TICKET,               "pg_mod_ticket_op" );
         pg->add_operation( irods::DATABASE_OP_CHECK_AND_GET_OBJ_ID,     "pg_check_and_get_object_id_op" );
         pg->add_operation( irods::DATABASE_OP_GET_RCS,                  "pg_get_icss_op" );
+        pg->add_operation( irods::DATABASE_OP_GEN_QUERY,                "pg_gen_query_op" );
+        pg->add_operation( irods::DATABASE_OP_GENERAL_UPDATE,           "pg_general_update_op" );
+        pg->add_operation( irods::DATABASE_OP_GEN_QUERY_ACCESS_CONTROL_SETUP,
+                           "pg_gen_query_access_control_setup_op" );
+        pg->add_operation( irods::DATABASE_OP_GEN_QUERY_TICKET_SETUP,
+                           "pg_gen_query_ticket_setup_op" );
         pg->add_operation( irods::DATABASE_OP_SUBSTITUTE_RESOURCE_HIERARCHIES,
                            "pg_substitute_resource_hierarchies_op" );
         pg->add_operation( irods::DATABASE_OP_GET_DISTINCT_DATA_OBJ_COUNT_ON_RESOURCE,

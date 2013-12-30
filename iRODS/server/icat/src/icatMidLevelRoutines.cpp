@@ -984,7 +984,7 @@ cmlCheckDirId( char *dirId, char *userName, char *userZone,
     rodsLong_t iVal;
 
     if ( logSQL_CML != 0 ) {
-        rodsLog( LOG_SQL, "cmlCheckDirId SQL 1 " );
+        rodsLog( LOG_SQL, "cmlCheckDirId S-Q-L 1 " );
     }
 
     status = cmlGetIntegerValueFromSql(
@@ -995,7 +995,7 @@ cmlCheckDirId( char *dirId, char *userName, char *userZone,
            of the two likely cases is problem. */
 
         if ( logSQL_CML != 0 ) {
-            rodsLog( LOG_SQL, "cmlCheckDirId SQL 2 " );
+            rodsLog( LOG_SQL, "cmlCheckDirId S-Q-L 2 " );
         }
 
         status = cmlGetIntegerValueFromSql(

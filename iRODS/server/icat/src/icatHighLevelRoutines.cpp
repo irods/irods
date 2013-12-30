@@ -17,35 +17,15 @@
 **************************************************************************/
 
 // =-=-=-=-=-=-=-
+// irods includes
+#include "icatHighLevelRoutines.hpp"
+#include "readServerConfig.hpp"
+#include "icatStructs.hpp"
 #include "irods_error.hpp"
-#include "irods_zone_info.hpp"
-#include "irods_sql_logger.hpp"
-#include "irods_string_tokenize.hpp"
-#include "irods_log.hpp"
-#include "irods_tmp_string.hpp"
-#include "irods_children_parser.hpp"
-#include "irods_stacktrace.hpp"
-#include "irods_hierarchy_parser.hpp"
-#include "irods_catalog_properties.hpp"
-#include "irods_kvp_string_parser.hpp"
-#include "irods_auth_object.hpp"
-#include "irods_auth_factory.hpp"
-#include "irods_auth_plugin.hpp"
-#include "irods_auth_manager.hpp"
-#include "irods_auth_constants.hpp"
-
 #include "irods_database_object.hpp"
 #include "irods_database_factory.hpp"
 #include "irods_database_manager.hpp"
 #include "irods_database_constants.hpp"
-
-// =-=-=-=-=-=-=-
-// irods includes
-#include "rods.hpp"
-#include "rcMisc.hpp"
-#include "icatMidLevelRoutines.hpp"
-#include "icatHighLevelRoutines.hpp"
-#include "icatLowLevel.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -58,6 +38,10 @@
 // =-=-=-=-=-=-=-
 // debug flag used across all icat fcns
 int logSQL = 0;
+int logSQLGenQuery = 0;
+int logSQLGenUpdate = 0;
+int logSQL_CML = 0;
+int auditEnabled = 0;
 
 // =-=-=-=-=-=-=-
 // holds the flavor of the catalog for the
@@ -81,15 +65,17 @@ int chlDebug(
     // if mode contains 'sql' then turn SQL logging on
     if ( mode.find( "sql" ) != std::string::npos ) {
         logSQL = 1;
-        chlDebugGenQuery( 1 );
-        chlDebugGenUpdate( 1 );
-        cmlDebug( 2 );
+        logSQLGenQuery = 1;//chlDebugGenQuery( 1 );
+        logSQLGenUpdate = 1;//chlDebugGenUpdate( 1 );
+        logSQL_CML = 2;
+        auditEnabled = 1;//cmlDebug( 2 );
     }
     else {
         logSQL = 0;
-        chlDebugGenQuery( 0 );
-        chlDebugGenUpdate( 0 );
-        cmlDebug( 0 );
+        logSQLGenQuery = 1;//chlDebugGenQuery( 0 );
+        logSQLGenUpdate = 1;//chlDebugGenUpdate( 0 );
+        logSQL_CML = 0;
+        auditEnabled = 0;//cmlDebug( 0 );
     }
 
     return( 0 );
@@ -4860,5 +4846,218 @@ int chlModTicket(
 
 } // chlModTicket
 
+int chlGenQuery(
+    genQueryInp_t  _gen_query_inp,
+    genQueryOut_t* _result ) {
+    // =-=-=-=-=-=-=-
+    // call factory for database object
+    irods::database_object_ptr db_obj_ptr;
+    irods::error ret = irods::database_factory(
+                           database_plugin_type,
+                           db_obj_ptr );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
 
+    // =-=-=-=-=-=-=-
+    // resolve a plugin for that object
+    irods::plugin_ptr db_plug_ptr;
+    ret = db_obj_ptr->resolve(
+              irods::DATABASE_INTERFACE,
+              db_plug_ptr );
+    if ( !ret.ok() ) {
+        irods::log(
+            PASSMSG(
+                "failed to resolve database interface",
+                ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // cast plugin and object to db and fco for call
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
+                                        irods::first_class_object > ( db_obj_ptr );
+    irods::database_ptr           db = boost::dynamic_pointer_cast <
+                                       irods::database > ( db_plug_ptr );
+
+    // =-=-=-=-=-=-=-
+    // call the operation on the plugin
+    ret = db->call <
+          genQueryInp_t*,
+          genQueryOut_t* > (
+              irods::DATABASE_OP_GEN_QUERY,
+              ptr,
+              &_gen_query_inp,
+              _result );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+    }
+
+    return ret.code();
+
+} // chlGenQuery
+
+int chlGenQueryAccessControlSetup(
+    char* _user,
+    char* _zone,
+    char* _host,
+    int   _priv,
+    int   _control_flag ) {
+    // =-=-=-=-=-=-=-
+    // call factory for database object
+    irods::database_object_ptr db_obj_ptr;
+    irods::error ret = irods::database_factory(
+                           database_plugin_type,
+                           db_obj_ptr );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // resolve a plugin for that object
+    irods::plugin_ptr db_plug_ptr;
+    ret = db_obj_ptr->resolve(
+              irods::DATABASE_INTERFACE,
+              db_plug_ptr );
+    if ( !ret.ok() ) {
+        irods::log(
+            PASSMSG(
+                "failed to resolve database interface",
+                ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // cast plugin and object to db and fco for call
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
+                                        irods::first_class_object > ( db_obj_ptr );
+    irods::database_ptr           db = boost::dynamic_pointer_cast <
+                                       irods::database > ( db_plug_ptr );
+
+    // =-=-=-=-=-=-=-
+    // call the operation on the plugin
+    ret = db->call <
+          char*,
+          char*,
+          char*,
+          int,
+          int > (
+              irods::DATABASE_OP_GEN_QUERY_ACCESS_CONTROL_SETUP,
+              ptr,
+              _user,
+              _zone,
+              _host,
+              _priv,
+              _control_flag );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+    }
+
+    return ret.code();
+
+} // chlGenQueryAccessControlSetup
+
+int chlGenQueryTicketSetup(
+    char* _ticket,
+    char* _client_addr ) {
+    // =-=-=-=-=-=-=-
+    // call factory for database object
+    irods::database_object_ptr db_obj_ptr;
+    irods::error ret = irods::database_factory(
+                           database_plugin_type,
+                           db_obj_ptr );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // resolve a plugin for that object
+    irods::plugin_ptr db_plug_ptr;
+    ret = db_obj_ptr->resolve(
+              irods::DATABASE_INTERFACE,
+              db_plug_ptr );
+    if ( !ret.ok() ) {
+        irods::log(
+            PASSMSG(
+                "failed to resolve database interface",
+                ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // cast plugin and object to db and fco for call
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
+                                        irods::first_class_object > ( db_obj_ptr );
+    irods::database_ptr           db = boost::dynamic_pointer_cast <
+                                       irods::database > ( db_plug_ptr );
+
+    // =-=-=-=-=-=-=-
+    // call the operation on the plugin
+    ret = db->call <
+          char*,
+          char* > (
+              irods::DATABASE_OP_GEN_QUERY_TICKET_SETUP,
+              ptr,
+              _ticket,
+              _client_addr );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+    }
+
+    return ret.code();
+
+
+} // chlGenQueryTicketSetup
+
+int chlGeneralUpdate(
+    generalUpdateInp_t _update_inp ) {
+    // =-=-=-=-=-=-=-
+    // call factory for database object
+    irods::database_object_ptr db_obj_ptr;
+    irods::error ret = irods::database_factory(
+                           database_plugin_type,
+                           db_obj_ptr );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // resolve a plugin for that object
+    irods::plugin_ptr db_plug_ptr;
+    ret = db_obj_ptr->resolve(
+              irods::DATABASE_INTERFACE,
+              db_plug_ptr );
+    if ( !ret.ok() ) {
+        irods::log(
+            PASSMSG(
+                "failed to resolve database interface",
+                ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // cast plugin and object to db and fco for call
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
+                                        irods::first_class_object > ( db_obj_ptr );
+    irods::database_ptr           db = boost::dynamic_pointer_cast <
+                                       irods::database > ( db_plug_ptr );
+
+    // =-=-=-=-=-=-=-
+    // call the operation on the plugin
+    ret = db->call <
+          generalUpdateInp_t* > (
+              irods::DATABASE_OP_GENERAL_UPDATE,
+              ptr,
+              &_update_inp );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+    }
+
+    return ret.code();
+
+} // chlGeneralUpdate
 

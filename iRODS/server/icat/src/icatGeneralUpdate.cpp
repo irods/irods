@@ -25,7 +25,7 @@ extern int icatGeneralQuerySetup();
 
 int updateDebug = 0;
 
-int logSQLGenUpdate = 0;
+extern int logSQLGenUpdate;
 char tSQL[MAX_SQL_SIZE];
 
 int

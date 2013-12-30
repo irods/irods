@@ -100,20 +100,20 @@ sub mkfiles {
 $ENV{'irodsConfigDir'}="../../config";
 
 # GenQuery options
-runCmd(0, "test_genq gen7 i");
-runCmd(0, "test_genq gen7 i 1 10");
-runCmd(2, "test_genq gen7 i 20 10");
-runCmd(0, "test_genq gen8 / 0 10");
-runCmd(2, "test_genq gen8 abc 0 10");
-runCmd(0, "test_genq gen7 i 0 8 10"); # test totalRowCount
-runCmd(0, "test_genq gen15 i 0 8"); # test AUTO_CLOSE
+# JMC runCmd(0, "test_genq gen7 i");
+# JMC runCmd(0, "test_genq gen7 i 1 10");
+# JMC runCmd(2, "test_genq gen7 i 20 10");
+# JMC runCmd(0, "test_genq gen8 / 0 10");
+# JMC runCmd(2, "test_genq gen8 abc 0 10");
+# JMC runCmd(0, "test_genq gen7 i 0 8 10"); # test totalRowCount
+# JMC runCmd(0, "test_genq gen15 i 0 8"); # test AUTO_CLOSE
 
 # GenQuery options to check access; exercise cmlCheckDirId
-runCmd(0, "test_genq gen10 $USER $myZone $ACCESS_GOOD $HOME");
-runCmd(0, "test_genq gen10 $USER $myZone $ACCESS_BAD $HOME");
+# JMC runCmd(0, "test_genq gen10 $USER $myZone $ACCESS_GOOD $HOME");
+# JMC runCmd(0, "test_genq gen10 $USER $myZone $ACCESS_BAD $HOME");
 
 # Scan the tables for possible cycles in the links between tables.
-runCmd(0, "test_genq -1");
+# JMC runCmd(0, "test_genq -1");
 
 # Mod resource freespace
 runCmd(0, "test_chl modrfs $Resc 123456789");
@@ -283,8 +283,8 @@ runCmd(0, "irm -rf $DIR1");
 # Oct 2011, re-added test_genu tests to improve coverage a little.
 # Without defining an extended ICAT (which would be difficult), 
 # coverage will be slight tho.
-runCmd(2, "test_genu 1 test 100078 name1");
-runCmd(2, "test_genu 2 test 100078 name1");
+# JMC runCmd(2, "test_genu 1 test 100078 name1");
+# JMC runCmd(2, "test_genu 2 test 100078 name1");
 
 # multiple open/close test
 runCmd(0, "test_chl open");

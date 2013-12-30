@@ -105,15 +105,15 @@ INCLUDES +=	-I$(svrIcatIncDir)
 ifdef RODS_CAT
 CFLAGS +=	-DRODS_CAT
 SVR_ICAT_OBJS =	\
-		$(svrIcatObjDir)/irods_catalog_properties.o \
-		$(svrIcatObjDir)/icatMidLevelRoutines.o \
-		$(svrIcatObjDir)/icatHighLevelRoutines.o \
-		$(svrIcatObjDir)/icatGeneralQuery.o \
-		$(svrIcatObjDir)/icatGeneralQuerySetup.o \
-		$(svrIcatObjDir)/icatGeneralUpdate.o \
-		$(svrIcatObjDir)/irods_zone_info.o \
-		$(svrIcatObjDir)/irods_sql_logger.o \
-		$(svrIcatObjDir)/irods_tmp_string.o
+		$(svrIcatObjDir)/icatHighLevelRoutines.o 
+#		$(svrIcatObjDir)/icatMidLevelRoutines.o 
+#		$(svrIcatObjDir)/irods_catalog_properties.o \
+#		$(svrIcatObjDir)/irods_zone_info.o \
+#		$(svrIcatObjDir)/irods_sql_logger.o \
+#		$(svrIcatObjDir)/irods_tmp_string.o
+#		$(svrIcatObjDir)/icatGeneralUpdate.o \
+#        $(svrIcatObjDir)/icatGeneralQuery.o \
+#		$(svrIcatObjDir)/icatGeneralQuerySetup.o \
 
 INCLUDES +=	-I$(svrIcatIncDir)
 
@@ -130,21 +130,21 @@ SVR_ICAT_OBJS += $(svrIcatObjDir)/rdaHighLevelRoutines.o
 
 ifdef PSQICAT
 # Support Postgres
-SVR_ICAT_OBJS += $(svrIcatObjDir)/icatLowLevelOdbc.o
+#SVR_ICAT_OBJS += $(svrIcatObjDir)/icatLowLevelOdbc.o
 INCLUDES +=	-I$(POSTGRES_HOME)/include
 endif
 
 ifdef ORAICAT
 # Support Oracle
 CFLAGS +=	-DORA_ICAT
-SVR_ICAT_OBJS += $(svrIcatObjDir)/icatLowLevelOracle.o
+#SVR_ICAT_OBJS += $(svrIcatObjDir)/icatLowLevelOracle.o
 INCLUDES +=	-I$(ORACLE_HOME)/rdbms/public
 endif
 endif
 
 ifdef MYICAT
 # Support MYSQL
-SVR_ICAT_OBJS += $(svrIcatObjDir)/icatLowLevelOdbc.o
+#SVR_ICAT_OBJS += $(svrIcatObjDir)/icatLowLevelOdbc.o
 INCLUDES +=	-I$(UNIXODBC_HOME)/include
 CFLAGS += -DUNIXODBC_DATASOURCE=\"$(UNIXODBC_DATASOURCE)\" -DMY_ICAT=1
 endif
@@ -289,10 +289,10 @@ TEST_OBJS =	\
 
 TEST_BINS =	\
 		$(svrTestBinDir)/test_chl \
-		$(svrTestBinDir)/test_cll \
-		$(svrTestBinDir)/test_genq \
-		$(svrTestBinDir)/test_genu \
-		$(svrTestBinDir)/test_rda
+		$(svrTestBinDir)/test_cll 
+#		$(svrTestBinDir)/test_genq \
+#		$(svrTestBinDir)/test_genu \
+#		$(svrTestBinDir)/test_rda
 endif
 
 # reTest only works on Solaris

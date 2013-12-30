@@ -801,12 +801,12 @@ int testCheckQuota( rsComm_t *rsComm, char *userName, char *rescName,
 
 rodsLong_t
 testCurrent( rsComm_t *rsComm ) {
-    rodsLong_t status;
+    rodsLong_t status = 0;
     icatSessionStruct *icss;
 
     chlGetRcs( &icss );
 
-    status = cmlGetCurrentSeqVal( icss );
+// JMC    status = cmlGetCurrentSeqVal( icss );
     return( status );
 }
 
@@ -1064,8 +1064,8 @@ main( int argc, char **argv ) {
 
     if ( strcmp( argv[1], "rename" ) == 0 ) {
         status = testRename( Comm, argv[2], argv[3] );
-        testCurrent( Comm );  /* exercise this as part of rename;
-                               testCurrent needs a SQL context */
+        // JMC testCurrent( Comm );  // exercise this as part of rename;
+        // testCurrent needs a SQL context
         didOne = 1;
     }
 

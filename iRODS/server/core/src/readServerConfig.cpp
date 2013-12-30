@@ -58,6 +58,9 @@ readServerConfig( rodsServerConfig_t *rodsServerConfig ) {
     fptr = fopen( serverConfigFile, "r" );
 
     if ( fptr == NULL ) {
+        printf( "Cannot open SERVER_CONFIG_FILE file %s. errno = %d\n",
+                serverConfigFile, errno );
+        fflush( stdout );
         rodsLog( LOG_NOTICE,
                  "Cannot open SERVER_CONFIG_FILE file %s. errno = %d\n",
                  serverConfigFile, errno );
