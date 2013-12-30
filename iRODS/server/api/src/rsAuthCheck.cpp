@@ -26,7 +26,6 @@ rsAuthCheck( rsComm_t *rsComm, authCheckInp_t *authCheckInp,
     authCheckOut_t *result;
     unsigned char *digest;
     char md5Buf[CHALLENGE_LEN + MAX_PASSWORD_LEN + 2];
-    MD5_CTX context;
     char ServerID[MAX_PASSWORD_LEN + 2];
 
     *authCheckOut = ( authCheckOut_t* )malloc( sizeof( authCheckOut_t ) );

@@ -556,16 +556,12 @@ resolveRodsTarget( rcComm_t *conn, rodsEnv *myRodsEnv,
                         if ( destPath->objType == COLL_OBJ_T ) {
                             if ( oprType != MOVE_OPR ) {
                                 /* rename does not need to mkColl */
-#ifdef FILESYSTEM_META
                                 if ( srcPath->objType <= COLL_OBJ_T ) {
                                     status = mkCollWithSrcCollMeta( conn, destPath->outPath, srcPath->outPath );
                                 }
                                 else {
                                     status = mkCollWithDirMeta( conn, targPath->outPath, srcPath->inPath );
                                 }
-#else
-                                status = mkColl( conn, targPath->outPath );
-#endif
                             }
                             else {
                                 status = 0;
@@ -599,16 +595,12 @@ resolveRodsTarget( rcComm_t *conn, rodsEnv *myRodsEnv,
                 if ( destPath->objType <= COLL_OBJ_T ) {
                     if ( oprType != MOVE_OPR ) {
                         /* rename does not need to mkColl */
-#ifdef FILESYSTEM_META
                         if ( srcPath->objType <= COLL_OBJ_T ) {
                             status = mkCollWithSrcCollMeta( conn, destPath->outPath, srcPath->outPath );
                         }
                         else {
                             status = mkCollWithDirMeta( conn, destPath->outPath, srcPath->inPath );
                         }
-#else
-                        status = mkColl( conn, destPath->outPath );
-#endif
                     }
                     else {
                         status = 0;
@@ -708,17 +700,6 @@ getLastPathElement( char *inInPath, char *lastElement ) {
         }
     }
 
-#if 0
-    if ( len == 1 && ( *lastElement == '.' || *lastElement == '~' ||
-                       *lastElement == '^' || *lastElement == '/' ) ) {
-        *lastElement = '\0';
-    }
-    else if ( len == 2 && *lastElement == '.' && *( lastElement + 1 ) == '.' ) {
-        /* ".." */
-        *lastElement = '\0';
-    }
-#endif
-
     return ( 0 );
 }
 
@@ -731,12 +712,6 @@ clearRodsPath( rodsPath_t *rodsPath ) {
     if ( rodsPath->rodsObjStat == NULL ) {
         return;
     }
-
-#if 0   /* this is freed in freeRodsObjStat */
-    if ( rodsPath->rodsObjStat->specColl != NULL ) {
-        free( rodsPath->rodsObjStat->specColl );
-    }
-#endif
 
     freeRodsObjStat( rodsPath->rodsObjStat );
 

@@ -40,9 +40,7 @@ l3FileGetSingleBuf( rsComm_t *rsComm, int l1descInx,
 #define RS_DATA_OBJ_GET NULL
 #endif
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* prototype for the client call */
     /* rcDataObjGet - Get (download) a iRODS data object.
@@ -67,8 +65,6 @@ extern "C" {
     _rcDataObjGet( rcComm_t *conn, dataObjInp_t *dataObjInp,
                    portalOprOut_t **portalOprOut, bytesBuf_t *dataObjOutBBuf );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif  /* DATA_OBJ_GET_H */

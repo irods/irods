@@ -82,10 +82,6 @@ doTest1( rcComm_t *Conn,
 
     addInxIval( &genQueryInp.selectInp, COL_COLL_ACCESS_NAME, ORDER_BY );
 
-#if 0
-    addInxIval( &genQueryInp.selectInp, COL_COLL_ACCESS_USER_ID, 1 );
-#endif
-
     genQueryInp.maxRows = 10;
 
     status =  rcGenQuery( Conn, &genQueryInp, &genQueryOut );
@@ -145,10 +141,6 @@ doTest2( rcComm_t *Conn,
 
     addInxIval( &genQueryInp.selectInp, COL_DATA_ACCESS_NAME, ORDER_BY );
 
-#if 0
-    addInxIval( &genQueryInp.selectInp, COL_DATA_ACCESS_USER_ID, 1 );
-#endif
-
     genQueryInp.maxRows = 10;
 
     status =  rcGenQuery( Conn, &genQueryInp, &genQueryOut );
@@ -171,9 +163,6 @@ doTest3( rcComm_t *Conn,
     genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut;
     char condStr[MAX_NAME_LEN];
-#if 0
-    char condStr2[MAX_NAME_LEN];
-#endif
     int status;
     char accStr[LONG_NAME_LEN];
     int doAccessControlToQuery = 0;
@@ -206,14 +195,6 @@ doTest3( rcComm_t *Conn,
     else {
         addInxIval( &genQueryInp.selectInp, COL_R_CLASS_NAME, ORDER_BY_DESC );
     }
-
-#if 0
-    snprintf( condStr2, LONG_NAME_LEN, "='%s'", userName );
-    addInxVal( &genQueryInp.sqlCondInp, COL_DATA_USER_NAME, condStr2 );
-
-    snprintf( condStr2, LONG_NAME_LEN, "='%s'", rodsZone );
-    addInxVal( &genQueryInp.sqlCondInp, COL_DATA_USER_ZONE, condStr2 );
-#endif
 
     genQueryInp.maxRows = 10;
 
@@ -463,18 +444,6 @@ main( int argc, char **argv ) {
     rcComm_t *Conn;
     rErrMsg_t errMsg;
     rodsArguments_t myRodsArgs;
-
-#if 0
-    struct stat statbuf;
-    int doStty = 0;
-    char newPw[MAX_PASSWORD_LEN + 10];
-    int len, lcopy;
-
-    char buf0[MAX_PASSWORD_LEN + 10];
-    char buf1[MAX_PASSWORD_LEN + 10];
-    char buf2[MAX_PASSWORD_LEN + 10];
-#endif
-
 
     status = parseCmdLineOpt( argc, argv, "ehvVl", 0, &myRodsArgs );
     if ( status != 0 ) {

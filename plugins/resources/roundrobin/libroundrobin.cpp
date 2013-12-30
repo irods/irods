@@ -169,7 +169,7 @@ extern "C" {
                 try {
                     // =-=-=-=-=-=-=-
                     // cast std::string to int index
-                    int idx = boost::lexical_cast<int>( ctx );
+                    size_t idx = boost::lexical_cast<int>( ctx );
                     if ( idx < 0 || idx >= list_size ) {
                         irods::log( ERROR( -1, "build_sorted_child_vector - index < 0" ) );
                         continue;
@@ -852,7 +852,7 @@ extern "C" {
         irods::resource_ptr&        _resc ) {
         // =-=-=-=-=-=-=-
         // counter and flag
-        size_t child_ctr   = 0;
+        int child_ctr   = 0;
         bool   child_found = false;
 
         // =-=-=-=-=-=-=-

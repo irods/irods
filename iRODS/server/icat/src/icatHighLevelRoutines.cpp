@@ -44,7 +44,6 @@
 #include "rods.hpp"
 #include "rcMisc.hpp"
 #include "icatMidLevelRoutines.hpp"
-#include "icatMidLevelHelpers.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "icatLowLevel.hpp"
 
@@ -57,7 +56,7 @@
 #include <boost/regex.hpp>
 
 // =-=-=-=-=-=-=-
-// debug flag used across all icat fcns 
+// debug flag used across all icat fcns
 int logSQL = 0;
 
 // =-=-=-=-=-=-=-
@@ -95,7 +94,7 @@ int chlDebug(
 
     return( 0 );
 
-} // chlDebug 
+} // chlDebug
 
 /// =-=-=-=-=-=-=-
 /// @brief Open a connection to the database.  This has to be called first.
@@ -210,7 +209,7 @@ int chlClose() {
 //are actually one module but in two separate source files (as they
 //got larger) so this is a 'glue' that binds them together.  So this
 //is mostly an 'internal' function too.
-int chlGetRcs( 
+int chlGetRcs(
     icatSessionStruct** _icss ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -308,7 +307,7 @@ int chlGetLocalZone(
 } // chlGetLocalZone
 
 // =-=-=-=-=-=-=-
-// 
+//
 int chlCheckAndGetObjectID(
     rsComm_t* _comm,
     char*     _type,
@@ -349,16 +348,16 @@ int chlCheckAndGetObjectID(
     // =-=-=-=-=-=-=-
     // call the get local zone operation on the plugin
     ret = db->call <
-              rsComm_t*,
-              char*,
-              char*,
-              char* >(
-                  irods::DATABASE_OP_CHECK_AND_GET_OBJ_ID,
-                  ptr,
-                  _comm,
-                  _type,
-                  _name,
-                  _access );
+          rsComm_t*,
+          char*,
+          char*,
+          char* > (
+              irods::DATABASE_OP_CHECK_AND_GET_OBJ_ID,
+              ptr,
+              _comm,
+              _type,
+              _name,
+              _access );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
@@ -789,7 +788,7 @@ int chlModRuleExec(
 } // chlModRuleExec
 
 // =-=-=-=-=-=-=-
-// delete a delayed rule execution entry 
+// delete a delayed rule execution entry
 int chlDelRuleExec(
     rsComm_t* _comm,
     char*     _re_id ) {
@@ -3448,15 +3447,15 @@ int chlDelToken(
 // chlRegServerLoad - Register a new iRODS server load row.
 // Input - rsComm_t *rsComm  - the server handle,
 //    input values.
-int chlRegServerLoad( 
+int chlRegServerLoad(
     rsComm_t* _comm,
-    char*     _host_name, 
+    char*     _host_name,
     char*     _resc_name,
-    char*     _cpu_used, 
-    char*     _mem_used, 
+    char*     _cpu_used,
+    char*     _mem_used,
     char*     _swap_used,
-    char*     _run_q_load, 
-    char*     _disk_space, 
+    char*     _run_q_load,
+    char*     _disk_space,
     char*     _net_input,
     char*     _net_output ) {
     // =-=-=-=-=-=-=-
@@ -3507,13 +3506,13 @@ int chlRegServerLoad(
               irods::DATABASE_OP_REG_SERVER_LOAD,
               ptr,
               _comm,
-              _host_name, 
+              _host_name,
               _resc_name,
-              _cpu_used, 
-              _mem_used, 
+              _cpu_used,
+              _mem_used,
               _swap_used,
-              _run_q_load, 
-              _disk_space, 
+              _run_q_load,
+              _disk_space,
               _net_input,
               _net_output );
     if ( !ret.ok() ) {
@@ -3529,8 +3528,8 @@ int chlRegServerLoad(
 // that are older than secondsAgo seconds ago.
 // Input - rsComm_t *rsComm - the server handle,
 //    char *secondsAgo (age in seconds).
-int chlPurgeServerLoad( 
-    rsComm_t* _comm, 
+int chlPurgeServerLoad(
+    rsComm_t* _comm,
     char*     _seconds_ago ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -3585,9 +3584,9 @@ int chlPurgeServerLoad(
 // chlRegServerLoadDigest - Register a new iRODS server load-digest row.
 // Input - rsComm_t *rsComm  - the server handle,
 //    input values.
-int chlRegServerLoadDigest( 
+int chlRegServerLoadDigest(
     rsComm_t* _comm,
-    char*     _resc_name, 
+    char*     _resc_name,
     char*     _load_factor ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -3645,8 +3644,8 @@ int chlRegServerLoadDigest(
 // that are older than secondsAgo seconds ago.
 // Input - rsComm_t *rsComm - the server handle,
 //    int secondsAgo (age in seconds).
-int chlPurgeServerLoadDigest( 
-    rsComm_t* _comm, 
+int chlPurgeServerLoadDigest(
+    rsComm_t* _comm,
     char*     _seconds_ago ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -3697,7 +3696,7 @@ int chlPurgeServerLoadDigest(
 
 } // chlPurgeServerLoadDigest
 
-int chlCalcUsageAndQuota( 
+int chlCalcUsageAndQuota(
     rsComm_t* _comm ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -3734,7 +3733,7 @@ int chlCalcUsageAndQuota(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t* >(
+          rsComm_t* > (
               irods::DATABASE_OP_CALC_USAGE_AND_QUOTA,
               ptr,
               _comm );
@@ -3746,11 +3745,11 @@ int chlCalcUsageAndQuota(
 
 } // chlCalcUsageAndQuota
 
-int chlSetQuota( 
-    rsComm_t* _comm, 
-    char*     _type, 
+int chlSetQuota(
+    rsComm_t* _comm,
+    char*     _type,
     char*     _name,
-    char*     _resc_name, 
+    char*     _resc_name,
     char*     _limit ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -3791,7 +3790,7 @@ int chlSetQuota(
           char*,
           char*,
           char*,
-          char* >(
+          char* > (
               irods::DATABASE_OP_SET_QUOTA,
               ptr,
               _comm,
@@ -3807,11 +3806,11 @@ int chlSetQuota(
 
 } // chlSetQuota
 
-int chlCheckQuota( 
-    rsComm_t*   _comm, 
-    char*       _user_name, 
+int chlCheckQuota(
+    rsComm_t*   _comm,
+    char*       _user_name,
     char*       _resc_name,
-    rodsLong_t* _user_quota, 
+    rodsLong_t* _user_quota,
     int*        _quota_status ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -3852,13 +3851,13 @@ int chlCheckQuota(
           char*,
           char*,
           rodsLong_t*,
-          int* >(
+          int* > (
               irods::DATABASE_OP_CHECK_QUOTA,
               ptr,
               _comm,
-              _user_name, 
+              _user_name,
               _resc_name,
-              _user_quota, 
+              _user_quota,
               _quota_status );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
@@ -3869,7 +3868,7 @@ int chlCheckQuota(
 } // chlCheckQuota
 
 int
-chlDelUnusedAVUs( 
+chlDelUnusedAVUs(
     rsComm_t* _comm ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -3906,7 +3905,7 @@ chlDelUnusedAVUs(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t* >(
+          rsComm_t* > (
               irods::DATABASE_OP_DEL_UNUSED_AVUS,
               ptr,
               _comm );
@@ -3923,16 +3922,16 @@ chlDelUnusedAVUs(
 // chlInsRuleTable - Insert  a new iRODS Rule Base table row.
 // Input - rsComm_t *rsComm  - the server handle,
 //    input values.
-int chlInsRuleTable( 
+int chlInsRuleTable(
     rsComm_t* _comm,
-    char*     _base_name, 
-    char*     _map_priority_str,  
+    char*     _base_name,
+    char*     _map_priority_str,
     char*     _rule_name,
-    char*     _rule_head, 
-    char*     _rule_condition, 
+    char*     _rule_head,
+    char*     _rule_condition,
     char*     _rule_action,
-    char*     _rule_recovery, 
-    char*     _rule_id_str, 
+    char*     _rule_recovery,
+    char*     _rule_id_str,
     char*     _my_time ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -3978,18 +3977,18 @@ int chlInsRuleTable(
           char*,
           char*,
           char*,
-          char* >(
+          char* > (
               irods::DATABASE_OP_INS_RULE_TABLE,
               ptr,
               _comm,
-              _base_name, 
-              _map_priority_str,  
+              _base_name,
+              _map_priority_str,
               _rule_name,
-              _rule_head, 
-              _rule_condition, 
+              _rule_head,
+              _rule_condition,
               _rule_action,
-              _rule_recovery, 
-              _rule_id_str, 
+              _rule_recovery,
+              _rule_id_str,
               _my_time );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
@@ -4003,12 +4002,12 @@ int chlInsRuleTable(
 // chlInsDvmTable - Insert  a new iRODS DVM table row.
 // Input - rsComm_t *rsComm  - the server handle,
 //    input values.
-int chlInsDvmTable( 
+int chlInsDvmTable(
     rsComm_t* _comm,
-    char*     _base_name, 
-    char*     _var_name, 
+    char*     _base_name,
+    char*     _var_name,
     char*     _action,
-    char*     _var_2_cmap, 
+    char*     _var_2_cmap,
     char*     _my_time ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -4050,14 +4049,14 @@ int chlInsDvmTable(
           char*,
           char*,
           char*,
-          char* >(
+          char* > (
               irods::DATABASE_OP_INS_DVM_TABLE,
               ptr,
               _comm,
-              _base_name, 
-              _var_name, 
+              _base_name,
+              _var_name,
               _action,
-              _var_2_cmap, 
+              _var_2_cmap,
               _my_time );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
@@ -4071,11 +4070,11 @@ int chlInsDvmTable(
 // chlInsFnmTable - Insert  a new iRODS FNM table row.
 // Input - rsComm_t *rsComm  - the server handle,
 //    input values.
-int chlInsFnmTable( 
+int chlInsFnmTable(
     rsComm_t* _comm,
-    char*     _base_name, 
+    char*     _base_name,
     char*     _func_name,
-    char*     _func_2_cmap, 
+    char*     _func_2_cmap,
     char*     _my_time ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -4116,13 +4115,13 @@ int chlInsFnmTable(
           char*,
           char*,
           char*,
-          char* >(
+          char* > (
               irods::DATABASE_OP_INS_FNM_TABLE,
               ptr,
               _comm,
-              _base_name, 
-              _func_name, 
-              _func_2_cmap, 
+              _base_name,
+              _func_name,
+              _func_2_cmap,
               _my_time );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
@@ -4136,16 +4135,16 @@ int chlInsFnmTable(
 // chlInsMsrvcTable - Insert  a new iRODS MSRVC table row (actually in two tables).
 // Input - rsComm_t *rsComm  - the server handle,
 //    input values.
-int chlInsMsrvcTable( 
+int chlInsMsrvcTable(
     rsComm_t* _comm,
-    char*     _module_name, 
+    char*     _module_name,
     char*     _msrvc_name,
-    char*     _msrvc_signature,  
+    char*     _msrvc_signature,
     char*     _msrvc_version,
-    char*     _msrvc_host, 
+    char*     _msrvc_host,
     char*     _msrvc_location,
-    char*     _msrvc_language,  
-    char*     _msrvc_typeName, 
+    char*     _msrvc_language,
+    char*     _msrvc_typeName,
     char*     _msrvc_status,
     char*     _my_time ) {
     // =-=-=-=-=-=-=-
@@ -4193,18 +4192,18 @@ int chlInsMsrvcTable(
           char*,
           char*,
           char*,
-          char* >(
+          char* > (
               irods::DATABASE_OP_INS_MSRVC_TABLE,
               ptr,
               _comm,
-              _module_name, 
+              _module_name,
               _msrvc_name,
-              _msrvc_signature,  
+              _msrvc_signature,
               _msrvc_version,
-              _msrvc_host, 
+              _msrvc_host,
               _msrvc_location,
-              _msrvc_language,  
-              _msrvc_typeName, 
+              _msrvc_language,
+              _msrvc_typeName,
               _msrvc_status,
               _my_time );
     if ( !ret.ok() ) {
@@ -4219,9 +4218,9 @@ int chlInsMsrvcTable(
 // chlVersionRuleBase - Version out the old base maps with timestamp
 // Input - rsComm_t *rsComm  - the server handle,
 //    input values.
-int chlVersionRuleBase( 
+int chlVersionRuleBase(
     rsComm_t* _comm,
-    char*     _base_name, 
+    char*     _base_name,
     char*     _my_time ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -4260,11 +4259,11 @@ int chlVersionRuleBase(
     ret = db->call <
           rsComm_t*,
           char*,
-          char* >(
+          char* > (
               irods::DATABASE_OP_VERSION_RULE_BASE,
               ptr,
               _comm,
-              _base_name, 
+              _base_name,
               _my_time );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
@@ -4279,9 +4278,9 @@ int chlVersionRuleBase(
 // chlVersionDvmBase - Version out the old dvm base maps with timestamp
 // Input - rsComm_t *rsComm  - the server handle,
 //    input values.
-int chlVersionDvmBase( 
+int chlVersionDvmBase(
     rsComm_t* _comm,
-    char*     _base_name, 
+    char*     _base_name,
     char*     _my_time ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -4320,11 +4319,11 @@ int chlVersionDvmBase(
     ret = db->call <
           rsComm_t*,
           char*,
-          char* >(
+          char* > (
               irods::DATABASE_OP_VERSION_DVM_BASE,
               ptr,
               _comm,
-              _base_name, 
+              _base_name,
               _my_time );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
@@ -4339,9 +4338,9 @@ int chlVersionDvmBase(
 // chlVersionFnmBase - Version out the old fnm base maps with timestamp
 // Input - rsComm_t *rsComm  - the server handle,
 //    input values.
-int chlVersionFnmBase( 
+int chlVersionFnmBase(
     rsComm_t* _comm,
-    char*     _base_name, 
+    char*     _base_name,
     char*     _my_time ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -4380,11 +4379,11 @@ int chlVersionFnmBase(
     ret = db->call <
           rsComm_t*,
           char*,
-          char* >(
+          char* > (
               irods::DATABASE_OP_VERSION_FNM_BASE,
               ptr,
               _comm,
-              _base_name, 
+              _base_name,
               _my_time );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
@@ -4394,9 +4393,9 @@ int chlVersionFnmBase(
 
 } // chlVersionFnmBase
 
-int chlAddSpecificQuery( 
-    rsComm_t* _comm, 
-    char*     _sql, 
+int chlAddSpecificQuery(
+    rsComm_t* _comm,
+    char*     _sql,
     char*     _alias ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -4435,11 +4434,11 @@ int chlAddSpecificQuery(
     ret = db->call <
           rsComm_t*,
           char*,
-          char* >(
+          char* > (
               irods::DATABASE_OP_ADD_SPECIFIC_QUERY,
               ptr,
               _comm,
-              _sql, 
+              _sql,
               _alias );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
@@ -4449,8 +4448,8 @@ int chlAddSpecificQuery(
 
 } // chlAddSpecificQuery
 
-int chlDelSpecificQuery( 
-    rsComm_t* _comm, 
+int chlDelSpecificQuery(
+    rsComm_t* _comm,
     char*     _sql_or_alias ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -4488,7 +4487,7 @@ int chlDelSpecificQuery(
     // call the operation on the plugin
     ret = db->call <
           rsComm_t*,
-          char* >(
+          char* > (
               irods::DATABASE_OP_DEL_SPECIFIC_QUERY,
               ptr,
               _comm,
@@ -4509,8 +4508,8 @@ int chlDelSpecificQuery(
 //  (bind variables) in some cases.  The output is the same as for a
 //  general-query.
 
-int chlSpecificQuery( 
-    specificQueryInp_t _spec_query_inp, 
+int chlSpecificQuery(
+    specificQueryInp_t _spec_query_inp,
     genQueryOut_t*     _result ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -4548,7 +4547,7 @@ int chlSpecificQuery(
     // call the operation on the plugin
     ret = db->call <
           specificQueryInp_t*,
-          genQueryOut_t* >(
+          genQueryOut_t* > (
               irods::DATABASE_OP_SPECIFIC_QUERY,
               ptr,
               &_spec_query_inp,
@@ -4565,9 +4564,9 @@ int chlSpecificQuery(
 // =-=-=-=-=-=-=-
 // chlSubstituteResourceHierarchies - Given an old resource hierarchy string and a new one,
 // replaces all r_data_main.resc_hier rows that match the old string with the new one.
-int chlSubstituteResourceHierarchies( 
-    rsComm_t*   _comm, 
-    const char* _old_hier, 
+int chlSubstituteResourceHierarchies(
+    rsComm_t*   _comm,
+    const char* _old_hier,
     const char* _new_hier ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -4604,14 +4603,14 @@ int chlSubstituteResourceHierarchies(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-              rsComm_t*,
-              const char*,
-              const char* >( 
-                  irods::DATABASE_OP_SUBSTITUTE_RESOURCE_HIERARCHIES,
-                  ptr,
-                  _comm,
-                  _old_hier,
-                  _new_hier );
+          rsComm_t*,
+          const char*,
+          const char* > (
+              irods::DATABASE_OP_SUBSTITUTE_RESOURCE_HIERARCHIES,
+              ptr,
+              _comm,
+              _old_hier,
+              _new_hier );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
@@ -4661,12 +4660,12 @@ int chlGetDistinctDataObjCountOnResource(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-              const char*,
-              long long* >( 
-                  irods::DATABASE_OP_GET_DISTINCT_DATA_OBJ_COUNT_ON_RESOURCE,
-                  ptr,
-                  _resc_name.c_str(),
-                  &_count );
+          const char*,
+          long long* > (
+              irods::DATABASE_OP_GET_DISTINCT_DATA_OBJ_COUNT_ON_RESOURCE,
+              ptr,
+              _resc_name.c_str(),
+              &_count );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
@@ -4719,16 +4718,16 @@ int chlGetDistinctDataObjsMissingFromChildGivenParent(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-              const std::string*,
-              const std::string*,
-              int,
-              dist_child_result_t* >(
-                  irods::DATABASE_OP_GET_DISTINCT_DATA_OBJS_MISSING_FROM_CHILD_GIVEN_PARENT,
-                  ptr,
-                  &_parent,
-                  &_child,
-                  _limit,
-                  &_results );
+          const std::string*,
+          const std::string*,
+          int,
+          dist_child_result_t* > (
+              irods::DATABASE_OP_GET_DISTINCT_DATA_OBJS_MISSING_FROM_CHILD_GIVEN_PARENT,
+              ptr,
+              &_parent,
+              &_child,
+              _limit,
+              &_results );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
@@ -4739,9 +4738,9 @@ int chlGetDistinctDataObjsMissingFromChildGivenParent(
 
 /// =-=-=-=-=-=-=-
 /// @brief Given a resource, resolves the hierarchy down to said resource
-int chlGetHierarchyForResc( 
-    const std::string& _resc_name, 
-    const std::string& _zone_name, 
+int chlGetHierarchyForResc(
+    const std::string& _resc_name,
+    const std::string& _zone_name,
     std::string&       _hierarchy ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -4778,14 +4777,14 @@ int chlGetHierarchyForResc(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-              const std::string*,
-              const std::string*,
-              std::string* >(
-                  irods::DATABASE_OP_GET_HIERARCHY_FOR_RESC,
-                  ptr,
-                  &_resc_name,
-                  &_zone_name,
-                  &_hierarchy );
+          const std::string*,
+          const std::string*,
+          std::string* > (
+              irods::DATABASE_OP_GET_HIERARCHY_FOR_RESC,
+              ptr,
+              &_resc_name,
+              &_zone_name,
+              &_hierarchy );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
@@ -4798,12 +4797,12 @@ int chlGetHierarchyForResc(
 /// @brief Administrative operations on a ticket.
 ///        create, modify, and remove.
 ///        ticketString is either the ticket-string or ticket-id.
-int chlModTicket( 
-    rsComm_t* _comm, 
-    char*     _op_name, 
+int chlModTicket(
+    rsComm_t* _comm,
+    char*     _op_name,
     char*     _ticket_string,
-    char*     _arg3, 
-    char*     _arg4, 
+    char*     _arg3,
+    char*     _arg4,
     char*     _arg5 ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -4840,19 +4839,19 @@ int chlModTicket(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-              rsComm_t*,
-              char*,
-              char*,
-              char*,
-              char* >(    
-                  irods::DATABASE_OP_MOD_TICKET,
-                  ptr,
-                  _comm,
-                  _op_name,
-                  _ticket_string,
-                  _arg3,
-                  _arg4,
-                  _arg5 );              
+          rsComm_t*,
+          char*,
+          char*,
+          char*,
+          char* > (
+              irods::DATABASE_OP_MOD_TICKET,
+              ptr,
+              _comm,
+              _op_name,
+              _ticket_string,
+              _arg3,
+              _arg4,
+              _arg5 );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }

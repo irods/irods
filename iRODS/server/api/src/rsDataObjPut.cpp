@@ -468,11 +468,6 @@ l3FilePutSingleBuf( rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf 
     } // struct file type >= 0
 
     std::string prev_resc_hier;
-#if 0 // JMC legacy resource 
-    rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
-    switch ( RescTypeDef[rescTypeInx].rescCat )
-    case FILE_CAT:
-#endif // JMC - legacy resource
     memset( &filePutInp, 0, sizeof( filePutInp ) );
     rstrcpy( filePutInp.resc_name_, dataObjInfo->rescInfo->rescName, MAX_NAME_LEN );
     rstrcpy( filePutInp.resc_hier_, dataObjInfo->rescHier, MAX_NAME_LEN );
@@ -485,10 +480,8 @@ l3FilePutSingleBuf( rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf 
     rstrcpy( filePutInp.addr.hostAddr, location.c_str(), NAME_LEN );
     rstrcpy( filePutInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN );
     filePutInp.mode = getFileMode( dataObjInp );
-#ifdef FILESYSTEM_META
     copyFilesystemMetadata( &dataObjInfo->condInput,
                             &filePutInp.condInput );
-#endif
 
     filePutInp.flags = O_WRONLY | dataObjInp->openFlags;
     rstrcpy( filePutInp.in_pdmo, L1desc[l1descInx].in_pdmo, MAX_NAME_LEN );
@@ -529,18 +522,6 @@ l3FilePutSingleBuf( rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf 
         rstrcpy( dataObjInfo->filePath, filePutInp.fileName, MAX_NAME_LEN );
         retryCnt ++;
     } // while
-#if 0 // JMC - legacy resource
-    break;
-
-default:
-    rodsLog( LOG_NOTICE, "l3Open: rescCat type %d is not recognized",
-             RescTypeDef[rescTypeInx].rescCat );
-    bytesWritten = SYS_INVALID_RESC_TYPE;
-    break;
-
-    // switch
-
-#endif // JMC - legacy resource
     return ( bytesWritten );
 
 } // l3FilePutSingleBuf

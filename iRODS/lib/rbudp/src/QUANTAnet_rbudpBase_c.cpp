@@ -23,16 +23,6 @@
 #include "QUANTAnet_rbudpBase_c.hpp"
 #include <stdarg.h>
 
-#if 0	/* not needed by C */
-// Instantiate these here.  Why we should ever need to instantiate constants
-// beats me, but some linkers (ia64?) call them undefined if we use them
-// in subclasses but not in this class, or something.
-const int SIZEOFFILENAME;
-const int UDPSOCKBUF;
-const int RB_SUCCESS;
-const int FAILED;
-#endif
-
 // inline void TRACE_DEBUG( char *format, ...)
 void TRACE_DEBUG( char *format, ... ) {
     va_list arglist;

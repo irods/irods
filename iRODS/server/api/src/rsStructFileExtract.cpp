@@ -119,7 +119,8 @@ int _rsStructFileExtract( rsComm_t*           _comm,
     int status = procCacheDir( _comm,
                                _struct_inp->specColl->cacheDir,
                                _struct_inp->specColl->resource,
-                               _struct_inp->oprType ); // JMC - backport 4657
+                               _struct_inp->oprType,
+                               _struct_inp->specColl->rescHier ); // JMC - backport 4657
     if ( status < 0 ) {
         rodsLog( LOG_ERROR, "_rsStructFileExtract - failed in call to procCacheDir status = %d", status );
         return status;
@@ -174,9 +175,9 @@ int _rsStructFileExtract( rsComm_t*           _comm,
 } // _rsStructFileExtract
 
 int
-procCacheDir( rsComm_t *rsComm, char *cacheDir, char *resource, int oprType ) {
+procCacheDir( rsComm_t *rsComm, char *cacheDir, char *resource, int oprType, char* hier ) {
     if ( ( oprType & PRESERVE_DIR_CONT ) == 0 ) {
-        int status = chkEmptyDir( rsComm, cacheDir );
+        int status = chkEmptyDir( rsComm, cacheDir, hier );
         if ( status == SYS_DIR_IN_VAULT_NOT_EMPTY ) {
             rodsLog( LOG_ERROR, "procCacheDir: chkEmptyDir error for %s in resc %s, status = %d",
                      cacheDir, resource, status );
@@ -185,7 +186,7 @@ procCacheDir( rsComm_t *rsComm, char *cacheDir, char *resource, int oprType ) {
 
     }
 
-    mkFileDirR( rsComm, "/", cacheDir, getDefDirMode() );
+    mkFileDirR( rsComm, "/", cacheDir, resource, getDefDirMode() );
 
     return 0;
 }

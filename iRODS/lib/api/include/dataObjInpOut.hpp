@@ -164,13 +164,6 @@ typedef struct CollInp {
     keyValPair_t condInput;
 } collInp_t;
 
-#ifdef COMPAT_201
-typedef struct CollInp201 {
-    char collName[MAX_NAME_LEN];
-    keyValPair_t condInput;
-} collInp201_t;
-#endif
-
 /* definition for oprType in dataObjInp_t, portalOpr_t and l1desc_t */
 
 #define DONE_OPR                9999
@@ -198,10 +191,6 @@ typedef struct CollInp201 {
 #define RENAME_UNKNOWN_TYPE     22
 #define REMOTE_ZONE_OPR         24
 #define UNREG_OPR               26
-#if 0
-#define CREATE_OPR              23
-#define OPEN_OPR                25
-#endif
 /* NETCDF type operation */
 #define NC_OPR                 1000    /* netcdf operation */
 #define NC_OPEN_FOR_WRITE      1000    /* open/create NETCDF for write */

@@ -232,48 +232,7 @@ _rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         return status;
     }
 
-#if 1 // JMC - legacy resource
     status = l1descInx = _rsDataObjCreateWithRescInfo( rsComm, dataObjInp, myRescGrpInfo->rescInfo, myRescGrpInfo->rescGroupName );
-#else // JMC - legacy resource
-    rescCnt = getRescCnt( myRescGrpInfo );
-
-    copiesNeeded = getCopiesFromCond( &dataObjInp->condInput );
-
-
-    tmpRescGrpInfo = myRescGrpInfo;
-    while ( tmpRescGrpInfo != NULL ) {
-        tmpRescInfo = tmpRescGrpInfo->rescInfo;
-        status      = l1descInx = _rsDataObjCreateWithRescInfo( rsComm, dataObjInp,
-                                  tmpRescInfo, myRescGrpInfo->rescGroupName );
-        /* loop till copyCount is satisfied */
-        if ( status < 0 ) {
-            failedCount++;
-            if ( copiesNeeded == ALL_COPIES || ( rescCnt - failedCount < copiesNeeded ) ) {
-                /* XXXXX cleanup */
-                freeAllRescGrpInfo( myRescGrpInfo );
-                return ( status );
-            }
-        }
-        else {
-            /* success. queue the rest of the resource if needed */
-            if ( copiesNeeded == ALL_COPIES || copiesNeeded > 1 ) {
-                if ( tmpRescGrpInfo->next != NULL ) {
-                    L1desc[l1descInx].moreRescGrpInfo = tmpRescGrpInfo->next;
-                    /* in cache - don't change. tmpRescGrpInfo->next = NULL; */
-                    L1desc[l1descInx].copiesNeeded = copiesNeeded;
-                }
-            }
-            L1desc[l1descInx].openType = CREATE_TYPE;
-            freeAllRescGrpInfo( myRescGrpInfo );
-
-
-            return ( l1descInx );
-        }
-        tmpRescGrpInfo = tmpRescGrpInfo->next;
-    }
-    /* should not be here */
-#endif // JMC - remove resource.c
-
 
     //freeAllRescGrpInfo (myRescGrpInfo);
     //delete myRescGrpInfo->rescInfo;
@@ -511,13 +470,6 @@ l3CreateByObjInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                    dataObjInfo_t *dataObjInfo ) {
     int l3descInx;
 
-#if 0 // JMC legacy resource 
-    // rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
-
-    // switch (RescTypeDef[rescTypeInx].rescCat)
-    // case FILE_CAT:
-
-#endif // JMC legacy resource 
     int retryCnt = 0;
     int chkType = 0; // JMC - backport 4774
 
@@ -543,10 +495,8 @@ l3CreateByObjInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     // =-=-=-=-=-=-=-
     // JMC - backport 4774
     chkType = getchkPathPerm( rsComm, dataObjInp, dataObjInfo );
-#ifdef FILESYSTEM_META
     copyFilesystemMetadata( &dataObjInfo->condInput,
                             &fileCreateInp.condInput );
-#endif
     if ( chkType == DISALLOW_PATH_REG ) {
         return PATH_REG_NOT_ALLOWED;
     }
@@ -576,17 +526,6 @@ l3CreateByObjInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         rstrcpy( dataObjInfo->filePath, fileCreateInp.fileName, MAX_NAME_LEN );
         retryCnt ++;
     }
-#if 0 // JMC legacy resource 
-    break;
-
-default:
-    rodsLog( LOG_NOTICE,
-             "l3Create: rescCat type %d is not recognized",
-             RescTypeDef[rescTypeInx].rescCat );
-    l3descInx = SYS_INVALID_RESC_TYPE;
-    break;
-
-#endif // JMC legacy resource 
     return ( l3descInx );
 }
 
@@ -650,18 +589,6 @@ int getRescGrpForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp, rescGrpInfo
         return SYS_RESC_QUOTA_EXCEEDED;
     }
 
-#if 0 // JMC - legacy resource
-    if ( strstr( rei.statusStr, "random" ) == NULL ) {
-        /* not a random scheme */
-        sortRescByLocation( myRescGrpInfo );
-        return 0;
-
-    }
-    else {
-        return 1;
-    }
-#else
     return 0; // JMC - should this be 1 per above block?
-#endif
 }
 

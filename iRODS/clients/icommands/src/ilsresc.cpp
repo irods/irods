@@ -426,7 +426,6 @@ int parseGenQueryOut( int offset, genQueryOut_t *genQueryOut ) {
 int showRescTree( char *name ) {
     int status;
     int offset = 0; // when getting more rows
-    char* t_res;	// target result
 
     // genQuery input and output (camelCase for tradition)
     genQueryInp_t genQueryInp;

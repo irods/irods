@@ -415,7 +415,6 @@ rsMkCollR( rsComm_t *rsComm, const char *startColl, const char *destColl ) {
     return 0;
 }
 
-#ifdef FILESYSTEM_META
 int
 rsQueryDirectoryMeta( rsComm_t *rsComm, char *collection, keyValPair_t *condInput ) {
     static char fname[] = "rsQueryDirectoryMeta";
@@ -536,6 +535,5 @@ rsQueryDirectoryMeta( rsComm_t *rsComm, char *collection, keyValPair_t *condInpu
 
     return status;
 }
-#endif /* FILESYSTEM_META */
 
 

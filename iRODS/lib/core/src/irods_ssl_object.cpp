@@ -139,18 +139,6 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // since the shared secret is random and unsigned it needs
         // a bit of sanitizaiton until we can copy it to the kvp
-#if 0
-        if ( shared_secret_.size() > 0 ) {
-            char* secret = new char[ key_size_ + 1 ];
-            secret[ key_size_ ] = '\0';
-            std::copy(
-                shared_secret_.begin(),
-                shared_secret_.end(),
-                &secret[0] );
-            addKeyVal( &_kvp, SSL_SHARED_SECRET_KW, secret );
-            delete [] secret;
-        }
-#endif
         std::stringstream key_sz;
         key_sz << key_size_;
         addKeyVal( &_kvp, SSL_KEY_SIZE_KW, key_sz.str().c_str() );

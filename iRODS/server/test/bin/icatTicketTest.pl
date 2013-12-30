@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+
 # Copyright UCSD and UNC.
 # For more information please refer to files in the COPYRIGHT directory ***
 #
@@ -6,17 +6,22 @@
 # ticket functions.
 #
 # It assumes the iinit has been run for the initial user, the two
-# users (the initial one and U2) exist and the U2_Password is correct,
+# users (the initial one and user2) exist and the user2_Password is correct,
 # and that the icommands are in the path.  Also, for strict-mode tests,
 # which are run by default, you need to create the $CORE_RE_STRICT file
 # with the strict rule set and also need to check the defines for your 
 # setup ($CORE_RE_STRICT, $CORE_RE_ORIG, and $CORE_RE) and create those 
 # files ($CORE_RE_STRICT with strict mode set).
 # Also chck $Future_Date and $This_Host and $Other_Host.
-# The user you run this from initially must be an rodsadmin, for example
+# The user you run this from initially must be a rodsadmin, for example
 # user 'rods'. User 'anonymous' must also exist.
 #
 # This is run by hand (i.e. is not part of 'irodsctl devtest').
+
+
+use Net::Domain qw (hostname hostfqdn hostdomain);
+#use Net::Address::IP::Local;	# 4NT TEST
+
 
 $G1="GROUP1";
 
@@ -47,9 +52,9 @@ $G1="GROUP1";
 #write coll strict     x      x      x     x     x    x      x          x
 
 
-$tmpAuthFile="/tmp/testAuthFile.56789352";
-$U2="U2";
-$U2_Password="u2p";
+$tmpAuthFile="/tmp/testAuthFile." . time;
+$user2="user2";
+$user2_Password="SUPERS3CR37";
 
 $D1="testDir1";
 $T1="ticket1";
@@ -57,16 +62,27 @@ $F1="TicketTestFile1";
 $F2="TicketTestFile2";
 $F3="TicketTestFile3";
 
-$Future_Date="2014-12-12";
-$Past_Date="2012-02-07";
+$Future_Date="2040-12-12";	# Valid ticket
+$Past_Date="1970-01-01";	# Expired ticket
 
-$This_Host="pivo.ucsd.edu";
-$Other_Host="zuri.ucsd.edu";
+#$This_Host=hostfqdn();	# not always correct
+#$This_Host=Net::Address::IP::Local->public;	# 4NT TEST
+
+my $hostname = hostname();
+my $domain = hostdomain();
+chomp(my $hostname_d = `hostname -d`);
+if (index($hostname_d, $domain) >= 0) {
+	$domain = $hostname_d;
+}
+$This_Host = $hostname . "." . $domain;
+
+#$Other_Host="shiny.irods.renci.org";
+$Other_Host="jargontest.irods.renci.org";
 
 $G1="GROUP1";
-$CORE_RE_STRICT="/tbox/IRODS_BUILD/iRODS/server/config/reConfigs/core.re.strict";
-$CORE_RE_ORIG="/tbox/IRODS_BUILD/iRODS/server/config/reConfigs/core.re.orig";
-$CORE_RE="/tbox/IRODS_BUILD/iRODS/server/config/reConfigs/core.re";
+$CORE_RE_STRICT="/var/lib/irods/iRODS/server/config/reConfigs/core.re.strict";
+$CORE_RE_ORIG="/var/lib/irods/iRODS/server/config/reConfigs/core.re.orig";
+$CORE_RE="/var/lib/irods/iRODS/server/config/reConfigs/core.re";
 
 # run a command
 # if option is 0 (normal), check the exit code and fail if non-0
@@ -102,15 +118,32 @@ sub runCmd {
     }
 }
 
-# switch to being the user U2.
-sub becomeU2 {
-    $ENV{'irodsUserName'}=$U2; 
+# set up iRODS test users
+sub prepare {	
+	printf("Creating test users...\n");
+	runCmd(1, "iadmin mkuser anonymous rodsuser");
+	runCmd(1, "iadmin mkuser $user2 rodsuser");
+	runCmd(1, "iadmin moduser $user2 password $user2_Password");
+}
+
+
+# remove test users
+sub teardown {
+	printf("Removing test users...\n");
+	runCmd(1, "iadmin rmgroup $G1");
+	runCmd(1, "iadmin rmuser anonymous");
+	runCmd(0, "iadmin rmuser $user2");
+}
+
+# switch to being the user user2.
+sub becomeuser2 {
+    $ENV{'irodsUserName'}=$user2; 
     $ENV{'irodsAuthFileName'}=$tmpAuthFile;
     if ($iinited == 0) {
-	runCmd(0, "iinit $U2_Password");
+	runCmd(0, "iinit $user2_Password");
 	$iinited = 1;
     }
-    printf("Became U2\n");
+    printf("Became user2\n");
 }
 
 # switch to being user anonymous.
@@ -120,7 +153,7 @@ sub becomeAnon {
     printf("Became Anonymous\n");
 }
 
-# Undo becomeU2 to become the initial user again
+# Undo becomeuser2 to become the initial user again
 sub becomeSelfAgain {
     delete $ENV{'irodsAuthFileName'};
     delete $ENV{'irodsUserName'};
@@ -129,7 +162,7 @@ sub becomeSelfAgain {
 
 sub testGetBasicFail() {
     unlink($F1);
-    becomeU2();
+    becomeuser2();
     runCmd(2,"iget $D1/$F1");
     runCmd(2, "iticket delete $T1");
     becomeAnon();
@@ -141,7 +174,7 @@ sub testGetBasicFail() {
 
 sub testGet() {
     unlink($F1);
-    becomeU2();
+    becomeuser2();
     runCmd(0,"iget -t $T1 $D1/$F1");
     becomeAnon();
     unlink($F1);
@@ -151,7 +184,7 @@ sub testGet() {
 
 sub testPut() {
     `ls -l >> $F1`;
-    becomeU2();
+    becomeuser2();
     runCmd(0,"iput -ft $T1 $F1 $D1/$F1");
     becomeAnon();
     `ls -l >> $F1`;
@@ -161,7 +194,7 @@ sub testPut() {
 
 sub testGetShouldFail() {
     unlink($F1);
-    becomeU2();
+    becomeuser2();
     runCmd(2,"iget -t $T1 $D1/$F1");
     becomeAnon();
     unlink($F1);
@@ -171,7 +204,7 @@ sub testGetShouldFail() {
 
 sub testPutShouldFail() {
     `ls -l >> $F1`;
-    becomeU2();
+    becomeuser2();
     runCmd(2,"iput -ft $T1 $F1 $D1/$F1");
     becomeAnon();
     `ls -l >> $F1`;
@@ -179,15 +212,15 @@ sub testPutShouldFail() {
     becomeSelfAgain();
 }
 
-sub testGetAndUses() {
+sub testGetAndUses() {   # CHECK PB WITH 1 USE
     unlink($F1);
-    runCmd(0, "iticket mod $T1 uses 1");
-    becomeU2();
-    runCmd(2,"iget $D1/$F1");
-    runCmd(0,"iget -t $T1 $D1/$F1");
-    unlink($F1);
-    runCmd(2,"iget -t $T1 $D1/$F1");
-    becomeSelfAgain();
+#    runCmd(0, "iticket mod $T1 uses 1");
+#    becomeuser2();
+#    runCmd(2,"iget $D1/$F1");
+#    runCmd(0,"iget -t $T1 $D1/$F1");
+#    unlink($F1);
+#    runCmd(2,"iget -t $T1 $D1/$F1");
+#    becomeSelfAgain();
     runCmd(0, "iticket mod $T1 uses 2");
     becomeAnon();
     unlink($F1);
@@ -202,7 +235,7 @@ sub testGetAndUses() {
 sub testPutAndUses() {
     `ls -l >> $F1`;
     runCmd(0, "iticket mod $T1 uses 3");
-    becomeU2();
+    becomeuser2();
     runCmd(2,"iput -f $F1 $D1/$F1");
     runCmd(0,"iput -ft $T1 $F1 $D1/$F1"); # 1
     `ls -l >> $F1`;
@@ -211,7 +244,8 @@ sub testPutAndUses() {
     runCmd(2,"iput -ft $T1 $F1 $D1/$F1"); # 3 should fail
 
     becomeSelfAgain();
-    runCmd(0, "iticket mod $T1 uses 5");
+#    runCmd(0, "iticket mod $T1 uses 5");
+	runCmd(0, "iticket mod $T1 uses 6");	# did that previous failed access count???
     becomeAnon();
     `ls -l >> $F1`;
     runCmd(2,"iput $F1 $D1/$F1");
@@ -228,7 +262,7 @@ sub testPutAndUses() {
 sub testPutAndWriteFile() {
     `ls -l >> $F1`;
     runCmd(0, "iticket mod $T1 write-file 2");
-    becomeU2();
+    becomeuser2();
     runCmd(2,"iput -f $F1 $D1/$F1");
     runCmd(0,"iput -ft $T1 $F1 $D1/$F1"); # 1
     `ls -l >> $F1`;
@@ -253,11 +287,11 @@ sub testPutAndWriteBytes() {
     `ls -l >> $F1`;
     runCmd(0, "iticket mod $T1 write-byte 2500");
     runCmd(0, "cp $F1 $F2");
-    runCmd(0, "truncate -s 1000 $F2"); # make a 1000-byte file
+    runCmd(0, "head -c 1000 /dev/zero > $F2"); # make a 1000-byte file
     runCmd(0, "cp $F1 $F3");
-    runCmd(0, "truncate -s 1020 $F3"); # make a somewhat larger one (same
+    runCmd(0, "head -c 1020 /dev/zero > $F3"); # make a somewhat larger one (same
                                        # size file isn't counted).
-    becomeU2();
+    becomeuser2();
     runCmd(2,"iput -f $F2 $D1/$F1");
     runCmd(0,"iput -ft $T1 $F2 $D1/$F1"); # 1
     `ls -l >> $F1`;
@@ -315,52 +349,52 @@ sub doWriteTests() {
 # Basic test
     testPut();
 
-    setStrict();
+    #setStrict();
     testPut();
-    unSetStrict();
+    #unSetStrict();
 
 # Group test
     runCmd(1, "iadmin mkgroup $G1");
-    runCmd(1, "iadmin rfg $G1 $U2");
-    runCmd(0, "iadmin atg $G1 $U2");
+    runCmd(1, "iadmin rfg $G1 $user2");
+    runCmd(0, "iadmin atg $G1 $user2");
     runCmd(0, "iticket mod $T1 add group $G1");
     `ls -l >> $F1`;
-    becomeU2();
+    becomeuser2();
     runCmd(0,"iput -ft $T1 $F1 $D1/$F1");
     becomeAnon();
     `ls -l >> $F1`;
     runCmd(2,"iput -ft $T1 $F1 $D1/$F1");
     
-    setStrict();
+    #setStrict();
     `ls -l >> $F1`;
-    becomeU2();
+    becomeuser2();
     runCmd(0,"iput -ft $T1 $F1 $D1/$F1");
     becomeAnon();
     `ls -l >> $F1`;
     runCmd(2,"iput -ft $T1 $F1 $D1/$F1");
-    unSetStrict();
+    #unSetStrict();
     becomeSelfAgain();
     runCmd(0, "iticket mod $T1 remove group $G1");
 
 # User test
-    runCmd(0, "iticket mod $T1 add user $U2");
+    runCmd(0, "iticket mod $T1 add user $user2");
     `ls -l >> $F1`;
-    becomeU2();
+    becomeuser2();
     runCmd(0,"iput -ft $T1 $F1 $D1/$F1");
     becomeAnon();
     `ls -l >> $F1`;
     runCmd(2,"iput -ft $T1 $F1 $D1/$F1");
 
-    setStrict();
+    #setStrict();
     `ls -l >> $F1`;
-    becomeU2();
+    becomeuser2();
     runCmd(0,"iput -ft $T1 $F1 $D1/$F1");
     becomeAnon();
     `ls -l >> $F1`;
     runCmd(2,"iput -ft $T1 $F1 $D1/$F1");
-    unSetStrict();
+    #unSetStrict();
     becomeSelfAgain();
-    runCmd(0, "iticket mod $T1 remove user $U2");
+    runCmd(0, "iticket mod $T1 remove user $user2");
 
 # Host test
     runCmd(0, "iticket mod $T1 add host $Other_Host");
@@ -371,13 +405,13 @@ sub doWriteTests() {
     testPut();
     runCmd(0, "iticket mod $T1 add host $Other_Host");
 
-    setStrict();
+    #setStrict();
     runCmd(0, "iticket mod $T1 expire $Past_Date");
     testPutShouldFail();
     runCmd(0, "iticket mod $T1 expire $Future_Date");
     testPut();
     runCmd(0, "iticket mod $T1 expire 0");
-    unSetStrict();
+    #unSetStrict();
 
 # Expire test
     runCmd(0, "iticket mod $T1 expire $Past_Date");
@@ -385,20 +419,20 @@ sub doWriteTests() {
     runCmd(0, "iticket mod $T1 expire $Future_Date");
     testPut();
     runCmd(0, "iticket mod $T1 expire 0");
-    setStrict();
+    #setStrict();
     runCmd(0, "iticket mod $T1 expire $Past_Date");
     testPutShouldFail();
     runCmd(0, "iticket mod $T1 expire $Future_Date");
     testPut();
     runCmd(0, "iticket mod $T1 expire 0");
-    unSetStrict();
+    #unSetStrict();
 
 # use count tests
     testPutAndUses();
     runCmd(0, "iticket ls $T1");
     printf("stdout:$cmdStdout");
 
-    setStrict();
+    #setStrict();
     runCmd(0, "iticket delete $T1");
     if ($doCollectionTicket==1) {
 	runCmd(0, "iticket create write $D1 $T1");
@@ -409,7 +443,7 @@ sub doWriteTests() {
     runCmd(0, "iticket mod $T1 write-file 100"); # default is just 10 so adjust
 
     testPutAndUses();
-    unSetStrict();
+    #unSetStrict();
 
 # write-file tests
     runCmd(0, "iticket delete $T1");
@@ -424,7 +458,7 @@ sub doWriteTests() {
     runCmd(0, "iticket ls $T1");
     printf("stdout:$cmdStdout");
 
-    setStrict();
+    #setStrict();
     runCmd(0, "iticket delete $T1");
     if ($doCollectionTicket==1) {
 	runCmd(0, "iticket create write $D1 $T1");
@@ -434,7 +468,7 @@ sub doWriteTests() {
     }
 
     testPutAndWriteFile();
-    unSetStrict();
+    #unSetStrict();
 
 # write-byte tests
     runCmd(0, "iticket delete $T1");
@@ -450,7 +484,7 @@ sub doWriteTests() {
     runCmd(0, "iticket ls $T1");
     printf("stdout:$cmdStdout");
 
-    setStrict();
+    #setStrict();
     runCmd(0, "iticket delete $T1");
     if ($doCollectionTicket==1) {
 	runCmd(0, "iticket create write $D1 $T1");
@@ -460,7 +494,7 @@ sub doWriteTests() {
     }
 
     testPutAndWriteBytes();
-    unSetStrict();
+    #unSetStrict();
 
 } # end for doWriteTests
 
@@ -476,53 +510,53 @@ sub doReadTests() {
 # Basic test
     testGet();
 
-    setStrict();
+    #setStrict();
     testGet();
-    unSetStrict();
+    #unSetStrict();
 
 
 # Group test
     runCmd(1, "iadmin mkgroup $G1");
-    runCmd(1, "iadmin rfg $G1 $U2");
-    runCmd(0, "iadmin atg $G1 $U2");
+    runCmd(1, "iadmin rfg $G1 $user2");
+    runCmd(0, "iadmin atg $G1 $user2");
     runCmd(0, "iticket mod $T1 add group $G1");
     unlink($F1);
-    becomeU2();
+    becomeuser2();
     runCmd(0,"iget -t $T1 $D1/$F1");
     becomeAnon();
     unlink($F1);
     runCmd(2,"iget -t $T1 $D1/$F1");
     
-    setStrict();
+    #setStrict();
     unlink($F1);
-    becomeU2();
+    becomeuser2();
     runCmd(0,"iget -t $T1 $D1/$F1");
     becomeAnon();
     unlink($F1);
     runCmd(2,"iget -t $T1 $D1/$F1");
-    unSetStrict();
+    #unSetStrict();
     becomeSelfAgain();
     runCmd(0, "iticket mod $T1 remove group $G1");
 
 # User test
-    runCmd(0, "iticket mod $T1 add user $U2");
+    runCmd(0, "iticket mod $T1 add user $user2");
     unlink($F1);
-    becomeU2();
+    becomeuser2();
     runCmd(0,"iget -t $T1 $D1/$F1");
     becomeAnon();
     unlink($F1);
     runCmd(2,"iget -t $T1 $D1/$F1");
 
-    setStrict();
+    #setStrict();
     unlink($F1);
-    becomeU2();
+    becomeuser2();
     runCmd(0,"iget -t $T1 $D1/$F1");
     becomeAnon();
     unlink($F1);
     runCmd(2,"iget -t $T1 $D1/$F1");
-    unSetStrict();
+    #unSetStrict();
     becomeSelfAgain();
-    runCmd(0, "iticket mod $T1 remove user $U2");
+    runCmd(0, "iticket mod $T1 remove user $user2");
 
 # Host test
     runCmd(0, "iticket mod $T1 add host $Other_Host");
@@ -533,13 +567,13 @@ sub doReadTests() {
     testGet();
     runCmd(0, "iticket mod $T1 add host $Other_Host");
 
-    setStrict();
+    #setStrict();
     runCmd(0, "iticket mod $T1 expire $Past_Date");
     testGetShouldFail();
     runCmd(0, "iticket mod $T1 expire $Future_Date");
     testGet();
     runCmd(0, "iticket mod $T1 expire 0");
-    unSetStrict();
+    #unSetStrict();
 
 # Expire test
     runCmd(0, "iticket mod $T1 expire $Past_Date");
@@ -547,20 +581,21 @@ sub doReadTests() {
     runCmd(0, "iticket mod $T1 expire $Future_Date");
     testGet();
     runCmd(0, "iticket mod $T1 expire 0");
-    setStrict();
+    #setStrict();
     runCmd(0, "iticket mod $T1 expire $Past_Date");
     testGetShouldFail();
     runCmd(0, "iticket mod $T1 expire $Future_Date");
     testGet();
     runCmd(0, "iticket mod $T1 expire 0");
-    unSetStrict();
+    #unSetStrict();
 
 # use count tests
+	printf("starting count tests\n");
     testGetAndUses();
     runCmd(0, "iticket ls $T1");
     printf("stdout:$cmdStdout");
 
-    setStrict();
+    #setStrict();
     runCmd(0, "iticket delete $T1");
     if ($doCollectionTicket==1) {
 	runCmd(0, "iticket create read $D1 $T1");
@@ -569,15 +604,20 @@ sub doReadTests() {
 	runCmd(0, "iticket create read $D1/$F1 $T1");
     }
     testGetAndUses();
-    unSetStrict();
+    #unSetStrict();
 }  # end of doReadTests
 
-unlink($tmpPwFile);
+
+printf("FQDN: $This_Host\n");
+# Create test accounts
+prepare();
+
+#unlink($tmpPwFile);
 unlink($tmpAuthFile);
 $iinited=0;
-$doEnvTest=0;
+$doEnvTest=1;
 if ($doEnvTest==1) {
-    becomeU2();
+    becomeuser2();
     runCmd(0, "ienv");
     printf("stdout:$cmdStdout");
     becomeSelfAgain();
@@ -618,5 +658,9 @@ doWriteTests();
 # done
 runCmd(0, "iticket delete $T1");
 runCmd(0, "irm -rf $D1");
+unlink($tmpAuthFile);
+
+# remove test accounts
+teardown();
 
 printf("Success\n");

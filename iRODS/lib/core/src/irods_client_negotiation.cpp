@@ -359,7 +359,7 @@ namespace irods {
                     std::stringstream msg;
                     msg << "received [" << msg_header.type << "] ";
                     msg << "but expected [" << RODS_CS_NEG_T << "]\n\n";
-                    msg << "\t*** Advanced negotiation is enabled in this E-iRODS environment ***\n";
+                    msg << "\t*** Advanced negotiation is enabled in this iRODS environment   ***\n";
                     msg << "\t*** which is most likely not supported by the server.           ***\n";
                     msg << "\t*** Comment out irodsClientServerNegotiation in the irodsEnv    ***\n";
                     msg << "\t*** file to disable.                                            ***\n";

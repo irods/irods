@@ -57,13 +57,6 @@ mkrodsdir() {
 
 void
 printUpdateMsg() {
-#if 0
-    printf( "One or more fields in your iRODS environment file (.irodsEnv) are\n" );
-    printf( "missing.  This program will ask you for them and if they work (the\n" );
-    printf( "connection/login succeeds), it will update (or create if needed) your\n" );
-    printf( "irods environment file with those values for use by the i-commands.\n" );
-    printf( "You can also edit the environment file with a text editor.\n" );
-#endif
     printf( "One or more fields in your iRODS environment file (.irodsEnv) are\n" );
     printf( "missing; please enter them.\n" );
 }

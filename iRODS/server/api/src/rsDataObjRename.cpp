@@ -120,14 +120,6 @@ rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
         return ( status );
     }
     else if ( srcType == SYS_SPEC_COLL_OBJ_NOT_EXIST ) {
-#if 0   /* don't understand this */
-        /* for STRUCT_FILE_COLL to make a directory in the structFile, the
-         * STRUCT_FILE_OPR_KW must be set */
-        if ( getSpecCollOpr( &srcDataObjInp->condInput,
-                             srcDataObjInfo->specColl ) != NORMAL_OPR_ON_STRUCT_FILE_COLL ) {
-            return ( SYS_SPEC_COLL_OBJ_NOT_EXIST );
-        }
-#endif
         return ( SYS_SPEC_COLL_OBJ_NOT_EXIST );
     }
     else if ( destType == SYS_SPEC_COLL_OBJ_NOT_EXIST ) {
@@ -447,33 +439,18 @@ l3Rename( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *newFileName ) {
                  MAX_NAME_LEN );
         rstrcpy( subStructFileRenameInp.newSubFilePath, newFileName, MAX_NAME_LEN );
         rstrcpy( subStructFileRenameInp.subFile.addr.hostAddr, location.c_str(), NAME_LEN );
+        rstrcpy( subStructFileRenameInp.resc_hier, dataObjInfo->rescHier, MAX_NAME_LEN );
         subStructFileRenameInp.subFile.specColl = dataObjInfo->specColl;
         status = rsSubStructFileRename( rsComm, &subStructFileRenameInp );
     }
     else {
-#if 0 // JMC legacy resource 
-        rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
-
-        switch ( RescTypeDef[rescTypeInx].rescCat ) {
-        case FILE_CAT:
-#endif // JMC legacy resource 
-            memset( &fileRenameInp, 0, sizeof( fileRenameInp ) );
-            rstrcpy( fileRenameInp.oldFileName,   dataObjInfo->filePath,  MAX_NAME_LEN );
-            rstrcpy( fileRenameInp.newFileName,   newFileName,            MAX_NAME_LEN );
-            rstrcpy( fileRenameInp.rescHier,      dataObjInfo->rescHier,  MAX_NAME_LEN );
-            rstrcpy( fileRenameInp.objPath,       dataObjInfo->objPath,   MAX_NAME_LEN );
-            rstrcpy( fileRenameInp.addr.hostAddr, location.c_str(),       NAME_LEN );
-            status = rsFileRename( rsComm, &fileRenameInp );
-#if 0 // JMC legacy resource 
-            break;
-        default:
-            rodsLog( LOG_NOTICE,
-                     "l3Rename: rescCat type %d is not recognized",
-                     RescTypeDef[rescTypeInx].rescCat );
-            status = SYS_INVALID_RESC_TYPE;
-            break;
-        }
-#endif // JMC legacy resource 
+        memset( &fileRenameInp, 0, sizeof( fileRenameInp ) );
+        rstrcpy( fileRenameInp.oldFileName,   dataObjInfo->filePath,  MAX_NAME_LEN );
+        rstrcpy( fileRenameInp.newFileName,   newFileName,            MAX_NAME_LEN );
+        rstrcpy( fileRenameInp.rescHier,      dataObjInfo->rescHier,  MAX_NAME_LEN );
+        rstrcpy( fileRenameInp.objPath,       dataObjInfo->objPath,   MAX_NAME_LEN );
+        rstrcpy( fileRenameInp.addr.hostAddr, location.c_str(),       NAME_LEN );
+        status = rsFileRename( rsComm, &fileRenameInp );
     }
     return ( status );
 }

@@ -56,16 +56,6 @@ rsPhyBundleColl( rsComm_t*                 rsComm,
         return SYS_INVALID_ZONE_NAME;
     }
 
-#if 0 // JMC - legacy resource
-    status = _getRescInfo( rsComm, destRescName, &rescGrpInfo );
-    if ( status < 0 || NULL == rescGrpInfo ) { // JMC cppcheck - nullptr
-        rodsLog( LOG_ERROR,
-                 "rsPhyBundleColl: _getRescInfo of %s error for %s. stat = %d",
-                 destRescName, phyBundleCollInp->collection, status );
-        return status;
-    }
-#endif // JMC - legacy resource
-
     rescGrpInfo_t rescGrpInfo;
     rescGrpInfo.rescInfo = 0;
     irods::error err = irods::get_resc_grp_info( destRescName, rescGrpInfo );
@@ -533,26 +523,6 @@ phyBundle( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *phyBunDir,
     int myOprType = oprType; // JMC - backport 4657
 
     dataType = dataObjInfo->dataType;
-#if 0 // this is now handled by libarchive which can add to existing archives without
-    // the need for unbundling
-    if ( ( oprType & ADD_TO_TAR_OPR ) != 0 ) { // JMC - backport 4657
-        /* need to extract the content of the exsisting zipped file */
-        if ( dataType != NULL &&
-                ( strstr( dataType, GZIP_TAR_DT_STR ) != NULL   || // JMC - backport 4658
-                  strstr( dataType, BZIP2_TAR_DT_STR ) != NULL ) ) {
-            /* don't need to do this file zipFile */
-            /* strstr (dataType, ZIP_DT_STR) != NULL)) {  */
-            status = unbunPhyBunFile( rsComm, dataObjInfo->objPath,
-                                      dataObjInfo->rescInfo,  dataObjInfo->filePath, phyBunDir,
-                                      dataType, PRESERVE_DIR_CONT );
-            if ( status < 0 ) {
-                return status;
-            }
-            /* take out ADD_TO_TAR_OPR */
-            myOprType = myOprType ^ ADD_TO_TAR_OPR;
-        }
-    }
-#endif
 
     bzero( &structFileOprInp, sizeof( structFileOprInp ) );
     addKeyVal( &structFileOprInp.condInput, RESC_HIER_STR_KW, dataObjInfo->rescHier );
@@ -567,6 +537,7 @@ phyBundle( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *phyBunDir,
     structFileOprInp.specColl->collClass = STRUCT_FILE_COLL;
     rstrcpy( structFileOprInp.specColl->resource, dataObjInfo->rescName, NAME_LEN );
     rstrcpy( structFileOprInp.specColl->phyPath, dataObjInfo->filePath, MAX_NAME_LEN );
+    rstrcpy( structFileOprInp.specColl->rescHier, dataObjInfo->rescHier, MAX_NAME_LEN );
     addKeyVal( &structFileOprInp.condInput, RESC_HIER_STR_KW, dataObjInfo->rescHier );
 
     rstrcpy( structFileOprInp.specColl->cacheDir, phyBunDir, MAX_NAME_LEN );
@@ -706,19 +677,6 @@ createPhyBundleDataObj( rsComm_t *rsComm, char *collection,
     if ( !err.ok() ) {
         irods::log( PASS( err ) );
     }
-
-#if 0 // JMC legacy resources
-    if ( std::string( "unix file system" ) != type ) { // JMC :: need a constant for this?
-        rodsLog( LOG_ERROR,
-                 "createPhyBundleFile: resource %s appears to be of type %s rather than UNIX_FILE_TYPE",
-                 rescGrpInfo->rescInfo->rescName, type.c_str() );
-        return SYS_INVALID_RESC_TYPE;
-    }
-    else if ( getRescClass( rescGrpInfo->rescInfo ) != CACHE_CL ) {
-        return SYS_NO_CACHE_RESC_IN_GRP;
-    }
-
-#endif // JMC legacy resources
 
     do {
         int loopCnt = 0;

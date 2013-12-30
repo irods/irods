@@ -32,9 +32,7 @@
 #include <openssl/x509v3.h>
 #include <openssl/err.h>
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     typedef enum {
         PROCESSING_STATE,	 /* the process is not sending nor receiving */
@@ -176,13 +174,11 @@ extern "C" {
         procState_t reconnThrState;
         int gsiRequest;
 
-#ifdef USE_SSL
         int ssl_on;
         SSL_CTX *ssl_ctx;
         SSL *ssl;
         int ssl_do_accept;
         int ssl_do_shutdown;
-#endif
 
         char negotiation_results[ MAX_NAME_LEN ];
         unsigned char shared_secret[ NAME_LEN ];
@@ -253,8 +249,6 @@ extern "C" {
     int
     cliChkReconnAtReadEnd( rcComm_t *conn );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* RC_CONNECT_H */

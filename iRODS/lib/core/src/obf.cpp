@@ -287,9 +287,6 @@ obfSavePw( int promptOpt, int fileOpt, int printOpt, char *pwArg ) {
     char inbuf[MAX_PASSWORD_LEN + 100];
     char myPw[MAX_PASSWORD_LEN + 10];
     int i, fd, envVal;
-#ifndef USE_BOOST_FS
-    struct stat statbuf;
-#endif
 
     i = obfiGetFilename( fileName );
     if ( i != 0 ) {
@@ -304,13 +301,10 @@ obfSavePw( int promptOpt, int fileOpt, int printOpt, char *pwArg ) {
         iRODSNtGetUserPasswdInputInConsole( inbuf, "Enter your current iRODS password:", promptOpt );
 #else
         if ( promptOpt != 1 ) {
-#ifdef USE_BOOST_FS
             path p( "/bin/stty" );
-            if ( exists( p ) )
-#else
-            if ( stat( "/bin/stty", &statbuf ) == 0 )
-#endif
+            if ( exists( p ) ) {
                 system( "/bin/stty -echo" );
+            }
         }
 
         printf( "Enter your current iRODS password:" );
@@ -746,7 +740,7 @@ obfiDecode( char *in, char *out, int extra ) {
     int rval;
     int wheel_len;
     int wheel[26 + 26 + 10 + 15];
-    int j, addin, addin_i, kpos, found, nout;
+    int j, addin, addin_i, kpos, found, nout = 0;
     char headstring[10];
     int ii, too_short;
     char *my_out, *my_in;
@@ -949,11 +943,6 @@ obfiDecode( char *in, char *out, int extra ) {
 
 int
 obfiGetEnvKey() {
-#if 0
-    char *envVar;
-    char *chr;
-    int i;
-#endif
     /* May want to do this someday, but at least not for now */
     return 0;
 }
@@ -1134,6 +1123,7 @@ obfEncodeByKeyV2( char *in, char *key, char *key2, char *out ) {
     strncat( myIn, in, 150 );
 
     strncpy( myKey, key, 90 );
+    myKey[90] = '\0';
     strncat( myKey, key2, 100 );
 
     /*
@@ -1277,6 +1267,7 @@ obfDecodeByKeyV2( char *in, char *key, char *key2, char *out ) {
     char myKey[200];
 
     strncpy( myKey, key, 90 );
+    myKey[90] = '\0';
     strncat( myKey, key2, 100 );
 
     myKey2 = obfGetMD5Hash( myKey );

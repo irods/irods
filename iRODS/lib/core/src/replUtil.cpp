@@ -149,9 +149,7 @@ int
 initCondForRepl( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                  dataObjInp_t *dataObjInp, rodsRestart_t *rodsRestart ) {
     char *myResc = NULL;
-#ifdef RBUDP_TRANSFER
     char *tmpStr;
-#endif  /* RBUDP_TRANSFER */
 
     if ( dataObjInp == NULL ) {
         rodsLog( LOG_ERROR,
@@ -221,7 +219,6 @@ initCondForRepl( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
         addKeyVal( &dataObjInp->condInput, UPDATE_REPL_KW, "" );
     }
 
-#ifdef RBUDP_TRANSFER
     if ( rodsArgs->rbudp == True ) {
         /* use -Q for rbudp transfer */
         addKeyVal( &dataObjInp->condInput, RBUDP_TRANSFER_KW, "" );
@@ -238,12 +235,6 @@ initCondForRepl( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
     if ( ( tmpStr = getenv( RBUDP_PACK_SIZE_KW ) ) != NULL ) {
         addKeyVal( &dataObjInp->condInput, RBUDP_PACK_SIZE_KW, tmpStr );
     }
-#else   /* RBUDP_TRANSFER */
-    if ( rodsArgs->rbudp == True ) {
-        rodsLog( LOG_NOTICE,
-                 "initCondForRepl: RBUDP_TRANSFER (-d) not supported" );
-    }
-#endif  /* RBUDP_TRANSFER */
 
     memset( rodsRestart, 0, sizeof( rodsRestart_t ) );
     if ( rodsArgs->restart == True ) {
@@ -275,9 +266,6 @@ replCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
               rodsRestart_t *rodsRestart ) {
     int status;
     int savedStatus = 0;
-#if 0
-    int collLen;
-#endif
     collHandle_t collHandle;
     collEnt_t collEnt;
     char srcChildPath[MAX_NAME_LEN];
@@ -299,39 +287,22 @@ replCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
         fprintf( stdout, "C- %s:\n", srcColl );
     }
 
-#if 0
-    status = rclOpenCollection( conn, srcColl, RECUR_QUERY_FG,
-                                &collHandle );
-#else
     bzero( &collHandle, sizeof( collHandle ) );
     replKeyVal( &dataObjInp->condInput, &collHandle.dataObjInp.condInput );
     status = rclOpenCollection( conn, srcColl, INCLUDE_CONDINPUT_IN_QUERY,
                                 &collHandle );
-#endif
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
                  "replCollUtil: rclOpenCollection of %s error. status = %d",
                  srcColl, status );
         return status;
     }
-#if 0
-    if ( collHandle.rodsObjStat->specColl != NULL ) {
-        fprintf( stderr,
-                 "getCollUtil: Mounted collection %s cannot be replicated\n",
-                 srcColl );
-        rclCloseCollection( &collHandle );
-        return ( 0 );
-    }
-    collLen = strlen( srcColl );
-    collLen = getOpenedCollLen( &collHandle );
-#else
     if ( collHandle.rodsObjStat->specColl != NULL &&
             collHandle.rodsObjStat->specColl->collClass != LINKED_COLL ) {
         /* no repl for mounted coll */
         rclCloseCollection( &collHandle );
         return 0;
     }
-#endif
     while ( ( status = rclReadCollection( conn, &collHandle, &collEnt ) ) >= 0 ) {
         if ( collEnt.objType == DATA_OBJ_T ) {
             snprintf( srcChildPath, MAX_NAME_LEN, "%s/%s",

@@ -9,9 +9,7 @@
 #include "parseCommandLine.hpp"
 #include "rodsPath.hpp"
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
 
     int
@@ -32,8 +30,6 @@ extern "C" {
     int
     setAggInfo( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
                 rodsArguments_t *rodsArgs, ncOpenInp_t *ncOpenInp );
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* NCUTIL_H */

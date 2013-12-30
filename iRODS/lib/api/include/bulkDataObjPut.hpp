@@ -14,10 +14,6 @@
 #include "procApiRequest.hpp"
 #include "apiNumber.hpp"
 #include "initServer.hpp"
-#if 0
-#include "dataObjWrite.hpp"
-#include "dataObjClose.hpp"
-#endif
 #include "genQuery.hpp"
 
 // =-=-=-=-=-=-=-
@@ -78,9 +74,7 @@ bulkRegSubfile( rsComm_t *rsComm, char *rescName, const std::string& rescHier, c
 #define RS_BULK_DATA_OBJ_PUT NULL
 #endif
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* prototype for the client call */
     /* rcBulkDataObjPut - Bulk Put (upload) a number of local files to iRODS.
@@ -99,8 +93,6 @@ extern "C" {
     int
     rcBulkDataObjPut( rcComm_t *conn, bulkOprInp_t *bulkOprInp,
                       bytesBuf_t *bulkOprInpBBuf );
-#ifdef  __cplusplus
 }
-#endif
 
 #endif  /* BULK_DATA_OBJ_PUT_H */

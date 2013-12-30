@@ -39,9 +39,7 @@ ncCloseDataObj( rsComm_t *rsComm, int l1descInx );
 #define RS_NC_CLOSE NULL
 #endif
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* rcNcClose - netcdf close an iRODS data object (equivalent to nc_close.
      * Input -
@@ -54,8 +52,6 @@ extern "C" {
     rcNcClose( rcComm_t *conn, ncCloseInp_t *ncCloseInp );
 
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* NC_CLOSE_H */

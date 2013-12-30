@@ -56,11 +56,7 @@
 #define MAX_BROKEN_PIPE_CNT	50
 #define BROKEN_PIPE_INT		300	/* 5 minutes interval */
 
-#if 0  /* XXXXX testing */ // JMC - backport 4612
-#define LOCK_FILE_PURGE_TIME   180     /* purge lock files every 3 min. */
-#else
 #define LOCK_FILE_PURGE_TIME   7200    /* purge lock files every 2 hr. */
-#endif
 
 /* Managing the spawned agents */
 
@@ -186,15 +182,9 @@ setExecArg( char *commandArgv, char *av[] );
 int
 initAgent( int processType, rsComm_t *rsComm );
 void cleanupAndExit( int status );
-#ifdef  __cplusplus
 void signalExit( int );
 void
 rsPipSigalHandler( int );
-#else
-void signalExit();
-void
-rsPipSigalHandler();
-#endif
 
 int
 initHostConfigByFile( rsComm_t *rsComm );

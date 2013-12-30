@@ -13,16 +13,10 @@
 #include "initServer.hpp"
 #include "objInfo.hpp"
 #include "dataObjInpOut.hpp"
-#if 0
-#include "ruleExecSubmit.hpp"
-#include "reIn2p3SysRule.hpp"
-#endif
 #include "rcGlobalExtern.hpp"
 #include "rsGlobalExtern.hpp"
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     int
     svrCloseQueryOut( rsComm_t *rsComm, genQueryOut_t *genQueryOut );
@@ -64,8 +58,6 @@ extern "C" {
     getNumSubfilesInBunfileObj( rsComm_t *rsComm, char *objPath ); // JMC - backport 4552
     int
     getPhyPath( rsComm_t *rsComm, char *objName,  char *resource, char *phyPath, char* rescHier ); // JMC - backport 4680
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* OBJ_META_OPR_H */

@@ -35,9 +35,7 @@ namespace irods {
 /* this defines the "copies" condition */
 #define ALL_COPIES      -1      /* "all" */
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* defines some commonly used dataTypes */
 #define GENERIC_DT_STR    "generic"
@@ -166,13 +164,6 @@ extern "C" {
         char modifyTime[NAME_LEN];
         struct SpecCollCache *next;
     } specCollCache_t;
-
-#if 0
-    typedef struct PathCache {
-        char path[MAX_NAME_LEN];
-        struct PathCache *next;
-    } pathCache_t;
-#endif
 
     /* definition for replStatus (isDirty) */
 #define OLD_COPY        0x0
@@ -331,15 +322,6 @@ extern "C" {
         NO_CREATE_PATH,
         CREATE_PATH
     } createPath_t;
-#if 0 // JMC - legacy resource
-    typedef struct RescTypeDef {
-        char *typeName;
-        rescCat_t rescCat;
-        int driverType;
-        int chkPathPerm;	/* whether to check path permission */
-        createPath_t createPathFlag;  /* create a path in getFilePathName ? */
-    } rescTypeDef_t;
-#endif // JMC - legacy resource
 
     /* definition for classType */
 
@@ -402,9 +384,7 @@ extern "C" {
         structFileType_t type;
     } structFileTypeDef_t;
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif  /* OBJ_INFO_H */
 

@@ -568,11 +568,7 @@ parseMsInputParam( int argc, char **argv, int optInd, int ruleGen, int string,
                 if ( strstr( &value[j * strArray.size], argv[optInd + i] ) == &value[j * strArray.size] ) {
                     *tmpPtr = '=';
                     char *val = quoteString( argv[optInd + i], string, 1 );
-#if 0	/* fix a not enugh space bug. MW */
-                    rstrcpy( &value[j * strArray.size], argv[optInd + i], NAME_LEN );
-#else
                     rstrcpy( &value[j * strArray.size], val, strArray.size );
-#endif
                     free( val );
                     break;
                 }
@@ -590,13 +586,8 @@ parseMsInputParam( int argc, char **argv, int optInd, int ruleGen, int string,
             if ( ( tmpPtr = strstr( valPtr, "=" ) ) != NULL ) {
                 tmpPtr++;
                 char *val = quoteString( argv[optInd + i], string, 0 );
-#if 0	/* fix a not enugh space bug. MW */
-                rstrcpy( tmpPtr, argv[optInd + i],
-                         ( int ) NAME_LEN - ( tmpPtr - valPtr + 1 ) );
-#else
                 rstrcpy( tmpPtr, val,
                          strArray.size - ( tmpPtr - valPtr + 1 ) );
-#endif
                 free( val );
             }
         }

@@ -79,10 +79,8 @@ rsyncUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
                 continue;
             }
             dataObjOprInp.createMode = rodsPathInp->srcPath[i].objMode;
-#ifdef FILESYSTEM_META
             getFileMetaFromPath( rodsPathInp->srcPath[i].outPath,
                                  &dataObjOprInp.condInput );
-#endif
             status = rsyncFileToDataUtil( conn, srcPath, targPath,
                                           myRodsEnv, myRodsArgs, &dataObjOprInp );
         }
@@ -538,11 +536,7 @@ rsyncCollToDirUtil( rcComm_t *conn, rodsPath_t *srcPath,
     int savedStatus = 0;
     char *srcColl, *targDir;
     char targChildPath[MAX_NAME_LEN];
-#if 0
-    int collLen;
-#else
     char parPath[MAX_NAME_LEN], childPath[MAX_NAME_LEN];
-#endif
     rodsPath_t mySrcPath, myTargPath;
     collHandle_t collHandle;
     collEnt_t collEnt;
@@ -564,13 +558,8 @@ rsyncCollToDirUtil( rcComm_t *conn, rodsPath_t *srcPath,
         return ( USER_INPUT_OPTION_ERR );
     }
 
-#if 0
-    status = rclOpenCollection( conn, srcColl,
-                                RECUR_QUERY_FG | VERY_LONG_METADATA_FG, &collHandle );
-#else
     status = rclOpenCollection( conn, srcColl,
                                 VERY_LONG_METADATA_FG, &collHandle );
-#endif
 
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
@@ -584,10 +573,6 @@ rsyncCollToDirUtil( rcComm_t *conn, rodsPath_t *srcPath,
     myTargPath.objType = LOCAL_FILE_T;
     mySrcPath.objType = DATA_OBJ_T;
 
-#if 0
-    collLen = strlen( srcColl );
-    collLen = getOpenedCollLen( &collHandle );
-#endif
     while ( ( status = rclReadCollection( conn, &collHandle, &collEnt ) ) >= 0 ) {
         if ( collEnt.objType == DATA_OBJ_T ) {
             if ( rodsArgs->age == True ) {
@@ -597,14 +582,8 @@ rsyncCollToDirUtil( rcComm_t *conn, rodsPath_t *srcPath,
                     continue;
                 }
             }
-#if 0
-            snprintf( myTargPath.outPath, MAX_NAME_LEN, "%s%s/%s",
-                      targDir, collEnt.collName + collLen,
-                      collEnt.dataName );
-#else
             snprintf( myTargPath.outPath, MAX_NAME_LEN, "%s/%s",
                       targDir, collEnt.dataName );
-#endif
             snprintf( mySrcPath.outPath, MAX_NAME_LEN, "%s/%s",
                       collEnt.collName, collEnt.dataName );
             /* fill in some info for mySrcPath */
@@ -630,10 +609,6 @@ rsyncCollToDirUtil( rcComm_t *conn, rodsPath_t *srcPath,
             }
         }
         else if ( collEnt.objType == COLL_OBJ_T ) {
-#if 0
-            snprintf( targChildPath, MAX_NAME_LEN, "%s/%s",
-                      targDir, collEnt.collName + collLen );
-#else
             if ( ( status = splitPathByKey(
                                 collEnt.collName, parPath, childPath, '/' ) ) < 0 ) {
                 rodsLogError( LOG_ERROR, status,
@@ -643,36 +618,29 @@ rsyncCollToDirUtil( rcComm_t *conn, rodsPath_t *srcPath,
             }
             snprintf( targChildPath, MAX_NAME_LEN, "%s/%s",
                       targDir, childPath );
-#endif
 
             /* only do the sync if no -l option specified */
             if ( rodsArgs->longOption != True ) {
                 mkdirR( targDir, targChildPath, 0750 );
             }
 
-#if 0
+            /* the child is a spec coll. need to drill down */
+            childDataObjInp = *dataObjOprInp;
             if ( collEnt.specColl.collClass != NO_SPEC_COLL ) {
-#endif
-                /* the child is a spec coll. need to drill down */
-                childDataObjInp = *dataObjOprInp;
-                if ( collEnt.specColl.collClass != NO_SPEC_COLL ) {
-                    childDataObjInp.specColl = &collEnt.specColl;
-                }
-                else {
-                    childDataObjInp.specColl = NULL;
-                }
-                rstrcpy( myTargPath.outPath, targChildPath, MAX_NAME_LEN );
-                rstrcpy( mySrcPath.outPath, collEnt.collName, MAX_NAME_LEN );
-
-                status = rsyncCollToDirUtil( conn, &mySrcPath,
-                                             &myTargPath, myRodsEnv, rodsArgs, &childDataObjInp );
-
-                if ( status < 0 && status != CAT_NO_ROWS_FOUND ) {
-                    return ( status );
-                }
-#if 0
+                childDataObjInp.specColl = &collEnt.specColl;
             }
-#endif
+            else {
+                childDataObjInp.specColl = NULL;
+            }
+            rstrcpy( myTargPath.outPath, targChildPath, MAX_NAME_LEN );
+            rstrcpy( mySrcPath.outPath, collEnt.collName, MAX_NAME_LEN );
+
+            status = rsyncCollToDirUtil( conn, &mySrcPath,
+                                         &myTargPath, myRodsEnv, rodsArgs, &childDataObjInp );
+
+            if ( status < 0 && status != CAT_NO_ROWS_FOUND ) {
+                return ( status );
+            }
         }
     }
     rclCloseCollection( &collHandle );
@@ -762,9 +730,7 @@ rsyncDirToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
                     file_size( p ) ) ) {
             continue;
         }
-#ifdef FILESYSTEM_META
         getFileMetaFromPath( mySrcPath.outPath, &dataObjOprInp->condInput );
-#endif
 
         bzero( &myTargPath, sizeof( myTargPath ) );
         path childPath = p.filename();
@@ -796,12 +762,8 @@ rsyncDirToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
             status = 0;
             /* only do the sync if no -l option specified */
             if ( rodsArgs->longOption != True ) {
-#ifdef FILESYSTEM_META
                 status = mkCollRWithDirMeta( conn, targColl,
                                              myTargPath.outPath, mySrcPath.outPath );
-#else
-                status = mkCollR( conn, targColl, myTargPath.outPath );
-#endif
             }
             if ( status < 0 ) {
                 rodsLogError( LOG_ERROR, status,
@@ -965,11 +927,7 @@ rsyncCollToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
                       targColl, childPath );
 
             if ( rodsArgs->longOption != True ) {   /* only do the sync if no -l option specified */
-#ifdef FILESYSTEM_META
                 mkCollWithSrcCollMeta( conn, targChildPath, collEnt.collName );
-#else
-                mkColl( conn, targChildPath );
-#endif
             }
 
             /* the child is a spec coll. need to drill down */

@@ -18,7 +18,6 @@
 
 #include "icatMidLevelRoutines.hpp"
 #include "icatLowLevel.hpp"
-#include "icatMidLevelHelpers.hpp"
 #include "irods_stacktrace.hpp"
 #include "irods_log.hpp"
 
@@ -38,6 +37,34 @@ int checkObjIdByTicket( char *dataId, char *accessLevel,
                         char *ticketStr, char *ticketHost,
                         char *userName, char *userZone,
                         icatSessionStruct *icss );
+
+/*
+  Convert the intput arrays to a string and add bind variables
+*/
+char *cmlArraysToStrWithBind( char *str,
+                              char *preStr,
+                              char *arr[],
+                              char *arr2[],
+                              int   arrLen,
+                              char *sep,
+                              char *sep2,
+                              int  maxLen ) {
+    int i;
+
+    rstrcpy( str, preStr, maxLen );
+
+    for ( i = 0; i < arrLen; i++ ) {
+        if ( i > 0 ) {
+            rstrcat( str, sep2, maxLen );
+        }
+        rstrcat( str, arr[i], maxLen );
+        rstrcat( str, sep, maxLen );
+        rstrcat( str, "?", maxLen );
+        cllBindVars[cllBindVarCount++] = arr2[i];
+    }
+    return( str );
+
+}
 
 int cmlDebug( int mode ) {
     logSQL_CML = mode;
@@ -1267,11 +1294,6 @@ int checkObjIdByTicket( char *dataId, char *accessLevel,
     static rodsLong_t previousDataId2 = 0;
 
     static char prevTicketId[50] = "";
-
-#if 0
-    rodsLog( LOG_NOTICE, "checkObjIdByTicket debug dataId=%s accessLevel=%s", dataId,
-             accessLevel );
-#endif
 
     for ( i = 0; i < 10; i++ ) {
         iVal[i] = NAME_LEN;

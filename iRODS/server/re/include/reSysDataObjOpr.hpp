@@ -15,9 +15,6 @@
 #include "modDataObjMeta.hpp"
 #include "reGlobalsExtern.hpp"
 #include "rsGlobalExtern.hpp"
-#if 0
-#include "rcGlobalExtern.hpp"
-#endif
 
 #define MULTI_COPIES_PER_RESC "MULTI_COPIES_PER_RESC"
 

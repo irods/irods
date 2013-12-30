@@ -240,58 +240,6 @@ int doAuthT( rcComm_t *Conn, char *userName ) {
     return( 0 );
 }
 
-#if 0
-// old version
-int doAuth( rcComm_t *Conn, char *userName ) {
-    int status, len, i;
-    AuthenticateInp_t authIn;
-    AuthenticateOut_t *authOut;
-    char pwBuf[MAX_PASSWORD_LEN + 1];
-    char md5Buf[CHALLENGE_LEN + MAX_PASSWORD_LEN + 2];
-    char digest[RESPONSE_LEN + 2];
-    MD5_CTX context;
-
-    authIn.subOp = AUTH_SUBOP_REQ_AUTH;
-    authIn.response = "";
-    authIn.username = "";
-    status = rcAuthenticate( Conn, &authIn, &authOut );
-    if ( status ) {
-        printError( Conn, status, "rcAuthenticate" );
-        return( status );
-    }
-    memset( md5Buf, 0, sizeof( md5Buf ) );
-    strncpy( md5Buf, authOut->challenge, CHALLENGE_LEN );
-    i = obfGetPw( md5Buf + CHALLENGE_LEN );
-    if ( i != 0 ) {
-        printf( "Enter password:" );
-        fgets( md5Buf + CHALLENGE_LEN, MAX_PASSWORD_LEN, stdin );
-        len = strlen( md5Buf );
-        md5Buf[len - 1] = '\0'; /* remove trailing \n */
-    }
-
-    MD5Init( &context );
-    MD5Update( &context, md5Buf, CHALLENGE_LEN + MAX_PASSWORD_LEN );
-    MD5Final( digest, &context );
-
-    for ( i = 0; i < RESPONSE_LEN; i++ ) {
-        if ( digest[i] == '\0' ) {
-            digest[i]++;
-        }  /* make sure 'string' doesn't
-					    end early*/
-    }
-    authIn.subOp = AUTH_SUBOP_RESP;
-    authIn.response = digest;
-    authIn.username = userName;
-    status = rcAuthenticate( Conn, &authIn, &authOut );
-    if ( status ) {
-        printError( Conn, status, "rcAuthenticate" );
-        return( status );
-    }
-    printf( "Successfully authenticated as user %s\n", userName );
-    return( 0 );
-}
-#endif
-
 int doRm( rcComm_t *Conn, char *file ) {
     int status;
     dataObjInp_t dataObjOprInp;
@@ -756,63 +704,6 @@ doAccCheck( rcComm_t *Conn, char *user, char *zone, char *coll,
 
     printCount = 0;
 
-#if 0
-    //    char accessPerm="read object";
-
-    snprintf( accStr, LONG_NAME_LEN, "%s", user );
-    addKeyVal( &genQueryInp.condInput, USER_NAME_CLIENT_KW, accStr );
-
-    snprintf( accStr, LONG_NAME_LEN, "%s", "z2" );
-    addKeyVal( &genQueryInp.condInput, RODS_ZONE_CLIENT_KW, accStr );
-
-    snprintf( accStr, LONG_NAME_LEN, "%s", "read object" );
-    addKeyVal( &genQueryInp.condInput, ACCESS_PERMISSION_KW, accStr );
-
-    snprintf( condStr, MAX_NAME_LEN, "='%s'", "/z2/home/rods" );
-    addInxVal( &genQueryInp.sqlCondInp, COL_COLL_NAME, condStr );
-
-    snprintf( condStr, MAX_NAME_LEN, "='%s'", "foo" );
-    addInxVal( &genQueryInp.sqlCondInp, COL_DATA_NAME, condStr );
-
-    addInxIval( &genQueryInp.selectInp,  COL_D_DATA_ID, 1 );
-#endif
-
-
-#if 0
-    snprintf( condStr, MAX_NAME_LEN, "='%s'", user );
-    addInxVal( &genQueryInp.sqlCondInp, COL_USER_NAME, condStr );
-
-    snprintf( condStr, MAX_NAME_LEN, "='%s'", zone );
-    addInxVal( &genQueryInp.sqlCondInp, COL_ZONE_NAME, condStr );
-
-    snprintf( condStr, MAX_NAME_LEN, "='%s'", coll );
-    addInxVal( &genQueryInp.sqlCondInp, COL_COLL_NAME, condStr );
-
-    snprintf( condStr, MAX_NAME_LEN, "='%s'", dataObjName );
-    addInxVal( &genQueryInp.sqlCondInp, COL_DATA_NAME, condStr );
-
-    addInxIval( &genQueryInp.selectInp, COL_DATA_ACCESS_TYPE, 1 );
-#endif
-
-#if 0
-    snprintf( accStr, LONG_NAME_LEN, "%s", userName );
-    addKeyVal( &genQueryInp.condInput, USER_NAME_CLIENT_KW, accStr );
-
-    snprintf( accStr, LONG_NAME_LEN, "%s", rodsZone );
-    addKeyVal( &genQueryInp.condInput, RODS_ZONE_CLIENT_KW, accStr );
-
-    snprintf( accStr, LONG_NAME_LEN, "%s", accessPerm );
-    addKeyVal( &genQueryInp.condInput, ACCESS_PERMISSION_KW, accStr );
-
-    snprintf( condStr, MAX_NAME_LEN, "='%s'", collection );
-    addInxVal( &genQueryInp.sqlCondInp, COL_COLL_NAME, condStr );
-
-    snprintf( condStr, MAX_NAME_LEN, "='%s'", dataObj );
-    addInxVal( &genQueryInp.sqlCondInp, COL_DATA_NAME, condStr );
-
-    addInxIval( &genQueryInp.selectInp,  COL_D_DATA_ID, 1 );
-
-#endif
     snprintf( condStr, MAX_NAME_LEN, "%s", user );
     addKeyVal( &genQueryInp.condInput, USER_NAME_CLIENT_KW, condStr );
 

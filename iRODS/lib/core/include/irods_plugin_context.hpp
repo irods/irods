@@ -30,6 +30,12 @@ namespace irods {
         } // ctor
 
         // =-=-=-=-=-=-=-
+        // dtor
+        virtual ~plugin_context() {
+
+        } // dtor
+
+        // =-=-=-=-=-=-=-
         // test to determine if contents are valid
         virtual error valid() {
             return SUCCESS();
@@ -48,6 +54,9 @@ namespace irods {
             // trap case of incorrect type for first class object
             try {
                 OBJ_TYPE* ref = dynamic_cast< OBJ_TYPE* >( fco_.get() );
+                if ( ref == NULL ) {
+                    ret = PASSMSG( "invalid type for fco cast", ret );
+                }
             }
             catch ( std::bad_cast exp ) {
                 ret = PASSMSG( "invalid type for fco cast", ret );

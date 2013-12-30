@@ -15,9 +15,7 @@
 #include "initServer.hpp"
 #include "icatDefines.hpp"
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     typedef struct {
         char *serverName;
@@ -40,8 +38,6 @@ extern "C" {
     int
     rcKrbAuthRequest( rcComm_t *conn, krbAuthRequestOut_t **krbAuthRequestOut );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* KRB_AUTH_REQUEST_H */

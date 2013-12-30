@@ -195,44 +195,12 @@ l3Mkdir( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
         status = rsSubStructFileMkdir( rsComm, &subFile );
     }
     else {
-#if 0 // JMC legacy resource 
-        rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
-
-        switch ( RescTypeDef[rescTypeInx].rescCat ) {
-        case FILE_CAT:
-#endif // JMC legacy resource 
-            memset( &fileMkdirInp, 0, sizeof( fileMkdirInp ) );
-            rstrcpy( fileMkdirInp.dirName, dataObjInfo->filePath, MAX_NAME_LEN );
-            rstrcpy( fileMkdirInp.rescHier, dataObjInfo->rescHier, MAX_NAME_LEN );
-            rstrcpy( fileMkdirInp.addr.hostAddr, location.c_str(), NAME_LEN );
-            fileMkdirInp.mode = getDefDirMode();
-            status = rsFileMkdir( rsComm, &fileMkdirInp );
-#if 0 // JMC legacy resource 
-            break;
-
-        default:
-            rodsLog( LOG_NOTICE,
-                     "l3Mkdir: rescCat type %d is not recognized",
-                     RescTypeDef[rescTypeInx].rescCat );
-            status = SYS_INVALID_RESC_TYPE;
-            break;
-        }
-#endif // JMC legacy resource 
+        memset( &fileMkdirInp, 0, sizeof( fileMkdirInp ) );
+        rstrcpy( fileMkdirInp.dirName, dataObjInfo->filePath, MAX_NAME_LEN );
+        rstrcpy( fileMkdirInp.rescHier, dataObjInfo->rescHier, MAX_NAME_LEN );
+        rstrcpy( fileMkdirInp.addr.hostAddr, location.c_str(), NAME_LEN );
+        fileMkdirInp.mode = getDefDirMode();
+        status = rsFileMkdir( rsComm, &fileMkdirInp );
     }
     return ( status );
 }
-
-#ifdef COMPAT_201
-int
-rsCollCreate201( rsComm_t *rsComm, collInp201_t *collCreateInp ) {
-    collInp_t collInp;
-    int status;
-
-    collInp201ToCollInp( collCreateInp, &collInp );
-
-    status = rsCollCreate( rsComm, &collInp );
-
-    return status;
-}
-#endif
-

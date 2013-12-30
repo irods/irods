@@ -14,9 +14,7 @@
 #include "dataObjCopy.hpp"
 #include "dataObjCopy.hpp"
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* rodsObjStat_t - this is similar to rodsStat_t but has minimum set of
      * parameter that are more irods specific */
@@ -77,8 +75,6 @@ extern "C" {
     rcObjStat( rcComm_t *conn, dataObjInp_t *dataObjInp,
                rodsObjStat_t **rodsObjStatOut );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* OBJ_STAT_H */

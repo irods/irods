@@ -18,9 +18,7 @@
 #include "fileDriver.hpp"
 #include "fileOpen.hpp"
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
 #if defined(RODS_SERVER)
 #define RS_CHK_NV_PATH_PERM rsChkNVPathPerm
@@ -43,8 +41,6 @@ extern "C" {
     int
     rcChkNVPathPerm( rcComm_t *conn, fileOpenInp_t *chkNVPathPermInp );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif  /* CHK_NV_PATH_PERM_H */

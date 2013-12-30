@@ -1,9 +1,7 @@
 #ifndef _iRODSGuiProgressCallback_h_
 #define _iRODSGuiProgressCallback_h_
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     typedef struct OperProgress {
         int oprType;
@@ -19,9 +17,7 @@ extern "C" {
 
     typedef void ( *irodsGuiProgressCallbak )( operProgress_t *operProgress );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif
 

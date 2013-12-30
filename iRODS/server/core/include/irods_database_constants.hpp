@@ -65,16 +65,16 @@ namespace irods {
 
     const std::string DATABASE_OP_RENAME_OBJECT( "database_rename_object" );
     const std::string DATABASE_OP_MOVE_OBJECT( "database_move_object" );
-    
+
     const std::string DATABASE_OP_REG_TOKEN( "database_reg_token" );
     const std::string DATABASE_OP_DEL_TOKEN( "database_del_token" );
-    
+
     const std::string DATABASE_OP_REG_ZONE( "database_reg_zone" );
     const std::string DATABASE_OP_MOD_ZONE( "database_mod_zone" );
     const std::string DATABASE_OP_MOD_ZONE_COLL_ACL( "database_mod_zone_coll_acl" );
     const std::string DATABASE_OP_DEL_ZONE( "database_del_zone" );
     const std::string DATABASE_OP_RENAME_LOCAL_ZONE( "database_rename_local_zone" );
-    
+
     const std::string DATABASE_OP_RENAME_COLL( "database_rename_coll" );
 
     const std::string DATABASE_OP_REG_SERVER_LOAD( "database_reg_server_load" );
@@ -90,7 +90,7 @@ namespace irods {
 
     const std::string DATABASE_OP_ADD_SPECIFIC_QUERY( "database_add_specific_query" );
     const std::string DATABASE_OP_DEL_SPECIFIC_QUERY( "database_del_specific_query" );
-    
+
     const std::string DATABASE_OP_DEBUG_QUERY( "database_debug_query" );
     const std::string DATABASE_OP_DEBUG_GEN_UPDATE( "database_debug_gen_update" );
 
@@ -111,8 +111,8 @@ namespace irods {
     const std::string DATABASE_OP_GET_DISTINCT_DATA_OBJS_MISSING_FROM_CHILD_GIVEN_PARENT( "database_get_distinct_data_objs_missing_from_child_given_parent" );
     const std::string DATABASE_OP_GET_DISTINCT_DATA_OBJ_COUNT_ON_RESOURCE( "database_get_distinct_data_obj_count_on_resource" );
     const std::string DATABASE_OP_GET_HIERARCHY_FOR_RESC( "database_get_hierarchy_for_resc" );
-    const std::string DATABASE_OP_CHECK_AND_GET_OBJ_ID( "database_check_and_get_obj_id" ); 
-    const std::string DATABASE_OP_GET_RCS( "database_get_rcs" ); 
+    const std::string DATABASE_OP_CHECK_AND_GET_OBJ_ID( "database_check_and_get_obj_id" );
+    const std::string DATABASE_OP_GET_RCS( "database_get_rcs" );
 
 
 

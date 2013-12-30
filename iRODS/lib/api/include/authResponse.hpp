@@ -15,9 +15,7 @@
 #include "initServer.hpp"
 #include "icatDefines.hpp"
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     typedef struct {
         char *response;
@@ -41,8 +39,6 @@ extern "C" {
     int
     rcAuthResponse( rcComm_t *conn, authResponseInp_t *authResponseInp );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* AUTH_RESPONSE_H */

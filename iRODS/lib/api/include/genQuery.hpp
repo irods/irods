@@ -10,9 +10,6 @@
 /* This is a high level file type API call */
 
 #include "rods.hpp"
-#if 0
-#include "rcMisc.hpp"
-#endif
 #include "procApiRequest.hpp"
 #include "apiNumber.hpp"
 #include "initServer.hpp"
@@ -33,17 +30,13 @@ _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
 #define RS_GEN_QUERY NULL
 #endif
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* prototype for the client call */
     int
     rcGenQuery( rcComm_t *conn, genQueryInp_t *genQueryInp,
                 genQueryOut_t **genQueryOut );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* GEN_QUERY_H */

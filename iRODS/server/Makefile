@@ -106,7 +106,6 @@ ifdef RODS_CAT
 CFLAGS +=	-DRODS_CAT
 SVR_ICAT_OBJS =	\
 		$(svrIcatObjDir)/irods_catalog_properties.o \
-		$(svrIcatObjDir)/icatMidLevelHelpers.o \
 		$(svrIcatObjDir)/icatMidLevelRoutines.o \
 		$(svrIcatObjDir)/icatHighLevelRoutines.o \
 		$(svrIcatObjDir)/icatGeneralQuery.o \

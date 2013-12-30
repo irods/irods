@@ -18,9 +18,7 @@
 #include "initServer.hpp"
 #include "icatDefines.hpp"
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     typedef struct {
         char *challenge;
@@ -54,8 +52,6 @@ extern "C" {
     rcAuthCheck( rcComm_t *conn, authCheckInp_t *authCheckInp,
                  authCheckOut_t **authCheckOut );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* AUTH_CHECK_H */

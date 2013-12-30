@@ -646,22 +646,6 @@ resolveIntInItem( char *name, packItem_t *myPackedItem,
         }
     }
 
-#if 0   /* take it out for now */
-    /* Try the user's packTable */
-
-    if ( myPackTable != NULL ) {
-        i = 0;
-        while ( strcmp( myPackTable[i].name, PACK_TABLE_END_PI ) != 0 ) {
-            /* not the end */
-            if ( strcmp( myPackTable[i].name, name ) == 0 ) {
-                /* compile warning here */
-                return ( ( int ) myPackTable[i].packInstruct );
-            }
-            i++;
-        }
-    }
-#endif
-
     /* Try the Rods Global table */
 
     i = 0;

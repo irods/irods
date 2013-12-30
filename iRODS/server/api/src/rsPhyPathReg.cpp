@@ -408,25 +408,15 @@ filePathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
     rstrcpy( dataObjInfo.rescHier, resc_hier, MAX_NAME_LEN );
 
     if ( dataObjInfo.dataSize <= 0 &&
-#ifdef FILESYSTEM_META
             ( dataObjInfo.dataSize = getFileMetadataFromVault( rsComm, &dataObjInfo ) ) < 0 &&
-#else
-            ( dataObjInfo.dataSize = getSizeInVault( rsComm, &dataObjInfo ) ) < 0 &&
-#endif
             dataObjInfo.dataSize != UNKNOWN_FILE_SZ ) {
         status = ( int ) dataObjInfo.dataSize;
         rodsLog( LOG_ERROR,
-#ifdef FILESYSTEM_META
                  "filePathReg: getFileMetadataFromVault for %s failed, status = %d",
-#else
-                 "filePathReg: getSizeInVault for %s failed, status = %d",
-#endif
                  dataObjInfo.objPath, status );
         return ( status );
     }
-#ifdef FILESYSTEM_META
     addKeyVal( &dataObjInfo.condInput, FILE_SOURCE_PATH_KW, filePath );
-#endif
 
     if ( ( chksum = getValByKey( &phyPathRegInp->condInput,
                                  REG_CHKSUM_KW ) ) != NULL ) {
@@ -502,7 +492,6 @@ dirPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
         /* no need to resolve sym link */ // JMC - backport 4845
         addKeyVal( &collCreateInp.condInput, TRANSLATED_PATH_KW, "" ); // JMC - backport 4845
 
-#ifdef FILESYSTEM_META
         /* stat the source directory to track the         */
         /* original directory meta-data                   */
         memset( &fileStatInp, 0, sizeof( fileStatInp ) );
@@ -521,7 +510,6 @@ dirPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
         getFileMetaFromStat( myStat, &collCreateInp.condInput );
         addKeyVal( &collCreateInp.condInput, FILE_SOURCE_PATH_KW, filePath );
         free( myStat );
-#endif /* FILESYSTEM_META */
 
         /* create the coll just in case it does not exist */
         status = rsCollCreate( rsComm, &collCreateInp );
@@ -799,12 +787,6 @@ unmountFileDir( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
         /* a struct file */
         status = _rsSyncMountedColl( rsComm, rodsObjStatOut->specColl,
                                      PURGE_STRUCT_FILE_CACHE );
-#if 0
-        if ( status < 0 ) {
-            freeRodsObjStat( rodsObjStatOut );
-            return ( status );
-        }
-#endif
     }
 
     freeRodsObjStat( rodsObjStatOut );
@@ -836,12 +818,6 @@ int structFileReg(
     rodsObjStat_t*   rodsObjStatOut = NULL;
     specCollCache_t* specCollCache  = NULL;
 
-#if 0
-    /* make it a privileged call for now */ // JMC - backport 4871
-    if ( rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-        return( CAT_INSUFFICIENT_PRIVILEGE_LEVEL );
-    }
-#endif
     if ( ( structFilePath = getValByKey( &phyPathRegInp->condInput, FILE_PATH_KW ) )
             == NULL ) {
         rodsLog( LOG_ERROR,
@@ -932,16 +908,6 @@ int structFileReg(
     std::string resc_name;
     parser.last_resc( resc_name );
 
-#if 0 // JMC - no longer necessary
-    if ( !structFileSupport( rsComm, phyPathRegInp->objPath,
-                             collType, tmp_hier ) ) {
-        rodsLog( LOG_ERROR,
-                 "structFileReg: structFileDriver type %s does not exist for %s",
-                 collType, dataObjInp.objPath );
-        return ( SYS_NOT_SUPPORTED );
-    }
-#endif // JMC - no longer necessary
-
     /* mk the collection */
 
     memset( &collCreateInp, 0, sizeof( collCreateInp ) );
@@ -1005,7 +971,7 @@ structFileSupport( rsComm_t *rsComm, char *collection, char *collType,
 
     snprintf( specColl.objPath, MAX_NAME_LEN, "%s/myFakeFile", collection );
     rstrcpy( specColl.resource, first_resc.c_str(), NAME_LEN );
-    rstrcpy( specColl.rescHier, resc_hier, NAME_LEN );
+    rstrcpy( specColl.rescHier, resc_hier, MAX_NAME_LEN );
     rstrcpy( specColl.phyPath, "/fakeDir1/fakeDir2/myFakeStructFile", MAX_NAME_LEN );
     rstrcpy( subFile.subFilePath, "/fakeDir1/fakeDir2/myFakeFile", MAX_NAME_LEN );
     rstrcpy( subFile.addr.hostAddr, location.c_str(), NAME_LEN );

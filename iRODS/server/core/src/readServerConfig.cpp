@@ -34,9 +34,9 @@ getServerConfigDir() {
 
 int read_some_stuff( rodsServerConfig_t *rodsServerConfig ) {
 
-rodsLog( LOG_NOTICE, "TOTALLY READINGD SOME STUFF" );
+    rodsLog( LOG_NOTICE, "TOTALLY READINGD SOME STUFF" );
 
-return 0;
+    return 0;
 
 }
 
@@ -199,7 +199,7 @@ readServerConfig( rodsServerConfig_t *rodsServerConfig ) {
                 rodsServerConfig->irods_pam_password_min_time );
 
         } // PAM_PW_MAX_TIME_KW
-    
+
         key = strstr( buf, CATALOG_DATABASE_TYPE_KW );
         if ( key != NULL ) {
             len = strlen( CATALOG_DATABASE_TYPE_KW );

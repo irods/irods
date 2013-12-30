@@ -257,44 +257,12 @@ initCondForNcOper( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
         if ( status < 0 ) {
             return status;
         }
-#if 0
-        i = 0;
-        inLen = strlen( rodsArgs->varStr );
-        inPtr = rodsArgs->varStr;
-        while ( getNextEleInStr( &inPtr,
-                                 &ncVarSubset->varName[i][LONG_NAME_LEN],
-                                 &inLen, LONG_NAME_LEN ) > 0 ) {
-            ncVarSubset->numVar++;
-            i++;
-            if ( ncVarSubset->numVar >= MAX_NUM_VAR ) {
-                break;
-            }
-        }
-#endif
     }
     if ( rodsArgs->subset == True || rodsArgs->subsetByVal ) {
         status = parseSubsetStr( rodsArgs->subsetStr, ncVarSubset );
         if ( status < 0 ) {
             return status;
         }
-#if 0
-        i = 0;
-        inLen = strlen( rodsArgs->subsetStr );
-        inPtr = rodsArgs->subsetStr;
-        while ( getNextEleInStr( &inPtr,
-                                 ncVarSubset->ncSubset[i].subsetVarName,
-                                 &inLen, LONG_NAME_LEN ) > 0 ) {
-            status = parseNcSubset( &ncVarSubset->ncSubset[i] );
-            if ( status < 0 ) {
-                return status;
-            }
-            ncVarSubset->numSubset++;
-            i++;
-            if ( ncVarSubset->numSubset >= MAX_NUM_VAR ) {
-                break;
-            }
-        }
-#endif
     }
     return ( 0 );
 }

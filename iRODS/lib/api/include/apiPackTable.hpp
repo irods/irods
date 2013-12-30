@@ -13,23 +13,11 @@
 /* need to include a header for for each API */
 #include "apiHeaderAll.hpp"
 
-//#ifdef  __cplusplus
-//extern "C" {
-//#endif
-
 packInstruct_t MiscSvrInfo_PIG = MiscSvrInfo_PI;
 
 packInstructArray_t ApiPackTable[] = {
     {"DataObjInp_PI", DataObjInp_PI},
     {"OpenedDataObjInp_PI", OpenedDataObjInp_PI},
-#ifdef COMPAT_201
-    {"dataObjReadInp_PI", dataObjReadInp_PI},
-    {"dataObjWriteInp_PI", dataObjWriteInp_PI},
-    {"dataObjCloseInp_PI", dataObjCloseInp_PI},
-    {"OpenCollInp_PI", OpenCollInp_PI},
-    {"CollInp_PI", CollInp_PI},
-#endif
-
     {"DataCopyInp_PI", DataCopyInp_PI},
     {"DataObjCopyInp_PI", DataObjCopyInp_PI},
     {"fileOpenInp_PI", fileOpenInp_PI},
@@ -135,9 +123,5 @@ packInstructArray_t ApiPackTable[] = {
     {"getLimitedPasswordOut_PI", getLimitedPasswordOut_PI},
     {PACK_TABLE_END_PI, ( char * ) NULL},
 };
-
-//#ifdef  __cplusplus
-//}
-//#endif
 
 #endif	/* API_PACK_TABLE_H */

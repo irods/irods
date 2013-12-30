@@ -37,16 +37,11 @@ applyRuleForPostProcForRead( rsComm_t *rsComm, bytesBuf_t *dataObjReadOutBBuf, c
     rei2.doi = ( dataObjInfo_t* )mallocAndZero( sizeof( dataObjInfo_t ) );
     strcpy( rei2.doi->objPath, objPath );
 
-#if 0
-    addMsParam( &msParamArray, "*ReadBuf", BUF_LEN_MS_T,
-                ( void * ) dataObjReadOutBBuf->len , dataObjReadOutBBuf );
-#else
     bzero( &msParamArray, sizeof( msParamArray ) );
     myInOutStruct = ( int* )malloc( sizeof( int ) );
     *myInOutStruct = dataObjReadOutBBuf->len;
     addMsParamToArray( &msParamArray, "*ReadBuf", BUF_LEN_MS_T, myInOutStruct,
                        dataObjReadOutBBuf, 0 );
-#endif
     i =  applyRule( "acPostProcForDataObjRead(*ReadBuf)", &msParamArray, &rei2,
                     NO_SAVE_REI );
     free( rei2.doi );
@@ -97,14 +92,9 @@ rsDataObjRead( rsComm_t *rsComm, openedDataObjInp_t *dataObjReadInp,
         if ( i < 0 ) {
             return( i );
         }
-#if 0	/* XXXXX This is used for msi changing the the return buffer but causes
-        * problem for normal read because len is the size of the buffer.
-        * it out for now */
-            bytesRead = dataObjReadOutBBuf->len;
-#endif
-}
+    }
 
-return ( bytesRead );
+    return ( bytesRead );
 }
 
 int
@@ -132,6 +122,7 @@ l3Read( rsComm_t *rsComm, int l1descInx, int len,
         subStructFileReadInp.fd = L1desc[l1descInx].l3descInx;
         subStructFileReadInp.len = len;
         rstrcpy( subStructFileReadInp.addr.hostAddr, location.c_str(), NAME_LEN );
+        rstrcpy( subStructFileReadInp.resc_hier, dataObjInfo->rescHier, MAX_NAME_LEN );
         bytesRead = rsSubStructFileRead( rsComm, &subStructFileReadInp, dataObjReadOutBBuf );
     }
     else {
@@ -172,21 +163,3 @@ _l3Read( rsComm_t *rsComm, int rescTypeInx, int l3descInx, void *buf, int len ) 
 
     return ( bytesRead );
 }
-
-#ifdef COMPAT_201
-int
-rsDataObjRead201( rsComm_t *rsComm, dataObjReadInp_t *dataObjReadInp,
-                  bytesBuf_t *dataObjReadOutBBuf ) {
-    openedDataObjInp_t openedDataObjInp;
-    int status;
-
-    bzero( &openedDataObjInp, sizeof( openedDataObjInp ) );
-
-    openedDataObjInp.l1descInx = dataObjReadInp->l1descInx;
-    openedDataObjInp.len = dataObjReadInp->len;
-
-    status = rsDataObjRead( rsComm, &openedDataObjInp, dataObjReadOutBBuf );
-
-    return status;
-}
-#endif

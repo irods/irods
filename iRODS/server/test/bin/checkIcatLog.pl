@@ -34,7 +34,6 @@ if (-e "icatMiscTest.log") {
 }
 
 $theLines = `grep -E "\\" *[A-Za-z0-9_]+ +SQL +[0-9]+ *\\"" $srcFiles`;
-#$theLines = `grep logSQL $srcFiles | grep " SQL "`;
 
 $_=$theLines;
 @lines=split("\n", $_);

@@ -1,5 +1,4 @@
 // =-=-=-=-=-=-=-
-// E-iRODS Includes
 #include "apiHeaderAll.hpp"
 #include "msParam.hpp"
 #include "reGlobalsExtern.hpp"

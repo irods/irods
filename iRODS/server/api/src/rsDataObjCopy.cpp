@@ -66,53 +66,6 @@ rsDataObjCopy( rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
         return status;
     }
 
-#if 0 // this should be handled by rsDataObjCreate and rsDataObjOpen
-    // =-=-=-=-=-=-=-
-    // pre-determine hier strings for the source
-    if ( getValByKey( &srcDataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
-        std::string hier;
-        irods::error ret = irods::resolve_resource_hierarchy( irods::OPEN_OPERATION, rsComm,
-                           srcDataObjInp, hier );
-        if ( !ret.ok() ) {
-            std::stringstream msg;
-            msg << "rsDataObjCopy :: failed in irods::resolve_resource_hierarchy for [";
-            msg << srcDataObjInp->objPath << "]";
-            irods::log( PASSMSG( msg.str(), ret ) );
-            return ret.code();
-        }
-
-        // =-=-=-=-=-=-=-
-        // we resolved the hier str for subsequent api calls, etc.
-        addKeyVal( &srcDataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
-    }
-
-    // =-=-=-=-=-=-=-
-    // determine the hier string for the dest data obj inp
-    if ( getValByKey( &destDataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
-        std::string hier;
-        irods::error ret = irods::resolve_resource_hierarchy( irods::CREATE_OPERATION, rsComm,
-                           destDataObjInp, hier );
-        if ( !ret.ok() ) {
-            std::stringstream msg;
-            msg << "rsDataObjCopy :: failed in irods::resolve_resource_hierarchy for [";
-            msg << destDataObjInp->objPath << "]";
-            irods::log( PASSMSG( msg.str(), ret ) );
-            return ret.code();
-        }
-
-        // =-=-=-=-=-=-=-
-        // we resolved the hier str for subsequent api calls, etc.
-        addKeyVal( &destDataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
-    }
-
-#endif
-
-
-#if 0
-    *transStat = malloc( sizeof( transferStat_t ) );
-    memset( *transStat, 0, sizeof( transferStat_t ) );
-#endif
-
     if ( strcmp( srcDataObjInp->objPath, destDataObjInp->objPath ) == 0 ) {
         rodsLog( LOG_ERROR,
                  "rsDataObjCopy: same src and dest objPath %s not allowed",
@@ -153,12 +106,9 @@ rsDataObjCopy( rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
         /* dataSingleBuf */
         addKeyVal( &destDataObjInp->condInput, NO_OPEN_FLAG_KW, "" );
     }
-#ifdef FILESYSTEM_META
     /* copy file metadata if the source object has it */
     copyFilesystemMetadata( &( L1desc[srcL1descInx].dataObjInfo->condInput ),
                             &destDataObjInp->condInput );
-#endif
-
 
     destL1descInx = rsDataObjCreate( rsComm, destDataObjInp );
     if ( destL1descInx == CAT_UNKNOWN_COLLECTION ) {
@@ -201,16 +151,7 @@ rsDataObjCopy( rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
     L1desc[destL1descInx].dataSize =
         L1desc[srcL1descInx].dataObjInfo->dataSize;
 
-#if 0
-    ( *transStat )->bytesWritten = L1desc[srcL1descInx].dataObjInfo->dataSize;
-#endif
     status = _rsDataObjCopy( rsComm, destL1descInx, existFlag, transStat );
-
-#if 0
-    if ( status >= 0 ) {
-        ( *transStat )->numThreads = destDataObjInp->numThreads;
-    }
-#endif
 
     return ( status );
 }
@@ -285,13 +226,6 @@ _rsDataObjCopy( rsComm_t *rsComm, int destL1descInx, int existFlag,
         }
 
         srcDataObjInp->numThreads = destDataObjInp->numThreads;
-#if 0
-        /* XXXX can't handle numThreads == 0 && size > MAX_SZ_FOR_SINGLE_BUF */
-        if ( destDataObjInp->numThreads == 0 &&
-                srcDataObjInfo->dataSize > MAX_SZ_FOR_SINGLE_BUF ) {
-            destDataObjInp->numThreads = 1;
-        }
-#endif
 
         status = dataObjCopy( rsComm, destL1descInx );
     }

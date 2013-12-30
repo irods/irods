@@ -8,11 +8,7 @@
 #include <jansson.h>
 
 
-#if 0
-#define PYDAP_URL 		"http://coastwatch.pfeg.noaa.gov/erddap/info/index.html"
-#else
 #define PYDAP_URL 		"http://127.0.0.1:8001/"
-#endif
 
 #define HLINK_PREFIX		"<a href="
 #define PARENT_HLINK_DIR	"../"

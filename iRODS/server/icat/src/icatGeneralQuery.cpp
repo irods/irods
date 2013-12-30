@@ -1667,8 +1667,8 @@ generateSpecialQuery( genQueryInp_t genQueryInp, char *resultingSQL ) {
                            userZone );
             if ( userZone[0] == '\0' ) {
                 std::string zoneName;
-                if( !chlGetLocalZone( zoneName ) ) {
-                    
+                if ( !chlGetLocalZone( zoneName ) ) {
+
                 }
 
                 strncpy( userZone, zoneName.c_str(), sizeof userZone );
@@ -1998,7 +1998,7 @@ checkCondInputAccess( genQueryInp_t genQueryInp, int statementNum,
     int userIx = -1, zoneIx = -1, accessIx = -1, dataIx = -1, collIx = -1;
     int status;
     std::string zoneName;
-    //char *ticketString = NULL;
+
     static char prevDataId[LONG_NAME_LEN];
     static char prevUser[LONG_NAME_LEN];
     static char prevAccess[LONG_NAME_LEN];
@@ -2022,7 +2022,6 @@ checkCondInputAccess( genQueryInp_t genQueryInp, int statementNum,
             /* for now, log it but the one used is the session ticket */
             rodsLog( LOG_NOTICE, "ticket input, value: %s",
                      genQueryInp.condInput.value[i] );
-            //ticketString = genQueryInp.condInput.value[i];
         }
     }
     if ( genQueryInp.condInput.len == 1 &&
@@ -2078,7 +2077,7 @@ checkCondInputAccess( genQueryInp_t genQueryInp, int statementNum,
         prevStatus = 0;
 
         if ( strlen( genQueryInp.condInput.value[zoneIx] ) == 0 ) {
-            if( !chlGetLocalZone( zoneName ) ) {
+            if ( !chlGetLocalZone( zoneName ) ) {
             }
         }
         else {
@@ -2087,9 +2086,8 @@ checkCondInputAccess( genQueryInp_t genQueryInp, int statementNum,
         status = cmlCheckDataObjId(
                      icss->stmtPtr[statementNum]->resultValue[dataIx],
                      genQueryInp.condInput.value[userIx],
-                     (char*)zoneName.c_str(),
+                     ( char* )zoneName.c_str(),
                      genQueryInp.condInput.value[accessIx],
-                     /*                  ticketString, accessControlHost, icss); */
                      /*                  sessionTicket, accessControlHost, icss); */
                      sessionTicket, sessionClientAddr, icss );
         prevStatus = status;
@@ -2098,7 +2096,7 @@ checkCondInputAccess( genQueryInp_t genQueryInp, int statementNum,
 
     if ( collIx >= 0 ) {
         if ( strlen( genQueryInp.condInput.value[zoneIx] ) == 0 ) {
-            if( !chlGetLocalZone( zoneName ) ) {
+            if ( !chlGetLocalZone( zoneName ) ) {
             }
         }
         else {
@@ -2107,7 +2105,7 @@ checkCondInputAccess( genQueryInp_t genQueryInp, int statementNum,
         status = cmlCheckDirId(
                      icss->stmtPtr[statementNum]->resultValue[collIx],
                      genQueryInp.condInput.value[userIx],
-                     (char*)zoneName.c_str(),
+                     ( char* )zoneName.c_str(),
                      genQueryInp.condInput.value[accessIx], icss );
     }
     return( status );
@@ -2179,7 +2177,7 @@ chlGenQuery( genQueryInp_t genQueryInp, genQueryOut_t *result ) {
     currentMaxColSize = 0;
 
     status = chlGetRcs( &icss );
-    if( status < 0 || icss == NULL ) {
+    if ( status < 0 || icss == NULL ) {
         return( CAT_NOT_OPEN );
     }
 #ifdef ADDR_64BITS
@@ -2210,9 +2208,6 @@ chlGenQuery( genQueryInp_t genQueryInp, genQueryOut_t *result ) {
             else {
                 rodsLog( LOG_SQL, "chlGenQuery SQL 2" );
             }
-#if 0
-            rodsLog( LOG_NOTICE, "combinedSQL: %s", combinedSQL );
-#endif
         }
 
         if ( genQueryInp.options & RETURN_TOTAL_ROW_COUNT ) {

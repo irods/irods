@@ -110,16 +110,12 @@ setupSrvPortalForParaOpr( rsComm_t *rsComm, dataOprInp_t *dataOprInp,
     int portalSock;
     int proto;
 
-#ifdef RBUDP_TRANSFER
     if ( getValByKey( &dataOprInp->condInput, RBUDP_TRANSFER_KW ) != NULL ) {
         proto = SOCK_DGRAM;
     }
     else {
         proto = SOCK_STREAM;
     }
-#else
-    proto = SOCK_STREAM;
-#endif  /* RBUDP_TRANSFER */
 
     myDataObjPutOut = ( portalOprOut_t * ) malloc( sizeof( portalOprOut_t ) );
     memset( myDataObjPutOut, 0, sizeof( portalOprOut_t ) );
@@ -323,13 +319,9 @@ svrPortalPutGet( rsComm_t *rsComm ) {
     }
 
     if ( getUdpPortFromPortList( thisPortList ) != 0 ) {
-#ifdef RBUDP_TRANSFER
         /* rbudp transfer */
         retVal = svrPortalPutGetRbudp( rsComm );
         return retVal;
-#else
-        return SYS_UDP_NO_SUPPORT_ERR;
-#endif  /* RBUDP_TRANSFER */
     }
 
     oprType = myPortalOpr->oprType;
@@ -836,7 +828,8 @@ void partialDataGet(
             &myInput->shared_secret[iv_size] );
     }
 
-    buf = ( unsigned char* )malloc( ( 2 * TRANS_BUF_SZ ) * sizeof( unsigned char ) );
+    size_t buf_size = ( 2 * TRANS_BUF_SZ ) * sizeof( unsigned char ) ;
+    buf = ( unsigned char* )malloc( buf_size );
 
 #ifdef PARA_TIMING
     afterSeek = time( 0 );
@@ -924,7 +917,7 @@ void partialDataGet(
 
                     // =-=-=-=-=-=-=-
                     // capture the iv with the cipher text
-                    bzero( buf, sizeof( buf ) );
+                    memset( buf, 0,  buf_size );
                     std::copy(
                         iv.begin(),
                         iv.end(),
@@ -1217,7 +1210,6 @@ remToLocPartialCopy( portalTransferInp_t *myInput ) {
 /* rbudpRemLocCopy - The rbudp version of remLocCopy.
  */
 
-#ifdef RBUDP_TRANSFER
 int
 rbudpRemLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     portalOprOut_t *portalOprOut;
@@ -1277,7 +1269,6 @@ rbudpRemLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     }
     return ( status );
 }
-#endif	/* RBUDP_TRANSFER */
 
 /* remLocCopy - This routine is very similar to rcPartialDataGet.
  */
@@ -1316,12 +1307,8 @@ remLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
 
     if ( getUdpPortFromPortList( &portalOprOut->portList ) != 0 ) {
         /* rbudp transfer */
-#ifdef RBUDP_TRANSFER
         retVal = rbudpRemLocCopy( rsComm, dataCopyInp );
         return ( retVal );
-#else
-        return ( SYS_UDP_NO_SUPPORT_ERR );
-#endif
     }
 
     if ( numThreads > MAX_NUM_CONFIG_TRAN_THR || numThreads <= 0 ) {
@@ -2011,26 +1998,15 @@ char *regex( char *rec, char *text, ... ) {
 /* generic functions to return SYS_NOT_SUPPORTED */
 
 int
-#ifdef  __cplusplus
-intNoSupport( ... )
-#else
-intNoSupport()
-#endif
-{
+intNoSupport( ... ) {
     return SYS_NOT_SUPPORTED;
 }
 
 rodsLong_t
-#ifdef  __cplusplus
-longNoSupport( ... )
-#else
-longNoSupport()
-#endif
-{
+longNoSupport( ... ) {
     return ( rodsLong_t ) SYS_NOT_SUPPORTED;
 }
 
-#ifdef RBUDP_TRANSFER
 int
 svrPortalPutGetRbudp( rsComm_t *rsComm ) {
     portalOpr_t *myPortalOpr;
@@ -2192,7 +2168,6 @@ svrPortalPutGetRbudp( rsComm_t *rsComm ) {
 
     return ( status );
 }
-#endif  /* RBUDP_TRANSFER */
 #ifndef windows_platform
 void
 reconnManager( rsComm_t *rsComm ) {

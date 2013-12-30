@@ -155,6 +155,7 @@ int _rsFileCreate(
                              _comm,
                              "/",
                              file_obj->physical_path().c_str(),
+                             file_obj->resc_hier().c_str(),
                              getDefDirMode() );
             if ( status != 0 ) {
                 std::stringstream msg;

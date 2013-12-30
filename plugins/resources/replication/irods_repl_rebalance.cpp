@@ -52,8 +52,6 @@ namespace irods {
         transferStat_t* trans_stat = NULL;
         int repl_stat = rsDataObjRepl( _comm, &data_obj_inp, &trans_stat );
         if ( repl_stat < 0 ) {
-            char* sys_error;
-            char* rods_error = rodsErrorName( repl_stat, &sys_error );
             std::stringstream msg;
             msg << "Failed to replicate the data object ["
                 << _obj_path

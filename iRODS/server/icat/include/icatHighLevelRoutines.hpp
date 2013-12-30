@@ -103,11 +103,6 @@ int chlModAccessControl( rsComm_t *rsComm, int recursiveFlag,
                          char* accessLevel, char *userName, char *zone,
                          char* pathName );
 
-#ifdef RESC_GROUP
-int chlModRescGroup( rsComm_t *rsComm, char *rescGroupName, char *option,
-                     char *rescName );
-#endif
-
 int chlRegRuleExec( rsComm_t *rsComm, ruleExecSubmitInp_t *ruleExecSubmitInp );
 int chlModRuleExec( rsComm_t *rsComm, char *ruleExecId, keyValPair_t *regParam );
 int chlDelRuleExec( rsComm_t *rsComm, char *ruleExecId );

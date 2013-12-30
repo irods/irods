@@ -84,6 +84,7 @@ runBankTest() {
     status = doNewAccount( easyhandle, "Savings", "John", &account_id );
 
     if ( status < 0 ) {
+        free( account_id );
         return status;
     }
 
@@ -118,19 +119,6 @@ doNewAccount( CURL *easyhandle, char *account_type, char *name,
     bankOprOut_t bankOprOut;
     int status;
 
-#if 0
-    obj = json_pack( "{s:{s:s,s:s,s:{s:s,s:s}}}",
-                     "serviceRequest",
-                     "serviceName", BANK_SERVICE_NAME,
-                     "serviceOp", NEW_ACCOUNT_OP,
-                     "params",
-                     ACCOUNT_TYPE_KW, account_type,
-                     NAME_KW, name );
-    if ( obj == NULL ) {
-        rodsLog( LOG_ERROR, "doNewAccount: json_pack error" );
-        return -2;
-    }
-#endif
     paramObj = json_object();
     status = json_object_set_new( paramObj, ACCOUNT_TYPE_KW,
                                   json_string( account_type ) );
@@ -368,7 +356,7 @@ newAccountOut( void *buffer, size_t size, size_t nmemb, void *userp ) {
     }
     responseStr = json_string_value( responseObj );
     bankOprOut = ( bankOprOut_t * ) userp;
-    strncpy( bankOprOut->account_id, responseStr, MAX_NAME_LEN );
+    strncpy( bankOprOut->account_id, responseStr, NAME_LEN );
     json_decref( root );
 
     return nmemb * size;
@@ -396,10 +384,6 @@ doListAccounts( CURL *easyhandle ) {
         rodsLog( LOG_ERROR, "listAccounts: curl_easy_perform error: %d", res );
         return -1;
     }
-#if 0
-    printf( "output = %s\n", bankOprOut.account_id );
-    *accountIDOut = strdup( bankOprOut.account_id );
-#endif
     return 0;
 }
 size_t

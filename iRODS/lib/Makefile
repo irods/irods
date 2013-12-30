@@ -157,12 +157,10 @@ LIB_HASHER_OBJS = \
 INCLUDES +=	-I$(libHasherIncDir)
 
 # rbudp
-ifdef RBUDP_TRANSFER
 LIB_RBUDP_OBJS =  \
 		$(libRbudpObjDir)/QUANTAnet_rbudpBase_c.o \
 		$(libRbudpObjDir)/QUANTAnet_rbudpSender_c.o 	\
 		$(libRbudpObjDir)/QUANTAnet_rbudpReceiver_c.o
-endif
 
 # GSI
 ifdef GSI_AUTH
@@ -325,11 +323,9 @@ $(LIB_HASHER_OBJS): $(libHasherObjDir)/%.o: $(libHasherSrcDir)/%.cpp $(configMk)
 	@echo "Compile Hasher `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
-ifdef RBUDP_TRANSFER
 $(LIB_RBUDP_OBJS):  $(libRbudpObjDir)/%.o: $(libRbudpSrcDir)/%.cpp $(configMk) $(platformMk)
 	@echo "Compile rbudp `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
-endif
 
 # Build logging source
 rodslog:  $(libCoreSrcDir)/rodsLog.cpp

@@ -32,16 +32,12 @@ _rsRuleExecMod( rsComm_t *rsComm, ruleExecModInp_t *ruleExecModInp );
 #define RS_RULE_EXEC_MOD NULL
 #endif
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* prototype for the client */
     int
     rcRuleExecMod( rcComm_t *conn, ruleExecModInp_t *ruleExecModInp );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* RULE_EXEC_MOD_H */

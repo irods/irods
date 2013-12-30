@@ -13,35 +13,31 @@
 #include "sockComm.hpp"
 #include "packStruct.hpp"
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     typedef struct {
         int apiNumber;              /* the API number */
         char *apiVersion;           /* The API version of this call */
         int clientUserAuth;         /* Client user authentication level.
-				 * NO_USER_AUTH, REMOTE_USER_AUTH,
-				 * LOCAL_USER_AUTH, REMOTE_PRIV_USER_AUTH or
-				 * LOCAL_PRIV_USER_AUTH */
-        int proxyUserAuth;		/* same for proxyUser */
+                                     * NO_USER_AUTH, REMOTE_USER_AUTH,
+                                     * LOCAL_USER_AUTH, REMOTE_PRIV_USER_AUTH or
+                                     * LOCAL_PRIV_USER_AUTH */
+        int proxyUserAuth;                    /* same for proxyUser */
         packInstruct_t inPackInstruct;  /* the packing instruct for the input
-				     * struct */
-        int inBsFlag;         	/* input bytes stream flag. 0 ==> no input
-				 * byte stream. 1 ==> we have an input byte
-				 * stream */
-        packInstruct_t outPackInstruct;  /* the packing instruction for the
-				     * output struct */
-        int outBsFlag;        	/* output bytes stream. 0 ==> no output byte
-				 * stream. 1 ==> we have an output byte stream
-				 */
+                                         * struct */
+        int inBsFlag;                   /* input bytes stream flag. 0 ==> no input
+                                         * byte stream. 1 ==> we have an input byte
+                                         * stream */
+        packInstruct_t outPackInstruct; /* the packing instruction for the
+                                         * output struct */
+        int outBsFlag;                  /* output bytes stream. 0 ==> no output byte
+                                         * stream. 1 ==> we have an output byte stream
+                                         */
         funcPtr svrHandler;   /* the server handler. should be defined NULL for
-                           * client */
+                               * client */
 
     } apidef_t;
 
-#ifdef  __cplusplus
 }
-#endif
 
-#endif	/* API_HANDLER_H */
+#endif          /* API_HANDLER_H */

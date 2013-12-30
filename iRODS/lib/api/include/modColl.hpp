@@ -26,20 +26,7 @@ _rsModColl( rsComm_t *rsComm, collInp_t *modCollInp );
 #define RS_MOD_COLL NULL
 #endif
 
-#ifdef COMPAT_201
-#if defined(RODS_SERVER)
-#define RS_MOD_COLL201 rsModColl201
-/* prototype for the server handler */
-int
-rsModColl201( rsComm_t *rsComm, collInp201_t *modCollInp );
-#else
-#define RS_MOD_COLL201 NULL
-#endif
-#endif
-
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* prototype for the client call */
     int
@@ -57,8 +44,6 @@ extern "C" {
      *   int status - status of the operation.
      */
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* MOD_COLL_H */

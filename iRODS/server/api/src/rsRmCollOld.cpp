@@ -31,7 +31,7 @@ rsRmCollOld( rsComm_t *rsComm, collInp_t *rmCollInp ) {
     status = getAndConnRcatHost( rsComm, MASTER_RCAT, rmCollInp->collName,
                                  &rodsServerHost );
     if ( status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
-        return( status );
+        return ( status );
     }
 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
@@ -125,7 +125,6 @@ _rsRmCollRecurOld( rsComm_t *rsComm, collInp_t *rmCollInp ) {
 int
 rsPhyRmCollRecurOld( rsComm_t *rsComm, collInp_t *rmCollInp ) {
     int status, i;
-    int savedStatus = 0;
     genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut = NULL;
     dataObjInp_t dataObjInp;
@@ -133,7 +132,10 @@ rsPhyRmCollRecurOld( rsComm_t *rsComm, collInp_t *rmCollInp ) {
     int continueInx;
     collInfo_t collInfo;
     collInp_t tmpCollInp;
+#ifdef RODS_CAT
+    int savedStatus = 0;
     int rmtrashFlag;
+#endif
 
     memset( &dataObjInp, 0, sizeof( dataObjInp ) );
     memset( &tmpCollInp, 0, sizeof( tmpCollInp ) );
@@ -145,11 +147,13 @@ rsPhyRmCollRecurOld( rsComm_t *rsComm, collInp_t *rmCollInp ) {
             return ( SYS_INVALID_FILE_PATH );
         }
         if ( rsComm->clientUser.authInfo.authFlag != LOCAL_PRIV_USER_AUTH ) {
-            return( CAT_INSUFFICIENT_PRIVILEGE_LEVEL );
+            return ( CAT_INSUFFICIENT_PRIVILEGE_LEVEL );
         }
         addKeyVal( &tmpCollInp.condInput, ADMIN_RMTRASH_KW, "" );
         addKeyVal( &dataObjInp.condInput, ADMIN_RMTRASH_KW, "" );
+#ifdef RODS_CAT
         rmtrashFlag = 2;
+#endif
 
     }
     else if ( getValByKey( &rmCollInp->condInput, RMTRASH_KW ) != NULL ) {
@@ -158,7 +162,9 @@ rsPhyRmCollRecurOld( rsComm_t *rsComm, collInp_t *rmCollInp ) {
         }
         addKeyVal( &tmpCollInp.condInput, RMTRASH_KW, "" );
         addKeyVal( &dataObjInp.condInput, RMTRASH_KW, "" );
+#ifdef RODS_CAT
         rmtrashFlag = 1;
+#endif
     }
 
     collLen = strlen( rmCollInp->collName );
@@ -208,7 +214,9 @@ rsPhyRmCollRecurOld( rsComm_t *rsComm, collInp_t *rmCollInp ) {
                          "rsPhyRmCollRecurOld:rsDataObjUnlink failed for %s. stat = %d",
                          dataObjInp.objPath, status );
                 /* need to set global error here */
+#ifdef RODS_CAT
                 savedStatus = status;
+#endif
             }
         }
 
@@ -258,7 +266,9 @@ rsPhyRmCollRecurOld( rsComm_t *rsComm, collInp_t *rmCollInp ) {
                 rodsLogError( LOG_ERROR, status,
                               "rsPhyRmCollRecurOld: rsPhyRmCollRecurOld of %s failed, status = %d",
                               tmpSubColl, status );
+#ifdef RODS_CAT
                 savedStatus = status;
+#endif
             }
         }
         continueInx = genQueryOut->continueInx;
@@ -656,18 +666,3 @@ svrRmSpecCollRecur( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
 
     return ( savedStatus );
 }
-
-#ifdef COMPAT_201
-int
-rsRmCollOld201( rsComm_t *rsComm, collInp201_t *rmCollInp ) {
-    collInp_t collInp;
-    int status;
-
-    collInp201ToCollInp( rmCollInp, &collInp );
-
-    status = rsRmCollOld( rsComm, &collInp );
-
-    return status;
-}
-
-#endif

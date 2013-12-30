@@ -10,9 +10,7 @@
 #include "rodsPath.hpp"
 #include "iFuseLib.hpp"
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     int
     _irodsGetattr( iFuseConn_t *iFuseConn, const char *path, struct stat *stbuf,
@@ -45,8 +43,6 @@ extern "C" {
     int irodsReaddir( const char *path, void *buf, fuse_fill_dir_t filler,
                       off_t offset, struct fuse_file_info *fi );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* I_FUSE_OPER_H */

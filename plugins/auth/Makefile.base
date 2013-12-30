@@ -17,7 +17,7 @@ GCC += `../../../packaging/compiler_check.sh 4 2`
 INC = -I${IRODSDIR}/lib/core/include/ -I${IRODSDIR}/lib/api/include/ -I${IRODSDIR}/lib/md5/include \
       -I${IRODSDIR}/server/core/include/ -I${IRODSDIR}/server/icat/include/ -I${IRODSDIR}/server/re/include/ \
       -I${IRODSDIR}/server/drivers/include/ -I$(LIBARCHIVE_DIR)/libarchive/ -I$(BOOST_DIR) \
-      -I/usr/include/openssl -I${IRODSDIR}/lib/sha1/include \
+      -I/usr/include/openssl -I${IRODSDIR}/lib/sha1/include -I${IRODSDIR}/lib/rbudp/include \
       -I/opt/hpss/include  -L/opt/hpss/lib
 
 ifeq ($(IRODS_BUILD_COVERAGE), 1)

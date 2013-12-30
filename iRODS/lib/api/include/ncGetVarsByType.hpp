@@ -95,9 +95,7 @@ rsNcGetVarsByTypeForObj( rsComm_t *rsComm, ncGetVarInp_t *ncGetVarInp,
 #define RS_NC_GET_VARS_BY_TYPE NULL
 #endif
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* rcNcGetVarsByType - general netcdf subsetting function nc_get_vars_type
      *    ....
@@ -134,8 +132,6 @@ extern "C" {
     getSizeForGetVars( ncGetVarInp_t *ncGetVarInp );
     int
     getDataTypeSize( int dataType );
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* NC_GET_VARS_BY_TYPE_H */

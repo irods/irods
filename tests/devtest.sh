@@ -18,7 +18,7 @@ if [ "$PYTHONVERSION" \< "2.7" ] ; then
     # get unittest2 package
     UNITTEST2VERSION="unittest2-0.5.1"
     if [ ! -e $UNITTEST2VERSION.tar.gz ] ; then
-        wget -nc ftp://ftp.renci.org/pub/eirods/external/$UNITTEST2VERSION.tar.gz
+        wget -nc ftp://ftp.renci.org/pub/irods/external/$UNITTEST2VERSION.tar.gz
     fi
     if [ ! -e $UNITTEST2VERSION.tar ] ; then
         gunzip $UNITTEST2VERSION.tar.gz
@@ -94,11 +94,14 @@ else
 fi
 
 # run authentication tests
-cd $IRODSROOT/tests/pydevtest
-$PYTHONCMD $OPTS auth_suite.Test_Auth_Suite
+if [ "$IRODSDEVTESTCI" == "true" ] ; then
+    cd $IRODSROOT/tests/pydevtest
+    $PYTHONCMD $OPTS auth_suite.Test_Auth_Suite
+fi
 
 # run OSAuth test by itself
 if [ "$IRODSDEVTESTCI" == "true" ] ; then
+    cd $IRODSROOT/tests/pydevtest
     set +e
     passwd <<EOF
 temporarypasswordforci

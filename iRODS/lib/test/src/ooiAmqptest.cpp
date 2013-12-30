@@ -195,10 +195,6 @@ int main( int argc, char const * const *argv ) {
                 printf( "bankId = %s\n", bankId );
             }
         }
-#if 0
-        msgpack_object_print( stdout, unpackedObj );
-        puts( "" );
-#endif
     }
     snprintf( tsStr, 128, "%d", ( int ) time( 0 ) );
     initOoiReqProp( &props, ( char * ) replyToStr, receiverStr,
@@ -473,15 +469,8 @@ recvApiReplyBody( amqp_connection_state_t conn, int channel,
 
         body_received += frame->payload.body_fragment.len;
 
-#if 0
-        amqp_dump( frame->payload.body_fragment.bytes,
-                   frame->payload.body_fragment.len );
-#endif
     }
     d = ( amqp_basic_deliver_t * ) frame->payload.method.decoded;
-#if 0
-    amqp_basic_ack( conn, channel, d->delivery_tag, 0 );
-#endif
     if ( body_received != body_target ) {
         /* Can only happen when amqp_simple_wait_frame returns <= 0 */
         /* We break here to close the connection */
@@ -499,9 +488,6 @@ int initOoiReqProp( amqp_basic_properties_t *props, char *replyToStr,
     bzero( props, sizeof( amqp_basic_properties_t ) );
     props->_flags = AMQP_BASIC_CONTENT_TYPE_FLAG |
                     AMQP_BASIC_DELIVERY_MODE_FLAG | AMQP_BASIC_HEADERS_FLAG;
-#if 0
-    props.content_type = amqp_cstring_bytes( "text/plain" );
-#endif
     props->delivery_mode = 2; /* persistent delivery mode */
     props->headers.num_entries = NUM_OOI_HEADER_ENTRIES;
 
@@ -533,13 +519,6 @@ int initOoiReqProp( amqp_basic_properties_t *props, char *replyToStr,
     entries[i].value.value.bytes = amqp_cstring_bytes( "0" );
     i++;
 
-#if 0
-    entries[i].key = amqp_cstring_bytes( "ion-actor-id" );
-    entries[i].value.kind = AMQP_FIELD_KIND_UTF8;
-    entries[i].value.value.bytes = amqp_cstring_bytes( "anonymous" );
-    i++;
-#endif
-
     entries[i].key = amqp_cstring_bytes( "reply-to" );
     entries[i].value.kind = AMQP_FIELD_KIND_UTF8;
     entries[i].value.value.bytes = amqp_cstring_bytes( replyToStr );
@@ -555,13 +534,6 @@ int initOoiReqProp( amqp_basic_properties_t *props, char *replyToStr,
     entries[i].value.value.i32 = 1;
     i++;
 
-#if 0
-    entries[i].key = amqp_cstring_bytes( "origin-container-id" );
-    entries[i].value.kind = AMQP_FIELD_KIND_UTF8;
-    entries[i].value.value.bytes = amqp_cstring_bytes( "one_8347" );
-    i++;
-#endif
-
     entries[i].key = amqp_cstring_bytes( "sender" );
     entries[i].value.kind = AMQP_FIELD_KIND_UTF8;
     entries[i].value.value.bytes = amqp_cstring_bytes( "C_client" );
@@ -576,13 +548,6 @@ int initOoiReqProp( amqp_basic_properties_t *props, char *replyToStr,
     entries[i].value.kind = AMQP_FIELD_KIND_UTF8;
     entries[i].value.value.bytes = amqp_cstring_bytes( "service" );
     i++;
-
-#if 0
-    entries[i].key = amqp_cstring_bytes( "sender-service" );
-    entries[i].value.kind = AMQP_FIELD_KIND_UTF8;
-    entries[i].value.value.bytes = amqp_cstring_bytes( "ion_one,service_gateway" );
-    i++;
-#endif
 
     entries[i].key = amqp_cstring_bytes( "ts" );
     entries[i].value.kind = AMQP_FIELD_KIND_UTF8;

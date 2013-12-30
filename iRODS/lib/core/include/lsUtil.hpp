@@ -9,9 +9,7 @@
 #include "parseCommandLine.hpp"
 #include "rodsPath.hpp"
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     int
     lsUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
@@ -63,8 +61,6 @@ extern "C" {
                         rodsArguments_t *rodsArgs );
     int
     setSessionTicket( rcComm_t *myConn, char *ticket );
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* LS_UTIL_H */

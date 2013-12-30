@@ -452,16 +452,12 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
             args[0] = generalAdminInp->arg2; /* username */
             args[1] = generalAdminInp->arg3; /* option */
-#if 0
-            args[2] = generalAdminInp->arg4; /* newValue */
-#else
             /* Since the obfuscated password might contain commas, single or
                double quotes, etc, it's hard to escape for processing (often
                causing a seg fault), so for now just pass in a dummy string.
                It is also unlikely the microservice actually needs the obfuscated
                password. */
             args[2] = "obfuscatedPw";
-#endif
             argc = 3;
             i =  applyRuleArg( "acPreProcForModifyUser", args, argc, &rei2, NO_SAVE_REI );
             if ( i < 0 ) {
@@ -655,42 +651,6 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             if ( status != 0 ) { chlRollback( rsComm ); }
             return ( status );
         }
-#if 0
-        if ( strcmp( generalAdminInp->arg1, "resourcegroup" ) == 0 ) {
-            args[0] = generalAdminInp->arg2; /* rescgroupname */
-            args[1] = generalAdminInp->arg3; /* option */
-            args[2] = generalAdminInp->arg4; /* rescname */
-            argc = 3;
-            i =  applyRuleArg( "acPreProcForModifyResourceGroup", args, argc, &rei2, NO_SAVE_REI );
-            if ( i < 0 ) {
-                if ( rei2.status < 0 ) {
-                    i = rei2.status;
-                }
-                rodsLog( LOG_ERROR,
-                         "rsGeneralAdmin:acPreProcForModifyResourceGroup error for %s and option %s,stat=%d",
-                         args[0], args[1], i );
-                return i;
-            }
-
-            status = chlModRescGroup( rsComm, generalAdminInp->arg2,
-                                      generalAdminInp->arg3, generalAdminInp->arg4 );
-
-            if ( status == 0 ) {
-                i =  applyRuleArg( "acPostProcForModifyResourceGroup", args, argc, &rei2, NO_SAVE_REI );
-                if ( i < 0 ) {
-                    if ( rei2.status < 0 ) {
-                        i = rei2.status;
-                    }
-                    rodsLog( LOG_ERROR,
-                             "rsGeneralAdmin:acPostProcForModifyResourceGroup error for %s and option %s,stat=%d",
-                             args[0], args[1], i );
-                    return i;
-                }
-            }
-            if ( status != 0 ) { chlRollback( rsComm ); }
-            return ( status );
-        }
-#endif
     }
     if ( strcmp( generalAdminInp->arg0, "rm" ) == 0 ) {
         if ( strcmp( generalAdminInp->arg1, "user" ) == 0 ) {

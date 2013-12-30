@@ -26,6 +26,8 @@ int doLs() {
     int i;
     char cwd[] = "/";
 
+    memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
+
     i1a[0] = COL_DATA_NAME;
     i1a[1] = COL_COLL_NAME;
     i1b[0] = 0;
@@ -439,26 +441,13 @@ doTest8( char *testString, char *testString2, char *testString3 ) {
 
     memset( &genQueryInp, 0, sizeof( genQueryInp ) );
 
-#if 0
-    /* for this one: test_genq gen8 "|.o|" 0 10 */
-    addInxIval( &genQueryInp.selectInp, COL_TOKEN_NAME, 1 );
-
-    snprintf( condStr1, MAX_NAME_LEN, "= 'data_type'" );
-    addInxVal( &genQueryInp.sqlCondInp,  COL_TOKEN_NAMESPACE, condStr1 );
-
-    snprintf( condStr2, MAX_NAME_LEN, "begin_of '%s'", testString );
-    addInxVal( &genQueryInp.sqlCondInp,  COL_TOKEN_VALUE2, condStr2 );
-#endif
-
-#if 1
-    /* for : test_genq gen8 / 0 10          (shoule find 1)
+    /* for : test_genq gen8 / 0 10          (should find 1)
        or :  test_genq gen8 /tempZone 0 10  (should find 2)
        or :  test_genq gen8 abc 0 10        (should find 0)  */
     addInxIval( &genQueryInp.selectInp, COL_COLL_NAME, 1 );
 
     snprintf( condStr2, MAX_NAME_LEN, "begin_of '%s'", testString );
     addInxVal( &genQueryInp.sqlCondInp,  COL_COLL_NAME, condStr2 );
-#endif
 
     genQueryInp.options = RETURN_TOTAL_ROW_COUNT;
     genQueryInp.maxRows = 5;
@@ -696,10 +685,6 @@ doTest12( char *userName, char *rodsZone, char *accessPerm, char *collection ) {
 
     addInxIval( &genQueryInp.selectInp, COL_COLL_ACCESS_NAME, ORDER_BY );
 
-#if 0
-    addInxIval( &genQueryInp.selectInp, COL_COLL_ACCESS_USER_ID, 1 );
-#endif
-
     genQueryInp.maxRows = 10;
 
     /*  status =  rsGenQuery (rsComm, &genQueryInp, &genQueryOut); */
@@ -758,10 +743,6 @@ doTest13( char *userName, char *rodsZone, char *accessPerm, char *collection,
     addInxVal( &genQueryInp.sqlCondInp, COL_DATA_USER_ZONE, condStr2 );
 
     addInxIval( &genQueryInp.selectInp, COL_DATA_ACCESS_NAME, ORDER_BY );
-
-#if 0
-    addInxIval( &genQueryInp.selectInp, COL_DATA_ACCESS_USER_ID, 1 );
-#endif
 
     genQueryInp.maxRows = 10;
 

@@ -41,9 +41,7 @@ rsDataObjUnlock( rsComm_t *rsComm, dataObjInp_t *dataObjInp, int fd ); // JMC - 
 #define RS_DATA_OBJ_LOCK NULL
 #endif
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     /* prototype for the client call */
     /* rcDataObjLock - Lock a iRODS data object.
@@ -59,9 +57,7 @@ extern "C" {
     int
     rcDataObjLock( rcComm_t *conn, dataObjInp_t *dataObjInp );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif /* DATA_OBJ_LOCK_H */
 

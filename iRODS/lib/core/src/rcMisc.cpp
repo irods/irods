@@ -496,9 +496,6 @@ getZoneNameFromHint( char *rcatZoneHint, char *zoneName, int len ) {
     else {
         /* just a zoneName. use strncpy instead of rstrcpy to avoid error
          * msg */
-#if 0
-        rstrcpy( zoneName, rcatZoneHint, len );
-#endif
         strncpy( zoneName, rcatZoneHint, len );
         zoneName[len - 1] = '\0';
     }
@@ -1977,3063 +1974,2937 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
         }
         return( 4 );
     }
-#if 0   /* the string to compare is "REPEAT UNTIL SUCCESS " */
-    if ( !strcmp( t, "REPEAT UNTIL SUCCESS" ) ) {
-#endif
-        if ( strstr( t, "REPEAT UNTIL SUCCESS" ) != NULL ) {
-            dt = dt   + atol( currTime );
-            sprintf( nextTime, "%lld", dt );
-            return( 1 );
+    if ( strstr( t, "REPEAT UNTIL SUCCESS" ) != NULL ) {
+        dt = dt   + atol( currTime );
+        sprintf( nextTime, "%lld", dt );
+        return( 1 );
+    }
+    if ( strstr( t, "DOUBLE UNTIL SUCCESS" ) != NULL ) {
+        dt = dt   + atol( currTime );
+        sprintf( nextTime, "%lld", dt );
+        sprintf( delayStr, "%lld%c DOUBLE UNTIL SUCCESS", it * 2, u );
+        return( 4 );
+    }
+    if ( ( s = strstr( t, "REPEAT UNTIL " ) ) != NULL ) {
+        s = s + strlen( "REPEAT UNTIL " );
+        while ( isspace( *s ) ) {
+            s++;
         }
-#if 0   /* the string to compare is "DOUBLE UNTIL SUCCESS " */
-        if ( !strcmp( t, "DOUBLE UNTIL SUCCESS" ) ) {
-#endif
-            if ( strstr( t, "DOUBLE UNTIL SUCCESS" ) != NULL ) {
-                dt = dt   + atol( currTime );
-                sprintf( nextTime, "%lld", dt );
-                sprintf( delayStr, "%lld%c DOUBLE UNTIL SUCCESS", it * 2, u );
-                return( 4 );
-            }
-            if ( ( s = strstr( t, "REPEAT UNTIL " ) ) != NULL ) {
-                s = s + strlen( "REPEAT UNTIL " );
-                while ( isspace( *s ) ) {
-                    s++;
-                }
-                strcpy( tstr, s );
-                convertDateFormat( tstr, currTime );
-                dt = dt   + atol( currTime );
-                sprintf( nextTime, "%lld", dt );
-                if ( atol( tstr ) < dt ) {
-                    return( 2 );
-                }
-                else {
-                    return( 0 );
-                }
-            }
-
-            if ( ( s = strstr( t, "DOUBLE UNTIL " ) ) != NULL ) {
-                s = s + strlen( "DOUBLE UNTIL " );
-                while ( isspace( *s ) ) {
-                    s++;
-                }
-                strcpy( tstr, s );
-                convertDateFormat( tstr, currTime );
-                dt = dt   + atol( currTime );
-                sprintf( nextTime, "%lld", dt );
-                /* sprintf(delayStr,"%lld%c DOUBLE UNTIL %s", it * 2, u,s); */
-                sprintf( delayStr, "%lld%c DOUBLE UNTIL %s", it * 2, u, tstr );
-                if ( atol( tstr ) < dt ) {
-                    return( 2 );
-                }
-                else {
-                    return( 3 );
-                }
-
-            }
-            if ( ( s = strstr( t, "REPEAT " ) ) != NULL ) {
-                s = s + strlen( "REPEAT " );
-                while ( isspace( *s ) ) {
-                    s++;
-                }
-                strcpy( tstr, s );
-                s = tstr;
-                while ( isdigit( *s ) ) {
-                    s++;
-                }
-                *s = '\0';
-                n = atoi( tstr );
-                n--;
-
-                dt = dt   + atol( currTime );
-                sprintf( nextTime, "%lld", dt );
-                if ( strstr( s + 1, "ORIGINAL TIMES" ) != NULL ) {
-                    sprintf( delayStr, "%lld%c REPEAT %i %s", it, u, n, s + 1 );
-                }
-                else {
-                    sprintf( delayStr, "%lld%c REPEAT %i TIMES. ORIGINAL TIMES=%i", it, u, n, n + 1 );
-                }
-                if ( n <= 0 ) {
-                    return( 2 );
-                }
-                else {
-                    return( 3 );
-                }
-            }
-            if ( ( s = strstr( t, "DOUBLE " ) ) != NULL ) {
-                s = s + strlen( "DOUBLE " );
-                while ( isspace( *s ) ) {
-                    s++;
-                }
-                strcpy( tstr, s );
-                s = tstr;
-                while ( isdigit( *s ) ) {
-                    s++;
-                }
-                *s = '\0';
-                n = atoi( tstr );
-                n--;
-                dt = dt   + atol( currTime );
-                sprintf( nextTime, "%lld", dt );
-                if ( strstr( s + 1, "ORIGINAL TIMES" ) != NULL ) {
-                    sprintf( delayStr, "%lld%c DOUBLE %i %s", it * 2, u, n, s + 1 );
-                }
-                else {
-                    sprintf( delayStr, "%lld%c DOUBLE %i TIMES. ORIGINAL TIMES=%i", it * 2, u, n, n + 1 );
-                }
-                if ( n <= 0 ) {
-                    return( 2 );
-                }
-                else {
-                    return( 3 );
-                }
-            }
-
+        strcpy( tstr, s );
+        convertDateFormat( tstr, currTime );
+        dt = dt   + atol( currTime );
+        sprintf( nextTime, "%lld", dt );
+        if ( atol( tstr ) < dt ) {
+            return( 2 );
+        }
+        else {
             return( 0 );
         }
+    }
 
-        int
-        localToUnixTime( char * localTime, char * unixTime ) {
-            time_t myTime;
-            struct tm *mytm;
-            time_t newTime;
-            char s[TIME_LEN];
+    if ( ( s = strstr( t, "DOUBLE UNTIL " ) ) != NULL ) {
+        s = s + strlen( "DOUBLE UNTIL " );
+        while ( isspace( *s ) ) {
+            s++;
+        }
+        strcpy( tstr, s );
+        convertDateFormat( tstr, currTime );
+        dt = dt   + atol( currTime );
+        sprintf( nextTime, "%lld", dt );
+        /* sprintf(delayStr,"%lld%c DOUBLE UNTIL %s", it * 2, u,s); */
+        sprintf( delayStr, "%lld%c DOUBLE UNTIL %s", it * 2, u, tstr );
+        if ( atol( tstr ) < dt ) {
+            return( 2 );
+        }
+        else {
+            return( 3 );
+        }
 
-            myTime = time( NULL );
-            mytm = localtime( &myTime );
+    }
+    if ( ( s = strstr( t, "REPEAT " ) ) != NULL ) {
+        s = s + strlen( "REPEAT " );
+        while ( isspace( *s ) ) {
+            s++;
+        }
+        strcpy( tstr, s );
+        s = tstr;
+        while ( isdigit( *s ) ) {
+            s++;
+        }
+        *s = '\0';
+        n = atoi( tstr );
+        n--;
 
-            rstrcpy( s, localTime, TIME_LEN );
+        dt = dt   + atol( currTime );
+        sprintf( nextTime, "%lld", dt );
+        if ( strstr( s + 1, "ORIGINAL TIMES" ) != NULL ) {
+            sprintf( delayStr, "%lld%c REPEAT %i %s", it, u, n, s + 1 );
+        }
+        else {
+            sprintf( delayStr, "%lld%c REPEAT %i TIMES. ORIGINAL TIMES=%i", it, u, n, n + 1 );
+        }
+        if ( n <= 0 ) {
+            return( 2 );
+        }
+        else {
+            return( 3 );
+        }
+    }
+    if ( ( s = strstr( t, "DOUBLE " ) ) != NULL ) {
+        s = s + strlen( "DOUBLE " );
+        while ( isspace( *s ) ) {
+            s++;
+        }
+        strcpy( tstr, s );
+        s = tstr;
+        while ( isdigit( *s ) ) {
+            s++;
+        }
+        *s = '\0';
+        n = atoi( tstr );
+        n--;
+        dt = dt   + atol( currTime );
+        sprintf( nextTime, "%lld", dt );
+        if ( strstr( s + 1, "ORIGINAL TIMES" ) != NULL ) {
+            sprintf( delayStr, "%lld%c DOUBLE %i %s", it * 2, u, n, s + 1 );
+        }
+        else {
+            sprintf( delayStr, "%lld%c DOUBLE %i TIMES. ORIGINAL TIMES=%i", it * 2, u, n, n + 1 );
+        }
+        if ( n <= 0 ) {
+            return( 2 );
+        }
+        else {
+            return( 3 );
+        }
+    }
 
-            s[19] = '\0';
-            mytm->tm_sec = atoi( &s[17] );
-            s[16] = '\0';
-            mytm->tm_min = atoi( &s[14] );
-            s[13] = '\0';
-            mytm->tm_hour = atoi( &s[11] );
-            s[10] = '\0';
-            mytm->tm_mday = atoi( &s[8] );
-            s[7] = '\0';
-            mytm->tm_mon = atoi( &s[5] ) - 1;
-            s[4] = '\0';
-            mytm->tm_year = atoi( &s[0] ) - 1900;
+    return( 0 );
+}
 
-            newTime = mktime( mytm );
-            if ( sizeof( newTime ) == 64 ) {
-                snprintf( unixTime, TIME_LEN, "%lld", ( rodsLong_t ) newTime );
-            }
-            else {
-                snprintf( unixTime, TIME_LEN, "%d", ( uint ) newTime );
-            }
+int
+localToUnixTime( char * localTime, char * unixTime ) {
+    time_t myTime;
+    struct tm *mytm;
+    time_t newTime;
+    char s[TIME_LEN];
+
+    myTime = time( NULL );
+    mytm = localtime( &myTime );
+
+    rstrcpy( s, localTime, TIME_LEN );
+
+    s[19] = '\0';
+    mytm->tm_sec = atoi( &s[17] );
+    s[16] = '\0';
+    mytm->tm_min = atoi( &s[14] );
+    s[13] = '\0';
+    mytm->tm_hour = atoi( &s[11] );
+    s[10] = '\0';
+    mytm->tm_mday = atoi( &s[8] );
+    s[7] = '\0';
+    mytm->tm_mon = atoi( &s[5] ) - 1;
+    s[4] = '\0';
+    mytm->tm_year = atoi( &s[0] ) - 1900;
+
+    newTime = mktime( mytm );
+    if ( sizeof( newTime ) == 64 ) {
+        snprintf( unixTime, TIME_LEN, "%lld", ( rodsLong_t ) newTime );
+    }
+    else {
+        snprintf( unixTime, TIME_LEN, "%d", ( uint ) newTime );
+    }
+    return ( 0 );
+}
+
+int
+isInteger( char * inStr ) {
+    int i;
+    int len;
+
+    len = strlen( inStr );
+    /* see if it is all digit */
+    for ( i = 0; i < len; i++ ) {
+        if ( !isdigit( inStr[i] ) ) {
             return ( 0 );
         }
+    }
+    return ( 1 );
+}
 
-        int
-        isInteger( char * inStr ) {
-            int i;
-            int len;
 
-            len = strlen( inStr );
-            /* see if it is all digit */
-            for ( i = 0; i < len; i++ ) {
-                if ( !isdigit( inStr[i] ) ) {
-                    return ( 0 );
-                }
-            }
-            return ( 1 );
+/* convertDateFormat  - uses the checkDateFormat to convert string 's'
+ * into sec of unix time. But if the time is in the YYYY-*** format
+ * adds the current date (in unix seconds format) to forma  full date
+ */
+
+int
+convertDateFormat( char * s, char * currTime ) {
+    rodsLong_t  it;
+    char tstr[200];
+    int i;
+    rstrcpy( tstr, s, 199 );
+    i = checkDateFormat( tstr );
+    if ( i != 0 ) {
+        return( i );
+    }
+    if ( !isInteger( s ) && strchr( s, '-' ) == NULL && strchr( s, ':' ) == NULL ) {
+        it = atol( tstr ) + atol( currTime );
+        sprintf( s, "%lld", it );
+    }
+    else {
+        strcpy( s, tstr );
+    }
+    return( 0 );
+}
+
+/* checkDateFormat - convert the string given in s and output the time
+ * in sec of unix time in the same string s
+ * The input can be incremental time given in :
+ *     nnnn - an integer. assumed to be in sec
+ *     nnnns - an integer followed by 's' ==> in sec
+ *     nnnnm - an integer followed by 'm' ==> in min
+ *     nnnnh - an integer followed by 'h' ==> in hours
+ *     nnnnd - an integer followed by 'd' ==> in days
+ *     nnnnd - an integer followed by 'y' ==> in years
+ *     dd.hh:mm:ss - where dd, hh, mm and ss are 2 digits integers representing
+ *       days, hours minutes and seconds, repectively. Truncation from the
+ *       end is allowed. e.g. 20:40 means mm:ss
+ * The input can also be full calander time in the form:
+ *    YYYY-MM-DD.hh:mm:ss  - Truncation from the beginnning is allowed.
+ *       e.g., 2007-07-29.12 means noon of July 29, 2007.
+ *
+ */
+
+int
+checkDateFormat( char * s ) {
+    /* Note. The input *s is assumed to be TIME_LEN long */
+    int len;
+    char t[] = "0000-00-00.00:00:00";
+    char outUnixTime[TIME_LEN];
+    int status;
+    int offset = 0;
+
+    if ( isInteger( s ) ) {
+        return ( 0 );
+    }
+
+    len = strlen( s );
+
+    if ( s[len - 1] == 's' ) {
+        /* in sec */
+        s[len - 1] = '\0';
+        offset = atoi( s );
+        snprintf( s, 19, "%d", offset );
+        return 0;
+    }
+    else if ( s[len - 1] == 'm' ) {
+        /* in min */
+        s[len - 1] = '\0';
+        offset = atoi( s ) * 60;
+        snprintf( s, 19, "%d", offset );
+        return 0;
+    }
+    else if ( s[len - 1] == 'h' ) {
+        /* in hours */
+        s[len - 1] = '\0';
+        offset = atoi( s ) * 3600;
+        snprintf( s, 19, "%d", offset );
+        return 0;
+    }
+    else if ( s[len - 1] == 'd' ) {
+        /* in days */
+        s[len - 1] = '\0';
+        offset = atoi( s ) * 3600 * 24;
+        snprintf( s, 19, "%d", offset );
+        return 0;
+    }
+    else if ( s[len - 1] == 'y' ) {
+        /* in days */
+        s[len - 1] = '\0';
+        offset = atoi( s ) * 3600 * 24 * 365;
+        snprintf( s, 19, "%d", offset );
+        return 0;
+    }
+    else if ( len < 19 ) {
+        /* not a full date. */
+        if ( isdigit( s[0] ) && isdigit( s[1] ) && isdigit( s[2] ) && isdigit( s[3] ) ) {
+            /* start with year, fill in the rest */
+            strcat( s, ( char * )&t[len] );
         }
+        else {
+            /* must be offset */
+            int mypos;
 
-
-        /* convertDateFormat  - uses the checkDateFormat to convert string 's'
-         * into sec of unix time. But if the time is in the YYYY-*** format
-         * adds the current date (in unix seconds format) to forma  full date
-         */
-
-        int
-        convertDateFormat( char * s, char * currTime ) {
-            rodsLong_t  it;
-            char tstr[200];
-            int i;
-            rstrcpy( tstr, s, 199 );
-            i = checkDateFormat( tstr );
-            if ( i != 0 ) {
-                return( i );
-            }
-            if ( !isInteger( s ) && strchr( s, '-' ) == NULL && strchr( s, ':' ) == NULL ) {
-                it = atol( tstr ) + atol( currTime );
-                sprintf( s, "%lld", it );
-            }
-            else {
-                strcpy( s, tstr );
-            }
-            return( 0 );
-        }
-
-        /* checkDateFormat - convert the string given in s and output the time
-         * in sec of unix time in the same string s
-         * The input can be incremental time given in :
-         *     nnnn - an integer. assumed to be in sec
-         *     nnnns - an integer followed by 's' ==> in sec
-         *     nnnnm - an integer followed by 'm' ==> in min
-         *     nnnnh - an integer followed by 'h' ==> in hours
-         *     nnnnd - an integer followed by 'd' ==> in days
-         *     nnnnd - an integer followed by 'y' ==> in years
-         *     dd.hh:mm:ss - where dd, hh, mm and ss are 2 digits integers representing
-         *       days, hours minutes and seconds, repectively. Truncation from the
-         *       end is allowed. e.g. 20:40 means mm:ss
-         * The input can also be full calander time in the form:
-         *    YYYY-MM-DD.hh:mm:ss  - Truncation from the beginnning is allowed.
-         *       e.g., 2007-07-29.12 means noon of July 29, 2007.
-         *
-         */
-
-        int
-        checkDateFormat( char * s ) {
-            /* Note. The input *s is assumed to be TIME_LEN long */
-            int len;
-            char t[] = "0000-00-00.00:00:00";
-            char outUnixTime[TIME_LEN];
-            int status;
-            int offset = 0;
-
-            if ( isInteger( s ) ) {
-                return ( 0 );
-            }
-
-            len = strlen( s );
-
-            if ( s[len - 1] == 's' ) {
-                /* in sec */
-                s[len - 1] = '\0';
-                offset = atoi( s );
-                snprintf( s, 19, "%d", offset );
-                return 0;
-            }
-            else if ( s[len - 1] == 'm' ) {
-                /* in min */
-                s[len - 1] = '\0';
-                offset = atoi( s ) * 60;
-                snprintf( s, 19, "%d", offset );
-                return 0;
-            }
-            else if ( s[len - 1] == 'h' ) {
-                /* in hours */
-                s[len - 1] = '\0';
-                offset = atoi( s ) * 3600;
-                snprintf( s, 19, "%d", offset );
-                return 0;
-            }
-            else if ( s[len - 1] == 'd' ) {
-                /* in days */
-                s[len - 1] = '\0';
-                offset = atoi( s ) * 3600 * 24;
-                snprintf( s, 19, "%d", offset );
-                return 0;
-            }
-            else if ( s[len - 1] == 'y' ) {
-                /* in days */
-                s[len - 1] = '\0';
-                offset = atoi( s ) * 3600 * 24 * 365;
-                snprintf( s, 19, "%d", offset );
-                return 0;
-            }
-            else if ( len < 19 ) {
-                /* not a full date. */
-                if ( isdigit( s[0] ) && isdigit( s[1] ) && isdigit( s[2] ) && isdigit( s[3] ) ) {
-                    /* start with year, fill in the rest */
-                    strcat( s, ( char * )&t[len] );
+            /* sec */
+            mypos = len - 1;
+            while ( mypos >= 0 ) {
+                if ( isdigit( s[mypos] ) ) {
+                    offset += s[mypos] - 48;
                 }
                 else {
-                    /* must be offset */
-                    int mypos;
+                    return ( DATE_FORMAT_ERR );
+                }
 
-                    /* sec */
-                    mypos = len - 1;
-                    while ( mypos >= 0 ) {
-                        if ( isdigit( s[mypos] ) ) {
-                            offset += s[mypos] - 48;
-                        }
-                        else {
-                            return ( DATE_FORMAT_ERR );
-                        }
-
-                        mypos--;
-                        if ( mypos >= 0 )
-                            if ( isdigit( s[mypos] ) ) {
-                                offset += 10 * ( s[mypos] - 48 );
-                            }
-                            else {
-                                return ( DATE_FORMAT_ERR );
-                            }
-                        else {
-                            break;
-                        }
-
-                        mypos--;
-                        if ( mypos >= 0 )
-                            if ( s[mypos] != ':' ) {
-                                return ( DATE_FORMAT_ERR );
-                            }
-
-                        /* min */
-                        mypos--;
-                        if ( mypos >= 0 )
-                            if ( isdigit( s[mypos] ) ) {
-                                offset += 60 * ( s[mypos] - 48 );
-                            }
-                            else {
-                                return ( DATE_FORMAT_ERR );
-                            }
-                        else {
-                            break;
-                        }
-
-                        mypos--;
-                        if ( mypos >= 0 )
-                            if ( isdigit( s[mypos] ) ) {
-                                offset += 10 * 60 * ( s[mypos] - 48 );
-                            }
-                            else {
-                                return ( DATE_FORMAT_ERR );
-                            }
-                        else {
-                            break;
-                        }
-
-                        mypos--;
-                        if ( mypos >= 0 )
-                            if ( s[mypos] != ':' ) {
-                                return ( DATE_FORMAT_ERR );
-                            }
-
-                        /* hour */
-                        mypos--;
-                        if ( mypos >= 0 )
-                            if ( isdigit( s[mypos] ) ) {
-                                offset += 3600 * ( s[mypos] - 48 );
-                            }
-                            else {
-                                return ( DATE_FORMAT_ERR );
-                            }
-                        else {
-                            break;
-                        }
-
-                        mypos--;
-                        if ( mypos >= 0 )
-                            if ( isdigit( s[mypos] ) ) {
-                                offset += 10 * 3600 * ( s[mypos] - 48 );
-                            }
-                            else {
-                                return ( DATE_FORMAT_ERR );
-                            }
-                        else {
-                            break;
-                        }
-
-                        mypos--;
-                        if ( mypos >= 0 )
-                            if ( s[mypos] != '.' ) {
-                                return ( DATE_FORMAT_ERR );
-                            }
-
-                        /* day */
-
-                        mypos--;
-                        if ( mypos >= 0 )
-                            if ( isdigit( s[mypos] ) ) {
-                                offset += 24 * 3600 * ( s[mypos] - 48 );
-                            }
-                            else {
-                                return ( DATE_FORMAT_ERR );
-                            }
-                        else {
-                            break;
-                        }
-
-                        mypos--;
-                        if ( mypos >= 0 )
-                            if ( isdigit( s[mypos] ) ) {
-                                offset += 10 * 24 * 3600 * ( s[mypos] - 48 );
-                            }
-                            else {
-                                return ( DATE_FORMAT_ERR );
-                            }
-                        else {
-                            break;
-                        }
+                mypos--;
+                if ( mypos >= 0 )
+                    if ( isdigit( s[mypos] ) ) {
+                        offset += 10 * ( s[mypos] - 48 );
                     }
-                    snprintf( s, 19, "%d", offset );
-                    return ( 0 );
-                }
-            }
-
-            if ( isdigit( s[0] ) && isdigit( s[1] ) && isdigit( s[2] ) && isdigit( s[3] ) &&
-                    isdigit( s[5] ) && isdigit( s[6] ) && isdigit( s[8] ) && isdigit( s[9] ) &&
-                    isdigit( s[11] ) && isdigit( s[12] ) && isdigit( s[14] ) && isdigit( s[15] ) &&
-                    isdigit( s[17] ) && isdigit( s[18] ) &&
-                    s[4] == '-' && s[7] == '-' && s[10] == '.' &&
-                    s[13] == ':' && s[16] == ':' ) {
-                status = localToUnixTime( s, outUnixTime );
-                if ( status >= 0 ) {
-                    rstrcpy( s, outUnixTime, TIME_LEN );
-                }
-                return( status );
-            }
-            else {
-                return( DATE_FORMAT_ERR );
-            }
-        }
-
-        int
-        printErrorStack( rError_t * rError ) {
-            int i, len;
-            rErrMsg_t *errMsg;
-
-            if ( rError == NULL ) {
-                return 0;
-            }
-
-            len = rError->len;
-
-            for ( i = 0; i < len; i++ ) {
-                errMsg = rError->errMsg[i];
-                if ( errMsg->status != STDOUT_STATUS ) {
-                    printf( "Level %d: ", i );
-                }
-                printf( "%s\n", errMsg->msg );
-            }
-            return ( 0 );
-        }
-
-        int
-        appendRandomToPath( char * trashPath ) {
-            int len;
-            char *tmpPtr;
-
-            len = strlen( trashPath );
-
-            /* assume there is enough space for MAX_NAME_LEN char */
-
-            if ( len >= MAX_NAME_LEN + 12 ) {
-                return ( SYS_INVALID_FILE_PATH );
-            }
-            tmpPtr = trashPath + len;
-            sprintf( tmpPtr, ".%d", ( uint ) random() );
-
-            return ( 0 );
-        }
-
-        // =-=-=-=-=-=-=-
-        // JMC - backport 4552
-        int
-        isBundlePath( char * myPath ) {
-            char *tmpPtr, *tmpPtr1;
-
-            tmpPtr = myPath;
-
-            /* start with a '/' */
-            if ( *tmpPtr != '/' ) {
-                return False;
-            }
-
-            tmpPtr++;
-            if ( ( tmpPtr1 = strchr( tmpPtr, '/' ) ) == NULL ) {
-                return False;
-            }
-
-            tmpPtr = tmpPtr1 + 1;
-
-            if ( strncmp( tmpPtr, "bundle/", 7 ) == 0 ) {
-                return True;
-            }
-            else {
-                return False;
-            }
-        }
-        //  =-=-=-=-=-=-=-
-
-        int
-        isTrashPath( char * myPath ) {
-            char *tmpPtr, *tmpPtr1;
-
-            tmpPtr = myPath;
-
-            /* start with a '/' */
-            if ( *tmpPtr != '/' ) {
-                return False;
-            }
-
-            tmpPtr++;
-            if ( ( tmpPtr1 = strchr( tmpPtr, '/' ) ) == NULL ) {
-                return False;
-            }
-
-            tmpPtr = tmpPtr1 + 1;
-
-            if ( strncmp( tmpPtr, "trash/", 6 ) == 0 ) {
-                return True;
-            }
-            else {
-                return False;
-            }
-        }
-
-        /* isTrashHome - see if the path is /myZone/trash/home or
-         * /myZone/trash/home/myName.
-         * return 0 if it is not
-         * return 1 if it is.
-         */
-
-        int
-        isTrashHome( char * myPath ) {
-            char *tmpPtr, *tmpPtr1;
-
-            tmpPtr = myPath;
-
-            /* start with a '/' */
-            if ( *tmpPtr != '/' ) {
-                return 0;
-            }
-
-            tmpPtr++;
-            if ( ( tmpPtr1 = strchr( tmpPtr, '/' ) ) == NULL ) {
-                return 0;
-            }
-
-            tmpPtr = tmpPtr1 + 1;
-
-            if ( strncmp( tmpPtr, "trash/home", 10 ) != 0 ) {
-                return 0;
-            }
-
-            tmpPtr += 10;
-
-            if ( *tmpPtr == '\0' ) {
-                /* /myZone/trash/home */
-                return ( 1 );
-            }
-            else if ( *tmpPtr != '/' ) {
-                return ( 0 );
-            }
-
-            tmpPtr++;
-
-            if ( strchr( tmpPtr, '/' ) == NULL ) {
-                /* /myZone/trash/home/myName */
-                return 1;
-            }
-            else {
-                /* /myZone/trash/home/myName/... Not a trash home */
-                return 0;
-            }
-        }
-
-        /* isOrphanPath - check if path is a orphan path - /myZone/trash/orphan
-         */
-        orphanPathType_t
-        isOrphanPath( char * myPath ) {
-            char *tmpPtr, *tmpPtr1;
-
-            tmpPtr = myPath;
-
-            /* start with a '/' */
-            if ( *tmpPtr != '/' ) {
-                return NOT_ORPHAN_PATH;
-            }
-
-            tmpPtr++;
-            if ( ( tmpPtr1 = strchr( tmpPtr, '/' ) ) == NULL ) {
-                return NOT_ORPHAN_PATH;
-            }
-
-            tmpPtr = tmpPtr1 + 1;
-
-            if ( strncmp( tmpPtr, "trash/orphan", 12 ) != 0 ) {
-                return NOT_ORPHAN_PATH;
-            }
-            else if ( strcmp( tmpPtr, "trash/orphan" ) == 0 ) {
-                return is_ORPHAN_HOME;
-            }
-            else {
-                return IS_ORPHAN_PATH;
-            }
-        }
-
-        /* isHomeColl - see if the path is /myZone/home or
-         * /myZone/home/myName.
-         * return 0 if it is not
-         * return 1 if it is.
-         */
-
-        int
-        isHomeColl( char * myPath ) {
-            char *tmpPtr, *tmpPtr1;
-
-            tmpPtr = myPath;
-
-            /* start with a '/' */
-            if ( *tmpPtr != '/' ) {
-                return 0;
-            }
-
-            tmpPtr++;
-            if ( ( tmpPtr1 = strchr( tmpPtr, '/' ) ) == NULL ) {
-                return 0;
-            }
-
-            tmpPtr = tmpPtr1 + 1;
-
-            if ( strncmp( tmpPtr, "home", 4 ) != 0 ) {
-                return 0;
-            }
-
-            tmpPtr += 4;
-
-            if ( *tmpPtr == '\0' ) {
-                /* /myZone/home */
-                return ( 1 );
-            }
-            else if ( *tmpPtr != '/' ) {
-                return ( 0 );
-            }
-
-            tmpPtr++;
-
-            if ( strchr( tmpPtr, '/' ) == NULL ) {
-                /* /myZone/home/myName */
-                return 1;
-            }
-            else {
-                /* /myZone/home/myName/... Not a trash home */
-                return 0;
-            }
-        }
-
-        int
-        openRestartFile( char * restartFile, rodsRestart_t * rodsRestart,
-                         rodsArguments_t * rodsArgs ) {
-            path p( restartFile );
-            char buf[MAX_NAME_LEN * 3];
-            char *inptr;
-            char tmpStr[MAX_NAME_LEN];
-            int status;
-
-            if ( !exists( p ) || file_size( p ) == 0 ) {
-#ifndef windows_platform
-                rodsRestart->fd = open( restartFile, O_RDWR | O_CREAT, 0644 );
-#else
-                rodsRestart->fd = iRODSNt_bopen( restartFile, O_RDWR | O_CREAT, 0644 );
-#endif
-                if ( rodsRestart->fd < 0 ) {
-                    status = UNIX_FILE_OPEN_ERR - errno;
-                    rodsLogError( LOG_ERROR, status,
-                                  "openRestartFile: open error for %s", restartFile );
-                    return status;
-                }
-                rodsRestart->restartState = 0;
-                printf( "New restartFile %s opened\n", restartFile );
-            }
-            else if ( !is_regular_file( p ) ) {
-                close( rodsRestart->fd );
-                rodsRestart->fd = -1;
-                status = UNIX_FILE_OPEN_ERR;
-                rodsLogError( LOG_ERROR, status,
-                              "openRestartFile: %s is not a file", restartFile );
-                return UNIX_FILE_OPEN_ERR;
-            }
-            else {
-#ifndef windows_platform
-                rodsRestart->fd = open( restartFile, O_RDWR, 0644 );
-#else
-                rodsRestart->fd = iRODSNt_bopen( restartFile, O_RDWR, 0644 );
-#endif
-                if ( rodsRestart->fd < 0 ) {
-                    status = UNIX_FILE_OPEN_ERR - errno;
-                    rodsLogError( LOG_ERROR, status,
-                                  "openRestartFile: open error for %s", restartFile );
-                    return status;
-                }
-                status = read( rodsRestart->fd, ( void * ) buf, MAX_NAME_LEN * 3 );
-                if ( status <= 0 ) {
-                    close( rodsRestart->fd );
-                    status = UNIX_FILE_READ_ERR - errno;
-                    rodsLogError( LOG_ERROR, status,
-                                  "openRestartFile: read error for %s", restartFile );
-                    return status;
-                }
-
-                inptr = buf;
-                if ( getLineInBuf( &inptr, rodsRestart->collection, MAX_NAME_LEN ) < 0 ) {
-                    rodsLog( LOG_ERROR,
-                             "openRestartFile: restartFile %s is empty", restartFile );
-                    return USER_RESTART_FILE_INPUT_ERR;
-                }
-                if ( getLineInBuf( &inptr, tmpStr, MAX_NAME_LEN ) < 0 ) {
-                    rodsLog( LOG_ERROR,
-                             "openRestartFile: restartFile %s has 1 only line", restartFile );
-                    return USER_RESTART_FILE_INPUT_ERR;
-                }
-                rodsRestart->doneCnt = atoi( tmpStr );
-
-                if ( getLineInBuf( &inptr, rodsRestart->lastDonePath,
-                                   MAX_NAME_LEN ) < 0 ) {
-                    rodsLog( LOG_ERROR,
-                             "openRestartFile: restartFile %s has only 2 lines", restartFile );
-                    return USER_RESTART_FILE_INPUT_ERR;
-                }
-
-                if ( getLineInBuf( &inptr, rodsRestart->oprType,
-                                   NAME_LEN ) < 0 ) {
-                    rodsLog( LOG_ERROR,
-                             "openRestartFile: restartFile %s has only 3 lines", restartFile );
-                    return USER_RESTART_FILE_INPUT_ERR;
-                }
-
-                rodsRestart->restartState = PATH_MATCHING;
-                printf( "RestartFile %s opened\n", restartFile );
-                printf( "Restarting collection/directory = %s     File count %d\n",
-                        rodsRestart->collection, rodsRestart->doneCnt );
-                printf( "File last completed = %s\n", rodsRestart->lastDonePath );
-            }
-            return ( 0 );
-        }
-
-        int
-        getLineInBuf( char **inbuf, char * outbuf, int bufLen ) {
-            char *inPtr, *outPtr;
-            int bytesCopied  = 0;
-            int c;
-
-            inPtr = *inbuf;
-            outPtr = outbuf;
-
-            while ( ( c = *inPtr ) != '\n' && c != EOF && bytesCopied < bufLen ) {
-                c = *inPtr;
-                if ( c == '\n' || c == EOF ) {
+                    else {
+                        return ( DATE_FORMAT_ERR );
+                    }
+                else {
                     break;
                 }
-                *outPtr = c;
-                inPtr++;
-                outPtr++;
-                bytesCopied++;
-            }
-            *outPtr = '\0';
-            *inbuf = inPtr + 1;
-            return ( bytesCopied );
-        }
 
+                mypos--;
+                if ( mypos >= 0 )
+                    if ( s[mypos] != ':' ) {
+                        return ( DATE_FORMAT_ERR );
+                    }
 
-        int
-        setStateForResume( rcComm_t * conn, rodsRestart_t * rodsRestart,
-                           char * restartPath, objType_t objType, keyValPair_t * condInput,
-                           int deleteFlag ) {
-            if ( restartPath != NULL && deleteFlag > 0 ) {
-                if ( objType == DATA_OBJ_T ) {
-                    if ( ( condInput == NULL ||
-                            getValByKey( condInput, FORCE_FLAG_KW ) == NULL ) &&
-                            ( conn->fileRestart.info.status != FILE_RESTARTED ||
-                              strcmp( conn->fileRestart.info.objPath, restartPath ) != 0 ) ) {
-                        dataObjInp_t dataObjInp;
-                        /* need to remove any partially completed file */
-                        /* XXXXX may not be enough for bulk put */
-                        memset( &dataObjInp, 0, sizeof( dataObjInp ) );
-                        addKeyVal( &dataObjInp.condInput, FORCE_FLAG_KW, "" );
-                        rstrcpy( dataObjInp.objPath, restartPath, MAX_NAME_LEN );
-                        int status = rcDataObjUnlink( conn, & dataObjInp );
-//                            if(status < 0)
-//                            {
-// FIXME                         irods::log( ERROR ( status, "rcDataObjUnlink failed."));
-//                            }
-                        clearKeyVal( &dataObjInp.condInput );
+                /* min */
+                mypos--;
+                if ( mypos >= 0 )
+                    if ( isdigit( s[mypos] ) ) {
+                        offset += 60 * ( s[mypos] - 48 );
                     }
-                }
-                else if ( objType == LOCAL_FILE_T ) {
-                    if ( conn->fileRestart.info.status != FILE_RESTARTED ||
-                            strcmp( conn->fileRestart.info.fileName, restartPath ) != 0 ) {
-                        boost::filesystem::path path( restartPath );
-                        if ( boost::filesystem::exists( path ) ) {
-                            int status = boost::filesystem::remove( path );
-                            if ( status < 0 ) {
-                                irods::log( ERROR( status, "boost:filesystem::remove() failed." ) );
-                            }
-                        }
+                    else {
+                        return ( DATE_FORMAT_ERR );
                     }
-                }
                 else {
-                    rodsLog( LOG_ERROR,
-                             "setStateForResume: illegal objType %d for %s",
-                             objType, restartPath );
+                    break;
+                }
+
+                mypos--;
+                if ( mypos >= 0 )
+                    if ( isdigit( s[mypos] ) ) {
+                        offset += 10 * 60 * ( s[mypos] - 48 );
+                    }
+                    else {
+                        return ( DATE_FORMAT_ERR );
+                    }
+                else {
+                    break;
+                }
+
+                mypos--;
+                if ( mypos >= 0 )
+                    if ( s[mypos] != ':' ) {
+                        return ( DATE_FORMAT_ERR );
+                    }
+
+                /* hour */
+                mypos--;
+                if ( mypos >= 0 )
+                    if ( isdigit( s[mypos] ) ) {
+                        offset += 3600 * ( s[mypos] - 48 );
+                    }
+                    else {
+                        return ( DATE_FORMAT_ERR );
+                    }
+                else {
+                    break;
+                }
+
+                mypos--;
+                if ( mypos >= 0 )
+                    if ( isdigit( s[mypos] ) ) {
+                        offset += 10 * 3600 * ( s[mypos] - 48 );
+                    }
+                    else {
+                        return ( DATE_FORMAT_ERR );
+                    }
+                else {
+                    break;
+                }
+
+                mypos--;
+                if ( mypos >= 0 )
+                    if ( s[mypos] != '.' ) {
+                        return ( DATE_FORMAT_ERR );
+                    }
+
+                /* day */
+
+                mypos--;
+                if ( mypos >= 0 )
+                    if ( isdigit( s[mypos] ) ) {
+                        offset += 24 * 3600 * ( s[mypos] - 48 );
+                    }
+                    else {
+                        return ( DATE_FORMAT_ERR );
+                    }
+                else {
+                    break;
+                }
+
+                mypos--;
+                if ( mypos >= 0 )
+                    if ( isdigit( s[mypos] ) ) {
+                        offset += 10 * 24 * 3600 * ( s[mypos] - 48 );
+                    }
+                    else {
+                        return ( DATE_FORMAT_ERR );
+                    }
+                else {
+                    break;
                 }
             }
-            rodsRestart->restartState = OPR_RESUMED;    /* resumed opr */
-
+            snprintf( s, 19, "%d", offset );
             return ( 0 );
         }
+    }
 
-
-        /* writeRestartFile - the restart file contain 4 lines:
-         *   line 1 - collection.
-         *   line 2 - doneCnt.
-         *   line 3 - lastDonePath
-         *   line 4 - oprType (BULK_OPR_KW or NON_BULK_OPR_KW);
-         */
-
-        int
-        writeRestartFile( rodsRestart_t * rodsRestart, char * lastDonePath ) {
-            char buf[MAX_NAME_LEN * 3];
-            int status;
-
-            rodsRestart->doneCnt = rodsRestart->curCnt;
-            rstrcpy( rodsRestart->lastDonePath, lastDonePath, MAX_NAME_LEN );
-            memset( buf, 0, MAX_NAME_LEN * 3 );
-            snprintf( buf, MAX_NAME_LEN * 3, "%s\n%d\n%s\n%s\n",
-                      rodsRestart->collection, rodsRestart->doneCnt,
-                      rodsRestart->lastDonePath, rodsRestart->oprType );
-
-            lseek( rodsRestart->fd, 0, SEEK_SET );
-            status = write( rodsRestart->fd, buf, MAX_NAME_LEN * 3 );
-            if ( status != MAX_NAME_LEN * 3 ) {
-                rodsLog( LOG_ERROR,
-                         "writeRestartFile: write error, errno = %d",
-                         errno );
-                return ( SYS_COPY_LEN_ERR - errno );
-            }
-            return ( 0 );
+    if ( isdigit( s[0] ) && isdigit( s[1] ) && isdigit( s[2] ) && isdigit( s[3] ) &&
+            isdigit( s[5] ) && isdigit( s[6] ) && isdigit( s[8] ) && isdigit( s[9] ) &&
+            isdigit( s[11] ) && isdigit( s[12] ) && isdigit( s[14] ) && isdigit( s[15] ) &&
+            isdigit( s[17] ) && isdigit( s[18] ) &&
+            s[4] == '-' && s[7] == '-' && s[10] == '.' &&
+            s[13] == ':' && s[16] == ':' ) {
+        status = localToUnixTime( s, outUnixTime );
+        if ( status >= 0 ) {
+            rstrcpy( s, outUnixTime, TIME_LEN );
         }
+        return( status );
+    }
+    else {
+        return( DATE_FORMAT_ERR );
+    }
+}
 
-        int
-        procAndWrriteRestartFile( rodsRestart_t * rodsRestart, char * donePath ) {
-            int status;
+int
+printErrorStack( rError_t * rError ) {
+    int i, len;
+    rErrMsg_t *errMsg;
 
-            if ( rodsRestart->fd <= 0 ) {
-                return 0;
-            }
+    if ( rError == NULL ) {
+        return 0;
+    }
 
-            rodsRestart->curCnt ++;
-            status = writeRestartFile( rodsRestart, donePath );
+    len = rError->len;
 
-            return ( status );
+    for ( i = 0; i < len; i++ ) {
+        errMsg = rError->errMsg[i];
+        if ( errMsg->status != STDOUT_STATUS ) {
+            printf( "Level %d: ", i );
         }
+        printf( "%s\n", errMsg->msg );
+    }
+    return ( 0 );
+}
 
-        int
-        setStateForRestart( rcComm_t * conn, rodsRestart_t * rodsRestart,
-                            rodsPath_t * targPath, rodsArguments_t * rodsArgs ) {
-            if ( rodsRestart->restartState & PATH_MATCHING ) {
-                /* check the restart collection */
-                if ( strstr( targPath->outPath, rodsRestart->collection ) != NULL ) {
-                    /* just use the rodsRestart->collection because the
-                     * targPath may be resolved into a differnet path */
-                    rstrcpy( targPath->outPath, rodsRestart->collection, MAX_NAME_LEN );
-                    rodsRestart->restartState |= MATCHED_RESTART_COLL;
-                    rodsRestart->curCnt = 0;
-                    if ( rodsArgs->verbose == True ) {
-                        printf( "**** Scanning to Restart Operation in %s ****\n",
-                                targPath->outPath );
-                    }
-                }
-                else {
-                    /* take out MATCHED_RESTART_COLL */
-                    if ( rodsArgs->verbose == True ) {
-                        printf( "**** Skip Coll/dir %s ****\n",
-                                targPath->outPath );
-                    }
-                    rodsRestart->restartState = rodsRestart->restartState &
-                                                ( ~MATCHED_RESTART_COLL );
-                }
-            }
-            else if ( rodsRestart->fd > 0 ) {
-                /* just writing restart file */
-                rstrcpy( rodsRestart->collection, targPath->outPath,
-                         MAX_NAME_LEN );
-                rodsRestart->doneCnt = rodsRestart->curCnt = 0;
-            }
-            return ( 0 );
+int
+appendRandomToPath( char * trashPath ) {
+    int len;
+    char *tmpPtr;
+
+    len = strlen( trashPath );
+
+    /* assume there is enough space for MAX_NAME_LEN char */
+
+    if ( len >= MAX_NAME_LEN + 12 ) {
+        return ( SYS_INVALID_FILE_PATH );
+    }
+    tmpPtr = trashPath + len;
+    sprintf( tmpPtr, ".%d", ( uint ) random() );
+
+    return ( 0 );
+}
+
+// =-=-=-=-=-=-=-
+// JMC - backport 4552
+int
+isBundlePath( char * myPath ) {
+    char *tmpPtr, *tmpPtr1;
+
+    tmpPtr = myPath;
+
+    /* start with a '/' */
+    if ( *tmpPtr != '/' ) {
+        return False;
+    }
+
+    tmpPtr++;
+    if ( ( tmpPtr1 = strchr( tmpPtr, '/' ) ) == NULL ) {
+        return False;
+    }
+
+    tmpPtr = tmpPtr1 + 1;
+
+    if ( strncmp( tmpPtr, "bundle/", 7 ) == 0 ) {
+        return True;
+    }
+    else {
+        return False;
+    }
+}
+//  =-=-=-=-=-=-=-
+
+int
+isTrashPath( char * myPath ) {
+    char *tmpPtr, *tmpPtr1;
+
+    tmpPtr = myPath;
+
+    /* start with a '/' */
+    if ( *tmpPtr != '/' ) {
+        return False;
+    }
+
+    tmpPtr++;
+    if ( ( tmpPtr1 = strchr( tmpPtr, '/' ) ) == NULL ) {
+        return False;
+    }
+
+    tmpPtr = tmpPtr1 + 1;
+
+    if ( strncmp( tmpPtr, "trash/", 6 ) == 0 ) {
+        return True;
+    }
+    else {
+        return False;
+    }
+}
+
+/* isTrashHome - see if the path is /myZone/trash/home or
+ * /myZone/trash/home/myName.
+ * return 0 if it is not
+ * return 1 if it is.
+ */
+
+int
+isTrashHome( char * myPath ) {
+    char *tmpPtr, *tmpPtr1;
+
+    tmpPtr = myPath;
+
+    /* start with a '/' */
+    if ( *tmpPtr != '/' ) {
+        return 0;
+    }
+
+    tmpPtr++;
+    if ( ( tmpPtr1 = strchr( tmpPtr, '/' ) ) == NULL ) {
+        return 0;
+    }
+
+    tmpPtr = tmpPtr1 + 1;
+
+    if ( strncmp( tmpPtr, "trash/home", 10 ) != 0 ) {
+        return 0;
+    }
+
+    tmpPtr += 10;
+
+    if ( *tmpPtr == '\0' ) {
+        /* /myZone/trash/home */
+        return ( 1 );
+    }
+    else if ( *tmpPtr != '/' ) {
+        return ( 0 );
+    }
+
+    tmpPtr++;
+
+    if ( strchr( tmpPtr, '/' ) == NULL ) {
+        /* /myZone/trash/home/myName */
+        return 1;
+    }
+    else {
+        /* /myZone/trash/home/myName/... Not a trash home */
+        return 0;
+    }
+}
+
+/* isOrphanPath - check if path is a orphan path - /myZone/trash/orphan
+ */
+orphanPathType_t
+isOrphanPath( char * myPath ) {
+    char *tmpPtr, *tmpPtr1;
+
+    tmpPtr = myPath;
+
+    /* start with a '/' */
+    if ( *tmpPtr != '/' ) {
+        return NOT_ORPHAN_PATH;
+    }
+
+    tmpPtr++;
+    if ( ( tmpPtr1 = strchr( tmpPtr, '/' ) ) == NULL ) {
+        return NOT_ORPHAN_PATH;
+    }
+
+    tmpPtr = tmpPtr1 + 1;
+
+    if ( strncmp( tmpPtr, "trash/orphan", 12 ) != 0 ) {
+        return NOT_ORPHAN_PATH;
+    }
+    else if ( strcmp( tmpPtr, "trash/orphan" ) == 0 ) {
+        return is_ORPHAN_HOME;
+    }
+    else {
+        return IS_ORPHAN_PATH;
+    }
+}
+
+/* isHomeColl - see if the path is /myZone/home or
+ * /myZone/home/myName.
+ * return 0 if it is not
+ * return 1 if it is.
+ */
+
+int
+isHomeColl( char * myPath ) {
+    char *tmpPtr, *tmpPtr1;
+
+    tmpPtr = myPath;
+
+    /* start with a '/' */
+    if ( *tmpPtr != '/' ) {
+        return 0;
+    }
+
+    tmpPtr++;
+    if ( ( tmpPtr1 = strchr( tmpPtr, '/' ) ) == NULL ) {
+        return 0;
+    }
+
+    tmpPtr = tmpPtr1 + 1;
+
+    if ( strncmp( tmpPtr, "home", 4 ) != 0 ) {
+        return 0;
+    }
+
+    tmpPtr += 4;
+
+    if ( *tmpPtr == '\0' ) {
+        /* /myZone/home */
+        return ( 1 );
+    }
+    else if ( *tmpPtr != '/' ) {
+        return ( 0 );
+    }
+
+    tmpPtr++;
+
+    if ( strchr( tmpPtr, '/' ) == NULL ) {
+        /* /myZone/home/myName */
+        return 1;
+    }
+    else {
+        /* /myZone/home/myName/... Not a trash home */
+        return 0;
+    }
+}
+
+int
+openRestartFile( char * restartFile, rodsRestart_t * rodsRestart,
+                 rodsArguments_t * rodsArgs ) {
+    path p( restartFile );
+    char buf[MAX_NAME_LEN * 3];
+    char *inptr;
+    char tmpStr[MAX_NAME_LEN];
+    int status;
+
+    if ( !exists( p ) || file_size( p ) == 0 ) {
+#ifndef windows_platform
+        rodsRestart->fd = open( restartFile, O_RDWR | O_CREAT, 0644 );
+#else
+        rodsRestart->fd = iRODSNt_bopen( restartFile, O_RDWR | O_CREAT, 0644 );
+#endif
+        if ( rodsRestart->fd < 0 ) {
+            status = UNIX_FILE_OPEN_ERR - errno;
+            rodsLogError( LOG_ERROR, status,
+                          "openRestartFile: open error for %s", restartFile );
+            return status;
         }
-
-        /* checkStateForResume - check the state for resume operation
-         * return 0 - skip
-         * return 1 - resume
-         */
-
-        int
-        chkStateForResume( rcComm_t * conn, rodsRestart_t * rodsRestart,
-                           char * targPath, rodsArguments_t * rodsArgs, objType_t objType,
-                           keyValPair_t * condInput, int deleteFlag ) {
-            int status;
-
-            if ( rodsRestart->restartState & MATCHED_RESTART_COLL ) {
-                if ( rodsRestart->curCnt > rodsRestart->doneCnt ) {
-                    rodsLog( LOG_ERROR,
-                             "chkStateForResume:Restart failed.curCnt %d>doneCnt %d,path %s",
-                             rodsRestart->curCnt, rodsRestart->doneCnt, targPath );
-                    return ( RESTART_OPR_FAILED );
-                }
-
-                if ( rodsRestart->restartState & LAST_PATH_MATCHED ) {
-                    if ( objType == DATA_OBJ_T || objType == LOCAL_FILE_T ) {
-                        /* a file */
-                        if ( rodsArgs->verbose == True ) {
-                            printf( "***** RESUMING OPERATION ****\n" );
-                        }
-                        setStateForResume( conn, rodsRestart, targPath,
-                                           objType, condInput, deleteFlag );
-                    }
-                    status = 1;
-                }
-                else if ( strcmp( targPath, rodsRestart->lastDonePath ) == 0 ) {
-                    /* will handle this with the next file */
-                    rodsRestart->curCnt ++;
-                    if ( rodsRestart->curCnt != rodsRestart->doneCnt ) {
-                        rodsLog( LOG_ERROR,
-                                 "chkStateForResume:Restart failed.curCnt %d!=doneCnt %d,path %s",
-                                 rodsRestart->curCnt, rodsRestart->doneCnt, targPath );
-                        return ( RESTART_OPR_FAILED );
-                    }
-                    rodsRestart->restartState |= LAST_PATH_MATCHED;
-                    status = 0;
-                }
-                else if ( objType == DATA_OBJ_T || objType == LOCAL_FILE_T ) {
-                    /* A file. no match - skip this */
-                    if ( rodsArgs->verbose == True ) {
-                        printf( "    ---- Skip file %s ----\n", targPath );
-                    }
-                    rodsRestart->curCnt ++;
-                    status = 0;
-                }
-                else {
-                    /* collection - drill down and see */
-                    status = 1;
-                }
-            }
-            else if ( rodsRestart->restartState & PATH_MATCHING ) {
-                /* the path does not match. skip */
-                status = 0;
-            }
-            else {
-                status = 1;
-            }
-
+        rodsRestart->restartState = 0;
+        printf( "New restartFile %s opened\n", restartFile );
+    }
+    else if ( !is_regular_file( p ) ) {
+        close( rodsRestart->fd );
+        rodsRestart->fd = -1;
+        status = UNIX_FILE_OPEN_ERR;
+        rodsLogError( LOG_ERROR, status,
+                      "openRestartFile: %s is not a file", restartFile );
+        return UNIX_FILE_OPEN_ERR;
+    }
+    else {
+#ifndef windows_platform
+        rodsRestart->fd = open( restartFile, O_RDWR, 0644 );
+#else
+        rodsRestart->fd = iRODSNt_bopen( restartFile, O_RDWR, 0644 );
+#endif
+        if ( rodsRestart->fd < 0 ) {
+            status = UNIX_FILE_OPEN_ERR - errno;
+            rodsLogError( LOG_ERROR, status,
+                          "openRestartFile: open error for %s", restartFile );
+            return status;
+        }
+        status = read( rodsRestart->fd, ( void * ) buf, MAX_NAME_LEN * 3 );
+        if ( status <= 0 ) {
+            close( rodsRestart->fd );
+            status = UNIX_FILE_READ_ERR - errno;
+            rodsLogError( LOG_ERROR, status,
+                          "openRestartFile: read error for %s", restartFile );
             return status;
         }
 
-        int
-        getAttrIdFromAttrName( char * cname ) {
+        inptr = buf;
+        if ( getLineInBuf( &inptr, rodsRestart->collection, MAX_NAME_LEN ) < 0 ) {
+            rodsLog( LOG_ERROR,
+                     "openRestartFile: restartFile %s is empty", restartFile );
+            return USER_RESTART_FILE_INPUT_ERR;
+        }
+        if ( getLineInBuf( &inptr, tmpStr, MAX_NAME_LEN ) < 0 ) {
+            rodsLog( LOG_ERROR,
+                     "openRestartFile: restartFile %s has 1 only line", restartFile );
+            return USER_RESTART_FILE_INPUT_ERR;
+        }
+        rodsRestart->doneCnt = atoi( tmpStr );
 
-            int i;
-            for ( i = 0; i < NumOfColumnNames ; i++ ) {
-                if ( !strcmp( columnNames[i].columnName, cname ) ) {
-                    return( columnNames[i].columnId );
+        if ( getLineInBuf( &inptr, rodsRestart->lastDonePath,
+                           MAX_NAME_LEN ) < 0 ) {
+            rodsLog( LOG_ERROR,
+                     "openRestartFile: restartFile %s has only 2 lines", restartFile );
+            return USER_RESTART_FILE_INPUT_ERR;
+        }
+
+        if ( getLineInBuf( &inptr, rodsRestart->oprType,
+                           NAME_LEN ) < 0 ) {
+            rodsLog( LOG_ERROR,
+                     "openRestartFile: restartFile %s has only 3 lines", restartFile );
+            return USER_RESTART_FILE_INPUT_ERR;
+        }
+
+        rodsRestart->restartState = PATH_MATCHING;
+        printf( "RestartFile %s opened\n", restartFile );
+        printf( "Restarting collection/directory = %s     File count %d\n",
+                rodsRestart->collection, rodsRestart->doneCnt );
+        printf( "File last completed = %s\n", rodsRestart->lastDonePath );
+    }
+    return ( 0 );
+}
+
+int
+getLineInBuf( char **inbuf, char * outbuf, int bufLen ) {
+    char *inPtr, *outPtr;
+    int bytesCopied  = 0;
+    int c;
+
+    inPtr = *inbuf;
+    outPtr = outbuf;
+
+    while ( ( c = *inPtr ) != '\n' && c != EOF && bytesCopied < bufLen ) {
+        c = *inPtr;
+        if ( c == '\n' || c == EOF ) {
+            break;
+        }
+        *outPtr = c;
+        inPtr++;
+        outPtr++;
+        bytesCopied++;
+    }
+    *outPtr = '\0';
+    *inbuf = inPtr + 1;
+    return ( bytesCopied );
+}
+
+
+int
+setStateForResume( rcComm_t * conn, rodsRestart_t * rodsRestart,
+                   char * restartPath, objType_t objType, keyValPair_t * condInput,
+                   int deleteFlag ) {
+    if ( restartPath != NULL && deleteFlag > 0 ) {
+        if ( objType == DATA_OBJ_T ) {
+            if ( ( condInput == NULL ||
+                    getValByKey( condInput, FORCE_FLAG_KW ) == NULL ) &&
+                    ( conn->fileRestart.info.status != FILE_RESTARTED ||
+                      strcmp( conn->fileRestart.info.objPath, restartPath ) != 0 ) ) {
+                dataObjInp_t dataObjInp;
+                /* need to remove any partially completed file */
+                /* XXXXX may not be enough for bulk put */
+                memset( &dataObjInp, 0, sizeof( dataObjInp ) );
+                addKeyVal( &dataObjInp.condInput, FORCE_FLAG_KW, "" );
+                rstrcpy( dataObjInp.objPath, restartPath, MAX_NAME_LEN );
+                int status = rcDataObjUnlink( conn, & dataObjInp );
+                if ( status < 0 ) {
+                    std::string notice = std::string( "rcDataObjUnlink returned with code: " );
+                    notice.append( boost::to_string( status ) );
+                    irods::log( LOG_NOTICE, notice );
+                }
+                clearKeyVal( &dataObjInp.condInput );
+            }
+        }
+        else if ( objType == LOCAL_FILE_T ) {
+            if ( conn->fileRestart.info.status != FILE_RESTARTED ||
+                    strcmp( conn->fileRestart.info.fileName, restartPath ) != 0 ) {
+                boost::filesystem::path path( restartPath );
+                if ( boost::filesystem::exists( path ) ) {
+                    int status = boost::filesystem::remove( path );
+                    if ( status < 0 ) {
+                        irods::log( ERROR( status, "boost:filesystem::remove() failed." ) );
+                    }
                 }
             }
+        }
+        else {
+            rodsLog( LOG_ERROR,
+                     "setStateForResume: illegal objType %d for %s",
+                     objType, restartPath );
+        }
+    }
+    rodsRestart->restartState = OPR_RESUMED;    /* resumed opr */
+
+    return ( 0 );
+}
+
+
+/* writeRestartFile - the restart file contain 4 lines:
+ *   line 1 - collection.
+ *   line 2 - doneCnt.
+ *   line 3 - lastDonePath
+ *   line 4 - oprType (BULK_OPR_KW or NON_BULK_OPR_KW);
+ */
+
+int
+writeRestartFile( rodsRestart_t * rodsRestart, char * lastDonePath ) {
+    char buf[MAX_NAME_LEN * 3];
+    int status;
+
+    rodsRestart->doneCnt = rodsRestart->curCnt;
+    rstrcpy( rodsRestart->lastDonePath, lastDonePath, MAX_NAME_LEN );
+    memset( buf, 0, MAX_NAME_LEN * 3 );
+    snprintf( buf, MAX_NAME_LEN * 3, "%s\n%d\n%s\n%s\n",
+              rodsRestart->collection, rodsRestart->doneCnt,
+              rodsRestart->lastDonePath, rodsRestart->oprType );
+
+    lseek( rodsRestart->fd, 0, SEEK_SET );
+    status = write( rodsRestart->fd, buf, MAX_NAME_LEN * 3 );
+    if ( status != MAX_NAME_LEN * 3 ) {
+        rodsLog( LOG_ERROR,
+                 "writeRestartFile: write error, errno = %d",
+                 errno );
+        return ( SYS_COPY_LEN_ERR - errno );
+    }
+    return ( 0 );
+}
+
+int
+procAndWrriteRestartFile( rodsRestart_t * rodsRestart, char * donePath ) {
+    int status;
+
+    if ( rodsRestart->fd <= 0 ) {
+        return 0;
+    }
+
+    rodsRestart->curCnt ++;
+    status = writeRestartFile( rodsRestart, donePath );
+
+    return ( status );
+}
+
+int
+setStateForRestart( rcComm_t * conn, rodsRestart_t * rodsRestart,
+                    rodsPath_t * targPath, rodsArguments_t * rodsArgs ) {
+    if ( rodsRestart->restartState & PATH_MATCHING ) {
+        /* check the restart collection */
+        if ( strstr( targPath->outPath, rodsRestart->collection ) != NULL ) {
+            /* just use the rodsRestart->collection because the
+             * targPath may be resolved into a differnet path */
+            rstrcpy( targPath->outPath, rodsRestart->collection, MAX_NAME_LEN );
+            rodsRestart->restartState |= MATCHED_RESTART_COLL;
+            rodsRestart->curCnt = 0;
+            if ( rodsArgs->verbose == True ) {
+                printf( "**** Scanning to Restart Operation in %s ****\n",
+                        targPath->outPath );
+            }
+        }
+        else {
+            /* take out MATCHED_RESTART_COLL */
+            if ( rodsArgs->verbose == True ) {
+                printf( "**** Skip Coll/dir %s ****\n",
+                        targPath->outPath );
+            }
+            rodsRestart->restartState = rodsRestart->restartState &
+                                        ( ~MATCHED_RESTART_COLL );
+        }
+    }
+    else if ( rodsRestart->fd > 0 ) {
+        /* just writing restart file */
+        rstrcpy( rodsRestart->collection, targPath->outPath,
+                 MAX_NAME_LEN );
+        rodsRestart->doneCnt = rodsRestart->curCnt = 0;
+    }
+    return ( 0 );
+}
+
+/* checkStateForResume - check the state for resume operation
+ * return 0 - skip
+ * return 1 - resume
+ */
+
+int
+chkStateForResume( rcComm_t * conn, rodsRestart_t * rodsRestart,
+                   char * targPath, rodsArguments_t * rodsArgs, objType_t objType,
+                   keyValPair_t * condInput, int deleteFlag ) {
+    int status;
+
+    if ( rodsRestart->restartState & MATCHED_RESTART_COLL ) {
+        if ( rodsRestart->curCnt > rodsRestart->doneCnt ) {
+            rodsLog( LOG_ERROR,
+                     "chkStateForResume:Restart failed.curCnt %d>doneCnt %d,path %s",
+                     rodsRestart->curCnt, rodsRestart->doneCnt, targPath );
+            return ( RESTART_OPR_FAILED );
+        }
+
+        if ( rodsRestart->restartState & LAST_PATH_MATCHED ) {
+            if ( objType == DATA_OBJ_T || objType == LOCAL_FILE_T ) {
+                /* a file */
+                if ( rodsArgs->verbose == True ) {
+                    printf( "***** RESUMING OPERATION ****\n" );
+                }
+                setStateForResume( conn, rodsRestart, targPath,
+                                   objType, condInput, deleteFlag );
+            }
+            status = 1;
+        }
+        else if ( strcmp( targPath, rodsRestart->lastDonePath ) == 0 ) {
+            /* will handle this with the next file */
+            rodsRestart->curCnt ++;
+            if ( rodsRestart->curCnt != rodsRestart->doneCnt ) {
+                rodsLog( LOG_ERROR,
+                         "chkStateForResume:Restart failed.curCnt %d!=doneCnt %d,path %s",
+                         rodsRestart->curCnt, rodsRestart->doneCnt, targPath );
+                return ( RESTART_OPR_FAILED );
+            }
+            rodsRestart->restartState |= LAST_PATH_MATCHED;
+            status = 0;
+        }
+        else if ( objType == DATA_OBJ_T || objType == LOCAL_FILE_T ) {
+            /* A file. no match - skip this */
+            if ( rodsArgs->verbose == True ) {
+                printf( "    ---- Skip file %s ----\n", targPath );
+            }
+            rodsRestart->curCnt ++;
+            status = 0;
+        }
+        else {
+            /* collection - drill down and see */
+            status = 1;
+        }
+    }
+    else if ( rodsRestart->restartState & PATH_MATCHING ) {
+        /* the path does not match. skip */
+        status = 0;
+    }
+    else {
+        status = 1;
+    }
+
+    return status;
+}
+
+int
+getAttrIdFromAttrName( char * cname ) {
+
+    int i;
+    for ( i = 0; i < NumOfColumnNames ; i++ ) {
+        if ( !strcmp( columnNames[i].columnName, cname ) ) {
+            return( columnNames[i].columnId );
+        }
+    }
 #ifdef EXTENDED_ICAT
-            for ( i = 0; i < NumOfExtColumnNames ; i++ ) {
-                if ( !strcmp( extColumnNames[i].columnName, cname ) ) {
-                    return( extColumnNames[i].columnId );
-                }
-            }
-#endif
-            return( NO_COLUMN_NAME_FOUND );
+    for ( i = 0; i < NumOfExtColumnNames ; i++ ) {
+        if ( !strcmp( extColumnNames[i].columnName, cname ) ) {
+            return( extColumnNames[i].columnId );
         }
+    }
+#endif
+    return( NO_COLUMN_NAME_FOUND );
+}
 
-        int
-        showAttrNames() {
-            int i;
-            for ( i = 0; i < NumOfColumnNames ; i++ ) {
-                printf( "%s\n", columnNames[i].columnName );
-            }
+int
+showAttrNames() {
+    int i;
+    for ( i = 0; i < NumOfColumnNames ; i++ ) {
+        printf( "%s\n", columnNames[i].columnName );
+    }
 #ifdef EXTENDED_ICAT
-            for ( i = 0; i < NumOfExtColumnNames ; i++ ) {
-                printf( "%s\n", extColumnNames[i].columnName );
-            }
+    for ( i = 0; i < NumOfExtColumnNames ; i++ ) {
+        printf( "%s\n", extColumnNames[i].columnName );
+    }
 #endif
-            return( 0 );
+    return( 0 );
+}
+
+int
+separateSelFuncFromAttr( char * t, char **aggOp, char **colNm ) {
+    char *s;
+
+    if ( ( s = strchr( t, '(' ) ) == NULL ) {
+        *colNm = t;
+        *aggOp = NULL;
+        return( 0 );
+    }
+    *aggOp = t;
+    *s = '\0';
+    s++;
+    *colNm = s;
+    if ( ( s = strchr( *colNm, ')' ) ) == NULL ) {
+        return( NO_COLUMN_NAME_FOUND );
+    }
+    *s = '\0';
+    return( 0 );
+}
+
+int
+getSelVal( char * c ) {
+    if ( c == NULL ) {
+        return( 1 );
+    }
+    if ( !strcmp( c, "sum" ) || !strcmp( c, "SUM" ) ) {
+        return( SELECT_SUM );
+    }
+    if ( !strcmp( c, "min" ) || !strcmp( c, "MIN" ) ) {
+        return( SELECT_MIN );
+    }
+    if ( !strcmp( c, "max" ) || !strcmp( c, "MAX" ) ) {
+        return( SELECT_MAX );
+    }
+    if ( !strcmp( c, "avg" ) || !strcmp( c, "AVG" ) ) {
+        return( SELECT_AVG );
+    }
+    if ( !strcmp( c, "count" ) || !strcmp( c, "COUNT" ) ) {
+        return( SELECT_COUNT );
+    }
+    // =-=-=-=-=-=-=-
+    // JMC - backport 4795
+    if ( !strcmp( c, "order" ) || !strcmp( c, "ORDER" ) ) {
+        return( ORDER_BY );
+    }
+    if ( !strcmp( c, "order_desc" ) || !strcmp( c, "ORDER_DESC" ) ) {
+        return( ORDER_BY_DESC );
+    }
+    // =-=-=-=-=-=-=-
+
+    return( 1 );
+}
+
+
+char *
+getAttrNameFromAttrId( int cid ) {
+
+    int i;
+    for ( i = 0; i < NumOfColumnNames ; i++ ) {
+        if ( columnNames[i].columnId == cid ) {
+            return( columnNames[i].columnName );
         }
-
-        int
-        separateSelFuncFromAttr( char * t, char **aggOp, char **colNm ) {
-            char *s;
-
-            if ( ( s = strchr( t, '(' ) ) == NULL ) {
-                *colNm = t;
-                *aggOp = NULL;
-                return( 0 );
-            }
-            *aggOp = t;
-            *s = '\0';
-            s++;
-            *colNm = s;
-            if ( ( s = strchr( *colNm, ')' ) ) == NULL ) {
-                return( NO_COLUMN_NAME_FOUND );
-            }
-            *s = '\0';
-            return( 0 );
-        }
-
-        int
-        getSelVal( char * c ) {
-            if ( c == NULL ) {
-                return( 1 );
-            }
-            if ( !strcmp( c, "sum" ) || !strcmp( c, "SUM" ) ) {
-                return( SELECT_SUM );
-            }
-            if ( !strcmp( c, "min" ) || !strcmp( c, "MIN" ) ) {
-                return( SELECT_MIN );
-            }
-            if ( !strcmp( c, "max" ) || !strcmp( c, "MAX" ) ) {
-                return( SELECT_MAX );
-            }
-            if ( !strcmp( c, "avg" ) || !strcmp( c, "AVG" ) ) {
-                return( SELECT_AVG );
-            }
-            if ( !strcmp( c, "count" ) || !strcmp( c, "COUNT" ) ) {
-                return( SELECT_COUNT );
-            }
-            // =-=-=-=-=-=-=-
-            // JMC - backport 4795
-            if ( !strcmp( c, "order" ) || !strcmp( c, "ORDER" ) ) {
-                return( ORDER_BY );
-            }
-            if ( !strcmp( c, "order_desc" ) || !strcmp( c, "ORDER_DESC" ) ) {
-                return( ORDER_BY_DESC );
-            }
-            // =-=-=-=-=-=-=-
-
-            return( 1 );
-        }
-
-
-        char *
-        getAttrNameFromAttrId( int cid ) {
-
-            int i;
-            for ( i = 0; i < NumOfColumnNames ; i++ ) {
-                if ( columnNames[i].columnId == cid ) {
-                    return( columnNames[i].columnName );
-                }
-            }
+    }
 #ifdef EXTENDED_ICAT
-            for ( i = 0; i < NumOfExtColumnNames ; i++ ) {
-                if ( extColumnNames[i].columnId == cid ) {
-                    return( extColumnNames[i].columnName );
-                }
-            }
+    for ( i = 0; i < NumOfExtColumnNames ; i++ ) {
+        if ( extColumnNames[i].columnId == cid ) {
+            return( extColumnNames[i].columnName );
+        }
+    }
 #endif
-            return( NULL );
+    return( NULL );
+}
+
+int
+goodStrExpr( char * expr ) {
+    int qcnt = 0;
+    int qqcnt = 0;
+    int bcnt = 0;
+    int i = 0;
+    int inq =  0;
+    int inqq =  0;
+    while ( expr[i] != '\0' ) {
+        if ( inq ) {
+            if ( expr[i] == '\'' ) {
+                inq--;
+                qcnt++;
+            }
+        }
+        else if ( inqq ) {
+            if ( expr[i] == '"' ) {
+                inqq--;
+                qqcnt++;
+            }
+        }
+        else if ( expr[i] == '\'' ) {
+            inq++;
+            qcnt++;
+        }
+        else if ( expr[i] == '"' ) {
+            inqq++;
+            qqcnt++;
+        }
+        else if ( expr[i] == '(' ) {
+            bcnt++;
+        }
+        else if ( expr[i] == ')' )
+            if ( bcnt > 0 ) {
+                bcnt--;
+            }
+        i++;
+    }
+    if ( bcnt != 0 || qcnt % 2 != 0 || qqcnt % 2 != 0 ) {
+        return( -1 );
+    }
+    return( 0 );
+
+}
+
+
+char *getCondFromString( char * t ) {
+    char *u;
+    char *u1, *u2;
+    char *s;
+
+    s = t;
+    for ( ;; ) {
+        /* Search for an 'and' string, either case, and use the one
+           that appears first. */
+        u1 = strstr( s, " and " );
+        u2 = strstr( s, " AND " );
+        u = u1;
+        if ( u1 == NULL ) {
+            u = u2;
+        }
+        if ( u1 != NULL && u2 != NULL ) {
+            if ( strlen( u2 ) > strlen( u1 ) ) {
+                u = u2;    /* both are present, use the first */
+            }
         }
 
-        int
-        goodStrExpr( char * expr ) {
-            int qcnt = 0;
-            int qqcnt = 0;
-            int bcnt = 0;
-            int i = 0;
-            int inq =  0;
-            int inqq =  0;
-            while ( expr[i] != '\0' ) {
-                if ( inq ) {
-                    if ( expr[i] == '\'' ) {
-                        inq--;
-                        qcnt++;
-                    }
-                }
-                else if ( inqq ) {
-                    if ( expr[i] == '"' ) {
-                        inqq--;
-                        qqcnt++;
-                    }
-                }
-                else if ( expr[i] == '\'' ) {
-                    inq++;
-                    qcnt++;
-                }
-                else if ( expr[i] == '"' ) {
-                    inqq++;
-                    qqcnt++;
-                }
-                else if ( expr[i] == '(' ) {
-                    bcnt++;
-                }
-                else if ( expr[i] == ')' )
-                    if ( bcnt > 0 ) {
-                        bcnt--;
-                    }
-                i++;
+        if ( u != NULL ) {
+            *u = '\0';
+            if ( goodStrExpr( t ) == 0 ) {
+                *u = ' ';
+                return( u );
             }
-            if ( bcnt != 0 || qcnt % 2 != 0 || qqcnt % 2 != 0 ) {
-                return( -1 );
-            }
-            return( 0 );
-
+            *u = ' ';
+            s = u + 1;
         }
-
-
-        char *getCondFromString( char * t ) {
-            char *u;
-            char *u1, *u2;
-            char *s;
-
-            s = t;
-            for ( ;; ) {
-                /* Search for an 'and' string, either case, and use the one
-                   that appears first. */
-                u1 = strstr( s, " and " );
-                u2 = strstr( s, " AND " );
-                u = u1;
-                if ( u1 == NULL ) {
-                    u = u2;
-                }
-                if ( u1 != NULL && u2 != NULL ) {
-                    if ( strlen( u2 ) > strlen( u1 ) ) {
-                        u = u2;    /* both are present, use the first */
-                    }
-                }
-
-                if ( u != NULL ) {
-                    *u = '\0';
-                    if ( goodStrExpr( t ) == 0 ) {
-                        *u = ' ';
-                        return( u );
-                    }
-                    *u = ' ';
-                    s = u + 1;
-                }
-                else {
-                    break;
-                }
-            }
-            return( NULL );
+        else {
+            break;
         }
+    }
+    return( NULL );
+}
 
-        int
-        fillGenQueryInpFromStrCond( char * str, genQueryInp_t * genQueryInp ) {
+int
+fillGenQueryInpFromStrCond( char * str, genQueryInp_t * genQueryInp ) {
 
-            int  n, m;
-            char *p, *t, *f, *u, *a, *c;
-            char *s;
-            s = strdup( str );
-            if ( ( t = strstr( s, "select" ) ) != NULL ||
-                    ( t = strstr( s, "SELECT" ) ) != NULL ) {
+    int  n, m;
+    char *p, *t, *f, *u, *a, *c;
+    char *s;
+    s = strdup( str );
+    if ( ( t = strstr( s, "select" ) ) != NULL ||
+            ( t = strstr( s, "SELECT" ) ) != NULL ) {
 
-                if ( ( f = strstr( t, "where" ) ) != NULL ||
-                        ( f = strstr( t, "WHERE" ) ) != NULL ) {
-                    /* Where Condition Found*/
-                    *f = '\0';
-                }
-                t = t +  7;
-                while ( ( u = strchr( t, ',' ) ) != NULL ) {
-                    *u = '\0';
-                    trimWS( t );
-                    separateSelFuncFromAttr( t, &a, &c );
-                    m = getSelVal( a );
-                    n = getAttrIdFromAttrName( c );
-                    if ( n < 0 ) {
-                        free( s );
-                        return( n );
-                    }
-                    addInxIval( &genQueryInp->selectInp, n, m );
-                    t  = u + 1;
-                }
-                trimWS( t );
-                separateSelFuncFromAttr( t, &a, &c );
-                m = getSelVal( a );
-                n = getAttrIdFromAttrName( c );
-                if ( n < 0 ) {
-                    free( s );
-                    return( n );
-                }
-                addInxIval( &genQueryInp->selectInp, n, m );
-                if ( f == NULL ) {
-                    free( s );
-                    return( 0 );
-                }
-            }
-            else {
-                if ( t == NULL ) {
-                    free( s );
-                    return( INPUT_ARG_NOT_WELL_FORMED_ERR );
-                }
-                if ( ( f = strstr( t, "where" ) ) == NULL &&
-                        ( f = strstr( t, "WHERE" ) ) == NULL ) {
-                    free( s );
-                    return( INPUT_ARG_NOT_WELL_FORMED_ERR );
-                }
-            }
-            t = f + 6;
-            while ( ( u = getCondFromString( t ) ) != NULL ) {
-                *u = '\0';
-                trimWS( t );
-                if ( ( p = strchr( t, ' ' ) ) == NULL ) {
-                    return( INPUT_ARG_NOT_WELL_FORMED_ERR );
-                }
-                *p = '\0';
-                n = getAttrIdFromAttrName( t );
-                if ( n < 0 ) {
-                    free( s );
-                    return( n );
-                }
-                addInxVal( &genQueryInp->sqlCondInp, n, p + 1 );
-                t = u + 5;
-            }
+        if ( ( f = strstr( t, "where" ) ) != NULL ||
+                ( f = strstr( t, "WHERE" ) ) != NULL ) {
+            /* Where Condition Found*/
+            *f = '\0';
+        }
+        t = t +  7;
+        while ( ( u = strchr( t, ',' ) ) != NULL ) {
+            *u = '\0';
             trimWS( t );
-            if ( ( p = strchr( t, ' ' ) ) == NULL ) {
-                return( INPUT_ARG_NOT_WELL_FORMED_ERR );
-            }
-            *p = '\0';
-            n = getAttrIdFromAttrName( t );
+            separateSelFuncFromAttr( t, &a, &c );
+            m = getSelVal( a );
+            n = getAttrIdFromAttrName( c );
             if ( n < 0 ) {
                 free( s );
                 return( n );
             }
-            addInxVal( &genQueryInp->sqlCondInp, n, p + 1 );
+            addInxIval( &genQueryInp->selectInp, n, m );
+            t  = u + 1;
+        }
+        trimWS( t );
+        separateSelFuncFromAttr( t, &a, &c );
+        m = getSelVal( a );
+        n = getAttrIdFromAttrName( c );
+        if ( n < 0 ) {
+            free( s );
+            return( n );
+        }
+        addInxIval( &genQueryInp->selectInp, n, m );
+        if ( f == NULL ) {
             free( s );
             return( 0 );
         }
+    }
+    else {
+        if ( t == NULL ) {
+            free( s );
+            return( INPUT_ARG_NOT_WELL_FORMED_ERR );
+        }
+        if ( ( f = strstr( t, "where" ) ) == NULL &&
+                ( f = strstr( t, "WHERE" ) ) == NULL ) {
+            free( s );
+            return( INPUT_ARG_NOT_WELL_FORMED_ERR );
+        }
+    }
+    t = f + 6;
+    while ( ( u = getCondFromString( t ) ) != NULL ) {
+        *u = '\0';
+        trimWS( t );
+        if ( ( p = strchr( t, ' ' ) ) == NULL ) {
+            return( INPUT_ARG_NOT_WELL_FORMED_ERR );
+        }
+        *p = '\0';
+        n = getAttrIdFromAttrName( t );
+        if ( n < 0 ) {
+            free( s );
+            return( n );
+        }
+        addInxVal( &genQueryInp->sqlCondInp, n, p + 1 );
+        t = u + 5;
+    }
+    trimWS( t );
+    if ( ( p = strchr( t, ' ' ) ) == NULL ) {
+        return( INPUT_ARG_NOT_WELL_FORMED_ERR );
+    }
+    *p = '\0';
+    n = getAttrIdFromAttrName( t );
+    if ( n < 0 ) {
+        free( s );
+        return( n );
+    }
+    addInxVal( &genQueryInp->sqlCondInp, n, p + 1 );
+    free( s );
+    return( 0 );
+}
 
-        int
-        printGenQueryOut( FILE * fd, char * format, char * hint, genQueryOut_t * genQueryOut ) {
-            int i = 0, n = 0, j = 0;
-            sqlResult_t *v[MAX_SQL_ATTR];
-            char * cname[MAX_SQL_ATTR];
+int
+printGenQueryOut( FILE * fd, char * format, char * hint, genQueryOut_t * genQueryOut ) {
+    int i = 0, n = 0, j = 0;
+    sqlResult_t *v[MAX_SQL_ATTR];
+    char * cname[MAX_SQL_ATTR];
 
-            if ( hint != NULL &&  strlen( hint ) > 0 ) {
-                //i = printHintedGenQueryOut(fd,format,hint, genQueryOut);
-                return( i );
+    if ( hint != NULL &&  strlen( hint ) > 0 ) {
+        //i = printHintedGenQueryOut(fd,format,hint, genQueryOut);
+        return( i );
+    }
+
+    n = genQueryOut->attriCnt;
+
+    for ( i = 0; i < n; i++ ) {
+        v[i] = &genQueryOut->sqlResult[i];
+        cname[i] = getAttrNameFromAttrId( v[i]->attriInx );
+        if ( cname[i] == NULL ) {
+            return( NO_COLUMN_NAME_FOUND );
+        }
+    }
+
+    for ( i = 0; i < genQueryOut->rowCnt; i++ ) {
+        if ( format == NULL || strlen( format ) == 0 ) {
+            for ( j = 0; j < n; j++ ) {
+                fprintf( fd, "%s = %s\n", cname[j], &v[j]->value[v[j]->len * i] );
             }
-
-            n = genQueryOut->attriCnt;
-
-            for ( i = 0; i < n; i++ ) {
-                v[i] = &genQueryOut->sqlResult[i];
-                cname[i] = getAttrNameFromAttrId( v[i]->attriInx );
-                if ( cname[i] == NULL ) {
-                    return( NO_COLUMN_NAME_FOUND );
-                }
+            fprintf( fd, "------------------------------------------------------------\n" );
+        }
+        else {
+            if ( n == 1 ) {
+                fprintf( fd, format, &v[0]->value[v[0]->len * i] );
             }
-
-            for ( i = 0; i < genQueryOut->rowCnt; i++ ) {
-                if ( format == NULL || strlen( format ) == 0 ) {
-                    for ( j = 0; j < n; j++ ) {
-                        fprintf( fd, "%s = %s\n", cname[j], &v[j]->value[v[j]->len * i] );
-                    }
-                    fprintf( fd, "------------------------------------------------------------\n" );
-                }
-                else {
-                    if ( n == 1 ) {
-                        fprintf( fd, format, &v[0]->value[v[0]->len * i] );
-                    }
-                    else if ( n == 2 ) {
-                        fprintf( fd, format, &v[0]->value[v[0]->len * i], &v[1]->value[v[1]->len * i] );
-                    }
-                    else if ( n == 3 ) {
-                        fprintf( fd, format, &v[0]->value[v[0]->len * i], &v[1]->value[v[1]->len * i], &v[2]->value[v[2]->len * i] );
-                    }
-                    else if ( n == 4 ) {
-                        fprintf( fd, format, &v[0]->value[v[0]->len * i], &v[1]->value[v[1]->len * i], &v[2]->value[v[2]->len * i], &v[3]->value[v[3]->len * i] );
-                    }
-                    else if ( n == 5 )
-                        fprintf( fd, format, &v[0]->value[v[0]->len * i], &v[1]->value[v[1]->len * i], &v[2]->value[v[2]->len * i], &v[3]->value[v[3]->len * i],
-                                 &v[4]->value[v[4]->len * i] );
-                    else if ( n == 6 )
-                        fprintf( fd, format, &v[0]->value[v[0]->len * i], &v[1]->value[v[1]->len * i], &v[2]->value[v[2]->len * i], &v[3]->value[v[3]->len * i],
-                                 &v[4]->value[v[4]->len * i], &v[5]->value[v[5]->len * i] );
-                    else if ( n == 7 )
-                        fprintf( fd, format, &v[0]->value[v[0]->len * i], &v[1]->value[v[1]->len * i], &v[2]->value[v[2]->len * i], &v[3]->value[v[3]->len * i],
-                                 &v[4]->value[v[4]->len * i], &v[5]->value[v[5]->len * i], &v[6]->value[v[6]->len * i] );
-                    else if ( n == 8 )
-                        fprintf( fd, format, &v[0]->value[v[0]->len * i], &v[1]->value[v[1]->len * i], &v[2]->value[v[2]->len * i], &v[3]->value[v[3]->len * i],
-                                 &v[4]->value[v[4]->len * i], &v[5]->value[v[5]->len * i], &v[6]->value[v[6]->len * i], &v[7]->value[v[7]->len * i] );
-                    else if ( n == 9 )
-                        fprintf( fd, format, &v[0]->value[v[0]->len * i], &v[1]->value[v[1]->len * i], &v[2]->value[v[2]->len * i], &v[3]->value[v[3]->len * i],
-                                 &v[4]->value[v[4]->len * i], &v[5]->value[v[5]->len * i], &v[6]->value[v[6]->len * i], &v[7]->value[v[7]->len * i],
-                                 &v[8]->value[v[8]->len * i] );
-                    else if ( n == 10 )
-                        fprintf( fd, format, &v[0]->value[v[0]->len * i], &v[1]->value[v[1]->len * i], &v[2]->value[v[2]->len * i], &v[3]->value[v[3]->len * i],
-                                 &v[4]->value[v[4]->len * i], &v[5]->value[v[5]->len * i], &v[6]->value[v[6]->len * i], &v[7]->value[v[7]->len * i],
-                                 &v[8]->value[v[8]->len * i], &v[9]->value[v[9]->len * i] );
-                    else if ( n == 11 )
-                        fprintf( fd, format, &v[0]->value[v[0]->len * i], &v[1]->value[v[1]->len * i], &v[2]->value[v[2]->len * i], &v[3]->value[v[3]->len * i],
-                                 &v[4]->value[v[4]->len * i], &v[5]->value[v[5]->len * i], &v[6]->value[v[6]->len * i], &v[7]->value[v[7]->len * i],
-                                 &v[8]->value[v[8]->len * i], &v[9]->value[v[9]->len * i], &v[10]->value[v[10]->len * i] );
-                    else if ( n == 12 )
-                        fprintf( fd, format, &v[0]->value[v[0]->len * i], &v[1]->value[v[1]->len * i], &v[2]->value[v[2]->len * i], &v[3]->value[v[3]->len * i],
-                                 &v[4]->value[v[4]->len * i], &v[5]->value[v[5]->len * i], &v[6]->value[v[6]->len * i], &v[7]->value[v[7]->len * i],
-                                 &v[8]->value[v[8]->len * i], &v[9]->value[v[9]->len * i], &v[10]->value[v[10]->len * i], &v[11]->value[v[11]->len * i] );
-                    fprintf( fd, "\n" );
-                }
-
+            else if ( n == 2 ) {
+                fprintf( fd, format, &v[0]->value[v[0]->len * i], &v[1]->value[v[1]->len * i] );
             }
-            return( 0 );
+            else if ( n == 3 ) {
+                fprintf( fd, format, &v[0]->value[v[0]->len * i], &v[1]->value[v[1]->len * i], &v[2]->value[v[2]->len * i] );
+            }
+            else if ( n == 4 ) {
+                fprintf( fd, format, &v[0]->value[v[0]->len * i], &v[1]->value[v[1]->len * i], &v[2]->value[v[2]->len * i], &v[3]->value[v[3]->len * i] );
+            }
+            else if ( n == 5 )
+                fprintf( fd, format, &v[0]->value[v[0]->len * i], &v[1]->value[v[1]->len * i], &v[2]->value[v[2]->len * i], &v[3]->value[v[3]->len * i],
+                         &v[4]->value[v[4]->len * i] );
+            else if ( n == 6 )
+                fprintf( fd, format, &v[0]->value[v[0]->len * i], &v[1]->value[v[1]->len * i], &v[2]->value[v[2]->len * i], &v[3]->value[v[3]->len * i],
+                         &v[4]->value[v[4]->len * i], &v[5]->value[v[5]->len * i] );
+            else if ( n == 7 )
+                fprintf( fd, format, &v[0]->value[v[0]->len * i], &v[1]->value[v[1]->len * i], &v[2]->value[v[2]->len * i], &v[3]->value[v[3]->len * i],
+                         &v[4]->value[v[4]->len * i], &v[5]->value[v[5]->len * i], &v[6]->value[v[6]->len * i] );
+            else if ( n == 8 )
+                fprintf( fd, format, &v[0]->value[v[0]->len * i], &v[1]->value[v[1]->len * i], &v[2]->value[v[2]->len * i], &v[3]->value[v[3]->len * i],
+                         &v[4]->value[v[4]->len * i], &v[5]->value[v[5]->len * i], &v[6]->value[v[6]->len * i], &v[7]->value[v[7]->len * i] );
+            else if ( n == 9 )
+                fprintf( fd, format, &v[0]->value[v[0]->len * i], &v[1]->value[v[1]->len * i], &v[2]->value[v[2]->len * i], &v[3]->value[v[3]->len * i],
+                         &v[4]->value[v[4]->len * i], &v[5]->value[v[5]->len * i], &v[6]->value[v[6]->len * i], &v[7]->value[v[7]->len * i],
+                         &v[8]->value[v[8]->len * i] );
+            else if ( n == 10 )
+                fprintf( fd, format, &v[0]->value[v[0]->len * i], &v[1]->value[v[1]->len * i], &v[2]->value[v[2]->len * i], &v[3]->value[v[3]->len * i],
+                         &v[4]->value[v[4]->len * i], &v[5]->value[v[5]->len * i], &v[6]->value[v[6]->len * i], &v[7]->value[v[7]->len * i],
+                         &v[8]->value[v[8]->len * i], &v[9]->value[v[9]->len * i] );
+            else if ( n == 11 )
+                fprintf( fd, format, &v[0]->value[v[0]->len * i], &v[1]->value[v[1]->len * i], &v[2]->value[v[2]->len * i], &v[3]->value[v[3]->len * i],
+                         &v[4]->value[v[4]->len * i], &v[5]->value[v[5]->len * i], &v[6]->value[v[6]->len * i], &v[7]->value[v[7]->len * i],
+                         &v[8]->value[v[8]->len * i], &v[9]->value[v[9]->len * i], &v[10]->value[v[10]->len * i] );
+            else if ( n == 12 )
+                fprintf( fd, format, &v[0]->value[v[0]->len * i], &v[1]->value[v[1]->len * i], &v[2]->value[v[2]->len * i], &v[3]->value[v[3]->len * i],
+                         &v[4]->value[v[4]->len * i], &v[5]->value[v[5]->len * i], &v[6]->value[v[6]->len * i], &v[7]->value[v[7]->len * i],
+                         &v[8]->value[v[8]->len * i], &v[9]->value[v[9]->len * i], &v[10]->value[v[10]->len * i], &v[11]->value[v[11]->len * i] );
+            fprintf( fd, "\n" );
         }
 
+    }
+    return( 0 );
+}
 
-        int
-        appendToByteBuf( bytesBuf_t * bytesBuf, char * str ) {
-            int i, j;
-            char *tBuf;
 
-            i = strlen( str );
-            j = 0;
-            if ( bytesBuf->buf == NULL ) {
-                bytesBuf->buf = malloc( i + 1 + MAX_NAME_LEN * 5 );
-                strcpy( ( char * )bytesBuf->buf, str );
-                bytesBuf->len = i + 1 + MAX_NAME_LEN * 5; /* allocated length */
-            }
-            else {
-                j = strlen( ( char * )bytesBuf->buf );
-                if ( ( i + j ) < bytesBuf->len ) {
-                    strcat( ( char * )bytesBuf->buf, str );
-                }
-                else { /* needs more space */
-                    tBuf = ( char * ) malloc( j + i + 1 + ( MAX_NAME_LEN * 5 ) );
-                    strcpy( tBuf, ( char * )bytesBuf->buf );
-                    strcat( tBuf, str );
-                    free( bytesBuf->buf );
-                    bytesBuf->len = j + i + 1 + ( MAX_NAME_LEN * 5 );
-                    bytesBuf->buf = tBuf;
-                }
-            }
-            /*
-                printf("bytesBuf->len=%d  oldbufLen=%d  strlen=%d\n",bytesBuf->len,j,i);
-                printf("bytesBuf->buf:%s\n",bytesBuf->buf);
-             */
-            return( 0 );
+int
+appendToByteBuf( bytesBuf_t * bytesBuf, char * str ) {
+    int i, j;
+    char *tBuf;
+
+    i = strlen( str );
+    j = 0;
+    if ( bytesBuf->buf == NULL ) {
+        bytesBuf->buf = malloc( i + 1 + MAX_NAME_LEN * 5 );
+        strcpy( ( char * )bytesBuf->buf, str );
+        bytesBuf->len = i + 1 + MAX_NAME_LEN * 5; /* allocated length */
+    }
+    else {
+        j = strlen( ( char * )bytesBuf->buf );
+        if ( ( i + j ) < bytesBuf->len ) {
+            strcat( ( char * )bytesBuf->buf, str );
         }
-
-
-        int
-        getMountedSubPhyPath( char * logMountPoint, char * phyMountPoint,
-                              char * logSubPath, char * phySubPathOut ) {
-            char *tmpPtr;
-            int len = strlen( logMountPoint );
-
-            if ( strncmp( logSubPath, logMountPoint, len ) != 0 ) {
-                rodsLog( LOG_ERROR,
-                         "getMountedSubPhyPath: sub path %s not in mount point %s",
-                         logSubPath, logMountPoint );
-                return ( SYS_INTERNAL_NULL_INPUT_ERR );
-            }
-            /* skip over the mount point */
-            tmpPtr = logSubPath + len;
-            /* compose the physical path */
-            snprintf( phySubPathOut, MAX_NAME_LEN, "%s%s", phyMountPoint,
-                      tmpPtr );
-            return ( 0 );
-
+        else { /* needs more space */
+            tBuf = ( char * ) malloc( j + i + 1 + ( MAX_NAME_LEN * 5 ) );
+            strcpy( tBuf, ( char * )bytesBuf->buf );
+            strcat( tBuf, str );
+            free( bytesBuf->buf );
+            bytesBuf->len = j + i + 1 + ( MAX_NAME_LEN * 5 );
+            bytesBuf->buf = tBuf;
         }
+    }
+    /*
+        printf("bytesBuf->len=%d  oldbufLen=%d  strlen=%d\n",bytesBuf->len,j,i);
+        printf("bytesBuf->buf:%s\n",bytesBuf->buf);
+     */
+    return( 0 );
+}
 
-        int
-        getSpecCollTypeStr( specColl_t * specColl, char * outStr ) {
-            int i;
 
-            if ( specColl->collClass == NO_SPEC_COLL ) {
-                return SYS_UNMATCHED_SPEC_COLL_TYPE;
-            }
-            else if ( specColl->collClass == MOUNTED_COLL ) {
-                rstrcpy( outStr, MOUNT_POINT_STR, NAME_LEN );
+int
+getMountedSubPhyPath( char * logMountPoint, char * phyMountPoint,
+                      char * logSubPath, char * phySubPathOut ) {
+    char *tmpPtr;
+    int len = strlen( logMountPoint );
+
+    if ( strncmp( logSubPath, logMountPoint, len ) != 0 ) {
+        rodsLog( LOG_ERROR,
+                 "getMountedSubPhyPath: sub path %s not in mount point %s",
+                 logSubPath, logMountPoint );
+        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+    }
+    /* skip over the mount point */
+    tmpPtr = logSubPath + len;
+    /* compose the physical path */
+    snprintf( phySubPathOut, MAX_NAME_LEN, "%s%s", phyMountPoint,
+              tmpPtr );
+    return ( 0 );
+
+}
+
+int
+getSpecCollTypeStr( specColl_t * specColl, char * outStr ) {
+    int i;
+
+    if ( specColl->collClass == NO_SPEC_COLL ) {
+        return SYS_UNMATCHED_SPEC_COLL_TYPE;
+    }
+    else if ( specColl->collClass == MOUNTED_COLL ) {
+        rstrcpy( outStr, MOUNT_POINT_STR, NAME_LEN );
+        return ( 0 );
+    }
+    else if ( specColl->collClass == LINKED_COLL ) {
+        rstrcpy( outStr, LINK_POINT_STR, NAME_LEN );
+        return ( 0 );
+    }
+    else {
+        for ( i = 0; i < NumStructFileType; i++ ) {
+            if ( specColl->type == StructFileTypeDef[i].type ) {
+                rstrcpy( outStr, StructFileTypeDef[i].typeName, NAME_LEN );
                 return ( 0 );
             }
-            else if ( specColl->collClass == LINKED_COLL ) {
-                rstrcpy( outStr, LINK_POINT_STR, NAME_LEN );
+        }
+        rodsLog( LOG_ERROR,
+                 "getSpecCollTypeStr: unmatch specColl type %d", specColl->type );
+        return ( SYS_UNMATCHED_SPEC_COLL_TYPE );
+    }
+}
+
+int
+resolveSpecCollType( char * type, char * collection, char * collInfo1,
+                     char * collInfo2, specColl_t * specColl ) {
+    int i;
+
+    if ( specColl == NULL ) {
+        return ( USER__NULL_INPUT_ERR );
+    }
+
+    if ( *type == '\0' ) {
+        specColl->collClass = NO_SPEC_COLL;
+        return ( SYS_UNMATCHED_SPEC_COLL_TYPE );
+    }
+
+    rstrcpy( specColl->collection, collection,
+             MAX_NAME_LEN );
+
+    if ( strcmp( type, MOUNT_POINT_STR ) == 0 ) {
+        specColl->collClass = MOUNTED_COLL;
+        rstrcpy( specColl->phyPath, collInfo1, MAX_NAME_LEN );
+
+        irods::hierarchy_parser parse;
+        parse.set_string( collInfo2 );
+
+        std::string first_resc;
+        parse.first_resc( first_resc );
+
+        rstrcpy( specColl->resource, first_resc.c_str(), NAME_LEN );
+        rstrcpy( specColl->rescHier, collInfo2, NAME_LEN );
+
+        return ( 0 );
+    }
+    else if ( strcmp( type, LINK_POINT_STR ) == 0 ) {
+        specColl->collClass = LINKED_COLL;
+        rstrcpy( specColl->phyPath, collInfo1, MAX_NAME_LEN );
+
+        return ( 0 );
+    }
+    else {
+        for ( i = 0; i < NumStructFileType; i++ ) {
+            if ( strcmp( type, StructFileTypeDef[i].typeName ) == 0 ) {
+                specColl->collClass = STRUCT_FILE_COLL;
+                specColl->type = StructFileTypeDef[i].type;
+                rstrcpy( specColl->objPath, collInfo1,
+                         MAX_NAME_LEN );
+                parseCachedStructFileStr( collInfo2, specColl );
                 return ( 0 );
             }
-            else {
-                for ( i = 0; i < NumStructFileType; i++ ) {
-                    if ( specColl->type == StructFileTypeDef[i].type ) {
-                        rstrcpy( outStr, StructFileTypeDef[i].typeName, NAME_LEN );
-                        return ( 0 );
-                    }
-                }
-                rodsLog( LOG_ERROR,
-                         "getSpecCollTypeStr: unmatch specColl type %d", specColl->type );
-                return ( SYS_UNMATCHED_SPEC_COLL_TYPE );
-            }
+        }
+        specColl->collClass = NO_SPEC_COLL;
+        rodsLog( LOG_ERROR,
+                 "resolveSpecCollType: unmatch specColl type %s", type );
+        return ( SYS_UNMATCHED_SPEC_COLL_TYPE );
+    }
+}
+
+int
+parseCachedStructFileStr( char * collInfo2, specColl_t * specColl ) {
+    char *tmpPtr1, *tmpPtr2;
+    int len;
+
+    if ( collInfo2 == NULL || specColl == NULL ) {
+        rodsLog( LOG_ERROR,
+                 "parseCachedStructFileStr: NULL input" );
+        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+    }
+
+    if ( strlen( collInfo2 ) == 0 ) {
+        /* empty */
+        specColl->cacheDir[0] = specColl->resource[0] = '\0';
+        return ( 0 );
+    }
+
+    tmpPtr1 = strstr( collInfo2, ";;;" );
+
+    if ( tmpPtr1 == NULL ) {
+        rodsLog( LOG_NOTICE,
+                 "parseCachedStructFileStr: collInfo2 %s format error", collInfo2 );
+        return SYS_COLLINFO_2_FORMAT_ERR;
+    }
+
+    len = ( int )( tmpPtr1 - collInfo2 );
+    strncpy( specColl->cacheDir, collInfo2, len );
+
+    tmpPtr1 += 3;
+
+    tmpPtr2 = strstr( tmpPtr1, ";;;" );
+
+    if ( tmpPtr2 == NULL ) {
+        rodsLog( LOG_NOTICE,
+                 "parseCachedStructFileStr: collInfo2 %s format error", collInfo2 );
+        return SYS_COLLINFO_2_FORMAT_ERR;
+    }
+
+    len = ( int )( tmpPtr2 - tmpPtr1 );
+    *tmpPtr2 = '\0';
+
+    irods::hierarchy_parser parse;
+    parse.set_string( tmpPtr1 );
+
+    std::string first_resc;
+    parse.first_resc( first_resc );
+
+    strncpy( specColl->resource, first_resc.c_str(), NAME_LEN );
+    strncpy( specColl->rescHier, tmpPtr1, len );
+    tmpPtr2 += 3;
+
+    specColl->cacheDirty = atoi( tmpPtr2 );
+
+    return 0;
+}
+
+int
+makeCachedStructFileStr( char * collInfo2, specColl_t * specColl ) {
+    if ( collInfo2 == NULL || specColl == NULL ) {
+        rodsLog( LOG_ERROR,
+                 "makeCachedStructFileStr: NULL input" );
+        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+    }
+
+    if ( strlen( specColl->resource ) == 0 || strlen( specColl->cacheDir ) == 0 ) {
+        return ( 0 );
+    }
+
+    snprintf( collInfo2, MAX_NAME_LEN, "%s;;;%s;;;%d",
+              //specColl->cacheDir, specColl->resource, specColl->cacheDirty);
+              specColl->cacheDir, specColl->rescHier, specColl->cacheDirty );
+
+    return 0;
+}
+
+int
+getErrno( int irodError ) {
+    int unixErrno = irodError % 1000;
+
+    if ( unixErrno < 0 ) {
+        unixErrno = -1 * unixErrno;
+    }
+
+    return ( unixErrno );
+}
+
+int
+getIrodsErrno( int irodError ) {
+    int irodsErrno = irodError / 1000 * 1000;
+    return irodsErrno;
+}
+
+structFileOprType_t
+getSpecCollOpr( keyValPair_t * condInput, specColl_t * specColl ) {
+    if ( specColl == NULL ) {
+        return ( NOT_SPEC_COLL_OPR );
+    }
+
+    if ( specColl->collClass != STRUCT_FILE_COLL ) {
+        return ( NON_STRUCT_FILE_SPEC_COLL_OPR );
+    }
+
+    if ( getValByKey( condInput, STRUCT_FILE_OPR_KW ) == NULL ) {
+        return ( NORMAL_OPR_ON_STRUCT_FILE_COLL );
+    }
+    else {
+        return ( STRUCT_FILE_SPEC_COLL_OPR );
+    }
+}
+
+
+/**
+ * Output a list of keyword-value pairs as a property string.
+ *
+ * @param       list            a keyword-value pair list
+ * @param       string          a property string
+ * @return                      a status code, 0 on success
+ */
+int
+keyValToString( keyValPair_t * list, char** string ) {
+    if ( NULL == list || NULL == string ) { // JMC cppcheck - nullptr
+        rodsLog( LOG_ERROR, "keyValToString :: null input parameter" );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
+    }
+    int nBytes = 0;
+    int nKeys = list->len;
+    int i;
+
+    //if ( list == NULL ) // JMC cppcheck - nullptr
+    //return SYS_INTERNAL_NULL_INPUT_ERR;
+
+    /* Scan the list to figure out how much space we need. */
+    for ( i = 0; i < nKeys; i++ ) {
+        int nk, nv;
+        if ( list->keyWord[i] == NULL || list->keyWord[i][0] == '\0' ) {
+            continue;    /* Null keyword means empty entry */
+        }
+        if ( list->value[i] == NULL ) {
+            continue;    /* Null value is not legal */
+        }
+        nk = strlen( list->keyWord[i] );
+        nv = strlen( list->value[i] );
+
+        /* <keyword>value</keyword> */
+        nBytes += 1 + nk + 1 +   nv   + 2 + nk + 1 + 1;
+    }
+    nBytes++;
+
+    /* Allocate the space. */
+    *string = ( char* )malloc( nBytes );
+    memset( *string, 0, nBytes );
+
+    /* Write the string. */
+    for ( i = 0; i < nKeys; i++ ) {
+        if ( list->keyWord[i] == NULL || list->keyWord[i][0] == '\0' ) {
+            continue;    /* Null keyword means empty entry */
+        }
+        if ( list->value[i] == NULL ) {
+            continue;    /* Null value is not legal */
         }
 
-        int
-        resolveSpecCollType( char * type, char * collection, char * collInfo1,
-                             char * collInfo2, specColl_t * specColl ) {
-            int i;
+        strcat( *string, "<" );
+        strcat( *string, list->keyWord[i] );
+        strcat( *string, ">" );
+        strcat( *string, list->value[i] );
+        strcat( *string, "</" );
+        strcat( *string, list->keyWord[i] );
+        strcat( *string, ">\n" );
+    }
 
-            if ( specColl == NULL ) {
-                return ( USER__NULL_INPUT_ERR );
-            }
+    return 0;
+}
 
-            if ( *type == '\0' ) {
-                specColl->collClass = NO_SPEC_COLL;
-                return ( SYS_UNMATCHED_SPEC_COLL_TYPE );
-            }
 
-            rstrcpy( specColl->collection, collection,
-                     MAX_NAME_LEN );
 
-            if ( strcmp( type, MOUNT_POINT_STR ) == 0 ) {
-                specColl->collClass = MOUNTED_COLL;
-                rstrcpy( specColl->phyPath, collInfo1, MAX_NAME_LEN );
 
-                irods::hierarchy_parser parse;
-                parse.set_string( collInfo2 );
+/**
+ * Parse a property string into a list of keyword-value pairs.
+ * The property string is assumed to be well-formed.
+ *
+ * @param       string          a property string
+ * @param       list            a keyword-value pair list
+ * @return                      a status code, 0 on success
+ */
+int
+keyValFromString( char * string, keyValPair_t** list ) {
+    int index = 0;
+    int len = strlen( string );
 
-                std::string first_resc;
-                parse.first_resc( first_resc );
+    /* Create and clear the list. */
+    *list = ( keyValPair_t* )malloc( sizeof( keyValPair_t ) );
+    memset( *list, 0, sizeof( keyValPair_t ) );
 
-                rstrcpy( specColl->resource, first_resc.c_str(), NAME_LEN );
-                rstrcpy( specColl->rescHier, collInfo2, NAME_LEN );
+    /* Parse the string.  Extract out the tag and value */
+    /* without doing any memory allocations (to save time). */
+    while ( TRUE ) {
+        int startTag = -1;
+        int endTag = -1;
+        char* tag = NULL;
 
-                return ( 0 );
-            }
-            else if ( strcmp( type, LINK_POINT_STR ) == 0 ) {
-                specColl->collClass = LINKED_COLL;
-                rstrcpy( specColl->phyPath, collInfo1, MAX_NAME_LEN );
+        int startCloseTag = -1;
+        int endCloseTag = -1;
+        char* closeTag = NULL;
 
-                return ( 0 );
-            }
-            else {
-                for ( i = 0; i < NumStructFileType; i++ ) {
-                    if ( strcmp( type, StructFileTypeDef[i].typeName ) == 0 ) {
-                        specColl->collClass = STRUCT_FILE_COLL;
-                        specColl->type = StructFileTypeDef[i].type;
-                        rstrcpy( specColl->objPath, collInfo1,
-                                 MAX_NAME_LEN );
-                        parseCachedStructFileStr( collInfo2, specColl );
-                        return ( 0 );
-                    }
-                }
-                specColl->collClass = NO_SPEC_COLL;
-                rodsLog( LOG_ERROR,
-                         "resolveSpecCollType: unmatch specColl type %s", type );
-                return ( SYS_UNMATCHED_SPEC_COLL_TYPE );
-            }
+        int startValue = -1;
+        int endValue = -1;
+        char* value = NULL;
+
+        /* Skip over everything until the start */
+        /* of the next tag. */
+        while ( index < len && string[index] != '<' ) {
+            ++index;
         }
-
-        int
-        parseCachedStructFileStr( char * collInfo2, specColl_t * specColl ) {
-            char *tmpPtr1, *tmpPtr2;
-            int len;
-
-            if ( collInfo2 == NULL || specColl == NULL ) {
-                rodsLog( LOG_ERROR,
-                         "parseCachedStructFileStr: NULL input" );
-                return ( SYS_INTERNAL_NULL_INPUT_ERR );
-            }
-
-            if ( strlen( collInfo2 ) == 0 ) {
-                /* empty */
-                specColl->cacheDir[0] = specColl->resource[0] = '\0';
-                return ( 0 );
-            }
-
-            tmpPtr1 = strstr( collInfo2, ";;;" );
-
-            if ( tmpPtr1 == NULL ) {
-                rodsLog( LOG_NOTICE,
-                         "parseCachedStructFileStr: collInfo2 %s format error", collInfo2 );
-                return SYS_COLLINFO_2_FORMAT_ERR;
-            }
-
-            len = ( int )( tmpPtr1 - collInfo2 );
-            strncpy( specColl->cacheDir, collInfo2, len );
-
-            tmpPtr1 += 3;
-
-            tmpPtr2 = strstr( tmpPtr1, ";;;" );
-
-            if ( tmpPtr2 == NULL ) {
-                rodsLog( LOG_NOTICE,
-                         "parseCachedStructFileStr: collInfo2 %s format error", collInfo2 );
-                return SYS_COLLINFO_2_FORMAT_ERR;
-            }
-
-            len = ( int )( tmpPtr2 - tmpPtr1 );
-            *tmpPtr2 = '\0';
-
-            irods::hierarchy_parser parse;
-            parse.set_string( tmpPtr1 );
-
-            std::string first_resc;
-            parse.first_resc( first_resc );
-
-            strncpy( specColl->resource, first_resc.c_str(), NAME_LEN );
-            strncpy( specColl->rescHier, tmpPtr1, len );
-            tmpPtr2 += 3;
-
-            specColl->cacheDirty = atoi( tmpPtr2 );
-
-            return 0;
-        }
-
-        int
-        makeCachedStructFileStr( char * collInfo2, specColl_t * specColl ) {
-            if ( collInfo2 == NULL || specColl == NULL ) {
-                rodsLog( LOG_ERROR,
-                         "makeCachedStructFileStr: NULL input" );
-                return ( SYS_INTERNAL_NULL_INPUT_ERR );
-            }
-
-            if ( strlen( specColl->resource ) == 0 || strlen( specColl->cacheDir ) == 0 ) {
-                return ( 0 );
-            }
-
-            snprintf( collInfo2, MAX_NAME_LEN, "%s;;;%s;;;%d",
-                      //specColl->cacheDir, specColl->resource, specColl->cacheDirty);
-                      specColl->cacheDir, specColl->rescHier, specColl->cacheDirty );
-
-            return 0;
-        }
-
-        int
-        getErrno( int irodError ) {
-            int unixErrno = irodError % 1000;
-
-            if ( unixErrno < 0 ) {
-                unixErrno = -1 * unixErrno;
-            }
-
-            return ( unixErrno );
-        }
-
-        int
-        getIrodsErrno( int irodError ) {
-            int irodsErrno = irodError / 1000 * 1000;
-            return irodsErrno;
-        }
-
-        structFileOprType_t
-        getSpecCollOpr( keyValPair_t * condInput, specColl_t * specColl ) {
-            if ( specColl == NULL ) {
-                return ( NOT_SPEC_COLL_OPR );
-            }
-
-            if ( specColl->collClass != STRUCT_FILE_COLL ) {
-                return ( NON_STRUCT_FILE_SPEC_COLL_OPR );
-            }
-
-            if ( getValByKey( condInput, STRUCT_FILE_OPR_KW ) == NULL ) {
-                return ( NORMAL_OPR_ON_STRUCT_FILE_COLL );
-            }
-            else {
-                return ( STRUCT_FILE_SPEC_COLL_OPR );
-            }
-        }
-
-#if 0 // JMC - UNUSED
-        void
-        resolveStatForStructFileOpr( keyValPair_t * condInput,
-                                     rodsObjStat_t * rodsObjStatOut ) {
-            if ( rodsObjStatOut == NULL ) {
-                return;
-            }
-
-            if ( getSpecCollOpr( condInput, rodsObjStatOut->specColl ) ==
-                    NORMAL_OPR_ON_STRUCT_FILE_COLL ) {
-                /* it is in a structFile but not trying to do operation in the structFile. */
-            }
-            return;
-        }
-#endif // JMC - UNUSED
-
-
-        /**
-         * Output a list of keyword-value pairs as a property string.
-         *
-         * @param       list            a keyword-value pair list
-         * @param       string          a property string
-         * @return                      a status code, 0 on success
-         */
-        int
-        keyValToString( keyValPair_t * list, char** string ) {
-            if ( NULL == list || NULL == string ) { // JMC cppcheck - nullptr
-                rodsLog( LOG_ERROR, "keyValToString :: null input parameter" );
-                return SYS_INTERNAL_NULL_INPUT_ERR;
-            }
-            int nBytes = 0;
-            int nKeys = list->len;
-            int i;
-
-            //if ( list == NULL ) // JMC cppcheck - nullptr
-            //return SYS_INTERNAL_NULL_INPUT_ERR;
-
-            /* Scan the list to figure out how much space we need. */
-            for ( i = 0; i < nKeys; i++ ) {
-                int nk, nv;
-                if ( list->keyWord[i] == NULL || list->keyWord[i][0] == '\0' ) {
-                    continue;    /* Null keyword means empty entry */
-                }
-                if ( list->value[i] == NULL ) {
-                    continue;    /* Null value is not legal */
-                }
-                nk = strlen( list->keyWord[i] );
-                nv = strlen( list->value[i] );
-
-                /* <keyword>value</keyword> */
-                nBytes += 1 + nk + 1 +   nv   + 2 + nk + 1 + 1;
-            }
-            nBytes++;
-
-            /* Allocate the space. */
-            *string = ( char* )malloc( nBytes );
-            memset( *string, 0, nBytes );
-
-            /* Write the string. */
-            for ( i = 0; i < nKeys; i++ ) {
-                if ( list->keyWord[i] == NULL || list->keyWord[i][0] == '\0' ) {
-                    continue;    /* Null keyword means empty entry */
-                }
-                if ( list->value[i] == NULL ) {
-                    continue;    /* Null value is not legal */
-                }
-
-                strcat( *string, "<" );
-                strcat( *string, list->keyWord[i] );
-                strcat( *string, ">" );
-                strcat( *string, list->value[i] );
-                strcat( *string, "</" );
-                strcat( *string, list->keyWord[i] );
-                strcat( *string, ">\n" );
-            }
-
-            return 0;
+        if ( index == len ) {
+            break;    /* Done */
         }
 
 
-
-
-        /**
-         * Parse a property string into a list of keyword-value pairs.
-         * The property string is assumed to be well-formed.
-         *
-         * @param       string          a property string
-         * @param       list            a keyword-value pair list
-         * @return                      a status code, 0 on success
-         */
-        int
-        keyValFromString( char * string, keyValPair_t** list ) {
-            int index = 0;
-            int len = strlen( string );
-
-            /* Create and clear the list. */
-            *list = ( keyValPair_t* )malloc( sizeof( keyValPair_t ) );
-            memset( *list, 0, sizeof( keyValPair_t ) );
-
-            /* Parse the string.  Extract out the tag and value */
-            /* without doing any memory allocations (to save time). */
-            while ( TRUE ) {
-                int startTag = -1;
-                int endTag = -1;
-                char* tag = NULL;
-
-                int startCloseTag = -1;
-                int endCloseTag = -1;
-                char* closeTag = NULL;
-
-                int startValue = -1;
-                int endValue = -1;
-                char* value = NULL;
-
-                /* Skip over everything until the start */
-                /* of the next tag. */
-                while ( index < len && string[index] != '<' ) {
-                    ++index;
-                }
-                if ( index == len ) {
-                    break;    /* Done */
-                }
-
-
-                /* Get the tag. */
-                index++;                /* Skip '<' */
-                startTag = index;
-                while ( index < len && string[index] != '>' ) {
-                    ++index;
-                }
-                if ( index == len ) {
-                    break;    /* Done */
-                }
-                endTag = index;
-                index++;                /* Skip '>' */
-                startValue = index;
-
-
-                /* Skip to the end of the value. */
-                while ( index < len && string[index] != '<' ) {
-                    ++index;
-                }
-                if ( index == len ) {
-                    break;    /* Done */
-                }
-                endValue = index;
-
-
-                /* Get the close tag.Y */
-                index += 2;             /* Skip '</' */
-                startCloseTag = index;
-                while ( index < len && string[index] != '>' ) {
-                    ++index;
-                }
-                if ( index == len ) {
-                    break;    /* Done */
-                }
-                endCloseTag = index;
-
-
-                /* Compare the opening and closing tags */
-                /* and make sure they match. */
-                if ( ( endTag - startTag ) != ( endCloseTag - startCloseTag ) )
-                    /* Find a better error code! */
-                {
-                    return UNMATCHED_KEY_OR_INDEX;
-                }
-                tag = string + startTag;
-                closeTag = string + startCloseTag;
-                value = string + startValue;
-                if ( strncmp( tag, closeTag, ( endTag - startTag ) ) != 0 )
-                    /* Find a better error code! */
-                {
-                    return UNMATCHED_KEY_OR_INDEX;
-                }
-
-                /* Temporarily add a NULL at the end of the tag */
-                /* and the value.  This gives us two NULL-terminated */
-                /* strings to pass in to the addKeyVal. */
-                string[endTag] = '\0';          /* was '>' */
-                string[endValue] = '\0';        /* was '<' */
-
-                /* Add the key-value pair. */
-                addKeyVal( *list, tag, value );
-
-                /* Remove the NULLs added above. */
-                string[endTag] = '>';
-                string[endValue] = '<';
-            }
-
-            return 0;
+        /* Get the tag. */
+        index++;                /* Skip '<' */
+        startTag = index;
+        while ( index < len && string[index] != '>' ) {
+            ++index;
         }
-
-        int
-        clearSendXmsgInfo( sendXmsgInfo_t * sendXmsgInfo ) {
-            if ( sendXmsgInfo == NULL ) {
-                return 0;
-            }
-
-            if ( sendXmsgInfo->msg != NULL ) {
-                free( sendXmsgInfo->msg );
-            }
-
-            if ( sendXmsgInfo->deliPort != NULL ) {
-                free( sendXmsgInfo->deliPort );
-            }
-
-            if ( sendXmsgInfo->miscInfo != NULL ) {
-                free( sendXmsgInfo->miscInfo );
-            }
-
-            if ( sendXmsgInfo->deliAddress != NULL &&
-                    *sendXmsgInfo->deliAddress != NULL ) {
-                int i;
-
-                for ( i = 0; i < sendXmsgInfo->numDeli; i++ ) {
-                    free( sendXmsgInfo->deliAddress[i] );
-                }
-                free( sendXmsgInfo->deliAddress );
-            }
-            memset( sendXmsgInfo, 0, sizeof( sendXmsgInfo_t ) );
-
-            return ( 0 );
+        if ( index == len ) {
+            break;    /* Done */
         }
+        endTag = index;
+        index++;                /* Skip '>' */
+        startValue = index;
 
-        void
-        freeStringIfNotNull( char * str ) {
-            if ( str != NULL ) {
-                free( str );
-            }
+
+        /* Skip to the end of the value. */
+        while ( index < len && string[index] != '<' ) {
+            ++index;
         }
-
-        int
-        clearModAVUMetadataInp( modAVUMetadataInp_t * modAVUMetadataInp ) {
-            freeStringIfNotNull( modAVUMetadataInp->arg0 );
-            freeStringIfNotNull( modAVUMetadataInp->arg1 );
-            freeStringIfNotNull( modAVUMetadataInp->arg2 );
-            freeStringIfNotNull( modAVUMetadataInp->arg3 );
-            freeStringIfNotNull( modAVUMetadataInp->arg4 );
-            freeStringIfNotNull( modAVUMetadataInp->arg5 );
-            freeStringIfNotNull( modAVUMetadataInp->arg6 );
-            freeStringIfNotNull( modAVUMetadataInp->arg7 );
-            freeStringIfNotNull( modAVUMetadataInp->arg8 );
-            freeStringIfNotNull( modAVUMetadataInp->arg9 );
-            memset( modAVUMetadataInp, 0, sizeof( modAVUMetadataInp_t ) );
-            return( 0 );
+        if ( index == len ) {
+            break;    /* Done */
         }
+        endValue = index;
 
-        /* freeRodsObjStat - free a rodsObjStat_t. Note that this should only
-         * be used by the client because specColl also is freed which is cached
-         * on the server
-         */
-        int
-        freeRodsObjStat( rodsObjStat_t * rodsObjStat ) {
-            if ( rodsObjStat == NULL ) {
-                return 0;
-            }
 
-            if ( rodsObjStat->specColl != NULL ) {
-                free( rodsObjStat->specColl );
-            }
-
-            free( rodsObjStat );
-
-            return 0;
+        /* Get the close tag.Y */
+        index += 2;             /* Skip '</' */
+        startCloseTag = index;
+        while ( index < len && string[index] != '>' ) {
+            ++index;
         }
-
-        int
-        parseHostAddrStr( char * hostAddr, rodsHostAddr_t * addr ) {
-            char port[NAME_LEN];
-
-            if ( hostAddr == NULL || addr == NULL ) {
-                return SYS_INTERNAL_NULL_INPUT_ERR;
-            }
-
-            if ( splitPathByKey( hostAddr, addr->hostAddr, port, ':' ) < 0 ) {
-                rstrcpy( addr->hostAddr, hostAddr, LONG_NAME_LEN );
-                addr->portNum = 0;
-            }
-            else {
-                addr->portNum = atoi( port );
-            }
-            return 0;
+        if ( index == len ) {
+            break;    /* Done */
         }
+        endCloseTag = index;
 
-#ifdef COMPAT_201
-        int
-        collInp201ToCollInp( collInp201_t * collInp201, collInp_t * collInp ) {
-            bzero( collInp, sizeof( collInp_t ) );
 
-            rstrcpy( collInp->collName, collInp201->collName, MAX_NAME_LEN );
-            collInp->condInput = collInp201->condInput;
-
-            return 0;
+        /* Compare the opening and closing tags */
+        /* and make sure they match. */
+        if ( ( endTag - startTag ) != ( endCloseTag - startCloseTag ) )
+            /* Find a better error code! */
+        {
+            return UNMATCHED_KEY_OR_INDEX;
         }
-#endif
-
-        /*
-           Print some release information.
-           Used by the i-commands when printting the help text.
-         */
-        void
-        printReleaseInfo( char * cmdName ) {
-            char tmp[40];
-            strncpy( tmp, RODS_REL_VERSION, 40 );   /* to skip over the 'rods' part
-                                                             of the string */
-            printf( "\nE-iRODS Version %s                %s                      %s\n",
-                    ( char* )&tmp[4], RODS_RELEASE_DATE, cmdName );
-            return;
-        }
-
-        unsigned int
-        seedRandom() {
-            unsigned int seed;
-
-            seed = time( 0 ) & ( getpid() << 10 );
-#ifdef windows_platform
-            srand( seed );
-#else
-            srandom( seed );
-#endif
-
-            return seed;
-        }
-
-        int
-        initBulkDataObjRegInp( genQueryOut_t * bulkDataObjRegInp ) {
-            if ( bulkDataObjRegInp == NULL ) {
-                return USER__NULL_INPUT_ERR;
-            }
-
-            memset( bulkDataObjRegInp, 0, sizeof( genQueryOut_t ) );
-
-            bulkDataObjRegInp->attriCnt = 11;
-
-            bulkDataObjRegInp->sqlResult[0].attriInx = COL_DATA_NAME;
-            bulkDataObjRegInp->sqlResult[0].len = MAX_NAME_LEN;
-            bulkDataObjRegInp->sqlResult[0].value =
-                ( char * )malloc( MAX_NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-            bzero( bulkDataObjRegInp->sqlResult[0].value,
-                   MAX_NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-            bulkDataObjRegInp->sqlResult[1].attriInx = COL_DATA_TYPE_NAME;
-            bulkDataObjRegInp->sqlResult[1].len = NAME_LEN;
-            bulkDataObjRegInp->sqlResult[1].value =
-                ( char * )malloc( NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-            bzero( bulkDataObjRegInp->sqlResult[1].value,
-                   NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-            bulkDataObjRegInp->sqlResult[2].attriInx = COL_DATA_SIZE;
-            bulkDataObjRegInp->sqlResult[2].len = NAME_LEN;
-            bulkDataObjRegInp->sqlResult[2].value =
-                ( char * )malloc( NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-            bzero( bulkDataObjRegInp->sqlResult[2].value,
-                   NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-            bulkDataObjRegInp->sqlResult[3].attriInx = COL_D_RESC_NAME;
-            bulkDataObjRegInp->sqlResult[3].len = NAME_LEN;
-            bulkDataObjRegInp->sqlResult[3].value =
-                ( char * )malloc( NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-            bzero( bulkDataObjRegInp->sqlResult[3].value,
-                   NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-            bulkDataObjRegInp->sqlResult[4].attriInx = COL_D_DATA_PATH;
-            bulkDataObjRegInp->sqlResult[4].len = MAX_NAME_LEN;
-            bulkDataObjRegInp->sqlResult[4].value =
-                ( char * )malloc( MAX_NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-            bzero( bulkDataObjRegInp->sqlResult[4].value,
-                   MAX_NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-            bulkDataObjRegInp->sqlResult[5].attriInx = COL_DATA_MODE;
-            bulkDataObjRegInp->sqlResult[5].len = NAME_LEN;
-            bulkDataObjRegInp->sqlResult[5].value =
-                ( char * )malloc( NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-            bzero( bulkDataObjRegInp->sqlResult[5].value,
-                   NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-            bulkDataObjRegInp->sqlResult[6].attriInx = OPR_TYPE_INX;
-            bulkDataObjRegInp->sqlResult[6].len = NAME_LEN;
-            bulkDataObjRegInp->sqlResult[6].value =
-                ( char * )malloc( NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-            bzero( bulkDataObjRegInp->sqlResult[6].value,
-                   NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-            bulkDataObjRegInp->sqlResult[7].attriInx = COL_RESC_GROUP_NAME;
-            bulkDataObjRegInp->sqlResult[7].len = NAME_LEN;
-            bulkDataObjRegInp->sqlResult[7].value =
-                ( char * )malloc( NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-            bzero( bulkDataObjRegInp->sqlResult[7].value,
-                   NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-            bulkDataObjRegInp->sqlResult[8].attriInx = COL_DATA_REPL_NUM;
-            bulkDataObjRegInp->sqlResult[8].len = NAME_LEN;
-            bulkDataObjRegInp->sqlResult[8].value =
-                ( char * )malloc( NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-            bzero( bulkDataObjRegInp->sqlResult[8].value,
-                   NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-            bulkDataObjRegInp->sqlResult[9].attriInx = COL_D_DATA_CHECKSUM;
-            bulkDataObjRegInp->sqlResult[9].len = NAME_LEN;
-            bulkDataObjRegInp->sqlResult[9].value =
-                ( char * )malloc( NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-            bzero( bulkDataObjRegInp->sqlResult[9].value,
-                   NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-            bulkDataObjRegInp->sqlResult[10].attriInx = COL_D_RESC_HIER;
-            bulkDataObjRegInp->sqlResult[10].len = MAX_NAME_LEN;
-            bulkDataObjRegInp->sqlResult[10].value =
-                ( char * )malloc( MAX_NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-            bzero( bulkDataObjRegInp->sqlResult[10].value,
-                   MAX_NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-
-
-            bulkDataObjRegInp->continueInx = -1;
-
-            return ( 0 );
-        }
-
-        int
-        initBulkDataObjRegOut( genQueryOut_t **bulkDataObjRegOut ) {
-            genQueryOut_t *myBulkDataObjRegOut;
-
-            if ( bulkDataObjRegOut == NULL ) {
-                return USER__NULL_INPUT_ERR;
-            }
-
-            myBulkDataObjRegOut = *bulkDataObjRegOut = ( genQueryOut_t* )malloc( sizeof( genQueryOut_t ) );
-            if ( myBulkDataObjRegOut == NULL ) {
-                return SYS_MALLOC_ERR;
-            }
-
-            memset( myBulkDataObjRegOut, 0, sizeof( genQueryOut_t ) );
-
-            myBulkDataObjRegOut->attriCnt = 1;
-
-            myBulkDataObjRegOut->sqlResult[0].attriInx = COL_D_DATA_ID;
-            myBulkDataObjRegOut->sqlResult[0].len = NAME_LEN;
-            myBulkDataObjRegOut->sqlResult[0].value =
-                ( char * )malloc( NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-            bzero( myBulkDataObjRegOut->sqlResult[0].value,
-                   NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-
-            myBulkDataObjRegOut->continueInx = -1;
-            return ( 0 );
-        }
-
-        int
-        fillBulkDataObjRegInp( char * rescName, const std::string & rescHier, char * rescGroupName, char * objPath,
-                               char * filePath, char * dataType, rodsLong_t dataSize, int dataMode,
-                               int modFlag, int replNum, char * chksum, genQueryOut_t * bulkDataObjRegInp ) {
-
-            int rowCnt;
-
-            if ( bulkDataObjRegInp == NULL || rescName == NULL || objPath == NULL ||
-                    filePath == NULL ) {
-                return USER__NULL_INPUT_ERR;
-            }
-
-            rowCnt = bulkDataObjRegInp->rowCnt;
-
-            if ( rowCnt >= MAX_NUM_BULK_OPR_FILES ) {
-                return SYS_BULK_REG_COUNT_EXCEEDED;
-            }
-
-            rstrcpy( &bulkDataObjRegInp->sqlResult[0].value[MAX_NAME_LEN * rowCnt],
-                     objPath, MAX_NAME_LEN );
-            rstrcpy( &bulkDataObjRegInp->sqlResult[1].value[NAME_LEN * rowCnt],
-                     dataType, NAME_LEN );
-            snprintf( &bulkDataObjRegInp->sqlResult[2].value[NAME_LEN * rowCnt],
-                      NAME_LEN, "%lld", dataSize );
-            rstrcpy( &bulkDataObjRegInp->sqlResult[3].value[NAME_LEN * rowCnt],
-                     rescName, NAME_LEN );
-            rstrcpy( &bulkDataObjRegInp->sqlResult[4].value[MAX_NAME_LEN * rowCnt],
-                     filePath, MAX_NAME_LEN );
-            snprintf( &bulkDataObjRegInp->sqlResult[5].value[NAME_LEN * rowCnt],
-                      NAME_LEN, "%d", dataMode );
-            if ( modFlag == 1 ) {
-                rstrcpy( &bulkDataObjRegInp->sqlResult[6].value[NAME_LEN * rowCnt],
-                         MODIFY_OPR, NAME_LEN );
-            }
-            else {
-                rstrcpy( &bulkDataObjRegInp->sqlResult[6].value[NAME_LEN * rowCnt],
-                         REGISTER_OPR, NAME_LEN );
-            }
-            rstrcpy( &bulkDataObjRegInp->sqlResult[7].value[NAME_LEN * rowCnt],
-                     rescGroupName, NAME_LEN );
-            snprintf( &bulkDataObjRegInp->sqlResult[8].value[NAME_LEN * rowCnt],
-                      NAME_LEN, "%d", replNum );
-            if ( chksum != NULL && strlen( chksum ) > 0 ) {
-                rstrcpy( &bulkDataObjRegInp->sqlResult[9].value[NAME_LEN * rowCnt],
-                         chksum, NAME_LEN );
-            }
-            else {
-                bulkDataObjRegInp->sqlResult[9].value[NAME_LEN * rowCnt] = '\0';
-            }
-            snprintf( &bulkDataObjRegInp->sqlResult[10].value[MAX_NAME_LEN * rowCnt],
-                      MAX_NAME_LEN, "%s", rescHier.c_str() );
-            bulkDataObjRegInp->rowCnt++;
-
-            return 0;
-        }
-
-        int
-        initAttriArrayOfBulkOprInp( bulkOprInp_t * bulkOprInp ) {
-            genQueryOut_t *attriArray;
-            int i;
-
-            if ( bulkOprInp == NULL ) {
-                return USER__NULL_INPUT_ERR;
-            }
-
-            attriArray = &bulkOprInp->attriArray;
-
-            attriArray->attriCnt = 3;
-
-            attriArray->sqlResult[0].attriInx = COL_DATA_NAME;
-            attriArray->sqlResult[0].len = MAX_NAME_LEN;
-            attriArray->sqlResult[0].value =
-                ( char * )malloc( MAX_NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-            bzero( attriArray->sqlResult[0].value,
-                   MAX_NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-            attriArray->sqlResult[1].attriInx = COL_DATA_MODE;
-            attriArray->sqlResult[1].len = NAME_LEN;
-            attriArray->sqlResult[1].value =
-                ( char * )malloc( NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-            bzero( attriArray->sqlResult[1].value,
-                   NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-            attriArray->sqlResult[2].attriInx = OFFSET_INX;
-            attriArray->sqlResult[2].len = NAME_LEN;
-            attriArray->sqlResult[2].value =
-                ( char * )malloc( NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-            bzero( attriArray->sqlResult[2].value,
-                   NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-
-            if ( getValByKey( &bulkOprInp->condInput, REG_CHKSUM_KW ) != NULL ||
-                    getValByKey( &bulkOprInp->condInput, VERIFY_CHKSUM_KW ) != NULL ) {
-                i = attriArray->attriCnt;
-                attriArray->sqlResult[i].attriInx = COL_D_DATA_CHECKSUM;
-                attriArray->sqlResult[i].len = NAME_LEN;
-                attriArray->sqlResult[i].value =
-                    ( char * )malloc( NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-                bzero( attriArray->sqlResult[i].value,
-                       NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-                attriArray->attriCnt++;
-            }
-            attriArray->continueInx = -1;
-            return 0;
-        }
-
-        int
-        fillAttriArrayOfBulkOprInp( char * objPath, int dataMode, char * inpChksum,
-                                    int offset, bulkOprInp_t * bulkOprInp ) {
-            genQueryOut_t *attriArray;
-            int rowCnt;
-            sqlResult_t *chksum = NULL;
-
-            if ( bulkOprInp == NULL || objPath == NULL ) {
-                return USER__NULL_INPUT_ERR;
-            }
-
-            attriArray = &bulkOprInp->attriArray;
-
-            rowCnt = attriArray->rowCnt;
-
-            if ( rowCnt >= MAX_NUM_BULK_OPR_FILES ) {
-                return SYS_BULK_REG_COUNT_EXCEEDED;
-            }
-
-            chksum = getSqlResultByInx( attriArray, COL_D_DATA_CHECKSUM );
-            if ( inpChksum != NULL && strlen( inpChksum ) > 0 ) {
-                if ( chksum == NULL ) {
-                    rodsLog( LOG_ERROR,
-                             "initAttriArrayOfBulkOprInp: getSqlResultByInx for COL_D_DATA_CHECKSUM failed" );
-                    return ( UNMATCHED_KEY_OR_INDEX );
-                }
-                else {
-                    rstrcpy( &chksum->value[NAME_LEN * rowCnt], inpChksum, NAME_LEN );
-                }
-            }
-            else {
-                if ( chksum != NULL ) {
-                    chksum->value[NAME_LEN * rowCnt] = '\0';
-                }
-            }
-            rstrcpy( &attriArray->sqlResult[0].value[MAX_NAME_LEN * rowCnt],
-                     objPath, MAX_NAME_LEN );
-            snprintf( &attriArray->sqlResult[1].value[NAME_LEN * rowCnt],
-                      NAME_LEN, "%d", dataMode );
-            snprintf( &attriArray->sqlResult[2].value[NAME_LEN * rowCnt],
-                      NAME_LEN, "%d", offset );
-
-            attriArray->rowCnt++;
-
-            return 0;
-        }
-
-        int
-        getAttriInAttriArray( char * inpObjPath, genQueryOut_t * attriArray,
-                              int * outDataMode, char **outChksum ) {
-            int i;
-            int startInx;
-            sqlResult_t *objPath, *dataMode, *chksum;
-            char *tmpObjPath, *tmpDataMode, *tmpChksum;
-
-            if ( inpObjPath == NULL || attriArray == NULL || outDataMode == NULL ||
-                    outChksum == NULL ) {
-                return USER__NULL_INPUT_ERR;
-            }
-
-            if ( ( objPath =
-                        getSqlResultByInx( attriArray, COL_DATA_NAME ) ) == NULL ) {
-                rodsLog( LOG_NOTICE,
-                         "getAttriInAttriArray: getSqlResultByInx for COL_DATA_NAME failed" );
-                return ( UNMATCHED_KEY_OR_INDEX );
-            }
-
-            if ( ( dataMode =
-                        getSqlResultByInx( attriArray, COL_DATA_MODE ) ) == NULL ) {
-                rodsLog( LOG_NOTICE,
-                         "getAttriInAttriArray: getSqlResultByInx for COL_DATA_MODE failed" );
-                return ( UNMATCHED_KEY_OR_INDEX );
-            }
-
-            chksum = getSqlResultByInx( attriArray, COL_D_DATA_CHECKSUM );
-
-            startInx = attriArray->continueInx;
-            if ( startInx >= attriArray->rowCnt || startInx < 0 ) {
-                startInx = 0;
-            }
-
-            for ( i = startInx; i < attriArray->rowCnt; i++ ) {
-                tmpObjPath = &objPath->value[objPath->len * i];
-                if ( strcmp( inpObjPath, tmpObjPath ) == 0 ) {
-                    attriArray->continueInx = i + 1;
-                    tmpDataMode = &dataMode->value[dataMode->len * i];
-                    *outDataMode = atoi( tmpDataMode );
-                    if ( chksum != NULL ) {
-                        tmpChksum = &chksum->value[chksum->len * i];
-                        if ( strlen( tmpChksum ) > 0 ) {
-                            *outChksum = tmpChksum;
-                        }
-                        else {
-                            *outChksum = NULL;
-                        }
-                    }
-                    else {
-                        *outChksum = NULL;
-                    }
-                    return 0;
-                }
-            }
-
-            for ( i = 0; i < startInx; i++ ) {
-                tmpObjPath = &objPath->value[objPath->len * i];
-                if ( strcmp( inpObjPath, tmpObjPath ) == 0 ) {
-                    attriArray->continueInx = i + 1;
-                    tmpDataMode = &dataMode->value[dataMode->len * i];
-                    *outDataMode = atoi( tmpDataMode );
-                    if ( chksum != NULL ) {
-                        tmpChksum = &chksum->value[chksum->len * i];
-                        if ( strlen( tmpChksum ) > 0 ) {
-                            *outChksum = tmpChksum;
-                        }
-                        else {
-                            *outChksum = NULL;
-                        }
-                    }
-                    else {
-                        *outChksum = NULL;
-                    }
-                    return 0;
-                }
-            }
-            /* no match when got here */
-            *outChksum = NULL;
+        tag = string + startTag;
+        closeTag = string + startCloseTag;
+        value = string + startValue;
+        if ( strncmp( tag, closeTag, ( endTag - startTag ) ) != 0 )
+            /* Find a better error code! */
+        {
             return UNMATCHED_KEY_OR_INDEX;
         }
 
-#ifdef BULK_OPR_WITH_TAR
-        int
-        untarBuf( char * phyBunDir, bytesBuf_t * tarBBuf ) {
-            int childPid;
-            int pipeFd[2];
-#ifdef windows_platform
-            int pipe_buf_size;
-#endif
-            int status = 0;
-            int childStatus = 0;
-            char *av[NAME_LEN];
+        /* Temporarily add a NULL at the end of the tag */
+        /* and the value.  This gives us two NULL-terminated */
+        /* strings to pass in to the addKeyVal. */
+        string[endTag] = '\0';          /* was '>' */
+        string[endValue] = '\0';        /* was '<' */
 
-            if ( tarBBuf == NULL || phyBunDir == NULL ) {
-                return USER__NULL_INPUT_ERR;
-            }
+        /* Add the key-value pair. */
+        addKeyVal( *list, tag, value );
 
-            if ( tarBBuf->len <= 0 ) {
-                return 0;
-            }
+        /* Remove the NULLs added above. */
+        string[endTag] = '>';
+        string[endValue] = '<';
+    }
 
-#ifdef windows_platform
-            if ( tarBBuf->len > META_STR_LEN ) {
-                pipe_buf_size = tarBBuf->len;
-            }
-            else {
-                pipe_buf_size = META_STR_LEN;
-            }
-#endif
+    return 0;
+}
 
-#ifndef windows_platform    /* UNIX */
-            if ( pipe( pipeFd ) < 0 )
-#else
-            if ( _pipe( pipeFd, pipe_buf_size, O_BINARY ) < 0 )
-#endif
-            {
-                rodsLog( LOG_ERROR,
-                         "untarBuf: pipe create failed. errno = %d", errno );
-                return ( SYS_PIPE_ERROR - errno );
-            }
+int
+clearSendXmsgInfo( sendXmsgInfo_t * sendXmsgInfo ) {
+    if ( sendXmsgInfo == NULL ) {
+        return 0;
+    }
 
-            bzero( av, sizeof( av ) );
-            av[0] = TAR_EXEC_PATH;
-            av[1] = "-x";
-            av[2] = "-m";       /* no timestamp error msg */
-            av[3] = "-C";
-            av[4] = phyBunDir;
+    if ( sendXmsgInfo->msg != NULL ) {
+        free( sendXmsgInfo->msg );
+    }
 
-#ifndef windows_platform   /* UNIX */
-            childPid = RODS_FORK();
+    if ( sendXmsgInfo->deliPort != NULL ) {
+        free( sendXmsgInfo->deliPort );
+    }
 
-            if ( childPid == 0 ) {
-                /* make pipeFd[0] stdin */
-                close( pipeFd[1] );
-                close( 0 );
+    if ( sendXmsgInfo->miscInfo != NULL ) {
+        free( sendXmsgInfo->miscInfo );
+    }
 
-                dup2( pipeFd[0], 0 );
-                close( pipeFd[0] );
+    if ( sendXmsgInfo->deliAddress != NULL &&
+            *sendXmsgInfo->deliAddress != NULL ) {
+        int i;
 
-                status = execv( av[0], av );
-
-                /* gets here. must be bad */
-                exit( 1 );
-            }
-            else if ( childPid < 0 ) {
-                rodsLog( LOG_ERROR,
-                         "untarBuf: RODS_FORK failed. errno = %d", errno );
-                return ( SYS_FORK_ERROR );
-            }
-            else {      /* parent */
-                close( pipeFd[0] );     /* close in */
-
-                status = writeFromByteBuf( pipeFd[1], tarBBuf );
-                close( pipeFd[1] );
-                if ( status < 0 ) {
-                    return status;
-                }
-
-                status = waitpid( childPid, &childStatus, 0 );
-                if ( status >= 0 && childStatus != 0 ) {
-                    rodsLog( LOG_ERROR,
-                             "untarBuf: waitpid status = %d, childStatus = %d",
-                             status, childStatus );
-                    status = EXEC_CMD_ERROR;
-                }
-            }
-#else  /* Windows */
-            /* can it redorect pipe ? */
-            status = _spawnv( _P_NOWAIT, av[0], av );
-#endif
-            return status;
+        for ( i = 0; i < sendXmsgInfo->numDeli; i++ ) {
+            free( sendXmsgInfo->deliAddress[i] );
         }
-#endif  /* BULK_OPR_WITH_TAR */
+        free( sendXmsgInfo->deliAddress );
+    }
+    memset( sendXmsgInfo, 0, sizeof( sendXmsgInfo_t ) );
 
-#if 0
-        int
-        unbunBulkBuf( char * phyBunDir, bu0lkOprInp_t * bulkOprInp, bytesBuf_t * bulkBBuf ) {
-            sqlResult_t *objPath, *offset;
-            char *tmpObjPath;
-            char *bufPtr;
-            int status, i;
-            genQueryOut_t *attriArray = &bulkOprInp->attriArray;
-            int intOffset[MAX_NUM_BULK_OPR_FILES];
-            char phyBunPath[MAX_NAME_LEN];
+    return ( 0 );
+}
 
-            if ( phyBunDir == NULL || bulkOprInp == NULL ) {
-                return USER__NULL_INPUT_ERR;
-            }
+void
+freeStringIfNotNull( char * str ) {
+    if ( str != NULL ) {
+        free( str );
+    }
+}
 
-            if ( ( objPath =
-                        getSqlResultByInx( attriArray, COL_DATA_NAME ) ) == NULL ) {
-                rodsLog( LOG_NOTICE,
-                         "unbunBulkBuf: getSqlResultByInx for COL_DATA_NAME failed" );
-                return ( UNMATCHED_KEY_OR_INDEX );
-            }
+int
+clearModAVUMetadataInp( modAVUMetadataInp_t * modAVUMetadataInp ) {
+    freeStringIfNotNull( modAVUMetadataInp->arg0 );
+    freeStringIfNotNull( modAVUMetadataInp->arg1 );
+    freeStringIfNotNull( modAVUMetadataInp->arg2 );
+    freeStringIfNotNull( modAVUMetadataInp->arg3 );
+    freeStringIfNotNull( modAVUMetadataInp->arg4 );
+    freeStringIfNotNull( modAVUMetadataInp->arg5 );
+    freeStringIfNotNull( modAVUMetadataInp->arg6 );
+    freeStringIfNotNull( modAVUMetadataInp->arg7 );
+    freeStringIfNotNull( modAVUMetadataInp->arg8 );
+    freeStringIfNotNull( modAVUMetadataInp->arg9 );
+    memset( modAVUMetadataInp, 0, sizeof( modAVUMetadataInp_t ) );
+    return( 0 );
+}
 
-            if ( ( offset =
-                        getSqlResultByInx( attriArray, OFFSET_INX ) ) == NULL ) {
-                rodsLog( LOG_NOTICE,
-                         "unbunBulkBuf: getSqlResultByInx for OFFSET_INX failed" );
-                return ( UNMATCHED_KEY_OR_INDEX );
-            }
-            if ( attriArray->rowCnt > MAX_NUM_BULK_OPR_FILES ) {
-                rodsLog( LOG_NOTICE,
-                         "unbunBulkBuf: rowCnt %d too large",
-                         attriArray->rowCnt );
-                return ( SYS_REQUESTED_BUF_TOO_LARGE );
-            }
+/* freeRodsObjStat - free a rodsObjStat_t. Note that this should only
+ * be used by the client because specColl also is freed which is cached
+ * on the server
+ */
+int
+freeRodsObjStat( rodsObjStat_t * rodsObjStat ) {
+    if ( rodsObjStat == NULL ) {
+        return 0;
+    }
 
-            for ( i = 0; i < attriArray->rowCnt; i++ ) {
-                intOffset[i] = atoi( &offset->value[offset->len * i] );
-            }
+    if ( rodsObjStat->specColl != NULL ) {
+        free( rodsObjStat->specColl );
+    }
 
-            for ( i = 0; i < attriArray->rowCnt; i++ ) {
-                int size;
-                int out_fd;
+    free( rodsObjStat );
 
-                tmpObjPath = &objPath->value[objPath->len * i];
-                if ( i == 0 ) {
-                    bufPtr = ( char * )bulkBBuf->buf;
-                    size = intOffset[0];
+    return 0;
+}
+
+int
+parseHostAddrStr( char * hostAddr, rodsHostAddr_t * addr ) {
+    char port[NAME_LEN];
+
+    if ( hostAddr == NULL || addr == NULL ) {
+        return SYS_INTERNAL_NULL_INPUT_ERR;
+    }
+
+    if ( splitPathByKey( hostAddr, addr->hostAddr, port, ':' ) < 0 ) {
+        rstrcpy( addr->hostAddr, hostAddr, LONG_NAME_LEN );
+        addr->portNum = 0;
+    }
+    else {
+        addr->portNum = atoi( port );
+    }
+    return 0;
+}
+
+/*
+   Print some release information.
+   Used by the i-commands when printting the help text.
+ */
+void
+printReleaseInfo( char * cmdName ) {
+    char tmp[40];
+    strncpy( tmp, RODS_REL_VERSION, 40 );   /* to skip over the 'rods' part
+                                                             of the string */
+    tmp[39] = '\0';
+    printf( "\niRODS Version %s                %s                      %s\n",
+            ( char* )&tmp[4], RODS_RELEASE_DATE, cmdName );
+    return;
+}
+
+unsigned int
+seedRandom() {
+    unsigned int seed;
+
+    seed = time( 0 ) & ( getpid() << 10 );
+#ifdef windows_platform
+    srand( seed );
+#else
+    srandom( seed );
+#endif
+
+    return seed;
+}
+
+int
+initBulkDataObjRegInp( genQueryOut_t * bulkDataObjRegInp ) {
+    if ( bulkDataObjRegInp == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
+
+    memset( bulkDataObjRegInp, 0, sizeof( genQueryOut_t ) );
+
+    bulkDataObjRegInp->attriCnt = 11;
+
+    bulkDataObjRegInp->sqlResult[0].attriInx = COL_DATA_NAME;
+    bulkDataObjRegInp->sqlResult[0].len = MAX_NAME_LEN;
+    bulkDataObjRegInp->sqlResult[0].value =
+        ( char * )malloc( MAX_NAME_LEN * MAX_NUM_BULK_OPR_FILES );
+    bzero( bulkDataObjRegInp->sqlResult[0].value,
+           MAX_NAME_LEN * MAX_NUM_BULK_OPR_FILES );
+    bulkDataObjRegInp->sqlResult[1].attriInx = COL_DATA_TYPE_NAME;
+    bulkDataObjRegInp->sqlResult[1].len = NAME_LEN;
+    bulkDataObjRegInp->sqlResult[1].value =
+        ( char * )malloc( NAME_LEN * MAX_NUM_BULK_OPR_FILES );
+    bzero( bulkDataObjRegInp->sqlResult[1].value,
+           NAME_LEN * MAX_NUM_BULK_OPR_FILES );
+    bulkDataObjRegInp->sqlResult[2].attriInx = COL_DATA_SIZE;
+    bulkDataObjRegInp->sqlResult[2].len = NAME_LEN;
+    bulkDataObjRegInp->sqlResult[2].value =
+        ( char * )malloc( NAME_LEN * MAX_NUM_BULK_OPR_FILES );
+    bzero( bulkDataObjRegInp->sqlResult[2].value,
+           NAME_LEN * MAX_NUM_BULK_OPR_FILES );
+    bulkDataObjRegInp->sqlResult[3].attriInx = COL_D_RESC_NAME;
+    bulkDataObjRegInp->sqlResult[3].len = NAME_LEN;
+    bulkDataObjRegInp->sqlResult[3].value =
+        ( char * )malloc( NAME_LEN * MAX_NUM_BULK_OPR_FILES );
+    bzero( bulkDataObjRegInp->sqlResult[3].value,
+           NAME_LEN * MAX_NUM_BULK_OPR_FILES );
+    bulkDataObjRegInp->sqlResult[4].attriInx = COL_D_DATA_PATH;
+    bulkDataObjRegInp->sqlResult[4].len = MAX_NAME_LEN;
+    bulkDataObjRegInp->sqlResult[4].value =
+        ( char * )malloc( MAX_NAME_LEN * MAX_NUM_BULK_OPR_FILES );
+    bzero( bulkDataObjRegInp->sqlResult[4].value,
+           MAX_NAME_LEN * MAX_NUM_BULK_OPR_FILES );
+    bulkDataObjRegInp->sqlResult[5].attriInx = COL_DATA_MODE;
+    bulkDataObjRegInp->sqlResult[5].len = NAME_LEN;
+    bulkDataObjRegInp->sqlResult[5].value =
+        ( char * )malloc( NAME_LEN * MAX_NUM_BULK_OPR_FILES );
+    bzero( bulkDataObjRegInp->sqlResult[5].value,
+           NAME_LEN * MAX_NUM_BULK_OPR_FILES );
+    bulkDataObjRegInp->sqlResult[6].attriInx = OPR_TYPE_INX;
+    bulkDataObjRegInp->sqlResult[6].len = NAME_LEN;
+    bulkDataObjRegInp->sqlResult[6].value =
+        ( char * )malloc( NAME_LEN * MAX_NUM_BULK_OPR_FILES );
+    bzero( bulkDataObjRegInp->sqlResult[6].value,
+           NAME_LEN * MAX_NUM_BULK_OPR_FILES );
+    bulkDataObjRegInp->sqlResult[7].attriInx = COL_RESC_GROUP_NAME;
+    bulkDataObjRegInp->sqlResult[7].len = NAME_LEN;
+    bulkDataObjRegInp->sqlResult[7].value =
+        ( char * )malloc( NAME_LEN * MAX_NUM_BULK_OPR_FILES );
+    bzero( bulkDataObjRegInp->sqlResult[7].value,
+           NAME_LEN * MAX_NUM_BULK_OPR_FILES );
+    bulkDataObjRegInp->sqlResult[8].attriInx = COL_DATA_REPL_NUM;
+    bulkDataObjRegInp->sqlResult[8].len = NAME_LEN;
+    bulkDataObjRegInp->sqlResult[8].value =
+        ( char * )malloc( NAME_LEN * MAX_NUM_BULK_OPR_FILES );
+    bzero( bulkDataObjRegInp->sqlResult[8].value,
+           NAME_LEN * MAX_NUM_BULK_OPR_FILES );
+    bulkDataObjRegInp->sqlResult[9].attriInx = COL_D_DATA_CHECKSUM;
+    bulkDataObjRegInp->sqlResult[9].len = NAME_LEN;
+    bulkDataObjRegInp->sqlResult[9].value =
+        ( char * )malloc( NAME_LEN * MAX_NUM_BULK_OPR_FILES );
+    bzero( bulkDataObjRegInp->sqlResult[9].value,
+           NAME_LEN * MAX_NUM_BULK_OPR_FILES );
+    bulkDataObjRegInp->sqlResult[10].attriInx = COL_D_RESC_HIER;
+    bulkDataObjRegInp->sqlResult[10].len = MAX_NAME_LEN;
+    bulkDataObjRegInp->sqlResult[10].value =
+        ( char * )malloc( MAX_NAME_LEN * MAX_NUM_BULK_OPR_FILES );
+    bzero( bulkDataObjRegInp->sqlResult[10].value,
+           MAX_NAME_LEN * MAX_NUM_BULK_OPR_FILES );
+
+
+    bulkDataObjRegInp->continueInx = -1;
+
+    return ( 0 );
+}
+
+int
+initBulkDataObjRegOut( genQueryOut_t **bulkDataObjRegOut ) {
+    genQueryOut_t *myBulkDataObjRegOut;
+
+    if ( bulkDataObjRegOut == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
+
+    myBulkDataObjRegOut = *bulkDataObjRegOut = ( genQueryOut_t* )malloc( sizeof( genQueryOut_t ) );
+    if ( myBulkDataObjRegOut == NULL ) {
+        return SYS_MALLOC_ERR;
+    }
+
+    memset( myBulkDataObjRegOut, 0, sizeof( genQueryOut_t ) );
+
+    myBulkDataObjRegOut->attriCnt = 1;
+
+    myBulkDataObjRegOut->sqlResult[0].attriInx = COL_D_DATA_ID;
+    myBulkDataObjRegOut->sqlResult[0].len = NAME_LEN;
+    myBulkDataObjRegOut->sqlResult[0].value =
+        ( char * )malloc( NAME_LEN * MAX_NUM_BULK_OPR_FILES );
+    bzero( myBulkDataObjRegOut->sqlResult[0].value,
+           NAME_LEN * MAX_NUM_BULK_OPR_FILES );
+
+    myBulkDataObjRegOut->continueInx = -1;
+    return ( 0 );
+}
+
+int
+fillBulkDataObjRegInp( char * rescName, const std::string & rescHier, char * rescGroupName, char * objPath,
+                       char * filePath, char * dataType, rodsLong_t dataSize, int dataMode,
+                       int modFlag, int replNum, char * chksum, genQueryOut_t * bulkDataObjRegInp ) {
+
+    int rowCnt;
+
+    if ( bulkDataObjRegInp == NULL || rescName == NULL || objPath == NULL ||
+            filePath == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
+
+    rowCnt = bulkDataObjRegInp->rowCnt;
+
+    if ( rowCnt >= MAX_NUM_BULK_OPR_FILES ) {
+        return SYS_BULK_REG_COUNT_EXCEEDED;
+    }
+
+    rstrcpy( &bulkDataObjRegInp->sqlResult[0].value[MAX_NAME_LEN * rowCnt],
+             objPath, MAX_NAME_LEN );
+    rstrcpy( &bulkDataObjRegInp->sqlResult[1].value[NAME_LEN * rowCnt],
+             dataType, NAME_LEN );
+    snprintf( &bulkDataObjRegInp->sqlResult[2].value[NAME_LEN * rowCnt],
+              NAME_LEN, "%lld", dataSize );
+    rstrcpy( &bulkDataObjRegInp->sqlResult[3].value[NAME_LEN * rowCnt],
+             rescName, NAME_LEN );
+    rstrcpy( &bulkDataObjRegInp->sqlResult[4].value[MAX_NAME_LEN * rowCnt],
+             filePath, MAX_NAME_LEN );
+    snprintf( &bulkDataObjRegInp->sqlResult[5].value[NAME_LEN * rowCnt],
+              NAME_LEN, "%d", dataMode );
+    if ( modFlag == 1 ) {
+        rstrcpy( &bulkDataObjRegInp->sqlResult[6].value[NAME_LEN * rowCnt],
+                 MODIFY_OPR, NAME_LEN );
+    }
+    else {
+        rstrcpy( &bulkDataObjRegInp->sqlResult[6].value[NAME_LEN * rowCnt],
+                 REGISTER_OPR, NAME_LEN );
+    }
+    rstrcpy( &bulkDataObjRegInp->sqlResult[7].value[NAME_LEN * rowCnt],
+             rescGroupName, NAME_LEN );
+    snprintf( &bulkDataObjRegInp->sqlResult[8].value[NAME_LEN * rowCnt],
+              NAME_LEN, "%d", replNum );
+    if ( chksum != NULL && strlen( chksum ) > 0 ) {
+        rstrcpy( &bulkDataObjRegInp->sqlResult[9].value[NAME_LEN * rowCnt],
+                 chksum, NAME_LEN );
+    }
+    else {
+        bulkDataObjRegInp->sqlResult[9].value[NAME_LEN * rowCnt] = '\0';
+    }
+    snprintf( &bulkDataObjRegInp->sqlResult[10].value[MAX_NAME_LEN * rowCnt],
+              MAX_NAME_LEN, "%s", rescHier.c_str() );
+    bulkDataObjRegInp->rowCnt++;
+
+    return 0;
+}
+
+int
+initAttriArrayOfBulkOprInp( bulkOprInp_t * bulkOprInp ) {
+    genQueryOut_t *attriArray;
+    int i;
+
+    if ( bulkOprInp == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
+
+    attriArray = &bulkOprInp->attriArray;
+
+    attriArray->attriCnt = 3;
+
+    attriArray->sqlResult[0].attriInx = COL_DATA_NAME;
+    attriArray->sqlResult[0].len = MAX_NAME_LEN;
+    attriArray->sqlResult[0].value =
+        ( char * )malloc( MAX_NAME_LEN * MAX_NUM_BULK_OPR_FILES );
+    bzero( attriArray->sqlResult[0].value,
+           MAX_NAME_LEN * MAX_NUM_BULK_OPR_FILES );
+    attriArray->sqlResult[1].attriInx = COL_DATA_MODE;
+    attriArray->sqlResult[1].len = NAME_LEN;
+    attriArray->sqlResult[1].value =
+        ( char * )malloc( NAME_LEN * MAX_NUM_BULK_OPR_FILES );
+    bzero( attriArray->sqlResult[1].value,
+           NAME_LEN * MAX_NUM_BULK_OPR_FILES );
+    attriArray->sqlResult[2].attriInx = OFFSET_INX;
+    attriArray->sqlResult[2].len = NAME_LEN;
+    attriArray->sqlResult[2].value =
+        ( char * )malloc( NAME_LEN * MAX_NUM_BULK_OPR_FILES );
+    bzero( attriArray->sqlResult[2].value,
+           NAME_LEN * MAX_NUM_BULK_OPR_FILES );
+
+    if ( getValByKey( &bulkOprInp->condInput, REG_CHKSUM_KW ) != NULL ||
+            getValByKey( &bulkOprInp->condInput, VERIFY_CHKSUM_KW ) != NULL ) {
+        i = attriArray->attriCnt;
+        attriArray->sqlResult[i].attriInx = COL_D_DATA_CHECKSUM;
+        attriArray->sqlResult[i].len = NAME_LEN;
+        attriArray->sqlResult[i].value =
+            ( char * )malloc( NAME_LEN * MAX_NUM_BULK_OPR_FILES );
+        bzero( attriArray->sqlResult[i].value,
+               NAME_LEN * MAX_NUM_BULK_OPR_FILES );
+        attriArray->attriCnt++;
+    }
+    attriArray->continueInx = -1;
+    return 0;
+}
+
+int
+fillAttriArrayOfBulkOprInp( char * objPath, int dataMode, char * inpChksum,
+                            int offset, bulkOprInp_t * bulkOprInp ) {
+    genQueryOut_t *attriArray;
+    int rowCnt;
+    sqlResult_t *chksum = NULL;
+
+    if ( bulkOprInp == NULL || objPath == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
+
+    attriArray = &bulkOprInp->attriArray;
+
+    rowCnt = attriArray->rowCnt;
+
+    if ( rowCnt >= MAX_NUM_BULK_OPR_FILES ) {
+        return SYS_BULK_REG_COUNT_EXCEEDED;
+    }
+
+    chksum = getSqlResultByInx( attriArray, COL_D_DATA_CHECKSUM );
+    if ( inpChksum != NULL && strlen( inpChksum ) > 0 ) {
+        if ( chksum == NULL ) {
+            rodsLog( LOG_ERROR,
+                     "initAttriArrayOfBulkOprInp: getSqlResultByInx for COL_D_DATA_CHECKSUM failed" );
+            return ( UNMATCHED_KEY_OR_INDEX );
+        }
+        else {
+            rstrcpy( &chksum->value[NAME_LEN * rowCnt], inpChksum, NAME_LEN );
+        }
+    }
+    else {
+        if ( chksum != NULL ) {
+            chksum->value[NAME_LEN * rowCnt] = '\0';
+        }
+    }
+    rstrcpy( &attriArray->sqlResult[0].value[MAX_NAME_LEN * rowCnt],
+             objPath, MAX_NAME_LEN );
+    snprintf( &attriArray->sqlResult[1].value[NAME_LEN * rowCnt],
+              NAME_LEN, "%d", dataMode );
+    snprintf( &attriArray->sqlResult[2].value[NAME_LEN * rowCnt],
+              NAME_LEN, "%d", offset );
+
+    attriArray->rowCnt++;
+
+    return 0;
+}
+
+int
+getAttriInAttriArray( char * inpObjPath, genQueryOut_t * attriArray,
+                      int * outDataMode, char **outChksum ) {
+    int i;
+    int startInx;
+    sqlResult_t *objPath, *dataMode, *chksum;
+    char *tmpObjPath, *tmpDataMode, *tmpChksum;
+
+    if ( inpObjPath == NULL || attriArray == NULL || outDataMode == NULL ||
+            outChksum == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
+
+    if ( ( objPath =
+                getSqlResultByInx( attriArray, COL_DATA_NAME ) ) == NULL ) {
+        rodsLog( LOG_NOTICE,
+                 "getAttriInAttriArray: getSqlResultByInx for COL_DATA_NAME failed" );
+        return ( UNMATCHED_KEY_OR_INDEX );
+    }
+
+    if ( ( dataMode =
+                getSqlResultByInx( attriArray, COL_DATA_MODE ) ) == NULL ) {
+        rodsLog( LOG_NOTICE,
+                 "getAttriInAttriArray: getSqlResultByInx for COL_DATA_MODE failed" );
+        return ( UNMATCHED_KEY_OR_INDEX );
+    }
+
+    chksum = getSqlResultByInx( attriArray, COL_D_DATA_CHECKSUM );
+
+    startInx = attriArray->continueInx;
+    if ( startInx >= attriArray->rowCnt || startInx < 0 ) {
+        startInx = 0;
+    }
+
+    for ( i = startInx; i < attriArray->rowCnt; i++ ) {
+        tmpObjPath = &objPath->value[objPath->len * i];
+        if ( strcmp( inpObjPath, tmpObjPath ) == 0 ) {
+            attriArray->continueInx = i + 1;
+            tmpDataMode = &dataMode->value[dataMode->len * i];
+            *outDataMode = atoi( tmpDataMode );
+            if ( chksum != NULL ) {
+                tmpChksum = &chksum->value[chksum->len * i];
+                if ( strlen( tmpChksum ) > 0 ) {
+                    *outChksum = tmpChksum;
                 }
                 else {
-                    bufPtr = ( char * )bulkBBuf->buf + intOffset[i - 1];
-                    size = intOffset[i] - intOffset[i - 1];
+                    *outChksum = NULL;
                 }
-                status = getPhyBunPath( bulkOprInp->objPath, tmpObjPath, phyBunDir,
-                                        phyBunPath );
-                if ( status < 0 ) {
-                    return status;
-                }
-
-                mkdirForFilePath( phyBunPath );
-
-#ifdef windows_platform
-                out_fd = iRODSNt_bopen( phyBunPath, O_WRONLY | O_CREAT | O_TRUNC, 0640 );
-#else
-                out_fd = open( phyBunPath, O_WRONLY | O_CREAT | O_TRUNC, 0640 );
-#endif
-                if ( out_fd < 0 ) {
-                    status = UNIX_FILE_OPEN_ERR - errno;
-                    rodsLogError( LOG_ERROR, status,
-                                  "unbunBulkBuf: open error for %s", phyBunPath );
-                    return status;
-                }
-
-                status = myWrite( out_fd, bufPtr, size, FILE_DESC_TYPE, NULL );
-                if ( status != size ) {
-                    if ( status >= 0 ) {
-                        status = SYS_COPY_LEN_ERR - errno;
-                    }
-                    rodsLog( LOG_ERROR,
-                             "unbunBulkBuf: Bytes written %d does not match size %d for %s",
-                             status, size, phyBunPath );
-                    return status;
-                }
-                close( out_fd );
+            }
+            else {
+                *outChksum = NULL;
             }
             return 0;
         }
-#endif
+    }
 
-#ifdef BULK_OPR_WITH_TAR
-        int
-        tarToBuf( char * phyBunDir, bytesBuf_t * tarBBuf ) {
-            int childPid;
-            int pipeFd[2];
-#ifdef windows_platform
-            int pipe_buf_size;
-#endif
-            int status = 0;
-            int childStatus = 0;
-            char *av[NAME_LEN];
-
-            if ( tarBBuf == NULL || phyBunDir == NULL ) {
-                return USER__NULL_INPUT_ERR;
-            }
-
-            if ( tarBBuf->len <= 0 ) {
-                return 0;
-            }
-
-#ifdef windows_platform
-            if ( tarBBuf->len > META_STR_LEN ) {
-                pipe_buf_size = tarBBuf->len;
+    for ( i = 0; i < startInx; i++ ) {
+        tmpObjPath = &objPath->value[objPath->len * i];
+        if ( strcmp( inpObjPath, tmpObjPath ) == 0 ) {
+            attriArray->continueInx = i + 1;
+            tmpDataMode = &dataMode->value[dataMode->len * i];
+            *outDataMode = atoi( tmpDataMode );
+            if ( chksum != NULL ) {
+                tmpChksum = &chksum->value[chksum->len * i];
+                if ( strlen( tmpChksum ) > 0 ) {
+                    *outChksum = tmpChksum;
+                }
+                else {
+                    *outChksum = NULL;
+                }
             }
             else {
-                pipe_buf_size = META_STR_LEN;
+                *outChksum = NULL;
             }
+            return 0;
+        }
+    }
+    /* no match when got here */
+    *outChksum = NULL;
+    return UNMATCHED_KEY_OR_INDEX;
+}
+
+#ifdef BULK_OPR_WITH_TAR
+int
+untarBuf( char * phyBunDir, bytesBuf_t * tarBBuf ) {
+    int childPid;
+    int pipeFd[2];
+#ifdef windows_platform
+    int pipe_buf_size;
+#endif
+    int status = 0;
+    int childStatus = 0;
+    char *av[NAME_LEN];
+
+    if ( tarBBuf == NULL || phyBunDir == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
+
+    if ( tarBBuf->len <= 0 ) {
+        return 0;
+    }
+
+#ifdef windows_platform
+    if ( tarBBuf->len > META_STR_LEN ) {
+        pipe_buf_size = tarBBuf->len;
+    }
+    else {
+        pipe_buf_size = META_STR_LEN;
+    }
 #endif
 
 #ifndef windows_platform    /* UNIX */
-            if ( pipe( pipeFd ) < 0 )
+    if ( pipe( pipeFd ) < 0 )
 #else
-            if ( _pipe( pipeFd, pipe_buf_size, O_BINARY ) < 0 )
+    if ( _pipe( pipeFd, pipe_buf_size, O_BINARY ) < 0 )
 #endif
-            {
-                rodsLog( LOG_ERROR,
-                         "untarBuf: pipe create failed. errno = %d", errno );
-                return ( SYS_PIPE_ERROR - errno );
-            }
+    {
+        rodsLog( LOG_ERROR,
+                 "untarBuf: pipe create failed. errno = %d", errno );
+        return ( SYS_PIPE_ERROR - errno );
+    }
 
-            bzero( av, sizeof( av ) );
-            av[0] = TAR_EXEC_PATH;
-            av[1] = "-c";
-            av[2] = "-h";
-            av[3] = "-C";
-            av[4] = phyBunDir;
-            av[5] = ".";
+    bzero( av, sizeof( av ) );
+    av[0] = TAR_EXEC_PATH;
+    av[1] = "-x";
+    av[2] = "-m";       /* no timestamp error msg */
+    av[3] = "-C";
+    av[4] = phyBunDir;
 
 #ifndef windows_platform   /* UNIX */
-            childPid = RODS_FORK();
+    childPid = RODS_FORK();
 
-            if ( childPid == 0 ) {
-                /* make pipeFd[1] the stdout */
-                close( pipeFd[0] );
-                close( 1 );
-                dup2( pipeFd[1], 1 );
-                close( pipeFd[1] );
+    if ( childPid == 0 ) {
+        /* make pipeFd[0] stdin */
+        close( pipeFd[1] );
+        close( 0 );
 
-                status = execv( av[0], av );
+        dup2( pipeFd[0], 0 );
+        close( pipeFd[0] );
 
-                /* gets here. must be bad */
-                exit( 1 );
-            }
-            else if ( childPid < 0 ) {
-                rodsLog( LOG_ERROR,
-                         "untarBuf: RODS_FORK failed. errno = %d", errno );
-                return ( SYS_FORK_ERROR );
-            }
-            else {      /* parent */
-                close( pipeFd[1] );
+        status = execv( av[0], av );
 
-                status = readToByteBuf( pipeFd[0], tarBBuf );
-                close( pipeFd[0] );
-                if ( status < 0 ) {
-                    return status;
-                }
+        /* gets here. must be bad */
+        exit( 1 );
+    }
+    else if ( childPid < 0 ) {
+        rodsLog( LOG_ERROR,
+                 "untarBuf: RODS_FORK failed. errno = %d", errno );
+        return ( SYS_FORK_ERROR );
+    }
+    else {      /* parent */
+        close( pipeFd[0] );     /* close in */
 
-                status = waitpid( childPid, &childStatus, 0 );
-                if ( status >= 0 && childStatus != 0 ) {
-                    rodsLog( LOG_ERROR,
-                             "untarBuf: waitpid status = %d, childStatus = %d",
-                             status, childStatus );
-                    status = EXEC_CMD_ERROR;
-                }
-            }
-#else  /* Windows */
-            /* can it redorect pipe ? */
-            status = _spawnv( _P_NOWAIT, av[0], av );
-#endif
+        status = writeFromByteBuf( pipeFd[1], tarBBuf );
+        close( pipeFd[1] );
+        if ( status < 0 ) {
             return status;
         }
+
+        status = waitpid( childPid, &childStatus, 0 );
+        if ( status >= 0 && childStatus != 0 ) {
+            rodsLog( LOG_ERROR,
+                     "untarBuf: waitpid status = %d, childStatus = %d",
+                     status, childStatus );
+            status = EXEC_CMD_ERROR;
+        }
+    }
+#else  /* Windows */
+    /* can it redorect pipe ? */
+    status = _spawnv( _P_NOWAIT, av[0], av );
+#endif
+    return status;
+}
 #endif  /* BULK_OPR_WITH_TAR */
 
 
-        int
-        readToByteBuf( int fd, bytesBuf_t * bytesBuf ) {
-            int toRead, buflen, nbytes;
-            char *bufptr;
+#ifdef BULK_OPR_WITH_TAR
+int
+tarToBuf( char * phyBunDir, bytesBuf_t * tarBBuf ) {
+    int childPid;
+    int pipeFd[2];
+#ifdef windows_platform
+    int pipe_buf_size;
+#endif
+    int status = 0;
+    int childStatus = 0;
+    char *av[NAME_LEN];
 
-            if ( bytesBuf->len <= 0 ) {
-                /* use default */
-                buflen = INIT_SZ_FOR_EXECMD_BUF;
+    if ( tarBBuf == NULL || phyBunDir == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
+
+    if ( tarBBuf->len <= 0 ) {
+        return 0;
+    }
+
+#ifdef windows_platform
+    if ( tarBBuf->len > META_STR_LEN ) {
+        pipe_buf_size = tarBBuf->len;
+    }
+    else {
+        pipe_buf_size = META_STR_LEN;
+    }
+#endif
+
+#ifndef windows_platform    /* UNIX */
+    if ( pipe( pipeFd ) < 0 )
+#else
+    if ( _pipe( pipeFd, pipe_buf_size, O_BINARY ) < 0 )
+#endif
+    {
+        rodsLog( LOG_ERROR,
+                 "untarBuf: pipe create failed. errno = %d", errno );
+        return ( SYS_PIPE_ERROR - errno );
+    }
+
+    bzero( av, sizeof( av ) );
+    av[0] = TAR_EXEC_PATH;
+    av[1] = "-c";
+    av[2] = "-h";
+    av[3] = "-C";
+    av[4] = phyBunDir;
+    av[5] = ".";
+
+#ifndef windows_platform   /* UNIX */
+    childPid = RODS_FORK();
+
+    if ( childPid == 0 ) {
+        /* make pipeFd[1] the stdout */
+        close( pipeFd[0] );
+        close( 1 );
+        dup2( pipeFd[1], 1 );
+        close( pipeFd[1] );
+
+        status = execv( av[0], av );
+
+        /* gets here. must be bad */
+        exit( 1 );
+    }
+    else if ( childPid < 0 ) {
+        rodsLog( LOG_ERROR,
+                 "untarBuf: RODS_FORK failed. errno = %d", errno );
+        return ( SYS_FORK_ERROR );
+    }
+    else {      /* parent */
+        close( pipeFd[1] );
+
+        status = readToByteBuf( pipeFd[0], tarBBuf );
+        close( pipeFd[0] );
+        if ( status < 0 ) {
+            return status;
+        }
+
+        status = waitpid( childPid, &childStatus, 0 );
+        if ( status >= 0 && childStatus != 0 ) {
+            rodsLog( LOG_ERROR,
+                     "untarBuf: waitpid status = %d, childStatus = %d",
+                     status, childStatus );
+            status = EXEC_CMD_ERROR;
+        }
+    }
+#else  /* Windows */
+    /* can it redorect pipe ? */
+    status = _spawnv( _P_NOWAIT, av[0], av );
+#endif
+    return status;
+}
+#endif  /* BULK_OPR_WITH_TAR */
+
+
+int
+readToByteBuf( int fd, bytesBuf_t * bytesBuf ) {
+    int toRead, buflen, nbytes;
+    char *bufptr;
+
+    if ( bytesBuf->len <= 0 ) {
+        /* use default */
+        buflen = INIT_SZ_FOR_EXECMD_BUF;
+    }
+    else {
+        /* sanity check */
+        buflen = bytesBuf->len;
+        if ( buflen > MAX_SZ_FOR_EXECMD_BUF ) {
+            return SYS_REQUESTED_BUF_TOO_LARGE;
+        }
+    }
+    bytesBuf->len = 0;
+    bytesBuf->buf = bufptr = ( char * )malloc( buflen );
+    toRead = buflen;
+
+    while ( 1 ) {
+        nbytes = myRead( fd, bufptr, toRead, SOCK_TYPE, NULL, NULL );
+        if ( nbytes == toRead ) { /* more */
+            char *tmpPtr;
+
+            bytesBuf->len += nbytes;
+            if ( buflen >= MAX_SZ_FOR_EXECMD_BUF ) {
+                return ( EXEC_CMD_OUTPUT_TOO_LARGE );
             }
             else {
-                /* sanity check */
-                buflen = bytesBuf->len;
+                buflen = 4 * buflen;
                 if ( buflen > MAX_SZ_FOR_EXECMD_BUF ) {
-                    return SYS_REQUESTED_BUF_TOO_LARGE;
+                    buflen = MAX_SZ_FOR_EXECMD_BUF;
                 }
-            }
-            bytesBuf->len = 0;
-            bytesBuf->buf = bufptr = ( char * )malloc( buflen );
-            toRead = buflen;
-
-            while ( 1 ) {
-                nbytes = myRead( fd, bufptr, toRead, SOCK_TYPE, NULL, NULL );
-                if ( nbytes == toRead ) { /* more */
-                    char *tmpPtr;
-
-                    bytesBuf->len += nbytes;
-                    if ( buflen >= MAX_SZ_FOR_EXECMD_BUF ) {
-                        return ( EXEC_CMD_OUTPUT_TOO_LARGE );
-                    }
-                    else {
-                        buflen = 4 * buflen;
-                        if ( buflen > MAX_SZ_FOR_EXECMD_BUF ) {
-                            buflen = MAX_SZ_FOR_EXECMD_BUF;
-                        }
-                        toRead = buflen - bytesBuf->len;
-                        tmpPtr = ( char* )bytesBuf->buf;
-                        bytesBuf->buf = malloc( buflen );
-                        memcpy( bytesBuf->buf, tmpPtr, bytesBuf->len );
-                        free( tmpPtr );
-                        bufptr = ( char * ) bytesBuf->buf + bytesBuf->len;
-                    }
-                }
-                else {
-                    if ( nbytes > 0 ) {
-                        bytesBuf->len += nbytes;
-                        bufptr += nbytes;
-                    }
-                    if ( bytesBuf->len > 0 ) {
-#if 0   /* not needed */
-                        /* add NULL termination */
-                        *bufptr = '\0';
-                        bytesBuf->len++;
-#endif
-                    }
-                    else {
-                        free( bytesBuf->buf );
-                        bytesBuf->buf = NULL;
-                    }
-                    break;
-                }
-            }
-            if ( nbytes < 0 ) {
-                return ( nbytes );
-            }
-            else {
-                return ( 0 );
+                toRead = buflen - bytesBuf->len;
+                tmpPtr = ( char* )bytesBuf->buf;
+                bytesBuf->buf = malloc( buflen );
+                memcpy( bytesBuf->buf, tmpPtr, bytesBuf->len );
+                free( tmpPtr );
+                bufptr = ( char * ) bytesBuf->buf + bytesBuf->len;
             }
         }
-
-        int
-        writeFromByteBuf( int fd, bytesBuf_t * bytesBuf ) {
-            int toWrite, nbytes;
-            char *bufptr;
-
-            bufptr = ( char * )bytesBuf->buf;
-            toWrite = bytesBuf->len;
-            while ( ( nbytes = myWrite( fd, bufptr, toWrite, SOCK_TYPE, NULL ) ) >= 0 ) {
-                toWrite -= nbytes;
+        else {
+            if ( nbytes > 0 ) {
+                bytesBuf->len += nbytes;
                 bufptr += nbytes;
-                if ( toWrite <= 0 ) {
-                    break;
+            }
+            if ( bytesBuf->len <= 0 ) {
+                free( bytesBuf->buf );
+                bytesBuf->buf = NULL;
+            }
+            break;
+        }
+    }
+    if ( nbytes < 0 ) {
+        return ( nbytes );
+    }
+    else {
+        return ( 0 );
+    }
+}
+
+int
+writeFromByteBuf( int fd, bytesBuf_t * bytesBuf ) {
+    int toWrite, nbytes;
+    char *bufptr;
+
+    bufptr = ( char * )bytesBuf->buf;
+    toWrite = bytesBuf->len;
+    while ( ( nbytes = myWrite( fd, bufptr, toWrite, SOCK_TYPE, NULL ) ) >= 0 ) {
+        toWrite -= nbytes;
+        bufptr += nbytes;
+        if ( toWrite <= 0 ) {
+            break;
+        }
+    }
+    close( fd );
+
+    if ( toWrite != 0 ) {
+        return ( SYS_COPY_LEN_ERR - errno );
+    }
+    else {
+        return ( 0 );
+    }
+}
+
+int
+setForceFlagForRestart( bulkOprInp_t * bulkOprInp, bulkOprInfo_t * bulkOprInfo ) {
+    if ( bulkOprInp == NULL || bulkOprInfo == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
+
+    if ( getValByKey( &bulkOprInp->condInput, FORCE_FLAG_KW ) != NULL ) {
+        /* already has FORCE_FLAG_KW */
+        return 0;
+    }
+
+    addKeyVal( &bulkOprInp->condInput, FORCE_FLAG_KW, "" );
+    /* remember to remove it */
+    bulkOprInfo->forceFlagAdded = 1;
+
+    return 0;
+}
+
+int
+getPhyBunPath( const char * collection, const char * objPath, const char * phyBunDir,
+               char * outPhyBunPath ) {
+    int collLen = strlen( collection );
+    const char *subPath = objPath + collLen;
+
+    if ( *subPath != '/' ) {
+        rodsLogError( LOG_ERROR, USER_INPUT_PATH_ERR,
+                      "getPhyBunPath: inconsistent collection %s and objPath %s",
+                      collection, objPath );
+        return USER_INPUT_PATH_ERR;
+    }
+    snprintf( outPhyBunPath, MAX_NAME_LEN, "%s%s", phyBunDir, subPath );
+    return 0;
+}
+
+int mySetenvStr( const char * envname, const char * envval ) {
+    int status;
+
+#if defined(linux_platform)||defined(osx_platform)
+    if ( envname == NULL || envval == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
+    status = setenv( envname, envval, 1 );
+#else
+    char *myBuf;
+    int len;
+
+    if ( envname == NULL || envval == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
+    len = strlen( envname ) + strlen( envval ) + 16;
+    myBuf = ( char * )malloc( len );
+    snprintf( myBuf, len, "%s=%s", envname, envval );
+    status = putenv( myBuf );
+    //      free( myBuf ); // JMC cppcheck - leak ==> backport 'fix' from comm trunk for solaris
+#endif
+    return status;
+}
+
+int
+mySetenvInt( char * envname, int envval ) {
+    int status;
+
+#if defined(linux_platform)||defined(osx_platform)
+    char myIntStr[NAME_LEN];
+    if ( envname == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
+    snprintf( myIntStr, NAME_LEN, "%d", envval );
+    status = setenv( envname, myIntStr, 1 );
+#else
+    char *myBuf;
+    int len;
+    if ( envname == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
+    len = strlen( envname ) + 20;
+    myBuf = ( char * )malloc( len );
+    snprintf( myBuf, len, "%s=%d", envname, envval );
+    status = putenv( myBuf );
+    //      free( myBuf ); // JMC cppcheck - leak ==> backport 'fix' from comm trunk for solaris
+#endif
+    return status;
+}
+
+int
+getRandomArray( int **randomArray, int size ) {
+    int *myArray;
+    int i, j, k;
+
+    if ( size < 0 ) {
+        *randomArray = NULL;
+        return -1;
+    }
+
+    myArray = ( int * ) malloc( size * sizeof( int ) );
+    bzero( myArray, size * sizeof( int ) );
+    for ( i = size ; i > 0; i -- ) {
+        int ranNum;
+        /* get a number between 0 and i-1 */
+        ranNum = ( random() >> 2 ) % i;
+        k = 0;
+        /* find the ranNum th empty slot  */
+        for ( j = 0; j < size ; j ++ ) {
+            if ( myArray[j] == 0 ) {
+                k++;
+            }
+            if ( k > ranNum ) {
+                break;
+            }
+        }
+        myArray[j] = i;
+    }
+    *randomArray = myArray;
+
+    return ( 0 );
+}
+
+int
+isPathSymlink( rodsArguments_t * rodsArgs, char * myPath ) {
+    path p( myPath );
+    if ( rodsArgs != NULL && rodsArgs->link != True ) {
+        return 0;
+    }
+    if ( exists( p ) && is_symlink( p ) ) {
+        return 1;
+    }
+    else {
+        return 0;
+    }
+}
+
+int
+clearAuthResponseInp( void * inauthResponseInp ) {
+    authResponseInp_t *authResponseInp;
+
+    authResponseInp = ( authResponseInp_t * ) inauthResponseInp;
+
+    if ( authResponseInp == NULL ) {
+        return 0;
+    }
+    free( authResponseInp->username );
+    free( authResponseInp->response );
+    memset( authResponseInp, 0, sizeof( authResponseInp_t ) );
+
+    return ( 0 );
+}
+char *trimPrefix( char * str ) {
+    int i = 0;
+    while ( str[i] != ' ' ) {
+        i++;
+    }
+    while ( str[i] == ' ' ) {
+        i++;
+    }
+    memmove( str, str + i, strlen( str ) + 1 - i );
+    return str;
+}
+
+char *trimSpaces( char * str ) {
+    char *p = str;
+    char *psrc = str;
+
+    while ( *psrc != '\0' && isspace( *psrc ) ) {
+        psrc++;
+    }
+
+    while ( *psrc != '\0' ) {
+        *( p++ ) = *( psrc++ );
+    }
+
+    p--;
+    while ( isspace( *p ) && p - str >= 0 ) {
+        p--;
+    }
+
+    p++;
+    *p = '\0';
+
+    return str;
+
+}
+
+int startsWith( char * str, char * prefix ) {
+    int i = 0;
+    while ( str[i] != '\0' && prefix[i] != '\0' ) {
+        if ( str[i] != prefix[i] ) {
+            return 0;
+        }
+        i++;
+    }
+    return prefix[i] == '\0';
+}
+
+int convertListToMultiString( char * strInput, int input ) {
+    if ( strcmp( strInput, "null" ) == 0 ) {
+        return 0;
+    }
+    char *src = strdup( strInput );
+
+    char *p = strInput;
+    char *psrc = src;
+
+    /* replace % with %% */
+    while ( *psrc != '\0' ) {
+        if ( *psrc == '%' ) {
+            *( p++ ) = '%';
+            *( p++ ) = '%';
+            psrc++;
+        }
+        else {
+            *( p++ ) = *( psrc++ );
+        }
+    }
+    *p = '\0';
+
+    free( src );
+
+    /* replace , with % and remove extra spaces */
+    p = strInput;
+    psrc = strInput;
+    while ( *psrc != '\0' ) {
+        /* variable name */
+        while ( !isspace( *psrc ) && *psrc != '=' && *psrc != ',' && *psrc != '\0' ) {
+            *( p++ ) = *( psrc++ );
+        }
+
+        /* skip spaces */
+        while ( isspace( *psrc ) ) {
+            psrc++;
+        }
+        if ( input ) {
+            if ( *psrc == '=' ) {
+                /* assignment */
+                *( p++ ) = *( psrc++ );
+
+                int inString = 0;
+                char delim = '\0';
+                while ( *psrc != '\0' ) {
+                    if ( inString ) {
+                        if ( *psrc == delim ) {
+                            inString = 0;
+                        }
+                        else if ( *psrc == '\\' ) {
+                            *( p++ ) = *( psrc++ );
+                            if ( *psrc == '\0' ) {
+                                return -1;
+                            }
+                        }
+                        *( p++ ) = *( psrc++ );
+                    }
+                    else {
+                        if ( *psrc == ',' ) {
+                            *( p++ ) = '%';
+                            psrc++;
+                            break;
+                        }
+                        else {
+                            if ( *psrc == '\'' || *psrc == '\"' ) {
+                                inString = 1;
+                                delim = *psrc;
+                            }
+                            *( p++ ) = *( psrc++ );
+                        }
+                    }
                 }
             }
-            close( fd );
-
-            if ( toWrite != 0 ) {
-                return ( SYS_COPY_LEN_ERR - errno );
-            }
             else {
-                return ( 0 );
-            }
-        }
-
-        int
-        setForceFlagForRestart( bulkOprInp_t * bulkOprInp, bulkOprInfo_t * bulkOprInfo ) {
-            if ( bulkOprInp == NULL || bulkOprInfo == NULL ) {
-                return USER__NULL_INPUT_ERR;
-            }
-
-            if ( getValByKey( &bulkOprInp->condInput, FORCE_FLAG_KW ) != NULL ) {
-                /* already has FORCE_FLAG_KW */
-                return 0;
-            }
-
-            addKeyVal( &bulkOprInp->condInput, FORCE_FLAG_KW, "" );
-            /* remember to remove it */
-            bulkOprInfo->forceFlagAdded = 1;
-
-            return 0;
-        }
-
-        int
-        getPhyBunPath( const char * collection, const char * objPath, const char * phyBunDir,
-                       char * outPhyBunPath ) {
-            int collLen = strlen( collection );
-            const char *subPath = objPath + collLen;
-
-            if ( *subPath != '/' ) {
-                rodsLogError( LOG_ERROR, USER_INPUT_PATH_ERR,
-                              "getPhyBunPath: inconsistent collection %s and objPath %s",
-                              collection, objPath );
-                return USER_INPUT_PATH_ERR;
-            }
-            snprintf( outPhyBunPath, MAX_NAME_LEN, "%s%s", phyBunDir, subPath );
-            return 0;
-        }
-
-        int mySetenvStr( const char * envname, const char * envval ) {
-            int status;
-
-#if defined(linux_platform)||defined(osx_platform)
-            if ( envname == NULL || envval == NULL ) {
-                return USER__NULL_INPUT_ERR;
-            }
-            status = setenv( envname, envval, 1 );
-#else
-            char *myBuf;
-            int len;
-
-            if ( envname == NULL || envval == NULL ) {
-                return USER__NULL_INPUT_ERR;
-            }
-            len = strlen( envname ) + strlen( envval ) + 16;
-            myBuf = ( char * )malloc( len );
-            snprintf( myBuf, len, "%s=%s", envname, envval );
-            status = putenv( myBuf );
-            //      free( myBuf ); // JMC cppcheck - leak ==> backport 'fix' from comm trunk for solaris
-#endif
-            return status;
-        }
-
-        int
-        mySetenvInt( char * envname, int envval ) {
-            int status;
-
-#if defined(linux_platform)||defined(osx_platform)
-            char myIntStr[NAME_LEN];
-            if ( envname == NULL ) {
-                return USER__NULL_INPUT_ERR;
-            }
-            snprintf( myIntStr, NAME_LEN, "%d", envval );
-            status = setenv( envname, myIntStr, 1 );
-#else
-            char *myBuf;
-            int len;
-            if ( envname == NULL ) {
-                return USER__NULL_INPUT_ERR;
-            }
-            len = strlen( envname ) + 20;
-            myBuf = ( char * )malloc( len );
-            snprintf( myBuf, len, "%s=%d", envname, envval );
-            status = putenv( myBuf );
-            //      free( myBuf ); // JMC cppcheck - leak ==> backport 'fix' from comm trunk for solaris
-#endif
-            return status;
-        }
-
-        int
-        getRandomArray( int **randomArray, int size ) {
-            int *myArray;
-            int i, j, k;
-
-            if ( size < 0 ) {
-                *randomArray = NULL;
                 return -1;
             }
-
-            myArray = ( int * ) malloc( size * sizeof( int ) );
-            bzero( myArray, size * sizeof( int ) );
-            for ( i = size ; i > 0; i -- ) {
-                int ranNum;
-                /* get a number between 0 and i-1 */
-                ranNum = ( random() >> 2 ) % i;
-                k = 0;
-                /* find the ranNum th empty slot  */
-                for ( j = 0; j < size ; j ++ ) {
-                    if ( myArray[j] == 0 ) {
-                        k++;
-                    }
-                    if ( k > ranNum ) {
-                        break;
-                    }
-                }
-                myArray[j] = i;
-            }
-            *randomArray = myArray;
-
-            return ( 0 );
         }
-
-        int
-        isPathSymlink( rodsArguments_t * rodsArgs, char * myPath ) {
-            path p( myPath );
-            if ( rodsArgs != NULL && rodsArgs->link != True ) {
-                return 0;
+        else {
+            if ( *psrc == '\0' ) {
+                break;
             }
-            if ( exists( p ) && is_symlink( p ) ) {
-                return 1;
-            }
-            else {
-                return 0;
-            }
-        }
-
-        int
-        clearAuthResponseInp( void * inauthResponseInp ) {
-            authResponseInp_t *authResponseInp;
-
-            authResponseInp = ( authResponseInp_t * ) inauthResponseInp;
-
-            if ( authResponseInp == NULL ) {
-                return 0;
-            }
-            free( authResponseInp->username );
-            free( authResponseInp->response );
-            memset( authResponseInp, 0, sizeof( authResponseInp_t ) );
-
-            return ( 0 );
-        }
-        char *trimPrefix( char * str ) {
-            int i = 0;
-            while ( str[i] != ' ' ) {
-                i++;
-            }
-            while ( str[i] == ' ' ) {
-                i++;
-            }
-            memmove( str, str + i, strlen( str ) + 1 - i );
-            return str;
-        }
-
-        char *trimSpaces( char * str ) {
-            char *p = str;
-            char *psrc = str;
-
-            while ( *psrc != '\0' && isspace( *psrc ) ) {
+            else if ( *psrc == ',' ) {
+                *( p++ ) = '%';
                 psrc++;
             }
-
-            while ( *psrc != '\0' ) {
-                *( p++ ) = *( psrc++ );
-            }
-
-            p--;
-            while ( isspace( *p ) && p - str >= 0 ) {
-                p--;
-            }
-
-            p++;
-            *p = '\0';
-
-            return str;
-
-        }
-
-        int startsWith( char * str, char * prefix ) {
-            int i = 0;
-            while ( str[i] != '\0' && prefix[i] != '\0' ) {
-                if ( str[i] != prefix[i] ) {
-                    return 0;
-                }
-                i++;
-            }
-            return prefix[i] == '\0';
-        }
-
-        int convertListToMultiString( char * strInput, int input ) {
-            if ( strcmp( strInput, "null" ) == 0 ) {
-                return 0;
-            }
-            char *src = strdup( strInput );
-
-            char *p = strInput;
-            char *psrc = src;
-
-            /* replace % with %% */
-            while ( *psrc != '\0' ) {
-                if ( *psrc == '%' ) {
-                    *( p++ ) = '%';
-                    *( p++ ) = '%';
-                    psrc++;
-                }
-                else {
-                    *( p++ ) = *( psrc++ );
-                }
-            }
-            *p = '\0';
-
-            free( src );
-
-            /* replace , with % and remove extra spaces */
-            p = strInput;
-            psrc = strInput;
-            while ( *psrc != '\0' ) {
-                /* variable name */
-                while ( !isspace( *psrc ) && *psrc != '=' && *psrc != ',' && *psrc != '\0' ) {
-                    *( p++ ) = *( psrc++ );
-                }
-
-                /* skip spaces */
-                while ( isspace( *psrc ) ) {
-                    psrc++;
-                }
-                if ( input ) {
-                    if ( *psrc == '=' ) {
-                        /* assignment */
-                        *( p++ ) = *( psrc++ );
-
-                        int inString = 0;
-                        char delim = '\0';
-                        while ( *psrc != '\0' ) {
-                            if ( inString ) {
-                                if ( *psrc == delim ) {
-                                    inString = 0;
-                                }
-                                else if ( *psrc == '\\' ) {
-                                    *( p++ ) = *( psrc++ );
-                                    if ( *psrc == '\0' ) {
-                                        return -1;
-                                    }
-                                }
-                                *( p++ ) = *( psrc++ );
-                            }
-                            else {
-                                if ( *psrc == ',' ) {
-                                    *( p++ ) = '%';
-                                    psrc++;
-                                    break;
-                                }
-                                else {
-                                    if ( *psrc == '\'' || *psrc == '\"' ) {
-                                        inString = 1;
-                                        delim = *psrc;
-                                    }
-                                    *( p++ ) = *( psrc++ );
-                                }
-                            }
-                        }
-                    }
-                    else {
-                        return -1;
-                    }
-                }
-                else {
-                    if ( *psrc == '\0' ) {
-                        break;
-                    }
-                    else if ( *psrc == ',' ) {
-                        *( p++ ) = '%';
-                        psrc++;
-                    }
-                    else {
-                        return -1;
-                    }
-                }
-                /* skip spaces */
-                while ( isspace( *psrc ) ) {
-                    psrc++;
-                }
-            }
-            *p = '\0';
-            return 0;
-        }
-
-        int
-        splitMultiStr( char * strInput, strArray_t * strArray ) {
-            char *startPtr, *endPtr;
-            int endReached = 0;
-
-            if ( strInput == NULL || strArray == NULL ) {
-                return ( SYS_INTERNAL_NULL_INPUT_ERR );
-            }
-
-            startPtr = endPtr = strInput;
-
-            while ( 1 ) {
-                // two %% will be taken as an input % instead of as a delimiter
-                while ( *endPtr != '%' && *endPtr != '\0' ) {
-                    endPtr ++;
-                }
-                if ( *endPtr == '%' ) {
-                    if ( *( endPtr + 1 ) == '%' ) {
-                        endPtr ++;
-                        endPtr ++;
-                        continue;
-                    }
-                    *endPtr = '\0';
-                }
-                else {
-                    endReached = 1;
-                }
-
-                char *str = strdup( startPtr );
-                char *p = str;
-                char *psrc = str;
-                while ( *psrc != '\0' ) {
-                    while ( *psrc != '%' && *psrc != '\0' ) {
-                        *( p++ ) = *( psrc++ );
-                    }
-                    if ( *psrc == '%' ) {
-                        *( p++ ) = *( psrc++ );
-                        psrc++;
-                    }
-                }
-                *p = '\0';
-
-                addStrArray( strArray, str );
-
-                free( str );
-
-                if ( endReached == 1 ) {
-                    break;
-                }
-
-                endPtr++;
-                startPtr = endPtr;
-            }
-
-            return ( strArray->len );
-        }
-
-        namespace boost {
-            void assertion_failed( char const * expr,
-                                   char const * function, char const * file, long line ) {
-                std::cerr <<
-                          "***** Internal Program Error - assertion (" << expr << ") failed in "
-                          << function << ":\n"
-                          << file << '(' << line << "): errno = " << errno << std::endl;
-            }
-
-
-        } // namespace boost
-
-        int
-        getPathStMode( path & p ) {
-            struct stat statbuf;
-
-            if ( stat( p.c_str(), &statbuf ) == 0 &&
-                    ( statbuf.st_mode & S_IFREG ) ) {
-                return statbuf.st_mode;
-            }
             else {
                 return -1;
             }
         }
+        /* skip spaces */
+        while ( isspace( *psrc ) ) {
+            psrc++;
+        }
+    }
+    *p = '\0';
+    return 0;
+}
 
+int
+splitMultiStr( char * strInput, strArray_t * strArray ) {
+    char *startPtr, *endPtr;
+    int endReached = 0;
 
-        int
-        hasSymlinkInDir( char * mydir ) {
-            int status;
-            char subfilePath[MAX_NAME_LEN];
-            DIR *dirPtr;
-            struct dirent *myDirent;
-            struct stat statbuf;
+    if ( strInput == NULL || strArray == NULL ) {
+        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+    }
 
-            if ( mydir == NULL ) {
-                return 0;
+    startPtr = endPtr = strInput;
+
+    while ( 1 ) {
+        // two %% will be taken as an input % instead of as a delimiter
+        while ( *endPtr != '%' && *endPtr != '\0' ) {
+            endPtr ++;
+        }
+        if ( *endPtr == '%' ) {
+            if ( *( endPtr + 1 ) == '%' ) {
+                endPtr ++;
+                endPtr ++;
+                continue;
             }
-            dirPtr = opendir( mydir );
-            if ( dirPtr == NULL ) {
-                return 0;
-            }
-
-            while ( ( myDirent = readdir( dirPtr ) ) != NULL ) {
-                if ( strcmp( myDirent->d_name, "." ) == 0 ||
-                        strcmp( myDirent->d_name, ".." ) == 0 ) {
-                    continue;
-                }
-                snprintf( subfilePath, MAX_NAME_LEN, "%s/%s",
-                          mydir, myDirent->d_name );
-                status = lstat( subfilePath, &statbuf );
-                if ( status != 0 ) {
-                    rodsLog( LOG_ERROR,
-                             "hasSymlinkIndir: stat error for %s, errno = %d",
-                             subfilePath, errno );
-                    continue;
-                }
-                if ( ( statbuf.st_mode & S_IFLNK ) == S_IFLNK ) {
-                    rodsLog( LOG_ERROR,
-                             "hasSymlinkIndir: %s is a symlink",
-                             subfilePath );
-                    closedir( dirPtr );
-                    return 1;
-                }
-                if ( ( statbuf.st_mode & S_IFDIR ) != 0 ) {
-                    if ( hasSymlinkInDir( subfilePath ) ) {
-                        closedir( dirPtr );
-                        return 1;
-                    }
-                }
-            }
-            closedir( dirPtr );
-            return 0;
+            *endPtr = '\0';
+        }
+        else {
+            endReached = 1;
         }
 
-        int
-        hasSymlinkInPartialPath( char * myPath, int pos ) {
-            char *nextPtr;
-            char *curPtr = myPath + pos;
-            struct stat statbuf;
-            int status;
-
-            status = lstat( myPath, &statbuf );
-            if ( status != 0 ) {
-                rodsLog( LOG_ERROR,
-                         "hasSymlinkInPartialPath: stat error for %s, errno = %d",
-                         myPath, errno );
-                return 0;
+        char *str = strdup( startPtr );
+        char *p = str;
+        char *psrc = str;
+        while ( *psrc != '\0' ) {
+            while ( *psrc != '%' && *psrc != '\0' ) {
+                *( p++ ) = *( psrc++ );
             }
-            if ( ( statbuf.st_mode & S_IFLNK ) == S_IFLNK ) {
-                rodsLog( LOG_ERROR,
-                         "hasSymlinkInPartialPath: %s is a symlink", myPath );
+            if ( *psrc == '%' ) {
+                *( p++ ) = *( psrc++ );
+                psrc++;
+            }
+        }
+        *p = '\0';
+
+        addStrArray( strArray, str );
+
+        free( str );
+
+        if ( endReached == 1 ) {
+            break;
+        }
+
+        endPtr++;
+        startPtr = endPtr;
+    }
+
+    return ( strArray->len );
+}
+
+namespace boost {
+    void assertion_failed( char const * expr,
+                           char const * function, char const * file, long line ) {
+        std::cerr <<
+                  "***** Internal Program Error - assertion (" << expr << ") failed in "
+                  << function << ":\n"
+                  << file << '(' << line << "): errno = " << errno << std::endl;
+    }
+
+
+} // namespace boost
+
+int
+getPathStMode( path & p ) {
+    struct stat statbuf;
+
+    if ( stat( p.c_str(), &statbuf ) == 0 &&
+            ( statbuf.st_mode & S_IFREG ) ) {
+        return statbuf.st_mode;
+    }
+    else {
+        return -1;
+    }
+}
+
+
+int
+hasSymlinkInDir( char * mydir ) {
+    int status;
+    char subfilePath[MAX_NAME_LEN];
+    DIR *dirPtr;
+    struct dirent *myDirent;
+    struct stat statbuf;
+
+    if ( mydir == NULL ) {
+        return 0;
+    }
+    dirPtr = opendir( mydir );
+    if ( dirPtr == NULL ) {
+        return 0;
+    }
+
+    while ( ( myDirent = readdir( dirPtr ) ) != NULL ) {
+        if ( strcmp( myDirent->d_name, "." ) == 0 ||
+                strcmp( myDirent->d_name, ".." ) == 0 ) {
+            continue;
+        }
+        snprintf( subfilePath, MAX_NAME_LEN, "%s/%s",
+                  mydir, myDirent->d_name );
+        status = lstat( subfilePath, &statbuf );
+        if ( status != 0 ) {
+            rodsLog( LOG_ERROR,
+                     "hasSymlinkIndir: stat error for %s, errno = %d",
+                     subfilePath, errno );
+            continue;
+        }
+        if ( ( statbuf.st_mode & S_IFLNK ) == S_IFLNK ) {
+            rodsLog( LOG_ERROR,
+                     "hasSymlinkIndir: %s is a symlink",
+                     subfilePath );
+            closedir( dirPtr );
+            return 1;
+        }
+        if ( ( statbuf.st_mode & S_IFDIR ) != 0 ) {
+            if ( hasSymlinkInDir( subfilePath ) ) {
+                closedir( dirPtr );
                 return 1;
             }
+        }
+    }
+    closedir( dirPtr );
+    return 0;
+}
 
-            while ( ( nextPtr = strchr( curPtr, '/' ) ) != NULL ) {
-                *nextPtr = '\0';
-                status = lstat( myPath, &statbuf );
-                if ( status != 0 ) {
-                    rodsLog( LOG_ERROR,
-                             "hasSymlinkInPartialPath: stat error for %s, errno = %d",
-                             myPath, errno );
-                    *nextPtr = '/';
-                    return 0;
-                }
-                if ( ( statbuf.st_mode & S_IFLNK ) == S_IFLNK ) {
-                    rodsLog( LOG_ERROR,
-                             "hasSymlinkInPartialPath: %s is a symlink", myPath );
-                    *nextPtr = '/';
-                    return 1;
-                }
-                *nextPtr = '/';
-                curPtr = nextPtr + 1;
-            }
+int
+hasSymlinkInPartialPath( char * myPath, int pos ) {
+    char *nextPtr;
+    char *curPtr = myPath + pos;
+    struct stat statbuf;
+    int status;
+
+    status = lstat( myPath, &statbuf );
+    if ( status != 0 ) {
+        rodsLog( LOG_ERROR,
+                 "hasSymlinkInPartialPath: stat error for %s, errno = %d",
+                 myPath, errno );
+        return 0;
+    }
+    if ( ( statbuf.st_mode & S_IFLNK ) == S_IFLNK ) {
+        rodsLog( LOG_ERROR,
+                 "hasSymlinkInPartialPath: %s is a symlink", myPath );
+        return 1;
+    }
+
+    while ( ( nextPtr = strchr( curPtr, '/' ) ) != NULL ) {
+        *nextPtr = '\0';
+        status = lstat( myPath, &statbuf );
+        if ( status != 0 ) {
+            rodsLog( LOG_ERROR,
+                     "hasSymlinkInPartialPath: stat error for %s, errno = %d",
+                     myPath, errno );
+            *nextPtr = '/';
             return 0;
         }
-
-        int
-        hasSymlinkInPath( char * myPath ) {
-            static char lastCheckedPath[MAX_NAME_LEN];
-            int status, i;
-            int lastSlashPos = 0;
-
-            for ( i = 0; i < MAX_NAME_LEN; i++ ) {
-                if ( lastCheckedPath[i] != myPath[i] ) {
-                    break;
-                }
-                if ( lastCheckedPath[i] == '/' ) {
-                    lastSlashPos = i;
-                }
-            }
-            status = hasSymlinkInPartialPath( myPath, lastSlashPos + 1 );
-            if ( status == 0 ) {
-                rstrcpy( lastCheckedPath, myPath, MAX_NAME_LEN );
-            }
-            return status;
+        if ( ( statbuf.st_mode & S_IFLNK ) == S_IFLNK ) {
+            rodsLog( LOG_ERROR,
+                     "hasSymlinkInPartialPath: %s is a symlink", myPath );
+            *nextPtr = '/';
+            return 1;
         }
+        *nextPtr = '/';
+        curPtr = nextPtr + 1;
+    }
+    return 0;
+}
+
+int
+hasSymlinkInPath( char * myPath ) {
+    static char lastCheckedPath[MAX_NAME_LEN];
+    int status, i;
+    int lastSlashPos = 0;
+
+    for ( i = 0; i < MAX_NAME_LEN; i++ ) {
+        if ( lastCheckedPath[i] != myPath[i] ) {
+            break;
+        }
+        if ( lastCheckedPath[i] == '/' ) {
+            lastSlashPos = i;
+        }
+    }
+    status = hasSymlinkInPartialPath( myPath, lastSlashPos + 1 );
+    if ( status == 0 ) {
+        rstrcpy( lastCheckedPath, myPath, MAX_NAME_LEN );
+    }
+    return status;
+}
 
 

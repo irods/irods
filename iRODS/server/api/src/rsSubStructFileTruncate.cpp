@@ -70,7 +70,7 @@ int _rsSubStructFileTruncate( rsComm_t*   _comm,
     irods::structured_object_ptr struct_obj(
         new irods::structured_object( *_sub_file ) );
     struct_obj->comm( _comm );
-    struct_obj->resc_hier( irods::LOCAL_USE_ONLY_RESOURCE );
+    struct_obj->resc_hier( _sub_file->specColl->rescHier );
 
     // =-=-=-=-=-=-=-
     // call abstrcated interface to truncate

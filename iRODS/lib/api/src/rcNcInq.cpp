@@ -126,10 +126,6 @@ freeNcInqOut( ncInqOut_t **ncInqOut ) {
     if ( ( *ncInqOut )->var != NULL ) {
         for ( i = 0; i < ( *ncInqOut )->nvars; i++ ) {
             if ( ( *ncInqOut )->var[i].att != NULL ) {
-#if 0	/* this can cause core dump */
-                clearNcGetVarOut( &( *ncInqOut )->var[i].att->value );
-                free( ( *ncInqOut )->var[i].att );
-#endif
             }
             if ( ( *ncInqOut )->var[i].dimId != NULL ) {
                 free( ( *ncInqOut )->var[i].dimId );
@@ -166,21 +162,6 @@ prNcHeader( rcComm_t *conn, int ncid, int noattr, ncInqOut_t *ncInqOut ) {
     int i, j, dimId, status;
     char tempStr[NAME_LEN];
     void *bufPtr;
-#if 0
-    char myDir[MAX_NAME_LEN], myFile[MAX_NAME_LEN];
-
-    if ( fileName == NULL || splitPathByKey( fileName, myDir, myFile, '/' ) < 0 ) {
-        printf( "netcdf UNKNOWN_FILE {\n" );
-    }
-    else {
-        int len = strlen( myFile );
-        char *myptr = myFile + len - 3;
-        if ( strcmp( myptr, ".nc" ) == 0 ) {
-            *myptr = '\0';
-        }
-        printf( "netcdf %s {\n", myFile );
-    }
-#endif
 
     /* attrbutes */
     if ( noattr == False ) {
@@ -297,11 +278,6 @@ prNcDimVar( rcComm_t *conn, char *fileName, int ncid, int printAsciTime,
         if ( j >= ncInqOut->nvars ) {
             /* not found. tabledap allows this */
             continue;
-#if 0
-            rodsLogError( LOG_ERROR, status,
-                          "prNcDimVar: unmatched dim var  %s", ncInqOut->dim[i].id );
-            return NETCDF_DIM_MISMATCH_ERR;
-#endif
         }
         status = prSingleDimVar( conn, ncid, j, 10, printAsciTime, ncInqOut );
         if ( status < 0 ) {
@@ -328,36 +304,6 @@ prSingleDimVar( rcComm_t *conn, int ncid, int varInx,
 
     status = getSingleNcVarData( conn, ncid, varInx, ncInqOut, NULL,
                                  &ncGetVarOut, start, stride, count );
-#if 0
-    for ( j = 0; j < ncInqOut->var[varInx].nvdims; j++ ) {
-        int dimId = ncInqOut->var[varInx].dimId[j];
-        start[j] = 0;
-        if ( dumpVarLen > 0 && ncInqOut->dim[dimId].arrayLen > dumpVarLen ) {
-            /* If it is NC_CHAR, it could be a str */
-            if ( ncInqOut->var[varInx].dataType == NC_CHAR &&
-                    j ==  ncInqOut->var[varInx].nvdims - 1 ) {
-                count[j] = ncInqOut->dim[dimId].arrayLen;
-            }
-            else {
-                count[j] = dumpVarLen;
-            }
-        }
-        else {
-            count[j] = ncInqOut->dim[dimId].arrayLen;
-        }
-        stride[j] = 1;
-    }
-    bzero( &ncGetVarInp, sizeof( ncGetVarInp ) );
-    ncGetVarInp.dataType = ncInqOut->var[varInx].dataType;
-    ncGetVarInp.ncid = ncid;
-    ncGetVarInp.varid =  ncInqOut->var[varInx].id;
-    ncGetVarInp.ndim =  ncInqOut->var[varInx].nvdims;
-    ncGetVarInp.start = start;
-    ncGetVarInp.count = count;
-    ncGetVarInp.stride = stride;
-
-    status = rcNcGetVarsByType( conn, &ncGetVarInp, &ncGetVarOut );
-#endif
 
     if ( status < 0 ) {
         rodsLogError( LOG_ERROR, status,
@@ -401,15 +347,6 @@ prSingleDimVar( rcComm_t *conn, int ncid, int varInx,
                 /* asci time */
                 time_t mytime = atoi( tempStr );
                 timeToAsci( mytime, tempStr );
-#if 0
-                struct tm *mytm = gmtime( &mytime );
-                if ( mytm != NULL ) {
-                    snprintf( tempStr, NAME_LEN,
-                              "%04d-%02d-%02dT%02d:%02d:%02dZ",
-                              1900 + mytm->tm_year, mytm->tm_mon + 1, mytm->tm_mday,
-                              mytm->tm_hour, mytm->tm_min, mytm->tm_sec );
-                }
-#endif
             }
             if ( j >= ncGetVarOut->dataArray->len - 1 ) {
                 printf( "%s ;\n", tempStr );
@@ -559,16 +496,6 @@ prNcVarData( rcComm_t *conn, char *fileName, int ncid, int printAsciTime,
                         /* asci time */
                         time_t mytime = atoi( tempStr );
                         timeToAsci( mytime, tempStr );
-#if 0
-                        struct tm *mytm = gmtime( &mytime );
-                        if ( mytm != NULL ) {
-                            snprintf( tempStr, NAME_LEN,
-                                      "%04d-%02d-%02dT%02d:%02d:%02dZ",
-                                      1900 + mytm->tm_year, mytm->tm_mon + 1,
-                                      mytm->tm_mday,
-                                      mytm->tm_hour, mytm->tm_min, mytm->tm_sec );
-                        }
-#endif
                     }
                     outCnt++;
                     if ( j >= ncGetVarOut->dataArray->len - 1 ) {
@@ -891,41 +818,6 @@ dumpNcInqOutToNcFile( rcComm_t *conn, int srcNcid, int noattrFlag,
             closeAndRmNeFile( ncid, outFileName );
             return status;
         }
-#if 0
-        bzero( &ncGetVarInp, sizeof( ncGetVarInp ) );
-        ncGetVarInp.dataType = var->dataType;
-        ncGetVarInp.ncid = srcNcid;
-        ncGetVarInp.varid =  var->id;
-        ncGetVarInp.ndim =  var->nvdims;
-        ncGetVarInp.start = start;
-        ncGetVarInp.count = count;
-        ncGetVarInp.stride = stride;
-
-        if ( conn == NULL ) {
-            /* local call */
-            status = _rsNcGetVarsByType( srcNcid, &ncGetVarInp, &ncGetVarOut );
-        }
-        else {
-            status = rcNcGetVarsByType( conn, &ncGetVarInp, &ncGetVarOut );
-        }
-        if ( status < 0 ) {
-            rodsLogError( LOG_ERROR, status,
-                          "dumpNcInqOutToNcFile: rcNcGetVarsByType error for %s",
-                          ncInqOut->var[i].name );
-            closeAndRmNeFile( ncid, outFileName );
-            return status;
-        }
-        status = nc_put_vars( ncid, var->myint, lstart,
-                              lcount, lstride, ncGetVarOut->dataArray->buf );
-        freeNcGetVarOut( &ncGetVarOut );
-        if ( status != NC_NOERR ) {
-            rodsLogError( LOG_ERROR, status,
-                          "dumpNcInqOutToNcFile: nc_put_vars error for %s    %s",
-                          ncInqOut->var[i].name, nc_strerror( status ) );
-            closeAndRmNeFile( ncid, outFileName );
-            return NETCDF_PUT_VARS_ERR;
-        }
-#endif
     }
     nc_close( ncid );
     return 0;

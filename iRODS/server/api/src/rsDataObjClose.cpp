@@ -716,6 +716,7 @@ l3Close( rsComm_t *rsComm, int l1descInx ) {
         subStructFileCloseInp.type = dataObjInfo->specColl->type;
         subStructFileCloseInp.fd = L1desc[l1descInx].l3descInx;
         rstrcpy( subStructFileCloseInp.addr.hostAddr, location.c_str(), NAME_LEN );
+        rstrcpy( subStructFileCloseInp.resc_hier, dataObjInfo->rescHier, MAX_NAME_LEN );
         status = rsSubStructFileClose( rsComm, &subStructFileCloseInp );
     }
     else {
@@ -949,21 +950,3 @@ procChksumForClose(
     }
     return status;
 }
-
-#ifdef COMPAT_201
-int
-rsDataObjClose201( rsComm_t *rsComm, dataObjCloseInp_t *dataObjCloseInp ) {
-    openedDataObjInp_t openedDataObjInp;
-    int status;
-
-    bzero( &openedDataObjInp, sizeof( openedDataObjInp ) );
-
-    openedDataObjInp.l1descInx = dataObjCloseInp->l1descInx;
-    openedDataObjInp.bytesWritten = dataObjCloseInp->bytesWritten;
-
-    status = rsDataObjClose( rsComm, &openedDataObjInp );
-
-    return status;
-}
-#endif
-

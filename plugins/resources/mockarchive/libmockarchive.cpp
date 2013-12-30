@@ -74,7 +74,7 @@
 
 // =-=-=-=-=-=-=-
 /// @brief Generates a full path name from the partial physical path and the specified resource's vault path
-irods::error unix_generate_full_path(
+irods::error mock_archive_generate_full_path(
     irods::plugin_property_map& _prop_map,
     const std::string&           _phy_path,
     std::string&                 _ret_string ) {
@@ -100,7 +100,7 @@ irods::error unix_generate_full_path(
 
     return result;
 
-} // unix_generate_full_path
+} // mock_archive_generate_full_path
 
 // =-=-=-=-=-=-=-
 /// @brief update the physical path in the file object
@@ -113,7 +113,7 @@ irods::error unix_check_path(
         // =-=-=-=-=-=-=-
         // NOTE: Must do this for all storage resources
         std::string full_path;
-        irods::error ret = unix_generate_full_path( _ctx.prop_map(),
+        irods::error ret = mock_archive_generate_full_path( _ctx.prop_map(),
                            data_obj->physical_path(),
                            full_path );
         if ( ( result = ASSERT_PASS( ret, "Failed generating full path for object." ) ).ok() ) {
@@ -164,6 +164,50 @@ extern "C" {
     //      :: double my_var = 0.0;
     //      :: irods::error ret = _prop_map.get< double >( "my_key", my_var );
     // =-=-=-=-=-=-=-
+
+    // =-=-=-=-=-=-=-
+    // interface for POSIX mkdir
+    irods::error mock_archive_mkdir_plugin(
+        irods::resource_plugin_context& _ctx ) {
+        irods::error result = SUCCESS();
+
+        // =-=-=-=-=-=-=-
+        // NOTE :: this function assumes the object's physical path is correct and
+        //         should not have the vault path prepended - hcj
+
+        irods::error ret = _ctx.valid< irods::collection_object >();
+        if ( ( result = ASSERT_PASS( ret, "resource context is invalid." ) ).ok() ) {
+
+            // =-=-=-=-=-=-=-
+            // cast down the chain to our understood object type
+            irods::collection_object_ptr fco = boost::dynamic_pointer_cast< irods::collection_object >( _ctx.fco() );
+
+            // =-=-=-=-=-=-=-
+            // make the call to mkdir & umask
+            mode_t myMask = umask( ( mode_t ) 0000 );
+            int    status = mkdir( fco->physical_path().c_str(), fco->mode() );
+
+            // =-=-=-=-=-=-=-
+            // reset the old mask
+            umask( ( mode_t ) myMask );
+
+            // =-=-=-=-=-=-=-
+            // return an error if necessary
+            result.code( status );
+            int err_status = UNIX_FILE_MKDIR_ERR - errno;
+            if ( ( result = ASSERT_ERROR( status >= 0, err_status, "Mkdir error for \"%s\", errno = \"%s\", status = %d.",
+                                          fco->physical_path().c_str(), strerror( errno ), err_status ) ).ok() ) {
+                result.code( status );
+            }
+        }
+        return result;
+
+    } // mock_archive_mkdir_plugin
+
+
+
+
+
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Unlink
@@ -520,8 +564,8 @@ extern "C" {
     } // mock_archive_redirect_plugin
 
     // =-=-=-=-=-=-=-
-    // mock_archive_file_rebalance - code which would rebalance the subtree
-    irods::error mock_archive_file_rebalance(
+    // mock_archive_rebalance - code which would rebalance the subtree
+    irods::error mock_archive_rebalance(
         irods::resource_plugin_context& _ctx ) {
         return SUCCESS();
 
@@ -578,18 +622,7 @@ extern "C" {
         // 3b. pass along a functor for maintenance work after
         //     the client disconnects, uncomment the first two lines for effect.
         irods::error post_disconnect_maintenance_operation( irods::pdmo_type& _op ) {
-#if 0
-            std::string name;
-            irods::error err = get_property< std::string >( irods::RESOURCE_NAME, name );
-            if ( !err.ok() ) {
-                return PASSMSG( "mockarchive_resource::post_disconnect_maintenance_operation failed.", err );
-            }
-
-            _op = maintenance_operation( name );
-            return SUCCESS();
-#else
             return ERROR( -1, "nop" );
-#endif
         }
 
     }; // class mockarchive_resource
@@ -611,11 +644,12 @@ extern "C" {
         // 4b. map function names to operations.  this map will be used to load
         //     the symbols from the shared object in the delay_load stage of
         //     plugin loading.
-        resc->add_operation( irods::RESOURCE_OP_UNLINK,       "mock_archive_unlink_plugin" );
-        resc->add_operation( irods::RESOURCE_OP_STAGETOCACHE, "mock_archive_stagetocache_plugin" );
-        resc->add_operation( irods::RESOURCE_OP_SYNCTOARCH,   "mock_archive_synctoarch_plugin" );
-        resc->add_operation( irods::RESOURCE_OP_RESOLVE_RESC_HIER,     "mock_archive_redirect_plugin" );
-        resc->add_operation( irods::RESOURCE_OP_REBALANCE,             "mock_archive_file_rebalance" );
+        resc->add_operation( irods::RESOURCE_OP_UNLINK,            "mock_archive_unlink_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_STAGETOCACHE,      "mock_archive_stagetocache_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_SYNCTOARCH,        "mock_archive_synctoarch_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_RESOLVE_RESC_HIER, "mock_archive_redirect_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_REBALANCE,         "mock_archive_rebalance" );
+        resc->add_operation( irods::RESOURCE_OP_MKDIR,             "mock_archive_mkdir_plugin" );
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code

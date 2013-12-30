@@ -188,7 +188,7 @@ chlGeneralUpdate( generalUpdateInp_t generalUpdateInp ) {
     icatSessionStruct *icss;
 
     status = chlGetRcs( &icss );
-    if( status < 0 || !icss ) {
+    if ( status < 0 || !icss ) {
         return( CAT_NOT_OPEN );
     }
 

@@ -33,4 +33,3 @@ class Test_CompatibilitySuite(unittest.TestCase, ResourceBase):
     assertiCmd(s.adminsession,"imeta set -u " + s.users[1]["name"] + " att verynewval")
     assertiCmd(s.adminsession,"imeta ls -u " + s.users[1]["name"] + " att","LIST","value: verynewval")
     assertiCmd(s.adminsession,"imeta ls -u " + s.users[1]["name"] + " att","LIST","units: someunit")
-

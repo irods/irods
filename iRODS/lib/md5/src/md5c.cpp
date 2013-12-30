@@ -57,9 +57,7 @@ Removed PROTO_LIST macro for C++ compatability.
 #define S43 15
 #define S44 21
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
 
     static void MD5Transform( UINT4 [4], unsigned char [64] );
@@ -87,9 +85,7 @@ extern "C" {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     };
 
-#ifdef  __cplusplus
 }
-#endif
 
 /* F, G, H and I are basic MD5 functions.
  */
@@ -128,13 +124,7 @@ Rotation is separate from addition to prevent recomputation.
 
 /* MD5 initialization. Begins an MD5 operation, writing a new context.
  */
-#ifdef  __cplusplus
-void MD5Init( MD5_CTX *context )
-#else
-void MD5Init( context )
-MD5_CTX *context;                                        /* context */
-#endif
-{
+void MD5Init( MD5_CTX *context ) {
     context->count[0] = context->count[1] = 0;
     /* Load magic initialization constants.
     */
@@ -149,15 +139,7 @@ MD5_CTX *context;                                        /* context */
   context.
  */
 
-#ifdef  __cplusplus
-void MD5Update( MD5_CTX *context, unsigned char *input, unsigned int inputLen )
-#else
-void MD5Update( context, input, inputLen )
-MD5_CTX *context;                                        /* context */
-unsigned char *input;                                /* input block */
-unsigned int inputLen;                     /* length of input block */
-#endif
-{
+void MD5Update( MD5_CTX *context, unsigned char *input, unsigned int inputLen ) {
     unsigned int i, index, partLen;
 
     /* Compute number of bytes mod 64 */
@@ -199,14 +181,7 @@ unsigned int inputLen;                     /* length of input block */
   the message digest and zeroizing the context.
  */
 
-#ifdef  __cplusplus
-void MD5Final( unsigned char digest[16], MD5_CTX *context )
-#else
-void MD5Final( digest, context )
-unsigned char digest[16];                         /* message digest */
-MD5_CTX *context;                                       /* context */
-#endif
-{
+void MD5Final( unsigned char digest[16], MD5_CTX *context ) {
     unsigned char bits[8];
     unsigned int index, padLen;
 
@@ -233,14 +208,7 @@ MD5_CTX *context;                                       /* context */
 /* MD5 basic transformation. Transforms state based on block.
  */
 
-#ifdef  __cplusplus
-static void MD5Transform( UINT4 state[4], unsigned char block[64] )
-#else
-static void MD5Transform( state, block )
-UINT4 state[4];
-unsigned char block[64];
-#endif
-{
+static void MD5Transform( UINT4 state[4], unsigned char block[64] ) {
     UINT4 a = state[0], b = state[1], c = state[2], d = state[3], x[16];
 
     Decode( x, block, 64 );
@@ -330,15 +298,7 @@ unsigned char block[64];
 /* Encodes input (UINT4) into output (unsigned char). Assumes len is
   a multiple of 4.
  */
-#ifdef  __cplusplus
-static void Encode( unsigned char *output, UINT4 *input, unsigned int len )
-#else
-static void Encode( output, input, len )
-unsigned char *output;
-UINT4 *input;
-unsigned int len;
-#endif
-{
+static void Encode( unsigned char *output, UINT4 *input, unsigned int len ) {
     unsigned int i, j;
 
     for ( i = 0, j = 0; j < len; i++, j += 4 ) {
@@ -353,15 +313,7 @@ unsigned int len;
   a multiple of 4.
  */
 
-#ifdef  __cplusplus
-static void Decode( UINT4 *output, unsigned char *input, unsigned int len )
-#else
-static void Decode( output, input, len )
-UINT4 *output;
-unsigned char *input;
-unsigned int len;
-#endif
-{
+static void Decode( UINT4 *output, unsigned char *input, unsigned int len ) {
     unsigned int i, j;
 
     for ( i = 0, j = 0; j < len; i++, j += 4 )
@@ -373,15 +325,7 @@ unsigned int len;
  */
 
 
-#ifdef  __cplusplus
-static void MD5_memcpy( POINTER output, POINTER input, unsigned int len )
-#else
-static void MD5_memcpy( output, input, len )
-POINTER output;
-POINTER input;
-unsigned int len;
-#endif
-{
+static void MD5_memcpy( POINTER output, POINTER input, unsigned int len ) {
     unsigned int i;
 
     for ( i = 0; i < len; i++ ) {
@@ -392,15 +336,7 @@ unsigned int len;
 /* Note: Replace "for loop" with standard memset if possible.
  */
 
-#ifdef  __cplusplus
-static void MD5_memset( POINTER output, int value, unsigned int len )
-#else
-static void MD5_memset( output, value, len )
-POINTER output;
-int value;
-unsigned int len;
-#endif
-{
+static void MD5_memset( POINTER output, int value, unsigned int len ) {
     unsigned int i;
 
     for ( i = 0; i < len; i++ ) {

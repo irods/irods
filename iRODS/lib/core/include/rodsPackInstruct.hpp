@@ -65,10 +65,6 @@
 
 #define CollInpNew_PI "str collName[MAX_NAME_LEN]; int flags; int oprType; struct KeyValPair_PI;"
 
-#ifdef COMPAT_201
-#define CollInp_PI "str collName[MAX_NAME_LEN]; struct KeyValPair_PI;"
-#endif
-
 #define GenQueryInp_PI "int maxRows; int continueInx; int partialStartIndex; int options; struct KeyValPair_PI; struct InxIvalPair_PI; struct InxValPair_PI;"
 #define SqlResult_PI "int attriInx; int reslen; str *value(rowCnt)(reslen);"
 
@@ -155,9 +151,5 @@
 #define FNMapStruct_PI "int maxNumOfFMaps; str *funcName[maxNumOfFMaps]; str *func2CMap[maxNumOfFMaps]; double fmapId[maxNumOfFMaps];"
 #define MsrvcStruct_PI "int maxNumOfMsrvcs; double msrvcId[maxNumOfMsrvcs]; str moduleName[maxNumOfMsrvcs]; str msrvcName[maxNumOfMsrvcs];  str msrvcSiganture[maxNumOfMsrvcs];  str msrvcVersion[maxNumOfMsrvcs];  str msrvcHost[maxNumOfMsrvcs];  str msrvcLocation[maxNumOfMsrvcs];  str msrvcLanguage[maxNumOfMsrvcs];  str msrvcTypeName[maxNumOfMsrvcs];  double msrvcStatus[maxNumOfMsrvcs];"
 #define DataSeg_PI "double len; double offset;"
-#if 0
-#define FileRestartInfo_PI "str fileName[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN]; int numSeg; int status; double fileSize; struct DataSeg_PI[MAX_NUM_CONFIG_TRAN_THR];"
-#else
 #define FileRestartInfo_PI "str fileName[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN]; int numSeg; int flags; double fileSize; struct DataSeg_PI[numSeg];"
-#endif
 #endif	/* PACK_INSTRUCT_H */

@@ -34,7 +34,6 @@
 #include "rods.hpp"
 #include "rcMisc.hpp"
 #include "icatMidLevelRoutines.hpp"
-#include "icatMidLevelHelpers.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "icatLowLevel.hpp"
 

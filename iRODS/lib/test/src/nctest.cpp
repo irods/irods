@@ -5,12 +5,6 @@
 #include "rodsClient.hpp"
 
 /* a copy of sfc_pres_temp.nc can be found in ../netcdf/sfc_pres_temp.nc */
-#if 0
-#define TEST_PATH1 "/wanZone/home/rods/hdf5/SDS.h5"
-#define TEST_PATH1 "/wanZone/home/rods/netcdf/sfc_pres_temp.nc"
-#define TEST_PATH2 "/wanZone/home/rods/netcdf/pres_temp_4D.nc"
-#define TEST_PATH2 "/oneZone/home/rods/erddap/erdCalcofiBio"
-#endif
 #define TEST_PATH1 "/oneZone/home/rods/hdf5/group.h5"
 #define TEST_PATH2 "/oneZone/home/rods/pydap/glider/glider114.nc"
 
@@ -38,13 +32,6 @@ main( int argc, char **argv ) {
     int status;
 
     int ncid;
-#if 0
-    status = nc_open( "http://coastwatch.pfeg.noaa.gov/erddap/tabledap/nosCoopsMAT.nc?stationID,stationName,longitude,latitude,time,dcp,sensor,AT,X,N,R&time>=2012-07-19T00:00:00Z", NC_NETCDF4, &ncid );
-    status = nc_open( "http://coastwatch.pfeg.noaa.gov/erddap/tabledap/nosCoopsMAT?stationID,stationName,longitude,latitude,time,dcp,sensor,AT,X,N,R&time>=2012-07-23", NC_NETCDF4, &ncid );
-    status = nc_open( "http://coastwatch.pfeg.noaa.gov/erddap/tabledap/nosCoopsMAT&time>=2012-07-23", NC_NETCDF4, &ncid );
-    printf( "nc_open status = %d  %s\n", status,  nc_strerror( status ) );
-    exit( 0 );
-#endif
 
     if ( argc <= 1 ) {
         testPath = TEST_PATH2;
@@ -74,20 +61,6 @@ main( int argc, char **argv ) {
         rcDisconnect( conn );
         exit( 2 );
     }
-#if 0	/* specify a specific group name */
-    status = nctest1( conn, TEST_PATH1, "/Data_new" );
-    status = nctest1( conn, TEST_PATH1, "INQ" );
-    if ( status < 0 ) {
-        fprintf( stderr, "nctest1 of %s failed. status = %d\n",
-                 TEST_PATH1, status );
-    }
-    status = nctestold( conn, testPath );
-
-    if ( status < 0 ) {
-        fprintf( stderr, "nctestold of %s failed. status = %d\n",
-                 testPath, status );
-    }
-#endif
 
     status = nctest1( conn, testPath, NULL );
 
@@ -96,19 +69,6 @@ main( int argc, char **argv ) {
                  testPath, status );
     }
 
-#if 0
-    status = nctest2( conn, TEST_PATH1 );
-    if ( status < 0 ) {
-        fprintf( stderr, "nctest2 of %s failed. status = %d\n",
-                 TEST_PATH1, status );
-    }
-    status = nctest2( conn, TEST_PATH2 );
-
-    if ( status < 0 ) {
-        fprintf( stderr, "nctest2 of %s failed. status = %d\n",
-                 TEST_PATH2, status );
-    }
-#endif
     rcDisconnect( conn );
 
     exit( 0 );
@@ -600,22 +560,6 @@ nctest1( rcComm_t *conn, char *ncpath, char *grpPath ) {
         return status;
     }
 
-#if 0
-    status = dumpNcInqOutToNcFile( conn, ncid1, ncInqOut, NC_OUTFILE );
-
-    if ( status < 0 ) {
-        rodsLogError( LOG_ERROR, status,
-                      "dumpNcInqOutToNcFile error for %s", ncOpenInp.objPath );
-        return status;
-    }
-
-    status = regNcGlobalAttr( conn, ncOpenInp.objPath, ncInqOut, 0 );
-    if ( status < 0 ) {
-        rodsLogError( LOG_ERROR, status,
-                      "regNcGlobalAttr error for %s", ncOpenInp.objPath );
-        return status;
-    }
-#endif
     bzero( & ncRegGlobalAttrInp, sizeof( ncRegGlobalAttrInp ) );
     rstrcpy( ncRegGlobalAttrInp.objPath, ncpath, MAX_NAME_LEN );
     status = rcNcRegGlobalAttr( conn, &ncRegGlobalAttrInp );
@@ -993,18 +937,6 @@ nctest2( rcComm_t *conn, char *ncpath ) {
         return status;
     }
 
-#if 0
-    tempvarid1 = myInqVar( conn, ncid1, "temperature", &temptype1, &tempndim );
-    if ( tempvarid1 < 0 ) {
-        return status;
-    }
-
-    presvarid1 = myInqVar( conn, ncid1, "pressure", &prestype1, &presndim );
-    if ( presvarid1 < 0 ) {
-        return status;
-    }
-#endif
-
     /* pressure subset */
     bzero( &nccfGetVarInp, sizeof( nccfGetVarInp ) );
     nccfGetVarInp.ncid = ncid;
@@ -1131,28 +1063,6 @@ regNcGlobalAttr( rcComm_t *conn, char *objPath, ncInqOut_t *ncInqOut,
             modAVUMetadataInp.arg4 = tempStr;
         }
         status = rcModAVUMetadata( conn, &modAVUMetadataInp );
-#if 0
-        if ( status < 0 ) {
-            if ( status == CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME &&
-                    strcmp( modAVUMetadataInp.arg0, "add" ) == 0 ) {
-                modAVUMetadataInp.arg0 = "mod";
-                status = rcModAVUMetadata( conn, &modAVUMetadataInp );
-                modAVUMetadataInp.arg0 = "add";
-                if ( status < 0 ) {
-                    rodsLogError( LOG_ERROR, status,
-                                  "regNcGlobalAttr: rcModAVUMetadata err for %s, attr = %s",
-                                  objPath, modAVUMetadataInp.arg3 );
-                    return status;
-                }
-            }
-            else {
-                rodsLogError( LOG_ERROR, status,
-                              "regNcGlobalAttr: rcModAVUMetadata error for %s, attr = %s",
-                              objPath, modAVUMetadataInp.arg3 );
-                return status;
-            }
-        }
-#else
         if ( status < 0 ) {
             if ( status == CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME ) {
                 status = 0;
@@ -1164,7 +1074,6 @@ regNcGlobalAttr( rcComm_t *conn, char *objPath, ncInqOut_t *ncInqOut,
                 return status;
             }
         }
-#endif
     }
     return status;
 }

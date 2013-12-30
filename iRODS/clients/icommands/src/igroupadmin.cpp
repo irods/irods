@@ -246,6 +246,7 @@ setScrambledPw( char *inPass ) {
     char rand[] = "1gCBizHWbwIYyWLoysGzTe6SyzqFKMniZX05faZHWAwQKXf6Fs";
     static char buf2[MAX_PASSWORD_LEN + 10];
     strncpy( buf0, inPass, MAX_PASSWORD_LEN );
+    buf0[MAX_PASSWORD_LEN] = '\0';
     len = strlen( inPass );
     lcopy = MAX_PASSWORD_LEN - 10 - len;
     if ( lcopy > 15 ) {

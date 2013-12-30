@@ -648,7 +648,7 @@
 #define DBO_WRITABLE_BY_TOO_MANY                    -1717000
 #define DBO_WRITABLE_BY_NON_PRIVILEGED              -1718000
 
-// e-irods errors
+// new irods errors
 #define KEY_NOT_FOUND                        -1800000
 #define KEY_TYPE_MISMATCH                    -1801000
 #define CHILD_EXISTS                         -1802000

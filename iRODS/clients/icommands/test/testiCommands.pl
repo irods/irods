@@ -463,7 +463,7 @@ runCmd( "irm -f --empty $bunfile" );
 # should not be able to remove it because it is not empty
 runCmd( "ils $bunfile",  "", "LIST", "$bunfile" );
 runCmd( "irm -rvf $irodshome/icmdtestp" );
-runCmd( "irm -f --empty $bunfile" );
+runCmd( "irm --empty $bunfile" );
 system ( "rm -r $dir_w/testp" );
 system ( "rm -r $mysdir" );
 

@@ -207,7 +207,7 @@ download_and_compile_EPM () {
     RENCIEPM="epm42-renci.tar.gz"
     rm -rf epm
     rm -f $RENCIEPM
-    wget ftp://ftp.renci.org/pub/eirods/build/$RENCIEPM
+    wget ftp://ftp.renci.org/pub/irods/build/$RENCIEPM 2>&1
     tar -xf $RENCIEPM
 
     # configure
@@ -351,6 +351,12 @@ if [ "$1" == "clean" ] ; then
     rm -f irods-manual*.pdf
     rm -f examples/microservices/*.pdf
     rm -f libirods.a
+    echo "Cleaning Database plugins..."
+    cd plugins/database
+    set +e
+    make clean > /dev/null 2>&1
+    set -e
+    cd ../..
     echo "Cleaning Authentication plugins..."
     cd plugins/auth
     set +e
@@ -413,10 +419,10 @@ if [ "$1" == "docs" ] ; then
     echo ""
     echo "${text_green}${text_bold}Building Docs...${text_reset}"
     echo ""
-    
+
     set +e
     # generate manual in pdf format
-    echo "${text_green}${text_bold}Building E-iRODS Administration Manual${text_reset}"
+    echo "${text_green}${text_bold}Building iRODS Administration Manual${text_reset}"
     cd $BUILDDIR
     rst2pdf manual.rst -o manual.pdf
     if [ "$?" != "0" ] ; then
@@ -431,7 +437,7 @@ if [ "$1" == "docs" ] ; then
 
     set +e
     # generate doxygen for microservices
-    echo "${text_green}${text_bold}Building E-iRODS Doxygen Output${text_reset}"
+    echo "${text_green}${text_bold}Building iRODS Doxygen Output${text_reset}"
     cd $BUILDDIR/iRODS/
     doxygen ./config/doxygen-saved.cfg
     if [ "$?" != "0" ] ; then
@@ -531,7 +537,12 @@ fi
 cp $BUILDDIR/plugins/resources/unixfilesystem/libunixfilesystem.cpp /tmp/libunixfilesystem.cpp
 sed -e s,unix,example,g /tmp/libunixfilesystem.cpp > $BUILDDIR/examples/resources/libexamplefilesystem.cpp
 rm /tmp/libunixfilesystem.cpp
-
+. $BUILDDIR/packaging/astyleparams
+if [ "`which astyle`" != "" ] ; then
+    astyle $ASTYLE_PARAMETERS examples/resources/libexamplefilesystem.cpp
+else
+    echo "Skipping formatting --- Artistic Style (astyle) not available"
+fi
 
 ################################################################################
 # use error codes to determine dependencies
@@ -858,7 +869,7 @@ ROMAN=`python -c "import roman"`
 if [ "$?" != "0" ] ; then
     PYPREFLIGHT="$PYPREFLIGHT roman"
 else
-    ROMANLOCATION=`python -c "import roman; print roman.__file__"` # expecting ".../roman.pyc"
+    ROMANLOCATION=`python -c "import roman; print (roman.__file__)"` # expecting ".../roman.pyc"
     echo "Detected python module 'roman' [$ROMANLOCATION]"
 fi
 
@@ -915,7 +926,7 @@ if [ "$BUILDIRODS" == "1" ] ; then
             echo "Using existing copy"
         else
 #            http://www.digip.org/jansson/
-            wget ftp://ftp.renci.org/pub/eirods/external/$IRODS_BUILD_JANSSONVERSION.tar.gz
+            wget ftp://ftp.renci.org/pub/irods/external/$IRODS_BUILD_JANSSONVERSION.tar.gz 2>&1
         fi
         gunzip $IRODS_BUILD_JANSSONVERSION.tar.gz
         tar xf $IRODS_BUILD_JANSSONVERSION.tar
@@ -941,7 +952,7 @@ if [ "$BUILDIRODS" == "1" ] ; then
             echo "Using existing copy"
         else
 #            wget http://sourceforge.net/projects/cjson/files/cJSONFiles.zip/download
-            wget ftp://ftp.renci.org/pub/eirods/external/$IRODS_BUILD_CJSONVERSION.zip
+            wget ftp://ftp.renci.org/pub/irods/external/$IRODS_BUILD_CJSONVERSION.zip 2>&1
         fi
         echo "${text_green}${text_bold}Unzipping [$IRODS_BUILD_CJSONVERSION]${text_reset}"
         unzip -o $IRODS_BUILD_CJSONVERSION.zip
@@ -959,7 +970,7 @@ if [ "$BUILDIRODS" == "1" ] ; then
             echo "Using existing copy"
         else
 #            wget http://www.cmake.org/files/v2.8/$IRODS_BUILD_CMAKEVERSION.tar.gz
-            wget ftp://ftp.renci.org/pub/eirods/external/$IRODS_BUILD_CMAKEVERSION.tar.gz
+            wget ftp://ftp.renci.org/pub/irods/external/$IRODS_BUILD_CMAKEVERSION.tar.gz 2>&1
         fi
 #        gunzip $IRODS_BUILD_CMAKEVERSION.tar.gz
         tar xf $IRODS_BUILD_CMAKEVERSION.tar.gz # this version wasn't zipped
@@ -985,7 +996,7 @@ if [ "$BUILDIRODS" == "1" ] ; then
             echo "Using existing copy"
         else
 #            wget -O $IRODS_BUILD_LIBARCHIVEVERSION.tar.gz https://github.com/libarchive/libarchive/archive/v$IRODS_BUILD_LIBARCHIVEVERSIONNUMBER.tar.gz
-            wget ftp://ftp.renci.org/pub/eirods/external/$IRODS_BUILD_LIBARCHIVEVERSION.tar.gz
+            wget ftp://ftp.renci.org/pub/irods/external/$IRODS_BUILD_LIBARCHIVEVERSION.tar.gz 2>&1
         fi
         gunzip $IRODS_BUILD_LIBARCHIVEVERSION.tar.gz
         tar xf $IRODS_BUILD_LIBARCHIVEVERSION.tar
@@ -1006,7 +1017,7 @@ if [ "$BUILDIRODS" == "1" ] ; then
     fi
 
     # build a copy of boost
-    IRODS_BUILD_BOOSTVERSION="boost_1_55_0"
+    IRODS_BUILD_BOOSTVERSION="boost_1_55_0z"
     cd $BUILDDIR/external/
     if [ -d "$IRODS_BUILD_BOOSTVERSION" ] ; then
         echo "${text_green}${text_bold}Detected copy of [$IRODS_BUILD_BOOSTVERSION]${text_reset}"
@@ -1015,8 +1026,8 @@ if [ "$BUILDIRODS" == "1" ] ; then
         if [ -e "$IRODS_BUILD_BOOSTVERSION.tar.gz" ] ; then
             echo "Using existing copy"
         else
-#            wget -O $IRODS_BUILD_BOOSTVERSION.tar.gz http://sourceforge.net/projects/boost/files/boost/1.55.0/$IRODS_BUILD_BOOSTVERSION.tar.gz/download
-            wget ftp://ftp.renci.org/pub/eirods/external/$IRODS_BUILD_BOOSTVERSION.tar.gz
+#            wget -O $IRODS_BUILD_BOOSTVERSION.tar.gz http://sourceforge.net/projects/boost/files/boost/1.55.0z/$IRODS_BUILD_BOOSTVERSION.tar.gz/download
+            wget ftp://ftp.renci.org/pub/irods/external/$IRODS_BUILD_BOOSTVERSION.tar.gz 2>&1
         fi
         gunzip $IRODS_BUILD_BOOSTVERSION.tar.gz
         tar xf $IRODS_BUILD_BOOSTVERSION.tar
@@ -1025,7 +1036,7 @@ if [ "$BUILDIRODS" == "1" ] ; then
     cd $BUILDDIR/external/$IRODS_BUILD_BOOSTVERSION
     sed -i "s/defined(__GLIBC_HAVE_LONG_LONG)/(defined(__GLIBC_HAVE_LONG_LONG) || (defined(__GLIBC__) \&\& ((__GLIBC__ > 2) || ((__GLIBC__ == 2) \&\& (__GLIBC_MINOR__ >= 17)))))/" ./boost/cstdint.hpp
     ./bootstrap.sh --with-libraries=filesystem,system,thread,regex
-    ./bjam link=static threading=multi cxxflags="-fPIC" -j$CPUCOUNT
+    ./bjam link=static threading=multi cxxflags="-fPIC -DBOOST_SYSTEM_NO_DEPRECATED" -j$CPUCOUNT
 
 fi
 
@@ -1041,8 +1052,18 @@ TMPCONFIGFILE=/tmp/$USER/irods.config.epm
 mkdir -p $(dirname $TMPCONFIGFILE)
 
 
+# =-=-=-=-=-=-=-
+# generate canonical version information for the code from top level VERSION file
+cd $BUILDDIR
+TEMPLATE_RODS_RELEASE_VERSION=`grep "\<IRODSVERSION\>" VERSION | awk -F= '{print $2}'`
+TEMPLATE_RODS_RELEASE_DATE=`date +"%b %Y"`
+sed -e "s,TEMPLATE_RODS_RELEASE_VERSION,$TEMPLATE_RODS_RELEASE_VERSION," ./iRODS/lib/core/include/rodsVersion.hpp.template > /tmp/rodsVersion.tmp
+mv /tmp/rodsVersion.tmp ./iRODS/lib/core/include/rodsVersion.hpp
+sed -e "s,TEMPLATE_RODS_RELEASE_DATE,$TEMPLATE_RODS_RELEASE_DATE," ./iRODS/lib/core/include/rodsVersion.hpp > /tmp/rodsVersion.tmp
+mv /tmp/rodsVersion.tmp ./iRODS/lib/core/include/rodsVersion.hpp
 
 # set up variables for icat configuration
+cd $BUILDDIR/iRODS
 if [ $1 == "icat" ] ; then
     SERVER_TYPE="ICAT"
     DB_TYPE=$2
@@ -1235,6 +1256,7 @@ if [ "$BUILDIRODS" == "1" ] ; then
     ###########################################
     set +e
     $MAKEJCMD
+    $MAKEJCMD
     set -e
     $MAKEJCMD
     if [ "$?" != "0" ] ; then
@@ -1336,7 +1358,7 @@ if [ "$BUILDIRODS" == "1" ] ; then
         GCOVFILELIST="gcovfilelist.txt"
         GCOVFILENAME="gcovfiles.tgz"
         cd $BUILDDIR
-        find ./plugins ./iRODS -name "*.h" -o -name "*.c" -o -name "*.cpp" -o -name "*.gcno" > $GCOVFILELIST
+        find ./plugins ./iRODS -name "*.h" -o -name "*.c" -o -name "*.hpp" -o -name "*.cpp" -o -name "*.gcno" > $GCOVFILELIST
         tar czf $GCOVFILENAME -T $GCOVFILELIST
         ls -al $GCOVFILELIST
         ls -al $GCOVFILENAME

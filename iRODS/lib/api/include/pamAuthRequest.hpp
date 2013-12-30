@@ -15,9 +15,7 @@
 #include "initServer.hpp"
 #include "icatDefines.hpp"
 
-#ifdef  __cplusplus
 extern "C" {
-#endif
 
     typedef struct {
         char *pamUser;
@@ -52,8 +50,6 @@ extern "C" {
     rcPamAuthRequest( rcComm_t *conn, pamAuthRequestInp_t *pamAuthRequestInp,
                       pamAuthRequestOut_t **pamAuthRequestOut );
 
-#ifdef  __cplusplus
 }
-#endif
 
 #endif	/* PAM_AUTH_REQUEST_H */

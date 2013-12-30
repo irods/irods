@@ -75,7 +75,7 @@ int _rsSubStructFileLseek( rsComm_t*                _comm,
         new irods::structured_object(
         ) );
     struct_obj->comm( _comm );
-    struct_obj->resc_hier( irods::LOCAL_USE_ONLY_RESOURCE );
+    struct_obj->resc_hier( _lseek_inp->resc_hier );
     struct_obj->file_descriptor( _lseek_inp->fd );
 
     // =-=-=-=-=-=-=-
