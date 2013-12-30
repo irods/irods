@@ -515,7 +515,7 @@ irods::error _updateChildParent(
     const std::string&          _new_child,
     const std::string&          _parent ) {
 
-    irods::error result;
+    irods::error result = SUCCESS();
     char resc_id[MAX_NAME_LEN];
     char myTime[50];
     irods::sql_logger logger( "_updateChildParent", logSQL );
@@ -14649,8 +14649,6 @@ checkLevel:
         _result->totalRowCount = 0;
 
         currentMaxColSize = 0;
-
-        rodsLog( LOG_NOTICE, "XXXX - spec query sql [%s]", _spec_query_inp->sql );
 
 #ifdef ADDR_64BITS
         if ( debug ) {
