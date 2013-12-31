@@ -49,6 +49,6 @@ ${DEPS}: ${SRCS} ${HEADERS}
 	${GCC} ${INC} -MM $< -MT $(patsubst %.cpp, ${OBJDIR}/%.o, $<) -MF $@
 
 ${OBJDIR}/%.o: %.cpp
-	${GCC} ${INC} -DADDR_64BITS -D${OS_platform} -fPIC -c -g -o $@ $<
+	${GCC} ${INC} -DADDR_64BITS -DNEW_ODBC -D${OS_platform} -fPIC -c -g -o $@ $<
 
 include ${DEPFILE}

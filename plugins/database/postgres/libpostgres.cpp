@@ -10703,7 +10703,6 @@ checkLevel:
         if ( _name == NULL || *_name == '\0' ) {
             return ERROR( CAT_INVALID_ARGUMENT, "invalid name" );
         }
-
         if ( _option != 2 ) {
             if ( _attribute == NULL || *_attribute == '\0' ) {
                 return ERROR( CAT_INVALID_ARGUMENT, "invalid attribute" );
@@ -10861,7 +10860,6 @@ checkLevel:
 
 
         snprintf( objIdStr, MAX_NAME_LEN, "%lld", objId );
-
         if ( _option == 2 ) {
             cllBindVars[cllBindVarCount++] = objIdStr;
             cllBindVars[cllBindVarCount++] = _attribute; /* attribute is really id */

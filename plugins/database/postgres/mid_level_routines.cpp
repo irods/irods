@@ -26,8 +26,8 @@
 /* Size of the R_OBJT_AUDIT comment field;must match table column definition */
 #define AUDIT_COMMENT_MAX_SIZE       1000
 
-int logSQL_CML = 0;
-int auditEnabled = 0;  /* Set this to 2 and rebuild to enable iRODS
+extern int logSQL_CML;
+extern int auditEnabled;  /* Set this to 2 and rebuild to enable iRODS
                         auditing (non-zero means auditing but 1 will
                         allow cmlDebug to modify it, so 2 means
                         permanently enabled).  We plan to change this
@@ -147,7 +147,6 @@ int cmlClose( icatSessionStruct *icss ) {
 int cmlExecuteNoAnswerSql( const char *sql,
                            icatSessionStruct *icss ) {
     int i;
-
     i = cllExecSqlNoResult( icss, sql );
     if ( i ) {
         if ( i <= CAT_ENV_ERR ) {

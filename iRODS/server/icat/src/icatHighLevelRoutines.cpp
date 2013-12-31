@@ -2649,12 +2649,6 @@ int chlSetAVUMetadata(
         irods::log( PASS( ret ) );
         return ret.code();
     }
-    if ( !_type ) {
-        rodsLog( LOG_NOTICE, "XXXX - chlSetAVUMetadata :: type is null" );
-    }
-    else {
-        rodsLog( LOG_NOTICE, "XXXX - chlSetAVUMetadata :: type is not null [%s]", _type );
-    }
 
     // =-=-=-=-=-=-=-
     // resolve a plugin for that object
