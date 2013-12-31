@@ -385,7 +385,7 @@ vpath %cpp %c 	$(svrCoreSrcDir) $(svrDriversSrcDir) $(svrApiSrcDir) \
 
 # Build everything
 all:	server
-	@true
+#	@true
 
 
 
@@ -393,13 +393,13 @@ all:	server
 
 # Build the servers
 servers: server
-	@true
+#	@true
 
 bin:	server
-	@true
+#	@true
 
 server:	config print_cflags print_ldflags $(OBJS) $(SERVER_BINS)
-	@true
+#	@true
 
 
 
@@ -407,7 +407,7 @@ server:	config print_cflags print_ldflags $(OBJS) $(SERVER_BINS)
 
 # Server configuration
 config:	$(CONFIG)
-	@true
+#	@true
 
 $(svrConfigDir)/server.config: $(svrConfigDir)/server.config.in
 	@echo "Warning, using default server.config file"
@@ -442,13 +442,13 @@ print_ldflags:
 
 # Tests
 tests:	test
-	@true
+#	@true
 
 retest:	test
-	@true
+#	@true
 
 test:	print_cflags print_ldflags $(TEST_OBJS) $(TEST_BINS)
-	@true
+#	@true
 
 
 
@@ -573,11 +573,11 @@ $(svrTestBinDir)/reTest: $(svrTestObjDir)/reTest.o $(OBJS) $(BOOST_LIBS) $(BOOST
 	@$(LDR) -o $@ $^ $(LDFLAGS) $(BOOST_LIBS) -lrt
 
 # cll and chl
-$(svrTestBinDir)/test_cll: $(svrTestObjDir)/test_cll.o $(SVR_ICAT_OBJS) $(LIBRARY) $(BOOST_LIBS) 
+$(svrTestBinDir)/test_cll: $(svrTestObjDir)/test_cll.o $(SVR_ICAT_OBJS) $(LIBRARY) $(BOOST_LIBS) $(DB_IFACE_OBJS)
 	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $^ $(LIBRARY) $(LDFLAGS) $(BOOST_LIBS) -lrt $(DB_PLUGIN_OBJ_WITH_NO_RE) $(DB_IFACE_OBJS)
+	@$(LDR) -o $@ $^ $(LIBRARY) $(LDFLAGS) $(BOOST_LIBS) -lrt $(DB_PLUGIN_OBJ_WITH_NO_RE) 
 
-$(svrTestBinDir)/test_chl: db_plugin_with_no_re $(svrTestObjDir)/test_chl.o $(SVR_ICAT_OBJS) $(LIBRARY) $(BOOST_LIBS)
+$(svrTestBinDir)/test_chl: db_plugin_with_no_re $(svrTestObjDir)/test_chl.o $(SVR_ICAT_OBJS) $(LIBRARY) $(BOOST_LIBS) $(DB_IFACE_OBJS)
 	@echo "Link server test `basename $@`..."
 	@$(LDR) -o $@ $(svrTestObjDir)/test_chl.o $(LIBRARY) $(SVR_ICAT_OBJS) $(DB_PLUGIN_OBJ_WITH_NO_RE) $(DB_IFACE_OBJS) $(BOOST_LIBS) $(LDFLAGS) -lrt
 
