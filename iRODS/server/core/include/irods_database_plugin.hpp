@@ -287,8 +287,8 @@ namespace irods {
             T10 _t10,
             T11 _t11 ) {
             plugin_context ctx( properties_, _obj, "" );
-            return operations_[ _op ].call< T1, T2, T3, T4, T5, T6, T7, T8, T9, T10 >(
-                       ctx, _t1, _t2, _t3, _t4, _t5, _t6, _t7, _t8, _t9, _t10 );
+            return operations_[ _op ].call< T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11 >(
+                       ctx, _t1, _t2, _t3, _t4, _t5, _t6, _t7, _t8, _t9, _t10, _t11 );
 
         } // call - T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11
 
