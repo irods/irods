@@ -430,9 +430,9 @@ f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/timeTest.pl ./
 %if ICAT
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_chl ./iRODS/server/test/bin/test_chl
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_cll ./iRODS/server/test/bin/test_cll
-f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_genq ./iRODS/server/test/bin/test_genq
-f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_genu ./iRODS/server/test/bin/test_genu
-f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_rda ./iRODS/server/test/bin/test_rda
+#f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_genq ./iRODS/server/test/bin/test_genq
+#f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_genu ./iRODS/server/test/bin/test_genu
+#f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_rda ./iRODS/server/test/bin/test_rda
 %endif
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/dbo3.ir ./iRODS/server/test/dbo3.ir
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/s3 -
