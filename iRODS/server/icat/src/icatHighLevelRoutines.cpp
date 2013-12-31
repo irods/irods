@@ -284,9 +284,6 @@ int chlGetLocalZone(
               irods::DATABASE_OP_GET_LOCAL_ZONE,
               ptr,
               &_zone );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -344,9 +341,6 @@ int chlCheckAndGetObjectID(
               _type,
               _name,
               _access );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -398,9 +392,6 @@ int chlUpdateRescObjCount(
               ptr,
               &_resc,
               _delta );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -465,9 +456,6 @@ int chlModDataObjMeta(
               _comm,
               _data_obj_info,
               _reg_param );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -521,9 +509,6 @@ int chlRegDataObj(
               ptr,
               _comm,
               _data_obj_info );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -586,9 +571,6 @@ int chlRegReplica(
               _src_data_obj_info,
               _dst_data_obj_info,
               _cond_input );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -646,9 +628,6 @@ int chlUnregDataObj(
               _comm,
               _data_obj_info,
               _cond_input );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -703,9 +682,6 @@ int chlRegRuleExec(
               ptr,
               _comm,
               _re_sub_inp );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -765,9 +741,6 @@ int chlModRuleExec(
               _comm,
               _re_id,
               _reg_param );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -819,10 +792,6 @@ int chlDelRuleExec(
               ptr,
               _comm,
               _re_id );
-
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -901,9 +870,6 @@ int chlAddChildResc(
               ptr,
               _comm,
               _resc_info );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -976,9 +942,6 @@ int chlRegResc(
               ptr,
               _comm,
               _resc_info );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -1030,9 +993,6 @@ int chlDelChildResc(
               ptr,
               _comm,
               _resc_info );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -1087,9 +1047,6 @@ int chlDelResc(
               _comm,
               _resc_info,
               _dry_run );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -1147,9 +1104,6 @@ int chlRollback(
               irods::DATABASE_OP_ROLLBACK,
               ptr,
               _comm );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -1202,9 +1156,6 @@ int chlCommit(
               irods::DATABASE_OP_COMMIT,
               ptr,
               _comm );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -1256,9 +1207,6 @@ int chlDelUserRE(
               ptr,
               _comm,
               _user_info );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -1313,9 +1261,6 @@ int chlRegCollByAdmin(
               ptr,
               _comm,
               _coll_info );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -1373,9 +1318,6 @@ int chlRegColl(
               ptr,
               _comm,
               _coll_info );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -1433,9 +1375,6 @@ int chlModColl(
               ptr,
               _comm,
               _coll_info );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -1496,9 +1435,6 @@ int chlRegZone(
               _zone_type,
               _zone_conn_info,
               _zone_comment );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -1556,9 +1492,6 @@ int chlModZone(
               _zone_name,
               _option,
               _option_value );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -1613,9 +1546,6 @@ int chlRenameColl(
               _comm,
               _old_coll,
               _new_coll );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -1673,9 +1603,6 @@ int chlModZoneCollAcl(
               _access_level,
               _user_name,
               _path_name );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -1730,9 +1657,6 @@ int chlRenameLocalZone(
               _comm,
               _old_zone,
               _new_zone );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -1783,9 +1707,6 @@ int chlDelZone(
               ptr,
               _comm,
               _zone_name );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -1882,9 +1803,6 @@ int chlSimpleQuery(
               _control,
               _out_buf,
               _max_out_buf );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -1937,9 +1855,6 @@ int chlDelCollByAdmin(
               ptr,
               _comm,
               _coll_info );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -1991,9 +1906,6 @@ int chlDelColl(
               ptr,
               _comm,
               _coll_info );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -2070,9 +1982,6 @@ int chlCheckAuth(
               _user_name,
               _user_priv_level,
               _client_priv_level );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -2136,9 +2045,6 @@ int chlMakeTempPw(
               _comm,
               _pw_value_to_hash,
               _other_user );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -2192,9 +2098,6 @@ chlMakeLimitedPw(
               _comm,
               _ttl,
               _pw_value_to_hash );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -2261,9 +2164,6 @@ int chlUpdateIrodsPamPassword(
               _ttl,
               _test_time,
               _irods_password );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -2322,9 +2222,6 @@ int chlModUser(
               _user_name,
               _option,
               _new_value );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -2386,9 +2283,6 @@ int chlModGroup(
               _option,
               _user_name,
               _user_zone );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -2446,9 +2340,6 @@ int chlModResc(
               _resc_name,
               _option,
               _option_value );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -2509,9 +2400,6 @@ int chlModRescDataPaths(
               _old_path,
               _new_path,
               _user_name );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -2567,9 +2455,6 @@ int chlModRescFreeSpace(
               _comm,
               _resc_name,
               _update_value );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -2621,9 +2506,6 @@ int chlRegUserRE(
               ptr,
               _comm,
               _user_info );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -2688,9 +2570,6 @@ int chlSetAVUMetadata(
               _attribute,
               _new_value,
               _new_unit );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -2762,9 +2641,6 @@ int chlAddAVUMetadataWild(
               _attribute,
               _value,
               _units );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -2831,9 +2707,6 @@ int chlAddAVUMetadata(
               _attribute,
               _value,
               _units );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -2905,9 +2778,6 @@ int chlModAVUMetadata(
               _arg1,
               _arg2,
               _arg3 );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -2978,9 +2848,6 @@ int chlDeleteAVUMetadata(
               _value,
               _units,
               _nocommit );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -3041,9 +2908,6 @@ int chlCopyAVUMetadata(
               _type2,
               _name1,
               _name2 );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -3105,9 +2969,6 @@ int chlModAccessControlResc(
               _user_name,
               _zone,
               _resc_name );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -3173,9 +3034,6 @@ int chlModAccessControl(
               _user_name,
               _zone,
               _path_name );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -3230,9 +3088,6 @@ int chlRenameObject(
               _comm,
               _obj_id,
               _new_name );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -3288,9 +3143,6 @@ int chlMoveObject(
               _comm,
               _obj_id,
               _target_coll_id );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -3357,9 +3209,6 @@ int chlRegToken(
               _value2,
               _value3,
               _comment );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -3415,9 +3264,6 @@ int chlDelToken(
               _comm,
               _name_space,
               _name );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -3495,9 +3341,6 @@ int chlRegServerLoad(
               _disk_space,
               _net_input,
               _net_output );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -3552,9 +3395,6 @@ int chlPurgeServerLoad(
               ptr,
               _comm,
               _seconds_ago );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -3611,9 +3451,6 @@ int chlRegServerLoadDigest(
               _comm,
               _resc_name,
               _load_factor );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -3668,9 +3505,6 @@ int chlPurgeServerLoadDigest(
               ptr,
               _comm,
               _seconds_ago );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -3717,9 +3551,6 @@ int chlCalcUsageAndQuota(
               irods::DATABASE_OP_CALC_USAGE_AND_QUOTA,
               ptr,
               _comm );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -3778,9 +3609,6 @@ int chlSetQuota(
               _name,
               _resc_name,
               _limit );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -3839,9 +3667,6 @@ int chlCheckQuota(
               _resc_name,
               _user_quota,
               _quota_status );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -3889,9 +3714,6 @@ chlDelUnusedAVUs(
               irods::DATABASE_OP_DEL_UNUSED_AVUS,
               ptr,
               _comm );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -3970,9 +3792,6 @@ int chlInsRuleTable(
               _rule_recovery,
               _rule_id_str,
               _my_time );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -4038,9 +3857,6 @@ int chlInsDvmTable(
               _action,
               _var_2_cmap,
               _my_time );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -4103,9 +3919,6 @@ int chlInsFnmTable(
               _func_name,
               _func_2_cmap,
               _my_time );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -4186,9 +3999,6 @@ int chlInsMsrvcTable(
               _msrvc_typeName,
               _msrvc_status,
               _my_time );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -4245,9 +4055,6 @@ int chlVersionRuleBase(
               _comm,
               _base_name,
               _my_time );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -4305,9 +4112,6 @@ int chlVersionDvmBase(
               _comm,
               _base_name,
               _my_time );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -4365,9 +4169,6 @@ int chlVersionFnmBase(
               _comm,
               _base_name,
               _my_time );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -4420,9 +4221,6 @@ int chlAddSpecificQuery(
               _comm,
               _sql,
               _alias );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -4472,9 +4270,6 @@ int chlDelSpecificQuery(
               ptr,
               _comm,
               _sql_or_alias );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -4532,9 +4327,6 @@ int chlSpecificQuery(
               ptr,
               &_spec_query_inp,
               _result );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -4591,9 +4383,6 @@ int chlSubstituteResourceHierarchies(
               _comm,
               _old_hier,
               _new_hier );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -4646,9 +4435,6 @@ int chlGetDistinctDataObjCountOnResource(
               ptr,
               _resc_name.c_str(),
               &_count );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -4708,9 +4494,6 @@ int chlGetDistinctDataObjsMissingFromChildGivenParent(
               &_child,
               _limit,
               &_results );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -4765,9 +4548,6 @@ int chlGetHierarchyForResc(
               &_resc_name,
               &_zone_name,
               &_hierarchy );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -4832,9 +4612,6 @@ int chlModTicket(
               _arg3,
               _arg4,
               _arg5 );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -4884,9 +4661,6 @@ int chlGenQuery(
               ptr,
               &_gen_query_inp,
               _result );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -4945,9 +4719,6 @@ int chlGenQueryAccessControlSetup(
               _host,
               _priv,
               _control_flag );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -4997,9 +4768,6 @@ int chlGenQueryTicketSetup(
               ptr,
               _ticket,
               _client_addr );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
@@ -5047,9 +4815,6 @@ int chlGeneralUpdate(
               irods::DATABASE_OP_GENERAL_UPDATE,
               ptr,
               &_update_inp );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-    }
 
     return ret.code();
 
