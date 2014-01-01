@@ -1452,34 +1452,6 @@ rodsLong_t checkAndGetObjectId(
         }
     }
 
-#ifdef RESC_GROUP
-    if ( itype == 5 ) {
-        if ( rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-            return( CAT_INSUFFICIENT_PRIVILEGE_LEVEL );
-        }
-
-        status = getLocalZone();
-        if ( status != 0 ) {
-            return( status );
-        }
-
-        objId = 0;
-        if ( logSQL != 0 ) {
-            rodsLog( LOG_SQL, "checkAndGetObjectId S Q L 5" );
-        }
-        status = cmlGetIntegerValueFromSql(
-                     "select distinct resc_group_id from R_RESC_GROUP where resc_group_name=?",
-                     &objId, name, 0, 0, 0, 0, &icss );
-        if ( status != 0 ) {
-            if ( status == CAT_NO_ROWS_FOUND ) {
-                return( CAT_INVALID_RESOURCE );
-            }
-            _rollback( "checkAndGetObjectId" );
-            return( status );
-        }
-    }
-#endif
-
     return( objId );
 }
 
@@ -8581,7 +8553,7 @@ checkLevel:
         // =-=-=-=-=-=-=-
         // check the params
         if ( !_comm       ||
-                !_resc_name ||
+                !_resc_name  ||
                 !_option     ||
                 !_option_value ) {
             return ERROR(
@@ -8602,7 +8574,7 @@ checkLevel:
         // extract the icss property
 //        icatSessionStruct icss;
 //        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
-        int status, OK;
+        int status = 0, OK = 0;
         char myTime[50];
         char rescId[MAX_NAME_LEN];
         char rescPath[MAX_NAME_LEN] = "";
@@ -8639,7 +8611,7 @@ checkLevel:
 
         std::string zone;
         ret = getLocalZone( _ctx.prop_map(), &icss, zone );
-        if ( status != 0 ) {
+        if ( !ret.ok() ) {
             return PASS( ret );
         }
 
