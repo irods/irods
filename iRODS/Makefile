@@ -376,7 +376,7 @@ check:	test
 tests:	test
 	@true
 
-test:
+test: libs
 	@echo "Tests"
 	@echo "------------------------------------------------------------------------"
 	@$(MAKE) -C server test
