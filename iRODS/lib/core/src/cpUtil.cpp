@@ -144,9 +144,6 @@ cpFileUtil( rcComm_t *conn, char *srcPath, char *targPath, rodsLong_t srcSize,
 
     rstrcpy( dataObjCopyInp->destDataObjInp.objPath, targPath, MAX_NAME_LEN );
     rstrcpy( dataObjCopyInp->srcDataObjInp.objPath, srcPath, MAX_NAME_LEN );
-#if 0
-    dataObjCopyInp->srcDataObjInp.dataSize = srcSize;
-#endif
     dataObjCopyInp->srcDataObjInp.dataSize = -1;
 
     status = rcDataObjCopy( conn, dataObjCopyInp );
@@ -292,11 +289,7 @@ cpCollUtil( rcComm_t *conn, char *srcColl, char *targColl,
             dataObjCopyInp_t *dataObjCopyInp, rodsRestart_t *rodsRestart ) {
     int status = 0;
     int savedStatus = 0;
-#if 0
-    int collLen;
-#else
     char parPath[MAX_NAME_LEN], childPath[MAX_NAME_LEN];
-#endif
     collHandle_t collHandle;
     collEnt_t collEnt;
     char srcChildPath[MAX_NAME_LEN], targChildPath[MAX_NAME_LEN];
@@ -315,34 +308,19 @@ cpCollUtil( rcComm_t *conn, char *srcColl, char *targColl,
         return ( USER_INPUT_OPTION_ERR );
     }
 
-#if 0
-    status = rclOpenCollection( conn, srcColl, RECUR_QUERY_FG,
-                                &collHandle );
-#else
     status = rclOpenCollection( conn, srcColl, 0, &collHandle );
-#endif
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
                  "cpCollUtil: rclOpenCollection of %s error. status = %d",
                  srcColl, status );
         return status;
     }
-#if 0
-    collLen = strlen( srcColl );
-    collLen = getOpenedCollLen( &collHandle );
-#endif
     while ( ( status = rclReadCollection( conn, &collHandle, &collEnt ) ) >= 0 ) {
         if ( collEnt.objType == DATA_OBJ_T ) {
             snprintf( srcChildPath, MAX_NAME_LEN, "%s/%s",
                       collEnt.collName, collEnt.dataName );
-#if 0
-            snprintf( targChildPath, MAX_NAME_LEN, "%s%s/%s",
-                      targColl, collEnt.collName + collLen,
-                      collEnt.dataName );
-#else
             snprintf( targChildPath, MAX_NAME_LEN, "%s/%s",
                       targColl, collEnt.dataName );
-#endif
 
             status = chkStateForResume( conn, rodsRestart, targChildPath,
                                         rodsArgs, DATA_OBJ_T, &dataObjCopyInp->destDataObjInp.condInput,
@@ -358,14 +336,11 @@ cpCollUtil( rcComm_t *conn, char *srcColl, char *targColl,
 
             status = cpFileUtil( conn, srcChildPath, targChildPath,
                                  collEnt.dataSize, myRodsEnv, rodsArgs, dataObjCopyInp );
-#if 0
-            -1, myRodsEnv, rodsArgs, dataObjCopyInp );
-#endif
 
             if ( status < 0 ) {
-            rodsLogError( LOG_ERROR, status,
-                          "getCollUtil: getDataObjUtil failed for %s. status = %d",
-                          srcChildPath, status );
+                rodsLogError( LOG_ERROR, status,
+                              "getCollUtil: getDataObjUtil failed for %s. status = %d",
+                              srcChildPath, status );
                 if ( rodsRestart->fd > 0 ) {
                     break;
                 }
@@ -394,19 +369,19 @@ cpCollUtil( rcComm_t *conn, char *srcColl, char *targColl,
                 fprintf( stdout, "C- %s:\n", targChildPath );
             }
 
-                /* the child is a spec coll. need to drill down */
-                childDataObjCopyInp = *dataObjCopyInp;
-                if ( collEnt.specColl.collClass != NO_SPEC_COLL )
-                    childDataObjCopyInp.srcDataObjInp.specColl =
-                        &collEnt.specColl;
-                status = cpCollUtil( conn, collEnt.collName,
-                                     targChildPath, myRodsEnv, rodsArgs, &childDataObjCopyInp,
-                                     rodsRestart );
+            /* the child is a spec coll. need to drill down */
+            childDataObjCopyInp = *dataObjCopyInp;
+            if ( collEnt.specColl.collClass != NO_SPEC_COLL )
+                childDataObjCopyInp.srcDataObjInp.specColl =
+                    &collEnt.specColl;
+            status = cpCollUtil( conn, collEnt.collName,
+                                 targChildPath, myRodsEnv, rodsArgs, &childDataObjCopyInp,
+                                 rodsRestart );
 
-                if ( status < 0 && status != CAT_NO_ROWS_FOUND &&
-                        status != SYS_SPEC_COLL_OBJ_NOT_EXIST ) {
-                    savedStatus = status;
-                }
+            if ( status < 0 && status != CAT_NO_ROWS_FOUND &&
+                    status != SYS_SPEC_COLL_OBJ_NOT_EXIST ) {
+                savedStatus = status;
+            }
         }
     }
     rclCloseCollection( &collHandle );

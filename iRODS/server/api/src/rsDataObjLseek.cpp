@@ -70,10 +70,10 @@ rsDataObjLseek( rsComm_t *rsComm, openedDataObjInp_t *dataObjLseekInp,
         subStructFileLseekInp.fd = L1desc[l1descInx].l3descInx;
         subStructFileLseekInp.offset = dataObjLseekInp->offset;
         subStructFileLseekInp.whence = dataObjLseekInp->whence;
-        rstrcpy( subStructFileLseekInp.addr.hostAddr, 
+        rstrcpy( subStructFileLseekInp.addr.hostAddr,
                  location.c_str(),
                  NAME_LEN );
-        rstrcpy( subStructFileLseekInp.resc_hier, 
+        rstrcpy( subStructFileLseekInp.resc_hier,
                  dataObjInfo->rescHier,
                  NAME_LEN );
         status = rsSubStructFileLseek( rsComm, &subStructFileLseekInp, dataObjLseekOut );
@@ -104,11 +104,11 @@ _l3Lseek( rsComm_t *rsComm, int rescTypeInx, int l3descInx,
     fileLseekOut_t *fileLseekOut = NULL;
     int status;
 
-        memset( &fileLseekInp, 0, sizeof( fileLseekInp ) );
-        fileLseekInp.fileInx = l3descInx;
-        fileLseekInp.offset = offset;
-        fileLseekInp.whence = whence;
-        status = rsFileLseek( rsComm, &fileLseekInp, &fileLseekOut );
+    memset( &fileLseekInp, 0, sizeof( fileLseekInp ) );
+    fileLseekInp.fileInx = l3descInx;
+    fileLseekInp.offset = offset;
+    fileLseekInp.whence = whence;
+    status = rsFileLseek( rsComm, &fileLseekInp, &fileLseekOut );
     if ( status < 0 ) {
         return ( status );
     }

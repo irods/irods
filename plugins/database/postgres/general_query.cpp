@@ -35,15 +35,13 @@ non-privileged users */
 #include "extendedICAT.hpp"
 #endif
 
-int logSQLGenQuery = 0;
+extern int logSQLGenQuery;
 
 void icatGeneralQuerySetup();
 int insertWhere( char *condition, int option );
 
 /* use a column size of at least this many characters: */
 #define MINIMUM_COL_SIZE 50
-
-extern icatSessionStruct *chlGetRcs();
 
 #ifdef EXTENDED_ICAT
 #define MAX_LINKS_TABLES_OR_COLUMNS 500+EXTENDED_TABLES_AND_COLUMNS
@@ -1668,9 +1666,12 @@ generateSpecialQuery( genQueryInp_t genQueryInp, char *resultingSQL ) {
             parseUserName( genQueryInp.sqlCondInp.value[i], userName,
                            userZone );
             if ( userZone[0] == '\0' ) {
-                char *zoneName;
-                zoneName = chlGetLocalZone();
-                strncpy( userZone, zoneName, sizeof userZone );
+                std::string zoneName;
+                if ( !chlGetLocalZone( zoneName ) ) {
+
+                }
+
+                strncpy( userZone, zoneName.c_str(), sizeof userZone );
                 rodsLog( LOG_ERROR, "userZone1=:%s:\n", userZone );
             }
             rodsLog( LOG_DEBUG, "spQuery(1) userZone2=:%s:\n", userZone );
@@ -1996,7 +1997,8 @@ checkCondInputAccess( genQueryInp_t genQueryInp, int statementNum,
     int i, nCols;
     int userIx = -1, zoneIx = -1, accessIx = -1, dataIx = -1, collIx = -1;
     int status;
-    char *zoneName;
+    std::string zoneName;
+
     static char prevDataId[LONG_NAME_LEN];
     static char prevUser[LONG_NAME_LEN];
     static char prevAccess[LONG_NAME_LEN];
@@ -2075,7 +2077,8 @@ checkCondInputAccess( genQueryInp_t genQueryInp, int statementNum,
         prevStatus = 0;
 
         if ( strlen( genQueryInp.condInput.value[zoneIx] ) == 0 ) {
-            zoneName = chlGetLocalZone();
+            if ( !chlGetLocalZone( zoneName ) ) {
+            }
         }
         else {
             zoneName = genQueryInp.condInput.value[zoneIx];
@@ -2083,7 +2086,7 @@ checkCondInputAccess( genQueryInp_t genQueryInp, int statementNum,
         status = cmlCheckDataObjId(
                      icss->stmtPtr[statementNum]->resultValue[dataIx],
                      genQueryInp.condInput.value[userIx],
-                     zoneName,
+                     ( char* )zoneName.c_str(),
                      genQueryInp.condInput.value[accessIx],
                      /*                  sessionTicket, accessControlHost, icss); */
                      sessionTicket, sessionClientAddr, icss );
@@ -2093,7 +2096,8 @@ checkCondInputAccess( genQueryInp_t genQueryInp, int statementNum,
 
     if ( collIx >= 0 ) {
         if ( strlen( genQueryInp.condInput.value[zoneIx] ) == 0 ) {
-            zoneName = chlGetLocalZone();
+            if ( !chlGetLocalZone( zoneName ) ) {
+            }
         }
         else {
             zoneName = genQueryInp.condInput.value[zoneIx];
@@ -2101,7 +2105,7 @@ checkCondInputAccess( genQueryInp_t genQueryInp, int statementNum,
         status = cmlCheckDirId(
                      icss->stmtPtr[statementNum]->resultValue[collIx],
                      genQueryInp.condInput.value[userIx],
-                     zoneName,
+                     ( char* )zoneName.c_str(),
                      genQueryInp.condInput.value[accessIx], icss );
     }
     return( status );
@@ -2111,9 +2115,12 @@ checkCondInputAccess( genQueryInp_t genQueryInp, int statementNum,
    Called with user == NULL to set the controlFlag, else with the
    user info.
  */
-int
-chlGenQueryAccessControlSetup( char *user, char *zone, char *host, int priv,
-                               int controlFlag ) {
+extern "C" int chl_gen_query_access_control_setup_impl(
+    char *user,
+    char *zone,
+    char *host,
+    int priv,
+    int controlFlag ) {
     if ( user != NULL ) {
         rstrcpy( accessControlUserName, user, MAX_NAME_LEN );
         rstrcpy( accessControlZone, zone, MAX_NAME_LEN );
@@ -2133,8 +2140,9 @@ chlGenQueryAccessControlSetup( char *user, char *zone, char *host, int priv,
     return( 0 );
 }
 
-int
-chlGenQueryTicketSetup( char *ticket, char *clientAddr ) {
+extern "C" int chl_gen_query_ticket_setup_impl(
+    char* ticket,
+    char* clientAddr ) {
     rstrcpy( sessionTicket, ticket, sizeof( sessionTicket ) );
     rstrcpy( sessionClientAddr, clientAddr, sizeof( sessionClientAddr ) );
     rodsLog( LOG_NOTICE, "session ticket setup, value: %s", ticket );
@@ -2143,8 +2151,9 @@ chlGenQueryTicketSetup( char *ticket, char *clientAddr ) {
 
 
 /* General Query */
-int
-chlGenQuery( genQueryInp_t genQueryInp, genQueryOut_t *result ) {
+extern "C" int chl_gen_query_impl(
+    genQueryInp_t  genQueryInp,
+    genQueryOut_t* result ) {
     int i, j, k;
     int needToGetNextRow;
 
@@ -2164,7 +2173,7 @@ chlGenQuery( genQueryInp_t genQueryInp, genQueryOut_t *result ) {
         rodsLog( LOG_SQL, "chlGenQuery" );
     }
 
-    icatSessionStruct *icss;
+    icatSessionStruct *icss = 0;
 
     result->attriCnt = 0;
     result->rowCnt = 0;
@@ -2172,8 +2181,8 @@ chlGenQuery( genQueryInp_t genQueryInp, genQueryOut_t *result ) {
 
     currentMaxColSize = 0;
 
-    icss = chlGetRcs();
-    if ( icss == NULL ) {
+    status = chlGetRcs( &icss );
+    if ( status < 0 || icss == NULL ) {
         return( CAT_NOT_OPEN );
     }
 #ifdef ADDR_64BITS
@@ -2182,7 +2191,7 @@ chlGenQuery( genQueryInp_t genQueryInp, genQueryOut_t *result ) {
     }
 #else
     if ( debug ) {
-        printf( "icss=%d\n", ( int )icss );
+        printf( "icss=%ld\n", ( long int )icss );
     }
 #endif
 
@@ -2204,9 +2213,6 @@ chlGenQuery( genQueryInp_t genQueryInp, genQueryOut_t *result ) {
             else {
                 rodsLog( LOG_SQL, "chlGenQuery SQL 2" );
             }
-#if 0
-            rodsLog( LOG_NOTICE, "combinedSQL: %s", combinedSQL );
-#endif
         }
 
         if ( genQueryInp.options & RETURN_TOTAL_ROW_COUNT ) {

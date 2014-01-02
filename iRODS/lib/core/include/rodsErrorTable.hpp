@@ -666,7 +666,7 @@
 #define DIRECT_ARCHIVE_ACCESS                -1814000
 #define ADVANCED_NEGOTIATION_NOT_SUPPORTED   -1815000
 #define DIRECT_CHILD_ACCESS                  -1816000
-#define INVALID_DYNAMIC_CAST                 -1816000
+#define INVALID_DYNAMIC_CAST                 -1817000
 
 
 /* NetCDF error code */

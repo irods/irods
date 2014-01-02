@@ -112,8 +112,8 @@ chkCollForBundleOpr( rsComm_t *rsComm,
                 return SYS_COPY_NOT_EXIST_IN_RESC;
             }
             /* check permission */
-            myId = checkAndGetObjectId( rsComm, "-c",
-                                        collEnt->specColl.collection, ACCESS_READ_OBJECT );
+            myId = chlCheckAndGetObjectID( rsComm, "-c",
+                                           collEnt->specColl.collection, ACCESS_READ_OBJECT );
             if ( myId < 0 ) {
                 status = myId;
                 rodsLog( LOG_ERROR,
@@ -177,8 +177,8 @@ chkCollForBundleOpr( rsComm_t *rsComm,
                     curCollEnt = NULL;
 
                     /* we have a good copy. Check the permission */
-                    myId = checkAndGetObjectId( rsComm, "-d", myPath,
-                                                ACCESS_READ_OBJECT );
+                    myId = chlCheckAndGetObjectID( rsComm, "-d", myPath,
+                                                   ACCESS_READ_OBJECT );
                     if ( myId < 0 && myId != CAT_UNKNOWN_FILE ) {
                         /* could return CAT_UNKNOWN_FILE if mounted files */
                         status = myId;

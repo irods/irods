@@ -8,11 +8,7 @@
 #include <jansson.h>
 
 
-#if 0
-#define ERDDAP_URL 		"http://127.0.0.1:8001/"
-#else
 #define ERDDAP_URL 		"http://coastwatch.pfeg.noaa.gov/erddap/info/index.json"
-#endif
 
 #define PARENT_HLINK_DIR	"../"
 typedef struct {

@@ -302,8 +302,9 @@ obfSavePw( int promptOpt, int fileOpt, int printOpt, char *pwArg ) {
 #else
         if ( promptOpt != 1 ) {
             path p( "/bin/stty" );
-            if ( exists( p ) )
+            if ( exists( p ) ) {
                 system( "/bin/stty -echo" );
+            }
         }
 
         printf( "Enter your current iRODS password:" );
@@ -942,11 +943,6 @@ obfiDecode( char *in, char *out, int extra ) {
 
 int
 obfiGetEnvKey() {
-#if 0
-    char *envVar;
-    char *chr;
-    int i;
-#endif
     /* May want to do this someday, but at least not for now */
     return 0;
 }

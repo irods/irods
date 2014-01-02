@@ -188,11 +188,6 @@ putFileToPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
         }
         else {
             if ( dataSize <= 0 || myInput[0].bytesWritten == dataSize ) {
-#if 0
-                if ( conn->fileRestart.info.numSeg > 0 ) {   /* file restart */
-                    clearLfRestartFile( &conn->fileRestart );
-                }
-#endif
                 return ( 0 );
             }
             else {
@@ -242,11 +237,6 @@ putFileToPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
         }
         else {
             if ( dataSize <= 0 || totalWritten == dataSize ) {
-#if 0
-                if ( conn->fileRestart.info.numSeg > 0 ) {   /* file restart */
-                    clearLfRestartFile( &conn->fileRestart );
-                }
-#endif
                 if ( gGuiProgressCB != NULL ) {
                     gGuiProgressCB( &conn->operProgress );
                 }
@@ -617,11 +607,6 @@ putFile( rcComm_t *conn, int l1descInx, char *locFilePath, char *objPath,
     close( in_fd );
 
     if ( dataSize <= 0 || totalWritten == dataSize ) {
-#if 0
-        if ( info->numSeg > 0 ) {   /* file restart */
-            clearLfRestartFile( &conn->fileRestart );
-        }
-#endif
         if ( gGuiProgressCB != NULL ) {
             conn->operProgress.curFileSizeDone = conn->operProgress.curFileSize;
             gGuiProgressCB( &conn->operProgress );
@@ -792,16 +777,7 @@ getFile( rcComm_t *conn, int l1descInx, char *locFilePath, char *objPath,
         close( out_fd );
     }
 
-#if 0   /* XXXXXXX testing only for no len check */
-    if ( dataSize <= 0 || totalWritten == dataSize ) {
-#else
     if ( bytesRead >= 0 ) {
-#endif
-#if 0
-        if ( info->numSeg > 0 ) {   /* file restart */
-            clearLfRestartFile( &conn->fileRestart );
-        }
-#endif
         if ( gGuiProgressCB != NULL ) {
             conn->operProgress.curFileSizeDone = conn->operProgress.curFileSize;
             gGuiProgressCB( &conn->operProgress );
@@ -812,11 +788,7 @@ getFile( rcComm_t *conn, int l1descInx, char *locFilePath, char *objPath,
         rodsLog( LOG_ERROR,
                  "getFile: totalWritten %lld dataSize %lld mismatch",
                  totalWritten, dataSize );
-#if 0   /* XXXXXXX testing only for no len check */
-        return ( SYS_COPY_LEN_ERR );
-#else
         return bytesRead;
-#endif
 
     }
 }
@@ -887,11 +859,6 @@ getFileFromPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
         }
         else {
             if ( dataSize <= 0 || myInput[0].bytesWritten == dataSize ) {
-#if 0
-                if ( conn->fileRestart.info.numSeg > 0 ) {   /* file restart */
-                    clearLfRestartFile( &conn->fileRestart );
-                }
-#endif
                 return ( 0 );
             }
             else {
@@ -947,11 +914,6 @@ getFileFromPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
         }
         else {
             if ( dataSize <= 0 || totalWritten == dataSize ) {
-#if 0
-                if ( conn->fileRestart.info.numSeg > 0 ) {   /* file restart */
-                    clearLfRestartFile( &conn->fileRestart );
-                }
-#endif
                 if ( gGuiProgressCB != NULL ) {
                     gGuiProgressCB( &conn->operProgress );
                 }

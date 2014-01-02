@@ -17,6 +17,10 @@ namespace irods {
     class oper_replicator {
     public:
         virtual error replicate( resource_plugin_context& _ctx, const child_list_t& _siblings, const object_oper& _object_oper ) = 0;
+
+        virtual ~oper_replicator() {
+
+        }
     };
 }; // namespace irods
 

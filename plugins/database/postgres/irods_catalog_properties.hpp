@@ -11,6 +11,7 @@
 
 // =-=-=-=-=-=-=-
 
+#include "icatStructs.hpp"
 #include "irods_lookup_table.hpp"
 
 
@@ -31,7 +32,7 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // Query for iCAT settings and fill catalog_properties::properties
-        error capture();
+        error capture( icatSessionStruct* );
 
         // =-=-=-=-=-=-=-
         /// @brief get a property from the map if it exists.  catch the exception in the case where

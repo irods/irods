@@ -173,32 +173,6 @@ rSplitStr( char *inStr, char* outStr1, int maxOutLen1,
         return ( 0 );
     }
 }
-#if 0 // JMC - UNUSED
-int
-rSplitStrByStrKey( char *inStr, char* outStr1, int maxOutLen1,
-                   char* outStr2, int maxOutLen2, char* key ) {
-    char *i;
-
-    if ( ( i = strstr( inStr, key ) ) != NULL ) {
-        *i = '\0';
-        if ( rstrcpy( outStr1, inStr, maxOutLen1 ) == NULL ) {
-            return ( USER_STRLEN_TOOLONG );
-        }
-        *i = key[0];
-        i += strlen( key );
-        if ( rstrcpy( outStr2, i, maxOutLen2 ) == NULL ) {
-            return ( USER_STRLEN_TOOLONG );
-        }
-    }
-    else {
-        if ( rstrcpy( outStr1, inStr, maxOutLen1 ) == NULL ) {
-            return ( USER_STRLEN_TOOLONG );
-        }
-        *outStr2 = '\0';
-    }
-    return( 0 );
-}
-#endif // JMC - UNUSED
 /* copyStrFromBuf - copy a string from buf to outStr, skipping white space
  * and comment. also advance buf pointer
  * returns the len of string copied
@@ -239,84 +213,62 @@ copyStrFromBuf( char **buf, char *outStr, int maxOutLen ) {
 
     len = 0;
     outPtr = outStr;
-#if 0	/* allow # in string as long as it is not preceded by a space */
-    while ( !isspace( *bufPtr ) && *bufPtr != '\0' && *bufPtr != '#' ) {
-#endif
-        while ( !isspace( *bufPtr ) && *bufPtr != '\0' ) {
-            len++;
-            if ( len >= maxOutLen ) {
-                *outStr = '\0';
-                return USER_STRLEN_TOOLONG;
-            }
-            *outPtr = *bufPtr;
-            outPtr++;
-            bufPtr++;
+    while ( !isspace( *bufPtr ) && *bufPtr != '\0' ) {
+        len++;
+        if ( len >= maxOutLen ) {
+            *outStr = '\0';
+            return USER_STRLEN_TOOLONG;
         }
-
-        *outPtr = '\0';
-        *buf = bufPtr;
-
-        return ( len );
+        *outPtr = *bufPtr;
+        outPtr++;
+        bufPtr++;
     }
 
-    int
-    isAllDigit( char * myStr ) {
-        int c;
+    *outPtr = '\0';
+    *buf = bufPtr;
 
-        while ( ( c = *myStr ) != '\0' ) {
-            if ( isdigit( c ) == 0 ) {
-                return ( 0 );
-            }
-            myStr++;
-        }
-        return ( 1 );
-    }
+    return ( len );
+}
 
-    int
-    splitPathByKey( const char * srcPath, char * dir, char * file, char key ) {
-        int pathLen, dirLen, fileLen;
-        const char *srcPtr;
+int
+isAllDigit( char * myStr ) {
+    int c;
 
-        pathLen = strlen( srcPath );
-
-        if ( pathLen >= MAX_NAME_LEN ) {
-            *dir = *file = '\0';
-            return ( USER_STRLEN_TOOLONG );
-        }
-        else if ( pathLen <= 0 ) {
-            *dir = '\0';
-            *file = '\0';
+    while ( ( c = *myStr ) != '\0' ) {
+        if ( isdigit( c ) == 0 ) {
             return ( 0 );
         }
+        myStr++;
+    }
+    return ( 1 );
+}
 
-        srcPtr = srcPath + pathLen - 1;
+int
+splitPathByKey( const char * srcPath, char * dir, char * file, char key ) {
+    int pathLen, dirLen, fileLen;
+    const char *srcPtr;
 
-        while ( srcPtr != srcPath ) {
-            if ( *srcPtr == key ) {
-                dirLen = srcPtr - srcPath;
-                strncpy( dir, srcPath, dirLen );
-                dir[dirLen] = '\0';
-                srcPtr ++;
-                fileLen = pathLen - dirLen - 1;
-                if ( fileLen > 0 ) {
-                    strncpy( file, srcPtr, fileLen );
-                    file[fileLen] = '\0';
-                }
-                else {
-                    *file = '\0';
-                }
-                return ( 0 );
-            }
-            srcPtr --;
-        }
+    pathLen = strlen( srcPath );
 
-        /* Handle the special cases "/foo" */
+    if ( pathLen >= MAX_NAME_LEN ) {
+        *dir = *file = '\0';
+        return ( USER_STRLEN_TOOLONG );
+    }
+    else if ( pathLen <= 0 ) {
+        *dir = '\0';
+        *file = '\0';
+        return ( 0 );
+    }
+
+    srcPtr = srcPath + pathLen - 1;
+
+    while ( srcPtr != srcPath ) {
         if ( *srcPtr == key ) {
-            dirLen = 1;
+            dirLen = srcPtr - srcPath;
             strncpy( dir, srcPath, dirLen );
             dir[dirLen] = '\0';
-            srcPtr++;
-            fileLen = pathLen - dirLen;
+            srcPtr ++;
+            fileLen = pathLen - dirLen - 1;
             if ( fileLen > 0 ) {
                 strncpy( file, srcPtr, fileLen );
                 file[fileLen] = '\0';
@@ -326,124 +278,99 @@ copyStrFromBuf( char **buf, char *outStr, int maxOutLen ) {
             }
             return ( 0 );
         }
-
-        /* no Match. just copy srcPath to file */
-        *dir = '\0';
-        rstrcpy( file, srcPath, MAX_NAME_LEN );
-        return ( SYS_INVALID_FILE_PATH );
+        srcPtr --;
     }
-#if 0 // JMC - UNUSED
-    /* get the strlen of the parent, including the last '/'
-     */
 
-    int
-    getParentPathlen( char * path ) {
-        int len;
-        char *tmpPtr;
-
-        if ( path == NULL ) {
-            return 0;
+    /* Handle the special cases "/foo" */
+    if ( *srcPtr == key ) {
+        dirLen = 1;
+        strncpy( dir, srcPath, dirLen );
+        dir[dirLen] = '\0';
+        srcPtr++;
+        fileLen = pathLen - dirLen;
+        if ( fileLen > 0 ) {
+            strncpy( file, srcPtr, fileLen );
+            file[fileLen] = '\0';
         }
-        len = strlen( path );
-
-        tmpPtr = path + len;
-
-        while ( len >= 0 ) {
-            if ( *tmpPtr == '/' ) {
-                break;
-            }
-            len --;
-            tmpPtr --;
+        else {
+            *file = '\0';
         }
-        return ( len + 1 );
+        return ( 0 );
     }
-#endif // JMC - UNUSED
-    int
-    trimWS( char * s ) {
-        char *t;
 
-        t = s;
-        while ( isspace( *t ) ) {
-            t++;
-        }
-        if ( s != t ) {
-            memmove( s, t, strlen( t ) + 1 );
-        }
+    /* no Match. just copy srcPath to file */
+    *dir = '\0';
+    rstrcpy( file, srcPath, MAX_NAME_LEN );
+    return ( SYS_INVALID_FILE_PATH );
+}
+int
+trimWS( char * s ) {
+    char *t;
+
+    t = s;
+    while ( isspace( *t ) ) {
+        t++;
+    }
+    if ( s != t ) {
+        memmove( s, t, strlen( t ) + 1 );
+    }
+    t = s + strlen( s ) - 1;
+    while ( isspace( *t ) ) {
+        t--;
+    }
+    *( t + 1 ) = '\0';
+
+    /*TODO Please return appropriate value*/
+    return ( 0 );
+}
+int
+trimQuotes( char * s ) {
+    char *t;
+
+    if ( *s == '\'' || *s == '"' ) {
+        memmove( s, s + 1, strlen( s + 1 ) + 1 );
         t = s + strlen( s ) - 1;
-        while ( isspace( *t ) ) {
-            t--;
+        if ( *t == '\'' || *t == '"' ) {
+            *t = '\0';
         }
-        *( t + 1 ) = '\0';
-
-        /*TODO Please return appropriate value*/
-        return ( 0 );
     }
-    int
-    trimQuotes( char * s ) {
-        char *t;
+    /* made it so that end quotes are removed only if quoted initially */
+    /*TODO Please return appropriate value*/
+    return ( 0 );
+}
 
-        if ( *s == '\'' || *s == '"' ) {
-            memmove( s, s + 1, strlen( s + 1 ) + 1 );
-            t = s + strlen( s ) - 1;
-            if ( *t == '\'' || *t == '"' ) {
-                *t = '\0';
-            }
-        }
-        /* made it so that end quotes are removed only if quoted initially */
-        /*TODO Please return appropriate value*/
-        return ( 0 );
-    }
+int
+checkStringForSystem( char * inString ) {
+    // .zZZZz. :: TODO - Make this do something. Sanitize strings to be
+    // passed as arguments to system calls, I think?
+    return( 0 );
+}
 
-    int
-    checkStringForSystem( char * inString ) {
-#if 0
-        // JMC :: TODO - revisit and implement with mail string standard
-        char c;
-        if ( inString == NULL ) {
-            return( 0 );
-        }
-        c = *inString;
-        while ( c != '\0' ) {
-            if ( ( c >= 'a' && c <= 'z' ) || ( c >= 'A' && c <= 'Z' ) ||
-                    ( c >= '0' && c <= '9' ) ||  c == ',' || c == '.' ||
-                    c == '/' || c == ' ' || c == '-', c == '@' ) {
-            }
-            else {
-                rodsLog( LOG_ERROR, "checkStringForSystem - invalid character %c", c );
-                return ( USER_INPUT_STRING_ERR );
-            }
-            c = *inString++;
-        }
-#endif
+/*
+ * Check if inString is a valid email address.
+ * This function only do a simple check that inString contains only a predefined set of characters.
+ * It does not check the structure.
+ * And this set of characters is a subset of that allowed in the RFCs.
+ */
+int
+checkStringForEmailAddress( char * inString ) {
+    char c;
+    if ( inString == NULL ) {
         return( 0 );
     }
-
-
-    /*
-     * Check if inString is a valid email address.
-     * This function only do a simple check that inString contains only a predefined set of characters.
-     * It does not check the structure.
-     * And this set of characters is a subset of that allowed in the RFCs.
-     */
-    int
-    checkStringForEmailAddress( char * inString ) {
-        char c;
-        if ( inString == NULL ) {
-            return( 0 );
+    c = *inString;
+    while ( c != '\0' ) {
+        if ( ( c >= 'a' && c <= 'z' ) || ( c >= 'A' && c <= 'Z' ) ||
+                ( c >= '0' && c <= '9' ) ||  c == ',' || c == '.' ||
+                c == '/' || c == '-' || c == '+' || c == '*' || c == '_' || c == '@' ) {
         }
-        c = *inString;
-        while ( c != '\0' ) {
-            if ( ( c >= 'a' && c <= 'z' ) || ( c >= 'A' && c <= 'Z' ) ||
-                    ( c >= '0' && c <= '9' ) ||  c == ',' || c == '.' ||
-                    c == '/' || c == '-' || c == '+' || c == '*' || c == '_' || c == '@' ) {
-            }
-            else {
-                return ( USER_INPUT_STRING_ERR );
-            }
-            c = *inString++;
+        else {
+            return ( USER_INPUT_STRING_ERR );
         }
-        return( 0 );
+        c = *inString++;
     }
+    return( 0 );
+}
 
 
 #ifdef MYMALLOC_H
@@ -452,34 +379,34 @@ copyStrFromBuf( char **buf, char *outStr, int maxOutLen ) {
 #undef strdup
 #undef free
 
-    void *
-    mymalloc( char * file, int line, char * func, int x ) {
-        void *p;
-        p = malloc( x );
-        rodsLog( LOG_NOTICE, "MYMALLOC: %s:%i:%s:%i=%x", file, line, func, x, p );
-        return( p );
-    }
+void *
+mymalloc( char * file, int line, char * func, int x ) {
+    void *p;
+    p = malloc( x );
+    rodsLog( LOG_NOTICE, "MYMALLOC: %s:%i:%s:%i=%x", file, line, func, x, p );
+    return( p );
+}
 
-    void *
-    mycalloc( char * file, int line,  char * func, int x, int y ) {
-        void *p;
-        p = malloc( x * y );
-        bzero( p, x * y );
-        rodsLog( LOG_NOTICE, "MYCALLOC: %s:%i:%s:%i:%i=%x", file, line, func, x, y, p );
-        return( p );
-    }
+void *
+mycalloc( char * file, int line,  char * func, int x, int y ) {
+    void *p;
+    p = malloc( x * y );
+    bzero( p, x * y );
+    rodsLog( LOG_NOTICE, "MYCALLOC: %s:%i:%s:%i:%i=%x", file, line, func, x, y, p );
+    return( p );
+}
 
-    void
-    myfree( char * file, int line, char * func, void * p ) {
-        rodsLog( LOG_NOTICE, "MYFREE: %s:%i:%s=%x", file, line, func, p );
-        free( p );
-    }
-    void *
-    mystrdup( char * file, int line, char * func, char * x ) {
-        void *p;
-        p = strdup( x );
-        rodsLog( LOG_NOTICE, "MYSTRDUP: %s:%i:%s=%x", file, line, func, p );
-        return( p );
-    }
+void
+myfree( char * file, int line, char * func, void * p ) {
+    rodsLog( LOG_NOTICE, "MYFREE: %s:%i:%s=%x", file, line, func, p );
+    free( p );
+}
+void *
+mystrdup( char * file, int line, char * func, char * x ) {
+    void *p;
+    p = strdup( x );
+    rodsLog( LOG_NOTICE, "MYSTRDUP: %s:%i:%s=%x", file, line, func, p );
+    return( p );
+}
 
 #endif /* MYMALLOC_H */

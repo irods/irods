@@ -159,7 +159,7 @@ MY_CFLAG+= -D$(hardware_platform)
 endif
 
 ifeq ($(CC_IS_GCC), 1)
-MY_CFLAG+=-Wall
+MY_CFLAG+=-Wall -Werror
 endif
 
 # Alpha
@@ -281,8 +281,4 @@ endif
 ifdef OOI_CI
 LDADD+= -ljansson
 CL_LDADD+= -ljansson
-endif
-
-ifdef STORAGE_ADMIN_ROLE
-MY_CFLAG+= -DSTORAGE_ADMIN_ROLE
 endif

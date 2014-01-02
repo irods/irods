@@ -327,19 +327,6 @@ isioFileRead( int fileIndex, void *buffer, int maxToRead ) {
     }
     return( count );
 
-#if 0
-    /* equivalent without caching */
-    dataObjReadOutBBuf.buf = buffer;
-    dataObjReadOutBBuf.len = maxToRead;
-
-    memset( &dataObjReadInp, 0, sizeof( dataObjReadInp ) );
-
-    dataObjReadInp.l1descInx = openFiles[fileIndex];
-    dataObjReadInp.len = maxToRead;
-
-    return( rcDataObjRead( Comm, &dataObjReadInp,
-                           &dataObjReadOutBBuf ) );
-#endif
 }
 
 size_t irodsfread( void *buffer, size_t itemsize, int nitems, FILE *fi_stream ) {
@@ -463,19 +450,6 @@ isioFileWrite( int fileIndex, void *buffer, int countToWrite ) {
     cacheInfo[fileIndex].written += countToWrite;
     return( countToWrite );
 
-#if 0
-    /* non-caching version */
-    dataObjWriteOutBBuf.buf = buffer;
-    dataObjWriteOutBBuf.len = countToWrite;
-
-    memset( &dataObjWriteInp, 0, sizeof( dataObjWriteInp ) );
-
-    dataObjWriteInp.l1descInx = openFiles[fileIndex];
-    dataObjWriteInp.len = countToWrite;
-
-    return( rcDataObjWrite( Comm, &dataObjWriteInp,
-                            &dataObjWriteOutBBuf ) );
-#endif
 }
 
 size_t

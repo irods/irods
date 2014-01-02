@@ -55,9 +55,9 @@ protected:
     }
 };
 
-TEST_F( TestChlEnv, HandlesConnected ) {
-    EXPECT_EQ( 1, chlIsConnected() );
-}
+//TEST_F( TestChlEnv, HandlesConnected ) {
+//    EXPECT_EQ( 1, chlIsConnected() );
+//}
 
 TEST_F( TestChlEnv, HandlesGetLocalZone ) {
     EXPECT_TRUE( strcmp( chlGetLocalZone(), "tempZone" ) == 0 );

@@ -117,21 +117,7 @@ int msiXmsgServerDisConnect(msParam_t* inConnParam, ruleExecInfo_t *rei);
 int msiString2KeyValPair(msParam_t *inBufferP, msParam_t* outKeyValPairP, ruleExecInfo_t *rei);
 int msiStrArray2String(msParam_t* inSAParam, msParam_t* outStr, ruleExecInfo_t *rei);
 
-int msiRdaToStdout(msParam_t *inpRdaName, msParam_t *inpSQL, 
-	 msParam_t *inpParam1, msParam_t *inpParam2, 
-	 msParam_t *inpParam3, msParam_t *inpParam4, 
-	 ruleExecInfo_t *rei);
-int msiRdaToDataObj(msParam_t *inpRdaName, msParam_t *inpSQL, 
-	 msParam_t *inpParam1, msParam_t *inpParam2, 
-	 msParam_t *inpParam3, msParam_t *inpParam4, 
-	 msParam_t *inOutFd, ruleExecInfo_t *rei);
-int msiRdaNoResults(msParam_t *inpRdaName, msParam_t *inpSQL, 
-	 msParam_t *inpParam1, msParam_t *inpParam2, 
-	 msParam_t *inpParam3, msParam_t *inpParam4, 
-	 ruleExecInfo_t *rei);
-int msiRdaCommit(ruleExecInfo_t *rei);
 int msiAW1(msParam_t* mPIn, msParam_t* mPOut2, ruleExecInfo_t *rei);
-int msiRdaRollback(ruleExecInfo_t *rei);
 int msiRenameLocalZone(msParam_t *oldName, msParam_t *newName,
                        ruleExecInfo_t *rei);
 int msiRenameCollection(msParam_t *oldName, msParam_t *newName,
@@ -347,12 +333,7 @@ int msiString2StrArray(msParam_t *inBufferP, msParam_t* outStrArrayP, ruleExecIn
 			table_[ "msiString2KeyValPair" ] = new irods::ms_table_entry( "msiString2KeyValPair",2,(funcPtr) msiString2KeyValPair );
 			table_[ "msiStrArray2String" ] = new irods::ms_table_entry( "msiStrArray2String",2,(funcPtr) msiStrArray2String );
 			table_[ "msiString2StrArray" ] = new irods::ms_table_entry( "msiString2StrArray",2,(funcPtr) msiString2StrArray );
-			table_[ "msiRdaToStdout" ] = new irods::ms_table_entry( "msiRdaToStdout",6,(funcPtr) msiRdaToStdout );
-			table_[ "msiRdaToDataObj" ] = new irods::ms_table_entry( "msiRdaToDataObj",7,(funcPtr) msiRdaToDataObj );
-			table_[ "msiRdaNoResults" ] = new irods::ms_table_entry( "msiRdaNoResults",6,(funcPtr) msiRdaNoResults );
-			table_[ "msiRdaCommit" ] = new irods::ms_table_entry( "msiRdaCommit",0,(funcPtr) msiRdaCommit );
 			table_[ "msiAW1" ] = new irods::ms_table_entry( "msiAW1",2,(funcPtr) msiAW1 );
-			table_[ "msiRdaRollback" ] = new irods::ms_table_entry( "msiRdaRollback",0,(funcPtr) msiRdaRollback );
 			table_[ "msiRenameLocalZone" ] = new irods::ms_table_entry( "msiRenameLocalZone",2,(funcPtr) msiRenameLocalZone );
 			table_[ "msiRenameCollection" ] = new irods::ms_table_entry( "msiRenameCollection",2,(funcPtr) msiRenameCollection );
 			table_[ "msiAclPolicy" ] = new irods::ms_table_entry( "msiAclPolicy",1,(funcPtr)msiAclPolicy );

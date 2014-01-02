@@ -94,11 +94,6 @@ _rsRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
     }
     else {
         /* need to check if it is spec coll */
-#if 0
-        dataObjInp_t dataObjInp;
-        memset( &dataObjInp, 0, sizeof( dataObjInp ) );
-        rstrcpy( dataObjInp.objPath, rmCollInp->collName, MAX_NAME_LEN );
-#endif
         status = resolvePathInSpecColl( rsComm, rmCollInp->collName,
                                         WRITE_COLL_PERM, 0, &dataObjInfo );
         if ( status < 0 && status != CAT_NO_ROWS_FOUND ) {
@@ -137,12 +132,6 @@ _rsRmCollRecur( rsComm_t *rsComm, collInp_t *rmCollInp,
     ruleExecInfo_t rei;
     int trashPolicy;
     dataObjInfo_t *dataObjInfo = NULL;
-#if 0
-    dataObjInp_t dataObjInp;
-
-    memset( &dataObjInp, 0, sizeof( dataObjInp ) );
-    rstrcpy( dataObjInp.objPath, rmCollInp->collName, MAX_NAME_LEN );
-#endif
     /* check for specColl and permission */
     status = resolvePathInSpecColl( rsComm, rmCollInp->collName,
                                     WRITE_COLL_PERM, 0, &dataObjInfo );

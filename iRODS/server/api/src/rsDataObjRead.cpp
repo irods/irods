@@ -37,16 +37,11 @@ applyRuleForPostProcForRead( rsComm_t *rsComm, bytesBuf_t *dataObjReadOutBBuf, c
     rei2.doi = ( dataObjInfo_t* )mallocAndZero( sizeof( dataObjInfo_t ) );
     strcpy( rei2.doi->objPath, objPath );
 
-#if 0
-    addMsParam( &msParamArray, "*ReadBuf", BUF_LEN_MS_T,
-                ( void * ) dataObjReadOutBBuf->len , dataObjReadOutBBuf );
-#else
     bzero( &msParamArray, sizeof( msParamArray ) );
     myInOutStruct = ( int* )malloc( sizeof( int ) );
     *myInOutStruct = dataObjReadOutBBuf->len;
     addMsParamToArray( &msParamArray, "*ReadBuf", BUF_LEN_MS_T, myInOutStruct,
                        dataObjReadOutBBuf, 0 );
-#endif
     i =  applyRule( "acPostProcForDataObjRead(*ReadBuf)", &msParamArray, &rei2,
                     NO_SAVE_REI );
     free( rei2.doi );
@@ -97,14 +92,9 @@ rsDataObjRead( rsComm_t *rsComm, openedDataObjInp_t *dataObjReadInp,
         if ( i < 0 ) {
             return( i );
         }
-#if 0	/* XXXXX This is used for msi changing the the return buffer but causes
-        * problem for normal read because len is the size of the buffer.
-        * it out for now */
-            bytesRead = dataObjReadOutBBuf->len;
-#endif
-}
+    }
 
-return ( bytesRead );
+    return ( bytesRead );
 }
 
 int

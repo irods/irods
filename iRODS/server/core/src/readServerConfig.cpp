@@ -30,6 +30,16 @@ getServerConfigDir() {
     return ( DEF_CONFIG_DIR );
 }
 
+
+
+int read_some_stuff( rodsServerConfig_t *rodsServerConfig ) {
+
+    rodsLog( LOG_NOTICE, "TOTALLY READINGD SOME STUFF" );
+
+    return 0;
+
+}
+
 int
 readServerConfig( rodsServerConfig_t *rodsServerConfig ) {
     FILE *fptr;
@@ -48,6 +58,9 @@ readServerConfig( rodsServerConfig_t *rodsServerConfig ) {
     fptr = fopen( serverConfigFile, "r" );
 
     if ( fptr == NULL ) {
+        printf( "Cannot open SERVER_CONFIG_FILE file %s. errno = %d\n",
+                serverConfigFile, errno );
+        fflush( stdout );
         rodsLog( LOG_NOTICE,
                  "Cannot open SERVER_CONFIG_FILE file %s. errno = %d\n",
                  serverConfigFile, errno );
@@ -175,21 +188,40 @@ readServerConfig( rodsServerConfig_t *rodsServerConfig ) {
 
         } // PAM_PW_MAX_TIME_KW
 
+        key = strstr( buf, PAM_PW_MAX_TIME_KW );
+        if ( key != NULL ) {
+            len = strlen( PAM_PW_MAX_TIME_KW );
+            rstrcpy(
+                rodsServerConfig->irods_pam_password_min_time,
+                findNextTokenAndTerm( key + len ),
+                NAME_LEN );
+            rodsLog(
+                LOG_NOTICE,
+                "%s=%s",
+                PAM_PW_MAX_TIME_KW,
+                rodsServerConfig->irods_pam_password_min_time );
 
+        } // PAM_PW_MAX_TIME_KW
 
+        key = strstr( buf, CATALOG_DATABASE_TYPE_KW );
+        if ( key != NULL ) {
+            len = strlen( CATALOG_DATABASE_TYPE_KW );
+            rstrcpy(
+                rodsServerConfig->catalog_database_type,
+                findNextTokenAndTerm( key + len ),
+                NAME_LEN );
+            rodsLog(
+                LOG_NOTICE,
+                "%s=%s",
+                CATALOG_DATABASE_TYPE_KW,
+                rodsServerConfig->catalog_database_type );
 
-
-
-
-
-
-
-
-
-
+        } // CATALOG_DATABASE_TYPE_KW
 
         fchar = fgets( buf, BUF_LEN - 1, fptr );
-    }
+
+    } // for
+
     fclose( fptr );
 
     if ( strlen( rodsServerConfig->DBKey ) > 0 &&

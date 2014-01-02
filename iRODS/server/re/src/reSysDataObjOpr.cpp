@@ -127,43 +127,7 @@ msiSetDefaultResc( msParam_t *xdefaultRescList, msParam_t *xoptionStr, ruleExecI
  **/
 int
 msiSetRescSortScheme( msParam_t *xsortScheme, ruleExecInfo_t *rei ) {
-#if 0 // JMC - legacy resource
-    rescGrpInfo_t *myRescGrpInfo;
-    char *sortScheme;
-
-    sortScheme = ( char * ) xsortScheme->inOutStruct;
-
-    RE_TEST_MACRO( "    Calling msiSetRescSortScheme" )
-
-    rei->status = 0;
-
-    if ( sortScheme != NULL && strlen( sortScheme ) > 0 ) {
-        strncat( rei->statusStr, sortScheme, MAX_NAME_LEN );
-        strncat( rei->statusStr, "%", MAX_NAME_LEN );
-    }
-    if ( rei->rgi == NULL ) {
-        /* def resc group has not been initialized yet */
-        // JMC - legacy resource - rei->status = setDefaultResc (rei->rsComm, NULL, NULL, &rei->doinp->condInput, &myRescGrpInfo);
-        irods::error err = irods::set_default_resource( rei->rsComm, "", "", &rei->doinp->condInput, *myRescGrpInfo );
-        rei->status = err.code();
-
-        if ( rei->status >= 0 ) {
-            rei->rgi = myRescGrpInfo;
-        }
-        else {
-            irods::log( PASS( false, -1, "msiSetRescSortScheme - failed", err );
-                        return ( rei->status );
-        }
-    }
-    else {
-        myRescGrpInfo = rei->rgi;
-    }
-    sortResc( rei->rsComm, &myRescGrpInfo, sortScheme );
-    rei->rgi = myRescGrpInfo;
-    return( 0 );
-#else
     return -1;
-#endif // JMC - legacy resource
 }
 
 

@@ -141,7 +141,7 @@ int chlDelUnusedAVUs( rsComm_t *rsComm );
 int chlAddSpecificQuery( rsComm_t *rsComm, char *alias, char *sql );
 int chlDelSpecificQuery( rsComm_t *rsComm, char *sqlOrAlias );
 
-char *chlGetLocalZone();
+int chlGetLocalZone( std::string& );
 
 int sTableInit();
 int sFklink( char *table1, char *table2, char *connectingSQL );
@@ -219,5 +219,12 @@ int chlGetHierarchyForResc(
     const std::string&	zone_name,
     std::string& hierarchy );
 
+int chlCheckAndGetObjectID(
+    rsComm_t*, // comm
+    char*,     // type
+    char*,     // name
+    char* );   // access
+
+int chlGetRcs( icatSessionStruct** );
 
 #endif /* ICAT_HIGHLEVEL_ROUTINES_H */

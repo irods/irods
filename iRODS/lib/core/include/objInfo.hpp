@@ -165,13 +165,6 @@ extern "C" {
         struct SpecCollCache *next;
     } specCollCache_t;
 
-#if 0
-    typedef struct PathCache {
-        char path[MAX_NAME_LEN];
-        struct PathCache *next;
-    } pathCache_t;
-#endif
-
     /* definition for replStatus (isDirty) */
 #define OLD_COPY        0x0
 #define NEWLY_CREATED_COPY      0x1
@@ -329,15 +322,6 @@ extern "C" {
         NO_CREATE_PATH,
         CREATE_PATH
     } createPath_t;
-#if 0 // JMC - legacy resource
-    typedef struct RescTypeDef {
-        char *typeName;
-        rescCat_t rescCat;
-        int driverType;
-        int chkPathPerm;	/* whether to check path permission */
-        createPath_t createPathFlag;  /* create a path in getFilePathName ? */
-    } rescTypeDef_t;
-#endif // JMC - legacy resource
 
     /* definition for classType */
 

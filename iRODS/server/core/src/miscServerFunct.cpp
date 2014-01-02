@@ -828,8 +828,8 @@ void partialDataGet(
             &myInput->shared_secret[iv_size] );
     }
 
-    size_t buf_size =  ( 2 * TRANS_BUF_SZ ) * sizeof( unsigned char ) ;
-    buf = ( unsigned char* )malloc(buf_size);
+    size_t buf_size = ( 2 * TRANS_BUF_SZ ) * sizeof( unsigned char ) ;
+    buf = ( unsigned char* )malloc( buf_size );
 
 #ifdef PARA_TIMING
     afterSeek = time( 0 );
@@ -917,7 +917,7 @@ void partialDataGet(
 
                     // =-=-=-=-=-=-=-
                     // capture the iv with the cipher text
-                    memset( buf, 0,  buf_size);
+                    memset( buf, 0,  buf_size );
                     std::copy(
                         iv.begin(),
                         iv.end(),
@@ -1998,14 +1998,12 @@ char *regex( char *rec, char *text, ... ) {
 /* generic functions to return SYS_NOT_SUPPORTED */
 
 int
-intNoSupport( ... )
-{
+intNoSupport( ... ) {
     return SYS_NOT_SUPPORTED;
 }
 
 rodsLong_t
-longNoSupport( ... )
-{
+longNoSupport( ... ) {
     return ( rodsLong_t ) SYS_NOT_SUPPORTED;
 }
 

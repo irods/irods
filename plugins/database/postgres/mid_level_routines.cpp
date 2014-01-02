@@ -18,7 +18,6 @@
 
 #include "icatMidLevelRoutines.hpp"
 #include "icatLowLevel.hpp"
-#include "icatMidLevelHelpers.hpp"
 #include "irods_stacktrace.hpp"
 #include "irods_log.hpp"
 
@@ -27,8 +26,8 @@
 /* Size of the R_OBJT_AUDIT comment field;must match table column definition */
 #define AUDIT_COMMENT_MAX_SIZE       1000
 
-int logSQL_CML = 0;
-int auditEnabled = 0;  /* Set this to 2 and rebuild to enable iRODS
+extern int logSQL_CML;
+extern int auditEnabled;  /* Set this to 2 and rebuild to enable iRODS
                         auditing (non-zero means auditing but 1 will
                         allow cmlDebug to modify it, so 2 means
                         permanently enabled).  We plan to change this
@@ -38,6 +37,34 @@ int checkObjIdByTicket( char *dataId, char *accessLevel,
                         char *ticketStr, char *ticketHost,
                         char *userName, char *userZone,
                         icatSessionStruct *icss );
+
+/*
+  Convert the intput arrays to a string and add bind variables
+*/
+char *cmlArraysToStrWithBind( char *str,
+                              char *preStr,
+                              char *arr[],
+                              char *arr2[],
+                              int   arrLen,
+                              char *sep,
+                              char *sep2,
+                              int  maxLen ) {
+    int i;
+
+    rstrcpy( str, preStr, maxLen );
+
+    for ( i = 0; i < arrLen; i++ ) {
+        if ( i > 0 ) {
+            rstrcat( str, sep2, maxLen );
+        }
+        rstrcat( str, arr[i], maxLen );
+        rstrcat( str, sep, maxLen );
+        rstrcat( str, "?", maxLen );
+        cllBindVars[cllBindVarCount++] = arr2[i];
+    }
+    return( str );
+
+}
 
 int cmlDebug( int mode ) {
     logSQL_CML = mode;
@@ -120,7 +147,6 @@ int cmlClose( icatSessionStruct *icss ) {
 int cmlExecuteNoAnswerSql( const char *sql,
                            icatSessionStruct *icss ) {
     int i;
-
     i = cllExecSqlNoResult( icss, sql );
     if ( i ) {
         if ( i <= CAT_ENV_ERR ) {
@@ -688,7 +714,7 @@ cmlGetCurrentSeqVal( icatSessionStruct *icss ) {
     rodsLong_t iVal;
 
     if ( logSQL_CML != 0 ) {
-        rodsLog( LOG_SQL, "cmlGetCurrentSeqVal SQL 1 " );
+        rodsLog( LOG_SQL, "cmlGetCurrentSeqVal S-Q-L 1 " );
     }
 
     nextStr[0] = '\0';
@@ -957,7 +983,7 @@ cmlCheckDirId( char *dirId, char *userName, char *userZone,
     rodsLong_t iVal;
 
     if ( logSQL_CML != 0 ) {
-        rodsLog( LOG_SQL, "cmlCheckDirId SQL 1 " );
+        rodsLog( LOG_SQL, "cmlCheckDirId S-Q-L 1 " );
     }
 
     status = cmlGetIntegerValueFromSql(
@@ -968,7 +994,7 @@ cmlCheckDirId( char *dirId, char *userName, char *userZone,
            of the two likely cases is problem. */
 
         if ( logSQL_CML != 0 ) {
-            rodsLog( LOG_SQL, "cmlCheckDirId SQL 2 " );
+            rodsLog( LOG_SQL, "cmlCheckDirId S-Q-L 2 " );
         }
 
         status = cmlGetIntegerValueFromSql(
@@ -1267,11 +1293,6 @@ int checkObjIdByTicket( char *dataId, char *accessLevel,
     static rodsLong_t previousDataId2 = 0;
 
     static char prevTicketId[50] = "";
-
-#if 0
-    rodsLog( LOG_NOTICE, "checkObjIdByTicket debug dataId=%s accessLevel=%s", dataId,
-             accessLevel );
-#endif
 
     for ( i = 0; i < 10; i++ ) {
         iVal[i] = NAME_LEN;

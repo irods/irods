@@ -1003,7 +1003,6 @@ extern "C" {
         // make the call to unlink a file
         int status = rsFileUnlink( comm, &fileUnlinkInp );
         if ( status >= 0 ) {
-            specColl_t* specColl;
             /* cache has been written */
             specColl_t* loc_spec_coll = PluginStructFileDesc[ struct_file_index ].specColl;
             if ( loc_spec_coll->cacheDirty == 0 ) {

@@ -456,29 +456,13 @@ l3Unlink( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
         status = rsSubStructFileUnlink( rsComm, &subFile );
     }
     else {
-#if 0 // JMC - legacy resource 
-        rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
-        switch ( RescTypeDef[rescTypeInx].rescCat ) {
-        case FILE_CAT:
-#endif // JMC - legacy resource 
-            memset( &fileUnlinkInp, 0, sizeof( fileUnlinkInp ) );
-            rstrcpy( fileUnlinkInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN );
-            rstrcpy( fileUnlinkInp.rescHier, dataObjInfo->rescHier, MAX_NAME_LEN );
-            rstrcpy( fileUnlinkInp.addr.hostAddr, location.c_str(), NAME_LEN );
-            rstrcpy( fileUnlinkInp.objPath, dataObjInfo->objPath, MAX_NAME_LEN );
-            rstrcpy( fileUnlinkInp.in_pdmo, dataObjInfo->in_pdmo, MAX_NAME_LEN );
-            status = rsFileUnlink( rsComm, &fileUnlinkInp );
-#if 0 // JMC - legacy resource 
-            break;
-
-        default:
-            rodsLog( LOG_NOTICE,
-                     "l3Unlink: rescCat type %d is not recognized",
-                     RescTypeDef[rescTypeInx].rescCat );
-            status = SYS_INVALID_RESC_TYPE;
-            break;
-        }
-#endif // JMC - legacy resource 
+        memset( &fileUnlinkInp, 0, sizeof( fileUnlinkInp ) );
+        rstrcpy( fileUnlinkInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN );
+        rstrcpy( fileUnlinkInp.rescHier, dataObjInfo->rescHier, MAX_NAME_LEN );
+        rstrcpy( fileUnlinkInp.addr.hostAddr, location.c_str(), NAME_LEN );
+        rstrcpy( fileUnlinkInp.objPath, dataObjInfo->objPath, MAX_NAME_LEN );
+        rstrcpy( fileUnlinkInp.in_pdmo, dataObjInfo->in_pdmo, MAX_NAME_LEN );
+        status = rsFileUnlink( rsComm, &fileUnlinkInp );
     }
     return ( status );
 }

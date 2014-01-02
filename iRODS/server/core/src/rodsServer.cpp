@@ -139,15 +139,9 @@ int irodsWinMain( int argc, char **argv )
     signal( SIGCHLD, SIG_DFL );	/* SIG_IGN causes autoreap. wait get nothing */
     signal( SIGPIPE, SIG_IGN );
 #ifdef osx_platform
-#if 0
-    signal( SIGINT, ( void * ) serverExit );
-    signal( SIGHUP, ( void * )serverExit );
-    signal( SIGTERM, ( void * )serverExit );
-#else
     signal( SIGINT, ( sig_t ) serverExit );
     signal( SIGHUP, ( sig_t )serverExit );
     signal( SIGTERM, ( sig_t ) serverExit );
-#endif
 #else
     signal( SIGINT, serverExit );
     signal( SIGHUP, serverExit );
@@ -552,67 +546,6 @@ execAgent( int newSock, startupPack_t *startupPack ) {
 
     mySetenvInt( SERVER_BOOT_TIME, ServerBootTime );
 
-#if 0
-    char *myBuf;
-    myBuf = malloc( NAME_LEN * 2 );
-    snprintf( myBuf, NAME_LEN * 2, "%s=%d", SP_NEW_SOCK, newSock );
-    putenv( myBuf );
-
-    myBuf = malloc( NAME_LEN * 2 );
-    snprintf( myBuf, NAME_LEN * 2, "%s=%d", SP_PROTOCOL,
-              startupPack->irodsProt );
-    putenv( myBuf );
-
-    myBuf = malloc( NAME_LEN * 2 );
-    snprintf( myBuf, NAME_LEN * 2, "%s=%d", SP_RECONN_FLAG,
-              startupPack->reconnFlag );
-    putenv( myBuf );
-
-    myBuf = malloc( NAME_LEN * 2 );
-    snprintf( myBuf, NAME_LEN * 2, "%s=%d", SP_CONNECT_CNT,
-              startupPack->connectCnt );
-    putenv( myBuf );
-
-    myBuf = malloc( NAME_LEN * 2 );
-    snprintf( myBuf, NAME_LEN * 2, "%s=%s", SP_PROXY_USER,
-              startupPack->proxyUser );
-    putenv( myBuf );
-
-    myBuf = malloc( NAME_LEN * 2 );
-    snprintf( myBuf, NAME_LEN * 2, "%s=%s", SP_PROXY_RODS_ZONE,
-              startupPack->proxyRodsZone );
-    putenv( myBuf );
-
-    myBuf = malloc( NAME_LEN * 2 );
-    snprintf( myBuf, NAME_LEN * 2, "%s=%s", SP_CLIENT_USER,
-              startupPack->clientUser );
-    putenv( myBuf );
-
-    myBuf = malloc( NAME_LEN * 2 );
-    snprintf( myBuf, NAME_LEN * 2, "%s=%s", SP_CLIENT_RODS_ZONE,
-              startupPack->clientRodsZone );
-    putenv( myBuf );
-
-    myBuf = malloc( NAME_LEN * 2 );
-    snprintf( myBuf, NAME_LEN * 2, "%s=%s", SP_REL_VERSION,
-              startupPack->relVersion );
-    putenv( myBuf );
-
-    myBuf = malloc( NAME_LEN * 2 );
-    snprintf( myBuf, NAME_LEN * 2, "%s=%s", SP_API_VERSION,
-              startupPack->apiVersion );
-    putenv( myBuf );
-
-    myBuf = malloc( NAME_LEN * 2 );
-    snprintf( myBuf, NAME_LEN * 2, "%s=%s", SP_OPTION,
-              startupPack->option );
-    putenv( myBuf );
-
-    myBuf = malloc( NAME_LEN * 2 );
-    snprintf( myBuf, NAME_LEN * 2, "%s=%d", SERVER_BOOT_TIME,
-              ServerBootTime );
-    putenv( myBuf );
-#endif
 
 #ifdef windows_platform  /* windows */
     iRODSNtGetAgentExecutableWithPath( buf, AGENT_EXE );
@@ -1148,9 +1081,6 @@ spawnManagerTask() {
         if ( curTime > agentQueChkTime + AGENT_QUE_CHK_INT ) {
             agentQueChkTime = curTime;
             procBadReq();
-#if 0	/* take this out for now. Wayne saw problem with accept */
-            chkConnectedAgentProcQue();
-#endif
         }
     }
 }

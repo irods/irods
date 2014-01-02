@@ -159,42 +159,6 @@ rsNcOpenColl( rsComm_t *rsComm, ncOpenInp_t *ncOpenInp, int **ncid ) {
     if ( status < 0 ) {
         return status;
     }
-#if 0
-    /* get the aggInfo from file */
-    bzero( &dataObjInp, sizeof( dataObjInp ) );
-    bzero( &packedBBuf, sizeof( packedBBuf ) );
-    replKeyVal( &ncOpenInp->condInput, &dataObjInp.condInput );
-    snprintf( dataObjInp.objPath, MAX_NAME_LEN, "%s/%s",
-              ncOpenInp->objPath, NC_AGG_INFO_FILE_NAME );
-    dataObjInp.oprType = GET_OPR;
-    status = rsDataObjGet( rsComm, &dataObjInp, &portalOprOut, &packedBBuf );
-    clearKeyVal( &dataObjInp.condInput );
-    if ( portalOprOut != NULL ) {
-        free( portalOprOut );
-    }
-    if ( status < 0 ) {
-        if ( status == CAT_NO_ROWS_FOUND ) {
-            status = NETCDF_AGG_INFO_FILE_ERR;
-        }
-        rodsLogError( LOG_ERROR, status,
-                      "rsNcOpenColl: rsDataObjGet error for %s", dataObjInp.objPath );
-        return status;
-    }
-    status = unpackStruct( packedBBuf.buf, ( void ** ) &ncAggInfo,
-                           "NcAggInfo_PI", RodsPackTable, XML_PROT );
-
-    if ( status < 0 ) {
-        rodsLogError( LOG_ERROR, status,
-                      "rsNcOpenColl: unpackStruct error for %s", dataObjInp.objPath );
-        return NETCDF_AGG_INFO_FILE_ERR;
-    }
-
-    if ( ncAggInfo == NULL || ncAggInfo->numFiles == 0 ) {
-        rodsLog( LOG_ERROR,
-                 "rsNcOpenColl: No ncAggInfo for %s", dataObjInp.objPath );
-        return NETCDF_AGG_INFO_FILE_ERR;
-    }
-#endif
 
     l1descInx = allocL1desc();
     if ( l1descInx < 0 ) {

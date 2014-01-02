@@ -183,11 +183,7 @@ int rsApiHandler(
         }
         else if ( strcmp( RsApiTable[apiInx].inPackInstruct,
                           "DataObjInp_PI" )  == 0 ) {
-#if 0	/* XXXXXXX Done in clearDataObjInp. this could be trouble */
-            if ( apiNumber == QUERY_SPEC_COLL_AN &&
-                    ( ( dataObjInp_t * ) myInStruct )->specColl != NULL ) [curlybrace here]
-#endif
-                clearDataObjInp( ( dataObjInp_t * ) myInStruct );
+            clearDataObjInp( ( dataObjInp_t * ) myInStruct );
         }
         else if ( strcmp( RsApiTable[apiInx].inPackInstruct,
                           "DataObjCopyInp_PI" )  == 0 ) {
@@ -428,12 +424,10 @@ chkApiPermission( rsComm_t * rsComm, int apiInx ) {
         return ( SYS_NO_API_PRIV );
     }
 
-#ifdef STORAGE_ADMIN_ROLE
     if ( ( strcmp( rsComm->proxyUser.userType, STORAGE_ADMIN_USER_TYPE ) == 0 )
             && ( clientUserAuth & STORAGE_ADMIN_USER ) ) {
         return ( 0 );
     }
-#endif
 
     clientUserAuth = clientUserAuth & 0xfff;	/* take out XMSG_SVR_* flags */
 

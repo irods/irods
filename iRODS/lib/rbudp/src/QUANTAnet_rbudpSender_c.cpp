@@ -42,16 +42,6 @@
   }  while(0)
 */
 
-#if 0
-inline void TRACE_DEBUG( char *format, ... ) {
-    va_list arglist;
-    va_start( arglist, format );
-    vfprintf( stderr, format, arglist );
-    fprintf( stderr, "\n" );
-    va_end( arglist );
-}
-#endif
-
 void
 QUANTAnet_rbudpSender_c( rbudpSender_t *rbudpSender, int port ) {
     memset( rbudpSender, 0, sizeof( rbudpBase_t ) );
@@ -180,51 +170,6 @@ int  sendBuf( rbudpSender_t *rbudpSender, void * buffer, int bufSize,
     free( rbudpSender->rbudpBase.hashTable );
     return ( 0 );
 }
-
-#if 0	/* not used */
-void  udpSendWritev() {
-    int i, done, actualPayloadSize;
-    struct timeval start, now;
-
-    done = 0;
-    i = 0;
-    gettimeofday( &start, NULL );
-    while ( !done ) {
-        gettimeofday( &now, NULL );
-        if ( USEC( &start, &now ) < usecsPerPacket * i ) {
-            // busy wait or sleep
-            //		usleep(1);
-        }
-        else {
-            // last packet is probably smaller than regular packets
-            // we have to pad the last packet, make it the same length
-            // as regular packets
-            if ( hashTable[i] < totalNumberOfPackets - 1 ) {
-                actualPayloadSize = payloadSize;
-            }
-            else {
-                actualPayloadSize = lastPayloadSize;
-            }
-            sendHeader.seq = hashTable[i];
-
-            iovSend[1].iov_base = ( char* )mainBuffer + ( sendHeader.seq * payloadSize );
-            iovSend[1].iov_len = actualPayloadSize;
-            if ( verbose > 1 ) {
-                fprintf( stderr, "sent %d, %d %d\n", sendHeader.seq, now.tv_sec, now.tv_usec );
-            }
-            if ( sendmsg( udpSockfd, &msgSend, 0 ) < 0 ) {
-                perror( "sendmsg" );
-                exit( 1 );
-            }
-            i++;
-            if ( i >= remainNumberOfPackets ) {
-                done = 1;
-            }
-        }
-    }
-}
-
-#endif
 
 /* XXXXX need to handle status */
 int

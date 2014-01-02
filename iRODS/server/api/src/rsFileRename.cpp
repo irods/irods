@@ -24,9 +24,6 @@ rsFileRename( rsComm_t *rsComm, fileRenameInp_t *fileRenameInp ) {
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
     int status;
-irods::stacktrace st;
-st.trace();
-st.dump();
 
     //remoteFlag = resolveHost (&fileRenameInp->addr, &rodsServerHost);
     irods::error ret = irods::get_host_for_hier_string( fileRenameInp->rescHier, remoteFlag, rodsServerHost );

@@ -46,16 +46,6 @@
 // key for ssl shared secret property
 const std::string SHARED_KEY( "ssl_network_plugin_shared_key" );
 
-static void get_time( std::string& _str ) {
-    time_t timeValue;
-    char timeBuf[100];
-    time( &timeValue );
-    rstrcpy( timeBuf, ctime( &timeValue ), 90 );
-    timeBuf[19] = '\0';
-
-    _str = timeBuf;
-}
-
 // =-=-=-=-=-=-=-
 //
 static void ssl_log_error(

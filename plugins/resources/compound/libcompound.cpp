@@ -474,8 +474,6 @@ extern "C" {
                             transferStat_t* trans_stat = NULL;
                             int status = rsDataObjRepl( _ctx.comm(), &data_obj_inp, &trans_stat );
                             if ( status < 0 ) {
-                                char* sys_error;
-                                char* rods_error = rodsErrorName( status, &sys_error );
                                 std::stringstream msg;
                                 msg << "Failed to replicate the data object [" << obj->logical_path() << "] ";
                                 msg << "for operation [" << _stage_sync_kw << "]";

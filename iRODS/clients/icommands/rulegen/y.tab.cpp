@@ -2205,6 +2205,8 @@ void *stitch( int typ, void *inarg1, void  *inarg2, void  *inarg3, void  *inarg4
     arg3 = ( char * ) inarg3;
     arg4 = ( char * ) inarg4;
 
+    memset( tmpStr, 0, 10000 );
+
     switch ( typ ) {
     case BRAC:
         return( arg1 );
@@ -2427,10 +2429,10 @@ void *stitch( int typ, void *inarg1, void  *inarg2, void  *inarg3, void  *inarg4
                 else {
                     if ( ( t = strstr( u, ":::" ) ) != NULL ) {
                         *t = '\0';
-                        sprintf( tmpStr, "%s%s|%s|%s%s", tmpStr, arg1, u, nopstr, ( char * ) t + strlen( ":::" ) );
+                        sprintf( tmpStr + strlen( tmpStr ), "%s|%s|%s%s", arg1, u, nopstr, ( char * ) t + strlen( ":::" ) );
                     }
                     else {
-                        sprintf( tmpStr, "%s%s|%s", tmpStr, arg1, u );
+                        sprintf( tmpStr + strlen( tmpStr ), "%s|%s", arg1, u );
                     }
                 }
             }
@@ -2438,10 +2440,10 @@ void *stitch( int typ, void *inarg1, void  *inarg2, void  *inarg3, void  *inarg4
                 if ( !strcmp( u, " " ) ) {
                     if ( ( t = strstr( arg3, ":::" ) ) != NULL ) {
                         *t = '\0';
-                        sprintf( tmpStr, "%s%s||%s|%s%s", tmpStr, arg1, arg3, nopstr, ( char * ) t + strlen( ":::" ) );
+                        sprintf( tmpStr + strlen( tmpStr ), "%s||%s|%s%s", arg1, arg3, nopstr, ( char * ) t + strlen( ":::" ) );
                     }
                     else {
-                        sprintf( tmpStr, "%s%s||%s", tmpStr, arg1, arg3 );
+                        sprintf( tmpStr + strlen( tmpStr ), "%s||%s", arg1, arg3 );
                     }
                 }
                 else {
@@ -2449,23 +2451,23 @@ void *stitch( int typ, void *inarg1, void  *inarg2, void  *inarg3, void  *inarg4
                         *t = '\0';
                         if ( ( s = strstr( arg3, ":::" ) ) != NULL ) {
                             *s = '\0';
-                            sprintf( tmpStr, "%s%s|%s##%s|%s%s##%s ", tmpStr,
+                            sprintf( tmpStr + strlen( tmpStr ), "%s|%s##%s|%s%s##%s ",
                                      arg1, u, arg3,  nopstr, ( char * ) t + strlen( ":::" ),
                                      ( char * ) s + strlen( ":::" ) );
                         }
                         else {
-                            sprintf( tmpStr, "%s%s|%s##%s|%s%s", tmpStr,
+                            sprintf( tmpStr + strlen( tmpStr ), "%s|%s##%s|%s%s",
                                      arg1, u, arg3,   nopstr, ( char * ) t + strlen( ":::" ) );
                         }
                     }
                     else {
                         if ( ( s = strstr( arg3, ":::" ) ) != NULL ) {
                             *s = '\0';
-                            sprintf( tmpStr, "%s%s|%s##%s|%s%s", tmpStr,
+                            sprintf( tmpStr + strlen( tmpStr ), "%s|%s##%s|%s%s",
                                      arg1, u, arg3,  nopstr, ( char * ) s + strlen( ":::" ) );
                         }
                         else {
-                            sprintf( tmpStr, "%s%s|%s##%s", tmpStr, arg1, u, arg3 );
+                            sprintf( tmpStr + strlen( tmpStr ), "%s|%s##%s", arg1, u, arg3 );
                         }
                     }
                 }

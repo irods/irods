@@ -130,15 +130,13 @@ TEST_F( TestCllFunctions, HandlesSQL ) {
 }
 
 int main( int argc, char **argv ) {
-    if(argc < EXPECTED_COMMAND_LINE_ARGS + 1)
-    {
-      user = "no_user";
-      pass = "no_pass";
+    if ( argc < EXPECTED_COMMAND_LINE_ARGS + 1 ) {
+        user = "no_user";
+        pass = "no_pass";
     }
-    else
-    {
-      user = argv[1];
-      user = argv[2];
+    else {
+        user = argv[1];
+        user = argv[2];
     }
     ::testing::GTEST_FLAG( output ) = "xml:icatLowLevelOdbc.xml";
     ::testing::InitGoogleTest( &argc, argv );

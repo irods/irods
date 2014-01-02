@@ -16,6 +16,7 @@
 #include "icatMidLevelRoutines.hpp"
 
 #include <string.h>
+#include <string>
 
 extern icatSessionStruct *chlGetRcs();
 
@@ -149,10 +150,10 @@ int testTempPwConvert( char *s1, char *s2 ) {
 
 int
 testGetLocalZone( rsComm_t *rsComm, char *expectedZone ) {
-    char *zone;
-    zone = chlGetLocalZone();
-    printf( "Zone is %s\n", zone );
-    if ( strcmp( zone, expectedZone ) != 0 ) {
+    std::string zone;
+    chlGetLocalZone( zone );
+    printf( "Zone is %s\n", zone.c_str() );
+    if ( zone != expectedZone ) {
         return( -1 );
     }
     return( 0 );
@@ -800,12 +801,12 @@ int testCheckQuota( rsComm_t *rsComm, char *userName, char *rescName,
 
 rodsLong_t
 testCurrent( rsComm_t *rsComm ) {
-    rodsLong_t status;
+    rodsLong_t status = 0;
     icatSessionStruct *icss;
 
-    icss = chlGetRcs();
+    chlGetRcs( &icss );
 
-    status = cmlGetCurrentSeqVal( icss );
+// JMC    status = cmlGetCurrentSeqVal( icss );
     return( status );
 }
 
@@ -1063,8 +1064,8 @@ main( int argc, char **argv ) {
 
     if ( strcmp( argv[1], "rename" ) == 0 ) {
         status = testRename( Comm, argv[2], argv[3] );
-        testCurrent( Comm );  /* exercise this as part of rename;
-                               testCurrent needs a SQL context */
+        // JMC testCurrent( Comm );  // exercise this as part of rename;
+        // testCurrent needs a SQL context
         didOne = 1;
     }
 

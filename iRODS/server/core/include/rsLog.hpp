@@ -12,7 +12,7 @@
 #define RULE_EXEC_LOGFILE     "reLog"
 #define XMSG_SVR_LOGFILE     "xmsgLog"
 
-#define DEF_CONFIG_DIR	"../config"
+#define DEF_CONFIG_DIR	"/var/lib/irods/iRODS/server/config"
 #define DEF_LOG_DIR	"../log"
 #define PROC_LOG_DIR_NAME	"proc"
 // =-=-=-=-=-=-=-

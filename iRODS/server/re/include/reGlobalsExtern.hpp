@@ -55,21 +55,11 @@ typedef struct RuleExecInfo {
     msParamArray_t inOutMsParamArray;
     int l1descInx;
     dataObjInp_t *doinp;	/* data object type input */
-#if 0
-    dataOprInp_t *dinp;   /* not used. data input */
-    fileOpenInp_t *finp;  /* not used. file type input */
-#endif
     dataObjInfo_t *doi;
     rescGrpInfo_t *rgi; /* resource group */
     userInfo_t *uoic;  /* client XXXX should get this from rsComm->clientUser */
     userInfo_t *uoip;  /* proxy XXXX should get this from rsComm->proxyUser */
     collInfo_t *coi;
-#if 0
-    dataObjInp_t *doinpo;  /* other data object type input. for copy operation */
-    dataOprInp_t *dinpo;   /* other data type input. for copy operation */
-    fileOpenInp_t *finpo;  /* other file type input. for copy operation */
-    rescGrpInfo_t *rgio; /* other resource group. for copy operation */
-#endif
     userInfo_t *uoio;     /* other user info */
     keyValPair_t *condInputData;
     /****        IF YOU ARE MAKING CHANGES CHECK BELOW

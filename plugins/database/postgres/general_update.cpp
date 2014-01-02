@@ -15,17 +15,17 @@
 #include "rodsGeneralUpdate.hpp"
 
 #include "rodsClient.hpp"
+#include "icatHighLevelRoutines.hpp"
 #include "icatMidLevelRoutines.hpp"
 #include "icatLowLevel.hpp"
 
 extern int sGetColumnInfo( int defineVal, char **tableName, char **columnName );
-extern icatSessionStruct *chlGetRcs();
 
 extern int icatGeneralQuerySetup();
 
 int updateDebug = 0;
 
-int logSQLGenUpdate = 0;
+extern int logSQLGenUpdate;
 char tSQL[MAX_SQL_SIZE];
 
 int
@@ -181,13 +181,17 @@ generalDelete( generalUpdateInp_t generalUpdateInp ) {
 
 
 /* General Update */
-int
-chlGeneralUpdate( generalUpdateInp_t generalUpdateInp ) {
+extern "C" int chl_general_update_impl(
+    generalUpdateInp_t generalUpdateInp ) {
     int status;
     static int firstCall = 1;
     icatSessionStruct *icss;
 
-    icss = chlGetRcs();
+    status = chlGetRcs( &icss );
+    if ( status < 0 || !icss ) {
+        return( CAT_NOT_OPEN );
+    }
+
     /*   result->rowCount=0; */
 
     if ( firstCall ) {

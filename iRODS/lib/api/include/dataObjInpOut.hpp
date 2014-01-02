@@ -191,10 +191,6 @@ typedef struct CollInp {
 #define RENAME_UNKNOWN_TYPE     22
 #define REMOTE_ZONE_OPR         24
 #define UNREG_OPR               26
-#if 0
-#define CREATE_OPR              23
-#define OPEN_OPR                25
-#endif
 /* NETCDF type operation */
 #define NC_OPR                 1000    /* netcdf operation */
 #define NC_OPEN_FOR_WRITE      1000    /* open/create NETCDF for write */

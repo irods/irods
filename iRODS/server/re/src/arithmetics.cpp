@@ -273,10 +273,10 @@ Res* processCoercion( Node *node, Res *res, ExprType *type, Hashtable *tvarEnv, 
         case T_BOOL:
             switch ( TYPE( res ) ) {
             case T_INT:
-                nres = newBoolRes( r, RES_INT_VAL( res ) );
+                nres = newIntRes( r, RES_INT_VAL( res ) );
                 break;
             case T_DOUBLE:
-                nres = newBoolRes( r, RES_DOUBLE_VAL( res ) );
+                nres = newDoubleRes( r, RES_DOUBLE_VAL( res ) );
                 break;
             case T_STRING:
                 if ( strcmp( res->text, "true" ) == 0 ) {
@@ -1320,21 +1320,6 @@ Res* execRuleNodeRes( Node *rule, Res** args, unsigned int argc, int applyAll, E
     Res *res = evaluateExpression3( ruleCondition, 0, 0, rei, reiSaveFlag,  envNew, errmsg, rNew );
     /* todo consolidate every error into T_ERROR except OOM */
     if ( getNodeType( res ) != N_ERROR && TYPE( res ) == T_BOOL && RES_BOOL_VAL( res ) != 0 ) {
-#ifndef DEBUG
-#if 0
-        if ( reTestFlag > 0 ) {
-            if ( reTestFlag == COMMAND_TEST_1 ) {
-                fprintf( stdout, "+Executing Rule Number:%i for Action:%s\n", ruleInx, ruleName );
-            }
-            else if ( reTestFlag == HTML_TEST_1 ) {
-                fprintf( stdout, "+Executing Rule Number:<FONT COLOR=#FF0000>%i</FONT> for Action:<FONT COLOR=#0000FF>%s</FONT><BR>\n", ruleInx, ruleName );
-            }
-            else {
-                rodsLog( LOG_NOTICE, "+Executing Rule Number:%i for Action:%s\n", ruleInx, ruleName );
-            }
-        }
-#endif
-#endif
         if ( getNodeType( ruleAction ) == N_ACTIONS ) {
             statusRes = evaluateActions( ruleAction, ruleRecovery, applyAll, rei, reiSaveFlag,  envNew, errmsg, rNew );
         }

@@ -401,14 +401,6 @@ int
 isValidFilePath( char *path ) {
     char *tmpPtr  = NULL;
     char *tmpPath = path;
-#if 0
-    if ( strstr( path, "/../" ) != NULL ) {
-        /* don't allow /../ in the path */
-        rodsLog( LOG_ERROR,
-                 "isValidFilePath: input fileName %s contains /../", path );
-        return SYS_INVALID_FILE_PATH;
-    }
-#endif
     while ( ( tmpPtr = strstr( tmpPath, "/.." ) ) != NULL ) {
         if ( tmpPtr[3] == '\0' || tmpPtr[3] == '/' ) {
             /* "/../" or end with "/.."  */
@@ -490,38 +482,6 @@ int matchCliVaultPath(
     // success
     return 1;
 
-#if 0
-    int len, nameLen;
-    char *tmpPath;
-    char *outVaultPath = NULL;
-
-
-    if ( ( len =
-                matchVaultPath( rsComm, filePath, rodsServerHost, &outVaultPath ) ) == 0 ) {
-        /* no match */
-        return ( 0 );
-    }
-
-    /* assume the path is $(vaultPath/home/userName */
-
-    nameLen = strlen( rsComm->clientUser.userName );
-
-    tmpPath = filePath + len + 1;    /* skip the vault path */
-
-    if ( strncmp( tmpPath, "home/", 5 ) != 0 ) {
-        return -1;
-    }
-    tmpPath += 5;
-    if ( strncmp( tmpPath, rsComm->clientUser.userName, nameLen ) == 0 &&
-            ( tmpPath[nameLen] == '/' || tmpPath[len] == '\0' ) ) {
-        return 1;
-    }
-    else {
-        return 0;
-    }
-
-    return -1;
-#endif
 } // matchCliVaultPath
 
 /* filePathTypeInResc - the status of a filePath in a resource.

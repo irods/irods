@@ -207,7 +207,7 @@ download_and_compile_EPM () {
     RENCIEPM="epm42-renci.tar.gz"
     rm -rf epm
     rm -f $RENCIEPM
-    wget ftp://ftp.renci.org/pub/irods/build/$RENCIEPM
+    wget ftp://ftp.renci.org/pub/irods/build/$RENCIEPM 2>&1
     tar -xf $RENCIEPM
 
     # configure
@@ -351,6 +351,12 @@ if [ "$1" == "clean" ] ; then
     rm -f irods-manual*.pdf
     rm -f examples/microservices/*.pdf
     rm -f libirods.a
+    echo "Cleaning Database plugins..."
+    cd plugins/database
+    set +e
+    make clean > /dev/null 2>&1
+    set -e
+    cd ../..
     echo "Cleaning Authentication plugins..."
     cd plugins/auth
     set +e
@@ -920,7 +926,7 @@ if [ "$BUILDIRODS" == "1" ] ; then
             echo "Using existing copy"
         else
 #            http://www.digip.org/jansson/
-            wget ftp://ftp.renci.org/pub/irods/external/$IRODS_BUILD_JANSSONVERSION.tar.gz
+            wget ftp://ftp.renci.org/pub/irods/external/$IRODS_BUILD_JANSSONVERSION.tar.gz 2>&1
         fi
         gunzip $IRODS_BUILD_JANSSONVERSION.tar.gz
         tar xf $IRODS_BUILD_JANSSONVERSION.tar
@@ -946,7 +952,7 @@ if [ "$BUILDIRODS" == "1" ] ; then
             echo "Using existing copy"
         else
 #            wget http://sourceforge.net/projects/cjson/files/cJSONFiles.zip/download
-            wget ftp://ftp.renci.org/pub/irods/external/$IRODS_BUILD_CJSONVERSION.zip
+            wget ftp://ftp.renci.org/pub/irods/external/$IRODS_BUILD_CJSONVERSION.zip 2>&1
         fi
         echo "${text_green}${text_bold}Unzipping [$IRODS_BUILD_CJSONVERSION]${text_reset}"
         unzip -o $IRODS_BUILD_CJSONVERSION.zip
@@ -964,7 +970,7 @@ if [ "$BUILDIRODS" == "1" ] ; then
             echo "Using existing copy"
         else
 #            wget http://www.cmake.org/files/v2.8/$IRODS_BUILD_CMAKEVERSION.tar.gz
-            wget ftp://ftp.renci.org/pub/irods/external/$IRODS_BUILD_CMAKEVERSION.tar.gz
+            wget ftp://ftp.renci.org/pub/irods/external/$IRODS_BUILD_CMAKEVERSION.tar.gz 2>&1
         fi
 #        gunzip $IRODS_BUILD_CMAKEVERSION.tar.gz
         tar xf $IRODS_BUILD_CMAKEVERSION.tar.gz # this version wasn't zipped
@@ -990,7 +996,7 @@ if [ "$BUILDIRODS" == "1" ] ; then
             echo "Using existing copy"
         else
 #            wget -O $IRODS_BUILD_LIBARCHIVEVERSION.tar.gz https://github.com/libarchive/libarchive/archive/v$IRODS_BUILD_LIBARCHIVEVERSIONNUMBER.tar.gz
-            wget ftp://ftp.renci.org/pub/irods/external/$IRODS_BUILD_LIBARCHIVEVERSION.tar.gz
+            wget ftp://ftp.renci.org/pub/irods/external/$IRODS_BUILD_LIBARCHIVEVERSION.tar.gz 2>&1
         fi
         gunzip $IRODS_BUILD_LIBARCHIVEVERSION.tar.gz
         tar xf $IRODS_BUILD_LIBARCHIVEVERSION.tar
@@ -1021,7 +1027,7 @@ if [ "$BUILDIRODS" == "1" ] ; then
             echo "Using existing copy"
         else
 #            wget -O $IRODS_BUILD_BOOSTVERSION.tar.gz http://sourceforge.net/projects/boost/files/boost/1.55.0z/$IRODS_BUILD_BOOSTVERSION.tar.gz/download
-            wget ftp://ftp.renci.org/pub/irods/external/$IRODS_BUILD_BOOSTVERSION.tar.gz
+            wget ftp://ftp.renci.org/pub/irods/external/$IRODS_BUILD_BOOSTVERSION.tar.gz 2>&1
         fi
         gunzip $IRODS_BUILD_BOOSTVERSION.tar.gz
         tar xf $IRODS_BUILD_BOOSTVERSION.tar
@@ -1218,6 +1224,11 @@ if [ "$BUILDIRODS" == "1" ] ; then
     irods_resources_home="$detected_irods_home/plugins/resources/"
     sed -e s,IRODSRESOURCESPATH,$irods_resources_home, ./lib/core/include/irods_resources_home.hpp.src > /tmp/irods_resources_home.hpp
     mv /tmp/irods_resources_home.hpp ./lib/core/include/
+    # =-=-=-=-=-=-=-
+    # modify the irods_database_home.hpp file with the proper path to the binary directory
+    irods_database_home="$detected_irods_home/plugins/database/"
+    sed -e s,IRODSDATABASEPATH,$irods_database_home, ./server/core/include/irods_database_home.hpp.src > /tmp/irods_database_home.hpp
+    mv /tmp/irods_database_home.hpp ./server/core/include/
 
 
     ###########################################
@@ -1243,10 +1254,7 @@ if [ "$BUILDIRODS" == "1" ] ; then
     #        time make -j 4      1m52.533s
     #        time make -j 5      1m48.611s
     ###########################################
-    set +e
-    $MAKEJCMD
-    set -e
-    $MAKEJCMD
+    $MAKEJCMD -C $BUILDDIR/iRODS
     if [ "$?" != "0" ] ; then
         exit 1
     fi
@@ -1276,6 +1284,13 @@ if [ "$BUILDIRODS" == "1" ] ; then
     # build auth plugins
     echo "${text_green}${text_bold}Building Auth Plugins${text_reset}"
 	cd $BUILDDIR/plugins/auth/
+	make -j$CPUCOUNT
+	cd $BUILDDIR
+
+    # =-=-=-=-=-=-=-
+    # build database plugins
+    echo "${text_green}${text_bold}Building Database Plugins${text_reset}"
+	cd $BUILDDIR/plugins/database/
 	make -j$CPUCOUNT
 	cd $BUILDDIR
 

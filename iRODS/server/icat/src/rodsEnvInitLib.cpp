@@ -1071,6 +1071,8 @@ updateAttrValue( int cd,
     i = checkAccessMetaDataAttr( real_user_id, attr_id, attr_cnt );
     if ( i != 0 ) {
         free( in_rsrcid );    // JMC cppcheck - leak
+        free( attr_name );
+        free( table_name );
         return( i );
     }
     tabcnt = 0;
@@ -1104,6 +1106,8 @@ updateAttrValue( int cd,
         iisAttrVal[i] = malloc( sizeof( char ) * ( strlen( attr_value[i] ) * 4 + 3 ) );
         if ( iisAttrVal[i] == NULL ) {
             free( in_rsrcid );    // JMC cppcheck
+            free( table_name );
+            free( attr_name );
             return( MEMORY_ALLOCATION_ERROR );
         }
         strcpy( iisAttrVal[i], attr_value[i] );
@@ -1114,6 +1118,8 @@ updateAttrValue( int cd,
             free( iisAttrVal[i] );
         }
         free( in_rsrcid ); // JMC cppcheck - leak
+        free( table_name );
+        free( attr_name );
         return( ii );
     }
     ii = convert_to_updatesql( cd, tabcnt, table_name, in_rsrcid,
@@ -1123,14 +1129,17 @@ updateAttrValue( int cd,
         for ( i = 0; i < attr_cnt; i++ ) {
             free( iisAttrVal[i] );
         }
+        free( attr_name );
         return ( ii );
     }
     i = ExecSqlDb( henv, hdbc, qs );
 
     if ( i < 0 ) {
         strcpy( GENERATEDSQL, qs );
+        free( attr_name );
         return( i );
     }
+    free( attr_name );
     return( 0 );
 }
 
@@ -1177,6 +1186,8 @@ insertIntoSchema( int cd,
     i = checkAccessMetaDataAttr( real_user_id, attr_id, attr_cnt );
     if ( i != 0 ) {
         free( in_rsrcid );
+        free( table_name );
+        free( attr_name );
         return( i );
     } // JMC cppcheck - leak
 
@@ -1216,6 +1227,8 @@ insertIntoSchema( int cd,
         iisAttrVal[i] = malloc( sizeof( char ) * ( strlen( attr_value[i] ) * 4 + 3 ) );
         if ( iisAttrVal[i] == NULL ) {
             free( in_rsrcid );    // JMC cppcheck - leak
+            free( table_name );
+            free( attr_name );
             return( MEMORY_ALLOCATION_ERROR );
         }
         strcpy( iisAttrVal[i], attr_value[i] );
@@ -1226,6 +1239,8 @@ insertIntoSchema( int cd,
             free( iisAttrVal[i] );
         }
         free( in_rsrcid ); // JMC cppcheck - leak
+        free( table_name );
+        free( attr_name );
         return( ii );
     }
 
@@ -1236,6 +1251,7 @@ insertIntoSchema( int cd,
         for ( i = 0; i < attr_cnt; i++ ) {
             free( iisAttrVal[i] );
         }
+        free( attr_name );
         return( ii );
     }
     /*  printf("QS:%s\n", query_string);*/
@@ -1255,6 +1271,7 @@ insertIntoSchema( int cd,
         i = ExecSqlDb( henv, hdbc, qs );
         if ( i < 0 ) {
             strcpy( GENERATEDSQL, qs );
+            free( attr_name );
             return( i );
         }
         qsptr = 0;
@@ -1269,6 +1286,7 @@ insertIntoSchema( int cd,
             query_stringptr++;
         }
     }
+    free( attr_name );
     return( 0 );
 }
 
@@ -1317,25 +1335,7 @@ insertIntoPhysicalTable( char **attr_name,
                          char  *dbschema_name,
                          char  *table_name,
                          int    attr_count ) {
-#if 0 // JMC cppcheck - src & dest sprintf
-    char sqlq[HUGE_STRING];
-    int i;
-
-    sprintf( sqlq, "insert into %s%s (", dbschema_name, table_name );
-    sprintf( sqlq, "%s  %s", sqlq, attr_name[0] );
-
-    for ( i = 1; i < attr_count; i++ ) {
-        sprintf( sqlq, "%s , %s", sqlq, attr_name[i] );
-    }
-    sprintf( sqlq, "%s ) values (", sqlq );
-    sprintf( sqlq, "%s %s", sqlq, attr_val[0] );
-    for ( i = 1; i < attr_count; i++ ) {
-        sprintf( sqlq, "%s , %s", sqlq, attr_val[i] );
-    }
-    sprintf( sqlq, "%s )", sqlq );
-#else
     const char* sqlq = buildPhyiscalTableQuery( attr_name, attr_val, dbschema_name, table_name, attr_count );
-#endif
     i = ExecSqlDb( henv, hdbc,  sqlq );
     if ( i != 0 ) {
         sprintf( errmess, "Data Insertion Error: %s", sqlq );
@@ -1352,24 +1352,7 @@ insertIntoPhysicalTableDontCare( char **attr_name,
                                  char  *dbschema_name,
                                  char  *table_name,
                                  int    attr_count ) {
-#if 0 // JMC cppcheck - src & dest sprintf
-    char sqlq[HUGE_STRING];
-    int i;
-
-    sprintf( sqlq, "insert into %s%s (", dbschema_name, table_name );
-    sprintf( sqlq, "%s  %s", sqlq, attr_name[0] );
-    for ( i = 1; i < attr_count; i++ ) {
-        sprintf( sqlq, "%s , %s", sqlq, attr_name[i] );
-    }
-    sprintf( sqlq, "%s ) values (", sqlq );
-    sprintf( sqlq, "%s %s", sqlq, attr_val[0] );
-    for ( i = 1; i < attr_count; i++ ) {
-        sprintf( sqlq, "%s , %s", sqlq, attr_val[i] );
-    }
-    sprintf( sqlq, "%s )", sqlq );
-#else
     const char* sqlq = buildPhyiscalTableQuery( attr_name, attr_val, dbschema_name, table_name, attr_count );
-#endif
     i = ExecSqlDb( henv, hdbc,  sqlq );
     if ( i != 0 ) {
         return( METADATA_INSERTION_ERROR );
@@ -1406,22 +1389,7 @@ int deleteFromPhysicalTable( char **attr_name,
                              char  *dbschema_name,
                              char  *table_name,
                              int    attr_count ) {
-#if 0
-    char sqlq[HUGE_STRING];
-    int i;
-
-    sprintf( sqlq, "delete from %s%s ", dbschema_name, table_name );
-    for ( i = 0; i < attr_count; i++ ) {
-        if ( i > 0 ) {
-            sprintf( sqlq, "%s AND %s = %s", sqlq, attr_name[i], attr_val[i] );
-        }
-        else {
-            sprintf( sqlq, "%s WHERE %s = %s", sqlq, attr_name[i], attr_val[i] );
-        }
-    }
-#else
     const char* sqlq = buildDeleteFRomPhysicalTableQuery( attr_name, attr_val, dbschema_name, table_name, attr_count );
-#endif
 
     i = ExecSqlDb( henv, hdbc, sqlq );
     if ( i != 0 ) {
@@ -1437,22 +1405,7 @@ int deleteFromPhysicalTableDontCare( char **attr_name,
                                      char  *dbschema_name,
                                      char  *table_name,
                                      int    attr_count ) {
-#if 0
-    char sqlq[HUGE_STRING];
-    int i;
-
-    sprintf( sqlq, "delete from %s%s ", dbschema_name, table_name );
-    for ( i = 0; i < attr_count; i++ ) {
-        if ( i > 0 ) {
-            sprintf( sqlq, "%s AND %s = %s", sqlq, attr_name[i], attr_val[i] );
-        }
-        else {
-            sprintf( sqlq, "%s WHERE %s = %s", sqlq, attr_name[i], attr_val[i] );
-        }
-    }
-#else
     const char* sqlq = buildDeleteFRomPhysicalTableQuery( attr_name, attr_val, dbschema_name, table_name, attr_count );
-#endif
     i = ExecSqlDb( henv, hdbc, sqlq );
     if ( i != 0 ) {
         return( METADATA_DELETION_ERROR );

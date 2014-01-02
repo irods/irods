@@ -40,9 +40,6 @@
 #define MY_DOC_NAME			"mikedoc"
 
 #define OOI_RESC			"ooiresc"
-#if 0
-#define TEST_BANK 1
-#endif
 
 int
 testDatastoreService( rcComm_t *conn );
@@ -157,9 +154,6 @@ testBankService( rcComm_t *conn ) {
     rstrcpy( ooiGenServReqInp.servName, BANK_SERVICE_NAME, NAME_LEN );
     rstrcpy( ooiGenServReqInp.servOpr, LIST_ACCOUNTS_OP, NAME_LEN );
     rstrcpy( ooiGenServReqInp.irodsRescName, OOI_RESC, NAME_LEN );
-#if 0
-    ooiGenServReqInp.outType = OOI_DICT_ARRAY_TYPE;
-#endif
     ooiGenServReqInp.outType = OOI_ARRAY_TYPE;
     status = rcOoiGenServReq( conn, &ooiGenServReqInp, &ooiGenServReqOut );
 
@@ -175,10 +169,6 @@ testBankService( rcComm_t *conn ) {
         return status;
     }
 
-#if 0
-    printDictArray( ( dictArray_t * ) ooiGenServReqOut->ptr );
-    clearDictArray( ( dictArray_t * ) ooiGenServReqOut->ptr );
-#endif
     printGenArray( ( genArray_t * ) ooiGenServReqOut->ptr );
     clearGenArray( ( genArray_t * ) ooiGenServReqOut->ptr );
     freeOoiGenServReqOut( &ooiGenServReqOut );

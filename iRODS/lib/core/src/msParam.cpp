@@ -393,58 +393,6 @@ writeMsParam( char *buf, int len, msParam_t *msParam ) {
         }
     }
 
-    /**** RAJA MOdified to simplify June 1 2010 ****/
-#if 0
-    msParam = outParamArray->msParam[i];
-
-    snprintf( &buf[strlen( buf )], len - strlen( buf ), "  output index: %d\n", i );
-    if ( msParam->label != NULL ) {
-        snprintf( &buf[strlen( buf )], len - strlen( buf ), "    label: %s\n", msParam->label );
-    }
-    if ( msParam->type != NULL ) {
-        snprintf( &buf[strlen( buf )], len - strlen( buf ), "    type: %s\n", msParam->type );
-    }
-    if ( msParam->inOutStruct != NULL ) {
-        if ( strcmp( msParam->type, STR_MS_T ) == 0 ) {
-            /* print the string */
-            snprintf( &buf[strlen( buf )], len - strlen( buf ), "    str content: %s\n", ( char * ) msParam->inOutStruct );
-        }
-        else if ( strcmp( msParam->type, INT_MS_T ) == 0 ) {
-            /* print the int */
-            snprintf( &buf[strlen( buf )], len - strlen( buf ), "    int content: %d\n", *( int * ) msParam->inOutStruct );
-        }
-        else if ( strcmp( msParam->type, KeyValPair_MS_T ) == 0 ) {
-            kVPairs = ( keyValPair_t * )msParam->inOutStruct;
-            snprintf( &buf[strlen( buf )], len - strlen( buf ), "      num of kv pairs: %i\n", kVPairs->len );
-            for ( j = 0; j < kVPairs->len; j++ ) {
-                snprintf( &buf[strlen( buf )], len - strlen( buf ), "       %s = %s\n", kVPairs->keyWord[j],
-                          kVPairs->value[j] );
-            }
-        }
-        else if ( strcmp( msParam->type, TagStruct_MS_T ) == 0 ) {
-            tagValues = ( tagStruct_t * ) msParam->inOutStruct;
-            snprintf( &buf[strlen( buf )], len - strlen( buf ), "      num of tags : %i\n", tagValues->len );
-            for ( j = 0; j < tagValues->len; j++ ) {
-                snprintf( &buf[strlen( buf )], len - strlen( buf ), "       AttName = %s\n", tagValues->keyWord[j] );
-                snprintf( &buf[strlen( buf )], len - strlen( buf ), "       PreTag  = %s\n", tagValues->preTag[j] );
-                snprintf( &buf[strlen( buf )], len - strlen( buf ), "       PostTag = %s\n", tagValues->postTag[j] );
-            }
-        }
-        else if ( strcmp( msParam->type, ExecCmdOut_MS_T ) == 0 ) {
-            execCmdOut_t *execCmdOut;
-            execCmdOut = ( execCmdOut_t * ) msParam->inOutStruct;
-            snprintf( &buf[strlen( buf )], len - strlen( buf ), "       status = %d\n", execCmdOut->status );
-            if ( execCmdOut->stdoutBuf.buf != NULL ) {
-                snprintf( &buf[strlen( buf )], len - strlen( buf ), "       stdout = %s",
-                          ( char * ) execCmdOut->stdoutBuf.buf );
-            }
-            if ( execCmdOut->stderrBuf.buf != NULL ) {
-                snprintf( &buf[strlen( buf )], len - strlen( buf ), "       strerr = %s",
-                          ( char * ) execCmdOut->stderrBuf.buf );
-            }
-        }
-    }
-#endif
     if ( msParam->inpOutBuf != NULL ) {
         snprintf( &buf[strlen( buf )], len - strlen( buf ), "    outBuf: buf length = %d\n", msParam->inpOutBuf->len );
     }
@@ -554,1312 +502,1307 @@ clearMsParam( msParam_t *msParam, int freeStruct ) {
     if ( msParam->label != NULL ) {
         free( msParam->label );
     }
-    /* XXXXXX  need to free their internal struct too */
-    /* free STR_MS_T too 7/8/10 mw */
-#if 0
-    if ( msParam->inOutStruct != NULL && freeStruct > 0 ) {
-#endif
-        if ( msParam->inOutStruct != NULL && ( freeStruct > 0 ||
-                                               ( msParam->type != NULL && strcmp( msParam->type, STR_MS_T ) == 0 ) ) ) {
-            free( msParam->inOutStruct );
-        }
-        if ( msParam->type != NULL ) {
-            free( msParam->type );
-        }
+    if ( msParam->inOutStruct != NULL && ( freeStruct > 0 ||
+                                           ( msParam->type != NULL && strcmp( msParam->type, STR_MS_T ) == 0 ) ) ) {
+        free( msParam->inOutStruct );
+    }
+    if ( msParam->type != NULL ) {
+        free( msParam->type );
+    }
 
-        memset( msParam, 0, sizeof( msParam_t ) );
+    memset( msParam, 0, sizeof( msParam_t ) );
+    return ( 0 );
+}
+
+
+/* clears everything but the label */
+int
+resetMsParam( msParam_t * msParam ) {
+    if ( msParam == NULL ) {
         return ( 0 );
     }
 
-
-    /* clears everything but the label */
-    int
-    resetMsParam( msParam_t * msParam ) {
-        if ( msParam == NULL ) {
-            return ( 0 );
-        }
-
-        if ( msParam->type != NULL ) {
-            free( msParam->type );
-        }
-
-        if ( msParam->inOutStruct != NULL ) {
-            free( msParam->inOutStruct );
-        }
-
-        if ( msParam->inpOutBuf != NULL ) {
-            freeBBuf( msParam->inpOutBuf );
-        }
-
-        return ( 0 );
+    if ( msParam->type != NULL ) {
+        free( msParam->type );
     }
 
-
-    int
-    trimMsParamArray( msParamArray_t * msParamArray, char * outParamDesc ) {
-        strArray_t strArray;
-        int status;
-        int i, j, k;
-        char *value;
-        msParam_t **msParam;
-
-        if ( msParamArray == NULL ) {
-            return 0;
-        }
-
-        memset( &strArray, 0, sizeof( strArray ) );
-
-        if ( outParamDesc != NULL && strlen( outParamDesc ) > 0 ) {
-            status = parseMultiStr( outParamDesc, &strArray );
-            if ( status < 0 ) {
-                rodsLog( LOG_ERROR,
-                         "trimMsParamArray: parseMultiStr error, status = %d", status );
-            }
-        }
-
-        msParam = msParamArray->msParam;
-        value = strArray.value;
-
-        if ( strArray.len == 1 && strcmp( value, ALL_MS_PARAM_KW ) == 0 ) {
-            /* retain all msParam */
-            return 0;
-        }
-
-        i = 0;
-        while ( i < msParamArray->len ) {
-            int match;
-            int nullType;
-
-            match = 0;
-            nullType = 0;
-            if ( msParam[i]->type == NULL || strlen( msParam[i]->type ) == 0 ) {
-                nullType = 1;
-            }
-            else {
-                for ( k = 0; k < strArray.len; k++ ) {
-                    if ( strcmp( &value[k * strArray.size], msParam[i]->label )
-                            == 0 ) {
-                        match = 1;
-                        break;
-                    }
-                }
-            }
-            if ( match == 0 || nullType == 1 ) {
-                if ( nullType != 1 ) {
-                    clearMsParam( msParamArray->msParam[i], 1 );
-                }
-                free( msParamArray->msParam[i] );
-                /* move the rest up */
-                for ( j = i + 1; j < msParamArray->len; j++ ) {
-                    msParamArray->msParam[j - 1] = msParamArray->msParam[j];
-                }
-                msParamArray->len --;
-            }
-            else {
-                i++;
-            }
-        }
-        if ( value != NULL ) {
-            free( value );
-        }
-
-        return ( 0 );
+    if ( msParam->inOutStruct != NULL ) {
+        free( msParam->inOutStruct );
     }
 
-    /* parseMspForDataObjInp - This is a rather convoluted subroutine because
-     * it tries to parse DataObjInp that have different types of msParam
-     * in inpParam and different modes of output.
-     *
-     * If outputToCache == 0 and inpParam is DataObjInp_MS_T, *outDataObjInp
-     *    will be set to the pointer given by inpParam->inOutStruct.
-     * If inpParam is STR_MS_T or KeyValPair_MS_T, regardles of the value of
-     *    outputToCache, the dataObjInpCache will be used to contain the output
-     *    if it is not NULL. Otherwise, one will be malloc'ed (be sure to free
-     *    it after your are done).
-     * If outputToCache == 1, the dataObjInpCache will be used to contain the
-     *    output if it is not NULL. Otherwise, one will be malloc'ed (be sure to
-     *    free it after your are done).
-     */
+    if ( msParam->inpOutBuf != NULL ) {
+        freeBBuf( msParam->inpOutBuf );
+    }
 
-    int
-    parseMspForDataObjInp( msParam_t * inpParam, dataObjInp_t * dataObjInpCache,
-                           dataObjInp_t **outDataObjInp, int outputToCache ) {
-        *outDataObjInp = NULL;
+    return ( 0 );
+}
 
-        if ( inpParam == NULL ) {
+
+int
+trimMsParamArray( msParamArray_t * msParamArray, char * outParamDesc ) {
+    strArray_t strArray;
+    int status;
+    int i, j, k;
+    char *value;
+    msParam_t **msParam;
+
+    if ( msParamArray == NULL ) {
+        return 0;
+    }
+
+    memset( &strArray, 0, sizeof( strArray ) );
+
+    if ( outParamDesc != NULL && strlen( outParamDesc ) > 0 ) {
+        status = parseMultiStr( outParamDesc, &strArray );
+        if ( status < 0 ) {
             rodsLog( LOG_ERROR,
-                     "parseMspForDataObjInp: input inpParam is NULL" );
-            return ( SYS_INTERNAL_NULL_INPUT_ERR );
+                     "trimMsParamArray: parseMultiStr error, status = %d", status );
         }
+    }
 
-        if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
-            /* str input */
-            if ( dataObjInpCache == NULL ) {
-                dataObjInpCache = ( dataObjInp_t * )malloc( sizeof( dataObjInp_t ) );
-            }
-            memset( dataObjInpCache, 0, sizeof( dataObjInp_t ) );
-            *outDataObjInp = dataObjInpCache;
-            if ( strcmp( ( char * ) inpParam->inOutStruct, "null" ) != 0 ) {
-                rstrcpy( dataObjInpCache->objPath, ( char* )inpParam->inOutStruct,
-                         MAX_NAME_LEN );
-            }
-            return ( 0 );
-        }
-        else if ( strcmp( inpParam->type, DataObjInp_MS_T ) == 0 ) {
-            if ( outputToCache == 1 ) {
-                dataObjInp_t *tmpDataObjInp;
-                tmpDataObjInp = ( dataObjInp_t * )inpParam->inOutStruct;
-                if ( dataObjInpCache == NULL ) {
-                    dataObjInpCache = ( dataObjInp_t * )malloc( sizeof( dataObjInp_t ) );
-                }
-                *dataObjInpCache = *tmpDataObjInp;
-                /* zero out the condition of the original because it has been
-                 * moved */
-                memset( &tmpDataObjInp->condInput, 0, sizeof( keyValPair_t ) );
-                *outDataObjInp = dataObjInpCache;
-            }
-            else {
-                *outDataObjInp = ( dataObjInp_t * ) inpParam->inOutStruct;
-            }
-            return ( 0 );
-        }
-        else if ( strcmp( inpParam->type, KeyValPair_MS_T ) == 0 ) {
-            /* key-val pair input needs ketwords "DATA_NAME" and  "COLL_NAME" */
-            char *dVal, *cVal;
-            keyValPair_t *kW;
-            kW = ( keyValPair_t * )inpParam->inOutStruct;
-            if ( ( dVal = getValByKey( kW, "DATA_NAME" ) ) == NULL ) {
-                return( USER_PARAM_TYPE_ERR );
-            }
-            if ( ( cVal = getValByKey( kW, "COLL_NAME" ) ) == NULL ) {
-                return( USER_PARAM_TYPE_ERR );
-            }
+    msParam = msParamArray->msParam;
+    value = strArray.value;
 
-            if ( dataObjInpCache == NULL ) {
-                dataObjInpCache = ( dataObjInp_t * )malloc( sizeof( dataObjInp_t ) );
-            }
+    if ( strArray.len == 1 && strcmp( value, ALL_MS_PARAM_KW ) == 0 ) {
+        /* retain all msParam */
+        return 0;
+    }
 
-            memset( dataObjInpCache, 0, sizeof( dataObjInp_t ) );
-            snprintf( dataObjInpCache->objPath, MAX_NAME_LEN, "%s/%s", cVal, dVal );
-            *outDataObjInp = dataObjInpCache;
-            return( 0 );
+    i = 0;
+    while ( i < msParamArray->len ) {
+        int match;
+        int nullType;
+
+        match = 0;
+        nullType = 0;
+        if ( msParam[i]->type == NULL || strlen( msParam[i]->type ) == 0 ) {
+            nullType = 1;
         }
         else {
-            rodsLog( LOG_ERROR,
-                     "parseMspForDataObjInp: Unsupported input Param1 type %s",
-                     inpParam->type );
-            return ( USER_PARAM_TYPE_ERR );
+            for ( k = 0; k < strArray.len; k++ ) {
+                if ( strcmp( &value[k * strArray.size], msParam[i]->label )
+                        == 0 ) {
+                    match = 1;
+                    break;
+                }
+            }
+        }
+        if ( match == 0 || nullType == 1 ) {
+            if ( nullType != 1 ) {
+                clearMsParam( msParamArray->msParam[i], 1 );
+            }
+            free( msParamArray->msParam[i] );
+            /* move the rest up */
+            for ( j = i + 1; j < msParamArray->len; j++ ) {
+                msParamArray->msParam[j - 1] = msParamArray->msParam[j];
+            }
+            msParamArray->len --;
+        }
+        else {
+            i++;
         }
     }
+    if ( value != NULL ) {
+        free( value );
+    }
 
-    /* parseMspForCollInp - see the explanation given for parseMspForDataObjInp
-     */
+    return ( 0 );
+}
 
-    int
-    parseMspForCollInp( msParam_t * inpParam, collInp_t * collInpCache,
-                        collInp_t **outCollInp, int outputToCache ) {
-        *outCollInp = NULL;
+/* parseMspForDataObjInp - This is a rather convoluted subroutine because
+  * it tries to parse DataObjInp that have different types of msParam
+  * in inpParam and different modes of output.
+  *
+  * If outputToCache == 0 and inpParam is DataObjInp_MS_T, *outDataObjInp
+  *    will be set to the pointer given by inpParam->inOutStruct.
+  * If inpParam is STR_MS_T or KeyValPair_MS_T, regardles of the value of
+  *    outputToCache, the dataObjInpCache will be used to contain the output
+  *    if it is not NULL. Otherwise, one will be malloc'ed (be sure to free
+  *    it after your are done).
+  * If outputToCache == 1, the dataObjInpCache will be used to contain the
+  *    output if it is not NULL. Otherwise, one will be malloc'ed (be sure to
+  *    free it after your are done).
+  */
 
-        if ( inpParam == NULL ) {
-            rodsLog( LOG_ERROR,
-                     "parseMspForCollInp: input inpParam is NULL" );
-            return ( SYS_INTERNAL_NULL_INPUT_ERR );
+int
+parseMspForDataObjInp( msParam_t * inpParam, dataObjInp_t * dataObjInpCache,
+                       dataObjInp_t **outDataObjInp, int outputToCache ) {
+    *outDataObjInp = NULL;
+
+    if ( inpParam == NULL ) {
+        rodsLog( LOG_ERROR,
+                 "parseMspForDataObjInp: input inpParam is NULL" );
+        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+    }
+
+    if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
+        /* str input */
+        if ( dataObjInpCache == NULL ) {
+            dataObjInpCache = ( dataObjInp_t * )malloc( sizeof( dataObjInp_t ) );
+        }
+        memset( dataObjInpCache, 0, sizeof( dataObjInp_t ) );
+        *outDataObjInp = dataObjInpCache;
+        if ( strcmp( ( char * ) inpParam->inOutStruct, "null" ) != 0 ) {
+            rstrcpy( dataObjInpCache->objPath, ( char* )inpParam->inOutStruct,
+                     MAX_NAME_LEN );
+        }
+        return ( 0 );
+    }
+    else if ( strcmp( inpParam->type, DataObjInp_MS_T ) == 0 ) {
+        if ( outputToCache == 1 ) {
+            dataObjInp_t *tmpDataObjInp;
+            tmpDataObjInp = ( dataObjInp_t * )inpParam->inOutStruct;
+            if ( dataObjInpCache == NULL ) {
+                dataObjInpCache = ( dataObjInp_t * )malloc( sizeof( dataObjInp_t ) );
+            }
+            *dataObjInpCache = *tmpDataObjInp;
+            /* zero out the condition of the original because it has been
+              * moved */
+            memset( &tmpDataObjInp->condInput, 0, sizeof( keyValPair_t ) );
+            *outDataObjInp = dataObjInpCache;
+        }
+        else {
+            *outDataObjInp = ( dataObjInp_t * ) inpParam->inOutStruct;
+        }
+        return ( 0 );
+    }
+    else if ( strcmp( inpParam->type, KeyValPair_MS_T ) == 0 ) {
+        /* key-val pair input needs ketwords "DATA_NAME" and  "COLL_NAME" */
+        char *dVal, *cVal;
+        keyValPair_t *kW;
+        kW = ( keyValPair_t * )inpParam->inOutStruct;
+        if ( ( dVal = getValByKey( kW, "DATA_NAME" ) ) == NULL ) {
+            return( USER_PARAM_TYPE_ERR );
+        }
+        if ( ( cVal = getValByKey( kW, "COLL_NAME" ) ) == NULL ) {
+            return( USER_PARAM_TYPE_ERR );
         }
 
-        if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
-            /* str input */
+        if ( dataObjInpCache == NULL ) {
+            dataObjInpCache = ( dataObjInp_t * )malloc( sizeof( dataObjInp_t ) );
+        }
+
+        memset( dataObjInpCache, 0, sizeof( dataObjInp_t ) );
+        snprintf( dataObjInpCache->objPath, MAX_NAME_LEN, "%s/%s", cVal, dVal );
+        *outDataObjInp = dataObjInpCache;
+        return( 0 );
+    }
+    else {
+        rodsLog( LOG_ERROR,
+                 "parseMspForDataObjInp: Unsupported input Param1 type %s",
+                 inpParam->type );
+        return ( USER_PARAM_TYPE_ERR );
+    }
+}
+
+/* parseMspForCollInp - see the explanation given for parseMspForDataObjInp
+  */
+
+int
+parseMspForCollInp( msParam_t * inpParam, collInp_t * collInpCache,
+                    collInp_t **outCollInp, int outputToCache ) {
+    *outCollInp = NULL;
+
+    if ( inpParam == NULL ) {
+        rodsLog( LOG_ERROR,
+                 "parseMspForCollInp: input inpParam is NULL" );
+        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+    }
+
+    if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
+        /* str input */
+        if ( collInpCache == NULL ) {
+            collInpCache = ( collInp_t * )malloc( sizeof( collInp_t ) );
+        }
+        memset( collInpCache, 0, sizeof( collInp_t ) );
+        *outCollInp = collInpCache;
+        if ( strcmp( ( char * ) inpParam->inOutStruct, "null" ) != 0 ) {
+            rstrcpy( collInpCache->collName, ( char* )inpParam->inOutStruct,
+                     MAX_NAME_LEN );
+        }
+        return ( 0 );
+    }
+    else if ( strcmp( inpParam->type, CollInp_MS_T ) == 0 ) {
+        if ( outputToCache == 1 ) {
+            collInp_t *tmpCollInp;
+            tmpCollInp = ( collInp_t * )inpParam->inOutStruct;
             if ( collInpCache == NULL ) {
                 collInpCache = ( collInp_t * )malloc( sizeof( collInp_t ) );
             }
-            memset( collInpCache, 0, sizeof( collInp_t ) );
+            *collInpCache = *tmpCollInp;
+            /* zero out the condition of the original because it has been
+              * moved */
+            memset( &tmpCollInp->condInput, 0, sizeof( keyValPair_t ) );
             *outCollInp = collInpCache;
+        }
+        else {
+            *outCollInp = ( collInp_t * ) inpParam->inOutStruct;
+        }
+        return ( 0 );
+    }
+    else {
+        rodsLog( LOG_ERROR,
+                 "parseMspForCollInp: Unsupported input Param1 type %s",
+                 inpParam->type );
+        return ( USER_PARAM_TYPE_ERR );
+    }
+}
+
+int
+parseMspForDataObjCopyInp( msParam_t * inpParam,
+                           dataObjCopyInp_t * dataObjCopyInpCache, dataObjCopyInp_t **outDataObjCopyInp ) {
+    *outDataObjCopyInp = NULL;
+    if ( inpParam == NULL ) {
+        rodsLog( LOG_ERROR,
+                 "parseMspForDataObjCopyInp: input inpParam is NULL" );
+        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+    }
+
+    if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
+        /* str input */
+        memset( dataObjCopyInpCache, 0, sizeof( dataObjCopyInp_t ) );
+        rstrcpy( dataObjCopyInpCache->srcDataObjInp.objPath,
+                 ( char * ) inpParam->inOutStruct, MAX_NAME_LEN );
+        *outDataObjCopyInp = dataObjCopyInpCache;
+    }
+    else if ( strcmp( inpParam->type, DataObjCopyInp_MS_T ) == 0 ) {
+        *outDataObjCopyInp = ( dataObjCopyInp_t* )inpParam->inOutStruct;
+    }
+    else if ( strcmp( inpParam->type, DataObjInp_MS_T ) == 0 ) {
+        memset( dataObjCopyInpCache, 0, sizeof( dataObjCopyInp_t ) );
+        dataObjCopyInpCache->srcDataObjInp =
+            *( dataObjInp_t * )inpParam->inOutStruct;
+        *outDataObjCopyInp = dataObjCopyInpCache;
+    }
+    else if ( strcmp( inpParam->type, KeyValPair_MS_T ) == 0 ) {
+        /* key-val pair input needs ketwords "DATA_NAME" and  "COLL_NAME" */
+        char *dVal, *cVal;
+        keyValPair_t *kW;
+        kW = ( keyValPair_t * )inpParam->inOutStruct;
+        if ( ( dVal = getValByKey( kW, "DATA_NAME" ) ) == NULL ) {
+            return( USER_PARAM_TYPE_ERR );
+        }
+        if ( ( cVal = getValByKey( kW, "COLL_NAME" ) ) == NULL ) {
+            return( USER_PARAM_TYPE_ERR );
+        }
+        memset( dataObjCopyInpCache, 0, sizeof( dataObjCopyInp_t ) );
+        snprintf( dataObjCopyInpCache->srcDataObjInp.objPath, MAX_NAME_LEN, "%s/%s", cVal, dVal );
+        *outDataObjCopyInp = dataObjCopyInpCache;
+        return( 0 );
+    }
+    else {
+        rodsLog( LOG_ERROR,
+                 "parseMspForDataObjCopyInp: Unsupported input Param1 type %s",
+                 inpParam->type );
+        return ( USER_PARAM_TYPE_ERR );
+    }
+    return ( 0 );
+}
+
+/* parseMspForCondInp - Take the inpParam->inOutStruct and use that as the
+  * value of the keyVal pair. The KW of the keyVal pair is given in condKw.
+  */
+
+int
+parseMspForCondInp( msParam_t * inpParam, keyValPair_t * condInput,
+                    char * condKw ) {
+    if ( inpParam != NULL ) {
+        if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
+            /* str input */
             if ( strcmp( ( char * ) inpParam->inOutStruct, "null" ) != 0 ) {
-                rstrcpy( collInpCache->collName, ( char* )inpParam->inOutStruct,
-                         MAX_NAME_LEN );
+                addKeyVal( condInput, condKw,
+                           ( char * ) inpParam->inOutStruct );
             }
-            return ( 0 );
-        }
-        else if ( strcmp( inpParam->type, CollInp_MS_T ) == 0 ) {
-            if ( outputToCache == 1 ) {
-                collInp_t *tmpCollInp;
-                tmpCollInp = ( collInp_t * )inpParam->inOutStruct;
-                if ( collInpCache == NULL ) {
-                    collInpCache = ( collInp_t * )malloc( sizeof( collInp_t ) );
-                }
-                *collInpCache = *tmpCollInp;
-                /* zero out the condition of the original because it has been
-                 * moved */
-                memset( &tmpCollInp->condInput, 0, sizeof( keyValPair_t ) );
-                *outCollInp = collInpCache;
-            }
-            else {
-                *outCollInp = ( collInp_t * ) inpParam->inOutStruct;
-            }
-            return ( 0 );
         }
         else {
             rodsLog( LOG_ERROR,
-                     "parseMspForCollInp: Unsupported input Param1 type %s",
+                     "parseMspForCondInp: Unsupported input Param type %s",
                      inpParam->type );
             return ( USER_PARAM_TYPE_ERR );
         }
     }
+    return ( 0 );
+}
 
-    int
-    parseMspForDataObjCopyInp( msParam_t * inpParam,
-                               dataObjCopyInp_t * dataObjCopyInpCache, dataObjCopyInp_t **outDataObjCopyInp ) {
-        *outDataObjCopyInp = NULL;
-        if ( inpParam == NULL ) {
-            rodsLog( LOG_ERROR,
-                     "parseMspForDataObjCopyInp: input inpParam is NULL" );
-            return ( SYS_INTERNAL_NULL_INPUT_ERR );
-        }
+/* parseMspForCondKw - Take the KW from inpParam->inOutStruct and add that
+  * to condInput. The value of the keyVal  pair is assumed to be "".
+  */
 
+int
+parseMspForCondKw( msParam_t * inpParam, keyValPair_t * condInput ) {
+    if ( inpParam != NULL ) {
         if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
             /* str input */
-            memset( dataObjCopyInpCache, 0, sizeof( dataObjCopyInp_t ) );
-            rstrcpy( dataObjCopyInpCache->srcDataObjInp.objPath,
-                     ( char * ) inpParam->inOutStruct, MAX_NAME_LEN );
-            *outDataObjCopyInp = dataObjCopyInpCache;
-        }
-        else if ( strcmp( inpParam->type, DataObjCopyInp_MS_T ) == 0 ) {
-            *outDataObjCopyInp = ( dataObjCopyInp_t* )inpParam->inOutStruct;
-        }
-        else if ( strcmp( inpParam->type, DataObjInp_MS_T ) == 0 ) {
-            memset( dataObjCopyInpCache, 0, sizeof( dataObjCopyInp_t ) );
-            dataObjCopyInpCache->srcDataObjInp =
-                *( dataObjInp_t * )inpParam->inOutStruct;
-            *outDataObjCopyInp = dataObjCopyInpCache;
-        }
-        else if ( strcmp( inpParam->type, KeyValPair_MS_T ) == 0 ) {
-            /* key-val pair input needs ketwords "DATA_NAME" and  "COLL_NAME" */
-            char *dVal, *cVal;
-            keyValPair_t *kW;
-            kW = ( keyValPair_t * )inpParam->inOutStruct;
-            if ( ( dVal = getValByKey( kW, "DATA_NAME" ) ) == NULL ) {
-                return( USER_PARAM_TYPE_ERR );
+            if ( strcmp( ( char * ) inpParam->inOutStruct, "null" ) != 0 &&
+                    strlen( ( const char* )inpParam->inOutStruct ) > 0 ) {
+                addKeyVal( condInput, ( char * ) inpParam->inOutStruct, "" );
             }
-            if ( ( cVal = getValByKey( kW, "COLL_NAME" ) ) == NULL ) {
-                return( USER_PARAM_TYPE_ERR );
-            }
-            memset( dataObjCopyInpCache, 0, sizeof( dataObjCopyInp_t ) );
-            snprintf( dataObjCopyInpCache->srcDataObjInp.objPath, MAX_NAME_LEN, "%s/%s", cVal, dVal );
-            *outDataObjCopyInp = dataObjCopyInpCache;
-            return( 0 );
         }
         else {
             rodsLog( LOG_ERROR,
-                     "parseMspForDataObjCopyInp: Unsupported input Param1 type %s",
+                     "parseMspForCondKw: Unsupported input Param type %s",
                      inpParam->type );
             return ( USER_PARAM_TYPE_ERR );
         }
-        return ( 0 );
     }
+    return ( 0 );
+}
 
-    /* parseMspForCondInp - Take the inpParam->inOutStruct and use that as the
-     * value of the keyVal pair. The KW of the keyVal pair is given in condKw.
-     */
+int
+parseMspForPhyPathReg( msParam_t * inpParam, keyValPair_t * condInput ) {
+    char *tmpStr;
 
-    int
-    parseMspForCondInp( msParam_t * inpParam, keyValPair_t * condInput,
-                        char * condKw ) {
-        if ( inpParam != NULL ) {
-            if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
-                /* str input */
-                if ( strcmp( ( char * ) inpParam->inOutStruct, "null" ) != 0 ) {
-                    addKeyVal( condInput, condKw,
-                               ( char * ) inpParam->inOutStruct );
-                }
-            }
-            else {
-                rodsLog( LOG_ERROR,
-                         "parseMspForCondInp: Unsupported input Param type %s",
-                         inpParam->type );
-                return ( USER_PARAM_TYPE_ERR );
-            }
-        }
-        return ( 0 );
-    }
-
-    /* parseMspForCondKw - Take the KW from inpParam->inOutStruct and add that
-     * to condInput. The value of the keyVal  pair is assumed to be "".
-     */
-
-    int
-    parseMspForCondKw( msParam_t * inpParam, keyValPair_t * condInput ) {
-        if ( inpParam != NULL ) {
-            if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
-                /* str input */
-                if ( strcmp( ( char * ) inpParam->inOutStruct, "null" ) != 0 &&
-                        strlen( ( const char* )inpParam->inOutStruct ) > 0 ) {
-                    addKeyVal( condInput, ( char * ) inpParam->inOutStruct, "" );
-                }
-            }
-            else {
-                rodsLog( LOG_ERROR,
-                         "parseMspForCondKw: Unsupported input Param type %s",
-                         inpParam->type );
-                return ( USER_PARAM_TYPE_ERR );
-            }
-        }
-        return ( 0 );
-    }
-
-    int
-    parseMspForPhyPathReg( msParam_t * inpParam, keyValPair_t * condInput ) {
-        char *tmpStr;
-
-        if ( inpParam != NULL ) {
-            if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
-                tmpStr = ( char * ) inpParam->inOutStruct;
-                /* str input */
-                if ( tmpStr != NULL && strlen( tmpStr ) > 0 &&
-                        strcmp( tmpStr, "null" ) != 0 ) {
-                    if ( strcmp( tmpStr, COLLECTION_KW ) == 0 ) {
-                        addKeyVal( condInput, COLLECTION_KW, "" );
-                    }
-                    else if ( strcmp( tmpStr, MOUNT_POINT_STR ) == 0 ) {
-                        addKeyVal( condInput, COLLECTION_TYPE_KW, MOUNT_POINT_STR );
-                    }
-                    else if ( strcmp( tmpStr, LINK_POINT_STR ) == 0 ) {
-                        addKeyVal( condInput, COLLECTION_TYPE_KW, LINK_POINT_STR );
-                    }
-                }
-            }
-            else {
-                rodsLog( LOG_ERROR,
-                         "parseMspForCondKw: Unsupported input Param type %s",
-                         inpParam->type );
-                return ( USER_PARAM_TYPE_ERR );
-            }
-        }
-        return ( 0 );
-    }
-
-    int
-    parseMspForPosInt( msParam_t * inpParam ) {
-        int myInt;
-
+    if ( inpParam != NULL ) {
         if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
+            tmpStr = ( char * ) inpParam->inOutStruct;
             /* str input */
-            if ( strcmp( ( char * ) inpParam->inOutStruct, "null" ) == 0 ) {
-                return ( SYS_NULL_INPUT );
+            if ( tmpStr != NULL && strlen( tmpStr ) > 0 &&
+                    strcmp( tmpStr, "null" ) != 0 ) {
+                if ( strcmp( tmpStr, COLLECTION_KW ) == 0 ) {
+                    addKeyVal( condInput, COLLECTION_KW, "" );
+                }
+                else if ( strcmp( tmpStr, MOUNT_POINT_STR ) == 0 ) {
+                    addKeyVal( condInput, COLLECTION_TYPE_KW, MOUNT_POINT_STR );
+                }
+                else if ( strcmp( tmpStr, LINK_POINT_STR ) == 0 ) {
+                    addKeyVal( condInput, COLLECTION_TYPE_KW, LINK_POINT_STR );
+                }
             }
-            myInt = atoi( ( const char* )inpParam->inOutStruct );
-        }
-        else if ( strcmp( inpParam->type, INT_MS_T ) == 0 ||
-                  strcmp( inpParam->type, BUF_LEN_MS_T ) == 0 ) {
-            myInt = *( int * )inpParam->inOutStruct;
-        }
-        else if ( strcmp( inpParam->type, DOUBLE_MS_T ) == 0 ) {
-            rodsLong_t myLong = *( rodsLong_t * )inpParam->inOutStruct;
-            myInt = ( int ) myLong;
         }
         else {
             rodsLog( LOG_ERROR,
-                     "parseMspForPosInt: Unsupported input Param type %s",
+                     "parseMspForCondKw: Unsupported input Param type %s",
                      inpParam->type );
             return ( USER_PARAM_TYPE_ERR );
         }
-        if ( myInt < 0 ) {
-            rodsLog( LOG_DEBUG,
-                     "parseMspForPosInt: parsed int %d is negative", myInt );
-        }
-        return ( myInt );
     }
+    return ( 0 );
+}
 
-    char *
-    parseMspForStr( msParam_t * inpParam ) {
-        if ( inpParam == NULL || inpParam->inOutStruct == NULL ) {
-            return ( NULL );
-        }
+int
+parseMspForPosInt( msParam_t * inpParam ) {
+    int myInt;
 
-        if ( strcmp( inpParam->type, STR_MS_T ) != 0 ) {
-            rodsLog( LOG_ERROR,
-                     "parseMspForStr: inpParam type %s is not STR_MS_T",
-                     inpParam->type );
-        }
-
+    if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
+        /* str input */
         if ( strcmp( ( char * ) inpParam->inOutStruct, "null" ) == 0 ) {
-            return ( NULL );
+            return ( SYS_NULL_INPUT );
         }
+        myInt = atoi( ( const char* )inpParam->inOutStruct );
+    }
+    else if ( strcmp( inpParam->type, INT_MS_T ) == 0 ||
+              strcmp( inpParam->type, BUF_LEN_MS_T ) == 0 ) {
+        myInt = *( int * )inpParam->inOutStruct;
+    }
+    else if ( strcmp( inpParam->type, DOUBLE_MS_T ) == 0 ) {
+        rodsLong_t myLong = *( rodsLong_t * )inpParam->inOutStruct;
+        myInt = ( int ) myLong;
+    }
+    else {
+        rodsLog( LOG_ERROR,
+                 "parseMspForPosInt: Unsupported input Param type %s",
+                 inpParam->type );
+        return ( USER_PARAM_TYPE_ERR );
+    }
+    if ( myInt < 0 ) {
+        rodsLog( LOG_DEBUG,
+                 "parseMspForPosInt: parsed int %d is negative", myInt );
+    }
+    return ( myInt );
+}
 
-        return ( char * )( inpParam->inOutStruct );
+char *
+parseMspForStr( msParam_t * inpParam ) {
+    if ( inpParam == NULL || inpParam->inOutStruct == NULL ) {
+        return ( NULL );
     }
 
-    int
-    parseMspForFloat( msParam_t * inpParam, float * floatout ) {
+    if ( strcmp( inpParam->type, STR_MS_T ) != 0 ) {
+        rodsLog( LOG_ERROR,
+                 "parseMspForStr: inpParam type %s is not STR_MS_T",
+                 inpParam->type );
+    }
 
-        if ( inpParam == NULL || floatout == NULL ) {
-            return SYS_NULL_INPUT;
+    if ( strcmp( ( char * ) inpParam->inOutStruct, "null" ) == 0 ) {
+        return ( NULL );
+    }
+
+    return ( char * )( inpParam->inOutStruct );
+}
+
+int
+parseMspForFloat( msParam_t * inpParam, float * floatout ) {
+
+    if ( inpParam == NULL || floatout == NULL ) {
+        return SYS_NULL_INPUT;
+    }
+    if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
+        /* str input */
+        if ( strcmp( ( char * ) inpParam->inOutStruct, "null" ) == 0 ) {
+            return ( SYS_NULL_INPUT );
         }
-        if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
-            /* str input */
-            if ( strcmp( ( char * ) inpParam->inOutStruct, "null" ) == 0 ) {
-                return ( SYS_NULL_INPUT );
-            }
 #if defined(solaris_platform)
-            *floatout = ( float )strtod( ( const char* )inpParam->inOutStruct, NULL );
+        *floatout = ( float )strtod( ( const char* )inpParam->inOutStruct, NULL );
 #else
-            *floatout = strtof( ( const char* )inpParam->inOutStruct, NULL );
+        *floatout = strtof( ( const char* )inpParam->inOutStruct, NULL );
 #endif
+    }
+    else if ( strcmp( inpParam->type, INT_MS_T ) == 0 ||
+              strcmp( inpParam->type, FLOAT_MS_T ) == 0 ) {
+        *floatout = *( float * )inpParam->inOutStruct;
+    }
+    else {
+        rodsLog( LOG_ERROR,
+                 "parseMspForPosFloat: Unsupported input Param type %s",
+                 inpParam->type );
+        return ( USER_PARAM_TYPE_ERR );
+    }
+    return 0;
+}
+
+int
+parseMspForExecCmdInp( msParam_t * inpParam,
+                       execCmd_t * execCmdInpCache, execCmd_t **ouExecCmdInp ) {
+    *ouExecCmdInp = NULL;
+    if ( inpParam == NULL ) {
+        rodsLog( LOG_ERROR,
+                 "parseMspForExecCmdInp: input inpParam is NULL" );
+        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+    }
+
+    if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
+        /* str input */
+        memset( execCmdInpCache, 0, sizeof( execCmd_t ) );
+        rstrcpy( execCmdInpCache->cmd,
+                 ( char * ) inpParam->inOutStruct, LONG_NAME_LEN );
+        *ouExecCmdInp = execCmdInpCache;
+    }
+    else if ( strcmp( inpParam->type, ExecCmd_MS_T ) == 0 ) {
+        *ouExecCmdInp = ( execCmd_t* )inpParam->inOutStruct;
+    }
+    else {
+        rodsLog( LOG_ERROR,
+                 "parseMspForExecCmdInp: Unsupported input Param1 type %s",
+                 inpParam->type );
+        return ( USER_PARAM_TYPE_ERR );
+    }
+    return ( 0 );
+}
+int
+getStdoutInExecCmdOut( msParam_t * inpExecCmdOut, char **outStr ) {
+    execCmdOut_t *execCmdOut;
+
+    if ( inpExecCmdOut == NULL ) {
+        rodsLog( LOG_ERROR,
+                 "getStdoutInExecCmdOut input inpParam is NULL" );
+        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+    }
+
+    if ( strcmp( inpExecCmdOut->type, ExecCmdOut_MS_T ) == 0 ) {
+        execCmdOut = ( execCmdOut_t * ) inpExecCmdOut->inOutStruct;
+        if ( execCmdOut == NULL ) {
+            return SYS_INTERNAL_NULL_INPUT_ERR;
         }
-        else if ( strcmp( inpParam->type, INT_MS_T ) == 0 ||
-                  strcmp( inpParam->type, FLOAT_MS_T ) == 0 ) {
-            *floatout = *( float * )inpParam->inOutStruct;
-        }
-        else {
-            rodsLog( LOG_ERROR,
-                     "parseMspForPosFloat: Unsupported input Param type %s",
-                     inpParam->type );
-            return ( USER_PARAM_TYPE_ERR );
-        }
+        *outStr = ( char * ) malloc( execCmdOut->stdoutBuf.len + 1 );
+        memcpy( *outStr, ( char * )execCmdOut->stdoutBuf.buf, execCmdOut->stdoutBuf.len );
+        ( *outStr )[execCmdOut->stdoutBuf.len] = '\0';
         return 0;
     }
+    else {
+        rodsLog( LOG_ERROR,
+                 "getStdoutInExecCmdOut: Unsupported input Param type %s",
+                 inpExecCmdOut->type );
+        return ( USER_PARAM_TYPE_ERR );
+    }
+}
 
-    int
-    parseMspForExecCmdInp( msParam_t * inpParam,
-                           execCmd_t * execCmdInpCache, execCmd_t **ouExecCmdInp ) {
-        *ouExecCmdInp = NULL;
-        if ( inpParam == NULL ) {
-            rodsLog( LOG_ERROR,
-                     "parseMspForExecCmdInp: input inpParam is NULL" );
-            return ( SYS_INTERNAL_NULL_INPUT_ERR );
-        }
+int
+getStderrInExecCmdOut( msParam_t * inpExecCmdOut, char **outStr ) {
+    execCmdOut_t *execCmdOut;
 
-        if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
-            /* str input */
-            memset( execCmdInpCache, 0, sizeof( execCmd_t ) );
-            rstrcpy( execCmdInpCache->cmd,
-                     ( char * ) inpParam->inOutStruct, LONG_NAME_LEN );
-            *ouExecCmdInp = execCmdInpCache;
+    if ( inpExecCmdOut == NULL ) {
+        rodsLog( LOG_ERROR,
+                 "getStderrInExecCmdOut input inpParam is NULL" );
+        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+    }
+
+    if ( strcmp( inpExecCmdOut->type, ExecCmdOut_MS_T ) == 0 ) {
+        execCmdOut = ( execCmdOut_t * ) inpExecCmdOut->inOutStruct;
+        if ( execCmdOut == NULL ) {
+            return SYS_INTERNAL_NULL_INPUT_ERR;
         }
-        else if ( strcmp( inpParam->type, ExecCmd_MS_T ) == 0 ) {
-            *ouExecCmdInp = ( execCmd_t* )inpParam->inOutStruct;
+        *outStr = ( char * ) malloc( execCmdOut->stderrBuf.len + 1 );
+        memcpy( *outStr, ( char * )execCmdOut->stderrBuf.buf, execCmdOut->stderrBuf.len );
+        ( *outStr )[execCmdOut->stderrBuf.len] = '\0';
+        return 0;
+    }
+    else {
+        rodsLog( LOG_ERROR,
+                 "getStderrInExecCmdOut: Unsupported input Param type %s",
+                 inpExecCmdOut->type );
+        return ( USER_PARAM_TYPE_ERR );
+    }
+}
+
+int
+initParsedMsKeyValStr( char * inpStr, parsedMsKeyValStr_t * parsedMsKeyValStr ) {
+    if ( inpStr == NULL || parsedMsKeyValStr == NULL ) {
+        rodsLog( LOG_ERROR,
+                 "initParsedMsKeyValStr: input inpStr or parsedMsKeyValStr is NULL" );
+        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+    }
+
+    bzero( parsedMsKeyValStr, sizeof( parsedMsKeyValStr_t ) );
+    parsedMsKeyValStr->inpStr = parsedMsKeyValStr->curPtr = strdup( inpStr );
+    parsedMsKeyValStr->endPtr = parsedMsKeyValStr->inpStr +
+                                strlen( parsedMsKeyValStr->inpStr );
+
+    return 0;
+}
+
+int
+clearParsedMsKeyValStr( parsedMsKeyValStr_t * parsedMsKeyValStr ) {
+    if ( parsedMsKeyValStr == NULL ) {
+        rodsLog( LOG_ERROR,
+                 "clearParsedMsKeyValStr: input parsedMsKeyValStr is NULL" );
+        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+    }
+    if ( parsedMsKeyValStr->inpStr != NULL ) {
+        free( parsedMsKeyValStr->inpStr );
+    }
+
+    bzero( parsedMsKeyValStr, sizeof( parsedMsKeyValStr_t ) );
+
+    return 0;
+}
+
+/* getNextKeyValFromMsKeyValStr - parse the inpStr for keyWd value pair.
+  * The str is expected to have the format keyWd=value separated by
+  * 4 "+" char. e.g. keyWd1=value1++++keyWd2=value2++++keyWd3=value3...
+  * If the char "=" is not present, the entire string is assumed to
+  * be value with a NULL value for kwPtr.
+  */
+int
+getNextKeyValFromMsKeyValStr( parsedMsKeyValStr_t * parsedMsKeyValStr ) {
+    char *tmpEndPtr;
+    char *equalPtr;
+
+    if ( parsedMsKeyValStr == NULL ) {
+        rodsLog( LOG_ERROR,
+                 "getNextKeyValFromMsKeyValStr: input parsedMsKeyValStr is NULL" );
+        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+    }
+    if ( parsedMsKeyValStr->curPtr >= parsedMsKeyValStr->endPtr ) {
+        return NO_MORE_RESULT;
+    }
+
+    if ( ( tmpEndPtr = strstr( parsedMsKeyValStr->curPtr, MS_INP_SEP_STR ) ) !=
+            NULL ) {
+        /* NULL terminate the str we are trying to parse */
+        *tmpEndPtr = '\0';
+    }
+    else {
+        tmpEndPtr = parsedMsKeyValStr->endPtr;
+    }
+
+    if ( strcmp( parsedMsKeyValStr->curPtr, MS_NULL_STR ) == 0 ) {
+        return NO_MORE_RESULT;
+    }
+
+    if ( ( equalPtr = strstr( parsedMsKeyValStr->curPtr, "=" ) ) != NULL ) {
+        *equalPtr = '\0';
+        parsedMsKeyValStr->kwPtr = parsedMsKeyValStr->curPtr;
+        if ( equalPtr + 1 == tmpEndPtr ) {
+            /* pair has no value */
+            parsedMsKeyValStr->valPtr = equalPtr;
         }
         else {
-            rodsLog( LOG_ERROR,
-                     "parseMspForExecCmdInp: Unsupported input Param1 type %s",
-                     inpParam->type );
-            return ( USER_PARAM_TYPE_ERR );
+            parsedMsKeyValStr->valPtr = equalPtr + 1;
         }
-        return ( 0 );
     }
-    int
-    getStdoutInExecCmdOut( msParam_t * inpExecCmdOut, char **outStr ) {
-        execCmdOut_t *execCmdOut;
+    else {
+        parsedMsKeyValStr->kwPtr = NULL;
+        parsedMsKeyValStr->valPtr = parsedMsKeyValStr->curPtr;
+    }
 
-        if ( inpExecCmdOut == NULL ) {
-            rodsLog( LOG_ERROR,
-                     "getStdoutInExecCmdOut input inpParam is NULL" );
-            return ( SYS_INTERNAL_NULL_INPUT_ERR );
-        }
+    /* advance curPtr */
+    parsedMsKeyValStr->curPtr = tmpEndPtr + strlen( MS_INP_SEP_STR );
 
-        if ( strcmp( inpExecCmdOut->type, ExecCmdOut_MS_T ) == 0 ) {
-            execCmdOut = ( execCmdOut_t * ) inpExecCmdOut->inOutStruct;
-            if ( execCmdOut == NULL ) {
-                return SYS_INTERNAL_NULL_INPUT_ERR;
+    return 0;
+}
+
+/* parseMsKeyValStrForDataObjInp - parse the msKeyValStr for keyWd value pair
+  * and put the kw/value pairs in dataObjInp->condInput.
+  * The msKeyValStr is expected to have the format keyWd=value separated by
+  * 4 "+" char. e.g. keyWd1=value1++++keyWd2=value2++++keyWd3=value3...
+  * If the char "=" is not present, the entire string is assumed to
+  * be value and hintForMissingKw will provide the missing keyWd.
+  */
+
+int
+parseMsKeyValStrForDataObjInp( msParam_t * inpParam, dataObjInp_t * dataObjInp,
+                               char * hintForMissingKw, int validKwFlags, char **outBadKeyWd ) {
+    char *msKeyValStr;
+    keyValPair_t *condInput;
+    parsedMsKeyValStr_t parsedMsKeyValStr;
+    int status;
+
+
+    if ( inpParam == NULL || dataObjInp == NULL ) {
+        rodsLog( LOG_ERROR,
+                 "parseMsKeyValStrForDataObjInp: input inpParam or dataObjInp is NULL" );
+        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+    }
+
+    if ( strcmp( inpParam->type, STR_MS_T ) != 0 ) {
+        return USER_PARAM_TYPE_ERR;
+    }
+
+    msKeyValStr = ( char * ) inpParam->inOutStruct;
+
+    condInput = &dataObjInp->condInput;
+
+    if ( outBadKeyWd != NULL ) {
+        *outBadKeyWd = NULL;
+    }
+
+    if ( ( status = initParsedMsKeyValStr( msKeyValStr, &parsedMsKeyValStr ) ) < 0 ) {
+        return status;
+    }
+
+    while ( getNextKeyValFromMsKeyValStr( &parsedMsKeyValStr ) >= 0 ) {
+        if ( parsedMsKeyValStr.kwPtr == NULL ) {
+            if ( hintForMissingKw == NULL ) {
+                status = NO_KEY_WD_IN_MS_INP_STR;
+                rodsLogError( LOG_ERROR, status,
+                              "parseMsKeyValStrForDataObjInp: no keyWd for %s",
+                              parsedMsKeyValStr.valPtr );
+                clearParsedMsKeyValStr( &parsedMsKeyValStr );
+                return status;
             }
-            *outStr = ( char * ) malloc( execCmdOut->stdoutBuf.len + 1 );
-            memcpy( *outStr, ( char * )execCmdOut->stdoutBuf.buf, execCmdOut->stdoutBuf.len );
-            ( *outStr )[execCmdOut->stdoutBuf.len] = '\0';
-            return 0;
-        }
-        else {
-            rodsLog( LOG_ERROR,
-                     "getStdoutInExecCmdOut: Unsupported input Param type %s",
-                     inpExecCmdOut->type );
-            return ( USER_PARAM_TYPE_ERR );
-        }
-    }
-
-    int
-    getStderrInExecCmdOut( msParam_t * inpExecCmdOut, char **outStr ) {
-        execCmdOut_t *execCmdOut;
-
-        if ( inpExecCmdOut == NULL ) {
-            rodsLog( LOG_ERROR,
-                     "getStderrInExecCmdOut input inpParam is NULL" );
-            return ( SYS_INTERNAL_NULL_INPUT_ERR );
-        }
-
-        if ( strcmp( inpExecCmdOut->type, ExecCmdOut_MS_T ) == 0 ) {
-            execCmdOut = ( execCmdOut_t * ) inpExecCmdOut->inOutStruct;
-            if ( execCmdOut == NULL ) {
-                return SYS_INTERNAL_NULL_INPUT_ERR;
-            }
-            *outStr = ( char * ) malloc( execCmdOut->stderrBuf.len + 1 );
-            memcpy( *outStr, ( char * )execCmdOut->stderrBuf.buf, execCmdOut->stderrBuf.len );
-            ( *outStr )[execCmdOut->stderrBuf.len] = '\0';
-            return 0;
-        }
-        else {
-            rodsLog( LOG_ERROR,
-                     "getStderrInExecCmdOut: Unsupported input Param type %s",
-                     inpExecCmdOut->type );
-            return ( USER_PARAM_TYPE_ERR );
-        }
-    }
-
-    int
-    initParsedMsKeyValStr( char * inpStr, parsedMsKeyValStr_t * parsedMsKeyValStr ) {
-        if ( inpStr == NULL || parsedMsKeyValStr == NULL ) {
-            rodsLog( LOG_ERROR,
-                     "initParsedMsKeyValStr: input inpStr or parsedMsKeyValStr is NULL" );
-            return ( SYS_INTERNAL_NULL_INPUT_ERR );
-        }
-
-        bzero( parsedMsKeyValStr, sizeof( parsedMsKeyValStr_t ) );
-        parsedMsKeyValStr->inpStr = parsedMsKeyValStr->curPtr = strdup( inpStr );
-        parsedMsKeyValStr->endPtr = parsedMsKeyValStr->inpStr +
-                                    strlen( parsedMsKeyValStr->inpStr );
-
-        return 0;
-    }
-
-    int
-    clearParsedMsKeyValStr( parsedMsKeyValStr_t * parsedMsKeyValStr ) {
-        if ( parsedMsKeyValStr == NULL ) {
-            rodsLog( LOG_ERROR,
-                     "clearParsedMsKeyValStr: input parsedMsKeyValStr is NULL" );
-            return ( SYS_INTERNAL_NULL_INPUT_ERR );
-        }
-        if ( parsedMsKeyValStr->inpStr != NULL ) {
-            free( parsedMsKeyValStr->inpStr );
-        }
-
-        bzero( parsedMsKeyValStr, sizeof( parsedMsKeyValStr_t ) );
-
-        return 0;
-    }
-
-    /* getNextKeyValFromMsKeyValStr - parse the inpStr for keyWd value pair.
-     * The str is expected to have the format keyWd=value separated by
-     * 4 "+" char. e.g. keyWd1=value1++++keyWd2=value2++++keyWd3=value3...
-     * If the char "=" is not present, the entire string is assumed to
-     * be value with a NULL value for kwPtr.
-     */
-    int
-    getNextKeyValFromMsKeyValStr( parsedMsKeyValStr_t * parsedMsKeyValStr ) {
-        char *tmpEndPtr;
-        char *equalPtr;
-
-        if ( parsedMsKeyValStr == NULL ) {
-            rodsLog( LOG_ERROR,
-                     "getNextKeyValFromMsKeyValStr: input parsedMsKeyValStr is NULL" );
-            return ( SYS_INTERNAL_NULL_INPUT_ERR );
-        }
-        if ( parsedMsKeyValStr->curPtr >= parsedMsKeyValStr->endPtr ) {
-            return NO_MORE_RESULT;
-        }
-
-        if ( ( tmpEndPtr = strstr( parsedMsKeyValStr->curPtr, MS_INP_SEP_STR ) ) !=
-                NULL ) {
-            /* NULL terminate the str we are trying to parse */
-            *tmpEndPtr = '\0';
-        }
-        else {
-            tmpEndPtr = parsedMsKeyValStr->endPtr;
-        }
-
-        if ( strcmp( parsedMsKeyValStr->curPtr, MS_NULL_STR ) == 0 ) {
-            return NO_MORE_RESULT;
-        }
-
-        if ( ( equalPtr = strstr( parsedMsKeyValStr->curPtr, "=" ) ) != NULL ) {
-            *equalPtr = '\0';
-            parsedMsKeyValStr->kwPtr = parsedMsKeyValStr->curPtr;
-            if ( equalPtr + 1 == tmpEndPtr ) {
-                /* pair has no value */
-                parsedMsKeyValStr->valPtr = equalPtr;
+            else if ( strcmp( hintForMissingKw, KEY_WORD_KW ) == 0 ) {
+                /* XXXXX need to check if keywd is allowed */
+                /* the value should be treated at keyWd */
+                parsedMsKeyValStr.kwPtr = parsedMsKeyValStr.valPtr;
+                parsedMsKeyValStr.valPtr = parsedMsKeyValStr.endPtr;
             }
             else {
-                parsedMsKeyValStr->valPtr = equalPtr + 1;
+                /* use the input hintForMissingKw */
+                parsedMsKeyValStr.kwPtr = hintForMissingKw;
             }
         }
-        else {
-            parsedMsKeyValStr->kwPtr = NULL;
-            parsedMsKeyValStr->valPtr = parsedMsKeyValStr->curPtr;
-        }
-
-        /* advance curPtr */
-        parsedMsKeyValStr->curPtr = tmpEndPtr + strlen( MS_INP_SEP_STR );
-
-        return 0;
-    }
-
-    /* parseMsKeyValStrForDataObjInp - parse the msKeyValStr for keyWd value pair
-     * and put the kw/value pairs in dataObjInp->condInput.
-     * The msKeyValStr is expected to have the format keyWd=value separated by
-     * 4 "+" char. e.g. keyWd1=value1++++keyWd2=value2++++keyWd3=value3...
-     * If the char "=" is not present, the entire string is assumed to
-     * be value and hintForMissingKw will provide the missing keyWd.
-     */
-
-    int
-    parseMsKeyValStrForDataObjInp( msParam_t * inpParam, dataObjInp_t * dataObjInp,
-                                   char * hintForMissingKw, int validKwFlags, char **outBadKeyWd ) {
-        char *msKeyValStr;
-        keyValPair_t *condInput;
-        parsedMsKeyValStr_t parsedMsKeyValStr;
-        int status;
-
-
-        if ( inpParam == NULL || dataObjInp == NULL ) {
-            rodsLog( LOG_ERROR,
-                     "parseMsKeyValStrForDataObjInp: input inpParam or dataObjInp is NULL" );
-            return ( SYS_INTERNAL_NULL_INPUT_ERR );
-        }
-
-        if ( strcmp( inpParam->type, STR_MS_T ) != 0 ) {
-            return USER_PARAM_TYPE_ERR;
-        }
-
-        msKeyValStr = ( char * ) inpParam->inOutStruct;
-
-        condInput = &dataObjInp->condInput;
-
-        if ( outBadKeyWd != NULL ) {
-            *outBadKeyWd = NULL;
-        }
-
-        if ( ( status = initParsedMsKeyValStr( msKeyValStr, &parsedMsKeyValStr ) ) < 0 ) {
+        if ( ( status = chkDataObjInpKw( parsedMsKeyValStr.kwPtr,
+                                         validKwFlags ) ) < 0 ) {
+            if ( outBadKeyWd != NULL ) {
+                *outBadKeyWd = strdup( parsedMsKeyValStr.kwPtr );
+            }
             return status;
         }
-
-        while ( getNextKeyValFromMsKeyValStr( &parsedMsKeyValStr ) >= 0 ) {
-            if ( parsedMsKeyValStr.kwPtr == NULL ) {
-                if ( hintForMissingKw == NULL ) {
-                    status = NO_KEY_WD_IN_MS_INP_STR;
-                    rodsLogError( LOG_ERROR, status,
-                                  "parseMsKeyValStrForDataObjInp: no keyWd for %s",
-                                  parsedMsKeyValStr.valPtr );
-                    clearParsedMsKeyValStr( &parsedMsKeyValStr );
-                    return status;
-                }
-                else if ( strcmp( hintForMissingKw, KEY_WORD_KW ) == 0 ) {
-                    /* XXXXX need to check if keywd is allowed */
-                    /* the value should be treated at keyWd */
-                    parsedMsKeyValStr.kwPtr = parsedMsKeyValStr.valPtr;
-                    parsedMsKeyValStr.valPtr = parsedMsKeyValStr.endPtr;
-                }
-                else {
-                    /* use the input hintForMissingKw */
-                    parsedMsKeyValStr.kwPtr = hintForMissingKw;
-                }
+        /* check for some of the special keyWd */
+        if ( status == CREATE_MODE_FLAG ) {
+            dataObjInp->createMode = atoi( parsedMsKeyValStr.valPtr );
+            continue;
+        }
+        else if ( status == OPEN_FLAGS_FLAG ) {
+            if ( strstr( parsedMsKeyValStr.valPtr, "O_RDWR" ) != NULL ) {
+                dataObjInp->openFlags |= O_RDWR;
             }
-            if ( ( status = chkDataObjInpKw( parsedMsKeyValStr.kwPtr,
-                                             validKwFlags ) ) < 0 ) {
-                if ( outBadKeyWd != NULL ) {
-                    *outBadKeyWd = strdup( parsedMsKeyValStr.kwPtr );
-                }
+            else if ( strstr( parsedMsKeyValStr.valPtr, "O_WRONLY" ) != NULL ) {
+                dataObjInp->openFlags |= O_WRONLY;
+            }
+            else if ( strstr( parsedMsKeyValStr.valPtr, "O_RDONLY" ) != NULL ) {
+                dataObjInp->openFlags |= O_RDONLY;
+            }
+            if ( strstr( parsedMsKeyValStr.valPtr, "O_CREAT" ) != NULL ) {
+                dataObjInp->openFlags |= O_CREAT;
+            }
+            if ( strstr( parsedMsKeyValStr.valPtr, "O_TRUNC" ) != NULL ) {
+                dataObjInp->openFlags |= O_TRUNC;
+            }
+            continue;
+        }
+        else if ( status == DATA_SIZE_FLAGS ) {
+            dataObjInp->dataSize =  strtoll( parsedMsKeyValStr.valPtr, 0, 0 );
+            continue;
+        }
+        else if ( status == NUM_THREADS_FLAG ) {
+            dataObjInp->numThreads = atoi( parsedMsKeyValStr.valPtr );
+            continue;
+        }
+        else if ( status == OPR_TYPE_FLAG ) {
+            dataObjInp->oprType = atoi( parsedMsKeyValStr.valPtr );
+            continue;
+        }
+        else if ( status == OBJ_PATH_FLAG ) {
+            rstrcpy( dataObjInp->objPath, parsedMsKeyValStr.valPtr,
+                     MAX_NAME_LEN );
+            continue;
+        }
+        else if ( strcmp( parsedMsKeyValStr.kwPtr, UNREG_KW ) == 0 ) {
+            dataObjInp->oprType = UNREG_OPR;
+        }
+
+        addKeyVal( condInput, parsedMsKeyValStr.kwPtr,
+                   parsedMsKeyValStr.valPtr );
+    }
+
+    clearParsedMsKeyValStr( &parsedMsKeyValStr );
+
+    return 0;
+}
+
+int
+chkDataObjInpKw( char * keyWd, int validKwFlags ) {
+    int i;
+
+    if ( keyWd == NULL ) {
+        return SYS_INTERNAL_NULL_INPUT_ERR;
+    }
+    for ( i = 0; i < NumDataObjInpKeyWd; i++ ) {
+        if ( strcmp( DataObjInpKeyWd[i].keyWd, keyWd ) == 0 ) {
+            if ( ( DataObjInpKeyWd[i].flag & validKwFlags ) == 0 ) {
+                /* not valid */
+                break;
+            }
+            else {
+                /* OK */
+                return DataObjInpKeyWd[i].flag;
+            }
+        }
+    }
+    return USER_BAD_KEYWORD_ERR;
+}
+
+int
+parseMsKeyValStrForCollInp( msParam_t * inpParam, collInp_t * collInp,
+                            char * hintForMissingKw, int validKwFlags, char **outBadKeyWd ) {
+    char *msKeyValStr;
+    keyValPair_t *condInput;
+    parsedMsKeyValStr_t parsedMsKeyValStr;
+    int status;
+
+
+    if ( inpParam == NULL || collInp == NULL ) {
+        rodsLog( LOG_ERROR,
+                 "parseMsKeyValStrForCollInp: input inpParam or collInp is NULL" );
+        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+    }
+
+    if ( strcmp( inpParam->type, STR_MS_T ) != 0 ) {
+        return USER_PARAM_TYPE_ERR;
+    }
+
+    msKeyValStr = ( char * ) inpParam->inOutStruct;
+
+    condInput = &collInp->condInput;
+
+    if ( outBadKeyWd != NULL ) {
+        *outBadKeyWd = NULL;
+    }
+
+    if ( ( status = initParsedMsKeyValStr( msKeyValStr, &parsedMsKeyValStr ) ) < 0 ) {
+        return status;
+    }
+
+    while ( getNextKeyValFromMsKeyValStr( &parsedMsKeyValStr ) >= 0 ) {
+        if ( parsedMsKeyValStr.kwPtr == NULL ) {
+            if ( hintForMissingKw == NULL ) {
+                status = NO_KEY_WD_IN_MS_INP_STR;
+                rodsLogError( LOG_ERROR, status,
+                              "parseMsKeyValStrForCollInp: no keyWd for %s",
+                              parsedMsKeyValStr.valPtr );
+                clearParsedMsKeyValStr( &parsedMsKeyValStr );
                 return status;
             }
-            /* check for some of the special keyWd */
-            if ( status == CREATE_MODE_FLAG ) {
-                dataObjInp->createMode = atoi( parsedMsKeyValStr.valPtr );
-                continue;
+            else if ( strcmp( hintForMissingKw, KEY_WORD_KW ) == 0 ) {
+                /* XXXXX need to check if keywd is allowed */
+                /* the value should be treated at keyWd */
+                parsedMsKeyValStr.kwPtr = parsedMsKeyValStr.valPtr;
+                parsedMsKeyValStr.valPtr = parsedMsKeyValStr.endPtr;
             }
-            else if ( status == OPEN_FLAGS_FLAG ) {
-                if ( strstr( parsedMsKeyValStr.valPtr, "O_RDWR" ) != NULL ) {
-                    dataObjInp->openFlags |= O_RDWR;
-                }
-                else if ( strstr( parsedMsKeyValStr.valPtr, "O_WRONLY" ) != NULL ) {
-                    dataObjInp->openFlags |= O_WRONLY;
-                }
-                else if ( strstr( parsedMsKeyValStr.valPtr, "O_RDONLY" ) != NULL ) {
-                    dataObjInp->openFlags |= O_RDONLY;
-                }
-                if ( strstr( parsedMsKeyValStr.valPtr, "O_CREAT" ) != NULL ) {
-                    dataObjInp->openFlags |= O_CREAT;
-                }
-                if ( strstr( parsedMsKeyValStr.valPtr, "O_TRUNC" ) != NULL ) {
-                    dataObjInp->openFlags |= O_TRUNC;
-                }
-                continue;
-            }
-            else if ( status == DATA_SIZE_FLAGS ) {
-                dataObjInp->dataSize =  strtoll( parsedMsKeyValStr.valPtr, 0, 0 );
-                continue;
-            }
-            else if ( status == NUM_THREADS_FLAG ) {
-                dataObjInp->numThreads = atoi( parsedMsKeyValStr.valPtr );
-                continue;
-            }
-            else if ( status == OPR_TYPE_FLAG ) {
-                dataObjInp->oprType = atoi( parsedMsKeyValStr.valPtr );
-                continue;
-            }
-            else if ( status == OBJ_PATH_FLAG ) {
-                rstrcpy( dataObjInp->objPath, parsedMsKeyValStr.valPtr,
-                         MAX_NAME_LEN );
-                continue;
-            }
-            else if ( strcmp( parsedMsKeyValStr.kwPtr, UNREG_KW ) == 0 ) {
-                dataObjInp->oprType = UNREG_OPR;
-            }
-
-            addKeyVal( condInput, parsedMsKeyValStr.kwPtr,
-                       parsedMsKeyValStr.valPtr );
-        }
-
-        clearParsedMsKeyValStr( &parsedMsKeyValStr );
-
-        return 0;
-    }
-
-    int
-    chkDataObjInpKw( char * keyWd, int validKwFlags ) {
-        int i;
-
-        if ( keyWd == NULL ) {
-            return SYS_INTERNAL_NULL_INPUT_ERR;
-        }
-        for ( i = 0; i < NumDataObjInpKeyWd; i++ ) {
-            if ( strcmp( DataObjInpKeyWd[i].keyWd, keyWd ) == 0 ) {
-                if ( ( DataObjInpKeyWd[i].flag & validKwFlags ) == 0 ) {
-                    /* not valid */
-                    break;
-                }
-                else {
-                    /* OK */
-                    return DataObjInpKeyWd[i].flag;
-                }
+            else {
+                /* use the input hintForMissingKw */
+                parsedMsKeyValStr.kwPtr = hintForMissingKw;
             }
         }
-        return USER_BAD_KEYWORD_ERR;
-    }
-
-    int
-    parseMsKeyValStrForCollInp( msParam_t * inpParam, collInp_t * collInp,
-                                char * hintForMissingKw, int validKwFlags, char **outBadKeyWd ) {
-        char *msKeyValStr;
-        keyValPair_t *condInput;
-        parsedMsKeyValStr_t parsedMsKeyValStr;
-        int status;
-
-
-        if ( inpParam == NULL || collInp == NULL ) {
-            rodsLog( LOG_ERROR,
-                     "parseMsKeyValStrForCollInp: input inpParam or collInp is NULL" );
-            return ( SYS_INTERNAL_NULL_INPUT_ERR );
-        }
-
-        if ( strcmp( inpParam->type, STR_MS_T ) != 0 ) {
-            return USER_PARAM_TYPE_ERR;
-        }
-
-        msKeyValStr = ( char * ) inpParam->inOutStruct;
-
-        condInput = &collInp->condInput;
-
-        if ( outBadKeyWd != NULL ) {
-            *outBadKeyWd = NULL;
-        }
-
-        if ( ( status = initParsedMsKeyValStr( msKeyValStr, &parsedMsKeyValStr ) ) < 0 ) {
+        if ( ( status = chkCollInpKw( parsedMsKeyValStr.kwPtr,
+                                      validKwFlags ) ) < 0 ) {
+            if ( outBadKeyWd != NULL ) {
+                *outBadKeyWd = strdup( parsedMsKeyValStr.kwPtr );
+            }
             return status;
         }
+        /* check for some of the special keyWd */
+        if ( status == COLL_FLAGS_FLAG ) {
+            collInp->flags = atoi( parsedMsKeyValStr.valPtr );
+            continue;
+        }
+        else if ( status == OPR_TYPE_FLAG ) {
+            collInp->oprType = atoi( parsedMsKeyValStr.valPtr );
+            continue;
+        }
+        else if ( status == COLL_NAME_FLAG ) {
+            rstrcpy( collInp->collName, parsedMsKeyValStr.valPtr,
+                     MAX_NAME_LEN );
+            continue;
+        }
+        addKeyVal( condInput, parsedMsKeyValStr.kwPtr,
+                   parsedMsKeyValStr.valPtr );
+    }
 
-        while ( getNextKeyValFromMsKeyValStr( &parsedMsKeyValStr ) >= 0 ) {
-            if ( parsedMsKeyValStr.kwPtr == NULL ) {
-                if ( hintForMissingKw == NULL ) {
-                    status = NO_KEY_WD_IN_MS_INP_STR;
-                    rodsLogError( LOG_ERROR, status,
-                                  "parseMsKeyValStrForCollInp: no keyWd for %s",
-                                  parsedMsKeyValStr.valPtr );
-                    clearParsedMsKeyValStr( &parsedMsKeyValStr );
-                    return status;
-                }
-                else if ( strcmp( hintForMissingKw, KEY_WORD_KW ) == 0 ) {
-                    /* XXXXX need to check if keywd is allowed */
-                    /* the value should be treated at keyWd */
-                    parsedMsKeyValStr.kwPtr = parsedMsKeyValStr.valPtr;
-                    parsedMsKeyValStr.valPtr = parsedMsKeyValStr.endPtr;
-                }
-                else {
-                    /* use the input hintForMissingKw */
-                    parsedMsKeyValStr.kwPtr = hintForMissingKw;
-                }
+    clearParsedMsKeyValStr( &parsedMsKeyValStr );
+
+    return 0;
+}
+
+int
+chkCollInpKw( char * keyWd, int validKwFlags ) {
+    int i;
+
+    if ( keyWd == NULL ) {
+        return SYS_INTERNAL_NULL_INPUT_ERR;
+    }
+    for ( i = 0; i < NumCollInpKeyWd; i++ ) {
+        if ( strcmp( CollInpKeyWd[i].keyWd, keyWd ) == 0 ) {
+            if ( ( CollInpKeyWd[i].flag & validKwFlags ) == 0 ) {
+                /* not valid */
+                break;
             }
-            if ( ( status = chkCollInpKw( parsedMsKeyValStr.kwPtr,
-                                          validKwFlags ) ) < 0 ) {
-                if ( outBadKeyWd != NULL ) {
-                    *outBadKeyWd = strdup( parsedMsKeyValStr.kwPtr );
-                }
+            else {
+                /* OK */
+                return CollInpKeyWd[i].flag;
+            }
+        }
+    }
+    return USER_BAD_KEYWORD_ERR;
+}
+
+int
+addKeyValToMspStr( msParam_t * keyStr, msParam_t * valStr,
+                   msParam_t * msKeyValStr ) {
+    int keyLen, valLen;
+    char *valPtr, *keyPtr, *oldKeyValPtr, *newKeyValPtr, *tmpPtr;
+    int oldLen, newLen;
+
+    if ( ( keyStr == NULL && valStr == NULL ) || msKeyValStr == NULL ) {
+        return SYS_INTERNAL_NULL_INPUT_ERR;
+    }
+
+    if ( msKeyValStr->type == NULL ) {
+        fillStrInMsParam( msKeyValStr, NULL );
+    }
+
+    keyPtr = parseMspForStr( keyStr );
+    if ( keyPtr == NULL || strcmp( keyPtr, MS_NULL_STR ) == 0 ) {
+        keyLen = 0;
+    }
+    else {
+        keyLen = strlen( keyPtr );
+    }
+
+    valPtr = parseMspForStr( valStr );
+    if ( valPtr == NULL || strcmp( valPtr, MS_NULL_STR ) == 0 ) {
+        valLen = 0;
+    }
+    else {
+        valLen = strlen( valPtr );
+    }
+    if ( valLen + keyLen <= 0 ) {
+        return 0;
+    }
+
+    oldKeyValPtr = parseMspForStr( msKeyValStr );
+    if ( oldKeyValPtr == NULL ) {
+        oldLen = 0;
+        newLen = valLen + keyLen + 10;
+        newKeyValPtr = ( char * )malloc( newLen );
+        *newKeyValPtr = '\0';
+        tmpPtr = newKeyValPtr;
+    }
+    else {
+        oldLen = strlen( oldKeyValPtr );
+        newLen = oldLen + valLen + keyLen + 10;
+        newKeyValPtr = ( char * )malloc( newLen );
+        snprintf( newKeyValPtr, newLen, "%s%s", oldKeyValPtr, MS_INP_SEP_STR );
+        tmpPtr = newKeyValPtr + oldLen + 4;
+        free( oldKeyValPtr );
+    }
+
+    if ( keyLen > 0 ) {
+        snprintf( tmpPtr, keyLen + 2, "%s=", keyPtr );
+        tmpPtr += keyLen + 1;
+    }
+    if ( valLen > 0 ) {
+        snprintf( tmpPtr, valLen + 2, "%s", valPtr );
+    }
+    msKeyValStr->inOutStruct = ( void * ) newKeyValPtr;
+
+    return 0;
+}
+
+int
+parseMsKeyValStrForStructFileExtAndRegInp( msParam_t * inpParam,
+        structFileExtAndRegInp_t * structFileExtAndRegInp,
+        char * hintForMissingKw, int validKwFlags, char **outBadKeyWd ) {
+    char *msKeyValStr;
+    keyValPair_t *condInput;
+    parsedMsKeyValStr_t parsedMsKeyValStr;
+    int status;
+
+
+    if ( inpParam == NULL || structFileExtAndRegInp == NULL ) {
+        rodsLog( LOG_ERROR,
+                 "parseMsKeyValStrForStructFile:inpParam or structFileInp is NULL" );
+        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+    }
+
+    if ( strcmp( inpParam->type, STR_MS_T ) != 0 ) {
+        return USER_PARAM_TYPE_ERR;
+    }
+
+    msKeyValStr = ( char * ) inpParam->inOutStruct;
+
+    condInput = &structFileExtAndRegInp->condInput;
+
+    if ( outBadKeyWd != NULL ) {
+        *outBadKeyWd = NULL;
+    }
+
+    if ( ( status = initParsedMsKeyValStr( msKeyValStr, &parsedMsKeyValStr ) ) < 0 ) {
+        return status;
+    }
+
+    while ( getNextKeyValFromMsKeyValStr( &parsedMsKeyValStr ) >= 0 ) {
+        if ( parsedMsKeyValStr.kwPtr == NULL ) {
+            if ( hintForMissingKw == NULL ) {
+                status = NO_KEY_WD_IN_MS_INP_STR;
+                rodsLogError( LOG_ERROR, status,
+                              "parseMsKeyValStrForStructFileExtAndRegInp: no keyWd for %s",
+                              parsedMsKeyValStr.valPtr );
+                clearParsedMsKeyValStr( &parsedMsKeyValStr );
                 return status;
             }
-            /* check for some of the special keyWd */
-            if ( status == COLL_FLAGS_FLAG ) {
-                collInp->flags = atoi( parsedMsKeyValStr.valPtr );
-                continue;
+            else if ( strcmp( hintForMissingKw, KEY_WORD_KW ) == 0 ) {
+                /* the value should be treated at keyWd */
+                parsedMsKeyValStr.kwPtr = parsedMsKeyValStr.valPtr;
+                parsedMsKeyValStr.valPtr = parsedMsKeyValStr.endPtr;
             }
-            else if ( status == OPR_TYPE_FLAG ) {
-                collInp->oprType = atoi( parsedMsKeyValStr.valPtr );
-                continue;
-            }
-            else if ( status == COLL_NAME_FLAG ) {
-                rstrcpy( collInp->collName, parsedMsKeyValStr.valPtr,
-                         MAX_NAME_LEN );
-                continue;
-            }
-            addKeyVal( condInput, parsedMsKeyValStr.kwPtr,
-                       parsedMsKeyValStr.valPtr );
-        }
-
-        clearParsedMsKeyValStr( &parsedMsKeyValStr );
-
-        return 0;
-    }
-
-    int
-    chkCollInpKw( char * keyWd, int validKwFlags ) {
-        int i;
-
-        if ( keyWd == NULL ) {
-            return SYS_INTERNAL_NULL_INPUT_ERR;
-        }
-        for ( i = 0; i < NumCollInpKeyWd; i++ ) {
-            if ( strcmp( CollInpKeyWd[i].keyWd, keyWd ) == 0 ) {
-                if ( ( CollInpKeyWd[i].flag & validKwFlags ) == 0 ) {
-                    /* not valid */
-                    break;
-                }
-                else {
-                    /* OK */
-                    return CollInpKeyWd[i].flag;
-                }
+            else {
+                /* use the input hintForMissingKw */
+                parsedMsKeyValStr.kwPtr = hintForMissingKw;
             }
         }
-        return USER_BAD_KEYWORD_ERR;
-    }
-
-    int
-    addKeyValToMspStr( msParam_t * keyStr, msParam_t * valStr,
-                       msParam_t * msKeyValStr ) {
-        int keyLen, valLen;
-        char *valPtr, *keyPtr, *oldKeyValPtr, *newKeyValPtr, *tmpPtr;
-        int oldLen, newLen;
-
-        if ( ( keyStr == NULL && valStr == NULL ) || msKeyValStr == NULL ) {
-            return SYS_INTERNAL_NULL_INPUT_ERR;
-        }
-
-        if ( msKeyValStr->type == NULL ) {
-            fillStrInMsParam( msKeyValStr, NULL );
-        }
-
-        keyPtr = parseMspForStr( keyStr );
-        if ( keyPtr == NULL || strcmp( keyPtr, MS_NULL_STR ) == 0 ) {
-            keyLen = 0;
-        }
-        else {
-            keyLen = strlen( keyPtr );
-        }
-
-        valPtr = parseMspForStr( valStr );
-        if ( valPtr == NULL || strcmp( valPtr, MS_NULL_STR ) == 0 ) {
-            valLen = 0;
-        }
-        else {
-            valLen = strlen( valPtr );
-        }
-        if ( valLen + keyLen <= 0 ) {
-            return 0;
-        }
-
-        oldKeyValPtr = parseMspForStr( msKeyValStr );
-        if ( oldKeyValPtr == NULL ) {
-            oldLen = 0;
-            newLen = valLen + keyLen + 10;
-            newKeyValPtr = ( char * )malloc( newLen );
-            *newKeyValPtr = '\0';
-            tmpPtr = newKeyValPtr;
-        }
-        else {
-            oldLen = strlen( oldKeyValPtr );
-            newLen = oldLen + valLen + keyLen + 10;
-            newKeyValPtr = ( char * )malloc( newLen );
-            snprintf( newKeyValPtr, newLen, "%s%s", oldKeyValPtr, MS_INP_SEP_STR );
-            tmpPtr = newKeyValPtr + oldLen + 4;
-            free( oldKeyValPtr );
-        }
-
-        if ( keyLen > 0 ) {
-            snprintf( tmpPtr, keyLen + 2, "%s=", keyPtr );
-            tmpPtr += keyLen + 1;
-        }
-        if ( valLen > 0 ) {
-            snprintf( tmpPtr, valLen + 2, "%s", valPtr );
-        }
-        msKeyValStr->inOutStruct = ( void * ) newKeyValPtr;
-
-        return 0;
-    }
-
-    int
-    parseMsKeyValStrForStructFileExtAndRegInp( msParam_t * inpParam,
-            structFileExtAndRegInp_t * structFileExtAndRegInp,
-            char * hintForMissingKw, int validKwFlags, char **outBadKeyWd ) {
-        char *msKeyValStr;
-        keyValPair_t *condInput;
-        parsedMsKeyValStr_t parsedMsKeyValStr;
-        int status;
-
-
-        if ( inpParam == NULL || structFileExtAndRegInp == NULL ) {
-            rodsLog( LOG_ERROR,
-                     "parseMsKeyValStrForStructFile:inpParam or structFileInp is NULL" );
-            return ( SYS_INTERNAL_NULL_INPUT_ERR );
-        }
-
-        if ( strcmp( inpParam->type, STR_MS_T ) != 0 ) {
-            return USER_PARAM_TYPE_ERR;
-        }
-
-        msKeyValStr = ( char * ) inpParam->inOutStruct;
-
-        condInput = &structFileExtAndRegInp->condInput;
-
-        if ( outBadKeyWd != NULL ) {
-            *outBadKeyWd = NULL;
-        }
-
-        if ( ( status = initParsedMsKeyValStr( msKeyValStr, &parsedMsKeyValStr ) ) < 0 ) {
+        if ( ( status = chkStructFileExtAndRegInpKw( parsedMsKeyValStr.kwPtr,
+                        validKwFlags ) ) < 0 ) {
+            if ( outBadKeyWd != NULL ) {
+                *outBadKeyWd = strdup( parsedMsKeyValStr.kwPtr );
+            }
             return status;
         }
-
-        while ( getNextKeyValFromMsKeyValStr( &parsedMsKeyValStr ) >= 0 ) {
-            if ( parsedMsKeyValStr.kwPtr == NULL ) {
-                if ( hintForMissingKw == NULL ) {
-                    status = NO_KEY_WD_IN_MS_INP_STR;
-                    rodsLogError( LOG_ERROR, status,
-                                  "parseMsKeyValStrForStructFileExtAndRegInp: no keyWd for %s",
-                                  parsedMsKeyValStr.valPtr );
-                    clearParsedMsKeyValStr( &parsedMsKeyValStr );
-                    return status;
-                }
-                else if ( strcmp( hintForMissingKw, KEY_WORD_KW ) == 0 ) {
-                    /* the value should be treated at keyWd */
-                    parsedMsKeyValStr.kwPtr = parsedMsKeyValStr.valPtr;
-                    parsedMsKeyValStr.valPtr = parsedMsKeyValStr.endPtr;
-                }
-                else {
-                    /* use the input hintForMissingKw */
-                    parsedMsKeyValStr.kwPtr = hintForMissingKw;
-                }
-            }
-            if ( ( status = chkStructFileExtAndRegInpKw( parsedMsKeyValStr.kwPtr,
-                            validKwFlags ) ) < 0 ) {
-                if ( outBadKeyWd != NULL ) {
-                    *outBadKeyWd = strdup( parsedMsKeyValStr.kwPtr );
-                }
-                return status;
-            }
-            /* check for some of the special keyWd */
-            if ( status == COLL_FLAGS_FLAG ) {
-                structFileExtAndRegInp->flags = atoi( parsedMsKeyValStr.valPtr );
-                continue;
-            }
-            else if ( status == OPR_TYPE_FLAG ) {
-                structFileExtAndRegInp->oprType = atoi( parsedMsKeyValStr.valPtr );
-                continue;
-            }
-            else if ( status == OBJ_PATH_FLAG ) {
-                rstrcpy( structFileExtAndRegInp->objPath,
-                         parsedMsKeyValStr.valPtr, MAX_NAME_LEN );
-                continue;
-            }
-            else if ( status == COLL_NAME_FLAG ) {
-                rstrcpy( structFileExtAndRegInp->collection,
-                         parsedMsKeyValStr.valPtr, MAX_NAME_LEN );
-                continue;
-            }
-            addKeyVal( condInput, parsedMsKeyValStr.kwPtr,
-                       parsedMsKeyValStr.valPtr );
+        /* check for some of the special keyWd */
+        if ( status == COLL_FLAGS_FLAG ) {
+            structFileExtAndRegInp->flags = atoi( parsedMsKeyValStr.valPtr );
+            continue;
         }
-
-        clearParsedMsKeyValStr( &parsedMsKeyValStr );
-
-        return 0;
+        else if ( status == OPR_TYPE_FLAG ) {
+            structFileExtAndRegInp->oprType = atoi( parsedMsKeyValStr.valPtr );
+            continue;
+        }
+        else if ( status == OBJ_PATH_FLAG ) {
+            rstrcpy( structFileExtAndRegInp->objPath,
+                     parsedMsKeyValStr.valPtr, MAX_NAME_LEN );
+            continue;
+        }
+        else if ( status == COLL_NAME_FLAG ) {
+            rstrcpy( structFileExtAndRegInp->collection,
+                     parsedMsKeyValStr.valPtr, MAX_NAME_LEN );
+            continue;
+        }
+        addKeyVal( condInput, parsedMsKeyValStr.kwPtr,
+                   parsedMsKeyValStr.valPtr );
     }
 
-    int
-    chkStructFileExtAndRegInpKw( char * keyWd, int validKwFlags ) {
-        int i;
+    clearParsedMsKeyValStr( &parsedMsKeyValStr );
 
-        if ( keyWd == NULL ) {
-            return SYS_INTERNAL_NULL_INPUT_ERR;
-        }
-        for ( i = 0; i < NumStructFileExtAndRegInpKeyWd; i++ ) {
-            if ( strcmp( StructFileExtAndRegInpKeyWd[i].keyWd, keyWd ) == 0 ) {
-                if ( ( StructFileExtAndRegInpKeyWd[i].flag & validKwFlags )
-                        == 0 ) {
-                    /* not valid */
-                    break;
-                }
-                else {
-                    /* OK */
-                    return StructFileExtAndRegInpKeyWd[i].flag;
-                }
+    return 0;
+}
+
+int
+chkStructFileExtAndRegInpKw( char * keyWd, int validKwFlags ) {
+    int i;
+
+    if ( keyWd == NULL ) {
+        return SYS_INTERNAL_NULL_INPUT_ERR;
+    }
+    for ( i = 0; i < NumStructFileExtAndRegInpKeyWd; i++ ) {
+        if ( strcmp( StructFileExtAndRegInpKeyWd[i].keyWd, keyWd ) == 0 ) {
+            if ( ( StructFileExtAndRegInpKeyWd[i].flag & validKwFlags )
+                    == 0 ) {
+                /* not valid */
+                break;
+            }
+            else {
+                /* OK */
+                return StructFileExtAndRegInpKeyWd[i].flag;
             }
         }
-        return USER_BAD_KEYWORD_ERR;
+    }
+    return USER_BAD_KEYWORD_ERR;
+}
+
+int
+parseMsParamFromIRFile( msParamArray_t * inpParamArray, char * inBuf ) {
+    strArray_t strArray;
+    int status, i;
+    char *value;
+
+    if ( inBuf == NULL || strcmp( inBuf, "null" ) == 0 ) {
+        inpParamArray = NULL;
+        return ( 0 );
     }
 
-    int
-    parseMsParamFromIRFile( msParamArray_t * inpParamArray, char * inBuf ) {
-        strArray_t strArray;
-        int status, i;
-        char *value;
+    memset( &strArray, 0, sizeof( strArray ) );
 
-        if ( inBuf == NULL || strcmp( inBuf, "null" ) == 0 ) {
-            inpParamArray = NULL;
-            return ( 0 );
-        }
+    status = splitMultiStr( inBuf, &strArray );
+    if ( status < 0 ) {
+        rodsLog( LOG_ERROR,
+                 "parseMsParamFromIRFile: parseMultiStr error, status = %d", status );
+        inpParamArray = NULL;
+        return ( status );
+    }
+    value = strArray.value;
 
-        memset( &strArray, 0, sizeof( strArray ) );
-
-        status = splitMultiStr( inBuf, &strArray );
-        if ( status < 0 ) {
-            rodsLog( LOG_ERROR,
-                     "parseMsParamFromIRFile: parseMultiStr error, status = %d", status );
-            inpParamArray = NULL;
-            return ( status );
-        }
-        value = strArray.value;
-
-        for ( i = 0; i < strArray.len; i++ ) {
-            char *valPtr = &value[i * strArray.size];
-            char *tmpPtr;
-            if ( ( tmpPtr = strstr( valPtr, "=" ) ) != NULL ) {
-                *tmpPtr = '\0';
+    for ( i = 0; i < strArray.len; i++ ) {
+        char *valPtr = &value[i * strArray.size];
+        char *tmpPtr;
+        if ( ( tmpPtr = strstr( valPtr, "=" ) ) != NULL ) {
+            *tmpPtr = '\0';
+            tmpPtr++;
+            if ( *tmpPtr == '\\' ) {
                 tmpPtr++;
-                if ( *tmpPtr == '\\' ) {
-                    tmpPtr++;
-                }
-                char *param = strdup( tmpPtr );
-                addMsParam( inpParamArray, valPtr, STR_MS_T,
-                            param, NULL );
+            }
+            char *param = strdup( tmpPtr );
+            addMsParam( inpParamArray, valPtr, STR_MS_T,
+                        param, NULL );
 
-            }
-            else {
-                rodsLog( LOG_ERROR,
-                         "parseMsParamFromIRFile: inpParam %s format error", valPtr );
-            }
         }
-
-        return ( 0 );
+        else {
+            rodsLog( LOG_ERROR,
+                     "parseMsParamFromIRFile: inpParam %s format error", valPtr );
+        }
     }
+
+    return ( 0 );
+}
 
 
 
 #ifdef NETCDF_API
-    int
-    parseMspForNcInqIdInpName( msParam_t * inpParam, ncInqIdInp_t * ncInqIdInp ) {
-        if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
-            /* str input */
-            bzero( ncInqIdInp, sizeof( ncInqIdInp_t ) );
-            rstrcpy( ncInqIdInp->name, ( char* )inpParam->inOutStruct,
-                     MAX_NAME_LEN );
-        }
-        else  if ( strcmp( inpParam->type, NcInqIdInp_MS_T ) == 0 ) {
-            *ncInqIdInp = *( ( ncInqIdInp_t * ) inpParam->inOutStruct );
-            replKeyVal( &( ( ncInqIdInp_t * ) inpParam->inOutStruct )->condInput,
-                        &ncInqIdInp->condInput );
-        }
-        else {
-            rodsLog( LOG_ERROR,
-                     "parseMspForNcInqIdInp: Unsupported input Param1 type %s",
-                     inpParam->type );
-            return ( USER_PARAM_TYPE_ERR );
-        }
-        return 0;
+int
+parseMspForNcInqIdInpName( msParam_t * inpParam, ncInqIdInp_t * ncInqIdInp ) {
+    if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
+        /* str input */
+        bzero( ncInqIdInp, sizeof( ncInqIdInp_t ) );
+        rstrcpy( ncInqIdInp->name, ( char* )inpParam->inOutStruct,
+                 MAX_NAME_LEN );
     }
-    int
-    parseMspForNcInqIdInpId( msParam_t * inpParam, ncInqIdInp_t * ncInqIdInp ) {
-        if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
-            /* str input */
-            bzero( ncInqIdInp, sizeof( ncInqIdInp_t ) );
-            ncInqIdInp->myid = atoi( ( const char* )inpParam->inOutStruct );
-        }
-        else if ( strcmp( inpParam->type, INT_MS_T ) == 0 ) {
-            bzero( ncInqIdInp, sizeof( ncInqIdInp_t ) );
-            ncInqIdInp->myid = *( int * )inpParam->inOutStruct;
-        }
-        else if ( strcmp( inpParam->type, NcInqIdInp_MS_T ) == 0 ) {
-            *ncInqIdInp = *( ( ncInqIdInp_t * ) inpParam->inOutStruct );
-            replKeyVal( &( ( ncInqIdInp_t * ) inpParam->inOutStruct )->condInput,
-                        &ncInqIdInp->condInput );
-        }
-        else {
-            rodsLog( LOG_ERROR,
-                     "parseMspForNcInqIdInp: Unsupported input Param1 type %s",
-                     inpParam->type );
-            return ( USER_PARAM_TYPE_ERR );
-        }
-        return 0;
+    else  if ( strcmp( inpParam->type, NcInqIdInp_MS_T ) == 0 ) {
+        *ncInqIdInp = *( ( ncInqIdInp_t * ) inpParam->inOutStruct );
+        replKeyVal( &( ( ncInqIdInp_t * ) inpParam->inOutStruct )->condInput,
+                    &ncInqIdInp->condInput );
     }
-    int
-    parseMspForNcGetVarInp( msParam_t * inpParam, ncGetVarInp_t * ncGetVarInp ) {
-        if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
-            /* str input */
-            bzero( ncGetVarInp, sizeof( ncGetVarInp_t ) );
-            ncGetVarInp->dataType = parseStrToNcType( ( char* )inpParam->inOutStruct );
-            if ( ncGetVarInp->dataType < 0 ) {
-                return ncGetVarInp->dataType;
-            }
-        }
-        else if ( strcmp( inpParam->type, INT_MS_T ) == 0 ) {
-            bzero( ncGetVarInp, sizeof( ncGetVarInp_t ) );
-            ncGetVarInp->dataType = *( int * )inpParam->inOutStruct;
-        }
-        else if ( strcmp( inpParam->type, NcGetVarInp_MS_T ) == 0 ) {
-            *ncGetVarInp = *( ( ncGetVarInp_t * ) inpParam->inOutStruct );
-            replKeyVal( &( ( ncGetVarInp_t * ) inpParam->inOutStruct )->condInput,
-                        &ncGetVarInp->condInput );
-        }
-        else {
-            rodsLog( LOG_ERROR,
-                     "parseMspForNcGetVarInp: Unsupported input Param1 type %s",
-                     inpParam->type );
-            return ( USER_PARAM_TYPE_ERR );
-        }
-        return 0;
+    else {
+        rodsLog( LOG_ERROR,
+                 "parseMspForNcInqIdInp: Unsupported input Param1 type %s",
+                 inpParam->type );
+        return ( USER_PARAM_TYPE_ERR );
     }
-
-    int
-    parseStrToNcType( char * myStr ) {
-        if ( strcmp( myStr, "NC_BYTE" ) == 0 ) {
-            return NC_BYTE;
-        }
-        else if ( strcmp( myStr, "NC_CHAR" ) == 0 ) {
-            return NC_CHAR;
-        }
-        else if ( strcmp( myStr, "NC_SHORT" ) == 0 ) {
-            return NC_SHORT;
-        }
-        else if ( strcmp( myStr, "NC_INT" ) == 0 ) {
-            return NC_INT;
-        }
-        else if ( strcmp( myStr, "NC_FLOAT" ) == 0 ) {
-            return NC_FLOAT;
-        }
-        else if ( strcmp( myStr, "NC_DOUBLE" ) == 0 ) {
-            return NC_DOUBLE;
-        }
-        else if ( strcmp( myStr, "NC_UBYTE" ) == 0 ) {
-            return NC_UBYTE;
-        }
-        else if ( strcmp( myStr, "NC_USHORT" ) == 0 ) {
-            return NC_USHORT;
-        }
-        else if ( strcmp( myStr, "NC_UINT" ) == 0 ) {
-            return NC_UINT;
-        }
-        else if ( strcmp( myStr, "NC_INT64" ) == 0 ) {
-            return NC_INT64;
-        }
-        else if ( strcmp( myStr, "NC_UINT64" ) == 0 ) {
-            return NC_UINT64;
-        }
-        else if ( strcmp( myStr, "NC_STRING" ) == 0 ) {
-            return NC_STRING;
-        }
-        else {
-            rodsLog( LOG_ERROR,
-                     "parseStrToNcType: Unknow dataType %s", myStr );
-            return ( NETCDF_INVALID_DATA_TYPE );
+    return 0;
+}
+int
+parseMspForNcInqIdInpId( msParam_t * inpParam, ncInqIdInp_t * ncInqIdInp ) {
+    if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
+        /* str input */
+        bzero( ncInqIdInp, sizeof( ncInqIdInp_t ) );
+        ncInqIdInp->myid = atoi( ( const char* )inpParam->inOutStruct );
+    }
+    else if ( strcmp( inpParam->type, INT_MS_T ) == 0 ) {
+        bzero( ncInqIdInp, sizeof( ncInqIdInp_t ) );
+        ncInqIdInp->myid = *( int * )inpParam->inOutStruct;
+    }
+    else if ( strcmp( inpParam->type, NcInqIdInp_MS_T ) == 0 ) {
+        *ncInqIdInp = *( ( ncInqIdInp_t * ) inpParam->inOutStruct );
+        replKeyVal( &( ( ncInqIdInp_t * ) inpParam->inOutStruct )->condInput,
+                    &ncInqIdInp->condInput );
+    }
+    else {
+        rodsLog( LOG_ERROR,
+                 "parseMspForNcInqIdInp: Unsupported input Param1 type %s",
+                 inpParam->type );
+        return ( USER_PARAM_TYPE_ERR );
+    }
+    return 0;
+}
+int
+parseMspForNcGetVarInp( msParam_t * inpParam, ncGetVarInp_t * ncGetVarInp ) {
+    if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
+        /* str input */
+        bzero( ncGetVarInp, sizeof( ncGetVarInp_t ) );
+        ncGetVarInp->dataType = parseStrToNcType( ( char* )inpParam->inOutStruct );
+        if ( ncGetVarInp->dataType < 0 ) {
+            return ncGetVarInp->dataType;
         }
     }
+    else if ( strcmp( inpParam->type, INT_MS_T ) == 0 ) {
+        bzero( ncGetVarInp, sizeof( ncGetVarInp_t ) );
+        ncGetVarInp->dataType = *( int * )inpParam->inOutStruct;
+    }
+    else if ( strcmp( inpParam->type, NcGetVarInp_MS_T ) == 0 ) {
+        *ncGetVarInp = *( ( ncGetVarInp_t * ) inpParam->inOutStruct );
+        replKeyVal( &( ( ncGetVarInp_t * ) inpParam->inOutStruct )->condInput,
+                    &ncGetVarInp->condInput );
+    }
+    else {
+        rodsLog( LOG_ERROR,
+                 "parseMspForNcGetVarInp: Unsupported input Param1 type %s",
+                 inpParam->type );
+        return ( USER_PARAM_TYPE_ERR );
+    }
+    return 0;
+}
 
-    int
-    parseStrMspForLongArray( msParam_t * inpParam, int * ndimOut,
-                             rodsLong_t **longArrayOut ) {
-        char *strPtr;
-        strArray_t strArray;
-        char *value;
-        int status, i;
-        rodsLong_t *longArray;
+int
+parseStrToNcType( char * myStr ) {
+    if ( strcmp( myStr, "NC_BYTE" ) == 0 ) {
+        return NC_BYTE;
+    }
+    else if ( strcmp( myStr, "NC_CHAR" ) == 0 ) {
+        return NC_CHAR;
+    }
+    else if ( strcmp( myStr, "NC_SHORT" ) == 0 ) {
+        return NC_SHORT;
+    }
+    else if ( strcmp( myStr, "NC_INT" ) == 0 ) {
+        return NC_INT;
+    }
+    else if ( strcmp( myStr, "NC_FLOAT" ) == 0 ) {
+        return NC_FLOAT;
+    }
+    else if ( strcmp( myStr, "NC_DOUBLE" ) == 0 ) {
+        return NC_DOUBLE;
+    }
+    else if ( strcmp( myStr, "NC_UBYTE" ) == 0 ) {
+        return NC_UBYTE;
+    }
+    else if ( strcmp( myStr, "NC_USHORT" ) == 0 ) {
+        return NC_USHORT;
+    }
+    else if ( strcmp( myStr, "NC_UINT" ) == 0 ) {
+        return NC_UINT;
+    }
+    else if ( strcmp( myStr, "NC_INT64" ) == 0 ) {
+        return NC_INT64;
+    }
+    else if ( strcmp( myStr, "NC_UINT64" ) == 0 ) {
+        return NC_UINT64;
+    }
+    else if ( strcmp( myStr, "NC_STRING" ) == 0 ) {
+        return NC_STRING;
+    }
+    else {
+        rodsLog( LOG_ERROR,
+                 "parseStrToNcType: Unknow dataType %s", myStr );
+        return ( NETCDF_INVALID_DATA_TYPE );
+    }
+}
 
-        if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
-            strPtr = ( char * ) inpParam->inOutStruct;
-            memset( &strArray, 0, sizeof( strArray ) );
+int
+parseStrMspForLongArray( msParam_t * inpParam, int * ndimOut,
+                         rodsLong_t **longArrayOut ) {
+    char *strPtr;
+    strArray_t strArray;
+    char *value;
+    int status, i;
+    rodsLong_t *longArray;
 
-            status = parseMultiStr( strPtr, &strArray );
+    if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
+        strPtr = ( char * ) inpParam->inOutStruct;
+        memset( &strArray, 0, sizeof( strArray ) );
 
-            if ( status <= 0 ) {
-                return ( SYS_INVALID_INPUT_PARAM );
-            }
+        status = parseMultiStr( strPtr, &strArray );
 
-            *ndimOut = strArray.len;
-            value = strArray.value;
-            *longArrayOut = longArray = ( rodsLong_t * )
-                                        calloc( 1, strArray.len * sizeof( rodsLong_t ) );
-            for ( i = 0; i < strArray.len; i++ ) {
-                longArray[i] = atoi( &value[i * strArray.size] );
-            }
-            if ( value != NULL ) {
-                free( value );
-            }
+        if ( status <= 0 ) {
+            return ( SYS_INVALID_INPUT_PARAM );
         }
-        else if ( strcmp( inpParam->type, NcGetVarOut_MS_T ) == 0 ) {
-            ncGetVarOut_t *ncArray;
-            int *inArray;
-            int len;
-            ncArray = ( ncGetVarOut_t * ) inpParam->inOutStruct;
-            if ( ncArray == NULL || ncArray->dataArray == NULL ||
-                    ncArray->dataArray->buf == NULL ) {
-                return USER__NULL_INPUT_ERR;
-            }
-            inArray = ( int * ) ncArray->dataArray->buf;
-            len = ncArray->dataArray->len;
-            if ( len <= 0 ) {
-                return SYS_INVALID_INPUT_PARAM;
-            }
-            *longArrayOut = longArray = ( rodsLong_t * )
-                                        calloc( 1, len * sizeof( rodsLong_t ) );
-            for ( i = 0; i < len; i++ ) {
-                longArray[i] = inArray[i];
-            }
-            *ndimOut = len;
-        }
-        else {
-            rodsLog( LOG_ERROR,
-                     "parseStrMspForLongArray: Unsupported input Param type %s",
-                     inpParam->type );
-            return ( USER_PARAM_TYPE_ERR );
-        }
 
-        return 0;
+        *ndimOut = strArray.len;
+        value = strArray.value;
+        *longArrayOut = longArray = ( rodsLong_t * )
+                                    calloc( 1, strArray.len * sizeof( rodsLong_t ) );
+        for ( i = 0; i < strArray.len; i++ ) {
+            longArray[i] = atoi( &value[i * strArray.size] );
+        }
+        if ( value != NULL ) {
+            free( value );
+        }
+    }
+    else if ( strcmp( inpParam->type, NcGetVarOut_MS_T ) == 0 ) {
+        ncGetVarOut_t *ncArray;
+        int *inArray;
+        int len;
+        ncArray = ( ncGetVarOut_t * ) inpParam->inOutStruct;
+        if ( ncArray == NULL || ncArray->dataArray == NULL ||
+                ncArray->dataArray->buf == NULL ) {
+            return USER__NULL_INPUT_ERR;
+        }
+        inArray = ( int * ) ncArray->dataArray->buf;
+        len = ncArray->dataArray->len;
+        if ( len <= 0 ) {
+            return SYS_INVALID_INPUT_PARAM;
+        }
+        *longArrayOut = longArray = ( rodsLong_t * )
+                                    calloc( 1, len * sizeof( rodsLong_t ) );
+        for ( i = 0; i < len; i++ ) {
+            longArray[i] = inArray[i];
+        }
+        *ndimOut = len;
+    }
+    else {
+        rodsLog( LOG_ERROR,
+                 "parseStrMspForLongArray: Unsupported input Param type %s",
+                 inpParam->type );
+        return ( USER_PARAM_TYPE_ERR );
     }
 
-    int
-    parseMspForNccfGetVarInp( msParam_t * inpParam, nccfGetVarInp_t * nccfGetVarInp ) {
-        if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
-            /* str input */
-            bzero( nccfGetVarInp, sizeof( nccfGetVarInp_t ) );
-            nccfGetVarInp->ncid = atoi( ( char* )inpParam->inOutStruct );
-            if ( nccfGetVarInp->ncid < 0 ) {
-                return nccfGetVarInp->ncid;
-            }
+    return 0;
+}
+
+int
+parseMspForNccfGetVarInp( msParam_t * inpParam, nccfGetVarInp_t * nccfGetVarInp ) {
+    if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
+        /* str input */
+        bzero( nccfGetVarInp, sizeof( nccfGetVarInp_t ) );
+        nccfGetVarInp->ncid = atoi( ( char* )inpParam->inOutStruct );
+        if ( nccfGetVarInp->ncid < 0 ) {
+            return nccfGetVarInp->ncid;
         }
-        else if ( strcmp( inpParam->type, INT_MS_T ) == 0 ) {
-            bzero( nccfGetVarInp, sizeof( nccfGetVarInp_t ) );
-            nccfGetVarInp->ncid = *( int * )inpParam->inOutStruct;
-        }
-        else if ( strcmp( inpParam->type, NccfGetVarInp_MS_T ) == 0 ) {
-            *nccfGetVarInp = *( ( nccfGetVarInp_t * ) inpParam->inOutStruct );
-            replKeyVal( &( ( nccfGetVarInp_t * ) inpParam->inOutStruct )->condInput,
-                        &nccfGetVarInp->condInput );
-        }
-        else {
-            rodsLog( LOG_ERROR,
-                     "parseMspForNccfGetVarInp: Unsupported input Param1 type %s",
-                     inpParam->type );
-            return ( USER_PARAM_TYPE_ERR );
-        }
-        return 0;
     }
+    else if ( strcmp( inpParam->type, INT_MS_T ) == 0 ) {
+        bzero( nccfGetVarInp, sizeof( nccfGetVarInp_t ) );
+        nccfGetVarInp->ncid = *( int * )inpParam->inOutStruct;
+    }
+    else if ( strcmp( inpParam->type, NccfGetVarInp_MS_T ) == 0 ) {
+        *nccfGetVarInp = *( ( nccfGetVarInp_t * ) inpParam->inOutStruct );
+        replKeyVal( &( ( nccfGetVarInp_t * ) inpParam->inOutStruct )->condInput,
+                    &nccfGetVarInp->condInput );
+    }
+    else {
+        rodsLog( LOG_ERROR,
+                 "parseMspForNccfGetVarInp: Unsupported input Param1 type %s",
+                 inpParam->type );
+        return ( USER_PARAM_TYPE_ERR );
+    }
+    return 0;
+}
 
 #endif

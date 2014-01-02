@@ -41,3 +41,7 @@ reVariableMapSet  core
 # pam_no_extend false
 # pam_password_min_time 121
 # pam_password_max_time 1209600
+
+# configuration of icat database plugin - e.g. postgres, mysql, or oracle
+catalog_database_type postgres
+

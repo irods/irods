@@ -1441,8 +1441,7 @@ static yy_state_type yy_get_previous_state() {
  *	next_state = yy_try_NUL_trans( current_state );
  */
 
-static yy_state_type yy_try_NUL_trans( yy_state_type yy_current_state )
-{
+static yy_state_type yy_try_NUL_trans( yy_state_type yy_current_state ) {
     register int yy_is_jam;
     register char *yy_cp = yy_c_buf_p;
 
@@ -1465,8 +1464,7 @@ static yy_state_type yy_try_NUL_trans( yy_state_type yy_current_state )
 
 
 #ifndef YY_NO_UNPUT
-static void yyunput( int c, register char *yy_bp )
-{
+static void yyunput( int c, register char *yy_bp ) {
     register char *yy_cp = yy_c_buf_p;
 
     /* undo effects of setting up yytext */
@@ -1506,8 +1504,7 @@ static void yyunput( int c, register char *yy_bp )
 
 
 #ifndef YY_NO_INPUT
-static int yyinput()
-{
+static int yyinput() {
     int c;
 
     *yy_c_buf_p = yy_hold_char;
@@ -1573,8 +1570,7 @@ static int yyinput()
 }
 #endif /* YY_NO_INPUT */
 
-void yyrestart( FILE *input_file )
-{
+void yyrestart( FILE *input_file ) {
     if ( ! yy_current_buffer ) {
         yy_current_buffer = yy_create_buffer( yyin, YY_BUF_SIZE );
     }
@@ -1584,8 +1580,7 @@ void yyrestart( FILE *input_file )
 }
 
 
-void yy_switch_to_buffer( YY_BUFFER_STATE new_buffer )
-{
+void yy_switch_to_buffer( YY_BUFFER_STATE new_buffer ) {
     if ( yy_current_buffer == new_buffer ) {
         return;
     }
@@ -1609,8 +1604,7 @@ void yy_switch_to_buffer( YY_BUFFER_STATE new_buffer )
 }
 
 
-void yy_load_buffer_state( void )
-{
+void yy_load_buffer_state( void ) {
     yy_n_chars = yy_current_buffer->yy_n_chars;
     yytext_ptr = yy_c_buf_p = yy_current_buffer->yy_buf_pos;
     yyin = yy_current_buffer->yy_input_file;
@@ -1618,8 +1612,7 @@ void yy_load_buffer_state( void )
 }
 
 
-YY_BUFFER_STATE yy_create_buffer( FILE *file, int size )
-{
+YY_BUFFER_STATE yy_create_buffer( FILE *file, int size ) {
     YY_BUFFER_STATE b;
 
     b = ( YY_BUFFER_STATE ) yy_flex_alloc( sizeof( struct yy_buffer_state ) );
@@ -1645,8 +1638,7 @@ YY_BUFFER_STATE yy_create_buffer( FILE *file, int size )
 }
 
 
-void yy_delete_buffer( YY_BUFFER_STATE b )
-{
+void yy_delete_buffer( YY_BUFFER_STATE b ) {
     if ( ! b ) {
         return;
     }
@@ -1664,8 +1656,7 @@ void yy_delete_buffer( YY_BUFFER_STATE b )
 
 
 
-void yy_init_buffer( YY_BUFFER_STATE b, FILE *file )
-{
+void yy_init_buffer( YY_BUFFER_STATE b, FILE *file ) {
     yy_flush_buffer( b );
 
     b->yy_input_file = file;
@@ -1683,8 +1674,7 @@ void yy_init_buffer( YY_BUFFER_STATE b, FILE *file )
 }
 
 
-void yy_flush_buffer( YY_BUFFER_STATE b )
-{
+void yy_flush_buffer( YY_BUFFER_STATE b ) {
     if ( ! b ) {
         return;
     }
@@ -1710,8 +1700,7 @@ void yy_flush_buffer( YY_BUFFER_STATE b )
 
 
 #ifndef YY_NO_SCAN_BUFFER
-YY_BUFFER_STATE yy_scan_buffer( char *base, yy_size_t size )
-{
+YY_BUFFER_STATE yy_scan_buffer( char *base, yy_size_t size ) {
     YY_BUFFER_STATE b;
 
     if ( size < 2 ||
@@ -1745,8 +1734,7 @@ YY_BUFFER_STATE yy_scan_buffer( char *base, yy_size_t size )
 
 
 #ifndef YY_NO_SCAN_STRING
-YY_BUFFER_STATE yy_scan_string( yyconst char *yy_str )
-{
+YY_BUFFER_STATE yy_scan_string( yyconst char *yy_str ) {
     int len;
     for ( len = 0; yy_str[len]; ++len ) {
         ;
@@ -1758,8 +1746,7 @@ YY_BUFFER_STATE yy_scan_string( yyconst char *yy_str )
 
 
 #ifndef YY_NO_SCAN_BYTES
-YY_BUFFER_STATE yy_scan_bytes( yyconst char *bytes, int len )
-{
+YY_BUFFER_STATE yy_scan_bytes( yyconst char *bytes, int len ) {
     YY_BUFFER_STATE b;
     char *buf;
     yy_size_t n;
@@ -1794,8 +1781,7 @@ YY_BUFFER_STATE yy_scan_bytes( yyconst char *bytes, int len )
 
 
 #ifndef YY_NO_PUSH_STATE
-static void yy_push_state( int new_state )
-{
+static void yy_push_state( int new_state ) {
     if ( yy_start_stack_ptr >= yy_start_stack_depth ) {
         yy_size_t new_size;
 
@@ -1843,8 +1829,7 @@ static int yy_top_state() {
 #define YY_EXIT_FAILURE 2
 #endif
 
-static void yy_fatal_error( yyconst char msg[] )
-{
+static void yy_fatal_error( yyconst char msg[] ) {
     ( void ) fprintf( stderr, "%s\n", msg );
     exit( YY_EXIT_FAILURE );
 }
@@ -1870,8 +1855,7 @@ static void yy_fatal_error( yyconst char msg[] )
 /* Internal utility routines. */
 
 #ifndef yytext_ptr
-static void yy_flex_strncpy( char *s1, yyconst char *s2, int n )
-{
+static void yy_flex_strncpy( char *s1, yyconst char *s2, int n ) {
     register int i;
     for ( i = 0; i < n; ++i ) {
         s1[i] = s2[i];
@@ -1880,8 +1864,7 @@ static void yy_flex_strncpy( char *s1, yyconst char *s2, int n )
 #endif
 
 #ifdef YY_NEED_STRLEN
-static int yy_flex_strlen( yyconst char *s )
-{
+static int yy_flex_strlen( yyconst char *s ) {
     register int n;
     for ( n = 0; s[n]; ++n ) {
         ;
@@ -1892,13 +1875,11 @@ static int yy_flex_strlen( yyconst char *s )
 #endif
 
 
-static void *yy_flex_alloc( yy_size_t size )
-{
+static void *yy_flex_alloc( yy_size_t size ) {
     return ( void * ) malloc( size );
 }
 
-static void *yy_flex_realloc( void *ptr, yy_size_t size )
-{
+static void *yy_flex_realloc( void *ptr, yy_size_t size ) {
     /* The cast to (char *) in the following accommodates both
      * implementations that use char* generic pointers, and those
      * that use void* generic pointers.  It works with the latter
@@ -1909,8 +1890,7 @@ static void *yy_flex_realloc( void *ptr, yy_size_t size )
     return ( void * ) realloc( ( char * ) ptr, size );
 }
 
-static void yy_flex_free( void *ptr )
-{
+static void yy_flex_free( void *ptr ) {
     free( ptr );
 }
 

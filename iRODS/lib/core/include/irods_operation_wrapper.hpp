@@ -18,7 +18,8 @@
 #include "irods_lookup_table.hpp"
 #include "irods_plugin_context.hpp"
 #include "irods_error.hpp"
-#include "irods_operation_rule_execution_manager_factory.hpp"
+#include "irods_operation_rule_execution_manager.hpp"
+#include "irods_operation_rule_execution_manager_no_op.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
@@ -520,6 +521,174 @@ namespace irods {
             }
 
         } // operator() - T1, T2, T3, T4, T5, T6, T7, T8
+
+        // =-=-=-=-=-=-=-
+        // public - nine parameter template, there will be more...
+        template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9 >
+        error call(
+            plugin_context& _ctx,
+            T1              _t1,
+            T2              _t2,
+            T3              _t3,
+            T4              _t4,
+            T5              _t5,
+            T6              _t6,
+            T7              _t7,
+            T8              _t8,
+            T9              _t9 ) {
+            if ( operation_ ) {
+                // =-=-=-=-=-=-=-
+                // get vars from fco
+                keyValPair_t kvp;
+                bzero( &kvp, sizeof( kvp ) );
+                _ctx.fco()->get_re_vars( kvp );
+
+                // =-=-=-=-=-=-=-
+                // call the pre-rule for this op
+                std::string pre_results;
+                rule_exec_mgr_->exec_pre_op( kvp, pre_results );
+
+                // =-=-=-=-=-=-=-
+                // call the actual operation
+                _ctx.rule_results( pre_results );
+                error op_err = ( *operation_ )( _ctx, _t1, _t2, _t3, _t4, _t5, _t6, _t7, _t8, _t9 );
+
+                // =-=-=-=-=-=-=-
+                // if the op failed, notifity the post rule
+                if ( !op_err.ok() ) {
+                    _ctx.rule_results( OP_FAILED );
+                }
+
+                // =-=-=-=-=-=-=-
+                // call the poste-rule for this op
+                std::string rule_results =  _ctx.rule_results();
+                rule_exec_mgr_->exec_post_op( kvp, rule_results );
+
+                // =-=-=-=-=-=-=-
+                // clean up kvp struct
+                clearKeyVal( &kvp );
+
+                return op_err;
+
+            }
+            else {
+                return ERROR( NULL_VALUE_ERR, "null resource operation." );
+            }
+
+        } // operator() - T1, T2, T3, T4, T5, T6, T7, T8, T9
+
+        // =-=-=-=-=-=-=-
+        // public - nine parameter template, there will be more...
+        template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9, typename T10 >
+        error call(
+            plugin_context& _ctx,
+            T1              _t1,
+            T2              _t2,
+            T3              _t3,
+            T4              _t4,
+            T5              _t5,
+            T6              _t6,
+            T7              _t7,
+            T8              _t8,
+            T9              _t9,
+            T10             _t10 ) {
+            if ( operation_ ) {
+                // =-=-=-=-=-=-=-
+                // get vars from fco
+                keyValPair_t kvp;
+                bzero( &kvp, sizeof( kvp ) );
+                _ctx.fco()->get_re_vars( kvp );
+
+                // =-=-=-=-=-=-=-
+                // call the pre-rule for this op
+                std::string pre_results;
+                rule_exec_mgr_->exec_pre_op( kvp, pre_results );
+
+                // =-=-=-=-=-=-=-
+                // call the actual operation
+                _ctx.rule_results( pre_results );
+                error op_err = ( *operation_ )( _ctx, _t1, _t2, _t3, _t4, _t5, _t6, _t7, _t8, _t9, _t10 );
+
+                // =-=-=-=-=-=-=-
+                // if the op failed, notifity the post rule
+                if ( !op_err.ok() ) {
+                    _ctx.rule_results( OP_FAILED );
+                }
+
+                // =-=-=-=-=-=-=-
+                // call the poste-rule for this op
+                std::string rule_results =  _ctx.rule_results();
+                rule_exec_mgr_->exec_post_op( kvp, rule_results );
+
+                // =-=-=-=-=-=-=-
+                // clean up kvp struct
+                clearKeyVal( &kvp );
+
+                return op_err;
+
+            }
+            else {
+                return ERROR( NULL_VALUE_ERR, "null resource operation." );
+            }
+
+        } // operator() - T1, T2, T3, T4, T5, T6, T7, T8, T9, T10
+
+        // =-=-=-=-=-=-=-
+        // public - 11 parameter template, there will be more...
+        template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9, typename T10, typename T11 >
+        error call(
+            plugin_context& _ctx,
+            T1              _t1,
+            T2              _t2,
+            T3              _t3,
+            T4              _t4,
+            T5              _t5,
+            T6              _t6,
+            T7              _t7,
+            T8              _t8,
+            T9              _t9,
+            T10             _t10,
+            T11             _t11 ) {
+            if ( operation_ ) {
+                // =-=-=-=-=-=-=-
+                // get vars from fco
+                keyValPair_t kvp;
+                bzero( &kvp, sizeof( kvp ) );
+                _ctx.fco()->get_re_vars( kvp );
+
+                // =-=-=-=-=-=-=-
+                // call the pre-rule for this op
+                std::string pre_results;
+                rule_exec_mgr_->exec_pre_op( kvp, pre_results );
+
+                // =-=-=-=-=-=-=-
+                // call the actual operation
+                _ctx.rule_results( pre_results );
+                error op_err = ( *operation_ )( _ctx, _t1, _t2, _t3, _t4, _t5, _t6, _t7, _t8, _t9, _t10, _t11 );
+
+                // =-=-=-=-=-=-=-
+                // if the op failed, notifity the post rule
+                if ( !op_err.ok() ) {
+                    _ctx.rule_results( OP_FAILED );
+                }
+
+                // =-=-=-=-=-=-=-
+                // call the poste-rule for this op
+                std::string rule_results =  _ctx.rule_results();
+                rule_exec_mgr_->exec_post_op( kvp, rule_results );
+
+                // =-=-=-=-=-=-=-
+                // clean up kvp struct
+                clearKeyVal( &kvp );
+
+                return op_err;
+
+            }
+            else {
+                return ERROR( NULL_VALUE_ERR, "null resource operation." );
+            }
+
+        } // operator() - T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11
 
     private:
         /// @brief rule execution context

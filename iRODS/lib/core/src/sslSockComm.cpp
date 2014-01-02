@@ -777,7 +777,7 @@ get_dh2048() {
 
 static int
 sslLoadDHParams( SSL_CTX *ctx, char *file ) {
-    DH *dhparams;
+    DH *dhparams = NULL;
     BIO *bio;
 
     if ( file ) {

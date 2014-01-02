@@ -34,7 +34,6 @@ connectRcat( rsComm_t *rsComm ) {
                 memset( &serverConfig, 0, sizeof( serverConfig ) );
                 status = readServerConfig( &serverConfig );
                 status = chlOpen( &serverConfig );
-
                 memset( &serverConfig, 0, sizeof( serverConfig ) );
                 if ( status < 0 ) {
                     rodsLog( LOG_NOTICE,

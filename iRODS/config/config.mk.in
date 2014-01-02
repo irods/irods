@@ -401,9 +401,3 @@ endif
 
 # OOI_CI - specify whether to compile the OOI CI modules
 # OOI_CI=1
-
-# STORAGE_ADMIN_ROLE - turn on support for the 'storageadmin' user type.
-# In this mode, you can run an iRODS server as a non-privileged user
-# so the data server doesn't need rodsadmin credentials.
-STORAGE_ADMIN_ROLE = 1
-

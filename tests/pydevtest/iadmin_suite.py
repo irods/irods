@@ -127,8 +127,8 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         totaltree   = doubletree1 + doubletree2 # 26
         create_directory_of_small_files(dir1,tree1)
         create_directory_of_small_files(dir2,tree2)
-	os.system("ls -al %s" % dir1)
-        os.system("ls -al %s" % dir2)
+        #os.system("ls -al %s" % dir1)
+        #os.system("ls -al %s" % dir2)
 
         # add files
         assertiCmd(s.adminsession,"iput -R %s -r %s" % ("pt", dir1))

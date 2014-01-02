@@ -1,0 +1,13 @@
+
+#ifndef __IRODS_DATABASE_HOME_H__
+#define __IRODS_DATABASE_HOME_H__
+
+#include <string>
+
+namespace irods {
+
+	const std::string IRODS_DATABASE_HOME( "IRODSDATABASEPATH" );
+
+}; // namespace irods
+
+#endif // __IRODS_DATABASE_HOME_H__

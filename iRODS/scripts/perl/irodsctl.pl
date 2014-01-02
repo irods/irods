@@ -1285,7 +1285,7 @@ sub doTestIcat
 	my $icatTestLog = File::Spec->catfile( $serverTestBinDir, "icatTest.log" );
 	my $icatMiscTestLog = File::Spec->catfile( $serverTestBinDir, "icatMiscTest.log" );
 	my $moveTestLog = File::Spec->catfile( $serverTestBinDir, "moveTest.log" );
-  # my $icatTicketTestLog = File::Spec->catfile( $serverTestBinDir, "icatTicketTest.log" );
+	my $icatTicketTestLog = File::Spec->catfile( $serverTestBinDir, "icatTicketTest.log" );
 
 	my $startDir = cwd( );
 	chdir( $serverTestBinDir );
@@ -1299,24 +1299,26 @@ sub doTestIcat
 	$output=`$perl moveTest.pl 2>&1`;
 	if ( $? != 0 ) { $icatFailure=1; }
 	printToFile( $moveTestLog, $output);
-  # $output = `$perl icatTicketTest.pl 2>&1`;
-  # if ( $? != 0 ) { $icatFailure=1; }
-  # printToFile( $icatTicketTestLog, $output );
+	
+	$output = `$perl icatTicketTest.pl 2>&1`;
+	if ( $? != 0 ) { $icatFailure=1; }
+	printToFile( $icatTicketTestLog, $output );
+
 	
 	# If the above all succeeded, check logs to see if all SQL was tested
-	$output = `checkIcatLog.pl 2>&1`;
-	if ( $? != 0 ) { $icatFailure=1; }
-	printToFile( $outputFile, $output );
-	my @lines = split( "\n", $output );
-	my $totalLine = undef;
-	foreach $line (@lines)
-	{
-		if ( $line =~ /Total/ )
-		{
-			$totalLine = $line;
-			last;
-		}
-	}
+	#$output = `checkIcatLog.pl 2>&1`;
+	#if ( $? != 0 ) { $icatFailure=1; }
+	#printToFile( $outputFile, $output );
+	#my @lines = split( "\n", $output );
+	#my $totalLine = undef;
+	#foreach $line (@lines)
+	#{
+	#	if ( $line =~ /Total/ )
+	#	{
+	#		$totalLine = $line;
+	#		last;
+	#	}
+	#}
 
 
 	# Restore the iRODS environment
@@ -1333,14 +1335,14 @@ sub doTestIcat
             # clean up after ICAT tests - they don't clean up the Vault themselves
             system("rm -rf $IRODS_HOME/Vault/home/rods/TestFile*");
 	}
-	printStatus( "Test report:\n" );
-	printStatus( "    $totalLine\n" );
+	#printStatus( "Test report:\n" );
+	#printStatus( "    $totalLine\n" );
 	printStatus( "Check log files for details:\n" );
 	printStatus( "    Logs:     $icatTestLog\n" );
 	printStatus( "              $icatMiscTestLog\n" );
 	printStatus( "              $moveTestLog\n" );
-  # printStatus( "              $icatTicketTestLog\n" );
-	printStatus( "    Summary:  $outputFile\n" );
+	printStatus( "              $icatTicketTestLog\n" );
+	#printStatus( "    Summary:  $outputFile\n" );
 }
 
 

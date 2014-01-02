@@ -61,7 +61,6 @@ rsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
             rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
         return SYS_NO_API_PRIV;
     }
-    rodsLog( LOG_NOTICE, "XXXX - rsPhyPathReg" );
 
     status = irsPhyPathReg( rsComm, phyPathRegInp );
     return ( status );
@@ -125,8 +124,6 @@ irsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
     else {
         hier = tmp_hier;
     }
-
-    rodsLog( LOG_NOTICE, "XXXX - irsPhyPathReg :: resc_hier [%s]", hier.c_str() );
 
     // =-=-=-=-=-=-=-
     // coll registration requires the resource hierarchy
@@ -231,7 +228,6 @@ remotePhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
 int
 _rsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
                rescGrpInfo_t *rescGrpInfo, rodsServerHost_t *rodsServerHost ) {
-    rodsLog( LOG_NOTICE, "XXXX - _rsPhyPathReg" );
     int status = 0;
     fileOpenInp_t chkNVPathPermInp;
     char *tmpFilePath = 0;
@@ -410,7 +406,6 @@ filePathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
     }
 
     rstrcpy( dataObjInfo.rescHier, resc_hier, MAX_NAME_LEN );
-    rodsLog( LOG_NOTICE, "XXXX - filePathReg :: resc_hier [%s]", resc_hier );
 
     if ( dataObjInfo.dataSize <= 0 &&
             ( dataObjInfo.dataSize = getFileMetadataFromVault( rsComm, &dataObjInfo ) ) < 0 &&
@@ -650,7 +645,6 @@ int mountFileDir( rsComm_t*     rsComm,
         rodsLog( LOG_NOTICE, "mountFileDir - RESC_HIER_STR_KW is NULL" );
         return -1;
     }
-    rodsLog( LOG_NOTICE, "XXXX - mountFileDir :: resc_hier [%s]", resc_hier );
 
     // =-=-=-=-=-=-=-
     // extract the host location from the resource hierarchy
@@ -793,12 +787,6 @@ unmountFileDir( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
         /* a struct file */
         status = _rsSyncMountedColl( rsComm, rodsObjStatOut->specColl,
                                      PURGE_STRUCT_FILE_CACHE );
-#if 0
-        if ( status < 0 ) {
-            freeRodsObjStat( rodsObjStatOut );
-            return ( status );
-        }
-#endif
     }
 
     freeRodsObjStat( rodsObjStatOut );
@@ -830,12 +818,6 @@ int structFileReg(
     rodsObjStat_t*   rodsObjStatOut = NULL;
     specCollCache_t* specCollCache  = NULL;
 
-#if 0
-    /* make it a privileged call for now */ // JMC - backport 4871
-    if ( rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-        return( CAT_INSUFFICIENT_PRIVILEGE_LEVEL );
-    }
-#endif
     if ( ( structFilePath = getValByKey( &phyPathRegInp->condInput, FILE_PATH_KW ) )
             == NULL ) {
         rodsLog( LOG_ERROR,
@@ -921,21 +903,10 @@ int structFileReg(
         rodsLog( LOG_ERROR, "structFileReg - RESC_HIER_STR_KW is NULL" );
         return -1;
     }
-    rodsLog( LOG_NOTICE, "XXXX - structFileReg :: hier [%s]", tmp_hier );
     irods::hierarchy_parser parser;
     parser.set_string( std::string( tmp_hier ) );
     std::string resc_name;
     parser.last_resc( resc_name );
-
-#if 0 // JMC - no longer necessary
-    if ( !structFileSupport( rsComm, phyPathRegInp->objPath,
-                             collType, tmp_hier ) ) {
-        rodsLog( LOG_ERROR,
-                 "structFileReg: structFileDriver type %s does not exist for %s",
-                 collType, dataObjInp.objPath );
-        return ( SYS_NOT_SUPPORTED );
-    }
-#endif // JMC - no longer necessary
 
     /* mk the collection */
 

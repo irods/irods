@@ -211,11 +211,11 @@ class ResourceSuite(ResourceBase):
         # set up client and server side for ssl handshake
 
         # server side certificate setup
-        os.system("openssl genrsa -out server.key")
+        os.system("openssl genrsa -out server.key 2> /dev/null")
         os.system("openssl req -batch -new -key server.key -out server.csr")
         os.system("openssl req -batch -new -x509 -key server.key -out server.crt -days 365")
         os.system("mv server.crt chain.pem")
-        os.system("openssl dhparam -2 -out dhparams.pem 100") # normally 2048, but smaller size here for speed
+        os.system("openssl dhparam -2 -out dhparams.pem 100 2> /dev/null") # normally 2048, but smaller size here for speed
 
         # server side environment variables
         os.environ['irodsSSLCertificateChainFile'] = "/var/lib/irods/tests/pydevtest/chain.pem"
@@ -231,9 +231,7 @@ class ResourceSuite(ResourceBase):
         os.system("echo \"irodsClientServerPolicy 'CS_NEG_REQUIRE'\" >> %s" % clientEnvFile)
 
         # server reboot to pick up new irodsEnv settings
-        os.system("/var/lib/irods/iRODS/irodsctl stop")
-        os.system("/var/lib/irods/tests/zombiereaper.sh")
-        os.system("/var/lib/irods/iRODS/irodsctl start")
+        os.system("/var/lib/irods/iRODS/irodsctl restart > /dev/null 2>&1")
 
         # do the encrypted put
         filename = "encryptedfile.txt"
@@ -246,7 +244,7 @@ class ResourceSuite(ResourceBase):
         largefilename = "BIGencryptedfile.txt"
         output = commands.getstatusoutput( 'dd if=/dev/zero of='+largefilename+' bs=1M count=60' )
         assert output[0] == 0, "dd did not successfully exit"
-        os.system("ls -al "+largefilename)
+        #os.system("ls -al "+largefilename)
         assertiCmd(s.adminsession,"iput "+largefilename) # encrypted put - large file
         assertiCmd(s.adminsession,"ils -L "+largefilename,"LIST",largefilename) # should be listed
 
