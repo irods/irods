@@ -1254,11 +1254,7 @@ if [ "$BUILDIRODS" == "1" ] ; then
     #        time make -j 4      1m52.533s
     #        time make -j 5      1m48.611s
     ###########################################
-    set +e
-    $MAKEJCMD
-    $MAKEJCMD
-    set -e
-    $MAKEJCMD
+    $MAKEJCMD -C $BUILDDIR/iRODS
     if [ "$?" != "0" ] ; then
         exit 1
     fi
