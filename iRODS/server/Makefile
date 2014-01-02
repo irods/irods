@@ -106,14 +106,6 @@ ifdef RODS_CAT
 CFLAGS +=	-DRODS_CAT
 SVR_ICAT_OBJS =	\
 		$(svrIcatObjDir)/icatHighLevelRoutines.o 
-#		$(svrIcatObjDir)/icatMidLevelRoutines.o 
-#		$(svrIcatObjDir)/irods_catalog_properties.o \
-#		$(svrIcatObjDir)/irods_zone_info.o \
-#		$(svrIcatObjDir)/irods_sql_logger.o \
-#		$(svrIcatObjDir)/irods_tmp_string.o
-#		$(svrIcatObjDir)/icatGeneralUpdate.o \
-#        $(svrIcatObjDir)/icatGeneralQuery.o \
-#		$(svrIcatObjDir)/icatGeneralQuerySetup.o \
 
 INCLUDES +=	-I$(svrIcatIncDir)
 
@@ -124,9 +116,6 @@ ifdef NEW_ODBC
 # Use the 'new' database handling
 CFLAGS +=	-DNEW_ODBC
 endif
-
-# Add new RDA functions (either empty stubs or full functions)
-SVR_ICAT_OBJS += $(svrIcatObjDir)/rdaHighLevelRoutines.o
 
 ifdef PSQICAT
 # Support Postgres
@@ -253,7 +242,6 @@ SVR_RE_OBJS =	\
 		$(svrReObjDir)/nre.ruleAdminMS.o \
 		$(svrReObjDir)/nre.systemMS.o \
 		$(svrReObjDir)/xmsgMS.o \
-		$(svrReObjDir)/reRDA.o \
 		$(svrReObjDir)/testMS.o \
 		$(svrReObjDir)/configuration.o \
 		$(svrReObjDir)/reAutoReplicateService.o \

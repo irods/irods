@@ -430,52 +430,23 @@ f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/timeTest.pl ./
 %if ICAT
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_chl ./iRODS/server/test/bin/test_chl
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_cll ./iRODS/server/test/bin/test_cll
-#f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_genq ./iRODS/server/test/bin/test_genq
-#f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_genu ./iRODS/server/test/bin/test_genu
-#f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_rda ./iRODS/server/test/bin/test_rda
 %endif
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/dbo3.ir ./iRODS/server/test/dbo3.ir
-d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/s3 -
-d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/s3/irodss3 -
-d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/s3/irodss3/src -
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/s3/irodss3/src/gets3.cpp ./iRODS/server/test/s3/irodss3/src/gets3.cpp
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/s3/irodss3/src/puts3.cpp ./iRODS/server/test/s3/irodss3/src/puts3.cpp
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/s3/libs3-1.4.tar ./iRODS/server/test/s3/libs3-1.4.tar
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/s3/README.txt ./iRODS/server/test/s3/README.txt
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/ltest.sh ./iRODS/server/test/ltest.sh
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/obj -
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/dbo5.ir ./iRODS/server/test/dbo5.ir
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/README.txt ./iRODS/server/test/README.txt
-d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/src -
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/src/test_genq.cpp ./iRODS/server/test/src/test_genq.cpp
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/src/test_genu.cpp ./iRODS/server/test/src/test_genu.cpp
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/src/test_cll.cpp ./iRODS/server/test/src/test_cll.cpp
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/src/reTest.cpp ./iRODS/server/test/src/reTest.cpp
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/src/test_chl.cpp ./iRODS/server/test/src/test_chl.cpp
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/src/test_rda.cpp ./iRODS/server/test/src/test_rda.cpp
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat -
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src -
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatDropCoreTables.sql ./iRODS/server/icat/src/icatDropCoreTables.sql
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/m2icat.pl ./iRODS/server/icat/src/m2icat.pl
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatHighLevelRoutines.cpp ./iRODS/server/icat/src/icatHighLevelRoutines.cpp
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatLowLevelOdbc.cpp ./iRODS/server/icat/src/icatLowLevelOdbc.cpp
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatGeneralQuery.cpp ./iRODS/server/icat/src/icatGeneralQuery.cpp
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatLowLevelOracle.cpp ./iRODS/server/icat/src/icatLowLevelOracle.cpp
 %if ICAT
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatSysTables.sql ./iRODS/server/icat/src/icatSysTables.sql
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatCoreTables.sql ./iRODS/server/icat/src/icatCoreTables.sql
 %endif
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatCoreInserts.sql ./iRODS/server/icat/src/icatCoreInserts.sql
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatDropSysTables.sql ./iRODS/server/icat/src/icatDropSysTables.sql
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatGeneralUpdate.cpp ./iRODS/server/icat/src/icatGeneralUpdate.cpp
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/rodsEnvInitLib.cpp ./iRODS/server/icat/src/rodsEnvInitLib.cpp
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/m2icatd.cpp ./iRODS/server/icat/src/m2icatd.cpp
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatSysInserts.sql ./iRODS/server/icat/src/icatSysInserts.sql
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatMidLevelRoutines.cpp ./iRODS/server/icat/src/icatMidLevelRoutines.cpp
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/makeSql.pl ./iRODS/server/icat/src/makeSql.pl
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/rdaHighLevelRoutines.cpp ./iRODS/server/icat/src/rdaHighLevelRoutines.cpp
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatPurgeRecycleBin.sql ./iRODS/server/icat/src/icatPurgeRecycleBin.sql
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatGeneralQuerySetup.cpp ./iRODS/server/icat/src/icatGeneralQuerySetup.cpp
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/convertSql.pl ./iRODS/server/icat/src/convertSql.pl
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/config -
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/config/platform.mk ./iRODS/config/platform.mk
@@ -843,8 +814,6 @@ d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/misc -
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/misc/switchuser.py ./iRODS/clients/icommands/test/misc/switchuser.py
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/misc/sample.email ./iRODS/clients/icommands/test/misc/sample.email
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/misc/HELP.looptest ./iRODS/clients/icommands/test/misc/HELP.looptest
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/misc/iTestGenQuery.cpp ./iRODS/clients/icommands/test/misc/iTestGenQuery.cpp
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/misc/i.cpp ./iRODS/clients/icommands/test/misc/i.cpp
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/misc/email.tag ./iRODS/clients/icommands/test/misc/email.tag
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/misc/addRepeatTest.txt ./iRODS/clients/icommands/test/misc/addRepeatTest.txt
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/misc/repeatTest.txt ./iRODS/clients/icommands/test/misc/repeatTest.txt

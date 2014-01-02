@@ -5,7 +5,6 @@
  */
 
 #include "rods.hpp"
-#include "icatLowLevel.hpp"
 #include "readServerConfig.hpp"
 #include "irods_database_home.hpp"
 #include "irods_plugin_name_generator.hpp"
