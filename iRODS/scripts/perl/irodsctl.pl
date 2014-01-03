@@ -1453,6 +1453,9 @@ sub startIrods
 		exit( 1 );
 	}
 
+	# Give iRODS port a chance to be free
+	sleep( $databaseStartStopDelay );
+
 	# Prepare
 	my $startingDir = cwd( );
 	chdir( $serverBinDir );
