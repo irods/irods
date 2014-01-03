@@ -14,4 +14,20 @@ HEADERS =
 
 EXTRALIBS = ../../../iRODS/lib/core/obj/irods_plugin_base.o
 
+CLL_OBJS =	\
+		$(OBJDIR)/low_level_odbc.o    \
+		$(OBJDIR)/irods_tmp_string.o  
+
+GENQ_OBJS = \
+        $(OBJDIR)/general_query.o \
+        $(OBJDIR)/general_query_setup.o \
+        ${OBJDIR}/mid_level_routines.o
+
+GENU_OBJS = \
+        $(OBJDIR)/general_update.o \
+        $(OBJDIR)/general_query.o \
+        $(OBJDIR)/general_query_setup.o \
+        ${OBJDIR}/mid_level_routines.o
+
+
 include ../Makefile.base

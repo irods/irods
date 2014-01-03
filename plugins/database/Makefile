@@ -42,4 +42,8 @@ clean:
 	rm -f $$dir/*.o > /dev/null 2>&1; \
 	done
 	@-rm -f ${SOTOPDIR}/*.so > /dev/null 2>&1
+	@-rm -f ${SOTOPDIR}/test_cll > /dev/null 2>&1
+	@-rm -f ${SOTOPDIR}/test_cml > /dev/null 2>&1
+	@-rm -f ${SOTOPDIR}/test_genq > /dev/null 2>&1
+	@-rm -f ${SOTOPDIR}/test_genu > /dev/null 2>&1
 

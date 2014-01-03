@@ -11,6 +11,17 @@ DEPS = $(patsubst %.cpp, ${DEPDIR}/%.d, ${SRCS})
 include ${IRODSDIR}/config/platform.mk
 include ${IRODSDIR}/config/config.mk
 
+LIBRARY=${IRODSDIR}/lib/core/obj/libRodsAPIs.a
+CHL_OBJS=${IRODSDIR}/server/icat/obj/icatHighLevelRoutines.o  \
+	     $(IRODSDIR)/server/core/obj/irods_database_factory.o \
+   	 	 $(IRODSDIR)/server/core/obj/irods_database_manager.o \
+   	 	 $(IRODSDIR)/server/core/obj/irods_database_object.o  \
+   	 	 $(IRODSDIR)/server/core/obj/irods_postgres_object.o  \
+         $(IRODSDIR)/server/core/obj/readServerConfig.o       \
+         ${IRODSDIR}/lib/core/obj/irods_plugin_base.o
+DB_PLUGIN_SRC = $(IRODSDIR)/server/core/src/irods_database_plugin.cpp
+DB_PLUGIN_OBJ_WITH_NO_RE = $(OBJDIR)/irods_database_plugin_with_no_re.o 
+ 
 GCC = g++ -Wno-write-strings -DRODS_SERVER -DADDR_64BITS -DNEW_ODBC
 
 
@@ -28,12 +39,20 @@ endif
 
 .PHONY: clean
 
-default: ${FULLTARGET}
+BOOST_LIBS = $(BOOST_DIR)/stage/lib/libboost_system.a \
+             $(BOOST_DIR)/stage/lib/libboost_filesystem.a \
+             $(BOOST_DIR)/stage/lib/libboost_regex.a \
+             $(BOOST_DIR)/stage/lib/libboost_thread.a 
+
+default: tests ${FULLTARGET}
+
+tests: ${SODIR}/test_cll ${SODIR}/test_genq ${SODIR}/test_genu
 
 clean:
 	@-rm -f ${FULLTARGET} > /dev/null 2>&1
 	@-rm -f ${OBJS} > /dev/null 2>&1
 	@-rm -f *.o > /dev/null 2>&1
+	rm -f ${SODIR}/test_cll ${SODIR}/test_cml ${SODIR}/test_genq ${SODIR}/test_genu
 
 ${FULLTARGET}: ${OBJS} ${DEPFILE}
 	@-mkdir -p ${SODIR} > /dev/null 2>&1
@@ -50,5 +69,24 @@ ${DEPS}: ${SRCS} ${HEADERS}
 
 ${OBJDIR}/%.o: %.cpp
 	${GCC} ${INC} -D${OS_platform} -fPIC -c -g -o $@ $<
+
+${DB_PLUGIN_OBJ_WITH_NO_RE}: $(DB_PLUGIN_SRC)
+	@echo "Compile Without RE `basename $@`..."
+	@$(CC) -DLINK_NO_OP_RE_MGR $(INC) -c $(DB_PLUGIN_SRC) -o $(DB_PLUGIN_OBJ_WITH_NO_RE)
+
+${SODIR}/test_cll: ${OBJDIR}/test_cll.o $(CLL_OBJS) $(LIBRARY) $(BOOST_LIBS)
+	@echo "Link server test `basename $@`..."
+	@$(LDR) -o $@ $^ ${LIBRARY} $(LDFLAGS) $(BOOST_LIBS) ${DBMS_LIB} -fPIC -rdynamic -ldl -lrt -lpthread -lssl -lcrypto
+
+${SODIR}/test_genq: ${OBJDIR}/test_genq.o  ${DB_PLUGIN_OBJ_WITH_NO_RE} ${CLL_OBJS} $(GENQ_OBJS) ${CHL_OBJS} $(LIBRARY) ${BOOST_LIBS} 
+	@echo "Link server test `basename $@`..."
+	$(LDR) -o $@ $^ $(LIBRARY) $(LDFLAGS) ${DBMS_LIB} -fPIC -rdynamic -ldl -lrt -lpthread -lssl -lcrypto
+
+${SODIR}/test_genu: $(OBJDIR)/test_genu.o ${CLL_OBJS} $(GENU_OBJS) ${CHL_OBJS} ${DB_PLUGIN_OBJ_WITH_NO_RE} $(LIBRARY) ${BOOST_LIBS} 
+	@echo "Link server test `basename $@`..."
+	@$(LDR) -o $@ $^ $(LIBRARY) $(LDFLAGS) ${DBMS_LIB} -fPIC -rdynamic -ldl -lrt -lpthread -lssl -lcrypto
+
+
+
 
 include ${DEPFILE}

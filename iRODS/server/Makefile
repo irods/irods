@@ -269,18 +269,10 @@ endif
 # icat Tests
 ifdef RODS_CAT
 TEST_OBJS =	\
-		$(svrTestObjDir)/test_chl.o \
-		$(svrTestObjDir)/test_cll.o \
-		$(svrTestObjDir)/test_genq.o \
-		$(svrTestObjDir)/test_genu.o \
-		$(svrTestObjDir)/test_rda.o
+		$(svrTestObjDir)/test_chl.o 
 
 TEST_BINS =	\
-		$(svrTestBinDir)/test_chl \
-		$(svrTestBinDir)/test_cll 
-#		$(svrTestBinDir)/test_genq \
-#		$(svrTestBinDir)/test_genu \
-#		$(svrTestBinDir)/test_rda
+		$(svrTestBinDir)/test_chl 
 endif
 
 # reTest only works on Solaris
@@ -560,29 +552,10 @@ $(svrTestBinDir)/reTest: $(svrTestObjDir)/reTest.o $(OBJS) $(BOOST_LIBS) $(BOOST
 	@echo "Link server test `basename $@`..."
 	@$(LDR) -o $@ $^ $(LDFLAGS) $(BOOST_LIBS) -lrt
 
-# cll and chl
-$(svrTestBinDir)/test_cll: $(svrTestObjDir)/test_cll.o $(SVR_ICAT_OBJS) $(LIBRARY) $(BOOST_LIBS) $(DB_IFACE_OBJS)
-	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $^ $(LIBRARY) $(LDFLAGS) $(BOOST_LIBS) -lrt $(DB_PLUGIN_OBJ_WITH_NO_RE) 
-
+# chl
 $(svrTestBinDir)/test_chl: db_plugin_with_no_re $(svrTestObjDir)/test_chl.o $(SVR_ICAT_OBJS) $(LIBRARY) $(BOOST_LIBS) $(DB_IFACE_OBJS)
 	@echo "Link server test `basename $@`..."
 	@$(LDR) -o $@ $(svrTestObjDir)/test_chl.o $(LIBRARY) $(SVR_ICAT_OBJS) $(DB_PLUGIN_OBJ_WITH_NO_RE) $(DB_IFACE_OBJS) $(BOOST_LIBS) $(LDFLAGS) -lrt
-
-# genq and genu
-$(svrTestBinDir)/test_genq: db_plugin_with_no_re $(svrTestObjDir)/test_genq.o $(SVR_ICAT_OBJS) $(LIBRARY) $(BOOST_LIBS)
-	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $(svrTestObjDir)/test_genq.o $(LIBRARY) $(SVR_ICAT_OBJS) $(LDFLAGS) $(DB_PLUGIN_OBJ_WITH_NO_RE)  $(DB_IFACE_OBJS) $(BOOST_LIBS) -lrt
-
-$(svrTestBinDir)/test_genu: db_plugin_with_no_re $(svrTestObjDir)/test_genu.o $(SVR_ICAT_OBJS) $(LIBRARY) $(BOOST_LIBS)
-	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $(svrTestObjDir)/test_genu.o $(LIBRARY) $(SVR_ICAT_OBJS) $(LDFLAGS) $(DB_PLUGIN_OBJ_WITH_NO_RE)  $(DB_IFACE_OBJS) $(BOOST_LIBS) -lrt
-
-$(svrTestBinDir)/test_rda: db_plugin_with_no_re $(svrTestObjDir)/test_rda.o $(SVR_ICAT_OBJS) $(LIBRARY) $(BOOST_LIBS)
-	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $(svrTestObjDir)/test_rda.o $(LIBRARY) $(SVR_ICAT_OBJS) $(LDFLAGS) $(DB_PLUGIN_OBJ_WITH_NO_RE)  $(DB_IFACE_OBJS) $(BOOST_LIBS) -lrt
-
-
 
 #
 # Rule Admin Targets
