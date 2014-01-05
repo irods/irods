@@ -3,10 +3,8 @@ IRODSDIR = ../${IRODSTOPDIR}
 SODIR = ../${SOTOPDIR}
 
 FULLTARGET = ${SODIR}/${TARGET}
-DEPFILE = .depends
 
 OBJS = $(patsubst %.cpp, ${OBJDIR}/%.o, ${SRCS})
-DEPS = $(patsubst %.cpp, ${DEPDIR}/%.d, ${SRCS})
 
 include ${IRODSDIR}/config/platform.mk
 include ${IRODSDIR}/config/config.mk
@@ -54,18 +52,10 @@ clean:
 	@-rm -f *.o > /dev/null 2>&1
 	rm -f ${SODIR}/test_cll ${SODIR}/test_cml ${SODIR}/test_genq ${SODIR}/test_genu
 
-${FULLTARGET}: ${OBJS} ${DEPFILE}
+${FULLTARGET}: ${OBJS}
+	@echo "Building Database Plugins"
 	@-mkdir -p ${SODIR} > /dev/null 2>&1
 	${GCC} ${INC} -D${OS_platform} ${CFLAGS} -fPIC "-Wl,-E" -shared -o ${FULLTARGET} ${OBJS} ${EXTRALIBS} ${DBMS_LIB}
-
-${DEPFILE}: ${DEPS}
-	@-rm -f ${DEPFILE} > /dev/null 2>&1
-	@for dep in ${DEPS}; do \
-	cat $$dep >> ${DEPFILE}; \
-	done
-
-${DEPS}: ${SRCS} ${HEADERS}
-	${GCC} ${INC} -MM $< -MT $(patsubst %.cpp, ${OBJDIR}/%.o, $<) -MF $@
 
 ${OBJDIR}/%.o: %.cpp
 	${GCC} ${INC} -D${OS_platform} -fPIC -c -g -o $@ $<
@@ -85,8 +75,3 @@ ${SODIR}/test_genq: ${OBJDIR}/test_genq.o  ${DB_PLUGIN_OBJ_WITH_NO_RE} ${CLL_OBJ
 ${SODIR}/test_genu: $(OBJDIR)/test_genu.o ${CLL_OBJS} $(GENU_OBJS) ${CHL_OBJS} ${DB_PLUGIN_OBJ_WITH_NO_RE} $(LIBRARY) ${BOOST_LIBS} 
 	@echo "Link server test `basename $@`..."
 	@$(LDR) -o $@ $^ $(LIBRARY) $(LDFLAGS) ${DBMS_LIB} ${LDRFLAGS} -fPIC -rdynamic -ldl -lrt -lpthread -lssl -lcrypto
-
-
-
-
-include ${DEPFILE}

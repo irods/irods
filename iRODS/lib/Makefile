@@ -288,6 +288,7 @@ clean:
 	@echo "Cleaning library..."
 	@rm -f $(OBJS)
 	@rm -f $(LIBRARY)
+	@rm -f $(LOG_SRC)
 
 
 
@@ -328,10 +329,10 @@ $(LIB_RBUDP_OBJS):  $(libRbudpObjDir)/%.o: $(libRbudpSrcDir)/%.cpp $(configMk) $
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
 # Build logging source
-rodslog:  $(libCoreSrcDir)/rodsLog.cpp
+rodslog:  $(LOG_SRC)
 	@true
 
-$(libCoreSrcDir)/rodsLog.cpp:  $(libCoreIncDir)/rodsErrorTable.hpp
+$(LOG_SRC):  $(libCoreIncDir)/rodsErrorTable.hpp
 	@$(PERL) $(perlScriptsDir)/updateRodsLog.pl
 
 

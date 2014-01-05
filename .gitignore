@@ -13,6 +13,7 @@ iRODS/lib/core/include/irods_auth_home.hpp
 iRODS/lib/core/include/irods_ms_home.hpp
 iRODS/lib/core/include/irods_network_home.hpp
 iRODS/lib/core/include/irods_resources_home.hpp
+iRODS/server/core/include/irods_database_home.hpp
 iRODS/lib/core/include/rodsVersion.hpp
 iRODS/server/config/server.config
 iRODS/server/re/include/reAction.hpp

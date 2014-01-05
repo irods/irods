@@ -12,9 +12,9 @@ $Defs=`grep '#define' ../lib/core/include/rodsErrorTable.hpp | grep -v RODS_ERRO
 $_=$Defs;
 @DO_LIST=split(" ",$_);
 
-$InputFile="../lib/core/src/rodsLog.cpp";
-$OutputFile =$InputFile . ".tmp.128923";
-$InputFileOrig = $InputFile . ".orig";
+$InputFile="../lib/core/src/rodsLog.cpp.src";
+$OutputFile ="/tmp/rodsLog.cpp";
+$DestFile="../lib/core/src/rodsLog.cpp";
 open(FileIn, $InputFile) || die("Can't open input file " . "$InputFile");
 open(FileOut, ">".$OutputFile) || die("Can't open output file "."$OutputFile");
 $step=0; # 0 copying the first part of src, 1 inserting new code,
@@ -48,10 +48,4 @@ while($line = <FileIn>) {
 close(FileIn);
 close(FileOut);
 
-if ( -e $InputFileOrig ) {
-    unlink($InputFile);
-}
-else {
-    rename($InputFile, $InputFileOrig);
-}
-rename($OutputFile, $InputFile);
+system "rsync -c $OutputFile $DestFile";
