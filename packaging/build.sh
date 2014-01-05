@@ -88,7 +88,12 @@ while getopts ":chrsp" opt; do
     case $opt in
         c)
         COVERAGE="1"
+        TARGET=$2
         echo "-c detected -- Building iRODS with coverage support (gcov)"
+        echo "${text_green}${text_bold}TARGET=[$TARGET]${text_reset}"
+        if [ "$TARGET" == "icat" ] ; then
+            echo "${text_green}${text_bold}TARGET is ICAT${text_reset}"
+        fi
         ;;
         h)
         echo "$USAGE"
@@ -1287,7 +1292,8 @@ if [ "$BUILDIRODS" == "1" ] ; then
 	make -j$CPUCOUNT
 	cd $BUILDDIR
 
-if ["$TARGET" == "icat" ] ; then
+echo "${text_green}${text_bold}Possibly building database plugins [$TARGET]${text_reset}"
+if [ "$TARGET" == "icat" ] ; then
     # =-=-=-=-=-=-=-
     # build database plugins
     echo "${text_green}${text_bold}Building Database Plugins${text_reset}"

@@ -76,15 +76,15 @@ ${DB_PLUGIN_OBJ_WITH_NO_RE}: $(DB_PLUGIN_SRC)
 
 ${SODIR}/test_cll: ${OBJDIR}/test_cll.o $(CLL_OBJS) $(LIBRARY) $(BOOST_LIBS)
 	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $^ ${LIBRARY} $(LDFLAGS) $(BOOST_LIBS) ${DBMS_LIB} -fPIC -rdynamic -ldl -lrt -lpthread -lssl -lcrypto
+	@$(LDR) -o $@ $^ ${LIBRARY} $(LDFLAGS) $(BOOST_LIBS) ${DBMS_LIB} ${LDRFLAGS} -fPIC -rdynamic -ldl -lrt -lpthread -lssl -lcrypto
 
 ${SODIR}/test_genq: ${OBJDIR}/test_genq.o  ${DB_PLUGIN_OBJ_WITH_NO_RE} ${CLL_OBJS} $(GENQ_OBJS) ${CHL_OBJS} $(LIBRARY) ${BOOST_LIBS} 
 	@echo "Link server test `basename $@`..."
-	$(LDR) -o $@ $^ $(LIBRARY) $(LDFLAGS) ${DBMS_LIB} -fPIC -rdynamic -ldl -lrt -lpthread -lssl -lcrypto
+	$(LDR) -o $@ $^ $(LIBRARY) $(LDFLAGS) ${DBMS_LIB} ${LDRFLAGS} -fPIC -rdynamic -ldl -lrt -lpthread -lssl -lcrypto
 
 ${SODIR}/test_genu: $(OBJDIR)/test_genu.o ${CLL_OBJS} $(GENU_OBJS) ${CHL_OBJS} ${DB_PLUGIN_OBJ_WITH_NO_RE} $(LIBRARY) ${BOOST_LIBS} 
 	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $^ $(LIBRARY) $(LDFLAGS) ${DBMS_LIB} -fPIC -rdynamic -ldl -lrt -lpthread -lssl -lcrypto
+	@$(LDR) -o $@ $^ $(LIBRARY) $(LDFLAGS) ${DBMS_LIB} ${LDRFLAGS} -fPIC -rdynamic -ldl -lrt -lpthread -lssl -lcrypto
 
 
 
