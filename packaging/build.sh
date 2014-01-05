@@ -1287,12 +1287,14 @@ if [ "$BUILDIRODS" == "1" ] ; then
 	make -j$CPUCOUNT
 	cd $BUILDDIR
 
+if ["$TARGET" == "icat" ] ; then
     # =-=-=-=-=-=-=-
     # build database plugins
     echo "${text_green}${text_bold}Building Database Plugins${text_reset}"
 	cd $BUILDDIR/plugins/database/
 	make -j$CPUCOUNT
 	cd $BUILDDIR
+fi
 
     # =-=-=-=-=-=-=-
     # update EPM list template with values from irods.config
