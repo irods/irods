@@ -18,24 +18,23 @@ resource : external-build libs plugins-nodb irods
 
 resource-package : external libs plugins-nodb irods
 
-external :
-	@$(MAKE) -C external all
+external : external-build epm
 
 external-build :
 	@$(MAKE) -C external default
 
-libs : external
+libs : external-build
 	@$(MAKE) -C iRODS libs
 
 plugins : plugins-nodb plugins-db
 
-plugins-nodb : libs external
+plugins-nodb : libs external-build
 	@$(MAKE) -C plugins nodb
 
-plugins-db : libs external irods
+plugins-db : libs external-build irods
 	@$(MAKE) -C plugins database
 
-irods : libs external
+irods : libs external-build
 	@$(MAKE) -C iRODS
 
 docs : $(MANUAL) doxygen
