@@ -26,7 +26,7 @@ $(CMAKEVERSIONARCHIVE) :
 $(CMAKEVERSIONMAKE) : $(CMAKEVERSIONARCHIVE)
 	@tar xf $(CMAKEVERSIONARCHIVE)
 	@sed "s/std::cerr << \"loading initial cache file \"/std::cout << \"loading initial cache file \"/" $(CMAKEVERSION)/Source/cmake.cxx > /tmp/cmake.cxx
-	@rsync -c /tmp/cmake.cxx $(CMAKEVERSION)/Source/cmake.cx
+	@rsync -c /tmp/cmake.cxx $(CMAKEVERSION)/Source/cmake.cxx
 	@rm -f /tmp/cmake.cxx
 	@+cd $(CMAKEVERSION) ; \
 		./bootstrap -- -DBUILD_TESTING=FALSE
