@@ -25,7 +25,9 @@ $(CMAKEVERSIONARCHIVE) :
 
 $(CMAKEVERSIONMAKE) : $(CMAKEVERSIONARCHIVE)
 	@tar xf $(CMAKEVERSIONARCHIVE)
-	@sed -i "s/std::cerr << \"loading initial cache file \"/std::cout << \"loading initial cache file \"/" $(CMAKEVERSION)/Source/cmake.cxx
+	@sed "s/std::cerr << \"loading initial cache file \"/std::cout << \"loading initial cache file \"/" $(CMAKEVERSION)/Source/cmake.cxx > /tmp/cmake.cxx
+	@rsync -c /tmp/cmake.cxx $(CMAKEVERSION)/Source/cmake.cx
+	@rm -f /tmp/cmake.cxx
 	@+cd $(CMAKEVERSION) ; \
 		./bootstrap -- -DBUILD_TESTING=FALSE
 
@@ -56,8 +58,12 @@ $(LIBARCHIVEVERSIONARCHIVE) :
 
 $(LIBARCHIVEVERSIONMAKE) : $(LIBARCHIVEVERSIONARCHIVE) cmake
 	@tar zxf $(LIBARCHIVEVERSIONARCHIVE)
-	@sed -i '/^#ifdef HAVE_LINUX_FIEMAP_H$$/i \'$$'\n''#ifdef HAVE_LINUX_TYPES_H\'$$'\n''#include <linux/types.h>\'$$'\n''#endif\'$$'\n' $(LIBARCHIVEVERSION)/libarchive/test/test_sparse_basic.c
-	@sed -i "s/size_t used\;/size_t used = 0\;/" $(LIBARCHIVEVERSION)/libarchive/archive_read_support_format_xar.c
+	@sed '/^#ifdef HAVE_LINUX_FIEMAP_H/i \''\n''#ifdef HAVE_LINUX_TYPES_H\n''#include <linux/types.h>\n''#endif\n' $(LIBARCHIVEVERSION)/libarchive/test/test_sparse_basic.c > /tmp/test_sparse_basic.c
+	@rsync -c /tmp/test_sparse_basic.c $(LIBARCHIVEVERSION)/libarchive/test/test_sparse_basic.c
+	@rm -f /tmp/test_sparse_basic.c
+	@sed "s/size_t used\;/size_t used = 0\;/" $(LIBARCHIVEVERSION)/libarchive/archive_read_support_format_xar.c > /tmp/archive_read_support_format_xar.c
+	@rsync -c /tmp/archive_read_support_format_xar.c $(LIBARCHIVEVERSION)/libarchive/archive_read_support_format_xar.c
+	@rm -f /tmp/archive_read_support_format_xar.c
 	@cd $(LIBARCHIVEVERSION) ; \
 		../$(CMAKEVERSION)/bin/cmake -D CMAKE_C_FLAGS:STRING=-fPIC .
 
@@ -69,7 +75,9 @@ $(BOOSTVERSIONARCHIVE) :
 
 $(BOOSTVERSIONMAKE) : $(BOOSTVERSIONARCHIVE)
 	@tar zxf $(BOOSTVERSIONARCHIVE)
-	@sed -i "s/defined(__GLIBC_HAVE_LONG_LONG)/(defined(__GLIBC_HAVE_LONG_LONG) || (defined(__GLIBC__) \&\& ((__GLIBC__ > 2) || ((__GLIBC__ == 2) \&\& (__GLIBC_MINOR__ >= 17)))))/" $(BOOSTVERSION)/boost/cstdint.hpp
+	@sed "s/defined(__GLIBC_HAVE_LONG_LONG)/(defined(__GLIBC_HAVE_LONG_LONG) || (defined(__GLIBC__) \&\& ((__GLIBC__ > 2) || ((__GLIBC__ == 2) \&\& (__GLIBC_MINOR__ >= 17)))))/" $(BOOSTVERSION)/boost/cstdint.hpp > /tmp/cstdint.hpp
+	@rsync -c /tmp/cstdint.hpp $(BOOSTVERSION)/boost/cstdint.hpp
+	@rm -f /tmp/cstdint.hpp
 	@touch $(BOOSTVERSION)/link.jam
 	@cd $(BOOSTVERSION) ; \
 		./bootstrap.sh --with-libraries=filesystem,system,thread,regex
@@ -83,9 +91,14 @@ $(EPMVERSIONARCHIVE) :
 
 $(EPMVERSIONMAKE) : $(EPMVERSIONARCHIVE)
 	@tar zxf $(EPMVERSIONARCHIVE)
-	@sed -i "/Sorry, setup GUI requires FLTK 1\\.1\\.x\\./d" epm/configure.in
-	@sed -i "/Sorry, setup GUI requires FLTK 1\\.1\\.x\\./d" epm/configure
-	@sed -i "s/^\\(epm:.*\\)/\\1 libepm.a/" $(EPMVERSIONMAKE).in
+	@sed "/Sorry, setup GUI requires FLTK 1\\.1\\.x\\./d" epm/configure.in > /tmp/configure.in
+	@rsync -c /tmp/configure.in epm/configure.in
+	@rm -f /tmp/configure.in
+	@sed "/Sorry, setup GUI requires FLTK 1\\.1\\.x\\./d" epm/configure > /tmp/configure
+	@rsync -c /tmp/configure epm/configure
+	@rm -f /tmp/configure
+	@sed "s/^\\(epm:.*\\)/\\1 libepm.a/" $(EPMVERSIONMAKE).in > /tmp/epmMakefile.in
+	@rsync -c /tmp/epmMakefile.in $(EPMVERSIONMAKE).in
 	@cd epm ; \
 		./configure > /dev/null
 

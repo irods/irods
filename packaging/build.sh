@@ -829,8 +829,11 @@ cd $BUILDDIR
 TEMPLATE_RODS_RELEASE_VERSION=`grep "\<IRODSVERSION\>" VERSION | awk -F= '{print $2}'`
 TEMPLATE_RODS_RELEASE_DATE=`date +"%b %Y"`
 sed -e "s,TEMPLATE_RODS_RELEASE_VERSION,$TEMPLATE_RODS_RELEASE_VERSION," ./iRODS/lib/core/include/rodsVersion.hpp.template > /tmp/rodsVersion.hpp
-sed -i -e "s,TEMPLATE_RODS_RELEASE_DATE,$TEMPLATE_RODS_RELEASE_DATE," /tmp/rodsVersion.hpp
+sed -e "s,TEMPLATE_RODS_RELEASE_DATE,$TEMPLATE_RODS_RELEASE_DATE," /tmp/rodsVersion.hpp > /tmp/rodsVersion.hpp.2
+sed -e "s,TEMPLATE_RODS_RELEASE_DATE,$TEMPLATE_RODS_RELEASE_DATE," /tmp/rodsVersion.hpp.2 > /tmp/rodsVersion.hpp
 rsync -c /tmp/rodsVersion.hpp ./iRODS/lib/core/include/rodsVersion.hpp
+rm -f /tmp/rodsVersion.hpp
+rm -f /tmp/rodsVersion.hpp.2
 
 # set up variables for icat configuration
 cd $BUILDDIR/iRODS
@@ -912,10 +915,12 @@ if [ "$BUILDIRODS" == "1" ] ; then
     chmod 755 ./irodsctl
 
     # update build_dir to our absolute path
-    sed -i -e "\,^IRODS_BUILD_DIR=,s,^.*$,IRODS_BUILD_DIR=$BUILDDIR," ./config/config.mk
+    sed -e "\,^IRODS_BUILD_DIR=,s,^.*$,IRODS_BUILD_DIR=$BUILDDIR," ./config/config.mk > /tmp/config.mk
+    mv /tmp/config.mk ./config/config.mk
 
     # update cpu count to our detected cpu count
-    sed -i -e "\,^CPU_COUNT=,s,^.*$,CPU_COUNT=$CPUCOUNT," ./config/config.mk
+    sed -e "\,^CPU_COUNT=,s,^.*$,CPU_COUNT=$CPUCOUNT," ./config/config.mk > /tmp/config.mk
+    mv /tmp/config.mk ./config/config.mk
 
     # twiddle coverage flag in platform.mk based on whether this is a coverage (gcov) build
     if [ "$COVERAGE" == "1" ] ; then
@@ -951,18 +956,6 @@ if [ "$BUILDIRODS" == "1" ] ; then
     found_so=`../packaging/find_so.sh libbz2.so`
     sed -e s,SYSTEM_LIBBZ2_SO,$found_so, ../plugins/resources/structfile/Makefile > /tmp/irods_p_r_Makefile
     mv /tmp/irods_p_r_Makefile ../plugins/resources/structfile/Makefile
-#    # libarchive
-#    found_so=`../packaging/find_so.sh libarchive.so`
-#    sed -e s,SYSTEM_LIBARCHIVE_SO,$found_so, ../plugins/resources/Makefile > /tmp/irods_p_r_Makefile
-#    mv /tmp/irods_p_r_Makefile ../plugins/resources/Makefile
-#    # boost filesystem
-#    found_so=`../packaging/find_so.sh libboost_filesystem.so`
-#    sed -e s,SYSTEM_LIBBOOST_FILESYSTEM_SO,$found_so, ../plugins/resources/Makefile > /tmp/irods_p_r_Makefile
-#    mv /tmp/irods_p_r_Makefile ../plugins/resources/Makefile
-#    # boost system
-#    found_so=`../packaging/find_so.sh libboost_system.so`
-#    sed -e s,SYSTEM_LIBBOOST_SYSTEM_SO,$found_so, ../plugins/resources/Makefile > /tmp/irods_p_r_Makefile
-#    mv /tmp/irods_p_r_Makefile ../plugins/resources/Makefile
 
     # =-=-=-=-=-=-=-
     # modify the irods_ms_home.hpp file with the proper path to the binary directory
@@ -1020,9 +1013,9 @@ if [ "$BUILDIRODS" == "1" ] ; then
     #        time make -j 4      1m52.533s
     #        time make -j 5      1m48.611s
     ###########################################
-    if [ "$1" == "icat" ] ; then
+    if [ "$SERVER_TYPE" == "ICAT" ] ; then
         $MAKEJCMD -C $BUILDDIR icat-package
-    elif [ "$1" == "resource" ] ; then
+    elif [ "$SERVER_TYPE" == "RESOURCE" ] ; then
         $MAKEJCMD -C $BUILDDIR resource-package
     fi
     if [ "$?" != "0" ] ; then
