@@ -99,6 +99,7 @@ $(EPMVERSIONMAKE) : $(EPMVERSIONARCHIVE)
 	@rm -f /tmp/configure
 	@sed "s/^\\(epm:.*\\)/\\1 libepm.a/" $(EPMVERSIONMAKE).in > /tmp/epmMakefile.in
 	@rsync -c /tmp/epmMakefile.in $(EPMVERSIONMAKE).in
+	@rm -f /tmp/epmMakefile.in
 	@cd epm ; \
 		./configure > /dev/null
 
