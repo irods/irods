@@ -799,7 +799,7 @@ if [ $DETECTEDCPUCOUNT -lt 2 ] ; then
     DETECTEDCPUCOUNT=1
 fi
 CPUCOUNT=$(( $DETECTEDCPUCOUNT + 3 ))
-MAKEJCMD="make -j $CPUCOUNT"
+MAKEJCMD="make -j $CPUCOUNT -Orecurse"
 
 # print out detected CPU information
 echo "${text_cyan}${text_bold}-------------------------------------"
@@ -830,8 +830,7 @@ TEMPLATE_RODS_RELEASE_VERSION=`grep "\<IRODSVERSION\>" VERSION | awk -F= '{print
 TEMPLATE_RODS_RELEASE_DATE=`date +"%b %Y"`
 sed -e "s,TEMPLATE_RODS_RELEASE_VERSION,$TEMPLATE_RODS_RELEASE_VERSION," ./iRODS/lib/core/include/rodsVersion.hpp.template > /tmp/rodsVersion.hpp
 sed -e "s,TEMPLATE_RODS_RELEASE_DATE,$TEMPLATE_RODS_RELEASE_DATE," /tmp/rodsVersion.hpp > /tmp/rodsVersion.hpp.2
-sed -e "s,TEMPLATE_RODS_RELEASE_DATE,$TEMPLATE_RODS_RELEASE_DATE," /tmp/rodsVersion.hpp.2 > /tmp/rodsVersion.hpp
-rsync -c /tmp/rodsVersion.hpp ./iRODS/lib/core/include/rodsVersion.hpp
+rsync -c /tmp/rodsVersion.hpp.2 ./iRODS/lib/core/include/rodsVersion.hpp
 rm -f /tmp/rodsVersion.hpp
 rm -f /tmp/rodsVersion.hpp.2
 
