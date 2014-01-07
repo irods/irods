@@ -224,10 +224,6 @@ main( int argc, char **argv ) {
         exit( 1 );
     }
 
-    if ( strstr( myEnv.rodsDebug, "CAT" ) != NULL ) {
-        chlDebug( myEnv.rodsDebug );
-    }
-
     memset( &serverConfig, 0, sizeof( serverConfig ) );
     status = readServerConfig( &serverConfig );
 
@@ -238,6 +234,12 @@ main( int argc, char **argv ) {
                  status );
         return ( status );
     }
+
+    if ( strstr( myEnv.rodsDebug, "CAT" ) != NULL ) {
+        chlDebug( myEnv.rodsDebug );
+    }
+
+
     if ( mode == 1 ) {
         status = doTest1( argv[2], argv[3], argv[4], argv[5] );
         if ( status < 0 ) {
