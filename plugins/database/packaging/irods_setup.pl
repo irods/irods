@@ -31,7 +31,7 @@ use Cwd;
 use Cwd "abs_path";
 use Config;
 
-$version{"irods_setup.pl"} = "Nov 2013";
+$version{"irods_setup.pl"} = "Jan 2014";
 
 
 # =-=-=-=-=-=-=-

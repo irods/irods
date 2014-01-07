@@ -758,111 +758,113 @@ if ( $configMkVariables{ "RODS_CAT" } ne "1" )
 
 	printStatus( "No database configured.\n" );
 }
-elsif ( $configMkVariables{ "PSQICAT" } eq "1" )
-{
-	# Configuration has enabled Postgres.  Make sure the
-	# rest of the configuration matches.
-	$irodsConfigVariables{ "DATABASE_TYPE" } = "postgres";
-	$irodsConfigVariables{ "POSTGRES_HOME" } = $DATABASE_HOME;
-	$configMkVariables{ "POSTGRES_HOME" } = $DATABASE_HOME;
 
-	$databaseHome = $irodsConfigVariables{ "DATABASE_HOME" };
-	if ( ! -e $databaseHome )
-	{
-		printError( "\n" );
-		printError( "Configuration problem:\n" );
-		printError( "    Cannot find the Postgres home directory.\n" );
-		printError( "        Directory:  $databaseHome\n" );
-		printError( "\n" );
-		printError( "Abort.  Please re-run this script after fixing this problem.\n" );
-		exit( 1 );
-	}
-	my $databaseBin = File::Spec->catdir( $databaseHome, "bin" );
-	if ( ! -e $databaseBin )
-	{
-		# A common error/confusion is to give a database
-		# home directory that is one up from the one to use.
-		# For instance, if an iRODS install has put Postgres
-		# in "here", then "here/pgsql/bin" is the bin directory,
-		# not "here/bin".  Check for this and silently adjust.
-		my $databaseBin2 = File::Spec->catdir( $databaseHome, "pgsql", "bin" );
-		if ( ! -e $databaseBin2 )
-		{
-			# That didn't work either.  Complain, but
-			# use the first tried bin directory in the
-			# message.
-			printError( "\n" );
-			printError( "Configuration problem:\n" );
-			printError( "    Cannot find the Postgres bin directory.\n" );
-			printError( "        Directory:  $databaseBin\n" );
-			printError( "\n" );
-			printError( "Abort.  Please re-run this script after fixing this problem.\n" );
-			exit( 1 );
-		}
-		# That worked.  Adjust.
-		$DATABASE_HOME = File::Spec->catdir( $databaseHome, "pgsql" );
-		$databaseHome  = $DATABASE_HOME;
-		$irodsConfigVariables{ "POSTGRES_HOME" } = $DATABASE_HOME;
-		$configMkVariables{ "POSTGRES_HOME" } = $DATABASE_HOME;
-		$irodsConfigVariables{ "DATABASE_HOME" } = $DATABASE_HOME;
-	}
+=pod
+    elsif ( $configMkVariables{ "PSQICAT" } eq "1" )
+    {
+        # Configuration has enabled Postgres.  Make sure the
+        # rest of the configuration matches.
+        $irodsConfigVariables{ "DATABASE_TYPE" } = "postgres";
+        $irodsConfigVariables{ "POSTGRES_HOME" } = $DATABASE_HOME;
+        $configMkVariables{ "POSTGRES_HOME" } = $DATABASE_HOME;
 
-	printStatus( "Postgres database found.\n" );
-}
-elsif ( $configMkVariables{ "ORAICAT" } eq "1" )
-{
-	# Configuration has enabled Oracle.  Make sure the
-	# rest of the irodsConfigVariables matches.
-	$irodsConfigVariables{ "DATABASE_TYPE" } = "oracle";
-	$irodsConfigVariables{ "ORACLE_HOME" } = $DATABASE_HOME;
-	$configMkVariables{ "ORACLE_HOME" } = $DATABASE_HOME;
+        $databaseHome = $irodsConfigVariables{ "DATABASE_HOME" };
+        if ( ! -e $databaseHome )
+        {
+            printError( "\n" );
+            printError( "Configuration problem:\n" );
+            printError( "    Cannot find the Postgres home directory.\n" );
+            printError( "        Directory:  $databaseHome\n" );
+            printError( "\n" );
+            printError( "Abort.  Please re-run this script after fixing this problem.\n" );
+            exit( 1 );
+        }
+        my $databaseBin = File::Spec->catdir( $databaseHome, "bin" );
+        if ( ! -e $databaseBin )
+        {
+            # A common error/confusion is to give a database
+            # home directory that is one up from the one to use.
+            # For instance, if an iRODS install has put Postgres
+            # in "here", then "here/pgsql/bin" is the bin directory,
+            # not "here/bin".  Check for this and silently adjust.
+            my $databaseBin2 = File::Spec->catdir( $databaseHome, "pgsql", "bin" );
+            if ( ! -e $databaseBin2 )
+            {
+                # That didn't work either.  Complain, but
+                # use the first tried bin directory in the
+                # message.
+                printError( "\n" );
+                printError( "Configuration problem:\n" );
+                printError( "    Cannot find the Postgres bin directory.\n" );
+                printError( "        Directory:  $databaseBin\n" );
+                printError( "\n" );
+                printError( "Abort.  Please re-run this script after fixing this problem.\n" );
+                exit( 1 );
+            }
+            # That worked.  Adjust.
+            $DATABASE_HOME = File::Spec->catdir( $databaseHome, "pgsql" );
+            $databaseHome  = $DATABASE_HOME;
+            $irodsConfigVariables{ "POSTGRES_HOME" } = $DATABASE_HOME;
+            $configMkVariables{ "POSTGRES_HOME" } = $DATABASE_HOME;
+            $irodsConfigVariables{ "DATABASE_HOME" } = $DATABASE_HOME;
+        }
 
-	$databaseHome = $irodsConfigVariables{ "DATABASE_HOME" };
-	if ( ! -e $databaseHome )
-	{
-		printError( "\n" );
-		printError( "Configuration problem:\n" );
-		printError( "    Cannot find the Oracle home directory.\n" );
-		printError( "        Directory:  $databaseHome\n" );
-		printError( "\n" );
-		printError( "Abort.  Please re-run this script after fixing this problem.\n" );
-		exit( 1 );
-	}
+        printStatus( "Postgres database found.\n" );
+    }
+    elsif ( $configMkVariables{ "ORAICAT" } eq "1" )
+    {
+        # Configuration has enabled Oracle.  Make sure the
+        # rest of the irodsConfigVariables matches.
+        $irodsConfigVariables{ "DATABASE_TYPE" } = "oracle";
+        $irodsConfigVariables{ "ORACLE_HOME" } = $DATABASE_HOME;
+        $configMkVariables{ "ORACLE_HOME" } = $DATABASE_HOME;
 
-	printStatus( "Oracle database found in $databaseHome\n" );
-}
-elsif ( $configMkVariables{ "MYICAT" } eq "1" )
-{
-	# Configuration has enabled MySQL.  Make sure the
-	# rest of the configuration matches.
-	$irodsConfigVariables{ "DATABASE_TYPE" } = "mysql";
-	$irodsConfigVariables{ "UNIXODBC_HOME" } = $DATABASE_HOME;
-	$configMkVariables{ "UNIXODBC_HOME" } = $DATABASE_HOME;
-	$configMkVariables{ "UNIXODBC_DATASOURCE" } = $DB_NAME;
+        $databaseHome = $irodsConfigVariables{ "DATABASE_HOME" };
+        if ( ! -e $databaseHome )
+        {
+            printError( "\n" );
+            printError( "Configuration problem:\n" );
+            printError( "    Cannot find the Oracle home directory.\n" );
+            printError( "        Directory:  $databaseHome\n" );
+            printError( "\n" );
+            printError( "Abort.  Please re-run this script after fixing this problem.\n" );
+            exit( 1 );
+        }
 
-	$databaseHome = $irodsConfigVariables{ "DATABASE_HOME" };
-	if ( ! -e $databaseHome )
-	{
-		printError( "\n" );
-		printError( "Configuration problem:\n" );
-		printError( "    Cannot find the unixODBC install directory.\n" );
-		printError( "        Directory:  $databaseHome\n" );
-		printError( "\n" );
-		printError( "Abort.  Please re-run this script after fixing this problem.\n" );
-		exit( 1 );
-	}
+        printStatus( "Oracle database found in $databaseHome\n" );
+    }
+    elsif ( $configMkVariables{ "MYICAT" } eq "1" )
+    {
+        # Configuration has enabled MySQL.  Make sure the
+        # rest of the configuration matches.
+        $irodsConfigVariables{ "DATABASE_TYPE" } = "mysql";
+        $irodsConfigVariables{ "UNIXODBC_HOME" } = $DATABASE_HOME;
+        $configMkVariables{ "UNIXODBC_HOME" } = $DATABASE_HOME;
+        $configMkVariables{ "UNIXODBC_DATASOURCE" } = $DB_NAME;
 
-	printStatus( "MySQL database found.\n" );
-}
-else
-{
-	# Configuration has no iCAT.
-	$irodsConfigVariables{ "DATABASE_TYPE" } = "";
-	$configMkVariables{ "RODS_CAT" } = "";
+        $databaseHome = $irodsConfigVariables{ "DATABASE_HOME" };
+        if ( ! -e $databaseHome )
+        {
+            printError( "\n" );
+            printError( "Configuration problem:\n" );
+            printError( "    Cannot find the unixODBC install directory.\n" );
+            printError( "        Directory:  $databaseHome\n" );
+            printError( "\n" );
+            printError( "Abort.  Please re-run this script after fixing this problem.\n" );
+            exit( 1 );
+        }
 
-	printStatus( "No database configured.\n" );
-}
+        printStatus( "MySQL database found.\n" );
+    }
+    else
+    {
+        # Configuration has no iCAT.
+        $irodsConfigVariables{ "DATABASE_TYPE" } = "";
+        $configMkVariables{ "RODS_CAT" } = "";
 
+        printStatus( "No database configured.\n" );
+    }
+=cut
 
 
 

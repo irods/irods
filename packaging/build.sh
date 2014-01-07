@@ -326,8 +326,6 @@ if [ "$1" == "clean" ] ; then
     rm -rf macosx-10.*
     rm -f server/config/reConfigs/raja1.re
     rm -f server/config/scriptMonPerf.config
-    rm -f server/icat/src/icatCoreTables.sql
-    rm -f server/icat/src/icatSysTables.sql
     rm -f lib/core/include/irods_ms_home.hpp
     rm -f lib/core/include/irods_network_home.hpp
     rm -f lib/core/include/irods_auth_home.hpp
@@ -410,17 +408,6 @@ if [[ $1 != "icat" && $1 != "resource" ]] ; then
     exit 1
 fi
 
-if [ "$1" == "icat" ] ; then
-    #  if [ "$2" != "postgres" -a "$2" != "mysql" ]
-    if [ "$2" != "postgres" ] ; then
-        echo "${text_red}#######################################################" 1>&2
-        echo "ERROR :: Invalid iCAT databaseType [$2]" 1>&2
-        echo "      :: Only 'postgres' available at this time" 1>&2
-        echo "#######################################################${text_reset}" 1>&2
-        exit 1
-    fi
-fi
-
 if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
     if [ "$(id -u)" != "0" ] ; then
         echo "${text_red}#######################################################" 1>&2
@@ -461,27 +448,6 @@ if [[ "$?" != "0" || `echo $GPLUSPLUS | awk '{print $1}'` == "no" ]] ; then
     elif [ "$DETECTEDOS" == "MacOSX" ] ; then
         PREFLIGHT="$PREFLIGHT homebrew/versions/gcc45"
         # mac comes with make preinstalled
-    fi
-fi
-
-if [ $1 == "icat" ] ; then
-    UNIXODBCDEV=`find /opt/csw/include/ /usr/include /usr/local -name sql.h 2> /dev/null`
-    if [ "$UNIXODBCDEV" == "" ] ; then
-        if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
-            PREFLIGHT="$PREFLIGHT unixodbc-dev"
-        elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-            PREFLIGHT="$PREFLIGHT unixODBC-devel"
-        elif [ "$DETECTEDOS" == "SuSE" ] ; then
-            PREFLIGHT="$PREFLIGHT unixODBC-devel"
-        elif [ "$DETECTEDOS" == "Solaris" ] ; then
-            PREFLIGHT="$PREFLIGHT unixodbc_dev"
-        elif [ "$DETECTEDOS" == "MacOSX" ] ; then
-            PREFLIGHT="$PREFLIGHT unixodbc" # not confirmed as successful
-        else
-            PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://www.unixodbc.org/download.html"
-        fi
-    else
-        echo "Detected unixODBC-dev library [$UNIXODBCDEV]"
     fi
 fi
 
@@ -682,25 +648,6 @@ else
     echo "Detected OpenSSL sha.h library [$OPENSSLDEV]"
 fi
 
-FINDPOSTGRESBIN=`../packaging/find_postgres_bin.sh 2> /dev/null`
-if [ "$FINDPOSTGRESBIN" == "FAIL" ] ; then
-    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
-        PREFLIGHT="$PREFLIGHT postgresql"
-    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-        PREFLIGHT="$PREFLIGHT postgresql"
-    elif [ "$DETECTEDOS" == "SuSE" ] ; then
-        PREFLIGHT="$PREFLIGHT postgresql"
-    elif [ "$DETECTEDOS" == "Solaris" ] ; then
-        PREFLIGHT="$PREFLIGHT postgresql_dev"
-    elif [ "$DETECTEDOS" == "MacOSX" ] ; then
-        PREFLIGHT="$PREFLIGHT postgresql"
-    else
-        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://www.postgresql.org/download/"
-    fi
-else
-    echo "Detected PostgreSQL binary [$FINDPOSTGRESBIN]"
-fi
-
 EASYINSTALL=`which easy_install`
 if [[ "$?" != "0" || `echo $EASYINSTALL | awk '{print $1}'` == "no" ]] ; then
     if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
@@ -838,42 +785,9 @@ rm -f /tmp/rodsVersion.hpp.2
 cd $BUILDDIR/iRODS
 if [ $1 == "icat" ] ; then
     SERVER_TYPE="ICAT"
-    DB_TYPE=$2
+    # otherwise set up variables for resource configuration
     EPMFILE="../packaging/irods.config.icat.epm"
-
-    if [ "$BUILDIRODS" == "1" ] ; then
-        # =-=-=-=-=-=-=-
-        # bake SQL files for different database types
-        # NOTE:: icatSysInserts.sql is handled by the packager as we rely on the default zone name
-        serverSqlDir="./server/icat/src"
-        convertScript="$serverSqlDir/convertSql.pl"
-
-        echo "Converting SQL: [$convertScript] [$DB_TYPE] [$serverSqlDir]"
-        `perl $convertScript $2 $serverSqlDir &> /dev/null`
-        if [ "$?" -ne "0" ] ; then
-            echo "Failed to convert SQL forms" 1>&2
-            exit 1
-        fi
-
-        # =-=-=-=-=-=-=-
-        # insert postgres path into list file
-        if [ "$DB_TYPE" == "postgres" ] ; then
-            # need to do a dirname here, as the irods.config is expected to have a path
-            # which will be appended with a /bin
-            IRODSPOSTGRESPATH=`../packaging/find_postgres_bin.sh`
-            if [ "$IRODSPOSTGRESPATH" == "FAIL" ] ; then
-                exit 1
-            fi
-            IRODSPOSTGRESPATH=`dirname $IRODSPOSTGRESPATH`
-            IRODSPOSTGRESPATH="$IRODSPOSTGRESPATH/"
-
-            echo "Detected PostgreSQL path [$IRODSPOSTGRESPATH]"
-            sed -e s,IRODSPOSTGRESPATH,$IRODSPOSTGRESPATH, $EPMFILE > $TMPCONFIGFILE
-        else
-            echo "TODO: irods.config for DBTYPE other than postgres"
-        fi
-    fi
-    # set up variables for resource configuration
+    cp $EPMFILE $TMPCONFIGFILE
 else
     SERVER_TYPE="RESOURCE"
     EPMFILE="../packaging/irods.config.resource.epm"
@@ -1014,33 +928,15 @@ if [ "$BUILDIRODS" == "1" ] ; then
     ###########################################
     if [ "$SERVER_TYPE" == "ICAT" ] ; then
         $MAKEJCMD -C $BUILDDIR icat-package
+        cd ../plugins/database
+        ./build.sh $2
+        cd $BUILDDIR
     elif [ "$SERVER_TYPE" == "RESOURCE" ] ; then
         $MAKEJCMD -C $BUILDDIR resource-package
     fi
     if [ "$?" != "0" ] ; then
         exit 1
     fi
-
-    # =-=-=-=-=-=-=-
-    # update EPM list template with values from irods.config
-    cd $BUILDDIR
-    #   database name
-    NEW_DB_NAME=`awk -F\' '/^\\$DB_NAME / {print $2}' iRODS/config/irods.config`
-    sed -e "s,TEMPLATE_DB_NAME,$NEW_DB_NAME," ./packaging/irods.list.template > /tmp/irodslist.tmp
-    mv /tmp/irodslist.tmp ./packaging/irods.list
-    #   database type
-    NEW_DB_TYPE=`awk -F\' '/^\\$DATABASE_TYPE/ {print $2}' iRODS/config/irods.config`
-    sed -e "s,TEMPLATE_DB_TYPE,$NEW_DB_TYPE," ./packaging/irods.list > /tmp/irodslist.tmp
-    mv /tmp/irodslist.tmp ./packaging/irods.list
-    #   database host
-    NEW_DB_HOST=`awk -F\' '/^\\$DATABASE_HOST/ {print $2}' iRODS/config/irods.config`
-    sed -e "s,TEMPLATE_DB_HOST,$NEW_DB_HOST," ./packaging/irods.list > /tmp/irodslist.tmp
-    mv /tmp/irodslist.tmp ./packaging/irods.list
-    #   database port
-    NEW_DB_PORT=`awk -F\' '/^\\$DATABASE_PORT/ {print $2}' iRODS/config/irods.config`
-    sed -e "s,TEMPLATE_DB_PORT,$NEW_DB_PORT," ./packaging/irods.list > /tmp/irodslist.tmp
-    mv /tmp/irodslist.tmp ./packaging/irods.list
-
 
     # =-=-=-=-=-=-=-
     # populate IRODSVERSIONINT and IRODSVERSION in all EPM list files

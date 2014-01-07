@@ -1,0 +1,162 @@
+#!/bin/bash -e
+
+DATABASETYPE="TEMPLATE_DATABASE_TYPE"
+
+# config
+IRODS_CONFIG_FILE="./iRODS/config/irods.config"
+SETUP_DATABASE_FLAG="/tmp/setup_database.flag"
+
+# get into the irods user home directory
+DETECTEDDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd $DETECTEDDIR/../
+
+# get temp file from prior run, if it exists
+if [ -f $SETUP_DATABASE_FLAG ] ; then
+    # have run this before, read the existing config file
+    DATABASEHOSTORIP=`grep "DATABASE_HOST =" $IRODS_CONFIG_FILE | awk -F\' '{print $2}'`
+    DATABASEPORT=`grep "DATABASE_PORT =" $IRODS_CONFIG_FILE | awk -F\' '{print $2}'`
+    DATABASENAME=`grep "DATABASE_NAME =" $IRODS_CONFIG_FILE | awk -F\' '{print $2}'`
+    DATABASEUSER=`grep "DATABASE_USER =" $IRODS_CONFIG_FILE | awk -F\' '{print $2}'`
+    STATUS="loop"
+else
+    # no temp file, this is the first run
+    STATUS="firstpass"
+fi
+
+echo "==================================================================="
+echo ""
+echo "You are installing an iRODS database plugin."
+echo ""
+echo "The iRODS server cannot be started until its database"
+echo "has been properly configured."
+echo ""
+while [ "$STATUS" != "complete" ] ; do
+
+  # set default values from an earlier loop
+  if [ "$STATUS" != "firstpass" ] ; then
+    LASTDATABASEHOSTORIP=$DATABASEHOSTORIP
+    LASTDATABASEPORT=$DATABASEPORT
+    LASTDATABASENAME=$DATABASENAME
+    LASTDATABASEUSER=$DATABASEUSER
+  fi
+
+  # get host
+  echo -n "Database server's hostname or IP address"
+  if [ "$LASTDATABASEHOSTORIP" ] ; then echo -n " [$LASTDATABASEHOSTORIP]"; fi
+  echo -n ": "
+  read DATABASEHOSTORIP
+  if [ "$DATABASEHOSTORIP" == "" ] ; then
+    if [ "$LASTDATABASEHOSTORIP" ] ; then DATABASEHOSTORIP=$LASTDATABASEHOSTORIP; fi
+  fi
+  # strip all forward slashes
+  DATABASEHOSTORIP=`echo "${DATABASEHOSTORIP}" | sed -e "s/\///g"`
+  echo ""
+
+  # get port
+  echo -n "Database server's port"
+  if [ "$LASTDATABASEPORT" ] ; then
+    echo -n " [$LASTDATABASEPORT]"
+  else
+    echo -n " [5432]"
+  fi
+  echo -n ": "
+  read DATABASEPORT
+  if [ "$DATABASEPORT" == "" ] ; then
+    if [ "$LASTDATABASEPORT" ] ; then
+      DATABASEPORT=$LASTDATABASEPORT
+    else
+      DATABASEPORT=5432
+    fi
+  fi
+  # strip all forward slashes
+  DATABASEPORT=`echo "${DATABASEPORT}" | sed -e "s/\///g"`
+  echo ""
+
+  # get the db name
+  echo -n "Database name"
+  if [ "$LASTDATABASENAME" ] ; then
+    echo -n " [$LASTDATABASENAME]"
+  else
+    echo -n " [ICAT]"
+  fi
+  echo -n ": "
+  read DATABASENAME
+  if [ "$DATABASENAME" == "" ] ; then
+    if [ "$LASTDATABASENAME" ] ; then
+      DATABASENAME=$LASTDATABASENAME
+    else
+      DATABASENAME="ICAT"
+    fi
+  fi
+  # strip all forward slashes
+  DATABASENAME=`echo "${DATABASENAME}" | sed -e "s/\///g"`
+  echo ""
+
+  # get database user
+  echo -n "Database username"
+  if [ "$LASTDATABASEUSER" ] ; then
+    echo -n " [$LASTDATABASEUSER]"
+  else
+    echo -n " [irods]"
+  fi
+  echo -n ": "
+  read DATABASEUSER
+  if [ "$DATABASEUSER" == "" ] ; then
+    if [ "$LASTDATABASEUSER" ] ; then
+      DATABASEUSER=$LASTDATABASEUSER
+    else
+      DATABASEUSER=irods
+    fi
+  fi
+  # strip all forward slashes
+  ADMINUSER=`echo "${DATABASEUSER}" | sed -e "s/\///g"`
+  echo ""
+
+  echo -n "Database password: "
+  # get db password, without showing on screen
+  stty -echo
+  read DATABASEPASSWORD
+  stty echo
+  echo ""
+  echo ""
+
+  # confirm
+  echo "-------------------------------------------"
+  echo "Database Type:     $DATABASETYPE"
+  echo "Hostname or IP:    $DATABASEHOSTORIP"
+  echo "Database Port:     $DATABASEPORT"
+  echo "Database Name:     $DATABASENAME"
+  echo "Database User:     $DATABASEUSER"
+  echo "Database Password: Not Shown"
+  echo "-------------------------------------------"
+  echo -n "Please confirm these settings [yes]: "
+  read CONFIRM
+  if [ "$CONFIRM" == "" -o "$CONFIRM" == "y" -o "$CONFIRM" == "Y" -o "$CONFIRM" == "yes" ]; then
+    STATUS="complete"
+  else
+    STATUS="loop"
+  fi
+  echo ""
+  echo ""
+
+done
+touch $SETUP_DATABASE_FLAG
+echo "==================================================================="
+
+IRODS_CONFIG_TEMPFILE="/tmp/tmp.irods.config"
+echo "Updating irods.config..."
+sed -e "/^\$DATABASE_TYPE/s/^.*$/\$DATABASE_TYPE = '$DATABASETYPE';/" $IRODS_CONFIG_FILE > $IRODS_CONFIG_TEMPFILE
+mv $IRODS_CONFIG_TEMPFILE $IRODS_CONFIG_FILE
+sed -e "/^\$DATABASE_HOST/s/^.*$/\$DATABASE_HOST = '$DATABASEHOSTORIP';/" $IRODS_CONFIG_FILE > $IRODS_CONFIG_TEMPFILE
+mv $IRODS_CONFIG_TEMPFILE $IRODS_CONFIG_FILE
+sed -e "/^\$DATABASE_PORT/s/^.*$/\$DATABASE_PORT = '$DATABASEPORT';/" $IRODS_CONFIG_FILE > $IRODS_CONFIG_TEMPFILE
+mv $IRODS_CONFIG_TEMPFILE $IRODS_CONFIG_FILE
+sed -e "/^\$DATABASE_ADMIN_NAME/s/^.*$/\$DATABASE_ADMIN_NAME = '$DATABASEUSER';/" $IRODS_CONFIG_FILE > $IRODS_CONFIG_TEMPFILE
+mv $IRODS_CONFIG_TEMPFILE $IRODS_CONFIG_FILE
+sed -e "/^\$DB_NAME/s/^.*$/\$DB_NAME = '$DATABASENAME';/" $IRODS_CONFIG_FILE > $IRODS_CONFIG_TEMPFILE
+mv $IRODS_CONFIG_TEMPFILE $IRODS_CONFIG_FILE
+
+echo "Running irods_setup.pl..."
+cd iRODS
+perl ./scripts/perl/irods_setup.pl $DATABASETYPE $DATABASEHOSTORIP $DATABASEPORT $DATABASEUSER $DATABASEPASSWORD
+

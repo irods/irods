@@ -311,6 +311,7 @@ if [ "$UPGRADE_FLAG" == "true" ] ; then
     set +e
     su --shell=/bin/bash -c "cd $IRODS_HOME; ./irodsctl start" $OS_IRODS_ACCT
     set -e
+<<COMMENT_OUT_FOR_DB_PLUGIN
 else
     # =-=-=-=-=-=-=-
     # run setup script to configure an ICAT server
@@ -324,6 +325,7 @@ else
     if [ "$SERVER_TYPE" == "icat" ] ; then
         su --shell=/bin/bash -c "/usr/bin/iadmin rmuser rodsBoot" $OS_IRODS_ACCT
     fi
+COMMENT_OUT_FOR_DB_PLUGIN
 fi
 
 # =-=-=-=-=-=-=-
@@ -346,7 +348,7 @@ if [ "$UPGRADE_FLAG" == "false" ] ; then
     if [ "$SERVER_TYPE" == "icat" ] ; then
         # tell user about their irodsenv
         cat $IRODS_HOME_DIR/packaging/user_irodsenv.txt
-        cat $IRODS_HOME_DIR/.irods/.irodsEnv
+        #cat $IRODS_HOME_DIR/.irods/.irodsEnv
     elif [ "$SERVER_TYPE" == "resource" ] ; then
         # give user some guidance regarding resource configuration
         cat $IRODS_HOME_DIR/packaging/user_resource.txt

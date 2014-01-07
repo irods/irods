@@ -1,4 +1,4 @@
-BASEDIRS = postgres
+#BASEDIRS = postgres
            
 
 ######################################################################
@@ -17,17 +17,17 @@ export OBJDIR = .objs
 export IRODSTOPDIR = ../../iRODS
 export SOTOPDIR = .
 
-SUBS = ${BASEDIRS}
+#SUBS = ${BASEDIRS}
 
 ifeq ($(IRODS_BUILD_DEBUG), 0)
 #SUBS += ${HPSSDIRS}
 endif
 
-.PHONY: ${SUBS} clean
+.PHONY: postgres clean
 
-default: ${SUBS}
+default: postgres
 
-${SUBS}:
+postgres:
 	@-mkdir -p $@/${OBJDIR} > /dev/null 2>&1
 	${MAKE} -C $@
 

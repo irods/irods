@@ -8,8 +8,8 @@ nodb : auth network resources
 auth :
 	@$(MAKE) -C auth
 
-database :
-	@$(MAKE) -C database
+#database :
+#	@$(MAKE) -C database
 
 network :
 	@$(MAKE) -C network

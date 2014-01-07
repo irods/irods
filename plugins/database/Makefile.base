@@ -57,8 +57,8 @@ ${FULLTARGET}: ${OBJS}
 	@-mkdir -p ${SODIR} > /dev/null 2>&1
 	${GCC} ${INC} -D${OS_platform} ${CFLAGS} -fPIC "-Wl,-E" -shared -o ${FULLTARGET} ${OBJS} ${EXTRALIBS} ${DBMS_LIB}
 
-${OBJDIR}/%.o: %.cpp
-	${GCC} ${INC} -D${OS_platform} -fPIC -c -g -o $@ $<
+${OBJDIR}/%.o: ../src/%.cpp
+	${GCC} ${INC} ${EXTRA_CFLAGS} -D${OS_platform} -fPIC -c -g -o $@ $<
 
 ${DB_PLUGIN_OBJ_WITH_NO_RE}: $(DB_PLUGIN_SRC)
 	@echo "Compile Without RE `basename $@`..."
