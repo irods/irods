@@ -799,7 +799,7 @@ if [ $DETECTEDCPUCOUNT -lt 2 ] ; then
     DETECTEDCPUCOUNT=1
 fi
 CPUCOUNT=$(( $DETECTEDCPUCOUNT + 3 ))
-MAKEJCMD="make -j $CPUCOUNT -Orecurse"
+MAKEJCMD="make -j $CPUCOUNT"
 
 # print out detected CPU information
 echo "${text_cyan}${text_bold}-------------------------------------"
