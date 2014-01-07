@@ -2,11 +2,9 @@
 
 
 
-#ifndef __EIRODS_DATABASE_MANAGER_H__
-#define __EIRODS_DATABASE_MANAGER_H__
+#ifndef __IRODS_DATABASE_MANAGER_HPP__
+#define __IRODS_DATABASE_MANAGER_HPP__
 
-// =-=-=-=-=-=-=-
-// eirods includes
 #include "irods_database_plugin.hpp"
 
 namespace irods {
@@ -56,7 +54,7 @@ namespace irods {
 
 }; // namespace irods
 
-#endif // __EIRODS_DATABASE_MANAGER_H__
+#endif // __IRODS_DATABASE_MANAGER_HPP__
 
 
 

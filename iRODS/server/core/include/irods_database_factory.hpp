@@ -1,8 +1,8 @@
 
 
 
-#ifndef __EIRODS_DATABASE_FACTORY_H__
-#define __EIRODS_DATABASE_FACTORY_H__
+#ifndef __IRODS_DATABASE_FACTORY_HPP__
+#define __IRODS_DATABASE_FACTORY_HPP__
 
 // =-=-=-=-=-=-=-
 // irods includes
@@ -24,7 +24,7 @@ namespace irods {
 }; // namespace irods
 
 
-#endif // __EIRODS_DATABASE_FACTORY_H__
+#endif // __IRODS_DATABASE_FACTORY_HPP__
 
 
 
