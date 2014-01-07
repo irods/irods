@@ -964,6 +964,12 @@ main( int argc, char **argv ) {
             exit( 1 );
         }
 
+        memset( &serverConfig, 0, sizeof( serverConfig ) );
+        status = readServerConfig( &serverConfig );
+        if ( status ) {
+            printf( "Error %d from readServerConfig\n", status );
+        }
+
         if ( ( status = chlOpen( &serverConfig ) ) != 0 ) {
 
             rodsLog( LOG_SYS_FATAL,
@@ -982,12 +988,6 @@ main( int argc, char **argv ) {
 
         if ( strstr( myEnv.rodsDebug, "CAT" ) != NULL ) {
             chlDebug( myEnv.rodsDebug );
-        }
-
-        memset( &serverConfig, 0, sizeof( serverConfig ) );
-        status = readServerConfig( &serverConfig );
-        if ( status ) {
-            printf( "Error %d from readServerConfig\n", status );
         }
 
         if ( mode == 2 ) {
