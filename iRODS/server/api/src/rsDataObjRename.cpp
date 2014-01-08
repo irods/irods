@@ -19,7 +19,7 @@
 #include "fileOpendir.hpp"
 #include "fileReaddir.hpp"
 #include "fileClosedir.hpp"
-#include "rmCollOld.hpp"
+#include "rmColl.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"

@@ -123,9 +123,6 @@ LIB_API_OBJS += $(libApiObjDir)/rcAuthResponse.o
 SVR_API_OBJS += $(svrApiObjDir)/rsAuthCheck.o
 LIB_API_OBJS += $(libApiObjDir)/rcAuthCheck.o
 
-SVR_API_OBJS += $(svrApiObjDir)/rsRmCollOld.o
-LIB_API_OBJS += $(libApiObjDir)/rcRmCollOld.o
-
 SVR_API_OBJS += $(svrApiObjDir)/rsRegColl.o
 LIB_API_OBJS += $(libApiObjDir)/rcRegColl.o
 

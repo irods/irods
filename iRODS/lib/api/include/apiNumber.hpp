@@ -109,7 +109,6 @@
 #define RM_COLL_AN                      679
 #define MOD_COLL_AN                     680
 #define COLL_CREATE_AN                  681
-#define RM_COLL_OLD_AN                  682
 #define REG_COLL_AN                     683
 #define PHY_BUNDLE_COLL_AN 		        684
 #define UNBUN_AND_REG_PHY_BUNFILE_AN 	685

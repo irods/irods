@@ -502,10 +502,6 @@ apidef_t RcApiTable[] = {
         "CollInpNew_PI", 0, NULL, 0, ( funcPtr ) RS_COLL_CREATE
     },
     {
-        RM_COLL_OLD_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "CollInpNew_PI", 0, NULL, 0, ( funcPtr ) RS_RM_COLL_OLD
-    },
-    {
         STRUCT_FILE_EXTRACT_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "StructFileOprInp_PI", 0, NULL, 0, ( funcPtr ) RS_STRUCT_FILE_EXTRACT
     },

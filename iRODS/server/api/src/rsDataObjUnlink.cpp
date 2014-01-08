@@ -18,7 +18,6 @@
 #include "rcGlobalExtern.hpp"
 #include "reGlobalsExtern.hpp"
 #include "reDefines.hpp"
-#include "rmCollOld.hpp"
 #include "rmColl.hpp"
 #include "dataObjRename.hpp"
 #include "subStructFileUnlink.hpp"

@@ -48,7 +48,6 @@
 #include "authRequest.hpp"
 #include "authResponse.hpp"
 #include "authCheck.hpp"
-#include "rmCollOld.hpp"
 #include "regColl.hpp"
 #include "regDataObj.hpp"
 #include "unregDataObj.hpp"
