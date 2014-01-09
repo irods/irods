@@ -355,7 +355,7 @@ if [ "$1" == "clean" ] ; then
     set -e
     echo "${text_green}${text_bold}Done.${text_reset}"
     
-    cd ../plugins/database
+    cd ./plugins/database
     ./build.sh clean
     cd $BUILDDIR
 
