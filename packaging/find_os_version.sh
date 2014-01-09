@@ -14,7 +14,7 @@ elif [ "$DETECTEDOS" == "Solaris" ] ; then
     OSVERSION=`uname -r`
 elif [ "$DETECTEDOS" == "MacOSX" ] ; then
     OSVERSION=`sw_vers -productVersion`
-elif [ "$DETECTEDOS" == "Arch" ] ; then
+elif [ "$DETECTEDOS" == "ArchLinux" ] ; then
     OSVERSION=`grep RELEASE /etc/lsb-release | awk -F= '{print $2}'`
 else
     exit 1

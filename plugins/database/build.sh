@@ -34,7 +34,7 @@ mv $TMPFILE $LISTFILE
 
 # =-=-=-=-=-=-=-
 # determine the OS Flavor
-DETECTEDOS=`./packaging/find_os.sh`
+DETECTEDOS=`../../packaging/find_os.sh`
 if [ "$PORTABLE" == "1" ] ; then
   DETECTEDOS="Portable"
 fi
@@ -42,7 +42,7 @@ echo "Detected OS [$DETECTEDOS]"
 
 # =-=-=-=-=-=-=-
 # determine the OS Version
-DETECTEDOSVERSION=`./packaging/find_os_version.sh`
+DETECTEDOSVERSION=`../../packaging/find_os_version.sh`
 echo "Detected OS Version [$DETECTEDOSVERSION]"
 
 # =-=-=-=-=-=-=-
@@ -175,6 +175,10 @@ elif [ "$DETECTEDOS" == "MacOSX" ] ; then  # MacOSX
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS DMGs${text_reset}"
     epmvar="OSX$SERVER_TYPE"
     $EPMCMD $EPMOPTS -f osx irods-database-plugin-${DB_TYPE}  $epmvar=true $LISTFILE
+elif [ "$DETECTEDOS" == "ArchLinux" ] ; then  # ArchLinux
+    echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS TGZs${text_reset}"
+    epmvar="ARCH$SERVER_TYPE"
+    $EPMCMD $EPMOPTS -f portable irods-database-plugin-${DB_TYPE}  $epmvar=true $LISTFILE
 elif [ "$DETECTEDOS" == "Portable" ] ; then  # Portable
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS TGZs${text_reset}"
     epmvar="PORTABLE$SERVER_TYPE"

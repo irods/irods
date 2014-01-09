@@ -256,6 +256,8 @@ rename_generated_packages() {
 	EXTENSION="pkg"
     elif [ "$DETECTEDOS" == "MacOSX" ] ; then
 	EXTENSION="dmg"
+    elif [ "$DETECTEDOS" == "ArchLinux" ] ; then
+	EXTENSION="tar.gz"
     elif [ "$DETECTEDOS" == "Portable" ] ; then
 	EXTENSION="tar.gz"
     fi
@@ -433,6 +435,9 @@ if [ "$1" == "docs" ] ; then
     elif [ "$DETECTEDOS" == "MacOSX" ] ; then  # MacOSX
 	echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS DMGs${text_reset}"
 	$EPMCMD -f osx irods-docs $LISTFILE
+    elif [ "$DETECTEDOS" == "ArchLinux" ] ; then  # ArchLinux
+	echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS TGZs${text_reset}"
+	$EPMCMD -f portable irods-docs $LISTFILE
     elif [ "$DETECTEDOS" == "Portable" ] ; then  # Portable
 	echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS TGZs${text_reset}"
 	$EPMCMD -f portable irods-docs $LISTFILE
@@ -1177,12 +1182,22 @@ elif [ "$DETECTEDOS" == "MacOSX" ] ; then  # MacOSX
     if [ "$RELEASE" == "1" ] ; then
         $EPMCMD $EPMOPTS -f osx irods-icommands $epmvar=true ./packaging/irods-icommands.list
     fi
+elif [ "$DETECTEDOS" == "ArchLinux" ] ; then  # ArchLinux
+    echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS TGZs${text_reset}"
+    epmvar="ARCH$SERVER_TYPE"
+    $EPMCMD $EPMOPTS -f portable irods-$SERVER_TYPE_LOWERCASE $epmvar=true ./packaging/irods.list
+    if [ "$SERVER_TYPE" == "ICAT" ] ; then
+        ICAT=true $EPMCMD $EPMOPTS -f portable irods-dev $epmvar=true ./packaging/irods-dev.list
+    fi
+    if [ "$RELEASE" == "1" ] ; then
+        $EPMCMD $EPMOPTS -f portable irods-icommands $epmvar=true ./packaging/irods-icommands.list
+    fi
 elif [ "$DETECTEDOS" == "Portable" ] ; then  # Portable
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS TGZs${text_reset}"
     epmvar="PORTABLE$SERVER_TYPE"
     $EPMCMD $EPMOPTS -f portable irods-$SERVER_TYPE_LOWERCASE $epmvar=true ./packaging/irods.list
     if [ "$SERVER_TYPE" == "ICAT" ] ; then
-        $EPMCMD $EPMOPTS -f portable irods-dev $epmvar=true ./packaging/irods-dev.list
+        ICAT=true $EPMCMD $EPMOPTS -f portable irods-dev $epmvar=true ./packaging/irods-dev.list
     fi
     if [ "$RELEASE" == "1" ] ; then
         $EPMCMD $EPMOPTS -f portable irods-icommands $epmvar=true ./packaging/irods-icommands.list
