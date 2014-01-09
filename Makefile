@@ -1,6 +1,6 @@
 include VERSION
 
-MANUAL=manual-$(IRODSVERSION).pdf
+MANUAL=irods-manual-$(IRODSVERSION).pdf
 
 MAKEFLAGS += --no-print-directory
 
