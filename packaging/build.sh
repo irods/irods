@@ -237,6 +237,8 @@ rename_generated_packages() {
     fi
     TARGET=$1
 
+    #################
+    # extensions
     cd $BUILDDIR
     SUFFIX=""
     if   [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
@@ -257,6 +259,9 @@ rename_generated_packages() {
     elif [ "$DETECTEDOS" == "Portable" ] ; then
 	EXTENSION="tar.gz"
     fi
+
+    #################
+    # icat and resource server packages
     RENAME_SOURCE="./linux*/irods-*$IRODSVERSION*.$EXTENSION"
     RENAME_SOURCE_DOCS=${RENAME_SOURCE/irods-/irods-docs-}
     RENAME_SOURCE_DEV=${RENAME_SOURCE/irods-/irods-dev-}
@@ -285,8 +290,18 @@ rename_generated_packages() {
     fi
     # coverage build
     if [ "$COVERAGE" == "1" ] ; then
-	RENAME_DESTINATION=${RENAME_DESTINATION/-64bit/-64bit-coverage}
+        RENAME_DESTINATION=${RENAME_DESTINATION/-64bit/-64bit-coverage}
     fi
+
+    #################
+    # database packages
+    DB_SOURCE="./plugins/database/linux*/*database*.$EXTENSION"
+    echo `ls $DB_SOURCE`
+    DB_PACKAGE=`basename $DB_SOURCE`
+    DB_DESTINATION="$IRODSPACKAGEDIR/$DB_PACKAGE"
+    DB_DESTINATION=`echo $DB_DESTINATION | sed -e "s,\\(-[^-]*\\)\{3\}\\.$EXTENSION\$,.$EXTENSION,"`
+
+    #################
     # rename and tell me
     if [ "$TARGET" == "docs" ] ; then
 	echo ""
@@ -306,11 +321,19 @@ rename_generated_packages() {
 	    echo "         to [$RENAME_DESTINATION_DEV]"
 	    mv $RENAME_SOURCE_DEV $RENAME_DESTINATION_DEV
 	fi
-	echo ""
-	echo "renaming    [$RENAME_SOURCE]"
-	echo "         to [$RENAME_DESTINATION]"
-	mv $RENAME_SOURCE $RENAME_DESTINATION
+        # icat or resource
+        echo ""
+        echo "renaming    [$RENAME_SOURCE]"
+        echo "         to [$RENAME_DESTINATION]"
+        mv $RENAME_SOURCE $RENAME_DESTINATION
+        # database
+        echo ""
+        echo "renaming    [$DB_SOURCE]"
+        echo "         to [$DB_DESTINATION]"
+        mv $DB_SOURCE $DB_DESTINATION
     fi
+
+    #################
     # list new result set
     echo ""
     echo "Contents of $IRODSPACKAGEDIR:"
