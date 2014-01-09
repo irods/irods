@@ -450,15 +450,16 @@ fi
 
 ################################################################################
 # housekeeping - update examples - keep them current
-sed -e s,unix,example,g $BUILDDIR/plugins/resources/unixfilesystem/libunixfilesystem.cpp > /tmp/libexamplefilesystem.cpp
+TMPFILE=/tmp/libexamplefilesystem.cpp
+sed -e s,unix,example,g $BUILDDIR/plugins/resources/unixfilesystem/libunixfilesystem.cpp > $TMPFILE
 . $BUILDDIR/packaging/astyleparams
 if [ "`which astyle`" != "" ] ; then
-    astyle $ASTYLE_PARAMETERS /tmp/libexamplefilesystem.cpp
+    astyle $ASTYLE_PARAMETERS $TMPFILE
 else
     echo "Skipping formatting --- Artistic Style (astyle) not available"
 fi
-rsync -c /tmp/libexamplefilesystem.cpp $BUILDDIR/examples/resources/libexamplefilesystem.cpp
-rm /tmp/libexamplefilesystem.cpp
+rsync -c $TMPFILE $BUILDDIR/examples/resources/libexamplefilesystem.cpp
+rm $TMPFILE
 
 ################################################################################
 # use error codes to determine dependencies
