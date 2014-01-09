@@ -354,6 +354,11 @@ if [ "$1" == "clean" ] ; then
     rm -f lib/core/include/irods_resources_home.hpp
     set -e
     echo "${text_green}${text_bold}Done.${text_reset}"
+    
+    cd ../plugins/database
+    ./build.sh clean
+    cd $BUILDDIR
+
     exit 0
 fi
 

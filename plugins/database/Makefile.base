@@ -30,9 +30,6 @@ INC = -I${IRODSDIR}/lib/core/include/ -I${IRODSDIR}/lib/api/include/ -I${IRODSDI
 
 ifeq ($(IRODS_BUILD_COVERAGE), 1)
 GCC += -fprofile-arcs -ftest-coverage -lgcov
-OBJS = $(patsubst %.cpp, %.o, ${SRCS})
-%.o: %.cpp
-	${GCC} ${INC} ${CFLAGS} -D${OS_platform} -fPIC -c -g -o $@ $<
 endif
 
 .PHONY: clean
