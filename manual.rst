@@ -25,7 +25,7 @@
 |
 
 :Author: Renaissance Computing Institute (RENCI)
-:Version: 3.0.1
+:Version: 4.0.0b1
 :Date: |todaysdate|
 
 

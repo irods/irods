@@ -2,14 +2,16 @@
 # EPM Variables
 # =-=-=-=-=-=-=-
 %product iRODS
-%copyright 2005-2013, Regents of the University of California, the University of North Carolina at Chapel Hill, and the Data Intensive Cyberinfrastructure Foundation, All Rights Reserved.
-%vendor Renaissance Computing Institute <info@eirods.org>
+%copyright 2005-2014, Regents of the University of California, the University of North Carolina at Chapel Hill, and the Data Intensive Cyberinfrastructure Foundation, All Rights Reserved.
+%vendor Renaissance Computing Institute <info@irods-consortium.org>
 %license LICENSE
 %readme README
 %description The integrated Rule-Oriented Data System
 %version TEMPLATE_IRODSVERSION TEMPLATE_IRODSVERSIONINT
 
 
+
+%incompat eirods
 
 
 # =-=-=-=-=-=-=-
@@ -100,9 +102,14 @@ $RESOURCE=true
 # =-=-=-=-=-=-=-
 # Install variables
 # =-=-=-=-=-=-=-
-$IRODS_PACKAGENAME=irods
-$IRODS_DOC_DIR=/usr/share/doc/$IRODS_PACKAGENAME
-$IRODS_HOME_DIR=/var/lib/$IRODS_PACKAGENAME
+%if ICAT
+$IRODS_PACKAGENAME=irods-icat
+%else
+$IRODS_PACKAGENAME=irods-resource
+%endif
+
+$IRODS_DOC_DIR=/usr/share/doc/irods
+$IRODS_HOME_DIR=/var/lib/irods
 $OS_IRODS_ACCT=irods
 $IRODS_HOME=$IRODS_HOME_DIR/iRODS
 $DB_NAME=TEMPLATE_DB_NAME
@@ -111,7 +118,7 @@ $DB_NAME=TEMPLATE_DB_NAME
 # iRODS variables
 # =-=-=-=-=-=-=-
 $DB_ADMIN_ROLE=postgres
-$DB_TYPE=TEMPLATE_DB_TYPE
+$DB_TYPE=TEMPLATE_DB_TYPEb
 $DB_HOST=TEMPLATE_DB_HOST
 $DB_PORT=TEMPLATE_DB_PORT
 $DB_USER=$OS_IRODS_ACCT

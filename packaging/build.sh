@@ -204,6 +204,28 @@ echo "Detected OS Version [$DETECTEDOSVERSION]"
 # FUNCTIONS
 ############################################################
 
+# find number of cpus
+detect_number_of_cpus_and_set_makejcmd() {
+    if [ "$DETECTEDOS" == "MacOSX" ] ; then
+        DETECTEDCPUCOUNT=`sysctl -n hw.ncpu`
+    elif [ "$DETECTEDOS" == "Solaris" ] ; then
+        DETECTEDCPUCOUNT=`/usr/sbin/psrinfo -p`
+    else
+        DETECTEDCPUCOUNT=`cat /proc/cpuinfo | grep processor | wc -l | tr -d ' '`
+    fi
+    if [ $DETECTEDCPUCOUNT -lt 2 ] ; then
+        DETECTEDCPUCOUNT=1
+    fi
+    CPUCOUNT=$(( $DETECTEDCPUCOUNT + 3 ))
+    MAKEJCMD="make -j $CPUCOUNT"
+
+    # print out detected CPU information
+    echo "${text_cyan}${text_bold}-------------------------------------"
+    echo "Detected CPUs:    $DETECTEDCPUCOUNT"
+    echo "Compiling with:   $MAKEJCMD"
+    echo "-------------------------------------${text_reset}"
+    sleep 1
+}
 
 # rename generated packages appropriately
 rename_generated_packages() {
@@ -257,9 +279,9 @@ rename_generated_packages() {
     RENAME_DESTINATION_ICOMMANDS=${RENAME_DESTINATION/irods-/irods-icommands-}
     # icat or resource
     if [ "$TARGET" == "icat" ] ; then
-	RENAME_DESTINATION=${RENAME_DESTINATION/-64bit/-64bit-icat-postgres}
-    else
-	RENAME_DESTINATION=${RENAME_DESTINATION/-64bit/-64bit-resource}
+        RENAME_DESTINATION=${RENAME_DESTINATION/irods-/irods-icat-}
+    elif [ "$TARGET" == "resource" ] ; then
+        RENAME_DESTINATION=${RENAME_DESTINATION/irods-/irods-resource-}
     fi
     # coverage build
     if [ "$COVERAGE" == "1" ] ; then
@@ -342,6 +364,9 @@ if [ "$1" == "docs" ] ; then
     echo "${text_green}${text_bold}Building Docs...${text_reset}"
     echo ""
 
+    # get cpu count
+    detect_number_of_cpus_and_set_makejcmd
+
     $MAKEJCMD docs
 
     # get EPM
@@ -354,7 +379,7 @@ if [ "$1" == "docs" ] ; then
     TMPFILE="/tmp/irodsdocslist.tmp"
     sed -e "s,TEMPLATE_IRODSVERSIONINT,$IRODSVERSIONINT," $LISTFILE.template > $TMPFILE
     mv $TMPFILE $LISTFILE
-    sed -e "s,TEMPLATE_IRODSVERSION,$IRODSVERSION," $LISTFILE > $TMPFILE
+    sed -e "s,TEMPLATE_IRODSVERSION,$IRODSVERSION,g" $LISTFILE > $TMPFILE
     mv $TMPFILE $LISTFILE
 
     # package them up
@@ -732,33 +757,10 @@ fi
 # reset to exit on an error
 set -e
 
-################################################################################
 
 # find number of cpus
-if [ "$DETECTEDOS" == "MacOSX" ] ; then
-    DETECTEDCPUCOUNT=`sysctl -n hw.ncpu`
-elif [ "$DETECTEDOS" == "Solaris" ] ; then
-    DETECTEDCPUCOUNT=`/usr/sbin/psrinfo -p`
-else
-    DETECTEDCPUCOUNT=`cat /proc/cpuinfo | grep processor | wc -l | tr -d ' '`
-fi
-if [ $DETECTEDCPUCOUNT -lt 2 ] ; then
-    DETECTEDCPUCOUNT=1
-fi
-CPUCOUNT=$(( $DETECTEDCPUCOUNT + 3 ))
-MAKEJCMD="make -j $CPUCOUNT"
+detect_number_of_cpus_and_set_makejcmd
 
-# print out detected CPU information
-echo "${text_cyan}${text_bold}-------------------------------------"
-echo "Detected CPUs:    $DETECTEDCPUCOUNT"
-echo "Compiling with:   $MAKEJCMD"
-echo "-------------------------------------${text_reset}"
-sleep 1
-
-################################################################################
-
-
-################################################################################
 
 echo "-----------------------------"
 echo "${text_green}${text_bold}Configuring and Building iRODS${text_reset}"
@@ -785,11 +787,13 @@ rm -f /tmp/rodsVersion.hpp.2
 cd $BUILDDIR/iRODS
 if [ $1 == "icat" ] ; then
     SERVER_TYPE="ICAT"
+    SERVER_TYPE_LOWERCASE="icat"
     # otherwise set up variables for resource configuration
     EPMFILE="../packaging/irods.config.icat.epm"
     cp $EPMFILE $TMPCONFIGFILE
 else
     SERVER_TYPE="RESOURCE"
+    SERVER_TYPE_LOWERCASE="resource"
     EPMFILE="../packaging/irods.config.resource.epm"
     cp $EPMFILE $TMPCONFIGFILE
 fi
@@ -942,7 +946,8 @@ if [ "$BUILDIRODS" == "1" ] ; then
     # populate IRODSVERSIONINT and IRODSVERSION in all EPM list files
 
     # irods main package
-    sed -e "s,TEMPLATE_IRODSVERSIONINT,$IRODSVERSIONINT," ./packaging/irods.list > /tmp/irodslist.tmp
+    cd $BUILDDIR
+    sed -e "s,TEMPLATE_IRODSVERSIONINT,$IRODSVERSIONINT," ./packaging/irods.list.template > /tmp/irodslist.tmp
     mv /tmp/irodslist.tmp ./packaging/irods.list
     sed -e "s,TEMPLATE_IRODSVERSION,$IRODSVERSION," ./packaging/irods.list > /tmp/irodslist.tmp
     mv /tmp/irodslist.tmp ./packaging/irods.list
@@ -1096,8 +1101,8 @@ if [ "$DETECTEDOS" == "RedHatCompatible" ] ; then # CentOS and RHEL and Fedora
     else
         epmosversion="NOTCENTOS6"
     fi
-    $EPMCMD $EPMOPTS -f rpm irods $epmvar=true $epmosversion=true ./packaging/irods.list
-    if [ "$1" == "icat" ] ; then
+    $EPMCMD $EPMOPTS -f rpm irods-$SERVER_TYPE_LOWERCASE $epmvar=true $epmosversion=true ./packaging/irods.list
+    if [ "$SERVER_TYPE" == "ICAT" ] ; then
         $EPMCMD $EPMOPTS -f rpm irods-dev $epmvar=true ./packaging/irods-dev.list
     fi
     if [ "$RELEASE" == "1" ] ; then
@@ -1106,8 +1111,8 @@ if [ "$DETECTEDOS" == "RedHatCompatible" ] ; then # CentOS and RHEL and Fedora
 elif [ "$DETECTEDOS" == "SuSE" ] ; then # SuSE
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS RPMs${text_reset}"
     epmvar="SUSERPM$SERVER_TYPE"
-    $EPMCMD $EPMOPTS -f rpm irods $epmvar=true ./packaging/irods.list
-    if [ "$1" == "icat" ] ; then
+    $EPMCMD $EPMOPTS -f rpm irods-$SERVER_TYPE_LOWERCASE $epmvar=true ./packaging/irods.list
+    if [ "$SERVER_TYPE" == "ICAT" ] ; then
         $EPMCMD $EPMOPTS -f rpm irods-dev $epmvar=true ./packaging/irods-dev.list
     fi
     if [ "$RELEASE" == "1" ] ; then
@@ -1116,8 +1121,8 @@ elif [ "$DETECTEDOS" == "SuSE" ] ; then # SuSE
 elif [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then  # Ubuntu
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS DEBs${text_reset}"
     epmvar="DEB$SERVER_TYPE"
-    $EPMCMD $EPMOPTS -a $arch -f deb irods $epmvar=true ./packaging/irods.list
-    if [ "$1" == "icat" ] ; then
+    $EPMCMD $EPMOPTS -a $arch -f deb irods-$SERVER_TYPE_LOWERCASE $epmvar=true ./packaging/irods.list
+    if [ "$SERVER_TYPE" == "ICAT" ] ; then
         $EPMCMD $EPMOPTS -a $arch -f deb irods-dev $epmvar=true ./packaging/irods-dev.list
     fi
     if [ "$RELEASE" == "1" ] ; then
@@ -1126,8 +1131,8 @@ elif [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then  # Ubuntu
 elif [ "$DETECTEDOS" == "Solaris" ] ; then  # Solaris
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS PKGs${text_reset}"
     epmvar="PKG$SERVER_TYPE"
-    $EPMCMD $EPMOPTS -f pkg irods $epmvar=true ./packaging/irods.list
-    if [ "$1" == "icat" ] ; then
+    $EPMCMD $EPMOPTS -f pkg irods-$SERVER_TYPE_LOWERCASE $epmvar=true ./packaging/irods.list
+    if [ "$SERVER_TYPE" == "ICAT" ] ; then
         $EPMCMD $EPMOPTS -f pkg irods-dev $epmvar=true ./packaging/irods-dev.list
     fi
     if [ "$RELEASE" == "1" ] ; then
@@ -1136,8 +1141,8 @@ elif [ "$DETECTEDOS" == "Solaris" ] ; then  # Solaris
 elif [ "$DETECTEDOS" == "MacOSX" ] ; then  # MacOSX
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS DMGs${text_reset}"
     epmvar="OSX$SERVER_TYPE"
-    $EPMCMD $EPMOPTS -f osx irods $epmvar=true ./packaging/irods.list
-    if [ "$1" == "icat" ] ; then
+    $EPMCMD $EPMOPTS -f osx irods-$SERVER_TYPE_LOWERCASE $epmvar=true ./packaging/irods.list
+    if [ "$SERVER_TYPE" == "ICAT" ] ; then
         $EPMCMD $EPMOPTS -f osx irods-dev $epmvar=true ./packaging/irods-dev.list
     fi
     if [ "$RELEASE" == "1" ] ; then
@@ -1146,8 +1151,8 @@ elif [ "$DETECTEDOS" == "MacOSX" ] ; then  # MacOSX
 elif [ "$DETECTEDOS" == "Portable" ] ; then  # Portable
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS TGZs${text_reset}"
     epmvar="PORTABLE$SERVER_TYPE"
-    $EPMCMD $EPMOPTS -f portable irods $epmvar=true ./packaging/irods.list
-    if [ "$1" == "icat" ] ; then
+    $EPMCMD $EPMOPTS -f portable irods-$SERVER_TYPE_LOWERCASE $epmvar=true ./packaging/irods.list
+    if [ "$SERVER_TYPE" == "ICAT" ] ; then
         $EPMCMD $EPMOPTS -f portable irods-dev $epmvar=true ./packaging/irods-dev.list
     fi
     if [ "$RELEASE" == "1" ] ; then

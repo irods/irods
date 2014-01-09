@@ -2,8 +2,8 @@
 # EPM Variables
 # =-=-=-=-=-=-=-
 %product iRODS
-%copyright 2005-2013, Regents of the University of California, the University of North Carolina at Chapel Hill, and the Data Intensive Cyberinfrastructure Foundation, All Rights Reserved.
-%vendor Renaissance Computing Institute <info@eirods.org>
+%copyright 2005-2014, Regents of the University of California, the University of North Carolina at Chapel Hill, and the Data Intensive Cyberinfrastructure Foundation, All Rights Reserved.
+%vendor Renaissance Computing Institute <info@irods-consortium.org>
 %license LICENSE
 %readme README
 %description The integrated Rule-Oriented Data System
@@ -29,5 +29,5 @@ f 644 root root ${IRODS_DOC_DIR}/doxygen ./iRODS/doc/html/*.png
 f 644 root root ${IRODS_DOC_DIR}/doxygen ./iRODS/doc/html/*.js
 
 d 755 root root ${IRODS_DOC_DIR} -
-f 644 root root ${IRODS_DOC_DIR}/manual.pdf ./manual.pdf
+f 644 root root ${IRODS_DOC_DIR}/manual-TEMPLATE_IRODSVERSION.pdf ./manual-TEMPLATE_IRODSVERSION.pdf
 

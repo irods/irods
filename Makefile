@@ -37,9 +37,9 @@ plugins-db : libs external-build irods
 irods : libs external-build
 	@$(MAKE) -C iRODS
 
-docs : $(MANUAL) doxygen
+docs : manual doxygen
 
-$(MANUAL) :
+manual :
 	@rst2pdf manual.rst -o $(MANUAL)
 
 doxygen :
@@ -54,5 +54,4 @@ clean :
 	@$(MAKE) -C iRODS clean
 	@$(MAKE) -C external clean
 	@rm -f $(MANUAL)
-	@rm -f index.html
 
