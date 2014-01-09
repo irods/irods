@@ -5,6 +5,9 @@
 if [ "$1" == "clean" ] ; then
     rm -f server/icat/src/icatCoreTables.sql
     rm -f server/icat/src/icatSysTables.sql
+    rm -f packaging/irods_database_plugin_postgres.list
+    rm -f packaging/setup_database.sh
+
     make clean
     exit 0
 fi
