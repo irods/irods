@@ -1292,7 +1292,7 @@ irods::error sendVersion(
         // =-=-=-=-=-=-=-
         // super secret jargon irods detection
         // sshhhhhhh...
-        myVersion.cookie = 4;
+        myVersion.cookie = 400;
 
     }
 
