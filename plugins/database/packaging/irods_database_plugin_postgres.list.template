@@ -126,22 +126,36 @@ END_PREINSTALL
 # post install
 # =-=-=-=-=-=-=-
 %postinstall << END_POSTINSTALL
+# irods_setup.pl expects this file to exist
+touch /var/lib/irods/.odbc.ini
 echo ""
-echo "This database plugin package expects an existing database"
-echo "user and permission to already have been created.  Also a"
-echo "database must be created by the database user for use as "
-echo "the iCAT catalog.  The setup script which must be run next"
-echo "will prompt for this information."
+echo "======================================================================="
 echo ""
-echo "When ready, please run the following script as the irods user:"
-echo "./packaging/setup_database.sh"
-
+echo "iRODS Postgres Database Plugin installation was successful."
+echo ""
+echo "To configure this plugin, the following prerequisites need to be met:"
+echo " - an existing database user (to be used by the iRODS server)"
+echo " - an existing database (to be used as the iCAT catalog)"
+echo " - permissions for existing user on existing database"
+echo ""
+echo "Please run the following setup script as the irods user:"
+echo "  ./packaging/setup_database.sh"
+echo ""
+echo "======================================================================="
+echo ""
 END_POSTINSTALL
 
 # =-=-=-=-=-=-=-
 # preremove
 # =-=-=-=-=-=-=-
-# N/A
+%preremove << END_PREREMOVE
+DB_NAME=$DB_NAME
+DB_USER=$DB_USER
+echo "     :: Leaving the iRODS database(s) and role in place."
+echo "     :: try:"
+echo "     ::      sudo su - postgres -c 'dropdb $$DB_NAME; dropuser $$DB_USER;'"
+echo ""
+END_PREREMOVE
 
 # =-=-=-=-=-=-=-
 # post remove

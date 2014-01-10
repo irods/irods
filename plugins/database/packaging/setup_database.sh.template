@@ -156,7 +156,9 @@ mv $IRODS_CONFIG_TEMPFILE $IRODS_CONFIG_FILE
 sed -e "/^\$DB_NAME/s/^.*$/\$DB_NAME = '$DATABASENAME';/" $IRODS_CONFIG_FILE > $IRODS_CONFIG_TEMPFILE
 mv $IRODS_CONFIG_TEMPFILE $IRODS_CONFIG_FILE
 
-echo "Running irods_setup.pl..."
+
 cd iRODS
+./irodsctl stop
+echo "Running irods_setup.pl..."
 perl ./scripts/perl/irods_setup.pl $DATABASETYPE $DATABASEHOSTORIP $DATABASEPORT $DATABASEUSER $DATABASEPASSWORD
 

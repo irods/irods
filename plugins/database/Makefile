@@ -1,4 +1,4 @@
-#BASEDIRS = postgres
+BASEDIRS = postgres
            
 
 ######################################################################
@@ -17,7 +17,7 @@ export OBJDIR = .objs
 export IRODSTOPDIR = ../../iRODS
 export SOTOPDIR = .
 
-#SUBS = ${BASEDIRS}
+SUBS = ${BASEDIRS}
 
 ifeq ($(IRODS_BUILD_DEBUG), 0)
 #SUBS += ${HPSSDIRS}

@@ -329,10 +329,12 @@ rename_generated_packages() {
         echo "         to [$RENAME_DESTINATION]"
         mv $RENAME_SOURCE $RENAME_DESTINATION
         # database
-        echo ""
-        echo "renaming    [$DB_SOURCE]"
-        echo "         to [$DB_DESTINATION]"
-        mv $DB_SOURCE $DB_DESTINATION
+        if [ "$BUILDIRODS" == "1" ] ; then
+            echo ""
+            echo "renaming    [$DB_SOURCE]"
+            echo "         to [$DB_DESTINATION]"
+            mv $DB_SOURCE $DB_DESTINATION
+        fi
     fi
 
     #################
@@ -965,11 +967,12 @@ if [ "$BUILDIRODS" == "1" ] ; then
     #        time make -j 5      1m48.611s
     ###########################################
     if [ "$SERVER_TYPE" == "ICAT" ] ; then
+        # build icat package
         $MAKEJCMD -C $BUILDDIR icat-package
-        cd ../plugins/database
-        ./build.sh $2
-        cd $BUILDDIR
+        # build designated database plugin
+        $BUILDDIR/plugins/database/build.sh $2
     elif [ "$SERVER_TYPE" == "RESOURCE" ] ; then
+        # build resource package
         $MAKEJCMD -C $BUILDDIR resource-package
     fi
     if [ "$?" != "0" ] ; then

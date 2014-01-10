@@ -204,7 +204,7 @@ END_PREINSTALL
 # post install
 # =-=-=-=-=-=-=-
 %if ICAT
-%postinstall $IRODS_HOME_DIR/packaging/postinstall.sh $IRODS_HOME_DIR $OS_IRODS_ACCT icat $DB_TYPE $DB_ADMIN_ROLE $DB_NAME $DB_HOST $DB_PORT $DB_USER
+%postinstall $IRODS_HOME_DIR/packaging/postinstall.sh $IRODS_HOME_DIR $OS_IRODS_ACCT icat
 %else
 %postinstall $IRODS_HOME_DIR/packaging/postinstall.sh $IRODS_HOME_DIR $OS_IRODS_ACCT resource
 %endif
@@ -218,7 +218,7 @@ END_PREINSTALL
 # preremove
 # =-=-=-=-=-=-=-
 %if ICAT
-%preremove $IRODS_HOME_DIR/packaging/preremove.sh $$1 $IRODS_HOME_DIR $OS_IRODS_ACCT icat $DB_TYPE $DB_ADMIN_ROLE $DB_NAME $DB_USER
+%preremove $IRODS_HOME_DIR/packaging/preremove.sh $$1 $IRODS_HOME_DIR $OS_IRODS_ACCT icat
 %else
 %preremove $IRODS_HOME_DIR/packaging/preremove.sh $$1 $IRODS_HOME_DIR $OS_IRODS_ACCT resource
 %endif
@@ -292,6 +292,7 @@ f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/post30upgrade.sh
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/postinstall.sh ./packaging/postinstall.sh
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/preremove.sh ./packaging/preremove.sh
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/user_irodsenv.txt ./packaging/user_irodsenv.txt
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/user_icat.txt ./packaging/user_icat.txt
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/user_resource.txt ./packaging/user_resource.txt
 
 %if DEB
@@ -314,7 +315,7 @@ f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/plugins/network/ ./plugins
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/plugins/auth -
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/plugins/auth/ ./plugins/auth/*.so
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/plugins/database -
-f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/plugins/database/ ./plugins/database/*.so
+#f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/plugins/database/ ./plugins/database/*.so
 
 f 644 root root /usr/share/man/man1 ./man/*.gz
 
