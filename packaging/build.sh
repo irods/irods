@@ -297,11 +297,13 @@ rename_generated_packages() {
 
     #################
     # database packages
-    DB_SOURCE="./plugins/database/linux*/*database*.$EXTENSION"
-    echo `ls $DB_SOURCE`
-    DB_PACKAGE=`basename $DB_SOURCE`
-    DB_DESTINATION="$IRODSPACKAGEDIR/$DB_PACKAGE"
-    DB_DESTINATION=`echo $DB_DESTINATION | sed -e "s,\\(-[^-]*\\)\{3\}\\.$EXTENSION\$,.$EXTENSION,"`
+    if [ "$TARGET" == "icat" ] ; then
+        DB_SOURCE="./plugins/database/linux*/*database*.$EXTENSION"
+        echo `ls $DB_SOURCE`
+        DB_PACKAGE=`basename $DB_SOURCE`
+        DB_DESTINATION="$IRODSPACKAGEDIR/$DB_PACKAGE"
+        DB_DESTINATION=`echo $DB_DESTINATION | sed -e "s,\\(-[^-]*\\)\{3\}\\.$EXTENSION\$,.$EXTENSION,"`
+    fi
 
     #################
     # rename and tell me
