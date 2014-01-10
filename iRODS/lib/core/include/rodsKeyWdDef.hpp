@@ -119,6 +119,7 @@
 #define NATIVE_NETCDF_CALL_KW "nativeNetcdfCall"  /* call netcdf natively */
 #define MAX_SUB_FILE_KW "maxSubFile" /* max number of files for tar file bundles */
 #define MAX_BUNDLE_SIZE_KW "maxBunSize" /* max size of a tar bundle in Gbs */
+#define MAX_BUNDLE_SIZE_KW "maxBunSize" /* max size of a tar bundle in Gbs */
 #define NO_STAGING_KW                  "noStaging"
 #define NEW_NETCDF_ARCH_KW                     "newNetcdfArch"
 
