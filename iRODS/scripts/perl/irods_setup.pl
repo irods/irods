@@ -3133,7 +3133,7 @@ sub Postgres_CreateDatabase()
 	else
 	{
 		# iRODS now supports a script to determine the path & lib name of the odbc driver
-		my $psqlOdbcLib = `../packaging/find_psqlodbc.sh`;
+		my $psqlOdbcLib = `../packaging/find_odbc_postgres.sh`;
 		chomp($psqlOdbcLib);
 
 		open( NEWCONFIGFILE, ">$userODBC" );
