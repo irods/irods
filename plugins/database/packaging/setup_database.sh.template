@@ -114,9 +114,7 @@ while [ "$STATUS" != "complete" ] ; do
 
   echo -n "Database password: "
   # get db password, without showing on screen
-  stty -echo
-  read DATABASEPASSWORD
-  stty echo
+  read -s DATABASEPASSWORD
   echo ""
   echo ""
 
