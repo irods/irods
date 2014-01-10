@@ -15,7 +15,7 @@ if [ -f $SETUP_DATABASE_FLAG ] ; then
     # have run this before, read the existing config file
     DATABASEHOSTORIP=`grep "DATABASE_HOST =" $IRODS_CONFIG_FILE | awk -F\' '{print $2}'`
     DATABASEPORT=`grep "DATABASE_PORT =" $IRODS_CONFIG_FILE | awk -F\' '{print $2}'`
-    DATABASENAME=`grep "DATABASE_NAME =" $IRODS_CONFIG_FILE | awk -F\' '{print $2}'`
+    DATABASENAME=`grep "DB_NAME =" $IRODS_CONFIG_FILE | awk -F\' '{print $2}'`
     DATABASEUSER=`grep "DATABASE_USER =" $IRODS_CONFIG_FILE | awk -F\' '{print $2}'`
     STATUS="loop"
 else

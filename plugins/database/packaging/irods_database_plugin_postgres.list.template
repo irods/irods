@@ -149,7 +149,8 @@ END_POSTINSTALL
 # preremove
 # =-=-=-=-=-=-=-
 %preremove << END_PREREMOVE
-DB_NAME=$DB_NAME
+IRODS_HOME=$IRODS_HOME
+DB_NAME=$$( grep "^\$$DB_NAME" $$IRODS_HOME/config/irods.config | awk -F\' '{print $$2}' )
 DB_USER=$DB_USER
 echo "     :: Leaving the iRODS database(s) and role in place."
 echo "     :: try:"
