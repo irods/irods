@@ -329,7 +329,7 @@ rename_generated_packages() {
         echo "         to [$RENAME_DESTINATION]"
         mv $RENAME_SOURCE $RENAME_DESTINATION
         # database
-        if [ "$BUILDIRODS" == "1" ] ; then
+        if [ "$BUILDIRODS" == "1" -a "$TARGET" == "icat" ] ; then
             echo ""
             echo "renaming    [$DB_SOURCE]"
             echo "         to [$DB_DESTINATION]"
@@ -381,11 +381,8 @@ if [ "$1" == "clean" ] ; then
     rm -f lib/core/include/irods_resources_home.hpp
     set -e
     echo "${text_green}${text_bold}Done.${text_reset}"
-    
-    cd ./plugins/database
-    ./build.sh clean
-    cd $BUILDDIR
-
+    # database plugin cleanup
+    ./plugins/database/build.sh clean
     exit 0
 fi
 
