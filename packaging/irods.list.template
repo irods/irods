@@ -353,7 +353,7 @@ f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/perl/irodsprompt.pl ./
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/perl/utils_paths.pl ./iRODS/scripts/perl/utils_paths.pl
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/perl/irodsctl.pl ./iRODS/scripts/perl/irodsctl.pl
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/perl/utils_prompt.pl ./iRODS/scripts/perl/utils_prompt.pl
-#f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/perl/irods_setup.pl ./iRODS/scripts/perl/irods_setup.pl
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/perl/irods_setup.pl ./iRODS/scripts/perl/irods_setup.pl
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/perl/updateRodsLog.pl ./iRODS/scripts/perl/updateRodsLog.pl
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/perl/uninstallPostgres.pl ./iRODS/scripts/perl/uninstallPostgres.pl
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/perl/installPostgres.pl ./iRODS/scripts/perl/installPostgres.pl

@@ -201,7 +201,6 @@ END_POSTREMOVE
 # =-=-=-=-=-=-=-
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/plugins/database/libpostgres.so ./libpostgres.so
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/setup_database.sh ./packaging/setup_database.sh
-f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/perl/irods_setup.pl ./packaging/irods_setup.pl
 
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatDropCoreTables.sql ./src/icatDropCoreTables.sql
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatSysTables.sql ./src/icatSysTables.sql
