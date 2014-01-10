@@ -488,7 +488,7 @@ else
     echo "Skipping formatting --- Artistic Style (astyle) not available"
 fi
 rsync -c $TMPFILE $BUILDDIR/examples/resources/libexamplefilesystem.cpp
-rm $TMPFILE
+rm -f $TMPFILE
 
 ################################################################################
 # use error codes to determine dependencies
