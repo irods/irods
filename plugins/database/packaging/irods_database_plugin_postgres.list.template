@@ -212,4 +212,7 @@ f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatSysInserts
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatPurgeRecycleBin.sql ./src/icatPurgeRecycleBin.sql
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/convertSql.pl ./src/convertSql.pl
 
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_cll ./test_cll
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_genu ./test_genu
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_genq ./test_genq
 
