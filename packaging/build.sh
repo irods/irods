@@ -303,6 +303,10 @@ rename_generated_packages() {
         DB_PACKAGE=`basename $DB_SOURCE`
         DB_DESTINATION="$IRODSPACKAGEDIR/$DB_PACKAGE"
         DB_DESTINATION=`echo $DB_DESTINATION | sed -e "s,\\(-[^-]*\\)\{3\}\\.$EXTENSION\$,.$EXTENSION,"`
+        # add OS-specific suffix
+        if [ "$SUFFIX" != "" ] ; then
+            DB_DESTINATION=${DB_DESTINATION/.$EXTENSION/$SUFFIX.$EXTENSION}
+        fi
     fi
 
     #################
