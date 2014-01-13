@@ -391,15 +391,11 @@ config:	$(CONFIG)
 
 $(svrConfigDir)/server.config: $(svrConfigDir)/server.config.in
 	@echo "Warning, using default server.config file"
-	@touch $(svrConfigDir)/server.config
-	@mv $(svrConfigDir)/server.config $(svrConfigDir)/server.config.sav
 	@cp $(svrConfigDir)/server.config.in $(svrConfigDir)/server.config
 	@chmod 600 $(svrConfigDir)/server.config
 
 $(svrConfigDir)/irodsHost: $(svrConfigDir)/irodsHost.in
 	@echo "Note, making irodsHost file from irodsHost.in"
-	@touch $(svrConfigDir)/irodsHost
-	@mv $(svrConfigDir)/irodsHost $(svrConfigDir)/irodsHost.sav
 	@cp $(svrConfigDir)/irodsHost.in $(svrConfigDir)/irodsHost
 	@chmod 600 $(svrConfigDir)/irodsHost
 
@@ -441,6 +437,8 @@ clean:
 	@rm -f $(SERVER_OBJS) $(SERVER_BINS) $(DB_PLUGIN_OBJ)
 	@rm -f $(TEST_OBJS) $(TEST_BINS)
 	@rm -f $(svrCoreObjDir)/ruleAdmin.o $(serverBinDir)/ruleAdmin
+	@rm -f $(DB_PLUGIN_OBJ_WITH_NO_RE)
+
 
 
 BOOST_LIBS = $(BOOST_DIR)/stage/lib/libboost_system.a \

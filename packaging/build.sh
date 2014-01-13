@@ -376,15 +376,20 @@ if [ "$1" == "clean" ] ; then
     set +e
     echo "Cleaning EPM residuals..."
     cd $BUILDDIR
+    rm -f packaging/irods-dev.list
+    rm -f packaging/irods.list
+    rm -f packaging/irods-icommands.list
     rm -rf linux-2.*
     rm -rf linux-3.*
     rm -rf macosx-10.*
     rm -f server/config/reConfigs/raja1.re
     rm -f server/config/scriptMonPerf.config
-    rm -f lib/core/include/irods_ms_home.hpp
-    rm -f lib/core/include/irods_network_home.hpp
-    rm -f lib/core/include/irods_auth_home.hpp
-    rm -f lib/core/include/irods_resources_home.hpp
+    rm -f iRODS/lib/core/include/rodsVersion.hpp
+    rm -f iRODS/lib/core/include/irods_ms_home.hpp
+    rm -f iRODS/lib/core/include/irods_network_home.hpp
+    rm -f iRODS/lib/core/include/irods_auth_home.hpp
+    rm -f iRODS/lib/core/include/irods_resources_home.hpp
+    rm -f iRODS/server/core/include/irods_database_home.hpp
     set -e
     echo "${text_green}${text_bold}Done.${text_reset}"
     # database plugin cleanup
