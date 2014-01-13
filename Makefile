@@ -50,6 +50,7 @@ epm :
 
 
 clean :
+	@touch iRODS/config/platform.mk iRODS/config/config.mk
 	@$(MAKE) -C plugins clean
 	@$(MAKE) -C iRODS clean
 	@$(MAKE) -C external clean
