@@ -903,11 +903,10 @@ if [ "$BUILDIRODS" == "1" ] ; then
 	    cp $dir/Makefile.in $dir/Makefile
 	fi
     done
-    cd $CWD
-    cp ../plugins/resources/structfile/Makefile.in ../plugins/resources/structfile/Makefile
 
     # =-=-=-=-=-=-=-
     # modify the irods_ms_home.hpp file with the proper path to the binary directory
+    cd $CWD
     detected_irods_home=`./scripts/find_irods_home.sh`
     detected_irods_home=`dirname $detected_irods_home`
     irods_msvc_home="$detected_irods_home/plugins/microservices/"
