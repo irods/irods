@@ -895,23 +895,8 @@ if [ "$BUILDIRODS" == "1" ] ; then
         mv /tmp/irods-platform.mk ./config/platform.mk
     fi
 
-    # update resources Makefiles to find system shared libraries
-    # First copy all of them just to be generic - harry
-    CWD=`pwd`
-    cd ../plugins/resources
-    filelist=`ls`
-    for dir in $filelist
-    do
-	if [ -d $dir -a -f $dir/Makefile.in ]
-	then
-	    echo "Copying $dir/Makefile.in $dir/Makefile"
-	    cp $dir/Makefile.in $dir/Makefile
-	fi
-    done
-
     # =-=-=-=-=-=-=-
     # modify the irods_ms_home.hpp file with the proper path to the binary directory
-    cd $CWD
     detected_irods_home=`./scripts/find_irods_home.sh`
     detected_irods_home=`dirname $detected_irods_home`
     irods_msvc_home="$detected_irods_home/plugins/microservices/"
