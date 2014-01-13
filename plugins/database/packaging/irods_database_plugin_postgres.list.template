@@ -10,6 +10,7 @@
 %version TEMPLATE_PLUGINVERSION TEMPLATE_PLUGINVERSIONINT
 
 
+%requires irods-icat
 
 
 # =-=-=-=-=-=-=-
