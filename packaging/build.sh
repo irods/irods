@@ -904,14 +904,7 @@ if [ "$BUILDIRODS" == "1" ] ; then
 	fi
     done
     cd $CWD
-    # libz
-    found_so=`../packaging/find_so.sh libz.so`
-    sed -e s,SYSTEM_LIBZ_SO,$found_so, ../plugins/resources/structfile/Makefile.in > /tmp/irods_p_r_Makefile
-    mv /tmp/irods_p_r_Makefile ../plugins/resources/structfile/Makefile
-    # bzip2
-    found_so=`../packaging/find_so.sh libbz2.so`
-    sed -e s,SYSTEM_LIBBZ2_SO,$found_so, ../plugins/resources/structfile/Makefile > /tmp/irods_p_r_Makefile
-    mv /tmp/irods_p_r_Makefile ../plugins/resources/structfile/Makefile
+    cp ../plugins/resources/structfile/Makefile.in ../plugins/resources/structfile/Makefile
 
     # =-=-=-=-=-=-=-
     # modify the irods_ms_home.hpp file with the proper path to the binary directory
