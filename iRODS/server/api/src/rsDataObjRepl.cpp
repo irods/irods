@@ -759,6 +759,7 @@ dataObjOpenForRepl(
     destL1descInx = allocL1desc();
 
     if ( destL1descInx < 0 ) {
+        free( srcDataObjInfo );
         return destL1descInx;
     }
 
@@ -781,6 +782,8 @@ dataObjOpenForRepl(
         if ( inpDestDataObjInfo == NULL || inpDestDataObjInfo->dataId <= 0 ) {
             rodsLog( LOG_ERROR, "dataObjOpenForRepl: dataId of %s copy to be updated not defined",
                      srcDataObjInfo->objPath );
+            free( myDestDataObjInfo );
+            free( srcDataObjInfo );
             return ( SYS_UPDATE_REPL_INFO_ERR );
         }
         /* inherit the replStatus of the src */

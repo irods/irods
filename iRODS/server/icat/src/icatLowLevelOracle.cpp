@@ -1022,6 +1022,7 @@ cllGetRowCount( icatSessionStruct *icss, int statementNumber ) {
     }
     else {   // JMC - catch failure
         rodsLog( LOG_ERROR, "cllGetRowCount :: OCIParamGet failed." );
+        free( pUb4 );
         return CAT_OCI_ERROR;
     }
     rowCount = *pUb4;

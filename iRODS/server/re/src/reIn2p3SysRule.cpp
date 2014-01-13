@@ -548,7 +548,7 @@ int msiServerMonPerf( msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei ) {
     const char *delim = " \n";
     char valinit[MAX_NAME_LEN] = "";
     char val[MAX_NAME_LEN] = ""; /* val => arguments for the script */
-    int check, i, indx, j, looptime, maxtime, nresc, nservers, rc, thrCount, threadsNotfinished;
+    int check, i, indx, j, looptime, maxtime, nresc, nservers, thrCount, threadsNotfinished;
     const char *probtimeDef = "10"; /* default value used by the monitoring script for the amount
                                        of time for this measurement (in s) */
     rsComm_t *rsComm;
@@ -676,8 +676,7 @@ int msiServerMonPerf( msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei ) {
             for ( i = 0; i < thrCount; i++ ) {
                 if ( !threadIsAlive[i] ) {
 #ifndef windows_platform
-                    rc = pthread_cancel( threads[i] );
-#endif
+                    int rc = pthread_cancel( threads[i] );
                     if ( rc == 0 ) {
                         char noanswer[MAXSTR] = MON_OUTPUT_NO_ANSWER;
                         threadIsAlive[i] = 1;
@@ -686,6 +685,7 @@ int msiServerMonPerf( msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei ) {
                                         noanswer,
                                         &( thrInput[i].rei ) );
                     }
+#endif
                 }
             }
         }

@@ -93,10 +93,10 @@ Cache *restoreCache( unsigned char *buf ) {
     unsigned char *pointersMapped;
     size_t dataSize;
     unsigned int version, version2;
-    int success = 0;
-    do {
+    while ( true )
+    {
         if ( lockMutex( &mutex ) != 0 ) {
-            break;
+            return NULL;
         }
         version = cache->version;
         unlockMutex( &mutex );
@@ -120,9 +120,9 @@ Cache *restoreCache( unsigned char *buf ) {
         }
         memcpy( pointersCopy, pointersMapped + ( buf - bufMapped ), pointersSize );
         if ( lockMutex( &mutex ) != 0 ) {
-            free( bufCopy );
             free( pointersCopy );
-            break;
+            free( bufCopy );
+            return NULL;
         }
         version2 = cache->version;
         unlockMutex( &mutex );
@@ -130,18 +130,13 @@ Cache *restoreCache( unsigned char *buf ) {
             free( bufCopy );
             free( pointersCopy );
             sleep( 1 );
+            continue;
         }
         else {
-            success = 1;
+          break;
         }
     }
-    while ( !success );
-
-    if ( !success ) {
-        return NULL;
-    }
     pointers = pointersCopy;
-
     /*    bufCopy = (unsigned char *)malloc(cache->dataSize);
 
         if(bufCopy == NULL) {
