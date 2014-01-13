@@ -21,7 +21,7 @@ main( int argc, char **argv ) {
     rodsPathInp_t rodsPathInp;
 
 
-    optStr = "hD:N:KR:S:s"; // JMC - backport 4528, 4658, 4771
+    optStr = "hD:N:KR:"; // JMC - backport 4528, 4658, 4771
 
     status = parseCmdLineOpt( argc, argv, optStr, 0, &myRodsArgs );
     if ( status < 0 ) {
@@ -85,14 +85,13 @@ main( int argc, char **argv ) {
 void
 usage() {
     char *msgs[] = {
-        "Usage : iphybun [-hK] [-D dataType] [-S srcResource] [-R resource] [-s maxSize_in_GB] [-N numOfSubFiles] collection ... ",
+        "Usage : iphybun [-hK] -R resource collection ... ",
         "iphybun allows system admin to physically bundle files in a collection into",
         "a number of tar files to make it more efficient to store these files on tape.",
         "The tar files are placed into the /myZone/bundle/.... collection with file",
         "names - collection.aRandomNumber. A new tar file will be created whenever",
         "the number of subfiles exceeds 5120 (default value or the value given by",
-        "the -N option) or the total size of the subfiles exceeds 4 GBytes (default value or the value given by",
-        "the -s option).",
+        "the -N option) or the total size of the subfiles exceeds 4 GBytes.",
         "A replica is registered for each bundled sub-files with",
         "a fictitious resource - 'bundleResc' and a physical file path pointing to",
         "the logical path of the tar bundle file. Whenever this copy of the subfile",
@@ -118,15 +117,11 @@ usage() {
         "     overhead for operations like retrieving a single file within a tar file",
         "     (stage, untar and register in iRODS lots of files).",
         " -R  resource - The resource where the bundle file is located",
-        " -S  srcResource - Only files in this resource will be bundled",
         " -K  compute and register checksum value for the bundled subfiles and the",
         "     bundle file.",
-        " -s  maxSize_in_GB - maximum size for the tar bundle file. This is given ",
-        "     in GB. If the option is not given, the default value will be 4 GBs.",
         " -h  this help",
         ""
     };
-
     int i;
     for ( i = 0;; i++ ) {
         if ( strlen( msgs[i] ) == 0 ) {

@@ -132,9 +132,6 @@ int
 _rsPhyBundleColl( rsComm_t*                 rsComm,
                   structFileExtAndRegInp_t* phyBundleCollInp,
                   rescGrpInfo_t*            rescGrpInfo ) {
-    char *srcRescName;
-
-    srcRescName = getValByKey (&phyBundleCollInp->condInput, RESC_NAME_KW);
     rescInfo_t* myRescInfo = rescGrpInfo->rescInfo;
     char*       myRescName = myRescInfo->rescName;
 
@@ -142,10 +139,6 @@ _rsPhyBundleColl( rsComm_t*                 rsComm,
     bzero( &collInp, sizeof( collInp ) );
     rstrcpy( collInp.collName, phyBundleCollInp->collection, MAX_NAME_LEN );
     collInp.flags = RECUR_QUERY_FG | VERY_LONG_METADATA_FG | NO_TRIM_REPL_FG;
-    if (srcRescName != NULL) {
-        collInp.flags |= INCLUDE_CONDINPUT_IN_QUERY;
-        addKeyVal (&collInp.condInput, RESC_NAME_KW, srcRescName);
-    }
 
     int handleInx = rsOpenCollection( rsComm, &collInp );
 
@@ -187,14 +180,12 @@ _rsPhyBundleColl( rsComm_t*                 rsComm,
     }
     // =-=-=-=-=-=-=-
     // JMC - backport 4771
-    int maxSubFileCnt = MAX_SUB_FILE_CNT;
+    int maxSubFileCnt = -1; // JMC - backport 4528, 4771
     if ( getValByKey( &phyBundleCollInp->condInput, MAX_SUB_FILE_KW ) != NULL ) {
         maxSubFileCnt = atoi( getValByKey( &phyBundleCollInp->condInput, MAX_SUB_FILE_KW ) );
     }
-
-    int maxBunSize = MAX_BUNDLE_SIZE * OneGig;
-    if (getValByKey (&phyBundleCollInp->condInput, MAX_BUNDLE_SIZE_KW) != NULL) {
-           maxBunSize = atoi(getValByKey (&phyBundleCollInp->condInput, MAX_BUNDLE_SIZE_KW)) * OneGig;
+    else {
+        maxSubFileCnt = MAX_SUB_FILE_CNT;
     }
 
     // =-=-=-=-=-=-=-
@@ -225,7 +216,8 @@ _rsPhyBundleColl( rsComm_t*                 rsComm,
                       || strcmp( curSubFileCond.dataName, collEnt->dataName ) != 0 ) {
                 /* a new file, need to handle the old one */
                 if ( bunReplCacheHeader.numSubFiles >= maxSubFileCnt || // JMC - backport 4771
-                        bunReplCacheHeader.totSubFileSize + collEnt->dataSize > maxBunSize) {
+                        bunReplCacheHeader.totSubFileSize + collEnt->dataSize >
+                        MAX_BUNDLE_SIZE * OneGig ) {
                     /* bundle is full */
                     status = bundleAndRegSubFiles( rsComm, l1descInx,
                                                    phyBunDir, phyBundleCollInp->collection,
@@ -322,8 +314,6 @@ _rsPhyBundleColl( rsComm_t*                 rsComm,
                  "_rsPhyBundleColl:bunAndRegSubFiles err for %s,stat=%d",
                  phyBundleCollInp->collection, status );
     }
-    clearKeyVal (&collInp.condInput);
-    rsCloseCollection (rsComm, &handleInx);
     if ( status >= 0 && savedStatus < 0 ) {
         return savedStatus;
     }
