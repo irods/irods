@@ -1,5 +1,4 @@
 include ../iRODS/config/external_versions.txt
-include ../iRODS/config/config.mk
 
 MAKEFLAGS += --no-print-directory
 
@@ -84,8 +83,9 @@ $(BOOSTVERSIONMAKE) : $(BOOSTVERSIONARCHIVE)
 		./bootstrap.sh --with-libraries=filesystem,system,thread,regex
 
 boost : $(BOOSTVERSIONMAKE)
-	@cd $(BOOSTVERSION) ; \
-		./bjam link=static threading=multi cxxflags="-fPIC -DBOOST_SYSTEM_NO_DEPRECATED" -j$(CPU_COUNT)
+	@CPU_COUNT=`../packaging/get_cpu_count.sh` ; \
+		cd $(BOOSTVERSION) ; \
+		./bjam link=static threading=multi cxxflags="-fPIC -DBOOST_SYSTEM_NO_DEPRECATED" -j$$CPU_COUNT
 
 $(EPMVERSIONARCHIVE) :
 	@wget ftp://ftp.renci.org/pub/irods/build/$(EPMVERSIONARCHIVE) 2>&1

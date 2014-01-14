@@ -43,7 +43,7 @@ manual :
 	@rst2pdf manual.rst -o $(MANUAL)
 
 doxygen :
-	@$(MAKE) -C iRODS doc
+#	@$(MAKE) -C iRODS doc
 
 epm :
 	@$(MAKE) -C external epm

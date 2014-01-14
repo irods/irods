@@ -108,7 +108,7 @@ class Test_Auth_Suite(unittest.TestCase, ResourceBase):
         os.system("echo \"irodsCwd '/tempZone/home/%s'\" >> %s" % (authTestUser, clientEnvFile))
 
         # server reboot to pick up new irodsEnv settings
-        os.system("/var/lib/irods/iRODS/irodsctl restart &> /dev/null")
+        os.system("/var/lib/irods/iRODS/irodsctl restart")
 
         # do the reauth
         assertiCmd(s.adminsession,"iinit %s" % authTestPass) # reinitialize
@@ -170,7 +170,7 @@ class Test_Auth_Suite(unittest.TestCase, ResourceBase):
 
 
         # server reboot to pick up new irodsEnv and server settings
-        os.system("/var/lib/irods/iRODS/irodsctl restart &> /dev/null")
+        os.system("/var/lib/irods/iRODS/irodsctl restart")
 
         # do the reauth
         assertiCmd(s.adminsession,"iinit %s" % authTestPass) # reinitialize
