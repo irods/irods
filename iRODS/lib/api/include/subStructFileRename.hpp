@@ -22,7 +22,7 @@ typedef struct SubStructFileRenameInp {
     char resc_hier[ MAX_NAME_LEN ];
 } subStructFileRenameInp_t;
 
-#define SubStructFileRenameInp_PI "struct SubFile_PI; str newSubFilePath[MAX_NAME_LEN];"
+#define SubStructFileRenameInp_PI "struct SubFile_PI; str newSubFilePath[MAX_NAME_LEN]; str resc_hier[MAX_NAME_LEN];"
 #if defined(RODS_SERVER)
 #define RS_SUB_STRUCT_FILE_RENAME rsSubStructFileRename
 /* prototype for the server handler */
