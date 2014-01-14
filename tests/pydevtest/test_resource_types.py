@@ -1325,7 +1325,7 @@ class Test_Replication_to_two_Compound_Resources(unittest.TestCase, ResourceSuit
         myfile.close()
 
         # restart the server to reread the new core.re
-        os.system("/var/lib/irods/iRODS/irodsctl restart &> /dev/null")
+        os.system("/var/lib/irods/iRODS/irodsctl restart")
 
         # manually update the replicas in archive vaults
         output = getiCmdOutput(s.adminsession,"ils -L "+filename)
