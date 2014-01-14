@@ -1,3 +1,4 @@
+include ../iRODS/config/external_versions.txt
 include ../iRODS/config/config.mk
 
 MAKEFLAGS += --no-print-directory

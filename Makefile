@@ -37,7 +37,7 @@ plugins-db : libs external-build irods
 irods : libs external-build
 	@$(MAKE) -C iRODS
 
-docs : manual doxygen
+docs : epm manual doxygen
 
 manual :
 	@rst2pdf manual.rst -o $(MANUAL)
