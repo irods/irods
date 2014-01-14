@@ -382,8 +382,11 @@ if [ "$1" == "clean" ] ; then
     rm -rf linux-2.*
     rm -rf linux-3.*
     rm -rf macosx-10.*
-    rm -f server/config/reConfigs/raja1.re
-    rm -f server/config/scriptMonPerf.config
+    rm -f iRODS/server/config/scriptMonPerf.config
+    rm -f iRODS/server/config/server.config
+    rm -f iRODS/config/config.mk
+    rm -f iRODS/config/irods.config
+    rm -f iRODS/config/platform.mk
     rm -f iRODS/lib/core/include/rodsVersion.hpp
     rm -f iRODS/lib/core/include/irods_ms_home.hpp
     rm -f iRODS/lib/core/include/irods_network_home.hpp
