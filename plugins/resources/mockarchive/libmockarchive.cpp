@@ -152,6 +152,37 @@ irods::error unix_check_params_and_path(
 
 } // unix_check_params_and_path
 
+// =-=-=-=-=-=-=-
+//@brief Recursively make all of the dirs in the path
+irods::error mock_archive_mkdir_r(
+    rsComm_t*                      _comm,
+    const std::string&             _results,
+    const std::string& path,
+    mode_t mode ) {
+    irods::error result = SUCCESS();
+    std::string subdir;
+    std::size_t pos = 0;
+    bool done = false;
+    while ( !done && result.ok() ) {
+        pos = path.find_first_of( '/', pos + 1 );
+        if ( pos > 0 ) {
+            subdir = path.substr( 0, pos );
+            int status = mkdir( subdir.c_str(), mode );
+
+            // =-=-=-=-=-=-=-
+            // handle error cases
+            result = ASSERT_ERROR( status >= 0 || errno == EEXIST, UNIX_FILE_RENAME_ERR - errno, "mkdir error for \"%s\", errno = \"%s\", status = %d.",
+                                   subdir.c_str(), strerror( errno ), status );
+        }
+        if ( pos == std::string::npos ) {
+            done = true;
+        }
+    }
+
+    return result;
+
+} // mock_archive_mkdir_r
+
 extern "C" {
     // =-=-=-=-=-=-=-
     // 3. Define operations which will be called by the file*
@@ -205,9 +236,56 @@ extern "C" {
     } // mock_archive_mkdir_plugin
 
 
+    // =-=-=-=-=-=-=-
+    // interface for POSIX readdir
+    irods::error mock_archive_rename_plugin(
+        irods::resource_plugin_context& _ctx,
+        const char*                     _new_file_name ) {
+        irods::error result = SUCCESS();
 
+        // =-=-=-=-=-=-=-
+        // Check the operation parameters and update the physical path
+        irods::error ret = unix_check_params_and_path< irods::data_object >( _ctx );
+        if ( ( result = ASSERT_PASS( ret, "Invalid parameters or physical path." ) ).ok() ) {
 
+            // =-=-=-=-=-=-=-
+            // manufacture a new path from the new file name
+            std::string new_full_path;
+            ret = mock_archive_generate_full_path( _ctx.prop_map(), _new_file_name, new_full_path );
+            if ( ( result = ASSERT_PASS( ret, "Unable to generate full path for destination file: \"%s\".",
+                                         _new_file_name ) ).ok() ) {
 
+                // =-=-=-=-=-=-=-
+                // cast down the hierarchy to the desired object
+                irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
+
+                // =-=-=-=-=-=-=-
+                // make the directories in the path to the new file
+                std::string new_path = new_full_path;
+                std::size_t last_slash = new_path.find_last_of( '/' );
+                new_path.erase( last_slash );
+                ret = mock_archive_mkdir_r( _ctx.comm(), "", new_path.c_str(), 0750 );
+                if ( ( result = ASSERT_PASS( ret, "Mkdir error for \"%s\".", new_path.c_str() ) ).ok() ) {
+
+                }
+
+                // =-=-=-=-=-=-=-
+                // make the call to rename
+                int status = rename( fco->physical_path().c_str(), new_full_path.c_str() );
+
+                // =-=-=-=-=-=-=-
+                // handle error cases
+                int err_status = UNIX_FILE_RENAME_ERR - errno;
+                if ( ( result = ASSERT_ERROR( status >= 0, err_status, "Rename error for \"%s\" to \"%s\", errno = \"%s\", status = %d.",
+                                              fco->physical_path().c_str(), new_full_path.c_str(), strerror( errno ), err_status ) ).ok() ) {
+                    result.code( status );
+                }
+            }
+        }
+
+        return result;
+
+    } // mock_archive_rename_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Unlink
@@ -650,6 +728,7 @@ extern "C" {
         resc->add_operation( irods::RESOURCE_OP_RESOLVE_RESC_HIER, "mock_archive_redirect_plugin" );
         resc->add_operation( irods::RESOURCE_OP_REBALANCE,         "mock_archive_rebalance" );
         resc->add_operation( irods::RESOURCE_OP_MKDIR,             "mock_archive_mkdir_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_RENAME,            "mock_archive_rename_plugin" );
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code

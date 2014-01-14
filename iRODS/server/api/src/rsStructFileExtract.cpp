@@ -14,7 +14,7 @@
 #include "irods_structured_object.hpp"
 #include "irods_resource_backport.hpp"
 #include "irods_resource_redirect.hpp"
-
+#include "irods_stacktrace.hpp"
 
 int
 rsStructFileExtract( rsComm_t *rsComm, structFileOprInp_t *structFileOprInp ) {
@@ -186,7 +186,7 @@ procCacheDir( rsComm_t *rsComm, char *cacheDir, char *resource, int oprType, cha
 
     }
 
-    mkFileDirR( rsComm, "/", cacheDir, resource, getDefDirMode() );
+    mkFileDirR( rsComm, "/", cacheDir, hier, getDefDirMode() );
 
     return 0;
 }
