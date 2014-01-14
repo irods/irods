@@ -14,7 +14,7 @@
 |
 |
 
-.. figure:: ./iRODS/images/E-iRODS-Logo-Tagline.jpg
+.. figure:: ./iRODS/images/iRODS-Logo.png
    :width: 6 in
    :align: center
 
