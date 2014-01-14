@@ -1,4 +1,3 @@
-*
 !.gitignore
 packaging/irods_database_plugin_postgres.list
 packaging/setup_database.sh
