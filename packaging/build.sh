@@ -384,9 +384,7 @@ if [ "$1" == "clean" ] ; then
     rm -rf macosx-10.*
     rm -f iRODS/server/config/scriptMonPerf.config
     rm -f iRODS/server/config/server.config
-    rm -f iRODS/config/config.mk
     rm -f iRODS/config/irods.config
-    rm -f iRODS/config/platform.mk
     rm -f iRODS/lib/core/include/rodsVersion.hpp
     rm -f iRODS/lib/core/include/irods_ms_home.hpp
     rm -f iRODS/lib/core/include/irods_network_home.hpp
@@ -397,6 +395,8 @@ if [ "$1" == "clean" ] ; then
     echo "${text_green}${text_bold}Done.${text_reset}"
     # database plugin cleanup
     ./plugins/database/build.sh clean
+    rm -f iRODS/config/platform.mk
+    rm -f iRODS/config/config.mk
     exit 0
 fi
 
