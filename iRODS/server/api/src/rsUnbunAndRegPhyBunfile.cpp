@@ -340,6 +340,7 @@ int unbunPhyBunFile( rsComm_t *rsComm, char *objPath,
     rstrcpy( structFileOprInp.specColl->resource, rescInfo->rescName, NAME_LEN );
     rstrcpy( structFileOprInp.specColl->phyPath, bunFilePath, MAX_NAME_LEN );
     rstrcpy( structFileOprInp.addr.hostAddr, location.c_str(), NAME_LEN );
+    rstrcpy( structFileOprInp.specColl->rescHier, resc_hier, MAX_NAME_LEN );
 
     /* set the cacheDir */
     rstrcpy( structFileOprInp.specColl->cacheDir, phyBunDir, MAX_NAME_LEN );
