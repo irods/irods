@@ -206,16 +206,7 @@ echo "Detected OS Version [$DETECTEDOSVERSION]"
 
 # find number of cpus
 detect_number_of_cpus_and_set_makejcmd() {
-    if [ "$DETECTEDOS" == "MacOSX" ] ; then
-        DETECTEDCPUCOUNT=`sysctl -n hw.ncpu`
-    elif [ "$DETECTEDOS" == "Solaris" ] ; then
-        DETECTEDCPUCOUNT=`/usr/sbin/psrinfo -p`
-    else
-        DETECTEDCPUCOUNT=`cat /proc/cpuinfo | grep processor | wc -l | tr -d ' '`
-    fi
-    if [ $DETECTEDCPUCOUNT -lt 2 ] ; then
-        DETECTEDCPUCOUNT=1
-    fi
+    DETECTEDCPUCOUNT=`$BUILDDIR/packaging/get_cpu_count.sh`
     CPUCOUNT=$(( $DETECTEDCPUCOUNT + 3 ))
     MAKEJCMD="make -j $CPUCOUNT"
 
