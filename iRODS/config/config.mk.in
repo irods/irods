@@ -69,7 +69,7 @@ IRODS_BUILD_DIR=
 CPU_COUNT=
 
 #external version numbers and associated names
-include external_versions.txt
+include $(IRODS_BUILD_DIR)/iRODS/config/external_versions.txt
 
 BOOST_DIR=$(IRODS_BUILD_DIR)/external/$(BOOSTVERSION)
 LIBARCHIVE_DIR=$(IRODS_BUILD_DIR)/external/$(LIBARCHIVEVERSION)
