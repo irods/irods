@@ -28,7 +28,7 @@ int rsFileSyncToArch(
     int remoteFlag;
     int status;
 
-    sync_out = ( fileSyncOut_t* )malloc( sizeof( fileSyncOut_t ) );
+    ( *sync_out ) = ( fileSyncOut_t* )malloc( sizeof( fileSyncOut_t ) );
     bzero( ( *sync_out ), sizeof( fileSyncOut_t ) );
 
 //    remoteFlag = resolveHost (&fileSyncToArchInp->addr, &rodsServerHost);
