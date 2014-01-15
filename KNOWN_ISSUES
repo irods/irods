@@ -34,13 +34,3 @@ Mar  6 09:47:34 pid:21588 ERROR: executeRuleAction Failed for msiAdmInsertRulesF
 CAT_SQL_ERR
 
 
-
-
-
-
-Ticket Item:  [#1807] Fix OSAuth testing in CI
---------------------------------------------------------------------------------------
-
-Test for OSAuth yielded a rxAuthResponse error.
-
-iexit needed to be called before a new iinit is issued with a new environment.
