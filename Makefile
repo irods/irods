@@ -40,7 +40,9 @@ irods : libs external-build
 docs : epm manual doxygen
 
 manual :
-	@rst2pdf manual.rst -o $(MANUAL)
+	@sed -e 's,TEMPLATE_IRODSVERSION,$(IRODSVERSION),' manual.rst > manual.tmp
+	@rst2pdf manual.tmp -o $(MANUAL)
+	@rm -f manual.tmp
 
 doxygen :
 #	@$(MAKE) -C iRODS doc

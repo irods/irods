@@ -1,36 +1,17 @@
-This is the second release of The integrated Rule-Oriented Data System (iRODS).
+This is the fourth major release of The integrated Rule-Oriented Data System (iRODS).
 
 iRODS is developed under the auspices of the iRODS Consortium.  This release was prepared by the Renaissance Computing Institute (RENCI) and released under the New BSD (BSD-3) License.
 
 Development of this release has focused on the following features and efforts:
 
-- API Compatibility with Community iRODS for purposes of Federation
-- Met all US Export Control requirements for distribution
-- Introduced pluggable interface for networks
+- Introduced pluggable interface for databases
 
-  - TCP
-  - SSL
-- Introduced pluggable interface for authentication
-
-  - Native iRODS password
-  - OSAuth
-  - PAM
-  - LDAP (via PAM)
-- Additional coordinating resource plugins
-
-  - Compound
-  - Replication
-- Migration support for composable resources
-
-  - Rebalance mechanism
-  - Adding/removing child resources with existing data
-  - itrim from child resources of replication resources
-- Tree view for visualizing resource hierarchies
+  - PostgreSQL
 - Full python-based testing framework
 - Certified against full Jargon test suite
 - Continuous integration testing via hudson
 - Continuous static analysis via cppcheck
-- Increased code coverage from ~50% to over 56%
+- Increased code coverage from ~55% to over 56%
 - Continuously built and tested across 3 major linux distributions
 - Packaged for 3 major linux distributions
 - Support for package upgrade via package manager

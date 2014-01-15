@@ -23,9 +23,11 @@
 |
 |
 |
+|
+|
 
 :Author: Renaissance Computing Institute (RENCI)
-:Version: 4.0.0b1
+:Version: TEMPLATE_IRODSVERSION
 :Date: |todaysdate|
 
 
@@ -45,6 +47,7 @@
 .. 
 ..    $ easy_install docutils==0.7.0
 ..    $ easy_install roman
+..    $ easy_install reportlab
 ..    $ easy_install rst2pdf
 .. 
 ..   Some links for learning in place:
@@ -65,7 +68,7 @@
 .. 
 ..   Generate HTML::
 .. 
-..    $ rst2html.py -stg manual.rst > manual.html
+..    $ rst2html -stg manual.rst > manual.html
 .. 
 ..   Generate PDF::
 .. 
@@ -87,11 +90,11 @@ License
 Overview
 --------
 
-This manual attempts to provide standalone documentation for iRODS (http://irods.org) as packaged by the Renaissance Computing Institute (RENCI).
+This manual attempts to provide standalone documentation for iRODS (http://eirods.org) as packaged by the Renaissance Computing Institute (RENCI).
 
-    http://irods.org
+    http://eirods.org
 
-Additional documentation is available on the iRODS wiki (http://irods.org), the iRODS Doxygen site (http://irods.org/doxygen), and in the two books published by the iRODS team:
+Additional documentation is available on the iRODS wiki (http://irods.org), the iRODS Doxygen site (http://irods.org/doxygen), and in the two books previously published by the iRODS team:
 
     (2010) iRODS Primer: integrated Rule-Oriented Data System (Synthesis Lectures on Information Concepts, Retrieval, and Services)
     http://www.amazon.com/dp/1608453332
@@ -113,36 +116,81 @@ RPM and DEB formats are available for both iCAT-enabled servers and resource-onl
 
 More combinations will be made available as our testing matrix continues to mature and increase in scope.
 
-The latest files can be downloaded from http://irods.org/download.
+The latest files can be downloaded from http://eirods.org/download.
 
 Open Source
 -----------
 
-Repositories, ticket trackers, and source code are available from the developers area of the iRODS website.
+Repositories, issue trackers, and source code are available on GitHub.
 
-  http://irods.org/developers
-  
+  http://github.com/irods
+
+  http://github.com/irods/irods
 
 ------------
 Installation
 ------------
 
-The available packages declare the dependencies necessary to run iRODS and if satisfied, they install a service account and group named 'irods', the iRODS binaries, microservice documentation, and this manual.
+iRODS is provided in binary form in a collection of interdependent packages.  An iRODS server is provided by a single package, but needs to be configured before it can be started.  There are two flavors of server, iCAT and Resource.  An iCAT server provides the metadata catalog for a Zone.  A resource server connects to an iCAT server and belongs to the iCAT's Zone.
 
-Installation of the Postgres iCAT DEB::
+iCAT Server
+-----------
 
- $ (sudo) dpkg -i irods-3.0.1-64bit-icat-postgres.deb
+The irods-icat package installs a service account and group named 'irods' and the iRODS binaries.
+
+The additional required database plugin installs the dependencies for database connections and a short setup script that will prompt for database connection information and configure the server.
+
+Installation of the iCAT DEB and Postgres plugin DEB::
+
+ $ (sudo) dpkg -i irods-icat-TEMPLATE_IRODSVERSION-64bit.deb irods-database-plugin-postgres-1.0.deb
  $ (sudo) apt-get -f install
+ $ (sudo) su - irods
+
+And then as the irods user::
+
+ irods@hostname:~/ $ ./packaging/setup_database.sh
+
+The `./packaging/setup_database.sh` script will ask for the following five pieces of information before starting the iRODS server:
+
+1) Database Server's Hostname or IP
+2) Database Port
+3) Database Name
+4) Database User
+5) Database Password
+
+
+Resource Server
+---------------
+
+The irods-resource package installs a service account and group named 'irods' and the iRODS binaries.
+
+There are no required additional packages, but the administrator will need to run a short setup script that will prompt for iRODS connection information and configure the server.
 
 Installation of the Resource RPM::
 
  - Make sure to read ./packaging/RPM_INSTALLATION_HOWTO.txt before trying to install the RPM package.
- $ (sudo) rpm -i irods-3.0.1-64bit-resource.rpm
+ $ (sudo) rpm -i irods-resource-TEMPLATE_IRODSVERSION-64bit-centos6.rpm
+ $ (sudo) su - irods
 
-For the iCAT-enabled server packages, the iRODS server and EICAT database are started automatically with default values::
+And then as the irods user::
+
+ irods@hostname:~/ $ ./packaging/setup_resource.sh
+
+The `./packaging/setup_resource.sh` script will ask for the following five pieces of information before iRODS can start and connect to its configured iCAT Zone:
+
+1) iCAT Hostname or IP
+2) iCAT Port
+3) iCAT Zone 
+4) iRODS administrator username
+5) iRODS administrator password
+
+Default Environment
+-------------------
+
+Once a server is up and running, the default environment can be shown::
 
  irods@hostname:~/ $ ienv
- NOTICE: Release Version = rods3.0, API Version = d
+ NOTICE: Release Version = rodsTEMPLATE_IRODSVERSION, API Version = d
  NOTICE: irodsHost=hostname
  NOTICE: irodsPort=1247
  NOTICE: irodsDefResource=demoResc
@@ -157,24 +205,16 @@ For the iCAT-enabled server packages, the iRODS server and EICAT database are st
  NOTICE: irodsEncryptionNumHashRounds=16
  NOTICE: irodsEncryptionAlgorithm=AES-256-CBC
 
-For the resource-only packages, the server is not started automatically.  The administrator will need to run the `./packaging/setup_resource.sh` script and provide the following five pieces of information before iRODS can start and connect to its configured iCAT Zone:
-
-1) Hostname or IP
-2) iCAT Port
-3) iCAT Zone 
-4) iRODS administrator username
-5) iRODS administrator password
-
 ----------
 Quickstart
 ----------
 
-Successful installation will complete and result in a running iRODS server.  If you installed an iCAT-enabled iRODS server, a database of your choice will also have been created and running.  The iCommand ``ils`` will list your new iRODS administrator's empty home directory in the iRODS virtual filesystem::
+Successful installation will complete and result in a running iRODS server.  The iCommand ``ils`` will list your new iRODS administrator's empty home directory in the iRODS virtual filesystem::
 
  irods@hostname:~/ $ ils
  /tempZone/home/rods:
 
-When moving into production, you will probably want to cover the next few basic steps:
+When moving into production, you should cover the following steps as best practice:
 
 Changing the administrator account password
 -------------------------------------------
@@ -248,7 +288,7 @@ Add additional resource(s)
 
 The default installation of iRODS comes with a single resource named 'demoResc' which stores its files in the `/var/lib/irods/iRODS/Vault` directory.  You will want to create additional resources at disk locations of your choosing as the 'demoResc' may not have sufficient disk space available for your intended usage scenarios.  The following command will create a basic 'unix file system' resource at a designated host at the designated full path::
 
- irods@hostname:~/ $ iadmin mkresc <newrescname> 'unix file system' <fully.qualified.domain.name>:</full/path/to/new/vault>
+ irods@hostname:~/ $ iadmin mkresc <newrescname> 'unixfilesystem' <fully.qualified.domain.name>:</full/path/to/new/vault>
  
 Additional information about creating resources can be found with::
 
@@ -297,37 +337,40 @@ It is best to change your Zone name before adding new users as any existing user
 Upgrading
 ---------
 
-iRODS did not support upgrading until 3.0.1rc1.  From that point forward, upgrading should be handled by the host Operating System via the package manager as expected.
+Upgrading is handled by the host Operating System via the package manager.
 
 RPM based systems
 -----------------
 
- $ (sudo) rpm -U irods-3.0.1-64bit-icat-postgres-suse.rpm
-
-Upgrading from before 3.0.1rc1 will be detected and require the running of an additional script to get your installation in working order.  The RPM based upgrade for those older installs moves aside the `/var/lib/irods/` home directory to `/var/lib/irods_new/`.  To restore this directory and reinstall all the correct packaged files, run the following script with the new RPM file::
-
- $ sudo /var/lib/irods_new/packaging/post30upgrade.sh <newfile.rpm>
+ $ (sudo) rpm -U irods-icat-TEMPLATE_IRODSVERSION-64bit-suse.rpm
 
 DEB based systems
 -----------------
 
- $ (sudo) dpkg -i irods-3.0.1-64bit-icat-postgres.deb
+ $ (sudo) dpkg -i irods-icat-TEMPLATE_IRODSVERSION-64bit.deb
 
-------------------------------
-Migration from Community iRODS
-------------------------------
+From E-iRODS 3.0.1
+------------------
 
-Support for migrating from Community iRODS is planned, but automated scripts and documentation have not yet been completed.
+Upgrading from E-iRODS to iRODS 4.0+ is not currently supported with an automatic script.  Since the package names, the default database, the service account, and the home directory were all changed, it was decided that there were too many moving parts (and too many possible combinations) to successfully detect and manipulate into a functional 4.0+ installation.
+
+If you are in need of upgrading from a production E-iRODS 3.0.1 installation, please contact the iRODS team at RENCI for free support.
+
+------------------------
+Migration from iRODS 3.x
+------------------------
+
+Support for migrating from iRODS 3.x is planned, but automated scripts and documentation have not yet been completed.
 
 This section will be updated when support is included and tested.
 
--------------------------------
-Federation with Community iRODS
--------------------------------
+-------------------------
+Federation with iRODS 3.x
+-------------------------
 
-Enterprise iRODS has made some additions to the database tables for the resources (r_resc_main) and Data Objects (r_data_main) for the purposes of tracking resource hierarchy, children, parents, and other relationships.  These changes would have caused a cross-zone query to fail when the target zone is a community version of iRODS.
+iRODS 4.0+ has made some additions to the database tables for the resources (r_resc_main) and Data Objects (r_data_main) for the purposes of tracking resource hierarchy, children, parents, and other relationships.  These changes would have caused a cross-zone query to fail when the target zone is iRODS 3.x.
 
-In order to support commands such as ``ils`` and ``ilsresc`` across an Enterprise to Community federation, iRODS will detect the cross zone query and subsequently strip out any requests for columns which do not exist in the community table structure in order to allow the query to succeed.
+In order to support commands such as ``ils`` and ``ilsresc`` across a 3.x to 4.0+ federation, iRODS 4.0+ will detect the cross zone query and subsequently strip out any requests for columns which do not exist in the iRODS 3.x table structure in order to allow the query to succeed.
 
 There are currently no known issues with Federation, but this has not yet been comprehensively tested.
 
@@ -349,16 +392,6 @@ Configuration and maintenance of this type of backup system is out of scope for 
 .. __: http://www.postgresql.org/docs/9.0/static/warm-standby.html#STREAMING-REPLICATION
 
 
------------
-Assumptions
------------
-
-.. iRODS enforces that the database in use (Postgres, MySQL, etc.) is configured for UTF-8 encoding.  For MySQL, this is enforced at the database level and the table level.  For Postgres, this is enforced at the database level and then the tables inherit this setting.  MySQL is not yet supported with a binary release.
-
-iRODS enforces that the database in use (PostgreSQL) is configured for UTF-8 encoding.  This is enforced at the database level and then the tables inherit this setting.
-
-The iRODS setting 'StrictACL' is configured on by default in iRODS.  This is different from the community version of iRODS and behaves more like standard Unix permissions.  This setting can be found in the `server/config/reConfigs/core.re` file under acAclPolicy{}.
-
 ------------
 Architecture
 ------------
@@ -376,7 +409,7 @@ The planned plugin interfaces and their status are listed here:
  Composable Resources       Complete      3.0b3
  Pluggable Authentication   Complete      3.0.1b1
  Pluggable Network          Complete      3.0.1b1
- Pluggable Database         Planned
+ Pluggable Database         Complete      4.0.0b1
  Pluggable RPC API          Planned
  Pluggable Rule Engine      Requested
  ========================   ==========    ========
@@ -407,39 +440,63 @@ The following operations are available for dynamic PEP evaluation.  At this time
  | Plugin Type             | Plugin Operation                  |
  +=========================+===================================+
  |                         |                                   |
- | Resource                |  resource_create		       |
- |                         |  resource_open		       |
- |                         |  resource_read		       |
- |                         |  resource_write		       |
- |                         |  resource_stagetocache	       |
- |                         |  resource_synctoarch	       |
- |                         |  resource_registered	       |
- |                         |  resource_unregistered	       |
- |                         |  resource_modified 	       |
+ | Resource                |  resource_create                  |
+ |                         |                                   |
+ |                         |  resource_open                    |
+ |                         |                                   |
+ |                         |  resource_read                    |
+ |                         |                                   |
+ |                         |  resource_write                   |
+ |                         |                                   |
+ |                         |  resource_stagetocache            |
+ |                         |                                   |
+ |                         |  resource_synctoarch              |
+ |                         |                                   |
+ |                         |  resource_registered              |
+ |                         |                                   |
+ |                         |  resource_unregistered            |
+ |                         |                                   |
+ |                         |  resource_modified                |
+ |                         |                                   |
  |                         |  resource_resolve_hierarchy       |
- |                         |  resource_rebalance	       |
+ |                         |                                   |
+ |                         |  resource_rebalance               |
  |                         |                                   |
  +-------------------------+-----------------------------------+
  |                         |                                   |
- | Authentication          |  auth_client_start 	       |
- |                         |  auth_agent_start  	       |
- |                         |  auth_establish_context	       |
+ | Authentication          |  auth_client_start                |
+ |                         |                                   |
+ |                         |  auth_agent_start                 |
+ |                         |                                   |
+ |                         |  auth_establish_context           |
+ |                         |                                   |
  |                         |  auth_agent_client_request        |
- |                         |  auth_agent_auth_request	       |
+ |                         |                                   |
+ |                         |  auth_agent_auth_request          |
+ |                         |                                   |
  |                         |  auth_agent_client_response       |
+ |                         |                                   |
  |                         |  auth_agent_auth_response         |
- |                         |  auth_agent_auth_verify	       |
+ |                         |                                   |
+ |                         |  auth_agent_auth_verify           |
  |                         |                                   |
  +-------------------------+-----------------------------------+
  |                         |                                   |
- | Network                 |  network_client_start	       |
- |                         |  network_client_stop	       |
- |                         |  network_agent_start	       |
- |                         |  network_agent_stop	       |
- |                         |  network_read_header	       |
- |                         |  network_read_body 	       |
- |                         |  network_write_header	       |
- |                         |  network_write_body	       |
+ | Network                 |  network_client_start             |
+ |                         |                                   |
+ |                         |  network_client_stop              |
+ |                         |                                   |
+ |                         |  network_agent_start              |
+ |                         |                                   |
+ |                         |  network_agent_stop               |
+ |                         |                                   |
+ |                         |  network_read_header              |
+ |                         |                                   |
+ |                         |  network_read_body                |
+ |                         |                                   |
+ |                         |  network_write_header             |
+ |                         |                                   |
+ |                         |  network_write_body               |
  |                         |                                   |
  +-------------------------+-----------------------------------+
 
@@ -455,67 +512,88 @@ The following Key-Value Pairs are made available within the running context of e
  +================+=====================+=========================+
  |                |                     |                         |
  | Resource       | Data Object         | physical_path           |
- |                |                     | mode_kw	          |
- |                |                     | flags_kw	          |
- |                |                     | resc_hier	          |
+ |                |                     |                         |
+ |                |                     | mode_kw                 |
+ |                |                     |                         |
+ |                |                     | flags_kw                |
+ |                |                     |                         |
+ |                |                     | resc_hier               |
  |                |                     |                         |
  |                +---------------------+-------------------------+
  |                |                     |                         |
- |                | File Object         | logical_path  	  |
- |                |                     | file_descriptor	  |
- |                |                     | l1_desc_idx		  |
- |                |                     | file_size		  |
- |                |                     | repl_requested  	  |
- |                |                     | in_pdmo		  |
+ |                | File Object         | logical_path            |
+ |                |                     |                         |
+ |                |                     | file_descriptor         |
+ |                |                     |                         |
+ |                |                     | l1_desc_idx             |
+ |                |                     |                         |
+ |                |                     | file_size               |
+ |                |                     |                         |
+ |                |                     | repl_requested          |
+ |                |                     |                         |
+ |                |                     | in_pdmo                 |
  |                |                     |                         |
  |                +---------------------+-------------------------+
  |                |                     |                         |
- |                | Structured Object   | host_addr		  |
- |                |                     | zone_name	 	  |
- |                |                     | port_num		  |
- |                |                     | sub_file_path 	  |
- |                |                     | offset		  |
- |                |                     | dataType		  |
- |                |                     | oprType		  |
+ |                | Structured Object   | host_addr               |
+ |                |                     |                         |
+ |                |                     | zone_name               |
+ |                |                     |                         |
+ |                |                     | port_num                |
+ |                |                     |                         |
+ |                |                     | sub_file_path           |
+ |                |                     |                         |
+ |                |                     | offset                  |
+ |                |                     |                         |
+ |                |                     | dataType                |
+ |                |                     |                         |
+ |                |                     | oprType                 |
  |                |                     |                         |
  |                +---------------------+-------------------------+
  |                |                     |                         |
- |                | Special Collection  | spec_coll_class	  |
- |                |                     | spec_coll_type	  |
- |                |                     | spec_coll_obj_path	  |
- |                |                     | spec_coll_resource	  |
- |                |                     | spec_coll_resc_hier	  |
- |                |                     | spec_coll_phy_path	  |
- |                |                     | spec_coll_cache_dir	  |
+ |                | Special Collection  | spec_coll_class         |
+ |                |                     |                         |
+ |                |                     | spec_coll_type          |
+ |                |                     |                         |
+ |                |                     | spec_coll_obj_path      |
+ |                |                     |                         |
+ |                |                     | spec_coll_resource      |
+ |                |                     |                         |
+ |                |                     | spec_coll_resc_hier     |
+ |                |                     |                         |
+ |                |                     | spec_coll_phy_path      |
+ |                |                     |                         |
+ |                |                     | spec_coll_cache_dir     |
+ |                |                     |                         |
  |                |                     | spec_coll_cache_dirty   |
- |                |                     | spec_coll_repl_num	  |
+ |                |                     |                         |
+ |                |                     | spec_coll_repl_num      |
  |                |                     |                         |
  +----------------+---------------------+-------------------------+
-
- +----------------+---------------------+-------------------------+
- | Plugin Type    | First Class Object  | Variable Name           |
- +================+=====================+=========================+
  |                |                     |                         |
- | Authentication | | Native Password   |  zone_name              |
- |                | | OS Auth           |  user_name              |
- |                | | PAM               |  digest                 |
+ | Authentication |  Native Password    |  zone_name              |
+ |                |                     |                         |
+ |                |  OS Auth            |  user_name              |
+ |                |                     |                         |
+ |                |  PAM                |  digest                 |
  |                |                     |                         |
  +----------------+---------------------+-------------------------+
-
- +----------------+---------------------+-------------------------+
- | Plugin Type    | First Class Object  | Variable Name           |
- +================+=====================+=========================+
  |                |                     |                         |
  | Network        | TCP                 |  tcp_socket_handle      |
  |                |                     |                         |
  |                +---------------------+-------------------------+
  |                |                     |                         |
- |                | SSL                 |  ssl_host		  |
- |                |                     |  ssl_shared_secret	  |
- |                |                     |  ssl_key_size 	  |
- |                |                     |  ssl_salt_size	  |
+ |                | SSL                 |  ssl_host               |
+ |                |                     |                         |
+ |                |                     |  ssl_shared_secret      |
+ |                |                     |                         |
+ |                |                     |  ssl_key_size           |
+ |                |                     |                         |
+ |                |                     |  ssl_salt_size          |
+ |                |                     |                         |
  |                |                     |  ssl_num_hash_rounds    |
- |                |                     |  ssl_algorithm	  |
+ |                |                     |                         |
+ |                |                     |  ssl_algorithm          |
  |                |                     |                         |
  +----------------+---------------------+-------------------------+
 
@@ -530,13 +608,13 @@ For example, when running ``iput -R myOtherResc newfile.txt``, a ``fileCreate()`
 Pluggable Microservices
 -----------------------
 
-iRODS is in the process of being modularized whereby existing community iRODS functionality will be replaced and provided by small, interoperable plugins.  The first plugin functionality to be completed was pluggable microservices.  Pluggable microservices allow users to add new microservices to an existing iRODS server without recompiling the server or even restarting any running processes.  A microservice plugin contains a single compiled microservice shared object file to be found by the server.  A separate development package, including an example, is available at http://irods.org/download, and explains how this works in more detail.
+iRODS is in the process of being modularized whereby existing iRODS 3.x functionality will be replaced and provided by small, interoperable plugins.  The first plugin functionality to be completed was pluggable microservices.  Pluggable microservices allow users to add new microservices to an existing iRODS server without recompiling the server or even restarting any running processes.  A microservice plugin contains a single compiled microservice shared object file to be found by the server.  A separate development package, including an example, is available at http://irods.org/download, and explains how this works in more detail.
 
 --------------------
 Composable Resources
 --------------------
 
-The second area of modularity to be added to iRODS consists of composable resources.  Composable resources replace the concept of resource groups from community iRODS.  There are no resource groups in iRODS. 
+The second area of modularity to be added to iRODS 4.0+ consists of composable resources.  Composable resources replace the concept of resource groups from iRODS 3.x.  There are no resource groups in iRODS 4.0+. 
 
 Tree Metaphor
 -------------
@@ -563,7 +641,7 @@ Composable resources, both coordinating and storage, introduce the same dichotom
 
 This virtualization enables the coordinating resources to manage both the placement and the retrieval of Data Objects independent from the types of resources that are connected as children resources. When iRODS tries to retrieve data, each child resource will "vote", indicating whether it can provide the requested data.  Coordinating resources will then decide which particular storage resource (e.g. physical location) the read should come from. The specific manner of this vote is specific to the logic of the coordinating resource.  A coordinating resource may lean toward a particular vote based on the type of optimization it deems best. For instance, a coordinating resource could decide between child votes by opting for the child that will reduce the number of requests made against each storage resource within a particular time frame or opting for the child that reduces latency in expected data retrieval times. We expect a wide variety of useful optimizations to be developed by the community.
 
-An intended side effect of the tree metaphor and the virtualization of coordinating resources is the deprecation of the concept of a resource group. Resource groups in community iRODS could not be put into other resource groups. A specific limiting example is a compound resource that, by definition, was a group and could not be placed into another group.  This significantly limited its functionality as a management tool. Groups in iRODS now only refer to user groups.
+An intended side effect of the tree metaphor and the virtualization of coordinating resources is the deprecation of the concept of a resource group. Resource groups in iRODS 3.x could not be put into other resource groups. A specific limiting example is a compound resource that, by definition, was a group and could not be placed into another group.  This significantly limited its functionality as a management tool. Groups in iRODS now only refer to user groups.
 
 Read more about Composable Resources at `http://eirods.org/release/e-irods-composable-resources/`__:
 
@@ -584,7 +662,7 @@ Coordinating resources contain the flow control logic which determines both how 
 Compound
 ********
 
-The compound resource is a continuation of the legacy compound resource type from Community iRODS.
+The compound resource is a continuation of the legacy compound resource type from iRODS 3.x.
 
 A compound resource has two and only two children.  One must be designated as the 'cache' resource and the other as the 'archive' resource.  This designation is made in the "context string" of the ``addchildtoresc`` command.
 
@@ -595,7 +673,7 @@ An Example::
 
 Putting files into the compound resource will first create a replica on the cache resource and then create a second replica on the archive resource.
 
-Getting files from the compound resource will behave in a similar way as the Community iRODS version.  By default, the replica from the cache resource will always be returned.  If the cache resource does not have a copy, then a replica is created on the cache resource before being returned.
+Getting files from the compound resource will behave in a similar way as iRODS 3.x.  By default, the replica from the cache resource will always be returned.  If the cache resource does not have a copy, then a replica is created on the cache resource before being returned.
 
 This compound resource staging policy can be controlled with the policy key-value pair whose keyword is "compound_resource_cache_refresh_policy" and whose values are either "when_necessary" (default), or "always".
 
@@ -617,7 +695,7 @@ Random
 
 The random resource provides logic to put a file onto one of its children on a random basis.  A random resource can have one or more children.
 
-If the selected target child resource of a put operation is currently marked "down" in the iCAT, the random resource will move on to another random child and try again.  Currently, the random resource will try 10 times the number of its children, and if still not succeeding, throw an error.
+If the selected target child resource of a put operation is currently marked "down" in the iCAT, the random resource will move on to another random child and try again.  The random resource will try each of its children, and if still not succeeding, throw an error.
 
 Replication
 ***********
@@ -806,6 +884,23 @@ The possible values for irodsClientServerPolicy include:
 In order for a connection to be made, the client and server have to agree on the type of connection they will share.  When both sides choose ``CS_NEG_DONT_CARE``, iRODS shows an affinity for security by connecting via SSL.
 
 The remaining parameters are standard SSL parameters and made available through the EVP library included with OpenSSL.  You can read more about these remaining parameters at https://www.openssl.org/docs/crypto/evp.html.
+
+------------------
+Pluggable Database
+------------------
+
+The iRODS metadata catalog is now installed and managed by separate plugins.  The default database is PostgreSQL and is available for the TEMPLATE_IRODSVERSION release.  MySQL and Orcale plugins will be released as soon as they are tested.
+
+The particular flavor of database is encoded in `iRODS/server/config/server.config` with the following directive::
+
+ # configuration of icat database plugin - e.g. postgres, mysql, or oracle
+ catalog_database_type postgres
+
+This is populated by the `setup_database.sh` script on configuration.
+
+The iRODS 3.x icatHighLevelRoutines are, in effect, the API calls for the database plugins.  No changes should be needed to any calls to the icatHighLevelRoutines.
+
+To implement a new database plugin, a developer will need to provide the existing 84 SQL calls (in icatHighLevelRoutines) and an implementation of GenQuery.
 
 -------------------
 Users & Permissions
@@ -1061,12 +1156,18 @@ irodsSSLCACertificatePath (client)
 
 
 
+-----------
+Other Notes
+-----------
+
+.. iRODS enforces that the database in use (Postgres, MySQL, etc.) is configured for UTF-8 encoding.  For MySQL, this is enforced at the database level and the table level.  For Postgres, this is enforced at the database level and then the tables inherit this setting.
+
+iRODS enforces that the database in use (PostgreSQL) is configured for UTF-8 encoding.  This is enforced at the database level and then the tables inherit this setting.
+
+The iRODS setting 'StrictACL' is configured on by default in iRODS 4.0+.  This is different from iRODS 3.x and behaves more like standard Unix permissions.  This setting can be found in the `server/config/reConfigs/core.re` file under acAclPolicy{}.
 
 
 
-
-
-..
 ..
 ..
 .. --------------
@@ -1100,9 +1201,9 @@ iRODS/server/config/server.config
 ~/.irods/.irodsEnv
     This is the main iRODS configuration file defining the iRODS environment.  Any changes are effective immediately since iCommands reload their environment on every execution.
 
------------------------
+---------------
 Troubleshooting
------------------------
+---------------
  
 Common Errors
 -------------
@@ -1111,9 +1212,9 @@ Some of the commonly encountered iRODS errors along with troubleshooting steps a
 
 
 iRODS Server is down
-**********************
+********************
 
-Error Code: USER_SOCK_CONNECT_TIMEDOUT	-347000
+:Error Code: USER_SOCK_CONNECT_TIMEDOUT	-347000
 
 Common areas to check for this error include:
 
@@ -1144,7 +1245,7 @@ Common areas to check for this error include:
 
 
 No rows found in the iRODS Catalog
-************************************
+**********************************
 
 :Error Code: CAT_NO_ROWS_FOUND -808000
 
@@ -1161,7 +1262,7 @@ Access Control and Permissions
 
 This error can occur when an iRODS user tries to access an iRODS Data Object or Collection that belongs to another iRODS user without the owner having granted the appropriate permission (usually simply read or write).
 
-With the more restrictive "StrictACL" policy being turned "on" by default in iRODS, this may occur more often than expected with Community iRODS.  Check the permissions carefully and use ``ils -AL`` to help diagnose what permissions *are* set for the Data Objects and Collections of interest.
+With the more restrictive "StrictACL" policy being turned "on" by default in iRODS 4.0+, this may occur more often than expected with iRODS 3.x.  Check the permissions carefully and use ``ils -AL`` to help diagnose what permissions *are* set for the Data Objects and Collections of interest.
 
 Modifying the "StrictACL" setting in the iRODS server's core.re file will apply the policy permanently; applying the policy via ``irule`` will have an impact only during the execution of that particular rule.
 
@@ -1241,10 +1342,10 @@ Metadata
 Metadata Harvesting
     The process of extraction of existing Metadata from a remote information resource and subsequent addition to the iRODS iCAT.  The harvested Metadata could be related to certain Data Objects, Collections, or any other iRODS entity.
 
-Micro-service
+Microservice
     A set of operations performed on a Collection at a remote storage location. 
 
-    Micro-services are small, well-defined procedures/functions that perform a certain server-side task and are compiled into the iRODS server code. Rules invoke Micro-services to implement Management Policies.  Micro-services can be chained to implement larger macro-level functionality, called an Action. By having more than one chain of Micro-services for an Action, a system can have multiple ways of performing the Action. At runtime, using priorities and validation conditions, the system chooses the "best" micro-service chain to be executed. 
+    Microservices are small, well-defined procedures/functions that perform a certain server-side task and are compiled into the iRODS server code. Rules invoke Microservices to implement Management Policies.  Microservices can be chained to implement larger macro-level functionality, called an Action. By having more than one chain of Microservices for an Action, a system can have multiple ways of performing the Action. At runtime, using priorities and validation conditions, the system chooses the "best" microservice chain to be executed. 
 
 Migration
     The process of moving digital Collections to new hardware and/or software as technology evolves.  Separately, Transformative Migration may be used to mean the process of manipulating a Data Object into a new format (e.g. gif to png) for preservation purposes.
@@ -1256,10 +1357,10 @@ Resource
     A resource, or storage resource, is a software/hardware system that stores digital data. iRODS clients can operate on local or remote data stored on different types of resources through a common interface.
 
 Rules
-    Rules are a major innovation in iRODS that let users automate data management tasks, essential as data collections scale to petabytes across hundreds of millions of files. Rules allow users to automate enforcement of complex Management Policies (workflows), controlling the server-side execution (via Micro-services) of all data access and manipulation operations, with the capability of verifying these operations.
+    Rules are a major innovation in iRODS that let users automate data management tasks, essential as data collections scale to petabytes across hundreds of millions of files. Rules allow users to automate enforcement of complex Management Policies (workflows), controlling the server-side execution (via Microservices) of all data access and manipulation operations, with the capability of verifying these operations.
 
 Rule Engine
-    The Rule Engine interprets Rules following the iRODS rule syntax. The Rule Engine, which runs on all iRODS servers, is invoked by server-side procedure calls and selects, prioritizes, and applies Rules and their corresponding Micro-services. The Rule Engine can apply recovery procedures if a Micro-service or Action fails.
+    The Rule Engine interprets Rules following the iRODS rule syntax. The Rule Engine, which runs on all iRODS servers, is invoked by server-side procedure calls and selects, prioritizes, and applies Rules and their corresponding Microservices. The Rule Engine can apply recovery procedures if a Microservice or Action fails.
 
 Scalability
     Scalability means that a computer system performs well, even when scaled up to very large sizes.  In iRODS, this refers to its ability to manage Collections ranging from the data on a single disk to petabytes (millions of gigabytes) of data in hundreds of millions of files distributed across multiple locations and administrative domains.
@@ -1283,7 +1384,7 @@ Vault
     An iRODS Vault is a data repository system that iRODS can maintain on any storage system which can be accessed by an iRODS server. For example, there can be an iRODS Vault on a Unix file system, an HPSS (High Performance Storage System), or an IBM DB2 database. A Data Object in an iRODS Vault is stored as an iRODS-written object, with access controlled through the iCAT catalog. This is distinct from legacy data objects that can be accessed by iRODS but are still owned by previous owners of the data. For file systems such as Unix and HPSS, a separate directory is used; for databases such as Oracle or DB2 a system-defined table with LOB-space (Large Object space) is used. 
 
 Zone
-    An iRODS Zone is an independent iRODS system consisting of an iCAT-Enabled Server (IES), optional additional distributed iRODS Servers (which can reach hundreds, worldwide) and clients. Each Zone has a unique name. When two iRODS Zones are configured to interoperate with each other securely, it is called (Zone) Federation.
+    An iRODS Zone is an independent iRODS system consisting of an iCAT-Enabled Server (IES), optional additional distributed iRODS Resource Servers (which can reach hundreds, worldwide), and clients. Each Zone has a unique name. When two iRODS Zones are configured to interoperate with each other securely, it is called (Zone) Federation.
 
 
 ------------
@@ -1300,6 +1401,11 @@ History of Releases
 ==========   =========    ======================================================
 Date         Version      Description
 ==========   =========    ======================================================
+2014-01-15   4.0.0b1      First Beta Release of Merged Codebase
+                            This is the first beta of the merged open source
+                            release from RENCI.  It includes pluggable database
+                            support and separate packages for the standalone
+                            server and its plugins.
 2013-11-16   3.0.1        Second Release.
                             This is the second open source release from RENCI.
                             It includes Federation compliance with Community
