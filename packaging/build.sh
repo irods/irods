@@ -711,40 +711,6 @@ else
     echo "Detected OpenSSL sha.h library [$OPENSSLDEV]"
 fi
 
-EASYINSTALL=`which easy_install`
-if [[ "$?" != "0" || `echo $EASYINSTALL | awk '{print $1}'` == "no" ]] ; then
-    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
-        PREFLIGHT="$PREFLIGHT python-setuptools"
-    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-        PREFLIGHT="$PREFLIGHT python-setuptools python-devel"
-    elif [ "$DETECTEDOS" == "SuSE" ] ; then
-        PREFLIGHT="$PREFLIGHT python-setuptools"
-    elif [ "$DETECTEDOS" == "Solaris" ] ; then
-        PREFLIGHT="$PREFLIGHT pysetuptools"
-    elif [ "$DETECTEDOS" == "MacOSX" ] ; then
-        PREFLIGHT="$PREFLIGHT"
-        # should have distribute included already
-    else
-        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://pypi.python.org/pypi/setuptools/"
-    fi
-else
-    echo "Detected easy_install [$EASYINSTALL]"
-fi
-
-
-# check python package prerequisites
-RST2PDF=`which rst2pdf`
-if [[ "$?" != "0" || `echo $RST2PDF | awk '{print $1}'` == "no" ]] ; then
-    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
-        PREFLIGHT="$PREFLIGHT rst2pdf"
-    else
-        PYPREFLIGHT="$PYPREFLIGHT rst2pdf"
-    fi
-else
-    RST2PDFVERSION=`rst2pdf --version`
-    echo "Detected rst2pdf [$RST2PDF] v[$RST2PDFVERSION]"
-fi
-
 # print out prerequisites error
 if [ "$PREFLIGHT" != "" ] ; then
     echo "${text_red}#######################################################" 1>&2
@@ -772,14 +738,6 @@ if [ "$PREFLIGHTDOWNLOAD" != "" ] ; then
     echo "$PREFLIGHTDOWNLOAD" 1>&2
     echo "#######################################################${text_reset}" 1>&2
     exit 1
-fi
-
-ROMAN=`python -c "import roman"`
-if [ "$?" != "0" ] ; then
-    PYPREFLIGHT="$PYPREFLIGHT roman"
-else
-    ROMANLOCATION=`python -c "import roman; print (roman.__file__)"` # expecting ".../roman.pyc"
-    echo "Detected python module 'roman' [$ROMANLOCATION]"
 fi
 
 # print out python prerequisites error
