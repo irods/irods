@@ -611,7 +611,7 @@ else
     GREPCMD="grep"
 fi
 
-LIBFUSEDEV=`find /usr/include -name fuse.h 2> /dev/null | grep -v linux`
+LIBFUSEDEV=`find /usr/include -name fuse.h 2> /dev/null | $GREPCMD -v linux`
 if [ "$LIBFUSEDEV" == "" ] ; then
     if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
         PREFLIGHT="$PREFLIGHT libfuse-dev"
@@ -771,7 +771,7 @@ mkdir -p $(dirname $TMPCONFIGFILE)
 # =-=-=-=-=-=-=-
 # generate canonical version information for the code from top level VERSION file
 cd $BUILDDIR
-TEMPLATE_RODS_RELEASE_VERSION=`grep "\<IRODSVERSION\>" VERSION | awk -F= '{print $2}'`
+TEMPLATE_RODS_RELEASE_VERSION=`$GREPCMD "\<IRODSVERSION\>" VERSION | awk -F= '{print $2}'`
 TEMPLATE_RODS_RELEASE_DATE=`date +"%b %Y"`
 sed -e "s,TEMPLATE_RODS_RELEASE_VERSION,$TEMPLATE_RODS_RELEASE_VERSION," ./iRODS/lib/core/include/rodsVersion.hpp.template > /tmp/rodsVersion.hpp
 sed -e "s,TEMPLATE_RODS_RELEASE_DATE,$TEMPLATE_RODS_RELEASE_DATE," /tmp/rodsVersion.hpp > /tmp/rodsVersion.hpp.2
@@ -987,7 +987,7 @@ if [ "$H2MVERSION" \< "1.37" ] ; then
     echo "     :: (or, add --version capability to all iCommands)"
     echo "     :: (installed here: help2man version $H2MVERSION)"
 else
-    IRODSMANVERSION=`grep "^%version" ./packaging/irods.list | awk '{print $2}'`
+    IRODSMANVERSION=`$GREPCMD "^%version" ./packaging/irods.list | awk '{print $2}'`
     ICMDDIR="iRODS/clients/icommands/bin"
     ICMDS=(
     genOSAuth     
