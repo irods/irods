@@ -2,7 +2,7 @@ include ../iRODS/config/external_versions.txt
 
 MAKEFLAGS += --no-print-directory
 
-.PHONY : all clean cmake libarchive jansson boost cjson epm
+.PHONY : all clean cmake libarchive jansson boost cjson hdf5 netcdf epm
 
 CMAKEVERSIONARCHIVE=$(CMAKEVERSION).tar.gz
 CMAKEVERSIONMAKE=$(CMAKEVERSION)/Makefile
@@ -13,12 +13,16 @@ JANSSONVERSIONMAKE=$(JANSSONVERSION)/Makefile
 BOOSTVERSIONARCHIVE=$(BOOSTVERSION).tar.gz
 BOOSTVERSIONMAKE=$(BOOSTVERSION)/bjam
 CJSONVERSIONARCHIVE=$(CJSONVERSION)Files-r$(CJSONVERSIONNUMBER).zip
+HDF5VERSIONARCHIVE=$(HDF5VERSION).tar.gz
+HDF5VERSIONMAKE=$(HDF5VERSION)/Makefile
+NETCDFVERSIONARCHIVE=$(NETCDFVERSION).tar.gz
+NETCDFVERSIONMAKE=$(NETCDFVERSION)/Makefile
 EPMVERSIONARCHIVE=$(EPMVERSION).tar.gz
 EPMVERSIONMAKE=epm/Makefile
 
-default : cmake libarchive jansson boost cjson
+default : cmake libarchive jansson boost cjson hdf5 netcdf
 
-all : cmake libarchive jansson boost cjson epm
+all : cmake libarchive jansson boost cjson epm hdf5 netcdf
 
 $(CMAKEVERSIONARCHIVE) :
 	@wget ftp://ftp.renci.org/pub/irods/external/$(CMAKEVERSIONARCHIVE) 2>&1
@@ -87,6 +91,29 @@ boost : $(BOOSTVERSIONMAKE)
 		cd $(BOOSTVERSION) ; \
 		./bjam link=static threading=multi cxxflags="-fPIC -DBOOST_SYSTEM_NO_DEPRECATED" -j$$CPU_COUNT
 
+$(HDF5VERSIONARCHIVE) :
+	@wget ftp://ftp.renci.org/pub/irods/external/$(HDF5VERSION).tar.gz
+
+$(HDF5VERSIONMAKE) : $(HDF5VERSIONARCHIVE)
+	@tar zxf $(HDF5VERSIONARCHIVE)
+	@cd $(HDF5VERSION) ; \
+		./configure
+
+hdf5 : $(HDF5VERSIONMAKE)
+	@$(MAKE) -C $(HDF5VERSION)
+
+$(NETCDFVERSIONARCHIVE) :
+	@wget ftp://ftp.renci.org/pub/irods/external/$(NETCDFVERSION).tar.gz
+
+$(NETCDFVERSIONMAKE) : $(NETCDFVERSIONARCHIVE) hdf5
+	@tar zxf $(NETCDFVERSIONARCHIVE)
+	@EXTERNALS_DIR=`echo $$PWD | sed "s/\([^-A-Za-z0-9_/]\)/\\\\\1/g"`; \
+		cd $(NETCDFVERSION) ; \
+		CC="gcc" LDFLAGS="-L$$EXTERNALS_DIR/hdf5-1.8.12/src/.libs/ -L$$EXTERNALS_DIR/hdf5-1.8.12/hl/src/.libs/" CPPFLAGS="-I$$EXTERNALS_DIR/hdf5-1.8.12/src -I$$EXTERNALS_DIR/hdf5-1.8.12/hl/src" ./configure
+
+netcdf : $(NETCDFVERSIONMAKE)
+	@$(MAKE) -C $(NETCDFVERSION)
+
 $(EPMVERSIONARCHIVE) :
 	@wget ftp://ftp.renci.org/pub/irods/build/$(EPMVERSIONARCHIVE) 2>&1
 
@@ -124,6 +151,12 @@ clean :
 	@rm -rf $(CJSONVERSION)
 	@rm -f $(CJSONVERSIONARCHIVE)
 	@rm -rf __MACOSX
+	@echo "Cleaning netcdf..."
+	@rm -rf $(NETCDFVERSION)
+	@rm -f $(NETCDFVERSIONARCHIVE)
+	@echo "Cleaning hdf5..."
+	@rm -rf $(HDF5VERSION)
+	@rm -f $(HDF5VERSIONARCHIVE)
 	@echo "Cleaning epm..."
 	@rm -rf epm
 	@rm -f $(EPMVERSIONARCHIVE)
