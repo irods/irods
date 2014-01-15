@@ -154,7 +154,15 @@ mv $IRODS_CONFIG_TEMPFILE $IRODS_CONFIG_FILE
 sed -e "/^\$DB_NAME/s/^.*$/\$DB_NAME = '$DATABASENAME';/" $IRODS_CONFIG_FILE > $IRODS_CONFIG_TEMPFILE
 mv $IRODS_CONFIG_TEMPFILE $IRODS_CONFIG_FILE
 
+# =-=-=-=-=-=-=-
+# update database flavor
+echo ""
+echo "# configuration of icat database plugin - e.g. postgres, mysql, or oracle" >> ./iRODS/server/config/server.config.in
+echo "catalog_database_type $DATABASETYPE" >> ./iRODS/server/config/server.config.in
+echo ""
 
+# =-=-=-=-=-=-=-
+# run irods_setup.pl
 cd iRODS
 ./irodsctl stop
 echo "Running irods_setup.pl..."
