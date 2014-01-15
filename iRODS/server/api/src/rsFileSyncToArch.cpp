@@ -20,11 +20,16 @@
 #include "irods_stacktrace.hpp"
 #include "irods_resource_backport.hpp"
 
-int
-rsFileSyncToArch( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp, fileSyncOut_t** sync_out ) {
+int rsFileSyncToArch(
+    rsComm_t*           rsComm,
+    fileStageSyncInp_t* fileSyncToArchInp,
+    fileSyncOut_t**     sync_out ) {
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
     int status;
+
+    sync_out = ( fileSyncOut_t* )malloc( sizeof( fileSyncOut_t ) );
+    bzero( ( *sync_out ), sizeof( fileSyncOut_t ) );
 
 //    remoteFlag = resolveHost (&fileSyncToArchInp->addr, &rodsServerHost);
     irods::error ret = irods::get_host_for_hier_string( fileSyncToArchInp->rescHier, remoteFlag, rodsServerHost );

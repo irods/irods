@@ -1263,7 +1263,7 @@ l3FileSync( rsComm_t * rsComm, int srcL1descInx, int destL1descInx ) {
     rstrcpy( fileSyncToArchInp.cacheFilename, srcDataObjInfo->filePath,  MAX_NAME_LEN );
 
     fileSyncToArchInp.mode = getFileMode( dataObjInp );
-    fileSyncOut_t* sync_out = new fileSyncOut_t;
+    fileSyncOut_t* sync_out = 0;
     status = rsFileSyncToArch( rsComm, &fileSyncToArchInp, &sync_out );
 
     if ( status >= 0 &&
