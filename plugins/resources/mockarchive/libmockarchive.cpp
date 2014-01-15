@@ -306,31 +306,22 @@ extern "C" {
 
                 // =-=-=-=-=-=-=-
                 // get hashed names for the old path
-                std::string old_hash;
+                std::string new_hash;
                 ret = make_hashed_path(
                           _ctx.prop_map(),
-                          fco->physical_path(),
-                          old_hash );
+                          _new_file_name,
+                          new_hash );
                 if ( ( result = ASSERT_PASS( ret, "Failed to gen hashed path" ) ).ok() ) {
                     // =-=-=-=-=-=-=-
-                    // get hashed names for the old path
-                    std::string new_hash;
-                    ret = make_hashed_path(
-                              _ctx.prop_map(),
-                              _new_file_name,
-                              new_hash );
-                    if ( ( result = ASSERT_PASS( ret, "Failed to gen hashed path" ) ).ok() ) {
-                        // =-=-=-=-=-=-=-
-                        // make the call to rename
-                        int status = rename( old_hash.c_str(), new_hash.c_str() );
+                    // make the call to rename
+                    int status = rename( fco->physical_path().c_str(), new_hash.c_str() );
 
-                        // =-=-=-=-=-=-=-
-                        // handle error cases
-                        int err_status = UNIX_FILE_RENAME_ERR - errno;
-                        if ( ( result = ASSERT_ERROR( status >= 0, err_status, "Rename error for \"%s\" to \"%s\", errno = \"%s\", status = %d.",
-                                                      fco->physical_path().c_str(), new_full_path.c_str(), strerror( errno ), err_status ) ).ok() ) {
-                            result.code( status );
-                        }
+                    // =-=-=-=-=-=-=-
+                    // handle error cases
+                    int err_status = UNIX_FILE_RENAME_ERR - errno;
+                    if ( ( result = ASSERT_ERROR( status >= 0, err_status, "Rename error for \"%s\" to \"%s\", errno = \"%s\", status = %d.",
+                                                  fco->physical_path().c_str(), new_hash.c_str(), strerror( errno ), err_status ) ).ok() ) {
+                        result.code( status );
                     }
                 }
             }
