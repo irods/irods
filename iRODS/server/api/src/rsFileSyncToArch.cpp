@@ -21,7 +21,7 @@
 #include "irods_resource_backport.hpp"
 
 int
-rsFileSyncToArch( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp ) {
+rsFileSyncToArch( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp, fileSyncOut_t** sync_out ) {
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
     int status;
@@ -37,13 +37,13 @@ rsFileSyncToArch( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp ) {
         return ( remoteFlag );
     }
     else {
-        status = rsFileSyncToArchByHost( rsComm, fileSyncToArchInp, rodsServerHost );
+        status = rsFileSyncToArchByHost( rsComm, fileSyncToArchInp, sync_out, rodsServerHost );
         return ( status );
     }
 }
 
 int
-rsFileSyncToArchByHost( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp, rodsServerHost_t *rodsServerHost ) {
+rsFileSyncToArchByHost( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp, fileSyncOut_t** sync_out, rodsServerHost_t *rodsServerHost ) {
     int status;
     int remoteFlag;
 
@@ -56,10 +56,10 @@ rsFileSyncToArchByHost( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp,
     remoteFlag = rodsServerHost->localFlag;
 
     if ( remoteFlag == LOCAL_HOST ) {
-        status = _rsFileSyncToArch( rsComm, fileSyncToArchInp );
+        status = _rsFileSyncToArch( rsComm, fileSyncToArchInp, sync_out );
     }
     else if ( remoteFlag == REMOTE_HOST ) {
-        status = remoteFileSyncToArch( rsComm, fileSyncToArchInp, rodsServerHost );
+        status = remoteFileSyncToArch( rsComm, fileSyncToArchInp, sync_out, rodsServerHost );
     }
     else {
         if ( remoteFlag < 0 ) {
@@ -77,7 +77,7 @@ rsFileSyncToArchByHost( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp,
 }
 
 int
-remoteFileSyncToArch( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp, rodsServerHost_t *rodsServerHost ) {
+remoteFileSyncToArch( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp, fileSyncOut_t** sync_out, rodsServerHost_t *rodsServerHost ) {
     int status;
 
     if ( rodsServerHost == NULL ) {
@@ -90,7 +90,7 @@ remoteFileSyncToArch( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp, r
         return status;
     }
 
-    status = rcFileSyncToArch( rodsServerHost->conn, fileSyncToArchInp );
+    status = rcFileSyncToArch( rodsServerHost->conn, fileSyncToArchInp, sync_out );
 
     if ( status < 0 ) {
         rodsLog( LOG_NOTICE,
@@ -105,7 +105,8 @@ remoteFileSyncToArch( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp, r
 // _rsFileSyncToArch - this the local version of rsFileSyncToArch.
 int _rsFileSyncToArch(
     rsComm_t*           _comm,
-    fileStageSyncInp_t* _sync_inp ) {
+    fileStageSyncInp_t* _sync_inp,
+    fileSyncOut_t**     _sync_out ) {
     // =-=-=-=-=-=-=-
     // XXXX need to check resource permission and vault permission
     // when RCAT is available
@@ -189,7 +190,9 @@ int _rsFileSyncToArch(
 
     // =-=-=-=-=-=-=-
     // has the file name has changed?
-    rstrcpy( _sync_inp->filename, file_obj->physical_path().c_str(), MAX_NAME_LEN );
+    if ( *_sync_out ) {
+        rstrcpy( ( *_sync_out )->file_name, file_obj->physical_path().c_str(), MAX_NAME_LEN );
+    }
 
     return ( sync_err.code() );
 

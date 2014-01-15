@@ -121,6 +121,7 @@ packInstructArray_t ApiPackTable[] = {
     {"sslEndInp_PI", sslEndInp_PI},
     {"getLimitedPasswordInp_PI", getLimitedPasswordInp_PI},
     {"getLimitedPasswordOut_PI", getLimitedPasswordOut_PI},
+    {"fileSyncOut_PI", fileSyncOut_PI},
     {PACK_TABLE_END_PI, ( char * ) NULL},
 };
 
