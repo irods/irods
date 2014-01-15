@@ -266,12 +266,12 @@ rename_generated_packages() {
     mkdir -p $IRODSPACKAGEDIR
     # vanilla construct
     RENAME_DESTINATION="$IRODSPACKAGEDIR/irods-$IRODSVERSION-64bit.$EXTENSION"
+    # docs build
+    RENAME_DESTINATION_DOCS=${RENAME_DESTINATION/irods-/irods-docs-}
     # add OS-specific suffix
     if [ "$SUFFIX" != "" ] ; then
 	RENAME_DESTINATION=${RENAME_DESTINATION/.$EXTENSION/$SUFFIX.$EXTENSION}
     fi
-    # docs build
-    RENAME_DESTINATION_DOCS=${RENAME_DESTINATION/irods-/irods-docs-}
     # release build (also building icommands)
     RENAME_DESTINATION_DEV=${RENAME_DESTINATION/irods-/irods-dev-}
     RENAME_DESTINATION_ICOMMANDS=${RENAME_DESTINATION/irods-/irods-icommands-}
