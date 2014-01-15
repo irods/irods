@@ -31,25 +31,25 @@ status)
     ;;
 start)
     su --shell=/bin/bash -c "$IRODS_CTL istart" irods
-    if [ "$DETECTEDOS" == "RedHatCompatible" -o "$DETECTEDOS" == "SuSE" ] ; then
+    if [ "$DETECTEDOS" = "RedHatCompatible" -o "$DETECTEDOS" = "SuSE" ] ; then
         touch /var/lock/subsys/irods
     fi
     ;;
 stop)
     su --shell=/bin/bash -c "$IRODS_CTL istop" irods
-    if [ "$DETECTEDOS" == "RedHatCompatible" -o "$DETECTEDOS" == "SuSE" ] ; then
+    if [ "$DETECTEDOS" = "RedHatCompatible" -o "$DETECTEDOS" = "SuSE" ] ; then
         rm /var/lock/subsys/irods
     fi
     ;;
 restart)
     su --shell=/bin/bash -c "$IRODS_CTL irestart" irods
-    if [ "$DETECTEDOS" == "RedHatCompatible" -o "$DETECTEDOS" == "SuSE" ] ; then
+    if [ "$DETECTEDOS" = "RedHatCompatible" -o "$DETECTEDOS" = "SuSE" ] ; then
         touch /var/lock/subsys/irods
     fi
     ;;
 force-reload)
     su --shell=/bin/bash -c "$IRODS_CTL irestart" irods
-    if [ "$DETECTEDOS" == "RedHatCompatible" -o "$DETECTEDOS" == "SuSE" ] ; then
+    if [ "$DETECTEDOS" = "RedHatCompatible" -o "$DETECTEDOS" = "SuSE" ] ; then
         touch /var/lock/subsys/irods
     fi
     ;;
