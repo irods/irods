@@ -72,7 +72,7 @@ fsckObjDir( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, char *ho
     directory_iterator end_itr; // default construction yields past-the-end
     for ( directory_iterator itr( srcDirPath ); itr != end_itr; ++itr ) {
         path cp = itr->path();
-        snprintf( fullPath, MAX_NAME_LEN, "%s",
+        snprintf( fullPath, LONG_NAME_LEN, "%s",
                   cp.c_str() );
         if ( is_symlink( cp ) ) {
             /* don't do anything if it is symlink */
