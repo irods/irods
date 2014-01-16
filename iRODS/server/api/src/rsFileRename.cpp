@@ -20,11 +20,13 @@
 #include "irods_resource_backport.hpp"
 
 int
-rsFileRename( rsComm_t *rsComm, fileRenameInp_t *fileRenameInp ) {
-    rodsServerHost_t *rodsServerHost;
+rsFileRename(
+    rsComm_t *rsComm,
+    fileRenameInp_t*  fileRenameInp,
+    fileRenameOut_t** rename_out ) {
+    rodsServerHost_t* rodsServerHost;
     int remoteFlag;
     int status;
-
     //remoteFlag = resolveHost (&fileRenameInp->addr, &rodsServerHost);
     irods::error ret = irods::get_host_for_hier_string( fileRenameInp->rescHier, remoteFlag, rodsServerHost );
     if ( !ret.ok() ) {
@@ -33,10 +35,10 @@ rsFileRename( rsComm_t *rsComm, fileRenameInp_t *fileRenameInp ) {
     }
 
     if ( remoteFlag == LOCAL_HOST ) {
-        status = _rsFileRename( rsComm, fileRenameInp, rodsServerHost );
+        status = _rsFileRename( rsComm, fileRenameInp, rename_out, rodsServerHost );
     }
     else if ( remoteFlag == REMOTE_HOST ) {
-        status = remoteFileRename( rsComm, fileRenameInp, rodsServerHost );
+        status = remoteFileRename( rsComm, fileRenameInp, rename_out, rodsServerHost );
     }
     else {
         if ( remoteFlag < 0 ) {
@@ -53,8 +55,11 @@ rsFileRename( rsComm_t *rsComm, fileRenameInp_t *fileRenameInp ) {
 }
 
 int
-remoteFileRename( rsComm_t *rsComm, fileRenameInp_t *fileRenameInp,
-                  rodsServerHost_t *rodsServerHost ) {
+remoteFileRename(
+    rsComm_t*         rsComm,
+    fileRenameInp_t*  fileRenameInp,
+    fileRenameOut_t** rename_out,
+    rodsServerHost_t* rodsServerHost ) {
     int status;
 
     if ( rodsServerHost == NULL ) {
@@ -67,7 +72,7 @@ remoteFileRename( rsComm_t *rsComm, fileRenameInp_t *fileRenameInp,
         return status;
     }
 
-    status = rcFileRename( rodsServerHost->conn, fileRenameInp );
+    status = rcFileRename( rodsServerHost->conn, fileRenameInp, rename_out );
 
     if ( status < 0 ) {
         rodsLog( LOG_NOTICE,
@@ -83,6 +88,7 @@ remoteFileRename( rsComm_t *rsComm, fileRenameInp_t *fileRenameInp,
 int _rsFileRename(
     rsComm_t*         _comm,
     fileRenameInp_t*  _rename_inp,
+    fileRenameOut_t** _rename_out,
     rodsServerHost_t* _server_host ) {
     // =-=-=-=-=-=-=-
     // FIXME: need to check resource permission and vault permission
@@ -121,6 +127,20 @@ int _rsFileRename(
         irods::error err = PASSMSG( msg.str(), rename_err );
         irods::log( err );
     }
+    // =-=-=-=-=-=-=-
+    // compare fco phy path and old file name
+    // if they differ then repave for next call
+    if ( file_obj->physical_path() == _rename_inp->oldFileName ) {
+        file_obj->physical_path( _rename_inp->newFileName );
+    }
+
+    // =-=-=-=-=-=-=-
+    // percolate posssible change in phy path up
+    ( *_rename_out ) = ( fileRenameOut_t* ) malloc( sizeof( fileRenameOut_t ) );
+    strncpy(
+        ( *_rename_out )->file_name,
+        file_obj->physical_path().c_str(),
+        MAX_NAME_LEN );
 
     return rename_err.code();
 

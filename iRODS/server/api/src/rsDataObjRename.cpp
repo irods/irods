@@ -450,7 +450,8 @@ l3Rename( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *newFileName ) {
         rstrcpy( fileRenameInp.rescHier,      dataObjInfo->rescHier,  MAX_NAME_LEN );
         rstrcpy( fileRenameInp.objPath,       dataObjInfo->objPath,   MAX_NAME_LEN );
         rstrcpy( fileRenameInp.addr.hostAddr, location.c_str(),       NAME_LEN );
-        status = rsFileRename( rsComm, &fileRenameInp );
+        fileRenameOut_t* ren_out = 0;
+        status = rsFileRename( rsComm, &fileRenameInp, &ren_out );
     }
     return ( status );
 }
@@ -518,8 +519,10 @@ moveMountedCollDataObj( rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
                                 destDataObjInfo.rescInfo->rescName, &myDataObjInfo );
         if ( status == 1 ) {
             /* orphan */
+            char new_fn[ MAX_NAME_LEN ];
             rstrcpy( fileRenameInp.oldFileName, destDataObjInfo.filePath, MAX_NAME_LEN );
-            renameFilePathToNewDir( rsComm, ORPHAN_DIR, &fileRenameInp, destDataObjInfo.rescInfo, 1 );
+            renameFilePathToNewDir( rsComm, ORPHAN_DIR, &fileRenameInp, destDataObjInfo.rescInfo, 1, new_fn );
+            strncpy( destDataObjInfo.filePath, new_fn, MAX_NAME_LEN );
         }
         else if ( status == 0 ) {
             /* obj exist */

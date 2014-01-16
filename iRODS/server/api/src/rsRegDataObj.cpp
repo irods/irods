@@ -34,7 +34,8 @@ rsRegDataObj( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
         if ( status >= 0 ) {
             *outDataObjInfo = ( dataObjInfo_t * ) malloc( sizeof( dataObjInfo_t ) );
             /* fake pointers will be deleted by the packing */
-            **outDataObjInfo = *dataObjInfo;
+            //**outDataObjInfo = *dataObjInfo;
+            memcpy( *outDataObjInfo, dataObjInfo, sizeof( dataObjInfo_t ) );
         }
 #else
         status = SYS_NO_RCAT_SERVER_ERR;

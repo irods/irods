@@ -366,8 +366,9 @@ int unbunPhyBunFile( rsComm_t *rsComm, char *objPath,
             fileRenameInp_t fileRenameInp;
             bzero( &fileRenameInp, sizeof( fileRenameInp ) );
             rstrcpy( fileRenameInp.oldFileName, phyBunDir, MAX_NAME_LEN );
+            char new_fn[ MAX_NAME_LEN ];
             status = renameFilePathToNewDir( rsComm, ORPHAN_DIR,
-                                             &fileRenameInp, rescInfo, 1 );
+                                             &fileRenameInp, rescInfo, 1, new_fn );
 
             if ( status >= 0 ) {
                 rodsLog( LOG_NOTICE,

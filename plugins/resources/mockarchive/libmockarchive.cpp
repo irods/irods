@@ -286,8 +286,6 @@ extern "C" {
     irods::error mock_archive_rename_plugin(
         irods::resource_plugin_context& _ctx,
         const char*                     _new_file_name ) {
-        using namespace boost::filesystem;
-
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
         irods::error result = SUCCESS();
@@ -321,6 +319,7 @@ extern "C" {
                     int err_status = UNIX_FILE_RENAME_ERR - errno;
                     if ( ( result = ASSERT_ERROR( status >= 0, err_status, "Rename error for \"%s\" to \"%s\", errno = \"%s\", status = %d.",
                                                   fco->physical_path().c_str(), new_hash.c_str(), strerror( errno ), err_status ) ).ok() ) {
+                        fco->physical_path( new_hash );
                         result.code( status );
                     }
                 }
@@ -336,7 +335,6 @@ extern "C" {
     irods::error mock_archive_unlink_plugin(
         irods::resource_plugin_context& _ctx ) {
         irods::error result = SUCCESS();
-
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
         irods::error ret = unix_check_params_and_path< irods::file_object >( _ctx );
