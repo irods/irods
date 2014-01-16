@@ -467,12 +467,12 @@ iparseDependent( packItem_t *myPackedItem, packInstructArray_t *myPackTable ) {
 
 int
 resolveIntDepItem( packItem_t *myPackedItem, packInstructArray_t *myPackTable ) {
-    char *tmpPtr, *bufPtr;
+    char *tmpPtr = 0, *bufPtr = 0;
     char buf[MAX_NAME_LEN], myPI[MAX_NAME_LEN], *pfPtr = NULL;
-    int endReached, c;
-    int outLen;
-    int keyVal, status;
-    packItem_t *newPackedItem, *tmpPackedItem, *lastPackedItem;
+    int endReached = 0, c = 0;
+    int outLen = 0;
+    int keyVal = 0, status = 0;
+    packItem_t *newPackedItem = 0, *tmpPackedItem = 0, *lastPackedItem = 0;
 
     tmpPtr = myPackedItem->name;
     bufPtr = buf;
@@ -1485,10 +1485,10 @@ packXmlString( void **inPtr, packedOutput_t *packedOutput, int maxStrLen,
 
 int
 strToXmlStr( char *inStr, char **outXmlStr ) {
-    char *tmpPtr;
-    char *inPtr;
-    char *outPtr;
-    int cpLen;
+    char *tmpPtr = 0;
+    char *inPtr = 0;
+    char *outPtr = 0;
+    int cpLen = 0;
 
     *outXmlStr = NULL;
     if ( inStr == NULL ) {
@@ -1846,7 +1846,7 @@ packChildStruct( void **inPtr, packedOutput_t *packedOutput,
                  packItem_t *myPackedItem, packInstructArray_t *myPackTable, int numElement,
                  int packFlag, irodsProt_t irodsProt, char *packInstructInp ) {
     void *packInstruct;
-    int i, status;
+    int i = 0, status = 0;
     packItem_t *packItemHead, *tmpItem;
 
     if ( numElement == 0 ) {
@@ -2751,11 +2751,11 @@ unpackChildStruct( void **inPtr, packedOutput_t *unpackedOutput,
                    packItem_t *myPackedItem, packInstructArray_t *myPackTable, int numElement,
                    irodsProt_t irodsProt, char *packInstructInp ) {
     void *packInstruct;
-    int i, status;
+    int i = 0, status = 0;
     packItem_t *unpackItemHead, *tmpItem;
-    int skipLen;
+    int skipLen = 0;
 #if defined(solaris_platform) && !defined(i86_hardware)
-    int doubleInStruct;
+    int doubleInStruct = 0;
 #endif
 #if defined(solaris_platform)
     void *outPtr1, *outPtr2;
@@ -2858,14 +2858,14 @@ int
 unpackPointerItem( packItem_t *myPackedItem, void **inPtr,
                    packedOutput_t *unpackedOutput, packInstructArray_t *myPackTable,
                    irodsProt_t irodsProt ) {
-    int numElement, numPointer;
-    int elementSz;
-    int typeInx;
-    int myTypeNum;
-    int i, j, status;
-    void **pointerArray;
-    void *outPtr;
-    int myDim;
+    int numElement = 0, numPointer = 0;
+    int elementSz = 0;
+    int typeInx = 0;
+    int myTypeNum = 0;
+    int i = 0, j = 0, status = 0;
+    void **pointerArray = 0;
+    void *outPtr = 0;
+    int myDim = 0;
 
     if ( unpackNullString( inPtr, unpackedOutput, myPackedItem, irodsProt )
             <= 0 ) {
@@ -2947,7 +2947,7 @@ unpackPointerItem( packItem_t *myPackedItem, void **inPtr,
          * want to unpack the entire length, just to end of the string
          * including the NULL.
          */
-        int maxStrLen, numStr, myLen;
+        int maxStrLen = 0, numStr = 0, myLen = 0;
 
         getNumStrAndStrLen( myPackedItem, &numStr, &maxStrLen );
 

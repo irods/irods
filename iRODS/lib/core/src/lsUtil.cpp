@@ -9,8 +9,8 @@ char zoneHint[MAX_NAME_LEN]; // JMC - backport 4416
 int
 lsUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         rodsPathInp_t *rodsPathInp ) {
-    int i;
-    int status;
+    int i = 0;
+    int status = 0;
     int savedStatus = 0;
     genQueryInp_t genQueryInp;
 
@@ -189,12 +189,12 @@ lsDataObjUtilLong( rcComm_t *conn, char *srcPath, rodsEnv *myRodsEnv,
 int
 printLsLong( rcComm_t *conn, rodsArguments_t *rodsArgs,
              genQueryOut_t *genQueryOut ) {
-    int i;
-    sqlResult_t *dataName, *replNum, *dataSize, *rescName, *rescHier,
-                *replStatus, *dataModify, *dataOwnerName, *dataId;
-    sqlResult_t *chksumStr, *dataPath, *rescGrp, *dataType; // JMC - backport 4636
-    char *tmpDataId;
-    int queryFlags;
+    int i = 0;
+    sqlResult_t *dataName = 0, *replNum = 0, *dataSize = 0, *rescName = 0, *rescHier = 0,
+                 *replStatus = 0, *dataModify = 0, *dataOwnerName = 0, *dataId = 0;
+    sqlResult_t *chksumStr = 0, *dataPath = 0, *rescGrp = 0, *dataType = 0; // JMC - backport 4636
+    char *tmpDataId = 0;
+    int queryFlags = 0;
 
     if ( genQueryOut == NULL ) {
         return ( USER__NULL_INPUT_ERR );

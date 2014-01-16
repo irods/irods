@@ -15,8 +15,8 @@ int TotalTrimmed = 0;
 int
 trimUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
           rodsPathInp_t *rodsPathInp ) {
-    int i;
-    int status;
+    int i = 0;
+    int status = 0;
     int savedStatus = 0;
     dataObjInp_t dataObjInp;
     int collCnt = 0;
@@ -89,7 +89,7 @@ int
 trimDataObjUtil( rcComm_t *conn, char *srcPath,
                  rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                  dataObjInp_t *dataObjInp ) {
-    int status;
+    int status = 0;
 
     if ( srcPath == NULL ) {
         rodsLog( LOG_ERROR,

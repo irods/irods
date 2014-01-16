@@ -175,8 +175,8 @@ scanObjCol( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath ) {
 
 int
 statPhysFile( rcComm_t *conn, genQueryOut_t *genQueryOut2 ) {
-    int i, rc;
-    char *dataPath, *loc, *zone, *dataName, *collName;
+    int i = 0, rc = 0;
+    char *dataPath = 0, *loc = 0, *zone = 0, *dataName = 0, *collName = 0;
     sqlResult_t *dataPathStruct, *locStruct, *zoneStruct,
                 *dataNameStruct, *collNameStruct;
     fileStatInp_t fileStatInp;

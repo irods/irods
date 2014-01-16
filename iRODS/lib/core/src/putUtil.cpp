@@ -38,7 +38,7 @@ putUtil( rcComm_t **myConn, rodsEnv *myRodsEnv,
     int i;
     int status;
     int savedStatus = 0;
-    rodsPath_t *targPath;
+    rodsPath_t *targPath = 0;
     dataObjInp_t dataObjOprInp;
     bulkOprInp_t bulkOprInp;
     rodsRestart_t rodsRestart;
@@ -527,8 +527,8 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
     char srcChildPath[MAX_NAME_LEN], targChildPath[MAX_NAME_LEN];
     objType_t childObjType;
     rcComm_t *conn;
-    int bulkFlag;
-    rodsLong_t dataSize;
+    int bulkFlag = 0;
+    rodsLong_t dataSize = 0;
 
     if ( srcDir == NULL || targColl == NULL ) {
         rodsLog( LOG_ERROR,
