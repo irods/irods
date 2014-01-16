@@ -2,6 +2,9 @@ include ../iRODS/config/external_versions.txt
 
 MAKEFLAGS += --no-print-directory
 
+RENCI_FTP_EXTERNAL="ftp://ftp.renci.org/pub/irods/external"
+RENCI_FTP_BUILD="ftp://ftp.renci.org/pub/irods/build"
+
 .PHONY : all clean cmake libarchive jansson boost cjson hdf5 netcdf epm
 
 CMAKEVERSIONARCHIVE=$(CMAKEVERSION).tar.gz
@@ -25,7 +28,7 @@ default : cmake libarchive jansson boost cjson hdf5 netcdf
 all : cmake libarchive jansson boost cjson epm hdf5 netcdf
 
 $(CMAKEVERSIONARCHIVE) :
-	@wget ftp://ftp.renci.org/pub/irods/external/$(CMAKEVERSIONARCHIVE) 2>&1
+	@wget $(RENCI_FTP_EXTERNAL)/$(CMAKEVERSIONARCHIVE) 2>&1
 
 $(CMAKEVERSIONMAKE) : $(CMAKEVERSIONARCHIVE)
 	@tar xf $(CMAKEVERSIONARCHIVE)
@@ -39,7 +42,7 @@ cmake : $(CMAKEVERSIONMAKE)
 	@$(MAKE) -C $(CMAKEVERSION)
 
 $(JANSSONVERSIONARCHIVE) :
-	@wget ftp://ftp.renci.org/pub/irods/external/$(JANSSONVERSIONARCHIVE) 2>&1
+	@wget $(RENCI_FTP_EXTERNAL)/$(JANSSONVERSIONARCHIVE) 2>&1
 
 $(JANSSONVERSIONMAKE) : $(JANSSONVERSIONARCHIVE)
 	@tar zxf $(JANSSONVERSIONARCHIVE)
@@ -50,7 +53,7 @@ jansson : $(JANSSONVERSIONMAKE)
 	@$(MAKE) -C $(JANSSONVERSION)
 
 $(CJSONVERSIONARCHIVE) :
-	@wget ftp://ftp.renci.org/pub/irods/external/$(CJSONVERSIONARCHIVE) 2>&1
+	@wget $(RENCI_FTP_EXTERNAL)/$(CJSONVERSIONARCHIVE) 2>&1
 
 $(CJSONVERSION) : $(CJSONVERSIONARCHIVE)
 	@unzip -o $(CJSONVERSIONARCHIVE)
@@ -58,7 +61,7 @@ $(CJSONVERSION) : $(CJSONVERSIONARCHIVE)
 cjson : $(CJSONVERSION)
 
 $(LIBARCHIVEVERSIONARCHIVE) :
-	@wget ftp://ftp.renci.org/pub/irods/external/$(LIBARCHIVEVERSIONARCHIVE) 2>&1
+	@wget $(RENCI_FTP_EXTERNAL)/$(LIBARCHIVEVERSIONARCHIVE) 2>&1
 
 $(LIBARCHIVEVERSIONMAKE) : $(LIBARCHIVEVERSIONARCHIVE) cmake
 	@tar zxf $(LIBARCHIVEVERSIONARCHIVE)
@@ -75,7 +78,7 @@ libarchive : $(LIBARCHIVEVERSIONMAKE)
 	@$(MAKE) -C $(LIBARCHIVEVERSION)
 
 $(BOOSTVERSIONARCHIVE) :
-	@wget ftp://ftp.renci.org/pub/irods/external/$(BOOSTVERSIONARCHIVE) 2>&1
+	@wget $(RENCI_FTP_EXTERNAL)/$(BOOSTVERSIONARCHIVE) 2>&1
 
 $(BOOSTVERSIONMAKE) : $(BOOSTVERSIONARCHIVE)
 	@tar zxf $(BOOSTVERSIONARCHIVE)
@@ -92,7 +95,7 @@ boost : $(BOOSTVERSIONMAKE)
 		./bjam link=static threading=multi cxxflags="-fPIC -DBOOST_SYSTEM_NO_DEPRECATED" -j$$CPU_COUNT
 
 $(HDF5VERSIONARCHIVE) :
-	@wget ftp://ftp.renci.org/pub/irods/external/$(HDF5VERSION).tar.gz
+	@wget $(RENCI_FTP_EXTERNAL)/$(HDF5VERSIONARCHIVE) 2>&1
 
 $(HDF5VERSIONMAKE) : $(HDF5VERSIONARCHIVE)
 	@tar zxf $(HDF5VERSIONARCHIVE)
@@ -103,7 +106,7 @@ hdf5 : $(HDF5VERSIONMAKE)
 	@$(MAKE) -C $(HDF5VERSION)
 
 $(NETCDFVERSIONARCHIVE) :
-	@wget ftp://ftp.renci.org/pub/irods/external/$(NETCDFVERSION).tar.gz
+	@wget $(RENCI_FTP_EXTERNAL)/$(NETCDFVERSIONARCHIVE) 2>&1
 
 $(NETCDFVERSIONMAKE) : $(NETCDFVERSIONARCHIVE) hdf5
 	@tar zxf $(NETCDFVERSIONARCHIVE)
@@ -115,7 +118,7 @@ netcdf : $(NETCDFVERSIONMAKE)
 	@$(MAKE) -C $(NETCDFVERSION)
 
 $(EPMVERSIONARCHIVE) :
-	@wget ftp://ftp.renci.org/pub/irods/build/$(EPMVERSIONARCHIVE) 2>&1
+	@wget $(RENCI_FTP_BUILD)/$(EPMVERSIONARCHIVE) 2>&1
 
 $(EPMVERSIONMAKE) : $(EPMVERSIONARCHIVE)
 	@tar zxf $(EPMVERSIONARCHIVE)
