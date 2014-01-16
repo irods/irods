@@ -159,7 +159,7 @@ MY_CFLAG+= -D$(hardware_platform)
 endif
 
 ifeq ($(CC_IS_GCC), 1)
-MY_CFLAG+=-Wall -Werror
+MY_CFLAG+=-Wall
 endif
 
 # Alpha
