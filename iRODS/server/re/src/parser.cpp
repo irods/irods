@@ -1433,7 +1433,7 @@ int rulegen = 1;
 
 TRY( Column )
 Label colFuncStart = *FPOS;
-char *columnFunc;
+char *columnFunc = NULL;
 TRY( columnFunc )
 TTEXT2( "count", "COUNT" );
 columnFunc = "count";

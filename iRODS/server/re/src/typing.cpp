@@ -507,7 +507,7 @@ Satisfiability simplifyLocally( ExprType *tca, ExprType *tcb, int flex, Node *no
         return TAUTOLOGY;
     }
     else if ( baseRuleApplies( tca, tcb, flex, &templa, &templb, r ) ) {
-        Satisfiability c;
+        Satisfiability c = TAUTOLOGY;
         logicalAnd( simplifyLocally( tca, templa, flex, node, typingEnv, equivalence, simpleTypingConstraints, r ),
                     simplifyLocally( templb, tcb, flex, node, typingEnv, equivalence, simpleTypingConstraints, r ), c );
         return c;
@@ -998,7 +998,7 @@ int typeFuncParam( Node *param, Node *paramType, Node *formalParamType, Hashtabl
 }
 
 ExprType* typeExpression3( Node *expr, int dynamictyping, Env *funcDesc, Hashtable *varTypes, List *typingConstraints, rError_t *errmsg, Node **errnode, Region *r ) {
-    ExprType *res;
+    ExprType *res = NULL;
     ExprType **components;
     ExprType* t = NULL;
     int i;

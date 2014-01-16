@@ -125,7 +125,7 @@ void CONCAT(nextRuleGen, l)(Pointer* e, ParserContext *context, p, q)
 #define PARSER_BEGIN(l) \
     Label start; \
     Label pos; \
-    Token *token; (void)token; \
+    Token *token = NULL; (void)token; \
     skipWhitespace(e); \
     getFPos(&start, (e), context); \
     do {

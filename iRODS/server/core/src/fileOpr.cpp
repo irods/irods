@@ -222,7 +222,7 @@ int chkEmptyDir(
     char*    cacheDir,
     char*    hier ) {
 
-    int status;
+    int status = 0;
     char childPath[MAX_NAME_LEN];
     struct stat myFileStat;
     struct rodsDirent* myFileDirent = 0;
@@ -270,16 +270,16 @@ int chkEmptyDir(
         // handle hard error
         if ( stat_err.code() < 0 ) {
             rodsLog( LOG_ERROR, "chkEmptyDir: fileStat error for %s, status = %d",
-                     childPath, status );
+                     childPath, stat_err.code() );
             break;
         }
 
         // =-=-=-=-=-=-=-
         // path exists
         if ( myFileStat.st_mode & S_IFREG ) {
+            status = SYS_DIR_IN_VAULT_NOT_EMPTY;
             rodsLog( LOG_ERROR, "chkEmptyDir: file %s exists",
                      childPath, status );
-            status = SYS_DIR_IN_VAULT_NOT_EMPTY;
             break;
         }
 

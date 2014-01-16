@@ -133,7 +133,7 @@ regUnbunPhySubfiles( rsComm_t *rsComm, rescInfo_t *rescInfo, char *phyBunDir,
     char subfilePath[MAX_NAME_LEN];
     dataObjInp_t dataObjInp;
     dataObjInp_t dataObjUnlinkInp;
-    int status;
+    int status = 0;
     int savedStatus = 0;
 
     dataObjInfo_t *dataObjInfoHead = NULL;

@@ -54,7 +54,7 @@ fsckObj( rcComm_t *conn, rodsArguments_t *myRodsArgs, rodsPathInp_t *rodsPathInp
 
 int
 fsckObjDir( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, char *hostname ) {
-    int status;
+    int status = 0;
     char fullPath[LONG_NAME_LEN] = "\0";
 
     /* check if it is a directory */

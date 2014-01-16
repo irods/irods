@@ -8,7 +8,7 @@ rsExecMyRule( rsComm_t *rsComm, execMyRuleInp_t *execMyRuleInp,
     int status;
     ruleExecInfo_t rei;
     char *iFlag;
-    int oldReTestFlag, oldReLoopBackFlag;
+    int oldReTestFlag = 0, oldReLoopBackFlag = 0;
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
 

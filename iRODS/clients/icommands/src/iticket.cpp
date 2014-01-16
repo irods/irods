@@ -56,7 +56,7 @@ printResultsAndSubQuery( rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
         else {
             for ( i = 0; i < genQueryOut->rowCnt; i++ ) {
                 printedRows++;
-                char *subCol;
+                char *subCol = "";
                 if ( i > 0 && dashOpt > 0 ) {
                     printf( "----\n" );
                 }

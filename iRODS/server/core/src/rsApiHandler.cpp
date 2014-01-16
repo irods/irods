@@ -272,7 +272,7 @@ sendAndProcApiReply( rsComm_t * rsComm, int apiInx, int status,
 int
 sendApiReply( rsComm_t * rsComm, int apiInx, int retVal,
               void * myOutStruct, bytesBuf_t * myOutBsBBuf ) {
-    int status;
+    int status = 0;
     bytesBuf_t *outStructBBuf = NULL;
     bytesBuf_t *myOutStructBBuf;
     bytesBuf_t *rErrorBBuf = NULL;

@@ -30,7 +30,7 @@ int rodsMonPerfLog( char *serverName, char *resc, char *output, ruleExecInfo_t *
          monStatus[MAX_NAME_LEN], suffix[MAX_VALUE], *result;
     const char *delim1 = "#";
     const char *delim2 = ",";
-    int indx, timestamp, rc1, rc2, rc3, rc4;
+    int indx, timestamp, rc1 = 0, rc2 = 0, rc3 = 0, rc4 = 0;
     FILE *foutput;
     time_t tps;
     generalRowInsertInp_t generalRowInsertInp;

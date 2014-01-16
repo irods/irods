@@ -656,12 +656,17 @@ printCollAcl( rcComm_t *conn, char *collName ) {
         int i, j;
         for ( i = 0; i < genQueryOut->rowCnt; i++ ) {
             char *tResult[10];
+            char empty = 0;
             char typeStr[8];
             tResult[3] = 0;
 
-            for ( j = 0; j < genQueryOut->attriCnt && j < 10; j++ ) {
-                tResult[j] = genQueryOut->sqlResult[j].value;
-                tResult[j] += i * genQueryOut->sqlResult[j].len;
+            for ( j = 0; j < 10; j++ ) {
+                tResult[j] = &empty;
+                if(j < genQueryOut->attriCnt)
+                {
+                    tResult[j] = genQueryOut->sqlResult[j].value;
+                    tResult[j] += i * genQueryOut->sqlResult[j].len;
+                }
             }
             typeStr[0] = '\0';
             if ( tResult[3] != 0 && strncmp( tResult[3], "rodsgroup", 9 ) == 0 ) {

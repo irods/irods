@@ -165,7 +165,7 @@ _rsProcStatAll( rsComm_t *rsComm, procStatInp_t *procStatInp,
 int
 localProcStat( rsComm_t *rsComm, procStatInp_t *procStatInp,
                genQueryOut_t **procStatOut ) {
-    int numProc, status;
+    int numProc, status = 0;
     procLog_t procLog;
     char childPath[MAX_NAME_LEN];
     int count = 0;

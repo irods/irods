@@ -852,7 +852,7 @@ Res* execMicroService3( char *msName, Res **args, unsigned int nargs, Node *node
     int actionInx;
     unsigned int numOfStrArgs;
     unsigned int i;
-    int ii;
+    int ii = 0;
     msParam_t *myArgv[MAX_PARAMS_LEN];
     Res *res;
 
@@ -1111,7 +1111,7 @@ Res *execRule( char *ruleNameInp, Res** args, unsigned int argc, int applyAllRul
     int ruleInx = 0, statusI;
     Res *statusRes = NULL;
     int  inited = 0;
-    ruleExecInfo_t  *saveRei;
+    ruleExecInfo_t  *saveRei = NULL;
     int reTryWithoutRecovery = 0;
     char ruleName[MAX_NAME_LEN];
     int applyAllRule = applyAllRuleInp;

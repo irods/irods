@@ -163,7 +163,7 @@ _rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     dataObjInfo_t *srcDataObjInfo;
     rescGrpInfo_t *tmpRescGrpInfo;
     rescInfo_t *tmpRescInfo;
-    int status;
+    int status = 0;
     int savedStatus = 0;
 
     tmpRescGrpInfo = destRescGrpInfo;
