@@ -1401,7 +1401,7 @@ History of Releases
 ==========   =========    ======================================================
 Date         Version      Description
 ==========   =========    ======================================================
-2014-01-15   4.0.0b1      First Beta Release of Merged Codebase
+2014-01-17   4.0.0b1      First Beta Release of Merged Codebase
                             This is the first beta of the merged open source
                             release from RENCI.  It includes pluggable database
                             support and separate packages for the standalone
