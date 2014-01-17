@@ -17,6 +17,7 @@
 
 int get64RandomBytes( char *buf );
 static char buf[CHALLENGE_LEN + MAX_PASSWORD_LEN + 1];
+
 // =-=-=-=-=-=-=-
 // accessor for static challenge buf variable
 char* _rsAuthRequestGetChallenge() {
@@ -27,10 +28,7 @@ char* _rsAuthRequestGetChallenge() {
 // mutator for static challenge buf variable
 void _rsSetAuthRequestGetChallenge( const char* _c ) {
     if ( _c ) {
-        strncpy(
-            buf,
-            _c,
-            CHALLENGE_LEN + 1 );
+        strncpy( buf, _c, CHALLENGE_LEN + 1 );
     }
 }
 
@@ -52,11 +50,7 @@ int rsAuthRequest(
 
     // =-=-=-=-=-=-=-
     // construct an auth object given the native scheme
-    irods::auth_object_ptr auth_obj;
-    irods::error ret = irods::auth_factory(
-                           irods::AUTH_NATIVE_SCHEME,
-                           &_comm->rError,
-                           auth_obj );
+    irods::auth_object_ptr auth_obj; irods::error ret = irods::auth_factory( irods::AUTH_NATIVE_SCHEME, &_comm->rError, auth_obj );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
@@ -65,9 +59,7 @@ int rsAuthRequest(
     // =-=-=-=-=-=-=-
     // resolve an auth plugin given the auth object
     irods::plugin_ptr ptr;
-    ret = auth_obj->resolve(
-              irods::AUTH_INTERFACE,
-              ptr );
+    ret = auth_obj->resolve( irods::AUTH_INTERFACE, ptr );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
@@ -76,11 +68,7 @@ int rsAuthRequest(
 
     // =-=-=-=-=-=-=-
     // call client side init - 'establish creds'
-    ret = auth_plugin->call <
-          rsComm_t* > (
-              irods::AUTH_AGENT_AUTH_REQUEST,
-              auth_obj,
-              _comm );
+    ret = auth_plugin->call <rsComm_t* > ( irods::AUTH_AGENT_AUTH_REQUEST, auth_obj, _comm );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
@@ -88,10 +76,7 @@ int rsAuthRequest(
 
     // =-=-=-=-=-=-=-
     // send back the results
-    strncpy(
-        ( *_req )->challenge,
-        auth_obj->request_result().c_str(),
-        auth_obj->request_result().size() + 1 );
+    strncpy( ( *_req )->challenge, auth_obj->request_result().c_str(), auth_obj->request_result().size() + 1 );
 
     // =-=-=-=-=-=-=-
     // win!

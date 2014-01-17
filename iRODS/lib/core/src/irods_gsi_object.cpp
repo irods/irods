@@ -6,21 +6,21 @@
 
 namespace irods {
 
-    gsi_object::gsi_object(
+    gsi_auth_object::gsi_auth_object(
         rError_t* _r_error ) : auth_object( _r_error ) {
         creds_ = GSS_C_NO_CREDENTIAL;
     }
 
-    gsi_object::~gsi_object() {
+    gsi_auth_object::~gsi_auth_object() {
         // TODO - stub
     }
 
-    error gsi_object::resolve(
+    error gsi_auth_object::resolve(
         const std::string& _interface,
         plugin_ptr& _ptr ) {
         error result = SUCCESS();
         if ( ( result = ASSERT_ERROR( _interface == AUTH_INTERFACE, SYS_INVALID_INPUT_PARAM,
-                                      "gsi_object does not support a \"%s\" plugin interface.",
+                                      "gsi_auth_object does not support a \"%s\" plugin interface.",
                                       _interface.c_str() ) ).ok() ) {
             auth_ptr ath;
             error ret = auth_mgr.resolve( GSI_AUTH_PLUGIN, ath );
@@ -39,8 +39,8 @@ namespace irods {
         return result;
     }
 
-    bool gsi_object::operator==(
-        const gsi_object& _rhs ) const {
+    bool gsi_auth_object::operator==(
+        const gsi_auth_object& _rhs ) const {
         return creds_ == _rhs.creds_;
     }
 

@@ -1,9 +1,10 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
-#ifndef _gsi_object_H_
-#define _gsi_object_H_
+#ifndef _gsi_auth_object_H_
+#define _gsi_auth_object_H_
 
 #include "irods_error.hpp"
+#include "irods_auth_object.hpp"
 
 #include <gssapi.h>
 
@@ -15,11 +16,11 @@ namespace irods {
     /**
      * @brief Auth object for GSI authentication
      */
-    class gsi_object : public auth_object {
+    class gsi_auth_object : public auth_object {
     public:
         /// @brief Constructor
-        gsi_object( rError_t* _r_error );
-        virtual ~gsi_object();
+        gsi_auth_object( rError_t* _r_error );
+        virtual ~gsi_auth_object();
 
         // Accessors
 
@@ -28,6 +29,15 @@ namespace irods {
             return creds_;
         }
 
+        /// @brief Returns the socket number
+        virtual int sock( void ) const { return sock_; }
+
+        /// @brief Returns the serverDN
+        virtual const std::string& server_dn( void ) const { return server_dn_; }
+
+        /// @brief Returns the digest
+        virtual const std::string& digest( void ) const { return digest_; }
+
         // Mutators
 
         /// @brief Sets the GSI credentials
@@ -35,21 +45,33 @@ namespace irods {
             creds_ = _creds;
         }
 
+        /// @brief Sets the socket number
+        virtual void sock( int s ) { sock_ = s; }
+
+        /// @brief Sets the serverDN
+        virtual void server_dn( const std::string& s ) { server_dn_ = s; }
+
+        /// @brief Sets the digest
+        virtual void digest( const std::string& d ) { digest_ = d; }
+
         // Methods
 
         /// @brief undocumented
         error resolve( const std::string& _name, plugin_ptr& _plugin ); // resolve plugin
 
         /// @brief Comparison operator
-        bool operator==( const gsi_object& _rhs ) const;
+        bool operator==( const gsi_auth_object& _rhs ) const;
 
 
     private:
         gss_cred_id_t creds_;
+        int sock_;
+        std::string server_dn_;
+        std::string digest_;
     };
 
-    typedef boost::shared_ptr<gsi_object> gsi_object_ptr;
+    typedef boost::shared_ptr<gsi_auth_object> gsi_auth_object_ptr;
 
 }; // namespace irods
 
-#endif // _gsi_object_H_
+#endif // _gsi_auth_object_H_
