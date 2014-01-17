@@ -210,8 +210,7 @@ int clientLoginPam( rcComm_t* Conn,
         path p( "/bin/stty" );
         if ( exists( p ) ) {
             if ( 0 != system( "/bin/stty -echo 2> /dev/null" ) ) {
-                printError( Conn, status, "System call failed for /bin/stty" );
-                return ( SYS_NOT_SUPPORTED );
+                // TODO: revisit this condition
             }
             doStty = 1;
         }
@@ -221,8 +220,7 @@ int clientLoginPam( rcComm_t* Conn,
         }
         if ( doStty ) {
             if ( 0 != system( "/bin/stty echo 2> /dev/null" ) ) {
-                printError( Conn, status, "System call failed for /bin/stty" );
-                return ( SYS_NOT_SUPPORTED );
+                // TODO: revisit this condition
             }
             printf( "\n" );
         }

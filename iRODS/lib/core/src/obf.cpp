@@ -306,8 +306,7 @@ obfSavePw( int promptOpt, int fileOpt, int printOpt, char *pwArg ) {
             path p( "/bin/stty" );
             if ( exists( p ) ) {
                 if ( 0 != system( "/bin/stty -echo" ) ) {
-                    rodsLog( LOG_ERROR, "System call failed for /bin/stty" );
-                    return ( SYS_NOT_SUPPORTED );
+                    // TODO: revisit this condition
                 }
             }
         }
@@ -319,8 +318,7 @@ obfSavePw( int promptOpt, int fileOpt, int printOpt, char *pwArg ) {
 
         if ( promptOpt != 1 ) {
             if ( 0 != system( "/bin/stty echo" ) ) {
-                rodsLog( LOG_ERROR, "System call failed for /bin/stty" );
-                return ( SYS_NOT_SUPPORTED );
+                // TODO: revisit this condition
             }
             printf( "\n" );
         }
