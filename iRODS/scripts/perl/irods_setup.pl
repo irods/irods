@@ -2736,7 +2736,7 @@ sub Postgres_CreateAlternateDatabaseUser( )
 	printToFile( $tmpPassword, "$DATABASE_ADMIN_PASSWORD\n" );
 	chmod( 0600, $tmpPassword );
 
-	$CUSER=`../packaging/find_postgres_bin.sh`;
+	$CUSER=`../packaging/find_bin_postgres.sh`;
 	chomp $CUSER;
 	$CUSER=$CUSER . "/createuser";
 
@@ -2871,7 +2871,7 @@ sub Postgres_CreateDatabase()
 	printLog( "\nChecking whether iCAT database exists...\n" );
 	my $needCreate = 1;
 
-	$PSQL=`../packaging/find_postgres_bin.sh`;
+	$PSQL=`../packaging/find_bin_postgres.sh`;
 	chomp $PSQL;
 	$PSQL=$PSQL . "/psql";
 	my ($status,$output) = run( "$PSQL -U $DATABASE_ADMIN_NAME -l $DB_NAME" );
@@ -2909,7 +2909,7 @@ sub Postgres_CreateDatabase()
 				printToFile( $tmpPassword, "$DATABASE_ADMIN_PASSWORD\n" );
 				chmod( 0600, $tmpPassword );
 
-				$DDB=`../packaging/find_postgres_bin.sh`;
+				$DDB=`../packaging/find_bin_postgres.sh`;
 				chomp $DDB;
 				$DDB=$DDB . "/dropdb";
 				my ($status,$output) = run( "$DDB $DB_NAME < $tmpPassword" );
@@ -2950,7 +2950,7 @@ sub Postgres_CreateDatabase()
 		chmod( 0600, $tmpPassword );
 
 
-		$CDB=`../packaging/find_postgres_bin.sh`;
+		$CDB=`../packaging/find_bin_postgres.sh`;
 		chomp $CDB;
 		$CDB=$CDB . "/createdb";
 		if ($DATABASE_HOST eq "localhost") {
@@ -3027,7 +3027,7 @@ sub Postgres_CreateDatabase()
 			my $libPath = abs_path( File::Spec->catfile($databaseLibDir, "libodbcpsql.so" ) );
 				
 			printToFile( $ini,
-				"[PostgreSQL]\n" .
+				"[postgres]\n" .
 				"Driver=$libPath\n" .
 				"Debug=0\n" .
 				"CommLog=0\n" .
@@ -3044,7 +3044,7 @@ sub Postgres_CreateDatabase()
 			# iRODS installation script, or Postgres was
 			# previosly installed.  Make sure there is a
 			# 'Database' name set in the file.
-			$status = Postgres_updateODBC( $ini, "PostgreSQL",
+			$status = Postgres_updateODBC( $ini, "postgres",
 				"Database", $DB_NAME );
 			if ( $status == 0 )
 			{
@@ -3082,7 +3082,7 @@ sub Postgres_CreateDatabase()
 			# previously.  Chances are good that this will not
 			# be sufficient and something else is wrong too.
 			printToFile( $ini,
-				"[PostgreSQL]\n" .
+				"[postgres]\n" .
 				"Debug=0\n" .
 				"CommLog=0\n" .
 				"Servername=$DATABASE_HOST\n" .
@@ -3098,7 +3098,7 @@ sub Postgres_CreateDatabase()
 			# iRODS installation script, or Postgres was
 			# previosly installed.  Make sure there is a
 			# 'Database' name set in the file.
-			$status = Postgres_updateODBC( $ini, "PostgreSQL",
+			$status = Postgres_updateODBC( $ini, "postgres",
 				"Database", $DB_NAME );
 			if ( $status == 0 )
 			{
@@ -3137,7 +3137,7 @@ sub Postgres_CreateDatabase()
 		chomp($psqlOdbcLib);
 
 		open( NEWCONFIGFILE, ">$userODBC" );
-		print ( NEWCONFIGFILE "[PostgreSQL]\n" .
+		print ( NEWCONFIGFILE "[postgres]\n" .
 				"Driver=$psqlOdbcLib\n" .
 				"Debug=0\n" .
 				"CommLog=0\n" .
@@ -3259,6 +3259,32 @@ sub MySQL_CreateDatabase()
         printStatus( "CreateDatabase Skipped.  For MySQL, DBA creates the instance.\n" );
         printLog( "CreateDatabase Skipped.  For MySQL, DBA creates the instance.\n" );
     }
+
+
+    # =-=-=-=-=-=-=-
+	# configure the service accounts .odbc.ini file
+	printStatus( "Updating the .odbc.ini...\n" );
+	printLog( "Updating the .odbc.ini...\n" );
+	my $userODBC = File::Spec->catfile( $ENV{"HOME"}, ".odbc.ini" );
+    
+    # iRODS now supports a script to determine the path & lib name of the odbc driver
+    my $mysqlOdbcLib = `../packaging/find_odbc_mysql.sh`;
+    chomp($psqlOdbcLib);
+
+    open( NEWCONFIGFILE, ">$userODBC" );
+    print ( NEWCONFIGFILE "[mysql]\n" .
+            "Driver=$mysqlOdbcLib\n" .
+            "Debug=0\n" .
+            "CommLog=0\n" .
+            "Servername=$DATABASE_HOST\n" .
+            "Database=$DB_NAME\n" .
+            "ReadOnly=no\n" .
+            "Ksqo=0\n" .
+            "Port=$DATABASE_PORT\n" );
+
+    close( NEWCONFIGFILE );
+
+    chmod( $userODBC, 0600 );
     return 1;
 }
 
@@ -3617,7 +3643,7 @@ sub Postgres_sql($$)
 {
 	my ($databaseName,$sqlFilename) = @_;
 
-	$PSQL=`../packaging/find_postgres_bin.sh`;
+	$PSQL=`../packaging/find_bin_postgres.sh`;
 	chomp $PSQL;
 	$PSQL=$PSQL . "/psql";
 
@@ -3672,8 +3698,11 @@ sub Oracle_sql($$)
 #
 sub MySQL_sql($$)
 {
+	$MYSQL=`../packaging/find_bin_mysql.sh`;
+	chomp $MYSQL;
+	$MYSQL=$MYSQL . "/mysql";
 	my ($databaseName,$sqlFilename) = @_;
-	return run( "$mysql < $sqlFilename" );
+	return run( "$MYSQL --user=$DATABASE_ADMIN_NAME --password=$DATABASE_ADMIN_PASSWORD $databaseName < $sqlFilename" );
 }
 
 

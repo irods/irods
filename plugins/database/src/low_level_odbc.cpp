@@ -34,6 +34,7 @@
 
 #include "irods_tmp_string.hpp"
 #include "irods_log.hpp"
+#include "irods_stacktrace.hpp"
 
 int _cllFreeStatementColumns( icatSessionStruct *icss, int statementNumber );
 
@@ -162,6 +163,13 @@ cllCloseEnv( icatSessionStruct *icss ) {
 */
 int
 cllConnect( icatSessionStruct *icss ) {
+
+
+    irods::stacktrace st;
+    st.trace();
+    st.dump();
+
+
     RETCODE stat;
 
     SQLCHAR         buffer[SQL_MAX_MESSAGE_LENGTH + 1];
@@ -178,14 +186,29 @@ cllConnect( icatSessionStruct *icss ) {
         return ( -1 );
     }
 
-    odbcEntryName = getenv( "irodsOdbcDSN" );
-    if ( odbcEntryName == NULL ) {
-        odbcEntryName = icss->database_plugin_type;
+    rodsLog( LOG_NOTICE, "XXXX - db type [%s]", icss->database_plugin_type );
+
+
+    // =-=-=-=-=-=-=-
+    // ODBC Entry is defined by the DB type or an env variable
+    char odbcEntryName[ DB_TYPENAME_LEN ];
+    strncpy( odbcEntryName, icss->database_plugin_type, DB_TYPENAME_LEN );
+    char* odbc_env = getenv( "irodsOdbcDSN" );
+    if ( odbc_env ) {
+        rodsLog( LOG_DEBUG, "Setting ODBC entry to ENV [%s]", icss->database_plugin_type );
+        strncpy( odbcEntryName, odbc_env, DB_TYPENAME_LEN );
+
     }
 
-    stat = SQLConnect( myHdbc, ( unsigned char * )odbcEntryName, SQL_NTS,
-                       ( unsigned char * )icss->databaseUsername, SQL_NTS,
-                       ( unsigned char * )icss->databasePassword, SQL_NTS );
+    rodsLog( LOG_NOTICE, "XXXX - odbc entry [%s]", odbcEntryName );
+
+    // =-=-=-=-=-=-=-
+    // initialize a connection to the catalog
+    stat = SQLConnect(
+               myHdbc,
+               ( unsigned char * )odbcEntryName, SQL_NTS,
+               ( unsigned char * )icss->databaseUsername, SQL_NTS,
+               ( unsigned char * )icss->databasePassword, SQL_NTS );
     if ( stat != SQL_SUCCESS ) {
         rodsLog( LOG_ERROR, "cllConnect: SQLConnect failed: %d", stat );
         rodsLog( LOG_ERROR,
@@ -1291,9 +1314,11 @@ extern "C" int cllTest( char *userArg, char *pwArg ) {
     icatSessionStruct icss;
 
     icss.stmtPtr[0] = 0;
+    strncpy( icss.database_plugin_type, "postgres", DB_TYPENAME_LEN );
     icss.databaseType = DB_TYPE_POSTGRES; // JMC - backport 4712
 #ifdef MY_ICAT
     icss.databaseType = DB_TYPE_MYSQL;
+    strncpy( icss.database_plugin_type, "mysql", DB_TYPENAME_LEN );
 #endif
 
     rodsLogSqlReq( 1 );

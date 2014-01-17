@@ -608,7 +608,12 @@ create unique index idx_data_main2 on R_DATA_MAIN (coll_id,data_name VARCHAR_MAX
 create index idx_data_main3 on R_DATA_MAIN (coll_id);
 create index idx_data_main4 on R_DATA_MAIN (data_name VARCHAR_MAX_IDX_SIZE);
 create index idx_data_main5 on R_DATA_MAIN (data_type_name);
+
+/* this is not possible for MySQL reference :: http://stackoverflow.com/a/1827099 */
+#ifndef mysql
 create index idx_data_main6 on R_DATA_MAIN (data_path);
+#endif
+
 create unique index idx_meta_main1 on R_META_MAIN (meta_id);
 create index idx_meta_main2 on R_META_MAIN (meta_attr_name VARCHAR_MAX_IDX_SIZE);
 create index idx_meta_main3 on R_META_MAIN (meta_attr_value VARCHAR_MAX_IDX_SIZE);

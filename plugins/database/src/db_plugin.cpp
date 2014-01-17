@@ -1996,12 +1996,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         return ret;
 
@@ -2022,12 +2022,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // check incoming param
@@ -2086,12 +2086,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // check incoming param
@@ -2168,12 +2168,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -2284,12 +2284,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -2349,12 +2349,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -2811,12 +2811,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -3092,12 +3092,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -3315,12 +3315,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -3589,12 +3589,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -3709,12 +3709,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -3846,12 +3846,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -3950,12 +3950,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -4182,12 +4182,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -4386,12 +4386,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -4565,12 +4565,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -4747,12 +4747,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -4796,12 +4796,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -4846,12 +4846,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -5036,12 +5036,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -5260,12 +5260,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -5539,12 +5539,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -5698,12 +5698,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -5822,12 +5822,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -5991,12 +5991,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -6059,12 +6059,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -6118,12 +6118,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -6326,12 +6326,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -6447,12 +6447,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -6722,12 +6722,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -6881,12 +6881,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -6949,12 +6949,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -7420,12 +7420,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -7583,12 +7583,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -7757,12 +7757,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -7968,12 +7968,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -8340,12 +8340,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -8543,12 +8543,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -9048,12 +9048,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -9212,12 +9212,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -9312,12 +9312,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -9577,12 +9577,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -9824,12 +9824,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -10186,12 +10186,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -10493,12 +10493,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -10619,12 +10619,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -10990,12 +10990,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -11105,12 +11105,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -11292,12 +11292,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -11844,12 +11844,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -12189,12 +12189,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -12576,12 +12576,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -12730,12 +12730,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -12841,12 +12841,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -12928,12 +12928,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -13008,12 +13008,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -13089,12 +13089,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -13166,12 +13166,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -13260,12 +13260,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -13435,12 +13435,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -13528,12 +13528,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -13589,12 +13589,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -13726,12 +13726,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -13857,12 +13857,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -13992,12 +13992,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -14164,12 +14164,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -14233,12 +14233,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -14302,12 +14302,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -14371,12 +14371,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -14478,12 +14478,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -14563,12 +14563,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -14820,12 +14820,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -14906,12 +14906,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -14971,12 +14971,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -15056,12 +15056,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -15134,12 +15134,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -15822,12 +15822,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -15871,12 +15871,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -15921,12 +15921,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -15972,12 +15972,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -16018,12 +16018,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
+        /*irods::postgres_object_ptr pg;
         ret = make_pg_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property

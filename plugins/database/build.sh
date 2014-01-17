@@ -27,7 +27,7 @@ fi
 if [ "$1" == "clean" ] ; then
     rm -f $SCRIPTPATH/src/icatCoreTables.sql
     rm -f $SCRIPTPATH/src/icatSysTables.sql
-    rm -f $SCRIPTPATH/packaging/irods_database_plugin_postgres.list
+    rm -f $SCRIPTPATH/packaging/irods_database_plugin_*.list
     rm -f $SCRIPTPATH/packaging/setup_database.sh
     make clean
     exit 0
@@ -77,7 +77,7 @@ echo "Detected OS Version [$DETECTEDOSVERSION]"
 
 # =-=-=-=-=-=-=-
 # handle determination of DB location
-DB_BIN=`$BUILDDIR/packaging/find_${DB_TYPE}_bin.sh`
+DB_BIN=`$SCRIPTPATH/packaging/find_bin_${DB_TYPE}.sh`
 if [ "$DB_BIN" == "FAIL" ] ; then
     if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
         PREFLIGHT="$PREFLIGHT postgresql"
