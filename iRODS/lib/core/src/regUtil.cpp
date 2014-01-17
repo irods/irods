@@ -9,8 +9,8 @@
 int
 regUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
          rodsPathInp_t *rodsPathInp ) {
-    int i;
-    int status;
+    int i = 0;
+    int status = 0;
     int savedStatus = 0;
     rodsPath_t *destPath, *srcPath;
     dataObjInp_t dataObjOprInp;

@@ -231,7 +231,7 @@ class ResourceSuite(ResourceBase):
         os.system("echo \"irodsClientServerPolicy 'CS_NEG_REQUIRE'\" >> %s" % clientEnvFile)
 
         # server reboot to pick up new irodsEnv settings
-        os.system("/var/lib/irods/iRODS/irodsctl restart > /dev/null 2>&1")
+        os.system("/var/lib/irods/iRODS/irodsctl restart")
 
         # do the encrypted put
         filename = "encryptedfile.txt"

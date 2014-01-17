@@ -45,6 +45,7 @@
 #			Module names are the names of directories in
 #			the 'modules' subdirectory.
 #
+
 OS_platform=
 #osx_106plus=
 FILE_64BITS=1
@@ -64,9 +65,14 @@ ORACLE_HOME=
 endif
 PAM_AUTH=1
 
-BOOST_DIR=TOBEFILLEDBYBUILDSH
-LIBARCHIVE_DIR=TOBEFILLEDBYBUILDSH
+IRODS_BUILD_DIR=
+CPU_COUNT=
 
+#external version numbers and associated names
+include $(IRODS_BUILD_DIR)/iRODS/config/external_versions.txt
+
+BOOST_DIR=$(IRODS_BUILD_DIR)/external/$(BOOSTVERSION)
+LIBARCHIVE_DIR=$(IRODS_BUILD_DIR)/external/$(LIBARCHIVEVERSION)
 
 #
 # Check which database is in use for the iCAT

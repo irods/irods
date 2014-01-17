@@ -20,9 +20,9 @@ When this branch is updated, a series of actions are set in motion, culminating 
 
 To create a new release:
 
-0 - Make sure you're in the development branch
-    $ git checkout development
-1 - Decide which commit is the one (if it's not the HEAD of development)
+0 - Make sure you're in the master branch
+    $ git checkout master
+1 - Decide which commit is the one (if it's not the HEAD of master)
     $ git log
     $ git checkout COMMITSHA1
 2 - Tag it

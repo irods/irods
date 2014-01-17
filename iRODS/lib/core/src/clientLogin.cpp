@@ -195,11 +195,11 @@ int clientLoginPam( rcComm_t* Conn,
                     char*     password,
                     int       ttl ) {
 #ifdef PAM_AUTH
-    int status;
+    int status = 0;
     pamAuthRequestInp_t pamAuthReqInp;
-    pamAuthRequestOut_t *pamAuthReqOut;
+    pamAuthRequestOut_t *pamAuthReqOut = NULL;
     int doStty = 0;
-    int len;
+    int len = 0;
     char myPassword[MAX_PASSWORD_LEN + 2];
     char userName[NAME_LEN * 2];
     strncpy( userName, Conn->proxyUser.userName, NAME_LEN );
@@ -209,13 +209,19 @@ int clientLoginPam( rcComm_t* Conn,
     else {
         path p( "/bin/stty" );
         if ( exists( p ) ) {
-            system( "/bin/stty -echo 2> /dev/null" );
+            if ( 0 != system( "/bin/stty -echo 2> /dev/null" ) ) {
+                // TODO: revisit this condition
+            }
             doStty = 1;
         }
         printf( "Enter your current PAM (system) password:" );
-        fgets( myPassword, sizeof( myPassword ), stdin );
+        if ( NULL == fgets( myPassword, sizeof( myPassword ), stdin ) ) {
+            // end of line reached or no input
+        }
         if ( doStty ) {
-            system( "/bin/stty echo 2> /dev/null" );
+            if ( 0 != system( "/bin/stty echo 2> /dev/null" ) ) {
+                // TODO: revisit this condition
+            }
             printf( "\n" );
         }
     }
@@ -267,7 +273,7 @@ int clientLoginPam( rcComm_t* Conn,
 int clientLoginTTL( rcComm_t *Conn, int ttl ) {
     getLimitedPasswordInp_t getLimitedPasswordInp;
     getLimitedPasswordOut_t *getLimitedPasswordOut;
-    char hashBuf[100];
+    char hashBuf[101];
     unsigned char digest[100];
     char limitedPw[100];
     int status;
@@ -475,12 +481,12 @@ int clientLogin(
 
 int
 clientLoginWithPassword( rcComm_t *Conn, char* password ) {
-    int status, len, i;
-    authRequestOut_t *authReqOut;
+    int status, len, i = 0;
+    authRequestOut_t *authReqOut = NULL;
     authResponseInp_t authRespIn;
     char md5Buf[CHALLENGE_LEN + MAX_PASSWORD_LEN + 2];
     char digest[RESPONSE_LEN + 2];
-    char userNameAndZone[NAME_LEN * 2];
+    char userNameAndZone[NAME_LEN * 2 + 1];
     MD5_CTX context;
 
     if ( Conn->loggedIn == 1 ) {

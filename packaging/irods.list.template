@@ -2,14 +2,16 @@
 # EPM Variables
 # =-=-=-=-=-=-=-
 %product iRODS
-%copyright 2005-2013, Regents of the University of California, the University of North Carolina at Chapel Hill, and the Data Intensive Cyberinfrastructure Foundation, All Rights Reserved.
-%vendor Renaissance Computing Institute <info@eirods.org>
+%copyright 2005-2014, Regents of the University of California, the University of North Carolina at Chapel Hill, and the Data Intensive Cyberinfrastructure Foundation, All Rights Reserved.
+%vendor Renaissance Computing Institute <info@irods-consortium.org>
 %license LICENSE
 %readme README
 %description The integrated Rule-Oriented Data System
 %version TEMPLATE_IRODSVERSION TEMPLATE_IRODSVERSIONINT
 
 
+
+%incompat eirods
 
 
 # =-=-=-=-=-=-=-
@@ -21,10 +23,10 @@
 %if DEBICAT
 $DEB=true
 $ICAT=true
-%requires postgresql 8.4
-%requires unixodbc
-%requires odbc-postgresql
-%requires super
+#%requires postgresql 8.4
+#%requires unixodbc
+#%requires odbc-postgresql
+#%requires super
 
 %elseif DEBRESOURCE
 $DEB=true
@@ -34,19 +36,19 @@ $RESOURCE=true
 $REDHAT=true
 $RPM=true
 $ICAT=true
-%requires postgresql 
-%requires postgresql-server
-%requires unixODBC
-%requires authd
+#%requires postgresql 
+#%requires postgresql-server
+#%requires unixODBC
+#%requires authd
 
 %elseif SUSERPMICAT
 $SUSE=true
 $RPM=true
 $ICAT=true
-%requires postgresql 
-%requires postgresql-server
-%requires psqlODBC
-%requires unixODBC
+#%requires postgresql 
+#%requires postgresql-server
+#%requires psqlODBC
+#%requires unixODBC
 
 %elseif REDHATRPMRESOURCE
 $REDHAT=true
@@ -100,9 +102,14 @@ $RESOURCE=true
 # =-=-=-=-=-=-=-
 # Install variables
 # =-=-=-=-=-=-=-
-$IRODS_PACKAGENAME=irods
-$IRODS_DOC_DIR=/usr/share/doc/$IRODS_PACKAGENAME
-$IRODS_HOME_DIR=/var/lib/$IRODS_PACKAGENAME
+%if ICAT
+$IRODS_PACKAGENAME=irods-icat
+%else
+$IRODS_PACKAGENAME=irods-resource
+%endif
+
+$IRODS_DOC_DIR=/usr/share/doc/irods
+$IRODS_HOME_DIR=/var/lib/irods
 $OS_IRODS_ACCT=irods
 $IRODS_HOME=$IRODS_HOME_DIR/iRODS
 $DB_NAME=TEMPLATE_DB_NAME
@@ -197,7 +204,7 @@ END_PREINSTALL
 # post install
 # =-=-=-=-=-=-=-
 %if ICAT
-%postinstall $IRODS_HOME_DIR/packaging/postinstall.sh $IRODS_HOME_DIR $OS_IRODS_ACCT icat $DB_TYPE $DB_ADMIN_ROLE $DB_NAME $DB_HOST $DB_PORT $DB_USER
+%postinstall $IRODS_HOME_DIR/packaging/postinstall.sh $IRODS_HOME_DIR $OS_IRODS_ACCT icat
 %else
 %postinstall $IRODS_HOME_DIR/packaging/postinstall.sh $IRODS_HOME_DIR $OS_IRODS_ACCT resource
 %endif
@@ -211,7 +218,7 @@ END_PREINSTALL
 # preremove
 # =-=-=-=-=-=-=-
 %if ICAT
-%preremove $IRODS_HOME_DIR/packaging/preremove.sh $$1 $IRODS_HOME_DIR $OS_IRODS_ACCT icat $DB_TYPE $DB_ADMIN_ROLE $DB_NAME $DB_USER
+%preremove $IRODS_HOME_DIR/packaging/preremove.sh $$1 $IRODS_HOME_DIR $OS_IRODS_ACCT icat
 %else
 %preremove $IRODS_HOME_DIR/packaging/preremove.sh $$1 $IRODS_HOME_DIR $OS_IRODS_ACCT resource
 %endif
@@ -285,6 +292,7 @@ f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/post30upgrade.sh
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/postinstall.sh ./packaging/postinstall.sh
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/preremove.sh ./packaging/preremove.sh
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/user_irodsenv.txt ./packaging/user_irodsenv.txt
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/user_icat.txt ./packaging/user_icat.txt
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/user_resource.txt ./packaging/user_resource.txt
 
 %if DEB
@@ -307,7 +315,7 @@ f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/plugins/network/ ./plugins
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/plugins/auth -
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/plugins/auth/ ./plugins/auth/*.so
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/plugins/database -
-f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/plugins/database/ ./plugins/database/*.so
+#f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/plugins/database/ ./plugins/database/*.so
 
 f 644 root root /usr/share/man/man1 ./man/*.gz
 
@@ -375,7 +383,6 @@ f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/irodsHost.in ./i
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/packedRei -
 c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/irodsHost ./iRODS/server/config/irodsHost
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/s3Auth.template ./iRODS/server/config/s3Auth.template
-c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/server.config ./iRODS/server/config/server.config
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/README.txt ./iRODS/server/config/README.txt
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/bin -
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/bin/cmd -
@@ -429,25 +436,27 @@ f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/specNameTest.p
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/timeTest.pl ./iRODS/server/test/bin/timeTest.pl
 %if ICAT
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_chl ./iRODS/server/test/bin/test_chl
-f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_cll ./iRODS/server/test/bin/test_cll
+#f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_cll ./plugins/database/test_cll
+#f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_genq ./plugins/database/test_genq
+#f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_genu ./plugins/database/test_genu
 %endif
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/ltest.sh ./iRODS/server/test/ltest.sh
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/obj -
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/README.txt ./iRODS/server/test/README.txt
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat -
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src -
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatDropCoreTables.sql ./iRODS/server/icat/src/icatDropCoreTables.sql
-f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/m2icat.pl ./iRODS/server/icat/src/m2icat.pl
-%if ICAT
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatSysTables.sql ./iRODS/server/icat/src/icatSysTables.sql
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatCoreTables.sql ./iRODS/server/icat/src/icatCoreTables.sql
-%endif
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatCoreInserts.sql ./iRODS/server/icat/src/icatCoreInserts.sql
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatDropSysTables.sql ./iRODS/server/icat/src/icatDropSysTables.sql
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatSysInserts.sql ./iRODS/server/icat/src/icatSysInserts.sql
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/makeSql.pl ./iRODS/server/icat/src/makeSql.pl
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatPurgeRecycleBin.sql ./iRODS/server/icat/src/icatPurgeRecycleBin.sql
-f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/convertSql.pl ./iRODS/server/icat/src/convertSql.pl
+#f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatDropCoreTables.sql ./iRODS/server/icat/src/icatDropCoreTables.sql
+#f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/m2icat.pl ./iRODS/server/icat/src/m2icat.pl
+#%if ICAT
+#f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatSysTables.sql ./iRODS/server/icat/src/icatSysTables.sql
+#f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatCoreTables.sql ./iRODS/server/icat/src/icatCoreTables.sql
+#%endif
+#f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatCoreInserts.sql ./iRODS/server/icat/src/icatCoreInserts.sql
+#f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatDropSysTables.sql ./iRODS/server/icat/src/icatDropSysTables.sql
+#f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatSysInserts.sql ./iRODS/server/icat/src/icatSysInserts.sql
+#f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/makeSql.pl ./iRODS/server/icat/src/makeSql.pl
+#f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatPurgeRecycleBin.sql ./iRODS/server/icat/src/icatPurgeRecycleBin.sql
+#f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/convertSql.pl ./iRODS/server/icat/src/convertSql.pl
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/config -
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/config/platform.mk ./iRODS/config/platform.mk
 c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/config/irods.config ./iRODS/config/irods.config

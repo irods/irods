@@ -1,7 +1,7 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
-#ifndef ___EIRODS_DATABASE_PLUGIN_H__
-#define ___EIRODS_DATABASE_PLUGIN_H__
+#ifndef ___IRODS_DATABASE_PLUGIN_HPP__
+#define ___IRODS_DATABASE_PLUGIN_HPP__
 
 // =-=-=-=-=-=-=-
 // irods includes
@@ -321,7 +321,7 @@ namespace irods {
 }; // namespace irods
 
 
-#endif // ___EIRODS_DATABASE_PLUGIN_H__
+#endif // ___IRODS_DATABASE_PLUGIN_HPP__
 
 
 

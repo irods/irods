@@ -30,7 +30,7 @@ int rodsMonPerfLog( char *serverName, char *resc, char *output, ruleExecInfo_t *
          monStatus[MAX_NAME_LEN], suffix[MAX_VALUE], *result;
     const char *delim1 = "#";
     const char *delim2 = ",";
-    int indx, timestamp, rc1, rc2, rc3, rc4;
+    int indx, timestamp, rc1 = 0, rc2 = 0, rc3 = 0, rc4 = 0;
     FILE *foutput;
     time_t tps;
     generalRowInsertInp_t generalRowInsertInp;
@@ -548,7 +548,7 @@ int msiServerMonPerf( msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei ) {
     const char *delim = " \n";
     char valinit[MAX_NAME_LEN] = "";
     char val[MAX_NAME_LEN] = ""; /* val => arguments for the script */
-    int check, i, indx, j, looptime, maxtime, nresc, nservers, rc, thrCount, threadsNotfinished;
+    int check, i, indx, j, looptime, maxtime, nresc, nservers, thrCount, threadsNotfinished;
     const char *probtimeDef = "10"; /* default value used by the monitoring script for the amount
                                        of time for this measurement (in s) */
     rsComm_t *rsComm;
@@ -676,8 +676,7 @@ int msiServerMonPerf( msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei ) {
             for ( i = 0; i < thrCount; i++ ) {
                 if ( !threadIsAlive[i] ) {
 #ifndef windows_platform
-                    rc = pthread_cancel( threads[i] );
-#endif
+                    int rc = pthread_cancel( threads[i] );
                     if ( rc == 0 ) {
                         char noanswer[MAXSTR] = MON_OUTPUT_NO_ANSWER;
                         threadIsAlive[i] = 1;
@@ -686,6 +685,7 @@ int msiServerMonPerf( msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei ) {
                                         noanswer,
                                         &( thrInput[i].rei ) );
                     }
+#endif
                 }
             }
         }

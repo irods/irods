@@ -1453,6 +1453,27 @@ sub startIrods
 		exit( 1 );
 	}
 
+	# Test for iRODS port in use
+	my $portTestLimit = 5;
+	my $waitSeconds = 1;
+	while ($waitSeconds < $portTestLimit){
+		my $porttest = `netstat -tlpen 2> /dev/null | grep $IRODS_PORT | awk '{print \$9}'`;
+		chomp($porttest);
+		if ($porttest ne ""){
+			print("($waitSeconds) Waiting for process bound to port $IRODS_PORT ... [$porttest]\n");
+			sleep($waitSeconds);
+			$waitSeconds = $waitSeconds * 2;
+		}
+		else{
+			last;
+		}
+	}
+	if ($waitSeconds >= $portTestLimit){
+		printError("Port $IRODS_PORT In Use ... Not Starting iRODS Server\n");
+		exit( 1 );
+	}
+
+
 	# Prepare
 	my $startingDir = cwd( );
 	chdir( $serverBinDir );
@@ -1530,6 +1551,7 @@ sub stopIrods
 	}
 	if ( ! $found )
 	{
+        system( "pgrep -l -u irods irods | grep -v irodsctl | awk '{print \$1}' | xargs kill -9 > /dev/null 2>&1" );
 		printStatus( "    There are no iRODS servers running.\n" );
 		return 1;
 	}
@@ -1548,7 +1570,7 @@ sub stopIrods
         # no regard for PIDs
         # iRODS must kill all owned processes for packaging purposes
 #        printStatus( "\tKilling any remaining Zombies... Silently.\n" );
-        system( "pgrep -l -u irods irods | grep -v irodsctl | awk '{print $1}' | xargs kill -9 > /dev/null 2>&1" );
+        system( "pgrep -l -u irods irods | grep -v irodsctl | awk '{print \$1}' | xargs kill -9 > /dev/null 2>&1" );
 
 	# Report if there are any left.
 	my $didNotDie = 0;

@@ -244,7 +244,7 @@ int
 modExeInfoForRepeat( rsComm_t *rsComm, char *ruleExecId, char* pastTime,
                      char *delay, int opStatus ) {
     keyValPair_t *regParam;
-    int status, status1;
+    int status = 0;
     char myTimeNow[200];
     char myTimeNext[200];
     ruleExecModInp_t ruleExecModInp;
@@ -257,7 +257,7 @@ modExeInfoForRepeat( rsComm_t *rsComm, char *ruleExecId, char* pastTime,
     rstrcpy( myTimeNext, pastTime, 200 );
     getOffsetTimeStr( ( char* )&myTimeNow, "                      " );
 
-    status1 = getNextRepeatTime( myTimeNow, delay, myTimeNext );
+    int status1 = getNextRepeatTime( myTimeNow, delay, myTimeNext );
 
     /***
     if (status != 0)

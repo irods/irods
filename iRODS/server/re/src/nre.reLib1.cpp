@@ -1072,7 +1072,7 @@ insertRulesIntoDBNew( char * baseName, RuleSet *ruleSet,
 
     for ( i = 0; i < ruleSet->len; i++ ) {
         RuleDesc *rd = ruleSet->rules[i];
-        char *ruleType;
+        char *ruleType = NULL;
         Node *ruleNode = rd->node;
         char ruleNameStr[MAX_RULE_LEN];
         char ruleCondStr[MAX_RULE_LEN];

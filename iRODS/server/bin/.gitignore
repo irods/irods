@@ -1,2 +1,8 @@
 *
 !.gitignore
+!list.pl
+!vacuumdb.pl
+!cmd/hello
+!cmd/irodsServerMonPerf
+!cmd/test_execstream.py
+!cmd/univMSSInterface.sh

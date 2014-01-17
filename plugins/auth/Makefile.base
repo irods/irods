@@ -3,10 +3,8 @@ IRODSDIR = ../${IRODSTOPDIR}
 SODIR = ../${SOTOPDIR}
 
 FULLTARGET = ${SODIR}/${TARGET}
-DEPFILE = .depends
 
 OBJS = $(patsubst %.cpp, ${OBJDIR}/%.o, ${SRCS})
-DEPS = $(patsubst %.cpp, ${DEPDIR}/%.d, ${SRCS})
 
 include ${IRODSDIR}/config/config.mk
 include ${IRODSDIR}/config/platform.mk
@@ -24,6 +22,7 @@ MY_CFLAG += ${INC}
 ifeq ($(IRODS_BUILD_COVERAGE), 1)
 GCC += -fprofile-arcs -ftest-coverage -lgcov
 OBJS = $(patsubst %.cpp, %.o, ${SRCS})
+
 %.o: %.cpp
 	${GCC} ${MY_CFLAG} -D${OS_platform} -fPIC -c -g -o $@ $<
 endif
@@ -37,20 +36,10 @@ clean:
 	@-rm -f ${OBJS} > /dev/null 2>&1
 	@-rm -f *.o > /dev/null 2>&1
 
-${FULLTARGET}: ${OBJS} ${DEPFILE}
+${FULLTARGET}: ${OBJS}
+	@echo "Building Auth Plugins"
 	@-mkdir -p ${SODIR} > /dev/null 2>&1
 	${GCC} ${MY_CFLAG} ${LDRFLAGS} -D${OS_platform} -fPIC "-Wl,-E" -shared -o ${FULLTARGET} ${OBJS} ${EXTRALIBS} ../../../iRODS/lib/api/obj/rcAuthCheck.o
 
-${DEPFILE}: ${DEPS}
-	@-rm -f ${DEPFILE} > /dev/null 2>&1
-	@for dep in ${DEPS}; do \
-	cat $$dep >> ${DEPFILE}; \
-	done
-
-${DEPS}: ${SRCS} ${HEADERS}
-	${GCC} ${MY_CFLAG} -MM $< -MT $(patsubst %.cpp, ${OBJDIR}/%.o, $<) -MF $@
-
 ${OBJDIR}/%.o: %.cpp
 	${GCC} ${MY_CFLAG} -D${OS_platform} -fPIC -c -g -o $@ $<
-
-include ${DEPFILE}

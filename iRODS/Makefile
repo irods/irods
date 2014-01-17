@@ -56,7 +56,7 @@ endif
 #
 # Principal Targets
 #
-.PHONY: all lib libs modules server clients $(MODULES) icommands fuse reaction
+.PHONY: default all lib libs modules server clients $(MODULES) icommands fuse reaction
 .PHONY: clean distclean mostlyclean maintainer-clean
 .PHONY: cleanlib cleanclients cleanserver cleanmodules
 .PHONY: config server_ldflags client_ldflags server_cflags client_cflags
@@ -72,9 +72,10 @@ MAKEFLAGS += --no-print-directory
 
 
 
+default :	reaction libs modules server clients tests
 
 # Build everything
-all:	reaction libs modules server clients tests
+all:	reaction libs modules server clients tests doc
 	@true
 
 
@@ -113,7 +114,7 @@ server:	reaction server_ldflags server_cflags libs modules
 
 
 # Build the clients
-clients: icommands
+clients: icommands fuse
 
 icommands: client_ldflags client_cflags libs modules
 	@echo "I-Commands"
@@ -289,20 +290,27 @@ test_flags:	test_server_cflags test_server_ldflags test_client_cflags test_clien
 
 
 # Build the documentation
-doc:
-	@echo "The iRODS Makefile does not support building documentation yet."
+doc: html
 
-dvi:	doc
-	@true
+dvi: doc/dvi
 
-html:	doc
-	@true
+doc/dvi:
+	@echo "DVI documentation is not yet supported."
 
-pdf:	doc
-	@true
+html: doc/html
 
-ps:	doc
-	@true
+doc/html:
+	@doxygen ./config/doxygen-saved.cfg
+
+pdf: doc/pdf
+
+doc/pdf:
+	@echo "PDF documentation is not yet supported."
+
+ps: doc/ps
+
+doc/ps:
+	@echo "PS documentation is not yet supported."
 
 
 
@@ -324,8 +332,6 @@ TAGS:
 
 # Clean out everything that's been built
 clean:
-	@echo "Clean"
-	@echo "------------------------------------------------------------------------"
 	@echo "Cleaning temp files..."
 	@rm -f $(SERVER_LDFLAGS_TMP) $(CLIENT_LDFLAGS_TMP) $(REACTION_TMP)
 	@rm -f $(SERVER_CFLAGS_TMP) $(CLIENT_CFLAGS_TMP)
@@ -335,6 +341,7 @@ clean:
 	@$(MAKE) cleanclients
 	@$(MAKE) cleanserver
 	@$(MAKE) cleanmodules
+	@$(MAKE) cleandoc
 
 cleanlib:
 	@$(MAKE) -C lib clean
@@ -344,6 +351,14 @@ cleanserver:
 
 cleanclients:
 	@$(MAKE) -C clients/icommands clean
+	@$(MAKE) -C clients/fuse clean
+
+cleandoc:
+	@echo "Cleaning documentation"
+	@rm -rf doc/html
+	@rm -rf doc/dvi
+	@rm -rf doc/pdf
+	@rm -rf doc/ps
 
 distclean:	clean
 	@echo "Cleaning configuration files..."
@@ -376,7 +391,7 @@ check:	test
 tests:	test
 	@true
 
-test: libs
+test: libs server
 	@echo "Tests"
 	@echo "------------------------------------------------------------------------"
 	@$(MAKE) -C server test

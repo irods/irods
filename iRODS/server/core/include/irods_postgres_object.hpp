@@ -1,8 +1,8 @@
 
 
 
-#ifndef __EIRODS_POSTGRES_OBJECT_H__
-#define __EIRODS_POSTGRES_OBJECT_H__
+#ifndef __IRODS_POSTGRES_OBJECT_HPP__
+#define __IRODS_POSTGRES_OBJECT_HPP__
 
 // =-=-=-=-=-=-=-
 // irods includes
@@ -67,7 +67,7 @@ namespace irods {
 
 }; // namespace irods
 
-#endif // __EIRODS_POSTGRES_OBJECT_H__
+#endif // __IRODS_POSTGRES_OBJECT_HPP__
 
 
 

@@ -2,8 +2,8 @@
 # EPM Variables
 # =-=-=-=-=-=-=-
 %product iRODS - Development Library
-%copyright 2012-2013 by Renaissance Computing Institute, All Rights Reserved.
-%vendor Renaissance Computing Institute <info@eirods.org>
+%copyright 2012-2014 by Renaissance Computing Institute, All Rights Reserved.
+%vendor Renaissance Computing Institute <info@irods-consortium.org>
 %license LICENSE
 %readme README
 %description The integrated Rule-Oriented Data System
@@ -80,13 +80,14 @@ $RPM=true
 f 644 root root /usr/lib/libirods.a ./libirods.a
 
 d 755 root root /usr/include/irods/
-f 644 root root /usr/include/irods/ ./iRODS/lib/core/include/*.h
-f 644 root root /usr/include/irods/ ./iRODS/lib/api/include/*.h
-f 644 root root /usr/include/irods/ ./iRODS/lib/md5/include/*.h 
-f 644 root root /usr/include/irods/ ./iRODS/server/core/include/*.h 
-f 644 root root /usr/include/irods/ ./iRODS/server/icat/include/*.h
-f 644 root root /usr/include/irods/ ./iRODS/server/re/include/*.h
-f 644 root root /usr/include/irods/ ./iRODS/server/drivers/include/*.h
+f 644 root root /usr/include/irods/ ./iRODS/lib/core/include/*.hpp
+f 644 root root /usr/include/irods/ ./iRODS/lib/api/include/*.hpp
+f 644 root root /usr/include/irods/ ./iRODS/lib/md5/include/*.hpp
+f 644 root root /usr/include/irods/ ./iRODS/lib/sha1/include/*.hpp
+f 644 root root /usr/include/irods/ ./iRODS/server/core/include/*.hpp
+f 644 root root /usr/include/irods/ ./iRODS/server/icat/include/*.hpp
+f 644 root root /usr/include/irods/ ./iRODS/server/re/include/*.hpp
+f 644 root root /usr/include/irods/ ./iRODS/server/drivers/include/*.hpp
 
 d 755 root root /usr/share/irods/
 d 755 root root /usr/share/irods/examples

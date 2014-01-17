@@ -121,6 +121,15 @@ class Test_AllRules(ResourceBase):
             for n in names_to_skip:
                 if n in rulefile: print "skipping "+rulefile+" ----- failbydesign"; skipme = 1
 
+            # skip rules that are for workflows
+            names_to_skip = [
+                "ruleTestWSO.r",
+                "ruleTestWSO1.r",
+                "ruleTestWSO2.r",
+            ]
+            for n in names_to_skip:
+                if n in rulefile: print "skipping "+rulefile+" ----- failbydesign"; skipme = 1
+
             # skip if an action (run in the core.re), not enough input/output for irule
             names_to_skip = [
                 "rulemsiAclPolicy",

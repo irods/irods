@@ -30,6 +30,13 @@ typedef struct {
 
 #define fileStageSyncInp_PI "int mode; int flags; double dataSize; struct RHostAddr_PI; str filename[MAX_NAME_LEN]; str cacheFilename[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN]; str rescHier[MAX_NAME_LEN]; struct KeyValPair_PI;"
 
+typedef struct {
+    char file_name[ MAX_NAME_LEN ];
+} fileSyncOut_t;
+
+#define fileSyncOut_PI "str file_name[MAX_NAME_LEN];"
+
+
 #if defined(RODS_SERVER)
 #define RS_FILE_STAGE_TO_CACHE rsFileStageToCache
 /* prototype for the server handler */

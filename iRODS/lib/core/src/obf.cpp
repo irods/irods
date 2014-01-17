@@ -224,7 +224,9 @@ obfRmPw( int opt ) {
     close( fd );
     if ( opt == 0 ) {
         printf( "Remove %s?:", fileName );
-        fgets( inbuf, MAX_NAME_LEN, stdin );
+        if ( NULL == fgets( inbuf, MAX_NAME_LEN, stdin ) ) {
+            // end of line reached or no input
+        }
         i = strlen( inbuf );
         if ( i < 2 ) {
             return 0;
@@ -286,7 +288,7 @@ obfSavePw( int promptOpt, int fileOpt, int printOpt, char *pwArg ) {
     char fileName[MAX_NAME_LEN + 10];
     char inbuf[MAX_PASSWORD_LEN + 100];
     char myPw[MAX_PASSWORD_LEN + 10];
-    int i, fd, envVal;
+    int i = 0, fd = 0, envVal = 0;
 
     i = obfiGetFilename( fileName );
     if ( i != 0 ) {
@@ -303,15 +305,21 @@ obfSavePw( int promptOpt, int fileOpt, int printOpt, char *pwArg ) {
         if ( promptOpt != 1 ) {
             path p( "/bin/stty" );
             if ( exists( p ) ) {
-                system( "/bin/stty -echo" );
+                if ( 0 != system( "/bin/stty -echo" ) ) {
+                    // TODO: revisit this condition
+                }
             }
         }
 
         printf( "Enter your current iRODS password:" );
-        fgets( inbuf, MAX_PASSWORD_LEN + 50, stdin );
+        if ( NULL == fgets( inbuf, MAX_PASSWORD_LEN + 50, stdin ) ) {
+            // end of line reached or no input
+        }
 
         if ( promptOpt != 1 ) {
-            system( "/bin/stty echo" );
+            if ( 0 != system( "/bin/stty echo" ) ) {
+                // TODO: revisit this condition
+            }
             printf( "\n" );
         }
 #endif
@@ -449,8 +457,8 @@ obfiGetPw( char *fileName, char *pw ) {
 
 int
 obfiOpenOutFile( char *fileName, int fileOpt ) {
-    char inbuf[MAX_NAME_LEN];
-    int i, fd_out;
+    char inbuf[MAX_NAME_LEN] = "";
+    int i = 0, fd_out = 0;
 
 #ifdef _WIN32
     fd_out = iRODSNt_open( fileName, O_CREAT | O_WRONLY | O_EXCL, 1 );
@@ -464,7 +472,9 @@ obfiOpenOutFile( char *fileName, int fileOpt ) {
         }
         if ( fileOpt > 0 ) {
             printf( "Overwrite '%s'?:", fileName );
-            fgets( inbuf, MAX_NAME_LEN, stdin );
+            if ( NULL == fgets( inbuf, MAX_NAME_LEN, stdin ) ) {
+                // end of line reached or no input
+            }
             i = strlen( inbuf );
             if ( i < 2 ) {
                 return 0;

@@ -71,9 +71,7 @@ set -x
 
 # restart the server, to exercise that code
 cd $IRODSROOT
-$IRODSROOT/iRODS/irodsctl stop
-$IRODSROOT/tests/zombiereaper.sh
-$IRODSROOT/iRODS/irodsctl start
+$IRODSROOT/iRODS/irodsctl restart
 
 # run RENCI developed python-based devtest suite (or just specified tests)
 # ( equivalent of original icommands and irules )

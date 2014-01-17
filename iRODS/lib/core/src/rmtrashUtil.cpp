@@ -12,8 +12,8 @@
 int
 rmtrashUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
              rodsPathInp_t *rodsPathInp ) {
-    int i;
-    int status;
+    int i = 0;
+    int status = 0;
     int savedStatus = 0;
     collInp_t collInp;
     dataObjInp_t dataObjInp;
@@ -124,7 +124,7 @@ int
 rmtrashDataObjUtil( rcComm_t *conn, char *srcPath,
                     rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                     dataObjInp_t *dataObjInp ) {
-    int status;
+    int status = 0;
     struct timeval startTime, endTime;
 
     if ( srcPath == NULL ) {

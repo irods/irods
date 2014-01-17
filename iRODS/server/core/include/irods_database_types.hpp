@@ -1,7 +1,7 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
-#ifndef __EIRODS_DATABASE_TYPES_H__
-#define __EIRODS_DATABASE_TYPES_H__
+#ifndef __IRODS_DATABASE_TYPES_HPP__
+#define __IRODS_DATABASE_TYPES_HPP__
 
 // =-=-=-=-=-=-=-
 // Boost Includes
@@ -29,7 +29,7 @@ namespace irods {
 
 }; // namespace
 
-#endif // __EIRODS_DATABASE_TYPES_H__
+#endif // __IRODS_DATABASE_TYPES_HPP__
 
 
 

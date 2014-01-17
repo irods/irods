@@ -1,0 +1,219 @@
+# =-=-=-=-=-=-=-
+# EPM Variables
+# =-=-=-=-=-=-=-
+%product iRODS Postgres Database Plugin
+%copyright 2014, The University of North Carolina at Chapel Hill
+%vendor Renaissance Computing Institute <info@irods-consortium.org>
+%license LICENSE
+%readme README
+%description The integrated Rule-Oriented Data System
+%version TEMPLATE_PLUGINVERSION TEMPLATE_PLUGINVERSIONINT
+
+
+%requires irods-icat
+
+
+# =-=-=-=-=-=-=-
+# Required Packages for specific systems
+# and
+# Setting environment variables for EPM
+# =-=-=-=-=-=-=-
+
+%if DEBICAT
+$DEB=true
+$ICAT=true
+%requires unixodbc
+%requires odbc-postgresql
+%requires postgresql-client
+
+%elseif DEBRESOURCE
+$DEB=true
+$RESOURCE=true
+
+%elseif REDHATRPMICAT
+$REDHAT=true
+$RPM=true
+$ICAT=true
+%requires unixODBC
+
+%elseif SUSERPMICAT
+$SUSE=true
+$RPM=true
+$ICAT=true
+%requires psqlODBC
+%requires unixODBC
+
+%endif
+
+
+%if CENTOS6
+%requires postgresql-odbc
+%endif
+
+
+
+%if DEB
+%requires libc6
+%requires libssl0.9.8
+%endif
+
+%if SUSE
+%requires libopenssl0_9_8
+%endif
+
+# =-=-=-=-=-=-=-
+# Required Packages for all systems
+# (have a common name across packaging universes)
+# =-=-=-=-=-=-=-
+
+%requires perl
+%requires python
+
+%format all
+
+# =-=-=-=-=-=-=-
+# Configuration Variables
+# =-=-=-=-=-=-=-
+
+# =-=-=-=-=-=-=-
+# Install variables
+# =-=-=-=-=-=-=-
+$IRODS_PACKAGENAME=irods_database_plugin_postgres
+$IRODS_HOME_DIR=/var/lib/irods
+$OS_IRODS_ACCT=irods
+$IRODS_HOME=$IRODS_HOME_DIR/iRODS
+$DB_NAME=TEMPLATE_DB_NAME
+
+# =-=-=-=-=-=-=-
+# iRODS variables
+# =-=-=-=-=-=-=-
+$DB_ADMIN_ROLE=postgres
+$DB_TYPE=TEMPLATE_DB_TYPE
+$DB_HOST=TEMPLATE_DB_HOST
+$DB_PORT=TEMPLATE_DB_PORT
+$DB_USER=$OS_IRODS_ACCT
+
+# =-=-=-=-=-=-=-
+# preinstall
+# =-=-=-=-=-=-=-
+%preinstall << END_PREINSTALL
+
+# determine whether this is an upgrade
+if [ "$$1" -eq "$$1" ] 2>/dev/null ; then
+  # integer, therefore rpm
+  if [ $$1 -gt 1 ] ; then
+    PACKAGEUPGRADE="true"
+  else
+    PACKAGEUPGRADE="false"
+  fi
+else
+  # string, therefore deb
+  if [ "$$1" = "upgrade" ] ; then
+    PACKAGEUPGRADE="true"
+  else
+    PACKAGEUPGRADE="false"
+  fi
+fi
+
+if [ "$$PACKAGEUPGRADE" = "true" ] ; then
+  echo "NOP" > /dev/null
+else
+  echo "NOP" > /dev/null
+fi
+
+END_PREINSTALL
+
+# =-=-=-=-=-=-=-
+# post install
+# =-=-=-=-=-=-=-
+%postinstall << END_POSTINSTALL
+# irods_setup.pl expects this file to exist
+touch $IRODS_HOME_DIR/.odbc.ini
+ACCT=$OS_IRODS_ACCT
+chown  $$ACCT:$$ACCT $IRODS_HOME_DIR/.odbc.ini
+echo ""
+echo "======================================================================="
+echo ""
+echo "iRODS Postgres Database Plugin installation was successful."
+echo ""
+echo "To configure this plugin, the following prerequisites need to be met:"
+echo " - an existing database user (to be used by the iRODS server)"
+echo " - an existing database (to be used as the iCAT catalog)"
+echo " - permissions for existing user on existing database"
+echo ""
+echo "Please run the following setup script as the irods user:"
+echo "  ./packaging/setup_database.sh"
+echo ""
+echo "======================================================================="
+echo ""
+END_POSTINSTALL
+
+# =-=-=-=-=-=-=-
+# preremove
+# =-=-=-=-=-=-=-
+%preremove << END_PREREMOVE
+IRODS_HOME=$IRODS_HOME
+DB_NAME=$$( grep "^\$$DB_NAME" $$IRODS_HOME/config/irods.config | awk -F\' '{print $$2}' )
+DB_USER=$DB_USER
+echo "     :: Leaving the iRODS database(s) and role in place."
+echo "     :: try:"
+echo "     ::      sudo su - postgres -c 'dropdb $$DB_NAME; dropuser $$DB_USER;'"
+echo ""
+END_PREREMOVE
+
+# =-=-=-=-=-=-=-
+# post remove
+# =-=-=-=-=-=-=-
+%postremove << END_POSTREMOVE
+
+# determine whether this is an upgrade
+if [ "$$1" -eq "$$1" ] 2>/dev/null ; then
+  # integer, therefore rpm
+  if [ $$1 -gt 0 ] ; then
+    PACKAGEUPGRADE="true"
+  else
+    PACKAGEUPGRADE="false"
+  fi
+else
+  # string, therefore deb
+  if [ "$$1" = "upgrade" ] ; then
+    PACKAGEUPGRADE="true"
+  else
+    PACKAGEUPGRADE="false"
+  fi
+fi
+
+if [ "$$PACKAGEUPGRADE" = "true" ] ; then
+   echo "NOP" > /dev/null
+else
+   echo "NOP" > /dev/null
+fi
+
+END_POSTREMOVE
+
+
+
+
+
+
+
+# =-=-=-=-=-=-=-
+# Full File Listing
+# =-=-=-=-=-=-=-
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/plugins/database/libpostgres.so ./libpostgres.so
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/setup_database.sh ./packaging/setup_database.sh
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/tests/localhost_setup_postgres.input ./packaging/localhost_setup_postgres.input
+
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatDropCoreTables.sql ./src/icatDropCoreTables.sql
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatSysTables.sql ./src/icatSysTables.sql
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatCoreTables.sql ./src/icatCoreTables.sql
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatCoreInserts.sql ./src/icatCoreInserts.sql
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatDropSysTables.sql ./src/icatDropSysTables.sql
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatSysInserts.sql ./src/icatSysInserts.sql
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatPurgeRecycleBin.sql ./src/icatPurgeRecycleBin.sql
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/convertSql.pl ./src/convertSql.pl
+
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_cll ./test_cll
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_genu ./test_genu
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_genq ./test_genq
+

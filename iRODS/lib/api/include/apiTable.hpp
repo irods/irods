@@ -92,7 +92,7 @@ apidef_t RcApiTable[] = {
     },
     {
         FILE_RENAME_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
-        "fileRenameInp_PI", 0, NULL, 0, ( funcPtr ) RS_FILE_RENAME
+        "fileRenameInp_PI", 0, "fileRenameOut_PI", 0, ( funcPtr ) RS_FILE_RENAME
     },
     {
         FILE_TRUNCATE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
@@ -112,7 +112,7 @@ apidef_t RcApiTable[] = {
     },
     {
         FILE_SYNC_TO_ARCH_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
-        "fileStageSyncInp_PI", 0, NULL, 0, ( funcPtr ) RS_FILE_SYNC_TO_ARCH
+        "fileStageSyncInp_PI", 0, "fileSyncOut_PI", 0, ( funcPtr ) RS_FILE_SYNC_TO_ARCH
     },
     {
         DATA_OBJ_CREATE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
@@ -500,10 +500,6 @@ apidef_t RcApiTable[] = {
     {
         COLL_CREATE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "CollInpNew_PI", 0, NULL, 0, ( funcPtr ) RS_COLL_CREATE
-    },
-    {
-        RM_COLL_OLD_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "CollInpNew_PI", 0, NULL, 0, ( funcPtr ) RS_RM_COLL_OLD
     },
     {
         STRUCT_FILE_EXTRACT_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,

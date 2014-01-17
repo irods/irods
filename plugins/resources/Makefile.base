@@ -3,10 +3,8 @@ IRODSDIR = ../${IRODSTOPDIR}
 SODIR = ../${SOTOPDIR}
 
 FULLTARGET = ${SODIR}/${TARGET}
-DEPFILE = .depends
 
 OBJS = $(patsubst %.cpp, ${OBJDIR}/%.o, ${SRCS})
-DEPS = $(patsubst %.cpp, ${DEPDIR}/%.d, ${SRCS})
 
 include ${IRODSDIR}/config/config.mk
 include ${IRODSDIR}/config/platform.mk
@@ -34,23 +32,11 @@ default: ${FULLTARGET}
 clean:
 	@-rm -f ${FULLTARGET} > /dev/null 2>&1
 	@-rm -f ${OBJS} > /dev/null 2>&1
-	@-rm -f ${DEPS} > /dev/null 2>&1
 	@-rm -f *.o > /dev/null 2>&1
 
-${FULLTARGET}: ${OBJS} ${DEPFILE}
+${FULLTARGET}: ${OBJS}
 	@-mkdir -p ${SODIR} > /dev/null 2>&1
 	${GCC} ${LDRFLAGS} -D${OS_platform} -fPIC -shared -o ${FULLTARGET} ${OBJS} ../../../iRODS/lib/core/obj/irods_plugin_base.o ${EXTRALIBS}
 
-${DEPFILE}: ${DEPS}
-	@-rm -f ${DEPFILE} > /dev/null 2>&1
-	@for dep in ${DEPS}; do \
-	cat $$dep >> ${DEPFILE}; \
-	done
-
-${DEPS}: ${SRCS} ${HEADERS}
-	${GCC} ${MY_CFLAG} -MM $< -MT $(patsubst %.cpp, ${OBJDIR}/%.o, $<) -MF $@
-
 ${OBJDIR}/%.o: %.cpp
 	${GCC} ${MY_CFLAG} -D${OS_platform} -fPIC -c -g -o $@ $< 
-
-include ${DEPFILE}

@@ -195,7 +195,6 @@ main( int argc, char **argv ) {
         char *outParamNames[1024];
 
         /* if the input file name starts with "i:", the get the file from iRODS server */
-        /*** RAJA ADDED TO USE INPUT FILE FROM AN iRODS OBJECT ***/
         if ( !strncmp( myRodsArgs.fileString, "i:", 2 ) ) {
             status = getRodsEnv( &myEnv );
 
@@ -230,15 +229,17 @@ main( int argc, char **argv ) {
                 if ( fileType == NULL ) {
                     printf( "Unsupported input file type\n" );
                     exit( 10 );
-
                 }
-                int rulegen;
                 if ( strcmp( fileType, ".r" ) == 0 ) {
                     rulegen = 1;
                 }
-                else if ( strcmp( fileType, ".ir" ) == 0
-                          || strcmp( fileType, ".irb" ) == 0 ) {
+                else if ( strcmp( fileType, ".ir" ) == 0 || strcmp( fileType, ".irb" ) == 0 ) {
                     rulegen = 0;
+                }
+                else {
+                    rodsLog( LOG_ERROR,
+                             "Unsupported input file type %s\n", fileType );
+                    exit( 10 );
                 }
                 snprintf( saveFile, MAX_NAME_LEN, "/tmp/tmpiruleFile.%i.%i.%s",
                           ( unsigned int ) time( 0 ), getpid(), rulegen ? "r" : "ir" );
@@ -253,7 +254,6 @@ main( int argc, char **argv ) {
                 connFlag = 1;
             }
         }
-        /*** RAJA ADDED TO USE INPUT FILE FROM AN iRODS OBJECT ***/
 
         fptr = fopen( myRodsArgs.fileString, "r" );
 
@@ -360,14 +360,13 @@ main( int argc, char **argv ) {
                      myRodsArgs.fileString );
             exit( 2 );
         }
-        /*** RAJA ADDED TO USE INPUT FILE FROM AN iRODS OBJECT ***/
         if ( connFlag == 1 ) {
             fclose( fptr );
             unlink( saveFile );
         }
-        /*** RAJA ADDED TO USE INPUT FILE FROM AN iRODS OBJECT ***/
     }
     else {	/* command line input */
+        rulegen = 1;
         int nArg = argc - optind; /* number of rule arguments */
         if ( nArg < 3 ) {
             rodsLog( LOG_ERROR, "no input" );

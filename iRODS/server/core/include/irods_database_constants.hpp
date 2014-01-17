@@ -1,8 +1,8 @@
 
 
 
-#ifndef __EIRODS_DATABASE_CONSTANTS_H__
-#define __EIRODS_DATABASE_CONSTANTS_H__
+#ifndef __IRODS_DATABASE_CONSTANTS_HPP__
+#define __IRODS_DATABASE_CONSTANTS_HPP__
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -114,11 +114,6 @@ namespace irods {
     const std::string DATABASE_OP_CHECK_AND_GET_OBJ_ID( "database_check_and_get_obj_id" );
     const std::string DATABASE_OP_GET_RCS( "database_get_rcs" );
 
-
-
 }; // namespace irods
 
-#endif // __EIRODS_DATABASE_CONSTANTS_H__
-
-
-
+#endif // __IRODS_DATABASE_CONSTANTS_HPP__

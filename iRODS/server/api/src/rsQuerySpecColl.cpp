@@ -200,7 +200,7 @@ initOutForQuerySpecColl( genQueryOut_t **genQueryOut ) {
 int
 _rsQuerySpecColl( rsComm_t *rsComm, int specCollInx,
                   dataObjInp_t *dataObjInp, genQueryOut_t *genQueryOut, int continueFlag ) {
-    int status;
+    int status = 0;
     rodsDirent_t *rodsDirent = NULL;
     dataObjInfo_t *dataObjInfo;
     rodsStat_t *fileStatOut = NULL;

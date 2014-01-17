@@ -5,7 +5,6 @@
 /* rsRmColl.c
  */
 
-#include "rmCollOld.hpp"
 #include "rmColl.hpp"
 #include "objMetaOpr.hpp"
 #include "specColl.hpp"
@@ -15,6 +14,12 @@
 #include "closeCollection.hpp"
 #include "dataObjUnlink.hpp"
 #include "rsApiHandler.hpp"
+#include "fileRmdir.hpp"
+#include "collection.hpp"
+#include "subStructFileRmdir.hpp"
+#include "dataObjRename.hpp"
+
+#include "irods_resource_backport.hpp"
 
 int
 rsRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
@@ -424,4 +429,238 @@ svrUnregColl( rsComm_t *rsComm, collInp_t *rmCollInp ) {
     }
 
     return status;
+}
+
+int
+rsMkTrashPath( rsComm_t *rsComm, char *objPath, char *trashPath ) {
+    int status;
+    char *tmpStr;
+    char startTrashPath[MAX_NAME_LEN];
+    char destTrashColl[MAX_NAME_LEN], myFile[MAX_NAME_LEN];
+    char *trashPathPtr;
+
+    trashPathPtr = trashPath;
+    *trashPathPtr = '/';
+    trashPathPtr++;
+    tmpStr = objPath + 1;
+    /* copy the zone */
+    while ( *tmpStr != '\0' ) {
+        *trashPathPtr = *tmpStr;
+        trashPathPtr ++;
+        if ( *tmpStr == '/' ) {
+            tmpStr ++;
+            break;
+        }
+        tmpStr ++;
+    }
+
+    if ( *tmpStr == '\0' ) {
+        rodsLog( LOG_ERROR,
+                 "rsMkTrashPath: input path %s too short", objPath );
+        return ( USER_INPUT_PATH_ERR );
+    }
+
+    /* skip "home/userName/"  or "home/userName#" */
+
+    if ( strncmp( tmpStr, "home/", 5 ) == 0 ) {
+        int nameLen;
+        tmpStr += 5;
+        nameLen = strlen( rsComm->clientUser.userName );
+        if ( strncmp( tmpStr, rsComm->clientUser.userName, nameLen ) == 0 &&
+                ( *( tmpStr + nameLen ) == '/' || *( tmpStr + nameLen ) == '#' ) ) {
+            /* tmpStr += (nameLen + 1); */
+            tmpStr = strchr( tmpStr, '/' ) + 1;
+        }
+    }
+
+
+    /* don't want to go back beyond /myZone/trash/home */
+    *trashPathPtr = '\0';
+    snprintf( startTrashPath, MAX_NAME_LEN, "%strash/home", trashPath );
+
+    /* add home/userName/ */
+
+    if ( rsComm->clientUser.authInfo.authFlag == REMOTE_USER_AUTH ||
+            rsComm->clientUser.authInfo.authFlag == REMOTE_PRIV_USER_AUTH ) {
+        /* remote user */
+        snprintf( trashPathPtr, MAX_NAME_LEN, "trash/home/%s#%s/%s",
+                  rsComm->clientUser.userName, rsComm->clientUser.rodsZone, tmpStr );
+    }
+    else {
+        snprintf( trashPathPtr, MAX_NAME_LEN, "trash/home/%s/%s",
+                  rsComm->clientUser.userName, tmpStr );
+    }
+
+    if ( ( status = splitPathByKey( trashPath, destTrashColl, myFile, '/' ) ) < 0 ) {
+        rodsLog( LOG_ERROR,
+                 "rsMkTrashPath: splitPathByKey error for %s ", trashPath );
+        return ( USER_INPUT_PATH_ERR );
+    }
+
+    status = rsMkCollR( rsComm, startTrashPath, destTrashColl );
+
+    if ( status < 0 ) {
+        rodsLog( LOG_ERROR,
+                 "rsMkTrashPath: rsMkCollR error for startPath %s, destPath %s ",
+                 startTrashPath, destTrashColl );
+    }
+
+    return ( status );
+}
+
+int
+l3Rmdir( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
+    fileRmdirInp_t fileRmdirInp;
+    int status;
+
+    // =-=-=-=-=-=-=-
+    // get the resc location of the hier leaf
+    std::string location;
+    irods::error ret = irods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
+    if ( !ret.ok() ) {
+        irods::log( PASSMSG( "l3Rmdir - failed in get_loc_for_hier_string", ret ) );
+        return -1;
+    }
+
+    if ( getStructFileType( dataObjInfo->specColl ) >= 0 ) {
+        subFile_t subFile;
+        memset( &subFile, 0, sizeof( subFile ) );
+        rstrcpy( subFile.subFilePath, dataObjInfo->subPath, MAX_NAME_LEN );
+        rstrcpy( subFile.addr.hostAddr, location.c_str(), NAME_LEN );
+        subFile.specColl = dataObjInfo->specColl;
+        status = rsSubStructFileRmdir( rsComm, &subFile );
+    }
+    else {
+        memset( &fileRmdirInp, 0, sizeof( fileRmdirInp ) );
+        rstrcpy( fileRmdirInp.dirName, dataObjInfo->filePath, MAX_NAME_LEN );
+        rstrcpy( fileRmdirInp.addr.hostAddr, location.c_str(), NAME_LEN );
+        rstrcpy( fileRmdirInp.rescHier, dataObjInfo->rescHier, MAX_NAME_LEN );
+        status = rsFileRmdir( rsComm, &fileRmdirInp );
+    }
+    return ( status );
+}
+
+int
+rsMvCollToTrash( rsComm_t *rsComm, collInp_t *rmCollInp ) {
+    int status;
+    char trashPath[MAX_NAME_LEN];
+    dataObjCopyInp_t dataObjRenameInp;
+    genQueryInp_t genQueryInp;
+    genQueryOut_t *genQueryOut = NULL;
+    int continueInx;
+    dataObjInfo_t dataObjInfo;
+
+    /* check permission of files */
+
+    memset( &genQueryInp, 0, sizeof( genQueryInp ) );
+    status = rsQueryDataObjInCollReCur( rsComm, rmCollInp->collName,
+                                        &genQueryInp, &genQueryOut, ACCESS_DELETE_OBJECT, 0 );
+
+    memset( &dataObjInfo, 0, sizeof( dataObjInfo ) );
+    while ( status >= 0 ) {
+        sqlResult_t *subColl, *dataObj, *rescName;
+        ruleExecInfo_t rei;
+
+        /* check if allow to delete */
+
+        if ( ( subColl = getSqlResultByInx( genQueryOut, COL_COLL_NAME ) )
+                == NULL ) {
+            rodsLog( LOG_ERROR,
+                     "rsMvCollToTrash: getSqlResultByInx for COL_COLL_NAME failed" );
+            return ( UNMATCHED_KEY_OR_INDEX );
+        }
+
+        if ( ( dataObj = getSqlResultByInx( genQueryOut, COL_DATA_NAME ) )
+                == NULL ) {
+            rodsLog( LOG_ERROR,
+                     "rsMvCollToTrash: getSqlResultByInx for COL_DATA_NAME failed" );
+            return ( UNMATCHED_KEY_OR_INDEX );
+        }
+
+        if ( ( rescName = getSqlResultByInx( genQueryOut, COL_D_RESC_NAME ) )
+                == NULL ) {
+            rodsLog( LOG_ERROR,
+                     "rsMvCollToTrash: getSqlResultByInx for COL_D_RESC_NAME failed" );
+            return ( UNMATCHED_KEY_OR_INDEX );
+        }
+
+        snprintf( dataObjInfo.objPath, MAX_NAME_LEN, "%s/%s",
+                  subColl->value, dataObj->value );
+        rstrcpy( dataObjInfo.rescName, rescName->value, NAME_LEN );
+
+        initReiWithDataObjInp( &rei, rsComm, NULL );
+        rei.doi = &dataObjInfo;
+
+        status = applyRule( "acDataDeletePolicy", NULL, &rei, NO_SAVE_REI );
+
+        if ( status < 0 && status != NO_MORE_RULES_ERR &&
+                status != SYS_DELETE_DISALLOWED ) {
+            rodsLog( LOG_NOTICE,
+                     "rsMvCollToTrash: acDataDeletePolicy error for %s. status = %d",
+                     dataObjInfo.objPath, status );
+            return ( status );
+        }
+
+        if ( rei.status == SYS_DELETE_DISALLOWED ) {
+            rodsLog( LOG_NOTICE,
+                     "rsMvCollToTrash:disallowed for %s via DataDeletePolicy,status=%d",
+                     dataObjInfo.objPath, rei.status );
+            return ( rei.status );
+        }
+
+        continueInx = genQueryOut->continueInx;
+
+        freeGenQueryOut( &genQueryOut );
+
+        if ( continueInx > 0 ) {
+            /* More to come */
+            genQueryInp.continueInx = continueInx;
+            status =  rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
+        }
+        else {
+            break;
+        }
+    }
+
+    if ( status < 0 && status != CAT_NO_ROWS_FOUND ) {
+        rodsLog( LOG_ERROR,
+                 "rsMvCollToTrash: rsQueryDataObjInCollReCur error for %s, stat=%d",
+                 rmCollInp->collName, status );
+        return ( status );
+    }
+
+    status = rsMkTrashPath( rsComm, rmCollInp->collName, trashPath );
+
+    if ( status < 0 ) {
+        appendRandomToPath( trashPath );
+        status = rsMkTrashPath( rsComm, rmCollInp->collName, trashPath );
+        if ( status < 0 ) {
+            return ( status );
+        }
+    }
+
+    memset( &dataObjRenameInp, 0, sizeof( dataObjRenameInp ) );
+
+    dataObjRenameInp.srcDataObjInp.oprType =
+        dataObjRenameInp.destDataObjInp.oprType = RENAME_COLL;
+
+    rstrcpy( dataObjRenameInp.destDataObjInp.objPath, trashPath, MAX_NAME_LEN );
+    rstrcpy( dataObjRenameInp.srcDataObjInp.objPath, rmCollInp->collName,
+             MAX_NAME_LEN );
+
+    status = rsDataObjRename( rsComm, &dataObjRenameInp );
+
+    while ( status == CAT_NAME_EXISTS_AS_COLLECTION ) {
+        appendRandomToPath( dataObjRenameInp.destDataObjInp.objPath );
+        status = rsDataObjRename( rsComm, &dataObjRenameInp );
+    }
+
+    if ( status < 0 ) {
+        rodsLog( LOG_ERROR,
+                 "mvCollToTrash: rcDataObjRename error for %s, status = %d",
+                 dataObjRenameInp.destDataObjInp.objPath, status );
+        return ( status );
+    }
+
+    return ( status );
 }

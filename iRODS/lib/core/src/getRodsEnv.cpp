@@ -638,10 +638,10 @@ createRodsEnvDefaults( rodsEnv *rodsEnvArg ) {
   find the next delimited token and terminate the string with matching quotes
 */
 char *findNextTokenAndTerm( char *inPtr ) {
-    char *myPtr;
-    char *savePtr;
-    char *nextPtr;
-    int whiteSpace;
+    char *myPtr = 0;
+    char *savePtr = 0;
+    char *nextPtr = 0;
+    int whiteSpace = 0;
     myPtr = inPtr;
     whiteSpace = 1;
     for ( ;; myPtr++ ) {

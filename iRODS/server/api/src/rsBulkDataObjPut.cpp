@@ -507,8 +507,9 @@ bulkProcAndRegSubfile( rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string
         bzero( &fileRenameInp, sizeof( fileRenameInp ) );
         rstrcpy( fileRenameInp.oldFileName, dataObjInfo.filePath, MAX_NAME_LEN );
         rstrcpy( fileRenameInp.rescHier, dataObjInfo.rescHier, MAX_NAME_LEN );
+        char new_fn[ MAX_NAME_LEN ];
         status = renameFilePathToNewDir( rsComm, ORPHAN_DIR,
-                                         &fileRenameInp, rescInfo, 1 );
+                                         &fileRenameInp, rescInfo, 1, new_fn );
         if ( status < 0 ) {
             rodsLog( LOG_ERROR,
                      "bulkProcAndRegSubfile: renameFilePathToNewDir err for %s. status = %d",

@@ -14,7 +14,6 @@ GCC += -fprofile-arcs -ftest-coverage -lgcov
 endif
 
 export OBJDIR = .objs
-export DEPDIR = .deps
 export IRODSTOPDIR = ../../iRODS
 export SOTOPDIR = .
 
@@ -24,22 +23,23 @@ ifeq ($(IRODS_BUILD_DEBUG), 0)
 #SUBS += ${HPSSDIRS}
 endif
 
-.PHONY: ${SUBS} clean
+.PHONY: postgres clean
 
-default: ${SUBS}
+default: postgres
 
-${SUBS}:
+postgres:
 	@-mkdir -p $@/${OBJDIR} > /dev/null 2>&1
-	@-mkdir -p $@/${DEPDIR} > /dev/null 2>&1
 	${MAKE} -C $@
 
 clean:
 	@-for dir in ${SUBS}; do \
 	echo "Cleaning $$dir"; \
 	rm -f $$dir/${OBJDIR}/*.o > /dev/null 2>&1; \
-        rm -f $$dir/${DEPDIR}/*.d > /dev/null 2>&1; \
-        rm -f $$dir/.depends > /dev/null 2>&1; \
 	rm -f $$dir/*.o > /dev/null 2>&1; \
 	done
 	@-rm -f ${SOTOPDIR}/*.so > /dev/null 2>&1
+	@-rm -f ${SOTOPDIR}/test_cll > /dev/null 2>&1
+	@-rm -f ${SOTOPDIR}/test_cml > /dev/null 2>&1
+	@-rm -f ${SOTOPDIR}/test_genq > /dev/null 2>&1
+	@-rm -f ${SOTOPDIR}/test_genu > /dev/null 2>&1
 

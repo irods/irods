@@ -267,7 +267,7 @@ int
 chkAndResetRule( rsComm_t *rsComm ) {
     char *configDir;
     char rulesFileName[MAX_NAME_LEN];
-    int status;
+    int status = 0;
     uint mtime;
 
     configDir = getConfigDir();

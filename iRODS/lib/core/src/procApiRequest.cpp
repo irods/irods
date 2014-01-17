@@ -44,8 +44,8 @@
 int
 procApiRequest( rcComm_t *conn, int apiNumber, void *inputStruct,
                 bytesBuf_t *inputBsBBuf, void **outStruct, bytesBuf_t *outBsBBuf ) {
-    int status;
-    int apiInx;
+    int status = 0;
+    int apiInx = 0;
 
     if ( conn == NULL ) {
         return ( USER__NULL_INPUT_ERR );
@@ -82,8 +82,8 @@ procApiRequest( rcComm_t *conn, int apiNumber, void *inputStruct,
 int
 branchReadAndProcApiReply( rcComm_t *conn, int apiNumber,
                            void **outStruct, bytesBuf_t *outBsBBuf ) {
-    int status;
-    int apiInx;
+    int status = 0;
+    int apiInx = 0;
 
     if ( conn == NULL ) {
         return ( USER__NULL_INPUT_ERR );
@@ -111,9 +111,9 @@ branchReadAndProcApiReply( rcComm_t *conn, int apiNumber,
 int
 sendApiRequest( rcComm_t *conn, int apiInx, void *inputStruct,
                 bytesBuf_t *inputBsBBuf ) {
-    int status;
+    int status = 0;
     bytesBuf_t *inputStructBBuf = NULL;
-    bytesBuf_t *myInputStructBBuf;
+    bytesBuf_t *myInputStructBBuf = NULL;
 
     cliChkReconnAtSendStart( conn );
 

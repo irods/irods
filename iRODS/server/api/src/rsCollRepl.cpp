@@ -33,7 +33,7 @@ rsCollRepl( rsComm_t *rsComm, collInp_t *collReplInp,
     collEnt_t *collEnt;
     int handleInx;
     transferStat_t myTransStat;
-    int totalFileCnt;
+    int totalFileCnt = 0;
     int fileCntPerStatOut;
     int savedStatus = 0;
     int remoteFlag;

@@ -104,7 +104,7 @@ usage() {
         "It can be removed with the 'irm -f' command. But this  will trigger the ",
         "staging of the subfiles before the tar file is removed.",
         "The -R flag specifies the resource of the bundle tar file. This input is",
-        "mandatory. The input resource must be a 'cache' type resource.",
+        "mandatory. The input resource must be a 'cache' type resource."
 
         "Options are:",
         " -D  dataType - the target struct file dataType. Valid dataTypes are -",

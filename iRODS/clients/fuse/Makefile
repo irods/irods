@@ -146,7 +146,7 @@ BOOST_LIBS = $(BOOST_DIR)/stage/lib/libboost_system.a \
 #
 .PHONY: all fuse clients clean print_cflags print_ldflags
 all:	fuse
-	@true
+	@echo "Building Fuse Client"
 
 clients: fuse
 	@true

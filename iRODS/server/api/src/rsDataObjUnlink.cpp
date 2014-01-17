@@ -18,7 +18,6 @@
 #include "rcGlobalExtern.hpp"
 #include "reGlobalsExtern.hpp"
 #include "reDefines.hpp"
-#include "rmCollOld.hpp"
 #include "rmColl.hpp"
 #include "dataObjRename.hpp"
 #include "subStructFileUnlink.hpp"
@@ -301,7 +300,7 @@ resolveDataObjReplStatus( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
 int
 dataObjUnlinkS( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
                 dataObjInfo_t *dataObjInfo ) {
-    int status;
+    int status = 0;
     unregDataObj_t unregDataObjInp;
 
     if ( dataObjInfo->specColl == NULL ) {

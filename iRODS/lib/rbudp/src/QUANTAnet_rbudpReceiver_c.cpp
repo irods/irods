@@ -333,7 +333,9 @@ getfileByFd( rbudpReceiver_t *rbudpReceiver, int fd, int packetSize ) {
         fprintf( stderr, "The size of the file is %lld.\n", filesize );
     }
 
-    ftruncate( fd, filesize );
+    if ( ftruncate( fd, filesize ) != 0 ) {
+        fprintf( stderr, "Truncation failed." );
+    }
 
     remaining = filesize;
     while ( remaining > 0 ) {
@@ -409,7 +411,9 @@ int  getfilelist( rbudpReceiver_t *rbudpReceiver, char * fileList,
             fprintf( stderr, "The size of the file is %lld.\n", filesize );
 
             int fd = open( destFName, O_RDWR | O_CREAT | O_TRUNC, 0666 );
-            ftruncate( fd, filesize );
+            if ( ftruncate( fd, filesize ) != 0 ) {
+                fprintf( stderr, "Truncation failed." );
+            }
 
             char *buf;
             buf = ( char * )mmap( NULL, filesize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0 );

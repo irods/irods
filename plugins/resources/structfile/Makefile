@@ -7,7 +7,6 @@ HEADERS =
 EXTRALIBS = $(LIBARCHIVE_DIR)/libarchive/libarchive.a \
             $(BOOST_DIR)/stage/lib/libboost_filesystem.a \
             $(BOOST_DIR)/stage/lib/libboost_system.a \
-            SYSTEM_LIBZ_SO \
-            SYSTEM_LIBBZ2_SO
+            -L /usr/lib -lz -lbz2
 
 include ../Makefile.base

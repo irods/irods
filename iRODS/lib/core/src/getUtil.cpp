@@ -34,10 +34,10 @@ setSessionTicket( rcComm_t *myConn, char *ticket ) {
 int
 getUtil( rcComm_t **myConn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
          rodsPathInp_t *rodsPathInp ) {
-    int i;
-    int status;
+    int i = 0;
+    int status = 0;
     int savedStatus = 0;
-    rodsPath_t *targPath;
+    rodsPath_t *targPath = 0;
     dataObjInp_t dataObjOprInp;
     rodsRestart_t rodsRestart;
     rcComm_t *conn = *myConn;

@@ -1,0 +1,9 @@
+!.gitignore
+packaging/irods_database_plugin_postgres.list
+packaging/setup_database.sh
+postgres/.objs/
+src/icatCoreTables.sql
+src/icatSysTables.sql
+test_cll
+test_genq
+test_genu

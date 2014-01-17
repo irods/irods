@@ -25,22 +25,16 @@ fi
 IRODS_HOME_DIR=$1
 OS_IRODS_ACCT=$2
 SERVER_TYPE=$3
-DB_TYPE=$4
-DB_ADMIN_ROLE=$5
-DB_NAME=$6
-DB_USER=$7
 
 IRODS_HOME=$IRODS_HOME_DIR/iRODS
 
+# =-=-=-=-=-=-=-
+# debugging
 #echo "THREE_OH_SCRIPT=[$THREE_OH_SCRIPT]"
 #echo "PACKAGER_COMMAND=[$PACKAGER_COMMAND]"
 #echo "IRODS_HOME_DIR=[$IRODS_HOME_DIR]"
 #echo "OS_IRODS_ACCT=[$OS_IRODS_ACCT]"
 #echo "SERVER_TYPE=[$SERVER_TYPE]"
-#echo "DB_TYPE=[$DB_TYPE]"
-#echo "DB_ADMIN_ROLE=[$DB_ADMIN_ROLE]"
-#echo "DB_NAME=[$DB_NAME]"
-#echo "DB_USER=[$DB_USER]"
 
 
 # determine whether this is an upgrade
@@ -132,50 +126,12 @@ if [ "$PACKAGEUPGRADE" == "false" ] ; then
 	cd /tmp
 
 	# =-=-=-=-=-=-=-
-	#
-	#if [ "$SERVER_TYPE" == "icat" ] ; then
-	#
-	#	if [ "$DB_TYPE" == "postgres" ] ; then
-	#		# =-=-=-=-=-=-=-
-	#		# determine if the database exists & remove
-	#		PSQL=`$IRODS_HOME_DIR/packaging/find_postgres_bin.sh`
-	#		PSQL="$PSQL/psql"
-	#
-	#		DB=$( su --shell=/bin/bash -c "$PSQL --list | grep $DB_NAME" $DB_ADMIN_ROLE )
-	#		if [ -n "$DB" ]; then
-	#			echo "Removing Database $DB_NAME"
-	#			su --shell=/bin/bash -c "dropdb $DB_NAME" $DB_ADMIN_ROLE &> /dev/null
-	#		fi
-	#
-	#		# =-=-=-=-=-=-=-
-	#		# determine if the database role exists & remove
-	#		ROLE=$( su - $OS_IRODS_ACCT --shell=/bin/bash -c "$PSQL $DB_ADMIN_ROLE -tAc \"SELECT 1 FROM pg_roles WHERE rolname='$DB_USER'\"" )
-	#		if [ $ROLE ]; then
-	#			echo "Removing Database Role $DB_USER"
-	#			su --shell=/bin/bash -c "dropuser $DB_USER" $DB_ADMIN_ROLE &> /dev/null
-	#		fi
-	#	else
-	#		# expand this for each type of database
-	#		echo "TODO: remove non-postgres database"
-	#		echo "TODO: remove non-postgres user"
-	#	fi
-	#fi
-
-	# =-=-=-=-=-=-=-
 	# detect operating system
 	DETECTEDOS=`$IRODS_HOME_DIR/packaging/find_os.sh`
 
 	# =-=-=-=-=-=-=-
 	# report that we are not deleting some things
 	echo "NOTE :: The Local System Administrator should delete these if necessary."
-
-	if [ "$SERVER_TYPE" == "icat" ] ; then
-	    # =-=-=-=-=-=-=-
-	    # database(s) and database role
-	    echo "     :: Leaving the iRODS database(s) and role in place."
-	    echo "     :: try:"
-	    echo "     ::      sudo su - postgres -c 'dropdb $DB_NAME; dropuser $DB_USER;'"
-	fi
 
 	# =-=-=-=-=-=-=-
 	# report that we are not deleting the account(s)
