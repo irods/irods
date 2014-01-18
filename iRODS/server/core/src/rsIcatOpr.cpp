@@ -19,7 +19,7 @@ connectRcat( rsComm_t *rsComm ) {
     int status = 0;
     rodsServerHost_t *tmpRodsServerHost;
     int gotRcatHost = 0;
-//    rodsServerConfig_t serverConfig;
+
 
     if ( IcatConnState == INITIAL_DONE ) {
         return ( 0 );
@@ -34,7 +34,10 @@ connectRcat( rsComm_t *rsComm ) {
             if ( tmpRodsServerHost->localFlag == LOCAL_HOST ) {
 
             	// capture server properties
-            	irods::server_properties::getInstance().capture();
+            	irods::error result = irods::server_properties::getInstance().capture();
+            	if (!result.ok()) {
+                    irods::log(PASSMSG("failed to read server configuration", result));
+            	}
 
                 status = chlOpen();
 
