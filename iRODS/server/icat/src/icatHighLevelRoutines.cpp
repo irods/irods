@@ -144,7 +144,7 @@ int chlOpen() {
 } // chlOpen
 
 /// =-=-=-=-=-=-=-
-///  @breif Close an open connection to the database.
+///  @brief Close an open connection to the database.
 ///         Clean up and shutdown the connection.
 int chlClose() {
     // =-=-=-=-=-=-=-
