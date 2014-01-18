@@ -4,15 +4,10 @@
 /* readServerConfig.h - common header file for readServerConfig.c
  */
 
-/*
-
- readServerConfig.c opens and reads in parameters (ICAT ones) from the
- server configuration file.  Note that initServer also reads thru the
- server server configuration file, to set up the server rcatHost
- parameters.  We thought it would be best to have a single
- configuration file (plus the rules and client env) to simplify server
- setup, so both this and initServer read thru the file.
-
+/**
+ * The server configuration settings are now stored in a singleton irods::server_properties
+ * and server.config is read by irods::server_properties::getInstance().capture()
+ *
  */
 
 
@@ -60,7 +55,6 @@ typedef struct rodsServerConfig {
 } rodsServerConfig_t;
 
 char *getServerConfigDir();
-int   readServerConfig( rodsServerConfig_t *rodsServerConfig );
 char* findNextTokenAndTerm( char *inPtr );
 
 #endif	/* READ_SERVER_CONFIG_H */
