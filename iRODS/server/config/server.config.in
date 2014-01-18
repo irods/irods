@@ -42,6 +42,10 @@ reVariableMapSet  core
 # pam_password_min_time 121
 # pam_password_max_time 1209600
 
+# Set run_server_as_root to 'true' and restart your server to run it as root. 
+# This mode should be left turned off except for a few specific use cases.
+run_server_as_root false
+
 # configuration of icat database plugin - e.g. postgres, mysql, or oracle
 catalog_database_type postgres
 

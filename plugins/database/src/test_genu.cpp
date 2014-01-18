@@ -6,6 +6,7 @@
 
 #include "rodsClient.hpp"
 #include "readServerConfig.hpp"
+#include "irods_server_properties.hpp"
 
 #include "icatHighLevelRoutines.hpp"
 #include "rodsGeneralUpdate.hpp"
@@ -224,10 +225,10 @@ main( int argc, char **argv ) {
         exit( 1 );
     }
 
-    memset( &serverConfig, 0, sizeof( serverConfig ) );
-    status = readServerConfig( &serverConfig );
+	// capture server properties
+	irods::server_properties::getInstance().capture();
 
-    if ( ( status = chlOpen( &serverConfig ) ) != 0 ) {
+    if ( ( status = chlOpen() ) != 0 ) {
 
         rodsLog( LOG_SYS_FATAL,
                  "chlopen Error. Status = %d",

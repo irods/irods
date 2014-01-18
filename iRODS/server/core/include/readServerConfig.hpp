@@ -23,21 +23,25 @@
 
 /* server host configuration */
 
-#define SERVER_CONFIG_FILE  "server.config"
+#define SERVER_CONFIG_FILE	"server.config"
 
 /* keywords for the ICAT_HOST_FILE */
 #define DB_PASSWORD_KW		"DBPassword"
-#define DB_KEY_KW	        "DBKey"
-#define DB_USERNAME_KW	        "DBUsername"
+#define DB_KEY_KW			"DBKey"
+#define DB_USERNAME_KW		"DBUsername"
 
-#define PAM_PW_LEN_KW      "pam_password_length"
-#define PAM_NO_EXTEND_KW   "pam_no_extend"
-#define PAM_PW_MIN_TIME_KW "pam_password_min_time"
-#define PAM_PW_MAX_TIME_KW "pam_password_max_time"
+#define PAM_PW_LEN_KW		"pam_password_length"
+#define PAM_NO_EXTEND_KW	"pam_no_extend"
+#define PAM_PW_MIN_TIME_KW	"pam_password_min_time"
+#define PAM_PW_MAX_TIME_KW	"pam_password_max_time"
 
-#define CATALOG_DATABASE_TYPE_KW "catalog_database_type"
+#define RUN_SERVER_AS_ROOT_KW	"run_server_as_root"
+
+#define CATALOG_DATABASE_TYPE_KW	"catalog_database_type"
 
 typedef struct rodsServerConfig {
+	bool run_server_as_root;
+
     char DBUsername[NAME_LEN];
     char DBPassword[MAX_PASSWORD_LEN];
     char DBKey[MAX_PASSWORD_LEN];  /* used to descramble password */
@@ -55,6 +59,7 @@ typedef struct rodsServerConfig {
 
 } rodsServerConfig_t;
 
+char *getServerConfigDir();
 int   readServerConfig( rodsServerConfig_t *rodsServerConfig );
 char* findNextTokenAndTerm( char *inPtr );
 

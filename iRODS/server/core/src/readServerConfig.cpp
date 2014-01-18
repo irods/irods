@@ -31,15 +31,6 @@ getServerConfigDir() {
 }
 
 
-
-int read_some_stuff( rodsServerConfig_t *rodsServerConfig ) {
-
-    rodsLog( LOG_NOTICE, "TOTALLY READINGD SOME STUFF" );
-
-    return 0;
-
-}
-
 int
 readServerConfig( rodsServerConfig_t *rodsServerConfig ) {
     FILE *fptr;
@@ -202,6 +193,38 @@ readServerConfig( rodsServerConfig_t *rodsServerConfig ) {
                 rodsServerConfig->irods_pam_password_min_time );
 
         } // PAM_PW_MAX_TIME_KW
+
+
+        key = strstr( buf, RUN_SERVER_AS_ROOT_KW );
+        if ( key != NULL ) {
+            len = strlen( RUN_SERVER_AS_ROOT_KW );
+            char val[ NAME_LEN ];
+            rstrcpy(
+                val,
+                findNextTokenAndTerm( key + len ),
+                NAME_LEN );
+
+            std::string val_str = val;
+            std::transform(
+                val_str.begin(),
+                val_str.end(),
+                val_str.begin(),
+                ::tolower );
+            if ( val_str == "true" ) {
+                rodsServerConfig->run_server_as_root = true;
+            }
+            else {
+                rodsServerConfig->run_server_as_root = false;
+            }
+
+            rodsLog(
+                LOG_NOTICE,
+                "%s=%s",
+                RUN_SERVER_AS_ROOT_KW,
+                val );
+
+        } // RUN_SERVER_AS_ROOT_KW
+
 
         key = strstr( buf, CATALOG_DATABASE_TYPE_KW );
         if ( key != NULL ) {

@@ -9,6 +9,7 @@
 #include "rodsClient.hpp"
 #include "parseCommandLine.hpp"
 #include "readServerConfig.hpp"
+#include "irods_server_properties.hpp"
 
 #include "rodsUser.hpp"
 
@@ -908,7 +909,7 @@ main( int argc, char **argv ) {
     char *mySubName;
     char *myName;
     int didOne;
-    rodsServerConfig_t serverConfig;
+
 
     Comm = ( rsComm_t* )malloc( sizeof( rsComm_t ) );
     memset( Comm, 0, sizeof( rsComm_t ) );
@@ -935,8 +936,6 @@ main( int argc, char **argv ) {
         chlDebug( myEnv.rodsDebug );
     }
 
-    memset( &serverConfig, 0, sizeof( serverConfig ) );
-    status = readServerConfig( &serverConfig );
 
     strncpy( Comm->clientUser.userName, myEnv.rodsUserName,
              sizeof Comm->clientUser.userName );
@@ -952,7 +951,12 @@ main( int argc, char **argv ) {
       char userName[NAME_LEN];
       char rodsZone[NAME_LEN];
     */
-    if ( ( status = chlOpen( &serverConfig ) ) != 0 ) {
+
+
+	// capture server properties
+	irods::server_properties::getInstance().capture();
+
+    if ( ( status = chlOpen() ) != 0 ) {
 
         rodsLog( LOG_SYS_FATAL,
                  "initInfoWithRcat: chlopen Error. Status = %d",
@@ -1144,7 +1148,7 @@ main( int argc, char **argv ) {
                 printf( "close %d error", i );
             }
 
-            if ( ( status = chlOpen( &serverConfig ) ) != 0 ) {
+            if ( ( status = chlOpen() ) != 0 ) {
 
                 rodsLog( LOG_SYS_FATAL,
                          "initInfoWithRcat: chlopen %d Error. Status = %d",

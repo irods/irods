@@ -29,7 +29,7 @@
 
 extern icatSessionStruct icss;
 
-int chlOpen( rodsServerConfig* );
+int chlOpen();
 int chlClose();
 int chlIsConnected();
 int chlModDataObjMeta( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,

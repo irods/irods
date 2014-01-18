@@ -27,6 +27,7 @@
 #include "irods_auth_plugin.hpp"
 #include "irods_auth_manager.hpp"
 #include "irods_auth_constants.hpp"
+#include "irods_server_properties.hpp"
 
 
 // =-=-=-=-=-=-=-
@@ -2002,8 +2003,7 @@ extern "C" {
 
         }
 
-        // =-=-=-=-=-=-=-
-        //
+        return ret;
 
 
     } // pg_start_op
@@ -2072,8 +2072,11 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // open a database connection
     irods::error pg_open_op(
-        irods::plugin_context& _ctx,
-        rodsServerConfig*      _cfg ) {
+        irods::plugin_context& _ctx ) {
+
+    	std::string prop; // server property
+
+
         // =-=-=-=-=-=-=-
         // check the context
         irods::error ret = _ctx.valid< irods::postgres_object >();
@@ -2092,11 +2095,11 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check incoming param
-        if ( !_cfg ) {
-            return ERROR(
-                       CAT_INVALID_ARGUMENT,
-                       "config is null" );
-        }
+//        if ( !_cfg ) {
+//            return ERROR(
+//                       CAT_INVALID_ARGUMENT,
+//                       "config is null" );
+//        }
 
         // =-=-=-=-=-=-=-
         // log as appropriate
@@ -2108,8 +2111,11 @@ extern "C" {
 //        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
         // =-=-=-=-=-=-=-
         // cache db creds
-        strncpy( icss.databaseUsername, _cfg->DBUsername, DB_USERNAME_LEN );
-        strncpy( icss.databasePassword, _cfg->DBPassword, DB_PASSWORD_LEN );
+        irods::server_properties::getInstance().get_property<std::string>(DB_USERNAME_KW, prop);
+        strncpy( icss.databaseUsername, prop.c_str(), DB_USERNAME_LEN );
+
+        irods::server_properties::getInstance().get_property<std::string>(DB_PASSWORD_KW, prop);
+        strncpy( icss.databasePassword, prop.c_str(), DB_PASSWORD_LEN );
 
         // =-=-=-=-=-=-=-
         // call open in mid level
@@ -2130,16 +2136,14 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // set pam properties
-        irods_pam_auth_no_extend = _cfg->irods_pam_auth_no_extend;
-        irods_pam_password_len   = _cfg->irods_pam_password_len;
-        strncpy(
-            irods_pam_password_min_time,
-            _cfg->irods_pam_password_min_time,
-            NAME_LEN );
-        strncpy(
-            irods_pam_password_max_time,
-            _cfg->irods_pam_password_max_time,
-            NAME_LEN );
+        irods::server_properties::getInstance().get_property<bool>(PAM_NO_EXTEND_KW, irods_pam_auth_no_extend);
+        irods::server_properties::getInstance().get_property<size_t>(PAM_PW_LEN_KW, irods_pam_password_len);
+
+        irods::server_properties::getInstance().get_property<std::string>(PAM_PW_MIN_TIME_KW, prop);
+        strncpy(irods_pam_password_min_time, prop.c_str(), NAME_LEN);
+
+        irods::server_properties::getInstance().get_property<std::string>(PAM_PW_MAX_TIME_KW, prop);
+        strncpy(irods_pam_password_max_time, prop.c_str(), NAME_LEN);
         if ( irods_pam_auth_no_extend ) {
             strncpy(
                 irods_pam_password_default_time,
@@ -4407,10 +4411,7 @@ extern "C" {
 
         std::string zone;
         if ( !( status = _canConnectToCatalog( _comm ) ) ) {
-            if ( !( result = getLocalZone( _ctx.prop_map(), &icss, zone ) ).ok() ) {
-                result = result;
-            }
-            else {
+            if ( ( result = getLocalZone( _ctx.prop_map(), &icss, zone ) ).ok() ) {
                 logger.log();
 
                 resc_id[0] = '\0';

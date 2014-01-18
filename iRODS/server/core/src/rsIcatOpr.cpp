@@ -11,6 +11,7 @@
 #include "rsGlobalExtern.hpp"
 #include "readServerConfig.hpp"
 #include "icatHighLevelRoutines.hpp"
+#include "irods_server_properties.hpp"
 
 #ifdef RODS_CAT
 int
@@ -18,7 +19,7 @@ connectRcat( rsComm_t *rsComm ) {
     int status = 0;
     rodsServerHost_t *tmpRodsServerHost;
     int gotRcatHost = 0;
-    rodsServerConfig_t serverConfig;
+//    rodsServerConfig_t serverConfig;
 
     if ( IcatConnState == INITIAL_DONE ) {
         return ( 0 );
@@ -31,10 +32,12 @@ connectRcat( rsComm_t *rsComm ) {
         if ( tmpRodsServerHost->rcatEnabled == LOCAL_ICAT ||
                 tmpRodsServerHost->rcatEnabled == LOCAL_SLAVE_ICAT ) {
             if ( tmpRodsServerHost->localFlag == LOCAL_HOST ) {
-                memset( &serverConfig, 0, sizeof( serverConfig ) );
-                status = readServerConfig( &serverConfig );
-                status = chlOpen( &serverConfig );
-                memset( &serverConfig, 0, sizeof( serverConfig ) );
+
+            	// capture server properties
+            	irods::server_properties::getInstance().capture();
+
+                status = chlOpen();
+
                 if ( status < 0 ) {
                     rodsLog( LOG_NOTICE,
                              "connectRcat: chlOpen Error. Status = %d", status );
