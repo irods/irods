@@ -104,7 +104,7 @@ _rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     dataObjInfo_t *compDataObjInfo = NULL;
     dataObjInfo_t *cacheDataObjInfo = NULL;
     rescInfo_t *compRescInfo = NULL;
-    int l1descInx;
+    int l1descInx = 0;
     int writeFlag;
     int phyOpenFlag = DO_PHYOPEN;
     char *lockType = NULL; // JMC - backport 4604

@@ -281,9 +281,9 @@ irods::error readMsgBody(
 int
 sockOpenForInConn( rsComm_t *rsComm, int *portNum, char **addr, int proto ) {
     struct sockaddr_in  mySockAddr;
-    int sock;
-    int status;
-    int svrPortRangeStart, svrPortRangeEnd;
+    int sock = 0;
+    int status = 0;
+    int svrPortRangeStart = 0, svrPortRangeEnd = 0;
     char *tmpPtr;
 
     if ( proto != SOCK_DGRAM && proto != SOCK_STREAM ) {

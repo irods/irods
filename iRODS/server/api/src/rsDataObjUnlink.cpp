@@ -300,7 +300,7 @@ resolveDataObjReplStatus( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
 int
 dataObjUnlinkS( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
                 dataObjInfo_t *dataObjInfo ) {
-    int status;
+    int status = 0;
     unregDataObj_t unregDataObjInp;
 
     if ( dataObjInfo->specColl == NULL ) {

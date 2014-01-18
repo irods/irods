@@ -243,7 +243,7 @@ Res *smsi_whileExec( Node **params, int n, Node *node, ruleExecInfo_t *rei, int 
 
 Res *smsi_forExec( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
 
-    Res *init, *cond, *res, *step;
+    Res *init, *cond, *res = NULL, *step;
     Region *rnew = make_region( 0, NULL );
     init = evaluateExpression3( ( Node * )params[0], 0, 1, rei, reiSaveFlag, env, errmsg, rnew );
     if ( getNodeType( init ) == N_ERROR ) {

@@ -1542,8 +1542,8 @@ int
 lfRestartPutWithInfo( rcComm_t *conn, fileRestartInfo_t *info ) {
     rodsLong_t curOffset = 0;
     bytesBuf_t dataObjWriteInpBBuf;
-    int status, i;
-    int localFd, irodsFd;
+    int status = 0, i = 0;
+    int localFd = 0, irodsFd = 0;
     dataObjInp_t dataObjOpenInp;
     openedDataObjInp_t dataObjWriteInp;
     openedDataObjInp_t dataObjLseekInp;
@@ -1702,8 +1702,8 @@ int
 lfRestartGetWithInfo( rcComm_t *conn, fileRestartInfo_t *info ) {
     rodsLong_t curOffset = 0;
     bytesBuf_t dataObjReadInpBBuf;
-    int status, i;
-    int localFd, irodsFd;
+    int status = 0, i = 0;
+    int localFd = 0, irodsFd = 0;
     dataObjInp_t dataObjOpenInp;
     openedDataObjInp_t dataObjReadInp;
     openedDataObjInp_t dataObjLseekInp;

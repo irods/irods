@@ -93,8 +93,7 @@ Cache *restoreCache( unsigned char *buf ) {
     unsigned char *pointersMapped;
     size_t dataSize;
     unsigned int version, version2;
-    while ( true )
-    {
+    while ( true ) {
         if ( lockMutex( &mutex ) != 0 ) {
             return NULL;
         }
@@ -133,7 +132,7 @@ Cache *restoreCache( unsigned char *buf ) {
             continue;
         }
         else {
-          break;
+            break;
         }
     }
     pointers = pointersCopy;

@@ -383,7 +383,6 @@ f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/irodsHost.in ./i
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/packedRei -
 c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/irodsHost ./iRODS/server/config/irodsHost
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/s3Auth.template ./iRODS/server/config/s3Auth.template
-c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/server.config ./iRODS/server/config/server.config
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/README.txt ./iRODS/server/config/README.txt
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/bin -
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/bin/cmd -

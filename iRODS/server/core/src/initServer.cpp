@@ -671,11 +671,11 @@ queAddr( rodsServerHost_t *rodsServerHost, char *myHostName ) {
                      myHostName, afterTime - beforeTime );
             /* XXXXXX may want to mark resource down later */
         }
+        if ( strcasecmp( myHostName, hostEnt->h_name ) != 0 ) {
+            queHostName( rodsServerHost, hostEnt->h_name, 0 );
+        }
     }
 
-    if ( strcasecmp( myHostName, hostEnt->h_name ) != 0 ) {
-        queHostName( rodsServerHost, hostEnt->h_name, 0 );
-    }
     return ( 0 );
 }
 
@@ -1456,7 +1456,6 @@ initHostConfigByFile( rsComm_t *rsComm ) {
     char *hostCongFile;
     char inbuf[MAX_NAME_LEN];
     char hostBuf[LONG_NAME_LEN];
-    rodsServerHost_t *tmpRodsServerHost;
     int lineLen, bytesCopied;
     hostCongFile = ( char * ) malloc( ( strlen( getConfigDir() ) +
                                         strlen( HOST_CONFIG_FILE ) + 24 ) );
@@ -1481,10 +1480,10 @@ initHostConfigByFile( rsComm_t *rsComm ) {
 
     while ( ( lineLen = getLine( fptr, inbuf, MAX_NAME_LEN ) ) > 0 ) {
         char *inPtr = inbuf;
-        int cnt = 0;
+        rodsServerHost_t *tmpRodsServerHost = NULL;
         while ( ( bytesCopied = getStrInBuf( &inPtr, hostBuf,
                                              &lineLen, LONG_NAME_LEN ) ) > 0 ) {
-            if ( cnt == 0 ) {
+            if ( tmpRodsServerHost == NULL ) {
                 /* first host */
                 tmpRodsServerHost = ( rodsServerHost_t* )malloc( sizeof( rodsServerHost_t ) );
                 memset( tmpRodsServerHost, 0, sizeof( rodsServerHost_t ) );
@@ -1495,7 +1494,6 @@ initHostConfigByFile( rsComm_t *rsComm ) {
                 int status = queRodsServerHost( &HostConfigHead, tmpRodsServerHost );
                 if ( status < 0 ) {}
             }
-            cnt ++;
             if ( strcmp( hostBuf, "localhost" ) == 0 ) {
                 tmpRodsServerHost->localFlag = LOCAL_HOST;
             }

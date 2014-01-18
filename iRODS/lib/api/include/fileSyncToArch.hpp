@@ -20,14 +20,14 @@
 #define RS_FILE_SYNC_TO_ARCH rsFileSyncToArch
 /* prototype for the server handler */
 int
-rsFileSyncToArch( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp );
+rsFileSyncToArch( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp, fileSyncOut_t** );
 int
-rsFileSyncToArchByHost( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp,
+rsFileSyncToArchByHost( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp, fileSyncOut_t**,
                         rodsServerHost_t *rodsServerHost );
 int
-_rsFileSyncToArch( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp );
+_rsFileSyncToArch( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp, fileSyncOut_t** );
 int
-remoteFileSyncToArch( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp,
+remoteFileSyncToArch( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp, fileSyncOut_t**,
                       rodsServerHost_t *rodsServerHost );
 #else
 #define RS_FILE_SYNC_TO_ARCH NULL
@@ -35,6 +35,6 @@ remoteFileSyncToArch( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp,
 
 /* prototype for the client call */
 int
-rcFileSyncToArch( rcComm_t *conn, fileStageSyncInp_t *fileSyncToArchInp );
+rcFileSyncToArch( rcComm_t *conn, fileStageSyncInp_t *fileSyncToArchInp, fileSyncOut_t** );
 
 #endif	/* FILE_SYNC_TO_ARCH_H */

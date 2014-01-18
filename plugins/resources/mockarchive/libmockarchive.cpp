@@ -28,6 +28,8 @@
 // boost includes
 #include <boost/function.hpp>
 #include <boost/any.hpp>
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/path.hpp>
 
 // =-=-=-=-=-=-=-
 // system includes
@@ -284,10 +286,9 @@ extern "C" {
     irods::error mock_archive_rename_plugin(
         irods::resource_plugin_context& _ctx,
         const char*                     _new_file_name ) {
-        irods::error result = SUCCESS();
-
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
+        irods::error result = SUCCESS();
         irods::error ret = unix_check_params_and_path< irods::data_object >( _ctx );
         if ( ( result = ASSERT_PASS( ret, "Invalid parameters or physical path." ) ).ok() ) {
 
@@ -297,48 +298,29 @@ extern "C" {
             ret = mock_archive_generate_full_path( _ctx.prop_map(), _new_file_name, new_full_path );
             if ( ( result = ASSERT_PASS( ret, "Unable to generate full path for destination file: \"%s\".",
                                          _new_file_name ) ).ok() ) {
-
                 // =-=-=-=-=-=-=-
                 // cast down the hierarchy to the desired object
                 irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
 
                 // =-=-=-=-=-=-=-
-                // make the directories in the path to the new file
-                std::string new_path = new_full_path;
-                std::size_t last_slash = new_path.find_last_of( '/' );
-                new_path.erase( last_slash );
-                ret = mock_archive_mkdir_r( _ctx.comm(), "", new_path.c_str(), 0750 );
-                if ( ( result = ASSERT_PASS( ret, "Mkdir error for \"%s\".", new_path.c_str() ) ).ok() ) {
-
-                }
-
-                // =-=-=-=-=-=-=-
                 // get hashed names for the old path
-                std::string old_hash;
+                std::string new_hash;
                 ret = make_hashed_path(
                           _ctx.prop_map(),
-                          fco->physical_path(),
-                          old_hash );
+                          _new_file_name,
+                          new_hash );
                 if ( ( result = ASSERT_PASS( ret, "Failed to gen hashed path" ) ).ok() ) {
                     // =-=-=-=-=-=-=-
-                    // get hashed names for the old path
-                    std::string new_hash;
-                    ret = make_hashed_path(
-                              _ctx.prop_map(),
-                              _new_file_name,
-                              new_hash );
-                    if ( ( result = ASSERT_PASS( ret, "Failed to gen hashed path" ) ).ok() ) {
-                        // =-=-=-=-=-=-=-
-                        // make the call to rename
-                        int status = rename( old_hash.c_str(), new_hash.c_str() );
+                    // make the call to rename
+                    int status = rename( fco->physical_path().c_str(), new_hash.c_str() );
 
-                        // =-=-=-=-=-=-=-
-                        // handle error cases
-                        int err_status = UNIX_FILE_RENAME_ERR - errno;
-                        if ( ( result = ASSERT_ERROR( status >= 0, err_status, "Rename error for \"%s\" to \"%s\", errno = \"%s\", status = %d.",
-                                                      fco->physical_path().c_str(), new_full_path.c_str(), strerror( errno ), err_status ) ).ok() ) {
-                            result.code( status );
-                        }
+                    // =-=-=-=-=-=-=-
+                    // handle error cases
+                    int err_status = UNIX_FILE_RENAME_ERR - errno;
+                    if ( ( result = ASSERT_ERROR( status >= 0, err_status, "Rename error for \"%s\" to \"%s\", errno = \"%s\", status = %d.",
+                                                  fco->physical_path().c_str(), new_hash.c_str(), strerror( errno ), err_status ) ).ok() ) {
+                        fco->physical_path( new_hash );
+                        result.code( status );
                     }
                 }
             }
@@ -353,7 +335,6 @@ extern "C" {
     irods::error mock_archive_unlink_plugin(
         irods::resource_plugin_context& _ctx ) {
         irods::error result = SUCCESS();
-
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
         irods::error ret = unix_check_params_and_path< irods::file_object >( _ctx );

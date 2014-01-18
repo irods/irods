@@ -4,7 +4,7 @@ MANUAL=irods-manual-$(IRODSVERSION).pdf
 
 MAKEFLAGS += --no-print-directory
 
-.PHONY : default all epm clean libs plugins plugins-nodb plugins-db irods external external-build docs doxygen icat resource
+.PHONY : default all epm squeaky_clean clean libs plugins plugins-nodb plugins-db irods external external-build docs doxygen icat resource
 
 default : external-build libs plugins irods
 
@@ -40,7 +40,9 @@ irods : libs external-build
 docs : epm manual doxygen
 
 manual :
-	@rst2pdf manual.rst -o $(MANUAL)
+	@sed -e 's,TEMPLATE_IRODSVERSION,$(IRODSVERSION),' manual.rst > manual.tmp
+	@rst2pdf manual.tmp -o $(MANUAL)
+	@rm -f manual.tmp
 
 doxygen :
 #	@$(MAKE) -C iRODS doc
@@ -53,6 +55,8 @@ clean :
 	@touch iRODS/config/platform.mk iRODS/config/config.mk
 	@$(MAKE) -C plugins clean
 	@$(MAKE) -C iRODS clean
-	@$(MAKE) -C external clean
 	@rm -f $(MANUAL)
+
+squeaky_clean : clean
+	@$(MAKE) -C external clean
 

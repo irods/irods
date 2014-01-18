@@ -551,8 +551,9 @@ chkAndHandleOrphanFile( rsComm_t *rsComm, char* objPath, char* rescHier, char *f
 
             /* a new copy or the current path is in trash.
              * rename and reg the path of the old one */
+            char new_fn[ MAX_NAME_LEN ];
             status = renameFilePathToNewDir( rsComm, REPL_DIR, &fileRenameInp,
-                                             rescInfo, 1 );
+                                             rescInfo, 1, new_fn );
             if ( status < 0 ) {
                 char* sys_error;
                 char* rods_error = rodsErrorName( status, &sys_error );
@@ -562,7 +563,7 @@ chkAndHandleOrphanFile( rsComm_t *rsComm, char* objPath, char* rescHier, char *f
             }
             /* register the change */
             memset( &regParam, 0, sizeof( regParam ) );
-            addKeyVal( &regParam, FILE_PATH_KW, fileRenameInp.newFileName );
+            addKeyVal( &regParam, FILE_PATH_KW, new_fn );//fileRenameInp.newFileName );
             modDataObjMetaInp.dataObjInfo = &myDataObjInfo;
             modDataObjMetaInp.regParam = &regParam;
             status = rsModDataObjMeta( rsComm, &modDataObjMetaInp );
@@ -576,7 +577,8 @@ chkAndHandleOrphanFile( rsComm_t *rsComm, char* objPath, char* rescHier, char *f
                          MAX_NAME_LEN );
                 rstrcpy( fileRenameInp.newFileName, filePath, MAX_NAME_LEN );
                 rstrcpy( fileRenameInp.rescHier, myDataObjInfo.rescHier, MAX_NAME_LEN );
-                status = rsFileRename( rsComm, &fileRenameInp );
+                fileRenameOut_t* ren_out = 0;
+                status = rsFileRename( rsComm, &fileRenameInp, &ren_out );
 
                 if ( status < 0 ) {
                     rodsLog( LOG_ERROR,
@@ -595,10 +597,12 @@ chkAndHandleOrphanFile( rsComm_t *rsComm, char* objPath, char* rescHier, char *f
             /* this is an old copy. change the path but don't
              * actually rename it */
             rstrcpy( fileRenameInp.oldFileName, filePath, MAX_NAME_LEN );
+            char new_fn[ MAX_NAME_LEN ];
             status = renameFilePathToNewDir( rsComm, REPL_DIR, &fileRenameInp,
-                                             rescInfo, 0 );
+                                             rescInfo, 0, new_fn );
             if ( status >= 0 ) {
-                rstrcpy( filePath, fileRenameInp.newFileName, MAX_NAME_LEN );
+                //rstrcpy( filePath, fileRenameInp.newFileName, MAX_NAME_LEN );
+                rstrcpy( filePath, new_fn, MAX_NAME_LEN );
                 return ( 0 );
             }
             else {
@@ -616,8 +620,9 @@ chkAndHandleOrphanFile( rsComm_t *rsComm, char* objPath, char* rescHier, char *f
         rstrcpy( fileRenameInp.oldFileName, filePath,           MAX_NAME_LEN );
         rstrcpy( fileRenameInp.rescHier,    rescHier,           MAX_NAME_LEN );
         rstrcpy( fileRenameInp.objPath,     objPath,            MAX_NAME_LEN );
+        char new_fn[ MAX_NAME_LEN ];
         status = renameFilePathToNewDir( rsComm, ORPHAN_DIR, &fileRenameInp,
-                                         rescInfo, 1 );
+                                         rescInfo, 1, new_fn );
         if ( status >= 0 ) {
             return ( 1 );
         }
@@ -639,7 +644,8 @@ chkAndHandleOrphanFile( rsComm_t *rsComm, char* objPath, char* rescHier, char *f
 
 int
 renameFilePathToNewDir( rsComm_t *rsComm, char *newDir,
-                        fileRenameInp_t *fileRenameInp, rescInfo_t *rescInfo, int renameFlag ) {
+                        fileRenameInp_t *fileRenameInp, rescInfo_t *rescInfo, int renameFlag,
+                        char* new_fn ) {
     int len, status;
     char *oldPtr, *newPtr;
     char *filePath = fileRenameInp->oldFileName;
@@ -701,7 +707,9 @@ renameFilePathToNewDir( rsComm_t *rsComm, char *newDir,
               ( uint ) random() );
 
     if ( renameFlag > 0 ) {
-        status = rsFileRename( rsComm, fileRenameInp );
+        fileRenameOut_t* ren_out = 0;
+        status = rsFileRename( rsComm, fileRenameInp, &ren_out );
+        strncpy( new_fn, ren_out->file_name, MAX_NAME_LEN );
         if ( status < 0 ) {
             rodsLog( LOG_NOTICE,
                      "renameFilePathToNewDir:rsFileRename from %s to %s failed,stat=%d",
@@ -837,7 +845,8 @@ syncDataObjPhyPathS( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     rstrcpy( fileRenameInp.newFileName, dataObjInfo->filePath,
              MAX_NAME_LEN );
 
-    status = rsFileRename( rsComm, &fileRenameInp );
+    fileRenameOut_t* ren_out = 0;
+    status = rsFileRename( rsComm, &fileRenameInp, &ren_out );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
                  "syncDataObjPhyPath:rsFileRename from %s to %s failed,status=%d",
@@ -845,9 +854,13 @@ syncDataObjPhyPathS( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         return ( status );
     }
 
+    // =-=-=-=-=-=-=-
+    // update phy path with possible new path from the resource
+    strncpy( dataObjInfo->filePath, ren_out->file_name, MAX_NAME_LEN );
+
     /* register the change */
     memset( &regParam, 0, sizeof( regParam ) );
-    addKeyVal( &regParam, FILE_PATH_KW, fileRenameInp.newFileName );
+    addKeyVal( &regParam, FILE_PATH_KW, ren_out->file_name );
     if ( acLCollection != NULL ) {
         addKeyVal( &regParam, ACL_COLLECTION_KW, acLCollection );
     }
@@ -865,7 +878,8 @@ syncDataObjPhyPathS( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         rstrcpy( fileRenameInp.oldFileName, fileRenameInp.newFileName,
                  MAX_NAME_LEN );
         rstrcpy( fileRenameInp.newFileName, tmpPath, MAX_NAME_LEN );
-        status1 = rsFileRename( rsComm, &fileRenameInp );
+        fileRenameOut_t* ren_out = 0;
+        status1 = rsFileRename( rsComm, &fileRenameInp, &ren_out );
 
         if ( status1 < 0 ) {
             rodsLog( LOG_ERROR,

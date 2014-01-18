@@ -611,7 +611,7 @@ else
     GREPCMD="grep"
 fi
 
-LIBFUSEDEV=`find /usr/include -name fuse.h 2> /dev/null | grep -v linux`
+LIBFUSEDEV=`find /usr/include -name fuse.h 2> /dev/null | $GREPCMD -v linux`
 if [ "$LIBFUSEDEV" == "" ] ; then
     if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
         PREFLIGHT="$PREFLIGHT libfuse-dev"
@@ -711,40 +711,6 @@ else
     echo "Detected OpenSSL sha.h library [$OPENSSLDEV]"
 fi
 
-EASYINSTALL=`which easy_install`
-if [[ "$?" != "0" || `echo $EASYINSTALL | awk '{print $1}'` == "no" ]] ; then
-    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
-        PREFLIGHT="$PREFLIGHT python-setuptools"
-    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-        PREFLIGHT="$PREFLIGHT python-setuptools python-devel"
-    elif [ "$DETECTEDOS" == "SuSE" ] ; then
-        PREFLIGHT="$PREFLIGHT python-setuptools"
-    elif [ "$DETECTEDOS" == "Solaris" ] ; then
-        PREFLIGHT="$PREFLIGHT pysetuptools"
-    elif [ "$DETECTEDOS" == "MacOSX" ] ; then
-        PREFLIGHT="$PREFLIGHT"
-        # should have distribute included already
-    else
-        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://pypi.python.org/pypi/setuptools/"
-    fi
-else
-    echo "Detected easy_install [$EASYINSTALL]"
-fi
-
-
-# check python package prerequisites
-RST2PDF=`which rst2pdf`
-if [[ "$?" != "0" || `echo $RST2PDF | awk '{print $1}'` == "no" ]] ; then
-    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
-        PREFLIGHT="$PREFLIGHT rst2pdf"
-    else
-        PYPREFLIGHT="$PYPREFLIGHT rst2pdf"
-    fi
-else
-    RST2PDFVERSION=`rst2pdf --version`
-    echo "Detected rst2pdf [$RST2PDF] v[$RST2PDFVERSION]"
-fi
-
 # print out prerequisites error
 if [ "$PREFLIGHT" != "" ] ; then
     echo "${text_red}#######################################################" 1>&2
@@ -772,14 +738,6 @@ if [ "$PREFLIGHTDOWNLOAD" != "" ] ; then
     echo "$PREFLIGHTDOWNLOAD" 1>&2
     echo "#######################################################${text_reset}" 1>&2
     exit 1
-fi
-
-ROMAN=`python -c "import roman"`
-if [ "$?" != "0" ] ; then
-    PYPREFLIGHT="$PYPREFLIGHT roman"
-else
-    ROMANLOCATION=`python -c "import roman; print (roman.__file__)"` # expecting ".../roman.pyc"
-    echo "Detected python module 'roman' [$ROMANLOCATION]"
 fi
 
 # print out python prerequisites error
@@ -813,7 +771,7 @@ mkdir -p $(dirname $TMPCONFIGFILE)
 # =-=-=-=-=-=-=-
 # generate canonical version information for the code from top level VERSION file
 cd $BUILDDIR
-TEMPLATE_RODS_RELEASE_VERSION=`grep "\<IRODSVERSION\>" VERSION | awk -F= '{print $2}'`
+TEMPLATE_RODS_RELEASE_VERSION=`$GREPCMD "\<IRODSVERSION\>" VERSION | awk -F= '{print $2}'`
 TEMPLATE_RODS_RELEASE_DATE=`date +"%b %Y"`
 sed -e "s,TEMPLATE_RODS_RELEASE_VERSION,$TEMPLATE_RODS_RELEASE_VERSION," ./iRODS/lib/core/include/rodsVersion.hpp.template > /tmp/rodsVersion.hpp
 sed -e "s,TEMPLATE_RODS_RELEASE_DATE,$TEMPLATE_RODS_RELEASE_DATE," /tmp/rodsVersion.hpp > /tmp/rodsVersion.hpp.2
@@ -1029,7 +987,7 @@ if [ "$H2MVERSION" \< "1.37" ] ; then
     echo "     :: (or, add --version capability to all iCommands)"
     echo "     :: (installed here: help2man version $H2MVERSION)"
 else
-    IRODSMANVERSION=`grep "^%version" ./packaging/irods.list | awk '{print $2}'`
+    IRODSMANVERSION=`$GREPCMD "^%version" ./packaging/irods.list | awk '{print $2}'`
     ICMDDIR="iRODS/clients/icommands/bin"
     ICMDS=(
     genOSAuth     

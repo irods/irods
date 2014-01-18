@@ -28,16 +28,22 @@ typedef struct {
 
 #define fileRenameInp_PI "struct RHostAddr_PI; str oldFileName[MAX_NAME_LEN]; str newFileName[MAX_NAME_LEN]; str rescHier[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN];"
 
+typedef struct {
+    char file_name[ MAX_NAME_LEN ];
+} fileRenameOut_t;
+
+#define fileRenameOut_PI "str file_name[MAX_NAME_LEN];"
+
 #if defined(RODS_SERVER)
 #define RS_FILE_RENAME rsFileRename
 /* prototype for the server handler */
 int
-rsFileRename( rsComm_t *rsComm, fileRenameInp_t *fileRenameInp );
+rsFileRename( rsComm_t *rsComm, fileRenameInp_t *fileRenameInp, fileRenameOut_t** );
 int
-_rsFileRename( rsComm_t *rsComm, fileRenameInp_t *fileRenameInp,
+_rsFileRename( rsComm_t *rsComm, fileRenameInp_t *fileRenameInp, fileRenameOut_t**,
                rodsServerHost_t *rodsServerHost );
 int
-remoteFileRename( rsComm_t *rsComm, fileRenameInp_t *fileRenameInp,
+remoteFileRename( rsComm_t *rsComm, fileRenameInp_t *fileRenameInp, fileRenameOut_t**,
                   rodsServerHost_t *rodsServerHost );
 #else
 #define RS_FILE_RENAME NULL
@@ -45,6 +51,6 @@ remoteFileRename( rsComm_t *rsComm, fileRenameInp_t *fileRenameInp,
 
 /* prototype for the client call */
 int
-rcFileRename( rcComm_t *conn, fileRenameInp_t *fileRenameInp );
+rcFileRename( rcComm_t *conn, fileRenameInp_t *fileRenameInp, fileRenameOut_t** );
 
 #endif  /* FILE_RENAME_H */

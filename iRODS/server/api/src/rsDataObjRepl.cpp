@@ -1263,16 +1263,18 @@ l3FileSync( rsComm_t * rsComm, int srcL1descInx, int destL1descInx ) {
     rstrcpy( fileSyncToArchInp.cacheFilename, srcDataObjInfo->filePath,  MAX_NAME_LEN );
 
     fileSyncToArchInp.mode = getFileMode( dataObjInp );
-    status = rsFileSyncToArch( rsComm, &fileSyncToArchInp );
+    fileSyncOut_t* sync_out = 0;
+    status = rsFileSyncToArch( rsComm, &fileSyncToArchInp, &sync_out );
 
     if ( status >= 0 &&
             CREATE_PATH == dst_create_path &&
-            fileSyncToArchInp.filename != NULL ) {
+            NULL != sync_out ) {
 
         /* path name is created by the resource */
-        rstrcpy( destDataObjInfo->filePath, fileSyncToArchInp.filename, MAX_NAME_LEN );
+        rstrcpy( destDataObjInfo->filePath, sync_out->file_name, MAX_NAME_LEN );
         L1desc[destL1descInx].replStatus |= FILE_PATH_HAS_CHG;
     }
+    delete sync_out;
     return ( status );
 }
 
