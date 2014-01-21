@@ -3274,12 +3274,9 @@ sub MySQL_CreateDatabase()
     open( NEWCONFIGFILE, ">$userODBC" );
     print ( NEWCONFIGFILE "[mysql]\n" .
             "Driver=$mysqlOdbcLib\n" .
-            "Debug=0\n" .
-            "CommLog=0\n" .
-            "Servername=$DATABASE_HOST\n" .
             "Database=$DB_NAME\n" .
-            "ReadOnly=no\n" .
-            "Ksqo=0\n" .
+            "Servername=$DATABASE_HOST\n" .
+            "Option=2\n" .
             "Port=$DATABASE_PORT\n" );
 
     close( NEWCONFIGFILE );

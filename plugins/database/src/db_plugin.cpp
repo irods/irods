@@ -2441,6 +2441,7 @@ extern "C" {
             }
             theVal = getValByKey( _reg_param, regParamNames[i] );
             if ( theVal != NULL ) {
+                rodsLog( LOG_NOTICE, "XXXX - i %d, j %d, colName [%s], val [%s]", i, j, colNames[i], theVal );
                 updateCols[j] = colNames[i];
                 updateVals[j] = theVal;
                 if ( i == DATA_EXPIRY_TS_IX ) {
@@ -2702,6 +2703,7 @@ extern "C" {
             if ( logSQL != 0 ) {
                 rodsLog( LOG_SQL, "chlModDataObjMeta SQL 4" );
             }
+            rodsLog( LOG_NOTICE, "XXXX - updateCols [%s], updateVals [%s]", updateCols[0], updateVals[0] );
             status = cmlModifySingleTable(
                          "R_DATA_MAIN",
                          updateCols,
