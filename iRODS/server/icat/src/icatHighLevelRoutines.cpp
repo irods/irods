@@ -26,6 +26,7 @@
 #include "irods_database_factory.hpp"
 #include "irods_database_manager.hpp"
 #include "irods_database_constants.hpp"
+#include "irods_server_properties.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -85,20 +86,20 @@ int chlDebug(
 /// =-=-=-=-=-=-=-
 /// @brief Open a connection to the database.  This has to be called first.
 ///        The server/agent and Rule-Engine Server call this when initializing.
-int chlOpen(
-    rodsServerConfig* _cfg ) {
-    // =-=-=-=-=-=-=-
-    // check incoming params
-    if ( !_cfg ) {
-        rodsLog(
-            LOG_ERROR,
-            "null config parameter" );
-        return SYS_INVALID_INPUT_PARAM;
-    }
+int chlOpen() {
+//    // =-=-=-=-=-=-=-
+//    // check incoming params
+//    if ( !_cfg ) {
+//        rodsLog(
+//            LOG_ERROR,
+//            "null config parameter" );
+//        return SYS_INVALID_INPUT_PARAM;
+//    }
 
     // =-=-=-=-=-=-=-
     // cache the database type for subsequent calls
-    database_plugin_type = _cfg->catalog_database_type;
+//    database_plugin_type = _cfg->catalog_database_type;
+	irods::server_properties::getInstance().get_property<std::string>(CATALOG_DATABASE_TYPE_KW, database_plugin_type);
 
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -134,17 +135,16 @@ int chlOpen(
 
     // =-=-=-=-=-=-=-
     // call the open operation on the plugin
-    ret = db->call< rodsServerConfig* >(
+    ret = db->call(
               irods::DATABASE_OP_OPEN,
-              ptr,
-              _cfg );
+              ptr );
 
     return ret.code();
 
 } // chlOpen
 
 /// =-=-=-=-=-=-=-
-///  @breif Close an open connection to the database.
+///  @brief Close an open connection to the database.
 ///         Clean up and shutdown the connection.
 int chlClose() {
     // =-=-=-=-=-=-=-

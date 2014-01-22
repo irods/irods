@@ -6,6 +6,7 @@
 
 #include "rodsClient.hpp"
 #include "readServerConfig.hpp"
+#include "irods_server_properties.hpp"
 
 #include "icatHighLevelRoutines.hpp"
 
@@ -805,7 +806,6 @@ doTest15( char *testString, char *testString2, char *testString3 ) {
 
 int
 main( int argc, char **argv ) {
-    rodsServerConfig_t serverConfig;
     int i1 = 0, i2 = 0, i3 = 0, i = 0;
     genQueryInp_t genQueryInp;
     int i1a[10];
@@ -964,13 +964,10 @@ main( int argc, char **argv ) {
             exit( 1 );
         }
 
-        memset( &serverConfig, 0, sizeof( serverConfig ) );
-        status = readServerConfig( &serverConfig );
-        if ( status ) {
-            printf( "Error %d from readServerConfig\n", status );
-        }
+    	// capture server properties
+    	irods::server_properties::getInstance().capture();
 
-        if ( ( status = chlOpen( &serverConfig ) ) != 0 ) {
+        if ( ( status = chlOpen() ) != 0 ) {
 
             rodsLog( LOG_SYS_FATAL,
                      "chlopen Error. Status = %d",
