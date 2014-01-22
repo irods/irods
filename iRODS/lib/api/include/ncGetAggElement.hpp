@@ -16,7 +16,7 @@
 #include "dataObjInpOut.hpp"
 #include "ncOpen.hpp"
 #ifdef NETCDF_API
-#include "netcdf.hpp"
+#include "netcdf.h"
 #endif
 
 /* data struct for aggregation of netcdf files. Our first attempt assumes

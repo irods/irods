@@ -73,6 +73,8 @@ include $(IRODS_BUILD_DIR)/iRODS/config/external_versions.txt
 
 BOOST_DIR=$(IRODS_BUILD_DIR)/external/$(BOOSTVERSION)
 LIBARCHIVE_DIR=$(IRODS_BUILD_DIR)/external/$(LIBARCHIVEVERSION)
+NETCDF_DIR=$(IRODS_BUILD_DIR)/external/$(NETCDFVERSION)
+HDF5_DIR=$(IRODS_BUILD_DIR)/external/$(HDF5VERSION)
 
 #
 # Check which database is in use for the iCAT
@@ -381,12 +383,11 @@ endif
 # built with --enable-netcdf-4. Since most NETCDF files are very large and 
 # Opendap support is needed for some NETCDF applications, NETCDF4 support 
 # is needed in most cases.
-# NETCDF_DIR - the install directory of NETCDF. 
 # NETCDF_CLIENT - build only the irods client with the NETCDF API. This
 # option does not require the installation of the NETCDF C library nor
 # header files. NETCDF_API must be off with is option.
-# NETCDF_API=1
-# NETCDF4_API=1
+NETCDF_API=1
+NETCDF4_API=1
 # NETCDF_CLIENT=1
 
 ifdef NETCDF4_API
@@ -394,7 +395,6 @@ NETCDF_API=1
 endif
 ifdef NETCDF_API
 NETCDF_CLIENT=1
-NETCDF_DIR=/usr/local
 endif
 
 # DIRECT_ACCESS_VAULT - build in support for a resource type that

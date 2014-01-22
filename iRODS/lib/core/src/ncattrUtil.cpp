@@ -401,7 +401,7 @@ listAttrDataObjUtil( rcComm_t *conn, char *srcPath,
     int status, i;
     genQueryOut_t *genQueryOut = NULL;
     sqlResult_t *metaAttr, *metaVal, *metaUnits;
-    char *metaAttrStr, *metaValStr, *metaUnitsStr;
+    char *metaAttrStr, *metaValStr; //, *metaUnitsStr;
     char myDir[MAX_NAME_LEN], myFile[MAX_NAME_LEN];
     int mycount = 0;
 
@@ -457,7 +457,7 @@ listAttrDataObjUtil( rcComm_t *conn, char *srcPath,
     for ( i = 0; i < genQueryOut->rowCnt; i++ ) {
         metaAttrStr = &metaAttr->value[metaAttr->len * i];
         metaValStr = &metaVal->value[metaVal->len * i];
-        metaUnitsStr = &metaUnits->value[metaUnits->len * i];
+        //metaUnitsStr = &metaUnits->value[metaUnits->len * i];
         if ( rodsArgs->longOption == True || rodsArgs->attr == True ) {
             printf( "   %s = \n", metaAttrStr );
             printNice( metaValStr, "      ", 72 );

@@ -218,6 +218,12 @@ typedef struct BytesBuf {   /* have to add BytesBuf to get Doxygen working */
     void *buf;
 } bytesBuf_t;
 
+typedef struct {   /* have to add BytesBuf to get Doxygen working */
+    int type;
+    int len;    /* len of array in buf */
+    void *buf;
+} dataArray_t;
+
 /* The msg header for all communication between client and server */
 
 typedef struct msgHeader {

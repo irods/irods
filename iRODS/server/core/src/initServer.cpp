@@ -86,6 +86,38 @@ resolveHost( rodsHostAddr_t *addr, rodsServerHost_t **rodsServerHost ) {
 
     return ( tmpRodsServerHost->localFlag );
 }
+
+int
+resoAndConnHostByDataObjInfo (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
+rodsServerHost_t **rodsServerHost)
+{
+    int status;
+    rodsHostAddr_t addr;
+    int remoteFlag;
+
+    if (dataObjInfo == NULL || dataObjInfo->rescInfo == NULL ||
+      dataObjInfo->rescInfo->rescLoc == NULL) {
+        rodsLog (LOG_NOTICE,
+          "resolveHostByDataObjInfo: NULL input");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    memset (&addr, 0, sizeof (addr));
+    rstrcpy (addr.hostAddr, dataObjInfo->rescInfo->rescLoc, NAME_LEN);
+
+    remoteFlag = resolveHost (&addr, rodsServerHost);
+
+    if (remoteFlag == REMOTE_HOST) {
+        status = svrToSvrConnect (rsComm, *rodsServerHost);
+        if (status < 0) {
+            rodsLog (LOG_ERROR,
+              "resAndConnHostByDataObjInfo: svrToSvrConnect to %s failed",
+              (*rodsServerHost)->hostName->name);
+	}
+    }
+    return (remoteFlag);
+}
+
 int
 resolveHostByRescInfo( rescInfo_t *rescInfo, rodsServerHost_t **rodsServerHost ) {
     rodsHostAddr_t addr;

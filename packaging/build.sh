@@ -990,7 +990,6 @@ else
     IRODSMANVERSION=`$GREPCMD "^%version" ./packaging/irods.list | awk '{print $2}'`
     ICMDDIR="iRODS/clients/icommands/bin"
     ICMDS=(
-    genOSAuth     
     iadmin        
     ibun          
     icd           

@@ -16,7 +16,7 @@
 #include "dataObjInpOut.hpp"
 #include "ncOpen.hpp"
 #ifdef NETCDF_API
-#include "netcdf.hpp"
+#include "netcdf.h"
 #endif
 
 #define NcOpenGroupInp_PI "str objPath[MAX_NAME_LEN]; int mode; int rootNcid; double intialsz; double bufrsizehint; struct KeyValPair_PI;"

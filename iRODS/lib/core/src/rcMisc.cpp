@@ -430,6 +430,50 @@ getStrInBuf( char **inbuf, char *outbuf, int *inbufLen, int outbufLen ) {
     return ( bytesCopied );
 }
 
+/* getNextEleInStr - same as getStrInBuf except it did not check for # */
+int
+getNextEleInStr (char **inbuf, char *outbuf, int *inbufLen, int maxOutLen)
+{
+    char *inPtr, *outPtr;
+    int bytesCopied  = 0;
+    int c;
+    int hasQuote;
+
+    inPtr = *inbuf;
+    outPtr = outbuf;
+
+    hasQuote = 0;
+    while ((c = *inPtr) != '\0' && *inbufLen > 0) {
+        (*inbufLen)--;
+        inPtr ++;
+        if (isspace (c) && hasQuote == False) {
+            if (bytesCopied > 0) {
+                break;
+            } else {
+                continue;
+            }
+        } else if (c == '\'') {
+            if (hasQuote == True) {
+                inPtr ++;
+                break;
+            } else {
+                hasQuote = True;
+            }
+        } else {
+            if (bytesCopied >= maxOutLen - 1) {
+                rodsLog (LOG_ERROR,
+                  "getNextEleInStr: outbuf overflow buf len %d", bytesCopied);
+                break;
+            }
+            *outPtr = c;
+            bytesCopied ++;
+            outPtr++;
+        }
+    }
+    *outPtr = '\0';
+    *inbuf = inPtr;
+    return (bytesCopied);
+}
 
 /* getLine - Read the next line. Add a NULL char at the end.
  * return the length of the line including the terminating NULL.

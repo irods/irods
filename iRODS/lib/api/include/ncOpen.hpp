@@ -15,7 +15,7 @@
 #include "initServer.hpp"
 #include "dataObjInpOut.hpp"
 #ifdef NETCDF_API
-#include "netcdf.hpp"
+#include "netcdf.h"
 #endif
 
 typedef struct {

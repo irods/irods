@@ -300,7 +300,6 @@ int
 getSizeForGetVars( ncGetVarInp_t *ncGetVarInp ) {
     int i;
     int len = 1;
-    int hasStride = 0;
 
     for ( i = 0; i < ncGetVarInp->ndim; i++ ) {
         if ( ncGetVarInp->count[i] <= 0 ) {
@@ -309,9 +308,6 @@ getSizeForGetVars( ncGetVarInp_t *ncGetVarInp ) {
         /* cal dataArray->len */
         if ( ncGetVarInp->stride[i] <= 0 ) {
             ncGetVarInp->stride[i] = 1;
-        }
-        else if ( ncGetVarInp->stride[i] > 1 ) {
-            hasStride = 1;
         }
         len = len * ( ( ncGetVarInp->count[i] - 1 ) / ncGetVarInp->stride[i] + 1 );
     }

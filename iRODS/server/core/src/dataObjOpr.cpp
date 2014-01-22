@@ -1491,7 +1491,7 @@ int matchDataObjInfoByCondInput( dataObjInfo_t **dataObjInfoHead,
 {
 
     int replNumCond;
-    int replNum;
+    int replNum = 0;
     int rescCond;
     bool destHierCond = false;
     char *tmpStr, *rescName;

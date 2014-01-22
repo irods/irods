@@ -455,6 +455,38 @@ printTiming( rcComm_t *conn, char *objPath, rodsLong_t fileSize,
     return ( 0 );
 }
 
+int
+printTime (rcComm_t *conn, char *objPath, struct timeval *startTime, 
+struct timeval *endTime)
+{
+    struct timeval diffTime;
+    char myDir[MAX_NAME_LEN], myFile[MAX_NAME_LEN];
+    float timeInSec;
+    int status;
+
+
+    if ((status = splitPathByKey (objPath, myDir, myFile, '/')) < 0) {
+        rodsLogError (LOG_NOTICE, status,
+          "printTime: splitPathByKey for %s error, status = %d",
+          objPath, status);
+        return (status);
+    }
+
+    diffTime.tv_sec = endTime->tv_sec - startTime->tv_sec;
+    diffTime.tv_usec = endTime->tv_usec - startTime->tv_usec;
+
+    if (diffTime.tv_usec < 0) {
+        diffTime.tv_sec --;
+        diffTime.tv_usec += 1000000;
+    }
+    timeInSec = (float) diffTime.tv_sec + ((float) diffTime.tv_usec /
+     1000000.0);
+
+    fprintf (stdout, "   %-25.25s  %.3f sec\n", myFile, timeInSec);
+
+    return (0);
+}
+
 #ifdef SYS_TIMING
 int
 initSysTiming( char *procName, char *action, int envVarFlag ) {

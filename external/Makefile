@@ -112,7 +112,7 @@ $(NETCDFVERSIONMAKE) : $(NETCDFVERSIONARCHIVE) hdf5
 	@tar zxf $(NETCDFVERSIONARCHIVE)
 	@EXTERNALS_DIR=`echo $$PWD | sed "s/\([^-A-Za-z0-9_/]\)/\\\\\1/g"`; \
 		cd $(NETCDFVERSION) ; \
-		CC="gcc" LDFLAGS="-L$$EXTERNALS_DIR/hdf5-1.8.12/src/.libs/ -L$$EXTERNALS_DIR/hdf5-1.8.12/hl/src/.libs/" CPPFLAGS="-I$$EXTERNALS_DIR/hdf5-1.8.12/src -I$$EXTERNALS_DIR/hdf5-1.8.12/hl/src" ./configure
+		CC="gcc" LDFLAGS="-L$$EXTERNALS_DIR/$(HDF5VERSION)/src/.libs/ -L$$EXTERNALS_DIR/$(HDF5VERSION)/hl/src/.libs/" CPPFLAGS="-I$$EXTERNALS_DIR/$(HDF5VERSION)/src -I$$EXTERNALS_DIR/$(HDF5VERSION)/hl/src" ./configure
 
 netcdf : $(NETCDFVERSIONMAKE)
 	@$(MAKE) -C $(NETCDFVERSION)

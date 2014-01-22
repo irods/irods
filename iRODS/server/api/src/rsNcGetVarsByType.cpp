@@ -109,7 +109,7 @@ rsNcGetVarsByTypeForColl( rsComm_t *rsComm, ncGetVarInp_t *ncGetVarInp,
     int timeInxInVar0;
     rodsLong_t start[NC_MAX_DIMS], stride[NC_MAX_DIMS], count[NC_MAX_DIMS];
     char *buf, *bufPos;
-    int len, eleLen, curLen;
+    int len, curLen;
     ncGetVarOut_t *myNcGetVarOut = NULL;
     char dataType_PI[NAME_LEN];
     int dataTypeSize;
@@ -250,7 +250,6 @@ rsNcGetVarsByTypeForColl( rsComm_t *rsComm, ncGetVarInp_t *ncGetVarInp,
                     }
                 }
             }
-            eleLen = getSizeForGetVars( &myNcGetVarInp );
             status = rsNcGetVarsByTypeForObj( rsComm, &myNcGetVarInp,
                                               &myNcGetVarOut );
             if ( status < 0 ) {

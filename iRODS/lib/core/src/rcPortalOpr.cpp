@@ -1867,3 +1867,45 @@ getSeg( rcComm_t *conn, rodsLong_t segSize, int localFd,
     return 0;
 }
 
+int
+catDataObj (rcComm_t *conn, char *objPath)
+{
+    dataObjInp_t dataObjOpenInp;
+    openedDataObjInp_t dataObjCloseInp;
+    openedDataObjInp_t dataObjReadInp;
+    bytesBuf_t dataObjReadOutBBuf;
+    int l1descInx;
+    int bytesRead;
+
+
+    memset (&dataObjOpenInp, 0, sizeof (dataObjOpenInp));
+    rstrcpy (dataObjOpenInp.objPath, objPath, MAX_NAME_LEN);
+    dataObjOpenInp.openFlags = O_RDONLY;
+
+    l1descInx = rcDataObjOpen (conn, &dataObjOpenInp);
+    if (l1descInx < 0) {
+        rodsLogError (LOG_ERROR, l1descInx,
+         "catDataObj: rcDataObjOpen error for %s", objPath);
+            return l1descInx;
+    }
+    bzero (&dataObjReadInp, sizeof (dataObjReadInp));
+    dataObjReadOutBBuf.buf = malloc (TRANS_BUF_SZ + 1);
+    dataObjReadOutBBuf.len = TRANS_BUF_SZ + 1;
+    dataObjReadInp.l1descInx = l1descInx;
+    dataObjReadInp.len = TRANS_BUF_SZ;
+
+    while ((bytesRead = rcDataObjRead (conn, &dataObjReadInp,
+     &dataObjReadOutBBuf)) > 0) {
+        char *buf = (char *) dataObjReadOutBBuf.buf;
+        buf[bytesRead] = '\0';
+       printf ("%s", buf);
+    }
+    free (dataObjReadOutBBuf.buf);
+    printf ("\n");
+    memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
+    dataObjCloseInp.l1descInx = l1descInx;
+
+    rcDataObjClose (conn, &dataObjCloseInp);
+
+    return 0;
+}

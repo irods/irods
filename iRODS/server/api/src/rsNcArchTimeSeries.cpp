@@ -346,8 +346,8 @@ archPartialTimeSeries( rsComm_t *rsComm, ncInqOut_t *ncInqOut,
         }
         curTimeInx = ncVarSubset.ncSubset[0].end + 1;
 
-        mkDirForFilePath( UNIX_FILE_TYPE, rsComm, "/",
-                          myDataObjInfo->filePath, getDefDirMode() );
+        mkDirForFilePath( rsComm, "/",
+                          myDataObjInfo->filePath, myDataObjInfo->rescHier, getDefDirMode() );
         status = dumpSubsetToFile( NULL, srcNcid, 0, ncInqOut, &ncVarSubset,
                                    L1desc[l1descInx].dataObjInfo->filePath );
         if ( status >= 0 ) {
@@ -384,7 +384,7 @@ int
 getTimeInxForArch( rsComm_t *rsComm, int ncid, ncInqOut_t *ncInqOut,
                    int dimInx, int varInx, unsigned int prevEndTime, rodsLong_t *startTimeInx ) {
     rodsLong_t start[1], count[1], stride[1];
-    rodsLong_t timeArrayLen, timeArrayRemain, readCount;
+    rodsLong_t timeArrayRemain, readCount;
     ncGetVarInp_t ncGetVarInp;
     ncGetVarOut_t *ncGetVarOut = NULL;
     void *bufPtr;
@@ -393,7 +393,7 @@ getTimeInxForArch( rsComm_t *rsComm, int ncid, ncInqOut_t *ncInqOut,
 
 
     /* read backward, READ_TIME_SIZE at a time until it is <= prevEndTime */
-    timeArrayLen = timeArrayRemain = ncInqOut->dim[dimInx].arrayLen;
+    timeArrayRemain = ncInqOut->dim[dimInx].arrayLen;
     if ( timeArrayRemain <= READ_TIME_SIZE ) {
         readCount = timeArrayRemain;
     }

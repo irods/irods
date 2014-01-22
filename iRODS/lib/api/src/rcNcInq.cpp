@@ -702,7 +702,6 @@ dumpNcInqOutToNcFile( rcComm_t *conn, int srcNcid, int noattrFlag,
                       ncInqOut_t *ncInqOut, char *outFileName ) {
     int i, j, dimId, status;
     int ncid, cmode;
-    rodsLong_t start[NC_MAX_DIMS], stride[NC_MAX_DIMS], count[NC_MAX_DIMS];
     size_t lstart[NC_MAX_DIMS], lcount[NC_MAX_DIMS];
     ptrdiff_t lstride[NC_MAX_DIMS];
     void *bufPtr;
@@ -802,11 +801,8 @@ dumpNcInqOutToNcFile( rcComm_t *conn, int srcNcid, int noattrFlag,
         ncGenVarOut_t *var = &ncInqOut->var[i];
         for ( j = 0; j < var->nvdims; j++ ) {
             dimId = var->dimId[j];
-            start[j] = 0;
             lstart[j] = 0;
-            count[j] = ncInqOut->dim[dimId].arrayLen;
             lcount[j] = ncInqOut->dim[dimId].arrayLen;
-            stride[j] = 1;
             lstride[j] = 1;
         }
         status = getAndPutVarToFile( conn, srcNcid, var->id, var->nvdims,
@@ -903,7 +899,7 @@ getAndPutVarToFile( rcComm_t *conn, int srcNcid, int srcVarid, int ndim,
 int
 dumpSubsetToFile( rcComm_t *conn, int srcNcid, int noattrFlag,
                   ncInqOut_t *ncInqOut, ncVarSubset_t *ncVarSubset, char *outFileName ) {
-    int i, j, dimId, nvars, status;
+    int i, j, dimId, status;
     int ncid, cmode;
     rodsLong_t start[NC_MAX_DIMS], stride[NC_MAX_DIMS], count[NC_MAX_DIMS];
     size_t lstart[NC_MAX_DIMS], lcount[NC_MAX_DIMS];
@@ -994,7 +990,6 @@ dumpSubsetToFile( rcComm_t *conn, int srcNcid, int noattrFlag,
     /* screen the variables */
     subsetNcInqOut.var = ( ncGenVarOut_t * )
                          calloc( ncInqOut->nvars, sizeof( ncGenVarOut_t ) );
-    nvars = 0;
     /* For subsequent subsetting and writing vars to a netcdf file,
      * subsetNcInqOut.var[i].id contains the var id of the source and
      * subsetNcInqOut.var[i].myint contains the var id of the target

@@ -18,7 +18,7 @@
 #include "ncGetAggElement.hpp"
 #include "ncInq.hpp"
 #ifdef NETCDF_API
-#include "netcdf.hpp"
+#include "netcdf.h"
 #endif
 
 /* The file name for the aggregate info */
