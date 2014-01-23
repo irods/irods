@@ -1925,12 +1925,12 @@ ncValueToInt( int dataType, void **invalue ) {
         break;
     case NC_FLOAT:
         myFloat = *( float * ) value;
-        myInt = myFloat;
+        myInt = ( int ) myFloat;
         *ptr += sizeof( float );	/* advance pointer */
         break;
     case NC_DOUBLE:
         myDouble = *( double * ) value;
-        myInt = myDouble;
+        myInt = ( int ) myDouble;
         *ptr += sizeof( double );	/* advance pointer */
         break;
     default:
