@@ -113,30 +113,6 @@ _rsModDataObjMeta( rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp ) {
                          "_rsModDataObjMeta:chlModDataObjMeta %s error stat=%d",
                          tmpDataObjInfo->objPath, status );
             }
-            else {
-                irods::file_object_ptr file_obj(
-                    new irods::file_object(
-                        rsComm,
-                        tmpDataObjInfo ) );
-
-                char* pdmo_kw = getValByKey( regParam, IN_PDMO_KW );
-                if ( pdmo_kw != NULL ) {
-                    file_obj->in_pdmo( pdmo_kw );
-
-                }
-
-                irods::error ret = fileModified( rsComm, file_obj );
-                if ( !ret.ok() ) {
-                    std::stringstream msg;
-                    msg << __FUNCTION__;
-                    msg << " - Failed to signal resource that the data object \"";
-                    msg << tmpDataObjInfo->objPath;
-                    msg << " was modified.";
-                    ret = PASSMSG( msg.str(), ret );
-                    irods::log( ret );
-                    status = ret.code();
-                }
-            }
             tmpDataObjInfo = tmpDataObjInfo->next;
         }
         freeAllDataObjInfo( dataObjInfoHead );
@@ -153,28 +129,6 @@ _rsModDataObjMeta( rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp ) {
             msg << "\" - " << rods_error << " " << sys_error;
             irods::error ret = ERROR( status, msg.str() );
             irods::log( ret );
-        }
-        else {
-            irods::file_object_ptr file_obj(
-                new irods::file_object(
-                    rsComm,
-                    dataObjInfo ) );
-
-            char* pdmo_kw = getValByKey( regParam, IN_PDMO_KW );
-            if ( pdmo_kw != NULL ) {
-                file_obj->in_pdmo( pdmo_kw );
-            }
-            irods::error ret = fileModified( rsComm, file_obj );
-            if ( !ret.ok() ) {
-                std::stringstream msg;
-                msg << __FUNCTION__;
-                msg << " - Failed to signal the resource that the data object \"";
-                msg << dataObjInfo->objPath;
-                msg << "\" was modified.";
-                ret = PASSMSG( msg.str(), ret );
-                irods::log( ret );
-                status = ret.code();
-            }
         }
     }
 
