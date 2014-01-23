@@ -60,11 +60,8 @@ char *cmlArraysToStrWithBind( char *str,
         rstrcat( str, arr[i], maxLen );
         rstrcat( str, sep, maxLen );
         rstrcat( str, "?", maxLen );
-        rodsLog( LOG_NOTICE, "XXXX - cmlArraysToStrWithBind :: %d - [%s] with [%s]", cllBindVarCount, arr[i], arr2[i] );
         cllBindVars[cllBindVarCount++] = arr2[i];
     }
-
-    rodsLog( LOG_NOTICE, "XXXX - cmlArraysToStrWithBind :: bind var count %d", cllBindVarCount );
 
     return( str );
 
@@ -198,6 +195,7 @@ int cmlGetOneRowFromSqlBV( char *sql,
         }
         return ( CAT_SQL_ERR );
     }
+
     i = cllGetRow( icss, stmtNum );
     if ( i != 0 )  {
         cllFreeStatement( icss, stmtNum );
@@ -652,10 +650,6 @@ int cmlModifySingleTable( char *tableName,
                           int numOfUpdates,
                           int numOfConds,
                           icatSessionStruct *icss ) {
-
-    rodsLog( LOG_NOTICE, "XXXX - cmlModifySingleTable [%s] [%s] [%s] [%s] [%s], num up %d, num cond %d",
-             tableName, updateCols[0], updateValues[0], whereColsAndConds[0], whereValues[0], numOfUpdates, numOfConds );
-
     char tsql[MAX_SQL_SIZE];
     int i, l;
     char *rsql;
@@ -674,7 +668,6 @@ int cmlModifySingleTable( char *tableName,
 
     cmlArraysToStrWithBind( rsql, " where ", whereColsAndConds, whereValues, numOfConds, "", " and ", MAX_SQL_SIZE - l );
 
-    rodsLog( LOG_NOTICE, "XXXX - cmlModifySingleTable bind var count %d, tsql [%s]", cllBindVarCount, tsql );
     for ( int q = 0; q < cllBindVarCount; ++q ) {
         rodsLog( LOG_NOTICE, "BIND VAR [%s]", cllBindVars[q] );
     }

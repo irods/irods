@@ -946,22 +946,28 @@ static int _delColl( rsComm_t *rsComm, collInfo_t *collInfo ) {
 // gets called after a resource has been modified (iadmin modresc <oldname> name <newname>)
 static int _modRescInHierarchies( const std::string& old_resc, const std::string& new_resc ) {
     char update_sql[MAX_SQL_SIZE];
-    int status;
+    int status = 0;
     const char *sep = irods::hierarchy_parser::delimiter().c_str();
     std::string std_conf_str;        // to store value of STANDARD_CONFORMING_STRINGS
 
 #if ORA_ICAT
+    // =-=-=-=-=-=-=-
+    // Oracle
     // Should have regexp_update. check syntax
     return SYS_NOT_IMPLEMENTED;
 #elif MY_ICAT
-    return SYS_NOT_IMPLEMENTED;
-#endif
-
-
+    // =-=-=-=-=-=-=-
+    // MySQL
+    snprintf( update_sql, MAX_SQL_SIZE,
+              "update R_DATA_MAIN set resc_hier = PREG_REPLACE('/(^|(.+%s))%s($|(%s.+))/', '$1%s$3', resc_hier);",
+              sep, old_resc.c_str(), sep, new_resc.c_str() );
+#else
+    // =-=-=-=-=-=-=-
+    // PostgrSQL
     // Get STANDARD_CONFORMING_STRINGS setting to determine if backslashes in regex must be escaped
     irods::catalog_properties::getInstance().get_property<std::string>( irods::STANDARD_CONFORMING_STRINGS, std_conf_str );
 
-
+    // =-=-=-=-=-=-=-
     // Regex will look in r_data_main.resc_hier
     // for occurrences of old_resc with either nothing or the separator (and some stuff) on each side
     // and replace them with new_resc, e.g:
@@ -981,6 +987,7 @@ static int _modRescInHierarchies( const std::string& old_resc, const std::string
                   sep, old_resc.c_str(), sep, new_resc.c_str() );
     }
 
+#endif
     // =-=-=-=-=-=-=-
     // SQL update
     status = cmlExecuteNoAnswerSql( update_sql, &icss );
@@ -1010,8 +1017,11 @@ static int _modRescInChildren( const std::string& old_resc, const std::string& n
     // Should have regexp_update. check syntax
     return SYS_NOT_IMPLEMENTED;
 #elif MY_ICAT
-    return SYS_NOT_IMPLEMENTED;
-#endif
+    snprintf( update_sql, MAX_SQL_SIZE,
+              "update R_RESC_MAIN set resc_children = PREG_REPLACE('/(^|(.+%s))%s\\{\\}(.*)/', '$1%s\\{\\}$3', resc_children);",
+              sep, old_resc.c_str(), new_resc.c_str() );
+#else
+
 
 
     // Get STANDARD_CONFORMING_STRINGS setting to determine if backslashes in regex must be escaped
@@ -1038,6 +1048,7 @@ static int _modRescInChildren( const std::string& old_resc, const std::string& n
                   sep, old_resc.c_str(), new_resc.c_str() );
     }
 
+#endif
     // =-=-=-=-=-=-=-
     // SQL update
     status = cmlExecuteNoAnswerSql( update_sql, &icss );
@@ -2441,7 +2452,6 @@ extern "C" {
             }
             theVal = getValByKey( _reg_param, regParamNames[i] );
             if ( theVal != NULL ) {
-                rodsLog( LOG_NOTICE, "XXXX - i %d, j %d, colName [%s], val [%s]", i, j, colNames[i], theVal );
                 updateCols[j] = colNames[i];
                 updateVals[j] = theVal;
                 if ( i == DATA_EXPIRY_TS_IX ) {
@@ -2703,7 +2713,6 @@ extern "C" {
             if ( logSQL != 0 ) {
                 rodsLog( LOG_SQL, "chlModDataObjMeta SQL 4" );
             }
-            rodsLog( LOG_NOTICE, "XXXX - updateCols [%s], updateVals [%s]", updateCols[0], updateVals[0] );
             status = cmlModifySingleTable(
                          "R_DATA_MAIN",
                          updateCols,
@@ -8961,8 +8970,50 @@ checkLevel:
                 return ERROR( status, "failed to update children" );
             }
 
+            // =-=-=-=-=-=-=-
+            // modify the resource group for all data objects if the resource
+            // in question is a root resource
+            std::string resc_hier;
+            status = chlGetHierarchyForResc( _resc_name, zone, resc_hier );
+            bool do_resc_grp = false;
+            if ( CAT_UNKNOWN_RESOURCE == status ) {
+                do_resc_grp = true;
+
+            }
+            else if ( status < 0 ) {
+                rodsLog( LOG_NOTICE,
+                         "chlModResc: chlGetHierarchyForResc error, status = %d",
+                         status );
+                _rollback( "chlModResc" );
+                return ERROR( status, "failed to get hierarchy for resource" );
+
+            }
+            else {
+                // =-=-=-=-=-=-=-
+                // check if the resc name is at the beginning of the hierarchy
+                if ( 0 == resc_hier.find( _resc_name ) ) {
+                    do_resc_grp = true;
+                }
+            }
+
+            if ( do_resc_grp ) {
+                cllBindVars[cllBindVarCount++] = _option_value;
+                cllBindVars[cllBindVarCount++] = _resc_name;
+                status =  cmlExecuteNoAnswerSql(
+                              "update R_DATA_MAIN set resc_group_name=? where resc_group_name=?",
+                              &icss );
+                if ( 0 != status && CAT_SUCCESS_BUT_WITH_NO_INFO != status ) {
+                    rodsLog( LOG_NOTICE,
+                             "chlModResc: failed to set group name error, status = %d",
+                             status );
+                    _rollback( "chlModResc" );
+                    return ERROR( status, "failed to update group name" );
+                }
+            }
+
             OK = 1;
-        }
+
+        } // if name
 
         if ( strcmp( _option, "context" ) == 0 ) {
             cllBindVars[cllBindVarCount++] = _option_value;
@@ -15089,9 +15140,20 @@ checkLevel:
             // Ask for parent of current node
             status = cmlGetStringValueFromSql( "select resc_parent from R_RESC_MAIN where resc_name=? and zone_name=?",
                                                parent, MAX_NAME_LEN, current_node, _zone_name->c_str(), NULL, &icss );
-
             if ( status == CAT_NO_ROWS_FOUND ) { // Resource doesn't exist
-                return ERROR( CAT_UNKNOWN_RESOURCE, "resource does not exist" );
+                // =-=-=-=-=-=-=-
+                // quick check to see if the resource actually exists
+                char type_name[ 250 ] = "";
+                status = cmlGetStringValueFromSql(
+                             "select resc_type_name from R_RESC_MAIN where resc_name=? and zone_name=?",
+                             type_name, 250, current_node, _zone_name->c_str(), NULL, &icss );
+                if ( status < 0 ) {
+                    return ERROR( CAT_UNKNOWN_RESOURCE, "resource does not exist" );
+                }
+                else {
+                    ( *_hierarchy ) = "";
+                    return SUCCESS();
+                }
             }
 
             if ( status < 0 ) { // Other error

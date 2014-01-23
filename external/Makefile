@@ -5,7 +5,7 @@ MAKEFLAGS += --no-print-directory
 RENCI_FTP_EXTERNAL="ftp://ftp.renci.org/pub/irods/external"
 RENCI_FTP_BUILD="ftp://ftp.renci.org/pub/irods/build"
 
-.PHONY : all clean cmake libarchive jansson boost cjson hdf5 netcdf epm
+.PHONY : all clean cmake libarchive jansson boost cjson hdf5 netcdf epm lib_mysqludf_preg
 
 CMAKEVERSIONARCHIVE=$(CMAKEVERSION).tar.gz
 CMAKEVERSIONMAKE=$(CMAKEVERSION)/Makefile
@@ -23,9 +23,26 @@ NETCDFVERSIONMAKE=$(NETCDFVERSION)/Makefile
 EPMVERSIONARCHIVE=$(EPMVERSION).tar.gz
 EPMVERSIONMAKE=epm/Makefile
 
-default : cmake libarchive jansson boost cjson hdf5 netcdf
+LIB_MYSQLUDF_PREG_ARCHIVE=$(LIB_MYSQLUDF_PREG).tar.gz
+LIB_MYSQLUDF_PREG_MAKE=lib_mysqludf_preg/Makefile
 
-all : cmake libarchive jansson boost cjson epm hdf5 netcdf
+default : cmake libarchive jansson boost cjson hdf5 netcdf lib_mysqludf_preg
+
+all : cmake libarchive jansson boost cjson epm hdf5 netcdf lib_mysqludf_preg
+
+
+
+$(LIB_MYSQLUDF_PREG_ARCHIVE) :
+	@wget $(RENCI_FTP_EXTERNAL)/$(LIB_MYSQLUDF_PREG_ARCHIVE) 2>&1
+
+$(LIB_MYSQLUDF_PREG_MAKE) : $(LIB_MYSQLUDF_PREG_ARCHIVE)
+	@tar xf $(LIB_MYSQLUDF_PREG_ARCHIVE)
+	@+cd lib_mysqludf_preg ; ./configure
+
+$(LIB_MYSQLUDF_PREG) : $(LIB_MYSQLUDF_PREG_MAKE)
+	@$(MAKE) -C $(LIB_MYSQLUDF_PREG)
+
+
 
 $(CMAKEVERSIONARCHIVE) :
 	@wget $(RENCI_FTP_EXTERNAL)/$(CMAKEVERSIONARCHIVE) 2>&1

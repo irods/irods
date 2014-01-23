@@ -95,4 +95,3 @@ create table RCORE_USCHEMA_ATTR
    modify_ts            varchar(32)
  ) ;
 
-

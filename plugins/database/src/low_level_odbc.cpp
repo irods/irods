@@ -638,7 +638,6 @@ _cllExecSqlNoResult(
 
     rodsLogSql( sql );
 
-    rodsLog( LOG_NOTICE, "XXXX - _cllExecSqlNoResult :: sql [%s]", sql );
     stat = SQLExecDirect( myHstmt, ( unsigned char * )sql, SQL_NTS );
     SQLRowCount( myHstmt, ( SQL_INT_OR_LEN * )&rowCount );
     status = "UNKNOWN";
@@ -674,7 +673,6 @@ _cllExecSqlNoResult(
         if ( ! cmp_stmt( sql, "begin" )  &&
                 ! cmp_stmt( sql, "commit" ) &&
                 ! cmp_stmt( sql, "rollback" ) ) {
-            rodsLog( LOG_NOTICE, "XXXX - _cllExecSqlNoResult :: stat %d, row count %d", stat, rowCount );
             /* Doesn't seem to return SQL_NO_DATA_FOUND, so check */
             rowCount = 0;
             i = SQLRowCount( myHstmt, ( SQL_INT_OR_LEN * )&rowCount );
