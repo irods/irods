@@ -278,7 +278,7 @@ archPartialTimeSeries( rsComm_t *rsComm, ncInqOut_t *ncInqOut,
                        rescGrpInfo_t *myRescGrpInfo, rodsLong_t startTimeInx, rodsLong_t endTimeInx,
                        rodsLong_t archFileSize ) {
     dataObjInp_t dataObjInp;
-    int status, l1descInx;
+    int status = 0, l1descInx;
     rodsLong_t curTimeInx = startTimeInx;
     ncVarSubset_t ncVarSubset;
     openedDataObjInp_t dataObjCloseInp;

@@ -99,7 +99,7 @@ rsNcGetVarsByTypeForObj( rsComm_t *rsComm, ncGetVarInp_t *ncGetVarInp,
 int
 rsNcGetVarsByTypeForColl( rsComm_t *rsComm, ncGetVarInp_t *ncGetVarInp,
                           ncGetVarOut_t **ncGetVarOut ) {
-    int i, j, status;
+    int i, j, status = 0;
     int l1descInx;
     openedAggInfo_t *openedAggInfo;
     ncInqInp_t ncInqInp;

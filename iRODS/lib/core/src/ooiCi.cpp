@@ -464,7 +464,7 @@ jsonUnpackDict( json_t *dictObj, dictionary_t *outDict ) {
     float *tmpFloat;
     const char *key;
     json_t *value;
-    int status;
+    int status = 0;
 
     if ( dictObj == NULL || outDict == NULL ) {
         rodsLog( LOG_ERROR,
@@ -555,7 +555,7 @@ jsonUnpackArray( json_t *genArrayObj, genArray_t *genArray ) {
     dictionary_t *tmpDict;
     genArray_t *tmpGenArray;
     json_t *value;
-    int status;
+    int status = 0;
     int i, len;
 
     if ( genArrayObj == NULL || genArray == NULL ) {

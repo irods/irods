@@ -316,7 +316,7 @@ getSizeForGetVars( ncGetVarInp_t *ncGetVarInp ) {
 
 int
 getDataTypeSize( int dataType ) {
-    int size;
+    int size = 0;
 
     switch ( dataType ) {
     case NC_CHAR:

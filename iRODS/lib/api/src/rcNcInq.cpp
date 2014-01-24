@@ -7,6 +7,7 @@
 /* See ncInq.h for a description of this API call.*/
 
 #include "ncInq.hpp"
+#include <limits>
 
 /**
  * \fn rcNcInq (rcComm_t *conn, ncInqInp_t *ncInqInp, ncInqOut_t **ncInqOut)
@@ -1309,8 +1310,12 @@ resolveSubsetVar( rcComm_t *conn, int ncid, ncInqOut_t *ncInqOut,
     rodsLong_t start[NC_MAX_DIMS], stride[NC_MAX_DIMS], count[NC_MAX_DIMS];
     ncGetVarOut_t *ncGetVarOut = NULL;
     char *bufPtr;
-    rodsLong_t longStart, longEnd, mylong;
-    double doubleStart, doubleEnd, mydouble;
+    rodsLong_t longStart = 0,
+              longEnd = 0,
+              mylong = 0;
+    double doubleStart = std::numeric_limits<double>::quiet_NaN(),
+              doubleEnd = std::numeric_limits<double>::quiet_NaN(),
+              mydouble = std::numeric_limits<double>::quiet_NaN();
     time_t startTime, endTime;
     int isInt;
 
