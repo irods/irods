@@ -10,6 +10,7 @@
 #include "specColl.hpp"
 #include "resource.hpp"
 #include "miscServerFunct.hpp"
+#include "irods_resource_backport.hpp"
 
 int
 rsOoiGenServReq( rsComm_t *rsComm, ooiGenServReqInp_t *ooiGenServReqInp,
@@ -22,7 +23,7 @@ rsOoiGenServReq( rsComm_t *rsComm, ooiGenServReqInp_t *ooiGenServReqInp,
 
     rescGrpInfo = new rescGrpInfo_t;
     rescGrpInfo->rescInfo = new rescInfo_t;
-    irods::error err = irods::get_resc_grp_info( ooiGenServReqInp->irodsRescName, &rescGrpInfo );
+    irods::error err = irods::get_resc_grp_info( ooiGenServReqInp->irodsRescName, *rescGrpInfo );
     if ( !err.ok() ) {
         rodsLogError( LOG_ERROR, status,
                       "rsOoiGenServReq: _getRescInfo of %s error",
@@ -90,14 +91,13 @@ _rsOoiGenServReq( rsComm_t *rsComm, ooiGenServReqInp_t *ooiGenServReqInp,
     char *postStr = NULL;
     ooiGenServReqStruct_t ooiGenServReqStruct;
     char *vaultPath;
-    int rescTypeInx;
 
     if ( ooiGenServReqInp == NULL || ooiGenServReqOut == NULL ||
             rescGrpInfo == NULL ) {
         return USER__NULL_INPUT_ERR;
     }
 
-    rescTypeInx = rescGrpInfo->rescInfo->rescTypeInx;
+    /*
     if ( RescTypeDef[rescTypeInx].driverType != OOICI_FILE_TYPE ) {
         status = SYS_INVALID_RESC_TYPE;
         rodsLogError( LOG_ERROR, status,
@@ -105,6 +105,7 @@ _rsOoiGenServReq( rsComm_t *rsComm, ooiGenServReqInp_t *ooiGenServReqInp,
                       rescGrpInfo->rescInfo->rescType );
         return status;
     }
+    */
     easyhandle = curl_easy_init();
     if ( !easyhandle ) {
         rodsLog( LOG_ERROR,

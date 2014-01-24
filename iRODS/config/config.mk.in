@@ -406,4 +406,4 @@ endif
 # DIRECT_ACCESS_VAULT = 1
 
 # OOI_CI - specify whether to compile the OOI CI modules
-# OOI_CI=1
+OOI_CI=1
