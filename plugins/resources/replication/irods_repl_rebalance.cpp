@@ -197,11 +197,12 @@ namespace irods {
 /// =-=-=-=-=-=-=-
 /// @brief
     error get_source_data_object_attributes(
-        const int    _data_id,
-        rsComm_t*    _comm,
-        std::string& _obj_path,
-        std::string& _resc_hier,
-        int&         _data_mode ) {
+        const int          _data_id,
+        const std::string& _parent,
+        rsComm_t*          _comm,
+        std::string&       _obj_path,
+        std::string&       _resc_hier,
+        int&               _data_mode ) {
         // =-=-=-=-=-=-=-
         // param check
         if ( _data_id <= 0 ) {
@@ -224,12 +225,20 @@ namespace irods {
         gen_inp.maxRows = MAX_SQL_ROWS;
 
         // =-=-=-=-=-=-=-
-        // add condition string matching data name
+        // add condition string matching data id
         std::stringstream id_str;
         id_str << _data_id;
         std::string cond_str = "='" + id_str.str() + "'";
         addInxVal( &gen_inp.sqlCondInp,
                    COL_D_DATA_ID,
+                   cond_str.c_str() );
+
+        // =-=-=-=-=-=-=-
+        // add condition string matching resc hier parent
+        cond_str = "like '" + _parent + ";%' || like '%;" + _parent + ";%' || like '%;" + _parent + "'";
+        //cond_str = "like '%"+_parent+"%'";
+        addInxVal( &gen_inp.sqlCondInp,
+                   COL_D_RESC_HIER,
                    cond_str.c_str() );
 
         // =-=-=-=-=-=-=-
@@ -428,6 +437,7 @@ namespace irods {
             std::string obj_path, src_hier;
             error ret = get_source_data_object_attributes(
                             *r_itr,
+                            _parent_resc_name,
                             _comm,
                             obj_path,
                             src_hier,

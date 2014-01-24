@@ -8974,13 +8974,9 @@ checkLevel:
             // modify the resource group for all data objects if the resource
             // in question is a root resource
             std::string resc_hier;
-            status = chlGetHierarchyForResc( _resc_name, zone, resc_hier );
+            status = chlGetHierarchyForResc( _option_value, zone, resc_hier );
             bool do_resc_grp = false;
-            if ( CAT_UNKNOWN_RESOURCE == status ) {
-                do_resc_grp = true;
-
-            }
-            else if ( status < 0 ) {
+            if ( status < 0 ) {
                 rodsLog( LOG_NOTICE,
                          "chlModResc: chlGetHierarchyForResc error, status = %d",
                          status );
@@ -8988,13 +8984,13 @@ checkLevel:
                 return ERROR( status, "failed to get hierarchy for resource" );
 
             }
-            else {
-                // =-=-=-=-=-=-=-
-                // check if the resc name is at the beginning of the hierarchy
-                if ( 0 == resc_hier.find( _resc_name ) ) {
-                    do_resc_grp = true;
-                }
+
+            // =-=-=-=-=-=-=-
+            // check if the resc name is at the beginning of the hierarchy
+            if ( resc_hier.empty() || 0 == resc_hier.find( _option_value ) ) {
+                do_resc_grp = true;
             }
+
 
             if ( do_resc_grp ) {
                 cllBindVars[cllBindVarCount++] = _option_value;
@@ -14973,7 +14969,7 @@ checkLevel:
         // =-=-=-=-=-=-=-
         // the basic query string
         char query[ MAX_NAME_LEN ];
-        std::string base_query = "select count(distinct data_id) from r_data_main where resc_hier like '%s;%s' or resc_hier like '%s;%s;%s' or resc_hier like '%s;%s';";
+        std::string base_query = "select count(distinct data_id) from R_DATA_MAIN where resc_hier like '%s;%s' or resc_hier like '%s;%s;%s' or resc_hier like '%s;%s';";
         sprintf(
             query,
             base_query.c_str(),
@@ -15039,7 +15035,12 @@ checkLevel:
         // =-=-=-=-=-=-=-
         // the basic query string
         char query[ MAX_NAME_LEN ];
-        std::string base_query = "select distinct data_id from r_data_main where resc_hier like '%s;%s' or resc_hier like '%s;%s;%s' or resc_hier like '%s;%s' except ( select distinct data_id from r_data_main where resc_hier like '%s;%s' or resc_hier like '%s;%s;%s' or resc_hier like '%s;%s' ) limit %d;";
+#ifdef MY_ICAT
+        std::string base_query = "select distinct data_id from R_DATA_MAIN where ( resc_hier like '%s;%s' or resc_hier like '%s;%s;%s' or resc_hier like '%s;%s' ) and data_id not in ( select data_id from R_DATA_MAIN where resc_hier like '%s;%s' or resc_hier like '%s;%s;%s' or resc_hier like '%s;%s' ) limit %d;";
+
+#else
+        std::string base_query = "select distinct data_id from R_DATA_MAIN where resc_hier like '%s;%s' or resc_hier like '%s;%s;%s' or resc_hier like '%s;%s' except ( select data_id from R_DATA_MAIN where resc_hier like '%s;%s' or resc_hier like '%s;%s;%s' or resc_hier like '%s;%s' ) limit %d;";
+#endif
         sprintf(
             query,
             base_query.c_str(),

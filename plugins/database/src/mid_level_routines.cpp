@@ -668,10 +668,6 @@ int cmlModifySingleTable( char *tableName,
 
     cmlArraysToStrWithBind( rsql, " where ", whereColsAndConds, whereValues, numOfConds, "", " and ", MAX_SQL_SIZE - l );
 
-    for ( int q = 0; q < cllBindVarCount; ++q ) {
-        rodsLog( LOG_NOTICE, "BIND VAR [%s]", cllBindVars[q] );
-    }
-
     i = cmlExecuteNoAnswerSql( tsql, icss );
     return( i );
 
