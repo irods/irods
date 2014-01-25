@@ -963,7 +963,7 @@ static int _modRescInHierarchies( const std::string& old_resc, const std::string
               sep, old_resc.c_str(), sep, new_resc.c_str() );
 #else
     // =-=-=-=-=-=-=-
-    // PostgrSQL
+    // PostgreSQL
     // Get STANDARD_CONFORMING_STRINGS setting to determine if backslashes in regex must be escaped
     irods::catalog_properties::getInstance().get_property<std::string>( irods::STANDARD_CONFORMING_STRINGS, std_conf_str );
 
