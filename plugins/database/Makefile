@@ -1,4 +1,6 @@
-BASEDIRS = postgres
+BASEDIRS = postgres \
+           mysql    \
+           oracle
            
 
 ######################################################################
@@ -32,6 +34,10 @@ postgres:
 	${MAKE} -C $@
 
 mysql:
+	@-mkdir -p $@/${OBJDIR} > /dev/null 2>&1
+	${MAKE} -C $@
+
+oracle:
 	@-mkdir -p $@/${OBJDIR} > /dev/null 2>&1
 	${MAKE} -C $@
 
