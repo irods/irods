@@ -46,7 +46,7 @@ packStruct( void *inStruct, bytesBuf_t **packedResult, char *packInstName,
     if ( irodsProt == XML_PROT ) {
         char *outPtr;
         /* add a NULL termination */
-        extendPackedOutput( &packedOutput, 1, ( void ** ) &outPtr );
+        extendPackedOutput( &packedOutput, 1, ( void ** )( static_cast< void * >( &outPtr ) ) );
         *outPtr = '\0';
         if ( getRodsLogLevel() >= LOG_DEBUG2 ) {
             printf( "packed XML: \n%s\n", ( char * ) packedOutput.bBuf->buf );
@@ -1412,7 +1412,7 @@ packNatString( void **inPtr, packedOutput_t *packedOutput, int maxStrLen,
         return ( USER_PACKSTRUCT_INPUT_ERR );
     }
 
-    extendPackedOutput( packedOutput, myStrlen + 1, ( void ** ) &outPtr );
+    extendPackedOutput( packedOutput, myStrlen + 1, ( void ** )( static_cast< void * >( &outPtr ) ) );
     if ( myStrlen == 0 ) {
         memset( outPtr, 0, 1 );
     }
@@ -1460,7 +1460,7 @@ packXmlString( void **inPtr, packedOutput_t *packedOutput, int maxStrLen,
     }
     packXmlTag( myPackedItem, packedOutput, START_TAG_FL );
 
-    extendPackedOutput( packedOutput, xmlLen + 1, ( void ** ) &outPtr );
+    extendPackedOutput( packedOutput, xmlLen + 1, ( void ** )( static_cast< void * >( &outPtr ) ) );
     if ( xmlLen == 0 ) {
         memset( outPtr, 0, 1 );
     }
@@ -2052,7 +2052,7 @@ unpackNonpointerItem( packItem_t *myPackedItem, void **inPtr,
                  myTypeNum, myPackedItem->name );
         return ( SYS_PACK_INSTRUCT_FORMAT_ERR );
     }
-    return( status );
+    return ( status );
 }
 /* unpackChar - This routine functionally is the same as packChar */
 
@@ -2225,11 +2225,11 @@ unpackXmlString( void **inPtr, packedOutput_t *unpackedOutput, int maxStrLen,
             return ( USER_PACKSTRUCT_INPUT_ERR );
         }
         else {
-            extendPackedOutput( unpackedOutput, myStrlen, ( void ** ) &outPtr );
+            extendPackedOutput( unpackedOutput, myStrlen, ( void ** )( static_cast< void * >( &outPtr ) ) );
         }
     }
     else {
-        extendPackedOutput( unpackedOutput, maxStrLen, ( void ** ) &outPtr );
+        extendPackedOutput( unpackedOutput, maxStrLen, ( void ** )( static_cast< void * >( &outPtr ) ) );
     }
 
     if ( myStrlen > 0 ) {
@@ -2290,7 +2290,7 @@ unpackNullString( void **inPtr, packedOutput_t *unpackedOutput,
 
         myPtr = ( char* ) * inPtr;
         /* check if tag exist */
-        tagLen = parseXmlTag( ( void ** ) &myPtr, myPackedItem, START_TAG_FL,
+        tagLen = parseXmlTag( ( void ** )( static_cast< void * >( &myPtr ) ), myPackedItem, START_TAG_FL,
                               &skipLen );
         if ( tagLen < 0 ) {
             addPointerToPackedOut( unpackedOutput, 0, NULL );
@@ -3480,7 +3480,7 @@ packNopackPointer( void **inPtr, packedOutput_t *packedOutput, int len,
 
     intPtr = ( int * )malloc( sizeof( int ) );
     *intPtr = curNumBuf;
-    status = packInt( ( void ** ) &intPtr, packedOutput, 1, myPackedItem,
+    status = packInt( ( void ** )( static_cast< void * >( &intPtr ) ), packedOutput, 1, myPackedItem,
                       irodsProt );
 
     free( intPtr );

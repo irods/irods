@@ -158,7 +158,7 @@ _rsOoiGenServReq( rsComm_t *rsComm, ooiGenServReqInp_t *ooiGenServReqInp,
 
 size_t
 ooiGenServReqFunc( void *buffer, size_t size, size_t nmemb, void *userp ) {
-    char *type_PI;
+    char *type_PI = "";
     int status;
     void *ptr = NULL;
     json_t *root, *dataObj, *responseObj;
