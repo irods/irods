@@ -906,7 +906,6 @@ static int _delColl( rsComm_t *rsComm, collInfo_t *collInfo ) {
     /* Remove associated AVUs, if any */
     removeMetaMapAndAVU( collIdNum );
 
-#ifdef FILESYSTEM_META
     /* remove any filesystem metadata entries */
     cllBindVars[cllBindVarCount++] = collIdNum;
     if ( logSQL ) {
@@ -922,7 +921,7 @@ static int _delColl( rsComm_t *rsComm, collInfo_t *collInfo ) {
                  "_delColl delete filesystem meta failure %d",
                  status );
     }
-#endif
+
     /* Audit */
     status = cmlAudit3( AU_DELETE_COLL,
                         collIdNum,
@@ -3017,7 +3016,6 @@ extern "C" {
             }
         }
 
-#ifdef FILESYSTEM_META
         /* we can track the filesystem metadata from the file which
            this data object was put or registered from */
         if ( getValByKey( &_data_obj_info->condInput, FILE_UID_KW ) ) {
@@ -3047,7 +3045,6 @@ extern "C" {
                 return ERROR( status, "cmlExecuteNoAnswerSql insert filesystem_meta failure" );
             }
         }
-#endif /* FILESYSTEM_META */
 
 
         status = cmlAudit3( AU_REGISTER_DATA_OBJ, dataIdNum,
@@ -3532,7 +3529,6 @@ extern "C" {
                          "delete from R_OBJT_ACCESS where object_id=? and not exists (select * from R_DATA_MAIN where data_id=?)", &icss );
             if ( status == 0 ) {
                 removeMetaMapAndAVU( dataObjNumber ); /* remove AVU metadata, if any */
-#ifdef FILESYSTEM_META
                 /* and remove source file OS metadata */
                 cllBindVars[0] = dataObjNumber;
                 cllBindVarCount = 1;
@@ -3541,7 +3537,6 @@ extern "C" {
                 }
                 status = cmlExecuteNoAnswerSql(
                              "delete from R_OBJT_FILESYSTEM_META where object_id=?", &icss );
-#endif
             }
         }
 
@@ -5469,7 +5464,6 @@ extern "C" {
             return ERROR( status, "cmlExecuteNoAnswerSql(insert access) failure" );
         }
 
-#ifdef FILESYSTEM_META
         /* we can track the filesystem metadata from the directory
            from which this collection was put or registered from */
         if ( getValByKey( &_coll_info->condInput, FILE_UID_KW ) != NULL ) {
@@ -5498,7 +5492,6 @@ extern "C" {
                 return ERROR( status, "cmlExecuteNoAnswerSql insert filesystem_meta failure" );
             }
         }
-#endif /* FILESYSTEM_META */
 
         /* Audit */
         status = cmlAudit4( AU_REGISTER_COLL,
