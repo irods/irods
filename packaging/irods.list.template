@@ -84,9 +84,15 @@ $RESOURCE=true
 # (have a common name across packaging universes)
 # =-=-=-=-=-=-=-
 
+%if ARCH
+
+%else
+
 %requires perl
 %requires python
 %requires openssl
+
+%endif
 
 %format all
 

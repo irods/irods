@@ -66,8 +66,14 @@ $ICAT=true
 # (have a common name across packaging universes)
 # =-=-=-=-=-=-=-
 
+%if ARCH
+
+%else
+
 %requires perl
 %requires python
+
+%endif
 
 %format all
 
