@@ -25,8 +25,8 @@
  */
 #include "rodsClient.hpp"
 #include "icatHighLevelRoutines.hpp"
-#include "icatMidLevelRoutines.hpp"
-#include "icatLowLevel.hpp"
+#include "mid_level.hpp"
+#include "low_level.hpp"
 #define LIMIT_AUDIT_ACCESS 1  /* undefine this if you want to allow
 access to the audit tables by
 non-privileged users */

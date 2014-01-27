@@ -12,7 +12,7 @@ SRCS = db_plugin.cpp                \
 
 HEADERS = 
 
-EXTRALIBS = ../../../iRODS/lib/core/obj/irods_plugin_base.o
+EXTRALIBS = ../../../iRODS/lib/core/obj/irods_plugin_base.o 
 
 CLL_OBJS =	\
 		$(OBJDIR)/low_level_oracle.o \
@@ -29,5 +29,13 @@ GENU_OBJS = \
         $(OBJDIR)/general_query_setup.o \
         ${OBJDIR}/mid_level_routines.o
 
-EXTRA_CFLAGS = -DORA_ICAT
+EXTRA_CFLAGS = \
+               -DORA_ICAT \
+               -I../../../external/OCI/instantclient_12_1/sdk/include/ \
+
+EXTRA_LDRFLAGS = \
+            -L../../../external/OCI/instantclient_12_1/ \
+            -lnnz12 -lociei -lclntsh -lclntshcore -lons
+
+
 include ../Makefile.base

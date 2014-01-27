@@ -16,8 +16,8 @@
 
 #include "rodsClient.hpp"
 #include "icatHighLevelRoutines.hpp"
-#include "icatMidLevelRoutines.hpp"
-#include "icatLowLevel.hpp"
+#include "mid_level.hpp"
+#include "low_level.hpp"
 
 extern int sGetColumnInfo( int defineVal, char **tableName, char **columnName );
 

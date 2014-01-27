@@ -9,7 +9,8 @@
 #include "readServerConfig.hpp"
 #include "icatStructs.hpp"
 #include "icatHighLevelRoutines.hpp"
-#include "icatMidLevelRoutines.hpp"
+#include "mid_level.hpp"
+#include "low_level.hpp"
 
 // =-=-=-=-=-=-=-
 // new irods includes
@@ -34,9 +35,6 @@
 // irods includes
 #include "rods.hpp"
 #include "rcMisc.hpp"
-#include "icatMidLevelRoutines.hpp"
-#include "icatHighLevelRoutines.hpp"
-#include "icatLowLevel.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes

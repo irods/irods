@@ -25,7 +25,7 @@ ifeq ($(IRODS_BUILD_DEBUG), 0)
 #SUBS += ${HPSSDIRS}
 endif
 
-.PHONY: mysql postgres clean
+.PHONY: clean mysql postgres oracle 
 
 default: postgres
 
