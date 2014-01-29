@@ -42,7 +42,7 @@ extern "C" {
     int
     myHtonll( rodsLong_t inlonglong, rodsLong_t *outlonglong );
     int
-    myNtohll( rodsULong_t inlonglong,  rodsLong_t *outlonglong );
+    myNtohll( rodsLong_t inlonglong,  rodsLong_t *outlonglong );
     int
     statToRodsStat( rodsStat_t *rodsStat, struct stat *myFileStat );
     int

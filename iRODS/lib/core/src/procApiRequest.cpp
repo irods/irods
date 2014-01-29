@@ -302,7 +302,7 @@ procApiReply( rcComm_t *conn, int apiInx, void **outStruct,
     int retVal;
 
     if ( errorBBuf->len > 0 ) {
-        status = unpackStruct( errorBBuf->buf, ( void ** ) &conn->rError,
+        status = unpackStruct( errorBBuf->buf, ( void ** )( static_cast< void * >( &conn->rError ) ),
                                "RError_PI", RodsPackTable, conn->irodsProt );
         if ( status < 0 ) {
             rodsLogError( LOG_ERROR, status,
