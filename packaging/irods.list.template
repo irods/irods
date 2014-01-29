@@ -60,6 +60,14 @@ $SUSE=true
 $RPM=true
 $RESOURCE=true
 
+%elseif ARCHICAT
+$ARCH=true
+$ICAT=true
+
+%elseif ARCHRESOURCE
+$ARCH=true
+$RESOURCE=true
+
 %endif
 
 

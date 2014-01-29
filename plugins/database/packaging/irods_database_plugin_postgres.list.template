@@ -43,6 +43,10 @@ $ICAT=true
 %requires psqlODBC
 %requires unixODBC
 
+%elseif ARCHICAT
+$ARCH=true
+$ICAT=true
+
 %endif
 
 

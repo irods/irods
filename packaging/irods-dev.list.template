@@ -18,25 +18,9 @@
 # Setting environment variables for EPM
 # =-=-=-=-=-=-=-
 
-
-%elseif REDHATRPM
-$REDHAT=true
-$RPM=true
-
-%elseif SUSERPM
-$SUSE=true
-$RPM=true
-
-%endif
-
-
-
 %if DEB
 %requires libc6
 %endif
-
-
-
 
 %format all
 
@@ -96,6 +80,3 @@ d 755 root root /usr/share/irods/examples/resources
 f 644 root root /usr/share/irods/examples/microservices ./examples/microservices/*
 f 644 root root /usr/share/irods/examples/resources ./examples/resources/*
 f 644 root root /usr/share/irods/examples/resources/libpassthru.cpp ./plugins/resources/passthru/libpassthru.cpp
-
-
-

@@ -25,10 +25,6 @@ $ICAT=true
 %requires libmyodbc
 %requires mysql-client
 
-%elseif DEBRESOURCE
-$DEB=true
-$RESOURCE=true
-
 %elseif REDHATRPMICAT
 $REDHAT=true
 $RPM=true
@@ -42,6 +38,9 @@ $ICAT=true
 %requires psqlODBC
 %requires unixODBC
 
+%elseif ARCHICAT
+$ARCH=true
+$ICAT=true
 %endif
 
 
@@ -64,9 +63,14 @@ $ICAT=true
 # Required Packages for all systems
 # (have a common name across packaging universes)
 # =-=-=-=-=-=-=-
+%if ARCH
+
+%else
 
 %requires perl
 %requires python
+
+%endif
 
 %format all
 

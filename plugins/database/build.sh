@@ -202,7 +202,7 @@ elif [ "$DETECTEDOS" == "MacOSX" ] ; then  # MacOSX
     $EPMCMD $EPMOPTS -f osx irods-database-plugin-${DB_TYPE} $epmvar=true $LISTFILE
 elif [ "$DETECTEDOS" == "ArchLinux" ] ; then  # ArchLinux
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS TGZs${text_reset}"
-    epmvar="ARCH"
+    epmvar="ARCH$SERVER_TYPE"
     $EPMCMD $EPMOPTS -f portable irods-database-plugin-${DB_TYPE} $epmvar=true $LISTFILE
 elif [ "$DETECTEDOS" == "Portable" ] ; then  # Portable
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS TGZs${text_reset}"
