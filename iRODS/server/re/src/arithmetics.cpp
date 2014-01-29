@@ -1266,7 +1266,7 @@ void copyFromEnv( Res **args, char **inParams, int inParamsCount, Hashtable *env
  */
 Res* execRuleNodeRes( Node *rule, Res** args, unsigned int argc, int applyAll, Env *env, ruleExecInfo_t *rei, int reiSaveFlag, rError_t *errmsg, Region *r ) {
     int restoreGlobalREAuditFlag = 0;
-    int globalREAuditFlag;
+    int globalREAuditFlag = 0;
     if ( GlobalREAuditFlag > 0 ) {
         /* get meta data */
         Node *metadata = rule->subtrees[4];
