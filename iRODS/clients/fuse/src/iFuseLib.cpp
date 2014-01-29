@@ -912,7 +912,7 @@ getIFuseConnByPath( iFuseConn_t **iFuseConn, char *localPath,
 
 int
 getIFuseConn( iFuseConn_t **iFuseConn, rodsEnv *myRodsEnv ) {
-    int status;
+    int status = 0;
     iFuseConn_t *tmpIFuseConn;
     int inuseCnt;
 
