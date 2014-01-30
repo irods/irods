@@ -11,6 +11,7 @@ DETECTEDDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $DETECTEDDIR/../
 
 # get temp file from prior run, if it exists
+mkdir -p /tmp/$USER
 if [ -f $SETUP_DATABASE_FLAG ] ; then
     # have run this before, read the existing config file
     DATABASEHOSTORIP=`grep "DATABASE_HOST =" $IRODS_CONFIG_FILE | awk -F\' '{print $2}'`
