@@ -16,7 +16,7 @@
     dates              - varchar(32)
     short strings      - varchar(250)
     long strings       - varchar(1000)
-    very long strings  - varchar(2700) (postgres/oracle), TEXT (mysql)
+    very long strings  - varchar(2700)
 
   R_TOKN_MAIN table is like a meta table for holding all
     reserved keywords/tokens/systemic ontologies that are used by
@@ -65,27 +65,6 @@
 #define INT64TYPE integer
 #endif
 
-/* We attempt to set all data for iRODS to use UTF8 encoding */
-#if defined(mysql)
-#define SETCHARACTERSET character set utf8 collate utf8_general_ci
-#else
-/* set to blank for postgres and oracle
-   (do not support table level charsets)
-*/
-#define SETCHARACTERSET
-#endif
-
-/* We use a TEXT field for very long strings in MySQL due to a
-   combination of UTF8 encoding making every character 3 bytes
-   instead of 1 and a table length limit of 65,535 bytes.
-   http://dev.mysql.com/doc/refman/5.0/en/column-count-limit.html
-*/
-#if defined(mysql)
-#define VERYLONGSTRING TEXT
-#else
-#define VERYLONGSTRING varchar(2700)
-#endif
-
 #if defined(mysql)
 SET SESSION storage_engine='InnoDB';
 #endif
@@ -99,7 +78,7 @@ create table R_ZONE_MAIN
    r_comment            varchar(1000),
    create_ts            varchar(32),
    modify_ts            varchar(32)
- ) SETCHARACTERSET;
+ ) ;
 
 create table R_USER_MAIN
  (
@@ -111,7 +90,7 @@ create table R_USER_MAIN
    r_comment            varchar(1000),
    create_ts            varchar(32),
    modify_ts            varchar(32)
- ) SETCHARACTERSET;
+ ) ;
 
 create table R_RESC_MAIN
  (
@@ -133,25 +112,25 @@ create table R_RESC_MAIN
    resc_context         varchar(1000),
    resc_parent          varchar(1000),
    resc_objcount        INT64TYPE DEFAULT 0
- ) SETCHARACTERSET;
+ ) ;
 
 create table R_COLL_MAIN
  (
    coll_id              INT64TYPE not null,
-   parent_coll_name     VERYLONGSTRING not null,
-   coll_name            VERYLONGSTRING not null,
+   parent_coll_name     varchar(2700) not null,
+   coll_name            varchar(2700) not null,
    coll_owner_name      varchar(250) not null,
    coll_owner_zone      varchar(250) not null,
    coll_map_id          INT64TYPE DEFAULT 0,
    coll_inheritance     varchar(1000),
    coll_type            varchar(250) DEFAULT '0',
-   coll_info1           VERYLONGSTRING,
-   coll_info2           VERYLONGSTRING,
+   coll_info1           varchar(2700) DEFAULT '0',
+   coll_info2           varchar(2700) DEFAULT '0',
    coll_expiry_ts       varchar(32),
    r_comment            varchar(1000),
    create_ts            varchar(32),
    modify_ts            varchar(32)
- ) SETCHARACTERSET;
+ ) ;
 
 /* 
   The data_is_dirty column is replStatus in the DataObjStatus structure.
@@ -168,7 +147,7 @@ create table R_DATA_MAIN
    data_size            INT64TYPE not null,
    resc_group_name      varchar(250),
    resc_name            varchar(250) not null,
-   data_path            VERYLONGSTRING not null,
+   data_path            varchar(2700) not null,
    data_owner_name      varchar(250) not null,
    data_owner_zone      varchar(250) not null,
    data_is_dirty        INTEGER  DEFAULT 0,
@@ -181,19 +160,19 @@ create table R_DATA_MAIN
    create_ts            varchar(32),
    modify_ts            varchar(32),
    resc_hier            varchar(1000)
- ) SETCHARACTERSET;
+ ) ;
 
 create table R_META_MAIN
  (
    meta_id              INT64TYPE not null,
    meta_namespace       varchar(250),
-   meta_attr_name       VERYLONGSTRING not null,
-   meta_attr_value      VERYLONGSTRING not null,
+   meta_attr_name       varchar(2700) not null,
+   meta_attr_value      varchar(2700) not null,
    meta_attr_unit       varchar(250),
    r_comment            varchar(1000),
    create_ts            varchar(32),
    modify_ts            varchar(32)
- ) SETCHARACTERSET;
+ ) ;
 
 create table R_TOKN_MAIN
  (
@@ -206,32 +185,32 @@ create table R_TOKN_MAIN
    r_comment            varchar(1000),
    create_ts            varchar(32),
    modify_ts            varchar(32)
- ) SETCHARACTERSET;
+ ) ;
 
 create table R_RULE_MAIN
  (
    rule_id              INT64TYPE not null,
    rule_version         varchar(250) DEFAULT '0',
    rule_base_name       varchar(250) not null,
-   rule_name            VERYLONGSTRING not null,
-   rule_event           VERYLONGSTRING not null,
-   rule_condition       VERYLONGSTRING,
-   rule_body            VERYLONGSTRING not null,
-   rule_recovery        VERYLONGSTRING not null,
+   rule_name            varchar(2700) not null,
+   rule_event           varchar(2700) not null,
+   rule_condition       varchar(2700),
+   rule_body            varchar(2700) not null,
+   rule_recovery        varchar(2700) not null,
    rule_status          INT64TYPE DEFAULT 1,
    rule_owner_name      varchar(250) not null,
    rule_owner_zone      varchar(250) not null,
-   rule_descr_1         VERYLONGSTRING,
-   rule_descr_2         VERYLONGSTRING,
-   input_params         VERYLONGSTRING,
-   output_params        VERYLONGSTRING,
-   dollar_vars          VERYLONGSTRING,
-   icat_elements        VERYLONGSTRING,
-   sideeffects          VERYLONGSTRING,
+   rule_descr_1         varchar(2700),
+   rule_descr_2         varchar(2700),
+   input_params         varchar(2700),
+   output_params        varchar(2700),
+   dollar_vars          varchar(2700),
+   icat_elements        varchar(2700),
+   sideeffects          varchar(2700),
    r_comment            varchar(1000),
    create_ts            varchar(32),
    modify_ts            varchar(32)
- ) SETCHARACTERSET;
+ ) ;
 
 create table R_RULE_BASE_MAP
  (
@@ -244,7 +223,7 @@ create table R_RULE_BASE_MAP
    r_comment            varchar(1000),
    create_ts            varchar(32),
    modify_ts            varchar(32)
- ) SETCHARACTERSET;
+ ) ;
 
 create table R_RULE_DVM
  (
@@ -252,15 +231,15 @@ create table R_RULE_DVM
    dvm_version          varchar(250) DEFAULT '0',
    dvm_base_name        varchar(250) not null,
    dvm_ext_var_name     varchar(250) not null,
-   dvm_condition        VERYLONGSTRING,
-   dvm_int_map_path     VERYLONGSTRING not null,
+   dvm_condition        varchar(2700),
+   dvm_int_map_path     varchar(2700) not null,
    dvm_status           INTEGER DEFAULT 1,
    dvm_owner_name       varchar(250) not null,
    dvm_owner_zone       varchar(250) not null,
    r_comment            varchar(1000),
    create_ts            varchar(32),
    modify_ts            varchar(32)
- ) SETCHARACTERSET;
+ ) ;
 
 create table R_RULE_DVM_MAP
  (
@@ -272,7 +251,7 @@ create table R_RULE_DVM_MAP
    r_comment            varchar(1000),
    create_ts            varchar(32),
    modify_ts            varchar(32)
- ) SETCHARACTERSET;
+ ) ;
 
 create table R_RULE_FNM
  (
@@ -280,14 +259,14 @@ create table R_RULE_FNM
    fnm_version          varchar(250) DEFAULT '0',
    fnm_base_name        varchar(250) not null,
    fnm_ext_func_name    varchar(250) not null,
-   fnm_int_func_name    VERYLONGSTRING not null,
+   fnm_int_func_name    varchar(2700) not null,
    fnm_status           INTEGER DEFAULT 1,
    fnm_owner_name       varchar(250) not null,
    fnm_owner_zone       varchar(250) not null,
    r_comment            varchar(1000),
    create_ts            varchar(32),
    modify_ts            varchar(32)
- ) SETCHARACTERSET;
+ ) ;
 
 create table R_RULE_FNM_MAP
  (
@@ -299,14 +278,14 @@ create table R_RULE_FNM_MAP
    r_comment            varchar(1000),
    create_ts            varchar(32),
    modify_ts            varchar(32)
- ) SETCHARACTERSET;
+ ) ;
 
 create table R_MICROSRVC_MAIN
  (
    msrvc_id             INT64TYPE not null,
    msrvc_name           varchar(250) not null,
    msrvc_module_name    varchar(250) not null,
-   msrvc_signature      VERYLONGSTRING not null,
+   msrvc_signature      varchar(2700) not null,
    msrvc_doxygen        varchar(2500) not null,
    msrvc_variations     varchar(2500) not null,
    msrvc_owner_name     varchar(250) not null,
@@ -314,7 +293,7 @@ create table R_MICROSRVC_MAIN
    r_comment            varchar(1000),
    create_ts            varchar(32),
    modify_ts            varchar(32)
- ) SETCHARACTERSET;
+ ) ;
 
 create table R_MICROSRVC_VER
  (
@@ -330,13 +309,13 @@ create table R_MICROSRVC_VER
    r_comment            varchar(1000),
    create_ts            varchar(32),
    modify_ts            varchar(32)
- ) SETCHARACTERSET;
+ ) ;
 
 create table R_RULE_EXEC
  (
    rule_exec_id         INT64TYPE not null,
-   rule_name            VERYLONGSTRING not null,
-   rei_file_path        VERYLONGSTRING,
+   rule_name            varchar(2700) not null,
+   rei_file_path        varchar(2700),
    user_name            varchar(250),
    exe_address          varchar(250),
    exe_time             varchar(32),
@@ -348,7 +327,7 @@ create table R_RULE_EXEC
    exe_status           varchar(32),
    create_ts            varchar(32),
    modify_ts            varchar(32)
- ) SETCHARACTERSET;
+ ) ;
 
 create table R_USER_GROUP
  (
@@ -356,7 +335,7 @@ create table R_USER_GROUP
    user_id              INT64TYPE not null,
    create_ts            varchar(32),
    modify_ts            varchar(32)
- ) SETCHARACTERSET;
+ ) ;
 
 create table R_USER_SESSION_KEY
  (
@@ -367,7 +346,7 @@ create table R_USER_SESSION_KEY
    session_expiry_ts    varchar(32) not null,
    create_ts            varchar(32),
    modify_ts            varchar(32)
- ) SETCHARACTERSET;
+ ) ;
 
 create table R_USER_PASSWORD
  (
@@ -376,7 +355,7 @@ create table R_USER_PASSWORD
    pass_expiry_ts       varchar(32) not null,
    create_ts            varchar(32),
    modify_ts            varchar(32)
- ) SETCHARACTERSET;
+ ) ;
 
 
 
@@ -387,7 +366,7 @@ create table R_RESC_GROUP
    resc_id              INT64TYPE not null,
    create_ts            varchar(32),
    modify_ts            varchar(32)
- ) SETCHARACTERSET;
+ ) ;
 
 create table R_OBJT_METAMAP
  (
@@ -395,7 +374,7 @@ create table R_OBJT_METAMAP
    meta_id              INT64TYPE not null,
    create_ts            varchar(32),
    modify_ts            varchar(32)
- ) SETCHARACTERSET;
+ ) ;
 
 create table R_OBJT_ACCESS
  (
@@ -404,7 +383,7 @@ create table R_OBJT_ACCESS
    access_type_id       INT64TYPE not null,
    create_ts            varchar(32),
    modify_ts            varchar(32)
- ) SETCHARACTERSET;
+ ) ;
 
 create table R_OBJT_DENY_ACCESS
  (
@@ -413,7 +392,7 @@ create table R_OBJT_DENY_ACCESS
    access_type_id       INT64TYPE not null,
    create_ts            varchar(32),
    modify_ts            varchar(32)
- ) SETCHARACTERSET;
+ ) ;
 
 create table R_OBJT_AUDIT
  (
@@ -423,7 +402,7 @@ create table R_OBJT_AUDIT
    r_comment            varchar(1000),
    create_ts            varchar(32),
    modify_ts            varchar(32)
- ) SETCHARACTERSET;
+ ) ;
 
 create table R_SERVER_LOAD
  (
@@ -437,14 +416,14 @@ create table R_SERVER_LOAD
    net_input            INTEGER,
    net_output           INTEGER,
    create_ts            varchar(32)
- ) SETCHARACTERSET;
+ ) ;
 
 create table R_SERVER_LOAD_DIGEST
  (
    resc_name            varchar(250) not null,
    load_factor          INTEGER,
    create_ts            varchar(32)
- ) SETCHARACTERSET;
+ ) ;
 
 /*
  Optional user authentication information,
@@ -455,7 +434,7 @@ create table R_USER_AUTH
    user_id              INT64TYPE not null,
    user_auth_name       varchar(1000),
    create_ts            varchar(32)
- ) SETCHARACTERSET;
+ ) ;
 
 
 
@@ -467,7 +446,7 @@ create table R_QUOTA_MAIN
    quota_limit          INT64TYPE,
    quota_over           INT64TYPE,
    modify_ts            varchar(32)
- ) SETCHARACTERSET;
+ ) ;
 
 create table R_QUOTA_USAGE
  (
@@ -475,14 +454,14 @@ create table R_QUOTA_USAGE
    resc_id              INT64TYPE,
    quota_usage          INT64TYPE,
    modify_ts            varchar(32)
- ) SETCHARACTERSET;
+ ) ;
 
 create table R_SPECIFIC_QUERY
  (
    alias                varchar(1000),
-   sqlStr               VERYLONGSTRING,
+   sqlStr               varchar(2700),
    create_ts            varchar(32)
- ) SETCHARACTERSET;
+ ) ;
 
 /* Main ticket table.
    Column ticket_type: read or write;
@@ -551,7 +530,7 @@ create table R_OBJT_FILESYSTEM_META
    the max is 255 utf8 characters (255x3=765)
    http://dev.mysql.com/doc/refman/5.0/en/create-index.html 
 */
-#define VARCHAR_MAX_IDX_SIZE (255)
+#define VARCHAR_MAX_IDX_SIZE (767)
 
 /* For MySQL we provide an emulation of the sequences using the 
    auto-increment field in a special table
@@ -559,7 +538,7 @@ create table R_OBJT_FILESYSTEM_META
 delimiter %%
 
 drop table if exists R_ObjectId_seq_tbl %%
-create table R_ObjectId_seq_tbl ( nextval bigint not null primary key auto_increment ) engine = MyISAM SETCHARACTERSET %%
+create table R_ObjectId_seq_tbl ( nextval bigint not null primary key auto_increment ) engine = MyISAM  %%
 alter table R_ObjectId_seq_tbl AUTO_INCREMENT = 10000 %%
 
 drop function if exists R_ObjectId_nextval %%
@@ -608,7 +587,10 @@ create unique index idx_data_main2 on R_DATA_MAIN (coll_id,data_name VARCHAR_MAX
 create index idx_data_main3 on R_DATA_MAIN (coll_id);
 create index idx_data_main4 on R_DATA_MAIN (data_name VARCHAR_MAX_IDX_SIZE);
 create index idx_data_main5 on R_DATA_MAIN (data_type_name);
+
+/* this is not possible for MySQL reference :: http://stackoverflow.com/a/1827099 */
 create index idx_data_main6 on R_DATA_MAIN (data_path);
+
 create unique index idx_meta_main1 on R_META_MAIN (meta_id);
 create index idx_meta_main2 on R_META_MAIN (meta_attr_name VARCHAR_MAX_IDX_SIZE);
 create index idx_meta_main3 on R_META_MAIN (meta_attr_value VARCHAR_MAX_IDX_SIZE);
@@ -626,7 +608,7 @@ create index idx_tokn_main1 on R_TOKN_MAIN (token_id);
 create index idx_tokn_main2 on R_TOKN_MAIN (token_name);
 create index idx_tokn_main3 on R_TOKN_MAIN (token_value);
 create index idx_tokn_main4 on R_TOKN_MAIN (token_namespace);
-create index idx_specific_query1 on R_SPECIFIC_QUERY (sqlStr VARCHAR_MAX_IDX_SIZE);
+create index idx_specific_query1 on R_SPECIFIC_QUERY (sqlStr);
 create index idx_specific_query2 on R_SPECIFIC_QUERY (alias);
 
 

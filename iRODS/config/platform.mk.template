@@ -68,7 +68,7 @@ endif
 # =-=-=-=-=-=-=-
 
 ifdef OOI_CI
-CCFLAGS += -DOOI_CI -I/usr/include/libxml2
+CCFLAGS += -DOOI_CI -I/usr/include/libxml2 -I$(IRODS_BUILD_DIR)/external/$(JANSSONVERSION)/src
 endif
 
 ifdef CCFLAGS
@@ -230,9 +230,9 @@ MY_CFLAG += -DNETCDF4_API
 endif
 
 ifdef NETCDF_API
-HDF5_HL_LIB = $(HDF5_DIR)/hl/src/.libs
-HDF5_LIB = $(HDF5_DIR)/src/.libs
-NETCDF_LIB = $(NETCDF_DIR)/liblib/.libs
+HDF5_HL_LIB=$(HDF5_DIR)/hl/src/.libs
+HDF5_LIB=$(HDF5_DIR)/src/.libs
+NETCDF_LIB=$(NETCDF_DIR)/liblib/.libs
 MY_CFLAG += -DNETCDF_API -I$(NETCDF_DIR)/include
 LDADD += -L$(NETCDF_LIB) -L$(HDF5_LIB) -L$(HDF5_HL_LIB) $(NETCDF_LIB)/libnetcdf.a $(HDF5_HL_LIB)/libhdf5_hl.a $(HDF5_LIB)/libhdf5.a -lz -lcurl
 CL_LDADD += -L$(NETCDF_LIB) -L$(HDF5_LIB) -L$(HDF5_HL_LIB) $(NETCDF_LIB)/libnetcdf.a $(HDF5_HL_LIB)/libhdf5_hl.a $(HDF5_LIB)/libhdf5.a -lz -lcurl
@@ -282,6 +282,7 @@ endif
 
 
 ifdef OOI_CI
-LDADD+= -ljansson
-CL_LDADD+= -ljansson
+JANSSON_LIB=$(IRODS_BUILD_DIR)/external/$(JANSSONVERSION)/src/.libs
+LDADD+= -L$(JANSSON_LIB) $(JANSSON_LIB)/libjansson.a
+CL_LDADD+= -L$(JANSSON_LIB) $(JANSSON_LIB)/libjansson.a
 endif

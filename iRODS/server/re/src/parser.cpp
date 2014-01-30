@@ -3212,7 +3212,6 @@ int parseRuleSet( Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc,
         else {
             int n = node->degree;
             Node **nodes = node->subtrees;
-            RuleType rk;
             /*                if(strcmp(node->text, "UNPARSED") == 0) {
                             	pushRule(ruleSet, newRuleDesc(RK_UNPARSED, nodes[0], r));
                             } else */
@@ -3248,20 +3247,21 @@ int parseRuleSet( Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc,
                 insertIntoHashTable( funcDescIndex->current, nodes[0]->subtrees[0]->text, newExternalFD( nodes[0]->subtrees[1], r ) );
                 pushRule( ruleSet,  newRuleDesc( RK_EXTERN, nodes[0], 0, r ) );
             }
-            else {
-                int notyping;
-                if ( strcmp( node->text, "REL" ) == 0 ) {
-                    rk = RK_REL;
-                    notyping = backwardCompatible >= 0 ? 1 : 0;
-                }
-                else if ( strcmp( node->text, "FUNC" ) == 0 ) {
-                    rk = RK_FUNC;
-                    notyping = 0;
-                }
+            else if ( strcmp( node->text, "REL" ) == 0 ) {
+                int notyping = backwardCompatible >= 0 ? 1 : 0;
                 int k;
                 for ( k = 0; k < n; k++ ) {
                     Node *node = nodes[k];
-                    pushRule( ruleSet, newRuleDesc( rk, node, notyping, r ) );
+                    pushRule( ruleSet, newRuleDesc( RK_REL, node, notyping, r ) );
+                    /*        printf("%s\n", node->subtrees[0]->text);
+                            printTree(node, 0); */
+                }
+            }
+            else if ( strcmp( node->text, "FUNC" ) == 0 ) {
+                int k;
+                for ( k = 0; k < n; k++ ) {
+                    Node *node = nodes[k];
+                    pushRule( ruleSet, newRuleDesc( RK_FUNC, node, 0, r ) );
                     /*        printf("%s\n", node->subtrees[0]->text);
                             printTree(node, 0); */
                 }

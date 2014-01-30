@@ -23,27 +23,6 @@
 #define INT64TYPE integer
 #endif
 
-/* We attempt to set all data for iRODS to use UTF8 encoding */
-#if defined(mysql)
-#define SETCHARACTERSET character set utf8 collate utf8_general_ci
-#else
-/* set to blank for postgres and oracle
-   (do not support table level charsets)
-*/
-#define SETCHARACTERSET
-#endif
-
-/* We use a TEXT field for very long strings in MySQL due to a
-   combination of UTF8 encoding making every character 3 bytes
-   instead of 1 and a table length limit of 65,535 bytes.
-   http://dev.mysql.com/doc/refman/5.0/en/column-count-limit.html
-*/
-#if defined(mysql)
-#define VERYLONGSTRING TEXT
-#else
-#define VERYLONGSTRING varchar(2700)
-#endif
-
 #if defined(mysql)
 SET SESSION storage_engine='InnoDB';
 #endif
@@ -56,7 +35,7 @@ create table RCORE_SCHEMAS
    r_comment            varchar(1000),
    create_ts            varchar(32),
    modify_ts            varchar(32)
- ) SETCHARACTERSET;
+ ) ;
 
 create table RCORE_TABLES
  (
@@ -69,7 +48,7 @@ create table RCORE_TABLES
    r_comment            varchar(1000),
    create_ts            varchar(32),
    modify_ts            varchar(32)
- ) SETCHARACTERSET;
+ ) ;
 
 create table RCORE_ATTRIBUTES
  (
@@ -87,7 +66,7 @@ create table RCORE_ATTRIBUTES
    r_comment            varchar(1000),
    create_ts            varchar(32),
    modify_ts            varchar(32)
- ) SETCHARACTERSET;
+ ) ;
 
 create table RCORE_FK_RELATIONS
  (
@@ -96,7 +75,7 @@ create table RCORE_FK_RELATIONS
    r_comment            varchar(1000),
    create_ts            varchar(32),
    modify_ts            varchar(32)
- ) SETCHARACTERSET;
+ ) ;
 
 create table RCORE_USER_SCHEMAS
  (
@@ -105,7 +84,7 @@ create table RCORE_USER_SCHEMAS
    r_comment            varchar(1000),
    create_ts            varchar(32),
    modify_ts            varchar(32)
- ) SETCHARACTERSET;
+ ) ;
 
 create table RCORE_USCHEMA_ATTR
  (
@@ -114,6 +93,5 @@ create table RCORE_USCHEMA_ATTR
    r_comment            varchar(1000),
    create_ts            varchar(32),
    modify_ts            varchar(32)
- ) SETCHARACTERSET;
-
+ ) ;
 

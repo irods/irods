@@ -41,6 +41,24 @@ namespace irods {
             _ptr.reset( dobj );
 
         }
+        else if ( irods::MYSQL_DATABASE_PLUGIN == _type ) {
+            irods::mysql_object* mysql = new irods::mysql_object;
+            if ( !mysql ) {
+                return ERROR(
+                           SYS_INVALID_INPUT_PARAM,
+                           "mysql allocation failed" );
+            }
+
+            irods::database_object* dobj = dynamic_cast< irods::database_object* >( mysql );
+            if ( !dobj ) {
+                return ERROR(
+                           SYS_INVALID_INPUT_PARAM,
+                           "mysql dynamic cast failed" );
+            }
+
+            _ptr.reset( dobj );
+
+        }
         else {
             std::string msg( "database type not recognized [" );
             msg += _type;

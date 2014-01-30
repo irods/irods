@@ -14,7 +14,7 @@ int
 ncUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         rodsPathInp_t *rodsPathInp ) {
     int i;
-    int status;
+    int status = 0;
     int savedStatus = 0;
     ncOpenInp_t ncOpenInp;
     ncVarSubset_t ncVarSubset;

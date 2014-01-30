@@ -34,6 +34,7 @@
 
 #include "irods_tmp_string.hpp"
 #include "irods_log.hpp"
+#include "irods_stacktrace.hpp"
 
 int _cllFreeStatementColumns( icatSessionStruct *icss, int statementNumber );
 
@@ -47,7 +48,6 @@ int cllBindVarCountPrev = 0; /* cclBindVarCount earlier in processing */
 
 SQLCHAR  psgErrorMsg[SQL_MAX_MESSAGE_LENGTH + 10];
 
-#ifdef ADDR_64BITS
 /* Different argument types are needed on at least Ubuntu 11.04 on a
    64-bit host when using MySQL, but may or may not apply to all
    64-bit hosts.  The ODBCVER in sql.h is the same, 0x0351, but some
@@ -58,10 +58,6 @@ SQLCHAR  psgErrorMsg[SQL_MAX_MESSAGE_LENGTH + 10];
    now.  */
 #define SQL_INT_OR_LEN SQLLEN
 #define SQL_UINT_OR_ULEN SQLULEN
-#else
-#define SQL_INT_OR_LEN SQLINTEGER
-#define SQL_UINT_OR_ULEN SQLUINTEGER
-#endif
 
 /* for now: */
 #define MAX_TOKEN 256
@@ -171,8 +167,6 @@ cllConnect( icatSessionStruct *icss ) {
 
     HDBC myHdbc;
 
-    char *odbcEntryName;
-
     stat = SQLAllocConnect( icss->environPtr,
                             &myHdbc );
     if ( stat != SQL_SUCCESS ) {
@@ -180,19 +174,30 @@ cllConnect( icatSessionStruct *icss ) {
         return ( -1 );
     }
 
-    odbcEntryName = getenv( "irodsOdbcDSN" );
-    if ( odbcEntryName == NULL ) {
-        odbcEntryName = CATALOG_ODBC_ENTRY_NAME;
+    // =-=-=-=-=-=-=-
+    // ODBC Entry is defined by the DB type or an env variable
+    char odbcEntryName[ DB_TYPENAME_LEN ];
+    strncpy( odbcEntryName, icss->database_plugin_type, DB_TYPENAME_LEN );
+    char* odbc_env = getenv( "irodsOdbcDSN" );
+    if ( odbc_env ) {
+        rodsLog( LOG_DEBUG, "Setting ODBC entry to ENV [%s]", icss->database_plugin_type );
+        strncpy( odbcEntryName, odbc_env, DB_TYPENAME_LEN );
+
     }
 
-    stat = SQLConnect( myHdbc, ( unsigned char * )odbcEntryName, SQL_NTS,
-                       ( unsigned char * )icss->databaseUsername, SQL_NTS,
-                       ( unsigned char * )icss->databasePassword, SQL_NTS );
+    // =-=-=-=-=-=-=-
+    // initialize a connection to the catalog
+    stat = SQLConnect(
+               myHdbc,
+               ( unsigned char * )odbcEntryName, SQL_NTS,
+               ( unsigned char * )icss->databaseUsername, SQL_NTS,
+               ( unsigned char * )icss->databasePassword, SQL_NTS );
     if ( stat != SQL_SUCCESS ) {
         rodsLog( LOG_ERROR, "cllConnect: SQLConnect failed: %d", stat );
         rodsLog( LOG_ERROR,
                  "cllConnect: SQLConnect failed:odbcEntry=%s,user=%s,pass=%s\n",
-                 odbcEntryName, icss->databaseUsername,
+                 odbcEntryName,
+                 icss->databaseUsername,
                  icss->databasePassword );
         while ( SQLError( icss->environPtr, myHdbc , 0, sqlstate, &sqlcode, buffer,
                           SQL_MAX_MESSAGE_LENGTH + 1, &length ) == SQL_SUCCESS ) {
@@ -575,7 +580,6 @@ bindTheVariables( HSTMT myHstmt, const char *sql ) {
   contain leading and trailing spaces, second string must be lowercase,
   no spaces.
 */
-#ifdef NEW_ODBC
 static int cmp_stmt( const char *str1, const char *str2 ) {
     /* skip leading spaces */
     while ( isspace( *str1 ) ) {
@@ -597,7 +601,6 @@ static int cmp_stmt( const char *str1, const char *str2 ) {
     /* if we are at the end of the strings then they are equal */
     return *str1 == *str2 ;
 }
-#endif
 
 /*
   Execute a SQL command which has no resulting table.  With optional
@@ -605,19 +608,19 @@ static int cmp_stmt( const char *str1, const char *str2 ) {
   If option is 1, skip the bind variables.
 */
 int
-_cllExecSqlNoResult( icatSessionStruct *icss, const char *sql,
-                     int option ) {
-    RETCODE stat;
+_cllExecSqlNoResult(
+    icatSessionStruct* icss,
+    const char*        sql,
+    int                option ) {
+    // =-=-=-=-=-=-=-
+    //
+    RETCODE stat = 0;
     HDBC myHdbc;
     HSTMT myHstmt;
-    int result;
-    char *status;
-    SQL_INT_OR_LEN rowCount;
-#ifdef NEW_ODBC
-    int i;
-#endif
-    noResultRowCount = 0;
-    rowCount = 0;
+    int result  = 0;
+    char *status = 0;
+    SQL_INT_OR_LEN rowCount = 0;
+    int i = 0;
 
     myHdbc = icss->connectPtr;
     rodsLog( LOG_DEBUG1, sql );
@@ -636,6 +639,7 @@ _cllExecSqlNoResult( icatSessionStruct *icss, const char *sql,
     rodsLogSql( sql );
 
     stat = SQLExecDirect( myHstmt, ( unsigned char * )sql, SQL_NTS );
+    SQLRowCount( myHstmt, ( SQL_INT_OR_LEN * )&rowCount );
     status = "UNKNOWN";
     if ( stat == SQL_SUCCESS ) {
         status = "SUCCESS";
@@ -654,20 +658,23 @@ _cllExecSqlNoResult( icatSessionStruct *icss, const char *sql,
     }
     rodsLogSqlResult( status );
 
-    if ( stat == SQL_SUCCESS || stat == SQL_SUCCESS_WITH_INFO ||
+    if ( stat == SQL_SUCCESS ||
+            stat == SQL_SUCCESS_WITH_INFO ||
             stat == SQL_NO_DATA_FOUND ) {
         cllCheckPending( sql, 0, icss->databaseType );
         result = 0;
         if ( stat == SQL_NO_DATA_FOUND ) {
             result = CAT_SUCCESS_BUT_WITH_NO_INFO;
         }
-#ifdef NEW_ODBC
         /* ODBC says that if statement is not UPDATE, INSERT, or DELETE then
            SQLRowCount may return anything. So for BEGIN, COMMIT and ROLLBACK
            we don't want to call it but just return OK.
         */
-        if ( ! cmp_stmt( sql, "begin" ) && ! cmp_stmt( sql, "commit" ) && ! cmp_stmt( sql, "rollback" ) ) {
+        if ( ! cmp_stmt( sql, "begin" )  &&
+                ! cmp_stmt( sql, "commit" ) &&
+                ! cmp_stmt( sql, "rollback" ) ) {
             /* Doesn't seem to return SQL_NO_DATA_FOUND, so check */
+            rowCount = 0;
             i = SQLRowCount( myHstmt, ( SQL_INT_OR_LEN * )&rowCount );
             if ( i ) {
                 /* error getting rowCount???, just call it no_info */
@@ -677,9 +684,6 @@ _cllExecSqlNoResult( icatSessionStruct *icss, const char *sql,
                 result = CAT_SUCCESS_BUT_WITH_NO_INFO;
             }
         }
-#else
-        rowCount = 0; /* avoid compiler warning */
-#endif
     }
     else {
         if ( option == 0 ) {
@@ -720,9 +724,7 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, char *sql ) {
     SQL_UINT_OR_ULEN precision;
     SQLSMALLINT     scale;
     SQL_INT_OR_LEN  displaysize;
-#ifndef NEW_ODBC
     static SQLINTEGER resultDataSize;
-#endif
 
     icatStmtStrct *myStatement;
 
@@ -914,9 +916,7 @@ cllExecSqlWithResultBV(
     SQL_UINT_OR_ULEN precision;
     SQLSMALLINT     scale;
     SQL_INT_OR_LEN  displaysize;
-#ifndef NEW_ODBC
     static SQLINTEGER resultDataSize;
-#endif
 
     icatStmtStrct *myStatement;
 
@@ -1292,9 +1292,11 @@ extern "C" int cllTest( char *userArg, char *pwArg ) {
     icatSessionStruct icss;
 
     icss.stmtPtr[0] = 0;
+    strncpy( icss.database_plugin_type, "postgres", DB_TYPENAME_LEN );
     icss.databaseType = DB_TYPE_POSTGRES; // JMC - backport 4712
 #ifdef MY_ICAT
     icss.databaseType = DB_TYPE_MYSQL;
+    strncpy( icss.database_plugin_type, "mysql", DB_TYPENAME_LEN );
 #endif
 
     rodsLogSqlReq( 1 );

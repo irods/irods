@@ -9,6 +9,8 @@
 #include "irods_string_tokenize.hpp"
 #include "irods_resource_manager.hpp"
 #include "irods_hierarchy_parser.hpp"
+#include "irods_resource_backport.hpp"
+#include "apiHeaderAll.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -123,6 +125,185 @@ extern "C" {
     } // tar_check_params
 
     // =-=-=-=-=-=-=-
+    // @brief simple struct to pass into libarchive callbacks
+    struct cb_ctx_t {
+        int               idx_;
+        char              loc_[ NAME_LEN ];
+        structFileDesc_t* desc_;
+        bytesBuf_t        read_buf;
+    };
+
+    // =-=-=-=-=-=-=-
+    // OPEN callback for use by libarchive which makes use of the
+    // irods rsFile API for file access
+    int irods_file_open(
+        struct archive* _arch,
+        void*           _data ) {
+        if ( !_arch ||
+                !_data ) {
+            rodsLog( LOG_ERROR, "irods_file_open - null input" );
+            return ARCHIVE_FATAL;
+        }
+
+        // =-=-=-=-=-=-=-
+        // cast data pointer to the cb_struct
+        cb_ctx_t* cb_ctx = static_cast< cb_ctx_t* >( _data );
+
+        // =-=-=-=-=-=-=-
+        // handy pointer to special collection
+        specColl_t* spec_coll = cb_ctx->desc_->specColl;
+
+        // =-=-=-=-=-=-=-
+        // prepare a file inp to call a rsFileOpen
+        fileOpenInp_t f_inp;
+        memset( &f_inp, 0, sizeof( f_inp ) );
+        rstrcpy(
+            f_inp.resc_name_,
+            cb_ctx->desc_->rescInfo->rescName,
+            MAX_NAME_LEN );
+        rstrcpy( f_inp.resc_hier_,    spec_coll->rescHier, MAX_NAME_LEN );
+        rstrcpy( f_inp.objPath,       spec_coll->objPath,  MAX_NAME_LEN );
+        rstrcpy( f_inp.addr.hostAddr, cb_ctx->loc_,        NAME_LEN );
+        rstrcpy( f_inp.fileName,      spec_coll->phyPath,  MAX_NAME_LEN );
+        f_inp.mode  = getDefFileMode();
+        f_inp.flags = O_RDWR;
+        //rstrcpy( f_inp.in_pdmo, dataObjInfo->in_pdmo, MAX_NAME_LEN );
+        cb_ctx->idx_ = rsFileOpen( cb_ctx->desc_->rsComm, &f_inp );
+
+        return ARCHIVE_OK;
+
+    } // irods_file_open
+
+    // =-=-=-=-=-=-=-
+    // READ callback for use by libarchive which makes use of the
+    // irods rsFile API for file access
+    ssize_t irods_file_read(
+        struct archive* _arch,
+        void*           _data,
+        const void**    _buff ) {
+        if ( !_arch ||
+                !_data ||
+                !_buff ) {
+            rodsLog( LOG_ERROR, "irods_file_read - null input" );
+            return ARCHIVE_FATAL;
+        }
+
+        // =-=-=-=-=-=-=-
+        // cast data pointer to the cb_struct
+        cb_ctx_t* cb_ctx = static_cast< cb_ctx_t* >( _data );
+
+        // =-=-=-=-=-=-=-
+        // stat the file to get its size
+        rodsStat_t*   stbuf = 0;
+        fileStatInp_t f_inp;
+        memset( &f_inp, 0, sizeof( f_inp ) );
+        rstrcpy( f_inp.fileName, FileDesc[ cb_ctx->idx_ ].fileName, MAX_NAME_LEN );
+        rstrcpy( f_inp.rescHier, FileDesc[ cb_ctx->idx_ ].rescHier, MAX_NAME_LEN );
+        rstrcpy( f_inp.objPath,  FileDesc[ cb_ctx->idx_ ].objPath,  MAX_NAME_LEN );
+        rstrcpy( f_inp.addr.hostAddr, cb_ctx->loc_, NAME_LEN );
+        int status = rsFileStat( cb_ctx->desc_->rsComm, &f_inp, &stbuf );
+        if ( status != 0 ) {
+            if ( status != UNIX_FILE_STAT_ERR - ENOENT ) {
+                rodsLog( LOG_DEBUG, "irods_file_read: can't stat %s. status = %d",
+                         f_inp.fileName, status );
+            }
+            return -1;
+        }
+
+        size_t buf_len = stbuf->st_size;
+        free( stbuf );
+
+        // =-=-=-=-=-=-=-
+        // build a read inp and read the buffer
+        if ( cb_ctx->read_buf.buf ) {
+            free( cb_ctx->read_buf.buf );
+        }
+
+        memset( &cb_ctx->read_buf, 0, sizeof( cb_ctx->read_buf ) );
+        cb_ctx->read_buf.buf = malloc( buf_len );
+        cb_ctx->read_buf.len = buf_len;
+
+        fileReadInp_t r_inp;
+        memset( &r_inp, 0, sizeof( r_inp ) );
+        r_inp.fileInx = cb_ctx->idx_;
+        r_inp.len     = buf_len;
+        status = rsFileRead( cb_ctx->desc_->rsComm, &r_inp, &cb_ctx->read_buf );
+        if ( status < 0 ) {
+            return -1;
+        }
+        else {
+            ( *_buff ) = cb_ctx->read_buf.buf;
+            return status;
+        }
+
+    } // irods_file_read
+
+    // =-=-=-=-=-=-=-
+    // CLOSE callback for use by libarchive which makes use of the
+    // irods rsFile API for file access
+    int irods_file_close(
+        struct archive* _arch,
+        void*           _data ) {
+        // =-=-=-=-=-=-=-
+        // parameter check
+        if ( !_arch ||
+                !_data ) {
+            rodsLog( LOG_ERROR, "irods_file_close - null input" );
+            return ARCHIVE_FATAL;
+        }
+        // =-=-=-=-=-=-=-
+        // cast data pointer to the cb_struct
+        cb_ctx_t* cb_ctx = static_cast< cb_ctx_t* >( _data );
+
+        fileCloseInp_t fileCloseInp;
+        memset( &fileCloseInp, 0, sizeof( fileCloseInp ) );
+        fileCloseInp.fileInx = cb_ctx->idx_;
+        return rsFileClose( cb_ctx->desc_->rsComm, &fileCloseInp );
+
+    } // irods_file_close
+
+    // =-=-=-=-=-=-=-
+    //
+    ssize_t irods_file_write(
+        struct archive* _arch,
+        void*           _data,
+        const void*     _buff,
+        size_t          _len ) {
+        // =-=-=-=-=-=-=-
+        // parameter check
+        if ( !_arch ||
+                !_data ||
+                !_buff ) {
+            rodsLog( LOG_ERROR, "irods_file_write - null input" );
+            return ARCHIVE_FATAL;
+        }
+
+        // =-=-=-=-=-=-=-
+        // cast data pointer to the cb_struct
+        cb_ctx_t* cb_ctx = static_cast< cb_ctx_t* >( _data );
+
+        fileWriteInp_t fileWriteInp;
+        memset( &fileWriteInp, 0, sizeof( fileWriteInp ) );
+        fileWriteInp.fileInx = cb_ctx->idx_;
+        fileWriteInp.len     = _len;
+
+        bytesBuf_t write_buf;
+        write_buf.buf = const_cast< void* >( _buff );
+        write_buf.len = _len;
+        int sz = rsFileWrite(
+                     cb_ctx->desc_->rsComm,
+                     &fileWriteInp,
+                     &write_buf );
+        if ( sz < 0 ) {
+            return -1;
+        }
+        else {
+            return sz;
+        }
+
+    } // irods_file_write
+
+    // =-=-=-=-=-=-=-
     // call archive file extraction for struct file
     irods::error extract_file( int _index ) {
         // =-=-=-=-=-=-=-
@@ -162,8 +343,26 @@ extern "C" {
         archive_read_support_format_all( arch );
 
         // =-=-=-=-=-=-=-
+        // extract the host location from the resource hierarchy
+        std::string location;
+        irods::error ret = irods::get_loc_for_hier_string( spec_coll->rescHier, location );
+        if ( !ret.ok() ) {
+            return PASSMSG( "failed in get_loc_for_hier_string", ret );
+        }
+
+        cb_ctx_t cb_ctx;
+        memset( &cb_ctx, 0, sizeof( cb_ctx_t ) );
+        cb_ctx.desc_ = &PluginStructFileDesc[ _index ];
+        strncpy( cb_ctx.loc_, location.c_str(), NAME_LEN );
+
+        // =-=-=-=-=-=-=-
         // open the archive and and prepare to read
-        if ( archive_read_open_filename( arch, spec_coll->phyPath, 16384 ) != ARCHIVE_OK ) {
+        if ( archive_read_open(
+                    arch,
+                    &cb_ctx,
+                    irods_file_open,
+                    irods_file_read,
+                    irods_file_close ) != ARCHIVE_OK ) {
             std::stringstream msg;
             msg << "extract_file - failed to open archive [";
             msg << spec_coll->phyPath;
@@ -202,6 +401,12 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // release the archive back into the wild
         archive_read_free( arch );
+
+        // =-=-=-=-=-=-=-
+        // release the last read buffer
+        if ( cb_ctx.read_buf.buf ) {
+            free( cb_ctx.read_buf.buf );
+        }
 
         return SUCCESS();
 
@@ -2083,8 +2288,28 @@ extern "C" {
         archive_write_set_format_ustar( arch );
 
         // =-=-=-=-=-=-=-
+        // extract the host location from the resource hierarchy
+        std::string location;
+        irods::error ret = irods::get_loc_for_hier_string( spec_coll->rescHier, location );
+        if ( !ret.ok() ) {
+            return PASSMSG( "failed in get_loc_for_hier_string", ret );
+        }
+
+        // =-=-=-=-=-=-=-
+        // create a context to pass to the callbacks
+        cb_ctx_t cb_ctx;
+        memset( &cb_ctx, 0, sizeof( cb_ctx_t ) );
+        cb_ctx.desc_ = &PluginStructFileDesc[ _index ];
+        strncpy( cb_ctx.loc_, location.c_str(), NAME_LEN );
+
+        // =-=-=-=-=-=-=-
         // open the spec coll physical path for archival
-        if ( archive_write_open_filename( arch, spec_coll->phyPath ) < ARCHIVE_OK ) {
+        if ( archive_write_open(
+                    arch,
+                    &cb_ctx,
+                    irods_file_open,
+                    irods_file_write,
+                    irods_file_close ) < ARCHIVE_OK ) {
             std::stringstream msg;
             msg << "bundle_cache_dir - failed to open archive file [";
             msg << spec_coll->phyPath;

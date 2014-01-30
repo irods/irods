@@ -201,7 +201,7 @@ irods::error readMsgHeader(
     msgHeader_t* out_header = 0;
     int status = unpackStruct(
                      static_cast<void*>( tmp_buf ),
-                     ( void** ) &out_header,
+                     ( void ** )( static_cast< void * >( &out_header ) ),
                      "MsgHeader_PI",
                      RodsPackTable,
                      XML_PROT );

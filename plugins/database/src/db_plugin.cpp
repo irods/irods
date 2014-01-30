@@ -150,7 +150,7 @@ const std::string ZONE_PROP( "irods_zone_property" );
 
 // =-=-=-=-=-=-=-
 // helper fcn to handle cast to pg object
-irods::error make_pg_ptr(
+irods::error make_db_ptr(
     const irods::first_class_object_ptr& _fc,
     irods::postgres_object_ptr&          _pg ) {
     if ( !_fc.get() ) {
@@ -174,7 +174,7 @@ irods::error make_pg_ptr(
                    "failed to dynamic cast to postgres_object_ptr" );
     }
 
-} // make_pg_ptr
+} // make_db_ptr
 
 // =-=-=-=-=-=-=-
 //  Called internally to rollback current transaction after an error.
@@ -906,7 +906,6 @@ static int _delColl( rsComm_t *rsComm, collInfo_t *collInfo ) {
     /* Remove associated AVUs, if any */
     removeMetaMapAndAVU( collIdNum );
 
-#ifdef FILESYSTEM_META
     /* remove any filesystem metadata entries */
     cllBindVars[cllBindVarCount++] = collIdNum;
     if ( logSQL ) {
@@ -922,7 +921,7 @@ static int _delColl( rsComm_t *rsComm, collInfo_t *collInfo ) {
                  "_delColl delete filesystem meta failure %d",
                  status );
     }
-#endif
+
     /* Audit */
     status = cmlAudit3( AU_DELETE_COLL,
                         collIdNum,
@@ -946,22 +945,28 @@ static int _delColl( rsComm_t *rsComm, collInfo_t *collInfo ) {
 // gets called after a resource has been modified (iadmin modresc <oldname> name <newname>)
 static int _modRescInHierarchies( const std::string& old_resc, const std::string& new_resc ) {
     char update_sql[MAX_SQL_SIZE];
-    int status;
+    int status = 0;
     const char *sep = irods::hierarchy_parser::delimiter().c_str();
     std::string std_conf_str;        // to store value of STANDARD_CONFORMING_STRINGS
 
 #if ORA_ICAT
+    // =-=-=-=-=-=-=-
+    // Oracle
     // Should have regexp_update. check syntax
     return SYS_NOT_IMPLEMENTED;
 #elif MY_ICAT
-    return SYS_NOT_IMPLEMENTED;
-#endif
-
-
+    // =-=-=-=-=-=-=-
+    // MySQL
+    snprintf( update_sql, MAX_SQL_SIZE,
+              "update R_DATA_MAIN set resc_hier = PREG_REPLACE('/(^|(.+%s))%s($|(%s.+))/', '$1%s$3', resc_hier);",
+              sep, old_resc.c_str(), sep, new_resc.c_str() );
+#else
+    // =-=-=-=-=-=-=-
+    // PostgreSQL
     // Get STANDARD_CONFORMING_STRINGS setting to determine if backslashes in regex must be escaped
     irods::catalog_properties::getInstance().get_property<std::string>( irods::STANDARD_CONFORMING_STRINGS, std_conf_str );
 
-
+    // =-=-=-=-=-=-=-
     // Regex will look in r_data_main.resc_hier
     // for occurrences of old_resc with either nothing or the separator (and some stuff) on each side
     // and replace them with new_resc, e.g:
@@ -981,6 +986,7 @@ static int _modRescInHierarchies( const std::string& old_resc, const std::string
                   sep, old_resc.c_str(), sep, new_resc.c_str() );
     }
 
+#endif
     // =-=-=-=-=-=-=-
     // SQL update
     status = cmlExecuteNoAnswerSql( update_sql, &icss );
@@ -1010,8 +1016,11 @@ static int _modRescInChildren( const std::string& old_resc, const std::string& n
     // Should have regexp_update. check syntax
     return SYS_NOT_IMPLEMENTED;
 #elif MY_ICAT
-    return SYS_NOT_IMPLEMENTED;
-#endif
+    snprintf( update_sql, MAX_SQL_SIZE,
+              "update R_RESC_MAIN set resc_children = PREG_REPLACE('/(^|(.+%s))%s\\{\\}(.*)/', '$1%s\\{\\}$3', resc_children);",
+              sep, old_resc.c_str(), new_resc.c_str() );
+#else
+
 
 
     // Get STANDARD_CONFORMING_STRINGS setting to determine if backslashes in regex must be escaped
@@ -1038,6 +1047,7 @@ static int _modRescInChildren( const std::string& old_resc, const std::string& n
                   sep, old_resc.c_str(), new_resc.c_str() );
     }
 
+#endif
     // =-=-=-=-=-=-=-
     // SQL update
     status = cmlExecuteNoAnswerSql( update_sql, &icss );
@@ -1985,49 +1995,49 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // read a message body off of the socket
-    irods::error pg_start_op(
+    irods::error db_start_op(
         irods::plugin_context& _ctx ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         return ret;
 
 
-    } // pg_start_op
+    } // db_start_op
 
     // =-=-=-=-=-=-=-
     // set debug behavior for plugin
-    irods::error pg_debug_op(
+    irods::error db_debug_op(
         irods::plugin_context& _ctx,
         const char*            _mode ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // check incoming param
@@ -2067,31 +2077,30 @@ extern "C" {
 
         return SUCCESS();
 
-    } // pg_debug_op
+    } // db_debug_op
 
     // =-=-=-=-=-=-=-
     // open a database connection
-    irods::error pg_open_op(
+    irods::error db_open_op(
         irods::plugin_context& _ctx ) {
 
-    	std::string prop; // server property
-
+        std::string prop; // server property
 
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // check incoming param
@@ -2111,11 +2120,14 @@ extern "C" {
 //        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
         // =-=-=-=-=-=-=-
         // cache db creds
-        irods::server_properties::getInstance().get_property<std::string>(DB_USERNAME_KW, prop);
+        irods::server_properties::getInstance().get_property<std::string>( DB_USERNAME_KW, prop );
         strncpy( icss.databaseUsername, prop.c_str(), DB_USERNAME_LEN );
 
-        irods::server_properties::getInstance().get_property<std::string>(DB_PASSWORD_KW, prop);
+        irods::server_properties::getInstance().get_property<std::string>( DB_PASSWORD_KW, prop );
         strncpy( icss.databasePassword, prop.c_str(), DB_PASSWORD_LEN );
+
+        irods::server_properties::getInstance().get_property<std::string>( CATALOG_DATABASE_TYPE_KW, prop );
+        strncpy( icss.database_plugin_type, prop.c_str(), NAME_LEN );
 
         // =-=-=-=-=-=-=-
         // call open in mid level
@@ -2136,14 +2148,14 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // set pam properties
-        irods::server_properties::getInstance().get_property<bool>(PAM_NO_EXTEND_KW, irods_pam_auth_no_extend);
-        irods::server_properties::getInstance().get_property<size_t>(PAM_PW_LEN_KW, irods_pam_password_len);
+        irods::server_properties::getInstance().get_property<bool>( PAM_NO_EXTEND_KW, irods_pam_auth_no_extend );
+        irods::server_properties::getInstance().get_property<size_t>( PAM_PW_LEN_KW, irods_pam_password_len );
 
-        irods::server_properties::getInstance().get_property<std::string>(PAM_PW_MIN_TIME_KW, prop);
-        strncpy(irods_pam_password_min_time, prop.c_str(), NAME_LEN);
+        irods::server_properties::getInstance().get_property<std::string>( PAM_PW_MIN_TIME_KW, prop );
+        strncpy( irods_pam_password_min_time, prop.c_str(), NAME_LEN );
 
-        irods::server_properties::getInstance().get_property<std::string>(PAM_PW_MAX_TIME_KW, prop);
-        strncpy(irods_pam_password_max_time, prop.c_str(), NAME_LEN);
+        irods::server_properties::getInstance().get_property<std::string>( PAM_PW_MAX_TIME_KW, prop );
+        strncpy( irods_pam_password_max_time, prop.c_str(), NAME_LEN );
         if ( irods_pam_auth_no_extend ) {
             strncpy(
                 irods_pam_password_default_time,
@@ -2153,27 +2165,27 @@ extern "C" {
 
         return CODE( status );
 
-    } // pg_open_op
+    } // db_open_op
 
     // =-=-=-=-=-=-=-
     // close a database connection
-    irods::error pg_close_op(
+    irods::error db_close_op(
         irods::plugin_context& _ctx ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -2195,11 +2207,11 @@ extern "C" {
 
         return CODE( status );
 
-    } // pg_close_op
+    } // db_close_op
 
     // =-=-=-=-=-=-=-
     // return the local zone
-    irods::error pg_check_and_get_object_id_op(
+    irods::error db_check_and_get_object_id_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         char*                  _type,
@@ -2207,7 +2219,7 @@ extern "C" {
         char*                  _access ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -2230,16 +2242,16 @@ extern "C" {
 
         }
 
-    } // pg_check_and_get_object_id_op
+    } // db_check_and_get_object_id_op
 
     // =-=-=-=-=-=-=-
     // return the local zone
-    irods::error pg_get_local_zone_op(
+    irods::error db_get_local_zone_op(
         irods::plugin_context& _ctx,
         std::string*           _zone ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -2258,17 +2270,17 @@ extern "C" {
 
         }
 
-    } // pg_get_local_zone_op
+    } // db_get_local_zone_op
 
     // =-=-=-=-=-=-=-
     // update the data obj count of a resource
-    irods::error pg_update_resc_obj_count_op(
+    irods::error db_update_resc_obj_count_op(
         irods::plugin_context& _ctx,
         const std::string*     _resc,
         int                    _delta ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -2284,12 +2296,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -2321,18 +2333,18 @@ extern "C" {
 
         return SUCCESS();
 
-    } // pg_update_resc_obj_count_op
+    } // db_update_resc_obj_count_op
 
     // =-=-=-=-=-=-=-
     // update the data obj count of a resource
-    irods::error pg_mod_data_obj_meta_op(
+    irods::error db_mod_data_obj_meta_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         dataObjInfo_t*         _data_obj_info,
         keyValPair_t*          _reg_param ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -2349,12 +2361,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -2784,18 +2796,18 @@ extern "C" {
 
         return CODE( status );
 
-    } // pg_mod_data_obj_meta_op
+    } // db_mod_data_obj_meta_op
 
 
     // =-=-=-=-=-=-=-
     // update the data obj count of a resource
-    irods::error pg_reg_data_obj_op(
+    irods::error db_reg_data_obj_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         dataObjInfo_t*         _data_obj_info ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -2811,12 +2823,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -3004,7 +3016,6 @@ extern "C" {
             }
         }
 
-#ifdef FILESYSTEM_META
         /* we can track the filesystem metadata from the file which
            this data object was put or registered from */
         if ( getValByKey( &_data_obj_info->condInput, FILE_UID_KW ) ) {
@@ -3034,7 +3045,6 @@ extern "C" {
                 return ERROR( status, "cmlExecuteNoAnswerSql insert filesystem_meta failure" );
             }
         }
-#endif /* FILESYSTEM_META */
 
 
         status = cmlAudit3( AU_REGISTER_DATA_OBJ, dataIdNum,
@@ -3061,12 +3071,12 @@ extern "C" {
 
         return SUCCESS();
 
-    } // pg_reg_data_obj_op
+    } // db_reg_data_obj_op
 
 
     // =-=-=-=-=-=-=-
     // register a data object into the catalog
-    irods::error pg_reg_replica_op(
+    irods::error db_reg_replica_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         dataObjInfo_t*         _src_data_obj_info,
@@ -3074,7 +3084,7 @@ extern "C" {
         keyValPair_t*          _cond_input ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -3092,12 +3102,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -3288,18 +3298,18 @@ extern "C" {
 
         return SUCCESS();
 
-    } // pg_reg_replica_op
+    } // db_reg_replica_op
 
     // =-=-=-=-=-=-=-
     // unregister a data object
-    irods::error pg_unreg_replica_op(
+    irods::error db_unreg_replica_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         dataObjInfo_t*         _data_obj_info,
         keyValPair_t*          _cond_input ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -3315,12 +3325,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -3519,7 +3529,6 @@ extern "C" {
                          "delete from R_OBJT_ACCESS where object_id=? and not exists (select * from R_DATA_MAIN where data_id=?)", &icss );
             if ( status == 0 ) {
                 removeMetaMapAndAVU( dataObjNumber ); /* remove AVU metadata, if any */
-#ifdef FILESYSTEM_META
                 /* and remove source file OS metadata */
                 cllBindVars[0] = dataObjNumber;
                 cllBindVarCount = 1;
@@ -3528,7 +3537,6 @@ extern "C" {
                 }
                 status = cmlExecuteNoAnswerSql(
                              "delete from R_OBJT_FILESYSTEM_META where object_id=?", &icss );
-#endif
             }
         }
 
@@ -3563,17 +3571,17 @@ extern "C" {
 
         return SUCCESS();
 
-    } // pg_unreg_replica_op
+    } // db_unreg_replica_op
 
     // =-=-=-=-=-=-=-
     //
-    irods::error pg_reg_rule_exec_op(
+    irods::error db_reg_rule_exec_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         ruleExecSubmitInp_t*   _re_sub_inp ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -3589,12 +3597,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -3681,18 +3689,18 @@ extern "C" {
 
         return SUCCESS();
 
-    } // pg_reg_rule_exec_op
+    } // db_reg_rule_exec_op
 
     // =-=-=-=-=-=-=-
     // unregister a data object
-    irods::error pg_mod_rule_exec_op(
+    irods::error db_mod_rule_exec_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         char*                  _re_id,
         keyValPair_t*          _reg_param ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -3709,12 +3717,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -3820,17 +3828,17 @@ extern "C" {
 
         return CODE( status );
 
-    } // pg_mod_rule_exec_op
+    } // db_mod_rule_exec_op
 
     // =-=-=-=-=-=-=-
     // unregister a data object
-    irods::error pg_del_rule_exec_op(
+    irods::error db_del_rule_exec_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         char*                  _re_id ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -3846,12 +3854,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -3924,17 +3932,17 @@ extern "C" {
 
         return CODE( status );
 
-    } // pg_del_rule_exec_op
+    } // db_del_rule_exec_op
 
     // =-=-=-=-=-=-=-
     //
-    irods::error pg_add_child_resc_op(
+    irods::error db_add_child_resc_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         rescInfo_t*            _resc_info ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -3950,12 +3958,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -4156,17 +4164,17 @@ extern "C" {
 
         return CODE( result );
 
-    } // pg_add_child_resc_op
+    } // db_add_child_resc_op
 
     // =-=-=-=-=-=-=-
     //
-    irods::error pg_reg_resc_op(
+    irods::error db_reg_resc_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         rescInfo_t*            _resc_info ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -4182,12 +4190,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -4360,17 +4368,17 @@ extern "C" {
 
         return CODE( status );
 
-    } // pg_reg_resc_op
+    } // db_reg_resc_op
 
     // =-=-=-=-=-=-=-
     //
-    irods::error pg_del_child_resc_op(
+    irods::error db_del_child_resc_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         rescInfo_t*            _resc_info ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -4386,12 +4394,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -4538,18 +4546,18 @@ extern "C" {
 
         return result;
 
-    } // pg_del_child_resc_op
+    } // db_del_child_resc_op
 
     // =-=-=-=-=-=-=-
     // delete a resource
-    irods::error pg_del_resc_op(
+    irods::error db_del_resc_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         rescInfo_t*            _resc_info,
         int                    _dry_run ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -4565,12 +4573,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -4723,16 +4731,16 @@ extern "C" {
         }
         return CODE( status );
 
-    } // pg_del_resc_op
+    } // db_del_resc_op
 
     // =-=-=-=-=-=-=-
     // rollback the db
-    irods::error pg_rollback_op(
+    irods::error db_rollback_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -4747,12 +4755,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -4772,16 +4780,16 @@ extern "C" {
 
         return CODE( status );
 
-    } // pg_rollback_op
+    } // db_rollback_op
 
     // =-=-=-=-=-=-=-
     // commit the transaction
-    irods::error pg_commit_op(
+    irods::error db_commit_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -4796,12 +4804,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -4820,17 +4828,17 @@ extern "C" {
 
         return CODE( status );
 
-    } // pg_commit_op
+    } // db_commit_op
 
     // =-=-=-=-=-=-=-
     // commit the transaction
-    irods::error pg_del_user_re_op(
+    irods::error db_del_user_re_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         userInfo_t*            _user_info ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -4846,12 +4854,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -5010,17 +5018,17 @@ extern "C" {
 
         return SUCCESS();
 
-    } // pg_del_user_re_op
+    } // db_del_user_re_op
 
     // =-=-=-=-=-=-=-
     // commit the transaction
-    irods::error pg_reg_coll_by_admin_op(
+    irods::error db_reg_coll_by_admin_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         collInfo_t*            _coll_info ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -5036,12 +5044,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -5234,17 +5242,17 @@ extern "C" {
 
         return SUCCESS();
 
-    } // pg_reg_coll_by_admin_op
+    } // db_reg_coll_by_admin_op
 
     // =-=-=-=-=-=-=-
     // commit the transaction
-    irods::error pg_reg_coll_op(
+    irods::error db_reg_coll_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         collInfo_t*            _coll_info ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -5260,12 +5268,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -5456,7 +5464,6 @@ extern "C" {
             return ERROR( status, "cmlExecuteNoAnswerSql(insert access) failure" );
         }
 
-#ifdef FILESYSTEM_META
         /* we can track the filesystem metadata from the directory
            from which this collection was put or registered from */
         if ( getValByKey( &_coll_info->condInput, FILE_UID_KW ) != NULL ) {
@@ -5485,7 +5492,6 @@ extern "C" {
                 return ERROR( status, "cmlExecuteNoAnswerSql insert filesystem_meta failure" );
             }
         }
-#endif /* FILESYSTEM_META */
 
         /* Audit */
         status = cmlAudit4( AU_REGISTER_COLL,
@@ -5513,17 +5519,17 @@ extern "C" {
 
         return CODE( status );
 
-    } // pg_reg_coll_op
+    } // db_reg_coll_op
 
     // =-=-=-=-=-=-=-
     // commit the transaction
-    irods::error pg_mod_coll_op(
+    irods::error db_mod_coll_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         collInfo_t*            _coll_info ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -5539,12 +5545,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -5666,11 +5672,11 @@ extern "C" {
 
         return SUCCESS();
 
-    } // pg_mod_coll_op
+    } // db_mod_coll_op
 
     // =-=-=-=-=-=-=-
     // commit the transaction
-    irods::error pg_reg_zone_op(
+    irods::error db_reg_zone_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         char*                  _zone_name,
@@ -5679,7 +5685,7 @@ extern "C" {
         char*                  _zone_comment ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -5698,12 +5704,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -5792,11 +5798,11 @@ extern "C" {
 
         return SUCCESS();
 
-    } // pg_reg_zone_op
+    } // db_reg_zone_op
 
     // =-=-=-=-=-=-=-
     // modify the zone
-    irods::error pg_mod_zone_op(
+    irods::error db_mod_zone_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         char*                  _zone_name,
@@ -5804,7 +5810,7 @@ extern "C" {
         char*                  _option_value ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -5822,12 +5828,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -5963,18 +5969,18 @@ extern "C" {
 
         return SUCCESS();
 
-    } // pg_mod_zone_op
+    } // db_mod_zone_op
 
     // =-=-=-=-=-=-=-
     // modify the zone
-    irods::error pg_rename_coll_op(
+    irods::error db_rename_coll_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         char*                  _old_coll,
         char*                  _new_coll ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -5991,12 +5997,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -6029,11 +6035,11 @@ extern "C" {
 
         return CODE( status );
 
-    } // pg_rename_coll_op
+    } // db_rename_coll_op
 
     // =-=-=-=-=-=-=-
     // modify the zone
-    irods::error pg_mod_zone_coll_acl_op(
+    irods::error db_mod_zone_coll_acl_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         char*                  _access_level,
@@ -6041,7 +6047,7 @@ extern "C" {
         char*                  _path_name ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -6059,12 +6065,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -6090,18 +6096,18 @@ extern "C" {
 
         return CODE( status );
 
-    } // pg_mod_zone_coll_acl_op
+    } // db_mod_zone_coll_acl_op
 
     // =-=-=-=-=-=-=-
     // modify the zone
-    irods::error pg_rename_local_zone_op(
+    irods::error db_rename_local_zone_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         char*                  _old_zone,
         char*                  _new_zone ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -6118,12 +6124,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -6300,17 +6306,17 @@ extern "C" {
 
         return SUCCESS();
 
-    } // pg_rename_local_zone_op
+    } // db_rename_local_zone_op
 
     // =-=-=-=-=-=-=-
     // modify the zone
-    irods::error pg_del_zone_op(
+    irods::error db_del_zone_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         char*                  _zone_name ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -6326,12 +6332,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -6414,11 +6420,11 @@ extern "C" {
 
         return SUCCESS();
 
-    } // pg_del_zone_op
+    } // db_del_zone_op
 
     // =-=-=-=-=-=-=-
     // modify the zone
-    irods::error pg_simple_query_op(
+    irods::error db_simple_query_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         char*                  _sql,
@@ -6432,7 +6438,7 @@ extern "C" {
         int                    _max_out_buf ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -6447,12 +6453,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -6696,17 +6702,17 @@ extern "C" {
 
         return SUCCESS();
 
-    } // pg_simple_query_op
+    } // db_simple_query_op
 
     // =-=-=-=-=-=-=-
     // commit the transaction
-    irods::error pg_del_coll_by_admin_op(
+    irods::error db_del_coll_by_admin_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         collInfo_t*            _coll_info ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -6722,12 +6728,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -6855,17 +6861,17 @@ extern "C" {
 
         return SUCCESS();
 
-    } // pg_del_coll_by_admin_op
+    } // db_del_coll_by_admin_op
 
     // =-=-=-=-=-=-=-
     // commit the transaction
-    irods::error pg_del_coll_op(
+    irods::error db_del_coll_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         collInfo_t*            _coll_info ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -6881,12 +6887,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -6914,11 +6920,11 @@ extern "C" {
 
         return SUCCESS();
 
-    } // pg_del_coll_op
+    } // db_del_coll_op
 
     // =-=-=-=-=-=-=-
     // authenticate user
-    irods::error pg_check_auth_op(
+    irods::error db_check_auth_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         const char*            _scheme,
@@ -6929,7 +6935,7 @@ extern "C" {
         int*                   _client_priv_level ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -6949,12 +6955,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -7392,18 +7398,18 @@ checkLevel:
         prevFailure = 0;
         return SUCCESS();
 
-    } // pg_check_auth_op
+    } // db_check_auth_op
 
     // =-=-=-=-=-=-=-
     // authenticate user
-    irods::error pg_make_temp_pw_op(
+    irods::error db_make_temp_pw_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         char*                  _pw_value_to_hash,
         char*                  _other_user ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -7420,12 +7426,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -7556,18 +7562,18 @@ checkLevel:
         memset( newPw, 0, MAX_PASSWORD_LEN );
         return SUCCESS();
 
-    } // pg_make_temp_pw_op
+    } // db_make_temp_pw_op
 
     // =-=-=-=-=-=-=-
     // authenticate user
-    irods::error pg_make_limited_pw_op(
+    irods::error db_make_limited_pw_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         int                    _ttl,
         char*                  _pw_value_to_hash ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -7583,12 +7589,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -7727,11 +7733,11 @@ checkLevel:
 
         return SUCCESS();
 
-    } // pg_make_limited_pw_op
+    } // db_make_limited_pw_op
 
     // =-=-=-=-=-=-=-
     // authenticate user
-    irods::error pg_update_pam_password_op(
+    irods::error db_update_pam_password_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         char*                  _user_name,
@@ -7740,7 +7746,7 @@ checkLevel:
         char**                 _irods_password ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -7757,12 +7763,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -7938,11 +7944,11 @@ checkLevel:
         strncpy( *_irods_password, randomPw, irods_pam_password_len );
         return SUCCESS();
 
-    } // pg_update_pam_password_op
+    } // db_update_pam_password_op
 
     // =-=-=-=-=-=-=-
     // authenticate user
-    irods::error pg_mod_user_op(
+    irods::error db_mod_user_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         char*                  _user_name,
@@ -7950,7 +7956,7 @@ checkLevel:
         char*                  _new_value ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -7968,12 +7974,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -8309,11 +8315,11 @@ checkLevel:
 
         return SUCCESS();
 
-    } // pg_mod_user_op
+    } // db_mod_user_op
 
     // =-=-=-=-=-=-=-
     // authenticate user
-    irods::error pg_mod_group_op(
+    irods::error db_mod_group_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         char*                  _group_name,
@@ -8322,7 +8328,7 @@ checkLevel:
         char*                  _user_zone ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -8340,12 +8346,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -8513,11 +8519,11 @@ checkLevel:
 
         return SUCCESS();
 
-    } // pg_mod_group_op
+    } // db_mod_group_op
 
     // =-=-=-=-=-=-=-
     // authenticate user
-    irods::error pg_mod_resc_op(
+    irods::error db_mod_resc_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         char*                  _resc_name,
@@ -8525,7 +8531,7 @@ checkLevel:
         char*                  _option_value ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -8543,12 +8549,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -8959,8 +8965,46 @@ checkLevel:
                 return ERROR( status, "failed to update children" );
             }
 
+            // =-=-=-=-=-=-=-
+            // modify the resource group for all data objects if the resource
+            // in question is a root resource
+            std::string resc_hier;
+            status = chlGetHierarchyForResc( _option_value, zone, resc_hier );
+            bool do_resc_grp = false;
+            if ( status < 0 ) {
+                rodsLog( LOG_NOTICE,
+                         "chlModResc: chlGetHierarchyForResc error, status = %d",
+                         status );
+                _rollback( "chlModResc" );
+                return ERROR( status, "failed to get hierarchy for resource" );
+
+            }
+
+            // =-=-=-=-=-=-=-
+            // check if the resc name is at the beginning of the hierarchy
+            if ( resc_hier.empty() || 0 == resc_hier.find( _option_value ) ) {
+                do_resc_grp = true;
+            }
+
+
+            if ( do_resc_grp ) {
+                cllBindVars[cllBindVarCount++] = _option_value;
+                cllBindVars[cllBindVarCount++] = _resc_name;
+                status =  cmlExecuteNoAnswerSql(
+                              "update R_DATA_MAIN set resc_group_name=? where resc_group_name=?",
+                              &icss );
+                if ( 0 != status && CAT_SUCCESS_BUT_WITH_NO_INFO != status ) {
+                    rodsLog( LOG_NOTICE,
+                             "chlModResc: failed to set group name error, status = %d",
+                             status );
+                    _rollback( "chlModResc" );
+                    return ERROR( status, "failed to update group name" );
+                }
+            }
+
             OK = 1;
-        }
+
+        } // if name
 
         if ( strcmp( _option, "context" ) == 0 ) {
             cllBindVars[cllBindVarCount++] = _option_value;
@@ -9017,11 +9061,11 @@ checkLevel:
 
         return SUCCESS();
 
-    } // pg_mod_resc_op
+    } // db_mod_resc_op
 
     // =-=-=-=-=-=-=-
     // authenticate user
-    irods::error pg_mod_resc_data_paths_op(
+    irods::error db_mod_resc_data_paths_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         char*                  _resc_name,
@@ -9030,7 +9074,7 @@ checkLevel:
         char*                  _user_name ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -9048,12 +9092,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -9185,18 +9229,18 @@ checkLevel:
 
         return SUCCESS();
 
-    } // pg_mod_resc_data_paths_op
+    } // db_mod_resc_data_paths_op
 
     // =-=-=-=-=-=-=-
     // authenticate user
-    irods::error pg_mod_resc_freespace_op(
+    irods::error db_mod_resc_freespace_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         char*                  _resc_name,
         int                    _update_value ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -9212,12 +9256,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -9286,17 +9330,17 @@ checkLevel:
 
         return SUCCESS();
 
-    } // pg_mod_resc_freespace_op
+    } // db_mod_resc_freespace_op
 
     // =-=-=-=-=-=-=-
     // commit the transaction
-    irods::error pg_reg_user_re_op(
+    irods::error db_reg_user_re_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         userInfo_t*            _user_info ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -9312,12 +9356,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -9546,11 +9590,11 @@ checkLevel:
 
         return CODE( status );
 
-    } // pg_reg_user_re_op
+    } // db_reg_user_re_op
 
     // =-=-=-=-=-=-=-
     // commit the transaction
-    irods::error pg_set_avu_metadata_op(
+    irods::error db_set_avu_metadata_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         char*                  _type,
@@ -9560,7 +9604,7 @@ checkLevel:
         char*                  _new_unit ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -9577,12 +9621,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -9784,7 +9828,7 @@ checkLevel:
 
         return CODE( status );
 
-    } // pg_set_avu_metadata_op
+    } // db_set_avu_metadata_op
 
 #define ACCESS_MAX 999999  /* A large access value (larger than the
     maximum used (i.e. for fail safe)) and
@@ -9796,7 +9840,7 @@ checkLevel:
 
         // The return value is error code (negative) or the number of objects
         // to which the AVU was associated.
-        irods::error pg_add_avu_metadata_wild_op(
+        irods::error db_add_avu_metadata_wild_op(
             irods::plugin_context& _ctx,
                   rsComm_t*              _comm,
                   int                    _admin_mode,
@@ -9807,7 +9851,7 @@ checkLevel:
                   char*                  _units ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -9824,12 +9868,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -10156,9 +10200,9 @@ checkLevel:
 
         return CODE( numObjects );
 
-    } // pg_add_avu_metadata_wild_op
+    } // db_add_avu_metadata_wild_op
 
-    irods::error pg_add_avu_metadata_op(
+    irods::error db_add_avu_metadata_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         int                    _admin_mode,
@@ -10169,7 +10213,7 @@ checkLevel:
         char*                  _units ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -10186,12 +10230,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -10461,9 +10505,9 @@ checkLevel:
 
         return CODE( status );
 
-    } // pg_add_avu_metadata_op
+    } // db_add_avu_metadata_op
 
-    irods::error pg_mod_avu_metadata_op(
+    irods::error db_mod_avu_metadata_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         char*                  _type,
@@ -10476,7 +10520,7 @@ checkLevel:
         char*                  _arg3 ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -10493,12 +10537,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -10588,9 +10632,9 @@ checkLevel:
                                     addUnits );
         return CODE( status );
 
-    } // pg_mod_avu_metadata_op
+    } // db_mod_avu_metadata_op
 
-    irods::error pg_del_avu_metadata_op(
+    irods::error db_del_avu_metadata_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         int                    _option,
@@ -10602,7 +10646,7 @@ checkLevel:
         int                    _nocommit ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -10619,12 +10663,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -10961,9 +11005,9 @@ checkLevel:
 
         return CODE( status );
 
-    } // pg_del_avu_metadata_op
+    } // db_del_avu_metadata_op
 
-    irods::error pg_copy_avu_metadata_op(
+    irods::error db_copy_avu_metadata_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         char*                  _type1,
@@ -10972,7 +11016,7 @@ checkLevel:
         char*                  _name2 ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -10990,12 +11034,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -11079,9 +11123,9 @@ checkLevel:
 
         return CODE( status );
 
-    } // pg_copy_avu_metadata_op
+    } // db_copy_avu_metadata_op
 
-    irods::error pg_mod_access_control_resc_op(
+    irods::error db_mod_access_control_resc_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         int                    _recursive_flag,
@@ -11090,7 +11134,7 @@ checkLevel:
         char*                  _zone,
         char*                  _resc_name ) {
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -11105,12 +11149,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -11266,9 +11310,9 @@ checkLevel:
 
         return SUCCESS();
 
-    } // pg_mod_access_control_resc_op
+    } // db_mod_access_control_resc_op
 
-    irods::error pg_mod_access_control_op(
+    irods::error db_mod_access_control_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         int                    _recursive_flag,
@@ -11277,7 +11321,7 @@ checkLevel:
         char*                  _zone,
         char*                  _path_name ) {
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -11292,12 +11336,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -11326,7 +11370,7 @@ checkLevel:
         }
 
         if ( strncmp( _access_level, MOD_RESC_PREFIX, strlen( MOD_RESC_PREFIX ) ) == 0 ) {
-            ret = pg_mod_access_control_resc_op(
+            ret = db_mod_access_control_resc_op(
                       _ctx,
                       _comm,
                       _recursive_flag,
@@ -11821,15 +11865,15 @@ checkLevel:
 
         return CODE( status );
 
-    } // pg_mod_access_control_op
+    } // db_mod_access_control_op
 
-    irods::error pg_rename_object_op(
+    irods::error db_rename_object_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         rodsLong_t             _obj_id,
         char*                  _new_name ) {
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -11844,12 +11888,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -12166,15 +12210,15 @@ checkLevel:
 
         return ERROR( CAT_NOT_A_DATAOBJ_AND_NOT_A_COLLECTION, "not a collection" );
 
-    } // pg_rename_object_op
+    } // db_rename_object_op
 
-    irods::error pg_move_object_op(
+    irods::error db_move_object_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         rodsLong_t             _obj_id,
         rodsLong_t             _target_coll_id ) {
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -12189,12 +12233,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -12548,9 +12592,9 @@ checkLevel:
 
         return ERROR( CAT_NOT_A_DATAOBJ_AND_NOT_A_COLLECTION, "invalid object or collection" );
 
-    } // pg_move_object_op
+    } // db_move_object_op
 
-    irods::error pg_reg_token_op(
+    irods::error db_reg_token_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         char*                  _name_space,
@@ -12561,7 +12605,7 @@ checkLevel:
         char*                  _comment ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -12576,12 +12620,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -12706,16 +12750,16 @@ checkLevel:
             return CODE( status );
         }
 
-    } // pg_reg_token_op
+    } // db_reg_token_op
 
-    irods::error pg_del_token_op(
+    irods::error db_del_token_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         char*                  _name_space,
         char*                  _name ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -12730,12 +12774,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -12810,9 +12854,9 @@ checkLevel:
             return SUCCESS();
         }
 
-    } // pg_del_token_op
+    } // db_del_token_op
 
-    irods::error pg_reg_server_load_op(
+    irods::error db_reg_server_load_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         char*                  _host_name,
@@ -12826,7 +12870,7 @@ checkLevel:
         char*                  _net_output ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -12841,12 +12885,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -12905,15 +12949,15 @@ checkLevel:
 
         return SUCCESS();
 
-    } // pg_reg_server_load_op
+    } // db_reg_server_load_op
 
-    irods::error pg_purge_server_load_op(
+    irods::error db_purge_server_load_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         char*                  _seconds_ago ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -12928,12 +12972,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -12984,16 +13028,16 @@ checkLevel:
             return SUCCESS();
         }
 
-    } // pg_purge_server_load_op
+    } // db_purge_server_load_op
 
-    irods::error pg_reg_server_load_digest_op(
+    irods::error db_reg_server_load_digest_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         char*                  _resc_name,
         char*                  _load_factor ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -13008,12 +13052,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -13066,15 +13110,15 @@ checkLevel:
 
         return SUCCESS();
 
-    } // pg_reg_server_load_digest_op
+    } // db_reg_server_load_digest_op
 
-    irods::error pg_purge_server_load_digest_op(
+    irods::error db_purge_server_load_digest_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         char*                  _seconds_ago ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -13089,12 +13133,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -13144,14 +13188,14 @@ checkLevel:
             return SUCCESS();
         }
 
-    } // pg_purge_server_load_digest_op
+    } // db_purge_server_load_digest_op
 
-    irods::error pg_calc_usage_and_quota_op(
+    irods::error db_calc_usage_and_quota_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -13166,12 +13210,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -13234,9 +13278,9 @@ checkLevel:
             return SUCCESS();
         }
 
-    } // pg_calc_usage_and_quota_op
+    } // db_calc_usage_and_quota_op
 
-    irods::error pg_set_quota_op(
+    irods::error db_set_quota_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         char*                  _type,
@@ -13245,7 +13289,7 @@ checkLevel:
         char*                  _limit ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -13260,12 +13304,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -13409,9 +13453,9 @@ checkLevel:
             return SUCCESS();
         }
 
-    } // pg_set_quota_op
+    } // db_set_quota_op
 
-    irods::error pg_check_quota_op(
+    irods::error db_check_quota_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         char*                  _user_name,
@@ -13420,7 +13464,7 @@ checkLevel:
         int*                   _quota_status ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -13435,12 +13479,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -13506,14 +13550,14 @@ checkLevel:
 
         return SUCCESS();
 
-    } // pg_check_quota_op
+    } // db_check_quota_op
 
-    irods::error pg_del_unused_avus_op(
+    irods::error db_del_unused_avus_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -13528,12 +13572,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -13558,9 +13602,9 @@ checkLevel:
             return ERROR( status, "commit failed" );
         }
 
-    } // pg_del_unused_avus_op
+    } // db_del_unused_avus_op
 
-    irods::error pg_ins_rule_table_op(
+    irods::error db_ins_rule_table_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         char*                  _base_name,
@@ -13574,7 +13618,7 @@ checkLevel:
         char*                  _my_time ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -13589,12 +13633,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -13699,9 +13743,9 @@ checkLevel:
 
         return SUCCESS();
 
-    } // pg_ins_rule_table_op
+    } // db_ins_rule_table_op
 
-    irods::error pg_ins_dvm_table_op(
+    irods::error db_ins_dvm_table_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         char*                  _base_name,
@@ -13711,7 +13755,7 @@ checkLevel:
         char*                  _my_time ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -13726,12 +13770,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -13831,9 +13875,9 @@ checkLevel:
 
         return SUCCESS();
 
-    } // pg_ins_dvm_table_op
+    } // db_ins_dvm_table_op
 
-    irods::error pg_ins_fnm_table_op(
+    irods::error db_ins_fnm_table_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         char*                  _base_name,
@@ -13842,7 +13886,7 @@ checkLevel:
         char*                  _my_time ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -13857,12 +13901,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -13960,9 +14004,9 @@ checkLevel:
 
         return SUCCESS();
 
-    } // pg_ins_fnm_table_op
+    } // db_ins_fnm_table_op
 
-    irods::error pg_ins_msrvc_table_op(
+    irods::error db_ins_msrvc_table_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         char*                  _module_name,
@@ -13977,7 +14021,7 @@ checkLevel:
         char*                  _my_time ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -13992,12 +14036,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -14140,16 +14184,16 @@ checkLevel:
 
         return SUCCESS();
 
-    } // pg_ins_msrvc_table_op
+    } // db_ins_msrvc_table_op
 
-    irods::error pg_version_rule_base_op(
+    irods::error db_version_rule_base_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         char*                  _base_name,
         char*                  _my_time ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -14164,12 +14208,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -14209,16 +14253,16 @@ checkLevel:
 
         return SUCCESS();
 
-    } // pg_version_rule_base_op
+    } // db_version_rule_base_op
 
-    irods::error pg_version_dvm_base_op(
+    irods::error db_version_dvm_base_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         char*                  _base_name,
         char*                  _my_time ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -14233,12 +14277,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -14278,16 +14322,16 @@ checkLevel:
 
         return SUCCESS();
 
-    } // pg_version_dvm_base_op
+    } // db_version_dvm_base_op
 
-    irods::error pg_version_fnm_base_op(
+    irods::error db_version_fnm_base_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         char*                  _base_name,
         char*                  _my_time ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -14302,12 +14346,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -14347,16 +14391,16 @@ checkLevel:
 
         return SUCCESS();
 
-    } // pg_version_fnm_base_op
+    } // db_version_fnm_base_op
 
-    irods::error pg_add_specific_query_op(
+    irods::error db_add_specific_query_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         char*                  _sql,
         char*                  _alias ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -14371,12 +14415,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -14455,15 +14499,15 @@ checkLevel:
             return SUCCESS();
         }
 
-    } // pg_add_specific_query_op
+    } // db_add_specific_query_op
 
-    irods::error pg_del_specific_query_op(
+    irods::error db_del_specific_query_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         char*                  _sql_or_alias ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -14478,12 +14522,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -14539,16 +14583,16 @@ checkLevel:
             return SUCCESS();
         }
 
-    } // pg_del_specific_query_op
+    } // db_del_specific_query_op
 
 #define MINIMUM_COL_SIZE 50
-    irods::error pg_specific_query_op(
+    irods::error db_specific_query_op(
         irods::plugin_context& _ctx,
         specificQueryInp_t*    _spec_query_inp,
         genQueryOut_t*         _result ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -14563,12 +14607,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -14804,28 +14848,28 @@ checkLevel:
                                                 always >0 */
         return SUCCESS();
 
-    } // pg_specific_query_op
+    } // db_specific_query_op
 
-    irods::error pg_substitute_resource_hierarchies_op(
+    irods::error db_substitute_resource_hierarchies_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         const char*            _old_hier,
         const char*            _new_hier ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -14882,15 +14926,15 @@ checkLevel:
 
         return SUCCESS();
 
-    } // pg_substitute_resource_hierarchies_op
+    } // db_substitute_resource_hierarchies_op
 
-    irods::error pg_get_distinct_data_obj_count_on_resource_op(
+    irods::error db_get_distinct_data_obj_count_on_resource_op(
         irods::plugin_context& _ctx,
         const char*            _resc_name,
         long long*             _count ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -14906,12 +14950,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -14920,7 +14964,7 @@ checkLevel:
         // =-=-=-=-=-=-=-
         // the basic query string
         char query[ MAX_NAME_LEN ];
-        std::string base_query = "select count(distinct data_id) from r_data_main where resc_hier like '%s;%s' or resc_hier like '%s;%s;%s' or resc_hier like '%s;%s';";
+        std::string base_query = "select count(distinct data_id) from R_DATA_MAIN where resc_hier like '%s;%s' or resc_hier like '%s;%s;%s' or resc_hier like '%s;%s';";
         sprintf(
             query,
             base_query.c_str(),
@@ -14943,9 +14987,9 @@ checkLevel:
 
         return SUCCESS();
 
-    } // pg_get_distinct_data_obj_count_on_resource_op
+    } // db_get_distinct_data_obj_count_on_resource_op
 
-    irods::error pg_get_distinct_data_objs_missing_from_child_given_parent_op(
+    irods::error db_get_distinct_data_objs_missing_from_child_given_parent_op(
         irods::plugin_context& _ctx,
         const std::string*     _parent,
         const std::string*     _child,
@@ -14953,7 +14997,7 @@ checkLevel:
         dist_child_result_t*   _results ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -14971,12 +15015,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -14986,7 +15030,12 @@ checkLevel:
         // =-=-=-=-=-=-=-
         // the basic query string
         char query[ MAX_NAME_LEN ];
-        std::string base_query = "select distinct data_id from r_data_main where resc_hier like '%s;%s' or resc_hier like '%s;%s;%s' or resc_hier like '%s;%s' except ( select distinct data_id from r_data_main where resc_hier like '%s;%s' or resc_hier like '%s;%s;%s' or resc_hier like '%s;%s' ) limit %d;";
+#ifdef MY_ICAT
+        std::string base_query = "select distinct data_id from R_DATA_MAIN where ( resc_hier like '%s;%s' or resc_hier like '%s;%s;%s' or resc_hier like '%s;%s' ) and data_id not in ( select data_id from R_DATA_MAIN where resc_hier like '%s;%s' or resc_hier like '%s;%s;%s' or resc_hier like '%s;%s' ) limit %d;";
+
+#else
+        std::string base_query = "select distinct data_id from R_DATA_MAIN where resc_hier like '%s;%s' or resc_hier like '%s;%s;%s' or resc_hier like '%s;%s' except ( select data_id from R_DATA_MAIN where resc_hier like '%s;%s' or resc_hier like '%s;%s;%s' or resc_hier like '%s;%s' ) limit %d;";
+#endif
         sprintf(
             query,
             base_query.c_str(),
@@ -15030,16 +15079,16 @@ checkLevel:
 
         return SUCCESS();
 
-    } // pg_get_distinct_data_objs_missing_from_child_given_parent_op
+    } // db_get_distinct_data_objs_missing_from_child_given_parent_op
 
-    irods::error pg_get_hierarchy_for_resc_op(
+    irods::error db_get_hierarchy_for_resc_op(
         irods::plugin_context& _ctx,
         const std::string*     _resc_name,
         const std::string*     _zone_name,
         std::string*           _hierarchy ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -15056,12 +15105,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -15087,9 +15136,20 @@ checkLevel:
             // Ask for parent of current node
             status = cmlGetStringValueFromSql( "select resc_parent from R_RESC_MAIN where resc_name=? and zone_name=?",
                                                parent, MAX_NAME_LEN, current_node, _zone_name->c_str(), NULL, &icss );
-
             if ( status == CAT_NO_ROWS_FOUND ) { // Resource doesn't exist
-                return ERROR( CAT_UNKNOWN_RESOURCE, "resource does not exist" );
+                // =-=-=-=-=-=-=-
+                // quick check to see if the resource actually exists
+                char type_name[ 250 ] = "";
+                status = cmlGetStringValueFromSql(
+                             "select resc_type_name from R_RESC_MAIN where resc_name=? and zone_name=?",
+                             type_name, 250, current_node, _zone_name->c_str(), NULL, &icss );
+                if ( status < 0 ) {
+                    return ERROR( CAT_UNKNOWN_RESOURCE, "resource does not exist" );
+                }
+                else {
+                    ( *_hierarchy ) = "";
+                    return SUCCESS();
+                }
             }
 
             if ( status < 0 ) { // Other error
@@ -15107,9 +15167,9 @@ checkLevel:
 
         return SUCCESS();
 
-    } // pg_get_hierarchy_for_resc_op
+    } // db_get_hierarchy_for_resc_op
 
-    irods::error pg_mod_ticket_op(
+    irods::error db_mod_ticket_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
         char*                  _op_name,
@@ -15119,7 +15179,7 @@ checkLevel:
         char*                  _arg5 ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -15134,12 +15194,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -15800,14 +15860,14 @@ checkLevel:
 
         return ERROR( CAT_INVALID_ARGUMENT, "invalid op name" );
 
-    } // pg_mod_ticket_op
+    } // db_mod_ticket_op
 
-    irods::error pg_get_icss_op(
+    irods::error db_get_icss_op(
         irods::plugin_context& _ctx,
         icatSessionStruct**    _icss ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -15822,12 +15882,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -15844,19 +15904,19 @@ checkLevel:
         ( *_icss ) = &icss;
         return SUCCESS();
 
-    } // pg_get_icss_op
+    } // db_get_icss_op
 
     // =-=-=-=-=-=-=-
     // from general_query.cpp ::
     int chl_gen_query_impl( genQueryInp_t, genQueryOut_t* );
 
-    irods::error pg_gen_query_op(
+    irods::error db_gen_query_op(
         irods::plugin_context& _ctx,
         genQueryInp_t*         _gen_query_inp,
         genQueryOut_t*         _result ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -15871,12 +15931,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -15892,13 +15952,13 @@ checkLevel:
 //         }
         return CODE( status );
 
-    } // pg_gen_query_op
+    } // db_gen_query_op
 
     // =-=-=-=-=-=-=-
     // from general_query.cpp ::
     int chl_gen_query_access_control_setup_impl( char*, char*, char*, int, int );
 
-    irods::error pg_gen_query_access_control_setup_op(
+    irods::error db_gen_query_access_control_setup_op(
         irods::plugin_context& _ctx,
         char*                  _user,
         char*                  _zone,
@@ -15907,7 +15967,7 @@ checkLevel:
         int                    _control_flag ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -15921,12 +15981,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -15945,19 +16005,19 @@ checkLevel:
             return SUCCESS();
         }
 
-    } // pg_gen_query_access_control_setup_op
+    } // db_gen_query_access_control_setup_op
 
     // =-=-=-=-=-=-=-
     // from general_query.cpp ::
     int chl_gen_query_ticket_setup_impl( char*, char* );
 
-    irods::error pg_gen_query_ticket_setup_op(
+    irods::error db_gen_query_ticket_setup_op(
         irods::plugin_context& _ctx,
         char*                  _ticket,
         char*                  _client_addr ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -15972,12 +16032,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -15993,18 +16053,18 @@ checkLevel:
             return SUCCESS();
         }
 
-    } // pg_gen_query_ticket_setup_op
+    } // db_gen_query_ticket_setup_op
 
     // =-=-=-=-=-=-=-
     // from general_query.cpp ::
     int chl_general_update_impl( generalUpdateInp_t );
 
-    irods::error pg_general_update_op(
+    irods::error db_general_update_op(
         irods::plugin_context& _ctx,
         generalUpdateInp_t*    _update_inp ) {
         // =-=-=-=-=-=-=-
         // check the context
-        irods::error ret = _ctx.valid< irods::postgres_object >();
+        irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -16018,12 +16078,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        irods::postgres_object_ptr pg;
-        ret = make_pg_ptr( _ctx.fco(), pg );
+        /*irods::postgres_object_ptr pg;
+        ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }
+        }*/
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -16038,7 +16098,7 @@ checkLevel:
             return SUCCESS();
         }
 
-    } // pg_general_update_op
+    } // db_general_update_op
 
 
 
@@ -16090,94 +16150,94 @@ checkLevel:
         // =-=-=-=-=-=-=-
         // fill in the operation table mapping call
         // names to function names
-        pg->add_operation( irods::DATABASE_OP_START,                    "pg_start_op" );
-        pg->add_operation( irods::DATABASE_OP_DEBUG,                    "pg_debug_op" );
-        pg->add_operation( irods::DATABASE_OP_OPEN,                     "pg_open_op" );
-        pg->add_operation( irods::DATABASE_OP_CLOSE,                    "pg_close_op" );
-        pg->add_operation( irods::DATABASE_OP_GET_LOCAL_ZONE,           "pg_get_local_zone_op" );
-        pg->add_operation( irods::DATABASE_OP_UPDATE_RESC_OBJ_COUNT,    "pg_update_resc_obj_count_op" );
-        pg->add_operation( irods::DATABASE_OP_MOD_DATA_OBJ_META,        "pg_mod_data_obj_meta_op" );
-        pg->add_operation( irods::DATABASE_OP_REG_DATA_OBJ,             "pg_reg_data_obj_op" );
-        pg->add_operation( irods::DATABASE_OP_REG_REPLICA,              "pg_reg_replica_op" );
-        pg->add_operation( irods::DATABASE_OP_UNREG_REPLICA,            "pg_unreg_replica_op" );
-        pg->add_operation( irods::DATABASE_OP_REG_RULE_EXEC,            "pg_reg_rule_exec_op" );
-        pg->add_operation( irods::DATABASE_OP_MOD_RULE_EXEC,            "pg_mod_rule_exec_op" );
-        pg->add_operation( irods::DATABASE_OP_DEL_RULE_EXEC,            "pg_del_rule_exec_op" );
-        pg->add_operation( irods::DATABASE_OP_ADD_CHILD_RESC,           "pg_add_child_resc_op" );
-        pg->add_operation( irods::DATABASE_OP_REG_RESC,                 "pg_reg_resc_op" );
-        pg->add_operation( irods::DATABASE_OP_DEL_CHILD_RESC,           "pg_del_child_resc_op" );
-        pg->add_operation( irods::DATABASE_OP_DEL_RESC,                 "pg_del_resc_op" );
-        pg->add_operation( irods::DATABASE_OP_ROLLBACK,                 "pg_rollback_op" );
-        pg->add_operation( irods::DATABASE_OP_COMMIT,                   "pg_commit_op" );
-        pg->add_operation( irods::DATABASE_OP_DEL_USER_RE,              "pg_del_user_re_op" );
-        pg->add_operation( irods::DATABASE_OP_REG_COLL_BY_ADMIN,        "pg_reg_coll_by_admin_op" );
-        pg->add_operation( irods::DATABASE_OP_REG_COLL,                 "pg_reg_coll_op" );
-        pg->add_operation( irods::DATABASE_OP_MOD_COLL,                 "pg_mod_coll_op" );
-        pg->add_operation( irods::DATABASE_OP_REG_ZONE,                 "pg_reg_zone_op" );
-        pg->add_operation( irods::DATABASE_OP_MOD_ZONE,                 "pg_mod_zone_op" );
-        pg->add_operation( irods::DATABASE_OP_RENAME_COLL,              "pg_rename_coll_op" );
-        pg->add_operation( irods::DATABASE_OP_MOD_ZONE_COLL_ACL,        "pg_mod_zone_coll_acl_op" );
-        pg->add_operation( irods::DATABASE_OP_RENAME_LOCAL_ZONE,        "pg_rename_local_zone_op" );
-        pg->add_operation( irods::DATABASE_OP_DEL_ZONE,                 "pg_del_zone_op" );
-        pg->add_operation( irods::DATABASE_OP_SIMPLE_QUERY,             "pg_simple_query_op" );
-        pg->add_operation( irods::DATABASE_OP_DEL_COLL_BY_ADMIN,        "pg_del_coll_by_admin_op" );
-        pg->add_operation( irods::DATABASE_OP_DEL_COLL,                 "pg_del_coll_op" );
-        pg->add_operation( irods::DATABASE_OP_CHECK_AUTH,               "pg_check_auth_op" );
-        pg->add_operation( irods::DATABASE_OP_MAKE_TEMP_PW,             "pg_make_temp_pw_op" );
-        pg->add_operation( irods::DATABASE_OP_UPDATE_PAM_PASSWORD,      "pg_update_pam_password_op" );
-        pg->add_operation( irods::DATABASE_OP_MOD_USER,                 "pg_mod_user_op" );
-        pg->add_operation( irods::DATABASE_OP_MAKE_LIMITED_PW,          "pg_make_limited_pw_op" );
-        pg->add_operation( irods::DATABASE_OP_MOD_GROUP,                "pg_mod_group_op" );
-        pg->add_operation( irods::DATABASE_OP_MOD_RESC,                 "pg_mod_resc_op" );
-        pg->add_operation( irods::DATABASE_OP_MOD_RESC_DATA_PATHS,      "pg_mod_resc_data_paths_op" );
-        pg->add_operation( irods::DATABASE_OP_MOD_RESC_FREESPACE,       "pg_mod_resc_freespace_op" );
-        pg->add_operation( irods::DATABASE_OP_REG_USER_RE,              "pg_reg_user_re_op" );
-        pg->add_operation( irods::DATABASE_OP_SET_AVU_METADATA,         "pg_set_avu_metadata_op" );
-        pg->add_operation( irods::DATABASE_OP_ADD_AVU_METADATA_WILD,    "pg_add_avu_metadata_wild_op" );
-        pg->add_operation( irods::DATABASE_OP_ADD_AVU_METADATA,         "pg_add_avu_metadata_op" );
-        pg->add_operation( irods::DATABASE_OP_MOD_AVU_METADATA,         "pg_mod_avu_metadata_op" );
-        pg->add_operation( irods::DATABASE_OP_DEL_AVU_METADATA,         "pg_del_avu_metadata_op" );
-        pg->add_operation( irods::DATABASE_OP_COPY_AVU_METADATA,        "pg_copy_avu_metadata_op" );
-        pg->add_operation( irods::DATABASE_OP_MOD_ACCESS_CONTROL_RESC,  "pg_mod_access_control_resc_op" );
-        pg->add_operation( irods::DATABASE_OP_MOD_ACCESS_CONTROL,       "pg_mod_access_control_op" );
-        pg->add_operation( irods::DATABASE_OP_RENAME_OBJECT,            "pg_rename_object_op" );
-        pg->add_operation( irods::DATABASE_OP_MOVE_OBJECT,              "pg_move_object_op" );
-        pg->add_operation( irods::DATABASE_OP_REG_TOKEN,                "pg_reg_token_op" );
-        pg->add_operation( irods::DATABASE_OP_DEL_TOKEN,                "pg_del_token_op" );
-        pg->add_operation( irods::DATABASE_OP_REG_SERVER_LOAD,          "pg_reg_server_load_op" );
-        pg->add_operation( irods::DATABASE_OP_PURGE_SERVER_LOAD,        "pg_purge_server_load_op" );
-        pg->add_operation( irods::DATABASE_OP_REG_SERVER_LOAD_DIGEST,   "pg_reg_server_load_digest_op" );
-        pg->add_operation( irods::DATABASE_OP_PURGE_SERVER_LOAD_DIGEST, "pg_purge_server_load_digest_op" );
-        pg->add_operation( irods::DATABASE_OP_CALC_USAGE_AND_QUOTA,     "pg_calc_usage_and_quota_op" );
-        pg->add_operation( irods::DATABASE_OP_SET_QUOTA,                "pg_set_quota_op" );
-        pg->add_operation( irods::DATABASE_OP_CHECK_QUOTA,              "pg_check_quota_op" );
-        pg->add_operation( irods::DATABASE_OP_DEL_UNUSED_AVUS,          "pg_del_unused_avus_op" );
-        pg->add_operation( irods::DATABASE_OP_INS_RULE_TABLE,           "pg_ins_rule_table_op" );
-        pg->add_operation( irods::DATABASE_OP_INS_DVM_TABLE,            "pg_ins_dvm_table_op" );
-        pg->add_operation( irods::DATABASE_OP_INS_FNM_TABLE,            "pg_ins_fnm_table_op" );
-        pg->add_operation( irods::DATABASE_OP_INS_MSRVC_TABLE,          "pg_ins_msrvc_table_op" );
-        pg->add_operation( irods::DATABASE_OP_VERSION_RULE_BASE,        "pg_version_rule_base_op" );
-        pg->add_operation( irods::DATABASE_OP_VERSION_DVM_BASE,         "pg_version_dvm_base_op" );
-        pg->add_operation( irods::DATABASE_OP_VERSION_FNM_BASE,         "pg_version_fnm_base_op" );
-        pg->add_operation( irods::DATABASE_OP_ADD_SPECIFIC_QUERY,       "pg_add_specific_query_op" );
-        pg->add_operation( irods::DATABASE_OP_DEL_SPECIFIC_QUERY,       "pg_del_specific_query_op" );
-        pg->add_operation( irods::DATABASE_OP_SPECIFIC_QUERY,           "pg_specific_query_op" );
-        pg->add_operation( irods::DATABASE_OP_GET_HIERARCHY_FOR_RESC,   "pg_get_hierarchy_for_resc_op" );
-        pg->add_operation( irods::DATABASE_OP_MOD_TICKET,               "pg_mod_ticket_op" );
-        pg->add_operation( irods::DATABASE_OP_CHECK_AND_GET_OBJ_ID,     "pg_check_and_get_object_id_op" );
-        pg->add_operation( irods::DATABASE_OP_GET_RCS,                  "pg_get_icss_op" );
-        pg->add_operation( irods::DATABASE_OP_GEN_QUERY,                "pg_gen_query_op" );
-        pg->add_operation( irods::DATABASE_OP_GENERAL_UPDATE,           "pg_general_update_op" );
+        pg->add_operation( irods::DATABASE_OP_START,                    "db_start_op" );
+        pg->add_operation( irods::DATABASE_OP_DEBUG,                    "db_debug_op" );
+        pg->add_operation( irods::DATABASE_OP_OPEN,                     "db_open_op" );
+        pg->add_operation( irods::DATABASE_OP_CLOSE,                    "db_close_op" );
+        pg->add_operation( irods::DATABASE_OP_GET_LOCAL_ZONE,           "db_get_local_zone_op" );
+        pg->add_operation( irods::DATABASE_OP_UPDATE_RESC_OBJ_COUNT,    "db_update_resc_obj_count_op" );
+        pg->add_operation( irods::DATABASE_OP_MOD_DATA_OBJ_META,        "db_mod_data_obj_meta_op" );
+        pg->add_operation( irods::DATABASE_OP_REG_DATA_OBJ,             "db_reg_data_obj_op" );
+        pg->add_operation( irods::DATABASE_OP_REG_REPLICA,              "db_reg_replica_op" );
+        pg->add_operation( irods::DATABASE_OP_UNREG_REPLICA,            "db_unreg_replica_op" );
+        pg->add_operation( irods::DATABASE_OP_REG_RULE_EXEC,            "db_reg_rule_exec_op" );
+        pg->add_operation( irods::DATABASE_OP_MOD_RULE_EXEC,            "db_mod_rule_exec_op" );
+        pg->add_operation( irods::DATABASE_OP_DEL_RULE_EXEC,            "db_del_rule_exec_op" );
+        pg->add_operation( irods::DATABASE_OP_ADD_CHILD_RESC,           "db_add_child_resc_op" );
+        pg->add_operation( irods::DATABASE_OP_REG_RESC,                 "db_reg_resc_op" );
+        pg->add_operation( irods::DATABASE_OP_DEL_CHILD_RESC,           "db_del_child_resc_op" );
+        pg->add_operation( irods::DATABASE_OP_DEL_RESC,                 "db_del_resc_op" );
+        pg->add_operation( irods::DATABASE_OP_ROLLBACK,                 "db_rollback_op" );
+        pg->add_operation( irods::DATABASE_OP_COMMIT,                   "db_commit_op" );
+        pg->add_operation( irods::DATABASE_OP_DEL_USER_RE,              "db_del_user_re_op" );
+        pg->add_operation( irods::DATABASE_OP_REG_COLL_BY_ADMIN,        "db_reg_coll_by_admin_op" );
+        pg->add_operation( irods::DATABASE_OP_REG_COLL,                 "db_reg_coll_op" );
+        pg->add_operation( irods::DATABASE_OP_MOD_COLL,                 "db_mod_coll_op" );
+        pg->add_operation( irods::DATABASE_OP_REG_ZONE,                 "db_reg_zone_op" );
+        pg->add_operation( irods::DATABASE_OP_MOD_ZONE,                 "db_mod_zone_op" );
+        pg->add_operation( irods::DATABASE_OP_RENAME_COLL,              "db_rename_coll_op" );
+        pg->add_operation( irods::DATABASE_OP_MOD_ZONE_COLL_ACL,        "db_mod_zone_coll_acl_op" );
+        pg->add_operation( irods::DATABASE_OP_RENAME_LOCAL_ZONE,        "db_rename_local_zone_op" );
+        pg->add_operation( irods::DATABASE_OP_DEL_ZONE,                 "db_del_zone_op" );
+        pg->add_operation( irods::DATABASE_OP_SIMPLE_QUERY,             "db_simple_query_op" );
+        pg->add_operation( irods::DATABASE_OP_DEL_COLL_BY_ADMIN,        "db_del_coll_by_admin_op" );
+        pg->add_operation( irods::DATABASE_OP_DEL_COLL,                 "db_del_coll_op" );
+        pg->add_operation( irods::DATABASE_OP_CHECK_AUTH,               "db_check_auth_op" );
+        pg->add_operation( irods::DATABASE_OP_MAKE_TEMP_PW,             "db_make_temp_pw_op" );
+        pg->add_operation( irods::DATABASE_OP_UPDATE_PAM_PASSWORD,      "db_update_pam_password_op" );
+        pg->add_operation( irods::DATABASE_OP_MOD_USER,                 "db_mod_user_op" );
+        pg->add_operation( irods::DATABASE_OP_MAKE_LIMITED_PW,          "db_make_limited_pw_op" );
+        pg->add_operation( irods::DATABASE_OP_MOD_GROUP,                "db_mod_group_op" );
+        pg->add_operation( irods::DATABASE_OP_MOD_RESC,                 "db_mod_resc_op" );
+        pg->add_operation( irods::DATABASE_OP_MOD_RESC_DATA_PATHS,      "db_mod_resc_data_paths_op" );
+        pg->add_operation( irods::DATABASE_OP_MOD_RESC_FREESPACE,       "db_mod_resc_freespace_op" );
+        pg->add_operation( irods::DATABASE_OP_REG_USER_RE,              "db_reg_user_re_op" );
+        pg->add_operation( irods::DATABASE_OP_SET_AVU_METADATA,         "db_set_avu_metadata_op" );
+        pg->add_operation( irods::DATABASE_OP_ADD_AVU_METADATA_WILD,    "db_add_avu_metadata_wild_op" );
+        pg->add_operation( irods::DATABASE_OP_ADD_AVU_METADATA,         "db_add_avu_metadata_op" );
+        pg->add_operation( irods::DATABASE_OP_MOD_AVU_METADATA,         "db_mod_avu_metadata_op" );
+        pg->add_operation( irods::DATABASE_OP_DEL_AVU_METADATA,         "db_del_avu_metadata_op" );
+        pg->add_operation( irods::DATABASE_OP_COPY_AVU_METADATA,        "db_copy_avu_metadata_op" );
+        pg->add_operation( irods::DATABASE_OP_MOD_ACCESS_CONTROL_RESC,  "db_mod_access_control_resc_op" );
+        pg->add_operation( irods::DATABASE_OP_MOD_ACCESS_CONTROL,       "db_mod_access_control_op" );
+        pg->add_operation( irods::DATABASE_OP_RENAME_OBJECT,            "db_rename_object_op" );
+        pg->add_operation( irods::DATABASE_OP_MOVE_OBJECT,              "db_move_object_op" );
+        pg->add_operation( irods::DATABASE_OP_REG_TOKEN,                "db_reg_token_op" );
+        pg->add_operation( irods::DATABASE_OP_DEL_TOKEN,                "db_del_token_op" );
+        pg->add_operation( irods::DATABASE_OP_REG_SERVER_LOAD,          "db_reg_server_load_op" );
+        pg->add_operation( irods::DATABASE_OP_PURGE_SERVER_LOAD,        "db_purge_server_load_op" );
+        pg->add_operation( irods::DATABASE_OP_REG_SERVER_LOAD_DIGEST,   "db_reg_server_load_digest_op" );
+        pg->add_operation( irods::DATABASE_OP_PURGE_SERVER_LOAD_DIGEST, "db_purge_server_load_digest_op" );
+        pg->add_operation( irods::DATABASE_OP_CALC_USAGE_AND_QUOTA,     "db_calc_usage_and_quota_op" );
+        pg->add_operation( irods::DATABASE_OP_SET_QUOTA,                "db_set_quota_op" );
+        pg->add_operation( irods::DATABASE_OP_CHECK_QUOTA,              "db_check_quota_op" );
+        pg->add_operation( irods::DATABASE_OP_DEL_UNUSED_AVUS,          "db_del_unused_avus_op" );
+        pg->add_operation( irods::DATABASE_OP_INS_RULE_TABLE,           "db_ins_rule_table_op" );
+        pg->add_operation( irods::DATABASE_OP_INS_DVM_TABLE,            "db_ins_dvm_table_op" );
+        pg->add_operation( irods::DATABASE_OP_INS_FNM_TABLE,            "db_ins_fnm_table_op" );
+        pg->add_operation( irods::DATABASE_OP_INS_MSRVC_TABLE,          "db_ins_msrvc_table_op" );
+        pg->add_operation( irods::DATABASE_OP_VERSION_RULE_BASE,        "db_version_rule_base_op" );
+        pg->add_operation( irods::DATABASE_OP_VERSION_DVM_BASE,         "db_version_dvm_base_op" );
+        pg->add_operation( irods::DATABASE_OP_VERSION_FNM_BASE,         "db_version_fnm_base_op" );
+        pg->add_operation( irods::DATABASE_OP_ADD_SPECIFIC_QUERY,       "db_add_specific_query_op" );
+        pg->add_operation( irods::DATABASE_OP_DEL_SPECIFIC_QUERY,       "db_del_specific_query_op" );
+        pg->add_operation( irods::DATABASE_OP_SPECIFIC_QUERY,           "db_specific_query_op" );
+        pg->add_operation( irods::DATABASE_OP_GET_HIERARCHY_FOR_RESC,   "db_get_hierarchy_for_resc_op" );
+        pg->add_operation( irods::DATABASE_OP_MOD_TICKET,               "db_mod_ticket_op" );
+        pg->add_operation( irods::DATABASE_OP_CHECK_AND_GET_OBJ_ID,     "db_check_and_get_object_id_op" );
+        pg->add_operation( irods::DATABASE_OP_GET_RCS,                  "db_get_icss_op" );
+        pg->add_operation( irods::DATABASE_OP_GEN_QUERY,                "db_gen_query_op" );
+        pg->add_operation( irods::DATABASE_OP_GENERAL_UPDATE,           "db_general_update_op" );
         pg->add_operation( irods::DATABASE_OP_GEN_QUERY_ACCESS_CONTROL_SETUP,
-                           "pg_gen_query_access_control_setup_op" );
+                           "db_gen_query_access_control_setup_op" );
         pg->add_operation( irods::DATABASE_OP_GEN_QUERY_TICKET_SETUP,
-                           "pg_gen_query_ticket_setup_op" );
+                           "db_gen_query_ticket_setup_op" );
         pg->add_operation( irods::DATABASE_OP_SUBSTITUTE_RESOURCE_HIERARCHIES,
-                           "pg_substitute_resource_hierarchies_op" );
+                           "db_substitute_resource_hierarchies_op" );
         pg->add_operation( irods::DATABASE_OP_GET_DISTINCT_DATA_OBJ_COUNT_ON_RESOURCE,
-                           "pg_get_distinct_data_obj_count_on_resource_op" );
+                           "db_get_distinct_data_obj_count_on_resource_op" );
         pg->add_operation( irods::DATABASE_OP_GET_DISTINCT_DATA_OBJS_MISSING_FROM_CHILD_GIVEN_PARENT,
-                           "pg_get_distinct_data_objs_missing_from_child_given_parent_op" );
+                           "db_get_distinct_data_objs_missing_from_child_given_parent_op" );
 
         // =-=-=-=-=-=-=-
         // upcast for return

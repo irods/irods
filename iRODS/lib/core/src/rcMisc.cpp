@@ -234,7 +234,7 @@ apiTableLookup( int apiNumber ) {
 
 int
 myHtonll( rodsLong_t inlonglong, rodsLong_t *outlonglong ) {
-    int *inPtr, *outPtr;
+    char *inPtr, *outPtr;
 
     if ( outlonglong == NULL ) {
         return ( SYS_INTERNAL_NULL_INPUT_ERR );
@@ -245,19 +245,21 @@ myHtonll( rodsLong_t inlonglong, rodsLong_t *outlonglong ) {
         return 0;
     }
 
-    inPtr = ( int * ) &inlonglong;
-    outPtr = ( int * ) outlonglong;
+    inPtr = ( char * )( static_cast< void * >( &inlonglong ) );
+    outPtr = ( char * )( static_cast<void *>( outlonglong ) );
 
-    *outPtr = htonl( *( inPtr + 1 ) );
-    outPtr++;
-    *outPtr = htonl( *inPtr );
-
+    int i;
+    int byte_length = sizeof(rodsLong_t);
+    for ( i = 0; i < byte_length; i++)
+    {
+      outPtr[i] = inPtr[byte_length - 1 - i];
+    }
     return ( 0 );
 }
 
 int
-myNtohll( rodsULong_t inlonglong,  rodsLong_t *outlonglong ) {
-    int *inPtr, *outPtr;
+myNtohll( rodsLong_t inlonglong,  rodsLong_t *outlonglong ) {
+    char *inPtr, *outPtr;
 
     if ( outlonglong == NULL ) {
         return ( SYS_INTERNAL_NULL_INPUT_ERR );
@@ -268,13 +270,15 @@ myNtohll( rodsULong_t inlonglong,  rodsLong_t *outlonglong ) {
         return 0;
     }
 
-    inPtr = ( int * ) &inlonglong;
-    outPtr = ( int * ) outlonglong;
+    inPtr = ( char * )( static_cast< void * >( &inlonglong ) );
+    outPtr = ( char * )( static_cast<void *>( outlonglong ) );
 
-    *outPtr = ntohl( *( inPtr + 1 ) );
-    outPtr ++;
-    *outPtr = ntohl( *inPtr );
-
+    int i;
+    int byte_length = sizeof(rodsLong_t);
+    for ( i = 0; i < byte_length; i++)
+    {
+      outPtr[i] = inPtr[byte_length - 1 - i];
+    }
     return ( 0 );
 }
 

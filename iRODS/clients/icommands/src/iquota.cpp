@@ -359,7 +359,7 @@ showUserUsage( char *userName, char *usersZone ) {
 
     printf( "%s\n", header );
     printCount = 0;
-
+    k = 0;
     for ( i = 0; i < genQueryOut->rowCnt; i++ ) {
         for ( j = 1; j < genQueryOut->attriCnt; j++ ) {
             char *tResult;

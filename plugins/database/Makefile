@@ -23,11 +23,15 @@ ifeq ($(IRODS_BUILD_DEBUG), 0)
 #SUBS += ${HPSSDIRS}
 endif
 
-.PHONY: postgres clean
+.PHONY: mysql postgres clean
 
 default: postgres
 
 postgres:
+	@-mkdir -p $@/${OBJDIR} > /dev/null 2>&1
+	${MAKE} -C $@
+
+mysql:
 	@-mkdir -p $@/${OBJDIR} > /dev/null 2>&1
 	${MAKE} -C $@
 

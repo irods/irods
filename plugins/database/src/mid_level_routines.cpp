@@ -62,6 +62,7 @@ char *cmlArraysToStrWithBind( char *str,
         rstrcat( str, "?", maxLen );
         cllBindVars[cllBindVarCount++] = arr2[i];
     }
+
     return( str );
 
 }
@@ -194,6 +195,7 @@ int cmlGetOneRowFromSqlBV( char *sql,
         }
         return ( CAT_SQL_ERR );
     }
+
     i = cllGetRow( icss, stmtNum );
     if ( i != 0 )  {
         cllFreeStatement( icss, stmtNum );
