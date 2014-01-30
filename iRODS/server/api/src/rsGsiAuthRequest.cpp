@@ -32,6 +32,7 @@ rsGsiAuthRequest( rsComm_t *rsComm, gsiAuthRequestOut_t **gsiAuthRequestOut ) {
     status = igsiSetupCreds( NULL, rsComm, NULL, &( *gsiAuthRequestOut )->serverDN );
     if ( status == 0 ) {
         rsComm->gsiRequest = 1;
+        rsComm->auth_scheme = "gsi";
     }
     return( status );
 #else

@@ -35,6 +35,7 @@ rsKrbAuthRequest( rsComm_t *rsComm, krbAuthRequestOut_t **krbAuthRequestOut ) {
                              &result->serverName );
     if ( status == 0 ) {
         rsComm->gsiRequest = 2;
+        rsComm->auth_scheme = "krb";
     }
     return( status );
 #else

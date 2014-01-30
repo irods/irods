@@ -22,6 +22,11 @@ static void NtAgentSetEnvsFromArgs( int ac, char **av );
 #include "irods_signal.hpp"
 #include "irods_client_server_negotiation.hpp"
 #include "irods_network_factory.hpp"
+#include "irods_auth_object.hpp"
+#include "irods_auth_factory.hpp"
+#include "irods_auth_manager.hpp"
+#include "irods_auth_plugin.hpp"
+#include "irods_auth_constants.hpp"
 
 /* #define SERVER_DEBUG 1   */
 int
@@ -236,8 +241,9 @@ main( int argc, char *argv[] ) {
     return ( status );
 }
 
-int
-agentMain( rsComm_t *rsComm ) {
+int agentMain(
+    rsComm_t *rsComm ) {
+    irods::error result = SUCCESS();
     int status = 0;
 
     // =-=-=-=-=-=-=-
@@ -245,40 +251,63 @@ agentMain( rsComm_t *rsComm ) {
     // see header file for more details
     irods::dynamic_cast_hack();
 
-    while ( 1 ) {
+    bool auth_done = false;
+    while ( result.ok() && status >= 0 ) {
 
-        if ( rsComm->gsiRequest == 1 ) {
+        if ( false && rsComm->gsiRequest == 1 ) {
             status = igsiServersideAuth( rsComm ) ;
             rsComm->gsiRequest = 0;
         }
-        if ( rsComm->gsiRequest == 2 ) {
+        if ( false && rsComm->gsiRequest == 2 ) {
             status = ikrbServersideAuth( rsComm ) ;
             rsComm->gsiRequest = 0;
         }
 
-        if ( rsComm->ssl_do_accept ) {
-            status = sslAccept( rsComm );
-            rsComm->ssl_do_accept = 0;
-        }
-        if ( rsComm->ssl_do_shutdown ) {
-            status = sslShutdown( rsComm );
-            rsComm->ssl_do_shutdown = 0;
-        }
+        if ( !auth_done ) {
+            // construct an auth object based on the scheme specified in the comm
+            irods::auth_object_ptr auth_obj;
+            irods::error ret = irods::auth_factory( rsComm->auth_scheme, &rsComm->rError, auth_obj );
+            if ( ( result = ASSERT_PASS( ret, "Failed to factory an auth object." ) ).ok() ) {
 
-        status = readAndProcClientMsg( rsComm, READ_HEADER_TIMEOUT );
+                irods::plugin_ptr ptr;
+                ret = auth_obj->resolve( irods::AUTH_INTERFACE, ptr );
+                if ( ( result = ASSERT_PASS( ret, "Failed to resolve the auth plugin for scheme: \"%s\".",
+                                             rsComm->auth_scheme.c_str() ) ).ok() ) {
 
-        if ( status >= 0 ) {
-            continue;
-        }
-        else {
-            if ( status == DISCONN_STATUS ) {
-                status = 0;
-                break;
-            }
-            else {
-                break;
+                    irods::auth_ptr auth_plugin = boost::dynamic_pointer_cast< irods::auth >( ptr );
+
+                    // Call agent start
+                    char* foo = "";
+                    ret = auth_plugin->call <rsComm_t*, const char* > ( irods::AUTH_CLIENT_START, auth_obj, rsComm, foo );
+                    result = ASSERT_PASS( ret, "Failed during auth plugin agent start for scheme: \"%s\".", rsComm->auth_scheme.c_str() );
+                    auth_done = true;
+                }
             }
         }
+
+        if ( result.ok() ) {
+            if ( rsComm->ssl_do_accept ) {
+                status = sslAccept( rsComm );
+                rsComm->ssl_do_accept = 0;
+            }
+            if ( rsComm->ssl_do_shutdown ) {
+                status = sslShutdown( rsComm );
+                rsComm->ssl_do_shutdown = 0;
+            }
+
+            status = readAndProcClientMsg( rsComm, READ_HEADER_TIMEOUT );
+
+            if ( status < 0 ) {
+                if ( status == DISCONN_STATUS ) {
+                    status = 0;
+                    break;
+                }
+            }
+        }
+    }
+
+    if ( !result.ok() ) {
+        status = result.code();
     }
 
     // =-=-=-=-=-=-=-
