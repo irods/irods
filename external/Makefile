@@ -183,3 +183,5 @@ clean :
 	@echo "Cleaning lib_mysqludf_preg..."
 	@rm -rf $(LIB_MYSQLUDF_PREG)
 	@rm -f $(LIB_MYSQLUDF_PREG_ARCHIVE)
+	@echo "Cleaning $(IRODSEXTERNALARCHIVE).tar.gz"
+	@rm -f ../$(IRODSEXTERNALARCHIVE).tar.gz
