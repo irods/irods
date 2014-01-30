@@ -34,7 +34,6 @@ $SCRIPTNAME resource
 $SCRIPTNAME -s icat postgres
 $SCRIPTNAME -s resource
 "
-
 # Color Manipulation Aliases
 if [[ "$TERM" == "dumb" || "$TERM" == "unknown" ]] ; then
     text_bold=""      # No Operation
@@ -56,6 +55,16 @@ else
     text_cyan=$(tput setaf 6)   # Cyan
     text_white=$(tput setaf 7)  # White
     text_reset=$(tput sgr0)     # Text Reset
+
+# =-=-=-=-=-=-=-
+# handle the case of build clean
+if [ "$1" == "clean" ] ; then
+    rm -f $SCRIPTPATH/irods_resource_plugin_*.list
+    cd $BUILDDIR
+    rm -rf linux-*
+    rm -rf ./build/
+    make clean
+    exit 0
 fi
 
 # boilerplate
@@ -1064,6 +1073,12 @@ if [[ "$unamem" == "x86_64" || "$unamem" == "amd64" ]] ; then
 else
     arch="i386"
 fi
+<<<<<<< HEAD
+=======
+
+cd $BUILDDIR
+mkdir -p build
+EPMCMD="/usr/bin/epm"
 if [ "$DETECTEDOS" == "RedHatCompatible" ] ; then # CentOS and RHEL and Fedora
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS RPMs${text_reset}"
     epmvar="REDHATRPM$SERVER_TYPE"
@@ -1071,36 +1086,25 @@ if [ "$DETECTEDOS" == "RedHatCompatible" ] ; then # CentOS and RHEL and Fedora
     osversion=`awk '{print $3}' /etc/redhat-release`
     if [ "$ostype" == "CentOS" -a "$osversion" \> "6" ]; then
         epmosversion="CENTOS6"
+        SUFFIX=redhat
     else
+        SUFFIX=centos6
         epmosversion="NOTCENTOS6"
     fi
-    $EPMCMD $EPMOPTS -f rpm irods-$SERVER_TYPE_LOWERCASE $epmvar=true $epmosversion=true ./packaging/irods.list
-    if [ "$SERVER_TYPE" == "ICAT" ] ; then
-        $EPMCMD $EPMOPTS -f rpm irods-dev $epmvar=true ./packaging/irods-dev.list
-    fi
-    if [ "$RELEASE" == "1" ] ; then
-        $EPMCMD $EPMOPTS -f rpm irods-icommands $epmvar=true ./packaging/irods-icommands.list
-    fi
+    $EPMCMD $EPMOPTS -f rpm irods-resource-plugin-${RESC_TYPE} $epmvar=true $epmosversion=true $LISTFILE
+    cp linux-*/irods-resource-plugin-${RESC_TYPE}*.rpm build/irods-resource-plugin-${RESC_TYPE}-${SUFIX}.rpm
+       
 elif [ "$DETECTEDOS" == "SuSE" ] ; then # SuSE
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS RPMs${text_reset}"
     epmvar="SUSERPM$SERVER_TYPE"
-    $EPMCMD $EPMOPTS -f rpm irods-$SERVER_TYPE_LOWERCASE $epmvar=true ./packaging/irods.list
-    if [ "$SERVER_TYPE" == "ICAT" ] ; then
-        $EPMCMD $EPMOPTS -f rpm irods-dev $epmvar=true ./packaging/irods-dev.list
-    fi
-    if [ "$RELEASE" == "1" ] ; then
-        $EPMCMD $EPMOPTS -f rpm irods-icommands $epmvar=true ./packaging/irods-icommands.list
-    fi
+    $EPMCMD $EPMOPTS -f rpm irods-resource-plugin-${RESC_TYPE} $epmvar=true $LISTFILE
+    cp linux-*/irods-resource-plugin-${RESC_TYPE}*.rpm build/irods-resource-plugin-${RESC_TYPE}-suse.rpm
 elif [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then  # Ubuntu
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS DEBs${text_reset}"
     epmvar="DEB$SERVER_TYPE"
-    $EPMCMD $EPMOPTS -a $arch -f deb irods-$SERVER_TYPE_LOWERCASE $epmvar=true ./packaging/irods.list
-    if [ "$SERVER_TYPE" == "ICAT" ] ; then
-        $EPMCMD $EPMOPTS -a $arch -f deb irods-dev $epmvar=true ./packaging/irods-dev.list
-    fi
-    if [ "$RELEASE" == "1" ] ; then
-        $EPMCMD $EPMOPTS -a $arch -f deb irods-icommands $epmvar=true ./packaging/irods-icommands.list
-    fi
+    $EPMCMD $EPMOPTS -a $arch -f deb irods-resource-plugin-${RESC_TYPE} $epmvar=true $LISTFILE
+    cp linux-*/irods-resource-plugin-${RESC_TYPE}*.deb build/irods-resource-plugin-${RESC_TYPE}.deb
+
 elif [ "$DETECTEDOS" == "Solaris" ] ; then  # Solaris
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS PKGs${text_reset}"
     epmvar="PKG$SERVER_TYPE"
@@ -1148,7 +1152,6 @@ else
     exit 1
 fi
 
-
 # rename generated packages appropriately
 rename_generated_packages $1
 
@@ -1176,3 +1179,4 @@ echo "|                                    |"
 printf "|   Completed in %02dm%02ds              |\n" "$((TOTALTIME/60))" "$((TOTALTIME%60))"
 echo "+------------------------------------+"
 echo "${text_reset}"
+
