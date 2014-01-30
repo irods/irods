@@ -11499,7 +11499,7 @@ f 666 root root /usr/include/irods/netcdf/ncgen3/generic.h ./external/netcdf-4.3
 
 
 
-f 666 root root /external/epm/libepm.a ./external/epm/libepm.a
+f 666 root root /usr/lib/irods/libepm.a ./external/epm/libepm.a
 f 666 root root /usr/lib/irods/libarchive.a ./external/libarchive-3.1.2/libarchive/libarchive.a
 f 666 root root /usr/lib/irods/libhdf5.a ./external/hdf5-1.8.12/src/.libs/libhdf5.a
 f 666 root root /usr/lib/irods/libdynlib2.a ./external/hdf5-1.8.12/test/.libs/libdynlib2.a
@@ -11522,6 +11522,7 @@ f 666 root root /usr/lib/irods/libnetcdf2.a ./external/netcdf-4.3.0/libdispatch/
 f 666 root root /usr/lib/irods/libnetcdf3.a ./external/netcdf-4.3.0/libsrc/.libs/libnetcdf3.a
 f 666 root root /usr/lib/irods/libdap2.a ./external/netcdf-4.3.0/libdap2/.libs/libdap2.a
 
+f 755 root root /usr/bin/epm ./external/epm/epm
 
 
 
