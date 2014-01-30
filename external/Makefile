@@ -5,7 +5,7 @@ MAKEFLAGS += --no-print-directory
 RENCI_FTP_EXTERNAL=ftp://ftp.renci.org/pub/irods/external
 RENCI_FTP_BUILD=ftp://ftp.renci.org/pub/irods/build
 
-.PHONY : default retrieve build generate clean cmake libarchive jansson boost cjson hdf5 netcdf epm lib_mysqludf_preg
+.PHONY : default retrieve build generate clean cmake libarchive jansson boost hdf5 netcdf epm lib_mysqludf_preg
 
 IRODSEXTERNALARCHIVE=irods_external
 CMAKEVERSIONARCHIVE=$(CMAKEVERSION).tar.gz
@@ -16,7 +16,6 @@ JANSSONVERSIONARCHIVE=$(JANSSONVERSION).tar.gz
 JANSSONVERSIONMAKE=$(JANSSONVERSION)/Makefile
 BOOSTVERSIONARCHIVE=$(BOOSTVERSION).tar.gz
 BOOSTVERSIONMAKE=$(BOOSTVERSION)/bjam
-CJSONVERSIONARCHIVE=$(CJSONVERSION)Files-r$(CJSONVERSIONNUMBER).zip
 HDF5VERSIONARCHIVE=$(HDF5VERSION).tar.gz
 HDF5VERSIONMAKE=$(HDF5VERSION)/Makefile
 NETCDFVERSIONARCHIVE=$(NETCDFVERSION).tar.gz
@@ -38,13 +37,13 @@ retrieve : $(IRODSEXTERNALARCHIVE).tar.gz
 	@cd ../ ; \
 		tar zxf $(IRODSEXTERNALARCHIVE).tar.gz
 
-build : cmake libarchive jansson boost cjson epm hdf5 netcdf lib_mysqludf_preg
+build : cmake libarchive jansson boost epm hdf5 netcdf lib_mysqludf_preg
 
 generate : build
 	@cd ../ ; \
 		OS=`./packaging/find_os.sh` ; \
 		mkdir -p build ; \
-		tar zfc build/$(IRODSEXTERNALARCHIVE)_$$OS.tar.gz --exclude "*.tar.gz" --exclude "*.zip" --exclude "*cmake*" --exclude "__MACOSX" --exclude "Makefile" external/
+		tar zfc build/$(IRODSEXTERNALARCHIVE)_$$OS.tar.gz --exclude "*.tar.gz" --exclude "*.zip" --exclude "*cmake*" --exclude "Makefile" external/
 
 $(LIB_MYSQLUDF_PREG_ARCHIVE) :
 	@wget $(RENCI_FTP_EXTERNAL)/$(LIB_MYSQLUDF_PREG_ARCHIVE) 2>&1
@@ -80,14 +79,6 @@ $(JANSSONVERSIONMAKE) : $(JANSSONVERSIONARCHIVE)
 
 jansson : $(JANSSONVERSIONMAKE)
 	@$(MAKE) -C $(JANSSONVERSION)
-
-$(CJSONVERSIONARCHIVE) :
-	@wget $(RENCI_FTP_EXTERNAL)/$(CJSONVERSIONARCHIVE) 2>&1
-
-$(CJSONVERSION) : $(CJSONVERSIONARCHIVE)
-	@unzip -o $(CJSONVERSIONARCHIVE)
-
-cjson : $(CJSONVERSION)
 
 $(LIBARCHIVEVERSIONARCHIVE) :
 	@wget $(RENCI_FTP_EXTERNAL)/$(LIBARCHIVEVERSIONARCHIVE) 2>&1
@@ -179,10 +170,6 @@ clean :
 	@echo "Cleaning jansson..."
 	@rm -rf $(JANSSONVERSION)
 	@rm -f $(JANSSONVERSIONARCHIVE)
-	@echo "Cleaning cjson..."
-	@rm -rf $(CJSONVERSION)
-	@rm -f $(CJSONVERSIONARCHIVE)
-	@rm -rf __MACOSX
 	@echo "Cleaning netcdf..."
 	@rm -rf $(NETCDFVERSION)
 	@rm -f $(NETCDFVERSIONARCHIVE)
