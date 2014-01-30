@@ -13,6 +13,7 @@
 
 %incompat eirods
 
+%provides irods
 
 # =-=-=-=-=-=-=-
 # Required Packages for specific systems

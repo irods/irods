@@ -1,7 +1,7 @@
 # =-=-=-=-=-=-=-
 # EPM Variables
 # =-=-=-=-=-=-=-
-%product iRODS Postgres Database Plugin
+%product iRODS MySQL Database Plugin
 %copyright 2014, The University of North Carolina at Chapel Hill
 %vendor Renaissance Computing Institute <info@irods-consortium.org>
 %license LICENSE
@@ -10,6 +10,7 @@
 %version TEMPLATE_PLUGINVERSION TEMPLATE_PLUGINVERSIONINT
 
 
+%requires irods-icat
 
 
 # =-=-=-=-=-=-=-
@@ -18,45 +19,31 @@
 # Setting environment variables for EPM
 # =-=-=-=-=-=-=-
 
-%if DEBICAT
-$DEB=true
-$ICAT=true
+%if DEB
 %requires unixodbc
 %requires libmyodbc
 %requires mysql-client
 
-%elseif REDHATRPMICAT
+%elseif REDHATRPM
 $REDHAT=true
 $RPM=true
-$ICAT=true
+%requires mysql
 %requires unixODBC
 
-%elseif SUSERPMICAT
+%elseif SUSERPM
 $SUSE=true
 $RPM=true
-$ICAT=true
-%requires psqlODBC
+%requires mysql-client
 %requires unixODBC
 
-%elseif ARCHICAT
-$ARCH=true
-$ICAT=true
 %endif
-
 
 %if CENTOS6
-%requires postgresql-odbc
+%requires mysql-connector-odbc
 %endif
-
-
 
 %if DEB
 %requires libc6
-%requires libssl0.9.8
-%endif
-
-%if SUSE
-%requires libopenssl0_9_8
 %endif
 
 # =-=-=-=-=-=-=-
@@ -64,37 +51,18 @@ $ICAT=true
 # (have a common name across packaging universes)
 # =-=-=-=-=-=-=-
 %if ARCH
-
 %else
-
 %requires perl
-%requires python
-
 %endif
 
 %format all
 
 # =-=-=-=-=-=-=-
-# Configuration Variables
-# =-=-=-=-=-=-=-
-
-# =-=-=-=-=-=-=-
 # Install variables
 # =-=-=-=-=-=-=-
-$IRODS_PACKAGENAME=irods_database_plugin_postgres
 $IRODS_HOME_DIR=/var/lib/irods
 $OS_IRODS_ACCT=irods
 $IRODS_HOME=$IRODS_HOME_DIR/iRODS
-$DB_NAME=TEMPLATE_DB_NAME
-
-# =-=-=-=-=-=-=-
-# iRODS variables
-# =-=-=-=-=-=-=-
-$DB_ADMIN_ROLE=postgres
-$DB_TYPE=TEMPLATE_DB_TYPE
-$DB_HOST=TEMPLATE_DB_HOST
-$DB_PORT=TEMPLATE_DB_PORT
-$DB_USER=$OS_IRODS_ACCT
 
 # =-=-=-=-=-=-=-
 # preinstall
@@ -130,16 +98,25 @@ END_PREINSTALL
 # post install
 # =-=-=-=-=-=-=-
 %postinstall << END_POSTINSTALL
+# irods_setup.pl expects this file to exist
+touch $IRODS_HOME_DIR/.odbc.ini
+ACCT=$OS_IRODS_ACCT
+chown  $$ACCT:$$ACCT $IRODS_HOME_DIR/.odbc.ini
 echo ""
-echo "This database plugin package expects an existing database"
-echo "user and permission to already have been created.  Also a"
-echo "database must be created by the database user for use as "
-echo "the iCAT catalog.  The setup script which must be run next"
-echo "will prompt for this information."
+echo "======================================================================="
 echo ""
-echo "When ready, please run the following script as the irods user:"
-echo "./packaging/setup_database.sh"
-
+echo "iRODS MySQL Database Plugin installation was successful."
+echo ""
+echo "To configure this plugin, the following prerequisites need to be met:"
+echo " - an existing database user (to be used by the iRODS server)"
+echo " - an existing database (to be used as the iCAT catalog)"
+echo " - permissions for existing user on existing database"
+echo ""
+echo "Please run the following setup script as the irods user:"
+echo "  ./packaging/setup_database.sh"
+echo ""
+echo "======================================================================="
+echo ""
 END_POSTINSTALL
 
 # =-=-=-=-=-=-=-

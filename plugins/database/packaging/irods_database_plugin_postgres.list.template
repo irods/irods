@@ -19,33 +19,25 @@
 # Setting environment variables for EPM
 # =-=-=-=-=-=-=-
 
-%if DEBICAT
-$DEB=true
-$ICAT=true
+%if DEB
 %requires unixodbc
 %requires odbc-postgresql
 %requires postgresql-client
+%requires super
 
-%elseif DEBRESOURCE
-$DEB=true
-$RESOURCE=true
-
-%elseif REDHATRPMICAT
+%elseif REDHATRPM
 $REDHAT=true
 $RPM=true
-$ICAT=true
+%requires postgresql
 %requires unixODBC
+%requires authd
 
-%elseif SUSERPMICAT
+%elseif SUSERPM
 $SUSE=true
 $RPM=true
-$ICAT=true
+%requires postgresql
 %requires psqlODBC
 %requires unixODBC
-
-%elseif ARCHICAT
-$ARCH=true
-$ICAT=true
 
 %endif
 
@@ -54,16 +46,10 @@ $ICAT=true
 %requires postgresql-odbc
 %endif
 
-
-
 %if DEB
 %requires libc6
-%requires libssl0.9.8
 %endif
 
-%if SUSE
-%requires libopenssl0_9_8
-%endif
 
 # =-=-=-=-=-=-=-
 # Required Packages for all systems
@@ -71,37 +57,18 @@ $ICAT=true
 # =-=-=-=-=-=-=-
 
 %if ARCH
-
 %else
-
 %requires perl
-%requires python
-
 %endif
 
 %format all
 
 # =-=-=-=-=-=-=-
-# Configuration Variables
-# =-=-=-=-=-=-=-
-
-# =-=-=-=-=-=-=-
 # Install variables
 # =-=-=-=-=-=-=-
-$IRODS_PACKAGENAME=irods_database_plugin_postgres
 $IRODS_HOME_DIR=/var/lib/irods
 $OS_IRODS_ACCT=irods
 $IRODS_HOME=$IRODS_HOME_DIR/iRODS
-$DB_NAME=TEMPLATE_DB_NAME
-
-# =-=-=-=-=-=-=-
-# iRODS variables
-# =-=-=-=-=-=-=-
-$DB_ADMIN_ROLE=postgres
-$DB_TYPE=TEMPLATE_DB_TYPE
-$DB_HOST=TEMPLATE_DB_HOST
-$DB_PORT=TEMPLATE_DB_PORT
-$DB_USER=$OS_IRODS_ACCT
 
 # =-=-=-=-=-=-=-
 # preinstall
@@ -161,15 +128,7 @@ END_POSTINSTALL
 # =-=-=-=-=-=-=-
 # preremove
 # =-=-=-=-=-=-=-
-%preremove << END_PREREMOVE
-IRODS_HOME=$IRODS_HOME
-DB_NAME=$$( grep "^\$$DB_NAME" $$IRODS_HOME/config/irods.config | awk -F\' '{print $$2}' )
-DB_USER=$DB_USER
-echo "     :: Leaving the iRODS database(s) and role in place."
-echo "     :: try:"
-echo "     ::      sudo su - postgres -c 'dropdb $$DB_NAME; dropuser $$DB_USER;'"
-echo ""
-END_PREREMOVE
+# N/A
 
 # =-=-=-=-=-=-=-
 # post remove
