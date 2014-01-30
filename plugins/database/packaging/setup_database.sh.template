@@ -4,7 +4,7 @@ DATABASETYPE="TEMPLATE_DATABASE_TYPE"
 
 # config
 IRODS_CONFIG_FILE="./iRODS/config/irods.config"
-SETUP_DATABASE_FLAG="/tmp/setup_database.flag"
+SETUP_DATABASE_FLAG="/tmp/$USER/setup_database.flag"
 
 # get into the irods user home directory
 DETECTEDDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -141,7 +141,7 @@ done
 touch $SETUP_DATABASE_FLAG
 echo "==================================================================="
 
-IRODS_CONFIG_TEMPFILE="/tmp/tmp.irods.config"
+IRODS_CONFIG_TEMPFILE="/tmp/$USER/tmp.irods.config"
 echo "Updating irods.config..."
 sed -e "/^\$DATABASE_TYPE/s/^.*$/\$DATABASE_TYPE = '$DATABASETYPE';/" $IRODS_CONFIG_FILE > $IRODS_CONFIG_TEMPFILE
 mv $IRODS_CONFIG_TEMPFILE $IRODS_CONFIG_FILE

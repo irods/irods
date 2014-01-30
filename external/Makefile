@@ -2,11 +2,12 @@ include ../iRODS/config/external_versions.txt
 
 MAKEFLAGS += --no-print-directory
 
-RENCI_FTP_EXTERNAL="ftp://ftp.renci.org/pub/irods/external"
-RENCI_FTP_BUILD="ftp://ftp.renci.org/pub/irods/build"
+RENCI_FTP_EXTERNAL=ftp://ftp.renci.org/pub/irods/external
+RENCI_FTP_BUILD=ftp://ftp.renci.org/pub/irods/build
 
-.PHONY : all clean cmake libarchive jansson boost cjson hdf5 netcdf epm lib_mysqludf_preg
+.PHONY : default retrieve build generate clean cmake libarchive jansson boost cjson hdf5 netcdf epm lib_mysqludf_preg
 
+IRODSEXTERNALARCHIVE=irods_external
 CMAKEVERSIONARCHIVE=$(CMAKEVERSION).tar.gz
 CMAKEVERSIONMAKE=$(CMAKEVERSION)/Makefile
 LIBARCHIVEVERSIONARCHIVE=$(LIBARCHIVEVERSION).tar.gz
@@ -26,11 +27,24 @@ EPMVERSIONMAKE=epm/Makefile
 LIB_MYSQLUDF_PREG_ARCHIVE=$(LIB_MYSQLUDF_PREG).tar.gz
 LIB_MYSQLUDF_PREG_MAKE=lib_mysqludf_preg/Makefile
 
-default : cmake libarchive jansson boost cjson hdf5 netcdf lib_mysqludf_preg
+default : retrieve
 
-all : cmake libarchive jansson boost cjson epm hdf5 netcdf lib_mysqludf_preg
+$(IRODSEXTERNALARCHIVE).tar.gz :
+	@cd ../ ; \
+		OS=`./packaging/find_os.sh` ; \
+		wget -O $(IRODSEXTERNALARCHIVE).tar.gz $(RENCI_FTP_BUILD)/$(IRODSEXTERNALARCHIVE)_$$OS.tar.gz 2>&1
 
+retrieve : $(IRODSEXTERNALARCHIVE).tar.gz
+	@cd ../ ; \
+		tar zxf $(IRODSEXTERNALARCHIVE).tar.gz
 
+build : cmake libarchive jansson boost cjson epm hdf5 netcdf lib_mysqludf_preg
+
+generate : build
+	@cd ../ ; \
+		OS=`./packaging/find_os.sh` ; \
+		mkdir -p build ; \
+		tar zfc build/$(IRODSEXTERNALARCHIVE)_$$OS.tar.gz --exclude "*.tar.gz" --exclude "*.zip" --exclude "*cmake*" --exclude "__MACOSX" --exclude "Makefile" external/
 
 $(LIB_MYSQLUDF_PREG_ARCHIVE) :
 	@wget $(RENCI_FTP_EXTERNAL)/$(LIB_MYSQLUDF_PREG_ARCHIVE) 2>&1
@@ -42,13 +56,11 @@ $(LIB_MYSQLUDF_PREG_MAKE) : $(LIB_MYSQLUDF_PREG_ARCHIVE)
 $(LIB_MYSQLUDF_PREG) : $(LIB_MYSQLUDF_PREG_MAKE)
 	@$(MAKE) -C $(LIB_MYSQLUDF_PREG)
 
-
-
 $(CMAKEVERSIONARCHIVE) :
 	@wget $(RENCI_FTP_EXTERNAL)/$(CMAKEVERSIONARCHIVE) 2>&1
 
 $(CMAKEVERSIONMAKE) : $(CMAKEVERSIONARCHIVE)
-	@tar xf $(CMAKEVERSIONARCHIVE)
+	@tar xf $(CMAKEVERSIONARCHIVE) # confusingly, cmake archive is not actually gzipped, just tarred
 	@sed "s/std::cerr << \"loading initial cache file \"/std::cout << \"loading initial cache file \"/" $(CMAKEVERSION)/Source/cmake.cxx > /tmp/cmake.cxx
 	@rsync -c /tmp/cmake.cxx $(CMAKEVERSION)/Source/cmake.cxx
 	@rm -f /tmp/cmake.cxx
@@ -180,3 +192,6 @@ clean :
 	@echo "Cleaning epm..."
 	@rm -rf epm
 	@rm -f $(EPMVERSIONARCHIVE)
+	@echo "Cleaning lib_mysqludf_preg..."
+	@rm -rf $(LIB_MYSQLUDF_PREG)
+	@rm -f $(LIB_MYSQLUDF_PREG_ARCHIVE)
