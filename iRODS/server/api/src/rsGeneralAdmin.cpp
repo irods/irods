@@ -277,7 +277,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
 
     if ( strcmp( generalAdminInp->arg0, "pvacuum" ) == 0 ) {
         char *args[2];
-        char argStr[100];    /* argument string */
+        char argStr[128];    /* argument string */
         memset( ( char* )&rei, 0, sizeof( rei ) );
         rei.rsComm = rsComm;
         rei.uoic = &rsComm->clientUser;
@@ -287,9 +287,9 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             snprintf( argStr, sizeof argStr, "<ET>%s</ET>", generalAdminInp->arg1 );
         }
         if ( atoi( generalAdminInp->arg2 ) > 0 ) {
-            strncat( argStr, "<EF>", 100 );
+            strncat( argStr, "<EF>", 5 );
             strncat( argStr, generalAdminInp->arg2, 100 );
-            strncat( argStr, "</EF>", 100 );
+            strncat( argStr, "</EF>", 6 );
         }
         args[0] = argStr;
         status = applyRuleArg( "acVacuum", args, 1, &rei, SAVE_REI );
@@ -365,7 +365,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                     memset( ( char* )&collInfo, 0, sizeof( collInfo ) );
                     strncpy( collInfo.collName, "/", sizeof( collInfo.collName ) );
                     strncat( collInfo.collName, generalAdminInp->arg2,
-                             sizeof( collInfo.collName ) );
+                             sizeof( collInfo.collName ) - strlen( collInfo.collName ) );
                     if ( collInfo.collName[sizeof( collInfo.collName ) - 1] ) {
                         return SYS_INVALID_INPUT_PARAM;
                     }
@@ -545,7 +545,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                 char oldName[MAX_NAME_LEN];
                 char newName[MAX_NAME_LEN];
                 strncpy( oldName, "/", sizeof( oldName ) );
-                strncat( oldName, generalAdminInp->arg2, sizeof( oldName ) );
+                strncat( oldName, generalAdminInp->arg2, sizeof( oldName ) - strlen( oldName ) );
                 if ( oldName[sizeof( oldName ) - 1] ) {
                     return SYS_INVALID_INPUT_PARAM;
                 }
@@ -763,7 +763,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                 memset( ( char* )&collInfo, 0, sizeof( collInfo ) );
                 strncpy( collInfo.collName, "/", sizeof collInfo.collName );
                 strncat( collInfo.collName, generalAdminInp->arg2,
-                         sizeof( collInfo.collName ) );
+                         sizeof( collInfo.collName ) - strlen( collInfo.collName ) );
                 if ( collInfo.collName[sizeof( collInfo.collName ) - 1] ) {
                     return SYS_INVALID_INPUT_PARAM;
                 }

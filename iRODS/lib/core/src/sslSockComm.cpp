@@ -275,7 +275,7 @@ sslReadMsgHeader( int sock, msgHeader_t *myHeader, struct timeval *tv, SSL *ssl 
     }
 
     /* always use XML_PROT for the startup pack */
-    status = unpackStruct( ( void * ) tmpBuf, ( void ** ) &outHeader,
+    status = unpackStruct( ( void * ) tmpBuf, ( void ** )( static_cast<void *>( &outHeader ) ),
                            "MsgHeader_PI", RodsPackTable, XML_PROT );
 
     if ( status < 0 ) {
