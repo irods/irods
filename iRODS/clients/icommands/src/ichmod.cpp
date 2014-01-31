@@ -114,14 +114,14 @@ main( int argc, char **argv ) {
 
         if ( myRodsArgs.resource ) {
             strncpy( rescAccessLevel, MOD_RESC_PREFIX, LONG_NAME_LEN );
-            strncat( rescAccessLevel, argv[myRodsArgs.optind], LONG_NAME_LEN );
+            strncat( rescAccessLevel, argv[myRodsArgs.optind], LONG_NAME_LEN - strlen( rescAccessLevel ) );
             modAccessControl.accessLevel = rescAccessLevel; /* indicate resource*/
             modAccessControl.path = argv[optind]; /* just use the plain name */
         }
         if ( myRodsArgs.admin ) {  /* admin mode, add indicator */
             strncpy( adminModeAccessLevel, MOD_ADMIN_MODE_PREFIX, LONG_NAME_LEN );
             strncat( adminModeAccessLevel, modAccessControl.accessLevel,
-                     LONG_NAME_LEN );
+                     LONG_NAME_LEN - strlen( adminModeAccessLevel ) );
             modAccessControl.accessLevel = adminModeAccessLevel;
         }
         status = rcModAccessControl( conn, &modAccessControl );

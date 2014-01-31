@@ -326,7 +326,7 @@ namespace irods {
                 version_t* version = 0;
                 int status = unpackStruct(
                                  struct_buf.buf,
-                                 ( void ** ) &version,
+                                 ( void ** )( static_cast<void *>( &version ) ),
                                  "Version_PI",
                                  RodsPackTable,
                                  XML_PROT );
@@ -415,7 +415,7 @@ namespace irods {
         // do an unpack into our out variable using the xml protocol
         cs_neg_t* tmp_cs_neg = 0;
         int status = unpackStruct( struct_buf.buf,
-                                   ( void ** ) &tmp_cs_neg,
+                                   ( void ** )( static_cast<void *>( &tmp_cs_neg ) ),
                                    "CS_NEG_PI",
                                    RodsPackTable,
                                    XML_PROT );
