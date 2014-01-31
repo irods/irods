@@ -133,7 +133,7 @@ setupSrvPortalForParaOpr( rsComm_t *rsComm, dataOprInp_t *dataOprInp,
                           int oprType, portalOprOut_t **portalOprOut );
 int
 readStartupPack( irods::network_object_ptr, startupPack_t **startupPack, struct timeval *tv );
-#ifdef RUN_SERVER_AS_ROOT
+
 int
 initServiceUser();
 int
@@ -142,5 +142,5 @@ int
 changeToRootUser();
 int
 changeToServiceUser();
-#endif
+
 #endif	/* MISC_SERVER_FUNCT_H */
