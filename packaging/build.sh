@@ -284,6 +284,7 @@ rename_generated_packages() {
     # coverage build
     if [ "$COVERAGE" == "1" ] ; then
         RENAME_DESTINATION=${RENAME_DESTINATION/-64bit/-64bit-coverage}
+        RENAME_DESTINATION_DEV=${RENAME_DESTINATION_DEV/-64bit/-64bit-coverage}
     fi
 
     #################
