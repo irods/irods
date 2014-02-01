@@ -79,9 +79,7 @@ extern int MaxConnections;          /* no control */
 extern time_t LastRescUpdateTime;
 
 /* manage server process permissions */
-#ifdef RUN_SERVER_AS_ROOT
 extern uid_t ServiceUid;
-#endif
 
 extern irodsStateFlag_t ReadWriteRuleState;
 
