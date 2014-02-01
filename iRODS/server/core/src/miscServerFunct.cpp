@@ -2253,7 +2253,7 @@ reconnManager( rsComm_t *rsComm ) {
         }
         else if ( reconnMsg->cookie != rsComm->cookie ) {
             rodsLog( LOG_ERROR,
-                     "reconnManager: cookie mistach, got = %d vs %d",
+                     "reconnManager: cookie mismatch, got = %d vs %d",
                      reconnMsg->cookie, rsComm->cookie );
             close( newSock );
             free( reconnMsg );
