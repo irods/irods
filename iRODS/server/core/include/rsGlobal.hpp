@@ -85,9 +85,7 @@ int MaxConnections = DEF_MAX_CONNECTION;                /* no control */
 time_t LastRescUpdateTime;
 
 /* manage server process permissions */
-#ifdef RUN_SERVER_AS_ROOT
 uid_t ServiceUid = 0;
-#endif
 
 /* Flag for whether the read/write rule should be executed */
 irodsStateFlag_t ReadWriteRuleState = UNINIT_STATE;
