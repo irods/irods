@@ -2737,7 +2737,6 @@ readStartupPack(
 }
 
 
-#ifdef RUN_SERVER_AS_ROOT
 
 /* initServiceUser - set the username/uid of the unix user to
  *      run the iRODS daemons as if configured using the
@@ -2850,6 +2849,5 @@ changeToServiceUser() {
     return ( 0 );
 }
 
-#endif /* RUN_SERVER_AS_ROOT */
 
 
