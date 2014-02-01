@@ -931,7 +931,7 @@ void partialDataGet(
 
                     // =-=-=-=-=-=-=-
                     // need to send the incoming size as encryption might change
-                    // the size of the data from the writen values
+                    // the size of the data from the written values
                     bytesWritten = myWrite(
                                        destFd,
                                        &new_size,
