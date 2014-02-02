@@ -63,7 +63,7 @@ rcNcOpen( rcComm_t *conn, ncOpenInp_t *ncOpenInp, int *ncid ) {
     int *myncid = NULL;
 
     status = procApiRequest( conn, NC_OPEN_AN,  ncOpenInp, NULL,
-                             ( void ** ) &myncid, NULL );
+                             ( void ** )( static_cast< void * >( &myncid ) ), NULL );
 
     if ( myncid != NULL ) {
         *ncid = *myncid;

@@ -961,7 +961,7 @@ modCopyAVUMetadata( char *arg0, char *arg1, char *arg2, char *arg3,
         char tempName[MAX_NAME_LEN] = "/";
         int len;
         int isRemote = 0;
-        strncat( tempName, myEnv.rodsZone, MAX_NAME_LEN );
+        strncat( tempName, myEnv.rodsZone, MAX_NAME_LEN - strlen( tempName ) );
         len = strlen( tempName );
         if ( strncmp( tempName, fullName1, len ) != 0 ) {
             printf( "Cannot copy metadata from a remote zone.\n" );
