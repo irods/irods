@@ -204,7 +204,7 @@ rcDataObjRsync( rcComm_t *conn, dataObjInp_t *dataObjInp ) {
         /* read the reply from the eariler call */
 
         status = branchReadAndProcApiReply( conn, DATA_OBJ_RSYNC_AN,
-                                            ( void ** )&outParamArray, NULL );
+                                            ( void ** )( static_cast< void * >( &outParamArray ) ), NULL );
         if ( status < 0 ) {
             rodsLogError( LOG_DEBUG, status,
                           "rcDataObjRsync: readAndProcApiReply failed. status = %d",
