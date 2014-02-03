@@ -15,9 +15,11 @@ $_=$Defs;
 $User=$ENV{"LOGNAME"};
 $TmpDir="/tmp/$User";
 $InputFile="../lib/core/src/rodsLog.cpp.src";
-$OutputFile ="/tmp/$User/rodsLog.cpp";
+$OutputFile ="$TmpDir/rodsLog.cpp";
 $DestFile="../lib/core/src/rodsLog.cpp";
-mkdir($TmpDir) || die("Can't create tmp directory " . "$TmpDir");
+if ( ! -d $TmpDir ) {
+    mkdir($TmpDir) || die("Can't create tmp directory " . "$TmpDir");
+}
 open(FileIn, $InputFile) || die("Can't open input file " . "$InputFile");
 open(FileOut, ">".$OutputFile) || die("Can't open output file "."$OutputFile");
 $step=0; # 0 copying the first part of src, 1 inserting new code,
