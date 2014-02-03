@@ -28,12 +28,13 @@ LIB_MYSQLUDF_PREG_MAKE=lib_mysqludf_preg/Makefile
 
 default : retrieve
 
-$(IRODSEXTERNALARCHIVE).tar.gz :
+../$(IRODSEXTERNALARCHIVE).tar.gz :
 	@cd ../ ; \
 		OS=`./packaging/find_os.sh` ; \
-		wget -O $(IRODSEXTERNALARCHIVE).tar.gz $(RENCI_FTP_BUILD)/$(IRODSEXTERNALARCHIVE)_$$OS.tar.gz 2>&1
+		wget -O $(IRODSEXTERNALARCHIVE).tar.gz $(RENCI_FTP_BUILD)/$(IRODSEXTERNALARCHIVE)_$$OS.tar.gz 2>&1 ; \
+		touch $(IRODSEXTERNALARCHIVE).tar.gz # to prevent re-download next time
 
-retrieve : $(IRODSEXTERNALARCHIVE).tar.gz
+retrieve : ../$(IRODSEXTERNALARCHIVE).tar.gz
 	@cd ../ ; \
 		tar zxf $(IRODSEXTERNALARCHIVE).tar.gz
 
