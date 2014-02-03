@@ -105,13 +105,11 @@ extern "C" {
                         int success = tcsetattr( STDIN_FILENO, TCSANOW, &tty );
 #endif
                         if ( !success ) {
-                            return ERROR( success, "Error getting password." );
+                            return ERROR( success, "Error disabling echo mode." );
                         }
-                                printf( "Enter your current PAM password:" );
+                        printf( "Enter your current PAM password:" );
                         std::string password = "";
-                        if ( getline( cin, password ) ) {
-                            return ERROR( success, "Error getting password." );
-                        }
+                        getline( cin, password );
                         strncpy( new_password, password.c_str(), MAX_PASSWORD_LEN );
 #ifdef WIN32
                         if ( SetConsoleMode( hStdin, lastMode ) ) {

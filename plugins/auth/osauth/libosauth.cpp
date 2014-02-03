@@ -193,9 +193,7 @@ extern "C" {
                 }
                 printf( "Enter your current iRODS password:" );
                 std::string password = "";
-                if ( getline( cin, password ) ) {
-                    return ERROR( success, "Error getting password." );
-                }
+                getline( cin, password );
                 strncpy( md5_buf + CHALLENGE_LEN, password.c_str(), MAX_PASSWORD_LEN );
 #ifdef WIN32
                 if ( SetConsoleMode( hStdin, lastMode ) ) {

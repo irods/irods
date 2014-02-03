@@ -22,11 +22,11 @@ NETCDFVERSIONARCHIVE=$(NETCDFVERSION).tar.gz
 NETCDFVERSIONMAKE=$(NETCDFVERSION)/Makefile
 EPMVERSIONARCHIVE=$(EPMVERSION).tar.gz
 EPMVERSIONMAKE=epm/Makefile
-
+FAKEFILEFORMAKE=FakeTargetForMake
 LIB_MYSQLUDF_PREG_ARCHIVE=$(LIB_MYSQLUDF_PREG).tar.gz
 LIB_MYSQLUDF_PREG_MAKE=lib_mysqludf_preg/Makefile
 
-default : retrieve
+default : ${FAKEFILEFORMAKE}
 
 ../$(IRODSEXTERNALARCHIVE).tar.gz :
 	@cd ../ ; \
@@ -34,9 +34,16 @@ default : retrieve
 		wget -O $(IRODSEXTERNALARCHIVE).tar.gz $(RENCI_FTP_BUILD)/$(IRODSEXTERNALARCHIVE)_$$OS.tar.gz 2>&1 ; \
 		touch $(IRODSEXTERNALARCHIVE).tar.gz # to prevent re-download next time
 
-retrieve : ../$(IRODSEXTERNALARCHIVE).tar.gz
-	@cd ../ ; \
+${FAKEFILEFORMAKE} : ../$(IRODSEXTERNALARCHIVE).tar.gz
+	echo "File Unpackaging externals."
+	@cd ../ 	; \
 		tar zxf $(IRODSEXTERNALARCHIVE).tar.gz
+	touch ${FAKEFILEFORMAKE}
+
+retrieve : ../$(IRODSEXTERNALARCHIVE).tar.gz
+	echo "Retrieve Unpackaging externals."
+	@cd ../ ; \
+	tar zxf $(IRODSEXTERNALARCHIVE).tar.gz
 
 build : cmake libarchive jansson boost epm hdf5 netcdf lib_mysqludf_preg
 
