@@ -33,6 +33,8 @@
 #include <sstream>
 #include <string>
 #include <iostream>
+#include <termios.h>
+#include <unistd.h>
 
 // =-=-=-=-=-=-=-
 // system includes
@@ -88,21 +90,39 @@ extern "C" {
                     // prompt for a password if necessary
                     char new_password[ MAX_PASSWORD_LEN + 2 ];
                     if ( password.empty() ) {
-                        int doStty = 0;
-                        path p( "/bin/stty" );
-                        if ( exists( p ) ) {
-                            system( "/bin/stty -echo 2> /dev/null" );
-                            doStty = 1;
+#ifdef WIN32
+                        HANDLE hStdin = GetStdHandle( STD_INPUT_HANDLE );
+                        DWORD mode;
+                        GetConsoleMode( hStdin, &mode );
+                        DWORD lastMode = mode;
+                        mode &= ~ENABLE_ECHO_INPUT;
+                        BOOL success = SetConsoleMode( hStdin, mode );
+#else
+                        struct termios tty;
+                        tcgetattr( STDIN_FILENO, &tty );
+                        tcflag_t oldflag = tty.c_lflag;
+                        tty.c_lflag &= ~ECHO;
+                        int success = tcsetattr( STDIN_FILENO, TCSANOW, &tty );
+#endif
+                        if ( !success ) {
+                            return ERROR( success, "Error getting password." );
                         }
-                        printf( "Enter your current PAM password:" );
-                        fgets( new_password, sizeof( new_password ), stdin );
-                        if ( doStty ) {
-                            system( "/bin/stty echo 2> /dev/null" );
-                            printf( "\n" );
+                                printf( "Enter your current PAM password:" );
+                        std::string password = "";
+                        if ( getline( cin, password ) ) {
+                            return ERROR( success, "Error getting password." );
                         }
-
-                        int len = strlen( new_password );
-                        new_password[len - 1] = '\0'; // remove trailing \n
+                        strncpy( new_password, password.c_str(), MAX_PASSWORD_LEN );
+#ifdef WIN32
+                        if ( SetConsoleMode( hStdin, lastMode ) ) {
+                            printf( "Error reinstating echo mode." );
+                        }
+#else
+                        tty.c_lflag = oldflag;
+                        if ( tcsetattr( STDIN_FILENO, TCSANOW, &tty ) ) {
+                            printf( "Error reinstating echo mode." );
+                        }
+#endif
 
                         // =-=-=-=-=-=-=-
                         // rebuilt and reset context string
@@ -273,15 +293,23 @@ extern "C" {
                This is still the parent.  Write the message to the child and
                then wait for the exit and status.
             */
-            write( p2cp[1], _password.c_str(), _password.size() );
+            if( write( p2cp[1], _password.c_str(), _password.size() ) == -1 )
+            {
+                int errsv = errno;
+                irods::log ( ERROR( errsv, "Error writing from parent to child." ) );
+            }
             close( p2cp[1] );
             waitpid( pid, &status, 0 );
             return status;
         }
         else {
             /* This is the child */
-            close( 0 );        /* close current stdin */
-            dup( p2cp[0] );    /* Make stdin come from read end of the pipe */
+            close( 0 );                   /* close current stdin */
+            if( dup( p2cp[0] ) == -1 )    /* Make stdin come from read end of the pipe */
+            {
+                int errsv = errno;
+                irods::log ( ERROR( errsv, "Error duplicating the file descriptor." ) );
+            }
             close( p2cp[1] );
             i = execl( PAM_AUTH_CHECK_PROG, PAM_AUTH_CHECK_PROG, _username.c_str(),
                        ( char * )NULL );

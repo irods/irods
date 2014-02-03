@@ -270,7 +270,11 @@ _rsExecCmd( rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut )
             status = EXEC_CMD_ERROR - errno;
         }
         /* send the status back to parent */
-        write( statusFd[1], &status, 4 );
+        if( write( statusFd[1], &status, 4 ) == -1 )
+        {
+          int errsv = errno;
+          irods::log( ERROR( errsv, "Write failed when sending status back to parent." ) );
+        }
         /* gets here. must be bad */
         exit( 1 );
     }

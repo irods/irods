@@ -620,6 +620,7 @@ int msiServerMonPerf( msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei ) {
            it will be put in a thrInp structure to be given to the thread.
            then start one thread for each server to be monitored */
         check = 0;
+        indx = 0;
         for ( j = 0; j < thrCount; j++ ) {
             if ( strcmp( thrInput[j].execAddr, rescList[i].serverName ) == 0 ) {
                 indx = j;

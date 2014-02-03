@@ -156,8 +156,9 @@ main( int argc, char **argv ) {
             printUpdateMsg();
         }
         printf( "Enter the host name (DNS) of the server to connect to:" );
-        memset( ttybuf, 0, TTYBUF_LEN );
-        fgets( ttybuf, TTYBUF_LEN, stdin );
+        std::string response = "";
+        getline( cin, response );
+        strncpy( ttybuf, response.c_str(), TTYBUF_LEN );
         rstrcat( updateText, "irodsHost ", UPDATE_TEXT_LEN );
         rstrcat( updateText, ttybuf, UPDATE_TEXT_LEN );
         i = strlen( ttybuf );
@@ -173,8 +174,9 @@ main( int argc, char **argv ) {
             printUpdateMsg();
         }
         printf( "Enter the port number:" );
-        memset( ttybuf, 0, TTYBUF_LEN );
-        fgets( ttybuf, TTYBUF_LEN, stdin );
+        std::string response = "";
+        getline( cin, response );
+        strncpy( ttybuf, response.c_str(), TTYBUF_LEN );
         rstrcat( updateText, "irodsPort ", UPDATE_TEXT_LEN );
         rstrcat( updateText, ttybuf, UPDATE_TEXT_LEN );
         i = strlen( ttybuf );
@@ -190,8 +192,9 @@ main( int argc, char **argv ) {
             printUpdateMsg();
         }
         printf( "Enter your irods user name:" );
-        memset( ttybuf, 0, TTYBUF_LEN );
-        fgets( ttybuf, TTYBUF_LEN, stdin );
+        std::string response = "";
+        getline( cin, response );
+        strncpy( ttybuf, response.c_str(), TTYBUF_LEN );
         rstrcat( updateText, "irodsUserName ", UPDATE_TEXT_LEN );
         rstrcat( updateText, ttybuf, UPDATE_TEXT_LEN );
         i = strlen( ttybuf );
@@ -207,9 +210,9 @@ main( int argc, char **argv ) {
             printUpdateMsg();
         }
         printf( "Enter your irods zone:" );
-        memset( ttybuf, 0, TTYBUF_LEN );
-        fgets( ttybuf, TTYBUF_LEN, stdin );
-        rstrcat( updateText, "irodsZone ", UPDATE_TEXT_LEN );
+        std::string response = "";
+        getline( cin, response );
+        strncpy( ttybuf, response.c_str(), TTYBUF_LEN );
         rstrcat( updateText, ttybuf, UPDATE_TEXT_LEN );
         i = strlen( ttybuf );
         if ( i > 0 ) {

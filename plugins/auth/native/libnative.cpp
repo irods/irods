@@ -24,6 +24,8 @@
 #include <sstream>
 #include <string>
 #include <iostream>
+#include <termios.h>
+#include <unistd.h>
 
 int get64RandomBytes( char *buf );
 void setSessionSignatureClientside( char* _sig );
@@ -146,29 +148,39 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // prompt for a password if necessary
             if ( 0 != need_password ) {
-                int doStty = 0;
-
-#ifdef windows_platform
-                if ( ProcessType != CLIENT_PT ) {
-                    return CODE( i );
-                }
+#ifdef WIN32
+                HANDLE hStdin = GetStdHandle( STD_INPUT_HANDLE );
+                DWORD mode;
+                GetConsoleMode( hStdin, &mode );
+                DWORD lastMode = mode;
+                mode &= ~ENABLE_ECHO_INPUT;
+                BOOL success = SetConsoleMode( hStdin, mode );
+#else
+                struct termios tty;
+                tcgetattr( STDIN_FILENO, &tty );
+                tcflag_t oldflag = tty.c_lflag;
+                tty.c_lflag &= ~ECHO;
+                int success = tcsetattr( STDIN_FILENO, TCSANOW, &tty );
 #endif
-
-                path p( "/bin/stty" );
-                if ( exists( p ) ) {
-                    system( "/bin/stty -echo 2> /dev/null" );
-                    doStty = 1;
+                if ( !success ) {
+                    return ERROR( success, "Error getting password." );
                 }
                 printf( "Enter your current iRODS password:" );
-                fgets( md5_buf + CHALLENGE_LEN, MAX_PASSWORD_LEN, stdin );
-                if ( doStty ) {
-                    system( "/bin/stty echo 2> /dev/null" );
-                    printf( "\n" );
+                std::string password = "";
+                if ( getline( cin, password ) ) {
+                    return ERROR( success, "Error getting password." );
                 }
-
-                int md5_len = strlen( md5_buf );
-                md5_buf[md5_len - 1] = '\0'; /* remove trailing \n */
-
+                strncpy( md5_buf + CHALLENGE_LEN, password.c_str(), MAX_PASSWORD_LEN );
+#ifdef WIN32
+                if ( SetConsoleMode( hStdin, lastMode ) ) {
+                    printf( "Error reinstating echo mode." );
+                }
+#else
+                tty.c_lflag = oldflag;
+                if ( tcsetattr( STDIN_FILENO, TCSANOW, &tty ) ) {
+                    printf( "Error reinstating echo mode." );
+                }
+#endif
             } // if need_password
 
             // =-=-=-=-=-=-=-

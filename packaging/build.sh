@@ -284,6 +284,7 @@ rename_generated_packages() {
     # coverage build
     if [ "$COVERAGE" == "1" ] ; then
         RENAME_DESTINATION=${RENAME_DESTINATION/-64bit/-64bit-coverage}
+        RENAME_DESTINATION_DEV=${RENAME_DESTINATION_DEV/-64bit/-64bit-coverage}
     fi
 
     #################
@@ -297,6 +298,10 @@ rename_generated_packages() {
         # add OS-specific suffix
         if [ "$SUFFIX" != "" ] ; then
             DB_DESTINATION=${DB_DESTINATION/.$EXTENSION/$SUFFIX.$EXTENSION}
+        fi
+        # coverage build
+        if [ "$COVERAGE" == "1" ] ; then
+            DB_DESTINATION=${DB_DESTINATION/.$EXTENSION/-coverage.$EXTENSION}
         fi
     fi
 

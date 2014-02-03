@@ -402,7 +402,7 @@ test: libs server
 
 # Install
 install:
-	@echo "Please use the irodssetup script to install iRODS"
+	@echo "Please use the packages provided by build.sh to install iRODS"
 
 installdirs:
 	@true

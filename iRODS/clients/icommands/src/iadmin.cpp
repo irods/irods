@@ -892,13 +892,13 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
 #endif
                 if ( !success ) {
                     printf( "Error %d getting password.", i );
-                    return 0;
+                    return i;
                 }
                 printf( "Enter your current iRODS password:" );
                 std::string password = "";
                 if ( getline( cin, password ) ) {
                     printf( "Error %d getting password.", i );
-                    return 0;
+                    return i;
                 }
                 strncpy( buf1, password.c_str(), MAX_PASSWORD_LEN );
 #ifdef WIN32
@@ -1011,8 +1011,6 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
     }
 
     if ( strcmp( cmdToken[0], "modrescdatapaths" ) == 0 ) {
-        char ttybuf[100];
-
         printf(
             "Warning, this command, more than others, is relying on your direct\n"
             "input to modify iCAT tables (potentially, many rows).  It will do a\n"
@@ -1023,9 +1021,9 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
             "text for more information.\n"
             "\n"
             "Are you sure you want to run this command? [y/N]:" );
-        fgets( ttybuf, 50, stdin );
-        if ( strcmp( ttybuf, "y\n" ) == 0 ||
-                strcmp( ttybuf, "yes\n" ) == 0 ) {
+        std::string response = "";
+        getline( cin, response );
+        if ( response == "y" || response == "yes" ) {
             printf( "OK, performing the resource data paths update\n" );
 
             generalAdmin( 0, "modify", "resourcedatapaths", cmdToken[1],
@@ -1036,7 +1034,6 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
 
     if ( strcmp( cmdToken[0], "modresc" ) == 0 ) {
         if ( strcmp( cmdToken[2], "name" ) == 0 )       {
-            char ttybuf[100];
             printf(
                 "If you modify a resource name, you and other users will need to\n" );
             printf( "change your .irodsEnv files to use it, you may need to update\n" );
@@ -1044,9 +1041,9 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
             printf( "update the core rules (core.re).  This command will update various\n" );
             printf( "tables with the new name.\n" );
             printf( "Do you really want to modify the resource name? (enter y or yes to do so):" );
-            fgets( ttybuf, 50, stdin );
-            if ( strcmp( ttybuf, "y\n" ) == 0 ||
-                    strcmp( ttybuf, "yes\n" ) == 0 ) {
+            std::string response = "";
+            getline( cin, response );
+            if ( response == "y" || response == "yes" ) {
                 printf( "OK, performing the resource rename\n" );
                 int stat;
                 stat = generalAdmin( 0, "modify", "resource", cmdToken[1], cmdToken[2],
@@ -1079,8 +1076,6 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
     if ( strcmp( cmdToken[0], "modzone" ) == 0 ) {
         if ( strcmp( myEnv.rodsZone, cmdToken[1] ) == 0 &&
                 strcmp( cmdToken[2], "name" ) == 0 )       {
-            char ttybuf[100];
-
             printf(
                 "If you modify the local zone name, you and other users will need to\n" );
             printf( "change your .irodsEnv files to use it, you may need to update\n" );
@@ -1088,9 +1083,9 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
             printf( "core.re.  This command will update various tables with the new name\n" );
             printf( "and rename the top-level collection.\n" );
             printf( "Do you really want to modify the local zone name? (enter y or yes to do so):" );
-            fgets( ttybuf, 50, stdin );
-            if ( strcmp( ttybuf, "y\n" ) == 0 ||
-                    strcmp( ttybuf, "yes\n" ) == 0 ) {
+            std::string response = "";
+            getline( cin, response );
+            if ( response == "y" || response == "yes" ) {
                 printf( "OK, performing the local zone rename\n" );
                 generalAdmin( 0, "modify", "localzonename", cmdToken[1], cmdToken[3],
                               "", "", "", "", "", "" );

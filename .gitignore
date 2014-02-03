@@ -1,5 +1,6 @@
 *~
 tags
+irods_external.tar.gz
 *.pyc
 *.so
 build/

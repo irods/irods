@@ -372,7 +372,15 @@ extern "C" {
                         close( fd );
                         rodsLog( LOG_NOTICE, "example_file_create_plugin: 0 descriptor" );
                         open( "/dev/null", O_RDWR, 0 );
+
+                        // =-=-=-=-=-=-=-
+                        // make call to umask & open for create
+                        mode_t myMask = umask( ( mode_t ) 0000 );
                         fd = open( fco->physical_path().c_str(), O_RDWR | O_CREAT | O_EXCL, fco->mode() );
+
+                        // =-=-=-=-=-=-=-
+                        // reset the old mask
+                        ( void ) umask( ( mode_t ) myMask );
                     }
 
                     // =-=-=-=-=-=-=-

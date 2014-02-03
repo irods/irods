@@ -63,7 +63,7 @@ rcNcCreate( rcComm_t *conn, ncOpenInp_t *ncCreateInp, int *ncid ) {
     int *myncid = NULL;
 
     status = procApiRequest( conn, NC_CREATE_AN,  ncCreateInp, NULL,
-                             ( void ** ) &myncid, NULL );
+                             ( void ** )( static_cast< void * >( &myncid ) ), NULL );
 
     if ( myncid != NULL ) {
         *ncid = *myncid;

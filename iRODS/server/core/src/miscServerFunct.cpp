@@ -931,7 +931,7 @@ void partialDataGet(
 
                     // =-=-=-=-=-=-=-
                     // need to send the incoming size as encryption might change
-                    // the size of the data from the writen values
+                    // the size of the data from the written values
                     bytesWritten = myWrite(
                                        destFd,
                                        &new_size,
@@ -1872,7 +1872,7 @@ locToRemPartialCopy( portalTransferInp_t *myInput ) {
 
                 // =-=-=-=-=-=-=-
                 // need to send the incoming size as encryption might change
-                // the size of the data from the writen values
+                // the size of the data from the written values
                 bytesWritten = myWrite(
                                    destFd,
                                    &new_size,
@@ -2253,7 +2253,7 @@ reconnManager( rsComm_t *rsComm ) {
         }
         else if ( reconnMsg->cookie != rsComm->cookie ) {
             rodsLog( LOG_ERROR,
-                     "reconnManager: cookie mistach, got = %d vs %d",
+                     "reconnManager: cookie mismatch, got = %d vs %d",
                      reconnMsg->cookie, rsComm->cookie );
             close( newSock );
             free( reconnMsg );
@@ -2737,7 +2737,6 @@ readStartupPack(
 }
 
 
-#ifdef RUN_SERVER_AS_ROOT
 
 /* initServiceUser - set the username/uid of the unix user to
  *      run the iRODS daemons as if configured using the
@@ -2850,6 +2849,5 @@ changeToServiceUser() {
     return ( 0 );
 }
 
-#endif /* RUN_SERVER_AS_ROOT */
 
 

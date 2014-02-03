@@ -4,7 +4,6 @@ MAKEFLAGS += --no-print-directory
 
 RENCI_FTP_EXTERNAL=ftp://ftp.renci.org/pub/irods/external
 RENCI_FTP_BUILD=ftp://ftp.renci.org/pub/irods/build
-RENCI_FTP_OUTGOING=ftp://ftp.renci.org/outgoing/irods
 
 .PHONY : default retrieve build generate clean cmake libarchive jansson boost hdf5 netcdf epm lib_mysqludf_preg
 
@@ -29,12 +28,13 @@ LIB_MYSQLUDF_PREG_MAKE=lib_mysqludf_preg/Makefile
 
 default : retrieve
 
-$(IRODSEXTERNALARCHIVE).tar.gz :
+../$(IRODSEXTERNALARCHIVE).tar.gz :
 	@cd ../ ; \
 		OS=`./packaging/find_os.sh` ; \
-		wget -O $(IRODSEXTERNALARCHIVE).tar.gz $(RENCI_FTP_OUTGOING)/$(IRODSEXTERNALARCHIVE)_$$OS.tar.gz 2>&1
+		wget -O $(IRODSEXTERNALARCHIVE).tar.gz $(RENCI_FTP_BUILD)/$(IRODSEXTERNALARCHIVE)_$$OS.tar.gz 2>&1 ; \
+		touch $(IRODSEXTERNALARCHIVE).tar.gz # to prevent re-download next time
 
-retrieve : $(IRODSEXTERNALARCHIVE).tar.gz
+retrieve : ../$(IRODSEXTERNALARCHIVE).tar.gz
 	@cd ../ ; \
 		tar zxf $(IRODSEXTERNALARCHIVE).tar.gz
 
@@ -183,3 +183,5 @@ clean :
 	@echo "Cleaning lib_mysqludf_preg..."
 	@rm -rf $(LIB_MYSQLUDF_PREG)
 	@rm -f $(LIB_MYSQLUDF_PREG_ARCHIVE)
+	@echo "Cleaning $(IRODSEXTERNALARCHIVE).tar.gz"
+	@rm -f ../$(IRODSEXTERNALARCHIVE).tar.gz
