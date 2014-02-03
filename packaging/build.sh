@@ -299,6 +299,10 @@ rename_generated_packages() {
         if [ "$SUFFIX" != "" ] ; then
             DB_DESTINATION=${DB_DESTINATION/.$EXTENSION/$SUFFIX.$EXTENSION}
         fi
+        # coverage build
+        if [ "$COVERAGE" == "1" ] ; then
+            DB_DESTINATION=${DB_DESTINATION/.$EXTENSION/-coverage.$EXTENSION}
+        fi
     fi
 
     #################
