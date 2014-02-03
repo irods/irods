@@ -4,7 +4,6 @@ MAKEFLAGS += --no-print-directory
 
 RENCI_FTP_EXTERNAL=ftp://ftp.renci.org/pub/irods/external
 RENCI_FTP_BUILD=ftp://ftp.renci.org/pub/irods/build
-RENCI_FTP_OUTGOING=ftp://ftp.renci.org/outgoing/irods
 
 .PHONY : default retrieve build generate clean cmake libarchive jansson boost hdf5 netcdf epm lib_mysqludf_preg
 
@@ -32,7 +31,7 @@ default : retrieve
 $(IRODSEXTERNALARCHIVE).tar.gz :
 	@cd ../ ; \
 		OS=`./packaging/find_os.sh` ; \
-		wget -O $(IRODSEXTERNALARCHIVE).tar.gz $(RENCI_FTP_OUTGOING)/$(IRODSEXTERNALARCHIVE)_$$OS.tar.gz 2>&1
+		wget -O $(IRODSEXTERNALARCHIVE).tar.gz $(RENCI_FTP_BUILD)/$(IRODSEXTERNALARCHIVE)_$$OS.tar.gz 2>&1
 
 retrieve : $(IRODSEXTERNALARCHIVE).tar.gz
 	@cd ../ ; \
