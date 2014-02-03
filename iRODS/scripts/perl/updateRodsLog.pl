@@ -12,9 +12,12 @@ $Defs=`grep '#define' ../lib/core/include/rodsErrorTable.hpp | grep -v RODS_ERRO
 $_=$Defs;
 @DO_LIST=split(" ",$_);
 
+$User=$ENV{"LOGNAME"};
+$TmpDir="/tmp/$User";
 $InputFile="../lib/core/src/rodsLog.cpp.src";
-$OutputFile ="/tmp/rodsLog.cpp";
+$OutputFile ="/tmp/$User/rodsLog.cpp";
 $DestFile="../lib/core/src/rodsLog.cpp";
+mkdir($TmpDir) || die("Can't create tmp directory " . "$TmpDir");
 open(FileIn, $InputFile) || die("Can't open input file " . "$InputFile");
 open(FileOut, ">".$OutputFile) || die("Can't open output file "."$OutputFile");
 $step=0; # 0 copying the first part of src, 1 inserting new code,
