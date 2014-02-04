@@ -1,4 +1,5 @@
-BASEDIRS = nonblocking \
+BASEDIRS = deferred \
+           nonblocking \
            unixfilesystem \
            structfile \
            passthru \
