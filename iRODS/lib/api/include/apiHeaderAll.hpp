@@ -166,6 +166,6 @@
 // =-=-=-=-=-=-=-
 // pluggable authentication
 #include "authPluginRequest.hpp"
-
+#include "getHierarchyForResc.hpp"
 
 #endif	/* API_HEADER_ALL_H */

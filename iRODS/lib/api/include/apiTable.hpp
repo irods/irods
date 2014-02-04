@@ -671,6 +671,11 @@ apidef_t RcApiTable[] = {
         AUTH_PLUG_REQ_AN, RODS_API_VERSION, NO_USER_AUTH, NO_USER_AUTH,
         "authPlugReqInp_PI", 0, "authPlugReqOut_PI", 0, ( funcPtr ) RS_AUTH_PLUG_REQ
     },
+    {
+        GET_HIER_FOR_RESC_AN, RODS_API_VERSION, NO_USER_AUTH, NO_USER_AUTH,
+        "getHierarchyForRescInp_PI", 0, "getHierarchyForRescOut_PI", 0, ( funcPtr ) RS_GET_HIER_FOR_RESC
+    },
+
 };
 
 #ifdef RODS_SERVER	/* depends on client lib for NumOfApi */

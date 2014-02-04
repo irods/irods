@@ -117,6 +117,8 @@ packInstructArray_t ApiPackTable[] = {
     {"pamAuthRequestOut_PI", pamAuthRequestOut_PI},
     {"authPlugReqInp_PI", authPlugReqInp_PI},
     {"authPlugReqOut_PI", authPlugReqOut_PI},
+    {"getHierarchyForRescInp_PI", getHierarchyForRescInp_PI},
+    {"getHierarchyForRescOut_PI", getHierarchyForRescOut_PI},
     {"sslStartInp_PI", sslStartInp_PI},
     {"sslEndInp_PI", sslEndInp_PI},
     {"getLimitedPasswordInp_PI", getLimitedPasswordInp_PI},
