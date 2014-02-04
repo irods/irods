@@ -291,10 +291,9 @@ extern "C" {
                This is still the parent.  Write the message to the child and
                then wait for the exit and status.
             */
-            if( write( p2cp[1], _password.c_str(), _password.size() ) == -1 )
-            {
+            if ( write( p2cp[1], _password.c_str(), _password.size() ) == -1 ) {
                 int errsv = errno;
-                irods::log ( ERROR( errsv, "Error writing from parent to child." ) );
+                irods::log( ERROR( errsv, "Error writing from parent to child." ) );
             }
             close( p2cp[1] );
             waitpid( pid, &status, 0 );
@@ -303,10 +302,9 @@ extern "C" {
         else {
             /* This is the child */
             close( 0 );                   /* close current stdin */
-            if( dup( p2cp[0] ) == -1 )    /* Make stdin come from read end of the pipe */
-            {
+            if ( dup( p2cp[0] ) == -1 ) { /* Make stdin come from read end of the pipe */
                 int errsv = errno;
-                irods::log ( ERROR( errsv, "Error duplicating the file descriptor." ) );
+                irods::log( ERROR( errsv, "Error duplicating the file descriptor." ) );
             }
             close( p2cp[1] );
             i = execl( PAM_AUTH_CHECK_PROG, PAM_AUTH_CHECK_PROG, _username.c_str(),
@@ -323,31 +321,29 @@ extern "C" {
     irods::error pam_auth_agent_request(
         irods::auth_plugin_context& _ctx,
         rsComm_t*                    _comm ) {
+
+        if ( true ) {
+            std::stringstream msg;
+            msg << "qqq - Here.";
+            DEBUGMSG( msg.str() );
+        }
+
+
         // =-=-=-=-=-=-=-
         // validate incoming parameters
         if ( !_ctx.valid< irods::pam_auth_object >().ok() ) {
-            return ERROR(
-                       SYS_INVALID_INPUT_PARAM,
-                       "invalid plugin context" );
+            return ERROR( SYS_INVALID_INPUT_PARAM, "invalid plugin context" );
         }
         else if ( !_comm ) {
-            return ERROR(
-                       SYS_INVALID_INPUT_PARAM,
-                       "null comm ptr" );
+            return ERROR( SYS_INVALID_INPUT_PARAM, "null comm ptr" );
         }
 
         // =-=-=-=-=-=-=-
         // get the server host handle
         rodsServerHost_t* server_host = 0;
-        int status = getAndConnRcatHost(
-                         _comm,
-                         MASTER_RCAT,
-                         _comm->clientUser.rodsZone,
-                         &server_host );
+        int status = getAndConnRcatHost( _comm, MASTER_RCAT, _comm->clientUser.rodsZone, &server_host );
         if ( status < 0 ) {
-            return ERROR(
-                       status,
-                       "getAndConnRcatHost failed." );
+            return ERROR( status, "getAndConnRcatHost failed." );
         }
 
         // =-=-=-=-=-=-=-
@@ -375,21 +371,12 @@ extern "C" {
             // manufacture structures for the redirected call
             authPluginReqOut_t* req_out = 0;
             authPluginReqInp_t  req_inp;
-            strncpy(
-                req_inp.auth_scheme_,
-                irods::AUTH_PAM_SCHEME.c_str(),
-                irods::AUTH_PAM_SCHEME.size() + 1 );
-            strncpy(
-                req_inp.context_,
-                context.c_str(),
-                context.size() + 1 );
+            strncpy( req_inp.auth_scheme_, irods::AUTH_PAM_SCHEME.c_str(), irods::AUTH_PAM_SCHEME.size() + 1 );
+            strncpy( req_inp.context_, context.c_str(), context.size() + 1 );
 
             // =-=-=-=-=-=-=-
             // make the redirected call
-            status = rcAuthPluginRequest(
-                         server_host->conn,
-                         &req_inp,
-                         &req_out );
+            status = rcAuthPluginRequest( server_host->conn, &req_inp, &req_out );
 
             // =-=-=-=-=-=-=-
             // shut down ssl on the connection
@@ -400,14 +387,16 @@ extern "C" {
             rcDisconnect( server_host->conn );
             server_host->conn = NULL;
             if ( !req_out || status < 0 ) {
-                return ERROR(
-                           status,
-                           "redirected rcAuthPluginRequest failed." );
+                return ERROR( status, "redirected rcAuthPluginRequest failed." );
             }
             else {
                 // =-=-=-=-=-=-=-
                 // set the result for communication back to the client
                 ptr->request_result( req_out->result_ );
+                if ( _comm->auth_scheme != NULL ) {
+                    free( _comm->auth_scheme );
+                }
+                _comm->auth_scheme = strdup( "pam" );
                 return SUCCESS();
 
             }
@@ -427,9 +416,7 @@ extern "C" {
         if ( kvp.find( irods::AUTH_USER_KEY ) == kvp.end() ||
                 kvp.find( irods::AUTH_TTL_KEY ) == kvp.end() ||
                 kvp.find( irods::AUTH_PASSWORD_KEY ) == kvp.end() ) {
-            return ERROR(
-                       SYS_INVALID_INPUT_PARAM,
-                       "user or ttl or password key missing" );
+            return ERROR( SYS_INVALID_INPUT_PARAM, "user or ttl or password key missing" );
         }
 
         std::string user_name = kvp[ irods::AUTH_USER_KEY     ];
@@ -442,30 +429,19 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // Normal mode, fork/exec setuid program to do the Pam check
-        status = run_pam_auth_check(
-                     user_name,
-                     password );
+        status = run_pam_auth_check( user_name, password );
         if ( status == 256 ) {
-            return ERROR(
-                       PAM_AUTH_PASSWORD_FAILED,
-                       "pam auth check failed" );
+            return ERROR( PAM_AUTH_PASSWORD_FAILED, "pam auth check failed" );
         }
         else if ( status ) {
-            return ERROR(
-                       status,
-                       "pam auth check failed" );
+            return ERROR( status, "pam auth check failed" );
         }
 
         // =-=-=-=-=-=-=-
         // request the resulting irods password after the handshake
         char password_out[ MAX_NAME_LEN ];
         char* pw_ptr = &password_out[0];
-        status = chlUpdateIrodsPamPassword(
-                     _comm,
-                     const_cast< char* >( user_name.c_str() ),
-                     ttl,
-                     NULL,
-                     &pw_ptr );
+        status = chlUpdateIrodsPamPassword( _comm, const_cast< char* >( user_name.c_str() ), ttl, NULL, &pw_ptr );
 
         // =-=-=-=-=-=-=-
         // set the result for communication back to the client
@@ -473,6 +449,10 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // win!
+        if ( _comm->auth_scheme != NULL ) {
+            free( _comm->auth_scheme );
+        }
+        _comm->auth_scheme = strdup( "pam" );
         return SUCCESS();
 
     } // pam_auth_agent_request

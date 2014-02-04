@@ -408,13 +408,7 @@ int clientLogin(
 
     // =-=-=-=-=-=-=-
     // call client side init
-    ret = auth_plugin->call <
-          rcComm_t*,
-          const char* > (
-              irods::AUTH_CLIENT_START,
-              auth_obj,
-              _comm,
-              _context );
+    ret = auth_plugin->call <rcComm_t*, const char* > ( irods::AUTH_CLIENT_START, auth_obj, _comm, _context );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();

@@ -36,6 +36,14 @@ void _rsSetAuthRequestGetChallenge( const char* _c ) {
 int rsAuthRequest(
     rsComm_t*          _comm,
     authRequestOut_t** _req ) {
+
+    if ( true ) {
+        std::stringstream msg;
+        msg << "qqq - Here.";
+        DEBUGMSG( msg.str() );
+    }
+
+
     // =-=-=-=-=-=-=-
     // check our incoming params
     if ( !_comm ) {

@@ -173,7 +173,7 @@ extern "C" {
         procState_t clientState;
         procState_t reconnThrState;
         int gsiRequest;
-        std::string auth_scheme;
+        char* auth_scheme;
 
         int ssl_on;
         SSL_CTX *ssl_ctx;

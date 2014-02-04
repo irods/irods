@@ -1158,7 +1158,10 @@ extern "C" {
                     ret = gsi_setup_creds( ptr, false, server_dn );
                     if ( ( result = ASSERT_PASS( ret, "Setting up GSI credentials failed." ) ).ok() ) {
                         _comm->gsiRequest = 1;
-                        _comm->auth_scheme = GSI_AUTH_SCHEME;
+                        if ( _comm->auth_scheme != NULL ) {
+                            free( _comm->auth_scheme );
+                        }
+                        _comm->auth_scheme = strdup( GSI_AUTH_SCHEME );
                         ptr->server_dn( server_dn );
                     }
                 }
