@@ -18,7 +18,6 @@ rm dummy
 #ar r $ar_file iRODS/lib/core/obj/irods_network_plugin.o
 #ar r $ar_file iRODS/lib/core/obj/irods_auth_plugin.o
 
-
 #for ff in `find iRODS/ -name "*.o"`
 #do
 #    ar qS $ar_file $ff
