@@ -21,6 +21,14 @@ int rsAuthPluginRequest(
     rsComm_t*             _comm,
     authPluginReqInp_t*   _req_inp,
     authPluginReqOut_t**  _req_out ) {
+
+    if ( true ) {
+        std::stringstream msg;
+        msg << "qqq - Here.";
+        DEBUGMSG( msg.str() );
+    }
+
+
     // =-=-=-=-=-=-=-
     // check our incoming params
     if ( !_comm ) {

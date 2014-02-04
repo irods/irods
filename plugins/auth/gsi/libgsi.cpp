@@ -33,6 +33,8 @@ extern "C" {
     static int igsiTokenHeaderMode = 1;  /* 1 is the normal mode,
                                             0 means running in a non-token-header mode, ie Java; dynamically cleared. */
 
+    static std::string GSI_AUTH_SCHEME = "gsi";
+
     // =-=-=-=-=-=-=-
     // NOTE:: this needs to become a property
     // Set requireServerAuth to 1 to fail authentications from
@@ -1156,6 +1158,10 @@ extern "C" {
                     ret = gsi_setup_creds( ptr, false, server_dn );
                     if ( ( result = ASSERT_PASS( ret, "Setting up GSI credentials failed." ) ).ok() ) {
                         _comm->gsiRequest = 1;
+                        if ( _comm->auth_scheme != NULL ) {
+                            free( _comm->auth_scheme );
+                        }
+                        _comm->auth_scheme = strdup( GSI_AUTH_SCHEME );
                         ptr->server_dn( server_dn );
                     }
                 }

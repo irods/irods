@@ -372,11 +372,7 @@ int clientLogin(
             // =-=-=-=-=-=-=-
             // ensure scheme is lower case for comparison
             std::string lower_scheme = auth_scheme;
-            std::transform(
-                auth_scheme.begin(),
-                auth_scheme.end(),
-                auth_scheme.begin(),
-                ::tolower );
+            std::transform( auth_scheme.begin(), auth_scheme.end(), auth_scheme.begin(), ::tolower );
 
             // =-=-=-=-=-=-=-
             // filter out the pam auth as it is an extra special
@@ -394,10 +390,7 @@ int clientLogin(
     // =-=-=-=-=-=-=-
     // construct an auth object given the scheme
     irods::auth_object_ptr auth_obj;
-    irods::error ret = irods::auth_factory(
-                           auth_scheme,
-                           _comm->rError,
-                           auth_obj );
+    irods::error ret = irods::auth_factory( auth_scheme, _comm->rError, auth_obj );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
@@ -406,9 +399,7 @@ int clientLogin(
     // =-=-=-=-=-=-=-
     // resolve an auth plugin given the auth object
     irods::plugin_ptr ptr;
-    ret = auth_obj->resolve(
-              irods::AUTH_INTERFACE,
-              ptr );
+    ret = auth_obj->resolve( irods::AUTH_INTERFACE, ptr );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
@@ -417,13 +408,7 @@ int clientLogin(
 
     // =-=-=-=-=-=-=-
     // call client side init
-    ret = auth_plugin->call <
-          rcComm_t*,
-          const char* > (
-              irods::AUTH_CLIENT_START,
-              auth_obj,
-              _comm,
-              _context );
+    ret = auth_plugin->call <rcComm_t*, const char* > ( irods::AUTH_CLIENT_START, auth_obj, _comm, _context );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();

@@ -21,7 +21,7 @@ resource-package : external libs plugins-nodb irods
 external : external-build
 
 external-build :
-	@$(MAKE) -C external retrieve
+	@$(MAKE) -C external default
 
 libs : external-build
 	@$(MAKE) -C iRODS libs

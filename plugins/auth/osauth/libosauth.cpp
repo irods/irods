@@ -175,37 +175,35 @@ extern "C" {
         // prompt for a password if necessary
         if ( 0 != need_password ) {
 #ifdef WIN32
-                HANDLE hStdin = GetStdHandle( STD_INPUT_HANDLE );
-                DWORD mode;
-                GetConsoleMode( hStdin, &mode );
-                DWORD lastMode = mode;
-                mode &= ~ENABLE_ECHO_INPUT;
-                BOOL success = SetConsoleMode( hStdin, mode );
+            HANDLE hStdin = GetStdHandle( STD_INPUT_HANDLE );
+            DWORD mode;
+            GetConsoleMode( hStdin, &mode );
+            DWORD lastMode = mode;
+            mode &= ~ENABLE_ECHO_INPUT;
+            BOOL success = SetConsoleMode( hStdin, mode );
 #else
-                struct termios tty;
-                tcgetattr( STDIN_FILENO, &tty );
-                tcflag_t oldflag = tty.c_lflag;
-                tty.c_lflag &= ~ECHO;
-                int success = tcsetattr( STDIN_FILENO, TCSANOW, &tty );
+            struct termios tty;
+            tcgetattr( STDIN_FILENO, &tty );
+            tcflag_t oldflag = tty.c_lflag;
+            tty.c_lflag &= ~ECHO;
+            int success = tcsetattr( STDIN_FILENO, TCSANOW, &tty );
 #endif
-                if ( !success ) {
-                    return ERROR( success, "Error getting password." );
-                }
-                printf( "Enter your current iRODS password:" );
-                std::string password = "";
-                if ( getline( cin, password ) ) {
-                    return ERROR( success, "Error getting password." );
-                }
-                strncpy( md5_buf + CHALLENGE_LEN, password.c_str(), MAX_PASSWORD_LEN );
+            if ( !success ) {
+                return ERROR( success, "Error getting password." );
+            }
+            printf( "Enter your current iRODS password:" );
+            std::string password = "";
+            getline( cin, password );
+            strncpy( md5_buf + CHALLENGE_LEN, password.c_str(), MAX_PASSWORD_LEN );
 #ifdef WIN32
-                if ( SetConsoleMode( hStdin, lastMode ) ) {
-                    printf( "Error reinstating echo mode." );
-                }
+            if ( SetConsoleMode( hStdin, lastMode ) ) {
+                printf( "Error reinstating echo mode." );
+            }
 #else
-                tty.c_lflag = oldflag;
-                if ( tcsetattr( STDIN_FILENO, TCSANOW, &tty ) ) {
-                    printf( "Error reinstating echo mode." );
-                }
+            tty.c_lflag = oldflag;
+            if ( tcsetattr( STDIN_FILENO, TCSANOW, &tty ) ) {
+                printf( "Error reinstating echo mode." );
+            }
 #endif
         } // if need_password
 
@@ -294,17 +292,21 @@ extern "C" {
     irods::error osauth_auth_agent_request(
         irods::auth_plugin_context& _ctx,
         rsComm_t*                    _comm ) {
+
+        if ( true ) {
+            std::stringstream msg;
+            msg << "qqq - Here.";
+            DEBUGMSG( msg.str() );
+        }
+
+
         // =-=-=-=-=-=-=-
         // validate incoming parameters
         if ( !_ctx.valid< irods::osauth_auth_object >().ok() ) {
-            return ERROR(
-                       SYS_INVALID_INPUT_PARAM,
-                       "invalid plugin context" );
+            return ERROR( SYS_INVALID_INPUT_PARAM, "invalid plugin context" );
         }
         else if ( !_comm ) {
-            return ERROR(
-                       SYS_INVALID_INPUT_PARAM,
-                       "null comm ptr" );
+            return ERROR( SYS_INVALID_INPUT_PARAM, "null comm ptr" );
         }
 
         // =-=-=-=-=-=-=-
@@ -323,6 +325,11 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // cache the challenge in the server for later usage
         _rsSetAuthRequestGetChallenge( buf );
+
+        if ( _comm->auth_scheme != NULL ) {
+            free( _comm->auth_scheme );
+        }
+        _comm->auth_scheme = strdup( "osauth" );
 
         // =-=-=-=-=-=-=-
         // win!

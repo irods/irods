@@ -163,13 +163,11 @@ extern "C" {
                 int success = tcsetattr( STDIN_FILENO, TCSANOW, &tty );
 #endif
                 if ( !success ) {
-                    return ERROR( success, "Error getting password." );
+                    return ERROR( success, "Error disabling echo mode." );
                 }
                 printf( "Enter your current iRODS password:" );
                 std::string password = "";
-                if ( getline( cin, password ) ) {
-                    return ERROR( success, "Error getting password." );
-                }
+                getline( cin, password );
                 strncpy( md5_buf + CHALLENGE_LEN, password.c_str(), MAX_PASSWORD_LEN );
 #ifdef WIN32
                 if ( SetConsoleMode( hStdin, lastMode ) ) {
@@ -261,6 +259,13 @@ extern "C" {
         irods::error result = SUCCESS();
         irods::error ret;
 
+
+        if ( true ) {
+            std::stringstream msg;
+            msg << "qqq - Here.";
+            DEBUGMSG( msg.str() );
+        }
+
         // =-=-=-=-=-=-=-
         // validate incoming parameters
         ret = _ctx.valid< irods::native_auth_object >();
@@ -284,6 +289,18 @@ extern "C" {
                 // =-=-=-=-=-=-=-
                 // cache the challenge in the server for later usage
                 _rsSetAuthRequestGetChallenge( buf );
+
+                if ( _comm->auth_scheme != NULL ) {
+                    free( _comm->auth_scheme );
+                }
+
+                if ( true ) {
+                    std::stringstream msg;
+                    msg << "qqq - Setting the auth scheme.";
+                    DEBUGMSG( msg.str() );
+                }
+
+                _comm->auth_scheme = strdup( "native" );
             }
         }
 
