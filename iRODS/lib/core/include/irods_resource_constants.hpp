@@ -64,7 +64,6 @@ namespace irods {
     const std::string RESOURCE_OP_CHMOD( "resource_chmod" );
     const std::string RESOURCE_OP_OPENDIR( "resource_opendir" );
     const std::string RESOURCE_OP_READDIR( "resource_readdir" );
-    const std::string RESOURCE_OP_STAGE( "resource_stage" );
     const std::string RESOURCE_OP_RENAME( "resource_rename" );
     const std::string RESOURCE_OP_FREESPACE( "resource_freespace" );
     const std::string RESOURCE_OP_LSEEK( "resource_lseek" );

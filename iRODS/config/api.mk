@@ -436,3 +436,6 @@ LIB_API_OBJS += $(libApiObjDir)/rcAuthPluginRequest.o
 
 SVR_API_OBJS += $(svrApiObjDir)/rsGetLimitedPassword.o
 LIB_API_OBJS += $(libApiObjDir)/rcGetLimitedPassword.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsGetHierarchyForResc.o
+LIB_API_OBJS += $(libApiObjDir)/rcGetHierarchyForResc.o

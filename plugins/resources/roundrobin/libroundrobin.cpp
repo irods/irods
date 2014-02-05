@@ -753,7 +753,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // call stage on the child
-        return resc->call< const char* >( _ctx.comm(), irods::RESOURCE_OP_STAGE, _ctx.fco(), _cache_file_name );
+        return resc->call< const char* >( _ctx.comm(), irods::RESOURCE_OP_STAGETOCACHE, _ctx.fco(), _cache_file_name );
 
     } // round_robin_file_stage_to_cache
 
