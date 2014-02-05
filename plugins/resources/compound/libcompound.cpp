@@ -912,8 +912,6 @@ extern "C" {
             return PASS( ret );
         }
 
-        irods::file_object_ptr ptr = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
-
         // =-=-=-=-=-=-=-
         // forward the call to the archive
         return resc->call< const char* >( _ctx.comm(), irods::RESOURCE_OP_STAGETOCACHE, _ctx.fco(), _cache_file_name );

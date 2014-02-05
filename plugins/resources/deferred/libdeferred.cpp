@@ -74,6 +74,7 @@ irods::error get_next_child_in_hier(
         // get the next resource in the series
         std::string next;
         err = parse.next( _name, next );
+
         if ( ( result = ASSERT_PASS( err, "Failed in next." ) ).ok() ) {
 
             // =-=-=-=-=-=-=-
@@ -511,9 +512,8 @@ extern "C" {
     } // deferred_file_getfs_freespace
 
     /// =-=-=-=-=-=-=-
-    /// @brief This routine is for testing the TEST_STAGE_FILE_TYPE.
-    ///        Just copy the file from filename to cacheFilename. optionalInfo info
-    ///        is not used.
+    /// @brief This routine copys data from the archive resource to the cache resource
+    ///        in a compound resource composition
     irods::error deferred_file_stage_to_cache(
         irods::resource_plugin_context& _ctx,
         const char*                         _cache_file_name ) {
@@ -524,10 +524,9 @@ extern "C" {
         irods::resource_ptr resc;
         irods::error err = deferred_get_resc_for_call< irods::file_object >( _ctx, resc );
         if ( ( result = ASSERT_PASS( err, "Failed to select deferred resource." ) ).ok() ) {
-
             // =-=-=-=-=-=-=-
             // call stage on the child
-            err = resc->call< const char* >( _ctx.comm(), irods::RESOURCE_OP_STAGE, _ctx.fco(), _cache_file_name );
+            err = resc->call< const char* >( _ctx.comm(), irods::RESOURCE_OP_STAGETOCACHE, _ctx.fco(), _cache_file_name );
             result = ASSERT_PASS_MSG( err, "Failed calling child operation." );
         }
 

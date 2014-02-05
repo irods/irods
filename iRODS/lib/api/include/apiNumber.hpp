@@ -182,6 +182,6 @@
 
 #define AUTH_PLUG_REQ_AN	    1201
 #define AUTH_PLUG_RESP_AN	    1202
-#define GET_HIER_FOR_RESC_AN	1202
+#define GET_HIER_FOR_RESC_AN	1203
 
 #endif	/* API_NUMBER_H */
