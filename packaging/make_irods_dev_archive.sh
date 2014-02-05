@@ -24,7 +24,8 @@ rm dummy
 #    ar qS $ar_file $ff
 #done
 
-ar qS $ar_file $(find iRODS/ -name \*.o)
+# Archive all objects except for managers
+ar qS $ar_file $(find iRODS/ -name \*.o ! -name \*_manager.o)
 
 #for ff in `find iRODS/lib -name "*.o"`
 #do
