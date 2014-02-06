@@ -48,7 +48,7 @@ retrieve : ../$(IRODSEXTERNALARCHIVE).tar.gz
 	@cd ../ ; \
 	tar zxf $(IRODSEXTERNALARCHIVE).tar.gz
 
-build : cmake libarchive jansson boost epm hdf5 netcdf lib_mysqludf_preg
+build : cmake libarchive jansson boost epm hdf5 netcdf lib_mysqludf_preg libs3
 
 generate : build
 	@cd ../ ; \
