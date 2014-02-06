@@ -1777,32 +1777,4 @@ parseStrMspForLongArray( msParam_t * inpParam, int * ndimOut,
     return 0;
 }
 
-int
-parseMspForNccfGetVarInp( msParam_t * inpParam, nccfGetVarInp_t * nccfGetVarInp ) {
-    if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
-        /* str input */
-        bzero( nccfGetVarInp, sizeof( nccfGetVarInp_t ) );
-        nccfGetVarInp->ncid = atoi( ( char* )inpParam->inOutStruct );
-        if ( nccfGetVarInp->ncid < 0 ) {
-            return nccfGetVarInp->ncid;
-        }
-    }
-    else if ( strcmp( inpParam->type, INT_MS_T ) == 0 ) {
-        bzero( nccfGetVarInp, sizeof( nccfGetVarInp_t ) );
-        nccfGetVarInp->ncid = *( int * )inpParam->inOutStruct;
-    }
-    else if ( strcmp( inpParam->type, NccfGetVarInp_MS_T ) == 0 ) {
-        *nccfGetVarInp = *( ( nccfGetVarInp_t * ) inpParam->inOutStruct );
-        replKeyVal( &( ( nccfGetVarInp_t * ) inpParam->inOutStruct )->condInput,
-                    &nccfGetVarInp->condInput );
-    }
-    else {
-        rodsLog( LOG_ERROR,
-                 "parseMspForNccfGetVarInp: Unsupported input Param1 type %s",
-                 inpParam->type );
-        return ( USER_PARAM_TYPE_ERR );
-    }
-    return 0;
-}
-
 #endif

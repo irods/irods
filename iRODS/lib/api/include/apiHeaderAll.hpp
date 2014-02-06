@@ -140,7 +140,6 @@
 #include "ncInqId.hpp"
 #include "ncInqWithId.hpp"
 #include "ncGetVarsByType.hpp"
-#include "nccfGetVara.hpp"
 #include "ncInq.hpp"
 #include "ncOpenGroup.hpp"
 #include "ncInqGrps.hpp"

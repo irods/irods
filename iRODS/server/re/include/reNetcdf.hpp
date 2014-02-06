@@ -32,14 +32,6 @@ msiNcGetVarsByType( msParam_t *dataTypeParam, msParam_t *ncidParam,
                     msParam_t *varidParam, msParam_t *ndimParam, msParam_t *startParam,
                     msParam_t *countParam, msParam_t *strideParam,
                     msParam_t *outParam, ruleExecInfo_t *rei );
-#ifdef LIB_CF
-int
-msiNccfGetVara( msParam_t *ncidParam, msParam_t *varidParam,
-                msParam_t *lvlIndexParam, msParam_t *timestepParam,
-                msParam_t *latRange0Param, msParam_t *latRange1Param,
-                msParam_t *lonRange0Param, msParam_t *lonRange1Param,
-                msParam_t *maxOutArrayLenParam, msParam_t *outParam, ruleExecInfo_t *rei );
-#endif
 int
 msiNcGetArrayLen( msParam_t *inpParam, msParam_t *outParam,
                   ruleExecInfo_t *rei );
