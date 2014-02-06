@@ -752,7 +752,7 @@ else
     echo "Detected pcre library [$PCREDEV]"
 fi
 
-
+# needed for libs3
 LIBXML2DEV=`find /usr/include/libxml2 /opt/csw/include/libxml2 -name parser.h 2> /dev/null`
 if [ "$LIBXML2DEV" == "" ] ; then
     if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
