@@ -24,10 +24,6 @@
 %if DEBICAT
 $DEB=true
 $ICAT=true
-#%requires postgresql 8.4
-#%requires unixodbc
-#%requires odbc-postgresql
-#%requires super
 
 %elseif DEBRESOURCE
 $DEB=true
@@ -37,19 +33,11 @@ $RESOURCE=true
 $REDHAT=true
 $RPM=true
 $ICAT=true
-#%requires postgresql 
-#%requires postgresql-server
-#%requires unixODBC
-#%requires authd
 
 %elseif SUSERPMICAT
 $SUSE=true
 $RPM=true
 $ICAT=true
-#%requires postgresql 
-#%requires postgresql-server
-#%requires psqlODBC
-#%requires unixODBC
 
 %elseif REDHATRPMRESOURCE
 $REDHAT=true
@@ -73,7 +61,6 @@ $RESOURCE=true
 
 
 %if CENTOS6
-%requires postgresql-odbc
 %requires openssl098e
 %endif
 
