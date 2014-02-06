@@ -305,7 +305,6 @@ $(LIB_API_OBJS):  $(libApiObjDir)/%.o: $(libApiSrcDir)/%.cpp $(DEPEND) $(BOOST_L
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
 # Build MD5
-#	Requires -O3 for optimization
 $(LIB_MD5_OBJS):  $(libMd5ObjDir)/%.o: $(libMd5SrcDir)/%.cpp $(configMk) $(platformMk)
 	@echo "Compile md5 `basename $@`..."
 	@$(CC) -c $(MD5_CFLAGS) -o $@ $<
