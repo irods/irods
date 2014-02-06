@@ -5,7 +5,7 @@ MAKEFLAGS += --no-print-directory
 RENCI_FTP_EXTERNAL=ftp://ftp.renci.org/pub/irods/external
 RENCI_FTP_BUILD=ftp://ftp.renci.org/pub/irods/build
 
-.PHONY : default retrieve build generate clean cmake libarchive jansson boost hdf5 netcdf epm lib_mysqludf_preg
+.PHONY : default retrieve build generate clean cmake libarchive jansson boost hdf5 netcdf epm lib_mysqludf_preg libs3
 
 IRODSEXTERNALARCHIVE=irods_external
 CMAKEVERSIONARCHIVE=$(CMAKEVERSION).tar.gz
@@ -22,9 +22,12 @@ NETCDFVERSIONARCHIVE=$(NETCDFVERSION).tar.gz
 NETCDFVERSIONMAKE=$(NETCDFVERSION)/Makefile
 EPMVERSIONARCHIVE=$(EPMVERSION).tar.gz
 EPMVERSIONMAKE=epm/Makefile
-FAKEFILEFORMAKE=FakeTargetForMake
 LIB_MYSQLUDF_PREG_ARCHIVE=$(LIB_MYSQLUDF_PREG).tar.gz
 LIB_MYSQLUDF_PREG_MAKE=lib_mysqludf_preg/Makefile
+LIBS3VERSIONARCHIVE=$(LIBS3VERSION).tar.gz
+LIBS3VERSIONMAKE=$(LIBS3VERSION)/GNUmakefile
+
+FAKEFILEFORMAKE=FakeTargetForMake
 
 default : ${FAKEFILEFORMAKE}
 
@@ -45,7 +48,7 @@ retrieve : ../$(IRODSEXTERNALARCHIVE).tar.gz
 	@cd ../ ; \
 	tar zxf $(IRODSEXTERNALARCHIVE).tar.gz
 
-build : cmake libarchive jansson boost epm hdf5 netcdf lib_mysqludf_preg
+build : cmake libarchive jansson boost epm hdf5 netcdf lib_mysqludf_preg libs3
 
 generate : build
 	@cd ../ ; \
@@ -62,6 +65,15 @@ $(LIB_MYSQLUDF_PREG_MAKE) : $(LIB_MYSQLUDF_PREG_ARCHIVE)
 
 $(LIB_MYSQLUDF_PREG) : $(LIB_MYSQLUDF_PREG_MAKE)
 	@$(MAKE) -C $(LIB_MYSQLUDF_PREG)
+
+$(LIBS3VERSIONARCHIVE) :
+	@wget $(RENCI_FTP_EXTERNAL)/$(LIBS3VERSIONARCHIVE) 2>&1
+
+$(LIBS3VERSIONMAKE) : $(LIBS3VERSIONARCHIVE)
+	@tar zxf $(LIBS3VERSIONARCHIVE)
+
+libs3 : $(LIBS3VERSIONMAKE)
+	@$(MAKE) -C $(LIBS3VERSION)
 
 $(CMAKEVERSIONARCHIVE) :
 	@wget $(RENCI_FTP_EXTERNAL)/$(CMAKEVERSIONARCHIVE) 2>&1
@@ -184,6 +196,9 @@ clean :
 	@echo "Cleaning hdf5..."
 	@rm -rf $(HDF5VERSION)
 	@rm -f $(HDF5VERSIONARCHIVE)
+	@echo "Cleaning libs3..."
+	@rm -rf $(LIBS3VERSION)
+	@rm -f $(LIBS3VERSIONARCHIVE)
 	@echo "Cleaning epm..."
 	@rm -rf epm
 	@rm -f $(EPMVERSIONARCHIVE)
