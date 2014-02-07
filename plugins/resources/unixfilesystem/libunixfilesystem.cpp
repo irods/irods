@@ -6,6 +6,7 @@
 #include "reGlobalsExtern.hpp"
 #include "rcConnect.hpp"
 #include "readServerConfig.hpp"
+#include "miscServerFunct.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_plugin.hpp"
