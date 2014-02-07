@@ -27,6 +27,8 @@ static void NtAgentSetEnvsFromArgs( int ac, char **av );
 #include "irods_auth_manager.hpp"
 #include "irods_auth_plugin.hpp"
 #include "irods_auth_constants.hpp"
+#include "irods_server_properties.hpp"
+#include "readServerConfig.hpp"
 
 /* #define SERVER_DEBUG 1   */
 int
@@ -34,16 +36,21 @@ main( int argc, char *argv[] ) {
     int status;
     rsComm_t rsComm;
     char *tmpStr;
+    bool run_server_as_root = false;
 
     ProcessType = AGENT_PT;
 //sleep(30);
-#ifdef RUN_SERVER_AS_ROOT
+
+    irods::server_properties::getInstance().get_property<bool>(RUN_SERVER_AS_ROOT_KW, run_server_as_root);
+
 #ifndef windows_platform
-    if ( initServiceUser() < 0 ) {
-        exit( 1 );
+    if (run_server_as_root) {
+		if ( initServiceUser() < 0 ) {
+			exit( 1 );
+		}
     }
 #endif
-#endif
+
 
 #ifdef windows_platform
     iRODSNtAgentInit( argc, argv );
