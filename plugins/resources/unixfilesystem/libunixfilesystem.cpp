@@ -823,7 +823,7 @@ extern "C" {
             irods::collection_object_ptr fco = boost::dynamic_pointer_cast< irods::collection_object >( _ctx.fco() );
 
             // =-=-=-=-=-=-=-
-            // make the call to chmod
+            // make the call to rmdir
             int status = rmdir( fco->physical_path().c_str() );
 
             // =-=-=-=-=-=-=-
