@@ -854,7 +854,7 @@ extern "C" {
             irods::collection_object_ptr fco = boost::dynamic_pointer_cast< irods::collection_object >( _ctx.fco() );
 
             // =-=-=-=-=-=-=-
-            // make the callt to opendir
+            // make the call to opendir
             DIR* dir_ptr = opendir( fco->physical_path().c_str() );
 
             // =-=-=-=-=-=-=-
