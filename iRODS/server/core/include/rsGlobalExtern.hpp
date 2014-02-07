@@ -25,7 +25,7 @@ extern irods::resource_manager resc_mgr;
 extern int LogFd;         		/* the log file descriptor */
 extern char *CurLogfileName;         	/* the path of the current logfile */
 extern char ProcLogDir[];
-extern apidef_t RsApiTable[];
+extern irods::api_entry_table RsApiTable;
 extern rodsServerHost_t *LocalServerHost;
 extern rodsServerHost_t *ServerHostHead;
 extern rodsServerHost_t *HostConfigHead;

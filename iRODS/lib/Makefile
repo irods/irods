@@ -100,7 +100,8 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/irods_pam_auth_object.o \
 		$(libCoreObjDir)/irods_osauth_auth_object.o \
 		$(libCoreObjDir)/irods_pluggable_auth_scheme.o \
-		$(libCoreObjDir)/irods_kvp_string_parser.o
+		$(libCoreObjDir)/irods_kvp_string_parser.o \
+		$(libCoreObjDir)/apiHandler.o 
 
 ifdef NETCDF_CLIENT
 LIB_CORE_OBJS += $(libCoreObjDir)/ncattrUtil.o $(libCoreObjDir)/ncUtil.o  \
@@ -176,6 +177,7 @@ endif
 include $(buildDir)/config/api.mk
 INCLUDES +=	-I$(libApiIncDir)
 
+SVR_API_OBJS += 
 
 # All objects
 OBJS =	$(LIB_CORE_OBJS) \

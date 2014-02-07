@@ -1230,8 +1230,8 @@ setApiPerm( int apiNumber, int proxyPerm, int clientPerm ) {
         return ( apiInx );
     }
 
-    RsApiTable[apiInx].proxyUserAuth = proxyPerm;
-    RsApiTable[apiInx].clientUserAuth = clientPerm;
+    RsApiTable[apiInx]->proxyUserAuth = proxyPerm;
+    RsApiTable[apiInx]->clientUserAuth = clientPerm;
 
     return ( 0 );
 }

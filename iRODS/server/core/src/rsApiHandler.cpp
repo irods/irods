@@ -44,7 +44,6 @@ int rsApiHandler(
     int retVal = 0;
     int numArg = 0;
     void *myArgv[4];
-
     memset( &myOutBsBBuf, 0, sizeof( bytesBuf_t ) );
     memset( &rsComm->rError, 0, sizeof( rError_t ) );
 
@@ -85,7 +84,7 @@ int rsApiHandler(
     }
 
     /* some sanity check */
-    if ( inputStructBBuf->len > 0 && RsApiTable[apiInx].inPackInstruct == NULL ) {
+    if ( inputStructBBuf->len > 0 && RsApiTable[apiInx]->inPackInstruct == NULL ) {
         rodsLog( LOG_NOTICE,
                  "rsApiHandler: input struct error 1 for apiNumber %d", apiNumber );
         sendApiReply( rsComm, apiInx, SYS_API_INPUT_ERR, myOutStruct,
@@ -93,7 +92,7 @@ int rsApiHandler(
         return ( SYS_API_INPUT_ERR );
     }
 
-    if ( inputStructBBuf->len <= 0 && RsApiTable[apiInx].inPackInstruct != NULL ) {
+    if ( inputStructBBuf->len <= 0 && RsApiTable[apiInx]->inPackInstruct != NULL ) {
         rodsLog( LOG_NOTICE,
                  "rsApiHandler: input struct error 2 for apiNumber %d", apiNumber );
         sendApiReply( rsComm, apiInx, SYS_API_INPUT_ERR, myOutStruct,
@@ -101,7 +100,7 @@ int rsApiHandler(
         return ( SYS_API_INPUT_ERR );
     }
 
-    if ( bsBBuf->len > 0 && RsApiTable[apiInx].inBsFlag <= 0 ) {
+    if ( bsBBuf->len > 0 && RsApiTable[apiInx]->inBsFlag <= 0 ) {
         rodsLog( LOG_NOTICE,
                  "rsApiHandler: input byte stream error for apiNumber %d", apiNumber );
         sendApiReply( rsComm, apiInx, SYS_API_INPUT_ERR, myOutStruct,
@@ -111,7 +110,7 @@ int rsApiHandler(
 
     if ( inputStructBBuf->len > 0 ) {
         status = unpackStruct( inputStructBBuf->buf, ( void ** ) &myInStruct,
-                               RsApiTable[apiInx].inPackInstruct, RodsPackTable, rsComm->irodsProt );
+                               RsApiTable[apiInx]->inPackInstruct, RodsPackTable, rsComm->irodsProt );
         if ( status < 0 ) {
             rodsLog( LOG_NOTICE,
                      "rsApiHandler: unpackStruct error for apiNumber %d, status = %d",
@@ -124,24 +123,26 @@ int rsApiHandler(
 
     /* ready to call the handler functions */
 
-    myHandler = RsApiTable[apiInx].svrHandler;
+    myHandler = RsApiTable[apiInx]->svrHandler;
+    if ( !myHandler ) {
+    }
 
-    if ( RsApiTable[apiInx].inPackInstruct != NULL ) {
+    if ( RsApiTable[apiInx]->inPackInstruct != NULL ) {
         myArgv[numArg] = myInStruct;
         numArg++;
     };
 
-    if ( RsApiTable[apiInx].inBsFlag != 0 ) {
+    if ( RsApiTable[apiInx]->inBsFlag != 0 ) {
         myArgv[numArg] = bsBBuf;
         numArg++;
     };
 
-    if ( RsApiTable[apiInx].outPackInstruct != NULL ) {
+    if ( RsApiTable[apiInx]->outPackInstruct != NULL ) {
         myArgv[numArg] = ( void * ) &myOutStruct;
         numArg++;
     };
 
-    if ( RsApiTable[apiInx].outBsFlag != 0 ) {
+    if ( RsApiTable[apiInx]->outBsFlag != 0 ) {
         myArgv[numArg] = ( void * ) &myOutBsBBuf;
         numArg++;
     };
@@ -166,56 +167,56 @@ int rsApiHandler(
     if ( myInStruct != NULL ) {
         /* XXXXX this is a hack to reduce mem leak. Need a more generalized
          * solution */
-        if ( strcmp( RsApiTable[apiInx].inPackInstruct, "GenQueryInp_PI" ) == 0 ) {
+        if ( strcmp( RsApiTable[apiInx]->inPackInstruct, "GenQueryInp_PI" ) == 0 ) {
             clearGenQueryInp( ( genQueryInp_t * ) myInStruct );
         }
-        else if ( strcmp( RsApiTable[apiInx].inPackInstruct,
+        else if ( strcmp( RsApiTable[apiInx]->inPackInstruct,
                           "ModDataObjMeta_PI" )  == 0 ) {
             clearModDataObjMetaInp( ( modDataObjMeta_t * ) myInStruct );
         }
-        else if ( strcmp( RsApiTable[apiInx].inPackInstruct,
+        else if ( strcmp( RsApiTable[apiInx]->inPackInstruct,
                           "RegReplica_PI" )  == 0 ) {
             clearRegReplicaInp( ( regReplica_t * ) myInStruct );
         }
-        else if ( strcmp( RsApiTable[apiInx].inPackInstruct,
+        else if ( strcmp( RsApiTable[apiInx]->inPackInstruct,
                           "UnregDataObj_PI" )  == 0 ) {
             clearUnregDataObj( ( unregDataObj_t * ) myInStruct );
         }
-        else if ( strcmp( RsApiTable[apiInx].inPackInstruct,
+        else if ( strcmp( RsApiTable[apiInx]->inPackInstruct,
                           "DataObjInp_PI" )  == 0 ) {
             clearDataObjInp( ( dataObjInp_t * ) myInStruct );
         }
-        else if ( strcmp( RsApiTable[apiInx].inPackInstruct,
+        else if ( strcmp( RsApiTable[apiInx]->inPackInstruct,
                           "DataObjCopyInp_PI" )  == 0 ) {
             clearDataObjCopyInp( ( dataObjCopyInp_t * ) myInStruct );
         }
-        else if ( strcmp( RsApiTable[apiInx].inPackInstruct,
+        else if ( strcmp( RsApiTable[apiInx]->inPackInstruct,
                           "GenQueryOut_PI" )  == 0 ) {
             clearGenQueryOut( ( genQueryOut_t * ) myInStruct );
         }
-        else if ( strcmp( RsApiTable[apiInx].inPackInstruct,
+        else if ( strcmp( RsApiTable[apiInx]->inPackInstruct,
                           "CollInpNew_PI" )  == 0 ) {
             clearCollInp( ( collInp_t * ) myInStruct );
         }
-        else if ( strcmp( RsApiTable[apiInx].inPackInstruct,
+        else if ( strcmp( RsApiTable[apiInx]->inPackInstruct,
                           "BulkOprInp_PI" )  == 0 ) {
             clearBulkOprInp( ( bulkOprInp_t * ) myInStruct );
         }
-        else if ( strcmp( RsApiTable[apiInx].inPackInstruct,
+        else if ( strcmp( RsApiTable[apiInx]->inPackInstruct,
                           "ModAVUMetadataInp_PI" )  == 0 ) {
             clearModAVUMetadataInp( ( modAVUMetadataInp_t * ) myInStruct );
         }
-        else if ( strcmp( RsApiTable[apiInx].inPackInstruct,
+        else if ( strcmp( RsApiTable[apiInx]->inPackInstruct,
                           "authResponseInp_PI" )  == 0 ) {
             /* Added by RAJA Nov 22 2010 */
             clearAuthResponseInp( ( void * ) myInStruct );
 #ifdef NETCDF_API
         }
-        else if ( strcmp( RsApiTable[apiInx].inPackInstruct,
+        else if ( strcmp( RsApiTable[apiInx]->inPackInstruct,
                           "NcGetVarInp_PI" )  == 0 ) {
             clearNcGetVarInp( ( ncGetVarInp_t * ) myInStruct );
         }
-        else if ( strcmp( RsApiTable[apiInx].inPackInstruct,
+        else if ( strcmp( RsApiTable[apiInx]->inPackInstruct,
                           "NcRegGlobalAttrInp_PI" )  == 0 ) {
             clearRegGlobalAttrInp( ( ncRegGlobalAttrInp_t * ) myInStruct );
 #endif
@@ -298,10 +299,10 @@ sendApiReply( rsComm_t * rsComm, int apiInx, int retVal,
     }
 
 
-    if ( RsApiTable[apiInx].outPackInstruct != NULL && myOutStruct != NULL ) {
+    if ( RsApiTable[apiInx]->outPackInstruct != NULL && myOutStruct != NULL ) {
 
         status = packStruct( ( char * ) myOutStruct, &outStructBBuf,
-                             RsApiTable[apiInx].outPackInstruct, RodsPackTable, FREE_POINTER,
+                             RsApiTable[apiInx]->outPackInstruct, RodsPackTable, FREE_POINTER,
                              rsComm->irodsProt );
 
         if ( status < 0 ) {
@@ -319,7 +320,7 @@ sendApiReply( rsComm_t * rsComm, int apiInx, int retVal,
         myOutStructBBuf = NULL;
     }
 
-    if ( RsApiTable[apiInx].outBsFlag == 0 ) {
+    if ( RsApiTable[apiInx]->outBsFlag == 0 ) {
         myOutBsBBuf = NULL;
     }
 
@@ -387,10 +388,10 @@ chkApiVersion( rsComm_t * rsComm, int apiInx ) {
     char *cliApiVersion;
 
     if ( ( cliApiVersion = getenv( SP_API_VERSION ) ) != NULL ) {
-        if ( strcmp( cliApiVersion, RsApiTable[apiInx].apiVersion ) != 0 ) {
+        if ( strcmp( cliApiVersion, RsApiTable[apiInx]->apiVersion ) != 0 ) {
             rodsLog( LOG_ERROR,
                      "chkApiVersion:Client's API Version %s does not match Server's %s",
-                     cliApiVersion, RsApiTable[apiInx].apiVersion );
+                     cliApiVersion, RsApiTable[apiInx]->apiVersion );
             return ( USER_API_VERSION_MISMATCH );
         }
     }
@@ -404,7 +405,7 @@ chkApiPermission( rsComm_t * rsComm, int apiInx ) {
     int xmsgSvrOnly;
     int xmsgSvrAlso;
 
-    clientUserAuth = RsApiTable[apiInx].clientUserAuth;
+    clientUserAuth = RsApiTable[apiInx]->clientUserAuth;
 
     xmsgSvrOnly = clientUserAuth & XMSG_SVR_ONLY;
     xmsgSvrAlso = clientUserAuth & XMSG_SVR_ALSO;
@@ -413,14 +414,14 @@ chkApiPermission( rsComm_t * rsComm, int apiInx ) {
         if ( ( xmsgSvrOnly + xmsgSvrAlso ) == 0 ) {
             rodsLog( LOG_ERROR,
                      "chkApiPermission: xmsgServer not allowed to handle api %d",
-                     RsApiTable[apiInx].apiNumber );
+                     RsApiTable[apiInx]->apiNumber );
             return ( SYS_NO_API_PRIV );
         }
     }
     else if ( xmsgSvrOnly != 0 ) {
         rodsLog( LOG_ERROR,
                  "chkApiPermission: non xmsgServer not allowed to handle api %d",
-                 RsApiTable[apiInx].apiNumber );
+                 RsApiTable[apiInx]->apiNumber );
         return ( SYS_NO_API_PRIV );
     }
 
@@ -435,7 +436,7 @@ chkApiPermission( rsComm_t * rsComm, int apiInx ) {
         return ( SYS_NO_API_PRIV );
     }
 
-    proxyUserAuth = RsApiTable[apiInx].proxyUserAuth & 0xfff;
+    proxyUserAuth = RsApiTable[apiInx]->proxyUserAuth & 0xfff;
     if ( proxyUserAuth > rsComm->proxyUser.authInfo.authFlag ) {
         return ( SYS_NO_API_PRIV );
     }
