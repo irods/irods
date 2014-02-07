@@ -1192,7 +1192,7 @@ extern "C" {
                     bool curr_host = ( _curr_host == host_name );
 
                     // =-=-=-=-=-=-=-
-                    // make some flags to clairify decision making
+                    // make some flags to clarify decision making
                     bool need_repl = ( _file_obj->repl_requested() > -1 );
 
                     // =-=-=-=-=-=-=-
@@ -1219,7 +1219,7 @@ extern "C" {
                         bool is_dirty = ( itr->is_dirty() != 1 );
 
                         // =-=-=-=-=-=-=-
-                        // success - correct resource and dont need a specific
+                        // success - correct resource and don't need a specific
                         //           replication, or the repl nums match
                         if ( resc_us ) {
                             // =-=-=-=-=-=-=-
