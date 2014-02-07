@@ -7,10 +7,12 @@ RENCI_FTP_BUILD=ftp://ftp.renci.org/pub/irods/build
 
 .PHONY : default retrieve build generate clean cmake libarchive jansson boost hdf5 netcdf epm lib_mysqludf_preg libs3
 
+OSNAME=$$(../packaging/find_os.sh)
 OSVERSION=$$(../packaging/find_os_version.sh)
-OS=$$(../packaging/find_os.sh)
+OS=$(OSNAME)$$( if [ "$(OSNAME)" = "RedHatCompatible" -a "$(OSVERSION)" \> "6" ] ; then echo "_CentOS6" ; fi)
 IRODSEXTERNALARCHIVE=irods_external_$(OS).tar.gz
 IRODSEXTERNALLOCAL=irods_external.tar.gz
+
 CMAKEVERSIONARCHIVE=$(CMAKEVERSION).tar.gz
 CMAKEVERSIONMAKE=$(CMAKEVERSION)/Makefile
 LIBARCHIVEVERSIONARCHIVE=$(LIBARCHIVEVERSION).tar.gz
