@@ -8,6 +8,8 @@
 #include "xmsgLib.hpp"
 #include "rsGlobal.hpp"
 #include "miscServerFunct.hpp"
+#include "irods_server_properties.hpp"
+#include "readServerConfig.hpp"
 
 int loopCnt = -1; /* make it -1 to run infinitel */
 
@@ -20,16 +22,20 @@ main( int argc, char **argv ) {
     char *logDir = NULL;
     char *tmpStr;
     int logFd;
+    bool run_server_as_root = false;
 
     ProcessType = XMSG_SERVER_PT;
 
-#ifdef RUN_SERVER_AS_ROOT
+    irods::server_properties::getInstance().get_property<bool>(RUN_SERVER_AS_ROOT_KW, run_server_as_root);
+
 #ifndef windows_platform
-    if ( initServiceUser() < 0 ) {
-        exit( 1 );
+    if (run_server_as_root) {
+		if ( initServiceUser() < 0 ) {
+			exit( 1 );
+		}
     }
 #endif
-#endif
+
 
 #ifndef _WIN32
     signal( SIGINT, signalExit );
