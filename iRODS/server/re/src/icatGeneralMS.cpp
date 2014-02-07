@@ -376,7 +376,6 @@ For Inclusion above, later
  - #msiNcInqId
  - #msiNcInqWithId
  - #msiNcGetVarsByType
- - #msiNccfGetVara
  - #msiNcGetArrayLen
  - #msiNcGetNumDim
  - #msiNcGetDataType

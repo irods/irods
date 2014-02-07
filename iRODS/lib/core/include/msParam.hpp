@@ -19,7 +19,6 @@
 #ifdef NETCDF_API
 #include "ncInqId.hpp"
 #include "ncGetVarsByType.hpp"
-#include "nccfGetVara.hpp"
 #endif
 
 
@@ -76,8 +75,6 @@ extern "C" {
 #define NcCloseInp_MS_T                "NcCloseInp_PI"
 #define NcGetVarInp_MS_T       "NcGetVarInp_PI"
 #define NcGetVarOut_MS_T       "NcGetVarOut_PI"
-#define NccfGetVarInp_MS_T     "NccfGetVarInp_PI"
-#define NccfGetVarOut_MS_T     "NccfGetVarOut_PI"
 #define NcInqOut_MS_T          "NcInqOut_PI"
 #define NcInqGrpsOut_MS_T      "NcInqGrpsOut_PI"
 #define Dictionary_MS_T                "Dictionary_PI"
@@ -265,8 +262,6 @@ extern "C" {
     int
     parseStrMspForLongArray( msParam_t *inpParam, int *ndim,
                              rodsLong_t **longArray );
-    int
-    parseMspForNccfGetVarInp( msParam_t *inpParam, nccfGetVarInp_t *nccfGetVarInp );
 #endif
     int
     parseMsParamFromIRFile( msParamArray_t *inpParamArray, char *inBuf );

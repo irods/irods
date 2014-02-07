@@ -378,7 +378,6 @@ LIB_API_OBJS += $(libApiObjDir)/rcNcClose.o
 LIB_API_OBJS += $(libApiObjDir)/rcNcInqId.o
 LIB_API_OBJS += $(libApiObjDir)/rcNcInqWithId.o
 LIB_API_OBJS += $(libApiObjDir)/rcNcGetVarsByType.o
-LIB_API_OBJS += $(libApiObjDir)/rcNccfGetVara.o
 LIB_API_OBJS += $(libApiObjDir)/rcNcInq.o
 LIB_API_OBJS += $(libApiObjDir)/rcNcOpenGroup.o
 LIB_API_OBJS += $(libApiObjDir)/rcNcInqGrps.o
@@ -396,9 +395,6 @@ SVR_API_OBJS += $(svrApiObjDir)/rsNcGetVarsByType.o
 SVR_API_OBJS += $(svrApiObjDir)/rsNcGetAggElement.o
 SVR_API_OBJS += $(svrApiObjDir)/rsNcGetAggInfo.o
 SVR_API_OBJS += $(svrApiObjDir)/rsNcArchTimeSeries.o
-ifdef LIB_CF
-SVR_API_OBJS += $(svrApiObjDir)/rsNccfGetVara.o
-endif
 SVR_API_OBJS += $(svrApiObjDir)/rsNcInq.o
 ifdef NETCDF4_API
 SVR_API_OBJS += $(svrApiObjDir)/rsNcOpenGroup.o

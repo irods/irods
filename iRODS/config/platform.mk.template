@@ -236,10 +236,6 @@ NETCDF_LIB=$(NETCDF_DIR)/liblib/.libs
 MY_CFLAG += -DNETCDF_API -I$(NETCDF_DIR)/include
 LDADD += -L$(NETCDF_LIB) -L$(HDF5_LIB) -L$(HDF5_HL_LIB) $(NETCDF_LIB)/libnetcdf.a $(HDF5_HL_LIB)/libhdf5_hl.a $(HDF5_LIB)/libhdf5.a -lz -lcurl
 CL_LDADD += -L$(NETCDF_LIB) -L$(HDF5_LIB) -L$(HDF5_HL_LIB) $(NETCDF_LIB)/libnetcdf.a $(HDF5_HL_LIB)/libhdf5_hl.a $(HDF5_LIB)/libhdf5.a -lz -lcurl
-ifdef LIB_CF
-MY_CFLAG += -DLIB_CF -I$(LIB_CF_INC_DIR)
-LDADD += -L$(LIB_CF_LIB_DIR) -lcf_src
-endif
 endif
 
 ifdef NETCDF_CLIENT

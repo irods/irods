@@ -602,123 +602,6 @@ msiNcGetVarsByType( msParam_t *dataTypeParam, msParam_t *ncidParam,
     return ( rei->status );
 }
 
-#ifdef LIB_CF
-/**
- * \fn msiNccfGetVara (msParam_t *ncidParam, msParam_t *varidParam, msParam_t *lvlIndexParam, msParam_t *timestepParam,  msParam_t *latRange0Param, msParam_t *latRange1Param, msParam_t *lonRange0Param, msParam_t *lonRange1Param, msParam_t *maxOutArrayLenParam, msParam_t *outParam, ruleExecInfo_t *rei)
- * This msi is being phased out becauuse we no longer support LIB_CF.
- *
-**/
-int
-msiNccfGetVara( msParam_t *ncidParam, msParam_t *varidParam,
-                msParam_t *lvlIndexParam, msParam_t *timestepParam,
-                msParam_t *latRange0Param, msParam_t *latRange1Param,
-                msParam_t *lonRange0Param, msParam_t *lonRange1Param,
-                msParam_t *maxOutArrayLenParam, msParam_t *outParam, ruleExecInfo_t *rei ) {
-    rsComm_t *rsComm;
-    nccfGetVarInp_t nccfGetVarInp;
-    nccfGetVarOut_t *nccfGetVarOut = NULL;
-
-    RE_TEST_MACRO( "    Calling msiNccfGetVara" )
-
-    if ( rei == NULL || rei->rsComm == NULL ) {
-        rodsLog( LOG_ERROR,
-                 "msiNccfGetVara: input rei or rsComm is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
-    }
-    rsComm = rei->rsComm;
-
-    if ( ncidParam == NULL ) {
-        rodsLog( LOG_ERROR,
-                 "msiNccfGetVara: input ncidParam is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
-    }
-
-    /* parse for dataType or nccfGetVarInp_t */
-    rei->status = parseMspForNccfGetVarInp( ncidParam, &nccfGetVarInp );
-
-    if ( rei->status < 0 ) {
-        return rei->status;
-    }
-
-    if ( varidParam != NULL ) {
-        /* parse for varid */
-        nccfGetVarInp.varid = parseMspForPosInt( varidParam );
-        if ( nccfGetVarInp.varid < 0 ) {
-            return nccfGetVarInp.varid;
-        }
-    }
-
-    if ( lvlIndexParam != NULL ) {
-        /* parse for ndim */
-        nccfGetVarInp.lvlIndex = parseMspForPosInt( lvlIndexParam );
-        if ( nccfGetVarInp.lvlIndex < 0 ) {
-            return nccfGetVarInp.lvlIndex;
-        }
-    }
-
-    if ( timestepParam != NULL ) {
-        /* parse for ndim */
-        nccfGetVarInp.timestep = parseMspForPosInt( timestepParam );
-        if ( nccfGetVarInp.timestep < 0 ) {
-            return nccfGetVarInp.timestep;
-        }
-    }
-
-    if ( latRange0Param != NULL ) {
-        rei->status = parseMspForFloat( latRange0Param,
-                                        &nccfGetVarInp.latRange[0] );
-        if ( rei->status < 0 ) {
-            return rei->status;
-        }
-    }
-
-    if ( latRange1Param != NULL ) {
-        rei->status = parseMspForFloat( latRange1Param,
-                                        &nccfGetVarInp.latRange[1] );
-        if ( rei->status < 0 ) {
-            return rei->status;
-        }
-    }
-
-    if ( lonRange0Param != NULL ) {
-        rei->status  = parseMspForFloat( lonRange0Param,
-                                         &nccfGetVarInp.lonRange[0] );
-        if ( rei->status < 0 ) {
-            return rei->status;
-        }
-    }
-
-    if ( lonRange1Param != NULL ) {
-        rei->status = parseMspForFloat( lonRange1Param,
-                                        &nccfGetVarInp.lonRange[1] );
-        if ( rei->status < 0 ) {
-            return rei->status;
-        }
-    }
-
-    if ( maxOutArrayLenParam != NULL ) {
-        /* parse for maxOutArrayLen */
-        nccfGetVarInp.maxOutArrayLen = parseMspForPosInt( maxOutArrayLenParam );
-        if ( nccfGetVarInp.maxOutArrayLen < 0 ) {
-            return nccfGetVarInp.maxOutArrayLen;
-        }
-    }
-
-    rei->status = rsNccfGetVara( rsComm, &nccfGetVarInp, &nccfGetVarOut );
-    clearKeyVal( &nccfGetVarInp.condInput );
-    if ( rei->status >= 0 ) {
-        fillMsParam( outParam, NULL, NccfGetVarOut_MS_T, nccfGetVarOut, NULL );
-    }
-    else {
-        rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
-                            "msiNccfGetVara: rsNccfGetVara failed, status = %d",
-                            rei->status );
-    }
-
-    return ( rei->status );
-}
-#endif
-
 /**
  * \fn msiNcGetArrayLen (msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
  * \brief Get the array length of a NcInqWithIdOut_MS_T (output of msiNcInqWithId) or NcGetVarOut_MS_T (output of msiNcGetVarsByType).
@@ -769,14 +652,6 @@ msiNcGetArrayLen( msParam_t *inpParam, msParam_t *outParam,
             return USER__NULL_INPUT_ERR;
         }
         arrayLen = ncGetVarOut->dataArray->len;
-    }
-    else if ( strcmp( inpParam->type, NccfGetVarOut_MS_T ) == 0 ) {
-        nccfGetVarOut_t *nccfGetVarOut;
-        nccfGetVarOut = ( nccfGetVarOut_t * ) inpParam->inOutStruct;
-        if ( nccfGetVarOut == NULL || nccfGetVarOut->dataArray == NULL ) {
-            return USER__NULL_INPUT_ERR;
-        }
-        arrayLen = nccfGetVarOut->dataArray->len;
     }
     else {
         rodsLog( LOG_ERROR,
@@ -902,14 +777,6 @@ msiNcGetDataType( msParam_t *inpParam, msParam_t *outParam,
         }
         dataType = ncGetVarOut->dataArray->type;
     }
-    else if ( strcmp( inpParam->type, NccfGetVarOut_MS_T ) == 0 ) {
-        nccfGetVarOut_t *nccfGetVarOut;
-        nccfGetVarOut = ( nccfGetVarOut_t * ) inpParam->inOutStruct;
-        if ( nccfGetVarOut == NULL || nccfGetVarOut->dataArray == NULL ) {
-            return USER__NULL_INPUT_ERR;
-        }
-        dataType = nccfGetVarOut->dataArray->type;
-    }
     else {
         rodsLog( LOG_ERROR,
                  "msiNcGetNumDim: Unsupported input Param type %s",
@@ -984,16 +851,6 @@ msiNcGetElementInArray( msParam_t *arrayStructParam, msParam_t *indexParam,
         dataType = ncGetVarOut->dataArray->type;
         myarray = ncGetVarOut->dataArray->buf;
         arrayLen = ncGetVarOut->dataArray->len;
-    }
-    else if ( strcmp( arrayStructParam->type, NccfGetVarOut_MS_T ) == 0 ) {
-        nccfGetVarOut_t *nccfGetVarOut;
-        nccfGetVarOut = ( nccfGetVarOut_t * ) arrayStructParam->inOutStruct;
-        if ( nccfGetVarOut == NULL || nccfGetVarOut->dataArray == NULL ) {
-            return USER__NULL_INPUT_ERR;
-        }
-        dataType = nccfGetVarOut->dataArray->type;
-        myarray = nccfGetVarOut->dataArray->buf;
-        arrayLen = nccfGetVarOut->dataArray->len;
     }
     else {
         rodsLog( LOG_ERROR,

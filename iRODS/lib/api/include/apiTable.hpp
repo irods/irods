@@ -614,12 +614,6 @@ apidef_t RcApiTable[] = {
         NC_GET_VARS_BY_TYPE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "NcGetVarInp_PI", 0, "NcGetVarOut_PI", 0, ( funcPtr ) RS_NC_GET_VARS_BY_TYPE
     },
-#ifdef LIB_CF
-    {
-        NCCF_GET_VARA_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "NccfGetVarInp_PI", 0, "NccfGetVarOut_PI", 0, ( funcPtr ) RS_NCCF_GET_VARA
-    },
-#endif
     {
         NC_INQ_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "NcInqInp_PI", 0, "NcInqOut_PI", 0, ( funcPtr ) RS_NC_INQ
