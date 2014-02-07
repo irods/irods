@@ -23,6 +23,8 @@
 // =-=-=-=-=-=-=-
 #include "irods_client_server_negotiation.hpp"
 #include "irods_network_factory.hpp"
+#include "irods_server_properties.hpp"
+#include "readServerConfig.hpp"
 
 
 
@@ -62,17 +64,21 @@ int irodsWinMain( int argc, char **argv )
     char tmpStr1[100], tmpStr2[100];
     char *logDir = NULL;
     char *tmpStr;
+    bool run_server_as_root = false;
 
 
     ProcessType = SERVER_PT;	/* I am a server */
 
-#ifdef RUN_SERVER_AS_ROOT
+    irods::server_properties::getInstance().get_property<bool>(RUN_SERVER_AS_ROOT_KW, run_server_as_root);
+
 #ifndef windows_platform
-    if ( initServiceUser() < 0 ) {
-        exit( 1 );
+    if (run_server_as_root) {
+		if ( initServiceUser() < 0 ) {
+			exit( 1 );
+		}
     }
 #endif
-#endif
+
 
     tmpStr = getenv( SP_LOG_LEVEL );
     if ( tmpStr != NULL ) {
