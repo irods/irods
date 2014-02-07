@@ -125,7 +125,7 @@ namespace irods {
         std::string                    logical_path_;    // full logical path from icat
         std::string                    data_type_;       // data type as described in objInfo.h:32
         int                            file_descriptor_; // file descriptor, if the file is in flight
-        int                            l1_desc_idx_;     // index into irods L1 file decriptor table
+        int                            l1_desc_idx_;     // index into irods L1 file descriptor table
         size_t                         size_;            // size of the file in bytes
         int                            repl_requested_;  // requested replica number
         std::string                    in_pdmo_;         // hierarchy indicating the current operations are

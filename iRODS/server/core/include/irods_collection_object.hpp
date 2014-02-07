@@ -23,7 +23,8 @@ namespace irods {
             const std::string&, // phy path
             const std::string&, // resc hier
             int,                // mode
-            int );              // flags
+            int,				// flags
+            const keyValPair_t& );	// cond_input
 
         // =-=-=-=-=-=-=-
         // Destructor

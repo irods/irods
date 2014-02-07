@@ -32,12 +32,14 @@ namespace irods {
         const std::string& _fn,
         const std::string& _resc_hier,
         int _m,
-        int _f ) :
+        int _f,
+        const keyValPair_t& _cond_input) :
         data_object(
             _fn,
             _resc_hier,
             _m,
-            _f ),
+            _f,
+            _cond_input),
         directory_pointer_( 0 ) {
 
     } // collection_object
