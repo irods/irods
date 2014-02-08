@@ -998,18 +998,18 @@ if [ "$BUILDIRODS" == "1" ] ; then
     mv /tmp/irodsicommandslist.tmp ./packaging/irods-icommands.list
 
 
-    set +e
-    # generate microservice developers tutorial in pdf format
-    echo "${text_green}${text_bold}Building iRODS Microservice Developers Tutorial${text_reset}"
-    cd $BUILDDIR/examples/microservices
-    rst2pdf microservice_tutorial.rst -o microservice_tutorial.pdf
-    if [ "$?" != "0" ] ; then
-        echo "${text_red}#######################################################" 1>&2
-        echo "ERROR :: Failed generating microservice_tutorial.pdf" 1>&2
-        echo "#######################################################${text_reset}" 1>&2
-        exit 1
-    fi
-    set -e
+#    set +e
+#    # generate microservice developers tutorial in pdf format
+#    echo "${text_green}${text_bold}Building iRODS Microservice Developers Tutorial${text_reset}"
+#    cd $BUILDDIR/examples/microservices
+#    rst2pdf microservice_tutorial.rst -o microservice_tutorial.pdf
+#    if [ "$?" != "0" ] ; then
+#        echo "${text_red}#######################################################" 1>&2
+#        echo "ERROR :: Failed generating microservice_tutorial.pdf" 1>&2
+#        echo "#######################################################${text_reset}" 1>&2
+#        exit 1
+#    fi
+#    set -e
 
     # generate tgz file for inclusion in coverage package
     if [ "$COVERAGE" == "1" ] ; then
