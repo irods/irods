@@ -84,9 +84,6 @@ namespace irods {
         virtual const std::string&             in_pdmo()         const {
             return in_pdmo_;
         }
-        virtual const keyValPair_t&            cond_input()      const {
-            return cond_input_;
-        }
 
         // =-=-=-=-=-=-=-
         // Mutators
@@ -111,9 +108,6 @@ namespace irods {
         virtual void replicas( const std::vector< physical_object >& _v ) {
             replicas_ = _v;
         }
-        inline void cond_input( const keyValPair_t& _cond_input ) {
-            replKeyVal( &_cond_input, &cond_input_ );
-        }
 
     protected:
         // =-=-=-=-=-=-=-
@@ -134,7 +128,6 @@ namespace irods {
         std::vector< physical_object > replicas_;        // structures holding replica info initialized
         // by factory fcn from
         // dataObjInfoHead
-        keyValPair_t                  cond_input_;       // input keywords
 
     }; // class file_object
 

@@ -13,9 +13,7 @@ namespace irods {
         resc_hier_( "" ),
         mode_( 0 ),
         flags_( 0 ) {
-    	cond_input_.len = 0;
-    	cond_input_.keyWord = NULL;
-    	cond_input_.value = NULL;
+    	memset( &cond_input_, 0, sizeof( keyValPair_t ) );
     } // ctor
 
 // =-=-=-=-=-=-=-
@@ -29,9 +27,7 @@ namespace irods {
 		resc_hier_( _resc_hier ),
 		mode_( _mode ),
 		flags_( _flags ) {
-    	cond_input_.len = 0;
-    	cond_input_.keyWord = NULL;
-    	cond_input_.value = NULL;
+		memset( &cond_input_, 0, sizeof( keyValPair_t ) );
 	} // ctor
 
 // =-=-=-=-=-=-=-
@@ -93,6 +89,11 @@ namespace irods {
         std::stringstream flags_str;
         flags_str << flags_;
         addKeyVal( &_kvp, FLAGS_KW, flags_str.str().c_str() );
+
+        // copy contents of cond_input
+        for ( int i = 0; i < cond_input_.len; i++ ) {
+            addKeyVal( &_kvp, cond_input_.keyWord[i], cond_input_.value[i] );
+        }
 
         return SUCCESS();
 
