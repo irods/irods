@@ -10,6 +10,7 @@ import commands
 import os
 import shutil
 import time
+import subprocess
 
 class Test_iAdminSuite(unittest.TestCase, ResourceBase):
 
@@ -23,6 +24,12 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
     def tearDown(self):
         self.run_resource_teardown()
         s.twousers_down()
+
+    def test_api_plugin(self):
+        assertiCmd(s.adminsession,"iapitest")
+        p = subprocess.Popen(['grep "HELLO WORLD"  ../../iRODS/server/log/rodsLog.*'], shell=True, stdout=subprocess.PIPE)
+        result = p.communicate()[0]
+        assert( -1 != result.find( "HELLO WORLD" ) )
 
     ###################
     # iadmin
@@ -664,6 +671,4 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
 
         assertiCmd( s.adminsession, "irm -rf "+dir_path )
         assertiCmd( s.adminsession, "irm -rf "+tar_path )
-
-
 

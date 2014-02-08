@@ -315,12 +315,14 @@ class RodsSession(object):
                         'ireg',
                         'imcoll',
                         'irsync',
-			'ixmsg',
+			            'ixmsg',
                         # added for test_allrules.py
                         'irule',
                         'iqdel',
                         # added for ticket_suite.py
                         'iticket',
+                        # added for pluggable api test
+                        'iapitest',
                      ]
 
         if icommand not in valid_cmds:

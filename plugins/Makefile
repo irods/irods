@@ -1,9 +1,12 @@
 
-.PHONY : clean all auth network database nodb resources
+.PHONY : clean all auth network database nodb resources api
 
-all : auth database network resources
+all : api auth database network resources
 
-nodb : auth network resources
+nodb : api auth network resources
+
+api :
+	@$(MAKE) -C api
 
 auth :
 	@$(MAKE) -C auth
