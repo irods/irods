@@ -7,7 +7,12 @@ RENCI_FTP_BUILD=ftp://ftp.renci.org/pub/irods/build
 
 .PHONY : default retrieve build generate clean cmake libarchive jansson boost hdf5 netcdf epm lib_mysqludf_preg libs3
 
-IRODSEXTERNALARCHIVE=irods_external
+OSNAME=$$(../packaging/find_os.sh)
+OSVERSION=$$(../packaging/find_os_version.sh)
+OS=$(OSNAME)$$( if [ "$(OSNAME)" = "RedHatCompatible" -a "$(OSVERSION)" \> "6" ] ; then echo "_CentOS6" ; fi)
+IRODSEXTERNALARCHIVE=irods_external_$(OS).tar.gz
+IRODSEXTERNALLOCAL=irods_external.tar.gz
+
 CMAKEVERSIONARCHIVE=$(CMAKEVERSION).tar.gz
 CMAKEVERSIONMAKE=$(CMAKEVERSION)/Makefile
 LIBARCHIVEVERSIONARCHIVE=$(LIBARCHIVEVERSION).tar.gz
@@ -27,34 +32,23 @@ LIB_MYSQLUDF_PREG_MAKE=lib_mysqludf_preg/Makefile
 LIBS3VERSIONARCHIVE=$(LIBS3VERSION).tar.gz
 LIBS3VERSIONMAKE=$(LIBS3VERSION)/GNUmakefile
 
-FAKEFILEFORMAKE=FakeTargetForMake
+FAKETARGETFORMAKE=FakeTargetForMake
 
-default : ${FAKEFILEFORMAKE}
+default :
+	@echo "Getting $(IRODSEXTERNALARCHIVE) -> $(IRODSEXTERNALLOCAL)..."
+	@curl -o $(IRODSEXTERNALLOCAL) -z $(IRODSEXTERNALLOCAL) $(RENCI_FTP_BUILD)/$(IRODSEXTERNALARCHIVE) > /dev/null 2>&1
+	@$(MAKE) $(FAKETARGETFORMAKE)
 
-../$(IRODSEXTERNALARCHIVE).tar.gz :
-	@cd ../ ; \
-		OS=`./packaging/find_os.sh` ; \
-		wget -O $(IRODSEXTERNALARCHIVE).tar.gz $(RENCI_FTP_BUILD)/$(IRODSEXTERNALARCHIVE)_$$OS.tar.gz 2>&1 ; \
-		touch $(IRODSEXTERNALARCHIVE).tar.gz # to prevent re-download next time
-
-${FAKEFILEFORMAKE} : ../$(IRODSEXTERNALARCHIVE).tar.gz
-	echo "File Unpackaging externals."
-	@cd ../ 	; \
-		tar zxf $(IRODSEXTERNALARCHIVE).tar.gz
-	touch ${FAKEFILEFORMAKE}
-
-retrieve : ../$(IRODSEXTERNALARCHIVE).tar.gz
-	echo "Retrieve Unpackaging externals."
-	@cd ../ ; \
-	tar zxf $(IRODSEXTERNALARCHIVE).tar.gz
+$(FAKETARGETFORMAKE) : $(IRODSEXTERNALLOCAL)
+	@echo "Unpacking $(IRODSEXTERNALLOCAL)..."
+	@tar zxf $(IRODSEXTERNALLOCAL)
+	@touch $(FAKETARGETFORMAKE)
 
 build : cmake libarchive jansson boost epm hdf5 netcdf lib_mysqludf_preg libs3
 
 generate : build
-	@cd ../ ; \
-		OS=`./packaging/find_os.sh` ; \
-		mkdir -p build ; \
-		tar zfc build/$(IRODSEXTERNALARCHIVE)_$$OS.tar.gz --exclude "*.tar.gz" --exclude "*.zip" --exclude "*cmake*" --exclude "Makefile" external/
+	@echo "Building $(IRODSEXTERNALARCHIVE)..."
+	@tar zfc $(IRODSEXTERNALARCHIVE) --exclude "*.tar.gz" --exclude "*.zip" --exclude "*cmake*" --exclude "Makefile" --exclude $(FAKETARGETFORMAKE) *
 
 $(LIB_MYSQLUDF_PREG_ARCHIVE) :
 	@wget $(RENCI_FTP_EXTERNAL)/$(LIB_MYSQLUDF_PREG_ARCHIVE) 2>&1
@@ -205,5 +199,7 @@ clean :
 	@echo "Cleaning lib_mysqludf_preg..."
 	@rm -rf $(LIB_MYSQLUDF_PREG)
 	@rm -f $(LIB_MYSQLUDF_PREG_ARCHIVE)
-	@echo "Cleaning $(IRODSEXTERNALARCHIVE).tar.gz"
-	@rm -f ../$(IRODSEXTERNALARCHIVE).tar.gz
+	@echo "Cleaning $(IRODSEXTERNALARCHIVE)"
+	@rm -f $(IRODSEXTERNALARCHIVE)
+	@rm -f $(IRODSEXTERNALLOCAL)
+	@rm -f ${FAKETARGETFORMAKE}
