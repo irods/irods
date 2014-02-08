@@ -20,6 +20,22 @@ namespace irods {
 
 // =-=-=-=-=-=-=-
 // public - ctor
+	data_object::data_object(
+		const std::string& _phy_path,
+		const std::string& _resc_hier,
+		int _mode,
+		int _flags ) :
+		physical_path_( _phy_path ),
+		resc_hier_( _resc_hier ),
+		mode_( _mode ),
+		flags_( _flags ) {
+    	cond_input_.len = 0;
+    	cond_input_.keyWord = NULL;
+    	cond_input_.value = NULL;
+	} // ctor
+
+// =-=-=-=-=-=-=-
+// public - ctor
     data_object::data_object(
         const std::string& _phy_path,
         const std::string& _resc_hier,

@@ -471,13 +471,11 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // create a context to call the mkdir operation
-        keyValPair_t cond_input;
-        memset(&cond_input, 0, sizeof(keyValPair_t));
         irods::collection_object_ptr coll_obj(
             new irods::collection_object(
                 dirname,
                 fco->resc_hier(),
-                fco->mode(), 0, cond_input ) );
+                fco->mode(), 0 ) );
         irods::resource_plugin_context context(
             _ctx.prop_map(),
             coll_obj, "",
@@ -630,13 +628,11 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // create a context to call the mkdir operation
-        keyValPair_t cond_input;
-        memset(&cond_input, 0, sizeof(keyValPair_t));
         irods::collection_object_ptr coll_obj(
             new irods::collection_object(
                 dirname,
                 fco->resc_hier(),
-                fco->mode(), 0, cond_input ) );
+                fco->mode(), 0 ) );
         irods::resource_plugin_context context(
             _ctx.prop_map(),
             coll_obj, "",

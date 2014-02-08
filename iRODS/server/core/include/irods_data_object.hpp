@@ -24,6 +24,11 @@ namespace irods {
             const std::string&,		// phy path
             const std::string&,		// resc hier
             int,                	// mode
+            int );					// flags
+        data_object(
+            const std::string&,		// phy path
+            const std::string&,		// resc hier
+            int,                	// mode
             int,					// flags
             const keyValPair_t& );	// cond_input
         data_object( const data_object& );
