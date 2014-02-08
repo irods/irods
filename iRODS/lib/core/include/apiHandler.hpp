@@ -78,18 +78,40 @@ namespace irods {
                                         */
         funcPtr        svrHandler;     /* the server handler. should be defined NULL for
                                         * client */
-
+        char           in_pack_key [ MAX_NAME_LEN ];
+        char           out_pack_key [ MAX_NAME_LEN ];
+        std::string    fcn_name_;
     }; // class api_entry
+    typedef boost::shared_ptr< api_entry > api_entry_ptr;
+
 
     /// =-=-=-=-=-=-=-
     /// @brief class which will hold statically compiled and dynamically loaded api handles
-    class api_entry_table : public lookup_table< api_entry*, size_t, boost::hash< size_t > > {
+    class api_entry_table : public lookup_table< api_entry_ptr, size_t, boost::hash< size_t > > {
     public:
         api_entry_table( apidef_t[], size_t );
         ~api_entry_table();
 
     }; // class api_entry_table
 
-};
+    /// =-=-=-=-=-=-=-
+    /// @brief class which will hold the map of pack struct entries
+    class pack_entry_table : public lookup_table< std::string > {
+    public:
+        pack_entry_table( packInstructArray_t[] );
+        ~pack_entry_table();
+
+    }; // class api_entry_table
+
+
+
+
+    /// =-=-=-=-=-=-=-
+    /// @brief load api plugins
+    error init_api_table(
+        api_entry_table&,    // table holding api entries
+        pack_entry_table& ); // table for pack struct ref
+
+}; // namespace irods
 
 #endif          /* API_HANDLER_H */

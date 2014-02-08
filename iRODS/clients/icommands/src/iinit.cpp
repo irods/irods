@@ -5,6 +5,7 @@
 #include "rods.hpp"
 #include "parseCommandLine.hpp"
 #include "rcMisc.hpp"
+#include "rodsClient.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_native_auth_object.hpp"
@@ -269,6 +270,10 @@ main( int argc, char **argv ) {
             exit( 1 );
         }
     }
+
+    // =-=-=-=-=-=-=-
+    // initialize pluggable api table
+    init_api_table( RcApiTable, ApiPackTable );
 
     /* Connect... */
     Conn = rcConnect( myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,

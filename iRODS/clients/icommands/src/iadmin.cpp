@@ -1393,6 +1393,10 @@ main( int argc, char **argv ) {
 
     /* need to copy time convert commands up here too */
 
+    // =-=-=-=-=-=-=-
+    // initialize pluggable api table
+    init_api_table( RcApiTable, ApiPackTable );
+
     Conn = rcConnect( myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
                       myEnv.rodsZone, 0, &errMsg );
 

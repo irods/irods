@@ -38,8 +38,20 @@ main( int argc, char *argv[] ) {
     char *tmpStr;
     bool run_server_as_root = false;
 
+    irods::error ret;
+
+    // =-=-=-=-=-=-=-
+    // load pluggable api entries
+    ret = irods::init_api_table(
+              RsApiTable,
+              ApiPackTable );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        exit( 1 );
+    }
+
+
     ProcessType = AGENT_PT;
-//sleep(30);
 
     irods::server_properties::getInstance().get_property<bool>(RUN_SERVER_AS_ROOT_KW, run_server_as_root);
 
@@ -90,7 +102,7 @@ main( int argc, char *argv[] ) {
     // =-=-=-=-=-=-=-
     // manufacture a network object for comms
     irods::network_object_ptr net_obj;
-    irods::error ret = irods::network_factory( &rsComm, net_obj );
+    ret = irods::network_factory( &rsComm, net_obj );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
@@ -127,7 +139,6 @@ main( int argc, char *argv[] ) {
     /* Open a connection to syslog */
     openlog( "rodsAgent", LOG_ODELAY | LOG_PID, LOG_DAEMON );
 #endif
-
     status = getRodsEnv( &rsComm.myEnv );
 
     if ( status < 0 ) {

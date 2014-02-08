@@ -87,9 +87,9 @@ namespace irods {
         }
 
     protected:
-        std::string                       context_;           // context string for this plugin
-        std::string                       instance_name_;     // name of this instance of the plugin
-        double                            interface_version_; // version of the plugin interface supported
+        std::string context_;           // context string for this plugin
+        std::string instance_name_;     // name of this instance of the plugin
+        double      interface_version_; // version of the plugin interface supported
 
         /// =-=-=-=-=-=-=-
         /// @brief heterogeneous key value map of plugin data

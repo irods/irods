@@ -15,7 +15,7 @@
 
 packInstruct_t MiscSvrInfo_PIG = MiscSvrInfo_PI;
 
-packInstructArray_t ApiPackTable[] = {
+packInstructArray_t api_pack_table_init[] = {
     {"DataObjInp_PI", DataObjInp_PI},
     {"OpenedDataObjInp_PI", OpenedDataObjInp_PI},
     {"DataCopyInp_PI", DataCopyInp_PI},
@@ -125,5 +125,8 @@ packInstructArray_t ApiPackTable[] = {
     {"fileRenameOut_PI", fileRenameOut_PI},
     {PACK_TABLE_END_PI, ( char * ) NULL},
 };
+
+
+irods::pack_entry_table ApiPackTable( api_pack_table_init );
 
 #endif	/* API_PACK_TABLE_H */

@@ -728,7 +728,12 @@ matchPackInstruct( char *name, packInstructArray_t *myPackTable ) {
     }
 
     /* Try the API table */
-
+#if 1
+    irods::pack_entry_table::iterator itr = ApiPackTable.find( name );
+    if ( itr != ApiPackTable.end() ) {
+        return ( void* )itr->second.c_str();
+    }
+#else
     i = 0;
     while ( strcmp( ApiPackTable[i].name, PACK_TABLE_END_PI ) != 0 ) {
         /* not the end */
@@ -737,7 +742,7 @@ matchPackInstruct( char *name, packInstructArray_t *myPackTable ) {
         }
         i++;
     }
-
+#endif
     rodsLog( LOG_ERROR,
              "matchPackInstruct: Cannot resolve %s",
              name );

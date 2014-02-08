@@ -18,6 +18,8 @@ resources :
 	@$(MAKE) -C resources
 
 clean :
+	@echo "Cleaning API plugins..."
+	@$(MAKE) clean -C api > /dev/null 2>&1
 	@echo "Cleaning Authentication plugins..."
 	@$(MAKE) clean -C auth > /dev/null 2>&1
 	@echo "Cleaning Database plugins..."

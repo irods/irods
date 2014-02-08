@@ -385,6 +385,7 @@ if [ "$1" == "clean" ] ; then
     rm -f iRODS/lib/core/include/irods_ms_home.hpp
     rm -f iRODS/lib/core/include/irods_network_home.hpp
     rm -f iRODS/lib/core/include/irods_auth_home.hpp
+    rm -f iRODS/lib/core/include/irods_api_home.hpp
     rm -f iRODS/lib/core/include/irods_resources_home.hpp
     rm -f iRODS/server/core/include/irods_database_home.hpp
     set -e
@@ -960,6 +961,12 @@ if [ "$BUILDIRODS" == "1" ] ; then
     sed -e s,IRODSDATABASEPATH,$irods_database_home, ./server/core/include/irods_database_home.hpp.src > /tmp/irods_database_home.hpp
     rsync -c /tmp/irods_database_home.hpp ./server/core/include/irods_database_home.hpp
     rm /tmp/irods_database_home.hpp
+    # =-=-=-=-=-=-=-
+    # modify the irods_api_home.hpp file with the proper path to the binary directory
+    irods_api_home="$detected_irods_home/plugins/api/"
+    sed -e s,IRODSAPIPATH,$irods_api_home, ./lib/core/include/irods_api_home.hpp.src > /tmp/irods_api_home.hpp
+    rsync -c /tmp/irods_api_home.hpp ./lib/core/include/irods_api_home.hpp
+    rm /tmp/irods_api_home.hpp
 
     ###########################################
     # single 'make' time on an 8 core machine

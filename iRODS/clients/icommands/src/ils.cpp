@@ -26,6 +26,8 @@ main( int argc, char **argv ) {
     char *optStr;
     rodsPathInp_t rodsPathInp;
 
+
+
     // -=-=-=-=-=- JMC - backport 4536 -=-=-=-=-=-
     optStr = "hArlLvt:VZ";
     status = parseCmdLineOpt( argc, argv, optStr, 1, &myRodsArgs );
@@ -66,6 +68,10 @@ main( int argc, char **argv ) {
     if ( conn == NULL ) {
         exit( 2 );
     }
+
+    // =-=-=-=-=-=-=-
+    // initialize pluggable api table
+    init_api_table( RcApiTable, ApiPackTable );
 
     if ( strcmp( myEnv.rodsUserName, PUBLIC_USER_NAME ) != 0 ) {
         status = clientLogin( conn );

@@ -221,7 +221,9 @@ parseUserName( char *fullUserNameIn, char *userName, char *userZone ) {
 
 int
 apiTableLookup( int apiNumber ) {
-
+#ifndef RODS_SERVER
+    return apiNumber;
+#endif
 #if 0
     int i;
 

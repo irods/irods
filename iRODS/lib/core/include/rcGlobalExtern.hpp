@@ -15,7 +15,7 @@
 extern packConstantArray_t PackConstantTable[];
 extern packInstructArray_t RodsPackTable[];
 extern int ProcessType;
-extern packInstructArray_t ApiPackTable[];
+extern irods::pack_entry_table ApiPackTable;
 extern packType_t packTypeTable[];
 extern int NumOfPackTypes;
 extern irods::api_entry_table RcApiTable;
