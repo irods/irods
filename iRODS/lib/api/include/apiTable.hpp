@@ -587,7 +587,21 @@ irods::apidef_t client_api_table_inp[] = {
     {
         FILE_CHKSUM_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "fileChksumInp_PI", 0, "fileChksumOut_PI", 0, ( funcPtr ) RS_FILE_CHKSUM
-    }
+    },
+    {
+        SSL_START_AN, RODS_API_VERSION,
+        NO_USER_AUTH | XMSG_SVR_ALSO, NO_USER_AUTH | XMSG_SVR_ALSO,
+        "sslStartInp_PI", 0, NULL, 0, ( funcPtr ) RS_SSL_START
+    },
+    {
+        SSL_END_AN, RODS_API_VERSION,
+        NO_USER_AUTH | XMSG_SVR_ALSO, NO_USER_AUTH | XMSG_SVR_ALSO,
+        "sslEndInp_PI", 0, NULL, 0, ( funcPtr ) RS_SSL_END
+    },
+    {
+        AUTH_PLUG_REQ_AN, RODS_API_VERSION, NO_USER_AUTH, NO_USER_AUTH,
+        "authPlugReqInp_PI", 0, "authPlugReqOut_PI", 0, ( funcPtr ) RS_AUTH_PLUG_REQ
+    },
 
 }; // _api_table_inp
 
