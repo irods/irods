@@ -147,6 +147,14 @@ sed -e s,TEMPLATE_DATABASE_TYPE,$DB_TYPE, "$SETUP_FILE.template" > "/tmp/$USER/s
 mv "/tmp/$USER/setup_database.temp" $SETUP_FILE
 
 # =-=-=-=-=-=-=-
+# setup default port
+ports[postgres]=5432
+ports[mysql]=3306
+ports[oracle]=7777
+sed -e s,TEMPLATE_DEFAULT_DATABASEPORT,${ports[$DB_TYPE]}, $SETUP_FILE > "/tmp/$USER/setup_database.temp"
+mv "/tmp/$USER/setup_database.temp" $SETUP_FILE
+
+# =-=-=-=-=-=-=-
 # build the particular flavor of DB plugin
 cd $SCRIPTPATH
 make ${DB_TYPE}

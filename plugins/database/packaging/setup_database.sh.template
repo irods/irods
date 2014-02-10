@@ -1,6 +1,7 @@
 #!/bin/bash -e
 
 DATABASETYPE="TEMPLATE_DATABASE_TYPE"
+DEFAULT_DATABASEPORT="TEMPLATE_DEFAULT_DATABASEPORT"
 
 # config
 IRODS_CONFIG_FILE="./iRODS/config/irods.config"
@@ -58,7 +59,7 @@ while [ "$STATUS" != "complete" ] ; do
   if [ "$LASTDATABASEPORT" ] ; then
     echo -n " [$LASTDATABASEPORT]"
   else
-    echo -n " [5432]"
+    echo -n " [$DEFAULT_DATABASEPORT]"
   fi
   echo -n ": "
   read DATABASEPORT
@@ -66,7 +67,7 @@ while [ "$STATUS" != "complete" ] ; do
     if [ "$LASTDATABASEPORT" ] ; then
       DATABASEPORT=$LASTDATABASEPORT
     else
-      DATABASEPORT=5432
+      DATABASEPORT=$DEFAULT_DATABASEPORT
     fi
   fi
   # strip all forward slashes
