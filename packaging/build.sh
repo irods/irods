@@ -1141,8 +1141,10 @@ if [ "$COVERAGE" == "1" ] ; then
     EPMOPTS="-g"
     # sets listfile coverage options
     EPMOPTS="$EPMOPTS COVERAGE=true"
-else
+elif [ "$RELEASE" == "1" ] ; then
     EPMOPTS=""
+else
+    EPMOPTS="-g"
 fi
 
 cd $BUILDDIR
