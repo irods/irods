@@ -116,12 +116,19 @@ initCondForMcoll( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
             addKeyVal( &dataObjOprInp->condInput,
                        COLLECTION_TYPE_KW, HAAW_STRUCT_FILE_STR );
         }
+        else if ( strcmp( mountType, "m" ) == 0 ||
+                  strcmp( mountType, "msso" ) == 0 ) {
+            addKeyVal( &dataObjOprInp->condInput,
+                       COLLECTION_TYPE_KW, MSSO_STRUCT_FILE_STR );
+            /* XXXXX need to add "msso structFile" token */
+            addKeyVal( &dataObjOprInp->condInput, DATA_TYPE_KW, MSSO_DT_STR );
+        }
         else if ( strcmp( mountType, "t" ) == 0 ||
                   strcmp( mountType, "tar" ) == 0 ) {
             addKeyVal( &dataObjOprInp->condInput,
                        COLLECTION_TYPE_KW, TAR_STRUCT_FILE_STR );
             /* XXXXX need to add "tar structFile" token */
-            addKeyVal( &dataObjOprInp->condInput, DATA_TYPE_KW, "tar file" );
+            addKeyVal( &dataObjOprInp->condInput, DATA_TYPE_KW, TAR_DT_STR );
         }
         else if ( strcmp( mountType, "f" ) == 0 ||
                   strcmp( mountType, "filesystem" ) == 0 ) {

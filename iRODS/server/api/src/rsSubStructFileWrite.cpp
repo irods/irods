@@ -73,7 +73,7 @@ int _rsSubStructFileWrite(
     // =-=-=-=-=-=-=-
     // create first class structured object
     irods::structured_object_ptr struct_obj(
-        new irods::structured_object( ) );
+        new irods::structured_object( *_write_inp ) );
     struct_obj->comm( _comm );
     struct_obj->resc_hier( _write_inp->resc_hier );
     struct_obj->file_descriptor( _write_inp->fd );

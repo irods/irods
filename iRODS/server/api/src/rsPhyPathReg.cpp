@@ -128,7 +128,8 @@ irsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
     // =-=-=-=-=-=-=-
     // coll registration requires the resource hierarchy
     if ( coll_type && ( strcmp( coll_type, HAAW_STRUCT_FILE_STR ) == 0 ||
-                        strcmp( coll_type, TAR_STRUCT_FILE_STR ) == 0 ) ) {
+                        strcmp( coll_type, TAR_STRUCT_FILE_STR ) == 0 ||
+                        strcmp( coll_type, MSSO_STRUCT_FILE_STR ) == 0 ) ) {
         status = structFileReg( rsComm, phyPathRegInp );
         return ( status );
     }
@@ -950,6 +951,9 @@ structFileSupport( rsComm_t *rsComm, char *collection, char *collType,
     }
     else if ( strcmp( collType, TAR_STRUCT_FILE_STR ) == 0 ) {
         specColl.type = TAR_STRUCT_FILE_T;
+    }
+    else if ( strcmp( collType, MSSO_STRUCT_FILE_STR ) == 0 ) {
+        specColl.type = MSSO_STRUCT_FILE_T;
     }
     else {
         return ( 0 );

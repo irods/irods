@@ -39,17 +39,18 @@ extern "C" {
 
     /* defines some commonly used dataTypes */
 #define GENERIC_DT_STR    "generic"
-#define TAR_DT_STR            "tar file"
+#define TAR_DT_STR        "tar file"
 #define GZIP_TAR_DT_STR   "gzipTar"  // JMC - backport 4632
 #define BZIP2_TAR_DT_STR  "bzip2Tar" // JMC - backport 4632
 #define ZIP_DT_STR        "zipFile"  // JMC - backport 4633
+#define MSSO_DT_STR       "msso file"
     /* bundle are types for internal phybun use */ // JMC - backport 4658
-#define TAR_BUNDLE_DT_STR "tar bundle" // JMC - backport 4658
-#define GZIP_TAR_BUNDLE_DT_STR "gzipTar bundle" // JMC - backport 4658
-#define BZIP2_TAR_BUNDLE_DT_STR "bzip2Tar bundle" // JMC - backport 4658
-#define ZIP_BUNDLE_DT_STR "zipFile bundle" // JMC - backport 4658
+#define TAR_BUNDLE_DT_STR       "tar bundle"       // JMC - backport 4658
+#define GZIP_TAR_BUNDLE_DT_STR  "gzipTar bundle"   // JMC - backport 4658
+#define BZIP2_TAR_BUNDLE_DT_STR "bzip2Tar bundle"  // JMC - backport 4658
+#define ZIP_BUNDLE_DT_STR       "zipFile bundle"   // JMC - backport 4658
 
-#define HAAW_DT_STR           "haaw file"
+#define HAAW_DT_STR             "haaw file"
 #define MAX_LINK_CNT    20      /* max number soft link in a path */
 
     typedef struct RescInfo {
@@ -108,9 +109,10 @@ extern "C" {
         LINKED_COLL
     } specCollClass_t;
 
-    typedef enum {          /* structFile type */
-        HAAW_STRUCT_FILE_T,        /* the UK eScience structFile */
-        TAR_STRUCT_FILE_T        /* The tar structFile */
+    typedef enum {            /* structFile type */
+        HAAW_STRUCT_FILE_T,   /* the UK eScience structFile */
+        TAR_STRUCT_FILE_T,    /* The tar structFile */
+        MSSO_STRUCT_FILE_T,   /* The workflow structFile */
     } structFileType_t;
 
     typedef enum {          /* specColl operation type */
@@ -120,13 +122,15 @@ extern "C" {
         NORMAL_OPR_ON_STRUCT_FILE_COLL
     } structFileOprType_t;
 
-#define HAAW_STRUCT_FILE_STR            "haawStructFile"
-#define TAR_STRUCT_FILE_STR             "tarStructFile"
-#define MOUNT_POINT_STR         "mountPoint"
-#define LINK_POINT_STR          "linkPoint"
-#define INHERIT_PAR_SPEC_COLL_STR       "inheritParentSpecColl"
+#define HAAW_STRUCT_FILE_STR      "haawStructFile"
+#define TAR_STRUCT_FILE_STR       "tarStructFile"
+#define MOUNT_POINT_STR           "mountPoint"
+#define LINK_POINT_STR            "linkPoint"
+#define INHERIT_PAR_SPEC_COLL_STR "inheritParentSpecColl"
+#define MSSO_STRUCT_FILE_STR      "mssoStructFile"
+#define MSO_STR                   "mso"
 
-#define UNMOUNT_STR             "unmount"
+#define UNMOUNT_STR               "unmount"
 
     typedef struct SpecColl {
         specCollClass_t collClass;
