@@ -128,7 +128,7 @@ int _rsFileCreate(
     }
 
     // =-=-=-=-=-=-=-
-    // dont capture the irods results in the log here as there may be an issue with
+    // don't capture the irods results in the log here as there may be an issue with
     // needing to create a directory, etc.
     irods::file_object_ptr file_obj( new irods::file_object(
                                          _comm,
@@ -150,7 +150,7 @@ int _rsFileCreate(
         if ( getErrno( create_err.code() ) == ENOENT ) {
 
             // =-=-=-=-=-=-=-
-            // the directory didnt exist, make it and then try the create once again.
+            // the directory didn't exist, make it and then try the create once again.
             int status = mkDirForFilePath(
                              _comm,
                              "/",
@@ -170,7 +170,7 @@ int _rsFileCreate(
 
             // =-=-=-=-=-=-=-
             // capture the irods results in the log as our error mechanism
-            // doesnt extend outside this function for now.
+            // doesn't extend outside this function for now.
             if ( !create_err.ok() ) {
                 std::stringstream msg;
                 msg << "ENOENT fileCreate for [";
@@ -184,7 +184,7 @@ int _rsFileCreate(
         }
         else if ( getErrno( create_err.code() ) == EEXIST ) {
             // =-=-=-=-=-=-=-
-            // remove a potentially empty directoy which is already in place
+            // remove a potentially empty directory which is already in place
             irods::collection_object_ptr coll_obj(
                 new irods::collection_object(
                     _create_inp->fileName,
@@ -204,7 +204,7 @@ int _rsFileCreate(
 
             // =-=-=-=-=-=-=-
             // capture the irods results in the log as our error mechanism
-            // doesnt extend outside this function for now.
+            // doesn't extend outside this function for now.
             if ( !create_err.ok() ) {
                 std::stringstream msg;
                 msg << "EEXIST 2 fileCreate for [";

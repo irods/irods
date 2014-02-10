@@ -132,7 +132,7 @@ mkDirForFilePath(
 }
 
 // =-=-=-=-=-=-=-
-// mk the directory resursively
+// mk the directory recursively
 int mkFileDirR(
     rsComm_t *rsComm,
     const char *startDir,
@@ -237,7 +237,7 @@ int chkEmptyDir(
     irods::error opendir_err = fileOpendir( rsComm, cacheDir_obj );
 
     // =-=-=-=-=-=-=-
-    // dont log an error as this is part
+    // don't log an error as this is part
     // of the functionality of this code
     if ( !opendir_err.ok() ) {
         return 0;
