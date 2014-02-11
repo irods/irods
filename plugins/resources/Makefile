@@ -1,4 +1,5 @@
-BASEDIRS = deferred \
+BASEDIRS = mssofile \
+           deferred \
            nonblocking \
            unixfilesystem \
            structfile \
