@@ -3269,7 +3269,7 @@ sub MySQL_CreateDatabase()
     
     # iRODS now supports a script to determine the path & lib name of the odbc driver
     my $mysqlOdbcLib = `../packaging/find_odbc_mysql.sh`;
-    chomp($psqlOdbcLib);
+    chomp($mysqlOdbcLib);
 
     open( NEWCONFIGFILE, ">$userODBC" );
     print ( NEWCONFIGFILE "[mysql]\n" .
