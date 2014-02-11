@@ -7,6 +7,8 @@
 #include "rodsPath.hpp"
 #include "rcMisc.hpp"
 #include "lsUtil.hpp"
+#include <iostream>
+#include <string>
 void usage();
 
 
@@ -193,7 +195,9 @@ queryAndShowStrCond( rcComm_t *conn, char *hint, char *format,
         if ( noPageFlag == 0 ) {
             char inbuf[100];
             printf( "Continue? [Y/n]" );
-            fgets( inbuf, 90, stdin );
+            std::string response = "";
+            getline( cin, response );
+            strncpy( inbuf, response.c_str(), 90 );
             if ( strncmp( inbuf, "n", 1 ) == 0 ) {
                 break;
             }
@@ -276,7 +280,9 @@ execAndShowSpecificQuery( rcComm_t *conn, char *sql,
         if ( noPageFlag == 0 ) {
             char inbuf[100];
             printf( "Continue? [Y/n]" );
-            fgets( inbuf, 90, stdin );
+            std::string response = "";
+            getline( cin, response );
+            strncpy( inbuf, response.c_str(), 90 );
             if ( strncmp( inbuf, "n", 1 ) == 0 ) {
                 break;
             }

@@ -91,9 +91,18 @@ void UnixSendEmail( char *toAddr, char *subjectLine, char *msgBody ) {
         sprintf( mailStr, "cat %s| mail  %s", fileName, toAddr );
     }
 #endif
-    system( mailStr );
+    int ret = 0;
+    ret = system( mailStr );
+    if( ret )
+    {
+        irods::log( ERROR( ret, "mailStr command returned a non-zero value." ) );
+    }
     sprintf( mailStr, "rm %s", fileName );
-    system( mailStr );
+    ret = system( mailStr );
+    if( ret )
+    {
+        irods::log( ERROR( ret, "mailStr command returned a non-zero value." ) );
+    }
 }
 
 static int  _myAutoReplicateService( rsComm_t *conn, char *topColl, int recursiveFlag,

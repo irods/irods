@@ -722,7 +722,7 @@ reDebug( RuleEngineEvent label, int flag, RuleEngineEventParam *param, Node *nod
                 aNum++;
             }
             for ( j = 0; j < aNum; j++ ) {
-                strncat( seActionStr, myActionStr[j], 10 * MAX_NAME_LEN + 100 );
+                strncat( seActionStr, myActionStr[j], 10 * MAX_NAME_LEN + 100 - strlen( seActionStr ) );
             }
         }
     }

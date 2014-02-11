@@ -86,7 +86,11 @@ runPamAuthCheck( char *username, char *password ) {
           This is still the parent.  Write the message to the child and
           then wait for the exit and status.
         */
-        write( p2cp[1], password, strlen( password ) );
+        if( write( p2cp[1], password, strlen( password ) ) == -1 )
+        {
+            int errsv = errno;
+            irods::log( ERROR( errsv, "Error during write from parent to child." ) );
+        }
         close( p2cp[1] );
         waitpid( pid, &status, 0 );
         return( status );
@@ -94,7 +98,10 @@ runPamAuthCheck( char *username, char *password ) {
     else {
         /* This is the child */
         close( 0 );        /* close current stdin */
-        dup( p2cp[0] );    /* Make stdin come from read end of the pipe */
+        if ( dup( p2cp[0] ) == -1 ) { /* Make stdin come from read end of the pipe */
+            int errsv = errno;
+            irods::log( ERROR( errsv, "Error duplicating the file descriptor." ) );
+        }
         close( p2cp[1] );
         i = execl( PAM_AUTH_CHECK_PROG, PAM_AUTH_CHECK_PROG, username,
                    ( char * )NULL );
