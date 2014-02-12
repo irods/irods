@@ -44,6 +44,12 @@ if [ "$DB_TYPE" != "postgres" -a "$DB_TYPE" != "mysql" -a "$DB_TYPE" != "oracle"
 fi
 
 # =-=-=-=-=-=-=-
+# tmpfile function
+function set_tmpfile {
+  TMPFILE=/tmp/$USER/$(date "+%Y%m%d-%H%M%S.%N.irods.tmp")
+}
+
+# =-=-=-=-=-=-=-
 # set up some variables
 mkdir -p /tmp/$USER
 TMPCONFIGFILE="/tmp/$USER/irods.config.epm"
@@ -57,11 +63,9 @@ source $SCRIPTPATH/${DB_TYPE}/VERSION
 echo "Detected Plugin Version to Build [$PLUGINVERSION]"
 echo "Detected Plugin Version Integer  [$PLUGINVERSIONINT]"
 LISTFILE="$SCRIPTPATH/packaging/irods_database_plugin_${DB_TYPE}.list"
-TMPFILE="/tmp/$USER/irods_db_plugin.list"
-sed -e "s,TEMPLATE_PLUGINVERSIONINT,$PLUGINVERSIONINT," $LISTFILE.template > $TMPFILE
-mv $TMPFILE $LISTFILE
-sed -e "s,TEMPLATE_PLUGINVERSION,$PLUGINVERSION," $LISTFILE > $TMPFILE
-mv $TMPFILE $LISTFILE
+set_tmpfile
+sed -e "s,TEMPLATE_PLUGINVERSIONINT,$PLUGINVERSIONINT," $LISTFILE.template > $TMPFILE; mv $TMPFILE $LISTFILE
+sed -e "s,TEMPLATE_PLUGINVERSION,$PLUGINVERSION," $LISTFILE > $TMPFILE; mv $TMPFILE $LISTFILE
 
 # =-=-=-=-=-=-=-
 # determine the OS Flavor
@@ -143,16 +147,17 @@ echo "Detected ${DB_TYPE} path [$IRODS_DB_PATH]"
 sed -e s,IRODS_DB_PATH,$IRODS_DB_PATH, $EPMFILE > $TMPCONFIGFILE
 
 SETUP_FILE="$SCRIPTPATH/packaging/setup_database.sh"
-sed -e s,TEMPLATE_DATABASE_TYPE,$DB_TYPE, "$SETUP_FILE.template" > "/tmp/$USER/setup_database.temp"
-mv "/tmp/$USER/setup_database.temp" $SETUP_FILE
+set_tmpfile
+sed -e s,TEMPLATE_DATABASE_TYPE,$DB_TYPE, "$SETUP_FILE.template" > $TMPFILE; mv $TMPFILE $SETUP_FILE
 
 # =-=-=-=-=-=-=-
 # setup default port
+declare -A ports
 ports[postgres]=5432
 ports[mysql]=3306
 ports[oracle]=7777
-sed -e s,TEMPLATE_DEFAULT_DATABASEPORT,${ports[$DB_TYPE]}, $SETUP_FILE > "/tmp/$USER/setup_database.temp"
-mv "/tmp/$USER/setup_database.temp" $SETUP_FILE
+set_tmpfile
+sed -e s,TEMPLATE_DEFAULT_DATABASEPORT,${ports[$DB_TYPE]}, $SETUP_FILE > $TMPFILE; mv $TMPFILE $SETUP_FILE
 
 # =-=-=-=-=-=-=-
 # build the particular flavor of DB plugin
