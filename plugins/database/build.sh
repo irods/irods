@@ -64,10 +64,8 @@ echo "Detected Plugin Version to Build [$PLUGINVERSION]"
 echo "Detected Plugin Version Integer  [$PLUGINVERSIONINT]"
 LISTFILE="$SCRIPTPATH/packaging/irods_database_plugin_${DB_TYPE}.list"
 set_tmpfile
-sed -e "s,TEMPLATE_PLUGINVERSIONINT,$PLUGINVERSIONINT," $LISTFILE.template > $TMPFILE
-mv $TMPFILE $LISTFILE
-sed -e "s,TEMPLATE_PLUGINVERSION,$PLUGINVERSION," $LISTFILE > $TMPFILE
-mv $TMPFILE $LISTFILE
+sed -e "s,TEMPLATE_PLUGINVERSIONINT,$PLUGINVERSIONINT," $LISTFILE.template > $TMPFILE; mv $TMPFILE $LISTFILE
+sed -e "s,TEMPLATE_PLUGINVERSION,$PLUGINVERSION," $LISTFILE > $TMPFILE; mv $TMPFILE $LISTFILE
 
 # =-=-=-=-=-=-=-
 # determine the OS Flavor
