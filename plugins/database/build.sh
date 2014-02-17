@@ -152,12 +152,12 @@ sed -e s,TEMPLATE_DATABASE_TYPE,$DB_TYPE, "$SETUP_FILE.template" > $TMPFILE; mv 
 
 # =-=-=-=-=-=-=-
 # setup default port
-declare -A ports
-ports[postgres]=5432
-ports[mysql]=3306
-ports[oracle]=7777
+defaultport="NOTDETECTED"
+if [ "$DB_TYPE" == "postgres" ] ;  then defaultport="5432"; fi
+if [ "$DB_TYPE" == "mysql" ] ;     then defaultport="3306"; fi
+if [ "$DB_TYPE" == "oracle" ] ;    then defaultport="7777"; fi
 set_tmpfile
-sed -e s,TEMPLATE_DEFAULT_DATABASEPORT,${ports[$DB_TYPE]}, $SETUP_FILE > $TMPFILE; mv $TMPFILE $SETUP_FILE
+sed -e s,TEMPLATE_DEFAULT_DATABASEPORT,$defaultport, $SETUP_FILE > $TMPFILE; mv $TMPFILE $SETUP_FILE
 
 # =-=-=-=-=-=-=-
 # build the particular flavor of DB plugin
