@@ -75,59 +75,59 @@
 //       the file object's physical path with the full path
 
 static irods::error example_file_copy_plugin(
-    int mode,
-    const char* srcFileName,
-    const char* destFileName ) {
+		int mode,
+		const char* srcFileName,
+		const char* destFileName ) {
 
-    irods::error result = SUCCESS();
+	irods::error result = SUCCESS();
 
-    int inFd, outFd;
-    char myBuf[TRANS_BUF_SZ];
-    rodsLong_t bytesCopied = 0;
-    int bytesRead;
-    int bytesWritten;
-    int status;
-    struct stat statbuf;
+	int inFd, outFd;
+	char myBuf[TRANS_BUF_SZ];
+	rodsLong_t bytesCopied = 0;
+	int bytesRead;
+	int bytesWritten;
+	int status;
+	struct stat statbuf;
 
-    status = stat( srcFileName, &statbuf );
-    int err_status = UNIX_FILE_STAT_ERR - errno;
-    if ( ( result = ASSERT_ERROR( status >= 0, err_status, "Stat of \"%s\" error, status = %d",
-                                  srcFileName, err_status ) ).ok() ) {
+	status = stat( srcFileName, &statbuf );
+	int err_status = UNIX_FILE_STAT_ERR - errno;
+	if ( ( result = ASSERT_ERROR( status >= 0, err_status, "Stat of \"%s\" error, status = %d",
+								  srcFileName, err_status ) ).ok() ) {
 
-        inFd = open( srcFileName, O_RDONLY, 0 );
-        err_status = UNIX_FILE_OPEN_ERR - errno;
-        if ( !( result = ASSERT_ERROR( inFd >= 0 && ( statbuf.st_mode & S_IFREG ) != 0, err_status, "Open error for srcFileName \"%s\", status = %d",
-                                       srcFileName, status ) ).ok() ) {
-            close( inFd ); // JMC cppcheck - resource
-        }
-        else {
-            outFd = open( destFileName, O_WRONLY | O_CREAT | O_TRUNC, mode );
-            err_status = UNIX_FILE_OPEN_ERR - errno;
-            if ( !( result = ASSERT_ERROR( outFd >= 0, err_status, "Open error for destFileName %s, status = %d",
-                                           destFileName, status ) ).ok() ) {
-                close( inFd );
-            }
-            else {
-                while ( result.ok() && ( bytesRead = read( inFd, ( void * ) myBuf, TRANS_BUF_SZ ) ) > 0 ) {
-                    bytesWritten = write( outFd, ( void * ) myBuf, bytesRead );
-                    err_status = UNIX_FILE_WRITE_ERR - errno;
-                    if ( ( result = ASSERT_ERROR( bytesWritten > 0, err_status, "Write error for srcFileName %s, status = %d",
-                                                  destFileName, status ) ).ok() ) {
-                        bytesCopied += bytesWritten;
-                    }
-                }
+		inFd = open( srcFileName, O_RDONLY, 0 );
+		err_status = UNIX_FILE_OPEN_ERR - errno;
+		if ( !( result = ASSERT_ERROR( inFd >= 0 && ( statbuf.st_mode & S_IFREG ) != 0, err_status, "Open error for srcFileName \"%s\", status = %d",
+									   srcFileName, status ) ).ok() ) {
+			close( inFd ); // JMC cppcheck - resource
+		}
+		else {
+			outFd = open( destFileName, O_WRONLY | O_CREAT | O_TRUNC, mode );
+			err_status = UNIX_FILE_OPEN_ERR - errno;
+			if ( !( result = ASSERT_ERROR( outFd >= 0, err_status, "Open error for destFileName %s, status = %d",
+										   destFileName, status ) ).ok() ) {
+				close( inFd );
+			}
+			else {
+				while ( result.ok() && ( bytesRead = read( inFd, ( void * ) myBuf, TRANS_BUF_SZ ) ) > 0 ) {
+					bytesWritten = write( outFd, ( void * ) myBuf, bytesRead );
+					err_status = UNIX_FILE_WRITE_ERR - errno;
+					if ( ( result = ASSERT_ERROR( bytesWritten > 0, err_status, "Write error for srcFileName %s, status = %d",
+												  destFileName, status ) ).ok() ) {
+						bytesCopied += bytesWritten;
+					}
+				}
 
-                close( inFd );
-                close( outFd );
+				close( inFd );
+				close( outFd );
 
-                if ( result.ok() ) {
-                    result = ASSERT_ERROR( bytesCopied == statbuf.st_size, SYS_COPY_LEN_ERR, "Copied size %lld does not match source size %lld of %s",
-                                           bytesCopied, statbuf.st_size, srcFileName );
-                }
-            }
-        }
-    }
-    return result;
+				if ( result.ok() ) {
+					result = ASSERT_ERROR( bytesCopied == statbuf.st_size, SYS_COPY_LEN_ERR, "Copied size %lld does not match source size %lld of %s",
+										   bytesCopied, statbuf.st_size, srcFileName );
+				}
+			}
+		}
+	}
+	return result;
 }
 
 
@@ -711,14 +711,14 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // if the file can't be accessed due to permission denied
             // try again using root credentials.
-            irods::server_properties::getInstance().get_property<bool>( RUN_SERVER_AS_ROOT_KW, run_server_as_root );
-            if ( run_server_as_root ) {
-                if ( status < 0 && errno == EACCES && isServiceUserSet() ) {
-                    if ( changeToRootUser() == 0 ) {
-                        status = stat( fco->physical_path().c_str() , _statbuf );
-                        changeToServiceUser();
-                    }
-                }
+            irods::server_properties::getInstance().get_property<bool>(RUN_SERVER_AS_ROOT_KW, run_server_as_root);
+            if (run_server_as_root) {
+				if ( status < 0 && errno == EACCES && isServiceUserSet() ) {
+					if ( changeToRootUser() == 0 ) {
+						status = stat( fco->physical_path().c_str() , _statbuf );
+						changeToServiceUser();
+					}
+				}
             }
 
             // =-=-=-=-=-=-=-
@@ -860,14 +860,14 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // if the directory can't be accessed due to permission
             // denied try again using root credentials.
-            irods::server_properties::getInstance().get_property<bool>( RUN_SERVER_AS_ROOT_KW, run_server_as_root );
-            if ( run_server_as_root ) {
-                if ( dir_ptr == NULL && errno == EACCES && isServiceUserSet() ) {
-                    if ( changeToRootUser() == 0 ) {
-                        dir_ptr = opendir( fco->physical_path().c_str() );
-                        changeToServiceUser();
-                    } // if
-                }
+            irods::server_properties::getInstance().get_property<bool>(RUN_SERVER_AS_ROOT_KW, run_server_as_root);
+            if (run_server_as_root) {
+				if ( dir_ptr == NULL && errno == EACCES && isServiceUserSet() ) {
+					if ( changeToRootUser() == 0 ) {
+						dir_ptr = opendir( fco->physical_path().c_str() );
+						changeToServiceUser();
+					} // if
+				}
             }
 
             // =-=-=-=-=-=-=-

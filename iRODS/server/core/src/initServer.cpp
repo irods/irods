@@ -159,7 +159,7 @@ mkServerHost( char *myHostAddr, char *zoneName ) {
     status = matchHostConfig( tmpRodsServerHost );
 
     status = getZoneInfo( zoneName,
-                          ( zoneInfo_t ** ) &tmpRodsServerHost->zoneInfo );
+                          ( zoneInfo_t ** )( static_cast< void * >( &tmpRodsServerHost->zoneInfo ) ) );
 
     if ( status < 0 ) {
         free( tmpRodsServerHost );

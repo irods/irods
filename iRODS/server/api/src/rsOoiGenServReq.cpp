@@ -206,27 +206,27 @@ ooiGenServReqFunc( void *buffer, size_t size, size_t nmemb, void *userp ) {
     switch ( ooiGenServReqStruct->outType ) {
     case OOI_STR_TYPE:
         type_PI = STR_MS_T;
-        status = jsonUnpackOoiRespStr( responseObj, ( char ** ) &ptr );
+        status = jsonUnpackOoiRespStr( responseObj, ( char ** )( static_cast< void * >( &ptr ) ) );
         break;
     case OOI_DICT_TYPE:
         type_PI = Dictionary_MS_T;
-        status = jsonUnpackOoiRespDict( responseObj, ( dictionary_t ** ) &ptr );
+        status = jsonUnpackOoiRespDict( responseObj, ( dictionary_t ** )( static_cast< void * >( &ptr ) ) );
         break;
     case OOI_ARRAY_TYPE:
         type_PI = GenArray_MS_T;
-        status = jsonUnpackOoiRespArray( responseObj, ( genArray_t ** ) &ptr );
+        status = jsonUnpackOoiRespArray( responseObj, ( genArray_t ** )( static_cast< void * >( &ptr ) ) );
         break;
     case OOI_INT_TYPE:
         type_PI = INT_MS_T;
-        status = jsonUnpackOoiRespInt( responseObj, ( int ** ) &ptr );
+        status = jsonUnpackOoiRespInt( responseObj, ( int ** )( static_cast< void * >( &ptr ) ) );
         break;
     case OOI_FLOAT_TYPE:
         type_PI = FLOAT_MS_T;
-        status = jsonUnpackOoiRespFloat( responseObj, ( float ** ) &ptr );
+        status = jsonUnpackOoiRespFloat( responseObj, ( float ** )( static_cast< void * >( &ptr ) ) );
         break;
     case OOI_BOOL_TYPE:
         type_PI = BOOL_MS_T;
-        status = jsonUnpackOoiRespBool( responseObj, ( int ** ) &ptr );
+        status = jsonUnpackOoiRespBool( responseObj, ( int ** )( static_cast< void * >( &ptr ) ) );
         break;
     default:
         rodsLog( LOG_ERROR,

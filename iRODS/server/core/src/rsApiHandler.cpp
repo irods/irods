@@ -109,7 +109,7 @@ int rsApiHandler(
     }
 
     if ( inputStructBBuf->len > 0 ) {
-        status = unpackStruct( inputStructBBuf->buf, ( void ** ) &myInStruct,
+        status = unpackStruct( inputStructBBuf->buf, ( void ** )( static_cast< void * >( &myInStruct ) ),
                                RsApiTable[apiInx]->inPackInstruct, RodsPackTable, rsComm->irodsProt );
         if ( status < 0 ) {
             rodsLog( LOG_NOTICE,
