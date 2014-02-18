@@ -98,29 +98,137 @@ irsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
     }
 
     // =-=-=-=-=-=-=-
-    // working on the "home zone", determine if we need to redirect to a different
-    // server in this zone for this operation.  if there is a RESC_HIER_STR_KW then
-    // we know that the redirection decision has already been made
-    int               local = LOCAL_HOST;
-    rodsServerHost_t* host  =  0;
-    std::string       hier;
-    char*             tmp_hier = getValByKey( &phyPathRegInp->condInput, RESC_HIER_STR_KW );
+    // determine if a hierarchy has been passed by kvp, if so use it.
+    // otherwise determine a resource hierarchy given dst hier or default resource
+    std::string hier;
+    char*       tmp_hier = getValByKey( &phyPathRegInp->condInput, RESC_HIER_STR_KW );
     if ( NULL == tmp_hier ) {
-        irods::error ret = irods::resource_redirect( irods::CREATE_OPERATION, rsComm,
-                           phyPathRegInp, hier, host, local );
-        if ( !ret.ok() ) {
-            std::stringstream msg;
-            msg << "failed in irods::resource_redirect for [";
-            msg << phyPathRegInp->objPath << "]";
-            irods::log( PASSMSG( msg.str(), ret ) );
-            return ret.code();
-        }
         // =-=-=-=-=-=-=-
-        // we resolved the redirect and have a host, set the hier str for subsequent
-        // api calls, etc.
-        addKeyVal( &phyPathRegInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
+        // if no hier is provided, determine if a resource was specified
+        char* dst_resc = getValByKey( &phyPathRegInp->condInput, DEST_RESC_NAME_KW );
+        if ( dst_resc ) {
+            // =-=-=-=-=-=-=-
+            // if we do have a dest resc, see if it has a parent or a child
+            irods::resource_ptr resc;
+            irods::error ret = resc_mgr.resolve( dst_resc, resc );
+            if ( !ret.ok() ) {
+                irods::log( PASS( ret ) );
+                return ret.code();
+            }
 
-    }
+            // =-=-=-=-=-=-=-
+            // get parent
+            irods::resource_ptr parent_resc;
+            ret = resc->get_parent( parent_resc );
+            bool has_parent = ret.ok();
+
+            // =-=-=-=-=-=-=-
+            // get child
+            bool has_child = ( resc->num_children() > 0 );
+
+            // =-=-=-=-=-=-=-
+            // if the resc is mid-tier this is a Bad Thing
+            if ( has_parent && has_child ) {
+                return HIERARCHY_ERROR;
+            }
+            // =-=-=-=-=-=-=-
+            // this is a leaf node situation
+            else if ( has_parent && !has_child ) {
+                // =-=-=-=-=-=-=-
+                // get the path from our parent resource
+                // to this given leaf resource - this our hier
+                getHierarchyForRescOut_t* get_hier_out = 0;
+                getHierarchyForRescInp_t  get_hier_inp;
+                strncpy(
+                    get_hier_inp.resc_name_,
+                    dst_resc,
+                    MAX_NAME_LEN );
+                status = rsGetHierarchyForResc(
+                             rsComm,
+                             &get_hier_inp,
+                             &get_hier_out );
+                if ( status < 0 ) {
+                    irods::log( ERROR( status, "failed to get resc hier" ) );
+                    return status;
+                }
+
+                hier = get_hier_out->resc_hier_;
+                addKeyVal(
+                    &phyPathRegInp->condInput,
+                    RESC_HIER_STR_KW,
+                    hier.c_str() );
+
+                // =-=-=-=-=-=-=-
+                // get the root resc of the hier, this is the
+                // new resource name
+                std::string root_resc;
+                irods::hierarchy_parser parser;
+                parser.set_string( get_hier_out->resc_hier_ );
+                parser.first_resc( root_resc );
+                addKeyVal(
+                    &phyPathRegInp->condInput,
+                    DEST_RESC_NAME_KW,
+                    root_resc.c_str() );
+
+            }
+            // =-=-=-=-=-=-=-
+            // this is a solo node situation
+            else if ( !has_parent && !has_child ) {
+                hier = dst_resc;
+                addKeyVal(
+                    &phyPathRegInp->condInput,
+                    RESC_HIER_STR_KW,
+                    hier.c_str() );
+            }
+            // =-=-=-=-=-=-=-
+            // root node and pathological situation
+            else {
+                irods::error ret = irods::resolve_resource_hierarchy(
+                                       irods::CREATE_OPERATION,
+                                       rsComm,
+                                       phyPathRegInp,
+                                       hier );
+                if ( !ret.ok() ) {
+                    std::string msg( "failed for [" );
+                    msg += phyPathRegInp->objPath;
+                    msg += "]";
+                    irods::log( PASSMSG( msg, ret ) );
+                    return ret.code();
+                }
+
+                addKeyVal(
+                    &phyPathRegInp->condInput,
+                    RESC_HIER_STR_KW,
+                    hier.c_str() );
+            }
+
+        } // if dst_resc
+        else {
+            // =-=-=-=-=-=-=-
+            // no resc is specificied, request a hierarchy given the default resource
+            irods::error ret = irods::resolve_resource_hierarchy(
+                                   irods::CREATE_OPERATION,
+                                   rsComm,
+                                   phyPathRegInp,
+                                   hier );
+            if ( !ret.ok() ) {
+                std::string msg( "failed for [" );
+                msg += phyPathRegInp->objPath;
+                msg += "]";
+                irods::log( PASSMSG( msg, ret ) );
+                return ret.code();
+            }
+
+            // =-=-=-=-=-=-=-
+            // we resolved the redirect and have a host, set the hier str for subsequent
+            // api calls, etc.
+            addKeyVal( &phyPathRegInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
+
+        } // else
+
+    } // if tmp_hier
+    // =-=-=-=-=-=-=-
+    // we have been handed a hierarchy, pass it on
     else {
         hier = tmp_hier;
     }
