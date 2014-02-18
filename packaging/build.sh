@@ -204,6 +204,11 @@ echo "Detected OS Version [$DETECTEDOSVERSION]"
 # FUNCTIONS
 ############################################################
 
+# creates a timestamped tempfile for quick usage
+set_tmpfile {
+  TMPFILE=/tmp/$USER/$(date "+%Y%m%d-%H%M%S.%N.irods.tmp")
+}
+
 # find number of cpus
 detect_number_of_cpus_and_set_makejcmd() {
     DETECTEDCPUCOUNT=`$BUILDDIR/packaging/get_cpu_count.sh`
@@ -416,7 +421,7 @@ if [ "$1" == "docs" ] ; then
     # prepare list file from template
     cd $BUILDDIR
     LISTFILE="./packaging/irods-docs.list"
-    TMPFILE="/tmp/irodsdocslist.tmp"
+    set_tmpfile
     sed -e "s,TEMPLATE_IRODSVERSIONINT,$IRODSVERSIONINT," $LISTFILE.template > $TMPFILE
     mv $TMPFILE $LISTFILE
     sed -e "s,TEMPLATE_IRODSVERSION,$IRODSVERSION,g" $LISTFILE > $TMPFILE
@@ -488,7 +493,7 @@ fi
 
 ################################################################################
 # housekeeping - update examples - keep them current
-TMPFILE=/tmp/libexamplefilesystem.cpp
+set_tmpfile
 sed -e s,unix,example,g $BUILDDIR/plugins/resources/unixfilesystem/libunixfilesystem.cpp > $TMPFILE
 . $BUILDDIR/packaging/astyleparams
 if [ "`which astyle`" != "" ] ; then
