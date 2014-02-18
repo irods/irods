@@ -36,13 +36,45 @@ class Test_Passthru_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
 
     hostname = socket.gethostname()
     my_test_resource = {
-        "setup"    : [  
+        "setup"    : [
             "iadmin modresc demoResc name origResc",
             "iadmin mkresc demoResc passthru",
             "iadmin mkresc unix1Resc 'unix file system' "+hostname+":/var/lib/irods/unix1RescVault",
             "iadmin addchildtoresc demoResc unix1Resc",
         ],
-        "teardown" : [ 
+        "teardown" : [
+            "iadmin rmchildfromresc demoResc unix1Resc",
+            "iadmin rmresc unix1Resc",
+            "iadmin rmresc demoResc",
+            "iadmin modresc origResc name demoResc",
+            "rm -rf /var/lib/irods/unix1RescVault",
+        ],
+    }
+
+    def setUp(self):
+        ResourceSuite.__init__(self)
+        s.twousers_up()
+        self.run_resource_setup()
+
+    def tearDown(self):
+        self.run_resource_teardown()
+        s.twousers_down()
+
+    @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
+    def test_ireg_as_rodsuser_in_vault(self):
+        pass
+
+class Test_Deferred_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
+
+    hostname = socket.gethostname()
+    my_test_resource = {
+        "setup"    : [
+            "iadmin modresc demoResc name origResc",
+            "iadmin mkresc demoResc deferred",
+            "iadmin mkresc unix1Resc 'unixfilesystem' "+hostname+":/var/lib/irods/unix1RescVault",
+            "iadmin addchildtoresc demoResc unix1Resc",
+        ],
+        "teardown" : [
             "iadmin rmchildfromresc demoResc unix1Resc",
             "iadmin rmresc unix1Resc",
             "iadmin rmresc demoResc",
