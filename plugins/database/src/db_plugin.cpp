@@ -3208,7 +3208,7 @@ extern "C" {
         cVal[IX_MODIFY_TS] = myTime;
         cVal[IX_CREATE_TS] = myTime;
 
-        cVal[IX_RESC_NAME2] = _dst_data_obj_info->rescName; // JMC - backport 4669
+        cVal[IX_RESC_NAME2] = _dst_data_obj_info->rescHier; // JMC - backport 4669
         cVal[IX_DATA_PATH2] = _dst_data_obj_info->filePath; // JMC - backport 4669
         cVal[IX_DATA_ID2] = objIdString; // JMC - backport 4669
 
@@ -3219,11 +3219,11 @@ extern "C" {
         cllBindVarCount = nColumns;
 #if (defined ORA_ICAT || defined MY_ICAT) // JMC - backport 4685
         /* MySQL and Oracle */
-        snprintf( tSQL, MAX_SQL_SIZE, "insert into R_DATA_MAIN ( %s ) select ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? from DUAL where not exists (select data_id from R_DATA_MAIN where resc_name=? and data_path=? and data_id=?)",
+        snprintf( tSQL, MAX_SQL_SIZE, "insert into R_DATA_MAIN ( %s ) select ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? from DUAL where not exists (select data_id from R_DATA_MAIN where resc_hier=? and data_path=? and data_id=?)",
                   theColls );
 #else
         /* Postgres */
-        snprintf( tSQL, MAX_SQL_SIZE, "insert into R_DATA_MAIN ( %s ) select ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? where not exists (select data_id from R_DATA_MAIN where resc_name=? and data_path=? and data_id=?)",
+        snprintf( tSQL, MAX_SQL_SIZE, "insert into R_DATA_MAIN ( %s ) select ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? where not exists (select data_id from R_DATA_MAIN where resc_hier=? and data_path=? and data_id=?)",
                   theColls );
 
 #endif

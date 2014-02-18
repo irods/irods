@@ -55,6 +55,7 @@ procApiRequest( rcComm_t *conn, int apiNumber, void *inputStruct,
     conn->rError = NULL;
 
     apiInx = apiTableLookup( apiNumber );
+
     if ( apiInx < 0 ) {
         rodsLog( LOG_ERROR,
                  "procApiRequest: apiTableLookup of apiNumber %d failed", apiNumber );
@@ -117,13 +118,13 @@ sendApiRequest( rcComm_t *conn, int apiInx, void *inputStruct,
 
     cliChkReconnAtSendStart( conn );
 
-    if ( RcApiTable[apiInx].inPackInstruct != NULL ) {
+    if ( RcApiTable[apiInx]->inPackInstruct != NULL ) {
         if ( inputStruct == NULL ) {
             cliChkReconnAtSendEnd( conn );
             return ( USER_API_INPUT_ERR );
         }
         status = packStruct( ( void * ) inputStruct, &inputStructBBuf,
-                             RcApiTable[apiInx].inPackInstruct, RodsPackTable, 0, conn->irodsProt );
+                             RcApiTable[apiInx]->inPackInstruct, RodsPackTable, 0, conn->irodsProt );
         if ( status < 0 ) {
             rodsLogError( LOG_ERROR, status,
                           "sendApiRequest: packStruct error, status = %d", status );
@@ -138,7 +139,7 @@ sendApiRequest( rcComm_t *conn, int apiInx, void *inputStruct,
     };
 
 
-    if ( RcApiTable[apiInx].inBsFlag <= 0 ) {
+    if ( RcApiTable[apiInx]->inBsFlag <= 0 ) {
         inputBsBBuf = NULL;
     }
 
@@ -155,7 +156,7 @@ sendApiRequest( rcComm_t *conn, int apiInx, void *inputStruct,
               myInputStructBBuf,
               inputBsBBuf,
               NULL,
-              RcApiTable[apiInx].apiNumber,
+              RcApiTable[apiInx]->apiNumber,
               conn->irodsProt );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
@@ -179,7 +180,7 @@ sendApiRequest( rcComm_t *conn, int apiInx, void *inputStruct,
                           myInputStructBBuf,
                           inputBsBBuf,
                           NULL,
-                          RcApiTable[apiInx].apiNumber,
+                          RcApiTable[apiInx]->apiNumber,
                           conn->irodsProt );
                 if ( !ret.ok() ) {
                     irods::log( PASS( ret ) );
@@ -222,18 +223,18 @@ readAndProcApiReply( rcComm_t *conn, int apiInx, void **outStruct,
 
     /* some sanity check */
 
-    if ( RcApiTable[apiInx].outPackInstruct != NULL && outStruct == NULL ) {
+    if ( RcApiTable[apiInx]->outPackInstruct != NULL && outStruct == NULL ) {
         rodsLog( LOG_ERROR,
                  "readAndProcApiReply: outStruct error for A apiNumber %d",
-                 RcApiTable[apiInx].apiNumber );
+                 RcApiTable[apiInx]->apiNumber );
         cliChkReconnAtReadEnd( conn );
         return ( USER_API_INPUT_ERR );
     }
 
-    if ( RcApiTable[apiInx].outBsFlag > 0 && outBsBBuf == NULL ) {
+    if ( RcApiTable[apiInx]->outBsFlag > 0 && outBsBBuf == NULL ) {
         rodsLog( LOG_ERROR,
                  "readAndProcApiReply: outBsBBuf error for B apiNumber %d",
-                 RcApiTable[apiInx].apiNumber );
+                 RcApiTable[apiInx]->apiNumber );
         cliChkReconnAtReadEnd( conn );
         return ( USER_API_INPUT_ERR );
     }
@@ -315,10 +316,10 @@ procApiReply( rcComm_t *conn, int apiInx, void **outStruct,
 
     /* some sanity check */
 
-    if ( RcApiTable[apiInx].outPackInstruct != NULL && outStruct == NULL ) {
+    if ( RcApiTable[apiInx]->outPackInstruct != NULL && outStruct == NULL ) {
         rodsLog( LOG_ERROR,
                  "readAndProcApiReply: outStruct error for C apiNumber %d",
-                 RcApiTable[apiInx].apiNumber );
+                 RcApiTable[apiInx]->apiNumber );
         if ( retVal < 0 ) {
             return retVal;
         }
@@ -327,10 +328,10 @@ procApiReply( rcComm_t *conn, int apiInx, void **outStruct,
         }
     }
 
-    if ( RcApiTable[apiInx].outBsFlag > 0 && outBsBBuf == NULL ) {
+    if ( RcApiTable[apiInx]->outBsFlag > 0 && outBsBBuf == NULL ) {
         rodsLog( LOG_ERROR,
                  "readAndProcApiReply: outBsBBuf error for D apiNumber %d",
-                 RcApiTable[apiInx].apiNumber );
+                 RcApiTable[apiInx]->apiNumber );
         if ( retVal < 0 ) {
             return retVal;
         }
@@ -343,7 +344,7 @@ procApiReply( rcComm_t *conn, int apiInx, void **outStruct,
     if ( outStructBBuf->len > 0 ) {
         if ( outStruct != NULL ) {
             status = unpackStruct( outStructBBuf->buf, ( void ** ) outStruct,
-                                   RcApiTable[apiInx].outPackInstruct, RodsPackTable,
+                                   RcApiTable[apiInx]->outPackInstruct, RodsPackTable,
                                    conn->irodsProt );
             if ( status < 0 ) {
                 rodsLogError( LOG_ERROR, status,
@@ -360,7 +361,7 @@ procApiReply( rcComm_t *conn, int apiInx, void **outStruct,
         else {
             rodsLog( LOG_ERROR,
                      "readAndProcApiReply: got unneeded outStruct for apiNumber %d",
-                     RcApiTable[apiInx].apiNumber );
+                     RcApiTable[apiInx]->apiNumber );
         }
     }
 
@@ -373,7 +374,7 @@ procApiReply( rcComm_t *conn, int apiInx, void **outStruct,
         else {
             rodsLog( LOG_ERROR,
                      "readAndProcApiReply: got unneeded outBsBBuf for apiNumber %d",
-                     RcApiTable[apiInx].apiNumber );
+                     RcApiTable[apiInx]->apiNumber );
         }
     }
 

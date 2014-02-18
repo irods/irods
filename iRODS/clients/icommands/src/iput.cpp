@@ -58,6 +58,10 @@ main( int argc, char **argv ) {
         reconnFlag = NO_RECONN;
     }
 
+    // =-=-=-=-=-=-=-
+    // initialize pluggable api table
+    init_api_table( RcApiTable, ApiPackTable );
+
     conn = rcConnect( myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
                       myEnv.rodsZone, reconnFlag, &errMsg );
 

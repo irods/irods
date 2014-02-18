@@ -5,9 +5,14 @@ MAKEFLAGS += --no-print-directory
 RENCI_FTP_EXTERNAL=ftp://ftp.renci.org/pub/irods/external
 RENCI_FTP_BUILD=ftp://ftp.renci.org/pub/irods/build
 
-.PHONY : default retrieve build generate clean cmake libarchive jansson boost hdf5 netcdf epm lib_mysqludf_preg
+.PHONY : default retrieve build generate clean cmake libarchive jansson boost hdf5 netcdf epm lib_mysqludf_preg libs3
 
-IRODSEXTERNALARCHIVE=irods_external
+OSNAME=$$(../packaging/find_os.sh)
+OSVERSION=$$(../packaging/find_os_version.sh)
+OS=$(OSNAME)$$( if [ "$(OSNAME)" = "RedHatCompatible" -a "$(OSVERSION)" \> "6" ] ; then echo "_CentOS6" ; fi)
+IRODSEXTERNALARCHIVE=irods_external_$(OS).tar.gz
+IRODSEXTERNALLOCAL=irods_external.tar.gz
+
 CMAKEVERSIONARCHIVE=$(CMAKEVERSION).tar.gz
 CMAKEVERSIONMAKE=$(CMAKEVERSION)/Makefile
 LIBARCHIVEVERSIONARCHIVE=$(LIBARCHIVEVERSION).tar.gz
@@ -22,36 +27,28 @@ NETCDFVERSIONARCHIVE=$(NETCDFVERSION).tar.gz
 NETCDFVERSIONMAKE=$(NETCDFVERSION)/Makefile
 EPMVERSIONARCHIVE=$(EPMVERSION).tar.gz
 EPMVERSIONMAKE=epm/Makefile
-FAKEFILEFORMAKE=FakeTargetForMake
 LIB_MYSQLUDF_PREG_ARCHIVE=$(LIB_MYSQLUDF_PREG).tar.gz
 LIB_MYSQLUDF_PREG_MAKE=lib_mysqludf_preg/Makefile
+LIBS3VERSIONARCHIVE=$(LIBS3VERSION).tar.gz
+LIBS3VERSIONMAKE=$(LIBS3VERSION)/GNUmakefile
 
-default : ${FAKEFILEFORMAKE}
+FAKETARGETFORMAKE=FakeTargetForMake
 
-../$(IRODSEXTERNALARCHIVE).tar.gz :
-	@cd ../ ; \
-		OS=`./packaging/find_os.sh` ; \
-		wget -O $(IRODSEXTERNALARCHIVE).tar.gz $(RENCI_FTP_BUILD)/$(IRODSEXTERNALARCHIVE)_$$OS.tar.gz 2>&1 ; \
-		touch $(IRODSEXTERNALARCHIVE).tar.gz # to prevent re-download next time
+default :
+	@echo "Getting $(IRODSEXTERNALARCHIVE) -> $(IRODSEXTERNALLOCAL)..."
+	@curl -o $(IRODSEXTERNALLOCAL) -z $(IRODSEXTERNALLOCAL) $(RENCI_FTP_BUILD)/$(IRODSEXTERNALARCHIVE) > /dev/null 2>&1
+	@$(MAKE) $(FAKETARGETFORMAKE)
 
-${FAKEFILEFORMAKE} : ../$(IRODSEXTERNALARCHIVE).tar.gz
-	echo "File Unpackaging externals."
-	@cd ../ 	; \
-		tar zxf $(IRODSEXTERNALARCHIVE).tar.gz
-	touch ${FAKEFILEFORMAKE}
+$(FAKETARGETFORMAKE) : $(IRODSEXTERNALLOCAL)
+	@echo "Unpacking $(IRODSEXTERNALLOCAL)..."
+	@tar zxf $(IRODSEXTERNALLOCAL)
+	@touch $(FAKETARGETFORMAKE)
 
-retrieve : ../$(IRODSEXTERNALARCHIVE).tar.gz
-	echo "Retrieve Unpackaging externals."
-	@cd ../ ; \
-	tar zxf $(IRODSEXTERNALARCHIVE).tar.gz
-
-build : cmake libarchive jansson boost epm hdf5 netcdf lib_mysqludf_preg
+build : cmake libarchive jansson boost epm hdf5 netcdf lib_mysqludf_preg libs3
 
 generate : build
-	@cd ../ ; \
-		OS=`./packaging/find_os.sh` ; \
-		mkdir -p build ; \
-		tar zfc build/$(IRODSEXTERNALARCHIVE)_$$OS.tar.gz --exclude "*.tar.gz" --exclude "*.zip" --exclude "*cmake*" --exclude "Makefile" external/
+	@echo "Building $(IRODSEXTERNALARCHIVE)..."
+	@tar zfc $(IRODSEXTERNALARCHIVE) --exclude "*.tar.gz" --exclude "*.zip" --exclude "*cmake*" --exclude "Makefile" --exclude $(FAKETARGETFORMAKE) *
 
 $(LIB_MYSQLUDF_PREG_ARCHIVE) :
 	@wget $(RENCI_FTP_EXTERNAL)/$(LIB_MYSQLUDF_PREG_ARCHIVE) 2>&1
@@ -62,6 +59,15 @@ $(LIB_MYSQLUDF_PREG_MAKE) : $(LIB_MYSQLUDF_PREG_ARCHIVE)
 
 $(LIB_MYSQLUDF_PREG) : $(LIB_MYSQLUDF_PREG_MAKE)
 	@$(MAKE) -C $(LIB_MYSQLUDF_PREG)
+
+$(LIBS3VERSIONARCHIVE) :
+	@wget $(RENCI_FTP_EXTERNAL)/$(LIBS3VERSIONARCHIVE) 2>&1
+
+$(LIBS3VERSIONMAKE) : $(LIBS3VERSIONARCHIVE)
+	@tar zxf $(LIBS3VERSIONARCHIVE)
+
+libs3 : $(LIBS3VERSIONMAKE)
+	@CFLAGS=-fPIC $(MAKE) -C $(LIBS3VERSION)
 
 $(CMAKEVERSIONARCHIVE) :
 	@wget $(RENCI_FTP_EXTERNAL)/$(CMAKEVERSIONARCHIVE) 2>&1
@@ -184,11 +190,16 @@ clean :
 	@echo "Cleaning hdf5..."
 	@rm -rf $(HDF5VERSION)
 	@rm -f $(HDF5VERSIONARCHIVE)
+	@echo "Cleaning libs3..."
+	@rm -rf $(LIBS3VERSION)
+	@rm -f $(LIBS3VERSIONARCHIVE)
 	@echo "Cleaning epm..."
 	@rm -rf epm
 	@rm -f $(EPMVERSIONARCHIVE)
 	@echo "Cleaning lib_mysqludf_preg..."
 	@rm -rf $(LIB_MYSQLUDF_PREG)
 	@rm -f $(LIB_MYSQLUDF_PREG_ARCHIVE)
-	@echo "Cleaning $(IRODSEXTERNALARCHIVE).tar.gz"
-	@rm -f ../$(IRODSEXTERNALARCHIVE).tar.gz
+	@echo "Cleaning $(IRODSEXTERNALARCHIVE)"
+	@rm -f $(IRODSEXTERNALARCHIVE)
+	@rm -f $(IRODSEXTERNALLOCAL)
+	@rm -f ${FAKETARGETFORMAKE}

@@ -519,7 +519,7 @@ extern "C" {
 
             // =-=-=-=-=-=-=-
             // call stage on the child
-            err = resc->call< const char* >( _ctx.comm(), irods::RESOURCE_OP_STAGE, _ctx.fco(), _cache_file_name );
+            err = resc->call< const char* >( _ctx.comm(), irods::RESOURCE_OP_STAGETOCACHE, _ctx.fco(), _cache_file_name );
             result = ASSERT_PASS_MSG( err, "Failed calling child operation." );
         }
 

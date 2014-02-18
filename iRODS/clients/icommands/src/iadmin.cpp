@@ -883,23 +883,22 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
                 DWORD lastMode = mode;
                 mode &= ~ENABLE_ECHO_INPUT;
                 BOOL success = SetConsoleMode( hStdin, mode );
+                int errsv = -1;
 #else
                 struct termios tty;
                 tcgetattr( STDIN_FILENO, &tty );
                 tcflag_t oldflag = tty.c_lflag;
                 tty.c_lflag &= ~ECHO;
                 int success = tcsetattr( STDIN_FILENO, TCSANOW, &tty );
+                int errsv = errno;
 #endif
                 if ( !success ) {
-                    printf( "Error %d getting password.", i );
-                    return i;
+                    printf( "Error %d disabling echo mode.", errsv );
+                    return errsv;
                 }
                 printf( "Enter your current iRODS password:" );
                 std::string password = "";
-                if ( getline( cin, password ) ) {
-                    printf( "Error %d getting password.", i );
-                    return i;
-                }
+                getline( cin, password );
                 strncpy( buf1, password.c_str(), MAX_PASSWORD_LEN );
 #ifdef WIN32
                 if ( SetConsoleMode( hStdin, lastMode ) ) {
@@ -1392,6 +1391,10 @@ main( int argc, char **argv ) {
     }
 
     /* need to copy time convert commands up here too */
+
+    // =-=-=-=-=-=-=-
+    // initialize pluggable api table
+    init_api_table( RcApiTable, ApiPackTable );
 
     Conn = rcConnect( myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
                       myEnv.rodsZone, 0, &errMsg );

@@ -385,6 +385,7 @@ if [ "$1" == "clean" ] ; then
     rm -f iRODS/lib/core/include/irods_ms_home.hpp
     rm -f iRODS/lib/core/include/irods_network_home.hpp
     rm -f iRODS/lib/core/include/irods_auth_home.hpp
+    rm -f iRODS/lib/core/include/irods_api_home.hpp
     rm -f iRODS/lib/core/include/irods_resources_home.hpp
     rm -f iRODS/server/core/include/irods_database_home.hpp
     set -e
@@ -547,6 +548,26 @@ if [[ "$DETECTEDOS" == "RedHatCompatible" || "$DETECTEDOS" == "SuSE" ]] ; then
             PREFLIGHT="$PREFLIGHT rpm-build"
        fi
     fi
+fi
+
+CURL=`which curl`
+if [[ "$?" != "0" || `echo $CURL | awk '{print $1}'` == "no" ]] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
+        PREFLIGHT="$PREFLIGHT curl"
+    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+        PREFLIGHT="$PREFLIGHT curl"
+    elif [ "$DETECTEDOS" == "SuSE" ] ; then
+        PREFLIGHT="$PREFLIGHT curl"
+    elif [ "$DETECTEDOS" == "Solaris" ] ; then
+        PREFLIGHT="$PREFLIGHT curl"
+    elif [ "$DETECTEDOS" == "MacOSX" ] ; then
+        PREFLIGHT="$PREFLIGHT curl"
+    else
+        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://curl.haxx.se/download.html"
+    fi
+else
+    CURLVERSION=`curl --version | head -n1 | awk '{print $2}'`
+    echo "Detected curl [$CURL] v[$CURLVERSION]"
 fi
 
 WGET=`which wget`
@@ -716,6 +737,62 @@ else
     echo "Detected OpenSSL sha.h library [$OPENSSLDEV]"
 fi
 
+# needed for lib_mysqludf_preg
+MYSQLDEV=`find /usr/include/mysql /opt/csw/include/mysql -name mysql.h 2> /dev/null`
+if [ "$MYSQLDEV" == "" ] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
+        PREFLIGHT="$PREFLIGHT libmysqlclient-dev"
+    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+        PREFLIGHT="$PREFLIGHT mysql-devel"
+    elif [ "$DETECTEDOS" == "SuSE" ] ; then
+        PREFLIGHT="$PREFLIGHT libmysqlclient-devel"
+    elif [ "$DETECTEDOS" == "Solaris" ] ; then
+        PREFLIGHT="$PREFLIGHT mysql_dev"
+    else
+        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://dev.mysql.com/downloads/"
+    fi
+else
+    echo "Detected mysql library [$MYSQLDEV]"
+fi
+
+# needed for lib_mysqludf_preg
+PCREDEV=`find /usr/include/ /opt/csw/include/ -name pcre.h 2> /dev/null`
+if [ "$PCREDEV" == "" ] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
+        PREFLIGHT="$PREFLIGHT libpcre3-dev"
+    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+        PREFLIGHT="$PREFLIGHT pcre-devel"
+    elif [ "$DETECTEDOS" == "SuSE" ] ; then
+        PREFLIGHT="$PREFLIGHT pcre-devel"
+    elif [ "$DETECTEDOS" == "Solaris" ] ; then
+        PREFLIGHT="$PREFLIGHT libpcre_dev"
+    else
+        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://www.pcre.org/"
+    fi
+else
+    echo "Detected pcre library [$PCREDEV]"
+fi
+
+# needed for libs3
+LIBXML2DEV=`find /usr/include/libxml2 /opt/csw/include/libxml2 -name parser.h 2> /dev/null`
+if [ "$LIBXML2DEV" == "" ] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
+        PREFLIGHT="$PREFLIGHT libxml2-dev"
+    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+        PREFLIGHT="$PREFLIGHT libxml2-devel"
+    elif [ "$DETECTEDOS" == "SuSE" ] ; then
+        PREFLIGHT="$PREFLIGHT libxml2-devel"
+    elif [ "$DETECTEDOS" == "Solaris" ] ; then
+        PREFLIGHT="$PREFLIGHT libxml2_dev"
+    else
+        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://www.xmlsoft.org/downloads.html"
+    fi
+else
+    echo "Detected libxml2 library [$LIBXML2DEV]"
+fi
+
+
+
 # print out prerequisites error
 if [ "$PREFLIGHT" != "" ] ; then
     echo "${text_red}#######################################################" 1>&2
@@ -884,6 +961,12 @@ if [ "$BUILDIRODS" == "1" ] ; then
     sed -e s,IRODSDATABASEPATH,$irods_database_home, ./server/core/include/irods_database_home.hpp.src > /tmp/irods_database_home.hpp
     rsync -c /tmp/irods_database_home.hpp ./server/core/include/irods_database_home.hpp
     rm /tmp/irods_database_home.hpp
+    # =-=-=-=-=-=-=-
+    # modify the irods_api_home.hpp file with the proper path to the binary directory
+    irods_api_home="$detected_irods_home/plugins/api/"
+    sed -e s,IRODSAPIPATH,$irods_api_home, ./lib/core/include/irods_api_home.hpp.src > /tmp/irods_api_home.hpp
+    rsync -c /tmp/irods_api_home.hpp ./lib/core/include/irods_api_home.hpp
+    rm /tmp/irods_api_home.hpp
 
     ###########################################
     # single 'make' time on an 8 core machine
@@ -942,18 +1025,18 @@ if [ "$BUILDIRODS" == "1" ] ; then
     mv /tmp/irodsicommandslist.tmp ./packaging/irods-icommands.list
 
 
-    set +e
-    # generate microservice developers tutorial in pdf format
-    echo "${text_green}${text_bold}Building iRODS Microservice Developers Tutorial${text_reset}"
-    cd $BUILDDIR/examples/microservices
-    rst2pdf microservice_tutorial.rst -o microservice_tutorial.pdf
-    if [ "$?" != "0" ] ; then
-        echo "${text_red}#######################################################" 1>&2
-        echo "ERROR :: Failed generating microservice_tutorial.pdf" 1>&2
-        echo "#######################################################${text_reset}" 1>&2
-        exit 1
-    fi
-    set -e
+#    set +e
+#    # generate microservice developers tutorial in pdf format
+#    echo "${text_green}${text_bold}Building iRODS Microservice Developers Tutorial${text_reset}"
+#    cd $BUILDDIR/examples/microservices
+#    rst2pdf microservice_tutorial.rst -o microservice_tutorial.pdf
+#    if [ "$?" != "0" ] ; then
+#        echo "${text_red}#######################################################" 1>&2
+#        echo "ERROR :: Failed generating microservice_tutorial.pdf" 1>&2
+#        echo "#######################################################${text_reset}" 1>&2
+#        exit 1
+#    fi
+#    set -e
 
     # generate tgz file for inclusion in coverage package
     if [ "$COVERAGE" == "1" ] ; then
@@ -1058,8 +1141,10 @@ if [ "$COVERAGE" == "1" ] ; then
     EPMOPTS="-g"
     # sets listfile coverage options
     EPMOPTS="$EPMOPTS COVERAGE=true"
-else
+elif [ "$RELEASE" == "1" ] ; then
     EPMOPTS=""
+else
+    EPMOPTS="-g"
 fi
 
 cd $BUILDDIR

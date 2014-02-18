@@ -9,6 +9,7 @@
 // =-=-=-=-=-=-=-
 // irods includes
 #include "rcConnect.hpp"
+#include "rcMisc.hpp"
 
 
 namespace irods {
@@ -20,10 +21,16 @@ namespace irods {
         // Constructors
         data_object();
         data_object(
-            const std::string&, // phy path
-            const std::string&, // resc hier
-            int,                // mode
-            int );              // flags
+            const std::string&,		// phy path
+            const std::string&,		// resc hier
+            int,                	// mode
+            int );					// flags
+        data_object(
+            const std::string&,		// phy path
+            const std::string&,		// resc hier
+            int,                	// mode
+            int,					// flags
+            const keyValPair_t& );	// cond_input
         data_object( const data_object& );
 
         // =-=-=-=-=-=-=-
@@ -59,6 +66,9 @@ namespace irods {
         virtual int         flags()           const {
             return flags_;
         }
+        virtual const keyValPair_t& cond_input()	const {
+        	return cond_input_;
+        }
 
         // =-=-=-=-=-=-=-
         // Mutators
@@ -74,6 +84,9 @@ namespace irods {
         virtual void flags( int _f )                         {
             flags_           = _f;
         }
+        virtual void cond_input( const keyValPair_t& _cond_input ) {
+            replKeyVal( &_cond_input, &cond_input_ );
+        }
 
     protected:
         // =-=-=-=-=-=-=-
@@ -81,10 +94,11 @@ namespace irods {
         // NOTE :: These are not guaranteed to be properly populated right now
         //      :: that will need be done later when these changes are pushed
         //      :: higher in the original design
-        std::string physical_path_;   // full physical path in the vault
-        std::string resc_hier_;       // where this lives in the resource hierarchy
-        int         mode_;            // mode when opened or modified
-        int         flags_;           // flags for object operations
+        std::string physical_path_;		// full physical path in the vault
+        std::string resc_hier_;			// where this lives in the resource hierarchy
+        int         mode_;				// mode when opened or modified
+        int         flags_;				// flags for object operations
+        keyValPair_t cond_input_;		// input key-value pairs
 
     }; // class data_object
 

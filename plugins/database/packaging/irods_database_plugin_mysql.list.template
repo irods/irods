@@ -35,6 +35,7 @@ $SUSE=true
 $RPM=true
 %requires mysql-client
 %requires unixODBC
+%requires MyODBC-unixODBC
 
 %endif
 
@@ -112,7 +113,17 @@ echo " - an existing database user (to be used by the iRODS server)"
 echo " - an existing database (to be used as the iCAT catalog)"
 echo " - permissions for existing user on existing database"
 echo ""
-echo "Please run the following setup script as the irods user:"
+echo "In addition, the following configuration needs to be added"
+echo "to the [mysqld] section of your /etc/my.cnf or /etc/mysql/my.cnf file:"
+echo "  #######################################"
+echo "  # iRODS MySQL Configuration Options"
+echo "  # as described at"
+echo "  # https://www.irods.org/index.php/MySQL"
+echo "  #######################################"
+echo "  log_bin_trust_function_creators=1"
+echo ""
+echo "After restarting your MySQL server with the new configuration,"
+echo "please run the following setup script as the irods user:"
 echo "  ./packaging/setup_database.sh"
 echo ""
 echo "======================================================================="
@@ -165,6 +176,7 @@ END_POSTREMOVE
 # =-=-=-=-=-=-=-
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/plugins/database/libmysql.so ./libmysql.so
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/setup_database.sh ./packaging/setup_database.sh
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/tests/localhost_setup_mysql.input ./packaging/localhost_setup_mysql.input
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/find_odbc_mysql.sh ./packaging/find_odbc_mysql.sh
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/find_bin_mysql.sh ./packaging/find_bin_mysql.sh
 

@@ -4,31 +4,36 @@
 /* xmsgLib.c - library routines for irodsXmsg
  */
 
-#include "xmsgLib.hpp"
+// =-=-=-=-=-=-=-
+// irods includes
 #include "rsApiHandler.hpp"
 #include "reGlobalsExtern.hpp"
 #include "miscServerFunct.hpp"
+#include "xmsgLib.hpp"
+#include "irods_network_factory.hpp"
 
+// =-=-=-=-=-=-=-
+// boost includes
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition.hpp>
 
-boost::mutex			ReqQueCondMutex;
-boost::condition_variable	ReqQueCond;
-boost::thread*			ProcReqThread[ NUM_XMSG_THR ];
-boost::mutex			MessQueCondMutex;
+static boost::mutex			     ReqQueCondMutex;
+static boost::mutex			     MessQueCondMutex;
+static boost::thread*			 ProcReqThread[ NUM_XMSG_THR ];
+static boost::condition_variable ReqQueCond;
+
+static xmsgQue_t      XmsgQue;
+static xmsgReq_t*     XmsgReqHead = NULL;
+static xmsgReq_t*     XmsgReqTail = NULL; /* points to last item in Q RAJA Nov 19 2010 */
+static msParamArray_t XMsgMsParamArray;
 
 // =-=-=-=-=-=-=-
-#include "irods_network_factory.hpp"
-
-
-xmsgReq_t *XmsgReqHead = NULL;
-xmsgReq_t *XmsgReqTail = NULL; /* points to last item in Q RAJA Nov 19 2010 */
-
+// globally referenced variable
 ticketHashQue_t XmsgHashQue[NUM_HASH_SLOT];
-xmsgQue_t XmsgQue;
 
-static  msParamArray_t XMsgMsParamArray;
+
+
 int
 initThreadEnv() {
     return ( 0 );

@@ -101,7 +101,8 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/irods_pam_auth_object.o \
 		$(libCoreObjDir)/irods_osauth_auth_object.o \
 		$(libCoreObjDir)/irods_pluggable_auth_scheme.o \
-		$(libCoreObjDir)/irods_kvp_string_parser.o
+		$(libCoreObjDir)/irods_kvp_string_parser.o \
+		$(libCoreObjDir)/apiHandler.o 
 
 ifdef NETCDF_CLIENT
 LIB_CORE_OBJS += $(libCoreObjDir)/ncattrUtil.o $(libCoreObjDir)/ncUtil.o  \
@@ -177,6 +178,7 @@ endif
 include $(buildDir)/config/api.mk
 INCLUDES +=	-I$(libApiIncDir)
 
+SVR_API_OBJS += 
 
 # All objects
 OBJS =	$(LIB_CORE_OBJS) \
@@ -306,7 +308,6 @@ $(LIB_API_OBJS):  $(libApiObjDir)/%.o: $(libApiSrcDir)/%.cpp $(DEPEND) $(BOOST_L
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
 # Build MD5
-#	Requires -O3 for optimization
 $(LIB_MD5_OBJS):  $(libMd5ObjDir)/%.o: $(libMd5SrcDir)/%.cpp $(configMk) $(platformMk)
 	@echo "Compile md5 `basename $@`..."
 	@$(CC) -c $(MD5_CFLAGS) -o $@ $<

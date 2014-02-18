@@ -155,15 +155,17 @@ extern "C" {
                 DWORD lastMode = mode;
                 mode &= ~ENABLE_ECHO_INPUT;
                 BOOL success = SetConsoleMode( hStdin, mode );
+                int errsv = -1;
 #else
                 struct termios tty;
                 tcgetattr( STDIN_FILENO, &tty );
                 tcflag_t oldflag = tty.c_lflag;
                 tty.c_lflag &= ~ECHO;
                 int success = tcsetattr( STDIN_FILENO, TCSANOW, &tty );
+                int errsv = errno;
 #endif
                 if ( !success ) {
-                    return ERROR( success, "Error disabling echo mode." );
+                    return ERROR( errsv, "Error disabling echo mode." );
                 }
                 printf( "Enter your current iRODS password:" );
                 std::string password = "";

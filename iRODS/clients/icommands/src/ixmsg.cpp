@@ -264,6 +264,11 @@ main( int argc, char **argv ) {
     else if ( !strcmp( cmd, "t" ) ) {
         memset( &getXmsgTicketInp, 0, sizeof( getXmsgTicketInp ) );
         getXmsgTicketInp.flag = 1;
+
+        // =-=-=-=-=-=-=-
+        // initialize pluggable api table
+        init_api_table( RcApiTable, ApiPackTable );
+
         conn = rcConnectXmsg( &myRodsEnv, &errMsg );
         if ( conn == NULL ) {
             fprintf( stderr, "rcConnect error\n" );

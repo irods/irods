@@ -68,6 +68,7 @@ f 644 root root /usr/include/irods/ ./iRODS/lib/core/include/*.hpp
 f 644 root root /usr/include/irods/ ./iRODS/lib/api/include/*.hpp
 f 644 root root /usr/include/irods/ ./iRODS/lib/md5/include/*.hpp
 f 644 root root /usr/include/irods/ ./iRODS/lib/sha1/include/*.hpp
+f 644 root root /usr/include/irods/ ./iRODS/lib/rbudp/include/*.hpp
 f 644 root root /usr/include/irods/ ./iRODS/server/core/include/*.hpp
 f 644 root root /usr/include/irods/ ./iRODS/server/icat/include/*.hpp
 f 644 root root /usr/include/irods/ ./iRODS/server/re/include/*.hpp
@@ -11497,7 +11498,9 @@ f 666 root root /usr/include/irods/netcdf/ncgen3/ncgentab.h ./external/netcdf-4.
 f 666 root root /usr/include/irods/netcdf/ncgen3/genlib.h ./external/netcdf-4.3.0/ncgen3/genlib.h
 f 666 root root /usr/include/irods/netcdf/ncgen3/generic.h ./external/netcdf-4.3.0/ncgen3/generic.h
 
+f 666 root root /usr/include/irods/libs3.h ./external/libs3-2.0/inc/libs3.h
 
+f 666 root root /usr/lib/irods/libs3.a ./external/libs3-2.0/build/lib/libs3.a
 
 f 666 root root /usr/lib/irods/libepm.a ./external/epm/libepm.a
 f 666 root root /usr/lib/irods/libarchive.a ./external/libarchive-3.1.2/libarchive/libarchive.a

@@ -84,9 +84,6 @@ namespace irods {
         virtual const std::string&             in_pdmo()         const {
             return in_pdmo_;
         }
-        virtual const keyValPair_t&            cond_input()      const {
-            return cond_input_;
-        }
 
         // =-=-=-=-=-=-=-
         // Mutators
@@ -111,9 +108,6 @@ namespace irods {
         virtual void replicas( const std::vector< physical_object >& _v ) {
             replicas_ = _v;
         }
-        inline void cond_input( const keyValPair_t& _cond_input ) {
-            replKeyVal( &_cond_input, &cond_input_ );
-        }
 
     protected:
         // =-=-=-=-=-=-=-
@@ -125,7 +119,7 @@ namespace irods {
         std::string                    logical_path_;    // full logical path from icat
         std::string                    data_type_;       // data type as described in objInfo.h:32
         int                            file_descriptor_; // file descriptor, if the file is in flight
-        int                            l1_desc_idx_;     // index into irods L1 file decriptor table
+        int                            l1_desc_idx_;     // index into irods L1 file descriptor table
         size_t                         size_;            // size of the file in bytes
         int                            repl_requested_;  // requested replica number
         std::string                    in_pdmo_;         // hierarchy indicating the current operations are
@@ -134,7 +128,6 @@ namespace irods {
         std::vector< physical_object > replicas_;        // structures holding replica info initialized
         // by factory fcn from
         // dataObjInfoHead
-        keyValPair_t                  cond_input_;       // input keywords
 
     }; // class file_object
 

@@ -7,6 +7,8 @@
 #include "miscUtil.hpp"
 #include "rcMisc.hpp"
 #include "genQuery.hpp"
+#include "apiHandler.hpp"
+#include "rodsClient.hpp"
 
 void usage( char *prog );
 
@@ -46,15 +48,13 @@ main( int argc, char **argv ) {
         exit( 0 );
     }
 
-    /* call parseRodsPath to handle the .. cases, etc. */
-    if ( strcmp( argv[ix], "/" ) == 0 ) { /* allow cd'ing to root */
-        strcpy( rodsPath.outPath, "/" );
-    }
-    else {
-        memset( ( char* )&rodsPath, 0, sizeof( rodsPath ) );
-        rstrcpy( rodsPath.inPath, argv[ix], MAX_NAME_LEN );
-        parseRodsPath( &rodsPath, &myEnv );
-    }
+    memset( ( char* )&rodsPath, 0, sizeof( rodsPath ) );
+    rstrcpy( rodsPath.inPath, argv[ix], MAX_NAME_LEN );
+    parseRodsPath( &rodsPath, &myEnv );
+
+    // =-=-=-=-=-=-=-
+    // initialize pluggable api table
+    init_api_table( RcApiTable, ApiPackTable );
 
     /* Connect and check that the path exists */
     Conn = rcConnect( myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,

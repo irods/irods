@@ -1494,7 +1494,7 @@ int matchDataObjInfoByCondInput( dataObjInfo_t **dataObjInfoHead,
     int replNum = 0;
     int rescCond;
     bool destHierCond = false;
-    char *tmpStr, *rescName;
+    char *tmpStr, *rescName = NULL;
     char* rescHier = NULL;
     char* destRescHier = NULL;
     dataObjInfo_t *prevDataObjInfo, *nextDataObjInfo, *tmpDataObjInfo;

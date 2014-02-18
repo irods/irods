@@ -15,7 +15,7 @@
 
 packInstruct_t MiscSvrInfo_PIG = MiscSvrInfo_PI;
 
-packInstructArray_t ApiPackTable[] = {
+packInstructArray_t api_pack_table_init[] = {
     {"DataObjInp_PI", DataObjInp_PI},
     {"OpenedDataObjInp_PI", OpenedDataObjInp_PI},
     {"DataCopyInp_PI", DataCopyInp_PI},
@@ -93,8 +93,6 @@ packInstructArray_t ApiPackTable[] = {
     {"NcInqWithIdOut_PI", NcInqWithIdOut_PI},
     {"NcGetVarInp_PI", NcGetVarInp_PI},
     {"NcGetVarOut_PI", NcGetVarOut_PI},
-    {"NccfGetVarInp_PI", NccfGetVarInp_PI},
-    {"NccfGetVarOut_PI", NccfGetVarOut_PI},
     {"NcGenDimOut_PI", NcGenDimOut_PI},
     {"NcGenAttOut_PI", NcGenAttOut_PI},
     {"NcGenVarOut_PI", NcGenVarOut_PI},
@@ -117,6 +115,8 @@ packInstructArray_t ApiPackTable[] = {
     {"pamAuthRequestOut_PI", pamAuthRequestOut_PI},
     {"authPlugReqInp_PI", authPlugReqInp_PI},
     {"authPlugReqOut_PI", authPlugReqOut_PI},
+    {"getHierarchyForRescInp_PI", getHierarchyForRescInp_PI},
+    {"getHierarchyForRescOut_PI", getHierarchyForRescOut_PI},
     {"sslStartInp_PI", sslStartInp_PI},
     {"sslEndInp_PI", sslEndInp_PI},
     {"getLimitedPasswordInp_PI", getLimitedPasswordInp_PI},
@@ -125,5 +125,8 @@ packInstructArray_t ApiPackTable[] = {
     {"fileRenameOut_PI", fileRenameOut_PI},
     {PACK_TABLE_END_PI, ( char * ) NULL},
 };
+
+
+irods::pack_entry_table ApiPackTable( api_pack_table_init );
 
 #endif	/* API_PACK_TABLE_H */

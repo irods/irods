@@ -140,7 +140,6 @@
 #include "ncInqId.hpp"
 #include "ncInqWithId.hpp"
 #include "ncGetVarsByType.hpp"
-#include "nccfGetVara.hpp"
 #include "ncInq.hpp"
 #include "ncOpenGroup.hpp"
 #include "ncInqGrps.hpp"
@@ -166,6 +165,6 @@
 // =-=-=-=-=-=-=-
 // pluggable authentication
 #include "authPluginRequest.hpp"
-
+#include "getHierarchyForResc.hpp"
 
 #endif	/* API_HEADER_ALL_H */

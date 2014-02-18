@@ -15,7 +15,7 @@
 #include "irods_resource_manager.hpp"
 
 // =-=-=-=-=-=-=-
-// Top Level Inteface for Resource Plugin POSIX create
+// Top Level Interface for Resource Plugin POSIX create
 irods::error fileCreate(
     rsComm_t*                      _comm,
     irods::first_class_object_ptr _object ) {
@@ -697,7 +697,7 @@ irods::error fileModified(
     irods::error result = SUCCESS();
     irods::error ret;
     // =-=-=-=-=-=-=-
-    // downcast - this must be called on a decendant of data object
+    // downcast - this must be called on a descendant of data object
     irods::data_object_ptr data_obj = boost::dynamic_pointer_cast< irods::data_object >( _object );
     std::string resc_hier = data_obj->resc_hier();
     if ( !resc_hier.empty() ) {
@@ -743,7 +743,7 @@ irods::error fileNotify(
     irods::error result = SUCCESS();
     irods::error ret;
     // =-=-=-=-=-=-=-
-    // downcast - this must be called on a decendant of data object
+    // downcast - this must be called on a descendant of data object
     irods::data_object_ptr data_obj = boost::dynamic_pointer_cast< irods::data_object >( _object );
     std::string resc_hier = data_obj->resc_hier();
     if ( !resc_hier.empty() ) {

@@ -5,6 +5,8 @@
 #include "msParam.hpp"
 #include "reGlobalsExtern.hpp"
 #include "rcConnect.hpp"
+#include "readServerConfig.hpp"
+#include "miscServerFunct.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_plugin.hpp"
@@ -15,6 +17,7 @@
 #include "irods_hierarchy_parser.hpp"
 #include "irods_resource_redirect.hpp"
 #include "irods_stacktrace.hpp"
+#include "irods_server_properties.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -70,6 +73,64 @@
 // =-=-=-=-=-=-=-
 // NOTE: All storage resources must do this on the physical path stored in the file object and then update
 //       the file object's physical path with the full path
+
+static irods::error example_file_copy_plugin(
+		int mode,
+		const char* srcFileName,
+		const char* destFileName ) {
+
+	irods::error result = SUCCESS();
+
+	int inFd, outFd;
+	char myBuf[TRANS_BUF_SZ];
+	rodsLong_t bytesCopied = 0;
+	int bytesRead;
+	int bytesWritten;
+	int status;
+	struct stat statbuf;
+
+	status = stat( srcFileName, &statbuf );
+	int err_status = UNIX_FILE_STAT_ERR - errno;
+	if ( ( result = ASSERT_ERROR( status >= 0, err_status, "Stat of \"%s\" error, status = %d",
+								  srcFileName, err_status ) ).ok() ) {
+
+		inFd = open( srcFileName, O_RDONLY, 0 );
+		err_status = UNIX_FILE_OPEN_ERR - errno;
+		if ( !( result = ASSERT_ERROR( inFd >= 0 && ( statbuf.st_mode & S_IFREG ) != 0, err_status, "Open error for srcFileName \"%s\", status = %d",
+									   srcFileName, status ) ).ok() ) {
+			close( inFd ); // JMC cppcheck - resource
+		}
+		else {
+			outFd = open( destFileName, O_WRONLY | O_CREAT | O_TRUNC, mode );
+			err_status = UNIX_FILE_OPEN_ERR - errno;
+			if ( !( result = ASSERT_ERROR( outFd >= 0, err_status, "Open error for destFileName %s, status = %d",
+										   destFileName, status ) ).ok() ) {
+				close( inFd );
+			}
+			else {
+				while ( result.ok() && ( bytesRead = read( inFd, ( void * ) myBuf, TRANS_BUF_SZ ) ) > 0 ) {
+					bytesWritten = write( outFd, ( void * ) myBuf, bytesRead );
+					err_status = UNIX_FILE_WRITE_ERR - errno;
+					if ( ( result = ASSERT_ERROR( bytesWritten > 0, err_status, "Write error for srcFileName %s, status = %d",
+												  destFileName, status ) ).ok() ) {
+						bytesCopied += bytesWritten;
+					}
+				}
+
+				close( inFd );
+				close( outFd );
+
+				if ( result.ok() ) {
+					result = ASSERT_ERROR( bytesCopied == statbuf.st_size, SYS_COPY_LEN_ERR, "Copied size %lld does not match source size %lld of %s",
+										   bytesCopied, statbuf.st_size, srcFileName );
+				}
+			}
+		}
+	}
+	return result;
+}
+
+
 
 // =-=-=-=-=-=-=-
 /// @brief Generates a full path name from the partial physical path and the specified resource's vault path
@@ -630,6 +691,7 @@ extern "C" {
         irods::resource_plugin_context& _ctx,
         struct stat*                        _statbuf ) {
         irods::error result = SUCCESS();
+        bool run_server_as_root = false;
         // =-=-=-=-=-=-=-
         // NOTE:: this function assumes the object's physical path is
         //        correct and should not have the vault path
@@ -649,14 +711,15 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // if the file can't be accessed due to permission denied
             // try again using root credentials.
-#ifdef RUN_SERVER_AS_ROOT
-            if ( status < 0 && errno == EACCES && isServiceUserSet() ) {
-                if ( changeToRootUser() == 0 ) {
-                    status = stat( filename, statbuf );
-                    changeToServiceUser();
-                }
+            irods::server_properties::getInstance().get_property<bool>(RUN_SERVER_AS_ROOT_KW, run_server_as_root);
+            if (run_server_as_root) {
+				if ( status < 0 && errno == EACCES && isServiceUserSet() ) {
+					if ( changeToRootUser() == 0 ) {
+						status = stat( fco->physical_path().c_str() , _statbuf );
+						changeToServiceUser();
+					}
+				}
             }
-#endif
 
             // =-=-=-=-=-=-=-
             // return an error if necessary
@@ -760,7 +823,7 @@ extern "C" {
             irods::collection_object_ptr fco = boost::dynamic_pointer_cast< irods::collection_object >( _ctx.fco() );
 
             // =-=-=-=-=-=-=-
-            // make the call to chmod
+            // make the call to rmdir
             int status = rmdir( fco->physical_path().c_str() );
 
             // =-=-=-=-=-=-=-
@@ -779,6 +842,7 @@ extern "C" {
     irods::error example_file_opendir_plugin(
         irods::resource_plugin_context& _ctx ) {
         irods::error result = SUCCESS();
+        bool run_server_as_root = false;
 
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
@@ -790,20 +854,21 @@ extern "C" {
             irods::collection_object_ptr fco = boost::dynamic_pointer_cast< irods::collection_object >( _ctx.fco() );
 
             // =-=-=-=-=-=-=-
-            // make the callt to opendir
+            // make the call to opendir
             DIR* dir_ptr = opendir( fco->physical_path().c_str() );
 
             // =-=-=-=-=-=-=-
             // if the directory can't be accessed due to permission
             // denied try again using root credentials.
-#ifdef RUN_SERVER_AS_ROOT
-            if ( dir_ptr == NULL && errno == EACCES && isServiceUserSet() ) {
-                if ( changeToRootUser() == 0 ) {
-                    dir_ptr = opendir( fco->physical_path().c_str() );
-                    changeToServiceUser();
-                } // if
+            irods::server_properties::getInstance().get_property<bool>(RUN_SERVER_AS_ROOT_KW, run_server_as_root);
+            if (run_server_as_root) {
+				if ( dir_ptr == NULL && errno == EACCES && isServiceUserSet() ) {
+					if ( changeToRootUser() == 0 ) {
+						dir_ptr = opendir( fco->physical_path().c_str() );
+						changeToServiceUser();
+					} // if
+				}
             }
-#endif
 
             // =-=-=-=-=-=-=-
             // cache status in out variable
@@ -996,61 +1061,6 @@ extern "C" {
     } // example_file_truncate_plugin
 
 
-    irods::error
-    exampleFileCopyPlugin( int         mode,
-                           const char* srcFileName,
-                           const char* destFileName ) {
-        irods::error result = SUCCESS();
-
-        int inFd, outFd;
-        char myBuf[TRANS_BUF_SZ];
-        rodsLong_t bytesCopied = 0;
-        int bytesRead;
-        int bytesWritten;
-        int status;
-        struct stat statbuf;
-
-        status = stat( srcFileName, &statbuf );
-        int err_status = UNIX_FILE_STAT_ERR - errno;
-        if ( ( result = ASSERT_ERROR( status >= 0, err_status, "Stat of \"%s\" error, status = %d",
-                                      srcFileName, err_status ) ).ok() ) {
-
-            inFd = open( srcFileName, O_RDONLY, 0 );
-            err_status = UNIX_FILE_OPEN_ERR - errno;
-            if ( !( result = ASSERT_ERROR( inFd >= 0 && ( statbuf.st_mode & S_IFREG ) != 0, err_status, "Open error for srcFileName \"%s\", status = %d",
-                                           srcFileName, status ) ).ok() ) {
-                close( inFd ); // JMC cppcheck - resource
-            }
-            else {
-                outFd = open( destFileName, O_WRONLY | O_CREAT | O_TRUNC, mode );
-                err_status = UNIX_FILE_OPEN_ERR - errno;
-                if ( !( result = ASSERT_ERROR( outFd >= 0, err_status, "Open error for destFileName %s, status = %d",
-                                               destFileName, status ) ).ok() ) {
-                    close( inFd );
-                }
-                else {
-                    while ( result.ok() && ( bytesRead = read( inFd, ( void * ) myBuf, TRANS_BUF_SZ ) ) > 0 ) {
-                        bytesWritten = write( outFd, ( void * ) myBuf, bytesRead );
-                        err_status = UNIX_FILE_WRITE_ERR - errno;
-                        if ( ( result = ASSERT_ERROR( bytesWritten > 0, err_status, "Write error for srcFileName %s, status = %d",
-                                                      destFileName, status ) ).ok() ) {
-                            bytesCopied += bytesWritten;
-                        }
-                    }
-
-                    close( inFd );
-                    close( outFd );
-
-                    if ( result.ok() ) {
-                        result = ASSERT_ERROR( bytesCopied == statbuf.st_size, SYS_COPY_LEN_ERR, "Copied size %lld does not match source size %lld of %s",
-                                               bytesCopied, statbuf.st_size, srcFileName );
-                    }
-                }
-            }
-        }
-        return result;
-    }
-
     // =-=-=-=-=-=-=-
     // exampleStageToCache - This routine is for testing the TEST_STAGE_FILE_TYPE.
     // Just copy the file from filename to cacheFilename. optionalInfo info
@@ -1069,7 +1079,7 @@ extern "C" {
             // cast down the hierarchy to the desired object
             irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
 
-            ret = exampleFileCopyPlugin( fco->mode(), fco->physical_path().c_str(), _cache_file_name );
+            ret = example_file_copy_plugin( fco->mode(), fco->physical_path().c_str(), _cache_file_name );
             result = ASSERT_PASS( ret, "Failed" );
         }
         return result;
@@ -1093,7 +1103,7 @@ extern "C" {
             // cast down the hierarchy to the desired object
             irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
 
-            ret = exampleFileCopyPlugin( fco->mode(), _cache_file_name, fco->physical_path().c_str() );
+            ret = example_file_copy_plugin( fco->mode(), _cache_file_name, fco->physical_path().c_str() );
             result = ASSERT_PASS( ret, "Failed" );
         }
 
@@ -1182,7 +1192,7 @@ extern "C" {
                     bool curr_host = ( _curr_host == host_name );
 
                     // =-=-=-=-=-=-=-
-                    // make some flags to clairify decision making
+                    // make some flags to clarify decision making
                     bool need_repl = ( _file_obj->repl_requested() > -1 );
 
                     // =-=-=-=-=-=-=-
@@ -1209,7 +1219,7 @@ extern "C" {
                         bool is_dirty = ( itr->is_dirty() != 1 );
 
                         // =-=-=-=-=-=-=-
-                        // success - correct resource and dont need a specific
+                        // success - correct resource and don't need a specific
                         //           replication, or the repl nums match
                         if ( resc_us ) {
                             // =-=-=-=-=-=-=-

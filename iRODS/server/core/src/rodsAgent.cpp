@@ -27,6 +27,8 @@ static void NtAgentSetEnvsFromArgs( int ac, char **av );
 #include "irods_auth_manager.hpp"
 #include "irods_auth_plugin.hpp"
 #include "irods_auth_constants.hpp"
+#include "irods_server_properties.hpp"
+#include "readServerConfig.hpp"
 
 /* #define SERVER_DEBUG 1   */
 int
@@ -34,16 +36,33 @@ main( int argc, char *argv[] ) {
     int status;
     rsComm_t rsComm;
     char *tmpStr;
+    bool run_server_as_root = false;
 
-    ProcessType = AGENT_PT;
-//sleep(30);
-#ifdef RUN_SERVER_AS_ROOT
-#ifndef windows_platform
-    if ( initServiceUser() < 0 ) {
+    irods::error ret;
+
+    // =-=-=-=-=-=-=-
+    // load pluggable api entries
+    ret = irods::init_api_table(
+              RsApiTable,
+              ApiPackTable );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
         exit( 1 );
     }
+
+
+    ProcessType = AGENT_PT;
+
+    irods::server_properties::getInstance().get_property<bool>(RUN_SERVER_AS_ROOT_KW, run_server_as_root);
+
+#ifndef windows_platform
+    if (run_server_as_root) {
+		if ( initServiceUser() < 0 ) {
+			exit( 1 );
+		}
+    }
 #endif
-#endif
+
 
 #ifdef windows_platform
     iRODSNtAgentInit( argc, argv );
@@ -83,7 +102,7 @@ main( int argc, char *argv[] ) {
     // =-=-=-=-=-=-=-
     // manufacture a network object for comms
     irods::network_object_ptr net_obj;
-    irods::error ret = irods::network_factory( &rsComm, net_obj );
+    ret = irods::network_factory( &rsComm, net_obj );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
@@ -120,7 +139,6 @@ main( int argc, char *argv[] ) {
     /* Open a connection to syslog */
     openlog( "rodsAgent", LOG_ODELAY | LOG_PID, LOG_DAEMON );
 #endif
-
     status = getRodsEnv( &rsComm.myEnv );
 
     if ( status < 0 ) {

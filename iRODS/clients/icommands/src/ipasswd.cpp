@@ -4,6 +4,8 @@
 /* User command to change their password. */
 #include "rods.hpp"
 #include "rodsClient.hpp"
+#include <unistd.h>
+#include <termios.h>
 
 void usage( char *prog );
 
@@ -17,8 +19,6 @@ main( int argc, char **argv ) {
     rErrMsg_t errMsg;
     rodsArguments_t myRodsArgs;
 
-    struct stat statbuf;
-    int doStty = 0;
     char newPw[MAX_PASSWORD_LEN + 10];
     char newPw2[MAX_PASSWORD_LEN + 10];
     int len, lcopy;
@@ -77,6 +77,10 @@ main( int argc, char **argv ) {
         exit( 1 );
     }
 
+    // =-=-=-=-=-=-=-
+    // initialize pluggable api table
+    init_api_table( RcApiTable, ApiPackTable );
+
     /* Connect... */
     Conn = rcConnect( myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
                       myEnv.rodsZone, 0, &errMsg );
@@ -95,48 +99,68 @@ main( int argc, char **argv ) {
     }
 
     /* get the new password */
-#ifdef windows_platform
-    iRODSNtGetUserPasswdInputInConsole( newPw, "Enter your new iRODS password:", echoFlag );
+#ifdef WIN32
+    HANDLE hStdin = GetStdHandle( STD_INPUT_HANDLE );
+    DWORD mode;
+    GetConsoleMode( hStdin, &mode );
+    DWORD lastMode = mode;
+    mode &= ~ENABLE_ECHO_INPUT;
+    BOOL success = SetConsoleMode( hStdin, mode );
+    int errsv = -1;
 #else
-    if ( !echoFlag ) {
-        if ( stat( "/bin/stty", &statbuf ) == 0 ) {
-            system( "/bin/stty -echo" );
-            doStty = 1;
-        }
+    struct termios tty;
+    tcgetattr( STDIN_FILENO, &tty );
+    tcflag_t oldflag = tty.c_lflag;
+    tty.c_lflag &= ~ECHO;
+    int success = tcsetattr( STDIN_FILENO, TCSANOW, &tty );
+    int errsv = errno;
+#endif
+    if ( !success ) {
+        printf( "Error %d disabling echo mode.", errsv );
+        return errsv;
     }
+
     len = 0;
     for ( ; len < 4; ) {
         printf( "Enter your new iRODS password:" );
-        fgets( newPw, MAX_PASSWORD_LEN, stdin );
+        string password = "";
+        getline( cin, password );
+        strncpy( newPw, password.c_str(), MAX_PASSWORD_LEN );
         len = strlen( newPw );
         if ( len < 4 ) {
             printf( "\nYour password must be at least 3 characters long.\n" );
         }
     }
     if ( myRodsArgs.force != True ) {
-        if ( !echoFlag ) {
-            printf( "\n" );
-        }
         printf( "Reenter your new iRODS password:" );
-        fgets( newPw2, MAX_PASSWORD_LEN, stdin );
+        string password = "";
+        getline( cin, password );
+        strncpy( newPw2, password.c_str(), MAX_PASSWORD_LEN );
         if ( strncmp( newPw, newPw2, MAX_PASSWORD_LEN ) != 0 ) {
-            if ( !echoFlag ) {
-                printf( "\n" );
-            }
             printf( "Entered passwords do not match\n" );
-            if ( doStty ) {
-                system( "/bin/stty echo" );
+#ifdef WIN32
+            if ( SetConsoleMode( hStdin, lastMode ) ) {
+                printf( "Error reinstating echo mode." );
             }
+#else
+            tty.c_lflag = oldflag;
+            if ( tcsetattr( STDIN_FILENO, TCSANOW, &tty ) ) {
+                printf( "Error reinstating echo mode." );
+            }
+#endif
             rcDisconnect( Conn );
             exit( 8 );
         }
     }
-
-    if ( doStty ) {
-        system( "/bin/stty echo" );
-        printf( "\n" );
+#ifdef WIN32
+    if ( SetConsoleMode( hStdin, lastMode ) ) {
+        printf( "Error reinstating echo mode." );
     }
-    newPw[len - 1] = '\0'; /* remove trailing \n */
+#else
+    tty.c_lflag = oldflag;
+    if ( tcsetattr( STDIN_FILENO, TCSANOW, &tty ) ) {
+        printf( "Error reinstating echo mode." );
+    }
 #endif
 
     strncpy( buf0, newPw, MAX_PASSWORD_LEN );

@@ -25,7 +25,6 @@ namespace irods {
         data_object(),
         size_( 0 ),
         repl_requested_( -1 ) {
-        memset( &cond_input_, 0, sizeof( keyValPair_t ) );
     } // file_object
 
 // =-=-=-=-=-=-=-
@@ -44,7 +43,6 @@ namespace irods {
         repl_requested_ = _rhs.repl_requested_;
         replicas_       = _rhs.replicas_;
         in_pdmo_        = _rhs.in_pdmo_;
-        memset( &cond_input_, 0, sizeof( keyValPair_t ) );
 
     } // cctor
 
@@ -73,7 +71,6 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // explicit initialization
         replicas_.empty();
-        memset( &cond_input_, 0, sizeof( keyValPair_t ) );
     } // file_object
 
 // from dataObjInfo

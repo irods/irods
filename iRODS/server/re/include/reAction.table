@@ -421,7 +421,4 @@ int msiString2StrArray(msParam_t *inBufferP, msParam_t* outStrArrayP, ruleExecIn
   table_[ "msiNcRegGlobalAttr" ] = new irods::ms_table_entry( "msiNcRegGlobalAttr",3,(funcPtr) msiNcRegGlobalAttr );
   table_[ "msiNcSubsetVar" ] = new irods::ms_table_entry( "msiNcSubsetVar",5,(funcPtr) msiNcSubsetVar );
   table_[ "msiNcVarStat" ] = new irods::ms_table_entry( "msiNcVarStat",2,(funcPtr) msiNcVarStat );
-#ifdef LIB_CF
-  table_[ "msiNccfGetVara" ] = new irods::ms_table_entry( "msiNccfGetVara",10,(funcPtr) msiNccfGetVara );
-#endif
 #endif

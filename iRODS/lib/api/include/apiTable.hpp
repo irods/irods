@@ -16,11 +16,10 @@
 
 /* need to include a header for for each API */
 #include "apiHeaderAll.hpp"
-
 #if defined(RODS_SERVER)
-apidef_t RsApiTable[] = {
+irods::apidef_t server_api_table_inp[] = {
 #else	/* client */
-apidef_t RcApiTable[] = {
+irods::apidef_t client_api_table_inp[] = {
 #endif
     {
         GET_MISC_SVR_INFO_AN, RODS_API_VERSION, NO_USER_AUTH, NO_USER_AUTH, NULL,
@@ -92,7 +91,7 @@ apidef_t RcApiTable[] = {
     },
     {
         FILE_RENAME_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
-        "fileRenameInp_PI", 0, "fileRenameOut_PI", 0, ( funcPtr ) RS_FILE_RENAME
+        "fileRenameInp_PI", 0, NULL, 0, ( funcPtr ) RS_FILE_RENAME
     },
     {
         FILE_TRUNCATE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
@@ -112,7 +111,7 @@ apidef_t RcApiTable[] = {
     },
     {
         FILE_SYNC_TO_ARCH_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
-        "fileStageSyncInp_PI", 0, "fileSyncOut_PI", 0, ( funcPtr ) RS_FILE_SYNC_TO_ARCH
+        "fileStageSyncInp_PI", 0, NULL, 0, ( funcPtr ) RS_FILE_SYNC_TO_ARCH
     },
     {
         DATA_OBJ_CREATE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
@@ -589,74 +588,6 @@ apidef_t RcApiTable[] = {
         FILE_CHKSUM_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "fileChksumInp_PI", 0, "fileChksumOut_PI", 0, ( funcPtr ) RS_FILE_CHKSUM
     },
-#ifdef NETCDF_CLIENT
-    {
-        NC_OPEN_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "NcOpenInp_PI", 0, "INT_PI", 0, ( funcPtr ) RS_NC_OPEN
-    },
-    {
-        NC_CREATE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "NcOpenInp_PI", 0, "INT_PI", 0, ( funcPtr ) RS_NC_CREATE
-    },
-    {
-        NC_CLOSE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "NcCloseInp_PI", 0, NULL, 0, ( funcPtr ) RS_NC_CLOSE
-    },
-    {
-        NC_INQ_ID_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "NcInqIdInp_PI", 0, "INT_PI", 0, ( funcPtr ) RS_NC_INQ_ID
-    },
-    {
-        NC_INQ_WITH_ID_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "NcInqIdInp_PI", 0, "NcInqWithIdOut_PI", 0, ( funcPtr ) RS_NC_INQ_WITH_ID
-    },
-    {
-        NC_GET_VARS_BY_TYPE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "NcGetVarInp_PI", 0, "NcGetVarOut_PI", 0, ( funcPtr ) RS_NC_GET_VARS_BY_TYPE
-    },
-#ifdef LIB_CF
-    {
-        NCCF_GET_VARA_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "NccfGetVarInp_PI", 0, "NccfGetVarOut_PI", 0, ( funcPtr ) RS_NCCF_GET_VARA
-    },
-#endif
-    {
-        NC_INQ_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "NcInqInp_PI", 0, "NcInqOut_PI", 0, ( funcPtr ) RS_NC_INQ
-    },
-#ifdef NETCDF4_API
-    {
-        NC_OPEN_GROUP_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "NcOpenInp_PI", 0, "INT_PI", 0, ( funcPtr ) RS_NC_OPEN_GROUP
-    },
-    {
-        NC_INQ_GRPS_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "NcInqGrpsInp_PI", 0, "NcInqGrpsOut_PI", 0, ( funcPtr ) RS_NC_INQ_GRPS
-    },
-#endif
-    {
-        NC_REG_GLOBAL_ATTR_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "NcRegGlobalAttrInp_PI", 0, NULL, 0, ( funcPtr ) RS_NC_REG_GLOBAL_ATTR
-    },
-    {
-        NC_GET_AGG_ELEMENT_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "NcOpenInp_PI", 0, "NcAggElement_PI", 0, ( funcPtr ) RS_NC_GET_AGG_ELEMENT
-    },
-    {
-        NC_GET_AGG_INFO_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "NcOpenInp_PI", 0, "NcAggInfo_PI", 0, ( funcPtr ) RS_NC_GET_AGG_INFO
-    },
-    {
-        NC_ARCH_TIME_SERIES_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "NcArchTimeSeriesInp_PI", 0, NULL, 0, ( funcPtr ) RS_NC_ARCH_TIME_SERIES
-    },
-#endif
-#ifdef OOI_CI
-    {
-        OOI_GEN_SERV_REQ_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "OoiGenServReqInp_PI", 0, "OoiGenServReqOut_PI", 0, ( funcPtr ) RS_OOI_GEN_SERV_REQ
-    },
-#endif
     {
         SSL_START_AN, RODS_API_VERSION,
         NO_USER_AUTH | XMSG_SVR_ALSO, NO_USER_AUTH | XMSG_SVR_ALSO,
@@ -671,11 +602,91 @@ apidef_t RcApiTable[] = {
         AUTH_PLUG_REQ_AN, RODS_API_VERSION, NO_USER_AUTH, NO_USER_AUTH,
         "authPlugReqInp_PI", 0, "authPlugReqOut_PI", 0, ( funcPtr ) RS_AUTH_PLUG_REQ
     },
-};
+
+}; // _api_table_inp
+
+
+#if defined(RODS_SERVER)
+size_t server_num_api_defs = sizeof( server_api_table_inp ) / sizeof( irods::apidef_t );
+irods::api_entry_table RsApiTable(
+    server_api_table_inp,
+    server_num_api_defs );
+#else
+size_t client_num_api_defs = sizeof( client_api_table_inp ) / sizeof( irods::apidef_t );
+irods::api_entry_table RcApiTable(
+    client_api_table_inp,
+    client_num_api_defs );
+#endif
+
+
+#if 0  // NETCDF etc
+#ifdef NETCDF_CLIENT
+{
+    NC_OPEN_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
+                "NcOpenInp_PI", 0, "INT_PI", 0, ( funcPtr ) RS_NC_OPEN
+}, {
+    NC_CREATE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
+    "NcOpenInp_PI", 0, "INT_PI", 0, ( funcPtr ) RS_NC_CREATE
+}, {
+    NC_CLOSE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
+                 "NcCloseInp_PI", 0, NULL, 0, ( funcPtr ) RS_NC_CLOSE
+}, {
+    NC_INQ_ID_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
+    "NcInqIdInp_PI", 0, "INT_PI", 0, ( funcPtr ) RS_NC_INQ_ID
+}, {
+    NC_INQ_WITH_ID_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
+                       "NcInqIdInp_PI", 0, "NcInqWithIdOut_PI", 0, ( funcPtr ) RS_NC_INQ_WITH_ID
+}, {
+    NC_GET_VARS_BY_TYPE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
+    "NcGetVarInp_PI", 0, "NcGetVarOut_PI", 0, ( funcPtr ) RS_NC_GET_VARS_BY_TYPE
+},
+#ifdef LIB_CF
+{
+    NCCF_GET_VARA_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
+    "NccfGetVarInp_PI", 0, "NccfGetVarOut_PI", 0, ( funcPtr ) RS_NCCF_GET_VARA
+},
+#endif
+{
+    NC_INQ_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
+    "NcInqInp_PI", 0, "NcInqOut_PI", 0, ( funcPtr ) RS_NC_INQ
+},
+#ifdef NETCDF4_API
+{
+    NC_OPEN_GROUP_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
+    "NcOpenInp_PI", 0, "INT_PI", 0, ( funcPtr ) RS_NC_OPEN_GROUP
+}, {
+    NC_INQ_GRPS_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
+                    "NcInqGrpsInp_PI", 0, "NcInqGrpsOut_PI", 0, ( funcPtr ) RS_NC_INQ_GRPS
+},
+#endif
+{
+    NC_REG_GLOBAL_ATTR_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
+    "NcRegGlobalAttrInp_PI", 0, NULL, 0, ( funcPtr ) RS_NC_REG_GLOBAL_ATTR
+}, {
+    NC_GET_AGG_ELEMENT_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
+                           "NcOpenInp_PI", 0, "NcAggElement_PI", 0, ( funcPtr ) RS_NC_GET_AGG_ELEMENT
+}, {
+    NC_GET_AGG_INFO_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
+    "NcOpenInp_PI", 0, "NcAggInfo_PI", 0, ( funcPtr ) RS_NC_GET_AGG_INFO
+}, {
+    NC_ARCH_TIME_SERIES_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
+                            "NcArchTimeSeriesInp_PI", 0, NULL, 0, ( funcPtr ) RS_NC_ARCH_TIME_SERIES
+},
+#endif
+#ifdef OOI_CI
+{
+    OOI_GEN_SERV_REQ_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
+    "OoiGenServReqInp_PI", 0, "OoiGenServReqOut_PI", 0, ( funcPtr ) RS_OOI_GEN_SERV_REQ
+},
+
+#endif
+#endif // NETCDF etc
+
 
 #ifdef RODS_SERVER	/* depends on client lib for NumOfApi */
 #else
-int NumOfApi = sizeof( RcApiTable ) / sizeof( apidef_t );
+//int NumOfApi = sizeof( RcApiTable ) / sizeof( apidef_t );
 #endif
+
 
 #endif	/* API_TABLE_H */

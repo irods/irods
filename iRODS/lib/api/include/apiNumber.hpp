@@ -164,7 +164,6 @@
 #define NC_INQ_ID_AN                    1003
 #define NC_INQ_WITH_ID_AN               1004
 #define NC_GET_VARS_BY_TYPE_AN          1005
-#define NCCF_GET_VARA_AN                1006
 #define NC_INQ_AN                       1007
 #define NC_OPEN_GROUP_AN                1008
 #define NC_INQ_GRPS_AN                  1009
@@ -180,7 +179,8 @@
 #define SSL_START_AN 			1100
 #define SSL_END_AN 			1101
 
-#define AUTH_PLUG_REQ_AN	1201
-#define AUTH_PLUG_RESP_AN	1202
+#define AUTH_PLUG_REQ_AN	    1201
+#define AUTH_PLUG_RESP_AN	    1202
+#define GET_HIER_FOR_RESC_AN	1203
 
 #endif	/* API_NUMBER_H */

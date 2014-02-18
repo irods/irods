@@ -221,6 +221,10 @@ parseUserName( char *fullUserNameIn, char *userName, char *userZone ) {
 
 int
 apiTableLookup( int apiNumber ) {
+#ifndef RODS_SERVER
+    return apiNumber;
+#endif
+#if 0
     int i;
 
     for ( i = 0; i < NumOfApi; i++ ) {
@@ -228,7 +232,11 @@ apiTableLookup( int apiNumber ) {
             return ( i );
         }
     }
-
+#else
+    if ( RcApiTable.find( apiNumber ) != RcApiTable.end() ) {
+        return apiNumber;
+    }
+#endif
     return ( SYS_UNMATCHED_API_NUM );
 }
 
@@ -249,10 +257,9 @@ myHtonll( rodsLong_t inlonglong, rodsLong_t *outlonglong ) {
     outPtr = ( char * )( static_cast<void *>( outlonglong ) );
 
     int i;
-    int byte_length = sizeof(rodsLong_t);
-    for ( i = 0; i < byte_length; i++)
-    {
-      outPtr[i] = inPtr[byte_length - 1 - i];
+    int byte_length = sizeof( rodsLong_t );
+    for ( i = 0; i < byte_length; i++ ) {
+        outPtr[i] = inPtr[byte_length - 1 - i];
     }
     return ( 0 );
 }
@@ -274,10 +281,9 @@ myNtohll( rodsLong_t inlonglong,  rodsLong_t *outlonglong ) {
     outPtr = ( char * )( static_cast<void *>( outlonglong ) );
 
     int i;
-    int byte_length = sizeof(rodsLong_t);
-    for ( i = 0; i < byte_length; i++)
-    {
-      outPtr[i] = inPtr[byte_length - 1 - i];
+    int byte_length = sizeof( rodsLong_t );
+    for ( i = 0; i < byte_length; i++ ) {
+        outPtr[i] = inPtr[byte_length - 1 - i];
     }
     return ( 0 );
 }
@@ -436,8 +442,7 @@ getStrInBuf( char **inbuf, char *outbuf, int *inbufLen, int outbufLen ) {
 
 /* getNextEleInStr - same as getStrInBuf except it did not check for # */
 int
-getNextEleInStr (char **inbuf, char *outbuf, int *inbufLen, int maxOutLen)
-{
+getNextEleInStr( char **inbuf, char *outbuf, int *inbufLen, int maxOutLen ) {
     char *inPtr, *outPtr;
     int bytesCopied  = 0;
     int c;
@@ -447,26 +452,30 @@ getNextEleInStr (char **inbuf, char *outbuf, int *inbufLen, int maxOutLen)
     outPtr = outbuf;
 
     hasQuote = 0;
-    while ((c = *inPtr) != '\0' && *inbufLen > 0) {
-        (*inbufLen)--;
+    while ( ( c = *inPtr ) != '\0' && *inbufLen > 0 ) {
+        ( *inbufLen )--;
         inPtr ++;
-        if (isspace (c) && hasQuote == False) {
-            if (bytesCopied > 0) {
+        if ( isspace( c ) && hasQuote == False ) {
+            if ( bytesCopied > 0 ) {
                 break;
-            } else {
+            }
+            else {
                 continue;
             }
-        } else if (c == '\'') {
-            if (hasQuote == True) {
+        }
+        else if ( c == '\'' ) {
+            if ( hasQuote == True ) {
                 inPtr ++;
                 break;
-            } else {
+            }
+            else {
                 hasQuote = True;
             }
-        } else {
-            if (bytesCopied >= maxOutLen - 1) {
-                rodsLog (LOG_ERROR,
-                  "getNextEleInStr: outbuf overflow buf len %d", bytesCopied);
+        }
+        else {
+            if ( bytesCopied >= maxOutLen - 1 ) {
+                rodsLog( LOG_ERROR,
+                         "getNextEleInStr: outbuf overflow buf len %d", bytesCopied );
                 break;
             }
             *outPtr = c;
@@ -476,7 +485,7 @@ getNextEleInStr (char **inbuf, char *outbuf, int *inbufLen, int maxOutLen)
     }
     *outPtr = '\0';
     *inbuf = inPtr;
-    return (bytesCopied);
+    return ( bytesCopied );
 }
 
 /* getLine - Read the next line. Add a NULL char at the end.
