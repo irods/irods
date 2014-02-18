@@ -140,7 +140,7 @@ The irods-icat package installs a service account and group named 'irods' and th
 
 The additional required database plugin installs the dependencies for database connections and a short setup script that will prompt for database connection information and configure the server.
 
-Installation of the iCAT DEB and Postgres plugin DEB::
+Installation of the iCAT DEB and PostgreSQL plugin DEB::
 
  $ (sudo) dpkg -i irods-icat-TEMPLATE_IRODSVERSION-64bit.deb irods-database-plugin-postgres-1.0.deb
  $ (sudo) apt-get -f install
@@ -286,7 +286,7 @@ Now, the connection should be reset and you should be able to list your empty iR
 Add additional resource(s)
 --------------------------
 
-The default installation of iRODS comes with a single resource named 'demoResc' which stores its files in the `/var/lib/irods/iRODS/Vault` directory.  You will want to create additional resources at disk locations of your choosing as the 'demoResc' may not have sufficient disk space available for your intended usage scenarios.  The following command will create a basic 'unix file system' resource at a designated host at the designated full path::
+The default installation of iRODS comes with a single resource named 'demoResc' which stores its files in the `/var/lib/irods/iRODS/Vault` directory.  You will want to create additional resources at disk locations of your choosing as the 'demoResc' may not have sufficient disk space available for your intended usage scenarios.  The following command will create a basic 'unixfilesystem' resource at a designated host at the designated full path::
 
  irods@hostname:~/ $ iadmin mkresc <newrescname> 'unixfilesystem' <fully.qualified.domain.name>:</full/path/to/new/vault>
  
@@ -410,7 +410,7 @@ The planned plugin interfaces and their status are listed here:
  Pluggable Authentication   Complete      3.0.1b1
  Pluggable Network          Complete      3.0.1b1
  Pluggable Database         Complete      4.0.0b1
- Pluggable RPC API          Planned
+ Pluggable RPC API          Complete      4.0.0b2
  Pluggable Rule Engine      Requested
  ========================   ==========    ========
 
@@ -690,6 +690,13 @@ Replicas within a compound resource can be trimmed.  There is no rebalance activ
 
 The "--purgec" option for ``iput``, ``iget``, and ``irepl`` is honored and will always purge the first replica (usually with replica number 0) for that Data Object (regardless of whether it is held within this compound resource).  This is not an optimal use of the compound resource as the behavior will become somewhat nondeterministic with complex resource compositions.
 
+Deferred
+********
+
+The deferred resource is designed to be as simple as possible.  A deferred resource can have one or more children.
+
+A deferred resource provides no implicit data management policy.  It defers to its children with respect to routing both puts and gets.  However they vote, the deferred node decides.
+
 Random
 ******
 
@@ -774,9 +781,11 @@ Expected
 
 A few other storage resource types have been brainstormed but are not included at this time:
 
+ - S3 (1.0b1 released and available separately)
+ - WOS (1.0b1 released and available separately)
  - HPSS (expected)
- - S3 (expected)
- - WOS (expected)
+ - HDFS (expected)
+ - directaccess (run as root) (expected)
 
 Managing Child Resources
 ------------------------
@@ -823,9 +832,9 @@ Example 1
 A replicating coordinating resource with three unix file system storage resources as children would be composed with seven (7) iadmin commands::
 
  irods@hostname:~/ $ iadmin mkresc example1 replication
- irods@hostname:~/ $ iadmin mkresc repl_resc1 "unix file system" renci.example.org:/Vault
- irods@hostname:~/ $ iadmin mkresc repl_resc2 "unix file system" maxplanck.example.org:/Vault
- irods@hostname:~/ $ iadmin mkresc repl_resc3 "unix file system" sdsc.example.org:/Vault
+ irods@hostname:~/ $ iadmin mkresc repl_resc1 "unixfilesystem" renci.example.org:/Vault
+ irods@hostname:~/ $ iadmin mkresc repl_resc2 "unixfilesystem" maxplanck.example.org:/Vault
+ irods@hostname:~/ $ iadmin mkresc repl_resc3 "unixfilesystem" sdsc.example.org:/Vault
  irods@hostname:~/ $ iadmin addchildtoresc example1 repl_resc1
  irods@hostname:~/ $ iadmin addchildtoresc example1 repl_resc2
  irods@hostname:~/ $ iadmin addchildtoresc example1 repl_resc3
@@ -889,7 +898,7 @@ The remaining parameters are standard SSL parameters and made available through 
 Pluggable Database
 ------------------
 
-The iRODS metadata catalog is now installed and managed by separate plugins.  The default database is PostgreSQL and is available for the TEMPLATE_IRODSVERSION release.  MySQL and Orcale plugins will be released as soon as they are tested.
+The iRODS metadata catalog is now installed and managed by separate plugins.  The default database is PostgreSQL and is available for the TEMPLATE_IRODSVERSION release.  MySQL and Oracle plugins will be released as soon as they are tested.
 
 The particular flavor of database is encoded in `iRODS/server/config/server.config` with the following directive::
 
@@ -901,6 +910,19 @@ This is populated by the `setup_database.sh` script on configuration.
 The iRODS 3.x icatHighLevelRoutines are, in effect, the API calls for the database plugins.  No changes should be needed to any calls to the icatHighLevelRoutines.
 
 To implement a new database plugin, a developer will need to provide the existing 84 SQL calls (in icatHighLevelRoutines) and an implementation of GenQuery.
+
+-----------------
+Pluggable RPC API
+-----------------
+
+The iRODS API has traditionally been a hard-coded table of values and names.  With the pluggable RPC API now available, a plugin can provide new API calls.
+
+At runtime, if a reqested API number is not already in the table, it is dynamically loaded from `plugins/api` and executed.  As it is a dynamic system, there is the potential for collisions between existing API numbers and any new dynamically loaded API numbers.  It is considered best practice to use a dynamic API number above 10000 to ensure no collisions with the existing static API calls.
+
+API plugins self-describe their IN and OUT packing instructions (examples coming soon).  These packing instructions are loaded into the table at runtime along with the API name, number, and the operation implementation being described.
+
+
+
 
 -------------------
 Users & Permissions
@@ -1160,7 +1182,7 @@ irodsSSLCACertificatePath (client)
 Other Notes
 -----------
 
-.. iRODS enforces that the database in use (Postgres, MySQL, etc.) is configured for UTF-8 encoding.  For MySQL, this is enforced at the database level and the table level.  For Postgres, this is enforced at the database level and then the tables inherit this setting.
+.. iRODS enforces that the database in use (PostgreSQL, MySQL, etc.) is configured for UTF-8 encoding.  For MySQL, this is enforced at the database level and the table level.  For PostgreSQL, this is enforced at the database level and then the tables inherit this setting.
 
 iRODS enforces that the database in use (PostgreSQL) is configured for UTF-8 encoding.  This is enforced at the database level and then the tables inherit this setting.
 
@@ -1401,6 +1423,11 @@ History of Releases
 ==========   =========    ======================================================
 Date         Version      Description
 ==========   =========    ======================================================
+2014-02-18   4.0.0b2      Second Beta Release of Merged Codebase
+                            This is the second beta of the merged open source
+                            release from RENCI.  It includes pluggable API
+                            support and external S3 and WOS resource plugin
+                            packages.
 2014-01-17   4.0.0b1      First Beta Release of Merged Codebase
                             This is the first beta of the merged open source
                             release from RENCI.  It includes pluggable database
