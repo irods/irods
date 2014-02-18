@@ -926,6 +926,7 @@ extern "C" {
                         if ( dataObjOutBBuf.buf != NULL ) {
                             free( dataObjOutBBuf.buf );
                         }
+                        fclose( fd );
                         return( FILE_OPEN_ERR );
                     }
                     status = fwrite( dataObjOutBBuf.buf, 1, dataObjOutBBuf.len, fd );
@@ -936,6 +937,7 @@ extern "C" {
                         if ( dataObjOutBBuf.buf != NULL ) {
                             free( dataObjOutBBuf.buf );
                         }
+                        fclose( fd );
                         return ( SYS_COPY_LEN_ERR );
                     }
                     fclose( fd );
