@@ -416,11 +416,7 @@ int clientLogin(
 
     // =-=-=-=-=-=-=-
     // send an authentication request to the server
-    ret = auth_plugin->call <
-          rcComm_t* > (
-              irods::AUTH_CLIENT_AUTH_REQUEST,
-              auth_obj,
-              _comm );
+    ret = auth_plugin->call <rcComm_t* > ( irods::AUTH_CLIENT_AUTH_REQUEST, auth_obj, _comm );
     if ( !ret.ok() ) {
         printError(
             _comm,
@@ -431,9 +427,7 @@ int clientLogin(
 
     // =-=-=-=-=-=-=-
     // establish auth context client side
-    ret = auth_plugin->call(
-              irods::AUTH_ESTABLISH_CONTEXT,
-              auth_obj );
+    ret = auth_plugin->call( irods::AUTH_ESTABLISH_CONTEXT, auth_obj );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
@@ -441,11 +435,7 @@ int clientLogin(
 
     // =-=-=-=-=-=-=-
     // send the auth response to the agent
-    ret = auth_plugin->call <
-          rcComm_t* > (
-              irods::AUTH_CLIENT_AUTH_RESPONSE,
-              auth_obj,
-              _comm );
+    ret = auth_plugin->call <rcComm_t* > ( irods::AUTH_CLIENT_AUTH_RESPONSE, auth_obj, _comm );
     if ( !ret.ok() ) {
         printError(
             _comm,

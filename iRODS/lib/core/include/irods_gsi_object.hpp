@@ -12,6 +12,7 @@ namespace irods {
 
 // constant key for gsi auth object
     const std::string GSI_AUTH_PLUGIN( "GSI" );
+    const std::string AUTH_GSI_SCHEME( "gsi" );
 
     /**
      * @brief Auth object for GSI authentication
@@ -37,6 +38,10 @@ namespace irods {
 
         /// @brief Returns the digest
         virtual const std::string& digest( void ) const { return digest_; }
+
+        /// =-=-=-=-=-=-=-
+        /// @brief serialize object to key-value pairs
+        virtual error get_re_vars( keyValPair_t& );
 
         // Mutators
 

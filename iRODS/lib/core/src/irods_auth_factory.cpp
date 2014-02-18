@@ -6,6 +6,7 @@
 #include "irods_native_auth_object.hpp"
 #include "irods_pam_auth_object.hpp"
 #include "irods_osauth_auth_object.hpp"
+#include "irods_gsi_object.hpp"
 
 namespace irods {
 /// =-=-=-=-=-=-=-
@@ -15,25 +16,17 @@ namespace irods {
         const std::string& _scheme,
         rError_t*          _r_error,
         auth_object_ptr&   _ptr ) {
-
         // =-=-=-=-=-=-=-
         // ensure scheme is lower case for comparison
         std::string scheme = _scheme;
-        std::transform(
-            scheme.begin(),
-            scheme.end(),
-            scheme.begin(),
-            ::tolower );
+        std::transform( scheme.begin(), scheme.end(), scheme.begin(), ::tolower );
 
         // =-=-=-=-=-=-=-
         // currently just support the native scheme
-        if ( scheme.empty() ||
-                AUTH_NATIVE_SCHEME == scheme ) {
+        if ( scheme.empty() || AUTH_NATIVE_SCHEME == scheme ) {
             native_auth_object* nat_obj = new native_auth_object( _r_error );
             if ( !nat_obj ) {
-                return ERROR(
-                           SYS_INVALID_INPUT_PARAM,
-                           "native auth allocation failed" );
+                return ERROR( SYS_INVALID_INPUT_PARAM, "native auth allocation failed" );
             }
 
             auth_object* auth_obj = dynamic_cast< auth_object* >( nat_obj );
@@ -82,12 +75,24 @@ namespace irods {
             _ptr.reset( auth_obj );
 
         }
+        else if ( AUTH_GSI_SCHEME == scheme ) {
+            gsi_auth_object* gsi_obj = new gsi_auth_object( _r_error );
+            if ( !gsi_obj ) {
+                return ERROR( SYS_INVALID_INPUT_PARAM, "gsi auth allocation failed" );
+            }
+
+            auth_object* auth_obj = dynamic_cast< auth_object* >( gsi_obj );
+            if ( !auth_obj ) {
+                return ERROR( SYS_INVALID_INPUT_PARAM, "gsi auth dynamic cast failed" );
+            }
+
+            _ptr.reset( auth_obj );
+
+        }
         else {
             std::string msg( "auth scheme not supported [" );
             msg += scheme + "]";
-            return ERROR(
-                       SYS_INVALID_INPUT_PARAM,
-                       msg );
+            return ERROR( SYS_INVALID_INPUT_PARAM, msg );
         }
 
         return SUCCESS();

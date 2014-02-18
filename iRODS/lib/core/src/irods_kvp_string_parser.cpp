@@ -1,5 +1,6 @@
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
-
+#include "irods_log.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_kvp_string_parser.hpp"
@@ -60,11 +61,11 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // test for the delim first, if there is none then
         // short circuit, test for association and place in map
-        size_t pos = _string.find( KVP_DEF_DELIM );
+        size_t pos = _string.find( kvp_delimiter() );
         if ( std::string::npos == pos ) {
             // =-=-=-=-=-=-=-
             // no delim, look for association
-            pos = _string.find( KVP_DEF_ASSOC );
+            pos = _string.find( kvp_association() );
             if ( std::string::npos == pos ) {
                 // =-=-=-=-=-=-=-
                 // no association, just add to the map
@@ -92,16 +93,34 @@ namespace irods {
             // =-=-=-=-=-=-=-
             // now that the string is broken into tokens we need to
             // extract the key and value to put them into the map
-            error ret = parse_token_into_kvp(
-                            token,
-                            _kvp,
-                            _assoc );
+            error ret = parse_token_into_kvp( token, _kvp, _assoc );
         }
 
         return SUCCESS();
 
     } // parse_kvp_string
 
+
+    error kvp_string(
+        const kvp_map_t& _kvp,
+        std::string& _rtn_str ) {
+        error result = SUCCESS();
+        std::string str;
+        bool first = true;
+        for ( kvp_map_t::const_iterator it = _kvp.begin(); result.ok() && it != _kvp.end(); ++it ) {
+            if ( !first ) {
+                str.append( kvp_delimiter() );
+            }
+            else {
+                first = false;
+            }
+            str.append( it->first );
+            str.append( kvp_association() );
+            str.append( it->second );
+        }
+        _rtn_str = str;
+        return result;
+    }
 }; // namespace irods
 
 

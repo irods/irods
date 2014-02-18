@@ -223,19 +223,14 @@ extern "C" {
         if ( !using_ssl ) {
             int err = sslStart( _comm );
             if ( err ) {
-                return ERROR(
-                           err,
-                           "failed to enable ssl" );
+                return ERROR( err, "failed to enable ssl" );
             }
         }
 
         // =-=-=-=-=-=-=-
         // make the call to our auth request
         authPluginReqOut_t* req_out = 0;
-        int status = rcAuthPluginRequest(
-                         _comm,
-                         &req_in,
-                         &req_out );
+        int status = rcAuthPluginRequest( _comm, &req_in, &req_out );
 
         // =-=-=-=-=-=-=-
         // shut down SSL if it was not already in use
@@ -246,10 +241,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // handle errors and exit
         if ( status < 0 ) {
-            return ERROR(
-                       status,
-                       "call to rcAuthRequest failed." );
-
+            return ERROR( status, "call to rcAuthRequest failed." );
         }
         else {
             // =-=-=-=-=-=-=-
@@ -322,13 +314,6 @@ extern "C" {
         irods::auth_plugin_context& _ctx,
         rsComm_t*                    _comm ) {
 
-        if ( true ) {
-            std::stringstream msg;
-            msg << "qqq - Here.";
-            DEBUGMSG( msg.str() );
-        }
-
-
         // =-=-=-=-=-=-=-
         // validate incoming parameters
         if ( !_ctx.valid< irods::pam_auth_object >().ok() ) {
@@ -362,9 +347,7 @@ extern "C" {
             // using an SSL connection to the remote ICAT
             status = sslStart( server_host->conn );
             if ( status ) {
-                return ERROR(
-                           status,
-                           "could not establish SSL connection" );
+                return ERROR( status, "could not establish SSL connection" );
             }
 
             // =-=-=-=-=-=-=-
@@ -396,7 +379,7 @@ extern "C" {
                 if ( _comm->auth_scheme != NULL ) {
                     free( _comm->auth_scheme );
                 }
-                _comm->auth_scheme = strdup( "pam" );
+                _comm->auth_scheme = strdup( irods::AUTH_PAM_SCHEME.c_str() );
                 return SUCCESS();
 
             }

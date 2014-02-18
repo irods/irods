@@ -71,8 +71,7 @@ int igsiServersideAuth( rsComm_t *rsComm ) {
 
     gsiAuthReqStatus = 1;
 
-    status = igsiEstablishContextServerside( rsComm, clientName,
-             500 );
+    status = igsiEstablishContextServerside( rsComm, clientName, 500 );
 #ifdef GSI_DEBUG
     if ( status == 0 ) {
         printf( "clientName:%s\n", clientName );

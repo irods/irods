@@ -293,13 +293,6 @@ extern "C" {
         irods::auth_plugin_context& _ctx,
         rsComm_t*                    _comm ) {
 
-        if ( true ) {
-            std::stringstream msg;
-            msg << "qqq - Here.";
-            DEBUGMSG( msg.str() );
-        }
-
-
         // =-=-=-=-=-=-=-
         // validate incoming parameters
         if ( !_ctx.valid< irods::osauth_auth_object >().ok() ) {
@@ -329,7 +322,7 @@ extern "C" {
         if ( _comm->auth_scheme != NULL ) {
             free( _comm->auth_scheme );
         }
-        _comm->auth_scheme = strdup( "osauth" );
+        _comm->auth_scheme = strdup( irods::AUTH_OSAUTH_SCHEME.c_str() );
 
         // =-=-=-=-=-=-=-
         // win!

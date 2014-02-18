@@ -22,13 +22,6 @@ int rsAuthPluginRequest(
     authPluginReqInp_t*   _req_inp,
     authPluginReqOut_t**  _req_out ) {
 
-    if ( true ) {
-        std::stringstream msg;
-        msg << "qqq - Here.";
-        DEBUGMSG( msg.str() );
-    }
-
-
     // =-=-=-=-=-=-=-
     // check our incoming params
     if ( !_comm ) {
@@ -50,6 +43,11 @@ int rsAuthPluginRequest(
         auth_scheme = _req_inp->auth_scheme_;
     }
 
+    // set the auth_scheme in the comm
+    if ( _comm->auth_scheme != NULL ) {
+        free( _comm->auth_scheme );
+    }
+    _comm->auth_scheme = strdup( auth_scheme.c_str() );
     // =-=-=-=-=-=-=-
     // store the scheme in a singleton for use in the following rsAuthResponse call
     irods::pluggable_auth_scheme& plug_a = irods::pluggable_auth_scheme::get_instance();

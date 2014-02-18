@@ -7,10 +7,15 @@
 
 // =-=-=-=-=-=-=-
 #include "irods_error.hpp"
+#include "rodsLog.hpp"
+#include "stringOpr.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
 #include <string>
+
+#include <time.h>
+#include <sys/time.h>
 
 namespace irods {
     class error;
@@ -28,9 +33,15 @@ namespace irods {
 
 #define DEBUGMSG(msg)                                           \
     {                                                           \
-    std::stringstream ss;                                       \
-    ss << msg << " " << __FUNCTION__ << " " << __FILE__ << ":" << __LINE__; \
-    irods::log(LOG_NOTICE, ss.str());                                  \
+    time_t timeValue;                                           \
+    char timeBuf[100]; \
+    time( &timeValue ); \
+    rstrcpy( timeBuf, ctime( &timeValue ), 90 ); \
+    timeBuf[19] = '\0'; \
+    std::stringstream ss;                                                   \
+    ss << timeBuf << " " << msg << " " << __FUNCTION__ << " " << __FILE__ << ":" << __LINE__; \
+    irods::log(LOG_NOTICE, ss.str());                                   \
+    std::cerr << ss.str() << std::endl; \
     }
 
 #endif // __IRODS_LOG_HPP__

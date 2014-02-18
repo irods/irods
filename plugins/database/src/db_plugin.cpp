@@ -1076,33 +1076,22 @@ irods::error verify_auth_response(
     // =-=-=-=-=-=-=-
     // validate incoming parameters
     if ( !_scheme ) {
-        return ERROR(
-                   SYS_INVALID_INPUT_PARAM,
-                   "null _scheme ptr" );
+        return ERROR( SYS_INVALID_INPUT_PARAM, "null _scheme ptr" );
     }
     else if ( !_challenge ) {
-        return ERROR(
-                   SYS_INVALID_INPUT_PARAM,
-                   "null _challenge ptr" );
+        return ERROR( SYS_INVALID_INPUT_PARAM, "null _challenge ptr" );
     }
     else if ( !_user_name ) {
-        return ERROR(
-                   SYS_INVALID_INPUT_PARAM,
-                   "null _user_name ptr" );
+        return ERROR( SYS_INVALID_INPUT_PARAM, "null _user_name ptr" );
     }
     else if ( !_response ) {
-        return ERROR(
-                   SYS_INVALID_INPUT_PARAM,
-                   "null _response ptr" );
+        return ERROR( SYS_INVALID_INPUT_PARAM, "null _response ptr" );
     }
 
     // =-=-=-=-=-=-=-
     // construct an auth object given the scheme
     irods::auth_object_ptr auth_obj;
-    irods::error ret = irods::auth_factory(
-                           _scheme,
-                           0,
-                           auth_obj );
+    irods::error ret = irods::auth_factory( _scheme, 0, auth_obj );
     if ( !ret.ok() ) {
         return ret;
     }
@@ -1110,9 +1099,7 @@ irods::error verify_auth_response(
     // =-=-=-=-=-=-=-
     // resolve an auth plugin given the auth object
     irods::plugin_ptr ptr;
-    ret = auth_obj->resolve(
-              irods::AUTH_INTERFACE,
-              ptr );
+    ret = auth_obj->resolve( irods::AUTH_INTERFACE, ptr );
     if ( !ret.ok() ) {
         return ret;
     }
@@ -1120,15 +1107,7 @@ irods::error verify_auth_response(
 
     // =-=-=-=-=-=-=-
     // call auth verify on plugin
-    ret = auth_plugin->call <
-          const char*,
-          const char*,
-          const char* > (
-              irods::AUTH_AGENT_AUTH_VERIFY,
-              auth_obj,
-              _challenge,
-              _user_name,
-              _response );
+    ret = auth_plugin->call <const char*, const char*, const char* > ( irods::AUTH_AGENT_AUTH_VERIFY, auth_obj, _challenge, _user_name, _response );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret;
@@ -6942,12 +6921,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( !_comm            ||
-                !_challenge       ||
-                !_response        ||
-                !_user_name       ||
-                !_user_priv_level ||
-                !_client_priv_level ) {
+        if ( !_comm || !_challenge || !_response || !_user_name || !_user_priv_level || !_client_priv_level ) {
             return ERROR(
                        CAT_INVALID_ARGUMENT,
                        "null parameter" );
@@ -7048,11 +7022,7 @@ extern "C" {
         }
 
         if ( _scheme && strlen( _scheme ) > 0 ) {
-            irods::error ret = verify_auth_response(
-                                   _scheme,
-                                   _challenge,
-                                   userName2,
-                                   _response );
+            irods::error ret = verify_auth_response( _scheme, _challenge, userName2, _response );
             if ( !ret.ok() ) {
                 return PASS( ret );
             }

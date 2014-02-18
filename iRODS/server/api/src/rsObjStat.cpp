@@ -1,3 +1,5 @@
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
+
 /*** Copyright (c), The Unregents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* rsObjStat.c
@@ -16,8 +18,10 @@
 #include "dataObjClose.hpp"
 
 int
-rsObjStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-           rodsObjStat_t **rodsObjStatOut ) {
+rsObjStat(
+    rsComm_t *rsComm,
+    dataObjInp_t *dataObjInp,
+    rodsObjStat_t **rodsObjStatOut ) {
     int status;
     rodsServerHost_t *rodsServerHost = NULL;
     specCollCache_t *specCollCache = NULL;
@@ -249,7 +253,7 @@ dataObjStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             ( *rodsObjStatOut )->objType = DATA_OBJ_T;
             status = ( int )DATA_OBJ_T;
             /* XXXXXX . dont have numCopies anymore. Replaced by dataMode
-            * (*rodsObjStatOut)->numCopies = genQueryOut->rowCnt; */
+             * (*rodsObjStatOut)->numCopies = genQueryOut->rowCnt; */
 
             for ( i = 0; i < genQueryOut->rowCnt; i++ ) {
                 if ( atoi( &replStatus->value[replStatus->len * i] ) > 0 ) {

@@ -11,6 +11,10 @@
 #include "authResponse.hpp"
 #include "authCheck.hpp"
 #include "gsiAuthRequest.hpp"
+#include "irods_kvp_string_parser.hpp"
+#include "authPluginRequest.hpp"
+#include "irods_client_server_negotiation.hpp"
+#include "irods_stacktrace.hpp"
 
 #include <gssapi.h>
 
@@ -32,8 +36,6 @@ extern "C" {
     static char igsiScratchBuffer[SCRATCH_BUFFER_SIZE];
     static int igsiTokenHeaderMode = 1;  /* 1 is the normal mode,
                                             0 means running in a non-token-header mode, ie Java; dynamically cleared. */
-
-    static std::string GSI_AUTH_SCHEME = "gsi";
 
     // =-=-=-=-=-=-=-
     // NOTE:: this needs to become a property
@@ -184,8 +186,7 @@ extern "C" {
 
         gss_release_name( &minor_status, &my_name );
 
-        major_status = gss_inquire_cred( &minor_status, tmp_creds, &my_name_2,
-                                         NULL, NULL, NULL );
+        major_status = gss_inquire_cred( &minor_status, tmp_creds, &my_name_2, NULL, NULL, NULL );
         if ( major_status != GSS_S_COMPLETE ) {
             gsi_log_error( _go->r_error(), "inquire_cred", major_status, minor_status, is_client );
             return ERROR( GSI_ERROR_ACQUIRING_CREDS, "Failed inquiring about credentials." );
@@ -342,7 +343,7 @@ extern "C" {
         unsigned int _nbyte,
         unsigned int* _rtn_bytes_read ) {
         irods::error result = SUCCESS();
-        int ret;
+        int ret = 1;
         char *ptr;
 
         for ( ptr = _buf; result.ok() && ret != 0 && _nbyte; ptr += ret, _nbyte -= ret ) {
@@ -450,6 +451,7 @@ extern "C" {
         int i;
 
         if ( igsiTokenHeaderMode ) {
+
             /*
               First, if in normal mode, peek to see if the other side is sending
               headers and possibly switch into non-header mode.
@@ -481,6 +483,7 @@ extern "C" {
             }
         }
         else {
+
             i = read( _fd, ( char * ) _token->value, _token->length );
             if ( igsiDebugFlag > 0 ) {
                 fprintf( stderr, "rcved token, length = %d\n", i );
@@ -564,7 +567,6 @@ extern "C" {
                     tokenPtr = GSS_C_NO_BUFFER;
                     context[fd] = GSS_C_NO_CONTEXT;
                     flags = GSS_C_MUTUAL_FLAG | GSS_C_REPLAY_FLAG;
-
                     do {
                         majorStatus = gss_init_sec_context( &minorStatus,
                                                             ptr->creds(), &context[fd], target_name, oid,
@@ -578,8 +580,8 @@ extern "C" {
                            gss_release_buffer, instead clear it. */
                         memset( igsiScratchBuffer, 0, SCRATCH_BUFFER_SIZE );
 
-                        if ( !( result = ASSERT_ERROR( majorStatus != GSS_S_COMPLETE && majorStatus != GSS_S_CONTINUE_NEEDED,
-                                                       GSI_ERROR_INIT_SECURITY_CONTEXT, "Failed initializing GSI context." ) ).ok() ) {
+                        if ( !( result = ASSERT_ERROR( majorStatus == GSS_S_COMPLETE || majorStatus == GSS_S_CONTINUE_NEEDED,
+                                                       GSI_ERROR_INIT_SECURITY_CONTEXT, "Failed initializing GSI context. Major status: %d\tMinor status: %d" ) ).ok() ) {
                             gsi_log_error( ptr->r_error(), "initializing context", majorStatus, minorStatus, true );
                             ( void ) gss_release_name( &minorStatus, &target_name );
                         }
@@ -735,7 +737,7 @@ extern "C" {
                                                           NULL,     /* ignore time_rec */
                                                           NULL );   /* ignore del_cred_handle */
 
-                    if ( !( result = ASSERT_ERROR( majorStatus != GSS_S_COMPLETE && majorStatus != GSS_S_CONTINUE_NEEDED,
+                    if ( !( result = ASSERT_ERROR( majorStatus == GSS_S_COMPLETE || majorStatus == GSS_S_CONTINUE_NEEDED,
                                                    GSI_ACCEPT_SEC_CONTEXT_ERROR, "Error accepting GSI security context." ) ).ok() ) {
                         gsi_log_error( &_comm->rError, "accepting context", majorStatus, minorStatus, false );
                         memset( igsiScratchBuffer, 0, SCRATCH_BUFFER_SIZE );
@@ -1058,6 +1060,12 @@ extern "C" {
                                 _comm->proxyUser.authInfo.authFlag = privLevel;
                                 _comm->clientUser.authInfo.authFlag = clientPrivLevel;
 
+                                // Reset the auth scheme here so we do not try to authenticate again unless the client requests it.
+                                if ( _comm->auth_scheme != NULL ) {
+                                    free( _comm->auth_scheme );
+                                }
+                                _comm->auth_scheme = NULL;
+
                                 if ( noNameMode ) { /* We didn't before, but now have an irodsUserName */
                                     int status2, status3;
                                     rodsServerHost_t *rodsServerHost = NULL;
@@ -1108,27 +1116,49 @@ extern "C" {
         ret = _ctx.valid< irods::gsi_auth_object >();
         if ( ( result = ASSERT_PASS( ret, "Invalid plugin context." ) ).ok() ) {
 
-            // call auth request
-            gsiAuthRequestOut_t* auth_request = NULL;
-            int status = rcGsiAuthRequest( _comm, &auth_request );
-            if ( ( result = ASSERT_ERROR( status >= 0, status, "Call to rcGsiAuthRequest failed." ) ).ok() ) {
+            // =-=-=-=-=-=-=-
+            // get the auth object
+            irods::gsi_auth_object_ptr ptr = boost::dynamic_pointer_cast <irods::gsi_auth_object > ( _ctx.fco() );
 
-                // store the serverDN in the request results
-                if ( auth_request != NULL ) {
-                    irods::gsi_auth_object_ptr ptr = boost::dynamic_pointer_cast<irods::gsi_auth_object>( _ctx.fco() );
-                    ptr->request_result( auth_request->serverDN );
-                }
-            }
+            // =-=-=-=-=-=-=-
+            // get the context string
+            std::string context = ptr->context( );
 
-            // free the auth request
-            if ( auth_request != NULL ) {
-                if ( auth_request->serverDN != NULL ) {
-                    free( auth_request->serverDN );
+            // =-=-=-=-=-=-=-
+            // append the auth scheme and user name
+            context += irods::kvp_delimiter() + irods::AUTH_USER_KEY + irods::kvp_association() + ptr->user_name();
+
+            // =-=-=-=-=-=-=-
+            // error check string size against MAX_NAME_LEN
+            if ( ( result = ASSERT_ERROR( context.size() <= MAX_NAME_LEN, SYS_INVALID_INPUT_PARAM, "context string > max name len" ) ).ok() ) {
+
+                // =-=-=-=-=-=-=-
+                // copy the context to the req in struct
+                authPluginReqInp_t req_in;
+                strncpy( req_in.context_, context.c_str(), context.size() + 1 );
+
+                // =-=-=-=-=-=-=-
+                // copy the auth scheme to the req in struct
+                strncpy( req_in.auth_scheme_, irods::AUTH_GSI_SCHEME.c_str(), irods::AUTH_GSI_SCHEME.size() + 1 );
+
+                // =-=-=-=-=-=-=-
+                // make the call to our auth request
+                authPluginReqOut_t* req_out = 0;
+                int status = rcAuthPluginRequest( _comm, &req_in, &req_out );
+
+                // =-=-=-=-=-=-=-
+                // handle errors and exit
+                if ( ( result = ASSERT_ERROR( status >= 0, status, "call to rcAuthRequest failed." ) ).ok() ) {
+
+                    // =-=-=-=-=-=-=-
+                    // copy over the resulting irods pam pasword
+                    // and cache the result in our auth object
+                    ptr->request_result( req_out->result_ );
+                    status = obfSavePw( 0, 0, 0, req_out->result_ );
+                    free( req_out );
                 }
-                free( auth_request );
             }
         }
-
         return result;
     }
 
@@ -1161,7 +1191,7 @@ extern "C" {
                         if ( _comm->auth_scheme != NULL ) {
                             free( _comm->auth_scheme );
                         }
-                        _comm->auth_scheme = strdup( GSI_AUTH_SCHEME );
+                        _comm->auth_scheme = strdup( irods::AUTH_GSI_SCHEME.c_str() );
                         ptr->server_dn( server_dn );
                     }
                 }
@@ -1185,10 +1215,15 @@ extern "C" {
                 // get the auth object
                 irods::gsi_auth_object_ptr ptr = boost::dynamic_pointer_cast<irods::gsi_auth_object >( _ctx.fco() );
 
+                irods::kvp_map_t kvp;
+                kvp[irods::AUTH_SCHEME_KEY] = irods::AUTH_GSI_SCHEME;
+                std::string resp_str;
+                irods::kvp_string( kvp, resp_str );
+
                 // =-=-=-=-=-=-=-
                 // build the response string
                 char response[ RESPONSE_LEN + 2 ];
-                strncpy( response, ptr->digest().c_str(), RESPONSE_LEN + 2 );
+                strncpy( response, resp_str.c_str(), RESPONSE_LEN + 2 );
 
                 // =-=-=-=-=-=-=-
                 // build the username#zonename string
@@ -1253,7 +1288,8 @@ extern "C" {
                         rcDisconnect( rodsServerHost->conn );
                         rodsServerHost->conn = NULL;
                     }
-                    if ( ( result = ASSERT_ERROR( status >= 0 && authCheckOut != NULL, status, "rcAuthCheck failed." ) ).ok() ) { // JMC cppcheck
+                    if ( ( result = ASSERT_ERROR( status >= 0 && authCheckOut != NULL, status, "rcAuthCheck failed, status = %d.",
+                                                  status ) ).ok() ) { // JMC cppcheck
 
                         if ( rodsServerHost->localFlag != LOCAL_HOST ) {
                             if ( authCheckOut->serverResponse == NULL ) {
@@ -1410,6 +1446,18 @@ extern "C" {
         return result;
     }
 
+    // =-=-=-=-=-=-=-
+    // stub for ops that the native plug does
+    // not need to support
+    irods::error gsi_auth_agent_verify(
+        irods::auth_plugin_context& _ctx,
+        const char* _a,
+        const char* _b,
+        const char* _c ) {
+        return SUCCESS();
+
+    } // native_auth_agent_verify
+
     /// @brief The gsi auth plugin
     class gsi_auth_plugin : public irods::auth {
     public:
@@ -1445,6 +1493,7 @@ extern "C" {
             gsi->add_operation( irods::AUTH_AGENT_AUTH_REQUEST,   "gsi_auth_agent_request" );
             gsi->add_operation( irods::AUTH_CLIENT_AUTH_RESPONSE, "gsi_auth_client_response" );
             gsi->add_operation( irods::AUTH_AGENT_AUTH_RESPONSE,  "gsi_auth_agent_response" );
+            gsi->add_operation( irods::AUTH_AGENT_AUTH_VERIFY,    "gsi_auth_agent_verify" );
 
             result = dynamic_cast<irods::auth*>( gsi );
             if ( !( ret = ASSERT_ERROR( result != NULL, SYS_INVALID_INPUT_PARAM, "Failed to dynamic cast to irods::auth*" ) ).ok() ) {

@@ -37,9 +37,7 @@ rsAuthCheck( rsComm_t *rsComm, authCheckInp_t *authCheckInp,
     // try to parse it
     std::string orig_resp = authCheckInp->response;
     irods::kvp_map_t kvp;
-    irods::error ret = irods::parse_kvp_string(
-                           orig_resp,
-                           kvp );
+    irods::error ret = irods::parse_kvp_string( orig_resp, kvp );
     std::string scheme;
     std::string response = authCheckInp->response;
     if ( ret.ok() ) {
@@ -54,14 +52,8 @@ rsAuthCheck( rsComm_t *rsComm, authCheckInp_t *authCheckInp,
 
         }
     }
-    status = chlCheckAuth(
-                 rsComm,
-                 scheme.c_str(),
-                 authCheckInp->challenge,
-                 const_cast< char* >( response.c_str() ),
-                 authCheckInp->username,
-                 &privLevel,
-                 &clientPrivLevel );
+    status = chlCheckAuth( rsComm, scheme.c_str(), authCheckInp->challenge, const_cast< char* >( response.c_str() ), authCheckInp->username, &privLevel,
+                           &clientPrivLevel );
     if ( status < 0 ) {
         rodsLog( LOG_NOTICE,
                  "rsAuthCheck: chlCheckAuth status = %d", status );

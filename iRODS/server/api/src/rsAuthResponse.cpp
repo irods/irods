@@ -51,10 +51,7 @@ int rsAuthResponse(
     // =-=-=-=-=-=-=-
     // construct an auth object given the scheme
     irods::auth_object_ptr auth_obj;
-    irods::error ret = irods::auth_factory(
-                           auth_scheme,
-                           &_comm->rError,
-                           auth_obj );
+    irods::error ret = irods::auth_factory( auth_scheme, &_comm->rError, auth_obj );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
@@ -63,9 +60,7 @@ int rsAuthResponse(
     // =-=-=-=-=-=-=-
     // resolve an auth plugin given the auth object
     irods::plugin_ptr ptr;
-    ret = auth_obj->resolve(
-              irods::AUTH_INTERFACE,
-              ptr );
+    ret = auth_obj->resolve( irods::AUTH_INTERFACE, ptr );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
@@ -74,13 +69,7 @@ int rsAuthResponse(
 
     // =-=-=-=-=-=-=-
     // call client side init - 'establish creds'
-    ret = auth_plugin->call <
-          rsComm_t*,
-          authResponseInp_t* > (
-              irods::AUTH_AGENT_AUTH_RESPONSE,
-              auth_obj,
-              _comm,
-              _resp );
+    ret = auth_plugin->call <rsComm_t*, authResponseInp_t* > ( irods::AUTH_AGENT_AUTH_RESPONSE, auth_obj, _comm, _resp );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();

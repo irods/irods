@@ -259,13 +259,6 @@ extern "C" {
         irods::error result = SUCCESS();
         irods::error ret;
 
-
-        if ( true ) {
-            std::stringstream msg;
-            msg << "qqq - Here.";
-            DEBUGMSG( msg.str() );
-        }
-
         // =-=-=-=-=-=-=-
         // validate incoming parameters
         ret = _ctx.valid< irods::native_auth_object >();
@@ -293,14 +286,7 @@ extern "C" {
                 if ( _comm->auth_scheme != NULL ) {
                     free( _comm->auth_scheme );
                 }
-
-                if ( true ) {
-                    std::stringstream msg;
-                    msg << "qqq - Setting the auth scheme.";
-                    DEBUGMSG( msg.str() );
-                }
-
-                _comm->auth_scheme = strdup( "native" );
+                _comm->auth_scheme = strdup( irods::AUTH_NATIVE_SCHEME.c_str() );
             }
         }
 

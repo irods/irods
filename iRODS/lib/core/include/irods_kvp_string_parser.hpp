@@ -28,7 +28,7 @@ namespace irods {
     static const std::string KVP_DEF_ASSOC( "=" );
 
 /// =-=-=-=-=-=-=-
-/// @brief typeedef of key-value map
+/// @brief typedef of key-value map
     typedef std::map< std::string, std::string > kvp_map_t;
 
 /// =-=-=-=-=-=-=-
@@ -47,6 +47,11 @@ namespace irods {
         kvp_map_t&         _kvp,                    // map of kvp
         const std::string& _assoc = KVP_DEF_ASSOC,  // associative token, defaults
         const std::string& _delim = KVP_DEF_DELIM ); // delimiter, defaults
+
+    /// @brief Given a kvp map, generate a properly delimited string.
+    error kvp_string(
+        const kvp_map_t& _kvp,	// The map from which to generate the string
+        std::string& _str );	// A reference to the string to return
 
 }; // namespace irods
 

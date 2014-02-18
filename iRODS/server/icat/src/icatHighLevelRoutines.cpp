@@ -99,7 +99,7 @@ int chlOpen() {
     // =-=-=-=-=-=-=-
     // cache the database type for subsequent calls
 //    database_plugin_type = _cfg->catalog_database_type;
-	irods::server_properties::getInstance().get_property<std::string>(CATALOG_DATABASE_TYPE_KW, database_plugin_type);
+    irods::server_properties::getInstance().get_property<std::string>( CATALOG_DATABASE_TYPE_KW, database_plugin_type );
 
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -1934,9 +1934,7 @@ int chlCheckAuth(
     // =-=-=-=-=-=-=-
     // call factory for database object
     irods::database_object_ptr db_obj_ptr;
-    irods::error ret = irods::database_factory(
-                           database_plugin_type,
-                           db_obj_ptr );
+    irods::error ret = irods::database_factory( database_plugin_type, db_obj_ptr );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
@@ -1945,43 +1943,21 @@ int chlCheckAuth(
     // =-=-=-=-=-=-=-
     // resolve a plugin for that object
     irods::plugin_ptr db_plug_ptr;
-    ret = db_obj_ptr->resolve(
-              irods::DATABASE_INTERFACE,
-              db_plug_ptr );
+    ret = db_obj_ptr->resolve( irods::DATABASE_INTERFACE, db_plug_ptr );
     if ( !ret.ok() ) {
-        irods::log(
-            PASSMSG(
-                "failed to resolve database interface",
-                ret ) );
+        irods::log( PASSMSG( "failed to resolve database interface", ret ) );
         return ret.code();
     }
 
     // =-=-=-=-=-=-=-
     // cast plugin and object to db and fco for call
-    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
-                                        irods::first_class_object > ( db_obj_ptr );
-    irods::database_ptr           db = boost::dynamic_pointer_cast <
-                                       irods::database > ( db_plug_ptr );
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <irods::first_class_object > ( db_obj_ptr );
+    irods::database_ptr           db = boost::dynamic_pointer_cast <irods::database > ( db_plug_ptr );
 
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
-    ret = db->call <
-          rsComm_t*,
-          const char*,
-          char*,
-          char*,
-          char*,
-          int*,
-          int* > (
-              irods::DATABASE_OP_CHECK_AUTH,
-              ptr,
-              _comm,
-              _scheme,
-              _challenge,
-              _response,
-              _user_name,
-              _user_priv_level,
-              _client_priv_level );
+    ret = db->call <rsComm_t*, const char*, char*, char*, char*, int*, int* > ( irods::DATABASE_OP_CHECK_AUTH, ptr, _comm, _scheme, _challenge, _response,
+            _user_name, _user_priv_level, _client_priv_level );
 
     return ret.code();
 
