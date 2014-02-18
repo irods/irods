@@ -205,7 +205,7 @@ echo "Detected OS Version [$DETECTEDOSVERSION]"
 ############################################################
 
 # creates a timestamped tempfile for quick usage
-set_tmpfile {
+set_tmpfile() {
   TMPFILE=/tmp/$USER/$(date "+%Y%m%d-%H%M%S.%N.irods.tmp")
 }
 
