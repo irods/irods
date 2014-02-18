@@ -3,6 +3,7 @@
 // =-=-=-=-=-=-=-
 #include "irods_structured_object.hpp"
 #include "irods_resource_manager.hpp"
+#include "irods_stacktrace.hpp"
 
 extern irods::resource_manager resc_mgr;
 
@@ -16,7 +17,8 @@ namespace irods {
         offset_( 0 ),
         spec_coll_( 0 ),
         data_type_( "" ),
-        opr_type_( 0 ) {
+        opr_type_( 0 ),
+        spec_coll_type_( HAAW_STRUCT_FILE_T ) {
     } // structured_object
 
 // =-=-=-=-=-=-=-
@@ -28,13 +30,16 @@ namespace irods {
         spec_coll_( 0 ),
         data_type_( "" ),
         opr_type_( 0 ) {
-
         // =-=-=-=-=-=-=-
         // pull out subFile attributes
-        addr_          = _sub.addr;
-        sub_file_path_ = _sub.subFilePath;
-        offset_        = _sub.offset;
-        spec_coll_     = _sub.specColl;
+        addr_           = _sub.addr;
+        sub_file_path_  = _sub.subFilePath;
+        offset_         = _sub.offset;
+        spec_coll_      = _sub.specColl;
+        spec_coll_type_ = _sub.specColl->type;
+        physical_path_  = _sub.specColl->phyPath;
+        logical_path_   = _sub.specColl->objPath;
+        resc_hier_      = _sub.specColl->rescHier;
         mode( _sub.mode );
         flags( _sub.flags );
 
@@ -70,12 +75,13 @@ namespace irods {
 // public - cctor
     structured_object::structured_object( const structured_object& _rhs ) :
         file_object( _rhs ) {
-        addr_          = _rhs.addr_;
-        sub_file_path_ = _rhs.sub_file_path_;
-        offset_        = _rhs.offset_;
-        spec_coll_     = _rhs.spec_coll_;
-        data_type_     = _rhs.data_type_;
-        opr_type_      = _rhs.opr_type_;
+        addr_            = _rhs.addr_;
+        sub_file_path_   = _rhs.sub_file_path_;
+        offset_          = _rhs.offset_;
+        spec_coll_       = _rhs.spec_coll_;
+        data_type_       = _rhs.data_type_;
+        opr_type_        = _rhs.opr_type_;
+        spec_coll_type_  = _rhs.spec_coll_type_;
     } // cctor
 
 // =-=-=-=-=-=-=-

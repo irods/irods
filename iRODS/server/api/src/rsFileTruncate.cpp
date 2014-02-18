@@ -82,16 +82,6 @@ int _rsFileTruncate(
     rsComm_t*      _comm,
     fileOpenInp_t* _trunc_inp ) {
     // =-=-=-=-=-=-=-
-    // trap bad object paths
-    if ( _trunc_inp->objPath[0] == '\0' ) {
-        std::stringstream msg;
-        msg << __FUNCTION__;
-        msg << " - Empty logical path.";
-        irods::log( LOG_ERROR, msg.str() );
-        return SYS_INVALID_INPUT_PARAM;
-    }
-
-    // =-=-=-=-=-=-=-
     // make the call to rename via the resource plugin
     irods::file_object_ptr file_obj(
         new irods::file_object(

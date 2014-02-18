@@ -107,14 +107,6 @@ int _rsFileGet(
         _get_buf->buf = malloc( len );
     }
 
-    if ( _get_inp->objPath[0] == '\0' ) {
-        std::stringstream msg;
-        msg << __FUNCTION__;
-        msg << " - Empty logical path.";
-        irods::log( LOG_ERROR, msg.str() );
-        return SYS_INVALID_INPUT_PARAM;
-    }
-
     irods::file_object_ptr file_obj(
         new irods::file_object(
             _comm,

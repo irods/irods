@@ -93,16 +93,7 @@ int _rsFileRename(
     // =-=-=-=-=-=-=-
     // FIXME: need to check resource permission and vault permission
     // when RCAT is available
-
     // mkDirForFilePath( _comm, "/", _rename_inp->newFileName, getDefDirMode () ); - The actual file path depends on the resource
-
-    if ( _rename_inp->objPath[0] == '\0' ) {
-        std::stringstream msg;
-        msg << __FUNCTION__;
-        msg << " - Empty logical path.";
-        irods::log( LOG_ERROR, msg.str() );
-        return SYS_INVALID_INPUT_PARAM;
-    }
 
     // =-=-=-=-=-=-=-
     // make the call to rename via the resource plugin

@@ -3447,6 +3447,7 @@ resolveSpecCollType( char * type, char * collection, char * collInfo1,
                 return ( 0 );
             }
         }
+
         specColl->collClass = NO_SPEC_COLL;
         rodsLog( LOG_ERROR,
                  "resolveSpecCollType: unmatch specColl type %s", type );
@@ -3475,7 +3476,7 @@ parseCachedStructFileStr( char * collInfo2, specColl_t * specColl ) {
 
     if ( tmpPtr1 == NULL ) {
         rodsLog( LOG_NOTICE,
-                 "parseCachedStructFileStr: collInfo2 %s format error", collInfo2 );
+                 "parseCachedStructFileStr: collInfo2 %s format error 1", collInfo2 );
         return SYS_COLLINFO_2_FORMAT_ERR;
     }
 
@@ -3488,7 +3489,7 @@ parseCachedStructFileStr( char * collInfo2, specColl_t * specColl ) {
 
     if ( tmpPtr2 == NULL ) {
         rodsLog( LOG_NOTICE,
-                 "parseCachedStructFileStr: collInfo2 %s format error", collInfo2 );
+                 "parseCachedStructFileStr: collInfo2 %s format error 2", collInfo2 );
         return SYS_COLLINFO_2_FORMAT_ERR;
     }
 

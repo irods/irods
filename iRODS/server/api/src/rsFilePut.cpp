@@ -134,14 +134,6 @@ int _rsFilePut(
         return ( fd );
     }
 
-    if ( _put_inp->objPath[0] == '\0' ) {
-        std::stringstream msg;
-        msg << __FUNCTION__;
-        msg << " - Empty logical path.";
-        irods::log( LOG_ERROR, msg.str() );
-        return SYS_INVALID_INPUT_PARAM;
-    }
-
     // =-=-=-=-=-=-=-
     // call write for resource plugin
     irods::file_object_ptr file_obj(

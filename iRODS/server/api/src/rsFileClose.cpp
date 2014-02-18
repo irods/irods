@@ -92,16 +92,6 @@ int _rsFileClose(
     }
 
     // =-=-=-=-=-=-=-
-    // trap for invalid objects
-    if ( FileDesc[ _close_inp->fileInx ].objPath == NULL ||
-            FileDesc[ _close_inp->fileInx ].objPath[0] == '\0' ) {
-        std::stringstream msg;
-        msg << "Empty logical path.";
-        irods::log( LOG_ERROR, msg.str() );
-        return SYS_INVALID_INPUT_PARAM;
-    }
-
-    // =-=-=-=-=-=-=-
     // call the resource plugin close operation
     irods::file_object_ptr file_obj(
         new irods::file_object(

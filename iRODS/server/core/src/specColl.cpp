@@ -276,14 +276,15 @@ getSpecCollCache( rsComm_t *rsComm, char *objPath,
 
 int
 modCollInfo2( rsComm_t *rsComm, specColl_t *specColl, int clearFlag ) {
+
     int status;
     char collInfo2[MAX_NAME_LEN];
     collInp_t modCollInp;
 
     memset( &modCollInp, 0, sizeof( modCollInp ) );
     rstrcpy( modCollInp.collName, specColl->collection, MAX_NAME_LEN );
-    addKeyVal( &modCollInp.condInput, COLLECTION_TYPE_KW,
-               TAR_STRUCT_FILE_STR ); /* need this or rsModColl fail */
+    //addKeyVal( &modCollInp.condInput, COLLECTION_TYPE_KW,
+    //           TAR_STRUCT_FILE_STR ); /* need this or rsModColl fail */
     if ( clearFlag > 0 ) {
         rstrcpy( collInfo2, "NULL_SPECIAL_VALUE", MAX_NAME_LEN );
     }
@@ -336,7 +337,6 @@ statPathInSpecColl( rsComm_t *rsComm, char *objPath,
     rstrcpy( ( *rodsObjStatOut )->ownerZone, specCollCache->ownerZone, NAME_LEN );
 
     status = specCollSubStat( rsComm, specColl, objPath, UNKNOW_COLL_PERM, &dataObjInfo );
-
 
     if ( status < 0 ) {
         if ( dataObjInfo != NULL ) {
@@ -614,6 +614,7 @@ specCollSubStat( rsComm_t *rsComm, specColl_t *specColl,
         return ( SYS_UNKNOWN_SPEC_COLL_CLASS );
     }
     status = l3Stat( rsComm, *dataObjInfo, &rodsStat );
+
     if ( status < 0 ) {
         return status;
     }

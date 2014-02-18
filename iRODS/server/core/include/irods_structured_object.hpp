@@ -71,6 +71,9 @@ namespace irods {
         void addr( rodsHostAddr_t _addr ) {
             addr_      = _addr;
         }
+        void sub_file_path( const std::string _p ) {
+            sub_file_path_ = _p;
+        }
         void spec_coll( specColl_t*    _coll ) {
             spec_coll_ = _coll;
         }

@@ -190,6 +190,7 @@ insert into R_TOKN_MAIN values ('data_type',1701,'zipFile','','|.zip|','','','13
 insert into R_TOKN_MAIN values ('data_type',1702,'gzipTar bundle','','','','','1324000000','1324000000');
 insert into R_TOKN_MAIN values ('data_type',1703,'bzip2Tar bundle','','','','','1324000000','1324000000');
 insert into R_TOKN_MAIN values ('data_type',1704,'zipFile bundle','','','','','1324000000','1324000000');
+insert into R_TOKN_MAIN values ('data_type',1704,'msso file','','','','','1324000000','1324000000');
 
 
 insert into R_TOKN_MAIN values ('action_type',1800,'generic','','','','','1170000000','1170000000');

@@ -52,7 +52,7 @@ main( int argc, char **argv ) {
     status = procApiRequest( conn, 1300, NULL, NULL,
                              ( void ** ) NULL, NULL );
     if ( status < 0 ) {
-        printf( "\n\nXXXX - failed to call our api\n\n\n" );
+        printf( "\n\nERROR - failed to call our api\n\n\n" );
         return 0;
     }
 }

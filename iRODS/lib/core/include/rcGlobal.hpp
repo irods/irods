@@ -131,6 +131,7 @@ char *collCond[] = {
 structFileTypeDef_t StructFileTypeDef[] = {
     {HAAW_STRUCT_FILE_STR, HAAW_STRUCT_FILE_T},
     {TAR_STRUCT_FILE_STR, TAR_STRUCT_FILE_T},
+    {MSSO_STRUCT_FILE_STR, MSSO_STRUCT_FILE_T},
 };
 
 int NumStructFileType = sizeof( StructFileTypeDef ) / sizeof( structFileTypeDef_t );
