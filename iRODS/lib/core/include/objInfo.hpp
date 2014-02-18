@@ -109,11 +109,11 @@ extern "C" {
         LINKED_COLL
     } specCollClass_t;
 
-    typedef enum {            /* structFile type */
-        NONE_STRUCT_FILE_T,   /* no known type */
-        HAAW_STRUCT_FILE_T,   /* the UK eScience structFile */
-        TAR_STRUCT_FILE_T,    /* The tar structFile */
-        MSSO_STRUCT_FILE_T,   /* The workflow structFile */
+    typedef enum {                /* structFile type */
+        NONE_STRUCT_FILE_T = 0,   /* no known type */
+        HAAW_STRUCT_FILE_T = 1,   /* the UK eScience structFile */
+        TAR_STRUCT_FILE_T  = 2,   /* The tar structFile */
+        MSSO_STRUCT_FILE_T = 3,   /* The workflow structFile */
     } structFileType_t;
 
     typedef enum {          /* specColl operation type */
