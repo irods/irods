@@ -3,6 +3,7 @@
 // =-=-=-=-=-=-=-
 #include "irods_structured_object.hpp"
 #include "irods_resource_manager.hpp"
+#include "irods_stacktrace.hpp"
 
 extern irods::resource_manager resc_mgr;
 
@@ -16,24 +17,12 @@ namespace irods {
         offset_( 0 ),
         spec_coll_( 0 ),
         data_type_( "" ),
-        opr_type_( 0 ) {
+        opr_type_( 0 ),
+        spec_coll_type_( HAAW_STRUCT_FILE_T ) {
     } // structured_object
 
 // =-=-=-=-=-=-=-
-// public - cctor
-    structured_object::structured_object( const structured_object& _rhs ) :
-        file_object( _rhs ) {
-        addr_          = _rhs.addr_;
-        sub_file_path_ = _rhs.sub_file_path_;
-        offset_        = _rhs.offset_;
-        spec_coll_     = _rhs.spec_coll_;
-        data_type_     = _rhs.data_type_;
-        opr_type_      = _rhs.opr_type_;
-
-    } // cctor
-
-// =-=-=-=-=-=-=-
-// public - cctor
+// public - ctor
     structured_object::structured_object( subFile_t& _sub ) :
         file_object(),
         sub_file_path_( "" ),
@@ -41,13 +30,16 @@ namespace irods {
         spec_coll_( 0 ),
         data_type_( "" ),
         opr_type_( 0 ) {
-
         // =-=-=-=-=-=-=-
         // pull out subFile attributes
-        addr_          = _sub.addr;
-        sub_file_path_ = _sub.subFilePath;
-        offset_        = _sub.offset;
-        spec_coll_     = _sub.specColl;
+        addr_           = _sub.addr;
+        sub_file_path_  = _sub.subFilePath;
+        offset_         = _sub.offset;
+        spec_coll_      = _sub.specColl;
+        spec_coll_type_ = _sub.specColl->type;
+        physical_path_  = _sub.specColl->phyPath;
+        logical_path_   = _sub.specColl->objPath;
+        resc_hier_      = _sub.specColl->rescHier;
         mode( _sub.mode );
         flags( _sub.flags );
 
@@ -55,8 +47,42 @@ namespace irods {
         // file* functions will fail with an empty physical_path_
         physical_path_ = _sub.subFilePath;
         logical_path( spec_coll_->objPath );
+        if ( spec_coll_ ) {
+            resc_hier_ = spec_coll_->rescHier;
+        }
 
     } // structured_object
+
+// =-=-=-=-=-=-=-
+// public - ctor
+    structured_object::structured_object(
+        subStructFileFdOprInp_t& _fd_inp ) :
+        file_object(),
+        sub_file_path_( "" ),
+        offset_( 0 ),
+        spec_coll_( 0 ),
+        data_type_( "" ),
+        opr_type_( 0 ) {
+
+        addr_            = _fd_inp.addr;
+        file_descriptor_ = _fd_inp.fd;
+        spec_coll_type_  = _fd_inp.type;
+        resc_hier_       = _fd_inp.resc_hier;
+
+    } // structured_object
+
+// =-=-=-=-=-=-=-
+// public - cctor
+    structured_object::structured_object( const structured_object& _rhs ) :
+        file_object( _rhs ) {
+        addr_            = _rhs.addr_;
+        sub_file_path_   = _rhs.sub_file_path_;
+        offset_          = _rhs.offset_;
+        spec_coll_       = _rhs.spec_coll_;
+        data_type_       = _rhs.data_type_;
+        opr_type_        = _rhs.opr_type_;
+        spec_coll_type_  = _rhs.spec_coll_type_;
+    } // cctor
 
 // =-=-=-=-=-=-=-
 // public - dtor
@@ -98,10 +124,31 @@ namespace irods {
         }
 
         // =-=-=-=-=-=-=-
+        // we now support tar file ( structfile ) and
+        // msso file types.  this needs to be moved out
+        std::string plugin_type;
+        if ( TAR_STRUCT_FILE_T == spec_coll_type_ ) {
+            plugin_type = "structfile";
+
+        }
+        else if ( MSSO_STRUCT_FILE_T == spec_coll_type_ ) {
+            plugin_type = "mssofile";
+
+        }
+        else {
+            std::stringstream msg;
+            msg << "unsupported structured type: "
+                << spec_coll_type_;
+            return ERROR(
+                       SYS_INVALID_INPUT_PARAM,
+                       msg.str() );
+        }
+
+        // =-=-=-=-=-=-=-
         // try to find the resource based on the type
         resource_ptr resc_ptr;
         irods::error err = resc_mgr.resolve(
-                               "struct file",
+                               plugin_type,
                                resc_ptr );
         if ( err.ok() ) {
             _ptr = boost::dynamic_pointer_cast< resource >( resc_ptr );
@@ -112,10 +159,10 @@ namespace irods {
             // =-=-=-=-=-=-=-
             // otherwise create a resource and add properties from this object
             error init_err = resc_mgr.init_from_type(
-                                 "structfile",
-                                 "struct file",
-                                 "struct_file_inst",
-                                 "empty context",
+                                 plugin_type,        // type
+                                 plugin_type,        // key
+                                 "struct_file_inst", // inst name
+                                 "empty context",    // context
                                  resc_ptr );
             if ( !init_err.ok() ) {
                 return PASSMSG( "failed to load resource plugin", init_err );
@@ -144,9 +191,9 @@ namespace irods {
         resc_ptr->set_property<int>( RESOURCE_STATUS, INT_RESC_STATUS_UP );
 
         resc_ptr->set_property<std::string>( RESOURCE_ZONE,      addr_.zoneName );
-        resc_ptr->set_property<std::string>( RESOURCE_NAME,      "structfile" );
+        resc_ptr->set_property<std::string>( RESOURCE_NAME,      plugin_type );
         resc_ptr->set_property<std::string>( RESOURCE_LOCATION,  addr_.hostAddr );
-        resc_ptr->set_property<std::string>( RESOURCE_TYPE,      "structfile" );
+        resc_ptr->set_property<std::string>( RESOURCE_TYPE,      plugin_type );
         resc_ptr->set_property<std::string>( RESOURCE_CLASS,     "cache" );
         resc_ptr->set_property<std::string>( RESOURCE_PATH,      physical_path_ );
         resc_ptr->set_property<std::string>( RESOURCE_INFO,      "blank info" );

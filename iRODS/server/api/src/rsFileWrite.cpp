@@ -91,15 +91,6 @@ int _rsFileWrite(
     // XXXX need to check resource permission and vault permission
     // when RCAT is available
 
-    if ( FileDesc[_write_inp->fileInx].objPath == NULL ||
-            FileDesc[_write_inp->fileInx].objPath[0] == '\0' ) {
-        std::stringstream msg;
-        msg << __FUNCTION__;
-        msg << " - Empty logical path.";
-        irods::log( LOG_ERROR, msg.str() );
-        return SYS_INVALID_INPUT_PARAM;
-    }
-
     // =-=-=-=-=-=-=-
     // make a call to the resource write
     irods::file_object_ptr file_obj(

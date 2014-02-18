@@ -119,14 +119,6 @@ int _rsFileCreate(
         }
     }
 
-    if ( _create_inp->objPath[0] == '\0' ) {
-        std::stringstream msg;
-        msg << __FUNCTION__;
-        msg << " - Empty logical path.";
-        irods::log( LOG_ERROR, msg.str() );
-        return SYS_INVALID_INPUT_PARAM;
-    }
-
     // =-=-=-=-=-=-=-
     // don't capture the irods results in the log here as there may be an issue with
     // needing to create a directory, etc.

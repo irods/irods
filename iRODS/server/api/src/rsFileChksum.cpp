@@ -119,15 +119,6 @@ int fileChksum(
 #ifdef MD5_DEBUG
     rodsLong_t total_bytes_read = 0;    /* XXXX debug */
 #endif
-
-    if ( objPath == NULL || objPath[0] == '\0' ) {
-        std::stringstream msg;
-        msg << __FUNCTION__;
-        msg << " - Empty logical path.";
-        irods::log( LOG_ERROR, msg.str() );
-        return -1;
-    }
-
     // =-=-=-=-=-=-=-
     // call resource plugin to open file
     irods::file_object_ptr file_obj(

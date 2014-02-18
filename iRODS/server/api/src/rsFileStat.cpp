@@ -113,14 +113,6 @@ int _rsFileStat(
     fileStatInp_t* _stat_inp,
     rodsStat_t**   _stat_out ) {
     struct stat myFileStat;
-    if ( _stat_inp->objPath[0] == '\0' ) {
-        std::stringstream msg;
-        msg << __FUNCTION__;
-        msg << " - Empty logical path.";
-        irods::log( LOG_ERROR, msg.str() );
-        return SYS_INVALID_INPUT_PARAM;
-    }
-
     // =-=-=-=-=-=-=-
     // make call to stat via resource plugin
     irods::file_object_ptr file_obj(

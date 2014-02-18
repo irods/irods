@@ -69,7 +69,7 @@ int _rsSubStructFileClose(
     // =-=-=-=-=-=-=-
     // create first class structured object
     irods::structured_object_ptr struct_obj(
-        new irods::structured_object( ) );
+        new irods::structured_object( *_close_inp ) );
     struct_obj->comm( _comm );
     struct_obj->resc_hier( _close_inp->resc_hier );
     struct_obj->file_descriptor( _close_inp->fd );

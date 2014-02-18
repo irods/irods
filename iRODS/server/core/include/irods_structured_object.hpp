@@ -10,6 +10,7 @@
 // =-=-=-=-=-=-=-
 #include "irods_file_object.hpp"
 #include "irods_log.hpp"
+#include "subStructFileRead.hpp"
 
 namespace irods {
 
@@ -19,7 +20,8 @@ namespace irods {
         // Constructors
         structured_object();
         structured_object( const structured_object& );
-        structured_object( subFile_t& _subfile );
+        structured_object( subFile_t& );
+        structured_object( subStructFileFdOprInp_t& );
 
         // =-=-=-=-=-=-=-
         // Destructor
@@ -41,38 +43,48 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // Accessors
-        inline rodsHostAddr_t addr()          const {
+        rodsHostAddr_t addr()          const {
             return addr_;
         }
-        inline std::string    sub_file_path() const {
+        std::string sub_file_path() const {
             return sub_file_path_;
         }
-        inline size_t         offset()        const {
+        size_t offset()        const {
             return offset_;
         }
-        inline specColl_t*    spec_coll()     const {
+        specColl_t* spec_coll()     const {
             return spec_coll_;
         }
-        inline std::string    data_type()     const {
+        std::string data_type()     const {
             return data_type_;
         }
-        inline int            opr_type()      const {
+        int opr_type()      const {
             return opr_type_;
+        }
+
+        structFileType_t spec_coll_type() const {
+            return spec_coll_type_;
         }
 
         // =-=-=-=-=-=-=-
         // Mutators
-        inline void addr( rodsHostAddr_t _addr ) {
+        void addr( rodsHostAddr_t _addr ) {
             addr_      = _addr;
         }
-        inline void spec_coll( specColl_t*    _coll ) {
+        void sub_file_path( const std::string _p ) {
+            sub_file_path_ = _p;
+        }
+        void spec_coll( specColl_t*    _coll ) {
             spec_coll_ = _coll;
         }
-        inline void data_type( std::string    _dt ) {
+        void data_type( std::string    _dt ) {
             data_type_ = _dt;
         }
-        inline void opr_type( int            _ot ) {
+        void opr_type( int            _ot ) {
             opr_type_ = _ot;
+        }
+        void spec_coll_type( structFileType_t _t ) {
+            spec_coll_type_ = _t;
         }
 
     protected:
@@ -87,6 +99,8 @@ namespace irods {
         specColl_t*    spec_coll_;
         std::string    data_type_;
         int            opr_type_;
+
+        structFileType_t spec_coll_type_;
 
     }; // class structured_object
 

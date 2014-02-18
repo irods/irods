@@ -1024,7 +1024,12 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // make the call to read a file
         int status = rsFileRead( fco->comm(), &fileReadInp, &fileReadOutBBuf );
-        return CODE( status );
+        if ( status < 0 ) {
+            return ERROR( status, "rsFileRead failed" );
+        }
+        else {
+            return CODE( status );
+        }
 
     } // tar_file_read_plugin
 
@@ -1082,9 +1087,11 @@ extern "C" {
                     return CODE( status1 );
                 }
             }
+            return CODE( status );
         }
-
-        return CODE( status );
+        else {
+            return ERROR( status, "rsFileWrite failed" );
+        }
 
     } // tar_file_write_plugin
 
@@ -1135,7 +1142,12 @@ extern "C" {
         free_tar_sub_file_desc( fco->file_descriptor() );
         fco->file_descriptor( 0 );
 
-        return CODE( status );
+        if ( status < 0 ) {
+            return ERROR( status, "rsFileClose failed" );
+        }
+        else {
+            return CODE( status );
+        }
 
     } // tar_file_close_plugin
 
@@ -1217,9 +1229,12 @@ extern "C" {
                     return CODE( status1 );
                 }
             }
+            return CODE( status );
+        }
+        else {
+            return ERROR( status, "rsFileUnlink failed" );
         }
 
-        return SUCCESS();
 
     } // tar_file_unlink_plugin
 
@@ -1356,7 +1371,7 @@ extern "C" {
         int status = rsFileLseek( comm, &fileLseekInp, &fileLseekOut );
 
         if ( status < 0 || NULL == fileLseekOut ) { // JMC cppcheck - nullptr
-            return CODE( status );
+            return ERROR( status, "rsFileLseek failed" );
         }
         else {
             rodsLong_t offset = fileLseekOut->offset;
@@ -1445,9 +1460,12 @@ extern "C" {
                 }
             }
 
-        } // if status
+            return CODE( status );
 
-        return CODE( status );
+        }
+        else {
+            return ERROR( status, "rsFileMkdir failed" );
+        }
 
     } // tar_file_mkdir_plugin
 

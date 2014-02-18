@@ -130,14 +130,6 @@ int _rsFileOpen(
         _open_inp->flags &= ~( O_WRONLY );
     }
 
-    if ( _open_inp->objPath[0] == '\0' ) {
-        std::stringstream msg;
-        msg << __FUNCTION__;
-        msg << " - Empty logical path.";
-        irods::log( LOG_ERROR, msg.str() );
-        return SYS_INVALID_INPUT_PARAM;
-    }
-
     // =-=-=-=-=-=-=-
     // call file open on the resource plugin
     irods::file_object_ptr file_obj(

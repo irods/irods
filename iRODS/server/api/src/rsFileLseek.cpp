@@ -84,16 +84,6 @@ int _rsFileLseek(
     rsComm_t*        _comm,
     fileLseekInp_t*  _lseek_inp,
     fileLseekOut_t** _lseek_out ) {
-
-    if ( FileDesc[_lseek_inp->fileInx].objPath == NULL ||
-            FileDesc[_lseek_inp->fileInx].objPath[0] == '\0' ) {
-        std::stringstream msg;
-        msg << __FUNCTION__;
-        msg << " - Empty logical path.";
-        irods::log( LOG_ERROR, msg.str() );
-        return SYS_INVALID_INPUT_PARAM;
-    }
-
     // =-=-=-=-=-=-=-
     // make call to lseek via resource plugin
     irods::file_object_ptr file_obj(

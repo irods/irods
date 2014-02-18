@@ -81,15 +81,6 @@ remoteFileChmod( rsComm_t *rsComm, fileChmodInp_t *fileChmodInp,
 int _rsFileChmod(
     rsComm_t*         _comm,
     fileChmodInp_t*   _chmod_inp ) {
-
-    if ( _chmod_inp->objPath[0] == '\0' ) {
-        std::stringstream msg;
-        msg << __FUNCTION__;
-        msg << " - Empty logical path.";
-        irods::log( LOG_ERROR, msg.str() );
-        return -1;
-    }
-
     // =-=-=-=-=-=-=-
     // make the call to chmod via the resource plugin
     irods::file_object_ptr file_obj(
