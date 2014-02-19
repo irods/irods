@@ -927,28 +927,34 @@ if [ "$BUILDIRODS" == "1" ] ; then
 
     # handle issue with IRODS_HOME being overwritten by the configure script
     irodsctl_irods_home=`./scripts/find_irods_home.sh`
-    sed -e "\,^IRODS_HOME,s,^.*$,IRODS_HOME=$irodsctl_irods_home," ./irodsctl > /tmp/irodsctl.tmp
-    rsync -c /tmp/irodsctl.tmp ./irodsctl
+    set_tmpfile
+    sed -e "\,^IRODS_HOME,s,^.*$,IRODS_HOME=$irodsctl_irods_home," ./irodsctl > $TMPFILE
+    rsync -c $TMPFILE ./irodsctl
+    rm -f $TMPFILE
     chmod 755 ./irodsctl
 
     # update build_dir to our absolute path
-    sed -e "\,^IRODS_BUILD_DIR=,s,^.*$,IRODS_BUILD_DIR=$BUILDDIR," ./config/config.mk > /tmp/config.mk
-    mv /tmp/config.mk ./config/config.mk
+    set_tmpfile
+    sed -e "\,^IRODS_BUILD_DIR=,s,^.*$,IRODS_BUILD_DIR=$BUILDDIR," ./config/config.mk > $TMPFILE
+    mv $TMPFILE ./config/config.mk
 
     # update cpu count to our detected cpu count
-    sed -e "\,^CPU_COUNT=,s,^.*$,CPU_COUNT=$CPUCOUNT," ./config/config.mk > /tmp/config.mk
-    mv /tmp/config.mk ./config/config.mk
+    set_tmpfile
+    sed -e "\,^CPU_COUNT=,s,^.*$,CPU_COUNT=$CPUCOUNT," ./config/config.mk > $TMPFILE
+    mv $TMPFILE ./config/config.mk
 
     # twiddle coverage flag in platform.mk based on whether this is a coverage (gcov) build
     if [ "$COVERAGE" == "1" ] ; then
-        sed -e "s,IRODS_BUILD_COVERAGE=0,IRODS_BUILD_COVERAGE=1," ./config/platform.mk > /tmp/irods-platform.mk
-        mv /tmp/irods-platform.mk ./config/platform.mk
+        set_tmpfile
+        sed -e "s,IRODS_BUILD_COVERAGE=0,IRODS_BUILD_COVERAGE=1," ./config/platform.mk > $TMPFILE
+        mv $TMPFILE ./config/platform.mk
     fi
 
     # twiddle debug flag in platform.mk based on whether this is a release build
     if [ "$RELEASE" == "1" ] ; then
-        sed -e "s,IRODS_BUILD_DEBUG=1,IRODS_BUILD_DEBUG=0," ./config/platform.mk > /tmp/irods-platform.mk
-        mv /tmp/irods-platform.mk ./config/platform.mk
+        set_tmpfile
+        sed -e "s,IRODS_BUILD_DEBUG=1,IRODS_BUILD_DEBUG=0," ./config/platform.mk > $TMPFILE
+        mv $TMPFILE ./config/platform.mk
     fi
 
     # =-=-=-=-=-=-=-
@@ -956,39 +962,45 @@ if [ "$BUILDIRODS" == "1" ] ; then
     detected_irods_home=`./scripts/find_irods_home.sh`
     detected_irods_home=`dirname $detected_irods_home`
     irods_msvc_home="$detected_irods_home/plugins/microservices/"
-    sed -e s,IRODSMSVCPATH,$irods_msvc_home, ./lib/core/include/irods_ms_home.hpp.src > /tmp/irods_ms_home.hpp
-    rsync -c /tmp/irods_ms_home.hpp ./lib/core/include/irods_ms_home.hpp
-    rm /tmp/irods_ms_home.hpp
+    set_tmpfile
+    sed -e s,IRODSMSVCPATH,$irods_msvc_home, ./lib/core/include/irods_ms_home.hpp.src > $TMPFILE
+    rsync -c $TMPFILE ./lib/core/include/irods_ms_home.hpp
+    rm -f $TMPFILE
     # =-=-=-=-=-=-=-
     # modify the irods_network_home.hpp file with the proper path to the binary directory
     irods_network_home="$detected_irods_home/plugins/network/"
-    sed -e s,IRODSNETWORKPATH,$irods_network_home, ./lib/core/include/irods_network_home.hpp.src > /tmp/irods_network_home.hpp
-    rsync -c /tmp/irods_network_home.hpp ./lib/core/include/irods_network_home.hpp
-    rm /tmp/irods_network_home.hpp
+    set_tmpfile
+    sed -e s,IRODSNETWORKPATH,$irods_network_home, ./lib/core/include/irods_network_home.hpp.src > $TMPFILE
+    rsync -c $TMPFILE ./lib/core/include/irods_network_home.hpp
+    rm -f $TMPFILE
     # =-=-=-=-=-=-=-
     # modify the irods_auth_home.hpp file with the proper path to the binary directory
     irods_auth_home="$detected_irods_home/plugins/auth/"
-    sed -e s,IRODSAUTHPATH,$irods_auth_home, ./lib/core/include/irods_auth_home.hpp.src > /tmp/irods_auth_home.hpp
-    rsync -c /tmp/irods_auth_home.hpp ./lib/core/include/irods_auth_home.hpp
-    rm /tmp/irods_auth_home.hpp
+    set_tmpfile
+    sed -e s,IRODSAUTHPATH,$irods_auth_home, ./lib/core/include/irods_auth_home.hpp.src > $TMPFILE
+    rsync -c $TMPFILE ./lib/core/include/irods_auth_home.hpp
+    rm -f $TMPFILE
     # =-=-=-=-=-=-=-
     # modify the irods_resources_home.hpp file with the proper path to the binary directory
     irods_resources_home="$detected_irods_home/plugins/resources/"
-    sed -e s,IRODSRESOURCESPATH,$irods_resources_home, ./lib/core/include/irods_resources_home.hpp.src > /tmp/irods_resources_home.hpp
-    rsync -c /tmp/irods_resources_home.hpp ./lib/core/include/irods_resources_home.hpp
-    rm /tmp/irods_resources_home.hpp
+    set_tmpfile
+    sed -e s,IRODSRESOURCESPATH,$irods_resources_home, ./lib/core/include/irods_resources_home.hpp.src > $TMPFILE
+    rsync -c $TMPFILE ./lib/core/include/irods_resources_home.hpp
+    rm -f $TMPFILE
     # =-=-=-=-=-=-=-
     # modify the irods_database_home.hpp file with the proper path to the binary directory
     irods_database_home="$detected_irods_home/plugins/database/"
-    sed -e s,IRODSDATABASEPATH,$irods_database_home, ./server/core/include/irods_database_home.hpp.src > /tmp/irods_database_home.hpp
-    rsync -c /tmp/irods_database_home.hpp ./server/core/include/irods_database_home.hpp
-    rm /tmp/irods_database_home.hpp
+    set_tmpfile
+    sed -e s,IRODSDATABASEPATH,$irods_database_home, ./server/core/include/irods_database_home.hpp.src > $TMPFILE
+    rsync -c $TMPFILE ./server/core/include/irods_database_home.hpp
+    rm -f $TMPFILE
     # =-=-=-=-=-=-=-
     # modify the irods_api_home.hpp file with the proper path to the binary directory
     irods_api_home="$detected_irods_home/plugins/api/"
-    sed -e s,IRODSAPIPATH,$irods_api_home, ./lib/core/include/irods_api_home.hpp.src > /tmp/irods_api_home.hpp
-    rsync -c /tmp/irods_api_home.hpp ./lib/core/include/irods_api_home.hpp
-    rm /tmp/irods_api_home.hpp
+    set_tmpfile
+    sed -e s,IRODSAPIPATH,$irods_api_home, ./lib/core/include/irods_api_home.hpp.src > $TMPFILE
+    rsync -c $TMPFILE ./lib/core/include/irods_api_home.hpp
+    rm -f $TMPFILE
 
     ###########################################
     # single 'make' time on an 8 core machine
@@ -1031,20 +1043,21 @@ if [ "$BUILDIRODS" == "1" ] ; then
 
     # irods main package
     cd $BUILDDIR
-    sed -e "s,TEMPLATE_IRODSVERSIONINT,$IRODSVERSIONINT," ./packaging/irods.list.template > /tmp/irodslist.tmp
-    mv /tmp/irodslist.tmp ./packaging/irods.list
-    sed -e "s,TEMPLATE_IRODSVERSION,$IRODSVERSION," ./packaging/irods.list > /tmp/irodslist.tmp
-    mv /tmp/irodslist.tmp ./packaging/irods.list
+    set_tmpfile
+    sed -e "s,TEMPLATE_IRODSVERSIONINT,$IRODSVERSIONINT," ./packaging/irods.list.template > $TMPFILE
+    mv $TMPFILE ./packaging/irods.list
+    sed -e "s,TEMPLATE_IRODSVERSION,$IRODSVERSION," ./packaging/irods.list > $TMPFILE
+    mv $TMPFILE ./packaging/irods.list
     # irods-dev package
-    sed -e "s,TEMPLATE_IRODSVERSIONINT,$IRODSVERSIONINT," ./packaging/irods-dev.list.template > /tmp/irodsdevlist.tmp
-    mv /tmp/irodsdevlist.tmp ./packaging/irods-dev.list
-    sed -e "s,TEMPLATE_IRODSVERSION,$IRODSVERSION," ./packaging/irods-dev.list > /tmp/irodsdevlist.tmp
-    mv /tmp/irodsdevlist.tmp ./packaging/irods-dev.list
+    sed -e "s,TEMPLATE_IRODSVERSIONINT,$IRODSVERSIONINT," ./packaging/irods-dev.list.template > $TMPFILE
+    mv $TMPFILE ./packaging/irods-dev.list
+    sed -e "s,TEMPLATE_IRODSVERSION,$IRODSVERSION," ./packaging/irods-dev.list > $TMPFILE
+    mv $TMPFILE ./packaging/irods-dev.list
     # irods-icommands package
-    sed -e "s,TEMPLATE_IRODSVERSIONINT,$IRODSVERSIONINT," ./packaging/irods-icommands.list.template > /tmp/irodsicommandslist.tmp
-    mv /tmp/irodsicommandslist.tmp ./packaging/irods-icommands.list
-    sed -e "s,TEMPLATE_IRODSVERSION,$IRODSVERSION," ./packaging/irods-icommands.list > /tmp/irodsicommandslist.tmp
-    mv /tmp/irodsicommandslist.tmp ./packaging/irods-icommands.list
+    sed -e "s,TEMPLATE_IRODSVERSIONINT,$IRODSVERSIONINT," ./packaging/irods-icommands.list.template > $TMPFILE
+    mv $TMPFILE ./packaging/irods-icommands.list
+    sed -e "s,TEMPLATE_IRODSVERSION,$IRODSVERSION," ./packaging/irods-icommands.list > $TMPFILE
+    mv $TMPFILE ./packaging/irods-icommands.list
 
 
 #    set +e
