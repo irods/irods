@@ -16070,7 +16070,30 @@ checkLevel:
 
     } // db_general_update_op
 
+    // =-=-=-=-=-=-=-
+    //
+    irods::error db_start_operation( irods::plugin_property_map& _props ) {
+#ifdef MY_ICAT
+        char cml_res[ MAX_NAME_LEN ];
+        char sql[] = { "select name from mysql.func" };
+        int status = cmlGetStringValueFromSql( sql, cml_res, MAX_NAME_LEN, 0, 0, 0, &icss );
+        if ( status < 0 ) {
+            return ERROR( status, "failed to call sql to determine UDF" );
+        }
 
+        rodsLog( LOG_DEBUG, "db_start_operation :: results [%s]", cml_res );
+        std::string results( cml_res );
+        if ( std::string::npos == results.find( "preg_" ) ) {
+            std::string msg;
+            msg += "PREG User Defined Function not found for mysql database";
+            rodsLog( LOG_ERROR, msg.c_str() );
+            return ERROR( PLUGIN_ERROR, msg );
+        }
+#endif
+
+        return SUCCESS();
+
+    } // db_start_operation
 
 
 // qqq - OPS END
@@ -16094,6 +16117,8 @@ checkLevel:
             icatSessionStruct icss;
             bzero( &icss, sizeof( icss ) );
             properties_.set< icatSessionStruct >( ICSS_PROP, icss );
+
+            set_start_operation( "db_start_operation" );
 
         } // ctor
 
