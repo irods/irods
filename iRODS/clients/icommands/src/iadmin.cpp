@@ -989,6 +989,24 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         std::string resc_type( cmdToken[2] );
         resc_type.erase( std::remove_if( resc_type.begin(), resc_type.end(), ::isspace ), resc_type.end() );
 
+        // tell the user what they are doing
+        std::cout << "Creating resource:" << std::endl;
+        std::cout << "Name:\t\t\"" << cmdToken[1] << "\"" << std::endl;
+        std::cout << "Type:\t\t\"" << cmdToken[2] << "\"" << std::endl;
+        if ( cmdToken[3] != NULL && strlen( cmdToken[3] ) > 0 ) {
+            std::string host_path( cmdToken[3] );
+            std::size_t colon_pos = host_path.find( ":" );
+            std::string host = host_path.substr( 0, colon_pos );
+            std::cout << "Host:\t\t\"" << host << "\"" << std::endl;
+            if ( colon_pos != std::string::npos ) {
+                std::string path = host_path.substr( colon_pos + 1, host_path.length() - colon_pos );
+                std::cout << "Path:\t\t\"" << path << "\"" << std::endl;
+            }
+            if ( cmdToken[4] != NULL && strlen( cmdToken[4] ) > 0 ) {
+                std::cout << "Context:\t\"" << cmdToken[4] << "\"" << std::endl;;
+            }
+        }
+
         generalAdmin( 0, "add", "resource", cmdToken[1], ( char * )resc_type.c_str(),
                       cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6], cmdToken[7], cmdToken[8] );
         /* (add resource name type host:path contextstring) */
