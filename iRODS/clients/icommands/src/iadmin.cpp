@@ -1002,9 +1002,19 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
                 std::string path = host_path.substr( colon_pos + 1, host_path.length() - colon_pos );
                 std::cout << "Path:\t\t\"" << path << "\"" << std::endl;
             }
-            if ( cmdToken[4] != NULL && strlen( cmdToken[4] ) > 0 ) {
-                std::cout << "Context:\t\"" << cmdToken[4] << "\"" << std::endl;;
+            else {
+                std::cout << "Path:\t\t\"\"" << std::endl;
             }
+        }
+        else {
+            std::cout << "Host:\t\t\"\"" << std::endl;
+            std::cout << "Path:\t\t\"\"" << std::endl;
+        }
+        if ( cmdToken[4] != NULL && strlen( cmdToken[4] ) > 0 ) {
+            std::cout << "Context:\t\"" << cmdToken[4] << "\"" << std::endl;;
+        }
+        else {
+            std::cout << "Context:\t\"\"" << std::endl;
         }
 
         generalAdmin( 0, "add", "resource", cmdToken[1], ( char * )resc_type.c_str(),
