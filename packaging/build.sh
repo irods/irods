@@ -796,6 +796,23 @@ else
     echo "Detected libxml2 library [$LIBXML2DEV]"
 fi
 
+# needed for gsi auth capabilities
+KRB5DEV=`find /usr/include /opt/csw/include -name gssapi.h 2> /dev/null`
+if [ "$KRB5DEV" == "" ] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
+        PREFLIGHT="$PREFLIGHT libkrb5-dev"
+    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+        PREFLIGHT="$PREFLIGHT krb5-devel"
+    elif [ "$DETECTEDOS" == "SuSE" ] ; then
+        PREFLIGHT="$PREFLIGHT krb5-devel"
+    elif [ "$DETECTEDOS" == "Solaris" ] ; then
+        PREFLIGHT="$PREFLIGHT libkrb5_dev"
+    else
+        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://web.mit.edu/kerberos/dist/index.html"
+    fi
+else
+    echo "Detected krb5 library [$KRB5DEV]"
+fi
 
 
 # print out prerequisites error
