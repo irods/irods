@@ -94,7 +94,7 @@ namespace irods {
             for ( ; itr != resources_.end(); ++itr ) {
                 // =-=-=-=-=-=-=-
                 // query resource for the property value
-                value_type value;
+                value_type value = NULL;
                 error ret = itr->second->get_property< value_type >( _prop, value );
 
                 // =-=-=-=-=-=-=-

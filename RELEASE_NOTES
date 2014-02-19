@@ -7,6 +7,10 @@ Development of this release has focused on the following features and efforts:
 - Introduced pluggable interface for databases
 
   - PostgreSQL
+- Additional resource plugins
+
+  - Amazon S3
+  - DDN WOS
 - Full python-based testing framework
 - Certified against full Jargon test suite
 - Continuous integration testing via hudson

@@ -158,7 +158,7 @@ extern "C" {
                 snprintf( mvstr, MAX_NAME_LEN, "%s/%s", stageArea, t );
                 checkPhySafety( mvstr );
                 snprintf( mvstr, MAX_NAME_LEN, "rm -rf %s/%s", stageArea, t );
-                system( mvstr );
+                if ( system( mvstr ) ) {}
                 s++;
                 while ( *s == ' ' ) { s++; }
                 t = s;
@@ -166,7 +166,7 @@ extern "C" {
             snprintf( mvstr, MAX_NAME_LEN, "%s/%s", stageArea, t );
             checkPhySafety( mvstr );
             snprintf( mvstr, MAX_NAME_LEN, "rm -rf %s/%s", stageArea, t );
-            system( mvstr );
+            if ( system( mvstr ) ) {}
             free( cleanOut[clnoutCnt] );
         }
         clnoutCnt = jj;
@@ -821,7 +821,7 @@ extern "C" {
         if ( inputHasChanged == 0 ) {
             if ( newRunDirName[0] != '\0' ) {
                 snprintf( mvStr, sizeof mvStr, "rmdir %s", newRunDirName );
-                system( mvStr );
+                if ( system( mvStr ) ) {}
             }
             if ( strlen( showFiles ) != 0 ) {
                 if ( strstr( showFiles, "stdout" ) != NULL ) {
@@ -869,12 +869,12 @@ extern "C" {
             /* do the moves if needed */
             if ( newRunDirName[0] != '\0' ) {
                 snprintf( mvStr, sizeof mvStr, "mv -f %s/* %s", runDir, newRunDirName );
-                system( mvStr );
+                if ( system( mvStr ) ) {}
             }
             else if ( oldRunDirTime > 0 ) {
                 snprintf( mvStr, sizeof mvStr, "mkdir %s.backup", runDir );
                 snprintf( mvStr, sizeof mvStr, "mv -f %s/* %s.backup", runDir, runDir );
-                system( mvStr );
+                if ( system( mvStr ) ) {}
             }
         }
         /*** Checking to see if one needs to really do run or use old files  ***/
@@ -955,7 +955,7 @@ extern "C" {
                 snprintf( mvstr, MAX_NAME_LEN, "%s/%s", specColl->cacheDir, stageIn[stinCnt] );
                 checkPhySafety( mvstr );
                 snprintf( mvstr, MAX_NAME_LEN, "cp -rf  %s/%s %s/%s", specColl->cacheDir, stageIn[stinCnt], stageArea, stagefilename );
-                system( mvstr );
+                if ( system( mvstr ) ) {}
             }
         }
         stinCnt = jj;
@@ -987,7 +987,7 @@ extern "C" {
                 checkPhySafety( mvstr );
                 snprintf( mvstr, MAX_NAME_LEN, "mv -f %s/%s %s/%s", stageArea, stageOut[stoutCnt], runDir, stageOut[stoutCnt] );
                 /* now move the file */
-                system( mvstr );
+                if ( system( mvstr ) ) {}
             }
             else {
                 *t = '\0';
@@ -999,12 +999,12 @@ extern "C" {
                     /* #### */
                     /* now remove the file */
                     snprintf( mvstr, MAX_NAME_LEN, "rm -rf %s/%s", stageArea, stageOut[stoutCnt] );
-                    system( mvstr );
+                    if ( system( mvstr ) ) {}
                 }
                 else {
                     snprintf( mvstr, MAX_NAME_LEN, "mv -f %s/%s %s/%s", stageArea, stageOut[stoutCnt], runDir, t );
                     /* now move the file */
-                    system( mvstr );
+                    if ( system( mvstr ) ) {}
                 }
             }
             free( stageOut[stoutCnt] );
@@ -1019,7 +1019,7 @@ extern "C" {
                 checkPhySafety( mvstr );
                 snprintf( mvstr, MAX_NAME_LEN, "cp -rf %s/%s %s/%s", stageArea, copyToIrods[cpoutCnt], runDir, copyToIrods[cpoutCnt] );
                 /* now copy the file */
-                system( mvstr );
+                if ( system( mvstr ) ) {}
             }
             else {
                 *t = '\0';
@@ -1033,7 +1033,7 @@ extern "C" {
                     checkPhySafety( mvstr );
                     snprintf( mvstr, MAX_NAME_LEN, "cp -rf %s/%s %s/%s", stageArea, copyToIrods[cpoutCnt], runDir, t );
                     /* now copy the file */
-                    system( mvstr );
+                    if ( system( mvstr ) ) {}
                 }
             }
             free( copyToIrods[cpoutCnt] );

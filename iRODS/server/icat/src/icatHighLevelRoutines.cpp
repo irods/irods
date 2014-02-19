@@ -132,12 +132,21 @@ int chlOpen() {
                                         irods::first_class_object > ( db_obj_ptr );
     irods::database_ptr           db = boost::dynamic_pointer_cast <
                                        irods::database > ( db_plug_ptr );
-
     // =-=-=-=-=-=-=-
-    // call the open operation on the plugin
+    // call the operation on the plugin
     ret = db->call(
               irods::DATABASE_OP_OPEN,
               ptr );
+
+    // =-=-=-=-=-=-=-
+    // call the start operation, as it may have opinions
+    // if it fails, close the connection and error out
+    ret = db->start_operation();
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        chlClose();
+        return PLUGIN_ERROR;
+    }
 
     return ret.code();
 
@@ -180,10 +189,19 @@ int chlClose() {
                                        irods::database > ( db_plug_ptr );
 
     // =-=-=-=-=-=-=-
-    // call the open operation on the plugin
+    // call the stop operation, as it may have opinions
+    irods::error ret2 = db->stop_operation();
+    if ( !ret2.ok() ) {
+        irods::log( PASS( ret2 ) );
+        return PLUGIN_ERROR;
+    }
+
+    // =-=-=-=-=-=-=-
+    // call the close operation on the plugin
     ret = db->call(
               irods::DATABASE_OP_CLOSE,
               ptr );
+
 
     return ret.code();
 
@@ -230,7 +248,7 @@ int chlGetRcs(
                                        irods::database > ( db_plug_ptr );
 
     // =-=-=-=-=-=-=-
-    // call the open operation on the plugin
+    // call the operation on the plugin
     ret = db->call< icatSessionStruct** >(
               irods::DATABASE_OP_GET_RCS,
               ptr,
@@ -384,7 +402,7 @@ int chlUpdateRescObjCount(
                                        irods::database > ( db_plug_ptr );
 
     // =-=-=-=-=-=-=-
-    // call the open operation on the plugin
+    // call the operation on the plugin
     ret = db->call <
           const std::string*,
           int > (
@@ -446,7 +464,7 @@ int chlModDataObjMeta(
                                        irods::database > ( db_plug_ptr );
 
     // =-=-=-=-=-=-=-
-    // call the open operation on the plugin
+    // call the operation on the plugin
     ret = db->call <
           rsComm_t*,
           dataObjInfo_t*,
@@ -501,7 +519,7 @@ int chlRegDataObj(
                                        irods::database > ( db_plug_ptr );
 
     // =-=-=-=-=-=-=-
-    // call the open operation on the plugin
+    // call the operation on the plugin
     ret = db->call <
           rsComm_t*,
           dataObjInfo_t* > (

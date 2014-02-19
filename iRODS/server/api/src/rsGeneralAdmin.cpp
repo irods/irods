@@ -113,8 +113,8 @@ _removeChildFromResource(
 int
 _addResource(
     generalAdminInp_t* _generalAdminInp,
-    ruleExecInfo_t _rei2,
-    rsComm_t* _rsComm ) {
+    ruleExecInfo_t     _rei2,
+    rsComm_t*          _rsComm ) {
     int result = 0;
     rescInfo_t rescInfo;
     bzero( &rescInfo, sizeof( rescInfo ) );
@@ -123,19 +123,20 @@ _addResource(
     char *args[argc];
 
     // =-=-=-=-=-=-=-
-    // pull location:path into string for parsing
-    std::string loc_path( _generalAdminInp->arg4 );
+    // capture all the parameters
+    std::string resc_name( _generalAdminInp->arg2 );
+    std::string resc_type( _generalAdminInp->arg3 );
+    std::string resc_host_path( _generalAdminInp->arg4 );
+    std::string resc_ctx( _generalAdminInp->arg5 );
 
     // =-=-=-=-=-=-=-
-    // grab resource context.  this may be overwritten by the 'location' as that
-    // could also hold the context string if no host:path pair exists
-    strncpy( rescInfo.rescContext, _generalAdminInp->arg5, sizeof rescInfo.rescContext );
-
-    if ( !loc_path.empty() ) {
+    // if it is not empty, parse out the host:path otherwise
+    // fill in with the EMPTY placeholders
+    if ( !resc_host_path.empty() ) {
         // =-=-=-=-=-=-=-
         // separate the location:/vault/path pair
         std::vector< std::string > tok;
-        irods::string_tokenize( loc_path, ":", tok );
+        irods::string_tokenize( resc_host_path, ":", tok );
 
         // =-=-=-=-=-=-=-
         // if we have exactly 2 tokens, things are going well
@@ -145,19 +146,9 @@ _addResource(
             strncpy( rescInfo.rescLoc,       tok[0].c_str(), sizeof rescInfo.rescLoc );
             strncpy( rescInfo.rescVaultPath, tok[1].c_str(), sizeof rescInfo.rescVaultPath );
         }
-        else {
-            // =-=-=-=-=-=-=-
-            // a key:value was not found, so blatantly assume the string is a context string
-            strncpy( rescInfo.rescContext, loc_path.c_str(), sizeof rescInfo.rescContext );
-            strncpy( rescInfo.rescLoc,       irods::EMPTY_RESC_HOST.c_str(), sizeof rescInfo.rescLoc );
-            strncpy( rescInfo.rescVaultPath, irods::EMPTY_RESC_PATH.c_str(), sizeof rescInfo.rescVaultPath );
-        }
 
     }
     else {
-        if ( strlen( rescInfo.rescContext ) != 0 ) {
-            addRErrorMsg( &_rsComm->rError, 0, "resource host:path string is empty" );
-        }
         strncpy( rescInfo.rescLoc,       irods::EMPTY_RESC_HOST.c_str(), sizeof rescInfo.rescLoc );
         strncpy( rescInfo.rescVaultPath, irods::EMPTY_RESC_PATH.c_str(), sizeof rescInfo.rescVaultPath );
 
@@ -165,12 +156,13 @@ _addResource(
 
     // =-=-=-=-=-=-=-
     // pull values out of api call args into rescInfo structure
-    strncpy( rescInfo.rescName,      _generalAdminInp->arg2, sizeof rescInfo.rescName );
-    strncpy( rescInfo.rescType,      _generalAdminInp->arg3, sizeof rescInfo.rescType );
-    strncpy( rescInfo.rescClass,     "cache",                sizeof rescInfo.rescClass );
-    strncpy( rescInfo.zoneName,      _generalAdminInp->arg6, sizeof rescInfo.zoneName );
-    strncpy( rescInfo.rescChildren,  "", 1 );
-    strncpy( rescInfo.rescParent,    "", 1 );
+    strncpy( rescInfo.rescName,     _generalAdminInp->arg2, sizeof rescInfo.rescName );
+    strncpy( rescInfo.rescType,     _generalAdminInp->arg3, sizeof rescInfo.rescType );
+    strncpy( rescInfo.rescContext,  _generalAdminInp->arg5, sizeof rescInfo.zoneName );
+    strncpy( rescInfo.rescClass,    "cache",                sizeof rescInfo.rescClass );
+    strncpy( rescInfo.zoneName,     _generalAdminInp->arg6, sizeof rescInfo.zoneName );
+    strncpy( rescInfo.rescChildren, "", 1 );
+    strncpy( rescInfo.rescParent,   "", 1 );
 
     // =-=-=-=-=-=-=-
     // RAJA ADDED June 1 2009 for pre-post processing rule hooks
@@ -182,6 +174,7 @@ _addResource(
     args[5] = rescInfo.rescContext;
     args[6] = rescInfo.zoneName;
 
+    // =-=-=-=-=-=-=-
     // Check that there is a plugin matching the resource type
     irods::plugin_name_generator name_gen;
     if ( !name_gen.exists( rescInfo.rescType, irods::RESOURCES_HOME ) ) {
