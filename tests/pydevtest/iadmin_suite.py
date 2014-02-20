@@ -69,11 +69,11 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
     def test_modify_resource_name(self):
         h = get_hostname()
         # tree standup
-        assertiCmd(s.adminsession,"iadmin mkresc %s passthru %s:/tmp/pydevtest_%s" % ("pt1", h, "pt1")) # passthru
-        assertiCmd(s.adminsession,"iadmin mkresc %s replication %s:/tmp/pydevtest_%s" % ("repl", h, "repl")) # replication
-        assertiCmd(s.adminsession,"iadmin mkresc %s unixfilesystem %s:/tmp/pydevtest_%s" % ("unix1", h, "unix1")) # unix
-        assertiCmd(s.adminsession,"iadmin mkresc %s passthru %s:/tmp/pydevtest_%s" % ("pt2", h, "pt2")) # passthru
-        assertiCmd(s.adminsession,"iadmin mkresc %s unixfilesystem %s:/tmp/pydevtest_%s" % ("unix2", h, "unix2")) # unix
+        assertiCmd(s.adminsession,"iadmin mkresc %s passthru %s:/tmp/pydevtest_%s" % ("pt1", h, "pt1"), "LIST", "Creating") # passthru
+        assertiCmd(s.adminsession,"iadmin mkresc %s replication %s:/tmp/pydevtest_%s" % ("repl", h, "repl"), "LIST", "Creating") # replication
+        assertiCmd(s.adminsession,"iadmin mkresc %s unixfilesystem %s:/tmp/pydevtest_%s" % ("unix1", h, "unix1"), "LIST", "Creating") # unix
+        assertiCmd(s.adminsession,"iadmin mkresc %s passthru %s:/tmp/pydevtest_%s" % ("pt2", h, "pt2"), "LIST", "Creating") # passthru
+        assertiCmd(s.adminsession,"iadmin mkresc %s unixfilesystem %s:/tmp/pydevtest_%s" % ("unix2", h, "unix2"), "LIST", "Creating") # unix
         assertiCmd(s.adminsession,"iadmin addchildtoresc %s %s" % ("pt1",  "repl"))
         assertiCmd(s.adminsession,"iadmin addchildtoresc %s %s" % ("repl", "unix1"))
         assertiCmd(s.adminsession,"iadmin addchildtoresc %s %s" % ("repl", "pt2"))
@@ -110,17 +110,17 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
     def test_resource_hierarchy_manipulation(self):
         h = get_hostname()
         # first tree standup
-        assertiCmd(s.adminsession,"iadmin mkresc %s passthru %s:/tmp/pydevtest_%s" % ("pt", h, "pt")) # passthru
-        assertiCmd(s.adminsession,"iadmin mkresc %s replication %s:/tmp/pydevtest_%s" % ("replA", h, "replA")) # replication
-        assertiCmd(s.adminsession,"iadmin mkresc %s unixfilesystem %s:/tmp/pydevtest_%s" % ("unixA1", h, "unixA1")) # unix
-        assertiCmd(s.adminsession,"iadmin mkresc %s unixfilesystem %s:/tmp/pydevtest_%s" % ("unixA2", h, "unixA2")) # unix
+        assertiCmd(s.adminsession,"iadmin mkresc %s passthru %s:/tmp/pydevtest_%s" % ("pt", h, "pt"), "LIST", "Creating") # passthru
+        assertiCmd(s.adminsession,"iadmin mkresc %s replication %s:/tmp/pydevtest_%s" % ("replA", h, "replA"), "LIST", "Creating") # replication
+        assertiCmd(s.adminsession,"iadmin mkresc %s unixfilesystem %s:/tmp/pydevtest_%s" % ("unixA1", h, "unixA1"), "LIST", "Creating") # unix
+        assertiCmd(s.adminsession,"iadmin mkresc %s unixfilesystem %s:/tmp/pydevtest_%s" % ("unixA2", h, "unixA2"), "LIST", "Creating") # unix
         assertiCmd(s.adminsession,"iadmin addchildtoresc %s %s" % ("pt", "replA"))
         assertiCmd(s.adminsession,"iadmin addchildtoresc %s %s" % ("replA", "unixA1"))
         assertiCmd(s.adminsession,"iadmin addchildtoresc %s %s" % ("replA", "unixA2"))
         # second tree standup
-        assertiCmd(s.adminsession,"iadmin mkresc %s replication %s:/tmp/pydevtest_%s" % ("replB", h, "replB")) # replication
-        assertiCmd(s.adminsession,"iadmin mkresc %s unixfilesystem %s:/tmp/pydevtest_%s" % ("unixB1", h, "unixB1")) # unix
-        assertiCmd(s.adminsession,"iadmin mkresc %s unixfilesystem %s:/tmp/pydevtest_%s" % ("unixB2", h, "unixB2")) # unix
+        assertiCmd(s.adminsession,"iadmin mkresc %s replication %s:/tmp/pydevtest_%s" % ("replB", h, "replB"), "LIST", "Creating") # replication
+        assertiCmd(s.adminsession,"iadmin mkresc %s unixfilesystem %s:/tmp/pydevtest_%s" % ("unixB1", h, "unixB1"), "LIST", "Creating") # unix
+        assertiCmd(s.adminsession,"iadmin mkresc %s unixfilesystem %s:/tmp/pydevtest_%s" % ("unixB2", h, "unixB2"), "LIST", "Creating") # unix
         assertiCmd(s.adminsession,"iadmin addchildtoresc %s %s" % ("replB", "unixB1"))
         assertiCmd(s.adminsession,"iadmin addchildtoresc %s %s" % ("replB", "unixB2"))
 
@@ -235,7 +235,7 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         assertiCmdFail(s.adminsession,"iadmin lr","LIST",testresc1) # should not be listed
         output = commands.getstatusoutput("hostname")
         hostname = output[1]
-        assertiCmd(s.adminsession,"iadmin mkresc "+testresc1+" unixfilesystem "+hostname+":/tmp/pydevtest_"+testresc1) # unix
+        assertiCmd(s.adminsession,"iadmin mkresc "+testresc1+" unixfilesystem "+hostname+":/tmp/pydevtest_"+testresc1, "LIST", "Creating") # unix
         assertiCmd(s.adminsession,"iadmin lr","LIST",testresc1) # should be listed
         assertiCmdFail(s.adminsession,"iadmin rmresc notaresource") # bad remove
         assertiCmd(s.adminsession,"iadmin rmresc "+testresc1) # good remove
@@ -246,7 +246,7 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         assertiCmdFail(s.adminsession,"iadmin lr","LIST",testresc1) # should not be listed
         output = commands.getstatusoutput("hostname")
         hostname = output[1]
-        assertiCmd(s.adminsession,"iadmin mkresc "+testresc1+" unixfilesystem "+hostname+":/tmp/pydevtest_"+testresc1) # unix
+        assertiCmd(s.adminsession,"iadmin mkresc "+testresc1+" unixfilesystem "+hostname+":/tmp/pydevtest_"+testresc1, "LIST", "Creating") # unix
         assertiCmd(s.adminsession,"iadmin lr","LIST",testresc1) # should be listed
         assertiCmd(s.adminsession,"iadmin rmresc "+testresc1) # good remove
         assertiCmdFail(s.adminsession,"iadmin lr","LIST",testresc1) # should be gone
@@ -256,7 +256,7 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         assertiCmdFail(s.adminsession,"iadmin lr","LIST",testresc1) # should not be listed
         output = commands.getstatusoutput("hostname")
         hostname = output[1]
-        assertiCmd(s.adminsession,"iadmin mkresc "+testresc1+" replication") # replication
+        assertiCmd(s.adminsession,"iadmin mkresc "+testresc1+" replication", "LIST", "Creating") # replication
         assertiCmd(s.adminsession,"iadmin lr","LIST",testresc1) # should be listed
         assertiCmd(s.adminsession,"iadmin lr "+testresc1,"LIST",["resc_net","EMPTY_RESC_HOST"]) # should have empty host
         assertiCmd(s.adminsession,"iadmin lr "+testresc1,"LIST",["resc_def_path","EMPTY_RESC_PATH"]) # should have empty path
@@ -268,7 +268,7 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         assertiCmdFail(s.adminsession,"iadmin lr","LIST",testresc1) # should not be listed
         output = commands.getstatusoutput("hostname")
         hostname = output[1]
-        assertiCmd(s.adminsession,"iadmin mkresc "+testresc1+" replication '' Context:String") # replication
+        assertiCmd(s.adminsession,"iadmin mkresc "+testresc1+" replication '' Context:String", "LIST", "Creating") # replication
         assertiCmd(s.adminsession,"iadmin lr","LIST",testresc1) # should be listed
         assertiCmd(s.adminsession,"iadmin lr "+testresc1,"LIST",["resc_net","EMPTY_RESC_HOST"]) # should have empty host
         assertiCmd(s.adminsession,"iadmin lr "+testresc1,"LIST",["resc_def_path","EMPTY_RESC_PATH"]) # should have empty path
@@ -332,15 +332,15 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
 
         # =-=-=-=-=-=-=-
         # STANDUP
-        assertiCmd(s.adminsession,"iadmin mkresc pt passthru") 
-        assertiCmd(s.adminsession,"iadmin mkresc pt_b passthru") 
-        assertiCmd(s.adminsession,"iadmin mkresc pt_c1 passthru") 
-        assertiCmd(s.adminsession,"iadmin mkresc pt_c2 passthru") 
-        assertiCmd(s.adminsession,"iadmin mkresc repl replication") 
+        assertiCmd(s.adminsession,"iadmin mkresc pt passthru", "LIST", "Creating") 
+        assertiCmd(s.adminsession,"iadmin mkresc pt_b passthru", "LIST", "Creating") 
+        assertiCmd(s.adminsession,"iadmin mkresc pt_c1 passthru", "LIST", "Creating") 
+        assertiCmd(s.adminsession,"iadmin mkresc pt_c2 passthru", "LIST", "Creating") 
+        assertiCmd(s.adminsession,"iadmin mkresc repl replication", "LIST", "Creating") 
 
-        assertiCmd(s.adminsession,"iadmin mkresc leaf_a unixfilesystem "+hostname+":/tmp/pydevtest_leaf_a") # unix
-        assertiCmd(s.adminsession,"iadmin mkresc leaf_b unixfilesystem "+hostname+":/tmp/pydevtest_leaf_b") # unix
-        assertiCmd(s.adminsession,"iadmin mkresc leaf_c unixfilesystem "+hostname+":/tmp/pydevtest_leaf_c") # unix
+        assertiCmd(s.adminsession,"iadmin mkresc leaf_a unixfilesystem "+hostname+":/tmp/pydevtest_leaf_a", "LIST", "Creating") # unix
+        assertiCmd(s.adminsession,"iadmin mkresc leaf_b unixfilesystem "+hostname+":/tmp/pydevtest_leaf_b", "LIST", "Creating") # unix
+        assertiCmd(s.adminsession,"iadmin mkresc leaf_c unixfilesystem "+hostname+":/tmp/pydevtest_leaf_c", "LIST", "Creating") # unix
 
         assertiCmd(s.adminsession,"iadmin addchildtoresc pt repl" )
         assertiCmd(s.adminsession,"iadmin addchildtoresc repl leaf_a" )
@@ -444,17 +444,17 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         # STANDUP
         h = get_hostname()
         # first tree standup
-        assertiCmd(s.adminsession,"iadmin mkresc %s passthru %s:/tmp/pydevtest_%s" % ("pt", h, "pt")) # passthru
-        assertiCmd(s.adminsession,"iadmin mkresc %s replication %s:/tmp/pydevtest_%s" % ("replA", h, "replA")) # replication
-        assertiCmd(s.adminsession,"iadmin mkresc %s unixfilesystem %s:/tmp/pydevtest_%s" % ("unixA1", h, "unixA1")) # unix
-        assertiCmd(s.adminsession,"iadmin mkresc %s unixfilesystem %s:/tmp/pydevtest_%s" % ("unixA2", h, "unixA2")) # unix
+        assertiCmd(s.adminsession,"iadmin mkresc %s passthru %s:/tmp/pydevtest_%s" % ("pt", h, "pt"), "LIST", "Creating") # passthru
+        assertiCmd(s.adminsession,"iadmin mkresc %s replication %s:/tmp/pydevtest_%s" % ("replA", h, "replA"), "LIST", "Creating") # replication
+        assertiCmd(s.adminsession,"iadmin mkresc %s unixfilesystem %s:/tmp/pydevtest_%s" % ("unixA1", h, "unixA1"), "LIST", "Creating") # unix
+        assertiCmd(s.adminsession,"iadmin mkresc %s unixfilesystem %s:/tmp/pydevtest_%s" % ("unixA2", h, "unixA2"), "LIST", "Creating") # unix
         assertiCmd(s.adminsession,"iadmin addchildtoresc %s %s" % ("pt", "replA"))
         assertiCmd(s.adminsession,"iadmin addchildtoresc %s %s" % ("replA", "unixA1"))
         assertiCmd(s.adminsession,"iadmin addchildtoresc %s %s" % ("replA", "unixA2"))
         # second tree standup
-        assertiCmd(s.adminsession,"iadmin mkresc %s replication %s:/tmp/pydevtest_%s" % ("replB", h, "replB")) # replication
-        assertiCmd(s.adminsession,"iadmin mkresc %s unixfilesystem %s:/tmp/pydevtest_%s" % ("unixB1", h, "unixB1")) # unix
-        assertiCmd(s.adminsession,"iadmin mkresc %s unixfilesystem %s:/tmp/pydevtest_%s" % ("unixB2", h, "unixB2")) # unix
+        assertiCmd(s.adminsession,"iadmin mkresc %s replication %s:/tmp/pydevtest_%s" % ("replB", h, "replB"), "LIST", "Creating") # replication
+        assertiCmd(s.adminsession,"iadmin mkresc %s unixfilesystem %s:/tmp/pydevtest_%s" % ("unixB1", h, "unixB1"), "LIST", "Creating") # unix
+        assertiCmd(s.adminsession,"iadmin mkresc %s unixfilesystem %s:/tmp/pydevtest_%s" % ("unixB2", h, "unixB2"), "LIST", "Creating") # unix
         assertiCmd(s.adminsession,"iadmin addchildtoresc %s %s" % ("replB", "unixB1"))
         assertiCmd(s.adminsession,"iadmin addchildtoresc %s %s" % ("replB", "unixB2"))
 

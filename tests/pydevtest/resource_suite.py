@@ -658,8 +658,8 @@ class ResourceSuite(ResourceBase):
         doublesize = str(os.stat(doublefile).st_size)
 
         # assertions
-        assertiCmd(s.adminsession,"iadmin mkresc thirdresc unixfilesystem %s:/tmp/thirdrescVault" % hostname)   # create third resource
-        assertiCmd(s.adminsession,"iadmin mkresc fourthresc unixfilesystem %s:/tmp/fourthrescVault" % hostname) # create fourth resource
+        assertiCmd(s.adminsession,"iadmin mkresc thirdresc unixfilesystem %s:/tmp/thirdrescVault" % hostname, "LIST", "Creating")   # create third resource
+        assertiCmd(s.adminsession,"iadmin mkresc fourthresc unixfilesystem %s:/tmp/fourthrescVault" % hostname, "LIST", "Creating") # create fourth resource
         assertiCmd(s.adminsession,"ils -L "+filename,"ERROR","does not exist")              # should not be listed
         assertiCmd(s.adminsession,"iput "+filename)                                         # put file
         assertiCmd(s.adminsession,"irepl -R "+self.testresc+" "+filename)                   # replicate to test resource
@@ -718,7 +718,7 @@ class ResourceSuite(ResourceBase):
         filepath = create_local_testfile(filename)
         hostname = get_hostname()
         # assertions
-        assertiCmd(s.adminsession,"iadmin mkresc thirdresc unixfilesystem %s:/tmp/thirdrescVault" % hostname) # create third resource
+        assertiCmd(s.adminsession,"iadmin mkresc thirdresc unixfilesystem %s:/tmp/thirdrescVault" % hostname, "LIST", "Creating") # create third resource
         assertiCmd(s.adminsession,"ils -L "+filename,"ERROR","does not exist") # should not be listed
         assertiCmd(s.adminsession,"iput "+filename)                            # put file
         assertiCmd(s.adminsession,"irepl -R "+self.testresc+" "+filename)      # replicate to test resource

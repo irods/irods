@@ -35,10 +35,10 @@ class Test_ireg_Suite(unittest.TestCase, ResourceBase):
 
         self.run_resource_setup()
 
-        assertiCmd(s.adminsession, 'iadmin mkresc r_resc passthru' )
-        assertiCmd(s.adminsession, 'iadmin mkresc m_resc passthru' )
+        assertiCmd(s.adminsession, 'iadmin mkresc r_resc passthru', "LIST", "Creating" )
+        assertiCmd(s.adminsession, 'iadmin mkresc m_resc passthru', "LIST", "Creating" )
         hostname = socket.gethostname()
-        assertiCmd(s.adminsession, 'iadmin mkresc l_resc unixfilesystem '+hostname+':/tmp/l_resc' )
+        assertiCmd(s.adminsession, 'iadmin mkresc l_resc unixfilesystem '+hostname+':/tmp/l_resc', "LIST", "Creating" )
 
         assertiCmd(s.adminsession, "iadmin addchildtoresc r_resc m_resc" )
         assertiCmd(s.adminsession, "iadmin addchildtoresc m_resc l_resc" )

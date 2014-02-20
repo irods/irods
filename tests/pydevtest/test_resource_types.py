@@ -252,8 +252,8 @@ class Test_Compound_with_MockArchive_Resource(unittest.TestCase, ResourceSuite, 
         doublesize = str(os.stat(doublefile).st_size)
 
         # assertions
-        assertiCmd(s.adminsession,"iadmin mkresc thirdresc unixfilesystem %s:/tmp/thirdrescVault" % hostname)   # create third resource
-        assertiCmd(s.adminsession,"iadmin mkresc fourthresc unixfilesystem %s:/tmp/fourthrescVault" % hostname) # create fourth resource
+        assertiCmd(s.adminsession,"iadmin mkresc thirdresc unixfilesystem %s:/tmp/thirdrescVault" % hostname, "LIST", "Creating")   # create third resource
+        assertiCmd(s.adminsession,"iadmin mkresc fourthresc unixfilesystem %s:/tmp/fourthrescVault" % hostname, "LIST", "Creating") # create fourth resource
         assertiCmd(s.adminsession,"ils -L "+filename,"ERROR","does not exist")              # should not be listed
         assertiCmd(s.adminsession,"iput "+filename)                                         # put file
         assertiCmd(s.adminsession,"irepl -R "+self.testresc+" "+filename)                   # replicate to test resource
@@ -315,7 +315,7 @@ class Test_Compound_with_MockArchive_Resource(unittest.TestCase, ResourceSuite, 
         filepath = create_local_testfile(filename)
         hostname = get_hostname()
         # assertions
-        assertiCmd(s.adminsession,"iadmin mkresc thirdresc unixfilesystem %s:/tmp/thirdrescVault" % hostname) # create third resource
+        assertiCmd(s.adminsession,"iadmin mkresc thirdresc unixfilesystem %s:/tmp/thirdrescVault" % hostname, "LIST", "Creating") # create third resource
         assertiCmd(s.adminsession,"ils -L "+filename,"ERROR","does not exist") # should not be listed
         assertiCmd(s.adminsession,"iput "+filename)                            # put file
         assertiCmd(s.adminsession,"irepl -R "+self.testresc+" "+filename)      # replicate to test resource
@@ -502,8 +502,8 @@ class Test_Compound_with_UniversalMSS_Resource(unittest.TestCase, ResourceSuite,
         doublesize = str(os.stat(doublefile).st_size)
 
         # assertions
-        assertiCmd(s.adminsession,"iadmin mkresc thirdresc unixfilesystem %s:/tmp/thirdrescVault" % hostname)   # create third resource
-        assertiCmd(s.adminsession,"iadmin mkresc fourthresc unixfilesystem %s:/tmp/fourthrescVault" % hostname) # create fourth resource
+        assertiCmd(s.adminsession,"iadmin mkresc thirdresc unixfilesystem %s:/tmp/thirdrescVault" % hostname, "LIST", "Creating")   # create third resource
+        assertiCmd(s.adminsession,"iadmin mkresc fourthresc unixfilesystem %s:/tmp/fourthrescVault" % hostname, "LIST", "Creating") # create fourth resource
         assertiCmd(s.adminsession,"ils -L "+filename,"ERROR","does not exist")              # should not be listed
         assertiCmd(s.adminsession,"iput "+filename)                                         # put file
         assertiCmd(s.adminsession,"irepl -R "+self.testresc+" "+filename)                   # replicate to test resource
@@ -564,7 +564,7 @@ class Test_Compound_with_UniversalMSS_Resource(unittest.TestCase, ResourceSuite,
         filepath = create_local_testfile(filename)
         hostname = get_hostname()
         # assertions
-        assertiCmd(s.adminsession,"iadmin mkresc thirdresc unixfilesystem %s:/tmp/thirdrescVault" % hostname) # create third resource
+        assertiCmd(s.adminsession,"iadmin mkresc thirdresc unixfilesystem %s:/tmp/thirdrescVault" % hostname, "LIST", "Creating") # create third resource
         assertiCmd(s.adminsession,"ils -L "+filename,"ERROR","does not exist") # should not be listed
         assertiCmd(s.adminsession,"iput "+filename)                            # put file
         assertiCmd(s.adminsession,"irepl -R "+self.testresc+" "+filename)      # replicate to test resource
@@ -817,8 +817,8 @@ class Test_Compound_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
         doublesize = str(os.stat(doublefile).st_size)
 
         # assertions
-        assertiCmd(s.adminsession,"iadmin mkresc thirdresc unixfilesystem %s:/tmp/thirdrescVault" % hostname)   # create third resource
-        assertiCmd(s.adminsession,"iadmin mkresc fourthresc unixfilesystem %s:/tmp/fourthrescVault" % hostname) # create fourth resource
+        assertiCmd(s.adminsession,"iadmin mkresc thirdresc unixfilesystem %s:/tmp/thirdrescVault" % hostname, "LIST", "Creating")   # create third resource
+        assertiCmd(s.adminsession,"iadmin mkresc fourthresc unixfilesystem %s:/tmp/fourthrescVault" % hostname, "LIST", "Creating") # create fourth resource
         assertiCmd(s.adminsession,"ils -L "+filename,"ERROR","does not exist")              # should not be listed
         assertiCmd(s.adminsession,"iput "+filename)                                         # put file
         assertiCmd(s.adminsession,"irepl -R "+self.testresc+" "+filename)                   # replicate to test resource
@@ -881,7 +881,7 @@ class Test_Compound_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
         filepath = create_local_testfile(filename)
         hostname = get_hostname()
         # assertions
-        assertiCmd(s.adminsession,"iadmin mkresc thirdresc unixfilesystem %s:/tmp/thirdrescVault" % hostname) # create third resource
+        assertiCmd(s.adminsession,"iadmin mkresc thirdresc unixfilesystem %s:/tmp/thirdrescVault" % hostname, "LIST", "Creating") # create third resource
         assertiCmd(s.adminsession,"ils -L "+filename,"ERROR","does not exist") # should not be listed
         assertiCmd(s.adminsession,"iput "+filename)                            # put file
         assertiCmd(s.adminsession,"irepl -R "+self.testresc+" "+filename)      # replicate to test resource
@@ -1140,7 +1140,7 @@ class Test_Replication_within_Replication_Resource(unittest.TestCase, ResourceSu
         filepath = create_local_testfile(filename)
         hostname = get_hostname()
         # assertions
-        assertiCmd(s.adminsession,"iadmin mkresc thirdresc unixfilesystem %s:/tmp/thirdrescVault" % hostname) # create third resource
+        assertiCmd(s.adminsession,"iadmin mkresc thirdresc unixfilesystem %s:/tmp/thirdrescVault" % hostname, "LIST", "Creating") # create third resource
         assertiCmd(s.adminsession,"ils -L "+filename,"ERROR","does not exist") # should not be listed
         assertiCmd(s.adminsession,"iput "+filename)                            # put file
         assertiCmd(s.adminsession,"irepl -R "+self.testresc+" "+filename)      # replicate to test resource
@@ -1167,8 +1167,8 @@ class Test_Replication_within_Replication_Resource(unittest.TestCase, ResourceSu
         doublesize = str(os.stat(doublefile).st_size)
 
         # assertions
-        assertiCmd(s.adminsession,"iadmin mkresc thirdresc unixfilesystem %s:/tmp/thirdrescVault" % hostname)   # create third resource
-        assertiCmd(s.adminsession,"iadmin mkresc fourthresc unixfilesystem %s:/tmp/fourthrescVault" % hostname) # create fourth resource
+        assertiCmd(s.adminsession,"iadmin mkresc thirdresc unixfilesystem %s:/tmp/thirdrescVault" % hostname, "LIST", "Creating")   # create third resource
+        assertiCmd(s.adminsession,"iadmin mkresc fourthresc unixfilesystem %s:/tmp/fourthrescVault" % hostname, "LIST", "Creating") # create fourth resource
         assertiCmd(s.adminsession,"ils -L "+filename,"ERROR","does not exist")              # should not be listed
         assertiCmd(s.adminsession,"iput "+filename)                                         # put file
         assertiCmd(s.adminsession,"irepl -R "+self.testresc+" "+filename)                   # replicate to test resource
@@ -1446,8 +1446,8 @@ class Test_Replication_to_two_Compound_Resources(unittest.TestCase, ResourceSuit
         doublesize = str(os.stat(doublefile).st_size)
 
         # assertions
-        assertiCmd(s.adminsession,"iadmin mkresc thirdresc unixfilesystem %s:/tmp/thirdrescVault" % hostname)   # create third resource
-        assertiCmd(s.adminsession,"iadmin mkresc fourthresc unixfilesystem %s:/tmp/fourthrescVault" % hostname) # create fourth resource
+        assertiCmd(s.adminsession,"iadmin mkresc thirdresc unixfilesystem %s:/tmp/thirdrescVault" % hostname, "LIST", "Creating")   # create third resource
+        assertiCmd(s.adminsession,"iadmin mkresc fourthresc unixfilesystem %s:/tmp/fourthrescVault" % hostname, "LIST", "Creating") # create fourth resource
         assertiCmd(s.adminsession,"ils -L "+filename,"ERROR","does not exist")              # should not be listed
         assertiCmd(s.adminsession,"iput "+filename)                                         # put file
         assertiCmd(s.adminsession,"irepl -R "+self.testresc+" "+filename)                   # replicate to test resource
@@ -1516,7 +1516,7 @@ class Test_Replication_to_two_Compound_Resources(unittest.TestCase, ResourceSuit
         filepath = create_local_testfile(filename)
         hostname = get_hostname()
         # assertions
-        assertiCmd(s.adminsession,"iadmin mkresc thirdresc unixfilesystem %s:/tmp/thirdrescVault" % hostname) # create third resource
+        assertiCmd(s.adminsession,"iadmin mkresc thirdresc unixfilesystem %s:/tmp/thirdrescVault" % hostname, "LIST", "Creating") # create third resource
         assertiCmd(s.adminsession,"ils -L "+filename,"ERROR","does not exist") # should not be listed
         assertiCmd(s.adminsession,"iput "+filename)                            # put file
         assertiCmd(s.adminsession,"irepl -R "+self.testresc+" "+filename)      # replicate to test resource
@@ -1756,8 +1756,8 @@ class Test_Replication_to_two_Compound_Resources_with_Prefer_Archive(unittest.Te
         doublesize = str(os.stat(doublefile).st_size)
 
         # assertions
-        assertiCmd(s.adminsession,"iadmin mkresc thirdresc unixfilesystem %s:/tmp/thirdrescVault" % hostname)   # create third resource
-        assertiCmd(s.adminsession,"iadmin mkresc fourthresc unixfilesystem %s:/tmp/fourthrescVault" % hostname) # create fourth resource
+        assertiCmd(s.adminsession,"iadmin mkresc thirdresc unixfilesystem %s:/tmp/thirdrescVault" % hostname, "LIST", "Creating")   # create third resource
+        assertiCmd(s.adminsession,"iadmin mkresc fourthresc unixfilesystem %s:/tmp/fourthrescVault" % hostname, "LIST", "Creating") # create fourth resource
         assertiCmd(s.adminsession,"ils -L "+filename,"ERROR","does not exist")              # should not be listed
         assertiCmd(s.adminsession,"iput "+filename)                                         # put file
         assertiCmd(s.adminsession,"irepl -R "+self.testresc+" "+filename)                   # replicate to test resource
@@ -1826,7 +1826,7 @@ class Test_Replication_to_two_Compound_Resources_with_Prefer_Archive(unittest.Te
         filepath = create_local_testfile(filename)
         hostname = get_hostname()
         # assertions
-        assertiCmd(s.adminsession,"iadmin mkresc thirdresc unixfilesystem %s:/tmp/thirdrescVault" % hostname) # create third resource
+        assertiCmd(s.adminsession,"iadmin mkresc thirdresc unixfilesystem %s:/tmp/thirdrescVault" % hostname, "LIST", "Creating") # create third resource
         assertiCmd(s.adminsession,"ils -L "+filename,"ERROR","does not exist") # should not be listed
         assertiCmd(s.adminsession,"iput "+filename)                            # put file
         assertiCmd(s.adminsession,"irepl -R "+self.testresc+" "+filename)      # replicate to test resource
@@ -2064,8 +2064,8 @@ class Test_Replication_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest)
         doublesize = str(os.stat(doublefile).st_size)
 
         # assertions
-        assertiCmd(s.adminsession,"iadmin mkresc thirdresc unixfilesystem %s:/tmp/thirdrescVault" % hostname)   # create third resource
-        assertiCmd(s.adminsession,"iadmin mkresc fourthresc unixfilesystem %s:/tmp/fourthrescVault" % hostname) # create fourth resource
+        assertiCmd(s.adminsession,"iadmin mkresc thirdresc unixfilesystem %s:/tmp/thirdrescVault" % hostname, "LIST", "Creating")   # create third resource
+        assertiCmd(s.adminsession,"iadmin mkresc fourthresc unixfilesystem %s:/tmp/fourthrescVault" % hostname, "LIST", "Creating") # create fourth resource
         assertiCmd(s.adminsession,"ils -L "+filename,"ERROR","does not exist")              # should not be listed
         assertiCmd(s.adminsession,"iput "+filename)                                         # put file
         assertiCmd(s.adminsession,"irepl -R "+self.testresc+" "+filename)                   # replicate to test resource
@@ -2130,7 +2130,7 @@ class Test_Replication_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest)
         filepath = create_local_testfile(filename)
         hostname = get_hostname()
         # assertions
-        assertiCmd(s.adminsession,"iadmin mkresc thirdresc unixfilesystem %s:/tmp/thirdrescVault" % hostname) # create third resource
+        assertiCmd(s.adminsession,"iadmin mkresc thirdresc unixfilesystem %s:/tmp/thirdrescVault" % hostname, "LIST", "Creating") # create third resource
         assertiCmd(s.adminsession,"ils -L "+filename,"ERROR","does not exist") # should not be listed
         assertiCmd(s.adminsession,"iput "+filename)                            # put file
         assertiCmd(s.adminsession,"irepl -R "+self.testresc+" "+filename)      # replicate to test resource
