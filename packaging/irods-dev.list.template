@@ -11509,9 +11509,9 @@ f 666 root root /usr/lib/irods/libdynlib2.a ./external/hdf5-1.8.12/test/.libs/li
 f 666 root root /usr/lib/irods/libh5test.a ./external/hdf5-1.8.12/test/.libs/libh5test.a
 f 666 root root /usr/lib/irods/libdynlib1.a ./external/hdf5-1.8.12/test/.libs/libdynlib1.a
 f 666 root root /usr/lib/irods/libdynlib3.a ./external/hdf5-1.8.12/test/.libs/libdynlib3.a
-f 666 root root /usr/lib/irods/libs/libh5tools.a ./external/hdf5-1.8.12/tools/lib/.libs/libh5tools.a
-f 666 root root /usr/lib/irods/libs/libdynlibadd.a ./external/hdf5-1.8.12/tools/h5repack/.libs/libdynlibadd.a
-f 666 root root /usr/lib/irods/libs/libhdf5_hl.a ./external/hdf5-1.8.12/hl/src/.libs/libhdf5_hl.a
+f 666 root root /usr/lib/irods/libh5tools.a ./external/hdf5-1.8.12/tools/lib/.libs/libh5tools.a
+f 666 root root /usr/lib/irods/libdynlibadd.a ./external/hdf5-1.8.12/tools/h5repack/.libs/libdynlibadd.a
+f 666 root root /usr/lib/irods/libhdf5_hl.a ./external/hdf5-1.8.12/hl/src/.libs/libhdf5_hl.a
 f 666 root root /usr/lib/irods/libboost_filesystem.a ./external/boost_1_55_0z/stage/lib/libboost_filesystem.a
 f 666 root root /usr/lib/irods/libboost_thread.a ./external/boost_1_55_0z/stage/lib/libboost_thread.a
 f 666 root root /usr/lib/irods/libboost_system.a ./external/boost_1_55_0z/stage/lib/libboost_system.a
