@@ -126,6 +126,7 @@ $(BOOSTVERSIONMAKE) : $(BOOSTVERSIONARCHIVE)
 boost : $(BOOSTVERSIONMAKE)
 	@CPU_COUNT=`../packaging/get_cpu_count.sh` ; \
 		cd $(BOOSTVERSION) ; \
+		./bjam clean ; \
 		./bjam link=static threading=multi cxxflags="-fPIC -DBOOST_SYSTEM_NO_DEPRECATED" -j$$CPU_COUNT
 
 $(HDF5VERSIONARCHIVE) :
