@@ -69,6 +69,12 @@ int irodsWinMain( int argc, char **argv )
 
     ProcessType = SERVER_PT;	/* I am a server */
 
+	// capture server properties
+	irods::error result = irods::server_properties::getInstance().capture();
+	if (!result.ok()) {
+        irods::log(PASSMSG("failed to read server configuration", result));
+	}
+
     irods::server_properties::getInstance().get_property<bool>(RUN_SERVER_AS_ROOT_KW, run_server_as_root);
 
 #ifndef windows_platform
