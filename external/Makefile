@@ -126,6 +126,7 @@ $(BOOSTVERSIONMAKE) : $(BOOSTVERSIONARCHIVE)
 boost : $(BOOSTVERSIONMAKE)
 	@CPU_COUNT=`../packaging/get_cpu_count.sh` ; \
 		cd $(BOOSTVERSION) ; \
+		./bjam clean ; \
 		./bjam link=static threading=multi cxxflags="-fPIC -DBOOST_SYSTEM_NO_DEPRECATED" -j$$CPU_COUNT
 
 $(HDF5VERSIONARCHIVE) :
@@ -134,7 +135,7 @@ $(HDF5VERSIONARCHIVE) :
 $(HDF5VERSIONMAKE) : $(HDF5VERSIONARCHIVE)
 	@tar zxf $(HDF5VERSIONARCHIVE)
 	@cd $(HDF5VERSION) ; \
-		./configure
+		CXXFLAGS="-fPIC" ./configure
 
 hdf5 : $(HDF5VERSIONMAKE)
 	@$(MAKE) -C $(HDF5VERSION)
@@ -146,7 +147,7 @@ $(NETCDFVERSIONMAKE) : $(NETCDFVERSIONARCHIVE) hdf5
 	@tar zxf $(NETCDFVERSIONARCHIVE)
 	@EXTERNALS_DIR=`echo $$PWD | sed "s/\([^-A-Za-z0-9_/]\)/\\\\\1/g"`; \
 		cd $(NETCDFVERSION) ; \
-		CC="gcc" LDFLAGS="-L$$EXTERNALS_DIR/$(HDF5VERSION)/src/.libs/ -L$$EXTERNALS_DIR/$(HDF5VERSION)/hl/src/.libs/" CPPFLAGS="-I$$EXTERNALS_DIR/$(HDF5VERSION)/src -I$$EXTERNALS_DIR/$(HDF5VERSION)/hl/src" ./configure
+		CC="gcc" LDFLAGS="-L$$EXTERNALS_DIR/$(HDF5VERSION)/src/.libs/ -L$$EXTERNALS_DIR/$(HDF5VERSION)/hl/src/.libs/" CPPFLAGS="-fPIC -I$$EXTERNALS_DIR/$(HDF5VERSION)/src -I$$EXTERNALS_DIR/$(HDF5VERSION)/hl/src" ./configure
 
 netcdf : $(NETCDFVERSIONMAKE)
 	@$(MAKE) -C $(NETCDFVERSION)
