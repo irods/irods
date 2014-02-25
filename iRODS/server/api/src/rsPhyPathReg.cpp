@@ -397,7 +397,7 @@ _rsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
             rodsLog( LOG_ERROR,
                      "_rsPhyPathReg: chkFilePathPerm error for %s",
                      phyPathRegInp->objPath );
-            return ( SYS_NO_PATH_PERMISSION );
+            return ( status );
         }
     }
     else {
