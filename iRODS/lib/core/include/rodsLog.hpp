@@ -45,7 +45,7 @@ extern "C" {
 
     void rodsLog( int level, const char *formatStr, ... );
     void rodsLogAndErrorMsg( int level, rError_t *myError, int status,
-                             char *formatStr, ... );
+                             const char *formatStr, ... );
     void rodsLogLevel( int level );
     void rodsLogSqlReq( int onOrOff );
     void rodsLogSql( const char *sql );
