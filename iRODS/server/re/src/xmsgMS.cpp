@@ -12,10 +12,10 @@
 #include "sendXmsg.hpp"
 #include "rcvXmsg.hpp"
 
-#ifdef ADDR_64BITS
+#if defined(_LP64) || defined(__LP64__)
 #define CAST_PTR_INT (long int)
 #else
-#define CAST_PTR_INT
+#define CAST_PTR_INT (uint)
 #endif
 
 static  rcComm_t *xmsgServerConn = NULL;
@@ -237,21 +237,21 @@ int msiCreateXmsgInp( msParam_t* inMsgNumber,
         sendXmsgInp->sendXmsgInfo.msgNumber = ( uint ) atoi( ( char* )inMsgNumber->inOutStruct );
     }
     else {
-        sendXmsgInp->sendXmsgInfo.msgNumber = ( uint ) CAST_PTR_INT inMsgNumber->inOutStruct;
+        sendXmsgInp->sendXmsgInfo.msgNumber = CAST_PTR_INT inMsgNumber->inOutStruct;
     }
     strcpy( sendXmsgInp->sendXmsgInfo.msgType, ( char* )inMsgType->inOutStruct );
     if ( !strcmp( inNumberOfReceivers->type, STR_MS_T ) ) {
         sendXmsgInp->sendXmsgInfo.numRcv = ( uint ) atoi( ( char* )inNumberOfReceivers->inOutStruct );
     }
     else {
-        sendXmsgInp->sendXmsgInfo.numRcv = ( uint ) CAST_PTR_INT inNumberOfReceivers->inOutStruct;
+        sendXmsgInp->sendXmsgInfo.numRcv = CAST_PTR_INT inNumberOfReceivers->inOutStruct;
     }
     sendXmsgInp->sendXmsgInfo.msg = strdup( ( char * ) inMsg->inOutStruct );
     if ( !strcmp( inNumberOfDeliverySites->type, STR_MS_T ) ) {
         sendXmsgInp->sendXmsgInfo.numDeli = ( int ) atoi( ( char* )inNumberOfDeliverySites->inOutStruct );
     }
     else {
-        sendXmsgInp->sendXmsgInfo.numDeli = ( int ) CAST_PTR_INT inNumberOfDeliverySites->inOutStruct;
+        sendXmsgInp->sendXmsgInfo.numDeli = CAST_PTR_INT inNumberOfDeliverySites->inOutStruct;
     }
     if ( sendXmsgInp->sendXmsgInfo.numDeli == 0 ) {
         sendXmsgInp->sendXmsgInfo.deliAddress = NULL;
@@ -411,13 +411,13 @@ int msiRcvXmsg( msParam_t* inConnParam,
         rcvXmsgInp.rcvTicket = ( uint ) atoi( ( char* )inTicketNumber->inOutStruct );
     }
     else {
-        rcvXmsgInp.rcvTicket = ( uint ) CAST_PTR_INT inTicketNumber->inOutStruct;
+        rcvXmsgInp.rcvTicket = CAST_PTR_INT inTicketNumber->inOutStruct;
     }
     if ( !strcmp( inMsgNumber->type, STR_MS_T ) ) {
         rcvXmsgInp.msgNumber = ( uint ) atoi( ( char* )inMsgNumber->inOutStruct );
     }
     else {
-        rcvXmsgInp.msgNumber = ( uint ) CAST_PTR_INT inMsgNumber->inOutStruct;
+        rcvXmsgInp.msgNumber = CAST_PTR_INT inMsgNumber->inOutStruct;
     }
 
     status = rcRcvXmsg( conn, &rcvXmsgInp, &rcvXmsgOut );

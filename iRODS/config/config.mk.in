@@ -23,8 +23,6 @@
 #
 #	FILE_64BITS	Whether 64-bit file sizes are supported.
 #
-#	ADDR_64BITS	Whether 64-bit addressing is supported.
-#
 #	PARA_OPR	A 1 to enable parallel operations.
 #
 #	RODS_CAT	A 1 to enable the iCAT in the iRODS server.
@@ -49,7 +47,6 @@
 OS_platform=
 #osx_106plus=
 FILE_64BITS=1
-#ADDR_64BITS=
 MODULES=
 #PARA_OPR=1  
 #RODS_CAT=1
@@ -151,18 +148,9 @@ endif
 # Oracle options
 #
 ifdef ORA_DBMS
-ifdef ADDR_64BITS
-ORA_LIB_DIR = $(ORACLE_HOME)/lib
-else
-ifeq ($(OS_platform), osx_platform)
-ORA_LIB_DIR = $(ORACLE_HOME)/lib32
-else
-ORA_LIB_DIR = $(ORACLE_HOME)/lib
-endif
-endif
 
 ORA_HDR_DIR = $(ORACLE_HOME)/rdbms/public
-DBMS_LIB+= -L$(ORA_LIB_DIR) -lclntsh
+DBMS_LIB+= -L$(ORACLE_HOME)/lib64 -L$(ORACLE_HOME)/lib -L$(ORACLE_HOME)/lib32 -lclntsh
 DBMS_INCLUDE+= -I$(ORA_HDR_DIR)
 
 ifneq ($(findstring /xe/, $(ORACLE_HOME)),)

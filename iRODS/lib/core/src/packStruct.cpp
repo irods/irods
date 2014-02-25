@@ -320,29 +320,36 @@ packTypeLookup( char *typeName ) {
 
 void *
 alignAddrToBoundary( void *ptr, int boundary ) {
-#ifdef ADDR_64BITS
+#if defined(_LP64) || defined(__LP64__)
     rodsLong_t b, m;
     b = ( rodsLong_t ) ptr;
-#else
-    uint b, m;
-    b = ( uint ) ptr;
-#endif
 
     m = b % boundary;
-
-#ifdef ADDR_64BITS
-    /* rodsLong_t is signed */
-    if ( m < 0 ) {
-        m = boundary + m;
-    }
-#endif
 
     if ( m == 0 ) {
         return ( ptr );
     }
-    else {
-        return ( ( void* )( ( char * ) ptr + boundary - m ) );
+
+    /* rodsLong_t is signed */
+    if ( m < 0 ) {
+        m = boundary + m;
     }
+
+    return ( ( void* )( ( char * ) ptr + boundary - m ) );
+
+#else
+    uint b, m;
+    b = ( uint ) ptr;
+
+    m = b % boundary;
+
+    if ( m == 0 ) {
+        return ( ptr );
+    }
+
+    return ( ( void* )( ( char * ) ptr + boundary - m ) );
+
+#endif
 }
 
 /* alignInt - align the inout pointer ptr to an int, char or void
@@ -369,11 +376,12 @@ alignDouble( void *ptr ) {
 #if defined(linux_platform) || defined(windows_platform)   /* no need align at 64 bit boundary for linux */
     /* By Bing on 5-29-08: Mike and I found that
        Windows 32-bit OS is aligned with 4. */
-#ifdef ADDR_64BITS
+
+#if defined(_LP64) || defined(__LP64__)
     return ( alignAddrToBoundary( ptr, 8 ) );
-#else   /* ADDR_64BITS */
+#else
     return ( alignAddrToBoundary( ptr, 4 ) );
-#endif  /* ADDR_64BITS */
+#endif // LP64
 
 #else   /* non-linux_platform || non-windows*/
     return ( alignAddrToBoundary( ptr, 8 ) );
@@ -383,7 +391,7 @@ alignDouble( void *ptr ) {
 /* align pointer address in a struct */
 
 void *ialignAddr( void *ptr ) {
-#ifdef ADDR_64BITS
+#if defined(_LP64) || defined(__LP64__)
     return ( alignDouble( ptr ) );
 #else
     return ( alignInt( ptr ) );

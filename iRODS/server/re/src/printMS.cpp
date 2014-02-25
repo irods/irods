@@ -12,10 +12,10 @@
 #include "apiHeaderAll.hpp"
 #include "rsApiHandler.hpp"
 
-#ifdef ADDR_64BITS
+#if defined(_LP64) || defined(__LP64__)
 #define CAST_PTR_INT (long int)
 #else
-#define CAST_PTR_INT
+#define CAST_PTR_INT (uint)
 #endif
 
 /**
@@ -546,7 +546,7 @@ writeXMsg( msParam_t* inStreamId, msParam_t *inHdr, msParam_t *inMsg, ruleExecIn
         streamId = ( int ) atoi( ( char* )inStreamId->inOutStruct );
     }
     else {
-        streamId = ( int ) CAST_PTR_INT  inStreamId->inOutStruct;
+        streamId = CAST_PTR_INT  inStreamId->inOutStruct;
     }
 
     i = _writeXMsg( streamId, ( char* )inHdr->inOutStruct, ( char* )inMsg->inOutStruct );
@@ -624,7 +624,7 @@ readXMsg( msParam_t* inStreamId, msParam_t *inCondRead,
         streamId = ( int ) atoi( ( char* )inStreamId->inOutStruct );
     }
     else {
-        streamId = ( int ) CAST_PTR_INT  inStreamId->inOutStruct;
+        streamId = CAST_PTR_INT  inStreamId->inOutStruct;
     }
     condRead = ( char * ) inCondRead->inOutStruct;
     i = _readXMsg( streamId, condRead, &mNum, &sNum, &hdr, &msg, &user, &addr );

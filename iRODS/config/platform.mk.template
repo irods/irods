@@ -142,11 +142,6 @@ MY_CFLAG+=-D_FILE_OFFSET_BITS=64
 endif
 endif
 
-# 64-bit memory addressing
-ifeq ($(ADDR_64BITS), 1)
-MY_CFLAG+= -DADDR_64BITS
-endif
-
 # Parallel operations
 ifdef PARA_OPR
 MY_CFLAG+= -DPARA_OPR=1
@@ -169,11 +164,6 @@ endif
 
 # Sun Solaris
 ifeq ($(OS_platform), solaris_platform)
-ifeq ($(ADDR_64BITS), 1)
-ifeq ($(CC_IS_GCC), 0)
-MY_CFLAG+=-xarch=v9
-endif
-endif
 LDADD+=-lnsl -lsocket -lm -lpthread -lrt
 CL_LDADD+=-lnsl -lsocket -lm -lpthread
 endif

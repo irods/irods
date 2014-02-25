@@ -14614,13 +14614,13 @@ checkLevel:
 
         currentMaxColSize = 0;
 
-#ifdef ADDR_64BITS
+#if defined(_LP64) || defined(__LP64__)
         if ( debug ) {
             printf( "icss=%ld\n", ( long int )&icss );
         }
 #else
         if ( debug ) {
-            printf( "icss=%ld\n", ( long int )&icss );
+            printf( "icss=%d\n", ( uint )&icss );
         }
 #endif
 

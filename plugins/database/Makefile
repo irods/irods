@@ -7,7 +7,7 @@ BASEDIRS = postgres
 include ../../iRODS/config/platform.mk
 include ../../iRODS/config/config.mk
 
-GCC = g++ -Wno-write-strings -DRODS_SERVER -DADDR_64BITS
+GCC = g++ -Wno-write-strings -DRODS_SERVER
 
 ifeq ($(IRODS_BUILD_COVERAGE), 1)
 GCC += -fprofile-arcs -ftest-coverage -lgcov
