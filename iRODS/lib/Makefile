@@ -94,6 +94,7 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/irods_buffer_encryption.o \
 		$(libCoreObjDir)/irods_auth_object.o \
 		$(libCoreObjDir)/irods_gsi_object.o \
+		$(libCoreObjDir)/irods_krb_object.o \
 		$(libCoreObjDir)/irods_auth_plugin.o \
 		$(libCoreObjDir)/irods_auth_manager.o \
 		$(libCoreObjDir)/irods_virtual_path.o \
