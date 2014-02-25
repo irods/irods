@@ -296,7 +296,7 @@ ret:
 }
 
 /* call an action with actionName and string parameters */
-Res *computeExpressionWithParams( char *actionName, char **params, int paramsCount, ruleExecInfo_t *rei, int reiSaveFlag, msParamArray_t *msParamArray, rError_t *errmsg, Region *r ) {
+Res *computeExpressionWithParams( const char *actionName, char **params, int paramsCount, ruleExecInfo_t *rei, int reiSaveFlag, msParamArray_t *msParamArray, rError_t *errmsg, Region *r ) {
 #ifdef DEBUG
     char buf[ERR_MSG_LEN > 1024 ? ERR_MSG_LEN : 1024];
     snprintf( buf, 1024, "computExpressionWithParams: %s\n", actionName );
@@ -735,7 +735,7 @@ Res *parseAndComputeExpressionAdapter( char *inAction, msParamArray_t *inMsParam
     return res;
 
 }
-int overflow( char* expr, int len ) {
+int overflow( const char* expr, int len ) {
     int i;
     for ( i = 0; i < len + 1; i++ ) {
         if ( expr[i] == 0 ) {

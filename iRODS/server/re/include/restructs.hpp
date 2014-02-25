@@ -315,7 +315,7 @@ typedef struct ruleEngineEventParam {
     char *actionName;
 } RuleEngineEventParam;
 
-Node *newNode( NodeType type, char* text, Label * exprloc, Region *r );
+Node *newNode( NodeType type, const char* text, Label * exprloc, Region *r );
 Node *newExprType( NodeType t, int degree, Node **subtrees, Region *r );
 ExprType *newTVar( Region *r );
 ExprType *newTVar2( int numDisjuncts, Node **disjuncts, Region *r );
@@ -366,7 +366,7 @@ void setBase( Node *node, char *base, Region *r );
 Node **setDegree( Node *node, int d, Region *r );
 Node *createUnaryFunctionNode( char *fn, Node *a, Label * exprloc, Region *r );
 Node *createBinaryFunctionNode( char *fn, Node *a, Node *b, Label * exprloc, Region *r );
-Node *createFunctionNode( char *fn, Node **params, int paramsLen, Label * exprloc, Region *r );
+Node *createFunctionNode( const char *fn, Node **params, int paramsLen, Label * exprloc, Region *r );
 Node *createActionsNode( Node **params, int paramsLen, Label * exprloc, Region *r );
 Node *createTextNode( char *t, Label * exprloc, Region *r );
 Node *createNumberNode( char *t, Label * exprloc, Region *r );

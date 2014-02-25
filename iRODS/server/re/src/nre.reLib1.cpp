@@ -43,7 +43,7 @@ applyRuleArg( char *action, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
  */
 
 int
-applyRuleArgPA( char *action, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
+applyRuleArgPA( const char *action, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
                 msParamArray_t *inMsParamArray, ruleExecInfo_t *rei, int reiSaveFlag ) {
 #ifdef DEBUG
     writeToTmp( "entry.log", "applyRuleArgPa: " );

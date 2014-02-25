@@ -20,7 +20,7 @@ int parseAndComputeRuleNewEnv( char *expr, ruleExecInfo_t *rei, int reiSaveFlag,
 int parseAndComputeRuleAdapter( char *rule, msParamArray_t *msParamArray, ruleExecInfo_t *rei, int reiSaveFlag, Region *r );
 Res *parseAndComputeExpression( char * expr, Env *env, ruleExecInfo_t *rei, int reiSaveFlag, rError_t *errmsg, Region *r );
 Res *parseAndComputeExpressionAdapter( char *inAction, msParamArray_t *inMsParamArray, int retOutParams, ruleExecInfo_t *rei, int reiSaveFlag, Region *r );
-Res *computeExpressionWithParams( char *actionName, char** params, int paramCount, ruleExecInfo_t *rei, int reiSaveFlag, msParamArray_t *vars, rError_t *errmsg, Region *r );
+Res *computeExpressionWithParams( const char *actionName, char** params, int paramCount, ruleExecInfo_t *rei, int reiSaveFlag, msParamArray_t *vars, rError_t *errmsg, Region *r );
 Res *computeNode( Node *expr, Node *reco, Env *env, ruleExecInfo_t *rei, int reiSaveFlag , rError_t *errmsg, Region *r );
 
 ExprType *typeRule( RuleDesc *ruleNode, Env *funcDesc, Hashtable *varTypes, List *typingConstraints, rError_t *errmsg, Node **errnode, Region *r );
@@ -29,7 +29,7 @@ execCmdOut_t *addCmdExecOutToEnv( Env *global, Region *r );
 void freeCmdExecOut( execCmdOut_t *ruleExecOut );
 RuleDesc *getRuleDesc( int ri );
 int generateRuleTypes( RuleSet *inRuleSet, Hashtable *symbol_type_table, Region *r );
-int overflow( char*expr, int len );
+int overflow( const char*expr, int len );
 Env *defaultEnv( Region *r );
 
 #endif

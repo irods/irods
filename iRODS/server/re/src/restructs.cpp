@@ -7,7 +7,7 @@
 /**
  * create a new node n
  */
-Node *newNode( NodeType type, char* text, Label * eloc, Region *r ) {
+Node *newNode( NodeType type, const char* text, Label * eloc, Region *r ) {
     Node *node = ( Node * )region_alloc( r, sizeof( Node ) );
     if ( node == NULL ) {
         return NULL;
@@ -410,7 +410,7 @@ Node *createBinaryFunctionNode( char *fn, Node *a, Node *b, Label * expr, Region
     node->subtrees[1] = b;
     return node;
 }
-Node *createFunctionNode( char *fn, Node **params, int paramsLen, Label * exprloc, Region *r ) {
+Node *createFunctionNode( const char *fn, Node **params, int paramsLen, Label * exprloc, Region *r ) {
     Node *node = newNode( N_APPLICATION, fn, exprloc, r );
     if ( node == NULL ) {
         return NULL;
