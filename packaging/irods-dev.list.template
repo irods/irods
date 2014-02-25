@@ -5295,11 +5295,8 @@ f 644 root root  /usr/include/irods/boost/thread/is_locked_by_this_thread.hpp ./
 f 644 root root  /usr/include/irods/boost/thread/exceptions.hpp ./external/boost_1_55_0z/boost/thread/exceptions.hpp
 d 755 root root  /usr/include/irods/boost/thread/v2 -
 f 644 root root  /usr/include/irods/boost/thread/v2/thread.hpp ./external/boost_1_55_0z/boost/thread/v2/thread.hpp
-<<<<<<< HEAD
-f 777 root root  /usr/include/irods/boost/thread/v2/shared_mutex.hpp ./external/boost_1_55_0z/boost/thread/v2/shared_mutex.hpp
-=======
 f 755 root root  /usr/include/irods/boost/thread/v2/shared_mutex.hpp ./external/boost_1_55_0z/boost/thread/v2/shared_mutex.hpp
->>>>>>> [#1944] remove netcdf code and refactor api interface to better support api plugins
+f 755 root root  /usr/include/irods/boost/thread/v2/shared_mutex.hpp ./external/boost_1_55_0z/boost/thread/v2/shared_mutex.hpp
 f 644 root root  /usr/include/irods/boost/thread/poly_lockable_adapter.hpp ./external/boost_1_55_0z/boost/thread/poly_lockable_adapter.hpp
 f 644 root root  /usr/include/irods/boost/thread/locks.hpp ./external/boost_1_55_0z/boost/thread/locks.hpp
 f 644 root root  /usr/include/irods/boost/thread/lock_traits.hpp ./external/boost_1_55_0z/boost/thread/lock_traits.hpp
@@ -5324,13 +5321,10 @@ f 644 root root  /usr/include/irods/boost/pool/detail/for.m4 ./external/boost_1_
 f 644 root root  /usr/include/irods/boost/pool/detail/pool_construct.ipp ./external/boost_1_55_0z/boost/pool/detail/pool_construct.ipp
 f 644 root root  /usr/include/irods/boost/pool/detail/guard.hpp ./external/boost_1_55_0z/boost/pool/detail/guard.hpp
 f 644 root root  /usr/include/irods/boost/pool/detail/pool_construct.m4 ./external/boost_1_55_0z/boost/pool/detail/pool_construct.m4
-<<<<<<< HEAD
-f 777 root root  /usr/include/irods/boost/pool/detail/pool_construct.bat ./external/boost_1_55_0z/boost/pool/detail/pool_construct.bat
-f 777 root root  /usr/include/irods/boost/pool/detail/pool_construct_simple.bat ./external/boost_1_55_0z/boost/pool/detail/pool_construct_simple.bat
-=======
 f 755 root root  /usr/include/irods/boost/pool/detail/pool_construct.bat ./external/boost_1_55_0z/boost/pool/detail/pool_construct.bat
 f 755 root root  /usr/include/irods/boost/pool/detail/pool_construct_simple.bat ./external/boost_1_55_0z/boost/pool/detail/pool_construct_simple.bat
->>>>>>> [#1944] remove netcdf code and refactor api interface to better support api plugins
+f 755 root root  /usr/include/irods/boost/pool/detail/pool_construct.bat ./external/boost_1_55_0z/boost/pool/detail/pool_construct.bat
+f 755 root root  /usr/include/irods/boost/pool/detail/pool_construct_simple.bat ./external/boost_1_55_0z/boost/pool/detail/pool_construct_simple.bat
 f 644 root root  /usr/include/irods/boost/pool/detail/pool_construct_simple.ipp ./external/boost_1_55_0z/boost/pool/detail/pool_construct_simple.ipp
 f 644 root root  /usr/include/irods/boost/pool/detail/pool_construct_simple.sh ./external/boost_1_55_0z/boost/pool/detail/pool_construct_simple.sh
 f 644 root root  /usr/include/irods/boost/pool/detail/pool_construct_simple.m4 ./external/boost_1_55_0z/boost/pool/detail/pool_construct_simple.m4
@@ -5562,11 +5556,8 @@ f 644 root root  /usr/include/irods/boost/graph/grid_graph.hpp ./external/boost_
 f 644 root root  /usr/include/irods/boost/graph/dijkstra_shortest_paths.hpp ./external/boost_1_55_0z/boost/graph/dijkstra_shortest_paths.hpp
 f 644 root root  /usr/include/irods/boost/graph/kruskal_min_spanning_tree.hpp ./external/boost_1_55_0z/boost/graph/kruskal_min_spanning_tree.hpp
 f 644 root root  /usr/include/irods/boost/graph/closeness_centrality.hpp ./external/boost_1_55_0z/boost/graph/closeness_centrality.hpp
-<<<<<<< HEAD
-f 777 root root  /usr/include/irods/boost/graph/vf2_sub_graph_iso.hpp ./external/boost_1_55_0z/boost/graph/vf2_sub_graph_iso.hpp
-=======
 f 755 root root  /usr/include/irods/boost/graph/vf2_sub_graph_iso.hpp ./external/boost_1_55_0z/boost/graph/vf2_sub_graph_iso.hpp
->>>>>>> [#1944] remove netcdf code and refactor api interface to better support api plugins
+f 755 root root  /usr/include/irods/boost/graph/vf2_sub_graph_iso.hpp ./external/boost_1_55_0z/boost/graph/vf2_sub_graph_iso.hpp
 f 644 root root  /usr/include/irods/boost/graph/bellman_ford_shortest_paths.hpp ./external/boost_1_55_0z/boost/graph/bellman_ford_shortest_paths.hpp
 f 644 root root  /usr/include/irods/boost/graph/undirected_graph.hpp ./external/boost_1_55_0z/boost/graph/undirected_graph.hpp
 f 644 root root  /usr/include/irods/boost/graph/bron_kerbosch_all_cliques.hpp ./external/boost_1_55_0z/boost/graph/bron_kerbosch_all_cliques.hpp
