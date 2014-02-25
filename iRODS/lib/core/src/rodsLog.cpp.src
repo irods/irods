@@ -1482,7 +1482,7 @@ rodsLog( int level, const char *formatStr, ... ) {
 
 void
 rodsLogAndErrorMsg( int level, rError_t *myError, int status,
-                    char *formatStr, ... ) {
+                    const char *formatStr, ... ) {
     char bigString[BIG_STRING_LEN];
     char *prefix;
     time_t timeValue;
