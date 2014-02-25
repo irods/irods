@@ -13,22 +13,22 @@ namespace irods {
         resc_hier_( "" ),
         mode_( 0 ),
         flags_( 0 ) {
-    	memset( &cond_input_, 0, sizeof( keyValPair_t ) );
+        memset( &cond_input_, 0, sizeof( keyValPair_t ) );
     } // ctor
 
 // =-=-=-=-=-=-=-
 // public - ctor
-	data_object::data_object(
-		const std::string& _phy_path,
-		const std::string& _resc_hier,
-		int _mode,
-		int _flags ) :
-		physical_path_( _phy_path ),
-		resc_hier_( _resc_hier ),
-		mode_( _mode ),
-		flags_( _flags ) {
-		memset( &cond_input_, 0, sizeof( keyValPair_t ) );
-	} // ctor
+    data_object::data_object(
+        const std::string& _phy_path,
+        const std::string& _resc_hier,
+        int _mode,
+        int _flags ) :
+        physical_path_( _phy_path ),
+        resc_hier_( _resc_hier ),
+        mode_( _mode ),
+        flags_( _flags ) {
+        memset( &cond_input_, 0, sizeof( keyValPair_t ) );
+    } // ctor
 
 // =-=-=-=-=-=-=-
 // public - ctor
@@ -37,12 +37,12 @@ namespace irods {
         const std::string& _resc_hier,
         int                _mode,
         int                _flags,
-        const keyValPair_t& _cond_input) :
+        const keyValPair_t& _cond_input ) :
         physical_path_( _phy_path ),
         resc_hier_( _resc_hier ),
         mode_( _mode ),
         flags_( _flags ) {
-    	replKeyVal( &_cond_input, &cond_input_ );
+        replKeyVal( &_cond_input, &cond_input_ );
     } // ctor
 
 // =-=-=-=-=-=-=-

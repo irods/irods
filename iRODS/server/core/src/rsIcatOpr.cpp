@@ -33,6 +33,12 @@ connectRcat( rsComm_t *rsComm ) {
                 tmpRodsServerHost->rcatEnabled == LOCAL_SLAVE_ICAT ) {
             if ( tmpRodsServerHost->localFlag == LOCAL_HOST ) {
 
+                // capture server properties
+                irods::error result = irods::server_properties::getInstance().capture();
+                if ( !result.ok() ) {
+                    irods::log( PASSMSG( "failed to read server configuration", result ) );
+                }
+
                 status = chlOpen();
 
                 if ( status < 0 ) {

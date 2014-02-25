@@ -93,14 +93,12 @@ void UnixSendEmail( char *toAddr, char *subjectLine, char *msgBody ) {
 #endif
     int ret = 0;
     ret = system( mailStr );
-    if( ret )
-    {
+    if ( ret ) {
         irods::log( ERROR( ret, "mailStr command returned a non-zero value." ) );
     }
     sprintf( mailStr, "rm %s", fileName );
     ret = system( mailStr );
-    if( ret )
-    {
+    if ( ret ) {
         irods::log( ERROR( ret, "mailStr command returned a non-zero value." ) );
     }
 }

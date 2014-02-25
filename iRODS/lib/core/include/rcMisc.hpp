@@ -54,7 +54,7 @@ extern "C" {
     int
     getStrInBuf( char **inbuf, char *outbuf, int *inbufLen, int outbufLen );
     int
-    getNextEleInStr (char **inbuf, char *outbuf, int *inbufLen, int maxOutLen);
+    getNextEleInStr( char **inbuf, char *outbuf, int *inbufLen, int maxOutLen );
     int
     getZoneNameFromHint( char *rcatZoneHint, char *zoneName, int len );
     int

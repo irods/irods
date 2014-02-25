@@ -2854,32 +2854,31 @@ changeToServiceUser() {
  *                perform actions as a particular user.
  */
 int
-changeToUser(uid_t uid)
-{
+changeToUser( uid_t uid ) {
     int prev_errno, my_errno;
 
-    if (!isServiceUserSet()) {
+    if ( !isServiceUserSet() ) {
         /* not configured ... just return */
         return 0;
     }
 
 #ifndef windows_platform
     prev_errno = errno;
-    if (geteuid() != 0) {
+    if ( geteuid() != 0 ) {
         changeToRootUser();
     }
-    if (seteuid(uid) == -1) {
+    if ( seteuid( uid ) == -1 ) {
         my_errno = errno;
         errno = prev_errno;
-        rodsLogError(LOG_ERROR, SYS_USER_NO_PERMISSION - my_errno,
-                     "changeToUser: can't change to user id %d",
-                     uid);
-        return (SYS_USER_NO_PERMISSION - my_errno);
+        rodsLogError( LOG_ERROR, SYS_USER_NO_PERMISSION - my_errno,
+                      "changeToUser: can't change to user id %d",
+                      uid );
+        return ( SYS_USER_NO_PERMISSION - my_errno );
     }
     errno = prev_errno;
 #endif
 
-    return (0);
+    return ( 0 );
 }
 
 /* dropRootPrivilege - set the process real and effective uid to
@@ -2888,13 +2887,12 @@ changeToUser(uid_t uid)
  *                     before a call to execl().
  */
 int
-dropRootPrivilege()
-{
+dropRootPrivilege() {
 #ifndef windows_platform
     int prev_errno, my_errno;
     uid_t new_real_uid;
 
-    if (!isServiceUserSet()) {
+    if ( !isServiceUserSet() ) {
         /* not configured ... just return */
         return 0;
     }
@@ -2902,7 +2900,7 @@ dropRootPrivilege()
     prev_errno = errno;
 
     new_real_uid = geteuid();
-    if (new_real_uid == 0) {
+    if ( new_real_uid == 0 ) {
         /* will become the iRODS service user */
         new_real_uid = ServiceUid;
     }
@@ -2912,19 +2910,19 @@ dropRootPrivilege()
         changeToRootUser();
     }
 
-    if (setuid(new_real_uid) == -1) {
+    if ( setuid( new_real_uid ) == -1 ) {
         my_errno = errno;
         errno = prev_errno;
-        rodsLogError(LOG_ERROR, SYS_USER_NO_PERMISSION - my_errno,
-                     "dropRootPrivilege: can't setuid() to uid %d",
-                     new_real_uid);
-        return (SYS_USER_NO_PERMISSION - my_errno);
+        rodsLogError( LOG_ERROR, SYS_USER_NO_PERMISSION - my_errno,
+                      "dropRootPrivilege: can't setuid() to uid %d",
+                      new_real_uid );
+        return ( SYS_USER_NO_PERMISSION - my_errno );
     }
 
     errno = prev_errno;
 #endif
 
-    return (0);
+    return ( 0 );
 }
 
 

@@ -78,10 +78,16 @@ namespace irods {
                                         */
         funcPtr        svrHandler;     /* the server handler. should be defined NULL for
                                         * client */
-        char           in_pack_key [ MAX_NAME_LEN ];
-        char           out_pack_key [ MAX_NAME_LEN ];
+        std::string    in_pack_key;
+        std::string    out_pack_key;
+        std::string    in_pack_value;
+        std::string    out_pack_value;
         std::string    fcn_name_;
+
+        lookup_table< std::string>   extra_pack_struct;
+
     }; // class api_entry
+
     typedef boost::shared_ptr< api_entry > api_entry_ptr;
 
 
@@ -109,9 +115,9 @@ namespace irods {
     /// =-=-=-=-=-=-=-
     /// @brief load api plugins
     error init_api_table(
-        api_entry_table&,    // table holding api entries
-        pack_entry_table& ); // table for pack struct ref
-
+        api_entry_table&  _api_tbl,    // table holding api entries
+        pack_entry_table& _pack_tbl,   // table for pack struct ref
+        bool              _cli_flg = true ); // default to client
 }; // namespace irods
 
 #endif          /* API_HANDLER_H */

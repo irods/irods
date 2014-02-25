@@ -200,7 +200,7 @@ parseCmdLineOpt( int argc, char **argv, char *optString, int includeLong,
                 rodsArgs->showFirstLine = True;
                 argv[i] = "-Z";
             }
-#ifdef NETCDF_CLIENT
+
             if ( strcmp( "--reg", argv[i] ) == 0 ) {
                 rodsArgs->reg = True;
                 argv[i] = "-Z";
@@ -294,7 +294,7 @@ parseCmdLineOpt( int argc, char **argv, char *optString, int includeLong,
                     argv[i + 1] = "-Z";
                 }
             }
-#endif
+
             if ( strcmp( "--exclude-from", argv[i] ) == 0 ) {
                 rodsArgs->excludeFile = True;
                 argv[i] = "-Z";
@@ -422,9 +422,9 @@ parseCmdLineOpt( int argc, char **argv, char *optString, int includeLong,
             break;
         case 'q':
             rodsArgs->query = True;
-#ifdef NETCDF_CLIENT
+//#ifdef NETCDF_CLIENT
             rodsArgs->queryStr = optarg;
-#endif
+//#endif
             break;
         case 'Q':
             rodsArgs->rbudp = True;

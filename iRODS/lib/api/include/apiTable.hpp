@@ -17,9 +17,9 @@
 /* need to include a header for for each API */
 #include "apiHeaderAll.hpp"
 #if defined(RODS_SERVER)
-irods::apidef_t server_api_table_inp[] = {
+static irods::apidef_t server_api_table_inp[] = {
 #else	/* client */
-irods::apidef_t client_api_table_inp[] = {
+static irods::apidef_t client_api_table_inp[] = {
 #endif
     {
         GET_MISC_SVR_INFO_AN, RODS_API_VERSION, NO_USER_AUTH, NO_USER_AUTH, NULL,
@@ -605,18 +605,6 @@ irods::apidef_t client_api_table_inp[] = {
 
 }; // _api_table_inp
 
-
-#if defined(RODS_SERVER)
-size_t server_num_api_defs = sizeof( server_api_table_inp ) / sizeof( irods::apidef_t );
-irods::api_entry_table RsApiTable(
-    server_api_table_inp,
-    server_num_api_defs );
-#else
-size_t client_num_api_defs = sizeof( client_api_table_inp ) / sizeof( irods::apidef_t );
-irods::api_entry_table RcApiTable(
-    client_api_table_inp,
-    client_num_api_defs );
-#endif
 
 
 #if 0  // NETCDF etc

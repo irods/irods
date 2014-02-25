@@ -86,7 +86,7 @@ packInstructArray_t api_pack_table_init[] = {
     {"getTempPasswordForOtherInp_PI", getTempPasswordForOtherInp_PI},
     {"getTempPasswordForOtherOut_PI", getTempPasswordForOtherOut_PI},
     /* NETCDF PI */
-#ifdef NETCDF_CLIENT
+#if 0 // NETCDF_CLIENT
     {"NcOpenInp_PI", NcOpenInp_PI},
     {"NcCloseInp_PI", NcCloseInp_PI},
     {"NcInqIdInp_PI", NcInqIdInp_PI},
@@ -125,8 +125,5 @@ packInstructArray_t api_pack_table_init[] = {
     {"fileRenameOut_PI", fileRenameOut_PI},
     {PACK_TABLE_END_PI, ( char * ) NULL},
 };
-
-
-irods::pack_entry_table ApiPackTable( api_pack_table_init );
 
 #endif	/* API_PACK_TABLE_H */

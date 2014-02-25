@@ -157,6 +157,7 @@
 
 #define EXEC_CMD241_AN                  634
 
+#if 0
 /* 1000 - 1059 - NETCDF API calls */
 #define NC_OPEN_AN                      1000
 #define NC_CREATE_AN                    1001
@@ -171,7 +172,7 @@
 #define NC_GET_AGG_ELEMENT_AN           1011
 #define NC_GET_AGG_INFO_AN              1012
 #define NC_ARCH_TIME_SERIES_AN          1013
-
+#endif
 /* 1060 - 1099 - OOI API calls */
 #define OOI_GEN_SERV_REQ_AN             1060
 

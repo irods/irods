@@ -35,7 +35,7 @@
 #define CATALOG_DATABASE_TYPE_KW	"catalog_database_type"
 
 typedef struct rodsServerConfig {
-	bool run_server_as_root;
+    bool run_server_as_root;
 
     char DBUsername[NAME_LEN];
     char DBPassword[MAX_PASSWORD_LEN];

@@ -2,7 +2,6 @@
 
 // =-=-=-=-=-=-=
 // irods includes
-#define RODS_SERVER
 #include "miscServerFunct.hpp"
 #include "objInfo.hpp"
 #include "dataObjCreate.hpp"

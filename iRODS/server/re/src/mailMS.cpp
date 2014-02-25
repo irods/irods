@@ -127,15 +127,13 @@ int msiSendMail( msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, 
 #endif
     int ret = 0;
     ret = system( mailStr );
-    if( ret )
-    {
-        irods::log( ERROR(ret, "mailStr command returned non-zero status" ) );
+    if ( ret ) {
+        irods::log( ERROR( ret, "mailStr command returned non-zero status" ) );
     }
     sprintf( mailStr, "rm %s", fName );
     ret = system( mailStr );
-    if( ret )
-    {
-        irods::log( ERROR(ret, "mailStr command returned non-zero status" ) );
+    if ( ret ) {
+        irods::log( ERROR( ret, "mailStr command returned non-zero status" ) );
     }
     free( mailStr );
     return( 0 );

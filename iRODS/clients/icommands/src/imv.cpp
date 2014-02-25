@@ -8,6 +8,9 @@
 #include "parseCommandLine.hpp"
 #include "rodsPath.hpp"
 #include "mvUtil.hpp"
+#include "irods_client_api_table.hpp"
+#include "irods_pack_table.hpp"
+
 void usage( char *program );
 
 int
@@ -57,7 +60,9 @@ main( int argc, char **argv ) {
 
     // =-=-=-=-=-=-=-
     // initialize pluggable api table
-    init_api_table( RcApiTable, ApiPackTable );
+    irods::pack_entry_table& pk_tbl  = irods::get_pack_table();
+    irods::api_entry_table&  api_tbl = irods::get_client_api_table();
+    init_api_table( api_tbl, pk_tbl );
 
     conn = rcConnect( myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
                       myEnv.rodsZone, 1, &errMsg );

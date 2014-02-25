@@ -67,7 +67,7 @@ namespace irods {
             return flags_;
         }
         virtual const keyValPair_t& cond_input()	const {
-        	return cond_input_;
+            return cond_input_;
         }
 
         // =-=-=-=-=-=-=-

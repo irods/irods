@@ -79,8 +79,7 @@ int msiAdmChangeCoreIRB( msParam_t *newFileNameParam, ruleExecInfo_t *rei ) {
               ( char * ) getConfigDir(), ( char * ) newFileNameParam->inOutStruct,
               ( char * ) getConfigDir() );
     int ret = system( sysString );
-    if( ret != 0 )
-    {
+    if ( ret != 0 ) {
         irods::log( ERROR( ret, "sysString command returned a non-zero value" ) );
     }
 
@@ -149,15 +148,13 @@ int msiAdmAppendToTopOfCoreIRB( msParam_t *newFileNameParam, ruleExecInfo_t *rei
               conDir, conDir );
     int ret = 0;
     ret = system( sysString );
-    if( ret != 0 )
-    {
+    if ( ret != 0 ) {
         irods::log( ERROR( ret, "sysString command returned a non-zero value" ) );
     }
     snprintf( sysString, 999, "mv %s/reConfigs/admtmpcore.irb %s/reConfigs/core.irb",
               conDir, conDir );
     ret = system( sysString );
-    if( ret != 0 )
-    {
+    if ( ret != 0 ) {
         irods::log( ERROR( ret, "sysString command returned a non-zero value" ) );
     }
     return( 0 );

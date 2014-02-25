@@ -373,8 +373,8 @@ endif
 # NETCDF_CLIENT - build only the irods client with the NETCDF API. This
 # option does not require the installation of the NETCDF C library nor
 # header files. NETCDF_API must be off with is option.
-NETCDF_API=1
-NETCDF4_API=1
+#NETCDF_API=1
+#NETCDF4_API=1
 # NETCDF_CLIENT=1
 
 ifdef NETCDF4_API

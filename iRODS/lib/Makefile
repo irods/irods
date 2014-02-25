@@ -82,7 +82,6 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/irods_hierarchy_parser.o \
 		$(libCoreObjDir)/irods_stacktrace.o \
 		$(libCoreObjDir)/irods_signal.o \
-		$(libCoreObjDir)/irods_resource_redirect.o \
 		$(libCoreObjDir)/irods_plugin_name_generator.o \
 		$(libCoreObjDir)/irods_client_negotiation.o \
 		$(libCoreObjDir)/irods_network_object.o \
@@ -102,6 +101,8 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/irods_osauth_auth_object.o \
 		$(libCoreObjDir)/irods_pluggable_auth_scheme.o \
 		$(libCoreObjDir)/irods_kvp_string_parser.o \
+		$(libCoreObjDir)/irods_client_api_table.o \
+		$(libCoreObjDir)/irods_pack_table.o \
 		$(libCoreObjDir)/apiHandler.o 
 
 ifdef NETCDF_CLIENT

@@ -34,6 +34,7 @@ set up the set 1 tables */
 // =-=-=-=-=-=-=-
 #include "irods_hierarchy_parser.hpp"
 #include "irods_stacktrace.hpp"
+#include "irods_client_api_table.hpp"
 
 // =-=-=-=-=-=-=-
 // boost includes
@@ -233,6 +234,7 @@ apiTableLookup( int apiNumber ) {
         }
     }
 #else
+    irods::api_entry_table& RcApiTable = irods::get_client_api_table();
     if ( RcApiTable.find( apiNumber ) != RcApiTable.end() ) {
         return apiNumber;
     }

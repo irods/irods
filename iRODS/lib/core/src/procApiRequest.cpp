@@ -8,6 +8,7 @@
 
 // =-=-=-=-=-=-=-
 #include "irods_network_factory.hpp"
+#include "irods_client_api_table.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
@@ -118,13 +119,22 @@ sendApiRequest( rcComm_t *conn, int apiInx, void *inputStruct,
 
     cliChkReconnAtSendStart( conn );
 
+    irods::api_entry_table& RcApiTable = irods::get_client_api_table();
+
+    irods::api_entry_table::iterator itr = RcApiTable.find( apiInx );
+    if ( itr == RcApiTable.end() ) {
+        rodsLogError( LOG_ERROR, SYS_UNMATCHED_API_NUM, "API Entry not found at index %d", apiInx );
+        return SYS_UNMATCHED_API_NUM;
+    }
+
+
     if ( RcApiTable[apiInx]->inPackInstruct != NULL ) {
         if ( inputStruct == NULL ) {
             cliChkReconnAtSendEnd( conn );
             return ( USER_API_INPUT_ERR );
         }
         status = packStruct( ( void * ) inputStruct, &inputStructBBuf,
-                             RcApiTable[apiInx]->inPackInstruct, RodsPackTable, 0, conn->irodsProt );
+                             ( char* )RcApiTable[apiInx]->inPackInstruct, RodsPackTable, 0, conn->irodsProt );
         if ( status < 0 ) {
             rodsLogError( LOG_ERROR, status,
                           "sendApiRequest: packStruct error, status = %d", status );
@@ -223,6 +233,7 @@ readAndProcApiReply( rcComm_t *conn, int apiInx, void **outStruct,
 
     /* some sanity check */
 
+    irods::api_entry_table& RcApiTable = irods::get_client_api_table();
     if ( RcApiTable[apiInx]->outPackInstruct != NULL && outStruct == NULL ) {
         rodsLog( LOG_ERROR,
                  "readAndProcApiReply: outStruct error for A apiNumber %d",
@@ -316,6 +327,7 @@ procApiReply( rcComm_t *conn, int apiInx, void **outStruct,
 
     /* some sanity check */
 
+    irods::api_entry_table& RcApiTable = irods::get_client_api_table();
     if ( RcApiTable[apiInx]->outPackInstruct != NULL && outStruct == NULL ) {
         rodsLog( LOG_ERROR,
                  "readAndProcApiReply: outStruct error for C apiNumber %d",
@@ -344,7 +356,7 @@ procApiReply( rcComm_t *conn, int apiInx, void **outStruct,
     if ( outStructBBuf->len > 0 ) {
         if ( outStruct != NULL ) {
             status = unpackStruct( outStructBBuf->buf, ( void ** ) outStruct,
-                                   RcApiTable[apiInx]->outPackInstruct, RodsPackTable,
+                                   ( char* )RcApiTable[apiInx]->outPackInstruct, RodsPackTable,
                                    conn->irodsProt );
             if ( status < 0 ) {
                 rodsLogError( LOG_ERROR, status,

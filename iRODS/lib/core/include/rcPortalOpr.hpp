@@ -98,8 +98,8 @@ extern "C" {
             openedDataObjInp_t *dataObjReadInp, bytesBuf_t *dataObjReadInpBBuf,
             int bufLen, int *writtenSinceUpdated, fileRestartInfo_t *info,
             rodsLong_t *dataSegLen );
-    int 
-      catDataObj (rcComm_t *conn, char *objPath);
+    int
+    catDataObj( rcComm_t *conn, char *objPath );
 }
 
 #endif	/* RC_PORTAL_OPR_H */

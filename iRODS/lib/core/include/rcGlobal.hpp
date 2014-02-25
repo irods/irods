@@ -7,8 +7,8 @@
 
 #include "rods.hpp"
 #include "rodsPackTable.hpp"		/* globally declare RodsPackTable */
-#include "apiPackTable.hpp"		/* globally declare apiPackTable */
-#include "apiTable.hpp"   /* contains global RsApiTable */
+//#include "apiPackTable.hpp"		/* globally declare apiPackTable */
+//#include "apiTable.hpp"   /* contains global RsApiTable */
 #include "objInfo.hpp"
 #include "rodsGenQuery.hpp"
 #include "rodsGeneralUpdate.hpp"

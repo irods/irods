@@ -23,7 +23,7 @@ struct */
 
         extern "C" {
 
-    typedef char* packInstruct_t;
+    typedef const char* packInstruct_t;
 
     /* indicate the end of packing table */
 

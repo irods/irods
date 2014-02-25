@@ -50,6 +50,7 @@ SVR_CORE_OBJS =	\
 		$(svrCoreObjDir)/physPath.o \
 		$(svrCoreObjDir)/irods_resource_manager.o \
 		$(svrCoreObjDir)/irods_resource_backport.o \
+		$(svrCoreObjDir)/irods_resource_redirect.o \
 		$(svrCoreObjDir)/irods_server_negotiation.o \
 		$(svrCoreObjDir)/irods_collection_object.o \
         $(svrCoreObjDir)/irods_data_object.o \
@@ -62,6 +63,8 @@ SVR_CORE_OBJS =	\
    		$(svrCoreObjDir)/irods_database_object.o  \
    		$(svrCoreObjDir)/irods_postgres_object.o  \
    		$(svrCoreObjDir)/irods_mysql_object.o  \
+   		$(svrCoreObjDir)/irods_server_api_table.o  \
+   		$(svrCoreObjDir)/irods_get_l1desc.o  \
         $(svrCoreObjDir)/readServerConfig.o
 
 DB_IFACE_OBJS = \

@@ -138,11 +138,6 @@ BINS =		\
 		$(binDir)/igroupadmin  \
 		$(binDir)/iapitest 
 
-ifdef NETCDF_CLIENT
-OBJS += $(objDir)/incattr.o $(objDir)/inc.o $(objDir)/incarch.o
-BINS += $(binDir)/incattr $(binDir)/inc $(binDir)/incarch
-endif
-
 # Compile and link flags
 
 CFLAGS_OPTIONS := -g $(CFLAGS) $(MY_CFLAG)

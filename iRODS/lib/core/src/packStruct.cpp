@@ -13,6 +13,7 @@
 #include "base64.hpp"
 #include "rcMisc.hpp"
 
+#include "irods_pack_table.hpp"
 #include <iostream>
 
 int
@@ -737,8 +738,9 @@ matchPackInstruct( char *name, packInstructArray_t *myPackTable ) {
 
     /* Try the API table */
 #if 1
-    irods::pack_entry_table::iterator itr = ApiPackTable.find( name );
-    if ( itr != ApiPackTable.end() ) {
+    irods::pack_entry_table& pk_tbl =  irods::get_pack_table();
+    irods::pack_entry_table::iterator itr = pk_tbl.find( name );
+    if ( itr != pk_tbl.end() ) {
         return ( void* )itr->second.c_str();
     }
 #else

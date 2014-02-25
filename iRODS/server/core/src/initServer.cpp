@@ -20,6 +20,7 @@
 #include "physPath.hpp"
 #include "irods_stacktrace.hpp"
 
+#include "irods_resource_backport.hpp"
 #include "irods_log.hpp"
 
 static time_t LastBrokenPipeTime = 0;
@@ -88,34 +89,41 @@ resolveHost( rodsHostAddr_t *addr, rodsServerHost_t **rodsServerHost ) {
 }
 
 int
-resoAndConnHostByDataObjInfo (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
-rodsServerHost_t **rodsServerHost)
-{
+resoAndConnHostByDataObjInfo( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
+                              rodsServerHost_t **rodsServerHost ) {
     int status;
     rodsHostAddr_t addr;
     int remoteFlag;
-
-    if (dataObjInfo == NULL || dataObjInfo->rescInfo == NULL ||
-      dataObjInfo->rescInfo->rescLoc == NULL) {
-        rodsLog (LOG_NOTICE,
-          "resolveHostByDataObjInfo: NULL input");
-        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    if ( dataObjInfo == NULL ) {
+        rodsLog( LOG_NOTICE,
+                 "resolveHostByDataObjInfo: NULL dataObjInfo" );
+        return ( SYS_INTERNAL_NULL_INPUT_ERR );
     }
 
-    memset (&addr, 0, sizeof (addr));
-    rstrcpy (addr.hostAddr, dataObjInfo->rescInfo->rescLoc, NAME_LEN);
-
-    remoteFlag = resolveHost (&addr, rodsServerHost);
-
-    if (remoteFlag == REMOTE_HOST) {
-        status = svrToSvrConnect (rsComm, *rodsServerHost);
-        if (status < 0) {
-            rodsLog (LOG_ERROR,
-              "resAndConnHostByDataObjInfo: svrToSvrConnect to %s failed",
-              (*rodsServerHost)->hostName->name);
-	}
+    // =-=-=-=-=-=-=-
+    // extract the host location from the resource hierarchy
+    std::string location;
+    irods::error ret = irods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
+    if ( !ret.ok() ) {
+        irods::log( PASSMSG( "failed in get_loc_for_hier_string", ret ) );
+        return ret.code();
     }
-    return (remoteFlag);
+
+
+    memset( &addr, 0, sizeof( addr ) );
+    rstrcpy( addr.hostAddr, location.c_str(), NAME_LEN );
+
+    remoteFlag = resolveHost( &addr, rodsServerHost );
+
+    if ( remoteFlag == REMOTE_HOST ) {
+        status = svrToSvrConnect( rsComm, *rodsServerHost );
+        if ( status < 0 ) {
+            rodsLog( LOG_ERROR,
+                     "resAndConnHostByDataObjInfo: svrToSvrConnect to %s failed",
+                     ( *rodsServerHost )->hostName->name );
+        }
+    }
+    return ( remoteFlag );
 }
 
 int
