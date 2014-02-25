@@ -111,7 +111,7 @@ END_POSTINSTALL
 
 f 644 root root /usr/share/man/man1 ./man/*.gz
 
-d 644 root root /var/lib/irods/VERSION ./VERSION
+f 644 root root /var/lib/irods/VERSION ./VERSION
 
 d 755 root root /var/lib/irods/plugins -
 d 755 root root /var/lib/irods/plugins/network -
