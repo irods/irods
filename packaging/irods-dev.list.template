@@ -61,8 +61,8 @@
 # Full File Listing
 # =-=-=-=-=-=-=-
 
-f 644 root root /usr/lib/libirods_client.a ./libirods_client.a
-f 644 root root /usr/lib/libirods_server.a ./libirods_server.a
+f 644 root root /usr/lib/irods/libirods_client.a ./libirods_client.a
+f 644 root root /usr/lib/irods/libirods_server.a ./libirods_server.a
 
 d 755 root root /usr/include/irods/
 f 644 root root /usr/include/irods/ ./iRODS/lib/core/include/*.hpp
