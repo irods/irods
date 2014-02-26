@@ -613,7 +613,7 @@ class ResourceSuite(ResourceBase):
 
         # assertions
         assertiCmd(s.adminsession,"ils -L "+filename,"ERROR","does not exist") # should not be listed
-        assertiCmd(s.sessions[1],"ireg "+filepath+" /"+s.sessions[1].getZoneName()+"/home/"+s.sessions[1].getUserName()+"/"+s.sessions[1].sessionId+"/"+filename, "ERROR","SYS_NO_PATH_PERMISSION") # ireg
+        assertiCmd(s.sessions[1],"ireg "+filepath+" /"+s.sessions[1].getZoneName()+"/home/"+s.sessions[1].getUserName()+"/"+s.sessions[1].sessionId+"/"+filename, "ERROR","PATH_REG_NOT_ALLOWED") # ireg
         assertiCmdFail(s.sessions[1],"ils -L "+filename,"LIST",filename) # should not be listed
 
         # local cleanup
@@ -638,7 +638,7 @@ class ResourceSuite(ResourceBase):
 
         # assertions
         assertiCmd(s.adminsession,"ils -L "+filename,"ERROR","does not exist") # should not be listed
-        assertiCmd(s.sessions[1],"ireg "+filepath+" /"+s.sessions[1].getZoneName()+"/home/"+s.sessions[1].getUserName()+"/"+s.sessions[1].sessionId+"/"+filename, "ERROR","SYS_NO_PATH_PERMISSION") # ireg
+        assertiCmd(s.sessions[1],"ireg "+filepath+" /"+s.sessions[1].getZoneName()+"/home/"+s.sessions[1].getUserName()+"/"+s.sessions[1].sessionId+"/"+filename, "ERROR","PATH_REG_NOT_ALLOWED") # ireg
         assertiCmdFail(s.sessions[1],"ils -L "+filename,"LIST",filename) # should not be listed
 
         # local cleanup

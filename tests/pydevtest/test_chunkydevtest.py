@@ -277,7 +277,7 @@ class ChunkyDevTest(ResourceBase):
         # test ireg with normal user
         testuser2home = "/"+irodszone+"/home/"+s.sessions[2].getUserName()
         commands.getstatusoutput( "cp /tmp/sfile2 /tmp/sfile2c" )
-        assertiCmd(s.sessions[2],"ireg -KR "+self.testresc+" /tmp/sfile2c "+testuser2home+"/foo5", "ERROR", "SYS_NO_PATH_PERMISSION" )
+        assertiCmd(s.sessions[2],"ireg -KR "+self.testresc+" /tmp/sfile2c "+testuser2home+"/foo5", "ERROR", "PATH_REG_NOT_ALLOWED" )
         assertiCmd(s.sessions[2],"iput -R "+self.testresc+" /tmp/sfile2c "+testuser2home+"/foo5" )
         assertiCmd(s.sessions[2],"irm -f "+testuser2home+"/foo5" )
     
