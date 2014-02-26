@@ -109,19 +109,18 @@ main( int argc, char **argv ) {
     GetConsoleMode( hStdin, &mode );
     DWORD lastMode = mode;
     mode &= ~ENABLE_ECHO_INPUT;
-    BOOL success = SetConsoleMode( hStdin, mode );
+    BOOL error = !SetConsoleMode( hStdin, mode );
     int errsv = -1;
 #else
     struct termios tty;
     tcgetattr( STDIN_FILENO, &tty );
     tcflag_t oldflag = tty.c_lflag;
     tty.c_lflag &= ~ECHO;
-    int success = tcsetattr( STDIN_FILENO, TCSANOW, &tty );
+    int error = tcsetattr( STDIN_FILENO, TCSANOW, &tty );
     int errsv = errno;
 #endif
-    if ( !success ) {
-        printf( "Error %d disabling echo mode.", errsv );
-        return errsv;
+    if ( error ) {
+        printf( "WARNING: Error %d disabling echo mode. Password will be displayed in plaintext.", errsv );
     }
 
     len = 0;
@@ -143,7 +142,7 @@ main( int argc, char **argv ) {
         if ( strncmp( newPw, newPw2, MAX_PASSWORD_LEN ) != 0 ) {
             printf( "Entered passwords do not match\n" );
 #ifdef WIN32
-            if ( SetConsoleMode( hStdin, lastMode ) ) {
+            if ( !SetConsoleMode( hStdin, lastMode ) ) {
                 printf( "Error reinstating echo mode." );
             }
 #else
