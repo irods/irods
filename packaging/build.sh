@@ -370,7 +370,8 @@ if [ "$1" == "clean" ] ; then
     rm -f manual.pdf
     rm -f irods-manual*.pdf
     rm -f examples/microservices/*.pdf
-    rm -f libirods.a
+    rm -f libirods_client.a
+    rm -f libirods_server.a
 
     make clean -C $BUILDDIR --no-print-directory
     set -e
