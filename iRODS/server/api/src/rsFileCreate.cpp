@@ -132,6 +132,10 @@ int _rsFileCreate(
                                          _create_inp->flags ) );
     file_obj->in_pdmo( _create_inp->in_pdmo );
 
+    // =-=-=-=-=-=-=-
+    // pass condInput
+    file_obj->cond_input(_create_inp->condInput);
+
     irods::error create_err = fileCreate( _comm, file_obj );
 
     // =-=-=-=-=-=-=-
