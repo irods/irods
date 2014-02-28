@@ -28,6 +28,9 @@ Options:
 -s      Skip compilation of iRODS source
 -p      Portable option, ignores OS and builds a tar.gz
 
+Long Options:
+--run-in-place    Build server for in-place execution (not recommended)
+
 Examples:
 $SCRIPTNAME icat postgres
 $SCRIPTNAME resource
@@ -76,6 +79,7 @@ do
         --release) args="${args}-r ";;
         --skip) args="${args}-s ";;
         --portable) args="${args}-p ";;
+        --run-in-place) args="${args}-z ";;
         # pass through anything else
         *) [[ "${arg:0:1}" == "-" ]] || delim="\""
         args="${args}${delim}${arg}${delim} ";;
@@ -84,7 +88,7 @@ done
 # reset the translated args
 eval set -- $args
 # now we can process with getopts
-while getopts ":chrsp" opt; do
+while getopts ":chrspz" opt; do
     case $opt in
         c)
         COVERAGE="1"
@@ -109,6 +113,10 @@ while getopts ":chrsp" opt; do
         p)
         PORTABLE="1"
         echo "-p detected -- Building portable package"
+        ;;
+        z)
+        RUNINPLACE="1"
+        echo "--run-in-place detected -- Building for in-place execution"
         ;;
         \?)
         echo "Invalid option: -$OPTARG" >&2
@@ -395,6 +403,7 @@ if [ "$1" == "clean" ] ; then
     rm -f iRODS/lib/core/include/irods_api_home.hpp
     rm -f iRODS/lib/core/include/irods_resources_home.hpp
     rm -f iRODS/server/core/include/irods_database_home.hpp
+    rm -f iRODS/lib/core/include/irods_home_directory.hpp
     set -e
     echo "${text_green}${text_bold}Done.${text_reset}"
     # database plugin cleanup
@@ -484,7 +493,7 @@ if [[ $1 != "icat" && $1 != "resource" ]] ; then
 fi
 
 if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
-    if [ "$(id -u)" != "0" ] ; then
+    if [ "$(id -u)" != "0" -a "$RUNINPLACE" == "0" ] ; then
         echo "${text_red}#######################################################" 1>&2
         echo "ERROR :: $SCRIPTNAME must be run as root" 1>&2
         echo "      :: because dpkg demands to be run as root" 1>&2
@@ -928,7 +937,11 @@ if [ "$BUILDIRODS" == "1" ] ; then
     cp $TMPCONFIGFILE ./config/irods.config
 
     # handle issue with IRODS_HOME being overwritten by the configure script
-    irodsctl_irods_home=`./scripts/find_irods_home.sh`
+    if [ "$RUNINPLACE" = "1" ] ; then
+        irodsctl_irods_home=`./scripts/find_irods_home.sh runinplace`
+    else
+        irodsctl_irods_home=`./scripts/find_irods_home.sh`
+    fi
     set_tmpfile
     sed -e "\,^IRODS_HOME,s,^.*$,IRODS_HOME=$irodsctl_irods_home," ./irodsctl > $TMPFILE
     rsync -c $TMPFILE ./irodsctl
@@ -962,6 +975,11 @@ if [ "$BUILDIRODS" == "1" ] ; then
     # =-=-=-=-=-=-=-
     # modify the irods_ms_home.hpp file with the proper path to the binary directory
     detected_irods_home=`./scripts/find_irods_home.sh`
+    if [ "$RUNINPLACE" = "1" ] ; then
+        detected_irods_home=`./scripts/find_irods_home.sh runinplace`
+    else
+        detected_irods_home=`./scripts/find_irods_home.sh`
+    fi
     detected_irods_home=`dirname $detected_irods_home`
     irods_msvc_home="$detected_irods_home/plugins/microservices/"
     set_tmpfile
@@ -1003,6 +1021,13 @@ if [ "$BUILDIRODS" == "1" ] ; then
     sed -e s,IRODSAPIPATH,$irods_api_home, ./lib/core/include/irods_api_home.hpp.src > $TMPFILE
     rsync -c $TMPFILE ./lib/core/include/irods_api_home.hpp
     rm -f $TMPFILE
+    # =-=-=-=-=-=-=-
+    # modify the irods_home_directory.hpp file with the proper path to the home directory
+    irods_home_directory="$detected_irods_home/"
+    set_tmpfile
+    sed -e s,IRODSHOMEDIRECTORY,$irods_home_directory, ./lib/core/include/irods_home_directory.hpp.src > $TMPFILE
+    rsync -c $TMPFILE ./lib/core/include/irods_home_directory.hpp
+    rm -f $TMPFILE
 
     ###########################################
     # single 'make' time on an 8 core machine
@@ -1038,6 +1063,13 @@ if [ "$BUILDIRODS" == "1" ] ; then
     fi
     if [ "$?" != "0" ] ; then
         exit 1
+    fi
+
+    # =-=-=-=-=-=-=-
+    # exit early for run-in-place option
+    if [ "$RUNINPLACE" == "1" ] ; then
+        echo "YUNOPACKAGE?"
+        exit 0
     fi
 
     # =-=-=-=-=-=-=-

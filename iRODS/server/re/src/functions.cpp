@@ -28,6 +28,10 @@ getDataObjInfoIncSpecColl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 #include "miscServerFunct.hpp"
 #endif
 
+// =-=-=-=-=-=-=-
+// irods includes
+#include "irods_get_full_path_for_config_file.hpp"
+
 #define GC_BEGIN Region *_rnew = make_region(0, NULL), *_rnew2 = NULL;
 #define GC_REGION _rnew
 #define GC_ON(env) \
@@ -2204,11 +2208,19 @@ Res *smsi_msiAdmShowIRB( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei,
 }
 Res *smsi_msiAdmShowCoreRE( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
     char buf[1024];
-    char *conDir = getConfigDir();
-    char file2[1024];
-    snprintf( file2, 1024, "%s/reConfigs/core.re",
-              conDir );
-    FILE *f2 = fopen( file2, "r" );
+    //char *conDir = getConfigDir();
+    //char file2[1024];
+    //snprintf( file2, 1024, "%s/reConfigs/core.re",
+    //          conDir );
+
+    std::string full_path;
+    irods::error ret = irods::get_full_path_for_config_file( "core.re", full_path );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return newIntRes( r, ret.code() );
+    }
+
+    FILE *f2 = fopen( full_path.c_str(), "r" );
 
     while ( !feof( f2 ) && ferror( f2 ) == 0 ) {
         if ( fgets( buf, 1024, f2 ) != NULL ) {
@@ -2302,16 +2314,35 @@ Res *smsi_msiAdmAppendToTopOfCoreRE( Node **paramsr, int n, Node *node, ruleExec
     }
 #endif
     char *conDir = getConfigDir();
+#if 0 // raja - 2003
     char file1[1024];
     char file2[1024];
-    char file3[1024];
     snprintf( file1, 1024, "%s/reConfigs/%s.re",
               conDir, paramsr[0]->text );
     snprintf( file2, 1024, "%s/reConfigs/core.re",
               conDir );
-    snprintf( file3, 1024, "%s/reConfigs/core.tmp", conDir );
+#endif
+    char tmp_file_path[1024];
+    snprintf( tmp_file_path, 1024, "%s/reConfigs/core.tmp", conDir );
+
+    std::string re_full_path;
+    irods::error ret = irods::get_full_path_for_config_file( "core.re", re_full_path );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return newIntRes( r, ret.code() );
+    }
+
+    std::string param_file( paramsr[0]->text );
+    param_file += ".re";
+    std::string param_full_path;
+    ret = irods::get_full_path_for_config_file( param_file, re_full_path );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return newIntRes( r, ret.code() );
+    }
+
     int errcode;
-    if ( ( errcode = fileConcatenate( file1, file2, file3 ) ) != 0 || ( errcode = remove( file2 ) ) != 0 || ( errcode = rename( file3, file2 ) ) != 0 ) {
+    if ( ( errcode = fileConcatenate( ( char* )re_full_path.c_str(), ( char* )param_full_path.c_str(), tmp_file_path ) ) != 0 || ( errcode = remove( ( char* )re_full_path.c_str() ) ) != 0 || ( errcode = rename( tmp_file_path, ( char* )re_full_path.c_str() ) ) != 0 ) {
         generateAndAddErrMsg( "error appending to top of core.re", node, errcode, errmsg );
         return newErrorRes( r, errcode );
     }
