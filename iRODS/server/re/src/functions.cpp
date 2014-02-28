@@ -122,7 +122,7 @@ ReIterableData *newReIterableData(
 void deleteReIterableData( ReIterableData *itrData ) {
     free( itrData );
 }
-int fileConcatenate( char *file1, char *file2, char *file3 );
+int fileConcatenate( const char *file1, const char *file2, const char *file3 );
 
 Node *wrapToActions( Node *node, Region *r ) {
     if ( getNodeType( node ) != N_ACTIONS ) {
@@ -2342,7 +2342,7 @@ Res *smsi_msiAdmAppendToTopOfCoreRE( Node **paramsr, int n, Node *node, ruleExec
     }
 
     int errcode;
-    if ( ( errcode = fileConcatenate( ( char* )re_full_path.c_str(), ( char* )param_full_path.c_str(), tmp_file_path ) ) != 0 || ( errcode = remove( ( char* )re_full_path.c_str() ) ) != 0 || ( errcode = rename( tmp_file_path, ( char* )re_full_path.c_str() ) ) != 0 ) {
+    if ( ( errcode = fileConcatenate( re_full_path.c_str(), param_full_path.c_str(), tmp_file_path ) ) != 0 || ( errcode = remove( re_full_path.c_str() ) ) != 0 || ( errcode = rename( tmp_file_path, re_full_path.c_str() ) ) != 0 ) {
         generateAndAddErrMsg( "error appending to top of core.re", node, errcode, errmsg );
         return newErrorRes( r, errcode );
     }
@@ -2356,15 +2356,32 @@ Res *smsi_msiAdmChangeCoreRE( Node **paramsr, int n, Node *node, ruleExecInfo_t 
         return newErrorRes( r, i );
     }
 #endif
-    char *conDir = getConfigDir();
-    char file1[1024];
-    char file2[1024];
-    snprintf( file1, 1024, "%s/reConfigs/%s.re",
-              conDir, paramsr[0]->text );
-    snprintf( file2, 1024, "%s/reConfigs/core.re",
-              conDir );
+//   char *conDir = getConfigDir();
+//    char file1[1024];
+//    char file2[1024];
+//    snprintf( file1, 1024, "%s/reConfigs/%s.re",
+//              conDir, paramsr[0]->text );
+//    snprintf( file2, 1024, "%s/reConfigs/core.re",
+//              conDir );
+
+    std::string re_full_path;
+    irods::error ret = irods::get_full_path_for_config_file( "core.re", re_full_path );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return newIntRes( r, ret.code() );
+    }
+
+    std::string param_file( paramsr[0]->text );
+    param_file += ".re";
+    std::string param_full_path;
+    ret = irods::get_full_path_for_config_file( param_file, re_full_path );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return newIntRes( r, ret.code() );
+    }
+
     int errcode;
-    if ( ( errcode = fileConcatenate( file1, NULL, file2 ) ) != 0 ) {
+    if ( ( errcode = fileConcatenate( param_full_path.c_str(), NULL, re_full_path.c_str() ) ) != 0 ) {
         generateAndAddErrMsg( "error changing core.re", node, errcode, errmsg );
         return newErrorRes( r, errcode );
     }
@@ -2838,7 +2855,7 @@ Res *smsiCollectionSpider( Node **subtrees, int n, Node *node, ruleExecInfo_t *r
 }
 
 /* utilities */
-int fileConcatenate( char *file1, char *file2, char *file3 ) {
+int fileConcatenate( const char *file1, const char *file2, const char *file3 ) {
     char buf[1024];
     FILE *f1 = fopen( file1, "r" );
     if ( f1 == NULL ) {
