@@ -144,6 +144,7 @@ cllOpenEnv( icatSessionStruct *icss ) {
 
     icss->connectPtr = p_svc;
     icss->environPtr = p_env;
+    rodsLog( LOG_NOTICE, "XXXX - cllOpenEnv :: SUCCESS!" );
     return( 0 );
 }
 
@@ -186,7 +187,7 @@ cllConnect( icatSessionStruct *icss ) {
 
     p_svc = ( OCISvcCtx * )icss->connectPtr;
     p_env = ( OCIEnv * )icss->environPtr;
-
+    rodsLog( LOG_NOTICE, "XXXX - cllConnect :: p_svc %d   p_env %d", p_svc, p_env );
     atFound = 0;
     userName[0] = '\0';
     databaseName[0] = '\0';
@@ -214,11 +215,16 @@ cllConnect( icatSessionStruct *icss ) {
         return( CAT_INVALID_ARGUMENT );
     }
 
-    stat = OCILogon( p_env, p_err, &p_svc, ( OraText * )userName,
+    stat = OCILogon( p_env,
+                     p_err,
+                     &p_svc,
+                     ( OraText * )userName,
                      strlen( userName ),
                      ( OraText * )icss->databasePassword,
                      strlen( icss->databasePassword ),
-                     ( OraText * )databaseName, strlen( databaseName ) );
+                     ( OraText * )databaseName,
+                     strlen( databaseName )
+                   );
 
     if ( stat != OCI_SUCCESS ) {
         rodsLog( LOG_ERROR, "cllConnect: OCILogon failed: %d", stat );

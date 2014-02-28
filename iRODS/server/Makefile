@@ -63,6 +63,7 @@ SVR_CORE_OBJS =	\
    		$(svrCoreObjDir)/irods_database_object.o  \
    		$(svrCoreObjDir)/irods_postgres_object.o  \
    		$(svrCoreObjDir)/irods_mysql_object.o  \
+   		$(svrCoreObjDir)/irods_oracle_object.o  \
    		$(svrCoreObjDir)/irods_server_api_table.o  \
    		$(svrCoreObjDir)/irods_get_l1desc.o  \
         $(svrCoreObjDir)/readServerConfig.o
@@ -73,6 +74,7 @@ DB_IFACE_OBJS = \
    		$(svrCoreObjDir)/irods_database_object.o  \
    		$(svrCoreObjDir)/irods_postgres_object.o  \
    		$(svrCoreObjDir)/irods_mysql_object.o  \
+   		$(svrCoreObjDir)/irods_oracle_object.o  \
         $(svrCoreObjDir)/readServerConfig.o
 
 DB_PLUGIN_OBJ = $(svrCoreObjDir)/irods_database_plugin.o 

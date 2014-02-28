@@ -16,6 +16,7 @@ CHL_OBJS=${IRODSDIR}/server/icat/obj/icatHighLevelRoutines.o  \
    	 	 $(IRODSDIR)/server/core/obj/irods_database_object.o  \
    	 	 $(IRODSDIR)/server/core/obj/irods_postgres_object.o  \
    	 	 $(IRODSDIR)/server/core/obj/irods_mysql_object.o     \
+   	 	 $(IRODSDIR)/server/core/obj/irods_oracle_object.o     \
          $(IRODSDIR)/server/core/obj/readServerConfig.o       \
          $(IRODSDIR)/server/core/obj/irods_server_properties.o	\
          ${IRODSDIR}/lib/core/obj/irods_plugin_base.o

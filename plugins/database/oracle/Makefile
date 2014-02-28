@@ -31,11 +31,14 @@ GENU_OBJS = \
 
 EXTRA_CFLAGS = \
                -DORA_ICAT \
-               -I../../../external/OCI/instantclient_12_1/sdk/include/ \
+               -I/usr/include/oracle/11.2/client64/
+#               -I../../../external/OCI/instantclient_12_1/sdk/include/ \
 
 EXTRA_LDRFLAGS = \
-            -L../../../external/OCI/instantclient_12_1/ \
-            -lnnz12 -lociei -lclntsh -lclntshcore -lons
+            -L/usr/lib/oracle/11.2/client64/lib/ \
+            -lclntsh -locci 
+#           -lnnz12 -lociei -lclntsh -lclntshcore -lons
+#           -L../../../external/OCI/instantclient_12_1/ \
 
 
 include ../Makefile.base

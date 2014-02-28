@@ -950,8 +950,11 @@ static int _modRescInHierarchies( const std::string& old_resc, const std::string
 #if ORA_ICAT
     // =-=-=-=-=-=-=-
     // Oracle
-    // Should have regexp_update. check syntax
-    return SYS_NOT_IMPLEMENTED;
+    snprintf( update_sql, MAX_SQL_SIZE,
+              "update r_data_main set resc_hier = regexp_replace(resc_hier, '(^|(.+%s))%s($|(%s.+))', '\\1%s\\3')",
+              sep, old_resc.c_str(), sep, new_resc.c_str() );
+
+
 #elif MY_ICAT
     // =-=-=-=-=-=-=-
     // MySQL
@@ -1011,8 +1014,11 @@ static int _modRescInChildren( const std::string& old_resc, const std::string& n
     std::string std_conf_str;        // to store value of STANDARD_CONFORMING_STRINGS
 
 #if ORA_ICAT
-    // Should have regexp_update. check syntax
-    return SYS_NOT_IMPLEMENTED;
+    snprintf( update_sql, MAX_SQL_SIZE,
+              "update r_resc_main set resc_children = regexp_replace(resc_children, '(^|(.+%s))%s{}(.*)', '\\1%s{}\\3')",
+              sep, old_resc.c_str(), new_resc.c_str() );
+
+
 #elif MY_ICAT
     snprintf( update_sql, MAX_SQL_SIZE,
               "update R_RESC_MAIN set resc_children = PREG_REPLACE('/(^|(.+%s))%s\\{\\}(.*)/', '$1%s\\{\\}$3', resc_children);",
@@ -14932,7 +14938,7 @@ checkLevel:
         // =-=-=-=-=-=-=-
         // the basic query string
         char query[ MAX_NAME_LEN ];
-        std::string base_query = "select count(distinct data_id) from R_DATA_MAIN where resc_hier like '%s;%s' or resc_hier like '%s;%s;%s' or resc_hier like '%s;%s';";
+        std::string base_query = "select count(distinct data_id) from R_DATA_MAIN where resc_hier like '%s;%s' or resc_hier like '%s;%s;%s' or resc_hier like '%s;%s'";
         sprintf(
             query,
             base_query.c_str(),
@@ -14998,11 +15004,15 @@ checkLevel:
         // =-=-=-=-=-=-=-
         // the basic query string
         char query[ MAX_NAME_LEN ];
-#ifdef MY_ICAT
+#ifdef ORA_ICAT
+        std::string base_query = "select distinct data_id from R_DATA_MAIN where ( resc_hier like '%s;%s' or resc_hier like '%s;%s;%s' or resc_hier like '%s;%s' ) and data_id not in ( select data_id from R_DATA_MAIN where resc_hier like '%s;%s' or resc_hier like '%s;%s;%s' or resc_hier like '%s;%s' ) and rownum < %d";
+
+#elif MY_ICAT
         std::string base_query = "select distinct data_id from R_DATA_MAIN where ( resc_hier like '%s;%s' or resc_hier like '%s;%s;%s' or resc_hier like '%s;%s' ) and data_id not in ( select data_id from R_DATA_MAIN where resc_hier like '%s;%s' or resc_hier like '%s;%s;%s' or resc_hier like '%s;%s' ) limit %d;";
 
 #else
-        std::string base_query = "select distinct data_id from R_DATA_MAIN where resc_hier like '%s;%s' or resc_hier like '%s;%s;%s' or resc_hier like '%s;%s' except ( select data_id from R_DATA_MAIN where resc_hier like '%s;%s' or resc_hier like '%s;%s;%s' or resc_hier like '%s;%s' ) limit %d;";
+        std::string base_query = "select distinct data_id from R_DATA_MAIN where resc_hier like '%s;%s' or resc_hier like '%s;%s;%s' or resc_hier like '%s;%s' except ( select data_id from R_DATA_MAIN where resc_hier like '%s;%s' or resc_hier like '%s;%s;%s' or resc_hier like '%s;%s' ) limit %d";
+
 #endif
         sprintf(
             query,
