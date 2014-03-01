@@ -338,6 +338,16 @@ f 644 root root ${IRODS_DOC_DIR}/changelog.gz ./changelog.gz
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/LICENSE ./LICENSE
 %endif
 
+d 644 $OS_IRODS_ACCT $OS_IRODS_ACCT /etc/irods -
+c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT /etc/irods/HostAccessControl ./iRODS/server/config/HostAccessControl
+c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT /etc/irods/core.dvm ./iRODS/server/config/reConfigs/core.dvm
+c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT /etc/irods/core.fnm ./iRODS/server/config/reConfigs/core.fnm
+c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT /etc/irods/core.re ./iRODS/server/config/reConfigs/core.re
+c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT /etc/irods/irodsHost ./iRODS/server/config/irodsHost
+c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT /etc/irods/irods.config ./iRODS/config/irods.config
+
+
+
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/installLogs -
 
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts -
@@ -377,18 +387,11 @@ d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/log -
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config -
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/lockFileDir -
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/connectControl.config.template ./iRODS/server/config/connectControl.config.template
-c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/dbr.config ./iRODS/server/config/dbr.config
-c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/HostAccessControl ./iRODS/server/config/HostAccessControl
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/reConfigs -
-c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core.dvm ./iRODS/server/config/reConfigs/core.dvm
-c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core.fnm ./iRODS/server/config/reConfigs/core.fnm
-c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core.re ./iRODS/server/config/reConfigs/core.re
-c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/rda.config ./iRODS/server/config/rda.config
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/irodsMonPerf.config.in ./iRODS/server/config/irodsMonPerf.config.in
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/server.config.in ./iRODS/server/config/server.config.in
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/irodsHost.in ./iRODS/server/config/irodsHost.in
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/packedRei -
-c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/irodsHost ./iRODS/server/config/irodsHost
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/s3Auth.template ./iRODS/server/config/s3Auth.template
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/README.txt ./iRODS/server/config/README.txt
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/bin -
@@ -466,7 +469,6 @@ d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src -
 #f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/convertSql.pl ./iRODS/server/icat/src/convertSql.pl
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/config -
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/config/platform.mk ./iRODS/config/platform.mk
-c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/config/irods.config ./iRODS/config/irods.config
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/config/doxygen-msi.config ./iRODS/config/doxygen-msi.config
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/config/irodsEnv.boot ./iRODS/config/irodsEnv.boot
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/config/installPostgres.config.template ./iRODS/config/installPostgres.config.template

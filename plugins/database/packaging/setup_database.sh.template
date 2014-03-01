@@ -4,7 +4,7 @@ DATABASETYPE="TEMPLATE_DATABASE_TYPE"
 DEFAULT_DATABASEPORT="TEMPLATE_DEFAULT_DATABASEPORT"
 
 # config
-IRODS_CONFIG_FILE="./iRODS/config/irods.config"
+IRODS_CONFIG_FILE="/etc/irods/irods.config"
 SETUP_DATABASE_FLAG="/tmp/$USER/setup_database.flag"
 
 # get into the irods user home directory

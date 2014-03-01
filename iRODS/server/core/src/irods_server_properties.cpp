@@ -6,6 +6,7 @@
  */
 
 #include "irods_server_properties.hpp"
+#include "irods_get_full_path_for_config_file.hpp"
 
 #include "rods.hpp"
 
@@ -37,31 +38,29 @@ namespace irods {
         char *fchar;
         int len;
         char *key;
-        char *serverConfigFile;
 
         char DBKey[MAX_PASSWORD_LEN], DBPassword[MAX_PASSWORD_LEN];
         memset( &DBKey, '\0', MAX_PASSWORD_LEN );
         memset( &DBPassword, '\0', MAX_PASSWORD_LEN );
 
-        serverConfigFile = ( char * ) malloc( ( strlen( getServerConfigDir() ) +
-                                                strlen( SERVER_CONFIG_FILE ) + 24 ) );
+        std::string cfg_file;
+        error ret = irods::get_full_path_for_config_file( SERVER_CONFIG_FILE, cfg_file );
+        if ( !ret.ok() ) {
+            return PASS( ret );
+        }
 
-        sprintf( serverConfigFile, "%s/%s", getServerConfigDir(),
-                 SERVER_CONFIG_FILE );
 
-        fptr = fopen( serverConfigFile, "r" );
+        fptr = fopen( cfg_file.c_str(), "r" );
 
         if ( fptr == NULL ) {
             printf( "Cannot open SERVER_CONFIG_FILE file %s. errno = %d\n",
-                    serverConfigFile, errno );
+                    cfg_file.c_str(), errno );
             fflush( stdout );
             rodsLog( LOG_NOTICE,
                      "Cannot open SERVER_CONFIG_FILE file %s. errno = %d\n",
-                     serverConfigFile, errno );
-            free( serverConfigFile );
+                     cfg_file.c_str(), errno );
             return ERROR( SYS_CONFIG_FILE_ERR, "server config file error" );
         }
-        free( serverConfigFile );
 
         buf[BUF_LEN - 1] = '\0';
         fchar = fgets( buf, BUF_LEN - 1, fptr );

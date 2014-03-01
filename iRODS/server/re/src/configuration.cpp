@@ -13,6 +13,12 @@
 #include "sharedmemory.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "modAVUMetadata.hpp"
+
+#include "irods_get_full_path_for_config_file.hpp"
+
+
+
+
 #ifdef DEBUG
 #include "re.hpp"
 #endif
@@ -446,7 +452,7 @@ int readRuleStructAndRuleSetFromFile( char *ruleBaseName, ruleStruct_t *inRuleSt
     char rulesFileName[MAX_NAME_LEN];
     /*   FILE *file; */
     /*   char buf[MAX_RULE_LENGTH]; */
-    char *configDir;
+    //char *configDir;
     /*   char *t; */
     /*   i = inRuleStrct->MaxNumOfRules; */
 
@@ -455,8 +461,15 @@ int readRuleStructAndRuleSetFromFile( char *ruleBaseName, ruleStruct_t *inRuleSt
         snprintf( rulesFileName, MAX_NAME_LEN, "%s", ruleBaseName );
     }
     else {
-        configDir = getConfigDir();
-        snprintf( rulesFileName, MAX_NAME_LEN, "%s/reConfigs/%s.re", configDir, ruleBaseName );
+        //configDir = getConfigDir();
+        //snprintf( rulesFileName, MAX_NAME_LEN, "%s/reConfigs/%s.re", configDir, ruleBaseName );
+        std::string cfg_file, fn( ruleBaseName ); fn += ".re";
+        irods::error ret = irods::get_full_path_for_config_file( fn, cfg_file );
+        if ( !ret.ok() ) {
+            irods::log( PASS( ret ) );
+            return ret.code();
+        }
+        strncpy( rulesFileName, cfg_file.c_str(), MAX_NAME_LEN );
     }
     /*file = fopen(rulesFileName, "r");
     if (file == NULL) {

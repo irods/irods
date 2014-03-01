@@ -1,4 +1,6 @@
-BASEDIRS = postgres
+BASEDIRS = postgres \
+           mysql    \
+           oracle
            
 
 ######################################################################
@@ -23,7 +25,7 @@ ifeq ($(IRODS_BUILD_DEBUG), 0)
 #SUBS += ${HPSSDIRS}
 endif
 
-.PHONY: mysql postgres clean
+.PHONY: clean mysql postgres oracle 
 
 default: postgres
 
@@ -32,6 +34,10 @@ postgres:
 	${MAKE} -C $@
 
 mysql:
+	@-mkdir -p $@/${OBJDIR} > /dev/null 2>&1
+	${MAKE} -C $@
+
+oracle:
 	@-mkdir -p $@/${OBJDIR} > /dev/null 2>&1
 	${MAKE} -C $@
 

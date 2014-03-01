@@ -12,7 +12,7 @@
 // =-=-=-=-=-=-=-
 // irods includes
 #include "icatHighLevelRoutines.hpp"
-#include "icatMidLevelRoutines.hpp"
+#include "mid_level.hpp"
 
 namespace irods {
 

@@ -463,6 +463,10 @@ clientLoginWithPassword( rcComm_t *Conn, char* password ) {
     char digest[RESPONSE_LEN + 2];
     char userNameAndZone[NAME_LEN * 2 + 1];
     MD5_CTX context;
+    if ( !password ) {
+        printError( Conn, -1, "null password pointer" );
+        return -1;
+    }
 
     if ( Conn->loggedIn == 1 ) {
         /* already logged in */

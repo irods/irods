@@ -17,9 +17,10 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include "irods_stacktrace.hpp"
-
 static pthread_mutex_t my_mutex;
 #endif
+
+#include "irods_get_full_path_for_config_file.hpp"
 
 short threadIsAlive[MAX_NSERVERS];
 
@@ -336,7 +337,8 @@ int checkIPaddress( char *IP, unsigned char IPcomp[IPV4] ) {
 
 int checkHostAccessControl( char *username, char *hostclient, char *groupsname ) {
 
-    char *configDir, hostControlAccessFile[LONG_NAME_LEN];
+    //char *configDir;
+    //char* hostControlAccessFile[LONG_NAME_LEN];
     char grouplist[MAX_SQL_ROWS][MAXSTR];
     const char *delim = " \t\n";
     int groupok, i, indxc, iok, nelt;
@@ -345,13 +347,20 @@ int checkHostAccessControl( char *username, char *hostclient, char *groupsname )
     FILE *fp;
 
     /* try to open the HostControlAccess if it exists. */
-    configDir = getConfigDir();
-    snprintf( hostControlAccessFile, LONG_NAME_LEN, "%s/%s", configDir,
-              HOST_ACCESS_CONTROL_FILE );
-    fp = fopen( hostControlAccessFile, "r" );
+    //configDir = getConfigDir();
+    //snprintf( hostControlAccessFile, LONG_NAME_LEN, "%s/%s", configDir,HOST_ACCESS_CONTROL_FILE );
+
+    std::string cfg_file;
+    irods::error ret = irods::get_full_path_for_config_file( HOST_ACCESS_CONTROL_FILE, cfg_file );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+
+    fp = fopen( cfg_file.c_str(), "r" );
     if ( fp == NULL ) {
         rodsLog( LOG_NOTICE,
-                 "hostAuthCheck: can't open HostControlAccess file %s", hostControlAccessFile );
+                 "hostAuthCheck: can't open HostControlAccess file %s", cfg_file.c_str() );
         return ( UNIX_FILE_OPEN_ERR - errno );
     }
     /* parse the list of groups for the user from the groupsname char */

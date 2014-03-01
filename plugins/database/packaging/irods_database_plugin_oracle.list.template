@@ -1,0 +1,188 @@
+# =-=-=-=-=-=-=-
+# EPM Variables
+# =-=-=-=-=-=-=-
+%product iRODS MySQL Database Plugin
+%copyright 2014, The University of North Carolina at Chapel Hill
+%vendor Renaissance Computing Institute <info@irods-consortium.org>
+%license LICENSE
+%readme README
+%description The integrated Rule-Oriented Data System
+%version TEMPLATE_PLUGINVERSION TEMPLATE_PLUGINVERSIONINT
+
+
+%requires irods-icat
+
+
+# =-=-=-=-=-=-=-
+# Required Packages for specific systems
+# and
+# Setting environment variables for EPM
+# =-=-=-=-=-=-=-
+
+%if DEB
+
+%elseif REDHATRPM
+$REDHAT=true
+$RPM=true
+
+%elseif SUSERPM
+$SUSE=true
+$RPM=true
+
+%endif
+
+%if CENTOS6
+
+%endif
+
+%if DEB
+%requires libc6
+%endif
+
+# =-=-=-=-=-=-=-
+# Required Packages for all systems
+# (have a common name across packaging universes)
+# =-=-=-=-=-=-=-
+%if ARCH
+%else
+%requires perl
+%endif
+
+%format all
+
+# =-=-=-=-=-=-=-
+# Install variables
+# =-=-=-=-=-=-=-
+$IRODS_HOME_DIR=/var/lib/irods
+$OS_IRODS_ACCT=irods
+$IRODS_HOME=$IRODS_HOME_DIR/iRODS
+
+# =-=-=-=-=-=-=-
+# preinstall
+# =-=-=-=-=-=-=-
+%preinstall << END_PREINSTALL
+
+# determine whether this is an upgrade
+if [ "$$1" -eq "$$1" ] 2>/dev/null ; then
+  # integer, therefore rpm
+  if [ $$1 -gt 1 ] ; then
+    PACKAGEUPGRADE="true"
+  else
+    PACKAGEUPGRADE="false"
+  fi
+else
+  # string, therefore deb
+  if [ "$$1" = "upgrade" ] ; then
+    PACKAGEUPGRADE="true"
+  else
+    PACKAGEUPGRADE="false"
+  fi
+fi
+
+if [ "$$PACKAGEUPGRADE" = "true" ] ; then
+  echo "NOP" > /dev/null
+else
+  echo "NOP" > /dev/null
+fi
+
+END_PREINSTALL
+
+# =-=-=-=-=-=-=-
+# post install
+# =-=-=-=-=-=-=-
+%postinstall << END_POSTINSTALL
+# irods_setup.pl expects this file to exist
+touch $IRODS_HOME_DIR/.odbc.ini
+ACCT=$OS_IRODS_ACCT
+chown  $$ACCT:$$ACCT $IRODS_HOME_DIR/.odbc.ini
+echo ""
+echo "======================================================================="
+echo ""
+echo "iRODS Oracle Database Plugin installation was successful."
+echo ""
+echo "To configure this plugin, the following prerequisites need to be met:"
+echo " - an existing database user (to be used by the iRODS server)"
+echo " - an existing database (to be used as the iCAT catalog)"
+echo " - permissions for existing user on existing database"
+echo ""
+echo "In addition, the following configuration needs to be added"
+echo "to the [oracle] section of your /etc/my.cnf or /etc/oracle/my.cnf file:"
+echo "  #######################################"
+echo "  # iRODS MySQL Configuration Options"
+echo "  # as described at"
+echo "  # https://www.irods.org/index.php/MySQL"
+echo "  #######################################"
+echo "  log_bin_trust_function_creators=1"
+echo ""
+echo "After restarting your MySQL server with the new configuration,"
+echo "please run the following setup script as the irods user:"
+echo "  ./packaging/setup_database.sh"
+echo ""
+echo "======================================================================="
+echo ""
+END_POSTINSTALL
+
+# =-=-=-=-=-=-=-
+# preremove
+# =-=-=-=-=-=-=-
+# N/A
+
+# =-=-=-=-=-=-=-
+# post remove
+# =-=-=-=-=-=-=-
+%postremove << END_POSTREMOVE
+
+# determine whether this is an upgrade
+if [ "$$1" -eq "$$1" ] 2>/dev/null ; then
+  # integer, therefore rpm
+  if [ $$1 -gt 0 ] ; then
+    PACKAGEUPGRADE="true"
+  else
+    PACKAGEUPGRADE="false"
+  fi
+else
+  # string, therefore deb
+  if [ "$$1" = "upgrade" ] ; then
+    PACKAGEUPGRADE="true"
+  else
+    PACKAGEUPGRADE="false"
+  fi
+fi
+
+if [ "$$PACKAGEUPGRADE" = "true" ] ; then
+   echo "NOP" > /dev/null
+else
+   echo "NOP" > /dev/null
+fi
+
+END_POSTREMOVE
+
+
+
+
+
+
+
+# =-=-=-=-=-=-=-
+# Full File Listing
+# =-=-=-=-=-=-=-
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/plugins/database/liboracle.so ./liboracle.so
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/setup_database.sh ./packaging/setup_database.sh
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/tests/localhost_setup_oracle.input ./packaging/localhost_setup_oracle.input
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/find_odbc_oracle.sh ./packaging/find_odbc_oracle.sh
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/find_bin_oracle.sh ./packaging/find_bin_oracle.sh
+
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatDropCoreTables.sql ./src/icatDropCoreTables.sql
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatSysTables.sql ./src/icatSysTables.sql
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatCoreTables.sql ./src/icatCoreTables.sql
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatCoreInserts.sql ./src/icatCoreInserts.sql
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatDropSysTables.sql ./src/icatDropSysTables.sql
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatSysInserts.sql ./src/icatSysInserts.sql
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatPurgeRecycleBin.sql ./src/icatPurgeRecycleBin.sql
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/convertSql.pl ./src/convertSql.pl
+
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_cll ./test_cll
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_genu ./test_genu
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_genq ./test_genq
+
+

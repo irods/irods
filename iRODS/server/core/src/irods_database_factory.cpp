@@ -59,6 +59,24 @@ namespace irods {
             _ptr.reset( dobj );
 
         }
+        else if ( irods::ORACLE_DATABASE_PLUGIN == _type ) {
+            irods::oracle_object* oracle = new irods::oracle_object;
+            if ( !oracle ) {
+                return ERROR(
+                           SYS_INVALID_INPUT_PARAM,
+                           "oracle allocation failed" );
+            }
+
+            irods::database_object* dobj = dynamic_cast< irods::database_object* >( oracle );
+            if ( !dobj ) {
+                return ERROR(
+                           SYS_INVALID_INPUT_PARAM,
+                           "oracle dynamic cast failed" );
+            }
+
+            _ptr.reset( dobj );
+
+        }
         else {
             std::string msg( "database type not recognized [" );
             msg += _type;

@@ -14,7 +14,12 @@
 
 */
 
-#include "icatLowLevelOracle.hpp"
+#include "low_level_oracle.hpp"
+
+#include "irods_tmp_string.hpp"
+#include "irods_log.hpp"
+#include "irods_stacktrace.hpp"
+
 int _cllFreeStatementColumns( icatSessionStruct *icss, int statementNumber );
 
 int cllBindVarCount = 0;
@@ -139,6 +144,7 @@ cllOpenEnv( icatSessionStruct *icss ) {
 
     icss->connectPtr = p_svc;
     icss->environPtr = p_env;
+    rodsLog( LOG_NOTICE, "XXXX - cllOpenEnv :: SUCCESS!" );
     return( 0 );
 }
 
@@ -181,7 +187,7 @@ cllConnect( icatSessionStruct *icss ) {
 
     p_svc = ( OCISvcCtx * )icss->connectPtr;
     p_env = ( OCIEnv * )icss->environPtr;
-
+    rodsLog( LOG_NOTICE, "XXXX - cllConnect :: p_svc %d   p_env %d", p_svc, p_env );
     atFound = 0;
     userName[0] = '\0';
     databaseName[0] = '\0';
@@ -209,11 +215,16 @@ cllConnect( icatSessionStruct *icss ) {
         return( CAT_INVALID_ARGUMENT );
     }
 
-    stat = OCILogon( p_env, p_err, &p_svc, ( OraText * )userName,
+    stat = OCILogon( p_env,
+                     p_err,
+                     &p_svc,
+                     ( OraText * )userName,
                      strlen( userName ),
                      ( OraText * )icss->databasePassword,
                      strlen( icss->databasePassword ),
-                     ( OraText * )databaseName, strlen( databaseName ) );
+                     ( OraText * )databaseName,
+                     strlen( databaseName )
+                   );
 
     if ( stat != OCI_SUCCESS ) {
         rodsLog( LOG_ERROR, "cllConnect: OCILogon failed: %d", stat );
@@ -528,7 +539,7 @@ cllExecSqlNoResult( icatSessionStruct *icss, const char *sqlInput ) {
     ub4 rows_affected;
     ub4 *pUb4;
 
-    stat = convertSqlToOra( sqlInput, sql );
+    stat = convertSqlToOra( ( char* )sqlInput, sql );
     if ( stat != 0 ) {
         rodsLog( LOG_ERROR, "cllExecSqlNoResult: SQL too long" );
         return( CAT_OCI_ERROR );
@@ -927,40 +938,48 @@ cllExecSqlWithResultBV(
     const char *bindVar5,
     const char *bindVar6 ) {
 
+    irods::tmp_string tmp_string1( bindVar1 );
+    irods::tmp_string tmp_string2( bindVar2 );
+    irods::tmp_string tmp_string3( bindVar3 );
+    irods::tmp_string tmp_string4( bindVar4 );
+    irods::tmp_string tmp_string5( bindVar5 );
+    irods::tmp_string tmp_string6( bindVar6 );
+
+
     int done;
     done = 0;
     if ( bindVar1 != NULL && strlen( bindVar1 ) > 0 ) {
-        cllBindVars[cllBindVarCount++] = bindVar1;
+        cllBindVars[cllBindVarCount++] = tmp_string1.str();
     }
     else {
         done = 1;
     }
     if ( !done && bindVar2 != NULL && strlen( bindVar2 ) > 0 ) {
-        cllBindVars[cllBindVarCount++] = bindVar2;
+        cllBindVars[cllBindVarCount++] = tmp_string2.str();
     }
     else {
         done = 1;
     }
     if ( !done && bindVar3 != NULL && strlen( bindVar3 ) > 0 ) {
-        cllBindVars[cllBindVarCount++] = bindVar3;
+        cllBindVars[cllBindVarCount++] = tmp_string3.str();
     }
     else {
         done = 1;
     }
     if ( !done && bindVar4 != NULL && strlen( bindVar4 ) > 0 ) {
-        cllBindVars[cllBindVarCount++] = bindVar4;
+        cllBindVars[cllBindVarCount++] = tmp_string4.str();
     }
     else {
         done = 1;
     }
     if ( !done && bindVar5 != NULL && strlen( bindVar5 ) > 0 ) {
-        cllBindVars[cllBindVarCount++] = bindVar5;
+        cllBindVars[cllBindVarCount++] = tmp_string5.str();
     }
     else {
         done = 1;
     }
     if ( !done && bindVar6 != NULL && strlen( bindVar6 ) > 0 ) {
-        cllBindVars[cllBindVarCount++] = bindVar6;
+        cllBindVars[cllBindVarCount++] = tmp_string6.str();
     }
     else {
         done = 1;
@@ -1003,7 +1022,7 @@ cllGetRowCount( icatSessionStruct *icss, int statementNumber ) {
 
     /* malloc it so that it's aligned properly, else can get
        bus errors when doing 64-bit addressing */
-    pUb4 = ( ub4 * )calloc( sizeof( rowCount ) ); // JMC cppcheck - use of uninit var
+    pUb4 = ( ub4 * )calloc( rowCount, sizeof( ub4 ) ); // JMC cppcheck - use of uninit var
 
     myStatement = icss->stmtPtr[statementNumber];
     p_statement = ( OCIStmt * )myStatement->stmtPtr;

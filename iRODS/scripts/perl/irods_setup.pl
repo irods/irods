@@ -121,6 +121,7 @@ my $currentPort = 0;
 # Load support scripts.
 my $perlScriptsDir = File::Spec->catdir( $IRODS_HOME, "scripts", "perl" );
 
+push @INC, "/etc/irods";
 push @INC, $configDir;
 require File::Spec->catfile( $perlScriptsDir, "utils_paths.pl" );
 require File::Spec->catfile( $perlScriptsDir, "utils_print.pl" );
@@ -1184,7 +1185,15 @@ sub testDatabase()
 	printLog( "\nTesting database communications with test_cll...\n" );
 
 	my $test_cll = File::Spec->catfile( $serverTestBinDir, "test_cll" );
-	my ($status,$output) = run( "$test_cll $DATABASE_ADMIN_NAME '$DATABASE_ADMIN_PASSWORD'" );
+
+	#my ($status,$output) = run( "$test_cll $DATABASE_ADMIN_NAME '$DATABASE_ADMIN_PASSWORD'" );
+
+	$exec_str = "$test_cll $DATABASE_ADMIN_NAME '$DATABASE_ADMIN_PASSWORD'"; 
+	if ( $DATABASE_TYPE eq "oracle" ) {
+	    $exec_str = "$test_cll $DATABASE_ADMIN_NAME"."@".$DATABASE_HOST.":$DATABASE_PORT '$DATABASE_ADMIN_PASSWORD'"; 
+        }
+
+	my ($status,$output) = run( "$exec_str" );
 	printLog( "    ", $output );
 
 	if ( $output !~ /The tests all completed normally/i )
@@ -1263,7 +1272,7 @@ sub configureIrodsServer
 	#	may already be updated.  It's so small there is
 	#	little point in checking for this first.  Just
 	#	overwrite it with the correct values.
-	my $serverConfigFile = File::Spec->catfile( $serverConfigDir,
+	my $serverConfigFile = File::Spec->catfile( "/etc/irods/",
 		"server.config" );
 	copyTemplateIfNeeded( $serverConfigFile );
 
@@ -3205,7 +3214,29 @@ sub Oracle_CreateDatabase()
 	 printStatus( "CreateDatabase Skipped.  For Oracle, DBA creates the instance.\n" );
 	 printLog( "CreateDatabase Skipped.  For Oracle, DBA creates the instance.\n" );
      }
+
+    # =-=-=-=-=-=-=-
+	# configure the service accounts .odbc.ini file
+	printStatus( "Updating the .odbc.ini...\n" );
+	printLog( "Updating the .odbc.ini...\n" );
+	my $userODBC = File::Spec->catfile( $ENV{"HOME"}, ".odbc.ini" );
+    
+    # iRODS now supports a script to determine the path & lib name of the odbc driver
+    my $oracleOdbcLib = `../packaging/find_odbc_oracle.sh`;
+    chomp($oracleOdbcLib);
+
+    open( NEWCONFIGFILE, ">$userODBC" );
+    print ( NEWCONFIGFILE "[oracle]\n" .
+            "Driver=$oracleOdbcLib\n" .
+            "Database=$DB_NAME\n" .
+            "Servername=$DATABASE_HOST\n" .
+            "Port=$DATABASE_PORT\n" );
+
+    close( NEWCONFIGFILE );
+
+    chmod( $userODBC, 0600 );
     return 1;
+
 }
 
 
@@ -3673,9 +3704,15 @@ sub Oracle_sql($$)
 	my ($databaseName,$sqlFilename) = @_;
 	my $connectArg, $i;
 	$i = index($DATABASE_ADMIN_NAME, "@");
-	$connectArg = substr($DATABASE_ADMIN_NAME, 0, $i) . "/" . 
-		 $DATABASE_ADMIN_PASSWORD .  substr($DATABASE_ADMIN_NAME, $i);
-	return run( "$sqlplus '$connectArg' < $sqlFilename" );
+
+    $dbadmin = substr($DATABASE_ADMIN_NAME, 0, $i);
+    $connectArg = $dbadmin . "/" . 
+                  $DATABASE_ADMIN_PASSWORD . "@" . 
+                  $DATABASE_HOST . ":" . $DATABASE_PORT;
+
+    $sqlplus = "sqlplus";
+    $exec_str = "$sqlplus '$connectArg' < $sqlFilename";
+	return run( "$exec_str" );
 }
 
 #
