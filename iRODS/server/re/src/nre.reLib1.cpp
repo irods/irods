@@ -15,6 +15,8 @@
 #include "functions.hpp"
 #include "configuration.hpp"
 
+#include "irods_get_full_path_for_config_file.hpp"
+
 #ifdef MYMALLOC
 # Within reLib1.c here, change back the redefines of malloc back to normal
 #define malloc(x) malloc(x)
@@ -804,7 +806,7 @@ readDVarStructFromFile( char *dvarBaseName, rulevardef_t *inRuleVarDef ) {
     char dvarsFileName[MAX_NAME_LEN];
     FILE *file;
     char buf[MAX_DVAR_LENGTH];
-    char *configDir;
+    //char *configDir;
 
     i = inRuleVarDef->MaxNumOfDVars;
 
@@ -813,8 +815,16 @@ readDVarStructFromFile( char *dvarBaseName, rulevardef_t *inRuleVarDef ) {
         snprintf( dvarsFileName, MAX_NAME_LEN, "%s", dvarBaseName );
     }
     else {
-        configDir = getConfigDir();
-        snprintf( dvarsFileName, MAX_NAME_LEN, "%s/reConfigs/%s.dvm", configDir, dvarBaseName );
+        //configDir = getConfigDir();
+        //snprintf( dvarsFileName, MAX_NAME_LEN, "%s/reConfigs/%s.dvm", configDir, dvarBaseName );
+        std::string cfg_file, fn( dvarBaseName ); fn += ".dvm";
+        irods::error ret = irods::get_full_path_for_config_file( fn, cfg_file );
+        if ( !ret.ok() ) {
+            irods::log( PASS( ret ) );
+            return ret.code();
+        }
+        strncpy( dvarsFileName, cfg_file.c_str(), MAX_NAME_LEN );
+
     }
     file = fopen( dvarsFileName, "r" );
     if ( file == NULL ) {
@@ -860,7 +870,7 @@ readFuncMapStructFromFile( char *fmapBaseName, rulefmapdef_t* inRuleFuncMapDef )
     char fmapsFileName[MAX_NAME_LEN];
     FILE *file;
     char buf[MAX_FMAP_LENGTH];
-    char *configDir;
+    //char *configDir;
 
     i = inRuleFuncMapDef->MaxNumOfFMaps;
 
@@ -869,8 +879,15 @@ readFuncMapStructFromFile( char *fmapBaseName, rulefmapdef_t* inRuleFuncMapDef )
         snprintf( fmapsFileName, MAX_NAME_LEN, "%s", fmapBaseName );
     }
     else {
-        configDir = getConfigDir();
-        snprintf( fmapsFileName, MAX_NAME_LEN, "%s/reConfigs/%s.fnm", configDir, fmapBaseName );
+//        configDir = getConfigDir();
+//        snprintf( fmapsFileName, MAX_NAME_LEN, "%s/reConfigs/%s.fnm", configDir, fmapBaseName );
+        std::string cfg_file, fn( fmapBaseName ); fn += ".fnm";
+        irods::error ret = irods::get_full_path_for_config_file( fn, cfg_file );
+        if ( !ret.ok() ) {
+            irods::log( PASS( ret ) );
+            return ret.code();
+        }
+        strncpy( fmapsFileName, cfg_file.c_str(), MAX_NAME_LEN );
     }
     file = fopen( fmapsFileName, "r" );
     if ( file == NULL ) {
@@ -1364,15 +1381,23 @@ writeRulesIntoFile( char * inFileName, ruleStruct_t *myRuleStruct,
     int i;
     FILE *file;
     char fileName[MAX_NAME_LEN];
-    char *configDir;
+    //char *configDir;
 
     if ( inFileName[0] == '/' || inFileName[0] == '\\' ||
             inFileName[1] == ':' ) {
         snprintf( fileName, MAX_NAME_LEN, "%s", inFileName );
     }
     else {
-        configDir = getConfigDir();
-        snprintf( fileName, MAX_NAME_LEN, "%s/reConfigs/%s.irb", configDir, inFileName );
+//        configDir = getConfigDir();
+//        snprintf( fileName, MAX_NAME_LEN, "%s/reConfigs/%s.irb", configDir, inFileName );
+        std::string cfg_file, fn( inFileName ); fn += ".irb";
+        irods::error ret = irods::get_full_path_for_config_file( fn, cfg_file );
+        if ( !ret.ok() ) {
+            irods::log( PASS( ret ) );
+            return ret.code();
+        }
+        strncpy( fileName, cfg_file.c_str(), MAX_NAME_LEN );
+
     }
 
 
@@ -1401,15 +1426,22 @@ writeDVMapsIntoFile( char * inFileName, dvmStruct_t *myDVMapStruct,
     int i;
     FILE *file;
     char fileName[MAX_NAME_LEN];
-    char *configDir;
+//    char *configDir;
 
     if ( inFileName[0] == '/' || inFileName[0] == '\\' ||
             inFileName[1] == ':' ) {
         snprintf( fileName, MAX_NAME_LEN, "%s", inFileName );
     }
     else {
-        configDir = getConfigDir();
-        snprintf( fileName, MAX_NAME_LEN, "%s/reConfigs/%s.dvm", configDir, inFileName );
+//        configDir = getConfigDir();
+//        snprintf( fileName, MAX_NAME_LEN, "%s/reConfigs/%s.dvm", configDir, inFileName );
+        std::string cfg_file, fn( inFileName ); fn += ".dvm";
+        irods::error ret = irods::get_full_path_for_config_file( fn, cfg_file );
+        if ( !ret.ok() ) {
+            irods::log( PASS( ret ) );
+            return ret.code();
+        }
+        strncpy( fileName, cfg_file.c_str(), MAX_NAME_LEN );
     }
 
     file = fopen( fileName, "w" );
@@ -1436,15 +1468,22 @@ writeFNMapsIntoFile( char * inFileName, fnmapStruct_t *myFNMapStruct,
     int i;
     FILE *file;
     char fileName[MAX_NAME_LEN];
-    char *configDir;
+//    char *configDir;
 
     if ( inFileName[0] == '/' || inFileName[0] == '\\' ||
             inFileName[1] == ':' ) {
         snprintf( fileName, MAX_NAME_LEN, "%s", inFileName );
     }
     else {
-        configDir = getConfigDir();
-        snprintf( fileName, MAX_NAME_LEN, "%s/reConfigs/%s.fnm", configDir, inFileName );
+//        configDir = getConfigDir();
+//        snprintf( fileName, MAX_NAME_LEN, "%s/reConfigs/%s.fnm", configDir, inFileName );
+        std::string cfg_file, fn( inFileName ); fn += ".fnm";
+        irods::error ret = irods::get_full_path_for_config_file( fn, cfg_file );
+        if ( !ret.ok() ) {
+            irods::log( PASS( ret ) );
+            return ret.code();
+        }
+        strncpy( fileName, cfg_file.c_str(), MAX_NAME_LEN );
     }
 
     file = fopen( fileName, "w" );

@@ -39,6 +39,8 @@ namespace irods {
             fs::path fn( *itr + _cfg_file );
             if ( fs::exists( fn ) ) {
                 _full_path = fn.string();
+
+                rodsLog( LOG_DEBUG, "config file found [%s]", _full_path.c_str() );
                 return SUCCESS();
 
             }

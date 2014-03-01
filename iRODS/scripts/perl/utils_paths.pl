@@ -77,7 +77,8 @@ $irodsctl = File::Spec->catfile( $IRODS_HOME, "irodsctl" );
 #
 # iRODS configuration files
 #
-$irodsConfig = File::Spec->catfile( $configDir, "irods.config" );
+#$irodsConfig = File::Spec->catfile( $configDir, "irods.config" );
+$irodsConfig = File::Spec->catfile( "/etc/irods", "irods.config" );
 $configMk    = File::Spec->catfile( $configDir, "config.mk" );
 
 

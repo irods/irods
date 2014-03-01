@@ -63,11 +63,9 @@ int msiDeleteCollByAdmin(msParam_t *parColl, msParam_t *childName, ruleExecInfo_
 int msiDeleteUser(ruleExecInfo_t *rei);
 int msiAddUserToGroup(msParam_t *msParam, ruleExecInfo_t *rei);
 int msiSendMail(msParam_t *toAddr, msParam_t *subjectLine, msParam_t *body, ruleExecInfo_t *rei);
-int msiAdmChangeCoreIRB(msParam_t *newF, ruleExecInfo_t *rei);
 //int msiAdmShowIRB(msParam_t *bufP, ruleExecInfo_t *rei);
 int msiAdmShowDVM(msParam_t *bufP, ruleExecInfo_t *rei);
 int msiAdmShowFNM(msParam_t *bufP, ruleExecInfo_t *rei);
-int msiAdmAppendToTopOfCoreIRB(msParam_t *bufP, ruleExecInfo_t *rei);
 int msiGetObjType(msParam_t *objNameP, msParam_t *objTypeP,
 	      ruleExecInfo_t *rei);
 int msiAssociateKeyValuePairsToObj(msParam_t *mDP, msParam_t* objP,  msParam_t* typP,
@@ -258,11 +256,8 @@ int msiString2StrArray(msParam_t *inBufferP, msParam_t* outStrArrayP, ruleExecIn
 			table_[ "msiDataObjCopy" ] = new irods::ms_table_entry( "msiDataObjCopy",4,(funcPtr) msiDataObjCopy );
 			table_[ "msiExtractNaraMetadata" ] = new irods::ms_table_entry( "msiExtractNaraMetadata",0,(funcPtr) msiExtractNaraMetadata );
 			table_[ "msiSetMultiReplPerResc" ] = new irods::ms_table_entry( "msiSetMultiReplPerResc",0,(funcPtr) msiSetMultiReplPerResc );
-			table_[ "msiAdmChangeCoreIRB" ] = new irods::ms_table_entry( "msiAdmChangeCoreIRB",1,(funcPtr) msiAdmChangeCoreIRB );
-			//table_[ "msiAdmShowIRB" ] = new irods::ms_table_entry( "msiAdmShowIRB",1,(funcPtr) msiAdmShowIRB );
 			table_[ "msiAdmShowDVM" ] = new irods::ms_table_entry( "msiAdmShowDVM",1,(funcPtr) msiAdmShowDVM );
 			table_[ "msiAdmShowFNM" ] = new irods::ms_table_entry( "msiAdmShowFNM",1,(funcPtr) msiAdmShowFNM );
-			table_[ "msiAdmAppendToTopOfCoreIRB" ] = new irods::ms_table_entry( "msiAdmAppendToTopOfCoreIRB",1,(funcPtr) msiAdmAppendToTopOfCoreIRB );
 			table_[ "msiGetObjType" ] = new irods::ms_table_entry( "msiGetObjType",2,(funcPtr) msiGetObjType );
 			table_[ "msiAssociateKeyValuePairsToObj" ] = new irods::ms_table_entry( "msiAssociateKeyValuePairsToObj",3,(funcPtr) msiAssociateKeyValuePairsToObj );
 			table_[ "msiSetKeyValuePairsToObj" ] = new irods::ms_table_entry( "msiSetKeyValuePairsToObj",3,(funcPtr) msiSetKeyValuePairsToObj );

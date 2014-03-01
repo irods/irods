@@ -121,6 +121,7 @@ my $currentPort = 0;
 # Load support scripts.
 my $perlScriptsDir = File::Spec->catdir( $IRODS_HOME, "scripts", "perl" );
 
+push @INC, "/etc/irods";
 push @INC, $configDir;
 require File::Spec->catfile( $perlScriptsDir, "utils_paths.pl" );
 require File::Spec->catfile( $perlScriptsDir, "utils_print.pl" );
@@ -1271,7 +1272,7 @@ sub configureIrodsServer
 	#	may already be updated.  It's so small there is
 	#	little point in checking for this first.  Just
 	#	overwrite it with the correct values.
-	my $serverConfigFile = File::Spec->catfile( $serverConfigDir,
+	my $serverConfigFile = File::Spec->catfile( "/etc/irods/",
 		"server.config" );
 	copyTemplateIfNeeded( $serverConfigFile );
 

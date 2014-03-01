@@ -2317,10 +2317,10 @@ Res *smsi_msiAdmAppendToTopOfCoreRE( Node **paramsr, int n, Node *node, ruleExec
 #if 0 // raja - 2003
     char file1[1024];
     char file2[1024];
-    snprintf( file1, 1024, "%s/reConfigs/%s.re",
-              conDir, paramsr[0]->text );
-    snprintf( file2, 1024, "%s/reConfigs/core.re",
-              conDir );
+//    snprintf( file1, 1024, "%s/reConfigs/%s.re",
+    conDir, paramsr[0]->text );
+//    snprintf( file2, 1024, "%s/reConfigs/core.re",
+    conDir );
 #endif
     char tmp_file_path[1024];
     snprintf( tmp_file_path, 1024, "%s/reConfigs/core.tmp", conDir );
@@ -2328,16 +2328,16 @@ Res *smsi_msiAdmAppendToTopOfCoreRE( Node **paramsr, int n, Node *node, ruleExec
     std::string re_full_path;
     irods::error ret = irods::get_full_path_for_config_file( "core.re", re_full_path );
     if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
+    irods::log( PASS( ret ) );
         return newIntRes( r, ret.code() );
     }
 
     std::string param_file( paramsr[0]->text );
     param_file += ".re";
-    std::string param_full_path;
-    ret = irods::get_full_path_for_config_file( param_file, re_full_path );
+                  std::string param_full_path;
+                  ret = irods::get_full_path_for_config_file( param_file, re_full_path );
     if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
+    irods::log( PASS( ret ) );
         return newIntRes( r, ret.code() );
     }
 
@@ -2403,7 +2403,7 @@ Res * smsi_msiAdmInsertRulesFromStructIntoDB( Node **paramsr, int n, Node *node,
 #endif
 
     if ( paramsr[0]->text == NULL ||
-            strlen( paramsr[0]->text ) == 0 ) {
+    strlen( paramsr[0]->text ) == 0 ) {
         generateAndAddErrMsg( "empty input struct", node, PARAOPR_EMPTY_IN_STRUCT_ERR, errmsg );
         return newErrorRes( r, PARAOPR_EMPTY_IN_STRUCT_ERR );
     }
@@ -2435,7 +2435,7 @@ Res * smsi_msiAdmReadRulesFromFileIntoStruct( Node **paramsr, int n, Node *node,
 
 
     if ( paramsr[0]->text == NULL ||
-            strlen( paramsr[0]->text ) == 0 ) {
+    strlen( paramsr[0]->text ) == 0 ) {
         generateAndAddErrMsg( "empty input struct", node, PARAOPR_EMPTY_IN_STRUCT_ERR, errmsg );
         return newErrorRes( r, PARAOPR_EMPTY_IN_STRUCT_ERR );
     }
@@ -2470,16 +2470,23 @@ Res *smsi_msiAdmWriteRulesFromStructIntoFile( Node **paramsr, int n, Node *node,
     int i;
     FILE *file;
     char fileName[MAX_NAME_LEN];
-    char *configDir;
+    //char *configDir;
 
     char *inFileName = paramsr[0]->text;
     if ( inFileName[0] == '/' || inFileName[0] == '\\' ||
-            inFileName[1] == ':' ) {
+    inFileName[1] == ':' ) {
         snprintf( fileName, MAX_NAME_LEN, "%s", inFileName );
     }
     else {
-        configDir = getConfigDir();
-        snprintf( fileName, MAX_NAME_LEN, "%s/reConfigs/%s.re", configDir, inFileName );
+        //configDir = getConfigDir();
+        //snprintf( fileName, MAX_NAME_LEN, "%s/reConfigs/%s.re", configDir, inFileName );
+        std::string cfg_file, fn( inFileName ); fn += ".re";
+        irods::error ret = irods::get_full_path_for_config_file( fn, cfg_file );
+        if ( !ret.ok() ) {
+            irods::log( PASS( ret ) );
+            return newIntRes( r, ret.code() );
+        }
+        strncpy( fileName, cfg_file.c_str(), MAX_NAME_LEN );
     }
 
 
@@ -2522,12 +2529,12 @@ Res * smsi_msiAdmRetrieveRulesFromDBIntoStruct( Node **paramsr, int n, Node *nod
     /* RE_TEST_MACRO ("Loopback on msiGetRulesFromDBIntoStruct"); */
 
     if ( paramsr[0]->text == NULL ||
-            strlen( paramsr[0]->text ) == 0 ) {
+    strlen( paramsr[0]->text ) == 0 ) {
         generateAndAddErrMsg( "empty input struct", node, PARAOPR_EMPTY_IN_STRUCT_ERR, errmsg );
         return newErrorRes( r, PARAOPR_EMPTY_IN_STRUCT_ERR );
     }
     if ( paramsr[1]->text == NULL ||
-            strlen( paramsr[1]->text ) == 0 ) {
+    strlen( paramsr[1]->text ) == 0 ) {
         generateAndAddErrMsg( "empty input struct", node, PARAOPR_EMPTY_IN_STRUCT_ERR, errmsg );
         return newErrorRes( r, PARAOPR_EMPTY_IN_STRUCT_ERR );
     }
@@ -2694,7 +2701,7 @@ Res *smsi_msiCheckStringForSystem( Node **paramsr, int n, Node *node, ruleExecIn
 
 int
 parseResForCollInp( Node *inpParam, collInp_t *collInpCache,
-                    collInp_t **outCollInp, int outputToCache ) {
+collInp_t **outCollInp, int outputToCache ) {
     *outCollInp = NULL;
 
     if ( inpParam == NULL ) {
