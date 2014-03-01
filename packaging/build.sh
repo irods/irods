@@ -927,6 +927,11 @@ if [ "$BUILDIRODS" == "1" ] ; then
     rm -f ./config/platform.mk
 
     # =-=-=-=-=-=-=-
+    # stage a tmp copy of irods.config in order for the utils 
+    # script to find it.  otherwise it errors out
+    cp ./config/irods.config.template ./config/irods.config
+
+    # =-=-=-=-=-=-=-
     # run configure to create Makefile, config.mk, platform.mk, etc.
     ./scripts/configure
     # overwrite with our values
