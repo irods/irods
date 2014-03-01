@@ -60,7 +60,11 @@ int
 chkFilePathPerm( rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
                  rodsServerHost_t *rodsServerHost, int chkType ); // JMC - backport 4774
 int // JMC - backport 4766
-isValidFilePath( char *path );
+isValidFilePath( const char *path );
+
+int
+matchVaultPath (rsComm_t *rsComm, const char *filePath, rodsServerHost_t *rodsServerHost, char **outVaultPath);
+
 int
 matchCliVaultPath( rsComm_t*,
                    const std::string&,

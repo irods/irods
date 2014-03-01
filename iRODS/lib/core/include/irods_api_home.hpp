@@ -6,7 +6,7 @@
 
 namespace irods {
 
-    const std::string API_HOME( "/var/lib/irods/plugins/api/" );
+	const std::string API_HOME( "/var/lib/irods/plugins/api/" );
 
 }; // namespace irods
 
