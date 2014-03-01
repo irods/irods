@@ -8173,6 +8173,12 @@ checkLevel:
             char userIdStr[MAX_NAME_LEN];
             i = decodePw( _comm, _new_value, decoded );
             int status2 = icatApplyRule( _comm, ( char* )"acCheckPasswordStrength", decoded );
+            if ( status2 == NO_RULE_OR_MSI_FUNCTION_FOUND_ERR ) {
+                int status3;
+                status3 = addRErrorMsg( &rsComm->rError, 0,
+                                        "acCheckPasswordStrength rule not found" );
+            }
+
             if ( status2 ) {
                 return ERROR( status2, "icatApplyRule failed" );
             }

@@ -87,7 +87,7 @@ int _rsFileMkdir(
 
     // =-=-=-=-=-=-=-
     // pass condInput
-    coll_obj->cond_input(_mkdir_inp->condInput);
+    coll_obj->cond_input( _mkdir_inp->condInput );
 
     irods::error mkdir_err = fileMkdir( _comm, coll_obj );
 

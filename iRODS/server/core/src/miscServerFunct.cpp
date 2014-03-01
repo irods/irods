@@ -288,6 +288,48 @@ acceptSrvPortal( rsComm_t *rsComm, portList_t *thisPortList ) {
     return ( myFd );
 }
 
+int applyRuleForSvrPortal( int sockFd, int oprType, int preOrPost, int load, rsComm_t *rsComm ) {
+    struct sockaddr local, peer;
+    struct sockaddr_in *localPtr = ( struct sockaddr_in * )&local, *peerPtr = ( struct sockaddr_in * )&peer;
+    socklen_t local_len;
+    memset( &local, 0, sizeof( local ) );
+    memset( &peer, 0, sizeof( peer ) );
+    local_len = sizeof( struct sockaddr );
+    int status = getsockname( sockFd, &local, &local_len );
+    if ( status < 0 ) {
+        rodsLog( LOG_ERROR, "applyRuleForSvrPortal: acceptSrvPortal error. errno = %d", errno );
+        return SYS_SOCK_READ_ERR - errno;
+    }
+    local_len = sizeof( struct sockaddr );
+    status = getpeername( sockFd, &peer, &local_len );
+    if ( status < 0 ) {
+        rodsLog( LOG_ERROR, "applyRuleForSvrPortal: acceptSrvPortal error. errno = %d", errno );
+        return SYS_SOCK_READ_ERR - errno;
+    }
+    char lPort[MAX_NAME_LEN];
+    char pPort[MAX_NAME_LEN];
+    char lLoad[MAX_NAME_LEN];
+    char oType[MAX_NAME_LEN];
+    snprintf( oType, MAX_NAME_LEN, "%d", oprType );
+    snprintf( lLoad, MAX_NAME_LEN, "%d", load );
+    char *lAddr = strdup( inet_ntoa( localPtr->sin_addr ) );
+    int localPort = ntohs( localPtr->sin_port );
+    snprintf( lPort, MAX_NAME_LEN, "%d", localPort );
+    char *pAddr = strdup( inet_ntoa( peerPtr->sin_addr ) );
+    int peerPort = ntohs( peerPtr->sin_port );
+    snprintf( pPort, MAX_NAME_LEN, "%d", peerPort );
+    char *args[6] = {oType, lAddr, lPort, pAddr, pPort, lLoad};
+    ruleExecInfo_t rei;
+    memset( &rei, 0, sizeof( rei ) );
+    rei.rsComm = rsComm;
+    int ret = applyRuleArg( ( char * )( preOrPost == 0 ? "acPreProcForServerPortal" : "acPostProcForServerPortal" ), args, 6, &rei,
+                            0 );
+    free( lAddr );
+    free( pAddr );
+    return ret;
+}
+
+
 int
 svrPortalPutGet( rsComm_t *rsComm ) {
     portalOpr_t *myPortalOpr;
@@ -362,6 +404,7 @@ svrPortalPutGet( rsComm_t *rsComm ) {
 
         return ( portalFd );
     }
+    applyRuleForSvrPortal( portalFd, oprType, 0, size0, rsComm );
 
     if ( oprType == PUT_OPR ) {
         fillPortalTransferInp( &myInput[0], rsComm,
@@ -413,6 +456,8 @@ svrPortalPutGet( rsComm_t *rsComm ) {
             else {
                 mySize = size1;
             }
+
+            applyRuleForSvrPortal( portalFd, oprType, 0, mySize, rsComm );
 
             if ( oprType == PUT_OPR ) {
                 /* open the file */
@@ -743,6 +788,9 @@ partialDataPut( portalTransferInp_t *myInput ) {
 #endif
 
     free( buf );
+
+    applyRuleForSvrPortal( srcFd, PUT_OPR, 1, myOffset - myInput->offset, myInput->rsComm );
+
     sendTranHeader( srcFd, DONE_OPR, 0, 0, 0 );
     if ( myInput->threadNum > 0 ) {
         _l3Close( myInput->rsComm, destRescTypeInx, destL3descInx );
@@ -999,6 +1047,9 @@ void partialDataGet(
     afterTransfer = time( 0 );
 #endif
     free( buf );
+
+    applyRuleForSvrPortal( destFd, GET_OPR, 1, myOffset - myInput->offset, myInput->rsComm );
+
     sendTranHeader( destFd, DONE_OPR, 0, 0, 0 );
     if ( myInput->threadNum > 0 ) {
         _l3Close( myInput->rsComm, srcRescTypeInx, srcL3descInx );

@@ -63,7 +63,7 @@ int // JMC - backport 4766
 isValidFilePath( const char *path );
 
 int
-matchVaultPath (rsComm_t *rsComm, const char *filePath, rodsServerHost_t *rodsServerHost, char **outVaultPath);
+matchVaultPath( rsComm_t *rsComm, const char *filePath, rodsServerHost_t *rodsServerHost, char **outVaultPath );
 
 int
 matchCliVaultPath( rsComm_t*,
