@@ -1272,8 +1272,13 @@ sub configureIrodsServer
 	#	may already be updated.  It's so small there is
 	#	little point in checking for this first.  Just
 	#	overwrite it with the correct values.
-	my $serverConfigFile = File::Spec->catfile( "/etc/irods/",
-		"server.config" );
+    my $serverConfigFile = File::Spec->catfile( $serverConfigDir,"server.config" );
+    unless( -e $serverConfigFile ) {
+	     $serverConfigFile = File::Spec->catfile( "/etc/irods/","server.config" );
+         unless( -e $serverConfigFile ) {
+              print( "server.config not found\n" );
+         }
+	}	
 	copyTemplateIfNeeded( $serverConfigFile );
 
 #	my $host = ($IRODS_ICAT_HOST eq "") ? $DATABASE_HOST : $IRODS_ICAT_HOST;

@@ -121,6 +121,10 @@ ln -fs    /usr/bin/ixmsg                   ${IRODS_HOME}/clients/icommands/bin/i
 chown -R $OS_IRODS_ACCT:$OS_IRODS_ACCT $IRODS_HOME_DIR
 
 # =-=-=-=-=-=-=-
+# ensure the config directory is owned by irods
+chown -R  $OS_IRODS_ACCT:$OS_IRODS_ACCT /etc/irods
+
+# =-=-=-=-=-=-=-
 # set permissions on iRODS authentication mechanisms
 chown root:root $IRODS_HOME/server/bin/PamAuthCheck
 chmod 4755 $IRODS_HOME/server/bin/PamAuthCheck

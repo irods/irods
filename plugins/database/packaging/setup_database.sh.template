@@ -158,9 +158,15 @@ mv $IRODS_CONFIG_TEMPFILE $IRODS_CONFIG_FILE
 
 # =-=-=-=-=-=-=-
 # update database flavor
+if [ -e /etc/irods/server.config ] ;  then 
+    server_config="/etc/irods/server.config"
+else
+    server_config="./iRODS/server/config/server.config"
+fi
+
 echo ""
-echo "# configuration of icat database plugin - e.g. postgres, mysql, or oracle" >> ./iRODS/server/config/server.config.in
-echo "catalog_database_type $DATABASETYPE" >> ./iRODS/server/config/server.config.in
+echo "# configuration of icat database plugin - e.g. postgres, mysql, or oracle" >> $server_config
+echo "catalog_database_type $DATABASETYPE" >> $server_config 
 echo ""
 
 # =-=-=-=-=-=-=-

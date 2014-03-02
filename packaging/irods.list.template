@@ -345,7 +345,7 @@ c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT /etc/irods/core.fnm ./iRODS/server/config/re
 c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT /etc/irods/core.re ./iRODS/server/config/reConfigs/core.re
 c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT /etc/irods/irodsHost ./iRODS/server/config/irodsHost
 c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT /etc/irods/irods.config ./iRODS/config/irods.config
-
+c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT /etc/irods/server.config ./iRODS/server/config/server.config.in
 
 
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/installLogs -
@@ -389,7 +389,7 @@ d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/lockFileDir -
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/connectControl.config.template ./iRODS/server/config/connectControl.config.template
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/reConfigs -
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/irodsMonPerf.config.in ./iRODS/server/config/irodsMonPerf.config.in
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/server.config.in ./iRODS/server/config/server.config.in
+#f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/server.config.in ./iRODS/server/config/server.config.in
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/irodsHost.in ./iRODS/server/config/irodsHost.in
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/packedRei -
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/s3Auth.template ./iRODS/server/config/s3Auth.template
