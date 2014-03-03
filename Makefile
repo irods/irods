@@ -56,7 +56,7 @@ clean :
 	@$(MAKE) -C plugins clean
 	@$(MAKE) -C iRODS clean
 	@$(MAKE) -C examples/microservices clean
-	@$(MAKE) -C exapmles/resources clean
+	@$(MAKE) -C examples/resources clean
 	@rm -f $(MANUAL)
 	@rm iRODS/config/platform.mk iRODS/config/config.mk
 
