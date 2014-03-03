@@ -42,6 +42,7 @@ namespace irods {
         resc_hier_( _resc_hier ),
         mode_( _mode ),
         flags_( _flags ) {
+        memset( &cond_input_, 0, sizeof( keyValPair_t ) );
         replKeyVal( &_cond_input, &cond_input_ );
     } // ctor
 
@@ -53,6 +54,7 @@ namespace irods {
         resc_hier_( _rhs.resc_hier_ ),
         mode_( _rhs.mode_ ),
         flags_( _rhs.flags_ ) {
+        memset( &cond_input_, 0, sizeof( keyValPair_t ) );
         replKeyVal( &_rhs.cond_input_, &cond_input_ );
     } // cctor
 
@@ -69,6 +71,7 @@ namespace irods {
         resc_hier_     = _rhs.resc_hier_;
         mode_          = _rhs.mode_;
         flags_         = _rhs.flags_;
+        memset( &cond_input_, 0, sizeof( keyValPair_t ) );
         replKeyVal( &_rhs.cond_input_, &cond_input_ );
 
         return *this;
