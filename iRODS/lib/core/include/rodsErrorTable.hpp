@@ -216,7 +216,8 @@
 #define OBJ_PATH_DOES_NOT_EXIST                     -358000
 #define SYMLINKED_BUNFILE_NOT_ALLOWED               -359000 // JMC - backport 4833
 #define USER_INPUT_STRING_ERR                       -360000
-#define USER_INVALID_RESC_INPUT		                  -361000
+#define USER_INVALID_RESC_INPUT		                -361000
+#define USER_NOT_ALLOWED_TO_EXEC_CMD                -370000
 
 /* 500,000 to 800,000 - file driver error */
 #define FILE_INDEX_LOOKUP_ERR                       -500000

@@ -18,7 +18,7 @@ include $(buildDir)/config/platform.mk
 include $(buildDir)/config/directories.mk
 include $(buildDir)/config/common.mk
 
-CFLAGS += `../../../packaging/compiler_check.sh 4 2`
+
 
 
 #
@@ -30,6 +30,12 @@ objDir =	$(fuseDir)/obj
 binDir =	$(fuseDir)/bin
 srcDir =	$(fuseDir)/src
 incDir =	$(fuseDir)/include
+
+reSrcDir =	$(buildDir)/server/re/src
+reObjDir =	$(buildDir)/server/re/obj
+reIncDir =	$(buildDir)/server/re/include
+
+
 
 
 
@@ -46,9 +52,18 @@ BINS =		\
 
 LIB_OBJS =	\
 		$(objDir)/iFuseOper.o \
-		$(objDir)/iFuseLib.o
+		$(objDir)/iFuseLib.o \
+		$(objDir)/iFuseLib.Conn.o \
+		$(objDir)/iFuseLib.Desc.o \
+		$(objDir)/iFuseLib.FileCache.o \
+		$(objDir)/iFuseLib.Lock.o \
+		$(objDir)/iFuseLib.PathCache.o \
+		$(objDir)/iFuseLib.Utils.o \
+		$(reObjDir)/list.o \
+		$(reObjDir)/hashtable.o \
+		$(reObjDir)/region.o \
 
-INCLUDES +=	-I$(incDir)
+INCLUDES +=	-I$(incDir) -I$(reIncDir)
 
 
 
@@ -80,6 +95,16 @@ LDFLAGS +=	$(LIBRARY)
 
 ifdef GSI_AUTH
 
+ifeq ($(OS_platform), osx_platform)
+GSI_LIB_DIR=lib
+else
+ifeq ($(ADDR_64BITS), 1)
+GSI_LIB_DIR=lib64
+else
+GSI_LIB_DIR=lib
+endif
+endif
+
 ifeq ($(GSI_INSTALL_TYPE),)
 GSI_INSTALL_TYPE2=
 else
@@ -101,8 +126,7 @@ GSI_CRYPTO = crypto$(GSI_INSTALL_TYPE2)
 endif
 
 LIB_GSI_AUTH = \
-      -L$(GLOBUS_LOCATION)/lib64 \
-      -L$(GLOBUS_LOCATION)/lib \
+      -L$(GLOBUS_LOCATION)/$(GSI_LIB_DIR) \
       -lglobus_gss_assist$(GSI_INSTALL_TYPE2) \
       -lglobus_gssapi_gsi$(GSI_INSTALL_TYPE2) \
       -lglobus_gsi_credential$(GSI_INSTALL_TYPE2) \
@@ -123,25 +147,27 @@ LDFLAGS += $(LIB_GSI_AUTH)
 endif
 
 ifdef KRB_AUTH
-LIB_KRB_AUTH = -L$(KRB_LOC)/lib -lgssapi_krb5
+ifdef KRB_LOCATION
+LIB_KRB_AUTH = -L$(KRB_LOCATION)/lib -lgssapi_krb5
+else
+LIB_KRB_AUTH = -lgssapi_krb5
+endif
 ifdef GSI_AUTH
 LIB_KRB_AUTH += -ldl
 endif
 LDFLAGS += $(LIB_KRB_AUTH)
 endif
 
-LDFLAGS += -lrt -ldl -lssl -lcrypto
-BOOST_LIBS = $(BOOST_DIR)/stage/lib/libboost_system.a \
-             $(BOOST_DIR)/stage/lib/libboost_filesystem.a \
-             $(BOOST_DIR)/stage/lib/libboost_regex.a \
-             $(BOOST_DIR)/stage/lib/libboost_thread.a
+ifdef USE_SSL
+LDFLAGS        += -lssl -lcrypto
+endif
 
 #
 # Principal Targets
 #
 .PHONY: all fuse clients clean print_cflags print_ldflags
 all:	fuse
-	@echo "Building Fuse Client"
+	@true
 
 clients: fuse
 	@true
@@ -153,9 +179,13 @@ $(objDir)/%.o:	$(srcDir)/%.cpp $(LIBRARY)
 	@echo "Compile fuse `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
+$(reObjDir)/%.o:	$(reSrcDir)/%.cpp $(LIBRARY)
+	@echo "Compile fuse `basename $@`..."
+	@$(CC) -c $(CFLAGS) -o $@ $<
+
 $(binDir)/%:	$(objDir)/%.o $(LIB_OBJS)
 	@echo "Link fuse `basename $@`..."
-	@$(LDR) -o $@ $< $(LIB_OBJS) $(LDFLAGS) $(BOOST_LIBS) -lrt
+	@$(LDR) -o $@ $< $(LIB_OBJS) $(LDFLAGS) -lcrypto
 
 
 

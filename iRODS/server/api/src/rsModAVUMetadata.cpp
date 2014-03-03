@@ -192,18 +192,20 @@ _rsModAVUMetadata( rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp ) {
         return( CAT_INVALID_ARGUMENT );
     }
 
-    status2 =  applyRuleArg( "acPostProcForModifyAVUMetadata", args, argc, &rei2, NO_SAVE_REI );
-    if ( status2 < 0 ) {
-        if ( rei2.status < 0 ) {
-            status2 = rei2.status;
+    if ( status >= 0 ) {
+        status2 =  applyRuleArg( "acPostProcForModifyAVUMetadata", args, argc, &rei2, NO_SAVE_REI );
+        if ( status2 < 0 ) {
+            if ( rei2.status < 0 ) {
+                status2 = rei2.status;
+            }
+            rodsLog( LOG_ERROR,
+                     "rsModAVUMetadata:acPostProcForModifyAVUMetadata error for %s of type %s and option %s,stat=%d",
+                     modAVUMetadataInp->arg2,
+                     modAVUMetadataInp->arg1,
+                     modAVUMetadataInp->arg0,
+                     status2 );
+            return status2;
         }
-        rodsLog( LOG_ERROR,
-                 "rsModAVUMetadata:acPostProcForModifyAVUMetadata error for %s of type %s and option %s,stat=%d",
-                 modAVUMetadataInp->arg2,
-                 modAVUMetadataInp->arg1,
-                 modAVUMetadataInp->arg0,
-                 status2 );
-        return status2;
     }
 
     return( status );

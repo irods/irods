@@ -2,14 +2,15 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* irodsFs.h - Header for for irodsFs.c */
 
-#ifndef FS_HPP
-#define FS_HPP
+#ifndef IRODS_FS_H
+#define IRODS_FS_H
 
-// =-=-=-=-=-=-=-
-// boost includes
+#ifdef USE_BOOST
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition_variable.hpp>
+#endif
+// =-=-=-=-=-=-=-
 
 
 #define FUSE_USE_VERSION 26
@@ -31,12 +32,30 @@
 
 typedef struct IFuseConn {
     rcComm_t *conn;
+#ifdef USE_BOOST
     boost::mutex* mutex;
+#else
+    pthread_mutex_t lock;
+#endif
+#ifdef USE_BOOST
+    boost::mutex* inuseLock;
+#else
+    pthread_mutex_t inuseLock;
+#endif
     time_t actTime;	/* the last time the connection is active */
     int inuseCnt;
     int pendingCnt;
     int status;
-    struct IFuseConn *next;
+    /* struct IFuseConn *next; */
 } iFuseConn_t;
 
-#endif	/* FS_H */
+#ifdef  __cplusplus
+extern "C" {
+#endif
+
+
+#ifdef  __cplusplus
+}
+#endif
+
+#endif	/* IRODS_FS_H */

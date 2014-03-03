@@ -11,15 +11,41 @@
 #include <time.h>
 #include <assert.h>
 #include <pthread.h>
-#include "irodsFs.hpp"
-#include "iFuseOper.hpp"
-#include "iFuseLib.hpp"
+#include "irodsFs.h"
+#include "iFuseOper.h"
+#include "iFuseLib.h"
 
 /* some global variables */
 
 extern rodsEnv MyRodsEnv;
 
+#ifdef  __cplusplus
 struct fuse_operations irodsOper;
+#else
+static struct fuse_operations irodsOper = {
+    .getattr = irodsGetattr,
+    .readlink = irodsReadlink,
+    .readdir = irodsReaddir,
+    .mknod = irodsMknod,
+    .mkdir = irodsMkdir,
+    .symlink = irodsSymlink,
+    .unlink = irodsUnlink,
+    .rmdir = irodsRmdir,
+    .rename = irodsRename,
+    .link = irodsLink,
+    .chmod = irodsChmod,
+    .chown = irodsChown,
+    .truncate = irodsTruncate,
+    .utimens = irodsUtimens,
+    .open = irodsOpen,
+    .read = irodsRead,
+    .write = irodsWrite,
+    .statfs = irodsStatfs,
+    .release = irodsRelease,
+    .fsync = irodsFsync,
+    .flush = irodsFlush,
+};
+#endif
 
 void usage();
 
@@ -88,6 +114,7 @@ main( int argc, char **argv ) {
     rodsArguments_t myRodsArgs;
     char *optStr;
 
+#ifdef  __cplusplus
     bzero( &irodsOper, sizeof( irodsOper ) );
     irodsOper.getattr = irodsGetattr;
     irodsOper.readlink = irodsReadlink;
@@ -110,6 +137,7 @@ main( int argc, char **argv ) {
     irodsOper.release = irodsRelease;
     irodsOper.fsync = irodsFsync;
     irodsOper.flush = irodsFlush;
+#endif
     optStr = "hdo:";
 
     status = parseCmdLineOpt( argc, argv, optStr, 0, &myRodsArgs );
@@ -133,13 +161,13 @@ main( int argc, char **argv ) {
     srandom( ( unsigned int ) time( 0 ) % getpid() );
 
 #ifdef CACHE_FILE_FOR_READ
-    if ( setAndMkFileCacheDir() < 0 ) {
-        exit( 1 );
-    }
+    if ( setAndMkFileCacheDir() < 0 ) { exit( 1 ); }
 #endif
 
     initPathCache();
     initIFuseDesc();
+    initConn();
+    initFileCache();
 
     status = fuse_main( argc, argv, &irodsOper, NULL );
 
@@ -166,9 +194,9 @@ usage() {
     };
     int i;
     for ( i = 0;; i++ ) {
-        if ( strlen( msgs[i] ) == 0 ) {
-            return;
-        }
+        if ( strlen( msgs[i] ) == 0 ) { return; }
         printf( "%s\n", msgs[i] );
     }
 }
+
+

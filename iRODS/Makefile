@@ -114,7 +114,8 @@ server:	reaction server_ldflags server_cflags libs modules
 
 
 # Build the clients
-clients: icommands fuse
+#clients: icommands #fuse -- JMC :: FIXME -- Disable FUSE until we hear back from hao
+clients: icommands 
 
 icommands: client_ldflags client_cflags libs modules
 	@echo "I-Commands"
