@@ -338,7 +338,7 @@ f 644 root root ${IRODS_DOC_DIR}/changelog.gz ./changelog.gz
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/LICENSE ./LICENSE
 %endif
 
-d 644 $OS_IRODS_ACCT $OS_IRODS_ACCT /etc/irods -
+d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT /etc/irods -
 c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT /etc/irods/HostAccessControl ./iRODS/server/config/HostAccessControl
 c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT /etc/irods/core.dvm ./iRODS/server/config/reConfigs/core.dvm
 c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT /etc/irods/core.fnm ./iRODS/server/config/reConfigs/core.fnm
