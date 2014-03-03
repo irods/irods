@@ -1125,6 +1125,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // build a close structure and make the rs call
         fileCloseInp_t fileCloseInp;
+        memset( &fileCloseInp, 0, sizeof( fileCloseInp ) );
         fileCloseInp.fileInx = PluginTarSubFileDesc[ fco->file_descriptor() ].fd;
         int status = rsFileClose( fco->comm(), &fileCloseInp );
         if ( status < 0 ) {
@@ -1430,6 +1431,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // build a file mkdir structure to pass off to the server api call
         fileMkdirInp_t fileMkdirInp;
+        memset( &fileMkdirInp, 0, sizeof( fileMkdirInp ) );
         strncpy( fileMkdirInp.addr.hostAddr, resc_host.c_str(), NAME_LEN );
         strncpy( fileMkdirInp.rescHier, spec_coll->rescHier, MAX_NAME_LEN );
         fileMkdirInp.mode = fco->mode();
@@ -1518,6 +1520,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // build a file mkdir structure to pass off to the server api call
         fileRmdirInp_t fileRmdirInp;
+        memset( &fileRmdirInp, 0, sizeof( fileRmdirInp ) );
         strncpy( fileRmdirInp.addr.hostAddr, resc_host.c_str(), NAME_LEN );
         strncpy( fileRmdirInp.rescHier, spec_coll->rescHier, MAX_NAME_LEN );
 
@@ -1682,6 +1685,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // build a file close dir structure to pass off to the server api call
         fileClosedirInp_t fileClosedirInp;
+        memset( &fileClosedirInp, 0, sizeof( fileClosedirInp ) );
         fileClosedirInp.fileInx = PluginTarSubFileDesc[ fco->file_descriptor() ].fd;
         int status = rsFileClosedir( _ctx.comm(), &fileClosedirInp );
         if ( status < 0 ) {
@@ -1730,6 +1734,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // build a file read dir structure to pass off to the server api call
         fileReaddirInp_t fileReaddirInp;
+        memset( &fileReaddirInp, 0, sizeof( fileReaddirInp ) );
         fileReaddirInp.fileInx = PluginTarSubFileDesc[ fco->file_descriptor() ].fd;
 
         // =-=-=-=-=-=-=-
