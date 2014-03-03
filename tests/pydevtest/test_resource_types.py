@@ -718,7 +718,7 @@ class Test_Compound_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
     @unittest.skip("TEMPORARY")
     def test_iget_prefer_from_archive__ticket_1660(self):
         # define core.re filepath
-        corefile = "/var/lib/irods/iRODS/server/config/reConfigs/core.re"
+        corefile = "/etc/irods/core.re"
         backupcorefile = corefile+"--"+self._testMethodName
 
         # new file to put and get
@@ -1317,7 +1317,7 @@ class Test_Replication_to_two_Compound_Resources(unittest.TestCase, ResourceSuit
     
     def test_iget_prefer_from_archive__ticket_1660(self):
         # define core.re filepath
-        corefile = "/var/lib/irods/iRODS/server/config/reConfigs/core.re"
+        corefile = "/etc/irods/core.re"
         backupcorefile = corefile+"--"+self._testMethodName
 
         # new file to put and get
@@ -1672,7 +1672,7 @@ class Test_Replication_to_two_Compound_Resources_with_Prefer_Archive(unittest.Te
     def setUp(self):
         ResourceSuite.__init__(self)
         # back up core file
-        corefile = "/var/lib/irods/iRODS/server/config/reConfigs/core.re"
+        corefile = "/etc/irods/core.re"
         backupcorefile = corefile+"--"+self._testMethodName
         shutil.copy(corefile,backupcorefile)
 
@@ -1689,7 +1689,7 @@ class Test_Replication_to_two_Compound_Resources_with_Prefer_Archive(unittest.Te
         s.twousers_down()
 
         # restore the original core.re
-        corefile = "/var/lib/irods/iRODS/server/config/reConfigs/core.re"
+        corefile = "/etc/irods/core.re"
         backupcorefile = corefile+"--"+self._testMethodName
         shutil.copy(backupcorefile,corefile)
         os.remove(backupcorefile)
