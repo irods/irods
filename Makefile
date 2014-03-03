@@ -55,7 +55,10 @@ clean :
 	@touch iRODS/config/platform.mk iRODS/config/config.mk
 	@$(MAKE) -C plugins clean
 	@$(MAKE) -C iRODS clean
+	@$(MAKE) -C examples/microservices clean
+	@$(MAKE) -C exapmles/resources clean
 	@rm -f $(MANUAL)
+	@rm iRODS/config/platform.mk iRODS/config/config.mk
 
 squeaky_clean : clean
 	@$(MAKE) -C external clean

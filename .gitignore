@@ -6,7 +6,8 @@ irods_external.tar.gz
 build/
 changelog.gz
 examples/microservices/microservice_tutorial.pdf
-libirods.a
+libirods_client.a
+libirods_server.a
 man/
 iRODS/.client_cflags
 iRODS/.client_ldflags
@@ -15,7 +16,9 @@ iRODS/.server_ldflags
 iRODS/config/config.mk
 iRODS/config/irods.config
 iRODS/config/platform.mk
+iRODS/lib/core/include/irods_api_home.hpp
 iRODS/lib/core/include/irods_auth_home.hpp
+iRODS/lib/core/include/irods_home_directory.hpp
 iRODS/lib/core/include/irods_ms_home.hpp
 iRODS/lib/core/include/irods_network_home.hpp
 iRODS/lib/core/include/irods_resources_home.hpp
@@ -28,6 +31,7 @@ packaging/irods.list
 packaging/irods-docs.list
 packaging/irods-dev.list
 packaging/irods-icommands.list
+plugins/api/*/.objs
 plugins/auth/*/.deps
 plugins/auth/*/.objs
 plugins/network/*/.deps
