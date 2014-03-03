@@ -58,7 +58,6 @@ clean :
 	@$(MAKE) -C examples/microservices clean
 	@$(MAKE) -C examples/resources clean
 	@rm -f $(MANUAL)
-	@rm iRODS/config/platform.mk iRODS/config/config.mk
 
 squeaky_clean : clean
 	@$(MAKE) -C external clean
