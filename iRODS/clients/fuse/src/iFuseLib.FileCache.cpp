@@ -5,12 +5,12 @@
 #include <errno.h>
 #include <time.h>
 #include <assert.h>
-#include "irodsFs.h"
-#include "iFuseLib.h"
-#include "iFuseOper.h"
-#include "hashtable.h"
-#include "list.h"
-#include "iFuseLib.Lock.h"
+#include "irodsFs.hpp"
+#include "iFuseLib.hpp"
+#include "iFuseOper.hpp"
+#include "hashtable.hpp"
+#include "list.hpp"
+#include "iFuseLib.Lock.hpp"
 
 /* Hashtable *NewlyCreatedFileTable; */
 concurrentList_t* FileCacheList;

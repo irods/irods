@@ -309,6 +309,7 @@ unsigned long sdbm_hash( char* str ) { /* sdbm */
     return hash;
 }
 
+/*
 #include "utils.hpp"
 #include "index.hpp"
 
@@ -323,4 +324,4 @@ void dumpHashtableKeys( Hashtable *t ) {
         }
     }
 }
-
+*/

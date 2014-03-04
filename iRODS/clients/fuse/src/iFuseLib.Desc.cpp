@@ -5,11 +5,11 @@
 #include <errno.h>
 #include <time.h>
 #include <assert.h>
-#include "irodsFs.h"
-#include "iFuseLib.h"
-#include "iFuseOper.h"
-#include "hashtable.h"
-#include "list.h"
+#include "irodsFs.hpp"
+#include "iFuseLib.hpp"
+#include "iFuseOper.hpp"
+#include "hashtable.hpp"
+#include "list.hpp"
 
 /* Lock DescLock when this array is read/writen, or the inUseFlag var in an array element is read/written.
  * Locking DescLock prevent allocating/freeing new IFuseDesc.
@@ -44,7 +44,7 @@ int _lockDesc( iFuseDesc_t *desc ) {
 
 #ifdef USE_BOOST
     try {
-        IFuseDesc[descInx].mutex->lock();
+        desc->mutex->lock();
     }
     catch ( boost::thread_resource_error ) {
         status = -1;
@@ -72,7 +72,7 @@ int _unlockDesc( iFuseDesc_t *desc ) {
     int status;
 #ifdef USE_BOOST
     try {
-        IFuseDesc[descInx].mutex->unlock();
+        desc->mutex->unlock();
     }
     catch ( boost::thread_resource_error ) {
         status = -1;

@@ -966,6 +966,8 @@ irodsWrite( const char *path, const char *buf, size_t size, off_t offset,
 
 int
 irodsStatfs( const char *path, struct statvfs *stbuf ) {
+    int status;
+
     rodsLog( LOG_DEBUG, "irodsStatfs: %s", path );
 
     if ( stbuf == NULL ) {
@@ -974,9 +976,9 @@ irodsStatfs( const char *path, struct statvfs *stbuf ) {
 
 
     /* just fake some number */
-    int status = statvfs( "/", stbuf );
+    status = statvfs( "/", stbuf );
     if ( status < 0 ) {
-        // error condition?
+        // error cond?
     }
 
     stbuf->f_bsize = FILE_BLOCK_SZ;

@@ -11,9 +11,9 @@
 #include <time.h>
 #include <assert.h>
 #include <pthread.h>
-#include "irodsFs.h"
-#include "iFuseOper.h"
-#include "iFuseLib.h"
+#include "irodsFs.hpp"
+#include "iFuseOper.hpp"
+#include "iFuseLib.hpp"
 
 /* some global variables */
 

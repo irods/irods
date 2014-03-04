@@ -268,6 +268,7 @@ Res *smsi_forExec( Node **params, int n, Node *node, ruleExecInfo_t *rei, int re
 
         cond = evaluateExpression3( ( Node * )params[1], 0, 1, rei, reiSaveFlag, env, errmsg, GC_REGION );
         if ( getNodeType( cond ) == N_ERROR ) {
+            res = cond;
             break;
         }
         if ( RES_BOOL_VAL( cond ) == 0 ) {
@@ -288,6 +289,7 @@ Res *smsi_forExec( Node **params, int n, Node *node, ruleExecInfo_t *rei, int re
         }
         step = evaluateExpression3( ( Node * )params[2], 0, 1, rei, reiSaveFlag, env, errmsg, GC_REGION );
         if ( getNodeType( step ) == N_ERROR ) {
+            res = step;
             break;
         }
         GC_ON( env );
@@ -705,7 +707,7 @@ Res *smsi_forEachExec( Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, 
     Res *res;
     char* varName = ( ( Node * )subtrees[0] )->text;
     Res* orig = evaluateVar3( varName, ( ( Node * )subtrees[0] ), rei, reiSaveFlag, env, errmsg, r );
-    if ( TYPE( orig ) == T_ERROR ) {
+    if ( getNodeType( orig ) == N_ERROR || TYPE( orig ) == T_ERROR ) {
         return orig;
     }
 

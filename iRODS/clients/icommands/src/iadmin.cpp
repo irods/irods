@@ -1854,6 +1854,13 @@ usage( char *subOpt ) {
         "Create a new zone definition.  Type must be 'remote' as the local zone",
         "must previously exist and there can be only one local zone definition.",
         "Connection-info (hostname:port) and a Comment field are optional.",
+        " ",
+        "The connection-info should be the hostname of the ICAT-Enabled-Server (IES)",
+        "of the zone.  If it is a non-IES, remote users trying to connect will get",
+        "a CAT_INVALID_USER error, even if valid, due to complications in the",
+        "way the protocol connections operate when the local server tries to",
+        "connect back to the remote zone to authenticate the user.",
+        " ",
         "Also see modzone, rmzone, and lz.",
         ""
     };
@@ -1863,6 +1870,9 @@ usage( char *subOpt ) {
         "Modify values in a zone definition, either the name, conn (connection-info),",
         "or comment.  Connection-info is the DNS host string:port, for example:",
         "zuri.unc.edu:1247",
+        "When modifying the conn information, it should be the hostname of the",
+        "ICAT-Enabled-Server (IES); see 'h mkzone' for more.",
+        " ",
         "The name of the local zone can be changed via some special processing and",
         "since it also requires some manual changes, iadmin will explain those and",
         "prompt for confirmation in this case.",

@@ -5,20 +5,20 @@
 #include <errno.h>
 #include <time.h>
 #include <assert.h>
-#include "irodsFs.h"
-#include "iFuseLib.h"
-#include "iFuseOper.h"
-#include "hashtable.h"
-#include "list.h"
-#include "iFuseLib.Lock.h"
+#include "irodsFs.hpp"
+#include "iFuseLib.hpp"
+#include "iFuseOper.hpp"
+#include "hashtable.hpp"
+#include "list.hpp"
+#include "iFuseLib.Lock.hpp"
 
 #ifdef USE_BOOST
 /*boost::mutex DescLock;*/
 /* boost::mutex ConnLock;*/
-boost::mutex PathCacheLock;
+boost::mutex* PathCacheLock = new boost::mutex();
 /* boost::mutex FileCacheLock; */
 boost::thread*            ConnManagerThr;
-boost::mutex              ConnManagerLock;
+boost::mutex*             ConnManagerLock = new boost::mutex();
 boost::condition_variable ConnManagerCond;
 #else
 /*pthread_mutex_t DescLock;*/
@@ -55,13 +55,13 @@ void deleteConnReqWaitMutex( connReqWait_t *myConnReqWait ) {
 
 }
 
-void timeoutWait( boost::mutex &ConnManagerLock, boost::condition_variable &ConnManagerCond, int sleepTime ) {
+void timeoutWait( boost::mutex** ConnManagerLock, boost::condition_variable *ConnManagerCond, int sleepTime ) {
     boost::system_time const tt = boost::get_system_time() + boost::posix_time::seconds( sleepTime );
-    boost::unique_lock< boost::mutex > boost_lock( ConnManagerLock );
-    ConnManagerCond.timed_wait( boost_lock, tt );
+    boost::unique_lock< boost::mutex > boost_lock( **ConnManagerLock );
+    ConnManagerCond->timed_wait( boost_lock, tt );
 }
-void notifyTimeoutWait( boost::mutex &ConnManagerLock, boost::condition_variable &ConnManagerCond ) {
-    ConnManagerCond.notify_all( );
+void notifyTimeoutWait( boost::mutex **ConnManagerLock, boost::condition_variable *ConnManagerCond ) {
+    ConnManagerCond->notify_all( );
 }
 #else
 /*#define UNLOCK(Lock) (pthread_mutex_unlock (&(Lock)))

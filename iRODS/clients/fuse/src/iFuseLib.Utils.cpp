@@ -4,12 +4,12 @@
 #include <errno.h>
 #include <time.h>
 #include <assert.h>
-#include "irodsFs.h"
-#include "iFuseLib.h"
-#include "iFuseOper.h"
-#include "hashtable.h"
-#include "list.h"
-#include "iFuseLib.Lock.h"
+#include "irodsFs.hpp"
+#include "iFuseLib.hpp"
+#include "iFuseOper.hpp"
+#include "hashtable.hpp"
+#include "list.hpp"
+#include "iFuseLib.Lock.hpp"
 
 fileCache_t *newFileCache( int iFd, char *objPath, char *localPath, char *cacheFilePath, time_t cachedTime, int mode, rodsLong_t fileSize, cacheState_t state ) {
     fileCache_t *fileCache = ( fileCache_t * ) malloc( sizeof( fileCache_t ) );

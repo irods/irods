@@ -45,7 +45,7 @@ reIncDir =	$(buildDir)/server/re/include
 # Source files
 #
 OBJS =		\
-		$(objDir)/irodsFs.o
+		$(objDir)/irodsFs.o 
 
 BINS =		\
 		$(binDir)/irodsFs \
@@ -58,10 +58,12 @@ LIB_OBJS =	\
 		$(objDir)/iFuseLib.FileCache.o \
 		$(objDir)/iFuseLib.Lock.o \
 		$(objDir)/iFuseLib.PathCache.o \
-		$(objDir)/iFuseLib.Utils.o \
+		$(objDir)/iFuseLib.Utils.o 
+
+SVR_OBJS = \
 		$(reObjDir)/list.o \
 		$(reObjDir)/hashtable.o \
-		$(reObjDir)/region.o \
+		$(reObjDir)/region.o 
 
 INCLUDES +=	-I$(incDir) -I$(reIncDir)
 
@@ -82,15 +84,20 @@ endif
 CFLAGS =	$(CFLAGS_OPTIONS) $(INCLUDES) $(LIB_INCLUDES) $(SVR_INCLUDES) $(MODULE_CFLAGS)
 
 ifeq ($(OS_platform), linux_platform)
-LDFLAGS +=	$(LDADD) $(MODULE_LDFLAGS) -L$(fuseHomeDir)/lib -lfuse -ldl -lrt
+LDFLAGS +=	$(LDADD) $(MODULE_LDFLAGS) -L$(fuseHomeDir)/lib -lfuse -lrt
 else
-LDFLAGS +=	$(LDADD) $(MODULE_LDFLAGS) -L$(fuseHomeDir)/lib -lfuse -ldl
+LDFLAGS +=	$(LDADD) $(MODULE_LDFLAGS) -L$(fuseHomeDir)/lib -lfuse 
 endif
 
 # for checking memleak
 # LDFLAGS +=	-L/data/mwan/rods/ccmalloc/ccmalloc-0.4.0/lib
 
-LDFLAGS +=	$(LIBRARY)
+LDFLAGS +=	$(LIBRARY) -ldl
+
+BOOST_LIBS = $(BOOST_DIR)/stage/lib/libboost_system.a \
+             $(BOOST_DIR)/stage/lib/libboost_filesystem.a \
+             $(BOOST_DIR)/stage/lib/libboost_regex.a \
+             $(BOOST_DIR)/stage/lib/libboost_thread.a
 
 
 ifdef GSI_AUTH
@@ -179,13 +186,13 @@ $(objDir)/%.o:	$(srcDir)/%.cpp $(LIBRARY)
 	@echo "Compile fuse `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
-$(reObjDir)/%.o:	$(reSrcDir)/%.cpp $(LIBRARY)
+$(reObjDir)/%.o:	$(reSrcDir)/%.c $(LIBRARY)
 	@echo "Compile fuse `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
 $(binDir)/%:	$(objDir)/%.o $(LIB_OBJS)
 	@echo "Link fuse `basename $@`..."
-	@$(LDR) -o $@ $< $(LIB_OBJS) $(LDFLAGS) -lcrypto
+	@$(LDR) -o $@ $< $(LIB_OBJS) $(SVR_OBJS) $(LDFLAGS) $(BOOST_LIBS) -lcrypto -lssl
 
 
 
