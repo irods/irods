@@ -763,7 +763,8 @@ rmKeyVal( keyValPair_t *condInput, char *keyWord ) {
 int
 replKeyVal( const keyValPair_t *srcCondInput, keyValPair_t *destCondInput ) {
     int i;
-    memset( destCondInput, 0, sizeof( keyValPair_t ) );
+
+    clearKeyVal(destCondInput);
 
     for ( i = 0; i < srcCondInput->len; i++ ) {
         addKeyVal( destCondInput, srcCondInput->keyWord[i],
@@ -788,6 +789,10 @@ int copyKeyVal(
 int
 replDataObjInp( dataObjInp_t *srcDataObjInp, dataObjInp_t *destDataObjInp ) {
     *destDataObjInp = *srcDataObjInp;
+
+    destDataObjInp->condInput.len = 0;
+    destDataObjInp->condInput.keyWord = NULL;
+    destDataObjInp->condInput.value = NULL;
 
     replKeyVal( &srcDataObjInp->condInput, &destDataObjInp->condInput );
     replSpecColl( srcDataObjInp->specColl, &destDataObjInp->specColl );
