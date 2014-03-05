@@ -60,6 +60,7 @@
 #define HEADER_TYPE_LEN 128 /* changed by Raja to 128 from 16 */
 #define TIME_LEN        32
 #define NAME_LEN        64
+#define CHKSUM_LEN      64  /* keep chksum_len the same as the old size */
 #define LONG_NAME_LEN	256
 #define MAX_PATH_ALLOWED 1024
 /* MAX_NAME_LEN actually has space for a few extra characters to match

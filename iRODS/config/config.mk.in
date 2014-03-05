@@ -331,6 +331,10 @@ BOOST_DIR=/tbox/IRODS_BUILD/iRODS/boost_irods
 endif
 endif
 
+# =-=-=-=-=-=-=-
+# compile in the sha256 support for the hasher class
+# NOTE:: this should be a build.sh template value
+SHA256_FILE_HASH = 1 
 
 # OS_AUTH - build in support for "OS level" authentication. This form
 # of authentication uses a shared secret and the genOSAuth command to

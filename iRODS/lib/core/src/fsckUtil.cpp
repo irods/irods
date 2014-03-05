@@ -127,7 +127,7 @@ chkObjConsistency( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, c
         if ( srcSize == objSize ) {
             if ( myRodsArgs->verifyChecksum == True ) {
                 if ( strcmp( objChksum, "" ) != 0 ) {
-                    status = chksumLocFile( inpPath, locChksum );
+                    status = chksumLocFile( inpPath, locChksum, myRodsArgs->hashValue );
                     if ( status == 0 ) {
                         if ( strcmp( locChksum, objChksum ) != 0 ) {
                             printf( "CORRUPTION: local file %s checksum not consistent with \

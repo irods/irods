@@ -214,6 +214,21 @@ namespace irods {
                 rodsLog( LOG_NOTICE, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
             } // CATALOG_DATABASE_TYPE_KW
 
+            key = strstr( buf, HASH_SCHEME_KW );
+            if ( key != NULL ) {
+                len = strlen( HASH_SCHEME_KW );
+
+                // Set property name and setting
+                prop_name.assign( HASH_SCHEME_KW );
+                prop_setting.assign( findNextTokenAndTerm( key + len ) );
+
+                // Update properties table
+                result = properties.set<std::string>( prop_name, prop_setting );
+
+                rodsLog( LOG_NOTICE, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
+            } // HASH_SCHEME_KW
+
+
             fchar = fgets( buf, BUF_LEN - 1, fptr );
 
         } // for ( ; fchar != '\0'; )

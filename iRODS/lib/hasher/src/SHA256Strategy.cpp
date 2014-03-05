@@ -11,7 +11,7 @@
 
 namespace irods {
 
-    std::string SHA256Strategy::_name = "SHA256";
+    std::string SHA256Strategy::_name = SHA256_NAME;
 
     SHA256Strategy::
     SHA256Strategy( void ) {

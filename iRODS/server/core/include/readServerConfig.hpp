@@ -34,6 +34,8 @@
 
 #define CATALOG_DATABASE_TYPE_KW	"catalog_database_type"
 
+#define HASH_SCHEME_KW	"hash_scheme"
+
 typedef struct rodsServerConfig {
     bool run_server_as_root;
 
@@ -51,6 +53,10 @@ typedef struct rodsServerConfig {
     // =-=-=-=-=-=-=-
     // agent side database plugin configuration
     char   catalog_database_type[ NAME_LEN ];
+
+    // =-=-=-=-=-=-=-
+    // desired hash scheme
+    char   hash_scheme[NAME_LEN];
 
 } rodsServerConfig_t;
 

@@ -12,7 +12,7 @@
 
 namespace irods {
 
-    std::string MD5Strategy::_name = "MD5";
+    std::string MD5Strategy::_name = MD5_NAME;
 
     MD5Strategy::
     MD5Strategy( void ) {
