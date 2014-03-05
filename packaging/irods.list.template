@@ -280,7 +280,13 @@ f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/tests/devtest.sh ./tests/d
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/tests/zombiereaper.sh ./tests/zombiereaper.sh
 
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/tests/pydevtest/workflow_testfiles/ -
-f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/tests/pydevtest/workflow_testfiles/ ./tests/pydevtest/workflow_testfiles/*
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/tests/pydevtest/workflow_testfiles/mycp ./tests/pydevtest/workflow_testfiles/mycp
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/tests/pydevtest/workflow_testfiles/myData ./tests/pydevtest/workflow_testfiles/myData
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/tests/pydevtest/workflow_testfiles/myWf.mpf ./tests/pydevtest/workflow_testfiles/myWf.mpf
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/tests/pydevtest/workflow_testfiles/myWf.mss ./tests/pydevtest/workflow_testfiles/myWf.mss
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/tests/pydevtest/workflow_testfiles/myWorkFlow ./tests/pydevtest/workflow_testfiles/myWorkFlow
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/tests/pydevtest/workflow_testfiles/PHOTO.JPG ./tests/pydevtest/workflow_testfiles/PHOTO.JPG
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/tests/pydevtest/workflow_testfiles/tt ./tests/pydevtest/workflow_testfiles/tt
 
 %if COVERAGE
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/gcovfiles.tgz ./gcovfiles.tgz
