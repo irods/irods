@@ -161,7 +161,7 @@ class Test_Auth_Suite(unittest.TestCase, ResourceBase):
         os.system("echo \"irodsCwd '/tempZone/home/%s'\" >> %s" % (authTestUser, clientEnvFile))
         
         # add server.config settings
-        serverConfigFile = "/var/lib/irods/iRODS/server/config/server.config"
+        serverConfigFile = "/etc/irods/server.config"
         os.system("cp %s %sOrig" % (serverConfigFile, serverConfigFile))
         os.system("echo \"pam_password_length 20\" >> %s" % serverConfigFile)
         os.system("echo \"pam_no_extend false\" >> %s" % serverConfigFile)
