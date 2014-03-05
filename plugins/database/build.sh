@@ -155,7 +155,7 @@ sed -e s,TEMPLATE_DATABASE_TYPE,$DB_TYPE, "$SETUP_FILE.template" > $TMPFILE; mv 
 defaultport="NOTDETECTED"
 if [ "$DB_TYPE" == "postgres" ] ;  then defaultport="5432"; fi
 if [ "$DB_TYPE" == "mysql" ] ;     then defaultport="3306"; fi
-if [ "$DB_TYPE" == "oracle" ] ;    then defaultport="7777"; fi
+if [ "$DB_TYPE" == "oracle" ] ;    then defaultport="1521"; fi
 set_tmpfile
 sed -e s,TEMPLATE_DEFAULT_DATABASEPORT,$defaultport, $SETUP_FILE > $TMPFILE; mv $TMPFILE $SETUP_FILE
 
