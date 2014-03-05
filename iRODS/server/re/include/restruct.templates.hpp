@@ -28,7 +28,7 @@ RE_STRUCT_END( Node )
 
 RE_STRUCT_BEGIN( msParam_t )
 MK_VAR_ARRAY( char, label )
-MK_VAR_ARRAY( char, type )
+MK_VAR_ARRAY( const char, type )
 MK_TRANSIENT_PTR( void, inOutStruct )
 MK_TRANSIENT_PTR( bytesBuf_t, inpOutBuf )
 RE_STRUCT_END( msParam_t )

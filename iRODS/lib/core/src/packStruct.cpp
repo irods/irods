@@ -17,7 +17,7 @@
 #include <iostream>
 
 int
-packStruct( void *inStruct, bytesBuf_t **packedResult, char *packInstName,
+packStruct( void *inStruct, bytesBuf_t **packedResult, const char *packInstName,
             packInstructArray_t *myPackTable, int packFlag, irodsProt_t irodsProt ) {
     int status;
     packItem_t rootPackedItem;
@@ -36,7 +36,7 @@ packStruct( void *inStruct, bytesBuf_t **packedResult, char *packInstName,
 
     inPtr = inStruct;
     memset( &rootPackedItem, 0, sizeof( rootPackedItem ) );
-    rootPackedItem.name = packInstName;
+    rootPackedItem.name = strdup( packInstName );
     status = packChildStruct( &inPtr, &packedOutput, &rootPackedItem,
                               myPackTable, 1, packFlag, irodsProt, NULL );
 
@@ -58,7 +58,7 @@ packStruct( void *inStruct, bytesBuf_t **packedResult, char *packInstName,
 }
 
 int
-unpackStruct( void *inPackedStr, void **outStruct, char *packInstName,
+unpackStruct( void *inPackedStr, void **outStruct, const char *packInstName,
               packInstructArray_t *myPackTable, irodsProt_t irodsProt ) {
     int status;
     packItem_t rootPackedItem;
@@ -77,7 +77,7 @@ unpackStruct( void *inPackedStr, void **outStruct, char *packInstName,
 
     inPtr = inPackedStr;
     memset( &rootPackedItem, 0, sizeof( rootPackedItem ) );
-    rootPackedItem.name = packInstName;
+    rootPackedItem.name = strdup( packInstName );
     status = unpackChildStruct( &inPtr, &unpackedOutput, &rootPackedItem,
                                 myPackTable, 1, irodsProt, NULL );
 
@@ -476,7 +476,8 @@ iparseDependent( packItem_t *myPackedItem, packInstructArray_t *myPackTable ) {
 
 int
 resolveIntDepItem( packItem_t *myPackedItem, packInstructArray_t *myPackTable ) {
-    char *tmpPtr = 0, *bufPtr = 0;
+    const char *tmpPtr = 0;
+    char *bufPtr = 0;
     char buf[MAX_NAME_LEN], myPI[MAX_NAME_LEN], *pfPtr = NULL;
     int endReached = 0, c = 0;
     int outLen = 0;

@@ -14,8 +14,9 @@
     if(*p > *pointers) return NULL;
 
 #define allocateArrayInBuffer(elemTy, n, lval, val) \
-    lval = ((elemTy *)(*p)); \
-    memcpy(lval, val, CACHE_SIZE(elemTy, n)); \
+    void *  newval = *p; \
+    memcpy(newval, val, CACHE_SIZE(elemTy, n)); \
+    lval = ( elemTy * )newval; \
     (*p)+=CACHE_SIZE(elemTy, n); \
     if(*p > *pointers) return NULL;
 

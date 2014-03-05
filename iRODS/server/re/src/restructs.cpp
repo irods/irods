@@ -96,7 +96,7 @@ ExprType *newTupleTypeVarArg( int arity, int vararg, ExprType **paramTypes, Regi
     return t;
 }
 
-ExprType *newIRODSType( char *name, Region *r ) {
+ExprType *newIRODSType( const char *name, Region *r ) {
     ExprType *t = newExprType( T_IRODS, 0, NULL, r );
     t->text = ( char * )region_alloc( r, ( strlen( name ) + 1 ) * sizeof( char ) );
     strcpy( t->text, name );
@@ -181,7 +181,7 @@ Res* newUninterpretedRes( Region *r, char *typeName, void *ioStruct, bytesBuf_t 
     res1->param = newMsParam( typeName, ioStruct, ioBuf, r );
     return res1;
 }
-msParam_t *newMsParam( char *typeName, void *ioStruct, bytesBuf_t *ioBuf, Region *r ) {
+msParam_t *newMsParam( const char *typeName, void *ioStruct, bytesBuf_t *ioBuf, Region *r ) {
     msParam_t *param = ( msParam_t * ) region_alloc( r, sizeof( msParam_t ) );
     memset( param, 0, sizeof( msParam_t ) );
     param->type = cpStringExt( typeName, r );

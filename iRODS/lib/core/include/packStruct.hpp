@@ -108,11 +108,11 @@ struct */
     } packedOutput_t;
 
     int
-    packStruct( void *inStruct, bytesBuf_t **packedResult, char *packInstName,
+    packStruct( void *inStruct, bytesBuf_t **packedResult, const char *packInstName,
                 packInstructArray_t *myPackTable, int packFlag, irodsProt_t irodsProt );
 
     int
-    unpackStruct( void *inPackStr, void **outStruct, char *packInstName,
+    unpackStruct( void *inPackStr, void **outStruct, const char *packInstName,
                   packInstructArray_t *myPackTable, irodsProt_t irodsProt );
     int
     parsePackInstruct( char *packInstruct, packItem_t **packItemHead );

@@ -5,24 +5,24 @@
 /**
  * returns NULL if out of memory
  */
-struct bucket *newBucket( char* key, void* value ) {
+struct bucket *newBucket( const char* key, const void* value ) {
     struct bucket *b = ( struct bucket * )malloc( sizeof( struct bucket ) );
     if ( b == NULL ) {
         return NULL;
     }
     b->next = NULL;
-    b->key = key;
+    b->key = strdup( key );
     b->value = value;
     return b;
 }
 
-struct bucket *newBucket2( char* key, void* value, Region *r ) {
+struct bucket *newBucket2( const char* key, const void* value, Region *r ) {
     struct bucket *b = ( struct bucket * )region_alloc( r, sizeof( struct bucket ) );
     if ( b == NULL ) {
         return NULL;
     }
     b->next = NULL;
-    b->key = key;
+    b->key = strdup( key );
     b->value = value;
     return b;
 }
@@ -83,7 +83,7 @@ Hashtable *newHashTable2( int size, Region *r ) {
  * MM: the key is managed by hashtable while the value is managed by the caller.
  * returns 0 if out of memory
  */
-int insertIntoHashTable( Hashtable *h, char* key, void *value ) {
+int insertIntoHashTable( Hashtable *h, const char* key, const void *value ) {
     /*
         printf("insert %s=%s\n", key, value==NULL?"null":"<value>");
     */
@@ -148,17 +148,17 @@ int insertIntoHashTable( Hashtable *h, char* key, void *value ) {
 /**
  * update hash table returns the pointer to the old value
  */
-void* updateInHashTable( Hashtable *h, char* key, void* value ) {
+const void* updateInHashTable( Hashtable *h, const char* key, const void* value ) {
     unsigned long hs = myhash( key );
     unsigned long index = hs % h->size;
     if ( h->buckets[index] != NULL ) {
         struct bucket *b0 = h->buckets[index];
         while ( b0 != NULL ) {
             if ( strcmp( b0->key, key ) == 0 ) {
-                void* tmp = b0->value;
+                const void* tmp = b0->value;
                 b0->value = value;
                 return tmp;
-                /* free not the value */
+                /* do not free the value */
             }
             b0 = b0->next;
         }
@@ -168,10 +168,10 @@ void* updateInHashTable( Hashtable *h, char* key, void* value ) {
 /**
  * delete from hash table
  */
-void *deleteFromHashTable( Hashtable *h, char* key ) {
+const void *deleteFromHashTable( Hashtable *h, const char* key ) {
     unsigned long hs = myhash( key );
     unsigned long index = hs % h->size;
-    void *temp = NULL;
+    const void *temp = NULL;
     if ( h->buckets[index] != NULL ) {
         struct bucket *b0 = h->buckets[index];
         if ( strcmp( b0->key, key ) == 0 ) {
@@ -206,7 +206,7 @@ void *deleteFromHashTable( Hashtable *h, char* key ) {
 /**
  * returns NULL if not found
  */
-void* lookupFromHashTable( Hashtable *h, char* key ) {
+const void* lookupFromHashTable( Hashtable *h, const char* key ) {
     unsigned long hs = myhash( key );
     unsigned long index = hs % h->size;
     struct bucket *b0 = h->buckets[index];
@@ -221,7 +221,7 @@ void* lookupFromHashTable( Hashtable *h, char* key ) {
 /**
  * returns NULL if not found
  */
-struct bucket* lookupBucketFromHashTable( Hashtable *h, char* key ) {
+struct bucket* lookupBucketFromHashTable( Hashtable *h, const char* key ) {
     unsigned long hs = myhash( key );
     unsigned long index = hs % h->size;
     struct bucket *b0 = h->buckets[index];
@@ -233,7 +233,7 @@ struct bucket* lookupBucketFromHashTable( Hashtable *h, char* key ) {
     }
     return NULL;
 }
-struct bucket* nextBucket( struct bucket *b0, char* key ) {
+struct bucket* nextBucket( struct bucket *b0, const char* key ) {
     b0 = b0->next;
     while ( b0 != NULL ) {
         if ( strcmp( b0->key, key ) == 0 ) {
@@ -244,7 +244,7 @@ struct bucket* nextBucket( struct bucket *b0, char* key ) {
     return NULL;
 }
 
-void deleteHashTable( Hashtable *h, void ( *f )( void * ) ) {
+void deleteHashTable( Hashtable *h, void ( *f )( const void * ) ) {
     if ( h->dynamic ) {
         /*if(f != NULL) {
         	int i;
@@ -270,7 +270,7 @@ void deleteHashTable( Hashtable *h, void ( *f )( void * ) ) {
         free( h );
     }
 }
-void deleteBucket( struct bucket *b0, void ( *f )( void * ) ) {
+void deleteBucket( struct bucket *b0, void ( *f )( const void * ) ) {
     if ( b0->next != NULL ) {
         deleteBucket( b0->next, f );
     }
@@ -281,9 +281,12 @@ void deleteBucket( struct bucket *b0, void ( *f )( void * ) ) {
     }
     free( b0 );
 }
-void nop( void *a ) {
+void nop( const void *a ) {
 }
 
+void free_const( const void *a) {
+    free( const_cast< void * >( a ) );
+}
 
 
 

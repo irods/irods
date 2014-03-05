@@ -4,7 +4,7 @@
 #ifndef TO_REGION_PROTO_HPP
 #define TO_REGION_PROTO_HPP
 
-typedef void *( RegionCopyFuncType )( void *, Region *, Hashtable * );
+typedef const void *( RegionCopyFuncType )( const void *, Region *, Hashtable * );
 
 #endif
 

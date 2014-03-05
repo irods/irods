@@ -11,7 +11,7 @@
 
 struct bucket {
     char* key;
-    void* value;
+    const void* value;
     struct bucket *next;
 };
 typedef struct hashtable {
@@ -22,17 +22,18 @@ typedef struct hashtable {
     Region *bucketRegion;
 } Hashtable;
 
-struct bucket *newBucket( char* key, void* value );
+struct bucket *newBucket( const char* key, const void* value );
 unsigned long B_hash( unsigned char* string );
 Hashtable *newHashTable( int size );
 Hashtable *newHashTable2( int size, Region *r );
-int insertIntoHashTable( Hashtable *h, char* key, void *value );
-void* updateInHashTable( Hashtable *h, char* key, void *value );
-void* deleteFromHashTable( Hashtable *h, char* key );
-void* lookupFromHashTable( Hashtable *h, char* key );
-void deleteHashTable( Hashtable *h, void ( *f )( void * ) );
-void deleteBucket( struct bucket *h, void ( *f )( void * ) );
-struct bucket* lookupBucketFromHashTable( Hashtable *h, char* key );
-struct bucket* nextBucket( struct bucket *h, char* key );
-void nop( void *a );
+int insertIntoHashTable( Hashtable *h, const char* key, const void *value );
+const void* updateInHashTable( Hashtable *h, const char* key, const void *value );
+const void* deleteFromHashTable( Hashtable *h, const char* key );
+const void* lookupFromHashTable( Hashtable *h, const char* key );
+void deleteHashTable( Hashtable *h, void ( *f )( const void * ) );
+void deleteBucket( struct bucket *h, void ( *f )( const void * ) );
+struct bucket* lookupBucketFromHashTable( Hashtable *h, const char* key );
+struct bucket* nextBucket( struct bucket *h, const char* key );
+void nop( const void *a );
+void free_const( const void *a );
 #endif

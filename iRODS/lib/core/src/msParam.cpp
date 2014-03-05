@@ -15,7 +15,7 @@
 
 int
 addMsParam( msParamArray_t *msParamArray, char *label,
-            char *type, void *inOutStruct, bytesBuf_t *inpOutBuf ) {
+            const char *type, void *inOutStruct, bytesBuf_t *inpOutBuf ) {
     int status = addMsParamToArray( msParamArray, label, type,
                                     inOutStruct, inpOutBuf, 0 );
 
@@ -36,7 +36,7 @@ addIntParamToArray( msParamArray_t *msParamArray, char *label, int inpInt ) {
 /* addMsParamToArray - Add a msParam_t to the msParamArray.
  * Input char *label - an element of the msParam_t. This input must be
  *            non null.
- *       char *type - can be NULL
+ *       const char *type - can be NULL
  *       void *inOutStruct - can be NULL;
  *       bytesBuf_t *inpOutBuf - can be NULL
  *	 int replFlag - label and type will be automatically replicated
@@ -47,7 +47,7 @@ addIntParamToArray( msParamArray_t *msParamArray, char *label, int inpInt ) {
 
 int
 addMsParamToArray( msParamArray_t *msParamArray, char *label,
-                   char *type, void *inOutStruct, bytesBuf_t *inpOutBuf, int replFlag ) {
+                   const char *type, void *inOutStruct, bytesBuf_t *inpOutBuf, int replFlag ) {
     msParam_t **newParam;
     int len, newLen;
     int i;
@@ -150,7 +150,8 @@ replMsParamArray( msParamArray_t *msParamArray,
 
 int
 replMsParam( msParam_t *msParam, msParam_t *outMsParam ) {
-    char *label, *type;
+    char *label;
+    const char * type;
     void *inOutStruct;
     bytesBuf_t *inpOutBuf;
     int status;
@@ -186,7 +187,7 @@ replMsParam( msParam_t *msParam, msParam_t *outMsParam ) {
 }
 
 int
-replInOutStruct( void *inStruct, void **outStruct, char *type ) {
+replInOutStruct( void *inStruct, void **outStruct, const char *type ) {
     int status;
 
     if ( outStruct == NULL ) {
@@ -225,7 +226,7 @@ replInOutStruct( void *inStruct, void **outStruct, char *type ) {
 
 int
 fillMsParam( msParam_t *msParam, char *label,
-             char *type, void *inOutStruct, bytesBuf_t *inpOutBuf ) {
+             const char *type, void *inOutStruct, bytesBuf_t *inpOutBuf ) {
     if ( label != NULL ) {
         msParam->label = strdup( label );
     }
@@ -418,7 +419,7 @@ getMsParamByLabel( msParamArray_t *msParamArray, char *label ) {
 }
 
 msParam_t *
-getMsParamByType( msParamArray_t *msParamArray, char *type ) {
+getMsParamByType( msParamArray_t *msParamArray, const char *type ) {
     int i;
 
     if ( msParamArray == NULL || msParamArray->msParam == NULL || type == NULL ) {
@@ -506,9 +507,6 @@ clearMsParam( msParam_t *msParam, int freeStruct ) {
                                            ( msParam->type != NULL && strcmp( msParam->type, STR_MS_T ) == 0 ) ) ) {
         free( msParam->inOutStruct );
     }
-    if ( msParam->type != NULL ) {
-        free( msParam->type );
-    }
 
     memset( msParam, 0, sizeof( msParam_t ) );
     return ( 0 );
@@ -522,9 +520,7 @@ resetMsParam( msParam_t * msParam ) {
         return ( 0 );
     }
 
-    if ( msParam->type != NULL ) {
-        free( msParam->type );
-    }
+    msParam->type = NULL;
 
     if ( msParam->inOutStruct != NULL ) {
         free( msParam->inOutStruct );

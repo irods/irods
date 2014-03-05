@@ -14,7 +14,7 @@ Hashtable *microsTableIndex = NULL;
 
 void clearIndex( Hashtable **ruleIndex ) {
     if ( *ruleIndex != NULL ) {
-        deleteHashTable( *ruleIndex, free );
+        deleteHashTable( *ruleIndex, free_const );
         *ruleIndex = NULL;
     }
 }
@@ -276,7 +276,7 @@ int createFuncMapDefIndex( rulefmapdef_t *inFuncStrct, Hashtable **ruleIndex ) {
         *value = i;
 
         if ( insertIntoHashTable( *ruleIndex, key, value ) == 0 ) {
-            deleteHashTable( *ruleIndex, free );
+            deleteHashTable( *ruleIndex, free_const );
             *ruleIndex = NULL;
             return 0;
         }

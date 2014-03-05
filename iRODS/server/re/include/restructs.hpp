@@ -328,7 +328,7 @@ ExprType *newConsType( int arity, char *cons, ExprType **paramTypes, Region *r )
 ExprType *newTupleTypeVarArg( int arity, int vararg, ExprType **paramTypes, Region *r );
 ExprType *newSimpType( NodeType t, Region *r );
 ExprType *newErrorType( int errcode, Region *r );
-ExprType *newIRODSType( char *name, Region *r );
+ExprType *newIRODSType( const char *name, Region *r );
 ExprType *newFlexKind( int arity, ExprType **typeArgs, Region *r );
 FunctionDesc *newFuncSymLink( char *fn , int nArgs, Region *r );
 Node *newPartialApplication( Node *func, Node *arg, int nArgsLeft, Region *r );
@@ -346,7 +346,7 @@ Res* newDatetimeRes( Region *r, long dt );
 Res* newCollRes( int size, ExprType *elemType, Region *r );
 Res* newUninterpretedRes( Region *r, char *typeName, void *ioStruct, bytesBuf_t *ioBuf );
 Res* newTupleRes( int arity, Res **compTypes, Region *r );
-msParam_t *newMsParam( char *typeName, void *ioStruct, bytesBuf_t *ioBuf, Region *r );
+msParam_t *newMsParam( const char *typeName, void *ioStruct, bytesBuf_t *ioBuf, Region *r );
 
 Env *newEnv( Hashtable *current, Env *previous, Env *lower, Region *r );
 /* void deleteEnv(Env *env, int deleteCurrent); */
