@@ -912,7 +912,7 @@ static int _delColl( rsComm_t *rsComm, collInfo_t *collInfo ) {
     status =  cmlExecuteNoAnswerSql(
                   "delete from R_OBJT_FILESYSTEM_META where object_id=?",
                   &icss );
-    if ( status ) {
+    if ( status && status != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
         /* error might indicate that this wasn't set
           which isn't a problem. Fall through. */
         rodsLog( LOG_NOTICE,
@@ -6800,7 +6800,7 @@ extern "C" {
         status =  cmlExecuteNoAnswerSql(
                       "delete from R_OBJT_FILESYSTEM_META where object_id=?",
                       &icss );
-        if ( status ) {
+        if ( status && status != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
             /* error might indicate that this wasn't set
               which isn't a problem. Fall through. */
             rodsLog( LOG_NOTICE,
