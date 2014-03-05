@@ -134,8 +134,6 @@ int
 resoAndConnHostByDataObjInfo( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
                               rodsServerHost_t **rodsServerHost );
 int
-resolveHostByRescInfo( rescInfo_t *rescInfo, rodsServerHost_t **rodsServerHost );
-int
 initServerInfo( rsComm_t *rsComm );
 int
 initLocalServerHost( rsComm_t *rsComm );
