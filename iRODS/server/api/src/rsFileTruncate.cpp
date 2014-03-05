@@ -91,6 +91,11 @@ int _rsFileTruncate(
             _trunc_inp->resc_hier_,
             0, 0, 0 ) );
     file_obj->size( _trunc_inp->dataSize );
+
+    // =-=-=-=-=-=-=-
+    // pass condInput
+    file_obj->cond_input(_trunc_inp->condInput);
+
     irods::error trunc_err = fileTruncate( _comm, file_obj );
 
     // =-=-=-=-=-=-=-

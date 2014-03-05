@@ -186,6 +186,8 @@ int _rsFileCreate(
                     _create_inp->fileName,
                     _create_inp->resc_hier_,
                     0, 0 ) );
+            coll_obj->cond_input(_create_inp->condInput);
+
             irods::error rmdir_err = fileRmdir( _comm, coll_obj );
             if ( !rmdir_err.ok() ) {
                 std::stringstream msg;

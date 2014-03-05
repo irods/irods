@@ -143,6 +143,11 @@ int _rsFileStageToCache(
             _stage_inp->flags ) );
     file_obj->resc_hier( _stage_inp->rescHier );
     file_obj->size( _stage_inp->dataSize );
+
+    // =-=-=-=-=-=-=-
+    // pass condInput
+    file_obj->cond_input(_stage_inp->condInput);
+
     irods::error stage_err = fileStageToCache( _comm,
                              file_obj,
                              _stage_inp->cacheFilename );
@@ -160,6 +165,7 @@ int _rsFileStageToCache(
                     _stage_inp->cacheFilename,
                     _stage_inp->rescHier,
                     0, 0 ) );
+            coll_obj->cond_input(_stage_inp->condInput);
             irods::error rmdir_err = fileRmdir( _comm, coll_obj );
             if ( !rmdir_err.ok() ) {
                 std::stringstream msg;

@@ -144,6 +144,7 @@ int _rsFilePut(
             _put_inp->resc_hier_,
             fd, 0, 0 ) );
     file_obj->in_pdmo( _put_inp->in_pdmo );
+    file_obj->cond_input(_put_inp->condInput);
 
     irods::error write_err = fileWrite( _comm,
                                         file_obj,
