@@ -764,7 +764,7 @@ int
 replKeyVal( const keyValPair_t *srcCondInput, keyValPair_t *destCondInput ) {
     int i;
 
-    clearKeyVal(destCondInput);
+    memset( destCondInput, 0, sizeof( keyValPair_t ) );
 
     for ( i = 0; i < srcCondInput->len; i++ ) {
         addKeyVal( destCondInput, srcCondInput->keyWord[i],
