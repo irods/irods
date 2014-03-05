@@ -314,16 +314,28 @@ dataObjUnlinkS( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
 
             applyRule( "acSetChkFilePathPerm", NULL, &rei, NO_SAVE_REI );
             if ( rei.status != NO_CHK_PATH_PERM ) {
-                rodsServerHost_t *rodsServerHost;
-                status = resolveHostByRescInfo( dataObjInfo->rescInfo,
-                                                &rodsServerHost );
-                if ( status < 0 ) {
-                    return status;
+                // =-=-=-=-=-=-=-
+                // extract the host location from the resource hierarchy
+                std::string location;
+                irods::error ret = irods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
+                if ( !ret.ok() ) {
+                    irods::log( PASSMSG( "failed in get_loc_for_hier_string", ret ) );
+                    return ret.code();
+                }
+
+                rodsHostAddr_t addr;
+                rodsServerHost_t *rodsServerHost = 0;
+
+                memset( &addr, 0, sizeof( addr ) );
+                rstrcpy( addr.hostAddr, location.c_str(), NAME_LEN );
+                int remoteFlag = resolveHost( &addr, &rodsServerHost );
+                if ( remoteFlag < 0 ) {
+                    // error condition?
                 }
 
                 /* unregistering but not an admin user */
                 std::string out_path;
-                irods::error ret = resc_mgr.validate_vault_path( dataObjInfo->filePath, rodsServerHost, out_path );
+                ret = resc_mgr.validate_vault_path( dataObjInfo->filePath, rodsServerHost, out_path );
                 if ( !ret.ok() ) {
                     /* in the vault */
                     std::stringstream msg;

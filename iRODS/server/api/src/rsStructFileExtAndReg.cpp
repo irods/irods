@@ -111,12 +111,6 @@ rsStructFileExtAndReg( rsComm_t *rsComm,
 
     rescInfo = L1desc[l1descInx].dataObjInfo->rescInfo;
     rescGroupName = L1desc[l1descInx].dataObjInfo->rescGroupName;
-    //remoteFlag = resolveHostByRescInfo (rescInfo, &rodsServerHost);
-    //irods::error ret = irods::get_host_for_hier_string( hier.c_str(), remoteFlag, rodsServerHost );
-    //if( !ret.ok() ) {
-    //    irods::log( PASSMSG( "rsStructFileExtAndReg - failed in call to irods::get_host_for_hier_string", ret ) );
-    //    return -1;
-    //}
 
     bzero( &dataObjCloseInp, sizeof( dataObjCloseInp ) );
     dataObjCloseInp.l1descInx = l1descInx;
@@ -125,9 +119,6 @@ rsStructFileExtAndReg( rsComm_t *rsComm,
         addKeyVal( &structFileExtAndRegInp->condInput, RESC_NAME_KW,
                    rescInfo->rescName );
 
-        //if ((status = svrToSvrConnect (rsComm, rodsServerHost)) < 0) {
-        //    return status;
-        //}
         status = rcStructFileExtAndReg( host->conn, structFileExtAndRegInp );
         rsDataObjClose( rsComm, &dataObjCloseInp );
 
