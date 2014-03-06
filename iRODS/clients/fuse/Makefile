@@ -58,11 +58,9 @@ LIB_OBJS =	\
 		$(objDir)/iFuseLib.FileCache.o \
 		$(objDir)/iFuseLib.Lock.o \
 		$(objDir)/iFuseLib.PathCache.o \
-		$(objDir)/iFuseLib.Utils.o 
-
-SVR_OBJS = \
-		$(reObjDir)/list.o \
 		$(reObjDir)/hashtable.o \
+		$(objDir)/iFuseLib.Utils.o  \
+		$(reObjDir)/list.o \
 		$(reObjDir)/region.o 
 
 INCLUDES +=	-I$(incDir) -I$(reIncDir)
