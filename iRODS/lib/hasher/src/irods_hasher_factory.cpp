@@ -12,17 +12,23 @@ namespace irods {
         const std::string& _chksum,
         std::string&       _scheme ) {
         if ( _chksum.empty() ) {
-
+            return ERROR(
+                       SYS_INVALID_INPUT_PARAM,
+                       "empty chksum string" );
         }
 
         if ( std::string::npos != _chksum.find( SHA256_CHKSUM_PREFIX ) ) {
             _scheme = SHA256_NAME;
+            return SUCCESS();
         }
-        else {
+        else if ( std::string::npos == _chksum.find_first_not_of( "0123456789abcdefABCDEF" ) ) {
             _scheme = MD5_NAME;
+            return SUCCESS();
         }
 
-        return SUCCESS();
+        return ERROR(
+                   SYS_INVALID_INPUT_PARAM,
+                   "hash scheme not found" );
 
     } // get_hasher_scheme_from_checksum
 

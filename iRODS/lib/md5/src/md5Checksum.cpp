@@ -6,7 +6,7 @@
 #include "irods_stacktrace.hpp"
 #include "irods_hasher_factory.hpp"
 #include "MD5Strategy.hpp"
-
+#include "getRodsEnv.hpp"
 
 #define MD5_BUF_SZ      (4 * 1024)
 
@@ -38,46 +38,58 @@ int main( int argc, char *argv[] ) {
 
 int
 chksumLocFile( char *fileName, char *chksumStr, const char* scheme ) {
-#if 1
     FILE *file = 0;
     int len = 0;
     char buffer[MD5_BUF_SZ];
-    int status = 0;
-
-    if ( ( file = fopen( fileName, "rb" ) ) == NULL ) {
-        status = UNIX_FILE_OPEN_ERR - errno;
-        rodsLogError( LOG_NOTICE, status,
-                      "chksumFile; fopen failed for %s. status = %d", fileName, status );
-        return ( status );
+    // =-=-=-=-=-=-=-
+    // capture client side configuration
+    rodsEnv env;
+    int status = getRodsEnv( &env );
+    if ( status < 0 ) {
+        return status;
     }
 
-    std::string hash_scheme( irods::MD5_NAME );
+    // =-=-=-=-=-=-=-
+    // capture the configured scheme if it is valid
+    std::string env_scheme( irods::MD5_NAME );
+    if ( strlen( env.rodsDefaultHashScheme ) > 0 ) {
+        env_scheme = env.rodsDefaultHashScheme;
+    }
+
+    // =-=-=-=-=-=-=-
+    // capture the configured hash match policy if it is valid
+    std::string env_policy;
+    if ( strlen( env.rodsMatchHashPolicy ) > 0 ) {
+        env_policy = env.rodsMatchHashPolicy;
+    }
+
+    // =-=-=-=-=-=-=-
+    // capture the incoming scheme if it is valid
+    std::string hash_scheme;
     if ( scheme &&
             strlen( scheme ) > 0 &&
             strlen( scheme ) < NAME_LEN ) {
         hash_scheme = scheme;
     }
 
-    irods::Hasher hasher;
-    irods::error ret = irods::hasher_factory( hasher );
+    // =-=-=-=-=-=-=-
+    // verify checksum scheme against configuration
+    // if requested
+    std::string final_scheme( env_scheme );
+    if ( !hash_scheme.empty() ) {
+        if ( !env_policy.empty() ) {
+            if ( irods::STRICT_HASH_POLICY == env_policy ) {
+                if ( env_scheme != hash_scheme ) {
+                    return USER_HASH_TYPE_MISMATCH;
+                }
+            }
+        }
 
-    hasher.init( hash_scheme );
-    while ( ( len = fread( buffer, 1, MD5_BUF_SZ, file ) ) > 0 ) {
-        hasher.update( buffer, len );
+        final_scheme = hash_scheme;
     }
-    fclose( file );
 
-    std::string digest;
-    hasher.digest( digest );
-    strncpy( chksumStr, digest.c_str(), digest.size() + 1 );
-
-#else
-    FILE *file;
-    MD5_CTX context;
-    int len;
-    unsigned char buffer[MD5_BUF_SZ], digest[16];
-    int status;
-
+    // =-=-=-=-=-=-=-
+    // open the local file
     if ( ( file = fopen( fileName, "rb" ) ) == NULL ) {
         status = UNIX_FILE_OPEN_ERR - errno;
         rodsLogError( LOG_NOTICE, status,
@@ -85,29 +97,36 @@ chksumLocFile( char *fileName, char *chksumStr, const char* scheme ) {
         return ( status );
     }
 
+    // =-=-=-=-=-=-=-
+    // init the hasher object
+    irods::Hasher hasher;
+    irods::error ret = irods::hasher_factory( hasher );
 
-    MD5Init( &context );
+    hasher.init( final_scheme );
     while ( ( len = fread( buffer, 1, MD5_BUF_SZ, file ) ) > 0 ) {
-        MD5Update( &context, buffer, len );
+        hasher.update( buffer, len );
     }
-    MD5Final( digest, &context );
-
     fclose( file );
 
-    md5ToStr( digest, chksumStr );
-#endif
+    // =-=-=-=-=-=-=-
+    // capture the digest
+    std::string digest;
+    hasher.digest( digest );
+    strncpy( chksumStr, digest.c_str(), digest.size() + 1 );
     return ( 0 );
 }
 
-int verifyChksumLocFile( char *fileName, char *myChksum, char *chksumStr ) {
-
+int verifyChksumLocFile(
+    char *fileName,
+    char *myChksum,
+    char *chksumStr ) {
+    // =-=-=-=-=-=-=-
+    // extract scheme from checksum string
     std::string scheme;
     irods::error ret = irods::get_hash_scheme_from_checksum( myChksum, scheme );
     if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-        return ret.code();
+        //irods::log( PASS( ret ) );
     }
-
 
     char chksumBuf[CHKSUM_LEN];
     if ( chksumStr == NULL ) {

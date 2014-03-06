@@ -1799,7 +1799,11 @@ sub configureIrodsUser
 			"# Client-Server Encryption Number of Hash Rounds:\n" .
 			"irodsEncryptionNumHashRounds '16'\n" .
 			"# Client-Server Encryption Algorithm:\n" .
-			"irodsEncryptionAlgorithm 'AES-256-CBC'\n\n"
+			"irodsEncryptionAlgorithm 'AES-256-CBC'\n\n".
+			"# Client requested hash scheme:\n".
+            "irodsDefaultHashScheme 'SHA256'\n".
+            "# Hash Matching Policy:\n".
+            "#irodsMatchHashPolicy 'strict'\n"
              );
 
 	} else {

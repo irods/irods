@@ -47,7 +47,12 @@ reVariableMapSet  core
 run_server_as_root false
 
 # select the requested hashing scheme ( SHA256 or MD5 )
-hash_scheme MD5
+default_hash_scheme SHA256
+
+# set the matching policy to strict to enforce the use of 
+# the default hash scheme and disallow usage of client requested
+# hashes instead
+# match_hash_policy strict
 
 # configuration of icat database plugin - e.g. postgres, mysql, or oracle
 #catalog_database_type postgres

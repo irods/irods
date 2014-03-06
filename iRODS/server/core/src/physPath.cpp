@@ -404,6 +404,7 @@ _dataObjChksum(
     rsComm_t *rsComm,
     dataObjInfo_t *inpDataObjInfo,
     char **chksumStr ) { // JMC - backport 4527
+
     fileChksumInp_t fileChksumInp;
     int rescClass = 0;
     int status = 0;
@@ -421,6 +422,7 @@ _dataObjChksum(
 
     // =-=-=-=-=-=-=-
     int category = FILE_CAT; // only supporting file resource, not DB right now
+    char* orig_chksum = getValByKey( &inpDataObjInfo->condInput, CHKSUM_KW );
 
     std::string location;
     irods::error ret;
@@ -441,6 +443,12 @@ _dataObjChksum(
         rstrcpy( fileChksumInp.rescHier, dataObjInfo->rescHier, MAX_NAME_LEN );
         rstrcpy( fileChksumInp.objPath, dataObjInfo->objPath, MAX_NAME_LEN );
         rstrcpy( fileChksumInp.in_pdmo, dataObjInfo->in_pdmo, MAX_NAME_LEN );
+
+        if ( orig_chksum ) {
+            rstrcpy( fileChksumInp.orig_chksum, orig_chksum, CHKSUM_LEN );
+
+        }
+
         status = rsFileChksum( rsComm, &fileChksumInp, chksumStr );
         if ( status == DIRECT_ARCHIVE_ACCESS ) {
             std::stringstream msg;

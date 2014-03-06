@@ -561,13 +561,7 @@ bulkProcAndRegSubfile( rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string
             if ( ( flags & VERIFY_CHKSUM_FLAG ) != 0 && myChksum != NULL ) {
                 char chksumStr[NAME_LEN];
                 /* verify the chksum */
-                std::string scheme;
-                irods::server_properties& prop = irods::server_properties::getInstance();
-                irods::error ret = prop.get_property< std::string >( HASH_SCHEME_KW, scheme );
-                if ( !ret.ok() ) {
-                    irods::log( PASS( ret ) );
-                }
-                status = chksumLocFile( dataObjInfo.filePath, chksumStr, scheme.c_str() );
+                status = verifyChksumLocFile( dataObjInfo.filePath, myChksum, chksumStr );
                 if ( status < 0 ) {
                     rodsLog( LOG_ERROR,
                              "bulkProcAndRegSubfile: chksumLocFile error for %s ",

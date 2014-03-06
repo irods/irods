@@ -214,20 +214,43 @@ namespace irods {
                 rodsLog( LOG_NOTICE, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
             } // CATALOG_DATABASE_TYPE_KW
 
-            key = strstr( buf, HASH_SCHEME_KW );
+            key = strstr( buf, DEFAULT_HASH_SCHEME_KW );
             if ( key != NULL ) {
-                len = strlen( HASH_SCHEME_KW );
+                len = strlen( DEFAULT_HASH_SCHEME_KW );
 
                 // Set property name and setting
-                prop_name.assign( HASH_SCHEME_KW );
+                prop_name.assign( DEFAULT_HASH_SCHEME_KW );
                 prop_setting.assign( findNextTokenAndTerm( key + len ) );
+                std::transform(
+                    prop_setting.begin(),
+                    prop_setting.end(),
+                    prop_setting.begin(),
+                    ::tolower );
 
                 // Update properties table
                 result = properties.set<std::string>( prop_name, prop_setting );
 
                 rodsLog( LOG_NOTICE, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
-            } // HASH_SCHEME_KW
+            } // DEFAULT_HASH_SCHEME_KW
 
+            key = strstr( buf, MATCH_HASH_POLICY_KW );
+            if ( key != NULL ) {
+                len = strlen( MATCH_HASH_POLICY_KW );
+
+                // Set property name and setting
+                prop_name.assign( MATCH_HASH_POLICY_KW );
+                prop_setting.assign( findNextTokenAndTerm( key + len ) );
+                std::transform(
+                    prop_setting.begin(),
+                    prop_setting.end(),
+                    prop_setting.begin(),
+                    ::tolower );
+
+                // Update properties table
+                result = properties.set<std::string>( prop_name, prop_setting );
+
+                rodsLog( LOG_NOTICE, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
+            } // MATCH_HASH_POLICY_KW
 
             fchar = fgets( buf, BUF_LEN - 1, fptr );
 

@@ -3,6 +3,9 @@
 
 #include "Hasher.hpp"
 #include <iostream>
+#include <algorithm>
+
+#include "irods_stacktrace.hpp"
 
 namespace irods {
 
@@ -35,11 +38,19 @@ namespace irods {
     init( const std::string& _hasher ) {
         unsigned int result = 0;
         _requested_hasher.clear();
+
+        std::string scheme = _hasher;
+        std::transform(
+            scheme.begin(),
+            scheme.end(),
+            scheme.begin(),
+            ::tolower );
+
         for ( std::vector<HashStrategy*>::iterator it = _strategies.begin();
                 result == 0 && it != _strategies.end();
                 ++it ) {
-            if ( _hasher == ( *it )->name() ) {
-                _requested_hasher = _hasher;
+            if ( scheme == ( *it )->name() ) {
+                _requested_hasher = scheme;
                 HashStrategy* strategy = *it;
                 result = strategy->init();
                 break;
@@ -47,7 +58,7 @@ namespace irods {
         }
         if ( _requested_hasher.empty() ) {
             std::cout << "Hasher::init - strategy not found ["
-                      << _hasher
+                      << scheme
                       << "]"
                       << std::endl;
 

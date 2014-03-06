@@ -1,13 +1,15 @@
 /* -*- mode: c++; fill-column: 72; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 #include "SHA256Strategy.hpp"
+#include "md5Checksum.hpp"
 
 #include <string>
 #include <sstream>
 #include <iostream>
 #include <iomanip>
-
 #include <string.h>
+
+#include "base64.hpp"
 
 namespace irods {
 
@@ -54,13 +56,30 @@ namespace irods {
         std::string& messageDigest ) {
         unsigned int result = 0;
         if ( !_finalized ) {
-            unsigned char buffer[SHA256_DIGEST_LENGTH];
-            SHA256_Final( buffer, &_context );
-            std::stringstream ins;
-            for ( int i = 0; i < SHA256_DIGEST_LENGTH; ++i ) {
-                ins << std::setfill( '0' ) << std::setw( 2 ) << std::hex << ( int )buffer[i];
-            }
-            _digest = ins.str();
+            // =-=-=-=-=-=-=-
+            // capture the final buffer
+            unsigned char final_buffer[SHA256_DIGEST_LENGTH];
+            SHA256_Final( final_buffer, &_context );
+
+            // =-=-=-=-=-=-=-
+            // compute output length
+            int len = strlen( SHA256_CHKSUM_PREFIX );
+            unsigned long out_len = CHKSUM_LEN - len;
+
+            // =-=-=-=-=-=-=-
+            // base64 encode the digest
+            unsigned char out_buffer[CHKSUM_LEN];
+            base64_encode( final_buffer, SHA256_DIGEST_LENGTH, out_buffer, &out_len );
+
+            // =-=-=-=-=-=-=-
+            // iterator based ctor to convert unsigned char[] to string
+            std::string tmp_buff( out_buffer, out_buffer + out_len );
+
+            // =-=-=-=-=-=-=-
+            // build final tagged output digest
+            _digest += SHA256_CHKSUM_PREFIX;
+            _digest += tmp_buff;
+
         }
         messageDigest = _digest;
         return result;

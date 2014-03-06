@@ -846,6 +846,10 @@ procChksumForClose(
         return 0;
     }
     else if ( L1desc[l1descInx].chksumFlag == VERIFY_CHKSUM ) {
+        if ( strlen( L1desc[l1descInx].chksum ) > 0 ) {
+            addKeyVal( &dataObjInfo->condInput, CHKSUM_KW, L1desc[l1descInx].chksum );
+        }
+
         status = _dataObjChksum( rsComm, dataObjInfo, chksumStr );
         if ( status < 0 ) {
             return ( status );

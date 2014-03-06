@@ -124,7 +124,7 @@ icommands: client_ldflags client_cflags libs modules
 		$(MAKE) -C clients/icommands all
 	@echo " "
 
-fuse:	client_ldflags client_cflags libs modules
+fuse:	client_ldflags client_cflags server
 	@echo "Fuse"
 	@echo "------------------------------------------------------------------------"
 	@MODULE_LDFLAGS=`cat $(CLIENT_LDFLAGS_TMP)` && export MODULE_LDFLAGS && \
