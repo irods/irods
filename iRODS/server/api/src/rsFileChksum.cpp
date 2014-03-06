@@ -90,9 +90,9 @@ _rsFileChksum(
     fileChksumInp_t *fileChksumInp,
     char **chksumStr ) {
     int status;
-
-    *chksumStr = ( char* )malloc( NAME_LEN );
-    memset( *chksumStr, 0, NAME_LEN );
+    if ( !*chksumStr ) {
+        *chksumStr = ( char* )malloc( sizeof( char ) * NAME_LEN );
+    }
 
     status = fileChksum(
                  rsComm,
@@ -101,7 +101,6 @@ _rsFileChksum(
                  fileChksumInp->rescHier,
                  fileChksumInp->orig_chksum,
                  *chksumStr );
-
     if ( status < 0 ) {
         rodsLog( LOG_NOTICE,
                  "_rsFileChksum: fileChksum for %s, status = %d",
@@ -167,6 +166,14 @@ int fileChksum(
         }
         final_scheme = chkstr_scheme;
     }
+
+    rodsLog(
+        LOG_DEBUG,
+        "fileChksum :: final_scheme [%s]  chkstr_scheme [%s]  svr_hash_policy [%s]  hash_policy [%s]",
+        final_scheme.c_str(),
+        chkstr_scheme.c_str(),
+        svr_hash_policy.c_str(),
+        hash_policy.c_str() );
 
     // =-=-=-=-=-=-=-
     // call resource plugin to open file
@@ -260,7 +267,7 @@ int fileChksum(
     // and copy to outgoing string
     std::string digest;
     hasher.digest( digest );
-    strncpy( chksumStr, digest.c_str(), CHKSUM_LEN );
+    strncpy( chksumStr, digest.c_str(), NAME_LEN );
 
     // =-=-=-=-=-=-=-
     // debug messaging

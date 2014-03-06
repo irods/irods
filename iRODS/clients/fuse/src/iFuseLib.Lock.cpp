@@ -11,6 +11,8 @@
 #include "hashtable.hpp"
 #include "list.hpp"
 #include "iFuseLib.Lock.hpp"
+#undef USE_BOOST
+
 
 #ifdef USE_BOOST
 /*boost::mutex DescLock;*/

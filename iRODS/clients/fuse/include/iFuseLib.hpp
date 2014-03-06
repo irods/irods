@@ -29,6 +29,7 @@
 #define IRODS_FREE		0
 #define IRODS_INUSE	1
 
+#undef USE_BOOST
 
 #ifdef USE_BOOST
 #include <boost/thread/thread.hpp>

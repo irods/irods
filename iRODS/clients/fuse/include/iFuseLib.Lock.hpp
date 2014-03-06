@@ -24,6 +24,8 @@
 #include "irodsFs.hpp"
 #include "iFuseLib.hpp"
 
+#undef USE_BOOST
+
 typedef struct ConcurrentList {
     List *list;
 #ifdef USE_BOOST
@@ -32,7 +34,6 @@ typedef struct ConcurrentList {
     pthread_mutex_t lock;
 #endif
 } concurrentList_t;
-
 
 
 #ifdef USE_BOOST

@@ -5,6 +5,8 @@
 #ifndef IRODS_FS_H
 #define IRODS_FS_H
 
+#undef USE_BOOST
+
 #ifdef USE_BOOST
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>

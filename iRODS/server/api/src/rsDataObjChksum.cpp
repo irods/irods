@@ -248,7 +248,10 @@ verifyDatObjChksum( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
                     char **outChksumStr ) {
     int status;
 
+    addKeyVal( &dataObjInfo->condInput, ORIG_CHKSUM_KW, dataObjInfo->chksum );
     status = _dataObjChksum( rsComm, dataObjInfo, outChksumStr );
+    rmKeyVal( &dataObjInfo->condInput, ORIG_CHKSUM_KW );
+
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
                  "verifyDatObjChksum:_dataObjChksum error for %s, stat=%d",

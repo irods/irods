@@ -12,6 +12,8 @@
 #include "list.hpp"
 #include "iFuseLib.Lock.hpp"
 
+#undef USE_BOOST
+
 /*
  * An ifuseconn->inuseLock is locked when before it goes from free to inuse and during the whole time it is in use, it is only unlocked when it is unused.
  */

@@ -169,6 +169,10 @@ ifdef USE_SSL
 LDFLAGS        += -lssl -lcrypto
 endif
 
+
+CFLAGS:=$(filter-out -DUSE_BOOST,$(CFLAGS))
+CFLAGS:=$(filter-out -DUSE_BOOST_COND,$(CFLAGS))
+
 #
 # Principal Targets
 #

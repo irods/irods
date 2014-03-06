@@ -36,6 +36,7 @@ int NumOfPackTypes = ( sizeof( packTypeTable ) / sizeof( packType_t ) );
 packConstantArray_t PackConstantTable[] = {
     {"HEADER_TYPE_LEN", HEADER_TYPE_LEN},
     {"NAME_LEN", NAME_LEN},
+    {"CHKSUM_LEN", CHKSUM_LEN},
     {"LONG_NAME_LEN", LONG_NAME_LEN},
     {"MAX_NAME_LEN", MAX_NAME_LEN},
     {"SHORT_STR_LEN", SHORT_STR_LEN},

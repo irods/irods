@@ -401,28 +401,16 @@ getSizeInVault( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
 
 int
 _dataObjChksum(
-    rsComm_t *rsComm,
-    dataObjInfo_t *inpDataObjInfo,
-    char **chksumStr ) { // JMC - backport 4527
+    rsComm_t*      rsComm,
+    dataObjInfo_t* dataObjInfo,
+    char**         chksumStr ) { // JMC - backport 4527
 
     fileChksumInp_t fileChksumInp;
-    int rescClass = 0;
     int status = 0;
-    // =-=-=-=-=-=-=-
-    // JMC - backport 4527
-    dataObjInfo_t *dataObjInfo;
-    int destL1descInx = -1;
-
-    if ( rescClass == BUNDLE_CL ) {
-        return SYS_CANT_CHKSUM_BUNDLED_DATA;
-    }
-    else {
-        dataObjInfo = inpDataObjInfo;
-    }
 
     // =-=-=-=-=-=-=-
     int category = FILE_CAT; // only supporting file resource, not DB right now
-    char* orig_chksum = getValByKey( &inpDataObjInfo->condInput, CHKSUM_KW );
+    char* orig_chksum = getValByKey( &dataObjInfo->condInput, ORIG_CHKSUM_KW );
 
     std::string location;
     irods::error ret;
@@ -441,15 +429,15 @@ _dataObjChksum(
         rstrcpy( fileChksumInp.addr.hostAddr, location.c_str(), NAME_LEN );
         rstrcpy( fileChksumInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN );
         rstrcpy( fileChksumInp.rescHier, dataObjInfo->rescHier, MAX_NAME_LEN );
-        rstrcpy( fileChksumInp.objPath, dataObjInfo->objPath, MAX_NAME_LEN );
-        rstrcpy( fileChksumInp.in_pdmo, dataObjInfo->in_pdmo, MAX_NAME_LEN );
+        rstrcpy( fileChksumInp.objPath,  dataObjInfo->objPath, MAX_NAME_LEN );
+        rstrcpy( fileChksumInp.in_pdmo,  dataObjInfo->in_pdmo, MAX_NAME_LEN );
 
         if ( orig_chksum ) {
             rstrcpy( fileChksumInp.orig_chksum, orig_chksum, CHKSUM_LEN );
-
         }
 
         status = rsFileChksum( rsComm, &fileChksumInp, chksumStr );
+
         if ( status == DIRECT_ARCHIVE_ACCESS ) {
             std::stringstream msg;
             msg << "Data object: \"";
@@ -464,12 +452,6 @@ _dataObjChksum(
                  "_dataObjChksum: rescCat type %d is not recognized", category );
         status = SYS_INVALID_RESC_TYPE;
         break;
-    }
-    // =-=-=-=-=-=-=-
-    // JMC - backport 4527
-    if ( destL1descInx >= 0 ) {
-        l3Unlink( rsComm, L1desc[destL1descInx].dataObjInfo );
-        freeL1desc( destL1descInx );
     }
 
     return ( status );

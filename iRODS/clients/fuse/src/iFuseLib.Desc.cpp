@@ -11,6 +11,8 @@
 #include "hashtable.hpp"
 #include "list.hpp"
 
+#undef USE_BOOST
+
 /* Lock DescLock when this array is read/writen, or the inUseFlag var in an array element is read/written.
  * Locking DescLock prevent allocating/freeing new IFuseDesc.
  * After being added to the pathCache or newlyCreatedCache,
