@@ -36,6 +36,7 @@ struct */
     typedef struct {
         char *name;
         char *packInstruct;
+        void (*clearInStruct)(void *);
     } packInstructArray_t;
 
     typedef struct {
