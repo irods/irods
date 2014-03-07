@@ -6,6 +6,10 @@
 #ifndef PACK_STRUCT_HPP
 #define PACK_STRUCT_HPP
 
+// =-=-=-=-=-=-=-
+// boost includes
+#include <boost/function.hpp>
+
 #include "rodsDef.hpp"
 
 #define MAX_PI_LEN	1024	/* max pack instruct length */
@@ -36,7 +40,7 @@ struct */
     typedef struct {
         char *name;
         char *packInstruct;
-        void (*clearInStruct)(void *);
+        boost::function<void(void*)> clearInStruct;
     } packInstructArray_t;
 
     typedef struct {

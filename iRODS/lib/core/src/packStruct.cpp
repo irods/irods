@@ -742,7 +742,8 @@ matchPackInstruct( char *name, packInstructArray_t *myPackTable ) {
     irods::pack_entry_table& pk_tbl =  irods::get_pack_table();
     irods::pack_entry_table::iterator itr = pk_tbl.find( name );
     if ( itr != pk_tbl.end() ) {
-        return ( void* )itr->second.c_str();
+        //return ( void* )itr->second.c_str();
+    	return ( void* )itr->second.packInstruct.c_str();
     }
 #else
     i = 0;

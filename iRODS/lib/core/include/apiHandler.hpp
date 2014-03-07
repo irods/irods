@@ -9,6 +9,10 @@
 #ifndef API_HANDLER_HPP
 #define API_HANDLER_HPP
 
+// =-=-=-=-=-=-=-
+// boost includes
+#include <boost/function.hpp>
+
 #include "rods.hpp"
 #include "sockComm.hpp"
 #include "packStruct.hpp"
@@ -16,6 +20,10 @@
 #include "irods_plugin_base.hpp"
 
 namespace irods {
+
+	// NOOP function for clearInStruct
+	void clearInStruct_noop(void*);
+
     struct apidef_t {
         // =-=-=-=-=-=-=-
         // attributes
@@ -86,6 +94,8 @@ namespace irods {
 
         lookup_table< std::string>   extra_pack_struct;
 
+        boost::function<void(void*)> clearInStruct;		//free input struct function
+
     }; // class api_entry
 
     typedef boost::shared_ptr< api_entry > api_entry_ptr;
@@ -100,16 +110,35 @@ namespace irods {
 
     }; // class api_entry_table
 
+
+    /// =-=-=-=-=-=-=-
+    /// @brief class to hold packing instruction and free function
+    class pack_entry {
+    public:
+    	std::string packInstruct;
+    	boost::function<void(void*)> clearInStruct;
+
+    	// ctor
+    	pack_entry() {};
+    	pack_entry(const pack_entry&);
+
+
+    	// dtor
+    	~pack_entry() {};
+
+    	// assignment operator
+    	pack_entry& operator=(const pack_entry&);
+    };
+
+
     /// =-=-=-=-=-=-=-
     /// @brief class which will hold the map of pack struct entries
-    class pack_entry_table : public lookup_table< std::string > {
+    class pack_entry_table : public lookup_table< pack_entry > {
     public:
         pack_entry_table( packInstructArray_t[] );
         ~pack_entry_table();
 
     }; // class api_entry_table
-
-
 
 
     /// =-=-=-=-=-=-=-

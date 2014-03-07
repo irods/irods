@@ -209,7 +209,9 @@ int rsApiHandler(
                           "authResponseInp_PI" )  == 0 ) {
             /* Added by RAJA Nov 22 2010 */
             clearAuthResponseInp( ( void * ) myInStruct );
-
+        }
+        else if (RsApiTable[apiInx]->clearInStruct) {
+        	RsApiTable[apiInx]->clearInStruct(myInStruct);
         }
 
 #if 0 // JMC :: these are now API plugins
