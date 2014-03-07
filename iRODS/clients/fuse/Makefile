@@ -194,7 +194,7 @@ $(reObjDir)/%.o:	$(reSrcDir)/%.c $(LIBRARY)
 
 $(binDir)/%:	$(objDir)/%.o $(LIB_OBJS)
 	@echo "Link fuse `basename $@`..."
-	@$(LDR) -o $@ $< $(LIB_OBJS) $(SVR_OBJS) $(LDFLAGS) $(BOOST_LIBS) -lcrypto -lssl
+	@$(LDR) -o $@ $< $(LIB_OBJS) $(SVR_OBJS) $(LDFLAGS) $(BOOST_LIBS) -lcrypto -lssl -lrt
 
 
 
