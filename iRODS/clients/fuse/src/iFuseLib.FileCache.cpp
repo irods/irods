@@ -224,7 +224,7 @@ int ifuseFileCacheSwapOut( fileCache_t *fileCache ) {
 }
 /* close any open files inside the file cache */
 int ifuseFileCacheClose( fileCache_t *fileCache ) {
-    int status;
+    int status = 0;
     LOCK_STRUCT( *fileCache );
     if ( fileCache->state == NO_FILE_CACHE ) {
         /* close remote file */
