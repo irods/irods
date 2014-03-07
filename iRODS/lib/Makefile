@@ -137,10 +137,6 @@ ifdef SHA256_FILE_HASH
 CFLAGS += -DSHA256_FILE_HASH
 endif
 
-ifdef OOI_CI
-LIB_CORE_OBJS += $(libCoreObjDir)/ooiCi.o
-endif
-
 # Logging (automatically generated source)
 LOG_SRC =	$(libCoreSrcDir)/rodsLog.cpp
 

@@ -395,6 +395,3 @@ endif
 # filesystem (e.g. a parallel file system NAS). It requires that the
 # RUN_SERVER_AS_ROOT feature is turned on.
 # DIRECT_ACCESS_VAULT = 1
-
-# OOI_CI - specify whether to compile the OOI CI modules
-OOI_CI=1

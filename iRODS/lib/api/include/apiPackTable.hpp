@@ -106,10 +106,6 @@ packInstructArray_t api_pack_table_init[] = {
     {"NcArchTimeSeriesInp_PI", NcArchTimeSeriesInp_PI},
 #endif
     /* endof NETCDF_CLIENT */
-#ifdef OOI_CI
-    {"OoiGenServReqInp_PI", OoiGenServReqInp_PI},
-    {"OoiGenServReqOut_PI", OoiGenServReqOut_PI},
-#endif
 
     {"pamAuthRequestInp_PI", pamAuthRequestInp_PI},
     {"pamAuthRequestOut_PI", pamAuthRequestOut_PI},

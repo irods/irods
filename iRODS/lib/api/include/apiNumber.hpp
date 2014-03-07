@@ -173,8 +173,6 @@
 #define NC_GET_AGG_INFO_AN              1012
 #define NC_ARCH_TIME_SERIES_AN          1013
 #endif
-/* 1060 - 1099 - OOI API calls */
-#define OOI_GEN_SERV_REQ_AN             1060
 
 /* 1100 - 1200 - SSL API calls */
 #define SSL_START_AN 			1100

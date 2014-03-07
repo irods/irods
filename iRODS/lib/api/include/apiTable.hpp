@@ -661,13 +661,6 @@ static irods::apidef_t client_api_table_inp[] = {
                             "NcArchTimeSeriesInp_PI", 0, NULL, 0, ( funcPtr ) RS_NC_ARCH_TIME_SERIES
 },
 #endif
-#ifdef OOI_CI
-{
-    OOI_GEN_SERV_REQ_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-    "OoiGenServReqInp_PI", 0, "OoiGenServReqOut_PI", 0, ( funcPtr ) RS_OOI_GEN_SERV_REQ
-},
-
-#endif
 #endif // NETCDF etc
 
 

@@ -67,10 +67,6 @@ LDRFLAGS += -lgcov
 endif
 # =-=-=-=-=-=-=-
 
-ifdef OOI_CI
-CCFLAGS += -DOOI_CI -I/usr/include/libxml2 -I$(IRODS_BUILD_DIR)/external/$(JANSSONVERSION)/src
-endif
-
 ifdef CCFLAGS
 MY_CFLAG += $(CCFLAGS)
 endif
@@ -262,11 +258,4 @@ endif
 
 ifdef DIRECT_ACCESS_VAULT
 MY_CFLAG+= -DDIRECT_ACCESS_VAULT
-endif
-
-
-ifdef OOI_CI
-JANSSON_LIB=$(IRODS_BUILD_DIR)/external/$(JANSSONVERSION)/src/.libs
-LDADD+= -L$(JANSSON_LIB) $(JANSSON_LIB)/libjansson.a
-CL_LDADD+= -L$(JANSSON_LIB) $(JANSSON_LIB)/libjansson.a
 endif
