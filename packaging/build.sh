@@ -272,6 +272,7 @@ rename_generated_packages() {
     RENAME_SOURCE="./linux*/irods-*$IRODSVERSION*.$EXTENSION"
     RENAME_SOURCE_DOCS=${RENAME_SOURCE/irods-/irods-docs-}
     RENAME_SOURCE_DEV=${RENAME_SOURCE/irods-/irods-dev-}
+    RENAME_SOURCE_RUNTIME=${RENAME_SOURCE/irods-/irods-runtime-}
     RENAME_SOURCE_ICOMMANDS=${RENAME_SOURCE/irods-/irods-icommands-}
     SOURCELIST=`ls $RENAME_SOURCE`
     echo "EPM produced packages:"
@@ -288,6 +289,7 @@ rename_generated_packages() {
     fi
     # release build (also building icommands)
     RENAME_DESTINATION_DEV=${RENAME_DESTINATION/irods-/irods-dev-}
+    RENAME_DESTINATION_RUNTIME=${RENAME_DESTINATION/irods-/irods-runtime-}
     RENAME_DESTINATION_ICOMMANDS=${RENAME_DESTINATION/irods-/irods-icommands-}
     # icat or resource
     if [ "$TARGET" == "icat" ] ; then
@@ -338,6 +340,10 @@ rename_generated_packages() {
 	    echo "renaming    [$RENAME_SOURCE_DEV]"
 	    echo "         to [$RENAME_DESTINATION_DEV]"
 	    mv $RENAME_SOURCE_DEV $RENAME_DESTINATION_DEV
+            echo ""
+            echo "renaming    [$RENAME_SOURCE_RUNTIME]"
+            echo "         to [$RENAME_DESTINATION_RUNTIME]"
+            mv $RENAME_SOURCE_RUNTIME $RENAME_DESTINATION_RUNTIME
 	fi
         # icat or resource
         echo ""
@@ -388,6 +394,7 @@ if [ "$1" == "clean" ] ; then
     echo "Cleaning EPM residuals..."
     cd $BUILDDIR
     rm -f packaging/irods-dev.list
+    rm -f packaging/irods-runtime.list
     rm -f packaging/irods.list
     rm -f packaging/irods-icommands.list
     rm -rf linux-2.*
@@ -1092,6 +1099,11 @@ if [ "$BUILDIRODS" == "1" ] ; then
     mv $TMPFILE ./packaging/irods-dev.list
     sed -e "s,TEMPLATE_IRODSVERSION,$IRODSVERSION," ./packaging/irods-dev.list > $TMPFILE
     mv $TMPFILE ./packaging/irods-dev.list
+    # irods-runtime package
+    sed -e "s,TEMPLATE_IRODSVERSIONINT,$IRODSVERSIONINT," ./packaging/irods-runtime.list.template > $TMPFILE
+    mv $TMPFILE ./packaging/irods-runtime.list
+    sed -e "s,TEMPLATE_IRODSVERSION,$IRODSVERSION," ./packaging/irods-runtime.list > $TMPFILE
+    mv $TMPFILE ./packaging/irods-runtime.list
     # irods-icommands package
     sed -e "s,TEMPLATE_IRODSVERSIONINT,$IRODSVERSIONINT," ./packaging/irods-icommands.list.template > $TMPFILE
     mv $TMPFILE ./packaging/irods-icommands.list
@@ -1241,6 +1253,7 @@ if [ "$DETECTEDOS" == "RedHatCompatible" ] ; then # CentOS and RHEL and Fedora
     $EPMCMD $EPMOPTS -f rpm irods-$SERVER_TYPE_LOWERCASE $epmvar=true $epmosversion=true ./packaging/irods.list
     if [ "$SERVER_TYPE" == "ICAT" ] ; then
         $EPMCMD $EPMOPTS -f rpm irods-dev $epmvar=true ./packaging/irods-dev.list
+        $EPMCMD $EPMOPTS -f rpm irods-runtime $epmvar=true ./packaging/irods-runtime.list
     fi
     if [ "$RELEASE" == "1" ] ; then
         $EPMCMD $EPMOPTS -f rpm irods-icommands $epmvar=true ./packaging/irods-icommands.list
@@ -1251,6 +1264,7 @@ elif [ "$DETECTEDOS" == "SuSE" ] ; then # SuSE
     $EPMCMD $EPMOPTS -f rpm irods-$SERVER_TYPE_LOWERCASE $epmvar=true ./packaging/irods.list
     if [ "$SERVER_TYPE" == "ICAT" ] ; then
         $EPMCMD $EPMOPTS -f rpm irods-dev $epmvar=true ./packaging/irods-dev.list
+        $EPMCMD $EPMOPTS -f rpm irods-runtime $epmvar=true ./packaging/irods-runtime.list
     fi
     if [ "$RELEASE" == "1" ] ; then
         $EPMCMD $EPMOPTS -f rpm irods-icommands $epmvar=true ./packaging/irods-icommands.list
@@ -1261,6 +1275,7 @@ elif [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then  # Ubuntu
     $EPMCMD $EPMOPTS -a $arch -f deb irods-$SERVER_TYPE_LOWERCASE $epmvar=true ./packaging/irods.list
     if [ "$SERVER_TYPE" == "ICAT" ] ; then
         $EPMCMD $EPMOPTS -a $arch -f deb irods-dev $epmvar=true ./packaging/irods-dev.list
+        $EPMCMD $EPMOPTS -a $arch -f deb irods-runtime $epmvar=true ./packaging/irods-runtime.list
     fi
     if [ "$RELEASE" == "1" ] ; then
         $EPMCMD $EPMOPTS -a $arch -f deb irods-icommands $epmvar=true ./packaging/irods-icommands.list
@@ -1271,6 +1286,7 @@ elif [ "$DETECTEDOS" == "Solaris" ] ; then  # Solaris
     $EPMCMD $EPMOPTS -f pkg irods-$SERVER_TYPE_LOWERCASE $epmvar=true ./packaging/irods.list
     if [ "$SERVER_TYPE" == "ICAT" ] ; then
         $EPMCMD $EPMOPTS -f pkg irods-dev $epmvar=true ./packaging/irods-dev.list
+        $EPMCMD $EPMOPTS -f pkg irods-runtime $epmvar=true ./packaging/irods-runtime.list
     fi
     if [ "$RELEASE" == "1" ] ; then
         $EPMCMD $EPMOPTS -f pkg irods-icommands $epmvar=true ./packaging/irods-icommands.list
@@ -1281,6 +1297,7 @@ elif [ "$DETECTEDOS" == "MacOSX" ] ; then  # MacOSX
     $EPMCMD $EPMOPTS -f osx irods-$SERVER_TYPE_LOWERCASE $epmvar=true ./packaging/irods.list
     if [ "$SERVER_TYPE" == "ICAT" ] ; then
         $EPMCMD $EPMOPTS -f osx irods-dev $epmvar=true ./packaging/irods-dev.list
+        $EPMCMD $EPMOPTS -f osx irods-runtime $epmvar=true ./packaging/irods-runtime.list
     fi
     if [ "$RELEASE" == "1" ] ; then
         $EPMCMD $EPMOPTS -f osx irods-icommands $epmvar=true ./packaging/irods-icommands.list
@@ -1291,6 +1308,7 @@ elif [ "$DETECTEDOS" == "ArchLinux" ] ; then  # ArchLinux
     if [ "$SERVER_TYPE" == "ICAT" ] ; then
         ICAT=true $EPMCMD $EPMOPTS -f portable irods-$SERVER_TYPE_LOWERCASE $epmvar=true ./packaging/irods.list
         $EPMCMD $EPMOPTS -f portable irods-dev $epmvar=true ./packaging/irods-dev.list
+        $EPMCMD $EPMOPTS -f portable irods-runtime $epmvar=true ./packaging/irods-runtime.list
     else
         $EPMCMD $EPMOPTS -f portable irods-$SERVER_TYPE_LOWERCASE $epmvar=true ./packaging/irods.list
     fi
@@ -1303,6 +1321,7 @@ elif [ "$DETECTEDOS" == "Portable" ] ; then  # Portable
     $EPMCMD $EPMOPTS -f portable irods-$SERVER_TYPE_LOWERCASE $epmvar=true ./packaging/irods.list
     if [ "$SERVER_TYPE" == "ICAT" ] ; then
         ICAT=true $EPMCMD $EPMOPTS -f portable irods-dev $epmvar=true ./packaging/irods-dev.list
+        ICAT=true $EPMCMD $EPMOPTS -f portable irods-runtime $epmvar=true ./packaging/irods-runtime.list
     fi
     if [ "$RELEASE" == "1" ] ; then
         $EPMCMD $EPMOPTS -f portable irods-icommands $epmvar=true ./packaging/irods-icommands.list

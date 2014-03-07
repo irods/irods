@@ -30,6 +30,7 @@ iRODS/server/re/include/reAction.hpp
 packaging/irods.list
 packaging/irods-docs.list
 packaging/irods-dev.list
+packaging/irods-runtime.list
 packaging/irods-icommands.list
 plugins/api/*/.objs
 plugins/auth/*/.deps

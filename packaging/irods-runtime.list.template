@@ -1,0 +1,75 @@
+# =-=-=-=-=-=-=-
+# EPM Variables
+# =-=-=-=-=-=-=-
+%product iRODS - Runtime Library
+%copyright 2014 by Renaissance Computing Institute, All Rights Reserved.
+%vendor Renaissance Computing Institute <info@irods-consortium.org>
+%license LICENSE
+%readme README
+%description The integrated Rule-Oriented Data System
+%version TEMPLATE_IRODSVERSION TEMPLATE_IRODSVERSIONINT
+
+
+
+
+# =-=-=-=-=-=-=-
+# Required Packages for specific systems
+# and
+# Setting environment variables for EPM
+# =-=-=-=-=-=-=-
+
+%if DEB
+%requires libc6
+%endif
+
+%format all
+
+
+
+# =-=-=-=-=-=-=-
+# preinstall
+# =-=-=-=-=-=-=-
+#%preinstall
+
+
+
+
+# =-=-=-=-=-=-=-
+# post install
+# =-=-=-=-=-=-=-
+#%postinstall
+
+
+# =-=-=-=-=-=-=-
+# preremove
+# =-=-=-=-=-=-=-
+#%preremove
+
+
+
+
+# =-=-=-=-=-=-=-
+# post remove
+# =-=-=-=-=-=-=-
+#%postremove
+
+
+
+
+
+# =-=-=-=-=-=-=-
+# Full File Listing
+# =-=-=-=-=-=-=-
+
+d 755 root root /usr/lib/irods/ -
+f 644 root root /usr/lib/irods/libs3.so ./external/libs3-2.0/build/lib/libs3.so.2
+f 644 root root /usr/lib/irods/libarchive.so ./external/libarchive-3.1.2/libarchive/libarchive.so.14
+f 644 root root /usr/lib/irods/libhdf5.so ./external/hdf5-1.8.12/src/.libs/libhdf5.so.8.0.1
+f 644 root root /usr/lib/irods/libdynlib1.so ./external/hdf5-1.8.12/test/.libs/libdynlib1.so.0.0.0
+f 644 root root /usr/lib/irods/libdynlib2.so ./external/hdf5-1.8.12/test/.libs/libdynlib2.so.0.0.0
+f 644 root root /usr/lib/irods/libdynlib3.so ./external/hdf5-1.8.12/test/.libs/libdynlib3.so.0.0.0
+f 644 root root /usr/lib/irods/libdynlibadd.so ./external/hdf5-1.8.12/tools/h5repack/.libs/libdynlibadd.so.0.0.0
+f 644 root root /usr/lib/irods/libhdf5_hl.so ./external/hdf5-1.8.12/hl/src/.libs/libhdf5_hl.so.8.0.1
+f 644 root root /usr/lib/irods/libjansson.so ./external/jansson-2.5/src/.libs/libjansson.so.4.5.0
+f 644 root root /usr/lib/irods/libnetcdf.so ./external/netcdf-4.3.0/liblib/.libs/libnetcdf.so.7.2.0
+
