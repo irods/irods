@@ -64,7 +64,7 @@
 f 644 root root /usr/lib/irods/libirods_client.a ./libirods_client.a
 f 644 root root /usr/lib/irods/libirods_server.a ./libirods_server.a
 
-d 755 root root /usr/include/irods/
+d 755 root root /usr/include/irods/ -
 f 644 root root /usr/include/irods/ ./iRODS/lib/core/include/*.hpp
 f 644 root root /usr/include/irods/ ./iRODS/lib/api/include/*.hpp
 f 644 root root /usr/include/irods/ ./iRODS/lib/md5/include/*.hpp
@@ -75,7 +75,7 @@ f 644 root root /usr/include/irods/ ./iRODS/server/icat/include/*.hpp
 f 644 root root /usr/include/irods/ ./iRODS/server/re/include/*.hpp
 f 644 root root /usr/include/irods/ ./iRODS/server/drivers/include/*.hpp
 
-d 755 root root /usr/share/irods/
+d 755 root root /usr/share/irods/ -
 d 755 root root /usr/share/irods/examples
 d 755 root root /usr/share/irods/examples/microservices
 d 755 root root /usr/share/irods/examples/resources
@@ -11530,33 +11530,16 @@ f 644 root root /usr/lib/irods/libnetcdf2.a ./external/netcdf-4.3.0/libdispatch/
 f 644 root root /usr/lib/irods/libnetcdf3.a ./external/netcdf-4.3.0/libsrc/.libs/libnetcdf3.a
 f 644 root root /usr/lib/irods/libdap2.a ./external/netcdf-4.3.0/libdap2/.libs/libdap2.a
 
-f 644 root root /usr/lib/irods/libs3.so.2 ./external/libs3-2.0/build/lib/libs3.so.2
-f 644 root root /usr/lib/irods/libarchive.so.14 ./external/libarchive-3.1.2/libarchive/libarchive.so.14
-f 644 root root /usr/lib/irods/libarchive.so ./external/libarchive-3.1.2/libarchive/libarchive.so
-f 644 root root /usr/lib/irods/libhdf5.so.8.0.1 ./external/hdf5-1.8.12/src/.libs/libhdf5.so.8.0.1
-f 644 root root /usr/lib/irods/libhdf5.so ./external/hdf5-1.8.12/src/.libs/libhdf5.so
-f 644 root root /usr/lib/irods/libhdf5.so.8 ./external/hdf5-1.8.12/src/.libs/libhdf5.so.8
-f 644 root root /usr/lib/irods/libdynlib3.so.0.0.0 ./external/hdf5-1.8.12/test/.libs/libdynlib3.so.0.0.0
-f 644 root root /usr/lib/irods/libdynlib2.so.0 ./external/hdf5-1.8.12/test/.libs/libdynlib2.so.0
-f 644 root root /usr/lib/irods/libdynlib1.so.0 ./external/hdf5-1.8.12/test/.libs/libdynlib1.so.0
-f 644 root root /usr/lib/irods/libdynlib1.so ./external/hdf5-1.8.12/test/.libs/libdynlib1.so
-f 644 root root /usr/lib/irods/libdynlib2.so ./external/hdf5-1.8.12/test/.libs/libdynlib2.so
-f 644 root root /usr/lib/irods/libdynlib3.so.0 ./external/hdf5-1.8.12/test/.libs/libdynlib3.so.0
-f 644 root root /usr/lib/irods/libdynlib1.so.0.0.0 ./external/hdf5-1.8.12/test/.libs/libdynlib1.so.0.0.0
-f 644 root root /usr/lib/irods/libdynlib2.so.0.0.0 ./external/hdf5-1.8.12/test/.libs/libdynlib2.so.0.0.0
-f 644 root root /usr/lib/irods/libdynlib3.so ./external/hdf5-1.8.12/test/.libs/libdynlib3.so
-f 644 root root /usr/lib/irods/libdynlibadd.so.0 ./external/hdf5-1.8.12/tools/h5repack/.libs/libdynlibadd.so.0
-f 644 root root /usr/lib/irods/libdynlibadd.so ./external/hdf5-1.8.12/tools/h5repack/.libs/libdynlibadd.so
-f 644 root root /usr/lib/irods/libdynlibadd.so.0.0.0 ./external/hdf5-1.8.12/tools/h5repack/.libs/libdynlibadd.so.0.0.0
-f 644 root root /usr/lib/irods/libhdf5_hl.so.8.0.1 ./external/hdf5-1.8.12/hl/src/.libs/libhdf5_hl.so.8.0.1
-f 644 root root /usr/lib/irods/libhdf5_hl.so ./external/hdf5-1.8.12/hl/src/.libs/libhdf5_hl.so
-f 644 root root /usr/lib/irods/libhdf5_hl.so.8 ./external/hdf5-1.8.12/hl/src/.libs/libhdf5_hl.so.8
-f 644 root root /usr/lib/irods/libjansson.so.4 ./external/jansson-2.5/src/.libs/libjansson.so.4
-f 644 root root /usr/lib/irods/libjansson.so.4.5.0 ./external/jansson-2.5/src/.libs/libjansson.so.4.5.0
-f 644 root root /usr/lib/irods/libjansson.so ./external/jansson-2.5/src/.libs/libjansson.so
-f 644 root root /usr/lib/irods/libnetcdf.so.7 ./external/netcdf-4.3.0/liblib/.libs/libnetcdf.so.7
-f 644 root root /usr/lib/irods/libnetcdf.so ./external/netcdf-4.3.0/liblib/.libs/libnetcdf.so
-f 644 root root /usr/lib/irods/libnetcdf.so.7.2.0 ./external/netcdf-4.3.0/liblib/.libs/libnetcdf.so.7.2.0
+f 644 root root /usr/lib/irods/libs3.so ./external/libs3-2.0/build/lib/libs3.so.2
+f 644 root root /usr/lib/irods/libarchive.so ./external/libarchive-3.1.2/libarchive/libarchive.so.14
+f 644 root root /usr/lib/irods/libhdf5.so ./external/hdf5-1.8.12/src/.libs/libhdf5.so.8.0.1
+f 644 root root /usr/lib/irods/libdynlib1.so ./external/hdf5-1.8.12/test/.libs/libdynlib1.so.0.0.0
+f 644 root root /usr/lib/irods/libdynlib2.so ./external/hdf5-1.8.12/test/.libs/libdynlib2.so.0.0.0
+f 644 root root /usr/lib/irods/libdynlib3.so ./external/hdf5-1.8.12/test/.libs/libdynlib3.so.0.0.0
+f 644 root root /usr/lib/irods/libdynlibadd.so ./external/hdf5-1.8.12/tools/h5repack/.libs/libdynlibadd.so.0.0.0
+f 644 root root /usr/lib/irods/libhdf5_hl.so ./external/hdf5-1.8.12/hl/src/.libs/libhdf5_hl.so.8.0.1
+f 644 root root /usr/lib/irods/libjansson.so ./external/jansson-2.5/src/.libs/libjansson.so.4.5.0
+f 644 root root /usr/lib/irods/libnetcdf.so ./external/netcdf-4.3.0/liblib/.libs/libnetcdf.so.7.2.0
 
 f 755 root root /usr/bin/epm ./external/epm/epm
 
