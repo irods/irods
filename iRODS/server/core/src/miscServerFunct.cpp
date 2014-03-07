@@ -289,19 +289,23 @@ acceptSrvPortal( rsComm_t *rsComm, portList_t *thisPortList ) {
 }
 
 int applyRuleForSvrPortal( int sockFd, int oprType, int preOrPost, int load, rsComm_t *rsComm ) {
-    struct sockaddr local, peer;
-    struct sockaddr_in *localPtr = ( struct sockaddr_in * )&local, *peerPtr = ( struct sockaddr_in * )&peer;
+    typedef union address {
+        struct sockaddr    sa;
+        struct sockaddr_in sa_in;
+    } address_t;
+
+    address_t local, peer;
     socklen_t local_len;
     memset( &local, 0, sizeof( local ) );
     memset( &peer, 0, sizeof( peer ) );
     local_len = sizeof( struct sockaddr );
-    int status = getsockname( sockFd, &local, &local_len );
+    int status = getsockname( sockFd, &local.sa, &local_len );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR, "applyRuleForSvrPortal: acceptSrvPortal error. errno = %d", errno );
         return SYS_SOCK_READ_ERR - errno;
     }
     local_len = sizeof( struct sockaddr );
-    status = getpeername( sockFd, &peer, &local_len );
+    status = getpeername( sockFd, &peer.sa, &local_len );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR, "applyRuleForSvrPortal: acceptSrvPortal error. errno = %d", errno );
         return SYS_SOCK_READ_ERR - errno;
@@ -312,11 +316,11 @@ int applyRuleForSvrPortal( int sockFd, int oprType, int preOrPost, int load, rsC
     char oType[MAX_NAME_LEN];
     snprintf( oType, MAX_NAME_LEN, "%d", oprType );
     snprintf( lLoad, MAX_NAME_LEN, "%d", load );
-    char *lAddr = strdup( inet_ntoa( localPtr->sin_addr ) );
-    int localPort = ntohs( localPtr->sin_port );
+    char *lAddr = strdup( inet_ntoa( local.sa_in.sin_addr ) );
+    int localPort = ntohs( local.sa_in.sin_port );
     snprintf( lPort, MAX_NAME_LEN, "%d", localPort );
-    char *pAddr = strdup( inet_ntoa( peerPtr->sin_addr ) );
-    int peerPort = ntohs( peerPtr->sin_port );
+    char *pAddr = strdup( inet_ntoa( peer.sa_in.sin_addr ) );
+    int peerPort = ntohs( peer.sa_in.sin_port );
     snprintf( pPort, MAX_NAME_LEN, "%d", peerPort );
     char *args[6] = {oType, lAddr, lPort, pAddr, pPort, lLoad};
     ruleExecInfo_t rei;
