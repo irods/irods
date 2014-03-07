@@ -8,7 +8,7 @@
 #include "md5.hpp"
 
 namespace irods {
-
+    const std::string MD5_NAME( "md5" );
     class MD5Strategy : public HashStrategy {
     public:
         MD5Strategy( void );

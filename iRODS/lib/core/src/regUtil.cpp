@@ -37,8 +37,10 @@ regUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         }
 
         if ( myRodsArgs->collection == False && myRodsArgs->checksum == True ) {
-            status = rcChksumLocFile( srcPath->outPath, REG_CHKSUM_KW,
-                                      &dataObjOprInp.condInput );
+            status = rcChksumLocFile( srcPath->outPath,
+                                      REG_CHKSUM_KW,
+                                      &dataObjOprInp.condInput,
+                                      myRodsArgs->hashValue );
             if ( status < 0 ) {
                 rodsLogError( LOG_ERROR, status,
                               "regUtil: rcChksumLocFile error for %s, status = %d",

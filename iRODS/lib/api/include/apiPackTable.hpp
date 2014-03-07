@@ -85,31 +85,7 @@ packInstructArray_t api_pack_table_init[] = {
     {"ticketAdminInp_PI", ticketAdminInp_PI, irods::clearInStruct_noop},
     {"getTempPasswordForOtherInp_PI", getTempPasswordForOtherInp_PI, irods::clearInStruct_noop},
     {"getTempPasswordForOtherOut_PI", getTempPasswordForOtherOut_PI, irods::clearInStruct_noop},
-    /* NETCDF PI */
-#if 0 // NETCDF_CLIENT
-    {"NcOpenInp_PI", NcOpenInp_PI, irods::clearInStruct_noop},
-    {"NcCloseInp_PI", NcCloseInp_PI, irods::clearInStruct_noop},
-    {"NcInqIdInp_PI", NcInqIdInp_PI, irods::clearInStruct_noop},
-    {"NcInqWithIdOut_PI", NcInqWithIdOut_PI, irods::clearInStruct_noop},
-    {"NcGetVarInp_PI", NcGetVarInp_PI, irods::clearInStruct_noop},
-    {"NcGetVarOut_PI", NcGetVarOut_PI, irods::clearInStruct_noop},
-    {"NcGenDimOut_PI", NcGenDimOut_PI, irods::clearInStruct_noop},
-    {"NcGenAttOut_PI", NcGenAttOut_PI, irods::clearInStruct_noop},
-    {"NcGenVarOut_PI", NcGenVarOut_PI, irods::clearInStruct_noop},
-    {"NcInqInp_PI", NcInqInp_PI, irods::clearInStruct_noop},
-    {"NcInqOut_PI", NcInqOut_PI, irods::clearInStruct_noop},
-    {"NcInqGrpsInp_PI", NcInqGrpsInp_PI, irods::clearInStruct_noop},
-    {"NcInqGrpsOut_PI", NcInqGrpsOut_PI, irods::clearInStruct_noop},
-    {"NcRegGlobalAttrInp_PI", NcRegGlobalAttrInp_PI, irods::clearInStruct_noop},
-    {"NcAggElement_PI", NcAggElement_PI, irods::clearInStruct_noop},
-    {"NcAggInfo_PI", NcAggInfo_PI, irods::clearInStruct_noop},
-    {"NcArchTimeSeriesInp_PI", NcArchTimeSeriesInp_PI, irods::clearInStruct_noop},
-#endif
-    /* endof NETCDF_CLIENT */
-#ifdef OOI_CI
-    {"OoiGenServReqInp_PI", OoiGenServReqInp_PI, irods::clearInStruct_noop},
-    {"OoiGenServReqOut_PI", OoiGenServReqOut_PI, irods::clearInStruct_noop},
-#endif
+
 
     {"pamAuthRequestInp_PI", pamAuthRequestInp_PI, irods::clearInStruct_noop},
     {"pamAuthRequestOut_PI", pamAuthRequestOut_PI, irods::clearInStruct_noop},

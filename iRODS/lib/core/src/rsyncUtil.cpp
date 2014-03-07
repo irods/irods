@@ -190,8 +190,10 @@ rsyncDataToFileUtil( rcComm_t *conn, rodsPath_t *srcPath,
     }
     else if ( strlen( srcPath->chksum ) > 0 ) {
         /* src has a checksum value */
-        status = rcChksumLocFile( targPath->outPath, RSYNC_CHKSUM_KW,
-                                  &dataObjOprInp->condInput );
+        status = rcChksumLocFile( targPath->outPath,
+                                  RSYNC_CHKSUM_KW,
+                                  &dataObjOprInp->condInput,
+                                  myRodsArgs->hashValue );
         if ( status < 0 ) {
             rodsLogError( LOG_ERROR, status,
                           "rsyncDataToFileUtil: rcChksumLocFile error for %s, status = %d",
@@ -208,7 +210,8 @@ rsyncDataToFileUtil( rcComm_t *conn, rodsPath_t *srcPath,
     else {
         /* exist but no chksum */
         status = rcChksumLocFile( targPath->outPath, RSYNC_CHKSUM_KW,
-                                  &dataObjOprInp->condInput );
+                                  &dataObjOprInp->condInput,
+                                  myRodsArgs->hashValue );
         if ( status < 0 ) {
             rodsLogError( LOG_ERROR, status,
                           "rsyncDataToFileUtil: rcChksumLocFile error for %s, status = %d",
@@ -323,7 +326,8 @@ rsyncFileToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
     else if ( strlen( targPath->chksum ) > 0 ) {
         /* src has a checksum value */
         status = rcChksumLocFile( srcPath->outPath, RSYNC_CHKSUM_KW,
-                                  &dataObjOprInp->condInput );
+                                  &dataObjOprInp->condInput,
+                                  myRodsArgs->hashValue );
         if ( status < 0 ) {
             rodsLogError( LOG_ERROR, status,
                           "rsyncFileToDataUtil: rcChksumLocFile error for %s, status = %d",
@@ -345,7 +349,8 @@ rsyncFileToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
     else {
         /* exist but no chksum */
         status = rcChksumLocFile( srcPath->outPath, RSYNC_CHKSUM_KW,
-                                  &dataObjOprInp->condInput );
+                                  &dataObjOprInp->condInput,
+                                  myRodsArgs->hashValue );
         if ( status < 0 ) {
             rodsLogError( LOG_ERROR, status,
                           "rsyncFileToDataUtil: rcChksumLocFile error for %s, status = %d",

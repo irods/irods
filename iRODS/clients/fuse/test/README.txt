@@ -1,0 +1,1 @@
+To run the test scripts, make sure you have set the environment variable IRODS_HOME. The scripts assume that the fuse shared libraries are installed at /usr/local/lib. Please set the LD_LIBRARY_PATH environment variable accordingly if they are not installed elsewhere.

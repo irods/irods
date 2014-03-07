@@ -45,6 +45,7 @@ _rnew = _rnew2;}
 #define RE_BACKWARD_COMPATIBLE
 
 static char globalSessionId[MAX_NAME_LEN] = "Unspecified";
+static keyValPair_t globalHashtable = {0, NULL, NULL};
 
 /* todo include proper header files */
 int rsOpenCollection( rsComm_t *rsComm, collInp_t *openCollInp );
@@ -64,6 +65,11 @@ Res *smsi_setGlobalSessionId( Node **subtrees, int n, Node *node, ruleExecInfo_t
     rstrcpy( globalSessionId, sid, MAX_NAME_LEN );
     return newIntRes( r, 0 );
 }
+
+Res *smsi_properties( Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+    return newUninterpretedRes( r, KeyValPair_MS_T, &globalHashtable, NULL );
+}
+
 
 void reIterable_genQuery_init( ReIterableData *itrData, Region *r );
 int reIterable_genQuery_hasNext( ReIterableData *itrData, Region *r );
@@ -262,6 +268,7 @@ Res *smsi_forExec( Node **params, int n, Node *node, ruleExecInfo_t *rei, int re
 
         cond = evaluateExpression3( ( Node * )params[1], 0, 1, rei, reiSaveFlag, env, errmsg, GC_REGION );
         if ( getNodeType( cond ) == N_ERROR ) {
+            res = cond;
             break;
         }
         if ( RES_BOOL_VAL( cond ) == 0 ) {
@@ -282,6 +289,7 @@ Res *smsi_forExec( Node **params, int n, Node *node, ruleExecInfo_t *rei, int re
         }
         step = evaluateExpression3( ( Node * )params[2], 0, 1, rei, reiSaveFlag, env, errmsg, GC_REGION );
         if ( getNodeType( step ) == N_ERROR ) {
+            res = step;
             break;
         }
         GC_ON( env );
@@ -388,6 +396,7 @@ int reIterable_genQuery_hasNext( ReIterableData *itrData, Region *r ) {
             itrData->errorRes = newErrorRes( r, status );
             return 0;
         }
+        data->genQueryOut = ( genQueryOut_t * ) data->genQOutParam.inOutStruct;
         data->len = getCollectionSize( itrData->res->subtrees[1]->exprType->text, data->genQueryOut, r );
         if ( data->len > 0 ) {
             return 1;
@@ -698,7 +707,7 @@ Res *smsi_forEachExec( Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, 
     Res *res;
     char* varName = ( ( Node * )subtrees[0] )->text;
     Res* orig = evaluateVar3( varName, ( ( Node * )subtrees[0] ), rei, reiSaveFlag, env, errmsg, r );
-    if ( TYPE( orig ) == T_ERROR ) {
+    if ( getNodeType( orig ) == N_ERROR || TYPE( orig ) == T_ERROR ) {
         return orig;
     }
 
@@ -3096,6 +3105,7 @@ void getSystemFunctions( Hashtable *ft, Region *r ) {
     insertIntoHashTable( ft, "collection", newFunctionFD( "path -> `CollInpNew_PI`", smsi_collection, r ) );
     insertIntoHashTable( ft, "getGlobalSessionId", newFunctionFD( "->string", smsi_getGlobalSessionId, r ) );
     insertIntoHashTable( ft, "setGlobalSessionId", newFunctionFD( "string->integer", smsi_setGlobalSessionId, r ) );
+    insertIntoHashTable( ft, "temporaryStorage", newFunctionFD( "->KeyValPair_PI", smsi_properties, r ) );
     /*    insertIntoHashTable(ft, "msiDataObjInfo", newFunctionFD("input `DataObjInp_PI` * output `DataObjInfo_PI` -> integer", smsi_msiDataObjInfo, r));*/
     insertIntoHashTable( ft, "rei->doi->dataSize", newFunctionFD( "double : 0 {string}", ( SmsiFuncTypePtr ) NULL, r ) );
     insertIntoHashTable( ft, "rei->doi->writeFlag", newFunctionFD( "integer : 0 {string}", ( SmsiFuncTypePtr ) NULL, r ) );

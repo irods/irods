@@ -14,15 +14,17 @@
 #include "sha1.hpp"
 
 extern "C" {
+#define SHA256_CHKSUM_PREFIX "sha2:"
+    int verifyChksumLocFile( char *fileName, char *myChksum, char *chksumStr );
 
     int
-    chksumLocFile( char *fileName, char *chksumStr );
+    chksumLocFile( char *fileName, char *chksumStr, const char* );
     int
     md5ToStr( unsigned char *digest, char *chksumStr );
     int
     hashToStr( unsigned char *digest, char *digestStr );
     int
-    rcChksumLocFile( char *fileName, char *chksumFlag, keyValPair_t *condInput );
+    rcChksumLocFile( char *fileName, char *chksumFlag, keyValPair_t *condInput, const char* );
 
 }
 

@@ -47,6 +47,8 @@ extern "C" {
         int global;
         int rescGroup;
         char *rescGroupString;
+        int hash;
+        char *hashValue;
         int header;
         int help;
         int hostAddr;

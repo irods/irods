@@ -59,7 +59,13 @@ extern "C" {
     // Set requireServerAuth to 1 to fail authentications from
     // un-authenticated Servers (for example, if the LocalZoneSID
     // is not set)
-    const int requireServerAuth = 0;
+    const int requireServerAuth = 1;
+
+    // =-=-=-=-=-=-=-
+    // NOTE:: this needs to become a property
+    // If set, then SIDs are always required, errors will be return if a SID
+    // is not locally set for a remote server
+    const int requireSIDs = 0;
 
     // =-=-=-=-=-=-=-
     // given the client connection and context string, set up the
@@ -364,7 +370,6 @@ extern "C" {
                 char digest[RESPONSE_LEN + 2];
                 char md5Buf[CHALLENGE_LEN + MAX_PASSWORD_LEN + 2];
                 char serverId[MAX_PASSWORD_LEN + 2];
-                MD5_CTX context;
 
                 bufp = _rsAuthRequestGetChallenge();
 
@@ -415,17 +420,22 @@ extern "C" {
                                     if ( len <= 0 ) {
                                         rodsLog( LOG_NOTICE, "rsAuthResponse: Warning, cannot authenticate the remote server, no RemoteZoneSID defined in server.config", status );
                                         result = ASSERT_ERROR( !requireServerAuth, REMOTE_SERVER_SID_NOT_DEFINED, "Authentication disallowed, no RemoteZoneSID defined." );
+                                        if ( requireSIDs ) {
+                                            return ERROR( REMOTE_SERVER_SID_NOT_DEFINED, "Authentication disallowed, no RemoteZoneSID defined" );
+                                        }
                                     }
                                     else {
-                                        strncpy( md5Buf + CHALLENGE_LEN, serverId, len );
-                                        MD5Init( &context );
-                                        MD5Update( &context, ( unsigned char* )md5Buf, CHALLENGE_LEN + MAX_PASSWORD_LEN );
-                                        MD5Final( ( unsigned char* )digest, &context );
+                                        obfMakeOneWayHash(
+                                            HASH_TYPE_DEFAULT,
+                                            ( unsigned char* )md5Buf,
+                                            CHALLENGE_LEN + MAX_PASSWORD_LEN,
+                                            ( unsigned char* )digest );
+
                                         for ( i = 0; i < RESPONSE_LEN; i++ ) {
                                             if ( digest[i] == '\0' ) {
                                                 digest[i]++;
-                                            }  /* make sure 'string' doesn't
-                                                                                  end early*/
+                                            }  /* make sure 'string' doesn't end early*/
+
                                         }
                                         cp = authCheckOut->serverResponse;
                                         OK = 1;

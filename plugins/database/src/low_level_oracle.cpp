@@ -144,7 +144,7 @@ cllOpenEnv( icatSessionStruct *icss ) {
 
     icss->connectPtr = p_svc;
     icss->environPtr = p_env;
-    rodsLog( LOG_NOTICE, "XXXX - cllOpenEnv :: SUCCESS!" );
+
     return( 0 );
 }
 
@@ -187,7 +187,6 @@ cllConnect( icatSessionStruct *icss ) {
 
     p_svc = ( OCISvcCtx * )icss->connectPtr;
     p_env = ( OCIEnv * )icss->environPtr;
-    rodsLog( LOG_NOTICE, "XXXX - cllConnect :: p_svc %d   p_env %d", p_svc, p_env );
     atFound = 0;
     userName[0] = '\0';
     databaseName[0] = '\0';

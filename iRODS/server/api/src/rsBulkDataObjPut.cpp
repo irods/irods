@@ -18,6 +18,9 @@
 #include "rsApiHandler.hpp"
 #include "irods_stacktrace.hpp"
 
+#include "irods_server_properties.hpp"
+#include "readServerConfig.hpp"
+
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
 #include "irods_resource_redirect.hpp"
@@ -558,7 +561,7 @@ bulkProcAndRegSubfile( rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string
             if ( ( flags & VERIFY_CHKSUM_FLAG ) != 0 && myChksum != NULL ) {
                 char chksumStr[NAME_LEN];
                 /* verify the chksum */
-                status = chksumLocFile( dataObjInfo.filePath, chksumStr );
+                status = verifyChksumLocFile( dataObjInfo.filePath, myChksum, chksumStr );
                 if ( status < 0 ) {
                     rodsLog( LOG_ERROR,
                              "bulkProcAndRegSubfile: chksumLocFile error for %s ",

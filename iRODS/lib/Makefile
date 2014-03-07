@@ -133,8 +133,8 @@ CFLAGS +=	-DEXTENDED_ICAT
 INCLUDES +=	-I$(svrExtIcatIncDir)
 endif
 
-ifdef OOI_CI
-LIB_CORE_OBJS += $(libCoreObjDir)/ooiCi.o
+ifdef SHA256_FILE_HASH
+CFLAGS += -DSHA256_FILE_HASH
 endif
 
 # Logging (automatically generated source)
@@ -157,7 +157,8 @@ INCLUDES +=    -I$(libSha1IncDir)
 LIB_HASHER_OBJS = \
 		$(libHasherObjDir)/Hasher.o \
 		$(libHasherObjDir)/MD5Strategy.o \
-		$(libHasherObjDir)/SHA256Strategy.o
+		$(libHasherObjDir)/SHA256Strategy.o \
+		$(libHasherObjDir)/irods_hasher_factory.o 
 INCLUDES +=	-I$(libHasherIncDir)
 
 # rbudp

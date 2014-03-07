@@ -458,7 +458,7 @@ bundleAndRegSubFiles( rsComm_t *rsComm, int l1descInx, char *phyBunDir,
         // JMC - backport 4528
         if ( chksumFlag != 0 ) {
             status = fileChksum( rsComm, regReplicaInp.destDataObjInfo->filePath,
-                                 subPhyPath, regReplicaInp.destDataObjInfo->rescHier, tmpBunReplCache->chksumStr );
+                                 subPhyPath, regReplicaInp.destDataObjInfo->rescHier, 0, tmpBunReplCache->chksumStr );
             if ( status < 0 ) {
                 savedStatus = status;
                 rodsLogError( LOG_ERROR, status, "bundleAndRegSubFiles: fileChksum error for %s", tmpBunReplCache->objPath );

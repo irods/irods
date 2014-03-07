@@ -25,9 +25,10 @@ typedef struct FileChksumInp {
     char objPath[MAX_NAME_LEN];
     int flag;   /* not used for now */
     char in_pdmo[MAX_NAME_LEN]; // Flag indicating if we are being executed from a pdmo
+    char orig_chksum[NAME_LEN]; // original incoming checksum
 } fileChksumInp_t;
 
-#define fileChksumInp_PI "struct RHostAddr_PI; str fileName[MAX_NAME_LEN]; str rescHier[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN]; int flags; str in_pdmo[MAX_NAME_LEN];"
+#define fileChksumInp_PI "struct RHostAddr_PI; str fileName[MAX_NAME_LEN]; str rescHier[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN]; int flags; str in_pdmo[MAX_NAME_LEN];, str orig_chksum[NAME_LEN];"
 
 #define fileChksumOut_PI "str chksumStr[NAME_LEN];"
 
@@ -44,7 +45,7 @@ int
 remoteFileChksum( rsComm_t *rsComm, fileChksumInp_t *fileChksumInp,
                   char **chksumStr, rodsServerHost_t *rodsServerHost );
 int
-fileChksum( rsComm_t *rsComm, char* objPath, char *fileName, char* rescHier, char *chksumStr );
+fileChksum( rsComm_t *rsComm, char* objPath, char *fileName, char* rescHier, char* orig_chksum, char *chksumStr );
 #else
 #define RS_FILE_CHKSUM NULL
 #endif

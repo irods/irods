@@ -233,7 +233,7 @@ endif
 
 # IRODS_FS - specify that irodsFuse should be built
 # The latest version is 26 for release 2.7. It default to 21 if not defined
- IRODS_FS = 1
+IRODS_FS = 1
 ifdef IRODS_FS
 fuseHomeDir=/usr/local/fuse
 endif
@@ -331,6 +331,10 @@ BOOST_DIR=/tbox/IRODS_BUILD/iRODS/boost_irods
 endif
 endif
 
+# =-=-=-=-=-=-=-
+# compile in the sha256 support for the hasher class
+# NOTE:: this should be a build.sh template value
+SHA256_FILE_HASH = 1 
 
 # OS_AUTH - build in support for "OS level" authentication. This form
 # of authentication uses a shared secret and the genOSAuth command to
@@ -391,6 +395,3 @@ endif
 # filesystem (e.g. a parallel file system NAS). It requires that the
 # RUN_SERVER_AS_ROOT feature is turned on.
 # DIRECT_ACCESS_VAULT = 1
-
-# OOI_CI - specify whether to compile the OOI CI modules
-OOI_CI=1

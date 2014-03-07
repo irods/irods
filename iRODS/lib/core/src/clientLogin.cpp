@@ -480,6 +480,8 @@ clientLoginWithPassword( rcComm_t *Conn, char* password ) {
 
     memset( md5Buf, 0, sizeof( md5Buf ) );
     strncpy( md5Buf, authReqOut->challenge, CHALLENGE_LEN );
+    setSessionSignatureClientside( md5Buf );
+
 
     len = strlen( password );
     sprintf( md5Buf + CHALLENGE_LEN, "%s", password );

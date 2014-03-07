@@ -1222,9 +1222,9 @@ int decodePw( rsComm_t *rsComm, char *in, char *out ) {
 
     if ( pwLen2 > MAX_PASSWORD_LEN - 5 && pwLen2 == pwLen1 ) {
         /* probable failure */
-        char errMsg[160];
-        snprintf( errMsg, 150,
-                  "Error with password encoding.\nPlease try connecting directly to the ICAT host (setenv irodsHost)" );
+        char errMsg[260];
+        snprintf( errMsg, 250,
+                  "Error with password encoding.  This can be caused by not connecting directly to the ICAT host, not using password authentication (using GSI or Kerberos instead), or entering your password incorrectly (if prompted)." );
         addRErrorMsg( &rsComm->rError, 0, errMsg );
         return( CAT_PASSWORD_ENCODING_ERROR );
     }
@@ -8173,6 +8173,12 @@ checkLevel:
             char userIdStr[MAX_NAME_LEN];
             i = decodePw( _comm, _new_value, decoded );
             int status2 = icatApplyRule( _comm, ( char* )"acCheckPasswordStrength", decoded );
+            if ( status2 == NO_RULE_OR_MSI_FUNCTION_FOUND_ERR ) {
+                int status3;
+                status3 = addRErrorMsg( &_comm->rError, 0,
+                                        "acCheckPasswordStrength rule not found" );
+            }
+
             if ( status2 ) {
                 return ERROR( status2, "icatApplyRule failed" );
             }
@@ -11696,6 +11702,69 @@ checkLevel:
         makeEscapedPath( _path_name, pathStart, sizeof( pathStart ) );
         strncat( pathStart, "/%", sizeof( pathStart ) );
 
+#if (defined ORA_ICAT || defined MY_ICAT)
+#else
+        /* The temporary table created and used below has been found to
+           greatly speed up the execution of subsequent deletes and
+           updates.  We did a lot of testing and 'explain' SQL using a copy
+           (minus passwords) of the large iPlant ICAT DB to find this.  It
+           makes sense that using a table like this will speed it up,
+           except for the constraints aspect (further below).
+
+           It is very likely that the same temporary table would also speed
+           up Oracle and MySQL ICATs but we didn't have time to test that
+           so this is only for Postgres for now.  The SQL for creating the
+           table is probably a bit different for Oracle and MySQL but
+           otherwise I expect this would work for them.
+
+           Before this change the SQL could take minutes on a very large
+           instance.  With this, it can take less than a second on a
+           'ichmod -r' on a small sub-collection, and is fairly fast on
+           moderate sized ones.  I expect it will perform somewhat better
+           than the old SQL on large ones, but I was unable to reliably
+           test this on our fairly modest hardware.
+
+           Since these SQL statements are only for Postgres, we can't add
+           rodsLog(LOG_SQL, ...) calls (so 'devtest' will verify it is
+           called), but since the later postgres SQL depends on this table,
+           we can be sure this is exercised if "chlModAccessControl SQL 8" is.
+        */
+        status =  cmlExecuteNoAnswerSql( "create temporary table R_MOD_ACCESS_TEMP1 (coll_id bigint not null, coll_name varchar(2700) not null) on commit drop",
+                                         &icss );
+        if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) { status = 0; }
+        if ( status != 0 ) {
+            rodsLog( LOG_NOTICE,
+                     "chlModAccessControl cmlExecuteNoAnswerSql create temp table failure %d",
+                     status );
+            _rollback( "chlModAccessControl" );
+            return ERROR( status, "chlModAccessControl cmlExecuteNoAnswerSql create temp table failure" );
+        }
+
+        status =  cmlExecuteNoAnswerSql( "create unique index idx_r_mod_access_temp1 on R_MOD_ACCESS_TEMP1 (coll_name)",
+                                         &icss );
+        if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) { status = 0; }
+        if ( status != 0 ) {
+            rodsLog( LOG_NOTICE,
+                     "chlModAccessControl cmlExecuteNoAnswerSql create index failure %d",
+                     status );
+            _rollback( "chlModAccessControl" );
+            return ERROR( status, "chlModAccessControl cmlExecuteNoAnswerSql create index failure" );
+        }
+
+        cllBindVars[cllBindVarCount++] = _path_name;
+        cllBindVars[cllBindVarCount++] = pathStart;
+        status =  cmlExecuteNoAnswerSql( "insert into R_MOD_ACCESS_TEMP1 (coll_id, coll_name) select  coll_id, coll_name from R_COLL_MAIN where coll_name = ? or coll_name like ?",
+                                         &icss );
+        if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) { status = 0; }
+        if ( status != 0 ) {
+            rodsLog( LOG_NOTICE,
+                     "chlModAccessControl cmlExecuteNoAnswerSql insert failure %d",
+                     status );
+            _rollback( "chlModAccessControl" );
+            return ERROR( status, "chlModAccessControl cmlExecuteNoAnswerSql insert failure" );
+        }
+#endif
+
         cllBindVars[cllBindVarCount++] = userIdStr;
         cllBindVars[cllBindVarCount++] = _path_name;
         cllBindVars[cllBindVarCount++] = pathStart;
@@ -11707,7 +11776,15 @@ checkLevel:
 #if (defined ORA_ICAT || defined MY_ICAT)
                       "delete from R_OBJT_ACCESS where user_id=? and object_id = ANY (select data_id from R_DATA_MAIN where coll_id in (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ?))",
 #else
-                      "delete from R_OBJT_ACCESS where user_id=? and object_id = ANY(ARRAY(select data_id from R_DATA_MAIN where coll_id in (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ?)))",
+                      /*  Use the temporary table to greatly speed up this operation
+                      (and similar ones below).  The last constraint, the 'where
+                      coll_name = ? or coll_name like ?' isn't really needed (since
+                      that table was populated via constraints like those) but,
+                      oddly, does seem to make it run much faster.  Using 'explain'
+                      SQL and test runs confirmed that it is faster with those
+                      constraints.
+                      */
+                      "delete from R_OBJT_ACCESS where user_id=? and object_id = ANY(ARRAY(select data_id from R_DATA_MAIN where coll_id in (select coll_id from R_MOD_ACCESS_TEMP1 where coll_name = ? or coll_name like ?)))",
 #endif
                       & icss );
 
@@ -11727,7 +11804,7 @@ checkLevel:
 #if (defined ORA_ICAT || defined MY_ICAT)
                       "delete from R_OBJT_ACCESS where user_id=? and object_id = ANY (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ?)",
 #else
-                      "delete from R_OBJT_ACCESS where user_id=? and object_id = ANY(ARRAY(select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ?))",
+                      "delete from R_OBJT_ACCESS where user_id=? and object_id = ANY(ARRAY(select coll_id from R_MOD_ACCESS_TEMP1 where coll_name = ? or coll_name like ?))",
 #endif
                       & icss );
         if ( status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
@@ -11776,8 +11853,9 @@ checkLevel:
                       "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct data_id, ?, (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_DATA_MAIN where coll_id in (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ?))",
                       &icss );
 #else
+        /* For Postgres, also use the temporary R_MOD_ACCESS_TEMP1 table */
         status =  cmlExecuteNoAnswerSql(
-                      "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct data_id, cast(? as bigint), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_DATA_MAIN where coll_id in (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ?))",
+                      "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct data_id, cast(? as bigint), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_DATA_MAIN where coll_id in (select coll_id from R_MOD_ACCESS_TEMP1 where coll_name = ? or coll_name like ?))",
                       &icss );
 #endif
         if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {

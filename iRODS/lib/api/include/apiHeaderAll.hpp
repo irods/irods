@@ -151,9 +151,6 @@
 #include "pamAuthRequest.hpp"
 #include "sslStart.hpp"
 #include "sslEnd.hpp"
-#ifdef OOI_CI
-#include "ooiGenServReq.hpp"
-#endif
 
 
 // =-=-=-=-=-=-=-

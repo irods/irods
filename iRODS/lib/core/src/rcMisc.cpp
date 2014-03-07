@@ -1094,7 +1094,6 @@ clearKeyVal( keyValPair_t *condInput ) {
     if ( condInput == NULL || condInput->len <= 0 ) {
         return ( 0 );
     }
-
     for ( i = 0; i < condInput->len; i++ ) {
         free( condInput->keyWord[i] );
         free( condInput->value[i] );

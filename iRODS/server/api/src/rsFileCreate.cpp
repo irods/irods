@@ -134,7 +134,7 @@ int _rsFileCreate(
 
     // =-=-=-=-=-=-=-
     // pass condInput
-    file_obj->cond_input(_create_inp->condInput);
+    file_obj->cond_input( _create_inp->condInput );
 
     irods::error create_err = fileCreate( _comm, file_obj );
 

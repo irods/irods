@@ -82,7 +82,7 @@ DB_PLUGIN_SRC = $(buildDir)/server/core/src/irods_database_plugin.cpp
 DB_PLUGIN_OBJ_WITH_NO_RE = $(svrCoreObjDir)/irods_database_plugin_with_no_re.o 
    		
 
-INCLUDES +=	-I$(svrCoreIncDir)
+INCLUDES +=	-I$(svrCoreIncDir) -I$(libHasherIncDir)
 
 CFLAGS += `../../packaging/compiler_check.sh 4 2`
 

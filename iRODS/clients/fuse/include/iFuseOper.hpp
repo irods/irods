@@ -2,19 +2,28 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* iFuseOper.h - Header for for iFuseOper.c */
 
-#ifndef I_FUSE_OPER_HPP
-#define I_FUSE_OPER_HPP
+#ifndef I_FUSE_OPER_H
+#define I_FUSE_OPER_H
 
 #include <sys/statvfs.h>
 #include "rodsClient.hpp"
 #include "rodsPath.hpp"
 #include "iFuseLib.hpp"
+#include "iFuseLib.Lock.hpp"
 
+#define RECONNECT_IF_NECESSARY(s, c, o) \
+	(s) = (o); \
+	if (isReadMsgError (s)) { \
+		ifuseReconnect (c); \
+		(s) = (o); \
+    }
+
+#ifdef  __cplusplus
 extern "C" {
+#endif
 
     int
-    _irodsGetattr( iFuseConn_t *iFuseConn, const char *path, struct stat *stbuf,
-                   pathCache_t **outPathCache );
+    _irodsGetattr( iFuseConn_t *iFuseConn, const char *path, struct stat *stbuf );
     int irodsGetattr( const char *path, struct stat *stbuf );
     int irodsReadlink( const char *path, char *buf, size_t size );
     int irodsGetdir( const char *, char *, size_t );	/* Deprecated */
@@ -43,6 +52,8 @@ extern "C" {
     int irodsReaddir( const char *path, void *buf, fuse_fill_dir_t filler,
                       off_t offset, struct fuse_file_info *fi );
 
+#ifdef  __cplusplus
 }
+#endif
 
 #endif	/* I_FUSE_OPER_H */

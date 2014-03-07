@@ -59,6 +59,16 @@ rsExecCmd( rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut ) 
         return ( BAD_EXEC_CMD_PATH );
     }
 
+    /* Also check for anonymous.  As an additional safety precaution,
+       by default, do not allow the anonymous user (if defined) to
+       execute commands via rcExecCmd.  If your site needs to allow
+       this for some particular feature, you can remove the
+       following check.
+    */
+    if ( strncmp( ANONYMOUS_USER, rsComm->clientUser.userName, NAME_LEN ) == 0 ) {
+        return( USER_NOT_ALLOWED_TO_EXEC_CMD );
+    }
+
     memset( &addr, 0, sizeof( addr ) );
     if ( *execCmdInp->hintPath != '\0' ) {
         dataObjInp_t dataObjInp;
@@ -351,8 +361,9 @@ execCmd( execCmd_t *execCmdInp, int stdOutFd, int stdErrFd ) {
     char *av[LONG_NAME_LEN];
     int status;
 
-    snprintf( cmdPath, LONG_NAME_LEN, "%s/%s", CMD_DIR, execCmdInp->cmd );
+    rodsLog( LOG_NOTICE, "execCmd:%s argv:%s", cmdPath, execCmdInp->cmdArgv );
 
+    snprintf( cmdPath, LONG_NAME_LEN, "%s/%s", CMD_DIR, execCmdInp->cmd );
     initCmdArg( av, execCmdInp->cmdArgv, cmdPath );
 
     closeAllL1desc( ThisComm );

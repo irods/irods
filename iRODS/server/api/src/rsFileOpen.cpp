@@ -145,7 +145,7 @@ int _rsFileOpen(
 
     // =-=-=-=-=-=-=-
     // pass condInput
-    file_obj->cond_input(_open_inp->condInput);
+    file_obj->cond_input( _open_inp->condInput );
 
     irods::error ret_err = fileOpen( _comm, file_obj );
 

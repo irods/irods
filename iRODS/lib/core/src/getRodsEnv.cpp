@@ -360,6 +360,28 @@ int getRodsEnvFromFile( char *fileName, rodsEnv *rodsEnvArg, int errorLevel ) {
                          rodsEnvArg->rodsEncryptionAlgorithm );
             }
 
+            // =-=-=-=-=-=-=-
+            // variable to define default hash scheme
+            key = strstr( buf, "irodsDefaultHashScheme" );
+            if ( key != NULL ) {
+                rstrcpy( rodsEnvArg->rodsDefaultHashScheme,
+                         findNextTokenAndTerm( key + 22 ),
+                         LONG_NAME_LEN );
+                rodsLog( msgLevel, "irodsDefaultHashScheme=%s",
+                         rodsEnvArg->rodsDefaultHashScheme );
+            }
+
+            // =-=-=-=-=-=-=-
+            // variable to define hash scheme matching policy
+            key = strstr( buf, "irodsMatchHashPolicy" );
+            if ( key != NULL ) {
+                rstrcpy( rodsEnvArg->rodsMatchHashPolicy,
+                         findNextTokenAndTerm( key + 20 ),
+                         LONG_NAME_LEN );
+                rodsLog( msgLevel, "irodsMatchHashPolicy=%s",
+                         rodsEnvArg->rodsMatchHashPolicy );
+            }
+
             key = strstr( buf, "irodsServerDn" );
             if ( key != NULL ) {
                 char *myStr;
@@ -573,6 +595,28 @@ getRodsEnvFromEnv( rodsEnv *rodsEnvArg ) {
                  LONG_NAME_LEN );
         rodsLog( LOG_NOTICE, "irodsEncryptionAlgorithm=%s",
                  rodsEnvArg->rodsEncryptionAlgorithm );
+    }
+
+    // =-=-=-=-=-=-=-
+    // variable to define hash scheme
+    getVar = getenv( "irodsDefaultHashScheme" );
+    if ( getVar != NULL ) {
+        rstrcpy( rodsEnvArg->rodsDefaultHashScheme,
+                 findNextTokenAndTerm( getVar ),
+                 LONG_NAME_LEN );
+        rodsLog( LOG_NOTICE, "irodsDefaultHashScheme=%s",
+                 rodsEnvArg->rodsDefaultHashScheme );
+    }
+
+    // =-=-=-=-=-=-=-
+    // variable to define hash matching policy
+    getVar = getenv( "irodsMatchHashPolicy" );
+    if ( getVar != NULL ) {
+        rstrcpy( rodsEnvArg->rodsMatchHashPolicy,
+                 findNextTokenAndTerm( getVar ),
+                 LONG_NAME_LEN );
+        rodsLog( LOG_NOTICE, "irodsMatchHashPolicy=%s",
+                 rodsEnvArg->rodsMatchHashPolicy );
     }
 
     getVar = getenv( "irodsServerDn" );

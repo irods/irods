@@ -226,11 +226,18 @@ rcDataObjGet( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
                      "rcDataObjGet: VERIFY_CHKSUM_KW set but no chksum from server" );
         }
         else {
-            char chksumStr[NAME_LEN];
 
-            status = chksumLocFile( locFilePath, chksumStr );
-
-            if ( status < 0 ) {
+            status = verifyChksumLocFile( locFilePath, portalOprOut->chksum, NULL );
+            if ( status == USER_CHKSUM_MISMATCH ) {
+                rodsLogError( LOG_ERROR, status,
+                              "rcDataObjGet: chksum mismatch error for %s, status = %d",
+                              locFilePath, status );
+                if ( portalOprOut != NULL ) {
+                    free( portalOprOut );
+                }
+                return ( status );
+            }
+            else if ( status < 0 ) {
                 rodsLogError( LOG_ERROR, status,
                               "rcDataObjGet: chksumLocFile error for %s, status = %d",
                               locFilePath, status );
@@ -240,16 +247,6 @@ rcDataObjGet( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
                 return ( status );
             }
 
-            if ( strcmp( portalOprOut->chksum, chksumStr ) != 0 ) {
-                status = USER_CHKSUM_MISMATCH;
-                rodsLogError( LOG_ERROR, status,
-                              "rcDataObjGet: chksum mismatch error for %s, status = %d",
-                              locFilePath, status );
-                if ( portalOprOut != NULL ) {
-                    free( portalOprOut );
-                }
-                return ( status );
-            }
         }
     }
     if ( portalOprOut != NULL ) {
