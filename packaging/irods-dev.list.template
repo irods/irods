@@ -11185,19 +11185,19 @@ f 644 root root /usr/include/irods/hdf5/c++/test/h5cpputil.h ./external/hdf5-1.8
 
 
 
-d 755 root root /usr/include/irods/janson -
-d 755 root root /usr/include/irods/janson/src -
-d 755 root root /usr/include/irods/janson/src/tets/ -
-d 755 root root /usr/include/irods/janson/src/win32/ -
-f 644 root root /usr/include/irods/janson/src/jansson.h ./external/jansson-2.5/src/jansson.h
-f 644 root root /usr/include/irods/janson/src/hashtable.h ./external/jansson-2.5/src/hashtable.h
-f 644 root root /usr/include/irods/janson/src/jansson_private.h ./external/jansson-2.5/src/jansson_private.h
-f 644 root root /usr/include/irods/janson/src/jansson_config.h ./external/jansson-2.5/src/jansson_config.h
-f 644 root root /usr/include/irods/janson/src/strbuffer.h ./external/jansson-2.5/src/strbuffer.h
-f 644 root root /usr/include/irods/janson/src/utf.h ./external/jansson-2.5/src/utf.h
-f 644 root root /usr/include/irods/janson/test/suites/api/util.h ./external/jansson-2.5/test/suites/api/util.h
-f 644 root root /usr/include/irods/janson/win32/jansson_config.h ./external/jansson-2.5/win32/jansson_config.h
-f 644 root root /usr/include/irods/janson/config.h ./external/jansson-2.5/config.h
+d 755 root root /usr/include/irods/jansson -
+d 755 root root /usr/include/irods/jansson/src -
+d 755 root root /usr/include/irods/jansson/src/tets/ -
+d 755 root root /usr/include/irods/jansson/src/win32/ -
+f 644 root root /usr/include/irods/jansson/src/jansson.h ./external/jansson-2.5/src/jansson.h
+f 644 root root /usr/include/irods/jansson/src/hashtable.h ./external/jansson-2.5/src/hashtable.h
+f 644 root root /usr/include/irods/jansson/src/jansson_private.h ./external/jansson-2.5/src/jansson_private.h
+f 644 root root /usr/include/irods/jansson/src/jansson_config.h ./external/jansson-2.5/src/jansson_config.h
+f 644 root root /usr/include/irods/jansson/src/strbuffer.h ./external/jansson-2.5/src/strbuffer.h
+f 644 root root /usr/include/irods/jansson/src/utf.h ./external/jansson-2.5/src/utf.h
+f 644 root root /usr/include/irods/jansson/test/suites/api/util.h ./external/jansson-2.5/test/suites/api/util.h
+f 644 root root /usr/include/irods/jansson/win32/jansson_config.h ./external/jansson-2.5/win32/jansson_config.h
+f 644 root root /usr/include/irods/jansson/config.h ./external/jansson-2.5/config.h
 
 
 d 755 root root /usr/include/irods/libarchive/Testing -
