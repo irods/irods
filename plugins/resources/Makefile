@@ -1,4 +1,5 @@
-BASEDIRS = mssofile \
+BASEDIRS = mso \
+           mssofile \
            deferred \
            nonblocking \
            unixfilesystem \
