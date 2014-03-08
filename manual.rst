@@ -1,4 +1,4 @@
-.. header:: iRODS Manual
+.. header:: iRODS TEMPLATE_IRODSVERSION - Manual
 .. footer:: page ###Page###
 
 .. |todaysdate| date::
@@ -785,7 +785,7 @@ A few other storage resource types have been brainstormed but are not included a
  - WOS (1.0b1 released and available separately)
  - HPSS (expected)
  - HDFS (expected)
- - directaccess (run as root) (expected)
+ - directaccess (run as root) (1.0b1 released and available separately)
 
 Managing Child Resources
 ------------------------
@@ -898,9 +898,9 @@ The remaining parameters are standard SSL parameters and made available through 
 Pluggable Database
 ------------------
 
-The iRODS metadata catalog is now installed and managed by separate plugins.  The default database is PostgreSQL and is available for the TEMPLATE_IRODSVERSION release.  MySQL and Oracle plugins will be released as soon as they are tested.
+The iRODS metadata catalog is now installed and managed by separate plugins.  The TEMPLATE_IRODSVERSION release has PostgreSQL, MySQL, and Oracle database plugins available and tested.  MySQL is not available on CentOS 5, as the required `lib_mysqludf_preg` is not currently available on that OS.
 
-The particular flavor of database is encoded in `iRODS/server/config/server.config` with the following directive::
+The particular flavor of database is encoded in `/etc/irods/server.config` with the following directive::
 
  # configuration of icat database plugin - e.g. postgres, mysql, or oracle
  catalog_database_type postgres
@@ -1014,7 +1014,7 @@ In order to use the iRODS PAM support, you also need to have SSL working between
 Server Configuration
 ********************
 
-The following keywords are used to set values for PAM server configuration.  These were previously defined as compile-time options.  They are now configurable via the `iRODS/server/config/server.config` configuration file.  The default values have been preserved.
+The following keywords are used to set values for PAM server configuration.  These were previously defined as compile-time options.  They are now configurable via the `/etc/irods/server.config` configuration file.  The default values have been preserved.
 
 - pam_password_length
 - pam_no_extend
@@ -1106,7 +1106,7 @@ Restart the server::
 Client SSL Setup
 ****************
 
-The client may or may not require configuration at the SSL level, but there are a few parameters that can be set via environment variables to customize the client SSL interaction if necessary. In many cases, if the server's certificate comes from a common CA, your system might already be configured to accept certificates from that CA, and you will not have to adjust the client configuration at all. For example, on an Ubuntu Precise system, the /etc/ssl/certs directory is used as a repository for system trusted certificates installed via an Ubuntu package. Many of the commercial certificate vendors such as VeriSign and AddTrust have their certificates already installed.
+The client may or may not require configuration at the SSL level, but there are a few parameters that can be set via environment variables to customize the client SSL interaction if necessary. In many cases, if the server's certificate comes from a common CA, your system might already be configured to accept certificates from that CA, and you will not have to adjust the client configuration at all. For example, on an Ubuntu12 (Precise) system, the /etc/ssl/certs directory is used as a repository for system trusted certificates installed via an Ubuntu package. Many of the commercial certificate vendors such as VeriSign and AddTrust have their certificates already installed.
 
 After setting up SSL on the server side, test SSL by using the PAM authentication (which requires an SSL connection) and running ``iinit`` with the log level set to LOG_NOTICE. If you see messages as follows, you need to set up trust for the server's certificate, or you need to turn off server verification.
 
@@ -1182,11 +1182,9 @@ irodsSSLCACertificatePath (client)
 Other Notes
 -----------
 
-.. iRODS enforces that the database in use (PostgreSQL, MySQL, etc.) is configured for UTF-8 encoding.  For MySQL, this is enforced at the database level and the table level.  For PostgreSQL, this is enforced at the database level and then the tables inherit this setting.
-
 iRODS enforces that the database in use (PostgreSQL) is configured for UTF-8 encoding.  This is enforced at the database level and then the tables inherit this setting.
 
-The iRODS setting 'StrictACL' is configured on by default in iRODS 4.0+.  This is different from iRODS 3.x and behaves more like standard Unix permissions.  This setting can be found in the `server/config/reConfigs/core.re` file under acAclPolicy{}.
+The iRODS setting 'StrictACL' is configured on by default in iRODS 4.0+.  This is different from iRODS 3.x and behaves more like standard Unix permissions.  This setting can be found in the `/etc/irods/core.re` file under acAclPolicy{}.
 
 
 
@@ -1211,10 +1209,10 @@ This document is intended to explain how the various configuration files are con
 ~/.odbc.ini
     This file, in the irods user's home directory, defines the unixODBC connection details needed for the iCommands to communicate with the iCAT database.  This file was created by the installer package and probably should not be changed by the sysadmin unless they know what they are doing.
 
-iRODS/config/irods.config
+/etc/irods/irods.config
     This file defines the main settings for the iRODS installation.  It is created by the installer package and comes preconfigured with approved and tested settings.  Changing this file will take effect after a restart of the iRODS server.  It is recommended not to change this file.
 
-iRODS/server/config/server.config
+/etc/irods/server.config
     This file defines the behavior of the server Agent that answers individual requests coming into iRODS.  It is recommended not to change this file.
 
 ~/.irods/.irodsA
@@ -1423,6 +1421,11 @@ History of Releases
 ==========   =========    ======================================================
 Date         Version      Description
 ==========   =========    ======================================================
+2014-03-08   4.0.0rc1     First Release Candidate of Merged Codebase
+                            This is the first release candidate of the merged
+                            open source release from RENCI.  It includes support
+                            for MySQL and Oracle databases, NetCDF, and direct
+                            access resources.
 2014-02-18   4.0.0b2      Second Beta Release of Merged Codebase
                             This is the second beta of the merged open source
                             release from RENCI.  It includes pluggable API

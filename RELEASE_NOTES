@@ -7,16 +7,26 @@ Development of this release has focused on the following features and efforts:
 - Introduced pluggable interface for databases
 
   - PostgreSQL
+  - MySQL
+  - Oracle
+- Introduced pluggable interface for the API
+
+  - NetCDF
 - Additional resource plugins
 
   - Amazon S3
   - DDN WOS
+  - Direct Access
+- Additional authentication plugins
+
+  - Grid Security Infrastructure (GSI)
+- Full merge of 3.3.1 features and bugfixes
 - Full python-based testing framework
 - Certified against full Jargon test suite
 - Continuous integration testing via hudson
 - Continuous static analysis via cppcheck
 - Optimized builds with "-O3" and "-Werror"
-- Increased code coverage from ~55% to over 56%
+- Code coverage over 56%
 - Topology testing
 - Continuously built and tested across 3 major linux distributions
 - Packaged for 3 major linux distributions
