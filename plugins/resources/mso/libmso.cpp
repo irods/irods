@@ -76,6 +76,28 @@ extern "C" {
 
     } // mso_mkdir_plugin
 
+    // =-=-=-=-=-=-=-
+    // interface for POSIX mkdir
+    irods::error mso_file_stat_plugin(
+        irods::resource_plugin_context& _ctx,
+        struct stat*                    _statbuf ) {
+        irods::error result = SUCCESS();
+        // =-=-=-=-=-=-=-
+        // manufacture a stat as we do not have a
+        // microservice to perform this duty
+        if ( !_statbuf ) {
+            _statbuf = ( struct stat* ) malloc( sizeof( struct stat ) );
+        }
+
+        _statbuf->st_mode  = S_IFREG;
+        _statbuf->st_nlink = 1;
+        _statbuf->st_uid   = getuid();
+        _statbuf->st_gid   = getgid();
+        _statbuf->st_atime = _statbuf->st_mtime = _statbuf->st_ctime = time( 0 );
+        _statbuf->st_size  = UNKNOWN_FILE_SZ;
+        return SUCCESS();
+
+    } // mso_file_stat_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX readdir
@@ -137,7 +159,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // substr the phy path to the : per
         // the syntax of an mso registered phy path
-        std::string call_code = phy_path.substr( 0, pos );
+        std::string call_code = phy_path.substr( 0, pos - 2 );
 
         // =-=-=-=-=-=-=-
         // build a string to call the microservice per mso syntax
@@ -539,6 +561,7 @@ extern "C" {
         resc->add_operation( irods::RESOURCE_OP_REBALANCE,         "mso_rebalance" );
         resc->add_operation( irods::RESOURCE_OP_MKDIR,             "mso_mkdir_plugin" );
         resc->add_operation( irods::RESOURCE_OP_RENAME,            "mso_rename_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_STAT,              "mso_file_stat_plugin" );
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code
