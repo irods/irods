@@ -11,7 +11,7 @@
 #include <boost/filesystem.hpp>
 namespace irods {
 
-	void clearInStruct_noop(void*) {};
+    void clearInStruct_noop( void* ) {};
 
     // =-=-=-=-=-=-=-
     // public - ctor
@@ -26,7 +26,8 @@ namespace irods {
         inBsFlag( _def.inBsFlag ),
         outPackInstruct( _def.outPackInstruct ),
         outBsFlag( _def.outBsFlag ),
-        svrHandler( _def.svrHandler ) {
+        svrHandler( _def.svrHandler ),
+        clearInStruct( _def.clearInStruct ) {
     } // ctor
 
     // =-=-=-=-=-=-=-
@@ -42,7 +43,8 @@ namespace irods {
         inBsFlag( _rhs.inBsFlag ),
         outPackInstruct( _rhs.outPackInstruct ),
         outBsFlag( _rhs.outBsFlag ),
-        svrHandler( _rhs.svrHandler ) {
+        svrHandler( _rhs.svrHandler ),
+        clearInStruct( _rhs.clearInStruct ) {
     } // cctor
 
     // =-=-=-=-=-=-=-
@@ -106,18 +108,18 @@ namespace irods {
 
     // =-=-=-=-=-=-=-
     // public - cctor for pack entry
-    pack_entry::pack_entry(const pack_entry& _rhs) {
-    	packInstruct = _rhs.packInstruct;
-    	clearInStruct = _rhs.clearInStruct;
+    pack_entry::pack_entry( const pack_entry& _rhs ) {
+        packInstruct = _rhs.packInstruct;
+        //clearInStruct = _rhs.clearInStruct;
     }
 
     // =-=-=-=-=-=-=-
     // public - assignment operator for pack entry
-    pack_entry& pack_entry::operator=(const pack_entry& _rhs) {
-    	packInstruct = _rhs.packInstruct;
-    	clearInStruct = _rhs.clearInStruct;
+    pack_entry& pack_entry::operator=( const pack_entry& _rhs ) {
+        packInstruct = _rhs.packInstruct;
+        //clearInStruct = _rhs.clearInStruct;
 
-    	return *this;
+        return *this;
     }
 
     // =-=-=-=-=-=-=-
@@ -129,9 +131,7 @@ namespace irods {
         int i = 0;
         std::string end_str( PACK_TABLE_END_PI );
         while ( end_str != _defs[ i ].name ) {
-        	table_[ _defs[ i ].name ].clearInStruct = _defs[i].clearInStruct;
-        	table_[ _defs[ i ].name ].packInstruct = _defs[i].packInstruct;
-            //table_[ _defs[ i ].name ] = _defs[ i ].packInstruct;
+            table_[ _defs[ i ].name ].packInstruct = _defs[i].packInstruct;
             ++i;
         } // for i
 
@@ -211,16 +211,8 @@ namespace irods {
                     // add the out struct
                     if ( !entry->out_pack_key.empty() ) {
                         _pack_tbl[ entry->out_pack_key ].packInstruct = entry->out_pack_value;
-                        if (entry->clearInStruct) {
-                        	_pack_tbl[ entry->out_pack_key ].clearInStruct = entry->clearInStruct;
-                        } else {
-                        	_pack_tbl[ entry->out_pack_key ].clearInStruct = clearInStruct_noop;
-                        }
                         entry->outPackInstruct = entry->out_pack_key.c_str();
                     }
-
-
-
 
                     // =-=-=-=-=-=-=-
                     // some plugins may define additional packinstructions

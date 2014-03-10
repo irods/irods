@@ -21,8 +21,8 @@
 
 namespace irods {
 
-	// NOOP function for clearInStruct
-	void clearInStruct_noop(void*);
+    // NOOP function for clearInStruct
+    void clearInStruct_noop( void* );
 
     struct apidef_t {
         // =-=-=-=-=-=-=-
@@ -46,6 +46,9 @@ namespace irods {
                                         */
         funcPtr        svrHandler;     /* the server handler. should be defined NULL for
                                         * client */
+
+        boost::function<void( void* )> clearInStruct;		//free input struct function
+
     }; // struct apidef_t
 
     class api_entry : public irods::plugin_base {
@@ -94,7 +97,7 @@ namespace irods {
 
         lookup_table< std::string>   extra_pack_struct;
 
-        boost::function<void(void*)> clearInStruct;		//free input struct function
+        boost::function<void( void* )> clearInStruct;		//free input struct function
 
     }; // class api_entry
 
@@ -115,19 +118,18 @@ namespace irods {
     /// @brief class to hold packing instruction and free function
     class pack_entry {
     public:
-    	std::string packInstruct;
-    	boost::function<void(void*)> clearInStruct;
+        std::string packInstruct;
 
-    	// ctor
-    	pack_entry() {};
-    	pack_entry(const pack_entry&);
+        // ctor
+        pack_entry() {};
+        pack_entry( const pack_entry& );
 
 
-    	// dtor
-    	~pack_entry() {};
+        // dtor
+        ~pack_entry() {};
 
-    	// assignment operator
-    	pack_entry& operator=(const pack_entry&);
+        // assignment operator
+        pack_entry& operator=( const pack_entry& );
     };
 
 

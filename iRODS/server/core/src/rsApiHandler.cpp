@@ -163,68 +163,13 @@ int rsApiHandler(
                                  myArgv[3] );
     }
 
+    // =-=-=-=-=-=-=-
+    // clear the incoming packing unstruction
     if ( myInStruct != NULL ) {
-        /* XXXXX this is a hack to reduce mem leak. Need a more generalized
-         * solution */
-        if ( strcmp( RsApiTable[apiInx]->inPackInstruct, "GenQueryInp_PI" ) == 0 ) {
-            clearGenQueryInp( ( genQueryInp_t * ) myInStruct );
-        }
-        else if ( strcmp( RsApiTable[apiInx]->inPackInstruct,
-                          "ModDataObjMeta_PI" )  == 0 ) {
-            clearModDataObjMetaInp( ( modDataObjMeta_t * ) myInStruct );
-        }
-        else if ( strcmp( RsApiTable[apiInx]->inPackInstruct,
-                          "RegReplica_PI" )  == 0 ) {
-            clearRegReplicaInp( ( regReplica_t * ) myInStruct );
-        }
-        else if ( strcmp( RsApiTable[apiInx]->inPackInstruct,
-                          "UnregDataObj_PI" )  == 0 ) {
-            clearUnregDataObj( ( unregDataObj_t * ) myInStruct );
-        }
-        else if ( strcmp( RsApiTable[apiInx]->inPackInstruct,
-                          "DataObjInp_PI" )  == 0 ) {
-            clearDataObjInp( ( dataObjInp_t * ) myInStruct );
-        }
-        else if ( strcmp( RsApiTable[apiInx]->inPackInstruct,
-                          "DataObjCopyInp_PI" )  == 0 ) {
-            clearDataObjCopyInp( ( dataObjCopyInp_t * ) myInStruct );
-        }
-        else if ( strcmp( RsApiTable[apiInx]->inPackInstruct,
-                          "GenQueryOut_PI" )  == 0 ) {
-            clearGenQueryOut( ( genQueryOut_t * ) myInStruct );
-        }
-        else if ( strcmp( RsApiTable[apiInx]->inPackInstruct,
-                          "CollInpNew_PI" )  == 0 ) {
-            clearCollInp( ( collInp_t * ) myInStruct );
-        }
-        else if ( strcmp( RsApiTable[apiInx]->inPackInstruct,
-                          "BulkOprInp_PI" )  == 0 ) {
-            clearBulkOprInp( ( bulkOprInp_t * ) myInStruct );
-        }
-        else if ( strcmp( RsApiTable[apiInx]->inPackInstruct,
-                          "ModAVUMetadataInp_PI" )  == 0 ) {
-            clearModAVUMetadataInp( ( modAVUMetadataInp_t * ) myInStruct );
-        }
-        else if ( strcmp( RsApiTable[apiInx]->inPackInstruct,
-                          "authResponseInp_PI" )  == 0 ) {
-            /* Added by RAJA Nov 22 2010 */
-            clearAuthResponseInp( ( void * ) myInStruct );
-        }
-        else if (RsApiTable[apiInx]->clearInStruct) {
-        	RsApiTable[apiInx]->clearInStruct(myInStruct);
+        if ( RsApiTable[apiInx]->clearInStruct ) {
+            RsApiTable[apiInx]->clearInStruct( myInStruct );
         }
 
-#if 0 // JMC :: these are now API plugins
-        else if ( strcmp( RsApiTable[apiInx]->inPackInstruct,
-                          "NcGetVarInp_PI" )  == 0 ) {
-            clearNcGetVarInp( ( ncGetVarInp_t * ) myInStruct );
-        }
-        else if ( strcmp( RsApiTable[apiInx]->inPackInstruct,
-                          "NcRegGlobalAttrInp_PI" )  == 0 ) {
-            clearRegGlobalAttrInp( ( ncRegGlobalAttrInp_t * ) myInStruct );
-
-        }
-#endif
         free( myInStruct );
         myInStruct = NULL;
     }
