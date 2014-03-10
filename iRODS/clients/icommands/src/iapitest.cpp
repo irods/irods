@@ -58,5 +58,7 @@ main( int argc, char **argv ) {
         printf( "\n\nERROR - failed to call our api\n\n\n" );
         return 0;
     }
+
+    rcDisconnect( conn );
 }
 
