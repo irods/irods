@@ -4,6 +4,6 @@ SRCS = libmsiobjput_http.cpp
 
 HEADERS = 
 
-EXTRALIBS =
+EXTRALIBS = -lcurl
 
 include ../Makefile.base

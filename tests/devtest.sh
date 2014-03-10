@@ -84,7 +84,7 @@ fi
 if [ "$PYTESTS" != "" ] ; then
     $PYTHONCMD $OPTS $PYTESTS
 else
-    $PYTHONCMD $OPTS test_resource_types iadmin_suite catalog_suite test_workflow_suite
+    $PYTHONCMD $OPTS test_resource_types iadmin_suite catalog_suite test_workflow_suite test_mso_suite
     nosetests -v test_allrules.py
     # run DICE developed perl-based devtest suite
     cd $IRODSROOT

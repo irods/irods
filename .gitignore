@@ -39,3 +39,5 @@ plugins/network/*/.deps
 plugins/network/*/.objs
 plugins/resources/*/.deps
 plugins/resources/*/.objs
+plugins/microservices/mso_drivers/msiobjget_http/.objs/
+plugins/microservices/mso_drivers/msiobjput_http/.objs/

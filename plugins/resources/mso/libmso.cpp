@@ -243,11 +243,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // compare data size of cache file to fco
-        if ( fs::file_size( cache_path ) != fco->size() ) {
-            return ERROR(
-                       SYS_COPY_LEN_ERR,
-                       _cache_file_name );
-        }
+        size_t file_size = fs::file_size( cache_path );
+        //if ( fs::file_size( cache_path ) != fco->size() ) {
+        //    return ERROR(
+        //               SYS_COPY_LEN_ERR,
+        //               _cache_file_name );
+        //}
 
         // =-=-=-=-=-=-=-
         // look for the magic token in the physical path
@@ -268,7 +269,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // substr the phy path to the : per
         // the syntax of an mso registered phy path
-        std::string call_code = phy_path.substr( 0, pos );
+        std::string call_code = phy_path.substr( 0, pos - 2 );
 
         // =-=-=-=-=-=-=-
         // build a string to call the microservice per mso syntax
@@ -277,8 +278,8 @@ extern "C" {
         call_str += "(\"" + phy_path + "\", \"";
         call_str += _cache_file_name;
         call_str += "\",";
-        call_str += "\""  + lexical_cast< std::string >( fco->size() ) + "\"";
-        call_str += "\")";
+        //call_str += "\""  + lexical_cast< std::string >( fco->size() ) + "\"";
+        call_str += "\""  + lexical_cast< std::string >( file_size ) + "\")";
 
         // =-=-=-=-=-=-=-
         // prepare necessary artifacts for invocation of the rule engine
