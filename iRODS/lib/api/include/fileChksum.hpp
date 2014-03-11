@@ -28,7 +28,7 @@ typedef struct FileChksumInp {
     char orig_chksum[NAME_LEN]; // original incoming checksum
 } fileChksumInp_t;
 
-#define fileChksumInp_PI "struct RHostAddr_PI; str fileName[MAX_NAME_LEN]; str rescHier[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN]; int flags; str in_pdmo[MAX_NAME_LEN];, str orig_chksum[NAME_LEN];"
+#define fileChksumInp_PI "struct RHostAddr_PI; str fileName[MAX_NAME_LEN]; str rescHier[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN]; int flags; str in_pdmo[MAX_NAME_LEN]; str orig_chksum[NAME_LEN];"
 
 #define fileChksumOut_PI "str chksumStr[NAME_LEN];"
 

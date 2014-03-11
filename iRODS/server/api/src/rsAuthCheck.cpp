@@ -20,6 +20,7 @@ int
 rsAuthCheck( rsComm_t *rsComm, authCheckInp_t *authCheckInp,
              authCheckOut_t **authCheckOut ) {
 #ifdef RODS_CAT
+    rodsLog( LOG_NOTICE, "XXXX - rsAuthCheck :: START" );
     int status;
     int privLevel;
     int clientPrivLevel;
@@ -40,7 +41,9 @@ rsAuthCheck( rsComm_t *rsComm, authCheckInp_t *authCheckInp,
     irods::error ret = irods::parse_kvp_string( orig_resp, kvp );
     std::string scheme;
     std::string response = authCheckInp->response;
+    rodsLog( LOG_NOTICE, "XXXX - rsAuthCheck :: parse kvp" );
     if ( ret.ok() ) {
+        rodsLog( LOG_NOTICE, "XXXX - rsAuthCheck :: kvp OK" );
         if ( kvp.end() != kvp.find( irods::AUTH_SCHEME_KEY ) ) {
             scheme   = kvp[ irods::AUTH_SCHEME_KEY   ];
 
@@ -52,14 +55,17 @@ rsAuthCheck( rsComm_t *rsComm, authCheckInp_t *authCheckInp,
 
         }
     }
+    rodsLog( LOG_NOTICE, "XXXX - rsAuthCheck :: call chlAuthCheck" );
     status = chlCheckAuth( rsComm, scheme.c_str(), authCheckInp->challenge, const_cast< char* >( response.c_str() ), authCheckInp->username, &privLevel,
                            &clientPrivLevel );
+    rodsLog( LOG_NOTICE, "XXXX - rsAuthCheck :: call chlAuthCheck. done." );
     if ( status < 0 ) {
         rodsLog( LOG_NOTICE,
                  "rsAuthCheck: chlCheckAuth status = %d", status );
     }
 
     if ( status == 0 ) {
+        rodsLog( LOG_NOTICE, "XXXX - rsAuthCheck :: chlAuthCheck SUCCESS" );
         int len, i;
         result = *authCheckOut;
         result->privLevel = privLevel;
@@ -70,6 +76,7 @@ rsAuthCheck( rsComm_t *rsComm, authCheckInp_t *authCheckInp,
         strncpy( md5Buf, authCheckInp->challenge, CHALLENGE_LEN );
 
         getZoneServerId( "", ServerID ); /* get our local zone SID */
+        rodsLog( LOG_NOTICE, "XXXX - rsAuthCheck :: ServerID [%s]", ServerID );
         len = strlen( ServerID );
         digest = ( unsigned char* )malloc( RESPONSE_LEN + 2 );
         if ( len <= 0 ) {

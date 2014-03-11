@@ -379,7 +379,7 @@ extern "C" {
                 status = getAndConnRcatHostNoLogin( _comm, MASTER_RCAT,
                                                     _comm->proxyUser.rodsZone, &rodsServerHost );
                 if ( ( result = ASSERT_ERROR( status >= 0, status, "Connecting to rcat host failed." ) ).ok() ) {
-
+                    rodsLog( LOG_NOTICE, "XXXX - native_auth_agent_response :: in resp [%s]", _resp->response );
                     memset( &authCheckInp, 0, sizeof( authCheckInp ) );
                     authCheckInp.challenge = bufp;
                     authCheckInp.response = _resp->response;
@@ -425,6 +425,7 @@ extern "C" {
                                         }
                                     }
                                     else {
+                                        strncpy( md5Buf + CHALLENGE_LEN, serverId, len );
                                         obfMakeOneWayHash(
                                             HASH_TYPE_DEFAULT,
                                             ( unsigned char* )md5Buf,
