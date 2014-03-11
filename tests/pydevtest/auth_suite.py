@@ -75,7 +75,7 @@ class Test_Auth_Suite(unittest.TestCase, ResourceBase):
         s.twousers_down()
 
     #@unittest.skip("TODO: Seeing inconsistent behavior in CI")
-    def test_authentication_PAM(self):
+    def test_authentication_PAM_without_negotiation(self):
         # add auth test user
         authTestUser = "irodsauthuser"
         authTestPass = "iamnotasecret"
@@ -101,7 +101,7 @@ class Test_Auth_Suite(unittest.TestCase, ResourceBase):
         # add client irodsEnv settings
         clientEnvFile = s.adminsession.sessionDir+"/.irodsEnv"
         os.system("cp %s %sOrig" % (clientEnvFile, clientEnvFile))
-        os.system("echo \"irodsClientServerPolicy 'CS_NEG_REQUIRE'\" >> %s" % clientEnvFile)
+#        os.system("echo \"irodsClientServerPolicy 'CS_NEG_REQUIRE'\" >> %s" % clientEnvFile) # commented out to test legacy SSL path
         os.system("echo \"irodsAuthScheme 'PaM'\" >> %s" % clientEnvFile) # check for auth to_lower
         os.system("echo \"irodsUserName '%s'\" >> %s" % (authTestUser, clientEnvFile))
         os.system("echo \"irodsHome '/tempZone/home/%s'\" >> %s" % (authTestUser, clientEnvFile))
