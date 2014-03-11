@@ -143,8 +143,8 @@ changeToRootUser();
 int
 changeToServiceUser();
 int
-changeToUser (uid_t uid);
+changeToUser( uid_t uid );
 int
-dropRootPrivilege ();
+dropRootPrivilege();
 
 #endif	/* MISC_SERVER_FUNCT_H */

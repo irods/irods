@@ -10,7 +10,7 @@
 #include <openssl/sha.h>
 
 namespace irods {
-
+    const std::string SHA256_NAME( "sha256" );
     class SHA256Strategy : public HashStrategy {
     public:
         SHA256Strategy( void );

@@ -46,7 +46,8 @@ carryOverMsParam( msParamArray_t *sourceMsParamArray, msParamArray_t *targetMsPa
 
     int i;
     msParam_t *mP, *mPt;
-    char *a, *b;
+    char *a;
+    const char *b;
     if ( sourceMsParamArray == NULL ) {
         return( 0 );
     }
@@ -83,7 +84,6 @@ carryOverMsParam( msParamArray_t *sourceMsParamArray, msParamArray_t *targetMsPa
             replMsParam( mPt, mP );
             free( mP->label );
             mP->label = a;
-            free( mP->type );
             mP->type = b;
         }
         else

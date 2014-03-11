@@ -25,8 +25,10 @@
 #define TRAVERSE_ARRAY_BEGIN(type, size, f) \
 	NO_COPY_IN_REGION(f) { \
 		type *oldf = ptr->f; \
-		CASCADE_NULL(ptr->f = (type *) region_alloc(r, sizeof(type) * size)); \
-		memcpy(ptr->f, oldf, sizeof(type) * size); \
+    void *newf; \
+		CASCADE_NULL(newf = region_alloc(r, sizeof(type) * size)); \
+		memcpy( newf, oldf, sizeof(type) * size); \
+    ptr->f = (type *) newf; \
 	}
 
 #define TRAVERSE_ARRAY_END(type, size, f)

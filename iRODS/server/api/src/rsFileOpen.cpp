@@ -143,6 +143,10 @@ int _rsFileOpen(
             _open_inp->flags ) );
     file_obj->in_pdmo( _open_inp->in_pdmo );
 
+    // =-=-=-=-=-=-=-
+    // pass condInput
+    file_obj->cond_input( _open_inp->condInput );
+
     irods::error ret_err = fileOpen( _comm, file_obj );
 
     // =-=-=-=-=-=-=-

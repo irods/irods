@@ -82,7 +82,6 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/irods_hierarchy_parser.o \
 		$(libCoreObjDir)/irods_stacktrace.o \
 		$(libCoreObjDir)/irods_signal.o \
-		$(libCoreObjDir)/irods_resource_redirect.o \
 		$(libCoreObjDir)/irods_plugin_name_generator.o \
 		$(libCoreObjDir)/irods_client_negotiation.o \
 		$(libCoreObjDir)/irods_network_object.o \
@@ -103,6 +102,9 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/irods_osauth_auth_object.o \
 		$(libCoreObjDir)/irods_pluggable_auth_scheme.o \
 		$(libCoreObjDir)/irods_kvp_string_parser.o \
+		$(libCoreObjDir)/irods_client_api_table.o \
+		$(libCoreObjDir)/irods_pack_table.o \
+		$(libCoreObjDir)/irods_get_full_path_for_config_file.o \
 		$(libCoreObjDir)/apiHandler.o 
 
 ifdef NETCDF_CLIENT
@@ -132,8 +134,8 @@ CFLAGS +=	-DEXTENDED_ICAT
 INCLUDES +=	-I$(svrExtIcatIncDir)
 endif
 
-ifdef OOI_CI
-LIB_CORE_OBJS += $(libCoreObjDir)/ooiCi.o
+ifdef SHA256_FILE_HASH
+CFLAGS += -DSHA256_FILE_HASH
 endif
 
 # Logging (automatically generated source)
@@ -156,7 +158,8 @@ INCLUDES +=    -I$(libSha1IncDir)
 LIB_HASHER_OBJS = \
 		$(libHasherObjDir)/Hasher.o \
 		$(libHasherObjDir)/MD5Strategy.o \
-		$(libHasherObjDir)/SHA256Strategy.o
+		$(libHasherObjDir)/SHA256Strategy.o \
+		$(libHasherObjDir)/irods_hasher_factory.o 
 INCLUDES +=	-I$(libHasherIncDir)
 
 # rbudp

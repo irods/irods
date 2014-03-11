@@ -10,6 +10,9 @@
 #include "rodsClient.hpp"
 #include "parseCommandLine.hpp"
 #include "irods_string_tokenize.hpp"
+#include "irods_client_api_table.hpp"
+#include "irods_pack_table.hpp"
+
 #include <iostream>
 #include <algorithm>
 #include <termios.h>
@@ -882,26 +885,25 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
                 GetConsoleMode( hStdin, &mode );
                 DWORD lastMode = mode;
                 mode &= ~ENABLE_ECHO_INPUT;
-                BOOL success = SetConsoleMode( hStdin, mode );
+                BOOL error = !SetConsoleMode( hStdin, mode );
                 int errsv = -1;
 #else
                 struct termios tty;
                 tcgetattr( STDIN_FILENO, &tty );
                 tcflag_t oldflag = tty.c_lflag;
                 tty.c_lflag &= ~ECHO;
-                int success = tcsetattr( STDIN_FILENO, TCSANOW, &tty );
+                int error = tcsetattr( STDIN_FILENO, TCSANOW, &tty );
                 int errsv = errno;
 #endif
-                if ( !success ) {
-                    printf( "Error %d disabling echo mode.", errsv );
-                    return errsv;
+                if ( error ) {
+                    printf( "WARNING: Error %d disabling echo mode. Password will be displayed in plaintext.", errsv );
                 }
                 printf( "Enter your current iRODS password:" );
                 std::string password = "";
                 getline( cin, password );
                 strncpy( buf1, password.c_str(), MAX_PASSWORD_LEN );
 #ifdef WIN32
-                if ( SetConsoleMode( hStdin, lastMode ) ) {
+                if ( !SetConsoleMode( hStdin, lastMode ) ) {
                     printf( "Error reinstating echo mode." );
                 }
 #else
@@ -1422,7 +1424,9 @@ main( int argc, char **argv ) {
 
     // =-=-=-=-=-=-=-
     // initialize pluggable api table
-    init_api_table( RcApiTable, ApiPackTable );
+    irods::pack_entry_table& pk_tbl  = irods::get_pack_table();
+    irods::api_entry_table&  api_tbl = irods::get_client_api_table();
+    init_api_table( api_tbl, pk_tbl );
 
     Conn = rcConnect( myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
                       myEnv.rodsZone, 0, &errMsg );
@@ -1850,6 +1854,13 @@ usage( char *subOpt ) {
         "Create a new zone definition.  Type must be 'remote' as the local zone",
         "must previously exist and there can be only one local zone definition.",
         "Connection-info (hostname:port) and a Comment field are optional.",
+        " ",
+        "The connection-info should be the hostname of the ICAT-Enabled-Server (IES)",
+        "of the zone.  If it is a non-IES, remote users trying to connect will get",
+        "a CAT_INVALID_USER error, even if valid, due to complications in the",
+        "way the protocol connections operate when the local server tries to",
+        "connect back to the remote zone to authenticate the user.",
+        " ",
         "Also see modzone, rmzone, and lz.",
         ""
     };
@@ -1859,6 +1870,9 @@ usage( char *subOpt ) {
         "Modify values in a zone definition, either the name, conn (connection-info),",
         "or comment.  Connection-info is the DNS host string:port, for example:",
         "zuri.unc.edu:1247",
+        "When modifying the conn information, it should be the hostname of the",
+        "ICAT-Enabled-Server (IES); see 'h mkzone' for more.",
+        " ",
         "The name of the local zone can be changed via some special processing and",
         "since it also requires some manual changes, iadmin will explain those and",
         "prompt for confirmation in this case.",

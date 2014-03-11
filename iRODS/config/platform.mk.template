@@ -67,10 +67,6 @@ LDRFLAGS += -lgcov
 endif
 # =-=-=-=-=-=-=-
 
-ifdef OOI_CI
-CCFLAGS += -DOOI_CI -I/usr/include/libxml2 -I$(IRODS_BUILD_DIR)/external/$(JANSSONVERSION)/src
-endif
-
 ifdef CCFLAGS
 MY_CFLAG += $(CCFLAGS)
 endif
@@ -142,11 +138,6 @@ MY_CFLAG+=-D_FILE_OFFSET_BITS=64
 endif
 endif
 
-# 64-bit memory addressing
-ifeq ($(ADDR_64BITS), 1)
-MY_CFLAG+= -DADDR_64BITS
-endif
-
 # Parallel operations
 ifdef PARA_OPR
 MY_CFLAG+= -DPARA_OPR=1
@@ -169,11 +160,6 @@ endif
 
 # Sun Solaris
 ifeq ($(OS_platform), solaris_platform)
-ifeq ($(ADDR_64BITS), 1)
-ifeq ($(CC_IS_GCC), 0)
-MY_CFLAG+=-xarch=v9
-endif
-endif
 LDADD+=-lnsl -lsocket -lm -lpthread -lrt
 CL_LDADD+=-lnsl -lsocket -lm -lpthread
 endif
@@ -238,6 +224,8 @@ LDADD += -L$(NETCDF_LIB) -L$(HDF5_LIB) -L$(HDF5_HL_LIB) $(NETCDF_LIB)/libnetcdf.
 CL_LDADD += -L$(NETCDF_LIB) -L$(HDF5_LIB) -L$(HDF5_HL_LIB) $(NETCDF_LIB)/libnetcdf.a $(HDF5_HL_LIB)/libhdf5_hl.a $(HDF5_LIB)/libhdf5.a -lz -lcurl
 endif
 
+LDADD += -lcurl
+
 ifdef NETCDF_CLIENT
 MY_CFLAG += -DNETCDF_CLIENT
 endif
@@ -270,11 +258,4 @@ endif
 
 ifdef DIRECT_ACCESS_VAULT
 MY_CFLAG+= -DDIRECT_ACCESS_VAULT
-endif
-
-
-ifdef OOI_CI
-JANSSON_LIB=$(IRODS_BUILD_DIR)/external/$(JANSSONVERSION)/src/.libs
-LDADD+= -L$(JANSSON_LIB) $(JANSSON_LIB)/libjansson.a
-CL_LDADD+= -L$(JANSSON_LIB) $(JANSSON_LIB)/libjansson.a
 endif

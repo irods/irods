@@ -84,6 +84,11 @@ int _rsFileMkdir(
             _mkdir_inp->rescHier,
             _mkdir_inp->mode,
             0 ) );
+
+    // =-=-=-=-=-=-=-
+    // pass condInput
+    coll_obj->cond_input( _mkdir_inp->condInput );
+
     irods::error mkdir_err = fileMkdir( _comm, coll_obj );
 
     // =-=-=-=-=-=-=-

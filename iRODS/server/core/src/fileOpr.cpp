@@ -19,6 +19,7 @@
 #include "irods_stacktrace.hpp"
 #include "irods_resource_backport.hpp"
 #include "irods_resource_manager.hpp"
+#include "irods_resource_plugin.hpp"
 
 int
 initFileDesc() {
@@ -145,6 +146,14 @@ int mkFileDirR(
     char tmpPath[MAX_NAME_LEN];
     struct stat statbuf;
 
+    rodsHostAddr_t addr;
+    rodsServerHost_t *rodsServerHost;
+    char *zoneName;
+    char *outVaultPath;
+    int vp_len;
+    char collName[MAX_NAME_LEN];
+    keyValPair_t condInput;
+
     startLen = strlen( startDir );
     pathLen = strlen( destDir );
 
@@ -187,16 +196,34 @@ int mkFileDirR(
     } // while
 
 
+    // for FS metadata query
+    zoneName = getLocalZoneName();
+    addr.hostAddr[0] = '\0';
+    resolveHost( &addr, &rodsServerHost );
+    vp_len = matchVaultPath( rsComm, destDir, rodsServerHost, &outVaultPath );
+    if ( vp_len == 0 ) {
+        outVaultPath = NULL;
+    }
+
     /* Now we go forward and make the required dir */
     while ( tmpLen < pathLen ) {
         /* Put back the '/' */
         tmpPath[tmpLen] = '/';
+
+        // query for FS metadata
+        memset( &condInput, 0, sizeof( condInput ) );
+        snprintf( collName, MAX_NAME_LEN, "/%s%s", zoneName, tmpPath + vp_len );
+        rsQueryDirectoryMeta( rsComm, collName, &condInput );
 
         irods::collection_object_ptr tmp_coll_obj(
             new irods::collection_object(
                 tmpPath,
                 hier,
                 mode, 0 ) );
+
+        // add FS metadata to collection object
+        tmp_coll_obj->cond_input( condInput );
+
         irods::error mkdir_err = fileMkdir( rsComm, tmp_coll_obj );
         if ( !mkdir_err.ok() && ( getErrno( mkdir_err.code() ) != EEXIST ) ) { // JMC - backport 4834
             std::stringstream msg;
@@ -398,9 +425,9 @@ chkFilePathPerm( rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
  * "/../" or end with "/.."
  */
 int
-isValidFilePath( char *path ) {
-    char *tmpPtr  = NULL;
-    char *tmpPath = path;
+isValidFilePath( const char *path ) {
+    const char *tmpPtr  = NULL;
+    const char *tmpPath = path;
     while ( ( tmpPtr = strstr( tmpPath, "/.." ) ) != NULL ) {
         if ( tmpPtr[3] == '\0' || tmpPtr[3] == '/' ) {
             /* "/../" or end with "/.."  */
@@ -413,6 +440,48 @@ isValidFilePath( char *path ) {
     }
     return 0;
 }
+
+
+// =-=-=-=-=-=-=-
+// Backported from community and modified to use the resource manager
+int
+matchVaultPath( rsComm_t *rsComm, const char *filePath,
+                rodsServerHost_t *rodsServerHost, char **outVaultPath ) {
+    std::string _vault_path;
+    int len;
+
+    if ( isValidFilePath( filePath ) < 0 ) {
+        /* no match */
+        return ( 0 );
+    }
+
+    // find a matching resource
+    irods::resource_ptr resc;
+    irods::error err = resc_mgr.resolve_from_property< rodsServerHost_t* >( irods::RESOURCE_HOST, rodsServerHost, resc );
+    if ( !err.ok() ) {
+        rodsLog( LOG_ERROR, "matchVaultPath: failed to resolve resource for path %s, status = %d", filePath, err.code() );
+        return err.code();
+    }
+
+    // get resource path
+    err = resc->get_property< std::string >( irods::RESOURCE_PATH, _vault_path );
+    if ( !err.ok() ) {
+        rodsLog( LOG_ERROR, "matchVaultPath: failed to get resource path, status = %d", err.code() );
+        return err.code();
+    }
+
+    // check if filePath is in the vault
+    len = strlen( _vault_path.c_str() );
+    if ( len > 0 && strncmp( _vault_path.c_str(), filePath, len ) == 0 &&
+            ( filePath[len] == '/' || filePath[len] == '\0' ) ) {
+        *outVaultPath = ( char* )_vault_path.c_str();
+        return ( len );
+    }
+
+    /* no match */
+    return ( 0 );
+}
+
 
 /* matchCliVaultPath - if the input path is inside
  * $(vaultPath)/home/userName, return 1.

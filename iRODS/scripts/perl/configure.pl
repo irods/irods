@@ -42,8 +42,6 @@ use Cwd;
 use Cwd 'abs_path';
 use Config;
 
-$version{"configure.pl"} = "September 2011";
-
 my $output;
 my $status;
 
@@ -551,18 +549,6 @@ foreach $arg ( @ARGV )
 		next;
 	}
 
-	# 64-bit addressing
-	if ( $arg =~ /--disable-addr64bit/ )
-	{
-		$configMkVariables{ "ADDR_64BITS" } = "";
-		next;
-	}
-	if ( $arg =~ /--enable-addr64bit/ )
-	{
-		$configMkVariables{ "ADDR_64BITS" } = "1";
-		next;
-	}
-
 	# New or old ODBC code
 	if ( $arg =~ /--enable-newodbc/ )
 	{
@@ -998,39 +984,6 @@ else
 {
 	printStatus( "Ranlib:      " . $platformMkVariables{ "RANLIB" } . "\n" );
 }
-
-
-
-
-
-#
-# 64-bit addressing?
-#
-# Skip this check if a command-line option was given to enable
-# 64-bit addressing.
-#
-if ( defined( $configMkVariables{ "ADDR_64BITS" } ) )
-{
-	printStatus( "64-bit addressing enabled.\n" );
-}
-else
-{
-	if ( is64bit( $platformMkVariables{ "CC" }, $platformMkVariables{ "CCFLAGS" },
-	       $platformMkVariables{ "LDR" }, $platformMkVariables{ "LDRFLAGS" } ) )
-	{
-		printStatus( "64-bit addressing supported and automatically enabled.\n" );
-		$configMkVariables{ "ADDR_64BITS" } = "1";
-	}
-	else
-	{
-		printStatus( "64-bit addressing not supported and automatically disabled.\n" );
-		$configMkVariables{ "ADDR_64BITS" } = "";
-	}
-}
-
-
-
-
 
 ########################################################################
 #
@@ -1571,10 +1524,8 @@ sub chooseArchiver()
 
 	# No command chosen.  Look for it.
 
-	# On Solaris, look in /usr/xpg4 first if we are using
-	# 64-bit addressing.
-	if ( ( $thisOS =~ /(sunos)|(solaris)/i ) &&
-		defined( $configMkVariables{ "ADDR_64BITS" } ) )
+	# On Solaris, look in /usr/xpg4 first
+	if ( $thisOS =~ /(sunos)|(solaris)/i )
 	{
 		$AR = File::Spec->catfile( File::Spec->rootdir( ),
 			"usr", "xpg4", "bin", "ar" );

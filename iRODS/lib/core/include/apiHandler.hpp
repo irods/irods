@@ -9,6 +9,10 @@
 #ifndef API_HANDLER_HPP
 #define API_HANDLER_HPP
 
+// =-=-=-=-=-=-=-
+// boost includes
+#include <boost/function.hpp>
+
 #include "rods.hpp"
 #include "sockComm.hpp"
 #include "packStruct.hpp"
@@ -16,6 +20,10 @@
 #include "irods_plugin_base.hpp"
 
 namespace irods {
+
+    // NOOP function for clearInStruct
+    void clearInStruct_noop( void* );
+
     struct apidef_t {
         // =-=-=-=-=-=-=-
         // attributes
@@ -38,6 +46,9 @@ namespace irods {
                                         */
         funcPtr        svrHandler;     /* the server handler. should be defined NULL for
                                         * client */
+
+        boost::function<void( void* )> clearInStruct;		//free input struct function
+
     }; // struct apidef_t
 
     class api_entry : public irods::plugin_base {
@@ -78,10 +89,18 @@ namespace irods {
                                         */
         funcPtr        svrHandler;     /* the server handler. should be defined NULL for
                                         * client */
-        char           in_pack_key [ MAX_NAME_LEN ];
-        char           out_pack_key [ MAX_NAME_LEN ];
+        std::string    in_pack_key;
+        std::string    out_pack_key;
+        std::string    in_pack_value;
+        std::string    out_pack_value;
         std::string    fcn_name_;
+
+        lookup_table< std::string>   extra_pack_struct;
+
+        boost::function<void( void* )> clearInStruct;		//free input struct function
+
     }; // class api_entry
+
     typedef boost::shared_ptr< api_entry > api_entry_ptr;
 
 
@@ -94,9 +113,29 @@ namespace irods {
 
     }; // class api_entry_table
 
+
+    /// =-=-=-=-=-=-=-
+    /// @brief class to hold packing instruction and free function
+    class pack_entry {
+    public:
+        std::string packInstruct;
+
+        // ctor
+        pack_entry() {};
+        pack_entry( const pack_entry& );
+
+
+        // dtor
+        ~pack_entry() {};
+
+        // assignment operator
+        pack_entry& operator=( const pack_entry& );
+    };
+
+
     /// =-=-=-=-=-=-=-
     /// @brief class which will hold the map of pack struct entries
-    class pack_entry_table : public lookup_table< std::string > {
+    class pack_entry_table : public lookup_table< pack_entry > {
     public:
         pack_entry_table( packInstructArray_t[] );
         ~pack_entry_table();
@@ -104,14 +143,12 @@ namespace irods {
     }; // class api_entry_table
 
 
-
-
     /// =-=-=-=-=-=-=-
     /// @brief load api plugins
     error init_api_table(
-        api_entry_table&,    // table holding api entries
-        pack_entry_table& ); // table for pack struct ref
-
+        api_entry_table&  _api_tbl,    // table holding api entries
+        pack_entry_table& _pack_tbl,   // table for pack struct ref
+        bool              _cli_flg = true ); // default to client
 }; // namespace irods
 
 #endif          /* API_HANDLER_H */

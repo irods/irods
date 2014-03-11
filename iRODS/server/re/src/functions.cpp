@@ -28,6 +28,10 @@ getDataObjInfoIncSpecColl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 #include "miscServerFunct.hpp"
 #endif
 
+// =-=-=-=-=-=-=-
+// irods includes
+#include "irods_get_full_path_for_config_file.hpp"
+
 #define GC_BEGIN Region *_rnew = make_region(0, NULL), *_rnew2 = NULL;
 #define GC_REGION _rnew
 #define GC_ON(env) \
@@ -41,6 +45,7 @@ _rnew = _rnew2;}
 #define RE_BACKWARD_COMPATIBLE
 
 static char globalSessionId[MAX_NAME_LEN] = "Unspecified";
+static keyValPair_t globalHashtable = {0, NULL, NULL};
 
 /* todo include proper header files */
 int rsOpenCollection( rsComm_t *rsComm, collInp_t *openCollInp );
@@ -60,6 +65,11 @@ Res *smsi_setGlobalSessionId( Node **subtrees, int n, Node *node, ruleExecInfo_t
     rstrcpy( globalSessionId, sid, MAX_NAME_LEN );
     return newIntRes( r, 0 );
 }
+
+Res *smsi_properties( Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+    return newUninterpretedRes( r, KeyValPair_MS_T, &globalHashtable, NULL );
+}
+
 
 void reIterable_genQuery_init( ReIterableData *itrData, Region *r );
 int reIterable_genQuery_hasNext( ReIterableData *itrData, Region *r );
@@ -118,7 +128,7 @@ ReIterableData *newReIterableData(
 void deleteReIterableData( ReIterableData *itrData ) {
     free( itrData );
 }
-int fileConcatenate( char *file1, char *file2, char *file3 );
+int fileConcatenate( const char *file1, const char *file2, const char *file3 );
 
 Node *wrapToActions( Node *node, Region *r ) {
     if ( getNodeType( node ) != N_ACTIONS ) {
@@ -258,6 +268,7 @@ Res *smsi_forExec( Node **params, int n, Node *node, ruleExecInfo_t *rei, int re
 
         cond = evaluateExpression3( ( Node * )params[1], 0, 1, rei, reiSaveFlag, env, errmsg, GC_REGION );
         if ( getNodeType( cond ) == N_ERROR ) {
+            res = cond;
             break;
         }
         if ( RES_BOOL_VAL( cond ) == 0 ) {
@@ -278,6 +289,7 @@ Res *smsi_forExec( Node **params, int n, Node *node, ruleExecInfo_t *rei, int re
         }
         step = evaluateExpression3( ( Node * )params[2], 0, 1, rei, reiSaveFlag, env, errmsg, GC_REGION );
         if ( getNodeType( step ) == N_ERROR ) {
+            res = step;
             break;
         }
         GC_ON( env );
@@ -384,6 +396,7 @@ int reIterable_genQuery_hasNext( ReIterableData *itrData, Region *r ) {
             itrData->errorRes = newErrorRes( r, status );
             return 0;
         }
+        data->genQueryOut = ( genQueryOut_t * ) data->genQOutParam.inOutStruct;
         data->len = getCollectionSize( itrData->res->subtrees[1]->exprType->text, data->genQueryOut, r );
         if ( data->len > 0 ) {
             return 1;
@@ -694,7 +707,7 @@ Res *smsi_forEachExec( Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, 
     Res *res;
     char* varName = ( ( Node * )subtrees[0] )->text;
     Res* orig = evaluateVar3( varName, ( ( Node * )subtrees[0] ), rei, reiSaveFlag, env, errmsg, r );
-    if ( TYPE( orig ) == T_ERROR ) {
+    if ( getNodeType( orig ) == N_ERROR || TYPE( orig ) == T_ERROR ) {
         return orig;
     }
 
@@ -2204,11 +2217,19 @@ Res *smsi_msiAdmShowIRB( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei,
 }
 Res *smsi_msiAdmShowCoreRE( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
     char buf[1024];
-    char *conDir = getConfigDir();
-    char file2[1024];
-    snprintf( file2, 1024, "%s/reConfigs/core.re",
-              conDir );
-    FILE *f2 = fopen( file2, "r" );
+    //char *conDir = getConfigDir();
+    //char file2[1024];
+    //snprintf( file2, 1024, "%s/reConfigs/core.re",
+    //          conDir );
+
+    std::string full_path;
+    irods::error ret = irods::get_full_path_for_config_file( "core.re", full_path );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return newIntRes( r, ret.code() );
+    }
+
+    FILE *f2 = fopen( full_path.c_str(), "r" );
 
     while ( !feof( f2 ) && ferror( f2 ) == 0 ) {
         if ( fgets( buf, 1024, f2 ) != NULL ) {
@@ -2302,16 +2323,35 @@ Res *smsi_msiAdmAppendToTopOfCoreRE( Node **paramsr, int n, Node *node, ruleExec
     }
 #endif
     char *conDir = getConfigDir();
+#if 0 // raja - 2003
     char file1[1024];
     char file2[1024];
-    char file3[1024];
-    snprintf( file1, 1024, "%s/reConfigs/%s.re",
-              conDir, paramsr[0]->text );
-    snprintf( file2, 1024, "%s/reConfigs/core.re",
-              conDir );
-    snprintf( file3, 1024, "%s/reConfigs/core.tmp", conDir );
+//    snprintf( file1, 1024, "%s/reConfigs/%s.re",
+    conDir, paramsr[0]->text );
+//    snprintf( file2, 1024, "%s/reConfigs/core.re",
+    conDir );
+#endif
+    char tmp_file_path[1024];
+    snprintf( tmp_file_path, 1024, "%s/reConfigs/core.tmp", conDir );
+
+    std::string re_full_path;
+    irods::error ret = irods::get_full_path_for_config_file( "core.re", re_full_path );
+    if ( !ret.ok() ) {
+    irods::log( PASS( ret ) );
+        return newIntRes( r, ret.code() );
+    }
+
+    std::string param_file( paramsr[0]->text );
+    param_file += ".re";
+                  std::string param_full_path;
+                  ret = irods::get_full_path_for_config_file( param_file, re_full_path );
+    if ( !ret.ok() ) {
+    irods::log( PASS( ret ) );
+        return newIntRes( r, ret.code() );
+    }
+
     int errcode;
-    if ( ( errcode = fileConcatenate( file1, file2, file3 ) ) != 0 || ( errcode = remove( file2 ) ) != 0 || ( errcode = rename( file3, file2 ) ) != 0 ) {
+    if ( ( errcode = fileConcatenate( re_full_path.c_str(), param_full_path.c_str(), tmp_file_path ) ) != 0 || ( errcode = remove( re_full_path.c_str() ) ) != 0 || ( errcode = rename( tmp_file_path, re_full_path.c_str() ) ) != 0 ) {
         generateAndAddErrMsg( "error appending to top of core.re", node, errcode, errmsg );
         return newErrorRes( r, errcode );
     }
@@ -2325,15 +2365,32 @@ Res *smsi_msiAdmChangeCoreRE( Node **paramsr, int n, Node *node, ruleExecInfo_t 
         return newErrorRes( r, i );
     }
 #endif
-    char *conDir = getConfigDir();
-    char file1[1024];
-    char file2[1024];
-    snprintf( file1, 1024, "%s/reConfigs/%s.re",
-              conDir, paramsr[0]->text );
-    snprintf( file2, 1024, "%s/reConfigs/core.re",
-              conDir );
+//   char *conDir = getConfigDir();
+//    char file1[1024];
+//    char file2[1024];
+//    snprintf( file1, 1024, "%s/reConfigs/%s.re",
+//              conDir, paramsr[0]->text );
+//    snprintf( file2, 1024, "%s/reConfigs/core.re",
+//              conDir );
+
+    std::string re_full_path;
+    irods::error ret = irods::get_full_path_for_config_file( "core.re", re_full_path );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return newIntRes( r, ret.code() );
+    }
+
+    std::string param_file( paramsr[0]->text );
+    param_file += ".re";
+    std::string param_full_path;
+    ret = irods::get_full_path_for_config_file( param_file, re_full_path );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return newIntRes( r, ret.code() );
+    }
+
     int errcode;
-    if ( ( errcode = fileConcatenate( file1, NULL, file2 ) ) != 0 ) {
+    if ( ( errcode = fileConcatenate( param_full_path.c_str(), NULL, re_full_path.c_str() ) ) != 0 ) {
         generateAndAddErrMsg( "error changing core.re", node, errcode, errmsg );
         return newErrorRes( r, errcode );
     }
@@ -2355,7 +2412,7 @@ Res * smsi_msiAdmInsertRulesFromStructIntoDB( Node **paramsr, int n, Node *node,
 #endif
 
     if ( paramsr[0]->text == NULL ||
-            strlen( paramsr[0]->text ) == 0 ) {
+    strlen( paramsr[0]->text ) == 0 ) {
         generateAndAddErrMsg( "empty input struct", node, PARAOPR_EMPTY_IN_STRUCT_ERR, errmsg );
         return newErrorRes( r, PARAOPR_EMPTY_IN_STRUCT_ERR );
     }
@@ -2387,7 +2444,7 @@ Res * smsi_msiAdmReadRulesFromFileIntoStruct( Node **paramsr, int n, Node *node,
 
 
     if ( paramsr[0]->text == NULL ||
-            strlen( paramsr[0]->text ) == 0 ) {
+    strlen( paramsr[0]->text ) == 0 ) {
         generateAndAddErrMsg( "empty input struct", node, PARAOPR_EMPTY_IN_STRUCT_ERR, errmsg );
         return newErrorRes( r, PARAOPR_EMPTY_IN_STRUCT_ERR );
     }
@@ -2422,16 +2479,23 @@ Res *smsi_msiAdmWriteRulesFromStructIntoFile( Node **paramsr, int n, Node *node,
     int i;
     FILE *file;
     char fileName[MAX_NAME_LEN];
-    char *configDir;
+    //char *configDir;
 
     char *inFileName = paramsr[0]->text;
     if ( inFileName[0] == '/' || inFileName[0] == '\\' ||
-            inFileName[1] == ':' ) {
+    inFileName[1] == ':' ) {
         snprintf( fileName, MAX_NAME_LEN, "%s", inFileName );
     }
     else {
-        configDir = getConfigDir();
-        snprintf( fileName, MAX_NAME_LEN, "%s/reConfigs/%s.re", configDir, inFileName );
+        //configDir = getConfigDir();
+        //snprintf( fileName, MAX_NAME_LEN, "%s/reConfigs/%s.re", configDir, inFileName );
+        std::string cfg_file, fn( inFileName ); fn += ".re";
+        irods::error ret = irods::get_full_path_for_config_file( fn, cfg_file );
+        if ( !ret.ok() ) {
+            irods::log( PASS( ret ) );
+            return newIntRes( r, ret.code() );
+        }
+        strncpy( fileName, cfg_file.c_str(), MAX_NAME_LEN );
     }
 
 
@@ -2474,12 +2538,12 @@ Res * smsi_msiAdmRetrieveRulesFromDBIntoStruct( Node **paramsr, int n, Node *nod
     /* RE_TEST_MACRO ("Loopback on msiGetRulesFromDBIntoStruct"); */
 
     if ( paramsr[0]->text == NULL ||
-            strlen( paramsr[0]->text ) == 0 ) {
+    strlen( paramsr[0]->text ) == 0 ) {
         generateAndAddErrMsg( "empty input struct", node, PARAOPR_EMPTY_IN_STRUCT_ERR, errmsg );
         return newErrorRes( r, PARAOPR_EMPTY_IN_STRUCT_ERR );
     }
     if ( paramsr[1]->text == NULL ||
-            strlen( paramsr[1]->text ) == 0 ) {
+    strlen( paramsr[1]->text ) == 0 ) {
         generateAndAddErrMsg( "empty input struct", node, PARAOPR_EMPTY_IN_STRUCT_ERR, errmsg );
         return newErrorRes( r, PARAOPR_EMPTY_IN_STRUCT_ERR );
     }
@@ -2646,7 +2710,7 @@ Res *smsi_msiCheckStringForSystem( Node **paramsr, int n, Node *node, ruleExecIn
 
 int
 parseResForCollInp( Node *inpParam, collInp_t *collInpCache,
-                    collInp_t **outCollInp, int outputToCache ) {
+collInp_t **outCollInp, int outputToCache ) {
     *outCollInp = NULL;
 
     if ( inpParam == NULL ) {
@@ -2807,7 +2871,7 @@ Res *smsiCollectionSpider( Node **subtrees, int n, Node *node, ruleExecInfo_t *r
 }
 
 /* utilities */
-int fileConcatenate( char *file1, char *file2, char *file3 ) {
+int fileConcatenate( const char *file1, const char *file2, const char *file3 ) {
     char buf[1024];
     FILE *f1 = fopen( file1, "r" );
     if ( f1 == NULL ) {
@@ -3041,6 +3105,7 @@ void getSystemFunctions( Hashtable *ft, Region *r ) {
     insertIntoHashTable( ft, "collection", newFunctionFD( "path -> `CollInpNew_PI`", smsi_collection, r ) );
     insertIntoHashTable( ft, "getGlobalSessionId", newFunctionFD( "->string", smsi_getGlobalSessionId, r ) );
     insertIntoHashTable( ft, "setGlobalSessionId", newFunctionFD( "string->integer", smsi_setGlobalSessionId, r ) );
+    insertIntoHashTable( ft, "temporaryStorage", newFunctionFD( "->KeyValPair_PI", smsi_properties, r ) );
     /*    insertIntoHashTable(ft, "msiDataObjInfo", newFunctionFD("input `DataObjInp_PI` * output `DataObjInfo_PI` -> integer", smsi_msiDataObjInfo, r));*/
     insertIntoHashTable( ft, "rei->doi->dataSize", newFunctionFD( "double : 0 {string}", ( SmsiFuncTypePtr ) NULL, r ) );
     insertIntoHashTable( ft, "rei->doi->writeFlag", newFunctionFD( "integer : 0 {string}", ( SmsiFuncTypePtr ) NULL, r ) );

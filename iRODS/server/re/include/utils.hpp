@@ -54,7 +54,7 @@ ExprType *dupTypeAux( ExprType *ty, Region *r, Hashtable *varTable );
 /*Res *cpRes(Res *res, Region *r);*/
 /*ExprType *cpType(ExprType *type, Region *r); */
 char *cpString( char *res, Region *r );
-char *cpStringExt( char* str, Region* r );
+char *cpStringExt( const char* str, Region* r );
 void cpHashtable( Hashtable *env, Region *r );
 void cpEnv( Env *env, Region *r );
 /*Res *cpRes2(Res *res, Region *oldr, Region *newr);*/
@@ -73,7 +73,7 @@ void printType( ExprType *type, Hashtable *var_types );
 char *typeToString( ExprType *type, Hashtable *var_types, char *buf, int bufsize );
 void typingConstraintsToString( List *typingConstraints, Hashtable *var_types, char *buf, int bufsize );
 
-void *lookupFromEnv( Env *env, char *key );
+const void *lookupFromEnv( Env *env, const char *key );
 void updateInEnv( Env *env, char *varname, Res *res );
 void freeEnvUninterpretedStructs( Env *e );
 Env* globalEnv( Env *env );

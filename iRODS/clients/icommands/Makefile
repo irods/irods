@@ -138,17 +138,7 @@ BINS =		\
 		$(binDir)/igroupadmin  \
 		$(binDir)/iapitest 
 
-ifdef NETCDF_CLIENT
-OBJS += $(objDir)/incattr.o $(objDir)/inc.o $(objDir)/incarch.o
-BINS += $(binDir)/incattr $(binDir)/inc $(binDir)/incarch
-endif
-
 # Compile and link flags
-#
-# Is this needed?
-#ifndef ADDR_64BITS
-#CC =		gcc
-#endif
 
 CFLAGS_OPTIONS := -g $(CFLAGS) $(MY_CFLAG)
 ifdef GSI_AUTH
@@ -164,12 +154,6 @@ LDFLAGS +=	$(LIBRARY) $(MODULE_LDFLAGS) $(CL_LDADD)
 
 
 ifdef GSI_AUTH
-
-ifeq ($(ADDR_64BITS), 1)
-GSI_LIB_DIR=lib64
-else
-GSI_LIB_DIR=lib
-endif
 
 ifeq ($(GSI_INSTALL_TYPE),)
 GSI_INSTALL_TYPE2=
@@ -190,7 +174,8 @@ GSI_CRYPTO = crypto$(GSI_INSTALL_TYPE2)
 endif
 
 LIB_GSI_AUTH = \
-      -L$(GLOBUS_LOCATION)/$(GSI_LIB_DIR) \
+      -L$(GLOBUS_LOCATION)/lib64 \
+      -L$(GLOBUS_LOCATION)/lib \
       -lglobus_gss_assist$(GSI_INSTALL_TYPE2) \
       -lglobus_gssapi_gsi$(GSI_INSTALL_TYPE2) \
       -lglobus_gsi_credential$(GSI_INSTALL_TYPE2) \

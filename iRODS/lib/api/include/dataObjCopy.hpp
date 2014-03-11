@@ -96,8 +96,8 @@ extern "C" {
     int
     _rcDataObjCopy250( rcComm_t *conn, dataObjCopyInp_t *dataObjCopyInp,
                        transStat_t **transStat );
-    int
-    clearDataObjCopyInp( dataObjCopyInp_t *dataObjCopyInp );
+    //int
+    //clearDataObjCopyInp( dataObjCopyInp_t *dataObjCopyInp );
 }
 
 #endif	/* DATA_OBJ_COPY_H */

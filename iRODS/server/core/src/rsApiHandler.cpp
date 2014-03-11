@@ -21,13 +21,10 @@
 #include <setjmp.h>
 jmp_buf Jenv;
 
-#ifdef NETCDF_API
-#include "ncGetVarsByType.hpp"
-#include "ncRegGlobalAttr.hpp"
-#endif
-
 // =-=-=-=-=-=-=-
+// irods includes
 #include "irods_network_factory.hpp"
+#include "irods_server_api_table.hpp"
 
 
 int rsApiHandler(
@@ -83,6 +80,8 @@ int rsApiHandler(
         return ( status );
     }
 
+    irods::api_entry_table& RsApiTable = irods::get_server_api_table();
+
     /* some sanity check */
     if ( inputStructBBuf->len > 0 && RsApiTable[apiInx]->inPackInstruct == NULL ) {
         rodsLog( LOG_NOTICE,
@@ -110,7 +109,7 @@ int rsApiHandler(
 
     if ( inputStructBBuf->len > 0 ) {
         status = unpackStruct( inputStructBBuf->buf, ( void ** )( static_cast< void * >( &myInStruct ) ),
-                               RsApiTable[apiInx]->inPackInstruct, RodsPackTable, rsComm->irodsProt );
+                               ( char* )RsApiTable[apiInx]->inPackInstruct, RodsPackTable, rsComm->irodsProt );
         if ( status < 0 ) {
             rodsLog( LOG_NOTICE,
                      "rsApiHandler: unpackStruct error for apiNumber %d, status = %d",
@@ -164,63 +163,13 @@ int rsApiHandler(
                                  myArgv[3] );
     }
 
+    // =-=-=-=-=-=-=-
+    // clear the incoming packing unstruction
     if ( myInStruct != NULL ) {
-        /* XXXXX this is a hack to reduce mem leak. Need a more generalized
-         * solution */
-        if ( strcmp( RsApiTable[apiInx]->inPackInstruct, "GenQueryInp_PI" ) == 0 ) {
-            clearGenQueryInp( ( genQueryInp_t * ) myInStruct );
+        if ( RsApiTable[apiInx]->clearInStruct ) {
+            RsApiTable[apiInx]->clearInStruct( myInStruct );
         }
-        else if ( strcmp( RsApiTable[apiInx]->inPackInstruct,
-                          "ModDataObjMeta_PI" )  == 0 ) {
-            clearModDataObjMetaInp( ( modDataObjMeta_t * ) myInStruct );
-        }
-        else if ( strcmp( RsApiTable[apiInx]->inPackInstruct,
-                          "RegReplica_PI" )  == 0 ) {
-            clearRegReplicaInp( ( regReplica_t * ) myInStruct );
-        }
-        else if ( strcmp( RsApiTable[apiInx]->inPackInstruct,
-                          "UnregDataObj_PI" )  == 0 ) {
-            clearUnregDataObj( ( unregDataObj_t * ) myInStruct );
-        }
-        else if ( strcmp( RsApiTable[apiInx]->inPackInstruct,
-                          "DataObjInp_PI" )  == 0 ) {
-            clearDataObjInp( ( dataObjInp_t * ) myInStruct );
-        }
-        else if ( strcmp( RsApiTable[apiInx]->inPackInstruct,
-                          "DataObjCopyInp_PI" )  == 0 ) {
-            clearDataObjCopyInp( ( dataObjCopyInp_t * ) myInStruct );
-        }
-        else if ( strcmp( RsApiTable[apiInx]->inPackInstruct,
-                          "GenQueryOut_PI" )  == 0 ) {
-            clearGenQueryOut( ( genQueryOut_t * ) myInStruct );
-        }
-        else if ( strcmp( RsApiTable[apiInx]->inPackInstruct,
-                          "CollInpNew_PI" )  == 0 ) {
-            clearCollInp( ( collInp_t * ) myInStruct );
-        }
-        else if ( strcmp( RsApiTable[apiInx]->inPackInstruct,
-                          "BulkOprInp_PI" )  == 0 ) {
-            clearBulkOprInp( ( bulkOprInp_t * ) myInStruct );
-        }
-        else if ( strcmp( RsApiTable[apiInx]->inPackInstruct,
-                          "ModAVUMetadataInp_PI" )  == 0 ) {
-            clearModAVUMetadataInp( ( modAVUMetadataInp_t * ) myInStruct );
-        }
-        else if ( strcmp( RsApiTable[apiInx]->inPackInstruct,
-                          "authResponseInp_PI" )  == 0 ) {
-            /* Added by RAJA Nov 22 2010 */
-            clearAuthResponseInp( ( void * ) myInStruct );
-#ifdef NETCDF_API
-        }
-        else if ( strcmp( RsApiTable[apiInx]->inPackInstruct,
-                          "NcGetVarInp_PI" )  == 0 ) {
-            clearNcGetVarInp( ( ncGetVarInp_t * ) myInStruct );
-        }
-        else if ( strcmp( RsApiTable[apiInx]->inPackInstruct,
-                          "NcRegGlobalAttrInp_PI" )  == 0 ) {
-            clearRegGlobalAttrInp( ( ncRegGlobalAttrInp_t * ) myInStruct );
-#endif
-        }
+
         free( myInStruct );
         myInStruct = NULL;
     }
@@ -299,10 +248,11 @@ sendApiReply( rsComm_t * rsComm, int apiInx, int retVal,
     }
 
 
+    irods::api_entry_table& RsApiTable = irods::get_server_api_table();
     if ( RsApiTable[apiInx]->outPackInstruct != NULL && myOutStruct != NULL ) {
 
         status = packStruct( ( char * ) myOutStruct, &outStructBBuf,
-                             RsApiTable[apiInx]->outPackInstruct, RodsPackTable, FREE_POINTER,
+                             ( char* )RsApiTable[apiInx]->outPackInstruct, RodsPackTable, FREE_POINTER,
                              rsComm->irodsProt );
 
         if ( status < 0 ) {
@@ -387,6 +337,7 @@ int
 chkApiVersion( rsComm_t * rsComm, int apiInx ) {
     char *cliApiVersion;
 
+    irods::api_entry_table& RsApiTable = irods::get_server_api_table();
     if ( ( cliApiVersion = getenv( SP_API_VERSION ) ) != NULL ) {
         if ( strcmp( cliApiVersion, RsApiTable[apiInx]->apiVersion ) != 0 ) {
             rodsLog( LOG_ERROR,
@@ -405,6 +356,7 @@ chkApiPermission( rsComm_t * rsComm, int apiInx ) {
     int xmsgSvrOnly;
     int xmsgSvrAlso;
 
+    irods::api_entry_table& RsApiTable = irods::get_server_api_table();
     clientUserAuth = RsApiTable[apiInx]->clientUserAuth;
 
     xmsgSvrOnly = clientUserAuth & XMSG_SVR_ONLY;

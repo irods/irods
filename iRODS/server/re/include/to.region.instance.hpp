@@ -28,8 +28,10 @@
 #define TRAVERSE_ARRAY_BEGIN(T, size, f) \
 	TRAVERSE_ARRAY_CYCLIC(T, size, f, ptr->f, key0, objectMap) { \
 		T *oldf = ptr->f; \
-		CASCADE_NULL(ptr->f = (T *) region_alloc(r, sizeof(T) * size)); \
-		memcpy(ptr->f, oldf, sizeof(T) * size); \
+    void * newf; \
+		CASCADE_NULL(newf = region_alloc(r, sizeof(T) * size)); \
+		memcpy(newf, oldf, sizeof(T) * size); \
+    ptr->f = ( T * )newf; \
 		insertIntoHashTable(objectMap, key0, ptr->f); \
  
 #define TRAVERSE_ARRAY_END(T, size, f) \

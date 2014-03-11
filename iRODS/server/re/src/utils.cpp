@@ -355,7 +355,7 @@ char *cpString( char *str, Region *r ) {
         return cpStringExt( str, r );
     }
 }
-char *cpStringExt( char *str, Region *r ) {
+char *cpStringExt( const char *str, Region *r ) {
     char *strCp = ( char * )region_alloc( r, ( strlen( str ) + 1 ) * sizeof( char ) );
     strcpy( strCp, str );
     return strCp;
@@ -842,8 +842,8 @@ char *errMsgToString( rError_t *errmsg, char *errbuf, int buflen /* = 0 */ ) {
 
 }
 
-void *lookupFromEnv( Env *env, char *key ) {
-    void* val = lookupFromHashTable( env->current, key );
+const void *lookupFromEnv( Env *env, const char *key ) {
+    const void* val = lookupFromHashTable( env->current, key );
     if ( val == NULL && env->previous != NULL ) {
         val = lookupFromEnv( env->previous, key );
     }

@@ -20,6 +20,8 @@
 #include "physPath.hpp"
 #include "irods_stacktrace.hpp"
 
+#include "irods_get_full_path_for_config_file.hpp"
+#include "irods_resource_backport.hpp"
 #include "irods_log.hpp"
 
 static time_t LastBrokenPipeTime = 0;
@@ -88,52 +90,40 @@ resolveHost( rodsHostAddr_t *addr, rodsServerHost_t **rodsServerHost ) {
 }
 
 int
-resoAndConnHostByDataObjInfo (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
-rodsServerHost_t **rodsServerHost)
-{
+resoAndConnHostByDataObjInfo( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
+                              rodsServerHost_t **rodsServerHost ) {
     int status;
     rodsHostAddr_t addr;
     int remoteFlag;
-
-    if (dataObjInfo == NULL || dataObjInfo->rescInfo == NULL ||
-      dataObjInfo->rescInfo->rescLoc == NULL) {
-        rodsLog (LOG_NOTICE,
-          "resolveHostByDataObjInfo: NULL input");
-        return (SYS_INTERNAL_NULL_INPUT_ERR);
-    }
-
-    memset (&addr, 0, sizeof (addr));
-    rstrcpy (addr.hostAddr, dataObjInfo->rescInfo->rescLoc, NAME_LEN);
-
-    remoteFlag = resolveHost (&addr, rodsServerHost);
-
-    if (remoteFlag == REMOTE_HOST) {
-        status = svrToSvrConnect (rsComm, *rodsServerHost);
-        if (status < 0) {
-            rodsLog (LOG_ERROR,
-              "resAndConnHostByDataObjInfo: svrToSvrConnect to %s failed",
-              (*rodsServerHost)->hostName->name);
-	}
-    }
-    return (remoteFlag);
-}
-
-int
-resolveHostByRescInfo( rescInfo_t *rescInfo, rodsServerHost_t **rodsServerHost ) {
-    rodsHostAddr_t addr;
-    int remoteFlag;
-
-    if ( rescInfo == NULL || rescInfo->rescLoc == NULL ) {
+    if ( dataObjInfo == NULL ) {
         rodsLog( LOG_NOTICE,
-                 "resolveHostByRescInfo: NULL input" );
+                 "resolveHostByDataObjInfo: NULL dataObjInfo" );
         return ( SYS_INTERNAL_NULL_INPUT_ERR );
     }
 
+    // =-=-=-=-=-=-=-
+    // extract the host location from the resource hierarchy
+    std::string location;
+    irods::error ret = irods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
+    if ( !ret.ok() ) {
+        irods::log( PASSMSG( "failed in get_loc_for_hier_string", ret ) );
+        return ret.code();
+    }
+
+
     memset( &addr, 0, sizeof( addr ) );
-    rstrcpy( addr.hostAddr, rescInfo->rescLoc, NAME_LEN );
+    rstrcpy( addr.hostAddr, location.c_str(), NAME_LEN );
 
     remoteFlag = resolveHost( &addr, rodsServerHost );
 
+    if ( remoteFlag == REMOTE_HOST ) {
+        status = svrToSvrConnect( rsComm, *rodsServerHost );
+        if ( status < 0 ) {
+            rodsLog( LOG_ERROR,
+                     "resAndConnHostByDataObjInfo: svrToSvrConnect to %s failed",
+                     ( *rodsServerHost )->hostName->name );
+        }
+    }
     return ( remoteFlag );
 }
 
@@ -468,7 +458,6 @@ printZoneInfo() {
 int
 initRcatServerHostByFile( rsComm_t *rsComm ) {
     FILE *fptr;
-    char *rcatCongFile;
     char inbuf[MAX_NAME_LEN];
     rodsHostAddr_t addr;
     rodsServerHost_t *tmpRodsServerHost;
@@ -484,26 +473,25 @@ initRcatServerHostByFile( rsComm_t *rsComm ) {
         remoteSID[i][0] = '\0';
     }
 
-    rcatCongFile = ( char * ) malloc( ( strlen( getConfigDir() ) +
-                                        strlen( RCAT_HOST_FILE ) + 24 ) );
+    std::string cfg_file;
+    irods::error ret = irods::get_full_path_for_config_file( RCAT_HOST_FILE, cfg_file );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
 
 #ifndef windows_platform
-    sprintf( rcatCongFile, "%-s/%-s", getConfigDir(), RCAT_HOST_FILE );
-    fptr = fopen( rcatCongFile, "r" );
+    fptr = fopen( cfg_file.c_str(), "r" );
 #else
-    sprintf( rcatCongFile, "%s\\%s", getConfigDir(), RCAT_HOST_FILE );
-    fptr = iRODSNt_fopen( rcatCongFile, "r" );
+    fptr = iRODSNt_fopen( cfg_file.c_str(), "r" );
 #endif
 
     if ( fptr == NULL ) {
         rodsLog( LOG_SYS_FATAL,
                  "Cannot open RCAT_HOST_FILE  file %s. ernro = %d\n",
-                 rcatCongFile, errno );
-        free( rcatCongFile );
+                 cfg_file.c_str(), errno );
         return ( SYS_CONFIG_FILE_ERR );
     }
-
-    free( rcatCongFile );
 
     memset( &addr, 0, sizeof( addr ) );
     while ( ( lineLen = getLine( fptr, inbuf, MAX_NAME_LEN ) ) > 0 ) {
@@ -1484,31 +1472,31 @@ rsPipSigalHandler( int ) {
 
 int
 initHostConfigByFile( rsComm_t *rsComm ) {
-    FILE *fptr;
-    char *hostCongFile;
+    FILE *fptr = 0;
     char inbuf[MAX_NAME_LEN];
     char hostBuf[LONG_NAME_LEN];
-    int lineLen, bytesCopied;
-    hostCongFile = ( char * ) malloc( ( strlen( getConfigDir() ) +
-                                        strlen( HOST_CONFIG_FILE ) + 24 ) );
+    int lineLen = 0, bytesCopied = 0;
+    // =-=-=-=-=-=-=-
+    // request fully qualified path to the config file
+    std::string cfg_file;
+    irods::error ret = irods::get_full_path_for_config_file( HOST_CONFIG_FILE, cfg_file );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
 
 #ifndef windows_platform
-    sprintf( hostCongFile, "%-s/%-s", getConfigDir(), HOST_CONFIG_FILE );
-    fptr = fopen( hostCongFile, "r" );
+    fptr = fopen( cfg_file.c_str(), "r" );
 #else
-    sprintf( hostCongFile, "%s\\%s", getConfigDir(), HOST_CONFIG_FILE );
-    fptr = iRODSNt_fopen( hostCongFile, "r" );
+    fptr = iRODSNt_fopen( cfg_file.c_str(), "r" );
 #endif
 
     if ( fptr == NULL ) {
         rodsLog( LOG_NOTICE,
                  "Cannot open HOST_CONFIG_FILE  file %s. ernro = %d\n",
-                 hostCongFile, errno );
-        free( hostCongFile );
+                 cfg_file.c_str(), errno );
         return ( SYS_CONFIG_FILE_ERR );
     }
-
-    free( hostCongFile );
 
     while ( ( lineLen = getLine( fptr, inbuf, MAX_NAME_LEN ) ) > 0 ) {
         char *inPtr = inbuf;

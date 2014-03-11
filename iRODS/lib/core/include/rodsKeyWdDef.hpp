@@ -23,6 +23,7 @@
 #define DATA_TYPE_KW	"dataType"	/* data type */
 #define DATA_SIZE_KW	"dataSize"
 #define CHKSUM_KW	"chksum"
+#define ORIG_CHKSUM_KW	"orig_chksum"
 #define VERSION_KW	"version"
 #define FILE_PATH_KW	"filePath"	/* the physical file path */
 #define BUN_FILE_PATH_KW "bunFilePath" /* the physical bun file path */ // JMC - backport 4768

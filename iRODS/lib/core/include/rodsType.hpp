@@ -39,12 +39,6 @@ typedef unsigned long long rodsULong_t;
 #endif	/* sgi_platform */
 #endif	/* osx_platform */
 
-#ifdef ADDR_64BITS
-typedef rodsULong_t addrInt_t;
-#else
-typedef unsigned int addrInt_t;
-#endif
-
 typedef enum {  /* object type */
     UNKNOWN_OBJ_T,
     DATA_OBJ_T,

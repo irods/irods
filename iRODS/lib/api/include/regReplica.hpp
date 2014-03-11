@@ -49,8 +49,8 @@ extern "C" {
      *   int status - status of the operation.
      */
 
-    int
-    clearRegReplicaInp( regReplica_t *regReplicaInp );
+    //int
+    //clearRegReplicaInp( regReplica_t *regReplicaInp );
 
 }
 

@@ -29,7 +29,7 @@
 # =-=-=-=-=-=-=-
 # preinstall
 # =-=-=-=-=-=-=-
-#%preinstall 
+#%preinstall
 
 
 
@@ -43,7 +43,7 @@
 # =-=-=-=-=-=-=-
 # preremove
 # =-=-=-=-=-=-=-
-#%preremove 
+#%preremove
 
 
 
@@ -51,7 +51,7 @@
 # =-=-=-=-=-=-=-
 # post remove
 # =-=-=-=-=-=-=-
-#%postremove 
+#%postremove
 
 
 
@@ -61,9 +61,10 @@
 # Full File Listing
 # =-=-=-=-=-=-=-
 
-f 644 root root /usr/lib/libirods.a ./libirods.a
+f 644 root root /usr/lib/irods/libirods_client.a ./libirods_client.a
+f 644 root root /usr/lib/irods/libirods_server.a ./libirods_server.a
 
-d 755 root root /usr/include/irods/
+d 755 root root /usr/include/irods/ -
 f 644 root root /usr/include/irods/ ./iRODS/lib/core/include/*.hpp
 f 644 root root /usr/include/irods/ ./iRODS/lib/api/include/*.hpp
 f 644 root root /usr/include/irods/ ./iRODS/lib/md5/include/*.hpp
@@ -74,7 +75,7 @@ f 644 root root /usr/include/irods/ ./iRODS/server/icat/include/*.hpp
 f 644 root root /usr/include/irods/ ./iRODS/server/re/include/*.hpp
 f 644 root root /usr/include/irods/ ./iRODS/server/drivers/include/*.hpp
 
-d 755 root root /usr/share/irods/
+d 755 root root /usr/share/irods/ -
 d 755 root root /usr/share/irods/examples
 d 755 root root /usr/share/irods/examples/microservices
 d 755 root root /usr/share/irods/examples/resources
@@ -5294,7 +5295,8 @@ f 644 root root  /usr/include/irods/boost/thread/is_locked_by_this_thread.hpp ./
 f 644 root root  /usr/include/irods/boost/thread/exceptions.hpp ./external/boost_1_55_0z/boost/thread/exceptions.hpp
 d 755 root root  /usr/include/irods/boost/thread/v2 -
 f 644 root root  /usr/include/irods/boost/thread/v2/thread.hpp ./external/boost_1_55_0z/boost/thread/v2/thread.hpp
-f 777 root root  /usr/include/irods/boost/thread/v2/shared_mutex.hpp ./external/boost_1_55_0z/boost/thread/v2/shared_mutex.hpp
+f 755 root root  /usr/include/irods/boost/thread/v2/shared_mutex.hpp ./external/boost_1_55_0z/boost/thread/v2/shared_mutex.hpp
+f 755 root root  /usr/include/irods/boost/thread/v2/shared_mutex.hpp ./external/boost_1_55_0z/boost/thread/v2/shared_mutex.hpp
 f 644 root root  /usr/include/irods/boost/thread/poly_lockable_adapter.hpp ./external/boost_1_55_0z/boost/thread/poly_lockable_adapter.hpp
 f 644 root root  /usr/include/irods/boost/thread/locks.hpp ./external/boost_1_55_0z/boost/thread/locks.hpp
 f 644 root root  /usr/include/irods/boost/thread/lock_traits.hpp ./external/boost_1_55_0z/boost/thread/lock_traits.hpp
@@ -5319,8 +5321,10 @@ f 644 root root  /usr/include/irods/boost/pool/detail/for.m4 ./external/boost_1_
 f 644 root root  /usr/include/irods/boost/pool/detail/pool_construct.ipp ./external/boost_1_55_0z/boost/pool/detail/pool_construct.ipp
 f 644 root root  /usr/include/irods/boost/pool/detail/guard.hpp ./external/boost_1_55_0z/boost/pool/detail/guard.hpp
 f 644 root root  /usr/include/irods/boost/pool/detail/pool_construct.m4 ./external/boost_1_55_0z/boost/pool/detail/pool_construct.m4
-f 777 root root  /usr/include/irods/boost/pool/detail/pool_construct.bat ./external/boost_1_55_0z/boost/pool/detail/pool_construct.bat
-f 777 root root  /usr/include/irods/boost/pool/detail/pool_construct_simple.bat ./external/boost_1_55_0z/boost/pool/detail/pool_construct_simple.bat
+f 755 root root  /usr/include/irods/boost/pool/detail/pool_construct.bat ./external/boost_1_55_0z/boost/pool/detail/pool_construct.bat
+f 755 root root  /usr/include/irods/boost/pool/detail/pool_construct_simple.bat ./external/boost_1_55_0z/boost/pool/detail/pool_construct_simple.bat
+f 755 root root  /usr/include/irods/boost/pool/detail/pool_construct.bat ./external/boost_1_55_0z/boost/pool/detail/pool_construct.bat
+f 755 root root  /usr/include/irods/boost/pool/detail/pool_construct_simple.bat ./external/boost_1_55_0z/boost/pool/detail/pool_construct_simple.bat
 f 644 root root  /usr/include/irods/boost/pool/detail/pool_construct_simple.ipp ./external/boost_1_55_0z/boost/pool/detail/pool_construct_simple.ipp
 f 644 root root  /usr/include/irods/boost/pool/detail/pool_construct_simple.sh ./external/boost_1_55_0z/boost/pool/detail/pool_construct_simple.sh
 f 644 root root  /usr/include/irods/boost/pool/detail/pool_construct_simple.m4 ./external/boost_1_55_0z/boost/pool/detail/pool_construct_simple.m4
@@ -5552,7 +5556,8 @@ f 644 root root  /usr/include/irods/boost/graph/grid_graph.hpp ./external/boost_
 f 644 root root  /usr/include/irods/boost/graph/dijkstra_shortest_paths.hpp ./external/boost_1_55_0z/boost/graph/dijkstra_shortest_paths.hpp
 f 644 root root  /usr/include/irods/boost/graph/kruskal_min_spanning_tree.hpp ./external/boost_1_55_0z/boost/graph/kruskal_min_spanning_tree.hpp
 f 644 root root  /usr/include/irods/boost/graph/closeness_centrality.hpp ./external/boost_1_55_0z/boost/graph/closeness_centrality.hpp
-f 777 root root  /usr/include/irods/boost/graph/vf2_sub_graph_iso.hpp ./external/boost_1_55_0z/boost/graph/vf2_sub_graph_iso.hpp
+f 755 root root  /usr/include/irods/boost/graph/vf2_sub_graph_iso.hpp ./external/boost_1_55_0z/boost/graph/vf2_sub_graph_iso.hpp
+f 755 root root  /usr/include/irods/boost/graph/vf2_sub_graph_iso.hpp ./external/boost_1_55_0z/boost/graph/vf2_sub_graph_iso.hpp
 f 644 root root  /usr/include/irods/boost/graph/bellman_ford_shortest_paths.hpp ./external/boost_1_55_0z/boost/graph/bellman_ford_shortest_paths.hpp
 f 644 root root  /usr/include/irods/boost/graph/undirected_graph.hpp ./external/boost_1_55_0z/boost/graph/undirected_graph.hpp
 f 644 root root  /usr/include/irods/boost/graph/bron_kerbosch_all_cliques.hpp ./external/boost_1_55_0z/boost/graph/bron_kerbosch_all_cliques.hpp
@@ -11180,19 +11185,19 @@ f 644 root root /usr/include/irods/hdf5/c++/test/h5cpputil.h ./external/hdf5-1.8
 
 
 
-d 755 root root /usr/include/irods/jannson -
-d 755 root root /usr/include/irods/jannson/src -
-d 755 root root /usr/include/irods/jannson/src/tets/ -
-d 755 root root /usr/include/irods/jannson/src/win32/ -
-f 644 root root /usr/include/irods/jannson/src/jansson.h ./external/jansson-2.5/src/jansson.h
-f 644 root root /usr/include/irods/jannson/src/hashtable.h ./external/jansson-2.5/src/hashtable.h
-f 644 root root /usr/include/irods/jannson/src/jansson_private.h ./external/jansson-2.5/src/jansson_private.h
-f 644 root root /usr/include/irods/jannson/src/jansson_config.h ./external/jansson-2.5/src/jansson_config.h
-f 644 root root /usr/include/irods/jannson/src/strbuffer.h ./external/jansson-2.5/src/strbuffer.h
-f 644 root root /usr/include/irods/jannson/src/utf.h ./external/jansson-2.5/src/utf.h
-f 644 root root /usr/include/irods/jannson/test/suites/api/util.h ./external/jansson-2.5/test/suites/api/util.h
-f 644 root root /usr/include/irods/jannson/win32/jansson_config.h ./external/jansson-2.5/win32/jansson_config.h
-f 644 root root /usr/include/irods/jannson/config.h ./external/jansson-2.5/config.h
+d 755 root root /usr/include/irods/jansson -
+d 755 root root /usr/include/irods/jansson/src -
+d 755 root root /usr/include/irods/jansson/src/tets/ -
+d 755 root root /usr/include/irods/jansson/src/win32/ -
+f 644 root root /usr/include/irods/jansson/src/jansson.h ./external/jansson-2.5/src/jansson.h
+f 644 root root /usr/include/irods/jansson/src/hashtable.h ./external/jansson-2.5/src/hashtable.h
+f 644 root root /usr/include/irods/jansson/src/jansson_private.h ./external/jansson-2.5/src/jansson_private.h
+f 644 root root /usr/include/irods/jansson/src/jansson_config.h ./external/jansson-2.5/src/jansson_config.h
+f 644 root root /usr/include/irods/jansson/src/strbuffer.h ./external/jansson-2.5/src/strbuffer.h
+f 644 root root /usr/include/irods/jansson/src/utf.h ./external/jansson-2.5/src/utf.h
+f 644 root root /usr/include/irods/jansson/test/suites/api/util.h ./external/jansson-2.5/test/suites/api/util.h
+f 644 root root /usr/include/irods/jansson/win32/jansson_config.h ./external/jansson-2.5/win32/jansson_config.h
+f 644 root root /usr/include/irods/jansson/config.h ./external/jansson-2.5/config.h
 
 
 d 755 root root /usr/include/irods/libarchive/Testing -
@@ -11524,6 +11529,17 @@ f 644 root root /usr/lib/irods/libdispatch.a ./external/netcdf-4.3.0/libdispatch
 f 644 root root /usr/lib/irods/libnetcdf2.a ./external/netcdf-4.3.0/libdispatch/.libs/libnetcdf2.a
 f 644 root root /usr/lib/irods/libnetcdf3.a ./external/netcdf-4.3.0/libsrc/.libs/libnetcdf3.a
 f 644 root root /usr/lib/irods/libdap2.a ./external/netcdf-4.3.0/libdap2/.libs/libdap2.a
+
+f 644 root root /usr/lib/irods/libs3.so ./external/libs3-2.0/build/lib/libs3.so.2
+f 644 root root /usr/lib/irods/libarchive.so ./external/libarchive-3.1.2/libarchive/libarchive.so.14
+f 644 root root /usr/lib/irods/libhdf5.so ./external/hdf5-1.8.12/src/.libs/libhdf5.so.8.0.1
+f 644 root root /usr/lib/irods/libdynlib1.so ./external/hdf5-1.8.12/test/.libs/libdynlib1.so.0.0.0
+f 644 root root /usr/lib/irods/libdynlib2.so ./external/hdf5-1.8.12/test/.libs/libdynlib2.so.0.0.0
+f 644 root root /usr/lib/irods/libdynlib3.so ./external/hdf5-1.8.12/test/.libs/libdynlib3.so.0.0.0
+f 644 root root /usr/lib/irods/libdynlibadd.so ./external/hdf5-1.8.12/tools/h5repack/.libs/libdynlibadd.so.0.0.0
+f 644 root root /usr/lib/irods/libhdf5_hl.so ./external/hdf5-1.8.12/hl/src/.libs/libhdf5_hl.so.8.0.1
+f 644 root root /usr/lib/irods/libjansson.so ./external/jansson-2.5/src/.libs/libjansson.so.4.5.0
+f 644 root root /usr/lib/irods/libnetcdf.so ./external/netcdf-4.3.0/liblib/.libs/libnetcdf.so.7.2.0
 
 f 755 root root /usr/bin/epm ./external/epm/epm
 

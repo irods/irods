@@ -463,6 +463,10 @@ clientLoginWithPassword( rcComm_t *Conn, char* password ) {
     char digest[RESPONSE_LEN + 2];
     char userNameAndZone[NAME_LEN * 2 + 1];
     MD5_CTX context;
+    if ( !password ) {
+        printError( Conn, -1, "null password pointer" );
+        return -1;
+    }
 
     if ( Conn->loggedIn == 1 ) {
         /* already logged in */
@@ -476,6 +480,8 @@ clientLoginWithPassword( rcComm_t *Conn, char* password ) {
 
     memset( md5Buf, 0, sizeof( md5Buf ) );
     strncpy( md5Buf, authReqOut->challenge, CHALLENGE_LEN );
+    setSessionSignatureClientside( md5Buf );
+
 
     len = strlen( password );
     sprintf( md5Buf + CHALLENGE_LEN, "%s", password );

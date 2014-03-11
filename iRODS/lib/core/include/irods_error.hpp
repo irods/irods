@@ -74,7 +74,7 @@ namespace irods {
             status_ = _status;
         }
         void message( std::string _message ) {
-        	message_ = _message;
+            message_ = _message;
         }
 
     private:

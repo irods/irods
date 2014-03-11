@@ -5,7 +5,7 @@
 
 #include "rodsLog.hpp"
 #include "icatHighLevelRoutines.hpp"
-#include "icatMidLevelRoutines.hpp"
+#include "mid_level.hpp"
 #include "rodsDef.hpp"
 
 namespace irods {

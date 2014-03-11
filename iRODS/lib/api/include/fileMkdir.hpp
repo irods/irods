@@ -21,6 +21,7 @@ typedef struct {
     char dirName[MAX_NAME_LEN];
     char rescHier[MAX_NAME_LEN];
     int mode;
+    keyValPair_t condInput;
 } fileMkdirInp_t;
 
 #define fileMkdirInp_PI "struct RHostAddr_PI; str dirName[MAX_NAME_LEN]; str rescHier[MAX_NAME_LEN]; int mode;"

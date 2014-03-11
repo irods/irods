@@ -17,6 +17,11 @@
 #include "irods_server_properties.hpp"
 #include "readServerConfig.hpp"
 
+// =-=-=-=-=-=-=-
+// irods includes
+#include "irods_get_full_path_for_config_file.hpp"
+
+
 extern int msiAdmClearAppRuleStruct( ruleExecInfo_t *rei );
 
 int usage( char *prog );
@@ -37,13 +42,13 @@ main( int argc, char **argv ) {
 
     ProcessType = RE_SERVER_PT;
 
-    irods::server_properties::getInstance().get_property<bool>(RUN_SERVER_AS_ROOT_KW, run_server_as_root);
+    irods::server_properties::getInstance().get_property<bool>( RUN_SERVER_AS_ROOT_KW, run_server_as_root );
 
 #ifndef windows_platform
-    if (run_server_as_root) {
-		if ( initServiceUser() < 0 ) {
-			exit( 1 );
-		}
+    if ( run_server_as_root ) {
+        if ( initServiceUser() < 0 ) {
+            exit( 1 );
+        }
     }
 #endif
 
@@ -271,20 +276,28 @@ reSvrSleep( rsComm_t *rsComm ) {
 
 int
 chkAndResetRule( rsComm_t *rsComm ) {
-    char *configDir;
-    char rulesFileName[MAX_NAME_LEN];
+//    char *configDir;
+//    char rulesFileName[MAX_NAME_LEN];
     int status = 0;
     uint mtime;
 
-    configDir = getConfigDir();
-    snprintf( rulesFileName, MAX_NAME_LEN, "%s/reConfigs/core.re",
-              configDir );
-    path p( rulesFileName );
+//    configDir = getConfigDir();
+//    snprintf( rulesFileName, MAX_NAME_LEN, "%s/reConfigs/core.re",
+//              configDir );
+
+    std::string re_full_path;
+    irods::error ret = irods::get_full_path_for_config_file( "core.re", re_full_path );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+
+    path p( re_full_path );
     if ( !exists( p ) ) {
         status = UNIX_FILE_STAT_ERR - errno;
         rodsLog( LOG_ERROR,
                  "chkAndResetRule: unable to read rule config file %s, status = %d",
-                 rulesFileName, status );
+                 re_full_path.c_str(), status );
         return ( status );
     }
 
@@ -300,7 +313,7 @@ chkAndResetRule( rsComm_t *rsComm ) {
         /* file has been changed */
         rodsLog( LOG_NOTICE,
                  "chkAndResetRule: reconf file %s has been changed. re-initializing",
-                 rulesFileName );
+                 re_full_path.c_str() );
         CoreIrbTimeStamp = mtime;
         clearCoreRule();
         /* The shared memory cache may have already been updated, do not force reload */

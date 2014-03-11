@@ -14,7 +14,7 @@
 #include "rodsUser.hpp"
 
 #include "icatHighLevelRoutines.hpp"
-#include "icatMidLevelRoutines.hpp"
+//#include "icatMidLevelRoutines.hpp"
 
 #include <string.h>
 #include <string>
@@ -953,8 +953,8 @@ main( int argc, char **argv ) {
     */
 
 
-	// capture server properties
-	irods::server_properties::getInstance().capture();
+    // capture server properties
+    irods::server_properties::getInstance().capture();
 
     if ( ( status = chlOpen() ) != 0 ) {
 
@@ -1074,6 +1074,7 @@ main( int argc, char **argv ) {
     }
 
     if ( strcmp( argv[1], "login" ) == 0 ) {
+        printf( "login - 2 [%s] 3 [%s] 4 [%s]\n", argv[2], argv[3], argv[4] );
         status = testLogin( Comm, argv[2], argv[3], argv[4] );
         didOne = 1;
     }

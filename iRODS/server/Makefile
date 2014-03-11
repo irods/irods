@@ -50,6 +50,7 @@ SVR_CORE_OBJS =	\
 		$(svrCoreObjDir)/physPath.o \
 		$(svrCoreObjDir)/irods_resource_manager.o \
 		$(svrCoreObjDir)/irods_resource_backport.o \
+		$(svrCoreObjDir)/irods_resource_redirect.o \
 		$(svrCoreObjDir)/irods_server_negotiation.o \
 		$(svrCoreObjDir)/irods_collection_object.o \
         $(svrCoreObjDir)/irods_data_object.o \
@@ -62,6 +63,9 @@ SVR_CORE_OBJS =	\
    		$(svrCoreObjDir)/irods_database_object.o  \
    		$(svrCoreObjDir)/irods_postgres_object.o  \
    		$(svrCoreObjDir)/irods_mysql_object.o  \
+   		$(svrCoreObjDir)/irods_oracle_object.o  \
+   		$(svrCoreObjDir)/irods_server_api_table.o  \
+   		$(svrCoreObjDir)/irods_get_l1desc.o  \
         $(svrCoreObjDir)/readServerConfig.o
 
 DB_IFACE_OBJS = \
@@ -70,6 +74,7 @@ DB_IFACE_OBJS = \
    		$(svrCoreObjDir)/irods_database_object.o  \
    		$(svrCoreObjDir)/irods_postgres_object.o  \
    		$(svrCoreObjDir)/irods_mysql_object.o  \
+   		$(svrCoreObjDir)/irods_oracle_object.o  \
         $(svrCoreObjDir)/readServerConfig.o
 
 DB_PLUGIN_OBJ = $(svrCoreObjDir)/irods_database_plugin.o 
@@ -77,7 +82,7 @@ DB_PLUGIN_SRC = $(buildDir)/server/core/src/irods_database_plugin.cpp
 DB_PLUGIN_OBJ_WITH_NO_RE = $(svrCoreObjDir)/irods_database_plugin_with_no_re.o 
    		
 
-INCLUDES +=	-I$(svrCoreIncDir)
+INCLUDES +=	-I$(svrCoreIncDir) -I$(libHasherIncDir)
 
 CFLAGS += `../../packaging/compiler_check.sh 4 2`
 

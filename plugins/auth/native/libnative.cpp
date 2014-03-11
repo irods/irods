@@ -59,7 +59,13 @@ extern "C" {
     // Set requireServerAuth to 1 to fail authentications from
     // un-authenticated Servers (for example, if the LocalZoneSID
     // is not set)
-    const int requireServerAuth = 0;
+    const int requireServerAuth = 1;
+
+    // =-=-=-=-=-=-=-
+    // NOTE:: this needs to become a property
+    // If set, then SIDs are always required, errors will be return if a SID
+    // is not locally set for a remote server
+    const int requireSIDs = 0;
 
     // =-=-=-=-=-=-=-
     // given the client connection and context string, set up the
@@ -154,25 +160,25 @@ extern "C" {
                 GetConsoleMode( hStdin, &mode );
                 DWORD lastMode = mode;
                 mode &= ~ENABLE_ECHO_INPUT;
-                BOOL success = SetConsoleMode( hStdin, mode );
+                BOOL error = !SetConsoleMode( hStdin, mode );
                 int errsv = -1;
 #else
                 struct termios tty;
                 tcgetattr( STDIN_FILENO, &tty );
                 tcflag_t oldflag = tty.c_lflag;
                 tty.c_lflag &= ~ECHO;
-                int success = tcsetattr( STDIN_FILENO, TCSANOW, &tty );
+                int error = tcsetattr( STDIN_FILENO, TCSANOW, &tty );
                 int errsv = errno;
 #endif
-                if ( !success ) {
-                    return ERROR( errsv, "Error disabling echo mode." );
+                if ( error ) {
+                    printf( "WARNING: Error %d disabling echo mode. Password will be displayed in plaintext.", errsv );
                 }
                 printf( "Enter your current iRODS password:" );
                 std::string password = "";
                 getline( cin, password );
                 strncpy( md5_buf + CHALLENGE_LEN, password.c_str(), MAX_PASSWORD_LEN );
 #ifdef WIN32
-                if ( SetConsoleMode( hStdin, lastMode ) ) {
+                if ( !SetConsoleMode( hStdin, lastMode ) ) {
                     printf( "Error reinstating echo mode." );
                 }
 #else
@@ -364,7 +370,6 @@ extern "C" {
                 char digest[RESPONSE_LEN + 2];
                 char md5Buf[CHALLENGE_LEN + MAX_PASSWORD_LEN + 2];
                 char serverId[MAX_PASSWORD_LEN + 2];
-                MD5_CTX context;
 
                 bufp = _rsAuthRequestGetChallenge();
 
@@ -374,7 +379,6 @@ extern "C" {
                 status = getAndConnRcatHostNoLogin( _comm, MASTER_RCAT,
                                                     _comm->proxyUser.rodsZone, &rodsServerHost );
                 if ( ( result = ASSERT_ERROR( status >= 0, status, "Connecting to rcat host failed." ) ).ok() ) {
-
                     memset( &authCheckInp, 0, sizeof( authCheckInp ) );
                     authCheckInp.challenge = bufp;
                     authCheckInp.response = _resp->response;
@@ -415,17 +419,23 @@ extern "C" {
                                     if ( len <= 0 ) {
                                         rodsLog( LOG_NOTICE, "rsAuthResponse: Warning, cannot authenticate the remote server, no RemoteZoneSID defined in server.config", status );
                                         result = ASSERT_ERROR( !requireServerAuth, REMOTE_SERVER_SID_NOT_DEFINED, "Authentication disallowed, no RemoteZoneSID defined." );
+                                        if ( requireSIDs ) {
+                                            return ERROR( REMOTE_SERVER_SID_NOT_DEFINED, "Authentication disallowed, no RemoteZoneSID defined" );
+                                        }
                                     }
                                     else {
                                         strncpy( md5Buf + CHALLENGE_LEN, serverId, len );
-                                        MD5Init( &context );
-                                        MD5Update( &context, ( unsigned char* )md5Buf, CHALLENGE_LEN + MAX_PASSWORD_LEN );
-                                        MD5Final( ( unsigned char* )digest, &context );
+                                        obfMakeOneWayHash(
+                                            HASH_TYPE_DEFAULT,
+                                            ( unsigned char* )md5Buf,
+                                            CHALLENGE_LEN + MAX_PASSWORD_LEN,
+                                            ( unsigned char* )digest );
+
                                         for ( i = 0; i < RESPONSE_LEN; i++ ) {
                                             if ( digest[i] == '\0' ) {
                                                 digest[i]++;
-                                            }  /* make sure 'string' doesn't
-                                                                                  end early*/
+                                            }  /* make sure 'string' doesn't end early*/
+
                                         }
                                         cp = authCheckOut->serverResponse;
                                         OK = 1;

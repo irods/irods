@@ -12,11 +12,11 @@
 // =-=-=-=-=-=-=-
 // irods includes
 #include "icatHighLevelRoutines.hpp"
-#include "icatMidLevelRoutines.hpp"
+#include "mid_level.hpp"
 
 namespace irods {
 
-	// Access singleton through its getInstance() method
+    // Access singleton through its getInstance() method
     catalog_properties& catalog_properties::getInstance() {
         static catalog_properties instance;
         return instance;

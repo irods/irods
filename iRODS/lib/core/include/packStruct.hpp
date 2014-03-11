@@ -6,6 +6,10 @@
 #ifndef PACK_STRUCT_HPP
 #define PACK_STRUCT_HPP
 
+// =-=-=-=-=-=-=-
+// boost includes
+#include <boost/function.hpp>
+
 #include "rodsDef.hpp"
 
 #define MAX_PI_LEN	1024	/* max pack instruct length */
@@ -23,7 +27,7 @@ struct */
 
         extern "C" {
 
-    typedef char* packInstruct_t;
+    typedef const char* packInstruct_t;
 
     /* indicate the end of packing table */
 
@@ -36,6 +40,7 @@ struct */
     typedef struct {
         char *name;
         char *packInstruct;
+        boost::function<void( void* )> clearInStruct;
     } packInstructArray_t;
 
     typedef struct {
@@ -108,11 +113,11 @@ struct */
     } packedOutput_t;
 
     int
-    packStruct( void *inStruct, bytesBuf_t **packedResult, char *packInstName,
+    packStruct( void *inStruct, bytesBuf_t **packedResult, const char *packInstName,
                 packInstructArray_t *myPackTable, int packFlag, irodsProt_t irodsProt );
 
     int
-    unpackStruct( void *inPackStr, void **outStruct, char *packInstName,
+    unpackStruct( void *inPackStr, void **outStruct, const char *packInstName,
                   packInstructArray_t *myPackTable, irodsProt_t irodsProt );
     int
     parsePackInstruct( char *packInstruct, packItem_t **packItemHead );

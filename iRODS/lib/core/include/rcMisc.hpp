@@ -21,6 +21,16 @@
 
 extern "C" {
 
+    void
+    clearModAVUMetadataInp( void* );
+    void
+    clearDataObjCopyInp( void* );
+    void
+    clearUnregDataObj( void* );
+    void
+    clearModDataObjMetaInp( void* );
+    void
+    clearRegReplicaInp( void *voidInp );
     int isPath( char *path );
     rodsLong_t
     getFileSize( char *path );
@@ -54,7 +64,7 @@ extern "C" {
     int
     getStrInBuf( char **inbuf, char *outbuf, int *inbufLen, int outbufLen );
     int
-    getNextEleInStr (char **inbuf, char *outbuf, int *inbufLen, int maxOutLen);
+    getNextEleInStr( char **inbuf, char *outbuf, int *inbufLen, int maxOutLen );
     int
     getZoneNameFromHint( char *rcatZoneHint, char *zoneName, int len );
     int
@@ -105,17 +115,17 @@ extern "C" {
                     rodsLong_t length );
     int
     freeGenQueryOut( genQueryOut_t **genQueryOut );
-    int
-    clearGenQueryInp( genQueryInp_t *genQueryInp );
+    void
+    clearGenQueryInp( void * voidInp );
     sqlResult_t *
     getSqlResultByInx( genQueryOut_t *genQueryOut, int attriInx );
-    int
-    clearGenQueryOut( genQueryOut_t *genQueryOut );
+    void
+    clearGenQueryOut( void * );
     int
     catGenQueryOut( genQueryOut_t *targGenQueryOut, genQueryOut_t *genQueryOut,
                     int maxRowCnt );
-    int
-    clearBulkOprInp( bulkOprInp_t *bulkOprInp );
+    void
+    clearBulkOprInp( void * );
     int
     getUnixUid( char *userName );
     int
@@ -179,11 +189,11 @@ extern "C" {
     int
     addTagStruct( tagStruct_t *condInput, char *preTag, char *postTag,
                   char *keyWord );
-    int
-    clearDataObjInp( dataObjInp_t *dataObjInp );
-    int
-    clearCollInp( collInp_t *collInp );
-    int
+    void
+    clearDataObjInp( void* );
+    void
+    clearCollInp( void* );
+    void
     clearAuthResponseInp( void * myInStruct );
     int
     isInteger( char *inStr );

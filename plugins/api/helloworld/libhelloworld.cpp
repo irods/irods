@@ -33,8 +33,9 @@ extern "C" {
                                 NO_USER_AUTH,
                                 NULL, 0,
                                 NULL, 0,
-                                0
-                              }; // null fcn ptr, handled in delay_load
+                                0, // null fcn ptr, handled in delay_load
+                                0  // null clear fcn
+                              };
         // =-=-=-=-=-=-=-
         // create an api object
         irods::api_entry* api = new irods::api_entry( def );

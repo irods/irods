@@ -46,7 +46,7 @@ rcUnregDataObj( rcComm_t *conn, unregDataObj_t *unregDataObjInp );
  *   int status - status of the operation.
  */
 
-int
-clearUnregDataObj( unregDataObj_t *unregDataObjInp );
+//int
+//clearUnregDataObj( unregDataObj_t *unregDataObjInp );
 
 #endif	/* UNREG_DATA_OBJ_H */

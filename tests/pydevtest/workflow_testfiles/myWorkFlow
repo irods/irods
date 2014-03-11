@@ -1,5 +1,0 @@
-#!/bin/sh
-# Just a test to create new empty files
-#mycp tt  "$1"
-#touch "$1"
-cmd/mycp cmd/tt  "$1"

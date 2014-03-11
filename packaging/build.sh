@@ -28,6 +28,9 @@ Options:
 -s      Skip compilation of iRODS source
 -p      Portable option, ignores OS and builds a tar.gz
 
+Long Options:
+--run-in-place    Build server for in-place execution (not recommended)
+
 Examples:
 $SCRIPTNAME icat postgres
 $SCRIPTNAME resource
@@ -76,6 +79,7 @@ do
         --release) args="${args}-r ";;
         --skip) args="${args}-s ";;
         --portable) args="${args}-p ";;
+        --run-in-place) args="${args}-z ";;
         # pass through anything else
         *) [[ "${arg:0:1}" == "-" ]] || delim="\""
         args="${args}${delim}${arg}${delim} ";;
@@ -84,7 +88,7 @@ done
 # reset the translated args
 eval set -- $args
 # now we can process with getopts
-while getopts ":chrsp" opt; do
+while getopts ":chrspz" opt; do
     case $opt in
         c)
         COVERAGE="1"
@@ -109,6 +113,10 @@ while getopts ":chrsp" opt; do
         p)
         PORTABLE="1"
         echo "-p detected -- Building portable package"
+        ;;
+        z)
+        RUNINPLACE="1"
+        echo "--run-in-place detected -- Building for in-place execution"
         ;;
         \?)
         echo "Invalid option: -$OPTARG" >&2
@@ -264,6 +272,7 @@ rename_generated_packages() {
     RENAME_SOURCE="./linux*/irods-*$IRODSVERSION*.$EXTENSION"
     RENAME_SOURCE_DOCS=${RENAME_SOURCE/irods-/irods-docs-}
     RENAME_SOURCE_DEV=${RENAME_SOURCE/irods-/irods-dev-}
+    RENAME_SOURCE_RUNTIME=${RENAME_SOURCE/irods-/irods-runtime-}
     RENAME_SOURCE_ICOMMANDS=${RENAME_SOURCE/irods-/irods-icommands-}
     SOURCELIST=`ls $RENAME_SOURCE`
     echo "EPM produced packages:"
@@ -280,6 +289,7 @@ rename_generated_packages() {
     fi
     # release build (also building icommands)
     RENAME_DESTINATION_DEV=${RENAME_DESTINATION/irods-/irods-dev-}
+    RENAME_DESTINATION_RUNTIME=${RENAME_DESTINATION/irods-/irods-runtime-}
     RENAME_DESTINATION_ICOMMANDS=${RENAME_DESTINATION/irods-/irods-icommands-}
     # icat or resource
     if [ "$TARGET" == "icat" ] ; then
@@ -330,6 +340,10 @@ rename_generated_packages() {
 	    echo "renaming    [$RENAME_SOURCE_DEV]"
 	    echo "         to [$RENAME_DESTINATION_DEV]"
 	    mv $RENAME_SOURCE_DEV $RENAME_DESTINATION_DEV
+            echo ""
+            echo "renaming    [$RENAME_SOURCE_RUNTIME]"
+            echo "         to [$RENAME_DESTINATION_RUNTIME]"
+            mv $RENAME_SOURCE_RUNTIME $RENAME_DESTINATION_RUNTIME
 	fi
         # icat or resource
         echo ""
@@ -370,7 +384,8 @@ if [ "$1" == "clean" ] ; then
     rm -f manual.pdf
     rm -f irods-manual*.pdf
     rm -f examples/microservices/*.pdf
-    rm -f libirods.a
+    rm -f libirods_client.a
+    rm -f libirods_server.a
 
     make clean -C $BUILDDIR --no-print-directory
     set -e
@@ -379,6 +394,7 @@ if [ "$1" == "clean" ] ; then
     echo "Cleaning EPM residuals..."
     cd $BUILDDIR
     rm -f packaging/irods-dev.list
+    rm -f packaging/irods-runtime.list
     rm -f packaging/irods.list
     rm -f packaging/irods-icommands.list
     rm -rf linux-2.*
@@ -394,6 +410,7 @@ if [ "$1" == "clean" ] ; then
     rm -f iRODS/lib/core/include/irods_api_home.hpp
     rm -f iRODS/lib/core/include/irods_resources_home.hpp
     rm -f iRODS/server/core/include/irods_database_home.hpp
+    rm -f iRODS/lib/core/include/irods_home_directory.hpp
     set -e
     echo "${text_green}${text_bold}Done.${text_reset}"
     # database plugin cleanup
@@ -483,7 +500,7 @@ if [[ $1 != "icat" && $1 != "resource" ]] ; then
 fi
 
 if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
-    if [ "$(id -u)" != "0" ] ; then
+    if [ "$(id -u)" != "0" -a "$RUNINPLACE" == "0" ] ; then
         echo "${text_red}#######################################################" 1>&2
         echo "ERROR :: $SCRIPTNAME must be run as root" 1>&2
         echo "      :: because dpkg demands to be run as root" 1>&2
@@ -917,6 +934,11 @@ if [ "$BUILDIRODS" == "1" ] ; then
     rm -f ./config/platform.mk
 
     # =-=-=-=-=-=-=-
+    # stage a tmp copy of irods.config in order for the utils 
+    # script to find it.  otherwise it errors out
+    cp ./config/irods.config.template ./config/irods.config
+
+    # =-=-=-=-=-=-=-
     # run configure to create Makefile, config.mk, platform.mk, etc.
     ./scripts/configure
     # overwrite with our values
@@ -927,7 +949,11 @@ if [ "$BUILDIRODS" == "1" ] ; then
     cp $TMPCONFIGFILE ./config/irods.config
 
     # handle issue with IRODS_HOME being overwritten by the configure script
-    irodsctl_irods_home=`./scripts/find_irods_home.sh`
+    if [ "$RUNINPLACE" = "1" ] ; then
+        irodsctl_irods_home=`./scripts/find_irods_home.sh runinplace`
+    else
+        irodsctl_irods_home=`./scripts/find_irods_home.sh`
+    fi
     set_tmpfile
     sed -e "\,^IRODS_HOME,s,^.*$,IRODS_HOME=$irodsctl_irods_home," ./irodsctl > $TMPFILE
     rsync -c $TMPFILE ./irodsctl
@@ -961,6 +987,11 @@ if [ "$BUILDIRODS" == "1" ] ; then
     # =-=-=-=-=-=-=-
     # modify the irods_ms_home.hpp file with the proper path to the binary directory
     detected_irods_home=`./scripts/find_irods_home.sh`
+    if [ "$RUNINPLACE" = "1" ] ; then
+        detected_irods_home=`./scripts/find_irods_home.sh runinplace`
+    else
+        detected_irods_home=`./scripts/find_irods_home.sh`
+    fi
     detected_irods_home=`dirname $detected_irods_home`
     irods_msvc_home="$detected_irods_home/plugins/microservices/"
     set_tmpfile
@@ -1002,6 +1033,13 @@ if [ "$BUILDIRODS" == "1" ] ; then
     sed -e s,IRODSAPIPATH,$irods_api_home, ./lib/core/include/irods_api_home.hpp.src > $TMPFILE
     rsync -c $TMPFILE ./lib/core/include/irods_api_home.hpp
     rm -f $TMPFILE
+    # =-=-=-=-=-=-=-
+    # modify the irods_home_directory.hpp file with the proper path to the home directory
+    irods_home_directory="$detected_irods_home/"
+    set_tmpfile
+    sed -e s,IRODSHOMEDIRECTORY,$irods_home_directory, ./lib/core/include/irods_home_directory.hpp.src > $TMPFILE
+    rsync -c $TMPFILE ./lib/core/include/irods_home_directory.hpp
+    rm -f $TMPFILE
 
     ###########################################
     # single 'make' time on an 8 core machine
@@ -1040,6 +1078,13 @@ if [ "$BUILDIRODS" == "1" ] ; then
     fi
 
     # =-=-=-=-=-=-=-
+    # exit early for run-in-place option
+    if [ "$RUNINPLACE" == "1" ] ; then
+        echo "YUNOPACKAGE?"
+        exit 0
+    fi
+
+    # =-=-=-=-=-=-=-
     # populate IRODSVERSIONINT and IRODSVERSION in all EPM list files
 
     # irods main package
@@ -1054,6 +1099,11 @@ if [ "$BUILDIRODS" == "1" ] ; then
     mv $TMPFILE ./packaging/irods-dev.list
     sed -e "s,TEMPLATE_IRODSVERSION,$IRODSVERSION," ./packaging/irods-dev.list > $TMPFILE
     mv $TMPFILE ./packaging/irods-dev.list
+    # irods-runtime package
+    sed -e "s,TEMPLATE_IRODSVERSIONINT,$IRODSVERSIONINT," ./packaging/irods-runtime.list.template > $TMPFILE
+    mv $TMPFILE ./packaging/irods-runtime.list
+    sed -e "s,TEMPLATE_IRODSVERSION,$IRODSVERSION," ./packaging/irods-runtime.list > $TMPFILE
+    mv $TMPFILE ./packaging/irods-runtime.list
     # irods-icommands package
     sed -e "s,TEMPLATE_IRODSVERSIONINT,$IRODSVERSIONINT," ./packaging/irods-icommands.list.template > $TMPFILE
     mv $TMPFILE ./packaging/irods-icommands.list
@@ -1203,6 +1253,7 @@ if [ "$DETECTEDOS" == "RedHatCompatible" ] ; then # CentOS and RHEL and Fedora
     $EPMCMD $EPMOPTS -f rpm irods-$SERVER_TYPE_LOWERCASE $epmvar=true $epmosversion=true ./packaging/irods.list
     if [ "$SERVER_TYPE" == "ICAT" ] ; then
         $EPMCMD $EPMOPTS -f rpm irods-dev $epmvar=true ./packaging/irods-dev.list
+        $EPMCMD $EPMOPTS -f rpm irods-runtime $epmvar=true ./packaging/irods-runtime.list
     fi
     if [ "$RELEASE" == "1" ] ; then
         $EPMCMD $EPMOPTS -f rpm irods-icommands $epmvar=true ./packaging/irods-icommands.list
@@ -1213,6 +1264,7 @@ elif [ "$DETECTEDOS" == "SuSE" ] ; then # SuSE
     $EPMCMD $EPMOPTS -f rpm irods-$SERVER_TYPE_LOWERCASE $epmvar=true ./packaging/irods.list
     if [ "$SERVER_TYPE" == "ICAT" ] ; then
         $EPMCMD $EPMOPTS -f rpm irods-dev $epmvar=true ./packaging/irods-dev.list
+        $EPMCMD $EPMOPTS -f rpm irods-runtime $epmvar=true ./packaging/irods-runtime.list
     fi
     if [ "$RELEASE" == "1" ] ; then
         $EPMCMD $EPMOPTS -f rpm irods-icommands $epmvar=true ./packaging/irods-icommands.list
@@ -1223,6 +1275,7 @@ elif [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then  # Ubuntu
     $EPMCMD $EPMOPTS -a $arch -f deb irods-$SERVER_TYPE_LOWERCASE $epmvar=true ./packaging/irods.list
     if [ "$SERVER_TYPE" == "ICAT" ] ; then
         $EPMCMD $EPMOPTS -a $arch -f deb irods-dev $epmvar=true ./packaging/irods-dev.list
+        $EPMCMD $EPMOPTS -a $arch -f deb irods-runtime $epmvar=true ./packaging/irods-runtime.list
     fi
     if [ "$RELEASE" == "1" ] ; then
         $EPMCMD $EPMOPTS -a $arch -f deb irods-icommands $epmvar=true ./packaging/irods-icommands.list
@@ -1233,6 +1286,7 @@ elif [ "$DETECTEDOS" == "Solaris" ] ; then  # Solaris
     $EPMCMD $EPMOPTS -f pkg irods-$SERVER_TYPE_LOWERCASE $epmvar=true ./packaging/irods.list
     if [ "$SERVER_TYPE" == "ICAT" ] ; then
         $EPMCMD $EPMOPTS -f pkg irods-dev $epmvar=true ./packaging/irods-dev.list
+        $EPMCMD $EPMOPTS -f pkg irods-runtime $epmvar=true ./packaging/irods-runtime.list
     fi
     if [ "$RELEASE" == "1" ] ; then
         $EPMCMD $EPMOPTS -f pkg irods-icommands $epmvar=true ./packaging/irods-icommands.list
@@ -1243,6 +1297,7 @@ elif [ "$DETECTEDOS" == "MacOSX" ] ; then  # MacOSX
     $EPMCMD $EPMOPTS -f osx irods-$SERVER_TYPE_LOWERCASE $epmvar=true ./packaging/irods.list
     if [ "$SERVER_TYPE" == "ICAT" ] ; then
         $EPMCMD $EPMOPTS -f osx irods-dev $epmvar=true ./packaging/irods-dev.list
+        $EPMCMD $EPMOPTS -f osx irods-runtime $epmvar=true ./packaging/irods-runtime.list
     fi
     if [ "$RELEASE" == "1" ] ; then
         $EPMCMD $EPMOPTS -f osx irods-icommands $epmvar=true ./packaging/irods-icommands.list
@@ -1250,9 +1305,12 @@ elif [ "$DETECTEDOS" == "MacOSX" ] ; then  # MacOSX
 elif [ "$DETECTEDOS" == "ArchLinux" ] ; then  # ArchLinux
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS TGZs${text_reset}"
     epmvar="ARCH$SERVERTYPE"
-    $EPMCMD $EPMOPTS -f portable irods-$SERVER_TYPE_LOWERCASE $epmvar=true ./packaging/irods.list
     if [ "$SERVER_TYPE" == "ICAT" ] ; then
+        ICAT=true $EPMCMD $EPMOPTS -f portable irods-$SERVER_TYPE_LOWERCASE $epmvar=true ./packaging/irods.list
         $EPMCMD $EPMOPTS -f portable irods-dev $epmvar=true ./packaging/irods-dev.list
+        $EPMCMD $EPMOPTS -f portable irods-runtime $epmvar=true ./packaging/irods-runtime.list
+    else
+        $EPMCMD $EPMOPTS -f portable irods-$SERVER_TYPE_LOWERCASE $epmvar=true ./packaging/irods.list
     fi
     if [ "$RELEASE" == "1" ] ; then
         $EPMCMD $EPMOPTS -f portable irods-icommands $epmvar=true ./packaging/irods-icommands.list
@@ -1263,6 +1321,7 @@ elif [ "$DETECTEDOS" == "Portable" ] ; then  # Portable
     $EPMCMD $EPMOPTS -f portable irods-$SERVER_TYPE_LOWERCASE $epmvar=true ./packaging/irods.list
     if [ "$SERVER_TYPE" == "ICAT" ] ; then
         ICAT=true $EPMCMD $EPMOPTS -f portable irods-dev $epmvar=true ./packaging/irods-dev.list
+        ICAT=true $EPMCMD $EPMOPTS -f portable irods-runtime $epmvar=true ./packaging/irods-runtime.list
     fi
     if [ "$RELEASE" == "1" ] ; then
         $EPMCMD $EPMOPTS -f portable irods-icommands $epmvar=true ./packaging/irods-icommands.list

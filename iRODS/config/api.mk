@@ -371,39 +371,6 @@ LIB_API_OBJS += $(libApiObjDir)/rcTicketAdmin.o
 SVR_API_OBJS += $(svrApiObjDir)/rsGetTempPasswordForOther.o
 LIB_API_OBJS += $(libApiObjDir)/rcGetTempPasswordForOther.o
 
-ifdef NETCDF_CLIENT
-LIB_API_OBJS += $(libApiObjDir)/rcNcOpen.o
-LIB_API_OBJS += $(libApiObjDir)/rcNcCreate.o
-LIB_API_OBJS += $(libApiObjDir)/rcNcClose.o
-LIB_API_OBJS += $(libApiObjDir)/rcNcInqId.o
-LIB_API_OBJS += $(libApiObjDir)/rcNcInqWithId.o
-LIB_API_OBJS += $(libApiObjDir)/rcNcGetVarsByType.o
-LIB_API_OBJS += $(libApiObjDir)/rcNcInq.o
-LIB_API_OBJS += $(libApiObjDir)/rcNcOpenGroup.o
-LIB_API_OBJS += $(libApiObjDir)/rcNcInqGrps.o
-LIB_API_OBJS += $(libApiObjDir)/rcNcRegGlobalAttr.o
-LIB_API_OBJS += $(libApiObjDir)/rcNcGetAggElement.o
-LIB_API_OBJS += $(libApiObjDir)/rcNcGetAggInfo.o
-LIB_API_OBJS += $(libApiObjDir)/rcNcArchTimeSeries.o
-ifdef NETCDF_API
-SVR_API_OBJS += $(svrApiObjDir)/rsNcOpen.o
-SVR_API_OBJS += $(svrApiObjDir)/rsNcCreate.o
-SVR_API_OBJS += $(svrApiObjDir)/rsNcClose.o
-SVR_API_OBJS += $(svrApiObjDir)/rsNcInqId.o
-SVR_API_OBJS += $(svrApiObjDir)/rsNcInqWithId.o
-SVR_API_OBJS += $(svrApiObjDir)/rsNcGetVarsByType.o
-SVR_API_OBJS += $(svrApiObjDir)/rsNcGetAggElement.o
-SVR_API_OBJS += $(svrApiObjDir)/rsNcGetAggInfo.o
-SVR_API_OBJS += $(svrApiObjDir)/rsNcArchTimeSeries.o
-SVR_API_OBJS += $(svrApiObjDir)/rsNcInq.o
-ifdef NETCDF4_API
-SVR_API_OBJS += $(svrApiObjDir)/rsNcOpenGroup.o
-SVR_API_OBJS += $(svrApiObjDir)/rsNcInqGrps.o
-endif
-SVR_API_OBJS += $(svrApiObjDir)/rsNcRegGlobalAttr.o
-endif  # NETCDF_API
-endif   # NETCDF_CLIENT
-
 SVR_API_OBJS += $(svrApiObjDir)/rsPamAuthRequest.o
 LIB_API_OBJS += $(libApiObjDir)/rcPamAuthRequest.o
 
@@ -412,11 +379,6 @@ LIB_API_OBJS += $(libApiObjDir)/rcSslStart.o
 
 SVR_API_OBJS += $(svrApiObjDir)/rsSslEnd.o
 LIB_API_OBJS += $(libApiObjDir)/rcSslEnd.o
-
-ifdef OOI_CI
-SVR_API_OBJS += $(svrApiObjDir)/rsOoiGenServReq.o
-LIB_API_OBJS += $(libApiObjDir)/rcOoiGenServReq.o
-endif
 
 SVR_API_OBJS += $(svrApiObjDir)/rsDataObjTruncate.o
 LIB_API_OBJS += $(libApiObjDir)/rcDataObjTruncate.o

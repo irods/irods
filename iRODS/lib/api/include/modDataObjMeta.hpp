@@ -3,7 +3,7 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* modDataObjMeta.h
- */
+ar*/
 
 #ifndef MOD_DATA_OBJ_META_HPP
 #define MOD_DATA_OBJ_META_HPP
@@ -50,8 +50,8 @@ extern "C" {
      *   int status - status of the operation.
      */
 
-    int
-    clearModDataObjMetaInp( modDataObjMeta_t *modDataObjMetaInp );
+//    int
+//    clearModDataObjMetaInp( modDataObjMeta_t *modDataObjMetaInp );
 }
 
 #endif  /* MOD_DATA_OBJ_META_H */

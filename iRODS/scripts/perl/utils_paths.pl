@@ -77,9 +77,20 @@ $irodsctl = File::Spec->catfile( $IRODS_HOME, "irodsctl" );
 #
 # iRODS configuration files
 #
-$irodsConfig = File::Spec->catfile( $configDir, "irods.config" );
 $configMk    = File::Spec->catfile( $configDir, "config.mk" );
 
+# =-=-=-=-=-=-=-
+# search for the irods.config file
+$irodsConfig = File::Spec->catfile( $configDir, "irods.config" );
+unless( -e $irodsConfig ) {
+    $irodsConfig = File::Spec->catfile( "/var/lib/irods/iRODS/config", "irods.config" );
+    unless( -e $irodsConfig ) {
+        $irodsConfig = File::Spec->catfile( "/etc/irods", "irods.config" );
+        unless( -e $irodsConfig ) {
+            printf( "ERROR: irods.config file not found\n" );
+        }
+    }
+}
 
 
 

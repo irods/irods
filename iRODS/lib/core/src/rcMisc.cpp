@@ -34,6 +34,7 @@ set up the set 1 tables */
 // =-=-=-=-=-=-=-
 #include "irods_hierarchy_parser.hpp"
 #include "irods_stacktrace.hpp"
+#include "irods_client_api_table.hpp"
 
 // =-=-=-=-=-=-=-
 // boost includes
@@ -233,6 +234,7 @@ apiTableLookup( int apiNumber ) {
         }
     }
 #else
+    irods::api_entry_table& RcApiTable = irods::get_client_api_table();
     if ( RcApiTable.find( apiNumber ) != RcApiTable.end() ) {
         return apiNumber;
     }
@@ -761,6 +763,7 @@ rmKeyVal( keyValPair_t *condInput, char *keyWord ) {
 int
 replKeyVal( const keyValPair_t *srcCondInput, keyValPair_t *destCondInput ) {
     int i;
+
     memset( destCondInput, 0, sizeof( keyValPair_t ) );
 
     for ( i = 0; i < srcCondInput->len; i++ ) {
@@ -786,6 +789,10 @@ int copyKeyVal(
 int
 replDataObjInp( dataObjInp_t *srcDataObjInp, dataObjInp_t *destDataObjInp ) {
     *destDataObjInp = *srcDataObjInp;
+
+    destDataObjInp->condInput.len = 0;
+    destDataObjInp->condInput.keyWord = NULL;
+    destDataObjInp->condInput.value = NULL;
 
     replKeyVal( &srcDataObjInp->condInput, &destDataObjInp->condInput );
     replSpecColl( srcDataObjInp->specColl, &destDataObjInp->specColl );
@@ -1087,7 +1094,6 @@ clearKeyVal( keyValPair_t *condInput ) {
     if ( condInput == NULL || condInput->len <= 0 ) {
         return ( 0 );
     }
-
     for ( i = 0; i < condInput->len; i++ ) {
         free( condInput->keyWord[i] );
         free( condInput->value[i] );
@@ -1131,18 +1137,19 @@ clearInxVal( inxValPair_t *inxValPair ) {
     return( 0 );
 }
 
-int
-clearGenQueryInp( genQueryInp_t *genQueryInp ) {
-    if ( genQueryInp == NULL ) {
-        return ( 0 );
+void
+clearGenQueryInp( void* voidInp ) {
+
+    if ( voidInp == NULL ) {
+        return;
     }
 
+    genQueryInp_t *genQueryInp = ( genQueryInp_t* ) voidInp;
     clearInxIval( &genQueryInp->selectInp );
     clearInxVal( &genQueryInp->sqlCondInp );
     clearKeyVal( &genQueryInp->condInput );
 
-
-    return ( 0 );
+    return;
 }
 
 int
@@ -1162,12 +1169,13 @@ freeGenQueryOut( genQueryOut_t **genQueryOut ) {
     return ( 0 );
 }
 
-int
-clearGenQueryOut( genQueryOut_t *genQueryOut ) {
+void
+clearGenQueryOut( void* voidInp ) {
+    genQueryOut_t *genQueryOut = ( genQueryOut_t* ) voidInp;
     int i;
 
     if ( genQueryOut == NULL ) {
-        return 0;
+        return;
     }
 
     for ( i = 0; i < genQueryOut->attriCnt; i++ ) {
@@ -1175,7 +1183,7 @@ clearGenQueryOut( genQueryOut_t *genQueryOut ) {
             free( genQueryOut->sqlResult[i].value );
         }
     }
-    return ( 0 );
+    return;
 }
 
 /* catGenQueryOut - Concatenate genQueryOut to targGenQueryOut up to maxRowCnt.
@@ -1259,14 +1267,15 @@ catGenQueryOut( genQueryOut_t *targGenQueryOut, genQueryOut_t *genQueryOut,
     return ( 0 );
 }
 
-int
-clearBulkOprInp( bulkOprInp_t *bulkOprInp ) {
+void
+clearBulkOprInp( void* voidInp ) {
+    bulkOprInp_t *bulkOprInp = ( bulkOprInp_t* ) voidInp;
     if ( bulkOprInp == NULL ) {
-        return 0;
+        return;
     }
     clearGenQueryOut( &bulkOprInp->attriArray );
     clearKeyVal( &bulkOprInp->condInput );
-    return 0;
+    return;
 }
 
 int
@@ -1507,10 +1516,11 @@ getSqlResultByInx( genQueryOut_t *genQueryOut, int attriInx ) {
     return ( NULL );
 }
 
-int
-clearModDataObjMetaInp( modDataObjMeta_t *modDataObjMetaInp ) {
+void
+clearModDataObjMetaInp( void* voidInp ) {
+    modDataObjMeta_t *modDataObjMetaInp = ( modDataObjMeta_t* ) voidInp;
     if ( modDataObjMetaInp == NULL ) {
-        return 0;
+        return;
     }
 
     if ( modDataObjMetaInp->regParam != NULL ) {
@@ -1522,13 +1532,14 @@ clearModDataObjMetaInp( modDataObjMeta_t *modDataObjMetaInp ) {
         freeDataObjInfo( modDataObjMetaInp->dataObjInfo );
     }
 
-    return ( 0 );
+    return;
 }
 
-int
-clearUnregDataObj( unregDataObj_t *unregDataObjInp ) {
+void
+clearUnregDataObj( void* voidInp ) {
+    unregDataObj_t *unregDataObjInp = ( unregDataObj_t* ) voidInp;
     if ( unregDataObjInp == NULL ) {
-        return 0;
+        return;
     }
 
     if ( unregDataObjInp->condInput != NULL ) {
@@ -1540,13 +1551,14 @@ clearUnregDataObj( unregDataObj_t *unregDataObjInp ) {
         freeDataObjInfo( unregDataObjInp->dataObjInfo );
     }
 
-    return ( 0 );
+    return ;
 }
 
-int
-clearRegReplicaInp( regReplica_t *regReplicaInp ) {
+void
+clearRegReplicaInp( void* voidInp ) {
+    regReplica_t *regReplicaInp = ( regReplica_t* ) voidInp;
     if ( regReplicaInp == NULL ) {
-        return 0;
+        return;
     }
 
     clearKeyVal( &regReplicaInp->condInput );
@@ -1561,13 +1573,14 @@ clearRegReplicaInp( regReplica_t *regReplicaInp ) {
 
     memset( regReplicaInp, 0, sizeof( regReplica_t ) );
 
-    return ( 0 );
+    return;
 }
 
-int
-clearDataObjInp( dataObjInp_t *dataObjInp ) {
+void
+clearDataObjInp( void* voidInp ) {
+    dataObjInp_t *dataObjInp = ( dataObjInp_t* ) voidInp;
     if ( dataObjInp == NULL ) {
-        return 0;
+        return;
     }
 
     clearKeyVal( &dataObjInp->condInput );
@@ -1577,26 +1590,29 @@ clearDataObjInp( dataObjInp_t *dataObjInp ) {
 
     memset( dataObjInp, 0, sizeof( dataObjInp_t ) );
 
-    return ( 0 );
+    return;
 }
 
-int
-clearCollInp( collInp_t *collInp ) {
+void
+clearCollInp( void* voidInp ) {
+
+    collInp_t *collInp = ( collInp_t* ) voidInp;
     if ( collInp == NULL ) {
-        return 0;
+        return;
     }
 
     clearKeyVal( &collInp->condInput );
 
     memset( collInp, 0, sizeof( collInp_t ) );
 
-    return ( 0 );
+    return;
 }
 
-int
-clearDataObjCopyInp( dataObjCopyInp_t *dataObjCopyInp ) {
+void
+clearDataObjCopyInp( void* voidInp ) {
+    dataObjCopyInp_t *dataObjCopyInp = ( dataObjCopyInp_t* ) voidInp;
     if ( dataObjCopyInp == NULL ) {
-        return 0;
+        return;
     }
 
     clearKeyVal( &dataObjCopyInp->destDataObjInp.condInput );
@@ -1608,7 +1624,7 @@ clearDataObjCopyInp( dataObjCopyInp_t *dataObjCopyInp ) {
 
     memset( dataObjCopyInp, 0, sizeof( dataObjCopyInp_t ) );
 
-    return ( 0 );
+    return;
 }
 
 int
@@ -3781,8 +3797,9 @@ freeStringIfNotNull( char * str ) {
     }
 }
 
-int
-clearModAVUMetadataInp( modAVUMetadataInp_t * modAVUMetadataInp ) {
+void
+clearModAVUMetadataInp( void* voidInp ) {
+    modAVUMetadataInp_t * modAVUMetadataInp = ( modAVUMetadataInp_t* )voidInp;
     freeStringIfNotNull( modAVUMetadataInp->arg0 );
     freeStringIfNotNull( modAVUMetadataInp->arg1 );
     freeStringIfNotNull( modAVUMetadataInp->arg2 );
@@ -3794,7 +3811,7 @@ clearModAVUMetadataInp( modAVUMetadataInp_t * modAVUMetadataInp ) {
     freeStringIfNotNull( modAVUMetadataInp->arg8 );
     freeStringIfNotNull( modAVUMetadataInp->arg9 );
     memset( modAVUMetadataInp, 0, sizeof( modAVUMetadataInp_t ) );
-    return( 0 );
+    return;
 }
 
 /* freeRodsObjStat - free a rodsObjStat_t. Note that this should only
@@ -4611,21 +4628,22 @@ isPathSymlink( rodsArguments_t * rodsArgs, char * myPath ) {
     }
 }
 
-int
+void
 clearAuthResponseInp( void * inauthResponseInp ) {
     authResponseInp_t *authResponseInp;
 
     authResponseInp = ( authResponseInp_t * ) inauthResponseInp;
 
     if ( authResponseInp == NULL ) {
-        return 0;
+        return;
     }
     free( authResponseInp->username );
     free( authResponseInp->response );
     memset( authResponseInp, 0, sizeof( authResponseInp_t ) );
 
-    return ( 0 );
+    return;
 }
+
 char *trimPrefix( char * str ) {
     int i = 0;
     while ( str[i] != ' ' ) {

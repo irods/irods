@@ -787,7 +787,7 @@ procChksumForClose(
     int status = 0;
     dataObjInfo_t *dataObjInfo = L1desc[l1descInx].dataObjInfo;
     int oprType = L1desc[l1descInx].oprType;
-    int srcL1descInx;
+    int srcL1descInx = 0;
     dataObjInfo_t *srcDataObjInfo;
 
     *chksumStr = NULL;
@@ -799,12 +799,16 @@ procChksumForClose(
                      srcL1descInx );
             return ( SYS_FILE_DESC_OUT_OF_RANGE );
         }
+
         srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
+        if ( strlen( srcDataObjInfo->chksum ) > 0 ) {
+            addKeyVal( &dataObjInfo->condInput, ORIG_CHKSUM_KW, srcDataObjInfo->chksum );
+        }
+
         if ( strlen( srcDataObjInfo->chksum ) > 0 &&
                 srcDataObjInfo->replStatus > 0 ) {
             /* the source has chksum. Must verify chksum */
             status = _dataObjChksum( rsComm, dataObjInfo, chksumStr );
-
             if ( status < 0 ) {
                 dataObjInfo->chksum[0] = '\0';
                 if ( status == DIRECT_ARCHIVE_ACCESS ) {
@@ -822,12 +826,11 @@ procChksumForClose(
             else {
                 rstrcpy( dataObjInfo->chksum, *chksumStr, NAME_LEN );
                 if ( strcmp( srcDataObjInfo->chksum, *chksumStr ) != 0 ) {
-
+                    rodsLog( LOG_NOTICE,
+                             "procChksumForClose: chksum mismatch for for %s src [%s] new [%s]",
+                             dataObjInfo->objPath, srcDataObjInfo->chksum, *chksumStr );
                     free( *chksumStr );
                     *chksumStr = NULL;
-                    rodsLog( LOG_NOTICE,
-                             "procChksumForClose: chksum mismatch for for %s",
-                             dataObjInfo->objPath );
                     return USER_CHKSUM_MISMATCH;
                 }
                 else {
@@ -846,12 +849,16 @@ procChksumForClose(
         return 0;
     }
     else if ( L1desc[l1descInx].chksumFlag == VERIFY_CHKSUM ) {
-        status = _dataObjChksum( rsComm, dataObjInfo, chksumStr );
-        if ( status < 0 ) {
-            return ( status );
-        }
-
         if ( strlen( L1desc[l1descInx].chksum ) > 0 ) {
+            if ( strlen( L1desc[l1descInx].chksum ) > 0 ) {
+                addKeyVal( &dataObjInfo->condInput, ORIG_CHKSUM_KW, L1desc[l1descInx].chksum );
+
+            }
+            status = _dataObjChksum( rsComm, dataObjInfo, chksumStr );
+            rmKeyVal( &dataObjInfo->condInput, ORIG_CHKSUM_KW );
+            if ( status < 0 ) {
+                return ( status );
+            }
             /* from a put type operation */
             /* verify against the input value. */
             if ( strcmp( L1desc[l1descInx].chksum, *chksumStr ) != 0 ) {
@@ -871,6 +878,17 @@ procChksumForClose(
         }
         else if ( oprType == REPLICATE_DEST ) {
             if ( strlen( dataObjInfo->chksum ) > 0 ) {
+                addKeyVal( &dataObjInfo->condInput, ORIG_CHKSUM_KW, dataObjInfo->chksum );
+
+            }
+            status = _dataObjChksum( rsComm, dataObjInfo, chksumStr );
+            if ( status < 0 ) {
+                return ( status );
+            }
+
+            if ( strlen( dataObjInfo->chksum ) > 0 ) {
+                rmKeyVal( &dataObjInfo->condInput, ORIG_CHKSUM_KW );
+
                 /* for replication, the chksum in dataObjInfo was duplicated */
                 if ( strcmp( dataObjInfo->chksum, *chksumStr ) != 0 ) {
                     rodsLog( LOG_NOTICE,
@@ -899,8 +917,16 @@ procChksumForClose(
                 return 0;
             }
             srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
-
             if ( strlen( srcDataObjInfo->chksum ) > 0 ) {
+                addKeyVal( &dataObjInfo->condInput, ORIG_CHKSUM_KW, srcDataObjInfo->chksum );
+
+            }
+            status = _dataObjChksum( rsComm, dataObjInfo, chksumStr );
+            if ( status < 0 ) {
+                return ( status );
+            }
+            if ( strlen( srcDataObjInfo->chksum ) > 0 ) {
+                rmKeyVal( &dataObjInfo->condInput, ORIG_CHKSUM_KW );
                 if ( strcmp( srcDataObjInfo->chksum, *chksumStr ) != 0 ) {
                     rodsLog( LOG_NOTICE,
                              "procChksumForClose:mismach chksum for %s.Rcat=%s,comp %s",
@@ -915,12 +941,17 @@ procChksumForClose(
         }
     }
     else {	/* REG_CHKSUM */
+        if ( strlen( L1desc[l1descInx].chksum ) > 0 ) {
+            addKeyVal( &dataObjInfo->condInput, ORIG_CHKSUM_KW, L1desc[l1descInx].chksum );
+        }
+
         status = _dataObjChksum( rsComm, dataObjInfo, chksumStr );
         if ( status < 0 ) {
             return ( status );
         }
 
         if ( strlen( L1desc[l1descInx].chksum ) > 0 ) {
+            rmKeyVal( &dataObjInfo->condInput, ORIG_CHKSUM_KW );
             /* from a put type operation */
 
             if ( strcmp( dataObjInfo->chksum, L1desc[l1descInx].chksum ) == 0 ) {

@@ -13,10 +13,11 @@
 #include "base64.hpp"
 #include "rcMisc.hpp"
 
+#include "irods_pack_table.hpp"
 #include <iostream>
 
 int
-packStruct( void *inStruct, bytesBuf_t **packedResult, char *packInstName,
+packStruct( void *inStruct, bytesBuf_t **packedResult, const char *packInstName,
             packInstructArray_t *myPackTable, int packFlag, irodsProt_t irodsProt ) {
     int status;
     packItem_t rootPackedItem;
@@ -35,7 +36,7 @@ packStruct( void *inStruct, bytesBuf_t **packedResult, char *packInstName,
 
     inPtr = inStruct;
     memset( &rootPackedItem, 0, sizeof( rootPackedItem ) );
-    rootPackedItem.name = packInstName;
+    rootPackedItem.name = strdup( packInstName );
     status = packChildStruct( &inPtr, &packedOutput, &rootPackedItem,
                               myPackTable, 1, packFlag, irodsProt, NULL );
 
@@ -57,7 +58,7 @@ packStruct( void *inStruct, bytesBuf_t **packedResult, char *packInstName,
 }
 
 int
-unpackStruct( void *inPackedStr, void **outStruct, char *packInstName,
+unpackStruct( void *inPackedStr, void **outStruct, const char *packInstName,
               packInstructArray_t *myPackTable, irodsProt_t irodsProt ) {
     int status;
     packItem_t rootPackedItem;
@@ -76,7 +77,7 @@ unpackStruct( void *inPackedStr, void **outStruct, char *packInstName,
 
     inPtr = inPackedStr;
     memset( &rootPackedItem, 0, sizeof( rootPackedItem ) );
-    rootPackedItem.name = packInstName;
+    rootPackedItem.name = strdup( packInstName );
     status = unpackChildStruct( &inPtr, &unpackedOutput, &rootPackedItem,
                                 myPackTable, 1, irodsProt, NULL );
 
@@ -320,29 +321,36 @@ packTypeLookup( char *typeName ) {
 
 void *
 alignAddrToBoundary( void *ptr, int boundary ) {
-#ifdef ADDR_64BITS
+#if defined(_LP64) || defined(__LP64__)
     rodsLong_t b, m;
     b = ( rodsLong_t ) ptr;
-#else
-    uint b, m;
-    b = ( uint ) ptr;
-#endif
 
     m = b % boundary;
-
-#ifdef ADDR_64BITS
-    /* rodsLong_t is signed */
-    if ( m < 0 ) {
-        m = boundary + m;
-    }
-#endif
 
     if ( m == 0 ) {
         return ( ptr );
     }
-    else {
-        return ( ( void* )( ( char * ) ptr + boundary - m ) );
+
+    /* rodsLong_t is signed */
+    if ( m < 0 ) {
+        m = boundary + m;
     }
+
+    return ( ( void* )( ( char * ) ptr + boundary - m ) );
+
+#else
+    uint b, m;
+    b = ( uint ) ptr;
+
+    m = b % boundary;
+
+    if ( m == 0 ) {
+        return ( ptr );
+    }
+
+    return ( ( void* )( ( char * ) ptr + boundary - m ) );
+
+#endif
 }
 
 /* alignInt - align the inout pointer ptr to an int, char or void
@@ -369,11 +377,12 @@ alignDouble( void *ptr ) {
 #if defined(linux_platform) || defined(windows_platform)   /* no need align at 64 bit boundary for linux */
     /* By Bing on 5-29-08: Mike and I found that
        Windows 32-bit OS is aligned with 4. */
-#ifdef ADDR_64BITS
+
+#if defined(_LP64) || defined(__LP64__)
     return ( alignAddrToBoundary( ptr, 8 ) );
-#else   /* ADDR_64BITS */
+#else
     return ( alignAddrToBoundary( ptr, 4 ) );
-#endif  /* ADDR_64BITS */
+#endif // LP64
 
 #else   /* non-linux_platform || non-windows*/
     return ( alignAddrToBoundary( ptr, 8 ) );
@@ -383,7 +392,7 @@ alignDouble( void *ptr ) {
 /* align pointer address in a struct */
 
 void *ialignAddr( void *ptr ) {
-#ifdef ADDR_64BITS
+#if defined(_LP64) || defined(__LP64__)
     return ( alignDouble( ptr ) );
 #else
     return ( alignInt( ptr ) );
@@ -467,7 +476,8 @@ iparseDependent( packItem_t *myPackedItem, packInstructArray_t *myPackTable ) {
 
 int
 resolveIntDepItem( packItem_t *myPackedItem, packInstructArray_t *myPackTable ) {
-    char *tmpPtr = 0, *bufPtr = 0;
+    const char *tmpPtr = 0;
+    char *bufPtr = 0;
     char buf[MAX_NAME_LEN], myPI[MAX_NAME_LEN], *pfPtr = NULL;
     int endReached = 0, c = 0;
     int outLen = 0;
@@ -729,9 +739,11 @@ matchPackInstruct( char *name, packInstructArray_t *myPackTable ) {
 
     /* Try the API table */
 #if 1
-    irods::pack_entry_table::iterator itr = ApiPackTable.find( name );
-    if ( itr != ApiPackTable.end() ) {
-        return ( void* )itr->second.c_str();
+    irods::pack_entry_table& pk_tbl =  irods::get_pack_table();
+    irods::pack_entry_table::iterator itr = pk_tbl.find( name );
+    if ( itr != pk_tbl.end() ) {
+        //return ( void* )itr->second.c_str();
+        return ( void* )itr->second.packInstruct.c_str();
     }
 #else
     i = 0;

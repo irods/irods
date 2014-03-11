@@ -77,7 +77,7 @@
 
 #define MK_VAR_ARRAY(type, f) \
 	  TRAVERSE_NON_NULL(f) { \
-	  	  GET_VAR_ARRAY_LEN(type, len, f); \
+	    GET_VAR_ARRAY_LEN(type, len, f); \
 		  TRAVERSE_ARRAY_BEGIN(type, len, f); \
 		  TRAVERSE_ARRAY_END(type, len, f); \
 	  }

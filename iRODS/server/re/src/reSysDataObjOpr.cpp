@@ -19,7 +19,9 @@
 #include "physPath.hpp"
 
 // =-=-=-=-=-=-=-
+//
 #include "irods_resource_backport.hpp"
+#include "irods_server_api_table.hpp"
 
 /**
  * \fn msiSetDefaultResc (msParam_t *xdefaultRescList, msParam_t *xoptionStr, ruleExecInfo_t *rei)
@@ -1230,6 +1232,7 @@ setApiPerm( int apiNumber, int proxyPerm, int clientPerm ) {
         return ( apiInx );
     }
 
+    irods::api_entry_table& RsApiTable = irods::get_server_api_table();
     RsApiTable[apiInx]->proxyUserAuth = proxyPerm;
     RsApiTable[apiInx]->clientUserAuth = clientPerm;
 

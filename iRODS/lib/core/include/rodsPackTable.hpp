@@ -12,9 +12,6 @@
 #include "rodsGenQuery.hpp"
 #include "reGlobalsExtern.hpp"
 #include "apiHeaderAll.hpp"
-#ifdef OOI_CI
-#include "ooiCi.hpp"
-#endif
 
 #define UNKNOWN_SIZE	-1
 
@@ -36,6 +33,7 @@ int NumOfPackTypes = ( sizeof( packTypeTable ) / sizeof( packType_t ) );
 packConstantArray_t PackConstantTable[] = {
     {"HEADER_TYPE_LEN", HEADER_TYPE_LEN},
     {"NAME_LEN", NAME_LEN},
+    {"CHKSUM_LEN", CHKSUM_LEN},
     {"LONG_NAME_LEN", LONG_NAME_LEN},
     {"MAX_NAME_LEN", MAX_NAME_LEN},
     {"SHORT_STR_LEN", SHORT_STR_LEN},
@@ -137,12 +135,6 @@ packInstructArray_t RodsPackTable[] = {
     {"MsrvcStruct_PI", MsrvcStruct_PI},
     {"DataSeg_PI", DataSeg_PI},
     {"FileRestartInfo_PI", FileRestartInfo_PI},
-#ifdef OOI_CI
-    {"DictValue_PI", DictValue_PI},
-    {"Dictionary_PI", Dictionary_PI},
-    {"DictArray_PI", DictArray_PI},
-    {"GenArray_PI", GenArray_PI},
-#endif
     {"CS_NEG_PI", CS_NEG_PI},
     {PACK_TABLE_END_PI, ( char * ) NULL},
 };

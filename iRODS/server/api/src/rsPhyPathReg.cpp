@@ -397,7 +397,7 @@ _rsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
             rodsLog( LOG_ERROR,
                      "_rsPhyPathReg: chkFilePathPerm error for %s",
                      phyPathRegInp->objPath );
-            return ( SYS_NO_PATH_PERMISSION );
+            return ( status );
         }
     }
     else {
@@ -494,10 +494,11 @@ int
 filePathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
              rescInfo_t *rescInfo ) {
     dataObjInfo_t dataObjInfo;
+    memset( &dataObjInfo, 0, sizeof( dataObjInfo ) );
+
     int status;
     char *rescGroupName = NULL;
     char *chksum = NULL;
-
     initDataObjInfoWithInp( &dataObjInfo, phyPathRegInp );
     if ( ( rescGroupName = getValByKey( &phyPathRegInp->condInput,
                                         RESC_GROUP_NAME_KW ) ) != NULL ) {
@@ -533,6 +534,7 @@ filePathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
     }
     else if ( ( chksum = getValByKey( &phyPathRegInp->condInput,
                                       VERIFY_CHKSUM_KW ) ) != NULL ) {
+        chksum = 0;
         status = _dataObjChksum( rsComm, &dataObjInfo, &chksum );
         if ( status < 0 ) {
             rodsLog( LOG_ERROR,

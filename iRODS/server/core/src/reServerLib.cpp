@@ -436,7 +436,7 @@ runQueuedRuleExec( rsComm_t *rsComm, reExec_t *reExec,
                          reExec->reExecProc[thrInx].pid, thrInx );
 #endif
                 /* parent fall through here */
-                reExec->runCnt++;
+                // r5676 - reExec->runCnt++;
                 continue;
             }
         }
@@ -581,23 +581,28 @@ allocReThr( rsComm_t * rsComm, reExec_t * reExec ) { // JMC - backport 4695
         return 0;
     }
 
-    reExec->runCnt = 0;		/* reset each time */
+    // r5676 - reExec->runCnt = 0;		/* reset each time */
     for ( i = 0; i < reExec->maxRunCnt; i++ ) {
         if ( reExec->reExecProc[i].procExecState == RE_PROC_IDLE ) {
-            if ( thrInx == SYS_NO_FREE_RE_THREAD ) {
-                thrInx = i;
-            }
-        }
-        else {
+            //if ( thrInx == SYS_NO_FREE_RE_THREAD ) {
+            thrInx = i;
             reExec->runCnt++;
+            reExec->reExecProc[thrInx].procExecState = RE_PROC_RUNNING;
+            break;
+            //}
+            //    }
+            //    else {
+            //        reExec->runCnt++;
         }
     }
-    if ( thrInx == SYS_NO_FREE_RE_THREAD ) {
-        thrInx = waitAndFreeReThr( rsComm, reExec ); // JMC - backport 4695
-    }
-    if ( thrInx >= 0 ) {
-        reExec->reExecProc[thrInx].procExecState = RE_PROC_RUNNING;
-    }
+    // r5679 - reExec->runCnt++; // r5676
+    // r5675 from hao
+    //if ( thrInx == SYS_NO_FREE_RE_THREAD ) {
+    //    thrInx = waitAndFreeReThr( rsComm, reExec ); // JMC - backport 4695
+    //}
+    //if ( thrInx >= 0 ) {
+    //    reExec->reExecProc[thrInx].procExecState = RE_PROC_RUNNING;
+    //}
 
     return ( thrInx );
 }
@@ -649,20 +654,31 @@ waitAndFreeReThr( rsComm_t * rsComm, reExec_t * reExec ) { // JMC - backport 469
                 }
 
                 if ( exeFrequency == NULL || strlen( exeFrequency->value ) == 0 || strcmp( exeStatus->value, RE_RUNNING ) == 0 ) {
-                    /* something wrong since the entry is not deleted. could
-                     * be core dump */
-                    if ( ( reExecProc->jobType & RE_FAILED_STATUS ) == 0 ) {
-                        /* first time. just mark it RE_FAILED */
-                        regExeStatus( rsComm, ruleExecId, RE_FAILED );
+                    // r5676
+                    int i;
+                    int overlap = 0;
+                    for ( i = 0; i < reExec->maxRunCnt; i++ ) {
+                        if ( i != thrInx && strcmp( reExec->reExecProc[i].ruleExecSubmitInp.ruleExecId, ruleExecId ) == 0 ) {
+                            overlap++;
+                        }
                     }
-                    else {
-                        ruleExecDelInp_t ruleExecDelInp;
-                        rodsLog( LOG_ERROR,
-                                 "waitAndFreeReThr: %s executed but still in iCat. Job deleted",
-                                 ruleExecId );
-                        rstrcpy( ruleExecDelInp.ruleExecId, ruleExecId, NAME_LEN );
-                        status = rsRuleExecDel( rsComm, &ruleExecDelInp );
-                    }
+
+                    if ( overlap == 0 ) { // r5676
+                        /* something wrong since the entry is not deleted. could
+                         * be core dump */
+                        if ( ( reExecProc->jobType & RE_FAILED_STATUS ) == 0 ) {
+                            /* first time. just mark it RE_FAILED */
+                            regExeStatus( rsComm, ruleExecId, RE_FAILED );
+                        }
+                        else {
+                            ruleExecDelInp_t ruleExecDelInp;
+                            rodsLog( LOG_ERROR,
+                                     "waitAndFreeReThr: %s executed but still in iCat. Job deleted",
+                                     ruleExecId );
+                            rstrcpy( ruleExecDelInp.ruleExecId, ruleExecId, NAME_LEN );
+                            status = rsRuleExecDel( rsComm, &ruleExecDelInp );
+                        }
+                    } // r5676
                 }
                 freeGenQueryOut( &genQueryOut );
             }

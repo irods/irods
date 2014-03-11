@@ -136,6 +136,11 @@ int _rsFileSyncToArch(
             _sync_inp->mode,
             _sync_inp->flags ) );
     file_obj->resc_hier( _sync_inp->rescHier );
+
+    // =-=-=-=-=-=-=-
+    // pass condInput
+    file_obj->cond_input( _sync_inp->condInput );
+
     irods::error sync_err = fileSyncToArch( _comm, file_obj, _sync_inp->cacheFilename );
 
     if ( !sync_err.ok() ) {
@@ -158,6 +163,7 @@ int _rsFileSyncToArch(
                     _sync_inp->filename,
                     _sync_inp->rescHier,
                     0, 0 ) );
+            coll_obj->cond_input( _sync_inp->condInput );
             irods::error rmdir_err = fileRmdir( _comm, coll_obj );
             if ( !rmdir_err.ok() ) {
                 std::stringstream msg;

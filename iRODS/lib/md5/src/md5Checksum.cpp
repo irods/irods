@@ -4,6 +4,9 @@
 #include "md5Checksum.hpp"
 #include "rcMisc.hpp"
 #include "irods_stacktrace.hpp"
+#include "irods_hasher_factory.hpp"
+#include "MD5Strategy.hpp"
+#include "getRodsEnv.hpp"
 
 #define MD5_BUF_SZ      (4 * 1024)
 
@@ -34,13 +37,59 @@ int main( int argc, char *argv[] ) {
 #endif 	/* MD5_TESTING */
 
 int
-chksumLocFile( char *fileName, char *chksumStr ) {
-    FILE *file;
-    MD5_CTX context;
-    int len;
-    unsigned char buffer[MD5_BUF_SZ], digest[16];
-    int status;
+chksumLocFile( char *fileName, char *chksumStr, const char* scheme ) {
+    FILE *file = 0;
+    int len = 0;
+    char buffer[MD5_BUF_SZ];
+    // =-=-=-=-=-=-=-
+    // capture client side configuration
+    rodsEnv env;
+    int status = getRodsEnv( &env );
+    if ( status < 0 ) {
+        return status;
+    }
 
+    // =-=-=-=-=-=-=-
+    // capture the configured scheme if it is valid
+    std::string env_scheme( irods::MD5_NAME );
+    if ( strlen( env.rodsDefaultHashScheme ) > 0 ) {
+        env_scheme = env.rodsDefaultHashScheme;
+    }
+
+    // =-=-=-=-=-=-=-
+    // capture the configured hash match policy if it is valid
+    std::string env_policy;
+    if ( strlen( env.rodsMatchHashPolicy ) > 0 ) {
+        env_policy = env.rodsMatchHashPolicy;
+    }
+
+    // =-=-=-=-=-=-=-
+    // capture the incoming scheme if it is valid
+    std::string hash_scheme;
+    if ( scheme &&
+            strlen( scheme ) > 0 &&
+            strlen( scheme ) < NAME_LEN ) {
+        hash_scheme = scheme;
+    }
+
+    // =-=-=-=-=-=-=-
+    // verify checksum scheme against configuration
+    // if requested
+    std::string final_scheme( env_scheme );
+    if ( !hash_scheme.empty() ) {
+        if ( !env_policy.empty() ) {
+            if ( irods::STRICT_HASH_POLICY == env_policy ) {
+                if ( env_scheme != hash_scheme ) {
+                    return USER_HASH_TYPE_MISMATCH;
+                }
+            }
+        }
+
+        final_scheme = hash_scheme;
+    }
+
+    // =-=-=-=-=-=-=-
+    // open the local file
     if ( ( file = fopen( fileName, "rb" ) ) == NULL ) {
         status = UNIX_FILE_OPEN_ERR - errno;
         rodsLogError( LOG_NOTICE, status,
@@ -48,18 +97,52 @@ chksumLocFile( char *fileName, char *chksumStr ) {
         return ( status );
     }
 
-    MD5Init( &context );
-    while ( ( len = fread( buffer, 1, MD5_BUF_SZ, file ) ) > 0 ) {
-        MD5Update( &context, buffer, len );
-    }
-    MD5Final( digest, &context );
+    // =-=-=-=-=-=-=-
+    // init the hasher object
+    irods::Hasher hasher;
+    irods::error ret = irods::hasher_factory( hasher );
 
+    hasher.init( final_scheme );
+    while ( ( len = fread( buffer, 1, MD5_BUF_SZ, file ) ) > 0 ) {
+        hasher.update( buffer, len );
+    }
     fclose( file );
 
-    md5ToStr( digest, chksumStr );
-
+    // =-=-=-=-=-=-=-
+    // capture the digest
+    std::string digest;
+    hasher.digest( digest );
+    strncpy( chksumStr, digest.c_str(), digest.size() + 1 );
     return ( 0 );
 }
+
+int verifyChksumLocFile(
+    char *fileName,
+    char *myChksum,
+    char *chksumStr ) {
+    // =-=-=-=-=-=-=-
+    // extract scheme from checksum string
+    std::string scheme;
+    irods::error ret = irods::get_hash_scheme_from_checksum( myChksum, scheme );
+    if ( !ret.ok() ) {
+        //irods::log( PASS( ret ) );
+    }
+
+    char chksumBuf[CHKSUM_LEN];
+    if ( chksumStr == NULL ) {
+        chksumStr = chksumBuf;
+    }
+
+    int status = chksumLocFile( fileName, chksumStr, scheme.c_str() );
+    if ( status < 0 ) {
+        return ( status );
+    }
+    if ( strcmp( myChksum, chksumStr ) != 0 ) {
+        return ( USER_CHKSUM_MISMATCH );
+    }
+    return 0;
+}
+
 
 int
 md5ToStr( unsigned char *digest, char *chksumStr ) {
@@ -97,7 +180,7 @@ hashToStr( unsigned char *digest, char *digestStr ) {
  */
 
 int
-rcChksumLocFile( char *fileName, char *chksumFlag, keyValPair_t *condInput ) {
+rcChksumLocFile( char *fileName, char *chksumFlag, keyValPair_t *condInput, const char* _scheme ) {
     char chksumStr[NAME_LEN];
     int status;
 
@@ -115,7 +198,7 @@ rcChksumLocFile( char *fileName, char *chksumFlag, keyValPair_t *condInput ) {
         return ( USER_BAD_KEYWORD_ERR );
     }
 
-    status = chksumLocFile( fileName, chksumStr );
+    status = chksumLocFile( fileName, chksumStr, _scheme );
 
     if ( status < 0 ) {
         return ( status );

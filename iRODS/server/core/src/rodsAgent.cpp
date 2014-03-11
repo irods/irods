@@ -28,6 +28,9 @@ static void NtAgentSetEnvsFromArgs( int ac, char **av );
 #include "irods_auth_plugin.hpp"
 #include "irods_auth_constants.hpp"
 #include "irods_server_properties.hpp"
+#include "irods_server_api_table.hpp"
+#include "irods_pack_table.hpp"
+
 #include "readServerConfig.hpp"
 
 /* #define SERVER_DEBUG 1   */
@@ -39,33 +42,21 @@ main( int argc, char *argv[] ) {
     bool run_server_as_root = false;
 
     irods::error ret;
-
-    // =-=-=-=-=-=-=-
-    // load pluggable api entries
-    ret = irods::init_api_table(
-              RsApiTable,
-              ApiPackTable );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-        exit( 1 );
-    }
-
-
     ProcessType = AGENT_PT;
 
-	// capture server properties
-	irods::error result = irods::server_properties::getInstance().capture();
-	if (!result.ok()) {
-        irods::log(PASSMSG("failed to read server configuration", result));
-	}
+    // capture server properties
+    irods::error result = irods::server_properties::getInstance().capture();
+    if ( !result.ok() ) {
+        irods::log( PASSMSG( "failed to read server configuration", result ) );
+    }
 
-    irods::server_properties::getInstance().get_property<bool>(RUN_SERVER_AS_ROOT_KW, run_server_as_root);
+    irods::server_properties::getInstance().get_property<bool>( RUN_SERVER_AS_ROOT_KW, run_server_as_root );
 
 #ifndef windows_platform
-    if (run_server_as_root) {
-		if ( initServiceUser() < 0 ) {
-			exit( 1 );
-		}
+    if ( run_server_as_root ) {
+        if ( initServiceUser() < 0 ) {
+            exit( 1 );
+        }
     }
 #endif
 
@@ -153,6 +144,23 @@ main( int argc, char *argv[] ) {
         unregister_handlers();
         cleanupAndExit( status );
     }
+
+    // =-=-=-=-=-=-=-
+    // load pluggable api entries
+    irods::api_entry_table&  RsApiTable   = irods::get_server_api_table();
+    irods::pack_entry_table& ApiPackTable = irods::get_pack_table();
+    ret = irods::init_api_table(
+              RsApiTable,
+              ApiPackTable,
+              false );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        exit( 1 );
+    }
+
+
+
+
 
 #if RODS_CAT
     if ( strstr( rsComm.myEnv.rodsDebug, "CAT" ) != NULL ) {

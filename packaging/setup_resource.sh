@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
 # config
-IRODS_CONFIG_FILE="./iRODS/config/irods.config"
+IRODS_CONFIG_FILE="/etc/irods/irods.config"
 SETUP_RESOURCE_FLAG="/tmp/setup_resource.flag"
 
 # get into the correct directory

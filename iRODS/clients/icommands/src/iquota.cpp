@@ -7,6 +7,8 @@
 
 #include "rods.hpp"
 #include "rodsClient.hpp"
+#include "irods_client_api_table.hpp"
+#include "irods_pack_table.hpp"
 
 #define BIG_STR 200
 #define QUOTA_APPROACH_WARNING_SIZE -10000000000LL
@@ -519,7 +521,9 @@ main( int argc, char **argv ) {
 
     // =-=-=-=-=-=-=-
     // initialize pluggable api table
-    init_api_table( RcApiTable, ApiPackTable );
+    irods::api_entry_table&  api_tbl = irods::get_client_api_table();
+    irods::pack_entry_table& pk_tbl  = irods::get_pack_table();
+    init_api_table( api_tbl, pk_tbl );
 
     Conn = rcConnect( myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
                       myEnv.rodsZone, 0, &errMsg );

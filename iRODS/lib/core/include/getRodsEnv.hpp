@@ -30,6 +30,11 @@ extern "C" {
         int  rodsEncryptionNumHashRounds;
         char rodsEncryptionAlgorithm[ HEADER_TYPE_LEN ];
 
+        // =-=-=-=-=-=-=-
+        // client side options for hashing
+        char rodsDefaultHashScheme[ NAME_LEN ];
+        char rodsMatchHashPolicy[ NAME_LEN ];
+
     } rodsEnv;
 
     int getRodsEnv( rodsEnv *myRodsEnv );

@@ -86,7 +86,7 @@ namespace irods {
         repl_requested_ = _dataObjInfo->replNum;
         replicas_.empty();
         // should mode be set here? - hcj
-        memset( &cond_input_, 0, sizeof( keyValPair_t ) );
+        replKeyVal( &_dataObjInfo->condInput, &cond_input_ );
     }
 
 // =-=-=-=-=-=-=-

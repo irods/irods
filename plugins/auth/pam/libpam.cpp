@@ -96,25 +96,25 @@ extern "C" {
                         GetConsoleMode( hStdin, &mode );
                         DWORD lastMode = mode;
                         mode &= ~ENABLE_ECHO_INPUT;
-                        BOOL success = SetConsoleMode( hStdin, mode );
+                        BOOL error = !SetConsoleMode( hStdin, mode );
                         int errsv = -1;
 #else
                         struct termios tty;
                         tcgetattr( STDIN_FILENO, &tty );
                         tcflag_t oldflag = tty.c_lflag;
                         tty.c_lflag &= ~ECHO;
-                        int success = tcsetattr( STDIN_FILENO, TCSANOW, &tty );
+                        int error = tcsetattr( STDIN_FILENO, TCSANOW, &tty );
                         int errsv = errno;
 #endif
-                        if ( !success ) {
-                            return ERROR( errsv, "Error disabling echo mode." );
+                        if ( error ) {
+                            printf( "WARNING: Error %d disabling echo mode. Password will be displayed in plaintext.", errsv );
                         }
                         printf( "Enter your current PAM password:" );
                         std::string password = "";
                         getline( cin, password );
                         strncpy( new_password, password.c_str(), MAX_PASSWORD_LEN );
 #ifdef WIN32
-                        if ( SetConsoleMode( hStdin, lastMode ) ) {
+                        if ( !SetConsoleMode( hStdin, lastMode ) ) {
                             printf( "Error reinstating echo mode." );
                         }
 #else

@@ -85,7 +85,7 @@ extern "C" {
     /* micro service input/output parameter */
     typedef struct MsParam {
         char *label;
-        char *type;         /* this is the name of the packing instruction in
+        const char *type;         /* this is the name of the packing instruction in
                          * rodsPackTable.h */
         void *inOutStruct;
         bytesBuf_t *inpOutBuf;
@@ -152,26 +152,26 @@ extern "C" {
     clearMsParam( msParam_t *msParam, int freeStruct );
     int
     addMsParam( msParamArray_t *msParamArray, char *label,
-                char *packInstruct, void *inOutStruct, bytesBuf_t *inpOutBuf );
+                const char *packInstruct, void *inOutStruct, bytesBuf_t *inpOutBuf );
     int
     addIntParamToArray( msParamArray_t *msParamArray, char *label, int inpInt );
     int
     addMsParamToArray( msParamArray_t *msParamArray, char *label,
-                       char *type, void *inOutStruct, bytesBuf_t *inpOutBuf, int replFlag );
+                       const char *type, void *inOutStruct, bytesBuf_t *inpOutBuf, int replFlag );
     int
     replMsParamArray( msParamArray_t *msParamArray,
                       msParamArray_t *outMsParamArray );
     int
     replMsParam( msParam_t *msParam, msParam_t *outMsParam );
     int
-    replInOutStruct( void *inStruct, void **outStruct, char *type );
+    replInOutStruct( void *inStruct, void **outStruct, const char *type );
     int
     fillMsParam( msParam_t *msParam, char *label,
-                 char *type, void *inOutStruct, bytesBuf_t *inpOutBuf );
+                 const char *type, void *inOutStruct, bytesBuf_t *inpOutBuf );
     msParam_t *
     getMsParamByLabel( msParamArray_t *msParamArray, char *label );
     msParam_t *
-    getMsParamByType( msParamArray_t *msParamArray, char *type );
+    getMsParamByType( msParamArray_t *msParamArray, const char *type );
     int
     rmMsParamByLabel( msParamArray_t *msParamArray, char *label, int freeStruct );
     int

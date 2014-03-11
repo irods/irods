@@ -12,6 +12,8 @@
 #include "irods_pam_auth_object.hpp"
 #include "irods_kvp_string_parser.hpp"
 #include "irods_auth_constants.hpp"
+#include "irods_client_api_table.hpp"
+#include "irods_pack_table.hpp"
 
 #include<iostream>
 void usage( char *prog );
@@ -151,7 +153,6 @@ main( int argc, char **argv ) {
        them if not already available.
      */
     if ( myEnv.rodsHost == NULL || strlen( myEnv.rodsHost ) == 0 ) {
-        int i;
         if ( doingEnvFileUpdate == 0 ) {
             doingEnvFileUpdate = 1;
             printUpdateMsg();
@@ -163,13 +164,9 @@ main( int argc, char **argv ) {
         rstrcat( updateText, "irodsHost ", UPDATE_TEXT_LEN );
         rstrcat( updateText, ttybuf, UPDATE_TEXT_LEN );
         i = strlen( ttybuf );
-        if ( i > 0 ) {
-            ttybuf[i - 1] = '\0';    /* chop off trailing \n */
-        }
         strncpy( myEnv.rodsHost, ttybuf, NAME_LEN );
     }
     if ( myEnv.rodsPort == 0 ) {
-        int i;
         if ( doingEnvFileUpdate == 0 ) {
             doingEnvFileUpdate = 1;
             printUpdateMsg();
@@ -181,13 +178,9 @@ main( int argc, char **argv ) {
         rstrcat( updateText, "irodsPort ", UPDATE_TEXT_LEN );
         rstrcat( updateText, ttybuf, UPDATE_TEXT_LEN );
         i = strlen( ttybuf );
-        if ( i > 0 ) {
-            ttybuf[i - 1] = '\0';
-        }
         myEnv.rodsPort = atoi( ttybuf );
     }
     if ( myEnv.rodsUserName == NULL || strlen( myEnv.rodsUserName ) == 0 ) {
-        int i;
         if ( doingEnvFileUpdate == 0 ) {
             doingEnvFileUpdate = 1;
             printUpdateMsg();
@@ -199,13 +192,9 @@ main( int argc, char **argv ) {
         rstrcat( updateText, "irodsUserName ", UPDATE_TEXT_LEN );
         rstrcat( updateText, ttybuf, UPDATE_TEXT_LEN );
         i = strlen( ttybuf );
-        if ( i > 0 ) {
-            ttybuf[i - 1] = '\0';
-        }
         strncpy( myEnv.rodsUserName, ttybuf, NAME_LEN );
     }
     if ( myEnv.rodsZone == NULL || strlen( myEnv.rodsZone ) == 0 ) {
-        int i;
         if ( doingEnvFileUpdate == 0 ) {
             doingEnvFileUpdate = 1;
             printUpdateMsg();
@@ -216,9 +205,6 @@ main( int argc, char **argv ) {
         strncpy( ttybuf, response.c_str(), TTYBUF_LEN );
         rstrcat( updateText, ttybuf, UPDATE_TEXT_LEN );
         i = strlen( ttybuf );
-        if ( i > 0 ) {
-            ttybuf[i - 1] = '\0';
-        }
         strncpy( myEnv.rodsZone, ttybuf, NAME_LEN );
     }
     if ( doingEnvFileUpdate ) {
@@ -273,7 +259,9 @@ main( int argc, char **argv ) {
 
     // =-=-=-=-=-=-=-
     // initialize pluggable api table
-    init_api_table( RcApiTable, ApiPackTable );
+    irods::api_entry_table&  api_tbl = irods::get_client_api_table();
+    irods::pack_entry_table& pk_tbl  = irods::get_pack_table();
+    init_api_table( api_tbl, pk_tbl );
 
     /* Connect... */
     Conn = rcConnect( myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,

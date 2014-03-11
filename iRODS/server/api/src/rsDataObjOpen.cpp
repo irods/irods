@@ -81,7 +81,6 @@ rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
             addKeyVal( &dataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
 
         } // if keyword
-
         l1descInx = _rsDataObjOpen( rsComm, dataObjInp );
 
     }

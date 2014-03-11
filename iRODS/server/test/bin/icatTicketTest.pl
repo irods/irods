@@ -1,4 +1,5 @@
-
+#!/usr/bin/perl
+#
 # Copyright UCSD and UNC.
 # For more information please refer to files in the COPYRIGHT directory ***
 #

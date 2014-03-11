@@ -280,7 +280,13 @@ f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/tests/devtest.sh ./tests/d
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/tests/zombiereaper.sh ./tests/zombiereaper.sh
 
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/tests/pydevtest/workflow_testfiles/ -
-f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/tests/pydevtest/workflow_testfiles/ ./tests/pydevtest/workflow_testfiles/*
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/tests/pydevtest/workflow_testfiles/mycp ./tests/pydevtest/workflow_testfiles/mycp
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/tests/pydevtest/workflow_testfiles/myData ./tests/pydevtest/workflow_testfiles/myData
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/tests/pydevtest/workflow_testfiles/myWf.mpf ./tests/pydevtest/workflow_testfiles/myWf.mpf
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/tests/pydevtest/workflow_testfiles/myWf.mss ./tests/pydevtest/workflow_testfiles/myWf.mss
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/tests/pydevtest/workflow_testfiles/myWorkFlow ./tests/pydevtest/workflow_testfiles/myWorkFlow
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/tests/pydevtest/workflow_testfiles/PHOTO.JPG ./tests/pydevtest/workflow_testfiles/PHOTO.JPG
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/tests/pydevtest/workflow_testfiles/tt ./tests/pydevtest/workflow_testfiles/tt
 
 %if COVERAGE
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/gcovfiles.tgz ./gcovfiles.tgz
@@ -321,6 +327,8 @@ d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/plugins/auth -
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/plugins/auth/ ./plugins/auth/*.so
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/plugins/api -
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/plugins/api/ ./plugins/api/*.so
+d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/plugins/microservices -
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/plugins/microservices/ ./plugins/microservices/*.so
 #d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/plugins/database -
 #f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/plugins/database/ ./plugins/database/*.so
 
@@ -337,6 +345,16 @@ f 644 root root ${IRODS_DOC_DIR}/changelog.gz ./changelog.gz
 %else
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/LICENSE ./LICENSE
 %endif
+
+d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT /etc/irods -
+c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT /etc/irods/HostAccessControl ./iRODS/server/config/HostAccessControl
+c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT /etc/irods/core.dvm ./iRODS/server/config/reConfigs/core.dvm
+c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT /etc/irods/core.fnm ./iRODS/server/config/reConfigs/core.fnm
+c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT /etc/irods/core.re ./iRODS/server/config/reConfigs/core.re
+c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT /etc/irods/irodsHost ./iRODS/server/config/irodsHost
+c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT /etc/irods/irods.config ./iRODS/config/irods.config
+c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT /etc/irods/server.config ./iRODS/server/config/server.config.in
+
 
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/installLogs -
 
@@ -377,18 +395,11 @@ d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/log -
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config -
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/lockFileDir -
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/connectControl.config.template ./iRODS/server/config/connectControl.config.template
-c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/dbr.config ./iRODS/server/config/dbr.config
-c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/HostAccessControl ./iRODS/server/config/HostAccessControl
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/reConfigs -
-c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core.dvm ./iRODS/server/config/reConfigs/core.dvm
-c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core.fnm ./iRODS/server/config/reConfigs/core.fnm
-c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core.re ./iRODS/server/config/reConfigs/core.re
-c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/rda.config ./iRODS/server/config/rda.config
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/irodsMonPerf.config.in ./iRODS/server/config/irodsMonPerf.config.in
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/server.config.in ./iRODS/server/config/server.config.in
+#f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/server.config.in ./iRODS/server/config/server.config.in
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/irodsHost.in ./iRODS/server/config/irodsHost.in
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/packedRei -
-c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/irodsHost ./iRODS/server/config/irodsHost
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/s3Auth.template ./iRODS/server/config/s3Auth.template
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/README.txt ./iRODS/server/config/README.txt
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/bin -
@@ -466,7 +477,6 @@ d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src -
 #f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/convertSql.pl ./iRODS/server/icat/src/convertSql.pl
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/config -
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/config/platform.mk ./iRODS/config/platform.mk
-c 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/config/irods.config ./iRODS/config/irods.config
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/config/doxygen-msi.config ./iRODS/config/doxygen-msi.config
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/config/irodsEnv.boot ./iRODS/config/irodsEnv.boot
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/config/installPostgres.config.template ./iRODS/config/installPostgres.config.template

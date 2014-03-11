@@ -8,6 +8,7 @@
  */
 
 #include "irods_server_properties.hpp"
+#include "irods_get_full_path_for_config_file.hpp"
 
 #include "rods.hpp"
 
@@ -47,31 +48,29 @@ namespace irods {
         char *fchar;
         int len;
         char *key;
-        char *serverConfigFile;
 
         char DBKey[MAX_PASSWORD_LEN], DBPassword[MAX_PASSWORD_LEN];
         memset( &DBKey, '\0', MAX_PASSWORD_LEN );
         memset( &DBPassword, '\0', MAX_PASSWORD_LEN );
 
-        serverConfigFile = ( char * ) malloc( ( strlen( getServerConfigDir() ) +
-                                                strlen( SERVER_CONFIG_FILE ) + 24 ) );
+        std::string cfg_file;
+        error ret = irods::get_full_path_for_config_file( SERVER_CONFIG_FILE, cfg_file );
+        if ( !ret.ok() ) {
+            return PASS( ret );
+        }
 
-        sprintf( serverConfigFile, "%s/%s", getServerConfigDir(),
-                 SERVER_CONFIG_FILE );
 
-        fptr = fopen( serverConfigFile, "r" );
+        fptr = fopen( cfg_file.c_str(), "r" );
 
         if ( fptr == NULL ) {
             printf( "Cannot open SERVER_CONFIG_FILE file %s. errno = %d\n",
-                    serverConfigFile, errno );
+                    cfg_file.c_str(), errno );
             fflush( stdout );
             rodsLog( LOG_NOTICE,
                      "Cannot open SERVER_CONFIG_FILE file %s. errno = %d\n",
-                     serverConfigFile, errno );
-            free( serverConfigFile );
+                     cfg_file.c_str(), errno );
             return ERROR( SYS_CONFIG_FILE_ERR, "server config file error" );
         }
-        free( serverConfigFile );
 
         buf[BUF_LEN - 1] = '\0';
         fchar = fgets( buf, BUF_LEN - 1, fptr );
@@ -79,7 +78,6 @@ namespace irods {
             if ( buf[0] == '#' || buf[0] == '/' ) {
                 buf[0] = '\0'; /* Comment line, ignore */
             }
-
 
             /**
              * Parsing of server configuration settings
@@ -93,7 +91,6 @@ namespace irods {
 
             } // DB_PASSWORD_KW
 
-
             key = strstr( buf, DB_KEY_KW );
             if ( key != NULL ) {
                 len = strlen( DB_KEY_KW );
@@ -103,6 +100,10 @@ namespace irods {
 
             } // DB_KEY_KW
 
+            // =-=-=-=-=-=-=-
+            // PAM configuration - init PAM values
+            result = properties.set<bool>( PAM_NO_EXTEND_KW, false );
+            result = properties.set<size_t>( PAM_PW_LEN_KW, 20 );
 
             key = strstr( buf, DB_USERNAME_KW );
             if ( key != NULL ) {
@@ -228,16 +229,53 @@ namespace irods {
             key = strstr( buf, KERBEROS_NAME_KW );
             if ( key != NULL ) {
                 len = strlen( KERBEROS_NAME_KW );
-
                 // Set property name and setting
                 prop_name.assign( KERBEROS_NAME_KW );
                 prop_setting.assign( findNextTokenAndTerm( key + len ) );
+                // Update properties table
+                result = properties.set<std::string>( prop_name, prop_setting );
+                rodsLog( LOG_NOTICE, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
+            } // KERBEROS_NAME_KW
+
+
+
+            key = strstr( buf, DEFAULT_HASH_SCHEME_KW );
+            if ( key != NULL ) {
+                len = strlen( DEFAULT_HASH_SCHEME_KW );
+
+                // Set property name and setting
+                prop_name.assign( DEFAULT_HASH_SCHEME_KW );
+                prop_setting.assign( findNextTokenAndTerm( key + len ) );
+                std::transform(
+                    prop_setting.begin(),
+                    prop_setting.end(),
+                    prop_setting.begin(),
+                    ::tolower );
 
                 // Update properties table
                 result = properties.set<std::string>( prop_name, prop_setting );
 
                 rodsLog( LOG_NOTICE, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
-            } // KERBEROS_NAME_KW
+            } // DEFAULT_HASH_SCHEME_KW
+
+            key = strstr( buf, MATCH_HASH_POLICY_KW );
+            if ( key != NULL ) {
+                len = strlen( MATCH_HASH_POLICY_KW );
+
+                // Set property name and setting
+                prop_name.assign( MATCH_HASH_POLICY_KW );
+                prop_setting.assign( findNextTokenAndTerm( key + len ) );
+                std::transform(
+                    prop_setting.begin(),
+                    prop_setting.end(),
+                    prop_setting.begin(),
+                    ::tolower );
+
+                // Update properties table
+                result = properties.set<std::string>( prop_name, prop_setting );
+
+                rodsLog( LOG_NOTICE, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
+            } // MATCH_HASH_POLICY_KW
 
             fchar = fgets( buf, BUF_LEN - 1, fptr );
 
@@ -270,7 +308,6 @@ namespace irods {
         return result;
 
     } // server_properties::capture()
-
 
 
 } // namespace irods

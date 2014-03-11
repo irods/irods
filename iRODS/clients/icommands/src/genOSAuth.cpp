@@ -68,11 +68,10 @@ main( int argc, char *argv[] ) {
     }
 
     /* write out the authenticator to stdout */
-    if( write( 1, authenticator, 16 ) == -1 )
-    {
+    if ( write( 1, authenticator, 16 ) == -1 ) {
         int errsv = errno;
         printf( "Error %s writing the authenticator to stdout.",
-            strerror( errsv ) );
+                strerror( errsv ) );
         exit( 1 );
     }
 

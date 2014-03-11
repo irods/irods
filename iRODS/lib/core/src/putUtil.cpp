@@ -13,6 +13,8 @@
 #include "rcPortalOpr.hpp"
 #include <string>
 #include <boost/filesystem.hpp>
+#include "irods_server_properties.hpp"
+#include "readServerConfig.hpp"
 
 int
 setSessionTicket( rcComm_t *myConn, char *ticket ) {
@@ -237,8 +239,10 @@ putFileUtil( rcComm_t *conn, char *srcPath, char *targPath, rodsLong_t srcSize,
 
     /* have to take care of checksum here since it needs to be recalcuated */
     if ( rodsArgs->checksum == True ) {
-        status = rcChksumLocFile( srcPath, REG_CHKSUM_KW,
-                                  &dataObjOprInp->condInput );
+        status = rcChksumLocFile( srcPath,
+                                  REG_CHKSUM_KW,
+                                  &dataObjOprInp->condInput,
+                                  rodsArgs->hashValue );
         if ( status < 0 ) {
             rodsLogError( LOG_ERROR, status,
                           "putFileUtil: rcChksumLocFile error for %s, status = %d",
@@ -247,8 +251,10 @@ putFileUtil( rcComm_t *conn, char *srcPath, char *targPath, rodsLong_t srcSize,
         }
     }
     else if ( rodsArgs->verifyChecksum == True ) {
-        status = rcChksumLocFile( srcPath, VERIFY_CHKSUM_KW,
-                                  &dataObjOprInp->condInput );
+        status = rcChksumLocFile( srcPath,
+                                  VERIFY_CHKSUM_KW,
+                                  &dataObjOprInp->condInput,
+                                  rodsArgs->hashValue );
         if ( status < 0 ) {
             rodsLogError( LOG_ERROR, status,
                           "putFileUtil: rcChksumLocFile error for %s, status = %d",
@@ -912,7 +918,8 @@ bulkPutFileUtil( rcComm_t *conn, char *srcPath, char *targPath,
     if ( getValByKey( &bulkOprInp->condInput, REG_CHKSUM_KW ) != NULL ||
             getValByKey( &bulkOprInp->condInput, VERIFY_CHKSUM_KW ) != NULL ) {
         char chksumStr[NAME_LEN];
-        status = chksumLocFile( srcPath, chksumStr );
+
+        status = chksumLocFile( srcPath, chksumStr, rodsArgs->hashValue );
         if ( status < 0 ) {
             rodsLog( LOG_ERROR,
                      "bulkPutFileUtil: chksumLocFile error for %s ", srcPath );

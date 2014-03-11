@@ -53,9 +53,7 @@ SQLCHAR  psgErrorMsg[SQL_MAX_MESSAGE_LENGTH + 10];
    64-bit hosts.  The ODBCVER in sql.h is the same, 0x0351, but some
    of the defines differ.  If it's using new defines and this isn't
    used, there may be compiler warnings but it might link OK, but not
-   operate correctly consistently.  I'm not sure how to properly
-   differentiate between the two, but am using ADDR_64BITS for
-   now.  */
+   operate correctly consistently. */
 #define SQL_INT_OR_LEN SQLLEN
 #define SQL_UINT_OR_ULEN SQLULEN
 
@@ -718,7 +716,7 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, char *sql ) {
     HSTMT hstmt;
     SQLSMALLINT numColumns;
 
-    SQLCHAR         colName[MAX_TOKEN];
+    SQLCHAR         colName[MAX_TOKEN] = "";
     SQLSMALLINT     colType;
     SQLSMALLINT     colNameLen;
     SQL_UINT_OR_ULEN precision;
@@ -910,7 +908,7 @@ cllExecSqlWithResultBV(
     HSTMT hstmt;
     SQLSMALLINT numColumns;
 
-    SQLCHAR         colName[MAX_TOKEN];
+    SQLCHAR         colName[MAX_TOKEN] = "";
     SQLSMALLINT     colType;
     SQLSMALLINT     colNameLen;
     SQL_UINT_OR_ULEN precision;

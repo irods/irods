@@ -8,6 +8,9 @@
 #include "parseCommandLine.hpp"
 #include "rodsPath.hpp"
 #include "mvUtil.hpp"
+#include "irods_client_api_table.hpp"
+#include "irods_pack_table.hpp"
+
 void usage( char *program );
 
 int
@@ -57,7 +60,9 @@ main( int argc, char **argv ) {
 
     // =-=-=-=-=-=-=-
     // initialize pluggable api table
-    init_api_table( RcApiTable, ApiPackTable );
+    irods::pack_entry_table& pk_tbl  = irods::get_pack_table();
+    irods::api_entry_table&  api_tbl = irods::get_client_api_table();
+    init_api_table( api_tbl, pk_tbl );
 
     conn = rcConnect( myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
                       myEnv.rodsZone, 1, &errMsg );
@@ -99,6 +104,14 @@ usage( char *program ) {
         "collection and then in the background, moved to the eventual target",
         "collection (where data are registered in the iCAT). But currently, the",
         "move from a normal collection to a mounted collection is not supported.",
+        " ",
+        "If you do a move and rename at the same time, for example,",
+        "'imv file1 coll1/file2', it will normally succeed if there's no conflicting",
+        "data-object name in the source collection (file2) but fail (giving error",
+        "CAT_NAME_EXISTS_AS_DATAOBJ) if there is, since, internally IRODS is doing",
+        "a rename and then a move. Please handle this by running multiple separate",
+        "'imv' commands.",
+        " ",
         "Options are:",
         "-v verbose - display various messages while processing",
         "-V very verbose",

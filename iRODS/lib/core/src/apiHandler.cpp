@@ -11,6 +11,8 @@
 #include <boost/filesystem.hpp>
 namespace irods {
 
+    void clearInStruct_noop( void* ) {};
+
     // =-=-=-=-=-=-=-
     // public - ctor
     api_entry::api_entry(
@@ -24,7 +26,8 @@ namespace irods {
         inBsFlag( _def.inBsFlag ),
         outPackInstruct( _def.outPackInstruct ),
         outBsFlag( _def.outBsFlag ),
-        svrHandler( _def.svrHandler ) {
+        svrHandler( _def.svrHandler ),
+        clearInStruct( _def.clearInStruct ) {
     } // ctor
 
     // =-=-=-=-=-=-=-
@@ -40,7 +43,8 @@ namespace irods {
         inBsFlag( _rhs.inBsFlag ),
         outPackInstruct( _rhs.outPackInstruct ),
         outBsFlag( _rhs.outBsFlag ),
-        svrHandler( _rhs.svrHandler ) {
+        svrHandler( _rhs.svrHandler ),
+        clearInStruct( _rhs.clearInStruct ) {
     } // cctor
 
     // =-=-=-=-=-=-=-
@@ -66,11 +70,17 @@ namespace irods {
     // =-=-=-=-=-=-=-
     // public - load operations from the plugin
     error api_entry::delay_load( void* _h ) {
+        if ( !fcn_name_.empty() ) {
+            svrHandler = ( funcPtr )dlsym( _h, fcn_name_.c_str() );
+            if ( !svrHandler ) {
+                std::string msg( "dlerror was empty" );
+                char* err = dlerror();
+                if ( err ) {
+                    msg = err;
+                }
 
-        svrHandler = ( funcPtr )dlsym( _h, fcn_name_.c_str() );
-        char* err = 0;
-        if ( !svrHandler || ( ( err = dlerror() ) != 0 ) ) {
-            return ERROR( PLUGIN_ERROR, err );
+                return ERROR( PLUGIN_ERROR, msg.c_str() );
+            }
         }
 
         return SUCCESS();
@@ -95,6 +105,23 @@ namespace irods {
     api_entry_table::~api_entry_table() {
     } // dtor
 
+
+    // =-=-=-=-=-=-=-
+    // public - cctor for pack entry
+    pack_entry::pack_entry( const pack_entry& _rhs ) {
+        packInstruct = _rhs.packInstruct;
+        //clearInStruct = _rhs.clearInStruct;
+    }
+
+    // =-=-=-=-=-=-=-
+    // public - assignment operator for pack entry
+    pack_entry& pack_entry::operator=( const pack_entry& _rhs ) {
+        packInstruct = _rhs.packInstruct;
+        //clearInStruct = _rhs.clearInStruct;
+
+        return *this;
+    }
+
     // =-=-=-=-=-=-=-
     // public - ctor for api entry table
     pack_entry_table::pack_entry_table(
@@ -104,7 +131,7 @@ namespace irods {
         int i = 0;
         std::string end_str( PACK_TABLE_END_PI );
         while ( end_str != _defs[ i ].name ) {
-            table_[ _defs[ i ].name ] = _defs[ i ].packInstruct;
+            table_[ _defs[ i ].name ].packInstruct = _defs[i].packInstruct;
             ++i;
         } // for i
 
@@ -119,7 +146,9 @@ namespace irods {
     // public - load api plugins
     error init_api_table(
         api_entry_table&  _api_tbl,
-        pack_entry_table& _pack_tbl ) {
+        pack_entry_table& _pack_tbl,
+        bool              _cli_flg ) {
+
         // =-=-=-=-=-=-=-
         // iterate over the API_HOME directory entries
         boost::filesystem::path so_dir( irods::API_HOME );
@@ -127,17 +156,38 @@ namespace irods {
             for ( boost::filesystem::directory_iterator it( so_dir );
                     it != boost::filesystem::directory_iterator();
                     ++it ) {
+
+
                 // =-=-=-=-=-=-=-
                 // given a shared object, load the plugin from it
                 std::string name  = it->path().stem().string();
 
+                // =-=-=-=-=-=-=-
+                // if client side, skip server plugins, etc.
+                if ( _cli_flg ) {
+                    size_t pos = name.find( "_server" );
+                    if ( std::string::npos != pos ) {
+                        continue;
+                    }
+
+                }
+                else {
+                    size_t pos = name.find( "_client" );
+                    if ( std::string::npos != pos ) {
+                        continue;
+                    }
+
+                }
+
+                // =-=-=-=-=-=-=-
+                // clip off the lib to remain compliant with
+                // load_plugin's expected behavior
                 size_t pos = name.find( "lib" );
                 if ( std::string::npos == pos ) {
                     continue;
                 }
-
                 name = name.substr( 3 );
-#if 1
+
                 api_entry*  entry = 0;
                 error ret = load_plugin< api_entry >(
                                 entry,
@@ -148,26 +198,44 @@ namespace irods {
                     // =-=-=-=-=-=-=-
                     // ask the plugin to fill in the api and pack
                     // tables with its appropriate values
-                    _api_tbl[ entry->apiNumber ].reset( entry );
+                    _api_tbl[ entry->apiNumber ] = api_entry_ptr( entry );
 
                     // =-=-=-=-=-=-=-
                     // add the in struct
-                    if ( strlen( entry->in_pack_key ) > 0 ) {
-                        _pack_tbl[ entry->in_pack_key ] = entry->inPackInstruct;
+                    if ( !entry->in_pack_key.empty() ) {
+                        _pack_tbl[ entry->in_pack_key ].packInstruct = entry->in_pack_value;
+                        entry->inPackInstruct = entry->in_pack_key.c_str();
                     }
 
                     // =-=-=-=-=-=-=-
                     // add the out struct
-                    if ( strlen( entry->out_pack_key ) > 0 ) {
-                        _pack_tbl[ entry->out_pack_key ] = entry->outPackInstruct;
+                    if ( !entry->out_pack_key.empty() ) {
+                        _pack_tbl[ entry->out_pack_key ].packInstruct = entry->out_pack_value;
+                        entry->outPackInstruct = entry->out_pack_key.c_str();
                     }
+
+                    // =-=-=-=-=-=-=-
+                    // some plugins may define additional packinstructions
+                    // which are composites of the in or out structs
+                    if ( !entry->extra_pack_struct.empty() ) {
+                        lookup_table<std::string>::iterator itr;
+                        for ( itr  = entry->extra_pack_struct.begin();
+                                itr != entry->extra_pack_struct.end();
+                                ++itr ) {
+                            _pack_tbl[ itr->first ].packInstruct = itr->second;
+
+                        } // for itr
+
+                    } // if empty
+
                 }
                 else {
                     irods::log( PASS( ret ) );
 
                 }
-#endif
+
             } // for itr
+
         } // if exists
 
         return SUCCESS();

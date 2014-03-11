@@ -12,7 +12,7 @@
 #include "sqlext.h"
 
 #include "rods.hpp"
-#include "icatMidLevelRoutines.hpp"
+#include "mid_level.hpp"
 
 #define MAX_BIND_VARS  120 // JMC - backport 4848 ( 40->120 )
 

@@ -1,0 +1,21 @@
+
+
+#include "apiTable.hpp"
+#include "irods_client_api_table.hpp"
+
+namespace irods {
+#ifndef RODS_SERVER
+    api_entry_table& get_client_api_table() {
+        static int client_num_api_defs = sizeof( client_api_table_inp ) / sizeof( irods::apidef_t );
+        static api_entry_table client_api_table(
+            client_api_table_inp,
+            client_num_api_defs );
+
+        return client_api_table;
+
+    } // client_api_table
+#endif
+
+}; // namespace irods
+
+

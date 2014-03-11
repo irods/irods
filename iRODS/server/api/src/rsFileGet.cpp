@@ -116,6 +116,11 @@ int _rsFileGet(
             fd,
             _get_inp->mode,
             _get_inp->flags ) );
+
+    // =-=-=-=-=-=-=-
+    // pass condInput
+    file_obj->cond_input( _get_inp->condInput );
+
     irods::error read_err = fileRead( _comm,
                                       file_obj,
                                       _get_buf->buf,

@@ -1,7 +1,8 @@
 /*** Copyright (c) 2010 Data Intensive Cyberinfrastructure Foundation. All rights reserved.    ***
  *** For full copyright notice please refer to files in the COPYRIGHT directory                ***/
 /* Written by Jean-Yves Nief of CCIN2P3 and copyright assigned to Data Intensive Cyberinfrastructure Foundation */
-
+#include "irods_client_api_table.hpp"
+#include "irods_pack_table.hpp"
 #include "rodsClient.hpp"
 #include "parseCommandLine.hpp"
 #include "rodsPath.hpp"
@@ -63,7 +64,9 @@ main( int argc, char **argv ) {
 
     // =-=-=-=-=-=-=-
     // initialize pluggable api table
-    init_api_table( RcApiTable, ApiPackTable );
+    irods::pack_entry_table& pk_tbl  = irods::get_pack_table();
+    irods::api_entry_table&  api_tbl = irods::get_client_api_table();
+    init_api_table( api_tbl, pk_tbl );
 
     conn = rcConnect( myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
                       myEnv.rodsZone, 0, &errMsg );

@@ -25,8 +25,8 @@
  */
 #include "rodsClient.hpp"
 #include "icatHighLevelRoutines.hpp"
-#include "icatMidLevelRoutines.hpp"
-#include "icatLowLevel.hpp"
+#include "mid_level.hpp"
+#include "low_level.hpp"
 #define LIMIT_AUDIT_ACCESS 1  /* undefine this if you want to allow
 access to the audit tables by
 non-privileged users */
@@ -2185,13 +2185,13 @@ extern "C" int chl_gen_query_impl(
     if ( status < 0 || icss == NULL ) {
         return( CAT_NOT_OPEN );
     }
-#ifdef ADDR_64BITS
+#if defined(_LP64) || defined(__LP64__)
     if ( debug ) {
         printf( "icss=%ld\n", ( long int )icss );
     }
 #else
     if ( debug ) {
-        printf( "icss=%ld\n", ( long int )icss );
+        printf( "icss=%d\n", ( uint )icss );
     }
 #endif
 

@@ -744,14 +744,14 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // if the file can't be accessed due to permission denied
             // try again using root credentials.
-            irods::server_properties::getInstance().get_property<bool>(RUN_SERVER_AS_ROOT_KW, run_server_as_root);
-            if (run_server_as_root) {
-				if ( status < 0 && errno == EACCES && isServiceUserSet() ) {
-					if ( changeToRootUser() == 0 ) {
-						status = stat( fco->physical_path().c_str(), _statbuf );
-						changeToServiceUser();
-					}
-				}
+            irods::server_properties::getInstance().get_property<bool>( RUN_SERVER_AS_ROOT_KW, run_server_as_root );
+            if ( run_server_as_root ) {
+                if ( status < 0 && errno == EACCES && isServiceUserSet() ) {
+                    if ( changeToRootUser() == 0 ) {
+                        status = stat( fco->physical_path().c_str(), _statbuf );
+                        changeToServiceUser();
+                    }
+                }
             }
 
             // =-=-=-=-=-=-=-
@@ -893,14 +893,14 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // if the directory can't be accessed due to permission
             // denied try again using root credentials.
-            irods::server_properties::getInstance().get_property<bool>(RUN_SERVER_AS_ROOT_KW, run_server_as_root);
-            if (run_server_as_root) {
-				if ( dir_ptr == NULL && errno == EACCES && isServiceUserSet() ) {
-					if ( changeToRootUser() == 0 ) {
-						dir_ptr = opendir( fco->physical_path().c_str() );
-						changeToServiceUser();
-					} // if
-				}
+            irods::server_properties::getInstance().get_property<bool>( RUN_SERVER_AS_ROOT_KW, run_server_as_root );
+            if ( run_server_as_root ) {
+                if ( dir_ptr == NULL && errno == EACCES && isServiceUserSet() ) {
+                    if ( changeToRootUser() == 0 ) {
+                        dir_ptr = opendir( fco->physical_path().c_str() );
+                        changeToServiceUser();
+                    } // if
+                }
             }
 
             // =-=-=-=-=-=-=-

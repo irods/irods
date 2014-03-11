@@ -21,13 +21,13 @@ namespace irods {
         }
         unsigned int listStrategies( std::vector<std::string>& strategies ) const;
 
-        unsigned int init( void );
+        unsigned int init( const std::string& );
         unsigned int update( char const* data, unsigned int size );
-        unsigned int digest( const std::string& name, std::string& messageDigest );
-        unsigned int catDigest( std::string& messageDigest );
+        unsigned int digest( std::string& messageDigest );
 
     private:
         std::vector<HashStrategy*> _strategies;
+        std::string                _requested_hasher;
     };
 
 }; // namespace irods
