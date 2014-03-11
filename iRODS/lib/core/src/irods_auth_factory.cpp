@@ -7,6 +7,7 @@
 #include "irods_pam_auth_object.hpp"
 #include "irods_osauth_auth_object.hpp"
 #include "irods_gsi_object.hpp"
+#include "irods_krb_object.hpp"
 
 namespace irods {
 /// =-=-=-=-=-=-=-
@@ -84,6 +85,20 @@ namespace irods {
             auth_object* auth_obj = dynamic_cast< auth_object* >( gsi_obj );
             if ( !auth_obj ) {
                 return ERROR( SYS_INVALID_INPUT_PARAM, "gsi auth dynamic cast failed" );
+            }
+
+            _ptr.reset( auth_obj );
+
+        }
+        else if ( AUTH_KRB_SCHEME == scheme ) {
+            krb_auth_object* krb_obj = new krb_auth_object( _r_error );
+            if ( !krb_obj ) {
+                return ERROR( SYS_INVALID_INPUT_PARAM, "krb auth allocation failed" );
+            }
+
+            auth_object* auth_obj = dynamic_cast< auth_object* >( krb_obj );
+            if ( !auth_obj ) {
+                return ERROR( SYS_INVALID_INPUT_PARAM, "krb auth dynamic cast failed" );
             }
 
             _ptr.reset( auth_obj );

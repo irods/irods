@@ -1,7 +1,6 @@
 BASEDIRS = osauth \
            pam \
            native
-           
 
 ######################################################################
 # Configuration should occur above this line

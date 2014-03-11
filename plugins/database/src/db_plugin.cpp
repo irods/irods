@@ -16096,8 +16096,6 @@ checkLevel:
     } // db_start_operation
 
 
-// qqq - OPS END
-
     // =-=-=-=-=-=-=-
     // derive a new tcp network plugin from
     // the network plugin base class for handling

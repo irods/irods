@@ -5,6 +5,7 @@
 
 #include "irods_error.hpp"
 #include "irods_auth_object.hpp"
+#include "irods_stacktrace.hpp"
 
 #include <gssapi.h>
 
@@ -34,7 +35,7 @@ namespace irods {
         virtual int sock( void ) const { return sock_; }
 
         /// @brief Returns the serverDN
-        virtual const std::string& server_dn( void ) const { return server_dn_; }
+        virtual const std::string& service_name( void ) const { return service_name_; }
 
         /// @brief Returns the digest
         virtual const std::string& digest( void ) const { return digest_; }
@@ -54,7 +55,7 @@ namespace irods {
         virtual void sock( int s ) { sock_ = s; }
 
         /// @brief Sets the serverDN
-        virtual void server_dn( const std::string& s ) { server_dn_ = s; }
+        virtual void service_name( const std::string& s ) { service_name_ = s; }
 
         /// @brief Sets the digest
         virtual void digest( const std::string& d ) { digest_ = d; }
@@ -71,7 +72,7 @@ namespace irods {
     private:
         gss_cred_id_t creds_;
         int sock_;
-        std::string server_dn_;
+        std::string service_name_;
         std::string digest_;
     };
 

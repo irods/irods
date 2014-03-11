@@ -57,7 +57,7 @@ namespace irods {
         std::stringstream sock_msg;
         sock_msg << sock_;
         addKeyVal( &_kvp, "socket", sock_msg.str().c_str() );
-        addKeyVal( &_kvp, "serverDN", server_dn_.c_str() );
+        addKeyVal( &_kvp, "serviceName", service_name_.c_str() );
         addKeyVal( &_kvp, "digest", digest_.c_str() );
 
         return result;
