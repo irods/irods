@@ -92,7 +92,7 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         FILE_RENAME_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
-        "fileRenameInp_PI", 0, NULL, 0, ( funcPtr ) RS_FILE_RENAME, irods::clearInStruct_noop
+        "fileRenameInp_PI", 0, "fileRenameOut_PI", 0, ( funcPtr ) RS_FILE_RENAME, irods::clearInStruct_noop
     },
     {
         FILE_TRUNCATE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
@@ -112,7 +112,7 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         FILE_SYNC_TO_ARCH_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
-        "fileStageSyncInp_PI", 0, NULL, 0, ( funcPtr ) RS_FILE_SYNC_TO_ARCH, irods::clearInStruct_noop
+        "fileStageSyncInp_PI", 0, "fileSyncOut_PI", 0, ( funcPtr ) RS_FILE_SYNC_TO_ARCH, irods::clearInStruct_noop
     },
     {
         DATA_OBJ_CREATE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
