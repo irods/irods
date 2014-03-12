@@ -1,4 +1,4 @@
 [submodule "tests"]
 	path = tests
-	url = https://github.com/irods/irods.git
+	url = https://github.com/irods/irods_tests.git
 	branch = master
