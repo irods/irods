@@ -129,7 +129,8 @@ msiSetDefaultResc( msParam_t *xdefaultRescList, msParam_t *xoptionStr, ruleExecI
  **/
 int
 msiSetRescSortScheme( msParam_t *xsortScheme, ruleExecInfo_t *rei ) {
-    return -1;
+    rodsLog( LOG_ERROR, "msiSetRescSortScheme is no longer supported, please use a resource composition of a similar type" );
+    return SYS_NOT_SUPPORTED;
 }
 
 
