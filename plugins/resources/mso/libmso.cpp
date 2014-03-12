@@ -85,10 +85,6 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // manufacture a stat as we do not have a
         // microservice to perform this duty
-        if ( !_statbuf ) {
-            _statbuf = ( struct stat* ) malloc( sizeof( struct stat ) );
-        }
-
         _statbuf->st_mode  = S_IFREG;
         _statbuf->st_nlink = 1;
         _statbuf->st_uid   = getuid();

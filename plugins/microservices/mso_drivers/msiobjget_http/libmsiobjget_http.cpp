@@ -113,6 +113,7 @@ extern "C" {
         if ( !curl ) {
             printf( "Curl Error: msigetobj_http: Initialization failed\n" );
             free( reqStr );
+            fclose( destFd );
             return( MSO_OBJ_GET_FAILED );
         }
 
