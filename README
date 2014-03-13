@@ -1,8 +1,9 @@
-This is the Enterprise integrated Rule-Oriented Data System.
+This is iRODS, the integrated Rule-Oriented Data System, a distributed
+data-management system for creating data grids, digital libraries,
+persistent archives, and real-time data systems.  
 
-  http://eirods.org
+  http://irods.org
 
   http://renci.org
 
 
-Originally forked from iRODS 3.0 (svn r4461).
