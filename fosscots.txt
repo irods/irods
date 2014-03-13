@@ -5,24 +5,30 @@ This file contains a comprehensive listing of Free / Open Source Software (FOSS)
 
 iRODS COTS
 ------------------
-Oracle
-DDN WOS
 Amazon S3
+DDN WOS
 HPSS
+Oracle
 
 iRODS FOSS
 ------------------
+boost
 c
 c++
-perl
-boost
 doxygen
+hdf5
+jansson
+lib_mysqludf_preg
 libarchive
-restructuredtext
-postgresql
-unixodbc
+libs3
 mysql
-HDF5
+netcdf
+openssl
+perl
+postgresql
+python
+restructuredtext
+unixodbc
 
 ----------------------------------------------
 
@@ -32,32 +38,33 @@ PACKAGING COTS
 PACKAGING FOSS
 --------------
 bash
-epm
+cmake
 dpkg
+epm
 lintian
-rpmtools
 rpmlint
+rpmtools
 
 ----------------------------------------------
 
 DEVELOPMENT COTS
 ----------------
-VMWare VSphere
 Microsoft Windows
-Mac OS X
 github.com
+Mac OS X
+VMWare VSphere
 
 DEVELOPMENT FOSS
 ----------------
+archlinux
+chromeos
+centos
+cppcheck
+g++
+gcc
 git
 hudson
-cppcheck
-valgrind
+ssh
 suse
 ubuntu
-centos
-ssh
-gcc
-g++
-python
-openstack
+valgrind
