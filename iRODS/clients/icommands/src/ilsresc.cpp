@@ -90,36 +90,6 @@ printGenQueryResults( rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
     return( printCount );
 }
 
-/*
- print the results of a general query, formatted for the Resc ACLs
- */
-int
-printGenQueryResultsRescACLs( rcComm_t *Conn, int status,
-                              genQueryOut_t *genQueryOut ) {
-    int printCount;
-    int i, j;
-    char interChars[] = "#:   ";
-    printCount = 0;
-    if ( status != 0 ) {
-        printError( Conn, status, "rcGenQuery" );
-    }
-    else {
-        if ( status != CAT_NO_ROWS_FOUND ) {
-            for ( i = 0; i < genQueryOut->rowCnt; i++ ) {
-                printf( "      " );
-                for ( j = 0; j < genQueryOut->attriCnt; j++ ) {
-                    char *tResult;
-                    tResult = genQueryOut->sqlResult[j].value;
-                    tResult += i * genQueryOut->sqlResult[j].len;
-                    printf( "%s%c", tResult, interChars[j] );
-                    printCount++;
-                }
-                printf( "\n" );
-            }
-        }
-    }
-    return( printCount );
-}
 
 /*
 Via a general query, show a resource
@@ -180,7 +150,7 @@ showResc( char *name, int longOption ) {
         // =-=-=-=-=-=-=-
         // JMC - backport 4629
         if ( strncmp( name, BUNDLE_RESC, sizeof( BUNDLE_RESC ) ) == 0 ) {
-            printf( "%s is a pseudo resource, not for direct access.\n",
+            printf( "%s is a pseudo resource for system use only.\n",
                     BUNDLE_RESC );
             return( 0 );
         }
@@ -236,88 +206,6 @@ showResc( char *name, int longOption ) {
         }
         printCount += printGenQueryResults( Conn, status, genQueryOut,
                                             columnNames, longOption );
-    }
-
-    return ( 1 );
-}
-
-
-/*
-Via a general query, show a resource Access Control List
-*/
-int
-showRescAcl( char *name ) {
-    genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut;
-    int i1a[20];
-    int i1b[20] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    int i2a[20];
-    char *condVal[10];
-    char v1[BIG_STR];
-    int i, status;
-    int printCount;
-
-    memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
-    printCount = 0;
-
-
-    i = 0;
-    i1a[i++] = COL_RESC_USER_NAME;
-    i1a[i++] = COL_RESC_USER_ZONE;
-    i1a[i++] = COL_RESC_ACCESS_NAME;
-
-    genQueryInp.selectInp.inx = i1a;
-    genQueryInp.selectInp.value = i1b;
-    genQueryInp.selectInp.len = i;
-
-    genQueryInp.sqlCondInp.inx = i2a;
-    genQueryInp.sqlCondInp.value = condVal;
-    if ( name != NULL && *name != '\0' ) {
-        i2a[0] = COL_R_RESC_NAME;
-        sprintf( v1, "='%s'", name );
-        condVal[0] = v1;
-        genQueryInp.sqlCondInp.len = 1;
-    }
-    else {
-        genQueryInp.sqlCondInp.len = 0;
-    }
-
-    if ( zoneArgument[0] != '\0' ) {
-        addKeyVal( &genQueryInp.condInput, ZONE_KW, zoneArgument );
-    }
-
-    genQueryInp.maxRows = 50;
-    genQueryInp.continueInx = 0;
-    status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
-    if ( status == CAT_NO_ROWS_FOUND ) {
-        i1a[0] = COL_R_RESC_INFO;
-        genQueryInp.selectInp.len = 1;
-        status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
-        if ( status == 0 ) {
-            printf( "None\n" );
-            return( 0 );
-        }
-        if ( status == CAT_NO_ROWS_FOUND ) {
-            if ( name != NULL && name[0] != '\0' ) {
-                printf( "Resource %s does not exist.\n", name );
-            }
-            else {
-                printf( "Resource does not exist.\n" );
-            }
-            return( 0 );
-        }
-    }
-    printf( "Resource access permissions apply only to Database Resources\n" );
-    printf( "(external databases).  See the Database Resources page on the\n" );
-    printf( "irods web site for more information.\n" );
-
-    printf( "   %s\n", name );
-
-    printCount += printGenQueryResultsRescACLs( Conn, status, genQueryOut );
-    while ( status == 0 && genQueryOut->continueInx > 0 ) {
-        genQueryInp.continueInx = genQueryOut->continueInx;
-        status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
-        printCount += printGenQueryResultsRescACLs( Conn, status, genQueryOut );
     }
 
     return ( 1 );
@@ -519,7 +407,7 @@ main( int argc, char **argv ) {
 
     rodsLogLevel( LOG_ERROR );
 
-    status = parseCmdLineOpt( argc, argv, "AhvVlz:Z", 1, &myRodsArgs );
+    status = parseCmdLineOpt( argc, argv, "hvVlz:Z", 1, &myRodsArgs );
     if ( status ) {
         printf( "Use -h for help.\n" );
         exit( 1 );
@@ -575,18 +463,8 @@ main( int argc, char **argv ) {
         status = showRescTree( argv[myRodsArgs.optind] );
     }
     else { // regular view
-        if ( myRodsArgs.optind == argc ) { /* no resource name specified */
-            status = showResc( argv[myRodsArgs.optind], myRodsArgs.longOption );
-        }
-        else {
-            if ( myRodsArgs.accessControl == True ) {
-                showRescAcl( argv[myRodsArgs.optind] );
-            }
-            else {
-                status = showResc( argv[myRodsArgs.optind], myRodsArgs.longOption );
-            }
-        }
-    } // regular view
+    	status = showResc( argv[myRodsArgs.optind], myRodsArgs.longOption );
+    }
 
     printErrorStack( Conn->rError );
     rcDisconnect( Conn );
@@ -604,7 +482,7 @@ Print the main usage/help information.
 void usage() {
     char *msgs[] = {
         "ilsresc lists iRODS resources",
-        "Usage: ilsresc [-lvVhA] [--tree] [--ascii] [Name]",
+        "Usage: ilsresc [-lvVh] [--tree] [--ascii] [Name]",
         "If Name is present, list only that resource, ",
         "otherwise list them all ",
         "Options are:",
@@ -612,7 +490,6 @@ void usage() {
         " -v verbose",
         " -V Very verbose",
         " -z Zonename  list resources of specified Zone",
-        " -A Rescname  list the access permissions (applies to Database Resources only)",
         " --tree - tree view",
         " --ascii - use ascii character set to build tree view (ignored without --tree)",
         " -h This help",
