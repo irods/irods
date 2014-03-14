@@ -10,6 +10,9 @@
 #include "miscServerFunct.hpp"
 #include "irods_server_properties.hpp"
 #include "readServerConfig.hpp"
+#include "irods_client_server_negotiation.hpp"
+#include "irods_network_factory.hpp"
+#include "irods_signal.hpp"
 
 int loopCnt = -1; /* make it -1 to run infinitel */
 
@@ -148,6 +151,41 @@ xmsgServerMain() {
         return ( status );
     }
 
+
+    // =-=-=-=-=-=-=-
+    // handle negotiations with the client regarding TLS if requested
+    irods::error ret;
+
+    // =-=-=-=-=-=-=-
+    // manufacture a network object for comms
+    irods::network_object_ptr net_obj;
+    ret = irods::network_factory( &rsComm, net_obj );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+    }
+
+    std::string neg_results;
+    ret = irods::client_server_negotiation_for_server( net_obj, neg_results );
+    if ( !ret.ok() || neg_results == irods::CS_NEG_FAILURE ) {
+        irods::log( PASS( ret ) );
+        // =-=-=-=-=-=-=-
+        // send a 'we failed to negotiate' message here??
+        // or use the error stack rule engine thingie
+        irods::log( PASS( ret ) );
+        sendVersion( net_obj, SYS_AGENT_INIT_ERR, 0, NULL, 0 );
+        unregister_handlers();
+        cleanupAndExit( ret.code() );
+
+    }
+    else {
+        // =-=-=-=-=-=-=-
+        // copy negotiation results to comm for action by network objects
+        strncpy( rsComm.negotiation_results, neg_results.c_str(), MAX_NAME_LEN );
+        //rsComm.ssl_do_accept = 1;
+
+    }
+
+
     /* open  a socket an listen for connection */
     svrComm.sock = sockOpenForInConn( &svrComm, &svrComm.myEnv.xmsgPort, NULL,
                                       SOCK_STREAM );
@@ -204,5 +242,6 @@ xmsgServerMain() {
     /* RAJA removed June 13, 2088 to avoid compiler warning in solaris
     return status;
     */
+    return 0;
 }
 
