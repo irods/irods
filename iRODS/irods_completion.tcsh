@@ -8,7 +8,7 @@
 ## To enable your tcsh shell to support iRODS <tab> completion for icommands
 ## simply source this file in your shell as follows:
 ##
-##    source irods_completion.csh
+##    source irods_completion.tcsh
 ##
 ## You can add the above line to your .tcshrc or .cshrc file to enable iRODS
 ## <tab> completion for all of your tcsh logins.
