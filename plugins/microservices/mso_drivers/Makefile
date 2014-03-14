@@ -1,4 +1,11 @@
-BASEDIRS = msiobjget_http \
+BASEDIRS = \
+           msiobjget_z3950 \
+           msiobjput_z3950 \
+           msiobjget_slink \
+           msiobjput_slink \
+           msiobjget_irods \
+           msiobjput_irods \
+           msiobjget_http \
            msiobjput_http
 
 ######################################################################

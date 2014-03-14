@@ -65,6 +65,11 @@ $(LIBS3VERSIONARCHIVE) :
 
 $(LIBS3VERSIONMAKE) : $(LIBS3VERSIONARCHIVE)
 	@tar zxf $(LIBS3VERSIONARCHIVE)
+	if [ $(OSNAME) = "MacOSX" ] ; then \
+		sed "s/-soname,/-install_name,/" $(LIBS3VERSION)/GNUmakefile > /tmp/libs3Makefile; \
+		rsync -c /tmp/libs3Makefile $(LIBS3VERSION)/GNUmakefile; \
+		rm -f /tmp/libs3Makefile; \
+		fi
 
 libs3 : $(LIBS3VERSIONMAKE)
 	@CFLAGS=-fPIC $(MAKE) -C $(LIBS3VERSION)
@@ -99,7 +104,8 @@ $(LIBARCHIVEVERSIONARCHIVE) :
 
 $(LIBARCHIVEVERSIONMAKE) : $(LIBARCHIVEVERSIONARCHIVE) cmake
 	@tar zxf $(LIBARCHIVEVERSIONARCHIVE)
-	@sed '/^#ifdef HAVE_LINUX_FIEMAP_H/i \''\n''#ifdef HAVE_LINUX_TYPES_H\n''#include <linux/types.h>\n''#endif\n' $(LIBARCHIVEVERSION)/libarchive/test/test_sparse_basic.c > /tmp/test_sparse_basic.c
+	SEDCMD=$$'/^#ifdef HAVE_LINUX_FIEMAP_H/i \\\x0a#ifdef HAVE_LINUX_TYPES_H\\\x0a#include <linux/types.h>\\\x0a#endif\\\x0a' \
+		sed "$$SEDCMD" $(LIBARCHIVEVERSION)/libarchive/test/test_sparse_basic.c > /tmp/test_sparse_basic.c
 	@rsync -c /tmp/test_sparse_basic.c $(LIBARCHIVEVERSION)/libarchive/test/test_sparse_basic.c
 	@rm -f /tmp/test_sparse_basic.c
 	@sed "s/size_t used\;/size_t used = 0\;/" $(LIBARCHIVEVERSION)/libarchive/archive_read_support_format_xar.c > /tmp/archive_read_support_format_xar.c
