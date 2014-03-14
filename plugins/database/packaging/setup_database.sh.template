@@ -176,7 +176,3 @@ cd iRODS
 echo "Running irods_setup.pl..."
 perl ./scripts/perl/irods_setup.pl $DATABASETYPE $DATABASEHOSTORIP $DATABASEPORT $DATABASEUSER $DATABASEPASSWORD
 
-# =-=-=-=-=-=-=-
-# remove setup 'rodsBoot' account - reduce potential attack surface
-iadmin rmuser rodsBoot
-

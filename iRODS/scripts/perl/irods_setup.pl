@@ -2,7 +2,7 @@
 # Perl
 
 #
-# Create the database tables and finish the irods-e installation
+# Create the database tables and finish the iRODS installation
 #
 # Usage is:
 #	perl irods_setup.pl [options]
@@ -31,7 +31,7 @@ use Cwd;
 use Cwd "abs_path";
 use Config;
 
-$version{"irods_setup.pl"} = "Jan 2014";
+$version{"irods_setup.pl"} = "Mar 2014";
 
 
 # =-=-=-=-=-=-=-
@@ -167,8 +167,8 @@ my $databaseStartStopDelay = 8;		# Seconds
 # Set the default iRODS boot administrator name and password.
 # These are the defaults when iRODS is first installed.  After
 # the first user account has been created (done in this script),
-# these aren't needed any more.  The boot account's password is
-# later set to that first user account's password.
+# these aren't needed any more.  The boot account is deleted
+# after the first run.
 my $IRODS_ADMIN_BOOT_NAME     = "rodsBoot";
 my $IRODS_ADMIN_BOOT_PASSWORD = "RODS";
 
@@ -1225,11 +1225,11 @@ sub testDatabase()
 # has been done, we skip it and try the next one.  This insures
 # that we'll pick up wherever we left off from a prior failure.
 #
-# The last step here changes the user's account *AND* the
-# boot account to the user's chosen password.  If this script
-# gets run a second time, we have to notice that the original
-# boot password may longer work.  In that case, we try the
-# user's password.  And if that fails, there's not much we can do.
+# The last step here changes the user's account *AND*
+# deletes the boot account.  If this script gets run a second
+# time, we have to notice that the original boot account
+# may be missing.  In that case, we try the user's password.
+# And if that fails, there's not much we can do.
 #
 # Output error messages and exit on problems.
 #
@@ -1392,18 +1392,17 @@ sub configureIrodsServer
 
 	if ( startIrods( ) == 0 )
 	{
-		printError( "\nInstall problem:\n" );
-		printError( "    Cannot start iRODS server.\n" );
+                printError( "\nInstall problem:\n" );
+                printError( "    Cannot start iRODS server.\n" );
 
-		printError( "    \nIf your network environment is unusual, you may need to update the\n");
-		printError( "    server/config/irodsHost file and rerun irodssetup.  See comments\n");
-		printError( "    within irodsHost.\n");
+                printError( "    \nIf your network environment is unusual, you may need to update the\n");
+                printError( "    server/config/irodsHost.\n");
 
-		printLog( "\nCannot start iRODS server.\n" );
+                printLog( "\nCannot start iRODS server.\n" );
 
-		printLog( "    \nIf your network environment is unusual, you may need to update the\n");
-		printLog( "    server/config/irodsHost file and rerun irodssetup.  See comments\n");
-		printLog( "    within irodsHost.\n");
+                printLog( "    \nIf your network environment is unusual, you may need to update the\n");
+                printLog( "    server/config/irodsHost.\n");
+
 		cleanAndExit( 1 );
 	}
 
@@ -1414,23 +1413,50 @@ sub configureIrodsServer
 	#	in the boot environment script.
 	#
 	#	The boot account has a default password.  However,
-	#	a last step of this function changes that boot
-	#	account's password to the user's password.  If
-	#	this script is run again, we have to try both
-	#	passwords.
+	#	a last step of this function deletes the boot
+	#	account.  If this script is run again, we have to
+	#	try both passwords.
 	printStatus( "Opening iRODS connection with boot password...\n" );
 	printLog( "\nOpening iRODS connection using boot password...\n" );
 	my $passwordsAlreadySet = 0;
 	($status,$output) = run( "$iinit $IRODS_ADMIN_BOOT_PASSWORD" );
 	if ( $status != 0 )
 	{
-		# Failed with the boot password.  Try the user's
-		# password.
-		printStatus( "Opening iRODS connection with user's password...\n" );
-		printLog( "    Boot password failed.  Try user's password.\n" );
-		printLog( "    ", $output );
-		printLog( "\nOpening iRODS connection using user's password...\n" );
-		($status,$output) = run( "$iinit $IRODS_ADMIN_PASSWORD" );
+                # Failed with the boot password.
+                # Log in as the existing admin user.
+                printStatus( "Opening iRODS connection with admin password...\n" );
+                printLog( "\nOpening iRODS connection using admin password...\n" );
+
+                # Delete the in-flight boot envfile;
+                delete $ENV{"irodsEnvFile"};
+                # Set up admin environment
+                $ENV{"irodsHost"}=$thisHost;
+                $ENV{"irodsPort"}=$IRODS_PORT;
+                $ENV{"irodsUserName"}=$IRODS_ADMIN_NAME;
+                $ENV{"irodsZone"}=$ZONE_NAME;
+                # Restart the server with admin credentials
+                if ( stopIrods( ) == 0 )
+                {
+                    printError( "\nServer did not shut down properly.\n" );
+                    cleanAndExit( 1 );
+                }
+                if ( startIrods( ) == 0 )
+                {
+                    printError( "\nInstall problem:\n" );
+                    printError( "    Cannot start iRODS server.\n" );
+
+                    printError( "    \nIf your network environment is unusual, you may need to update the\n");
+                    printError( "    server/config/irodsHost.\n");
+
+                    printLog( "\nCannot start iRODS server.\n" );
+
+                    printLog( "    \nIf your network environment is unusual, you may need to update the\n");
+                    printLog( "    server/config/irodsHost.\n");
+
+                    cleanAndExit( 1 );
+                }
+                # Connect with admin password
+                my ($status,$output) = run( "$iinit $IRODS_ADMIN_PASSWORD" );
 		if ( $status != 0 )
 		{
 			# Neither worked.
@@ -1441,7 +1467,7 @@ sub configureIrodsServer
 			printError( "\nInstall problem:\n" );
 			printError( "    Connection to the iRODS server failed.\n" );
 			printError( "        ", $output );
-			printLog( "\nCannot initialize connection to iRODS server using boot account.\n" );
+			printLog( "\nCannot initialize connection to iRODS server using boot/admin account.\n" );
 			printLog( "    ", $output );
 			cleanAndExit( 1 );
 		}
@@ -1635,31 +1661,67 @@ sub configureIrodsServer
 	# in setting a password next.
 
 
-	# Set the password for the admin and boot accounts.
-	#	Note that after we do this, if this script is run again
-	#	it won't be able to use the default boot password to
-	#	connect again.  It'll have to use the admin password.
+	# Set the password for the admin account
 	if ( !$somethingFailed && !$passwordsAlreadySet )
 	{
-		printStatus( "Setting iRODS user password...\n" );
-		printLog( "\nSetting iRODS user password...\n" );
-		my $command = "$iadmin moduser $IRODS_ADMIN_NAME password $IRODS_ADMIN_PASSWORD";
-		printStatus( "Setting iRODS user password for $IRODS_ADMIN_NAME as $IRODS_ADMIN_PASSWORD\n" );
-		if ( runIcommand( $command ) == 0 )
-		{
-			$somethingFailed = 1;
-		}
-		else
-		{
-			printStatus( "Setting iRODS boot password...\n" );
-			printLog( "\nSetting iRODS boot password...\n" );
-			$command = "$iadmin moduser $IRODS_ADMIN_BOOT_NAME password $IRODS_ADMIN_PASSWORD";
-			if ( runIcommand( $command ) == 0 )
-			{
-				$somethingFailed = 1;
-			}
-		}
+                printStatus( "Setting iRODS user password...\n" );
+                printLog( "\nSetting iRODS user password...\n" );
+                my $command = "$iadmin moduser $IRODS_ADMIN_NAME password $IRODS_ADMIN_PASSWORD";
+                printStatus( "Setting iRODS user password for $IRODS_ADMIN_NAME as $IRODS_ADMIN_PASSWORD\n" );
+                if ( runIcommand( $command ) == 0 )
+                {
+                        $somethingFailed = 1;
+                }
 	}
+
+        # Remove the boot account.
+        if ( !$somethingFailed )
+        {
+                printStatus( "Checking for iRODS boot user...\n" );
+                printLog( "\nChecking for iRODS boot user...\n" );
+                my $command = "$iadmin lu";
+                my ($status, $output) = run( $command );
+                if ($status != 0)
+                {
+                        $somethingFailed = 1;
+                }
+                else
+                {
+                        # does rodsBoot exist
+                        if (index($output, "rodsBoot#") != -1) {
+                                printStatus( "    Removing iRODS boot user...\n" );
+                                printLog( "\nRemoving iRODS boot user...\n" );
+
+                                # restart server as non-boot admin
+                                stopIrods();
+                                $ENV{"irodsHost"}=$thisHost;
+                                $ENV{"irodsPort"}=$IRODS_PORT;
+                                $ENV{"irodsUserName"}=$IRODS_ADMIN_NAME;
+                                $ENV{"irodsZone"}=$ZONE_NAME;
+                                startIrods();
+                                # login
+                                $command = "$iinit $IRODS_ADMIN_PASSWORD";
+                                my ($status, $output) = run( $command );
+                                if ($status != 0)
+                                {
+                                        $somethingFailed = 1;
+                                }
+                                # remove the boot user
+                                $command = "$iadmin rmuser $IRODS_ADMIN_BOOT_NAME";
+                                my ($status,$output) = run( $command );
+                                if ($status != 0)
+                                {
+                                        $somethingFailed = 1;
+                                }
+                        }
+                        else
+                        {
+                                printStatus( "    No boot user found.\n");
+                                printLog( "\nNo boot user found.\n");
+                        }
+                }
+        }
+
 
 
 	# Clean up.  Stop using the boot environment and delete
@@ -1886,7 +1948,7 @@ sub configureIrodsUser
 	printLog( "\nCreating default resource...\n" );
 
 	# List existing resources first to see if it already exists.
-	($status,$output) = run( "$iadmin lr" );
+	my ($status,$output) = run( "$iadmin lr" );
 	if ( $status == 0 && index($output,$RESOURCE_NAME) >= 0 )
 	{
 		printStatus( "    Skipped.  Resource [$RESOURCE_NAME] already created.\n" );
@@ -1920,7 +1982,7 @@ sub configureIrodsUser
 	my $tmpGetFile = "irods_get.$$.tmp";
 	printToFile( $tmpPutFile, "This is a test file." );
 
-	($status,$output) = run( "$iput $tmpPutFile" );
+	my ($status,$output) = run( "$iput $tmpPutFile" );
 	if ( $status != 0 )
 	{
 		printError( "\nInstall problem:\n" );
