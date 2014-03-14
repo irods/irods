@@ -297,8 +297,6 @@ f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/tests/pydevtest/run_pydevt
 
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging -
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/find_os.sh ./packaging/find_os.sh
-#f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/find_postgres_bin.sh ./packaging/find_postgres_bin.sh
-#f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/find_psqlodbc.sh ./packaging/find_psqlodbc.sh
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/post30upgrade.sh ./packaging/post30upgrade.sh
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/postinstall.sh ./packaging/postinstall.sh
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/preremove.sh ./packaging/preremove.sh
@@ -329,8 +327,6 @@ d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/plugins/api -
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/plugins/api/ ./plugins/api/*.so
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/plugins/microservices -
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/plugins/microservices/ ./plugins/microservices/*.so
-#d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/plugins/database -
-#f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/plugins/database/ ./plugins/database/*.so
 
 f 644 root root /usr/share/man/man1 ./man/*.gz
 
@@ -339,8 +335,6 @@ f 644 root root ${IRODS_DOC_DIR}/KNOWN_ISSUES ./KNOWN_ISSUES
 f 644 root root ${IRODS_DOC_DIR}/RELEASE_NOTES ./RELEASE_NOTES
 %if DEB
 f 644 root root ${IRODS_DOC_DIR}/copyright ./LICENSE
-#f 644 root root ${IRODS_DOC_DIR}/copyright ./iRODS/COPYRIGHT/Copyright.txt
-#f 644 root root ${IRODS_DOC_DIR}/copyright_addendum ./iRODS/COPYRIGHT/Copyright_Addendum.txt
 f 644 root root ${IRODS_DOC_DIR}/changelog.gz ./changelog.gz
 %else
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/LICENSE ./LICENSE
@@ -360,7 +354,6 @@ d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/installLogs -
 
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts -
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/find_irods_home.sh ./iRODS/scripts/find_irods_home.sh
-f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/finishSetup ./iRODS/scripts/finishSetup
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/runperl ./iRODS/scripts/runperl
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/installPostgres ./iRODS/scripts/installPostgres
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/izoneinfo.sh ./iRODS/scripts/izoneinfo.sh
@@ -370,10 +363,8 @@ f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/notify/notify.pl ./iRO
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/notify/cront ./iRODS/scripts/notify/cront
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/perl -
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/perl/configure.pl ./iRODS/scripts/perl/configure.pl
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/perl/irodssetup.pl ./iRODS/scripts/perl/irodssetup.pl
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/perl/utils_file.pl ./iRODS/scripts/perl/utils_file.pl
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/perl/utils_platform.pl ./iRODS/scripts/perl/utils_platform.pl
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/perl/finishSetup.pl ./iRODS/scripts/perl/finishSetup.pl
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/perl/irodsprompt.pl ./iRODS/scripts/perl/irodsprompt.pl
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/perl/utils_paths.pl ./iRODS/scripts/perl/utils_paths.pl
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/scripts/perl/irodsctl.pl ./iRODS/scripts/perl/irodsctl.pl
@@ -397,7 +388,6 @@ d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/lockFileDir -
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/connectControl.config.template ./iRODS/server/config/connectControl.config.template
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/reConfigs -
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/irodsMonPerf.config.in ./iRODS/server/config/irodsMonPerf.config.in
-#f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/server.config.in ./iRODS/server/config/server.config.in
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/irodsHost.in ./iRODS/server/config/irodsHost.in
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/packedRei -
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/config/s3Auth.template ./iRODS/server/config/s3Auth.template
@@ -414,8 +404,6 @@ f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/bin/irodsReServer ./iRO
 %if ICAT
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/bin/irodsXmsgServer ./iRODS/server/bin/irodsXmsgServer
 %endif
-#f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/bin/ ./external/boost*/stage/lib/*.so
-#f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/bin/ ./external/libarchive*/.libs/libarchive*.so*
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/bin/list.pl ./iRODS/server/bin/list.pl
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/bin/irodsAgent ./iRODS/server/bin/irodsAgent
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/bin/PamAuthCheck ./iRODS/server/bin/PamAuthCheck
@@ -454,27 +442,12 @@ f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/specNameTest.p
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/timeTest.pl ./iRODS/server/test/bin/timeTest.pl
 %if ICAT
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_chl ./iRODS/server/test/bin/test_chl
-#f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_cll ./plugins/database/test_cll
-#f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_genq ./plugins/database/test_genq
-#f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_genu ./plugins/database/test_genu
 %endif
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/ltest.sh ./iRODS/server/test/ltest.sh
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/obj -
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/README.txt ./iRODS/server/test/README.txt
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat -
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src -
-#f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatDropCoreTables.sql ./iRODS/server/icat/src/icatDropCoreTables.sql
-#f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/m2icat.pl ./iRODS/server/icat/src/m2icat.pl
-#%if ICAT
-#f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatSysTables.sql ./iRODS/server/icat/src/icatSysTables.sql
-#f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatCoreTables.sql ./iRODS/server/icat/src/icatCoreTables.sql
-#%endif
-#f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatCoreInserts.sql ./iRODS/server/icat/src/icatCoreInserts.sql
-#f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatDropSysTables.sql ./iRODS/server/icat/src/icatDropSysTables.sql
-#f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatSysInserts.sql ./iRODS/server/icat/src/icatSysInserts.sql
-#f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/makeSql.pl ./iRODS/server/icat/src/makeSql.pl
-#f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatPurgeRecycleBin.sql ./iRODS/server/icat/src/icatPurgeRecycleBin.sql
-#f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/convertSql.pl ./iRODS/server/icat/src/convertSql.pl
 d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/config -
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/config/platform.mk ./iRODS/config/platform.mk
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/config/doxygen-msi.config ./iRODS/config/doxygen-msi.config
