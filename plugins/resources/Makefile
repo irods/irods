@@ -1,4 +1,6 @@
-BASEDIRS = mso \
+BASEDIRS = \
+           load_balancer \
+           mso \
            mssofile \
            deferred \
            nonblocking \
