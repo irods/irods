@@ -1,6 +1,4 @@
 BASEDIRS = \
-           msiobjget_z3950 \
-           msiobjput_z3950 \
            msiobjget_slink \
            msiobjput_slink \
            msiobjget_irods \
