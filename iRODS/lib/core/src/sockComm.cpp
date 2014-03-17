@@ -586,7 +586,7 @@ irods::error readVersion(
     tv.tv_usec = 0;
 
     // =-=-=-=-=-=-=-
-    // call inteface to read message header
+    // call interface to read message header
     msgHeader_t myHeader;
     irods::error ret = readMsgHeader( _ptr, &myHeader, &tv );
     if ( !ret.ok() ) {
@@ -594,7 +594,7 @@ irods::error readVersion(
     }
 
     // =-=-=-=-=-=-=-
-    // call inteface to read message body
+    // call interface to read message body
     bytesBuf_t inputStructBBuf, bsBBuf, errorBBuf;
     memset( &bsBBuf, 0, sizeof( bytesBuf_t ) );
     ret = readMsgBody( _ptr, &myHeader, &inputStructBBuf, &bsBBuf,
