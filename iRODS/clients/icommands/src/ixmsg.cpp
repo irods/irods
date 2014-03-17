@@ -98,6 +98,9 @@ main( int argc, char **argv ) {
     myHostName[0] = '\0';
     condStr[0] = '\0';
 
+    // disable client-server negotiation
+    putenv("irodsClientServerNegotiation=0");
+
     if ( argc < 2 ) {
         printIxmsgHelp( argv[0] );
         exit( 1 );
