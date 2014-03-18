@@ -85,6 +85,8 @@ extern "C" {
         if ( i != 0 ) {
             rcDisconnect( *rcComm );
         }
+
+        free( str );
         return( i );
 
     }
