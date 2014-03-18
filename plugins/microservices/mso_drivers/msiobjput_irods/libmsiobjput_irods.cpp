@@ -79,6 +79,7 @@ extern "C" {
 
         *rcComm = rcConnect( host, port, user, zone, 0, &errMsg );
         if ( *rcComm == NULL ) {
+            free( str );
             return( REMOTE_IRODS_CONNECT_ERR );
         }
         i = clientLogin( *rcComm );
