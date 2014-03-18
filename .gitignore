@@ -41,3 +41,7 @@ plugins/resources/*/.deps
 plugins/resources/*/.objs
 plugins/microservices/mso_drivers/msiobjget_http/.objs/
 plugins/microservices/mso_drivers/msiobjput_http/.objs/
+plugins/microservices/mso_drivers/msiobjget_irods/.objs/
+plugins/microservices/mso_drivers/msiobjget_slink/.objs/
+plugins/microservices/mso_drivers/msiobjput_irods/.objs/
+plugins/microservices/mso_drivers/msiobjput_slink/.objs/
