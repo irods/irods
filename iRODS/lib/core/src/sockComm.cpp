@@ -861,11 +861,11 @@ connectToRhost( rcComm_t *conn, int connectCnt, int reconnFlag ) {
 
     ret = readVersion( net_obj, &conn->svrVersion );
     if ( !ret.ok() ) {
-        rodsLogError( LOG_ERROR, status,
+        rodsLogError( LOG_ERROR, ret.code(),
                       "connectToRhost: readVersion to %s failed, status = %d",
-                      conn->host, status );
+                      conn->host, ret.code() );
         close( conn->sock );
-        return status;
+        return ret.code();
     }
 
     if ( conn->svrVersion->status < 0 ) {

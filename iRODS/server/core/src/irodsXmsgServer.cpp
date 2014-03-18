@@ -29,6 +29,13 @@ main( int argc, char **argv ) {
 
     ProcessType = XMSG_SERVER_PT;
 
+    // capture server properties
+    irods::error result = irods::server_properties::getInstance().capture();
+    if ( !result.ok() ) {
+        irods::log( PASSMSG( "failed to read server configuration", result ) );
+    }
+
+
     irods::server_properties::getInstance().get_property<bool>( RUN_SERVER_AS_ROOT_KW, run_server_as_root );
 
 #ifndef windows_platform
@@ -95,7 +102,6 @@ main( int argc, char **argv ) {
 
     daemonize( runMode, logFd );
 
-
     xmsgServerMain();
     sleep( 5 );
     exit( 0 );
@@ -146,44 +152,44 @@ xmsgServerMain() {
     status = initAgent( RULE_ENGINE_NO_CACHE, &rsComm );
 
     if ( status < 0 ) {
-        rodsLog( LOG_ERROR, "xmsgServerMain: initServer error. status = %d",
+        rodsLog( LOG_ERROR, "xmsgServerMain: initAgent error. status = %d",
                  status );
         return ( status );
     }
 
 
-//    // =-=-=-=-=-=-=-
-//    // handle negotiations with the client regarding TLS if requested
-//    irods::error ret;
-//
-//    // =-=-=-=-=-=-=-
-//    // manufacture a network object for comms
-//    irods::network_object_ptr net_obj;
-//    ret = irods::network_factory( &rsComm, net_obj );
-//    if ( !ret.ok() ) {
-//        irods::log( PASS( ret ) );
-//    }
-//
-//    std::string neg_results;
-//    ret = irods::client_server_negotiation_for_server( net_obj, neg_results );
-//    if ( !ret.ok() || neg_results == irods::CS_NEG_FAILURE ) {
-//        irods::log( PASS( ret ) );
-//        // =-=-=-=-=-=-=-
-//        // send a 'we failed to negotiate' message here??
-//        // or use the error stack rule engine thingie
-//        irods::log( PASS( ret ) );
-//        sendVersion( net_obj, SYS_AGENT_INIT_ERR, 0, NULL, 0 );
-//        unregister_handlers();
-//        cleanupAndExit( ret.code() );
-//
-//    }
-//    else {
-//        // =-=-=-=-=-=-=-
-//        // copy negotiation results to comm for action by network objects
-//        strncpy( rsComm.negotiation_results, neg_results.c_str(), MAX_NAME_LEN );
-//        //rsComm.ssl_do_accept = 1;
-//
-//    }
+    // =-=-=-=-=-=-=-
+    // handle negotiations with the client regarding TLS if requested
+    irods::error ret;
+
+    // =-=-=-=-=-=-=-
+    // manufacture a network object for comms
+    irods::network_object_ptr net_obj;
+    ret = irods::network_factory( &rsComm, net_obj );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+    }
+
+    std::string neg_results;
+    ret = irods::client_server_negotiation_for_server( net_obj, neg_results );
+    if ( !ret.ok() || neg_results == irods::CS_NEG_FAILURE ) {
+        irods::log( PASS( ret ) );
+        // =-=-=-=-=-=-=-
+        // send a 'we failed to negotiate' message here??
+        // or use the error stack rule engine thingie
+        irods::log( PASS( ret ) );
+        sendVersion( net_obj, SYS_AGENT_INIT_ERR, 0, NULL, 0 );
+        unregister_handlers();
+        cleanupAndExit( ret.code() );
+
+    }
+    else {
+        // =-=-=-=-=-=-=-
+        // copy negotiation results to comm for action by network objects
+        strncpy( rsComm.negotiation_results, neg_results.c_str(), MAX_NAME_LEN );
+        //rsComm.ssl_do_accept = 1;
+
+    }
 
 
     /* open  a socket and listen for connection */
@@ -191,7 +197,7 @@ xmsgServerMain() {
                                       SOCK_STREAM );
 
     if ( svrComm.sock < 0 ) {
-        rodsLog( LOG_NOTICE, "serverMain: sockOpenForInConn error. status = %d",
+        rodsLog( LOG_NOTICE, "xmsgServerMain: sockOpenForInConn error. status = %d",
                  svrComm.sock );
         exit( 1 );
     }
@@ -200,7 +206,7 @@ xmsgServerMain() {
 
     FD_ZERO( &sockMask );
 
-    rodsLog( LOG_NOTICE, "rodsServer version %s is up", RODS_REL_VERSION );
+    rodsLog( LOG_NOTICE, "xmsgServer version %s is up", RODS_REL_VERSION );
 
     while ( 1 ) {       /* infinite loop */
         FD_SET( svrComm.sock, &sockMask );
@@ -208,12 +214,12 @@ xmsgServerMain() {
                                     ( fd_set * ) NULL, ( fd_set * ) NULL, ( struct timeval * ) NULL ) ) < 0 ) {
 
             if ( errno == EINTR ) {
-                rodsLog( LOG_NOTICE, "serverMain: select() interrupted" );
+                rodsLog( LOG_NOTICE, "xmsgServerMain: select() interrupted" );
                 FD_SET( svrComm.sock, &sockMask );
                 continue;
             }
             else {
-                rodsLog( LOG_NOTICE, "serverMain: select() error, errno = %d",
+                rodsLog( LOG_NOTICE, "xmsgServerMain: select() error, errno = %d",
                          errno );
                 return ( -1 );
             }
@@ -223,10 +229,9 @@ xmsgServerMain() {
 
         if ( newSock < 0 ) {
             rodsLog( LOG_NOTICE,
-                     "serverMain: acceptConn () error, errno = %d", errno );
+                     "xmsgServerMain: acceptConn () error, errno = %d", errno );
             continue;
         }
-
 
         addReqToQue( newSock );
 

@@ -5,18 +5,18 @@
  */
 
 // =-=-=-=-=-=-=-
+// boost includes
+#include <boost/thread/thread.hpp>
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/condition.hpp>
+
+// =-=-=-=-=-=-=-
 // irods includes
 #include "rsApiHandler.hpp"
 #include "reGlobalsExtern.hpp"
 #include "miscServerFunct.hpp"
 #include "xmsgLib.hpp"
 #include "irods_network_factory.hpp"
-
-// =-=-=-=-=-=-=-
-// boost includes
-#include <boost/thread/thread.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/condition.hpp>
 
 static boost::mutex			     ReqQueCondMutex;
 static boost::mutex			     MessQueCondMutex;
@@ -435,7 +435,7 @@ addTicketMsgStructToHQue( ticketMsgStruct_t *ticketMsgStruct,
     }
 
 
-    /* que in decending order of rcvTicket */
+    /* que in descending order of rcvTicket */
     tmpTicketMsgStruct = ticketHQue->head;
     while ( tmpTicketMsgStruct != NULL ) {
         if ( ticketMsgStruct->ticket.rcvTicket ==
@@ -531,8 +531,9 @@ addReqToQue( int sock ) {
         XmsgReqTail = myXmsgReq;
     }
 
-    ReqQueCond.notify_all();
     ReqQueCondMutex.unlock();
+
+    ReqQueCond.notify_all();
 
     return ( 0 );
 }
@@ -542,24 +543,31 @@ getReqFromQue() {
     xmsgReq_t *myXmsgReq = NULL;
 
     while ( myXmsgReq == NULL ) {
+
         ReqQueCondMutex.lock();
+
         if ( XmsgReqHead != NULL ) {
             myXmsgReq = XmsgReqHead;
             XmsgReqHead = XmsgReqHead->next;
             ReqQueCondMutex.unlock();
+
             break;
         }
+
+        ReqQueCondMutex.unlock();
 
         boost::unique_lock<boost::mutex> boost_lock( ReqQueCondMutex );
         ReqQueCond.wait( boost_lock );
         if ( XmsgReqHead == NULL ) {
             boost_lock.unlock();
+
             continue;
         }
         else {
             myXmsgReq = XmsgReqHead;
             XmsgReqHead = XmsgReqHead->next;
             boost_lock.unlock();
+
             break;
         }
     }
@@ -598,7 +606,7 @@ procReqRoutine() {
         rsComm.sock = myXmsgReq->sock;
 
         // =-=-=-=-=-=-=-
-        // maufacture a network object
+        // manufacture a network object
         irods::network_object_ptr net_obj;
         irods::error ret = irods::network_factory( &rsComm, net_obj );
         if ( !ret.ok() ) {
