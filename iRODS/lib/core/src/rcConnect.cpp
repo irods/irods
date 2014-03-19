@@ -118,8 +118,8 @@ _rcConnect( char *rodsHost, int rodsPort,
 
     if ( status < 0 ) {
         rodsLogError( LOG_ERROR, status,
-                      "_rcConnect: connectToRhost error, server on %s is probably down",
-                      conn->host );
+                      "_rcConnect: connectToRhost error, server on %s:%d is probably down",
+                      conn->host, conn->portNum );
         if ( errMsg != NULL ) {
             errMsg->status = status;
             snprintf( errMsg->msg, ERR_MSG_LEN - 1,
