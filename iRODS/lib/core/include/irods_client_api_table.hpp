@@ -1,8 +1,6 @@
 
-
-
-#ifndef __RIDOS_CLIENT_API_TABLE_HPP__
-#define __RIDOS_CLIENT_API_TABLE_HPP__
+#ifndef __IRODS_CLIENT_API_TABLE_HPP__
+#define __IRODS_CLIENT_API_TABLE_HPP__
 
 #include "apiHandler.hpp"
 
@@ -14,6 +12,6 @@ namespace irods {
 
 }; // namespace irods
 
-#endif // __RIDOS_CLIENT_API_TABLE_HPP__
+#endif // __IRODS_CLIENT_API_TABLE_HPP__
 
 
