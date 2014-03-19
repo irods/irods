@@ -14,8 +14,7 @@
 #	Please use --help to get a list of current options.
 #
 # Script options select the database to use and its location,
-# the iRODS server components, and optional iRODS modules to
-# build into the system.
+# and the iRODS server components to build into the system.
 #
 # The script analyzes your OS to determine configuration parameters
 # that are OS and CPU specific.
@@ -127,7 +126,7 @@ my %thisHostAddresses = getCurrentHostAddresses( );
 # The current step increases after each major part of the
 # install.  These are used as a progress indicator for the
 # user, but otherwise have no meaning.
-$totalSteps  = 4;
+$totalSteps  = 3;
 $currentStep = 0;
 
 
@@ -157,49 +156,7 @@ setPrintVerbose( 1 );
 
 ########################################################################
 #
-# Collect available modules.
-#	Build a list of available modules.  Each module has
-#	enable/disable options.  The default setting is determined
-#	by the module's "info.txt" file.
-#
-$startDir = cwd( );
-%modules = ( );
-if ( -d $modulesDir )
-{
-	# Make a list of all modules in the directory
-	chdir( $modulesDir );
-	while ( defined( $module = <*> ) )
-	{
-		# A module must have an 'info.txt' file describing the
-		# module in order for it to be configurable by this script
-		my $infoPath = File::Spec->catfile(
-			$modulesDir, $module, "info.txt" );
-		if ( -e $infoPath )
-		{
-			my $value = getPropertyValue( $infoPath, "enabled", 0 );
-			if ( $value =~ /ye?s?/i )
-			{
-				$modules{ $module } = "yes";
-			}
-			else
-			{
-				$modules{ $module } = "no";
-			}
-		}
-	}
-    	chdir( $startDir );
-}
-
-
-
-
-
-########################################################################
-#
 # Print a help message then exit before going further.
-#	We have to print this after collecting the module list
-#	above so that we can list enable/disable options for
-#	those modules.
 #
 foreach $arg ( @ARGV )
 {
@@ -244,24 +201,6 @@ foreach $arg ( @ARGV )
 	printNotice( "    --enable-file64bit          Enable large files\n" );
 	printNotice( "    --disable-file64bit         Disable large files\n" );
 	printNotice( "\n" );
-	printNotice( "Authentication options:\n" );
-	printNotice( "    --enable-gsi                Enable GSI authentication\n" );
-	printNotice( "    --globus-location=<DIR>     Where Globus is installed\n" );
-	printNotice( "    --gsi-install-type=<TYPE>   Globus/GSI installation type\n" );
-	printNotice( "                                See \$GLOBUS_LOCATION/include\n" );
-	printNotice( "    --disable-gsi               Disable GSI authentication\n" );
-	if ( scalar keys %modules > 0 )
-	{
-		printNotice( "\n" );
-		printNotice( "Module options:\n" );
-		foreach $module (keys %modules)
-		{
-			my $infoPath = File::Spec->catfile( $modulesDir, $module, "info.txt" );
-			my $brief = getPropertyValue( $infoPath, "brief" );
-			printNotice( "    --enable-$module        $brief\n" );
-			printNotice( "    --disable-$module       $brief\n" );
-		}
-	}
 	exit( 0 );
 }
 
@@ -568,52 +507,6 @@ foreach $arg ( @ARGV )
 		next;
 	}
 
-	# GSI
-	if ( $arg =~ /--enable-gsi/ )
-	{
-		$configMkVariables{ "GSI_AUTH" } = "1";
-		next;
-	}
-	if ( $arg =~ /--disable-gsi/ )
-	{
-		$configMkVariables{ "GSI_AUTH" } = "";
-		next;
-	}
-	if ( $arg =~ /--globus-location=(.*)/ )
-	{
-		$configMkVariables{ "GSI_AUTH" } = "1";
-		$configMkVariables{ "GLOBUS_LOCATION" } = $1;
-		next;
-	}
-	if ( $arg =~ /--gsi-install-type=(.*)/ )
-	{
-		$configMkVariables{ "GSI_AUTH" } = "1";
-		$configMkVariables{ "GSI_INSTALL_TYPE" } = $1;
-		next;
-	}
-
-	# Modules
-	my $modargfound = 0;
-	foreach $module ( keys %modules )
-	{
-		if ( $arg =~ /--disable-$module/ )
-		{
-			$modules{ $module } = "no";
-			$modargfound = 1;
-			last;
-		}
-		elsif ( $arg =~ /--enable-$module/ )
-		{
-			$modules{ $module } = "yes";
-			$modargfound = 1;
-			last;
-		}
-	}
-	if ( $modargfound )
-	{
-		next;
-	}
-
 	if ( $arg =~ /-?-?q(uiet)/ )
 	{
 		setPrintVerbose( 0 );
@@ -649,78 +542,6 @@ if ( ! $noHeader )
 	printTitle( "Configure iRODS\n" );
 	printTitle( "------------------------------------------------------------------------\n" );
 }
-
-
-
-
-
-########################################################################
-#
-# Check module dependencies.
-#
-# For each enabled module, make sure all of the modules it
-# depends upon are also enabled.
-#
-@modulesNeeded = ( );
-foreach $module (keys %modules)
-{
-	if ( $modules{$module} eq "yes" )
-	{
-		my $infoPath = File::Spec->catfile( $modulesDir, $module, "info.txt" );
-		my $deplist = getPropertyValue( $infoPath, "dependencies" );
-		if ( defined( $deplist ) )
-		{
-			my @depends = split( " ", $deplist );
-			foreach $depend (@depends)
-			{
-				if ( ! defined( $modules{$depend} ) ||
-					$modules{$depend} eq "no" )
-				{
-					push( @modulesNeeded, $depend );
-				}
-			}
-		}
-	}
-}
-
-if ( scalar @modulesNeeded > 0 )
-{
-	printError( "Configuration error:\n" );
-	printError( "    The following modules are depended upon by enabled modules\n" );
-	printError( "    but were not enabled:\n" );
-	foreach $module (@modulesNeeded)
-	{
-		printError( "        $module\n" );
-	}
-	printError( "\n" );
-	printError( "    Please review your configuration and either enable these\n" );
-	printError( "    modules, or disable the ones that require them.\n" );
-	printError( "\n" );
-	printError( "Abort.  Please re-run this script with updated options.\n" );
-	exit( 1 );
-}
-
-$currentStep++;
-printSubtitle( "\nStep $currentStep of $totalSteps:  Enabling modules...\n" );
-if ( scalar keys %modules > 0 )
-{
-	my $tmp = "";
-	foreach $module (keys %modules )
-	{
-		if ( $modules{$module} =~ "yes" )
-		{
-			$tmp .= " $module";
-			printStatus( "$module\n" );
-		}
-	}
-	$configMkVariables{ "MODULES"} = $tmp;
-}
-else
-{
-	printStatus( "    Skipped.  No modules enabled.\n" );
-	$configMkVariables{ "MODULES"} = "";
-}
-
 
 
 
