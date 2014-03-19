@@ -463,7 +463,7 @@ main( int argc, char **argv ) {
         status = showRescTree( argv[myRodsArgs.optind] );
     }
     else { // regular view
-    	status = showResc( argv[myRodsArgs.optind], myRodsArgs.longOption );
+        status = showResc( argv[myRodsArgs.optind], myRodsArgs.longOption );
     }
 
     printErrorStack( Conn->rError );
