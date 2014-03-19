@@ -5,12 +5,9 @@ an iRODS installation.
 
 Contents
 	configure.pl		configure prior to building iRODS
-	finishSetup.pl		finish setting up iRODS
-	installPostgres.pl	install Postgres for iRODS
 	irodsctl.pl		start or stop the iRODS servers
 	irodsprompt.pl		prompt for config settings
-	irodssetup.pl		set up iRODS
-	uninstallPostgres.pl	uninstall Postgres for iRODS
+	irods_setup.pl		set up iRODS
 
 	utils_config.pl		utility functions for irods.config
 	utils_file.pl		utility functions for file I/O
