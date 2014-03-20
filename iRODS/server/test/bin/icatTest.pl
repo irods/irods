@@ -832,6 +832,7 @@ runCmd(0, "iquest \"select max(DATA_SIZE) where COLL_NAME = '$iHome'\"");
 runCmd(0, "iquest \"select avg(DATA_SIZE) where COLL_NAME = '$iHome'\"");
 runCmd(0, "iquest \"select sum(DATA_SIZE) where COLL_NAME = '$iHome'\"");
 runCmd(0, "iquest \"select count(DATA_SIZE) where COLL_NAME = '$iHome'\"");
+runCmd(0, "iquest \"select order_desc(DATA_SIZE) where COLL_NAME = '$iHome'\"");
 runCmd(0, "irm -f $F2");
 runCmd(0, "irm -f $F1");
 
