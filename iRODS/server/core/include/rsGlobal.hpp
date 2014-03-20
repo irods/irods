@@ -87,6 +87,7 @@ time_t LastRescUpdateTime;
 
 /* manage server process permissions */
 uid_t ServiceUid = 0;
+gid_t ServiceGid = 0;
 
 /* Flag for whether the read/write rule should be executed */
 irodsStateFlag_t ReadWriteRuleState = UNINIT_STATE;

@@ -80,6 +80,7 @@ extern time_t LastRescUpdateTime;
 
 /* manage server process permissions */
 extern uid_t ServiceUid;
+extern gid_t ServiceGid;
 
 extern irodsStateFlag_t ReadWriteRuleState;
 

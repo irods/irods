@@ -2817,6 +2817,7 @@ initServiceUser() {
     pwent = getpwnam( serviceUser );
     if ( pwent ) {
         ServiceUid = pwent->pw_uid;
+        ServiceGid = pwent->pw_gid;
         return ( changeToServiceUser() );
     }
 
@@ -2892,6 +2893,13 @@ changeToServiceUser() {
 
 #ifndef windows_platform
     prev_errno = errno;
+
+    if ( setegid( ServiceGid ) == -1 ) {
+    	/* if only setegid fails, log error but continue */
+    	rodsLog( LOG_ERROR, "changeToServiceUser: setegid() failed, errno = %d", errno);
+    	errno = prev_errno;
+    }
+
     if ( seteuid( ServiceUid ) == -1 ) {
         my_errno = errno;
         errno = prev_errno;
