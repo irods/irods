@@ -533,7 +533,7 @@ runCmd( "irsync i:$irodshome/icmdtest/foo100 i:$irodshome/icmdtest/foo200" );
 system ("rm  $dir_w/foo100" );
 
 # do a test of the irule -s option
-runCmd( "irule -s -F iRODS/clients/icommands/test/rules3.0/rulewriteLine.r \"*Where=stdout *StringIn=line\"" )
+runCmd( "irule -s -F iRODS/clients/icommands/test/rules3.0/rulewriteLine.r \"*Where=stdout *StringIn=line\"" );
 
 # do test using xml protocol
 $ENV{'irodsProt'} = 1;
