@@ -116,7 +116,7 @@ irodsCwd '/tempZone/home/USERNAME'
 irodsUserName 'USERNAME'
 # Zone:
 irodsZone 'tempZone'
-# Enable Advanced Client-Server negotation:
+# Enable Advanced Client-Server negotiation:
 irodsClientServerNegotiation 'request_server_negotiation'
 # Client-Server connection policy:
 irodsClientServerPolicy 'CS_NEG_REFUSE'
