@@ -1252,11 +1252,11 @@ if [ "$DETECTEDOS" == "RedHatCompatible" ] ; then # CentOS and RHEL and Fedora
     fi
     $EPMCMD $EPMOPTS -f rpm irods-$SERVER_TYPE_LOWERCASE $epmvar=true $epmosversion=true ./packaging/irods.list
     if [ "$SERVER_TYPE" == "ICAT" ] ; then
-        $EPMCMD $EPMOPTS -f rpm irods-dev $epmvar=true ./packaging/irods-dev.list
-        $EPMCMD $EPMOPTS -f rpm irods-runtime $epmvar=true ./packaging/irods-runtime.list
+        $EPMCMD $EPMOPTS -f rpm irods-dev $epmvar=true $epmosversion=true ./packaging/irods-dev.list
+        $EPMCMD $EPMOPTS -f rpm irods-runtime $epmvar=true $epmosversion=true ./packaging/irods-runtime.list
     fi
     if [ "$RELEASE" == "1" ] ; then
-        $EPMCMD $EPMOPTS -f rpm irods-icommands $epmvar=true ./packaging/irods-icommands.list
+        $EPMCMD $EPMOPTS -f rpm irods-icommands $epmvar=true $epmosversion=true ./packaging/irods-icommands.list
     fi
 elif [ "$DETECTEDOS" == "SuSE" ] ; then # SuSE
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS RPMs${text_reset}"
