@@ -661,6 +661,9 @@ generalAdmin( int userOption, char *arg0, char *arg1, char *arg2, char *arg3,
         }
     } // else if status < 0
 
+    printErrorStack( Conn->rError );
+    freeRErrorContent( Conn->rError );
+
     return ( status );
 }
 
