@@ -488,7 +488,7 @@ initRcatServerHostByFile( rsComm_t *rsComm ) {
 
     if ( fptr == NULL ) {
         rodsLog( LOG_SYS_FATAL,
-                 "Cannot open RCAT_HOST_FILE  file %s. ernro = %d\n",
+                 "Cannot open RCAT_HOST_FILE  file %s. errno = %d\n",
                  cfg_file.c_str(), errno );
         return ( SYS_CONFIG_FILE_ERR );
     }
@@ -1493,7 +1493,7 @@ initHostConfigByFile( rsComm_t *rsComm ) {
 
     if ( fptr == NULL ) {
         rodsLog( LOG_NOTICE,
-                 "Cannot open HOST_CONFIG_FILE  file %s. ernro = %d\n",
+                 "Cannot open HOST_CONFIG_FILE  file %s. errno = %d\n",
                  cfg_file.c_str(), errno );
         return ( SYS_CONFIG_FILE_ERR );
     }
@@ -2431,7 +2431,7 @@ logAgentProc( rsComm_t *rsComm ) {
 
     if ( fptr == NULL ) {
         rodsLog( LOG_ERROR,
-                 "logAgentProc: Cannot open input file %s. ernro = %d",
+                 "logAgentProc: Cannot open input file %s. errno = %d",
                  procPath, errno );
         return ( UNIX_FILE_OPEN_ERR - errno );
     }
@@ -2471,7 +2471,7 @@ readProcLog( int pid, procLog_t *procLog ) {
 
     if ( fptr == NULL ) {
         rodsLog( LOG_ERROR,
-                 "readProcLog: Cannot open input file %s. ernro = %d",
+                 "readProcLog: Cannot open input file %s. errno = %d",
                  procPath, errno );
         return ( UNIX_FILE_OPEN_ERR - errno );
     }

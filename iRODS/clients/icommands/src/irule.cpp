@@ -268,7 +268,7 @@ main( int argc, char **argv ) {
 
         /* test if the file can be opened */
         if ( fptr == NULL ) {
-            rodsLog( LOG_ERROR, "Cannot open input file %s. ernro = %d\n",
+            rodsLog( LOG_ERROR, "Cannot open input file %s. errno = %d\n",
                      myRodsArgs.fileString, errno );
             exit( 1 );
         }

@@ -204,7 +204,7 @@ writePackedRes( bytesBuf_t *packedResult, char *outFile ) {
 
     if ( fptr == NULL ) {
         rodsLog( LOG_ERROR,
-                 "Cannot open input file %s. ernro = %d\n",
+                 "Cannot open input file %s. errno = %d\n",
                  outFile, errno );
         return ( -1 );
     }
