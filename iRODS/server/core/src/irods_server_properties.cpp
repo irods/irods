@@ -142,7 +142,7 @@ namespace irods {
                 // Update properties table
                 result = properties.set<size_t>( prop_name, atoi( prop_setting.c_str() ) );
 
-                rodsLog( LOG_NOTICE, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
+                rodsLog( LOG_DEBUG, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
             } // PAM_PW_LEN_KW
 
             key = strstr( buf, PAM_NO_EXTEND_KW );
@@ -161,7 +161,7 @@ namespace irods {
                     result = properties.set<bool>( PAM_NO_EXTEND_KW, false );
                 }
 
-                rodsLog( LOG_NOTICE, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
+                rodsLog( LOG_DEBUG, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
             } // PAM_NO_EXTEND_KW
 
             key = strstr( buf, PAM_PW_MIN_TIME_KW );
@@ -175,7 +175,7 @@ namespace irods {
                 // Update properties table
                 result = properties.set<std::string>( prop_name, prop_setting );
 
-                rodsLog( LOG_NOTICE, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
+                rodsLog( LOG_DEBUG, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
             } // PAM_PW_MIN_TIME_KW
 
             key = strstr( buf, PAM_PW_MAX_TIME_KW );
@@ -189,7 +189,7 @@ namespace irods {
                 // Update properties table
                 result = properties.set<std::string>( prop_name, prop_setting );
 
-                rodsLog( LOG_NOTICE, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
+                rodsLog( LOG_DEBUG, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
             } // PAM_PW_MAX_TIME_KW
 
             key = strstr( buf, RUN_SERVER_AS_ROOT_KW );
@@ -208,7 +208,7 @@ namespace irods {
                     result = properties.set<bool>( RUN_SERVER_AS_ROOT_KW, false );
                 }
 
-                rodsLog( LOG_NOTICE, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
+                rodsLog( LOG_DEBUG, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
             } // RUN_SERVER_AS_ROOT_KW
 
 
@@ -223,7 +223,7 @@ namespace irods {
                 // Update properties table
                 result = properties.set<std::string>( prop_name, prop_setting );
 
-                rodsLog( LOG_NOTICE, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
+                rodsLog( LOG_DEBUG, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
             } // CATALOG_DATABASE_TYPE_KW
 
             key = strstr( buf, KERBEROS_NAME_KW );
@@ -234,7 +234,7 @@ namespace irods {
                 prop_setting.assign( findNextTokenAndTerm( key + len ) );
                 // Update properties table
                 result = properties.set<std::string>( prop_name, prop_setting );
-                rodsLog( LOG_NOTICE, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
+                rodsLog( LOG_DEBUG, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
             } // KERBEROS_NAME_KW
 
 
@@ -255,7 +255,7 @@ namespace irods {
                 // Update properties table
                 result = properties.set<std::string>( prop_name, prop_setting );
 
-                rodsLog( LOG_NOTICE, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
+                rodsLog( LOG_DEBUG, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
             } // DEFAULT_HASH_SCHEME_KW
 
             key = strstr( buf, MATCH_HASH_POLICY_KW );
@@ -274,7 +274,7 @@ namespace irods {
                 // Update properties table
                 result = properties.set<std::string>( prop_name, prop_setting );
 
-                rodsLog( LOG_NOTICE, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
+                rodsLog( LOG_DEBUG, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
             } // MATCH_HASH_POLICY_KW
 
             fchar = fgets( buf, BUF_LEN - 1, fptr );

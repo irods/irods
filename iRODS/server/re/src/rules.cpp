@@ -663,13 +663,13 @@ int actionTableLookUp( irods::ms_table_entry& _entry, char* _action ) {
     // look up Action in microservice table.  If it returns
     // the end() iterator, is is not found so try to load it.
     if ( !MicrosTable.has_entry( str_act ) ) {
-        rodsLog( LOG_NOTICE, "actionTableLookUp - [%s] not found, load it.", _action );
+        rodsLog( LOG_DEBUG, "actionTableLookUp - [%s] not found, load it.", _action );
         irods::error ret = irods::load_microservice_plugin( MicrosTable, str_act );
         if ( !ret.ok() ) {
             return UNMATCHED_ACTION_ERR;
         }
         else {   // if loaded
-            rodsLog( LOG_NOTICE, "actionTableLookUp - loaded [%s]", _action );
+            rodsLog( LOG_DEBUG, "actionTableLookUp - loaded [%s]", _action );
         } // else
     }  // if not found
 
