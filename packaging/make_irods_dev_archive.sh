@@ -44,7 +44,7 @@ rm dummy
 
 # =-=-=-=-=-=-=-
 # Archive all Server Objects, except the managers
-ar qS $ar_file $(find iRODS/server -name \*.o ! -name \*_manager.o )
+ar qS $ar_file $(find iRODS/server -name \*.o ! -name \*_manager.o ! -name irods_server_api_table.o )
 
 # =-=-=-=-=-=-=-
 # Generate index
