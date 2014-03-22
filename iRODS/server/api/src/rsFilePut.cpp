@@ -127,7 +127,7 @@ int _rsFilePut(
                      _put_inp->fileName, fd );
         }
         else if ( fd != DIRECT_ARCHIVE_ACCESS ) {
-            rodsLog( LOG_NOTICE,
+            rodsLog( LOG_DEBUG,
                      "_rsFilePut: filePut for %s, status = %d",
                      _put_inp->fileName, fd );
         }

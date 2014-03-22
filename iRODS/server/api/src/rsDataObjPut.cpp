@@ -322,7 +322,7 @@ l3DataPutSingleBuf( rsComm_t*     rsComm,
     L1desc[l1descInx].oprStatus = bytesWritten;
     status = rsDataObjClose( rsComm, &dataObjCloseInp );
     if ( status < 0 ) {
-        rodsLog( LOG_NOTICE,
+        rodsLog( LOG_DEBUG,
                  "l3DataPutSingleBuf: rsDataObjClose of %d error, status = %d",
                  l1descInx, status );
     }
@@ -364,7 +364,7 @@ l3DataPutSingleBuf( rsComm_t*     rsComm,
             L1desc[l1descInx].oprStatus = bytesWritten;
             status = rsDataObjClose( rsComm, &dataObjCloseInp );
             if ( status < 0 ) {
-                rodsLog( LOG_NOTICE,
+                rodsLog( LOG_DEBUG,
                          "l3DataPutSingleBuf: rsDataObjClose of %d error, status = %d",
                          l1descInx, status );
             }
