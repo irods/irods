@@ -2275,52 +2275,67 @@ sub getIrodsServerPid()
 # 		1 = stopped
 # 		2 = already stopped
 #
-sub stopIrods()
+sub stopIrods
 {
+	#
+	# Design Notes:  The current version of this uses a file created
+	# 	by the irods server which records its PID and then finds
+	# 	the children, which should work well in most cases. 
+	# 	The previous version (irods 1.0) would use ps
+	# 	to find processes of the right name.  See the old version
+	#       from CVS for the limitations of that approach.  
+	#       This should work better, in most situations, and will
+	# 	allow us to run multiple systems on a host.
+	#
 	# Find and kill the server process IDs
-	my $found = 0;
-
 	$parentPid=getIrodsServerPid();
 	my @pids = getFamilyProcessIds( $parentPid );
-
+	my $found = 0;
+	$num = @pids;
+	print ( "Found $num processes:\n" );
 	foreach $pid (@pids)
 	{
-	    	$found = 1;
+		$found = 1;
+		print( "\tStopping process id $pid\n" );
 		kill( 'SIGINT', $pid );
 	}
-	return 2 if ( ! $found );	# Nothing running
+	if ( ! $found )
+	{
+                system( "pgrep -l -u irods irods | grep -v irodsctl | awk '{print \$1}' | xargs kill -9 > /dev/null 2>&1" );
+		printStatus( "    There are no iRODS servers running.\n" );
+		return 1;
+	}
 
 	# Repeat to catch stragglers.  This time use kill -9.
-
 	my @pids = getFamilyProcessIds( $parentPid );
-	if ( $#pids >= 0 )
-	{
-		# make some short delay, let them die
-		sleep( 1 ) ;
-	}
-	my @pids = getFamilyProcessIds( $parentPid );
+	my $found = 0;
 	foreach $pid (@pids)
 	{
-	    	kill( 9, $pid );
+		$found = 1;
+		print( "\tKilling process id $pid\n" );
+		kill( 9, $pid );
 	}
+
+        # TGR - ZOMBIE REAPER
+        # no regard for PIDs
+        # iRODS must kill all owned processes for packaging purposes
+        #printStatus( "\tKilling any remaining Zombies... Silently.\n" );
+        system( "pgrep -l -u irods irods | grep -v irodsctl | awk '{print \$1}' | xargs kill -9 > /dev/null 2>&1" );
 
 	# Report if there are any left.
 	my $didNotDie = 0;
-	@pids = getFamilyProcessIds( $parentPid );
+	my @pids = getFamilyProcessIds( $parentPid );
+
 	if ( $#pids >= 0 )
 	{
-	    	printError( "Could not stop all iRODS servers\n" );
-		printLog( "Could not stop all iRODS servers\n" );
-		foreach $pid (@pids)
-		{
-			printError( "    Process $pid\n" );
-			printLog( "    Process $pid\n" );
-		}		
-		$didNotDie = 1;
+		printError( "    Some servers could not be killed.  They may be owned\n" );
+		printError( "    by another user or there could be a problem.\n" );
+		return 0;
 	}
-	return 0 if ( $didNotDie );	# Failed to kill all
 	return 1;
 }
+
+
 
 
 
