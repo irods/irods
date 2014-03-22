@@ -1028,7 +1028,7 @@ extern "C" {
             ret = _ctx.prop_map().get< std::string >( OPERATION_TYPE, operation );
             if ( ret.ok() ) {
                 rodsLog(
-                    LOG_NOTICE, // should be debug1
+                    LOG_DEBUG,
                     "compound_file_notify - oper [%s] changed to [%s]",
                     _opr->c_str(),
                     operation.c_str() );
@@ -1039,7 +1039,7 @@ extern "C" {
             }
             else {
                 rodsLog(
-                    LOG_NOTICE, // should be debug1
+                    LOG_DEBUG,
                     "compound_file_notify - skipping [%s]",
                     _opr->c_str() );
             }

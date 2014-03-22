@@ -102,7 +102,7 @@ _rsFileChksum(
                  fileChksumInp->orig_chksum,
                  *chksumStr );
     if ( status < 0 ) {
-        rodsLog( LOG_NOTICE,
+        rodsLog( LOG_DEBUG,
                  "_rsFileChksum: fileChksum for %s, status = %d",
                  fileChksumInp->fileName, status );
         free( *chksumStr );

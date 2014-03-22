@@ -2895,9 +2895,9 @@ changeToServiceUser() {
     prev_errno = errno;
 
     if ( setegid( ServiceGid ) == -1 ) {
-    	/* if only setegid fails, log error but continue */
-    	rodsLog( LOG_ERROR, "changeToServiceUser: setegid() failed, errno = %d", errno);
-    	errno = prev_errno;
+        /* if only setegid fails, log error but continue */
+        rodsLog( LOG_ERROR, "changeToServiceUser: setegid() failed, errno = %d", errno );
+        errno = prev_errno;
     }
 
     if ( seteuid( ServiceUid ) == -1 ) {

@@ -443,7 +443,7 @@ _dataObjChksum(
             msg << "Data object: \"";
             msg << dataObjInfo->filePath;
             msg << "\" is located in an archive resource. Ignoring its checksum.";
-            irods::log( LOG_NOTICE, msg.str() );
+            irods::log( LOG_DEBUG, msg.str() );
 
         }
         break;
