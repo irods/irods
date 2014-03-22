@@ -367,7 +367,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // report children to log
         for ( size_t i = 0; i < child_vector.size(); ++i ) {
-            rodsLog( LOG_NOTICE, "round_robin_start_operation :: RR Child [%s] at [%d]",
+            rodsLog( LOG_DEBUG, "round_robin_start_operation :: RR Child [%s] at [%d]",
                      child_vector[i].c_str(), i );
         }
 
@@ -1171,7 +1171,7 @@ extern "C" {
             // in the property map.  this is used to keep track
             // of the last used child in the vector
             properties_.set< std::string >( NEXT_CHILD_PROP, context_ );
-            rodsLog( LOG_NOTICE, "roundrobin_resource :: next_child [%s]", context_.c_str() );
+            rodsLog( LOG_DEBUG, "roundrobin_resource :: next_child [%s]", context_.c_str() );
 
             set_start_operation( "round_robin_start_operation" );
         }
