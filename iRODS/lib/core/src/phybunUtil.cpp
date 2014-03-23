@@ -88,14 +88,17 @@ initCondForPhybunOpr( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
         else {
             addKeyVal( &phyBundleCollInp->condInput,
                        DEST_RESC_NAME_KW, rodsArgs->resourceString );
-            addKeyVal( &phyBundleCollInp->condInput, RESC_NAME_KW,
-                       rodsArgs->resourceString );
         }
     }
     else {
         rodsLog( LOG_ERROR,
                  "initCondForPhybunOpr: A -Rresource must be input" );
         return ( USER__NULL_INPUT_ERR );
+    }
+
+    if ( rodsArgs->srcResc == True ) {
+        addKeyVal( &phyBundleCollInp->condInput, RESC_NAME_KW,
+                   rodsArgs->srcRescString );
     }
 
     if ( rodsArgs->verifyChecksum == True ) { // JMC - backport 4528

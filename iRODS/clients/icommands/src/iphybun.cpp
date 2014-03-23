@@ -22,7 +22,7 @@ main( int argc, char **argv ) {
     rodsPathInp_t rodsPathInp;
 
 
-    optStr = "hD:N:KR:"; // JMC - backport 4528, 4658, 4771
+    optStr = "hD:N:KR:S:"; // JMC - backport 4528, 4658, 4771
 
     status = parseCmdLineOpt( argc, argv, optStr, 0, &myRodsArgs );
     if ( status < 0 ) {
@@ -92,7 +92,7 @@ main( int argc, char **argv ) {
 void
 usage() {
     char *msgs[] = {
-        "Usage : iphybun [-hK] -R resource collection ... ",
+        "Usage : iphybun [-hK] [-D dataType] [-S srcResource] -R resource collection ... ",
         "iphybun allows system admin to physically bundle files in a collection into",
         "a number of tar files to make it more efficient to store these files on tape.",
         "The tar files are placed into the /myZone/bundle/.... collection with file",
@@ -124,6 +124,7 @@ usage() {
         "     overhead for operations like retrieving a single file within a tar file",
         "     (stage, untar and register in iRODS lots of files).",
         " -R  resource - The resource where the bundle file is located",
+        " -S  srcResource - Only files in this resource will be bundled",
         " -K  compute and register checksum value for the bundled subfiles and the",
         "     bundle file.",
         " -h  this help",
