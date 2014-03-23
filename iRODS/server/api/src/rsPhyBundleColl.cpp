@@ -194,11 +194,18 @@ _rsPhyBundleColl( rsComm_t*                 rsComm,
         maxSubFileCnt = MAX_SUB_FILE_CNT;
     }
 
+    rodsLong_t maxBunSize;
+    if ( getValByKey( &phyBundleCollInp->condInput, MAX_BUNDLE_SIZE_KW ) != NULL ) {
+        maxBunSize = atoi( getValByKey( &phyBundleCollInp->condInput, MAX_BUNDLE_SIZE_KW ) ) * OneGig;
+    }
+    else {
+        maxBunSize = MAX_BUNDLE_SIZE * OneGig;
+    }
+
     // =-=-=-=-=-=-=-
     char phyBunDir[MAX_NAME_LEN];
     createPhyBundleDir( rsComm, L1desc[l1descInx].dataObjInfo->filePath,
                         phyBunDir );
-
 
     curSubFileCond_t     curSubFileCond;
     bunReplCacheHeader_t bunReplCacheHeader;
@@ -222,8 +229,7 @@ _rsPhyBundleColl( rsComm_t*                 rsComm,
                       || strcmp( curSubFileCond.dataName, collEnt->dataName ) != 0 ) {
                 /* a new file, need to handle the old one */
                 if ( bunReplCacheHeader.numSubFiles >= maxSubFileCnt || // JMC - backport 4771
-                        bunReplCacheHeader.totSubFileSize + collEnt->dataSize >
-                        MAX_BUNDLE_SIZE * OneGig ) {
+                        bunReplCacheHeader.totSubFileSize + collEnt->dataSize > maxBunSize ) {
                     /* bundle is full */
                     status = bundleAndRegSubFiles( rsComm, l1descInx,
                                                    phyBunDir, phyBundleCollInp->collection,
