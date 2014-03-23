@@ -248,7 +248,7 @@ rename_generated_packages() {
     SUFFIX=""
     if   [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
 	EXTENSION="rpm"
-	SUFFIX="-redhat"
+	SUFFIX="-centos5"
 	if [ "$epmosversion" == "CENTOS6" ] ; then
             SUFFIX="-centos6"
 	fi
