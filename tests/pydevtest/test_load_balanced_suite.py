@@ -22,13 +22,13 @@ RODSHOME = "/home/irodstest/irodsfromsvn/iRODS"
 ABSPATHTESTDIR = os.path.abspath(os.path.dirname (sys.argv[0]))
 RODSHOME = ABSPATHTESTDIR + "/../../iRODS"
 
-class Test_LoadBalancer_Resource(unittest.TestCase, ResourceBase):
+class Test_LoadBalanced_Resource(unittest.TestCase, ResourceBase):
   
     hostname = socket.gethostname()
     my_test_resource = {
         "setup"    : [
             "iadmin modresc demoResc name origResc",
-            "iadmin mkresc demoResc load_balancer",
+            "iadmin mkresc demoResc load_balanced",
             "iadmin mkresc rescA 'unix file system' "+hostname+":/var/lib/irods/rescAVault",
             "iadmin mkresc rescB 'unix file system' "+hostname+":/var/lib/irods/rescBVault",
             "iadmin mkresc rescC 'unix file system' "+hostname+":/var/lib/irods/rescCVault",
@@ -60,7 +60,7 @@ class Test_LoadBalancer_Resource(unittest.TestCase, ResourceBase):
         self.run_resource_teardown()
         s.twousers_down()
 
-    def test_load_balancer(self):
+    def test_load_balanced(self):
        # =-=-=-=-=-=-=-
        # read server.config and .odbc.ini
        cfg = Server_Config() 
@@ -79,7 +79,7 @@ class Test_LoadBalancer_Resource(unittest.TestCase, ResourceBase):
 
        # =-=-=-=-=-=-=-
        # put a test_file.txt - should be on rescA given load table values
-       assertiCmd( s.adminsession ,"iput -f ./test_load_balancer_suite.py "+test_file )
+       assertiCmd( s.adminsession ,"iput -f ./test_load_balanced_suite.py "+test_file )
        assertiCmd( s.adminsession, "ils -L "+test_file, "LIST", "rescA" )
        assertiCmd( s.adminsession ,"irm -f "+test_file )
     
@@ -89,7 +89,7 @@ class Test_LoadBalancer_Resource(unittest.TestCase, ResourceBase):
        
        # =-=-=-=-=-=-=-
        # put a test_file.txt - should be on rescC given load table values
-       assertiCmd( s.adminsession ,"iput -f ./test_load_balancer_suite.py "+test_file )
+       assertiCmd( s.adminsession ,"iput -f ./test_load_balanced_suite.py "+test_file )
        assertiCmd( s.adminsession, "ils -L "+test_file, "LIST", "rescC" )
        assertiCmd( s.adminsession ,"irm -f "+test_file )
     

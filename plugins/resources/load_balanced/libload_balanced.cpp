@@ -43,7 +43,7 @@ const std::string DEFER_POLICY_LOCALHOST( "localhost_defer_policy" );
 /// =-=-=-=-=-=-=-
 /// @brief Check the general parameters passed in to most plugin functions
 template< typename DEST_TYPE >
-inline irods::error load_balancer_check_params(
+inline irods::error load_balanced_check_params(
     irods::resource_plugin_context& _ctx ) {
     irods::error result = SUCCESS();
 
@@ -54,7 +54,7 @@ inline irods::error load_balancer_check_params(
 
     return result;
 
-} // load_balancer_check_params
+} // load_balanced_check_params
 
 /// =-=-=-=-=-=-=-
 /// @brief get the next resource shared pointer given this resources name
@@ -98,14 +98,14 @@ irods::error get_next_child_in_hier(
 /// @brief get the resource for the child in the hierarchy
 ///        to pass on the call
 template< typename DEST_TYPE >
-irods::error load_balancer_get_resc_for_call(
+irods::error load_balanced_get_resc_for_call(
     irods::resource_plugin_context& _ctx,
     irods::resource_ptr&            _resc ) {
     irods::error result = SUCCESS();
 
     // =-=-=-=-=-=-=-
     // check incoming parameters
-    irods::error err = load_balancer_check_params< DEST_TYPE >( _ctx );
+    irods::error err = load_balanced_check_params< DEST_TYPE >( _ctx );
     if ( ( result = ASSERT_PASS( err, "Bad resource context." ) ).ok() ) {
 
         // =-=-=-=-=-=-=-
@@ -128,76 +128,30 @@ irods::error load_balancer_get_resc_for_call(
 
     return result;
 
-} // load_balancer_get_resc_for_call
+} // load_balanced_get_resc_for_call
 
 extern "C" {
 
     // =-=-=-=-=-=-=-
-    /// @brief Start Up Operation - initialize the load_balancer number generator
-    irods::error load_balancer_start_operation(
+    /// @brief Start Up Operation - initialize the load_balanced number generator
+    irods::error load_balanced_start_operation(
         irods::plugin_property_map& _prop_map,
         irods::resource_child_map&  _cmap ) {
         srand( time( NULL ) );
         return SUCCESS();
 
-    } // load_balancer_start_operation
-
-    /// =-=-=-=-=-=-=-
-    /// @brief given the property map the properties next_child and child_vector,
-    ///        select the next property in the vector to be tapped as the RR resc
-    irods::error load_balancer_get_next_child_resource(
-        irods::resource_child_map& _cmap,
-        std::string&                _next_child ) {
-        irods::error result = SUCCESS();
-
-        // =-=-=-=-=-=-=-
-        // if the child map is empty then just return
-        if ( _cmap.size() > 0 ) {
-
-            // =-=-=-=-=-=-=-
-            // get the size of the map and load_balancerly pick an index into it
-            double rand_number  = static_cast<double>( rand() );
-            rand_number /= static_cast<double>( RAND_MAX );
-            size_t target_index = ( size_t )round( ( _cmap.size() - 1 ) * rand_number );
-
-            // =-=-=-=-=-=-=-
-            // child map is keyed by resource name so we need to count out the index
-            // and then snag the child name from the key of the hash map
-            size_t counter = 0;
-            std::string next_child;
-            irods::resource_child_map::iterator itr = _cmap.begin();
-            for ( ; itr != _cmap.end(); ++itr ) {
-                if ( counter == target_index ) {
-                    next_child = itr->first;
-                    break;
-
-                }
-                else {
-                    ++counter;
-
-                }
-
-            } // for itr
-
-            // =-=-=-=-=-=-=-
-            // assign the next_child to the out variable
-            _next_child = next_child;
-        }
-
-        return result;
-
-    } // load_balancer_get_next_child_resource
+    } // load_balanced_start_operation
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX create
-    irods::error load_balancer_file_create(
+    irods::error load_balanced_file_create(
         irods::resource_plugin_context& _ctx ) {
         irods::error result = SUCCESS();
 
         // =-=-=-=-=-=-=-
         // get the child resc to call
         irods::resource_ptr resc;
-        irods::error err = load_balancer_get_resc_for_call< irods::file_object >( _ctx, resc );
+        irods::error err = load_balanced_get_resc_for_call< irods::file_object >( _ctx, resc );
         if ( ( result = ASSERT_PASS( err, "Invalid resource context." ) ).ok() ) {
 
             // =-=-=-=-=-=-=-
@@ -207,18 +161,18 @@ extern "C" {
         }
 
         return result;
-    } // load_balancer_file_create
+    } // load_balanced_file_create
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Open
-    irods::error load_balancer_file_open(
+    irods::error load_balanced_file_open(
         irods::resource_plugin_context& _ctx ) {
         irods::error result = SUCCESS();
 
         // =-=-=-=-=-=-=-
         // get the child resc to call
         irods::resource_ptr resc;
-        irods::error err = load_balancer_get_resc_for_call< irods::file_object >( _ctx, resc );
+        irods::error err = load_balanced_get_resc_for_call< irods::file_object >( _ctx, resc );
         if ( ( result = ASSERT_PASS( err, "Failed in file open." ) ).ok() ) {
 
             // =-=-=-=-=-=-=-
@@ -228,11 +182,11 @@ extern "C" {
         }
 
         return result;
-    } // load_balancer_file_open
+    } // load_balanced_file_open
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX Read
-    irods::error load_balancer_file_read(
+    irods::error load_balanced_file_read(
         irods::resource_plugin_context& _ctx,
         void*                               _buf,
         int                                 _len ) {
@@ -241,7 +195,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the child resc to call
         irods::resource_ptr resc;
-        irods::error err = load_balancer_get_resc_for_call< irods::file_object >( _ctx, resc );
+        irods::error err = load_balanced_get_resc_for_call< irods::file_object >( _ctx, resc );
         if ( ( result = ASSERT_PASS( err, "Failed finding resource." ) ).ok() ) {
 
             // =-=-=-=-=-=-=-
@@ -252,11 +206,11 @@ extern "C" {
 
         return result;
 
-    } // load_balancer_file_read
+    } // load_balanced_file_read
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX Write
-    irods::error load_balancer_file_write(
+    irods::error load_balanced_file_write(
         irods::resource_plugin_context& _ctx,
         void*                               _buf,
         int                                 _len ) {
@@ -265,7 +219,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the child resc to call
         irods::resource_ptr resc;
-        irods::error err = load_balancer_get_resc_for_call< irods::file_object >( _ctx, resc );
+        irods::error err = load_balanced_get_resc_for_call< irods::file_object >( _ctx, resc );
         if ( ( result = ASSERT_PASS( err, "Failed choosing child resource." ) ).ok() ) {
 
             // =-=-=-=-=-=-=-
@@ -275,19 +229,19 @@ extern "C" {
         }
 
         return result;
-    } // load_balancer_file_write
+    } // load_balanced_file_write
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX Close
-    irods::error load_balancer_file_close(
+    irods::error load_balanced_file_close(
         irods::resource_plugin_context& _ctx ) {
         irods::error result = SUCCESS();
 
         // =-=-=-=-=-=-=-
         // get the child resc to call
         irods::resource_ptr resc;
-        irods::error err = load_balancer_get_resc_for_call< irods::file_object >( _ctx, resc );
-        if ( ( result = ASSERT_PASS( err, "Failed to select load_balancer resource." ) ).ok() ) {
+        irods::error err = load_balanced_get_resc_for_call< irods::file_object >( _ctx, resc );
+        if ( ( result = ASSERT_PASS( err, "Failed to select load_balanced resource." ) ).ok() ) {
 
             // =-=-=-=-=-=-=-
             // call close on the child
@@ -296,19 +250,19 @@ extern "C" {
         }
 
         return result;
-    } // load_balancer_file_close
+    } // load_balanced_file_close
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX Unlink
-    irods::error load_balancer_file_unlink(
+    irods::error load_balanced_file_unlink(
         irods::resource_plugin_context& _ctx ) {
         irods::error result = SUCCESS();
 
         // =-=-=-=-=-=-=-
         // get the child resc to call
         irods::resource_ptr resc;
-        irods::error err = load_balancer_get_resc_for_call< irods::data_object >( _ctx, resc );
-        if ( ( result = ASSERT_PASS( err, "Failed to select load_balancer resource." ) ).ok() ) {
+        irods::error err = load_balanced_get_resc_for_call< irods::data_object >( _ctx, resc );
+        if ( ( result = ASSERT_PASS( err, "Failed to select load_balanced resource." ) ).ok() ) {
 
             // =-=-=-=-=-=-=-
             // call unlink on the child
@@ -317,11 +271,11 @@ extern "C" {
         }
 
         return result;
-    } // load_balancer_file_unlink
+    } // load_balanced_file_unlink
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX Stat
-    irods::error load_balancer_file_stat(
+    irods::error load_balanced_file_stat(
         irods::resource_plugin_context& _ctx,
         struct stat*                     _statbuf ) {
         irods::error result = SUCCESS();
@@ -329,8 +283,8 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the child resc to call
         irods::resource_ptr resc;
-        irods::error err = load_balancer_get_resc_for_call< irods::data_object >( _ctx, resc );
-        if ( ( result = ASSERT_PASS( err, "Failed selecting load_balancer child resource." ) ).ok() ) {
+        irods::error err = load_balanced_get_resc_for_call< irods::data_object >( _ctx, resc );
+        if ( ( result = ASSERT_PASS( err, "Failed selecting load_balanced child resource." ) ).ok() ) {
 
             // =-=-=-=-=-=-=-
             // call stat on the child
@@ -339,11 +293,11 @@ extern "C" {
         }
 
         return result;
-    } // load_balancer_file_stat
+    } // load_balanced_file_stat
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX lseek
-    irods::error load_balancer_file_lseek(
+    irods::error load_balanced_file_lseek(
         irods::resource_plugin_context& _ctx,
         long long                        _offset,
         int                              _whence ) {
@@ -352,8 +306,8 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the child resc to call
         irods::resource_ptr resc;
-        irods::error err = load_balancer_get_resc_for_call< irods::file_object >( _ctx, resc );
-        if ( ( result = ASSERT_PASS( err, "Failed to select load_balancer child." ) ).ok() ) {
+        irods::error err = load_balanced_get_resc_for_call< irods::file_object >( _ctx, resc );
+        if ( ( result = ASSERT_PASS( err, "Failed to select load_balanced child." ) ).ok() ) {
 
             // =-=-=-=-=-=-=-
             // call lseek on the child
@@ -362,19 +316,19 @@ extern "C" {
         }
 
         return result;
-    } // load_balancer_file_lseek
+    } // load_balanced_file_lseek
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX mkdir
-    irods::error load_balancer_file_mkdir(
+    irods::error load_balanced_file_mkdir(
         irods::resource_plugin_context& _ctx ) {
         irods::error result = SUCCESS();
 
         // =-=-=-=-=-=-=-
         // get the child resc to call
         irods::resource_ptr resc;
-        irods::error err = load_balancer_get_resc_for_call< irods::collection_object >( _ctx, resc );
-        if ( ( result = ASSERT_PASS( err, "Failed to select load_balancer child resource." ) ).ok() ) {
+        irods::error err = load_balanced_get_resc_for_call< irods::collection_object >( _ctx, resc );
+        if ( ( result = ASSERT_PASS( err, "Failed to select load_balanced child resource." ) ).ok() ) {
 
             // =-=-=-=-=-=-=-
             // call mkdir on the child
@@ -383,19 +337,19 @@ extern "C" {
         }
 
         return result;
-    } // load_balancer_file_mkdir
+    } // load_balanced_file_mkdir
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX rmdir
-    irods::error load_balancer_file_rmdir(
+    irods::error load_balanced_file_rmdir(
         irods::resource_plugin_context& _ctx ) {
         irods::error result = SUCCESS();
 
         // =-=-=-=-=-=-=-
         // get the child resc to call
         irods::resource_ptr resc;
-        irods::error err = load_balancer_get_resc_for_call< irods::collection_object >( _ctx, resc );
-        if ( ( result = ASSERT_PASS( err, "Failed to select load_balancer resource." ) ).ok() ) {
+        irods::error err = load_balanced_get_resc_for_call< irods::collection_object >( _ctx, resc );
+        if ( ( result = ASSERT_PASS( err, "Failed to select load_balanced resource." ) ).ok() ) {
 
             // =-=-=-=-=-=-=-
             // call rmdir on the child
@@ -404,19 +358,19 @@ extern "C" {
         }
 
         return result;
-    } // load_balancer_file_rmdir
+    } // load_balanced_file_rmdir
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX opendir
-    irods::error load_balancer_file_opendir(
+    irods::error load_balanced_file_opendir(
         irods::resource_plugin_context& _ctx ) {
         irods::error result = SUCCESS();
 
         // =-=-=-=-=-=-=-
         // get the child resc to call
         irods::resource_ptr resc;
-        irods::error err = load_balancer_get_resc_for_call< irods::collection_object >( _ctx, resc );
-        if ( ( result = ASSERT_PASS( err, "Failed to select load_balancer resource." ) ).ok() ) {
+        irods::error err = load_balanced_get_resc_for_call< irods::collection_object >( _ctx, resc );
+        if ( ( result = ASSERT_PASS( err, "Failed to select load_balanced resource." ) ).ok() ) {
 
             // =-=-=-=-=-=-=-
             // call opendir on the child
@@ -425,19 +379,19 @@ extern "C" {
         }
 
         return result;
-    } // load_balancer_file_opendir
+    } // load_balanced_file_opendir
 
     // =-=-=-=-=-=-=-
     /// @brief interface for POSIX closedir
-    irods::error load_balancer_file_closedir(
+    irods::error load_balanced_file_closedir(
         irods::resource_plugin_context& _ctx ) {
         irods::error result = SUCCESS();
 
         // =-=-=-=-=-=-=-
         // get the child resc to call
         irods::resource_ptr resc;
-        irods::error err = load_balancer_get_resc_for_call< irods::collection_object >( _ctx, resc );
-        if ( ( result = ASSERT_PASS( err, "Failed to select load_balancer resource." ) ).ok() ) {
+        irods::error err = load_balanced_get_resc_for_call< irods::collection_object >( _ctx, resc );
+        if ( ( result = ASSERT_PASS( err, "Failed to select load_balanced resource." ) ).ok() ) {
 
             // =-=-=-=-=-=-=-
             // call closedir on the child
@@ -446,11 +400,11 @@ extern "C" {
         }
 
         return result;
-    } // load_balancer_file_closedir
+    } // load_balanced_file_closedir
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX readdir
-    irods::error load_balancer_file_readdir(
+    irods::error load_balanced_file_readdir(
         irods::resource_plugin_context& _ctx,
         struct rodsDirent**              _dirent_ptr ) {
         irods::error result = SUCCESS();
@@ -458,8 +412,8 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the child resc to call
         irods::resource_ptr resc;
-        irods::error err = load_balancer_get_resc_for_call< irods::collection_object >( _ctx, resc );
-        if ( ( result = ASSERT_PASS( err, "Failed to select load_balancer resource." ) ).ok() ) {
+        irods::error err = load_balanced_get_resc_for_call< irods::collection_object >( _ctx, resc );
+        if ( ( result = ASSERT_PASS( err, "Failed to select load_balanced resource." ) ).ok() ) {
 
             // =-=-=-=-=-=-=-
             // call readdir on the child
@@ -468,11 +422,11 @@ extern "C" {
         }
 
         return result;
-    } // load_balancer_file_readdir
+    } // load_balanced_file_readdir
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX rename
-    irods::error load_balancer_file_rename(
+    irods::error load_balanced_file_rename(
         irods::resource_plugin_context& _ctx,
         const char*                         _new_file_name ) {
         irods::error result = SUCCESS();
@@ -480,8 +434,8 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the child resc to call
         irods::resource_ptr resc;
-        irods::error err = load_balancer_get_resc_for_call< irods::file_object >( _ctx, resc );
-        if ( ( result = ASSERT_PASS( err, "Failed to select load_balancer resource." ) ).ok() ) {
+        irods::error err = load_balanced_get_resc_for_call< irods::file_object >( _ctx, resc );
+        if ( ( result = ASSERT_PASS( err, "Failed to select load_balanced resource." ) ).ok() ) {
 
             // =-=-=-=-=-=-=-
             // call rename on the child
@@ -490,19 +444,19 @@ extern "C" {
         }
 
         return result;
-    } // load_balancer_file_rename
+    } // load_balanced_file_rename
 
     /// =-=-=-=-=-=-=-
     /// @brief interface to determine free space on a device given a path
-    irods::error load_balancer_file_getfs_freespace(
+    irods::error load_balanced_file_getfs_freespace(
         irods::resource_plugin_context& _ctx ) {
         irods::error result = SUCCESS();
 
         // =-=-=-=-=-=-=-
         // get the child resc to call
         irods::resource_ptr resc;
-        irods::error err = load_balancer_get_resc_for_call< irods::file_object >( _ctx, resc );
-        if ( ( result = ASSERT_PASS( err, "Failed selecting load_balancer resource." ) ).ok() ) {
+        irods::error err = load_balanced_get_resc_for_call< irods::file_object >( _ctx, resc );
+        if ( ( result = ASSERT_PASS( err, "Failed selecting load_balanced resource." ) ).ok() ) {
 
             // =-=-=-=-=-=-=-
             // call freespace on the child
@@ -511,12 +465,12 @@ extern "C" {
         }
 
         return result;
-    } // load_balancer_file_getfs_freespace
+    } // load_balanced_file_getfs_freespace
 
     /// =-=-=-=-=-=-=-
     /// @brief This routine copys data from the archive resource to the cache resource
     ///        in a compound resource composition
-    irods::error load_balancer_file_stage_to_cache(
+    irods::error load_balanced_file_stage_to_cache(
         irods::resource_plugin_context& _ctx,
         const char*                         _cache_file_name ) {
         irods::error result = SUCCESS();
@@ -524,8 +478,8 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the child resc to call
         irods::resource_ptr resc;
-        irods::error err = load_balancer_get_resc_for_call< irods::file_object >( _ctx, resc );
-        if ( ( result = ASSERT_PASS( err, "Failed to select load_balancer resource." ) ).ok() ) {
+        irods::error err = load_balanced_get_resc_for_call< irods::file_object >( _ctx, resc );
+        if ( ( result = ASSERT_PASS( err, "Failed to select load_balanced resource." ) ).ok() ) {
             // =-=-=-=-=-=-=-
             // call stage on the child
             err = resc->call< const char* >( _ctx.comm(), irods::RESOURCE_OP_STAGETOCACHE, _ctx.fco(), _cache_file_name );
@@ -533,13 +487,13 @@ extern "C" {
         }
 
         return result;
-    } // load_balancer_file_stage_to_cache
+    } // load_balanced_file_stage_to_cache
 
     /// =-=-=-=-=-=-=-
     /// @brief This routine is for testing the TEST_STAGE_FILE_TYPE.
     ///        Just copy the file from cacheFilename to filename. optionalInfo info
     ///        is not used.
-    irods::error load_balancer_file_sync_to_arch(
+    irods::error load_balanced_file_sync_to_arch(
         irods::resource_plugin_context& _ctx,
         const char*                         _cache_file_name ) {
         irods::error result = SUCCESS();
@@ -547,8 +501,8 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the child resc to call
         irods::resource_ptr resc;
-        irods::error err = load_balancer_get_resc_for_call< irods::file_object >( _ctx, resc );
-        if ( ( result = ASSERT_PASS( err, "Failed selecting load_balancer resource." ) ).ok() ) {
+        irods::error err = load_balanced_get_resc_for_call< irods::file_object >( _ctx, resc );
+        if ( ( result = ASSERT_PASS( err, "Failed selecting load_balanced resource." ) ).ok() ) {
 
             // =-=-=-=-=-=-=-
             // call synctoarch on the child
@@ -557,19 +511,19 @@ extern "C" {
         }
 
         return result;
-    } // load_balancer_file_sync_to_arch
+    } // load_balanced_file_sync_to_arch
 
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file registration
-    irods::error load_balancer_file_registered(
+    irods::error load_balanced_file_registered(
         irods::resource_plugin_context& _ctx ) {
         irods::error result = SUCCESS();
 
         // =-=-=-=-=-=-=-
         // get the child resc to call
         irods::resource_ptr resc;
-        irods::error err = load_balancer_get_resc_for_call< irods::file_object >( _ctx, resc );
-        if ( ( result = ASSERT_PASS( err, "Failed selecting load_balancer resource." ) ).ok() ) {
+        irods::error err = load_balanced_get_resc_for_call< irods::file_object >( _ctx, resc );
+        if ( ( result = ASSERT_PASS( err, "Failed selecting load_balanced resource." ) ).ok() ) {
 
             // =-=-=-=-=-=-=-
             // call rename on the child
@@ -578,19 +532,19 @@ extern "C" {
         }
 
         return result;
-    } // load_balancer_file_registered
+    } // load_balanced_file_registered
 
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file unregistration
-    irods::error load_balancer_file_unregistered(
+    irods::error load_balanced_file_unregistered(
         irods::resource_plugin_context& _ctx ) {
         irods::error result = SUCCESS();
 
         // =-=-=-=-=-=-=-
         // get the child resc to call
         irods::resource_ptr resc;
-        irods::error err = load_balancer_get_resc_for_call< irods::file_object >( _ctx, resc );
-        if ( ( result = ASSERT_PASS( err, "Failed selecting load_balancer resource." ) ).ok() ) {
+        irods::error err = load_balanced_get_resc_for_call< irods::file_object >( _ctx, resc );
+        if ( ( result = ASSERT_PASS( err, "Failed selecting load_balanced resource." ) ).ok() ) {
 
             // =-=-=-=-=-=-=-
             // call rename on the child
@@ -599,19 +553,19 @@ extern "C" {
         }
 
         return result;
-    } // load_balancer_file_unregistered
+    } // load_balanced_file_unregistered
 
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file modification
-    irods::error load_balancer_file_modified(
+    irods::error load_balanced_file_modified(
         irods::resource_plugin_context& _ctx ) {
         irods::error result = SUCCESS();
 
         // =-=-=-=-=-=-=-
         // get the child resc to call
         irods::resource_ptr resc;
-        irods::error err = load_balancer_get_resc_for_call< irods::file_object >( _ctx, resc );
-        if ( ( result = ASSERT_PASS( err, "Failed selecting load_balancer resource." ) ).ok() ) {
+        irods::error err = load_balanced_get_resc_for_call< irods::file_object >( _ctx, resc );
+        if ( ( result = ASSERT_PASS( err, "Failed selecting load_balanced resource." ) ).ok() ) {
 
             // =-=-=-=-=-=-=-
             // call rename on the child
@@ -620,11 +574,11 @@ extern "C" {
         }
 
         return result;
-    } // load_balancer_file_modified
+    } // load_balanced_file_modified
 
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify a resource of an operation
-    irods::error load_balancer_file_notify(
+    irods::error load_balanced_file_notify(
         irods::resource_plugin_context& _ctx,
         const std::string*               _opr ) {
         irods::error result = SUCCESS();
@@ -632,8 +586,8 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the child resc to call
         irods::resource_ptr resc;
-        irods::error err = load_balancer_get_resc_for_call< irods::file_object >( _ctx, resc );
-        if ( ( result = ASSERT_PASS( err, "Failed selecting load_balancer resource." ) ).ok() ) {
+        irods::error err = load_balanced_get_resc_for_call< irods::file_object >( _ctx, resc );
+        if ( ( result = ASSERT_PASS( err, "Failed selecting load_balanced resource." ) ).ok() ) {
 
             // =-=-=-=-=-=-=-
             // call rename on the child
@@ -643,7 +597,7 @@ extern "C" {
 
         return result;
 
-    } // load_balancer_file_notify
+    } // load_balanced_file_notify
 
     /// =-=-=-=-=-=-=-
     /// @brief get the loads, times and names from the resource monitoring table
@@ -715,7 +669,7 @@ extern "C" {
 
     /// =-=-=-=-=-=-=-
     /// @brief
-    irods::error load_balancer_redirect_for_create_operation(
+    irods::error load_balanced_redirect_for_create_operation(
         irods::resource_plugin_context& _ctx,
         const std::string*              _opr,
         const std::string*              _curr_host,
@@ -807,7 +761,7 @@ extern "C" {
         parser.str( hier );
         rodsLog(
             LOG_DEBUG1,
-            "load_balancer node - hier : [%s], vote %f",
+            "load_balanced node - hier : [%s], vote %f",
             hier.c_str(),
             vote );
         if ( !err.ok() ) {
@@ -821,11 +775,11 @@ extern "C" {
 
         return SUCCESS();
 
-    } // load_balancer_redirect_for_create_operation
+    } // load_balanced_redirect_for_create_operation
 
     /// =-=-=-=-=-=-=-
     /// @brief
-    irods::error load_balancer_redirect_for_open_operation(
+    irods::error load_balanced_redirect_for_open_operation(
         irods::resource_plugin_context& _ctx,
         const std::string*              _opr,
         const std::string*              _curr_host,
@@ -866,7 +820,7 @@ extern "C" {
                                    &vote );
             std::string hier;
             parser.str( hier );
-            rodsLog( LOG_DEBUG1, "load_balancer node - hier : [%s], vote %f", hier.c_str(), vote );
+            rodsLog( LOG_DEBUG1, "load_balanced node - hier : [%s], vote %f", hier.c_str(), vote );
             if ( !err.ok() ) {
                 irods::log( PASS( err ) );
             }
@@ -891,13 +845,13 @@ extern "C" {
             return ERROR( -1, "no valid data object found to open" );
         }
 
-    } // load_balancer_redirect_for_open_operation
+    } // load_balanced_redirect_for_open_operation
 
 
     /// =-=-=-=-=-=-=-
     /// @brief used to allow the resource to determine which host
     ///        should provide the requested operation
-    irods::error load_balancer_redirect(
+    irods::error load_balanced_redirect(
         irods::resource_plugin_context& _ctx,
         const std::string*              _opr,
         const std::string*              _curr_host,
@@ -907,7 +861,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check incoming parameters
-        irods::error err = load_balancer_check_params< irods::file_object >( _ctx );
+        irods::error err = load_balanced_check_params< irods::file_object >( _ctx );
         if ( ( result = ASSERT_PASS( err, "Invalid resource context." ) ).ok() ) {
             if ( ( result = ASSERT_ERROR( _opr && _curr_host && _out_parser && _out_vote, SYS_INVALID_INPUT_PARAM,
                                           "Invalid parameters." ) ).ok() ) {
@@ -931,7 +885,7 @@ extern "C" {
                     if ( irods::OPEN_OPERATION   == ( *_opr )  ||
                             irods::WRITE_OPERATION  == ( *_opr ) ) {
                         std::string err_msg = "failed in resolve hierarchy for [" + ( *_opr ) + "]";
-                        err = load_balancer_redirect_for_open_operation( _ctx, _opr, _curr_host, _out_parser, _out_vote );
+                        err = load_balanced_redirect_for_open_operation( _ctx, _opr, _curr_host, _out_parser, _out_vote );
                         result = ASSERT_PASS( err, err_msg );
 
                     }
@@ -941,7 +895,7 @@ extern "C" {
                         // get the next_child resource for create
                         irods::resource_ptr resc;
                         std::string err_msg = "failed in resolve hierarchy for [" + ( *_opr ) + "]";
-                        err = load_balancer_redirect_for_create_operation( _ctx, _opr, _curr_host, _out_parser, _out_vote );
+                        err = load_balanced_redirect_for_create_operation( _ctx, _opr, _curr_host, _out_parser, _out_vote );
                         result = ASSERT_PASS( err, err_msg );
                     }
                     else {
@@ -956,11 +910,11 @@ extern "C" {
         }
 
         return result;
-    } // load_balancer_redirect
+    } // load_balanced_redirect
 
     // =-=-=-=-=-=-=-
-    // load_balancer_file_rebalance - code which would rebalance the subtree
-    irods::error load_balancer_file_rebalance(
+    // load_balanced_file_rebalance - code which would rebalance the subtree
+    irods::error load_balanced_file_rebalance(
         irods::resource_plugin_context& _ctx ) {
         // =-=-=-=-=-=-=-
         // forward request for rebalance to children
@@ -975,16 +929,16 @@ extern "C" {
 
         return result;
 
-    } // load_balancer_file_rebalancec
+    } // load_balanced_file_rebalancec
 
     // =-=-=-=-=-=-=-
     // 3. create derived class to handle unix file system resources
     //    necessary to do custom parsing of the context string to place
     //    any useful values into the property map for reference in later
     //    operations.  semicolon is the preferred delimiter
-    class load_balancer_resource : public irods::resource {
+    class load_balanced_resource : public irods::resource {
     public:
-        load_balancer_resource(
+        load_balanced_resource(
             const std::string& _inst_name,
             const std::string& _context ) :
             irods::resource( _inst_name, _context ) {
@@ -1005,7 +959,7 @@ extern "C" {
                     DEFER_POLICY_LOCALHOST );
                 rodsLog(
                     LOG_DEBUG,
-                    "load_balancer_resource :: using localhost policy, none specificed" );
+                    "load_balanced_resource :: using localhost policy, none specificed" );
             }
 
         }
@@ -1036,36 +990,36 @@ extern "C" {
                                      const std::string& _context ) {
         // =-=-=-=-=-=-=-
         // 4a. create unixfilesystem_resource
-        load_balancer_resource* resc = new load_balancer_resource( _inst_name, _context );
+        load_balanced_resource* resc = new load_balanced_resource( _inst_name, _context );
 
         // =-=-=-=-=-=-=-
         // 4b. map function names to operations.  this map will be used to load
         //     the symbols from the shared object in the delay_load stage of
         //     plugin loading.
-        resc->add_operation( irods::RESOURCE_OP_CREATE,       "load_balancer_file_create" );
-        resc->add_operation( irods::RESOURCE_OP_OPEN,         "load_balancer_file_open" );
-        resc->add_operation( irods::RESOURCE_OP_READ,         "load_balancer_file_read" );
-        resc->add_operation( irods::RESOURCE_OP_WRITE,        "load_balancer_file_write" );
-        resc->add_operation( irods::RESOURCE_OP_CLOSE,        "load_balancer_file_close" );
-        resc->add_operation( irods::RESOURCE_OP_UNLINK,       "load_balancer_file_unlink" );
-        resc->add_operation( irods::RESOURCE_OP_STAT,         "load_balancer_file_stat" );
-        resc->add_operation( irods::RESOURCE_OP_MKDIR,        "load_balancer_file_mkdir" );
-        resc->add_operation( irods::RESOURCE_OP_OPENDIR,      "load_balancer_file_opendir" );
-        resc->add_operation( irods::RESOURCE_OP_READDIR,      "load_balancer_file_readdir" );
-        resc->add_operation( irods::RESOURCE_OP_RENAME,       "load_balancer_file_rename" );
-        resc->add_operation( irods::RESOURCE_OP_FREESPACE,    "load_balancer_file_getfs_freespace" );
-        resc->add_operation( irods::RESOURCE_OP_LSEEK,        "load_balancer_file_lseek" );
-        resc->add_operation( irods::RESOURCE_OP_RMDIR,        "load_balancer_file_rmdir" );
-        resc->add_operation( irods::RESOURCE_OP_CLOSEDIR,     "load_balancer_file_closedir" );
-        resc->add_operation( irods::RESOURCE_OP_STAGETOCACHE, "load_balancer_file_stage_to_cache" );
-        resc->add_operation( irods::RESOURCE_OP_SYNCTOARCH,   "load_balancer_file_sync_to_arch" );
-        resc->add_operation( irods::RESOURCE_OP_REGISTERED,   "load_balancer_file_registered" );
-        resc->add_operation( irods::RESOURCE_OP_UNREGISTERED, "load_balancer_file_unregistered" );
-        resc->add_operation( irods::RESOURCE_OP_MODIFIED,     "load_balancer_file_modified" );
-        resc->add_operation( irods::RESOURCE_OP_NOTIFY,       "load_balancer_file_notify" );
+        resc->add_operation( irods::RESOURCE_OP_CREATE,       "load_balanced_file_create" );
+        resc->add_operation( irods::RESOURCE_OP_OPEN,         "load_balanced_file_open" );
+        resc->add_operation( irods::RESOURCE_OP_READ,         "load_balanced_file_read" );
+        resc->add_operation( irods::RESOURCE_OP_WRITE,        "load_balanced_file_write" );
+        resc->add_operation( irods::RESOURCE_OP_CLOSE,        "load_balanced_file_close" );
+        resc->add_operation( irods::RESOURCE_OP_UNLINK,       "load_balanced_file_unlink" );
+        resc->add_operation( irods::RESOURCE_OP_STAT,         "load_balanced_file_stat" );
+        resc->add_operation( irods::RESOURCE_OP_MKDIR,        "load_balanced_file_mkdir" );
+        resc->add_operation( irods::RESOURCE_OP_OPENDIR,      "load_balanced_file_opendir" );
+        resc->add_operation( irods::RESOURCE_OP_READDIR,      "load_balanced_file_readdir" );
+        resc->add_operation( irods::RESOURCE_OP_RENAME,       "load_balanced_file_rename" );
+        resc->add_operation( irods::RESOURCE_OP_FREESPACE,    "load_balanced_file_getfs_freespace" );
+        resc->add_operation( irods::RESOURCE_OP_LSEEK,        "load_balanced_file_lseek" );
+        resc->add_operation( irods::RESOURCE_OP_RMDIR,        "load_balanced_file_rmdir" );
+        resc->add_operation( irods::RESOURCE_OP_CLOSEDIR,     "load_balanced_file_closedir" );
+        resc->add_operation( irods::RESOURCE_OP_STAGETOCACHE, "load_balanced_file_stage_to_cache" );
+        resc->add_operation( irods::RESOURCE_OP_SYNCTOARCH,   "load_balanced_file_sync_to_arch" );
+        resc->add_operation( irods::RESOURCE_OP_REGISTERED,   "load_balanced_file_registered" );
+        resc->add_operation( irods::RESOURCE_OP_UNREGISTERED, "load_balanced_file_unregistered" );
+        resc->add_operation( irods::RESOURCE_OP_MODIFIED,     "load_balanced_file_modified" );
+        resc->add_operation( irods::RESOURCE_OP_NOTIFY,       "load_balanced_file_notify" );
 
-        resc->add_operation( irods::RESOURCE_OP_RESOLVE_RESC_HIER,     "load_balancer_redirect" );
-        resc->add_operation( irods::RESOURCE_OP_REBALANCE,             "load_balancer_file_rebalance" );
+        resc->add_operation( irods::RESOURCE_OP_RESOLVE_RESC_HIER,     "load_balanced_redirect" );
+        resc->add_operation( irods::RESOURCE_OP_REBALANCE,             "load_balanced_file_rebalance" );
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code
