@@ -27,6 +27,7 @@
 #include "unbunAndRegPhyBunfile.hpp"
 #include "dataObjTrim.hpp" // JMC - backport 4550
 #include "dataObjLock.hpp" // JMC - backport 4609
+#include "miscServerFunct.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
@@ -1004,10 +1005,21 @@ dataObjCopy( rsComm_t * rsComm, int l1descInx ) {
         destRemoteFlag = FileDesc[destL3descInx].rodsServerHost->localFlag;
     }
 
-    if ( srcRemoteFlag != REMOTE_ZONE_HOST &&
-            destRemoteFlag != REMOTE_ZONE_HOST &&
-            FileDesc[srcL3descInx].rodsServerHost ==
-            FileDesc[destL3descInx].rodsServerHost ) {
+    if ( srcRemoteFlag == REMOTE_ZONE_HOST &&
+            destRemoteFlag == REMOTE_ZONE_HOST ) {
+        /* remote zone to remote zone copy. Have to do L1 level copy */
+        initDataOprInp( &dataCopyInp.dataOprInp, l1descInx, COPY_TO_REM_OPR );
+        L1desc[l1descInx].dataObjInp->numThreads = 0;
+        dataCopyInp.portalOprOut.l1descInx = l1descInx;
+        status = singleL1Copy( rsComm, &dataCopyInp );
+        if ( portalOprOut != NULL ) { free( portalOprOut ); }
+        clearKeyVal( &dataOprInp->condInput );
+        return ( status );
+    }
+    else if ( srcRemoteFlag != REMOTE_ZONE_HOST &&
+              destRemoteFlag != REMOTE_ZONE_HOST &&
+              FileDesc[srcL3descInx].rodsServerHost ==
+              FileDesc[destL3descInx].rodsServerHost ) {
         /* local zone same host copy */
         initDataOprInp( &dataCopyInp.dataOprInp, l1descInx, SAME_HOST_COPY_OPR );
         /* dataCopyInp.portalOprOut.numThreads is needed by rsDataCopy */

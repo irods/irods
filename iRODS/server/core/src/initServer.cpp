@@ -1961,6 +1961,14 @@ getAndConnRemoteZoneForCopy( rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
         return ( LOCAL_HOST );
     }
 
+    /* remote zone to different remote zone copy. Have to handle it
+     * locally because of proxy admin user privilege issue */
+    if ( srcIcatServerHost != destIcatServerHost ) {
+        return ( LOCAL_HOST );
+    }
+
+    /* from the same remote zone. do it in the remote zone */
+
     status = getAndConnRemoteZone( rsComm, destDataObjInp, rodsServerHost,
                                    REMOTE_CREATE );
 
