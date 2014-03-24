@@ -44,8 +44,8 @@
 #define RE_VARIABLEMAPSET_KW    "reVariableMapSet"
 
 /* Keywords for Kerberos initialization */
-#define KERBEROS_NAME_KW "KerberosName"
-
+#define KERBEROS_NAME_KW "KerberosServicePrincipal"
+#define KERBEROS_KEYTAB_KW "KerberosKeytab"
 
 /* definition for initialization state InitialState and IcatConnState */
 

@@ -237,7 +237,31 @@ namespace irods {
                 rodsLog( LOG_DEBUG, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
             } // KERBEROS_NAME_KW
 
+            key = strstr( buf, KERBEROS_KEYTAB_KW );
+            if ( key != NULL ) {
+                len = strlen( KERBEROS_KEYTAB_KW );
+                // Set property name and setting
+                prop_name.assign( KERBEROS_KEYTAB_KW );
+                prop_setting.assign( findNextTokenAndTerm( key + len ) );
+                // Update properties table
+                result = properties.set<std::string>( prop_name, prop_setting );
+                rodsLog( LOG_DEBUG, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
 
+
+                if ( true ) {
+                    std::stringstream msg;
+                    msg << "qqq - Setting environment variable: \"";
+                    msg << "KRB5_KTNAME";
+                    msg << "\" to value: \"";
+                    msg << prop_setting;
+                    msg << "\"";
+                    DEBUGMSG( msg.str() );
+                }
+
+                // Now set the appropriate kerberos environment variable
+                setenv( "KRB5_KTNAME", prop_setting.c_str(), 1 );
+
+            } // KERBEROS_KEYTAB_KW
 
             key = strstr( buf, DEFAULT_HASH_SCHEME_KW );
             if ( key != NULL ) {
