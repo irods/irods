@@ -95,7 +95,7 @@ else
     $PYTHONCMD $OPTS test_workflow_suite
     $PYTHONCMD $OPTS test_mso_suite
     $PYTHONCMD $OPTS test_resource_tree
-    $PYTHONCMD $OPTS test_load_balancer_suite
+    $PYTHONCMD $OPTS test_load_balanced_suite
     nosetests -v test_allrules.py
     if [ ! "$IRODSDEVTESTTOPO" == "true" ] ; then
         # run DICE developed perl-based devtest suite
