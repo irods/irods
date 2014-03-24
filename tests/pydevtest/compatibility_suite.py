@@ -10,6 +10,7 @@ from resource_suite import ResourceBase
 from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, getiCmdOutput
 import pydevtest_sessions as s
 import commands
+import psutil
 
 def touch(fname, times=None):
   with file(fname, 'a'):
@@ -56,8 +57,11 @@ class Test_CompatibilitySuite(unittest.TestCase, ResourceBase):
       assertiCmd(s.adminsession, "iput " + f)
       unlink(f)
     assertiCmd(s.adminsession, "icd ..")
-    assertiCmd(s.adminsession, "iphybun -N3 -RdemoResc testColl")
+    assertiCmd(s.adminsession, "iphybun -N3 -SdemoResc -RdemoResc testColl")
     coll_dir = getiCmdOutput(s.adminsession, "ils /tempZone/bundle/home/rods")[0].split('\n')[-2].lstrip(string.printable.translate(None, "/"))
     after = getiCmdOutput(s.adminsession, "ils " + coll_dir)
     after = after[0].split('\n');
     assert(len(after) == 2 + 3)
+    assertiCmd(s.adminsession, "irm -rf testColl" )
+
+
