@@ -875,7 +875,8 @@ dataObjOpenForRepl(
                                            //&dataObjInp->condInput, destRescName, srcRescName);
                                            &dataObjInp->condInput, dst_hier_str, src_hier_str );
 
-    if ( l1DataObjInp->numThreads > 0 &&
+    if ( ( l1DataObjInp->numThreads > 0 ||
+            l1DataObjInp->dataSize > MAX_SZ_FOR_SINGLE_BUF ) &&
             L1desc[destL1descInx].stageFlag == NO_STAGING ) {
         if ( updateFlag > 0 ) {
             status = dataOpen( rsComm, destL1descInx );
@@ -950,7 +951,8 @@ dataObjOpenForRepl(
         L1desc[srcL1descInx].purgeCacheFlag = 1;
     }
 
-    if ( l1DataObjInp->numThreads > 0 &&
+    if ( ( l1DataObjInp->numThreads > 0 ||
+            l1DataObjInp->dataSize > MAX_SZ_FOR_SINGLE_BUF ) &&
             L1desc[destL1descInx].stageFlag == NO_STAGING ) {
         openedDataObjInp_t dataObjCloseInp;
 

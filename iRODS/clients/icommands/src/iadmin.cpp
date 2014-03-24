@@ -1132,6 +1132,13 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         }
         return ( 0 );
     }
+    if ( strcmp( cmdToken[0], "modzonecollacl" ) == 0 ) {
+        generalAdmin( 0, "modify", "zonecollacl", cmdToken[1], cmdToken[2],
+                      cmdToken[3], "", "", "", "", "" );
+        return( 0 );
+    }
+
+
     if ( strcmp( cmdToken[0], "rmzone" ) == 0 ) {
         generalAdmin( 0, "rm", "zone", cmdToken[1], "",
                       "", "", "", "", "", "" );
@@ -1528,6 +1535,7 @@ void usageMain() {
         " rmchildfromresc Parent Child",
         " mkzone Name Type(remote) [Connection-info] [Comment] (make zone)",
         " modzone Name [ name | conn | comment ] newValue  (modify zone)",
+        " modzonecollacl null|read userOrGroup /remotezone (set strict-mode root ACLs)",
         " rmzone Name (remove zone)",
         " mkgroup Name (make group)",
         " rmgroup Name (remove group)",
@@ -1881,6 +1889,49 @@ usage( char *subOpt ) {
         "prompt for confirmation in this case.",
         ""
     };
+    char *modzonecollaclMsgs[] = {
+        " modzonecollacl null|read userOrGroup /remotezone (set strict-mode root ACLs)",
+        "Modify a remote zone's local collection for strict-mode access.",
+        " ",
+        "This is only needed if you are running with strict access control",
+        "enabled (see acAclPolicy in core.re) and you want users to be able to",
+        "see (via 'ils /' or other queries) the existing remote zones in the",
+        "root ('/') collection.",
+        " ",
+        "The problem only occurs at the '/' level because for zones there are",
+        "both local and remote collections for the zone. As with any query in",
+        "strict mode, when the user asks for information on a collection, the",
+        "ICAT-generated SQL adds checks to restrict results to data-objects or",
+        "sub-collections in that collection to which the user has read or",
+        "better access. The problem is that collections for the remote zones",
+        "(/zone) do not have ACLs set, even if ichmod is run try to give it",
+        "(e.g. read access to public) because ichmod (like ils, iget, iput,",
+        "etc) communicates to the appropriate zone based on the beginning part",
+        "of the collection name.",
+        " ",
+        "The following iquest command returns the local ACLs (tempZone is the",
+        "local zone and r3 is a remote zone):",
+        "  iquest -z tempZone \"select COLL_ACCESS_TYPE where COLL_NAME = '/r3'\" ",
+        "The '-z tempZone' is needed to have it connect locally instead of to the",
+        "remote r3 zone.  Normally there will be one row returned for the",
+        "owner.  With this command, others can be added.  Note that 'ils -A /r3'",
+        "will also check with the remote zone, so use the above iquest",
+        "command to see the local information.",
+        " ",
+        "The command syntax is similar to ichmod:",
+        "  null|read userOrGroup /remoteZone",
+        "Use null to remove ACLs and read access for another user or group.",
+        " ",
+        "For example, to allow all users to see the remote zones via 'ils /':",
+        "iadmin modzoneacl read public /r3",
+        " ",
+        "To remove it:",
+        "iadmin modzoneacl null public /r3",
+        " ",
+        "Access below this level is controlled at the remote zone.",
+        ""
+    };
+
 
     char *rmzoneMsgs[] = {
         " rmzone Name (remove zone)",
@@ -2076,7 +2127,7 @@ usage( char *subOpt ) {
                        "rmuser", "mkdir", "rmdir", "mkresc",
                        "modresc", "modrescdatapaths", "rmresc",
                        "addchildtoresc", "rmchildfromresc",
-                       "mkzone", "modzone", "rmzone",
+                       "mkzone", "modzone", "modzonecollacl", "rmzone",
                        "mkgroup", "rmgroup", "atg",
                        "rfg", "at", "rt", "spass", "dspass",
                        "pv", "ctime",
@@ -2093,7 +2144,7 @@ usage( char *subOpt ) {
                        rmuserMsgs, mkdirMsgs, rmdirMsgs, mkrescMsgs,
                        modrescMsgs, modrescDataPathsMsgs, rmrescMsgs,
                        addchildtorescMsgs, rmchildfromrescMsgs,
-                       mkzoneMsgs, modzoneMsgs, rmzoneMsgs,
+                       mkzoneMsgs, modzoneMsgs, modzonecollaclMsgs, rmzoneMsgs,
                        mkgroupMsgs, rmgroupMsgs, atgMsgs,
                        rfgMsgs, atMsgs, rtMsgs, spassMsgs,
                        dspassMsgs, pvMsgs, ctimeMsgs,

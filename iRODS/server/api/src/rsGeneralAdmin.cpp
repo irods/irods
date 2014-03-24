@@ -553,6 +553,11 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             }
             return ( status );
         }
+        if ( strcmp( generalAdminInp->arg1, "zonecollacl" ) == 0 ) {
+            status = chlModZoneCollAcl( rsComm, generalAdminInp->arg2,
+                                        generalAdminInp->arg3, generalAdminInp->arg4 );
+            return( status );
+        }
         if ( strcmp( generalAdminInp->arg1, "localzonename" ) == 0 ) {
             /* run the acRenameLocalZone rule */
             char *args[2];

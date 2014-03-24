@@ -93,7 +93,7 @@ main( int argc, char **argv ) {
         fprintf( stderr, "Unable to open envFile %s\n", envFile );
         exit( 5 );
     }
-    sprintf( buffer, "irodsCwd=%s\n", rodsPath.outPath );
+    snprintf( buffer, sizeof( buffer ), "irodsCwd=%s\n", rodsPath.outPath );
     len = strlen( buffer );
     i = write( fd, buffer, len );
     close( fd );

@@ -251,6 +251,14 @@ initCondForRepl( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
     if ( rodsArgs->rlock == True ) { // JMC - backport 4609
         addKeyVal( &dataObjInp->condInput, LOCK_TYPE_KW, READ_LOCK_TYPE );
     }
+    if ( rodsArgs->number == True ) {
+        if ( rodsArgs->numberValue == 0 ) {
+            dataObjInp->numThreads = NO_THREADING;
+        }
+        else {
+            dataObjInp->numThreads = rodsArgs->numberValue;
+        }
+    }
     if ( rodsArgs->wlock == True ) { // JMC - backport 4612
         rodsLog( LOG_ERROR,
                  "initCondForPut: --wlock not supported, changing it to --rlock" );

@@ -127,7 +127,7 @@ main( int argc, char **argv ) {
             modAccessControl.accessLevel = rescAccessLevel; /* indicate resource*/
             modAccessControl.path = argv[optind]; /* just use the plain name */
         }
-        if ( myRodsArgs.admin ) {  /* admin mode, add indicator */
+        if ( myRodsArgs.admin && i == 0 ) {  /* admin mode, add indicator */
             strncpy( adminModeAccessLevel, MOD_ADMIN_MODE_PREFIX, LONG_NAME_LEN );
             strncat( adminModeAccessLevel, modAccessControl.accessLevel,
                      LONG_NAME_LEN - strlen( adminModeAccessLevel ) );
