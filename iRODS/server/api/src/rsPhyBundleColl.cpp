@@ -140,6 +140,12 @@ _rsPhyBundleColl( rsComm_t*                 rsComm,
     rstrcpy( collInp.collName, phyBundleCollInp->collection, MAX_NAME_LEN );
     collInp.flags = RECUR_QUERY_FG | VERY_LONG_METADATA_FG | NO_TRIM_REPL_FG;
 
+    char* srcRescName = getValByKey( &phyBundleCollInp->condInput, RESC_NAME_KW );
+    if ( srcRescName != NULL ) {
+        collInp.flags |= INCLUDE_CONDINPUT_IN_QUERY;
+        addKeyVal( &collInp.condInput, RESC_NAME_KW, srcRescName );
+    }
+
     int handleInx = rsOpenCollection( rsComm, &collInp );
 
     if ( handleInx < 0 ) {
@@ -188,11 +194,18 @@ _rsPhyBundleColl( rsComm_t*                 rsComm,
         maxSubFileCnt = MAX_SUB_FILE_CNT;
     }
 
+    rodsLong_t maxBunSize;
+    if ( getValByKey( &phyBundleCollInp->condInput, MAX_BUNDLE_SIZE_KW ) != NULL ) {
+        maxBunSize = atoi( getValByKey( &phyBundleCollInp->condInput, MAX_BUNDLE_SIZE_KW ) ) * OneGig;
+    }
+    else {
+        maxBunSize = MAX_BUNDLE_SIZE * OneGig;
+    }
+
     // =-=-=-=-=-=-=-
     char phyBunDir[MAX_NAME_LEN];
     createPhyBundleDir( rsComm, L1desc[l1descInx].dataObjInfo->filePath,
                         phyBunDir );
-
 
     curSubFileCond_t     curSubFileCond;
     bunReplCacheHeader_t bunReplCacheHeader;
@@ -216,8 +229,7 @@ _rsPhyBundleColl( rsComm_t*                 rsComm,
                       || strcmp( curSubFileCond.dataName, collEnt->dataName ) != 0 ) {
                 /* a new file, need to handle the old one */
                 if ( bunReplCacheHeader.numSubFiles >= maxSubFileCnt || // JMC - backport 4771
-                        bunReplCacheHeader.totSubFileSize + collEnt->dataSize >
-                        MAX_BUNDLE_SIZE * OneGig ) {
+                        bunReplCacheHeader.totSubFileSize + collEnt->dataSize > maxBunSize ) {
                     /* bundle is full */
                     status = bundleAndRegSubFiles( rsComm, l1descInx,
                                                    phyBunDir, phyBundleCollInp->collection,
@@ -314,6 +326,10 @@ _rsPhyBundleColl( rsComm_t*                 rsComm,
                  "_rsPhyBundleColl:bunAndRegSubFiles err for %s,stat=%d",
                  phyBundleCollInp->collection, status );
     }
+
+    clearKeyVal( &collInp.condInput );
+    rsCloseCollection( rsComm, &handleInx );
+
     if ( status >= 0 && savedStatus < 0 ) {
         return savedStatus;
     }
@@ -521,6 +537,7 @@ phyBundle( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *phyBunDir,
     int status = 0;
     char *dataType; // JMC - backport 4633
     int myOprType = oprType; // JMC - backport 4657
+
 
     dataType = dataObjInfo->dataType;
 

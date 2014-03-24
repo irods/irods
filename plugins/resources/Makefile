@@ -1,5 +1,5 @@
 BASEDIRS = \
-           load_balancer \
+           load_balanced \
            mso \
            mssofile \
            deferred \

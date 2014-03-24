@@ -1,6 +1,6 @@
-TARGET = libload_balancer.so
+TARGET = libload_balanced.so
 
-SRCS = libload_balancer.cpp
+SRCS = libload_balanced.cpp
 
 HEADERS = 
 

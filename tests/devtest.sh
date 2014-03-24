@@ -41,6 +41,11 @@ if [ "$1" == "ci" ] ; then
     IRODSDEVTESTCI="true"
 fi
 
+# check for topological testing parameter
+if [ "$1" == "topo" ] ; then
+    IRODSDEVTESTTOPO="true"
+fi
+
 # if running as a human
 if [ "$IRODSDEVTESTCI" != "true" ] ; then
     # human user, allows keyboard interrupt to clean up
@@ -48,7 +53,7 @@ if [ "$IRODSDEVTESTCI" != "true" ] ; then
 fi
 
 # pass any other parameters to the test framework
-if [ "$IRODSDEVTESTCI" == "true" ] ; then
+if [ "$IRODSDEVTESTCI" == "true" -o "$IRODSDEVTESTTOPO" == "true" ] ; then
     # trim the ci parameter
     shift
     PYTESTS=$@
@@ -84,11 +89,19 @@ fi
 if [ "$PYTESTS" != "" ] ; then
     $PYTHONCMD $OPTS $PYTESTS
 else
-    $PYTHONCMD $OPTS test_resource_types iadmin_suite catalog_suite test_workflow_suite test_mso_suite test_resource_tree test_load_balancer_suite
+    $PYTHONCMD $OPTS test_resource_types
+    $PYTHONCMD $OPTS iadmin_suite
+    $PYTHONCMD $OPTS catalog_suite
+    $PYTHONCMD $OPTS test_workflow_suite
+    $PYTHONCMD $OPTS test_mso_suite
+    $PYTHONCMD $OPTS test_resource_tree
+    $PYTHONCMD $OPTS test_load_balanced_suite
     nosetests -v test_allrules.py
-    # run DICE developed perl-based devtest suite
-    cd $IRODSROOT
-    $IRODSROOT/iRODS/irodsctl devtesty
+    if [ ! "$IRODSDEVTESTTOPO" == "true" ] ; then
+        # run DICE developed perl-based devtest suite
+        cd $IRODSROOT
+        $IRODSROOT/iRODS/irodsctl devtesty
+    fi
 fi
 
 # run authentication tests
