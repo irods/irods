@@ -705,7 +705,7 @@ Any resource node can be a coordinating resource and/or a storage resource.  How
 This powerful tree metaphor is best illustrated with an actual example.  You can now use `ilsresc --tree` to visualize the tree structure of a grid.
 
 .. figure:: ./iRODS/images/treeview.png
-   :height: 3.8 in
+   :height: 3.6 in
 
 Virtualization
 --------------
