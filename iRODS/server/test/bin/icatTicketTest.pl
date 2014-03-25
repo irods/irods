@@ -72,7 +72,7 @@ $Past_Date="1970-01-01";	# Expired ticket
 my $hostname = hostname();
 my $domain = hostdomain();
 chomp(my $hostname_d = `hostname -d`);
-if (index($hostname_d, $domain) >= 0) {
+if (index($hostname_d, $domain) >= 0 and index($hostname . "." . $domain, $hostname_d) < 0) {
 	$domain = $hostname_d;
 }
 $This_Host = $hostname . "." . $domain;
