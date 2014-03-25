@@ -1172,11 +1172,6 @@ The `server.config` must be updated to include::
  KerberosServicePrincipal=irodsserver/serverhost.example.org@EXAMPLE.ORG
  KerberosKeytab=/var/lib/irods/irods.keytab
 
-And then the iRODS server must be restarted::
-
- irods@hostname:~/ $ irodsctl restart
-
-
 On the client side, the user's 'irodsAuthScheme' must be set to 'KRB'.  This can be done via environment variable::
 
  irods@hostname:~/ $ irodsAuthScheme=KRB
