@@ -356,13 +356,80 @@ Upgrading from E-iRODS to iRODS 4.0+ is not currently supported with an automati
 
 If you are in need of upgrading from a production E-iRODS 3.0.1 installation, please contact the iRODS team at RENCI for free support.
 
-------------------------
-Migration from iRODS 3.x
-------------------------
+From iRODS 3.x
+--------------
 
-Support for migrating from iRODS 3.x is planned, but automated scripts and documentation have not yet been completed.
+Upgrading from iRODS 3.x to iRODS 4.0+ is not supported with an automatic script.  There is no good way to automate setting the new configuration options (resource hierarchies, server.config, etc.) based solely on the state of a 3.x system.  In addition, with some of the new functionality, a system administrator may choose to implement some existing policies in a different manner with 4.0+.
 
-This section will be updated when support is included and tested.
+For these reasons, the following manual steps should be carefully studied and understood before beginning the upgrade process.
+
+#. Port any custom development to plugins: Microservices, Resources, Authentication
+#. Make a backup of the ICAT database & configuration files: core.re, core.fnm, core.dvm, etc.
+#. Declare a Maintenance Window
+#. Remove resources from resource groups
+#. Remove resource groups
+#. Shutdown 3.x server(s)
+#. Patch database with provided script
+#. Install iRODS 4.0+ packages: irods-icat and a database plugin package (e.g. irods-database-plugin-postgres)
+#. Run the `packaging/setup_database.sh` script
+#. Install and setup resource servers
+#. Update 4.0+ configuration files given previous 3.x configuration
+#. Rebuild Resource Hierarchies from previous Resource Group configurations (iadmin)
+#. Install Custom Plugins (Microservice & Resources)
+#. Conformance Testing
+#. Sunset 3.x server(s)
+#. Close Maintenance Window
+
+
+---------------------
+Server Authentication
+---------------------
+
+Within A Zone
+-------------
+
+When a client connects to a resource server and then authenticates, the server connects to the iCAT server to perform the authentication. To make this more secure, you can configure some Server Identifiers (SIDs) to cause the iRODS system to authenticate the servers themselves. These SID passwords should be unique and arbitrary strings, one for your whole zone::
+
+ LocalZoneSID  SomeChosenIDString
+
+This allows the resource server to verify the identity of the iCAT server beyond just relying on DNS. If you do not set up the LocalZoneSID, the log on the resource server will contain warnings like these::
+
+ Warning, cannot authenticate remote server, serverResponse field is empty
+
+However, the authentication will be allowed.
+
+For 3.3.1+, if LocalZoneSID is defined, the authentication will not be allowed if the remote server fails to authenticate itself. In 3.3.1+, you will get the following if LocalZoneSID is not set::
+
+ Warning, cannot authenticate the remote server, no RemoteZoneSID defined in server.config
+
+Mutual authentication between servers is always on.  Note that this applies to iRODS passwords and PAM, and some other interactions, but not GSI or Kerberos. 
+
+For GSI, users can set the `irodsServerDn` variable to do mutual authentication.
+
+Between Two Zones
+-----------------
+
+When a user from a remote zone connects to the local zone, the iRODS server will check with the iCAT in the user's home zone to authenticate the user (confirm their password). This works well, as no user passwords have to be exchanged between zones and it is simple and easy to administer. But it is secure only if it is actually connecting to the correct host computer. And that relies on DNS which can be compromised.
+
+To make this more secure, you can configure some Server Identifiers (SIDs) to cause the iRODS system to authenticate the servers, via something like the iRODS password mechanism (using an MD5 hash). These SID passwords should be unique and arbitrary strings, one for each zone.
+
+To configure this, add items to the `/etc/irods/server.config` file. 'LocalZoneSID' is for the local zone SID, for example::
+
+ LocalZoneSID  qwerty123
+
+And one or more 'RemoteZoneSID' items for the remote zones, for example::
+
+ RemoteZoneSID <ZoneName>-<LocalZoneSID> ( e.g tempZone-qwerty123 )
+
+When tempZone users connect, the system will then confirm that tempZone's LocalZoneSID is 'qwerty123' (via a hash, no password on the network).
+
+Mutual authentication between servers is always on across Federations.
+
+If you want, you can also scramble the SIDs in the server.config file. Use the 'iadmin spass' to scramble and enter the key used in the server.config file:
+
+  SIDKey 456
+
+This makes it a little more secure by keeping plain text passwords (although not encrypted) out of text files on your host.
 
 -------------------------
 Federation with iRODS 3.x
@@ -373,6 +440,13 @@ iRODS 4.0+ has made some additions to the database tables for the resources (r_r
 In order to support commands such as ``ils`` and ``ilsresc`` across a 3.x to 4.0+ federation, iRODS 4.0+ will detect the cross zone query and subsequently strip out any requests for columns which do not exist in the iRODS 3.x table structure in order to allow the query to succeed.
 
 There are currently no known issues with Federation, but this has not yet been comprehensively tested.
+
+.irodsEnv for Service Account
+-----------------------------
+
+irodsClientServerNegotiation needs to be commented out (turned off) as 3.x does not support this feature.
+
+The effect of turning this negotiation off is a lack of SSL encryption when talking with a 3.x Zone.  All clients that connect to this 4.0+ Zone will also need to disable the Advanced Negotiation in their own '.irodsEnv' files.
 
 ----------
 Backing Up
@@ -402,17 +476,18 @@ The core is designed to be as immutable as possible and serve as a bus for handl
 
 The planned plugin interfaces and their status are listed here:
 
- ========================   ==========    ========
- Plugin Interface           Status        Since
- ========================   ==========    ========
- Pluggable Microservices    Complete      3.0b2
- Composable Resources       Complete      3.0b3
- Pluggable Authentication   Complete      3.0.1b1
- Pluggable Network          Complete      3.0.1b1
- Pluggable Database         Complete      4.0.0b1
- Pluggable RPC API          Complete      4.0.0b2
- Pluggable Rule Engine      Requested
- ========================   ==========    ========
+ =============================    ==========    ========
+ Plugin Interface                 Status        Since
+ =============================    ==========    ========
+ Pluggable Microservices          Complete      3.0b2
+ Composable Resources             Complete      3.0b3
+ Pluggable Authentication         Complete      3.0.1b1
+ Pluggable Network                Complete      3.0.1b1
+ Pluggable Database               Complete      4.0.0b1
+ Pluggable RPC API                Complete      4.0.0b2
+ Pluggable First Class Objects    Requested
+ Pluggable Rule Engine            Requested
+ =============================    ==========    ========
 
 Dynamic Policy Enforcement Points
 ---------------------------------
@@ -697,6 +772,15 @@ The deferred resource is designed to be as simple as possible.  A deferred resou
 
 A deferred resource provides no implicit data management policy.  It defers to its children with respect to routing both puts and gets.  However they vote, the deferred node decides.
 
+Load Balanced
+*************
+
+The load balanced resource provides equivalent functionality as the "doLoad" option for the `msiSetRescSortScheme` microservice.  This resource plugin will query the r_load_digest table from the iCAT and select the appropriate child resource based on the load values returned from the table.
+
+The r_load_digest table is part of the Resource Monitoring System and has been incorporated into iRODS 4.x.
+
+The load balanced resource has an effect on writes only (it has no effect on reads).
+
 Random
 ******
 
@@ -732,7 +816,6 @@ Expected
 
 A few other coordinating resource types have been brainstormed but are not functional at this time:
 
- - Load Balanced (expected)
  - Storage Balanced (%-full) (expected)
  - Storage Balanced (bytes) (expected)
  - Tiered (expected)
@@ -773,7 +856,7 @@ When creating a "univmss" resource, the context string provides the location of 
 
 Example::
 
- irods@hostname:~$ iadmin mkresc myArchiveResc univmss HOSTNAME:/full/path/to/Vault univMSSInterface.sh
+ irods@hostname:~/ $ iadmin mkresc myArchiveResc univmss HOSTNAME:/full/path/to/Vault univMSSInterface.sh
 
 
 Expected
@@ -783,9 +866,9 @@ A few other storage resource types have been brainstormed but are not included a
 
  - S3 (1.0b1 released and available separately)
  - WOS (1.0b1 released and available separately)
+ - directaccess (run as root) (1.0b1 released and available separately)
  - HPSS (expected)
  - HDFS (expected)
- - directaccess (run as root) (1.0b1 released and available separately)
 
 Managing Child Resources
 ------------------------
@@ -794,7 +877,7 @@ There are two new ``iadmin`` subcommands introduced with this feature.
 
 ``addchildtoresc``::
 
- irods@hostname:~$ iadmin h addchildtoresc
+ irods@hostname:~/ $ iadmin h addchildtoresc
   addchildtoresc Parent Child [ContextString] (add child to resource)
  Add a child resource to a parent resource.  This creates an 'edge'
  between two nodes in a resource tree.
@@ -806,7 +889,7 @@ There are two new ``iadmin`` subcommands introduced with this feature.
 
 ``rmchildfromresc``::
 
- irods@hostname:~$ iadmin h rmchildfromresc
+ irods@hostname:~/ $ iadmin h rmchildfromresc
   rmchildfromresc Parent Child (remove child from resource)
  Remove a child resource from a parent resource.  This removes an 'edge'
  between two nodes in a resource tree.
@@ -971,8 +1054,6 @@ Monitoring the delayed queue is important once your workflows and maintenance sc
 .. - queue management
 .. - file locking
 ..
-.. - PAM
-.. 
 .. ----------
 .. Monitoring
 .. ----------
@@ -985,7 +1066,145 @@ Monitoring the delayed queue is important once your workflows and maintenance sc
 Authentication
 --------------
 
-By default, iRODS uses a secure password system for user authentication.  The user passwords are scrambled and stored in the iCAT database.  Additionally, iRODS supports user authentication via PAM (Pluggable Authentication Modules), which in turn can be configured to support Kerberos and LDAP authentication systems.  PAM and SSL have been configured 'on' out of the box with iRODS, but there is still some setup required to configure an installation to communicate with your local external authentication server of choice.
+By default, iRODS uses a secure password system for user authentication.  The user passwords are scrambled and stored in the iCAT database.  Additionally, iRODS supports user authentication via PAM (Pluggable Authentication Modules), which can be configured to support many things, including the LDAP authentication system.  PAM and SSL have been configured 'available' out of the box with iRODS, but there is still some setup required to configure an installation to communicate with your local external authentication server of choice.
+
+The iRODS administrator can 'force' a particular auth scheme for a rodsuser by 'blanking' the native password for the rodsuser.  There is currently no way to signal to a particular login attempt that it is using an incorrect scheme (`GitHub Issue #2005`_).
+
+.. _GitHub Issue #2005: https://github.com/irods/irods/issues/2005
+
+GSI
+---
+
+Grid Security Infrastructure (GSI) setup in iRODS 4.0+ has been greatly simplified.  The functionality itself is provided by the `GSI auth plugin`_.
+
+.. _GSI auth plugin: https://github.com/irods/irods_auth_plugin_gsi
+
+GSI Configuration
+*****************
+
+Configuration of GSI is out of scope for this document, but consists of the following three main steps:
+
+#. Install GSI (most easily done via package manager)
+#. Confirm the irods service account has a certificate in good standing (signed)
+#. Confirm the local system account for client "newuser" account has a certificate in good standing (signed)
+
+iRODS Configuration
+*******************
+
+Configuring iRODS to communicate via GSI requires a few simple steps.
+
+First, if GSI is being configured for a new user, it must be created::
+
+ iadmin mkuser newuser rodsuser
+
+Then that user must be configured so its Distiguished Name (DN) matches its certificate::
+
+ iadmin aua newuser '/DC=org/DC=example/O=Example/OU=People/CN=New User/CN=UID:drexample'
+
+NOTE: The comma characters (,) in the Distiguished Name (DN) must be replaced with forward slash characters (/).
+
+On the client side, the user's 'irodsAuthScheme' must be set to 'GSI'.  This can be done via environment variable::
+
+ irods@hostname:~/ $ irodsAuthScheme=GSI
+ irods@hostname:~/ $ export irodsAuthScheme
+
+Or, preferably, in the user's `.irodsEnv` file::
+
+ irodsAuthScheme 'GSI'
+
+Then, to have a temporary proxy certificate issued and authenticate::
+
+ grid-proxy-init
+
+This will prompt for the user's GSI password.  If the user is successfully authenticated, temporary certificates are issued and setup in the user's environment.  The certificates are good, by default, for 24 hours.
+
+In addition, if users want to authenticate the server, they can set 'irodsServerDn' in their user environment. This will cause the system to do mutual authentication instead of just authenticating the client user to the server.
+
+
+Kerberos
+--------
+
+Kerberos setup in iRODS 4.0+ has been greatly simplified.  The functionality itself is provided by the `Kerberos auth plugin`_.
+
+.. _Kerberos auth plugin: https://github.com/irods/irods_auth_plugin_kerberos
+
+Kerberos Configuration
+**********************
+
+Configuration of Kerberos is out of scope for this document, but consists of the following four main steps:
+
+#. Set up Kerberos (Key Distribution Center (KDC) and Kerberos Admin Server)
+#. Confirm the irods service account has a service principal in KDC (with the hostname of the rodsServer) (e.g. irodsserver/serverhost.example.org@EXAMPLE.ORG)
+#. Confirm the local system account for client "newuser" account has principal in KDC (e.g. newuser@EXAMPLE.ORG)
+#. Create an appropriate keytab entry (adding to an existing file or creating a new one)
+
+A new keytab file can be created with the following command::
+
+ kadmin ktadd -k /var/lib/irods/irods.keytab irodsserver/serverhost.example.org@EXAMPLE.ORG
+
+Limitations
+###########
+
+The iRODS administrator will see two limitations when using GSI authentication:
+
+#. The 'clientUserName' environment variable will fail (the admin cannot alias as another user)
+#. The ``iadmin moduser password`` will fail (cannot update the user's password)
+
+The workaround is to use iRODS native password authentication when using these.
+
+``ipasswd`` for rodsusers will also fail, but it is not an issue as it would be trying to update their (unused) iRODS native password.  They should not be updating their GSI passwords via iCommands.
+
+iRODS Configuration
+*******************
+
+Configuring iRODS to communicate via Kerberos requires a few simple steps.
+
+First, if Kerberos is being configured for a new user, it must be created::
+
+ iadmin mkuser newuser rodsuser
+
+Then that user must be configured so its principal matches the KDC::
+
+ iadmin aua newuser newuser@EXAMPLE.ORG
+
+The `server.config` must be updated to include::
+
+ KerberosServicePrincipal=irodsserver/serverhost.example.org@EXAMPLE.ORG
+ KerberosKeytab=/var/lib/irods/irods.keytab
+
+And then the iRODS server must be restarted::
+
+ irods@hostname:~/ $ irodsctl restart
+
+
+On the client side, the user's 'irodsAuthScheme' must be set to 'KRB'.  This can be done via environment variable::
+
+ irods@hostname:~/ $ irodsAuthScheme=KRB
+ irods@hostname:~/ $ export irodsAuthScheme
+
+Or, preferably, in the user's `.irodsEnv` file::
+ 
+ irodsAuthScheme 'KRB'
+
+Then, to initialize the Kerberos session ticket and authenticate::
+
+ kinit
+
+
+Limitations
+###########
+
+The iRODS administrator will see two limitations when using Kerberos authentication:
+
+#. The 'clientUserName' environment variable will fail (the admin cannot alias as another user)
+#. The ``iadmin moduser password`` will fail (cannot update the user's password)
+
+The workaround is to use iRODS native password authentication when using these.
+
+``ipasswd`` for rodsusers will also fail, but it is not an issue as it would be trying to update their (unused) iRODS native password.  They should not be updating their Kerberos passwords via iCommands.
+
+
+
 
 PAM
 ---
@@ -1030,7 +1249,7 @@ Server SSL Setup
 Here are the basic steps to configure the server:
 
 Generate a new RSA key
-#######################
+######################
 
 Make sure it does not have a passphrase (i.e. do not use the -des, -des3 or -idea options to genrsa)::
 
@@ -1193,9 +1412,7 @@ The iRODS setting 'StrictACL' is configured on by default in iRODS 4.0+.  This i
 .. --------------
 .. Best Practices
 .. --------------
-.. - microservice objects (MSO)
 .. - tickets
-.. - realizable objects (remote database connection)
 .. - quota management
 
 -------------
@@ -1312,7 +1529,7 @@ API
     An Application Programming Interface (API) is a piece of software's set of defined programmatic interfaces to enable other software to communicate with it.  iRODS defines a client API and expects that clients connect and communicate with iRODS servers in this controlled manner.  iRODS has an API written in C, and another written in Java (Jargon). 
 
 Authentication Mechanisms
-    iRODS can employ various mechanisms to verify user identity and control access to Data Objects (iRODS files), Collections, etc.  These currently include the default iRODS secure password mechanism (challenge-response), Grid Security Infrastructure (GSI), and Operating System authentication (OSAuth).
+    iRODS can employ various mechanisms to verify user identity and control access to Data Objects (iRODS files), Collections, etc.  These currently include the default iRODS secure password mechanism (challenge-response), Grid Security Infrastructure (GSI), Kerberos, and Operating System authentication (OSAuth).
 
 Audit Trail
     List of all operations performed upon a Data Object, a Collection, a Resource, a User, or other iRODS entities.  When Auditing is enabled, significant events in the iRODS system (affecting the iCAT) are recorded.  Full activity reports can be compiled to verify important preservation and/or security policies have been enforced.
@@ -1336,7 +1553,7 @@ Federation
     Zone Federation occurs when two or more independent iRODS Zones are registered with one another.  Users from one Zone can authenticate through their home iRODS server and have access rights on a remote Zone and its Data Objects, Collections, and Metadata.
 
 Jargon
-    The Java API for iRODS.  Read more at https://www.irods.org/index.php/Jargon.
+    The Java API for iRODS.  Read more at https://github.com/DICE-UNC/jargon.
 
 iCAT
     The iCAT, or iRODS Metadata Catalog, stores descriptive state metadata about the Data Objects in iRODS Collections in a DBMS database (e.g. PostgreSQL, MySQL, Oracle). The iCAT can keep track of both system-level metadata and user-defined metadata.  There is one iCAT database per iRODS Zone.
@@ -1421,6 +1638,11 @@ History of Releases
 ==========   =========    ======================================================
 Date         Version      Description
 ==========   =========    ======================================================
+2014-03-25   4.0.0rc2     Second Release Candidate of Merged Codebase
+                            This is the second release candidate of the merged
+                            open source release from RENCI.  It includes support
+                            for MySQL and Oracle databases, GSI, Kerberos,
+                            NetCDF,direct access resources.
 2014-03-08   4.0.0rc1     First Release Candidate of Merged Codebase
                             This is the first release candidate of the merged
                             open source release from RENCI.  It includes support
