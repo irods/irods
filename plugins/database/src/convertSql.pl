@@ -9,7 +9,7 @@
 # PostgresQL and Oracle forms for the table creation, etc, performed
 # by the *.sql files in this directory, are mostly the same, so rather
 # than maintain two nearly identical copies, this script converts
-# icatSysTables.sql and icatCoreTables.sql back and forth.  The only
+# icatSysTables.sql back and forth.  The only
 # difference is that for Postgres we use 'bigint's and for Oracle
 # 'integer's.  When Postgresql's smaller integer is OK (rather than
 # bigint), the .sql files have use upper case INTEGER which is kept
@@ -40,9 +40,6 @@ print ("$arg1\n");
 
 runCmd("cpp -D$arg1 icatSysTables.sql.pp | grep -v '^#' > icatSysTables.sql");
 print "Preprocess icatSysTables.sql.pp to icatSysTables.sql\n";
-
-runCmd("cpp -D$arg1 icatCoreTables.sql.pp | grep -v '^#' > icatCoreTables.sql");
-print "Preprocess icatCoreTables.sql.pp to icatCoreTables.sql\n";
 
 exit(0);
 

@@ -879,8 +879,8 @@ sub createDatabaseAndTables
 	my $line;
 	foreach $line ( @lines )
 	{
-		# iRODS table names mostly start with RCORE_
-		if ( $line =~ /rcore_/i )
+		# iRODS table names mostly start with R_
+		if ( $line =~ /r_/i )
 		{
 			$tablesAlreadyCreated = 1;
 			printLog( "        $line (<-- for iRODS)\n" );
@@ -896,9 +896,7 @@ sub createDatabaseAndTables
 	if ( ! $tablesAlreadyCreated )
 	{
 		my @sqlfiles = (
-			"icatCoreTables.sql",
 			"icatSysTables.sql",
-			"icatCoreInserts.sql",
 			"icatSysInserts.sql" );
 
 # =-=-=-=-=-=-=-
