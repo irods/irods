@@ -204,6 +204,7 @@ Once a server is up and running, the default environment can be shown::
  NOTICE: irodsEncryptionSaltSize=8
  NOTICE: irodsEncryptionNumHashRounds=16
  NOTICE: irodsEncryptionAlgorithm=AES-256-CBC
+ NOTICE: irodsDefaultHashScheme=SHA256
 
 ----------
 Quickstart
@@ -275,6 +276,10 @@ Once the Zone has been renamed, you will need to update your .irodsEnv file to m
  irodsEncryptionNumHashRounds '16'
  # Client-Server Encryption Algorithm:
  irodsEncryptionAlgorithm 'AES-256-CBC'
+ # Client requested hash scheme:
+ irodsDefaultHashScheme 'SHA256'
+ # Hash Matching Policy:
+ #irodsMatchHashPolicy 'strict'
 
 Now, the connection should be reset and you should be able to list your empty iRODS collection again::
 
