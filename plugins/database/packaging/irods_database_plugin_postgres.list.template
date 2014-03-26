@@ -171,6 +171,7 @@ END_POSTREMOVE
 # =-=-=-=-=-=-=-
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/plugins/database/libpostgres.so ./libpostgres.so
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/setup_database.sh ./packaging/setup_database.sh
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/upgrade-3.3.xto4.0.0.sql ./postgres/upgrade-3.3.xto4.0.0.sql
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/tests/localhost_setup_postgres.input ./packaging/localhost_setup_postgres.input
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/find_odbc_postgres.sh ./packaging/find_odbc_postgres.sh
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/find_bin_postgres.sh ./packaging/find_bin_postgres.sh
