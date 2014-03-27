@@ -204,6 +204,7 @@ Once a server is up and running, the default environment can be shown::
  NOTICE: irodsEncryptionSaltSize=8
  NOTICE: irodsEncryptionNumHashRounds=16
  NOTICE: irodsEncryptionAlgorithm=AES-256-CBC
+ NOTICE: irodsDefaultHashScheme=SHA256
 
 ----------
 Quickstart
@@ -275,6 +276,10 @@ Once the Zone has been renamed, you will need to update your .irodsEnv file to m
  irodsEncryptionNumHashRounds '16'
  # Client-Server Encryption Algorithm:
  irodsEncryptionAlgorithm 'AES-256-CBC'
+ # Client requested hash scheme:
+ irodsDefaultHashScheme 'SHA256'
+ # Hash Matching Policy:
+ #irodsMatchHashPolicy 'strict'
 
 Now, the connection should be reset and you should be able to list your empty iRODS collection again::
 
@@ -356,28 +361,28 @@ Upgrading from E-iRODS to iRODS 4.0+ is not currently supported with an automati
 
 If you are in need of upgrading from a production E-iRODS 3.0.1 installation, please contact the iRODS team at RENCI for free support.
 
-From iRODS 3.x
---------------
+From iRODS 3.3.x
+----------------
 
-Upgrading from iRODS 3.x to iRODS 4.0+ is not supported with an automatic script.  There is no good way to automate setting the new configuration options (resource hierarchies, server.config, etc.) based solely on the state of a 3.x system.  In addition, with some of the new functionality, a system administrator may choose to implement some existing policies in a different manner with 4.0+.
+Upgrading from iRODS 3.3.x to iRODS 4.0+ is not supported with an automatic script.  There is no good way to automate setting the new configuration options (resource hierarchies, server.config, etc.) based solely on the state of a 3.3.x system.  In addition, with some of the new functionality, a system administrator may choose to implement some existing policies in a different manner with 4.0+.
 
 For these reasons, the following manual steps should be carefully studied and understood before beginning the upgrade process.
 
 #. Port any custom development to plugins: Microservices, Resources, Authentication
-#. Make a backup of the ICAT database & configuration files: core.re, core.fnm, core.dvm, etc.
+#. Make a backup of the iCAT database & configuration files: core.re, core.fnm, core.dvm, etc.
 #. Declare a Maintenance Window
 #. Remove resources from resource groups
 #. Remove resource groups
-#. Shutdown 3.x server(s)
-#. Patch database with provided script
+#. Shutdown 3.3.x server(s)
 #. Install iRODS 4.0+ packages: irods-icat and a database plugin package (e.g. irods-database-plugin-postgres)
-#. Run the `packaging/setup_database.sh` script
-#. Install and setup resource servers
-#. Update 4.0+ configuration files given previous 3.x configuration
+#. Patch database with provided upgrade SQL file: `packaging/upgrade-3.3.xto4.0.0.sql`
+#. Update 4.0+ configuration files given previous 3.3.x configuration
+#. Start new 4.0+ iCAT server
+#. Install, setup, and start resource servers
 #. Rebuild Resource Hierarchies from previous Resource Group configurations (iadmin)
 #. Install Custom Plugins (Microservice & Resources)
 #. Conformance Testing
-#. Sunset 3.x server(s)
+#. Sunset 3.3.x server(s)
 #. Close Maintenance Window
 
 

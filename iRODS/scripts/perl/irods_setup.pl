@@ -879,8 +879,8 @@ sub createDatabaseAndTables
 	my $line;
 	foreach $line ( @lines )
 	{
-		# iRODS table names mostly start with RCORE_
-		if ( $line =~ /rcore_/i )
+		# iRODS table names mostly start with R_
+		if ( $line =~ /r_/i )
 		{
 			$tablesAlreadyCreated = 1;
 			printLog( "        $line (<-- for iRODS)\n" );
@@ -896,9 +896,7 @@ sub createDatabaseAndTables
 	if ( ! $tablesAlreadyCreated )
 	{
 		my @sqlfiles = (
-			"icatCoreTables.sql",
 			"icatSysTables.sql",
-			"icatCoreInserts.sql",
 			"icatSysInserts.sql" );
 
 # =-=-=-=-=-=-=-
@@ -1861,7 +1859,7 @@ sub configureIrodsUser
 			"# Client-Server Encryption Number of Hash Rounds:\n" .
 			"irodsEncryptionNumHashRounds '16'\n" .
 			"# Client-Server Encryption Algorithm:\n" .
-			"irodsEncryptionAlgorithm 'AES-256-CBC'\n\n".
+			"irodsEncryptionAlgorithm 'AES-256-CBC'\n".
 			"# Client requested hash scheme:\n".
             "irodsDefaultHashScheme 'SHA256'\n".
             "# Hash Matching Policy:\n".
