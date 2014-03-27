@@ -7,7 +7,7 @@ if (sys.version_info >= (2,7)):
 else:
     import unittest2 as unittest
 from resource_suite import ResourceBase
-from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, getiCmdOutput
+from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, getiCmdOutput, get_irods_top_level_dir
 import pydevtest_sessions as s
 import commands
 import os
@@ -16,7 +16,7 @@ import datetime
 import time
 import socket
 
-RODSHOME = "/var/lib/irods/iRODS/"
+RODSHOME = get_irods_top_level_dir() + "/iRODS/"
 ABSPATHTESTDIR = os.path.abspath(os.path.dirname (sys.argv[0]))
 RODSHOME = ABSPATHTESTDIR + "/../../iRODS"
 FILESDIR = ABSPATHTESTDIR + '/workflow_testfiles'

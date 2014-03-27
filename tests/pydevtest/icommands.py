@@ -6,10 +6,11 @@ import datetime
 import time
 import psutil
 import sys
+from pydevtest_common import get_irods_top_level_dir
 
 '''Originally written by Antoine de Torcy'''
 
-RODSLOGDIR = "/var/lib/irods/iRODS/server/log"
+RODSLOGDIR = get_irods_top_level_dir() + "/iRODS/server/log"
 
 class RodsEnv(object):
     '''Contains Env/Auth variables.

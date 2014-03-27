@@ -27,7 +27,7 @@ icommands_bin  = "/usr/bin"
 
 def admin_up():
     # restart server because overkill
-#    os.system("/var/lib/irods/iRODS/irodsctl restart")
+#    os.system( c.get_irods_top_level_dir() + "/iRODS/irodsctl restart")
 
     # set up admin session
     admin = users[0]

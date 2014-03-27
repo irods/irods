@@ -218,6 +218,18 @@ echo "Detected OS Version [$DETECTEDOSVERSION]"
 # FUNCTIONS
 ############################################################
 
+# script footer for successful completion
+print_script_finish_box() {
+    TOTALTIME="$(($(date +%s)-STARTTIME))"
+    echo "${text_cyan}${text_bold}"
+    echo "+------------------------------------+"
+    echo "| RENCI iRODS Build Script           |"
+    echo "|                                    |"
+    printf "|   Completed in %02dm%02ds              |\n" "$((TOTALTIME/60))" "$((TOTALTIME%60))"
+    echo "+------------------------------------+"
+    echo "${text_reset}"
+}
+
 # creates a timestamped tempfile for quick usage
 set_tmpfile() {
   mkdir -p /tmp/$USER
@@ -949,7 +961,7 @@ fi
 if [ "$BUILDIRODS" == "1" ] ; then
 
     if [ "$COVERAGE" == "1" ] ; then
-        # change context for BUILDDIR - we're building in place for gcov linking
+        # change context for BUILDDIR - we're building down "on location" for gcov linking
         BUILDDIR=$COVERAGEBUILDDIR
         echo "${text_green}${text_bold}Switching context to [$BUILDDIR] for coverage-enabled build${text_reset}"
         # copy entire local tree to real package target location
@@ -975,7 +987,9 @@ if [ "$BUILDIRODS" == "1" ] ; then
     # run with our updated irods.config
     ./scripts/configure
     # again to reset IRODS_HOME
-    cp $TMPCONFIGFILE ./config/irods.config
+    if [ "$RUNINPLACE" != "1" ] ; then
+      cp $TMPCONFIGFILE ./config/irods.config
+    fi
 
     # handle issue with IRODS_HOME being overwritten by the configure script
     if [ "$RUNINPLACE" = "1" ] ; then
@@ -983,11 +997,17 @@ if [ "$BUILDIRODS" == "1" ] ; then
     else
         irodsctl_irods_home=`./scripts/find_irods_home.sh`
     fi
+    # wrapper script
     set_tmpfile
     sed -e "\,^IRODS_HOME,s,^.*$,IRODS_HOME=$irodsctl_irods_home," ./irodsctl > $TMPFILE
     rsync -c $TMPFILE ./irodsctl
     rm -f $TMPFILE
     chmod 755 ./irodsctl
+    # perl file
+    set_tmpfile
+    sed -e "\,^IRODS_HOME,s,^.*$,IRODS_HOME=$irodsctl_irods_home," ./scripts/perl/irodsctl.pl > $TMPFILE
+    rsync -c $TMPFILE ./scripts/perl/irodsctl.pl
+    rm -f $TMPFILE
 
     # update build_dir to our absolute path
     set_tmpfile
@@ -1098,7 +1118,13 @@ if [ "$BUILDIRODS" == "1" ] ; then
         $MAKEJCMD -C $BUILDDIR icat-package
         # build designated database plugin
         DATABASE_PLUGIN_TYPE=$2
-        $BUILDDIR/plugins/database/build.sh $DATABASE_PLUGIN_TYPE
+        echo ""
+        echo "${text_green}${text_bold}Building [$DATABASE_PLUGIN_TYPE] database plugin...${text_reset}"
+        if [ "$RUNINPLACE" == "1" ] ; then
+            $BUILDDIR/plugins/database/build.sh --run-in-place $DATABASE_PLUGIN_TYPE
+        else
+            $BUILDDIR/plugins/database/build.sh $DATABASE_PLUGIN_TYPE
+        fi
     elif [ "$SERVER_TYPE" == "RESOURCE" ] ; then
         # build resource package
         $MAKEJCMD -C $BUILDDIR resource-package
@@ -1113,7 +1139,8 @@ if [ "$BUILDIRODS" == "1" ] ; then
     # =-=-=-=-=-=-=-
     # exit early for run-in-place option
     if [ "$RUNINPLACE" == "1" ] ; then
-        echo "YUNOPACKAGE?"
+        # boilerplate
+        print_script_finish_box
         exit 0
     fi
 
@@ -1398,12 +1425,8 @@ fi
 cd $GITDIR
 chmod -R a+w .
 
-# boilerplate
-TOTALTIME="$(($(date +%s)-STARTTIME))"
-echo "${text_cyan}${text_bold}"
-echo "+------------------------------------+"
-echo "| RENCI iRODS Build Script           |"
-echo "|                                    |"
-printf "|   Completed in %02dm%02ds              |\n" "$((TOTALTIME/60))" "$((TOTALTIME%60))"
-echo "+------------------------------------+"
-echo "${text_reset}"
+# print out complete boilerplate
+print_script_finish_box
+
+# done
+exit 0

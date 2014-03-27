@@ -21,6 +21,28 @@
 # Corresponds to a .h value for regular user authentication level:
 $LOCAL_USER_AUTH="3";
 
+
+
+#
+# Get bearings on installation details
+#
+use Cwd "abs_path";
+use File::Basename;
+use File::Spec;
+$scriptfullpath = abs_path(__FILE__);
+$scripttoplevel = dirname(dirname(dirname(dirname(dirname($scriptfullpath)))));
+if( -e "/etc/irods/irods.config" )
+{
+        $configDir = "/etc/irods";
+}
+else
+{
+        $configDir = File::Spec->catdir( "$scripttoplevel", "iRODS", "config" );
+}
+$logDir = File::Spec->catdir( "$scripttoplevel", "iRODS", "server", "log" );
+
+
+
 # get our zone name
 runCmd(0, "ienv | grep irodsZone | tail -1");
 chomp($cmdStdout);
@@ -43,6 +65,7 @@ $USER="rods";
 $ACCESS_GOOD="'read metadata'";
 $ACCESS_BAD="'bad access'";
 
+
 # run a command
 # if option is 0 (normal), check the exit code and fail if non-0
 # if 1, don't care
@@ -50,8 +73,8 @@ $ACCESS_BAD="'bad access'";
 sub runCmd {
     my($option, $cmd) = @_;
     use File::Basename;
-    my $thescriptname = basename($0);    
-    chomp(my $therodslog = `ls -t /var/lib/irods/iRODS/server/log/rodsLog* | head -n1`);
+    my $thescriptname = basename($0);
+    chomp(my $therodslog = `ls -t $logDir/rodsLog* | head -n1`);
     open THERODSLOG, ">>$therodslog" or die "could not open [$therodslog]";
     print THERODSLOG " --- $thescriptname [$cmd] --- \n";
     close THERODSLOG;
@@ -97,7 +120,7 @@ sub mkfiles {
 
 # Set the environment variable for the config dir since
 # this is now one more level down.
-$ENV{'irodsConfigDir'}="/etc/irods";
+$ENV{'irodsConfigDir'}=`perl \$`;
 
 # GenQuery options
 runCmd(0, "test_genq gen7 i");
@@ -132,7 +155,7 @@ runCmd(0, "iadmin lr $Resc | grep -i free_space: | grep 987654321");
 $ENV{'irodsDebug'}='noop'; # override value in irodsEnv file
 runCmd(0, "test_chl modrfs $Resc 123456789 close");
 
-do "/etc/irods/irods.config";
+do "$configDir/irods.config";
 if ($DATABASE_TYPE eq "oracle") {
 #   oracle does autocommit so don't check the result
     runCmd(1, "iadmin lr $Resc | grep -i free_space: | grep 123456789");
@@ -187,7 +210,7 @@ runCmd(1, "iadmin rmuser $User2");
 runCmd(0, "iadmin mkuser $User2 rodsuser");
 runCmd(0, "iadmin moduser $User2 password 123");
 #$ENV{'irodsUserName'}=$User2; 
-#   $IRODS_ADMIN_PASSWORD is from /etc/irods/irods.config
+#   $IRODS_ADMIN_PASSWORD is from $configDir/irods.config
 runCmd(0, "test_chl login $User2 123 $IRODS_ADMIN_PASSWORD");
 #delete $ENV{'irodsUserName'};
 

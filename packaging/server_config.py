@@ -7,10 +7,19 @@ class Server_Config:
     values = {}
 
     def __init__(self):
-        cfg_file = "/etc/irods/server.config"
+        thefile = "/etc/irods/server.config"
+        if os.path.isfile(thefile):
+                cfg_file = thefile
+        else:
+                cfg_file = os.path.dirname(
+                    os.path.dirname(os.path.realpath(__file__))) + "/iRODS/server/config/server.config"
         self.capture(cfg_file, ' ')
 
-        cfg_file = "/var/lib/irods/.odbc.ini"
+        thefile = "/var/lib/irods/.odbc.ini"
+        if os.path.isfile(thefile):
+                cfg_file = thefile
+        else:
+                cfg_file = os.environ['HOME'] + "/.odbc.ini"
         self.capture(cfg_file, '=')
 
     def capture(self, cfg_file, sep):
@@ -32,6 +41,9 @@ class Server_Config:
     def exec_pgsql_cmd(self, sql):
         fbp = os.path.dirname(
             os.path.realpath(__file__)) + "/find_bin_postgres.sh"
+        if( not os.path.isfile(fbp) ):
+                fbp = os.path.dirname( os.path.dirname(
+                        os.path.realpath(__file__))) + "/plugins/database/packaging/find_bin_postgres.sh"
         p = subprocess.Popen(
             fbp,
             shell=True,
@@ -64,6 +76,9 @@ class Server_Config:
     def exec_pgsql_file(self, sql):
         fbp = os.path.dirname(
             os.path.realpath(__file__)) + "/find_bin_postgres.sh"
+        if( not os.path.isfile(fbp) ):
+                fbp = os.path.dirname( os.path.dirname(
+                        os.path.realpath(__file__))) + "/plugins/database/packaging/find_bin_postgres.sh"
         p = subprocess.Popen(
             fbp,
             shell=True,

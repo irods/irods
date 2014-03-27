@@ -6,12 +6,12 @@ if (sys.version_info >= (2,7)):
 else:
 	import unittest2 as unittest
 import pydevtest_sessions as s
-
+from pydevtest_common import get_irods_top_level_dir, get_irods_config_dir
 
 
 
 class Test_ixmsg(unittest.TestCase):
-	serverConfigFile = "/etc/irods/server.config"
+	serverConfigFile = get_irods_config_dir() + "/server.config"
 	xmsgHost = 'localhost'
 	xmsgPort = '1279'
 
@@ -31,7 +31,7 @@ class Test_ixmsg(unittest.TestCase):
 		my_env['xmsgPort'] = self.xmsgPort	
 		
 		# restart server with Xmsg
-		args = ['/var/lib/irods/iRODS/irodsctl', 'restart']
+		args = [get_irods_top_level_dir() + '/iRODS/irodsctl', 'restart']
 		subprocess.Popen(args, env=my_env).communicate()
 
 
@@ -41,7 +41,7 @@ class Test_ixmsg(unittest.TestCase):
 		
 		# restart server
 		my_env = os.environ.copy()
-		args = ['/var/lib/irods/iRODS/irodsctl', 'restart']
+		args = [get_irods_top_level_dir() + '/iRODS/irodsctl', 'restart']
 		subprocess.Popen(args, env=my_env).communicate()
 
 		# Close admin session

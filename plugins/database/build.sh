@@ -16,7 +16,60 @@ Usage:
   $SCRIPTNAME postgres
   $SCRIPTNAME mysql
   $SCRIPTNAME oracle
+
+Options:
+-c      Build with coverage support (gcov)
+-h      Show this help
+-r      Build a release package (no debugging information, optimized)
+
+Long Options:
+--run-in-place    Build for in-place execution (not recommended)
 "
+
+# translate long options to short
+for arg
+do
+    delim=""
+    case "$arg" in
+        --coverage) args="${args}-c ";;
+        --help) args="${args}-h ";;
+        --release) args="${args}-r ";;
+        --run-in-place) args="${args}-z ";;
+        # pass through anything else
+        *) [[ "${arg:0:1}" == "-" ]] || delim="\""
+        args="${args}${delim}${arg}${delim} ";;
+    esac
+done
+# reset the translated args
+eval set -- $args
+# now we can process with getopts
+while getopts ":chrz" opt; do
+    case $opt in
+        c)
+        COVERAGE="1"
+        echo "-c detected -- Building iRODS with coverage support (gcov)"
+        ;;
+        h)
+        echo "$USAGE"
+        ;;
+        r)
+        RELEASE="1"
+        echo "-r detected -- Building a RELEASE package"
+        ;;
+        z)
+        RUNINPLACE="1"
+        echo "--run-in-place detected -- Building for in-place execution"
+        ;;
+        \?)
+        echo "Invalid option: -$OPTARG" >&2
+        ;;
+    esac
+done
+echo ""
+
+# remove options from $@
+shift $((OPTIND-1))
+
 if [ $# -eq 0 -o $# -gt 1 -o "$1" == "-h" -o "$1" == "--help" -o "$1" == "help" ] ; then
     echo "$USAGE"
     exit 1
@@ -159,12 +212,26 @@ set_tmpfile
 sed -e s,TEMPLATE_DEFAULT_DATABASEPORT,$defaultport, $SETUP_FILE > $TMPFILE; mv $TMPFILE $SETUP_FILE
 
 # =-=-=-=-=-=-=-
+# setup irods.config location
+IRODS_CONFIG_LOCATION=/etc/irods/irods.config
+if [ "$RUNINPLACE" == "1" ] ; then
+    IRODS_CONFIG_LOCATION=$(cd $(dirname FULLPATHSCRIPTNAME)/../../; pwd -P )/iRODS/config/irods.config
+fi
+set_tmpfile
+sed -e s,TEMPLATE_DEFAULT_IRODSCONFIG,$IRODS_CONFIG_LOCATION, $SETUP_FILE > $TMPFILE; mv $TMPFILE $SETUP_FILE
+chmod +x $SETUP_FILE
+
+# =-=-=-=-=-=-=-
 # build the particular flavor of DB plugin
 cd $SCRIPTPATH
 make ${DB_TYPE}
 
 # =-=-=-=-=-=-=-
 # package the plugin and associated files
+if [ "$RUNINPLACE" == "1" ] ; then
+    # work is done - exit early when building for run-in-place
+    exit 0
+fi
 
 if [ "$COVERAGE" == "1" ] ; then
     # sets EPM to not strip binaries of debugging information

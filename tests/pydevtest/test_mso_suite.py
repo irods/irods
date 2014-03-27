@@ -7,7 +7,7 @@ if (sys.version_info >= (2,7)):
 else:
     import unittest2 as unittest
 from resource_suite import ResourceBase
-from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, getiCmdOutput
+from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, getiCmdOutput, get_irods_top_level_dir, get_irods_config_dir
 import pydevtest_sessions as s
 import socket
 import commands
@@ -27,7 +27,7 @@ class Test_MSOSuite(unittest.TestCase, ResourceBase):
         "setup"    : [
             "iadmin modresc demoResc name origResc",
             "iadmin mkresc demoResc compound",
-            "iadmin mkresc cacheResc 'unix file system' "+hostname+":/var/lib/irods/cacheRescVault",
+            "iadmin mkresc cacheResc 'unix file system' "+hostname+":" + get_irods_top_level_dir() + "/cacheRescVault",
             "iadmin mkresc archiveResc mso "+hostname+":/fake/vault/",
             "iadmin addchildtoresc demoResc cacheResc cache",
             "iadmin addchildtoresc demoResc archiveResc archive",
@@ -39,8 +39,8 @@ class Test_MSOSuite(unittest.TestCase, ResourceBase):
             "iadmin rmresc cacheResc",
             "iadmin rmresc demoResc",
             "iadmin modresc origResc name demoResc",
-            "rm -rf /var/lib/irods/archiveRescVault",
-            "rm -rf /var/lib/irods/cacheRescVault",
+            "rm -rf " + get_irods_top_level_dir() + "/archiveRescVault",
+            "rm -rf " + get_irods_top_level_dir() + "/cacheRescVault",
         ],
     }
 

@@ -22,7 +22,6 @@
 #
 #	** There are no user-editable parameters in this file. **
 #
-
 use File::Spec;
 use File::Copy;
 #use File::Grep;
@@ -32,7 +31,6 @@ use Config;
 use File::Basename;
 
 $version{"irods_setup.pl"} = "Mar 2014";
-
 
 # =-=-=-=-=-=-=-
 # detect whether running in a consistent environment (usually the service account user)
@@ -52,7 +50,7 @@ if( scalar(@ARGV) == 1) {
         $cloudResourceInstall = 1;
 }
 # set flag to determine if this is an iCAT installation or not
-$icatInstall = 0;    
+$icatInstall = 0;
 if( scalar(@ARGV) > 1 ) {
         $icatInstall = 1;
 }
@@ -77,30 +75,30 @@ if( scalar(@ARGV) > 1 ) {
 #
 
 
-
-
-
 ########################################################################
 #
 # Confirm execution from the top-level iRODS directory.
 #
 $IRODS_HOME = cwd( );	# Might not be actual iRODS home.  Fixed below.
 
+my $perlScriptsDir = File::Spec->catdir( $IRODS_HOME, "scripts", "perl" );
+
 # Where is the configuration directory for iRODS?  This is where
 # support scripts are kept.
-$configDir = File::Spec->catdir( $IRODS_HOME, "config" );
-if ( ! -e $configDir )
+$configDir = `perl $perlScriptsDir/irods_get_config_dir.pl`;
+
+if ( ! -d $configDir )
 {
 	# Configuration directory does not exist.  Perhaps this
 	# script was run from the scripts or scripts/perl subdirectories.
 	# Look up one directory.
 	$IRODS_HOME = File::Spec->catdir( $IRODS_HOME, File::Spec->updir( ));
 	$configDir  = File::Spec->catdir( $IRODS_HOME, "config" );
-	if ( ! -e $configDir )
+	if ( ! -d $configDir )
 	{
 		$IRODS_HOME = File::Spec->catdir( $IRODS_HOME, File::Spec->updir( ));
 		$configDir  = File::Spec->catdir( $IRODS_HOME, "config" );
-		if ( ! -e $configDir )
+		if ( ! -d $configDir )
 		{
 			# Nope.  Complain.
 			print( "Usage error:\n" );
@@ -115,10 +113,6 @@ if ( ! -e $configDir )
 $IRODS_HOME = abs_path( $IRODS_HOME );
 $configDir  = abs_path( $configDir );
 
-
-
-
-
 ########################################################################
 #
 # Initialize.
@@ -129,7 +123,6 @@ my $scriptName = $0;
 my $currentPort = 0;
 
 # Load support scripts.
-my $perlScriptsDir = File::Spec->catdir( $IRODS_HOME, "scripts", "perl" );
 
 push @INC, "/etc/irods";
 push @INC, $configDir;
@@ -140,7 +133,6 @@ require File::Spec->catfile( $perlScriptsDir, "utils_platform.pl" );
 #require File::Spec->catfile( $perlScriptsDir, "utils_config.pl" );
 require File::Spec->catfile( $perlScriptsDir, "utils_prompt.pl" );
 my $irodsctl = File::Spec->catfile( $perlScriptsDir, "irodsctl.pl" );
-
 
 
 
@@ -284,15 +276,15 @@ setPrintVerbose( 1 );
 # script, which must be run first.  If the file doesn't exist, it
 # probably means scripts are being run out of order or that a prior
 # stage failed.
-if ( ! -e $configMk )
-{
-	printError( "Usage error:\n" );
-	printError( "    The file 'config.mk' is missing.  This probably\n" );
-	printError( "    means that prior setup stages have not been\n" );
-	printError( "    completed yet.\n" );
-	printError( "\n    Please run ./setup.\n" );
-	exit( 1 );
-}
+# if ( ! -e $configMk )
+# {
+# 	printError( "Usage error:\n" );
+# 	printError( "    The file 'config.mk' is missing.  This probably\n" );
+# 	printError( "    means that prior setup stages have not been\n" );
+# 	printError( "    completed yet.\n" );
+# 	printError( "\n    Please run ./setup.\n" );
+# 	exit( 1 );
+# }
 
 # Make sure the i-command binaries exist.  They are built during 'make',
 # which should already have occurred.
@@ -344,7 +336,6 @@ if ( ! -e $iadmin )
 #	}
 #}
 
-
 # =-=-=-=-=-=-=-
 # JMC :: pulled from utils_config.pl - the call to set up env vars
 #     :: was breaking the path to the system db binaries
@@ -394,7 +385,7 @@ sub irodsLoadIrodsConfig()
 
 	#require $irodsConfig;
 	require "irods\.config";
-
+	
 	return 1;
 }
 
@@ -418,7 +409,6 @@ if ( irodsLoadIrodsConfig( ) == 0 )
 	# has already been output.
 	exit( 1 );
 }
-
 # Make sure the home directory is set and valid.  If not, the installation
 # is probably being run out of order or a prior stage failed.
 if ( $IRODS_HOME eq "" || ! -e $IRODS_HOME )
@@ -1191,7 +1181,7 @@ sub testDatabase()
 	printStatus( "Testing database communications...\n" );
 	printLog( "\nTesting database communications with test_cll...\n" );
 
-	my $test_cll = File::Spec->catfile( $serverTestBinDir, "test_cll" );
+	my $test_cll = File::Spec->catfile( $serverTestCLLBinDir, "test_cll" );
 
 	#my ($status,$output) = run( "$test_cll $DATABASE_ADMIN_NAME '$DATABASE_ADMIN_PASSWORD'" );
 
@@ -1359,8 +1349,8 @@ sub configureIrodsServer
 	#	dependent upon the directory from which this
 	#	script is run.
 	printLog( "\nUpdating iRODS irodsEnv.boot...\n" );
-	my $bootEnv  = File::Spec->catfile( $configDir, "irodsEnv.boot" );
-	my $authFile = File::Spec->catfile( $configDir, "auth.tmp" );
+	my $bootEnv  = File::Spec->catfile( $IRODS_HOME, "config", "irodsEnv.boot" );
+	my $authFile = File::Spec->catfile( $IRODS_HOME, "config", "auth.tmp" );
 	my %envVariables = ( "irodsAuthFileName", $authFile, "irodsZone", $ZONE_NAME) ;
 	printLog( "    irodsAuthFileName = $authFile\n" );
 
@@ -2834,7 +2824,7 @@ sub Postgres_CreateAlternateDatabaseUser( )
 	printToFile( $tmpPassword, "$DATABASE_ADMIN_PASSWORD\n" );
 	chmod( 0600, $tmpPassword );
 
-	$CUSER=`../packaging/find_bin_postgres.sh`;
+	$CUSER=`$scripttoplevel/packaging/find_bin_postgres.sh`;
 	chomp $CUSER;
 	$CUSER=$CUSER . "/createuser";
 
@@ -2967,9 +2957,17 @@ sub Postgres_CreateDatabase()
 	printLog( "\nChecking whether iCAT database exists...\n" );
 	my $needCreate = 1;
 
-	$PSQL=`../packaging/find_bin_postgres.sh`;
+        if( $RUNINPLACE == 1 )
+        {
+                $PSQL=`$scripttoplevel/plugins/database/packaging/find_bin_postgres.sh`;
+        }
+        else
+        {
+                $PSQL=`$scripttoplevel/packaging/find_bin_postgres.sh`;
+        }
 	chomp $PSQL;
 	$PSQL=$PSQL . "/psql";
+#        print "$PSQL -U $DATABASE_ADMIN_NAME -p $DATABASE_PORT -l $DB_NAME";
 	my ($status,$output) = run( "$PSQL -U $DATABASE_ADMIN_NAME -p $DATABASE_PORT -l $DB_NAME" );
         if ( $output =~ /List of databases/i )
         {
@@ -3121,17 +3119,31 @@ sub Postgres_CreateDatabase()
 	printStatus( "Updating user's .odbc.ini...\n" );
 	printLog( "Updating user's .odbc.ini...\n" );
 	my $userODBC = File::Spec->catfile( $ENV{"HOME"}, ".odbc.ini" );
+        if ( ! -e $userODBC )
+        {
+                printStatus( "    Touching... $userODBC\n" );
+                open( TOUCHFILE, ">>$userODBC" );
+                close( TOUCHFILE );
+        }
 	if ( ! -e $userODBC )
 	{
-		printStatus( "    Skipped.  File doesn't exist. - $userODBC\n" );
+                printStatus( "    Skipped.  File doesn't exist. - $userODBC\n" );
 		printLog( "    Skipped.  File doesn't exist.\n" );
 	}
 	else
 	{
 		# iRODS now supports a script to determine the path & lib name of the odbc driver
-		my $psqlOdbcLib = `../packaging/find_odbc_postgres.sh`;
+                 my $psqlOdbcLib;
+		if ( $RUNINPLACE == 1 )
+                {
+                        $psqlOdbcLib = `$scripttoplevel/plugins/database/packaging/find_odbc_postgres.sh`;
+                }
+                else
+                {
+                        $psqlOdbcLib = `$scripttoplevel/packaging/find_odbc_postgres.sh`;
+                }
 		chomp($psqlOdbcLib);
-
+		
 		open( NEWCONFIGFILE, ">$userODBC" );
 		print ( NEWCONFIGFILE "[postgres]\n" .
 				"Driver=$psqlOdbcLib\n" .
@@ -3209,7 +3221,7 @@ sub Oracle_CreateDatabase()
 	my $userODBC = File::Spec->catfile( $ENV{"HOME"}, ".odbc.ini" );
     
     # iRODS now supports a script to determine the path & lib name of the odbc driver
-    my $oracleOdbcLib = `../packaging/find_odbc_oracle.sh`;
+    my $oracleOdbcLib = `$scripttoplevel/packaging/find_odbc_oracle.sh`;
     chomp($oracleOdbcLib);
 
     open( NEWCONFIGFILE, ">$userODBC" );
@@ -3286,7 +3298,7 @@ sub MySQL_CreateDatabase()
 	my $userODBC = File::Spec->catfile( $ENV{"HOME"}, ".odbc.ini" );
     
     # iRODS now supports a script to determine the path & lib name of the odbc driver
-    my $mysqlOdbcLib = `../packaging/find_odbc_mysql.sh`;
+    my $mysqlOdbcLib = `$scripttoplevel/packaging/find_odbc_mysql.sh`;
     chomp($mysqlOdbcLib);
 
     open( NEWCONFIGFILE, ">$userODBC" );
@@ -3658,7 +3670,15 @@ sub Postgres_sql($$)
 {
 	my ($databaseName,$sqlFilename) = @_;
 
-	$PSQL=`../packaging/find_bin_postgres.sh`;
+        $findbinscript = "find_bin_".$DATABASE_TYPE.".sh";
+        if ( $RUNINPLACE == 1 )
+        {
+                $PSQL=`$scripttoplevel/plugins/database/packaging/$findbinscript`;
+        }
+        else
+        {
+                $PSQL=`$scripttoplevel/packaging/$findbinscript`;
+        }
 	chomp $PSQL;
 	$PSQL=$PSQL . "/psql";
 
@@ -3719,7 +3739,15 @@ sub Oracle_sql($$)
 #
 sub MySQL_sql($$)
 {
-	$MYSQL=`../packaging/find_bin_mysql.sh`;
+        $findbinscript = "find_bin_".$DATABASE_TYPE.".sh";
+        if ( $RUNINPLACE == 1 )
+        {
+                $MYSQL=`$scripttoplevel/plugins/database/packaging/$findbinscript`;
+        }
+        else
+        {
+                $MYSQL=`$scripttoplevel/packaging/$findbinscript`;
+        }
 	chomp $MYSQL;
 	$MYSQL=$MYSQL . "/mysql";
 	my ($databaseName,$sqlFilename) = @_;

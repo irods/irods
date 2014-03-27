@@ -7,7 +7,7 @@ if (sys.version_info >= (2,7)):
 else:
     import unittest2 as unittest
 from resource_suite import ResourceBase
-from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, getiCmdOutput
+from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, getiCmdOutput, get_irods_top_level_dir, get_irods_config_dir
 import pydevtest_sessions as s
 import socket
 import commands
@@ -27,9 +27,9 @@ class Test_LoadBalanced_Resource(unittest.TestCase, ResourceBase):
         "setup"    : [
             "iadmin modresc demoResc name origResc",
             "iadmin mkresc demoResc load_balanced",
-            "iadmin mkresc rescA 'unix file system' "+hostname+":/var/lib/irods/rescAVault",
-            "iadmin mkresc rescB 'unix file system' "+hostname+":/var/lib/irods/rescBVault",
-            "iadmin mkresc rescC 'unix file system' "+hostname+":/var/lib/irods/rescCVault",
+            "iadmin mkresc rescA 'unix file system' "+hostname+":" + get_irods_top_level_dir() + "/rescAVault",
+            "iadmin mkresc rescB 'unix file system' "+hostname+":" + get_irods_top_level_dir() + "/rescBVault",
+            "iadmin mkresc rescC 'unix file system' "+hostname+":" + get_irods_top_level_dir() + "/rescCVault",
             "iadmin addchildtoresc demoResc rescA",
             "iadmin addchildtoresc demoResc rescB",
             "iadmin addchildtoresc demoResc rescC",
@@ -43,9 +43,9 @@ class Test_LoadBalanced_Resource(unittest.TestCase, ResourceBase):
             "iadmin rmresc rescC",
             "iadmin rmresc demoResc",
             "iadmin modresc origResc name demoResc",
-            "rm -rf /var/lib/irods/rescAVault",
-            "rm -rf /var/lib/irods/rescBVault",
-            "rm -rf /var/lib/irods/rescCVault",
+            "rm -rf " + get_irods_top_level_dir() + "/rescAVault",
+            "rm -rf " + get_irods_top_level_dir() + "/rescBVault",
+            "rm -rf " + get_irods_top_level_dir() + "/rescCVault",
         ],
     }
 

@@ -33,9 +33,13 @@ $version{"irodsctl.pl"} = "September 2011";
 #
 $IRODS_HOME = cwd( );	# Might not be actual iRODS home.  Fixed below.
 
+my $perlScriptsDir = File::Spec->catdir( $IRODS_HOME, "scripts", "perl" );
+
 # Where is the configuration directory for iRODS?  This is where
 # support scripts are kept.
-$configDir = File::Spec->catdir( $IRODS_HOME, "config" );
+
+$configDir = `perl $perlScriptsDir/irods_get_config_dir.pl`;
+
 if ( ! -e $configDir )
 {
 	# Configuration directory does not exist.  Perhaps this
@@ -70,7 +74,6 @@ $configDir  = abs_path( $configDir );
 my $scriptName = $0;
 
 # Load support scripts.
-my $perlScriptsDir = File::Spec->catdir( $IRODS_HOME, "scripts", "perl" );
 require File::Spec->catfile( $perlScriptsDir, "utils_paths.pl" );
 require File::Spec->catfile( $perlScriptsDir, "utils_print.pl" );
 require File::Spec->catfile( $perlScriptsDir, "utils_file.pl" );
@@ -963,8 +966,8 @@ sub doTest
 	    doTestIcat( );
 	}
 	else {
-	    printNotice( "\nSkipping ICAT tests since the ICAT-enabled server\n");
-	    printNotice( "is on a remote host.  The ICAT tests can only be\n" );
+	    printNotice( "\nSkipping iCAT tests since the iCAT-enabled server\n");
+	    printNotice( "is on a remote host.  The iCAT tests can only be\n" );
 	    printNotice( "run locally.\n" );
  
 	}
@@ -1360,12 +1363,12 @@ sub doTestIcat
 	chdir( $startDir );
 
 	if ($icatFailure) {
-	    printError( "One or more ICAT tests failed.\n" );
+	    printError( "One or more iCAT tests failed.\n" );
 	    $doTestExitValue++;
 	}
 	else {
-	    printStatus("All ICAT tests were successful.\n");
-            # clean up after ICAT tests - they don't clean up the Vault themselves
+	    printStatus("All iCAT tests were successful.\n");
+            # clean up after iCAT tests - they don't clean up the Vault themselves
             system("rm -rf $IRODS_HOME/Vault/home/rods/TestFile*");
 	}
 	#printStatus( "Test report:\n" );
@@ -1514,7 +1517,7 @@ sub startIrods
 	chdir( $serverBinDir );
 	umask( 077 );
 	# Start the server
-	my $syslogStat = `grep IRODS_SYSLOG $configDir/config.mk | grep -v \'#'`;
+	my $syslogStat = `grep IRODS_SYSLOG $configDir/config.mk 2> /dev/null | grep -v \'#'`;
 	if ($syslogStat) {
 #           syslog enabled, need to start differently
 	    my $status = system("$irodsServer&");

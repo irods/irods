@@ -18,6 +18,8 @@
 # commands should fail and this script will fail if they don't.
 #
 
+use Cwd 'abs_path';
+
 $F1="TestFile1";
 $F1LC="testfile1";
 $F2="TestFile2";
@@ -58,8 +60,9 @@ $IN_FILE="icatTest.infile.24085";
 sub runCmd {
     my($option, $cmd, $stdoutVal) = @_;
     use File::Basename;
-    my $thescriptname = basename($0);    
-    chomp(my $therodslog = `ls -t /var/lib/irods/iRODS/server/log/rodsLog* | head -n1`);
+    my $thescriptname = basename($0);
+    my $IRODS_HOME = dirname(dirname(dirname(dirname(abs_path(__FILE__)))));
+    chomp(my $therodslog = `ls -t $IRODS_HOME/server/log/rodsLog* | head -n1`);
     open THERODSLOG, ">>$therodslog" or die "could not open [$therodslog]";
     print THERODSLOG " --- $thescriptname [$cmd] --- \n";
     close THERODSLOG;

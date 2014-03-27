@@ -60,8 +60,11 @@ def get_current_schema_version(cfg):
 def get_target_schema_version():
     # default
     target_schema_version = 2
-    # read version value from /var/lib/irods/VERSION
-    version_file = os.path.abspath("/var/lib/irods/VERSION")
+    # read version value from VERSION file
+    if os.path.isfile( "/var/lib/irods/VERSION" ):
+        version_file = os.path.abspath("/var/lib/irods/VERSION")
+    else:
+        version_file = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + "/VERSION"
     lines = [line.rstrip('\n') for line in open(version_file)]
     for line in lines:
         (name, value) = line.split("=")
@@ -98,6 +101,9 @@ def update_schema_version(cfg, version):
 def get_update_files(version, dbtype):
     # list all files
     sd = os.path.dirname(os.path.realpath(__file__)) + "/" + schema_directory
+    if ( not os.path.exists( sd )):
+        sd = os.path.dirname(
+            os.path.dirname(os.path.realpath(__file__))) + "/plugins/database/packaging/" + schema_directory
     mycmd = "find %s -name %s" % (sd, "*." + dbtype + ".*sql")
     if DEBUG:
         print("finding files: %s" % mycmd)
