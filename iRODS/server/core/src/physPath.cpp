@@ -1048,25 +1048,18 @@ isInVault( dataObjInfo_t *dataObjInfo ) {
 
 int
 getDefFileMode() {
-    int defFileMode=0;
-    irods::error ret = irods::server_properties::getInstance().get_property<int>( DEF_FILE_MODE_KW, defFileMode );
+    int defFileMode = DEFAULT_FILE_MODE;
 
-    if (!ret.ok()) {
-    	defFileMode = DEFAULT_FILE_MODE;
-    }
+    irods::error ret = irods::server_properties::getInstance().get_property<int>( DEF_FILE_MODE_KW, defFileMode );
 
     return defFileMode;
 }
 
 int
 getDefDirMode() {
-    int defDirMode=0;
+    int defDirMode = DEFAULT_DIR_MODE;
 
     irods::error ret = irods::server_properties::getInstance().get_property<int>( DEF_DIR_MODE_KW, defDirMode );
-
-    if (!ret.ok()) {
-    	defDirMode = DEFAULT_DIR_MODE;
-    }
 
     return defDirMode;
 }
