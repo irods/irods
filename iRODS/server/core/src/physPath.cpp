@@ -25,6 +25,7 @@
 #include "reSysDataObjOpr.hpp"
 #include "genQuery.hpp"
 #include "rodsClient.hpp"
+#include "readServerConfig.hpp"
 
 #include <iostream>
 
@@ -32,6 +33,7 @@
 #include "irods_resource_backport.hpp"
 #include "irods_hierarchy_parser.hpp"
 #include "irods_stacktrace.hpp"
+#include "irods_server_properties.hpp"
 
 int
 getFileMode( dataObjInp_t *dataObjInp ) {
@@ -1047,26 +1049,25 @@ isInVault( dataObjInfo_t *dataObjInfo ) {
 int
 getDefFileMode() {
     int defFileMode;
-    char *modeStr; // JMC - backport 4841
-    if ( ( modeStr = getenv( "DefFileMode" ) ) != NULL && *modeStr == '0' ) { // JMC - backport 4841
-        defFileMode = strtol( getenv( "DefFileMode" ), 0, 0 );
+    irods::error ret = irods::server_properties::getInstance().get_property<int>( DEF_FILE_MODE_KW, defFileMode );
+
+    if (!ret.ok()) {
+    	defFileMode = DEFAULT_FILE_MODE;
     }
-    else {
-        defFileMode = DEFAULT_FILE_MODE;
-    }
+
     return defFileMode;
 }
 
 int
 getDefDirMode() {
     int defDirMode;
-    char *modeStr; // JMC - backport 4841
-    if ( ( modeStr = getenv( "DefDirMode" ) ) != NULL && *modeStr == '0' ) { // JMC - backport 4841
-        defDirMode = strtol( getenv( "DefDirMode" ), 0, 0 );
+
+    irods::error ret = irods::server_properties::getInstance().get_property<int>( DEF_DIR_MODE_KW, defDirMode );
+
+    if (!ret.ok()) {
+    	defDirMode = DEFAULT_DIR_MODE;
     }
-    else {
-        defDirMode = DEFAULT_DIR_MODE;
-    }
+
     return defDirMode;
 }
 

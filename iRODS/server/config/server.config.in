@@ -46,6 +46,10 @@ reVariableMapSet  core
 # This mode should be left turned off except for a few specific use cases.
 run_server_as_root false
 
+# Default mode for directory and file creation (on disk)
+default_dir_mode	0700
+default_file_mode	0600
+
 # select the requested hashing scheme ( SHA256 or MD5 )
 default_hash_scheme SHA256
 

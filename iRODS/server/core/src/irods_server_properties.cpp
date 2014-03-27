@@ -212,6 +212,36 @@ namespace irods {
             } // RUN_SERVER_AS_ROOT_KW
 
 
+            key = strstr( buf, DEF_DIR_MODE_KW );
+            if ( key != NULL ) {
+                len = strlen( DEF_DIR_MODE_KW );
+
+                // Set property name and setting
+                prop_name.assign( DEF_DIR_MODE_KW );
+                prop_setting.assign( findNextTokenAndTerm( key + len ) );
+
+                // Update properties table
+                result = properties.set<int>( prop_name, strtol(prop_setting.c_str(), 0, 0) );
+
+                rodsLog( LOG_DEBUG, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
+            } // DEF_DIR_MODE_KW
+
+
+            key = strstr( buf, DEF_FILE_MODE_KW );
+            if ( key != NULL ) {
+                len = strlen( DEF_FILE_MODE_KW );
+
+                // Set property name and setting
+                prop_name.assign( DEF_FILE_MODE_KW );
+                prop_setting.assign( findNextTokenAndTerm( key + len ) );
+
+                // Update properties table
+                result = properties.set<int>( prop_name, strtol(prop_setting.c_str(), 0, 0) );
+
+                rodsLog( LOG_DEBUG, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
+            } // DEF_FILE_MODE_KW
+
+
             key = strstr( buf, CATALOG_DATABASE_TYPE_KW );
             if ( key != NULL ) {
                 len = strlen( CATALOG_DATABASE_TYPE_KW );

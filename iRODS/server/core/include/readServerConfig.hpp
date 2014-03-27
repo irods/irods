@@ -37,6 +37,9 @@
 #define DEFAULT_HASH_SCHEME_KW	"default_hash_scheme"
 #define MATCH_HASH_POLICY_KW	"match_hash_policy"
 
+#define DEF_DIR_MODE_KW		"default_dir_mode"
+#define DEF_FILE_MODE_KW	"default_file_mode"
+
 typedef struct rodsServerConfig {
     bool run_server_as_root;
 

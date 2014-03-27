@@ -235,14 +235,6 @@ $postgresBinDir  = File::Spec->catdir( $POSTGRES_HOME, "bin" );
 # idbug
 # $GLOBALREDEBUGFLAG=4;
 
-# $DefFileMode - the mode of the file created in the resource vault. 
-# The default value is 0600 (DEFAULT_FILE_MODE).
-# $DefFileMode=0640;
-
-# $DefDirMode - the mode of the directory created in the resource vault.
-# The default value is 0750 (DEFAULT_DIR_MODE).
-# $DefDirMode=0700;
-
 # $LOGFILE_INT - specifies the server log interval in number of days.
 # The default is 5 days.
 # $LOGFILE_INT=5;
@@ -264,8 +256,6 @@ if ($GLOBALALLRULEEXECFLAG)    { $ENV{'GLOBALALLRULEEXECFLAG'} = $GLOBALALLRULEE
 if ($PREPOSTPROCFORGENQUERYFLAG)    { $ENV{'PREPOSTPROCFORGENQUERYFLAG'} = $PREPOSTPROCFORGENQUERYFLAG; }
 if ($GLOBALREAUDITFLAG)         { $ENV{'GLOBALREAUDITFLAG'}   = $GLOBALREAUDITFLAG; }
 if ($GLOBALREDEBUGFLAG)         { $ENV{'GLOBALREDEBUGFLAG'}   = $GLOBALREDEBUGFLAG; }
-if ($DefFileMode)		{ $ENV{'DefFileMode'}         = $DefFileMode; }
-if ($DefDirMode)		{ $ENV{'DefDirMode'}          = $DefDirMode; }
 if ($LOGFILE_INT)		{ $ENV{'logfileInt'}          = $LOGFILE_INT; }
 
 
