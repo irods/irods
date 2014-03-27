@@ -26,7 +26,7 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         s.twousers_down()
 
     def test_api_plugin(self):
-        assertiCmd(s.adminsession,"iapitest")
+        assertiCmd(s.adminsession,"iapitest", "LIST", "this")
         p = subprocess.Popen(['grep "HELLO WORLD"  ../../iRODS/server/log/rodsLog.*'], shell=True, stdout=subprocess.PIPE)
         result = p.communicate()[0]
         assert( -1 != result.find( "HELLO WORLD" ) )

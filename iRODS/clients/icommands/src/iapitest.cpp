@@ -12,6 +12,21 @@
 #include <iostream>
 
 
+// =-=-=-=-=-=-=-
+// NOTE:: these track the same structs in
+//     :: the api example libhelloworld.cpp
+typedef struct {
+    int  _this;
+    char _that [64];
+} helloInp_t;
+
+typedef struct {
+    int  _this;
+    char _that [64];
+    double _other;
+} helloOut_t;
+
+
 
 void usage();
 
@@ -52,11 +67,21 @@ main( int argc, char **argv ) {
         }
     }
 
-    status = procApiRequest( conn, 1300, NULL, NULL,
-                             ( void ** ) NULL, NULL );
+    helloInp_t inp;
+    memset( &inp, 0, sizeof( inp ) );
+    inp._this = 42;
+    strncpy( inp._that, "hello, world.", 64 );
+
+    helloOut_t* out = 0;
+
+    status = procApiRequest( conn, 1300, &inp, NULL,
+                             ( void ** ) &out, NULL );
     if ( status < 0 ) {
         printf( "\n\nERROR - failed to call our api\n\n\n" );
         return 0;
+    }
+    else {
+        printf( "\n\nthis [%d]  that [%s] other [%f]\n", out->_this, out->_that, out->_other );
     }
 
     rcDisconnect( conn );
