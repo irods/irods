@@ -20,13 +20,18 @@ typedef struct {
 } helloInp_t;
 
 typedef struct {
+    double _value;
+} otherOut_t;
+
+typedef struct {
     int  _this;
     char _that [64];
-    double _other;
+    otherOut_t _other;
 } helloOut_t;
 
 #define HelloInp_PI "int _this; str _that[64];"
-#define HelloOut_PI "int _this; str _that[64]; double _other;"
+#define OtherOut_PI "double _value;"
+#define HelloOut_PI "int _this; str _that[64]; struct OtherOut_PI;"
 
 extern "C" {
 
@@ -38,7 +43,7 @@ extern "C" {
         ( *_out ) = ( helloOut_t* )malloc( sizeof( helloOut_t ) );
         ( *_out )->_this = 42;
         strncpy( ( *_out )->_that, "hello, world.", 63 );
-        ( *_out )->_other = 128.0;
+        ( *_out )->_other._value = 128.0;
 
         rodsLog( LOG_NOTICE, "Dynamic API - this [%d] that [%s]", _inp->_this, _inp->_that );
         rodsLog( LOG_NOTICE, "Dynamic API - DONE" );
@@ -78,9 +83,7 @@ extern "C" {
         api->out_pack_key   = "HelloOut_PI";
         api->out_pack_value = HelloOut_PI;
 
-        api->extra_pack_struct[ "SOME" ] = HelloInp_PI;
-        api->extra_pack_struct[ "OTHER" ] = HelloOut_PI;
-        api->extra_pack_struct[ "PACK" ] = HelloInp_PI;
+        api->extra_pack_struct[ "OtherOut_PI" ] = OtherOut_PI;
 
         return api;
 

@@ -21,12 +21,14 @@ typedef struct {
 } helloInp_t;
 
 typedef struct {
+    double _value;
+} otherOut_t;
+
+typedef struct {
     int  _this;
     char _that [64];
-    double _other;
+    otherOut_t _other;
 } helloOut_t;
-
-
 
 void usage();
 
@@ -81,7 +83,7 @@ main( int argc, char **argv ) {
         return 0;
     }
     else {
-        printf( "\n\nthis [%d]  that [%s] other [%f]\n", out->_this, out->_that, out->_other );
+        printf( "\n\nthis [%d]  that [%s] other [%f]\n", out->_this, out->_that, out->_other._value );
     }
 
     rcDisconnect( conn );
