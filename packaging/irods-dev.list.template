@@ -62,6 +62,7 @@
 # =-=-=-=-=-=-=-
 
 f 644 root root /usr/lib/irods/libirods_client.a ./libirods_client.a
+f 644 root root /usr/lib/irods/libirods_client_api.a ./libirods_client_api.a
 f 644 root root /usr/lib/irods/libirods_server.a ./libirods_server.a
 
 d 755 root root /usr/include/irods/ -

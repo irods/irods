@@ -7,6 +7,7 @@ build/
 changelog.gz
 examples/microservices/microservice_tutorial.pdf
 libirods_client.a
+libirods_client_api.a
 libirods_server.a
 man/
 iRODS/.client_cflags
