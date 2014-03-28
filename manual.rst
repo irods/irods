@@ -90,11 +90,11 @@ License
 Overview
 --------
 
-This manual attempts to provide standalone documentation for iRODS (http://eirods.org) as packaged by the Renaissance Computing Institute (RENCI).
+This manual attempts to provide standalone documentation for iRODS (http://irods.org) as packaged by the Renaissance Computing Institute (RENCI) (http://www.renci.org) under the aegis of the iRODS Consortium (http://irods-consortium.org).
 
-    http://eirods.org
+    http://irods.org
 
-Additional documentation is available on the iRODS wiki (http://irods.org), the iRODS Doxygen site (http://irods.org/doxygen), and in the two books previously published by the iRODS team:
+Additional documentation is available on the iRODS wiki (http://wiki.irods.org), the iRODS Doxygen site (http://irods.org/doxygen), and in the two books previously published by the iRODS team:
 
     (2010) iRODS Primer: integrated Rule-Oriented Data System (Synthesis Lectures on Information Concepts, Retrieval, and Services)
     http://www.amazon.com/dp/1608453332
@@ -116,7 +116,7 @@ RPM and DEB formats are available for both iCAT-enabled servers and resource-onl
 
 More combinations will be made available as our testing matrix continues to mature and increase in scope.
 
-The latest files can be downloaded from http://eirods.org/download.
+The latest files can be downloaded from http://irods.org/download.
 
 Open Source
 -----------
@@ -372,14 +372,17 @@ For these reasons, the following manual steps should be carefully studied and un
 #. Make a backup of the iCAT database & configuration files: core.re, core.fnm, core.dvm, etc.
 #. Declare a Maintenance Window
 #. Remove resources from resource groups
-#. Remove resource groups
+#. Remove resource groups (confirm: ``iadmin lrg`` returns no results)
 #. Shutdown 3.3.x server(s)
+#. If necessary, start 3.3.x in-place iCAT database ( ``irodsctl dbstart`` )
 #. Install iRODS 4.0+ packages: irods-icat and a database plugin package (e.g. irods-database-plugin-postgres)
-#. Patch database with provided upgrade SQL file: `packaging/upgrade-3.3.xto4.0.0.sql`
-#. Update 4.0+ configuration files given previous 3.3.x configuration
+#. Patch database with provided upgrade SQL file ( psql ICAT < `packaging/upgrade-3.3.xto4.0.0.sql` )
+#. If necessary, migrate 3.3.x in-place iCAT database to the system database installation.  It is recommended to dump and restore your database into the system installation.  This will allow the original database to be uninstalled completely, once the iRODS upgrade is confirmed.
+#. Provide a database user 'irods', database password, and owner permissions for that database user to the new system-installed iCAT.
+#. Update 4.0+ configuration files given previous 3.3.x configuration (core.re, server.config, .irodsEnv, etc.) (.odbc.ini DSN needs to be set to either 'postgres', 'mysql', or 'oracle')
 #. Start new 4.0+ iCAT server
 #. Install, setup, and start resource servers
-#. Rebuild Resource Hierarchies from previous Resource Group configurations (iadmin)
+#. Rebuild Resource Hierarchies from previous Resource Group configurations (``iadmin addchildtoresc``)
 #. Install Custom Plugins (Microservice & Resources)
 #. Conformance Testing
 #. Sunset 3.3.x server(s)
@@ -723,16 +726,16 @@ This virtualization enables the coordinating resources to manage both the placem
 
 An intended side effect of the tree metaphor and the virtualization of coordinating resources is the deprecation of the concept of a resource group. Resource groups in iRODS 3.x could not be put into other resource groups. A specific limiting example is a compound resource that, by definition, was a group and could not be placed into another group.  This significantly limited its functionality as a management tool. Groups in iRODS now only refer to user groups.
 
-Read more about Composable Resources at `http://eirods.org/release/e-irods-composable-resources/`__:
+Read more about Composable Resources at `http://irods.org/2013/02/e-irods-composable-resources/`__:
 
 - `Paper (279kB, PDF)`__
 - `Slides (321kB, PDF)`__
 - `Poster (6.4MB, PDF)`__
 
-.. __: http://eirods.org/release/e-irods-composable-resources/
-.. __: http://eirods.org/dev/wp-content/uploads/2013/02/eirods-composable-resources.pdf
-.. __: http://eirods.org/dev/wp-content/uploads/2013/02/eirods-cr-slides.pdf
-.. __: http://eirods.org/dev/wp-content/uploads/2013/02/eirods-composable-resources-poster.pdf
+.. __: http://irods.org/2013/02/e-irods-composable-resources/
+.. __: http://irods.org/dev/wp-content/uploads/2013/02/eirods-composable-resources.pdf
+.. __: http://irods.org/dev/wp-content/uploads/2013/02/eirods-cr-slides.pdf
+.. __: http://irods.org/dev/wp-content/uploads/2013/02/eirods-composable-resources-poster.pdf
 
 Coordinating Resources
 ----------------------
@@ -1515,7 +1518,7 @@ This error can occur when the iRODS user is unknown or invalid in some way (for 
 Glossary
 --------
 
-This glossary attempts to cover most of the terms you may encounter when first interacting with iRODS.  More information can be found on the iRODS wiki at http://irods.org.
+This glossary attempts to cover most of the terms you may encounter when first interacting with iRODS.  More information can be found on the iRODS wiki at http://wiki.irods.org.
 
 Action
     An external (logical) name given to an iRODS Rule(s) that defines a set of macro-level tasks.
