@@ -75,9 +75,8 @@ main( int argc, char **argv ) {
     strncpy( inp._that, "hello, world.", 64 );
 
     helloOut_t* out = 0;
-    void* tmp_out = static_cast< void* >( out );
     status = procApiRequest( conn, 1300, &inp, NULL,
-                             &( tmp_out ), NULL );
+                             ( void** )( &out ), NULL );
     if ( status < 0 ) {
         printf( "\n\nERROR - failed to call our api\n\n\n" );
         return 0;
@@ -85,6 +84,9 @@ main( int argc, char **argv ) {
     else {
         if ( out != NULL ) {
             printf( "\n\nthis [%d]  that [%s] other [%f]\n", out->_this, out->_that, out->_other._value );
+        }
+        else {
+            printf( "ERROR: the 'out' variable is null\n" );
         }
     }
 
