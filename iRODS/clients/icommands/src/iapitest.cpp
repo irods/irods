@@ -83,7 +83,9 @@ main( int argc, char **argv ) {
         return 0;
     }
     else {
-        printf( "\n\nthis [%d]  that [%s] other [%f]\n", out->_this, out->_that, out->_other._value );
+        if ( out != NULL ) {
+            printf( "\n\nthis [%d]  that [%s] other [%f]\n", out->_this, out->_that, out->_other._value );
+        }
     }
 
     rcDisconnect( conn );
