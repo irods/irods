@@ -364,9 +364,11 @@ If you are in need of upgrading from a production E-iRODS 3.0.1 installation, pl
 From iRODS 3.3.x
 ----------------
 
+.. role:: rubric
+
 Upgrading from iRODS 3.3.x to iRODS 4.0+ is not supported with an automatic script.  There is no good way to automate setting the new configuration options (resource hierarchies, server.config, etc.) based solely on the state of a 3.3.x system.  In addition, with some of the new functionality, a system administrator may choose to implement some existing policies in a different manner with 4.0+.
 
-For these reasons, the following manual steps should be carefully studied and understood before beginning the upgrade process.
+:rubric:`For these reasons, the following manual steps should be carefully studied and understood before beginning the upgrade process.`
 
 #. Port any custom development to plugins: Microservices, Resources, Authentication
 #. Make a backup of the iCAT database & configuration files: core.re, core.fnm, core.dvm, etc.
@@ -379,15 +381,16 @@ For these reasons, the following manual steps should be carefully studied and un
 #. Patch database with provided upgrade SQL file ( psql ICAT < `packaging/upgrade-3.3.xto4.0.0.sql` )
 #. If necessary, migrate 3.3.x in-place iCAT database to the system database installation.  It is recommended to dump and restore your database into the system installation.  This will allow the original database to be uninstalled completely, once the iRODS upgrade is confirmed.
 #. Provide a database user 'irods', database password, and owner permissions for that database user to the new system-installed iCAT.
-#. Update 4.0+ configuration files given previous 3.3.x configuration (core.re, server.config, .irodsEnv, etc.) (.odbc.ini DSN needs to be set to either 'postgres', 'mysql', or 'oracle')
+#. Confirm all local at-rest data (any local iRODS Vault paths) has read and write permissions for the new 'irods' unix service account.
+#. Manually update any changes to 'core.re' and 'server.config'.  Keep in mind immediate replication rules (``acPostProcForPut``, etc.) may be superceded by your new resource composition.
+#. Run ``./packaging/setup_database.sh`` (recommended) OR Manually update all 4.0+ configuration files given previous 3.3.x configuration (.irodsEnv, .odbc.ini DSN needs to be set to either 'postgres', 'mysql', or 'oracle').  The automatic ``./packaging/setup_database.sh`` script will work only with the system-installed database server.
 #. Start new 4.0+ iCAT server
-#. Install, setup, and start resource servers
-#. Rebuild Resource Hierarchies from previous Resource Group configurations (``iadmin addchildtoresc``)
+#. On all resource servers in the same Zone, install and setup 4.0+.  Existing configuration details should be ported as well ('server.config', 'core.re', Vault permissions).
+#. Rebuild Resource Hierarchies from previous Resource Group configurations (``iadmin addchildtoresc``) (See `Composable Resources`_)
 #. Install Custom Plugins (Microservice & Resources)
 #. Conformance Testing
 #. Sunset 3.3.x server(s)
 #. Close Maintenance Window
-
 
 ---------------------
 Server Authentication
@@ -396,7 +399,7 @@ Server Authentication
 Within A Zone
 -------------
 
-When a client connects to a resource server and then authenticates, the server connects to the iCAT server to perform the authentication. To make this more secure, you can configure some Server Identifiers (SIDs) to cause the iRODS system to authenticate the servers themselves. These SID passwords should be unique and arbitrary strings, one for your whole zone::
+When a client connects to a resource server and then authenticates, the resource server connects to the iCAT server to perform the authentication. To make this more secure, you can configure some Server Identifiers (SIDs) to cause the iRODS system to authenticate the servers themselves. These SID passwords should be unique and arbitrary strings, one for your whole zone::
 
  LocalZoneSID  SomeChosenIDString
 
@@ -478,9 +481,9 @@ Configuration and maintenance of this type of backup system is out of scope for 
 Architecture
 ------------
 
-iRODS represents a major effort to analyze, harden, and package iRODS for sustainability, modularization, security, and testability.  This has led to a fairly significant refactorization of much of the underlying codebase.  The following descriptions are included to help explain the architecture of iRODS.
+iRODS 4.0+ represents a major effort to analyze, harden, and package iRODS for sustainability, modularization, security, and testability.  This has led to a fairly significant refactorization of much of the underlying codebase.  The following descriptions are included to help explain the architecture of iRODS.
 
-The core is designed to be as immutable as possible and serve as a bus for handling the internal logic of the business of iRODS (data storage, policy enforcement, etc.).  Six or seven major interfaces will be exposed by the core and will allow extensibility and separation of functionality into plugins.  A few plugins are included by default in iRODS to provide a set of base functionality.
+The core is designed to be as immutable as possible and serve as a bus for handling the internal logic of the business of iRODS (data storage, policy enforcement, etc.).  Seven or eight major interfaces will be exposed by the core and will allow extensibility and separation of functionality into plugins.  A few plugins are included by default in iRODS to provide a set of base functionality.
 
 The planned plugin interfaces and their status are listed here:
 
@@ -500,7 +503,7 @@ The planned plugin interfaces and their status are listed here:
 Dynamic Policy Enforcement Points
 ---------------------------------
 
-iRODS has introduced the capability for dynamic policy enforcement points (PEP).  For every operation that is called, two policy enforcement points are constructed (both a pre and post variety), and if it has been defined in core.re or any other loaded rulebase file they will be executed by the rule engine.
+iRODS 4.0+ has introduced the capability for dynamic policy enforcement points (PEP).  For every operation that is called, two policy enforcement points are constructed (both a pre and post variety), and if it has been defined in core.re or any other loaded rulebase file they will be executed by the rule engine.
 
 The PEP will be constructed of the form "pep_PLUGINOPERATION_pre" and "pep_PLUGINOPERATION_post".
 
@@ -845,6 +848,16 @@ The structured file type storage resource is used to interface with files that h
 
 These are used mainly for mounted collections.
 
+Amazon S3 (Archive)
+*******************
+
+The Amazon S3 archive storage resource is used to interface with an S3 bucket.  It is expected to be used as the archive child of a compound resource composition.  The credentials are stored in a file which is referenced by the context string.  Read more at: https://github.com/irods/irods_resource_plugin_s3
+
+DDN WOS (Archive)
+*****************
+
+The DataDirect Networks (DDN) WOS archive storage resource is used to interface with a Web Object Scalar (WOS) Appliance.  It is expected to be used as the archive child of a compound resource composition.  It currently references a single WOS endpoint and WOS policy in the context string.  Read more at: https://github.com/irods/irods_resource_plugin_wos
+
 Non-Blocking
 ************
 
@@ -854,6 +867,13 @@ Mock Archive
 ************
 
 The mock archive storage resource was created mainly for testing purposes to emulate the behavior of object stores (e.g. WOS).  It creates a hash of the file path as the physical name of the Data Object.
+
+Direct Access
+*************
+
+The direct access resource was created for scenarios where data resources need to be accessible both through iRODS and through the local filesystem. A typical usage scenario would be an environment in which there is a shared high performance filesystem mounted on a compute cluster via NFS, and on which iRODS has the files from this filesystem registered in order to provide metadata annotation for the files in this filesystem (i.e. iRODS acts as an "overlay" for the unix file system).
+
+Read more at: https://github.com/irods/irods_resource_plugin_directaccess
 
 Universal Mass Storage Service
 ******************************
@@ -870,13 +890,13 @@ Example::
 Expected
 ********
 
-A few other storage resource types have been brainstormed but are not included at this time:
+A few other storage resource types are under development and will be released as additional separate plugins:
 
- - S3 (1.0b1 released and available separately)
- - WOS (1.0b1 released and available separately)
- - directaccess (run as root) (1.0b1 released and available separately)
- - HPSS (expected)
+ - ERDDAP (expected)
  - HDFS (expected)
+ - HPSS (expected)
+ - Pydap (expected)
+ - TDS (expected)
 
 Managing Child Resources
 ------------------------
@@ -1422,6 +1442,9 @@ The iRODS setting 'StrictACL' is configured on by default in iRODS 4.0+.  This i
 Configuration
 -------------
 
+Configuration Files
+-------------------
+
 There are a number of configuration files that control how an iRODS server behaves.  The following is a listing of the configuration files in an iRODS installation.
 
 This document is intended to explain how the various configuration files are connected, what their parameters are, and when to use them.
@@ -1440,6 +1463,44 @@ This document is intended to explain how the various configuration files are con
 
 ~/.irods/.irodsEnv
     This is the main iRODS configuration file defining the iRODS environment.  Any changes are effective immediately since iCommands reload their environment on every execution.
+
+Checksum Configuration
+----------------------
+
+Checksums in iRODS 4.0+ can be calculated using one of multiple hashing schemes.  Since the default hashing scheme for iRODS 4.0+ is SHA256, some existing earlier checksums may need to be recalculated and stored in the iCAT.
+
+The following two settings, the default hash scheme and the default hash policy, need to be set on both the client and the server:
+
+ +-------------------------+-----------------------------------+
+ | Client (.irodsEnv)      | Server (server.config)            |
+ +=========================+===================================+
+ | irodsDefaultHashScheme  | default_hash_scheme               |
+ |  - SHA256 (default)     |  - SHA256 (default)               |
+ |  - MD5                  |  - MD5                            |
+ +-------------------------+-----------------------------------+
+ | irodsMatchHashPolicy    | match_hash_policy                 |
+ |  - Compatible (default) |  - Compatible (default)           |
+ |  - Strict               |  - Strict                         |
+ +-------------------------+-----------------------------------+
+
+When a request is made, the sender and receiver's hash schemes and the receiver's policy are considered:
+
+  ============    =====================     =================================
+  Sender          Receiver                  Result
+  ============    =====================     =================================
+  MD5             MD5                       Success with MD5
+  SHA256          SHA256                    Success with SHA256
+  MD5             SHA256, Compatible        Success with MD5
+  MD5             SHA256, Strict            Error, USER_HASH_TYPE_MISMATCH
+  SHA256          MD5, Compatible           Success with SHA256
+  SHA256          MD5, Strict               Error, USER_HASH_TYPE_MISMATCH
+  ============    =====================     =================================
+
+If the sender and receiver have consistent hash schemes defined, everything will match.
+
+If the sender and receiver have inconsistent hash schemes defined, and the receiver's policy is set to 'compatible', the sender's hash scheme is used.
+
+If the sender and receiver have inconsistent hash schemes defined, and the receiver's policy is set to 'strict', a USER_HASH_TYPE_MISMATCH error occurs.
 
 ---------------
 Troubleshooting
@@ -1641,11 +1702,14 @@ History of Releases
 ==========   =========    ======================================================
 Date         Version      Description
 ==========   =========    ======================================================
+2014-03-28   4.0.0        Merged Codebase
+                            This is the fourth major release of iRODS and the
+                            first merged open source release from RENCI.
 2014-03-25   4.0.0rc2     Second Release Candidate of Merged Codebase
                             This is the second release candidate of the merged
                             open source release from RENCI.  It includes support
                             for MySQL and Oracle databases, GSI, Kerberos,
-                            NetCDF,direct access resources.
+                            NetCDF, and direct access resources.
 2014-03-08   4.0.0rc1     First Release Candidate of Merged Codebase
                             This is the first release candidate of the merged
                             open source release from RENCI.  It includes support
@@ -1661,48 +1725,48 @@ Date         Version      Description
                             release from RENCI.  It includes pluggable database
                             support and separate packages for the standalone
                             server and its plugins.
-2013-11-16   3.0.1        Second Release.
+2013-11-16   3.0.1        Second Release
                             This is the second open source release from RENCI.
                             It includes Federation compliance with Community
                             iRODS and signaling for dynamic post-PEPs to know
                             whether their operation failed.
-2013-11-14   3.0.1rc1     First Release Candidate of Second Release.
+2013-11-14   3.0.1rc1     First Release Candidate of Second Release
                             This is the first release candidate of the second
                             open source release from RENCI.  It includes
                             a new "--tree" view for `ilsresc` and a more
                             powerful `irodsctl stop`.  In addition, package
                             managers should now be able to handle upgrades
                             more gracefully.
-2013-11-12   3.0.1b2      Second Beta of Second Release.
+2013-11-12   3.0.1b2      Second Beta of Second Release
                             This is the second beta of the second open source
                             release from RENCI.  It includes certification
                             work with the Jargon library, more CI testing,
                             and minor fixes.
-2013-10-31   3.0.1b1      First Beta of Second Release.
+2013-10-31   3.0.1b1      First Beta of Second Release
                             This is the first beta of the second open source
                             release from RENCI.
                             It includes pluggable network and authentication
                             support as well as a rebalance option and migration
                             support for the composable resources.
-2013-06-05   3.0          First Release.
+2013-06-05   3.0          First Release
                             This is the first open source release from RENCI.
                             It includes all the features mentioned below and
                             has been both manually and continuously tested.
-2013-05-14   3.0rc1       First Release Candidate.
+2013-05-14   3.0rc1       First Release Candidate
                             This is the first release candidate from RENCI.  It
                             includes PAM support, additional resources
                             (compound, universalMSS, replication, random,
                             and nonblocking), and additional documentation.
-2013-03-15   3.0b3        Third Beta Release.
+2013-03-15   3.0b3        Third Beta Release
                             This is the third release from RENCI.  It includes
                             a new package for CentOS 6+, support for composable
                             resources, and additional documentation.
-2012-06-25   3.0b2        Second Beta Release.
+2012-06-25   3.0b2        Second Beta Release
                             This is the second release from RENCI.  It includes
                             packages for iCAT, Resource, iCommands, and
                             development, in both DEB and RPM formats.
                             Also includes more documentation.
-2012-03-01   3.0b1        Initial Beta Release.
+2012-03-01   3.0b1        Initial Beta Release
                             This is the first release from RENCI, based on the
                             iRODS 3.0 community codebase.
 ==========   =========    ======================================================
