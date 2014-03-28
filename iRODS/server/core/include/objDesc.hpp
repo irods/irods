@@ -20,9 +20,6 @@
 #include "structFileSync.hpp"
 #include "structFileExtAndReg.hpp"
 #include "dataObjOpenAndStat.hpp"
-#ifdef NETCDF_API
-#include "ncGetAggInfo.hpp"
-#endif
 
 #define NUM_L1_DESC     1026    /* number of L1Desc */
 
@@ -60,9 +57,7 @@ typedef struct l1desc {
     int stageFlag;
     int purgeCacheFlag; // JMC - backport 4537
     int lockFd; // JMC - backport 4604
-#ifdef NETCDF_API
-    openedAggInfo_t openedAggInfo;
-#endif
+    boost::any pluginData;
     rescInfo_t *replRescInfo;   /* if non NULL, repl to this resc on close */
     dataObjInfo_t *replDataObjInfo; /* if non NULL, repl to this dataObjInfo
                                      * on close */
