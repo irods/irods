@@ -77,7 +77,7 @@ main( int argc, char **argv ) {
     helloOut_t* out = 0;
     void* tmp_out = static_cast< void* >( out );
     status = procApiRequest( conn, 1300, &inp, NULL,
-                             &tmp_out, NULL );
+                             &( tmp_out ), NULL );
     if ( status < 0 ) {
         printf( "\n\nERROR - failed to call our api\n\n\n" );
         return 0;
