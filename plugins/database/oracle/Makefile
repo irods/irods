@@ -36,7 +36,7 @@ EXTRA_CFLAGS = \
 
 EXTRA_LDRFLAGS = \
             -L/usr/lib/oracle/11.2/client64/lib/ \
-            -lclntsh -locci 
+            -lclntsh -locci -lnnz11
 #           -lnnz12 -lociei -lclntsh -lclntshcore -lons
 #           -L../../../external/OCI/instantclient_12_1/ \
 
