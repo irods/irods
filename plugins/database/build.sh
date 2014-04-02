@@ -25,7 +25,6 @@ fi
 # =-=-=-=-=-=-=-
 # handle the case of build clean
 if [ "$1" == "clean" ] ; then
-    rm -f $SCRIPTPATH/src/icatCoreTables.sql
     rm -f $SCRIPTPATH/src/icatSysTables.sql
     rm -f $SCRIPTPATH/packaging/irods_database_plugin_*.list
     rm -f $SCRIPTPATH/packaging/setup_database.sh
