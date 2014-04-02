@@ -352,6 +352,20 @@ rename_generated_packages() {
         mv $RENAME_SOURCE $RENAME_DESTINATION
         # database
         if [ "$BUILDIRODS" == "1" -a "$TARGET" == "icat" ] ; then
+            # checking whether to build package for postgres93 for centos6
+            if [ "$DETECTEDOS" == "RedHatCompatible" -a "$DATABASE_PLUGIN_TYPE" == "postgres" ] ; then
+                ostype=`awk '{print $1}' /etc/redhat-release`
+                osversion=`awk '{print $3}' /etc/redhat-release`
+                if [ "$ostype" == "CentOS" -a "$osversion" \> "6" ]; then
+                    DB93_SOURCE=${DB_SOURCE/\*database\*/*database*postgres93*}
+                    DB93_DESTINATION=${DB_DESTINATION/postgres/postgres93}
+                    echo ""
+                    echo "renaming    [$DB93_SOURCE]"
+                    echo "         to [$DB93_DESTINATION]"
+                    mv $DB93_SOURCE $DB93_DESTINATION
+                fi
+            fi
+            # all others
             echo ""
             echo "renaming    [$DB_SOURCE]"
             echo "         to [$DB_DESTINATION]"
@@ -1068,7 +1082,8 @@ if [ "$BUILDIRODS" == "1" ] ; then
         # build icat package
         $MAKEJCMD -C $BUILDDIR icat-package
         # build designated database plugin
-        $BUILDDIR/plugins/database/build.sh $2
+        DATABASE_PLUGIN_TYPE=$2
+        $BUILDDIR/plugins/database/build.sh $DATABASE_PLUGIN_TYPE
     elif [ "$SERVER_TYPE" == "RESOURCE" ] ; then
         # build resource package
         $MAKEJCMD -C $BUILDDIR resource-package

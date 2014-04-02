@@ -197,6 +197,14 @@ if [ "$DETECTEDOS" == "RedHatCompatible" ] ; then # CentOS and RHEL and Fedora
         epmosversion="NOTCENTOS6"
     fi
     $EPMCMD $EPMOPTS -f rpm irods-database-plugin-${DB_TYPE} $epmvar=true $epmosversion=true $LISTFILE
+    if [ "$epmosversion" == "CENTOS6" -a "$DB_TYPE" == "postgres" ] ; then
+        # also build a postgres93 version of the list file and packaging
+        NINETHREELISTFILE=${LISTFILE/postgres/postgres93}
+        set_tmpfile
+        sed -e 's/postgresql-odbc/postgresql93-odbc/' $LISTFILE > $TMPFILE
+        sed -e 's/postgresql$/postgresql93/' $TMPFILE > $NINETHREELISTFILE
+        $EPMCMD $EPMOPTS -f rpm irods-database-plugin-${DB_TYPE}93 $epmvar=true $epmosversion=true $NINETHREELISTFILE
+    fi
 elif [ "$DETECTEDOS" == "SuSE" ] ; then # SuSE
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS RPMs${text_reset}"
     epmvar="SUSERPM"
