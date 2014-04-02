@@ -1187,9 +1187,9 @@ sub testDatabase()
 	#my ($status,$output) = run( "$test_cll $DATABASE_ADMIN_NAME '$DATABASE_ADMIN_PASSWORD'" );
 
 	$exec_str = "$test_cll $DATABASE_ADMIN_NAME '$DATABASE_ADMIN_PASSWORD'"; 
-	if ( $DATABASE_TYPE eq "oracle" ) {
-	    $exec_str = "$test_cll $DATABASE_ADMIN_NAME"."@".$DATABASE_HOST.":$DATABASE_PORT '$DATABASE_ADMIN_PASSWORD'"; 
-        }
+	#if ( $DATABASE_TYPE eq "oracle" ) {
+	#    $exec_str = "$test_cll $DATABASE_ADMIN_NAME"."@".$DATABASE_HOST.":$DATABASE_PORT '$DATABASE_ADMIN_PASSWORD'"; 
+    #    }
 
 	my ($status,$output) = run( "$exec_str" );
 	printLog( "    ", $output );
