@@ -64,37 +64,38 @@ class Test_LoadBalanced_Resource(unittest.TestCase, ResourceBase):
        # =-=-=-=-=-=-=-
        # read server.config and .odbc.ini
        cfg = Server_Config() 
-       
-       # =-=-=-=-=-=-=-
-       # seed load table with fake values - rescA should win
-       secs = int( time.time() )
-       cfg.exec_sql_cmd( "insert into r_server_load_digest values ('rescA', 50, %s)" % secs )
-       cfg.exec_sql_cmd( "insert into r_server_load_digest values ('rescB', 75, %s)" % secs )
-       cfg.exec_sql_cmd( "insert into r_server_load_digest values ('rescC', 95, %s)" % secs )
-
-       # =-=-=-=-=-=-=-
-       # build a logical path for putting a file
-       test_file_path = "/"+s.adminsession.getZoneName()+"/home/"+s.adminsession.getUserName()+"/"+s.adminsession.sessionId
-       test_file = test_file_path + "/test_file.txt"
-
-       # =-=-=-=-=-=-=-
-       # put a test_file.txt - should be on rescA given load table values
-       assertiCmd( s.adminsession ,"iput -f ./test_load_balanced_suite.py "+test_file )
-       assertiCmd( s.adminsession, "ils -L "+test_file, "LIST", "rescA" )
-       assertiCmd( s.adminsession ,"irm -f "+test_file )
     
-       # =-=-=-=-=-=-=-
-       # drop rescC to a load of 15 - this should now win
-       cfg.exec_sql_cmd( "update r_server_load_digest set load_factor=15 where resc_name='rescC'")
-       
-       # =-=-=-=-=-=-=-
-       # put a test_file.txt - should be on rescC given load table values
-       assertiCmd( s.adminsession ,"iput -f ./test_load_balanced_suite.py "+test_file )
-       assertiCmd( s.adminsession, "ils -L "+test_file, "LIST", "rescC" )
-       assertiCmd( s.adminsession ,"irm -f "+test_file )
-    
-       # =-=-=-=-=-=-=-
-       # clean up our alterations to the load table
-       cfg.exec_sql_cmd( "delete from r_server_load_digest where resc_name='rescA'")
-       cfg.exec_sql_cmd( "delete from r_server_load_digest where resc_name='rescB'")
-       cfg.exec_sql_cmd( "delete from r_server_load_digest where resc_name='rescC'")
+       if cfg.values[ 'catalog_database_type' ] == "postgres" :
+           # =-=-=-=-=-=-=-
+           # seed load table with fake values - rescA should win
+           secs = int( time.time() )
+           cfg.exec_sql_cmd( "insert into r_server_load_digest values ('rescA', 50, %s)" % secs )
+           cfg.exec_sql_cmd( "insert into r_server_load_digest values ('rescB', 75, %s)" % secs )
+           cfg.exec_sql_cmd( "insert into r_server_load_digest values ('rescC', 95, %s)" % secs )
+
+           # =-=-=-=-=-=-=-
+           # build a logical path for putting a file
+           test_file_path = "/"+s.adminsession.getZoneName()+"/home/"+s.adminsession.getUserName()+"/"+s.adminsession.sessionId
+           test_file = test_file_path + "/test_file.txt"
+
+           # =-=-=-=-=-=-=-
+           # put a test_file.txt - should be on rescA given load table values
+           assertiCmd( s.adminsession ,"iput -f ./test_load_balanced_suite.py "+test_file )
+           assertiCmd( s.adminsession, "ils -L "+test_file, "LIST", "rescA" )
+           assertiCmd( s.adminsession ,"irm -f "+test_file )
+        
+           # =-=-=-=-=-=-=-
+           # drop rescC to a load of 15 - this should now win
+           cfg.exec_sql_cmd( "update r_server_load_digest set load_factor=15 where resc_name='rescC'")
+           
+           # =-=-=-=-=-=-=-
+           # put a test_file.txt - should be on rescC given load table values
+           assertiCmd( s.adminsession ,"iput -f ./test_load_balanced_suite.py "+test_file )
+           assertiCmd( s.adminsession, "ils -L "+test_file, "LIST", "rescC" )
+           assertiCmd( s.adminsession ,"irm -f "+test_file )
+        
+           # =-=-=-=-=-=-=-
+           # clean up our alterations to the load table
+           cfg.exec_sql_cmd( "delete from r_server_load_digest where resc_name='rescA'")
+           cfg.exec_sql_cmd( "delete from r_server_load_digest where resc_name='rescB'")
+           cfg.exec_sql_cmd( "delete from r_server_load_digest where resc_name='rescC'")
