@@ -99,3 +99,5 @@ class Test_LoadBalanced_Resource(unittest.TestCase, ResourceBase):
            cfg.exec_sql_cmd( "delete from r_server_load_digest where resc_name='rescA'")
            cfg.exec_sql_cmd( "delete from r_server_load_digest where resc_name='rescB'")
            cfg.exec_sql_cmd( "delete from r_server_load_digest where resc_name='rescC'")
+       else:
+           print 'skipping test_load_balanced due to unsupported database for this test.'
