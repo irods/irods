@@ -508,7 +508,7 @@ msiVacuum( ruleExecInfo_t *rei ) {
  *
  * \note This is run via an admin rule
  *
- * \usage See clients/icommands/test/rules3.0/ and https://www.irods.org/index.php/Quotas
+ * \usage See clients/icommands/test/rules3.0/ and https://wiki.irods.org/index.php/Quotas
  *
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a

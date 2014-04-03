@@ -1022,7 +1022,7 @@ msiAddSelectFieldToGenQuery( msParam_t *select, msParam_t *function, msParam_t *
  *
  * \usage See clients/icommands/test/rules3.0/
  *
- * \param[in] attribute - Required - A STR_MS_T with the iCAT attribute name (see www.irods.org/index.php/icatAttributes).
+ * \param[in] attribute - Required - A STR_MS_T with the iCAT attribute name (see wiki.irods.org/index.php/icatAttributes).
  * \param[in] opr - Required - A STR_MS_T with the operator.
  * \param[in] value - Required - A STR_MS_T with the value.
  * \param[in,out] queryInput - Required - A GenQueryInp_MS_T.

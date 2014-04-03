@@ -25,7 +25,7 @@ B. Configurating a S3 enabled server
 
 2) create a S3 resource - The S3 driver is implemented as a compound
    class resource because of the S3 API. As explained in this link: 
-   https://www.irods.org/index.php/resource, the compound resource 
+   https://wiki.irods.org/index.php/resource, the compound resource
    implementation requires a cache class resource to be configured in the 
    same resource group as the compound resource. Data stored in the compound 
    resource cannot be accessed directly but through the cache resource. 

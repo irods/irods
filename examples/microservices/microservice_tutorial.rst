@@ -22,7 +22,7 @@ This tutorial covers two built-in examples: "Hello World!" and "CURL Get".
 
 To run this tutorial:
 
-#. Download iRODS binary package and Development Tools from http://www.eirods.org/download
+#. Download iRODS binary package and Development Tools from http://www.irods.org/download
 #. Install iRODS
 #. Install the iRODS Development Tools
 #. Install package libboost1.xx-dev
@@ -50,10 +50,10 @@ A set of helper functions is commonly used in microservices to interface with th
 
 Where 'Xxx' varies depending on the type of parameter ('Str', 'Int', 'DataObjInp', etc.. ).
 
-For more information on iRODS microservices and related helper functions see https://www.irods.org/index.php/iRODS_Introduction sections 6 and 8:
+For more information on iRODS microservices and related helper functions see https://wiki.irods.org/index.php/iRODS_Introduction sections 6 and 8:
 
-- https://www.irods.org/index.php/iRODS_Introduction#iRODS_Micro-services
-- https://www.irods.org/index.php/iRODS_Introduction#Extending_iRODS
+- https://wiki.irods.org/index.php/iRODS_Introduction#iRODS_Micro-services
+- https://wiki.irods.org/index.php/iRODS_Introduction#Extending_iRODS
 
 iRODS allows microservices to be dynamically loaded as plugins, without the need to rebuild the iRODS server.
 
