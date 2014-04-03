@@ -199,7 +199,7 @@ if [ "$DETECTEDOS" == "RedHatCompatible" ] ; then # CentOS and RHEL and Fedora
     $EPMCMD $EPMOPTS -f rpm irods-database-plugin-${DB_TYPE} $epmvar=true $epmosversion=true $LISTFILE
     if [ "$epmosversion" == "CENTOS6" -a "$DB_TYPE" == "postgres" ] ; then
         # also build a postgres93 version of the list file and packaging
-        NINETHREELISTFILE=${LISTFILE/postgres/postgres93}
+        NINETHREELISTFILE=${LISTFILE/postgres.list/postgres93.list}
         set_tmpfile
         sed -e 's/postgresql-odbc/postgresql93-odbc/' $LISTFILE > $TMPFILE
         sed -e 's/postgresql$/postgresql93/' $TMPFILE > $NINETHREELISTFILE
