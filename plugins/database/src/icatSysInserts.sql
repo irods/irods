@@ -9,6 +9,8 @@ quasi-universal time) for an arbitrary recent past time
 (2007-01-28 08:00:00).
 */
 
+insert into R_GRID_CONFIGURATION values ( 'database', 'schema_version', '1' );
+
 insert into R_TOKN_MAIN values ('token_namespace',0,'zone_type','','','','','1170000000','1170000000');
 insert into R_TOKN_MAIN values ('token_namespace',1,'user_type','','','','','1170000000','1170000000');
 insert into R_TOKN_MAIN values ('token_namespace',2,'data_type','','','','','1170000000','1170000000');
