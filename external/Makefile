@@ -1,3 +1,5 @@
+include ../iRODS/config/config.mk
+
 include ../iRODS/config/external_versions.txt
 
 MAKEFLAGS += --no-print-directory
@@ -5,7 +7,7 @@ MAKEFLAGS += --no-print-directory
 RENCI_FTP_EXTERNAL=ftp://ftp.renci.org/pub/irods/external
 RENCI_FTP_BUILD=ftp://ftp.renci.org/pub/irods/build
 
-.PHONY : default retrieve build generate clean cmake libarchive jansson boost hdf5 netcdf epm lib_mysqludf_preg libs3
+.PHONY : default macosxdatabase retrieve build generate clean cmake libarchive jansson boost hdf5 netcdf epm lib_mysqludf_preg libs3
 
 OSNAME=$$(../packaging/find_os.sh)
 OSVERSION=$$(../packaging/find_os_version.sh)
@@ -34,17 +36,46 @@ LIBS3VERSIONMAKE=$(LIBS3VERSION)/GNUmakefile
 
 FAKETARGETFORMAKE=FakeTargetForMake
 
+PG_VERSION=9.3.4
+UNIXODBC_VERSION=2.2.12
+PGUNIXODBCARCHIVE=postgresql-$(PG_VERSION)_unixODBC-$(UNIXODBC_VERSION)-$(OSNAME).tar.gz
+
 default :
 	@echo "Getting $(IRODSEXTERNALARCHIVE) -> $(IRODSEXTERNALLOCAL)..."
 	@curl -o $(IRODSEXTERNALLOCAL) -z $(IRODSEXTERNALLOCAL) $(RENCI_FTP_BUILD)/$(IRODSEXTERNALARCHIVE) > /dev/null 2>&1
 	@$(MAKE) $(FAKETARGETFORMAKE)
+
+$(PGUNIXODBCARCHIVE) :
+	echo "Getting PostgreSQL and unixODBC source for MacOSX..."; \
+		curl -o $(PGUNIXODBCARCHIVE) -z $(PGUNIXODBCARCHIVE) $(RENCI_FTP_EXTERNAL)/$(PGUNIXODBCARCHIVE);
+
+postgresql-$(PG_VERSION)/Makefile : $(PGUNIXODBCARCHIVE)
+	tar zxf $(PGUNIXODBCARCHIVE); \
+		cd postgresql-$(PG_VERSION); \
+		./configure --prefix=`pwd`/pgsql --without-readline --without-zlib;
+
+build_database_for_macosx : postgresql-$(PG_VERSION)/Makefile
+	cd postgresql-$(PG_VERSION); \
+		$(MAKE); \
+		$(MAKE) install; \
+		cd src/interfaces/odbc/unixODBC-$(UNIXODBC_VERSION); \
+		./configure --prefix=`pwd`/../../../../pgsql --enable-gui=no --enable-static; \
+		$(MAKE); \
+		$(MAKE) install; \
+		$(MAKE) distclean; \
+		cd ../../../../; \
+		$(MAKE) distclean;
 
 $(FAKETARGETFORMAKE) : $(IRODSEXTERNALLOCAL)
 	@echo "Unpacking $(IRODSEXTERNALLOCAL)..."
 	@tar zxf $(IRODSEXTERNALLOCAL)
 	@touch $(FAKETARGETFORMAKE)
 
+ifeq ($(OS_platform), osx_platform)
+build : cmake libarchive jansson boost epm hdf5 netcdf lib_mysqludf_preg libs3 build_database_for_macosx
+else
 build : cmake libarchive jansson boost epm hdf5 netcdf lib_mysqludf_preg libs3
+endif
 
 generate : build
 	@echo "Building $(IRODSEXTERNALARCHIVE)..."
@@ -206,6 +237,11 @@ clean :
 	@echo "Cleaning lib_mysqludf_preg..."
 	@rm -rf $(LIB_MYSQLUDF_PREG)
 	@rm -f $(LIB_MYSQLUDF_PREG_ARCHIVE)
+	@if [ $(OSNAME) = "MacOSX" ] ; then \
+		echo "Cleaning PostgreSQL and UnixODBC..."; \
+		rm -f $(PGUNIXODBCARCHIVE); \
+		rm -rf postgresql-$(PG_VERSION); \
+		fi
 	@echo "Cleaning $(IRODSEXTERNALARCHIVE)"
 	@rm -f $(IRODSEXTERNALARCHIVE)
 	@rm -f $(IRODSEXTERNALLOCAL)

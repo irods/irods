@@ -239,7 +239,7 @@ if [ "$COVERAGE" == "1" ] ; then
     # sets listfile coverage options
     EPMOPTS="$EPMOPTS COVERAGE=true"
 else
-    EPMOPTS=""
+    EPMOPTS="-g"
 fi
 
 # =-=-=-=-=-=-=-

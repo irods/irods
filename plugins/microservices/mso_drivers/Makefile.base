@@ -18,6 +18,13 @@ INC = -I${IRODSDIR}/lib/core/include/ -I${IRODSDIR}/lib/api/include/ -I${IRODSDI
 
 MY_CFLAG += ${INC}
 
+
+ifeq ($(OS_platform), osx_platform)
+LDADD += "-Wl,-undefined,dynamic_lookup"
+else
+LDADD += "-Wl,-E"
+endif
+
 ifeq ($(IRODS_BUILD_COVERAGE), 1)
 GCC += -fprofile-arcs -ftest-coverage -lgcov
 OBJS = $(patsubst %.cpp, %.o, ${SRCS})
@@ -36,7 +43,7 @@ clean:
 
 ${FULLTARGET}: ${OBJS}
 	@-mkdir -p ${SODIR} > /dev/null 2>&1
-	${GCC} ${LDRFLAGS} -D${OS_platform} -fPIC -shared -o ${FULLTARGET} ${OBJS} ../../../../iRODS/lib/core/obj/irods_plugin_base.o ${EXTRALIBS}
+	${GCC} ${LDRFLAGS} -D${OS_platform} -fPIC ${LDADD} -shared -o ${FULLTARGET} ${OBJS} ../../../../iRODS/lib/core/obj/irods_plugin_base.o ${EXTRALIBS}
 
 ${OBJDIR}/%.o: %.cpp
 	${GCC} ${MY_CFLAG} -D${OS_platform} -fPIC -c -g -o $@ $< 

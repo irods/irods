@@ -29,9 +29,6 @@ else
 CCFLAGS += -Wno-write-strings
 endif
 
-# added by Terrell
-# silence deprecation warnings until we can use newer compilers on CentOS
-CCFLAGS += -Wno-deprecated
 # show all code that is not reachable
 #CCFLAGS += -Wunreachable-code
 
@@ -101,6 +98,7 @@ endif
 #
 AROPT= -crs
 ifeq ($(OS_platform), osx_platform)
+CCFLAGS += -Wno-deprecated
 AROPT= -cr
 endif
 
@@ -149,10 +147,11 @@ ifdef hardware_platform
 MY_CFLAG+= -D$(hardware_platform)
 endif
 
-ifeq ($(CC_IS_GCC), 1)
-MY_CFLAG+=-Wall -Werror
+ifneq ($(OS_platform), osx_platform)
+    ifeq ($(CC_IS_GCC), 1)
+    MY_CFLAG+=-Wall -Werror
+    endif
 endif
-
 # Alpha
 ifeq ($(OS_platform), alpha_platform)
 MY_CFLAGS+=-pthread  -std0 -verbose

@@ -19,12 +19,16 @@
 use File::Spec;
 use File::Path;
 use File::Copy;
+use File::Basename;
 use Cwd;
 use Cwd "abs_path";
 use Config;
 
 $version{"irodsctl.pl"} = "September 2011";
 
+
+$scriptfullpath = abs_path(__FILE__);
+$scripttoplevel = dirname(dirname(dirname(dirname($scriptfullpath))));
 
 
 ########################################################################
@@ -1245,6 +1249,11 @@ sub doTestIcommands
 #
 sub doTestIcat
 {
+        # Update environment PATH for run-in-place tests
+        $ENV{PATH} = "$ENV{PATH}:$scripttoplevel/iRODS/clients/icommands/bin";
+        $ENV{PATH} = "$ENV{PATH}:$scripttoplevel/iRODS/server/test/bin";
+        $ENV{PATH} = "$ENV{PATH}:$scripttoplevel/plugins/database";
+
 	# Connect to iRODS.
 	my $output  = `$iinit $IRODS_ADMIN_PASSWORD 2>&1`;
 	if ( $? != 0 )

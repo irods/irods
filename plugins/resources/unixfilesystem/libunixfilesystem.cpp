@@ -59,6 +59,12 @@
 #if defined(solaris_platform)
 #include <sys/statvfs.h>
 #endif
+
+#if defined(osx_platform)
+#include <sys/param.h>
+#include <sys/mount.h>
+#endif
+
 #if defined(linux_platform)
 #include <sys/vfs.h>
 #endif

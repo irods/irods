@@ -73,15 +73,31 @@ INCLUDES +=	-I$(incDir) -I$(reIncDir)
 CFLAGS_OPTIONS := -g $(CFLAGS) $(MY_CFLAG)
 ifdef IRODS_FS
 CFLAGS_OPTIONS += -D_REENTRANT
-INCLUDES +=	-I$(fuseHomeDir)/include
+    ifeq (${OS_platform}, osx_platform)
+    INCLUDES +=    -I$(fuseHomeDir)/include/osxfuse
+    else
+    INCLUDES +=	-I$(fuseHomeDir)/include
+    endif
 endif
+
+
+
 
 CFLAGS =	$(CFLAGS_OPTIONS) $(INCLUDES) $(LIB_INCLUDES) $(SVR_INCLUDES) $(MODULE_CFLAGS)
 
 ifeq ($(OS_platform), linux_platform)
-LDFLAGS +=	$(LDADD) $(MODULE_LDFLAGS) -L$(fuseHomeDir)/lib -lfuse -lrt
+LDFLAGS +=	$(LDADD) $(MODULE_LDFLAGS) -L$(fuseHomeDir)/lib -lfuse
 else
-LDFLAGS +=	$(LDADD) $(MODULE_LDFLAGS) -L$(fuseHomeDir)/lib -lfuse 
+    LDFLAGS +=     $(LDADD) $(MODULE_LDFLAGS) -L$(fuseHomeDir)/lib
+    ifeq ($(OS_platform), osx_platform)
+    LDFLAGS +=     -losxfuse
+    else
+    LDFLAGS +=     -lfuse
+    endif
+endif
+
+ifeq ($(OS_platform), linux_platform)
+    LDRTFLAGS = -lrt
 endif
 
 # for checking memleak
@@ -190,7 +206,7 @@ $(reObjDir)/%.o:	$(reSrcDir)/%.c $(LIBRARY)
 
 $(binDir)/%:	$(objDir)/%.o $(LIB_OBJS)
 	@echo "Link fuse `basename $@`..."
-	@$(LDR) -o $@ $< $(LIB_OBJS) $(SVR_OBJS) $(LDFLAGS) $(BOOST_LIBS) -lcrypto -lssl -lrt
+	@$(LDR) -o $@ $< $(LIB_OBJS) $(SVR_OBJS) $(LDFLAGS) $(BOOST_LIBS) $(LDRTFLAGS) -lcrypto -lssl
 
 
 

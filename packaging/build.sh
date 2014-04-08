@@ -287,7 +287,7 @@ rename_generated_packages() {
 
     #################
     # icat and resource server packages
-    RENAME_SOURCE="./linux*/irods-*$IRODSVERSION*.$EXTENSION"
+    RENAME_SOURCE="./[lm]*/irods-*$IRODSVERSION*.$EXTENSION" # [lm] finds linux and macosx, avoids build/ directory
     RENAME_SOURCE_DOCS=${RENAME_SOURCE/irods-/irods-docs-}
     RENAME_SOURCE_DEV=${RENAME_SOURCE/irods-/irods-dev-}
     RENAME_SOURCE_RUNTIME=${RENAME_SOURCE/irods-/irods-runtime-}
@@ -324,7 +324,7 @@ rename_generated_packages() {
     #################
     # database packages
     if [ "$TARGET" == "icat" ] ; then
-        DB_SOURCE="./plugins/database/linux*/*database*.$EXTENSION"
+        DB_SOURCE="./plugins/database/*/*database*.$EXTENSION"
         echo `ls $DB_SOURCE`
         DB_PACKAGE=`basename $DB_SOURCE`
         DB_DESTINATION="$IRODSPACKAGEDIR/$DB_PACKAGE"
@@ -697,7 +697,7 @@ else
     GREPCMD="grep"
 fi
 
-LIBFUSEDEV=`find /usr/include -name fuse.h 2> /dev/null | $GREPCMD -v linux`
+LIBFUSEDEV=`find /usr/include /usr/local/Cellar -name fuse.h 2> /dev/null | $GREPCMD -v linux`
 if [ "$LIBFUSEDEV" == "" ] ; then
     if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
         PREFLIGHT="$PREFLIGHT libfuse-dev"
@@ -798,7 +798,7 @@ else
 fi
 
 # needed for lib_mysqludf_preg
-MYSQLDEV=`find /usr/include/mysql /opt/csw/include/mysql -name mysql.h 2> /dev/null`
+MYSQLDEV=`find /usr/include/mysql /opt/csw/include/mysql /usr/local/Cellar -name mysql.h 2> /dev/null`
 if [ "$MYSQLDEV" == "" ] ; then
     if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
         PREFLIGHT="$PREFLIGHT libmysqlclient-dev"
@@ -816,7 +816,7 @@ else
 fi
 
 # needed for lib_mysqludf_preg
-PCREDEV=`find /usr/include/ /opt/csw/include/ -name pcre.h 2> /dev/null`
+PCREDEV=`find /usr/include/ /opt/csw/include/ /usr/local/Cellar -name pcre.h 2> /dev/null`
 if [ "$PCREDEV" == "" ] ; then
     if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
         PREFLIGHT="$PREFLIGHT libpcre3-dev"
@@ -1140,6 +1140,26 @@ if [ "$BUILDIRODS" == "1" ] ; then
     # =-=-=-=-=-=-=-
     # exit early for run-in-place option
     if [ "$RUNINPLACE" == "1" ] ; then
+        # instructions
+        if [ "$SERVER_TYPE" == "ICOMMANDS" ] ; then
+            echo ""
+            echo "To add the iCommands to your path, please run:"
+            echo "  export PATH=\$PATH:$BUILDDIR/iRODS/clients/icommands/bin"
+        elif [ "$SERVER_TYPE" == "RESOURCE" ] ; then
+            echo ""
+            echo "To complete your installation, please run:"
+            echo "  ./packaging/setup_resource.sh"
+        elif [ "$SERVER_TYPE" == "ICAT" ] ; then
+            if [ "$DETECTEDOS" == "MacOSX" ] ; then
+                echo ""
+                echo "For this build on MacOSX, you will need to prepare PostgreSQL"
+                echo "for use with iRODS.  Please refer to the instructions in:"
+                echo "  ./packaging/MACOSX_DATABASE_SETUP.txt"
+            fi
+            echo ""
+            echo "To complete your installation, please run:"
+            echo "  ./plugins/database/packaging/setup_database.sh"
+        fi
         # boilerplate
         print_script_finish_box
         exit 0
@@ -1362,11 +1382,15 @@ elif [ "$DETECTEDOS" == "Solaris" ] ; then  # Solaris
         $EPMCMD $EPMOPTS -f pkg irods-icommands $epmvar=true ./packaging/irods-icommands.list
     fi
 elif [ "$DETECTEDOS" == "MacOSX" ] ; then  # MacOSX
+    EPMOPTS="$EPMOPTS -g "
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS DMGs${text_reset}"
     epmvar="OSX$SERVER_TYPE"
     if [ "$SERVER_TYPE" == "ICAT" ] ; then
+        echo "${text_green}${text_bold}-- packaging irods-icat${text_reset}"
         $EPMCMD $EPMOPTS -f osx irods-icat $epmvar=true ./packaging/irods.list
+        echo "${text_green}${text_bold}-- packaging irods-dev${text_reset}"
         $EPMCMD $EPMOPTS -f osx irods-dev $epmvar=true ./packaging/irods-dev.list
+        echo "${text_green}${text_bold}-- packaging irods-runtime${text_reset}"
         $EPMCMD $EPMOPTS -f osx irods-runtime $epmvar=true ./packaging/irods-runtime.list
     elif [ "$SERVER_TYPE" = "RESOURCE" ] ; then
         $EPMCMD $EPMOPTS -f osx irods-resource $epmvar=true ./packaging/irods.list

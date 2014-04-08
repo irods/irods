@@ -19,6 +19,12 @@ INC = -I${IRODSDIR}/lib/core/include/ -I${IRODSDIR}/lib/api/include/ -I${IRODSDI
 
 MY_CFLAG += ${INC}
 
+ifeq ($(OS_platform), osx_platform)
+LDADD += "-Wl,-undefined,dynamic_lookup"
+else
+LDADD += "-Wl,-E"
+endif
+
 ifeq ($(IRODS_BUILD_COVERAGE), 1)
 GCC += -fprofile-arcs -ftest-coverage -lgcov
 OBJS = $(patsubst %.cpp, %.o, ${SRCS})
@@ -39,7 +45,7 @@ clean:
 ${FULLTARGET}: ${OBJS}
 	@echo "Building Auth Plugins"
 	@-mkdir -p ${SODIR} > /dev/null 2>&1
-	${GCC} ${MY_CFLAG} ${LDRFLAGS} -D${OS_platform} -fPIC "-Wl,-E" -shared -o ${FULLTARGET} ${OBJS} ${EXTRALIBS} ../../../iRODS/lib/api/obj/rcAuthCheck.o
+	${GCC} ${MY_CFLAG} ${LDRFLAGS} -D${OS_platform} -fPIC ${LDADD} -shared -o ${FULLTARGET} ${OBJS} ${EXTRALIBS} ../../../iRODS/lib/api/obj/rcAuthCheck.o
 
 ${OBJDIR}/%.o: %.cpp
 	${GCC} ${MY_CFLAG} -D${OS_platform} -fPIC -c -g -o $@ $<

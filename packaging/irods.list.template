@@ -57,6 +57,14 @@ $ICAT=true
 $ARCH=true
 $RESOURCE=true
 
+%elseif OSXICAT
+$OSX=true
+$ICAT=true
+
+%elseif OSXRESOURCE
+$OSX=true
+$RESOURCE=true
+
 %endif
 
 
@@ -175,21 +183,31 @@ else
   # New Install
   echo "Creating Service Group and Account: $OS_IRODS_ACCT at $IRODS_HOME_DIR "
 
+  # Detect OS
+  UNAMERESULTS=`uname`
+  if [ "$$UNAMERESULTS" = "SunOS" ] ; then
+    DETECTED_OS="Solaris"
+  elif [ -f "/usr/bin/sw_vers" ] ; then
+    DETECTED_OS="MacOSX"
+  else
+    DETECTED_OS="Linux"
+  fi
+
   set +e
   CHECKGROUP=`getent group $OS_IRODS_ACCT `
   CHECKACCT=`getent passwd $OS_IRODS_ACCT `
   set -e
-  if [ "$$CHECKGROUP" = "" ]; then
+  if [ "$$CHECKGROUP" = "" ] ; then
     /usr/sbin/groupadd -r $OS_IRODS_ACCT
   else
     echo "ERROR :: Please delete the existing Service Group $OS_IRODS_ACCT before proceeding."
-    if [ "$$CHECKACCT" = "" ]; then
+    if [ "$$CHECKACCT" != "" ] ; then
       echo "      :: The $OS_IRODS_ACCT Service Account must be deleted prior to deleting the $OS_IRODS_ACCT Service Group."
     fi
     exit 1
   fi
 
-  if [ "$$CHECKACCT" = "" ]; then
+  if [ "$$CHECKACCT" = "" ] ; then
     useradd -r -d $IRODS_HOME_DIR -M -s /bin/bash -g $OS_IRODS_ACCT -c "iRODS Administrator" $OS_IRODS_ACCT
   else
     echo "ERROR :: Please delete the existing Service Account $OS_IRODS_ACCT before proceeding."

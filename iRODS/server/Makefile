@@ -199,6 +199,7 @@ CFLAGS +=       -DCACHE_ENABLE
 
 ifeq ($(OS_platform), osx_platform)
 # osx_platform does not support the POSIX realtime extension, but the shared memory functions are supported 
+LDADD += -rdynamic -force_flat_namespace
 else
 LDADD +=		-lrt
 endif
@@ -542,12 +543,12 @@ $(TEST_OBJS):	$(svrTestObjDir)/%.o: $(svrTestSrcDir)/%.cpp $(DEPEND) $(BOOST_LIB
 # reTest
 $(svrTestBinDir)/reTest: $(svrTestObjDir)/reTest.o $(OBJS) $(BOOST_LIBS) $(BOOST_LIBS)
 	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $^ $(LDFLAGS) $(BOOST_LIBS) -lrt
+	@$(LDR) -o $@ $^ $(LDFLAGS) $(BOOST_LIBS) 
 
 # chl
 $(svrTestBinDir)/test_chl: db_plugin_with_no_re $(svrTestObjDir)/test_chl.o $(SVR_ICAT_OBJS) $(LIBRARY) $(BOOST_LIBS) $(DB_IFACE_OBJS)
 	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $(svrTestObjDir)/test_chl.o $(LIBRARY) $(SVR_ICAT_OBJS) $(svrCoreObjDir)/irods_server_properties.o $(DB_PLUGIN_OBJ_WITH_NO_RE) $(DB_IFACE_OBJS) $(BOOST_LIBS) $(LDFLAGS) -lrt
+	@$(LDR) -o $@ $(svrTestObjDir)/test_chl.o $(LIBRARY) $(SVR_ICAT_OBJS) $(svrCoreObjDir)/irods_server_properties.o $(DB_PLUGIN_OBJ_WITH_NO_RE) $(DB_IFACE_OBJS) $(BOOST_LIBS) $(LDFLAGS)
 
 #
 # Rule Admin Targets

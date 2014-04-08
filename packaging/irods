@@ -25,30 +25,36 @@ cd $IRODS_HOME
 
 DETECTEDOS=`../packaging/find_os.sh`
 
+if [ "$DETECTEDOS" = "MacOSX" ] ; then
+    SUSHELLOPTS=""
+else
+    SU_SHELL_OPTS="--shell=/bin/bash"
+fi
+
 case $1 in
 status)
-    su --shell=/bin/bash -c "$IRODS_CTL status" irods
+    su $SU_SHELL_OPTS irods -c "$IRODS_CTL status"
     ;;
 start)
-    su --shell=/bin/bash -c "$IRODS_CTL istart" irods
+    su $SU_SHELL_OPTS irods -c "$IRODS_CTL istart"
     if [ "$DETECTEDOS" = "RedHatCompatible" -o "$DETECTEDOS" = "SuSE" ] ; then
         touch /var/lock/subsys/irods
     fi
     ;;
 stop)
-    su --shell=/bin/bash -c "$IRODS_CTL istop" irods
+    su $SU_SHELL_OPTS irods -c "$IRODS_CTL istop"
     if [ "$DETECTEDOS" = "RedHatCompatible" -o "$DETECTEDOS" = "SuSE" ] ; then
         rm /var/lock/subsys/irods
     fi
     ;;
 restart)
-    su --shell=/bin/bash -c "$IRODS_CTL irestart" irods
+    su $SU_SHELL_OPTS irods -c "$IRODS_CTL irestart"
     if [ "$DETECTEDOS" = "RedHatCompatible" -o "$DETECTEDOS" = "SuSE" ] ; then
         touch /var/lock/subsys/irods
     fi
     ;;
 force-reload)
-    su --shell=/bin/bash -c "$IRODS_CTL irestart" irods
+    su $SU_SHELL_OPTS irods -c "$IRODS_CTL irestart"
     if [ "$DETECTEDOS" = "RedHatCompatible" -o "$DETECTEDOS" = "SuSE" ] ; then
         touch /var/lock/subsys/irods
     fi

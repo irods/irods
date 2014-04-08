@@ -153,6 +153,13 @@ CFLAGS =	$(CFLAGS_OPTIONS) $(LIB_INCLUDES) $(SVR_INCLUDES) $(MODULE_CFLAGS)
 LDFLAGS +=	$(LIBRARY) $(MODULE_LDFLAGS) $(CL_LDADD) 
 
 
+LDFLAGS += $(BOOST_LIBS)
+
+ifneq (${OS_platform}, osx_platform)
+LDFLAGS += -lrt
+endif
+
+
 ifdef GSI_AUTH
 
 ifeq ($(GSI_INSTALL_TYPE),)
@@ -210,7 +217,6 @@ ifdef CCMALLOC
 LDFLAGS += -L$(CCMALLOC_DIR)/lib
 endif
 
-LDFLAGS += -lrt
 BOOST_LIBS = $(BOOST_DIR)/stage/lib/libboost_system.a \
              $(BOOST_DIR)/stage/lib/libboost_filesystem.a \
              $(BOOST_DIR)/stage/lib/libboost_regex.a \
@@ -234,7 +240,7 @@ $(objDir)/%.o:	$(srcDir)/%.cpp $(LIBRARY) $(BOOST_LIBS)
 
 $(binDir)/%:	$(objDir)/%.o $(BOOST_LIBS)
 	@echo "Link icommand `basename $@`..."
-	@$(LDR) -o $@ $< $(LDFLAGS) $(BOOST_LIBS) -lrt
+	@$(LDR) -o $@ $< $(LDFLAGS)
 
 # Show compile flags
 print_cflags:

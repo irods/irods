@@ -249,6 +249,58 @@ Once a server is up and running, the default environment can be shown::
  NOTICE: irodsEncryptionAlgorithm=AES-256-CBC
  NOTICE: irodsDefaultHashScheme=SHA256
 
+Run In Place
+------------
+
+iRODS can be compiled from source and run from the same directory.  Although this is not recommended for production deployment, it may be useful for testing, running multiple iRODS servers on the same system, running iRODS on systems without a package manager, and users who do not have administrator rights on their system.
+
+To run iRODS in place, the build script must be called with the appropriate flag::
+
+ user@hostname:~/ $ ./packaging/build.sh --run-in-place icat postgres
+
+After the system is built, the setup_database.sh script needs to be run from its original location::
+
+ user@hostname:~/ $ ./plugins/database/packaging/setup_database.sh
+
+The script will prompt for iRODS configuration information that would already be known to a binary installation::
+
+ ===================================================================
+
+ You are installing iRODS with the --run-in-place option.
+
+ The iRODS server cannot be started until it has been configured.
+
+ iRODS server's port [1247]: 
+
+ iRODS port range (begin) [20000]: 
+
+ iRODS port range (end) [20199]: 
+
+ iRODS Vault directory [/full/path/to/Vault]: 
+
+ iRODS server's adminstrator name [rods]: 
+
+ iRODS server's administrator password: 
+
+ -------------------------------------------
+ iRODS Port:             1247
+ Range (Begin):          20000
+ Range (End):            20199
+ Vault Directory:        /full/path/to/Vault
+ Administrator Name:     rods
+ Administrator Password: Not Shown
+ -------------------------------------------
+ Please confirm these settings [yes]: 
+
+
+MacOSX
+******
+
+Installation on a MacOSX system requires the use of the --run-in-place build option due to the lack of a system-level package manager.
+
+.. include:: packaging/MACOSX_DATABASE_SETUP.txt
+
+
 ----------
 Quickstart
 ----------

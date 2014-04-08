@@ -716,7 +716,7 @@ sub configureDatabaseUser
 	if ( $DATABASE_TYPE eq "postgres" )
 	{
 		Postgres_ConfigureDatabaseUser( );
-		Postgres_CreateAlternateDatabaseUser( );
+	#	Postgres_CreateAlternateDatabaseUser( );
 		return;
 	}
 
@@ -2978,8 +2978,10 @@ sub Postgres_CreateDatabase()
         {
                 printError( "\nInstall problem:\n" );
                 printError( "    Database [$DB_NAME] does not exist.\n" );
+                printError( "    $output\n" );
                 printLog( "\nInstall problem:\n" );
                 printLog( "    Database [$DB_NAME] does not exist.\n" );
+                printLog( "    $output\n" );
                 cleanAndExit( 1 );
         }
 
@@ -3136,7 +3138,7 @@ sub Postgres_CreateDatabase()
                  my $psqlOdbcLib;
 		if ( $RUNINPLACE == 1 )
                 {
-                        $psqlOdbcLib = `$scripttoplevel/plugins/database/packaging/find_odbc_postgres.sh`;
+                        $psqlOdbcLib = `$scripttoplevel/plugins/database/packaging/find_odbc_postgres.sh $scripttoplevel`;
                 }
                 else
                 {

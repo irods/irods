@@ -19,6 +19,15 @@
 # Setting environment variables for EPM
 # =-=-=-=-=-=-=-
 
+%if OSXICAT
+$OSX=true
+$ICAT=true
+
+%elseif OSXRESOURCE
+$OSX=true
+$RESOURCE=true
+%endif
+
 %if DEB
 %requires libc6
 %endif

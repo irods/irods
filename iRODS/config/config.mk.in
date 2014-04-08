@@ -132,7 +132,7 @@ NSL=-lnsl
 endif
 PSQ_LIB_DIR = $(POSTGRES_HOME)/lib
 PSQ_HDR_DIR = $(POSTGRES_HOME)/include
-DBMS_LIB+= -L$(PSQ_LIB_DIR) -lodbc $(NSL) -lm
+DBMS_LIB+= -L$(PSQ_LIB_DIR) $(NSL) -lm
 DBMS_INCLUDE+= -I$(PSQ_HDR_DIR)
 endif
 
@@ -164,7 +164,7 @@ NSL=-lnsl
 endif
 ODBC_LIB_DIR = $(UNIXODBC_HOME)/lib
 ODBC_HDR_DIR = $(UNIXODBC_HOME)/include
-DBMS_LIB+= -L$(ODBC_LIB_DIR) -lodbc $(NSL) -lm
+DBMS_LIB+= -L$(ODBC_LIB_DIR) $(NSL) -lm
 DBMS_INCLUDE+= -I$(ODBC_HDR_DIR)
 endif
 
@@ -182,7 +182,7 @@ NSL=-lnsl
 endif
 PSQ_LIB_DIR = $(POSTGRES_HOME)/lib
 PSQ_HDR_DIR = $(POSTGRES_HOME)/include
-DBMS_LIB+= -L$(PSQ_LIB_DIR) -lodbc $(NSL) -lm
+DBMS_LIB+= -L$(PSQ_LIB_DIR) $(NSL) -lm
 DBMS_INCLUDE+= -I$(PSQ_HDR_DIR)
 # Use lines like these, in place of the Postgres items above 
 # (under ifdef DBR), for an Oracle DBR, using values for your
@@ -206,7 +206,7 @@ DBMS_INCLUDE+= -I$(PSQ_HDR_DIR)
 #endif
 #ODBC_LIB_DIR = $(UNIXODBC_HOME)/lib
 #ODBC_HDR_DIR = $(UNIXODBC_HOME)/include
-#DBMS_LIB+= -L$(ODBC_LIB_DIR) -lodbc $(NSL) -lm
+#DBMS_LIB+= -L$(ODBC_LIB_DIR) $(NSL) -lm
 #DBMS_INCLUDE+= -I$(ODBC_HDR_DIR)
 
 endif
@@ -334,7 +334,7 @@ SHA256_FILE_HASH = 1
 # You can use this instead of using password authentication.
 OS_AUTH = 1
 ifdef OS_AUTH
-OS_AUTH_KEYFILE = /var/lib/irods/iRODS/config/irods.key
+OS_AUTH_KEYFILE = TEMPLATE_IRODS_CONFIG_DIR/irods.key
 # Some environments don't have a uniform username/uid
 # space between the IES and the clients. Uncomment
 # OS_AUTH_NO_UID if this is the case, so the uid will
@@ -350,7 +350,7 @@ endif
 # in iRODS.
 PAM_AUTH = 1
 ifdef PAM_AUTH
-PAM_AUTH_CHECK_PROG=/var/lib/irods/iRODS/server/bin/PamAuthCheck
+PAM_AUTH_CHECK_PROG=TEMPLATE_IRODS_TOPLEVEL/iRODS/server/bin/PamAuthCheck
 
 # Uncomment the following if you want to disallow extending the
 # lifetime of an already existing irods-pam password.  This will also

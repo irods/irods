@@ -8,6 +8,7 @@ else
 
     DETECTEDDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
     MYIRODSCONFIG=$DETECTEDDIR/../iRODS/config/irods.config
+    MYIRODSCONFIG="$(cd $MYIRODSCONFIG && pwd)"
     SETUP_RUNINPLACE_FLAG="/tmp/$USER/setup_runinplace.flag"
     DEFAULTRIPRESOURCEDIR="$( cd "$( dirname "$( dirname "$DETECTEDDIR/../" )" )" && pwd )"/Vault
     

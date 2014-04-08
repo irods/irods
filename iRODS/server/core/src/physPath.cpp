@@ -264,6 +264,7 @@ setPathForGraftPathScheme( char *objPath, const char *vaultPath, int addUserName
 int
 resolveDupFilePath( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
                     dataObjInp_t *dataObjInp ) {
+    rodsLog( LOG_NOTICE, "XXXX - resolveDupFilePath :: terrible things are afoot" );
     char tmpStr[NAME_LEN];
     char *filePath;
 
@@ -532,12 +533,15 @@ chkAndHandleOrphanFile( rsComm_t *rsComm, char* objPath, char* rescHier, char *f
     memset( &myDataObjInfo, 0, sizeof( myDataObjInfo ) );
     memset( &fileRenameInp, 0, sizeof( fileRenameInp ) );
     if ( ( status = chkOrphanFile( rsComm, filePath, rescInfo->rescName, &myDataObjInfo ) ) == 0 ) {
+
+    rodsLog( LOG_NOTICE, "XXXX - chkAndHandleOrphanFile :: IS an Orphan File" );
         rstrcpy( fileRenameInp.oldFileName, filePath, MAX_NAME_LEN );
         rstrcpy( fileRenameInp.rescHier, rescHier, MAX_NAME_LEN );
         rstrcpy( fileRenameInp.objPath, objPath, MAX_NAME_LEN );
 
         /* not an orphan file */
         if ( replStatus > OLD_COPY || isTrashPath( myDataObjInfo.objPath ) ) {
+    rodsLog( LOG_NOTICE, "XXXX - chkAndHandleOrphanFile :: IS in the trash path" );
             modDataObjMeta_t modDataObjMetaInp;
             keyValPair_t regParam;
 
@@ -586,6 +590,8 @@ chkAndHandleOrphanFile( rsComm_t *rsComm, char* objPath, char* rescHier, char *f
             }
         }
         else {
+
+    rodsLog( LOG_NOTICE, "XXXX - chkAndHandleOrphanFile :: not in the trash path" );
             /* this is an old copy. change the path but don't
              * actually rename it */
             rstrcpy( fileRenameInp.oldFileName, filePath, MAX_NAME_LEN );
@@ -608,6 +614,7 @@ chkAndHandleOrphanFile( rsComm_t *rsComm, char* objPath, char* rescHier, char *f
 
     }
     else if ( status > 0 ) {
+    rodsLog( LOG_NOTICE, "XXXX - chkAndHandleOrphanFile :: Rename the Orphan File" );
         /* this is an orphan file. need to rename it */
         rstrcpy( fileRenameInp.oldFileName, filePath,           MAX_NAME_LEN );
         rstrcpy( fileRenameInp.rescHier,    rescHier,           MAX_NAME_LEN );
@@ -697,6 +704,8 @@ renameFilePathToNewDir( rsComm_t *rsComm, char *newDir,
 
     snprintf( newPtr, MAX_NAME_LEN - len, "/%s%s.%-d", newDir, oldPtr,
               ( uint ) random() );
+
+rodsLog( LOG_NOTICE, "XXXX - rename_the_file :: newPtr [%s], newFileName [%s]", newPtr, fileRenameInp->newFileName );
 
     if ( renameFlag > 0 ) {
         fileRenameOut_t* ren_out = 0;

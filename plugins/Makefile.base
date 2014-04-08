@@ -21,6 +21,12 @@ ifndef ${GCC}
 GCC=g++
 endif
 
+ifeq ($(OS_platform), osx_platform)
+LDADD += "-Wl,-undefined,dynamic_lookup"
+else
+LDADD += "-Wl,-E"
+endif
+
 CFLAGS+= -Wno-write-strings
 CFLAGS+= -Wall -Werror
 CFLAGS+= -DZIP_EXEC_PATH=\"$(ZIP_EXEC_PATH)\"
@@ -56,15 +62,15 @@ clean-base:
 
 $(AGNOSTIC_OBJS) : $(SODIR)/lib%.so : $(SRCDIR)/%.cpp $(DEPDIR)/%.d $(DEPFILE) $(AGNOSTIC_DEPS)
 	@echo "Compile plugin `basename $@`..."
-	@${GCC} ${CFLAGS} ${AGNOSTIC_CFLAGS} ${INC} -fPIC -shared -o $@ $< ${EXTRALIBS} ${AGNOSTIC_LIBS}
+	@${GCC} ${CFLAGS} ${AGNOSTIC_CFLAGS} ${INC} -fPIC -shared -o $@ $< ${LDADD} ${EXTRALIBS} ${AGNOSTIC_LIBS}
 
 $(SERVER_OBJS) : $(SODIR)/lib%_server.so : $(SRCDIR)/%.cpp $(DEPDIR)/%.d $(DEPFILE) $(SERVER_DEPS)
 	@echo "Compile plugin `basename $@`..."
-	@${GCC} ${CFLAGS} ${SERVER_CFLAGS} ${INC} -fPIC -shared -o $@ $< ${EXTRALIBS} ${SERVER_LIBS}
+	@${GCC} ${CFLAGS} ${SERVER_CFLAGS} ${INC} -fPIC -shared -o $@ $< ${LDADD} ${EXTRALIBS} ${SERVER_LIBS}
 
 $(CLIENT_OBJS) : $(SODIR)/lib%_client.so : $(SRCDIR)/%.cpp $(DEPDIR)/%.d $(DEPFILE) $(CLIENT_DEPS)
 	@echo "Compile plugin `basename $@`..."
-	@${GCC} ${CFLAGS} ${CLIENT_CFLAGS} ${INC} -fPIC -shared -o $@ $< ${EXTRALIBS} ${CLIENT_LIBS}
+	@${GCC} ${CFLAGS} ${CLIENT_CFLAGS} ${INC} -fPIC -shared -o $@ $< ${LDADD} ${EXTRALIBS} ${CLIENT_LIBS}
 
 ${DEPFILE}: ${DEPS}
 	@-rm -f ${DEPFILE} > /dev/null 2>&1
