@@ -653,7 +653,6 @@ int irodsErrors[] = {
     NETCDF_AGG_ELE_INX_OUT_OF_RANGE,
     NETCDF_AGG_ELE_FILE_NOT_OPENED,
     NETCDF_AGG_ELE_FILE_NO_TIME_DIM,
-    NETCDF_BUILD_WITH_NETCDF_API_NEEDED,
     SSL_NOT_BUILT_INTO_CLIENT,
     SSL_NOT_BUILT_INTO_SERVER,
     SSL_INIT_ERROR,
@@ -1303,7 +1302,6 @@ char *irodsErrorNames[] = {
     "NETCDF_AGG_ELE_INX_OUT_OF_RANGE",
     "NETCDF_AGG_ELE_FILE_NOT_OPENED",
     "NETCDF_AGG_ELE_FILE_NO_TIME_DIM",
-    "NETCDF_BUILD_WITH_NETCDF_API_NEEDED",
     "SSL_NOT_BUILT_INTO_CLIENT",
     "SSL_NOT_BUILT_INTO_SERVER",
     "SSL_INIT_ERROR",
@@ -1330,7 +1328,7 @@ char *irodsErrorNames[] = {
     "SYS_HANDLER_DONE_NO_ERROR",
     "SYS_NO_HANDLER_REPLY_MSG",
 };
-int irodsErrorCount = 648;
+int irodsErrorCount = 647;
 /* END generated code */
 
 static int verbosityLevel = LOG_ERROR;

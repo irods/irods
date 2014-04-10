@@ -257,10 +257,6 @@ SVR_RE_OBJS =	\
 		$(svrReObjDir)/irods_ms_plugin.o \
 		$(svrReObjDir)/irods_operation_rule_execution_manager.o
 
-ifdef NETCDF_API
-SVR_RE_OBJS+=  $(svrReObjDir)/reNetcdf.o
-endif
-
 INCLUDES +=	-I$(svrReIncDir)
 SERVER_BINS +=	$(serverBinDir)/irodsReServer
 SERVER_OBJS +=	$(svrCoreObjDir)/irodsReServer.o

@@ -107,11 +107,6 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/irods_get_full_path_for_config_file.o \
 		$(libCoreObjDir)/apiHandler.o 
 
-ifdef NETCDF_CLIENT
-LIB_CORE_OBJS += $(libCoreObjDir)/ncattrUtil.o $(libCoreObjDir)/ncUtil.o  \
-               $(libCoreObjDir)/ncarchUtil.o
-endif
-
 ifdef USE_BOOST_ASIO
 LIB_CORE_OBJS += $(libCoreObjDir)/socket_wrapper.o 
 endif

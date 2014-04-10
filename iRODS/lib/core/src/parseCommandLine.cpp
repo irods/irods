@@ -422,9 +422,7 @@ parseCmdLineOpt( int argc, char **argv, char *optString, int includeLong,
             break;
         case 'q':
             rodsArgs->query = True;
-//#ifdef NETCDF_CLIENT
             rodsArgs->queryStr = optarg;
-//#endif
             break;
         case 'Q':
             rodsArgs->rbudp = True;
