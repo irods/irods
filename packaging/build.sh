@@ -247,24 +247,24 @@ rename_generated_packages() {
     cd $BUILDDIR
     SUFFIX=""
     if   [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-	EXTENSION="rpm"
-	SUFFIX="-centos5"
-	if [ "$epmosversion" == "CENTOS6" ] ; then
+        EXTENSION="rpm"
+        SUFFIX="-centos5"
+        if [ "$epmosversion" == "CENTOS6" ] ; then
             SUFFIX="-centos6"
-	fi
+        fi
     elif [ "$DETECTEDOS" == "SuSE" ] ; then
-	EXTENSION="rpm"
-	SUFFIX="-suse"
+        EXTENSION="rpm"
+        SUFFIX="-suse"
     elif [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
-	EXTENSION="deb"
+        EXTENSION="deb"
     elif [ "$DETECTEDOS" == "Solaris" ] ; then
-	EXTENSION="pkg"
+        EXTENSION="pkg"
     elif [ "$DETECTEDOS" == "MacOSX" ] ; then
-	EXTENSION="dmg"
+        EXTENSION="dmg"
     elif [ "$DETECTEDOS" == "ArchLinux" ] ; then
-	EXTENSION="tar.gz"
+        EXTENSION="tar.gz"
     elif [ "$DETECTEDOS" == "Portable" ] ; then
-	EXTENSION="tar.gz"
+        EXTENSION="tar.gz"
     fi
 
     #################
@@ -285,7 +285,7 @@ rename_generated_packages() {
     RENAME_DESTINATION_DOCS=${RENAME_DESTINATION/irods-/irods-docs-}
     # add OS-specific suffix
     if [ "$SUFFIX" != "" ] ; then
-	RENAME_DESTINATION=${RENAME_DESTINATION/.$EXTENSION/$SUFFIX.$EXTENSION}
+        RENAME_DESTINATION=${RENAME_DESTINATION/.$EXTENSION/$SUFFIX.$EXTENSION}
     fi
     # release build (also building icommands)
     RENAME_DESTINATION_DEV=${RENAME_DESTINATION/irods-/irods-dev-}
@@ -324,27 +324,27 @@ rename_generated_packages() {
     #################
     # rename and tell me
     if [ "$TARGET" == "docs" ] ; then
-	echo ""
-	echo "renaming    [$RENAME_SOURCE_DOCS]"
-	echo "         to [$RENAME_DESTINATION_DOCS]"
-	mv $RENAME_SOURCE_DOCS $RENAME_DESTINATION_DOCS
+        echo ""
+        echo "renaming    [$RENAME_SOURCE_DOCS]"
+        echo "         to [$RENAME_DESTINATION_DOCS]"
+        mv $RENAME_SOURCE_DOCS $RENAME_DESTINATION_DOCS
     else
-	if [ "$RELEASE" == "1" ] ; then
-	    echo ""
-	    echo "renaming    [$RENAME_SOURCE_ICOMMANDS]"
-	    echo "         to [$RENAME_DESTINATION_ICOMMANDS]"
-	    mv $RENAME_SOURCE_ICOMMANDS $RENAME_DESTINATION_ICOMMANDS
-	fi
-	if [ "$TARGET" == "icat" ] ; then
-	    echo ""
-	    echo "renaming    [$RENAME_SOURCE_DEV]"
-	    echo "         to [$RENAME_DESTINATION_DEV]"
-	    mv $RENAME_SOURCE_DEV $RENAME_DESTINATION_DEV
+        if [ "$RELEASE" == "1" ] ; then
+            echo ""
+            echo "renaming    [$RENAME_SOURCE_ICOMMANDS]"
+            echo "         to [$RENAME_DESTINATION_ICOMMANDS]"
+            mv $RENAME_SOURCE_ICOMMANDS $RENAME_DESTINATION_ICOMMANDS
+        fi
+        if [ "$TARGET" == "icat" ] ; then
+            echo ""
+            echo "renaming    [$RENAME_SOURCE_DEV]"
+            echo "         to [$RENAME_DESTINATION_DEV]"
+            mv $RENAME_SOURCE_DEV $RENAME_DESTINATION_DEV
             echo ""
             echo "renaming    [$RENAME_SOURCE_RUNTIME]"
             echo "         to [$RENAME_DESTINATION_RUNTIME]"
             mv $RENAME_SOURCE_RUNTIME $RENAME_DESTINATION_RUNTIME
-	fi
+        fi
         # icat or resource
         echo ""
         echo "renaming    [$RENAME_SOURCE]"
@@ -463,36 +463,36 @@ if [ "$1" == "docs" ] ; then
     cd $BUILDDIR
     unamem=`uname -m`
     if [[ "$unamem" == "x86_64" || "$unamem" == "amd64" ]] ; then
-	arch="amd64"
+        arch="amd64"
     else
-	arch="i386"
+        arch="i386"
     fi
     if [ "$DETECTEDOS" == "RedHatCompatible" ] ; then # CentOS and RHEL and Fedora
-	echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS RPMs${text_reset}"
-	$EPMCMD -f rpm irods-docs $LISTFILE
+        echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS RPMs${text_reset}"
+        $EPMCMD -f rpm irods-docs $LISTFILE
     elif [ "$DETECTEDOS" == "SuSE" ] ; then # SuSE
-	echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS RPMs${text_reset}"
-	$EPMCMD -f rpm irods-docs $LISTFILE
+        echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS RPMs${text_reset}"
+        $EPMCMD -f rpm irods-docs $LISTFILE
     elif [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then  # Ubuntu
-	echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS DEBs${text_reset}"
-	$EPMCMD -a $arch -f deb irods-docs $LISTFILE
+        echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS DEBs${text_reset}"
+        $EPMCMD -a $arch -f deb irods-docs $LISTFILE
     elif [ "$DETECTEDOS" == "Solaris" ] ; then  # Solaris
-	echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS PKGs${text_reset}"
-	$EPMCMD -f pkg irods-docs $LISTFILE
+        echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS PKGs${text_reset}"
+        $EPMCMD -f pkg irods-docs $LISTFILE
     elif [ "$DETECTEDOS" == "MacOSX" ] ; then  # MacOSX
-	echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS DMGs${text_reset}"
-	$EPMCMD -f osx irods-docs $LISTFILE
+        echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS DMGs${text_reset}"
+        $EPMCMD -f osx irods-docs $LISTFILE
     elif [ "$DETECTEDOS" == "ArchLinux" ] ; then  # ArchLinux
-	echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS TGZs${text_reset}"
-	$EPMCMD -f portable irods-docs $LISTFILE
+        echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS TGZs${text_reset}"
+        $EPMCMD -f portable irods-docs $LISTFILE
     elif [ "$DETECTEDOS" == "Portable" ] ; then  # Portable
-	echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS TGZs${text_reset}"
-	$EPMCMD -f portable irods-docs $LISTFILE
+        echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS TGZs${text_reset}"
+        $EPMCMD -f portable irods-docs $LISTFILE
     else
-	echo "${text_red}#######################################################" 1>&2
-	echo "ERROR :: Unknown OS, cannot generate packages with EPM" 1>&2
-	echo "#######################################################${text_reset}" 1>&2
-	exit 1
+        echo "${text_red}#######################################################" 1>&2
+        echo "ERROR :: Unknown OS, cannot generate packages with EPM" 1>&2
+        echo "#######################################################${text_reset}" 1>&2
+        exit 1
     fi
 
     # rename generated packages appropriately
