@@ -117,11 +117,9 @@
 #define LOCK_CMD_KW    "lockCmd"       /* valid values are SET_LOCK_WAIT_CMD,
 * SET_LOCK_CMD and GET_LOCK_CMD */
 #define LOCK_FD_KW     "lockFd"        /* Lock file desc for unlock */
-#define NATIVE_NETCDF_CALL_KW "nativeNetcdfCall"  /* call netcdf natively */
 #define MAX_SUB_FILE_KW "maxSubFile" /* max number of files for tar file bundles */
 #define MAX_BUNDLE_SIZE_KW "maxBunSize" /* max size of a tar bundle in Gbs */
 #define NO_STAGING_KW                  "noStaging"
-#define NEW_NETCDF_ARCH_KW                     "newNetcdfArch"
 
 // =-=-=-=-=-=-=-
 #define MAX_SUB_FILE_KW "maxSubFile" /* max number of files for tar file bundles */ // JMC - backport 4771

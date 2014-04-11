@@ -177,42 +177,6 @@ This documentation is generated from the iRODS code.
   - #msiSetKeyValuePairsToObj - Ingests or overwrites object metadata into iCAT from a AVU structure
   - #msiAddKeyVal - Adds a new key and value to a keyValPair_t
 
- \subsection msinetcdf NETCDF Microservices
-  - #msiNcOpen - Open an iRODS data object for netcdf operation (equivalent to nc_open)
-  - #msiNcCreate - Create an iRODS data object for netcdf operation (equivalent to nc_create)
-  - #msiNcClose - Close an opened iRODS data object (equivalent to nc_close)
-  - #msiNcInqId - A general netcdf inquiry for id (equivalent to nc_inq_dimid, nc_inq_varid, .... This msi is superceded by the more comprehensive msiNcInq API
-  - #msiNcInqWithId - A general netcdf inquiry with id (equivalent nc_inq_dim, nc_inq_dim, nc_inq_var ....) This API is superceded by the more comprehensive rcNcInq API
-  - #msiNcGetVarsByType - A general NETCDF variable subsetting microservice (equivalent to nc_get_vars_type API)
-  - #msiNcGetArrayLen - Get the array length of a NcInqWithIdOut_MS_T or NcGetVarOut_MS_T
-  - #msiNcGetNumDim - Get the number of dimensions of a NcInqWithIdOut_MS_T or NcGetVarOut_MS_T
-  - #msiNcGetDataType - Get the dataType of a NcInqWithIdOut_MS_T, NcGetVarInp_MS_T or NcGetVarOut_MS_T
-  - #msiNcGetElementInArray - Get the value of an element in an array
-  - #msiFloatToString - Convert a floating point number to a string
-  - #msiNcInq - A gGeneral netcdf inquiry (This msi is more comprehensive and supercede the msiNcInqId and msiNcInqWithId msi)
-  - #msiNcGetNdimsInInqOut - Get the number of dimensions of a variable in a NcInqOut_MS_T
-  - #msiNcGetNattsInInqOut - Get the number of attributes associated with a variable in a NcInqOut_MS_T
-  - #msiNcGetNvarsInInqOut - Get the number of variables in a NcInqOut_MS_T
-  - #msiNcGetFormatInInqOut - Get the format of the NETCDF file in  a NcInqOut_MS_T
-  - #msiNcGetVarNameInInqOut - Get the name of a variable in an array of variables in a NcInqOut_MS_T
-
-  - #msiNcGetVarIdInInqOut - Get the NETCDF variable ID of a variable in a NcInqOut_MS_T
-  - #msiNcGetDimNameInInqOut - Get the name of a dimension in a NcInqOut_MS_T
-  - #msiNcGetDimLenInInqOut - Get the length of a dimension of a variable in a NcInqOut_MS_T
-  - #msiNcGetAttNameInInqOut - Get the name of an attribute of a varible in a NcInqOut_MS_T
-  - #msiNcGetAttValStrInInqOut - Get the value of an atrribute of a variable in a NcInqOut_MS_T
-  - #msiNcGetVarTypeInInqOut -  Get the dataType of a variable in a  NcInqOut_MS_T
-  - #msiNcIntDataTypeToStr - Covert an integer NETCDF type to string
-  - #msiAddToNcArray - Add a value to a variable value array in a DataArray_PI
-  - #msiFreeNcStruct - Free the NcGetVarOut_MS_T and its content
-  - #msiNcInqGrps - Given the group ncid, returns all full group paths
-  - #msiNcOpenGroup - Open a fully qualified group name and get the group id
-  - #msiNcGetNGrpsInInqOut - Get the number of groups in a NcInqGrpsOut_MS_T
-  - #msiNcGetGrpInInqOut - Get the name of a group in a NcInqGrpsOut_MS_T
-  - #msiNcRegGlobalAttr - Extract the NETCDF global variables in an iRODS data object and register them as AUV
-  - #msiNcSubsetVar - NETCDF subsetting operation
-  - #msiNcVarStat - Compute the maximum, minimum and average of a variable in a NcGetVarOut_MS_T
-
  \subsection msiotheruser Other User Microservices
   - #msiExtractNaraMetadata - Extracts NARA style metadata from a local configuration file
   - #msiApplyDCMetadataTemplate - Adds Dublin Core Metadata fields to an object or collection
@@ -365,22 +329,6 @@ This documentation is generated from the iRODS code.
  \subsection msiz3950 Z3950
   - #msiz3950Submit - Retrieves a record from a Z39.50 server
 
-**/
-
-/**
-For Inclusion above, later
-\subsection msinetcdf NetCDF Microservices
- - #msiNcOpen
- - #msiNcCreate
- - #msiNcClose
- - #msiNcInqId
- - #msiNcInqWithId
- - #msiNcGetVarsByType
- - #msiNcGetArrayLen
- - #msiNcGetNumDim
- - #msiNcGetDataType
- - #msiNcGetElementInArray
- - #msiFloatToString
 **/
 
 
