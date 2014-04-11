@@ -158,6 +158,47 @@ The `./packaging/setup_database.sh` script will ask for the following five piece
 4) Database User
 5) Database Password
 
+Database Setup Example
+**********************
+
+Once the PostgreSQL database plugin has been installed, the following text will be displayed::
+
+ =======================================================================
+
+ iRODS Postgres Database Plugin installation was successful.
+
+ To configure this plugin, the following prerequisites need to be met:
+  - an existing database user (to be used by the iRODS server)
+  - an existing database (to be used as the iCAT catalog)
+  - permissions for existing user on existing database
+
+ Please run the following setup script as the irods user:
+   ./packaging/setup_database.sh
+
+ =======================================================================
+
+
+iRODS can use many different database configurations.  As an example, a local
+PostgreSQL database can be configured on Ubuntu 12.04 with the following steps::
+
+ $ (sudo) su - postgres
+ postgres$ psql
+ psql> CREATE USER irods WITH PASSWORD 'testpassword';
+ psql> CREATE DATABASE "ICAT";
+ psql> GRANT ALL PRIVILEGES ON DATABASE "ICAT" TO irods;
+
+Confirmation of the permissions can be viewed with ``\l`` within the ``psql`` console::
+
+ psql> \l
+                                   List of databases
+    Name    |  Owner   | Encoding |   Collate   |    Ctype    |   Access privileges
+ -----------+----------+----------+-------------+-------------+-----------------------
+  ICAT      | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =Tc/postgres         +
+            |          |          |             |             | postgres=CTc/postgres+
+            |          |          |             |             | irods=CTc/postgres
+ ...
+ (N rows)
+
 
 Resource Server
 ---------------
