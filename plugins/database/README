@@ -1,7 +1,7 @@
-iRODS Postgres Database Plugin
-==============================
+iRODS Database Plugins
+======================
 
-This is the default database plugin for iRODS 4.0+.
+This is the database plugin directory for iRODS 4.0+.
 
 For more information, please consult the iRODS manual.
 
