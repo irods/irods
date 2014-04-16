@@ -24,7 +24,7 @@ insert into R_TOKN_MAIN values ('token_namespace',9,'coll_map','','','','','1170
 insert into R_TOKN_MAIN values ('token_namespace',10,'auth_scheme_type','','','','','1170000000','1170000000');
 
 
-insert into R_TOKN_MAIN values ('zone_type',100,'local','','native zone of this RCAT','','','1170000000','1170000000');
+insert into R_TOKN_MAIN values ('zone_type',100,'local','','native zone of this iCAT','','','1170000000','1170000000');
 insert into R_TOKN_MAIN values ('zone_type',101,'remote','','foreign zone','','','1170000000','1170000000');
 
 insert into R_TOKN_MAIN values ('user_type',200,'rodsgroup','','rods group users','','','1170000000','1170000000');
@@ -215,6 +215,9 @@ insert into R_OBJT_ACCESS values (9003,9002,1200,'1170000000','1170000000');
 
 insert into R_RESC_MAIN (resc_id, resc_name, zone_name, resc_type_name, resc_class_name,  resc_net, resc_def_path, free_space, free_space_ts, resc_info, r_comment, resc_status, create_ts, modify_ts) values (9100, 'bundleResc', 'tempZone', 'unixfilesystem', 'bundle', 'localhost', '/bundle', '', '', '', '', '', '1250100000','1250100000');
 
-insert into R_SPECIFIC_QUERY (alias, sqlStr, create_ts) values ('ls', 'select alias,sqlStr from R_SPECIFIC_QUERY', '01292940000');
-insert into R_SPECIFIC_QUERY (alias, sqlStr, create_ts) values ('lsl', 'select alias,sqlStr from R_SPECIFIC_QUERY where sqlStr like ?', '01292940000');
-insert into R_SPECIFIC_QUERY (alias, sqlStr, create_ts) values ('ShowCollAcls', 'select distinct R_USER_MAIN.user_name ,R_USER_MAIN.zone_name, R_TOKN_MAIN.token_name, R_USER_MAIN.user_type_name from R_USER_MAIN , R_TOKN_MAIN, R_OBJT_ACCESS, R_COLL_MAIN where R_OBJT_ACCESS.object_id = R_COLL_MAIN.coll_id AND R_COLL_MAIN.coll_name = ? AND R_TOKN_MAIN.token_namespace = ''access_type'' AND R_USER_MAIN.user_id = R_OBJT_ACCESS.user_id AND R_OBJT_ACCESS.access_type_id = R_TOKN_MAIN.token_id', '01342019000');
+
+
+insert into R_SPECIFIC_QUERY (alias, sqlStr, create_ts) values ('ls', 'select alias, sqlStr from R_SPECIFIC_QUERY', '01292940000');
+insert into R_SPECIFIC_QUERY (alias, sqlStr, create_ts) values ('lsl', 'select alias, sqlStr from R_SPECIFIC_QUERY where sqlStr like ?', '01292940000');
+insert into R_SPECIFIC_QUERY (alias, sqlStr, create_ts) values ('ShowCollAcls', 'select distinct R_USER_MAIN.user_name, R_USER_MAIN.zone_name, R_TOKN_MAIN.token_name, R_USER_MAIN.user_type_name from R_USER_MAIN, R_TOKN_MAIN, R_OBJT_ACCESS, R_COLL_MAIN where R_OBJT_ACCESS.object_id = R_COLL_MAIN.coll_id AND R_COLL_MAIN.coll_name = ? AND R_TOKN_MAIN.token_namespace = ''access_type'' AND R_USER_MAIN.user_id = R_OBJT_ACCESS.user_id AND R_OBJT_ACCESS.access_type_id = R_TOKN_MAIN.token_id', '01342019000');
+
