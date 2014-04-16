@@ -26,8 +26,9 @@ class Server_Config:
                     self.values[ columns[0] .rstrip()] = columns[1].rstrip()
 
     def exec_pgsql_cmd(self,sql):
+        fbp = os.path.dirname(os.path.realpath(__file__))+"/find_bin_postgres.sh"
         p = subprocess.Popen(
-                "../../packaging/find_bin_postgres.sh", 
+                fbp,
                 shell=True, 
                 stdout=subprocess.PIPE, 
                 stderr=subprocess.PIPE)
@@ -46,12 +47,15 @@ class Server_Config:
             run_str = psql + " " + db_name + " -c \"" + sql + "\""
         else:
             run_str = psql + " -h " + db_host + " " + db_name + " -c \"" + sql + "\""
-       
-        res = os.system( run_str )
+
+        p = subprocess.Popen( run_str, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE )
+        (myout, myerr) = p.communicate()
+        return (p.returncode, myout, myerr)
 
     def exec_pgsql_file(self,sql):
+        fbp = os.path.dirname(os.path.realpath(__file__))+"/find_bin_postgres.sh"
         p = subprocess.Popen(
-                "../../packaging/find_bin_postgres.sh", 
+                fbp,
                 shell=True, 
                 stdout=subprocess.PIPE, 
                 stderr=subprocess.PIPE)
@@ -71,35 +75,14 @@ class Server_Config:
         else:
             run_str = psql + " -h " + db_host + " " + db_name + " < " + sql
        
-        res = os.system( run_str )
-
+        p = subprocess.Popen( run_str, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE )
+        (myout, myerr) = p.communicate()
+        return (p.returncode, myout, myerr)
 
     def exec_sql_file(self,sql):
         if self.values[ 'catalog_database_type' ] == 'postgres':
-            self.exec_pgsql_file(sql)
+            return self.exec_pgsql_file(sql)
 
     def exec_sql_cmd(self,sql):
         if self.values[ 'catalog_database_type' ] == 'postgres':
-            self.exec_pgsql_cmd(sql)
-
-
-#def main():
-#    cfg = Server_Config()
-#    #print cfg.values
-#
-#    secs = int( time.time() )
-#
-#    cfg.exec_sql_cmd( "insert into r_server_load_digest values ('rescA', 50, %s)" % secs )
-#    cfg.exec_sql_cmd( "insert into r_server_load_digest values ('rescB', 75, %s)" % secs )
-#    cfg.exec_sql_cmd( "insert into r_server_load_digest values ('rescC', 95, %s)" % secs )
-#    cfg.exec_sql_cmd( "select * from r_server_load_digest" )
-#    cfg.exec_sql_cmd( "update r_server_load_digest set load_factor=15 where resc_name='rescA'")
-#    cfg.exec_sql_cmd( "select * from r_server_load_digest" )
-#    cfg.exec_sql_cmd( "delete from r_server_load_digest where resc_name='rescA'")
-#    cfg.exec_sql_cmd( "delete from r_server_load_digest where resc_name='rescB'")
-#    cfg.exec_sql_cmd( "delete from r_server_load_digest where resc_name='rescC'")
-#    cfg.exec_sql_cmd( "select * from r_server_load_digest" )
-#
-#
-#if  __name__ =='__main__':
-#    main()
+            return self.exec_pgsql_cmd(sql)

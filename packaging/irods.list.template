@@ -303,6 +303,7 @@ f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/preremove.sh ./p
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/user_irodsenv.txt ./packaging/user_irodsenv.txt
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/user_icat.txt ./packaging/user_icat.txt
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/user_resource.txt ./packaging/user_resource.txt
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/server_config.py ./packaging/server_config.py
 
 %if DEB
 c 755 $OS_IRODS_ACCT $OS_IRODS_ACCT /etc/init.d/irods ./packaging/irods

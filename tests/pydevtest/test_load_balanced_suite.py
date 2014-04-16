@@ -11,16 +11,14 @@ from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, getiCmdO
 import pydevtest_sessions as s
 import socket
 import commands
-import os
 import shlex
 import datetime
-import time
 
+pydevtestdir = os.path.realpath(__file__)
+topdir = os.path.dirname(os.path.dirname(os.path.dirname(pydevtestdir)))
+packagingdir = os.path.join(topdir,"packaging")
+sys.path.append(packagingdir)
 from server_config import Server_Config
-
-RODSHOME = "/home/irodstest/irodsfromsvn/iRODS"
-ABSPATHTESTDIR = os.path.abspath(os.path.dirname (sys.argv[0]))
-RODSHOME = ABSPATHTESTDIR + "/../../iRODS"
 
 class Test_LoadBalanced_Resource(unittest.TestCase, ResourceBase):
   
