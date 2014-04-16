@@ -39,26 +39,30 @@ $SCRIPTNAME -s resource
 "
 
 # Color Manipulation Aliases
-if [[ "$TERM" == "dumb" || "$TERM" == "unknown" ]] ; then
-    text_bold=""      # No Operation
-    text_red=""       # No Operation
-    text_green=""     # No Operation
-    text_yellow=""    # No Operation
-    text_blue=""      # No Operation
-    text_purple=""    # No Operation
-    text_cyan=""      # No Operation
-    text_white=""     # No Operation
-    text_reset=""     # No Operation
-else
-    text_bold=$(tput bold)      # Bold
-    text_red=$(tput setaf 1)    # Red
-    text_green=$(tput setaf 2)  # Green
-    text_yellow=$(tput setaf 3) # Yellow
-    text_blue=$(tput setaf 4)   # Blue
-    text_purple=$(tput setaf 5) # Purple
-    text_cyan=$(tput setaf 6)   # Cyan
-    text_white=$(tput setaf 7)  # White
-    text_reset=$(tput sgr0)     # Text Reset
+text_bold=""      # No Operation
+text_red=""       # No Operation
+text_green=""     # No Operation
+text_yellow=""    # No Operation
+text_blue=""      # No Operation
+text_purple=""    # No Operation
+text_cyan=""      # No Operation
+text_white=""     # No Operation
+text_reset=""     # No Operation
+# detect whether stdout is a terminal
+if [ -t 1 ] ; then
+    # see if it supports colors...
+    ncolors=$(tput colors)
+    if [ -n "$ncolors" -a $ncolors -ge 8 ] ; then
+        text_bold=$(tput bold)      # Bold
+        text_red=$(tput setaf 1)    # Red
+        text_green=$(tput setaf 2)  # Green
+        text_yellow=$(tput setaf 3) # Yellow
+        text_blue=$(tput setaf 4)   # Blue
+        text_purple=$(tput setaf 5) # Purple
+        text_cyan=$(tput setaf 6)   # Cyan
+        text_white=$(tput setaf 7)  # White
+        text_reset=$(tput sgr0)     # Text Reset
+    fi
 fi
 
 # boilerplate
