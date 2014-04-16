@@ -614,7 +614,7 @@ closeLog( );
 if ( ! $noHeader )
 {
 	printSubtitle( "\nDone.  Additional detailed information is in the log file:\n" );
-	printSubtitle( "    $logFile\n" );
+	printStatus( "$logFile\n" );
 }
 exit( 0 );
 
