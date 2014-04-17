@@ -34,11 +34,11 @@ class Server_Config:
                 stderr=subprocess.PIPE)
 
         psql = ""
-        for line in p.stdout.readlines():
-            psql = line.rstrip() + "/psql"
+        for line in p.stdout:
+            psql = line.decode('utf-8').rstrip() + "/psql"
         retval = p.wait()
         if retval != 0:
-            print "find_bin_postgres.sh failed"
+            print( "find_bin_postgres.sh failed" )
             return
 
         db_host = self.values[ 'Servername' ]
@@ -61,11 +61,11 @@ class Server_Config:
                 stderr=subprocess.PIPE)
 
         psql = ""
-        for line in p.stdout.readlines():
-            psql = line.rstrip() + "/psql"
+        for line in p.stdout:
+            psql = line.decode('utf-8').rstrip() + "/psql"
         retval = p.wait()
         if retval != 0:
-            print "find_bin_postgres.sh failed"
+            print( "find_bin_postgres.sh failed" )
             return
 
         db_host = self.values[ 'Servername' ]
