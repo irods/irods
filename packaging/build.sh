@@ -697,6 +697,25 @@ else
     GREPCMD="grep"
 fi
 
+UNIXODBC=`ldconfig -p 2> /dev/null | grep libodbc\.so`
+if [ "$?" != "0" ] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
+        PREFLIGHT="$PREFLIGHT unixodbc"
+    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+        PREFLIGHT="$PREFLIGHT unixODBC"
+    elif [ "$DETECTEDOS" == "SuSE" ] ; then
+        PREFLIGHT="$PREFLIGHT unixODBC"
+    elif [ "$DETECTEDOS" == "Solaris" ] ; then
+        PREFLIGHT="$PREFLIGHT unixodbc"
+    elif [ "$DETECTEDOS" == "MacOSX" ] ; then
+        : # using --run-in-place, nothing to install
+    else
+        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://www.unixodbc.org/download.html"
+    fi
+else
+    echo "Detected unixODBC library [$UNIXODBC]"
+fi
+
 LIBFUSEDEV=`find /usr/include /usr/local/Cellar -name fuse.h 2> /dev/null | $GREPCMD -v linux`
 if [ "$LIBFUSEDEV" == "" ] ; then
     if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then

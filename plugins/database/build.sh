@@ -153,11 +153,8 @@ else
     echo "Detected DB [$DB_BIN]"
 fi
 
-# =-=-=-=-=-=-=-
-# handle determination of ODBC location
-set +e
+# need odbc-dev package
 UNIXODBCDEV=`find /opt/csw/include/ /usr/include /usr/local -name sql.h 2> /dev/null`
-set -e
 if [ "$UNIXODBCDEV" == "" ] ; then
     if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
         PREFLIGHT="$PREFLIGHT unixodbc-dev"
@@ -174,6 +171,35 @@ if [ "$UNIXODBCDEV" == "" ] ; then
     fi
 else
     echo "Detected unixODBC-dev library [$UNIXODBCDEV]"
+fi
+
+# print out prerequisites error
+if [ "$PREFLIGHT" != "" ] ; then
+    echo "${text_red}#######################################################" 1>&2
+    echo "ERROR :: $SCRIPTNAME requires some software to be installed" 1>&2
+    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
+        echo "      :: try: ${text_reset}sudo apt-get install$PREFLIGHT${text_red}" 1>&2
+    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+        echo "      :: try: ${text_reset}sudo yum install$PREFLIGHT${text_red}" 1>&2
+    elif [ "$DETECTEDOS" == "SuSE" ] ; then
+        echo "      :: try: ${text_reset}sudo zypper install$PREFLIGHT${text_red}" 1>&2
+    elif [ "$DETECTEDOS" == "Solaris" ] ; then
+        echo "      :: try: ${text_reset}sudo pkgutil --install$PREFLIGHT${text_red}" 1>&2
+    elif [ "$DETECTEDOS" == "MacOSX" ] ; then
+        echo "      :: try: ${text_reset}brew install$PREFLIGHT${text_red}" 1>&2
+    else
+        echo "      :: NOT A DETECTED OPERATING SYSTEM" 1>&2
+    fi
+    echo "#######################################################${text_reset}" 1>&2
+    exit 1
+fi
+
+if [ "$PREFLIGHTDOWNLOAD" != "" ] ; then
+    echo "${text_red}#######################################################" 1>&2
+    echo "ERROR :: $SCRIPTNAME requires some software to be installed" 1>&2
+    echo "$PREFLIGHTDOWNLOAD" 1>&2
+    echo "#######################################################${text_reset}" 1>&2
+    exit 1
 fi
 
 # =-=-=-=-=-=-=-
