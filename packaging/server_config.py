@@ -43,13 +43,15 @@ class Server_Config:
             print("find_bin_postgres.sh failed")
             return
 
-        db_host = self.values[ 'Servername' ]
-        db_port = self.values[ 'Port' ]
-        db_name = self.values[ 'Database' ]
+        db_host = self.values['Servername']
+        db_port = self.values['Port']
+        db_name = self.values['Database']
         if db_host == 'localhost':
-            run_str = psql + " -p " + db_port + " " + db_name + " -c \"" + sql + "\""
+            run_str = psql + " -p " + db_port + \
+                " " + db_name + " -c \"" + sql + "\""
         else:
-            run_str = psql + " -h " + db_host + " -p " + db_port + " " + db_name + " -c \"" + sql + "\""
+            run_str = psql + " -h " + db_host + " -p " + \
+                db_port + " " + db_name + " -c \"" + sql + "\""
 
         p = subprocess.Popen(
             run_str, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -73,15 +75,17 @@ class Server_Config:
             print("find_bin_postgres.sh failed")
             return
 
-        db_host = self.values[ 'Servername' ]
-        db_port = self.values[ 'Port' ]
-        db_name = self.values[ 'Database' ]
+        db_host = self.values['Servername']
+        db_port = self.values['Port']
+        db_name = self.values['Database']
         if db_host == 'localhost':
             run_str = psql + " -p " + db_port + " " + db_name + " < " + sql
         else:
-            run_str = psql + " -h " + db_host + " -p " + db_port + " " + db_name + " < " + sql
-       
-        p = subprocess.Popen( run_str, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE )
+            run_str = psql + " -h " + db_host + " -p " + \
+                db_port + " " + db_name + " < " + sql
+
+        p = subprocess.Popen(
+            run_str, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         (myout, myerr) = p.communicate()
         return (p.returncode, myout, myerr)
 
