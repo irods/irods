@@ -2967,7 +2967,7 @@ sub Postgres_CreateDatabase()
 	$PSQL=`../packaging/find_bin_postgres.sh`;
 	chomp $PSQL;
 	$PSQL=$PSQL . "/psql";
-	my ($status,$output) = run( "$PSQL -U $DATABASE_ADMIN_NAME -l $DB_NAME" );
+	my ($status,$output) = run( "$PSQL -U $DATABASE_ADMIN_NAME -p $DATABASE_PORT -l $DB_NAME" );
 	if ( $output =~ /List of databases/i )
 	{
 		# The command only shows a list of databases if
@@ -3760,9 +3760,9 @@ sub Postgres_sql($$)
 	$PSQL=$PSQL . "/psql";
 
 	if ($DATABASE_HOST eq "localhost") {
-	    return run( "$PSQL -U $DATABASE_ADMIN_NAME $databaseName < $sqlFilename" );
+	    return run( "$PSQL -U $DATABASE_ADMIN_NAME -p $DATABASE_PORT $databaseName < $sqlFilename" );
 	}
-	return run( "$PSQL -U $DATABASE_ADMIN_NAME -h $DATABASE_HOST $databaseName < $sqlFilename" );
+	return run( "$PSQL -U $DATABASE_ADMIN_NAME -p $DATABASE_PORT -h $DATABASE_HOST $databaseName < $sqlFilename" );
 }
 
 #
@@ -3820,7 +3820,7 @@ sub MySQL_sql($$)
 	chomp $MYSQL;
 	$MYSQL=$MYSQL . "/mysql";
 	my ($databaseName,$sqlFilename) = @_;
-	return run( "$MYSQL --user=$DATABASE_ADMIN_NAME --password=$DATABASE_ADMIN_PASSWORD $databaseName < $sqlFilename" );
+	return run( "$MYSQL --user=$DATABASE_ADMIN_NAME --port=$DATABASE_PORT --password=$DATABASE_ADMIN_PASSWORD $databaseName < $sqlFilename" );
 }
 
 
