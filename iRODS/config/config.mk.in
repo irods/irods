@@ -37,8 +37,6 @@
 #
 #	ORACLE_HOME	The home directory of Oracle, if ORAICAT = 1
 #
-#	NEW_ODBC	A 1 if the Postgres interface uses the unix ODBC.
-#
 #	MODULES		The list of modules enabled during configuration.
 #			Module names are the names of directories in
 #			the 'modules' subdirectory.
@@ -52,7 +50,6 @@ MODULES=
 #RODS_CAT=1
 #PSQICAT=1
 #POSTGRES_HOME=
-#NEW_ODBC=1
 #ORAICAT=1
 #MYICAT=1
 #UNIXODBC_HOME=
@@ -135,11 +132,7 @@ NSL=-lnsl
 endif
 PSQ_LIB_DIR = $(POSTGRES_HOME)/lib
 PSQ_HDR_DIR = $(POSTGRES_HOME)/include
-ifdef NEW_ODBC
 DBMS_LIB+= -L$(PSQ_LIB_DIR) -lodbc $(NSL) -lm
-else
-DBMS_LIB+= -L$(PSQ_LIB_DIR) -lpsqlodbc $(NSL) -lm
-endif
 DBMS_INCLUDE+= -I$(PSQ_HDR_DIR)
 endif
 
@@ -204,7 +197,6 @@ DBMS_INCLUDE+= -I$(PSQ_HDR_DIR)
 # Use lines like these, in place of the Postgres items above 
 # for mysql:
 #DBR_TYPE=mysql
-#NEW_ODBC=1
 #UNIXODBC_HOME=/usr
 #UNIXODBC_DATASOURCE=ICAT
 #ifeq ($(OS_platform), osx_platform)

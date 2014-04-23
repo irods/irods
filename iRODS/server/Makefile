@@ -120,11 +120,6 @@ INCLUDES +=	-I$(svrIcatIncDir)
 SERVER_BINS +=  $(serverBinDir)/irodsXmsgServer
 SERVER_OBJS +=	$(svrCoreObjDir)/irodsXmsgServer.o
 
-ifdef NEW_ODBC
-# Use the 'new' database handling
-CFLAGS +=	-DNEW_ODBC
-endif
-
 ifdef PSQICAT
 # Support Postgres
 #SVR_ICAT_OBJS += $(svrIcatObjDir)/icatLowLevelOdbc.o
@@ -159,7 +154,6 @@ INCLUDES +=	-I$(ORACLE_HOME)/rdbms/public
 CFLAGS +=	-DORA_DBR
 endif
 ifeq ($(DBR_TYPE), postgres) 
-CFLAGS +=	-DNEW_ODBC
 INCLUDES +=	-I$(svrIcatIncDir)
 INCLUDES +=	-I$(POSTGRES_HOME)/include
 ifndef PSQICAT
@@ -169,7 +163,6 @@ endif
 endif
 
 ifeq ($(DBR_TYPE), mysql)
-CFLAGS +=	-DNEW_ODBC
 ifndef MYICAT
 SVR_ICAT_OBJS += $(svrIcatObjDir)/icatLowLevelOdbc.o
 endif
