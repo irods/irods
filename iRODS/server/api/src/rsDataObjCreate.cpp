@@ -235,8 +235,8 @@ _rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     status = l1descInx = _rsDataObjCreateWithRescInfo( rsComm, dataObjInp, myRescGrpInfo->rescInfo, myRescGrpInfo->rescGroupName );
 
     //freeAllRescGrpInfo (myRescGrpInfo);
-    //delete myRescGrpInfo->rescInfo;
-    //delete myRescGrpInfo;
+    delete myRescGrpInfo->rescInfo;
+    delete myRescGrpInfo;
 
     // JMC - legacy resource - if (status < 0) {
     if ( status >= 0 ) {
