@@ -118,6 +118,7 @@ closeAllL1desc( rsComm_t *rsComm ) {
         if ( L1desc[i].inuseFlag == FD_INUSE &&
                 L1desc[i].l3descInx > 2 ) {
             l3Close( rsComm, i );
+            freeL1desc( i );
         }
     }
     return ( 0 );
@@ -157,19 +158,6 @@ freeL1desc( int l1descInx ) {
     }
     memset( &L1desc[l1descInx], 0, sizeof( l1desc_t ) );
 
-    return ( 0 );
-}
-
-int
-freeAllL1desc() {
-    int i;
-
-    for ( i = 3; i < NUM_L1_DESC; i++ ) {
-        if ( L1desc[i].inuseFlag == FD_INUSE &&
-                L1desc[i].l3descInx > 2 ) {
-            freeL1desc( i );
-        }
-    }
     return ( 0 );
 }
 
