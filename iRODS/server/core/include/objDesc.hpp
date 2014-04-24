@@ -77,6 +77,9 @@ extern "C" {
     freeL1Desc( int fileInx );
 
     int
+    freeAllL1desc();
+
+    int
     fillL1desc( int l1descInx, dataObjInp_t *dataObjInp,
                 dataObjInfo_t *dataObjInfo, int replStatus, rodsLong_t dataSize );
     int

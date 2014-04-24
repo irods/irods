@@ -173,6 +173,19 @@ echo ""
 # run irods_setup.pl
 cd iRODS
 ./irodsctl stop
+echo ""
+echo "-----------------------------"
 echo "Running irods_setup.pl..."
 perl ./scripts/perl/irods_setup.pl $DATABASETYPE $DATABASEHOSTORIP $DATABASEPORT $DATABASEUSER $DATABASEPASSWORD
 
+# =-=-=-=-=-=-=-
+# run update_catalog_schema.py
+cd ..
+echo ""
+echo "-----------------------------"
+echo "Running update_catalog_schema.py..."
+python ./packaging/update_catalog_schema.py
+
+# =-=-=-=-=-=-=-
+# done
+exit 0

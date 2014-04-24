@@ -13,7 +13,6 @@
 # Verbosity options:
 # 	--quiet     Suppress all messages
 # 	--verbose   Output all messages (default)
-# 	--force     Force all actions
 #
 #
 # This Perl script completes the installation of iRODS by creating
@@ -30,9 +29,20 @@ use File::Copy;
 use Cwd;
 use Cwd "abs_path";
 use Config;
+use File::Basename;
 
 $version{"irods_setup.pl"} = "Mar 2014";
 
+
+# =-=-=-=-=-=-=-
+# detect whether running in a consistent environment (usually the service account user)
+$scriptfullpath = abs_path(__FILE__);
+$scripttoplevel = dirname(dirname(dirname(dirname($scriptfullpath))));
+if( $scripttoplevel !~ /$ENV{HOME}/ ) {
+    print "The current environment [$ENV{HOME}] does not match script location [$scripttoplevel].\n";
+    print "Please switch user and run this script again.\n";
+    exit(1);
+}
 
 # =-=-=-=-=-=-=-
 # for testing later...
@@ -204,7 +214,6 @@ my $IRODS_ADMIN_BOOT_PASSWORD = "RODS";
 
 
 # Initialize global flags.
-my $force = 0;
 my $noAsk = 0;
 my $noHeader = 0;
 my $isUpgrade = 0;
@@ -614,7 +623,7 @@ closeLog( );
 if ( ! $noHeader )
 {
 	printSubtitle( "\nDone.  Additional detailed information is in the log file:\n" );
-	printSubtitle( "    $logFile\n" );
+	printStatus( "$logFile\n" );
 }
 exit( 0 );
 
@@ -2071,8 +2080,7 @@ sub configureIrodsUser
 # @brief	Create the database, if it doesn't exist already.
 #
 # This function creates the iRODS/iCAT database using the selected
-# database type.  If the script is in FORCE mode, and there is a
-# database already, that database is dropped first.
+# database type.
 #
 # Messages are output on errors.
 #
@@ -2773,9 +2781,6 @@ sub printUsage()
 	printNotice( "    --verbose   Output all messages (default)\n" );
 	printNotice( "    --noask     Don't ask questions, assume 'yes'\n" );
 	printNotice( "\n" );
-	printNotice( "Other options:\n" );
-	printNotice( "    --force     Force database drop and reset\n" );
-	printNotice( "\n" );
 
 	setPrintVerbose( $oldVerbosity );
 }
@@ -2941,9 +2946,7 @@ sub Postgres_ConfigureDatabaseUser()
 #
 # @brief	Create a Postgres database.
 #
-# This function creates a Postgres database.  If the script is
-# being run in FORCE mode, and there is an old database, drop
-# it first.
+# This function creates a Postgres database.
 #
 # These actions could require a database restart.
 #
@@ -2967,118 +2970,17 @@ sub Postgres_CreateDatabase()
 	$PSQL=`../packaging/find_bin_postgres.sh`;
 	chomp $PSQL;
 	$PSQL=$PSQL . "/psql";
-	my ($status,$output) = run( "$PSQL -U $DATABASE_ADMIN_NAME -l $DB_NAME" );
-	if ( $output =~ /List of databases/i )
-	{
-		# The command only shows a list of databases if
-		# the database name on the command line exists.
-		# Otherwise it reports a 'does not exist' error.
-		#
-		# Since we did get a list of databases, the
-		# database exists.  Re-create it if forced too.
-		if ( $force )
-		{
-			# In FORCE mode, we need to drop the database and
-			# re-create it.
-			printStatus( "Forced dropping of iCAT database...\n" );
-			printLog( "Forced dropping of iCAT database...\n" );
-			my $doDrop = 1;
-			if ( ! $noAsk )
-			{
-				printNotice( "\nDropping the iCAT database tables will destroy all metadata about files\n" );
-				printNotice( "stored by iRODS.  This cannot be undone.\n" );
-				printNotice( "\n" );
-				if ( askYesNo( "    Continue (yes/no)?  " ) == 0 )
-				{
-					printStatus( "    Skipped.  Drop canceled.\n" );
-					$doDrop = 0;
-				}
-			}
-			if ( $doDrop )
-			{
-				printStatus( "Dropping iCAT database...\n" );
-
-				my $tmpPassword = createTempFilePath( "drop" );
-				printToFile( $tmpPassword, "$DATABASE_ADMIN_PASSWORD\n" );
-				chmod( 0600, $tmpPassword );
-
-				$DDB=`../packaging/find_bin_postgres.sh`;
-				chomp $DDB;
-				$DDB=$DDB . "/dropdb";
-				my ($status,$output) = run( "$DDB $DB_NAME < $tmpPassword" );
-				unlink( $tmpPassword );
-
-				if ( $status != 0 && $output !~ /does not exist/i )
-				{
-					printError( "\nInstall problem:\n" );
-					printError( "    Could not drop iCAT database.\n" );
-					printError( "        ", $output );
-					printLog( "\nCould not drop iCAT database:\n" );
-					printLog( "        ", $output );
-					return 0;
-				}
-			}
-		}
-		else
-		{
-			# Already exists and not forced to drop it,
-			# so we don't need to create it again.
-			$needCreate = 0;
-		}
-	}
-
-
-	# Create the database.
-	#	While the user's .pgpass provides a password for
-	#	use when accessing this database, the database
-	#	doesn't exist yet.  So, .pgpass isn't involved and
-	#	the user will be prompted for a password.  To avoid
-	#	the prompt, we include the password in an input file.
-	if ( $needCreate )
-	{
-		printStatus( "    Creating iCAT database...\n" );
-		printLog( "\n    Creating iCAT database...\n" );
-		my $tmpPassword = createTempFilePath( "create" );
-		printToFile( $tmpPassword, "$DATABASE_ADMIN_PASSWORD\n" );
-		chmod( 0600, $tmpPassword );
-
-
-		$CDB=`../packaging/find_bin_postgres.sh`;
-		chomp $CDB;
-		$CDB=$CDB . "/createdb";
-		if ($DATABASE_HOST eq "localhost") {
-			$status = system( "$CDB -U $DATABASE_ADMIN_NAME $DB_NAME &> /dev/null" );
-		}
-		else {
-		    ($status,$output) = run( "$CDB -h $DATABASE_HOST -U $DATABASE_ADMIN_NAME $DB_NAME < $tmpPassword" );
-		}
-		unlink( $tmpPassword );
-
-		if ( $status != 0 )
-		{
-			# Supposedly we've already caught the case where
-			# the database already exists above.  Just in case,
-			# watch for the same error again.
-			if( $output =~ /already exists/i )
-			{
-				# Already exists.  Odd.  The earlier check
-				# should have avoided this.
-				return 2;
-			}
-
-			printError( "\nInstall problem:\n" );
-			printError( "    Could not create iCAT database.\n" );
-			printError( "        ", $output );
-			printLog( "\nCould not create iCAT database:\n" );
-			printLog( "        ", $output );
-			return 0;
-		}
-	}
-	else
-	{
-		printStatus( "    Skipped creating iCAT database, it already exists.\n" );
-		printLog( "    Skipped creating iCAT database, it already exists.\n" );
-	}
+	my ($status,$output) = run( "$PSQL -U $DATABASE_ADMIN_NAME -p $DATABASE_PORT -l $DB_NAME" );
+        if ( $output =~ /List of databases/i )
+        {
+                printStatus( "    Skipped creating iCAT database, it already exists.\n" );
+                printLog( "    Skipped creating iCAT database, it already exists.\n" );
+        }
+        else
+        {
+                printStatus( "    For Postgres, DBA creates the instance.\n" );
+                printLog( "    For Postgres, DBA creates the instance.\n" );
+        }
 
 
 
@@ -3760,9 +3662,9 @@ sub Postgres_sql($$)
 	$PSQL=$PSQL . "/psql";
 
 	if ($DATABASE_HOST eq "localhost") {
-	    return run( "$PSQL -U $DATABASE_ADMIN_NAME $databaseName < $sqlFilename" );
+	    return run( "$PSQL -U $DATABASE_ADMIN_NAME -p $DATABASE_PORT $databaseName < $sqlFilename" );
 	}
-	return run( "$PSQL -U $DATABASE_ADMIN_NAME -h $DATABASE_HOST $databaseName < $sqlFilename" );
+	return run( "$PSQL -U $DATABASE_ADMIN_NAME -p $DATABASE_PORT -h $DATABASE_HOST $databaseName < $sqlFilename" );
 }
 
 #
@@ -3820,7 +3722,7 @@ sub MySQL_sql($$)
 	chomp $MYSQL;
 	$MYSQL=$MYSQL . "/mysql";
 	my ($databaseName,$sqlFilename) = @_;
-	return run( "$MYSQL --user=$DATABASE_ADMIN_NAME --password=$DATABASE_ADMIN_PASSWORD $databaseName < $sqlFilename" );
+	return run( "$MYSQL --user=$DATABASE_ADMIN_NAME --port=$DATABASE_PORT --password=$DATABASE_ADMIN_PASSWORD $databaseName < $sqlFilename" );
 }
 
 

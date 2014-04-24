@@ -1419,6 +1419,7 @@ cleanupAndExit( int status ) {
     if ( InitialState == INITIAL_DONE ) {
         /* close all opened descriptors */
         closeAllL1desc( ThisComm );
+        freeAllL1desc();
         /* close any opened server to server connection */
         disconnectAllSvrToSvrConn();
     }

@@ -158,12 +158,12 @@ main( int argc, char **argv ) {
             printUpdateMsg();
         }
         printf( "Enter the host name (DNS) of the server to connect to:" );
-        std::string response = "";
+        std::string response;
         getline( cin, response );
         strncpy( ttybuf, response.c_str(), TTYBUF_LEN );
         rstrcat( updateText, "irodsHost ", UPDATE_TEXT_LEN );
         rstrcat( updateText, ttybuf, UPDATE_TEXT_LEN );
-        i = strlen( ttybuf );
+        rstrcat( updateText, "\n", UPDATE_TEXT_LEN );
         strncpy( myEnv.rodsHost, ttybuf, NAME_LEN );
     }
     if ( myEnv.rodsPort == 0 ) {
@@ -172,12 +172,12 @@ main( int argc, char **argv ) {
             printUpdateMsg();
         }
         printf( "Enter the port number:" );
-        std::string response = "";
+        std::string response;
         getline( cin, response );
         strncpy( ttybuf, response.c_str(), TTYBUF_LEN );
         rstrcat( updateText, "irodsPort ", UPDATE_TEXT_LEN );
         rstrcat( updateText, ttybuf, UPDATE_TEXT_LEN );
-        i = strlen( ttybuf );
+        rstrcat( updateText, "\n", UPDATE_TEXT_LEN );
         myEnv.rodsPort = atoi( ttybuf );
     }
     if ( myEnv.rodsUserName == NULL || strlen( myEnv.rodsUserName ) == 0 ) {
@@ -186,12 +186,12 @@ main( int argc, char **argv ) {
             printUpdateMsg();
         }
         printf( "Enter your irods user name:" );
-        std::string response = "";
+        std::string response;
         getline( cin, response );
         strncpy( ttybuf, response.c_str(), TTYBUF_LEN );
         rstrcat( updateText, "irodsUserName ", UPDATE_TEXT_LEN );
         rstrcat( updateText, ttybuf, UPDATE_TEXT_LEN );
-        i = strlen( ttybuf );
+        rstrcat( updateText, "\n", UPDATE_TEXT_LEN );
         strncpy( myEnv.rodsUserName, ttybuf, NAME_LEN );
     }
     if ( myEnv.rodsZone == NULL || strlen( myEnv.rodsZone ) == 0 ) {
@@ -200,11 +200,12 @@ main( int argc, char **argv ) {
             printUpdateMsg();
         }
         printf( "Enter your irods zone:" );
-        std::string response = "";
+        std::string response;
         getline( cin, response );
         strncpy( ttybuf, response.c_str(), TTYBUF_LEN );
+        rstrcat( updateText, "irodsZone ", UPDATE_TEXT_LEN );
         rstrcat( updateText, ttybuf, UPDATE_TEXT_LEN );
-        i = strlen( ttybuf );
+        rstrcat( updateText, "\n", UPDATE_TEXT_LEN );
         strncpy( myEnv.rodsZone, ttybuf, NAME_LEN );
     }
     if ( doingEnvFileUpdate ) {

@@ -192,8 +192,6 @@ foreach $arg ( @ARGV )
 	printNotice( "    --disable-mycat             Disable MySQL database catalog\n" );
 	printNotice( "\n" );
 	printNotice( "    --enable-psghome=<DIR>      Set the Postgres directory\n" );
-	printNotice( "    --enable-newodbc            Use the new ODBC interface\n" );
-	printNotice( "    --enable-oldodbc            Use the old ODBC interface\n" );
 	printNotice( "\n" );
 	printNotice( "iRODS options:\n" );
 	printNotice( "    --enable-parallel           Enable parallel computation\n" );
@@ -225,7 +223,6 @@ $configMkVariables{ "RODS_CAT" } = "";	# Enable iCAT
 $configMkVariables{ "PSQICAT" }  = "";	# Enable Postgres iCAT
 $configMkVariables{ "ORAICAT" }  = "";	# Disable Oracle iCAT
 $configMkVariables{ "MYICAT" }  = "";	# Disable MySQL iCAT
-$configMkVariables{ "NEW_ODBC" } = "1";	# New ODBC drivers
 $configMkVariables{ "PARA_OPR" } = "1";	# Parallel
 
 $irodsConfigVariables{ "IRODS_HOME" } = $IRODS_HOME;
@@ -317,15 +314,6 @@ if ($GSI_AUTH == 1) {
 	if ( ! -e $testLib ) {
 	    $configMkVariables{ "GSI_CRYPTO" } = crypto;
 	}
-}
-
-if ( $DATABASE_ODBC_TYPE =~ /unix/i )
-{
-	$configMkVariables{ "NEW_ODBC" } = "1";	# New ODBC drivers
-}
-else
-{
-	$configMkVariables{ "NEW_ODBC" } = "";	# Old ODBC drivers
 }
 
 if ( $DATABASE_TYPE =~ /postgres/i )
@@ -485,18 +473,6 @@ foreach $arg ( @ARGV )
 	if ( $arg =~ /--enable-file64bit/ )
 	{
 		$configMkVariables{ "FILE_64BITS" } = "1";
-		next;
-	}
-
-	# New or old ODBC code
-	if ( $arg =~ /--enable-newodbc/ )
-	{
-		$configMkVariables{ "NEW_ODBC" } = "1";
-		next;
-	}
-	if ( $arg =~ /--enable-oldodbc/ )
-	{
-		$configMkVariables{ "NEW_ODBC" } = "";
 		next;
 	}
 

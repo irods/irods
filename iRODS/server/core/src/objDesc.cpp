@@ -161,6 +161,19 @@ freeL1desc( int l1descInx ) {
 }
 
 int
+freeAllL1desc() {
+    int i;
+
+    for ( i = 3; i < NUM_L1_DESC; i++ ) {
+        if ( L1desc[i].inuseFlag == FD_INUSE &&
+                L1desc[i].l3descInx > 2 ) {
+            freeL1desc( i );
+        }
+    }
+    return ( 0 );
+}
+
+int
 fillL1desc( int l1descInx, dataObjInp_t *dataObjInp,
             dataObjInfo_t *dataObjInfo, int replStatus, rodsLong_t dataSize ) {
     keyValPair_t *condInput;
