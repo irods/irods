@@ -73,6 +73,10 @@ namespace irods {
         virtual int   num_children() {
             return children_.size();
         }
+        virtual bool has_child(
+            const std::string& _name ) {
+            return children_.has_entry( _name );
+        }
 
         // =-=-=-=-=-=-=-
         /// @brief interface to get and set a resource's parent pointer
