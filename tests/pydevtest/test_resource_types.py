@@ -1992,6 +1992,23 @@ class Test_RoundRobin_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
     def test_ireg_as_rodsuser_in_vault(self):
         pass
 
+    def test_round_robin_mechanism(self):
+        # local setup
+        filename = "rrfile.txt"
+        filepath = os.path.abspath(filename)
+        f = open(filepath,'wb')
+        f.write("TESTFILE -- ["+filepath+"]")
+        f.close()
+
+        assertiCmd( s.sessions[1],"iput "+filename+" file0.txt" );
+        assertiCmd( s.sessions[1],"iput "+filename+" file1.txt" );
+
+        assertiCmd( s.sessions[1],"ils -l", "LIST", "unix1Resc" );
+        assertiCmd( s.sessions[1],"ils -l", "LIST", "unix2Resc" );
+
+        # local cleanup
+        output = commands.getstatusoutput( 'rm '+filepath )
+
 class Test_Replication_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
 
     hostname = socket.gethostname()
