@@ -41,6 +41,7 @@ packStruct( void *inStruct, bytesBuf_t **packedResult, const char *packInstName,
                               myPackTable, 1, packFlag, irodsProt, NULL );
 
     if ( status < 0 ) {
+        free( rootPackedItem.name );
         return ( status );
     }
 
@@ -54,6 +55,7 @@ packStruct( void *inStruct, bytesBuf_t **packedResult, const char *packInstName,
         }
     }
     *packedResult = packedOutput.bBuf;
+    free( rootPackedItem.name );
     return ( 0 );
 }
 
@@ -82,11 +84,13 @@ unpackStruct( void *inPackedStr, void **outStruct, const char *packInstName,
                                 myPackTable, 1, irodsProt, NULL );
 
     if ( status < 0 ) {
+        free( rootPackedItem.name );
         return ( status );
     }
 
     *outStruct = unpackedOutput.bBuf->buf;
     free( unpackedOutput.bBuf );
+    free( rootPackedItem.name );
 
     return ( 0 );
 }
