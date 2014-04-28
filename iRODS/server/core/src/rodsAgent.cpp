@@ -29,6 +29,7 @@ static void NtAgentSetEnvsFromArgs( int ac, char **av );
 #include "irods_auth_constants.hpp"
 #include "irods_server_properties.hpp"
 #include "irods_server_api_table.hpp"
+#include "irods_client_api_table.hpp"
 #include "irods_pack_table.hpp"
 
 #include "readServerConfig.hpp"
@@ -146,7 +147,7 @@ main( int argc, char *argv[] ) {
     }
 
     // =-=-=-=-=-=-=-
-    // load pluggable api entries
+    // load server side pluggable api entries
     irods::api_entry_table&  RsApiTable   = irods::get_server_api_table();
     irods::pack_entry_table& ApiPackTable = irods::get_pack_table();
     ret = irods::init_api_table(
@@ -158,6 +159,17 @@ main( int argc, char *argv[] ) {
         exit( 1 );
     }
 
+    // =-=-=-=-=-=-=-
+    // load client side pluggable api entries
+    irods::api_entry_table&  RcApiTable = irods::get_client_api_table();
+    ret = irods::init_api_table(
+              RcApiTable,
+              ApiPackTable,
+              true );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        exit( 1 );
+    }
 
 
 
