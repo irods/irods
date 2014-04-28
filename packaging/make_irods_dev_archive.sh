@@ -17,7 +17,7 @@ rm dummy
 
 # =-=-=-=-=-=-=-
 # Archive all Client Objects
-ar qS $ar_file $(find iRODS/lib -name \*.o ! -name irods_pack_table.o ! -name irods_client_api_table.o)
+ar qS $ar_file $(find iRODS/lib -name \*.o ! -name irods_pack_table.o ! -name irods_client_api_table.o ! -name irods_*_plugin.o ! -name irods_*_object.o )
 
 # =-=-=-=-=-=-=-
 # Generate index
