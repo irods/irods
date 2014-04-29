@@ -37,7 +37,7 @@
 # =-=-=-=-=-=-=-
 # post install
 # =-=-=-=-=-=-=-
-#%postinstall
+%postinstall ldconfig /usr/lib/irods
 
 
 # =-=-=-=-=-=-=-
@@ -62,44 +62,6 @@
 # =-=-=-=-=-=-=-
 
 d 755 root root /usr/lib/irods/ -
-%if ARCH
-f 644 root root /usr/lib/irods/libs3.so.2 ./external/libs3-2.0/build/lib/libs3.so.2
-l 000 root root /usr/lib/irods/libs3.so /usr/lib/irods/libs3.so.2
-f 644 root root /usr/lib/irods/libarchive.so.14 ./external/libarchive-3.1.2/libarchive/libarchive.so.14
-l 000 root root /usr/lib/irods/libarchive.so /usr/lib/irods/libarchive.so.14
-f 644 root root /usr/lib/irods/libhdf5.so.8.0.1 ./external/hdf5-1.8.12/src/.libs/libhdf5.so.8.0.1
-l 000 root root /usr/lib/irods/libhdf5.so.8.0 /usr/lib/irods/libhdf5.so.8.0.1
-l 000 root root /usr/lib/irods/libhdf5.so.8 /usr/lib/irods/libhdf5.so.8.0
-l 000 root root /usr/lib/irods/libhdf5.so /usr/lib/irods/libhdf5.so.8
-f 644 root root /usr/lib/irods/libdynlib1.so.0.0.0 ./external/hdf5-1.8.12/test/.libs/libdynlib1.so.0.0.0
-l 000 root root /usr/lib/irods/libdynlib1.so.0.0 /usr/lib/irods/libdynlib1.so.0.0.0
-l 000 root root /usr/lib/irods/libdynlib1.so.0 /usr/lib/irods/libdynlib1.so.0.0
-l 000 root root /usr/lib/irods/libdynlib1.so /usr/lib/irods/libdynlib1.so.0
-f 644 root root /usr/lib/irods/libdynlib2.so.0.0.0 ./external/hdf5-1.8.12/test/.libs/libdynlib2.so.0.0.0
-l 000 root root /usr/lib/irods/libdynlib2.so.0.0 /usr/lib/irods/libdynlib2.so.0.0.0
-l 000 root root /usr/lib/irods/libdynlib2.so.0 /usr/lib/irods/libdynlib2.so.0.0
-l 000 root root /usr/lib/irods/libdynlib2.so /usr/lib/irods/libdynlib2.so.0
-f 644 root root /usr/lib/irods/libdynlib3.so.0.0.0 ./external/hdf5-1.8.12/test/.libs/libdynlib3.so.0.0.0
-l 000 root root /usr/lib/irods/libdynlib3.so.0.0 /usr/lib/irods/libdynlib3.so.0.0.0
-l 000 root root /usr/lib/irods/libdynlib3.so.0 /usr/lib/irods/libdynlib3.so.0.0
-l 000 root root /usr/lib/irods/libdynlib3.so /usr/lib/irods/libdynlib3.so.0
-f 644 root root /usr/lib/irods/libdynlibadd.so.0.0.0 ./external/hdf5-1.8.12/tools/h5repack/.libs/libdynlibadd.so.0.0.0
-l 000 root root /usr/lib/irods/libdynlibadd.so.0.0 /usr/lib/irods/libdynlibadd.so.0.0.0
-l 000 root root /usr/lib/irods/libdynlibadd.so.0 /usr/lib/irods/libdynlibadd.so.0.0
-l 000 root root /usr/lib/irods/libdynlibadd.so /usr/lib/irods/libdynlibadd.so.0
-f 644 root root /usr/lib/irods/libhdf5_hl.so.8.0.1 ./external/hdf5-1.8.12/hl/src/.libs/libhdf5_hl.so.8.0.1
-l 000 root root /usr/lib/irods/libhdf5_hl.so.8.0 /usr/lib/irods/libhdf5_hl.so.8.0.1
-l 000 root root /usr/lib/irods/libhdf5_hl.so.8 /usr/lib/irods/libhdf5_hl.so.8.0
-l 000 root root /usr/lib/irods/libhdf5_hl.so /usr/lib/irods/libhdf5_hl.so.8
-f 644 root root /usr/lib/irods/libjansson.so.4.5.0 ./external/jansson-2.5/src/.libs/libjansson.so.4.5.0
-l 000 root root /usr/lib/irods/libjansson.so.4.5 /usr/lib/irods/libjansson.so.4.5.0
-l 000 root root /usr/lib/irods/libjansson.so.4 /usr/lib/irods/libjansson.so.4.5
-l 000 root root /usr/lib/irods/libjansson.so /usr/lib/irods/libjansson.so.4
-f 644 root root /usr/lib/irods/libnetcdf.so.7.2.0 ./external/netcdf-4.3.0/liblib/.libs/libnetcdf.so.7.2.0
-l 000 root root /usr/lib/irods/libnetcdf.so.7.2 /usr/lib/irods/libnetcdf.so.7.2.0
-l 000 root root /usr/lib/irods/libnetcdf.so.7 /usr/lib/irods/libnetcdf.so.7.2
-l 000 root root /usr/lib/irods/libnetcdf.so /usr/lib/irods/libnetcdf.so.7
-%else
 f 644 root root /usr/lib/irods/libs3.so ./external/libs3-2.0/build/lib/libs3.so.2
 f 644 root root /usr/lib/irods/libarchive.so ./external/libarchive-3.1.2/libarchive/libarchive.so.14
 f 644 root root /usr/lib/irods/libhdf5.so ./external/hdf5-1.8.12/src/.libs/libhdf5.so.8.0.1
@@ -110,4 +72,3 @@ f 644 root root /usr/lib/irods/libdynlibadd.so ./external/hdf5-1.8.12/tools/h5re
 f 644 root root /usr/lib/irods/libhdf5_hl.so ./external/hdf5-1.8.12/hl/src/.libs/libhdf5_hl.so.8.0.1
 f 644 root root /usr/lib/irods/libjansson.so ./external/jansson-2.5/src/.libs/libjansson.so.4.5.0
 f 644 root root /usr/lib/irods/libnetcdf.so ./external/netcdf-4.3.0/liblib/.libs/libnetcdf.so.7.2.0
-%endif
