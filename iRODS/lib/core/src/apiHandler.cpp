@@ -196,6 +196,14 @@ namespace irods {
                                 "inst", "ctx" );
                 if ( ret.ok() && entry ) {
                     // =-=-=-=-=-=-=-
+                    //
+                    rodsLog(
+                        LOG_DEBUG,
+                        "init_api_table :: adding %d - [%s]",
+                        entry->apiNumber,
+                        entry->fcn_name_.c_str() );
+
+                    // =-=-=-=-=-=-=-
                     // ask the plugin to fill in the api and pack
                     // tables with its appropriate values
                     _api_tbl[ entry->apiNumber ] = api_entry_ptr( entry );

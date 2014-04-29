@@ -5,10 +5,7 @@
 #include "apiHandler.hpp"
 
 namespace irods {
-
-#ifndef RODS_SERVER
     api_entry_table& get_client_api_table();
-#endif
 
 }; // namespace irods
 

@@ -3,7 +3,7 @@
 # These should not need to be changed in most cases.
 
 
-SODIR = obj
+SODIR = .
 INCDIR= include
 
 DEPDIR = .deps
@@ -49,7 +49,7 @@ client-base: ${CLIENT_OBJS}
 server-base: ${SERVER_OBJS}
 
 clean-base:
-	@-rm -f ${SODIR}/* > /dev/null 2>&1
+	@-rm -f ${SODIR}/*.so > /dev/null 2>&1
 	@-rm -f ${DEPS} > /dev/null 2>&1
 	@-rm -f ${DEPFILE} > /dev/null 2>&1
 

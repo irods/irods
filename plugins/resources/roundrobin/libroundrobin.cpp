@@ -2,12 +2,12 @@
 
 
 // =-=-=-=-=-=-=-
-// irods includes
+// legacy irods includes
 #include "msParam.hpp"
 #include "reGlobalsExtern.hpp"
-#include "generalAdmin.hpp"
 
 // =-=-=-=-=-=-=-
+//
 #include "irods_resource_plugin.hpp"
 #include "irods_file_object.hpp"
 #include "irods_physical_object.hpp"
@@ -16,6 +16,8 @@
 #include "irods_hierarchy_parser.hpp"
 #include "irods_resource_redirect.hpp"
 #include "irods_stacktrace.hpp"
+#include "irods_server_api_call.hpp"
+#include "rs_set_round_robin_context.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -1139,24 +1141,31 @@ extern "C" {
 
                 std::string next_child;
                 properties_.get< std::string >( NEXT_CHILD_PROP, next_child );
-                generalAdminInp_t inp;
-                inp.arg0 = const_cast<char*>( "modify" );
-                inp.arg1 = const_cast<char*>( "resource" );
-                inp.arg2 = const_cast<char*>( name.c_str() );
-                inp.arg3 = const_cast<char*>( "context" );
-                inp.arg4 = const_cast<char*>( next_child.c_str() );
-                inp.arg5 = 0;
-                inp.arg6 = 0;
-                inp.arg7 = 0;
-                inp.arg8 = 0;
-                inp.arg9 = 0;
 
-                int status = rcGeneralAdmin( _comm, &inp );
+                setRoundRobinContextInp_t inp;
+                strncpy( inp.resc_name_, name.c_str(),       NAME_LEN );
+                strncpy( inp.context_,   next_child.c_str(), MAX_NAME_LEN );
+                int status = procApiRequest(
+                                 _comm,
+                                 SET_RR_CTX_AN,
+                                 &inp,
+                                 NULL,
+                                 ( void** ) NULL,
+                                 NULL );
+
                 if ( status < 0 ) {
-                    return ERROR( status, "roundrobin_pdmo - rsGeneralAdmin failed." );
-                }
+                    std::stringstream msg;
+                    msg << "failed to update round robin context for [";
+                    msg << name << "] with context [" << next_child << "]";
+                    return ERROR(
+                               status,
+                               msg.str() );
 
-                return SUCCESS();
+                }
+                else {
+                    return SUCCESS();
+
+                }
 
             } // operator=
 

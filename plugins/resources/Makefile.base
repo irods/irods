@@ -11,10 +11,18 @@ include ${IRODSDIR}/config/platform.mk
 
 GCC = g++ -DRODS_SERVER 
 
-INC = -I${IRODSDIR}/lib/core/include/ -I${IRODSDIR}/lib/api/include/ -I${IRODSDIR}/lib/md5/include \
-      -I${IRODSDIR}/server/core/include/ -I${IRODSDIR}/server/icat/include/ -I${IRODSDIR}/server/re/include/ \
-      -I${IRODSDIR}/server/drivers/include/ -I${IRODSDIR}/lib/sha1/include/ -I$(LIBARCHIVE_DIR)/libarchive/ \
-      -I$(BOOST_DIR) -I${IRODSDIR}/lib/rbudp/include
+INC = -I${IRODSDIR}/lib/core/include/ \
+      -I${IRODSDIR}/lib/api/include/ \
+      -I${IRODSDIR}/lib/md5/include \
+      -I${IRODSDIR}/server/core/include/ \
+      -I${IRODSDIR}/server/icat/include/ \
+      -I${IRODSDIR}/server/re/include/ \
+      -I${IRODSDIR}/server/drivers/include/ \
+      -I${IRODSDIR}/lib/sha1/include/ \
+      -I${IRODSDIR}/lib/rbudp/include \
+      -I${IRODSDIR}/../plugins/api/include \
+      -I$(LIBARCHIVE_DIR)/libarchive/ \
+      -I$(BOOST_DIR) 
 
 MY_CFLAG += ${INC}
 
