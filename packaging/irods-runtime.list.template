@@ -37,8 +37,7 @@
 # =-=-=-=-=-=-=-
 # post install
 # =-=-=-=-=-=-=-
-%postinstall
-ldconfig /usr/lib/irods
+%postinstall ldconfig /usr/lib/irods
 
 
 # =-=-=-=-=-=-=-
