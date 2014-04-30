@@ -34,8 +34,10 @@ Long Options:
 Examples:
 $SCRIPTNAME icat postgres
 $SCRIPTNAME resource
+$SCRIPTNAME icommands
 $SCRIPTNAME -s icat postgres
 $SCRIPTNAME -s resource
+$SCRIPTNAME -s icommands
 "
 
 # Color Manipulation Aliases
@@ -333,7 +335,7 @@ rename_generated_packages() {
         echo "         to [$RENAME_DESTINATION_DOCS]"
         mv $RENAME_SOURCE_DOCS $RENAME_DESTINATION_DOCS
     else
-        if [ "$RELEASE" == "1" ] ; then
+        if [ "$RELEASE" == "1" -o "$TARGET" == "icommands" ] ; then
             echo ""
             echo "renaming    [$RENAME_SOURCE_ICOMMANDS]"
             echo "         to [$RENAME_DESTINATION_ICOMMANDS]"
@@ -348,32 +350,34 @@ rename_generated_packages() {
             echo "renaming    [$RENAME_SOURCE_RUNTIME]"
             echo "         to [$RENAME_DESTINATION_RUNTIME]"
             mv $RENAME_SOURCE_RUNTIME $RENAME_DESTINATION_RUNTIME
-        fi
+          fi
         # icat or resource
-        echo ""
-        echo "renaming    [$RENAME_SOURCE]"
-        echo "         to [$RENAME_DESTINATION]"
-        mv $RENAME_SOURCE $RENAME_DESTINATION
-        # database
-        if [ "$BUILDIRODS" == "1" -a "$TARGET" == "icat" ] ; then
-            # checking whether to build package for postgres93 for centos6
-            if [ "$DETECTEDOS" == "RedHatCompatible" -a "$DATABASE_PLUGIN_TYPE" == "postgres" ] ; then
-                ostype=`awk '{print $1}' /etc/redhat-release`
-                osversion=`awk '{print $3}' /etc/redhat-release`
-                if [ "$ostype" == "CentOS" -a "$osversion" \> "6" ]; then
-                    DB93_SOURCE=${DB_SOURCE/\*database\*/*database*postgres93*}
-                    DB93_DESTINATION=${DB_DESTINATION/postgres/postgres93}
-                    echo ""
-                    echo "renaming    [$DB93_SOURCE]"
-                    echo "         to [$DB93_DESTINATION]"
-                    mv $DB93_SOURCE $DB93_DESTINATION
-                fi
-            fi
-            # all others
+        if [ "$TARGET" == "icat" -o "$TARGET" == "resource" ] ; then
             echo ""
-            echo "renaming    [$DB_SOURCE]"
-            echo "         to [$DB_DESTINATION]"
-            mv $DB_SOURCE $DB_DESTINATION
+            echo "renaming    [$RENAME_SOURCE]"
+            echo "         to [$RENAME_DESTINATION]"
+            mv $RENAME_SOURCE $RENAME_DESTINATION
+            # database
+            if [ "$BUILDIRODS" == "1" -a "$TARGET" == "icat" ] ; then
+                # checking whether to build package for postgres93 for centos6
+                if [ "$DETECTEDOS" == "RedHatCompatible" -a "$DATABASE_PLUGIN_TYPE" == "postgres" ] ; then
+                    ostype=`awk '{print $1}' /etc/redhat-release`
+                    osversion=`awk '{print $3}' /etc/redhat-release`
+                    if [ "$ostype" == "CentOS" -a "$osversion" \> "6" ]; then
+                        DB93_SOURCE=${DB_SOURCE/\*database\*/*database*postgres93*}
+                        DB93_DESTINATION=${DB_DESTINATION/postgres/postgres93}
+                        echo ""
+                        echo "renaming    [$DB93_SOURCE]"
+                        echo "         to [$DB93_DESTINATION]"
+                        mv $DB93_SOURCE $DB93_DESTINATION
+                    fi
+                fi
+                # all others
+                echo ""
+                echo "renaming    [$DB_SOURCE]"
+                echo "         to [$DB_DESTINATION]"
+                mv $DB_SOURCE $DB_DESTINATION
+            fi
         fi
     fi
 
@@ -509,7 +513,7 @@ fi
 
 
 # check for invalid switch combinations
-if [[ $1 != "icat" && $1 != "resource" ]] ; then
+if [[ $1 != "icat" && $1 != "resource" && $1 != icommands ]] ; then
     echo "${text_red}#######################################################" 1>&2
     echo "ERROR :: Invalid serverType [$1]" 1>&2
     echo "      :: Only 'icat' or 'resource' available at this time" 1>&2
@@ -545,6 +549,7 @@ fi
 # does not work on solaris ('which' returns 0, regardless), so check the output as well
 set +e
 
+#find prerequisites and particular flavors of command
 GPLUSPLUS=`which g++`
 if [[ "$?" != "0" || `echo $GPLUSPLUS | awk '{print $1}'` == "no" ]] ; then
     if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
@@ -672,6 +677,7 @@ else
     echo "Detected help2man [$HELP2MAN] v[$H2MVERSION]"
 fi
 
+#grep is ggrep on solaris
 if [ "$DETECTEDOS" == "Solaris" ] ; then
     GREPCMD="ggrep"
 else
@@ -927,9 +933,14 @@ if [ $1 == "icat" ] ; then
     # otherwise set up variables for resource configuration
     EPMFILE="../packaging/irods.config.icat.epm"
     cp $EPMFILE $TMPCONFIGFILE
-else
+elif [ $1 == "resource" ] ; then
     SERVER_TYPE="RESOURCE"
     SERVER_TYPE_LOWERCASE="resource"
+    EPMFILE="../packaging/irods.config.resource.epm"
+    cp $EPMFILE $TMPCONFIGFILE
+elif [ $1 == "icommands" ] ; then
+    SERVER_TYPE="ICOMMANDS"
+    SERVER_TYPE_LOWERCASE="icommands"
     EPMFILE="../packaging/irods.config.resource.epm"
     cp $EPMFILE $TMPCONFIGFILE
 fi
@@ -1091,6 +1102,9 @@ if [ "$BUILDIRODS" == "1" ] ; then
     elif [ "$SERVER_TYPE" == "RESOURCE" ] ; then
         # build resource package
         $MAKEJCMD -C $BUILDDIR resource-package
+    elif [ "$SERVER_TYPE" == "ICOMMANDS" ] ; then
+        # build icommands package
+        $MAKEJCMD -C $BUILDDIR icommands-package
     fi
     if [ "$?" != "0" ] ; then
         exit 1
@@ -1252,6 +1266,7 @@ else
     EPMOPTS="-g"
 fi
 
+#generate packages with epm
 cd $BUILDDIR
 unamem=`uname -m`
 if [[ "$unamem" == "x86_64" || "$unamem" == "amd64" ]] ; then
@@ -1269,80 +1284,92 @@ if [ "$DETECTEDOS" == "RedHatCompatible" ] ; then # CentOS and RHEL and Fedora
     else
         epmosversion="NOTCENTOS6"
     fi
-    $EPMCMD $EPMOPTS -f rpm irods-$SERVER_TYPE_LOWERCASE $epmvar=true $epmosversion=true ./packaging/irods.list
     if [ "$SERVER_TYPE" == "ICAT" ] ; then
+        $EPMCMD $EPMOPTS -f rpm irods-icat $epmvar=true $epmosversion=true ./packaging/irods.list
         $EPMCMD $EPMOPTS -f rpm irods-dev $epmvar=true $epmosversion=true ./packaging/irods-dev.list
         $EPMCMD $EPMOPTS -f rpm irods-runtime $epmvar=true $epmosversion=true ./packaging/irods-runtime.list
+    elif [ "$SERVER_TYPE" = "RESOURCE" ] ; then
+        $EPMCMD $EPMOPTS -f rpm irods-resource $epmvar=true $epmosversion=true ./packaging/irods.list
     fi
-    if [ "$RELEASE" == "1" ] ; then
+    if [ "$SERVER_TYPE" == "ICOMMANDS" -o "$RELEASE" == "1" ] ; then
         $EPMCMD $EPMOPTS -f rpm irods-icommands $epmvar=true $epmosversion=true ./packaging/irods-icommands.list
     fi
 elif [ "$DETECTEDOS" == "SuSE" ] ; then # SuSE
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS RPMs${text_reset}"
     epmvar="SUSERPM$SERVER_TYPE"
-    $EPMCMD $EPMOPTS -f rpm irods-$SERVER_TYPE_LOWERCASE $epmvar=true ./packaging/irods.list
     if [ "$SERVER_TYPE" == "ICAT" ] ; then
+        $EPMCMD $EPMOPTS -f rpm irods-icat $epmvar=true ./packaging/irods.list
         $EPMCMD $EPMOPTS -f rpm irods-dev $epmvar=true ./packaging/irods-dev.list
         $EPMCMD $EPMOPTS -f rpm irods-runtime $epmvar=true ./packaging/irods-runtime.list
+    elif [ "$SERVER_TYPE" = "RESOURCE" ] ; then
+        $EPMCMD $EPMOPTS -f rpm irods-resource $epmvar=true ./packaging/irods.list
     fi
-    if [ "$RELEASE" == "1" ] ; then
+    if [ "$SERVER_TYPE" == "ICOMMANDS" -o "$RELEASE" == "1" ] ; then
         $EPMCMD $EPMOPTS -f rpm irods-icommands $epmvar=true ./packaging/irods-icommands.list
     fi
 elif [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then  # Ubuntu
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS DEBs${text_reset}"
     epmvar="DEB$SERVER_TYPE"
-    $EPMCMD $EPMOPTS -a $arch -f deb irods-$SERVER_TYPE_LOWERCASE $epmvar=true ./packaging/irods.list
     if [ "$SERVER_TYPE" == "ICAT" ] ; then
+        $EPMCMD $EPMOPTS -a $arch -f deb irods-icat $epmvar=true ./packaging/irods.list
         $EPMCMD $EPMOPTS -a $arch -f deb irods-dev $epmvar=true ./packaging/irods-dev.list
         $EPMCMD $EPMOPTS -a $arch -f deb irods-runtime $epmvar=true ./packaging/irods-runtime.list
+    elif [ "$SERVER_TYPE" = "RESOURCE" ] ; then
+      $EPMCMD $EPMOPTS -a $arch -f deb irods-resource $epmvar=true ./packaging/irods.list
     fi
-    if [ "$RELEASE" == "1" ] ; then
+    if [ "$SERVER_TYPE" == "ICOMMANDS" -o "$RELEASE" == "1" ] ; then
         $EPMCMD $EPMOPTS -a $arch -f deb irods-icommands $epmvar=true ./packaging/irods-icommands.list
     fi
 elif [ "$DETECTEDOS" == "Solaris" ] ; then  # Solaris
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS PKGs${text_reset}"
     epmvar="PKG$SERVER_TYPE"
-    $EPMCMD $EPMOPTS -f pkg irods-$SERVER_TYPE_LOWERCASE $epmvar=true ./packaging/irods.list
     if [ "$SERVER_TYPE" == "ICAT" ] ; then
+        $EPMCMD $EPMOPTS -f pkg irods-icat $epmvar=true ./packaging/irods.list
         $EPMCMD $EPMOPTS -f pkg irods-dev $epmvar=true ./packaging/irods-dev.list
         $EPMCMD $EPMOPTS -f pkg irods-runtime $epmvar=true ./packaging/irods-runtime.list
+    elif [ "$SERVER_TYPE" = "RESOURCE" ] ; then
+        $EPMCMD $EPMOPTS -f pkg irods-resource $epmvar=true ./packaging/irods.list
     fi
-    if [ "$RELEASE" == "1" ] ; then
+    if [ "$SERVER_TYPE" == "ICOMMANDS" -o "$RELEASE" == "1" ] ; then
         $EPMCMD $EPMOPTS -f pkg irods-icommands $epmvar=true ./packaging/irods-icommands.list
     fi
 elif [ "$DETECTEDOS" == "MacOSX" ] ; then  # MacOSX
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS DMGs${text_reset}"
     epmvar="OSX$SERVER_TYPE"
-    $EPMCMD $EPMOPTS -f osx irods-$SERVER_TYPE_LOWERCASE $epmvar=true ./packaging/irods.list
     if [ "$SERVER_TYPE" == "ICAT" ] ; then
+        $EPMCMD $EPMOPTS -f osx irods-icat $epmvar=true ./packaging/irods.list
         $EPMCMD $EPMOPTS -f osx irods-dev $epmvar=true ./packaging/irods-dev.list
         $EPMCMD $EPMOPTS -f osx irods-runtime $epmvar=true ./packaging/irods-runtime.list
+    elif [ "$SERVER_TYPE" = "RESOURCE" ] ; then
+        $EPMCMD $EPMOPTS -f osx irods-resource $epmvar=true ./packaging/irods.list
     fi
-    if [ "$RELEASE" == "1" ] ; then
+    if [ "$SERVER_TYPE" == "ICOMMANDS" -o "$RELEASE" == "1" ] ; then
         $EPMCMD $EPMOPTS -f osx irods-icommands $epmvar=true ./packaging/irods-icommands.list
-    fi
+      fi
 elif [ "$DETECTEDOS" == "ArchLinux" ] ; then  # ArchLinux
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS TGZs${text_reset}"
     epmvar="ARCH$SERVERTYPE"
     if [ "$SERVER_TYPE" == "ICAT" ] ; then
-        ICAT=true $EPMCMD $EPMOPTS -f portable irods-$SERVER_TYPE_LOWERCASE $epmvar=true ./packaging/irods.list
+        ICAT=true $EPMCMD $EPMOPTS -f portable irods-icat $epmvar=true ./packaging/irods.list
         $EPMCMD $EPMOPTS -f portable irods-dev $epmvar=true ./packaging/irods-dev.list
         $EPMCMD $EPMOPTS -f portable irods-runtime $epmvar=true ./packaging/irods-runtime.list
-    else
-        $EPMCMD $EPMOPTS -f portable irods-$SERVER_TYPE_LOWERCASE $epmvar=true ./packaging/irods.list
+    elif [ "$SERVER_TYPE" = "RESOURCE" ] ; then
+        $EPMCMD $EPMOPTS -f portable irods-resource $epmvar=true ./packaging/irods.list
     fi
-    if [ "$RELEASE" == "1" ] ; then
+    if [ "$SERVER_TYPE" == "ICOMMANDS" -o "$RELEASE" == "1" ] ; then
         $EPMCMD $EPMOPTS -f portable irods-icommands $epmvar=true ./packaging/irods-icommands.list
     fi
 elif [ "$DETECTEDOS" == "Portable" ] ; then  # Portable
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS TGZs${text_reset}"
     epmvar="PORTABLE$SERVER_TYPE"
-    $EPMCMD $EPMOPTS -f portable irods-$SERVER_TYPE_LOWERCASE $epmvar=true ./packaging/irods.list
     if [ "$SERVER_TYPE" == "ICAT" ] ; then
-        ICAT=true $EPMCMD $EPMOPTS -f portable irods-dev $epmvar=true ./packaging/irods-dev.list
-        ICAT=true $EPMCMD $EPMOPTS -f portable irods-runtime $epmvar=true ./packaging/irods-runtime.list
+        ICAT=true $EPMCMD $EPMOPTS -f portable irods-icat $epmvar=true ./packaging/irods.list
+        $EPMCMD $EPMOPTS -f portable irods-dev $epmvar=true ./packaging/irods-dev.list
+        $EPMCMD $EPMOPTS -f portable irods-runtime $epmvar=true ./packaging/irods-runtime.list
+    elif [ "$SERVER_TYPE" = "RESOURCE" ] ; then
+        $EPMCMD $EPMOPTS -f portable irods-resource $epmvar=true ./packaging/irods.list
     fi
-    if [ "$RELEASE" == "1" ] ; then
+    if [ "$SERVER_TYPE" == "ICOMMANDS" -o "$RELEASE" == "1" ] ; then
         $EPMCMD $EPMOPTS -f portable irods-icommands $epmvar=true ./packaging/irods-icommands.list
     fi
 else

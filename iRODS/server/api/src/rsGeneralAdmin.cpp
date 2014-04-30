@@ -666,7 +666,20 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             if ( userInfo.rodsZone[sizeof( userInfo.rodsZone ) - 1] ) {
                 return SYS_INVALID_INPUT_PARAM;
             }
-            rei.uoio = &userInfo;
+            userInfo_t userInfoRei = userInfo;
+            char userName[NAME_LEN];
+            char zoneName[NAME_LEN];
+            status = parseUserName( userInfo.userName, userName, zoneName );
+            if ( status != 0 ) {
+                chlRollback( rsComm );
+                return status;
+            }
+            if ( strcmp( zoneName, "" ) != 0 ) {
+                strncpy( userInfoRei.rodsZone, zoneName, NAME_LEN );
+                strncpy( userInfoRei.userName, userName, NAME_LEN );
+            }
+
+            rei.uoio = &userInfoRei;
             rei.uoic = &rsComm->clientUser;
             rei.uoip = &rsComm->proxyUser;
             status = applyRuleArg( "acDeleteUser", args, 0, &rei, SAVE_REI );

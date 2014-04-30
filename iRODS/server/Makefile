@@ -221,14 +221,11 @@ SVR_RE_OBJS =	\
 		$(svrReObjDir)/parser.o \
 		$(svrReObjDir)/conversion.o \
 		$(svrReObjDir)/index.o \
-		$(svrReObjDir)/region.o \
 		$(svrReObjDir)/datetime.o \
-		$(svrReObjDir)/hashtable.o \
 		$(svrReObjDir)/functions.o \
 		$(svrReObjDir)/typing.o \
 		$(svrReObjDir)/utils.o \
 		$(svrReObjDir)/locks.o \
-		$(svrReObjDir)/list.o \
 		$(svrReObjDir)/restructs.o \
 		$(svrReObjDir)/sharedmemory.o \
 		$(svrReObjDir)/filesystem.o \

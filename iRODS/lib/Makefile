@@ -105,6 +105,9 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/irods_client_api_table.o \
 		$(libCoreObjDir)/irods_pack_table.o \
 		$(libCoreObjDir)/irods_get_full_path_for_config_file.o \
+		$(libCoreObjDir)/list.o \
+		$(libCoreObjDir)/hashtable.o \
+		$(libCoreObjDir)/region.o \
 		$(libCoreObjDir)/apiHandler.o 
 
 ifdef GSI_AUTH
