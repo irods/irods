@@ -1,4 +1,6 @@
-This is an example for writing a very basic microservice plugin.
+This is an example for writing a very basic microservice plugin (msvc_test).
+
+For more examples please read microservice_tutorial.rst
 
 The example code will create a microservice which will be loaded
 and run by the accompanying rule file and write out some text to
