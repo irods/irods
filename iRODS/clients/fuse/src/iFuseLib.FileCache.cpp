@@ -390,7 +390,7 @@ int _ifuseFileCacheWrite( fileCache_t *fileCache, char *buf, size_t size, off_t 
             unuseIFuseConn( conn );
 
             if ( status < 0 ) {
-                rodsLog( LOG_ERROR, "iFuseWrtie: rcDataObjOpen of %s error. status = %d", fileCache->objPath, status );
+                rodsLog( LOG_ERROR, "iFuseWrite: rcDataObjOpen of %s error. status = %d", fileCache->objPath, status );
                 return -ENOENT;
             }
 
