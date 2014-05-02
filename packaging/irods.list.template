@@ -69,10 +69,16 @@ $RESOURCE=true
 %if DEB
 %requires libc6
 %requires libssl0.9.8
+%requires libfuse2
+%endif
+
+%if REDHAT
+%requires fuse-libs
 %endif
 
 %if SUSE
 %requires libopenssl0_9_8
+%requires libfuse2
 %endif
 
 # =-=-=-=-=-=-=-
