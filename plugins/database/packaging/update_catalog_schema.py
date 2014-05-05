@@ -8,24 +8,34 @@ schema_directory = "schema_updates"
 DEBUG = True
 DEBUG = False
 
-
 def get_current_schema_version(cfg):
+    dbtype = cfg.values['catalog_database_type']
     result = cfg.exec_sql_cmd( "select option_value \
-                                 from r_grid_configuration \
+                                 from R_GRID_CONFIGURATION \
                                  where namespace='database' \
                                  and option_name='schema_version'")
     if DEBUG:
+        print(cfg.values)
         print(result)
-    if ("relation \"r_grid_configuration\" does not exist" in result[2].decode('utf-8')):
+    if (
+        (dbtype == "postgres" and
+        "relation \"r_grid_configuration\" does not exist" in result[2].decode('utf-8'))
+        or
+        (dbtype == "mysql" and
+        ("Table '%s.R_GRID_CONFIGURATION' doesn't exist" % cfg.values['Database']) in result[2].decode('utf-8'))
+        ):
         # create and populate configuration table
+        indexstring = ""
+        if (dbtype == "mysql"):
+            indexstring = "(767)"
         result = cfg.exec_sql_cmd("create table R_GRID_CONFIGURATION ( \
-                                     namespace varchar(2700), \
-                                     option_name varchar(2700), \
-                                     option_value varchar(2700) ); \
-                                   create unique index idx_grid_configuration \
-                                     on R_GRID_CONFIGURATION (namespace, option_name); \
-                                   insert into R_GRID_CONFIGURATION VALUES ( \
-                                     'database', 'schema_version', '1' );")
+                                        namespace varchar(2700), \
+                                        option_name varchar(2700), \
+                                        option_value varchar(2700) ); \
+                                        create unique index idx_grid_configuration \
+                                        on R_GRID_CONFIGURATION (namespace %s, option_name %s); \
+                                        insert into R_GRID_CONFIGURATION VALUES ( \
+                                        'database', 'schema_version', '1' );" % indexstring)
         if DEBUG:
             print(result)
         if (result[2].decode('utf-8') != ""):
@@ -36,8 +46,12 @@ def get_current_schema_version(cfg):
         # use default value
         current_schema_version = 1
     else:
+        # postgres as default, oracle not tested yet
+        resultline = 2
+        if (dbtype == "mysql"):
+            resultline = 1
         current_schema_version = int(
-            result[1].decode('utf-8').split("\n")[2].strip())
+            result[1].decode('utf-8').split("\n")[resultline].strip())
     if DEBUG:
         print("current_schema_version: %d" % current_schema_version)
     return current_schema_version
@@ -67,7 +81,7 @@ def update_schema_version(cfg, version):
     if DEBUG:
         print("Updating schema_version...")
     # update the database
-    thesql = "update r_grid_configuration \
+    thesql = "update R_GRID_CONFIGURATION \
                 set option_value = '%d' \
                 where namespace = 'database' \
                 and option_name = 'schema_version';" % version
