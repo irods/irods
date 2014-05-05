@@ -629,5 +629,5 @@ create unique index idx_ticket_group on R_TICKET_ALLOWED_GROUPS (ticket_id, grou
 
 create unique index idx_obj_filesystem_meta1 on R_OBJT_FILESYSTEM_META (object_id);
 
-create unique index idx_grid_configuration on R_GRID_CONFIGURATION (namespace, option_name);
+create unique index idx_grid_configuration on R_GRID_CONFIGURATION (namespace VARCHAR_MAX_IDX_SIZE, option_name VARCHAR_MAX_IDX_SIZE);
 
