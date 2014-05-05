@@ -2973,16 +2973,17 @@ sub Postgres_CreateDatabase()
 	my ($status,$output) = run( "$PSQL -U $DATABASE_ADMIN_NAME -p $DATABASE_PORT -l $DB_NAME" );
         if ( $output =~ /List of databases/i )
         {
-                printStatus( "    Skipped creating iCAT database, it already exists.\n" );
-                printLog( "    Skipped creating iCAT database, it already exists.\n" );
+                printStatus( "    [$DB_NAME] Found.\n");
+                printLog( "    [$DB_NAME] Found.\n");
         }
         else
         {
-                printStatus( "    For Postgres, DBA creates the instance.\n" );
-                printLog( "    For Postgres, DBA creates the instance.\n" );
+                printError( "\nInstall problem:\n" );
+                printError( "    Database [$DB_NAME] does not exist.\n" );
+                printLog( "\nInstall problem:\n" );
+                printLog( "    Database [$DB_NAME] does not exist.\n" );
+                cleanAndExit( 1 );
         }
-
-
 
 	# Update the ODBC configuration files to include the database name.
 	#	If Postgres was installed by the iRODS scripts, then
