@@ -25,7 +25,7 @@ automatic factory code generation
         RETURN( -1);
     }
     snprintf(c, "%s%s", a, b);
-    b = c; // no need to free b
+    a = c; // no need to free a
   MICROSERVICE_END
 
   MICROSERVICE_BEGIN(
@@ -273,7 +273,7 @@ public:
 #define MSI_OUTPUT_PARAM_LIST(typeList, nameList, ioList) \
     BOOST_PP_REPEAT(BOOST_PP_LIST_SIZE(typeList), MSI_OUTPUT_PARAM, (typeList, nameList, ioList)) \
  
-// distribute a list of type, param name into two lists
+// distribute a list of type, name, io into three lists
 #define DISTRIBUTE_OP(d, state) \
     (BOOST_PP_TUPLE_ELEM(4,1,state), \
      BOOST_PP_TUPLE_ELEM(4,2,state), \
