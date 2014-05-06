@@ -676,7 +676,11 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             }
             if ( strcmp( zoneName, "" ) != 0 ) {
                 strncpy( userInfoRei.rodsZone, zoneName, NAME_LEN );
-                strncpy( userInfoRei.userName, userName, NAME_LEN );
+                // =-=-=-=-=-=-=-
+                // JMC :: while correct, much of the code assumes that the user name
+                //        has the zone name appended.  this will need to be part of
+                //        a full audit of the use of userName and zoneName
+                // strncpy( userInfoRei.userName, userName, NAME_LEN );
             }
 
             rei.uoio = &userInfoRei;
