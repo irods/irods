@@ -111,6 +111,7 @@ curl_easy_cleanup( curl );
 
 printf( "CURL: get success with %s\n", reqStr );
 
+// cppcheck-suppress syntaxError
 MICROSERVICE_END
 
 
