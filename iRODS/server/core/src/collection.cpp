@@ -97,13 +97,14 @@ int trySpecificQueryDataObjInCollReCur(
          */
         genQueryOut_t *result;
         result = *genQueryOut;
-        if ( result->attriCnt == 6 ) {
+        if ( result->attriCnt == 7 ) {
             result->sqlResult[0].attriInx = COL_D_DATA_ID;
             result->sqlResult[1].attriInx = COL_COLL_NAME;
             result->sqlResult[2].attriInx = COL_DATA_NAME;
             result->sqlResult[3].attriInx = COL_DATA_REPL_NUM;
             result->sqlResult[4].attriInx = COL_D_RESC_NAME;
             result->sqlResult[5].attriInx = COL_D_DATA_PATH;
+            result->sqlResult[6].attriInx = COL_D_RESC_HIER;
         }
     }
     return( status );
@@ -165,7 +166,7 @@ rsQueryDataObjInCollReCur( rsComm_t *rsComm, char *collection,
                 LOG_NOTICE,
                 "Note: DataObjInCollReCur specific-Query failed (not defined?), running standard query, status=%d",
                 status );
-            /* remove the level 0 error msg added by the specifc-query failure */
+            /* remove the level 0 error msg added by the specific-query failure */
             status = freeRErrorContent( &rsComm->rError );
             /* fall back to the general-query call which used before this
                specific-query was added (post 3.3.1) */

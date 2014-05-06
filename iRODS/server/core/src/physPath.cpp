@@ -915,7 +915,7 @@ syncCollPhyPath( rsComm_t *rsComm, char *collection ) {
         if ( ( dataIdRes = getSqlResultByInx( genQueryOut, COL_D_DATA_ID ) )
                 == NULL ) {
             rodsLog( LOG_ERROR,
-                     "syncCollPhyPath: getSqlResultByInx for COL_COLL_NAME failed" );
+                     "syncCollPhyPath: getSqlResultByInx for COL_D_DATA_ID failed" );
             return ( UNMATCHED_KEY_OR_INDEX );
         }
         if ( ( subCollRes = getSqlResultByInx( genQueryOut, COL_COLL_NAME ) )
