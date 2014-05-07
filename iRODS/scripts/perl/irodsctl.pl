@@ -1283,29 +1283,61 @@ sub doTestIcat
 	chdir( $serverTestBinDir );
 	$icatFailure=0;
 	$output = `$perl icatTest.pl 2>&1`;
-	if ( $? != 0 ) { $icatFailure=1; }
+  $icatTestStatus="OK";
+	if ( $? != 0 )
+  {
+    $icatFailure=1;
+    $icatTestStatus="FAILURE";
+  }
 	printToFile( $icatTestLog, $output);
+
 	$output = `$perl icatMiscTest.pl 2>&1`;
-	if ( $? != 0 ) { $icatFailure=1; }
+  $icatMiscTestStatus="OK";
+	if ( $? != 0 )
+  {
+    $icatFailure=1;
+    $icatMiscTestStatus="FAILURE";
+  }
 	printToFile( $icatMiscTestLog, $output );
+
 	$output=`$perl moveTest.pl 2>&1`;
-	if ( $? != 0 ) { $icatFailure=1; }
+  $moveTestStatus="OK";
+	if ( $? != 0 )
+  {
+    $icatFailure=1;
+    $moveTestStatus="FAILURE";
+  }
 	printToFile( $moveTestLog, $output);
-	
+
 	$output = `$perl icatTicketTest.pl 2>&1`;
-	if ( $? != 0 ) { $icatFailure=1; }
+  $icatTicketTestStatus="OK";
+	if ( $? != 0 )
+  {
+    $icatFailure=1;
+    $icatTicketTestStatus="FAILURE";
+  }
 	printToFile( $icatTicketTestLog, $output );
-	
+
 	$output = `$perl quotaTest.pl 2>&1`;
-	if ( $? != 0 ) { $icatFailure=1; }
+  $quotaTestStatus="OK";
+	if ( $? != 0 )
+  {
+    $icatFailure=1;
+    $quotaTestStatus="FAILURE";
+  }
 	printToFile( $quotaTestLog, $output );
-	
+
 	$output = `$perl specNameTest.pl 2>&1`;
-	if ( $? != 0 ) { $icatFailure=1; }
+  $specNameTestStatus="OK";
+	if ( $? != 0 )
+  {
+    $icatFailure=1;
+    $specNameTestStatus="FAILURE";
+  }
 	printToFile( $specNameTestLog, $output );
 
 
-	
+
 	# If the above all succeeded, check logs to see if all SQL was tested
 	#$output = `checkIcatLog.pl 2>&1`;
 	#if ( $? != 0 ) { $icatFailure=1; }
@@ -1339,12 +1371,12 @@ sub doTestIcat
 	#printStatus( "Test report:\n" );
 	#printStatus( "    $totalLine\n" );
 	printStatus( "Check log files for details:\n" );
-	printStatus( "    Logs:     $icatTestLog\n" );
-	printStatus( "              $icatMiscTestLog\n" );
-	printStatus( "              $moveTestLog\n" );
-	printStatus( "              $icatTicketTestLog\n" );
-	printStatus( "              $quotaTestLog\n" );
-	printStatus( "              $specNameTestLog\n" );
+	printStatus( "    Logs:     $icatTestLog        $icatTestStatus\n" );
+	printStatus( "              $icatMiscTestLog    $icatMiscTestStatus\n" );
+	printStatus( "              $moveTestLog        $moveTestStatus\n" );
+	printStatus( "              $icatTicketTestLog  $icatTicketTestStatus\n" );
+	printStatus( "              $quotaTestLog       $quotaTestStatus\n" );
+	printStatus( "              $specNameTestLog    $specNameTestStatus\n" );
 	#printStatus( "    Summary:  $outputFile\n" );
 }
 
