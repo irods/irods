@@ -89,7 +89,20 @@ fi
 if [ "$PYTESTS" != "" ] ; then
     $PYTHONCMD $OPTS $PYTESTS
 else
-    $PYTHONCMD $OPTS test_resource_types
+    $PYTHONCMD $OPTS test_resource_types.Test_UnixFileSystem_Resource
+    $PYTHONCMD $OPTS test_resource_types.Test_Passthru_Resource
+    $PYTHONCMD $OPTS test_resource_types.Test_Deferred_Resource
+    $PYTHONCMD $OPTS test_resource_types.Test_Random_Resource
+    $PYTHONCMD $OPTS test_resource_types.Test_NonBlocking_Resource
+    $PYTHONCMD $OPTS test_resource_types.Test_Compound_with_MockArchive_Resource
+    $PYTHONCMD $OPTS test_resource_types.Test_Compound_with_UniversalMSS_Resource
+    $PYTHONCMD $OPTS test_resource_types.Test_Compound_Resource
+    $PYTHONCMD $OPTS test_resource_types.Test_Replication_within_Replication_Resource
+    $PYTHONCMD $OPTS test_resource_types.Test_Replication_to_two_Compound_Resources
+    $PYTHONCMD $OPTS test_resource_types.Test_Replication_to_two_Compound_Resources_with_Prefer_Archive
+    $PYTHONCMD $OPTS test_resource_types.Test_RoundRobin_Resource
+    $PYTHONCMD $OPTS test_resource_types.Test_Replication_Resource
+    $PYTHONCMD $OPTS test_resource_types.Test_MultiLayered_Resource
     $PYTHONCMD $OPTS iadmin_suite
     $PYTHONCMD $OPTS catalog_suite
     $PYTHONCMD $OPTS test_workflow_suite
