@@ -593,7 +593,7 @@ sub getSwapFractionUsed
 	my $swapUsed;
 	my $swapFree;
 
-	@result = `top n 1`;
+	@result = `top -b n 1`;
 	if( $systype eq 'SunOS' )
 	{
 		foreach my $c(@result)
