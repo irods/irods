@@ -515,7 +515,7 @@ if [ "$1" == "docs" ] ; then
     fi
 
     # rename generated packages appropriately
-    if [ "$DETECTEDOS" != "MacOSX" && "$DETECTEDOS" != "Portable" ] ; then
+    if [[ "$DETECTEDOS" != "MacOSX" && "$DETECTEDOS" != "Portable" ]] ; then
         rename_generated_packages $1
     fi
 
