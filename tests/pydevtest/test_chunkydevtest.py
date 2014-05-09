@@ -32,11 +32,17 @@ class ChunkyDevTest(ResourceBase):
         if os.path.exists( myldir ):
             shutil.rmtree( myldir )
         assertiCmd(s.adminsession,"imkdir icmdtest")
-    
-        # begin original devtest
+        
+        # test basic informational commands
         assertiCmd(s.adminsession,"iinit -l", "LIST", s.adminsession.getUserName() )
         assertiCmd(s.adminsession,"iinit -l", "LIST", s.adminsession.getZoneName() )
         assertiCmd(s.adminsession,"iinit -l", "LIST", s.adminsession.getDefResource() )
+        res = s.adminsession.runCmd('ils', ['-V'])
+        assert (res[0].count('NOTICE: irodsHost') == 1
+                and res[0].count('NOTICE: irodsPort') == 1
+                and res[0].count('NOTICE: irodsDefResource') == 1)
+    
+        # begin original devtest
         assertiCmd(s.adminsession,"ilsresc", "LIST", self.testresc)
         assertiCmd(s.adminsession,"ilsresc -l", "LIST", self.testresc)
         assertiCmd(s.adminsession,"imiscsvrinfo", "LIST", ["relVersion"] )
