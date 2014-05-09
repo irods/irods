@@ -464,9 +464,8 @@ if [ "$1" == "docs" ] ; then
     # get cpu count
     detect_number_of_cpus_and_set_makejcmd
 
+    cd $BUILDDIR
     $MAKEJCMD docs
-
-    # get EPM
 
     $MAKEJCMD epm
 
@@ -500,8 +499,8 @@ if [ "$1" == "docs" ] ; then
         echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS PKGs${text_reset}"
         $EPMCMD -f pkg irods-docs $LISTFILE
     elif [ "$DETECTEDOS" == "MacOSX" ] ; then  # MacOSX
-        echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS DMGs${text_reset}"
-        $EPMCMD -f osx irods-docs $LISTFILE
+        echo "${text_green}${text_bold}$DETECTEDOS - No packaging supported.${text_reset}"
+        ls -l irods-manual*.pdf
     elif [ "$DETECTEDOS" == "ArchLinux" ] ; then  # ArchLinux
         echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS TGZs${text_reset}"
         $EPMCMD -f portable irods-docs $LISTFILE
@@ -516,7 +515,9 @@ if [ "$1" == "docs" ] ; then
     fi
 
     # rename generated packages appropriately
-    rename_generated_packages $1
+    if [ "$DETECTEDOS" != "MacOSX" && "$DETECTEDOS" != "Portable" ] ; then
+        rename_generated_packages $1
+    fi
 
     # done
     echo "${text_green}${text_bold}Done.${text_reset}"
