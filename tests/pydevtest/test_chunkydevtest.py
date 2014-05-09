@@ -34,6 +34,9 @@ class ChunkyDevTest(ResourceBase):
         assertiCmd(s.adminsession,"imkdir icmdtest")
     
         # begin original devtest
+        assertiCmd(s.adminsession,"iinit -l", "LIST", s.adminsession.getUserName() )
+        assertiCmd(s.adminsession,"iinit -l", "LIST", s.adminsession.getZoneName() )
+        assertiCmd(s.adminsession,"iinit -l", "LIST", s.adminsession.getDefResource() )
         assertiCmd(s.adminsession,"ilsresc", "LIST", self.testresc)
         assertiCmd(s.adminsession,"ilsresc -l", "LIST", self.testresc)
         assertiCmd(s.adminsession,"imiscsvrinfo", "LIST", ["relVersion"] )
