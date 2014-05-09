@@ -99,15 +99,16 @@ main( int argc, char **argv ) {
         exit( 0 );
     }
 
+    if ( myRodsArgs.longOption == True ) {
+        rodsLogLevel( LOG_NOTICE );
+        setenv(PRINT_RODS_ENV_STR, "1", 0);
+    }
+
     status = getRodsEnv( &myEnv );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR, "main: getRodsEnv error. status = %d",
                  status );
         exit( 1 );
-    }
-
-    if ( myRodsArgs.longOption == True ) {
-        rodsLogLevel( LOG_NOTICE );
     }
 
     if ( myRodsArgs.ttl == True ) {

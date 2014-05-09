@@ -261,7 +261,7 @@ int rcDisconnect(
     int status = getRodsEnv( &rods_env );
 
     // =-=-=-=-=-=-=-
-    // shut down any network plugin activitiy
+    // shut down any network plugin activity
     ret = sockClientStop( net_obj, &rods_env );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
