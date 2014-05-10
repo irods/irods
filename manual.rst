@@ -827,9 +827,9 @@ A deferred resource provides no implicit data management policy.  It defers to i
 Load Balanced
 *************
 
-The load balanced resource provides equivalent functionality as the "doLoad" option for the `msiSetRescSortScheme` microservice.  This resource plugin will query the r_load_digest table from the iCAT and select the appropriate child resource based on the load values returned from the table.
+The load balanced resource provides equivalent functionality as the "doLoad" option for the `msiSetRescSortScheme` microservice.  This resource plugin will query the r_server_load_digest table from the iCAT and select the appropriate child resource based on the load values returned from the table.
 
-The r_load_digest table is part of the Resource Monitoring System and has been incorporated into iRODS 4.x.
+The r_server_load_digest table is part of the Resource Monitoring System and has been incorporated into iRODS 4.x.  The r_server_load_digest table must be populated with load data for this plugin to function properly.
 
 The load balanced resource has an effect on writes only (it has no effect on reads).
 
