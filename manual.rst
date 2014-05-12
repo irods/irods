@@ -158,6 +158,8 @@ The `./packaging/setup_database.sh` script will ask for the following five piece
 4) Database User
 5) Database Password
 
+Installing the MySQL database plugin will also require `Installing lib_mysqludf_preg`_.  These functions are required for the internal iRODS SQL which uses regular expressions.
+
 Database Setup Example
 **********************
 
@@ -1050,7 +1052,7 @@ The remaining parameters are standard SSL parameters and made available through 
 Pluggable Database
 ------------------
 
-The iRODS metadata catalog is now installed and managed by separate plugins.  The TEMPLATE_IRODSVERSION release has PostgreSQL, MySQL, and Oracle database plugins available and tested.  MySQL is not available on CentOS 5, as the required `lib_mysqludf_preg` is not currently available on that OS.
+The iRODS metadata catalog is now installed and managed by separate plugins.  The TEMPLATE_IRODSVERSION release has PostgreSQL, MySQL, and Oracle database plugins available and tested.  MySQL is not available on CentOS 5, as the required set of `lib_mysqludf_preg` functions are not currently available on that OS.
 
 The particular flavor of database is encoded in `/etc/irods/server.config` with the following directive::
 
@@ -1062,6 +1064,41 @@ This is populated by the `setup_database.sh` script on configuration.
 The iRODS 3.x icatHighLevelRoutines are, in effect, the API calls for the database plugins.  No changes should be needed to any calls to the icatHighLevelRoutines.
 
 To implement a new database plugin, a developer will need to provide the existing 84 SQL calls (in icatHighLevelRoutines) and an implementation of GenQuery.
+
+Installing lib_mysqludf_preg
+----------------------------
+
+Installing the iRODS MySQL database plugin requires the MySQL server to have the `lib_mysqludf_preg functions`__ installed and available to iRODS.
+
+The steps for installing `lib_mysqludf_preg` on Ubuntu 14.04 include::
+
+ # Get Dependencies
+ sudo apt-get install mysql-server mysql-client libmysqlclient-dev libpcre3-dev
+
+ # Build and Install
+ cd lib_mysqludf_preg
+ ./configure
+ make
+ sudo make install
+ sudo make MYSQL="mysql -p" installdb
+
+Then, to confirm they are available::
+
+ $ mysql -uUSER -p -e "select name from mysql.func"
+ Enter password:
+ +------------------------+
+ | name                   |
+ +------------------------+
+ | lib_mysqludf_preg_info |
+ | preg_capture           |
+ | preg_check             |
+ | preg_position          |
+ | preg_replace           |
+ | preg_rlike             |
+ +------------------------+
+
+.. __: https://github.com/mysqludf/lib_mysqludf_preg
+
 
 -----------------
 Pluggable RPC API
