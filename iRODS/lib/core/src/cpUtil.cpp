@@ -126,7 +126,7 @@ cpFileUtil( rcComm_t *conn, char *srcPath, char *targPath, rodsLong_t srcSize,
 
     if ( srcPath == NULL || targPath == NULL ) {
         rodsLog( LOG_ERROR,
-                 "cpFileUtil: NULL srcPath or targPath incp" );
+                 "cpFileUtil: NULL srcPath or targPath in cp" );
         return ( USER__NULL_INPUT_ERR );
     }
 
