@@ -277,7 +277,7 @@ initCondForCp( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
         }
     }
 
-    dataObjCopyInp->destDataObjInp.createMode = 0700;
+    dataObjCopyInp->destDataObjInp.createMode = 0600;
     dataObjCopyInp->destDataObjInp.openFlags = O_WRONLY;
 
     return ( 0 );
