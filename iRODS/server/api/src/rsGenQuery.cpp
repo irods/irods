@@ -216,11 +216,23 @@ _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
         }
     }
 
-    chlGenQueryAccessControlSetup( rsComm->clientUser.userName,
-                                   rsComm->clientUser.rodsZone,
-                                   rsComm->clientAddr,
-                                   rsComm->clientUser.authInfo.authFlag,
-                                   -1 );
+    // =-=-=-=-=-=-=-
+    // detect if a request for disable of strict acls is made
+    int acl_val = -1;
+    char* dis_kw = getValByKey( &genQueryInp->condInput, DISABLE_STRICT_ACL_KW );
+    if ( dis_kw ) {
+        acl_val = 0;
+    }
+
+    // =-=-=-=-=-=-=-
+    // cache the old acl value for reuse later if necessary
+    int old_acl_val =  chlGenQueryAccessControlSetup(
+                           rsComm->clientUser.userName,
+                           rsComm->clientUser.rodsZone,
+                           rsComm->clientAddr,
+                           rsComm->clientUser.authInfo.authFlag,
+                           acl_val );
+
     if ( PrePostProcForGenQueryFlag == 1 ) {
         args[0] = ( char * ) malloc( 300 );
         sprintf( args[0], "%ld", ( long ) genQueryInp );
@@ -238,6 +250,17 @@ _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
     /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
 
     status = chlGenQuery( *genQueryInp, *genQueryOut );
+
+    // =-=-=-=-=-=-=-
+    // if a disable was requested, repave with old value immediately
+    if ( dis_kw ) {
+        chlGenQueryAccessControlSetup(
+            rsComm->clientUser.userName,
+            rsComm->clientUser.rodsZone,
+            rsComm->clientAddr,
+            rsComm->clientUser.authInfo.authFlag,
+            old_acl_val );
+    }
 
     /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
     if ( PrePostProcForGenQueryFlag == 1 ) {

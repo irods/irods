@@ -284,7 +284,7 @@
 #define SPEC_COLL_REPL_NUM           "spec_coll_repl_num"
 
 
-
+#define DISABLE_STRICT_ACL_KW "disable_strict_acls"
 
 
 

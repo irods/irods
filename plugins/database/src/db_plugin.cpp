@@ -16056,7 +16056,7 @@ checkLevel:
             return ERROR( status, "chl_gen_query_access_control_setup_impl failed" );
         }
         else {
-            return SUCCESS();
+            return CODE( status );
         }
 
     } // db_gen_query_access_control_setup_op
