@@ -84,7 +84,7 @@ class ChunkyDevTest(ResourceBase):
         
         # new file mode check
         assertiCmd(s.adminsession,"iget -fK --rlock "+irodshome+"/icmdtest/foo2 /tmp/" )
-        assert oct(stat.S_IMODE(os.stat("/tmp/foo2").st_mode)) == '0600'
+        assert oct(stat.S_IMODE(os.stat("/tmp/foo2").st_mode)) == '0640'
         os.unlink( "/tmp/foo2" )
         
         assertiCmd(s.adminsession,"ils "+irodshome+"/icmdtest/foo2", "LIST", "foo2" )
