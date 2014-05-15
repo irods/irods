@@ -1189,8 +1189,19 @@ initDataObjInfoQuery( dataObjInp_t *dataObjInp, genQueryInp_t *genQueryInp,
  */
 
 int
-chkOrphanFile( rsComm_t *rsComm, char *filePath, char *rescName,
-               dataObjInfo_t *dataObjInfo ) {
+chkOrphanFile(
+    rsComm_t*      rsComm,
+    char*          filePath,
+    char*          rescName,
+    dataObjInfo_t* dataObjInfo ) {
+    // =-=-=-=-=-=-=-
+    // disallow the orphaning of a file by an anonymous user as this
+    // is a similar issue to the use of strict acls in that an anonymous
+    // user may inappropriately orphan a file owned by another user
+    if ( strncmp( ANONYMOUS_USER, rsComm->clientUser.userName, NAME_LEN ) == 0 ) {
+        return SYS_USER_NO_PERMISSION;
+    }
+
     genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut = NULL;
     int status;
@@ -1269,6 +1280,7 @@ chkOrphanFile( rsComm_t *rsComm, char *filePath, char *rescName,
         }
 
         if ( ( rescHier = getSqlResultByInx( genQueryOut, COL_D_RESC_HIER ) ) ==
+
                 NULL ) {
             rodsLog( LOG_NOTICE,
                      "chkOrphanFile: getSqlResultByInx for COL_D_RESC_HIER failed" );
