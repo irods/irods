@@ -125,7 +125,7 @@ int insertIntoHashTable( Hashtable *h, const char* key, const void *value ) {
         return 1;
     }
     else {
-        struct bucket *b = newBucket( strdup( key ), value );
+        struct bucket *b = newBucket( key, value );
         if ( b == NULL ) {
             return 0;
         }
@@ -177,8 +177,8 @@ const void *deleteFromHashTable( Hashtable *h, const char* key ) {
         if ( strcmp( b0->key, key ) == 0 ) {
             h->buckets[index] = b0->next;
             temp = b0->value;
+            free( b0->key );
             if ( !h->dynamic ) {
-                free( b0->key );
                 free( b0 );
             }
             h->len --;
@@ -189,8 +189,8 @@ const void *deleteFromHashTable( Hashtable *h, const char* key ) {
                     struct bucket *tempBucket = b0->next;
                     temp = b0->next->value;
                     b0->next = b0->next->next;
+                    free( tempBucket->key );
                     if ( !h->dynamic ) {
-                        free( tempBucket->key );
                         free( tempBucket );
                     }
                     h->len --;
@@ -246,17 +246,18 @@ struct bucket* nextBucket( struct bucket *b0, const char* key ) {
 
 void deleteHashTable( Hashtable *h, void ( *f )( const void * ) ) {
     if ( h->dynamic ) {
-        /*if(f != NULL) {
+        if(f != NULL) {
         	int i;
         	for(i =0;i<h->size;i++) {
         		struct bucket *b0 = h->buckets[i];
         		while(b0!=NULL) {
         			f(b0->value);
+              free( b0->key );
         			b0= b0->next;
         		}
         	}
 
-        }*/
+        }
     }
     else {
         int i;

@@ -115,7 +115,8 @@ main( int argc, char **argv ) {
         printf( "Unknown test type: %s\n", argv[3] );
     }
 
-    exit( status );
+    free( Comm );
+    return status;
 }
 /* This is a dummy version of icatApplyRule for this test program so
    the rule-engine is not needed in this ICAT test. */

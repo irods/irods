@@ -152,10 +152,7 @@ namespace irods {
 /// @brief function which manages the TLS and Auth negotiations with the client
     error client_server_negotiation_for_client(
         irods::network_object_ptr _ptr,
-        std::string&               _result ) {
-        // =-=-=-=-=-=-=-
-        // prep the out variable
-        _result.clear();
+        std::string&              _result ) {
 
         // =-=-=-=-=-=-=-
         // we requested a negotiation, wait for the response from CS_NEG_SVR_1_MSG
@@ -426,7 +423,7 @@ namespace irods {
 
         }
 
-        _cs_neg_msg.reset( tmp_cs_neg );
+        _cs_neg_msg.reset( tmp_cs_neg, free );
 
         // =-=-=-=-=-=-=-
         // win!!!111one

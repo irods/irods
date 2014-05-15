@@ -515,13 +515,12 @@ int main( int argc, char **argv ) {
     /******/
     if ( !strcmp( Sentries->entries[0].val, "showRules" ) ) {
         showRules( Sentries );
-        exit( 0 );
     }
     else if ( !strcmp( Sentries->entries[0].val, "applyRule" ) ) {
         performAction( Sentries );
-        exit( 0 );
     }
-    exit( 0 );
+    free( Sentries );
+    return 0;
 }
 
 int

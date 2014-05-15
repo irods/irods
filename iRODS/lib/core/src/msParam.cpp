@@ -507,6 +507,9 @@ clearMsParam( msParam_t *msParam, int freeStruct ) {
                                            ( msParam->type != NULL && strcmp( msParam->type, STR_MS_T ) == 0 ) ) ) {
         free( msParam->inOutStruct );
     }
+    if ( msParam->type != NULL ) {
+        free( const_cast< char * >( msParam->type ) );
+    }
 
     memset( msParam, 0, sizeof( msParam_t ) );
     return ( 0 );
