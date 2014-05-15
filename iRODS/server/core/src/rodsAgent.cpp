@@ -210,25 +210,28 @@ main( int argc, char *argv[] ) {
 
     // =-=-=-=-=-=-=-
     // handle negotiations with the client regarding TLS if requested
-    std::string neg_results;
-    ret = irods::client_server_negotiation_for_server( net_obj, neg_results );
-    if ( !ret.ok() || neg_results == irods::CS_NEG_FAILURE ) {
-        irods::log( PASS( ret ) );
-        // =-=-=-=-=-=-=-
-        // send a 'we failed to negotiate' message here??
-        // or use the error stack rule engine thingie
-        irods::log( PASS( ret ) );
-        sendVersion( net_obj, SYS_AGENT_INIT_ERR, 0, NULL, 0 );
-        unregister_handlers();
-        cleanupAndExit( ret.code() );
+    // this scope block makes valgrind happy
+    {
+        std::string neg_results;
+        ret = irods::client_server_negotiation_for_server( net_obj, neg_results );
+        if ( !ret.ok() || neg_results == irods::CS_NEG_FAILURE ) {
+            irods::log( PASS( ret ) );
+            // =-=-=-=-=-=-=-
+            // send a 'we failed to negotiate' message here??
+            // or use the error stack rule engine thingie
+            irods::log( PASS( ret ) );
+            sendVersion( net_obj, SYS_AGENT_INIT_ERR, 0, NULL, 0 );
+            unregister_handlers();
+            cleanupAndExit( ret.code() );
 
-    }
-    else {
-        // =-=-=-=-=-=-=-
-        // copy negotiation results to comm for action by network objects
-        strncpy( rsComm.negotiation_results, neg_results.c_str(), MAX_NAME_LEN );
-        //rsComm.ssl_do_accept = 1;
+        }
+        else {
+            // =-=-=-=-=-=-=-
+            // copy negotiation results to comm for action by network objects
+            strncpy( rsComm.negotiation_results, neg_results.c_str(), MAX_NAME_LEN );
+            //rsComm.ssl_do_accept = 1;
 
+        }
     }
 
     /* send the server version and atatus as part of the protocol. Put

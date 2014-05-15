@@ -1506,7 +1506,6 @@ genqAppendAccessCheck() {
 
     if ( ACDebug ) printf( "genqAC 2 accessControlControlFlag=%d\n",
                                accessControlControlFlag );
-
     if ( accessControlControlFlag > 1 ) {
         doCheck = 1;
     }
@@ -2115,7 +2114,8 @@ checkCondInputAccess( genQueryInp_t genQueryInp, int statementNum,
    Called with user == NULL to set the controlFlag, else with the
    user info.
  */
-extern "C" int chl_gen_query_access_control_setup_impl(
+extern "C"
+int chl_gen_query_access_control_setup_impl(
     char *user,
     char *zone,
     char *host,
@@ -2127,7 +2127,12 @@ extern "C" int chl_gen_query_access_control_setup_impl(
 //      rstrcpy(accessControlHost, host, MAX_NAME_LEN);
         accessControlPriv = priv;
     }
-    if ( controlFlag > 0 ) {
+
+    // =-=-=-=-=-=-=-
+    // add the >= 0 to allow for repave of strict acl due to
+    // issue with file create vs file open in rsDataObjCreate
+    int old_flag = accessControlControlFlag;
+    if ( controlFlag >= 0 ) {
         /*
         If the caller is making this STRICT, then allow the change as
                this will be an initial acAclPolicy call which is setup in
@@ -2137,7 +2142,8 @@ extern "C" int chl_gen_query_access_control_setup_impl(
              */
         accessControlControlFlag = controlFlag;
     }
-    return( 0 );
+
+    return old_flag;
 }
 
 extern "C" int chl_gen_query_ticket_setup_impl(

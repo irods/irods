@@ -544,6 +544,34 @@ class ResourceSuite(ResourceBase):
 
         assert errorflag == True, "Expected ERRORs did not occur"
 
+    def test_iput_overwrite_others_file__ticket_2086(self):
+        # pre state
+        assertiCmd(s.adminsession,"ils -L","LIST",self.testfile) # should be listed
+
+        # local setup
+        filename = "overwritefile.txt"
+        filepath = create_local_testfile(filename)
+
+        # alice tries to put
+        homepath = "/home/"+s.adminsession.getUserName()+"/"+s.adminsession.sessionId+"/"+self.testfile
+        logicalpath = "/"+s.adminsession.getZoneName()+homepath
+        assertiCmd(s.sessions[1],"iput "+filepath+" "+logicalpath,"ERROR","CAT_NO_ACCESS_PERMISSION") # iput
+
+        # get vault base path
+        cmdout = s.sessions[1].runCmd('iquest',["%s", "select RESC_VAULT_PATH where RESC_NAME = 'demoResc'"])
+        vaultpath = cmdout[0].rstrip('\n')
+
+        # check file in catalog and on disk
+        print "[find "+vaultpath+"]:"
+        os.system("find "+vaultpath)
+
+        physicalpath = vaultpath + homepath
+        assert os.path.exists(physicalpath)
+
+        # local cleanup
+        output = commands.getstatusoutput( 'rm '+filepath )
+
+
     def test_iput_with_purgec(self):
         # local setup
         filename = "purgecfile.txt"
