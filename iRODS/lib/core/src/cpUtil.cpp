@@ -277,7 +277,7 @@ initCondForCp( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
         }
     }
 
-    //dataObjCopyInp->destDataObjInp.createMode = 0600;
+    //dataObjCopyInp->destDataObjInp.createMode = 0600;		// seems unused, and caused https://github.com/irods/irods/issues/2085
     dataObjCopyInp->destDataObjInp.openFlags = O_WRONLY;
 
     return ( 0 );
