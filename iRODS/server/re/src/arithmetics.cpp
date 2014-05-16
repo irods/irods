@@ -894,6 +894,7 @@ Res* execMicroService3( char *msName, Res **args, unsigned int nargs, Node *node
                 for ( j = i - 1; j >= 0; j-- ) {
                     int freeStruct = TYPE( args[j] ) != T_IRODS  ? 1 : 0;
                     clearMsParam( myArgv[j], freeStruct );
+                    free( myArgv[j] );
                 }
                 return newErrorRes( r, ret );
             }
@@ -1017,6 +1018,7 @@ ret:
     for ( i = 0; i < numOfStrArgs; i++ ) {
         int freeStruct = TYPE( args[i] ) != T_IRODS  ? 1 : 0;
         clearMsParam( myArgv[i], freeStruct );
+        free( myArgv[i] );
     }
     if ( getNodeType( res ) == N_ERROR ) {
         generateErrMsg( "execMicroService3: error when executing microservice", NODE_EXPR_POS( node ), node->base, errbuf );
