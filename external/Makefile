@@ -7,7 +7,7 @@ MAKEFLAGS += --no-print-directory
 RENCI_FTP_EXTERNAL=ftp://ftp.renci.org/pub/irods/external
 RENCI_FTP_BUILD=ftp://ftp.renci.org/pub/irods/build
 
-.PHONY : default macosxdatabase retrieve build generate clean cmake libarchive jansson boost hdf5 netcdf epm lib_mysqludf_preg libs3
+.PHONY : default build_database_for_macosx retrieve build generate clean cmake libarchive jansson boost hdf5 netcdf epm lib_mysqludf_preg libs3
 
 OSNAME=$$(../packaging/find_os.sh)
 OSVERSION=$$(../packaging/find_os_version.sh)
