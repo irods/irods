@@ -26,7 +26,7 @@ cd $IRODS_HOME
 DETECTEDOS=`../packaging/find_os.sh`
 
 if [ "$DETECTEDOS" = "MacOSX" ] ; then
-    SUSHELLOPTS=""
+    SU_SHELL_OPTS=""
 else
     SU_SHELL_OPTS="--shell=/bin/bash"
 fi
