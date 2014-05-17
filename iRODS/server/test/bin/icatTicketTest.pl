@@ -241,15 +241,8 @@ sub testGetAndUses() {   # CHECK PB WITH 1 USE
 sub testPutAndUses() {
     `ls -l >> $F1`;
     runCmd(0, "iticket mod $T1 uses 3");
-`ils -L $D1 >> /tmp/ls_output.txt`;
     becomeuser2();
-
-`ls -l /Users/jasonc/irods/Vault/home/rods/$D1 >> /tmp/ls_output.txt`;
-
     runCmd(2,"iput -f $F1 $D1/$F1");
-
-`ls -l /Users/jasonc/irods/Vault/home/rods/$D1 >> /tmp/ls_output2.txt`;
-
     runCmd(0,"iput -ft $T1 $F1 $D1/$F1"); # 1
     `ls -l >> $F1`;
     runCmd(0,"iput -ft $T1 $F1 $D1/$F1"); # 2
@@ -658,15 +651,15 @@ runCmd(1, "iticket delete $T1");
 testGetBasicFail();
 
 # You can comment out any of the do*Tests() calls below to run a briefer set
-#  $doCollectionTicket=0;
-#  doReadTests();
-#  $doCollectionTicket=1;
-#  doReadTests();
+$doCollectionTicket=0;
+doReadTests();
+$doCollectionTicket=1;
+doReadTests();
 
-#$doCollectionTicket=0;
-#doWriteTests();
-#  $doCollectionTicket=1;
-  doWriteTests();
+$doCollectionTicket=0;
+doWriteTests();
+$doCollectionTicket=1;
+doWriteTests();
 
 # done
 runCmd(0, "iticket delete $T1");
