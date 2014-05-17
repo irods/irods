@@ -256,11 +256,11 @@ iRODS can be compiled from source and run from the same directory.  Although thi
 
 To run iRODS in place, the build script must be called with the appropriate flag::
 
- user@hostname:~/ $ ./packaging/build.sh --run-in-place icat postgres
+ user@hostname:~/irods/ $ ./packaging/build.sh --run-in-place icat postgres
 
 After the system is built, the setup_database.sh script needs to be run from its original location::
 
- user@hostname:~/ $ ./plugins/database/packaging/setup_database.sh
+ user@hostname:~/irods/ $ ./plugins/database/packaging/setup_database.sh
 
 The script will prompt for iRODS configuration information that would already be known to a binary installation::
 
