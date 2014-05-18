@@ -469,7 +469,7 @@ parseCmdLineOpt( int argc, char **argv, char *optString, int includeLong,
             rodsArgs->veryVerbose = True;
             if ( VCount <= 1 ) {
                 rodsLogLevel( LOG_NOTICE );
-                setenv(PRINT_RODS_ENV_STR, "1", 0);
+                setenv( PRINT_RODS_ENV_STR, "1", 0 );
             }
             else {
                 rodsLogLevel( LOG_DEBUG ); /* multiple V's is for DEBUG level */

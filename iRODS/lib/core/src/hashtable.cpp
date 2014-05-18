@@ -246,16 +246,16 @@ struct bucket* nextBucket( struct bucket *b0, const char* key ) {
 
 void deleteHashTable( Hashtable *h, void ( *f )( const void * ) ) {
     if ( h->dynamic ) {
-        if(f != NULL) {
-        	int i;
-        	for(i =0;i<h->size;i++) {
-        		struct bucket *b0 = h->buckets[i];
-        		while(b0!=NULL) {
-        			f(b0->value);
-              free( b0->key );
-        			b0= b0->next;
-        		}
-        	}
+        if ( f != NULL ) {
+            int i;
+            for ( i = 0; i < h->size; i++ ) {
+                struct bucket *b0 = h->buckets[i];
+                while ( b0 != NULL ) {
+                    f( b0->value );
+                    free( b0->key );
+                    b0 = b0->next;
+                }
+            }
 
         }
     }

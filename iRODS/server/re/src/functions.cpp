@@ -98,7 +98,7 @@ ReIterableTableRow reIterableTable[NUM_RE_ITERABLE] = {
     {RE_ITERABLE_GEN_QUERY_OUT, {reIterable_irods_init, reIterable_irods_hasNext, reIterable_irods_next, reIterable_irods_finalize}},
     {RE_ITERABLE_INT_ARRAY, {reIterable_irods_init, reIterable_irods_hasNext, reIterable_irods_next, reIterable_irods_finalize}},
     {RE_ITERABLE_STRING_ARRAY, {reIterable_irods_init, reIterable_irods_hasNext, reIterable_irods_next, reIterable_irods_finalize}},
-		{RE_ITERABLE_KEY_VALUE_PAIRS, {reIterable_irods_init, reIterable_irods_hasNext, reIterable_irods_next, reIterable_irods_finalize}},
+    {RE_ITERABLE_KEY_VALUE_PAIRS, {reIterable_irods_init, reIterable_irods_hasNext, reIterable_irods_next, reIterable_irods_finalize}},
     {RE_ITERABLE_COLLECTION, {reIterable_collection_init, reIterable_collection_hasNext, reIterable_collection_next, reIterable_collection_finalize}}
 };
 
@@ -343,9 +343,11 @@ ReIterableType collType( Res *coll, Node *node, rError_t *errmsg, Region *r ) {
         }
         else if ( strcmp( coll->exprType->text, CollInp_MS_T ) == 0 ) {
             return RE_ITERABLE_COLLECTION;
-		} else if (strcmp(coll->exprType->text, KeyValPair_MS_T) == 0) {
-			return RE_ITERABLE_KEY_VALUE_PAIRS;
-		} else {
+        }
+        else if ( strcmp( coll->exprType->text, KeyValPair_MS_T ) == 0 ) {
+            return RE_ITERABLE_KEY_VALUE_PAIRS;
+        }
+        else {
             return RE_NOT_ITERABLE;
         }
     }
@@ -644,7 +646,7 @@ Res *smsi_forEach2Exec( Node **subtrees, int n, Node *node, ruleExecInfo_t *rei,
     case RE_ITERABLE_INT_ARRAY:
     case RE_ITERABLE_STRING_ARRAY:
     case RE_ITERABLE_GEN_QUERY_OUT:
-	case RE_ITERABLE_KEY_VALUE_PAIRS:
+    case RE_ITERABLE_KEY_VALUE_PAIRS:
     case RE_ITERABLE_LIST: {
         res = newIntRes( r, 0 );
         itrData = newReIterableData( subtrees[0]->text, subtrees[1], subtrees, node, rei, reiSaveFlag, env, errmsg );
@@ -948,13 +950,15 @@ Res *smsi_getValByKey( Node **params, int n, Node *node, ruleExecInfo_t *rei, in
     Res *res;
     if ( getNodeType( params[1] ) == N_APPLICATION && N_APP_ARITY( params[1] ) == 0 ) {
         key = N_APP_FUNC( params[1] )->text;
-    } else {
-	res = evaluateExpression3(params[1], 0, 1, rei, reiSaveFlag, env, errmsg, r);
-	if(TYPE(res) != T_STRING) {
-	    snprintf(errbuf, ERR_MSG_LEN, "malformatted key");
-        generateAndAddErrMsg( errbuf, params[1], UNMATCHED_KEY_OR_INDEX, errmsg );
-        return newErrorRes( r, UNMATCHED_KEY_OR_INDEX );
-        } else {
+    }
+    else {
+        res = evaluateExpression3( params[1], 0, 1, rei, reiSaveFlag, env, errmsg, r );
+        if ( TYPE( res ) != T_STRING ) {
+            snprintf( errbuf, ERR_MSG_LEN, "malformatted key" );
+            generateAndAddErrMsg( errbuf, params[1], UNMATCHED_KEY_OR_INDEX, errmsg );
+            return newErrorRes( r, UNMATCHED_KEY_OR_INDEX );
+        }
+        else {
             key = res->text;
         }
     }
@@ -1960,7 +1964,7 @@ int writeStringNew( char *writeId, char *writeStr, Env *env, Region *r, ruleExec
 
         bzero( &openedDataObjInp, sizeof( openedDataObjInp ) );
         openedDataObjInp.l1descInx = fd;
-        tmpBBuf.len = openedDataObjInp.len = strlen( writeStr )  ;
+        tmpBBuf.len = openedDataObjInp.len = strlen( writeStr );
         tmpBBuf.buf =  writeStr;
         i = rsDataObjWrite( rei->rsComm, &openedDataObjInp, &tmpBBuf );
         if ( i < 0 ) {
@@ -2494,7 +2498,8 @@ Res *smsi_msiAdmWriteRulesFromStructIntoFile( Node **paramsr, int n, Node *node,
     else {
         //configDir = getConfigDir();
         //snprintf( fileName, MAX_NAME_LEN, "%s/reConfigs/%s.re", configDir, inFileName );
-        std::string cfg_file, fn( inFileName ); fn += ".re";
+        std::string cfg_file, fn( inFileName );
+        fn += ".re";
         irods::error ret = irods::get_full_path_for_config_file( fn, cfg_file );
         if ( !ret.ok() ) {
             irods::log( PASS( ret ) );

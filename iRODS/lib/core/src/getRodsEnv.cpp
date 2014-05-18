@@ -213,9 +213,9 @@ int getRodsEnvFromFile( char *fileName, rodsEnv *rodsEnvArg, int errorLevel ) {
 //        msgLevel = LOG_DEBUG;
 //    }
 
-    if ( getenv(PRINT_RODS_ENV_STR) && atoi(getenv(PRINT_RODS_ENV_STR)) ) {
-    	msgLevel = LOG_NOTICE;
-    	unsetenv(PRINT_RODS_ENV_STR);
+    if ( getenv( PRINT_RODS_ENV_STR ) && atoi( getenv( PRINT_RODS_ENV_STR ) ) ) {
+        msgLevel = LOG_NOTICE;
+        unsetenv( PRINT_RODS_ENV_STR );
     }
 
     /*
@@ -454,11 +454,11 @@ int getRodsEnvFromFile( char *fileName, rodsEnv *rodsEnvArg, int errorLevel ) {
 
 int
 getRodsEnvFromEnv( rodsEnv *rodsEnvArg ) {
-	int msgLevel = LOG_DEBUG;
+    int msgLevel = LOG_DEBUG;
 
-    if ( getenv(PRINT_RODS_ENV_STR) && atoi(getenv(PRINT_RODS_ENV_STR)) ) {
-    	msgLevel = LOG_NOTICE;
-    	unsetenv(PRINT_RODS_ENV_STR);
+    if ( getenv( PRINT_RODS_ENV_STR ) && atoi( getenv( PRINT_RODS_ENV_STR ) ) ) {
+        msgLevel = LOG_NOTICE;
+        unsetenv( PRINT_RODS_ENV_STR );
     }
 
     /*

@@ -695,7 +695,7 @@ ExprType *getElemType( ExprType *type, Region *r ) {
         return newIRODSType( KeyValPair_MS_T, r );
     }
     else if ( strcmp( type->text, KeyValPair_MS_T ) == 0 ) {
-        return newSimpType(T_STRING, r);
+        return newSimpType( T_STRING, r );
     }
     return NULL;
 }
@@ -719,10 +719,11 @@ int isIterableBaseRuleType( ExprType *type, ExprType **templa, ExprType **templb
         }
         else if ( strcmp( typeName, GenQueryOut_MS_T ) == 0 ) {
             *templa = type;
-       }
+        }
         else if ( strcmp( typeName, KeyValPair_MS_T ) == 0 ) {
             *templa = type;
-		} else {
+        }
+        else {
             return 0;
         }
         *templb = newCollType( getElemType( type, r ), r );
