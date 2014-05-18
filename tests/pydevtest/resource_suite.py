@@ -557,16 +557,19 @@ class ResourceSuite(ResourceBase):
         logicalpath = "/"+s.adminsession.getZoneName()+homepath
         assertiCmd(s.sessions[1],"iput "+filepath+" "+logicalpath,"ERROR","CAT_NO_ACCESS_PERMISSION") # iput
 
-        # get vault base path
-        cmdout = s.sessions[1].runCmd('iquest',["%s", "select RESC_VAULT_PATH where RESC_NAME = 'demoResc'"])
-        vaultpath = cmdout[0].rstrip('\n')
-
-        # check file in catalog and on disk
-        print "[find "+vaultpath+"]:"
-        os.system("find "+vaultpath)
-
-        physicalpath = vaultpath + homepath
-        assert os.path.exists(physicalpath)
+        # check physicalpaths (of all replicas)
+        cmdout = s.adminsession.runCmd('ils',['-L'])
+        print "[ils -L]:"
+        print "["+cmdout[0]+"]"
+        lines = cmdout[0].splitlines()
+        for l in cmdout[0].splitlines():
+            if "demoResc" in l:
+                if "/session-" in l:
+                    physicalpath = l.split()[2]
+                    # check file is on disk
+                    print "[ls -l "+physicalpath+"]:"
+                    os.system("ls -l "+physicalpath)
+                    assert os.path.exists(physicalpath)
 
         # local cleanup
         output = commands.getstatusoutput( 'rm '+filepath )
