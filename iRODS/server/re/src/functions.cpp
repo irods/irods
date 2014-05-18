@@ -1960,7 +1960,7 @@ int writeStringNew( char *writeId, char *writeStr, Env *env, Region *r, ruleExec
 
         bzero( &openedDataObjInp, sizeof( openedDataObjInp ) );
         openedDataObjInp.l1descInx = fd;
-        tmpBBuf.len = openedDataObjInp.len = strlen( writeStr ) + 1;
+        tmpBBuf.len = openedDataObjInp.len = strlen( writeStr )  ;
         tmpBBuf.buf =  writeStr;
         i = rsDataObjWrite( rei->rsComm, &openedDataObjInp, &tmpBBuf );
         if ( i < 0 ) {
