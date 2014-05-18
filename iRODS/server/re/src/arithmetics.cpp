@@ -277,7 +277,7 @@ Res* processCoercion( Node *node, Res *res, ExprType *type, Hashtable *tvarEnv, 
                             nres = newBoolRes(r, RES_INT_VAL(res));
                 break;
             case T_DOUBLE:
-                            nres = newBoolRes(r, RES_DOUBLE_VAL(res));
+                            nres = newBoolRes(r, ( int ) RES_DOUBLE_VAL(res));
                 break;
             case T_STRING:
                 if ( strcmp( res->text, "true" ) == 0 ) {
