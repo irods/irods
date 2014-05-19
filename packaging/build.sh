@@ -1010,6 +1010,22 @@ if [ "$BUILDIRODS" == "1" ] ; then
     rsync -c $TMPFILE ./scripts/perl/irodsctl.pl
     rm -f $TMPFILE
 
+    # detect irods_home_directory
+    detected_irods_home=`./scripts/find_irods_home.sh`
+    if [ "$RUNINPLACE" = "1" ] ; then
+        detected_irods_home=`./scripts/find_irods_home.sh runinplace`
+    else
+        detected_irods_home=`./scripts/find_irods_home.sh`
+    fi
+    detected_irods_home=`dirname $detected_irods_home`
+
+    # detect irods_config_dir
+    if [ "$RUNINPLACE" = "1" ] ; then
+        detected_irods_config_dir="$detected_irods_home/iRODS/server/config"
+    else
+        detected_irods_config_dir="/etc/irods"
+    fi
+
     # update build_dir to our absolute path
     set_tmpfile
     sed -e "\,^IRODS_BUILD_DIR=,s,^.*$,IRODS_BUILD_DIR=$BUILDDIR," ./config/config.mk > $TMPFILE
@@ -1018,6 +1034,16 @@ if [ "$BUILDIRODS" == "1" ] ; then
     # update cpu count to our detected cpu count
     set_tmpfile
     sed -e "\,^CPU_COUNT=,s,^.*$,CPU_COUNT=$CPUCOUNT," ./config/config.mk > $TMPFILE
+    mv $TMPFILE ./config/config.mk
+
+    # update fullpath for Pam Auth executable
+    set_tmpfile
+    sed -e "s,TEMPLATE_IRODS_TOPLEVEL,$detected_irods_home," ./config/config.mk > $TMPFILE
+    mv $TMPFILE ./config/config.mk
+
+    # update fullpath for OS Auth executable
+    set_tmpfile
+    sed -e "s,TEMPLATE_IRODS_CONFIG_DIR,$detected_irods_config_dir," ./config/config.mk > $TMPFILE
     mv $TMPFILE ./config/config.mk
 
     # twiddle coverage flag in platform.mk based on whether this is a coverage (gcov) build
