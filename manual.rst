@@ -158,6 +158,7 @@ The `./packaging/setup_database.sh` script will ask for the following five piece
 4) Database User
 5) Database Password
 
+
 Installing the MySQL database plugin will also require `Installing lib_mysqludf_preg`_.  These functions are required for the internal iRODS SQL which uses regular expressions.
 
 Database Setup Example
