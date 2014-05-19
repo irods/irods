@@ -13,6 +13,8 @@
 #include "region.hpp"
 #include "rules.hpp"
 #include "conversion.hpp"
+#include "irods_plugin_name_generator.hpp"
+#include "irods_ms_home.hpp"
 
 int
 fillSubmitConditions( char *action, char *inDelayCondition, bytesBuf_t *packedReiAndArgBBuf,
@@ -1088,14 +1090,12 @@ msiBytesBufToStr( msParam_t* buf_msp, msParam_t* str_msp, ruleExecInfo_t *rei ) 
  * \sa none
 **/
 int
-msiListEnabledMS( msParam_t *outKVPairs, ruleExecInfo_t *rei ) {
-    FILE *radhpp = 0;			/* reAction(dot)hpp */
+msiListEnabledMS(
+    msParam_t*      outKVPairs,
+    ruleExecInfo_t* rei ) {
 
+    extern irods::ms_table MicrosTable;
     keyValPair_t *results;		/* the output data structure */
-
-    char lineStr[LONG_NAME_LEN];	/* for line and string parsing */
-    char modName[NAME_LEN];
-    char *begPtr, *endPtr;
 
 
     /* For testing mode when used with irule --test */
@@ -1108,65 +1108,32 @@ msiListEnabledMS( msParam_t *outKVPairs, ruleExecInfo_t *rei ) {
         return ( SYS_INTERNAL_NULL_INPUT_ERR );
     }
 
-
-    /* Open reAction.hpp for reading */
-    radhpp = fopen( "../re/include/reAction.hpp", "r" );
-    if ( !radhpp ) {
-        rodsLog( LOG_ERROR, "msiListEnabledMS: unable to open reAction.hpp for reading." );
-        return ( UNIX_FILE_READ_ERR );
-    }
-
-
-    /* Skip the first part of the file */
-    while ( fgets( lineStr, LONG_NAME_LEN, radhpp ) != NULL ) {
-        if ( strstr( lineStr, "microsdef_t MicrosTable[]" ) == lineStr ) {
-            break;
-        }
-    }
-
-
-    /* Default microservices come first, will be listed are "core" */
-    strncpy( modName, "core", NAME_LEN ); /* Pad with null chars in the process */
-
-
     /* Allocate memory for our result struct */
     results = ( keyValPair_t* )malloc( sizeof( keyValPair_t ) );
     memset( results, 0, sizeof( keyValPair_t ) );
 
+    // =-=-=-=-=-=-=-
+    // scan table for msvc names and add to kvp struct
+    irods::ms_table::iterator itr = MicrosTable.begin();
+    for ( ; itr != MicrosTable.end(); ++itr ) {
+        addKeyVal( results, itr->first.c_str(), "core" );
 
-    /* Scan microservice table one line at a time*/
-    while ( fgets( lineStr, LONG_NAME_LEN, radhpp ) != NULL ) {
-        /* End of the table? */
-        if ( strstr( lineStr, "};" ) == lineStr ) {
-            break;
-        }
+    } // for i
 
-        /* Get microservice name */
-        if ( ( begPtr = strchr( lineStr, '\"' ) ) && ( endPtr = strrchr( lineStr, '\"' ) ) ) {
-            endPtr[0] = '\0';
-            addKeyVal( results, &begPtr[1], modName );
-        }
-        else {
-            /* New Module? */
-            if ( strstr( lineStr, "module microservices" ) ) {
-                /* Get name of module (between the first two spaces) */
-                begPtr = strchr( lineStr, ' ' );
-                endPtr = strchr( ++begPtr, ' ' );
-                endPtr[0] = '\0';
-
-                strncpy( modName, begPtr, NAME_LEN - 1 );
-            }
+    // =-=-=-=-=-=-=-
+    // scan plugin directory for additional plugins
+    irods::plugin_name_generator name_gen;
+    irods::plugin_name_generator::plugin_list_t plugin_list;
+    irods::error ret = name_gen.list_plugins( irods::MS_HOME, plugin_list );
+    if ( ret.ok() ) {
+        irods::plugin_name_generator::plugin_list_t::iterator it = plugin_list.begin();
+        for ( ; it != plugin_list.end(); ++it ) {
+            addKeyVal( results, it->c_str(), "plugin" );
         }
     }
 
-
-    /* Done */
-    fclose( radhpp );
-
-
     /* Send results out to outKVPairs */
     fillMsParam( outKVPairs, NULL, KeyValPair_MS_T, results, NULL );
-
 
     return 0;
 }
