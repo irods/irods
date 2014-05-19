@@ -90,7 +90,7 @@ License
 Overview
 --------
 
-This manual attempts to provide standalone documentation for iRODS (http://irods.org) as packaged by the Renaissance Computing Institute (RENCI) (http://www.renci.org) under the aegis of the iRODS Consortium (http://irods-consortium.org).
+This manual provides standalone documentation for iRODS (http://irods.org) as packaged by the Renaissance Computing Institute (RENCI) (http://www.renci.org) under the aegis of the iRODS Consortium (http://irods-consortium.org).
 
     http://irods.org
 
@@ -101,7 +101,6 @@ Additional documentation is available on the iRODS wiki (http://wiki.irods.org),
 
     (2011) The integrated Rule-Oriented Data System (iRODS 3.0) Micro-service Workbook
     http://www.amazon.com/dp/1466469129
-
 
 --------
 Download
@@ -131,14 +130,14 @@ Repositories, issue trackers, and source code are available on GitHub.
 Installation
 ------------
 
-iRODS is provided in binary form in a collection of interdependent packages.  An iRODS server is provided by a single package, but needs to be configured before it can be started.  There are two flavors of server, iCAT and Resource.  An iCAT server provides the metadata catalog for a Zone.  A resource server connects to an iCAT server and belongs to the iCAT's Zone.
+iRODS is provided in binary form in a collection of interdependent packages.  There are two types of iRODS server, iCAT and Resource.  A resource server connects to an existing data grid (Zone) and can provide additional `Storage Resources`_.  An iCAT server, consisting of an iRODS server plus an iCAT metadata catalog, provide the central point of coordination for a data grid.
 
 iCAT Server
 -----------
 
-The irods-icat package installs a service account and group named 'irods' and the iRODS binaries.
+The irods-icat package installs a local unix service account and group named 'irods' and the iRODS binaries.
 
-The additional required database plugin installs the dependencies for database connections and a short setup script that will prompt for database connection information and configure the server.
+An additional database plugin is required which installs the dependencies for database connections and a short setup script that will prompt for database connection information and then configure the iCAT Server.  Database connection information about an existing database is expected to be provided to iRODS (see `Database Setup Example`_).  iRODS does not create or manage a database instance itself, just the tables within the database.
 
 Installation of the iCAT DEB and PostgreSQL plugin DEB::
 
@@ -205,7 +204,7 @@ Confirmation of the permissions can be viewed with ``\l`` within the ``psql`` co
 Resource Server
 ---------------
 
-The irods-resource package installs a service account and group named 'irods' and the iRODS binaries.
+The irods-resource package installs a local unix service account and group named 'irods' and the iRODS binaries.
 
 There are no required additional packages, but the administrator will need to run a short setup script that will prompt for iRODS connection information and configure the server.
 
@@ -219,7 +218,7 @@ And then as the irods user::
 
  irods@hostname:~/ $ ./packaging/setup_resource.sh
 
-The `./packaging/setup_resource.sh` script will ask for the following five pieces of information before iRODS can start and connect to its configured iCAT Zone:
+The `./packaging/setup_resource.sh` script will ask for the following five pieces of information about the existing data grid that the iRODS resource server will need in order to stand up and then connect to its configured iCAT Zone:
 
 1) iCAT Hostname or IP
 2) iCAT Port
@@ -531,7 +530,7 @@ When tempZone users connect, the system will then confirm that tempZone's LocalZ
 
 Mutual authentication between servers is always on across Federations.
 
-If you want, you can also scramble the SIDs in the server.config file. Use the 'iadmin spass' to scramble and enter the key used in the server.config file:
+If you want, you can also scramble the SIDs in the `/etc/irods/server.config` file. Use the 'iadmin spass' to scramble and enter the key used in the `/etc/irods/server.config` file:
 
   SIDKey 456
 
@@ -795,7 +794,7 @@ iRODS is in the process of being modularized whereby existing iRODS 3.x function
 
 A separate development package, irods-dev, available at http://irods.org/download, contains the necessary header files to write your own microservice plugins (as well as any other type of iRODS plugin).  Additional information can be found in the `Microservice Developers Tutorial`_. 
 
-.. _Microservice Developer Tutorial: https://github.com/irods/irods/blob/master/examples/microservices/microservice_tutorial.rst
+.. _Microservice Developers Tutorial: https://github.com/irods/irods/blob/master/examples/microservices/microservice_tutorial.rst
 
 --------------------
 Composable Resources
@@ -1112,7 +1111,7 @@ Pluggable Database
 
 The iRODS metadata catalog is now installed and managed by separate plugins.  The TEMPLATE_IRODSVERSION release has PostgreSQL, MySQL, and Oracle database plugins available and tested.  MySQL is not available on CentOS 5, as the required set of `lib_mysqludf_preg` functions are not currently available on that OS.
 
-The particular flavor of database is encoded in `/etc/irods/server.config` with the following directive::
+The particular type of database is encoded in `/etc/irods/server.config` with the following directive::
 
  # configuration of icat database plugin - e.g. postgres, mysql, or oracle
  catalog_database_type postgres
@@ -1331,7 +1330,7 @@ Then that user must be configured so its principal matches the KDC::
 
  iadmin aua newuser newuser@EXAMPLE.ORG
 
-The `server.config` must be updated to include::
+The `/etc/irods/server.config` must be updated to include::
 
  KerberosServicePrincipal=irodsserver/serverhost.example.org@EXAMPLE.ORG
  KerberosKeytab=/var/lib/irods/irods.keytab
