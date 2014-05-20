@@ -90,7 +90,7 @@ License
 Overview
 --------
 
-This manual attempts to provide standalone documentation for iRODS (http://irods.org) as packaged by the Renaissance Computing Institute (RENCI) (http://www.renci.org) under the aegis of the iRODS Consortium (http://irods-consortium.org).
+This manual provides standalone documentation for iRODS (http://irods.org) as packaged by the Renaissance Computing Institute (RENCI) (http://www.renci.org) under the aegis of the iRODS Consortium (http://irods-consortium.org).  Please enter comments and suggestions as github issues at https://github.com/irods/irods/issues.
 
     http://irods.org
 
@@ -131,7 +131,7 @@ Repositories, issue trackers, and source code are available on GitHub.
 Installation
 ------------
 
-iRODS is provided in binary form in a collection of interdependent packages.  There are two flavors of server, iCAT and Resource.  An iCAT server, along with the iCAT metadata catalog, provide the nerve central for a data grid (Zone).  An iCAT server needs a database to be up and running in order to create the iCAT; a resource server needs a data grid (an iCAT server and metadata catalogue) to be up and running in order to connect and become a resource on that data grid or Zone.
+iRODS is provided in binary form in a collection of interdependent packages.  There are two flavors of iRODS server, iCAT and Resource.  An iCAT server, along with the iCAT metadata catalog, provide the nerve central for a data grid (Zone).  A resource server connects to an existing data grid, providing it with an additional data resource.  An iCAT server needs a database to be up and running in order to create the iCAT; a resource server needs a data grid (an iCAT server and metadata catalogue) to be up and running in order to connect and become a resource on that data grid or Zone.
 
 iCAT Server
 -----------
@@ -341,8 +341,8 @@ The default installation of iRODS comes with a Zone named 'tempZone'.  You proba
  irods@hostname:~/ $ iadmin modzone tempZone name <newzonename>
  If you modify the local zone name, you and other users will need to
  change your .irodsEnv files to use it, you may need to update
- irods.config and, if rules use the zone name, you'll need to update
- core.re.  This command will update various tables with the new name
+ /etc/irods/irods.config and, if rules use the zone name, you'll need to update
+ /etc/irods/core.re.  This command will update various tables with the new name
  and rename the top-level collection.
  Do you really want to modify the local zone name? (enter y or yes to do so):y
  OK, performing the local zone rename
@@ -536,7 +536,7 @@ When tempZone users connect, the system will then confirm that tempZone's LocalZ
 
 Mutual authentication between servers is always on across Federations.
 
-If you want, you can also scramble the SIDs in the server.config file. Use the 'iadmin spass' to scramble and enter the key used in the server.config file:
+If you want, you can also scramble the SIDs in the /etc/irods/server.config file. Use the 'iadmin spass' to scramble and enter the key used in the server.config file:
 
   SIDKey 456
 
@@ -1330,7 +1330,7 @@ Then that user must be configured so its principal matches the KDC::
 
  iadmin aua newuser newuser@EXAMPLE.ORG
 
-The `server.config` must be updated to include::
+The `/etc/irods/server.config` must be updated to include::
 
  KerberosServicePrincipal=irodsserver/serverhost.example.org@EXAMPLE.ORG
  KerberosKeytab=/var/lib/irods/irods.keytab
