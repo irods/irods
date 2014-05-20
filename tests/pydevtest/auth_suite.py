@@ -39,7 +39,7 @@ class Test_OSAuth_Only(unittest.TestCase, ResourceBase):
         os.system("echo \"irodsCwd '/tempZone/home/%s'\" >> %s" % (authTestUser, clientEnvFile))
 
         # setup the irods.key file necessary for OSAuth
-        keyfile = get_irods_top_level_dir() + "/iRODS/config/irods.key"
+        keyfile = get_irods_config_dir() + "/irods.key"
         os.system("echo \"gibberish\" > %s" % keyfile)
 
         # do the reauth

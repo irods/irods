@@ -35,27 +35,40 @@ rsAuthCheck( rsComm_t *rsComm, authCheckInp_t *authCheckInp,
     // the incoming response string might be a kvp string
     // holding the auth scheme as well as the response
     // try to parse it
-    std::string orig_resp;
-    orig_resp.assign( authCheckInp->response, authCheckInp->response + RESPONSE_LEN );
+    // NOTE :: incoming response string is longer than RESPONSE_LEN so we
+    //         cannot directly assign it, it will need to be properly terminated
+    //         and not contain any magic characters
+    std::string scheme;
+    std::string orig_resp = authCheckInp->response;
+    std::string response  = authCheckInp->response;
+
     irods::kvp_map_t kvp;
     irods::error ret = irods::parse_kvp_string( orig_resp, kvp );
-    std::string scheme;
-    std::string response;
-    response.assign( authCheckInp->response, authCheckInp->response + RESPONSE_LEN );
     if ( ret.ok() ) {
         if ( kvp.end() != kvp.find( irods::AUTH_SCHEME_KEY ) ) {
-            scheme   = kvp[ irods::AUTH_SCHEME_KEY   ];
+            scheme = kvp[ irods::AUTH_SCHEME_KEY ];
 
-            std::size_t response_key_pos = response.find( irods::AUTH_RESPONSE_KEY, 0 );
+            // =-=-=-=-=-=-=-
+            // subset the 'response' string from the incoming kvp set
+            size_t response_key_pos = response.find( irods::AUTH_RESPONSE_KEY );
             if ( response_key_pos != std::string::npos ) {
-                char *response_ptr = authCheckInp->response + response_key_pos + irods::AUTH_RESPONSE_KEY.length() + irods::KVP_DEF_ASSOC.length();
+                char *response_ptr = authCheckInp->response +
+                                     ( response_key_pos +
+                                       irods::AUTH_RESPONSE_KEY.length() +
+                                       irods::KVP_DEF_ASSOC.length() );
                 response.assign( response_ptr, RESPONSE_LEN + 2 );
             }
 
         }
     }
-    status = chlCheckAuth( rsComm, scheme.c_str(), authCheckInp->challenge, const_cast< char* >( response.c_str() ), authCheckInp->username, &privLevel,
-                           &clientPrivLevel );
+    status = chlCheckAuth(
+                 rsComm,
+                 scheme.c_str(),
+                 authCheckInp->challenge,
+                 const_cast< char* >( response.c_str() ),
+                 authCheckInp->username,
+                 &privLevel,
+                 &clientPrivLevel );
     if ( status < 0 ) {
         rodsLog( LOG_NOTICE,
                  "rsAuthCheck: chlCheckAuth status = %d", status );
