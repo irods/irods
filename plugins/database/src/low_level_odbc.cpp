@@ -1335,7 +1335,8 @@ extern "C" int cllTest( char *userArg, char *pwArg ) {
 
     i = cllConnect( &icss );
     if ( i != 0 ) {
-        exit( -1 );
+        printf( "cllConnect failed with error %d.\n", i );
+        return( i );
     }
 
     i = cllExecSqlNoResult( &icss, "create table test (i integer, j integer, a varchar(32))" );

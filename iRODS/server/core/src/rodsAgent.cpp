@@ -56,7 +56,7 @@ main( int argc, char *argv[] ) {
 #ifndef windows_platform
     if ( run_server_as_root ) {
         if ( initServiceUser() < 0 ) {
-            exit( 1 );
+            return 1;
         }
     }
 #endif
@@ -156,7 +156,7 @@ main( int argc, char *argv[] ) {
               false );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
-        exit( 1 );
+        return 1;
     }
 
     // =-=-=-=-=-=-=-
@@ -168,7 +168,7 @@ main( int argc, char *argv[] ) {
               true );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
-        exit( 1 );
+        return 1;
     }
 
 
