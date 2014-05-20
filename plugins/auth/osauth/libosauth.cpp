@@ -35,7 +35,7 @@ int get64RandomBytes( char *buf );
 void setSessionSignatureClientside( char* _sig );
 void _rsSetAuthRequestGetChallenge( const char* _c );
 static
-int check_proxy_user_privelges(
+int check_proxy_user_privileges(
     rsComm_t *rsComm,
     int proxyUserPriv ) {
     if ( strcmp( rsComm->proxyUser.userName, rsComm->clientUser.userName )
@@ -222,7 +222,7 @@ extern "C" {
         MD5Final( ( unsigned char* )digest, &context );
 
         // =-=-=-=-=-=-=-
-        // make sure 'string' doesn'tend early -
+        // make sure 'string' doesn't end early -
         // scrub out any errant terminating chars
         // by incrementing their value by one
         for ( int i = 0; i < RESPONSE_LEN; ++i ) {
@@ -552,7 +552,7 @@ extern "C" {
 
         /* have to modify privLevel if the icat is a foreign icat because
          * a local user in a foreign zone is not a local user in this zone
-         * and vice vera for a remote user
+         * and vice versa for a remote user
          */
         if ( rodsServerHost->rcatEnabled == REMOTE_ICAT ) {
             /* proxy is easy because rodsServerHost is based on proxy user */
@@ -604,13 +604,13 @@ extern "C" {
             authCheckOut->clientPrivLevel = authCheckOut->privLevel;
         }
 
-        status = check_proxy_user_privelges( _comm, authCheckOut->privLevel );
+        status = check_proxy_user_privileges( _comm, authCheckOut->privLevel );
 
         if ( status < 0 ) {
             free( authCheckOut );
             return ERROR(
                        status,
-                       "check_proxy_user_privelges failed" );
+                       "check_proxy_user_privileges failed" );
         }
 
         rodsLog( LOG_NOTICE,
