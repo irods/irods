@@ -131,14 +131,16 @@ Repositories, issue trackers, and source code are available on GitHub.
 Installation
 ------------
 
-iRODS is provided in binary form in a collection of interdependent packages.  An iRODS server is provided by a single package, but needs to be configured before it can be started.  There are two flavors of server, iCAT and Resource.  An iCAT server provides the metadata catalog for a Zone.  A resource server connects to an iCAT server and belongs to the iCAT's Zone.
+iRODS is provided in binary form in a collection of interdependent packages.  There are two flavors of server, iCAT and Resource.  An iCAT server, along with the iCAT metadata catalog, provide the nerve central for a data grid (Zone).  An iCAT server needs a database to be up and running in order to create the iCAT; a resource server needs a data grid (an iCAT server and metadata catalogue) to be up and running in order to connect and become a resource on that data grid or Zone.
 
 iCAT Server
 -----------
 
+Before installing the iRODS software, install your database and create a user/role 'irods' with create privileges. This 'irods' account will be the admin user for your iCAT database. Create this role with the password you will use in setting up the iCAT database during the iRODS installation. 
+
 The irods-icat package installs a service account and group named 'irods' and the iRODS binaries.
 
-The additional required database plugin installs the dependencies for database connections and a short setup script that will prompt for database connection information and configure the server.
+The additional database plugin is required and installs the dependencies for database connections and a short setup script that will prompt for database connection information and configure the server.
 
 Installation of the iCAT DEB and PostgreSQL plugin DEB::
 
@@ -158,6 +160,7 @@ The `./packaging/setup_database.sh` script will ask for the following five piece
 4) Database User
 5) Database Password
 
+This information will need to be consistent with your previous setup of your database.
 
 Installing the MySQL database plugin will also require `Installing lib_mysqludf_preg`_.  These functions are required for the internal iRODS SQL which uses regular expressions.
 
@@ -206,7 +209,7 @@ Confirmation of the permissions can be viewed with ``\l`` within the ``psql`` co
 Resource Server
 ---------------
 
-The irods-resource package installs a service account and group named 'irods' and the iRODS binaries.
+The irods-resource package installs a local service account and group named 'irods' and the iRODS binaries.
 
 There are no required additional packages, but the administrator will need to run a short setup script that will prompt for iRODS connection information and configure the server.
 
@@ -220,13 +223,14 @@ And then as the irods user::
 
  irods@hostname:~/ $ ./packaging/setup_resource.sh
 
-The `./packaging/setup_resource.sh` script will ask for the following five pieces of information before iRODS can start and connect to its configured iCAT Zone:
+The `./packaging/setup_resource.sh` script will ask for the following five pieces of information about the existing data grid that the iRODS resource server will need in order to start up and connect to its configured iCAT Zone:
 
 1) iCAT Hostname or IP
 2) iCAT Port
 3) iCAT Zone 
 4) iRODS administrator username
 5) iRODS administrator password
+
 
 Default Environment
 -------------------
