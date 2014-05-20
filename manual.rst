@@ -414,6 +414,13 @@ Additional information about creating resources can be found with::
 
 Creating new resources does not make them default for any existing or new users.  You will need to make sure that default resources are properly set for newly ingested files.
 
+
+Change default resource name and/or path
+----------------------------------------
+
+Installing an iRODS resource server gives you a default resource name of <hostname>Resource and default data path of /var/lib/irods/iRODS/<hostname>ResourceVault on the local resource. These can both be changed, using modresc, a part of the iadmin command available to administrative users. Follow the indications given in 'iadmin -h'.  For simplicity's sake, such modifications should generally take place before any data has been placed in the default resource at the default location.
+
+
 Add additional user(s)
 ----------------------
 
