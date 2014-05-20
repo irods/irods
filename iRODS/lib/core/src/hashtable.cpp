@@ -3,6 +3,7 @@
 #include "hashtable.hpp"
 #include "utils.hpp"
 /**
+ * Allocated dynamically
  * returns NULL if out of memory
  */
 struct bucket *newBucket( const char* key, const void* value ) {
@@ -16,13 +17,16 @@ struct bucket *newBucket( const char* key, const void* value ) {
     return b;
 }
 
-struct bucket *newBucket2( const char* key, const void* value, Region *r ) {
+/**
+ * Allocated in regions
+ */
+struct bucket *newBucket2( char* key, const void* value, Region *r ) {
     struct bucket *b = ( struct bucket * )region_alloc( r, sizeof( struct bucket ) );
     if ( b == NULL ) {
         return NULL;
     }
     b->next = NULL;
-    b->key = strdup( key );
+    b->key = key;
     b->value = value;
     return b;
 }
@@ -177,8 +181,8 @@ const void *deleteFromHashTable( Hashtable *h, const char* key ) {
         if ( strcmp( b0->key, key ) == 0 ) {
             h->buckets[index] = b0->next;
             temp = b0->value;
-            free( b0->key );
             if ( !h->dynamic ) {
+                free( b0->key );
                 free( b0 );
             }
             h->len --;
@@ -189,8 +193,8 @@ const void *deleteFromHashTable( Hashtable *h, const char* key ) {
                     struct bucket *tempBucket = b0->next;
                     temp = b0->next->value;
                     b0->next = b0->next->next;
-                    free( tempBucket->key );
                     if ( !h->dynamic ) {
+                        free( tempBucket->key );
                         free( tempBucket );
                     }
                     h->len --;
@@ -245,21 +249,7 @@ struct bucket* nextBucket( struct bucket *b0, const char* key ) {
 }
 
 void deleteHashTable( Hashtable *h, void ( *f )( const void * ) ) {
-    if ( h->dynamic ) {
-        if ( f != NULL ) {
-            int i;
-            for ( i = 0; i < h->size; i++ ) {
-                struct bucket *b0 = h->buckets[i];
-                while ( b0 != NULL ) {
-                    f( b0->value );
-                    free( b0->key );
-                    b0 = b0->next;
-                }
-            }
-
-        }
-    }
-    else {
+    if ( !h->dynamic ) {
         int i;
         for ( i = 0; i < h->size; i++ ) {
             struct bucket *b0 = h->buckets[i];
