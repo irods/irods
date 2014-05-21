@@ -789,7 +789,13 @@ For example, when running ``iput -R myOtherResc newfile.txt``, a ``fileCreate()`
 Pluggable Microservices
 -----------------------
 
-iRODS is in the process of being modularized whereby existing iRODS 3.x functionality will be replaced and provided by small, interoperable plugins.  The first plugin functionality to be completed was pluggable microservices.  Pluggable microservices allow users to add new microservices to an existing iRODS server without recompiling the server or even restarting any running processes.  A microservice plugin contains a single compiled microservice shared object file to be found by the server.  A separate development package, including an example, is available at http://irods.org/download, and explains how this works in more detail.
+iRODS is in the process of being modularized whereby existing iRODS 3.x functionality will be replaced and provided by small, interoperable plugins.  The first plugin functionality to be completed was pluggable microservices.  Pluggable microservices allow users to add new microservices to an existing iRODS server without recompiling the server or even restarting any running processes.  A microservice plugin contains a single compiled microservice shared object file to be found by the server.  Development examples can be found in the source tree under `examples/microservices`_.
+
+.. _examples/microservices: https://github.com/irods/irods/tree/master/examples/microservices
+
+A separate development package, irods-dev, available at http://irods.org/download, contains the necessary header files to write your own microservice plugins (as well as any other type of iRODS plugin).  Additional information can be found in the `Microservice Developers Tutorial`_. 
+
+.. _Microservice Developer Tutorial: https://github.com/irods/irods/blob/master/examples/microservices/microservice_tutorial.rst
 
 --------------------
 Composable Resources
