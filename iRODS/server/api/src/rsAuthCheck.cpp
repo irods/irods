@@ -39,8 +39,10 @@ rsAuthCheck( rsComm_t *rsComm, authCheckInp_t *authCheckInp,
     //         cannot directly assign it, it will need to be properly terminated
     //         and not contain any magic characters
     std::string scheme;
-    std::string orig_resp = authCheckInp->response;
-    std::string response  = authCheckInp->response;
+    std::string orig_resp;
+    orig_resp.assign( authCheckInp->response, authCheckInp->response + authCheckInp->response_len );
+    std::string response;
+    response.assign( authCheckInp->response, authCheckInp->response + authCheckInp->response_len );
 
     irods::kvp_map_t kvp;
     irods::error ret = irods::parse_kvp_string( orig_resp, kvp );

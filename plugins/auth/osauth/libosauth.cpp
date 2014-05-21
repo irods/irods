@@ -453,6 +453,7 @@ extern "C" {
                                irods::kvp_association()  +
                                _resp->response;
         authCheckInp.response = const_cast<char*>( resp_str.c_str() );
+        authCheckInp.response_len = resp_str.size();
 
         if ( rodsServerHost->localFlag == LOCAL_HOST ) {
             status = rsAuthCheck( _comm, &authCheckInp, &authCheckOut );

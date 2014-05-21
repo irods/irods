@@ -13,6 +13,8 @@
 // irods includes
 #include "miscServerFunct.hpp"
 #include "dataObjOpr.hpp"
+#include "objDesc.hpp"
+//#include "rsGlobal.hpp"
 
 // =-=-=-=-=-=-=-
 // boost includes
@@ -23,6 +25,7 @@ namespace irods {
 // public - ctor
     file_object::file_object() :
         data_object(),
+        file_descriptor_( -1 ),
         size_( 0 ),
         repl_requested_( -1 ) {
     } // file_object
@@ -87,6 +90,16 @@ namespace irods {
         replicas_.empty();
         // should mode be set here? - hcj
         replKeyVal( &_dataObjInfo->condInput, &cond_input_ );
+        int l1descInx = getL1descIndexByDataObjInfo( _dataObjInfo );
+        if( l1descInx != -1 )
+        {
+            int l3descInx = L1desc[ l1descInx ].l3descInx;
+            file_descriptor_ = FileDesc[ l3descInx ].fd;
+        }
+        else
+        {
+            file_descriptor_ = -1;
+        }
     }
 
 // =-=-=-=-=-=-=-

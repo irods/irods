@@ -382,6 +382,7 @@ extern "C" {
                     memset( &authCheckInp, 0, sizeof( authCheckInp ) );
                     authCheckInp.challenge = bufp;
                     authCheckInp.response = _resp->response;
+                    authCheckInp.response_len = RESPONSE_LEN;
                     authCheckInp.username = _resp->username;
 
                     if ( rodsServerHost->localFlag == LOCAL_HOST ) {

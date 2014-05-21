@@ -261,6 +261,20 @@ initDataObjInfoWithInp( dataObjInfo_t *dataObjInfo, dataObjInp_t *dataObjInp ) {
     return ( 0 );
 }
 
+int
+getL1descIndexByDataObjInfo( const dataObjInfo_t * dataObjInfo  )
+{
+    int index;
+    for( index = 3; index < NUM_L1_DESC; index++ )
+    {
+        if( L1desc[index].dataObjInfo == dataObjInfo )
+        {
+            return index;
+        }
+    }
+    return -1;
+}
+
 /* getNumThreads - get the number of threads.
  * inpNumThr - 0 - server decide
  *             < 0 - NO_THREADING
