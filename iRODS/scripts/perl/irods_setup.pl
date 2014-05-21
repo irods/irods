@@ -2214,7 +2214,7 @@ sub startIrods()
 		return 2;
 	}
 
-	($status,$output) = run( "$perl $irodsctl istart" );
+	($status,$output) = run( "$perl $irodsctl start" );
 
 	if ( $status != 0 )
 	{
