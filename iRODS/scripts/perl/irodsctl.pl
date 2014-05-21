@@ -24,7 +24,7 @@ use Cwd;
 use Cwd "abs_path";
 use Config;
 
-$version{"irodsctl.pl"} = "September 2011";
+$version{"irodsctl.pl"} = "May 2014";
 
 
 $scriptfullpath = abs_path(__FILE__);
@@ -310,109 +310,10 @@ foreach $arg (@ARGV)
 
 
 
-	# Database commands
-	if ( $arg =~ /^-?-?(dbstart)$/i )	# Start database
-	{
-		$numberCommands++;
-		printSubtitle( "Starting database server...\n" );
-		if ( ! $controlDatabase )
-		{
-			printError(
-				"    The database is not configured for exclusive use by iRODS and\n",
-				"    cannot be started by this script.\n" );
-		}
-		else
-		{
-			startDatabase( );
-		}
-		next;
-	}
-	if ( $arg =~ /^-?-?(dbstop)$/i )	# Stop database
-	{
-		$numberCommands++;
-		printSubtitle( "Stopping database server...\n" );
-		if ( ! $controlDatabase )
-		{
-			printError(
-				"    The database is not configured for exclusive use by iRODS and\n",
-				"    cannot be stopped by this script.\n" );
-		}
-		else
-		{
-			stopDatabase( );
-		}
-		next;
-	}
-	if ( $arg =~ /^-?-?(dbrestart)$/i )	# Restart database
-	{
-		$numberCommands++;
-		if ( ! $controlDatabase )
-		{
-			printError(
-				"    The database is not configured for exclusive use by iRODS and\n",
-				"    cannot be restarted by this script.\n" );
-		}
-		else
-		{
-			printSubtitle( "Stopping database server...\n" );
-			stopDatabase( );
-			printSubtitle( "Starting database server...\n" );
-			startDatabase( );
-		}
-		next;
-	}
-	if ( $arg =~ /^-?-?((dbopt(imize)?)|(dbvac(uum)?))$/i ) # Optimize db
-	{
-		$numberCommands++;
-		doOptimize( );
-		next;
-	}
-	if ( $arg =~ /^-?-?(drop)$/ )	# Drop iCAT tables from database
-	{
-		$numberCommands++;
-		doDrop( );
-		next;
-	}
-
-
-
-	# iRODS commands
-	if ( $arg =~ /^-?-?(istart)$/i )	# Start iRODS
-	{
-		$numberCommands++;
-		printSubtitle( "Starting iRODS server...\n" );
-		$startVal = startIrods( );
-		if ($startVal eq "0") {$doStartExitValue++;}
-		next;
-	}
-	if ( $arg =~ /^-?-?(istop)$/i )		# Stop iRODS
-	{
-		$numberCommands++;
-		printSubtitle( "Stopping iRODS server...\n" );
-		stopIrods( );
-		next;
-	}
-	if ( $arg =~ /^-?-?(irestart)$/i )	# Restart iRODS
-	{
-		$numberCommands++;
-		printSubtitle( "Stopping iRODS server...\n" );
-		stopIrods( );	# OK to fail.  Server might not be started
-		printSubtitle( "Starting iRODS server...\n" );
-		startIrods( );
-		next;
-	}
-
-
-
 	# Commands
 	if ( $arg =~ /^-?-?(start)$/i )		# Start database and iRODS
 	{
 		$numberCommands++;
-		if ( $controlDatabase )
-		{
-			printSubtitle( "Starting database server...\n" );
-			startDatabase( ) || exit( 1 );
-		}
 		printSubtitle( "Starting iRODS server...\n" );
 		$startVal = startIrods( );
 		if ($startVal eq "0") {$doStartExitValue++;}
@@ -423,11 +324,6 @@ foreach $arg (@ARGV)
 		$numberCommands++;
 		printSubtitle( "Stopping iRODS server...\n" );
 		my $status = stopIrods( );
-		if ( $controlDatabase )
-		{
-			printSubtitle( "Stopping database server...\n" );
-			stopDatabase( );
-		}
 		next;
 	}
 	if ( $arg =~ /^-?-?(restart)$/i )	# Restart database and iRODS
@@ -435,13 +331,6 @@ foreach $arg (@ARGV)
 		$numberCommands++;
 		printSubtitle( "Stopping iRODS server...\n" );
 		stopIrods( );	# OK to fail.  Server might not be started
-		if ( $controlDatabase )
-		{
-			printSubtitle( "Stopping database server...\n" );
-			stopDatabase( );
-			printSubtitle( "Starting database server...\n" );
-			startDatabase( ) || exit( 1 );
-		}
 		printSubtitle( "Starting iRODS server...\n" );
 		startIrods( );
 		next;
@@ -468,15 +357,6 @@ foreach $arg (@ARGV)
 		doTest( );
 		next;
 	}
-        if ( $arg =~ /^-?-?devtestyall$/ ) # Run iRODS tests
-# Undocumented command that does not warn user or prompts;
-# used for batch-mode testing.
-# Also, this tests all known resource types
-        {
-                $numberCommands++;
-                doAllRescTests( );
-                next;
-        }
 	if ( $arg =~ /^-?-?devtest$/ )	# Run iRODS developer tests
 	{
 		$numberCommands++;
@@ -606,316 +486,6 @@ sub doStatus
 
 
 
-
-#
-# @brief	Optimize database.
-#
-# Optimize the database.  Exactly what this means varies with the
-# type of database.
-#
-sub doOptimize
-{
-	if ( $DATABASE_TYPE ne "postgres" )
-	{
-		printError( "Database optimization is only available when iRODS is\n" );
-		printError( "configured to use Postgres.\n" );
-		return;
-	}
-
-	printSubtitle( "Optimizing iRODS database...\n" );
-
-	# Stop the iRODS server to avoid vacuumdb hanging on a semaphore
-	printStatus( "Stopping iRODS server...\n" );
-	if ( stopIrods( ) == 0 )
-	{
-		# Failed.  Message already output.
-		exit( 1 );
-	}
-
-	printStatus( "Optimizing database...\n" );
-	my $output = `$vacuumdb -f -z $DB_NAME 2>&1`;
-	if ( $? != 0 )
-	{
-		printError( "Postgres optimization failed.\n" );
-		printError( "    ", $output );
-		# Continue and restart iRODS anyway.
-	}
-
-	printStatus( "Starting iRODS server...\n" );
-	startIrods( ) || exit( 1 );
-}
-
-
-
-
-
-#
-# @brief	Drop database tables.
-#
-sub doDrop
-{
-	if ( isPrintVerbose( ) )
-	{
-		printNotice( "Dropping the iCAT database tables will destroy all metadata about files\n" );
-		printNotice( "stored by iRODS.  This cannot be undone.\n" );
-		printNotice( "\n" );
-		if ( askYesNo( "    Continue (yes/no)?  " ) == 0 )
-		{
-			printNotice( "Canceled.\n" );
-			exit( 1 );
-		}
-	}
-	printSubtitle( "Dropping database...\n" );
-
-
-	# Stop iRODS first.  Continue even if this fails.
-	# Failure probably means iRODS was already stopped.
-	printStatus( "Stopping iRODS server...\n" );
-	if ( stopIrods( ) == 0 )
-	{
-		printStatus( "    Skipped.  iRODS server already stopped.\n" );
-	}
-
-	# Start the database, if it isn't already running.
-	if ( $controlDatabase )
-	{
-		printStatus( "Starting database server...\n" );
-		my $status = startDatabase( );
-		if ( $status == 0 )
-		{
-			printError( "Cannot start database server.\n" );
-			exit( 1 );
-		}
-		if ( $status == 2 )
-		{
-			printStatus( "    Skipped.  Database server already running.\n" );
-		}
-	}
-
-
-	printStatus( "Dropping database...\n" );
-	my $output = `$dropdb $DB_NAME 2>&1`;
-	if ( $? != 0 )
-	{
-		if ( $output =~ /does not exist/ )
-		{
-			# Common error.  The tables were already dropped.
-			printError( "There is no iCAT database to drop.\n" );
-		}
-		else
-		{
-			printError( "iCAT database drop failed:\n" );
-			my @lines = split( "\n", $output );
-			foreach $line ( @lines )
-			{
-				$line =~ s/dropdb: //;
-				printError( "    $line\n" );
-			}
-			exit( 1 );
-		}
-	}
-	else
-	{
-		printNotice( "iCAT tables dropped.\n" );
-	}
-}
-
-
-
-
-#
-# @brief        Test all resource types.
-#
-# Run the developer iRODS tests on all known resource types.
-#
-sub doAllRescTests
-{
-
-	my $hostname = getCurrentHostName( );
-
-	# define resource types and setup/teardown for each
-	my %resctypes = (
-                "random" => {
-                        "setup" => [
-                                "yes | iadmin modresc demoResc name origResc",
-                                "iadmin mkresc demoResc random",
-                                "iadmin mkresc unix1Resc 'unix file system' $hostname:/var/lib/irods/unix1RescVault",
-                                "iadmin mkresc unix2Resc 'unix file system' $hostname:/var/lib/irods/unix2RescVault",
-                                "iadmin mkresc unix3Resc 'unix file system' $hostname:/var/lib/irods/unix3RescVault",
-                                "iadmin addchildtoresc demoResc unix1Resc",
-                                "iadmin addchildtoresc demoResc unix2Resc",
-                                "iadmin addchildtoresc demoResc unix3Resc",
-                        ],
-                        "teardown" => [
-                                "iadmin rmchildfromresc demoResc unix3Resc",
-                                "iadmin rmchildfromresc demoResc unix2Resc",
-                                "iadmin rmchildfromresc demoResc unix1Resc",
-                                "iadmin rmresc unix3Resc",
-                                "iadmin rmresc unix2Resc",
-                                "iadmin rmresc unix1Resc",
-                                "iadmin rmresc demoResc",
-                                "yes | iadmin modresc origResc name demoResc",
-                                "rm -rf /var/lib/irods/unix1RescVault",
-                                "rm -rf /var/lib/irods/unix2RescVault",
-                                "rm -rf /var/lib/irods/unix3RescVault",
-                        ],
-                },
-                "unix file system" => {
-                        "setup" => [],
-                        "teardown" => [],
-                },    
-                "nonblocking" => {
-                        "setup" => [
-                                "yes | iadmin modresc demoResc name origResc",
-                                "iadmin mkresc demoResc nonblocking $hostname:/var/lib/irods/nbVault",
-                        ],
-                        "teardown" => [
-                                "iadmin rmresc demoResc",
-                                "yes | iadmin modresc origResc name demoResc",
-                        ],
-                },
-                "passthru" => {
-                        "setup" => [
-                                "yes | iadmin modresc demoResc name origResc",
-                                "iadmin mkresc demoResc passthru",
-                                "iadmin mkresc unix1Resc 'unix file system' $hostname:/var/lib/irods/unix1RescVault",
-                                "iadmin addchildtoresc demoResc unix1Resc",
-                        ],
-                        "teardown" => [
-                                "iadmin rmchildfromresc demoResc unix1Resc",
-                                "iadmin rmresc unix1Resc",
-                                "iadmin rmresc demoResc",
-                                "yes | iadmin modresc origResc name demoResc",
-                                "rm -rf /var/lib/irods/unix1RescVault",
-                        ],
-                },
-                "roundrobin" => {
-                        "setup" => [
-                                "yes | iadmin modresc demoResc name origResc",
-                                "iadmin mkresc demoResc roundrobin",
-                                "iadmin mkresc unix1Resc 'unix file system' $hostname:/var/lib/irods/unix1RescVault",
-                                "iadmin mkresc unix2Resc 'unix file system' $hostname:/var/lib/irods/unix2RescVault",
-                                "iadmin addchildtoresc demoResc unix1Resc",
-                                "iadmin addchildtoresc demoResc unix2Resc",
-                        ],
-                        "teardown" => [
-                                "iadmin rmchildfromresc demoResc unix2Resc",
-                                "iadmin rmchildfromresc demoResc unix1Resc",
-                                "iadmin rmresc unix2Resc",
-                                "iadmin rmresc unix1Resc",
-                                "iadmin rmresc demoResc",
-                                "yes | iadmin modresc origResc name demoResc",
-                                "rm -rf /var/lib/irods/unix1RescVault",
-                                "rm -rf /var/lib/irods/unix2RescVault",
-                        ],
-                },
-                "multilayered" => {
-                        "setup" => [
-                                "yes | iadmin modresc demoResc name origResc",
-                                "iadmin mkresc demoResc passthru",
-                                "iadmin mkresc pass2Resc passthru",
-                                "iadmin mkresc rrResc roundrobin",
-                                "iadmin mkresc unix1Resc 'unix file system' $hostname:/var/lib/irods/unix1RescVault",
-                                "iadmin mkresc unix2Resc 'unix file system' $hostname:/var/lib/irods/unix2RescVault",
-                                "iadmin mkresc unix3Resc 'unix file system' $hostname:/var/lib/irods/unix3RescVault",
-                                "iadmin addchildtoresc demoResc pass2Resc",
-                                "iadmin addchildtoresc pass2Resc rrResc",
-                                "iadmin addchildtoresc rrResc unix1Resc",
-                                "iadmin addchildtoresc rrResc unix2Resc",
-                                "iadmin addchildtoresc rrResc unix3Resc",
-                        ],
-                        "teardown" => [
-                                "iadmin rmchildfromresc rrResc unix3Resc",
-                                "iadmin rmchildfromresc rrResc unix2Resc",
-                                "iadmin rmchildfromresc rrResc unix1Resc",
-                                "iadmin rmchildfromresc pass2Resc rrResc",
-                                "iadmin rmchildfromresc demoResc pass2Resc",
-                                "iadmin rmresc unix3Resc",
-                                "iadmin rmresc unix2Resc",
-                                "iadmin rmresc unix1Resc",
-                                "iadmin rmresc rrResc",
-                                "iadmin rmresc pass2Resc",
-                                "iadmin rmresc demoResc",
-                                "yes | iadmin modresc origResc name demoResc",
-                                "rm -rf /var/lib/irods/unix1RescVault",
-                                "rm -rf /var/lib/irods/unix2RescVault",
-                                "rm -rf /var/lib/irods/unix3RescVault",
-                        ],
-                },
-#                "hpss" => {
-#                        "setup" => [
-#                                "yes | iadmin modresc demoResc name origResc",
-#                                "iadmin mkresc demoResc hpss $hostname:/VaultPath 'user=irods;keytab=/var/hpss/etc/hpss.irods.keytab'",
-#                        ],
-#                        "teardown" => [
-#                                "iadmin rmresc demoResc",
-#                                "yes | iadmin modresc origResc name demoResc",
-#                        ],
-#                },
-	);
-
-	# loop through resource types and test them
-        my $resctypecounter = 0;
-	foreach my $resctype ( keys %resctypes ) {
-                $resctypecounter++;
-                print "\n==============================================================\n";
-		print "Resource Type $resctypecounter of ".keys( %resctypes )." : $resctype";
-		print "\n==============================================================\n";
-		my $teststatus = "SUCCESS";		
-		my $cmd;
-		my $cmdout;
-		my $testcmd;
-		my $testresult;
-		my $teststatus;		
-		
-		# run setup
-		print "[$resctype] SETUP...\n";
-
-		foreach $cmd ( @{$resctypes{$resctype}{"setup"}} ) {
-			print "[$resctype] :: running command [$cmd]\n";
-                        $cmdout = `$cmd 2>&1`;
-		}
-		print "[$resctype] SETUP DONE\n";
-
-		# run devtesty
-		print "[$resctype] TESTING...\n";
-		$testcmd = "$IRODS_HOME/irodsctl devtesty";
-#		$testcmd = "ls";
-		print "[$resctype] :: running command [$testcmd]...\n";
-		$testresult = `$testcmd 2>&1`;
-		if ( $? != 0 ){
-			print "\n\n\n********* TESTS FAILED ************\n\n\n";
-			$teststatus = "FAILED";
-		}
-		printStatus( "$testresult" );
-
-		# if failure occurred, then stop here and exit
-		if ( $teststatus eq "FAILED" ) {
-			print "Exiting without cleaning up...\n";
-			exit( 1 );
-		}
-                print "[$resctype] TESTING DONE\n";
-
-		# run teardown
-                print "[$resctype] TEARDOWN...\n";
-                foreach $cmd ( @{$resctypes{$resctype}{"teardown"}} ) {
-			print "[$resctype] :: running command [$cmd]\n";
-			$cmdout = `$cmd 2>&1`;
-                }
-                print "[$resctype] TEARDOWN DONE\n";
-
-	}
-
-	# summary reporting
-        print "\n==============================================================\n";
-	print "SUMMARY\n";
-        print "==============================================================\n\n";
-
-}
-
-
-
-
 #
 # @brief	Test installation.
 #
@@ -935,11 +505,6 @@ sub doTest
 	if ( (scalar keys %serverPids) == 0 )
 	{
 		printSubtitle( "Starting servers...\n" );
-		if ( $controlDatabase )
-		{
-			printStatus( "Starting database server...\n" );
-			startDatabase( ) || exit( 1 );
-		}
 		printStatus( "Starting iRODS server...\n" );
 		startIrods( ) || exit( 1 );
 	}
@@ -1428,40 +993,8 @@ sub setupEnvironment
 	# Execution path.  Add ".", iRODS commands, and database commands
 	my $oldPath = $ENV{'PATH'};
 	my $newPath = ".:$icommandsBinDir";
-	if ( $controlDatabase)
-	{
-		$newPath .= ":$databaseBinDir";
-	}
 	$ENV{'PATH'} = "$newPath:$oldPath";
 
-
-	# Library path.  Add database.
-	if ( $controlDatabase )
-	{
-		my $oldLibPath = $ENV{'LD_LIBRARY_PATH'};  
-		if ( ! defined($oldLibPath) || $oldLibPath eq "" )
-		{
-			$ENV{'LD_LIBRARY_PATH'} = $databaseLibDir;
-		}
-		else
-		{
-			$ENV{'LD_LIBRARY_PATH'}="$databaseLibDir:$oldLibPath";
-		}
-	}
-
-
-	# Postgres variables
-	if ( $controlDatabase && $DATABASE_TYPE eq "postgres" )
-	{
-		$ENV{"PGDATA"} = $databaseDataDir;
-		$ENV{"PGPORT"} = $DATABASE_PORT;
-		if ( $DATABASE_HOST !~ "localhost" &&
-			$DATABASE_HOST !~ $thisHost )
-		{
-			$ENV{"PGHOST"} = $DATABASE_HOST;
-		}
-		$ENV{"PGUSER"} = $DATABASE_ADMIN_NAME;
-	}
 }
 
 
@@ -1668,107 +1201,6 @@ sub getOurIrodsServerPids
 }
 
 
-#
-# @brief	Start database server
-#
-# If the database server is under our control, start it.
-# Otherwise do nothing.
-#
-# @return	0 = failed
-# 		1 = started
-# 		2 = already started
-# 		3 = not under our control
-#
-sub startDatabase
-{
-	if ( !$controlDatabase )
-	{
-		# The database is not under our control.
-		return 3;
-	}
-
-	if ( $DATABASE_TYPE eq "postgres" )
-	{
-		# Is Postgres running?
-		my $output = `$pgctl status 2>&1`;
-		if ( $? == 0 )
-		{
-			# Running.  Nothing more to do.
-			return 2;
-		}
-
-		# Start it.
-		my $logpath = File::Spec->catfile( $databaseLogDir, "pgsql.log" );
-		$output = `$pgctl start -o '-i' -l $logpath 2>&1`;
-		if ( $? != 0 )
-		{
-			printError( "Could not start Postgres database server.\n" );
-			printError( "    $output\n" );
-			return 0;
-		}
-
-		# Give it time to start up
-		sleep( $databaseStartStopDelay );
-		return 1;
-	}
-
-	# Otherwise it's an unknown database type.
-	return 3;
-}
-
-
-
-
-
-#
-# @brief	Stop database server
-#
-# If the database server is under our control, stop it.
-# Otherwise do nothing.
-#
-# @return	0 = failed
-# 		1 = stopped
-# 		2 = already stopped
-# 		3 = not under out control
-#
-sub stopDatabase
-{
-	if ( !$controlDatabase )
-	{
-		# The database is not under our control.
-		return 3;
-	}
-
-	if ( $DATABASE_TYPE eq "postgres" )
-	{
-		# Is Postgres running?
-		my $output = `$pgctl status 2>&1`;
-		if ( $? != 0 )
-		{
-			# Not running.
-			return 2;
-		}
-
-		# Stop it.
-		$output = `$pgctl stop 2>&1`;
-		if ( $? != 0 )
-		{
-			printError( "Could not stop Postgres database server.\n" );
-			printError( "    $output\n" );
-			return 0;
-		}
-
-		# Give it time to stop
-		sleep( $databaseStartStopDelay );
-		return 1;
-	}
-
-	# Otherwise it's an unknown database type.
-	return 3;
-}
-
-
-
 
 
 #
@@ -1844,25 +1276,12 @@ sub printUsage
 	printNotice( "    --quiet       Suppress all messages\n" );
 	printNotice( "    --verbose     Output all messages (default)\n" );
 	printNotice( "\n" );
-	printNotice( "iRODS server Commands:\n" );
-	printNotice( "    istart        Start the iRODS servers\n" );
-	printNotice( "    istop         Stop the iRODS servers\n" );
-	printNotice( "    irestart      Restart the iRODS servers\n" );
-	printNotice( "\n" );
-	printNotice( "Database commands:\n" );
-	printNotice( "    dbstart       Start the database servers\n" );
-	printNotice( "    dbstop        Stop the database servers\n" );
-	printNotice( "    dbrestart     Restart the database servers\n" );
-	printNotice( "    dboptimize    Optimize the iRODS tables in the database\n" );
-	printNotice( "    dbvacuum      Same as 'dboptimize'\n" );
-	printNotice( "\n" );
 	printNotice( "General Commands:\n" );
 	printNotice( "    start         Start the iRODS and database servers\n" );
 	printNotice( "    stop          Stop the iRODS and database servers\n" );
 	printNotice( "    restart       Restart the iRODS and database servers\n" );
 	printNotice( "    status        Show the status of iRODS and database servers\n" );
 	printNotice( "    devtest       Run a developer test suite\n" );
-	printNotice( "    devtestyall   Run an extended test suite\n" );
 	printNotice( "    loadtest      Run a concurrency (load/pound) test suite\n" );
 
 	setPrintVerbose( $oldVerbosity );
