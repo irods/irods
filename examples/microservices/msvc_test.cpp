@@ -11,9 +11,14 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // 1. Write a standard issue microservice
-    int irods_msvc_test( msParam_t* _a, msParam_t* _b, msParam_t* _c, ruleExecInfo_t* _rei ) {
+    int irods_msvc_test( msParam_t* _a, msParam_t* _b, msParam_t* _c, msParam_t* _out, ruleExecInfo_t* _rei ) {
         std::cout << "irods_msvc_test :: " << parseMspForStr( _a ) << " " << parseMspForStr( _b ) << " " << parseMspForStr( _c ) << std::endl;
-        return 0;
+	    std::string astr = parseMspForStr( _a );
+	    std::string bstr = parseMspForStr( _b );
+	    std::string cstr = parseMspForStr( _c );
+	    std::string my_str = "irods_msvc_test :: " + astr + " " + bstr + " " + cstr + "\n(The preceding line is also written into the server log.)";
+	    fillStrInMsParam( _out, my_str.c_str() );        
+	    return 0;
     }
 
     // =-=-=-=-=-=-=-
@@ -23,7 +28,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // 3.  allocate a microservice plugin which takes the number of function
         //     params as a parameter to the constructor
-        irods::ms_table_entry* msvc = new irods::ms_table_entry( 3 );
+        irods::ms_table_entry* msvc = new irods::ms_table_entry( 4 );
 
         // =-=-=-=-=-=-=-
         // 4. add the microservice function as an operation to the plugin
