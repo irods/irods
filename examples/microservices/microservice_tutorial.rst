@@ -4,11 +4,6 @@
 .. |todaysdate| date::
 
 
-:Author: Renaissance Computing Institute (RENCI)
-:Version: 3.0.1
-:Date: |todaysdate|
-
-
 .. contents:: Table of Contents
 .. section-numbering::
 
