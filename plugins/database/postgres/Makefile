@@ -38,5 +38,5 @@ GENU_OBJS = \
         $(OBJDIR)/general_query_setup.o \
         ${OBJDIR}/mid_level_routines.o
 
-EXTRA_CFLAGS = 
+EXTRA_CFLAGS =  -DPSQICAT
 include ../Makefile.base
