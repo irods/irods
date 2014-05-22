@@ -1,12 +1,12 @@
 -- add new resource hierarchy columns and index
-alter table R_RESC_MAIN add column resc_children varchar(1000);
-alter table R_RESC_MAIN add column resc_context varchar(1000);
-alter table R_RESC_MAIN add column resc_parent varchar(1000);
-alter table R_DATA_MAIN add column resc_hier varchar(1000);
-alter table R_RESC_MAIN add column resc_objcount integer DEFAULT 0;
+alter table R_RESC_MAIN add resc_children varchar(1000);
+alter table R_RESC_MAIN add resc_context varchar(1000);
+alter table R_RESC_MAIN add resc_parent varchar(1000);
+alter table R_DATA_MAIN add resc_hier varchar(1000);
+alter table R_RESC_MAIN add resc_objcount integer DEFAULT 0;
 
 -- update leaf node object counts
-update R_RESC_MAIN as r SET resc_objcount = ( select count(*) from R_DATA_MAIN as d where d.resc_name=r.resc_name );
+update R_RESC_MAIN r SET resc_objcount = ( select count(*) from R_DATA_MAIN d where d.resc_name=r.resc_name );
 
 -- reset resc_group for consistency
 update R_DATA_MAIN SET resc_group_name=resc_name;

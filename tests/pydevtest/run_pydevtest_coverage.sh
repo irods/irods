@@ -14,9 +14,16 @@ fi
 
 # check lcov version
 LCOVVERSION=`lcov --version | awk '{print $4}'`
-if [ "$LCOVVERSION" \< "1.8" ]; then
+LCOVVERSIONMAJOR=`echo $LCOVVERSION | awk -F'.' '{print $1}'`
+if (( "$LCOVVERSIONMAJOR" < "1" )); then
   echo "ERROR: LCOV is version [$LCOVVERSION] ... this script requires >= 1.8"
   exit 1
+elif (( "$LCOVVERSIONMAJOR" == "1" )); then
+  LCOVVERSIONMINOR=`echo $LCOVVERSION | awk -F'.' '{print $2}'`
+  if (( "$LCOVVERSIONMINOR" < "8" )); then
+    echo "ERROR: LCOV is version [$LCOVVERSION] ... this script requires >= 1.8"
+    exit 1
+  fi
 fi
 
 # prep
