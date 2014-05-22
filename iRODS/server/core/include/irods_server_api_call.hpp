@@ -64,6 +64,23 @@ namespace irods {
                    _output );
     }
 
+    template< typename INP_T >
+    int server_api_call(
+        int          _api_index,
+        rsComm_t *   _comm,
+        INP_T *      _input,
+        bytesBuf_t * _input_buffer ) {
+        api_entry_table& table = get_server_api_table();
+        bool has_entry = table.has_entry( _api_index );
+        if ( !has_entry ) {
+            return SYS_UNMATCHED_API_NUM;
+        }
+        return table[_api_index]->svrHandler(
+                   _comm,
+                   _input,
+                   _input_buffer );
+    }
+
     template< typename INP_T, typename OUT_T >
     int server_api_call(
         int          _api_index,
