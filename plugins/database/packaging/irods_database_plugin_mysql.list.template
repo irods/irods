@@ -124,7 +124,7 @@ echo "  log_bin_trust_function_creators=1"
 echo ""
 echo "After restarting your MySQL server with the new configuration,"
 echo "please switch to the irods user:"
-echo "  $$ sudo su - irods
+echo "  $$ sudo su - irods"
 echo ""
 echo "And run the following setup script:"
 echo "  irods@hostname:~/ $$ ./packaging/setup_database.sh"
