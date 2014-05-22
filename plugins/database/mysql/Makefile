@@ -14,6 +14,10 @@ HEADERS =
 
 EXTRALIBS = ../../../iRODS/lib/core/obj/irods_plugin_base.o
 
+# works for linux
+# does not work on macosx - look at postgres/Makefile for .dylib information
+EXTRA_LDRFLAGS = -lodbc
+
 CLL_OBJS =	\
 		$(OBJDIR)/low_level_odbc.o    \
 		$(OBJDIR)/irods_tmp_string.o  
