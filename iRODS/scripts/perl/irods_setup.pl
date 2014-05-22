@@ -13,7 +13,6 @@
 # Verbosity options:
 # 	--quiet     Suppress all messages
 # 	--verbose   Output all messages (default)
-# 	--force     Force all actions
 #
 #
 # This Perl script completes the installation of iRODS by creating
@@ -23,16 +22,25 @@
 #
 #	** There are no user-editable parameters in this file. **
 #
-
 use File::Spec;
 use File::Copy;
 #use File::Grep;
 use Cwd;
 use Cwd "abs_path";
 use Config;
+use File::Basename;
 
 $version{"irods_setup.pl"} = "Mar 2014";
 
+# =-=-=-=-=-=-=-
+# detect whether running in a consistent environment (usually the service account user)
+$scriptfullpath = abs_path(__FILE__);
+$scripttoplevel = dirname(dirname(dirname(dirname($scriptfullpath))));
+if( $scripttoplevel !~ /$ENV{HOME}/ ) {
+    print "The current environment [$ENV{HOME}] does not match script location [$scripttoplevel].\n";
+    print "Please switch user and run this script again.\n";
+    exit(1);
+}
 
 # =-=-=-=-=-=-=-
 # for testing later...
@@ -42,7 +50,7 @@ if( scalar(@ARGV) == 1) {
         $cloudResourceInstall = 1;
 }
 # set flag to determine if this is an iCAT installation or not
-$icatInstall = 0;    
+$icatInstall = 0;
 if( scalar(@ARGV) > 1 ) {
         $icatInstall = 1;
 }
@@ -67,30 +75,30 @@ if( scalar(@ARGV) > 1 ) {
 #
 
 
-
-
-
 ########################################################################
 #
 # Confirm execution from the top-level iRODS directory.
 #
 $IRODS_HOME = cwd( );	# Might not be actual iRODS home.  Fixed below.
 
+my $perlScriptsDir = File::Spec->catdir( $IRODS_HOME, "scripts", "perl" );
+
 # Where is the configuration directory for iRODS?  This is where
 # support scripts are kept.
-$configDir = File::Spec->catdir( $IRODS_HOME, "config" );
-if ( ! -e $configDir )
+$configDir = `perl $perlScriptsDir/irods_get_config_dir.pl`;
+
+if ( ! -d $configDir )
 {
 	# Configuration directory does not exist.  Perhaps this
 	# script was run from the scripts or scripts/perl subdirectories.
 	# Look up one directory.
 	$IRODS_HOME = File::Spec->catdir( $IRODS_HOME, File::Spec->updir( ));
 	$configDir  = File::Spec->catdir( $IRODS_HOME, "config" );
-	if ( ! -e $configDir )
+	if ( ! -d $configDir )
 	{
 		$IRODS_HOME = File::Spec->catdir( $IRODS_HOME, File::Spec->updir( ));
 		$configDir  = File::Spec->catdir( $IRODS_HOME, "config" );
-		if ( ! -e $configDir )
+		if ( ! -d $configDir )
 		{
 			# Nope.  Complain.
 			print( "Usage error:\n" );
@@ -105,10 +113,6 @@ if ( ! -e $configDir )
 $IRODS_HOME = abs_path( $IRODS_HOME );
 $configDir  = abs_path( $configDir );
 
-
-
-
-
 ########################################################################
 #
 # Initialize.
@@ -119,7 +123,6 @@ my $scriptName = $0;
 my $currentPort = 0;
 
 # Load support scripts.
-my $perlScriptsDir = File::Spec->catdir( $IRODS_HOME, "scripts", "perl" );
 
 push @INC, "/etc/irods";
 push @INC, $configDir;
@@ -130,7 +133,6 @@ require File::Spec->catfile( $perlScriptsDir, "utils_platform.pl" );
 #require File::Spec->catfile( $perlScriptsDir, "utils_config.pl" );
 require File::Spec->catfile( $perlScriptsDir, "utils_prompt.pl" );
 my $irodsctl = File::Spec->catfile( $perlScriptsDir, "irodsctl.pl" );
-
 
 
 
@@ -204,7 +206,6 @@ my $IRODS_ADMIN_BOOT_PASSWORD = "RODS";
 
 
 # Initialize global flags.
-my $force = 0;
 my $noAsk = 0;
 my $noHeader = 0;
 my $isUpgrade = 0;
@@ -275,15 +276,15 @@ setPrintVerbose( 1 );
 # script, which must be run first.  If the file doesn't exist, it
 # probably means scripts are being run out of order or that a prior
 # stage failed.
-if ( ! -e $configMk )
-{
-	printError( "Usage error:\n" );
-	printError( "    The file 'config.mk' is missing.  This probably\n" );
-	printError( "    means that prior setup stages have not been\n" );
-	printError( "    completed yet.\n" );
-	printError( "\n    Please run ./setup.\n" );
-	exit( 1 );
-}
+# if ( ! -e $configMk )
+# {
+# 	printError( "Usage error:\n" );
+# 	printError( "    The file 'config.mk' is missing.  This probably\n" );
+# 	printError( "    means that prior setup stages have not been\n" );
+# 	printError( "    completed yet.\n" );
+# 	printError( "\n    Please run ./setup.\n" );
+# 	exit( 1 );
+# }
 
 # Make sure the i-command binaries exist.  They are built during 'make',
 # which should already have occurred.
@@ -335,7 +336,6 @@ if ( ! -e $iadmin )
 #	}
 #}
 
-
 # =-=-=-=-=-=-=-
 # JMC :: pulled from utils_config.pl - the call to set up env vars
 #     :: was breaking the path to the system db binaries
@@ -385,7 +385,7 @@ sub irodsLoadIrodsConfig()
 
 	#require $irodsConfig;
 	require "irods\.config";
-
+	
 	return 1;
 }
 
@@ -409,7 +409,6 @@ if ( irodsLoadIrodsConfig( ) == 0 )
 	# has already been output.
 	exit( 1 );
 }
-
 # Make sure the home directory is set and valid.  If not, the installation
 # is probably being run out of order or a prior stage failed.
 if ( $IRODS_HOME eq "" || ! -e $IRODS_HOME )
@@ -614,7 +613,7 @@ closeLog( );
 if ( ! $noHeader )
 {
 	printSubtitle( "\nDone.  Additional detailed information is in the log file:\n" );
-	printSubtitle( "    $logFile\n" );
+	printStatus( "$logFile\n" );
 }
 exit( 0 );
 
@@ -717,7 +716,7 @@ sub configureDatabaseUser
 	if ( $DATABASE_TYPE eq "postgres" )
 	{
 		Postgres_ConfigureDatabaseUser( );
-		Postgres_CreateAlternateDatabaseUser( );
+	#	Postgres_CreateAlternateDatabaseUser( );
 		return;
 	}
 
@@ -1182,14 +1181,14 @@ sub testDatabase()
 	printStatus( "Testing database communications...\n" );
 	printLog( "\nTesting database communications with test_cll...\n" );
 
-	my $test_cll = File::Spec->catfile( $serverTestBinDir, "test_cll" );
+	my $test_cll = File::Spec->catfile( $serverTestCLLBinDir, "test_cll" );
 
 	#my ($status,$output) = run( "$test_cll $DATABASE_ADMIN_NAME '$DATABASE_ADMIN_PASSWORD'" );
 
 	$exec_str = "$test_cll $DATABASE_ADMIN_NAME '$DATABASE_ADMIN_PASSWORD'"; 
-	if ( $DATABASE_TYPE eq "oracle" ) {
-	    $exec_str = "$test_cll $DATABASE_ADMIN_NAME"."@".$DATABASE_HOST.":$DATABASE_PORT '$DATABASE_ADMIN_PASSWORD'"; 
-        }
+	#if ( $DATABASE_TYPE eq "oracle" ) {
+	#    $exec_str = "$test_cll $DATABASE_ADMIN_NAME"."@".$DATABASE_HOST.":$DATABASE_PORT '$DATABASE_ADMIN_PASSWORD'"; 
+    #    }
 
 	my ($status,$output) = run( "$exec_str" );
 	printLog( "    ", $output );
@@ -1350,8 +1349,8 @@ sub configureIrodsServer
 	#	dependent upon the directory from which this
 	#	script is run.
 	printLog( "\nUpdating iRODS irodsEnv.boot...\n" );
-	my $bootEnv  = File::Spec->catfile( $configDir, "irodsEnv.boot" );
-	my $authFile = File::Spec->catfile( $configDir, "auth.tmp" );
+	my $bootEnv  = File::Spec->catfile( $IRODS_HOME, "config", "irodsEnv.boot" );
+	my $authFile = File::Spec->catfile( $IRODS_HOME, "config", "auth.tmp" );
 	my %envVariables = ( "irodsAuthFileName", $authFile, "irodsZone", $ZONE_NAME) ;
 	printLog( "    irodsAuthFileName = $authFile\n" );
 
@@ -2071,8 +2070,7 @@ sub configureIrodsUser
 # @brief	Create the database, if it doesn't exist already.
 #
 # This function creates the iRODS/iCAT database using the selected
-# database type.  If the script is in FORCE mode, and there is a
-# database already, that database is dropped first.
+# database type.
 #
 # Messages are output on errors.
 #
@@ -2299,7 +2297,7 @@ sub stopIrods
 	}
 	if ( ! $found )
 	{
-                system( "pgrep -l -u irods irods | grep -v irodsctl | awk '{print \$1}' | xargs kill -9 > /dev/null 2>&1" );
+		system( "ps aux | grep \"^[_]\\?\$USER\" | grep \"irods[A|S|R|X]\" | awk '{print \$2}' | xargs kill -9 > /dev/null 2>&1" );
 		printStatus( "    There are no iRODS servers running.\n" );
 		return 1;
 	}
@@ -2318,7 +2316,7 @@ sub stopIrods
         # no regard for PIDs
         # iRODS must kill all owned processes for packaging purposes
         #printStatus( "\tKilling any remaining Zombies... Silently.\n" );
-        system( "pgrep -l -u irods irods | grep -v irodsctl | awk '{print \$1}' | xargs kill -9 > /dev/null 2>&1" );
+        system( "ps aux | grep \"^[_]\\?\$USER\" | grep \"irods[A|S|R|X]\" | awk '{print \$2}' | xargs kill -9 > /dev/null 2>&1" );
 
 	# Report if there are any left.
 	my $didNotDie = 0;
@@ -2773,9 +2771,6 @@ sub printUsage()
 	printNotice( "    --verbose   Output all messages (default)\n" );
 	printNotice( "    --noask     Don't ask questions, assume 'yes'\n" );
 	printNotice( "\n" );
-	printNotice( "Other options:\n" );
-	printNotice( "    --force     Force database drop and reset\n" );
-	printNotice( "\n" );
 
 	setPrintVerbose( $oldVerbosity );
 }
@@ -2829,7 +2824,7 @@ sub Postgres_CreateAlternateDatabaseUser( )
 	printToFile( $tmpPassword, "$DATABASE_ADMIN_PASSWORD\n" );
 	chmod( 0600, $tmpPassword );
 
-	$CUSER=`../packaging/find_bin_postgres.sh`;
+	$CUSER=`$scripttoplevel/packaging/find_bin_postgres.sh`;
 	chomp $CUSER;
 	$CUSER=$CUSER . "/createuser";
 
@@ -2941,9 +2936,7 @@ sub Postgres_ConfigureDatabaseUser()
 #
 # @brief	Create a Postgres database.
 #
-# This function creates a Postgres database.  If the script is
-# being run in FORCE mode, and there is an old database, drop
-# it first.
+# This function creates a Postgres database.
 #
 # These actions could require a database restart.
 #
@@ -2964,123 +2957,33 @@ sub Postgres_CreateDatabase()
 	printLog( "\nChecking whether iCAT database exists...\n" );
 	my $needCreate = 1;
 
-	$PSQL=`../packaging/find_bin_postgres.sh`;
+        if( $RUNINPLACE == 1 )
+        {
+                $PSQL=`$scripttoplevel/plugins/database/packaging/find_bin_postgres.sh`;
+        }
+        else
+        {
+                $PSQL=`$scripttoplevel/packaging/find_bin_postgres.sh`;
+        }
 	chomp $PSQL;
 	$PSQL=$PSQL . "/psql";
-	my ($status,$output) = run( "$PSQL -U $DATABASE_ADMIN_NAME -l $DB_NAME" );
-	if ( $output =~ /List of databases/i )
-	{
-		# The command only shows a list of databases if
-		# the database name on the command line exists.
-		# Otherwise it reports a 'does not exist' error.
-		#
-		# Since we did get a list of databases, the
-		# database exists.  Re-create it if forced too.
-		if ( $force )
-		{
-			# In FORCE mode, we need to drop the database and
-			# re-create it.
-			printStatus( "Forced dropping of iCAT database...\n" );
-			printLog( "Forced dropping of iCAT database...\n" );
-			my $doDrop = 1;
-			if ( ! $noAsk )
-			{
-				printNotice( "\nDropping the iCAT database tables will destroy all metadata about files\n" );
-				printNotice( "stored by iRODS.  This cannot be undone.\n" );
-				printNotice( "\n" );
-				if ( askYesNo( "    Continue (yes/no)?  " ) == 0 )
-				{
-					printStatus( "    Skipped.  Drop canceled.\n" );
-					$doDrop = 0;
-				}
-			}
-			if ( $doDrop )
-			{
-				printStatus( "Dropping iCAT database...\n" );
-
-				my $tmpPassword = createTempFilePath( "drop" );
-				printToFile( $tmpPassword, "$DATABASE_ADMIN_PASSWORD\n" );
-				chmod( 0600, $tmpPassword );
-
-				$DDB=`../packaging/find_bin_postgres.sh`;
-				chomp $DDB;
-				$DDB=$DDB . "/dropdb";
-				my ($status,$output) = run( "$DDB $DB_NAME < $tmpPassword" );
-				unlink( $tmpPassword );
-
-				if ( $status != 0 && $output !~ /does not exist/i )
-				{
-					printError( "\nInstall problem:\n" );
-					printError( "    Could not drop iCAT database.\n" );
-					printError( "        ", $output );
-					printLog( "\nCould not drop iCAT database:\n" );
-					printLog( "        ", $output );
-					return 0;
-				}
-			}
-		}
-		else
-		{
-			# Already exists and not forced to drop it,
-			# so we don't need to create it again.
-			$needCreate = 0;
-		}
-	}
-
-
-	# Create the database.
-	#	While the user's .pgpass provides a password for
-	#	use when accessing this database, the database
-	#	doesn't exist yet.  So, .pgpass isn't involved and
-	#	the user will be prompted for a password.  To avoid
-	#	the prompt, we include the password in an input file.
-	if ( $needCreate )
-	{
-		printStatus( "    Creating iCAT database...\n" );
-		printLog( "\n    Creating iCAT database...\n" );
-		my $tmpPassword = createTempFilePath( "create" );
-		printToFile( $tmpPassword, "$DATABASE_ADMIN_PASSWORD\n" );
-		chmod( 0600, $tmpPassword );
-
-
-		$CDB=`../packaging/find_bin_postgres.sh`;
-		chomp $CDB;
-		$CDB=$CDB . "/createdb";
-		if ($DATABASE_HOST eq "localhost") {
-			$status = system( "$CDB -U $DATABASE_ADMIN_NAME $DB_NAME &> /dev/null" );
-		}
-		else {
-		    ($status,$output) = run( "$CDB -h $DATABASE_HOST -U $DATABASE_ADMIN_NAME $DB_NAME < $tmpPassword" );
-		}
-		unlink( $tmpPassword );
-
-		if ( $status != 0 )
-		{
-			# Supposedly we've already caught the case where
-			# the database already exists above.  Just in case,
-			# watch for the same error again.
-			if( $output =~ /already exists/i )
-			{
-				# Already exists.  Odd.  The earlier check
-				# should have avoided this.
-				return 2;
-			}
-
-			printError( "\nInstall problem:\n" );
-			printError( "    Could not create iCAT database.\n" );
-			printError( "        ", $output );
-			printLog( "\nCould not create iCAT database:\n" );
-			printLog( "        ", $output );
-			return 0;
-		}
-	}
-	else
-	{
-		printStatus( "    Skipped creating iCAT database, it already exists.\n" );
-		printLog( "    Skipped creating iCAT database, it already exists.\n" );
-	}
-
-
+#        print "$PSQL -U $DATABASE_ADMIN_NAME -p $DATABASE_PORT -l $DB_NAME";
+	my ($status,$output) = run( "$PSQL -U $DATABASE_ADMIN_NAME -p $DATABASE_PORT -l $DB_NAME" );
+        if ( $output =~ /List of databases/i )
+        {
+                printStatus( "    [$DB_NAME] Found.\n");
+                printLog( "    [$DB_NAME] Found.\n");
+        }
+        else
+        {
+                printError( "\nInstall problem:\n" );
+                printError( "    Database [$DB_NAME] does not exist.\n" );
+                printError( "    $output\n" );
+                printLog( "\nInstall problem:\n" );
+                printLog( "    Database [$DB_NAME] does not exist.\n" );
+                printLog( "    $output\n" );
+                cleanAndExit( 1 );
+        }
 
 	# Update the ODBC configuration files to include the database name.
 	#	If Postgres was installed by the iRODS scripts, then
@@ -3218,17 +3121,31 @@ sub Postgres_CreateDatabase()
 	printStatus( "Updating user's .odbc.ini...\n" );
 	printLog( "Updating user's .odbc.ini...\n" );
 	my $userODBC = File::Spec->catfile( $ENV{"HOME"}, ".odbc.ini" );
+        if ( ! -e $userODBC )
+        {
+                printStatus( "    Touching... $userODBC\n" );
+                open( TOUCHFILE, ">>$userODBC" );
+                close( TOUCHFILE );
+        }
 	if ( ! -e $userODBC )
 	{
-		printStatus( "    Skipped.  File doesn't exist. - $userODBC\n" );
+                printStatus( "    Skipped.  File doesn't exist. - $userODBC\n" );
 		printLog( "    Skipped.  File doesn't exist.\n" );
 	}
 	else
 	{
 		# iRODS now supports a script to determine the path & lib name of the odbc driver
-		my $psqlOdbcLib = `../packaging/find_odbc_postgres.sh`;
+                 my $psqlOdbcLib;
+		if ( $RUNINPLACE == 1 )
+                {
+                        $psqlOdbcLib = `$scripttoplevel/plugins/database/packaging/find_odbc_postgres.sh $scripttoplevel`;
+                }
+                else
+                {
+                        $psqlOdbcLib = `$scripttoplevel/packaging/find_odbc_postgres.sh`;
+                }
 		chomp($psqlOdbcLib);
-
+		
 		open( NEWCONFIGFILE, ">$userODBC" );
 		print ( NEWCONFIGFILE "[postgres]\n" .
 				"Driver=$psqlOdbcLib\n" .
@@ -3306,7 +3223,7 @@ sub Oracle_CreateDatabase()
 	my $userODBC = File::Spec->catfile( $ENV{"HOME"}, ".odbc.ini" );
     
     # iRODS now supports a script to determine the path & lib name of the odbc driver
-    my $oracleOdbcLib = `../packaging/find_odbc_oracle.sh`;
+    my $oracleOdbcLib = `$scripttoplevel/packaging/find_odbc_oracle.sh`;
     chomp($oracleOdbcLib);
 
     open( NEWCONFIGFILE, ">$userODBC" );
@@ -3383,7 +3300,7 @@ sub MySQL_CreateDatabase()
 	my $userODBC = File::Spec->catfile( $ENV{"HOME"}, ".odbc.ini" );
     
     # iRODS now supports a script to determine the path & lib name of the odbc driver
-    my $mysqlOdbcLib = `../packaging/find_odbc_mysql.sh`;
+    my $mysqlOdbcLib = `$scripttoplevel/packaging/find_odbc_mysql.sh`;
     chomp($mysqlOdbcLib);
 
     open( NEWCONFIGFILE, ">$userODBC" );
@@ -3755,14 +3672,22 @@ sub Postgres_sql($$)
 {
 	my ($databaseName,$sqlFilename) = @_;
 
-	$PSQL=`../packaging/find_bin_postgres.sh`;
+        $findbinscript = "find_bin_".$DATABASE_TYPE.".sh";
+        if ( $RUNINPLACE == 1 )
+        {
+                $PSQL=`$scripttoplevel/plugins/database/packaging/$findbinscript`;
+        }
+        else
+        {
+                $PSQL=`$scripttoplevel/packaging/$findbinscript`;
+        }
 	chomp $PSQL;
 	$PSQL=$PSQL . "/psql";
 
 	if ($DATABASE_HOST eq "localhost") {
-	    return run( "$PSQL -U $DATABASE_ADMIN_NAME $databaseName < $sqlFilename" );
+	    return run( "$PSQL -U $DATABASE_ADMIN_NAME -p $DATABASE_PORT $databaseName < $sqlFilename" );
 	}
-	return run( "$PSQL -U $DATABASE_ADMIN_NAME -h $DATABASE_HOST $databaseName < $sqlFilename" );
+	return run( "$PSQL -U $DATABASE_ADMIN_NAME -p $DATABASE_PORT -h $DATABASE_HOST $databaseName < $sqlFilename" );
 }
 
 #
@@ -3816,11 +3741,19 @@ sub Oracle_sql($$)
 #
 sub MySQL_sql($$)
 {
-	$MYSQL=`../packaging/find_bin_mysql.sh`;
+        $findbinscript = "find_bin_".$DATABASE_TYPE.".sh";
+        if ( $RUNINPLACE == 1 )
+        {
+                $MYSQL=`$scripttoplevel/plugins/database/packaging/$findbinscript`;
+        }
+        else
+        {
+                $MYSQL=`$scripttoplevel/packaging/$findbinscript`;
+        }
 	chomp $MYSQL;
 	$MYSQL=$MYSQL . "/mysql";
 	my ($databaseName,$sqlFilename) = @_;
-	return run( "$MYSQL --user=$DATABASE_ADMIN_NAME --password=$DATABASE_ADMIN_PASSWORD $databaseName < $sqlFilename" );
+	return run( "$MYSQL --user=$DATABASE_ADMIN_NAME --port=$DATABASE_PORT --password=$DATABASE_ADMIN_PASSWORD $databaseName < $sqlFilename" );
 }
 
 

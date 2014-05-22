@@ -107,6 +107,9 @@ Res* getValueFromCollection( char *typ, void *inPtr, int inx, Region *r ) {
         res = newUninterpretedRes( r, KeyValPair_MS_T, k, NULL );
         return res;
     }
+    else if ( strcmp( typ, KeyValPair_MS_T ) == 0 ) {
+        return newStringRes( r, ( ( keyValPair_t * ) inPtr )->keyWord[inx] );
+    }
     else {
         return NULL;
     }
@@ -127,6 +130,9 @@ int getCollectionSize( char *typ, void *inPtr, Region *r ) {
     else if ( !strcmp( typ, GenQueryOut_MS_T ) ) {
         genQueryOut_t *g = ( genQueryOut_t * ) inPtr; /* the result set */
         return g->rowCnt;
+    }
+    else if ( strcmp( typ, KeyValPair_MS_T ) == 0 ) {
+        return ( ( keyValPair_t * ) inPtr ) -> len;
     }
     else {
         return( USER_PARAM_TYPE_ERR );

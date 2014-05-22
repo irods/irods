@@ -11,14 +11,16 @@
 # user is 'rods' and that certain file and collection names do not exist
 # and can be removed.
 
+use Cwd 'abs_path';
 
 # run a command
 # if option is 0 (normal), check the exit code 
 sub runCmd {
     my($option, $cmd) = @_;
     use File::Basename;
-    my $thescriptname = basename($0);    
-    chomp(my $therodslog = `ls -t /var/lib/irods/iRODS/server/log/rodsLog* | head -n1`);
+    my $thescriptname = basename($0);
+    my $IRODS_HOME = dirname(dirname(dirname(dirname(abs_path(__FILE__)))));
+    chomp(my $therodslog = `ls -t $IRODS_HOME/server/log/rodsLog* | head -n1`);
     open THERODSLOG, ">>$therodslog" or die "could not open [$therodslog]";
     print THERODSLOG " --- $thescriptname [$cmd] --- \n";
     close THERODSLOG;

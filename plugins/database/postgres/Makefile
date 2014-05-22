@@ -1,3 +1,5 @@
+include ../../../iRODS/config/config.mk
+
 TARGET = libpostgres.so
 
 SRCS = db_plugin.cpp                \
@@ -12,7 +14,14 @@ SRCS = db_plugin.cpp                \
 
 HEADERS = 
 
-EXTRALIBS = ../../../iRODS/lib/core/obj/irods_plugin_base.o
+EXTRALIBS = ../../../iRODS/lib/core/obj/irods_plugin_base.o 
+
+ifeq ($(OS_platform), osx_platform)
+    EXTRA_LDRFLAGS = \
+		../../../external/postgresql-9.3.4/pgsql/lib/libodbc.dylib
+else
+    EXTRA_LDRFLAGS = -lodbc
+endif
 
 CLL_OBJS =	\
 		$(OBJDIR)/low_level_odbc.o    \

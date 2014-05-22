@@ -118,8 +118,11 @@ echo " - an existing database user (to be used by the iRODS server)"
 echo " - an existing database (to be used as the iCAT catalog)"
 echo " - permissions for existing user on existing database"
 echo ""
-echo "Please run the following setup script as the irods user:"
-echo "  ./packaging/setup_database.sh"
+echo "Please switch to the irods user:"
+echo "  $$ sudo su - irods"
+echo ""
+echo "And run the following setup script:"
+echo "  irods@hostname:~/ $$ ./packaging/setup_database.sh"
 echo ""
 echo "======================================================================="
 echo ""
@@ -186,3 +189,7 @@ f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_cll ./tes
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_genu ./test_genu
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_genq ./test_genq
 
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/update_catalog_schema.py ./packaging/update_catalog_schema.py
+d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/schema_updates -
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/schema_updates/2.postgres.sql ./packaging/schema_updates/2.postgres.mysql.oracle.sql
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/schema_updates/3.postgres.sql ./packaging/schema_updates/3.postgres.mysql.oracle.sql

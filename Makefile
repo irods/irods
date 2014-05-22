@@ -4,7 +4,7 @@ MANUAL=irods-manual-$(IRODSVERSION).pdf
 
 MAKEFLAGS += --no-print-directory
 
-.PHONY : default all epm squeaky_clean clean libs plugins plugins-nodb plugins-db irods external external-build docs doxygen icat resource
+.PHONY : default all epm manual squeaky_clean clean libs plugins plugins-nodb plugins-db irods external external-build docs doxygen icat icat-package icommands icommands-package resource resource-package resource
 
 default : external-build libs plugins irods
 
@@ -13,6 +13,10 @@ all : external libs plugins irods docs epm
 icat : external-build libs plugins irods
 
 icat-package : external libs plugins irods
+
+icommands : external-build libs clients
+
+icommands-package : external libs clients
 
 resource : external-build libs plugins-nodb irods
 
@@ -25,6 +29,10 @@ external-build :
 
 libs : external-build
 	@$(MAKE) -C iRODS libs
+
+clients : libs
+	@$(MAKE) -C iRODS clients
+	@$(MAKE) -C plugins auth network
 
 plugins : plugins-nodb plugins-db
 

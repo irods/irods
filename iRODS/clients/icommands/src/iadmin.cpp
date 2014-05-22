@@ -899,7 +899,7 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
                 int errsv = errno;
 #endif
                 if ( error ) {
-                    printf( "WARNING: Error %d disabling echo mode. Password will be displayed in plaintext.", errsv );
+                    printf( "WARNING: Error %d disabling echo mode. Password will be displayed in plain text.", errsv );
                 }
                 printf( "Enter your current iRODS password:" );
                 std::string password = "";

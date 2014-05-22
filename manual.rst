@@ -90,7 +90,7 @@ License
 Overview
 --------
 
-This manual attempts to provide standalone documentation for iRODS (http://irods.org) as packaged by the Renaissance Computing Institute (RENCI) (http://www.renci.org) under the aegis of the iRODS Consortium (http://irods-consortium.org).
+This manual provides standalone documentation for iRODS (http://irods.org) as packaged by the Renaissance Computing Institute (RENCI) (http://www.renci.org) under the aegis of the iRODS Consortium (http://irods-consortium.org).  Please enter comments and suggestions as github issues at https://github.com/irods/irods/issues.
 
     http://irods.org
 
@@ -131,14 +131,16 @@ Repositories, issue trackers, and source code are available on GitHub.
 Installation
 ------------
 
-iRODS is provided in binary form in a collection of interdependent packages.  An iRODS server is provided by a single package, but needs to be configured before it can be started.  There are two flavors of server, iCAT and Resource.  An iCAT server provides the metadata catalog for a Zone.  A resource server connects to an iCAT server and belongs to the iCAT's Zone.
+iRODS is provided in binary form in a collection of interdependent packages.  There are two flavors of iRODS server, iCAT and Resource.  An iCAT server, along with the iCAT metadata catalog, provide the nerve central for a data grid (Zone).  A resource server connects to an existing data grid, providing it with an additional data resource.  An iCAT server needs a database to be up and running in order to create the iCAT; a resource server needs a data grid (an iCAT server and metadata catalogue) to be up and running in order to connect and become a resource on that data grid or Zone.
 
 iCAT Server
 -----------
 
+Before installing the iRODS software, install your database and create a user/role 'irods' with create privileges. This 'irods' account will be the admin user for your iCAT database. Create this role with the password you will use in setting up the iCAT database during the iRODS installation. 
+
 The irods-icat package installs a service account and group named 'irods' and the iRODS binaries.
 
-The additional required database plugin installs the dependencies for database connections and a short setup script that will prompt for database connection information and configure the server.
+The additional database plugin is required and installs the dependencies for database connections and a short setup script that will prompt for database connection information and configure the server.
 
 Installation of the iCAT DEB and PostgreSQL plugin DEB::
 
@@ -158,11 +160,56 @@ The `./packaging/setup_database.sh` script will ask for the following five piece
 4) Database User
 5) Database Password
 
+This information will need to be consistent with your previous setup of your database.
+
+Installing the MySQL database plugin will also require `Installing lib_mysqludf_preg`_.  These functions are required for the internal iRODS SQL which uses regular expressions.
+
+Database Setup Example
+**********************
+
+Once the PostgreSQL database plugin has been installed, the following text will be displayed::
+
+ =======================================================================
+
+ iRODS Postgres Database Plugin installation was successful.
+
+ To configure this plugin, the following prerequisites need to be met:
+  - an existing database user (to be used by the iRODS server)
+  - an existing database (to be used as the iCAT catalog)
+  - permissions for existing user on existing database
+
+ Please run the following setup script as the irods user:
+   ./packaging/setup_database.sh
+
+ =======================================================================
+
+
+iRODS can use many different database configurations.  As an example, a local
+PostgreSQL database can be configured on Ubuntu 12.04 with the following steps::
+
+ $ (sudo) su - postgres
+ postgres$ psql
+ psql> CREATE USER irods WITH PASSWORD 'testpassword';
+ psql> CREATE DATABASE "ICAT";
+ psql> GRANT ALL PRIVILEGES ON DATABASE "ICAT" TO irods;
+
+Confirmation of the permissions can be viewed with ``\l`` within the ``psql`` console::
+
+ psql> \l
+                                   List of databases
+    Name    |  Owner   | Encoding |   Collate   |    Ctype    |   Access privileges
+ -----------+----------+----------+-------------+-------------+-----------------------
+  ICAT      | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =Tc/postgres         +
+            |          |          |             |             | postgres=CTc/postgres+
+            |          |          |             |             | irods=CTc/postgres
+ ...
+ (N rows)
+
 
 Resource Server
 ---------------
 
-The irods-resource package installs a service account and group named 'irods' and the iRODS binaries.
+The irods-resource package installs a local service account and group named 'irods' and the iRODS binaries.
 
 There are no required additional packages, but the administrator will need to run a short setup script that will prompt for iRODS connection information and configure the server.
 
@@ -176,13 +223,14 @@ And then as the irods user::
 
  irods@hostname:~/ $ ./packaging/setup_resource.sh
 
-The `./packaging/setup_resource.sh` script will ask for the following five pieces of information before iRODS can start and connect to its configured iCAT Zone:
+The `./packaging/setup_resource.sh` script will ask for the following five pieces of information about the existing data grid that the iRODS resource server will need in order to start up and connect to its configured iCAT Zone:
 
 1) iCAT Hostname or IP
 2) iCAT Port
 3) iCAT Zone 
 4) iRODS administrator username
 5) iRODS administrator password
+
 
 Default Environment
 -------------------
@@ -205,6 +253,58 @@ Once a server is up and running, the default environment can be shown::
  NOTICE: irodsEncryptionNumHashRounds=16
  NOTICE: irodsEncryptionAlgorithm=AES-256-CBC
  NOTICE: irodsDefaultHashScheme=SHA256
+
+Run In Place
+------------
+
+iRODS can be compiled from source and run from the same directory.  Although this is not recommended for production deployment, it may be useful for testing, running multiple iRODS servers on the same system, running iRODS on systems without a package manager, and users who do not have administrator rights on their system.
+
+To run iRODS in place, the build script must be called with the appropriate flag::
+
+ user@hostname:~/irods/ $ ./packaging/build.sh --run-in-place icat postgres
+
+After the system is built, the setup_database.sh script needs to be run from its original location::
+
+ user@hostname:~/irods/ $ ./plugins/database/packaging/setup_database.sh
+
+The script will prompt for iRODS configuration information that would already be known to a binary installation::
+
+ ===================================================================
+
+ You are installing iRODS with the --run-in-place option.
+
+ The iRODS server cannot be started until it has been configured.
+
+ iRODS server's port [1247]: 
+
+ iRODS port range (begin) [20000]: 
+
+ iRODS port range (end) [20199]: 
+
+ iRODS Vault directory [/full/path/to/Vault]: 
+
+ iRODS server's adminstrator name [rods]: 
+
+ iRODS server's administrator password: 
+
+ -------------------------------------------
+ iRODS Port:             1247
+ Range (Begin):          20000
+ Range (End):            20199
+ Vault Directory:        /full/path/to/Vault
+ Administrator Name:     rods
+ Administrator Password: Not Shown
+ -------------------------------------------
+ Please confirm these settings [yes]: 
+
+
+MacOSX
+******
+
+Installation on a MacOSX system requires the use of the --run-in-place build option due to the lack of a system-level package manager.
+
+.. include:: packaging/MACOSX_DATABASE_SETUP.txt
+
 
 ----------
 Quickstart
@@ -241,8 +341,8 @@ The default installation of iRODS comes with a Zone named 'tempZone'.  You proba
  irods@hostname:~/ $ iadmin modzone tempZone name <newzonename>
  If you modify the local zone name, you and other users will need to
  change your .irodsEnv files to use it, you may need to update
- irods.config and, if rules use the zone name, you'll need to update
- core.re.  This command will update various tables with the new name
+ /etc/irods/irods.config and, if rules use the zone name, you'll need to update
+ /etc/irods/core.re.  This command will update various tables with the new name
  and rename the top-level collection.
  Do you really want to modify the local zone name? (enter y or yes to do so):y
  OK, performing the local zone rename
@@ -313,6 +413,13 @@ Additional information about creating resources can be found with::
  to an empty string ('').
 
 Creating new resources does not make them default for any existing or new users.  You will need to make sure that default resources are properly set for newly ingested files.
+
+
+Change default resource name and/or path
+----------------------------------------
+
+Installing an iRODS resource server gives you a default resource name of <hostname>Resource and default data path of /var/lib/irods/iRODS/<hostname>ResourceVault on the local resource. These can both be changed, using modresc, a part of the iadmin command available to administrative users. Follow the indications given in 'iadmin -h'.  For simplicity's sake, such modifications should generally take place before any data has been placed in the default resource at the default location.
+
 
 Add additional user(s)
 ----------------------
@@ -436,7 +543,7 @@ When tempZone users connect, the system will then confirm that tempZone's LocalZ
 
 Mutual authentication between servers is always on across Federations.
 
-If you want, you can also scramble the SIDs in the server.config file. Use the 'iadmin spass' to scramble and enter the key used in the server.config file:
+If you want, you can also scramble the SIDs in the /etc/irods/server.config file. Use the 'iadmin spass' to scramble and enter the key used in the server.config file:
 
   SIDKey 456
 
@@ -786,9 +893,9 @@ A deferred resource provides no implicit data management policy.  It defers to i
 Load Balanced
 *************
 
-The load balanced resource provides equivalent functionality as the "doLoad" option for the `msiSetRescSortScheme` microservice.  This resource plugin will query the r_load_digest table from the iCAT and select the appropriate child resource based on the load values returned from the table.
+The load balanced resource provides equivalent functionality as the "doLoad" option for the `msiSetRescSortScheme` microservice.  This resource plugin will query the r_server_load_digest table from the iCAT and select the appropriate child resource based on the load values returned from the table.
 
-The r_load_digest table is part of the Resource Monitoring System and has been incorporated into iRODS 4.x.
+The r_server_load_digest table is part of the Resource Monitoring System and has been incorporated into iRODS 4.x.  The r_server_load_digest table must be populated with load data for this plugin to function properly.
 
 The load balanced resource has an effect on writes only (it has no effect on reads).
 
@@ -1009,7 +1116,7 @@ The remaining parameters are standard SSL parameters and made available through 
 Pluggable Database
 ------------------
 
-The iRODS metadata catalog is now installed and managed by separate plugins.  The TEMPLATE_IRODSVERSION release has PostgreSQL, MySQL, and Oracle database plugins available and tested.  MySQL is not available on CentOS 5, as the required `lib_mysqludf_preg` is not currently available on that OS.
+The iRODS metadata catalog is now installed and managed by separate plugins.  The TEMPLATE_IRODSVERSION release has PostgreSQL, MySQL, and Oracle database plugins available and tested.  MySQL is not available on CentOS 5, as the required set of `lib_mysqludf_preg` functions are not currently available on that OS.
 
 The particular flavor of database is encoded in `/etc/irods/server.config` with the following directive::
 
@@ -1021,6 +1128,41 @@ This is populated by the `setup_database.sh` script on configuration.
 The iRODS 3.x icatHighLevelRoutines are, in effect, the API calls for the database plugins.  No changes should be needed to any calls to the icatHighLevelRoutines.
 
 To implement a new database plugin, a developer will need to provide the existing 84 SQL calls (in icatHighLevelRoutines) and an implementation of GenQuery.
+
+Installing lib_mysqludf_preg
+----------------------------
+
+Installing the iRODS MySQL database plugin requires the MySQL server to have the `lib_mysqludf_preg functions`__ installed and available to iRODS.
+
+The steps for installing `lib_mysqludf_preg` on Ubuntu 14.04 include::
+
+ # Get Dependencies
+ sudo apt-get install mysql-server mysql-client libmysqlclient-dev libpcre3-dev
+
+ # Build and Install
+ cd lib_mysqludf_preg
+ ./configure
+ make
+ sudo make install
+ sudo make MYSQL="mysql -p" installdb
+
+Then, to confirm they are available::
+
+ $ mysql -uUSER -p -e "select name from mysql.func"
+ Enter password:
+ +------------------------+
+ | name                   |
+ +------------------------+
+ | lib_mysqludf_preg_info |
+ | preg_capture           |
+ | preg_check             |
+ | preg_position          |
+ | preg_replace           |
+ | preg_rlike             |
+ +------------------------+
+
+.. __: https://github.com/mysqludf/lib_mysqludf_preg
+
 
 -----------------
 Pluggable RPC API
@@ -1195,7 +1337,7 @@ Then that user must be configured so its principal matches the KDC::
 
  iadmin aua newuser newuser@EXAMPLE.ORG
 
-The `server.config` must be updated to include::
+The `/etc/irods/server.config` must be updated to include::
 
  KerberosServicePrincipal=irodsserver/serverhost.example.org@EXAMPLE.ORG
  KerberosKeytab=/var/lib/irods/irods.keytab

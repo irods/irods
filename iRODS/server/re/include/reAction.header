@@ -15,8 +15,3 @@
 #include "reDataObjOpr.hpp"
 #include "reNaraMetaData.hpp"
 #include "reIn2p3SysRule.hpp"
-#ifdef NETCDF_API
-#include "reNetcdf.hpp"
-#endif
-
-

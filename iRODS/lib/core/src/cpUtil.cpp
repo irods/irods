@@ -126,7 +126,7 @@ cpFileUtil( rcComm_t *conn, char *srcPath, char *targPath, rodsLong_t srcSize,
 
     if ( srcPath == NULL || targPath == NULL ) {
         rodsLog( LOG_ERROR,
-                 "cpFileUtil: NULL srcPath or targPath incp" );
+                 "cpFileUtil: NULL srcPath or targPath in cp" );
         return ( USER__NULL_INPUT_ERR );
     }
 
@@ -170,7 +170,7 @@ initCondForCp( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
 
     if ( dataObjCopyInp == NULL ) {
         rodsLog( LOG_ERROR,
-                 "initCondForCp: NULL dataObjCopyInp incp" );
+                 "initCondForCp: NULL dataObjCopyInp in cp" );
         return ( USER__NULL_INPUT_ERR );
     }
 
@@ -277,7 +277,7 @@ initCondForCp( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
         }
     }
 
-    dataObjCopyInp->destDataObjInp.createMode = 0700;
+    //dataObjCopyInp->destDataObjInp.createMode = 0600;		// seems unused, and caused https://github.com/irods/irods/issues/2085
     dataObjCopyInp->destDataObjInp.openFlags = O_WRONLY;
 
     return ( 0 );
@@ -297,13 +297,13 @@ cpCollUtil( rcComm_t *conn, char *srcColl, char *targColl,
 
     if ( srcColl == NULL || targColl == NULL ) {
         rodsLog( LOG_ERROR,
-                 "cpCollUtil: NULL srcColl or targColl incp" );
+                 "cpCollUtil: NULL srcColl or targColl in cp" );
         return ( USER__NULL_INPUT_ERR );
     }
 
     if ( rodsArgs->recursive != True ) {
         rodsLog( LOG_ERROR,
-                 "cpCollUtil: -r option must be used for cpting %s directory",
+                 "cpCollUtil: -r option must be used for copying %s directory",
                  srcColl );
         return ( USER_INPUT_OPTION_ERR );
     }

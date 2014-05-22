@@ -4,4 +4,4 @@ irodsHost 'localhost'
 irodsPort 1233
 irodsUserName 'rodsBoot'
 irodsZone tempZone
-irodsAuthFileName /home/jasonc/dev/irods/Clean3.0/iRODS/config/auth.tmp
+irodsAuthFileName /Users/jasonc/irods/iRODS/config/auth.tmp

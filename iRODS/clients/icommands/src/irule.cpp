@@ -197,6 +197,12 @@ main( int argc, char **argv ) {
         char *inpParamNames[1024];
         char *outParamNames[1024];
 
+        // =-=-=-=-=-=-=-
+        // initialize pluggable api table
+        irods::api_entry_table&  api_tbl = irods::get_client_api_table();
+        irods::pack_entry_table& pk_tbl  = irods::get_pack_table();
+        init_api_table( api_tbl, pk_tbl );
+
         /* if the input file name starts with "i:", the get the file from iRODS server */
         if ( !strncmp( myRodsArgs.fileString, "i:", 2 ) ) {
             status = getRodsEnv( &myEnv );
@@ -205,12 +211,6 @@ main( int argc, char **argv ) {
                 rodsLogError( LOG_ERROR, status, "main: getRodsEnv error. " );
                 exit( 1 );
             }
-
-            // =-=-=-=-=-=-=-
-            // initialize pluggable api table
-            irods::api_entry_table&  api_tbl = irods::get_client_api_table();
-            irods::pack_entry_table& pk_tbl  = irods::get_pack_table();
-            init_api_table( api_tbl, pk_tbl );
 
             conn = rcConnect( myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
                               myEnv.rodsZone, 0, &errMsg );

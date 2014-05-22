@@ -221,7 +221,7 @@ namespace irods {
                 prop_setting.assign( findNextTokenAndTerm( key + len ) );
 
                 // Update properties table
-                result = properties.set<int>( prop_name, strtol(prop_setting.c_str(), 0, 0) );
+                result = properties.set<int>( prop_name, strtol( prop_setting.c_str(), 0, 0 ) );
 
                 rodsLog( LOG_DEBUG, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
             } // DEF_DIR_MODE_KW
@@ -236,7 +236,7 @@ namespace irods {
                 prop_setting.assign( findNextTokenAndTerm( key + len ) );
 
                 // Update properties table
-                result = properties.set<int>( prop_name, strtol(prop_setting.c_str(), 0, 0) );
+                result = properties.set<int>( prop_name, strtol( prop_setting.c_str(), 0, 0 ) );
 
                 rodsLog( LOG_DEBUG, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
             } // DEF_FILE_MODE_KW

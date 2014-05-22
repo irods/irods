@@ -43,6 +43,19 @@ def get_lan_ip():
 def get_hostname():
     return socket.gethostname()
 
+def get_irods_top_level_dir():
+    configdir = "/etc/irods/irods.config"
+    topleveldir = "/var/lib/irods"
+    if( not os.path.isfile( configdir )):
+        topleveldir = os.path.dirname( os.path.dirname( os.path.dirname( os.path.abspath(__file__) ) ) )
+    return topleveldir
+
+def get_irods_config_dir():
+    configfile = "/etc/irods/irods.config"
+    configdir = os.path.dirname( configfile )
+    if( not os.path.isfile( configfile )):
+        configdir = get_irods_top_level_dir() + "/iRODS/config"
+    return configdir
 
 def create_directory_of_small_files(directory_name_suffix, file_count):
     if not os.path.exists(directory_name_suffix):

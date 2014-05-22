@@ -666,7 +666,7 @@ int actionTableLookUp( irods::ms_table_entry& _entry, char* _action ) {
         rodsLog( LOG_DEBUG, "actionTableLookUp - [%s] not found, load it.", _action );
         irods::error ret = irods::load_microservice_plugin( MicrosTable, str_act );
         if ( !ret.ok() ) {
-            irods::log( PASS(ret) );
+            irods::log( PASS( ret ) );
             return UNMATCHED_ACTION_ERR;
         }
         else {   // if loaded

@@ -7,7 +7,7 @@ import pydevtest_sessions as s
 from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd
 from resource_suite import ResourceBase
 import commands
-import os
+import os, stat
 import datetime
 import time
 import shutil
@@ -32,6 +32,15 @@ class ChunkyDevTest(ResourceBase):
         if os.path.exists( myldir ):
             shutil.rmtree( myldir )
         assertiCmd(s.adminsession,"imkdir icmdtest")
+        
+        # test basic informational commands
+        assertiCmd(s.adminsession,"iinit -l", "LIST", s.adminsession.getUserName() )
+        assertiCmd(s.adminsession,"iinit -l", "LIST", s.adminsession.getZoneName() )
+        assertiCmd(s.adminsession,"iinit -l", "LIST", s.adminsession.getDefResource() )
+        res = s.adminsession.runCmd('ils', ['-V'])
+        assert (res[0].count('NOTICE: irodsHost') == 1
+                and res[0].count('NOTICE: irodsPort') == 1
+                and res[0].count('NOTICE: irodsDefResource') == 1)
     
         # begin original devtest
         assertiCmd(s.adminsession,"ilsresc", "LIST", self.testresc)
@@ -72,6 +81,12 @@ class ChunkyDevTest(ResourceBase):
         assertiCmd(s.adminsession,"imeta ls -d "+irodshome+"/icmdtest/foo1", "LIST", ["180"] )
         assertiCmd(s.adminsession,"imeta ls -d "+irodshome+"/icmdtest/foo1", "LIST", ["cm"] )
         assertiCmd(s.adminsession,"icp -K -R "+self.testresc+" "+irodshome+"/icmdtest/foo1 "+irodshome+"/icmdtest/foo2" )
+        
+        # new file mode check
+        assertiCmd(s.adminsession,"iget -fK --rlock "+irodshome+"/icmdtest/foo2 /tmp/" )
+        assert oct(stat.S_IMODE(os.stat("/tmp/foo2").st_mode)) == '0640'
+        os.unlink( "/tmp/foo2" )
+        
         assertiCmd(s.adminsession,"ils "+irodshome+"/icmdtest/foo2", "LIST", "foo2" )
         assertiCmd(s.adminsession,"imv "+irodshome+"/icmdtest/foo2 "+irodshome+"/icmdtest/foo4" )
         assertiCmd(s.adminsession,"ils -l "+irodshome+"/icmdtest/foo4", "LIST", "foo4" )

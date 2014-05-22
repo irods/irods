@@ -6976,7 +6976,7 @@ extern "C" {
         char lastPwModTs[MAX_PASSWORD_LEN + 10];
         char *cPwTs = NULL;
         int iTs1 = 0, iTs2 = 0;
-        boost::shared_ptr<char> pwInfoArray;
+        std::vector<char> pwInfoArray( MAX_PASSWORD_LEN * MAX_PASSWORDS * 4 );
 
         if ( logSQL != 0 ) {
             rodsLog( LOG_SQL, "chlCheckAuth" );
@@ -7033,15 +7033,13 @@ extern "C" {
             goto checkLevel;
         }
 
-        pwInfoArray.reset( new char[MAX_PASSWORD_LEN * MAX_PASSWORDS * 4] );
-
         if ( logSQL != 0 ) {
             rodsLog( LOG_SQL, "chlCheckAuth SQL 1 " );
         }
 
         status = cmlGetMultiRowStringValuesFromSql( "select rcat_password, pass_expiry_ts, R_USER_PASSWORD.create_ts, R_USER_PASSWORD.modify_ts from R_USER_PASSWORD, "
                  "R_USER_MAIN where user_name=? and zone_name=? and R_USER_MAIN.user_id = R_USER_PASSWORD.user_id",
-                 pwInfoArray.get(), MAX_PASSWORD_LEN,
+                 pwInfoArray.data(), MAX_PASSWORD_LEN,
                  MAX_PASSWORDS * 4, /* four strings per password returned */
                  userName2, myUserZone, 0, &icss );
 
@@ -7066,16 +7064,16 @@ extern "C" {
             status = cmlGetIntegerValueFromSql( "select count(UP.user_id) from R_USER_PASSWORD UP, R_USER_MAIN where user_name=?", &MAX_PASSWORDS, userName2, 0, 0, 0, 0,
                                                 &icss );
             nPasswords = MAX_PASSWORDS;
-            pwInfoArray.reset( new char[MAX_PASSWORD_LEN * MAX_PASSWORDS * 4] );
+            pwInfoArray.resize( MAX_PASSWORD_LEN * MAX_PASSWORDS * 4 );
 
             status = cmlGetMultiRowStringValuesFromSql( "select rcat_password, pass_expiry_ts, R_USER_PASSWORD.create_ts, R_USER_PASSWORD.modify_ts from R_USER_PASSWORD, "
                      "R_USER_MAIN where user_name=? and zone_name=? and R_USER_MAIN.user_id = R_USER_PASSWORD.user_id",
-                     pwInfoArray.get(), MAX_PASSWORD_LEN,
+                     pwInfoArray.data(), MAX_PASSWORD_LEN,
                      MAX_PASSWORDS * 4, /* four strings per password returned */
                      userName2, myUserZone, 0, &icss );
         }
 
-        cpw = pwInfoArray.get();
+        cpw = pwInfoArray.data();
         for ( k = 0; OK == 0 && k < MAX_PASSWORDS && k < nPasswords; k++ ) {
             memset( md5Buf, 0, sizeof( md5Buf ) );
             strncpy( md5Buf, _challenge, CHALLENGE_LEN );
@@ -16058,7 +16056,7 @@ checkLevel:
             return ERROR( status, "chl_gen_query_access_control_setup_impl failed" );
         }
         else {
-            return SUCCESS();
+            return CODE( status );
         }
 
     } // db_gen_query_access_control_setup_op

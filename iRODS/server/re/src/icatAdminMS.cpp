@@ -27,7 +27,7 @@
  * \note Should not be used outside of the rules defined in core.irb.
  * This is called via an 'iadmin' command.
  *
- * \note From the irods wiki: https://www.irods.org/index.php/Rules
+ * \note From the irods wiki: https://wiki.irods.org/index.php/Rules
  *
  * \note The "acCreateUser" rule, for example, calls "msiCreateUser".
  * If that succeeds it invokes the "acCreateDefaultCollections" rule (which calls other rules and msi routines).

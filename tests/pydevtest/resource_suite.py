@@ -3,7 +3,7 @@ if (sys.version_info >= (2,7)):
     import unittest
 else:
     import unittest2 as unittest
-from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, create_local_testfile, get_hostname, RUN_IN_TOPOLOGY
+from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, create_local_testfile, get_hostname, RUN_IN_TOPOLOGY, get_irods_top_level_dir, get_irods_config_dir
 import pydevtest_sessions as s
 import commands
 import os
@@ -218,9 +218,9 @@ class ResourceSuite(ResourceBase):
         os.system("openssl dhparam -2 -out dhparams.pem 100 2> /dev/null") # normally 2048, but smaller size here for speed
 
         # server side environment variables
-        os.environ['irodsSSLCertificateChainFile'] = "/var/lib/irods/tests/pydevtest/chain.pem"
-        os.environ['irodsSSLCertificateKeyFile'] = "/var/lib/irods/tests/pydevtest/server.key"
-        os.environ['irodsSSLDHParamsFile'] = "/var/lib/irods/tests/pydevtest/dhparams.pem"
+        os.environ['irodsSSLCertificateChainFile'] = get_irods_top_level_dir() + "/tests/pydevtest/chain.pem"
+        os.environ['irodsSSLCertificateKeyFile'] = get_irods_top_level_dir() + "/tests/pydevtest/server.key"
+        os.environ['irodsSSLDHParamsFile'] = get_irods_top_level_dir() + "/tests/pydevtest/dhparams.pem"
 
         # client side environment variables
         os.environ['irodsSSLVerifyServer'] = "none"
@@ -231,7 +231,7 @@ class ResourceSuite(ResourceBase):
         os.system("echo \"irodsClientServerPolicy 'CS_NEG_REQUIRE'\" >> %s" % clientEnvFile)
 
         # server reboot to pick up new irodsEnv settings
-        os.system("/var/lib/irods/iRODS/irodsctl restart")
+        os.system(get_irods_top_level_dir() + "/iRODS/irodsctl restart")
 
         # do the encrypted put
         filename = "encryptedfile.txt"
@@ -399,7 +399,7 @@ class ResourceSuite(ResourceBase):
         f.write("TESTFILE -- ["+datafilename+"]")
         f.close()
         # assertions
-        fullpath = "/var/lib/irods/newphysicalpath.txt"
+        fullpath = get_irods_top_level_dir() + "/newphysicalpath.txt"
         assertiCmd(s.adminsession,"iput -p "+fullpath+" "+datafilename) # should complete
         assertiCmd(s.adminsession,"ils -L "+datafilename,"LIST",datafilename) # should be listed
         assertiCmd(s.adminsession,"ils -L "+datafilename,"LIST",fullpath) # should be listed
@@ -543,6 +543,37 @@ class ResourceSuite(ResourceBase):
         output = commands.getstatusoutput( 'rm '+datafilename )
 
         assert errorflag == True, "Expected ERRORs did not occur"
+
+    def test_iput_overwrite_others_file__ticket_2086(self):
+        # pre state
+        assertiCmd(s.adminsession,"ils -L","LIST",self.testfile) # should be listed
+
+        # local setup
+        filename = "overwritefile.txt"
+        filepath = create_local_testfile(filename)
+
+        # alice tries to put
+        homepath = "/home/"+s.adminsession.getUserName()+"/"+s.adminsession.sessionId+"/"+self.testfile
+        logicalpath = "/"+s.adminsession.getZoneName()+homepath
+        assertiCmd(s.sessions[1],"iput "+filepath+" "+logicalpath,"ERROR","CAT_NO_ACCESS_PERMISSION") # iput
+
+        # check physicalpaths (of all replicas)
+        cmdout = s.adminsession.runCmd('ils',['-L'])
+        print "[ils -L]:"
+        print "["+cmdout[0]+"]"
+        lines = cmdout[0].splitlines()
+        for l in cmdout[0].splitlines():
+            if "demoResc" in l:
+                if "/session-" in l:
+                    physicalpath = l.split()[2]
+                    # check file is on disk
+                    print "[ls -l "+physicalpath+"]:"
+                    os.system("ls -l "+physicalpath)
+                    assert os.path.exists(physicalpath)
+
+        # local cleanup
+        output = commands.getstatusoutput( 'rm '+filepath )
+
 
     def test_iput_with_purgec(self):
         # local setup

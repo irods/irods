@@ -378,6 +378,23 @@ int _ifuseFileCacheWrite( fileCache_t *fileCache, char *buf, size_t size, off_t 
         }
         if ( fileCache->offset >= MAX_NEWLY_CREATED_CACHE_SIZE ) {
             _iFuseFileCacheFlush( fileCache );
+            fileCache->iFd = 0;
+            /* reopen file */
+            dataObjInp_t dataObjOpenInp;
+            memset( &dataObjOpenInp, 0, sizeof( dataObjOpenInp ) );
+            rstrcpy( dataObjOpenInp.objPath, fileCache->objPath, MAX_NAME_LEN );
+            dataObjOpenInp.openFlags = O_RDWR;
+
+            conn = getAndUseConnByPath( fileCache->localPath, &MyRodsEnv, &status );
+            status = rcDataObjOpen( conn->conn, &dataObjOpenInp );
+            unuseIFuseConn( conn );
+
+            if ( status < 0 ) {
+                rodsLog( LOG_ERROR, "iFuseWrite: rcDataObjOpen of %s error. status = %d", fileCache->objPath, status );
+                return -ENOENT;
+            }
+
+            fileCache->iFd = status;
         }
     }
     return status;

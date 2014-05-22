@@ -10,6 +10,7 @@ import tempfile
 xinetd_authd_config = '/etc/xinetd.d/auth'
 authd_runlevel = 3
 
+
 def check_xinetd_authd_config(config_fn):
     """
     Check the server_args attribute in the xinetd authd system configuration
@@ -42,6 +43,7 @@ def check_xinetd_authd_config(config_fn):
     config_file.close()
     return error
 
+
 def check_authd_in_runlevel(runlevel):
     """
     Check the specified runlevel and confirm that authd is enabled.  Returns 0
@@ -50,13 +52,13 @@ def check_authd_in_runlevel(runlevel):
     """
     error = 1
     (temp_file, temp_fn) = (
-        tempfile.mkstemp(prefix = 'irods_pre_rpm-', dir = '/tmp') )
+        tempfile.mkstemp(prefix='irods_pre_rpm-', dir='/tmp'))
     subprocess.call(
         ['/sbin/chkconfig',
             '--list',
             '--level=' + str(runlevel),
             'auth'],
-        stdout = temp_file)
+        stdout=temp_file)
     os.close(temp_file)
     temp_file = open(temp_fn)
     line = temp_file.readline().strip()
@@ -66,6 +68,7 @@ def check_authd_in_runlevel(runlevel):
     temp_file.close()
     os.remove(temp_fn)
     return error
+
 
 def pre_rpm_checks():
     """
@@ -77,8 +80,8 @@ def pre_rpm_checks():
     error = 0
     if check_xinetd_authd_config(xinetd_authd_config):
         sys.stderr.write('ERROR: The auth server_args attribute in ' +
-            xinetd_authd_config +
-            ' includes -E\n')
+                         xinetd_authd_config +
+                         ' includes -E\n')
         error = 1
     if check_authd_in_runlevel(authd_runlevel):
         sys.stderr.write(
@@ -91,4 +94,3 @@ def pre_rpm_checks():
         sys.stderr.write('OK\n')
 
 pre_rpm_checks()
-

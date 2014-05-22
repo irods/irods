@@ -113,7 +113,7 @@ main( int argc, char **argv ) {
 
     // DISABLE ADVANCED CLIENT-SERVER NEGOTIATION FOR XMSG CLIENT
     char env_var[] = "irodsClientServerNegotiation='NO_NEG'";
-    putenv(env_var);
+    putenv( env_var );
     // DISABLE ADVANCED CLIENT-SERVER NEGOTIATION FOR XMSG CLIENT
 
     while ( ( opt = getopt( argc, argv, "ht:n:r:H:M:c:s:" ) ) != ( char )EOF ) {

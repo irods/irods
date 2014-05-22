@@ -167,6 +167,7 @@ Res* evaluateExpression3( Node *expr, int applyAll, int force, ruleExecInfo_t *r
     return res;
 }
 
+ExprType* isIterable( ExprType *type, int dynamictyping, Hashtable* var_type_table, Region *r );
 Res* processCoercion( Node *node, Res *res, ExprType *type, Hashtable *tvarEnv, rError_t *errmsg, Region *r ) {
     char buf[ERR_MSG_LEN > 1024 ? ERR_MSG_LEN : 1024];
     char *buf2;
@@ -273,10 +274,10 @@ Res* processCoercion( Node *node, Res *res, ExprType *type, Hashtable *tvarEnv, 
         case T_BOOL:
             switch ( TYPE( res ) ) {
             case T_INT:
-                nres = newIntRes( r, RES_INT_VAL( res ) );
+                nres = newBoolRes( r, RES_INT_VAL( res ) );
                 break;
             case T_DOUBLE:
-                nres = newDoubleRes( r, RES_DOUBLE_VAL( res ) );
+                nres = newBoolRes( r, ( int ) RES_DOUBLE_VAL( res ) );
                 break;
             case T_STRING:
                 if ( strcmp( res->text, "true" ) == 0 ) {
@@ -298,27 +299,13 @@ Res* processCoercion( Node *node, Res *res, ExprType *type, Hashtable *tvarEnv, 
         case T_CONS:
             /* we can ignore the not top level type constructor and leave type checking to when it is derefed */
             switch ( TYPE( res ) ) {
-            case T_PATH:
-                nres = res;
-                break;
             case T_CONS:
                 nres = res;
                 break;
-            case T_IRODS:
-                if ( strcmp( res->exprType->text, IntArray_MS_T ) == 0 ||
-                        strcmp( res->exprType->text, StrArray_MS_T ) == 0 ||
-                        strcmp( res->exprType->text, GenQueryOut_MS_T ) == 0 ) {
-                    nres = res;
-                }
-                break;
-            case T_TUPLE:
-                if ( res->exprType->degree == 2 &&
-                        getNodeType( res->exprType->subtrees[0] ) == T_IRODS && strcmp( res->exprType->subtrees[0]->text, GenQueryInp_MS_T ) == 0 &&
-                        getNodeType( res->exprType->subtrees[1] ) == T_IRODS && strcmp( res->exprType->subtrees[1]->text, GenQueryOut_MS_T ) == 0 ) {
-                    nres = res;
-                }
-                break;
             default:
+                if ( isIterable( res->exprType, 0, newHashTable2( 10, r ), r ) != NULL ) {
+                    nres = res;
+                }
                 break;
             }
             break;
@@ -894,6 +881,7 @@ Res* execMicroService3( char *msName, Res **args, unsigned int nargs, Node *node
                 for ( j = i - 1; j >= 0; j-- ) {
                     int freeStruct = TYPE( args[j] ) != T_IRODS  ? 1 : 0;
                     clearMsParam( myArgv[j], freeStruct );
+                    free( myArgv[j] );
                 }
                 return newErrorRes( r, ret );
             }
@@ -1017,6 +1005,7 @@ ret:
     for ( i = 0; i < numOfStrArgs; i++ ) {
         int freeStruct = TYPE( args[i] ) != T_IRODS  ? 1 : 0;
         clearMsParam( myArgv[i], freeStruct );
+        free( myArgv[i] );
     }
     if ( getNodeType( res ) == N_ERROR ) {
         generateErrMsg( "execMicroService3: error when executing microservice", NODE_EXPR_POS( node ), node->base, errbuf );
@@ -1386,11 +1375,14 @@ Res* matchPattern( Node *pattern, Node *val, Env *env, ruleExecInfo_t *rei, int 
             if ( getNodeType( N_APP_ARG( pattern, 1 ) ) == N_APPLICATION && N_APP_ARITY( N_APP_ARG( pattern, 1 ) ) == 0 ) {
                 key = N_APP_FUNC( N_APP_ARG( pattern, 1 ) )->text;
             }
-            else if ( getNodeType( N_APP_ARG( pattern, 1 ) ) == TK_STRING ) {
-                key = N_APP_ARG( pattern, 1 )->text;
-            }
             else {
-                RE_ERROR2( 1, "malformatted key pattern." );
+                Res *res = evaluateExpression3( N_APP_ARG( pattern, 1 ), 0, 1, rei, reiSaveFlag, env, errmsg, r );
+                if ( res->exprType != NULL && TYPE( res ) == T_STRING ) {
+                    key = res->text;
+                }
+                else {
+                    RE_ERROR2( 1, "malformatted key pattern." );
+                }
             }
             varName = N_APP_ARG( pattern, 0 )->text;
             if ( getNodeType( N_APP_ARG( pattern, 0 ) ) == TK_VAR && varName[0] == '*' &&
@@ -1403,8 +1395,9 @@ Res* matchPattern( Node *pattern, Node *val, Env *env, ruleExecInfo_t *rei, int 
                 }
                 else {
                     if ( insertIntoHashTable( env->current, varName, res2 ) == 0 ) {
-                        snprintf( errbuf, ERR_MSG_LEN, "error: unable to write to local variable \"%s\".", varName );
-                        generateErrMsg( errbuf, NODE_EXPR_POS( N_APP_ARG( pattern, 0 ) ), N_APP_ARG( pattern, 0 )->base, errbuf );
+                        char localErrorMsg[ERR_MSG_LEN];
+                        snprintf( localErrorMsg, ERR_MSG_LEN, "error: unable to write to local variable \"%s\".", varName );
+                        generateErrMsg( localErrorMsg, NODE_EXPR_POS( N_APP_ARG( pattern, 0 ) ), N_APP_ARG( pattern, 0 )->base, errbuf );
                         addRErrorMsg( errmsg, RE_UNABLE_TO_WRITE_LOCAL_VAR, errbuf );
                         return newErrorRes( r, RE_UNABLE_TO_WRITE_LOCAL_VAR );
                     }
@@ -1447,8 +1440,9 @@ Res* matchPattern( Node *pattern, Node *val, Env *env, ruleExecInfo_t *rei, int 
             if ( lookupFromEnv( env, varName ) == NULL ) {
                 /* new variable */
                 if ( insertIntoHashTable( env->current, varName, val ) == 0 ) {
-                    snprintf( errbuf, ERR_MSG_LEN, "error: unable to write to local variable \"%s\".", varName );
-                    generateErrMsg( errbuf, NODE_EXPR_POS( pattern ), pattern->base, errbuf );
+                    char localErrorMsg[ERR_MSG_LEN];
+                    snprintf( localErrorMsg, ERR_MSG_LEN, "error: unable to write to local variable \"%s\".", varName );
+                    generateErrMsg( localErrorMsg, NODE_EXPR_POS( pattern ), pattern->base, errbuf );
                     addRErrorMsg( errmsg, RE_UNABLE_TO_WRITE_LOCAL_VAR, errbuf );
                     return newErrorRes( r, RE_UNABLE_TO_WRITE_LOCAL_VAR );
                 }

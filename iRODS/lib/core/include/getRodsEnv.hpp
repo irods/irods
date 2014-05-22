@@ -3,6 +3,8 @@
 #ifndef GET_RODS_ENV
 #define GET_RODS_ENV
 
+#define PRINT_RODS_ENV_STR "PRINT_IRODS_ENV"
+
 extern "C" {
 
     typedef struct {

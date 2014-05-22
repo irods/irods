@@ -699,7 +699,6 @@
 #define NETCDF_AGG_ELE_INX_OUT_OF_RANGE             -2023000
 #define NETCDF_AGG_ELE_FILE_NOT_OPENED              -2024000
 #define NETCDF_AGG_ELE_FILE_NO_TIME_DIM             -2025000
-#define NETCDF_BUILD_WITH_NETCDF_API_NEEDED         -2026000
 
 /* SSL protocol error codes */
 

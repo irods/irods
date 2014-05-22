@@ -1,7 +1,7 @@
 # =-=-=-=-=-=-=-
 # EPM Variables
 # =-=-=-=-=-=-=-
-%product iRODS MySQL Database Plugin
+%product iRODS Oracle Database Plugin
 %copyright 2014, The University of North Carolina at Chapel Hill
 %vendor Renaissance Computing Institute <info@irods-consortium.org>
 %license LICENSE
@@ -105,18 +105,11 @@ echo " - an existing database user (to be used by the iRODS server)"
 echo " - an existing database (to be used as the iCAT catalog)"
 echo " - permissions for existing user on existing database"
 echo ""
-echo "In addition, the following configuration needs to be added"
-echo "to the [oracle] section of your /etc/my.cnf or /etc/oracle/my.cnf file:"
-echo "  #######################################"
-echo "  # iRODS MySQL Configuration Options"
-echo "  # as described at"
-echo "  # https://www.irods.org/index.php/MySQL"
-echo "  #######################################"
-echo "  log_bin_trust_function_creators=1"
+echo "Please switch to the irods user:"
+echo "  $$ sudo su - irods
 echo ""
-echo "After restarting your MySQL server with the new configuration,"
-echo "please run the following setup script as the irods user:"
-echo "  ./packaging/setup_database.sh"
+echo "And run the following setup script:"
+echo "  irods@hostname:~/ $$ ./packaging/setup_database.sh"
 echo ""
 echo "======================================================================="
 echo ""
@@ -189,4 +182,8 @@ f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_cll ./tes
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_genu ./test_genu
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_genq ./test_genq
 
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/update_catalog_schema.py ./packaging/update_catalog_schema.py
+d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/schema_updates -
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/schema_updates/2.oracle.sql ./packaging/schema_updates/2.postgres.mysql.oracle.sql
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/schema_updates/3.oracle.sql ./packaging/schema_updates/3.postgres.mysql.oracle.sql
 

@@ -12,16 +12,21 @@ static boost::interprocess::shared_memory_object *shm_obj = NULL;
 static boost::interprocess::mapped_region *mapped = NULL;
 
 unsigned char *prepareServerSharedMemory() {
-    char shm_name[1024];
-    getResourceName( shm_name, shm_rname );
-    shm_obj = new boost::interprocess::shared_memory_object( boost::interprocess::open_or_create, shm_name, boost::interprocess::read_write );
-    boost::interprocess::offset_t size;
-    if ( shm_obj->get_size( size ) && size == 0 ) {
-        shm_obj->truncate( SHMMAX );
+    try {
+        char shm_name[1024];
+        getResourceName( shm_name, shm_rname );
+        shm_obj = new boost::interprocess::shared_memory_object( boost::interprocess::open_or_create, shm_name, boost::interprocess::read_write );
+        boost::interprocess::offset_t size;
+        if ( shm_obj->get_size( size ) && size == 0 ) {
+            shm_obj->truncate( SHMMAX );
+        }
+        mapped = new boost::interprocess::mapped_region( *shm_obj, boost::interprocess::read_write );
+        unsigned char *shmBuf = ( unsigned char * ) mapped->get_address();
+        return shmBuf;
     }
-    mapped = new boost::interprocess::mapped_region( *shm_obj, boost::interprocess::read_write );
-    unsigned char *shmBuf = ( unsigned char * ) mapped->get_address();
-    return shmBuf;
+    catch ( boost::interprocess::interprocess_exception e ) {
+        return NULL;
+    }
 }
 
 void detachSharedMemory() {

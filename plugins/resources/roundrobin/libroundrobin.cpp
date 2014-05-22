@@ -2,12 +2,12 @@
 
 
 // =-=-=-=-=-=-=-
-// irods includes
+// legacy irods includes
 #include "msParam.hpp"
 #include "reGlobalsExtern.hpp"
-#include "generalAdmin.hpp"
 
 // =-=-=-=-=-=-=-
+//
 #include "irods_resource_plugin.hpp"
 #include "irods_file_object.hpp"
 #include "irods_physical_object.hpp"
@@ -16,6 +16,8 @@
 #include "irods_hierarchy_parser.hpp"
 #include "irods_resource_redirect.hpp"
 #include "irods_stacktrace.hpp"
+#include "irods_server_api_call.hpp"
+#include "rs_set_round_robin_context.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -797,7 +799,7 @@ extern "C" {
         }
 
         // =-=-=-=-=-=-=-
-        // call rename on the child
+        // call registered on the child
         return resc->call( _ctx.comm(), irods::RESOURCE_OP_REGISTERED, _ctx.fco() );
 
     } // round_robin_file_registered
@@ -818,7 +820,7 @@ extern "C" {
         }
 
         // =-=-=-=-=-=-=-
-        // call rename on the child
+        // call unregistered on the child
         return resc->call( _ctx.comm(), irods::RESOURCE_OP_UNREGISTERED, _ctx.fco() );
 
     } // round_robin_file_unregistered
@@ -832,15 +834,49 @@ extern "C" {
         irods::resource_ptr resc;
         irods::error err = round_robin_get_resc_for_call< irods::file_object >( _ctx, resc );
         if ( !err.ok() ) {
-            std::stringstream msg;
-            msg <<  __FUNCTION__;
-            msg << " - failed.";
-            return PASSMSG( msg.str(), err );
+            return PASS( err );
         }
 
         // =-=-=-=-=-=-=-
-        // call rename on the child
-        return resc->call( _ctx.comm(), irods::RESOURCE_OP_MODIFIED, _ctx.fco() );
+        // call modified on the child
+        err = resc->call( _ctx.comm(), irods::RESOURCE_OP_MODIFIED, _ctx.fco() );
+        if ( !err.ok() ) {
+            return PASS( err );
+        }
+
+        // =-=-=-=-=-=-=-
+        // if file modified is successful then we will update the next
+        // child in the round robin within the database
+        std::string name;
+        _ctx.prop_map().get< std::string >( irods::RESOURCE_NAME, name );
+
+        std::string next_child;
+        _ctx.prop_map().get< std::string >( NEXT_CHILD_PROP, next_child );
+
+        setRoundRobinContextInp_t inp;
+        strncpy( inp.resc_name_, name.c_str(),       NAME_LEN );
+        strncpy( inp.context_,   next_child.c_str(), MAX_NAME_LEN );
+        int status = irods::server_api_call(
+                         SET_RR_CTX_AN,
+                         _ctx.comm(),
+                         &inp,
+                         NULL,
+                         ( void** ) NULL,
+                         NULL );
+
+        if ( status < 0 ) {
+            std::stringstream msg;
+            msg << "failed to update round robin context for [";
+            msg << name << "] with context [" << next_child << "]";
+            return ERROR(
+                       status,
+                       msg.str() );
+
+        }
+        else {
+            return SUCCESS();
+
+        }
 
     } // round_robin_file_modified
 
@@ -1112,56 +1148,6 @@ extern "C" {
     //    any useful values into the property map for reference in later
     //    operations.  semicolon is the preferred delimiter
     class roundrobin_resource : public irods::resource {
-
-        class roundrobin_pdmo {
-            irods::plugin_property_map& properties_;
-        public:
-            // =-=-=-=-=-=-=-
-            // public - ctor
-            roundrobin_pdmo( irods::plugin_property_map& _prop_map ) :
-                properties_( _prop_map ) {
-            }
-
-            roundrobin_pdmo( const roundrobin_pdmo& _rhs ) :
-                properties_( _rhs.properties_ ) {
-            }
-
-            roundrobin_pdmo& operator=( const roundrobin_pdmo& _rhs ) {
-                properties_ = _rhs.properties_;
-                return *this;
-            }
-
-            // =-=-=-=-=-=-=-
-            // public - ctor
-            irods::error operator()( rcComm_t* _comm ) {
-                std::string name;
-                properties_.get< std::string >( irods::RESOURCE_NAME, name );
-
-                std::string next_child;
-                properties_.get< std::string >( NEXT_CHILD_PROP, next_child );
-                generalAdminInp_t inp;
-                inp.arg0 = const_cast<char*>( "modify" );
-                inp.arg1 = const_cast<char*>( "resource" );
-                inp.arg2 = const_cast<char*>( name.c_str() );
-                inp.arg3 = const_cast<char*>( "context" );
-                inp.arg4 = const_cast<char*>( next_child.c_str() );
-                inp.arg5 = 0;
-                inp.arg6 = 0;
-                inp.arg7 = 0;
-                inp.arg8 = 0;
-                inp.arg9 = 0;
-
-                int status = rcGeneralAdmin( _comm, &inp );
-                if ( status < 0 ) {
-                    return ERROR( status, "roundrobin_pdmo - rsGeneralAdmin failed." );
-                }
-
-                return SUCCESS();
-
-            } // operator=
-
-        }; // class roundrobin_pdmo
-
     public:
         roundrobin_resource( const std::string& _inst_name,
                              const std::string& _context ) :
@@ -1174,28 +1160,6 @@ extern "C" {
             rodsLog( LOG_DEBUG, "roundrobin_resource :: next_child [%s]", context_.c_str() );
 
             set_start_operation( "round_robin_start_operation" );
-        }
-
-        // =-=-=-=-=-=-
-        // override from plugin_base
-        irods::error need_post_disconnect_maintenance_operation( bool& _flg ) {
-            std::string next_child;
-            properties_.get< std::string >( NEXT_CHILD_PROP, next_child );
-            if ( !next_child.empty() ) {
-                _flg = ( next_child != context_ );
-            }
-            else {
-                _flg = false;
-            }
-
-            return SUCCESS();
-        }
-
-        // =-=-=-=-=-=-
-        // override from plugin_base
-        irods::error post_disconnect_maintenance_operation( irods::pdmo_type& _pdmo ) {
-            _pdmo = roundrobin_pdmo( properties_ );
-            return SUCCESS();
         }
 
     }; // class

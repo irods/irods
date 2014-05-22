@@ -1,15 +1,27 @@
 #!/bin/bash -e
 
+# templated variables
 DATABASETYPE="TEMPLATE_DATABASE_TYPE"
 DEFAULT_DATABASEPORT="TEMPLATE_DEFAULT_DATABASEPORT"
 
 # config
-IRODS_CONFIG_FILE="/etc/irods/irods.config"
+IRODS_CONFIG_FILE="TEMPLATE_DEFAULT_IRODSCONFIG"
 SETUP_DATABASE_FLAG="/tmp/$USER/setup_database.flag"
 
-# get into the irods user home directory
+# get into the top level directory
 DETECTEDDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd $DETECTEDDIR/../
+if [ -e /etc/irods/server.config ] ;  then
+    cd $DETECTEDDIR/../
+else
+    cd $DETECTEDDIR/../../../
+fi
+
+#
+# Detect run-in-place installation
+#
+set +e
+source ./packaging/setup_runinplace.sh 2> /dev/null
+set -e
 
 # get temp file from prior run, if it exists
 mkdir -p /tmp/$USER
@@ -18,7 +30,7 @@ if [ -f $SETUP_DATABASE_FLAG ] ; then
     DATABASEHOSTORIP=`grep "DATABASE_HOST =" $IRODS_CONFIG_FILE | awk -F\' '{print $2}'`
     DATABASEPORT=`grep "DATABASE_PORT =" $IRODS_CONFIG_FILE | awk -F\' '{print $2}'`
     DATABASENAME=`grep "DB_NAME =" $IRODS_CONFIG_FILE | awk -F\' '{print $2}'`
-    DATABASEUSER=`grep "DATABASE_USER =" $IRODS_CONFIG_FILE | awk -F\' '{print $2}'`
+    DATABASEUSER=`grep "DATABASE_ADMIN_NAME =" $IRODS_CONFIG_FILE | awk -F\' '{print $2}'`
     STATUS="loop"
 else
     # no temp file, this is the first run
@@ -158,10 +170,10 @@ mv $IRODS_CONFIG_TEMPFILE $IRODS_CONFIG_FILE
 
 # =-=-=-=-=-=-=-
 # update database flavor
-if [ -e /etc/irods/server.config ] ;  then 
-    server_config="/etc/irods/server.config"
+if [ "$RUNINPLACE" == "1" ] ;  then
+    server_config=$(cd $(dirname DETECTEDDIR); pwd -P )/iRODS/server/config/server.config
 else
-    server_config="./iRODS/server/config/server.config"
+    server_config="/etc/irods/server.config"
 fi
 
 echo ""
@@ -173,6 +185,22 @@ echo ""
 # run irods_setup.pl
 cd iRODS
 ./irodsctl stop
+echo ""
+echo "-----------------------------"
 echo "Running irods_setup.pl..."
 perl ./scripts/perl/irods_setup.pl $DATABASETYPE $DATABASEHOSTORIP $DATABASEPORT $DATABASEUSER $DATABASEPASSWORD
 
+# =-=-=-=-=-=-=-
+# run update_catalog_schema.py
+cd ..
+echo ""
+echo "-----------------------------"
+echo "Running update_catalog_schema.py..."
+if [ "$RUNINPLACE" == "1" ] ;  then
+    cp ./plugins/database/packaging/update_catalog_schema.py ./packaging/
+fi
+python ./packaging/update_catalog_schema.py
+
+# =-=-=-=-=-=-=-
+# done
+exit 0

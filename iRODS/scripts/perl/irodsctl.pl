@@ -19,12 +19,16 @@
 use File::Spec;
 use File::Path;
 use File::Copy;
+use File::Basename;
 use Cwd;
 use Cwd "abs_path";
 use Config;
 
 $version{"irodsctl.pl"} = "September 2011";
 
+
+$scriptfullpath = abs_path(__FILE__);
+$scripttoplevel = dirname(dirname(dirname(dirname($scriptfullpath))));
 
 
 ########################################################################
@@ -33,9 +37,13 @@ $version{"irodsctl.pl"} = "September 2011";
 #
 $IRODS_HOME = cwd( );	# Might not be actual iRODS home.  Fixed below.
 
+my $perlScriptsDir = File::Spec->catdir( $IRODS_HOME, "scripts", "perl" );
+
 # Where is the configuration directory for iRODS?  This is where
 # support scripts are kept.
-$configDir = File::Spec->catdir( $IRODS_HOME, "config" );
+
+$configDir = `perl $perlScriptsDir/irods_get_config_dir.pl`;
+
 if ( ! -e $configDir )
 {
 	# Configuration directory does not exist.  Perhaps this
@@ -70,7 +78,6 @@ $configDir  = abs_path( $configDir );
 my $scriptName = $0;
 
 # Load support scripts.
-my $perlScriptsDir = File::Spec->catdir( $IRODS_HOME, "scripts", "perl" );
 require File::Spec->catfile( $perlScriptsDir, "utils_paths.pl" );
 require File::Spec->catfile( $perlScriptsDir, "utils_print.pl" );
 require File::Spec->catfile( $perlScriptsDir, "utils_file.pl" );
@@ -963,8 +970,8 @@ sub doTest
 	    doTestIcat( );
 	}
 	else {
-	    printNotice( "\nSkipping ICAT tests since the ICAT-enabled server\n");
-	    printNotice( "is on a remote host.  The ICAT tests can only be\n" );
+	    printNotice( "\nSkipping iCAT tests since the iCAT-enabled server\n");
+	    printNotice( "is on a remote host.  The iCAT tests can only be\n" );
 	    printNotice( "run locally.\n" );
  
 	}
@@ -1242,6 +1249,11 @@ sub doTestIcommands
 #
 sub doTestIcat
 {
+        # Update environment PATH for run-in-place tests
+        $ENV{PATH} = "$ENV{PATH}:$scripttoplevel/iRODS/clients/icommands/bin";
+        $ENV{PATH} = "$ENV{PATH}:$scripttoplevel/iRODS/server/test/bin";
+        $ENV{PATH} = "$ENV{PATH}:$scripttoplevel/plugins/database";
+
 	# Connect to iRODS.
 	my $output  = `$iinit $IRODS_ADMIN_PASSWORD 2>&1`;
 	if ( $? != 0 )
@@ -1283,29 +1295,61 @@ sub doTestIcat
 	chdir( $serverTestBinDir );
 	$icatFailure=0;
 	$output = `$perl icatTest.pl 2>&1`;
-	if ( $? != 0 ) { $icatFailure=1; }
+  $icatTestStatus="OK";
+	if ( $? != 0 )
+  {
+    $icatFailure=1;
+    $icatTestStatus="FAILURE";
+  }
 	printToFile( $icatTestLog, $output);
+
 	$output = `$perl icatMiscTest.pl 2>&1`;
-	if ( $? != 0 ) { $icatFailure=1; }
+  $icatMiscTestStatus="OK";
+	if ( $? != 0 )
+  {
+    $icatFailure=1;
+    $icatMiscTestStatus="FAILURE";
+  }
 	printToFile( $icatMiscTestLog, $output );
+
 	$output=`$perl moveTest.pl 2>&1`;
-	if ( $? != 0 ) { $icatFailure=1; }
+  $moveTestStatus="OK";
+	if ( $? != 0 )
+  {
+    $icatFailure=1;
+    $moveTestStatus="FAILURE";
+  }
 	printToFile( $moveTestLog, $output);
-	
+
 	$output = `$perl icatTicketTest.pl 2>&1`;
-	if ( $? != 0 ) { $icatFailure=1; }
+  $icatTicketTestStatus="OK";
+	if ( $? != 0 )
+  {
+    $icatFailure=1;
+    $icatTicketTestStatus="FAILURE";
+  }
 	printToFile( $icatTicketTestLog, $output );
-	
+
 	$output = `$perl quotaTest.pl 2>&1`;
-	if ( $? != 0 ) { $icatFailure=1; }
+  $quotaTestStatus="OK";
+	if ( $? != 0 )
+  {
+    $icatFailure=1;
+    $quotaTestStatus="FAILURE";
+  }
 	printToFile( $quotaTestLog, $output );
-	
+
 	$output = `$perl specNameTest.pl 2>&1`;
-	if ( $? != 0 ) { $icatFailure=1; }
+  $specNameTestStatus="OK";
+	if ( $? != 0 )
+  {
+    $icatFailure=1;
+    $specNameTestStatus="FAILURE";
+  }
 	printToFile( $specNameTestLog, $output );
 
 
-	
+
 	# If the above all succeeded, check logs to see if all SQL was tested
 	#$output = `checkIcatLog.pl 2>&1`;
 	#if ( $? != 0 ) { $icatFailure=1; }
@@ -1328,23 +1372,23 @@ sub doTestIcat
 	chdir( $startDir );
 
 	if ($icatFailure) {
-	    printError( "One or more ICAT tests failed.\n" );
+	    printError( "One or more iCAT tests failed.\n" );
 	    $doTestExitValue++;
 	}
 	else {
-	    printStatus("All ICAT tests were successful.\n");
-            # clean up after ICAT tests - they don't clean up the Vault themselves
+	    printStatus("All iCAT tests were successful.\n");
+            # clean up after iCAT tests - they don't clean up the Vault themselves
             system("rm -rf $IRODS_HOME/Vault/home/rods/TestFile*");
 	}
 	#printStatus( "Test report:\n" );
 	#printStatus( "    $totalLine\n" );
 	printStatus( "Check log files for details:\n" );
-	printStatus( "    Logs:     $icatTestLog\n" );
-	printStatus( "              $icatMiscTestLog\n" );
-	printStatus( "              $moveTestLog\n" );
-	printStatus( "              $icatTicketTestLog\n" );
-	printStatus( "              $quotaTestLog\n" );
-	printStatus( "              $specNameTestLog\n" );
+	printStatus( "    Logs:     $icatTestLog        $icatTestStatus\n" );
+	printStatus( "              $icatMiscTestLog    $icatMiscTestStatus\n" );
+	printStatus( "              $moveTestLog        $moveTestStatus\n" );
+	printStatus( "              $icatTicketTestLog  $icatTicketTestStatus\n" );
+	printStatus( "              $quotaTestLog       $quotaTestStatus\n" );
+	printStatus( "              $specNameTestLog    $specNameTestStatus\n" );
 	#printStatus( "    Summary:  $outputFile\n" );
 }
 
@@ -1482,7 +1526,7 @@ sub startIrods
 	chdir( $serverBinDir );
 	umask( 077 );
 	# Start the server
-	my $syslogStat = `grep IRODS_SYSLOG $configDir/config.mk | grep -v \'#'`;
+	my $syslogStat = `grep IRODS_SYSLOG $configDir/config.mk 2> /dev/null | grep -v \'#'`;
 	if ($syslogStat) {
 #           syslog enabled, need to start differently
 	    my $status = system("$irodsServer&");
@@ -1554,7 +1598,7 @@ sub stopIrods
 	}
 	if ( ! $found )
 	{
-        system( "pgrep -l -u irods irods | grep -v irodsctl | awk '{print \$1}' | xargs kill -9 > /dev/null 2>&1" );
+		system( "ps aux | grep \"^[_]\\?\$USER\" | grep \"irods[A|S|R|X]\" | awk '{print \$2}' | xargs kill -9 > /dev/null 2>&1" );
 		printStatus( "    There are no iRODS servers running.\n" );
 		return 1;
 	}
@@ -1573,7 +1617,7 @@ sub stopIrods
         # no regard for PIDs
         # iRODS must kill all owned processes for packaging purposes
 #        printStatus( "\tKilling any remaining Zombies... Silently.\n" );
-        system( "pgrep -l -u irods irods | grep -v irodsctl | awk '{print \$1}' | xargs kill -9 > /dev/null 2>&1" );
+        system( "ps aux | grep \"^[_]\\?\$USER\" | grep \"irods[A|S|R|X]\" | awk '{print \$2}' | xargs kill -9 > /dev/null 2>&1" );
 
 	# Report if there are any left.
 	my $didNotDie = 0;

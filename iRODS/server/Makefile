@@ -120,11 +120,6 @@ INCLUDES +=	-I$(svrIcatIncDir)
 SERVER_BINS +=  $(serverBinDir)/irodsXmsgServer
 SERVER_OBJS +=	$(svrCoreObjDir)/irodsXmsgServer.o
 
-ifdef NEW_ODBC
-# Use the 'new' database handling
-CFLAGS +=	-DNEW_ODBC
-endif
-
 ifdef PSQICAT
 # Support Postgres
 #SVR_ICAT_OBJS += $(svrIcatObjDir)/icatLowLevelOdbc.o
@@ -159,7 +154,6 @@ INCLUDES +=	-I$(ORACLE_HOME)/rdbms/public
 CFLAGS +=	-DORA_DBR
 endif
 ifeq ($(DBR_TYPE), postgres) 
-CFLAGS +=	-DNEW_ODBC
 INCLUDES +=	-I$(svrIcatIncDir)
 INCLUDES +=	-I$(POSTGRES_HOME)/include
 ifndef PSQICAT
@@ -169,7 +163,6 @@ endif
 endif
 
 ifeq ($(DBR_TYPE), mysql)
-CFLAGS +=	-DNEW_ODBC
 ifndef MYICAT
 SVR_ICAT_OBJS += $(svrIcatObjDir)/icatLowLevelOdbc.o
 endif
@@ -206,6 +199,7 @@ CFLAGS +=       -DCACHE_ENABLE
 
 ifeq ($(OS_platform), osx_platform)
 # osx_platform does not support the POSIX realtime extension, but the shared memory functions are supported 
+LDADD += -rdynamic -force_flat_namespace
 else
 LDADD +=		-lrt
 endif
@@ -228,14 +222,11 @@ SVR_RE_OBJS =	\
 		$(svrReObjDir)/parser.o \
 		$(svrReObjDir)/conversion.o \
 		$(svrReObjDir)/index.o \
-		$(svrReObjDir)/region.o \
 		$(svrReObjDir)/datetime.o \
-		$(svrReObjDir)/hashtable.o \
 		$(svrReObjDir)/functions.o \
 		$(svrReObjDir)/typing.o \
 		$(svrReObjDir)/utils.o \
 		$(svrReObjDir)/locks.o \
-		$(svrReObjDir)/list.o \
 		$(svrReObjDir)/restructs.o \
 		$(svrReObjDir)/sharedmemory.o \
 		$(svrReObjDir)/filesystem.o \
@@ -256,10 +247,6 @@ SVR_RE_OBJS =	\
 		$(svrReObjDir)/sysBackupMS.o \
 		$(svrReObjDir)/irods_ms_plugin.o \
 		$(svrReObjDir)/irods_operation_rule_execution_manager.o
-
-ifdef NETCDF_API
-SVR_RE_OBJS+=  $(svrReObjDir)/reNetcdf.o
-endif
 
 INCLUDES +=	-I$(svrReIncDir)
 SERVER_BINS +=	$(serverBinDir)/irodsReServer
@@ -556,12 +543,12 @@ $(TEST_OBJS):	$(svrTestObjDir)/%.o: $(svrTestSrcDir)/%.cpp $(DEPEND) $(BOOST_LIB
 # reTest
 $(svrTestBinDir)/reTest: $(svrTestObjDir)/reTest.o $(OBJS) $(BOOST_LIBS) $(BOOST_LIBS)
 	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $^ $(LDFLAGS) $(BOOST_LIBS) -lrt
+	@$(LDR) -o $@ $^ $(LDFLAGS) $(BOOST_LIBS) 
 
 # chl
 $(svrTestBinDir)/test_chl: db_plugin_with_no_re $(svrTestObjDir)/test_chl.o $(SVR_ICAT_OBJS) $(LIBRARY) $(BOOST_LIBS) $(DB_IFACE_OBJS)
 	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $(svrTestObjDir)/test_chl.o $(LIBRARY) $(SVR_ICAT_OBJS) $(svrCoreObjDir)/irods_server_properties.o $(DB_PLUGIN_OBJ_WITH_NO_RE) $(DB_IFACE_OBJS) $(BOOST_LIBS) $(LDFLAGS) -lrt
+	@$(LDR) -o $@ $(svrTestObjDir)/test_chl.o $(LIBRARY) $(SVR_ICAT_OBJS) $(svrCoreObjDir)/irods_server_properties.o $(DB_PLUGIN_OBJ_WITH_NO_RE) $(DB_IFACE_OBJS) $(BOOST_LIBS) $(LDFLAGS)
 
 #
 # Rule Admin Targets

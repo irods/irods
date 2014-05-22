@@ -218,6 +218,7 @@ irods::error readMsgHeader(
     // of scope from unpackStruct.
     // NOTE :: look into why this is necessary
     *_header = *out_header;
+    free( out_header );
 
     // =-=-=-=-=-=-=-
     // win!
@@ -447,6 +448,9 @@ irods::error writeMsgHeader(
               irods::NETWORK_OP_WRITE_HEADER,
               ptr,
               header_buf );
+
+    freeBBuf( header_buf );
+
     if ( !ret.ok() ) {
         return PASS( ret );
     }

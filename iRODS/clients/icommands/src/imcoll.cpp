@@ -194,7 +194,7 @@ usage() {
         " ",
         "NOTE: To use the tar data type for bundling, the server must be linked with",
         "the libtar library. The link:",
-        "    https://www.irods.org/index.php/Mounted_iRODS_Collection",
+        "    https://wiki.irods.org/index.php/Mounted_iRODS_Collection",
         "under the heading 'Building libtar and linking the iRODS servers",
         "with libtar' gives the instructions for installing libtar.",
         "Also note that the current version of libtar 1.2.11 does not",

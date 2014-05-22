@@ -9,9 +9,9 @@ import sys
 import shutil
 
 
-if len(sys.argv) != 2: 
-    print 'Usage: switchuser.py <username>' 
-    sys.exit(1) 
+if len(sys.argv) != 2:
+    print 'Usage: switchuser.py <username>'
+    sys.exit(1)
 
 irods_dir = os.path.join(os.environ['HOME'], '.irods')
 
@@ -19,10 +19,12 @@ irods_dir = os.path.join(os.environ['HOME'], '.irods')
 if '.irodsEnv_' + sys.argv[1] in os.listdir(irods_dir):
     # Save previous environment file
     if '.irodsEnv' in os.listdir(irods_dir):
-        os.rename(os.path.join(irods_dir, '.irodsEnv'), os.path.join(irods_dir, '.irodsEnv~'))
+        os.rename(os.path.join(irods_dir, '.irodsEnv'),
+                  os.path.join(irods_dir, '.irodsEnv~'))
 
     # Copy user environment file to .irodsEnv
-    shutil.copyfile(os.path.join(irods_dir, '.irodsEnv_' + sys.argv[1]), os.path.join(irods_dir, '.irodsEnv'))
+    shutil.copyfile(os.path.join(
+        irods_dir, '.irodsEnv_' + sys.argv[1]), os.path.join(irods_dir, '.irodsEnv'))
 
 else:
     print 'No .irodsEnv file found for user:', sys.argv[1]

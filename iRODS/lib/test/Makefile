@@ -25,10 +25,6 @@ l3structFile.o xmsgtest.o listcoll.o nctest.o
 TARGETS = iTestGenQuery luketest lowlevtest packtest l1test l1rm testrule xmltest l3structFile  \
 xmsgtest listcoll
 
-ifdef NETCDF_API
-TARGETS+= nctest
-endif
-
 ifdef TAR_STRUCT_FILE
 # TARGETS+=tartest
 # TESTOBJS+=tartest.o

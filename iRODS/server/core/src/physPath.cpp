@@ -532,6 +532,7 @@ chkAndHandleOrphanFile( rsComm_t *rsComm, char* objPath, char* rescHier, char *f
     memset( &myDataObjInfo, 0, sizeof( myDataObjInfo ) );
     memset( &fileRenameInp, 0, sizeof( fileRenameInp ) );
     if ( ( status = chkOrphanFile( rsComm, filePath, rescInfo->rescName, &myDataObjInfo ) ) == 0 ) {
+
         rstrcpy( fileRenameInp.oldFileName, filePath, MAX_NAME_LEN );
         rstrcpy( fileRenameInp.rescHier, rescHier, MAX_NAME_LEN );
         rstrcpy( fileRenameInp.objPath, objPath, MAX_NAME_LEN );
@@ -586,6 +587,7 @@ chkAndHandleOrphanFile( rsComm_t *rsComm, char* objPath, char* rescHier, char *f
             }
         }
         else {
+
             /* this is an old copy. change the path but don't
              * actually rename it */
             rstrcpy( fileRenameInp.oldFileName, filePath, MAX_NAME_LEN );
@@ -697,6 +699,7 @@ renameFilePathToNewDir( rsComm_t *rsComm, char *newDir,
 
     snprintf( newPtr, MAX_NAME_LEN - len, "/%s%s.%-d", newDir, oldPtr,
               ( uint ) random() );
+
 
     if ( renameFlag > 0 ) {
         fileRenameOut_t* ren_out = 0;
@@ -915,7 +918,7 @@ syncCollPhyPath( rsComm_t *rsComm, char *collection ) {
         if ( ( dataIdRes = getSqlResultByInx( genQueryOut, COL_D_DATA_ID ) )
                 == NULL ) {
             rodsLog( LOG_ERROR,
-                     "syncCollPhyPath: getSqlResultByInx for COL_COLL_NAME failed" );
+                     "syncCollPhyPath: getSqlResultByInx for COL_D_DATA_ID failed" );
             return ( UNMATCHED_KEY_OR_INDEX );
         }
         if ( ( subCollRes = getSqlResultByInx( genQueryOut, COL_COLL_NAME ) )

@@ -3,7 +3,7 @@ if (sys.version_info >= (2,7)):
     import unittest
 else:
     import unittest2 as unittest
-from pydevtest_common import assertiCmd, assertiCmdFail, getiCmdOutput, create_local_testfile, get_hostname, RUN_IN_TOPOLOGY
+from pydevtest_common import assertiCmd, assertiCmdFail, getiCmdOutput, create_local_testfile, get_hostname, RUN_IN_TOPOLOGY, get_irods_config_dir, get_irods_top_level_dir
 import pydevtest_sessions as s
 from resource_suite import ResourceSuite, ShortAndSuite
 from test_chunkydevtest import ChunkyDevTest
@@ -31,12 +31,12 @@ class Test_UnixFileSystem_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTe
     my_test_resource = {
         "setup"    : [
             "iadmin modresc demoResc name origResc",
-            "iadmin mkresc demoResc 'unix file system' "+hostname+":/var/lib/irods/demoRescVault",
+            "iadmin mkresc demoResc 'unix file system' "+hostname+":" + get_irods_top_level_dir() + "/demoRescVault",
         ],
         "teardown" : [
             "iadmin rmresc demoResc",
             "iadmin modresc origResc name demoResc",
-            "rm -rf /var/lib/irods/demoRescVault",
+            "rm -rf " + get_irods_top_level_dir() + "/demoRescVault",
         ],
     }
 
@@ -56,7 +56,7 @@ class Test_Passthru_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
         "setup"    : [
             "iadmin modresc demoResc name origResc",
             "iadmin mkresc demoResc passthru",
-            "iadmin mkresc unix1Resc 'unix file system' "+hostname1+":/var/lib/irods/unix1RescVault",
+            "iadmin mkresc unix1Resc 'unix file system' "+hostname1+":" + get_irods_top_level_dir() + "/unix1RescVault",
             "iadmin addchildtoresc demoResc unix1Resc",
         ],
         "teardown" : [
@@ -64,7 +64,7 @@ class Test_Passthru_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
             "iadmin rmresc unix1Resc",
             "iadmin rmresc demoResc",
             "iadmin modresc origResc name demoResc",
-            "rm -rf /var/lib/irods/unix1RescVault",
+            "rm -rf " + get_irods_top_level_dir() + "/unix1RescVault",
         ],
     }
 
@@ -88,7 +88,7 @@ class Test_Deferred_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
         "setup"    : [
             "iadmin modresc demoResc name origResc",
             "iadmin mkresc demoResc deferred",
-            "iadmin mkresc unix1Resc 'unixfilesystem' "+hostname1+":/var/lib/irods/unix1RescVault",
+            "iadmin mkresc unix1Resc 'unixfilesystem' "+hostname1+":" + get_irods_top_level_dir() + "/unix1RescVault",
             "iadmin addchildtoresc demoResc unix1Resc",
         ],
         "teardown" : [
@@ -96,7 +96,7 @@ class Test_Deferred_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
             "iadmin rmresc unix1Resc",
             "iadmin rmresc demoResc",
             "iadmin modresc origResc name demoResc",
-            "rm -rf /var/lib/irods/unix1RescVault",
+            "rm -rf " + get_irods_top_level_dir() + "/unix1RescVault",
         ],
     }
 
@@ -120,9 +120,9 @@ class Test_Random_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
         "setup"    : [
             "iadmin modresc demoResc name origResc",
             "iadmin mkresc demoResc random",
-            "iadmin mkresc unix1Resc 'unix file system' "+hostname1+":/var/lib/irods/unix1RescVault",
-            "iadmin mkresc unix2Resc 'unix file system' "+hostname2+":/var/lib/irods/unix2RescVault",
-            "iadmin mkresc unix3Resc 'unix file system' "+hostname3+":/var/lib/irods/unix3RescVault",
+            "iadmin mkresc unix1Resc 'unix file system' "+hostname1+":" + get_irods_top_level_dir() + "/unix1RescVault",
+            "iadmin mkresc unix2Resc 'unix file system' "+hostname2+":" + get_irods_top_level_dir() + "/unix2RescVault",
+            "iadmin mkresc unix3Resc 'unix file system' "+hostname3+":" + get_irods_top_level_dir() + "/unix3RescVault",
             "iadmin addchildtoresc demoResc unix1Resc",
             "iadmin addchildtoresc demoResc unix2Resc",
             "iadmin addchildtoresc demoResc unix3Resc",
@@ -136,9 +136,9 @@ class Test_Random_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
             "iadmin rmresc unix1Resc",
             "iadmin rmresc demoResc",
             "iadmin modresc origResc name demoResc",
-            "rm -rf /var/lib/irods/unix1RescVault",
-            "rm -rf /var/lib/irods/unix2RescVault",
-            "rm -rf /var/lib/irods/unix3RescVault",
+            "rm -rf " + get_irods_top_level_dir() + "/unix1RescVault",
+            "rm -rf " + get_irods_top_level_dir() + "/unix2RescVault",
+            "rm -rf " + get_irods_top_level_dir() + "/unix3RescVault",
         ],
     }
 
@@ -161,7 +161,7 @@ class Test_NonBlocking_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest)
     my_test_resource = {
         "setup"    : [
             "iadmin modresc demoResc name origResc",
-            "iadmin mkresc demoResc nonblocking "+hostname1+":/var/lib/irods/nbVault",
+            "iadmin mkresc demoResc nonblocking "+hostname1+":" + get_irods_top_level_dir() + "/nbVault",
         ],
         "teardown" : [
             "iadmin rmresc demoResc",
@@ -185,8 +185,8 @@ class Test_Compound_with_MockArchive_Resource(unittest.TestCase, ResourceSuite, 
         "setup"    : [
             "iadmin modresc demoResc name origResc",
             "iadmin mkresc demoResc compound",
-            "iadmin mkresc cacheResc 'unix file system' "+hostname1+":/var/lib/irods/cacheRescVault",
-            "iadmin mkresc archiveResc mockarchive "+hostname1+":/var/lib/irods/archiveRescVault univMSSInterface.sh",
+            "iadmin mkresc cacheResc 'unix file system' "+hostname1+":" + get_irods_top_level_dir() + "/cacheRescVault",
+            "iadmin mkresc archiveResc mockarchive "+hostname1+":" + get_irods_top_level_dir() + "/archiveRescVault univMSSInterface.sh",
             "iadmin addchildtoresc demoResc cacheResc cache",
             "iadmin addchildtoresc demoResc archiveResc archive",
         ],
@@ -197,8 +197,8 @@ class Test_Compound_with_MockArchive_Resource(unittest.TestCase, ResourceSuite, 
             "iadmin rmresc cacheResc",
             "iadmin rmresc demoResc",
             "iadmin modresc origResc name demoResc",
-            "rm -rf /var/lib/irods/archiveRescVault",
-            "rm -rf /var/lib/irods/cacheRescVault",
+            "rm -rf " + get_irods_top_level_dir() + "/archiveRescVault",
+            "rm -rf " + get_irods_top_level_dir() + "/cacheRescVault",
         ],
     }
 
@@ -439,8 +439,8 @@ class Test_Compound_with_UniversalMSS_Resource(unittest.TestCase, ResourceSuite,
         "setup"    : [
             "iadmin modresc demoResc name origResc",
             "iadmin mkresc demoResc compound",
-            "iadmin mkresc cacheResc 'unix file system' "+hostname1+":/var/lib/irods/cacheRescVault",
-            "iadmin mkresc archiveResc univmss "+hostname1+":/var/lib/irods/archiveRescVault univMSSInterface.sh",
+            "iadmin mkresc cacheResc 'unix file system' "+hostname1+":" + get_irods_top_level_dir() + "/cacheRescVault",
+            "iadmin mkresc archiveResc univmss "+hostname1+":" + get_irods_top_level_dir() + "/archiveRescVault univMSSInterface.sh",
             "iadmin addchildtoresc demoResc cacheResc cache",
             "iadmin addchildtoresc demoResc archiveResc archive",
         ],
@@ -451,8 +451,8 @@ class Test_Compound_with_UniversalMSS_Resource(unittest.TestCase, ResourceSuite,
             "iadmin rmresc cacheResc",
             "iadmin rmresc demoResc",
             "iadmin modresc origResc name demoResc",
-            "rm -rf /var/lib/irods/archiveRescVault",
-            "rm -rf /var/lib/irods/cacheRescVault",
+            "rm -rf " + get_irods_top_level_dir() + "/archiveRescVault",
+            "rm -rf " + get_irods_top_level_dir() + "/cacheRescVault",
         ],
     }
 
@@ -688,8 +688,8 @@ class Test_Compound_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
         "setup"    : [
             "iadmin modresc demoResc name origResc",
             "iadmin mkresc demoResc compound",
-            "iadmin mkresc cacheResc 'unix file system' "+hostname1+":/var/lib/irods/cacheRescVault",
-            "iadmin mkresc archiveResc 'unix file system' "+hostname1+":/var/lib/irods/archiveRescVault",
+            "iadmin mkresc cacheResc 'unix file system' "+hostname1+":" + get_irods_top_level_dir() + "/cacheRescVault",
+            "iadmin mkresc archiveResc 'unix file system' "+hostname1+":" + get_irods_top_level_dir() + "/archiveRescVault",
             "iadmin addchildtoresc demoResc cacheResc cache",
             "iadmin addchildtoresc demoResc archiveResc archive",
         ],
@@ -700,8 +700,8 @@ class Test_Compound_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
             "iadmin rmresc cacheResc",
             "iadmin rmresc demoResc",
             "iadmin modresc origResc name demoResc",
-            "rm -rf /var/lib/irods/archiveRescVault",
-            "rm -rf /var/lib/irods/cacheRescVault",
+            "rm -rf " + get_irods_top_level_dir() + "/archiveRescVault",
+            "rm -rf " + get_irods_top_level_dir() + "/cacheRescVault",
         ],
     }
 
@@ -735,7 +735,7 @@ class Test_Compound_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
     @unittest.skip("TEMPORARY")
     def test_iget_prefer_from_archive__ticket_1660(self):
         # define core.re filepath
-        corefile = "/etc/irods/core.re"
+        corefile = get_irods_config_dir() + "/core.re"
         backupcorefile = corefile+"--"+self._testMethodName
 
         # new file to put and get
@@ -769,9 +769,9 @@ class Test_Compound_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
         myfile.close()
 
         # restart the server to reread the new core.re
-        os.system("/var/lib/irods/iRODS/irodsctl stop")
-        os.system("/var/lib/irods/tests/zombiereaper.sh")
-        os.system("/var/lib/irods/iRODS/irodsctl start")
+        os.system(get_irods_top_level_dir() + "/iRODS/irodsctl stop")
+        os.system(get_irods_top_level_dir() + "/tests/zombiereaper.sh")
+        os.system(get_irods_top_level_dir() + "/iRODS/irodsctl start")
 
         # manually update the replica in archive vault
         output = getiCmdOutput(s.adminsession,"ils -L "+filename)
@@ -1007,9 +1007,9 @@ class Test_Replication_within_Replication_Resource(unittest.TestCase, ResourceSu
             "iadmin modresc demoResc name origResc",
             "iadmin mkresc demoResc replication",
             "iadmin mkresc replResc replication",
-            "iadmin mkresc unixA 'unix file system' "+hostname1+":/var/lib/irods/unixAVault",
-            "iadmin mkresc unixB1 'unix file system' "+hostname2+":/var/lib/irods/unixB1Vault",
-            "iadmin mkresc unixB2 'unix file system' "+hostname3+":/var/lib/irods/unixB2Vault",
+            "iadmin mkresc unixA 'unix file system' "+hostname1+":" + get_irods_top_level_dir() + "/unixAVault",
+            "iadmin mkresc unixB1 'unix file system' "+hostname2+":" + get_irods_top_level_dir() + "/unixB1Vault",
+            "iadmin mkresc unixB2 'unix file system' "+hostname3+":" + get_irods_top_level_dir() + "/unixB2Vault",
             "iadmin addchildtoresc demoResc replResc",
             "iadmin addchildtoresc demoResc unixA",
             "iadmin addchildtoresc replResc unixB1",
@@ -1026,9 +1026,9 @@ class Test_Replication_within_Replication_Resource(unittest.TestCase, ResourceSu
             "iadmin rmresc replResc",
             "iadmin rmresc demoResc",
             "iadmin modresc origResc name demoResc",
-            "rm -rf /var/lib/irods/unixB2Vault",
-            "rm -rf /var/lib/irods/unixB1Vault",
-            "rm -rf /var/lib/irods/unixAVault",
+            "rm -rf " + get_irods_top_level_dir() + "/unixB2Vault",
+            "rm -rf " + get_irods_top_level_dir() + "/unixB1Vault",
+            "rm -rf " + get_irods_top_level_dir() + "/unixAVault",
         ],
     }
 
@@ -1272,10 +1272,10 @@ class Test_Replication_to_two_Compound_Resources(unittest.TestCase, ResourceSuit
             "iadmin mkresc demoResc replication",
             "iadmin mkresc compResc1 compound",
             "iadmin mkresc compResc2 compound",
-            "iadmin mkresc cacheResc1 'unix file system' "+hostname1+":/var/lib/irods/cacheResc1Vault",
-            "iadmin mkresc archiveResc1 'unix file system' "+hostname1+":/var/lib/irods/archiveResc1Vault",
-            "iadmin mkresc cacheResc2 'unix file system' "+hostname2+":/var/lib/irods/cacheResc2Vault",
-            "iadmin mkresc archiveResc2 'unix file system' "+hostname2+":/var/lib/irods/archiveResc2Vault",
+            "iadmin mkresc cacheResc1 'unix file system' "+hostname1+":" + get_irods_top_level_dir() + "/cacheResc1Vault",
+            "iadmin mkresc archiveResc1 'unix file system' "+hostname1+":" + get_irods_top_level_dir() + "/archiveResc1Vault",
+            "iadmin mkresc cacheResc2 'unix file system' "+hostname2+":" + get_irods_top_level_dir() + "/cacheResc2Vault",
+            "iadmin mkresc archiveResc2 'unix file system' "+hostname2+":" + get_irods_top_level_dir() + "/archiveResc2Vault",
             "iadmin addchildtoresc demoResc compResc1",
             "iadmin addchildtoresc demoResc compResc2",
             "iadmin addchildtoresc compResc1 cacheResc1 cache",
@@ -1298,10 +1298,10 @@ class Test_Replication_to_two_Compound_Resources(unittest.TestCase, ResourceSuit
             "iadmin rmresc compResc1",
             "iadmin rmresc demoResc",
             "iadmin modresc origResc name demoResc",
-            "rm -rf /var/lib/irods/archiveResc1Vault",
-            "rm -rf /var/lib/irods/cacheResc1Vault",
-            "rm -rf /var/lib/irods/archiveResc2Vault",
-            "rm -rf /var/lib/irods/cacheResc2Vault",
+            "rm -rf " + get_irods_top_level_dir() + "/archiveResc1Vault",
+            "rm -rf " + get_irods_top_level_dir() + "/cacheResc1Vault",
+            "rm -rf " + get_irods_top_level_dir() + "/archiveResc2Vault",
+            "rm -rf " + get_irods_top_level_dir() + "/cacheResc2Vault",
         ],
     }
 
@@ -1335,7 +1335,7 @@ class Test_Replication_to_two_Compound_Resources(unittest.TestCase, ResourceSuit
     @unittest.skipIf( RUN_IN_TOPOLOGY==True, "Skip for Topology Testing")
     def test_iget_prefer_from_archive__ticket_1660(self):
         # define core.re filepath
-        corefile = "/etc/irods/core.re"
+        corefile = get_irods_config_dir() + "/core.re"
         backupcorefile = corefile+"--"+self._testMethodName
 
         # new file to put and get
@@ -1375,7 +1375,7 @@ class Test_Replication_to_two_Compound_Resources(unittest.TestCase, ResourceSuit
         myfile.close()
 
         # restart the server to reread the new core.re
-        os.system("/var/lib/irods/iRODS/irodsctl restart")
+        os.system(get_irods_top_level_dir() + "/iRODS/irodsctl restart")
 
         # manually update the replicas in archive vaults
         output = getiCmdOutput(s.adminsession,"ils -L "+filename)
@@ -1654,10 +1654,10 @@ class Test_Replication_to_two_Compound_Resources_with_Prefer_Archive(unittest.Te
             "iadmin mkresc demoResc replication",
             "iadmin mkresc compResc1 compound",
             "iadmin mkresc compResc2 compound",
-            "iadmin mkresc cacheResc1 'unix file system' "+hostname1+":/var/lib/irods/cacheResc1Vault",
-            "iadmin mkresc archiveResc1 'unix file system' "+hostname1+":/var/lib/irods/archiveResc1Vault",
-            "iadmin mkresc cacheResc2 'unix file system' "+hostname2+":/var/lib/irods/cacheResc2Vault",
-            "iadmin mkresc archiveResc2 'unix file system' "+hostname2+":/var/lib/irods/archiveResc2Vault",
+            "iadmin mkresc cacheResc1 'unix file system' "+hostname1+":" + get_irods_top_level_dir() + "/cacheResc1Vault",
+            "iadmin mkresc archiveResc1 'unix file system' "+hostname1+":" + get_irods_top_level_dir() + "/archiveResc1Vault",
+            "iadmin mkresc cacheResc2 'unix file system' "+hostname2+":" + get_irods_top_level_dir() + "/cacheResc2Vault",
+            "iadmin mkresc archiveResc2 'unix file system' "+hostname2+":" + get_irods_top_level_dir() + "/archiveResc2Vault",
             "iadmin addchildtoresc demoResc compResc1",
             "iadmin addchildtoresc demoResc compResc2",
             "iadmin addchildtoresc compResc1 cacheResc1 cache",
@@ -1680,17 +1680,17 @@ class Test_Replication_to_two_Compound_Resources_with_Prefer_Archive(unittest.Te
             "iadmin rmresc compResc1",
             "iadmin rmresc demoResc",
             "iadmin modresc origResc name demoResc",
-            "rm -rf /var/lib/irods/archiveResc1Vault",
-            "rm -rf /var/lib/irods/cacheResc1Vault",
-            "rm -rf /var/lib/irods/archiveResc2Vault",
-            "rm -rf /var/lib/irods/cacheResc2Vault",
+            "rm -rf " + get_irods_top_level_dir() + "/archiveResc1Vault",
+            "rm -rf " + get_irods_top_level_dir() + "/cacheResc1Vault",
+            "rm -rf " + get_irods_top_level_dir() + "/archiveResc2Vault",
+            "rm -rf " + get_irods_top_level_dir() + "/cacheResc2Vault",
         ],
     }
 
     def setUp(self):
         ResourceSuite.__init__(self)
         # back up core file
-        corefile = "/etc/irods/core.re"
+        corefile = get_irods_config_dir() + "/core.re"
         backupcorefile = corefile+"--"+self._testMethodName
         shutil.copy(corefile,backupcorefile)
 
@@ -1707,7 +1707,7 @@ class Test_Replication_to_two_Compound_Resources_with_Prefer_Archive(unittest.Te
         s.twousers_down()
 
         # restore the original core.re
-        corefile = "/etc/irods/core.re"
+        corefile = get_irods_config_dir() + "/core.re"
         backupcorefile = corefile+"--"+self._testMethodName
         shutil.copy(backupcorefile,corefile)
         os.remove(backupcorefile)
@@ -1962,8 +1962,8 @@ class Test_RoundRobin_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
         "setup"    : [
             "iadmin modresc demoResc name origResc",
             "iadmin mkresc demoResc roundrobin",
-            "iadmin mkresc unix1Resc 'unix file system' "+hostname1+":/var/lib/irods/unix1RescVault",
-            "iadmin mkresc unix2Resc 'unix file system' "+hostname2+":/var/lib/irods/unix2RescVault",
+            "iadmin mkresc unix1Resc 'unix file system' "+hostname1+":" + get_irods_top_level_dir() + "/unix1RescVault",
+            "iadmin mkresc unix2Resc 'unix file system' "+hostname2+":" + get_irods_top_level_dir() + "/unix2RescVault",
             "iadmin addchildtoresc demoResc unix1Resc",
             "iadmin addchildtoresc demoResc unix2Resc",
         ],
@@ -1974,8 +1974,8 @@ class Test_RoundRobin_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
             "iadmin rmresc unix1Resc",
             "iadmin rmresc demoResc",
             "iadmin modresc origResc name demoResc",
-            "rm -rf /var/lib/irods/unix1RescVault",
-            "rm -rf /var/lib/irods/unix2RescVault",
+            "rm -rf " + get_irods_top_level_dir() + "/unix1RescVault",
+            "rm -rf " + get_irods_top_level_dir() + "/unix2RescVault",
         ],
     }
 
@@ -1992,6 +1992,23 @@ class Test_RoundRobin_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
     def test_ireg_as_rodsuser_in_vault(self):
         pass
 
+    def test_round_robin_mechanism(self):
+        # local setup
+        filename = "rrfile.txt"
+        filepath = os.path.abspath(filename)
+        f = open(filepath,'wb')
+        f.write("TESTFILE -- ["+filepath+"]")
+        f.close()
+
+        assertiCmd( s.sessions[1],"iput "+filename+" file0.txt" );
+        assertiCmd( s.sessions[1],"iput "+filename+" file1.txt" );
+
+        assertiCmd( s.sessions[1],"ils -l", "LIST", "unix1Resc" );
+        assertiCmd( s.sessions[1],"ils -l", "LIST", "unix2Resc" );
+
+        # local cleanup
+        output = commands.getstatusoutput( 'rm '+filepath )
+
 class Test_Replication_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
 
     hostname = socket.gethostname()
@@ -1999,9 +2016,9 @@ class Test_Replication_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest)
         "setup"    : [
             "iadmin modresc demoResc name origResc",
             "iadmin mkresc demoResc replication",
-            "iadmin mkresc unix1Resc 'unix file system' "+hostname1+":/var/lib/irods/unix1RescVault",
-            "iadmin mkresc unix2Resc 'unix file system' "+hostname2+":/var/lib/irods/unix2RescVault",
-            "iadmin mkresc unix3Resc 'unix file system' "+hostname3+":/var/lib/irods/unix3RescVault",
+            "iadmin mkresc unix1Resc 'unix file system' "+hostname1+":" + get_irods_top_level_dir() + "/unix1RescVault",
+            "iadmin mkresc unix2Resc 'unix file system' "+hostname2+":" + get_irods_top_level_dir() + "/unix2RescVault",
+            "iadmin mkresc unix3Resc 'unix file system' "+hostname3+":" + get_irods_top_level_dir() + "/unix3RescVault",
             "iadmin addchildtoresc demoResc unix1Resc",
             "iadmin addchildtoresc demoResc unix2Resc",
             "iadmin addchildtoresc demoResc unix3Resc",
@@ -2015,9 +2032,9 @@ class Test_Replication_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest)
             "iadmin rmresc unix1Resc",
             "iadmin rmresc demoResc",
             "iadmin modresc origResc name demoResc",
-            "rm -rf /var/lib/irods/unix1RescVault",
-            "rm -rf /var/lib/irods/unix2RescVault",
-            "rm -rf /var/lib/irods/unix3RescVault",
+            "rm -rf " + get_irods_top_level_dir() + "/unix1RescVault",
+            "rm -rf " + get_irods_top_level_dir() + "/unix2RescVault",
+            "rm -rf " + get_irods_top_level_dir() + "/unix3RescVault",
         ],
     }
 
@@ -2261,9 +2278,9 @@ class Test_MultiLayered_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest
             "iadmin mkresc demoResc passthru",
             "iadmin mkresc pass2Resc passthru",
             "iadmin mkresc rrResc roundrobin",
-            "iadmin mkresc unix1Resc 'unix file system' "+hostname1+":/var/lib/irods/unix1RescVault",
-            "iadmin mkresc unix2Resc 'unix file system' "+hostname2+":/var/lib/irods/unix2RescVault",
-            "iadmin mkresc unix3Resc 'unix file system' "+hostname3+":/var/lib/irods/unix3RescVault",
+            "iadmin mkresc unix1Resc 'unix file system' "+hostname1+":" + get_irods_top_level_dir() + "/unix1RescVault",
+            "iadmin mkresc unix2Resc 'unix file system' "+hostname2+":" + get_irods_top_level_dir() + "/unix2RescVault",
+            "iadmin mkresc unix3Resc 'unix file system' "+hostname3+":" + get_irods_top_level_dir() + "/unix3RescVault",
             "iadmin addchildtoresc demoResc pass2Resc",
             "iadmin addchildtoresc pass2Resc rrResc",
             "iadmin addchildtoresc rrResc unix1Resc",
@@ -2283,9 +2300,9 @@ class Test_MultiLayered_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest
             "iadmin rmresc pass2Resc",
             "iadmin rmresc demoResc",
             "iadmin modresc origResc name demoResc",
-            "rm -rf /var/lib/irods/unix1RescVault",
-            "rm -rf /var/lib/irods/unix2RescVault",
-            "rm -rf /var/lib/irods/unix3RescVault",
+            "rm -rf " + get_irods_top_level_dir() + "/unix1RescVault",
+            "rm -rf " + get_irods_top_level_dir() + "/unix2RescVault",
+            "rm -rf " + get_irods_top_level_dir() + "/unix3RescVault",
         ],
     }
 

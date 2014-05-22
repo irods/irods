@@ -17,11 +17,20 @@
 #
 
 use File::Spec;
+use File::Basename;
 
 $version{"utils_paths.pl"} = "September 2011";
 
 
 
+#
+# Detect run-in-place installation
+#
+$RUNINPLACE = 0;
+if ( ! -e "/etc/irods/irods.config" )
+{
+        $RUNINPLACE = 1;
+}
 
 
 #
@@ -38,6 +47,7 @@ $serverSqlDir     = File::Spec->catdir( $IRODS_HOME, "server",  "icat", "src" );
 $serverAuditExtSql= File::Spec->catdir( $IRODS_HOME, "server",  "icat", "auditExtensions" );
 $extendedIcatDir  = File::Spec->catdir( $IRODS_HOME, "modules",  "extendedICAT" );
 $serverTestBinDir = File::Spec->catdir( $IRODS_HOME, "server",  "test", "bin" );
+$serverTestCLLBinDir = $serverTestBinDir;
 $serverConfigDir  = File::Spec->catdir( $IRODS_HOME, "server",  "config" );
 
 $logDir           = File::Spec->catdir( $IRODS_HOME, "installLogs" );
@@ -82,15 +92,21 @@ $configMk    = File::Spec->catfile( $configDir, "config.mk" );
 # =-=-=-=-=-=-=-
 # search for the irods.config file
 $irodsConfig = File::Spec->catfile( $configDir, "irods.config" );
-unless( -e $irodsConfig ) {
-    $irodsConfig = File::Spec->catfile( "/var/lib/irods/iRODS/config", "irods.config" );
-    unless( -e $irodsConfig ) {
-        $irodsConfig = File::Spec->catfile( "/etc/irods", "irods.config" );
-        unless( -e $irodsConfig ) {
-            printf( "ERROR: irods.config file not found\n" );
-        }
-    }
+
+
+#
+# Overrides for run-in-place installations
+#
+if ( $RUNINPLACE == 1 )
+{
+        $serverSqlDir     = File::Spec->catdir( dirname($IRODS_HOME), "plugins",  "database", "src" );
+        $serverTestCLLBinDir = File::Spec->catdir( dirname($IRODS_HOME), "plugins", "database" );
 }
+
+
+
+
+
 
 
 

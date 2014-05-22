@@ -35,11 +35,13 @@ rsAuthCheck( rsComm_t *rsComm, authCheckInp_t *authCheckInp,
     // the incoming response string might be a kvp string
     // holding the auth scheme as well as the response
     // try to parse it
-    std::string orig_resp = authCheckInp->response;
+    std::string orig_resp;
+    orig_resp.assign( authCheckInp->response, authCheckInp->response + RESPONSE_LEN );
     irods::kvp_map_t kvp;
     irods::error ret = irods::parse_kvp_string( orig_resp, kvp );
     std::string scheme;
-    std::string response = authCheckInp->response;
+    std::string response;
+    response.assign( authCheckInp->response, authCheckInp->response + RESPONSE_LEN );
     if ( ret.ok() ) {
         if ( kvp.end() != kvp.find( irods::AUTH_SCHEME_KEY ) ) {
             scheme   = kvp[ irods::AUTH_SCHEME_KEY   ];

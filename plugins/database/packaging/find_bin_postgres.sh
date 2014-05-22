@@ -1,11 +1,13 @@
 #!/bin/bash
 
+SEARCHPATHS="/usr $HOME"
+
 # =-=-=-=-=-=-=-
 # count only binary ELF files for psql hits
 ctr=0
-for file in `find /usr -name "psql" -print 2> /dev/null`
+for file in `find $SEARCHPATHS -name "psql" -print 2> /dev/null`
 do
-	elfstatus=`file $file | grep ELF | wc -l`
+	elfstatus=`file -h $file | grep 'ELF\|Mach-O' | grep 64 | wc -l | tr -d ' '`
 	if [ "$elfstatus" == "1" ]; then
 		elf_links[$ctr]=$file
 		ctr=$ctr+1

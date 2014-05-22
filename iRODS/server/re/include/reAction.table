@@ -374,46 +374,10 @@ int msiString2StrArray(msParam_t *inBufferP, msParam_t* outStrArrayP, ruleExecIn
 			table_[ "msiSetReplComment" ] = new irods::ms_table_entry( "msiSetReplComment", 4, (funcPtr) msiSetReplComment );
 			table_[ "msiSetBulkPutPostProcPolicy" ] = new irods::ms_table_entry( "msiSetBulkPutPostProcPolicy",1,(funcPtr) msiSetBulkPutPostProcPolicy );
 			table_[ "msiStrlen" ] = new irods::ms_table_entry( "msiStrlen",2,(funcPtr) msiStrlen );
+			table_[ "msiStrCat" ] = new irods::ms_table_entry( "msiStrCat",2,(funcPtr) msiStrCat );
 			table_[ "msiStrchop" ] = new irods::ms_table_entry( "msiStrchop",2,(funcPtr) msiStrchop );
 			table_[ "msiSubstr" ] = new irods::ms_table_entry( "msiSubstr",4,(funcPtr) msiSubstr );
 			table_[ "msiCutBufferInHalf" ] = new irods::ms_table_entry( "msiCutBufferInHalf",1,(funcPtr) msiCutBufferInHalf );
 			table_[ "msiDoSomething" ] = new irods::ms_table_entry( "msiDoSomething", 2, (funcPtr) msiDoSomething );  
 			table_[ "msiExit" ] = new irods::ms_table_entry( "msiExit",2,(funcPtr) msiExit );
 			table_[ "msiSysMetaModify" ] = new irods::ms_table_entry( "msiSysMetaModify",2,(funcPtr) msiSysMetaModify );
-#ifdef NETCDF_API
-  table_[ "msiNcOpen" ] = new irods::ms_table_entry( "msiNcOpen",3,(funcPtr) msiNcOpen );
-  table_[ "msiNcCreate" ] = new irods::ms_table_entry( "msiNcCreate",3,(funcPtr) msiNcCreate );
-  table_[ "msiNcClose" ] = new irods::ms_table_entry( "msiNcClose",1,(funcPtr) msiNcClose );
-  table_[ "msiNcInqId" ] = new irods::ms_table_entry( "msiNcInqId",4,(funcPtr) msiNcInqId );
-  table_[ "msiNcInqWithId" ] = new irods::ms_table_entry( "msiNcInqWithId",4,(funcPtr) msiNcInqWithId );
-  table_[ "msiNcGetVarsByType" ] = new irods::ms_table_entry( "msiNcGetVarsByType",8,(funcPtr) msiNcGetVarsByType );
-  table_[ "msiNcGetArrayLen" ] = new irods::ms_table_entry( "msiNcGetArrayLen",2,(funcPtr) msiNcGetArrayLen );
-  table_[ "msiNcGetNumDim" ] = new irods::ms_table_entry( "msiNcGetNumDim",2,(funcPtr) msiNcGetNumDim );
-  table_[ "msiNcGetDataType" ] = new irods::ms_table_entry( "msiNcGetDataType",2,(funcPtr) msiNcGetDataType );
-  table_[ "msiNcGetElementInArray" ] = new irods::ms_table_entry( "msiNcGetElementInArray",3,(funcPtr) msiNcGetElementInArray );
-  table_[ "msiFloatToString" ] = new irods::ms_table_entry( "msiFloatToString",2,(funcPtr) msiFloatToString );
-  table_[ "msiNcInq" ] = new irods::ms_table_entry( "msiNcInq",2,(funcPtr) msiNcInq );
-  table_[ "msiNcGetNdimsInInqOut" ] = new irods::ms_table_entry( "msiNcGetNdimsInInqOut",3,(funcPtr) msiNcGetNdimsInInqOut );
-  table_[ "msiNcGetNattsInInqOut" ] = new irods::ms_table_entry( "msiNcGetNattsInInqOut",3,(funcPtr) msiNcGetNattsInInqOut );
-  table_[ "msiNcGetNvarsInInqOut" ] = new irods::ms_table_entry( "msiNcGetNvarsInInqOut",2,(funcPtr) msiNcGetNvarsInInqOut );
-  table_[ "msiNcGetFormatInInqOut" ] = new irods::ms_table_entry( "msiNcGetFormatInInqOut",2,(funcPtr) msiNcGetFormatInInqOut );
-  table_[ "msiNcGetVarNameInInqOut" ] = new irods::ms_table_entry( "msiNcGetVarNameInInqOut",3,(funcPtr) msiNcGetVarNameInInqOut );
-  table_[ "msiNcGetDimNameInInqOut" ] = new irods::ms_table_entry( "msiNcGetDimNameInInqOut",4,(funcPtr) msiNcGetDimNameInInqOut );
-  table_[ "msiNcGetAttNameInInqOut" ] = new irods::ms_table_entry( "msiNcGetAttNameInInqOut",4,(funcPtr) msiNcGetAttNameInInqOut );
-  table_[ "msiNcGetVarTypeInInqOut" ] = new irods::ms_table_entry( "msiNcGetVarTypeInInqOut",3,(funcPtr) msiNcGetVarTypeInInqOut );
-  table_[ "msiNcIntDataTypeToStr" ] = new irods::ms_table_entry( "msiNcIntDataTypeToStr",2,(funcPtr) msiNcIntDataTypeToStr );
-  table_[ "msiNcGetAttValStrInInqOut" ] = new irods::ms_table_entry( "msiNcGetAttValStrInInqOut",4,(funcPtr) msiNcGetAttValStrInInqOut );
-  table_[ "msiAddToNcArray" ] = new irods::ms_table_entry( "msiAddToNcArray",3,(funcPtr) msiAddToNcArray );
-  table_[ "msiNcGetDimLenInInqOut" ] = new irods::ms_table_entry( "msiNcGetDimLenInInqOut",4,(funcPtr) msiNcGetDimLenInInqOut );
-  table_[ "msiNcGetVarIdInInqOut" ] = new irods::ms_table_entry( "msiNcGetVarIdInInqOut",3,(funcPtr) msiNcGetVarIdInInqOut );
-  table_[ "msiFreeNcStruct" ] = new irods::ms_table_entry( "msiFreeNcStruct",1,(funcPtr) msiFreeNcStruct );
-#ifdef NETCDF4_API
-  table_[ "msiNcOpenGroup" ] = new irods::ms_table_entry( "msiNcOpenGroup",3,(funcPtr) msiNcOpenGroup );
-  table_[ "msiNcInqGrps" ] = new irods::ms_table_entry( "msiNcInqGrps",2,(funcPtr) msiNcInqGrps );
-#endif
-  table_[ "msiNcGetNGrpsInInqOut" ] = new irods::ms_table_entry( "msiNcGetNGrpsInInqOut",2,(funcPtr) msiNcGetNGrpsInInqOut );
-  table_[ "msiNcGetGrpInInqOut" ] = new irods::ms_table_entry( "msiNcGetGrpInInqOut",3,(funcPtr) msiNcGetGrpInInqOut );
-  table_[ "msiNcRegGlobalAttr" ] = new irods::ms_table_entry( "msiNcRegGlobalAttr",3,(funcPtr) msiNcRegGlobalAttr );
-  table_[ "msiNcSubsetVar" ] = new irods::ms_table_entry( "msiNcSubsetVar",5,(funcPtr) msiNcSubsetVar );
-  table_[ "msiNcVarStat" ] = new irods::ms_table_entry( "msiNcVarStat",2,(funcPtr) msiNcVarStat );
-#endif

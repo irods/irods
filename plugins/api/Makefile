@@ -1,41 +1,40 @@
-BASEDIRS = helloworld
-           
-
-######################################################################
-# Configuration should occur above this line
-
 include ../../iRODS/config/platform.mk
 include ../../iRODS/config/config.mk
 
-GCC = g++ -DRODS_SERVER -DZIP_EXEC_PATH=\"$(ZIP_EXEC_PATH)\" -DUNZIP_EXEC_PATH=\"$(UNZIP_EXEC_PATH)\"
+IRODSDIR=${IRODS_BUILD_DIR}/iRODS
 
-ifeq ($(IRODS_BUILD_COVERAGE), 1)
-GCC += -fprofile-arcs -ftest-coverage -lgcov
-endif
+SRCDIR = src
 
-export OBJDIR = .objs
-export IRODSTOPDIR = ../../iRODS
-export SOTOPDIR = .
+SRCS= \
+    $(SRCDIR)/helloworld.cpp \
+    $(SRCDIR)/rsSetRoundRobinContext.cpp
 
-SUBS = ${BASEDIRS}
+MAKEFLAGS += --no-print-directory
 
-ifeq ($(IRODS_BUILD_DEBUG), 0)
-#SUBS += ${HPSSDIRS}
-endif
+CFLAGS += -Wno-write-strings
 
-.PHONY: ${SUBS} clean
+CFLAGS += -L${IRODS_BUILD_DIR}
 
-default: ${SUBS}
+EXTRAINCS += -I${IRODSDIR}/lib/core/include/ -I${IRODSDIR}/lib/api/include/ -I${IRODSDIR}/lib/md5/include \
+						-I${IRODSDIR}/server/core/include/ -I${IRODSDIR}/server/icat/include/ -I${IRODSDIR}/server/re/include/ \
+						-I${IRODSDIR}/server/drivers/include/ -I$(LIBARCHIVE_DIR)/libarchive/ -I$(BOOST_DIR) \
+						-I/usr/include/openssl -I${IRODSDIR}/lib/sha1/include
 
-${SUBS}:
-	@-mkdir -p $@/${OBJDIR} > /dev/null 2>&1
-	${MAKE} -C $@
+#BOOST_LIBS = \
+#    -lboost_filesystem \
+#    -lboost_system \
+#    -lboost_regex \
+#    -lboost_thread
 
-clean:
-	@-for dir in ${SUBS}; do \
-	echo "Cleaning $$dir"; \
-	rm -f $$dir/${OBJDIR}/*.o > /dev/null 2>&1; \
-	rm -f $$dir/*.o > /dev/null 2>&1; \
-	done
-	@-rm -f ${SOTOPDIR}/*.so > /dev/null 2>&1
+#EXTRALIBS += $(BOOST_LIBS) \
+#						-lirods_client \
+#						-lirods_client_api \
+#						-lirods_server
 
+.PHONY: default clean
+
+default: api-base
+
+clean: clean-base
+
+include ../Makefile.base

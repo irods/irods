@@ -16,10 +16,6 @@
 #include "structFileExtAndReg.hpp"
 #include "execCmd.hpp"
 #include "rodsPath.hpp"
-#ifdef NETCDF_API
-#include "ncInqId.hpp"
-#include "ncGetVarsByType.hpp"
-#endif
 
 
 extern "C" {
@@ -250,19 +246,6 @@ extern "C" {
     parseMsKeyValStrForStructFileExtAndRegInp( msParam_t *inpParam,
             structFileExtAndRegInp_t *structFileExtAndRegInp,
             char *hintForMissingKw, int validKwFlags, char **outBadKeyWd );
-#ifdef NETCDF_API
-    int
-    parseMspForNcInqIdInpName( msParam_t *inpParam, ncInqIdInp_t *ncInqIdInp );
-    int
-    parseMspForNcInqIdInpId( msParam_t *inpParam, ncInqIdInp_t *ncInqIdInp );
-    int
-    parseMspForNcGetVarInp( msParam_t *inpParam, ncGetVarInp_t *ncGetVarInp );
-    int
-    parseStrToNcType( char *myStr );
-    int
-    parseStrMspForLongArray( msParam_t *inpParam, int *ndim,
-                             rodsLong_t **longArray );
-#endif
     int
     parseMsParamFromIRFile( msParamArray_t *inpParamArray, char *inBuf );
 

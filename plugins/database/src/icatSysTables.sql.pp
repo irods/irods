@@ -523,6 +523,14 @@ create table R_OBJT_FILESYSTEM_META
    modify_ts varchar(32)
 );
 
+create table R_GRID_CONFIGURATION
+(
+   namespace varchar(2700),
+   option_name varchar(2700),
+   option_value varchar(2700)
+);
+
+
 #ifdef mysql
 
 /* The max size for a MySQL InnoDB index prefix is 767 bytes,
@@ -620,3 +628,6 @@ create unique index idx_ticket_user on R_TICKET_ALLOWED_USERS (ticket_id, user_n
 create unique index idx_ticket_group on R_TICKET_ALLOWED_GROUPS (ticket_id, group_name);
 
 create unique index idx_obj_filesystem_meta1 on R_OBJT_FILESYSTEM_META (object_id);
+
+create unique index idx_grid_configuration on R_GRID_CONFIGURATION (namespace VARCHAR_MAX_IDX_SIZE, option_name VARCHAR_MAX_IDX_SIZE);
+

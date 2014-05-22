@@ -29,6 +29,7 @@ static void NtAgentSetEnvsFromArgs( int ac, char **av );
 #include "irods_auth_constants.hpp"
 #include "irods_server_properties.hpp"
 #include "irods_server_api_table.hpp"
+#include "irods_client_api_table.hpp"
 #include "irods_pack_table.hpp"
 
 #include "readServerConfig.hpp"
@@ -146,7 +147,7 @@ main( int argc, char *argv[] ) {
     }
 
     // =-=-=-=-=-=-=-
-    // load pluggable api entries
+    // load server side pluggable api entries
     irods::api_entry_table&  RsApiTable   = irods::get_server_api_table();
     irods::pack_entry_table& ApiPackTable = irods::get_pack_table();
     ret = irods::init_api_table(
@@ -158,6 +159,17 @@ main( int argc, char *argv[] ) {
         exit( 1 );
     }
 
+    // =-=-=-=-=-=-=-
+    // load client side pluggable api entries
+    irods::api_entry_table&  RcApiTable = irods::get_client_api_table();
+    ret = irods::init_api_table(
+              RcApiTable,
+              ApiPackTable,
+              true );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        exit( 1 );
+    }
 
 
 
@@ -198,25 +210,28 @@ main( int argc, char *argv[] ) {
 
     // =-=-=-=-=-=-=-
     // handle negotiations with the client regarding TLS if requested
-    std::string neg_results;
-    ret = irods::client_server_negotiation_for_server( net_obj, neg_results );
-    if ( !ret.ok() || neg_results == irods::CS_NEG_FAILURE ) {
-        irods::log( PASS( ret ) );
-        // =-=-=-=-=-=-=-
-        // send a 'we failed to negotiate' message here??
-        // or use the error stack rule engine thingie
-        irods::log( PASS( ret ) );
-        sendVersion( net_obj, SYS_AGENT_INIT_ERR, 0, NULL, 0 );
-        unregister_handlers();
-        cleanupAndExit( ret.code() );
+    // this scope block makes valgrind happy
+    {
+        std::string neg_results;
+        ret = irods::client_server_negotiation_for_server( net_obj, neg_results );
+        if ( !ret.ok() || neg_results == irods::CS_NEG_FAILURE ) {
+            irods::log( PASS( ret ) );
+            // =-=-=-=-=-=-=-
+            // send a 'we failed to negotiate' message here??
+            // or use the error stack rule engine thingie
+            irods::log( PASS( ret ) );
+            sendVersion( net_obj, SYS_AGENT_INIT_ERR, 0, NULL, 0 );
+            unregister_handlers();
+            cleanupAndExit( ret.code() );
 
-    }
-    else {
-        // =-=-=-=-=-=-=-
-        // copy negotiation results to comm for action by network objects
-        strncpy( rsComm.negotiation_results, neg_results.c_str(), MAX_NAME_LEN );
-        //rsComm.ssl_do_accept = 1;
+        }
+        else {
+            // =-=-=-=-=-=-=-
+            // copy negotiation results to comm for action by network objects
+            strncpy( rsComm.negotiation_results, neg_results.c_str(), MAX_NAME_LEN );
+            //rsComm.ssl_do_accept = 1;
 
+        }
     }
 
     /* send the server version and atatus as part of the protocol. Put

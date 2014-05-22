@@ -126,13 +126,19 @@ chown -R  $OS_IRODS_ACCT:$OS_IRODS_ACCT /etc/irods
 
 # =-=-=-=-=-=-=-
 # set permissions on iRODS authentication mechanisms
-chown root:root $IRODS_HOME/server/bin/PamAuthCheck
+if [ "$DETECTEDOS" == "MacOSX" ] ; then
+    chown root:wheel $IRODS_HOME/server/bin/PamAuthCheck
+else
+    chown root:root $IRODS_HOME/server/bin/PamAuthCheck
+fi
 chmod 4755 $IRODS_HOME/server/bin/PamAuthCheck
 chmod 4755 /usr/bin/genOSAuth
 
 # =-=-=-=-=-=-=-
 # remove the password from the service account
-passwd -d $OS_IRODS_ACCT > /dev/null
+if [ "$DETECTEDOS" != "MacOSX" ] ; then
+    passwd -d $OS_IRODS_ACCT > /dev/null
+fi
 
 # =-=-=-=-=-=-=-
 # display helpful information

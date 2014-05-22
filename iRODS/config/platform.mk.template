@@ -29,9 +29,6 @@ else
 CCFLAGS += -Wno-write-strings
 endif
 
-# added by Terrell
-# silence deprecation warnings until we can use newer compilers on CentOS
-CCFLAGS += -Wno-deprecated
 # show all code that is not reachable
 #CCFLAGS += -Wunreachable-code
 
@@ -46,7 +43,7 @@ LDRFLAGS += -ldl -rdynamic
 # JMC :: BOOST Include & Linking
 # use our locally built Boost on the include line
 CCFLAGS+=-I$(BOOST_DIR)
-CCFLAGS+=-DUSE_BOOST -DUSE_BOOST_COND
+CCFLAGS+=-DUSE_BOOST
 
 # =-=-=-=-=-=-=-
 
@@ -101,6 +98,7 @@ endif
 #
 AROPT= -crs
 ifeq ($(OS_platform), osx_platform)
+CCFLAGS += -Wno-deprecated
 AROPT= -cr
 endif
 
@@ -149,10 +147,11 @@ ifdef hardware_platform
 MY_CFLAG+= -D$(hardware_platform)
 endif
 
-ifeq ($(CC_IS_GCC), 1)
-MY_CFLAG+=-Wall -Werror
+ifneq ($(OS_platform), osx_platform)
+    ifeq ($(CC_IS_GCC), 1)
+    MY_CFLAG+=-Wall -Werror
+    endif
 endif
-
 # Alpha
 ifeq ($(OS_platform), alpha_platform)
 MY_CFLAGS+=-pthread  -std0 -verbose
@@ -211,24 +210,7 @@ endif
 
 # server specific LDADD
 
-ifdef NETCDF4_API
-MY_CFLAG += -DNETCDF4_API
-endif
-
-ifdef NETCDF_API
-HDF5_HL_LIB=$(HDF5_DIR)/hl/src/.libs
-HDF5_LIB=$(HDF5_DIR)/src/.libs
-NETCDF_LIB=$(NETCDF_DIR)/liblib/.libs
-MY_CFLAG += -DNETCDF_API -I$(NETCDF_DIR)/include
-LDADD += -L$(NETCDF_LIB) -L$(HDF5_LIB) -L$(HDF5_HL_LIB) $(NETCDF_LIB)/libnetcdf.a $(HDF5_HL_LIB)/libhdf5_hl.a $(HDF5_LIB)/libhdf5.a -lz -lcurl
-CL_LDADD += -L$(NETCDF_LIB) -L$(HDF5_LIB) -L$(HDF5_HL_LIB) $(NETCDF_LIB)/libnetcdf.a $(HDF5_HL_LIB)/libhdf5_hl.a $(HDF5_LIB)/libhdf5.a -lz -lcurl
-endif
-
 LDADD += -lcurl
-
-ifdef NETCDF_CLIENT
-MY_CFLAG += -DNETCDF_CLIENT
-endif
 
 MY_CFLAG+= -I/usr/include/openssl
 ifeq ($(OS_platform), linux_platform)

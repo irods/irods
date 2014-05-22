@@ -118,6 +118,7 @@ closeAllL1desc( rsComm_t *rsComm ) {
         if ( L1desc[i].inuseFlag == FD_INUSE &&
                 L1desc[i].l3descInx > 2 ) {
             l3Close( rsComm, i );
+            freeL1desc( i );
         }
     }
     return ( 0 );

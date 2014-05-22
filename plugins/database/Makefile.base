@@ -23,13 +23,25 @@ CHL_OBJS=${IRODSDIR}/server/icat/obj/icatHighLevelRoutines.o  \
 DB_PLUGIN_SRC = $(IRODSDIR)/server/core/src/irods_database_plugin.cpp
 DB_PLUGIN_OBJ_WITH_NO_RE = $(OBJDIR)/irods_database_plugin_with_no_re.o 
  
-GCC = g++ -Wno-write-strings -DRODS_SERVER -DNEW_ODBC
+GCC = g++ -Wno-write-strings -DRODS_SERVER
 
 
 INC = -I${IRODSDIR}/lib/core/include/ -I${IRODSDIR}/lib/api/include/ -I${IRODSDIR}/lib/md5/include \
       -I${IRODSDIR}/server/core/include/ -I${IRODSDIR}/server/icat/include/ -I${IRODSDIR}/server/re/include/ \
       -I${IRODSDIR}/server/drivers/include/ -I$(LIBARCHIVE_DIR)/libarchive/ -I$(BOOST_DIR) \
       -I/usr/include/openssl -I${IRODSDIR}/lib/sha1/include -I${IRODSDIR}/../plugins/database/include
+
+ifeq ($(OS_platform), osx_platform)
+LDADD += "-Wl,-undefined,dynamic_lookup"
+else
+LDADD += "-Wl,-E"
+endif
+
+ifneq (${OS_platform}, osx_platform)
+LDFLAGS += -lrt
+endif
+
+
 
 ifeq ($(IRODS_BUILD_COVERAGE), 1)
 GCC += -fprofile-arcs -ftest-coverage -lgcov
@@ -55,7 +67,7 @@ clean:
 ${FULLTARGET}: ${OBJS}
 	@echo "Building Database Plugins"
 	@-mkdir -p ${SODIR} > /dev/null 2>&1
-	${GCC} ${INC} -D${OS_platform} ${CFLAGS} -fPIC "-Wl,-E" -shared -o ${FULLTARGET} ${OBJS} ${EXTRALIBS} ${EXTRA_LDRFLAGS} ${DBMS_LIB}
+	${GCC} ${INC} -D${OS_platform} ${CFLAGS} ${LDRFLAGS} -fPIC ${LDADD}  -shared -o ${FULLTARGET} ${OBJS} ${EXTRALIBS} ${EXTRA_LDRFLAGS} ${DBMS_LIB}
 
 ${OBJDIR}/%.o: ../src/%.cpp
 	${GCC} ${INC} ${EXTRA_CFLAGS} -D${OS_platform} -fPIC -c -g -o $@ $<
@@ -66,15 +78,15 @@ ${DB_PLUGIN_OBJ_WITH_NO_RE}: $(DB_PLUGIN_SRC)
 
 ${SODIR}/test_cll: ${OBJDIR}/test_cll.o $(CLL_OBJS) $(LIBRARY) $(BOOST_LIBS)
 	@echo "Link server test `basename $@`..."
-	$(LDR) -o $@ $^ ${LIBRARY} $(LDFLAGS) $(BOOST_LIBS) ${DBMS_LIB} ${LDRFLAGS} ${EXTRA_LDRFLAGS} -fPIC -rdynamic -ldl -lrt -lpthread -lssl -lcrypto
+	$(LDR) -o $@ $^ ${LIBRARY} $(LDFLAGS) $(BOOST_LIBS) ${DBMS_LIB} ${LDRFLAGS} ${EXTRA_LDRFLAGS} -fPIC -rdynamic -ldl -lpthread -lssl -lcrypto
 
 ${SODIR}/test_genq: ${OBJDIR}/test_genq.o  ${DB_PLUGIN_OBJ_WITH_NO_RE} ${CLL_OBJS} $(GENQ_OBJS) ${CHL_OBJS} $(LIBRARY) ${BOOST_LIBS} 
 	@echo "Link server test `basename $@`..."
-	$(LDR) -o $@ $^ $(LIBRARY) $(LDFLAGS) ${DBMS_LIB} ${LDRFLAGS} ${EXTRA_LDRFLAGS} -fPIC -rdynamic -ldl -lrt -lpthread -lssl -lcrypto
+	$(LDR) -o $@ $^ $(LIBRARY) $(LDFLAGS) ${DBMS_LIB} ${LDRFLAGS} ${EXTRA_LDRFLAGS} -fPIC -rdynamic -ldl -lpthread -lssl -lcrypto
 
 ${SODIR}/test_genu: $(OBJDIR)/test_genu.o $(GENU_OBJS) ${CHL_OBJS} ${CLL_OBJS} ${DB_PLUGIN_OBJ_WITH_NO_RE} $(LIBRARY) ${BOOST_LIBS} 
 	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $^ $(LIBRARY) $(LDFLAGS) ${DBMS_LIB} ${LDRFLAGS} ${EXTRA_LDRFLAGS} -fPIC -rdynamic -ldl -lrt -lpthread -lssl -lcrypto
+	@$(LDR) -o $@ $^ $(LIBRARY) $(LDFLAGS) ${DBMS_LIB} ${LDRFLAGS} ${EXTRA_LDRFLAGS} -fPIC -rdynamic -ldl -lpthread -lssl -lcrypto
 
 
 

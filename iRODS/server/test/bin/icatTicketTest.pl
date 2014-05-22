@@ -23,6 +23,9 @@
 use Net::Domain qw (hostname hostfqdn hostdomain);
 #use Net::Address::IP::Local;	# 4NT TEST
 
+use Cwd 'abs_path';
+use File::Basename;
+
 
 $G1="GROUP1";
 
@@ -80,10 +83,12 @@ $This_Host = $hostname . "." . $domain;
 #$Other_Host="shiny.irods.renci.org";
 $Other_Host="jargontest.irods.renci.org";
 
+my $IRODS_HOME = dirname(dirname(dirname(dirname(abs_path(__FILE__)))));
+
 $G1="GROUP1";
-$CORE_RE_STRICT="/var/lib/irods/iRODS/server/config/reConfigs/core.re.strict";
-$CORE_RE_ORIG="/var/lib/irods/iRODS/server/config/reConfigs/core.re.orig";
-$CORE_RE="/var/lib/irods/iRODS/server/config/reConfigs/core.re";
+$CORE_RE_STRICT="$IRODS_HOME/server/config/reConfigs/core.re.strict";
+$CORE_RE_ORIG="$IRODS_HOME/server/config/reConfigs/core.re.orig";
+$CORE_RE="$IRODS_HOME/server/config/reConfigs/core.re";
 
 # run a command
 # if option is 0 (normal), check the exit code and fail if non-0
