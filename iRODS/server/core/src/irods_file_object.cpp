@@ -14,7 +14,6 @@
 #include "miscServerFunct.hpp"
 #include "dataObjOpr.hpp"
 #include "objDesc.hpp"
-//#include "rsGlobal.hpp"
 
 // =-=-=-=-=-=-=-
 // boost includes
