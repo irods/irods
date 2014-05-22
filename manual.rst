@@ -90,7 +90,7 @@ License
 Overview
 --------
 
-This manual attempts to provide standalone documentation for iRODS (http://irods.org) as packaged by the Renaissance Computing Institute (RENCI) (http://www.renci.org) under the aegis of the iRODS Consortium (http://irods-consortium.org).
+This manual provides standalone documentation for iRODS (http://irods.org) as packaged by the Renaissance Computing Institute (RENCI) (http://www.renci.org) under the aegis of the iRODS Consortium (http://irods-consortium.org).  Please enter comments and suggestions as github issues at https://github.com/irods/irods/issues.
 
     http://irods.org
 
@@ -131,14 +131,16 @@ Repositories, issue trackers, and source code are available on GitHub.
 Installation
 ------------
 
-iRODS is provided in binary form in a collection of interdependent packages.  An iRODS server is provided by a single package, but needs to be configured before it can be started.  There are two flavors of server, iCAT and Resource.  An iCAT server provides the metadata catalog for a Zone.  A resource server connects to an iCAT server and belongs to the iCAT's Zone.
+iRODS is provided in binary form in a collection of interdependent packages.  There are two flavors of iRODS server, iCAT and Resource.  An iCAT server, along with the iCAT metadata catalog, provide the nerve central for a data grid (Zone).  A resource server connects to an existing data grid, providing it with an additional data resource.  An iCAT server needs a database to be up and running in order to create the iCAT; a resource server needs a data grid (an iCAT server and metadata catalogue) to be up and running in order to connect and become a resource on that data grid or Zone.
 
 iCAT Server
 -----------
 
+Before installing the iRODS software, install your database and create a user/role 'irods' with create privileges. This 'irods' account will be the admin user for your iCAT database. Create this role with the password you will use in setting up the iCAT database during the iRODS installation. 
+
 The irods-icat package installs a service account and group named 'irods' and the iRODS binaries.
 
-The additional required database plugin installs the dependencies for database connections and a short setup script that will prompt for database connection information and configure the server.
+The additional database plugin is required and installs the dependencies for database connections and a short setup script that will prompt for database connection information and configure the server.
 
 Installation of the iCAT DEB and PostgreSQL plugin DEB::
 
@@ -157,6 +159,8 @@ The `./packaging/setup_database.sh` script will ask for the following five piece
 3) Database Name
 4) Database User
 5) Database Password
+
+This information will need to be consistent with your previous setup of your database.
 
 Installing the MySQL database plugin will also require `Installing lib_mysqludf_preg`_.  These functions are required for the internal iRODS SQL which uses regular expressions.
 
@@ -205,7 +209,7 @@ Confirmation of the permissions can be viewed with ``\l`` within the ``psql`` co
 Resource Server
 ---------------
 
-The irods-resource package installs a service account and group named 'irods' and the iRODS binaries.
+The irods-resource package installs a local service account and group named 'irods' and the iRODS binaries.
 
 There are no required additional packages, but the administrator will need to run a short setup script that will prompt for iRODS connection information and configure the server.
 
@@ -219,13 +223,14 @@ And then as the irods user::
 
  irods@hostname:~/ $ ./packaging/setup_resource.sh
 
-The `./packaging/setup_resource.sh` script will ask for the following five pieces of information before iRODS can start and connect to its configured iCAT Zone:
+The `./packaging/setup_resource.sh` script will ask for the following five pieces of information about the existing data grid that the iRODS resource server will need in order to start up and connect to its configured iCAT Zone:
 
 1) iCAT Hostname or IP
 2) iCAT Port
 3) iCAT Zone 
 4) iRODS administrator username
 5) iRODS administrator password
+
 
 Default Environment
 -------------------
@@ -336,8 +341,8 @@ The default installation of iRODS comes with a Zone named 'tempZone'.  You proba
  irods@hostname:~/ $ iadmin modzone tempZone name <newzonename>
  If you modify the local zone name, you and other users will need to
  change your .irodsEnv files to use it, you may need to update
- irods.config and, if rules use the zone name, you'll need to update
- core.re.  This command will update various tables with the new name
+ /etc/irods/irods.config and, if rules use the zone name, you'll need to update
+ /etc/irods/core.re.  This command will update various tables with the new name
  and rename the top-level collection.
  Do you really want to modify the local zone name? (enter y or yes to do so):y
  OK, performing the local zone rename
@@ -408,6 +413,13 @@ Additional information about creating resources can be found with::
  to an empty string ('').
 
 Creating new resources does not make them default for any existing or new users.  You will need to make sure that default resources are properly set for newly ingested files.
+
+
+Change default resource name and/or path
+----------------------------------------
+
+Installing an iRODS resource server gives you a default resource name of <hostname>Resource and default data path of /var/lib/irods/iRODS/<hostname>ResourceVault on the local resource. These can both be changed, using modresc, a part of the iadmin command available to administrative users. Follow the indications given in 'iadmin -h'.  For simplicity's sake, such modifications should generally take place before any data has been placed in the default resource at the default location.
+
 
 Add additional user(s)
 ----------------------
@@ -531,7 +543,7 @@ When tempZone users connect, the system will then confirm that tempZone's LocalZ
 
 Mutual authentication between servers is always on across Federations.
 
-If you want, you can also scramble the SIDs in the server.config file. Use the 'iadmin spass' to scramble and enter the key used in the server.config file:
+If you want, you can also scramble the SIDs in the /etc/irods/server.config file. Use the 'iadmin spass' to scramble and enter the key used in the server.config file:
 
   SIDKey 456
 
@@ -1331,7 +1343,7 @@ Then that user must be configured so its principal matches the KDC::
 
  iadmin aua newuser newuser@EXAMPLE.ORG
 
-The `server.config` must be updated to include::
+The `/etc/irods/server.config` must be updated to include::
 
  KerberosServicePrincipal=irodsserver/serverhost.example.org@EXAMPLE.ORG
  KerberosKeytab=/var/lib/irods/irods.keytab
