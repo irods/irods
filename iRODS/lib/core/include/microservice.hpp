@@ -73,8 +73,8 @@ automatic factory code generation
 
 
 
-typedef int INT_t;
-typedef char* STR_t;
+typedef int INT;
+typedef char* STR;
 
 template<typename T>
 class ParamType {
@@ -90,10 +90,10 @@ public:
 };
 
 template<>
-class ParamType <STR_t> {
+class ParamType <STR> {
 public:
     typedef char* type;
-    typedef STR_t& refType;
+    typedef STR& refType;
     static type defaultValue() {
         return NULL;
     }
@@ -125,7 +125,7 @@ public:
     BOOST_PP_STRINGIZE(t) "_PI" \
  
 #define C_TYPE(t) \
-    BOOST_PP_CAT(t, _t)
+    t
 
 #define PARAM_NAME(n) \
     BOOST_PP_CAT(_msi_param_, n) \
