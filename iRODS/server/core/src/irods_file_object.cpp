@@ -25,6 +25,7 @@ namespace irods {
     file_object::file_object() :
         data_object(),
         file_descriptor_( -1 ),
+        l1_desc_idx_( -1 ),
         size_( 0 ),
         repl_requested_( -1 ) {
     } // file_object
@@ -68,7 +69,7 @@ namespace irods {
         data_type_( "" ),
         file_descriptor_( _fd ),
         l1_desc_idx_( -1 ),
-        size_( -1 ),
+        size_( 0 ),
         repl_requested_( -1 ) {
         // =-=-=-=-=-=-=-
         // explicit initialization
@@ -79,20 +80,21 @@ namespace irods {
     file_object::file_object(
         rsComm_t*            _rsComm,
         const dataObjInfo_t* _dataObjInfo ) {
-        logical_path( _dataObjInfo->objPath );
 
+        data_type_      = _dataObjInfo->dataType;
         comm_           = _rsComm;
+        logical_path_   = _dataObjInfo->objPath;
         physical_path_  = _dataObjInfo->filePath;
         resc_hier_      = _dataObjInfo->rescHier;
         flags_          = _dataObjInfo->flags;
         repl_requested_ = _dataObjInfo->replNum;
         replicas_.empty();
-        // should mode be set here? - hcj
         replKeyVal( &_dataObjInfo->condInput, &cond_input_ );
-        int l1descInx = getL1descIndexByDataObjInfo( _dataObjInfo );
-        if( l1descInx != -1 )
+        l1_desc_idx_ = getL1descIndexByDataObjInfo( _dataObjInfo );
+        size_ = _dataObjInfo->dataSize;
+        if( l1_desc_idx_ != -1 )
         {
-            int l3descInx = L1desc[ l1descInx ].l3descInx;
+            int l3descInx = L1desc[ l1_desc_idx_ ].l3descInx;
             file_descriptor_ = FileDesc[ l3descInx ].fd;
         }
         else
