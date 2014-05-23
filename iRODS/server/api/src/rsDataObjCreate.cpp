@@ -363,7 +363,6 @@ _rsDataObjCreateWithRescInfo(
         status = dataObjCreateAndReg( rsComm, l1descInx );
     }
 
-    clearKeyVal( &dataObjInp->condInput );
     if ( status < 0 ) {
         freeL1desc( l1descInx );
         return ( status );

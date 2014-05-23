@@ -568,6 +568,7 @@ freeDataObjInfo( dataObjInfo_t *dataObjInfo ) {
         return ( 0 );
     }
 
+    clearKeyVal( &dataObjInfo->condInput );
     /* separate specColl */
     if ( dataObjInfo->specColl != NULL ) {
         free( dataObjInfo->specColl );
