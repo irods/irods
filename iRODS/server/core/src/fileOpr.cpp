@@ -225,6 +225,7 @@ int mkFileDirR(
         tmp_coll_obj->cond_input( condInput );
 
         irods::error mkdir_err = fileMkdir( rsComm, tmp_coll_obj );
+        clearKeyVal( &condInput );
         if ( !mkdir_err.ok() && ( getErrno( mkdir_err.code() ) != EEXIST ) ) { // JMC - backport 4834
             std::stringstream msg;
             msg << "fileMkdir for [";

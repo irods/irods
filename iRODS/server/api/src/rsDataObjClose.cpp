@@ -49,13 +49,7 @@ int
 rsDataObjClose( rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp ) {
     int status;
 
-    dataObjInfo_t* data_obj = 0;
-    status = irsDataObjClose( rsComm, dataObjCloseInp, &data_obj );
-
-    if ( !data_obj ) {
-        rodsLog( LOG_ERROR, "rsDataObjClose data_obj is null" );
-        return status;
-    }
+    status = irsDataObjClose( rsComm, dataObjCloseInp, NULL );
 
     return status;
 }

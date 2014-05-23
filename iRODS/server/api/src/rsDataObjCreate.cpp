@@ -363,6 +363,7 @@ _rsDataObjCreateWithRescInfo(
         status = dataObjCreateAndReg( rsComm, l1descInx );
     }
 
+    clearKeyVal( &dataObjInp->condInput );
     if ( status < 0 ) {
         freeL1desc( l1descInx );
         return ( status );
@@ -498,6 +499,7 @@ l3CreateByObjInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     copyFilesystemMetadata( &dataObjInfo->condInput,
                             &fileCreateInp.condInput );
     if ( chkType == DISALLOW_PATH_REG ) {
+        clearKeyVal( &fileCreateInp.condInput );
         return PATH_REG_NOT_ALLOWED;
     }
     else if ( chkType == NO_CHK_PATH_PERM ) {
@@ -526,6 +528,7 @@ l3CreateByObjInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         rstrcpy( dataObjInfo->filePath, fileCreateInp.fileName, MAX_NAME_LEN );
         retryCnt ++;
     }
+    clearKeyVal( &fileCreateInp.condInput );
     return ( l3descInx );
 }
 

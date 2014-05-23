@@ -1091,7 +1091,7 @@ int
 clearKeyVal( keyValPair_t *condInput ) {
     int i;
 
-    if ( condInput == NULL || condInput->len <= 0 ) {
+    if ( condInput == NULL ) {
         return ( 0 );
     }
     for ( i = 0; i < condInput->len; i++ ) {

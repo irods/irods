@@ -120,6 +120,7 @@ rsDataObjCopy( rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
     }
 
     if ( destL1descInx < 0 ) {
+        clearKeyVal( &destDataObjInp->condInput );
         std::stringstream msg;
         char* sys_error;
         char* rods_error = rodsErrorName( destL1descInx, &sys_error );
@@ -152,6 +153,8 @@ rsDataObjCopy( rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
         L1desc[srcL1descInx].dataObjInfo->dataSize;
 
     status = _rsDataObjCopy( rsComm, destL1descInx, existFlag, transStat );
+
+    clearKeyVal( &destDataObjInp->condInput );
 
     return ( status );
 }

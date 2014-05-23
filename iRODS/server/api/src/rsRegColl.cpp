@@ -86,6 +86,7 @@ _rsRegColl( rsComm_t *rsComm, collInp_t *collCreateInp ) {
     }
 
     status = chlRegColl( rsComm, &collInfo );
+    clearKeyVal( &collInfo.condInput );
     return ( status );
 #else
     return ( SYS_NO_RCAT_SERVER_ERR );

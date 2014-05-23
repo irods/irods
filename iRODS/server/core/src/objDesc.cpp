@@ -118,7 +118,6 @@ closeAllL1desc( rsComm_t *rsComm ) {
         if ( L1desc[i].inuseFlag == FD_INUSE &&
                 L1desc[i].l3descInx > 2 ) {
             l3Close( rsComm, i );
-            freeL1desc( i );
         }
     }
     return ( 0 );
@@ -133,14 +132,10 @@ freeL1desc( int l1descInx ) {
     }
 
     if ( L1desc[l1descInx].dataObjInfo != NULL ) {
-        /* for remote zone type L1desc, rescInfo is not from local cache
-         * but malloc'ed */
-        if ( L1desc[l1descInx].remoteZoneHost != NULL &&
-                L1desc[l1descInx].dataObjInfo->rescInfo != NULL )
-            // free (L1desc[l1descInx].dataObjInfo->rescInfo);
-            if ( L1desc[l1descInx].dataObjInfo != NULL ) {
-                freeDataObjInfo( L1desc[l1descInx].dataObjInfo );
-            }
+        if ( L1desc[l1descInx].dataObjInfo->rescInfo != NULL ) {
+            delete L1desc[l1descInx].dataObjInfo->rescInfo;
+        }
+        freeDataObjInfo( L1desc[l1descInx].dataObjInfo );
     }
 
     if ( L1desc[l1descInx].otherDataObjInfo != NULL ) {

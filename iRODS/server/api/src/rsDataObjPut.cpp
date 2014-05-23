@@ -491,6 +491,7 @@ l3FilePutSingleBuf( rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf 
     chkType = getchkPathPerm( rsComm, L1desc[l1descInx].dataObjInp, L1desc[l1descInx].dataObjInfo );
 
     if ( chkType == DISALLOW_PATH_REG ) {
+        clearKeyVal( &filePutInp.condInput );
         return PATH_REG_NOT_ALLOWED;
     }
     else if ( chkType == NO_CHK_PATH_PERM ) {
@@ -522,6 +523,7 @@ l3FilePutSingleBuf( rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf 
         rstrcpy( dataObjInfo->filePath, filePutInp.fileName, MAX_NAME_LEN );
         retryCnt ++;
     } // while
+    clearKeyVal( &filePutInp.condInput );
     return ( bytesWritten );
 
 } // l3FilePutSingleBuf

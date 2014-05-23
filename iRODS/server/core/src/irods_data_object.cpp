@@ -59,6 +59,7 @@ namespace irods {
 // =-=-=-=-=-=-=-
 // public - dtor
     data_object::~data_object() {
+        clearKeyVal( &cond_input_ );
     } // dtor
 
 // =-=-=-=-=-=-=-
