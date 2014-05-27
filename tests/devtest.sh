@@ -165,7 +165,7 @@ fi
 
 # clean up /tmp
 set +x
-ls /tmp/psqlodbc* | xargs rm -f
+ls /tmp/psqlodbc* 2> /dev/null | xargs rm -f
 set -x
 
 # done
