@@ -23,9 +23,6 @@
 #include "fileOpen.hpp"
 #include "dataObjInpOut.hpp"
 #include "dataCopy.hpp"
-#include "QUANTAnet_rbudpBase_c.hpp"
-#include "QUANTAnet_rbudpSender_c.hpp"
-#include "QUANTAnet_rbudpReceiver_c.hpp"
 
 #include "structFileSync.hpp" /* JMC */
 
@@ -148,5 +145,6 @@ int
 changeToUser( uid_t uid );
 int
 dropRootPrivilege();
-
+int
+checkModArgType( char *arg );
 #endif	/* MISC_SERVER_FUNCT_H */

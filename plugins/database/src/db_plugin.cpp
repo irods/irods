@@ -35,6 +35,7 @@
 // irods includes
 #include "rods.hpp"
 #include "rcMisc.hpp"
+#include "miscServerFunct.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -1537,28 +1538,6 @@ findOrInsertAVU( char *attribute, char *value, char *units ) {
     return( seqNum );
 }
 
-/*
-  check a chlModAVUMetadata argument; returning the type.
-*/
-int
-checkModArgType( char *arg ) {
-    if ( arg == NULL || *arg == '\0' ) {
-        return( CAT_INVALID_ARGUMENT );
-    }
-    if ( *( arg + 1 ) != ':' ) {
-        return( 0 );    /* not one */
-    }
-    if ( *arg == 'n' ) {
-        return( 1 );
-    }
-    if ( *arg == 'v' ) {
-        return( 2 );
-    }
-    if ( *arg == 'u' ) {
-        return( 3 );
-    }
-    return( 0 );
-}
 
 /* create a path name with escaped SQL special characters (% and _) */
 void

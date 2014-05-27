@@ -6,6 +6,7 @@
 #include "modAVUMetadata.hpp"
 #include "reGlobalsExtern.hpp"
 #include "icatHighLevelRoutines.hpp"
+#include "miscServerFunct.hpp"
 
 int
 rsModAVUMetadata( rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp ) {
@@ -70,6 +71,7 @@ rsModAVUMetadata( rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp ) {
 }
 
 #ifdef RODS_CAT
+
 int
 _rsModAVUMetadata( rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp ) {
     int status, status2;
@@ -91,12 +93,29 @@ _rsModAVUMetadata( rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp ) {
     args[2] = modAVUMetadataInp->arg2; /* item name */
     args[3] = modAVUMetadataInp->arg3; /* attr name */
     args[4] = modAVUMetadataInp->arg4; /* attr val */
-    args[5] = modAVUMetadataInp->arg5; /* attr unit */
-    if ( args[5] ) {
-        argc = 6;
-    }
-    else {
+    args[5] = modAVUMetadataInp->arg5;
+    if(args[5] == NULL) args[5] = ""; /* attr unit */
+    if(strcmp(args[0], "mod") == 0) {
+        argc = 9;
+#define ARG(arg) if((arg) != NULL && (arg)[0] != '\0') avu[checkModArgType(arg)] = arg
+        if(checkModArgType(modAVUMetadataInp->arg5) != 0) {
+            char *avu[4] = {"", "", "", ""};
+            ARG(modAVUMetadataInp->arg5);
+            ARG(modAVUMetadataInp->arg6);
+            ARG(modAVUMetadataInp->arg7);
+            args[5] = "";
+            memcpy(args+6, avu+1, sizeof(char *[3]));
+          } else {
+              char *avu[4] = {"", "", "", ""};
+                ARG(modAVUMetadataInp->arg6); /* new attr */
+                ARG(modAVUMetadataInp->arg7); /* new val */
+                ARG(modAVUMetadataInp->arg8); /* new unit */
+              memcpy(args+6, avu+1, sizeof(char *[3]));
+          }
+    } else if(strcmp(args[0], "cp") == 0) {
         argc = 5;
+    } else {
+    argc = 6;
     }
 
     status2 =  applyRuleArg( "acPreProcForModifyAVUMetadata", args, argc,
