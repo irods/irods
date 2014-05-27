@@ -25,7 +25,8 @@ class Server_Config:
     def capture(self, cfg_file, sep):
         # NOTE:: we want to make this programmatically detected
         cfg_file = os.path.abspath(cfg_file)
-        with open(cfg_file) as f:
+        f = open(cfg_file, 'r')
+        try:
             for i, row in enumerate(f):
                 columns = row.split(sep)
                 # print columns
@@ -34,6 +35,8 @@ class Server_Config:
                     continue
                 elif len(columns) > 1:
                     self.values[columns[0] .rstrip()] = columns[1].rstrip()
+        finally:
+            f.close()
 
     # =-=-=-=-=-=-=-=-=-=-=-=-=-
     # POSTGRES
