@@ -573,7 +573,7 @@ freeDataObjInfo( dataObjInfo_t *dataObjInfo ) {
     if ( dataObjInfo->specColl != NULL ) {
         free( dataObjInfo->specColl );
     }
-    if ( false && dataObjInfo->rescInfo != NULL ) {
+    if ( dataObjInfo->rescInfo != NULL ) {
         delete dataObjInfo->rescInfo;
         dataObjInfo->rescInfo = 0;
     }
@@ -824,7 +824,6 @@ addKeyVal( keyValPair_t *condInput, const char *keyWord, const char *value ) {
     }
 
     /* check if the keyword exists */
-
     for ( i = 0; i < condInput->len; i++ ) {
         if ( strcmp( keyWord, condInput->keyWord[i] ) == 0 ) {
             free( condInput->value[i] );
@@ -1092,9 +1091,10 @@ int
 clearKeyVal( keyValPair_t *condInput ) {
     int i;
 
-    if ( condInput == NULL ) {
+    if ( condInput == NULL || condInput->len < 1 ) {
         return ( 0 );
     }
+
     for ( i = 0; i < condInput->len; i++ ) {
         free( condInput->keyWord[i] );
         free( condInput->value[i] );

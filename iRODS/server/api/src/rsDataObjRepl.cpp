@@ -686,7 +686,6 @@ _rsDataObjReplS(
             destDataObjInfo->dataSize = myDestDataObjInfo->dataSize;
         }
     }
-
     freeDataObjInfo( myDestDataObjInfo );
 
     if ( status < 0 ) {
@@ -741,9 +740,13 @@ dataObjOpenForRepl(
     if ( cacheDataObjInfo == NULL ) {
         srcDataObjInfo  = ( dataObjInfo_t* )calloc( 1, sizeof( dataObjInfo_t ) );
         *srcDataObjInfo = *inpSrcDataObjInfo;
+
         srcDataObjInfo->rescInfo = new rescInfo_t;
         memcpy( srcDataObjInfo->rescInfo, inpSrcDataObjInfo->rescInfo, sizeof( rescInfo_t ) );
 
+        memset( &srcDataObjInfo->condInput, 0, sizeof( srcDataObjInfo->condInput ) );
+        replKeyVal( &inpSrcDataObjInfo->condInput, &srcDataObjInfo->condInput );
+       
     }
     else {
         srcDataObjInfo = cacheDataObjInfo;
@@ -790,6 +793,13 @@ dataObjOpenForRepl(
         /* inherit the replStatus of the src */
         inpDestDataObjInfo->replStatus = srcDataObjInfo->replStatus;
         *myDestDataObjInfo = *inpDestDataObjInfo;
+        // =-=-=-=-=-=-=-
+        // JMC :: deep copy of condInput - necessary for preventing a double-free
+        //     :: after an irsDataObjClose is called and then a freeDataObjInfo
+        //     :: on the copied outgoing dataObjInfo.  see _rsDataObjReplS()
+        memset( &myDestDataObjInfo->condInput, 0, sizeof( keyValPair_t ) );
+        replKeyVal( &inpDestDataObjInfo->condInput, &myDestDataObjInfo->condInput );
+        
         myDestDataObjInfo->rescInfo = new rescInfo_t;
         memcpy( myDestDataObjInfo->rescInfo, inpDestDataObjInfo->rescInfo, sizeof( rescInfo_t ) );
         replStatus = srcDataObjInfo->replStatus | OPEN_EXISTING_COPY;
@@ -907,6 +917,13 @@ dataObjOpenForRepl(
     if ( inpDestDataObjInfo != NULL && updateFlag == 0 ) {
         /* a new replica */
         *inpDestDataObjInfo = *myDestDataObjInfo;
+        // =-=-=-=-=-=-=-
+        // JMC :: deep copy of condInput - necessary for preventing a double-free
+        //     :: after an irsDataObjClose is called and then a freeDataObjInfo
+        //     :: on the copied outgoing dataObjInfo.  see _rsDataObjReplS()
+        memset( &inpDestDataObjInfo->condInput, 0, sizeof( keyValPair_t ) );
+        replKeyVal( &myDestDataObjInfo->condInput, &inpDestDataObjInfo->condInput );
+
         inpDestDataObjInfo->next = NULL;
     }
 

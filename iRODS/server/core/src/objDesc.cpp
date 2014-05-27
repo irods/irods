@@ -132,9 +132,6 @@ freeL1desc( int l1descInx ) {
     }
 
     if ( L1desc[l1descInx].dataObjInfo != NULL ) {
-        if ( L1desc[l1descInx].dataObjInfo->rescInfo != NULL ) {
-            delete L1desc[l1descInx].dataObjInfo->rescInfo;
-        }
         freeDataObjInfo( L1desc[l1descInx].dataObjInfo );
     }
 
@@ -543,12 +540,16 @@ initDataOprInp( dataOprInp_t *dataOprInp, int l1descInx, int oprType ) {
 int
 initDataObjInfoForRepl(
     rsComm_t *rsComm,
-    dataObjInfo_t *destDataObjInfo,
-    dataObjInfo_t *srcDataObjInfo,
-    rescInfo_t *destRescInfo,
-    char *destRescGroupName ) {
+    dataObjInfo_t* destDataObjInfo,
+    dataObjInfo_t* srcDataObjInfo,
+    rescInfo_t*    destRescInfo,
+    char*          destRescGroupName ) {
+
     memset( destDataObjInfo, 0, sizeof( dataObjInfo_t ) );
     *destDataObjInfo = *srcDataObjInfo;
+    memset( &destDataObjInfo->condInput, 0, sizeof(destDataObjInfo->condInput) );
+    replKeyVal( &srcDataObjInfo->condInput, &destDataObjInfo->condInput );
+
     destDataObjInfo->filePath[0] = '\0';
     rstrcpy( destDataObjInfo->rescName, destRescInfo->rescName, NAME_LEN );
 

@@ -54,6 +54,7 @@ namespace irods {
         }
 
         std::string rule_result( rule_result_ptr );
+        clearMsParamArray( &params, 0 );
 
         // =-=-=-=-=-=-=-
         // check to see if a negoation was requested
