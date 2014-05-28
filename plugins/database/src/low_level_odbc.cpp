@@ -763,13 +763,14 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, char *sql ) {
 
     myStatement->stmtPtr = hstmt;
 
+#ifdef PSQICAT 
+    SQLExecDirect( hstmt, (SQLCHAR*)"SAVEPOINT lowlevel_odbc_savepoint", SQL_NTS );
+#endif
+
     if ( bindTheVariables( hstmt, sql ) != 0 ) {
         return( -1 );
     }
    
-#ifdef PSQICAT 
-    i = cllExecSqlNoResult( icss, "SAVEPOINT lowlevel_odbc_savepoint" );
-#endif
     rodsLogSql( sql );
     stat = SQLExecDirect( hstmt, ( unsigned char * )sql, SQL_NTS );
 
@@ -803,15 +804,11 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, char *sql ) {
         logPsgError( LOG_NOTICE, icss->environPtr, myHdbc, hstmt,
                      icss->databaseType );
 #ifdef PSQICAT 
-        i = cllExecSqlNoResult( icss, "ROLLBACK TO SAVEPOINT lowlevel_odbc_savepoint" );
+        SQLExecDirect( hstmt, (SQLCHAR*)"ROLLBACK TO SAVEPOINT lowlevel_odbc_savepoint", SQL_NTS );
 #endif
         return( -1 );
     }
     
-#ifdef PSQICAT 
-    i = cllExecSqlNoResult( icss, "RELEASE SAVEPOINT lowlevel_odbc_savepoint" );
-#endif
-
     stat =  SQLNumResultCols( hstmt, &numColumns );
     if ( stat != SQL_SUCCESS ) {
         rodsLog( LOG_ERROR, "cllExecSqlWithResult: SQLNumResultCols failed: %d",
@@ -865,6 +862,7 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, char *sql ) {
         strncpy( myStatement->resultColName[i], ( char * )colName, columnLength[i] );
 
     }
+
     *stmtNum = statementNumber;
     return( 0 );
 }
