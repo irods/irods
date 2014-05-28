@@ -465,9 +465,8 @@ if [ "$1" == "docs" ] ; then
     detect_number_of_cpus_and_set_makejcmd
 
     cd $BUILDDIR
+    touch $BUILDDIR/iRODS/config/config.mk # required for Makefile
     $MAKEJCMD docs
-
-    $MAKEJCMD epm
 
     # prepare list file from template
     cd $BUILDDIR
