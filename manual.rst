@@ -1842,6 +1842,9 @@ History of Releases
 ==========   =========    ======================================================
 Date         Version      Description
 ==========   =========    ======================================================
+2014-05-29   4.0.1        First Point Release
+                            Memory leak fixes, security fixes, --run-in-place,
+                            MacOSX support, schema update mechanism.
 2014-03-28   4.0.0        Merged Codebase
                             This is the fourth major release of iRODS and the
                             first merged open source release from RENCI.
