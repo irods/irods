@@ -697,7 +697,7 @@ else
     GREPCMD="grep"
 fi
 
-UNIXODBC=`ldconfig -p 2> /dev/null | grep libodbc\.so`
+UNIXODBC=`/sbin/ldconfig -p 2> /dev/null | grep libodbc\.so`
 if [ "$?" != "0" ] ; then
     if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
         PREFLIGHT="$PREFLIGHT unixodbc"
