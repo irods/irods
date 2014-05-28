@@ -320,6 +320,33 @@ namespace irods {
                 rodsLog( LOG_DEBUG, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
             } // MATCH_HASH_POLICY_KW
 
+            key = strstr( buf, LOCAL_ZONE_SID_KW );
+            if ( key != NULL ) {
+                len = strlen( LOCAL_ZONE_SID_KW );
+
+                // Set property name and setting
+                prop_name.assign( LOCAL_ZONE_SID_KW );
+                prop_setting.assign( findNextTokenAndTerm( key + len ) );
+
+                // Update properties table
+                result = properties.set<std::string>( prop_name, prop_setting );
+
+                rodsLog( LOG_DEBUG, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
+            } // LOCAL_ZONE_SID_KW
+
+            key = strstr( buf, AGENT_KEY_KW.c_str() );
+            if ( key != NULL ) {
+                len = strlen( AGENT_KEY_KW.c_str() );
+
+                // Set property name and setting
+                prop_name.assign( AGENT_KEY_KW );
+                prop_setting.assign( findNextTokenAndTerm( key + len ) );
+
+                // Update properties table
+                result = properties.set<std::string>( prop_name, prop_setting );
+
+            } // AGENT_KEY_KW
+
             fchar = fgets( buf, BUF_LEN - 1, fptr );
 
         } // for ( ; fchar != '\0'; )

@@ -161,9 +161,20 @@ namespace irods {
         // create an encryption context
         EVP_CIPHER_CTX context;
         EVP_CIPHER_CTX_init( &context );
+
+        const EVP_CIPHER* algo = EVP_get_cipherbyname( algorithm_.c_str() );
+        if( !algo ) {
+            rodsLog( 
+                LOG_DEBUG, 
+                "buffer_crypt::encrypt - algorithm not supported [%s]", 
+                algorithm_.c_str() );
+            // default to aes 256 cbc
+            algo = EVP_aes_256_cbc();
+        }
+
         int ret = EVP_EncryptInit_ex(
                       &context,
-                      EVP_get_cipherbyname( algorithm_.c_str() ),
+                      algo, 
                       NULL,
                       &_key[0],
                       &_iv[0] );
@@ -238,9 +249,20 @@ namespace irods {
         // create an decryption context
         EVP_CIPHER_CTX context;
         EVP_CIPHER_CTX_init( &context );
+
+        const EVP_CIPHER* algo = EVP_get_cipherbyname( algorithm_.c_str() );
+        if( !algo ) {
+            rodsLog( 
+                LOG_DEBUG, 
+                "buffer_crypt::encrypt - algorithm not supported [%s]", 
+                algorithm_.c_str() );
+            // default to aes 256 cbc
+            algo = EVP_aes_256_cbc();
+        }
+
         int ret = EVP_DecryptInit_ex(
                       &context,
-                      EVP_get_cipherbyname( algorithm_.c_str() ),
+                      algo,
                       NULL,
                       &_key[0],
                       &_iv [0] );

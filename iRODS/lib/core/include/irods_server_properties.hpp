@@ -16,6 +16,12 @@
 
 namespace irods {
 
+    /// @brief kw for server property map stating this is an agent-agent conn
+    const std::string AGENT_CONN_KW( "agent_conn" );
+
+    /// @brief kw for server property map for encryption key
+    const std::string AGENT_KEY_KW( "agent_key" );
+    
     class server_properties {
 
     public:
@@ -41,9 +47,25 @@ namespace irods {
         template< typename T >
         error get_property( const std::string& _key, T& _val ) {
             error ret = properties.get< T >( _key, _val );
-            return PASSMSG( "server_properties::get_property", ret );
+            return PASS( ret );
         }
 
+        template< typename T >
+        error set_property( const std::string& _key, T& _val ) {
+            error ret = properties.set< T >( _key, _val );
+            return PASS( ret );
+        }
+
+        error delete_property( const std::string& _key ) {
+            size_t n = properties.erase( _key );
+            if( n != 1 ) {
+                std::string msg( "failed to erase key: ");
+                msg += _key;
+                return ERROR( UNMATCHED_KEY_OR_INDEX, _key );
+            } else {
+                return SUCCESS();
+            }
+        }
 
     private:
         // Disable constructors

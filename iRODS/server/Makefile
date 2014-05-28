@@ -54,7 +54,6 @@ SVR_CORE_OBJS =	\
 		$(svrCoreObjDir)/irods_server_negotiation.o \
 		$(svrCoreObjDir)/irods_collection_object.o \
         $(svrCoreObjDir)/irods_data_object.o \
-        $(svrCoreObjDir)/irods_server_properties.o \
 		$(svrCoreObjDir)/irods_structured_object.o \
 		$(svrCoreObjDir)/irods_physical_object.o \
 		$(svrCoreObjDir)/irods_file_object.o \
@@ -548,7 +547,7 @@ $(svrTestBinDir)/reTest: $(svrTestObjDir)/reTest.o $(OBJS) $(BOOST_LIBS) $(BOOST
 # chl
 $(svrTestBinDir)/test_chl: db_plugin_with_no_re $(svrTestObjDir)/test_chl.o $(SVR_ICAT_OBJS) $(LIBRARY) $(BOOST_LIBS) $(DB_IFACE_OBJS)
 	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $(svrTestObjDir)/test_chl.o $(LIBRARY) $(SVR_ICAT_OBJS) $(svrCoreObjDir)/irods_server_properties.o $(DB_PLUGIN_OBJ_WITH_NO_RE) $(DB_IFACE_OBJS) $(BOOST_LIBS) $(LDFLAGS)
+	@$(LDR) -o $@ $(svrTestObjDir)/test_chl.o $(LIBRARY) $(SVR_ICAT_OBJS) $(DB_PLUGIN_OBJ_WITH_NO_RE) $(DB_IFACE_OBJS) $(BOOST_LIBS) $(LDFLAGS)
 
 #
 # Rule Admin Targets

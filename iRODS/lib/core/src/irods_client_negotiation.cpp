@@ -4,6 +4,11 @@
 // =-=-=-=-=-=-=-
 #include "irods_client_server_negotiation.hpp"
 #include "irods_stacktrace.hpp"
+#include "irods_server_properties.hpp"
+#include "irods_kvp_string_parser.hpp"
+#include "irods_buffer_encryption.hpp"
+#include "irods_hasher_factory.hpp"
+#include "MD5Strategy.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
@@ -17,6 +22,66 @@
 
 
 namespace irods {
+
+/// =-=-=-=-=-=-=-
+/// @brief given a buffer encrypt and hash it for negotiation
+error sign_server_sid( 
+    std::string& _signed_sid ) {
+    server_properties& props = server_properties::getInstance();
+    irods::error err = props.capture_if_needed();
+
+    // =-=-=-=-=-=-=-
+    // get the local SID
+    std::string svr_sid;
+    err = props.get_property< std::string >( LOCAL_ZONE_SID_KW, svr_sid );
+    if( !err.ok() ) {
+        return PASS( err );
+    }
+
+    // =-=-=-=-=-=-=-
+    // get the encryption key from the properties
+    std::string enc_key;
+    err = props.get_property< std::string >( AGENT_KEY_KW, enc_key );
+    if( !err.ok() ) {
+        return PASS( err );
+    }
+
+    // =-=-=-=-=-=-=-
+    // create an encryption object
+    // 32 byte key, 8 byte iv, 16 rounds encryption
+    irods::buffer_crypt crypt;
+
+    irods::buffer_crypt::array_t key;
+
+    // leverage iteration to copy from std::string to a std::vector<>
+    key.assign( begin( enc_key ), end( enc_key ) );
+    
+    irods::buffer_crypt::array_t in_buf;
+    // leverage iteration to copy from std::string to a std::vector<>
+    in_buf.assign( begin( svr_sid ), end( svr_sid ) );
+
+    irods::buffer_crypt::array_t out_buf;
+    err = crypt.encrypt(
+              key,
+              key, // reuse key as iv
+              in_buf,
+              out_buf );
+    if( !err.ok() ) {
+        return PASS( err );
+    }
+
+    // =-=-=-=-=-=-=-
+    // hash the encrypted sid
+    Hasher hasher;
+    err = hasher_factory( hasher );
+    hasher.init( irods::MD5_NAME );
+    hasher.update( reinterpret_cast<char*>( out_buf.data() ), out_buf.size() );
+    hasher.digest( _signed_sid );
+
+    return SUCCESS();
+
+} // sign_server_sid
+
 /// =-=-=-=-=-=-=-
 /// @brief convenience class to initialize the table and index map for negotiations
     class client_server_negotiations_context {
@@ -222,12 +287,42 @@ namespace irods {
             ret = PASSMSG( msg.str(), ret );
             return ret;
         }
+        
+        // =-=-=-=-=-=-=-
+        // attempt to get the server config, if we can then we must be an
+        // Agent.  sign the SID and send it showing that we are a trusted
+        // Agent and not an actual Client ( icommand, jargon connection etc )
+        std::string cli_msg;
+
+        // =-=-=-=-=-=-=-
+        // sign the SID
+        std::string signed_sid;
+        err = sign_server_sid(
+                  signed_sid );
+        if( err.ok() ) {
+            // =-=-=-=-=-=-=-
+            // add the SID to the returning client message
+            cli_msg += CS_NEG_SID_KW             + 
+                       irods::kvp_association()  +
+                       signed_sid                +
+                       irods::kvp_delimiter();
+        } else {
+            irods::log( PASS( err ) );
+
+        }
+
+        // =-=-=-=-=-=-=-
+        // tack on the rest of the result
+        cli_msg += CS_NEG_RESULT_KW         + 
+                   irods::kvp_association() +
+                   result                   +
+                   irods::kvp_delimiter();
 
         // =-=-=-=-=-=-=-
         // send CS_NEG_CLI_1_MSG, success message to the server with our choice
         cs_neg_t send_cs_neg;
         send_cs_neg.status_ = CS_NEG_STATUS_SUCCESS;
-        strncpy( send_cs_neg.result_, result.c_str(), MAX_NAME_LEN );
+        strncpy( send_cs_neg.result_, cli_msg.c_str(), sizeof( send_cs_neg.result_ ) );
         err = send_client_server_negotiation_message(
                   _ptr,
                   send_cs_neg );

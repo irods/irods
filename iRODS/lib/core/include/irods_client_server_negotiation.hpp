@@ -47,6 +47,9 @@ namespace irods {
     const std::string CS_NEG_REQUIRE( "CS_NEG_REQUIRE" );     // index 0
     const std::string CS_NEG_REFUSE( "CS_NEG_REFUSE" );       // index 1
     const std::string CS_NEG_DONT_CARE( "CS_NEG_DONT_CARE" ); // index 2
+    
+    const std::string CS_NEG_SID_KW( "cs_neg_sid_kw" );
+    const std::string CS_NEG_RESULT_KW( "cs_neg_result_kw" );
 
 /// =-=-=-=-=-=-=-
 /// @brief function which determines if a client/server negotiation is needed
@@ -81,6 +84,11 @@ namespace irods {
     error read_client_server_negotiation_message(
         irods::network_object_ptr,       // socket
         boost::shared_ptr< cs_neg_t >& ); // message payload
+
+/// =-=-=-=-=-=-=-
+/// @brief given a buffer encrypt and hash it for negotiation
+error sign_server_sid( 
+    std::string& );      // signed buffer
 
 }; // namespace irods
 

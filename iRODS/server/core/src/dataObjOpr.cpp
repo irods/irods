@@ -27,6 +27,7 @@
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
+#include "irods_server_properties.hpp"
 #include "irods_log.hpp"
 #include "irods_stacktrace.hpp"
 
@@ -59,6 +60,7 @@ getDataObjFileMeta( rsComm_t *rsComm, char *data_id, keyValPair_t *condInput ) {
     addInxIval( &genQueryInp.selectInp, COL_DATA_FILEMETA_OBJ_ID, 1 );
     addInxIval( &genQueryInp.selectInp, COL_DATA_FILEMETA_UID, 1 );
     addInxIval( &genQueryInp.selectInp, COL_DATA_FILEMETA_GID, 1 );
+    addInxIval( &genQueryInp.selectInp, COL_DATA_FILEMETA_OWNER, 1 );
     addInxIval( &genQueryInp.selectInp, COL_DATA_FILEMETA_OWNER, 1 );
     addInxIval( &genQueryInp.selectInp, COL_DATA_FILEMETA_GROUP, 1 );
     addInxIval( &genQueryInp.selectInp, COL_DATA_FILEMETA_MODE, 1 );
@@ -1229,9 +1231,27 @@ chkOrphanFile(
     // query in order to avoid orphaning another users physical data.
     addKeyVal( &genQueryInp.condInput, DISABLE_STRICT_ACL_KW, "disable" );
 
+    irods::server_properties& props = irods::server_properties::getInstance();
+    irods::error get_err;
+    irods::error err = props.capture_if_needed();
+    if( err.ok() ) {
+        std::string svr_sid;
+        get_err = props.get_property< std::string >( irods::AGENT_CONN_KW, svr_sid );
+        if( !get_err.ok() ) { 
+            std::string tmp( "StrictACLOverride" );
+            props.set_property< std::string >( irods::AGENT_CONN_KW, tmp );
+        }
+    }
+
     // =-=-=-=-=-=-=-
     // invoke genquery
     status =  rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
+    
+    // =-=-=-=-=-=-=-
+    // remove the agent-agent conn flag
+    if( !get_err.ok() ) {
+        props.delete_property( irods::AGENT_CONN_KW );
+    }
 
     clearGenQueryInp( &genQueryInp );
     if ( status < 0 ) {

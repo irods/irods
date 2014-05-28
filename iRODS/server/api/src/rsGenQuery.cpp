@@ -8,6 +8,7 @@
 #include "miscUtil.hpp"
 #include "cache.hpp"
 #include "rsGlobalExtern.hpp"
+#include "irods_server_properties.hpp"
 
 static
 irods::error strip_irods_query_terms(
@@ -215,12 +216,21 @@ _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
                              retry next time. */
         }
     }
+    
+    // =-=-=-=-=-=-=-
+    // verify that we are running a query for another agent connection
+    irods::server_properties& props = irods::server_properties::getInstance();
+    props.capture_if_needed();
 
+    std::string svr_sid;
+    irods::error err = props.get_property< std::string >( irods::AGENT_CONN_KW, svr_sid );
+    bool agent_conn_flg = err.ok();
+    
     // =-=-=-=-=-=-=-
     // detect if a request for disable of strict acls is made
     int acl_val = -1;
     char* dis_kw = getValByKey( &genQueryInp->condInput, DISABLE_STRICT_ACL_KW );
-    if ( dis_kw ) {
+    if ( agent_conn_flg && dis_kw ) {
         acl_val = 0;
     }
 
@@ -253,7 +263,7 @@ _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
 
     // =-=-=-=-=-=-=-
     // if a disable was requested, repave with old value immediately
-    if ( dis_kw ) {
+    if ( agent_conn_flg && dis_kw ) {
         chlGenQueryAccessControlSetup(
             rsComm->clientUser.userName,
             rsComm->clientUser.rodsZone,
