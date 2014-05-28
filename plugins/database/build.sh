@@ -154,6 +154,7 @@ else
 fi
 
 # need odbc-dev package
+set +e
 UNIXODBCDEV=`find /opt/csw/include/ /usr/include /usr/local -name sql.h 2> /dev/null`
 if [ "$UNIXODBCDEV" == "" ] ; then
     if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
@@ -172,6 +173,7 @@ if [ "$UNIXODBCDEV" == "" ] ; then
 else
     echo "Detected unixODBC-dev library [$UNIXODBCDEV]"
 fi
+set -e
 
 # print out prerequisites error
 if [ "$PREFLIGHT" != "" ] ; then
