@@ -131,6 +131,22 @@ rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
 #endif
     }
     else {
+        // =-=-=-=-=-=-=-
+        // strip disable strict acl flag if the agent conn flag is missing
+        char* dis_kw = getValByKey( &genQueryInp->condInput, DISABLE_STRICT_ACL_KW );
+        if ( dis_kw ) {
+            irods::server_properties& props = irods::server_properties::getInstance();
+            props.capture_if_needed();
+
+            std::string svr_sid;
+            irods::error err = props.get_property< std::string >( irods::AGENT_CONN_KW, svr_sid );
+            if( !err.ok() ) {
+                rmKeyVal( &genQueryInp->condInput, DISABLE_STRICT_ACL_KW );
+                        
+            }
+
+        } // if dis_kw
+
         status = rcGenQuery( rodsServerHost->conn,
                              genQueryInp, genQueryOut );
     }
