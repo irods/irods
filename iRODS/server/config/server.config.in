@@ -58,7 +58,7 @@ LocalZoneSID TEMP_LOCAL_ZONE_SID
 
 # default 32 byte key for agent-agent handshake during 
 # advanced client-server negotiation
-agent_key temp_32_byte_key_for_agent_conn
+agent_key temp_32_byte_key_for_agent__conn
 
 # set the matching policy to strict to enforce the use of 
 # the default hash scheme and disallow usage of client requested
