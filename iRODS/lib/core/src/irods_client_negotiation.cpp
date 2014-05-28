@@ -54,11 +54,11 @@ error sign_server_sid(
     irods::buffer_crypt::array_t key;
 
     // leverage iteration to copy from std::string to a std::vector<>
-    key.assign( begin( enc_key ), end( enc_key ) );
+    key.assign( enc_key.begin(), enc_key.end() );
     
     irods::buffer_crypt::array_t in_buf;
     // leverage iteration to copy from std::string to a std::vector<>
-    in_buf.assign( begin( svr_sid ), end( svr_sid ) );
+    in_buf.assign( svr_sid.begin(), svr_sid.end() );
 
     irods::buffer_crypt::array_t out_buf;
     err = crypt.encrypt(
