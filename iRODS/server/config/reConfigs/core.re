@@ -5,7 +5,7 @@
 #Test Rules
 printHello { print_hello; }
 
-# 
+#
 #
 # These are sys admin rules for creating and deleting users and renaming
 # the local zone.
@@ -26,7 +26,7 @@ acCreateUserF1 {
   msiCommit;  }
 acVacuum(*arg1) { delay(*arg1) { msiVacuum;} }
 acCreateDefaultCollections { acCreateUserZoneCollections; }
-acCreateUserZoneCollections { 
+acCreateUserZoneCollections {
   acCreateCollByAdmin("/"++$rodsZoneProxy++"/home", $otherUserName);
   acCreateCollByAdmin("/"++$rodsZoneProxy++"/trash/home", $otherUserName); }
 #acCreateCollByAdmin(*parColl, *childColl) {msiCreateCollByAdmin(*parColl,*childColl); }
@@ -77,7 +77,7 @@ acGetUserByDN(*arg,*OUT) { }
 # cases, access control to the data-objects is enforced.  Even with
 # STRICT access control, the admin user is not restricted so various
 # microservices and queries will still be able to evaluate system-wide
-# information.  
+# information.
 # Post irods 2.5, $userNameClient is available although this
 # is only secure in a irods-password environment (not GSI), but you can
 # then have rules for specific users:
@@ -88,10 +88,10 @@ acGetUserByDN(*arg,*OUT) { }
 # strict or not for all users:
 #acAclPolicy { }
 acAclPolicy {msiAclPolicy("STRICT"); }
-# When choosing a "STRICT" ACL policy you should consider setting the 
+# When choosing a "STRICT" ACL policy you should consider setting the
 # following permissions if you are using the PHP web browser:
 # ichmod -M read public /ZONE_NAME
-# ichmod -M read public /ZONE_NAME/home 
+# ichmod -M read public /ZONE_NAME/home
 # Post-3.2, you may also want to use 'iadmin modzonecollacl'; see the
 # help 'iadmin h modzonecollacl' for more information on this.
 #
@@ -124,15 +124,15 @@ acCheckPasswordStrength(*password) { }
 # Note that the msiOprDisallowed microservice can be used by all the rules
 # to disallow the execution of certain actions.
 # 1) acSetRescSchemeForCreate - This is the preprossing rule for creating a
-# data object. It can be used for setting the resource selection scheme 
-# when creating a data object which is used by the put, copy and 
-# replicate operations. Currently, three preprocessing functions can be 
+# data object. It can be used for setting the resource selection scheme
+# when creating a data object which is used by the put, copy and
+# replicate operations. Currently, three preprocessing functions can be
 # used by this rule:
 #    msiSetNoDirectRescInp(rescList) - sets a list of resources that cannot
-#      be used by a normal user directly. More than one resources can be 
-#      input using the character "%" as separator. e.g., resc1%resc2%resc3.  
+#      be used by a normal user directly. More than one resources can be
+#      input using the character "%" as separator. e.g., resc1%resc2%resc3.
 #      This function is optional, but if used, should be the first function
-#      to execute because it screens the resource input. 
+#      to execute because it screens the resource input.
 #    msiSetDefaultResc(defaultRescList, optionStr) - sets the default resource.
 #      From version 2.3 onward, this function is no longer mandatory, but
 #      if it is used, if should be executed right after the screening
@@ -140,15 +140,15 @@ acCheckPasswordStrength(*password) { }
 #      defaultResc - the resource to use if no resource is input. A "null"
 #        means there is no defaultResc. More than one resources can be
 #      input using the character "%" as separator.
-#      optionStr - Can be "forced", "preferred" or "null". A "forced" input 
-#      means the defaultResc will be used regardless of the user input. 
+#      optionStr - Can be "forced", "preferred" or "null". A "forced" input
+#      means the defaultResc will be used regardless of the user input.
 #      The forced action only apply to to users with normal privilege.
-#    msiSetRescSortScheme(sortScheme) - set the scheme for 
-#      for selecting the best resource to use when creating a data object.  
-#      sortScheme - The sorting scheme. Valid scheme are "default", 
+#    msiSetRescSortScheme(sortScheme) - set the scheme for
+#      for selecting the best resource to use when creating a data object.
+#      sortScheme - The sorting scheme. Valid scheme are "default",
 #        "random", "byLoad" and "byRescClass". The "byRescClass" scheme will put the
 #        cache class of resource on the top of the list. The "byLoad" scheme will put
-#        the least loaded resource on the top of the list: in order to work properly, 
+#        the least loaded resource on the top of the list: in order to work properly,
 #        the RMS system must be switched on in order to pick up the load information
 #        for each server in the resource group list.
 #        The scheme "random" and "byRescClass" can be applied in sequence. e.g.,
@@ -160,7 +160,7 @@ acCheckPasswordStrength(*password) { }
 # data object. This rule is similar to acSetRescSchemeForCreate except it
 # applies to replication. All the micro-services for acSetRescSchemeForCreate
 # also apply to acSetRescSchemeForRepl
-# 
+#
 # acSetRescSchemeForCreate {msiSetNoDirectRescInp("xyz%demoResc8%abc"); msiSetDefaultResc("demoResc8","null"); msiSetRescSortScheme("default"); }
 # acSetRescSchemeForCreate {msiSetDefaultResc("demoResc","null"); msiSetRescSortScheme("random"); msiSetRescSortScheme("byRescClass"); }
 # acSetRescSchemeForCreate {msiSetDefaultResc("demoResc7%demoResc8","preferred"); }
@@ -171,11 +171,11 @@ acSetRescSchemeForRepl {msiSetDefaultResc("demoResc","null"); }
 # acSetRescSchemeForCreate {msiSetDefaultResc("demoResc","forced"); msiSetRescSortScheme("random"); msiSetRescSortScheme("byRescClass"); }
 #
 # 2) acPreprocForDataObjOpen - Preprocess rule for opening an existing
-# data object which is used by the get, copy and replicate operations. 
+# data object which is used by the get, copy and replicate operations.
 # Currently, four preprocessing functions can be used individually or
 # in sequence by this rule.
-#    msiSetDataObjPreferredResc(preferredRescList) - set the preferred 
-#      resources of the opened object. The copy stored in this preferred 
+#    msiSetDataObjPreferredResc(preferredRescList) - set the preferred
+#      resources of the opened object. The copy stored in this preferred
 #      resource will be picked if it exists. More than one resources can be
 #      input using the character "%" as separator. e.g., resc1%resc2%resc3.
 #      The most preferred resource should be at the top of the list.
@@ -184,16 +184,16 @@ acSetRescSchemeForRepl {msiSetDefaultResc("demoResc","null"); }
 #      unless this is the only copy.
 #    msiSortDataObj(sortingScheme) - Sort the copies of the data object using
 #      this scheme. Currently, "random" and "byRescClass" sorting scheme are
-#      supported. If "byRescClass" is set, data objects in the "cache" 
-#      resources will be placed ahead of of those in the "archive" resources. 
+#      supported. If "byRescClass" is set, data objects in the "cache"
+#      resources will be placed ahead of of those in the "archive" resources.
 #      The sorting schemes can also be chained. e.g.,
 #      msiSortDataObj(random); msiSortDataObj(byRescClass) means that
 #      the data objects will be sorted randomly first and then separated
-#      by class. 
-#    msiStageDataObj(cacheResc) - stage a copy of the data object in the 
-#      cacheResc before opening the data object. 
+#      by class.
+#    msiStageDataObj(cacheResc) - stage a copy of the data object in the
+#      cacheResc before opening the data object.
 #    The $writeFlag session variable has been created to be used as a condition
-#    for differentiating between open for read ($writeFlag == "0") and 
+#    for differentiating between open for read ($writeFlag == "0") and
 #    write ($writeFlag == "1"). e.g. :
 # acPreprocForDataObjOpen {ON($writeFlag == "0") {msiStageDataObj("demoResc8"); } }
 # acPreprocForDataObjOpen {ON($writeFlag == "1") { } }
@@ -203,11 +203,11 @@ acPreprocForDataObjOpen { }
 # acPreprocForDataObjOpen {msiGetSessionVarValue("all","all"); }
 # acPreprocForDataObjOpen {ON($writeFlag == "0") {writeLine("serverLog",$objPath);} }
 # 3) acSetMultiReplPerResc - Preprocess rule for replicating an existing
-# data object. Currently, one preprocessing function can be used 
-# by this rule. 
+# data object. Currently, one preprocessing function can be used
+# by this rule.
 #     msiSetMultiReplPerResc - By default, the system allows one copy per
 #       resource. This micro-service sets the number of copies per resource
-#       to unlimited.   
+#       to unlimited.
 acSetMultiReplPerResc { }
 # acSetMultiReplPerResc {msiGetSessionVarValue("all","all"); }
 #
@@ -219,22 +219,22 @@ acSetMultiReplPerResc { }
 # 8a) acPostProcForPhymv - Rule for post processing of data object phymv.
 # 8b) acPostProcForRepl - Rule for post processing of data object repl.
 # of a physical file path (e.g. - ireg command).
-# 
+#
 # Currently, three post processing functions can be used individually or
-# in sequence by these rules. 
-#    msiExtractNaraMetadata - extract and register metadata from the just 
+# in sequence by these rules.
+#    msiExtractNaraMetadata - extract and register metadata from the just
 #     upload NARA files.
-#    msiSysReplDataObj(replResc, flag) - can be used to replicate a copy of 
-#    the file just uploaded or copied data object to the specified replResc 
-#    Valid values for the "flag" input are "all", "updateRepl" and 
-#    "rbudpTransfer". More than one flag values can be set using the 
-#    "%" character as separator. e.g., "all%updateRepl". "updateRepl" means 
-#    update an existing stale copy to the latest copy. The "all" flag means 
-#    replicate to all resources in a resource group or update all stale 
+#    msiSysReplDataObj(replResc, flag) - can be used to replicate a copy of
+#    the file just uploaded or copied data object to the specified replResc
+#    Valid values for the "flag" input are "all", "updateRepl" and
+#    "rbudpTransfer". More than one flag values can be set using the
+#    "%" character as separator. e.g., "all%updateRepl". "updateRepl" means
+#    update an existing stale copy to the latest copy. The "all" flag means
+#    replicate to all resources in a resource group or update all stale
 #    copies if the "updateRepl" flag is also set. "rbudpTransfer" means
 #    the RBUDP protocol will be used for the transfer.
-#    A "null" input means a single will be made in one of the resource 
-#    in the resource group.  
+#    A "null" input means a single will be made in one of the resource
+#    in the resource group.
 #    It may be desirable to do replication only if the dataObject is stored
 #    in a resource group. For example, the following rule can be used:
 # acPostProcForPut {ON($rescGroupName != "") {msiSysReplDataObj($rescGroupName,"all"); } }
@@ -265,29 +265,29 @@ acPostProcForRepl { }
 # This rule supports condition based on $rescName so that different
 # policies can be set for different resources.
 # Only one function can be used for this rule
-#    msiSetNumThreads(sizePerThrInMb, maxNumThr, windowSize) - set the number 
-#      of threads and the tcp window size. The number of threads is based 
+#    msiSetNumThreads(sizePerThrInMb, maxNumThr, windowSize) - set the number
+#      of threads and the tcp window size. The number of threads is based
 #      the two input parameters
 #      sizePerThrInMb - The number of threads is computed using:
 #        numThreads = fileSizeInMb / sizePerThrInMb + 1
 #        where sizePerThrInMb is an integer value in MBytes. It also accepts
 #        the word "default" which sets sizePerThrInMb to a default value of 32
 #      maxNumThr - The maximum number of threads to use. It accepts integer
-#        value up to 16. It also accepts the word "default" which sets 
+#        value up to 16. It also accepts the word "default" which sets
 #        maxNumThr to a default value of 4. A value of 0 means no parallel
 #        I/O. This can be helpful to get around firewall issues.
-#    windowSize - the tcp window size in Bytes for the parallel transfer. 
+#    windowSize - the tcp window size in Bytes for the parallel transfer.
 #      A value of 0 or "default" means a default size of 1,048,576 Bytes.
 # The msiSetNumThreads function must be present or no thread will be used
-# for all transfer 
+# for all transfer
 # acSetNumThreads {msiSetNumThreads("16","4","default"); }
-# acSetNumThreads {msiSetNumThreads("default","16","default"); }  
-# acSetNumThreads {ON($rescName == "macResc") {msiSetNumThreads("default","0","default"); } } 
+# acSetNumThreads {msiSetNumThreads("default","16","default"); }
+# acSetNumThreads {ON($rescName == "macResc") {msiSetNumThreads("default","0","default"); } }
 acSetNumThreads {msiSetNumThreads("default","16","default"); }
 # 10) acDataDeletePolicy - This rule set the policy for deleting data objects.
 #     This is the PreProcessing rule for delete.
 # Only one function can be called:
-#    msiDeleteDisallowed() - Disallow the deletion of the data object. 
+#    msiDeleteDisallowed() - Disallow the deletion of the data object.
 # Examples:
 #    acDataDeletePolicy {ON($objPath like "/foo/bar/*") {msiDeleteDisallowed; } }
 #      this rule prevents the deletion of any data objects or collections
@@ -298,29 +298,29 @@ acSetNumThreads {msiSetNumThreads("default","16","default"); }
 #acDataDeletePolicy {ON($objPath like "/tempZone/home/rods/*") {msiDeleteDisallowed; } }
 acDataDeletePolicy { }
 #
-# 11) acPostProcForDelete - This rule set the post-processing policy for 
+# 11) acPostProcForDelete - This rule set the post-processing policy for
 # deleting data objects.  Currently there is no function written specifically
 # for this rule.
 acPostProcForDelete { }
 #
-# 12) acSetChkFilePathPerm - This rule replaces acNoChkFilePathPerm. 
+# 12) acSetChkFilePathPerm - This rule replaces acNoChkFilePathPerm.
 # For now, the only safe setting is the default,
 # msiSetChkFilePathPerm("disallowPathReg"), which prevents non-admin
 # users from using imcoll and ireg.  In the next release (after 3.1)
 # we expect to be able to offer the other settings described below.
-# You can experiment with the other settings, but we do not 
-# recommend them for production at this time.  The rule sets 
-# the policy for checking the file path permission when registering physical 
-# file path using commands such as ireg and imcoll. This rule also sets the 
-# policy for checking the file path when unregistering a data object without 
+# You can experiment with the other settings, but we do not
+# recommend them for production at this time.  The rule sets
+# the policy for checking the file path permission when registering physical
+# file path using commands such as ireg and imcoll. This rule also sets the
+# policy for checking the file path when unregistering a data object without
 # deleting the physical file.
 # Normally, a normal user cannot unregister a data object if the physical
 # file is located in a resource vault. Setting the chkType input of
-# msiSetChkFilePathPerm to "noChkPathPerm" allows this check to be bypassed. 
+# msiSetChkFilePathPerm to "noChkPathPerm" allows this check to be bypassed.
 # Only one function can be called:
 #    msiSetChkFilePathPerm(chkType) - Valid values for chkType are:
 #       "disallowPathReg" - Disallow of registration of iRODS path using
-#         ireg and imcoll by a non-privileged user. 
+#         ireg and imcoll by a non-privileged user.
 #       "noChkPathPerm" - Do not check file path permission when registering
 #         a file. WARNING - This setting can create a security problem if used.
 #      "doChkPathPerm" - Check UNIX ownership of physical files before
@@ -328,7 +328,7 @@ acPostProcForDelete { }
 #         path is not allowed.
 #     "chkNonVaultPathPerm" - Check UNIX ownership of physical files before
 #         registering. Registration of path inside iRODS resource vault
-#         path is allowed if the vault path belong to the user. 
+#         path is allowed if the vault path belong to the user.
 # acSetChkFilePathPerm {msiSetChkFilePathPerm("doChkPathPerm"); }
 acSetChkFilePathPerm {msiSetChkFilePathPerm("disallowPathReg"); }
 #
@@ -339,13 +339,13 @@ acSetChkFilePathPerm {msiSetChkFilePathPerm("disallowPathReg"); }
 acTrashPolicy { }
 # acTrashPolicy {msiNoTrashCan; }
 #
-# 14) acSetPublicUserPolicy - This rule set the policy for the set of 
-# operations that are allowable for the user "public" Only one function can 
+# 14) acSetPublicUserPolicy - This rule set the policy for the set of
+# operations that are allowable for the user "public" Only one function can
 # be called.
 #    msiSetPublicUserOpr(oprList) - Sets a list of operations that can
 #      be performed by the user "public". Only 2 operations are allowed -
-#      "read" - read files; "query" - browse some system level metadata. More 
-#      than one operation can be input using the character "%" as separator. 
+#      "read" - read files; "query" - browse some system level metadata. More
+#      than one operation can be input using the character "%" as separator.
 #      e.g., read%query.
 # acSetPublicUserPolicy {msiSetPublicUserOpr("read%query"); }
 acSetPublicUserPolicy { }
@@ -363,23 +363,23 @@ acChkHostAccessControl { }
 #      to GRAFT_PATH - graft (add) the logical path to the vault path of the
 #      resource when generating the physical path for a data object. The first
 #      argument (addUserName) specifies whether the userName should be added
-#      to the physical path. e.g. $vaultPath/$userName/$logicalPath. 
+#      to the physical path. e.g. $vaultPath/$userName/$logicalPath.
 #      "addUserName" can have two values - yes or no. The second argument
 #      (trimDirCnt) specifies the number of leading directory elements of
 #      of the logical path to trim. A value of 0 or 1 is allowable. The
-#      default value is 1. 
+#      default value is 1.
 #    msiSetRandomScheme() - Set the VaultPath scheme to RANDOM meaning a
 #      randomly generated path is appended to the vaultPath when generating
 #      the physical path. e.g., $vaultPath/$userName/$randomPath.
 #      The advantage with the RANDOM scheme is renaming operations (imv, irm)
-#      are much faster because there is no need to rename the 
-#      corresponding physical path. 
+#      are much faster because there is no need to rename the
+#      corresponding physical path.
 # This default is GRAFT_PATH scheme with addUserName == yes and trimDirCnt == 1.
 # Note : if trimDirCnt is greater than 1, the home or trash entry will be
 # taken out.
 # acSetVaultPathPolicy {msiSetRandomScheme; }
 acSetVaultPathPolicy {msiSetGraftPathScheme("no","1"); }
-#      
+#
 # 17) acSetReServerNumProc - This rule set the policy for the number of processes
 # to use when running jobs in the irodsReServer. The irodsReServer can now
 # muli-task such that one or two long running jobs cannot block the execution
@@ -411,7 +411,7 @@ acPreprocForRmColl { }
 acPostProcForRmColl { }
 #
 # 22) acPreProcForModifyUser - This rule set the pre-processing policy for
-# modifying the properties of a user. 
+# modifying the properties of a user.
 # Option specifies the modifying-action being performed by the administraor
 #
 #acPreProcForModifyUser(*UserName,*Option,*NewValue) {writeLine("serverLog","TEST:acPreProcForModifyUser: *UserName,*Option,*NewValue"); }
@@ -428,23 +428,38 @@ acPostProcForModifyUser(*UserName,*Option,*NewValue) { }
 #
 # 24) acPreProcForModifyAVUmetadata - This rule set the pre-processing policy for
 # adding/deleting and copying the AVUmetadata for data, collection, user and resources.
-# option= add, adda, rm, rmw, rmi, cp
-# item type= -d,-d,-c,-C,-r,-R,-u,-U 
-#
-#acPreProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit) {writeLine("serverLog","TEST:acPreProcForModifyAVUMetadata:*Option,*ItemType,*ItemName"); }
-#
+# For argument format, refer to imeta -h
+# when option =
+# mod
+# new values have the prefix n:, v:, u:, and "" means that that value remain unchanged
+acPreProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit, *NAName, *NAValue, *NAUnit) { }
+# add, adda, addw, set, rm, rmw, rmi
 acPreProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit) { }
-acPreProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue) { }
+# cp
+acPreProcForModifyAVUMetadata(*Option,*SourceItemType,*TargetItemType,*SourceItemName,*TargetItemName) { }
+#
+# for backward compatibility
+#acPreProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit, *NAName, *NAValue, *NAUnit) {
+#  acPreProcForModifyAVUMetadata(*Option, *ItemType, *ItemName, *AName, *AValue, *AUnit);
+#}
+#acPreProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit) {
+#  on(*AUnit == "") {
+#    # copy old acPreProcForModifyAVUMetadata(*Option, *ItemType, *ItemName, *AName, *AValue)
+#  }
+#  or {
+#    # copy old acPreProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit)
+#  }
+#}
+#acPreProcForModifyAVUMetadata(*Option,*SourceItemType,*TargetItemType,*SourceItemName,*TargetItemName) {
+#  acPreProcForModifyAVUMetadata(*Option, *SourceItemType, *SourceItemName, *TargetItemName, "", "");
+#}
 #
 # 25) acPostProcForModifyAVUmetadata - This rule set the post-processing policy for
 # adding/deleting and copying the AVUmetadata for data, collection, user and resources.
-# option= add, adda, rm, rmw, rmi, cp
-# item type= -d,-d,-c,-C,-r,-R,-u,-U
-#
-#acPostProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit) {writeLine("serverLog","TEST:acPostProcForModifyAVUMetadata:*Option,*ItemType,*ItemName"); }
-#
+# See acPreProcForModifyAVUMetadata for which rule to implement and backward compatibility
+acPostProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit, *NAName, *NAValue, *NAUnit) { }
 acPostProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit) { }
-acPostProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue) { }
+acPostProcForModifyAVUMetadata(*Option,*SourceItemType,*TargetItemType,*SourceItemName,*TargetItemName) { }
 #
 # 26) acPreProcForCreateUser - This rule set the pre-processing policy for
 # creating a new user.
@@ -549,7 +564,7 @@ acPostProcForModifyResourceGroup(*ResourceGroupName,*Option,*ResourceName) { }
 #
 # 42) acPreProcForModifyCollMeta - This rule set the pre-processing policy for
 # modifying system metadata of a collection.
-# 
+#
 acPreProcForModifyCollMeta { }
 #
 # 43) acPostProcForModifyCollMeta - This rule set the post-processing policy for
@@ -571,7 +586,7 @@ acPreProcForModifyDataObjMeta { }
 acPostProcForModifyDataObjMeta { }
 #
 # 44) acPreProcForModifyAccessControl - This rule set the pre-processing policy for
-# access control 
+# access control
 #
 #acPreProcForModifyAccessControl(*RecursiveFlag,*AccessLevel,*UserName,*Zone,*Path) {writeLine("serverLog","TEST:acPreProcForModifyAccessControl: *RecursiveFlag,*AccessLevel,*UserName,*Zone,*Path"); }
 #
@@ -639,19 +654,19 @@ acPostProcForGenQuery(*genQueryInpStr,*genQueryOutStr,*genQueryStatusStr) { }
 #    msiSetRescQuotaPolicy() - This microservice sets whether the Resource
 #      Quota should be enforced. Valid values for the flag are:
 #      "on"  - enable Resource Quota enforcement,
-#      "off" - disable Resource Quota enforcement (default). 
+#      "off" - disable Resource Quota enforcement (default).
 # acRescQuotaPolicy {msiSetRescQuotaPolicy("off"); }
 acRescQuotaPolicy {msiSetRescQuotaPolicy("off"); }
 #
 #
 # 51) acBulkPutPostProcPolicy - This rule set the policy for executing
-# the post processing put rule (acPostProcForPut) for bulk put. Since the 
+# the post processing put rule (acPostProcForPut) for bulk put. Since the
 # bulk put option is intended to improve the upload speed, executing
-# the acPostProcForPut for every file rule will slow down the the 
+# the acPostProcForPut for every file rule will slow down the the
 # upload. This rule provide an option to turn the postprocessing off.
 # Only one function can be called:
-#    msiSetBulkPutPostProcPolicy () - This microservice sets whether the 
-#    acPostProcForPut rule will be run bulk put. Valid values for the 
+#    msiSetBulkPutPostProcPolicy () - This microservice sets whether the
+#    acPostProcForPut rule will be run bulk put. Valid values for the
 #    flag are:
 #      "on"  - enable execution of acPostProcForPut.
 #      "off" - disable execution of acPostProcForPut (default).
@@ -663,19 +678,19 @@ acBulkPutPostProcPolicy {msiSetBulkPutPostProcPolicy("off"); }
 # associated with this rule.
 acPostProcForTarFileReg { }
 # 53) acPostProcForDataObjWrite - Rule for pre processing the write buffer
-# the argument passed is of type BUF_LEN_MS_T 
+# the argument passed is of type BUF_LEN_MS_T
 #acPostProcForDataObjWrite(*WriteBuffer) {writeLine("serverLog","TEST:acPostProcForDataObjWrite"); }
 # rule below used for testing. dont uncomment this....
 # acPostProcForDataObjWrite(*WriteBuffer) {msiCutBufferInHalf(*WriteBuffer); }
 acPostProcForDataObjWrite(*WriteBuffer) { }
 # 54) acPostProcForDataObjRead - Rule for post processing the read buffer
-# the argument passed is of type BUF_LEN_MS_T 
+# the argument passed is of type BUF_LEN_MS_T
 #acPostProcForDataObjRead(*ReadBuffer) {writeLine("serverLog","TEST:acPostProcForDataObjRead"); }
 # rule below used for testing. dont uncomment this....
 # acPostProcForDataObjRead(*ReadBuffer) {msiCutBufferInHalf(*ReadBuffer); }
 acPostProcForDataObjRead(*ReadBuffer) { }
 # 55) acPreProcForExecCmd - Rule for pre processing when remotely executing a command
-#     in server/bin/cmd 
+#     in server/bin/cmd
 #     parameter contains the command to be executed, arguments, execution address, hint path.
 #     if a parameter is not provided, then it is the empty string
 acPreProcForExecCmd(*cmd, *args, *addr, *hint) { }
