@@ -33,7 +33,7 @@ fi
 # set return value accordingly
 if [ ${#elf_links[@]} -gt 1 ]; then
 	echo "Multiple versions of postgres found, aborting installation" 1>&2
-	echo -e `find /usr -name "psql" -print 2> /dev/null ` 1>&2
+	echo -e `find $SEARCHPATHS -name "psql" -print 2> /dev/null ` 1>&2
 	ret="FAIL/FAIL"
 fi
 

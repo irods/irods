@@ -104,11 +104,6 @@ function set_tmpfile {
 # =-=-=-=-=-=-=-
 # set up some variables
 mkdir -p /tmp/$USER
-TMPCONFIGFILE="/tmp/$USER/irods.config.epm"
-mkdir -p $(dirname $TMPCONFIGFILE)
-
-EPMFILE="$BUILDDIR/packaging/irods.config.icat.epm"
-cp $EPMFILE $TMPCONFIGFILE
 
 # prepare list file from template
 source $SCRIPTPATH/${DB_TYPE}/VERSION
@@ -131,27 +126,6 @@ echo "Detected OS [$DETECTEDOS]"
 # determine the OS Version
 DETECTEDOSVERSION=`$BUILDDIR/packaging/find_os_version.sh`
 echo "Detected OS Version [$DETECTEDOSVERSION]"
-
-# =-=-=-=-=-=-=-
-# handle determination of DB location
-DB_BIN=`$SCRIPTPATH/packaging/find_bin_${DB_TYPE}.sh`
-if [ "$DB_BIN" == "FAIL" ] ; then
-    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
-        PREFLIGHT="$PREFLIGHT postgresql"
-    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-        PREFLIGHT="$PREFLIGHT postgresql"
-    elif [ "$DETECTEDOS" == "SuSE" ] ; then
-        PREFLIGHT="$PREFLIGHT postgresql"
-    elif [ "$DETECTEDOS" == "Solaris" ] ; then
-        PREFLIGHT="$PREFLIGHT postgresql_dev"
-    elif [ "$DETECTEDOS" == "MacOSX" ] ; then
-        PREFLIGHT="$PREFLIGHT postgresql"
-    else
-        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://www.postgresql.org/download/"
-    fi
-else
-    echo "Detected DB [$DB_BIN]"
-fi
 
 # need odbc-dev package
 set +e
@@ -217,14 +191,6 @@ if [ "$?" -ne "0" ] ; then
     exit 1
 fi
 
-# =-=-=-=-=-=-=-
-# insert DB into list file
-# need to do a dirname here, as the irods.config is expected to have a path
-# which will be appended with a /bin
-IRODS_DB_PATH=`dirname $DB_BIN`
-IRODS_DB_PATH="$IRODS_DB_PATH/"
-echo "Detected ${DB_TYPE} path [$IRODS_DB_PATH]"
-sed -e s,IRODS_DB_PATH,$IRODS_DB_PATH, $EPMFILE > $TMPCONFIGFILE
 
 SETUP_FILE="$SCRIPTPATH/packaging/setup_database.sh"
 set_tmpfile
