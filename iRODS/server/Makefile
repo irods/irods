@@ -65,7 +65,7 @@ SVR_CORE_OBJS =	\
    		$(svrCoreObjDir)/irods_oracle_object.o  \
    		$(svrCoreObjDir)/irods_server_api_table.o  \
    		$(svrCoreObjDir)/irods_get_l1desc.o  \
-        $(svrCoreObjDir)/readServerConfig.o
+        $(svrCoreObjDir)/readServerConfig.o 
 
 DB_IFACE_OBJS = \
 	    $(svrCoreObjDir)/irods_database_factory.o \
@@ -91,7 +91,8 @@ SERVER_OBJS =	\
 		$(svrCoreObjDir)/rodsServer.o \
 		$(svrCoreObjDir)/rodsAgent.o
 SERVER_BINS =	$(serverBinDir)/irodsServer \
-		$(serverBinDir)/irodsAgent
+		$(serverBinDir)/irodsAgent \
+		$(serverBinDir)/unobf
 
 
 # API (see api.mk, which is automatically generated)
@@ -481,6 +482,16 @@ $(SVR_DBR_OBJS):	$(svrIcatObjDir)/%.o: $(svrIcatSrcDir)/%.cpp $(BOOST_LIBS)
 $(SVR_RE_OBJS):		$(svrReObjDir)/%.o: $(svrReSrcDir)/%.cpp $(DEPEND) $(BOOST_LIBS)
 	@echo "Compile re `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
+
+
+$(svrCoreObjDir)/unobf.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.cpp $(LIBRARY) $(OBJS) $(BOOST_LIBS)
+	@echo "Compile `basename $@`..."
+	@$(CC) -c $(CFLAGS) -o $@ $<
+
+$(serverBinDir)/unobf: $(svrCoreObjDir)/unobf.o 
+	@echo "Link `basename $@`..."
+	$(LDR) -o $@ $(svrCoreObjDir)/unobf.o $(LIBRARY) $(LDFLAGS) $(BOOST_LIBS)
+
 
 # Servers
 #

@@ -423,6 +423,7 @@ f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/bin/cmd/univMSSInterfac
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/bin/vacuumdb.pl ./iRODS/server/bin/vacuumdb.pl
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/bin/irodsServer ./iRODS/server/bin/irodsServer
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/bin/irodsReServer ./iRODS/server/bin/irodsReServer
+f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/bin/unobf ./iRODS/server/bin/unobf
 %if ICAT
 f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/bin/irodsXmsgServer ./iRODS/server/bin/irodsXmsgServer
 %endif
