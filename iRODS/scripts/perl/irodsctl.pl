@@ -97,11 +97,11 @@ my $thisUserID = $<;
 my $thisHost   = getCurrentHostName( );
 
 # Set the number of seconds to sleep after starting or stopping the
-# database or iRODS servers.  This gives them time to start or stop before
+# iRODS servers.  This gives them time to start or stop before
 # we do anything more.  The actual number here is a guess.  Different
 # CPU speeds, host loads, or database versions may make this too little
 # or too much.
-my $databaseStartStopDelay = 4;		# Seconds
+my $iRODSStartStopDelay = 4;  # Seconds
 
 
 
@@ -446,26 +446,6 @@ sub doStatus
 			}
 		}
 	}
-
-	# Report on database servers even if they are
-	# not under our control but only for postgres (not Oracle).
-	printSubtitle( "Database servers:\n" );
-	if ( $DATABASE_TYPE eq "oracle" )
-	{
-		printStatus( "Not applicable: DBMS is Oracle\n");
-	}
-	else 
-	{
-		my $databasePID = getDatabaseProcessId( );
-		if ( defined( $databasePID ) )
-		{
-			printStatus( "Process $databasePID \n" );
-		}
-		else
-		{
-			printStatus( "No servers running\n" );
-		}
-	} 
 
 	# Report on our PIDs
 	my @pids = getOurIrodsServerPids();
@@ -1078,7 +1058,7 @@ sub startIrods
 	chdir( $startingDir );
 
 	# Sleep a bit to give the server time to start and possibly exit
-	sleep( $databaseStartStopDelay );
+	sleep( $iRODSStartStopDelay );
 
 	# Check that it actually started
 	my %serverPids = getIrodsProcessIds( );
@@ -1225,37 +1205,6 @@ sub getIrodsProcessIds()
 
 
 
-
-
-#
-# @brief	Get the process ID of the database server.
-#
-# @return	$pid			PID of the server
-#
-sub getDatabaseProcessId
-{
-	my $pid = undef;
-
-	if ( $DATABASE_TYPE eq "postgres" )
-	{
-		my $i, $j;
-		my $output = `$pgctl status 2>&1`;
- 		if ( $? == 0 ) {
-			$i=index($output, "PID: ");
-			$j=index($output, ")");
-			if ($i>1 && $j>$i+5) {
-				($pid) = substr($output,$i+5, $j-$i-5);
-			}
-		}
-	}
-
-	return $pid;
-}
-
-
-
-
-
 #
 # @brief	Print command-line help
 #
@@ -1277,10 +1226,10 @@ sub printUsage
 	printNotice( "    --verbose     Output all messages (default)\n" );
 	printNotice( "\n" );
 	printNotice( "General Commands:\n" );
-	printNotice( "    start         Start the iRODS and database servers\n" );
-	printNotice( "    stop          Stop the iRODS and database servers\n" );
-	printNotice( "    restart       Restart the iRODS and database servers\n" );
-	printNotice( "    status        Show the status of iRODS and database servers\n" );
+	printNotice( "    start         Start the iRODS servers\n" );
+	printNotice( "    stop          Stop the iRODS servers\n" );
+	printNotice( "    restart       Restart the iRODS servers\n" );
+	printNotice( "    status        Show the status of iRODS servers\n" );
 	printNotice( "    devtest       Run a developer test suite\n" );
 	printNotice( "    loadtest      Run a concurrency (load/pound) test suite\n" );
 
