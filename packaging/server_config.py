@@ -65,11 +65,16 @@ class Server_Config:
         db_port = self.values['Port']
         db_name = self.values['Database']
         if db_host == 'localhost':
-            run_str = sqlclient + " -p " + db_port + \
-                " " + db_name + " -c \"" + sql + "\""
+            run_str = sqlclient + \
+                " -p " + db_port + \
+                " " + db_name + \
+                " -c \"" + sql + "\""
         else:
-            run_str = sqlclient + " -h " + db_host + " -p " + \
-                db_port + " " + db_name + " -c \"" + sql + "\""
+            run_str = sqlclient + \
+                " -h " + db_host + \
+                " -p " + db_port + \
+                " " + db_name + \
+                " -c \"" + sql + "\""
 
         p = subprocess.Popen(
             run_str, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -100,10 +105,16 @@ class Server_Config:
         db_port = self.values['Port']
         db_name = self.values['Database']
         if db_host == 'localhost':
-            run_str = sqlclient + " -p " + db_port + " " + db_name + " < " + sql
+            run_str = sqlclient + \
+            " -p " + db_port + \
+            " " + db_name + \
+            " < " + sql
         else:
-            run_str = sqlclient + " -h " + db_host + " -p " + \
-                db_port + " " + db_name + " < " + sql
+            run_str = sqlclient + \
+            " -h " + db_host + \
+            " -p " + db_port + \
+            " " + db_name + \
+            " < " + sql
 
         p = subprocess.Popen(
             run_str, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
