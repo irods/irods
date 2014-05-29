@@ -490,7 +490,7 @@ $(svrCoreObjDir)/unobf.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.cpp $(LIBRARY
 
 $(serverBinDir)/unobf: $(svrCoreObjDir)/unobf.o 
 	@echo "Link `basename $@`..."
-	$(LDR) -o $@ $(svrCoreObjDir)/unobf.o $(LIBRARY) $(LDFLAGS) $(BOOST_LIBS)
+	@$(LDR) -o $@ $(svrCoreObjDir)/unobf.o $(LIBRARY) $(MODULE_LDFLAGS) $(BOOST_LIBS) $(LDFLAGS) $(AG_LDADD)
 
 
 # Servers
