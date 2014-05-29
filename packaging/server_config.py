@@ -122,7 +122,7 @@ class Server_Config:
         return (p.returncode, myout, myerr)
 
     # =-=-=-=-=-=-=-=-=-=-=-=-=-
-    # MySQL
+    # MYSQL
     # =-=-=-=-=-=-=-=-=-=-=-=-=-
     def exec_mysql_cmd(self, sql):
         fbp = os.path.dirname(
@@ -145,9 +145,11 @@ class Server_Config:
         db_port = self.values['Port']
         db_name = self.values['Database']
         db_user = self.values['DBUsername']
+        db_pass = self.get_db_pass()
         if db_host == 'localhost':
             run_str = sqlclient + \
                 " -u " + db_user + \
+                " --password=" + db_pass + \
                 " -P " + db_port + \
                 " " + db_name + \
                 " -e \"" + sql + "\""
@@ -185,9 +187,11 @@ class Server_Config:
         db_port = self.values['Port']
         db_name = self.values['Database']
         db_user = self.values['DBUsername']
+        db_pass = self.get_db_pass()
         if db_host == 'localhost':
             run_str = sqlclient + \
                 " -u " + db_user + \
+                " --password=" + db_pass + \
                 " -P " + db_port + \
                 " " + db_name + \
                 " < " + sql
