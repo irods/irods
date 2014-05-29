@@ -91,10 +91,6 @@ END_PREINSTALL
 # post install
 # =-=-=-=-=-=-=-
 %postinstall << END_POSTINSTALL
-# irods_setup.pl expects this file to exist
-touch $IRODS_HOME_DIR/.odbc.ini
-ACCT=$OS_IRODS_ACCT
-chown  $$ACCT:$$ACCT $IRODS_HOME_DIR/.odbc.ini
 echo ""
 echo "======================================================================="
 echo ""
