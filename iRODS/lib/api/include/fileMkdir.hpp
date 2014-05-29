@@ -24,7 +24,7 @@ typedef struct {
     keyValPair_t condInput;
 } fileMkdirInp_t;
 
-#define fileMkdirInp_PI "struct RHostAddr_PI; str dirName[MAX_NAME_LEN]; str rescHier[MAX_NAME_LEN]; int mode;"
+#define fileMkdirInp_PI "struct RHostAddr_PI; str dirName[MAX_NAME_LEN]; str rescHier[MAX_NAME_LEN]; int mode; struct KeyValPair_PI;"
 
 #if defined(RODS_SERVER)
 #define RS_FILE_MKDIR rsFileMkdir
