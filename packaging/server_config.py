@@ -38,6 +38,14 @@ class Server_Config:
         finally:
             f.close()
 
+    def get_db_pass(self):
+        db_key = self.values['DBKey']
+        db_obf_pass = self.values['DBPassword']
+        run_str = "iadmin dspass '" + db_obf_pass + "' " + db_key
+        p = subprocess.Popen(run_str, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        (db_pass, db_err) = p.communicate()
+        return db_pass.split(":")[1].rstrip()
+
     # =-=-=-=-=-=-=-=-=-=-=-=-=-
     # POSTGRES
     # =-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -209,6 +217,51 @@ class Server_Config:
         return (p.returncode, myout, myerr)
 
     # =-=-=-=-=-=-=-=-=-=-=-=-=-
+    # ORACLE
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-
+    def exec_oracle_cmd(self, sql):
+        sqlfile = "tmpsqlfile"
+        f = open(sqlfile, 'w+')
+        f.write(sql)
+        f.close()
+        (returncode, myout, myerr) = self.exec_oracle_file(sqlfile)
+        os.unlink(sqlfile)
+        return (returncode, myout, myerr)
+
+    def exec_oracle_file(self, sql):
+        fbp = os.path.dirname(
+            os.path.realpath(__file__)) + "/find_bin_oracle.sh"
+        p = subprocess.Popen(
+            fbp,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE)
+
+        sqlclient = ""
+        for line in p.stdout:
+            sqlclient = line.decode('utf-8').rstrip()
+        retval = p.wait()
+        if retval != 0:
+            print("find_bin_oracle.sh failed")
+            return
+
+        db_host = self.values['Servername']
+        db_port = self.values['Port']
+        db_user = self.values['DBUsername'].split("@")[0]
+        db_pass = self.get_db_pass()
+        run_str = sqlclient + \
+            " " + db_user + \
+            "/" + db_pass + \
+            "@" + db_host + \
+            ":" + db_port + \
+            " < " + sql
+
+        p = subprocess.Popen(
+            run_str, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        (myout, myerr) = p.communicate()
+        return (p.returncode, myout, myerr)
+
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-
     # GENERIC
     # =-=-=-=-=-=-=-=-=-=-=-=-=-
     def exec_sql_cmd(self, sql):
@@ -216,6 +269,8 @@ class Server_Config:
             return self.exec_pgsql_cmd(sql)
         if self.values['catalog_database_type'] == 'mysql':
             return self.exec_mysql_cmd(sql)
+        if self.values['catalog_database_type'] == 'oracle':
+            return self.exec_oracle_cmd(sql)
         print( "exec_sql_cmd: unknown database type [%s]", self.values['catalog_database_type'])
         return
 
@@ -224,5 +279,7 @@ class Server_Config:
             return self.exec_pgsql_file(sql)
         if self.values['catalog_database_type'] == 'mysql':
             return self.exec_mysql_file(sql)
+        if self.values['catalog_database_type'] == 'oracle':
+            return self.exec_oracle_file(sql)
         print( "exec_sql_file: unknown determine database type [%s]", self.values['catalog_database_type'])
         return

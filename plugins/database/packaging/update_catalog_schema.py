@@ -13,7 +13,7 @@ def get_current_schema_version(cfg):
     result = cfg.exec_sql_cmd( "select option_value \
                                  from R_GRID_CONFIGURATION \
                                  where namespace='database' \
-                                 and option_name='schema_version'")
+                                 and option_name='schema_version';")
     if DEBUG:
         print(cfg.values)
         print(result)
@@ -50,6 +50,8 @@ def get_current_schema_version(cfg):
         resultline = 2
         if (dbtype == "mysql"):
             resultline = 1
+        if (dbtype == "oracle"):
+            resultline = 12
         current_schema_version = int(
             result[1].decode('utf-8').split("\n")[resultline].strip())
     if DEBUG:
