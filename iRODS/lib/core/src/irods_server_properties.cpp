@@ -63,10 +63,7 @@ namespace irods {
         fptr = fopen( cfg_file.c_str(), "r" );
 
         if ( fptr == NULL ) {
-            printf( "Cannot open SERVER_CONFIG_FILE file %s. errno = %d\n",
-                    cfg_file.c_str(), errno );
-            fflush( stdout );
-            rodsLog( LOG_NOTICE,
+            rodsLog( LOG_DEBUG,
                      "Cannot open SERVER_CONFIG_FILE file %s. errno = %d\n",
                      cfg_file.c_str(), errno );
             return ERROR( SYS_CONFIG_FILE_ERR, "server config file error" );

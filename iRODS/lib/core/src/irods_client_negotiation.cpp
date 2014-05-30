@@ -307,8 +307,7 @@ error sign_server_sid(
                        signed_sid                +
                        irods::kvp_delimiter();
         } else {
-            irods::log( PASS( err ) );
-
+            rodsLog( LOG_DEBUG, "%s", PASS(err).result().c_str() );
         }
 
         // =-=-=-=-=-=-=-
