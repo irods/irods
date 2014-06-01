@@ -3145,6 +3145,16 @@ sub Postgres_CreateDatabase()
                         $psqlOdbcLib = `$scripttoplevel/packaging/find_odbc_postgres.sh`;
                 }
 		chomp($psqlOdbcLib);
+
+		if ($psqlOdbcLib eq "")
+		{
+			printError("\nInstall Problem:\n");
+			printError("    find_odbc_postgres.sh did not find odbc driver.\n");
+			printLog("\nInstall Problem:\n");
+			printLog("    find_odbc_postgres.sh did not find odbc driver.\n");
+
+			cleanAndExit( 1 );
+		}
 		
 		open( NEWCONFIGFILE, ">$userODBC" );
 		print ( NEWCONFIGFILE "[postgres]\n" .
