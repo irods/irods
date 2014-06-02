@@ -1191,6 +1191,10 @@ sub testDatabase()
     #    }
 
 	my ($status,$output) = run( "$exec_str" );
+
+	# scrub the password before logging and displaying
+	$output =~ s/(.*,pass=)(.*)/$1XXXXX/;
+	$output =~ s/(.*password=)(.*)/$1XXXXX/;
 	printLog( "    ", $output );
 
 	if ( $output !~ /The tests all completed normally/i )

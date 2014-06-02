@@ -193,10 +193,9 @@ cllConnect( icatSessionStruct *icss ) {
     if ( stat != SQL_SUCCESS ) {
         rodsLog( LOG_ERROR, "cllConnect: SQLConnect failed: %d", stat );
         rodsLog( LOG_ERROR,
-                 "cllConnect: SQLConnect failed:odbcEntry=%s,user=%s,pass=%s\n",
+                 "cllConnect: SQLConnect failed:odbcEntry=%s,user=%s,pass=XXXXX\n",
                  odbcEntryName,
-                 icss->databaseUsername,
-                 icss->databasePassword );
+                 icss->databaseUsername );
         while ( SQLError( icss->environPtr, myHdbc , 0, sqlstate, &sqlcode, buffer,
                           SQL_MAX_MESSAGE_LENGTH + 1, &length ) == SQL_SUCCESS ) {
             rodsLog( LOG_ERROR, "cllConnect:          SQLSTATE: %s\n", sqlstate );
@@ -260,8 +259,8 @@ cllConnectRda( icatSessionStruct *icss ) {
     if ( stat != SQL_SUCCESS ) {
         rodsLog( LOG_ERROR, "cllConnect: SQLConnect failed: %d", stat );
         rodsLog( LOG_ERROR,
-                 "cllConnect: SQLConnect failed:odbcEntry=%s,user=%s,pass=%s\n",
-                 RDA_ODBC_ENTRY_NAME, icss->databaseUsername,  icss->databasePassword );
+                 "cllConnect: SQLConnect failed:odbcEntry=%s,user=%s,pass=XXXXX\n",
+                 RDA_ODBC_ENTRY_NAME, icss->databaseUsername );
         while ( SQLError( icss->environPtr, myHdbc , 0, sqlstate, &sqlcode, buffer,
                           SQL_MAX_MESSAGE_LENGTH + 1, &length ) == SQL_SUCCESS ) {
             rodsLog( LOG_ERROR, "cllConnect:          SQLSTATE: %s\n", sqlstate );
@@ -324,8 +323,8 @@ cllConnectDbr( icatSessionStruct *icss, char *odbcEntryName ) {
     if ( stat != SQL_SUCCESS ) {
         rodsLog( LOG_ERROR, "cllConnect: SQLConnect failed: %d", stat );
         rodsLog( LOG_ERROR,
-                 "cllConnect: SQLConnect failed:odbcEntry=%s,user=%s,pass=%s\n",
-                 odbcEntryName, icss->databaseUsername,  icss->databasePassword );
+                 "cllConnect: SQLConnect failed:odbcEntry=%s,user=%s,pass=XXXXX\n",
+                 odbcEntryName, icss->databaseUsername );
         while ( SQLError( icss->environPtr, myHdbc , 0, sqlstate, &sqlcode, buffer,
                           SQL_MAX_MESSAGE_LENGTH + 1, &length ) == SQL_SUCCESS ) {
             rodsLog( LOG_ERROR, "cllConnect:          SQLSTATE: %s\n", sqlstate );
