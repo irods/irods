@@ -10,6 +10,7 @@
 
 #include "dataObjClose.hpp"
 #include "rodsLog.hpp"
+#include "reFuncDefs.hpp"
 #include "regReplica.hpp"
 #include "modDataObjMeta.hpp"
 #include "dataObjOpr.hpp"

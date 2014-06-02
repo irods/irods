@@ -16,17 +16,13 @@
 #include "apiNumber.hpp"
 #include "initServer.hpp"
 
-//#include "fileDriver.hpp"
-
 /* definition for otherFlags */
 
 #define NO_CHK_PERM_FLAG                0x1 // JMC - backport 4758
 #define UNIQUE_REM_COMM_FLAG    0x2
 #define FORCE_FLAG                      0x4
 
-#include <string>
-
-struct fileOpenInp_t {
+typedef struct {
 
     char resc_name_[MAX_NAME_LEN];
     char resc_hier_[MAX_NAME_LEN];
@@ -40,7 +36,7 @@ struct fileOpenInp_t {
     rodsLong_t dataSize;
     keyValPair_t condInput;
     char in_pdmo[MAX_NAME_LEN];
-}; // struct fileOpenInp_t
+} fileOpenInp_t;
 
 #define fileOpenInp_PI "str resc_name_[MAX_NAME_LEN]; str resc_hier_[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN]; int otherFlags; struct RHostAddr_PI; str fileName[MAX_NAME_LEN]; int flags; int mode; double dataSize; struct KeyValPair_PI; str in_pdmo[MAX_NAME_LEN];"
 
@@ -62,7 +58,13 @@ remoteFileOpen( rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
 #endif
 
 /* prototype for the client call */
+#ifdef __cplusplus
+extern "C" {
+#endif
 int
 rcFileOpen( rcComm_t *conn, fileOpenInp_t *fileOpenInp );
+#ifdef __cplusplus
+}
+#endif
 
 #endif  /* FILE_OPEN_H */

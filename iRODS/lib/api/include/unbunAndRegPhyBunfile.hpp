@@ -47,8 +47,9 @@ rmUnlinkedFilesInUnixDir( char *phyBunDir ); // JMC _ backport 4657
 #define RS_UNBUN_AND_REG_PHY_BUNFILE NULL
 #endif
 
+#ifdef __cplusplus
 extern "C" {
-
+#endif
     /* prototype for the client call */
     /* rcUnbunAndRegPhyBunfile - Unbundle a physical bundle file specified by
      * FILE_PATH_KW and register each subfile as replica. This call cannot be
@@ -64,6 +65,7 @@ extern "C" {
      */
     int
     rcUnbunAndRegPhyBunfile( rcComm_t *conn, dataObjInp_t *dataObjInp );
+#ifdef __cplusplus
 }
-
+#endif
 #endif	/* UNBUN_AND_REG_PHY_BUNFILE_H */

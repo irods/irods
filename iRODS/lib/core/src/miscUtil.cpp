@@ -13,7 +13,11 @@
 
 #include "irods_stacktrace.hpp"
 
+
+
 #include <fstream>
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/convenience.hpp> 
 
 /* VERIFY_DIV - contributed by g.soudlenkov@auckland.ac.nz */
 #define VERIFY_DIV(_v1_,_v2_) ((_v2_)? (float)(_v1_)/(_v2_):0.0)
@@ -97,6 +101,7 @@ mkCollR( rcComm_t *conn, char *startColl, char *destColl ) {
 
 int
 mkdirR( char *startDir, char *destDir, int mode ) {
+    using namespace boost::filesystem;
     int status = 0;
     int startLen;
     int pathLen, tmpLen;
@@ -1961,6 +1966,7 @@ getCollSizeForProgStat( rcComm_t *conn, char *srcColl,
 int
 getDirSizeForProgStat( rodsArguments_t *rodsArgs, char *srcDir,
                        operProgress_t *operProgress ) {
+    using namespace boost::filesystem;
     int status = 0;
     char srcChildPath[MAX_NAME_LEN];
 
@@ -2013,6 +2019,7 @@ getDirSizeForProgStat( rodsArguments_t *rodsArgs, char *srcDir,
  */
 irodsGuiProgressCallbak
 iCommandProgStat( operProgress_t *operProgress ) {
+    using namespace boost::filesystem;
     char myDir[MAX_NAME_LEN], myFile[MAX_NAME_LEN];
     int status;
     time_t myTime;
@@ -2080,6 +2087,7 @@ getOpenedCollLen( collHandle_t *collHandle ) {
 
 int
 rmSubDir( char *mydir ) {
+    using namespace boost::filesystem;
     int status = 0;
     int savedStatus = 0;
     char childPath[MAX_NAME_LEN];
@@ -2128,6 +2136,7 @@ rmSubDir( char *mydir ) {
 
 int
 rmFilesInDir( char *mydir ) {
+    using namespace boost::filesystem;
     int status = 0;
     int savedStatus = 0;
     char childPath[MAX_NAME_LEN];
@@ -2161,6 +2170,7 @@ rmFilesInDir( char *mydir ) {
 }
 int
 getNumFilesInDir( char *mydir ) {
+    using namespace boost::filesystem;
     int status = 0;
     int savedStatus = 0;
     char childPath[MAX_NAME_LEN];

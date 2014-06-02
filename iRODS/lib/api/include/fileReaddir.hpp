@@ -14,8 +14,6 @@
 #include "apiNumber.hpp"
 #include "initServer.hpp"
 
-#include "fileDriver.hpp"
-
 typedef struct {
     int fileInx;
 } fileReaddirInp_t;
@@ -39,8 +37,14 @@ remoteFileReaddir( rsComm_t *rsComm, fileReaddirInp_t *fileReaddirInp,
 #endif
 
 /* prototype for the client call */
+#ifdef __cplusplus
+extern "C" {
+#endif
 int
 rcFileReaddir( rcComm_t *conn, fileReaddirInp_t *fileReaddirInp,
                rodsDirent_t **fileReaddirOut );
+#ifdef __cplusplus
+}
+#endif
 
 #endif	/* FILE_READDIR_H */

@@ -34,8 +34,9 @@ _rsRegReplica( rsComm_t *rsComm, regReplica_t *regReplicaInp );
 #define RS_REG_REPLICA NULL
 #endif
 
+#ifdef __cplusplus
 extern "C" {
-
+#endif
     /* prototype for the client call */
     int
     rcRegReplica( rcComm_t *conn, regReplica_t *regReplicaInp );
@@ -52,6 +53,7 @@ extern "C" {
     //int
     //clearRegReplicaInp( regReplica_t *regReplicaInp );
 
+#ifdef __cplusplus
 }
-
+#endif
 #endif	/* REG_REPLICA_H */

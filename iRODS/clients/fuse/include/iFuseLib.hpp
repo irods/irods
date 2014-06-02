@@ -7,6 +7,7 @@
 
 #include "rodsClient.hpp"
 #include "rodsPath.hpp"
+#include "reFuncDefs.hpp"
 
 #define CACHE_FUSE_PATH         1
 #ifdef CACHE_FUSE_PATH

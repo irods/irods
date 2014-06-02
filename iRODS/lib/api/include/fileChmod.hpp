@@ -14,8 +14,6 @@
 #include "apiNumber.hpp"
 #include "initServer.hpp"
 
-#include "fileDriver.hpp"
-
 typedef struct {
     rodsHostAddr_t addr;
     char fileName[MAX_NAME_LEN];
@@ -41,7 +39,13 @@ remoteFileChmod( rsComm_t *rsComm, fileChmodInp_t *fileChmodInp,
 #endif
 
 /* prototype for the client call */
+#ifdef __cplusplus
+extern "C" {
+#endif
 int
 rcFileChmod( rcComm_t *conn, fileChmodInp_t *fileChmodInp );
+#ifdef __cplusplus
+}
+#endif
 
 #endif	/* FILE_CHMOD_H */

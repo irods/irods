@@ -8,6 +8,7 @@
 #include "reGlobalsExtern.hpp"
 #include "reconstants.hpp"
 #include "configuration.hpp"
+#include "reFuncDefs.hpp"
 
 static char ruleSetInitialized[NAME_LEN] = "";
 

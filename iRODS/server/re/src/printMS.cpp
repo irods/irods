@@ -11,6 +11,7 @@
 #include "icatHighLevelRoutines.hpp"
 #include "apiHeaderAll.hpp"
 #include "rsApiHandler.hpp"
+#include "reFuncDefs.hpp"
 
 #if defined(_LP64) || defined(__LP64__)
 #define CAST_PTR_INT (long int)

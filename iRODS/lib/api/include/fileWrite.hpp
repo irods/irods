@@ -14,8 +14,6 @@
 #include "apiNumber.hpp"
 #include "initServer.hpp"
 
-#include "fileDriver.hpp"
-
 typedef struct {
     int fileInx;
     int len;
@@ -40,8 +38,14 @@ remoteFileWrite( rsComm_t *rsComm, fileWriteInp_t *fileWriteInp,
 #endif
 
 /* prototype for the client call */
+#ifdef __cplusplus
+extern "C" {
+#endif
 int
 rcFileWrite( rcComm_t *conn, fileWriteInp_t *fileWriteInp,
              bytesBuf_t *fileWriteInpBBuf );
+#ifdef __cplusplus
+}
+#endif
 
 #endif	/* FILE_WRITE_H */

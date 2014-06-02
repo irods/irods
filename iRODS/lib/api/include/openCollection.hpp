@@ -26,8 +26,9 @@ rsOpenCollection( rsComm_t *rsComm, collInp_t *openCollInp );
 #define RS_OPEN_COLLECTION NULL
 #endif
 
+#ifdef __cplusplus
 extern "C" {
-
+#endif
     /* prototype for the client call */
 
     int
@@ -44,6 +45,7 @@ extern "C" {
      * OutPut -
      *   int status - status of the operation.
      */
+#ifdef __cplusplus
 }
-
+#endif
 #endif	/* OPEN_COLLECTION_H */

@@ -16,7 +16,7 @@
 #include "apiNumber.hpp"
 #include "initServer.hpp"
 
-#include "fileDriver.hpp"
+
 
 typedef struct {
     rodsHostAddr_t addr;
@@ -50,7 +50,13 @@ remoteFileRename( rsComm_t *rsComm, fileRenameInp_t *fileRenameInp, fileRenameOu
 #endif
 
 /* prototype for the client call */
+#ifdef __cplusplus
+extern "C" {
+#endif
 int
 rcFileRename( rcComm_t *conn, fileRenameInp_t *fileRenameInp, fileRenameOut_t** );
+#ifdef __cplusplus
+}
+#endif
 
 #endif  /* FILE_RENAME_H */

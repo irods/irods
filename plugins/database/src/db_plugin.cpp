@@ -5,6 +5,7 @@
 #include "rodsDef.hpp"
 #include "msParam.hpp"
 #include "reGlobalsExtern.hpp"
+#include "reFuncDefs.hpp"
 #include "rcConnect.hpp"
 #include "readServerConfig.hpp"
 #include "icatStructs.hpp"
@@ -29,7 +30,7 @@
 #include "irods_auth_manager.hpp"
 #include "irods_auth_constants.hpp"
 #include "irods_server_properties.hpp"
-
+#include "irods_resource_manager.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
@@ -42,6 +43,7 @@
 #include <sstream>
 #include <string>
 #include <iostream>
+#include <vector>
 #include <boost/regex.hpp>
 
 extern int get64RandomBytes( char *buf );

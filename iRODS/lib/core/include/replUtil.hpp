@@ -9,8 +9,9 @@
 #include "parseCommandLine.hpp"
 #include "rodsPath.hpp"
 
+#ifdef __cplusplus
 extern "C" {
-
+#endif
     int
     replUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
               rodsPathInp_t *rodsPathInp );
@@ -25,6 +26,8 @@ extern "C" {
                   rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp,
                   rodsRestart_t *rodsRestart );
 
+#ifdef __cplusplus
 }
+#endif
 
 #endif	/* REPL_UTIL_H */

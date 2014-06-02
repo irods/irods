@@ -11,13 +11,14 @@
 
 // =-=-=-=-=-=-=-
 // boost includes
-#include <boost/function.hpp>
+// XXXX - JMC :: #include <boost/function.hpp>
 
 #include "rods.hpp"
-#include "sockComm.hpp"
+// XXXX - JMC :: #include "sockComm.hpp"
 #include "packStruct.hpp"
 #include "irods_lookup_table.hpp"
 #include "irods_plugin_base.hpp"
+#include "boost/shared_ptr.hpp"
 
 namespace irods {
 
@@ -47,7 +48,8 @@ namespace irods {
         funcPtr        svrHandler;     /* the server handler. should be defined NULL for
                                         * client */
 
-        boost::function<void( void* )> clearInStruct;		//free input struct function
+        void (*clearInStruct)( void* ); // free input struct function
+        // XXXX - JMC :: boost::function<void( void* )> clearInStruct;		//free input struct function
 
     }; // struct apidef_t
 

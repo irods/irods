@@ -15,6 +15,8 @@
 #include "conversion.hpp"
 #include "irods_plugin_name_generator.hpp"
 #include "irods_ms_home.hpp"
+#include "reFuncDefs.hpp"
+#include "sockComm.hpp"
 
 int
 fillSubmitConditions( char *action, char *inDelayCondition, bytesBuf_t *packedReiAndArgBBuf,

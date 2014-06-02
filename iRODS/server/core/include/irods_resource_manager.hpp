@@ -8,6 +8,14 @@
 #include "irods_first_class_object.hpp"
 
 namespace irods {
+
+// =-=-=-=-=-=-=-
+//
+    const std::string EMPTY_RESC_HOST( "EMPTY_RESC_HOST" );
+    const std::string EMPTY_RESC_PATH( "EMPTY_RESC_PATH" );
+
+
+
 // =-=-=-=-=-=-=-
 /// @brief definition of the resource interface
     const std::string RESOURCE_INTERFACE( "irods_resource_interface" );

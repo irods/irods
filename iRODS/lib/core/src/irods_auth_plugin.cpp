@@ -82,7 +82,7 @@ namespace irods {
                 }
 
                 // Iterate over the list of operation names, load the functions and add it to the map via the wrapper function
-                vector<std::pair<std::string, std::string> >::iterator itr = ops_for_delay_load_.begin();
+                std::vector<std::pair<std::string, std::string> >::iterator itr = ops_for_delay_load_.begin();
                 for ( ; result.ok() && itr != ops_for_delay_load_.end(); ++itr ) {
 
                     std::string key = itr->first;

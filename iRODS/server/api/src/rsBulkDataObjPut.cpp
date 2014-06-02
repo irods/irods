@@ -25,6 +25,39 @@
 #include "irods_resource_backport.hpp"
 #include "irods_resource_redirect.hpp"
 
+#include "reFuncDefs.hpp"
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/convenience.hpp> 
+using namespace boost::filesystem;
+
+
+int
+_rsBulkDataObjPut( rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
+                   bytesBuf_t *bulkOprInpBBuf );
+int
+createBunDirForBulkPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+                        rescInfo_t *rescInfo, specColl_t *specColl, char *phyBunDir );
+int
+initDataObjInpFromBulkOpr( dataObjInp_t *dataObjInp, bulkOprInp_t *bulkOprInp );
+int
+bulkRegUnbunSubfiles( rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string& rescHier,
+                      char *rescGroupName, char *collection, char *phyBunDir, int flags,
+                      genQueryOut_t *attriArray );
+int
+_bulkRegUnbunSubfiles( rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string& rescHier,
+                       char *rescGroupName, char *collection, char *phyBunDir, int flags,
+                       genQueryOut_t *bulkDataObjRegInp, renamedPhyFiles_t *renamedPhyFiles,
+                       genQueryOut_t *attriArray );
+int
+bulkProcAndRegSubfile( rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string& rescHier,
+                       char *rescGroupName, char *subObjPath, char *subfilePath, rodsLong_t dataSize,
+                       int dataMode, int flags, genQueryOut_t *bulkDataObjRegInp,
+                       renamedPhyFiles_t *renamedPhyFiles, genQueryOut_t *attriArray );
+int
+bulkRegSubfile( rsComm_t *rsComm, char *rescName, const std::string& rescHier, char *rescGroupName,
+                char *subObjPath, char *subfilePath, rodsLong_t dataSize, int dataMode,
+                int modFlag, int replNum, char *chksum, genQueryOut_t *bulkDataObjRegInp,
+                renamedPhyFiles_t *renamedPhyFiles );
 
 int
 rsBulkDataObjPut( rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
@@ -435,7 +468,7 @@ _bulkRegUnbunSubfiles( rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string
             }
         }
         else if ( is_regular_file( p ) ) {
-            st_mode = getPathStMode( p );
+            st_mode = getPathStMode( p.c_str() );
             st_size = file_size( p );
             status = bulkProcAndRegSubfile( rsComm, rescInfo, rescHier, rescGroupName,
                                             subObjPath, subfilePath, st_size,
@@ -595,7 +628,7 @@ bulkRegSubfile( rsComm_t *rsComm, char *rescName, const std::string& rescHier, c
     int status;
 
     /* XXXXXXXX use NULL for chksum for now */
-    status = fillBulkDataObjRegInp( rescName, rescHier, rescGroupName, subObjPath,
+    status = fillBulkDataObjRegInp( rescName, rescHier.c_str(), rescGroupName, subObjPath,
                                     subfilePath, "generic", dataSize, dataMode, modFlag,
                                     replNum, chksum, bulkDataObjRegInp );
     if ( status < 0 ) {

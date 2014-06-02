@@ -41,8 +41,9 @@ chkPreProcDeleteRule( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
 #define RS_DATA_OBJ_UNLINK NULL
 #endif
 
+#ifdef __cplusplus
 extern "C" {
-
+#endif
     /* prototype for the client call */
     int
     rcDataObjUnlink( rcComm_t *conn, dataObjInp_t *dataObjUnlinkInp );
@@ -62,6 +63,7 @@ extern "C" {
      *   int status - The status of the operation.
      */
 
+#ifdef __cplusplus
 }
-
+#endif
 #endif	/* DATA_OBJ_UNLINK_H */

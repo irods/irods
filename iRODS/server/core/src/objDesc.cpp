@@ -23,6 +23,7 @@
 #include "reSysDataObjOpr.hpp"
 #include "genQuery.hpp"
 #include "rodsClient.hpp"
+#include "reFuncDefs.hpp"
 #ifdef LOG_TRANSFERS
 #include <sys/time.h>
 #endif

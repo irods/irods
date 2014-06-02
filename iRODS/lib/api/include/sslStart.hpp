@@ -18,8 +18,6 @@
 #include "initServer.hpp"
 #include "icatDefines.hpp"
 
-extern "C" {
-
     typedef struct {
         char *arg0;
     } sslStartInp_t;
@@ -37,9 +35,13 @@ extern "C" {
 #endif
 
     /* prototype for the client call */
+#ifdef __cplusplus
+extern "C" {
+#endif
     int
     rcSslStart( rcComm_t *conn, sslStartInp_t *sslStartInp );
 
+#ifdef __cplusplus
 }
-
+#endif
 #endif	/* SSL_START_H */

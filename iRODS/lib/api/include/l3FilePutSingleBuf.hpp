@@ -25,8 +25,9 @@ rsL3FilePutSingleBuf( rsComm_t *rsComm, int *l1descInx,
 #define RS_L3_FILE_PUT_SINGLE_BUF NULL
 #endif
 
+#ifdef __cplusplus
 extern "C" {
-
+#endif
     /* prototype for the client call */
     /* rcL3FilePutSingleBuf - remote call for l3FilePutSingleBuf for cross zone
      * single buffer get.
@@ -38,6 +39,7 @@ extern "C" {
     rcL3FilePutSingleBuf( rcComm_t *conn, int l1descInx,
                           bytesBuf_t *dataObjInBBuf );
 
+#ifdef __cplusplus
 }
-
+#endif
 #endif	/* L3_FILE_PUT_SINGLE_BUF_H */

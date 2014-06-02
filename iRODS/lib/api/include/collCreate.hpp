@@ -28,8 +28,9 @@ l3Mkdir( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo );
 #define RS_COLL_CREATE NULL
 #endif
 
+#ifdef __cplusplus
 extern "C" {
-
+#endif
     /* prototype for the client call */
     int
     rcCollCreate( rcComm_t *conn, collInp_t *collCreateInp );
@@ -44,6 +45,7 @@ extern "C" {
      * OutPut -
      *   int status - status of the operation.
      */
+#ifdef __cplusplus
 }
-
+#endif
 #endif	/* COLL_CREATE_H */

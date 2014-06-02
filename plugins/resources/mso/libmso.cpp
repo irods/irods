@@ -5,6 +5,7 @@
 #include "msParam.hpp"
 #include "reGlobalsExtern.hpp"
 #include "rcConnect.hpp"
+#include "reFuncDefs.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_plugin.hpp"

@@ -1,6 +1,7 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
 
+#include "reFuncDefs.hpp"
 #include "utils.hpp"
 #include "restructs.hpp"
 #include "parser.hpp"

@@ -32,11 +32,13 @@ _rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp );
 #define RS_RULE_EXEC_DEL NULL
 #endif
 
+#ifdef __cplusplus
 extern "C" {
-
+#endif
     int
     rcRuleExecDel( rcComm_t *conn, ruleExecDelInp_t *ruleExecDelInp );
 
+#ifdef __cplusplus
 }
-
+#endif
 #endif	/* RULE_EXEC_DEL_H */

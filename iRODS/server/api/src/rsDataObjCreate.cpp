@@ -25,6 +25,7 @@
 #include "getRemoteZoneResc.hpp"
 #include "getRescQuota.hpp"
 #include "icatHighLevelRoutines.hpp"
+#include "reFuncDefs.hpp"
 
 #include "irods_hierarchy_parser.hpp"
 

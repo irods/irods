@@ -13,7 +13,7 @@
 #include "arithmetics.hpp"
 #include "configuration.hpp"
 #include "filesystem.hpp"
-
+#include "irods_log.hpp"
 
 
 #define RE_ERROR(cond) if(cond) { goto error; }

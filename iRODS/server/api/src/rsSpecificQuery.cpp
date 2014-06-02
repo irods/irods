@@ -6,6 +6,7 @@
 #include "specificQuery.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "miscUtil.hpp"
+#include "irods_log.hpp"
 
 /* can be used for debug: */
 

@@ -16,6 +16,7 @@
 #include "reGlobalsExtern.hpp"
 #include "miscServerFunct.hpp"
 #include "xmsgLib.hpp"
+#include "reFuncDefs.hpp"
 #include "irods_network_factory.hpp"
 
 static boost::mutex			     ReqQueCondMutex;

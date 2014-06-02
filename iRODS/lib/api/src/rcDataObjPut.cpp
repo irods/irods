@@ -13,6 +13,7 @@
 #include "dataObjPut.hpp"
 #include "rcPortalOpr.hpp"
 #include "oprComplete.hpp"
+#include "sockComm.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_client_server_negotiation.hpp"

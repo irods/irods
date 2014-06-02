@@ -8,6 +8,7 @@
 #include "datetime.hpp"
 #include "filesystem.hpp"
 #include "irods_get_full_path_for_config_file.hpp"
+#include "irods_log.hpp"
 
 char *getRuleBasePath( char *ruleBaseName, char rulesFileName[MAX_NAME_LEN] ) {
     //char *configDir = getConfigDir();

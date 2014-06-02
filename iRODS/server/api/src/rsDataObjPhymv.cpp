@@ -5,6 +5,7 @@
 /* See dataObjPhymv.h for a description of this API call.*/
 
 #include "dataObjPhymv.hpp"
+#include "reFuncDefs.hpp"
 #include "dataObjRepl.hpp"
 #include "dataObjOpr.hpp"
 #include "rodsLog.hpp"

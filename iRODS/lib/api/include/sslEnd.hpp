@@ -18,8 +18,6 @@
 #include "initServer.hpp"
 #include "icatDefines.hpp"
 
-extern "C" {
-
     typedef struct {
         char *arg0;
     } sslEndInp_t;
@@ -36,10 +34,14 @@ extern "C" {
 #define RS_SSL_END NULL
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
     /* prototype for the client call */
     int
     rcSslEnd( rcComm_t *conn, sslEndInp_t *sslEndInp );
 
+#ifdef __cplusplus
 }
-
+#endif
 #endif	/* SSL_END_H */

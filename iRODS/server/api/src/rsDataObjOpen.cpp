@@ -28,6 +28,7 @@
 #include "regDataObj.hpp"
 #include "dataObjClose.hpp"
 #include "dataObjRepl.hpp"
+#include "reFuncDefs.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
@@ -592,7 +593,7 @@ procDataObjOpenForWrite( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     return status;
 }
 
-
+#if 0
 /// @brief Selects the dataObjInfo in the specified list whose resc hier matches that of the cond input
 irods::error selectObjInfo(
     dataObjInfo_t * _dataObjInfoHead,
@@ -626,3 +627,4 @@ irods::error selectObjInfo(
     }
     return result;
 }
+#endif

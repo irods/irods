@@ -46,6 +46,7 @@
 
 #include "rods.hpp"
 #include "rodsPath.hpp"
+#include "authenticate.hpp"
 
 #ifdef _WIN32
 #include "Unix2Nt.hpp"  /* May need something like this for Windows */
@@ -53,6 +54,8 @@
 #include "rcGlobalExtern.hpp"
 #endif
 
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/convenience.hpp> 
 #define TMP_FLAG "%TEMPORARY_PW%"
 
 #define AUTH_FILENAME_DEFAULT ".irods/.irodsA" /* under the HOME dir */
@@ -285,6 +288,7 @@ obfiSetTimeFromFile( int fd ) {
 /* char *pwArg; if non-0-length, this is the new password */
 int
 obfSavePw( int promptOpt, int fileOpt, int printOpt, char *pwArg ) {
+    using namespace boost::filesystem;
     char fileName[MAX_NAME_LEN + 10];
     char inbuf[MAX_PASSWORD_LEN + 100];
     char myPw[MAX_PASSWORD_LEN + 10];

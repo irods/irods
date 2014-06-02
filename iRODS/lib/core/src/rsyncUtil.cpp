@@ -9,6 +9,14 @@
 #include "rsyncUtil.hpp"
 #include "miscUtil.hpp"
 
+#include <sstream>
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/convenience.hpp> 
+using namespace boost::filesystem;
+
+#include "irods_log.hpp"
+
+
 static int CurrentTime = 0;
 int
 ageExceeded( int ageLimit, int myTime, int verbose, char *objPath,
@@ -747,7 +755,7 @@ rsyncDirToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
                       srcDir, cp.c_str() );
             p = path( mySrcPath.outPath );
         }
-        dataObjOprInp->createMode = getPathStMode( p );
+        dataObjOprInp->createMode = getPathStMode( p.c_str() );
         if ( is_regular_file( p ) ) {
             myTargPath.objType = DATA_OBJ_T;
             mySrcPath.objType = LOCAL_FILE_T;

@@ -71,6 +71,7 @@ $RESOURCE=true
 # Full File Listing
 # =-=-=-=-=-=-=-
 
+f 644 root root /usr/lib/irods/libRodsAPIs.a ./iRODS/lib/core/obj/libRodsAPIs.a
 f 644 root root /usr/lib/irods/libirods_client.a ./libirods_client.a
 f 644 root root /usr/lib/irods/libirods_client_api.a ./libirods_client_api.a
 f 644 root root /usr/lib/irods/libirods_server.a ./libirods_server.a

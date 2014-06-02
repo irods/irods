@@ -14,6 +14,7 @@
 #include "objDesc.hpp"
 #include "querySpecColl.hpp"
 #include "miscUtil.hpp"
+#include "authenticate.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_manager.hpp"

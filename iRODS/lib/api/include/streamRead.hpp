@@ -15,8 +15,6 @@
 #include "initServer.hpp"
 #include "fileRead.hpp"
 
-#include "fileDriver.hpp"
-
 #if defined(RODS_SERVER)
 #define RS_STREAM_READ rsStreamRead
 /* prototype for the server handler */
@@ -27,9 +25,15 @@ rsStreamRead( rsComm_t *rsComm, fileReadInp_t *streamReadInp,
 #define RS_STREAM_READ NULL
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 /* prototype for the client call */
 int
 rcStreamRead( rcComm_t *conn, fileReadInp_t *streamReadInp,
               bytesBuf_t *streamReadOutBBuf );
+#ifdef __cplusplus
+}
+#endif
 
 #endif	/* STREAM_READ_H */

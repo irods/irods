@@ -18,11 +18,13 @@
 #include "getRemoteZoneResc.hpp"
 #include "getRescQuota.hpp"
 #include "physPath.hpp"
+#include "reFuncDefs.hpp"
 #include "irods_stacktrace.hpp"
 
 #include "irods_get_full_path_for_config_file.hpp"
 #include "irods_resource_backport.hpp"
 #include "irods_log.hpp"
+#include "irods_threads.hpp"
 
 static time_t LastBrokenPipeTime = 0;
 static int BrokenPipeCnt = 0;
@@ -1373,9 +1375,9 @@ initAgent( int processType, rsComm_t *rsComm ) {
         else {
             rsComm->cookie = random();
         }
-        rsComm->lock = new boost::mutex;
-        rsComm->cond = new boost::condition_variable;
-        rsComm->reconnThr = new boost::thread( reconnManager, rsComm );
+        rsComm->thread_ctx->lock      = new boost::mutex;
+        rsComm->thread_ctx->cond      = new boost::condition_variable;
+        rsComm->thread_ctx->reconnThr = new boost::thread( reconnManager, rsComm );
         if ( status < 0 ) {
             rodsLog( LOG_ERROR, "initAgent: pthread_create failed, stat=%d",
                      status );

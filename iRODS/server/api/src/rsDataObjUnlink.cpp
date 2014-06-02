@@ -9,6 +9,7 @@
 #include "rodsLog.hpp"
 #include "icatDefines.hpp"
 #include "fileUnlink.hpp"
+#include "reFuncDefs.hpp"
 #include "unregDataObj.hpp"
 #include "objMetaOpr.hpp"
 #include "dataObjOpr.hpp"

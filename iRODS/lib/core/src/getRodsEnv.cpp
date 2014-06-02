@@ -44,6 +44,7 @@
 #define LARGE_BUF_LEN MAX_NAME_LEN+20
 
 #define RODS_ENV_FILE "/.irods/.irodsEnv"  /* under the HOME directory */
+extern "C" {
 
 extern int ProcessType;
 extern char *rstrcpy( char *dst, const char *src, int len ); // why do they not just include the header? - harry
@@ -804,5 +805,7 @@ int appendRodsEnv( char *appendText ) {
     fclose( fptr );
     return( 0 );
 }
+
+} // extern "C"
 
 

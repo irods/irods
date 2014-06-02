@@ -12,6 +12,7 @@
 #include "replUtil.hpp"
 #include "irods_client_api_table.hpp"
 #include "irods_pack_table.hpp"
+#include <iostream>
 
 void usage();
 

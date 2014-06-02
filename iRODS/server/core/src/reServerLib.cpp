@@ -17,7 +17,12 @@
 #include "rodsClient.hpp"
 #include "rsIcatOpr.hpp"
 #include "resource.hpp"
+#include "reFuncDefs.hpp"
 #include "irods_stacktrace.hpp"
+
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/convenience.hpp>
+using namespace boost::filesystem;
 
 int
 getReInfo( rsComm_t *rsComm, genQueryOut_t **genQueryOut ) {

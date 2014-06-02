@@ -29,7 +29,9 @@ rsDataObjCreateAndStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 #define RS_DATA_OBJ_CREATE_AND_STAT NULL
 #endif
 
+#ifdef __cplusplus
 extern "C" {
+#endif
 
     /* prototype for the client call */
     /* rcDataObjCreateAndStat - Create And Stat a iRODS data object. This is the same
@@ -63,6 +65,7 @@ extern "C" {
     rcDataObjCreateAndStat( rcComm_t *conn, dataObjInp_t *dataObjInp,
                             openStat_t **openStat );
 
+#ifdef __cplusplus
 }
-
+#endif
 #endif	/* DATA_OBJ_CREATE_AND_STAT_H */

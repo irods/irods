@@ -87,8 +87,9 @@ stageBundledData( rsComm_t *rsComm, dataObjInfo_t **subfileObjInfoHead );
 #define RS_DATA_OBJ_REPL250 NULL
 #endif
 
+#ifdef __cplusplus
 extern "C" {
-
+#endif
     /* prototype for the client call */
     /* rcDataObjRepl - Replicate an iRODS data object.
      * Input -
@@ -125,6 +126,7 @@ extern "C" {
                                 dataObjInfo_t *srcDataObjInfoHead, dataObjInfo_t *destDataObjInfoHead,
                                 rescGrpInfo_t *compRescGrpInfo, dataObjInfo_t *oldDataObjInfo,
                                 dataObjInfo_t **outDataObjInfo );
+#ifdef __cplusplus
 }
-
+#endif
 #endif  /* DATA_OBJ_REPL_H */

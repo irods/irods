@@ -3,6 +3,7 @@
 /* modColl.c
  */
 
+#include "reFuncDefs.hpp"
 #include "modColl.hpp"
 #include "icatHighLevelRoutines.hpp"
 

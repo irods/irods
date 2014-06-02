@@ -15,6 +15,7 @@
 #include "procApiRequest.hpp"
 #include "rcGlobalExtern.hpp"
 #include "rcMisc.hpp"
+#include "sockComm.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -23,6 +24,9 @@
 // =-=-=-=-=-=-=-
 // boost includes
 #include <boost/shared_ptr.hpp>
+
+#include "irods_threads.hpp"
+
 
 /* procApiRequest - This is the main function used by the client API
  * function to issue API requests and recieve output returned from
@@ -174,12 +178,12 @@ sendApiRequest( rcComm_t *conn, int apiInx, void *inputStruct,
                 conn->svrVersion->reconnPort > 0 ) {
             int status1;
             int savedStatus = ret.code() ;
-            conn->lock->lock();
+            conn->thread_ctx->lock->lock();
             status1 = cliSwitchConnect( conn );
             rodsLog( LOG_DEBUG,
                      "sendApiRequest: svrSwitchConnect. cliState = %d,agState=%d",
                      conn->clientState, conn->agentState );
-            conn->lock->unlock();
+            conn->thread_ctx->lock->unlock();
             if ( status1 > 0 ) {
                 /* should not be here */
                 rodsLog( LOG_NOTICE,
@@ -263,12 +267,12 @@ readAndProcApiReply( rcComm_t *conn, int apiInx, void **outStruct,
         if ( conn->svrVersion != NULL && conn->svrVersion->reconnPort > 0 ) {
             int savedStatus = ret.code();
             /* try again. the socket might have changed */
-            conn->lock->lock();
+            conn->thread_ctx->lock->lock();
             rodsLog( LOG_DEBUG,
                      "readAndProcClientMsg:svrSwitchConnect.cliState = %d,agState=%d",
                      conn->clientState, conn->agentState );
             cliSwitchConnect( conn );
-            conn->lock->unlock();
+            conn->thread_ctx->lock->unlock();
             irods::error ret = readMsgHeader( net_obj, &myHeader, NULL );
 
             if ( !ret.ok() ) {

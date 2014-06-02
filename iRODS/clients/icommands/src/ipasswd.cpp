@@ -9,6 +9,9 @@
 #include "irods_client_api_table.hpp"
 #include "irods_pack_table.hpp"
 
+#include <iostream>
+#include <string>
+
 void usage( char *prog );
 
 int
@@ -126,8 +129,8 @@ main( int argc, char **argv ) {
     len = 0;
     for ( ; len < 4; ) {
         printf( "Enter your new iRODS password:" );
-        string password = "";
-        getline( cin, password );
+        std::string password = "";
+        getline( std::cin, password );
         strncpy( newPw, password.c_str(), MAX_PASSWORD_LEN );
         len = strlen( newPw );
         if ( len < 4 ) {
@@ -136,8 +139,8 @@ main( int argc, char **argv ) {
     }
     if ( myRodsArgs.force != True ) {
         printf( "Reenter your new iRODS password:" );
-        string password = "";
-        getline( cin, password );
+        std::string password = "";
+        getline( std::cin, password );
         strncpy( newPw2, password.c_str(), MAX_PASSWORD_LEN );
         if ( strncmp( newPw, newPw2, MAX_PASSWORD_LEN ) != 0 ) {
             printf( "Entered passwords do not match\n" );

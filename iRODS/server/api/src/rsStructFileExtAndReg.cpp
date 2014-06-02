@@ -5,6 +5,7 @@
 /* rsStructFileExtAndReg.c. See structFileExtAndReg.h for a description of
  * this API call.*/
 
+#include "reFuncDefs.hpp"
 #include "apiHeaderAll.hpp"
 #include "objMetaOpr.hpp"
 #include "collection.hpp"
@@ -24,6 +25,16 @@
 #include "irods_stacktrace.hpp"
 #include "irods_resource_backport.hpp"
 #include "irods_file_object.hpp"
+
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/convenience.hpp>
+using namespace boost::filesystem;
+
+int
+bulkRegUnbunSubfiles( rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string& rescHier,
+                      char *rescGroupName, char *collection, char *phyBunDir, int flags,
+                      genQueryOut_t *attriArray );
+
 
 int
 rsStructFileExtAndReg( rsComm_t *rsComm,

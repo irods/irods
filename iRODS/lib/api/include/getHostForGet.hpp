@@ -44,8 +44,9 @@ getRescForGetInDataObj( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 #define RS_GET_HOST_FOR_GET NULL
 #endif
 
+#ifdef __cplusplus
 extern "C" {
-
+#endif
     /* prototype for the client call */
     /* rcGetHostForGet - get the best host the put operation.
      * Input -
@@ -64,6 +65,7 @@ extern "C" {
     int
     rcGetHostForGet( rcComm_t *conn, dataObjInp_t *dataObjInp,
                      char **outHost );
+#ifdef __cplusplus
 }
-
+#endif
 #endif	/* GET_HOST_FOR_GET_H */

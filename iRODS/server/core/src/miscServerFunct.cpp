@@ -22,6 +22,7 @@
 #include "dataObjRead.hpp"
 #include "rcPortalOpr.hpp"
 #include "initServer.hpp"
+#include "reFuncDefs.hpp"
 #ifdef PARA_OPR
 #include <boost/thread/thread.hpp>
 #endif
@@ -40,6 +41,7 @@ char *__loc1;
 #include "irods_buffer_encryption.hpp"
 #include "irods_client_server_negotiation.hpp"
 #include "irods_hierarchy_parser.hpp"
+#include "irods_threads.hpp"
 
 #include <iomanip>
 #include <fstream>
@@ -2259,7 +2261,7 @@ reconnManager( rsComm_t *rsComm ) {
             else {
                 rodsLog( LOG_ERROR, "reconnManager: select failed, errno = %d",
                          errno );
-                boost::unique_lock< boost::mutex > boost_lock( *rsComm->lock );
+                boost::unique_lock< boost::mutex > boost_lock( *rsComm->thread_ctx->lock );
                 close( rsComm->reconnSock );
                 rsComm->reconnSock = 0;
                 boost_lock.unlock();
@@ -2320,14 +2322,14 @@ reconnManager( rsComm_t *rsComm ) {
             continue;
         }
 
-        boost::unique_lock<boost::mutex> boost_lock( *rsComm->lock );
+        boost::unique_lock<boost::mutex> boost_lock( *rsComm->thread_ctx->lock );
         rsComm->clientState = reconnMsg->procState;
         rsComm->reconnectedSock = newSock;
         /* need to check agentState */
         while ( rsComm->agentState == SENDING_STATE ) {
             /* have to wait until the agent stop sending */
             rsComm->reconnThrState = CONN_WAIT_STATE;
-            rsComm->cond->wait( boost_lock );
+            rsComm->thread_ctx->cond->wait( boost_lock );
         }
 
         rsComm->reconnThrState = PROCESSING_STATE;
@@ -2356,14 +2358,14 @@ int
 svrChkReconnAtSendStart( rsComm_t *rsComm ) {
     if ( rsComm->reconnSock > 0 ) {
         /* handle reconn */
-        boost::unique_lock<boost::mutex> boost_lock( *rsComm->lock );
+        boost::unique_lock<boost::mutex> boost_lock( *rsComm->thread_ctx->lock );
         if ( rsComm->reconnThrState == CONN_WAIT_STATE ) {
             /* should not be here */
             rodsLog( LOG_NOTICE,
                      "svrChkReconnAtSendStart: ThrState = CONN_WAIT_STATE, agentState=%d",
                      rsComm->agentState );
             rsComm->agentState = PROCESSING_STATE;
-            rsComm->cond->notify_all();
+            rsComm->thread_ctx->cond->notify_all();
         }
         svrSwitchConnect( rsComm );
         rsComm->agentState = SENDING_STATE;
@@ -2376,10 +2378,10 @@ int
 svrChkReconnAtSendEnd( rsComm_t *rsComm ) {
     if ( rsComm->reconnSock > 0 ) {
         /* handle reconn */
-        boost::unique_lock<boost::mutex> boost_lock( *rsComm->lock );
+        boost::unique_lock<boost::mutex> boost_lock( *rsComm->thread_ctx->lock );
         rsComm->agentState = PROCESSING_STATE;
         if ( rsComm->reconnThrState == CONN_WAIT_STATE ) {
-            rsComm->cond->wait( boost_lock );
+            rsComm->thread_ctx->cond->wait( boost_lock );
         }
         boost_lock.unlock();
     }
@@ -2390,14 +2392,14 @@ int
 svrChkReconnAtReadStart( rsComm_t *rsComm ) {
     if ( rsComm->reconnSock > 0 ) {
         /* handle reconn */
-        boost::unique_lock< boost::mutex > boost_lock( *rsComm->lock );
+        boost::unique_lock< boost::mutex > boost_lock( *rsComm->thread_ctx->lock );
         if ( rsComm->reconnThrState == CONN_WAIT_STATE ) {
             /* should not be here */
             rodsLog( LOG_NOTICE,
                      "svrChkReconnAtReadStart: ThrState = CONN_WAIT_STATE, agentState=%d",
                      rsComm->agentState );
             rsComm->agentState = PROCESSING_STATE;
-            rsComm->cond->wait( boost_lock );
+            rsComm->thread_ctx->cond->wait( boost_lock );
         }
         svrSwitchConnect( rsComm );
         rsComm->agentState = RECEIVING_STATE;
@@ -2410,10 +2412,10 @@ int
 svrChkReconnAtReadEnd( rsComm_t *rsComm ) {
     if ( rsComm->reconnSock > 0 ) {
         /* handle reconn */
-        boost::unique_lock< boost::mutex > boost_lock( *rsComm->lock );
+        boost::unique_lock< boost::mutex > boost_lock( *rsComm->thread_ctx->lock );
         rsComm->agentState = PROCESSING_STATE;
         if ( rsComm->reconnThrState == CONN_WAIT_STATE ) {
-            rsComm->cond->notify_all();
+            rsComm->thread_ctx->cond->notify_all();
         }
         boost_lock.unlock();
     }

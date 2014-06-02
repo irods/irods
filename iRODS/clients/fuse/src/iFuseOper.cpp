@@ -9,6 +9,7 @@
 #include "irodsFs.hpp"
 #include "iFuseOper.hpp"
 #include "miscUtil.hpp"
+#include "sockComm.hpp"
 
 int
 irodsGetattr( const char *path, struct stat *stbuf ) {

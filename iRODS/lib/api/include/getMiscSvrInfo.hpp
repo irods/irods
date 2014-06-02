@@ -39,7 +39,9 @@ rsGetMiscSvrInfo( rsComm_t *rsComm, miscSvrInfo_t **outSvrInfo );
 #define RS_GET_MISC_SVR_INFO NULL
 #endif
 
+#ifdef _cplusplus
 extern "C" {
+#endif
 
     /* prototype for the client call */
     /* rcGetMiscSvrInfo - get miscellenous server info
@@ -54,6 +56,8 @@ extern "C" {
     int
     rcGetMiscSvrInfo( rcComm_t *conn, miscSvrInfo_t **outSvrInfo );
 
+#ifdef _cplusplus
 }
+#endif
 
 #endif	/* GET_MISC_SVR_INFO_H */

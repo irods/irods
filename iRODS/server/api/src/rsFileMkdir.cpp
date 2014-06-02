@@ -12,6 +12,7 @@
 #include "irods_log.hpp"
 #include "irods_collection_object.hpp"
 #include "irods_stacktrace.hpp"
+#include "fileDriver.hpp"
 
 int
 rsFileMkdir( rsComm_t *rsComm, fileMkdirInp_t *fileMkdirInp ) {

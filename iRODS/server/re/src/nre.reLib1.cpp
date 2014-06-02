@@ -3,6 +3,7 @@
 /* #define RE_LOG_RULES_TMP */
 #define HAS_MICROSDEF_T
 #include "reGlobals.hpp"
+#include "reFuncDefs.hpp"
 #include "initServer.hpp"
 #include "reHelpers1.hpp"
 #include "reAction.hpp"

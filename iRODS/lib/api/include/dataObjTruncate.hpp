@@ -34,8 +34,9 @@ l3Truncate( rsComm_t *rsComm, dataObjInp_t *dataObjTruncateInp,
 #define RS_DATA_OBJ_TRUNCATE NULL
 #endif
 
+#ifdef __cplusplus
 extern "C" {
-
+#endif
     /* prototype for the client call */
     int
     rcDataObjTruncate( rcComm_t *conn, dataObjInp_t *dataObjInp );
@@ -51,6 +52,7 @@ extern "C" {
      *   return value - The status of the operation.
      */
 
+#ifdef __cplusplus
 }
-
+#endif
 #endif	/* DATA_OBJ_TRUNCATE_H */

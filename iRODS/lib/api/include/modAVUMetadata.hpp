@@ -50,8 +50,9 @@ _rsModAVUMetadata( rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp );
 #define RS_MOD_AVU_METADATA NULL
 #endif
 
+#ifdef __cplusplus
 extern "C" {
-
+#endif
     /* prototype for the client call */
     int
     rcModAVUMetadata( rcComm_t *conn, modAVUMetadataInp_t *modAVUMetadataInp );
@@ -59,6 +60,7 @@ extern "C" {
     void
     clearModAVUMetadataInp( void * voidInp );
 
+#ifdef __cplusplus
 }
-
+#endif
 #endif	/* MOD_AVU_METADATA_H */

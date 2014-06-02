@@ -15,12 +15,13 @@
 #include "rodsError.hpp"
 #include "objInfo.hpp"
 #include "dataObjCopy.hpp"
-#include "execCmd.hpp"
+// XXXX - JMC :: #include "execCmd.hpp"
 #include "rodsPath.hpp"
 #include "bulkDataObjPut.hpp"
 
+#ifdef __cplusplus
 extern "C" {
-
+#endif
     void
     clearModAVUMetadataInp( void* );
     void
@@ -264,7 +265,7 @@ extern "C" {
     int
     initBulkDataObjRegOut( genQueryOut_t **bulkDataObjRegOut );
     int
-    fillBulkDataObjRegInp( char *rescName, const std::string& rescHier, char *rescGroupName, char *objPath,
+    fillBulkDataObjRegInp( char *rescName, const char* rescHier, char *rescGroupName, char *objPath,
                            char *filePath, char *dataType, rodsLong_t dataSize, int dataMode,
                            int modFlag, int replNum, char *chksum, genQueryOut_t *bulkDataObjRegInp );
     int
@@ -316,8 +317,9 @@ extern "C" {
     static const int STDOUT_STATUS = 1000000;
 
     int
-    getPathStMode( path & p );
+    getPathStMode( const char* p );
 
+#ifdef __cplusplus
 }
-
+#endif
 #endif  /* RC_MISC_H */

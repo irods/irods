@@ -19,8 +19,6 @@
 #include "apiNumber.hpp"
 #include "initServer.hpp"
 
-#include "fileDriver.hpp"
-
 /**
  * \var fileLseekInp_t
  * \brief Input struct for rcDataObjLseek and rsFileLseek operations
@@ -91,8 +89,14 @@ remoteFileLseek( rsComm_t *rsComm, fileLseekInp_t *fileLseekInp,
 #endif
 
 /* prototype for the client call */
+#ifdef __cplusplus
+extern "C" {
+#endif
 int
 rcFileLseek( rcComm_t *conn, fileLseekInp_t *fileLseekInp,
              fileLseekOut_t **fileLseekOut );
 
+#ifdef __cplusplus
+}
+#endif
 #endif	/* FILE_LSEEK_H */

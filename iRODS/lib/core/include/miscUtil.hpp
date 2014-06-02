@@ -140,7 +140,10 @@ typedef struct {
 } pathnamePatterns_t;
 
 
+#ifdef __cplusplus
 extern "C" {
+#endif
+
     int
     mkdirR( char *startDir, char *destDir, int mode );
     int
@@ -276,6 +279,7 @@ extern "C" {
     freePathnamePatterns( pathnamePatterns_t *pp );
     int
     matchPathname( pathnamePatterns_t *pp, char *name, char *dirname );
+#ifdef __cplusplus
 }
-
+#endif
 #endif	/* MISC_UTIL_H */

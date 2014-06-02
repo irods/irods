@@ -26,8 +26,9 @@ _rsModColl( rsComm_t *rsComm, collInp_t *modCollInp );
 #define RS_MOD_COLL NULL
 #endif
 
+#ifdef __cplusplus
 extern "C" {
-
+#endif
     /* prototype for the client call */
     int
     rcModColl( rcComm_t *conn, collInp_t *modCollInp );
@@ -44,6 +45,7 @@ extern "C" {
      *   int status - status of the operation.
      */
 
+#ifdef __cplusplus
 }
-
+#endif
 #endif	/* MOD_COLL_H */

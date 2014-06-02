@@ -35,8 +35,9 @@ _rsModDataObjMeta( rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp );
 #define RS_MOD_DATA_OBJ_META NULL
 #endif
 
+#ifdef __cplusplus
 extern "C" {
-
+#endif
     /* prototype for the client call */
     int
     rcModDataObjMeta( rcComm_t *conn, modDataObjMeta_t *modDataObjMetaInp );
@@ -52,6 +53,7 @@ extern "C" {
 
 //    int
 //    clearModDataObjMetaInp( modDataObjMeta_t *modDataObjMetaInp );
+#ifdef __cplusplus
 }
-
+#endif
 #endif  /* MOD_DATA_OBJ_META_H */

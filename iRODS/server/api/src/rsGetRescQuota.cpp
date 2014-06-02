@@ -10,6 +10,7 @@
 #include "genQuery.hpp"
 #include "objMetaOpr.hpp"
 #include "resource.hpp"
+#include "reFuncDefs.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"

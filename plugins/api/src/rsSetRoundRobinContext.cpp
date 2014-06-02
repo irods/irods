@@ -3,6 +3,7 @@
 // =-=-=-=-=-=-=-
 // irods includes
 #include "reGlobalsExtern.hpp"
+#include "apiHandler.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "rs_set_round_robin_context.hpp"
 #include "irods_resource_manager.hpp"

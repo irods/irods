@@ -9,6 +9,7 @@
 #include "rodsType.hpp"
 #include "objStat.hpp"
 
+#if 0
 #include <iostream>
 #include <iterator>
 #include <vector>
@@ -17,9 +18,11 @@
 #include <boost/filesystem/convenience.hpp>
 using namespace std;
 using namespace boost::filesystem;
+#endif
 
-
+#ifdef __cplusplus
 extern "C" {
+#endif
 
 #define STDOUT_FILE_NAME	"-"	/* pipe to stdout */
 
@@ -73,6 +76,8 @@ extern "C" {
     getFileType( rodsPath_t *rodsPath );
     void
     clearRodsPath( rodsPath_t *rodsPath );
+#ifdef __cplusplus
 }
+#endif
 
 #endif	/* RODS_PATH_H*/

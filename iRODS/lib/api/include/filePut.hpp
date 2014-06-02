@@ -16,7 +16,7 @@
 #include "apiNumber.hpp"
 #include "initServer.hpp"
 
-#include "fileDriver.hpp"
+
 #include "fileOpen.hpp"
 
 typedef struct {
@@ -47,9 +47,15 @@ remoteFilePut( rsComm_t *rsComm, fileOpenInp_t *filePutInp,
 #endif
 
 /* prototype for the client call */
+#ifdef __cplusplus
+extern "C" {
+#endif
 int
 rcFilePut( rcComm_t *conn, fileOpenInp_t *filePutInp,
            bytesBuf_t *filePutInpBBuf,
            filePutOut_t**  );
+#ifdef __cplusplus
+}
+#endif
 
 #endif  /* FILE_PUT_H */

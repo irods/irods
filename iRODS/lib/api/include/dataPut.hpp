@@ -34,8 +34,14 @@ _rsDataPut( rsComm_t *rsComm, dataOprInp_t *dataPutInp,
 #endif
 
 /* prototype for the client call */
+#ifdef __cplusplus
+extern "C" {
+#endif
 int
 rcDataPut( rcComm_t *conn, dataOprInp_t *dataPutInp,
            portalOprOut_t **portalOprOut );
+#ifdef __cplusplus
+}
+#endif
 
 #endif	/* DATA_PUT_H */

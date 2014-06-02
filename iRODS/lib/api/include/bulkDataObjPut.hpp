@@ -16,10 +16,6 @@
 #include "initServer.hpp"
 #include "genQuery.hpp"
 
-// =-=-=-=-=-=-=-
-// stl includes
-#include <string>
-
 #define TMP_PHY_BUN_DIR         "tmpPhyBunDir"
 
 typedef struct {
@@ -43,39 +39,13 @@ typedef struct RenamedPhyFiles {
 int
 rsBulkDataObjPut( rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
                   bytesBuf_t *bulkOprInpBBuf );
-int
-_rsBulkDataObjPut( rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
-                   bytesBuf_t *bulkOprInpBBuf );
-int
-createBunDirForBulkPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                        rescInfo_t *rescInfo, specColl_t *specColl, char *phyBunDir );
-int
-initDataObjInpFromBulkOpr( dataObjInp_t *dataObjInp, bulkOprInp_t *bulkOprInp );
-int
-bulkRegUnbunSubfiles( rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string& rescHier,
-                      char *rescGroupName, char *collection, char *phyBunDir, int flags,
-                      genQueryOut_t *attriArray );
-int
-_bulkRegUnbunSubfiles( rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string& rescHier,
-                       char *rescGroupName, char *collection, char *phyBunDir, int flags,
-                       genQueryOut_t *bulkDataObjRegInp, renamedPhyFiles_t *renamedPhyFiles,
-                       genQueryOut_t *attriArray );
-int
-bulkProcAndRegSubfile( rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string& rescHier,
-                       char *rescGroupName, char *subObjPath, char *subfilePath, rodsLong_t dataSize,
-                       int dataMode, int flags, genQueryOut_t *bulkDataObjRegInp,
-                       renamedPhyFiles_t *renamedPhyFiles, genQueryOut_t *attriArray );
-int
-bulkRegSubfile( rsComm_t *rsComm, char *rescName, const std::string& rescHier, char *rescGroupName,
-                char *subObjPath, char *subfilePath, rodsLong_t dataSize, int dataMode,
-                int modFlag, int replNum, char *chksum, genQueryOut_t *bulkDataObjRegInp,
-                renamedPhyFiles_t *renamedPhyFiles );
 #else
 #define RS_BULK_DATA_OBJ_PUT NULL
 #endif
 
+#ifdef __cplusplus
 extern "C" {
-
+#endif
     /* prototype for the client call */
     /* rcBulkDataObjPut - Bulk Put (upload) a number of local files to iRODS.
      * bulkOprInpBBuf contains the bundled local files in tar format.
@@ -93,6 +63,7 @@ extern "C" {
     int
     rcBulkDataObjPut( rcComm_t *conn, bulkOprInp_t *bulkOprInp,
                       bytesBuf_t *bulkOprInpBBuf );
+#ifdef __cplusplus
 }
-
+#endif
 #endif  /* BULK_DATA_OBJ_PUT_H */

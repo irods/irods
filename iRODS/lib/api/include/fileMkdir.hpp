@@ -14,7 +14,7 @@
 #include "apiNumber.hpp"
 #include "initServer.hpp"
 
-#include "fileDriver.hpp"
+
 
 typedef struct {
     rodsHostAddr_t addr;
@@ -41,7 +41,13 @@ remoteFileMkdir( rsComm_t *rsComm, fileMkdirInp_t *fileMkdirInp,
 #endif
 
 /* prototype for the client call */
+#ifdef __cplusplus
+extern "C" {
+#endif
 int
 rcFileMkdir( rcComm_t *conn, fileMkdirInp_t *fileMkdirInp );
 
+#ifdef __cplusplus
+}
+#endif
 #endif	/* FILE_MKDIR_H */

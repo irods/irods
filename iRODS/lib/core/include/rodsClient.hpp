@@ -19,4 +19,12 @@ typedef struct TransferProgress {
     char currentFilePath[MAX_NAME_LEN];
 } xferProgress_t;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+    void init_client_api_table();
+#ifdef __cplusplus
+}
+#endif
+
 #endif	/* RODS_CLIENT_H */

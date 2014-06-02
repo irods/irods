@@ -5,6 +5,7 @@
 /* rsStructFileBundle.c. See structFileBundle.h for a description of
  * this API call.*/
 
+#include "reFuncDefs.hpp"
 #include "apiHeaderAll.hpp"
 #include "objMetaOpr.hpp"
 #include "dataObjOpr.hpp"

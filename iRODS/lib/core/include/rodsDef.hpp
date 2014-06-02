@@ -55,7 +55,6 @@
 #include <netinet/tcp.h>
 #endif
 
-#include "irods_log.hpp"
 
 #define HEADER_TYPE_LEN 128 /* changed by Raja to 128 from 16 */
 #define TIME_LEN        32
@@ -309,24 +308,14 @@ typedef struct {
     char reconnAddr[LONG_NAME_LEN];
     int cookie;
 } version_t;
-
 /* struct that defines a Host Addr */
 
-struct rodsHostAddr_t {
+typedef struct {
     char hostAddr[LONG_NAME_LEN];
     char zoneName[NAME_LEN];
     int portNum;
     int dummyInt;	/* make it to 64 bit boundary */
-
-    rodsHostAddr_t& operator=( const rodsHostAddr_t& _rhs ) {
-        strncpy( hostAddr, _rhs.hostAddr, LONG_NAME_LEN );
-        strncpy( zoneName, _rhs.zoneName, NAME_LEN );
-        portNum  = _rhs.portNum;
-        dummyInt = _rhs.dummyInt;
-        return *this;
-    }
-
-};
+} rodsHostAddr_t;
 
 /* definition for restartState */
 
@@ -354,7 +343,11 @@ typedef struct {
 } rodsRestart_t;
 
 /* definition for handler function */
+#ifdef __cplusplus
 typedef int( ( *funcPtr )( ... ) );
+#else
+typedef int( ( *funcPtr )( ) );
+#endif
 
 /* some platform does not support vfork */
 #if defined(sgi_platform) || defined(aix_platform)

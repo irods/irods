@@ -11,6 +11,7 @@
 #include "authCheck.hpp"
 #include "miscServerFunct.hpp"
 #include "authPluginRequest.hpp"
+#include "authenticate.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_auth_plugin.hpp"
@@ -176,7 +177,7 @@ extern "C" {
                 }
                 printf( "Enter your current iRODS password:" );
                 std::string password = "";
-                getline( cin, password );
+                getline( std::cin, password );
                 strncpy( md5_buf + CHALLENGE_LEN, password.c_str(), MAX_PASSWORD_LEN );
 #ifdef WIN32
                 if ( !SetConsoleMode( hStdin, lastMode ) ) {

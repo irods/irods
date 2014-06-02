@@ -36,12 +36,14 @@ _rsGeneralUpdate( rsComm_t *rsComm, generalUpdateInp_t *generalUpdateInp );
 #define RS_GENERAL_UPDATE NULL
 #endif
 
+#ifdef __cplusplus
 extern "C" {
-
+#endif
     /* prototype for the client call */
     int
     rcGeneralUpdate( rcComm_t *conn, generalUpdateInp_t *generalUpdateInp );
 
+#ifdef __cplusplus
 }
-
+#endif
 #endif	/* GENERAL_UPDATE_H */

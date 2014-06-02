@@ -15,8 +15,6 @@
 #include "initServer.hpp"
 #include "icatDefines.hpp"
 
-extern "C" {
-
     typedef struct {
         char *response;
         char *username;
@@ -35,10 +33,15 @@ extern "C" {
 #define RS_AUTH_RESPONSE NULL
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
     /* prototype for the client call */
     int
     rcAuthResponse( rcComm_t *conn, authResponseInp_t *authResponseInp );
 
+#ifdef __cplusplus
 }
+#endif
 
 #endif	/* AUTH_RESPONSE_H */

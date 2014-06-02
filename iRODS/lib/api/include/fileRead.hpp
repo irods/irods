@@ -15,7 +15,7 @@
 #include "initServer.hpp"
 #include "fileRead.hpp"
 
-#include "fileDriver.hpp"
+
 
 typedef struct FileReadInp {
     int fileInx;
@@ -41,8 +41,14 @@ remoteFileRead( rsComm_t *rsComm, fileReadInp_t *fileReadInp,
 #endif
 
 /* prototype for the client call */
+#ifdef __cplusplus
+extern "C" {
+#endif
 int
 rcFileRead( rcComm_t *conn, fileReadInp_t *fileReadInp,
             bytesBuf_t *fileReadOutBBuf );
+#ifdef __cplusplus
+}
+#endif
 
 #endif	/* FILE_READ_H */

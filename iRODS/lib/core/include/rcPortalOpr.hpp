@@ -16,7 +16,10 @@
 #include "QUANTAnet_rbudpBase_c.hpp"
 #include "QUANTAnet_rbudpSender_c.hpp"
 #include "QUANTAnet_rbudpReceiver_c.hpp"
+
+#ifdef __cplusplus
 extern "C" {
+#endif
 
 #define MAX_PROGRESS_CNT	8
 
@@ -100,6 +103,7 @@ extern "C" {
             rodsLong_t *dataSegLen );
     int
     catDataObj( rcComm_t *conn, char *objPath );
+#ifdef __cplusplus
 }
-
+#endif
 #endif	/* RC_PORTAL_OPR_H */

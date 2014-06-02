@@ -27,7 +27,7 @@ typedef struct {
 
 #define generalRowPurgeInp_PI "str *tableName; str *secondsAgo;"
 
-extern "C" {
+
 
 #if defined(RODS_SERVER)
 #define RS_GENERAL_ROW_PURGE rsGeneralRowPurge
@@ -41,10 +41,14 @@ extern "C" {
 #define RS_GENERAL_ROW_PURGE NULL
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
     /* prototype for the client call */
     int
     rcGeneralRowPurge( rcComm_t *conn, generalRowPurgeInp_t *generalRowPurgeInp );
 
+#ifdef __cplusplus
 }
-
+#endif
 #endif	/* GENERAL_ROW_PURGE_H */

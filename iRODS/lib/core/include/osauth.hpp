@@ -2,7 +2,9 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* definitions for osauth routines */
 
+#ifdef __cplusplus
 extern "C" {
+#endif
 
 #define OS_AUTH_FLAG     "##OS_AUTH"
 #define OS_AUTH_CMD      "genOSAuth"
@@ -15,5 +17,7 @@ extern "C" {
     int osauthGetUsername( char *username, int username_len );
     int osauthGenerateAuthenticator( char *username, int uid, char *challenge, char *key,
                                      int key_len, char *authenticator, int authenticator_len );
+#ifdef __cplusplus
 }
+#endif
 

@@ -14,8 +14,6 @@
 #include "apiNumber.hpp"
 #include "initServer.hpp"
 
-#include "fileDriver.hpp"
-
 typedef struct {
     int fileInx;
 } fileClosedirInp_t;
@@ -37,7 +35,13 @@ remoteFileClosedir( rsComm_t *rsComm, fileClosedirInp_t *fileClosedirInp,
 #endif
 
 /* prototype for the client call */
+#ifdef __cplusplus
+extern "C" {
+#endif
 int
 rcFileClosedir( rcComm_t *conn, fileClosedirInp_t *fileClosedirInp );
+#ifdef __cplusplus
+}
+#endif
 
 #endif	/* FILE_CLOSEDIR_H */

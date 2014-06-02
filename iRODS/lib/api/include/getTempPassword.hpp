@@ -12,6 +12,7 @@
 #include "rcMisc.hpp"
 #include "procApiRequest.hpp"
 #include "apiNumber.hpp"
+#include "authenticate.hpp"
 
 typedef struct {
     char stringToHashWith[MAX_PASSWORD_LEN];

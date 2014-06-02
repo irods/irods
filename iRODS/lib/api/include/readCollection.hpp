@@ -27,8 +27,9 @@ rsReadCollection( rsComm_t *rsComm, int *handleInxInp,
 #define RS_READ_COLLECTION NULL
 #endif
 
+#ifdef __cplusplus
 extern "C" {
-
+#endif
     /* prototype for the client call */
 
     int
@@ -46,6 +47,7 @@ extern "C" {
      *   collEnt_t **collEnt - the metadata of an object in the collection.
      *   int status - status of the operation. -1 means no more collEnt
      */
+#ifdef __cplusplus
 }
-
+#endif
 #endif	/* READ_COLLECTION_H */

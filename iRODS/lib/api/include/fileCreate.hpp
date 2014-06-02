@@ -16,7 +16,6 @@
 #include "apiNumber.hpp"
 #include "initServer.hpp"
 
-//#include "fileDriver.hpp"
 #include "fileOpen.hpp"
 
 typedef fileOpenInp_t fileCreateInp_t;
@@ -44,7 +43,14 @@ remoteFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,
 #endif
 
 /* prototype for the client call */
+#ifdef __cplusplus
+extern "C" {
+#endif
 int
 rcFileCreate( rcComm_t *conn, fileCreateInp_t *fileCreateInp, fileCreateOut_t** );
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif  /* FILE_CREATE_H */

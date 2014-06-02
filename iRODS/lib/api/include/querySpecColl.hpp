@@ -12,8 +12,6 @@
 #include "procApiRequest.hpp"
 #include "apiNumber.hpp"
 
-extern "C" {
-
     typedef struct specCollDesc {
         int l3descInx;
         int inuseFlag;
@@ -51,11 +49,15 @@ extern "C" {
 #define RS_QUERY_SPEC_COLL NULL
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
     /* prototype for the client call */
     int
     rcQuerySpecColl( rcComm_t *conn, dataObjInp_t *querySpecCollInp,
                      genQueryOut_t **genQueryOut );
 
+#ifdef __cplusplus
 }
-
+#endif
 #endif	/* QUERY_SPEC_COLL_H */

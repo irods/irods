@@ -14,7 +14,6 @@
 #include "apiNumber.hpp"
 #include "initServer.hpp"
 
-#include "fileDriver.hpp"
 #include "fileOpen.hpp"
 
 #if defined(RODS_SERVER)
@@ -34,8 +33,14 @@ remoteFileGet( rsComm_t *rsComm, fileOpenInp_t *fileGetInp,
 #endif
 
 /* prototype for the client call */
+#ifdef __cplusplus
+extern "C" {
+#endif
 int
 rcFileGet( rcComm_t *conn, fileOpenInp_t *fileGetInp,
            bytesBuf_t *fileGetOutBBuf );
+#ifdef __cplusplus
+}
+#endif
 
 #endif	/* FILE_GET_H */

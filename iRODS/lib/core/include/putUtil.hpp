@@ -9,7 +9,9 @@
 #include "parseCommandLine.hpp"
 #include "rodsPath.hpp"
 
+#ifdef __cplusplus
 extern "C" {
+#endif
 
     /* definition for flags in bulkOprInfo_t */
 #define NON_BULK_OPR		0x0
@@ -67,6 +69,7 @@ extern "C" {
     clearBulkOprInfo( bulkOprInfo_t *bulkOprInfo );
     int
     setForceFlagForRestart( bulkOprInp_t *bulkOprInp, bulkOprInfo_t *bulkOprInfo );
+#ifdef __cplusplus
 }
-
+#endif
 #endif	/* PUT_UTIL_H */

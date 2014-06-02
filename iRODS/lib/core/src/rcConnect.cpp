@@ -18,6 +18,9 @@
 #include "irods_stacktrace.hpp"
 #include "irods_network_factory.hpp"
 
+#include "sockComm.hpp"
+#include "irods_threads.hpp"
+
 rcComm_t *
 rcConnect( char *rodsHost, int rodsPort, char *userName, char *rodsZone,
            int reconnFlag, rErrMsg_t *errMsg ) {
@@ -65,8 +68,10 @@ _rcConnect( char *rodsHost, int rodsPort,
 #endif
 
     conn = ( rcComm_t* )malloc( sizeof( rcComm_t ) );
-
     memset( conn, 0, sizeof( rcComm_t ) );
+    
+    conn->thread_ctx = (thread_context*) malloc( sizeof( thread_context ) );    
+    memset( conn->thread_ctx, 0, sizeof( thread_context ) );
 
     if ( errMsg != NULL ) {
         memset( errMsg, 0, sizeof( rErrMsg_t ) );
@@ -140,9 +145,9 @@ _rcConnect( char *rodsHost, int rodsPort,
             rstrcpy( conn->svrVersion->reconnAddr, conn->host, NAME_LEN );
         }
         conn->exit_flg = false;
-        conn->lock = new boost::mutex;
-        conn->cond = new boost::condition_variable;
-        conn->reconnThr = new boost::thread( cliReconnManager, conn );
+        conn->thread_ctx->lock      = new boost::mutex;
+        conn->thread_ctx->cond      = new boost::condition_variable;
+        conn->thread_ctx->reconnThr = new boost::thread( cliReconnManager, conn );
         if ( status < 0 ) {
             rodsLog( LOG_ERROR, "_rcConnect: pthread_create failed, stat=%d",
                      status );
@@ -271,15 +276,15 @@ int rcDisconnect(
 
     close( _conn->sock );
 
+
     _conn->exit_flg = true; //
-    if ( _conn->reconnThr ) {
-        // _conn->reconnThr->interrupt(); // terminate at next interruption point
+    if ( _conn->thread_ctx->reconnThr ) {
         boost::system_time until = boost::get_system_time() + boost::posix_time::seconds( 2 );
-        _conn->reconnThr->timed_join( until );    // force an interruption point
+        _conn->thread_ctx->reconnThr->timed_join( until );    // force an interruption point
     }
-    delete  _conn->reconnThr;
-    delete  _conn->lock;
-    delete  _conn->cond;
+    delete  _conn->thread_ctx->reconnThr;
+    delete  _conn->thread_ctx->lock;
+    delete  _conn->thread_ctx->cond;
 
     status = freeRcComm( _conn );
     return ( status );
@@ -353,24 +358,31 @@ cliReconnManager( rcComm_t *conn ) {
     conn->reconnTime = time( 0 ) + RECONN_TIMEOUT_TIME;
 
     while ( !conn->exit_flg ) { /* JMC */
+printf( "cliReconnManager: while !exit flg\n" );
+fflush( stdout );
         time_t curTime = time( 0 );
 
         if ( curTime < conn->reconnTime ) {
             rodsSleep( conn->reconnTime - curTime, 0 );
         }
-        boost::unique_lock<boost::mutex> boost_lock( *conn->lock );
+        boost::unique_lock<boost::mutex> boost_lock( *conn->thread_ctx->lock );
         /* need to check clientState */
         while ( conn->clientState != PROCESSING_STATE ) {
             /* have to wait until the client stop sending */
             conn->reconnThrState = CONN_WAIT_STATE;
             rodsLog( LOG_DEBUG,
                      "cliReconnManager: clientState = %d", conn->clientState );
-            conn->cond->wait( boost_lock );
+printf( "cliReconnManager: clientState = %d\n", conn->clientState );
+fflush( stdout );
+            conn->thread_ctx->cond->wait( boost_lock );
 
         }
         rodsLog( LOG_DEBUG,
                  "cliReconnManager: Reconnecting clientState = %d",
                  conn->clientState );
+ printf( "cliReconnManager: Reconnecting clientState = %d\n",
+ conn->clientState );
+fflush( stdout );
 
         conn->reconnThrState = PROCESSING_STATE;
         /* connect to server's reconn thread */
@@ -393,11 +405,14 @@ cliReconnManager( rcComm_t *conn ) {
             connectToRhostWithRaddr( &remoteAddr, conn->windowSize, 0 );
 
         if ( conn->reconnectedSock < 0 ) {
-            conn->cond->notify_all();
+            conn->thread_ctx->cond->notify_all();
             boost_lock.unlock();
             rodsLog( LOG_ERROR,
                      "cliReconnManager: connect to host %s failed, status = %d",
                      conn->svrVersion->reconnAddr, conn->reconnectedSock );
+     printf( "cliReconnManager: connect to host %s failed, status = %d\n",
+             conn->svrVersion->reconnAddr, conn->reconnectedSock );
+     fflush( stdout );
             rodsSleep( RECONNECT_SLEEP_TIME, 0 );
             continue;
         }
@@ -421,7 +436,7 @@ cliReconnManager( rcComm_t *conn ) {
         if ( !ret.ok() ) {
             close( conn->reconnectedSock );
             conn->reconnectedSock = 0;
-            conn->cond->notify_all();
+            conn->thread_ctx->cond->notify_all();
             boost_lock.unlock();
             rodsLog( LOG_ERROR,
                      "cliReconnManager: sendReconnMsg to host %s failed, status = %d",
@@ -434,7 +449,7 @@ cliReconnManager( rcComm_t *conn ) {
         if ( !ret.ok() ) {
             close( conn->reconnectedSock );
             conn->reconnectedSock = 0;
-            conn->cond->notify_all();
+            conn->thread_ctx->cond->notify_all();
             boost_lock.unlock();
             rodsLog( LOG_ERROR,
                      "cliReconnManager: readReconMsg to host %s failed, status = %d",
@@ -458,7 +473,7 @@ cliReconnManager( rcComm_t *conn ) {
                      "cliReconnManager: Not calling svrSwitchConnect,  clientState = %d",
                      conn->clientState );
         }
-        conn->cond->notify_all();
+        conn->thread_ctx->cond->notify_all();
         boost_lock.unlock();
     }
 }
@@ -467,16 +482,16 @@ int
 cliChkReconnAtSendStart( rcComm_t *conn ) {
     if ( conn->svrVersion != NULL && conn->svrVersion->reconnPort > 0 ) {
         /* handle reconn */
-        boost::unique_lock<boost::mutex> boost_lock( *conn->lock );
+        boost::unique_lock<boost::mutex> boost_lock( *conn->thread_ctx->lock );
         if ( conn->reconnThrState == CONN_WAIT_STATE ) {
             rodsLog( LOG_DEBUG,
                      "cliChkReconnAtSendStart:ThrState=CONN_WAIT_STATE,clientState=%d",
                      conn->clientState );
             conn->clientState = PROCESSING_STATE;
 
-            conn->cond->notify_all();
+            conn->thread_ctx->cond->notify_all();
             /* wait for reconnManager to get done */
-            conn->cond->wait( boost_lock );
+            conn->thread_ctx->cond->wait( boost_lock );
 
         }
         conn->clientState = SENDING_STATE;
@@ -489,10 +504,10 @@ int
 cliChkReconnAtSendEnd( rcComm_t *conn ) {
     if ( conn->svrVersion != NULL && conn->svrVersion->reconnPort > 0 ) {
         /* handle reconn */
-        boost::unique_lock<boost::mutex> boost_lock( *conn->lock );
+        boost::unique_lock<boost::mutex> boost_lock( *conn->thread_ctx->lock );
         conn->clientState = PROCESSING_STATE;
         if ( conn->reconnThrState == CONN_WAIT_STATE ) {
-            conn->cond->notify_all();
+            conn->thread_ctx->cond->notify_all();
         }
 
         boost_lock.unlock();
@@ -504,7 +519,7 @@ int
 cliChkReconnAtReadStart( rcComm_t *conn ) {
     if ( conn->svrVersion != NULL && conn->svrVersion->reconnPort > 0 ) {
         /* handle reconn */
-        boost::unique_lock<boost::mutex> boost_lock( *conn->lock );
+        boost::unique_lock<boost::mutex> boost_lock( *conn->thread_ctx->lock );
         conn->clientState = RECEIVING_STATE;
         boost_lock.unlock();
     }
@@ -515,16 +530,16 @@ int
 cliChkReconnAtReadEnd( rcComm_t *conn ) {
     if ( conn->svrVersion != NULL && conn->svrVersion->reconnPort > 0 ) {
         /* handle reconn */
-        boost::unique_lock<boost::mutex> boost_lock( *conn->lock );
+        boost::unique_lock<boost::mutex> boost_lock( *conn->thread_ctx->lock );
         conn->clientState = PROCESSING_STATE;
         if ( conn->reconnThrState == CONN_WAIT_STATE ) {
             rodsLog( LOG_DEBUG,
                      "cliChkReconnAtReadEnd:ThrState=CONN_WAIT_STATE, clientState=%d",
                      conn->clientState );
 
-            conn->cond->notify_all();
+            conn->thread_ctx->cond->notify_all();
             /* wait for reconnManager to get done */
-            conn->cond->wait( boost_lock );
+            conn->thread_ctx->cond->wait( boost_lock );
         }
         boost_lock.unlock();
     }

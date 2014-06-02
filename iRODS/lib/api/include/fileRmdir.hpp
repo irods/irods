@@ -14,7 +14,7 @@
 #include "apiNumber.hpp"
 #include "initServer.hpp"
 
-#include "fileDriver.hpp"
+
 
 /* definition for flags of fileRmdirInp_t */
 #define RMDIR_RECUR	0x1
@@ -43,7 +43,13 @@ remoteFileRmdir( rsComm_t *rsComm, fileRmdirInp_t *fileRmdirInp,
 #endif
 
 /* prototype for the client call */
+#ifdef __cplusplus
+extern "C" {
+#endif
 int
 rcFileRmdir( rcComm_t *conn, fileRmdirInp_t *fileRmdirInp );
+#ifdef __cplusplus
+}
+#endif
 
 #endif	/* FILE_RMDIR_H */

@@ -60,8 +60,9 @@ addProcToProcStatOut( procLog_t *procLog, genQueryOut_t *procStatOut );
 #define RS_PROC_STAT NULL
 #endif
 
+#ifdef __cplusplus
 extern "C" {
-
+#endif
     /* prototype for the client call */
     /* rcProcStat - Get the connection stat of irods agents running in the
      * iRods federation. By default, the stat of the irods agents on the icat
@@ -104,6 +105,7 @@ extern "C" {
     int
     rcProcStat( rcComm_t *conn, procStatInp_t *procStatInp,
                 genQueryOut_t **procStatOut );
+#ifdef __cplusplus
 }
-
+#endif
 #endif	/* PROC_STAT_H */

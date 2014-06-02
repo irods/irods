@@ -5,8 +5,9 @@
 
 #define PRINT_RODS_ENV_STR "PRINT_IRODS_ENV"
 
+#ifdef __cplusplus
 extern "C" {
-
+#endif
     typedef struct {
         char rodsUserName[NAME_LEN];
         char rodsHost[NAME_LEN];
@@ -46,6 +47,7 @@ extern "C" {
 
     int appendRodsEnv( char *appendText );
 
+#ifdef __cplusplus
 }
-
+#endif
 #endif	/* GET_RODS_ENV */

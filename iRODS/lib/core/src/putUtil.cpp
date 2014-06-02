@@ -16,6 +16,11 @@
 #include "irods_server_properties.hpp"
 #include "readServerConfig.hpp"
 
+#include "sockComm.hpp"
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/convenience.hpp> 
+using namespace boost::filesystem;
+
 int
 setSessionTicket( rcComm_t *myConn, char *ticket ) {
     ticketAdminInp_t ticketAdminInp;
@@ -610,7 +615,7 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
                       srcDir, cp.c_str() );
             p = path( srcChildPath );
         }
-        dataObjOprInp->createMode = getPathStMode( p );
+        dataObjOprInp->createMode = getPathStMode( p.c_str() );
         if ( is_regular_file( p ) ) {
             childObjType = DATA_OBJ_T;
             dataSize = file_size( p );

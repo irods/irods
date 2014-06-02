@@ -14,7 +14,7 @@
 #include "apiNumber.hpp"
 #include "initServer.hpp"
 
-#include "fileDriver.hpp"
+
 #include "fileClose.hpp"
 
 #if defined(RODS_SERVER)
@@ -27,7 +27,13 @@ rsStreamClose( rsComm_t *rsComm, fileCloseInp_t *fileCloseInp );
 #endif
 
 /* prototype for the client call */
+#ifdef __cplusplus
+extern "C" {
+#endif
 int
 rcStreamClose( rcComm_t *conn, fileCloseInp_t *fileCloseInp );
+#ifdef __cplusplus
+}
+#endif
 
 #endif	/* STREAM_CLOSE_H */

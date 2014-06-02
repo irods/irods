@@ -9,7 +9,9 @@
 #include "parseCommandLine.hpp"
 #include "rodsPath.hpp"
 
+#ifdef __cplusplus
 extern "C" {
+#endif
 
     int
     trimUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
@@ -25,6 +27,8 @@ extern "C" {
     trimCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
                   rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp );
 
+#ifdef __cplusplus
 }
+#endif
 
 #endif	/* TRIMUTIL_H */

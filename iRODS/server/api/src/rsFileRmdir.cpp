@@ -10,7 +10,7 @@
 #include "fileReaddir.hpp"
 #include "fileClosedir.hpp"
 #include "miscServerFunct.hpp"
-//#include "tarSubStructFileDriver.hpp"
+#include "fileDriver.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_log.hpp"

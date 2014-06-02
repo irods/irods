@@ -6,6 +6,7 @@
 #include "msParam.hpp"
 #include "reGlobalsExtern.hpp"
 #include "rcConnect.hpp"
+#include "sockComm.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_network_plugin.hpp"

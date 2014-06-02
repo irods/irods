@@ -161,6 +161,6 @@ extern char tmpStr[];
 extern strArray_t delayStack;
 extern strArray_t msParamStack;
 
-#include "reFuncDefs.hpp"
+//#include "reFuncDefs.hpp"
 #include "reHelpers1.hpp"
 #endif  /* RE_GLOBALS_EXTERN_H */

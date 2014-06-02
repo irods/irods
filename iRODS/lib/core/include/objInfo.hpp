@@ -24,18 +24,12 @@
 #include "rodsType.hpp"
 #include "rodsUser.hpp"
 
-#include <string>
-
-// =-=-=-=-=-=-=-
-namespace irods {
-    const std::string EMPTY_RESC_HOST( "EMPTY_RESC_HOST" );
-    const std::string EMPTY_RESC_PATH( "EMPTY_RESC_PATH" );
-}; // namespace irods
-
 /* this defines the "copies" condition */
 #define ALL_COPIES      -1      /* "all" */
 
+#ifdef __cplusplus
 extern "C" {
+#endif
 
     /* defines some commonly used dataTypes */
 #define GENERIC_DT_STR    "generic"
@@ -84,15 +78,15 @@ extern "C" {
 
     /* link of resource in resource group */
 
-    struct rescGrpInfo_t {
+    typedef struct RescGrpInfo {
         char rescGroupName[NAME_LEN];
         rescInfo_t *rescInfo;
         int status;		/* SYS_RESC_IS_DOWN - one of the resource is down
 			 * SYS_RESC_QUOTA_EXCEEDED - quota exceeded */
         int dummy;
-        struct rescGrpInfo_t *cacheNext; 	/* this is for cached resource grp */
-        struct rescGrpInfo_t *next;
-    };
+        struct RescGrpInfo *cacheNext; 	/* this is for cached resource grp */
+        struct RescGrpInfo *next;
+    } rescGrpInfo_t ;
 
     typedef struct RescCacheInfo {
         char inpRescName[NAME_LEN];
@@ -389,7 +383,9 @@ extern "C" {
         structFileType_t type;
     } structFileTypeDef_t;
 
+#ifdef __cplusplus
 }
+#endif
 
 #endif  /* OBJ_INFO_H */
 

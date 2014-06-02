@@ -16,7 +16,7 @@
 #include "apiNumber.hpp"
 #include "initServer.hpp"
 
-#include "fileDriver.hpp"
+
 
 typedef struct {
     rodsHostAddr_t addr;
@@ -47,8 +47,14 @@ remoteFileStat( rsComm_t *rsComm, fileStatInp_t *fileStatInp,
 #endif
 
 /* prototype for the client call */
+#ifdef __cplusplus
+extern "C" {
+#endif
 int
 rcFileStat( rcComm_t *conn, fileStatInp_t *fileStatInp,
             rodsStat_t **fileStatOut );
+#ifdef __cplusplus
+}
+#endif
 
 #endif  /* FILE_STAT_H */

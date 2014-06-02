@@ -30,8 +30,9 @@ _l3Write( rsComm_t *rsComm, int destRescTypeInx, int l3descInx,
 #define RS_DATA_OBJ_WRITE NULL
 #endif
 
+#ifdef __cplusplus
 extern "C" {
-
+#endif
     /* prototype for the client call */
     /* rcDataObjWrite - Write the content of dataObjWriteInpBBuf to
      * an opened iRODS data object descriptor.
@@ -50,6 +51,7 @@ extern "C" {
     rcDataObjWrite( rcComm_t *conn, openedDataObjInp_t *dataObjWriteInp,
                     bytesBuf_t *dataObjWriteInpBBuf );
 
+#ifdef __cplusplus
 }
-
+#endif
 #endif	/* DATA_OBJ_WRITE_H */

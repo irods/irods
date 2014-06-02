@@ -12,16 +12,16 @@
 #include "apiNumber.hpp"
 #include "initServer.hpp"
 
-struct getHierarchyForRescInp_t {
+typedef struct GetHierarchyForRescInp {
     char resc_name_[ MAX_NAME_LEN ];
 
-}; // struct authPluginReqInp_t
+} getHierarchyForRescInp_t;
 #define getHierarchyForRescInp_PI "str resc_name_[MAX_NAME_LEN];"
 
-struct getHierarchyForRescOut_t {
+typedef struct GetHierarchyForRescOut {
     char resc_hier_[ MAX_NAME_LEN ];
 
-}; // struct authPluginReqOut_t
+} getHierarchyForRescOut_t;
 #define getHierarchyForRescOut_PI "str resc_hier_[MAX_NAME_LEN];"
 
 // =-=-=-=-=-=-=-
@@ -36,12 +36,19 @@ int rsGetHierarchyForResc(
 #define RS_GET_HIER_FOR_RESC NULL
 #endif
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 // =-=-=-=-=-=-=-
 // prototype for client
 int rcGetHierarchyForResc(
     rcComm_t*,                    // server comm ptr
     getHierarchyForRescInp_t*,    // incoming resc name
     getHierarchyForRescOut_t** ); // full hier to resc
+#ifdef __cplusplus
+}
+#endif
 
 #endif // __GET_HIERARCHY_FOR_RESC_HPP__
 

@@ -4,6 +4,7 @@
 #include "rodsErrorTable.hpp"
 #include "rodsDef.hpp"
 
+
 namespace irods {
 
     template< typename INP_T, typename OUT_T >
@@ -19,7 +20,8 @@ namespace irods {
         if ( !has_entry ) {
             return SYS_UNMATCHED_API_NUM;
         }
-        return table[_api_index]->svrHandler(
+
+        return table[_api_index].get()->svrHandler(
                    _comm,
                    _input,
                    _input_buffer,

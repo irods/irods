@@ -15,7 +15,6 @@
 #include "initServer.hpp"
 #include "fileOpen.hpp"
 
-#include "fileDriver.hpp"
 
 #if defined(RODS_SERVER)
 #define RS_FILE_TRUNCATE rsFileTruncate
@@ -32,7 +31,13 @@ remoteFileTruncate( rsComm_t *rsComm, fileOpenInp_t *fileTruncateInp,
 #endif
 
 /* prototype for the client call */
+#ifdef __cplusplus
+extern "C" {
+#endif
 int
 rcFileTruncate( rcComm_t *conn, fileOpenInp_t *fileTruncateInp );
+#ifdef __cplusplus
+}
+#endif
 
 #endif	/* FILE_TRUNCATE_H */

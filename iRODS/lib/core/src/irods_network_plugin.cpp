@@ -130,7 +130,7 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // iterate over list and load function. then add it to the map via wrapper functor
-        vector< std::pair< std::string, std::string > >::iterator itr = ops_for_delay_load_.begin();
+        std::vector< std::pair< std::string, std::string > >::iterator itr = ops_for_delay_load_.begin();
         for ( ; itr != ops_for_delay_load_.end(); ++itr ) {
             // =-=-=-=-=-=-=-
             // cache values in obvious variables

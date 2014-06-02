@@ -36,8 +36,9 @@ Removed PROTO_LIST macro for C++ compatability.
 #ifndef __MD5_HPP__
 #define __MD5_HPP__
 
+#ifdef __cplusplus
 extern "C" {
-
+#endif
 
     /* MD5 context. */
     typedef struct {
@@ -52,6 +53,7 @@ extern "C" {
     void MD5Update( MD5_CTX *, unsigned char *, unsigned int );
     void MD5Final( unsigned char [16], MD5_CTX * );
 
+#ifdef __cplusplus
 }
-
+#endif
 #endif // __MD5_HPP__

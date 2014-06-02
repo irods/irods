@@ -8,6 +8,10 @@
 #include "fsckUtil.hpp"
 #include "miscUtil.hpp"
 
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/convenience.hpp> 
+using namespace boost::filesystem;
+
 int
 fsckObj( rcComm_t *conn, rodsArguments_t *myRodsArgs, rodsPathInp_t *rodsPathInp, char hostname[LONG_NAME_LEN] ) {
     char inpPath[LONG_NAME_LEN] = "";

@@ -41,8 +41,9 @@ svrRegReplByDataObjInfo( rsComm_t *rsComm, dataObjInfo_t *destDataObjInfo );
 #define RS_BULK_DATA_OBJ_REG NULL
 #endif
 
+#ifdef __cplusplus
 extern "C" {
-
+#endif
     /* prototype for the client call */
     int
     rcBulkDataObjReg( rcComm_t *conn, genQueryOut_t *bulkDataObjRegInp,
@@ -61,6 +62,7 @@ extern "C" {
      *   int status - The status of the operation.
      */
 
+#ifdef __cplusplus
 }
-
+#endif
 #endif  /* BULK_DATA_OBJ_REG_H */

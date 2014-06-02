@@ -40,8 +40,9 @@ rsDataObjOpenAndStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 #define RS_DATA_OBJ_OPEN_AND_STAT NULL
 #endif
 
+#ifdef __cplusplus
 extern "C" {
-
+#endif
     /* prototype for the client call */
     /* rcDataObjOpenAndStat - Open And Stat a iRODS data object. This is the same
      * as the rcDataObjOpen call except it returns a openStat_t output.
@@ -72,6 +73,7 @@ extern "C" {
     rcDataObjOpenAndStat( rcComm_t *conn, dataObjInp_t *dataObjInp,
                           openStat_t **openStat );
 
+#ifdef __cplusplus
 }
-
+#endif
 #endif	/* DATA_OBJ_OPEN_AND_STAT_H */

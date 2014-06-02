@@ -8,7 +8,7 @@
 
 // =-=-=-=-=-=-=-
 // boost includes
-#include <boost/function.hpp>
+// XXXX - JMC :: #include <boost/function.hpp>
 
 #include "rodsDef.hpp"
 
@@ -25,8 +25,9 @@ struct */
 #define END_TAG_FL	1
 #define LF_FL		2	/* line feed */
 
-        extern "C" {
-
+#ifdef __cplusplus
+extern "C" {
+#endif
     typedef const char* packInstruct_t;
 
     /* indicate the end of packing table */
@@ -40,7 +41,8 @@ struct */
     typedef struct {
         char *name;
         char *packInstruct;
-        boost::function<void( void* )> clearInStruct;
+        void(*clearInStruct)( void* );
+        // XXXX - JMC :: boost::function<void( void* )> clearInStruct;
     } packInstructArray_t;
 
     typedef struct {
@@ -305,6 +307,7 @@ struct */
                        packItem_t *myPackedItem, irodsProt_t irodsProt );
     int
     ovStrcpy( char *outStr, char *inStr );
+#ifdef __cplusplus
 }
-
+#endif
 #endif	/* PACK_STRUCT_H */

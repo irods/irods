@@ -41,8 +41,9 @@ typedef struct SHA1Context {
     int Corrupted;              /* Is the message digest corruped?  */
 } SHA1Context;
 
+#ifdef __cplusplus
 extern "C" {
-
+#endif
 
 
     /*
@@ -54,6 +55,7 @@ extern "C" {
                     const unsigned char *,
                     unsigned );
 
+#ifdef __cplusplus
 }
-
+#endif
 #endif

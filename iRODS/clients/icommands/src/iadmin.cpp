@@ -903,7 +903,7 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
                 }
                 printf( "Enter your current iRODS password:" );
                 std::string password = "";
-                getline( cin, password );
+                getline( std::cin, password );
                 strncpy( buf1, password.c_str(), MAX_PASSWORD_LEN );
 #ifdef WIN32
                 if ( !SetConsoleMode( hStdin, lastMode ) ) {
@@ -1054,7 +1054,7 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
             "\n"
             "Are you sure you want to run this command? [y/N]:" );
         std::string response = "";
-        getline( cin, response );
+        getline( std::cin, response );
         if ( response == "y" || response == "yes" ) {
             printf( "OK, performing the resource data paths update\n" );
 
@@ -1074,7 +1074,7 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
             printf( "tables with the new name.\n" );
             printf( "Do you really want to modify the resource name? (enter y or yes to do so):" );
             std::string response = "";
-            getline( cin, response );
+            getline( std::cin, response );
             if ( response == "y" || response == "yes" ) {
                 printf( "OK, performing the resource rename\n" );
                 int stat;
@@ -1116,7 +1116,7 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
             printf( "and rename the top-level collection.\n" );
             printf( "Do you really want to modify the local zone name? (enter y or yes to do so):" );
             std::string response = "";
-            getline( cin, response );
+            getline( std::cin, response );
             if ( response == "y" || response == "yes" ) {
                 printf( "OK, performing the local zone rename\n" );
                 generalAdmin( 0, "modify", "localzonename", cmdToken[1], cmdToken[3],
@@ -1480,6 +1480,7 @@ main( int argc, char **argv ) {
             getInput( cmdToken, maxCmdTokens );
         }
     }
+
 
     printErrorStack( Conn->rError );
     rcDisconnect( Conn );

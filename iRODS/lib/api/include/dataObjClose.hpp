@@ -37,7 +37,9 @@ procChksumForClose( rsComm_t *rsComm, int l1descInx, char **chksumStr );
 #define RS_DATA_OBJ_CLOSE NULL
 #endif
 
+#ifdef __cplusplus
 extern "C" {
+#endif
 
     /* prototype for the client call */
     /* rcDataObjClose - Close an opened iRODS data object descriptor.
@@ -53,6 +55,7 @@ extern "C" {
     int
     rcDataObjClose( rcComm_t *conn, openedDataObjInp_t *dataObjCloseInp );
 
+#ifdef __cplusplus
 }
-
+#endif
 #endif	/* DATA_OBJ_CLOSE_H */

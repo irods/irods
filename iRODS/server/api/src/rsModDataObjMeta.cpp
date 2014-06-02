@@ -5,6 +5,7 @@
 /* unregDataObj.c
  */
 
+#include "reFuncDefs.hpp"
 #include "modDataObjMeta.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "objMetaOpr.hpp"

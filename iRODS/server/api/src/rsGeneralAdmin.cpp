@@ -10,6 +10,7 @@
 #include "generalAdmin.hpp"
 #include "reGlobalsExtern.hpp"
 #include "icatHighLevelRoutines.hpp"
+#include "reFuncDefs.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes

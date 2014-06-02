@@ -58,8 +58,9 @@ linkCollReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp );
 #define RS_PHY_PATH_REG NULL
 #endif
 
+#ifdef __cplusplus
 extern "C" {
-
+#endif
     /* prototype for the client call */
     int
     rcPhyPathReg( rcComm_t *conn, dataObjInp_t *phyPathRegInp );
@@ -74,6 +75,7 @@ extern "C" {
      *   int status - The status of the operation.
      */
 
+#ifdef __cplusplus
 }
-
+#endif
 #endif	/* PHY_PATH_REG_H */

@@ -18,7 +18,6 @@
 #define CHALLENGE_LEN 64 /* 64 bytes of data and terminating null */
 #define RESPONSE_LEN 16  /* 16 bytes of data and terminating null */
 
-extern "C" {
 
     typedef struct {
         char *challenge;
@@ -40,10 +39,14 @@ extern "C" {
 #define RS_AUTH_REQUEST NULL
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
     /* prototype for the client call */
     int
     rcAuthRequest( rcComm_t *conn, authRequestOut_t **authRequestOut );
 
+#ifdef __cplusplus
 }
-
+#endif
 #endif	/* AUTH_REQUEST_H */

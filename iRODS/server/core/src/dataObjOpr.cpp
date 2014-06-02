@@ -31,6 +31,11 @@
 #include "irods_log.hpp"
 #include "irods_stacktrace.hpp"
 
+
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/convenience.hpp>
+using namespace boost::filesystem;
+
 int
 getDataObjFileMeta( rsComm_t *rsComm, char *data_id, keyValPair_t *condInput ) {
     static char fname[] = "getDataObjFileMeta";

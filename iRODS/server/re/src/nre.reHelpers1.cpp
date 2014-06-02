@@ -3,10 +3,14 @@
 
 #include "reHelpers1.hpp"
 
+#include "reFuncDefs.hpp"
 #include "index.hpp"
 #include "parser.hpp"
 #include "filesystem.hpp"
 #include "configuration.hpp"
+
+#include "irods_log.hpp"
+
 
 struct Breakpoint {
     char *actionName;

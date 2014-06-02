@@ -10,6 +10,7 @@
 #include "iFuseOper.hpp"
 #include "hashtable.hpp"
 #include "list.hpp"
+#include "sockComm.hpp"
 #include "iFuseLib.Lock.hpp"
 
 /* Hashtable *NewlyCreatedFileTable; */

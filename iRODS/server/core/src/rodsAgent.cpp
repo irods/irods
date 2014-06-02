@@ -31,12 +31,14 @@ static void NtAgentSetEnvsFromArgs( int ac, char **av );
 #include "irods_server_api_table.hpp"
 #include "irods_client_api_table.hpp"
 #include "irods_pack_table.hpp"
+#include "irods_threads.hpp"
 
 #include "readServerConfig.hpp"
 
 /* #define SERVER_DEBUG 1   */
 int
 main( int argc, char *argv[] ) {
+
     int status;
     rsComm_t rsComm;
     char *tmpStr;
@@ -94,6 +96,7 @@ main( int argc, char *argv[] ) {
 #endif
 
     memset( &rsComm, 0, sizeof( rsComm ) );
+    rsComm.thread_ctx = ( thread_context* )malloc( sizeof( thread_context ) );
 
     status = initRsCommWithStartupPack( &rsComm, NULL );
 
@@ -284,6 +287,8 @@ main( int argc, char *argv[] ) {
     new_net_obj->to_server( &rsComm );
     unregister_handlers();
     cleanupAndExit( status );
+
+    free( rsComm.thread_ctx );
 
     return ( status );
 }

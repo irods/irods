@@ -15,6 +15,10 @@
 #include "irodsntutil.hpp"
 #endif
 
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/convenience.hpp> 
+using namespace boost::filesystem;
+
 /* parseRodsPathStr - This is similar to parseRodsPath except the
  * input and output are char string inPath and outPath
  */

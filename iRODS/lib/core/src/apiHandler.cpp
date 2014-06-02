@@ -7,6 +7,8 @@
 #include "irods_api_home.hpp"
 #include "irods_load_plugin.hpp"
 #include "irods_plugin_name_generator.hpp"
+#include "irods_pack_table.hpp"
+#include "irods_client_api_table.hpp"
 
 #include <boost/filesystem.hpp>
 namespace irods {
@@ -252,5 +254,17 @@ namespace irods {
 
 }; // namespace irods
 
-
+#ifdef __cplusplus
+extern "C" {
+#endif
+void init_client_api_table() {
+    // =-=-=-=-=-=-=-
+    // initialize pluggable api table
+    irods::api_entry_table&  api_tbl = irods::get_client_api_table();
+    irods::pack_entry_table& pk_tbl  = irods::get_pack_table();
+    init_api_table( api_tbl, pk_tbl );
+}
+#ifdef __cplusplus
+}
+#endif
 

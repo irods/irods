@@ -43,8 +43,9 @@ l3Rmdir( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo );
 #define RS_RM_COLL NULL
 #endif
 
+#ifdef __cplusplus
 extern "C" {
-
+#endif
     /* prototype for the client call */
     int
     rcRmColl( rcComm_t *conn, collInp_t *rmCollInp, int vFlag );
@@ -63,6 +64,7 @@ extern "C" {
      *   int status - status of the operation.
      */
 
+#ifdef __cplusplus
 }
-
+#endif
 #endif	/* RM_COLL_H */

@@ -60,15 +60,16 @@ procDataObjOpenForExistObj( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                             dataObjInfo_t **dataObjInfoHead, dataObjInfo_t **cacheDataObjInfo,
                             dataObjInfo_t **compDataObjInfo, rescInfo_t **compRescInfo );
 
-irods::error selectObjInfo( dataObjInfo_t * _dataObjInfoHead, keyValPair_t* _condInput, dataObjInfo_t** _rtn_dataObjInfo );
+// JMC :: unused -- irods::error selectObjInfo( dataObjInfo_t * _dataObjInfoHead, keyValPair_t* _condInput, dataObjInfo_t** _rtn_dataObjInfo );
 
 // =-=-=-=-=-=-=-
 #else
 #define RS_DATA_OBJ_OPEN NULL
 #endif
 
+#ifdef __cplusplus
 extern "C" {
-
+#endif
     /* prototype for the client call */
     /* rcDataObjOpen - Open a iRODS data object.
      * Input -
@@ -97,6 +98,7 @@ extern "C" {
     int
     rcDataObjOpen( rcComm_t *conn, dataObjInp_t *dataObjInp );
 
+#ifdef __cplusplus
 }
-
+#endif
 #endif	/* DATA_OBJ_OPEN_H */

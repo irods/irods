@@ -26,6 +26,7 @@
 #include "genQuery.hpp"
 #include "rodsClient.hpp"
 #include "readServerConfig.hpp"
+#include "reFuncDefs.hpp"
 
 #include <iostream>
 
@@ -34,6 +35,8 @@
 #include "irods_hierarchy_parser.hpp"
 #include "irods_stacktrace.hpp"
 #include "irods_server_properties.hpp"
+
+int getLeafRescPathName( const std::string& _resc_hier, std::string& _ret_string );
 
 int
 getFileMode( dataObjInp_t *dataObjInp ) {

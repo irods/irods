@@ -34,8 +34,6 @@ typedef struct {
 
 #define userAdminInp_PI "str *arg0; str *arg1; str *arg2; str *arg3; str *arg4; str *arg5; str *arg6; str *arg7;  str *arg8;  str *arg9;"
 
-extern "C" {
-
 #if defined(RODS_SERVER)
 #define RS_USER_ADMIN rsUserAdmin
     /* prototype for the server handler */
@@ -48,10 +46,15 @@ extern "C" {
 #define RS_USER_ADMIN NULL
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
     /* prototype for the client call */
     int
     rcUserAdmin( rcComm_t *conn, userAdminInp_t *userAdminInp );
-
+#ifdef __cplusplus
 }
+#endif
+
 
 #endif	/* USER_ADMIN_H */

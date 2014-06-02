@@ -15,6 +15,7 @@
 #define READ_SERVER_CONFIG_HPP
 
 #include "rods.hpp"
+#include "authenticate.hpp"
 
 /* server host configuration */
 
@@ -39,6 +40,7 @@
 
 #define DEF_DIR_MODE_KW		"default_dir_mode"
 #define DEF_FILE_MODE_KW	"default_file_mode"
+extern "C" {
 
 typedef struct rodsServerConfig {
     bool run_server_as_root;
@@ -67,5 +69,7 @@ typedef struct rodsServerConfig {
 
 char *getServerConfigDir();
 char* findNextTokenAndTerm( char *inPtr );
+
+}
 
 #endif	/* READ_SERVER_CONFIG_H */

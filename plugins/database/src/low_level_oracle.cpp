@@ -121,7 +121,7 @@ cllOpenEnv( icatSessionStruct *icss ) {
                          ( void ( * )( dvoid *, dvoid * ) )0,
                          ( size_t )0, ( dvoid ** )0 );
     if ( stat != OCI_SUCCESS ) {
-        rodsLog( LOG_ERROR, "cllOpenEnv: OCIEnvInit failed" );
+        rodsLog( LOG_ERROR, "cllOpenEnv: OCIEnvCreate failed" );
         return( CAT_ENV_ERR );
     }
 

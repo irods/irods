@@ -27,6 +27,8 @@
 
 #include <boost/tuple/tuple.hpp>
 
+#include "irods_error.hpp"
+
 extern icatSessionStruct icss;
 
 int chlOpen();

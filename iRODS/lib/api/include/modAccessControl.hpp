@@ -49,12 +49,14 @@ _rsModAccessControl( rsComm_t *rsComm, modAccessControlInp_t *modAccessControlIn
 #define RS_MOD_ACCESS_CONTROL NULL
 #endif
 
+#ifdef __cplusplus
 extern "C" {
-
+#endif
     /* prototype for the client call */
     int
     rcModAccessControl( rcComm_t *conn, modAccessControlInp_t *modAccessControlInp );
 
+#ifdef __cplusplus
 }
-
+#endif
 #endif	/* MOD_ACCESS_CONTROL_H */

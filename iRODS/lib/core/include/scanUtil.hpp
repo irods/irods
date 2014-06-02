@@ -9,7 +9,9 @@
 #include "parseCommandLine.hpp"
 #include "rodsPath.hpp"
 
+#ifdef __cplusplus
 extern "C" {
+#endif
 
     int
     scanObj( rcComm_t *conn, rodsArguments_t *myRodsArgs, rodsPathInp_t *rodsPathInp, char hostname[LONG_NAME_LEN] );
@@ -24,6 +26,8 @@ extern "C" {
     int
     checkIsMount( rcComm_t *conn, char *inpPath );
 
+#ifdef __cplusplus
 }
+#endif
 
 #endif  /* SCAN_UTIL_H */

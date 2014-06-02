@@ -10,7 +10,9 @@
 #include "parseCommandLine.hpp"
 #include "rodsPath.hpp"
 
+#ifdef __cplusplus
 extern "C" {
+#endif
 
     int
     cpUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
@@ -27,6 +29,7 @@ extern "C" {
                 rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                 dataObjCopyInp_t *dataObjCopyInp, rodsRestart_t *rodsRestart );
 
+#ifdef __cplusplus
 }
-
+#endif
 #endif	/* CP_UTIL_H */

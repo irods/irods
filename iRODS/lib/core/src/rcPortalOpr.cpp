@@ -21,6 +21,12 @@
 #include <boost/thread/condition.hpp>
 #include <iomanip>
 #include <fstream>
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/convenience.hpp> 
+using namespace boost::filesystem;
+
+
+
 int
 sendTranHeader( int sock, int oprType, int flags, rodsLong_t offset,
                 rodsLong_t length ) {

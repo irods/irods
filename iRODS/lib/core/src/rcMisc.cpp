@@ -19,6 +19,7 @@
 #include "rodsType.hpp"
 #include "rsApiHandler.hpp"
 #include "dataObjPut.hpp"
+#include "reFuncDefs.hpp"
 
 #ifdef EXTENDED_ICAT
 #define EXTENDED_ICAT_TABLES_1 1 /* have extendedICAT.h 
@@ -27,6 +28,7 @@ set up the set 1 tables */
 #endif
 #include "bulkDataObjPut.hpp"
 #include "putUtil.hpp"
+#include "sockComm.hpp"
 
 #include <cstdlib>
 #include <iostream>
@@ -39,6 +41,10 @@ set up the set 1 tables */
 // =-=-=-=-=-=-=-
 // boost includes
 #include "boost/filesystem.hpp"
+#include "boost/lexical_cast.hpp"
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/convenience.hpp> 
+using namespace boost::filesystem;
 
 /* check with the input path is a valid path -
  * 1 - valid
@@ -2799,7 +2805,7 @@ setStateForResume( rcComm_t * conn, rodsRestart_t * rodsRestart,
                 int status = rcDataObjUnlink( conn, & dataObjInp );
                 if ( status < 0 ) {
                     std::string notice = std::string( "rcDataObjUnlink returned with code: " );
-                    notice.append( boost::to_string( status ) );
+                    notice.append( boost::lexical_cast<std::string>( status ) );
                     irods::log( LOG_NOTICE, notice );
                 }
                 clearKeyVal( &dataObjInp.condInput );
@@ -3986,7 +3992,7 @@ initBulkDataObjRegOut( genQueryOut_t **bulkDataObjRegOut ) {
 }
 
 int
-fillBulkDataObjRegInp( char * rescName, const std::string & rescHier, char * rescGroupName, char * objPath,
+fillBulkDataObjRegInp( char * rescName, const char* rescHier, char * rescGroupName, char * objPath,
                        char * filePath, char * dataType, rodsLong_t dataSize, int dataMode,
                        int modFlag, int replNum, char * chksum, genQueryOut_t * bulkDataObjRegInp ) {
 
@@ -4035,7 +4041,7 @@ fillBulkDataObjRegInp( char * rescName, const std::string & rescHier, char * res
         bulkDataObjRegInp->sqlResult[9].value[NAME_LEN * rowCnt] = '\0';
     }
     snprintf( &bulkDataObjRegInp->sqlResult[10].value[MAX_NAME_LEN * rowCnt],
-              MAX_NAME_LEN, "%s", rescHier.c_str() );
+              MAX_NAME_LEN, "%s", rescHier );
     bulkDataObjRegInp->rowCnt++;
 
     return 0;
@@ -4853,10 +4859,10 @@ namespace boost {
 } // namespace boost
 
 int
-getPathStMode( path & p ) {
+getPathStMode( const char* p ) {
     struct stat statbuf;
 
-    if ( stat( p.c_str(), &statbuf ) == 0 &&
+    if ( stat( p, &statbuf ) == 0 &&
             ( statbuf.st_mode & S_IFREG ) ) {
         return statbuf.st_mode;
     }

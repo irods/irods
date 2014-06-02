@@ -14,7 +14,7 @@
 #include "apiNumber.hpp"
 #include "initServer.hpp"
 
-#include "fileDriver.hpp"
+
 
 typedef struct {
     int mode;
@@ -55,7 +55,13 @@ remoteFileStageToCache( rsComm_t *rsComm, fileStageSyncInp_t *fileStageToCacheIn
 #endif
 
 /* prototype for the client call */
+#ifdef __cplusplus
+extern "C" {
+#endif
 int
 rcFileStageToCache( rcComm_t *conn, fileStageSyncInp_t *fileStageToCacheInp );
+#ifdef __cplusplus
+}
+#endif
 
 #endif	/* FILE_STAGE_TO_CACHE_H */

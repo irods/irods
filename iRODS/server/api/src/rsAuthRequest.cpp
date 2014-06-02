@@ -14,6 +14,7 @@
 // =-=-=-=-=-=-=-
 // irods includes
 #include "authRequest.hpp"
+#include "authenticate.hpp"
 
 int get64RandomBytes( char *buf );
 static char buf[CHALLENGE_LEN + MAX_PASSWORD_LEN + 1];

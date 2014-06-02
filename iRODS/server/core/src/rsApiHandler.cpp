@@ -14,6 +14,7 @@
 #include "regReplica.hpp"
 #include "unregDataObj.hpp"
 #include "modAVUMetadata.hpp"
+#include "sockComm.hpp"
 
 #include <boost/thread.hpp>
 #include <boost/thread/mutex.hpp>
@@ -25,6 +26,7 @@ jmp_buf Jenv;
 // irods includes
 #include "irods_network_factory.hpp"
 #include "irods_server_api_table.hpp"
+#include "irods_threads.hpp"
 
 
 int rsApiHandler(
@@ -300,7 +302,7 @@ sendApiReply( rsComm_t * rsComm, int apiInx, int retVal,
 
         if ( rsComm->reconnSock > 0 ) {
             int savedStatus = ret.code();
-            boost::unique_lock< boost::mutex > boost_lock( *rsComm->lock );
+            boost::unique_lock< boost::mutex > boost_lock( *rsComm->thread_ctx->lock );
             rodsLog( LOG_DEBUG,
                      "sendApiReply: svrSwitchConnect. cliState = %d,agState=%d",
                      rsComm->clientState, rsComm->agentState );
@@ -486,7 +488,7 @@ readAndProcClientMsg( rsComm_t * rsComm, int flags ) {
         if ( rsComm->reconnSock > 0 ) {
             int savedStatus = ret.code();
             /* try again. the socket might have changed */
-            boost::unique_lock< boost::mutex > boost_lock( *rsComm->lock );
+            boost::unique_lock< boost::mutex > boost_lock( *rsComm->thread_ctx->lock );
             rodsLog( LOG_DEBUG,
                      "readAndProcClientMsg: svrSwitchConnect. cliState = %d,agState=%d",
                      rsComm->clientState, rsComm->agentState );

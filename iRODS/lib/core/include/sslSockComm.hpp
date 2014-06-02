@@ -16,7 +16,9 @@
 
 #define SSL_CIPHER_LIST "ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH"
 
+#ifdef __cplusplus
 extern "C" {
+#endif
 
     int
     sslStart( rcComm_t *rcComm );
@@ -45,6 +47,8 @@ extern "C" {
     sslWrite( int sock, void *buf, int len, irodsDescType_t irodsDescType,
               int *bytesWritten, SSL *ssl );
 
+#ifdef __cplusplus
 }
+#endif
 
 #endif	/* SSL_SOCK_COMM_H */

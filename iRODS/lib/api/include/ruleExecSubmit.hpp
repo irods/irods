@@ -59,14 +59,16 @@ _rsRuleExecSubmit( rsComm_t *rsComm, ruleExecSubmitInp_t *ruleExecSubmitInp );
 #define RS_RULE_EXEC_SUBMIT NULL
 #endif
 
+#ifdef __cplusplus
 extern "C" {
-
+#endif
     int
     rcRuleExecSubmit( rcComm_t *conn, ruleExecSubmitInp_t *ruleExecSubmitInp,
                       char **ruleExecId );
 
     int
     getReiFilePath( char *reiFilePath, char *userName );
+#ifdef __cplusplus
 }
-
+#endif
 #endif	/* RULE_EXEC_SUBMIT_H */

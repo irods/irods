@@ -16,8 +16,6 @@
 #include "apiNumber.hpp"
 #include "initServer.hpp"
 
-#include "fileDriver.hpp"
-
 typedef struct FileCloseInp {
     int fileInx;
     char in_pdmo[MAX_NAME_LEN];
@@ -40,7 +38,13 @@ remoteFileClose( rsComm_t *rsComm, fileCloseInp_t *fileCloseInp,
 #endif
 
 /* prototype for the client call */
+#ifdef __cplusplus
+extern "C" {
+#endif
 int
 rcFileClose( rcComm_t *conn, fileCloseInp_t *fileCloseInp );
+#ifdef __cplusplus
+}
+#endif
 
 #endif  /* FILE_CLOSE_H */

@@ -73,11 +73,14 @@ getRescGrpForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
  *   int l1descInx - an integer descriptor.
  */
 
+#ifdef __cplusplus
 extern "C" {
-
+#endif
     int
     rcDataObjCreate( rcComm_t *conn, dataObjInp_t *dataObjInp );
 
+#ifdef __cplusplus
 }
+#endif
 
 #endif  /* DATA_OBJ_CREATE_H */

@@ -14,7 +14,6 @@
 #include "apiNumber.hpp"
 #include "initServer.hpp"
 
-#include "fileDriver.hpp"
 #include "fileLseek.hpp"
 
 /* This is a high level type API call */
@@ -32,8 +31,9 @@ _l3Lseek( rsComm_t *rsComm, int rescTypeInx, int l3descInx,
 #define RS_DATA_OBJ_LSEEK NULL
 #endif
 
+#ifdef __cplusplus
 extern "C" {
-
+#endif
     /* prototype for the client call */
     /* rcDataObjLseek - Lseek an opened iRODS data object descriptor.
      * Input -
@@ -53,6 +53,7 @@ extern "C" {
     rcDataObjLseek( rcComm_t *conn, openedDataObjInp_t *dataObjLseekInp,
                     fileLseekOut_t **dataObjLseekOut );
 
+#ifdef __cplusplus
 }
-
+#endif
 #endif	/* DATA_OBJ_LSEEK_H */

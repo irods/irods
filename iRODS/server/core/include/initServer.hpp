@@ -10,7 +10,7 @@
 #define INIT_SERVER_HPP
 
 #include "rods.hpp"
-#include "sockComm.hpp"
+//#include "sockComm.hpp"
 #include "rsLog.hpp"
 
 /* server host configuration */

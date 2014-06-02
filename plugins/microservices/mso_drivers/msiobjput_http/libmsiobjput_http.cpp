@@ -1,6 +1,7 @@
 
 
 #include "rsApiHandler.hpp"
+#include "reFuncDefs.hpp"
 #include "rods.hpp"
 #include "reGlobalsExtern.hpp"
 #include "rsGlobalExtern.hpp"

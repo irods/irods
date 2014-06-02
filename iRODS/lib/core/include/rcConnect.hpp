@@ -21,10 +21,15 @@
 #include "dataObjInpOut.hpp"
 #include "irodsGuiProgressCallback.hpp"
 
-
+#if 0 // XXXX - Opaque thread type
 #include <boost/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition.hpp>
+#endif
+
+// =-=-=-=-=-=-=-
+// forard del of thread context
+struct thread_context;
 
 // =-=-=-=-=-=-=-
 // ssl includes
@@ -32,8 +37,17 @@
 #include <openssl/x509v3.h>
 #include <openssl/err.h>
 
-extern "C" {
+/* definition for the reconnFlag */
+#define NO_RECONN	0	/* no reconnection */
+#define RECONN_NOTUSED	1	/* this has been depricated */
+#define RECONN_TIMEOUT	200
 
+#define RECONN_TIMEOUT_TIME  600   /* re-connection timeout time in sec */
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
     typedef enum {
         PROCESSING_STATE,	 /* the process is not sending nor receiving */
         RECEIVING_STATE,
@@ -107,10 +121,14 @@ extern "C" {
         int                        windowSize;
         int                        reconnectedSock;
         time_t                     reconnTime;
-        volatile bool		       exit_flg;
+        volatile int		       exit_flg;
+#if 0 // XXXX - Opaque thread context
         boost::thread*             reconnThr;
         boost::mutex*              lock;
         boost::condition_variable* cond;
+#else
+        struct thread_context*     thread_ctx;
+#endif
         procState_t                agentState;
         procState_t                clientState;
         procState_t                reconnThrState;
@@ -166,9 +184,14 @@ extern "C" {
         char *reconnAddr;
         int cookie;
 
+#if 0 // XXXX - Opaque thread context
         boost::thread*              reconnThr;
         boost::mutex*               lock;
         boost::condition_variable*  cond;
+#else
+        struct thread_context* thread_ctx;
+#endif
+
         procState_t agentState;
         procState_t clientState;
         procState_t reconnThrState;
@@ -225,8 +248,13 @@ extern "C" {
     int
     cleanRcComm( rcComm_t *conn );
     /* XXXX putting clientLogin here for now. Should be in clientLogin.h */
+#ifdef __cplusplus
     int
     clientLogin( rcComm_t *conn, const char* _context = 0, const char* _scheme_override = 0 );
+#else
+    int
+    clientLogin( rcComm_t *conn, const char* _context, const char* _scheme_override );
+#endif
     int
     clientLoginPam( rcComm_t *conn, char *password, int ttl );
     int
@@ -250,6 +278,7 @@ extern "C" {
     int
     cliChkReconnAtReadEnd( rcComm_t *conn );
 
+#ifdef __cplusplus
 }
-
+#endif
 #endif	/* RC_CONNECT_H */

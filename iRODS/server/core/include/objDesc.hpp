@@ -21,6 +21,8 @@
 #include "structFileExtAndReg.hpp"
 #include "dataObjOpenAndStat.hpp"
 
+#include "boost/any.hpp"
+
 #define NUM_L1_DESC     1026    /* number of L1Desc */
 
 #define CHK_ORPHAN_CNT_LIMIT  20  /* number of failed check before stopping */

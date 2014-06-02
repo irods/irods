@@ -11,6 +11,7 @@
 
 // =-=-=-=-=-=-=-
 // irods includes
+#include "irods_log.hpp"
 #include "irods_home_directory.hpp"
 #include "irods_get_full_path_for_config_file.hpp"
 

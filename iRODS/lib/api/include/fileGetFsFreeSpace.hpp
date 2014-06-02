@@ -16,8 +16,6 @@
 #include "apiNumber.hpp"
 #include "initServer.hpp"
 
-#include "fileDriver.hpp"
-
 typedef struct {
     rodsHostAddr_t addr;
     char fileName[MAX_NAME_LEN];
@@ -55,9 +53,15 @@ remoteFileGetFsFreeSpace( rsComm_t *rsComm,
 #endif
 
 /* prototype for the client call */
+#ifdef __cplusplus
+extern "C" {
+#endif
 int
 rcFileGetFsFreeSpace( rcComm_t *conn,
                       fileGetFsFreeSpaceInp_t *fileGetFsFreeSpaceInp,
                       fileGetFsFreeSpaceOut_t **fileGetFsFreeSpaceOut );
 
+#ifdef __cplusplus
+}
+#endif
 #endif  /* FILE_GET_FS_FREESPACE_H */

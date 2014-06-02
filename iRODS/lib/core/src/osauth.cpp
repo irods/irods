@@ -18,6 +18,7 @@
 
 #include "rods.hpp"
 #include "rcGlobalExtern.hpp"
+#include "authenticate.hpp"
 extern "C" {
 
     int

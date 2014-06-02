@@ -23,6 +23,9 @@
 #include "irods_pam_auth_object.hpp"
 #include "authPluginRequest.hpp"
 
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/convenience.hpp>
+
 static char prevChallengeSignatureClient[200];
 
 char *getSessionSignatureClientside() {
@@ -194,6 +197,7 @@ int clientLoginKrb( rcComm_t *Conn ) {
 int clientLoginPam( rcComm_t* Conn,
                     char*     password,
                     int       ttl ) {
+    using namespace boost::filesystem;
 #ifdef PAM_AUTH
     int status = 0;
     pamAuthRequestInp_t pamAuthReqInp;

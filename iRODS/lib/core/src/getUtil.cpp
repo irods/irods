@@ -12,6 +12,7 @@
 #include "getUtil.hpp"
 #include "miscUtil.hpp"
 #include "rcPortalOpr.hpp"
+#include "sockComm.hpp"
 
 int
 setSessionTicket( rcComm_t *myConn, char *ticket ) {

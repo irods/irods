@@ -5,6 +5,7 @@
 /* This is script-generated code (for the most part).  */
 /* See dataObjGet.h for a description of this API call.*/
 
+#include "reFuncDefs.hpp"
 #include "dataObjGet.hpp"
 #include "rodsLog.hpp"
 #include "dataGet.hpp"

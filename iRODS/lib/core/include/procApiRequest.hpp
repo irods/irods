@@ -10,9 +10,11 @@
 #define PROC_API_REQUEST_HPP
 
 #include "rods.hpp"
-#include "apiHandler.hpp"
+// XXXX - JMC :: #include "apiHandler.hpp"
 
+#ifdef __cplusplus
 extern "C" {
+#endif
 
     int
     procApiRequest( rcComm_t *conn, int apiNumber, void *inputStruct,
@@ -37,6 +39,8 @@ extern "C" {
                        int retval );
     int
     _cliGetCollOprStat( rcComm_t *conn, collOprStat_t **collOprStat );
+#ifdef __cplusplus
 }
+#endif
 
 #endif	/* PROC_API_REQUEST_H */

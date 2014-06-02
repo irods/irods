@@ -9,8 +9,9 @@
 #include "parseCommandLine.hpp"
 #include "rodsPath.hpp"
 
+#ifdef __cplusplus
 extern "C" {
-
+#endif
     int
     rsyncUtil( rcComm_t *conn, rodsEnv *myEnv, rodsArguments_t *myRodsArgs,
                rodsPathInp_t *rodsPathInp );
@@ -47,6 +48,8 @@ extern "C" {
                          rodsPath_t *targPath, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
                          dataObjCopyInp_t *dataObjCopyInp );
 
+#ifdef __cplusplus
 }
+#endif
 
 #endif	/* RSYNC_UTIL_H */

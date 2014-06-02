@@ -29,12 +29,6 @@
 
 #define READ_STARTUP_PACK_TOUT_SEC	100	/* 1 sec timeout */
 #define READ_VERSION_TOUT_SEC		100	/* 10 sec timeout */
-/* definition for the reconnFlag */
-#define NO_RECONN	0	/* no reconnection */
-#define RECONN_NOTUSED	1	/* this has been depricated */
-#define RECONN_TIMEOUT	200
-
-#define RECONN_TIMEOUT_TIME  600   /* re-connection timeout time in sec */
 
 #define RECONNECT_ENV "irodsReconnect"		/* reconnFlag will be set to
 * RECONN_TIMEOUT if this
@@ -50,7 +44,9 @@
 #define CLOSE_SOCK       close
 #endif
 
+#ifdef __cplusplus
 extern "C" {
+#endif
 
 // =-=-=-=-=-=-=-
 // network plugin interface functions
@@ -142,6 +138,8 @@ irods::error readMsgHeader(
     int redirectConnToRescSvr( rcComm_t **conn, dataObjInp_t *dataObjInp, rodsEnv *myEnv, int reconnFlag );
     int rcReconnect( rcComm_t **conn, char *newHost, rodsEnv *myEnv, int reconnFlag );
     int mySockClose( int sock ); // server stop fcn <==> rsAccept?
+#ifdef __cplusplus
 }
+#endif
 
 #endif	/* SOCK_COMM_H */

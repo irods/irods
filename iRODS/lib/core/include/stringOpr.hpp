@@ -11,8 +11,9 @@
 
 #include "rodsDef.hpp"
 
+#ifdef __cplusplus
 extern "C" {
-
+#endif
     char *rstrcpy( char *dest, const char *src, int maxLen );
     char *rstrcat( char *dest, const char *src, int maxLen );
     char *rstrncat( char *dest, const char *src, int srcLen, int maxLen );
@@ -35,6 +36,7 @@ extern "C" {
     int
     checkStringForEmailAddress( char *inString );
 
+#ifdef __cplusplus
 }
-
+#endif
 #endif	/* STRING_OPR_H */

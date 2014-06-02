@@ -19,6 +19,7 @@
 // =-=-=-=-=-=-=-
 // stl includes
 #include <iostream>
+#include <vector>
 
 // =-=-=-=-=-=-=-
 // global singleton
@@ -709,7 +710,7 @@ namespace irods {
 
             // =-=-=-=-=-=-=-
             // vector which will hold this 'top level resource' ops
-            vector< pdmo_type > resc_ops;
+            std::vector< pdmo_type > resc_ops;
 
             // =-=-=-=-=-=-=-
             // cache the parent operator

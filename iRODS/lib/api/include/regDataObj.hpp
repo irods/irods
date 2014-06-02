@@ -31,8 +31,9 @@ svrRegDataObj( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo );
 #define RS_REG_DATA_OBJ NULL
 #endif
 
+#ifdef __cplusplus
 extern "C" {
-
+#endif
     /* prototype for the client call */
     int
     rcRegDataObj( rcComm_t *conn, dataObjInfo_t *dataObjInfo,
@@ -49,6 +50,7 @@ extern "C" {
      *   int status - status of the operation.
      */
 
+#ifdef __cplusplus
 }
-
+#endif
 #endif  /* REG_DATA_OBJ_H */

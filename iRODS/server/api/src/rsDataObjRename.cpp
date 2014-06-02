@@ -5,6 +5,7 @@
 /* rsDataObjRename.c - rename a data object.
  */
 #include "dataObjRename.hpp"
+#include "reFuncDefs.hpp"
 #include "objMetaOpr.hpp"
 #include "dataObjOpr.hpp"
 #include "collection.hpp"

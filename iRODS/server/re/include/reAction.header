@@ -15,3 +15,5 @@
 #include "reDataObjOpr.hpp"
 #include "reNaraMetaData.hpp"
 #include "reIn2p3SysRule.hpp"
+#include "reFuncDefs.hpp"
+

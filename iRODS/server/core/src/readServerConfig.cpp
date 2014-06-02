@@ -9,7 +9,7 @@
 
 
 #include "readServerConfig.hpp"
-
+#include "rsLog.hpp"
 
 char *
 getServerConfigDir() {

@@ -4,6 +4,7 @@
 /* See modAVUMetadata.h for a description of this API call.*/
 
 #include "modAVUMetadata.hpp"
+#include "reFuncDefs.hpp"
 #include "reGlobalsExtern.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "miscServerFunct.hpp"

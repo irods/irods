@@ -6,6 +6,7 @@
 #include "reGlobalsExtern.hpp"
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.hpp"
+#include "reFuncDefs.hpp"
 
 #include <strings.h>
 

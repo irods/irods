@@ -16,7 +16,7 @@
 #include "apiNumber.hpp"
 #include "initServer.hpp"
 
-#include "fileDriver.hpp"
+
 
 typedef struct {
     char resc_name_[MAX_NAME_LEN];
@@ -45,7 +45,13 @@ remoteFileOpendir( rsComm_t *rsComm, fileOpendirInp_t *fileOpendirInp,
 #endif
 
 /* prototype for the client call */
+#ifdef __cplusplus
+extern "C" {
+#endif
 int
 rcFileOpendir( rcComm_t *conn, fileOpendirInp_t *fileOpendirInp );
+#ifdef __cplusplus
+}
+#endif
 
 #endif  /* FILE_OPENDIR_H */

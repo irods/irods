@@ -9,8 +9,9 @@
 #include "parseCommandLine.hpp"
 #include "rodsPath.hpp"
 
+#ifdef __cplusplus
 extern "C" {
-
+#endif
     int
     rmtrashUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
                  rodsPathInp_t *rodsPathInp );
@@ -25,6 +26,8 @@ extern "C" {
     rmtrashCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
                      rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp, collInp_t *collInp );
 
+#ifdef __cplusplus
 }
+#endif
 
 #endif	/* RMTRASH_UTIL_H */

@@ -15,8 +15,6 @@
 #include "initServer.hpp"
 #include "icatDefines.hpp"
 
-extern "C" {
-
     typedef struct {
         char *serverName;
     } krbAuthRequestOut_t;
@@ -34,10 +32,13 @@ extern "C" {
 #define RS_KRB_AUTH_REQUEST NULL
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
     /* prototype for the client call */
     int
     rcKrbAuthRequest( rcComm_t *conn, krbAuthRequestOut_t **krbAuthRequestOut );
-
+#ifdef __cplusplus
 }
-
+#endif
 #endif	/* KRB_AUTH_REQUEST_H */

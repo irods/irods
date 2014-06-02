@@ -16,8 +16,6 @@
 #include "apiNumber.hpp"
 #include "initServer.hpp"
 
-#include "fileDriver.hpp"
-
 typedef struct FileChksumInp {
     rodsHostAddr_t addr;
     char fileName[MAX_NAME_LEN];
@@ -51,8 +49,14 @@ fileChksum( rsComm_t *rsComm, char* objPath, char *fileName, char* rescHier, cha
 #endif
 
 /* prototype for the client call */
+#ifdef __cplusplus
+extern "C" {
+#endif
 int
 rcFileChksum( rcComm_t *conn, fileChksumInp_t *fileChksumInp,
               char **chksumStr );
 
+#ifdef __cplusplus
+}
+#endif
 #endif  /* FILE_CHKSUM_H */

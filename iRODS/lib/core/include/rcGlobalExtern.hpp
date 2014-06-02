@@ -7,7 +7,6 @@
 
 #include "rods.hpp"
 #include "packStruct.hpp"
-#include "apiHandler.hpp"
 #include "objInfo.hpp"
 #include "msParam.hpp"
 #include "irodsGuiProgressCallback.hpp"
@@ -15,10 +14,8 @@
 extern packConstantArray_t PackConstantTable[];
 extern packInstructArray_t RodsPackTable[];
 extern int ProcessType;
-extern irods::pack_entry_table ApiPackTable;
 extern packType_t packTypeTable[];
 extern int NumOfPackTypes;
-extern irods::api_entry_table RcApiTable;
 extern int NumOfApi;
 extern char *dataObjCond[];
 extern char *compareOperator[];
@@ -38,11 +35,13 @@ extern validKeyWd_t StructFileExtAndRegInpKeyWd[];
 extern int NumStructFileExtAndRegInpKeyWd;
 extern struct timeval SysTimingVal;
 
+#ifdef __cplusplus
 extern "C" {
-
+#endif
     extern irodsGuiProgressCallbak gGuiProgressCB;
 
+#ifdef __cplusplus
 }
-
+#endif
 
 #endif	/* RC_GLOBAL_EXTERN_H */

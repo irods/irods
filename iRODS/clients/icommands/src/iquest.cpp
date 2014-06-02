@@ -199,7 +199,7 @@ queryAndShowStrCond( rcComm_t *conn, char *hint, char *format,
             char inbuf[100];
             printf( "Continue? [Y/n]" );
             std::string response = "";
-            getline( cin, response );
+            getline( std::cin, response );
             strncpy( inbuf, response.c_str(), 90 );
             if ( strncmp( inbuf, "n", 1 ) == 0 ) {
                 break;
@@ -284,7 +284,7 @@ execAndShowSpecificQuery( rcComm_t *conn, char *sql,
             char inbuf[100];
             printf( "Continue? [Y/n]" );
             std::string response = "";
-            getline( cin, response );
+            getline( std::cin, response );
             strncpy( inbuf, response.c_str(), 90 );
             if ( strncmp( inbuf, "n", 1 ) == 0 ) {
                 break;

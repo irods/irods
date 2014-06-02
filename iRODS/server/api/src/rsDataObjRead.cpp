@@ -10,6 +10,7 @@
 #include "rcGlobalExtern.hpp"
 #include "subStructFileRead.hpp"  /* XXXXX can be taken out when structFile api done */
 #include "reGlobalsExtern.hpp"
+#include "reFuncDefs.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"

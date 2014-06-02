@@ -111,7 +111,7 @@ extern "C" {
                         }
                         printf( "Enter your current PAM password:" );
                         std::string password = "";
-                        getline( cin, password );
+                        getline( std::cin, password );
                         strncpy( new_password, password.c_str(), MAX_PASSWORD_LEN );
 #ifdef WIN32
                         if ( !SetConsoleMode( hStdin, lastMode ) ) {

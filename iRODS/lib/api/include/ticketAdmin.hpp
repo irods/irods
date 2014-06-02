@@ -31,8 +31,9 @@ typedef struct {
 
 #define ticketAdminInp_PI "str *arg1; str *arg2; str *arg3; str *arg4; str *arg5; str *arg6;"
 
+#ifdef __cplusplus
 extern "C" {
-
+#endif
 #if defined(RODS_SERVER)
 #define RS_TICKET_ADMIN rsTicketAdmin
     /* prototype for the server handler */
@@ -49,6 +50,7 @@ extern "C" {
     int
     rcTicketAdmin( rcComm_t *conn, ticketAdminInp_t *ticketAdminInp );
 
+#ifdef __cplusplus
 }
-
+#endif
 #endif	/* TICKET_ADMIN_H */

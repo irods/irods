@@ -18,8 +18,6 @@
 #include "initServer.hpp"
 #include "icatDefines.hpp"
 
-extern "C" {
-
     typedef struct {
         char *challenge;
         char *response;
@@ -47,11 +45,15 @@ extern "C" {
 #define RS_AUTH_CHECK NULL
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
     /* prototype for the client call */
     int
     rcAuthCheck( rcComm_t *conn, authCheckInp_t *authCheckInp,
                  authCheckOut_t **authCheckOut );
 
+#ifdef __cplusplus
 }
-
+#endif
 #endif	/* AUTH_CHECK_H */

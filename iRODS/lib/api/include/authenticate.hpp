@@ -9,10 +9,10 @@
 /* This is a high level file type API call */
 
 #include "rods.hpp"
-#include "procApiRequest.hpp"
-#include "apiNumber.hpp"
-#include "initServer.hpp"
-#include "icatDefines.hpp"
+//#include "procApiRequest.hpp"
+//#include "apiNumber.hpp"
+//#include "initServer.hpp"
+//#include "icatDefines.hpp"
 
 #define AUTH_SUBOP_REQ_AUTH "request challenge"
 #define AUTH_SUBOP_RESP "challenge response"
@@ -21,7 +21,6 @@
 #define CHALLENGE_LEN 64 /* 64 bytes of data and terminating null */
 #define RESPONSE_LEN 16  /* 16 bytes of data and terminating null */
 
-extern "C" {
 
     typedef struct {
         char *subOp;
@@ -51,11 +50,16 @@ extern "C" {
 #define RS_AUTHENTICATE NULL
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
     /* prototype for the client call */
     int
     rcAuthenticate( rcComm_t *conn, AuthenticateInp_t *authenticateInp,
                     AuthenticateOut_t **authenticateOut );
 
+#ifdef __cplusplus
 }
+#endif
 
 #endif	/* AUTHENTICATE_H */

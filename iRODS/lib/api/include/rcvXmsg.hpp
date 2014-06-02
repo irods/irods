@@ -26,13 +26,15 @@ rsRcvXmsg( rsComm_t *rsComm, rcvXmsgInp_t *rcvXmsgInp,
 #define RS_RCV_XMSG NULL
 #endif
 
+#ifdef __cplusplus
 extern "C" {
-
+#endif
     /* prototype for the client call */
     int
     rcRcvXmsg( rcComm_t *conn, rcvXmsgInp_t *rcvXmsgInp,
                rcvXmsgOut_t **rcvXmsgOut );
 
+#ifdef __cplusplus
 }
-
+#endif
 #endif	/* RCV_XMSG_H */

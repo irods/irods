@@ -6,6 +6,14 @@
  * Allocated dynamically
  * returns NULL if out of memory
  */
+
+static char *cpStringExtForHashTable( const char *str, Region *r ) {
+    char *strCp = ( char * )region_alloc( r, ( strlen( str ) + 1 ) * sizeof( char ) );
+    strcpy( strCp, str );
+    return strCp;
+}
+
+
 struct bucket *newBucket( const char* key, const void* value ) {
     struct bucket *b = ( struct bucket * )malloc( sizeof( struct bucket ) );
     if ( b == NULL ) {
@@ -108,7 +116,7 @@ int insertIntoHashTable( Hashtable *h, const char* key, const void *value ) {
             }
             memcpy( h, h2, sizeof( Hashtable ) );
         }
-        struct bucket *b = newBucket2( cpStringExt( key, h->bucketRegion ), value, h->bucketRegion );
+        struct bucket *b = newBucket2( cpStringExtForHashTable( key, h->bucketRegion ), value, h->bucketRegion );
         if ( b == NULL ) {
             return 0;
         }

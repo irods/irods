@@ -74,7 +74,9 @@ initCmdArg( char *av[], char *cmdArgv, char *cmdPath );
 #define RS_EXEC_CMD NULL
 #endif
 
+#ifdef __cplusplus
 extern "C" {
+#endif
 
     /* prototype for the client call */
     int
@@ -94,6 +96,8 @@ extern "C" {
     rcExecCmd241( rcComm_t *conn, execCmd241_t *execCmdInp,
                   execCmdOut_t **execCmdOut );
 
+#ifdef __cplusplus
 }
+#endif
 
 #endif	/* EXEC_CMD_H */

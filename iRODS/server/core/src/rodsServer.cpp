@@ -26,6 +26,11 @@
 #include "irods_server_properties.hpp"
 #include "readServerConfig.hpp"
 
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/convenience.hpp> 
+using namespace boost::filesystem;
+
+
 
 
 uint ServerBootTime;
@@ -996,7 +1001,6 @@ readWorkerTask() {
             /* someone else took care of it */
             continue;
         }
-
         newSock = myConnReq->sock;
 
         // =-=-=-=-=-=-=-

@@ -9,8 +9,9 @@
 #include "parseCommandLine.hpp"
 #include "rodsPath.hpp"
 
+#ifdef __cplusplus
 extern "C" {
-
+#endif
     int
     bunUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
              rodsPathInp_t *rodsPathInp );
@@ -18,6 +19,7 @@ extern "C" {
     initCondForBunOpr( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                        structFileExtAndRegInp_t *structFileExtAndRegInp,
                        rodsPathInp_t *rodsPathInp );
+#ifdef __cplusplus
 }
-
+#endif
 #endif	/* BUN_UTIL_H */

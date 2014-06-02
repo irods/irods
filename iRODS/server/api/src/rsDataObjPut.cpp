@@ -8,6 +8,7 @@
 #include "dataObjPut.hpp"
 #include "rodsLog.hpp"
 #include "dataPut.hpp"
+#include "reFuncDefs.hpp"
 #include "filePut.hpp"
 #include "objMetaOpr.hpp"
 #include "physPath.hpp"

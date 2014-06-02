@@ -3,6 +3,7 @@
 
 /* See genQuery.h for a description of this API call.*/
 
+#include "reFuncDefs.hpp"
 #include "genQuery.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "miscUtil.hpp"

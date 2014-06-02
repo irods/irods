@@ -15,6 +15,7 @@
 #include "modAVUMetadata.hpp"
 
 #include "irods_get_full_path_for_config_file.hpp"
+#include "irods_log.hpp"
 
 #if defined( osx_platform )
 #undef CACHE_ENABLE

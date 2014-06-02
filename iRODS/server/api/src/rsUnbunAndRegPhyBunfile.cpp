@@ -20,6 +20,11 @@
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
 
+#include "reFuncDefs.hpp"
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/convenience.hpp> 
+using namespace boost::filesystem;
+
 int
 rsUnbunAndRegPhyBunfile( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     int status;

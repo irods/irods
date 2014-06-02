@@ -160,7 +160,7 @@ main( int argc, char **argv ) {
         }
         printf( "Enter the host name (DNS) of the server to connect to:" );
         std::string response;
-        getline( cin, response );
+        getline( std::cin, response );
         strncpy( ttybuf, response.c_str(), TTYBUF_LEN );
         rstrcat( updateText, "irodsHost ", UPDATE_TEXT_LEN );
         rstrcat( updateText, ttybuf, UPDATE_TEXT_LEN );
@@ -174,7 +174,7 @@ main( int argc, char **argv ) {
         }
         printf( "Enter the port number:" );
         std::string response;
-        getline( cin, response );
+        getline( std::cin, response );
         strncpy( ttybuf, response.c_str(), TTYBUF_LEN );
         rstrcat( updateText, "irodsPort ", UPDATE_TEXT_LEN );
         rstrcat( updateText, ttybuf, UPDATE_TEXT_LEN );
@@ -188,7 +188,7 @@ main( int argc, char **argv ) {
         }
         printf( "Enter your irods user name:" );
         std::string response;
-        getline( cin, response );
+        getline( std::cin, response );
         strncpy( ttybuf, response.c_str(), TTYBUF_LEN );
         rstrcat( updateText, "irodsUserName ", UPDATE_TEXT_LEN );
         rstrcat( updateText, ttybuf, UPDATE_TEXT_LEN );
@@ -202,7 +202,7 @@ main( int argc, char **argv ) {
         }
         printf( "Enter your irods zone:" );
         std::string response;
-        getline( cin, response );
+        getline( std::cin, response );
         strncpy( ttybuf, response.c_str(), TTYBUF_LEN );
         rstrcat( updateText, "irodsZone ", UPDATE_TEXT_LEN );
         rstrcat( updateText, ttybuf, UPDATE_TEXT_LEN );
@@ -317,6 +317,8 @@ main( int argc, char **argv ) {
                               myEnv.rodsAuthScheme;
     status = clientLogin( Conn, 0, auth_scheme );
     if ( status != 0 ) {
+
+
         rcDisconnect( Conn );
         exit( 7 );
     }
@@ -327,12 +329,16 @@ main( int argc, char **argv ) {
         short-term password (after initial login) */
         status = clientLoginTTL( Conn, ttl );
         if ( status != 0 ) {
+
+
             rcDisconnect( Conn );
             exit( 8 );
         }
         /* And check that it works */
         status = clientLogin( Conn );
         if ( status != 0 ) {
+
+
             rcDisconnect( Conn );
             exit( 7 );
         }

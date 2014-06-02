@@ -13,7 +13,6 @@
 #include "procApiRequest.hpp"
 #include "apiNumber.hpp"
 #include "initServer.hpp"
-#include "fileDriver.hpp"
 #include "fileStageToCache.hpp"
 
 #if defined(RODS_SERVER)
@@ -34,7 +33,13 @@ remoteFileSyncToArch( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp, f
 #endif
 
 /* prototype for the client call */
+#ifdef __cplusplus
+extern "C" {
+#endif
 int
 rcFileSyncToArch( rcComm_t *conn, fileStageSyncInp_t *fileSyncToArchInp, fileSyncOut_t** );
+#ifdef __cplusplus
+}
+#endif
 
 #endif	/* FILE_SYNC_TO_ARCH_H */
