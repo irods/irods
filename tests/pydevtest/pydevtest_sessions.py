@@ -64,11 +64,12 @@ def admin_up():
     # users, passwords, and groups
     global testgroup
     testgroup = "pydevtest_user_group"
-    adminsession.runAdminCmd('iadmin',["mkgroup",testgroup])
-    for u in users[1:]:
-        adminsession.runAdminCmd('iadmin',["mkuser",u['name'],"rodsuser"])
-        adminsession.runAdminCmd('iadmin',["moduser",u['name'],"password",u['passwd']])
-        adminsession.runAdminCmd('iadmin',["atg",testgroup,u['name']])
+    if not c.RUN_AS_RESOURCE_SERVER:
+	    adminsession.runAdminCmd('iadmin',["mkgroup",testgroup])
+	    for u in users[1:]:
+		adminsession.runAdminCmd('iadmin',["mkuser",u['name'],"rodsuser"])
+		adminsession.runAdminCmd('iadmin',["moduser",u['name'],"password",u['passwd']])
+		adminsession.runAdminCmd('iadmin',["atg",testgroup,u['name']])
 
     # get back into the proper directory
     adminsession.runCmd('icd', [sessionid])
@@ -82,12 +83,15 @@ def admin_down():
 
     # trash
     adminsession.runCmd('irmtrash',['-M']) # removes all trash for all users (admin mode)
+
     # users
-    for u in users[1:]:
-        adminsession.runAdminCmd('iadmin',["rfg",testgroup,u['name']])
-        adminsession.runAdminCmd('iadmin',["rmuser",u['name']])
-    # groups
-    adminsession.runAdminCmd('iadmin',['rmgroup',testgroup])
+    if not c.RUN_AS_RESOURCE_SERVER:
+	    for u in users[1:]:
+		adminsession.runAdminCmd('iadmin',["rfg",testgroup,u['name']])
+		adminsession.runAdminCmd('iadmin',["rmuser",u['name']])
+	    # groups
+	    adminsession.runAdminCmd('iadmin',['rmgroup',testgroup])
+
     print "admin session exiting: user["+adminsession.getUserName()+"] zone["+adminsession.getZoneName()+"]"
     adminsession.runCmd('iexit', ['full'])
     adminsession.deleteEnvFiles()
