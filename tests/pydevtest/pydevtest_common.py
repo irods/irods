@@ -16,12 +16,12 @@ signal(SIGPIPE,SIG_DFL)
 # global variable dictating that we are running in a
 # toplogical testing framework.  skip certain tests
 # and define various hostnames to resources
-RUN_IN_TOPOLOGY=True;
+RUN_IN_TOPOLOGY=False;
 
 # =-=-=-=-=-=-=-
 # global variable dictating that we are running as a
 # resource server during topological testing
-RUN_AS_RESOURCE_SERVER=True;
+RUN_AS_RESOURCE_SERVER=False;
 
 if os.name != "nt":
     import fcntl

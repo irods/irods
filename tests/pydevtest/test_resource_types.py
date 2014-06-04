@@ -15,9 +15,9 @@ import subprocess
 import re
 
 if( RUN_IN_TOPOLOGY==True ):
-    hostname1 = "resource1"
-    hostname2 = "resource2"
-    hostname3 = "resource3"
+    hostname1 = "resource1.example.org"
+    hostname2 = "resource2.example.org"
+    hostname3 = "resource3.example.org"
 else:
     hostname = socket.gethostname()
     hostname1 = hostname
