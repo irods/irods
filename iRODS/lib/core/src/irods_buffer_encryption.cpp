@@ -234,6 +234,10 @@ namespace irods {
 
         delete [] cipher_text;
 
+        if( 0 == EVP_CIPHER_CTX_cleanup( &context ) ) {
+            return ERROR( ERR_get_error(), "EVP_CIPHER_CTX_cleanup failed" );
+        }
+
         return SUCCESS();
 
     } // encrypt
@@ -322,6 +326,10 @@ namespace irods {
             &plain_text[ plain_len + final_len ] );
 
         delete [] plain_text;
+
+        if( 0 == EVP_CIPHER_CTX_cleanup( &context ) ) {
+            return ERROR( ERR_get_error(), "EVP_CIPHER_CTX_cleanup failed" );
+        }
 
         return SUCCESS();
 
