@@ -23,7 +23,6 @@ extern "C" {
     typedef struct {
         char *challenge;
         char *response;
-        int response_len;
         char *username;
     } authCheckInp_t;
 
@@ -33,7 +32,7 @@ extern "C" {
         char *serverResponse;
     } authCheckOut_t;
 
-#define authCheckInp_PI "str *challenge; str *response; int response_len; str *username;"
+#define authCheckInp_PI "str *challenge; str *response; str *username;"
 
 #define authCheckOut_PI "int privLevel; int clientPrivLevel; str *serverResponse;"
 
