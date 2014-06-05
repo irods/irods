@@ -1,7 +1,11 @@
 !.gitignore
 packaging/irods_database_plugin_postgres.list
+packaging/irods_database_plugin_mysql.list
+packaging/irods_database_plugin_oracle.list
 packaging/setup_database.sh
 postgres/.objs/
+mysql/.objs/
+oracle/.objs/
 src/icatCoreTables.sql
 src/icatSysTables.sql
 test_cll
