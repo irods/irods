@@ -403,6 +403,10 @@ sub irodsLoadIrodsConfig()
 # prints messages if they do not.
 #
 copyTemplateIfNeeded( $irodsConfig );
+
+# Restrict permissions on irods.config
+chmod( 0600, $irodsConfig );
+
 if ( irodsLoadIrodsConfig( ) == 0 )
 {
 	# Configuration failed to load or validate.  An error message
