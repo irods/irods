@@ -118,7 +118,6 @@ class Test_AllRules(ResourceBase):
             # skip rules that handle .irb files
             names_to_skip = [
                 "rulemsiAdmAppendToTopOfCoreIRB",
-                #"rulemsiAdmAppendToTopOfCoreRE",
                 "rulemsiAdmChangeCoreIRB",
                 "rulemsiGetRulesFromDBIntoStruct",
             ]
