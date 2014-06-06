@@ -687,6 +687,7 @@ f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiExecStrCondQuery.r ./iRODS/clients/icommands/test/rules3.0/rulemsiExecStrCondQuery.r
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiServerMonPerf.r ./iRODS/clients/icommands/test/rules3.0/rulemsiServerMonPerf.r
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiStrchop.r ./iRODS/clients/icommands/test/rules3.0/rulemsiStrchop.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiStrCat.r ./iRODS/clients/icommands/test/rules3.0/rulemsiStrCat.r
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiString2KeyValPair.r ./iRODS/clients/icommands/test/rules3.0/rulemsiString2KeyValPair.r
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiExtractNaraMetadata.r ./iRODS/clients/icommands/test/rules3.0/rulemsiExtractNaraMetadata.r
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/ruleworkflowcut.r ./iRODS/clients/icommands/test/rules3.0/ruleworkflowcut.r
