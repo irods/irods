@@ -773,6 +773,7 @@ f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiObjByName.r ./iRODS/clients/icommands/test/rules3.0/rulemsiObjByName.r
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiDataObjPut.r ./iRODS/clients/icommands/test/rules3.0/rulemsiDataObjPut.r
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiSplitPath.r ./iRODS/clients/icommands/test/rules3.0/rulemsiSplitPath.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiSplitPathByKey.r ./iRODS/clients/icommands/test/rules3.0/rulemsiSplitPathByKey.r
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiStructFileBundle.r ./iRODS/clients/icommands/test/rules3.0/rulemsiStructFileBundle.r
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiz3950Submit.r ./iRODS/clients/icommands/test/rules3.0/rulemsiz3950Submit.r
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiSetMultiReplPerResc.r ./iRODS/clients/icommands/test/rules3.0/rulemsiSetMultiReplPerResc.r
