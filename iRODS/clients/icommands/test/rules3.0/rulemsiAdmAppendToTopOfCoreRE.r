@@ -6,5 +6,5 @@ myTestRule {
   msiAdmAppendToTopOfCoreRE(*A);
   msiAdmShowCoreRE();
 }
-INPUT *A="core3"
+INPUT *A="empty.test"
 OUTPUT ruleExecOut

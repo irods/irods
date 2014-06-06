@@ -2353,7 +2353,7 @@ Res *smsi_msiAdmAppendToTopOfCoreRE( Node **paramsr, int n, Node *node, ruleExec
     std::string param_file( paramsr[0]->text );
     param_file += ".re";
                   std::string param_full_path;
-                  ret = irods::get_full_path_for_config_file( param_file, re_full_path );
+                  ret = irods::get_full_path_for_config_file( param_file, param_full_path );
     if ( !ret.ok() ) {
     irods::log( PASS( ret ) );
         return newIntRes( r, ret.code() );

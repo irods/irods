@@ -115,12 +115,11 @@ class Test_AllRules(ResourceBase):
         for rulefile in sorted(os.listdir(rules30dir)):
 
             skipme = 0
-            # skip rules that touch our core re
+            # skip rules that handle .irb files
             names_to_skip = [
                 "rulemsiAdmAppendToTopOfCoreIRB",
-                "rulemsiAdmAppendToTopOfCoreRE",
+                #"rulemsiAdmAppendToTopOfCoreRE",
                 "rulemsiAdmChangeCoreIRB",
-                #"rulemsiAdmChangeCoreRE",
                 "rulemsiGetRulesFromDBIntoStruct",
             ]
             for n in names_to_skip:
