@@ -35,7 +35,7 @@ def get_current_schema_version(cfg):
                                         create unique index idx_grid_configuration \
                                         on R_GRID_CONFIGURATION (namespace %s, option_name %s); \
                                         insert into R_GRID_CONFIGURATION VALUES ( \
-                                        'database', 'schema_version', '1' );" % indexstring)
+                                        'database', 'schema_version', '1' );" % ( indexstring, indexstring) )
         if DEBUG:
             print(result)
         if (result[2].decode('utf-8') != ""):
