@@ -1,5 +1,5 @@
 myTestRule {
-#Input parameter is:
+#Input parameters are:
 #  string
 #  separator
 #Output parameters are:
