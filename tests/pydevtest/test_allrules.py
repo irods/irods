@@ -72,7 +72,7 @@ class Test_AllRules(ResourceBase):
         # setup for rulemsiAdmChangeCoreRE and the likes
         empty_core_file_name = 'empty.test.re'
         new_core_file_name = 'new.test.re'
-        with open(self.conf_dir + "/" + empty_core_file_name, 'w'): pass                          # create empty file
+        with open(self.conf_dir + "/" + empty_core_file_name, 'w'): pass                    # create empty file
         shutil.copy(self.conf_dir + "/core.re", self.conf_dir + "/core.re.bckp" )           # back up core.re
         shutil.copy(self.conf_dir + "/core.re", self.conf_dir + "/" + new_core_file_name)   # copy core.re
         
