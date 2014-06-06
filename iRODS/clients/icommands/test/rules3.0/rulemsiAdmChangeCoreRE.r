@@ -6,5 +6,5 @@ myTestRule {
   msiAdmChangeCoreRE(*A);
   msiAdmShowCoreRE();
 }
-INPUT *A="core-new-rule"
+INPUT *A="new.test"
 OUTPUT ruleExecOut

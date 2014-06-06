@@ -1,15 +1,17 @@
 import pydevtest_sessions as s
-from pydevtest_common import assertiCmd, assertiCmdFail
+from pydevtest_common import assertiCmd, assertiCmdFail, get_irods_config_dir
 from resource_suite import ResourceBase
 import os
 import inspect
 import socket
+import shutil
 
 class Test_AllRules(ResourceBase):
 
     global rules30dir
     currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
     rules30dir = currentdir+"/../../iRODS/clients/icommands/test/rules3.0/"
+    conf_dir = get_irods_config_dir()
 
     my_test_resource = {
         "setup"    : [
@@ -22,7 +24,7 @@ class Test_AllRules(ResourceBase):
         ResourceBase.__init__(self)
         s.twousers_up()
         self.run_resource_setup()
-
+        
         # testallrules setup
         global rules30dir
         hostname = socket.gethostname()
@@ -66,6 +68,14 @@ class Test_AllRules(ResourceBase):
         s.adminsession.runCmd('iput', [dir_w+"/misc/email.tag","test"] )
         s.adminsession.runCmd('iput', [dir_w+"/misc/sample.email","test/sample2.email"] )
         s.adminsession.runCmd('iput', [dir_w+"/misc/email.tag","test/email2.tag"] )
+        
+        # setup for rulemsiAdmChangeCoreRE and the likes
+        empty_core_file_name = 'empty.test.re'
+        new_core_file_name = 'new.test.re'
+        with open(self.conf_dir + "/" + empty_core_file_name, 'w'): pass                          # create empty file
+        shutil.copy(self.conf_dir + "/core.re", self.conf_dir + "/core.re.bckp" )           # back up core.re
+        shutil.copy(self.conf_dir + "/core.re", self.conf_dir + "/" + new_core_file_name)   # copy core.re
+        
 
     def tearDown(self):
         # testallrules teardown
@@ -76,6 +86,10 @@ class Test_AllRules(ResourceBase):
         s.adminsession.runAdminCmd('iadmin',["rmresc","testallrulesResc"] )
         s.adminsession.runAdminCmd('iadmin',["rmuser","devtestuser"] )
         s.adminsession.runCmd('iqdel',["-a"] ) # remove all/any queued rules
+        
+        # cleanup mods in iRODS config dir
+        os.system('mv -f %s/core.re.bckp %s/core.re' % (self.conf_dir, self.conf_dir))
+        os.system('rm -f %s/*.test.re' % self.conf_dir)
  
         self.run_resource_teardown()
         s.twousers_down()
@@ -106,7 +120,7 @@ class Test_AllRules(ResourceBase):
                 "rulemsiAdmAppendToTopOfCoreIRB",
                 "rulemsiAdmAppendToTopOfCoreRE",
                 "rulemsiAdmChangeCoreIRB",
-                "rulemsiAdmChangeCoreRE",
+                #"rulemsiAdmChangeCoreRE",
                 "rulemsiGetRulesFromDBIntoStruct",
             ]
             for n in names_to_skip:
