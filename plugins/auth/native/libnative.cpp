@@ -381,7 +381,9 @@ extern "C" {
                 if ( ( result = ASSERT_ERROR( status >= 0, status, "Connecting to rcat host failed." ) ).ok() ) {
                     memset( &authCheckInp, 0, sizeof( authCheckInp ) );
                     authCheckInp.challenge = bufp;
-                    //TODO: null terminate _resp->response
+                    //null-terminate the response for rsAuthCheck
+                    _resp->response = (char *)realloc( _resp->response, RESPONSE_LEN + 1 );
+                    _resp->response[ RESPONSE_LEN ] = 0;
                     authCheckInp.response = _resp->response;
                     authCheckInp.username = _resp->username;
 
