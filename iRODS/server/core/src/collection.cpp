@@ -66,7 +66,8 @@ int trySpecificQueryDataObjInCollReCur(
     rsComm_t *rsComm,
     char *collection,
     genQueryOut_t **genQueryOut ) {
-    int status;
+
+    int status = 0;
     char collNamePercent[MAX_NAME_LEN + 2];
 
     specificQueryInp_t specificQueryInp;
@@ -98,6 +99,7 @@ int trySpecificQueryDataObjInCollReCur(
         genQueryOut_t *result;
         result = *genQueryOut;
         if ( result->attriCnt == 7 ) {
+
             result->sqlResult[0].attriInx = COL_D_DATA_ID;
             result->sqlResult[1].attriInx = COL_COLL_NAME;
             result->sqlResult[2].attriInx = COL_DATA_NAME;
@@ -117,13 +119,15 @@ rsQueryDataObjInCollReCur( rsComm_t *rsComm, char *collection,
                            genQueryInp_t *genQueryInp, genQueryOut_t **genQueryOut, char *accessPerm,
                            int singleFlag ) {
     char collQCond[MAX_NAME_LEN * 2];
-    int status;
+    int status = 0;
     char accStr[LONG_NAME_LEN];
 
-    if ( collection == NULL || genQueryOut == NULL ) {
+    if ( genQueryInp == NULL || 
+         collection  == NULL || 
+         genQueryOut == NULL ) {
         return ( USER__NULL_INPUT_ERR );
     }
-
+  
     memset( genQueryInp, 0, sizeof( genQueryInp_t ) );
 
     genAllInCollQCond( collection, collQCond );
@@ -133,12 +137,14 @@ rsQueryDataObjInCollReCur( rsComm_t *rsComm, char *collection,
     addInxIval( &genQueryInp->selectInp, COL_D_DATA_ID, 1 );
     addInxIval( &genQueryInp->selectInp, COL_COLL_NAME, 1 );
     addInxIval( &genQueryInp->selectInp, COL_DATA_NAME, 1 );
-    addInxIval( &genQueryInp->selectInp, COL_D_RESC_HIER, 1 );
+
     if ( singleFlag == 0 ) {
         addInxIval( &genQueryInp->selectInp, COL_DATA_REPL_NUM, 1 );
         addInxIval( &genQueryInp->selectInp, COL_D_RESC_NAME, 1 );
         addInxIval( &genQueryInp->selectInp, COL_D_DATA_PATH, 1 );
     }
+
+    addInxIval( &genQueryInp->selectInp, COL_D_RESC_HIER, 1 );
 
     if ( accessPerm != NULL ) {
         snprintf( accStr, LONG_NAME_LEN, "%s", rsComm->clientUser.userName );
@@ -156,7 +162,8 @@ rsQueryDataObjInCollReCur( rsComm_t *rsComm, char *collection,
         rmKeyVal( &genQueryInp->condInput, RODS_ZONE_CLIENT_KW );
         rmKeyVal( &genQueryInp->condInput, ACCESS_PERMISSION_KW );
     }
-    else {
+    else { 
+        genQueryInp->maxRows = MAX_SQL_ROWS;
         status = trySpecificQueryDataObjInCollReCur(
                      rsComm,
                      collection,
