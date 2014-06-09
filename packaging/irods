@@ -36,25 +36,25 @@ status)
     su $SU_SHELL_OPTS irods -c "$IRODS_CTL status"
     ;;
 start)
-    su $SU_SHELL_OPTS irods -c "$IRODS_CTL istart"
+    su $SU_SHELL_OPTS irods -c "$IRODS_CTL start"
     if [ "$DETECTEDOS" = "RedHatCompatible" -o "$DETECTEDOS" = "SuSE" ] ; then
         touch /var/lock/subsys/irods
     fi
     ;;
 stop)
-    su $SU_SHELL_OPTS irods -c "$IRODS_CTL istop"
+    su $SU_SHELL_OPTS irods -c "$IRODS_CTL stop"
     if [ "$DETECTEDOS" = "RedHatCompatible" -o "$DETECTEDOS" = "SuSE" ] ; then
         rm /var/lock/subsys/irods
     fi
     ;;
 restart)
-    su $SU_SHELL_OPTS irods -c "$IRODS_CTL irestart"
+    su $SU_SHELL_OPTS irods -c "$IRODS_CTL restart"
     if [ "$DETECTEDOS" = "RedHatCompatible" -o "$DETECTEDOS" = "SuSE" ] ; then
         touch /var/lock/subsys/irods
     fi
     ;;
 force-reload)
-    su $SU_SHELL_OPTS irods -c "$IRODS_CTL irestart"
+    su $SU_SHELL_OPTS irods -c "$IRODS_CTL restart"
     if [ "$DETECTEDOS" = "RedHatCompatible" -o "$DETECTEDOS" = "SuSE" ] ; then
         touch /var/lock/subsys/irods
     fi
