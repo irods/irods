@@ -608,7 +608,6 @@ f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiPhyBundleColl.r ./iRODS/clients/icommands/test/rules3.0/rulemsiPhyBundleColl.r
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiString2StrArray.r ./iRODS/clients/icommands/test/rules3.0/rulemsiString2StrArray.r
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/ruleworkflowbreak.r ./iRODS/clients/icommands/test/rules3.0/ruleworkflowbreak.r
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiDataObjAutoMove.r ./iRODS/clients/icommands/test/rules3.0/rulemsiDataObjAutoMove.r
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiAdmChangeCoreIRB.r ./iRODS/clients/icommands/test/rules3.0/rulemsiAdmChangeCoreIRB.r
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiDbrRollback.r ./iRODS/clients/icommands/test/rules3.0/rulemsiDbrRollback.r
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiFlushMonStat.r ./iRODS/clients/icommands/test/rules3.0/rulemsiFlushMonStat.r
@@ -752,7 +751,6 @@ f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiAdmReadRulesFromFileIntoStruct.r ./iRODS/clients/icommands/test/rules3.0/rulemsiAdmReadRulesFromFileIntoStruct.r
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiDataObjUnlink.r ./iRODS/clients/icommands/test/rules3.0/rulemsiDataObjUnlink.r
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiSetNumThreads.r ./iRODS/clients/icommands/test/rules3.0/rulemsiSetNumThreads.r
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiAutoReplicateService.r ./iRODS/clients/icommands/test/rules3.0/rulemsiAutoReplicateService.r
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiCheckHostAccessControl.r ./iRODS/clients/icommands/test/rules3.0/rulemsiCheckHostAccessControl.r
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiRcvXmsg.r ./iRODS/clients/icommands/test/rules3.0/rulemsiRcvXmsg.r
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiIsColl.r ./iRODS/clients/icommands/test/rules3.0/rulemsiIsColl.r

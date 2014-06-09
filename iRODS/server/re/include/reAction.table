@@ -150,19 +150,7 @@ int msiExecStrCondQueryWithOptions(msParam_t* queryParam,
                                   msParam_t* genQueryOutParam,
                                   ruleExecInfo_t *rei);
 
-int msiAutoReplicateService(msParam_t *xColl,
-                            msParam_t *xRecursive,
-                            msParam_t *xRequireNumReplicas,
-                            msParam_t *xRescGroup,
-                            msParam_t *xEmailAccountToNotify,
-                            ruleExecInfo_t *rei);
 
-int msiDataObjAutoMove(msParam_t *inpParam1,
-                       msParam_t *inpParam2,
-                       msParam_t *inpParam3,
-                       msParam_t *inpParam4,
-                       msParam_t *inpParam5,
-                       ruleExecInfo_t *rei);
 
 int
 msiGetContInxFromGenQueryOut(msParam_t* genQueryOutParam, msParam_t* continueInx, ruleExecInfo_t *rei);
@@ -353,8 +341,6 @@ int msiString2StrArray(msParam_t *inBufferP, msParam_t* outStrArrayP, ruleExecIn
 			table_[ "msiSplitPath" ] = new irods::ms_table_entry( "msiSplitPath",3,(funcPtr) msiSplitPath );
 			table_[ "msiSplitPathByKey" ] = new irods::ms_table_entry( "msiSplitPathByKey",4,(funcPtr) msiSplitPathByKey );
 			table_[ "msiGetSessionVarValue" ] = new irods::ms_table_entry( "msiGetSessionVarValue",2,(funcPtr) msiGetSessionVarValue );
-			table_[ "msiAutoReplicateService" ] = new irods::ms_table_entry( "msiAutoReplicateService", 5, (funcPtr)msiAutoReplicateService );
-			table_[ "msiDataObjAutoMove" ] = new irods::ms_table_entry( "msiDataObjAutoMove", 5, (funcPtr)msiDataObjAutoMove );
 			table_[ "msiGetContInxFromGenQueryOut" ] = new irods::ms_table_entry( "msiGetContInxFromGenQueryOut",2,(funcPtr) msiGetContInxFromGenQueryOut );
 			table_[ "msiSetACL" ] = new irods::ms_table_entry( "msiSetACL",4,(funcPtr) msiSetACL );
 			table_[ "msiSetRescQuotaPolicy" ] = new irods::ms_table_entry( "msiSetRescQuotaPolicy",1,(funcPtr) msiSetRescQuotaPolicy );

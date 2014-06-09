@@ -242,7 +242,6 @@ SVR_RE_OBJS =	\
 		$(svrReObjDir)/xmsgMS.o \
 		$(svrReObjDir)/testMS.o \
 		$(svrReObjDir)/configuration.o \
-		$(svrReObjDir)/reAutoReplicateService.o \
 		$(svrReObjDir)/sysBackupMS.o \
 		$(svrReObjDir)/irods_ms_plugin.o \
 		$(svrReObjDir)/irods_operation_rule_execution_manager.o

@@ -103,8 +103,6 @@ This documentation is generated from the iRODS code.
   - #msiCollCreate - Create a collection
   - #msiCollRepl - Replicate all files in a collection
   - #msiRmColl - Delete a collection
-  - #msiAutoReplicateService - Checks and repairs up to n replicas
-  - #msiDataObjAutoMove - Used to automatically move the newly created file into a destination collection
   - #msiTarFileExtract - Extracts a tar object file into a target collection
   - #msiTarFileCreate - Creates a tar object file from a target collection
   - #msiPhyBundleColl - Bundles a collection into a number of tar files, similar to the iphybun command
