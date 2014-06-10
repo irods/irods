@@ -34,12 +34,12 @@ main( int argc, char **argv ) {
     status = parseCmdLineOpt( argc, argv,  optStr, 0, &myRodsArgs );
     if ( status < 0 ) {
         printf( "Use -h for help.\n" );
-        exit( 1 );
+        return 1;
     }
 
     if ( myRodsArgs.help == True ) {
         usage();
-        exit( 0 );
+        return 0;
     }
 
     status = getRodsEnv( &myEnv );
@@ -47,7 +47,7 @@ main( int argc, char **argv ) {
     if ( status < 0 ) {
         rodsLog( LOG_ERROR, "main: getRodsEnv error. status = %d",
                  status );
-        exit( 1 );
+        return 1;
     }
 
     // =-=-=-=-=-=-=-
@@ -60,14 +60,14 @@ main( int argc, char **argv ) {
                       myEnv.rodsZone, 0, &errMsg );
 
     if ( conn == NULL ) {
-        exit( 2 );
+        return 2;
     }
 
     if ( strcmp( myEnv.rodsUserName, PUBLIC_USER_NAME ) != 0 ) {
         status = clientLogin( conn );
         if ( status != 0 ) {
             rcDisconnect( conn );
-            exit( 7 );
+            return 7;
         }
     }
 
@@ -84,13 +84,25 @@ main( int argc, char **argv ) {
     rcDisconnect( conn );
 
     if ( status < 0 ) {
-        rodsLogError( LOG_ERROR, status,
-                      "rcProcStat for at least one of the server failed." );
-        exit( 3 );
+        if ( SYS_INVALID_SERVER_HOST == status )
+        {
+            rodsLogError( LOG_ERROR, status,
+                          "rcProcStat for at least one of the servers failed. "
+                          "Check to make sure you did not call this on a "
+                          "coordinating resource. Coordinating resources are "
+                          "virtual and have no host to query." );
+            return 3;
+        }
+        else
+        {
+            rodsLogError( LOG_ERROR, status,
+                          "rcProcStat for at least one of the servers failed." );
+            return 3;
+        }
     }
 
 
-    exit( 0 );
+    return 0;
 }
 
 int
