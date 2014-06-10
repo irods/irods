@@ -178,6 +178,8 @@ int getListOfResc( rsComm_t *rsComm, char serverList[MAX_VALUE][MAX_NAME_LEN], i
     addInxIval( &genQueryInp.selectInp, COL_R_RESC_NAME, 1 );
     addInxIval( &genQueryInp.selectInp, COL_R_TYPE_NAME, 1 );
     addInxIval( &genQueryInp.selectInp, COL_R_VAULT_PATH, 1 );
+    addInxVal( &genQueryInp.sqlCondInp, COL_R_RESC_NAME, "!= 'EMPTY_RESC_HOST'" );
+    addInxVal( &genQueryInp.sqlCondInp, COL_R_VAULT_PATH, "!= 'EMPTY_VAULT_PATH'" );
 
     status = rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
     if ( status < 0 ) {
