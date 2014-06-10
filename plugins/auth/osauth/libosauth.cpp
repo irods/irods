@@ -613,7 +613,7 @@ extern "C" {
                        "check_proxy_user_privileges failed" );
         }
 
-        rodsLog( LOG_NOTICE,
+        rodsLog( LOG_DEBUG,
                  "rsAuthResponse set proxy authFlag to %d, client authFlag to %d, user:%s proxy:%s client:%s",
                  authCheckOut->privLevel,
                  authCheckOut->clientPrivLevel,
