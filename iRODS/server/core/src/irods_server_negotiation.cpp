@@ -101,9 +101,9 @@ namespace irods {
         // get the result from the key val pair
         if ( strlen( read_cs_neg->result_ ) != 0 ) {
             irods::kvp_map_t kvp;
-            irods::error ret = irods::parse_kvp_string( 
-                                   read_cs_neg->result_, 
-                                   kvp );
+            err = irods::parse_kvp_string( 
+                      read_cs_neg->result_, 
+                      kvp );
              if( err.ok() ) {
                  // =-=-=-=-=-=-=-
                  // extract the signed SID
