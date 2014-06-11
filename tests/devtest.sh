@@ -110,6 +110,7 @@ else
     $PYTHONCMD $OPTS test_resource_tree
     $PYTHONCMD $OPTS test_xmsg
     $PYTHONCMD $OPTS test_load_balanced_suite
+    $PYTHONCMD $OPTS test_icommands_recursive
 
     echo "Skipping test_allrules for now - TURN BACK ON ASAP"
     #    nosetests -v test_allrules.py
