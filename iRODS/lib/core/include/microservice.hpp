@@ -232,7 +232,7 @@ public:
  
 #define _MSI_EXTRACT_PARAM_NO_ALLOC(_type, name, pname, irodsType) \
         BUF_NAME(name) = NULL; \
-        ParamType<_type>::type name = &BUF_NAME(name); \
+        ParamType<_type>::type& name = BUF_NAME(name); \
  
 #define MSI_EXTRACT_PARAM_LIST(typeList, nameList, ioList) \
     BOOST_PP_REPEAT(BOOST_PP_LIST_SIZE(typeList), MSI_EXTRACT_PARAM, (typeList, nameList, ioList)) \
