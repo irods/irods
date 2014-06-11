@@ -34,6 +34,16 @@ def get_vault_session_path(session):
                         session.getUserName(),
                         session.sessionId)
 
+def make_large_local_tmp_dir(dir_name, file_count, file_size):
+    os.mkdir(dir_name)
+    for i in range(file_count):
+        make_file(os.path.join(dir_name, "junk"+str(i).zfill(4)),
+                  file_size)
+    local_files = os.listdir(dir_name)
+    assert len(local_files) == file_count, "dd loop did not make all " + str(file_count) + " files"
+    return local_files
+
+
 class Test_ICommands_Recursive(unittest.TestCase, ResourceBase):
 
     my_test_resource = {"setup":[],"teardown":[]}
@@ -51,110 +61,168 @@ class Test_ICommands_Recursive(unittest.TestCase, ResourceBase):
         s.twousers_down()
         shutil.rmtree(self.testing_tmp_dir)
 
-    def test_iput_r(self):
-        base_name = "test_iput_r_dir"
+    def iput_r_large_collection(self, session, base_name, file_count, file_size):
         local_dir = os.path.join(self.testing_tmp_dir, base_name)
-        os.mkdir(local_dir)
-        n_files = 1000
-        file_size = 100
-        for i in range(n_files):
-            make_file(os.path.join(local_dir, "junk"+str(i).zfill(4)),
-                      file_size)
-        local_files = set(os.listdir(local_dir))
-        assert len(local_files) == n_files, "dd loop did not make all " + str(n_files) + " files"
-        alice_session = s.sessions[1]
-        assertiCmd(alice_session, "iput -r " + local_dir, "EMPTY")
-        rods_files = set(runCmd_ils_to_entries(alice_session.runCmd("ils", [base_name])))
-        self.assertTrue(local_files == rods_files,
-                        msg="Files missing from rods:\n" + str(local_files-rods_files) + "\n\n" + \
-                            "Extra files in rods:\n" + str(rods_files-local_files))
-        vault_files = set(os.listdir(os.path.join(get_vault_session_path(alice_session),
+        local_files = make_large_local_tmp_dir(local_dir, file_count, file_size)
+        assertiCmd(session, "iput -r " + local_dir, "EMPTY")
+        rods_files = set(runCmd_ils_to_entries(session.runCmd("ils", [base_name])))
+        self.assertTrue(set(local_files) == rods_files,
+                        msg="Files missing from rods:\n" + str(set(local_files)-rods_files) + "\n\n" + \
+                            "Extra files in rods:\n" + str(rods_files-set(local_files)))
+        vault_files = set(os.listdir(os.path.join(get_vault_session_path(session),
                                                   base_name)))
-        self.assertTrue(local_files == vault_files,
-                        msg="Files missing from vault:\n" + str(local_files-vault_files) + "\n\n" + \
-                            "Extra files in vault:\n" + str(vault_files-local_files))
+        self.assertTrue(set(local_files) == vault_files,
+                        msg="Files missing from vault:\n" + str(set(local_files)-vault_files) + "\n\n" + \
+                            "Extra files in vault:\n" + str(vault_files-set(local_files)))
+
+        return (local_dir, local_files)
+
+    def test_iput_r(self):
+        self.iput_r_large_collection(s.sessions[1], "test_iput_r_dir", file_count=1000, file_size=100)
 
     def test_irm_r(self):
         base_name = "test_irm_r_dir"
-        local_dir = os.path.join(self.testing_tmp_dir, base_name)
-        os.mkdir(local_dir)
-        n_files = 1000
-        file_size = 100
-        for i in range(n_files):
-            make_file(os.path.join(local_dir, "junk"+str(i).zfill(4)),
-                      file_size)
-        local_files = set(os.listdir(local_dir))
-        assert len(local_files) == n_files, "dd loop did not make all " + str(n_files) + " files"
-        alice_session = s.sessions[1]
-        assertiCmd(alice_session, "iput -r " + local_dir, "EMPTY")
-        rods_files_pre_irm = set(runCmd_ils_to_entries(alice_session.runCmd("ils", [base_name])))
-        self.assertTrue(local_files == rods_files_pre_irm,
-                        msg="Files missing from rods:\n" + str(local_files-rods_files_pre_irm) + "\n\n" + \
-                            "Extra files in rods:\n" + str(rods_files_pre_irm-local_files))
-        vault_files_pre_irm = set(os.listdir(os.path.join(get_vault_session_path(alice_session),
-                                                  base_name)))
-        self.assertTrue(local_files == vault_files_pre_irm,
-                        msg="Files missing from vault:\n" + str(local_files-vault_files_pre_irm) + "\n\n" + \
-                            "Extra files in vault:\n" + str(vault_files_pre_irm-local_files))
+        user_session = s.sessions[1]
+        self.iput_r_large_collection(user_session, base_name, file_count=1000, file_size=100)
 
-        # Files have been successfully added, try removing them
-        assertiCmd(alice_session, "irm -r " + base_name, "EMPTY")
-        assertiCmd(alice_session, "ils " + base_name, "ERROR", "does not exist")
+        assertiCmd(user_session, "irm -r " + base_name, "EMPTY")
+        assertiCmd(user_session, "ils " + base_name, "ERROR", "does not exist")
         
-        vault_files_post_irm = set(os.listdir(os.path.join(get_vault_session_path(alice_session),
-                                                  base_name)))
+        vault_files_post_irm = os.listdir(os.path.join(get_vault_session_path(user_session),
+                                                       base_name))
         self.assertTrue(len(vault_files_post_irm) == 0,
                         msg="Files not removed from vault:\n" + str(vault_files_post_irm))
         
 
     def test_imv_r(self):
         base_name_source = "test_imv_r_dir_source"
-        local_dir = os.path.join(self.testing_tmp_dir, base_name_source)
-        os.mkdir(local_dir)
-        n_files = 1000
-        file_size = 100
-        for i in range(n_files):
-            make_file(os.path.join(local_dir, "junk"+str(i).zfill(4)),
-                      file_size)
-        local_files = set(os.listdir(local_dir))
-        assert len(local_files) == n_files, "dd loop did not make all " + str(n_files) + " files"
-        alice_session = s.sessions[1]
-        assertiCmd(alice_session, "iput -r " + local_dir, "EMPTY")
-        rods_files_pre_imv = set(runCmd_ils_to_entries(alice_session.runCmd("ils", [base_name_source])))
-        self.assertTrue(local_files == rods_files_pre_imv,
-                        msg="Files missing from rods:\n" + str(local_files-rods_files_pre_imv) + "\n\n" + \
-                            "Extra files in rods:\n" + str(rods_files_pre_imv-local_files))
-        vault_files_pre_irm = set(os.listdir(os.path.join(get_vault_session_path(alice_session),
-                                                          base_name_source)))
-        self.assertTrue(local_files == vault_files_pre_irm,
-                        msg="Files missing from vault:\n" + str(local_files-vault_files_pre_irm) + "\n\n" + \
-                            "Extra files in vault:\n" + str(vault_files_pre_irm-local_files))
+        user_session = s.sessions[1]
+        file_names = set(self.iput_r_large_collection(user_session, base_name_source, file_count=1000, file_size=100)[1])
 
-        # Files have been successfully added, try moving them
         base_name_target = "test_imv_r_dir_target"
-        assertiCmd(alice_session, "imv " + base_name_source + " " + base_name_target, "EMPTY")
-        assertiCmd(alice_session, "ils " + base_name_source, "ERROR", "does not exist")
-        assertiCmd(alice_session, "ils", "LIST", base_name_target)
-        rods_files_post_imv = set(runCmd_ils_to_entries(alice_session.runCmd("ils", [base_name_target])))
-        self.assertTrue(local_files == rods_files_post_imv,
-                        msg="Files missing from rods:\n" + str(local_files-rods_files_post_imv) + "\n\n" + \
-                            "Extra files in rods:\n" + str(rods_files_post_imv-local_files))
+        assertiCmd(user_session, "imv " + base_name_source + " " + base_name_target, "EMPTY")
+        assertiCmd(user_session, "ils " + base_name_source, "ERROR", "does not exist")
+        assertiCmd(user_session, "ils", "LIST", base_name_target)
+        rods_files_post_imv = set(runCmd_ils_to_entries(user_session.runCmd("ils", [base_name_target])))
+        self.assertTrue(file_names == rods_files_post_imv,
+                        msg="Files missing from rods:\n" + str(file_names-rods_files_post_imv) + "\n\n" + \
+                            "Extra files in rods:\n" + str(rods_files_post_imv-file_names))
         
-        vault_files_post_irm = set(os.listdir(os.path.join(get_vault_session_path(alice_session),
+        vault_files_post_irm_source = set(os.listdir(os.path.join(get_vault_session_path(user_session),
+                                                                  base_name_source)))
+        self.assertTrue(len(vault_files_post_irm_source) == 0)
+
+        vault_files_post_irm_target = set(os.listdir(os.path.join(get_vault_session_path(user_session),
                                                            base_name_target)))
-        self.assertTrue(local_files == vault_files_post_irm,
-                        msg="Files missing from vault:\n" + str(local_files-vault_files_post_irm) + "\n\n" + \
-                            "Extra files in vault:\n" + str(vault_files_post_irm-local_files))
+        self.assertTrue(file_names == vault_files_post_irm_target,
+                        msg="Files missing from vault:\n" + str(file_names-vault_files_post_irm_target) + "\n\n" + \
+                            "Extra files in vault:\n" + str(vault_files_post_irm_target-file_names))
+
+    def test_icp_r(self):
+        base_name_source = "test_icp_r_dir_source"
+        user_session = s.sessions[1]
+        file_names = set(self.iput_r_large_collection(user_session, base_name_source, file_count=1000, file_size=100)[1])
+
+        base_name_target = "test_icp_r_dir_target"
+        assertiCmd(user_session, "icp -r " + base_name_source + " " + base_name_target, "EMPTY")
+        assertiCmd(user_session, "ils", "LIST", base_name_target)
+        rods_files_source = set(runCmd_ils_to_entries(user_session.runCmd("ils", [base_name_source])))
+        self.assertTrue(file_names == rods_files_source,
+                        msg="Files missing from rods source:\n" + str(file_names-rods_files_source) + "\n\n" + \
+                            "Extra files in rods source:\n" + str(rods_files_source-file_names))
+
+        rods_files_target = set(runCmd_ils_to_entries(user_session.runCmd("ils", [base_name_target])))
+        self.assertTrue(file_names == rods_files_target,
+                        msg="Files missing from rods target:\n" + str(file_names-rods_files_target) + "\n\n" + \
+                            "Extra files in rods target:\n" + str(rods_files_target-file_names))     
+
+        vault_files_post_icp_source = set(os.listdir(os.path.join(get_vault_session_path(user_session),
+                                                                  base_name_source)))
+
+        self.assertTrue(file_names == vault_files_post_icp_source,
+                        msg="Files missing from vault:\n" + str(file_names-vault_files_post_icp_source) + "\n\n" + \
+                            "Extra files in vault:\n" + str(vault_files_post_icp_source-file_names))
 
 
+        vault_files_post_icp_target = set(os.listdir(os.path.join(get_vault_session_path(user_session),
+                                                                  base_name_target)))
+        self.assertTrue(file_names == vault_files_post_icp_target,
+                        msg="Files missing from vault:\n" + str(file_names-vault_files_post_icp_target) + "\n\n" + \
+                            "Extra files in vault:\n" + str(vault_files_post_icp_target-file_names))
 
-        
-        
-                      
+    def test_irsync_r_dir_to_coll(self):
+        base_name = "test_irsync_r_dir_to_coll"
+        local_dir = os.path.join(self.testing_tmp_dir, base_name)
+        file_names = set(make_large_local_tmp_dir(local_dir, file_count=1000, file_size=100))
+        user_session = s.sessions[1]
 
-        
+        assertiCmd(user_session, "irsync -r " + local_dir + " i:" + base_name, "EMPTY")
+        assertiCmd(user_session, "ils", "LIST", base_name)
+        rods_files = set(runCmd_ils_to_entries(user_session.runCmd("ils", [base_name])))
+        self.assertTrue(file_names == rods_files,
+                        msg="Files missing from rods:\n" + str(file_names-rods_files) + "\n\n" + \
+                            "Extra files in rods:\n" + str(rods_files-file_names))
 
+        vault_files_post_irsync = set(os.listdir(os.path.join(get_vault_session_path(user_session),
+                                                              base_name)))
 
+        self.assertTrue(file_names == vault_files_post_irsync,
+                        msg="Files missing from vault:\n" + str(file_names-vault_files_post_irsync) + "\n\n" + \
+                            "Extra files in vault:\n" + str(vault_files_post_irsync-file_names))
 
+    def test_irsync_r_coll_to_coll(self):
+        base_name_source = "test_irsync_r_coll_to_coll_source"
+        user_session = s.sessions[1]
+        file_names = set(self.iput_r_large_collection(user_session, base_name_source, file_count=1000, file_size=100)[1])
+        base_name_target = "test_irsync_r_coll_to_coll_target"
+        assertiCmd(user_session, "irsync -r i:" + base_name_source + " i:" + base_name_target, "EMPTY")
+        assertiCmd(user_session, "ils", "LIST", base_name_source)
+        assertiCmd(user_session, "ils", "LIST", base_name_target)
+        rods_files_source = set(runCmd_ils_to_entries(user_session.runCmd("ils", [base_name_source])))
+        self.assertTrue(file_names == rods_files_source,
+                        msg="Files missing from rods source:\n" + str(file_names-rods_files_source) + "\n\n" + \
+                            "Extra files in rods source:\n" + str(rods_files_source-file_names))
 
+        rods_files_target = set(runCmd_ils_to_entries(user_session.runCmd("ils", [base_name_target])))
+        self.assertTrue(file_names == rods_files_target,
+                        msg="Files missing from rods target:\n" + str(file_names-rods_files_target) + "\n\n" + \
+                            "Extra files in rods target:\n" + str(rods_files_target-file_names))
+
+        vault_files_post_irsync_source = set(os.listdir(os.path.join(get_vault_session_path(user_session),
+                                                                     base_name_source)))
+
+        self.assertTrue(file_names == vault_files_post_irsync_source,
+                        msg="Files missing from vault:\n" + str(file_names-vault_files_post_irsync_source) + "\n\n" + \
+                            "Extra files in vault:\n" + str(vault_files_post_irsync_source-file_names))
+
+        vault_files_post_irsync_target = set(os.listdir(os.path.join(get_vault_session_path(user_session),
+                                                                     base_name_target)))
+
+        self.assertTrue(file_names == vault_files_post_irsync_target,
+                        msg="Files missing from vault:\n" + str(file_names-vault_files_post_irsync_target) + "\n\n" + \
+                            "Extra files in vault:\n" + str(vault_files_post_irsync_target-file_names))
+
+    def test_irsync_r_coll_to_dir(self):
+        base_name_source = "test_irsync_r_coll_to_dir_source"
+        user_session = s.sessions[1]
+        file_names = set(self.iput_r_large_collection(user_session, base_name_source, file_count=1000, file_size=100)[1])
+        local_dir = os.path.join(self.testing_tmp_dir, "test_irsync_r_coll_to_dir_target")
+        assertiCmd(user_session, "irsync -r i:" + base_name_source + " " + local_dir, "EMPTY")
+        assertiCmd(user_session, "ils", "LIST", base_name_source)
+        rods_files_source = set(runCmd_ils_to_entries(user_session.runCmd("ils", [base_name_source])))
+        self.assertTrue(file_names == rods_files_source,
+                        msg="Files missing from rods source:\n" + str(file_names-rods_files_source) + "\n\n" + \
+                            "Extra files in rods source:\n" + str(rods_files_source-file_names))
+
+        local_files = set(os.listdir(local_dir))
+        self.assertTrue(file_names == local_files,
+                        msg="Files missing from local dir:\n" + str(file_names-local_files) + "\n\n" + \
+                            "Extra files in local dir:\n" + str(local_files-file_names))
+
+        vault_files_post_irsync_source = set(os.listdir(os.path.join(get_vault_session_path(user_session),
+                                                                     base_name_source)))
+
+        self.assertTrue(file_names == vault_files_post_irsync_source,
+                        msg="Files missing from vault:\n" + str(file_names-vault_files_post_irsync_source) + "\n\n" + \
+                            "Extra files in vault:\n" + str(vault_files_post_irsync_source-file_names))
 
