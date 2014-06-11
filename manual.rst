@@ -218,13 +218,15 @@ And then as the irods user::
 
  irods@hostname:~/ $ ./packaging/setup_resource.sh
 
-The `./packaging/setup_resource.sh` script will ask for the following five pieces of information about the existing data grid that the iRODS resource server will need in order to stand up and then connect to its configured iCAT Zone:
+The `./packaging/setup_resource.sh` script will ask for the following seven pieces of information about the existing data grid that the iRODS resource server will need in order to stand up and then connect to its configured iCAT Zone:
 
 1) iCAT Hostname or IP
 2) iCAT Port
 3) iCAT Zone 
-4) iRODS administrator username
-5) iRODS administrator password
+4) LocalZoneSID
+5) agent_key
+6) iRODS administrator username
+7) iRODS administrator password
 
 Default Environment
 -------------------
