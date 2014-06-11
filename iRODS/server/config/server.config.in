@@ -53,7 +53,7 @@ default_file_mode	0600
 # select the requested hashing scheme ( SHA256 or MD5 )
 default_hash_scheme SHA256
 
-# set a default server id for the tempZone
+# default server id for the local zone
 LocalZoneSID TEMP_LOCAL_ZONE_SID
 
 # default 32 byte key for agent-agent handshake during 
