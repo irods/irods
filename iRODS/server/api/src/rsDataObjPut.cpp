@@ -299,6 +299,9 @@ l3DataPutSingleBuf( rsComm_t*     rsComm,
     }
 
     bytesWritten = _l3DataPutSingleBuf( rsComm, l1descInx, dataObjInp, dataObjInpBBuf );
+
+
+
     if ( bytesWritten < 0 ) {
         myDataObjInfo = L1desc[l1descInx].dataObjInfo;
         if ( getStructFileType( myDataObjInfo->specColl ) < 0 &&
@@ -499,12 +502,16 @@ l3FilePutSingleBuf( rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf 
         filePutInp.otherFlags |= NO_CHK_PERM_FLAG; // JMC - backport 4758
     }
 
+    filePutOut_t* put_out = 0;
     prev_resc_hier = filePutInp.resc_hier_;
-    bytesWritten = rsFilePut( rsComm, &filePutInp, dataObjInpBBuf );
+    bytesWritten = rsFilePut( rsComm, &filePutInp, dataObjInpBBuf, &put_out );
 
     // update the dataObjInfo with the potential changes made by the resource - hcj
     rstrcpy( dataObjInfo->rescHier, filePutInp.resc_hier_, MAX_NAME_LEN );
-    rstrcpy( dataObjInfo->filePath, filePutInp.fileName, MAX_NAME_LEN );
+    if( put_out ) {
+        rstrcpy( dataObjInfo->filePath, put_out->file_name, MAX_NAME_LEN );
+        free( put_out );
+    }
 
     /* file already exists ? */
     while ( bytesWritten < 0 && retryCnt < 10 &&
@@ -517,10 +524,14 @@ l3FilePutSingleBuf( rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf 
         rstrcpy( filePutInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN );
 
 
-        bytesWritten = rsFilePut( rsComm, &filePutInp, dataObjInpBBuf );
+        filePutOut_t* put_out = 0;
+        bytesWritten = rsFilePut( rsComm, &filePutInp, dataObjInpBBuf, &put_out );
         // update the dataObjInfo with the potential changes made by the resource - hcj
         rstrcpy( dataObjInfo->rescHier, filePutInp.resc_hier_, MAX_NAME_LEN );
-        rstrcpy( dataObjInfo->filePath, filePutInp.fileName, MAX_NAME_LEN );
+        if( put_out ) {
+            rstrcpy( dataObjInfo->filePath, put_out->file_name, MAX_NAME_LEN );
+            free( put_out );
+        }
         retryCnt ++;
     } // while
     clearKeyVal( &filePutInp.condInput );

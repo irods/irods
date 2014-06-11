@@ -28,8 +28,11 @@
  */
 
 int
-rsFilePut( rsComm_t *rsComm, fileOpenInp_t *filePutInp,
-           bytesBuf_t *filePutInpBBuf ) {
+rsFilePut( 
+    rsComm_t *rsComm, 
+    fileOpenInp_t* filePutInp,
+    bytesBuf_t*    filePutInpBBuf,
+    filePutOut_t** _put_out ) {
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
     int status;
@@ -40,12 +43,20 @@ rsFilePut( rsComm_t *rsComm, fileOpenInp_t *filePutInp,
         return -1;
     }
     if ( remoteFlag == LOCAL_HOST ) {
-        status = _rsFilePut( rsComm, filePutInp, filePutInpBBuf,
-                             rodsServerHost );
+        status = _rsFilePut( 
+                     rsComm, 
+                     filePutInp, 
+                     filePutInpBBuf,
+                     rodsServerHost,
+                     _put_out );
     }
     else if ( remoteFlag == REMOTE_HOST ) {
-        status = remoteFilePut( rsComm, filePutInp, filePutInpBBuf,
-                                rodsServerHost );
+        status = remoteFilePut( 
+                     rsComm, 
+                     filePutInp, 
+                     filePutInpBBuf,
+                     rodsServerHost,
+                     _put_out );
     }
     else {
         if ( remoteFlag < 0 ) {
@@ -68,8 +79,12 @@ rsFilePut( rsComm_t *rsComm, fileOpenInp_t *filePutInp,
 }
 
 int
-remoteFilePut( rsComm_t *rsComm, fileOpenInp_t *filePutInp,
-               bytesBuf_t *filePutInpBBuf, rodsServerHost_t *rodsServerHost ) {
+remoteFilePut( 
+    rsComm_t *rsComm, 
+    fileOpenInp_t *filePutInp,
+    bytesBuf_t *filePutInpBBuf, 
+    rodsServerHost_t *rodsServerHost,
+    filePutOut_t** _put_out ) {
     int status;
 
     if ( rodsServerHost == NULL ) {
@@ -84,7 +99,11 @@ remoteFilePut( rsComm_t *rsComm, fileOpenInp_t *filePutInp,
     }
 
 
-    status = rcFilePut( rodsServerHost->conn, filePutInp, filePutInpBBuf );
+    status = rcFilePut( 
+                 rodsServerHost->conn, 
+                 filePutInp, 
+                 filePutInpBBuf, 
+                 _put_out );
 
     if ( status < 0 && status != DIRECT_ARCHIVE_ACCESS ) {
         rodsLog( LOG_NOTICE,
@@ -101,7 +120,8 @@ int _rsFilePut(
     rsComm_t*         _comm,
     fileOpenInp_t*    _put_inp,
     bytesBuf_t*       _put_bbuf,
-    rodsServerHost_t* _server_host ) {
+    rodsServerHost_t* _server_host,
+    filePutOut_t**    _put_out ) {
     int fd = 0;
 
     // =-=-=-=-=-=-=-
@@ -184,6 +204,14 @@ int _rsFilePut(
         irods::error err = PASSMSG( "error on close", close_err );
         irods::log( err );
     }
+
+    // =-=-=-=-=-=-=-
+    // percolate posssible change in phy path up
+    ( *_put_out ) = ( filePutOut_t* ) malloc( sizeof( filePutOut_t ) );
+    strncpy(
+        ( *_put_out )->file_name,
+        file_obj->physical_path().c_str(),
+        MAX_NAME_LEN );
 
     // =-=-=-=-=-=-=-
     // return 'write_err code' as this includes this implementation

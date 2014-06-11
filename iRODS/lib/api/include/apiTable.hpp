@@ -100,7 +100,7 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         FILE_PUT_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
-        "fileOpenInp_PI", 1, NULL, 0, ( funcPtr ) RS_FILE_PUT, irods::clearInStruct_noop
+        "fileOpenInp_PI", 1, "filePutOut_PI", 0, ( funcPtr ) RS_FILE_PUT, irods::clearInStruct_noop
     },
     {
         FILE_GET_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,

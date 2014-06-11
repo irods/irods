@@ -5,9 +5,11 @@
 
 #include "filePut.hpp"
 
-int
-rcFilePut( rcComm_t *conn, fileOpenInp_t *filePutInp,
-           bytesBuf_t *filePutInpBBuf ) {
+int rcFilePut( 
+    rcComm_t *conn, 
+    fileOpenInp_t *filePutInp,
+    bytesBuf_t *filePutInpBBuf,
+    filePutOut_t** put_out ) {
     int status;
 
 #if defined(osx_platform) // JMC - backport 4614
@@ -19,7 +21,7 @@ rcFilePut( rcComm_t *conn, fileOpenInp_t *filePutInp,
 
 
     status = procApiRequest( conn, FILE_PUT_AN, filePutInp, filePutInpBBuf,
-                             ( void ** ) NULL, NULL );
+                             ( void ** ) put_out, NULL );
 
     return ( status );
 }
