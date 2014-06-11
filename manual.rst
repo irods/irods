@@ -141,7 +141,7 @@ An additional database plugin is required which installs the dependencies for da
 
 Installation of the iCAT DEB and PostgreSQL plugin DEB::
 
- $ (sudo) dpkg -i irods-icat-TEMPLATE_IRODSVERSION-64bit.deb irods-database-plugin-postgres-1.0.deb
+ $ (sudo) dpkg -i irods-icat-TEMPLATE_IRODSVERSION-64bit.deb irods-database-plugin-postgres-1.1.deb
  $ (sudo) apt-get -f install
  $ (sudo) su - irods
 
@@ -157,7 +157,10 @@ The `./packaging/setup_database.sh` script will ask for the following five piece
 4) Database User
 5) Database Password
 
-Installing the MySQL database plugin will also require `Installing lib_mysqludf_preg`_.  These functions are required for the internal iRODS SQL which uses regular expressions.
+Note: A default system PostgreSQL installation does not listen on a TCP port, it only listens on a local socket.  If your PostgreSQL server is localhost, use 'localhost' for 1) above.
+
+Note: Installing the MySQL database plugin will also require `Installing lib_mysqludf_preg`_.  These functions are required for the internal iRODS SQL which uses regular expressions.
+
 
 Database Setup Example
 **********************
@@ -384,6 +387,21 @@ Now, the connection should be reset and you should be able to list your empty iR
  irods@hostname:~/ $ ils
  /<newzonename>/home/rods:
 
+Changing the LocalZoneSID and agent_key
+---------------------------------------
+
+iRODS 4.0+ servers use the Server Identifiers (SIDs) to mutually authenticate.  These two variables should be changed from their default values in `/etc/irods/server.config`::
+
+ # default server id for the local zone
+ LocalZoneSID TEMP_LOCAL_ZONE_SID
+
+ # default 32 byte key for agent-agent handshake during
+ # advanced client-server negotiation
+ agent_key temp_32_byte_key_for_agent__conn
+
+The 'LocalZoneSID' can be up to 50 alphanumeric characters long.  The 'agent_key' must be exactly 32 alphanumeric bytes long.  These values need to be the same on all servers in the same Zone, or they will not be able to authenticate (see `Server Authentication`_ for more information).
+
+
 Add additional resource(s)
 --------------------------
 
@@ -495,19 +513,11 @@ Server Authentication
 Within A Zone
 -------------
 
-When a client connects to a resource server and then authenticates, the resource server connects to the iCAT server to perform the authentication. To make this more secure, you can configure some Server Identifiers (SIDs) to cause the iRODS system to authenticate the servers themselves. These SID passwords should be unique and arbitrary strings, one for your whole zone::
+When a client connects to a resource server and then authenticates, the resource server connects to the iCAT server to perform the authentication. To make this more secure, you must configure some Server Identifiers (SIDs) to cause the iRODS system to authenticate the servers themselves. These SIDs should be unique and arbitrary strings (maximum alphanumeric length of 50), one for your whole zone::
 
  LocalZoneSID  SomeChosenIDString
 
-This allows the resource server to verify the identity of the iCAT server beyond just relying on DNS. If you do not set up the LocalZoneSID, the log on the resource server will contain warnings like these::
-
- Warning, cannot authenticate remote server, serverResponse field is empty
-
-However, the authentication will be allowed.
-
-For 3.3.1+, if LocalZoneSID is defined, the authentication will not be allowed if the remote server fails to authenticate itself. In 3.3.1+, you will get the following if LocalZoneSID is not set::
-
- Warning, cannot authenticate the remote server, no RemoteZoneSID defined in server.config
+This allows the resource servers to verify the identity of the iCAT server beyond just relying on DNS.
 
 Mutual authentication between servers is always on.  Note that this applies to iRODS passwords and PAM, and some other interactions, but not GSI or Kerberos. 
 
@@ -516,19 +526,19 @@ For GSI, users can set the `irodsServerDn` variable to do mutual authentication.
 Between Two Zones
 -----------------
 
-When a user from a remote zone connects to the local zone, the iRODS server will check with the iCAT in the user's home zone to authenticate the user (confirm their password). This works well, as no user passwords have to be exchanged between zones and it is simple and easy to administer. But it is secure only if it is actually connecting to the correct host computer. And that relies on DNS which can be compromised.
+When a user from a remote zone connects to the local zone, the iRODS server will check with the iCAT in the user's home zone to authenticate the user (confirm their password).  Passwords are never sent across federated zones, they always remain in their home zone.
 
-To make this more secure, you can configure some Server Identifiers (SIDs) to cause the iRODS system to authenticate the servers, via something like the iRODS password mechanism (using an MD5 hash). These SID passwords should be unique and arbitrary strings, one for each zone.
+To make this more secure, the iRODS system uses Server Identifiers (SIDs) to authenticate the servers, via a similar method as iRODS passwords. These SIDs should be unique and arbitrary strings, one for each zone.
 
-To configure this, add items to the `/etc/irods/server.config` file. 'LocalZoneSID' is for the local zone SID, for example::
+To configure this, add items to the `/etc/irods/server.config` file. 'LocalZoneSID' is for servers `Within A Zone`_, for example::
 
  LocalZoneSID  qwerty123
 
 And one or more 'RemoteZoneSID' items for the remote zones, for example::
 
- RemoteZoneSID <ZoneName>-<LocalZoneSID> ( e.g tempZone-qwerty123 )
+ RemoteZoneSID <ZoneName>-<LocalZoneSID> ( e.g. tempZone-qwerty123 )
 
-When tempZone users connect, the system will then confirm that tempZone's LocalZoneSID is 'qwerty123' (via a hash, no password on the network).
+When tempZone users connect, the system will then confirm that tempZone's LocalZoneSID is 'qwerty123'.
 
 Mutual authentication between servers is always on across Federations.
 
