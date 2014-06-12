@@ -58,15 +58,18 @@ inline irods::error round_robin_check_params(
 irods::error get_next_child_in_hier(
     const std::string&          _name,
     const std::string&          _hier,
-    irods::resource_child_map& _cmap,
-    irods::resource_ptr&       _resc ) {
+    irods::resource_child_map&  _cmap,
+    irods::resource_ptr&        _resc ) {
 
     // =-=-=-=-=-=-=-
     // create a parser and parse the string
     irods::hierarchy_parser parse;
     irods::error err = parse.set_string( _hier );
     if ( !err.ok() ) {
-        return PASSMSG( "get_next_child_in_hier - failed in set_string", err );
+        std::stringstream msg;
+        msg << "get_next_child_in_hier - failed in set_string for [";
+        msg << _hier << "]";
+        return PASSMSG( msg.str(), err );
     }
 
     // =-=-=-=-=-=-=-
@@ -74,7 +77,11 @@ irods::error get_next_child_in_hier(
     std::string next;
     err = parse.next( _name, next );
     if ( !err.ok() ) {
-        return PASSMSG( "get_next_child_in_hier - failed in next", err );
+        std::stringstream msg;
+        msg << "get_next_child_in_hier - failed in next for [";
+        msg << _name << "] for hier ["
+            << _hier << "]";
+        return PASSMSG( msg.str(), err );
     }
 
     // =-=-=-=-=-=-=-
@@ -83,7 +90,7 @@ irods::error get_next_child_in_hier(
         std::stringstream msg;
         msg << "get_next_child_in_hier - child map missing entry [";
         msg << next << "]";
-        return ERROR( -1, msg.str() );
+        return ERROR( CHILD_NOT_FOUND, msg.str() );
     }
 
     // =-=-=-=-=-=-=-
@@ -93,6 +100,51 @@ irods::error get_next_child_in_hier(
     return SUCCESS();
 
 } // get_next_child_in_hier
+
+/// =-=-=-=-=-=-=-
+/// @brief get the next resource shared pointer given this resources name
+///        as well as the file object
+irods::error get_next_child_for_open_or_write(
+    const std::string&          _name,
+    irods::file_object_ptr&     _file_obj,
+    irods::resource_child_map&  _cmap,
+    irods::resource_ptr&        _resc ) {
+    // =-=-=-=-=-=-=-
+    // set up iteration over physical objects 
+    std::vector< irods::physical_object > objs = _file_obj->replicas();
+    std::vector< irods::physical_object >::iterator itr = objs.begin();
+
+    // =-=-=-=-=-=-=-
+    // check to see if the replica is in this resource, if one is requested
+    for ( ; itr != objs.end(); ++itr ) {
+        // =-=-=-=-=-=-=-
+        // run the hier string through the parser 
+        irods::hierarchy_parser parser;
+        parser.set_string( itr->resc_hier() );
+
+        // =-=-=-=-=-=-=-
+        // find this resource in the hier
+        if( !parser.resc_in_hier( _name ) ) {
+            continue;
+        }
+        
+        // =-=-=-=-=-=-=-
+        // if we have a hit, get the resc ptr to the next resc
+        return get_next_child_in_hier(
+                   _name,
+                   itr->resc_hier(),
+                   _cmap,
+                   _resc );
+
+    } // for itr
+   
+    std::string msg( "no hier found for resc [" );
+    msg += _name + "]"; 
+    return ERROR(
+               CHILD_NOT_FOUND,
+               msg ); 
+     
+} // get_next_child_for_open_or_write
 
 // =-=-=-=-=-=-=-
 /// @brief get the resource for the child in the hierarchy
@@ -1015,13 +1067,18 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // test the operation to determine which choices to make
         if ( irods::OPEN_OPERATION  == ( *_opr )  ||
-                irods::WRITE_OPERATION == ( *_opr ) ) {
+             irods::WRITE_OPERATION == ( *_opr ) ) {
             // =-=-=-=-=-=-=-
             // get the next child pointer in the hierarchy, given our name and the hier string
             irods::resource_ptr resc;
-            err = get_next_child_in_hier( name, hier, _ctx.child_map(), resc );
+            err = get_next_child_for_open_or_write( 
+                      name, 
+                      file_obj, 
+                      _ctx.child_map(), 
+                      resc );
             if ( !err.ok() ) {
-                return PASSMSG( "get_next_child_in_hier failed.", err );
+                (*_out_vote) = 0.0;
+                return PASS( err );
             }
 
             // =-=-=-=-=-=-=-
@@ -1038,6 +1095,14 @@ extern "C" {
                        _curr_host,
                        _out_parser,
                        _out_vote );
+
+            std::string hier;
+            _out_parser->str( hier );
+            rodsLog( 
+                LOG_DEBUG,
+                "open :: resc hier [%s] vote [%f]",
+                hier.c_str(),
+                _out_vote );
 
         }
         else if ( irods::CREATE_OPERATION == ( *_opr ) ) {
@@ -1070,6 +1135,14 @@ extern "C" {
                 return PASSMSG( "forward of put redirect failed", err );
 
             }
+
+            std::string hier;
+            _out_parser->str( hier );
+            rodsLog( 
+                LOG_NOTICE,
+                "round robin - create :: resc hier [%s] vote [%f]",
+                hier.c_str(),
+                _out_vote );
 
             std::string new_hier;
             _out_parser->str( new_hier );

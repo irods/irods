@@ -83,6 +83,51 @@ irods::error get_next_child_in_hier(
 
 } // get_next_child_in_hier
 
+/// =-=-=-=-=-=-=-
+/// @brief get the next resource shared pointer given this resources name
+///        as well as the file object
+irods::error get_next_child_for_open_or_write(
+    const std::string&          _name,
+    irods::file_object_ptr&     _file_obj,
+    irods::resource_child_map&  _cmap,
+    irods::resource_ptr&        _resc ) {
+    // =-=-=-=-=-=-=-
+    // set up iteration over physical objects 
+    std::vector< irods::physical_object > objs = _file_obj->replicas();
+    std::vector< irods::physical_object >::iterator itr = objs.begin();
+
+    // =-=-=-=-=-=-=-
+    // check to see if the replica is in this resource, if one is requested
+    for ( ; itr != objs.end(); ++itr ) {
+        // =-=-=-=-=-=-=-
+        // run the hier string through the parser 
+        irods::hierarchy_parser parser;
+        parser.set_string( itr->resc_hier() );
+
+        // =-=-=-=-=-=-=-
+        // find this resource in the hier
+        if( !parser.resc_in_hier( _name ) ) {
+            continue;
+        }
+        
+        // =-=-=-=-=-=-=-
+        // if we have a hit, get the resc ptr to the next resc
+        return get_next_child_in_hier(
+                   _name,
+                   itr->resc_hier(),
+                   _cmap,
+                   _resc );
+
+    } // for itr
+   
+    std::string msg( "no hier found for resc [" );
+    msg += _name + "]"; 
+    return ERROR(
+               CHILD_NOT_FOUND,
+               msg ); 
+     
+} // get_next_child_for_open_or_write
+
 // =-=-=-=-=-=-=-
 /// @brief get the resource for the child in the hierarchy
 ///        to pass on the call
@@ -742,7 +787,7 @@ extern "C" {
                         // =-=-=-=-=-=-=-
                         // get the next child pointer in the hierarchy, given our name and the hier string
                         irods::resource_ptr resc;
-                        err = get_next_child_in_hier( name, hier, _ctx.child_map(), resc );
+                        err = get_next_child_for_open_or_write( name, file_obj, _ctx.child_map(), resc );
                         if ( ( result = ASSERT_PASS( err, "Failed to get next child in the hierarchy." ) ).ok() ) {
 
                             // =-=-=-=-=-=-=-
