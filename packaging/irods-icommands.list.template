@@ -223,3 +223,4 @@ f 755 root root /usr/bin/iticket              ./iRODS/clients/icommands/bin/itic
 f 755 root root /usr/bin/itrim                ./iRODS/clients/icommands/bin/itrim
 f 755 root root /usr/bin/iuserinfo            ./iRODS/clients/icommands/bin/iuserinfo
 f 755 root root /usr/bin/ixmsg                ./iRODS/clients/icommands/bin/ixmsg
+f 755 root root /usr/bin/irodsFs              ./iRODS/clients/fuse/bin/irodsFs
