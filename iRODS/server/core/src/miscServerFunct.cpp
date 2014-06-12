@@ -3225,7 +3225,7 @@ irods::error update_resource_object_count(
     if( old_obj_count != new_obj_count ) {
         rodsLog( 
             LOG_NOTICE,
-            "rebalance for [%s] - updataing object count from [%d] to [%d]",
+            "rebalance for [%s] - updating object count from [%d] to [%d]",
             resc_name.c_str(),
             old_obj_count,
             new_obj_count );
