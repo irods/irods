@@ -1302,7 +1302,7 @@ extern "C" {
             irods::resource_ptr child = it->second.second;
             ret = child->call<const std::string*, const std::string*, irods::hierarchy_parser*, float*>(
                       _ctx.comm(), irods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(), _operation, _curr_host, &parser, &out_vote );
-            if ( !ret.ok() ) {
+            if ( !ret.ok() && ret.code() != CHILD_NOT_FOUND ) {
                 std::stringstream msg;
                 msg << __FUNCTION__;
                 msg << " - Failed calling redirect on the child \"" << it->first << "\"";

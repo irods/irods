@@ -1139,7 +1139,7 @@ extern "C" {
             std::string hier;
             _out_parser->str( hier );
             rodsLog( 
-                LOG_NOTICE,
+                LOG_DEBUG,
                 "round robin - create :: resc hier [%s] vote [%f]",
                 hier.c_str(),
                 _out_vote );
