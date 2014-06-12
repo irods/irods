@@ -25,6 +25,7 @@
 #ifdef PARA_OPR
 #include <boost/thread/thread.hpp>
 #endif
+#include <boost/lexical_cast.hpp>
 #if !defined(solaris_platform)
 char *__loc1;
 #endif /* linux_platform */
@@ -38,6 +39,7 @@ char *__loc1;
 #include "irods_network_factory.hpp"
 #include "irods_buffer_encryption.hpp"
 #include "irods_client_server_negotiation.hpp"
+#include "irods_hierarchy_parser.hpp"
 
 #include <iomanip>
 #include <fstream>
@@ -3077,4 +3079,209 @@ checkModArgType( char *arg ) {
     }
     return( 0 );
 }
+
+/// =-=-=-=-=-=-=-
+/// @brief get number of data object under management of a resource
+irods::error get_current_resource_object_count( 
+    rsComm_t*          _comm,
+    const std::string& _resc_name,
+    int&               _count ) {
+    // =-=-=-=-=-=-=-
+    // build a general query
+    genQueryOut_t* gen_out = 0;
+    genQueryInp_t  gen_inp;
+    memset( &gen_inp, 0, sizeof( gen_inp ) );
+
+    gen_inp.maxRows = MAX_SQL_ROWS;
+
+    // =-=-=-=-=-=-=-
+    // build the condition string, child is either a leaf
+    // or an internal node so test for both
+    std::string single_cond = _resc_name;
+                            
+    std::string root_cond = _resc_name + 
+                            irods::hierarchy_parser::delimiter();
+                            
+
+    std::string leaf_cond = irods::hierarchy_parser::delimiter() +
+                            _resc_name;
+
+    std::string mid_cond = irods::hierarchy_parser::delimiter() +
+                           _resc_name                           +
+                           irods::hierarchy_parser::delimiter();
+
+    std::string cond_str = "='"            + single_cond +
+                           "'  || like '%" + mid_cond    +
+                           "%' || like '%" + leaf_cond   +
+                           "'  || like '"  + root_cond   +
+                           "%'";
+
+
+    // =-=-=-=-=-=-=-
+    // add condition string matching above madness
+    addInxVal( &gen_inp.sqlCondInp,
+               COL_D_RESC_HIER,
+               cond_str.c_str() );
+
+    // =-=-=-=-=-=-=-
+    // request the data id
+    addInxIval( &gen_inp.selectInp,
+                COL_D_DATA_ID, 1 );
+
+
+    // =-=-=-=-=-=-=-
+    // execute the query
+    int status = rsGenQuery( _comm, &gen_inp, &gen_out );
+    if ( CAT_NO_ROWS_FOUND == status ) {
+        // =-=-=-=-=-=-=-
+        // hopefully this resource is empty
+        return SUCCESS();
+
+    }
+    else if ( status < 0 || 0 == gen_out ) {
+        return ERROR( status, "genQuery failed." );
+
+    }
+
+    // =-=-=-=-=-=-=-
+    // loop over result sets
+    int num_data_obj = 0;
+    while( status >= 0 ) {
+        // =-=-=-=-=-=-=-
+        // accumulate the row counts
+        num_data_obj += gen_out->rowCnt;
+
+        // =-=-=-=-=-=-=-
+        // call genquery again if there are more
+        // results to be had
+        int cont_inx = gen_out->continueInx;
+        freeGenQueryOut( &gen_out );
+        if( cont_inx > 0 ) {
+            gen_inp.continueInx = cont_inx;
+            status = rsGenQuery( _comm, &gen_inp, &gen_out );
+
+        } else {
+            status = -1;
+        }
+        
+    } // while
+    
+    clearGenQueryInp( &gen_inp );
+
+    // =-=-=-=-=-=-=-
+    // set out variable
+    _count = num_data_obj;
+
+    return SUCCESS();
+
+} // get_current_resource_object_count
+
+
+/// =-=-=-=-=-=-=-
+/// @brief compute obj count for a resource and update icat if necessary
+irods::error update_resource_object_count(
+    rsComm_t*                   _comm,
+    irods::plugin_property_map& _prop_map ) {
+    // =-=-=-=-=-=-=-
+    // get the resource name
+    std::string resc_name;
+    irods::error ret = _prop_map.get< std::string >( 
+                           irods::RESOURCE_NAME, 
+                           resc_name );
+    if( !ret.ok() ) {
+        return PASS( ret );
+    }
+
+    // =-=-=-=-=-=-=-
+    // get the resource's objcount in the DB
+    std::string resc_objcount;
+    ret = _prop_map.get< std::string >( 
+              irods::RESOURCE_OBJCOUNT, 
+              resc_objcount );
+    if( !ret.ok() ) {
+        return PASS( ret );
+    }
+
+    int old_obj_count = 0;
+    if( !resc_objcount.empty() )  {
+        old_obj_count = boost::lexical_cast<int>( resc_objcount );
+    }
+    
+    // =-=-=-=-=-=-=-
+    // get the count of the resource's data objects
+    // currently listed under management
+    int new_obj_count = 0;
+    ret = get_current_resource_object_count(
+              _comm,
+              resc_name,
+              new_obj_count );
+    if( !ret.ok() ) {
+        return PASS( ret );
+    }
+
+    // =-=-=-=-=-=-=-
+    // issue a a warning that we are making a
+    // change
+    if( old_obj_count != new_obj_count ) {
+        rodsLog( 
+            LOG_NOTICE,
+            "rebalance for [%s] - updataing object count from [%d] to [%d]",
+            resc_name.c_str(),
+            old_obj_count,
+            new_obj_count );
+        // =-=-=-=-=-=-=-
+        // NOTE :: the code path to update the obj count requires a 'delta'
+        //         as integer math is done in the sql  
+        std::stringstream new_count_str;
+        new_count_str << ( new_obj_count - old_obj_count );
+
+        // =-=-=-=-=-=-=-
+        // copy to stack, avoid const cast
+        char rn[MAX_NAME_LEN];
+        char oc[MAX_NAME_LEN];
+        strncpy( rn, resc_name.c_str(),           MAX_NAME_LEN );
+        strncpy( oc, new_count_str.str().c_str(), MAX_NAME_LEN );
+
+        // =-=-=-=-=-=-=-
+        // call update via rsGeneralAdmin
+        generalAdminInp_t gen_inp;
+        memset( &gen_inp, 0, sizeof( gen_inp ) );
+        gen_inp.arg0 = "modify";
+        gen_inp.arg1 = "resource";
+        gen_inp.arg2 = rn;
+        gen_inp.arg3 = "objcount";
+        gen_inp.arg4 = oc;
+        int status = rsGeneralAdmin(
+                         _comm,
+                         &gen_inp );
+        if( status < 0 ) {
+            return ERROR( 
+                       status,
+                       "rsGeneralAdmin failed" );
+        }
+
+    } else {
+        rodsLog( 
+            LOG_NOTICE,
+            "rebalance for [%s] - matching old count: %d to new count %d",
+            resc_name.c_str(),
+            old_obj_count,
+            new_obj_count );
+
+    }
+
+    return SUCCESS();
+
+
+} // update_resource_object_count
+
+
+
+
+
+
+
+
+
+
 

@@ -5,6 +5,7 @@
 #include "msParam.hpp"
 #include "reGlobalsExtern.hpp"
 #include "rcConnect.hpp"
+#include "miscServerFunct.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_plugin.hpp"
@@ -669,7 +670,10 @@ extern "C" {
     // mock_archive_rebalance - code which would rebalance the subtree
     irods::error mock_archive_rebalance(
         irods::resource_plugin_context& _ctx ) {
-        return SUCCESS();
+        
+        return update_resource_object_count( 
+                   _ctx.comm(),
+                   _ctx.prop_map() );
 
     } // mock_archive_file_rebalancec
 

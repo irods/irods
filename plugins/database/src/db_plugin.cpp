@@ -8575,6 +8575,28 @@ checkLevel:
 
         getNowStr( myTime );
         OK = 0;
+        if ( strcmp( _option, "objcount" ) == 0 ) {
+            int amt = atoi( _option_value );
+            int ret = _updateRescObjCount( 
+                          &icss,
+                          _resc_name,
+                          zone,
+                          amt );
+            if( ret != 0 ) {
+                rodsLog( 
+                    LOG_ERROR,
+                    "failed in _updateRescObjCount %d",
+                    ret );
+                return ERROR(
+                           ret,
+                           "failed in _updateRescObjCount" );
+            }
+            
+            OK = 1;
+
+        } // objcount
+
+
         if ( strcmp( _option, "info" ) == 0 ) {
             cllBindVars[cllBindVarCount++] = _option_value;
             cllBindVars[cllBindVarCount++] = myTime;

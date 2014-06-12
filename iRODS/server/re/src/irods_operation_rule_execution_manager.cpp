@@ -58,18 +58,18 @@ namespace irods {
         const std::string& _name,
         std::string&       _res ) {
         // =-=-=-=-=-=-=-
-        // debug message for creating dynPEP rules
-        rodsLog(
-            LOG_DEBUG,
-            "operation_rule_execution_manager exec_op [%s]",
-            _name.c_str() );
-
-        // =-=-=-=-=-=-=-
         // determine if rule exists
         RuleIndexListNode* re_node = 0;
         if ( findNextRule2( const_cast<char*>( _name.c_str() ), 0, &re_node ) < 0 ) {
             return ERROR( SYS_RULE_NOT_FOUND, "no rule found" );
         }
+
+        // =-=-=-=-=-=-=-
+        // debug message for creating dynPEP rules
+        rodsLog(
+            LOG_DEBUG,
+            "operation_rule_execution_manager exec_op [%s]",
+            _name.c_str() );
 
         // =-=-=-=-=-=-=-
         // manufacture an rei for the applyRule

@@ -12,6 +12,14 @@ import shutil
 import time
 import subprocess
 
+# =-=-=-=-=-=-=-
+# build path magic to import server_config.py 
+pydevtestdir = os.path.realpath(__file__)
+topdir = os.path.dirname(os.path.dirname(os.path.dirname(pydevtestdir)))
+packagingdir = os.path.join(topdir,"packaging")
+sys.path.append(packagingdir)
+from server_config import Server_Config
+
 class Test_iAdminSuite(unittest.TestCase, ResourceBase):
 
     my_test_resource = {"setup":[],"teardown":[]}
@@ -324,7 +332,37 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         assertiCmd(s.adminsession,r"iadmin mkuser hawai\'i rodsuser","ERROR","SYS_INVALID_INPUT_PARAM") # should be rejected
         assertiCmd(s.adminsession,r"iadmin mkuser \\\/\!\*\?\|\$ rodsuser","ERROR","SYS_INVALID_INPUT_PARAM") # should be rejected
 
+
+
+    # =-=-=-=-=-=-=-
     # REBALANCE
+
+    def test_rebalance_for_object_count(self):
+       # =-=-=-=-=-=-=-
+       # read server.config and .odbc.ini
+       cfg = Server_Config() 
+ 
+       root_dir = "/tmp/irods/big_dir"
+       if os.path.exists( root_dir ):
+           shutil.rmtree( root_dir )
+       os.makedirs( root_dir )
+
+       for i in range(30):
+           path = root_dir + "/file_"+str(i)
+           output = commands.getstatusoutput( 'dd if=/dev/zero of='+path+' bs=1M count=1' )
+           print output[1]
+           assert output[0] == 0, "dd did not successfully exit"
+
+       assertiCmd( s.adminsession,"iput -r "+root_dir )
+       
+       # =-=-=-=-=-=-=-
+       # drop several rows from the R_DATA_MAIN table to jkjjq:q
+       cfg.exec_sql_cmd( "delete from R_DATA_MAIN where data_name like 'file_1%'");
+
+       assertiCmd(s.adminsession,"iadmin modresc demoResc rebalance");
+       assertiCmd(s.adminsession,"iadmin lr demoResc", "LIST", "resc_objcount: 21");
+
+
 
     def test_rebalance_for_repl_node(self):
         output = commands.getstatusoutput("hostname")

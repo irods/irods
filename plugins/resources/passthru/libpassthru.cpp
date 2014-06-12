@@ -9,6 +9,7 @@
 // irods includes
 #include "msParam.hpp"
 #include "reGlobalsExtern.hpp"
+#include "miscServerFunct.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_plugin.hpp"
@@ -746,8 +747,14 @@ extern "C" {
                 result = ret;
             }
         }
+        
+        if( !result.ok() ) {
+            return PASS( result );
+        }
 
-        return result;
+        return update_resource_object_count( 
+                   _ctx.comm(),
+                   _ctx.prop_map() );
 
     } // pass_thru_file_rebalancec
 

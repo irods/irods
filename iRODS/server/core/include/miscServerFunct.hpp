@@ -147,4 +147,14 @@ int
 dropRootPrivilege();
 int
 checkModArgType( char *arg );
+
+irods::error get_current_resource_object_count( 
+    rsComm_t*,          // comm handle
+    const std::string&, // resourc name
+    int& );             // out var - count 
+
+irods::error update_resource_object_count(
+    rsComm_t*,                     // server comm handle
+    irods::plugin_property_map& ); // resource property map
+
 #endif	/* MISC_SERVER_FUNCT_H */

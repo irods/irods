@@ -7,6 +7,7 @@
 #include "rcConnect.hpp"
 #include "readServerConfig.hpp"
 #include "miscServerFunct.hpp"
+#include "generalAdmin.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_plugin.hpp"
@@ -18,6 +19,7 @@
 #include "irods_resource_redirect.hpp"
 #include "irods_stacktrace.hpp"
 #include "irods_server_properties.hpp"
+#include "irods_hierarchy_parser.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -30,6 +32,7 @@
 // boost includes
 #include <boost/function.hpp>
 #include <boost/any.hpp>
+#include <boost/lexical_cast.hpp>
 
 // =-=-=-=-=-=-=-
 // system includes
@@ -422,7 +425,6 @@ extern "C" {
                 rodsLong_t file_size = fco->size();
                 if ( ( result = ASSERT_ERROR( file_size < 0 || ret.code() >= file_size, USER_FILE_TOO_LARGE, "File size: %ld is greater than space left on device: %ld",
                                               file_size, ret.code() ) ).ok() ) {
-
                     // =-=-=-=-=-=-=-
                     // make call to umask & open for create
                     mode_t myMask = umask( ( mode_t ) 0000 );
@@ -1157,6 +1159,15 @@ extern "C" {
                         _out_vote = 0.5;
                     }
                 }
+
+                rodsLog( 
+                    LOG_DEBUG,
+                    "create :: resc name [%s] curr host [%s] resc host [%s] vote [%f]",
+                    _resc_name.c_str(),
+                    _curr_host.c_str(),
+                    host_name.c_str(),
+                    _out_vote );
+
             }
         }
         return result;
@@ -1263,6 +1274,14 @@ extern "C" {
                                 }
                             }
 
+                            rodsLog( 
+                                LOG_DEBUG,
+                                "open :: resc name [%s] curr host [%s] resc host [%s] vote [%f]",
+                                _resc_name.c_str(),
+                                _curr_host.c_str(),
+                                host_name.c_str(),
+                                _out_vote );
+
                             break;
 
                         } // if resc_us
@@ -1346,7 +1365,9 @@ extern "C" {
     // unix_file_rebalance - code which would rebalance the subtree
     irods::error unix_file_rebalance(
         irods::resource_plugin_context& _ctx ) {
-        return SUCCESS();
+        return update_resource_object_count( 
+                   _ctx.comm(),
+                   _ctx.prop_map() );
 
     } // unix_file_rebalancec
 

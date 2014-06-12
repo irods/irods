@@ -5,6 +5,7 @@
 // legacy irods includes
 #include "msParam.hpp"
 #include "reGlobalsExtern.hpp"
+#include "miscServerFunct.hpp"
 
 // =-=-=-=-=-=-=-
 //
@@ -1186,7 +1187,13 @@ extern "C" {
             }
         }
 
-        return result;
+        if( !result.ok() ) {
+            return PASS( result );
+        }
+
+        return update_resource_object_count( 
+                   _ctx.comm(),
+                   _ctx.prop_map() );
 
     } // round_robin_file_rebalancec
 

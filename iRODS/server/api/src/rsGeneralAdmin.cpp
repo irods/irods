@@ -627,8 +627,11 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
 
             }
             else {
-                status = chlModResc( rsComm, generalAdminInp->arg2,
-                                     generalAdminInp->arg3, generalAdminInp->arg4 );
+                status = chlModResc( 
+                             rsComm, 
+                             generalAdminInp->arg2,
+                             generalAdminInp->arg3, 
+                             generalAdminInp->arg4 );
 
             }
 

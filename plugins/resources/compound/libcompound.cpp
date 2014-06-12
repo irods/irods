@@ -7,6 +7,7 @@
 #include "generalAdmin.hpp"
 #include "physPath.hpp"
 #include "reIn2p3SysRule.hpp"
+#include "miscServerFunct.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_plugin.hpp"
@@ -1502,7 +1503,29 @@ extern "C" {
     // compound_file_rebalance - code which would rebalance the subtree
     irods::error compound_file_rebalance(
         irods::resource_plugin_context& _ctx ) {
-        return SUCCESS();
+        // =-=-=-=-=-=-=-
+        // forward request for rebalance to children
+        irods::error result = SUCCESS();
+        irods::resource_child_map::iterator itr = _ctx.child_map().begin();
+        for ( ; itr != _ctx.child_map().end(); ++itr ) {
+            irods::error ret = itr->second.second->call(
+                                   _ctx.comm(),
+                                   irods::RESOURCE_OP_REBALANCE,
+                                   _ctx.fco() );
+            if ( !ret.ok() ) {
+                irods::log( PASS( ret ) );
+                result = ret;
+            }
+        }
+
+        if( !result.ok() ) {
+            return PASS( result );
+        }
+
+        return update_resource_object_count( 
+                   _ctx.comm(),
+                   _ctx.prop_map() );
+
 
     } // compound_file_rebalancec
 

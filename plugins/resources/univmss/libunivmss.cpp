@@ -8,6 +8,7 @@
 #include "generalAdmin.hpp"
 #include "physPath.hpp"
 #include "reIn2p3SysRule.hpp"
+#include "miscServerFunct.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_plugin.hpp"
@@ -951,7 +952,9 @@ extern "C" {
     // univ_mss__file_rebalance - code which would rebalance the subtree
     irods::error univ_mss__file_rebalance(
         irods::resource_plugin_context& _ctx ) {
-        return SUCCESS();
+        return update_resource_object_count( 
+                   _ctx.comm(),
+                   _ctx.prop_map() );
 
     } // univ_mss__file_rebalancec
 

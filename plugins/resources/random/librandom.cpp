@@ -5,6 +5,7 @@
 #include "msParam.hpp"
 #include "reGlobalsExtern.hpp"
 #include "generalAdmin.hpp"
+#include "miscServerFunct.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_plugin.hpp"
@@ -837,7 +838,13 @@ extern "C" {
             }
         }
 
-        return result;
+        if( !result.ok() ) {
+            return PASS( result );
+        }
+
+        return update_resource_object_count( 
+                   _ctx.comm(),
+                   _ctx.prop_map() );
 
     } // random_file_rebalancec
 
