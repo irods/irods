@@ -206,7 +206,7 @@ int _rsFilePut(
     }
 
     // =-=-=-=-=-=-=-
-    // percolate posssible change in phy path up
+    // percolate possible change in phy path up
     ( *_put_out ) = ( filePutOut_t* ) malloc( sizeof( filePutOut_t ) );
     strncpy(
         ( *_put_out )->file_name,

@@ -126,7 +126,7 @@ int _rsFileRename(
     }
 
     // =-=-=-=-=-=-=-
-    // percolate posssible change in phy path up
+    // percolate possible change in phy path up
     ( *_rename_out ) = ( fileRenameOut_t* ) malloc( sizeof( fileRenameOut_t ) );
     strncpy(
         ( *_rename_out )->file_name,
