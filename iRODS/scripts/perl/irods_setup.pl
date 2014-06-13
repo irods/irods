@@ -1672,7 +1672,6 @@ sub configureIrodsServer
                 printStatus( "Setting iRODS user password...\n" );
                 printLog( "\nSetting iRODS user password...\n" );
                 my $command = "$iadmin moduser $IRODS_ADMIN_NAME password $IRODS_ADMIN_PASSWORD";
-                printStatus( "Setting iRODS user password for $IRODS_ADMIN_NAME as $IRODS_ADMIN_PASSWORD\n" );
                 if ( runIcommand( $command ) == 0 )
                 {
                         $somethingFailed = 1;
