@@ -427,6 +427,7 @@ if [ "$1" == "clean" ] ; then
     set +e
     echo "Cleaning EPM residuals..."
     cd $BUILDDIR
+    rm -rf build 
     rm -f packaging/irods-dev.list
     rm -f packaging/irods-runtime.list
     rm -f packaging/irods.list
