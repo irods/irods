@@ -149,15 +149,25 @@ And then as the irods user::
 
  irods@hostname:~/ $ ./packaging/setup_database.sh
 
-The `./packaging/setup_database.sh` script will ask for the following five pieces of information before starting the iRODS server:
+The `./packaging/setup_database.sh` script will ask for the following fourteen pieces of information before starting the iRODS server:
 
-1) Database Server's Hostname or IP
-2) Database Port
-3) Database Name
-4) Database User
-5) Database Password
+1) iCAT Port
+2) iCAT Zone
+3) Parallel Port Range (Begin)
+4) Parallel Port Range (End)
+5) Vault Directory
+6) LocalZoneSID
+7) agent_key
+8) iRODS Administrator Username
+9) iRODS Administrator Password
 
-Note: A default system PostgreSQL installation does not listen on a TCP port, it only listens on a local socket.  If your PostgreSQL server is localhost, use 'localhost' for 1) above.
+10) Database Server's Hostname or IP
+11) Database Port
+12) Database Name
+13) Database User
+14) Database Password
+
+Note: A default system PostgreSQL installation does not listen on a TCP port, it only listens on a local socket.  If your PostgreSQL server is localhost, use 'localhost' for 10) above.
 
 Note: Installing the MySQL database plugin will also require `Installing lib_mysqludf_preg`_.  These functions are required for the internal iRODS SQL which uses regular expressions.
 
@@ -228,8 +238,8 @@ The `./packaging/setup_resource.sh` script will ask for the following seven piec
 3) iCAT Zone 
 4) LocalZoneSID
 5) agent_key
-6) iRODS administrator username
-7) iRODS administrator password
+6) iRODS Administrator Username
+7) iRODS Administrator Password
 
 Default Environment
 -------------------
@@ -274,27 +284,36 @@ The script will prompt for iRODS configuration information that would already be
 
  The iRODS server cannot be started until it has been configured.
 
- iRODS server's port [1247]: 
+ iRODS server's port [1247]:
 
- iRODS port range (begin) [20000]: 
+ iRODS server's zone [tempZone]:
 
- iRODS port range (end) [20199]: 
+ iRODS port range (begin) [20000]:
 
- iRODS Vault directory [/full/path/to/Vault]: 
+ iRODS port range (end) [20199]:
 
- iRODS server's adminstrator name [rods]: 
+ iRODS Vault directory [/full/path/to/Vault]:
 
- iRODS server's administrator password: 
+ iRODS server's LocalZoneSID [TEMP_LOCAL_ZONE_SID]:
+
+ iRODS server's agent_key [temp_32_byte_key_for_agent__conn]:
+
+ iRODS server's administrator username [rods]:
+
+ iRODS server's administrator password:
 
  -------------------------------------------
  iRODS Port:             1247
+ iRODS Zone:             tempZone
  Range (Begin):          20000
  Range (End):            20199
  Vault Directory:        /full/path/to/Vault
+ LocalZoneSID:           TEMP_LOCAL_ZONE_SID
+ agent_key:              temp_32_byte_key_for_agent__conn
  Administrator Name:     rods
  Administrator Password: Not Shown
  -------------------------------------------
- Please confirm these settings [yes]: 
+ Please confirm these settings [yes]:
 
 
 MacOSX

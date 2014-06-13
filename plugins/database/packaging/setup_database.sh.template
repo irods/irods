@@ -20,7 +20,7 @@ fi
 # Detect run-in-place installation
 #
 set +e
-source ./packaging/setup_runinplace.sh 2> /dev/null
+source ./packaging/setup_irods_configuration.sh 2> /dev/null
 set -e
 
 # get temp file from prior run, if it exists
