@@ -343,6 +343,7 @@ namespace irods {
                     rodsLog( LOG_ERROR,
                             "%s field in server.config must be 32 characters in length (currently %d characters in length).",
                             prop_name.c_str(), prop_setting.size() );
+                    fclose( fptr );
                     return ERROR( SYS_CONFIG_FILE_ERR, "server.config file error" );
                 }
 
