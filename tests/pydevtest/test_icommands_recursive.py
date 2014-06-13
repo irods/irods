@@ -12,9 +12,10 @@ from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, getiCmdO
 from resource_suite import ResourceBase
 
 def make_file(f_name, f_size, source='/dev/zero'):
-    output = commands.getstatusoutput('dd if="' + source + '" of="' + f_name + '" count=' + str(f_size) + ' iflag=count_bytes')
+    output = commands.getstatusoutput('dd if="' + source + '" of="' + f_name + '" count=' + str(f_size) + ' bs=1')
     if output[0] != 0:
-        raise OSError(output[0], "dd returned non-zero")
+        sys.stderr.write(output[1] + '\n')
+        raise OSError(output[0], "call to dd returned non-zero")
 
 def runCmd_ils_to_entries(runCmd_output):
     raw = runCmd_output[0].strip().split('\n')
