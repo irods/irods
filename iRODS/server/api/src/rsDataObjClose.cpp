@@ -307,7 +307,8 @@ _rsDataObjClose(
     dataObjInfo_t *destDataObjInfo, *srcDataObjInfo;
     int srcL1descInx;
     regReplica_t regReplicaInp;
-    int noChkCopyLenFlag;
+    int noChkCopyLenFlag = 0;
+    int updateChksumFlag = 0;
 
     l1descInx = dataObjCloseInp->l1descInx;
     l3descInx = L1desc[l1descInx].l3descInx;
@@ -373,9 +374,7 @@ _rsDataObjClose(
                       NO_CHK_COPY_LEN_KW ) != NULL ) {
         noChkCopyLenFlag = 1;
     }
-    else {
-        noChkCopyLenFlag = 0;
-    }
+
     if ( L1desc[l1descInx].stageFlag == NO_STAGING ) {
         /* don't check for size if it is DO_STAGING type because the
          * fileStat call may not be supported */
@@ -391,8 +390,7 @@ _rsDataObjClose(
             return ( status );
         }
         else if ( L1desc[l1descInx].dataSize > 0 ) {
-            if ( newSize != L1desc[l1descInx].dataSize &&
-                    noChkCopyLenFlag == 0 ) {
+            if ( newSize != L1desc[l1descInx].dataSize && noChkCopyLenFlag == 0 ) {
                 rodsLog( LOG_NOTICE,
                          "_rsDataObjClose: size in vault %lld != target size %lld",
                          newSize, L1desc[l1descInx].dataSize );
@@ -406,7 +404,17 @@ _rsDataObjClose(
         newSize = L1desc[l1descInx].dataSize;
     }
 
-    if ( noChkCopyLenFlag == 0 ) {
+    // If an object with a checksum was written to, checksum needs updating
+    if ( OPEN_FOR_WRITE_TYPE == L1desc[l1descInx].openType
+    		&& L1desc[l1descInx].dataObjInfo->chksum
+    		&& strlen(L1desc[l1descInx].dataObjInfo->chksum) > 0) {
+
+    	L1desc[l1descInx].chksumFlag = REG_CHKSUM;
+    	updateChksumFlag = 1;
+
+    }
+
+    if ( !noChkCopyLenFlag || updateChksumFlag ) {
         status = procChksumForClose( rsComm, l1descInx, &chksumStr );
         if ( status < 0 ) {
             return status;
@@ -835,7 +843,7 @@ procChksumForClose(
     }
 
     /* overwriting an old copy. need to verify the chksum again */
-    if ( strlen( L1desc[l1descInx].dataObjInfo->chksum ) > 0 ) {
+    if ( strlen( L1desc[l1descInx].dataObjInfo->chksum ) > 0 && !L1desc[l1descInx].chksumFlag) {
         L1desc[l1descInx].chksumFlag = VERIFY_CHKSUM;
     }
 

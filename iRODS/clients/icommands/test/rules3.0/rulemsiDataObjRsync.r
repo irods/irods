@@ -1,4 +1,4 @@
-myTestRule {
+rulemsiDataObjRsync {
 #Input parameters are:
 #  Data object path
 #  Optional flag for mode
@@ -7,11 +7,14 @@ myTestRule {
 #  Optional storage resource
 #  Optional target collection
 #Output parameters are:
-#  Status
+#  status
 #Output from running the example is:
-#  The file /tempZone/home/rods/sub1/foo2 is synchronized onto the logical data object path /tempZone/home/rods/rules
-  msiDataObjRsync(*SourceFile,"IRODS_TO_IRODS",*DestResource,*DestPathName,*Status);
-  writeLine("stdout","The file *SourceFile is synchronized onto the logical data object path *DestPathName");
+# Source object /tempZone/home/antoine/source.txt synchronized with destination object /tempZone/home/antoine/dest.txt
+  msiDataObjRsync(*sourceObj,"IRODS_TO_IRODS",*destResc,*destObj,*status);
+  writeLine("stdout","Source object *sourceObj synchronized with destination object *destObj");
+  
+  writeLine("stdout","status = *status");
+  
 }
-INPUT *SourceFile="/tempZone/home/rods/sub1/foo2",*DestResource="testResc",*DestPathName="/tempZone/home/rods/rules"
+INPUT *sourceObj="/tempZone/home/antoine/source.txt",*destResc="demoResc",*destObj="/tempZone/home/antoine/dest.txt"
 OUTPUT ruleExecOut
