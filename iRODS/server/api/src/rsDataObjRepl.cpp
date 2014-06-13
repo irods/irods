@@ -374,7 +374,9 @@ _rsDataObjRepl(
             freeAllDataObjInfo( dataObjInfoHead );
             freeAllDataObjInfo( oldDataObjInfoHead );
             freeAllDataObjInfo( destDataObjInfo ); // JMC - backport 4494
-            freeAllRescGrpInfo( myRescGrpInfo );
+            //freeAllRescGrpInfo( myRescGrpInfo );
+            delete myRescGrpInfo->rescInfo;
+            delete myRescGrpInfo;
 
             return status;
         }
@@ -382,7 +384,9 @@ _rsDataObjRepl(
             freeAllDataObjInfo( dataObjInfoHead );
             freeAllDataObjInfo( oldDataObjInfoHead );
             freeAllDataObjInfo( destDataObjInfo ); // JMC - backport 4494
-            freeAllRescGrpInfo( myRescGrpInfo );
+            //freeAllRescGrpInfo( myRescGrpInfo );
+            delete myRescGrpInfo->rescInfo;
+            delete myRescGrpInfo;
             rodsLog( LOG_NOTICE, "%s - Failed to resolve a single replication copy.", __FUNCTION__ );
             return status;
         }
@@ -393,6 +397,12 @@ _rsDataObjRepl(
 
     status = applyPreprocRuleForOpen( rsComm, dataObjInp, &dataObjInfoHead );
     if ( status < 0 ) {
+        freeAllDataObjInfo( dataObjInfoHead );
+        freeAllDataObjInfo( oldDataObjInfoHead );
+        freeAllDataObjInfo( destDataObjInfo ); // JMC - backport 4494
+        //freeAllRescGrpInfo( myRescGrpInfo );
+        delete myRescGrpInfo->rescInfo;
+        delete myRescGrpInfo;
         return status;
     }
 
@@ -411,7 +421,9 @@ _rsDataObjRepl(
                 freeAllDataObjInfo( dataObjInfoHead );
                 freeAllDataObjInfo( oldDataObjInfoHead );
                 freeAllDataObjInfo( destDataObjInfo ); // JMC - backport 4494
-                freeAllRescGrpInfo( myRescGrpInfo );
+                //freeAllRescGrpInfo( myRescGrpInfo );
+                delete myRescGrpInfo->rescInfo;
+                delete myRescGrpInfo;
                 return 0;
             }
             else {   // JMC - backport 4494
@@ -438,7 +450,9 @@ _rsDataObjRepl(
 
     freeAllDataObjInfo( dataObjInfoHead );
     freeAllDataObjInfo( oldDataObjInfoHead );
-    freeAllRescGrpInfo( myRescGrpInfo );
+    //freeAllRescGrpInfo( myRescGrpInfo );
+    delete myRescGrpInfo->rescInfo;
+    delete myRescGrpInfo;
 
     return ( savedStatus );
 }
