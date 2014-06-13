@@ -141,7 +141,7 @@ An additional database plugin is required which installs the dependencies for da
 
 Installation of the iCAT DEB and PostgreSQL plugin DEB::
 
- $ (sudo) dpkg -i irods-icat-TEMPLATE_IRODSVERSION-64bit.deb irods-database-plugin-postgres-1.1.deb
+ $ (sudo) dpkg -i irods-icat-TEMPLATE_IRODSVERSION-64bit.deb irods-database-plugin-postgres-1.2.deb
  $ (sudo) apt-get -f install
  $ (sudo) su - irods
 
