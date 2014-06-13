@@ -16,5 +16,5 @@ rulemsiDataObjRsync {
   writeLine("stdout","status = *status");
   
 }
-INPUT *sourceObj="/tempZone/home/antoine/source.txt",*destResc="demoResc",*destObj="/tempZone/home/antoine/dest.txt"
+INPUT *sourceObj="/tempZone/home/rods/synctest/source.txt",*destResc="demoResc",*destObj="/tempZone/home/rods/synctest/dest.txt"
 OUTPUT ruleExecOut

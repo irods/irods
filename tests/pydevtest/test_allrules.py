@@ -106,9 +106,10 @@ class Test_AllRules(ResourceBase):
         global rules30dir
         assertiCmd(s.adminsession, "icd" )
         assertiCmd(s.adminsession,"irule -vF "+rules30dir+rulefile, "LIST", "completed successfully")
+        
+        
 
     def test_allrules(self):
-
         global rules30dir
         print rules30dir
 
@@ -349,5 +350,45 @@ class Test_AllRules(ResourceBase):
             print "-- running "+rulefile
             yield self.run_irule, rulefile
 
-#            self.run_irule(rulefile)
+
+    def test_rulemsiDataObjRsync(self):
+        rulefile = 'rulemsiDataObjRsync.r'
+        src_filename = 'source.txt'
+        dest_filename = 'dest.txt'
+        test_dir = '/tmp'
+        test_coll = '/tempZone/home/rods/synctest'
+        src_file = os.path.join(test_dir, src_filename)
+        src_obj = test_coll + '/' + src_filename
+        dest_obj = test_coll + '/' + dest_filename
+        
+        # create test collection
+        s.adminsession.runCmd('imkdir', [test_coll])
+        
+        # create source test file
+        with open(src_file, 'a') as src:
+            src.write('blah\n')
+        
+        # upload source test file
+        s.adminsession.runCmd('iput', [src_file, test_coll] )
+        
+        # first rsync rule test
+        assertiCmd(s.adminsession,"irule -F "+rules30dir+rulefile, "LIST", "status = 99999992")
+        
+        # modify the source and try again
+        for i in range(1, 5):
+            with open(src_file, 'a') as src:
+                src.write('blah_%d\n' % i)
+            
+            # force upload source
+            s.adminsession.runCmd('iput', ['-f', src_file, test_coll] )
+            
+            # sync test
+            assertiCmd(s.adminsession,"irule -F "+rules30dir+rulefile, "LIST", "status = 99999992")
+        
+        # cleanup
+        s.adminsession.runCmd('irm', ['-rf', test_coll])
+        os.remove(src_file)
+
+
+
 
