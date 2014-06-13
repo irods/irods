@@ -705,6 +705,7 @@ renameFilePathToNewDir( rsComm_t *rsComm, char *newDir,
         fileRenameOut_t* ren_out = 0;
         status = rsFileRename( rsComm, fileRenameInp, &ren_out );
         strncpy( new_fn, ren_out->file_name, MAX_NAME_LEN );
+        free( ren_out->file_name );
         if ( status < 0 ) {
             rodsLog( LOG_NOTICE,
                      "renameFilePathToNewDir:rsFileRename from %s to %s failed,stat=%d",

@@ -735,7 +735,7 @@ dataObjOpenForRepl(
 
     // JMC - legacy resource int srcRescClass = getRescClass (inpSrcDataObjInfo->rescInfo);
     dataObjInfo_t *cacheDataObjInfo = NULL;
-    dataObjInp_t dest_inp, myDataObjInp, *l1DataObjInp = 0;
+    dataObjInp_t myDataObjInp, *l1DataObjInp = 0;
     if ( destRescInfo == NULL ) {
         myDestRescInfo = inpDestDataObjInfo->rescInfo;
     }
@@ -785,10 +785,6 @@ dataObjOpenForRepl(
     // =-=-=-=-=-=-=-=-
     // use for redirect
     std::string op_name;
-    memset( &dest_inp, 0, sizeof( dest_inp ) );
-    memset( &dest_inp.condInput, 0, sizeof( dest_inp.condInput ) );
-    strncpy( dest_inp.objPath, dataObjInp->objPath, MAX_NAME_LEN );
-    addKeyVal( &( dest_inp.condInput ), RESC_NAME_KW, myDestRescInfo->rescName );
 
     myDestDataObjInfo = ( dataObjInfo_t* )calloc( 1, sizeof( dataObjInfo_t ) );
     if ( updateFlag > 0 ) {
@@ -838,7 +834,15 @@ dataObjOpenForRepl(
         // set a repl keyword here so resources can respond accordingly
         addKeyVal( &dataObjInp->condInput, IN_REPL_KW, "" );
 
+        dataObjInp_t dest_inp;
+        memset( &dest_inp, 0, sizeof( dest_inp ) );
+        memset( &dest_inp.condInput, 0, sizeof( dest_inp.condInput ) );
+        strncpy( dest_inp.objPath, dataObjInp->objPath, MAX_NAME_LEN );
+        addKeyVal( &( dest_inp.condInput ), RESC_NAME_KW, myDestRescInfo->rescName );
+
         irods::error ret = irods::resolve_resource_hierarchy( op_name, rsComm, &dest_inp, hier );
+        clearKeyVal( &dest_inp.condInput );
+
         if ( !ret.ok() ) {
             std::stringstream msg;
             msg << "failed in irods::resolve_resource_hierarchy for [";
