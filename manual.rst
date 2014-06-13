@@ -420,6 +420,13 @@ iRODS 4.0+ servers use the Server Identifiers (SIDs) to mutually authenticate.  
 
 The 'LocalZoneSID' can be up to 50 alphanumeric characters long.  The 'agent_key' must be exactly 32 alphanumeric bytes long.  These values need to be the same on all servers in the same Zone, or they will not be able to authenticate (see `Server Authentication`_ for more information).
 
+The following error will be logged if an agent_key is missing::
+
+ ERROR: client_server_negotiation_for_server - sent SID is empty
+
+The following error will be logged when the agent_key values to not align and/or are not exactly 32 bytes long::
+
+ ERROR: client-server negotiation SID mismatch
 
 Add additional resource(s)
 --------------------------
