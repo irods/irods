@@ -66,7 +66,7 @@ namespace irods {
             rodsLog( LOG_DEBUG,
                      "Cannot open SERVER_CONFIG_FILE file %s. errno = %d\n",
                      cfg_file.c_str(), errno );
-            return ERROR( SYS_CONFIG_FILE_ERR, "server config file error" );
+            return ERROR( SYS_CONFIG_FILE_ERR, "server.config file error" );
         }
 
         buf[BUF_LEN - 1] = '\0';
@@ -334,10 +334,17 @@ namespace irods {
             key = strstr( buf, AGENT_KEY_KW.c_str() );
             if ( key != NULL ) {
                 len = strlen( AGENT_KEY_KW.c_str() );
-
                 // Set property name and setting
                 prop_name.assign( AGENT_KEY_KW );
                 prop_setting.assign( findNextTokenAndTerm( key + len ) );
+
+                if ( 32 != prop_setting.size() )
+                {
+                    rodsLog( LOG_ERROR,
+                            "%s field in server.config must be 32 characters in length (currently %d characters in length).",
+                            prop_name.c_str(), prop_setting.size() );
+                    return ERROR( SYS_CONFIG_FILE_ERR, "server.config file error" );
+                }
 
                 // Update properties table
                 result = properties.set<std::string>( prop_name, prop_setting );
