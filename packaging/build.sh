@@ -899,40 +899,42 @@ else
     echo "Detected OpenSSL sha.h library [$OPENSSLDEV]"
 fi
 
-# needed for lib_mysqludf_preg
-MYSQLDEV=`find /usr/include/mysql /opt/csw/include/mysql /usr/local/Cellar -name mysql.h 2> /dev/null`
-if [ "$MYSQLDEV" == "" ] ; then
-    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
-        PREFLIGHT="$PREFLIGHT libmysqlclient-dev"
-    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-        PREFLIGHT="$PREFLIGHT mysql-devel"
-    elif [ "$DETECTEDOS" == "SuSE" ] ; then
-        PREFLIGHT="$PREFLIGHT libmysqlclient-devel"
-    elif [ "$DETECTEDOS" == "Solaris" ] ; then
-        PREFLIGHT="$PREFLIGHT mysql_dev"
+if [ "$DATABASE_PLUGIN_TYPE" == "mysql" ] ; then
+    # needed for lib_mysqludf_preg
+    MYSQLDEV=`find /usr/include/mysql /opt/csw/include/mysql /usr/local/Cellar -name mysql.h 2> /dev/null`
+    if [ "$MYSQLDEV" == "" ] ; then
+        if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
+            PREFLIGHT="$PREFLIGHT libmysqlclient-dev"
+        elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+            PREFLIGHT="$PREFLIGHT mysql-devel"
+        elif [ "$DETECTEDOS" == "SuSE" ] ; then
+            PREFLIGHT="$PREFLIGHT libmysqlclient-devel"
+        elif [ "$DETECTEDOS" == "Solaris" ] ; then
+            PREFLIGHT="$PREFLIGHT mysql_dev"
+        else
+            PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://dev.mysql.com/downloads/"
+        fi
     else
-        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://dev.mysql.com/downloads/"
+        echo "Detected mysql library [$MYSQLDEV]"
     fi
-else
-    echo "Detected mysql library [$MYSQLDEV]"
-fi
 
-# needed for lib_mysqludf_preg
-PCREDEV=`find /usr/include/ /opt/csw/include/ /usr/local/Cellar -name pcre.h 2> /dev/null`
-if [ "$PCREDEV" == "" ] ; then
-    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
-        PREFLIGHT="$PREFLIGHT libpcre3-dev"
-    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-        PREFLIGHT="$PREFLIGHT pcre-devel"
-    elif [ "$DETECTEDOS" == "SuSE" ] ; then
-        PREFLIGHT="$PREFLIGHT pcre-devel"
-    elif [ "$DETECTEDOS" == "Solaris" ] ; then
-        PREFLIGHT="$PREFLIGHT libpcre_dev"
+    # needed for lib_mysqludf_preg
+    PCREDEV=`find /usr/include/ /opt/csw/include/ /usr/local/Cellar -name pcre.h 2> /dev/null`
+    if [ "$PCREDEV" == "" ] ; then
+        if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
+            PREFLIGHT="$PREFLIGHT libpcre3-dev"
+        elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+            PREFLIGHT="$PREFLIGHT pcre-devel"
+        elif [ "$DETECTEDOS" == "SuSE" ] ; then
+            PREFLIGHT="$PREFLIGHT pcre-devel"
+        elif [ "$DETECTEDOS" == "Solaris" ] ; then
+            PREFLIGHT="$PREFLIGHT libpcre_dev"
+        else
+            PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://www.pcre.org/"
+        fi
     else
-        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://www.pcre.org/"
+        echo "Detected pcre library [$PCREDEV]"
     fi
-else
-    echo "Detected pcre library [$PCREDEV]"
 fi
 
 # needed for libs3
