@@ -1402,12 +1402,14 @@ if [ "$COVERAGE" == "1" ] ; then
     # sets listfile coverage options
     EPMOPTS="$EPMOPTS COVERAGE=true"
 elif [ "$RELEASE" == "1" ] ; then
+    # release build should get stripped (the default EPM behavior)
     EPMOPTS=""
 else
+    # leave debugging information in binaries by default
     EPMOPTS="-g"
 fi
 
-#generate packages with epm
+# generate packages with epm
 cd $BUILDDIR
 unamem=`uname -m`
 if [[ "$unamem" == "x86_64" || "$unamem" == "amd64" ]] ; then
