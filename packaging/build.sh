@@ -250,6 +250,47 @@ detect_number_of_cpus_and_set_makejcmd() {
     sleep 1
 }
 
+# confirm preflight checks are all met
+confirm_preflight_prerequisites() {
+    if [ "$PREFLIGHT" != "" ] ; then
+        echo "${text_red}#######################################################" 1>&2
+        echo "ERROR :: $SCRIPTNAME requires some software to be installed" 1>&2
+        if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
+            echo "      :: try: ${text_reset}sudo apt-get install$PREFLIGHT${text_red}" 1>&2
+        elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+            echo "      :: try: ${text_reset}sudo yum install$PREFLIGHT${text_red}" 1>&2
+        elif [ "$DETECTEDOS" == "SuSE" ] ; then
+            echo "      :: try: ${text_reset}sudo zypper install$PREFLIGHT${text_red}" 1>&2
+        elif [ "$DETECTEDOS" == "Solaris" ] ; then
+            echo "      :: try: ${text_reset}sudo pkgutil --install$PREFLIGHT${text_red}" 1>&2
+        elif [ "$DETECTEDOS" == "MacOSX" ] ; then
+            echo "      :: try: ${text_reset}brew install$PREFLIGHT${text_red}" 1>&2
+        else
+            echo "      :: NOT A DETECTED OPERATING SYSTEM" 1>&2
+        fi
+        echo "#######################################################${text_reset}" 1>&2
+        exit 1
+    fi
+
+    if [ "$PREFLIGHTDOWNLOAD" != "" ] ; then
+        echo "${text_red}#######################################################" 1>&2
+        echo "ERROR :: $SCRIPTNAME requires some software to be installed" 1>&2
+        echo "$PREFLIGHTDOWNLOAD" 1>&2
+        echo "#######################################################${text_reset}" 1>&2
+        exit 1
+    fi
+
+    # print out python prerequisites error
+    if [ "$PYPREFLIGHT" != "" ] ; then
+        echo "${text_red}#######################################################" 1>&2
+        echo "ERROR :: python requires some software to be installed" 1>&2
+        echo "      :: try: ${text_reset}sudo easy_install$PYPREFLIGHT${text_red}" 1>&2
+        echo "      ::   (easy_install provided by pysetuptools or pydistribute)" 1>&2
+        echo "#######################################################${text_reset}" 1>&2
+        exit 1
+    fi
+}
+
 # rename generated packages appropriately
 rename_generated_packages() {
 
@@ -462,6 +503,68 @@ if [ "$1" == "docs" ] ; then
     echo "${text_green}${text_bold}Building Docs...${text_reset}"
     echo ""
 
+    set +e
+    # check python package prerequisites
+    EASYINSTALL=`which easy_install`
+    if [[ "$?" != "0" || `echo $EASYINSTALL | awk '{print $1}'` == "no" ]] ; then
+        if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
+            PREFLIGHT="$PREFLIGHT python-setuptools"
+        elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+            PREFLIGHT="$PREFLIGHT python-setuptools python-devel"
+        elif [ "$DETECTEDOS" == "SuSE" ] ; then
+            PREFLIGHT="$PREFLIGHT python-setuptools"
+        elif [ "$DETECTEDOS" == "Solaris" ] ; then
+            PREFLIGHT="$PREFLIGHT pysetuptools"
+        elif [ "$DETECTEDOS" == "MacOSX" ] ; then
+            PREFLIGHT="$PREFLIGHT"
+            # should have distribute included already
+        else
+            PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://pypi.python.org/pypi/setuptools/"
+        fi
+    else
+        echo "Detected easy_install [$EASYINSTALL]"
+    fi
+    RST2PDF=`which rst2pdf`
+    if [[ "$?" != "0" || `echo $RST2PDF | awk '{print $1}'` == "no" ]] ; then
+        if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
+            PREFLIGHT="$PREFLIGHT rst2pdf"
+        else
+            PYPREFLIGHT="$PYPREFLIGHT rst2pdf"
+        fi
+    else
+        RST2PDFVERSION=`rst2pdf --version`
+        echo "Detected rst2pdf [$RST2PDF] v[$RST2PDFVERSION]"
+    fi
+    ROMAN=`python -c "import roman" 2> /dev/null`
+    if [ "$?" != "0" ] ; then
+        PYPREFLIGHT="$PYPREFLIGHT roman"
+    else
+        ROMANLOCATION=`python -c "import roman; print (roman.__file__)"` # expecting ".../roman.pyc"
+        echo "Detected python module 'roman' [$ROMANLOCATION]"
+    fi
+##### commented out - not currently building doxygen for iRODS 4.0+
+#     DOXYGEN=`which doxygen`
+#     if [[ "$?" != "0" || `echo $DOXYGEN | awk '{print $1}'` == "no" ]] ; then
+#         if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
+#             PREFLIGHT="$PREFLIGHT doxygen"
+#         elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+#             PREFLIGHT="$PREFLIGHT doxygen"
+#         elif [ "$DETECTEDOS" == "SuSE" ] ; then
+#             PREFLIGHT="$PREFLIGHT doxygen"
+#         elif [ "$DETECTEDOS" == "Solaris" ] ; then
+#             PREFLIGHT="$PREFLIGHT doxygen"
+#         elif [ "$DETECTEDOS" == "MacOSX" ] ; then
+#             PREFLIGHT="$PREFLIGHT doxygen"
+#         else
+#             PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://doxygen.org"
+#         fi
+#     else
+#         DOXYGENVERSION=`doxygen --version`
+#         echo "Detected doxygen [$DOXYGEN] v[$DOXYGENVERSION]"
+#     fi
+    confirm_preflight_prerequisites
+    set -e
+
     # get cpu count
     detect_number_of_cpus_and_set_makejcmd
 
@@ -647,26 +750,6 @@ if [[ "$?" != "0" || `echo $WGET | awk '{print $1}'` == "no" ]] ; then
 else
     WGETVERSION=`wget --version | head -n1 | awk '{print $3}'`
     echo "Detected wget [$WGET] v[$WGETVERSION]"
-fi
-
-DOXYGEN=`which doxygen`
-if [[ "$?" != "0" || `echo $DOXYGEN | awk '{print $1}'` == "no" ]] ; then
-    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
-        PREFLIGHT="$PREFLIGHT doxygen"
-    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-        PREFLIGHT="$PREFLIGHT doxygen"
-    elif [ "$DETECTEDOS" == "SuSE" ] ; then
-        PREFLIGHT="$PREFLIGHT doxygen"
-    elif [ "$DETECTEDOS" == "Solaris" ] ; then
-        PREFLIGHT="$PREFLIGHT doxygen"
-    elif [ "$DETECTEDOS" == "MacOSX" ] ; then
-        PREFLIGHT="$PREFLIGHT doxygen"
-    else
-        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://doxygen.org"
-    fi
-else
-    DOXYGENVERSION=`doxygen --version`
-    echo "Detected doxygen [$DOXYGEN] v[$DOXYGENVERSION]"
 fi
 
 HELP2MAN=`which help2man`
@@ -889,44 +972,7 @@ else
 fi
 
 
-# print out prerequisites error
-if [ "$PREFLIGHT" != "" ] ; then
-    echo "${text_red}#######################################################" 1>&2
-    echo "ERROR :: $SCRIPTNAME requires some software to be installed" 1>&2
-    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
-        echo "      :: try: ${text_reset}sudo apt-get install$PREFLIGHT${text_red}" 1>&2
-    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-        echo "      :: try: ${text_reset}sudo yum install$PREFLIGHT${text_red}" 1>&2
-    elif [ "$DETECTEDOS" == "SuSE" ] ; then
-        echo "      :: try: ${text_reset}sudo zypper install$PREFLIGHT${text_red}" 1>&2
-    elif [ "$DETECTEDOS" == "Solaris" ] ; then
-        echo "      :: try: ${text_reset}sudo pkgutil --install$PREFLIGHT${text_red}" 1>&2
-    elif [ "$DETECTEDOS" == "MacOSX" ] ; then
-        echo "      :: try: ${text_reset}brew install$PREFLIGHT${text_red}" 1>&2
-    else
-        echo "      :: NOT A DETECTED OPERATING SYSTEM" 1>&2
-    fi
-    echo "#######################################################${text_reset}" 1>&2
-    exit 1
-fi
-
-if [ "$PREFLIGHTDOWNLOAD" != "" ] ; then
-    echo "${text_red}#######################################################" 1>&2
-    echo "ERROR :: $SCRIPTNAME requires some software to be installed" 1>&2
-    echo "$PREFLIGHTDOWNLOAD" 1>&2
-    echo "#######################################################${text_reset}" 1>&2
-    exit 1
-fi
-
-# print out python prerequisites error
-if [ "$PYPREFLIGHT" != "" ] ; then
-    echo "${text_red}#######################################################" 1>&2
-    echo "ERROR :: python requires some software to be installed" 1>&2
-    echo "      :: try: ${text_reset}sudo easy_install$PYPREFLIGHT${text_red}" 1>&2
-    echo "      ::   (easy_install provided by pysetuptools or pydistribute)" 1>&2
-    echo "#######################################################${text_reset}" 1>&2
-    exit 1
-fi
+confirm_preflight_prerequisites
 
 # reset to exit on an error
 set -e
