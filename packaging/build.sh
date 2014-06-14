@@ -236,6 +236,16 @@ set_tmpfile() {
   TMPFILE=/tmp/$USER/$(date "+%Y%m%d-%H%M%S.%N.irods.tmp")
 }
 
+# reset ownership of any generated files, in case this was run via sudo
+reset_ownership_in_dir() {
+    # parameters
+    if [ "$1" == "" ] ; then
+        echo "reset_ownership_in_dir() expected 1 parameter"
+        exit 1
+    fi
+    chown -R `logname`:`logname` $1
+}
+
 # find number of cpus
 detect_number_of_cpus_and_set_makejcmd() {
     DETECTEDCPUCOUNT=`$BUILDDIR/packaging/get_cpu_count.sh`
@@ -436,6 +446,7 @@ rename_generated_packages() {
 
     #################
     # list new result set
+    reset_ownership_in_dir $IRODSPACKAGEDIR
     echo ""
     echo "Contents of $IRODSPACKAGEDIR:"
     ls -l $IRODSPACKAGEDIR
@@ -622,8 +633,9 @@ if [ "$1" == "docs" ] ; then
         rename_generated_packages $1
     fi
 
-    # done
-    echo "${text_green}${text_bold}Done.${text_reset}"
+    # boilerplate and exit
+    reset_ownership_in_dir $GITDIR
+    print_script_finish_box
     exit 0
 fi
 
@@ -1541,12 +1553,7 @@ if [ "$COVERAGE" == "1" ] ; then
     rm -rf $COVERAGEBUILDDIR
 fi
 
-# grant write permission to all, in case this was run via sudo
-cd $GITDIR
-chmod -R a+w .
-
-# print out complete boilerplate
+# boilerplate and exit
+reset_ownership_in_dir $GITDIR
 print_script_finish_box
-
-# done
 exit 0
