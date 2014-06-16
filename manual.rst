@@ -482,7 +482,7 @@ It is best to change your Zone name before adding new users as any existing user
 Upgrading
 ---------
 
-Upgrading is handled by the host Operating System via the package manager.
+Upgrading is handled by the host Operating System via the package manager.  Depending on your package manager, your config files will have been preserved with your local changes since the last installation.  Please see `Changing the LocalZoneSID and agent_key`_ for information on server-server authentication.
 
 RPM based systems
 -----------------
