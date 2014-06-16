@@ -129,6 +129,8 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     if ( status < 0 ) {
         rodsLog( LOG_NOTICE,
                  "rsDataObjPhymv: getDataObjInfo for %s", dataObjInp->objPath );
+        delete myRescGrpInfo->rescInfo;
+        delete myRescGrpInfo;
         return ( status );
     }
 
@@ -137,7 +139,8 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     if ( status < 0 ) {
         freeAllDataObjInfo( dataObjInfoHead );
         freeAllDataObjInfo( oldDataObjInfoHead );
-        freeAllRescGrpInfo( myRescGrpInfo );
+        delete myRescGrpInfo->rescInfo;
+        delete myRescGrpInfo;
         if ( status == CAT_NO_ROWS_FOUND ) {
             return ( 0 );
         }
@@ -151,7 +154,8 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     freeAllDataObjInfo( dataObjInfoHead );
     freeAllDataObjInfo( oldDataObjInfoHead );
-    freeAllRescGrpInfo( myRescGrpInfo );
+    delete myRescGrpInfo->rescInfo;
+    delete myRescGrpInfo;
 
     return ( status );
 }

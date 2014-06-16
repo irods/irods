@@ -378,7 +378,8 @@ l3DataPutSingleBuf( rsComm_t*     rsComm,
         }
         tmpRescGrpInfo = tmpRescGrpInfo->next;
     }
-    freeAllRescGrpInfo( myRescGrpInfo );
+    delete myRescGrpInfo->rescInfo;
+    delete myRescGrpInfo;
     return bytesWritten;
 }
 

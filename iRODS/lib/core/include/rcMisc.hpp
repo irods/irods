@@ -133,8 +133,6 @@ extern "C" {
     int
     getUnixGroupname( int gid, char *groupname, int groupname_len );
     int
-    freeAllRescGrpInfo( rescGrpInfo_t *rescGrpInfoHead );
-    int
     parseMultiStr( char *strInput, strArray_t *strArray );
     void
     getNowStr( char *timeStr );

@@ -175,16 +175,13 @@ _rsBulkDataObjPut( rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
     int status;
     rescInfo_t *rescInfo;
     char phyBunDir[MAX_NAME_LEN];
-    rescGrpInfo_t *myRescGrpInfo = new rescGrpInfo_t;
-    myRescGrpInfo->rescInfo = new rescInfo_t;
+    rescGrpInfo_t *myRescGrpInfo;
     dataObjInp_t dataObjInp;
     rodsObjStat_t *myRodsObjStat = NULL;
 
 
     status = chkCollForExtAndReg( rsComm, bulkOprInp->objPath, &myRodsObjStat );
     if ( status < 0 || myRodsObjStat == NULL ) {
-        delete myRescGrpInfo->rescInfo;
-        delete myRescGrpInfo;
         return status; // JMC cppcheck
     }
 
@@ -202,6 +199,8 @@ _rsBulkDataObjPut( rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
           return (status);
           }*/
         irods::resource_ptr resc;
+        myRescGrpInfo = new rescGrpInfo_t;
+        myRescGrpInfo->rescInfo = new rescInfo_t;
         irods::error err = irods::get_resc_grp_info( myRodsObjStat->specColl->resource, *myRescGrpInfo );
         if ( !err.ok() ) {
             delete myRescGrpInfo->rescInfo;
@@ -226,6 +225,9 @@ _rsBulkDataObjPut( rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
     rescInfo = myRescGrpInfo->rescInfo;
     status = createBunDirForBulkPut( rsComm, &dataObjInp, rescInfo, myRodsObjStat->specColl, phyBunDir );
     if ( status < 0 ) {
+        delete myRescGrpInfo->rescInfo;
+        delete myRescGrpInfo;
+
         std::stringstream msg;
         msg << __FUNCTION__ << ": Unable to create BunDir";
         irods::log( LOG_ERROR, msg.str() );
@@ -234,6 +236,9 @@ _rsBulkDataObjPut( rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
 
     status = rsMkCollR( rsComm, "/", bulkOprInp->objPath );
     if ( status < 0 ) {
+        delete myRescGrpInfo->rescInfo;
+        delete myRescGrpInfo;
+
         std::stringstream msg;
         msg << __FUNCTION__ << ": Unable to make collection \"" << bulkOprInp->objPath << "\"";
         irods::log( LOG_ERROR, msg.str() );
@@ -245,21 +250,18 @@ _rsBulkDataObjPut( rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
 
     status = unbunBulkBuf( rsComm, &dataObjInp, rescInfo, bulkOprInp, bulkOprInpBBuf, phyBunDir );
     if ( status < 0 ) {
+        delete myRescGrpInfo->rescInfo;
+        delete myRescGrpInfo;
+
         rodsLog( LOG_ERROR,
                  "_rsBulkDataObjPut: unbunBulkBuf for dir %s. stat = %d",
                  phyBunDir, status );
         return status;
     }
 
-    if ( myRodsObjStat->specColl != NULL ) {
-        freeRodsObjStat( myRodsObjStat );
-        return status;
-    }
-    else {
-        freeRodsObjStat( myRodsObjStat );
-    }
-
-    freeAllRescGrpInfo( myRescGrpInfo );
+    freeRodsObjStat( myRodsObjStat );
+    delete myRescGrpInfo->rescInfo;
+    delete myRescGrpInfo;
 
     return status;
 }

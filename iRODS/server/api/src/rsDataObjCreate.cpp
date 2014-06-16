@@ -234,7 +234,6 @@ _rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
 
     status = l1descInx = _rsDataObjCreateWithRescInfo( rsComm, dataObjInp, myRescGrpInfo->rescInfo, myRescGrpInfo->rescGroupName );
 
-    //freeAllRescGrpInfo (myRescGrpInfo);
     delete myRescGrpInfo->rescInfo;
     delete myRescGrpInfo;
 
@@ -576,6 +575,8 @@ int getRescGrpForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp, rescGrpInfo
 
         irods::error set_err = irods::set_default_resource( rsComm, "", "", &dataObjInp->condInput, *( *myRescGrpInfo ) );
         if ( !set_err.ok() ) {
+            delete ( *myRescGrpInfo )->rescInfo;
+            delete ( *myRescGrpInfo );
             irods::log( PASS( set_err ) );
             return SYS_INVALID_RESC_INPUT;
         }
@@ -588,6 +589,10 @@ int getRescGrpForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp, rescGrpInfo
     status = setRescQuota( rsComm, dataObjInp->objPath, myRescGrpInfo, dataObjInp->dataSize );
 
     if ( status == SYS_RESC_QUOTA_EXCEEDED ) {
+        if ( rei.rgi == NULL ) {
+            delete ( *myRescGrpInfo )->rescInfo;
+            delete ( *myRescGrpInfo );
+        }
         return SYS_RESC_QUOTA_EXCEEDED;
     }
 

@@ -543,7 +543,8 @@ createEmptyRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         break;
     }
 
-    freeAllRescGrpInfo( myRescGrpInfo );
+    delete myRescGrpInfo->rescInfo;
+    delete myRescGrpInfo;
 
     if ( status < 0 ) {
         free( myDataObjInfo );
@@ -563,7 +564,6 @@ procDataObjOpenForWrite( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                          dataObjInfo_t **dataObjInfoHead, dataObjInfo_t **cacheDataObjInfo,
                          dataObjInfo_t **compDataObjInfo, rescInfo_t **compRescInfo ) {
     int status = 0;
-    rescGrpInfo_t *myRescGrpInfo = NULL;
 
     /* put the copy with destResc on top */
     status = requeDataObjInfoByDestResc( dataObjInfoHead, &dataObjInp->condInput, 1, 1 );
@@ -571,11 +571,6 @@ procDataObjOpenForWrite( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     /* status < 0 means there is no copy in the DEST_RESC */
     if ( status < 0 && ( *dataObjInfoHead )->specColl == NULL &&
             getValByKey( &dataObjInp->condInput, DEST_RESC_NAME_KW ) != NULL ) {
-        /* we don't have a copy in the DEST_RESC_NAME */
-        status = getRescGrpForCreate( rsComm, dataObjInp, &myRescGrpInfo );
-        if ( status < 0 ) {
-            return status;
-        }
 
         /* we don't have a copy, so create an empty dataObjInfo */
         status = createEmptyRepl( rsComm, dataObjInp, dataObjInfoHead );
@@ -583,7 +578,6 @@ procDataObjOpenForWrite( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             rodsLogError( LOG_ERROR, status,
                           "procDataObjForOpenWrite: createEmptyRepl of %s failed",
                           ( *dataObjInfoHead )->objPath );
-            freeAllRescGrpInfo( myRescGrpInfo );
             return status;
         }
 
@@ -595,7 +589,6 @@ procDataObjOpenForWrite( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     if ( *compDataObjInfo != NULL ) {
         dequeDataObjInfo( dataObjInfoHead, *compDataObjInfo );
     }
-    freeAllRescGrpInfo( myRescGrpInfo );
     return status;
 }
 
