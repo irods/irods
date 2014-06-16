@@ -97,6 +97,8 @@ else
     $PYTHONCMD $OPTS test_resource_types.Test_Compound_with_MockArchive_Resource
     $PYTHONCMD $OPTS test_resource_types.Test_Compound_with_UniversalMSS_Resource
     $PYTHONCMD $OPTS test_resource_types.Test_Compound_Resource
+    $PYTHONCMD $OPTS test_resource_types.Test_Random_within_Replication_Resource
+    $PYTHONCMD $OPTS test_resource_types.Test_RoundRobin_within_Replication_Resource
     $PYTHONCMD $OPTS test_resource_types.Test_Replication_within_Replication_Resource
     $PYTHONCMD $OPTS test_resource_types.Test_Replication_to_two_Compound_Resources
     $PYTHONCMD $OPTS test_resource_types.Test_Replication_to_two_Compound_Resources_with_Prefer_Archive
