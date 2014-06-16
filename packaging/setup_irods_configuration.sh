@@ -304,7 +304,7 @@ fi
         cp $MYICATSYSINSERTS.orig $MYICATSYSINSERTS
         exit 1
     fi
-    if [ "$LASTMYADMINNAME" != "rods" -a "$LASTMYADMINNAME" != "$MYADMINNAME" ] ; then
+    if [ "$LASTMYADMINNAME" != "" -a "$LASTMYADMINNAME" != "rods" -a "$LASTMYADMINNAME" != "$MYADMINNAME" ] ; then
         echo "====================================="
         echo "ERROR:"
         echo "Cannot change existing non-default administrator username."
