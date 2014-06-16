@@ -1883,6 +1883,7 @@ Date         Version      Description
 2014-06-16   4.0.2        Second Point Release
                             Random and RoundRobin resource plugin fix, memory
                             leak fixes, microservice fixes, security fixes,
+                            large collection recursive operations, and
                             better server-server authentication setup.
 2014-06-05   4.0.1        First Point Release
                             Memory leak fixes, security fixes, --run-in-place,
