@@ -544,6 +544,7 @@ class ResourceSuite(ResourceBase):
 
         assert errorflag == True, "Expected ERRORs did not occur"
 
+    @unittest.skipIf( RUN_IN_TOPOLOGY==True, "Skip for Topology Testing")
     def test_iput_overwrite_others_file__ticket_2086(self):
         # pre state
         assertiCmd(s.adminsession,"ils -L","LIST",self.testfile) # should be listed
