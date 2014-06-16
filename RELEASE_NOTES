@@ -4,15 +4,12 @@ iRODS is developed under the auspices of the iRODS Consortium.  This release was
 
 Development of this release has focused on the following features and efforts:
 
-- Memory leak analysis via valgrind
 - Security fixes
-- --run-in-place support
-- MacOSX support (via --run-in-place)
-- Developer-friendly microservice templating
-- Database schema update mechanism
+- Bug fixes
 
 Ongoing efforts include:
 
+- Memory leak analysis via valgrind
 - Full python-based testing framework
 - Certified against full Jargon test suite
 - Continuous integration testing via hudson
