@@ -243,7 +243,7 @@ reset_ownership_in_dir() {
         echo "reset_ownership_in_dir() expected 1 parameter"
         exit 1
     fi
-    chown -R `logname` $1
+#    chown -R `logname` $1
 }
 
 # find number of cpus
