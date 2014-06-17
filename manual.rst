@@ -1880,7 +1880,7 @@ History of Releases
 ==========   =========    ======================================================
 Date         Version      Description
 ==========   =========    ======================================================
-2014-06-16   4.0.2        Second Point Release
+2014-06-17   4.0.2        Second Point Release
                             Random and RoundRobin resource plugin fix, memory
                             leak fixes, microservice fixes, security fixes,
                             large collection recursive operations, and
