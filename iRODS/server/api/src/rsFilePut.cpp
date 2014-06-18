@@ -134,7 +134,8 @@ int _rsFilePut(
 
     }
     else {
-        fd = _rsFileCreate( _comm, _put_inp, _server_host );
+        fileCreateOut_t* _out = 0;
+        fd = _rsFileCreate( _comm, _put_inp, _server_host, &_out );
 
     } // else
 

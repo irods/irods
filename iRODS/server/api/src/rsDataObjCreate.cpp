@@ -506,12 +506,14 @@ l3CreateByObjInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     rstrcpy( fileCreateInp.in_pdmo, dataObjInfo->in_pdmo, MAX_NAME_LEN );
 
     // =-=-=-=-=-=-=-
+    // 
+    fileCreateOut_t* create_out = 0;
     std::string prev_resc_hier = fileCreateInp.resc_hier_;
-    l3descInx = rsFileCreate( rsComm, &fileCreateInp );
+    l3descInx = rsFileCreate( rsComm, &fileCreateInp, &create_out );
 
     // update the dataObjInfo with the potential changes made by the resource - hcj
     rstrcpy( dataObjInfo->rescHier, fileCreateInp.resc_hier_, MAX_NAME_LEN );
-    rstrcpy( dataObjInfo->filePath, fileCreateInp.fileName, MAX_NAME_LEN );
+    rstrcpy( dataObjInfo->filePath, create_out->file_name, MAX_NAME_LEN );
 
     /* file already exists ? */
     while ( l3descInx <= 2 && retryCnt < 100 &&
@@ -520,10 +522,12 @@ l3CreateByObjInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             break;
         }
         rstrcpy( fileCreateInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN );
-        l3descInx = rsFileCreate( rsComm, &fileCreateInp );
+        free( create_out );
+        l3descInx = rsFileCreate( rsComm, &fileCreateInp, &create_out );
+
         // update the dataObjInfo with the potential changes made by the resource - hcj
         rstrcpy( dataObjInfo->rescHier, fileCreateInp.resc_hier_, MAX_NAME_LEN );
-        rstrcpy( dataObjInfo->filePath, fileCreateInp.fileName, MAX_NAME_LEN );
+        rstrcpy( dataObjInfo->filePath, create_out->file_name, MAX_NAME_LEN );
         retryCnt ++;
     }
     clearKeyVal( &fileCreateInp.condInput );

@@ -21,23 +21,30 @@
 
 typedef fileOpenInp_t fileCreateInp_t;
 
+typedef struct {
+    char file_name[ MAX_NAME_LEN ];
+} fileCreateOut_t;
+
+#define fileCreateOut_PI "str file_name[MAX_NAME_LEN];"
+
+
 #if defined(RODS_SERVER)
 #define RS_FILE_CREATE rsFileCreate
 /* prototype for the server handler */
 int
-rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp );
+rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp, fileCreateOut_t** );
 int
 _rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,
-               rodsServerHost_t *rodsServerHost );
+               rodsServerHost_t *rodsServerHost, fileCreateOut_t** );
 int
 remoteFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,
-                  rodsServerHost_t *rodsServerHost );
+                  rodsServerHost_t *rodsServerHost, fileCreateOut_t** );
 #else
 #define RS_FILE_CREATE NULL
 #endif
 
 /* prototype for the client call */
 int
-rcFileCreate( rcComm_t *conn, fileCreateInp_t *fileCreateInp );
+rcFileCreate( rcComm_t *conn, fileCreateInp_t *fileCreateInp, fileCreateOut_t** );
 
 #endif  /* FILE_CREATE_H */

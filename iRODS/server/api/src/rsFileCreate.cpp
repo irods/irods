@@ -27,7 +27,7 @@
 #include <string>
 
 int
-rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp ) {
+rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp, fileCreateOut_t** _out ) {
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
     int fileInx;
@@ -41,10 +41,10 @@ rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp ) {
     }
 
     if ( remoteFlag == LOCAL_HOST ) {
-        fd = _rsFileCreate( rsComm, fileCreateInp, rodsServerHost );
+        fd = _rsFileCreate( rsComm, fileCreateInp, rodsServerHost, _out );
     }
     else if ( remoteFlag == REMOTE_HOST ) {
-        fd = remoteFileCreate( rsComm, fileCreateInp, rodsServerHost );
+        fd = remoteFileCreate( rsComm, fileCreateInp, rodsServerHost, _out );
     }
     else {
         if ( remoteFlag < 0 ) {
@@ -70,7 +70,7 @@ rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp ) {
 
 int
 remoteFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,
-                  rodsServerHost_t *rodsServerHost ) {
+                  rodsServerHost_t *rodsServerHost, fileCreateOut_t** _out ) {
     int fileInx;
     int status;
 
@@ -84,7 +84,7 @@ remoteFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,
         return status;
     }
 
-    fileInx = rcFileCreate( rodsServerHost->conn, fileCreateInp );
+    fileInx = rcFileCreate( rodsServerHost->conn, fileCreateInp, _out );
 
     if ( fileInx < 0 ) {
         rodsLog( LOG_NOTICE,
@@ -100,7 +100,8 @@ remoteFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,
 int _rsFileCreate(
     rsComm_t*         _comm,
     fileCreateInp_t*  _create_inp,
-    rodsServerHost_t* _server_host ) {
+    rodsServerHost_t* _server_host,
+    fileCreateOut_t** _out ) {
     // =-=-=-=-=-=-=-
     // NOTE:: need to check resource permission and vault permission when RCAT
     // is available
@@ -224,6 +225,14 @@ int _rsFileCreate(
         } // else
 
     } // if !create_err.ok()
+
+    // =-=-=-=-=-=-=-
+    // percolate possible change in phy path up
+    ( *_out ) = ( fileCreateOut_t* ) malloc( sizeof( fileCreateOut_t ) );
+    rstrcpy(
+        (*_out)->file_name,
+        file_obj->physical_path().c_str(),
+        MAX_NAME_LEN );
 
     rstrcpy(
         _create_inp->resc_hier_,

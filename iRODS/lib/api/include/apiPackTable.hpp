@@ -99,6 +99,7 @@ packInstructArray_t api_pack_table_init[] = {
     {"getLimitedPasswordOut_PI", getLimitedPasswordOut_PI, irods::clearInStruct_noop},
     {"fileSyncOut_PI", fileSyncOut_PI, irods::clearInStruct_noop},
     {"fileRenameOut_PI", fileRenameOut_PI, irods::clearInStruct_noop},
+    {"fileCreateOut_PI", fileCreateOut_PI, irods::clearInStruct_noop},
     {"filePutOut_PI", filePutOut_PI, irods::clearInStruct_noop},
     {PACK_TABLE_END_PI, ( char * ) NULL, irods::clearInStruct_noop},
 };

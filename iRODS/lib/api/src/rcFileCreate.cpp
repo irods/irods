@@ -6,11 +6,11 @@
 #include "fileCreate.hpp"
 
 int
-rcFileCreate( rcComm_t *conn, fileCreateInp_t *fileCreateInp ) {
+rcFileCreate( rcComm_t *conn, fileCreateInp_t *fileCreateInp, fileCreateOut_t** _out ) {
     int status;
 
     status = procApiRequest( conn, FILE_CREATE_AN, fileCreateInp, NULL,
-                             ( void ** ) NULL, NULL );
+                             ( void ** ) _out, NULL );
 
     return ( status );
 }

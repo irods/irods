@@ -867,7 +867,8 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // make the call to create a file
-        int status = rsFileCreate( comm, &fileCreateInp );
+        fileCreateOut_t* create_out = 0;
+        int status = rsFileCreate( comm, &fileCreateInp, &create_out );
         if ( status < 0 ) {
             std::stringstream msg;
             msg << "tar_file_create_plugin - rsFileCreate failed for [";

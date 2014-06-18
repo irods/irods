@@ -402,7 +402,9 @@ extern "C" {
                   specColl->cacheDir, mpfFileName, MSSO_RUN_FILE_STR );
         fileCreateInp.otherFlags = NO_CHK_PERM_FLAG;
         strncpy( fileCreateInp.resc_hier_, specColl->rescHier, MAX_NAME_LEN );
-        status = rsFileCreate( rsComm, &fileCreateInp );
+
+        fileCreateOut_t* create_out = 0;
+        status = rsFileCreate( rsComm, &fileCreateInp, &create_out );
         if ( status < 0 ) {
             i = UNIX_FILE_CREATE_ERR - status;
             if ( i == EEXIST ) {
@@ -1488,8 +1490,9 @@ extern "C" {
         fileCreateInp.flags      = fco->flags();
         fileCreateInp.otherFlags = NO_CHK_PERM_FLAG;
 
+        fileCreateOut_t* create_out = 0;
         strncpy( fileCreateInp.resc_hier_, specColl->rescHier, MAX_NAME_LEN );
-        status = rsFileCreate( _ctx.comm(), &fileCreateInp );
+        status = rsFileCreate( _ctx.comm(), &fileCreateInp, &create_out );
 
         if ( status < 0 ) {
             std::stringstream msg;
