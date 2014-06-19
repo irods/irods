@@ -158,7 +158,7 @@ _addResource(
     // pull values out of api call args into rescInfo structure
     strncpy( rescInfo.rescName,     _generalAdminInp->arg2, sizeof rescInfo.rescName );
     strncpy( rescInfo.rescType,     _generalAdminInp->arg3, sizeof rescInfo.rescType );
-    strncpy( rescInfo.rescContext,  _generalAdminInp->arg5, sizeof rescInfo.zoneName );
+    strncpy( rescInfo.rescContext,  _generalAdminInp->arg5, sizeof rescInfo.rescContext );
     strncpy( rescInfo.rescClass,    "cache",                sizeof rescInfo.rescClass );
     strncpy( rescInfo.zoneName,     _generalAdminInp->arg6, sizeof rescInfo.zoneName );
     strncpy( rescInfo.rescChildren, "", 1 );
