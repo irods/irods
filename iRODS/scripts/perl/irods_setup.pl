@@ -2975,7 +2975,15 @@ sub Postgres_CreateDatabase()
 	chomp $PSQL;
 	$PSQL=$PSQL . "/psql";
 #        print "$PSQL -U $DATABASE_ADMIN_NAME -p $DATABASE_PORT -l $DB_NAME";
-	my ($status,$output) = run( "$PSQL -U $DATABASE_ADMIN_NAME -p $DATABASE_PORT -l $DB_NAME" );
+	my ($status,$output);
+        if ($DATABASE_HOST eq "localhost") 
+        {
+            ($status,$output) = run( "$PSQL -U $DATABASE_ADMIN_NAME -p $DATABASE_PORT -l $DB_NAME" );
+        }
+        else
+        {
+            ($status,$output) = run( "$PSQL -U $DATABASE_ADMIN_NAME -p $DATABASE_PORT -l $DB_NAME -h $DATABASE_HOST" );
+        }
         if ( $output =~ /List of databases/i )
         {
                 printStatus( "    [$DB_NAME] Found.\n");
