@@ -1,5 +1,5 @@
 import pydevtest_sessions as s
-from pydevtest_common import assertiCmd, assertiCmdFail, get_irods_config_dir
+from pydevtest_common import assertiCmd, assertiCmdFail, getiCmdOutput, get_irods_config_dir
 from resource_suite import ResourceBase
 import os
 import inspect
@@ -389,6 +389,30 @@ class Test_AllRules(ResourceBase):
         s.adminsession.runCmd('irm', ['-rf', test_coll])
         os.remove(src_file)
 
+
+    def test_rulemsiPhyBundleColl(self):
+        rulefile = 'rulemsiPhyBundleColl.r'
+        
+        # rule test
+        assertiCmd(s.adminsession,"irule -F "+rules30dir+rulefile, "LIST", "Create tar file of collection /tempZone/home/rods/test on resource testallrulesResc")
+        
+        # look for the bundle
+        output = getiCmdOutput(s.adminsession, "ils -L /tempZone/bundle/home/rods")
+        
+        # last token in stdout should be the bundle file's full physical path
+        bundlefile = output[0].split()[-1]
+        
+        # check on the bundle file's name
+        assert bundlefile.find('test.') >= 0
+        
+        # check physical path on resource
+        assert os.path.isfile(bundlefile)
+        
+        # now try as a normal user (expect err msg)
+        assertiCmd(s.sessions[1],"irule -F "+rules30dir+rulefile, "ERROR", "SYS_NO_API_PRIV")
+        
+        # cleanup
+        s.adminsession.runCmd('irm', ['-rf', '/tempZone/bundle/home/rods'])
 
 
 

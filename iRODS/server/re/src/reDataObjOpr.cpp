@@ -3873,6 +3873,14 @@ msiPhyBundleColl( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outPara
         return ( rei->status );
     }
 
+    // For consistency with iphybun
+    if ( rei->uoic->authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        rei->status = SYS_NO_API_PRIV;
+        rodsLog( LOG_ERROR, "msiPhyBundleColl: User %s does not have sufficient privilege, status = %d",
+                 rei->uoic->userName, rei->status );
+        return( rei->status );
+    }
+
 
     if ( strcmp( inpParam1->type, STR_MS_T ) == 0 ) {
         bzero( &structFileExtAndRegInp, sizeof( structFileExtAndRegInp ) );
