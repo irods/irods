@@ -2974,20 +2974,26 @@ sub Postgres_CreateDatabase()
         }
 	chomp $PSQL;
 	$PSQL=$PSQL . "/psql";
-#        print "$PSQL -U $DATABASE_ADMIN_NAME -p $DATABASE_PORT -l $DB_NAME";
-	my ($status,$output) = run( "$PSQL -U $DATABASE_ADMIN_NAME -p $DATABASE_PORT -l $DB_NAME" );
+    if ($DATABASE_HOST eq "localhost") {
+        $psqlcmd = "$PSQL -U $DATABASE_ADMIN_NAME -p $DATABASE_PORT -l $DB_NAME";
+    }
+    else {
+        $psqlcmd = "$PSQL -U $DATABASE_ADMIN_NAME -p $DATABASE_PORT -h $DATABASE_HOST -l $DB_NAME";
+    }
+    printLog( "    Connecting with: $psqlcmd\n" );
+    my ($status,$output) = run( $psqlcmd );
         if ( $output =~ /List of databases/i )
         {
-                printStatus( "    [$DB_NAME] Found.\n");
-                printLog( "    [$DB_NAME] Found.\n");
+                printStatus( "    [$DB_NAME] on [$DATABASE_HOST] found.\n");
+                printLog( "    [$DB_NAME] on [$DATABASE_HOST] found.\n");
         }
         else
         {
                 printError( "\nInstall problem:\n" );
-                printError( "    Database [$DB_NAME] does not exist.\n" );
+                printError( "    Database [$DB_NAME] on [$DATABASE_HOST] cannot be found.\n" );
                 printError( "    $output\n" );
                 printLog( "\nInstall problem:\n" );
-                printLog( "    Database [$DB_NAME] does not exist.\n" );
+                printLog( "    Database [$DB_NAME] on [$DATABASE_HOST] cannot be found.\n" );
                 printLog( "    $output\n" );
                 cleanAndExit( 1 );
         }
