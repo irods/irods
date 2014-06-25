@@ -1260,6 +1260,7 @@ sendStartupPack( rcComm_t *conn, int connectCnt, int reconnFlag ) {
               startupPackBBuf,
               NULL, NULL, 0,
               XML_PROT );
+    freeBBuf( startupPackBBuf );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();

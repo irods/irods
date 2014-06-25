@@ -199,7 +199,7 @@ extern "C" {
             MD5Final( ( unsigned char* )digest, &context );
 
             // =-=-=-=-=-=-=-
-            // make sure 'string' doesn'tend early -
+            // make sure 'string' doesn't end early -
             // scrub out any errant terminating chars
             // by incrementing their value by one
             for ( int i = 0; i < RESPONSE_LEN; ++i ) {
@@ -210,7 +210,7 @@ extern "C" {
 
             // =-=-=-=-=-=-=-
             // cache the digest for the response
-            ptr->digest( digest );
+            ptr->digest( std::string( digest, RESPONSE_LEN ) );
         }
 
         return result;
@@ -247,7 +247,7 @@ extern "C" {
                 // =-=-=-=-=-=-=-
                 // cache the challenge
                 if ( ( result = ASSERT_ERROR( auth_request->challenge, 0, "Challenge attribute is blank." ) ).ok() ) {
-                    ptr->request_result( auth_request->challenge );
+                    ptr->request_result( std::string( auth_request->challenge, CHALLENGE_LEN ) );
                 }
 
                 free( auth_request->challenge );

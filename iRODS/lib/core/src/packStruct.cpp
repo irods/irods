@@ -2901,7 +2901,7 @@ unpackPointerItem( packItem_t *myPackedItem, void **inPtr,
     elementSz = packTypeTable[typeInx].size;
     myTypeNum = packTypeTable[typeInx].number;
 
-    /* alloc pointer to an array of pointer if myDim > 0 */
+    /* alloc pointer to an array of pointers if myDim > 0 */
     if ( myDim > 0 ) {
         if ( numPointer > 0 ) {
             int allocLen, myModu;
@@ -2949,9 +2949,7 @@ unpackPointerItem( packItem_t *myPackedItem, void **inPtr,
         else {
             /* pointer to an array of pointers */
             for ( i = 0; i < numPointer; i++ ) {
-                if ( myPackedItem->pointerType == NO_PACK_POINTER ) {
-                }
-                else {
+                if ( myPackedItem->pointerType != NO_PACK_POINTER ) {
                     outPtr = pointerArray[i] = malloc( numElement * elementSz );
                     status = unpackCharToOutPtr( inPtr, &outPtr,
                                                  numElement * elementSz, myPackedItem, irodsProt );
@@ -3132,10 +3130,12 @@ unpackPointerItem( packItem_t *myPackedItem, void **inPtr,
     }
     default:
         rodsLog( LOG_ERROR,
-                 "unpackPointerItem: Unknow type %d - %s ",
+                 "unpackPointerItem: Unknown type %d - %s ",
                  myTypeNum, myPackedItem->name );
+
         return ( SYS_PACK_INSTRUCT_FORMAT_ERR );
     }
+
     return 0;
 }
 
