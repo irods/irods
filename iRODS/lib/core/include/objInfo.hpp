@@ -179,7 +179,7 @@ extern "C" {
     /* keyValPair_t - str key, str value pair */
     typedef struct KeyValPair {
         int len;
-        char **keyWord;     /* array of keyword */
+        char **keyWord;     /* array of keywords */
         char **value;       /* pointer to an array of values */
     } keyValPair_t;
 

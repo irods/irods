@@ -119,6 +119,7 @@ svrRegDataObj( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
                                &outDataObjInfo );
         if ( status >= 0 && NULL != outDataObjInfo ) { // JMC cppcheck - nullptr
             dataObjInfo->dataId = outDataObjInfo->dataId;
+            clearKeyVal( &outDataObjInfo->condInput );
             free( outDataObjInfo );
         }
     }
