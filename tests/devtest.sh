@@ -54,7 +54,7 @@ fi
 
 # pass any other parameters to the test framework
 if [ "$IRODSDEVTESTCI" == "true" -o "$IRODSDEVTESTTOPO" == "true" ] ; then
-    # trim the ci parameter
+    # trim the ci/topo parameter
     shift
     PYTESTS=$@
 else
@@ -85,9 +85,10 @@ if [ "$PYTHONVERSION" \< "2.7" ] ; then
     cp -r ../$UNITTEST2VERSION/unittest2 .
     cp ../$UNITTEST2VERSION/unit2 .
 fi
-# run the suite
+# run a particular specified test
 if [ "$PYTESTS" != "" ] ; then
     $PYTHONCMD $OPTS $PYTESTS
+# run the full suite (default)
 else
     $PYTHONCMD $OPTS test_resource_types.Test_UnixFileSystem_Resource
     $PYTHONCMD $OPTS test_resource_types.Test_Passthru_Resource
@@ -114,57 +115,59 @@ else
     $PYTHONCMD $OPTS test_load_balanced_suite
     $PYTHONCMD $OPTS test_icommands_recursive
 
-    echo "Skipping test_allrules for now - TURN BACK ON ASAP"
-    #    nosetests -v test_allrules.py
+    # run all test rules
+    nosetests -v test_allrules.py
 
+    # run DICE developed perl-based devtest suite
     if [ ! "$IRODSDEVTESTTOPO" == "true" ] ; then
-        # run DICE developed perl-based devtest suite
         cd $IRODSROOT
         $IRODSROOT/iRODS/irodsctl devtesty
     fi
-fi
 
-# run authentication tests
-if [ "$IRODSDEVTESTCI" == "true" ] ; then
-    cd $IRODSROOT/tests/pydevtest
-    $PYTHONCMD $OPTS auth_suite.Test_Auth_Suite
-fi
+    # run authentication tests
+    if [ "$IRODSDEVTESTCI" == "true" ] ; then
+        cd $IRODSROOT/tests/pydevtest
+        $PYTHONCMD $OPTS auth_suite.Test_Auth_Suite
+    fi
 
-# run OSAuth test by itself
-if [ "$IRODSDEVTESTCI" == "true" ] ; then
-    cd $IRODSROOT/tests/pydevtest
-    set +e
-    passwd <<EOF
+    # run OSAuth test by itself
+    if [ "$IRODSDEVTESTCI" == "true" ] ; then
+        cd $IRODSROOT/tests/pydevtest
+        set +e
+        passwd <<EOF
 temporarypasswordforci
 temporarypasswordforci
 EOF
-    PASSWDRESULT=`echo $?`
-    if [ "$PASSWDRESULT" != 0 ] ; then
-            # known suse11 behavior
-            # needs an empty line for 'old password' prompt
-            passwd <<EOF
+        PASSWDRESULT=`echo $?`
+        if [ "$PASSWDRESULT" != 0 ] ; then
+                # known suse11 behavior
+                # needs an empty line for 'old password' prompt
+                passwd <<EOF
 
 temporarypasswordforci
 temporarypasswordforci
 EOF
+        fi
+        PASSWDRESULT=`echo $?`
+        if [ "$PASSWDRESULT" != 0 ] ; then
+            exit $PASSWDRESULT
+        fi
+        set -e
+        cd $IRODSROOT/tests/pydevtest
+        $PYTHONCMD $OPTS auth_suite.Test_OSAuth_Only
+        ################################################
+        # note:
+        #   this test is run last to minimize the
+        #   window of the following...
+        # side effect:
+        #   unix irods user now has a set password
+        # to remove, run:
+        #   sudo passwd -d irods
+        ################################################
     fi
-    PASSWDRESULT=`echo $?`
-    if [ "$PASSWDRESULT" != 0 ] ; then
-        exit $PASSWDRESULT
-    fi
-    set -e
-    cd $IRODSROOT/tests/pydevtest
-    $PYTHONCMD $OPTS auth_suite.Test_OSAuth_Only
-    ################################################
-    # note:
-    #   this test is run last to minimize the
-    #   window of the following...
-    # side effect:
-    #   unix irods user now has a set password
-    # to remove, run:
-    #   sudo passwd -d irods
-    ################################################
+
 fi
+
 
 # clean up /tmp
 set +x
