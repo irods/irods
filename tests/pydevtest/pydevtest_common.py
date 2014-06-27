@@ -110,7 +110,7 @@ def getiCmdBoolean(mysession,fullcmd,outputtype="",expectedresults=""):
         print "  Expecting "+outputtype+": "+str(expectedresults)
         print "  stdout:"
         print "    | "+"\n    | ".join(output[0].splitlines())
-        print "  stderr: ["+output[1].strip()+"]"
+        print "  stderr: ["+output[1].rstrip('\n')+"]"
         # generate lines based on outputtype
         if (outputtype == "LIST"):
             lines = output[0].splitlines()
@@ -120,8 +120,8 @@ def getiCmdBoolean(mysession,fullcmd,outputtype="",expectedresults=""):
         for line in lines:
             foundcount = 0
             for er in expectedresults:
-                print "  searching ["+line.strip()+"] for ["+er+"] ...",
-                if not re.search(re.escape(er),line.strip()) == None:
+                print "  searching ["+line.rstrip('\n')+"] for ["+er+"] ...",
+                if not re.search(re.escape(er),line.rstrip('\n')) == None:
                     foundcount += 1
                     print "found ("+str(foundcount)+" of "+str(len(expectedresults))+")"
                 else:
