@@ -2966,14 +2966,22 @@ sub Postgres_CreateDatabase()
 
         if( $RUNINPLACE == 1 )
         {
-                $PSQL=`$scripttoplevel/plugins/database/packaging/find_bin_postgres.sh`;
+            $finding_psql="$scripttoplevel/plugins/database/packaging/find_bin_postgres.sh";
         }
         else
         {
-                $PSQL=`$scripttoplevel/packaging/find_bin_postgres.sh`;
+            $finding_psql="$scripttoplevel/packaging/find_bin_postgres.sh";
         }
-	chomp $PSQL;
-	$PSQL=$PSQL . "/psql";
+        $PSQL=`$finding_psql`;
+        chomp $PSQL;
+        if ($PSQL eq "FAIL") {
+            printStatus("    Ran $finding_psql\n");
+            printStatus("    Failed to find psql binary.\n");
+            printLog("    Ran $finding_psql\n");
+            printLog("    Failed to find psql binary.\n");
+            cleanAndExit( 1 );
+        }
+        $PSQL=$PSQL . "/psql";
     if ($DATABASE_HOST eq "localhost") {
         $psqlcmd = "$PSQL -U $DATABASE_ADMIN_NAME -p $DATABASE_PORT -l $DB_NAME";
     }
