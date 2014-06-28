@@ -78,7 +78,7 @@ def create_local_testfile(filename):
     return filepath
 
 def check_icmd_outputtype(fullcmd,outputtype):
-    allowed_outputtypes = ["LIST","EMPTY","ERROR",""]
+    allowed_outputtypes = ["LIST","EMPTY","ERROR","",'STDOUT', 'STDERR', 'STDOUT_MULTILINE', 'STDERR_MULTILINE']
     if outputtype not in allowed_outputtypes:
         print "  full command: ["+fullcmd+"]"
         print "  allowed outputtypes: "+str(allowed_outputtypes)
@@ -97,7 +97,7 @@ def getiCmdOutput(mysession,fullcmd):
     #   [1] is stderr
     return output
 
-def getiCmdBoolean(mysession,fullcmd,outputtype="",expectedresults=""):
+def getiCmdBoolean(mysession,fullcmd,outputtype="",expectedresults="",use_regex=False):
     result = False # should start as failing, then get set to pass
     parameters = shlex.split(fullcmd) # preserves quoted substrings
     # expectedresults needs to be a list
@@ -105,33 +105,68 @@ def getiCmdBoolean(mysession,fullcmd,outputtype="",expectedresults=""):
         expectedresults = [expectedresults]
     # get output from icommand
     output = getiCmdOutput(mysession,fullcmd)
+    # allow old outputtype identifiers
+    if outputtype == "LIST":
+        outputtype = "STDOUT"
+    elif outputtype == "ERROR":
+        outputtype = "STDERR"
+
+    if use_regex:
+        regex_msg = 'regex '
+    else:
+        regex_msg = ''
+
     # check result listing for expected results
-    if (outputtype == "LIST" or outputtype == "ERROR"):
-        print "  Expecting "+outputtype+": "+str(expectedresults)
+    if outputtype in ['STDOUT', 'STDERR', 'STDOUT_MULTILINE', 'STDERR_MULTILINE']:
+        print "  Expecting "+outputtype+": "+regex_msg+str(expectedresults)
         print "  stdout:"
         print "    | "+"\n    | ".join(output[0].splitlines())
         print "  stderr: ["+output[1].rstrip('\n')+"]"
         # generate lines based on outputtype
-        if (outputtype == "LIST"):
+        if outputtype in ['STDOUT', 'STDOUT_MULTILINE']:
             lines = output[0].splitlines()
         else:
             lines = output[1].splitlines()
         # look for expected results in the output lines
-        for line in lines:
-            foundcount = 0
+        if outputtype in ['STDOUT_MULTILINE', 'STDERR_MULTILINE']:
             for er in expectedresults:
-                print "  searching ["+line.rstrip('\n')+"] for ["+er+"] ...",
-                if not re.search(re.escape(er),line.rstrip('\n')) == None:
-                    foundcount += 1
-                    print "found ("+str(foundcount)+" of "+str(len(expectedresults))+")"
+                if use_regex:
+                    regex_pattern = er
                 else:
-                    print "NOTFOUND"
-            if foundcount == len(expectedresults):
+                    regex_pattern = re.escape(er)
+                for line in lines:
+                    print '  searching for ' + regex_msg + '['+er+'] in ['+line.rstrip('\n')+'] ...',
+                    if re.search(regex_pattern, line.rstrip('\n')):
+                        print "FOUND"
+                        break
+                    else:
+                        print "NOTFOUND"
+                else:
+                    print "    --> stopping search - expected result not found"
+                    break
+            else:
                 print "    --> stopping search - expected result(s) found"
                 result = True
-                break
-            else:
-                print "    --> did not find expected result(s)"
+        else:
+            for line in lines:
+                foundcount = 0
+                for er in expectedresults:
+                    if use_regex:
+                        regex_pattern = er
+                    else:
+                        regex_pattern = re.escape(er)
+                    print '  searching for ' + regex_msg + '['+er+'] in ['+line.rstrip('\n')+']...',
+                    if re.search(regex_pattern,line.rstrip('\n')):
+                        foundcount += 1
+                        print "found ("+str(foundcount)+" of "+str(len(expectedresults))+")"
+                    else:
+                        print "NOTFOUND"
+                if foundcount == len(expectedresults):
+                    print "    --> stopping search - expected result(s) found"
+                    result = True
+                    break
+                else:
+                    print "    --> did not find expected result(s)"
     # check that icommand returned no result
     elif (outputtype == "EMPTY" or outputtype == ""):
         print "  Expecting EMPTY output"
@@ -145,12 +180,12 @@ def getiCmdBoolean(mysession,fullcmd,outputtype="",expectedresults=""):
         print "  unknown outputtype requested: ["+outputtype+"]"
         assert False, "WEIRD - DUPLICATE BRANCH - hard fail, bad icommand format"
     # return error if stderr is populated unexpectedly
-    if (outputtype != "ERROR" and output[1] != ""):
+    if outputtype not in ['STDERR', 'STDERR_MULTILINE'] and output[1] != "":
         return False
     # return value
     return result
 
-def assertiCmd(mysession,fullcmd,outputtype="",expectedresults=""):
+def assertiCmd(mysession,fullcmd,outputtype="",expectedresults="",use_regex=False):
     ''' Runs an icommand, detects output type, and searches for
     values in expected results list.
 
@@ -162,11 +197,11 @@ def assertiCmd(mysession,fullcmd,outputtype="",expectedresults=""):
     print "\n"
     print "ASSERTING PASS"
     check_icmd_outputtype(fullcmd,outputtype)
-    assert getiCmdBoolean(mysession,fullcmd,outputtype,expectedresults)
+    assert getiCmdBoolean(mysession,fullcmd,outputtype,expectedresults,use_regex)
     elapsed = time.time() - begin
     return elapsed
 
-def assertiCmdFail(mysession,fullcmd,outputtype="",expectedresults=""):
+def assertiCmdFail(mysession,fullcmd,outputtype="",expectedresults="",use_regex=False):
     ''' Runs an icommand, detects output type, and searches for
     values in expected results list.
 
@@ -178,7 +213,7 @@ def assertiCmdFail(mysession,fullcmd,outputtype="",expectedresults=""):
     print "\n"
     print "ASSERTING FAIL"
     check_icmd_outputtype(fullcmd,outputtype)
-    assert not getiCmdBoolean(mysession,fullcmd,outputtype,expectedresults)
+    assert not getiCmdBoolean(mysession,fullcmd,outputtype,expectedresults,use_regex)
     elapsed = time.time() - begin
     return elapsed
 

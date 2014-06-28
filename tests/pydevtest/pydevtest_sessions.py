@@ -86,11 +86,12 @@ def admin_down():
 
     # users
     if not c.RUN_AS_RESOURCE_SERVER:
-	    for u in users[1:]:
-		adminsession.runAdminCmd('iadmin',["rfg",testgroup,u['name']])
-		adminsession.runAdminCmd('iadmin',["rmuser",u['name']])
-	    # groups
-	    adminsession.runAdminCmd('iadmin',['rmgroup',testgroup])
+        for u in users[1:]:
+            adminsession.runAdminCmd('iadmin',["rfg",testgroup,u['name']])
+            adminsession.runAdminCmd('iadmin',["rmuser",u['name']])
+        # groups
+        adminsession.runAdminCmd('iadmin',['rmgroup',testgroup])
+        adminsession.runAdminCmd('iadmin', ['rum'])
 
     print "admin session exiting: user["+adminsession.getUserName()+"] zone["+adminsession.getZoneName()+"]"
     adminsession.runCmd('iexit', ['full'])
