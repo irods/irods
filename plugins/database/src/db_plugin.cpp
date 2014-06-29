@@ -9638,9 +9638,23 @@ checkLevel:
         if ( logSQL != 0 ) {
             rodsLog( LOG_SQL, "chlSetAVUMetadata SQL 2" );
         }
-        /* Query to see if the attribute exists for this object */
+
+        /* Treat unspecified unit as empty string */
+        if ( _new_unit == NULL ) {
+            _new_unit = "";
+        }
+
+        /* Query to see if the attribute exists for this object
+         *
+         * If status == 0: then object has zero AVUs with matching A
+         * If status == 1: then object has *exactly one* AVU with this A AND said AVU is not shared with any other object
+         * If status >= 2: then at least one of:
+         *                     object has multiple AVUs with this A
+         *                     object has an AVU with this A and said AVU is shared with another object
+         */
+
         status = cmlGetMultiRowStringValuesFromSql( "select meta_id from R_OBJT_METAMAP where meta_id in (select meta_id from R_META_MAIN where meta_attr_name=? AND meta_id in (select meta_id from R_OBJT_METAMAP where object_id=?))",
-                 metaIdStr, MAX_NAME_LEN, 2, _attribute, objIdStr, 0, &icss );
+                                                    metaIdStr, MAX_NAME_LEN, 2, _attribute, objIdStr, 0, &icss );
 
         if ( status <= 0 ) {
             if ( status == CAT_NO_ROWS_FOUND ) {
@@ -9657,7 +9671,7 @@ checkLevel:
         }
 
         if ( status > 1 ) {
-            /* More than one AVU, need to do a delete with wildcards then add */
+            /* Cannot update AVU in-place, need to do a delete with wildcards then add */
             status = chlDeleteAVUMetadata( _comm, 1, _type, _name, _attribute, "%",
                                            "%", 1 );
             if ( status != 0 ) {
@@ -9694,92 +9708,32 @@ checkLevel:
             return ERROR( status, "delete avu metadata failed" );
         }
 
-        /* Only one metaId for this Attribute and Object has been found */
-
+        /* Only one metaId for this Attribute and Object has been found, and the metaID is not shared */
         rodsLog( LOG_NOTICE, "chlSetAVUMetadata found metaId %s", metaIdStr );
-        /* Check if there are other objects are using this AVU  */
+
         if ( logSQL != 0 ) {
             rodsLog( LOG_SQL, "chlSetAVUMetadata SQL 4" );
         }
-        status = cmlGetMultiRowStringValuesFromSql( "select meta_id from R_META_MAIN where meta_attr_name=?",
-                 metaIdStr, MAX_NAME_LEN, 2, _attribute, 0, 0, &icss );
-        if ( status <= 0 ) {
+
+        getNowStr( myTime );
+        cllBindVarCount = 0;
+        cllBindVars[cllBindVarCount++] = _new_value;
+        cllBindVars[cllBindVarCount++] = _new_unit;
+        cllBindVars[cllBindVarCount++] = myTime;
+        cllBindVars[cllBindVarCount++] = metaIdStr;
+
+        if ( logSQL != 0 ) {
+            rodsLog( LOG_SQL, "chlSetAVUMetadata SQL 5" );
+        }
+        status = cmlExecuteNoAnswerSql( "update R_META_MAIN set meta_attr_value=?,meta_attr_unit=?,modify_ts=? where meta_id=?",
+                                        &icss );
+
+        if ( status != 0 ) {
             rodsLog( LOG_NOTICE,
-                     "chlSetAVUMetadata cmlGetMultiRowStringValueFromSql failure %d",
+                     "chlSetAVUMetadata cmlExecuteNoAnswerSql update failure %d",
                      status );
-            return ERROR( status, "get avu failed" );
-        }
-        if ( status > 1 ) {
-            /* Can't modify in place, need to delete and add,
-               which will reuse matching AVUs if they exist.
-            */
-            status = chlDeleteAVUMetadata( _comm, 1, _type, _name, _attribute,
-                                           "%", "%", 1 );
-            if ( status != 0 ) {
-                /* Give it a second chance
-                 * as per r5350:
-                 *   "Improve the handling of an ICAT AVU metadata concurrency case.
-                 *
-                 *    When setting user-defined meta-data (AVUs), if two Agents try to
-                 *    modify the the same metadata (which exists with different values in
-                 *    R_META_MAIN), one of the chlSetAVUMetadata fails.  These changes allow
-                 *    the agent to retry a second time.
-                 *
-                 *    Since this is in the case of "delete then add", the
-                 *    chlDeleteAVUMetadata is called with noCommit=1, but the delete fails
-                 *    (since the AVU was changed by the other agent), so in this case
-                 *    (noCommit set) it should not do the rollback.  And then the caller,
-                 *    chlSetAVUMetadata, can try a second time to modify the AVU."
-                 *
-                 * Essentially, this is a MASSSIVE hack that attempts to bypass a race condition
-                 * by TRYING TWICE. This implies other major race conditions also exist related
-                 * to the AVUMetadata, as well as the fact that this race condition is not
-                 * actually fixed. Leaving it in for now, as it is marginally better than the
-                 * alternative, but this is a definite TODO: Implement AVUMetadata locks.
-                 */
-                status = chlDeleteAVUMetadata( _comm, 1, _type, _name, _attribute, "%",
-                                               "%", 1 );
-            }
-            if ( status != 0 ) {
-                _rollback( "chlSetAVUMetadata" );
-                return ERROR( status, "delete avu metadata failed" );
-            }
-            status = chlAddAVUMetadata( _comm, 0, _type, _name, _attribute,
-                                        _new_value, _new_unit );
-        }
-        else {
-            getNowStr( myTime );
-            cllBindVarCount = 0;
-            cllBindVars[cllBindVarCount++] = _new_value;
-            if ( _new_unit != NULL && *_new_unit != '\0' ) {
-                cllBindVars[cllBindVarCount++] = _new_unit;
-            }
-            cllBindVars[cllBindVarCount++] = myTime;
-            cllBindVars[cllBindVarCount++] = _attribute;
-            cllBindVars[cllBindVarCount++] = metaIdStr;
-            if ( _new_unit != NULL && *_new_unit != '\0' ) {
-                if ( logSQL != 0 ) {
-                    rodsLog( LOG_SQL, "chlSetAVUMetadata SQL 5" );
-                }
-                status = cmlExecuteNoAnswerSql(
-                             "update R_META_MAIN set meta_attr_value=?,meta_attr_unit=?,modify_ts=? where meta_attr_name=? and meta_id=?",
-                             &icss );
-            }
-            else {
-                if ( logSQL != 0 ) {
-                    rodsLog( LOG_SQL, "chlSetAVUMetadata SQL 6" );
-                }
-                status = cmlExecuteNoAnswerSql(
-                             "update R_META_MAIN set meta_attr_value=?,modify_ts=? where meta_attr_name=? and meta_id=?",
-                             &icss );
-            }
-            if ( status != 0 ) {
-                rodsLog( LOG_NOTICE,
-                         "chlSetAVUMetadata cmlExecuteNoAnswerSql update failure %d",
-                         status );
-                _rollback( "chlSetAVUMetadata" );
-                return ERROR( status, "set avu failed" );
-            }
+            _rollback( "chlSetAVUMetadata" );
+            return ERROR( status, "set avu failed" );
         }
 
         /* Audit */

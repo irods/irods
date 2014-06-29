@@ -114,6 +114,7 @@ else
     $PYTHONCMD $OPTS test_xmsg
     $PYTHONCMD $OPTS test_load_balanced_suite
     $PYTHONCMD $OPTS test_icommands_recursive
+    $PYTHONCMD $OPTS test_imeta_set
 
     # run all test rules
     nosetests -v test_allrules.py
