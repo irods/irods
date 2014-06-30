@@ -115,9 +115,7 @@ else
     $PYTHONCMD $OPTS test_load_balanced_suite
     $PYTHONCMD $OPTS test_icommands_recursive
     $PYTHONCMD $OPTS test_imeta_set
-
-    # run all test rules
-    nosetests -v test_allrules.py
+    $PYTHONCMD $OPTS test_allrules
 
     # run DICE developed perl-based devtest suite
     if [ ! "$IRODSDEVTESTTOPO" == "true" ] ; then

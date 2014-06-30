@@ -1,15 +1,25 @@
+import os
+import socket
+import shutil
+import sys
+
+if (sys.version_info >= (2,7)):
+    import unittest
+else:
+    import unittest2 as unittest
+
+import metaclass_unittest_test_case_generator
 import pydevtest_sessions as s
 from pydevtest_common import assertiCmd, assertiCmdFail, getiCmdOutput, get_irods_config_dir
 from resource_suite import ResourceBase
-import os
-import inspect
-import socket
-import shutil
 
-class Test_AllRules(ResourceBase):
+
+class Test_AllRules(unittest.TestCase, ResourceBase):
+
+    __metaclass__ = metaclass_unittest_test_case_generator.MetaclassUnittestTestCaseGenerator
 
     global rules30dir
-    currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+    currentdir = os.path.dirname(os.path.realpath(__file__))
     rules30dir = currentdir+"/../../iRODS/clients/icommands/test/rules3.0/"
     conf_dir = get_irods_config_dir()
 
@@ -94,28 +104,13 @@ class Test_AllRules(ResourceBase):
         self.run_resource_teardown()
         s.twousers_down()
 
- 
 
-    #def create_testallrules_test(self, rulefile):
-        #def do_test_expected(self):
-            #self.run_irule(rulefile)
-        #return do_test_expected
-
-
-    def run_irule(self, rulefile):
-        global rules30dir
-        assertiCmd(s.adminsession, "icd" )
-        assertiCmd(s.adminsession,"irule -vF "+rules30dir+rulefile, "LIST", "completed successfully")
-        
-        
-
-    def test_allrules(self):
+    def generate_tests_allrules():
         global rules30dir
         print rules30dir
 
-        for rulefile in sorted(os.listdir(rules30dir)):
+        def filter_rulefiles(rulefile):
 
-            skipme = 0
             # skip rules that handle .irb files
             names_to_skip = [
                 "rulemsiAdmAppendToTopOfCoreIRB",
@@ -123,7 +118,7 @@ class Test_AllRules(ResourceBase):
                 "rulemsiGetRulesFromDBIntoStruct",
             ]
             for n in names_to_skip:
-                if n in rulefile: print "skipping "+rulefile+" ----- RE"; skipme = 1
+                if n in rulefile: print "skipping "+rulefile+" ----- RE"; return False
 
             # skip rules that fail by design
             names_to_skip = [
@@ -132,7 +127,7 @@ class Test_AllRules(ResourceBase):
                 "ruleworkflowfail",
             ]
             for n in names_to_skip:
-                if n in rulefile: print "skipping "+rulefile+" ----- failbydesign"; skipme = 1
+                if n in rulefile: print "skipping "+rulefile+" ----- failbydesign"; return False
 
             # skip rules that are for workflows
             names_to_skip = [
@@ -141,7 +136,7 @@ class Test_AllRules(ResourceBase):
                 "ruleTestWSO2.r",
             ]
             for n in names_to_skip:
-                if n in rulefile: print "skipping "+rulefile+" ----- failbydesign"; skipme = 1
+                if n in rulefile: print "skipping "+rulefile+" ----- failbydesign"; return False
 
             # skip if an action (run in the core.re), not enough input/output for irule
             names_to_skip = [
@@ -188,7 +183,7 @@ class Test_AllRules(ResourceBase):
                 "rulemsiVacuum",
             ]
             for n in names_to_skip:
-                if n in rulefile: print "skipping "+rulefile+" ----- input/output"; skipme = 1
+                if n in rulefile: print "skipping "+rulefile+" ----- input/output"; return False
 
 
             # skip rules we are not yet supporting
@@ -198,7 +193,7 @@ class Test_AllRules(ResourceBase):
                 "rulemsiobj",
             ]
             for n in names_to_skip:
-                if n in rulefile: print "skipping "+rulefile+" ----- DBO/DBR/msiobj"; skipme = 1
+                if n in rulefile: print "skipping "+rulefile+" ----- DBO/DBR/msiobj"; return False
 
             # ERA
             names_to_skip = [
@@ -212,7 +207,7 @@ class Test_AllRules(ResourceBase):
                 "rulemsiGetCollectionPSmeta-null" # marked for removal - iquest now handles this natively
             ]
             for n in names_to_skip:
-                if n in rulefile: print "skipping "+rulefile+" ----- ERA"; skipme = 1
+                if n in rulefile: print "skipping "+rulefile+" ----- ERA"; return False
 
             # XMSG
             names_to_skip = [
@@ -226,7 +221,7 @@ class Test_AllRules(ResourceBase):
                 "rulewriteXMsg",
             ]
             for n in names_to_skip:
-                if n in rulefile: print "skipping "+rulefile+" ----- XMSG"; skipme = 1
+                if n in rulefile: print "skipping "+rulefile+" ----- XMSG"; return False
 
             # FTP
             names_to_skip = [
@@ -234,7 +229,7 @@ class Test_AllRules(ResourceBase):
                 "rulemsiTwitterPost",
             ]
             for n in names_to_skip:
-                if n in rulefile: print "skipping "+rulefile+" ----- FTP"; skipme = 1
+                if n in rulefile: print "skipping "+rulefile+" ----- FTP"; return False
 
             # webservices
             names_to_skip = [
@@ -245,7 +240,7 @@ class Test_AllRules(ResourceBase):
                 "rulemsiSdssImgCutout_GetJpeg",
             ]
             for n in names_to_skip:
-                if n in rulefile: print "skipping "+rulefile+" ----- webservices"; skipme = 1
+                if n in rulefile: print "skipping "+rulefile+" ----- webservices"; return False
 
             # XML
             names_to_skip = [
@@ -254,7 +249,7 @@ class Test_AllRules(ResourceBase):
                 "rulemsiXsltApply",
             ]
             for n in names_to_skip:
-                if n in rulefile: print "skipping "+rulefile+" ----- XML"; skipme = 1
+                if n in rulefile: print "skipping "+rulefile+" ----- XML"; return False
 
             # transition to core microservices only
             names_to_skip = [
@@ -300,10 +295,8 @@ class Test_AllRules(ResourceBase):
                 "rulewriteKeyValPairs.r",
             ]
             for n in names_to_skip:
-                if n in rulefile: print "skipping "+rulefile+" ----- transition to core"; skipme = 1
+                if n in rulefile: print "skipping "+rulefile+" ----- transition to core"; return False
 
-            if skipme == 1: continue
-            
             # skipping rules requiring additional .re files in community code
             names_to_skip = [
                 "rulemsiAdmAddAppRuleStruct.r",
@@ -314,41 +307,47 @@ class Test_AllRules(ResourceBase):
                 "rulemsiAdmWriteRulesFromStructIntoFile.r",
             ]
             for n in names_to_skip:
-                if n in rulefile: print "skipping "+rulefile+" ----- community"; skipme = 1
-
-            if skipme == 1: continue
+                if n in rulefile: print "skipping "+rulefile+" ----- community"; return False
 
             # skipping for now, not sure why it's throwing a stacktrace at the moment
             if "rulemsiPropertiesToString" in rulefile:
-                print "skipping "+rulefile+" ----- b/c of stacktrace"; continue
+                print "skipping "+rulefile+" ----- b/c of stacktrace"; return False
 
             # misc / other
             if "ruleintegrity" in rulefile:
-                print "skipping "+rulefile+" ----- integrityChecks"; continue
+                print "skipping "+rulefile+" ----- integrityChecks"; return False
             if "z3950" in rulefile:
-                print "skipping "+rulefile+" ----- z3950"; continue
+                print "skipping "+rulefile+" ----- z3950"; return False
             if "rulemsiImage" in rulefile:
-                print "skipping "+rulefile+" ----- image"; continue
+                print "skipping "+rulefile+" ----- image"; return False
             if "rulemsiRda" in rulefile:
-                print "skipping "+rulefile+" ----- RDA"; continue
+                print "skipping "+rulefile+" ----- RDA"; return False
             if "rulemsiCollRepl" in rulefile:
-                print "skipping "+rulefile+" ----- deprecated"; continue
+                print "skipping "+rulefile+" ----- deprecated"; return False
             if "rulemsiDataObjGetWithOptions" in rulefile:
-                print "skipping "+rulefile+" ----- deprecated"; continue
+                print "skipping "+rulefile+" ----- deprecated"; return False
             if "rulemsiDataObjReplWithOptions" in rulefile:
-                print "skipping "+rulefile+" ----- deprecated"; continue
+                print "skipping "+rulefile+" ----- deprecated"; return False
             if "rulemsiServerBackup" in rulefile:
-                print "skipping "+rulefile+" ----- serverbackup"; continue
+                print "skipping "+rulefile+" ----- serverbackup"; return False
             if "rulemsiExecStrCondQueryWithOptions" in rulefile:
-                print "skipping "+rulefile+" ----- SYS_HEADER_READ_LEN_ERR, Operation now in progress"; continue
+                print "skipping "+rulefile+" ----- SYS_HEADER_READ_LEN_ERR, Operation now in progress"; return False
             if "rulemsiTarFileExtract" in rulefile:
-                print "skipping "+rulefile+" ----- CAT_NO_ROWS_FOUND - failed in call to getDataObjInfoIncSpecColl"; continue
+                print "skipping "+rulefile+" ----- CAT_NO_ROWS_FOUND - failed in call to getDataObjInfoIncSpecColl"; return False
             if "rulemsiDataObjRsync" in rulefile:
-                print "skipping "+rulefile+" ----- tested separately"; continue
+                print "skipping "+rulefile+" ----- tested separately"; return False
 
-            # actually run the test - yield means create a separate test for each rulefile
-            print "-- running "+rulefile
-            yield self.run_irule, rulefile
+            return True
+            
+        for rulefile in filter(filter_rulefiles, sorted(os.listdir(rules30dir))):
+            def make_test(rulefile):
+                def test(self):
+                    global rules30dir
+                    assertiCmd(s.adminsession, "icd" )
+                    assertiCmd(s.adminsession, "irule -vF "+rules30dir+rulefile, "STDOUT", "completed successfully")
+                return test
+
+            yield 'test_'+rulefile.replace('.', '_'), make_test(rulefile)
 
 
     def test_rulemsiDataObjRsync(self):
