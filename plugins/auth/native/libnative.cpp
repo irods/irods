@@ -164,6 +164,7 @@ extern "C" {
                 int errsv = -1;
 #else
                 struct termios tty;
+                memset( &tty, 0, sizeof( tty ) );
                 tcgetattr( STDIN_FILENO, &tty );
                 tcflag_t oldflag = tty.c_lflag;
                 tty.c_lflag &= ~ECHO;
