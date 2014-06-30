@@ -352,8 +352,8 @@ int msiString2StrArray(msParam_t *inBufferP, msParam_t* outStrArrayP, ruleExecIn
 			table_[ "msiAdmInsertFNMapsFromStructIntoDB" ] = new irods::ms_table_entry( "msiAdmInsertFNMapsFromStructIntoDB",2, (funcPtr) msiAdmInsertFNMapsFromStructIntoDB );
 			table_[ "msiGetFNMapsFromDBIntoStruct" ] = new irods::ms_table_entry( "msiGetFNMapsFromDBIntoStruct",3, (funcPtr) msiGetFNMapsFromDBIntoStruct );
 			table_[ "msiAdmWriteFNMapsFromStructIntoFile" ] = new irods::ms_table_entry( "msiAdmWriteFNMapsFromStructIntoFile",2, (funcPtr) msiAdmWriteFNMapsFromStructIntoFile );
-			table_[ "msiAdmWriteMSrvcsFromStructIntoFilemsiAdmReadMSrvcsFromFileIntoStruct" ] = new irods::ms_table_entry( "msiAdmReadMSrvcsFromFileIntoStruct",2, (funcPtr) msiAdmReadMSrvcsFromFileIntoStruct );
-			table_[ "msiAdmInsertMSrvcsFromStructIntoDB" ] = new irods::ms_table_entry( "msiAdmInsertMSrvcsFromStructIntoDB",1, (funcPtr) msiAdmInsertMSrvcsFromStructIntoDB );
+			table_[ "msiAdmReadMSrvcsFromFileIntoStruct" ] = new irods::ms_table_entry( "msiAdmReadMSrvcsFromFileIntoStruct",2, (funcPtr) msiAdmReadMSrvcsFromFileIntoStruct );
+			table_[ "msiAdmInsertMSrvcsFromStructIntoDB" ] = new irods::ms_table_entry( "msiAdmInsertMSrvcsFromStructIntoDB",2, (funcPtr) msiAdmInsertMSrvcsFromStructIntoDB );
 			table_[ "msiGetMSrvcsFromDBIntoStruct" ] = new irods::ms_table_entry( "msiGetMSrvcsFromDBIntoStruct",2, (funcPtr) msiGetMSrvcsFromDBIntoStruct );
 			table_[ "msiAdmWriteMSrvcsFromStructIntoFile" ] = new irods::ms_table_entry( "msiAdmWriteMSrvcsFromStructIntoFile",2, (funcPtr) msiAdmWriteMSrvcsFromStructIntoFile );
 			table_[ "writeXMsg" ] = new irods::ms_table_entry( "writeXMsg",3, (funcPtr) writeXMsg );
