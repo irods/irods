@@ -163,17 +163,6 @@ int rsApiHandler(
                                  myArgv[3] );
     }
 
-    // =-=-=-=-=-=-=-
-    // clear the incoming packing unstruction
-    if ( myInStruct != NULL ) {
-        if ( RsApiTable[apiInx]->clearInStruct ) {
-            RsApiTable[apiInx]->clearInStruct( myInStruct );
-        }
-
-        free( myInStruct );
-        myInStruct = NULL;
-    }
-
     if ( apiNumber == GSI_AUTH_REQUEST_AN && retVal >= 0 ) {
         /* the clientUser.userName and zoneZone could be fillin in
          * rsGsiAuthRequest
@@ -184,6 +173,17 @@ int rsApiHandler(
     if ( retVal != SYS_NO_HANDLER_REPLY_MSG ) {
         status = sendAndProcApiReply
                  ( rsComm, apiInx, retVal, myOutStruct, &myOutBsBBuf );
+    }
+
+    // =-=-=-=-=-=-=-
+    // clear the incoming packing instruction
+    if ( myInStruct != NULL ) {
+        if ( RsApiTable[apiInx]->clearInStruct ) {
+            RsApiTable[apiInx]->clearInStruct( myInStruct );
+        }
+
+        free( myInStruct );
+        myInStruct = NULL;
     }
 
     if ( retVal >= 0 && status < 0 ) {

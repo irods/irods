@@ -188,6 +188,8 @@ extern "C" {
     addTagStruct( tagStruct_t *condInput, char *preTag, char *postTag,
                   char *keyWord );
     void
+    clearFileOpenInp( void* voidInp );
+    void
     clearDataObjInp( void* );
     void
     clearCollInp( void* );

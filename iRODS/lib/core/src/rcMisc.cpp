@@ -1578,6 +1578,18 @@ clearRegReplicaInp( void* voidInp ) {
 }
 
 void
+clearFileOpenInp( void* voidInp ) {
+    fileOpenInp_t *fileOpenInp = ( fileOpenInp_t* ) voidInp;
+    if ( fileOpenInp == NULL ) {
+        return;
+    }
+    clearKeyVal( &fileOpenInp->condInput );
+    memset( fileOpenInp, 0, sizeof( fileOpenInp_t ) );
+
+    return;
+}
+
+void
 clearDataObjInp( void* voidInp ) {
     dataObjInp_t *dataObjInp = ( dataObjInp_t* ) voidInp;
     if ( dataObjInp == NULL ) {

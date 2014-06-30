@@ -28,15 +28,15 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         FILE_CREATE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
-        "fileOpenInp_PI", 0, "fileCreateOut_t", 0, ( funcPtr ) RS_FILE_CREATE, irods::clearInStruct_noop
+        "fileOpenInp_PI", 0, "fileCreateOut_t", 0, ( funcPtr ) RS_FILE_CREATE, clearFileOpenInp
     },
     {
         FILE_OPEN_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
-        "fileOpenInp_PI", 0, NULL, 0, ( funcPtr ) RS_FILE_OPEN, irods::clearInStruct_noop
+        "fileOpenInp_PI", 0, NULL, 0, ( funcPtr ) RS_FILE_OPEN, clearFileOpenInp
     },
     {
         CHK_N_V_PATH_PERM_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
-        "fileOpenInp_PI", 0, NULL, 0, ( funcPtr ) RS_CHK_NV_PATH_PERM, irods::clearInStruct_noop
+        "fileOpenInp_PI", 0, NULL, 0, ( funcPtr ) RS_CHK_NV_PATH_PERM, clearFileOpenInp
     },
     {
         FILE_WRITE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
@@ -96,15 +96,15 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         FILE_TRUNCATE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
-        "fileOpenInp_PI", 0, NULL, 0, ( funcPtr ) RS_FILE_TRUNCATE, irods::clearInStruct_noop
+        "fileOpenInp_PI", 0, NULL, 0, ( funcPtr ) RS_FILE_TRUNCATE, clearFileOpenInp
     },
     {
         FILE_PUT_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
-        "fileOpenInp_PI", 1, "filePutOut_PI", 0, ( funcPtr ) RS_FILE_PUT, irods::clearInStruct_noop
+        "fileOpenInp_PI", 1, "filePutOut_PI", 0, ( funcPtr ) RS_FILE_PUT, clearFileOpenInp
     },
     {
         FILE_GET_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
-        "fileOpenInp_PI", 0, NULL, 1, ( funcPtr ) RS_FILE_GET, irods::clearInStruct_noop
+        "fileOpenInp_PI", 0, NULL, 1, ( funcPtr ) RS_FILE_GET, clearFileOpenInp
     },
     {
         FILE_STAGE_TO_CACHE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
