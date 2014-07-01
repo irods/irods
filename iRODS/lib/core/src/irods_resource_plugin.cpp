@@ -3,6 +3,7 @@
 // =-=-=-=-=-=-=-
 // My Includes
 #include "irods_resource_plugin.hpp"
+#include "irods_resource_plugin_impostor.hpp"
 #include "irods_load_plugin.hpp"
 #include "irods_resources_home.hpp"
 #include "irods_operation_rule_execution_manager_base.hpp"
@@ -275,16 +276,30 @@ namespace irods {
                                 const std::string _context ) {
 
         resource* resc = 0;
-        error ret = load_plugin< resource >( resc, _plugin_name, RESOURCES_HOME, _inst_name, _context );
+        error ret = load_plugin< resource >( 
+                        resc, 
+                        _plugin_name, 
+                        RESOURCES_HOME, 
+                        _inst_name, 
+                        _context );
         if ( ret.ok() && resc ) {
             _plugin.reset( resc );
-            return SUCCESS();
 
         }
         else {
-            return PASS( ret );
+            rodsLog( 
+                LOG_DEBUG,
+                "loading impostor resource for [%s] of type [%s] with context [%s]",
+                _inst_name.c_str(),
+                _plugin_name.c_str(),
+                _context.c_str() );
+            _plugin.reset( 
+                new impostor_resource( 
+                        "impostor_resource", "" ) );
 
         }
+        
+        return SUCCESS();
 
     } // load_resource_plugin
 

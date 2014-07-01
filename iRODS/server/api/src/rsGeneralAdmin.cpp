@@ -181,17 +181,16 @@ _addResource(
     // Check that there is a plugin matching the resource type
     irods::plugin_name_generator name_gen;
     if ( !name_gen.exists( rescInfo.rescType, irods::RESOURCES_HOME ) ) {
-        std::stringstream msg;
-        msg << __FUNCTION__;
-        msg << " - No plugin exists to provide resource type \"";
-        msg << rescInfo.rescType << "\".";
-        irods::log( ERROR( SYS_INVALID_RESC_TYPE, msg.str() ) );
-        result = SYS_INVALID_RESC_TYPE;
+        rodsLog( 
+            LOG_DEBUG,
+            "No plugin exists to provide resource [%s] of type [%s]",
+            rescInfo.rescName,
+            rescInfo.rescType );
     }
 
     // =-=-=-=-=-=-=-
     // apply preproc policy enforcement point for creating a resource, handle errors
-    else if ( ( result =  applyRuleArg( "acPreProcForCreateResource", args, argc, &_rei2, NO_SAVE_REI ) ) < 0 ) {
+    if ( ( result =  applyRuleArg( "acPreProcForCreateResource", args, argc, &_rei2, NO_SAVE_REI ) ) < 0 ) {
         if ( _rei2.status < 0 ) {
             result = _rei2.status;
         }

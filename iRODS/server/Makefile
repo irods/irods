@@ -65,6 +65,7 @@ SVR_CORE_OBJS =	\
    		$(svrCoreObjDir)/irods_oracle_object.o  \
    		$(svrCoreObjDir)/irods_server_api_table.o  \
    		$(svrCoreObjDir)/irods_get_l1desc.o  \
+   		$(svrCoreObjDir)/irods_resource_plugin_impostor.o  \
         $(svrCoreObjDir)/readServerConfig.o
 
 DB_IFACE_OBJS = \
