@@ -49,9 +49,12 @@ rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
     else {
         status = rcGeneralAdmin( rodsServerHost->conn,
                                  generalAdminInp );
-        if ( status < 0 ) {
-            replErrorStack( rodsServerHost->conn->rError, &rsComm->rError );
-        }
+
+        // =-=-=-=-=-=-=-
+        // always replicate the error stack [#2184] for 'iadmin lt' reporting
+        // back to the client if it had been redirected
+        replErrorStack( rodsServerHost->conn->rError, &rsComm->rError );
+
     }
     if ( status < 0 ) {
         rodsLog( LOG_NOTICE,
