@@ -11,7 +11,7 @@ CREATE TABLE ext_audit_actions
 WITH (
   OIDS=FALSE
 );
-ALTER TABLE ext_audit_actions OWNER TO rodsbuild;
+ALTER TABLE ext_audit_actions OWNER TO irods;
 
 -- Index: idx_ext_audit1
 
@@ -66,7 +66,7 @@ CREATE TABLE ext_coll_historical
 WITH (
   OIDS=FALSE
 );
-ALTER TABLE ext_coll_historical OWNER TO rodsbuild;
+ALTER TABLE ext_coll_historical OWNER TO irods;
 
 -- Index: idx_ext_coll1
 
@@ -121,12 +121,13 @@ CREATE TABLE ext_data_historical
   data_mode character varying(32),
   r_comment character varying(1000),
   create_ts character varying(32),
-  modify_ts character varying(32)
+  modify_ts character varying(32),
+  resc_hier character varying(1000)
 )
 WITH (
   OIDS=FALSE
 );
-ALTER TABLE ext_data_historical OWNER TO rodsbuild;
+ALTER TABLE ext_data_historical OWNER TO irods;
 
 -- Index: idx_ext_data1
 
@@ -165,12 +166,16 @@ CREATE TABLE ext_resc_historical
   r_comment character varying(1000),
   resc_status character varying(32),
   create_ts character varying(32),
-  modify_ts character varying(32)
+  modify_ts character varying(32),
+  resc_children character varying(1000),
+  resc_context character varying(1000),
+  resc_parent character varying(1000),
+  resc_objcount bigint default 0
 )
 WITH (
   OIDS=FALSE
 );
-ALTER TABLE ext_resc_historical OWNER TO rodsbuild;
+ALTER TABLE ext_resc_historical OWNER TO irods;
 
 -- Index: idx_ext_resc1
 
@@ -207,7 +212,7 @@ CREATE TABLE ext_zone_historical
 WITH (
   OIDS=FALSE
 );
-ALTER TABLE ext_zone_historical OWNER TO rodsbuild;
+ALTER TABLE ext_zone_historical OWNER TO irods;
 
 -- Index: idx_ext_zone1
 
@@ -252,7 +257,7 @@ $BODY$BEGIN
 END;$BODY$
   LANGUAGE 'plpgsql' VOLATILE
   COST 100;
-ALTER FUNCTION tg_ext_audit_delete() OWNER TO rodsbuild;
+ALTER FUNCTION tg_ext_audit_delete() OWNER TO irods;
 
 -- View: vw_ext_data
 
@@ -269,7 +274,7 @@ CREATE OR REPLACE VIEW vw_ext_data AS
 			SELECT *, TRUE AS is_deleted FROM ext_data_historical) data
 	WHERE	data.coll_id = coll.coll_id;
 	
-ALTER TABLE vw_ext_data OWNER TO rodsbuild;
+ALTER TABLE vw_ext_data OWNER TO irods;
 
 -- View: vw_ext_coll
 
@@ -284,7 +289,7 @@ CREATE OR REPLACE VIEW vw_ext_coll AS
 			UNION ALL
 			SELECT *, TRUE AS is_deleted FROM ext_coll_historical) coll;
 
-ALTER TABLE vw_ext_coll OWNER TO rodsbuild;
+ALTER TABLE vw_ext_coll OWNER TO irods;
 
 -- View: vw_ext_resc
 
@@ -301,7 +306,7 @@ CREATE OR REPLACE VIEW vw_ext_resc AS
 			SELECT *, true AS is_deleted
 			FROM ext_resc_historical) resc;
 
-ALTER TABLE vw_ext_resc OWNER TO rodsbuild;
+ALTER TABLE vw_ext_resc OWNER TO irods;
 
 -- View: vw_ext_audit
 
@@ -323,7 +328,7 @@ to_timestamp(to_number(aud.create_ts::text, '09999999999'::text)::double precisi
 	FROM 	vw_ext_resc resc, ext_audit_actions ext_aud, r_objt_audit aud, r_user_main usr
 	WHERE 	resc.resc_id = aud.object_id AND aud.action_id = ext_aud.action_id AND aud.user_id = usr.user_id;
 
-ALTER TABLE vw_ext_audit OWNER TO rodsbuild;
+ALTER TABLE vw_ext_audit OWNER TO irods;
 
 CREATE TRIGGER tg_ext_data_delete
   AFTER DELETE
