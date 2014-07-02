@@ -2930,7 +2930,7 @@ _rsCollRsync( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
  * ruleExecInfo_t *rei)
  *
  * \brief This microservice requests the client to call a rcExecCmd API
- *   to fork and execute a command that resides in the server/ibn/cmd directory.
+ *   to fork and execute a command that resides in the server/bin/cmd directory.
  *
  * \module core
  *
