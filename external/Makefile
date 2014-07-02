@@ -80,6 +80,8 @@ endif
 generate : build
 	@echo "Building $(IRODSEXTERNALARCHIVE)..."
 	@tar zfc $(IRODSEXTERNALARCHIVE) --exclude "*.tar.gz" --exclude "*.zip" --exclude "*cmake*" --exclude "Makefile" --exclude $(FAKETARGETFORMAKE) *
+	@cp $(IRODSEXTERNALARCHIVE) $(IRODSEXTERNALLOCAL)
+	@touch $(FAKETARGETFORMAKE)
 
 $(LIB_MYSQLUDF_PREG_ARCHIVE) :
 	@wget $(RENCI_FTP_EXTERNAL)/$(LIB_MYSQLUDF_PREG_ARCHIVE) 2>&1
