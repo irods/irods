@@ -3756,7 +3756,7 @@ sub Oracle_sql($$)
     $dbadmin = substr($DATABASE_ADMIN_NAME, 0, $i);
     $connectArg = $dbadmin . "/" . 
                   $DATABASE_ADMIN_PASSWORD . "@" . 
-                  $DATABASE_HOST . ":" . $DATABASE_PORT;
+                  $DATABASE_HOST . ":" . $DATABASE_PORT . '/' . $databaseName;
 
     $sqlplus = "sqlplus";
     $exec_str = "$sqlplus '$connectArg' < $sqlFilename";
