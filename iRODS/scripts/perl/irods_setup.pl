@@ -1516,6 +1516,14 @@ sub configureIrodsServer
 		elsif ( $status == 1 ) { $createdDirectory = 1; }
 	}
 
+        if ( !$somethingFailed )
+        {
+                printLog( "    Create /$ZONE_NAME/home/rodsBoot...\n" );
+                $status = imkdir( "/$ZONE_NAME/home/rodsBoot" );
+                if ( $status == 0 ) { $somethingFailed = 1; }
+                elsif ( $status == 1 ) { $createdDirectory = 1; }
+        }
+
 	if ( !$somethingFailed )
 	{
 		printLog( "    Create /$ZONE_NAME/trash...\n" );
