@@ -1,10 +1,9 @@
-The SQL script in this directory can be run manually (via psql) after
-irods installation or as part of the installation process (by
-responding 'yes' to the appropriate question in 'irodssetup').
+When using iRODS event auditing on a Postgres-based iCAT server, the
+SQL script in this directory can be run manually (via psql) after
+irods installation.
 
-When running manually, you will need to change the 'rodsbuild' to the
-user name of the owner of the ICAT database (irodssetup does this for
-you).
+You will need to change the 'irods' to the user name of the owner of
+the ICAT database.
 
 This SQL system supports advanced logging.  Essentially, it creates a
 look-up table that translates numeric iRODS action ids into human
