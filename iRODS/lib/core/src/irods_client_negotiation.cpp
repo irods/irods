@@ -29,6 +29,9 @@ error sign_server_sid(
     std::string& _signed_sid ) {
     server_properties& props = server_properties::getInstance();
     irods::error err = props.capture_if_needed();
+    if( !err.ok() ) {
+        return PASS( err );
+    }
 
     // =-=-=-=-=-=-=-
     // get the local SID
