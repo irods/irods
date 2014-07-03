@@ -695,3 +695,87 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         assertiCmd( s.adminsession, "irm -rf "+dir_path )
         assertiCmd( s.adminsession, "irm -rf "+tar_path )
 
+    def test_rebalance_for_repl_node_with_different_users(self):
+        output = commands.getstatusoutput("hostname")
+        hostname = output[1]
+
+        # =-=-=-=-=-=-=-
+        # STANDUP
+        assertiCmd(s.adminsession,"iadmin mkresc repl replication", "LIST", "Creating")
+        assertiCmd(s.adminsession,"iadmin mkresc leaf_a unixfilesystem "+hostname+":/tmp/irods/pydevtest_leaf_a", "LIST", "Creating") # unix
+        assertiCmd(s.adminsession,"iadmin mkresc leaf_b unixfilesystem "+hostname+":/tmp/irods/pydevtest_leaf_b", "LIST", "Creating") # unix
+        assertiCmd(s.adminsession,"iadmin addchildtoresc repl leaf_a" )
+        assertiCmd(s.adminsession,"iadmin addchildtoresc repl leaf_b" )
+
+        # =-=-=-=-=-=-=-
+        # place data into the resource
+        num_children = 3
+        for i in range( num_children ):
+            assertiCmd(s.adminsession,"iput -R repl README foo%d" % i )
+            assertiCmd(s.sessions[1],"iput -R repl README bar%d" % i )
+
+        # =-=-=-=-=-=-=-
+        # surgically trim repls so we can rebalance
+        assertiCmd(s.adminsession,"itrim -N1 -n 0 foo1" )
+        assertiCmd(s.sessions[1], "itrim -N1 -n 0 bar0" )
+
+        # =-=-=-=-=-=-=-
+        # dirty up a foo10 repl to ensure that code path is tested also
+        assertiCmd(s.adminsession,"iadmin modresc leaf_a status down" );
+        assertiCmd(s.sessions[1],"iput -fR repl test_allrules.py bar2" )
+        assertiCmd(s.adminsession,"iadmin modresc leaf_a status up" );
+
+        # =-=-=-=-=-=-=-
+        # visualize our pruning and dirtying
+        assertiCmd(s.adminsession,"ils -ALr /", "LIST", "rods" )
+
+        # =-=-=-=-=-=-=-
+        # call rebalance function - the thing were actually testing... finally.
+        assertiCmd(s.adminsession,"iadmin modresc repl rebalance" )
+
+        # =-=-=-=-=-=-=-
+        # visualize our rebalance
+        assertiCmd(s.adminsession,"ils -ALr /", "LIST", "rods" )
+
+        # =-=-=-=-=-=-=-
+        # assert that all the appropriate repl numbers exist for all the children
+        assertiCmd(s.adminsession,"ils -AL foo0", "LIST", [" 0 ", " foo0" ] )
+        assertiCmd(s.adminsession,"ils -AL foo0", "LIST", [" 1 ", " foo0" ] )
+
+        assertiCmd(s.adminsession,"ils -AL foo1", "LIST", [" 1 ", " foo1" ] )
+        assertiCmd(s.adminsession,"ils -AL foo1", "LIST", [" 2 ", " foo1" ] )
+
+        assertiCmd(s.adminsession,"ils -AL foo2", "LIST", [" 0 ", " foo2" ] )
+        assertiCmd(s.adminsession,"ils -AL foo2", "LIST", [" 1 ", " foo2" ] )
+
+        assertiCmd(s.sessions[1],"ils -AL bar0", "LIST", [" 1 ", " bar0" ] )
+        assertiCmd(s.sessions[1],"ils -AL bar0", "LIST", [" 2 ", " bar0" ] )
+
+        assertiCmd(s.sessions[1],"ils -AL bar1", "LIST", [" 0 ", " bar1" ] )
+        assertiCmd(s.sessions[1],"ils -AL bar1", "LIST", [" 1 ", " bar1" ] )
+
+        assertiCmd(s.sessions[1],"ils -AL bar2", "LIST", [" 0 ", " bar2" ] )
+        assertiCmd(s.sessions[1],"ils -AL bar2", "LIST", [" 1 ", " bar2" ] )
+
+        # =-=-=-=-=-=-=-
+        # TEARDOWN
+        for i in range( num_children ):
+            assertiCmd(s.adminsession,"irm -f foo%d" % i )
+            assertiCmd(s.sessions[1],"irm -f bar%d" % i )
+
+        assertiCmd(s.adminsession,"iadmin rmchildfromresc repl leaf_b" )
+        assertiCmd(s.adminsession,"iadmin rmchildfromresc repl leaf_a" )
+        assertiCmd(s.adminsession,"iadmin rmresc leaf_b" )
+        assertiCmd(s.adminsession,"iadmin rmresc leaf_a" )
+        assertiCmd(s.adminsession,"iadmin rmresc repl" )
+
+
+
+
+
+
+
+
+
+
+

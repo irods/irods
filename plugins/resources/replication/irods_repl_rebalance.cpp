@@ -46,6 +46,7 @@ namespace irods {
         addKeyVal( &data_obj_inp.condInput, RESC_NAME_KW,          _src_resc.c_str() );
         addKeyVal( &data_obj_inp.condInput, DEST_RESC_NAME_KW,     _dst_resc.c_str() );
         addKeyVal( &data_obj_inp.condInput, IN_PDMO_KW,             sub_hier.c_str() );
+        addKeyVal( &data_obj_inp.condInput, ADMIN_KW,              "" );
 
         // =-=-=-=-=-=-=-
         // process the actual call for replication
@@ -57,7 +58,7 @@ namespace irods {
                 << _obj_path
                 << "]";
             return ERROR( repl_stat, msg.str() );
-        }
+        } 
 
         return SUCCESS();
 
@@ -236,10 +237,15 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // add condition string matching resc hier parent
         cond_str = "like '" + _parent + ";%' || like '%;" + _parent + ";%' || like '%;" + _parent + "'";
-        //cond_str = "like '%"+_parent+"%'";
         addInxVal( &gen_inp.sqlCondInp,
                    COL_D_RESC_HIER,
                    cond_str.c_str() );
+
+        // =-=-=-=-=-=-=-
+        // add condition string stating clean status only
+        addInxVal( &gen_inp.sqlCondInp,
+                   COL_D_REPL_STATUS,
+                   "= '1'" );
 
         // =-=-=-=-=-=-=-
         // request the data name, coll name, resc hier, mode
@@ -426,7 +432,7 @@ namespace irods {
                        SYS_INVALID_INPUT_PARAM,
                        "empty results vector" );
         }
-
+        
         // =-=-=-=-=-=-=-
         // iterate over the result set and repl the objects
         dist_child_result_t::const_iterator r_itr = _results.begin();
