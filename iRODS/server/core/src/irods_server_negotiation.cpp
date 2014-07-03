@@ -104,57 +104,60 @@ namespace irods {
             err = irods::parse_kvp_string( 
                       read_cs_neg->result_, 
                       kvp );
-             if( err.ok() ) {
+            if( err.ok() ) {
+
                  // =-=-=-=-=-=-=-
                  // extract the signed SID
-                 std::string svr_sid = kvp[ CS_NEG_SID_KW ];
-                 if( !svr_sid.empty() ) {
-                     // =-=-=-=-=-=-=-
-                     // get our SID to compare
-                     server_properties& props = server_properties::getInstance();
-                     err = props.capture_if_needed();
-                     if( !err.ok() ) {
-                         return PASS( err );
-                     }
+                 if ( kvp.find( CS_NEG_SID_KW ) != kvp.end() ) {
+                    std::string svr_sid = kvp[ CS_NEG_SID_KW ];
+                    if( !svr_sid.empty() ) {
+                        // =-=-=-=-=-=-=-
+                        // get our SID to compare
+                        server_properties& props = server_properties::getInstance();
+                        err = props.capture_if_needed();
+                        if( !err.ok() ) {
+                            return PASS( err );
+                        }
 
-                     // =-=-=-=-=-=-=-
-                     // sign local SID
-                     std::string signed_sid;
-                     err = sign_server_sid(
-                               signed_sid );
-                     if( !err.ok() ) {
-                         return PASS( err );
-                     }
+                        // =-=-=-=-=-=-=-
+                        // sign local SID
+                        std::string signed_sid;
+                        err = sign_server_sid(
+                                signed_sid );
+                        if( !err.ok() ) {
+                            return PASS( err );
+                        }
 
-                     // =-=-=-=-=-=-=-
-                     // check SID against our SID
-                     if( svr_sid != signed_sid ) {
-                         rodsLog( 
-                             LOG_ERROR, 
-                             "client-server negotiation SID mismatch [%s] vs [%s]",
-                             svr_sid.c_str(),
-                             signed_sid.c_str() );
-                     } else {
-                         // =-=-=-=-=-=-=-
-                         // store property that states this is an Agent-Agent connection
-                         props.set_property< std::string >( AGENT_CONN_KW, svr_sid );
-                     }
+                        // =-=-=-=-=-=-=-
+                        // check SID against our SID
+                        if( svr_sid != signed_sid ) {
+                            rodsLog(
+                                LOG_ERROR,
+                                "client-server negotiation SID mismatch [%s] vs [%s]",
+                                svr_sid.c_str(),
+                                signed_sid.c_str() );
+                        } else {
+                            // =-=-=-=-=-=-=-
+                            // store property that states this is an Agent-Agent connection
+                            props.set_property< std::string >( AGENT_CONN_KW, svr_sid );
+                        }
 
-                 } // if sid is not empty
-                 else {
-                     rodsLog( LOG_ERROR, "client_server_negotiation_for_server - sent SID is empty" );
+                    } // if sid is not empty
+                    else {
+                        rodsLog( LOG_ERROR, "client_server_negotiation_for_server - sent SID is empty" );
+                    }
                  }
 
                  // =-=-=-=-=-=-=-
                  // check to see if the result string has the SSL negotiation results
                  _result = kvp[ CS_NEG_RESULT_KW ];
                  if( _result.empty() ) {
-                     return ERROR( 
-                               UNMATCHED_KEY_OR_INDEX,
-                               "SSL result string missing from response" );
+                    return ERROR(
+                            UNMATCHED_KEY_OR_INDEX,
+                            "SSL result string missing from response" );
                  }
 
-             } else {
+            } else {
                  // =-=-=-=-=-=-=-
                  // support 4.0 client-server negotiation which did not
                  // use key-val pairs
