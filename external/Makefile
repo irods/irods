@@ -98,7 +98,7 @@ $(LIBS3VERSIONARCHIVE) :
 
 $(LIBS3VERSIONMAKE) : $(LIBS3VERSIONARCHIVE)
 	@tar zxf $(LIBS3VERSIONARCHIVE)
-	if [ $(OSNAME) = "MacOSX" ] ; then \
+	@if [ $(OSNAME) = "MacOSX" ] ; then \
 		sed "s/-soname,/-install_name,/" $(LIBS3VERSION)/GNUmakefile > /tmp/libs3Makefile; \
 		rsync -c /tmp/libs3Makefile $(LIBS3VERSION)/GNUmakefile; \
 		rm -f /tmp/libs3Makefile; \
