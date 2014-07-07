@@ -228,6 +228,9 @@ clean :
 	@echo "Cleaning cmake..."
 	@rm -rf $(CMAKEVERSION)
 	@rm -f $(CMAKEVERSIONARCHIVE)
+	@echo "Cleaning check..."
+	@rm -rf $(CHECKVERSION)
+	@rm -f $(CHECKVERSIONARCHIVE)
 	@echo "Cleaning libarchive..."
 	@rm -rf $(LIBARCHIVEVERSION)
 	@rm -f $(LIBARCHIVEVERSIONARCHIVE)
