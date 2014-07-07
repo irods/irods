@@ -72,6 +72,11 @@ $RESOURCE=true
 # =-=-=-=-=-=-=-
 
 d 755 root root /usr/lib/irods/ -
+
+f 644 root root /usr/lib/irods/libirods_client.so ./libirods_client.so
+f 644 root root /usr/lib/irods/libirods_client_api.so ./libirods_client_api.so
+f 644 root root /usr/lib/irods/libirods_server.so ./libirods_server.so
+
 f 644 root root /usr/lib/irods/libs3.so ./external/libs3-2.0/build/lib/libs3.so.2
 f 644 root root /usr/lib/irods/libarchive.so ./external/libarchive-3.1.2/libarchive/libarchive.so.14
 f 644 root root /usr/lib/irods/libhdf5.so ./external/hdf5-1.8.12/src/.libs/libhdf5.so.8.0.1
