@@ -38,6 +38,9 @@ LIBS3VERSIONMAKE=$(LIBS3VERSION)/GNUmakefile
 
 FAKETARGETFORMAKE=FakeTargetForMake
 
+LIBARCHIVESEDCMD="/^\#ifdef HAVE_LINUX_FIEMAP_H/i \#ifdef HAVE_LINUX_TYPES_H\x0a\#include \<linux/types.h\>\x0a\#endif"
+
+
 PG_VERSION=9.3.4
 UNIXODBC_VERSION=2.2.12
 PGUNIXODBCARCHIVE=postgresql-$(PG_VERSION)_unixODBC-$(UNIXODBC_VERSION)-$(OSNAME).tar.gz
@@ -150,8 +153,7 @@ $(LIBARCHIVEVERSIONARCHIVE) :
 
 $(LIBARCHIVEVERSIONMAKE) : $(LIBARCHIVEVERSIONARCHIVE) cmake
 	@tar zxf $(LIBARCHIVEVERSIONARCHIVE)
-	SEDCMD=$$'/^#ifdef HAVE_LINUX_FIEMAP_H/i \\\x0a#ifdef HAVE_LINUX_TYPES_H\\\x0a#include <linux/types.h>\\\x0a#endif\\\x0a' \
-		bash -c 'sed "$$SEDCMD" $(LIBARCHIVEVERSION)/libarchive/test/test_sparse_basic.c > /tmp/test_sparse_basic.c'
+	@bash -xc 'sed $(LIBARCHIVESEDCMD) $(LIBARCHIVEVERSION)/libarchive/test/test_sparse_basic.c > /tmp/test_sparse_basic.c'
 	@rsync -c /tmp/test_sparse_basic.c $(LIBARCHIVEVERSION)/libarchive/test/test_sparse_basic.c
 	@rm -f /tmp/test_sparse_basic.c
 	@sed "s/size_t used\;/size_t used = 0\;/" $(LIBARCHIVEVERSION)/libarchive/archive_read_support_format_xar.c > /tmp/archive_read_support_format_xar.c
