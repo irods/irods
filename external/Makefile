@@ -151,7 +151,7 @@ $(LIBARCHIVEVERSIONARCHIVE) :
 $(LIBARCHIVEVERSIONMAKE) : $(LIBARCHIVEVERSIONARCHIVE) cmake
 	@tar zxf $(LIBARCHIVEVERSIONARCHIVE)
 	SEDCMD=$$'/^#ifdef HAVE_LINUX_FIEMAP_H/i \\\x0a#ifdef HAVE_LINUX_TYPES_H\\\x0a#include <linux/types.h>\\\x0a#endif\\\x0a' \
-		sed "$$SEDCMD" $(LIBARCHIVEVERSION)/libarchive/test/test_sparse_basic.c > /tmp/test_sparse_basic.c
+		bash -c 'sed "$$SEDCMD" $(LIBARCHIVEVERSION)/libarchive/test/test_sparse_basic.c > /tmp/test_sparse_basic.c'
 	@rsync -c /tmp/test_sparse_basic.c $(LIBARCHIVEVERSION)/libarchive/test/test_sparse_basic.c
 	@rm -f /tmp/test_sparse_basic.c
 	@sed "s/size_t used\;/size_t used = 0\;/" $(LIBARCHIVEVERSION)/libarchive/archive_read_support_format_xar.c > /tmp/archive_read_support_format_xar.c
