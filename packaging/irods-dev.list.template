@@ -11515,8 +11515,11 @@ f 644 root root /usr/include/irods/netcdf/ncgen3/genlib.h ./external/netcdf-4.3.
 f 644 root root /usr/include/irods/netcdf/ncgen3/generic.h ./external/netcdf-4.3.0/ncgen3/generic.h
 
 f 644 root root /usr/include/irods/libs3.h ./external/libs3-2.0/inc/libs3.h
-
 f 644 root root /usr/lib/irods/libs3.a ./external/libs3-2.0/build/lib/libs3.a
+
+f 644 root root /usr/lib/irods/libcheck_pic.a ./external/check-0.9.13/src/.libs/libcheck.a
+f 644 root root /usr/include/irods ./external/check-0.9.13/src/check*.h
+f 644 root root /usr/include/irods ./external/check-0.9.13/check_stdint.h
 
 f 644 root root /usr/lib/irods/libepm.a ./external/epm/libepm.a
 f 644 root root /usr/lib/irods/libarchive.a ./external/libarchive-3.1.2/libarchive/libarchive.a
