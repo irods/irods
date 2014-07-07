@@ -7,7 +7,7 @@ MAKEFLAGS += --no-print-directory
 RENCI_FTP_EXTERNAL=ftp://ftp.renci.org/pub/irods/external
 RENCI_FTP_BUILD=ftp://ftp.renci.org/pub/irods/build
 
-.PHONY : default build_database_for_macosx retrieve build generate clean cmake libarchive jansson boost hdf5 netcdf epm lib_mysqludf_preg libs3
+.PHONY : default build_database_for_macosx retrieve build generate clean cmake check libarchive jansson boost hdf5 netcdf epm lib_mysqludf_preg libs3
 
 OSNAME=$$(../packaging/find_os.sh)
 OSVERSION=$$(../packaging/find_os_version.sh)
@@ -17,6 +17,8 @@ IRODSEXTERNALLOCAL=irods_external.tar.gz
 
 CMAKEVERSIONARCHIVE=$(CMAKEVERSION).tar.gz
 CMAKEVERSIONMAKE=$(CMAKEVERSION)/Makefile
+CHECKVERSIONARCHIVE=$(CHECKVERSION).tar.gz
+CHECKVERSIONMAKE=$(CHECKVERSION)/Makefile
 LIBARCHIVEVERSIONARCHIVE=$(LIBARCHIVEVERSION).tar.gz
 LIBARCHIVEVERSIONMAKE=$(LIBARCHIVEVERSION)/Makefile
 JANSSONVERSIONARCHIVE=$(JANSSONVERSION).tar.gz
@@ -120,6 +122,17 @@ $(CMAKEVERSIONMAKE) : $(CMAKEVERSIONARCHIVE)
 
 cmake : $(CMAKEVERSIONMAKE)
 	@$(MAKE) -C $(CMAKEVERSION)
+
+$(CHECKVERSIONARCHIVE) :
+	@wget $(RENCI_FTP_EXTERNAL)/$(CHECKVERSIONARCHIVE) 2>&1
+
+$(CHECKVERSIONMAKE) : $(CHECKVERSIONARCHIVE)
+	@tar zxf $(CHECKVERSIONARCHIVE)
+	@cd $(CHECKVERSION) ; \
+		./configure --with-pic
+
+check : $(CHECKVERSIONMAKE)
+	@$(MAKE) -C $(CHECKVERSION)
 
 $(JANSSONVERSIONARCHIVE) :
 	@wget $(RENCI_FTP_EXTERNAL)/$(JANSSONVERSIONARCHIVE) 2>&1
