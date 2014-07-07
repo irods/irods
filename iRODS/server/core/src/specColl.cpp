@@ -336,7 +336,7 @@ statPathInSpecColl( rsComm_t *rsComm, char *objPath,
     rstrcpy( ( *rodsObjStatOut )->ownerName, specCollCache->ownerName, NAME_LEN );
     rstrcpy( ( *rodsObjStatOut )->ownerZone, specCollCache->ownerZone, NAME_LEN );
 
-    status = specCollSubStat( rsComm, specColl, objPath, UNKNOW_COLL_PERM, &dataObjInfo );
+    status = specCollSubStat( rsComm, specColl, objPath, UNKNOWN_COLL_PERM, &dataObjInfo );
 
     if ( status < 0 ) {
         if ( dataObjInfo != NULL ) {
@@ -664,7 +664,7 @@ resolvePathInSpecColl( rsComm_t *rsComm, char *objPath,
         cachedSpecColl = &specCollCache->specColl;
     }
 
-    if ( specCollPerm != UNKNOW_COLL_PERM ) {
+    if ( specCollPerm != UNKNOWN_COLL_PERM ) {
         if ( specCollPerm == WRITE_COLL_PERM ) {
             accessStr = ACCESS_DELETE_OBJECT;
         }

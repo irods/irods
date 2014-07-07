@@ -107,7 +107,7 @@ openSpecColl( rsComm_t *rsComm, dataObjInp_t *dataObjInp, int parentInx ) {
 
     status = resolvePathInSpecColl( rsComm, dataObjInp->objPath,
                                     //READ_COLL_PERM, 0, &dataObjInfo);
-                                    UNKNOW_COLL_PERM, 0, &dataObjInfo );
+                                    UNKNOWN_COLL_PERM, 0, &dataObjInfo );
 
     if ( status < 0 || NULL == dataObjInfo ) { // JMC cppcheck - nullptr
         rodsLog( LOG_NOTICE,

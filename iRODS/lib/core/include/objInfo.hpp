@@ -154,7 +154,7 @@ extern "C" {
     } specColl_t;
 
     typedef enum {
-        UNKNOW_COLL_PERM,
+        UNKNOWN_COLL_PERM,
         READ_COLL_PERM,
         WRITE_COLL_PERM
     } specCollPerm_t;
