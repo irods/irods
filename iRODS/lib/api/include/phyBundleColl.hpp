@@ -67,7 +67,7 @@ createPhyBundleDataObj( rsComm_t *rsComm, char *collection, rescGrpInfo_t *rescG
                         const char* rescHier, dataObjInp_t *dataObjInp, char *dataType ); // JMC - backport 4658
 int
 createPhyBundleDir( rsComm_t *rsComm, char *bunFilePath,
-                    char *outPhyBundleDir );
+                    char *outPhyBundleDir, char* hier );
 int
 rsMkBundlePath( rsComm_t *rsComm, char *collection, char *outPath,
                 int myRanNum );

@@ -189,7 +189,7 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
 
     // =-=-=-=-=-=-=-
     // create the special hidden directory where the bundling happens
-    createPhyBundleDir( rsComm, L1desc[ l1descInx ].dataObjInfo->filePath, phyBunDir );
+    createPhyBundleDir( rsComm, L1desc[ l1descInx ].dataObjInfo->filePath, phyBunDir, L1desc[ l1descInx ].dataObjInfo->rescHier );
 
     // =-=-=-=-=-=-=-
     // build a collection open input structure
@@ -302,7 +302,7 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
                 continue;
             }
             snprintf( tmpPath, MAX_NAME_LEN, "%s/%s", phyBunDir, collEnt->collName + collLen );
-            mkdirR( phyBunDir, tmpPath, getDefDirMode() );
+            mkFileDirR( rsComm, phyBunDir, tmpPath, collEnt->resc_hier, getDefDirMode() );
         } // else
 
         if ( collEnt != NULL ) {

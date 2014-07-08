@@ -309,14 +309,6 @@ createBunDirForBulkPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         return USER__NULL_INPUT_ERR;
     }
 
-    if ( specColl != NULL ) {
-        status = getMountedSubPhyPath( specColl->collection,
-                                       specColl->phyPath, dataObjInp->objPath, phyBunDir );
-        if ( status >= 0 ) {
-            mkdirR( "/", phyBunDir, getDefDirMode() );
-        }
-        return status;
-    }
     bzero( &dataObjInfo, sizeof( dataObjInfo ) );
     rstrcpy( dataObjInfo.objPath, dataObjInp->objPath, MAX_NAME_LEN );
     rstrcpy( dataObjInfo.rescName, rescInfo->rescName, NAME_LEN );
@@ -327,6 +319,16 @@ createBunDirForBulkPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     }
     else {
         rstrcpy( dataObjInfo.rescHier, rescInfo->rescName, NAME_LEN ); // in kw else
+    }
+
+    if ( specColl != NULL ) {
+        status = getMountedSubPhyPath( specColl->collection,
+                                       specColl->phyPath, dataObjInp->objPath, phyBunDir );
+        if ( status >= 0 ) {
+            //mkdirR( "/", phyBunDir, getDefDirMode() );
+            mkFileDirR( rsComm, "/", phyBunDir, resc_hier, getDefDirMode() );
+        }
+        return status;
     }
 
     dataObjInfo.rescInfo = new rescInfo_t;
@@ -352,7 +354,8 @@ createBunDirForBulkPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     }
     while ( status == 0 );
 
-    mkdirR( "/", phyBunDir, getDefDirMode() );
+    //mkdirR( "/", phyBunDir, getDefDirMode() );
+    mkFileDirR( rsComm, "/", phyBunDir, resc_hier, getDefDirMode() );
 
     return 0;
 }

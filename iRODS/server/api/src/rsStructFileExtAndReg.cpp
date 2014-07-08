@@ -146,7 +146,7 @@ rsStructFileExtAndReg( rsComm_t *rsComm,
     dataObjInfo = L1desc[l1descInx].dataObjInfo;
     std::string rescHier = dataObjInfo->rescHier;
 
-    createPhyBundleDir( rsComm, dataObjInfo->filePath, phyBunDir );
+    createPhyBundleDir( rsComm, dataObjInfo->filePath, phyBunDir, dataObjInfo->rescHier );
 
     status = unbunPhyBunFile( rsComm, dataObjInp.objPath, rescInfo, // JMC - backport 4657
                               dataObjInfo->filePath, phyBunDir, dataObjInfo->dataType, 0,

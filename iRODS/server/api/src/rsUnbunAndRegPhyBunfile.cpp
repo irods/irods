@@ -97,7 +97,7 @@ _rsUnbunAndRegPhyBunfile( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         return ( SYS_INVALID_FILE_PATH );
     }
 
-    createPhyBundleDir( rsComm, bunFilePath, phyBunDir );
+    createPhyBundleDir( rsComm, bunFilePath, phyBunDir, resc_hier );
     dataType = getValByKey( &dataObjInp->condInput, DATA_TYPE_KW ); // JMC - backport 4664
     status = unbunPhyBunFile( rsComm, dataObjInp->objPath, rescInfo, bunFilePath, phyBunDir,
                               dataType, 0, resc_hier ); // JMC - backport 4632, 4657, 4664

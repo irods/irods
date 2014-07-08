@@ -205,7 +205,7 @@ _rsPhyBundleColl( rsComm_t*                 rsComm,
     // =-=-=-=-=-=-=-
     char phyBunDir[MAX_NAME_LEN];
     createPhyBundleDir( rsComm, L1desc[l1descInx].dataObjInfo->filePath,
-                        phyBunDir );
+                        phyBunDir, L1desc[l1descInx].dataObjInfo->rescHier );
 
     curSubFileCond_t     curSubFileCond;
     bunReplCacheHeader_t bunReplCacheHeader;
@@ -254,7 +254,7 @@ _rsPhyBundleColl( rsComm_t*                 rsComm,
                         }
 
                         createPhyBundleDir( rsComm,
-                                            L1desc[l1descInx].dataObjInfo->filePath, phyBunDir );
+                                            L1desc[l1descInx].dataObjInfo->filePath, phyBunDir, L1desc[l1descInx].dataObjInfo->rescHier );
                         /* need to reset subPhyPath since phyBunDir has
                          * changed */
                         /* At this point subPhyPath[0] == 0 if it has gone
@@ -669,10 +669,11 @@ replDataObjForBundle( rsComm_t *rsComm, char *collName, char *dataName,
 
 int
 createPhyBundleDir( rsComm_t *rsComm, char *bunFilePath,
-                    char *outPhyBundleDir ) {
+                    char *outPhyBundleDir, char* hier ) {
     /* the dir where we put the files to bundle is in phyPath.dir */
     snprintf( outPhyBundleDir, MAX_NAME_LEN, "%s.dir",  bunFilePath );
-    mkdirR( "/", outPhyBundleDir, getDefDirMode() );
+    //mkdirR( "/", outPhyBundleDir, getDefDirMode() );
+    mkFileDirR( rsComm, "/", outPhyBundleDir, hier, getDefDirMode() );
     return ( 0 );
 }
 

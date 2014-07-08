@@ -249,7 +249,9 @@ int chkEmptyDir(
     rsComm_t* rsComm,
     char*    cacheDir,
     char*    hier ) {
-
+irods::stacktrace st;
+st.trace();
+st.dump();
     int status = 0;
     char childPath[MAX_NAME_LEN];
     struct stat myFileStat;
