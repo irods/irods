@@ -77,9 +77,9 @@ $(FAKETARGETFORMAKE) : $(IRODSEXTERNALLOCAL)
 	@touch $(FAKETARGETFORMAKE)
 
 ifeq ($(OS_platform), osx_platform)
-build : cmake libarchive jansson boost epm hdf5 netcdf lib_mysqludf_preg libs3 build_database_for_macosx
+build : cmake libarchive jansson boost epm hdf5 netcdf lib_mysqludf_preg libs3 check build_database_for_macosx
 else
-build : cmake libarchive jansson boost epm hdf5 netcdf lib_mysqludf_preg libs3
+build : cmake libarchive jansson boost epm hdf5 netcdf lib_mysqludf_preg libs3 check
 endif
 
 generate : build
