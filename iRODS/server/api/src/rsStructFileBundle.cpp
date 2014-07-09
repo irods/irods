@@ -302,7 +302,7 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
                 continue;
             }
             snprintf( tmpPath, MAX_NAME_LEN, "%s/%s", phyBunDir, collEnt->collName + collLen );
-            mkFileDirR( rsComm, phyBunDir, tmpPath, collEnt->resc_hier, getDefDirMode() );
+            mkFileDirR( rsComm, phyBunDir, tmpPath, resc_hier.c_str(), getDefDirMode() );
         } // else
 
         if ( collEnt != NULL ) {
