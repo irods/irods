@@ -48,15 +48,15 @@ rsDataObjPhymv250( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 int
 rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                 transferStat_t **transStat ) {
-    int status;
+    int status = 0;
     dataObjInfo_t *dataObjInfoHead = NULL;
     dataObjInfo_t *oldDataObjInfoHead = NULL;
     rescGrpInfo_t *myRescGrpInfo = NULL;
     ruleExecInfo_t rei;
-    int multiCopyFlag;
-    char *accessPerm;
-    int remoteFlag;
-    rodsServerHost_t *rodsServerHost;
+    int multiCopyFlag = 0;
+    char *accessPerm = NULL;
+    int remoteFlag = 0;
+    rodsServerHost_t *rodsServerHost = NULL;
     specCollCache_t *specCollCache = NULL;
 
     resolveLinkedPath( rsComm, dataObjInp->objPath, &specCollCache,
@@ -111,6 +111,8 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     /* query rcat for resource info and sort it */
     status = getRescGrpForCreate( rsComm, dataObjInp, &myRescGrpInfo );
     if ( status < 0 ) {
+        delete myRescGrpInfo->rescInfo;
+        delete myRescGrpInfo;
         return status;
     }
 
@@ -140,8 +142,10 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     if ( status < 0 ) {
         freeAllDataObjInfo( dataObjInfoHead );
         freeAllDataObjInfo( oldDataObjInfoHead );
-        delete myRescGrpInfo->rescInfo;
-        delete myRescGrpInfo;
+        if ( myRescGrpInfo ) {
+            delete myRescGrpInfo->rescInfo;
+            delete myRescGrpInfo;
+        }
         if ( status == CAT_NO_ROWS_FOUND ) {
             return ( 0 );
         }
@@ -155,8 +159,10 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     freeAllDataObjInfo( dataObjInfoHead );
     freeAllDataObjInfo( oldDataObjInfoHead );
-    delete myRescGrpInfo->rescInfo;
-    delete myRescGrpInfo;
+    if ( myRescGrpInfo ) {
+        delete myRescGrpInfo->rescInfo;
+        delete myRescGrpInfo;
+    }
 
     return ( status );
 }

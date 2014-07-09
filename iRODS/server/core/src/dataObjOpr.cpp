@@ -963,8 +963,8 @@ matchAndTrimRescGrp( dataObjInfo_t **dataObjInfoHead,
 
                 }
 
-                free( tmpRescGrpInfo );
-
+                delete tmpRescGrpInfo->rescInfo;
+                delete tmpRescGrpInfo;
             }
             else if ( trimjFlag & REQUE_MATCHED_RESC_INFO ) {
                 if ( tmpRescGrpInfo->next != NULL ) {

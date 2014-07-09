@@ -375,8 +375,10 @@ _rsDataObjRepl(
             freeAllDataObjInfo( dataObjInfoHead );
             freeAllDataObjInfo( oldDataObjInfoHead );
             freeAllDataObjInfo( destDataObjInfo ); // JMC - backport 4494
-            delete myRescGrpInfo->rescInfo;
-            delete myRescGrpInfo;
+            if ( myRescGrpInfo ) {
+                delete myRescGrpInfo->rescInfo;
+                delete myRescGrpInfo;
+            }
 
             return status;
         }
@@ -384,8 +386,10 @@ _rsDataObjRepl(
             freeAllDataObjInfo( dataObjInfoHead );
             freeAllDataObjInfo( oldDataObjInfoHead );
             freeAllDataObjInfo( destDataObjInfo ); // JMC - backport 4494
-            delete myRescGrpInfo->rescInfo;
-            delete myRescGrpInfo;
+            if ( myRescGrpInfo ) {
+                delete myRescGrpInfo->rescInfo;
+                delete myRescGrpInfo;
+            }
             rodsLog( LOG_NOTICE, "%s - Failed to resolve a single replication copy.", __FUNCTION__ );
             return status;
         }
