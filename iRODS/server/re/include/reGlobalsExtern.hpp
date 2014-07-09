@@ -1,6 +1,6 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* reGlobalsExtern.h - header file for global extern declaration for the
+/* reGlobalsExtern.hpp - header file for global extern declaration for the
  * rule engine modules
  */
 
@@ -40,7 +40,7 @@ extern void myfree(char* file, int line, void *x);
 /***** for more details.                      *****/
 /***** ALSO, if any structure in RuleExecInfo *****/
 /***** has its definition changed there need  *****/
-/***** correspomding changes in maintenace    *****/
+/***** corresponding changes in maintenance   *****/
 /***** files. Please refer to the  file       *****/
 /***** WhatToDoWhenYouChangeREIStructure.txt  *****/
 /***** for more details.                      *****/
@@ -75,7 +75,7 @@ typedef struct RuleExecInfo {
 /***** for more details.                      *****/
 /***** ALSO, if any structure in RuleExecInfo *****/
 /***** has its definition changed there need  *****/
-/***** correspomding changes in maintenace    *****/
+/***** corresponding changes in maintenance   *****/
 /***** files. Please refer to the  file       *****/
 /***** WhatToDoWhenYouChangeREIStructure.txt  *****/
 /***** for more details.                      *****/
