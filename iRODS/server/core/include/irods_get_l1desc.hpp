@@ -1,5 +1,3 @@
-
-
 #ifndef __IRODS_GET_L1DESC_HPP__
 #define __IRODS_GET_L1DESC_HPP__
 

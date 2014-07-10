@@ -1,4 +1,3 @@
-
 /*-------------------------------------------------------------------------
  *
  * irodsReServer.c--The irods Rule Execution server

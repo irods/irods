@@ -1,7 +1,3 @@
-
-
-
-
 #ifndef __IRODS_AUTH_SCHEME_HPP__
 #define __IRODS_AUTH_SCHEME_HPP__
 

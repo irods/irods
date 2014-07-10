@@ -1,5 +1,3 @@
-
-
 // =-=-=-=-=-=-=-
 //
 #include "irods_resource_plugin_impostor.hpp"

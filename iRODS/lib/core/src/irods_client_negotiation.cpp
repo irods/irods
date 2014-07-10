@@ -1,6 +1,3 @@
-
-
-
 // =-=-=-=-=-=-=-
 #include "irods_client_server_negotiation.hpp"
 #include "irods_stacktrace.hpp"

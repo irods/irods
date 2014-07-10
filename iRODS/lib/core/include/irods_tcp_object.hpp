@@ -1,6 +1,3 @@
-
-
-
 #ifndef __IRODS_TCP_OBJECT_HPP__
 #define __IRODS_TCP_OBJECT_HPP__
 

@@ -1,5 +1,3 @@
-/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Plug-in defining a replicating resource. This resource makes sure that all of its data is replicated to all of its children
 //

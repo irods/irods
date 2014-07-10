@@ -1,6 +1,3 @@
-
-
-
 // =-=-=-=-=-=-=-
 #include "irods_plugin_base.hpp"
 

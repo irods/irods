@@ -1,6 +1,3 @@
-
-
-
 #ifndef __AUTH_PLUGIN_REQUEST_HPP__
 #define __AUTH_PLUGIN_REQUEST_HPP__
 

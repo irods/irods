@@ -1,5 +1,3 @@
-/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
-
 #ifndef __PAM_AUTH_OBJECT_HPP__
 #define __PAM_AUTH_OBJECT_HPP__
 

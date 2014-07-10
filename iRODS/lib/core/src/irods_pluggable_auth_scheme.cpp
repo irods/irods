@@ -1,6 +1,3 @@
-
-
-
 // =-=-=-=-=-=-=-
 #include "irods_pluggable_auth_scheme.hpp"
 

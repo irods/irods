@@ -1,6 +1,3 @@
-
-
-
 #ifndef __IRODS_SERVER_API_TABLE_HPP__
 #define __IRODS_SERVER_API_TABLE_HPP__
 

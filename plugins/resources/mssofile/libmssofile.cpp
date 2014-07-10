@@ -1,6 +1,3 @@
-
-
-
 #include "rods.hpp"
 #include "rsGlobal.hpp"
 //#include "structFileDriver.hpp"

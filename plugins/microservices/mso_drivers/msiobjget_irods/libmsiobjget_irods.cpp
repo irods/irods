@@ -1,6 +1,3 @@
-
-
-
 #include "rodsClient.hpp"
 #include "reFuncDefs.hpp"
 #include "rods.hpp"

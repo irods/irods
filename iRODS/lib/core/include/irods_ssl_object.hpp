@@ -1,6 +1,3 @@
-
-
-
 #ifndef __IRODS_SSL_OBJECT_HPP__
 #define __IRODS_SSL_OBJECT_HPP__
 

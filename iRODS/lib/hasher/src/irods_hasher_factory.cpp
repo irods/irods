@@ -1,6 +1,3 @@
-
-
-
 #include "irods_hasher_factory.hpp"
 #include "MD5Strategy.hpp"
 #include "SHA256Strategy.hpp"

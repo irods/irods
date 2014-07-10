@@ -1,4 +1,3 @@
-
 /* this is automatically generated C code */
 
 #include "reVariableMap.gen.hpp"

@@ -1,6 +1,3 @@
-/* -*- mode: c++; fill-column: 72; c-basic-offset: 4; indent-tabs-mode: nil -*- */
-
-
 #include "MD5Strategy.hpp"
 
 #include <string>

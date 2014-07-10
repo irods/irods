@@ -1,6 +1,3 @@
-/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
-
-
 #ifndef PLUGIN_TABLE_HPP
 #define PLUGIN_TABLE_HPP
 

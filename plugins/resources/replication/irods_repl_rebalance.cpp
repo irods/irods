@@ -1,6 +1,3 @@
-
-
-
 // =-=-=-=-=-=-=-
 #include "irods_repl_rebalance.hpp"
 #include "irods_resource_plugin.hpp"

@@ -1,7 +1,3 @@
-
-
-
-
 #ifndef __IRODS_PACK_TABLE_HPP__
 #define __IRODS_PACK_TABLE_HPP__
 

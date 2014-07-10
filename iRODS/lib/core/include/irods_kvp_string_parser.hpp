@@ -1,6 +1,3 @@
-
-
-
 #ifndef __IRODS_KVP_STRING_PARSER_HPP__
 #define __IRODS_KVP_STRING_PARSER_HPP__
 

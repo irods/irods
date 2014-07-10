@@ -1,6 +1,3 @@
-
-
-
 #ifndef __IRODS_ORACLE_OBJECT_HPP__
 #define __IRODS_ORACLE_OBJECT_HPP__
 

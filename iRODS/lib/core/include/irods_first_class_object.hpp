@@ -1,5 +1,3 @@
-/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
-
 #ifndef __IRODS_FIRST_CLASS_OBJECT_HPP__
 #define __IRODS_FIRST_CLASS_OBJECT_HPP__
 

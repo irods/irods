@@ -1,6 +1,3 @@
-
-
-
 // =-=-=-=-=-=-=-
 #include "irods_network_factory.hpp"
 #include "irods_client_server_negotiation.hpp"

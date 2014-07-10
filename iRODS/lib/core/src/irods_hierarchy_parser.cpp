@@ -1,5 +1,3 @@
-/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
-
 #include "irods_hierarchy_parser.hpp"
 #include "irods_string_tokenize.hpp"
 #include "rodsErrorTable.hpp"

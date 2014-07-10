@@ -1,6 +1,3 @@
-
-
-
 #ifndef __IRODS_DATABASE_OBJECT_HPP__
 #define __IRODS_DATABASE_OBJECT_HPP__
 

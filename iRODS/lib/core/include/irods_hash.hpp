@@ -1,6 +1,3 @@
-
-
-
 #ifndef __IRODS_HASH_HPP__
 #define __IRODS_HASH_HPP__
 

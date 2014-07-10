@@ -1,5 +1,3 @@
-/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
-
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
 #include <limits.h>

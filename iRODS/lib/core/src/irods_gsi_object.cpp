@@ -1,5 +1,3 @@
-/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
-
 #include "rcMisc.hpp"
 
 #include "irods_gsi_object.hpp"

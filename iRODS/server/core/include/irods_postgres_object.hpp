@@ -1,6 +1,3 @@
-
-
-
 #ifndef __IRODS_POSTGRES_OBJECT_HPP__
 #define __IRODS_POSTGRES_OBJECT_HPP__
 

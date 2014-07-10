@@ -1,7 +1,3 @@
-
-
-
-
 #ifndef __IRODS_NETWORK_MANAGER_HPP__
 #define __IRODS_NETWORK_MANAGER_HPP__
 

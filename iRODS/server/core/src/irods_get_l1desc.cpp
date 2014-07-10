@@ -1,4 +1,3 @@
-
 #include "irods_get_l1desc.hpp"
 #include "rsGlobalExtern.hpp"
 

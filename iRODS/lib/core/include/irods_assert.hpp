@@ -1,6 +1,3 @@
-
-
-
 #ifndef __IRODS_ASSERT_HPP__
 #define __IRODS_ASSERT_HPP__
 

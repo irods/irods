@@ -1,5 +1,3 @@
-
-
 #include "apiTable.hpp"
 #include "irods_client_api_table.hpp"
 

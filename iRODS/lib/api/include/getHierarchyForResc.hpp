@@ -1,6 +1,3 @@
-
-
-
 #ifndef __GET_HIERARCHY_FOR_RESC_HPP__
 #define __GET_HIERARCHY_FOR_RESC_HPP__
 

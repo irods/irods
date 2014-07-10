@@ -1,6 +1,3 @@
-
-
-
 #ifndef __SOCKET_WRAPPER_HPP__
 #define __SOCKET_WRAPPER_HPP__
 

@@ -1,6 +1,3 @@
-
-
-
 // =-=-=-=-=-=-=-
 // irods includes
 #include "irods_virtual_path.hpp"

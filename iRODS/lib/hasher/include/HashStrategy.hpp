@@ -1,5 +1,3 @@
-/* -*- mode: c++; fill-column: 72; c-basic-offset: 4; indent-tabs-mode: nil -*- */
-
 #ifndef _HashStrategy_H_
 #define _HashStrategy_H_
 

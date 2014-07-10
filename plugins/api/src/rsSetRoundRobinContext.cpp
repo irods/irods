@@ -1,5 +1,3 @@
-
-
 // =-=-=-=-=-=-=-
 // irods includes
 #include "reGlobalsExtern.hpp"

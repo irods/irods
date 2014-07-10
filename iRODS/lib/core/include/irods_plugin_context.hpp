@@ -1,6 +1,3 @@
-
-
-
 #ifndef __IRODS_PLUGIN_CONTEXT_HPP__
 #define __IRODS_PLUGIN_CONTEXT_HPP__
 

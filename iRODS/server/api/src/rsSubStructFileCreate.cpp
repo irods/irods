@@ -1,4 +1,3 @@
-
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
 #include "miscServerFunct.hpp"

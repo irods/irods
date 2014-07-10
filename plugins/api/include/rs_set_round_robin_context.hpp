@@ -1,6 +1,3 @@
-
-
-
 #ifndef SET_ROUND_ROBIN_CONTEXT_HPP__
 #define SET_ROUND_ROBIN_CONTEXT_HPP__
 

@@ -1,5 +1,3 @@
-/* -*- mode: c++; fill-column: 72; c-basic-offset: 4; indent-tabs-mode: nil -*- */
-
 #include "SHA256Strategy.hpp"
 #include "md5Checksum.hpp"
 

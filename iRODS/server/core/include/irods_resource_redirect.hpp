@@ -1,6 +1,3 @@
-
-
-
 #ifndef __IRODS_RESOURCE_REDIRECT_HPP__
 #define __IRODS_RESOURCE_REDIRECT_HPP__
 

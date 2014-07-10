@@ -1,6 +1,3 @@
-
-
-
 #ifndef __IRODS_PHYSICAL_OBJECT_HPP__
 #define  __IRODS_PHYSICAL_OBJECT_HPP__
 

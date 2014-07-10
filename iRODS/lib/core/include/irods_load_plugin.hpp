@@ -1,5 +1,3 @@
-/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
-
 #ifndef __IRODS_LOAD_PLUGIN_HPP__
 #define __IRODS_LOAD_PLUGIN_HPP__
 

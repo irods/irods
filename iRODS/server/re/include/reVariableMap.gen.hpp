@@ -1,4 +1,3 @@
-
 /* this is automatically generated C code */
 
 #ifndef RE_VARIABLE_MAP_GEN

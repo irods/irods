@@ -1,6 +1,3 @@
-
-
-
 #ifndef __IRODS_RESOURCE_BACKPORT_HPP_
 #define __IRODS_RESOURCE_BACKPORT_HPP_
 

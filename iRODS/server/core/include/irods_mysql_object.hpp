@@ -1,6 +1,3 @@
-
-
-
 #ifndef __IRODS_MYSQL_OBJECT_HPP__
 #define __IRODS_MYSQL_OBJECT_HPP__
 

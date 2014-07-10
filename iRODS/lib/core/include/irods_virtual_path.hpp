@@ -1,6 +1,3 @@
-
-
-
 #ifndef __IRODS_VIRTUAL_PATH_HPP__
 #define __IRODS_VIRTUAL_PATH_HPP__
 

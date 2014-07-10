@@ -1,4 +1,3 @@
-
 // =-=-=-=-=-=-=-
 // irods includes
 #include "rodsDef.hpp"

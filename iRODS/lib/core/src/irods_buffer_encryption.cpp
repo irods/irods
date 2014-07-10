@@ -1,6 +1,3 @@
-
-
-
 // =-=-=-=-=-=-=-
 #include "irods_buffer_encryption.hpp"
 #include "irods_log.hpp"

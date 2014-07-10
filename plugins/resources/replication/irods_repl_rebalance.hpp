@@ -1,6 +1,3 @@
-
-
-
 #ifndef __IRODS_REPL_REBALANCE_HPP__
 #define __IRODS_REPL_REBALANCE_HPP__
 

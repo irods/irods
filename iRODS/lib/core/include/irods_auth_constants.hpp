@@ -1,6 +1,3 @@
-
-
-
 #ifndef __IRODS_AUTH_CONSTANTS_HPP__
 #define __IRODS_AUTH_CONSTANTS_HPP__
 

@@ -1,5 +1,3 @@
-/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
-
 // =-=-=-=-=-=-=-
 #include "irods_native_auth_object.hpp"
 #include "irods_auth_manager.hpp"

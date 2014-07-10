@@ -1,6 +1,3 @@
-
-
-
 #ifndef __IRODS_NETWORK_FACTORY_HPP__
 #define __IRODS_NETWORK_FACTORY_HPP__
 

@@ -1,6 +1,3 @@
-
-
-
 #ifndef IRODS_THREADS_HPP
 #define IRODS_THREADS_HPP
 

@@ -1,6 +1,3 @@
-
-
-
 // =-=-=-=-=-=-=-
 #include "authPluginRequest.hpp"
 #include "irods_native_auth_object.hpp"

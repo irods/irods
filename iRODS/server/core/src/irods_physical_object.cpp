@@ -1,5 +1,3 @@
-
-
 // =-=-=-=-=-=-=-
 #include "irods_physical_object.hpp"
 

@@ -1,6 +1,3 @@
-
-
-
 // =-=-=-=-=-=-=-
 // legacy irods includes
 #include "msParam.hpp"

@@ -1,6 +1,3 @@
-
-
-
 #include "rodsClient.hpp"
 #include "rods.hpp"
 #include "reGlobalsExtern.hpp"

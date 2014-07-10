@@ -1,6 +1,3 @@
-
-
-
 #ifndef __IRODS_BUFFER_ENCRYPTION_HPP__
 #define __IRODS_BUFFER_ENCRYPTION_HPP__
 

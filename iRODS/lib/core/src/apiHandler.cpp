@@ -1,6 +1,3 @@
-
-
-
 // =-=-=-=-=-=-=-
 // irods includes
 #include "apiHandler.hpp"
