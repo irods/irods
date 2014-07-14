@@ -387,7 +387,7 @@ Res* evaluateActions( Node *expr, Node *reco, int applyAll, ruleExecInfo_t *rei,
                 char *errAction = getNodeType( nodei ) == N_APPLICATION ? N_APP_FUNC( nodei )->text : nodei->text;
                 sprintf( tmpStr, "executeRuleAction Failed for %s", errAction );
                 rodsLogError( LOG_ERROR, RES_ERR_CODE( res ), tmpStr );
-                rodsLog( LOG_NOTICE, "executeRuleBody: Micro-service or Action %s Failed with status %i", errAction, RES_ERR_CODE( res ) );
+                rodsLog( LOG_NOTICE, "executeRuleBody: Microservice or Action %s Failed with status %i", errAction, RES_ERR_CODE( res ) );
 #endif
                 /* run recovery chain */
                 if ( RES_ERR_CODE( res ) != RETRY_WITHOUT_RECOVERY_ERR && reco != NULL ) {
