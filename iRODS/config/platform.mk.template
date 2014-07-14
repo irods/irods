@@ -53,7 +53,6 @@ IRODS_BUILD_DEBUG=1
 ifeq ($(IRODS_BUILD_DEBUG), 1)
 CCFLAGS += -g
 else
-# we'll change this to -O3 later to optimize... hit errors on first attempt
 CCFLAGS += -O3
 endif
 
