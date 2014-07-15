@@ -374,8 +374,8 @@ int convertResToMsParam( msParam_t *var, Res *res, rError_t *errmsg ) {
         /**((time_t *)var->inOutStruct) = res->value.t; */
         /*var->type = strdup(DATETIME_MS_T); */
         /* Here we pass datatime as an integer to reuse exiting packing instructions. Need to change to long int. */
-        var->inOutStruct = ( rodsLong_t * )malloc( sizeof( int ) );
-        *( ( rodsLong_t * )var->inOutStruct ) = RES_TIME_VAL( res );
+        var->inOutStruct = ( int* )malloc( sizeof( int ) );
+        *( ( int* )var->inOutStruct ) = (int)RES_TIME_VAL( res );
         var->type = strdup( INT_MS_T );
         break;
     case T_CONS:
