@@ -3637,7 +3637,7 @@ msiTarFileExtract( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPar
         return ( rei->status );
     }
 
-    if ( strcmp( inpParam3->type, STR_MS_T ) == 0 && inpParam3 != NULL &&
+    if ( inpParam3 != NULL && strcmp( inpParam3->type, STR_MS_T ) == 0 &&
             strcmp( ( char * ) inpParam3->inOutStruct, "null" ) != 0 ) {
         addKeyVal( &myStructFileExtAndRegInp->condInput, DEST_RESC_NAME_KW,
                    ( char * ) inpParam3->inOutStruct );
