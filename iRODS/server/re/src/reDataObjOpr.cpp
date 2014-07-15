@@ -3900,7 +3900,7 @@ msiPhyBundleColl( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outPara
         return ( rei->status );
     }
 
-    if ( strcmp( inpParam2->type, STR_MS_T ) == 0 && inpParam2 != NULL &&
+    if ( inpParam2 != NULL && strcmp( inpParam2->type, STR_MS_T ) == 0 &&
             // =-=-=-=-=-=-=-
             strcmp( ( char * ) inpParam2->inOutStruct, "null" ) != 0 ) {
         inpStr = ( char * ) inpParam2->inOutStruct;
