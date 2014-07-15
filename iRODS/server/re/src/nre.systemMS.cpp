@@ -1034,7 +1034,7 @@ msiBytesBufToStr( msParam_t* buf_msp, msParam_t* str_msp, ruleExecInfo_t *rei ) 
     bytesBuf_t *inBuf;
 
     /*check buf_msp */
-    if ( buf_msp == NULL && buf_msp->inOutStruct == NULL ) {
+    if ( buf_msp == NULL || buf_msp->inOutStruct == NULL ) {
         rodsLog( LOG_ERROR, "msiBytesBufToStr: input buf_msp is NULL." );
         return ( USER__NULL_INPUT_ERR );
     }
