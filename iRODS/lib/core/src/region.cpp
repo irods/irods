@@ -170,14 +170,3 @@ void assert( int res ) {
         printf( "error" );
     }
 }
-void test() {
-    Region *r = make_region( 0, NULL );
-    assert( region_alloc( r, 16 ) != NULL );
-    assert( region_alloc( r, 20 ) != NULL );
-    assert( region_alloc( r, 1000 ) != NULL );
-    assert( region_alloc( r, 10000 ) != NULL );
-    assert( region_alloc( r, 16 ) != NULL );
-    assert( region_alloc( r, 10 ) != NULL );
-    assert( region_alloc( r, 1024 - 16 - 10 ) != NULL );
-    region_free( r );
-}
