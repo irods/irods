@@ -598,7 +598,7 @@ char* typeToString( ExprType *type, Hashtable *var_types, char *buf, int bufsize
         }
     }
     else {
-        snprintf( buf + strlen( buf ), bufsize - strlen( buf ), "%s ", etype == NULL ? "?" : typeName_ExprType( etype ) );
+        snprintf( buf + strlen( buf ), bufsize - strlen( buf ), "%s ", typeName_ExprType( etype ) );
     }
 
     int i = strlen( buf ) - 1;
