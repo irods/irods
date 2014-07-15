@@ -673,8 +673,8 @@ msiDataObjWrite( msParam_t *inpParam1, msParam_t *inpParam2,
         inpParam2->type = strdup( STR_MS_T );
     }
 
-    if ( inpParam1 == NULL || ( inpParam2->inpOutBuf == NULL &&
-                                inpParam2->inOutStruct == NULL ) ) {
+    if ( inpParam1 == NULL || ( inpParam1->inpOutBuf == NULL &&
+                                inpParam1->inOutStruct == NULL ) ) {
         rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjWrite: input inpParam1 or inpOutBuf or inOutStruct is NULL" );
