@@ -719,9 +719,6 @@ extern "C" {
         nat->add_operation( irods::AUTH_AGENT_AUTH_VERIFY,    "osauth_auth_agent_auth_verify" );
 
         irods::auth* auth = dynamic_cast< irods::auth* >( nat );
-        if ( !auth ) {
-            rodsLog( LOG_ERROR, "failed to dynamic cast to irods::auth*" );
-        }
 
         return auth;
 
