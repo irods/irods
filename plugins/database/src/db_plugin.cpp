@@ -6623,13 +6623,10 @@ extern "C" {
             if ( rows == 0 && _format == 3 ) {
                 for ( i = 0; i < nCols ; i++ ) {
                     rstrcat( _out_buf, icss.stmtPtr[stmtNum]->resultColName[i], _max_out_buf );
-                    rstrcat( _out_buf, " ", _max_out_buf );
+                    if ( i != nCols - 1 ) {
+                        rstrcat( _out_buf, " ", _max_out_buf );
+                    }
                 }
-                if ( i != nCols - 1 ) { // JMC - backport 4586
-                    /* add a space except for the last column */
-                    rstrcat( _out_buf, " ", _max_out_buf );
-                }
-
             }
             rows++;
             for ( i = 0; i < nCols ; i++ ) {
