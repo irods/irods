@@ -532,7 +532,7 @@ char* typeToString( ExprType *type, Hashtable *var_types, char *buf, int bufsize
     }
 
     if ( getNodeType( etype ) == T_VAR ) {
-        snprintf( buf + strlen( buf ), bufsize - strlen( buf ), "%s ", etype == NULL ? "?" : typeName_ExprType( etype ) );
+        snprintf( buf + strlen( buf ), bufsize - strlen( buf ), "%s ", typeName_ExprType( etype ) );
         snprintf( buf + strlen( buf ), bufsize - strlen( buf ), "%d", T_VAR_ID( etype ) );
         if ( T_VAR_NUM_DISJUNCTS( type ) != 0 ) {
             snprintf( buf + strlen( buf ), bufsize - strlen( buf ), "{" );
