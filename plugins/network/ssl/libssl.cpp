@@ -1277,10 +1277,6 @@ extern "C" {
         ssl_network_plugin* ssl = new ssl_network_plugin(
             _inst_name,
             _context );
-        if ( !ssl ) {
-            printf( "plugin_factory - failed to alloc ssl_network_plugin" );
-            return 0;
-        }
 
         // =-=-=-=-=-=-=-
         // fill in the operation table mapping call
