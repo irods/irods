@@ -510,9 +510,6 @@ extern "C" {
         pam->add_operation( irods::AUTH_AGENT_AUTH_VERIFY,    "pam_auth_success_stub" );
 
         irods::auth* auth = dynamic_cast< irods::auth* >( pam );
-        if ( !auth ) {
-            rodsLog( LOG_ERROR, "failed to dynamic cast to irods::auth*" );
-        }
 
         return auth;
 
