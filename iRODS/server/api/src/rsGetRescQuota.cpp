@@ -317,6 +317,10 @@ chkRescGrpInfoForQuota( rescGrpInfo_t **rescGrpInfoHead, rodsLong_t dataSize ) {
         }
     }
 
+    if ( rescGrpInfoHead == NULL ) {
+        return SYS_INTERNAL_NULL_INPUT_ERR;
+    }
+
     /* take out resc that has been overrun and indicate that the quota has
      * been initialized */
     prevRescGrpInfo = NULL;
@@ -347,7 +351,7 @@ chkRescGrpInfoForQuota( rescGrpInfo_t **rescGrpInfoHead, rodsLong_t dataSize ) {
         }
         tmpRescGrpInfo = nextRescGrpInfo;
     }
-    if ( rescGrpInfoHead == NULL || *rescGrpInfoHead == NULL ) {
+    if ( *rescGrpInfoHead == NULL ) {
         return SYS_RESC_QUOTA_EXCEEDED;
     }
     else {
