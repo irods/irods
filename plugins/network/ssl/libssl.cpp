@@ -1291,9 +1291,6 @@ extern "C" {
         ssl->add_operation( irods::NETWORK_OP_WRITE_BODY,   "ssl_send_rods_msg" );
 
         irods::network* net = dynamic_cast< irods::network* >( ssl );
-        if ( !net ) {
-            printf( "failed to dynamic cast to irods::network*" );
-        }
 
         return net;
 
