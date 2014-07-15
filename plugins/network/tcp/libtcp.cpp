@@ -699,9 +699,6 @@ extern "C" {
         tcp->add_operation( irods::NETWORK_OP_WRITE_BODY,   "tcp_send_rods_msg" );
 
         irods::network* net = dynamic_cast< irods::network* >( tcp );
-        if ( !net ) {
-            rodsLog( LOG_ERROR, "failed to dynamic cast to irods::network*" );
-        }
 
         return net;
 
