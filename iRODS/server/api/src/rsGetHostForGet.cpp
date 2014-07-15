@@ -83,11 +83,12 @@ getBestRescForGet( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     int status, i;
     int maxInx = -1;
 
-    *outRescInfo = NULL;
-
     if ( dataObjInp == NULL || outRescInfo == NULL ) {
         return USER__NULL_INPUT_ERR;
     }
+
+    *outRescInfo = NULL;
+
     bzero( &hostSearchStat, sizeof( hostSearchStat ) );
     bzero( &collInp, sizeof( collInp ) );
     rstrcpy( collInp.collName, dataObjInp->objPath, MAX_NAME_LEN );
