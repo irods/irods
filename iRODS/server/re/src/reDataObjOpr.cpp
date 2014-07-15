@@ -3782,7 +3782,7 @@ msiTarFileCreate( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPara
                    ( char * ) inpParam3->inOutStruct );
     }
 
-    if ( strcmp( inpParam4->type, STR_MS_T ) == 0 && inpParam4 != NULL &&
+    if ( inpParam4 != NULL && strcmp( inpParam4->type, STR_MS_T ) == 0 &&
             strcmp( ( char * ) inpParam4->inOutStruct, "force" ) == 0 ) {
         addKeyVal( &myStructFileExtAndRegInp->condInput, FORCE_FLAG_KW, "" );
     }
