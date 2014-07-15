@@ -685,10 +685,6 @@ extern "C" {
         tcp_network_plugin* tcp = new tcp_network_plugin(
             _inst_name,
             _context );
-        if ( !tcp ) {
-            rodsLog( LOG_ERROR, "plugin_factory - failed to alloc tcp_network_plugin" );
-            return 0;
-        }
 
         // =-=-=-=-=-=-=-
         // fill in the operation table mapping call
