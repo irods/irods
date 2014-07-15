@@ -705,10 +705,6 @@ extern "C" {
         osauth_auth_plugin* nat = new osauth_auth_plugin(
             _inst_name,
             _context );
-        if ( !nat ) {
-            rodsLog( LOG_ERROR, "plugin_factory - failed to alloc osauth_auth_plugin" );
-            return 0;
-        }
 
         // =-=-=-=-=-=-=-
         // fill in the operation table mapping call
