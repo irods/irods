@@ -496,10 +496,6 @@ extern "C" {
         pam_auth_plugin* pam = new pam_auth_plugin(
             _inst_name,
             _context );
-        if ( !pam ) {
-            rodsLog( LOG_ERROR, "plugin_factory - failed to alloc pam_auth_plugin" );
-            return 0;
-        }
 
         // =-=-=-=-=-=-=-
         // fill in the operation table mapping call
