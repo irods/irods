@@ -13,7 +13,14 @@
 #########################
 
 # check python version
-PYTHONVERSION=$( python --version 2>&1 | awk '{print $2}' )
+REQUIREDPYTHON="2.5"
+PYTHONVERSION=$( python -V 2>&1 | awk '{print $2}' )
+if [ "$PYTHONVERSION" \< "$REQUIREDPYTHON" ] ; then
+    # too old
+    # psutil w/ 2.4 says: yield not allowed in a try block with a finally clause
+    echo "ERROR: python$REQUIREDPYTHON or greater required (python$PYTHONVERSION installed)"
+    exit 1
+fi
 if [ "$PYTHONVERSION" \< "2.7" ] ; then
     # get unittest2 package
     UNITTEST2VERSION="unittest2-0.5.1"
