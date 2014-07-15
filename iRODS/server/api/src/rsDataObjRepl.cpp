@@ -885,7 +885,7 @@ dataObjOpenForRepl(
     }
 
     char* src_hier_str = 0;
-    if ( srcDataObjInfo != NULL && srcDataObjInfo->rescHier != NULL ) {
+    if ( srcDataObjInfo->rescHier != NULL ) {
         src_hier_str = srcDataObjInfo->rescHier;
     }
 
