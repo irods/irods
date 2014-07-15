@@ -729,10 +729,7 @@ dataObjOpenForRepl(
     int srcL1descInx = 0;
     int status = 0;
     int replStatus = 0;
-    //int destRescClass;
 
-    // JMC - legacy resource int srcRescClass = getRescClass (inpSrcDataObjInfo->rescInfo);
-    dataObjInfo_t *cacheDataObjInfo = NULL;
     dataObjInp_t myDataObjInp, *l1DataObjInp = 0;
     if ( destRescInfo == NULL ) {
         myDestRescInfo = inpDestDataObjInfo->rescInfo;
@@ -749,25 +746,20 @@ dataObjOpenForRepl(
         return SYS_RESC_IS_DOWN;
     }
 
-    if ( cacheDataObjInfo == NULL ) {
-        srcDataObjInfo  = ( dataObjInfo_t* )calloc( 1, sizeof( dataObjInfo_t ) );
-        *srcDataObjInfo = *inpSrcDataObjInfo;
-
-        srcDataObjInfo->rescInfo = new rescInfo_t;
-        memcpy( srcDataObjInfo->rescInfo, inpSrcDataObjInfo->rescInfo, sizeof( rescInfo_t ) );
-
-        memset( &srcDataObjInfo->condInput, 0, sizeof( srcDataObjInfo->condInput ) );
-        replKeyVal( &inpSrcDataObjInfo->condInput, &srcDataObjInfo->condInput );
-       
-    }
-    else {
-        srcDataObjInfo = cacheDataObjInfo;
-    }
-
+    srcDataObjInfo = ( dataObjInfo_t* )calloc( 1, sizeof( dataObjInfo_t ) );
     if ( NULL == srcDataObjInfo ) { // JMC cppcheck - nullptr
         rodsLog( LOG_ERROR, "dataObjOpenForRepl - srcDataObjInfo is NULL" );
         return -1;
     }
+    *srcDataObjInfo = *inpSrcDataObjInfo;
+
+    srcDataObjInfo->rescInfo = new rescInfo_t;
+    memcpy( srcDataObjInfo->rescInfo, inpSrcDataObjInfo->rescInfo, sizeof( rescInfo_t ) );
+
+    memset( &srcDataObjInfo->condInput, 0, sizeof( srcDataObjInfo->condInput ) );
+    replKeyVal( &inpSrcDataObjInfo->condInput, &srcDataObjInfo->condInput );
+       
+
     /* open the dest */
     myDataObjInp = *dataObjInp;
     myDataObjInp.dataSize = inpSrcDataObjInfo->dataSize;
