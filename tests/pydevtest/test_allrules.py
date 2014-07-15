@@ -82,7 +82,7 @@ class Test_AllRules(unittest.TestCase, ResourceBase):
         # setup for rulemsiAdmChangeCoreRE and the likes
         empty_core_file_name = 'empty.test.re'
         new_core_file_name = 'new.test.re'
-        with open(self.conf_dir + "/" + empty_core_file_name, 'w'): pass                    # create empty file
+        open(self.conf_dir + "/" + empty_core_file_name, 'w').close()                       # create empty file
         shutil.copy(self.conf_dir + "/core.re", self.conf_dir + "/core.re.bckp" )           # back up core.re
         shutil.copy(self.conf_dir + "/core.re", self.conf_dir + "/" + new_core_file_name)   # copy core.re
         
@@ -364,9 +364,10 @@ class Test_AllRules(unittest.TestCase, ResourceBase):
         s.adminsession.runCmd('imkdir', [test_coll])
         
         # create source test file
-        with open(src_file, 'a') as src:
-            src.write('blah\n')
-        
+        f = open(src_file, 'a')
+        f.write('blah\n')
+        f.close()
+
         # upload source test file
         s.adminsession.runCmd('iput', [src_file, test_coll] )
         
@@ -375,12 +376,13 @@ class Test_AllRules(unittest.TestCase, ResourceBase):
         
         # modify the source and try again
         for i in range(1, 5):
-            with open(src_file, 'a') as src:
-                src.write('blah_%d\n' % i)
-            
+            f = open(src_file, 'a')
+            f.write('blah_'+str(i)+'\n')
+            f.close()
+
             # force upload source
             s.adminsession.runCmd('iput', ['-f', src_file, test_coll] )
-            
+
             # sync test
             assertiCmd(s.adminsession,"irule -F "+rules30dir+rulefile, "LIST", "status = 99999992")
         

@@ -190,8 +190,8 @@ class RodsSession(object):
         global RODSLOGDIR
         proc = subprocess.Popen('ls -t '+RODSLOGDIR+'/rodsLog* | head -n1', stdout=subprocess.PIPE, shell=True)
         (myrodslogfile, err) = proc.communicate()
-        with open(myrodslogfile.rstrip(),"a") as myrodslog:
-            myrodslog.write(" --- interrupt icommand ["+' '.join(argList)+"] --- \n")
+        myrodslog = open(myrodslogfile.rstrip(),"a")
+        myrodslog.write(" --- interrupt icommand ["+' '.join(argList)+"] --- \n")
         myrodslog.close()
 
         p = subprocess.Popen(argList, stdout = subprocess.PIPE, \
@@ -250,8 +250,8 @@ class RodsSession(object):
         global RODSLOGDIR
         proc = subprocess.Popen('ls -t '+RODSLOGDIR+'/rodsLog* | head -n1', stdout=subprocess.PIPE, shell=True)
         (myrodslogfile, err) = proc.communicate()
-        with open(myrodslogfile.rstrip(),"a") as myrodslog:
-            myrodslog.write(" --- interrupt icommand delay("+str(delay)+") ["+' '.join(argList)+"] --- \n")
+        myrodslog = open(myrodslogfile.rstrip(),"a")
+        myrodslog.write(" --- interrupt icommand delay("+str(delay)+") ["+' '.join(argList)+"] --- \n")
         myrodslog.close()
 
         p = subprocess.Popen(argList, stdout = subprocess.PIPE, \
@@ -342,8 +342,8 @@ class RodsSession(object):
         global RODSLOGDIR
         proc = subprocess.Popen('ls -t '+RODSLOGDIR+'/rodsLog* | head -n1', stdout=subprocess.PIPE, shell=True)
         (myrodslogfile, err) = proc.communicate()
-        with open(myrodslogfile.rstrip(),"a") as myrodslog:
-            myrodslog.write(" --- icommand ["+' '.join(argList)+"] --- \n")
+        myrodslog = open(myrodslogfile.rstrip(),"a")
+        myrodslog.write(" --- icommand ["+' '.join(argList)+"] --- \n")
         myrodslog.close()
 
         if delay > 0:
@@ -379,8 +379,8 @@ class RodsSession(object):
         global RODSLOGDIR
         proc = subprocess.Popen('ls -t '+RODSLOGDIR+'/rodsLog* | head -n1', stdout=subprocess.PIPE, shell=True)
         (myrodslogfile, err) = proc.communicate()
-        with open(myrodslogfile.rstrip(),"a") as myrodslog:
-           myrodslog.write(" --- iadmin ["+' '.join(argList)+"] --- \n")
+        myrodslog = open(myrodslogfile.rstrip(),"a")
+        myrodslog.write(" --- iadmin ["+' '.join(argList)+"] --- \n")
         myrodslog.close()
 
         return subprocess.Popen(argList, stdin = subprocess.PIPE, \
