@@ -42,14 +42,12 @@ int loadDirToLocalResc( ruleExecInfo_t *rei, char *dirPath, size_t offset,
     int filecount = 0, status;
     char *dirname;
 
-
-
     /* Get name of directory */
-    if ( ( dirname = strrchr( dirPath, '/' ) + 1 ) == NULL ) {
+    if ( ( dirname = strrchr( dirPath, '/' ) ) == NULL ) {
         rei->status = SYS_INVALID_FILE_PATH;
         return 0;
     }
-
+    dirname += 1;
 
     /* Stuff we'll ignore */
     /* Make sure to skip the vault, which by default is
