@@ -1152,6 +1152,8 @@ rsMkOrphanPath( rsComm_t *rsComm, char *objPath, char *orphanPath ) {
 
     memset( &collCreateInp, 0, sizeof( collCreateInp ) );
     rstrcpy( collCreateInp.collName, orphanPath, MAX_NAME_LEN );
+    addKeyVal( &collCreateInp.condInput, RECURSIVE_OPR__KW, "" );	// in case there is no trash/orphan collection
+
     status = rsCollCreate( rsComm, &collCreateInp );
 
     if ( status < 0 && status != CAT_NAME_EXISTS_AS_COLLECTION ) {
