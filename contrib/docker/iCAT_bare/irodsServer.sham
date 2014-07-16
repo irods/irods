@@ -1,4 +1,0 @@
-#!/bin/bash
-env >/var/lib/irods/env.tmp
-supervisorctl start irodsServer
-# rm /var/lib/irods/irodsEnvFile.tmp
