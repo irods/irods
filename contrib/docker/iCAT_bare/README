@@ -1,0 +1,13 @@
+This set of files can be used to create a Docker image of an iRODS iCAT server.
+To create and instantiate the server, use the following instructions.
+
+1. Locate the files in a single directory (known below as "path")..
+2. Run "docker build -t [repo/tag] [path]"
+3. Run 
+ "docker run -h [hostname] -p [ssh redirect]:22 \ 
+   [irods redirect]:1247 -t -i [repo/tag]"
+
+Once running...
+* You can ssh to the box with "ssh -p [ssh redirect] admin@localhost"
+* The admin password is "admin"
+* rods is the only iRODS user, with password "rods"
