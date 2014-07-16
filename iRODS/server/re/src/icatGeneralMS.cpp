@@ -667,7 +667,7 @@ int msiCheckAccess( msParam_t *inObjName, msParam_t * inOperation,
                     msParam_t * outResult, ruleExecInfo_t *rei ) {
     char *objName, *oper;
     char objType[MAX_NAME_LEN];
-    int i;
+    int i=0;
     char *user;
     char *zone;
 
@@ -703,6 +703,11 @@ int msiCheckAccess( msParam_t *inObjName, msParam_t * inOperation,
     }
 
     i = checkPermissionByObjType( rei->rsComm, objName, objType, user, zone, oper );
+
+    if (i == 0) {	// hack
+    	i = checkPermissionByObjType( rei->rsComm, objName, objType, "public", zone, oper );
+    }
+
     if ( i < 0 ) {
         return( i );
     }
