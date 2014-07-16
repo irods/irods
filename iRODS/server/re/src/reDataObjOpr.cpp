@@ -638,7 +638,7 @@ msiDataObjWrite( msParam_t *inpParam1, msParam_t *inpParam2,
     rsComm_t *rsComm;
     openedDataObjInp_t dataObjWriteInp, *myDataObjWriteInp;
     int myInt;
-    bytesBuf_t tmpBBuf, *myBBuf;
+    bytesBuf_t tmpBBuf, *myBBuf = NULL;
     execCmdOut_t *myExecCmdOut;
     msParam_t *mP;
 
@@ -651,27 +651,6 @@ msiDataObjWrite( msParam_t *inpParam1, msParam_t *inpParam2,
 
     rsComm = rei->rsComm;
 
-    if ( ( strcmp( ( char * )inpParam2->inOutStruct, "stdout" ) == 0 ) ||
-            ( strcmp( ( char * ) inpParam2->inOutStruct, "stderr" ) == 0 ) ) {
-        if ( ( mP = getMsParamByLabel( rei->msParamArray, "ruleExecOut" ) ) == NULL ) {
-            return( NO_VALUES_FOUND );
-        }
-        myExecCmdOut = ( execCmdOut_t* )mP->inOutStruct;
-        if ( strcmp( ( char * ) inpParam2->inOutStruct, "stdout" ) == 0 ) {
-            free( inpParam2->inOutStruct );
-            inpParam2->inOutStruct = 0;
-            if ( myExecCmdOut->stdoutBuf.len > 0 ) {
-                inpParam2->inOutStruct =  strdup( ( char * ) myExecCmdOut->stdoutBuf.buf );
-            }
-        }
-        else {
-            free( inpParam2->inOutStruct );
-            if ( myExecCmdOut->stdoutBuf.len > 0 ) {
-                inpParam2->inOutStruct =  strdup( ( char * ) myExecCmdOut->stderrBuf.buf );
-            }
-        }
-        inpParam2->type = strdup( STR_MS_T );
-    }
 
     if ( inpParam1 == NULL || ( inpParam1->inpOutBuf == NULL &&
                                 inpParam1->inOutStruct == NULL ) ) {
@@ -700,6 +679,27 @@ msiDataObjWrite( msParam_t *inpParam1, msParam_t *inpParam2,
     }
 
     if ( inpParam2 != NULL ) {
+        if ( ( strcmp( ( char * )inpParam2->inOutStruct, "stdout" ) == 0 ) ||
+                ( strcmp( ( char * ) inpParam2->inOutStruct, "stderr" ) == 0 ) ) {
+            if ( ( mP = getMsParamByLabel( rei->msParamArray, "ruleExecOut" ) ) == NULL ) {
+                return( NO_VALUES_FOUND );
+            }
+            myExecCmdOut = ( execCmdOut_t* )mP->inOutStruct;
+            if ( strcmp( ( char * ) inpParam2->inOutStruct, "stdout" ) == 0 ) {
+                free( inpParam2->inOutStruct );
+                inpParam2->inOutStruct = 0;
+                if ( myExecCmdOut->stdoutBuf.len > 0 ) {
+                    inpParam2->inOutStruct =  strdup( ( char * ) myExecCmdOut->stdoutBuf.buf );
+                }
+            }
+            else {
+                free( inpParam2->inOutStruct );
+                if ( myExecCmdOut->stdoutBuf.len > 0 ) {
+                    inpParam2->inOutStruct =  strdup( ( char * ) myExecCmdOut->stderrBuf.buf );
+                }
+            }
+            inpParam2->type = strdup( STR_MS_T );
+        }
         if ( strcmp( inpParam2->type, STR_MS_T ) == 0 ) {
             tmpBBuf.len = myDataObjWriteInp->len =
                               strlen( ( char* )inpParam2->inOutStruct ) + 1;
