@@ -435,7 +435,7 @@ l3Unlink( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
     }
     else {
         std::stringstream msg;
-        msg << "failed to get proprty [class] for resource [";
+        msg << "failed to get property [class] for resource [";
         msg << dataObjInfo->rescInfo->rescName;
         msg << "]";
         irods::log( PASSMSG( msg.str(), prop_err ) );
