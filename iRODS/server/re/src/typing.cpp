@@ -777,9 +777,6 @@ ExprType* isIterable( ExprType *type, int dynamictyping, Hashtable* var_type_tab
             return dereference( T_CONS_TYPE_ARG( derefedType, 0 ), var_type_table, r );
         }
         /* no break */
-    case T_IRODS:
-    case T_STRING:
-    case T_PATH:
         disjuncts[0] = newSimpType( T_STRING, r );
         disjuncts[1] = newIRODSType( CollInp_MS_T, r );
         disjuncts[2] = newIRODSType( IntArray_MS_T, r );
@@ -798,10 +795,15 @@ ExprType* isIterable( ExprType *type, int dynamictyping, Hashtable* var_type_tab
                 disjunctsElem[i] = getElemType( T_VAR_DISJUNCT( unified, i ), r );
             }
             return newTVar2( T_VAR_NUM_DISJUNCTS( unified ), disjunctsElem, r );
-        }
-        else {
+        } else {
             return getElemType( unified, r );
         }
+
+    case T_IRODS:
+    case T_STRING:
+    case T_PATH:
+        return getElemType( derefedType, r );
+
     case T_TUPLE:
         if ( T_CONS_ARITY( derefedType ) != 2 ) {
             return NULL;
