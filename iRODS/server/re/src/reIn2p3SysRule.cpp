@@ -9,6 +9,7 @@
 
 #include "reIn2p3SysRule.hpp"
 #include "genQuery.hpp"
+#include "phyBundleColl.hpp"
 #ifndef windows_platform
 #include <sys/socket.h>
 #include <pthread.h>
@@ -165,19 +166,22 @@ int getListOfResc( rsComm_t *rsComm, char serverList[MAX_VALUE][MAX_NAME_LEN], i
      ***********************************************************/
     int i, j, k, index[MAX_NSERVERS], l, status;
     genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut;
+    genQueryOut_t *genQueryOut=NULL;
+    char condStr[MAX_NAME_LEN];
 
-    memset( &genQueryInp, 0, sizeof( genQueryInp ) );
+    memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
     memset( &index, -1, MAX_NSERVERS * sizeof( int ) );
     genQueryInp.maxRows = MAX_SQL_ROWS;
 
-    clearGenQueryInp( &genQueryInp );
+    //clearGenQueryInp( &genQueryInp );
     addInxIval( &genQueryInp.selectInp, COL_R_LOC, 1 );
     addInxIval( &genQueryInp.selectInp, COL_R_RESC_NAME, 1 );
     addInxIval( &genQueryInp.selectInp, COL_R_TYPE_NAME, 1 );
     addInxIval( &genQueryInp.selectInp, COL_R_VAULT_PATH, 1 );
-    addInxVal( &genQueryInp.sqlCondInp, COL_R_RESC_NAME, "!= 'EMPTY_RESC_HOST'" );
-    addInxVal( &genQueryInp.sqlCondInp, COL_R_VAULT_PATH, "!= 'EMPTY_VAULT_PATH'" );
+    addInxVal( &genQueryInp.sqlCondInp, COL_R_LOC, "!='EMPTY_RESC_HOST'" );
+    addInxVal( &genQueryInp.sqlCondInp, COL_R_VAULT_PATH, "!='EMPTY_RESC_PATH'" );
+    snprintf( condStr, MAX_NAME_LEN, "!='%s'", BUNDLE_RESC );
+    addInxVal( &genQueryInp.sqlCondInp, COL_R_RESC_NAME, condStr);
 
     status = rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
     if ( status < 0 ) {
