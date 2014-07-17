@@ -6,10 +6,13 @@ Development of this release has focused on the following features and efforts:
 
 - Security fixes
 - Bug fixes
+- Impostor resource plugin removes need for installation of plugins across entire grid
+- Better support for block-storage operations
 
 Ongoing efforts include:
 
 - Memory leak analysis via valgrind
+- Optimization-unstable analysis via MIT's stack
 - Full python-based testing framework
 - Certified against full Jargon test suite
 - Continuous integration testing via hudson
