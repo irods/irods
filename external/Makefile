@@ -153,9 +153,11 @@ $(LIBARCHIVEVERSIONARCHIVE) :
 
 $(LIBARCHIVEVERSIONMAKE) : $(LIBARCHIVEVERSIONARCHIVE) cmake
 	@tar zxf $(LIBARCHIVEVERSIONARCHIVE)
-	@bash -xc 'sed $(LIBARCHIVESEDCMD) $(LIBARCHIVEVERSION)/libarchive/test/test_sparse_basic.c > /tmp/test_sparse_basic.c'
-	@rsync -c /tmp/test_sparse_basic.c $(LIBARCHIVEVERSION)/libarchive/test/test_sparse_basic.c
-	@rm -f /tmp/test_sparse_basic.c
+	@if [ $(OSNAME) != "MacOSX" ] ; then \
+		bash -xc 'sed $(LIBARCHIVESEDCMD) $(LIBARCHIVEVERSION)/libarchive/test/test_sparse_basic.c > /tmp/test_sparse_basic.c' ; \
+		rsync -c /tmp/test_sparse_basic.c $(LIBARCHIVEVERSION)/libarchive/test/test_sparse_basic.c ; \
+		rm -f /tmp/test_sparse_basic.c ; \
+		fi
 	@sed "s/size_t used\;/size_t used = 0\;/" $(LIBARCHIVEVERSION)/libarchive/archive_read_support_format_xar.c > /tmp/archive_read_support_format_xar.c
 	@rsync -c /tmp/archive_read_support_format_xar.c $(LIBARCHIVEVERSION)/libarchive/archive_read_support_format_xar.c
 	@rm -f /tmp/archive_read_support_format_xar.c
