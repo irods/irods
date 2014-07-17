@@ -691,11 +691,17 @@ msiDataObjWrite( msParam_t *inpParam1, msParam_t *inpParam2,
                 if ( myExecCmdOut->stdoutBuf.len > 0 ) {
                     inpParam2->inOutStruct =  strdup( ( char * ) myExecCmdOut->stdoutBuf.buf );
                 }
+                else {
+                    inpParam2->inOutStruct = strdup( "" );
+                }
             }
             else {
                 free( inpParam2->inOutStruct );
                 if ( myExecCmdOut->stdoutBuf.len > 0 ) {
                     inpParam2->inOutStruct =  strdup( ( char * ) myExecCmdOut->stderrBuf.buf );
+                }
+                else {
+                    inpParam2->inOutStruct = strdup( "" );
                 }
             }
             inpParam2->type = strdup( STR_MS_T );
