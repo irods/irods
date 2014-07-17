@@ -1711,6 +1711,21 @@ Common areas to check for this error include:
 
 If the iRODS environment issues and networking issues have been ruled out, the iRODS server/client logs may provide additional information with regards to the specifics of the error in question.
 
+Routing issue and/or an accidental use of localhost
+***************************************************
+
+:Error Code: SYS_EXCEED_CONNECT_CNT -9000
+
+This error occurs when one of the iRODS servers is trying to connect to another server but is actually being routed back to itself.  This usually occurs because of a configuration error in /etc/hosts possibly due to:
+
+#. DHCP lease renewal
+
+#. shortnames used instead of fully qualified domain names
+
+#. a simple typo
+
+Every iRODS server in a Zone needs to be fully routable to and from every other iRODS server in the Zone.
+
 No such file or directory
 *************************
 
