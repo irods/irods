@@ -382,7 +382,7 @@ Once the Zone has been renamed, you will need to update your .irodsEnv file to m
  irodsUserName 'rods'
  # Zone:
  irodsZone '**<newzonename>**'
- # Enable Advanced Client-Server negotation:
+ # Enable Advanced Client-Server negotiation:
  irodsClientServerNegotiation 'request_server_negotiation'
  # Client-Server connection policy:
  irodsClientServerPolicy 'CS_NEG_REFUSE'
@@ -1118,7 +1118,7 @@ iRODS now ships with both TCP and SSL network plugins enabled.  The SSL mechanis
 
 The SSL parameters are tunable via the following .irodsEnv variables::
 
- # Enable Advanced Client-Server negotation:
+ # Enable Advanced Client-Server negotiation:
  irodsClientServerNegotiation 'request_server_negotiation'
  # Client-Server connection policy:
  irodsClientServerPolicy 'CS_NEG_REFUSE'
