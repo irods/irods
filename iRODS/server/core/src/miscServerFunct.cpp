@@ -2798,13 +2798,13 @@ readStartupPack(
 
     if ( strcmp( myHeader.type, RODS_CONNECT_T ) != 0 ) {
         if ( inputStructBBuf.buf != NULL ) {
-            free( inputStructBBuf.buf );
+            clearBBuf( &inputStructBBuf );
         }
         if ( bsBBuf.buf != NULL ) {
-            free( inputStructBBuf.buf );
+            clearBBuf( &bsBBuf );
         }
         if ( errorBBuf.buf != NULL ) {
-            free( inputStructBBuf.buf );
+            clearBBuf( &errorBBuf );
         }
         rodsLog( LOG_NOTICE,
                  "readStartupPack: wrong mag type - %s, expect %s",
@@ -2814,7 +2814,7 @@ readStartupPack(
 
     if ( myHeader.bsLen != 0 ) {
         if ( bsBBuf.buf != NULL ) {
-            free( inputStructBBuf.buf );
+            clearBBuf( &bsBBuf );
         }
         rodsLog( LOG_NOTICE, "readStartupPack: myHeader.bsLen = %d is not 0",
                  myHeader.bsLen );
@@ -2822,7 +2822,7 @@ readStartupPack(
 
     if ( myHeader.errorLen != 0 ) {
         if ( errorBBuf.buf != NULL ) {
-            free( inputStructBBuf.buf );
+            clearBBuf( &errorBBuf );
         }
         rodsLog( LOG_NOTICE,
                  "readStartupPack: myHeader.errorLen = %d is not 0",
