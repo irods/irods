@@ -54,6 +54,10 @@ rsFileOpendir( rsComm_t *rsComm, fileOpendirInp_t *fileOpendirInp ) {
 
     fileInx = allocAndFillFileDesc( rodsServerHost, fileOpendirInp->objPath, fileOpendirInp->dirName, fileOpendirInp->resc_hier_,
                                     status, 0 );
+    if ( fileInx < 0 ) {
+        rodsLog( LOG_NOTICE, "call to allocAndFileDesc failed with status %ji", ( intmax_t ) fileInx );
+        return fileInx;
+    }
     FileDesc[fileInx].driverDep = dirPtr;
 
     return ( fileInx );
