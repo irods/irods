@@ -469,10 +469,12 @@ if ( $fsExists ) {
 				@temp2 = split('\s+', $entry);
                 # suppression of the character '%' at the end of the chain for diskUsed
                 my $diskUsedTemp = $temp2[$col_diskUsed];
-                $diskUsed .= substr($diskUsedTemp, 0, length($diskUsedTemp)-1);
-                #if ($diskUsed !~ /^[+-]?\d+$/ ) {
-				#	$diskUsed .= -1;
-                #}
+                $diskUsedTemp = substr($diskUsedTemp, 0, length($diskUsedTemp)-1);
+                if ($diskUsedTemp =~ /^[+-]?\d+$/ ) {
+					$diskUsed .= $diskUsedTemp;
+                } else {
+                	$diskUsed .= -1;
+                }
                 if ($temp2[$col_diskAbsAvail] =~ /^[+-]?\d+$/ ) {
 					$diskAbsAvail .= int($temp2[$col_diskAbsAvail]/1024);
                 } else {
