@@ -808,7 +808,6 @@ genQueryOutToCollRes( genQueryOut_t **genQueryOut,
                 NULL ) {
             rodsLog( LOG_ERROR,
                      "genQueryOutToCollRes: getSqlResultByInx COL_COLL_INFO2 failed" );
-            free( collSqlResult );
             return ( UNMATCHED_KEY_OR_INDEX );
         }
         else {
