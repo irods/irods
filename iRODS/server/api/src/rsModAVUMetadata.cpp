@@ -98,7 +98,7 @@ _rsModAVUMetadata( rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp ) {
     if(args[5] == NULL) args[5] = ""; /* attr unit */
     if(strcmp(args[0], "mod") == 0) {
         argc = 9;
-#define ARG(arg) if((arg) != NULL && (arg)[0] != '\0') avu[checkModArgType(arg)] = arg
+#define ARG(arg) { int ix; if( ( ix = checkModArgType(arg) ) >= 0 ) avu[ix] = arg; }
         if(checkModArgType(modAVUMetadataInp->arg5) != 0) {
             char *avu[4] = {"", "", "", ""};
             ARG(modAVUMetadataInp->arg5);
