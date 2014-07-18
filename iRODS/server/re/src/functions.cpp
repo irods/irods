@@ -2331,17 +2331,6 @@ Res *smsi_msiAdmAppendToTopOfCoreRE( Node **paramsr, int n, Node *node, ruleExec
         return newErrorRes( r, i );
     }
 #endif
-    char *conDir = getConfigDir();
-#if 0 // raja - 2003
-    char file1[1024];
-    char file2[1024];
-//    snprintf( file1, 1024, "%s/reConfigs/%s.re",
-    conDir, paramsr[0]->text );
-//    snprintf( file2, 1024, "%s/reConfigs/core.re",
-    conDir );
-#endif
-    char tmp_file_path[1024];
-    snprintf( tmp_file_path, 1024, "%s/reConfigs/core.tmp", conDir );
 
     std::string re_full_path;
     irods::error ret = irods::get_full_path_for_config_file( "core.re", re_full_path );
@@ -2349,6 +2338,10 @@ Res *smsi_msiAdmAppendToTopOfCoreRE( Node **paramsr, int n, Node *node, ruleExec
     irods::log( PASS( ret ) );
         return newIntRes( r, ret.code() );
     }
+
+    const std::string::size_type pos = re_full_path.rfind( "core.re" );
+    std::string tmp_file_path = re_full_path.substr( 0, pos );
+    tmp_file_path += "tmp.re";
 
     std::string param_file( paramsr[0]->text );
     param_file += ".re";
@@ -2360,7 +2353,7 @@ Res *smsi_msiAdmAppendToTopOfCoreRE( Node **paramsr, int n, Node *node, ruleExec
     }
 
     int errcode;
-    if ( ( errcode = fileConcatenate( re_full_path.c_str(), param_full_path.c_str(), tmp_file_path ) ) != 0 || ( errcode = remove( re_full_path.c_str() ) ) != 0 || ( errcode = rename( tmp_file_path, re_full_path.c_str() ) ) != 0 ) {
+    if ( ( errcode = fileConcatenate( re_full_path.c_str(), param_full_path.c_str(), tmp_file_path.c_str() ) ) != 0 || ( errcode = remove( re_full_path.c_str() ) ) != 0 || ( errcode = rename( tmp_file_path.c_str(), re_full_path.c_str() ) ) != 0 ) {
         generateAndAddErrMsg( "error appending to top of core.re", node, errcode, errmsg );
         return newErrorRes( r, errcode );
     }
