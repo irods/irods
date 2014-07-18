@@ -472,7 +472,7 @@ matchVaultPath( rsComm_t *rsComm, const char *filePath,
     len = strlen( _vault_path.c_str() );
     if ( len > 0 && strncmp( _vault_path.c_str(), filePath, len ) == 0 &&
             ( filePath[len] == '/' || filePath[len] == '\0' ) ) {
-        *outVaultPath = ( char* )_vault_path.c_str();
+        *outVaultPath = strdup( _vault_path.c_str() );
         return ( len );
     }
 
