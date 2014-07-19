@@ -28,7 +28,7 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         FILE_CREATE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
-        "fileOpenInp_PI", 0, "fileCreateOut_t", 0, ( funcPtr ) RS_FILE_CREATE, clearFileOpenInp
+        "fileOpenInp_PI", 0, "fileCreateOut_PI", 0, ( funcPtr ) RS_FILE_CREATE, clearFileOpenInp
     },
     {
         FILE_OPEN_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
