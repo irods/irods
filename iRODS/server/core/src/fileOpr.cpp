@@ -147,7 +147,6 @@ int mkFileDirR(
     rodsHostAddr_t addr;
     rodsServerHost_t *rodsServerHost;
     char *zoneName;
-    char *outVaultPath;
     int vp_len;
     char collName[MAX_NAME_LEN];
     keyValPair_t condInput;
@@ -198,10 +197,7 @@ int mkFileDirR(
     zoneName = getLocalZoneName();
     addr.hostAddr[0] = '\0';
     resolveHost( &addr, &rodsServerHost );
-    vp_len = matchVaultPath( rsComm, destDir, rodsServerHost, &outVaultPath );
-    if ( vp_len == 0 ) {
-        outVaultPath = NULL;
-    }
+    vp_len = matchVaultPath( rsComm, destDir, rodsServerHost );
 
     /* Now we go forward and make the required dir */
     while ( tmpLen < pathLen ) {
@@ -444,7 +440,7 @@ isValidFilePath( const char *path ) {
 // Backported from community and modified to use the resource manager
 int
 matchVaultPath( rsComm_t *rsComm, const char *filePath,
-                rodsServerHost_t *rodsServerHost, char **outVaultPath ) {
+                rodsServerHost_t *rodsServerHost ) {
     std::string _vault_path;
     int len;
 
@@ -472,7 +468,6 @@ matchVaultPath( rsComm_t *rsComm, const char *filePath,
     len = strlen( _vault_path.c_str() );
     if ( len > 0 && strncmp( _vault_path.c_str(), filePath, len ) == 0 &&
             ( filePath[len] == '/' || filePath[len] == '\0' ) ) {
-        *outVaultPath = strdup( _vault_path.c_str() );
         return ( len );
     }
 
