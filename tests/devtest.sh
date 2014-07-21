@@ -14,7 +14,12 @@
 
 # check python version
 REQUIREDPYTHON="2.5"
-PYTHONVERSION=$( python -V 2>&1 | awk '{print $2}' )
+if type -P python2 ; then
+    PYTHON=`type -P python2`
+else
+    PYTHON=`type -P python`
+fi
+PYTHONVERSION=$( $PYTHON -V 2>&1 | awk '{print $2}' )
 if [ "$PYTHONVERSION" \< "$REQUIREDPYTHON" ] ; then
     # too old
     # psutil w/ 2.4 says: yield not allowed in a try block with a finally clause
@@ -32,12 +37,12 @@ if [ "$PYTHONVERSION" \< "2.7" ] ; then
     fi
     tar xf $UNITTEST2VERSION.tar
     cd $UNITTEST2VERSION
-    python setup.py build
+    $PYTHON setup.py build
     cd ..
     PYTHONCMD="./unit2"
 else
     # python 2.7+
-    PYTHONCMD="python -m unittest"
+    PYTHONCMD="$PYTHON -m unittest"
 fi
 
 # set command line options for test runner
