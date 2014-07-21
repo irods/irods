@@ -20,7 +20,7 @@
 
 #include "reFuncDefs.hpp"
 #include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/convenience.hpp> 
+#include <boost/filesystem/convenience.hpp>
 using namespace boost::filesystem;
 
 int

@@ -5,7 +5,7 @@
 
 namespace irods {
 
-    l1desc_t& get_l1desc( int );
+l1desc_t& get_l1desc( int );
 
 }; // namespace irds
 

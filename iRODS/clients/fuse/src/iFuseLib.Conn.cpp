@@ -139,7 +139,9 @@ int _getAndUseIFuseConn( iFuseConn_t **iFuseConn, rodsEnv *myRodsEnv ) {
                     /* may cause num of conn > max num of conn */
                     /* get here when nothing free. make one */
                     tmpIFuseConn = newIFuseConn( &status );
-                    if ( status < 0 ) { return status; }
+                    if ( status < 0 ) {
+                        return status;
+                    }
 
                     _useFreeIFuseConn( tmpIFuseConn );
                     addToConcurrentList( ConnectedConn, tmpIFuseConn );
@@ -214,7 +216,9 @@ _useIFuseConn( iFuseConn_t *iFuseConn ) {
 
 int
 _useFreeIFuseConn( iFuseConn_t *iFuseConn ) {
-    if ( iFuseConn == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( iFuseConn == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
     iFuseConn->actTime = time( NULL );
     iFuseConn->inuseCnt++;
     LOCK( iFuseConn->inuseLock );

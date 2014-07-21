@@ -40,9 +40,9 @@ remoteFileReaddir( rsComm_t *rsComm, fileReaddirInp_t *fileReaddirInp,
 #ifdef __cplusplus
 extern "C" {
 #endif
-int
-rcFileReaddir( rcComm_t *conn, fileReaddirInp_t *fileReaddirInp,
-               rodsDirent_t **fileReaddirOut );
+    int
+    rcFileReaddir( rcComm_t *conn, fileReaddirInp_t *fileReaddirInp,
+                   rodsDirent_t **fileReaddirOut );
 #ifdef __cplusplus
 }
 #endif

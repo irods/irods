@@ -120,12 +120,12 @@ rsQueryDataObjInCollReCur( rsComm_t *rsComm, char *collection,
     int status = 0;
     char accStr[LONG_NAME_LEN];
 
-    if ( genQueryInp == NULL || 
-         collection  == NULL || 
-         genQueryOut == NULL ) {
+    if ( genQueryInp == NULL ||
+            collection  == NULL ||
+            genQueryOut == NULL ) {
         return ( USER__NULL_INPUT_ERR );
     }
-  
+
     memset( genQueryInp, 0, sizeof( genQueryInp_t ) );
 
     genAllInCollQCond( collection, collQCond );
@@ -160,7 +160,7 @@ rsQueryDataObjInCollReCur( rsComm_t *rsComm, char *collection,
         rmKeyVal( &genQueryInp->condInput, RODS_ZONE_CLIENT_KW );
         rmKeyVal( &genQueryInp->condInput, ACCESS_PERMISSION_KW );
     }
-    else { 
+    else {
         genQueryInp->maxRows = MAX_SQL_ROWS;
         status = trySpecificQueryDataObjInCollReCur(
                      rsComm,

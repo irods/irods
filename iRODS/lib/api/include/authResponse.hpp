@@ -15,20 +15,20 @@
 #include "initServer.hpp"
 #include "icatDefines.hpp"
 
-    typedef struct {
-        char *response;
-        char *username;
-    } authResponseInp_t;
+typedef struct {
+    char *response;
+    char *username;
+} authResponseInp_t;
 
 #define authResponseInp_PI "bin *response(RESPONSE_LEN); str *username;"
 
 #if defined(RODS_SERVER)
 #define RS_AUTH_RESPONSE rsAuthResponse
-    /* prototype for the server handler */
-    int
-    rsAuthResponse( rsComm_t *rsComm, authResponseInp_t *authResponseInp );
-    int
-    chkProxyUserPriv( rsComm_t *rsComm, int proxyUserPriv );
+/* prototype for the server handler */
+int
+rsAuthResponse( rsComm_t *rsComm, authResponseInp_t *authResponseInp );
+int
+chkProxyUserPriv( rsComm_t *rsComm, int proxyUserPriv );
 #else
 #define RS_AUTH_RESPONSE NULL
 #endif

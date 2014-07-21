@@ -41,7 +41,7 @@ _rsSyncMountedColl( rsComm_t *rsComm, specColl_t *specColl, int oprType );
 #define PRESERVE_DIR_CONT      0x40    /* preserve the content of cachrdir */ // JMC - backport 4657
 
 #ifdef __cplusplus
-extern "C" {
+        extern "C" {
 #endif
     /* prototype for the client call */
     int

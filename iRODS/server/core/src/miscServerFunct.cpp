@@ -3084,7 +3084,7 @@ checkModArgType( char *arg ) {
 
 /// =-=-=-=-=-=-=-
 /// @brief get number of data object under management of a resource
-irods::error get_current_resource_object_count( 
+irods::error get_current_resource_object_count(
     rsComm_t*          _comm,
     const std::string& _resc_name,
     int&               _count ) {
@@ -3100,10 +3100,10 @@ irods::error get_current_resource_object_count(
     // build the condition string, child is either a leaf
     // or an internal node so test for both
     std::string single_cond = _resc_name;
-                            
-    std::string root_cond = _resc_name + 
+
+    std::string root_cond = _resc_name +
                             irods::hierarchy_parser::delimiter();
-                            
+
 
     std::string leaf_cond = irods::hierarchy_parser::delimiter() +
                             _resc_name;
@@ -3165,9 +3165,9 @@ irods::error get_current_resource_object_count(
         } else {
             status = -1;
         }
-        
+
     } // while
-    
+
     clearGenQueryInp( &gen_inp );
 
     // =-=-=-=-=-=-=-
@@ -3187,8 +3187,8 @@ irods::error update_resource_object_count(
     // =-=-=-=-=-=-=-
     // get the resource name
     std::string resc_name;
-    irods::error ret = _prop_map.get< std::string >( 
-                           irods::RESOURCE_NAME, 
+    irods::error ret = _prop_map.get< std::string >(
+                           irods::RESOURCE_NAME,
                            resc_name );
     if( !ret.ok() ) {
         return PASS( ret );
@@ -3197,8 +3197,8 @@ irods::error update_resource_object_count(
     // =-=-=-=-=-=-=-
     // get the resource's objcount in the DB
     std::string resc_objcount;
-    ret = _prop_map.get< std::string >( 
-              irods::RESOURCE_OBJCOUNT, 
+    ret = _prop_map.get< std::string >(
+              irods::RESOURCE_OBJCOUNT,
               resc_objcount );
     if( !ret.ok() ) {
         return PASS( ret );
@@ -3208,7 +3208,7 @@ irods::error update_resource_object_count(
     if( !resc_objcount.empty() )  {
         old_obj_count = boost::lexical_cast<int>( resc_objcount );
     }
-    
+
     // =-=-=-=-=-=-=-
     // get the count of the resource's data objects
     // currently listed under management
@@ -3225,7 +3225,7 @@ irods::error update_resource_object_count(
     // issue a a warning that we are making a
     // change
     if( old_obj_count != new_obj_count ) {
-        rodsLog( 
+        rodsLog(
             LOG_NOTICE,
             "rebalance for [%s] - updating object count from [%d] to [%d]",
             resc_name.c_str(),
@@ -3233,7 +3233,7 @@ irods::error update_resource_object_count(
             new_obj_count );
         // =-=-=-=-=-=-=-
         // NOTE :: the code path to update the obj count requires a 'delta'
-        //         as integer math is done in the sql  
+        //         as integer math is done in the sql
         std::stringstream new_count_str;
         new_count_str << ( new_obj_count - old_obj_count );
 
@@ -3257,13 +3257,13 @@ irods::error update_resource_object_count(
                          _comm,
                          &gen_inp );
         if( status < 0 ) {
-            return ERROR( 
+            return ERROR(
                        status,
                        "rsGeneralAdmin failed" );
         }
 
     } else {
-        rodsLog( 
+        rodsLog(
             LOG_NOTICE,
             "rebalance for [%s] - matching old count: %d to new count %d",
             resc_name.c_str(),

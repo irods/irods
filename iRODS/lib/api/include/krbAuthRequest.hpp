@@ -15,18 +15,18 @@
 #include "initServer.hpp"
 #include "icatDefines.hpp"
 
-    typedef struct {
-        char *serverName;
-    } krbAuthRequestOut_t;
+typedef struct {
+    char *serverName;
+} krbAuthRequestOut_t;
 
 #define krbAuthRequestOut_PI "str *ServerName;"
 
 
 #if defined(RODS_SERVER)
 #define RS_KRB_AUTH_REQUEST rsKrbAuthRequest
-    /* prototype for the server handler */
-    int
-    rsKrbAuthRequest( rsComm_t *rsComm, krbAuthRequestOut_t **krbAuthRequestOut );
+/* prototype for the server handler */
+int
+rsKrbAuthRequest( rsComm_t *rsComm, krbAuthRequestOut_t **krbAuthRequestOut );
 
 #else
 #define RS_KRB_AUTH_REQUEST NULL

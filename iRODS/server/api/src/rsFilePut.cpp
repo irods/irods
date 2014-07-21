@@ -26,8 +26,8 @@
  */
 
 int
-rsFilePut( 
-    rsComm_t *rsComm, 
+rsFilePut(
+    rsComm_t *rsComm,
     fileOpenInp_t* filePutInp,
     bytesBuf_t*    filePutInpBBuf,
     filePutOut_t** _put_out ) {
@@ -41,17 +41,17 @@ rsFilePut(
         return -1;
     }
     if ( remoteFlag == LOCAL_HOST ) {
-        status = _rsFilePut( 
-                     rsComm, 
-                     filePutInp, 
+        status = _rsFilePut(
+                     rsComm,
+                     filePutInp,
                      filePutInpBBuf,
                      rodsServerHost,
                      _put_out );
     }
     else if ( remoteFlag == REMOTE_HOST ) {
-        status = remoteFilePut( 
-                     rsComm, 
-                     filePutInp, 
+        status = remoteFilePut(
+                     rsComm,
+                     filePutInp,
                      filePutInpBBuf,
                      rodsServerHost,
                      _put_out );
@@ -77,10 +77,10 @@ rsFilePut(
 }
 
 int
-remoteFilePut( 
-    rsComm_t *rsComm, 
+remoteFilePut(
+    rsComm_t *rsComm,
     fileOpenInp_t *filePutInp,
-    bytesBuf_t *filePutInpBBuf, 
+    bytesBuf_t *filePutInpBBuf,
     rodsServerHost_t *rodsServerHost,
     filePutOut_t** _put_out ) {
     int status;
@@ -97,10 +97,10 @@ remoteFilePut(
     }
 
 
-    status = rcFilePut( 
-                 rodsServerHost->conn, 
-                 filePutInp, 
-                 filePutInpBBuf, 
+    status = rcFilePut(
+                 rodsServerHost->conn,
+                 filePutInp,
+                 filePutInpBBuf,
                  _put_out );
 
     if ( status < 0 && status != DIRECT_ARCHIVE_ACCESS ) {

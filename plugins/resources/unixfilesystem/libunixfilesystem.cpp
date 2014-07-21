@@ -1158,7 +1158,7 @@ extern "C" {
                     }
                 }
 
-                rodsLog( 
+                rodsLog(
                     LOG_DEBUG,
                     "create :: resc name [%s] curr host [%s] resc host [%s] vote [%f]",
                     _resc_name.c_str(),
@@ -1272,7 +1272,7 @@ extern "C" {
                                 }
                             }
 
-                            rodsLog( 
+                            rodsLog(
                                 LOG_DEBUG,
                                 "open :: resc name [%s] curr host [%s] resc host [%s] vote [%f]",
                                 _resc_name.c_str(),
@@ -1363,7 +1363,7 @@ extern "C" {
     // unix_file_rebalance - code which would rebalance the subtree
     irods::error unix_file_rebalance(
         irods::resource_plugin_context& _ctx ) {
-        return update_resource_object_count( 
+        return update_resource_object_count(
                    _ctx.comm(),
                    _ctx.prop_map() );
 

@@ -13,7 +13,9 @@
 
 fileCache_t *newFileCache( int iFd, char *objPath, char *localPath, char *cacheFilePath, time_t cachedTime, int mode, rodsLong_t fileSize, cacheState_t state ) {
     fileCache_t *fileCache = ( fileCache_t * ) malloc( sizeof( fileCache_t ) );
-    if ( fileCache == NULL ) { return NULL; }
+    if ( fileCache == NULL ) {
+        return NULL;
+    }
     fileCache->fileCachePath = cacheFilePath == NULL ? NULL : strdup( cacheFilePath );
     fileCache->localPath = strdup( localPath );
     fileCache->objPath = strdup( objPath );
@@ -33,7 +35,9 @@ pathCache_t *newPathCache( char *inPath, fileCache_t *fileCache, struct stat *st
     pathCache_t *tmpPathCache;
 
     tmpPathCache = ( pathCache_t * ) malloc( sizeof( pathCache_t ) );
-    if ( tmpPathCache == NULL ) { return NULL; }
+    if ( tmpPathCache == NULL ) {
+        return NULL;
+    }
 
     tmpPathCache->localPath = strdup( inPath );
     tmpPathCache->cachedTime = cachedTime;

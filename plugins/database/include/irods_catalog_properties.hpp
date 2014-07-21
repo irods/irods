@@ -20,42 +20,42 @@ namespace irods {
 // =-=-=-=-=-=-=-
 /// @brief This setting controls how backslashes in strings literals are treated.
 // See http://www.postgresql.org/docs/9.3/static/runtime-config-compatible.html#GUC-STANDARD-CONFORMING-STRINGS
-    const std::string STANDARD_CONFORMING_STRINGS( "standard_conforming_strings" );
+const std::string STANDARD_CONFORMING_STRINGS( "standard_conforming_strings" );
 
 
-    class catalog_properties {
+class catalog_properties {
 
-    public:
-        // =-=-=-=-=-=-=-
-        // Access singleton through its getInstance() method
-        static catalog_properties& getInstance();
+public:
+    // =-=-=-=-=-=-=-
+    // Access singleton through its getInstance() method
+    static catalog_properties& getInstance();
 
-        // =-=-=-=-=-=-=-
-        // Query for iCAT settings and fill catalog_properties::properties
-        error capture( icatSessionStruct* );
+    // =-=-=-=-=-=-=-
+    // Query for iCAT settings and fill catalog_properties::properties
+    error capture( icatSessionStruct* );
 
-        // =-=-=-=-=-=-=-
-        /// @brief get a property from the map if it exists.  catch the exception in the case where
-        // the template types may not match and return success/fail
-        template< typename T >
-        error get_property( const std::string& _key, T& _val ) {
-            error ret = properties.get< T >( _key, _val );
-            return PASSMSG( "catalog_properties::get_property", ret );
-        } // get_property
+    // =-=-=-=-=-=-=-
+    /// @brief get a property from the map if it exists.  catch the exception in the case where
+    // the template types may not match and return success/fail
+    template< typename T >
+    error get_property( const std::string& _key, T& _val ) {
+        error ret = properties.get< T >( _key, _val );
+        return PASSMSG( "catalog_properties::get_property", ret );
+    } // get_property
 
 
-    private:
-        // =-=-=-=-=-=-=-
-        // Disable constructors
-        catalog_properties() {};
-        catalog_properties( catalog_properties const& );
-        void operator=( catalog_properties const& );
+private:
+    // =-=-=-=-=-=-=-
+    // Disable constructors
+    catalog_properties() {};
+    catalog_properties( catalog_properties const& );
+    void operator=( catalog_properties const& );
 
-        // =-=-=-=-=-=-=-
-        // properties
-        lookup_table<boost::any> properties;
+    // =-=-=-=-=-=-=-
+    // properties
+    lookup_table<boost::any> properties;
 
-    }; // class catalog_properties
+}; // class catalog_properties
 
 
 } // namespace irods

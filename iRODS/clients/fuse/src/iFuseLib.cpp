@@ -56,7 +56,9 @@ isSpecialPath( char *inPath ) {
     len = strlen( inPath );
     endPtr = inPath + len;
     for ( i = 0; i < NumSpecialPath; i++ ) {
-        if ( len < SpecialPath[i].len ) { continue; }
+        if ( len < SpecialPath[i].len ) {
+            continue;
+        }
         if ( strcmp( SpecialPath[i].path, endPtr - SpecialPath[i].len ) == 0 ) {
             return ( 1 );
         }

@@ -15,7 +15,7 @@
 
 #include <fstream>
 #include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/convenience.hpp> 
+#include <boost/filesystem/convenience.hpp>
 
 /* VERIFY_DIV - contributed by g.soudlenkov@auckland.ac.nz */
 #define VERIFY_DIV(_v1_,_v2_) ((_v2_)? (float)(_v1_)/(_v2_):0.0)

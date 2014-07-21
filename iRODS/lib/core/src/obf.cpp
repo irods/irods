@@ -55,7 +55,7 @@
 #endif
 
 #include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/convenience.hpp> 
+#include <boost/filesystem/convenience.hpp>
 #define TMP_FLAG "%TEMPORARY_PW%"
 
 #define AUTH_FILENAME_DEFAULT ".irods/.irodsA" /* under the HOME dir */

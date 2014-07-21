@@ -34,8 +34,8 @@ remoteFileTruncate( rsComm_t *rsComm, fileOpenInp_t *fileTruncateInp,
 #ifdef __cplusplus
 extern "C" {
 #endif
-int
-rcFileTruncate( rcComm_t *conn, fileOpenInp_t *fileTruncateInp );
+    int
+    rcFileTruncate( rcComm_t *conn, fileOpenInp_t *fileTruncateInp );
 #ifdef __cplusplus
 }
 #endif

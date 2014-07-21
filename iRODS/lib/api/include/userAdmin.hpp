@@ -36,12 +36,12 @@ typedef struct {
 
 #if defined(RODS_SERVER)
 #define RS_USER_ADMIN rsUserAdmin
-    /* prototype for the server handler */
-    int
-    rsUserAdmin( rsComm_t *rsComm, userAdminInp_t *userAdminInp );
+/* prototype for the server handler */
+int
+rsUserAdmin( rsComm_t *rsComm, userAdminInp_t *userAdminInp );
 
-    int
-    _rsUserAdmin( rsComm_t *rsComm, userAdminInp_t *userAdminInp );
+int
+_rsUserAdmin( rsComm_t *rsComm, userAdminInp_t *userAdminInp );
 #else
 #define RS_USER_ADMIN NULL
 #endif

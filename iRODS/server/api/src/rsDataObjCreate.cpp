@@ -505,7 +505,7 @@ l3CreateByObjInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     rstrcpy( fileCreateInp.in_pdmo, dataObjInfo->in_pdmo, MAX_NAME_LEN );
 
     // =-=-=-=-=-=-=-
-    // 
+    //
     fileCreateOut_t* create_out = 0;
     std::string prev_resc_hier = fileCreateInp.resc_hier_;
     l3descInx = rsFileCreate( rsComm, &fileCreateInp, &create_out );

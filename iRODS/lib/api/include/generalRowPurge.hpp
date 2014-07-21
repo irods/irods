@@ -31,12 +31,12 @@ typedef struct {
 
 #if defined(RODS_SERVER)
 #define RS_GENERAL_ROW_PURGE rsGeneralRowPurge
-    /* prototype for the server handler */
-    int
-    rsGeneralRowPurge( rsComm_t *rsComm, generalRowPurgeInp_t *generalRowPurgeInp );
+/* prototype for the server handler */
+int
+rsGeneralRowPurge( rsComm_t *rsComm, generalRowPurgeInp_t *generalRowPurgeInp );
 
-    int
-    _rsGeneralRowPurge( rsComm_t *rsComm, generalRowPurgeInp_t *generalRowPurgeInp );
+int
+_rsGeneralRowPurge( rsComm_t *rsComm, generalRowPurgeInp_t *generalRowPurgeInp );
 #else
 #define RS_GENERAL_ROW_PURGE NULL
 #endif

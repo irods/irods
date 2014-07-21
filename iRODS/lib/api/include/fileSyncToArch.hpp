@@ -36,8 +36,8 @@ remoteFileSyncToArch( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp, f
 #ifdef __cplusplus
 extern "C" {
 #endif
-int
-rcFileSyncToArch( rcComm_t *conn, fileStageSyncInp_t *fileSyncToArchInp, fileSyncOut_t** );
+    int
+    rcFileSyncToArch( rcComm_t *conn, fileStageSyncInp_t *fileSyncToArchInp, fileSyncOut_t** );
 #ifdef __cplusplus
 }
 #endif

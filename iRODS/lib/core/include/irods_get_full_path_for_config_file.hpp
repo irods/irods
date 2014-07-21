@@ -11,11 +11,11 @@
 
 namespace irods {
 
-    /// =-=-=-=-=-=-=-
-    /// @brief service which searches for a specified config file and returns its location
-    error get_full_path_for_config_file(
-        const std::string&, // config file name
-        std::string& );     // full path for config file
+/// =-=-=-=-=-=-=-
+/// @brief service which searches for a specified config file and returns its location
+error get_full_path_for_config_file(
+    const std::string&, // config file name
+    std::string& );     // full path for config file
 
 }; // namespace irods
 

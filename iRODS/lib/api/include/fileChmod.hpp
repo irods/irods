@@ -42,8 +42,8 @@ remoteFileChmod( rsComm_t *rsComm, fileChmodInp_t *fileChmodInp,
 #ifdef __cplusplus
 extern "C" {
 #endif
-int
-rcFileChmod( rcComm_t *conn, fileChmodInp_t *fileChmodInp );
+    int
+    rcFileChmod( rcComm_t *conn, fileChmodInp_t *fileChmodInp );
 #ifdef __cplusplus
 }
 #endif

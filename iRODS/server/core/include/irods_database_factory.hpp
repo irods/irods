@@ -13,12 +13,12 @@
 #include <boost/shared_ptr.hpp>
 
 namespace irods {
-    /// =-=-=-=-=-=-=-
-    /// @brief super basic free factory function to create an appropriate
-    ///        database object given the type requested
-    irods::error database_factory(
-        const std::string&,            // object type
-        irods::database_object_ptr& ); // database object
+/// =-=-=-=-=-=-=-
+/// @brief super basic free factory function to create an appropriate
+///        database object given the type requested
+irods::error database_factory(
+    const std::string&,            // object type
+    irods::database_object_ptr& ); // database object
 
 }; // namespace irods
 

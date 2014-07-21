@@ -16,14 +16,14 @@
 #include "rcConnect.hpp"
 
 namespace irods {
-    // =-=-=-=-=-=-=-
-    // database plugin pointer type
-    class database;
-    typedef boost::shared_ptr< database > database_ptr;
+// =-=-=-=-=-=-=-
+// database plugin pointer type
+class database;
+typedef boost::shared_ptr< database > database_ptr;
 
-    // =-=-=-=-=-=-=-
-    // fwd decl of database manager for fco resolve
-    class database_manager;
+// =-=-=-=-=-=-=-
+// fwd decl of database manager for fco resolve
+class database_manager;
 
 }; // namespace
 

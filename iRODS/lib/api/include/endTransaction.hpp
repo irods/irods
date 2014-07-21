@@ -27,12 +27,12 @@ typedef struct {
 
 #if defined(RODS_SERVER)
 #define RS_END_TRANSACTION rsEndTransaction
-    /* prototype for the server handler */
-    int
-    rsEndTransaction( rsComm_t *rsComm, endTransactionInp_t *endTransactionInp );
+/* prototype for the server handler */
+int
+rsEndTransaction( rsComm_t *rsComm, endTransactionInp_t *endTransactionInp );
 
-    int
-    _rsEndTransaction( rsComm_t *rsComm, endTransactionInp_t *endTransactionInp );
+int
+_rsEndTransaction( rsComm_t *rsComm, endTransactionInp_t *endTransactionInp );
 #else
 #define RS_END_TRANSACTION NULL
 #endif

@@ -1240,7 +1240,7 @@ chkOrphanFile(
     if( err.ok() ) {
         std::string svr_sid;
         get_err = props.get_property< std::string >( irods::AGENT_CONN_KW, svr_sid );
-        if( !get_err.ok() ) { 
+        if( !get_err.ok() ) {
             std::string tmp( "StrictACLOverride" );
             props.set_property< std::string >( irods::AGENT_CONN_KW, tmp );
         }
@@ -1249,7 +1249,7 @@ chkOrphanFile(
     // =-=-=-=-=-=-=-
     // invoke genquery
     status =  rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
-    
+
     // =-=-=-=-=-=-=-
     // remove the agent-agent conn flag
     if( !get_err.ok() ) {

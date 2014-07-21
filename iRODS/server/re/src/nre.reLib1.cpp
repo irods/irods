@@ -818,7 +818,8 @@ readDVarStructFromFile( char *dvarBaseName, rulevardef_t *inRuleVarDef ) {
     else {
         //configDir = getConfigDir();
         //snprintf( dvarsFileName, MAX_NAME_LEN, "%s/reConfigs/%s.dvm", configDir, dvarBaseName );
-        std::string cfg_file, fn( dvarBaseName ); fn += ".dvm";
+        std::string cfg_file, fn( dvarBaseName );
+        fn += ".dvm";
         irods::error ret = irods::get_full_path_for_config_file( fn, cfg_file );
         if ( !ret.ok() ) {
             irods::log( PASS( ret ) );
@@ -882,7 +883,8 @@ readFuncMapStructFromFile( char *fmapBaseName, rulefmapdef_t* inRuleFuncMapDef )
     else {
 //        configDir = getConfigDir();
 //        snprintf( fmapsFileName, MAX_NAME_LEN, "%s/reConfigs/%s.fnm", configDir, fmapBaseName );
-        std::string cfg_file, fn( fmapBaseName ); fn += ".fnm";
+        std::string cfg_file, fn( fmapBaseName );
+        fn += ".fnm";
         irods::error ret = irods::get_full_path_for_config_file( fn, cfg_file );
         if ( !ret.ok() ) {
             irods::log( PASS( ret ) );
@@ -1391,7 +1393,8 @@ writeRulesIntoFile( char * inFileName, ruleStruct_t *myRuleStruct,
     else {
 //        configDir = getConfigDir();
 //        snprintf( fileName, MAX_NAME_LEN, "%s/reConfigs/%s.irb", configDir, inFileName );
-        std::string cfg_file, fn( inFileName ); fn += ".irb";
+        std::string cfg_file, fn( inFileName );
+        fn += ".irb";
         irods::error ret = irods::get_full_path_for_config_file( fn, cfg_file );
         if ( !ret.ok() ) {
             irods::log( PASS( ret ) );
@@ -1436,7 +1439,8 @@ writeDVMapsIntoFile( char * inFileName, dvmStruct_t *myDVMapStruct,
     else {
 //        configDir = getConfigDir();
 //        snprintf( fileName, MAX_NAME_LEN, "%s/reConfigs/%s.dvm", configDir, inFileName );
-        std::string cfg_file, fn( inFileName ); fn += ".dvm";
+        std::string cfg_file, fn( inFileName );
+        fn += ".dvm";
         irods::error ret = irods::get_full_path_for_config_file( fn, cfg_file );
         if ( !ret.ok() ) {
             irods::log( PASS( ret ) );
@@ -1478,7 +1482,8 @@ writeFNMapsIntoFile( char * inFileName, fnmapStruct_t *myFNMapStruct,
     else {
 //        configDir = getConfigDir();
 //        snprintf( fileName, MAX_NAME_LEN, "%s/reConfigs/%s.fnm", configDir, inFileName );
-        std::string cfg_file, fn( inFileName ); fn += ".fnm";
+        std::string cfg_file, fn( inFileName );
+        fn += ".fnm";
         irods::error ret = irods::get_full_path_for_config_file( fn, cfg_file );
         if ( !ret.ok() ) {
             irods::log( PASS( ret ) );

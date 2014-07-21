@@ -108,7 +108,7 @@ irods::error get_next_child_for_open_or_write(
     irods::resource_child_map&  _cmap,
     irods::resource_ptr&        _resc ) {
     // =-=-=-=-=-=-=-
-    // set up iteration over physical objects 
+    // set up iteration over physical objects
     std::vector< irods::physical_object > objs = _file_obj->replicas();
     std::vector< irods::physical_object >::iterator itr = objs.begin();
 
@@ -116,7 +116,7 @@ irods::error get_next_child_for_open_or_write(
     // check to see if the replica is in this resource, if one is requested
     for ( ; itr != objs.end(); ++itr ) {
         // =-=-=-=-=-=-=-
-        // run the hier string through the parser 
+        // run the hier string through the parser
         irods::hierarchy_parser parser;
         parser.set_string( itr->resc_hier() );
 
@@ -125,7 +125,7 @@ irods::error get_next_child_for_open_or_write(
         if( !parser.resc_in_hier( _name ) ) {
             continue;
         }
-        
+
         // =-=-=-=-=-=-=-
         // if we have a hit, get the resc ptr to the next resc
         return get_next_child_in_hier(
@@ -135,13 +135,13 @@ irods::error get_next_child_for_open_or_write(
                    _resc );
 
     } // for itr
-   
+
     std::string msg( "no hier found for resc [" );
-    msg += _name + "]"; 
+    msg += _name + "]";
     return ERROR(
                CHILD_NOT_FOUND,
-               msg ); 
-     
+               msg );
+
 } // get_next_child_for_open_or_write
 
 // =-=-=-=-=-=-=-
@@ -1065,14 +1065,14 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // test the operation to determine which choices to make
         if ( irods::OPEN_OPERATION  == ( *_opr )  ||
-             irods::WRITE_OPERATION == ( *_opr ) ) {
+                irods::WRITE_OPERATION == ( *_opr ) ) {
             // =-=-=-=-=-=-=-
             // get the next child pointer in the hierarchy, given our name and the hier string
             irods::resource_ptr resc;
-            err = get_next_child_for_open_or_write( 
-                      name, 
-                      file_obj, 
-                      _ctx.child_map(), 
+            err = get_next_child_for_open_or_write(
+                      name,
+                      file_obj,
+                      _ctx.child_map(),
                       resc );
             if ( !err.ok() ) {
                 (*_out_vote) = 0.0;
@@ -1096,7 +1096,7 @@ extern "C" {
 
             std::string hier;
             _out_parser->str( hier );
-            rodsLog( 
+            rodsLog(
                 LOG_DEBUG,
                 "open :: resc hier [%s] vote [%f]",
                 hier.c_str(),
@@ -1136,7 +1136,7 @@ extern "C" {
 
             std::string hier;
             _out_parser->str( hier );
-            rodsLog( 
+            rodsLog(
                 LOG_DEBUG,
                 "round robin - create :: resc hier [%s] vote [%f]",
                 hier.c_str(),
@@ -1188,7 +1188,7 @@ extern "C" {
             return PASS( result );
         }
 
-        return update_resource_object_count( 
+        return update_resource_object_count(
                    _ctx.comm(),
                    _ctx.prop_map() );
 

@@ -405,11 +405,11 @@ _rsDataObjClose(
 
     // If an object with a checksum was written to, checksum needs updating
     if ( OPEN_FOR_WRITE_TYPE == L1desc[l1descInx].openType
-    		&& L1desc[l1descInx].dataObjInfo->chksum
-    		&& strlen(L1desc[l1descInx].dataObjInfo->chksum) > 0) {
+            && L1desc[l1descInx].dataObjInfo->chksum
+            && strlen(L1desc[l1descInx].dataObjInfo->chksum) > 0) {
 
-    	L1desc[l1descInx].chksumFlag = REG_CHKSUM;
-    	updateChksumFlag = 1;
+        L1desc[l1descInx].chksumFlag = REG_CHKSUM;
+        updateChksumFlag = 1;
 
     }
 

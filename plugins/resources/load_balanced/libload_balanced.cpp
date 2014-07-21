@@ -930,7 +930,7 @@ extern "C" {
             return PASS( result );
         }
 
-        return update_resource_object_count( 
+        return update_resource_object_count(
                    _ctx.comm(),
                    _ctx.prop_map() );
 

@@ -28,10 +28,10 @@ rsStreamRead( rsComm_t *rsComm, fileReadInp_t *streamReadInp,
 #ifdef __cplusplus
 extern "C" {
 #endif
-/* prototype for the client call */
-int
-rcStreamRead( rcComm_t *conn, fileReadInp_t *streamReadInp,
-              bytesBuf_t *streamReadOutBBuf );
+    /* prototype for the client call */
+    int
+    rcStreamRead( rcComm_t *conn, fileReadInp_t *streamReadInp,
+                  bytesBuf_t *streamReadOutBBuf );
 #ifdef __cplusplus
 }
 #endif

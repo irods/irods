@@ -44,8 +44,8 @@ remoteFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,
 #ifdef __cplusplus
 extern "C" {
 #endif
-int
-rcFileCreate( rcComm_t *conn, fileCreateInp_t *fileCreateInp, fileCreateOut_t** );
+    int
+    rcFileCreate( rcComm_t *conn, fileCreateInp_t *fileCreateInp, fileCreateOut_t** );
 #ifdef __cplusplus
 }
 #endif

@@ -466,7 +466,8 @@ int readRuleStructAndRuleSetFromFile( char *ruleBaseName, ruleStruct_t *inRuleSt
     else {
         //configDir = getConfigDir();
         //snprintf( rulesFileName, MAX_NAME_LEN, "%s/reConfigs/%s.re", configDir, ruleBaseName );
-        std::string cfg_file, fn( ruleBaseName ); fn += ".re";
+        std::string cfg_file, fn( ruleBaseName );
+        fn += ".re";
         irods::error ret = irods::get_full_path_for_config_file( fn, cfg_file );
         if ( !ret.ok() ) {
             irods::log( PASS( ret ) );

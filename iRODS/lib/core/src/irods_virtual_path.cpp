@@ -8,10 +8,10 @@
 namespace irods {
 /// =-=-=-=-=-=-=-
 /// @brief interface to get virtual path separator
-    std::string get_virtual_path_separator() {
-        const std::string PATH_SEPARATOR( "/" );
-        return PATH_SEPARATOR;
-    }
+std::string get_virtual_path_separator() {
+    const std::string PATH_SEPARATOR( "/" );
+    return PATH_SEPARATOR;
+}
 
 }; // namespace irods
 

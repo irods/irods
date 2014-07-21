@@ -3038,14 +3038,14 @@ TTEXT( ")" )
 OPTIONAL_END( argList )
 BUILD_NODE( T_CONS, cons, &start, n, n );
 END_TRY(type)
-            OPTIONAL_BEGIN(kind)
-             TTEXT(":");
-             NT2(_Type, 1, 0);
-             SWAP;
-             node = POP;
-             node->exprType = POP;
-             PUSH(node);
-            OPTIONAL_END(kind)
+OPTIONAL_BEGIN(kind)
+TTEXT(":");
+NT2(_Type, 1, 0);
+SWAP;
+node = POP;
+node->exprType = POP;
+PUSH(node);
+OPTIONAL_END(kind)
 if ( !cont ) {
     arity ++;
     TRY( typeEnd )

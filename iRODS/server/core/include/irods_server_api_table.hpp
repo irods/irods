@@ -5,7 +5,7 @@
 
 namespace irods {
 
-    api_entry_table& get_server_api_table();
+api_entry_table& get_server_api_table();
 
 }; // namespace irods
 

@@ -3922,7 +3922,9 @@ msiPhyBundleColl( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outPara
 
             do {
                 pstr2 = strstr( pstr1 + 4, "=" );
-                if ( pstr2 == NULL ) { break; }
+                if ( pstr2 == NULL ) {
+                    break;
+                }
                 pstr3 = strstr( pstr2, "++++" );
                 if ( pstr3 == NULL ) {
                     len3 = 0;

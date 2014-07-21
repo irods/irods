@@ -52,7 +52,8 @@ int rsAuthRequest(
 
     // =-=-=-=-=-=-=-
     // construct an auth object given the native scheme
-    irods::auth_object_ptr auth_obj; irods::error ret = irods::auth_factory( irods::AUTH_NATIVE_SCHEME, &_comm->rError, auth_obj );
+    irods::auth_object_ptr auth_obj;
+    irods::error ret = irods::auth_factory( irods::AUTH_NATIVE_SCHEME, &_comm->rError, auth_obj );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();

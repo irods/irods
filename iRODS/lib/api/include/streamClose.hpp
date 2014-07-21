@@ -30,8 +30,8 @@ rsStreamClose( rsComm_t *rsComm, fileCloseInp_t *fileCloseInp );
 #ifdef __cplusplus
 extern "C" {
 #endif
-int
-rcStreamClose( rcComm_t *conn, fileCloseInp_t *fileCloseInp );
+    int
+    rcStreamClose( rcComm_t *conn, fileCloseInp_t *fileCloseInp );
 #ifdef __cplusplus
 }
 #endif

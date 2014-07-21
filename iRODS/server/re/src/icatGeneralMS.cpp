@@ -705,7 +705,7 @@ int msiCheckAccess( msParam_t *inObjName, msParam_t * inOperation,
     i = checkPermissionByObjType( rei->rsComm, objName, objType, user, zone, oper );
 
     if (i == 0) {	// hack
-    	i = checkPermissionByObjType( rei->rsComm, objName, objType, "public", zone, oper );
+        i = checkPermissionByObjType( rei->rsComm, objName, objType, "public", zone, oper );
     }
 
     if ( i < 0 ) {

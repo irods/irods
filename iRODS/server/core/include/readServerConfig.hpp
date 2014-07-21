@@ -42,33 +42,33 @@
 #define DEF_FILE_MODE_KW	"default_file_mode"
 extern "C" {
 
-typedef struct rodsServerConfig {
-    bool run_server_as_root;
+    typedef struct rodsServerConfig {
+        bool run_server_as_root;
 
-    char DBUsername[NAME_LEN];
-    char DBPassword[MAX_PASSWORD_LEN];
-    char DBKey[MAX_PASSWORD_LEN];  /* used to descramble password */
+        char DBUsername[NAME_LEN];
+        char DBPassword[MAX_PASSWORD_LEN];
+        char DBKey[MAX_PASSWORD_LEN];  /* used to descramble password */
 
-    // =-=-=-=-=-=-=-
-    // agent side pam configuration
-    bool   irods_pam_auth_no_extend;
-    size_t irods_pam_password_len;
-    char   irods_pam_password_min_time[ NAME_LEN ];
-    char   irods_pam_password_max_time[ NAME_LEN ];
+        // =-=-=-=-=-=-=-
+        // agent side pam configuration
+        bool   irods_pam_auth_no_extend;
+        size_t irods_pam_password_len;
+        char   irods_pam_password_min_time[ NAME_LEN ];
+        char   irods_pam_password_max_time[ NAME_LEN ];
 
-    // =-=-=-=-=-=-=-
-    // agent side database plugin configuration
-    char   catalog_database_type[ NAME_LEN ];
+        // =-=-=-=-=-=-=-
+        // agent side database plugin configuration
+        char   catalog_database_type[ NAME_LEN ];
 
-    // =-=-=-=-=-=-=-
-    // desired hash scheme
-    char   default_hash_scheme[NAME_LEN];
-    char   match_hash_policy  [NAME_LEN];
+        // =-=-=-=-=-=-=-
+        // desired hash scheme
+        char   default_hash_scheme[NAME_LEN];
+        char   match_hash_policy  [NAME_LEN];
 
-} rodsServerConfig_t;
+    } rodsServerConfig_t;
 
-char *getServerConfigDir();
-char* findNextTokenAndTerm( char *inPtr );
+    char *getServerConfigDir();
+    char* findNextTokenAndTerm( char *inPtr );
 
 }
 

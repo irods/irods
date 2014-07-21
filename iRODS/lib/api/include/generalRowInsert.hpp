@@ -39,12 +39,12 @@ typedef struct {
 
 #if defined(RODS_SERVER)
 #define RS_GENERAL_ROW_INSERT rsGeneralRowInsert
-    /* prototype for the server handler */
-    int
-    rsGeneralRowInsert( rsComm_t *rsComm, generalRowInsertInp_t *generalRowInsertInp );
+/* prototype for the server handler */
+int
+rsGeneralRowInsert( rsComm_t *rsComm, generalRowInsertInp_t *generalRowInsertInp );
 
-    int
-    _rsGeneralRowInsert( rsComm_t *rsComm, generalRowInsertInp_t *generalRowInsertInp );
+int
+_rsGeneralRowInsert( rsComm_t *rsComm, generalRowInsertInp_t *generalRowInsertInp );
 #else
 #define RS_GENERAL_ROW_INSERT NULL
 #endif

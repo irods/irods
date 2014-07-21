@@ -5,8 +5,8 @@
 
 #include "filePut.hpp"
 
-int rcFilePut( 
-    rcComm_t *conn, 
+int rcFilePut(
+    rcComm_t *conn,
     fileOpenInp_t *filePutInp,
     bytesBuf_t *filePutInpBBuf,
     filePutOut_t** put_out ) {

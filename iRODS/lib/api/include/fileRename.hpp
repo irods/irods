@@ -51,8 +51,8 @@ remoteFileRename( rsComm_t *rsComm, fileRenameInp_t *fileRenameInp, fileRenameOu
 #ifdef __cplusplus
 extern "C" {
 #endif
-int
-rcFileRename( rcComm_t *conn, fileRenameInp_t *fileRenameInp, fileRenameOut_t** );
+    int
+    rcFileRename( rcComm_t *conn, fileRenameInp_t *fileRenameInp, fileRenameOut_t** );
 #ifdef __cplusplus
 }
 #endif

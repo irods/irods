@@ -15,18 +15,18 @@
 #include "initServer.hpp"
 #include "icatDefines.hpp"
 
-    typedef struct {
-        char *serverDN;
-    } gsiAuthRequestOut_t;
+typedef struct {
+    char *serverDN;
+} gsiAuthRequestOut_t;
 
 #define gsiAuthRequestOut_PI "str *ServerDN;"
 
 
 #if defined(RODS_SERVER)
 #define RS_GSI_AUTH_REQUEST rsGsiAuthRequest
-    /* prototype for the server handler */
-    int
-    rsGsiAuthRequest( rsComm_t *rsComm, gsiAuthRequestOut_t **gsiAuthRequestOut );
+/* prototype for the server handler */
+int
+rsGsiAuthRequest( rsComm_t *rsComm, gsiAuthRequestOut_t **gsiAuthRequestOut );
 
 #else
 #define RS_GSI_AUTH_REQUEST NULL

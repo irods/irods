@@ -758,7 +758,7 @@ dataObjOpenForRepl(
 
     memset( &srcDataObjInfo->condInput, 0, sizeof( srcDataObjInfo->condInput ) );
     replKeyVal( &inpSrcDataObjInfo->condInput, &srcDataObjInfo->condInput );
-       
+
 
     /* open the dest */
     myDataObjInp = *dataObjInp;
@@ -799,7 +799,7 @@ dataObjOpenForRepl(
         //     :: on the copied outgoing dataObjInfo.  see _rsDataObjReplS()
         memset( &myDestDataObjInfo->condInput, 0, sizeof( keyValPair_t ) );
         replKeyVal( &inpDestDataObjInfo->condInput, &myDestDataObjInfo->condInput );
-        
+
         myDestDataObjInfo->rescInfo = new rescInfo_t;
         memcpy( myDestDataObjInfo->rescInfo, inpDestDataObjInfo->rescInfo, sizeof( rescInfo_t ) );
         replStatus = srcDataObjInfo->replStatus | OPEN_EXISTING_COPY;
@@ -1037,7 +1037,9 @@ dataObjCopy( rsComm_t * rsComm, int l1descInx ) {
         L1desc[l1descInx].dataObjInp->numThreads = 0;
         dataCopyInp.portalOprOut.l1descInx = l1descInx;
         status = singleL1Copy( rsComm, &dataCopyInp );
-        if ( portalOprOut != NULL ) { free( portalOprOut ); }
+        if ( portalOprOut != NULL ) {
+            free( portalOprOut );
+        }
         clearKeyVal( &dataOprInp->condInput );
         return ( status );
     }

@@ -37,9 +37,9 @@ _rsDataPut( rsComm_t *rsComm, dataOprInp_t *dataPutInp,
 #ifdef __cplusplus
 extern "C" {
 #endif
-int
-rcDataPut( rcComm_t *conn, dataOprInp_t *dataPutInp,
-           portalOprOut_t **portalOprOut );
+    int
+    rcDataPut( rcComm_t *conn, dataOprInp_t *dataPutInp,
+               portalOprOut_t **portalOprOut );
 #ifdef __cplusplus
 }
 #endif

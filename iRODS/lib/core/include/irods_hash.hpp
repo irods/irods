@@ -11,57 +11,57 @@
 
 namespace irods {
 
-    struct irods_char_str_hash {
-        enum {
-            // parameters for hash table
-            bucket_size = 4, // 0 < bucket_size
-            min_buckets = 8
+struct irods_char_str_hash {
+    enum {
+        // parameters for hash table
+        bucket_size = 4, // 0 < bucket_size
+        min_buckets = 8
 
-        }; // min_buckets = 2 ^^ N, 0 < N
+    }; // min_buckets = 2 ^^ N, 0 < N
 
-        size_t operator()( const char *s1 ) const {
-            // hash string s1 to size_t value
-            const unsigned char *p = ( const unsigned char * )s1;
-            size_t hashval = 0;
+    size_t operator()( const char *s1 ) const {
+        // hash string s1 to size_t value
+        const unsigned char *p = ( const unsigned char * )s1;
+        size_t hashval = 0;
 
-            while ( *p != '\0' ) {
-                hashval = 31 * hashval + ( *p++ );    // or whatever
-            }
-
-            return ( hashval );
+        while ( *p != '\0' ) {
+            hashval = 31 * hashval + ( *p++ );    // or whatever
         }
 
-        bool operator()( const char* s1, const char* s2 ) const {
-            return ( strcmp( s1, s2 ) < 0 );
+        return ( hashval );
+    }
+
+    bool operator()( const char* s1, const char* s2 ) const {
+        return ( strcmp( s1, s2 ) < 0 );
+    }
+
+}; // struct irods_char_str_hash
+
+struct irods_string_hash {
+    enum {
+        // parameters for hash table
+        bucket_size = 4, // 0 < bucket_size
+        min_buckets = 8
+
+    }; // min_buckets = 2 ^^ N, 0 < N
+
+    size_t operator()( const std::string s1 ) const {
+        // hash string s1 to size_t value
+        const unsigned char *p = ( const unsigned char * )s1.c_str();
+        size_t hashval = 0;
+
+        while ( *p != '\0' ) {
+            hashval = 31 * hashval + ( *p++ );    // or whatever
         }
 
-    }; // struct irods_char_str_hash
+        return ( hashval );
+    }
 
-    struct irods_string_hash {
-        enum {
-            // parameters for hash table
-            bucket_size = 4, // 0 < bucket_size
-            min_buckets = 8
+    bool operator()( const std::string s1, const std::string s2 ) const {
+        return ( s1 < s2 );
+    }
 
-        }; // min_buckets = 2 ^^ N, 0 < N
-
-        size_t operator()( const std::string s1 ) const {
-            // hash string s1 to size_t value
-            const unsigned char *p = ( const unsigned char * )s1.c_str();
-            size_t hashval = 0;
-
-            while ( *p != '\0' ) {
-                hashval = 31 * hashval + ( *p++ );    // or whatever
-            }
-
-            return ( hashval );
-        }
-
-        bool operator()( const std::string s1, const std::string s2 ) const {
-            return ( s1 < s2 );
-        }
-
-    }; // struct irods_string_hash
+}; // struct irods_string_hash
 
 }; // namespace irods
 

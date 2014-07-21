@@ -28,18 +28,18 @@ typedef struct {
 #define RS_FILE_PUT rsFilePut
 /* prototype for the server handler */
 int
-rsFilePut( rsComm_t *rsComm, 
-    fileOpenInp_t *filePutInp,
-    bytesBuf_t *filePutInpBBuf,
-    filePutOut_t**  );
+rsFilePut( rsComm_t *rsComm,
+           fileOpenInp_t *filePutInp,
+           bytesBuf_t *filePutInpBBuf,
+           filePutOut_t** );
 int
 _rsFilePut( rsComm_t *rsComm, fileOpenInp_t *filePutInp,
             bytesBuf_t *filePutInpBBuf, rodsServerHost_t *rodsServerHost,
-            filePutOut_t**  );
+            filePutOut_t** );
 int
 remoteFilePut( rsComm_t *rsComm, fileOpenInp_t *filePutInp,
                bytesBuf_t *filePutInpBBuf, rodsServerHost_t *rodsServerHost,
-               filePutOut_t**  );
+               filePutOut_t** );
 #else
 #define RS_FILE_PUT NULL
 #endif
@@ -48,10 +48,10 @@ remoteFilePut( rsComm_t *rsComm, fileOpenInp_t *filePutInp,
 #ifdef __cplusplus
 extern "C" {
 #endif
-int
-rcFilePut( rcComm_t *conn, fileOpenInp_t *filePutInp,
-           bytesBuf_t *filePutInpBBuf,
-           filePutOut_t**  );
+    int
+    rcFilePut( rcComm_t *conn, fileOpenInp_t *filePutInp,
+               bytesBuf_t *filePutInpBBuf,
+               filePutOut_t** );
 #ifdef __cplusplus
 }
 #endif

@@ -5,20 +5,20 @@
 
 namespace irods {
 
-    class impostor_resource : public irods::resource {
-    public:
-        impostor_resource(
-            const std::string& _inst_name,
-            const std::string& _context );
-        error wire_op( 
-            const std::string& _key,
-            plugin_operation   _op );
-        error need_post_disconnect_maintenance_operation( bool& _b );
-        error post_disconnect_maintenance_operation( pdmo_type& _op );
-        static error report_error(
-            resource_plugin_context& );
+class impostor_resource : public irods::resource {
+public:
+    impostor_resource(
+        const std::string& _inst_name,
+        const std::string& _context );
+    error wire_op(
+        const std::string& _key,
+        plugin_operation   _op );
+    error need_post_disconnect_maintenance_operation( bool& _b );
+    error post_disconnect_maintenance_operation( pdmo_type& _op );
+    static error report_error(
+        resource_plugin_context& );
 
-    }; // class impostor_resource
+}; // class impostor_resource
 
 }; // namespace irods
 

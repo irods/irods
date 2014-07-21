@@ -18,17 +18,17 @@
 #include "initServer.hpp"
 #include "icatDefines.hpp"
 
-    typedef struct {
-        char *challenge;
-        char *response;
-        char *username;
-    } authCheckInp_t;
+typedef struct {
+    char *challenge;
+    char *response;
+    char *username;
+} authCheckInp_t;
 
-    typedef struct {
-        int  privLevel;
-        int  clientPrivLevel;
-        char *serverResponse;
-    } authCheckOut_t;
+typedef struct {
+    int  privLevel;
+    int  clientPrivLevel;
+    char *serverResponse;
+} authCheckOut_t;
 
 #define authCheckInp_PI "str *challenge; str *response; str *username;"
 
@@ -36,10 +36,10 @@
 
 #if defined(RODS_SERVER)
 #define RS_AUTH_CHECK rsAuthCheck
-    /* prototype for the server handler */
-    int
-    rsAuthCheck( rsComm_t *rsComm, authCheckInp_t *authCheckInp,
-                 authCheckOut_t **authCheckOut );
+/* prototype for the server handler */
+int
+rsAuthCheck( rsComm_t *rsComm, authCheckInp_t *authCheckInp,
+             authCheckOut_t **authCheckOut );
 
 #else
 #define RS_AUTH_CHECK NULL

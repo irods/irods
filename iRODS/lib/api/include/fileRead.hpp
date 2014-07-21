@@ -44,9 +44,9 @@ remoteFileRead( rsComm_t *rsComm, fileReadInp_t *fileReadInp,
 #ifdef __cplusplus
 extern "C" {
 #endif
-int
-rcFileRead( rcComm_t *conn, fileReadInp_t *fileReadInp,
-            bytesBuf_t *fileReadOutBBuf );
+    int
+    rcFileRead( rcComm_t *conn, fileReadInp_t *fileReadInp,
+                bytesBuf_t *fileReadOutBBuf );
 #ifdef __cplusplus
 }
 #endif

@@ -106,17 +106,17 @@ _rsModAVUMetadata( rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp ) {
             ARG(modAVUMetadataInp->arg7);
             args[5] = "";
             memcpy(args+6, avu+1, sizeof(char *[3]));
-          } else {
-              char *avu[4] = {"", "", "", ""};
-                ARG(modAVUMetadataInp->arg6); /* new attr */
-                ARG(modAVUMetadataInp->arg7); /* new val */
-                ARG(modAVUMetadataInp->arg8); /* new unit */
-              memcpy(args+6, avu+1, sizeof(char *[3]));
-          }
+        } else {
+            char *avu[4] = {"", "", "", ""};
+            ARG(modAVUMetadataInp->arg6); /* new attr */
+            ARG(modAVUMetadataInp->arg7); /* new val */
+            ARG(modAVUMetadataInp->arg8); /* new unit */
+            memcpy(args+6, avu+1, sizeof(char *[3]));
+        }
     } else if(strcmp(args[0], "cp") == 0) {
         argc = 5;
     } else {
-    argc = 6;
+        argc = 6;
     }
 
     status2 =  applyRuleArg( "acPreProcForModifyAVUMetadata", args, argc,

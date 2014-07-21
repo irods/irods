@@ -19,21 +19,21 @@
 #define RESPONSE_LEN 16  /* 16 bytes of data and terminating null */
 
 
-    typedef struct {
-        char *challenge;
-    } authRequestOut_t;
+typedef struct {
+    char *challenge;
+} authRequestOut_t;
 
 #define authRequestOut_PI "bin *challenge(CHALLENGE_LEN);"
 
 #if defined(RODS_SERVER)
 #define RS_AUTH_REQUEST rsAuthRequest
-    /* prototype for the server handler */
-    int
-    rsAuthRequest( rsComm_t *rsComm, authRequestOut_t **authRequestOut );
+/* prototype for the server handler */
+int
+rsAuthRequest( rsComm_t *rsComm, authRequestOut_t **authRequestOut );
 
-    /* return the previous challenge */
-    char *
-    _rsAuthRequestGetChallenge();
+/* return the previous challenge */
+char *
+_rsAuthRequestGetChallenge();
 
 #else
 #define RS_AUTH_REQUEST NULL

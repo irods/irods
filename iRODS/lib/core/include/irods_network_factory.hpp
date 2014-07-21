@@ -14,15 +14,15 @@ namespace irods {
 /// =-=-=-=-=-=-=-
 /// @brief super basic free factory function to create either a tcp
 ///        object or an ssl object based on wether ssl has been enabled
-    irods::error network_factory(
-        rcComm_t*,                     // irods client comm ptr
-        irods::network_object_ptr& ); // network object
+irods::error network_factory(
+    rcComm_t*,                     // irods client comm ptr
+    irods::network_object_ptr& ); // network object
 
 /// =-=-=-=-=-=-=-
 /// @brief version for server connection as well
-    irods::error network_factory(
-        rsComm_t*,                    // irods client comm ptr
-        irods::network_object_ptr& ); // network object
+irods::error network_factory(
+    rsComm_t*,                    // irods client comm ptr
+    irods::network_object_ptr& ); // network object
 
 }; // namespace irods
 

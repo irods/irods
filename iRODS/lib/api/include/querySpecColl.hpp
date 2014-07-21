@@ -12,12 +12,12 @@
 #include "procApiRequest.hpp"
 #include "apiNumber.hpp"
 
-    typedef struct specCollDesc {
-        int l3descInx;
-        int inuseFlag;
-        dataObjInfo_t *dataObjInfo;
-        int parentInx;
-    } specCollDesc_t;
+typedef struct specCollDesc {
+    int l3descInx;
+    int inuseFlag;
+    dataObjInfo_t *dataObjInfo;
+    int parentInx;
+} specCollDesc_t;
 
 #define NUM_SPEC_COLL_DESC	100
 #define MAX_SPEC_COLL_ROW	100
@@ -27,24 +27,24 @@
 #if defined(RODS_SERVER)
 #define RS_QUERY_SPEC_COLL rsQuerySpecColl
 
-    /* prototype for the server handler */
-    int
-    rsQuerySpecColl( rsComm_t *rsComm, dataObjInp_t *querySpecCollInp,
-                     genQueryOut_t **genQueryOut );
-    int
-    _rsQuerySpecColl( rsComm_t *rsComm, int specCollInx,
-                      dataObjInp_t *dataObjInp, genQueryOut_t *genQueryOut, int continueFlag );
-    int
-    initOutForQuerySpecColl( genQueryOut_t **genQueryOut );
-    int
-    l3Opendir( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo );
-    int
-    specCollReaddir( rsComm_t *rsComm, int specCollInx,
-                     rodsDirent_t **rodsDirent );
-    int
-    specCollClosedir( rsComm_t *rsComm, int specCollInx );
-    int
-    openSpecColl( rsComm_t *rsComm, dataObjInp_t *dataObjInp, int parentInx );
+/* prototype for the server handler */
+int
+rsQuerySpecColl( rsComm_t *rsComm, dataObjInp_t *querySpecCollInp,
+                 genQueryOut_t **genQueryOut );
+int
+_rsQuerySpecColl( rsComm_t *rsComm, int specCollInx,
+                  dataObjInp_t *dataObjInp, genQueryOut_t *genQueryOut, int continueFlag );
+int
+initOutForQuerySpecColl( genQueryOut_t **genQueryOut );
+int
+l3Opendir( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo );
+int
+specCollReaddir( rsComm_t *rsComm, int specCollInx,
+                 rodsDirent_t **rodsDirent );
+int
+specCollClosedir( rsComm_t *rsComm, int specCollInx );
+int
+openSpecColl( rsComm_t *rsComm, dataObjInp_t *dataObjInp, int parentInx );
 #else
 #define RS_QUERY_SPEC_COLL NULL
 #endif

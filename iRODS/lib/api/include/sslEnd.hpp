@@ -18,18 +18,18 @@
 #include "initServer.hpp"
 #include "icatDefines.hpp"
 
-    typedef struct {
-        char *arg0;
-    } sslEndInp_t;
+typedef struct {
+    char *arg0;
+} sslEndInp_t;
 
 #define sslEndInp_PI "str *arg0;"
 
 
 #if defined(RODS_SERVER)
 #define RS_SSL_END rsSslEnd
-    /* prototype for the server handler */
-    int
-    rsSslEnd( rsComm_t *rsComm, sslEndInp_t *sslEndInp );
+/* prototype for the server handler */
+int
+rsSslEnd( rsComm_t *rsComm, sslEndInp_t *sslEndInp );
 #else
 #define RS_SSL_END NULL
 #endif

@@ -101,7 +101,9 @@ _irodsGetattr( iFuseConn_t *iFuseConn, const char *path, struct stat *stbuf ) {
     }
     else if ( rodsObjStatOut->objType == UNKNOWN_OBJ_T ) {
         pathNotExist( ( char * ) path );
-        if ( rodsObjStatOut != NULL ) { freeRodsObjStat( rodsObjStatOut ); }
+        if ( rodsObjStatOut != NULL ) {
+            freeRodsObjStat( rodsObjStatOut );
+        }
         return -ENOENT;
     }
     else {

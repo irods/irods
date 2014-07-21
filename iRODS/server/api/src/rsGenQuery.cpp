@@ -143,7 +143,7 @@ rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
             irods::error err = props.get_property< std::string >( irods::AGENT_CONN_KW, svr_sid );
             if( !err.ok() ) {
                 rmKeyVal( &genQueryInp->condInput, DISABLE_STRICT_ACL_KW );
-                        
+
             }
 
         } // if dis_kw
@@ -233,7 +233,7 @@ _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
                              retry next time. */
         }
     }
-    
+
     // =-=-=-=-=-=-=-
     // verify that we are running a query for another agent connection
     irods::server_properties& props = irods::server_properties::getInstance();
@@ -242,7 +242,7 @@ _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
     std::string svr_sid;
     irods::error err = props.get_property< std::string >( irods::AGENT_CONN_KW, svr_sid );
     bool agent_conn_flg = err.ok();
-    
+
     // =-=-=-=-=-=-=-
     // detect if a request for disable of strict acls is made
     int acl_val = -1;

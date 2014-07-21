@@ -153,7 +153,9 @@ int _iFuseFileCacheFlush( fileCache_t *fileCache ) {
 }
 int ifuseFileCacheSwapOut( fileCache_t *fileCache ) {
     int status = 0;
-    if ( fileCache == NULL ) { return USER__NULL_INPUT_ERR; }
+    if ( fileCache == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
     LOCK_STRUCT( *fileCache );
 
     /* flush local cache file to remote server */
@@ -288,7 +290,9 @@ getFileCachePath( const char *inPath, char *cacehPath ) {
     while ( 1 ) {
         snprintf( cacehPath, MAX_NAME_LEN, "%s/%s.%d", FuseCacheDir,
                   myFile, ( int ) random() );
-        if ( stat( cacehPath, &statbuf ) < 0 ) { break; }
+        if ( stat( cacehPath, &statbuf ) < 0 ) {
+            break;
+        }
     }
     return 0;
 }
@@ -372,7 +376,9 @@ int _ifuseFileCacheWrite( fileCache_t *fileCache, char *buf, size_t size, off_t 
     else {
         status = write( fileCache->iFd, buf, size );
 
-        if ( status < 0 ) { return ( errno ? ( -1 * errno ) : -1 ); }
+        if ( status < 0 ) {
+            return ( errno ? ( -1 * errno ) : -1 );
+        }
         fileCache->offset += status;
         if ( fileCache->offset > fileCache->fileSize ) {
             fileCache->fileSize = fileCache->offset;
@@ -451,7 +457,9 @@ int _ifuseFileCacheRead( fileCache_t *fileCache, char *buf, size_t size, off_t o
     else {
         status = read( fileCache->iFd, buf, size );
 
-        if ( status < 0 ) { return ( errno ? ( -1 * errno ) : -1 ); }
+        if ( status < 0 ) {
+            return ( errno ? ( -1 * errno ) : -1 );
+        }
     }
     fileCache->offset += status;
 

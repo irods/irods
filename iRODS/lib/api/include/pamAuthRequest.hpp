@@ -15,35 +15,35 @@
 #include "initServer.hpp"
 #include "icatDefines.hpp"
 
-    typedef struct {
-        char *pamUser;
-        char *pamPassword;
-        int timeToLive;
-    } pamAuthRequestInp_t;
+typedef struct {
+    char *pamUser;
+    char *pamPassword;
+    int timeToLive;
+} pamAuthRequestInp_t;
 
 #define pamAuthRequestInp_PI "str *pamUser; str *pamPassword; int timeToLive;"
 
-    typedef struct {
-        char *irodsPamPassword;  /* the generated password to use for iRODS */
-    } pamAuthRequestOut_t;
+typedef struct {
+    char *irodsPamPassword;  /* the generated password to use for iRODS */
+} pamAuthRequestOut_t;
 
 #define pamAuthRequestOut_PI "str *irodsPamPassword;"
 
 
 #if defined(RODS_SERVER)
 #define RS_PAM_AUTH_REQUEST rsPamAuthRequest
-    /* prototype for the server handler */
-    int
-    rsPamAuthRequest( rsComm_t *rsComm, pamAuthRequestInp_t *pamAuthRequestInp,
-                      pamAuthRequestOut_t **pamAuthRequestOut );
-    int
-    _rsPamAuthRequest( rsComm_t *rsComm, pamAuthRequestInp_t *pamAuthRequestInp,
-                       pamAuthRequestOut_t **pamAuthRequestOut );
+/* prototype for the server handler */
+int
+rsPamAuthRequest( rsComm_t *rsComm, pamAuthRequestInp_t *pamAuthRequestInp,
+                  pamAuthRequestOut_t **pamAuthRequestOut );
+int
+_rsPamAuthRequest( rsComm_t *rsComm, pamAuthRequestInp_t *pamAuthRequestInp,
+                   pamAuthRequestOut_t **pamAuthRequestOut );
 #else
 #define RS_PAM_AUTH_REQUEST NULL
 #endif
 
-    /* prototype for the client call */
+/* prototype for the client call */
 #ifdef __cplusplus
 extern "C" {
 #endif

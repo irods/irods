@@ -18,23 +18,23 @@
 #include "initServer.hpp"
 #include "icatDefines.hpp"
 
-    typedef struct {
-        char *arg0;
-    } sslStartInp_t;
+typedef struct {
+    char *arg0;
+} sslStartInp_t;
 
 #define sslStartInp_PI "str *arg0;"
 
 
 #if defined(RODS_SERVER)
 #define RS_SSL_START rsSslStart
-    /* prototype for the server handler */
-    int
-    rsSslStart( rsComm_t *rsComm, sslStartInp_t *sslStartInp );
+/* prototype for the server handler */
+int
+rsSslStart( rsComm_t *rsComm, sslStartInp_t *sslStartInp );
 #else
 #define RS_SSL_START NULL
 #endif
 
-    /* prototype for the client call */
+/* prototype for the client call */
 #ifdef __cplusplus
 extern "C" {
 #endif

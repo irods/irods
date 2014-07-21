@@ -41,7 +41,7 @@ set up the set 1 tables */
 #include "boost/filesystem.hpp"
 #include "boost/lexical_cast.hpp"
 #include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/convenience.hpp> 
+#include <boost/filesystem/convenience.hpp>
 using namespace boost::filesystem;
 
 /* check with the input path is a valid path -
@@ -4845,13 +4845,13 @@ splitMultiStr( char * strInput, strArray_t * strArray ) {
 }
 
 namespace boost {
-    void assertion_failed( char const * expr,
-                           char const * function, char const * file, long line ) {
-        std::cerr <<
-                  "***** Internal Program Error - assertion (" << expr << ") failed in "
-                  << function << ":\n"
-                  << file << '(' << line << "): errno = " << errno << std::endl;
-    }
+void assertion_failed( char const * expr,
+                       char const * function, char const * file, long line ) {
+    std::cerr <<
+              "***** Internal Program Error - assertion (" << expr << ") failed in "
+              << function << ":\n"
+              << file << '(' << line << "): errno = " << errno << std::endl;
+}
 
 
 } // namespace boost

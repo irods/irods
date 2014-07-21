@@ -2074,7 +2074,9 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // log as appropriate
-        if ( logSQL != 0 ) { rodsLog( LOG_SQL, "chlOpen" ); }
+        if ( logSQL != 0 ) {
+            rodsLog( LOG_SQL, "chlOpen" );
+        }
 
         // =-=-=-=-=-=-=-
         // extract the icss property
@@ -8574,13 +8576,13 @@ checkLevel:
         OK = 0;
         if ( strcmp( _option, "objcount" ) == 0 ) {
             int amt = atoi( _option_value );
-            int ret = _updateRescObjCount( 
+            int ret = _updateRescObjCount(
                           &icss,
                           _resc_name,
                           zone,
                           amt );
             if( ret != 0 ) {
-                rodsLog( 
+                rodsLog(
                     LOG_ERROR,
                     "failed in _updateRescObjCount %d",
                     ret );
@@ -8588,7 +8590,7 @@ checkLevel:
                            ret,
                            "failed in _updateRescObjCount" );
             }
-            
+
             OK = 1;
 
         } // objcount
@@ -9651,7 +9653,7 @@ checkLevel:
          */
 
         status = cmlGetMultiRowStringValuesFromSql( "select meta_id from R_OBJT_METAMAP where meta_id in (select meta_id from R_META_MAIN where meta_attr_name=? AND meta_id in (select meta_id from R_OBJT_METAMAP where object_id=?))",
-                                                    metaIdStr, MAX_NAME_LEN, 2, _attribute, objIdStr, 0, &icss );
+                 metaIdStr, MAX_NAME_LEN, 2, _attribute, objIdStr, 0, &icss );
 
         if ( status <= 0 ) {
             if ( status == CAT_NO_ROWS_FOUND ) {
@@ -11681,7 +11683,9 @@ checkLevel:
         */
         status =  cmlExecuteNoAnswerSql( "create temporary table R_MOD_ACCESS_TEMP1 (coll_id bigint not null, coll_name varchar(2700) not null) on commit drop",
                                          &icss );
-        if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) { status = 0; }
+        if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
+            status = 0;
+        }
         if ( status != 0 ) {
             rodsLog( LOG_NOTICE,
                      "chlModAccessControl cmlExecuteNoAnswerSql create temp table failure %d",
@@ -11692,7 +11696,9 @@ checkLevel:
 
         status =  cmlExecuteNoAnswerSql( "create unique index idx_r_mod_access_temp1 on R_MOD_ACCESS_TEMP1 (coll_name)",
                                          &icss );
-        if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) { status = 0; }
+        if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
+            status = 0;
+        }
         if ( status != 0 ) {
             rodsLog( LOG_NOTICE,
                      "chlModAccessControl cmlExecuteNoAnswerSql create index failure %d",
@@ -11705,7 +11711,9 @@ checkLevel:
         cllBindVars[cllBindVarCount++] = pathStart;
         status =  cmlExecuteNoAnswerSql( "insert into R_MOD_ACCESS_TEMP1 (coll_id, coll_name) select  coll_id, coll_name from R_COLL_MAIN where coll_name = ? or coll_name like ?",
                                          &icss );
-        if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) { status = 0; }
+        if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
+            status = 0;
+        }
         if ( status != 0 ) {
             rodsLog( LOG_NOTICE,
                      "chlModAccessControl cmlExecuteNoAnswerSql insert failure %d",

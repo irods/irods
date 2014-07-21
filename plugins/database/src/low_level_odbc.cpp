@@ -760,14 +760,14 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, char *sql ) {
 
     myStatement->stmtPtr = hstmt;
 
-#ifdef PSQICAT 
+#ifdef PSQICAT
     SQLExecDirect( hstmt, (SQLCHAR*)"SAVEPOINT lowlevel_odbc_savepoint", SQL_NTS );
 #endif
 
     if ( bindTheVariables( hstmt, sql ) != 0 ) {
         return( -1 );
     }
-   
+
     rodsLogSql( sql );
     stat = SQLExecDirect( hstmt, ( unsigned char * )sql, SQL_NTS );
 
@@ -800,12 +800,12 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, char *sql ) {
                  stat, sql );
         logPsgError( LOG_NOTICE, icss->environPtr, myHdbc, hstmt,
                      icss->databaseType );
-#ifdef PSQICAT 
+#ifdef PSQICAT
         SQLExecDirect( hstmt, (SQLCHAR*)"ROLLBACK TO SAVEPOINT lowlevel_odbc_savepoint", SQL_NTS );
 #endif
         return( -1 );
     }
-    
+
     stat =  SQLNumResultCols( hstmt, &numColumns );
     if ( stat != SQL_SUCCESS ) {
         rodsLog( LOG_ERROR, "cllExecSqlWithResult: SQLNumResultCols failed: %d",

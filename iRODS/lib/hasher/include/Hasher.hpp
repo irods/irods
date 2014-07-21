@@ -8,25 +8,25 @@
 
 namespace irods {
 
-    class Hasher {
-    public:
-        Hasher( void );
-        virtual ~Hasher( void );
+class Hasher {
+public:
+    Hasher( void );
+    virtual ~Hasher( void );
 
-        unsigned int addStrategy( HashStrategy* strategy ) {
-            _strategies.push_back( strategy );
-            return 0;
-        }
-        unsigned int listStrategies( std::vector<std::string>& strategies ) const;
+    unsigned int addStrategy( HashStrategy* strategy ) {
+        _strategies.push_back( strategy );
+        return 0;
+    }
+    unsigned int listStrategies( std::vector<std::string>& strategies ) const;
 
-        unsigned int init( const std::string& );
-        unsigned int update( char const* data, unsigned int size );
-        unsigned int digest( std::string& messageDigest );
+    unsigned int init( const std::string& );
+    unsigned int update( char const* data, unsigned int size );
+    unsigned int digest( std::string& messageDigest );
 
-    private:
-        std::vector<HashStrategy*> _strategies;
-        std::string                _requested_hasher;
-    };
+private:
+    std::vector<HashStrategy*> _strategies;
+    std::string                _requested_hasher;
+};
 
 }; // namespace irods
 

@@ -48,9 +48,9 @@ remoteFileStat( rsComm_t *rsComm, fileStatInp_t *fileStatInp,
 #ifdef __cplusplus
 extern "C" {
 #endif
-int
-rcFileStat( rcComm_t *conn, fileStatInp_t *fileStatInp,
-            rodsStat_t **fileStatOut );
+    int
+    rcFileStat( rcComm_t *conn, fileStatInp_t *fileStatInp,
+                rodsStat_t **fileStatOut );
 #ifdef __cplusplus
 }
 #endif

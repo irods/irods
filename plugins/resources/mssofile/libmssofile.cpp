@@ -157,7 +157,9 @@ extern "C" {
                 snprintf( mvstr, MAX_NAME_LEN, "rm -rf %s/%s", stageArea, t );
                 if ( system( mvstr ) ) {}
                 s++;
-                while ( *s == ' ' ) { s++; }
+                while ( *s == ' ' ) {
+                    s++;
+                }
                 t = s;
             }
             snprintf( mvstr, MAX_NAME_LEN, "%s/%s", stageArea, t );
@@ -892,13 +894,17 @@ extern "C" {
                 while ( *t != '/' && t != stageIn[stinCnt] )  {
                     t--;
                 }
-                if ( *t == '/' ) { t++; } /*skip the slash if it exists */
+                if ( *t == '/' ) {
+                    t++;    /*skip the slash if it exists */
+                }
                 strncpy( stagefilename, t, MAX_NAME_LEN );
             }
             else {
                 *t = '\0';
                 t++;    /* stage file name starts here */
-                while ( *t == ' ' ) { t++; } /* skip leading blanks */
+                while ( *t == ' ' ) {
+                    t++;    /* skip leading blanks */
+                }
                 strncpy( stagefilename, t, MAX_NAME_LEN );
             }
             if ( stageIn[stinCnt][0] == '/' ) { /* it is an irods collection ###### */
@@ -909,7 +915,9 @@ extern "C" {
                 snprintf( mvstr, MAX_NAME_LEN, "%s/%s", stageArea, stagefilename );
                 status  = rsDataObjGet( rsComm, &dataObjInp, &portalOprOut, &dataObjOutBBuf );
                 if ( status < 0 ) {
-                    if ( portalOprOut != NULL ) { free( portalOprOut ); }
+                    if ( portalOprOut != NULL ) {
+                        free( portalOprOut );
+                    }
                     rodsLog( LOG_NOTICE,
                              "Failure in extractMssoFile at rsDataObjGet when copying files from iRODS into execution area: %d\n",
                              status );
@@ -991,7 +999,9 @@ extern "C" {
             else {
                 *t = '\0';
                 t++;
-                while ( *t == ' ' ) { t++; } /* skip blanks */
+                while ( *t == ' ' ) {
+                    t++;    /* skip blanks */
+                }
                 snprintf( mvstr, MAX_NAME_LEN, "%s/%s", stageArea, stageOut[stoutCnt] );
                 checkPhySafety( mvstr );
                 if ( *t == '/' ) { /* target is an irods object */
@@ -1023,7 +1033,9 @@ extern "C" {
             else {
                 *t = '\0';
                 t++;
-                while ( *t == ' ' ) { t++; } /* skip blanks */
+                while ( *t == ' ' ) {
+                    t++;    /* skip blanks */
+                }
                 if ( *t == '/' ) { /* target is an irods object */
                     /* #### */
                 }
@@ -1166,7 +1178,9 @@ extern "C" {
             if ( strlen( specColl->cacheDir ) == 0 ) {
                 /* no cache. stage one. make the CacheDir first */
                 status = mkMssoCacheDir( _struct_inx , _fco );
-                if ( status < 0 ) { return status; }
+                if ( status < 0 ) {
+                    return status;
+                }
                 /**********
                   status = extractMssoFile ( _struct_inx , subFile);
                   if (status < 0) {
@@ -1178,17 +1192,23 @@ extern "C" {
                  ******************/
                 /* register the CacheDir */
                 status = modCollInfo2( rsComm, specColl, 0 ); /*#######*/
-                if ( status < 0 ) { return status; }
+                if ( status < 0 ) {
+                    return status;
+                }
             }
         }
         else if ( fileType == 2 ) {
             if ( strlen( specColl->cacheDir ) == 0 ) {
                 /* no cache. stage one. make the CacheDir first */
                 status = mkMssoCacheDir( _struct_inx , _fco );
-                if ( status < 0 ) { return status; }
+                if ( status < 0 ) {
+                    return status;
+                }
                 /* register the CacheDir */
                 status = modCollInfo2( rsComm, specColl, 0 ); /*#######*/
-                if ( status < 0 ) { return status; }
+                if ( status < 0 ) {
+                    return status;
+                }
             }
 
             /* create a run file */
@@ -1243,7 +1263,9 @@ extern "C" {
 
         structFileInx = matchMssoStructFileDesc( spec_coll );
 
-        if ( structFileInx > 0 && ( _stage != 1 ) ) { return structFileInx; }
+        if ( structFileInx > 0 && ( _stage != 1 ) ) {
+            return structFileInx;
+        }
 
         if ( structFileInx < 0 ) {
             if ( ( structFileInx = alloc_struct_file_desc() ) < 0 ) {
@@ -1471,7 +1493,9 @@ extern "C" {
 
         subInx = allocMssoSubFileDesc();
 
-        if ( subInx < 0 ) { return ERROR( subInx, "alloc msso failed" ); }
+        if ( subInx < 0 ) {
+            return ERROR( subInx, "alloc msso failed" );
+        }
 
         MssoSubFileDesc[subInx].structFileInx = structFileInx;
 
@@ -1479,7 +1503,9 @@ extern "C" {
         memset( &fileCreateInp, 0, sizeof( fileCreateInp ) );
         status = getMssoSubStructFilePhyPath( fileCreateInp.fileName, specColl,
                                               fco->sub_file_path().c_str() );
-        if ( status < 0 ) { return ERROR( status, "getMssoSubStructFilePhyPath failed" ); }
+        if ( status < 0 ) {
+            return ERROR( status, "getMssoSubStructFilePhyPath failed" );
+        }
 
         rstrcpy( fileCreateInp.addr.hostAddr,
                  MssoStructFileDesc[structFileInx].location, NAME_LEN );
@@ -1552,7 +1578,9 @@ extern "C" {
 
         subInx = allocMssoSubFileDesc();
 
-        if ( subInx < 0 ) { return ERROR( subInx, "allocMssoSubFileDesc" ); }
+        if ( subInx < 0 ) {
+            return ERROR( subInx, "allocMssoSubFileDesc" );
+        }
 
         MssoSubFileDesc[subInx].structFileInx = structFileInx;
 
@@ -1562,7 +1590,9 @@ extern "C" {
                      fileOpenInp.fileName,
                      specColl,
                      fco->sub_file_path().c_str() );
-        if ( status < 0 ) { return ERROR( status, "getMssoSubStructFilePhyPath" ); }
+        if ( status < 0 ) {
+            return ERROR( status, "getMssoSubStructFilePhyPath" );
+        }
 
         rstrcpy( fileOpenInp.addr.hostAddr, location.c_str(), NAME_LEN );
         fileOpenInp.mode  = fco->mode();
@@ -1680,7 +1710,9 @@ extern "C" {
             if ( specColl->cacheDirty == 0 ) {
                 specColl->cacheDirty = 1;
                 status1 = modCollInfo2( _ctx.comm(), specColl, 0 );
-                if ( status1 < 0 ) { return ERROR( status1, "modCollInfo2 failed" ); }
+                if ( status1 < 0 ) {
+                    return ERROR( status1, "modCollInfo2 failed" );
+                }
             }
 
             return CODE( status );
@@ -1770,7 +1802,9 @@ extern "C" {
                          fileUnlinkInp.fileName,
                          specColl,
                          fco->sub_file_path().c_str() );
-        if ( status < 0 ) { return ERROR( status, "getMssoSubStructFilePhyPath failed" ); }
+        if ( status < 0 ) {
+            return ERROR( status, "getMssoSubStructFilePhyPath failed" );
+        }
 
         rstrcpy( fileUnlinkInp.addr.hostAddr,
                  MssoStructFileDesc[structFileInx].location,
@@ -1786,7 +1820,9 @@ extern "C" {
             if ( specColl->cacheDirty == 0 ) {
                 specColl->cacheDirty = 1;
                 status1 = modCollInfo2( _ctx.comm(), specColl, 0 );
-                if ( status1 < 0 ) { return ERROR( status1, "modCollInfo2 failed" ); }
+                if ( status1 < 0 ) {
+                    return ERROR( status1, "modCollInfo2 failed" );
+                }
             }
 
             return CODE( status );
@@ -1948,12 +1984,16 @@ extern "C" {
                          fileRenameInp.oldFileName,
                          specColl,
                          fco->sub_file_path().c_str() );
-        if ( status < 0 ) { return ERROR( status, "getMssoSubStructFilePhyPath failed" ); }
+        if ( status < 0 ) {
+            return ERROR( status, "getMssoSubStructFilePhyPath failed" );
+        }
         status = getMssoSubStructFilePhyPath(
                      fileRenameInp.newFileName,
                      specColl,
                      newFileName );
-        if ( status < 0 ) { return ERROR( status, "getMssoSubStructFilePhyPath failed" ); }
+        if ( status < 0 ) {
+            return ERROR( status, "getMssoSubStructFilePhyPath failed" );
+        }
         rstrcpy( fileRenameInp.addr.hostAddr,
                  MssoStructFileDesc[structFileInx].location,
                  NAME_LEN );
@@ -1971,7 +2011,9 @@ extern "C" {
             if ( specColl->cacheDirty == 0 ) {
                 specColl->cacheDirty = 1;
                 status1 = modCollInfo2( _ctx.comm(), specColl, 0 );
-                if ( status1 < 0 ) { return ERROR( status1, "modCollInfo2 failed" ); }
+                if ( status1 < 0 ) {
+                    return ERROR( status1, "modCollInfo2 failed" );
+                }
             }
 
             return CODE( status );
@@ -2016,7 +2058,9 @@ extern "C" {
                          fileMkdirInp.dirName,
                          specColl,
                          fco->sub_file_path().c_str() );
-        if ( status < 0 ) { return ERROR( status, "getMssoSubStructFilePhyPath failed" ); }
+        if ( status < 0 ) {
+            return ERROR( status, "getMssoSubStructFilePhyPath failed" );
+        }
 
         rstrcpy( fileMkdirInp.addr.hostAddr,
                  MssoStructFileDesc[structFileInx].location,
@@ -2033,7 +2077,9 @@ extern "C" {
             if ( specColl->cacheDirty == 0 ) {
                 specColl->cacheDirty = 1;
                 status1 = modCollInfo2( _ctx.comm(), specColl, 0 );
-                if ( status1 < 0 ) { return ERROR( status1, "modCollInfo2 failed" ); }
+                if ( status1 < 0 ) {
+                    return ERROR( status1, "modCollInfo2 failed" );
+                }
             }
 
             return CODE( status );
@@ -2076,7 +2122,9 @@ extern "C" {
                          fileRmdirInp.dirName,
                          specColl,
                          fco->sub_file_path().c_str() );
-        if ( status < 0 ) { return ERROR( status, "getMssoSubStructFilePhyPath failed." ); }
+        if ( status < 0 ) {
+            return ERROR( status, "getMssoSubStructFilePhyPath failed." );
+        }
 
         rstrcpy( fileRmdirInp.addr.hostAddr,
                  MssoStructFileDesc[structFileInx].location,
@@ -2091,7 +2139,9 @@ extern "C" {
             if ( specColl->cacheDirty == 0 ) {
                 specColl->cacheDirty = 1;
                 status1 = modCollInfo2( _ctx.comm(), specColl, 0 );
-                if ( status1 < 0 ) { return ERROR( status1, "modCollInfo2 failed" ); }
+                if ( status1 < 0 ) {
+                    return ERROR( status1, "modCollInfo2 failed" );
+                }
             }
             return CODE( status );
         }
@@ -2132,7 +2182,9 @@ extern "C" {
 
         int subInx = allocMssoSubFileDesc();
 
-        if ( subInx < 0 ) { return ERROR( subInx, "allocMssoSubFileDesc failed" ); }
+        if ( subInx < 0 ) {
+            return ERROR( subInx, "allocMssoSubFileDesc failed" );
+        }
 
         MssoSubFileDesc[subInx].structFileInx = structFileInx;
 
@@ -2142,7 +2194,9 @@ extern "C" {
                          fileOpendirInp.dirName,
                          specColl,
                          fco->sub_file_path().c_str() );
-        if ( status < 0 ) { return ERROR( status, "getMssoSubStructFilePhyPath failed." ); }
+        if ( status < 0 ) {
+            return ERROR( status, "getMssoSubStructFilePhyPath failed." );
+        }
 
         rstrcpy( fileOpendirInp.addr.hostAddr,
                  MssoStructFileDesc[structFileInx].location,
@@ -2280,7 +2334,9 @@ extern "C" {
                          fileTruncateInp.fileName,
                          specColl,
                          fco->sub_file_path().c_str() );
-        if ( status < 0 ) { return ERROR( status, "getMssoSubStructFilePhyPath failed" ); }
+        if ( status < 0 ) {
+            return ERROR( status, "getMssoSubStructFilePhyPath failed" );
+        }
 
         rstrcpy( fileTruncateInp.addr.hostAddr,
                  MssoStructFileDesc[structFileInx].location,
@@ -2297,7 +2353,9 @@ extern "C" {
             if ( specColl->cacheDirty == 0 ) {
                 specColl->cacheDirty = 1;
                 status1 = modCollInfo2( _ctx.comm(), specColl, 0 );
-                if ( status1 < 0 ) { return ERROR( status1, "modCollInfo2 failed" ); }
+                if ( status1 < 0 ) {
+                    return ERROR( status1, "modCollInfo2 failed" );
+                }
             }
 
             return CODE( status );

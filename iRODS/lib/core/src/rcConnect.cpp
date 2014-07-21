@@ -69,8 +69,8 @@ _rcConnect( char *rodsHost, int rodsPort,
 
     conn = ( rcComm_t* )malloc( sizeof( rcComm_t ) );
     memset( conn, 0, sizeof( rcComm_t ) );
-    
-    conn->thread_ctx = (thread_context*) malloc( sizeof( thread_context ) );    
+
+    conn->thread_ctx = (thread_context*) malloc( sizeof( thread_context ) );
     memset( conn->thread_ctx, 0, sizeof( thread_context ) );
 
     if ( errMsg != NULL ) {
@@ -358,8 +358,8 @@ cliReconnManager( rcComm_t *conn ) {
     conn->reconnTime = time( 0 ) + RECONN_TIMEOUT_TIME;
 
     while ( !conn->exit_flg ) { /* JMC */
-printf( "cliReconnManager: while !exit flg\n" );
-fflush( stdout );
+        printf( "cliReconnManager: while !exit flg\n" );
+        fflush( stdout );
         time_t curTime = time( 0 );
 
         if ( curTime < conn->reconnTime ) {
@@ -372,17 +372,17 @@ fflush( stdout );
             conn->reconnThrState = CONN_WAIT_STATE;
             rodsLog( LOG_DEBUG,
                      "cliReconnManager: clientState = %d", conn->clientState );
-printf( "cliReconnManager: clientState = %d\n", conn->clientState );
-fflush( stdout );
+            printf( "cliReconnManager: clientState = %d\n", conn->clientState );
+            fflush( stdout );
             conn->thread_ctx->cond->wait( boost_lock );
 
         }
         rodsLog( LOG_DEBUG,
                  "cliReconnManager: Reconnecting clientState = %d",
                  conn->clientState );
- printf( "cliReconnManager: Reconnecting clientState = %d\n",
- conn->clientState );
-fflush( stdout );
+        printf( "cliReconnManager: Reconnecting clientState = %d\n",
+                conn->clientState );
+        fflush( stdout );
 
         conn->reconnThrState = PROCESSING_STATE;
         /* connect to server's reconn thread */
@@ -410,9 +410,9 @@ fflush( stdout );
             rodsLog( LOG_ERROR,
                      "cliReconnManager: connect to host %s failed, status = %d",
                      conn->svrVersion->reconnAddr, conn->reconnectedSock );
-     printf( "cliReconnManager: connect to host %s failed, status = %d\n",
-             conn->svrVersion->reconnAddr, conn->reconnectedSock );
-     fflush( stdout );
+            printf( "cliReconnManager: connect to host %s failed, status = %d\n",
+                    conn->svrVersion->reconnAddr, conn->reconnectedSock );
+            fflush( stdout );
             rodsSleep( RECONNECT_SLEEP_TIME, 0 );
             continue;
         }

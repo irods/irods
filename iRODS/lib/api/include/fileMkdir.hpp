@@ -44,8 +44,8 @@ remoteFileMkdir( rsComm_t *rsComm, fileMkdirInp_t *fileMkdirInp,
 #ifdef __cplusplus
 extern "C" {
 #endif
-int
-rcFileMkdir( rcComm_t *conn, fileMkdirInp_t *fileMkdirInp );
+    int
+    rcFileMkdir( rcComm_t *conn, fileMkdirInp_t *fileMkdirInp );
 
 #ifdef __cplusplus
 }
