@@ -102,7 +102,7 @@ getPhyPath(
                                _comm,
                                &data_inp,
                                resc_hier );
-        if ( ret.ok() ) {
+        if ( !ret.ok() ) {
             irods::log( PASS( ret ) );
             return SYS_INVALID_INPUT_PARAM;
         }
