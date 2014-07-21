@@ -227,7 +227,7 @@ endif
 # The latest version is 26 for release 2.7. It default to 21 if not defined
 IRODS_FS = 1
 ifdef IRODS_FS
-fuseHomeDir=/usr/local/fuse
+fuseHomeDir=TEMPLATE_IRODS_FUSE_DIR
 endif
 
 # PHP_LIB - specify whether php library will be loaded into irodsAgent.

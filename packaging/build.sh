@@ -1126,6 +1126,13 @@ if [ "$BUILDIRODS" == "1" ] ; then
     sed -e "s,TEMPLATE_IRODS_CONFIG_DIR,$detected_irods_config_dir," ./config/config.mk > $TMPFILE
     mv $TMPFILE ./config/config.mk
 
+    # update fuse header path
+    fusedirarray=(${LIBFUSEDEV//\/include\// })  # split on "/include/"
+    detected_fuse_dir=${fusedirarray[0]}         # first element
+    set_tmpfile
+    sed -e "s,TEMPLATE_IRODS_FUSE_DIR,$detected_fuse_dir," ./config/config.mk > $TMPFILE
+    mv $TMPFILE ./config/config.mk
+
     # twiddle coverage flag in platform.mk based on whether this is a coverage (gcov) build
     if [ "$COVERAGE" == "1" ] ; then
         set_tmpfile
