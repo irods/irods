@@ -1159,7 +1159,7 @@ initDataObjInfoQuery( dataObjInp_t *dataObjInp, genQueryInp_t *genQueryInp,
         memset( myData, 0, MAX_NAME_LEN );
 
         if ( ( status = splitPathByKey(
-                            dataObjInp->objPath, myColl, myData, '/' ) ) < 0 ) {
+                            dataObjInp->objPath, myColl, MAX_NAME_LEN, myData, MAX_NAME_LEN, '/' ) ) < 0 ) {
             rodsLog( LOG_NOTICE,
                      "initDataObjInfoQuery: splitPathByKey for %s error, status = %d",
                      dataObjInp->objPath, status );

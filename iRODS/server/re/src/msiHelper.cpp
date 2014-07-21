@@ -300,7 +300,7 @@ msiSplitPath( msParam_t *inpPath,  msParam_t *outParentColl,
 
     if ( strcmp( inpPath->type, STR_MS_T ) == 0 ) {
         if ( ( rei->status = splitPathByKey( ( char * ) inpPath->inOutStruct,
-                                             parent, child, '/' ) ) < 0 ) {
+                                             parent, MAX_NAME_LEN, child, MAX_NAME_LEN, '/' ) ) < 0 ) {
             rodsLog( LOG_ERROR,
                      "msiSplitPath: splitPathByKey for %s error, status = %d",
                      ( char * ) inpPath->inOutStruct, rei->status );
@@ -863,7 +863,7 @@ msiSplitPathByKey( msParam_t *inpPath,  msParam_t *inpKey, msParam_t *outParentC
 
     if ( strcmp( inpPath->type, STR_MS_T ) == 0 ) {
         if ( ( rei->status = splitPathByKey( ( char * ) inpPath->inOutStruct,
-                                             parent, child, *( char * ) inpKey->inOutStruct ) ) < 0 ) {
+                                             parent, MAX_NAME_LEN, child, MAX_NAME_LEN, *( char * ) inpKey->inOutStruct ) ) < 0 ) {
             rodsLog( LOG_ERROR,
                      "msiSplitPathByKey: splitPathByKey for %s error, status = %d",
                      ( char * ) inpPath->inOutStruct, rei->status );

@@ -51,7 +51,7 @@ parseCmdLineOpt( int argc, char **argv, char *optString, int includeLong,
         /* set SP_OPTION to argv[0] so it can be passed to server */
         char child[MAX_NAME_LEN], parent[MAX_NAME_LEN];
         *child = '\0';
-        splitPathByKey( argv[0], parent, child, '/' );
+        splitPathByKey( argv[0], parent, MAX_NAME_LEN, child, MAX_NAME_LEN, '/' );
         if ( *child != '\0' ) {
             mySetenvStr( SP_OPTION, child );
         }

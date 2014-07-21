@@ -7,6 +7,7 @@
 #include "stringOpr.hpp"
 #include "rodsErrorTable.hpp"
 #include "rodsLog.hpp"
+#include <string>
 
 char *rmemmove( void *dest, void *src, int strLen, int maxLen ) {
 
@@ -136,42 +137,27 @@ char *rstrncat( char *dest, const char *src, int srcLen, int maxLen ) {
 }
 
 int
-rSplitStr( char *inStr, char* outStr1, int maxOutLen1,
-           char* outStr2, int maxOutLen2, char key ) {
-    int len;
-    int c;
-    char *inPtr, *outPtr;
-
-    inPtr = inStr;
-    outPtr = outStr1;
-    len = 0;
-
-    while ( ( c = *inPtr ) != '\0' ) {
-        inPtr ++;
-        if ( c == key ) {
-            break;
-        }
-        else {
-            *outPtr = c;
-        }
-        if ( len >= maxOutLen1 ) {
-            *outStr1 = '\0';
-            return ( USER_STRLEN_TOOLONG );
-        }
-        outPtr ++;
-        len ++;
+rSplitStr( const char *inStr, char* outStr1, size_t maxOutLen1,
+           char* outStr2, size_t maxOutLen2, char key ) {
+    std::string base_string( inStr );
+    size_t index_of_first_key = base_string.find( key );
+    if ( std::string::npos == index_of_first_key ) {
+        index_of_first_key = base_string.size();
     }
-
-    *outPtr = '\0';
+    strncpy( outStr1, base_string.substr( 0, index_of_first_key ).c_str(), maxOutLen1 );
+    if( maxOutLen1 > 0 ) {
+        outStr1[ maxOutLen1 - 1 ] = '\0';
+    }
+    if( index_of_first_key >= maxOutLen1 ) {
+        return USER_STRLEN_TOOLONG;
+    }
 
     /* copy the second str */
-
-    if ( rstrcpy( outStr2, inPtr, maxOutLen2 ) == NULL ) {
+    size_t copy_start = base_string.size() == index_of_first_key ? base_string.size() : index_of_first_key + 1;
+    if ( rstrcpy( outStr2, base_string.substr( copy_start ).c_str(), maxOutLen2 ) == NULL ) {
         return ( USER_STRLEN_TOOLONG );
     }
-    else {
-        return ( 0 );
-    }
+    return ( 0 );
 }
 /* copyStrFromBuf - copy a string from buf to outStr, skipping white space
  * and comment. also advance buf pointer
@@ -244,64 +230,43 @@ isAllDigit( char * myStr ) {
 }
 
 int
-splitPathByKey( const char * srcPath, char * dir, char * file, char key ) {
-    int pathLen, dirLen, fileLen;
-    const char *srcPtr;
+splitPathByKey( const char * srcPath, char * dir, size_t maxDirLen,
+        char * file, size_t maxFileLen, char key ) {
+    std::string srcPathString( srcPath );
 
-    pathLen = strlen( srcPath );
-
-    if ( pathLen >= MAX_NAME_LEN ) {
-        *dir = *file = '\0';
-        return ( USER_STRLEN_TOOLONG );
+    if( maxDirLen == 0 || maxFileLen == 0 ) {
+        rodsLog( LOG_ERROR, "splitPathByKey called with buffers of size 0" );
+        return SYS_INVALID_INPUT_PARAM;
     }
-    else if ( pathLen <= 0 ) {
+
+    if ( srcPathString.size() == 0 ) {
         *dir = '\0';
         *file = '\0';
         return ( 0 );
     }
 
-    srcPtr = srcPath + pathLen - 1;
-
-    while ( srcPtr != srcPath ) {
-        if ( *srcPtr == key ) {
-            dirLen = srcPtr - srcPath;
-            strncpy( dir, srcPath, dirLen );
-            dir[dirLen] = '\0';
-            srcPtr ++;
-            fileLen = pathLen - dirLen - 1;
-            if ( fileLen > 0 ) {
-                strncpy( file, srcPtr, fileLen );
-                file[fileLen] = '\0';
-            }
-            else {
-                *file = '\0';
-            }
-            return ( 0 );
-        }
-        srcPtr --;
+    size_t index_of_last_key = srcPathString.rfind( key );
+    if( std::string::npos == index_of_last_key ) {
+        *dir = '\0';
+        rstrcpy( file, srcPathString.c_str(), maxFileLen );
+        return ( SYS_INVALID_FILE_PATH );
     }
 
-    /* Handle the special cases "/foo" */
-    if ( *srcPtr == key ) {
-        dirLen = 1;
-        strncpy( dir, srcPath, dirLen );
-        dir[dirLen] = '\0';
-        srcPtr++;
-        fileLen = pathLen - dirLen;
-        if ( fileLen > 0 ) {
-            strncpy( file, srcPtr, fileLen );
-            file[fileLen] = '\0';
-        }
-        else {
-            *file = '\0';
-        }
-        return ( 0 );
+    // If dir is the root directory, we want to return the single-character
+    // string consisting of the key, NOT the empty string.
+    std::string dirPathString = srcPathString.substr(0, std::max< size_t >( index_of_last_key, 1 ) );
+    std::string filePathString = srcPathString.substr( index_of_last_key + 1) ;
+
+    rstrcpy( dir, dirPathString.c_str(), maxDirLen);
+    rstrcpy( file, filePathString.c_str(), maxFileLen);
+
+    if( dirPathString.size() >= maxDirLen || filePathString.size() >= maxFileLen ) {
+        rodsLog( LOG_ERROR, "splitPathByKey called with buffers of insufficient size" );
+        return USER_STRLEN_TOOLONG;
     }
 
-    /* no Match. just copy srcPath to file */
-    *dir = '\0';
-    rstrcpy( file, srcPath, MAX_NAME_LEN );
-    return ( SYS_INVALID_FILE_PATH );
+    return 0;
+
 }
 int
 trimWS( char * s ) {

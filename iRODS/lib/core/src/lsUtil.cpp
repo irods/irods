@@ -156,7 +156,7 @@ lsDataObjUtilLong( rcComm_t *conn, char *srcPath, rodsEnv *myRodsEnv,
     memset( myData, 0, MAX_NAME_LEN );
 
     if ( ( status = splitPathByKey(
-                        srcPath, myColl, myData, '/' ) ) < 0 ) {
+                        srcPath, myColl, MAX_NAME_LEN, myData, MAX_NAME_LEN, '/' ) ) < 0 ) {
         rodsLogError( LOG_ERROR, status,
                       "setQueryInpForLong: splitPathByKey for %s error, status = %d",
                       srcPath, status );

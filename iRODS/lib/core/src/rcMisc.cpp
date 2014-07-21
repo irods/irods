@@ -3840,7 +3840,7 @@ parseHostAddrStr( char * hostAddr, rodsHostAddr_t * addr ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
-    if ( splitPathByKey( hostAddr, buffer, port, ':' ) < 0 ) {
+    if ( splitPathByKey( hostAddr, buffer, MAX_NAME_LEN, port, MAX_NAME_LEN, ':' ) < 0 ) {
         rstrcpy( addr->hostAddr, hostAddr, LONG_NAME_LEN );
         addr->portNum = 0;
     }

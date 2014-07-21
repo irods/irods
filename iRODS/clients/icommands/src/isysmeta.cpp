@@ -89,7 +89,7 @@ doLs( rcComm_t *Conn, char *objPath, int longOption ) {
     printf( "doing ls of %s\n", objPath );
 
     status = splitPathByKey( objPath,
-                             logicalParentDirName, logicalEndName, '/' );
+                             logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
 
     i = 0;
     i1a[i++] = COL_DATA_NAME;

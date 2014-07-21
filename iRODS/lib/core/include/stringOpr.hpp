@@ -19,14 +19,14 @@ extern "C" {
     char *rstrncat( char *dest, const char *src, int srcLen, int maxLen );
 
     int
-    rSplitStr( char *inStr, char* outStr1, int maxOutLen1,
-               char* outStr2, int maxOutLen2, char key );
+    rSplitStr( const char *inStr, char* outStr1, size_t maxOutLen1,
+               char* outStr2, size_t maxOutLen2, char key );
     int
     copyStrFromBuf( char **buf, char *outStr, int maxOutLen );
     int
     isAllDigit( char *myStr );
     int
-    splitPathByKey( const char *srcPath, char *dir, char *file, char key );
+    splitPathByKey( const char *srcPath, char *dir, size_t maxDirLen, char *file, size_t maxFileLen, char key );
     int
     getParentPathlen( char *path );
     int

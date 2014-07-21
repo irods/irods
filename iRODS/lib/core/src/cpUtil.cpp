@@ -354,7 +354,7 @@ cpCollUtil( rcComm_t *conn, char *srcColl, char *targColl,
         }
         else if ( collEnt.objType == COLL_OBJ_T ) {
             if ( ( status = splitPathByKey(
-                                collEnt.collName, parPath, childPath, '/' ) ) < 0 ) {
+                                collEnt.collName, parPath, MAX_NAME_LEN, childPath, MAX_NAME_LEN, '/' ) ) < 0 ) {
                 rodsLogError( LOG_ERROR, status,
                               "cpCollUtil:: splitPathByKey for %s error, status = %d",
                               collEnt.collName, status );

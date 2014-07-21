@@ -490,7 +490,7 @@ rsMkTrashPath( rsComm_t *rsComm, char *objPath, char *trashPath ) {
                   rsComm->clientUser.userName, tmpStr );
     }
 
-    if ( ( status = splitPathByKey( trashPath, destTrashColl, myFile, '/' ) ) < 0 ) {
+    if ( ( status = splitPathByKey( trashPath, destTrashColl, MAX_NAME_LEN, myFile, MAX_NAME_LEN, '/' ) ) < 0 ) {
         rodsLog( LOG_ERROR,
                  "rsMkTrashPath: splitPathByKey error for %s ", trashPath );
         return ( USER_INPUT_PATH_ERR );

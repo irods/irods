@@ -490,7 +490,7 @@ getCollUtil( rcComm_t **myConn, char *srcColl, char *targDir,
         }
         else if ( collEnt.objType == COLL_OBJ_T ) {
             if ( ( status = splitPathByKey(
-                                collEnt.collName, parPath, childPath, '/' ) ) < 0 ) {
+                                collEnt.collName, parPath, MAX_NAME_LEN, childPath, MAX_NAME_LEN, '/' ) ) < 0 ) {
                 rodsLogError( LOG_ERROR, status,
                               "getCollUtil:: splitPathByKey for %s error, status = %d",
                               collEnt.collName, status );

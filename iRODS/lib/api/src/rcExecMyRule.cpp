@@ -29,7 +29,7 @@ rcExecMyRule( rcComm_t *conn, execMyRuleInp_t *execMyRuleInp,
             if ( ( locFilePath = getValByKey( &dataObjInp->condInput,
                                               LOCAL_PATH_KW ) ) == NULL ) {
                 if ( ( status = splitPathByKey( dataObjInp->objPath,
-                                                myDir, myFile, '/' ) ) < 0 ) {
+                                                myDir, MAX_NAME_LEN, myFile, MAX_NAME_LEN, '/' ) ) < 0 ) {
                     rodsLogError( LOG_ERROR, status,
                                   "rcExecMyRule: splitPathByKey for %s error",
                                   dataObjInp->objPath );
@@ -48,7 +48,7 @@ rcExecMyRule( rcComm_t *conn, execMyRuleInp_t *execMyRuleInp,
             if ( ( locFilePath = getValByKey( &dataObjInp->condInput,
                                               LOCAL_PATH_KW ) ) == NULL ) {
                 if ( ( status = splitPathByKey( dataObjInp->objPath,
-                                                myDir, myFile, '/' ) ) < 0 ) {
+                                                myDir, MAX_NAME_LEN, myFile, MAX_NAME_LEN, '/' ) ) < 0 ) {
                     rodsLogError( LOG_ERROR, status,
                                   "rcExecMyRule: splitPathByKey for %s error",
                                   dataObjInp->objPath );

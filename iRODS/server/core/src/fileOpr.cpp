@@ -122,7 +122,7 @@ mkDirForFilePath(
 
     char myDir[MAX_NAME_LEN], myFile[MAX_NAME_LEN];
 
-    if ( ( status = splitPathByKey( filePath.c_str(), myDir, myFile, '/' ) ) < 0 ) {
+    if ( ( status = splitPathByKey( filePath.c_str(), myDir, MAX_NAME_LEN, myFile, MAX_NAME_LEN, '/' ) ) < 0 ) {
         rodsLog( LOG_NOTICE,
                  "mkDirForFilePath: splitPathByKey for %s error, status = %d",
                  filePath.c_str(), status );

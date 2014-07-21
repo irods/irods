@@ -114,7 +114,7 @@ chksumDataObjUtil( rcComm_t *conn, char *srcPath,
     else {
         ChksumCnt++;
     }
-    splitPathByKey( dataObjInp->objPath, myDir, myFile, '/' );
+    splitPathByKey( dataObjInp->objPath, myDir, MAX_NAME_LEN, myFile, MAX_NAME_LEN, '/' );
     if ( rodsArgs->silent == False ) {
         printf( "    %-30.30s    %s\n", myFile, chksumStr );
         free( chksumStr );

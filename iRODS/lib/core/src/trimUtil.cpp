@@ -103,7 +103,7 @@ trimDataObjUtil( rcComm_t *conn, char *srcPath,
 
     if ( status >= 0 && rodsArgs->verbose == True ) {
         char myDir[MAX_NAME_LEN], myFile[MAX_NAME_LEN];
-        splitPathByKey( srcPath, myDir, myFile, '/' );
+        splitPathByKey( srcPath, myDir, MAX_NAME_LEN, myFile, MAX_NAME_LEN, '/' );
         if ( status > 0 ) {
             printf( "%s - a copy trimmed\n", myFile );
         }

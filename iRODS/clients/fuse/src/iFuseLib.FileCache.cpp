@@ -285,7 +285,7 @@ getFileCachePath( const char *inPath, char *cacehPath ) {
                  "getFileCachePath: input inPath or cacehPath is NULL" );
         return ( SYS_INTERNAL_NULL_INPUT_ERR );
     }
-    splitPathByKey( ( char * ) inPath, myDir, myFile, '/' );
+    splitPathByKey( ( char * ) inPath, myDir, MAX_NAME_LEN, myFile, MAX_NAME_LEN, '/' );
 
     while ( 1 ) {
         snprintf( cacehPath, MAX_NAME_LEN, "%s/%s.%d", FuseCacheDir,

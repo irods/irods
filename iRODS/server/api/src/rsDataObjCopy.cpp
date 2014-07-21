@@ -112,7 +112,7 @@ rsDataObjCopy( rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
     if ( destL1descInx == CAT_UNKNOWN_COLLECTION ) {
         /* collection does not exist. make one */
         char parColl[MAX_NAME_LEN], child[MAX_NAME_LEN];
-        splitPathByKey( destDataObjInp->objPath, parColl, child, '/' );
+        splitPathByKey( destDataObjInp->objPath, parColl, MAX_NAME_LEN, child, MAX_NAME_LEN, '/' );
         rsMkCollR( rsComm, "/", parColl );
         destL1descInx = rsDataObjCreate( rsComm, destDataObjInp );
     }
@@ -205,7 +205,7 @@ _rsDataObjCopy( rsComm_t *rsComm, int destL1descInx, int existFlag,
             if ( status == CAT_UNKNOWN_COLLECTION ) {
                 /* collection does not exist. make one */
                 char parColl[MAX_NAME_LEN], child[MAX_NAME_LEN];
-                splitPathByKey( destDataObjInfo->objPath, parColl, child, '/' );
+                splitPathByKey( destDataObjInfo->objPath, parColl, MAX_NAME_LEN, child, MAX_NAME_LEN, '/' );
                 status = svrRegDataObj( rsComm, destDataObjInfo );
                 rsMkCollR( rsComm, "/", parColl );
                 status = svrRegDataObj( rsComm, destDataObjInfo );

@@ -668,7 +668,7 @@ getLastPathElement( char *inInPath, char *lastElement ) {
 #endif
 
 
-    splitPathByKey( inPath, mydir, lastElement, '/' );
+    splitPathByKey( inPath, mydir, MAX_NAME_LEN, lastElement, MAX_NAME_LEN, '/' );
 
     len = strlen( lastElement );
 

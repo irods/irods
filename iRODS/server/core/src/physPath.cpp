@@ -198,7 +198,7 @@ setPathForRandomScheme( char *objPath, const char *vaultPath, char *userName,
     dir2 = ( myRandom >> 4 ) & 0xf;
 
     status = splitPathByKey( objPath,
-                             logicalCollName, logicalFileName, '/' );
+                             logicalCollName, MAX_NAME_LEN, logicalFileName, MAX_NAME_LEN, '/' );
 
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
@@ -1122,7 +1122,7 @@ rsMkOrphanPath( rsComm_t *rsComm, char *objPath, char *orphanPath ) {
     char parentColl[MAX_NAME_LEN], childName[MAX_NAME_LEN];
     collInp_t collCreateInp;
 
-    status = splitPathByKey( objPath, parentColl, childName, '/' );
+    status = splitPathByKey( objPath, parentColl, MAX_NAME_LEN, childName, MAX_NAME_LEN, '/' );
 
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,

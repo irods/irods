@@ -193,7 +193,7 @@ _rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
     destDataObjInp = &dataObjRenameInp->destDataObjInp;
 
     if ( ( status = splitPathByKey(
-                        srcDataObjInp->objPath, srcColl, srcObj, '/' ) ) < 0 ) {
+                        srcDataObjInp->objPath, srcColl, MAX_NAME_LEN, srcObj, MAX_NAME_LEN, '/' ) ) < 0 ) {
         rodsLog( LOG_ERROR,
                  "_rsDataObjRename: splitPathByKey for %s error, status = %d",
                  srcDataObjInp->objPath, status );
@@ -201,7 +201,7 @@ _rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
     }
 
     if ( ( status = splitPathByKey(
-                        destDataObjInp->objPath, destColl, destObj, '/' ) ) < 0 ) {
+                        destDataObjInp->objPath, destColl, MAX_NAME_LEN, destObj, MAX_NAME_LEN, '/' ) ) < 0 ) {
         rodsLog( LOG_ERROR,
                  "_rsDataObjRename: splitPathByKey for %s error, status = %d",
                  destDataObjInp->objPath, status );

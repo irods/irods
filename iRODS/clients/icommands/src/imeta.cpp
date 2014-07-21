@@ -151,7 +151,7 @@ showDataObj( char *name, char *attrName, int wild ) {
             strncpy( fullName, name, MAX_NAME_LEN );
         }
         status = splitPathByKey( fullName,
-                                 myDirName, myFileName, '/' );
+                                 myDirName, MAX_NAME_LEN, myFileName, MAX_NAME_LEN, '/' );
         snprintf( v1, sizeof( v1 ), "='%s'", myDirName );
         snprintf( v2, sizeof( v2 ), "='%s'", myFileName );
     }

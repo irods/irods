@@ -1240,7 +1240,7 @@ intGetDataObjChksumsTimeStampsFromAVUVol2( collInp_t * ptrInpColl,
     ( "GJK-P P.14.0.11. in intGetDataObjChksumsTimeStampsFromAVUVol2(), strAbsPath=(%s), ptrInpColl->collName=(%s)\n",
       strAbsPath, ptrInpColl->collName );
 
-    iErr = splitPathByKey( strAbsPath, strDirName, strFileName, '/' );
+    iErr = splitPathByKey( strAbsPath, strDirName, MAX_NAME_LEN, strFileName, MAX_NAME_LEN, '/' );
 
     printf
     ( "GJK-P P.14.0.12. in intGetDataObjChksumsTimeStampsFromAVUVol2(), strAbsPath=(%s), ptrInpColl->collName=(%s), strDirName=(%s), strFileName=(%s), iErr=%d\n",

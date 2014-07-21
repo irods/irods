@@ -155,7 +155,7 @@ dataObjStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     memset( myData, 0, MAX_NAME_LEN );
 
     if ( ( status = splitPathByKey(
-                        dataObjInp->objPath, myColl, myData, '/' ) ) < 0 ) {
+                        dataObjInp->objPath, myColl, MAX_NAME_LEN, myData, MAX_NAME_LEN, '/' ) ) < 0 ) {
         return ( OBJ_PATH_DOES_NOT_EXIST );
     }
 

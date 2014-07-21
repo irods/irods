@@ -529,13 +529,13 @@ msiSetDataTypeFromExt( ruleExecInfo_t *rei ) {
     }
 
     status = splitPathByKey( dataObjInfoHead->objPath,
-                             logicalCollName, logicalFileName, '/' );
+                             logicalCollName, MAX_NAME_LEN, logicalFileName, MAX_NAME_LEN, '/' );
     if ( strlen( logicalFileName ) <= 0 ) {
         return( 0 );
     }
 
     status = splitPathByKey( logicalFileName,
-                             logicalFileName1, logicalFileNameExt, '.' );
+                             logicalFileName1, MAX_NAME_LEN, logicalFileNameExt, MAX_NAME_LEN, '.' );
     if ( strlen( logicalFileNameExt ) <= 0 ) {
         return( 0 );
     }

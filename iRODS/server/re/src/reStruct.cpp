@@ -291,7 +291,7 @@ initReiWithCollInp( ruleExecInfo_t *rei, rsComm_t *rsComm,
     rei->coi = collInfo;
     /* try to fill out as much info in collInfo as possible */
     if ( ( status = splitPathByKey( collCreateInp->collName,
-                                    collInfo->collParentName, collInfo->collName, '/' ) ) < 0 ) {
+                                    collInfo->collParentName, MAX_NAME_LEN, collInfo->collName, MAX_NAME_LEN, '/' ) ) < 0 ) {
         rodsLog( LOG_ERROR,
                  "initReiWithCollInp: splitPathByKey for %s error, status = %d",
                  collCreateInp->collName, status );

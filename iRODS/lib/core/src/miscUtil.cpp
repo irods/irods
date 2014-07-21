@@ -153,7 +153,7 @@ mkdirForFilePath( char* filePath ) {
     char child[MAX_NAME_LEN], parent[MAX_NAME_LEN];
     int status;
 
-    if ( ( status = splitPathByKey( filePath, parent, child, '/' ) ) < 0 ) {
+    if ( ( status = splitPathByKey( filePath, parent, MAX_NAME_LEN, child, MAX_NAME_LEN, '/' ) ) < 0 ) {
         rodsLogError( LOG_ERROR, status,
                       "mkdirForFilePath:: splitPathByKey for %s error, status = %d",
                       filePath, status );
@@ -403,7 +403,7 @@ printTiming( rcComm_t *conn, char *objPath, rodsLong_t fileSize,
     int status;
 
 
-    if ( ( status = splitPathByKey( objPath, myDir, myFile, '/' ) ) < 0 ) {
+    if ( ( status = splitPathByKey( objPath, myDir, MAX_NAME_LEN, myFile, MAX_NAME_LEN, '/' ) ) < 0 ) {
         rodsLogError( LOG_NOTICE, status,
                       "printTiming: splitPathByKey for %s error, status = %d",
                       objPath, status );
@@ -467,7 +467,7 @@ printTime( rcComm_t *conn, char *objPath, struct timeval *startTime,
     int status;
 
 
-    if ( ( status = splitPathByKey( objPath, myDir, myFile, '/' ) ) < 0 ) {
+    if ( ( status = splitPathByKey( objPath, myDir, MAX_NAME_LEN, myFile, MAX_NAME_LEN, '/' ) ) < 0 ) {
         rodsLogError( LOG_NOTICE, status,
                       "printTime: splitPathByKey for %s error, status = %d",
                       objPath, status );
@@ -567,7 +567,7 @@ printNoSync( char *objPath, rodsLong_t fileSize, char *reason ) {
     int status;
 
 
-    if ( ( status = splitPathByKey( objPath, myDir, myFile, '/' ) ) < 0 ) {
+    if ( ( status = splitPathByKey( objPath, myDir, MAX_NAME_LEN, myFile, MAX_NAME_LEN, '/' ) ) < 0 ) {
         rstrcpy( myFile, objPath, MAX_NAME_LEN );
     }
 
@@ -2028,7 +2028,7 @@ iCommandProgStat( operProgress_t *operProgress ) {
         rstrcpy( myFile, operProgress->curFileName, MAX_NAME_LEN );
     }
     else if ( ( status = splitPathByKey( operProgress->curFileName,
-                                         myDir, myFile, '/' ) ) < 0 ) {
+                                         myDir, MAX_NAME_LEN, myFile, MAX_NAME_LEN, '/' ) ) < 0 ) {
         rodsLogError( LOG_NOTICE, status,
                       "iCommandProgStat: splitPathByKey for %s error, status = %d",
                       operProgress->curFileName, status );

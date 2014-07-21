@@ -89,7 +89,7 @@ msiInheritCollACL( ruleExecInfo_t *rei ) {
     char logicalDirName[MAX_NAME_LEN];
 
     splitPathByKey( rei->doi->objPath,
-                    logicalDirName, logicalFileName, '/' );
+                    logicalDirName, MAX_NAME_LEN, logicalFileName, MAX_NAME_LEN, '/' );
     if ( reTestFlag > 0 ) {
         if ( reTestFlag == LOG_TEST_1 ) {
             rodsLog( LOG_NOTICE, "   Calling chlInheritCollACL\n" );

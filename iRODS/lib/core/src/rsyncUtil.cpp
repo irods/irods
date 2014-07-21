@@ -623,7 +623,7 @@ rsyncCollToDirUtil( rcComm_t *conn, rodsPath_t *srcPath,
         }
         else if ( collEnt.objType == COLL_OBJ_T ) {
             if ( ( status = splitPathByKey(
-                                collEnt.collName, parPath, childPath, '/' ) ) < 0 ) {
+                                collEnt.collName, parPath, MAX_NAME_LEN, childPath, MAX_NAME_LEN, '/' ) ) < 0 ) {
                 rodsLogError( LOG_ERROR, status,
                               "rsyncCollToDirUtil:: splitPathByKey for %s error, stat=%d",
                               collEnt.collName, status );
@@ -930,7 +930,7 @@ rsyncCollToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
         }
         else if ( collEnt.objType == COLL_OBJ_T ) {
             if ( ( status = splitPathByKey(
-                                collEnt.collName, parPath, childPath, '/' ) ) < 0 ) {
+                                collEnt.collName, parPath, MAX_NAME_LEN, childPath, MAX_NAME_LEN, '/' ) ) < 0 ) {
                 rodsLogError( LOG_ERROR, status,
                               "rsyncCollToCollUtil:: splitPathByKey for %s error, status = %d",
                               collEnt.collName, status );

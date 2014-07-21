@@ -811,7 +811,7 @@ static int _delColl( rsComm_t *rsComm, collInfo_t *collInfo ) {
     }
 
     status = splitPathByKey( collInfo->collName,
-                             logicalParentDirName, logicalEndName, '/' );
+                             logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
 
     if ( strlen( logicalParentDirName ) == 0 ) {
         strcpy( logicalParentDirName, "/" );
@@ -1348,7 +1348,7 @@ rodsLong_t checkAndGetObjectId(
 
     if ( itype == 1 ) {
         status = splitPathByKey( name,
-                                 logicalParentDirName, logicalEndName, '/' );
+                                 logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
         if ( strlen( logicalParentDirName ) == 0 ) {
             strcpy( logicalParentDirName, "/" );
             strcpy( logicalEndName, name );
@@ -2493,7 +2493,7 @@ extern "C" {
 
         if ( _data_obj_info->dataId <= 0 ) {
             status = splitPathByKey( _data_obj_info->objPath,
-                                     logicalDirName, logicalFileName, '/' );
+                                     logicalDirName, MAX_NAME_LEN, logicalFileName, MAX_NAME_LEN, '/' );
 
             if ( logSQL != 0 ) {
                 rodsLog( LOG_SQL, "chlModDataObjMeta SQL 1 " );
@@ -2835,7 +2835,7 @@ extern "C" {
         _data_obj_info->dataId = seqNum; /* store as output parameter */
 
         status = splitPathByKey( _data_obj_info->objPath,
-                                 logicalDirName, logicalFileName, '/' );
+                                 logicalDirName, MAX_NAME_LEN, logicalFileName, MAX_NAME_LEN, '/' );
 
 
         /* Check that collection exists and user has write permission.
@@ -3127,7 +3127,7 @@ extern "C" {
         }
 
         status = splitPathByKey( _src_data_obj_info->objPath,
-                                 logicalDirName, logicalFileName, '/' );
+                                 logicalDirName, MAX_NAME_LEN, logicalFileName, MAX_NAME_LEN, '/' );
 
         if ( adminMode ) {
             if ( _comm->clientUser.authInfo.authFlag != LOCAL_PRIV_USER_AUTH ) {
@@ -3340,7 +3340,7 @@ extern "C" {
         }
 
         status = splitPathByKey( _data_obj_info->objPath,
-                                 logicalDirName, logicalFileName, '/' );
+                                 logicalDirName, MAX_NAME_LEN, logicalFileName, MAX_NAME_LEN, '/' );
 
 
         if ( adminMode == 0 ) {
@@ -5059,7 +5059,7 @@ extern "C" {
         }
 
         status = splitPathByKey( _coll_info->collName,
-                                 logicalParentDirName, logicalEndName, '/' );
+                                 logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
 
         if ( strlen( logicalParentDirName ) == 0 ) {
             strcpy( logicalParentDirName, "/" );
@@ -5264,7 +5264,7 @@ extern "C" {
         }
 
         status = splitPathByKey( _coll_info->collName,
-                                 logicalParentDirName, logicalEndName, '/' );
+                                 logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
 
         if ( strlen( logicalParentDirName ) == 0 ) {
             strcpy( logicalParentDirName, "/" );
@@ -6722,7 +6722,7 @@ extern "C" {
         }
 
         status = splitPathByKey( _coll_info->collName,
-                                 logicalParentDirName, logicalEndName, '/' );
+                                 logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
 
         if ( strlen( logicalParentDirName ) == 0 ) {
             strcpy( logicalParentDirName, "/" );
@@ -9828,7 +9828,7 @@ checkLevel:
             return ERROR( CAT_INVALID_ARGUMENT, "invalid type" );    /* only -d for now */
         }
 
-        status = splitPathByKey( _name, collection, objectName, '/' );
+        status = splitPathByKey( _name, collection, MAX_NAME_LEN, objectName, MAX_NAME_LEN, '/' );
         if ( strlen( collection ) == 0 ) {
             strcpy( collection, "/" );
             strcpy( objectName, _name );
@@ -10225,7 +10225,7 @@ checkLevel:
 
         if ( itype == 1 ) {
             status = splitPathByKey( _name,
-                                     logicalParentDirName, logicalEndName, '/' );
+                                     logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
             if ( strlen( logicalParentDirName ) == 0 ) {
                 strcpy( logicalParentDirName, "/" );
                 strcpy( logicalEndName, _name );
@@ -10652,7 +10652,7 @@ checkLevel:
 
         if ( itype == 1 ) {
             status = splitPathByKey( _name,
-                                     logicalParentDirName, logicalEndName, '/' );
+                                     logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
             if ( strlen( logicalParentDirName ) == 0 ) {
                 strcpy( logicalParentDirName, "/" );
                 strcpy( logicalEndName, _name );
@@ -11400,7 +11400,7 @@ checkLevel:
         /* Not a collection (with access for non-Admin) */
         if ( status1 < 0 ) {
             status2 = splitPathByKey( _path_name,
-                                      logicalParentDirName, logicalEndName, '/' );
+                                      logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
             if ( strlen( logicalParentDirName ) == 0 ) {
                 strcpy( logicalParentDirName, "/" );
                 strcpy( logicalEndName, _path_name + 1 );
@@ -15266,7 +15266,7 @@ checkLevel:
         /* create */
         if ( strcmp( _op_name, "create" ) == 0 ) {
             status = splitPathByKey( _arg4,
-                                     logicalParentDirName, logicalEndName, '/' );
+                                     logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
             if ( strlen( logicalParentDirName ) == 0 ) {
                 strcpy( logicalParentDirName, "/" );
                 strcpy( logicalEndName, _arg4 + 1 );

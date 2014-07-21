@@ -847,7 +847,7 @@ bulkPutFileUtil( rcComm_t *conn, char *srcPath, char *targPath,
     }
 
     /* need to create the subPhyBunDir */
-    if ( ( status = splitPathByKey( phyBunPath, subPhyBunDir, tmpSrcPath,
+    if ( ( status = splitPathByKey( phyBunPath, subPhyBunDir, MAX_NAME_LEN, tmpSrcPath, MAX_NAME_LEN,
                                     '/' ) ) < 0 ) {
         rodsLogError( LOG_ERROR, status,
                       "bulkPutFileUtil: splitPathByKey for %s error",

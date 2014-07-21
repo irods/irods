@@ -259,7 +259,7 @@ irodsReaddir( const char *path, void *buf, fuse_fill_dir_t filler,
 #endif
         }
         else if ( collEnt.objType == COLL_OBJ_T ) {
-            splitPathByKey( collEnt.collName, myDir, mySubDir, '/' );
+            splitPathByKey( collEnt.collName, myDir, MAX_NAME_LEN, mySubDir, MAX_NAME_LEN, '/' );
             if ( mySubDir[0] != '\0' ) {
                 filler( buf, mySubDir, NULL, 0 );
 #ifdef CACHE_FUSE_PATH

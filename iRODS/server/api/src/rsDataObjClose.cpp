@@ -247,7 +247,7 @@ logTransfer( char *oprType, char *objPath, rodsLong_t fileSize,
     ( void )gettimeofday( &endTime, ( struct timezone * )0 );
 
 
-    if ( ( status = splitPathByKey( objPath, myDir, myFile, '/' ) ) < 0 ) {
+    if ( ( status = splitPathByKey( objPath, myDir, MAX_NAME_LEN, myFile, MAX_NAME_LEN, '/' ) ) < 0 ) {
         rodsLogError( LOG_NOTICE, status,
                       "printTiming: splitPathByKey for %s error, status = %d",
                       objPath, status );
