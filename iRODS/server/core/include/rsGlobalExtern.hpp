@@ -15,6 +15,7 @@
 #include "querySpecColl.hpp"
 #include "miscUtil.hpp"
 #include "authenticate.hpp"
+#include "openCollection.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_manager.hpp"
@@ -34,10 +35,10 @@ extern zoneInfo_t *ZoneInfoHead;
 extern rescGrpInfo_t *RescGrpInfo;
 extern rescGrpInfo_t *CachedRescGrpInfo;
 extern int RescGrpInit;
-extern fileDesc_t FileDesc[];
-extern l1desc_t L1desc[];
-extern specCollDesc_t SpecCollDesc[];
-extern collHandle_t CollHandle[];
+extern fileDesc_t FileDesc[NUM_FILE_DESC];
+extern l1desc_t L1desc[NUM_L1_DESC];
+extern specCollDesc_t SpecCollDesc[NUM_SPEC_COLL_DESC];
+extern collHandle_t CollHandle[NUM_COLL_HANDLE];
 
 /* global Rule Engine File Initialization String */
 

@@ -38,5 +38,5 @@ collStatAllKinds( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 int
 rsMkCollR( rsComm_t *rsComm, const char *startColl, const char *destColl );
 int
-rsQueryDirectoryMeta( rsComm_t *rsComm, char *collection, keyValPair_t *condInput );
+rsQueryDirectoryMeta( rsComm_t *rsComm, const char *collection, keyValPair_t *condInput );
 #endif	/* COLLECTION_H */

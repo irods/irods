@@ -117,7 +117,7 @@ int _rsFileStageToCache(
     // parallel I/O
     mkDirForFilePath(
         _comm,
-        "/",
+        0,
         _stage_inp->cacheFilename,
         _stage_inp->rescHier,
         getDefDirMode() );

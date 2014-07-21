@@ -42,8 +42,8 @@ int
 allocFileDesc();
 
 int
-allocAndFillFileDesc( rodsServerHost_t *rodsServerHost, char* objPath, char *fileName,
-                      char* rescHier, int fd, int mode );
+allocAndFillFileDesc( rodsServerHost_t *rodsServerHost, const std::string& objPath,
+        const std::string& fileName, const std::string& rescHier, int fd, int mode );
 
 int
 freeFileDesc( int fileInx );
@@ -51,26 +51,23 @@ freeFileDesc( int fileInx );
 int
 getServerHostByFileInx( int fileInx, rodsServerHost_t **rodsServerHost );
 int
-mkDirForFilePath( rsComm_t *rsComm, const char *startDir, const char *filePath,  const char* hier, int mode );
+mkDirForFilePath( rsComm_t *rsComm, size_t startDirLen, const std::string& filePath, const std::string& hier, int mode );
 int
-mkFileDirR( rsComm_t *rsComm, const char *startDir, const char *destDir, const char* hier, int mode );
+mkFileDirR( rsComm_t *rsComm, size_t startDirLen, const std::string& destDir, const std::string& hier, int mode );
 int
 chkFilePathPerm( rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
                  rodsServerHost_t *rodsServerHost, int chkType ); // JMC - backport 4774
 int // JMC - backport 4766
-isValidFilePath( const char *path );
-
-int
-matchVaultPath( rsComm_t *rsComm, const char *filePath, rodsServerHost_t *rodsServerHost );
+isValidFilePath( const std::string& path );
 
 int
 matchCliVaultPath( rsComm_t*,
                    const std::string&,
                    rodsServerHost_t* );
 int
-chkEmptyDir( rsComm_t *rsComm, char *cacheDir, char* hier );
+chkEmptyDir( rsComm_t *rsComm, const std::string& cacheDir, const std::string& hier );
 int
-filePathTypeInResc( rsComm_t *rsComm, char* objPath, char *fileName, char* rescHier, rescInfo_t *rescInfo );
+filePathTypeInResc( rsComm_t *rsComm, const std::string& objPath, const std::string& fileName, const std::string& rescHier, rescInfo_t *rescInfo );
 int
 bindStreamToIRods( rodsServerHost_t *rodsServerHost, int fd );
 #endif  /* FILE_OPR_H */

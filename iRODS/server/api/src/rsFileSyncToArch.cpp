@@ -148,7 +148,7 @@ int _rsFileSyncToArch(
             // the directory does not exist, lets make one
             mkDirForFilePath(
                 _comm,
-                "/",
+                0,
                 _sync_inp->filename,
                 _sync_inp->rescHier,
                 getDefDirMode() );

@@ -491,7 +491,7 @@ rsMkCollR( rsComm_t *rsComm, const char *startColl, const char *destColl ) {
 }
 
 int
-rsQueryDirectoryMeta( rsComm_t *rsComm, char *collection, keyValPair_t *condInput ) {
+rsQueryDirectoryMeta( rsComm_t *rsComm, const char *collection, keyValPair_t *condInput ) {
     static char fname[] = "rsQueryDirectoryMeta";
     genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut = NULL;

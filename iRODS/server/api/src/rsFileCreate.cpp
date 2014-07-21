@@ -148,7 +148,7 @@ int _rsFileCreate(
             // the directory didn't exist, make it and then try the create once again.
             int status = mkDirForFilePath(
                              _comm,
-                             "/",
+                             0,
                              file_obj->physical_path().c_str(),
                              file_obj->resc_hier().c_str(),
                              getDefDirMode() );

@@ -278,7 +278,7 @@ regPhySubFile( rsComm_t *rsComm, char *subfilePath,
     /* make the necessary dir */
     mkDirForFilePath(
         rsComm,
-        "/",
+        0,
         stageDataObjInfo.filePath,
         stageDataObjInfo.rescHier,
         getDefDirMode() );

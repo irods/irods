@@ -670,7 +670,7 @@ createPhyBundleDir( rsComm_t *rsComm, char *bunFilePath,
                     char *outPhyBundleDir, char* hier ) {
     /* the dir where we put the files to bundle is in phyPath.dir */
     snprintf( outPhyBundleDir, MAX_NAME_LEN, "%s.dir",  bunFilePath );
-    mkFileDirR( rsComm, "/", outPhyBundleDir, hier, getDefDirMode() );
+    mkFileDirR( rsComm, 0, outPhyBundleDir, hier, getDefDirMode() );
     return ( 0 );
 }
 

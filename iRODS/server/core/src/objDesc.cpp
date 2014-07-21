@@ -33,7 +33,7 @@
 
 int
 initL1desc() {
-    memset( L1desc, 0, sizeof( l1desc_t ) * NUM_L1_DESC );
+    memset( L1desc, 0, sizeof( L1desc ) );
     return ( 0 );
 }
 
@@ -68,7 +68,7 @@ isL1descInuse() {
 
 int
 initSpecCollDesc() {
-    memset( SpecCollDesc, 0, sizeof( specCollDesc_t ) * NUM_SPEC_COLL_DESC );
+    memset( SpecCollDesc, 0, sizeof( SpecCollDesc ) );
     return ( 0 );
 }
 
@@ -596,7 +596,7 @@ convL3descInx( int l3descInx ) {
 
 int
 initCollHandle() {
-    memset( CollHandle, 0, sizeof( collHandle_t ) * NUM_COLL_HANDLE );
+    memset( CollHandle, 0, sizeof( CollHandle ) );
     return ( 0 );
 }
 

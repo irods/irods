@@ -21,7 +21,7 @@
 
 int
 initFileDesc() {
-    memset( FileDesc, 0, sizeof( fileDesc_t ) * NUM_FILE_DESC );
+    memset( FileDesc, 0, sizeof( FileDesc ) );
     return ( 0 );
 }
 
@@ -43,8 +43,12 @@ allocFileDesc() {
 }
 
 int
-allocAndFillFileDesc( rodsServerHost_t *rodsServerHost, char* objPath, char *fileName,
-                      char* rescHier, int fd, int mode ) {
+allocAndFillFileDesc( rodsServerHost_t *rodsServerHost,
+        const std::string&  objPath,
+        const std::string&  fileName,
+        const std::string&  rescHier,
+        int                 fd,
+        int                 mode ) {
     int fileInx;
 
     fileInx = allocFileDesc();
@@ -53,9 +57,9 @@ allocAndFillFileDesc( rodsServerHost_t *rodsServerHost, char* objPath, char *fil
     }
 
     FileDesc[fileInx].rodsServerHost = rodsServerHost;
-    FileDesc[fileInx].objPath  = strdup( objPath );
-    FileDesc[fileInx].fileName = strdup( fileName );
-    FileDesc[fileInx].rescHier = strdup( rescHier );
+    FileDesc[fileInx].objPath  = strdup( objPath.c_str() );
+    FileDesc[fileInx].fileName = strdup( fileName.c_str() );
+    FileDesc[fileInx].rescHier = strdup( rescHier.c_str() );
     FileDesc[fileInx].mode = mode;
     FileDesc[fileInx].fd = fd;
 
@@ -109,23 +113,23 @@ getServerHostByFileInx( int fileInx, rodsServerHost_t **rodsServerHost ) {
 
 int
 mkDirForFilePath(
-    rsComm_t *rsComm,
-    const char *startDir,
-    const char *filePath,
-    const char *hier,
-    int mode ) {
+        rsComm_t *          rsComm,
+        size_t              startDirLen,
+        const std::string&  filePath,
+        const std::string&  hier,
+        int                 mode ) {
     int status;
 
     char myDir[MAX_NAME_LEN], myFile[MAX_NAME_LEN];
 
-    if ( ( status = splitPathByKey( filePath, myDir, myFile, '/' ) ) < 0 ) {
+    if ( ( status = splitPathByKey( filePath.c_str(), myDir, myFile, '/' ) ) < 0 ) {
         rodsLog( LOG_NOTICE,
                  "mkDirForFilePath: splitPathByKey for %s error, status = %d",
-                 filePath, status );
+                 filePath.c_str(), status );
         return ( status );
     }
 
-    status = mkFileDirR( rsComm, startDir, myDir, hier, mode );
+    status = mkFileDirR( rsComm, startDirLen, myDir, hier, mode );
 
     return ( status );
 }
@@ -133,37 +137,54 @@ mkDirForFilePath(
 // =-=-=-=-=-=-=-
 // mk the directory recursively
 int mkFileDirR(
-    rsComm_t *rsComm,
-    const char *startDir,
-    const char *destDir,
-    const char *hier,
-    int mode ) {
+    rsComm_t *          rsComm,
+    size_t              startDirLen,
+    const std::string&  destDir,
+    const std::string&  hier,
+    int                 mode ) {
 
-    int startLen;
-    int pathLen, tmpLen;
-    char tmpPath[MAX_NAME_LEN];
-    struct stat statbuf;
+    std::string physical_directory_prefix;
+    if( destDir.empty() ) {
+        rodsLog( LOG_ERROR, "mkFileDirR called with empty dest directory" );
+        return SYS_INVALID_INPUT_PARAM ;
+    }
+    if( destDir.size() < startDirLen ) {
+        rodsLog( LOG_ERROR, "mkFileDirR called with a destDir: [%s]"
+                "shorter than its startDirLen: [%ju]",
+                destDir.c_str(), (uintmax_t)startDirLen );
+        return SYS_INVALID_INPUT_PARAM;
+    }
+    if ( !rsComm ) {
+        rodsLog( LOG_ERROR, "mkFileDirR called with null rsComm" );
+        return SYS_INVALID_INPUT_PARAM;
+    }
+    if( isValidFilePath( destDir ) ) {
+        std::string vault_path;
+        irods::error err = irods::get_vault_path_for_hier_string( hier, vault_path );
+        if( !err.ok() ) {
+            rodsLog( LOG_ERROR, err.result().c_str() );
+            return err.code();
+        }
 
-    rodsHostAddr_t addr;
-    rodsServerHost_t *rodsServerHost;
-    char *zoneName;
-    int vp_len;
-    char collName[MAX_NAME_LEN];
-    keyValPair_t condInput;
+        if ( destDir.compare( 0, vault_path.size(), vault_path ) == 0 &&
+                ( destDir[ vault_path.size() ] == '/' || destDir.size() == vault_path.size() ) ) {
+            physical_directory_prefix = vault_path;
+        }
+    }
 
-    startLen = strlen( startDir );
-    pathLen = strlen( destDir );
+    std::vector< std::string > directories_to_create;
 
-    rstrcpy( tmpPath, destDir, MAX_NAME_LEN );
-
-    tmpLen = pathLen;
-
-    while ( tmpLen > startLen ) {
+    std::string physical_directory = destDir;
+    if ( physical_directory[ physical_directory.size() - 1 ] == '/' ) {
+        physical_directory.erase( physical_directory.size() - 1 );
+    }
+    while (physical_directory.size() > startDirLen ) {
         irods::collection_object_ptr tmp_coll_obj(
             new irods::collection_object(
-                tmpPath,
+                physical_directory,
                 hier,
                 0, 0 ) );
+        struct stat statbuf;
         irods::error stat_err = fileStat(
                                     rsComm,
                                     tmp_coll_obj,
@@ -175,43 +196,47 @@ int mkFileDirR(
             else {
                 rodsLog( LOG_NOTICE,
                          "mkFileDirR: A local non-directory %s already exists \n",
-                         tmpPath );
+                         physical_directory.c_str() );
                 return ( stat_err.code() );
             }
         }
         else {
-            // debug code only -- irods::log( stat_err );
+            directories_to_create.push_back( physical_directory.substr( physical_directory_prefix.size() ) );
         }
 
         /* Go backward */
-        while ( tmpLen && tmpPath[tmpLen] != '/' ) {
-            tmpLen --;
+        size_t index_of_last_slash = physical_directory.rfind( '/', physical_directory.size() - 1 );
+        if( std::string::npos != index_of_last_slash ) {
+            physical_directory = physical_directory.substr( 0, index_of_last_slash );
         }
-
-        tmpPath[tmpLen] = '\0';
+        else {
+            break;
+        }
 
     } // while
 
-
-    // for FS metadata query
-    zoneName = getLocalZoneName();
-    addr.hostAddr[0] = '\0';
-    resolveHost( &addr, &rodsServerHost );
-    vp_len = matchVaultPath( rsComm, destDir, rodsServerHost );
+    std::string irods_directory_prefix = "/";
+    irods_directory_prefix += getLocalZoneName();
 
     /* Now we go forward and make the required dir */
-    while ( tmpLen < pathLen ) {
-        /* Put back the '/' */
-        tmpPath[tmpLen] = '/';
+    while ( !directories_to_create.empty() ) {
+
+        physical_directory = physical_directory_prefix;
+        physical_directory += directories_to_create.back();
+
+        std::string irods_directory = irods_directory_prefix;
+        irods_directory += directories_to_create.back();
+
+        directories_to_create.pop_back();
 
         // query for FS metadata
+        keyValPair_t condInput;
         memset( &condInput, 0, sizeof( condInput ) );
-        snprintf( collName, MAX_NAME_LEN, "/%s%s", zoneName, tmpPath + vp_len );
-        rsQueryDirectoryMeta( rsComm, collName, &condInput );
+        rsQueryDirectoryMeta( rsComm, irods_directory.c_str(), &condInput );
 
         irods::collection_object_ptr tmp_coll_obj(
             new irods::collection_object(
-                tmpPath,
+                physical_directory,
                 hier,
                 mode, 0 ) );
 
@@ -223,15 +248,12 @@ int mkFileDirR(
         if ( !mkdir_err.ok() && ( getErrno( mkdir_err.code() ) != EEXIST ) ) { // JMC - backport 4834
             std::stringstream msg;
             msg << "fileMkdir for [";
-            msg << tmpPath;
+            msg << physical_directory;
             msg << "]";
             irods::error ret_err = PASSMSG( msg.str(), mkdir_err );
             irods::log( ret_err );
 
             return  mkdir_err.code();
-        }
-        while ( tmpPath[tmpLen] != '\0' ) {
-            tmpLen ++;
         }
     }
     return 0;
@@ -240,9 +262,9 @@ int mkFileDirR(
 // =-=-=-=-=-=-=-
 //
 int chkEmptyDir(
-    rsComm_t* rsComm,
-    char*    cacheDir,
-    char*    hier ) {
+    rsComm_t*           rsComm,
+    const std::string&  cacheDir,
+    const std::string&  hier ) {
     int status = 0;
     char childPath[MAX_NAME_LEN];
     struct stat myFileStat;
@@ -278,7 +300,7 @@ int chkEmptyDir(
 
         // =-=-=-=-=-=-=-
         // get status of path
-        snprintf( childPath, MAX_NAME_LEN, "%s/%s", cacheDir, myFileDirent->d_name );
+        snprintf( childPath, MAX_NAME_LEN, "%s/%s", cacheDir.c_str(), myFileDirent->d_name );
         irods::collection_object_ptr tmp_coll_obj(
             new irods::collection_object(
                 childPath,
@@ -419,62 +441,18 @@ chkFilePathPerm( rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
  * "/../" or end with "/.."
  */
 int
-isValidFilePath( const char *path ) {
-    const char *tmpPtr  = NULL;
-    const char *tmpPath = path;
-    while ( ( tmpPtr = strstr( tmpPath, "/.." ) ) != NULL ) {
-        if ( tmpPtr[3] == '\0' || tmpPtr[3] == '/' ) {
-            /* "/../" or end with "/.."  */
-            rodsLog( LOG_ERROR, "isValidFilePath: inp fileName %s contains /../ or ends with /..", path );
-            return SYS_INVALID_FILE_PATH;
-        }
-        else {
-            tmpPath += 3;
-        }
+isValidFilePath( const std::string& path ) {
+
+    if( path.find( "/../" ) != std::string::npos ||
+            path.compare( path.size() - 3, path.size(), "/.." ) == 0)
+    {
+        /* "/../" or end with "/.."  */
+        rodsLog( LOG_ERROR, "isValidFilePath: inp fileName %s contains /../ or ends with /..", path.c_str() );
+        return SYS_INVALID_FILE_PATH;
     }
+
     return 0;
 }
-
-
-// =-=-=-=-=-=-=-
-// Backported from community and modified to use the resource manager
-int
-matchVaultPath( rsComm_t *rsComm, const char *filePath,
-                rodsServerHost_t *rodsServerHost ) {
-    std::string _vault_path;
-    int len;
-
-    if ( isValidFilePath( filePath ) < 0 ) {
-        /* no match */
-        return ( 0 );
-    }
-
-    // find a matching resource
-    irods::resource_ptr resc;
-    irods::error err = resc_mgr.resolve_from_property< rodsServerHost_t* >( irods::RESOURCE_HOST, rodsServerHost, resc );
-    if ( !err.ok() ) {
-        rodsLog( LOG_ERROR, "matchVaultPath: failed to resolve resource for path %s, status = %d", filePath, err.code() );
-        return err.code();
-    }
-
-    // get resource path
-    err = resc->get_property< std::string >( irods::RESOURCE_PATH, _vault_path );
-    if ( !err.ok() ) {
-        rodsLog( LOG_ERROR, "matchVaultPath: failed to get resource path, status = %d", err.code() );
-        return err.code();
-    }
-
-    // check if filePath is in the vault
-    len = strlen( _vault_path.c_str() );
-    if ( len > 0 && strncmp( _vault_path.c_str(), filePath, len ) == 0 &&
-            ( filePath[len] == '/' || filePath[len] == '\0' ) ) {
-        return ( len );
-    }
-
-    /* no match */
-    return ( 0 );
-}
-
 
 /* matchCliVaultPath - if the input path is inside
  * $(vaultPath)/home/userName, return 1.
@@ -551,11 +529,11 @@ int matchCliVaultPath(
  */
 int
 filePathTypeInResc(
-    rsComm_t*   rsComm,
-    char*       objPath,
-    char*       fileName,
-    char*       rescHier,
-    rescInfo_t* rescInfo ) {
+    rsComm_t*           rsComm,
+    const std::string&  objPath,
+    const std::string&  fileName,
+    const std::string&  rescHier,
+    rescInfo_t*         rescInfo ) {
     fileStatInp_t fileStatInp;
     rodsStat_t *myStat = NULL;
     int status;
@@ -570,9 +548,9 @@ filePathTypeInResc(
     }
 
     memset( &fileStatInp, 0, sizeof( fileStatInp ) );
-    rstrcpy( fileStatInp.fileName, fileName, MAX_NAME_LEN );
-    rstrcpy( fileStatInp.rescHier, rescHier, MAX_NAME_LEN );
-    rstrcpy( fileStatInp.objPath,  objPath,  MAX_NAME_LEN );
+    rstrcpy( fileStatInp.fileName, fileName.c_str(), MAX_NAME_LEN );
+    rstrcpy( fileStatInp.rescHier, rescHier.c_str(), MAX_NAME_LEN );
+    rstrcpy( fileStatInp.objPath,  objPath.c_str(),  MAX_NAME_LEN );
     rstrcpy( fileStatInp.addr.hostAddr,  location.c_str(), NAME_LEN );
     status = rsFileStat( rsComm, &fileStatInp, &myStat );
 

@@ -323,7 +323,7 @@ createBunDirForBulkPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         status = getMountedSubPhyPath( specColl->collection,
                                        specColl->phyPath, dataObjInp->objPath, phyBunDir );
         if ( status >= 0 ) {
-            mkFileDirR( rsComm, "/", phyBunDir, resc_hier, getDefDirMode() );
+            mkFileDirR( rsComm, 0, phyBunDir, resc_hier, getDefDirMode() );
         }
         return status;
     }
@@ -351,7 +351,7 @@ createBunDirForBulkPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     }
     while ( status == 0 );
 
-    mkFileDirR( rsComm, "/", phyBunDir, resc_hier, getDefDirMode() );
+    mkFileDirR( rsComm, 0, phyBunDir, resc_hier, getDefDirMode() );
 
     return 0;
 }
@@ -565,7 +565,7 @@ bulkProcAndRegSubfile( rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string
         /* make the necessary dir */
         mkDirForFilePath(
             rsComm,
-            "/",
+            0,
             dataObjInfo.filePath,
             dataObjInfo.rescHier,
             getDefDirMode() );

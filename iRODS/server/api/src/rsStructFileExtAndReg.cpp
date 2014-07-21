@@ -420,7 +420,7 @@ regSubfile( rsComm_t *rsComm, rescInfo_t *rescInfo, const char* rescHier, char *
     /* make the necessary dir */
     mkDirForFilePath(
         rsComm,
-        "/",
+        0,
         dataObjInfo.filePath,
         dataObjInfo.rescHier,
         getDefDirMode() );

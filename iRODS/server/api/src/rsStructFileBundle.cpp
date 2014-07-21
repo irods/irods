@@ -265,7 +265,7 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
                     collEnt->dataName );
                 mkDirForFilePath(
                     rsComm,
-                    phyBunDir,
+                    strlen( phyBunDir ),
                     tmpPath,
                     collEnt->resc_hier,
                     getDefDirMode() );
@@ -300,7 +300,7 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
                 continue;
             }
             snprintf( tmpPath, MAX_NAME_LEN, "%s/%s", phyBunDir, collEnt->collName + collLen );
-            mkFileDirR( rsComm, phyBunDir, tmpPath, resc_hier.c_str(), getDefDirMode() );
+            mkFileDirR( rsComm, strlen( phyBunDir ), tmpPath, resc_hier.c_str(), getDefDirMode() );
         } // else
 
         if ( collEnt != NULL ) {

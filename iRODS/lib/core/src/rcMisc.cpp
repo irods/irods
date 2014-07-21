@@ -3833,13 +3833,14 @@ freeRodsObjStat( rodsObjStat_t * rodsObjStat ) {
 
 int
 parseHostAddrStr( char * hostAddr, rodsHostAddr_t * addr ) {
-    char port[NAME_LEN];
+    char port[MAX_NAME_LEN];
+    char buffer[MAX_NAME_LEN];
 
     if ( hostAddr == NULL || addr == NULL ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
-    if ( splitPathByKey( hostAddr, addr->hostAddr, port, ':' ) < 0 ) {
+    if ( splitPathByKey( hostAddr, buffer, port, ':' ) < 0 ) {
         rstrcpy( addr->hostAddr, hostAddr, LONG_NAME_LEN );
         addr->portNum = 0;
     }
