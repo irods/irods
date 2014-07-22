@@ -15,30 +15,30 @@ rsModAccessControl( rsComm_t *rsComm, modAccessControlInp_t *modAccessControlInp
     int status;
     specCollCache_t *specCollCache = NULL;
     char newPath[MAX_NAME_LEN];
+    modAccessControlInp_t newModAccessControlInp = *modAccessControlInp;
 
-    rstrcpy( newPath, modAccessControlInp->path, MAX_NAME_LEN );
+    rstrcpy( newPath, newModAccessControlInp.path, MAX_NAME_LEN );
     resolveLinkedPath( rsComm, newPath, &specCollCache, NULL );
-    if ( strcmp( newPath, modAccessControlInp->path ) != 0 ) {
-        free( modAccessControlInp->path );
-        modAccessControlInp->path = strdup( newPath );
+    if ( strcmp( newPath, newModAccessControlInp.path ) != 0 ) {
+        newModAccessControlInp.path = newPath;
     }
 
     status = getAndConnRcatHost( rsComm, MASTER_RCAT,
-                                 modAccessControlInp->path, &rodsServerHost );
+                                 newModAccessControlInp.path, &rodsServerHost );
     if ( status < 0 ) {
         return( status );
     }
 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
 #ifdef RODS_CAT
-        status = _rsModAccessControl( rsComm, modAccessControlInp );
+        status = _rsModAccessControl( rsComm, &newModAccessControlInp );
 #else
         status = SYS_NO_RCAT_SERVER_ERR;
 #endif
     }
     else {
         status = rcModAccessControl( rodsServerHost->conn,
-                                     modAccessControlInp );
+                                     &newModAccessControlInp );
     }
 
     if ( status < 0 ) {
