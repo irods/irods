@@ -1440,10 +1440,10 @@ irods::error readReconMsg(
             free( inputStructBBuf.buf );
         }
         if ( bsBBuf.buf != NULL ) {
-            free( inputStructBBuf.buf );
+            free( bsBBuf.buf );
         }
         if ( errorBBuf.buf != NULL ) {
-            free( inputStructBBuf.buf );
+            free( errorBBuf.buf );
         }
         std::stringstream msg;
         msg << "wrong msg type ["
@@ -1456,7 +1456,7 @@ irods::error readReconMsg(
 
     if ( myHeader.bsLen != 0 ) {
         if ( bsBBuf.buf != NULL ) {
-            free( inputStructBBuf.buf );
+            free( bsBBuf.buf );
         }
         rodsLog( LOG_NOTICE, "readReconMsg: myHeader.bsLen = %d is not 0",
                  myHeader.bsLen );
@@ -1464,7 +1464,7 @@ irods::error readReconMsg(
 
     if ( myHeader.errorLen != 0 ) {
         if ( errorBBuf.buf != NULL ) {
-            free( inputStructBBuf.buf );
+            free( errorBBuf.buf );
         }
         rodsLog( LOG_NOTICE,
                  "readReconMsg: myHeader.errorLen = %d is not 0",
