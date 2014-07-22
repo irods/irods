@@ -973,11 +973,6 @@ startProcConnReqThreads() {
 
 void
 readWorkerTask() {
-    agentProc_t *myConnReq = NULL;
-    startupPack_t *startupPack;
-    int newSock = 0;
-    int status  = 0;
-    struct timeval tv;
 
     // =-=-=-=-=-=-=-
     // artificially create a conn object in order to
@@ -993,21 +988,23 @@ readWorkerTask() {
         return;
     }
 
-    tv.tv_sec = READ_STARTUP_PACK_TOUT_SEC;
-    tv.tv_usec = 0;
     while ( 1 ) {
-        myConnReq = getConnReqFromQue();
+        agentProc_t *myConnReq = getConnReqFromQue();
         if ( myConnReq == NULL ) {
             /* someone else took care of it */
             continue;
         }
-        newSock = myConnReq->sock;
+        int newSock = myConnReq->sock;
 
         // =-=-=-=-=-=-=-
         // repave the socket handle with the new socket
         // for this connection
         net_obj->socket_handle( newSock );
-        status = readStartupPack( net_obj, &startupPack, &tv );
+        startupPack_t *startupPack;
+        struct timeval tv;
+        tv.tv_sec = READ_STARTUP_PACK_TOUT_SEC;
+        tv.tv_usec = 0;
+        int status = readStartupPack( net_obj, &startupPack, &tv );
 
         if ( status < 0 ) {
             rodsLog( LOG_ERROR, "readWorkerTask - readStartupPack failed. %d", status );
@@ -1034,6 +1031,7 @@ readWorkerTask() {
                     sendVersion( net_obj, status, 0, NULL, 0 );
                     mySockClose( newSock );
                     free( myConnReq );
+                    continue;
                 }
             }
 
