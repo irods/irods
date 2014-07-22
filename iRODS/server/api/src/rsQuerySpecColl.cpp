@@ -201,7 +201,6 @@ _rsQuerySpecColl( rsComm_t *rsComm, int specCollInx,
     int status = 0;
     rodsDirent_t *rodsDirent = NULL;
     dataObjInfo_t *dataObjInfo;
-    rodsStat_t *fileStatOut = NULL;
     int rowCnt;
     objType_t selObjType;
     char *tmpStr;
@@ -261,6 +260,7 @@ _rsQuerySpecColl( rsComm_t *rsComm, int specCollInx,
         snprintf( myDataObjInfo.filePath, MAX_NAME_LEN, "%s/%s",
                   dataObjInfo->filePath, myRodsDirent.d_name );
 
+        rodsStat_t *fileStatOut = NULL;
         status = l3Stat( rsComm, &myDataObjInfo, &fileStatOut );
         if ( status < 0 ) {
             rodsLog( LOG_ERROR,
