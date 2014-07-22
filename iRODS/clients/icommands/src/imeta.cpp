@@ -1416,7 +1416,7 @@ main( int argc, char **argv ) {
     }
     j = 0;
     for ( i = argOffset; i < argc; i++ ) {
-        if ( j >= maxCmdTokens + 1 ) {
+        if ( j >= maxCmdTokens ) {
             printf( "Unrecognzied input, too many input tokens\n" );
             exit( 4 );
         }
