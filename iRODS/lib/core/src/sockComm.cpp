@@ -612,10 +612,10 @@ irods::error readVersion(
             free( inputStructBBuf.buf );
         }
         if ( bsBBuf.buf != NULL ) {
-            free( inputStructBBuf.buf );
+            free( bsBBuf.buf );
         }
         if ( errorBBuf.buf != NULL ) {
-            free( inputStructBBuf.buf );
+            free( errorBBuf.buf );
         }
         std::stringstream msg;
         msg << "wrong msg type ["
@@ -630,7 +630,7 @@ irods::error readVersion(
     // check length of byte stream buffer, should be 0
     if ( myHeader.bsLen != 0 ) {
         if ( bsBBuf.buf != NULL ) {
-            free( inputStructBBuf.buf );
+            free( bsBBuf.buf );
         }
         rodsLog( LOG_NOTICE, "readVersion: myHeader.bsLen = %d is not 0",
                  myHeader.bsLen );
@@ -640,7 +640,7 @@ irods::error readVersion(
     // check length of error buffer, should be 0
     if ( myHeader.errorLen != 0 ) {
         if ( errorBBuf.buf != NULL ) {
-            free( inputStructBBuf.buf );
+            free( errorBBuf.buf );
         }
         rodsLog( LOG_NOTICE, "readVersion: myHeader.errorLen = %d is not 0",
                  myHeader.errorLen );
