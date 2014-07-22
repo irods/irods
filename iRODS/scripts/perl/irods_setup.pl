@@ -3768,7 +3768,17 @@ sub Oracle_sql($$)
 
     $sqlplus = "sqlplus";
     $exec_str = "$sqlplus '$connectArg' < $sqlFilename";
-	return run( "$exec_str" );
+	($code,$output) = run( "$exec_str" );
+        if( $code != 0 ){
+	    $connectArg = $dbadmin . "/" . 
+			  $DATABASE_ADMIN_PASSWORD . "@" . 
+			  $DATABASE_HOST . ":" . $DATABASE_PORT; 
+            $exec_str = "$sqlplus '$connectArg' < $sqlFilename";
+
+	    ($code,$output) = run( "$exec_str" );
+        }
+
+        return ($code,$output);
 }
 
 #
