@@ -15,7 +15,7 @@ Building and running iRODS on MacOSX is currently only supported with a locally 
  
  # =-=-=-=-=-=-=-
  # turn off standard_conforming_strings (postgresql 9.x)
- sed -i s/#standard_conforming_strings = on/standard_conforming_strings = off/ ./pgsql/data/postgresql.conf
+ sed -i '' 's/#standard_conforming_strings = on/standard_conforming_strings = off/' ./pgsql/data/postgresql.conf
  
  # =-=-=-=-=-=-=-
  # start the database, with logging
@@ -29,6 +29,10 @@ Building and running iRODS on MacOSX is currently only supported with a locally 
  ./pgsql/bin/psql ICAT -c "GRANT ALL PRIVILEGES ON DATABASE \"ICAT\" TO irods"
  
  # =-=-=-=-=-=-=-
- # switch back to top level and run setup_database.sh
+ # switch back to top level, update to use this local postgresql installation
  cd ../../
+ sed -i '' 's/^SEARCHPATHS=.*$/SEARCHPATHS="$HOME"/' ./plugins/database/packaging/find_bin_postgres.sh
+
+ # =-=-=-=-=-=-=-
+ # run setup_database.sh
  ./plugins/database/packaging/setup_database.sh
