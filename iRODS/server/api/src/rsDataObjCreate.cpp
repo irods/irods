@@ -466,9 +466,7 @@ l3Create( rsComm_t *rsComm, int l1descInx ) {
 int
 l3CreateByObjInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                    dataObjInfo_t *dataObjInfo ) {
-    int l3descInx;
 
-    int retryCnt = 0;
     int chkType = 0; // JMC - backport 4774
 
     // =-=-=-=-=-=-=-
@@ -504,31 +502,26 @@ l3CreateByObjInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     }
     rstrcpy( fileCreateInp.in_pdmo, dataObjInfo->in_pdmo, MAX_NAME_LEN );
 
-    // =-=-=-=-=-=-=-
-    //
-    fileCreateOut_t* create_out = 0;
-    std::string prev_resc_hier = fileCreateInp.resc_hier_;
-    l3descInx = rsFileCreate( rsComm, &fileCreateInp, &create_out );
-
-    // update the dataObjInfo with the potential changes made by the resource - hcj
-    rstrcpy( dataObjInfo->rescHier, fileCreateInp.resc_hier_, MAX_NAME_LEN );
-    rstrcpy( dataObjInfo->filePath, create_out->file_name, MAX_NAME_LEN );
-
-    /* file already exists ? */
-    while ( l3descInx <= 2 && retryCnt < 100 &&
-            getErrno( l3descInx ) == EEXIST ) {
-        if ( resolveDupFilePath( rsComm, dataObjInfo, dataObjInp ) < 0 ) {
-            break;
-        }
-        rstrcpy( fileCreateInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN );
-        free( create_out );
+    //loop until we find a valid filename
+    int retryCnt = 0;
+    int l3descInx;
+    do {
+        fileCreateOut_t* create_out = NULL;
         l3descInx = rsFileCreate( rsComm, &fileCreateInp, &create_out );
 
         // update the dataObjInfo with the potential changes made by the resource - hcj
-        rstrcpy( dataObjInfo->rescHier, fileCreateInp.resc_hier_, MAX_NAME_LEN );
-        rstrcpy( dataObjInfo->filePath, create_out->file_name, MAX_NAME_LEN );
-        retryCnt ++;
-    }
+        if ( create_out != NULL ) {
+            rstrcpy( dataObjInfo->rescHier, fileCreateInp.resc_hier_, MAX_NAME_LEN );
+            rstrcpy( dataObjInfo->filePath, create_out->file_name, MAX_NAME_LEN );
+            free( create_out );
+        }
+
+        //update the filename in case of a retry
+        rstrcpy( fileCreateInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN );
+        retryCnt++;
+     } while ( getErrno( l3descInx ) == EEXIST &&
+            resolveDupFilePath( rsComm, dataObjInfo, dataObjInp ) >= 0 &&
+            l3descInx <= 2 && retryCnt < 100 );
     clearKeyVal( &fileCreateInp.condInput );
     return ( l3descInx );
 }
