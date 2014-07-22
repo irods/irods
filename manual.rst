@@ -1212,7 +1212,7 @@ API plugins self-describe their IN and OUT packing instructions (examples coming
 Users & Permissions
 -------------------
 
-Users and permissions in iRODS are inspired by, but slightly different from, traditional UNIX filesystem permissions.  Access to Data Objects and Collections can be modified using the ``ichmod`` iCommand.
+Users and permissions in iRODS are inspired by, but slightly different from, traditional Unix filesystem permissions.  Access to Data Objects and Collections can be modified using the ``ichmod`` iCommand.
 
 Additionally, permissions can be managed via user groups in iRODS.  A user can belong to more than one group at a time.  The owner of a Data Object has full control of the file and can grant and remove access to other users and groups.  The owner of a Data Object can also give ownership rights to other users, who in turn can grant or revoke access to users.
 
@@ -1512,7 +1512,7 @@ The server needs to read these variables on startup::
   irods@hostname:~/ $ export irodsSSLDHParamsFile
 
 Restart iRODS
-###############
+#############
 
 Restart the server::
 
