@@ -30,6 +30,7 @@ set up the set 1 tables */
 
 #include <cstdlib>
 #include <iostream>
+#include <algorithm>
 
 // =-=-=-=-=-=-=-
 #include "irods_hierarchy_parser.hpp"
@@ -4582,33 +4583,16 @@ mySetenvInt( char * envname, int envval ) {
 
 int
 getRandomArray( int **randomArray, int size ) {
-    int *myArray;
-    int i, j, k;
-
     if ( size < 0 ) {
         *randomArray = NULL;
         return -1;
     }
 
-    myArray = ( int * ) malloc( size * sizeof( int ) );
-    bzero( myArray, size * sizeof( int ) );
-    for ( i = size ; i > 0; i -- ) {
-        int ranNum;
-        /* get a number between 0 and i-1 */
-        ranNum = ( random() >> 2 ) % i;
-        k = 0;
-        /* find the ranNum th empty slot  */
-        for ( j = 0; j < size ; j ++ ) {
-            if ( myArray[j] == 0 ) {
-                k++;
-            }
-            if ( k > ranNum ) {
-                break;
-            }
-        }
-        myArray[j] = i;
+    *randomArray = ( int * ) malloc( size * sizeof( int ) );
+    for( int i = 0; i < size; i++ ) {
+       ( *randomArray )[i] = i + 1;
     }
-    *randomArray = myArray;
+    std::random_shuffle( *randomArray, *randomArray + size );
 
     return ( 0 );
 }
