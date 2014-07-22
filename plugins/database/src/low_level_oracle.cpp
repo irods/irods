@@ -13,7 +13,7 @@
 */
 
 #include "low_level_oracle.hpp"
-
+#include "packStruct.hpp"
 #include "irods_tmp_string.hpp"
 #include "irods_log.hpp"
 #include "irods_stacktrace.hpp"
