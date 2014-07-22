@@ -1220,9 +1220,6 @@ msiPrintGenQueryOutToBuffer( msParam_t *queryOut, msParam_t *format, msParam_t *
     /********************************* RETURN AND DONE **********************************/
 
     /* Free memory previously allocated for previous result batches (when used in loop). */
-    if ( buffer && buffer->inpOutBuf ) {
-        freeBBuf( buffer->inpOutBuf );
-    }
     resetMsParam( buffer );
 
     /* Fill bytesBuf in our buffer output */
