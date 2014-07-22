@@ -209,7 +209,6 @@ serverize( char *logDir ) {
 #else
     LogFd = iRODSNt_open( logFile, O_CREAT | O_APPEND | O_WRONLY, 1 );
 #endif
-    free( logFile );
 
     if ( LogFd < 0 ) {
         rodsLog( LOG_NOTICE, "logFileOpen: Unable to open %s. errno = %d",
@@ -217,6 +216,7 @@ serverize( char *logDir ) {
         return ( -1 );
     }
 
+    free( logFile );
 #ifndef windows_platform
     if ( fork() ) {	/* parent */
         exit( 0 );
