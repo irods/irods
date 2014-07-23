@@ -135,7 +135,8 @@ extern "C" {
     // irods rsFile API for file access
     int irods_file_open(
         struct archive* _arch,
-        void*           _data ) {
+        void*           _data,
+        int             mode ) {
         if ( !_arch ||
                 !_data ) {
             rodsLog( LOG_ERROR, "irods_file_open - null input" );
@@ -163,13 +164,25 @@ extern "C" {
         rstrcpy( f_inp.addr.hostAddr, cb_ctx->loc_,        NAME_LEN );
         rstrcpy( f_inp.fileName,      spec_coll->phyPath,  MAX_NAME_LEN );
         f_inp.mode  = getDefFileMode();
-        f_inp.flags = O_RDWR;
+        f_inp.flags = mode;
         //rstrcpy( f_inp.in_pdmo, dataObjInfo->in_pdmo, MAX_NAME_LEN );
         cb_ctx->idx_ = rsFileOpen( cb_ctx->desc_->rsComm, &f_inp );
 
         return ARCHIVE_OK;
 
     } // irods_file_open
+
+    int irods_file_open_for_read(
+            struct archive* _arch,
+            void*           _data ) {
+        return irods_file_open( _arch, _data, O_RDONLY );
+    }
+
+    int irods_file_open_for_write(
+            struct archive* _arch,
+            void*           _data ) {
+        return irods_file_open( _arch, _data, O_WRONLY | O_CREAT );
+    }
 
     // =-=-=-=-=-=-=-
     // READ callback for use by libarchive which makes use of the
@@ -357,7 +370,7 @@ extern "C" {
         if ( archive_read_open(
                     arch,
                     &cb_ctx,
-                    irods_file_open,
+                    irods_file_open_for_read,
                     irods_file_read,
                     irods_file_close ) != ARCHIVE_OK ) {
             std::stringstream msg;
@@ -2328,7 +2341,7 @@ extern "C" {
         if ( archive_write_open(
                     arch,
                     &cb_ctx,
-                    irods_file_open,
+                    irods_file_open_for_write,
                     irods_file_write,
                     irods_file_close ) < ARCHIVE_OK ) {
             std::stringstream msg;
