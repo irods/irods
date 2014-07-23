@@ -3834,18 +3834,19 @@ freeRodsObjStat( rodsObjStat_t * rodsObjStat ) {
 
 int
 parseHostAddrStr( char * hostAddr, rodsHostAddr_t * addr ) {
-    char port[MAX_NAME_LEN];
-    char buffer[MAX_NAME_LEN];
+    char port[SHORT_STR_LEN];
+    char buffer[LONG_NAME_LEN];
 
     if ( hostAddr == NULL || addr == NULL ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
-    if ( splitPathByKey( hostAddr, buffer, MAX_NAME_LEN, port, MAX_NAME_LEN, ':' ) < 0 ) {
+    if ( splitPathByKey( hostAddr, buffer, LONG_NAME_LEN, port, SHORT_STR_LEN, ':' ) < 0 ) {
         rstrcpy( addr->hostAddr, hostAddr, LONG_NAME_LEN );
         addr->portNum = 0;
     }
     else {
+    	rstrcpy( addr->hostAddr, buffer, LONG_NAME_LEN );
         addr->portNum = atoi( port );
     }
     return 0;
