@@ -50,44 +50,16 @@ class Server_Config:
     # POSTGRES
     # =-=-=-=-=-=-=-=-=-=-=-=-=-
     def exec_pgsql_cmd(self, sql):
-        fbp = os.path.dirname(
-            os.path.realpath(__file__)) + "/find_bin_postgres.sh"
-        if( not os.path.isfile(fbp) ):
-                fbp = os.path.dirname( os.path.dirname(
-                        os.path.realpath(__file__))) + "/plugins/database/packaging/find_bin_postgres.sh"
-        p = subprocess.Popen(
-            fbp,
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE)
+        sql = sql.strip()
+        if( not sql.endswith( ';' ) ):
+            sql = sql + ";"
 
-        sqlclient = ""
-        for line in p.stdout:
-            sqlclient = line.decode('utf-8').rstrip() + "/psql"
-        retval = p.wait()
-        if retval != 0:
-            print("find_bin_postgres.sh failed")
-            return
-
-        db_host = self.values['Servername']
-        db_port = self.values['Port']
-        db_name = self.values['Database']
-        if db_host == 'localhost':
-            run_str = sqlclient + \
-                " -p " + db_port + \
-                " " + db_name + \
-                " -c \"" + sql + "\""
-        else:
-            run_str = sqlclient + \
-                " -h " + db_host + \
-                " -p " + db_port + \
-                " " + db_name + \
-                " -c \"" + sql + "\""
-
-        p = subprocess.Popen(
-            run_str, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        (myout, myerr) = p.communicate()
-        return (p.returncode, myout, myerr)
+        sqlfile = "tmpsqlfile"
+        f = open(sqlfile, 'w+')
+        f.write(sql)
+        f.close()
+        (returncode, myout, myerr) = self.exec_pgsql_file(sqlfile)
+        os.unlink(sqlfile)
 
     def exec_pgsql_file(self, sql):
         fbp = os.path.dirname(
@@ -133,46 +105,16 @@ class Server_Config:
     # MYSQL
     # =-=-=-=-=-=-=-=-=-=-=-=-=-
     def exec_mysql_cmd(self, sql):
-        fbp = os.path.dirname(
-            os.path.realpath(__file__)) + "/find_bin_mysql.sh"
-        p = subprocess.Popen(
-            fbp,
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE)
+        sql = sql.strip()
+        if( not sql.endswith( ';' ) ):
+            sql = sql + ";"
 
-        sqlclient = ""
-        for line in p.stdout:
-            sqlclient = line.decode('utf-8').rstrip() + "/mysql"
-        retval = p.wait()
-        if retval != 0:
-            print("find_bin_mysql.sh failed")
-            return
-
-        db_host = self.values['Servername']
-        db_port = self.values['Port']
-        db_name = self.values['Database']
-        db_user = self.values['DBUsername']
-        db_pass = self.get_db_pass()
-        if db_host == 'localhost':
-            run_str = sqlclient + \
-                " -u " + db_user + \
-                " --password=" + db_pass + \
-                " -P " + db_port + \
-                " " + db_name + \
-                " -e \"" + sql + "\""
-        else:
-            run_str = sqlclient + \
-                " -h " + db_host + \
-                " -u " + db_user + \
-                " -P " + db_port + \
-                " " + db_name + \
-                " -e \"" + sql + "\""
-
-        p = subprocess.Popen(
-            run_str, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        (myout, myerr) = p.communicate()
-        return (p.returncode, myout, myerr)
+        sqlfile = "tmpsqlfile"
+        f = open(sqlfile, 'w+')
+        f.write(sql)
+        f.close()
+        (returncode, myout, myerr) = self.exec_mysql_file(sqlfile)
+        os.unlink(sqlfile)
 
     def exec_mysql_file(self, sql):
         fbp = os.path.dirname(
@@ -220,6 +162,10 @@ class Server_Config:
     # ORACLE
     # =-=-=-=-=-=-=-=-=-=-=-=-=-
     def exec_oracle_cmd(self, sql):
+        sql = sql.strip()
+        if( not sql.endswith( ';' ) ):
+            sql = sql + ";"
+
         sqlfile = "tmpsqlfile"
         f = open(sqlfile, 'w+')
         f.write(sql)
