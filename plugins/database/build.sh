@@ -80,7 +80,7 @@ fi
 if [ "$1" == "clean" ] ; then
     rm -f $SCRIPTPATH/src/icatSysTables.sql
     rm -f $SCRIPTPATH/packaging/irods_database_plugin_*.list
-    rm -f $SCRIPTPATH/packaging/setup_database.sh
+    rm -f $SCRIPTPATH/packaging/setup_irods_database.sh
     make clean
     exit 0
 fi
@@ -192,7 +192,7 @@ if [ "$?" -ne "0" ] ; then
 fi
 
 
-SETUP_FILE="$SCRIPTPATH/packaging/setup_database.sh"
+SETUP_FILE="$SCRIPTPATH/packaging/setup_irods_database.sh"
 set_tmpfile
 sed -e s,TEMPLATE_DATABASE_TYPE,$DB_TYPE, "$SETUP_FILE.template" > $TMPFILE; mv $TMPFILE $SETUP_FILE
 

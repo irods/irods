@@ -1271,7 +1271,7 @@ if [ "$BUILDIRODS" == "1" ] ; then
             fi
             echo ""
             echo "To complete your installation, please run:"
-            echo "  ./plugins/database/packaging/setup_database.sh"
+            echo "  ./plugins/database/packaging/setup_irods_database.sh"
         fi
         # boilerplate
         print_script_finish_box

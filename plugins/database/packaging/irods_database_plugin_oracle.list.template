@@ -54,7 +54,6 @@ $RPM=true
 # Install variables
 # =-=-=-=-=-=-=-
 $IRODS_HOME_DIR=/var/lib/irods
-$OS_IRODS_ACCT=irods
 $IRODS_HOME=$IRODS_HOME_DIR/iRODS
 
 # =-=-=-=-=-=-=-
@@ -101,11 +100,8 @@ echo " - an existing database user (to be used by the iRODS server)"
 echo " - an existing database (to be used as the iCAT catalog)"
 echo " - permissions for existing user on existing database"
 echo ""
-echo "Please switch to the irods user:"
-echo "  $$ sudo su - irods"
-echo ""
 echo "And run the following setup script:"
-echo "  irods@hostname:~/ $$ ./packaging/setup_database.sh"
+echo "  $$ (sudo) /var/lib/irods/packaging/setup_irods.sh"
 echo ""
 echo "======================================================================="
 echo ""
@@ -155,31 +151,31 @@ END_POSTREMOVE
 # =-=-=-=-=-=-=-
 # Full File Listing
 # =-=-=-=-=-=-=-
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/plugins/database/liboracle.so ./liboracle.so
-f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/setup_database.sh ./packaging/setup_database.sh
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/upgrade-3.3.xto4.0.0.sql ./oracle/upgrade-3.3.xto4.0.0.sql
-f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/find_odbc_oracle.sh ./packaging/find_odbc_oracle.sh
-f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/find_bin_oracle.sh ./packaging/find_bin_oracle.sh
+f 644 root root ${IRODS_HOME_DIR}/plugins/database/liboracle.so ./liboracle.so
+f 755 root root ${IRODS_HOME_DIR}/packaging/setup_irods_database.sh ./packaging/setup_irods_database.sh
+f 644 root root ${IRODS_HOME_DIR}/packaging/upgrade-3.3.xto4.0.0.sql ./oracle/upgrade-3.3.xto4.0.0.sql
+f 755 root root ${IRODS_HOME_DIR}/packaging/find_odbc_oracle.sh ./packaging/find_odbc_oracle.sh
+f 755 root root ${IRODS_HOME_DIR}/packaging/find_bin_oracle.sh ./packaging/find_bin_oracle.sh
 
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/tests/setup_oracle_centos5.input ./packaging/setup_oracle_centos5.input
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/tests/setup_oracle_centos6.input ./packaging/setup_oracle_centos6.input
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/tests/setup_oracle_suse11.input ./packaging/setup_oracle_suse11.input
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/tests/setup_oracle_suse12.input ./packaging/setup_oracle_suse12.input
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/tests/setup_oracle_ub10.input ./packaging/setup_oracle_ub10.input
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/tests/setup_oracle_ub12.input ./packaging/setup_oracle_ub12.input
+f 644 root root ${IRODS_HOME_DIR}/tests/setup_oracle_centos5.input ./packaging/setup_oracle_centos5.input
+f 644 root root ${IRODS_HOME_DIR}/tests/setup_oracle_centos6.input ./packaging/setup_oracle_centos6.input
+f 644 root root ${IRODS_HOME_DIR}/tests/setup_oracle_suse11.input ./packaging/setup_oracle_suse11.input
+f 644 root root ${IRODS_HOME_DIR}/tests/setup_oracle_suse12.input ./packaging/setup_oracle_suse12.input
+f 644 root root ${IRODS_HOME_DIR}/tests/setup_oracle_ub10.input ./packaging/setup_oracle_ub10.input
+f 644 root root ${IRODS_HOME_DIR}/tests/setup_oracle_ub12.input ./packaging/setup_oracle_ub12.input
 
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatSysTables.sql ./src/icatSysTables.sql
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatDropSysTables.sql ./src/icatDropSysTables.sql
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatSysInserts.sql ./src/icatSysInserts.sql
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatPurgeRecycleBin.sql ./src/icatPurgeRecycleBin.sql
-f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/convertSql.pl ./src/convertSql.pl
+f 644 root root ${IRODS_HOME}/server/icat/src/icatSysTables.sql ./src/icatSysTables.sql
+f 644 root root ${IRODS_HOME}/server/icat/src/icatDropSysTables.sql ./src/icatDropSysTables.sql
+f 644 root root ${IRODS_HOME}/server/icat/src/icatSysInserts.sql ./src/icatSysInserts.sql
+f 644 root root ${IRODS_HOME}/server/icat/src/icatPurgeRecycleBin.sql ./src/icatPurgeRecycleBin.sql
+f 755 root root ${IRODS_HOME}/server/icat/src/convertSql.pl ./src/convertSql.pl
 
-f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_cll ./test_cll
-f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_genu ./test_genu
-f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_genq ./test_genq
+f 755 root root ${IRODS_HOME}/server/test/bin/test_cll ./test_cll
+f 755 root root ${IRODS_HOME}/server/test/bin/test_genu ./test_genu
+f 755 root root ${IRODS_HOME}/server/test/bin/test_genq ./test_genq
 
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/update_catalog_schema.py ./packaging/update_catalog_schema.py
-d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/schema_updates -
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/schema_updates/2.oracle.sql ./packaging/schema_updates/2.postgres.mysql.oracle.sql
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/schema_updates/3.oracle.sql ./packaging/schema_updates/3.postgres.mysql.oracle.sql
+f 644 root root ${IRODS_HOME_DIR}/packaging/update_catalog_schema.py ./packaging/update_catalog_schema.py
+d 755 root root ${IRODS_HOME_DIR}/packaging/schema_updates -
+f 644 root root ${IRODS_HOME_DIR}/packaging/schema_updates/2.oracle.sql ./packaging/schema_updates/2.postgres.mysql.oracle.sql
+f 644 root root ${IRODS_HOME_DIR}/packaging/schema_updates/3.oracle.sql ./packaging/schema_updates/3.postgres.mysql.oracle.sql
 

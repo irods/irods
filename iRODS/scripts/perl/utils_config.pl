@@ -204,34 +204,37 @@ sub validateIrodsVariables()
 			$adminSet = 0;
 		}
 	}
-	if ( !defined( $IRODS_ADMIN_PASSWORD ) || $IRODS_ADMIN_PASSWORD eq "" )
-	{
-		# No adminstrator password.  Check legacy names.
-		if ( defined( $ADMIN_PW ) && $ADMIN_PW ne "" )
-		{
-			$IRODS_ADMIN_PASSWORD = $ADMIN_PW;
-		}
-		elsif ( defined( $DB_PASSWORD ) && $DB_PASSWORD ne "" )
-		{
-			$IRODS_ADMIN_PASSWORD = $DB_PASSWORD;
-		}
-		elsif ( $adminSet == 1 )
-		{
-			# If an admin account name was given, then
-			# we really need the password too.
-			printError(
-				"\n" .
-				"Configuration problem:\n" .
-				"    iRODS administrator password is not set.\n" .
-				"\n" .
-				"    The iRODS configuration file does not set the administrator\n" .
-				"    account password.  Possible typo in the variable name?\n" .
-				"\n" .
-				"    Please check \$IRODS_ADMIN_PASSWORD in the configuration file.\n" .
-				"        Config file:  $irodsConfig\n" );
-			return 0;
-		}
-	}
+#############
+# TGR - we are no longer writing passwords down for bootstrapping
+#############
+# 	if ( !defined( $IRODS_ADMIN_PASSWORD ) || $IRODS_ADMIN_PASSWORD eq "" )
+# 	{
+# 		# No adminstrator password.  Check legacy names.
+# 		if ( defined( $ADMIN_PW ) && $ADMIN_PW ne "" )
+# 		{
+# 			$IRODS_ADMIN_PASSWORD = $ADMIN_PW;
+# 		}
+# 		elsif ( defined( $DB_PASSWORD ) && $DB_PASSWORD ne "" )
+# 		{
+# 			$IRODS_ADMIN_PASSWORD = $DB_PASSWORD;
+# 		}
+# 		elsif ( $adminSet == 1 )
+# 		{
+# 			# If an admin account name was given, then
+# 			# we really need the password too.
+# 			printError(
+# 				"\n" .
+# 				"Configuration problem:\n" .
+# 				"    iRODS administrator password is not set.\n" .
+# 				"\n" .
+# 				"    The iRODS configuration file does not set the administrator\n" .
+# 				"    account password.  Possible typo in the variable name?\n" .
+# 				"\n" .
+# 				"    Please check \$IRODS_ADMIN_PASSWORD in the configuration file.\n" .
+# 				"        Config file:  $irodsConfig\n" );
+# 			return 0;
+# 		}
+# 	}
 
 
 	# iRODS server:

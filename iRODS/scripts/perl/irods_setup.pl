@@ -522,7 +522,11 @@ else
         print "\n";
         print "  iCAT server's admin username: $IRODS_ADMIN_NAME\n";
         print "  iCAT server's admin password: ";
-        $IRODS_ADMIN_PASSWORD = `/var/lib/irods/packaging/get_icat_server_password.sh`;
+        if( $RUNINPLACE == 1 ) {
+            $IRODS_ADMIN_PASSWORD = `$scripttoplevel/packaging/get_icat_server_password.sh`;
+        } else {
+          $IRODS_ADMIN_PASSWORD = `/var/lib/irods/packaging/get_icat_server_password.sh`;
+        }
         print "\n";
         print "\n";
     }

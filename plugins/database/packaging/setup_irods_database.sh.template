@@ -6,22 +6,21 @@ DEFAULT_DATABASEPORT="TEMPLATE_DEFAULT_DATABASEPORT"
 
 # config
 IRODS_CONFIG_FILE="TEMPLATE_DEFAULT_IRODSCONFIG"
-SETUP_DATABASE_FLAG="/tmp/$USER/setup_database.flag"
+SETUP_DATABASE_FLAG="/tmp/$USER/setup_irods_database.flag"
 
 # get into the top level directory
+# detect run-in-place installation
 DETECTEDDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 if [ -e /etc/irods/server.config ] ;  then
+    RUNINPLACE=0
     cd $DETECTEDDIR/../
 else
+    RUNINPLACE=1
     cd $DETECTEDDIR/../../../
+    set +e
+    source ./packaging/setup_irods_configuration.sh 2> /dev/null
+    set -e
 fi
-
-#
-# Detect run-in-place installation
-#
-set +e
-source ./packaging/setup_irods_configuration.sh 2> /dev/null
-set -e
 
 # get temp file from prior run, if it exists
 mkdir -p /tmp/$USER

@@ -1131,6 +1131,9 @@ sub stopIrods
         # iRODS must kill all owned processes for packaging purposes
 #        printStatus( "\tKilling any remaining Zombies... Silently.\n" );
         system( "ps aux | grep \"^[_]\\?\$USER\" | grep \"irods[A|S|R|X]\" | awk '{print \$2}' | xargs kill -9 > /dev/null 2>&1" );
+        # remove shared memory mutex and semaphore
+        # this will be handled more cleanly when servers can be gracefully shutdown
+        system( "rm -f /var/run/shm/*var_lib_irods_iRODS_server_config*" );
 
 	# Report if there are any left.
 	my $didNotDie = 0;

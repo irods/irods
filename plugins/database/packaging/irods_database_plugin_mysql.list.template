@@ -62,7 +62,6 @@ $RPM=true
 # Install variables
 # =-=-=-=-=-=-=-
 $IRODS_HOME_DIR=/var/lib/irods
-$OS_IRODS_ACCT=irods
 $IRODS_HOME=$IRODS_HOME_DIR/iRODS
 
 # =-=-=-=-=-=-=-
@@ -101,8 +100,6 @@ END_PREINSTALL
 %postinstall << END_POSTINSTALL
 # irods_setup.pl expects this file to exist
 touch $IRODS_HOME_DIR/.odbc.ini
-ACCT=$OS_IRODS_ACCT
-chown  $$ACCT:$$ACCT $IRODS_HOME_DIR/.odbc.ini
 echo ""
 echo "======================================================================="
 echo ""
@@ -123,11 +120,8 @@ echo "  #######################################"
 echo "  log_bin_trust_function_creators=1"
 echo ""
 echo "After restarting your MySQL server with the new configuration,"
-echo "please switch to the irods user:"
-echo "  $$ sudo su - irods"
-echo ""
-echo "And run the following setup script:"
-echo "  irods@hostname:~/ $$ ./packaging/setup_database.sh"
+echo "please run the following setup script:"
+echo "  $$ (sudo) /var/lib/irods/packaging/setup_irods.sh"
 echo ""
 echo "======================================================================="
 echo ""
@@ -177,25 +171,25 @@ END_POSTREMOVE
 # =-=-=-=-=-=-=-
 # Full File Listing
 # =-=-=-=-=-=-=-
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/plugins/database/libmysql.so ./libmysql.so
-f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/setup_database.sh ./packaging/setup_database.sh
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/upgrade-3.3.xto4.0.0.sql ./mysql/upgrade-3.3.xto4.0.0.sql
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/tests/localhost_setup_mysql.input ./packaging/localhost_setup_mysql.input
-f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/find_odbc_mysql.sh ./packaging/find_odbc_mysql.sh
-f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/find_bin_mysql.sh ./packaging/find_bin_mysql.sh
+f 644 root root ${IRODS_HOME_DIR}/plugins/database/libmysql.so ./libmysql.so
+f 755 root root ${IRODS_HOME_DIR}/packaging/setup_irods_database.sh ./packaging/setup_irods_database.sh
+f 644 root root ${IRODS_HOME_DIR}/packaging/upgrade-3.3.xto4.0.0.sql ./mysql/upgrade-3.3.xto4.0.0.sql
+f 644 root root ${IRODS_HOME_DIR}/tests/localhost_setup_mysql.input ./packaging/localhost_setup_mysql.input
+f 755 root root ${IRODS_HOME_DIR}/packaging/find_odbc_mysql.sh ./packaging/find_odbc_mysql.sh
+f 755 root root ${IRODS_HOME_DIR}/packaging/find_bin_mysql.sh ./packaging/find_bin_mysql.sh
 
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatSysTables.sql ./src/icatSysTables.sql
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatDropSysTables.sql ./src/icatDropSysTables.sql
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatSysInserts.sql ./src/icatSysInserts.sql
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatPurgeRecycleBin.sql ./src/icatPurgeRecycleBin.sql
-f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/convertSql.pl ./src/convertSql.pl
+f 644 root root ${IRODS_HOME}/server/icat/src/icatSysTables.sql ./src/icatSysTables.sql
+f 644 root root ${IRODS_HOME}/server/icat/src/icatDropSysTables.sql ./src/icatDropSysTables.sql
+f 644 root root ${IRODS_HOME}/server/icat/src/icatSysInserts.sql ./src/icatSysInserts.sql
+f 644 root root ${IRODS_HOME}/server/icat/src/icatPurgeRecycleBin.sql ./src/icatPurgeRecycleBin.sql
+f 755 root root ${IRODS_HOME}/server/icat/src/convertSql.pl ./src/convertSql.pl
 
-f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_cll ./test_cll
-f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_genu ./test_genu
-f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_genq ./test_genq
+f 755 root root ${IRODS_HOME}/server/test/bin/test_cll ./test_cll
+f 755 root root ${IRODS_HOME}/server/test/bin/test_genu ./test_genu
+f 755 root root ${IRODS_HOME}/server/test/bin/test_genq ./test_genq
 
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/update_catalog_schema.py ./packaging/update_catalog_schema.py
-d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/schema_updates -
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/schema_updates/2.mysql.sql ./packaging/schema_updates/2.postgres.mysql.oracle.sql
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/schema_updates/3.mysql.sql ./packaging/schema_updates/3.postgres.mysql.oracle.sql
+f 644 root root ${IRODS_HOME_DIR}/packaging/update_catalog_schema.py ./packaging/update_catalog_schema.py
+d 755 root root ${IRODS_HOME_DIR}/packaging/schema_updates -
+f 644 root root ${IRODS_HOME_DIR}/packaging/schema_updates/2.mysql.sql ./packaging/schema_updates/2.postgres.mysql.oracle.sql
+f 644 root root ${IRODS_HOME_DIR}/packaging/schema_updates/3.mysql.sql ./packaging/schema_updates/3.postgres.mysql.oracle.sql
 

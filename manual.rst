@@ -143,29 +143,28 @@ Installation of the iCAT DEB and PostgreSQL plugin DEB::
 
  $ (sudo) dpkg -i irods-icat-TEMPLATE_IRODSVERSION-64bit.deb irods-database-plugin-postgres-1.2.deb
  $ (sudo) apt-get -f install
- $ (sudo) su - irods
+ $ (sudo) /var/lib/irods/packaging/setup_irods.sh
 
-And then as the irods user::
+The `setup_irods.sh` script will ask for the following sixteen pieces of information before starting the iRODS server:
 
- irods@hostname:~/ $ ./packaging/setup_database.sh
+1) Service Account Name
+2) Service Account Group
 
-The `./packaging/setup_database.sh` script will ask for the following fourteen pieces of information before starting the iRODS server:
+3) iCAT Port
+4) iCAT Zone
+5) Parallel Port Range (Begin)
+6) Parallel Port Range (End)
+7) Vault Directory
+8) LocalZoneSID
+9) agent_key
+10) iRODS Administrator Username
+11) iRODS Administrator Password
 
-1) iCAT Port
-2) iCAT Zone
-3) Parallel Port Range (Begin)
-4) Parallel Port Range (End)
-5) Vault Directory
-6) LocalZoneSID
-7) agent_key
-8) iRODS Administrator Username
-9) iRODS Administrator Password
-
-10) Database Server's Hostname or IP
-11) Database Port
-12) Database Name
-13) Database User
-14) Database Password
+12) Database Server's Hostname or IP
+13) Database Port
+14) Database Name
+15) Database User
+16) Database Password
 
 Note: A default system PostgreSQL installation does not listen on a TCP port, it only listens on a local socket.  If your PostgreSQL server is localhost, use 'localhost' for 10) above.
 
@@ -189,8 +188,8 @@ Once the PostgreSQL database plugin has been installed, the following text will 
   - an existing database (to be used as the iCAT catalog)
   - permissions for existing user on existing database
 
- Please run the following setup script as the irods user:
-   ./packaging/setup_database.sh
+ Please run the following setup script:
+   /var/lib/irods/packaging/setup_irods.sh
 
  =======================================================================
 
@@ -275,9 +274,9 @@ To run iRODS in place, the build script must be called with the appropriate flag
 
  user@hostname:~/irods/ $ ./packaging/build.sh --run-in-place icat postgres
 
-After the system is built, the setup_database.sh script needs to be run from its original location::
+After the system is built, the setup_irods_database.sh script needs to be run from its original location::
 
- user@hostname:~/irods/ $ ./plugins/database/packaging/setup_database.sh
+ user@hostname:~/irods/ $ ./plugins/database/packaging/setup_irods_database.sh
 
 The script will prompt for iRODS configuration information that would already be known to a binary installation::
 
@@ -526,7 +525,7 @@ Upgrading from iRODS 3.3.x to iRODS 4.0+ is not supported with an automatic scri
 #. Provide a database user 'irods', database password, and owner permissions for that database user to the new system-installed iCAT.
 #. Confirm all local at-rest data (any local iRODS Vault paths) has read and write permissions for the new 'irods' unix service account.
 #. Manually update any changes to 'core.re' and 'server.config'.  Keep in mind immediate replication rules (``acPostProcForPut``, etc.) may be superceded by your new resource composition.
-#. Run ``./packaging/setup_database.sh`` (recommended) OR Manually update all 4.0+ configuration files given previous 3.3.x configuration (.irodsEnv, .odbc.ini DSN needs to be set to either 'postgres', 'mysql', or 'oracle').  The automatic ``./packaging/setup_database.sh`` script will work only with the system-installed database server.
+#. Run ``./packaging/setup_irods_database.sh`` (recommended) OR Manually update all 4.0+ configuration files given previous 3.3.x configuration (.irodsEnv, .odbc.ini DSN needs to be set to either 'postgres', 'mysql', or 'oracle').  The automatic ``./packaging/setup_irods_database.sh`` script will work only with the system-installed database server.
 #. Start new 4.0+ iCAT server
 #. On all resource servers in the same Zone, install and setup 4.0+.  Existing configuration details should be ported as well ('server.config', 'core.re', Vault permissions).
 #. Rebuild Resource Hierarchies from previous Resource Group configurations (``iadmin addchildtoresc``) (See `Composable Resources`_)
@@ -1157,7 +1156,7 @@ The particular type of database is encoded in `/etc/irods/server.config` with th
  # configuration of icat database plugin - e.g. postgres, mysql, or oracle
  catalog_database_type postgres
 
-This is populated by the `setup_database.sh` script on configuration.
+This is populated by the `setup_irods_database.sh` script on configuration.
 
 The iRODS 3.x icatHighLevelRoutines are, in effect, the API calls for the database plugins.  No changes should be needed to any calls to the icatHighLevelRoutines.
 

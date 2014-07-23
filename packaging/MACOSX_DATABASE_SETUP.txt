@@ -34,5 +34,5 @@ Building and running iRODS on MacOSX is currently only supported with a locally 
  sed -i '' 's/^SEARCHPATHS=.*$/SEARCHPATHS="$HOME"/' ./plugins/database/packaging/find_bin_postgres.sh
 
  # =-=-=-=-=-=-=-
- # run setup_database.sh
- ./plugins/database/packaging/setup_database.sh
+ # run setup_irods_database.sh
+ ./plugins/database/packaging/setup_irods_database.sh

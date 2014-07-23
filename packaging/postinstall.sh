@@ -1,8 +1,7 @@
 #!/bin/bash -e
 
 IRODS_HOME_DIR=$1
-OS_IRODS_ACCT=$2
-SERVER_TYPE=$3
+SERVER_TYPE=$2
 
 IRODS_HOME=$IRODS_HOME_DIR/iRODS
 
@@ -19,7 +18,6 @@ fi
 # debugging
 #echo "UPGRADE_FLAG=[$UPGRADE_FLAG]"
 #echo "IRODS_HOME_DIR=[$IRODS_HOME_DIR]"
-#echo "OS_IRODS_ACCT=[$OS_IRODS_ACCT]"
 #echo "SERVER_TYPE=[$SERVER_TYPE]"
 
 # =-=-=-=-=-=-=-
@@ -33,15 +31,15 @@ if [ -f /tmp/irodsServer.* ] ; then
 fi
 
 # =-=-=-=-=-=-=-
+# clean up any stray iRODS shared memory mutex files
+rm -f /var/run/shm/*var_lib_irods_iRODS_server_config*
+
+# =-=-=-=-=-=-=-
 # explode tarball of necessary coverage files if it exists
 if [ -f "$IRODS_HOME_DIR/gcovfiles.tgz" ] ; then
     cd $IRODS_HOME_DIR
     tar xzf gcovfiles.tgz
 fi
-
-# =-=-=-=-=-=-=-
-# set permissions on the installed files
-chown -R $OS_IRODS_ACCT:$OS_IRODS_ACCT $IRODS_HOME
 
 # =-=-=-=-=-=-=-
 # setup runlevels and aliases (use os-specific tools)
@@ -117,14 +115,6 @@ ln -fs    /usr/bin/ixmsg                   ${IRODS_HOME}/clients/icommands/bin/i
 
 
 # =-=-=-=-=-=-=-
-# really make sure everything is owned by the irods service account
-chown -R $OS_IRODS_ACCT:$OS_IRODS_ACCT $IRODS_HOME_DIR
-
-# =-=-=-=-=-=-=-
-# ensure the config directory is owned by irods
-chown -R  $OS_IRODS_ACCT:$OS_IRODS_ACCT /etc/irods
-
-# =-=-=-=-=-=-=-
 # set permissions on iRODS authentication mechanisms
 if [ "$DETECTEDOS" == "MacOSX" ] ; then
     chown root:wheel $IRODS_HOME/server/bin/PamAuthCheck
@@ -135,14 +125,21 @@ chmod 4755 $IRODS_HOME/server/bin/PamAuthCheck
 chmod 4755 /usr/bin/genOSAuth
 
 # =-=-=-=-=-=-=-
-# remove the password from the service account
-if [ "$DETECTEDOS" != "MacOSX" ] ; then
-    passwd -d $OS_IRODS_ACCT > /dev/null
-fi
-
-# =-=-=-=-=-=-=-
 # display helpful information
-if [ "$UPGRADE_FLAG" == "false" ] ; then
+if [ "$UPGRADE_FLAG" == "true" ] ; then
+    # get service account information
+    source /etc/irods/service_account.config 2> /dev/null
+    # stop server
+    su - $IRODS_SERVICE_ACCOUNT_NAME -c "$IRODS_HOME_DIR/iRODS/irodsctl stop"
+    # update the database schema if an icat server
+    if [ "$SERVER_TYPE" == "icat" ] ; then
+        # =-=-=-=-=-=-=-
+        # run update_catalog_schema.py
+        su - $IRODS_SERVICE_ACCOUNT_NAME -c "python $IRODS_HOME_DIR/packaging/update_catalog_schema.py"
+    fi
+    # re-start server
+    su - $IRODS_SERVICE_ACCOUNT_NAME -c "$IRODS_HOME_DIR/iRODS/irodsctl start"
+else
     # =-=-=-=-=-=-=-
     if [ "$SERVER_TYPE" == "icat" ] ; then
         # tell user about their irodsenv
@@ -158,4 +155,3 @@ fi
 # =-=-=-=-=-=-=-
 # exit with success
 exit 0
-

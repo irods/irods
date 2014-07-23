@@ -1,3 +1,5 @@
+#!/bin/bash -e
+
 #
 # Detect run-in-place installation
 #
@@ -7,10 +9,10 @@ else
     RUNINPLACE=1
 fi
 
-
+# find local working directory
+DETECTEDDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 if [ $RUNINPLACE -eq 1 ] ; then
-    DETECTEDDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
     MYIRODSCONFIG=$DETECTEDDIR/../iRODS/config/irods.config
     MYSERVERCONFIG=$DETECTEDDIR/../iRODS/server/config/server.config
     MYICATSYSINSERTS=$DETECTEDDIR/../iRODS/server/icat/src/icatSysInserts.sql
@@ -26,6 +28,16 @@ else
     DEFAULTRESOURCEDIR=/var/lib/irods/iRODS/Vault
 fi
 
+# detect server type being installed
+if [ -f $DETECTEDDIR/setup_database.sh ] ; then
+    # icat enabled server
+    ICAT_SERVER=1
+else
+    # resource server
+    ICAT_SERVER=0
+fi
+
+
     SETUP_IRODS_CONFIGURATION_FLAG="/tmp/$USER/setup_irods_configuration.flag"
 
     # get temp file from prior run, if it exists
@@ -33,7 +45,9 @@ fi
     if [ -f $SETUP_IRODS_CONFIGURATION_FLAG ] ; then
         # have run this before, read the existing config files
         MYPORT=`grep "IRODS_PORT =" $MYIRODSCONFIG | awk -F\' '{print $2}'`
-        MYZONE=`grep "ZONE_NAME =" $MYIRODSCONFIG | awk -F\' '{print $2}'`
+        if [ $ICAT_SERVER -eq 1 ] ; then
+            MYZONE=`grep "ZONE_NAME =" $MYIRODSCONFIG | awk -F\' '{print $2}'`
+        fi
         MYRANGESTART=`grep "SVR_PORT_RANGE_START =" $MYIRODSCONFIG | awk -F\' '{print $2}'`
         MYRANGEEND=`grep "SVR_PORT_RANGE_END =" $MYIRODSCONFIG | awk -F\' '{print $2}'`
         MYRESOURCEDIR=`grep "RESOURCE_DIR =" $MYIRODSCONFIG | awk -F\' '{print $2}'`
@@ -91,25 +105,27 @@ fi
       MYPORT=`echo "${MYPORT}" | sed -e "s/\///g"`
       echo ""
 
-      # get zone
-      echo -n "iRODS server's zone name"
-      if [ "$LASTMYZONE" ] ; then
-        echo -n " [$LASTMYZONE]"
-      else
-        echo -n " [tempZone]"
-      fi
-      echo -n ": "
-      read MYZONE
-      if [ "$MYZONE" == "" ] ; then
+      if [ $ICAT_SERVER -eq 1 ] ; then
+        # get zone
+        echo -n "iRODS server's zone name"
         if [ "$LASTMYZONE" ] ; then
-          MYZONE=$LASTMYZONE
+            echo -n " [$LASTMYZONE]"
         else
-          MYZONE="tempZone"
+            echo -n " [tempZone]"
         fi
+        echo -n ": "
+        read MYZONE
+        if [ "$MYZONE" == "" ] ; then
+            if [ "$LASTMYZONE" ] ; then
+            MYZONE=$LASTMYZONE
+            else
+            MYZONE="tempZone"
+            fi
+        fi
+        # strip all forward slashes
+        MYZONE=`echo "${MYZONE}" | sed -e "s/\///g"`
+        echo ""
       fi
-      # strip all forward slashes
-      MYZONE=`echo "${MYZONE}" | sed -e "s/\///g"`
-      echo ""
 
       # get the db name
       echo -n "iRODS port range (begin)"
@@ -241,23 +257,29 @@ fi
       MYADMINNAME=`echo "${MYADMINNAME}" | sed -e "s/\///g"`
       echo ""
 
-      echo -n "iRODS server's administrator password: "
-      # get db password, without showing on screen
-      read -s MYADMINPASSWORD
-      echo ""
-      echo ""
+      if [ $ICAT_SERVER -eq 1 ] ; then
+        echo -n "iRODS server's administrator password: "
+        # get db password, without showing on screen
+        read -s MYADMINPASSWORD
+        echo ""
+        echo ""
+      fi
 
       # confirm
       echo "-------------------------------------------"
       echo "iRODS Port:             $MYPORT"
-      echo "iRODS Zone:             $MYZONE"
+      if [ $ICAT_SERVER -eq 1 ] ; then
+        echo "iRODS Zone:             $MYZONE"
+      fi
       echo "Range (Begin):          $MYRANGESTART"
       echo "Range (End):            $MYRANGEEND"
       echo "Vault Directory:        $MYRESOURCEDIR"
       echo "LocalZoneSID:           $MYLOCALZONESID"
       echo "agent_key:              $MYAGENTKEY"
       echo "Administrator Username: $MYADMINNAME"
-      echo "Administrator Password: Not Shown"
+      if [ $ICAT_SERVER -eq 1 ] ; then
+        echo "Administrator Password: Not Shown"
+      fi
       echo "-------------------------------------------"
       echo -n "Please confirm these settings [yes]: "
       read CONFIRM
@@ -277,49 +299,48 @@ fi
     TMPFILE="/tmp/$USER/setupirodsconfig.txt"
     echo "Updating $MYIRODSCONFIG..."
     sed -e "/^\$IRODS_PORT/s/^.*$/\$IRODS_PORT = '$MYPORT';/" $MYIRODSCONFIG > $TMPFILE ; mv $TMPFILE $MYIRODSCONFIG
-#    grep IRODS_PORT $MYIRODSCONFIG
-    sed -e "/^\$ZONE_NAME/s/^.*$/\$ZONE_NAME = '$MYZONE';/" $MYIRODSCONFIG > $TMPFILE ; mv $TMPFILE $MYIRODSCONFIG
-#    grep ZONE_NAME $MYIRODSCONFIG
+    if [ $ICAT_SERVER -eq 1 ] ; then
+      sed -e "/^\$ZONE_NAME/s/^.*$/\$ZONE_NAME = '$MYZONE';/" $MYIRODSCONFIG > $TMPFILE ; mv $TMPFILE $MYIRODSCONFIG
+    fi
     sed -e "/^\$SVR_PORT_RANGE_START/s/^.*$/\$SVR_PORT_RANGE_START = '$MYRANGESTART';/" $MYIRODSCONFIG > $TMPFILE ; mv $TMPFILE $MYIRODSCONFIG
-#    grep SVR_PORT_RANGE_START $MYIRODSCONFIG
     sed -e "/^\$SVR_PORT_RANGE_END/s/^.*$/\$SVR_PORT_RANGE_END = '$MYRANGEEND';/" $MYIRODSCONFIG > $TMPFILE ; mv $TMPFILE $MYIRODSCONFIG
-#    grep SVR_PORT_RANGE_END $MYIRODSCONFIG
     sed -e "s,^\$RESOURCE_DIR =.*$,\$RESOURCE_DIR = '$MYRESOURCEDIR';," $MYIRODSCONFIG > $TMPFILE ; mv $TMPFILE $MYIRODSCONFIG
-#    grep RESOURCE_DIR $MYIRODSCONFIG
     sed -e "/^\$IRODS_ADMIN_NAME/s/^.*$/\$IRODS_ADMIN_NAME = '$MYADMINNAME';/" $MYIRODSCONFIG > $TMPFILE ; mv $TMPFILE $MYIRODSCONFIG
-#    grep IRODS_ADMIN_NAME $MYIRODSCONFIG
-    sed -e "/^\$IRODS_ADMIN_PASSWORD/s/^.*$/\$IRODS_ADMIN_PASSWORD = '$MYADMINPASSWORD';/" $MYIRODSCONFIG > $TMPFILE ; mv $TMPFILE $MYIRODSCONFIG
-#    grep IRODS_ADMIN_PASSWORD $MYIRODSCONFIG
+    if [ $ICAT_SERVER -eq 1 ] ; then
+      sed -e "/^\$IRODS_ADMIN_PASSWORD/s/^.*$/\$IRODS_ADMIN_PASSWORD = '$MYADMINPASSWORD';/" $MYIRODSCONFIG > $TMPFILE ; mv $TMPFILE $MYIRODSCONFIG
+    fi
 
-    # updating SQL
-    TMPFILE="/tmp/$USER/setupicatsysinserts.txt"
-    echo "Updating $MYICATSYSINSERTS..."
-    if [ $(grep -c "'tempZone'" $MYICATSYSINSERTS) -eq 0 ] ; then
-        echo "====================================="
-        echo "ERROR:"
-        echo "Unknown existing Zone name in $MYICATSYSINSERTS."
-        echo "Please drop all tables and try again."
-        echo "====================================="
-        # restore original
-        cp $MYICATSYSINSERTS.orig $MYICATSYSINSERTS
-        exit 1
+    if [ $ICAT_SERVER -eq 1 ] ; then
+        # updating SQL
+        TMPFILE="/tmp/$USER/setupicatsysinserts.txt"
+        echo "Updating $MYICATSYSINSERTS..."
+        if [ $(grep -c "'tempZone'" $MYICATSYSINSERTS) -eq 0 ] ; then
+            echo "====================================="
+            echo "ERROR:"
+            echo "Unknown existing Zone name in $MYICATSYSINSERTS."
+            echo "Please drop all tables and try again."
+            echo "====================================="
+            # restore original
+            cp $MYICATSYSINSERTS.orig $MYICATSYSINSERTS
+            exit 1
+        fi
+        if [ "$LASTMYADMINNAME" != "" -a "$LASTMYADMINNAME" != "rods" -a "$LASTMYADMINNAME" != "$MYADMINNAME" ] ; then
+            echo "====================================="
+            echo "ERROR:"
+            echo "Cannot change existing non-default administrator username."
+            echo ""
+            echo "Please:"
+            echo "1) Drop all of the iCAT tables,"
+            echo "2) Reset $MYIRODSCONFIG with \$IRODS_ADMIN_NAME = 'rods';, and"
+            echo "3) Run this script again."
+            echo "====================================="
+            exit 1
+        fi
+        # store original
+        cp $MYICATSYSINSERTS $MYICATSYSINSERTS.orig
+        # substitute
+        sed -e "s/'tempZone'/'$MYZONE'/" $MYICATSYSINSERTS > $TMPFILE ; mv $TMPFILE $MYICATSYSINSERTS
     fi
-    if [ "$LASTMYADMINNAME" != "" -a "$LASTMYADMINNAME" != "rods" -a "$LASTMYADMINNAME" != "$MYADMINNAME" ] ; then
-        echo "====================================="
-        echo "ERROR:"
-        echo "Cannot change existing non-default administrator username."
-        echo ""
-        echo "Please:"
-        echo "1) Drop all of the iCAT tables,"
-        echo "2) Reset $MYIRODSCONFIG with \$IRODS_ADMIN_NAME = 'rods';, and"
-        echo "3) Run this script again."
-        echo "====================================="
-        exit 1
-    fi
-    # store original
-    cp $MYICATSYSINSERTS $MYICATSYSINSERTS.orig
-    # substitute
-    sed -e "s/'tempZone'/'$MYZONE'/" $MYICATSYSINSERTS > $TMPFILE ; mv $TMPFILE $MYICATSYSINSERTS
 
     # update existing server.config
     TMPFILE="/tmp/$USER/setupserverconfig.txt"

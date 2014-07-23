@@ -67,7 +67,6 @@ $RPM=true
 # Install variables
 # =-=-=-=-=-=-=-
 $IRODS_HOME_DIR=/var/lib/irods
-$OS_IRODS_ACCT=irods
 $IRODS_HOME=$IRODS_HOME_DIR/iRODS
 
 # =-=-=-=-=-=-=-
@@ -106,26 +105,31 @@ END_PREINSTALL
 %postinstall << END_POSTINSTALL
 # irods_setup.pl expects this file to exist
 touch $IRODS_HOME_DIR/.odbc.ini
-ACCT=$OS_IRODS_ACCT
-chown  $$ACCT:$$ACCT $IRODS_HOME_DIR/.odbc.ini
-echo ""
-echo "======================================================================="
-echo ""
-echo "iRODS Postgres Database Plugin installation was successful."
-echo ""
-echo "To configure this plugin, the following prerequisites need to be met:"
-echo " - an existing database user (to be used by the iRODS server)"
-echo " - an existing database (to be used as the iCAT catalog)"
-echo " - permissions for existing user on existing database"
-echo ""
-echo "Please switch to the irods user:"
-echo "  $$ sudo su - irods"
-echo ""
-echo "And run the following setup script:"
-echo "  irods@hostname:~/ $$ ./packaging/setup_database.sh"
-echo ""
-echo "======================================================================="
-echo ""
+# =-=-=-=-=-=-=-
+# detect whether this is an upgrade
+UPGRADE_FLAG_FILE=$IRODS_HOME_DIR/upgrade.tmp
+if [ -f "$$UPGRADE_FLAG_FILE" ] ; then
+    UPGRADE_FLAG="true"
+else
+    UPGRADE_FLAG="false"
+fi
+if [ "$$UPGRADE_FLAG" = "false" ] ; then
+    echo ""
+    echo "======================================================================="
+    echo ""
+    echo "iRODS Postgres Database Plugin installation was successful."
+    echo ""
+    echo "To configure this plugin, the following prerequisites need to be met:"
+    echo " - an existing database user (to be used by the iRODS server)"
+    echo " - an existing database (to be used as the iCAT catalog)"
+    echo " - permissions for existing user on existing database"
+    echo ""
+    echo "Then run the following setup script:"
+    echo "  $$ (sudo) /var/lib/irods/packaging/setup_irods.sh"
+    echo ""
+    echo "======================================================================="
+    echo ""
+fi
 END_POSTINSTALL
 
 # =-=-=-=-=-=-=-
@@ -172,24 +176,24 @@ END_POSTREMOVE
 # =-=-=-=-=-=-=-
 # Full File Listing
 # =-=-=-=-=-=-=-
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/plugins/database/libpostgres.so ./libpostgres.so
-f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/setup_database.sh ./packaging/setup_database.sh
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/upgrade-3.3.xto4.0.0.sql ./postgres/upgrade-3.3.xto4.0.0.sql
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/tests/localhost_setup_postgres.input ./packaging/localhost_setup_postgres.input
-f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/find_odbc_postgres.sh ./packaging/find_odbc_postgres.sh
-f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/find_bin_postgres.sh ./packaging/find_bin_postgres.sh
+f 644 root root ${IRODS_HOME_DIR}/plugins/database/libpostgres.so ./libpostgres.so
+f 755 root root ${IRODS_HOME_DIR}/packaging/setup_irods_database.sh ./packaging/setup_irods_database.sh
+f 644 root root ${IRODS_HOME_DIR}/packaging/upgrade-3.3.xto4.0.0.sql ./postgres/upgrade-3.3.xto4.0.0.sql
+f 644 root root ${IRODS_HOME_DIR}/tests/localhost_setup_postgres.input ./packaging/localhost_setup_postgres.input
+f 755 root root ${IRODS_HOME_DIR}/packaging/find_odbc_postgres.sh ./packaging/find_odbc_postgres.sh
+f 755 root root ${IRODS_HOME_DIR}/packaging/find_bin_postgres.sh ./packaging/find_bin_postgres.sh
 
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatSysTables.sql ./src/icatSysTables.sql
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatDropSysTables.sql ./src/icatDropSysTables.sql
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatSysInserts.sql ./src/icatSysInserts.sql
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/icatPurgeRecycleBin.sql ./src/icatPurgeRecycleBin.sql
-f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/icat/src/convertSql.pl ./src/convertSql.pl
+f 644 root root ${IRODS_HOME}/server/icat/src/icatSysTables.sql ./src/icatSysTables.sql
+f 644 root root ${IRODS_HOME}/server/icat/src/icatDropSysTables.sql ./src/icatDropSysTables.sql
+f 644 root root ${IRODS_HOME}/server/icat/src/icatSysInserts.sql ./src/icatSysInserts.sql
+f 644 root root ${IRODS_HOME}/server/icat/src/icatPurgeRecycleBin.sql ./src/icatPurgeRecycleBin.sql
+f 755 root root ${IRODS_HOME}/server/icat/src/convertSql.pl ./src/convertSql.pl
 
-f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_cll ./test_cll
-f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_genu ./test_genu
-f 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/server/test/bin/test_genq ./test_genq
+f 755 root root ${IRODS_HOME}/server/test/bin/test_cll ./test_cll
+f 755 root root ${IRODS_HOME}/server/test/bin/test_genu ./test_genu
+f 755 root root ${IRODS_HOME}/server/test/bin/test_genq ./test_genq
 
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/update_catalog_schema.py ./packaging/update_catalog_schema.py
-d 755 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/schema_updates -
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/schema_updates/2.postgres.sql ./packaging/schema_updates/2.postgres.mysql.oracle.sql
-f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME_DIR}/packaging/schema_updates/3.postgres.sql ./packaging/schema_updates/3.postgres.mysql.oracle.sql
+f 644 root root ${IRODS_HOME_DIR}/packaging/update_catalog_schema.py ./packaging/update_catalog_schema.py
+d 755 root root ${IRODS_HOME_DIR}/packaging/schema_updates -
+f 644 root root ${IRODS_HOME_DIR}/packaging/schema_updates/2.postgres.sql ./packaging/schema_updates/2.postgres.mysql.oracle.sql
+f 644 root root ${IRODS_HOME_DIR}/packaging/schema_updates/3.postgres.sql ./packaging/schema_updates/3.postgres.mysql.oracle.sql
