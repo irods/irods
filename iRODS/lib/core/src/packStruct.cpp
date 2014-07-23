@@ -1044,6 +1044,7 @@ packPointerItem( packItem_t *myPackedItem, void **inPtr,
     int myTypeNum;
     int i, j, status;
     void **pointerArray;
+    void* singletonArray[1];
     void *pointer;      /* working pointer */
     void *origPtr;      /* for the purpose of freeing the original ptr */
     int myDim;
@@ -1065,8 +1066,8 @@ packPointerItem( packItem_t *myPackedItem, void **inPtr,
 
     /* pointer is already aligned */
     if ( myDim == 0 ) {
-        /* so that pointerArray[0] == myPackedItem->pointer */
-        pointerArray = &myPackedItem->pointer;
+        pointerArray = singletonArray;
+        pointerArray[0] = myPackedItem->pointer;
         if ( myTypeNum == PACK_PI_STR_TYPE ) {
             /* save the str */
             strncpy( myPackedItem->strValue, ( char* )myPackedItem->pointer,
