@@ -60,6 +60,7 @@ class Server_Config:
         f.close()
         (returncode, myout, myerr) = self.exec_pgsql_file(sqlfile)
         os.unlink(sqlfile)
+        return (returncode, myout, myerr)
 
     def exec_pgsql_file(self, sql):
         fbp = os.path.dirname(
@@ -115,6 +116,7 @@ class Server_Config:
         f.close()
         (returncode, myout, myerr) = self.exec_mysql_file(sqlfile)
         os.unlink(sqlfile)
+        return (returncode, myout, myerr)
 
     def exec_mysql_file(self, sql):
         fbp = os.path.dirname(
