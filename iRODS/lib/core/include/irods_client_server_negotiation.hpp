@@ -4,6 +4,7 @@
 // =-=-=-=-=-=-=-
 #include "irods_log.hpp"
 #include "irods_network_object.hpp"
+#include "irods_server_properties.hpp"
 
 // =-=-=-=-=-=-=-
 // boost includes
@@ -85,7 +86,15 @@ error read_client_server_negotiation_message(
 /// =-=-=-=-=-=-=-
 /// @brief given a buffer encrypt and hash it for negotiation
 error sign_server_sid(
+    const std::string,   // incoming SID
+    const std::string,   // encryption key
     std::string& );      // signed buffer
+
+/// =-=-=-=-=-=-=-
+/// @brief check the incoming signed SID against all locals SIDs 
+error check_sent_sid( 
+    server_properties&,   // server properties
+    const std::string );  // incoming signed SID
 
 }; // namespace irods
 

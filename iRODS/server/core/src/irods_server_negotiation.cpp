@@ -12,6 +12,106 @@
 
 namespace irods {
 /// =-=-=-=-=-=-=-
+/// @brief check the incoming signed SID against all locals SIDs 
+error check_sent_sid( 
+    server_properties& _props,
+    const std::string  _in_sid ) {
+    // =-=-=-=-=-=-=-
+    // check incoming params
+    if( _in_sid.empty() ) {
+        return ERROR(
+                   SYS_INVALID_INPUT_PARAM,
+                   "incoming SID is empty" );
+    }
+
+    // =-=-=-=-=-=-=-
+    // get the agent key
+    std::string encr_key;
+    irods::error err = _props.get_property< std::string >( 
+                           AGENT_KEY_KW, 
+                           encr_key );
+    if( !err.ok() ) {
+        return PASS( err );
+    }
+    // =-=-=-=-=-=-=-
+    // start with local SID
+    std::string svr_sid;
+    err = _props.get_property< 
+              std::string >( 
+                  LOCAL_ZONE_SID_KW, 
+                  svr_sid );
+    if( !err.ok() ) {
+        return PASS( err );
+    }
+
+    // =-=-=-=-=-=-=-
+    // sign SID
+    std::string signed_sid;
+    err = sign_server_sid(
+              svr_sid,
+              encr_key,
+              signed_sid );
+    if( !err.ok() ) {
+        return PASS( err );
+    }
+
+    // =-=-=-=-=-=-=-
+    // basic string compare
+    if( _in_sid == signed_sid ) {
+        return SUCCESS();
+    }
+
+    // =-=-=-=-=-=-=-
+    // get remote zone SIDs
+    std::vector< std::string > rem_sids;
+    err = _props.get_property< 
+              std::vector< std::string > >( 
+                  REMOTE_ZONE_SID_KW, 
+                  rem_sids );
+    if( !err.ok() ) {
+        return PASS( err );
+    }
+
+    std::vector< std::string >::iterator itr = rem_sids.begin();
+    for( ; itr != rem_sids.end(); ++itr ) {
+        // =-=-=-=-=-=-=-
+        // extract SID from remote zone SID
+        std::string::size_type pos = itr->find( "-" );
+        if( std::string::npos == pos ) {
+            rodsLog(
+                LOG_DEBUG,
+                "failed to find '-' in remote SID [%s]",
+                itr->c_str() );
+        }
+        std::string sid = itr->substr( pos );
+
+        // =-=-=-=-=-=-=-
+        // sign SID
+        std::string signed_sid;
+        err = sign_server_sid(
+                  sid,
+                  encr_key,
+                  signed_sid );
+        if( !err.ok() ) {
+            return PASS( err );
+        }
+
+        // =-=-=-=-=-=-=-
+        // basic string compare
+        if( _in_sid == signed_sid ) {
+            return SUCCESS();
+        }
+
+    } // for itr
+
+    return ERROR(
+               SYS_SIGNED_SID_NOT_MATCHED,
+               "signed SID was not matched" );
+
+} // check_sent_sid
+
+
+/// =-=-=-=-=-=-=-
 /// @brief function which manages the TLS and Auth negotiations with the client
 error client_server_negotiation_for_server(
     irods::network_object_ptr _ptr,
@@ -117,31 +217,31 @@ error client_server_negotiation_for_server(
                     }
 
                     // =-=-=-=-=-=-=-
-                    // sign local SID
-                    std::string signed_sid;
-                    err = sign_server_sid(
-                              signed_sid );
+                    // check SID against our SIDs
+                    err = check_sent_sid( 
+                              props, 
+                              svr_sid );
                     if( !err.ok() ) {
-                        return PASS( err );
-                    }
-
-                    // =-=-=-=-=-=-=-
-                    // check SID against our SID
-                    if( svr_sid != signed_sid ) {
                         rodsLog(
-                            LOG_ERROR,
-                            "client-server negotiation SID mismatch [%s] vs [%s]",
-                            svr_sid.c_str(),
-                            signed_sid.c_str() );
+                            LOG_DEBUG,
+                            "[%s]",
+                            PASS(err).status() );
                     } else {
                         // =-=-=-=-=-=-=-
-                        // store property that states this is an Agent-Agent connection
-                        props.set_property< std::string >( AGENT_CONN_KW, svr_sid );
+                        // store property that states this is an 
+                        // Agent-Agent connection
+                        props.set_property< 
+                            std::string >( 
+                                AGENT_CONN_KW, 
+                                svr_sid );
                     }
 
                 } // if sid is not empty
                 else {
-                    rodsLog( LOG_ERROR, "client_server_negotiation_for_server - sent SID is empty" );
+                    rodsLog( 
+                        LOG_DEBUG, 
+                        "%s - sent SID is empty",
+                        __FUNCTION__ );
                 }
             }
 

@@ -24,49 +24,28 @@ namespace irods {
 /// =-=-=-=-=-=-=-
 /// @brief given a buffer encrypt and hash it for negotiation
 error sign_server_sid(
-    std::string& _signed_sid ) {
-    server_properties& props = server_properties::getInstance();
-    irods::error err = props.capture_if_needed();
-    if( !err.ok() ) {
-        return PASS( err );
-    }
-
-    // =-=-=-=-=-=-=-
-    // get the local SID
-    std::string svr_sid;
-    err = props.get_property< std::string >( LOCAL_ZONE_SID_KW, svr_sid );
-    if( !err.ok() ) {
-        return PASS( err );
-    }
-
-    // =-=-=-=-=-=-=-
-    // get the encryption key from the properties
-    std::string enc_key;
-    err = props.get_property< std::string >( AGENT_KEY_KW, enc_key );
-    if( !err.ok() ) {
-        return PASS( err );
-    }
-
+    const std::string _svr_sid,
+    const std::string _enc_key,
+    std::string&      _signed_sid ) {
     // =-=-=-=-=-=-=-
     // create an encryption object
     // 32 byte key, 8 byte iv, 16 rounds encryption
-    irods::buffer_crypt crypt;
-
+    irods::buffer_crypt          crypt;
     irods::buffer_crypt::array_t key;
 
     // leverage iteration to copy from std::string to a std::vector<>
-    key.assign( enc_key.begin(), enc_key.end() );
+    key.assign( _enc_key.begin(), _enc_key.end() );
 
     irods::buffer_crypt::array_t in_buf;
     // leverage iteration to copy from std::string to a std::vector<>
-    in_buf.assign( svr_sid.begin(), svr_sid.end() );
+    in_buf.assign( _svr_sid.begin(), _svr_sid.end() );
 
     irods::buffer_crypt::array_t out_buf;
-    err = crypt.encrypt(
-              key,
-              key, // reuse key as iv
-              in_buf,
-              out_buf );
+    irods::error err = crypt.encrypt(
+                           key,
+                           key, // reuse key as iv
+                           in_buf,
+                           out_buf );
     if( !err.ok() ) {
         return PASS( err );
     }
@@ -294,21 +273,58 @@ error client_server_negotiation_for_client(
     // Agent.  sign the SID and send it showing that we are a trusted
     // Agent and not an actual Client ( icommand, jargon connection etc )
     std::string cli_msg;
-
+    
     // =-=-=-=-=-=-=-
-    // sign the SID
-    std::string signed_sid;
-    err = sign_server_sid(
-              signed_sid );
+    // if we cannot read the server.config file, punt
+    // as this must be a client-side situation
+    server_properties& props = server_properties::getInstance();
+    err = props.capture_if_needed();
     if( err.ok() ) {
         // =-=-=-=-=-=-=-
-        // add the SID to the returning client message
-        cli_msg += CS_NEG_SID_KW             +
-                   irods::kvp_association()  +
-                   signed_sid                +
-                   irods::kvp_delimiter();
-    } else {
-        rodsLog( LOG_DEBUG, "%s", PASS(err).result().c_str() );
+        // get our local zone SID
+        std::string sid;
+        err = props.get_property< 
+                  std::string >(
+                      LOCAL_ZONE_SID_KW,
+                      sid );
+        if( err.ok() ) {
+            std::string enc_key;
+            err = props.get_property< 
+                      std::string >(
+                          AGENT_KEY_KW,
+                          enc_key );
+            if( err.ok() ) {
+                // =-=-=-=-=-=-=-
+                // sign the SID
+                std::string signed_sid;
+                err = sign_server_sid(
+                          sid,
+                          enc_key,
+                          signed_sid );
+                if( err.ok() ) {
+                    // =-=-=-=-=-=-=-
+                    // add the SID to the returning client message
+                    cli_msg += CS_NEG_SID_KW             +
+                               irods::kvp_association()  +
+                               signed_sid                +
+                               irods::kvp_delimiter();
+                } else {
+                    rodsLog( 
+                        LOG_DEBUG, 
+                        "%s", 
+                        PASS(err).result().c_str() );
+                }
+            } else {
+                rodsLog( 
+                    LOG_DEBUG,
+                    "failed to get agent key" );
+            }
+        } else {
+                rodsLog( 
+                    LOG_DEBUG,
+                    "failed to get local zone SID" );
+            }
+
     }
 
     // =-=-=-=-=-=-=-

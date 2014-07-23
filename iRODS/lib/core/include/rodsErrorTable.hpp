@@ -161,6 +161,7 @@
 #define SYS_MSSO_CLOSE_ERR                          -136000
 #define SYS_RULE_NOT_FOUND                          -144000 // JMC
 #define SYS_NOT_IMPLEMENTED                         -146000 // JMC
+#define SYS_SIGNED_SID_NOT_MATCHED                  -147000 // JMC
 
 
 

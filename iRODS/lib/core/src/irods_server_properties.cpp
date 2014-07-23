@@ -9,6 +9,7 @@
 #include "irods_get_full_path_for_config_file.hpp"
 
 #include "rods.hpp"
+#include "irods_log.hpp"
 
 #include "readServerConfig.hpp"
 #include "initServer.hpp"
@@ -328,6 +329,34 @@ error server_properties::capture() {
 
             rodsLog( LOG_DEBUG, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
         } // LOCAL_ZONE_SID_KW
+
+        key = strstr( buf, REMOTE_ZONE_SID_KW );
+        if ( key != NULL ) {
+            result = SUCCESS();
+            len = strlen( REMOTE_ZONE_SID_KW );
+
+            // Set property name and setting
+            prop_name.assign( REMOTE_ZONE_SID_KW );
+            prop_setting.assign( findNextTokenAndTerm( key + len ) );
+            rodsLog( LOG_DEBUG, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
+
+            // Update properties table
+            std::vector<std::string> rem_sids;
+            if( properties.has_entry( prop_name ) ) {
+                result = properties.get< std::vector< std::string > >( prop_name, rem_sids );
+                if( result.ok() ) {
+                    rem_sids.push_back( prop_setting );
+                }
+            } 
+           
+            if( result.ok() ) { 
+                rem_sids.push_back( prop_setting );
+                result = properties.set< std::vector< std::string > >( prop_name, rem_sids );
+            } else {
+                irods::log( PASS( result ) );
+            }
+
+        } // REMOTE_ZONE_SID_KW
 
         key = strstr( buf, AGENT_KEY_KW.c_str() );
         if ( key != NULL ) {
