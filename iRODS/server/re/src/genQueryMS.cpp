@@ -1203,7 +1203,7 @@ msiPrintGenQueryOutToBuffer( msParam_t *queryOut, msParam_t *format, msParam_t *
     rei->status = printGenQueryOut( stream, format_str, NULL, genQueryOut );
     if ( rei->status < 0 ) {
         rodsLog( LOG_ERROR, "msiPrintGenQueryOutToBuffer: printGenQueryOut() failed, status = %d", rei->status );
-        free( stream );
+        fclose( stream );
         return( rei->status );
     }
 
@@ -1225,7 +1225,7 @@ msiPrintGenQueryOutToBuffer( msParam_t *queryOut, msParam_t *format, msParam_t *
 
     /* Fill bytesBuf in our buffer output */
     fillBufLenInMsParam( buffer, bytesBuf->len, bytesBuf );
-    free( stream );
+    fclose( stream );
 
     return 0;
 
