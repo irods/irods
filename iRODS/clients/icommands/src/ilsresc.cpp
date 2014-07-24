@@ -54,7 +54,7 @@ printGenQueryResults( rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
                       char *descriptions[], int doDashes ) {
     int printCount;
     int i, j;
-    char localTime[20];
+    char localTime[TIME_LEN];
     printCount = 0;
     if ( status != 0 ) {
         printError( Conn, status, "rcGenQuery" );
