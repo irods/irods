@@ -41,7 +41,6 @@ void
 printResultsAndSubQuery( rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
                          char *descriptions[], int subColumn, int dashOpt ) {
     int i, j;
-    char localTime[20];
     lastCommandStatus = status;
     if ( status == CAT_NO_ROWS_FOUND ) {
         lastCommandStatus = 0;
@@ -71,6 +70,7 @@ printResultsAndSubQuery( rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
                     }
                     if ( *descriptions[j] != '\0' ) {
                         if ( strstr( descriptions[j], "time" ) != 0 ) {
+                            char localTime[TIME_LEN];
                             getLocalTimeFromRodsTime( tResult, localTime );
                             if ( strcmp( tResult, "0" ) == 0 || *tResult == '\0' ) {
                                 strcpy( localTime, "none" );
