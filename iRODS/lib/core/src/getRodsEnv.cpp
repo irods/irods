@@ -390,7 +390,7 @@ extern "C" {
                 if ( key != NULL ) {
                     char *myStr;
                     char *getVar;
-                    myStr = ( char * )malloc( strlen( buf ) );
+                    myStr = ( char * )malloc( LONG_NAME_LEN );
                     rstrcpy( myStr, findNextTokenAndTerm( key + 13 ),
                              LONG_NAME_LEN );
                     rodsEnvArg->rodsServerDn = myStr;
