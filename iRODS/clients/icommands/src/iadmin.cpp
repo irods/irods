@@ -66,7 +66,7 @@ printSimpleQuery( char *buf ) {
                     return -1;
                 }
                 else {
-                    char local_time[20];
+                    char local_time[TIME_LEN];
                     getLocalTimeFromRodsTime( time_tokens[1].c_str(), local_time );
                     std::cout << time_tokens[0] << " " << local_time << std::endl;
                 }
@@ -1257,7 +1257,7 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         return ( 0 );
     }
     if ( strcmp( cmdToken[0], "ctime" ) == 0 ) {
-        char myString[20];
+        char myString[TIME_LEN];
         if ( strcmp( cmdToken[1], "str" ) == 0 ) {
             int status;
             status = checkDateFormat( cmdToken[2] );
@@ -1407,7 +1407,7 @@ main( int argc, char **argv ) {
     }
 
     if ( strcmp( cmdToken[0], "ctime" ) == 0 ) {
-        char myString[20];
+        char myString[TIME_LEN];
         if ( strcmp( cmdToken[1], "str" ) == 0 ) {
             int status;
             status = checkDateFormat( cmdToken[2] );
