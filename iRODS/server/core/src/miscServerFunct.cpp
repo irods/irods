@@ -3064,22 +3064,22 @@ dropRootPrivilege() {
 */
 int
 checkModArgType( char *arg ) {
-    if ( arg == NULL || *arg == '\0' ) {
+    if ( arg == NULL || strlen( arg ) == 0 ) {
         return( CAT_INVALID_ARGUMENT );
     }
-    if ( *( arg + 1 ) != ':' ) {
-        return( 0 );    /* not one */
+    if ( ':' != arg[1] ) {
+        return 0;
     }
-    if ( *arg == 'n' ) {
-        return( 1 );
+    switch( arg[0] ) {
+        case 'n':
+            return 1;
+        case 'v':
+            return 2;
+        case 'u':
+            return 3;
+        default:
+            return 0;
     }
-    if ( *arg == 'v' ) {
-        return( 2 );
-    }
-    if ( *arg == 'u' ) {
-        return( 3 );
-    }
-    return( 0 );
 }
 
 /// =-=-=-=-=-=-=-
