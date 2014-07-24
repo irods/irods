@@ -13,47 +13,53 @@
 using namespace boost::filesystem;
 
 int
-fsckObj( rcComm_t *conn, rodsArguments_t *myRodsArgs, rodsPathInp_t *rodsPathInp, char hostname[LONG_NAME_LEN] ) {
-    char inpPath[LONG_NAME_LEN] = "";
-    char *inpPathO, *lastChar;
-    int lenInpPath, status;
+fsckObj( rcComm_t *conn,
+        rodsArguments_t *myRodsArgs,
+        rodsPathInp_t *rodsPathInp,
+        char hostname[LONG_NAME_LEN] ) {
 
     if ( rodsPathInp->numSrc != 1 ) {
-        rodsLog( LOG_ERROR, "fsckObj: gave %i input source path, should give one and only one", rodsPathInp->numSrc );
-        status = USER_INPUT_PATH_ERR;
-    }
-    else {
-        inpPathO = rodsPathInp->srcPath[0].outPath;
-        path p( inpPathO );
-        if ( exists( p ) ) {
-            /* don't do anything if it is symlink */
-            if ( is_symlink( p ) ) {
-                return 0;
-            }
-            /* remove any trailing "/" from inpPathO */
-            lenInpPath = strlen( inpPathO );
-            lastChar = strrchr( inpPathO, '/' );
-            if ( lastChar && strlen( lastChar ) == 1 ) { // JMC - backport 4578
-                lenInpPath = lenInpPath - 1;
-            }
-            strncpy( inpPath, inpPathO, lenInpPath );
-            if ( is_directory( p ) ) {
-                status = checkIsMount( conn, inpPath );
-                if ( status != 0 ) {  /* if it is part of a mounted collection, abort */
-                    printf( "The directory %s or one of its subdirectories to be checked is declared as being \
-                            used for a mounted collection: abort!\n", inpPath );
-                    return ( status );
-                }
-            }
-            status = fsckObjDir( conn, myRodsArgs, inpPath, hostname );
-        }
-        else {
-            status = USER_INPUT_PATH_ERR;
-            rodsLog( LOG_ERROR, "fsckObj: %s does not exist", inpPathO );
-        }
+        rodsLog( LOG_ERROR, "fsckObj: gave %i input source path,"
+                "should give one and only one", rodsPathInp->numSrc );
+        return USER_INPUT_PATH_ERR;
     }
 
-    return ( status );
+    char * inpPathO = rodsPathInp->srcPath[0].outPath;
+    path p( inpPathO );
+    if ( !exists( p ) ) {
+        rodsLog( LOG_ERROR, "fsckObj: %s does not exist", inpPathO );
+        return USER_INPUT_PATH_ERR;
+    }
+
+    /* don't do anything if it is symlink */
+    if ( is_symlink( p ) ) {
+        return 0;
+    }
+
+    int lenInpPath = strlen( inpPathO );
+    /* remove any trailing "/" from inpPathO */
+    if ( lenInpPath > 0 && '/' == inpPathO[ lenInpPath - 1 ] ) {
+        lenInpPath--;
+    }
+    if ( lenInpPath >= LONG_NAME_LEN ) {
+        rodsLog( LOG_ERROR, "Path %s is longer than %ju characters in fsckObj",
+                inpPathO, (intmax_t) LONG_NAME_LEN );
+        return USER_STRLEN_TOOLONG;
+    }
+
+    char inpPath[ LONG_NAME_LEN ];
+    strncpy( inpPath, inpPathO, lenInpPath );
+    inpPath[ lenInpPath ] = '\0';
+    // if it is part of a mounted collection, abort
+    if ( is_directory( p ) ) {
+        if ( int status = checkIsMount( conn, inpPath ) ) {
+            rodsLog( LOG_ERROR, "The directory %s or one of its"
+                    "subdirectories to be checked is declared as being"
+                    "used for a mounted collection: abort!", inpPath );
+            return status;
+        }
+    }
+    return fsckObjDir( conn, myRodsArgs, inpPath, hostname );
 }
 
 int
