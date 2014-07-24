@@ -604,7 +604,10 @@ static irods::apidef_t client_api_table_inp[] = {
         AUTH_PLUG_REQ_AN, RODS_API_VERSION, NO_USER_AUTH, NO_USER_AUTH,
         "authPlugReqInp_PI", 0, "authPlugReqOut_PI", 0, ( funcPtr ) RS_AUTH_PLUG_REQ, irods::clearInStruct_noop
     },
-
+    {
+        GET_HIER_FOR_RESC_AN, RODS_API_VERSION, NO_USER_AUTH, NO_USER_AUTH,
+        "getHierarchyForRescInp_PI", 0, "getHierarchyForRescOut_PI", 0, ( funcPtr ) RS_GET_HIER_FOR_RESC, irods::clearInStruct_noop
+    }
 }; // _api_table_inp
 
 
