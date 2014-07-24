@@ -13,54 +13,60 @@
 using namespace boost::filesystem;
 
 int
-scanObj( rcComm_t *conn, rodsArguments_t *myRodsArgs, rodsPathInp_t *rodsPathInp, char hostname[LONG_NAME_LEN] ) {
-    char inpPath[LONG_NAME_LEN] = "";
-    char *inpPathO, *lastChar;
-    int lenInpPath = 0, status = 0; // JMC cppcheck - return uninit var
+scanObj( rcComm_t *conn,
+        rodsArguments_t *myRodsArgs,
+        rodsPathInp_t *rodsPathInp,
+        char hostname[LONG_NAME_LEN] ) {
 
-    if ( rodsPathInp->numSrc == 1 ) {
-        inpPathO = rodsPathInp->srcPath[0].outPath;
-        if ( rodsPathInp->srcPath[0].objType == LOCAL_FILE_T || \
-                rodsPathInp->srcPath[0].objType == LOCAL_DIR_T ) {
-            path p( inpPathO );
-            if ( exists( p ) ) {
-                /* don't do anything if it is symlink */
-                if ( is_symlink( p ) ) {
-                    return 0;
-                }
-                /* remove any trailing "/" from inpPathO */
-                lenInpPath = strlen( inpPathO );
-                lastChar = strrchr( inpPathO, '/' );
-                if ( lastChar && strlen( lastChar ) == 1 ) {
-                    lenInpPath = lenInpPath - 1;
-                }
-                strncpy( inpPath, inpPathO, lenInpPath );
-                if ( is_directory( p ) ) {
-                    status = checkIsMount( conn, inpPath );
-                    if ( status != 0 ) {  /* if it is part of a mounted collection, abort */
-                        printf( "The directory %s or one of its subdirectories to be scanned is declared as being \
-                                used for a mounted collection: abort!\n", inpPath );
-                        return ( status );
-                    }
-                }
-                status = scanObjDir( conn, myRodsArgs, inpPath, hostname );
-            }
-            else {
-                status = USER_INPUT_PATH_ERR;
-                rodsLog( LOG_ERROR, "scanObj: %s does not exist", inpPathO );
-            }
-        }
-        else if ( rodsPathInp->srcPath[0].objType == UNKNOWN_OBJ_T ||
-                  rodsPathInp->srcPath[0].objType == COLL_OBJ_T ) {
-            status = scanObjCol( conn, myRodsArgs, inpPathO );
-        }
-    }
-    else {
+    if ( rodsPathInp->numSrc != 1 ) {
         rodsLog( LOG_ERROR, "scanObj: gave %i input source path, should give one and only one", rodsPathInp->numSrc );
-        status = USER_INPUT_PATH_ERR;
+        return USER_INPUT_PATH_ERR;
     }
 
-    return ( status );
+    char * inpPathO = rodsPathInp->srcPath[0].outPath;
+    if ( rodsPathInp->srcPath[0].objType == LOCAL_FILE_T || \
+            rodsPathInp->srcPath[0].objType == LOCAL_DIR_T ) {
+        path p( inpPathO );
+        if ( !exists( p ) ) {
+            rodsLog( LOG_ERROR, "scanObj: %s does not exist", inpPathO );
+            return USER_INPUT_PATH_ERR;
+        }
+        /* don't do anything if it is symlink */
+        if ( is_symlink( p ) ) {
+            return 0;
+        }
+
+        int lenInpPath = strlen( inpPathO );
+        /* remove any trailing "/" from inpPathO */
+        if ( lenInpPath > 0 && '/' == inpPathO[ lenInpPath - 1 ] ) {
+            lenInpPath--;
+        }
+        if ( lenInpPath >= LONG_NAME_LEN ) {
+            rodsLog( LOG_ERROR, "Path %s is longer than %ju characters in scanObj",
+                    inpPathO, (intmax_t) LONG_NAME_LEN );
+            return USER_STRLEN_TOOLONG;
+        }
+
+        char inpPath[ LONG_NAME_LEN ];
+        strncpy( inpPath, inpPathO, lenInpPath );
+        inpPath[ lenInpPath ] = '\0';
+        // if it is part of a mounted collection, abort
+        if ( is_directory( p ) ) {
+            if ( int status = checkIsMount( conn, inpPath ) ) {
+                rodsLog( LOG_ERROR, "The directory %s or one of its"
+                        "subdirectories to be scanned is declared as being"
+                        "used for a mounted collection: abort!", inpPath );
+                return status;
+            }
+        }
+        return scanObjDir( conn, myRodsArgs, inpPath, hostname );
+    }
+    else if ( rodsPathInp->srcPath[0].objType == UNKNOWN_OBJ_T ||
+                rodsPathInp->srcPath[0].objType == COLL_OBJ_T ) {
+        return scanObjCol( conn, myRodsArgs, inpPathO );
+    }
+
+    return 0;
 }
 
 int
