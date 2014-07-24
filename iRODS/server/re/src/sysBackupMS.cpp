@@ -314,7 +314,6 @@ msiServerBackup( msParam_t *options, msParam_t *keyValOut, ruleExecInfo_t *rei )
 
     char newDirPath[MAX_NAME_LEN];				/* physical path of new directory on resource */
 
-    rescInfo_t *rescInfo;						/* for local resource info */
     char *dbPath;								/* local iCAT home dir */
 
     char *rodsDirPath, *subPath;
@@ -348,6 +347,7 @@ msiServerBackup( msParam_t *options, msParam_t *keyValOut, ruleExecInfo_t *rei )
     dbPath = getDBHomeDir();
 
     /* Get local resource info */
+    rescInfo_t *rescInfo = NULL; // for local resource info
     status = getDefaultLocalRescInfo( &rescInfo );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR, "msiServerBackup: Could not resolve local resource, status = %d",
