@@ -2335,22 +2335,10 @@ sub stopIrods
 		kill( 9, $pid );
 	}
 
-        # TGR - ZOMBIE REAPER
-        # no regard for PIDs
-        # iRODS must kill all owned processes for packaging purposes
-        #printStatus( "\tKilling any remaining Zombies... Silently.\n" );
-        system( "ps aux | grep \"^[_]\\?\$USER\" | grep \"irods[A|S|R|X]\" | awk '{print \$2}' | xargs kill -9 > /dev/null 2>&1" );
+    # no regard for PIDs
+    # iRODS must kill all owned processes for packaging purposes
+    system( "ps aux | grep \"^[_]\\?\$USER\" | grep \"irods[A|S|R|X]\" | awk '{print \$2}' | xargs kill -9 > /dev/null 2>&1" );
 
-	# Report if there are any left.
-	my $didNotDie = 0;
-	my @pids = getFamilyProcessIds( $parentPid );
-
-	if ( $#pids >= 0 )
-	{
-		printError( "    Some servers could not be killed.  They may be owned\n" );
-		printError( "    by another user or there could be a problem.\n" );
-		return 0;
-	}
 	return 1;
 }
 
@@ -3761,22 +3749,22 @@ sub Oracle_sql($$)
 	my $connectArg, $i;
 	$i = index($DATABASE_ADMIN_NAME, "@");
 
-    $dbadmin = substr($DATABASE_ADMIN_NAME, 0, $i);
-    $connectArg = $dbadmin . "/" . 
+        $dbadmin = substr($DATABASE_ADMIN_NAME, 0, $i);
+        $connectArg = $dbadmin . "/" . 
                   $DATABASE_ADMIN_PASSWORD . "@" . 
                   $DATABASE_HOST . ":" . $DATABASE_PORT . '/' . $databaseName;
 
-    $sqlplus = "sqlplus";
-    $exec_str = "$sqlplus '$connectArg' < $sqlFilename";
+        $sqlplus = "sqlplus";
+        $exec_str = "$sqlplus '$connectArg' < $sqlFilename";
 	($code,$output) = run( "$exec_str" );
-        if( $code != 0 ){
+        if( $output =~ "listener does not currently know of service requested in connect" ){
 	    $connectArg = $dbadmin . "/" . 
 			  $DATABASE_ADMIN_PASSWORD . "@" . 
 			  $DATABASE_HOST . ":" . $DATABASE_PORT; 
             $exec_str = "$sqlplus '$connectArg' < $sqlFilename";
 
 	    ($code,$output) = run( "$exec_str" );
-        }
+        } 
 
         return ($code,$output);
 }

@@ -11,9 +11,17 @@ DEBUG = False
 def get_current_schema_version(cfg):
     dbtype = cfg.values['catalog_database_type']
     result = cfg.exec_sql_cmd( "select option_value \
-                                 from R_GRID_CONFIGURATION \
-                                 where namespace='database' \
-                                 and option_name='schema_version';")
+                                from R_GRID_CONFIGURATION \
+                                where namespace='database' \
+                                and option_name='schema_version';")
+
+    # use default value
+    current_schema_version = 1
+
+    err_idx = 2;
+    if( dbtype == "oracle" ):
+        err_idx = 1
+
     if DEBUG:
         print(cfg.values)
         print(result)
@@ -23,30 +31,48 @@ def get_current_schema_version(cfg):
         or
         (dbtype == "mysql" and
         ("Table '%s.R_GRID_CONFIGURATION' doesn't exist" % cfg.values['Database']) in result[2].decode('utf-8'))
+        or
+        (dbtype == "oracle" and
+        "table or view does not exist" in result[1].decode('utf-8')) # sqlplus puts the output into stdout
         ):
+
         # create and populate configuration table
         indexstring = ""
         if (dbtype == "mysql"):
             indexstring = "(767)"
         result = cfg.exec_sql_cmd("create table R_GRID_CONFIGURATION ( \
-                                        namespace varchar(2700), \
-                                        option_name varchar(2700), \
-                                        option_value varchar(2700) ); \
-                                        create unique index idx_grid_configuration \
-                                        on R_GRID_CONFIGURATION (namespace %s, option_name %s); \
-                                        insert into R_GRID_CONFIGURATION VALUES ( \
-                                        'database', 'schema_version', '1' );" % ( indexstring, indexstring) )
+                                   namespace varchar(2700), \
+                                   option_name varchar(2700), \
+                                   option_value varchar(2700) );" )
         if DEBUG:
             print(result)
-        if (result[2].decode('utf-8') != ""):
-            print(
-                "ERROR: Creating Grid Configuration Table did not complete...")
-            print(result[2])
-            return
+
+        result = cfg.exec_sql_cmd("create unique index idx_grid_configuration \
+                                   on R_GRID_CONFIGURATION (namespace %s, option_name %s);" % ( indexstring, indexstring ) )
+        if DEBUG:
+            print(result)
+
+        result = cfg.exec_sql_cmd("insert into R_GRID_CONFIGURATION VALUES ( \
+                                   'database', 'schema_version', '1' );" )
+        if DEBUG:
+            print(result)
+ 
+        # special error case for oracle as it prints out '1 row created' on success
+        if ( dbtype == "oracle" ):
+            if( result[err_idx].decode('utf-8').find("row created") == -1 ):
+                print("ERROR: Creating Grid Configuration Table did not complete...")
+                print(result[err_idx])
+                return
+        else:
+            if( result[err_idx].decode('utf-8') != "" ):
+                print("ERROR: Creating Grid Configuration Table did not complete...")
+                print(result[err_idx])
+                return
+
         # use default value
         current_schema_version = 1
     else:
-        # postgres as default, oracle not tested yet
+        # postgres as default
         resultline = 2
         if (dbtype == "mysql"):
             resultline = 1
@@ -56,6 +82,8 @@ def get_current_schema_version(cfg):
             result[1].decode('utf-8').split("\n")[resultline].strip())
     if DEBUG:
         print("current_schema_version: %d" % current_schema_version)
+
+
     return current_schema_version
 
 
@@ -87,9 +115,9 @@ def update_schema_version(cfg, version):
         print("Updating schema_version...")
     # update the database
     thesql = "update R_GRID_CONFIGURATION \
-                set option_value = '%d' \
-                where namespace = 'database' \
-                and option_name = 'schema_version';" % version
+              set option_value = '%d' \
+              where namespace = 'database' \
+              and option_name = 'schema_version';" % version
     result = cfg.exec_sql_cmd(thesql)
     if (result[2].decode('utf-8') != ""):
         print("ERROR: Updating schema_version did not complete...")
