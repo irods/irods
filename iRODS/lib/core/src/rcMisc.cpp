@@ -1785,7 +1785,7 @@ getOffsetTimeStr( char *timeStr, char *offSet ) {
     myTime = time( NULL );
     myTime += atoi( offSet );
 
-    snprintf( timeStr, NAME_LEN, "%d", ( uint ) myTime );
+    snprintf( timeStr, TIME_LEN, "%d", ( uint ) myTime );
 }
 
 /* Update the input time string to be offset minutes ahead of the
