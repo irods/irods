@@ -698,6 +698,8 @@ int n = 0;
 char actiBuffer[bufferSize], recoBuffer[bufferSize];
 int actiP = 0, recoP = 0;
 Label start, finish;
+memset( &start, 0, sizeof( start ) );
+memset( &finish, 0, sizeof( finish ) );
 TRY( actions )
 TTEXT_LOOKAHEAD( "}" );
 OR( actions )
