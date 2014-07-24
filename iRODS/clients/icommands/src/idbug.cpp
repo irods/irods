@@ -14,7 +14,7 @@ char myHostName[MAX_NAME_LEN];
 int streamId = -1;
 int myMNum;
 
-char lastSent[100];
+char lastSent[HEADER_TYPE_LEN];
 char *sendAddr[100];
 int sendAddrInx = 0;
 
@@ -158,7 +158,7 @@ int sendIDebugCommand( char *buf, char *hdr ) {
     else {
         for ( ii = 0; ii < sendAddrInx ; ii++ ) {
             if ( sendAddr[ii] != NULL ) {
-                snprintf( hdr, 99, "CMSG:%s", sendAddr[ii] );
+                snprintf( hdr, HEADER_TYPE_LEN, "CMSG:%s", sendAddr[ii] );
                 strcpy( sendXmsgInp.sendXmsgInfo.msgType, hdr );
                 /*	printf("*** Sending:%s::%s::%i\n",sendXmsgInp.sendXmsgInfo.msgType,sendXmsgInp.sendXmsgInfo.msg,sendXmsgInp.sendXmsgInfo.numRcv);*/
                 status = rcSendXmsg( conn, &sendXmsgInp );
@@ -300,14 +300,14 @@ int processUserInput( char *buf ) {
             t++;
         }
         if ( ( strstr( t, "all" ) == t ) ) {
-            snprintf( hdr, 99, "CMSG:ALL" );
+            snprintf( hdr, HEADER_TYPE_LEN, "CMSG:ALL" );
         }
         else {
             if ( t[strlen( t ) - 1] == '\n' ) {
                 t[strlen( t ) - 1] = '\0';
             }
             if ( sendAddr[( int )atoi( t )] != NULL ) {
-                snprintf( hdr, 99, "CMSG:%s", sendAddr[( int )atoi( t )] );
+                snprintf( hdr, HEADER_TYPE_LEN, "CMSG:%s", sendAddr[( int )atoi( t )] );
             }
             else {
                 printf( "Wrong Server: No server found for %s\n", t );
@@ -317,10 +317,10 @@ int processUserInput( char *buf ) {
     }
     else {
         if ( sendAddrInx == 1 ) {
-            snprintf( hdr, 99, "CMSG:%s", sendAddr[0] );
+            snprintf( hdr, HEADER_TYPE_LEN, "CMSG:%s", sendAddr[0] );
         }
         else {
-            snprintf( hdr, 99, "%s", lastSent );
+            snprintf( hdr, HEADER_TYPE_LEN, "%s", lastSent );
         }
     }
     strcpy( lastSent, hdr );
@@ -441,7 +441,7 @@ main( int argc, char **argv ) {
 
 
     /* initialize and connect */
-    snprintf( lastSent, 99, "CMSG:BEGIN" );
+    snprintf( lastSent, HEADER_TYPE_LEN, "CMSG:BEGIN" );
     myHostName[0] = '\0';
     gethostname( myHostName, MAX_NAME_LEN );
     connectToX();
