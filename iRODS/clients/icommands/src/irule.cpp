@@ -622,16 +622,14 @@ parseMsInputParam( int argc, char **argv, int optInd, int ruleGen, int string,
                 if ( fgets( line, MAX_NAME_LEN, stdin ) == NULL ) {
                     return( CAT_INVALID_ARGUMENT );
                 }
-                if ( ( line[strlen( line ) - 1] = '\n' ) ) {
-                    line[strlen( line ) - 1] = '\0';
+                size_t line_len = strlen( line );
+                if( line_len > 0 && '\n' == line[line_len - 1] ) {
+                    line[line_len - 1] = '\0';
+                    line_len--;
                 }
-                char *val;
-                if ( strlen( line ) == 0 ) {
-                    val = strdup( tmpPtr + 1 );
-                }
-                else {
-                    val = quoteString( line, string && ruleGen, 0 );
-                }
+                char *val = line_len > 0 ?
+                    quoteString( line, string && ruleGen, 0 ) :
+                    strdup( tmpPtr + 1 );
                 addMsParam( execMyRuleInp->inpParamArray, valPtr, STR_MS_T,
                             val, NULL );
             }
@@ -641,16 +639,14 @@ parseMsInputParam( int argc, char **argv, int optInd, int ruleGen, int string,
                 if ( fgets( line, MAX_NAME_LEN, stdin ) == NULL ) {
                     return( CAT_INVALID_ARGUMENT );
                 }
-                if ( ( line[strlen( line ) - 1] = '\n' ) ) {
-                    line[strlen( line ) - 1] = '\0';
+                size_t line_len = strlen( line );
+                if( line_len > 0 && '\n' == line[line_len - 1] ) {
+                    line[line_len - 1] = '\0';
+                    line_len--;
                 }
-                char *val;
-                if ( strlen( line ) == 0 ) {
-                    val = strdup( tmpPtr );
-                }
-                else {
-                    val = quoteString( line, string && ruleGen, 0 );
-                }
+                char *val = line_len > 0 ?
+                    quoteString( line, string && ruleGen, 0 ) :
+                    strdup( tmpPtr );
                 addMsParam( execMyRuleInp->inpParamArray, valPtr, STR_MS_T,
                             val, NULL );
             }
