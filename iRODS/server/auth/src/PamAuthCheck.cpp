@@ -51,58 +51,58 @@ null_conv( int num_msg, const struct pam_message **msg,
 }
 
 int main( int argc, char *argv[] ) {
-    pam_handle_t *pamh = NULL;
-    int retval;
-    int nb;
-    int debug = 0;
 
-    static char password[500];
-
-    static const char *username = "nobody";
-    static struct pam_conv conv = { null_conv, NULL };
-
-    if ( argc == 2 ) {
+    const char *username = NULL;
+    if ( argc == 2 || argc == 3 ) {
         username = argv[1];
     }
     else {
-        fprintf( stderr, "Usage: PamAuthCheck username\n" );
-        exit( 2 );
+        fprintf( stderr, "Usage: PamAuthCheck username [extra-arg-activates-debug-mode]\n" );
+        return 2;
+    }
+
+    bool debug = false;
+    if ( argc == 3 ) {
+        debug = true;
     }
 
     /* read the pw from stdin */
-    nb = read( 0, ( void* )&password, sizeof( password ) );
-    if ( debug > 0 ) {
+    char password[500];
+    const int nb = read( 0, ( void* )&password, sizeof( password ) );
+    if ( debug ) {
         printf( "nb=%d\n", nb );
     }
     if ( password[nb - 1] == '\n' ) {
         password[nb - 1] = '\0';
     }
 
-    retval = pam_start( pam_service, username, &conv, &pamh );
-    if ( debug > 0 ) {
+    pam_handle_t *pamh = NULL;
+    struct pam_conv conv = { null_conv, NULL };
+    int retval = pam_start( pam_service, username, &conv, &pamh );
+    if ( debug ) {
         printf( "retval 1=%d\n", retval );
     }
 
     if ( retval != PAM_SUCCESS ) {
-        fprintf( stderr, "PamAuthCheck: pam_start error\n" );
-        exit( 3 );
+        fprintf( stderr, "PamAuthCheck: pam_start error [%d]\n", retval );
+        return 3;
     }
 
     reply = ( struct pam_response* )malloc( sizeof( struct pam_response ) );
     if ( reply == NULL ) {
         fprintf( stderr, "PamAuthCheck: malloc error\n" );
-        exit( 4 );
+        return 4;
     }
 
     reply[0].resp = strdup( password );
     reply[0].resp_retcode = 0;
 
     retval = pam_authenticate( pamh, 0 );  /* check username-password */
-    if ( debug > 0 ) {
+    if ( debug ) {
         printf( "retval 2=%d\n", retval );
     }
 
-    strcpy( password, "                    " );
+    memset( password, 0, sizeof( password ) );
 
     if ( retval == PAM_SUCCESS ) {
         fprintf( stdout, "Authenticated\n" );
@@ -113,8 +113,8 @@ int main( int argc, char *argv[] ) {
 
     if ( pam_end( pamh, retval ) != PAM_SUCCESS ) { /* close Linux-PAM */
         pamh = NULL;
-        fprintf( stderr, "PamAuthCheck: failed to release authenticator\n" );
-        exit( 5 );
+        fprintf( stderr, "PamAuthCheck: failed to release authenticator [%d]\n", retval );
+        return 5;
     }
 
     return ( retval == PAM_SUCCESS ? 0 : 1 );   /* indicate success (valid
