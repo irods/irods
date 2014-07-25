@@ -1315,12 +1315,12 @@ obfGetMD5Hash( char *stringToHash ) {
       Set up an array of characters that we will transpose.
     */
     unsigned char buffer[30]; /* the digest is 16 bytes for MD5, 20 SHA1 */
-    unsigned char keyBuf[100];
+    unsigned char keyBuf[101];
 
     static char outBuf[50];
 
-    memset( keyBuf, 0, 100 );
-    strncpy( ( char * )keyBuf, stringToHash, 100 );
+    memset( keyBuf, 0, 101 );
+    snprintf( ( char* )keyBuf, sizeof( keyBuf ), "%s", stringToHash );
 
     memset( buffer, 0, sizeof( buffer ) );
     /*
