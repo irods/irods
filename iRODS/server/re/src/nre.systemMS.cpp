@@ -266,7 +266,7 @@ int remoteExec( msParam_t *mPD, msParam_t *mPA, msParam_t *mPB, msParam_t *mPC, 
     msParamArray_t *tmpParamArray, *aParamArray;
     msParamArray_t *outParamArray = NULL;
     char tmpStr[LONG_NAME_LEN];
-    char tmpStr1[LONG_NAME_LEN];
+    char tmpStr1[MAX_COND_LEN];
     /*
     char actionCall[MAX_ACTION_SIZE];
     char recoveryActionCall[MAX_ACTION_SIZE];
