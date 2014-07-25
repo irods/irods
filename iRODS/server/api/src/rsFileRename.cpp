@@ -126,10 +126,9 @@ int _rsFileRename(
     // =-=-=-=-=-=-=-
     // percolate possible change in phy path up
     ( *_rename_out ) = ( fileRenameOut_t* ) malloc( sizeof( fileRenameOut_t ) );
-    strncpy(
-        ( *_rename_out )->file_name,
-        file_obj->physical_path().c_str(),
-        MAX_NAME_LEN );
+    snprintf(
+        ( *_rename_out )->file_name, sizeof( ( *_rename_out )->file_name ),
+        "%s", file_obj->physical_path().c_str() );
 
     return rename_err.code();
 
