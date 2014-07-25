@@ -558,7 +558,7 @@ fillSubmitConditions( char *action, char *inDelayCondition,
         free( delayCondition ); // JMC cppcheck - leak
         return( i );
     }
-    i = copyTaggedValue( delayCondition, "ET", ruleSubmitInfo->exeTime, NAME_LEN );
+    i = copyTaggedValue( delayCondition, "ET", ruleSubmitInfo->exeTime, TIME_LEN );
     if ( i != 0 && i != UNMATCHED_KEY_OR_INDEX ) {
         free( delayCondition ); // JMC cppcheck - leak
         return( i );
