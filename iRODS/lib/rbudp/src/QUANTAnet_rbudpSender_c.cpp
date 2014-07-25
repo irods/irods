@@ -503,7 +503,7 @@ int  initSendRudp( rbudpSender_t *rbudpSender, void* buffer, int bufSize,
                                sizeof( long long ) );
 
     rbudpSender->rbudpBase.endOfUdp.round = 0;
-    strncpy( rbudpSender->rbudpBase.endOfUdp.end, "EEE", 3 );
+    memset( rbudpSender->rbudpBase.endOfUdp.end, 'E', sizeof( rbudpSender->rbudpBase.endOfUdp.end ) );
 
     if ( rbudpSender->rbudpBase.verbose > 1 )
         TRACE_DEBUG( "totalNumberOfPackets: %d",
