@@ -493,7 +493,7 @@ printDataCollEnt( collEnt_t *collEnt, int flags ) {
 int
 printDataCollEntLong( collEnt_t *collEnt, int flags ) {
     char *tmpReplStatus;
-    char localTimeModify[20];
+    char localTimeModify[TIME_LEN];
     char typeStr[NAME_LEN];
 
     if ( collEnt->replStatus == OLD_COPY ) {
