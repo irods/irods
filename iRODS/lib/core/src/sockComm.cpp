@@ -858,7 +858,7 @@ connectToRhost( rcComm_t *conn, int connectCnt, int reconnFlag ) {
 
         // =-=-=-=-=-=-=-
         // copy results to connection for network object factory
-        strncpy( conn->negotiation_results, results.c_str(), MAX_NAME_LEN );
+        snprintf( conn->negotiation_results, MAX_NAME_LEN, "%s", results.c_str() );
     }
 
     ret = readVersion( net_obj, &conn->svrVersion );
