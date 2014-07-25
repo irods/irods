@@ -83,7 +83,7 @@ error server_properties::capture() {
             len = strlen( DB_PASSWORD_KW );
 
             // Store password in temporary string
-            strncpy( DBPassword, findNextTokenAndTerm( key + len ), MAX_PASSWORD_LEN );
+            snprintf( DBPassword, sizeof( DBPassword ), "%s", findNextTokenAndTerm( key + len ) );
 
         } // DB_PASSWORD_KW
 
