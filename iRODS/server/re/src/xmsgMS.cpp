@@ -573,7 +573,7 @@ int _readXMsg( int streamId, char *condRead, int *msgNum, int *seqNum,
     memset( &rcvXmsgInp, 0, sizeof( rcvXmsgInp ) );
     rcvXmsgInp.rcvTicket = streamId;
     rcvXmsgInp.msgNumber = 0;
-    strncpy( rcvXmsgInp.msgCondition, condRead, MAX_NAME_LEN );
+    snprintf( rcvXmsgInp.msgCondition, MAX_NAME_LEN, "%s", condRead );
     i = rcRcvXmsg( conn, &rcvXmsgInp, &rcvXmsgOut );
     if ( i < 0 || rcvXmsgOut == NULL ) { // JMC cppcheck
         /*  rcDisconnect(conn); */
