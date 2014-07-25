@@ -264,7 +264,7 @@ genAllInCollQCond( char *collection, char *collQCond ) {
     }
     else {
 
-        snprintf( collQCond, MAX_NAME_LEN * 2, " = '%s' || like '%s/%%' ",
+        snprintf( collQCond, MAX_NAME_LEN, " = '%s' || like '%s/%%' ",
                   collection, collection );
     }
     return ( 0 );
