@@ -892,7 +892,8 @@ msiGetSystemTime( msParam_t* outParam, msParam_t* inpParam, ruleExecInfo_t *rei 
 **/
 int
 msiHumanToSystemTime( msParam_t* inpParam, msParam_t* outParam, ruleExecInfo_t *rei ) {
-    char sys_time[TIME_LEN], *hr_time;
+    //CID26185: prevent buffer overrun
+    char sys_time[TIME_LEN + 1], *hr_time;
     int status;
 
     /* For testing mode when used with irule --test */
