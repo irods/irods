@@ -92,7 +92,7 @@ error server_properties::capture() {
             len = strlen( DB_KEY_KW );
 
             // Store key in temporary string
-            strncpy( DBKey, findNextTokenAndTerm( key + len ), MAX_PASSWORD_LEN );
+            snprintf( DBKey, MAX_PASSWORD_LEN, "%s", findNextTokenAndTerm( key + len ) );
 
         } // DB_KEY_KW
 
