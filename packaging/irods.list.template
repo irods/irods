@@ -829,6 +829,7 @@ f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiobjget_irods.r ./iRODS/clients/icommands/test/rules3.0/rulemsiobjget_irods.r
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiCreateUserAccountsFromDataObj.r ./iRODS/clients/icommands/test/rules3.0/rulemsiCreateUserAccountsFromDataObj.r
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiobjget_test.r ./iRODS/clients/icommands/test/rules3.0/rulemsiobjget_test.r
+f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/ruleTestChangeSessionVar.r ./iRODS/clients/icommands/test/rules3.0/ruleTestChangeSessionVar.r
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/testsuite1.r ./iRODS/clients/icommands/test/rules3.0/testsuite1.r
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/testsuite2.r ./iRODS/clients/icommands/test/rules3.0/testsuite2.r
 f 644 $OS_IRODS_ACCT $OS_IRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/testsuite3.r ./iRODS/clients/icommands/test/rules3.0/testsuite3.r
