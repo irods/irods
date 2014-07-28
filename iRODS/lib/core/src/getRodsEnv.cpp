@@ -187,6 +187,10 @@ extern "C" {
             getRodsEnvFromFile( configFileName, rodsEnvArg, LOG_DEBUG );
         }
 
+        // Prevent the iRODS environment from being printed multiple times
+        unsetenv( PRINT_RODS_ENV_STR );
+
+
 #ifdef windows_platform
         if ( getVar != NULL ) {
             free( getVar );
@@ -214,7 +218,6 @@ extern "C" {
 
         if ( getenv( PRINT_RODS_ENV_STR ) && atoi( getenv( PRINT_RODS_ENV_STR ) ) ) {
             msgLevel = LOG_NOTICE;
-            unsetenv( PRINT_RODS_ENV_STR );
         }
 
         /*
@@ -457,7 +460,6 @@ extern "C" {
 
         if ( getenv( PRINT_RODS_ENV_STR ) && atoi( getenv( PRINT_RODS_ENV_STR ) ) ) {
             msgLevel = LOG_NOTICE;
-            unsetenv( PRINT_RODS_ENV_STR );
         }
 
         /*
