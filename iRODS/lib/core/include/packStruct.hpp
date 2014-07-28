@@ -160,9 +160,8 @@ struct */
               packedOutput_t *packedOutput, packInstructArray_t *myPackTable,
               int packFlag, irodsProt_t irodsProt );
     int
-    packPointerItem( packItem_t *myPackedItem, void **inPtr,
-                     packedOutput_t *packedOutput, packInstructArray_t *myPackTable,
-                     int packFlag, irodsProt_t irodsProt );
+    packPointerItem( packItem_t *myPackedItem, packedOutput_t *packedOutput,
+            packInstructArray_t *myPackTable, int packFlag, irodsProt_t irodsProt );
     int
     packNonpointerItem( packItem_t *myPackedItem, void **inPtr,
                         packedOutput_t *packedOutput, packInstructArray_t *myPackTable,

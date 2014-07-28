@@ -1034,9 +1034,8 @@ packNonpointerItem( packItem_t *myPackedItem, void **inPtr,
 }
 
 int
-packPointerItem( packItem_t *myPackedItem, void **inPtr,
-                 packedOutput_t *packedOutput, packInstructArray_t *myPackTable,
-                 int packFlag, irodsProt_t irodsProt ) {
+packPointerItem( packItem_t *myPackedItem, packedOutput_t *packedOutput,
+        packInstructArray_t *myPackTable, int packFlag, irodsProt_t irodsProt ) {
     int numElement;     /* number of elements pointed to by one pointer */
     int numPointer;     /* number of pointers in the array of pointer */
     int elementSz;
@@ -1334,7 +1333,7 @@ packItem( packItem_t *myPackedItem, void **inPtr, packedOutput_t *packedOutput,
     }
     if ( myPackedItem->pointerType > 0 ) {
         /* a pointer type */
-        status = packPointerItem( myPackedItem, inPtr, packedOutput,
+        status = packPointerItem( myPackedItem, packedOutput,
                                   myPackTable, packFlag, irodsProt );
     }
     else {
