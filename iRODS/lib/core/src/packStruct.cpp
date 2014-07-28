@@ -2126,20 +2126,16 @@ int
 unpackXmlCharToOutPtr( void **inPtr, void **outPtr, int len,
                        packItem_t *myPackedItem ) {
     int endTagLen;
-    unsigned long inLen, outLen;
-    int status;
-
-    inLen = parseXmlValue( inPtr, myPackedItem, &endTagLen );
+    int inLen = parseXmlValue( inPtr, myPackedItem, &endTagLen );
     if ( inLen < 0 ) {
-        return ( ( int ) inLen );
+        return inLen;
     }
 
     if ( packTypeTable[myPackedItem->typeInx].number == PACK_BIN_TYPE ) {
         /* bin type. need to decode */
-        outLen = len;
-        status = base64_decode( ( const unsigned char * ) * inPtr, inLen,
-                                ( unsigned char * ) * outPtr, &outLen );
-        if ( status < 0 ) {
+        unsigned long outLen = len;
+        if( int status = base64_decode( ( const unsigned char * ) * inPtr,
+                    inLen, ( unsigned char * ) * outPtr, &outLen ) ) {
             return status;
         }
         if ( ( int ) outLen != len ) {
@@ -2149,11 +2145,11 @@ unpackXmlCharToOutPtr( void **inPtr, void **outPtr, int len,
         }
     }
     else {
-        if ( ( int ) inLen != len ) {
+        if ( inLen != len ) {
             rodsLog( LOG_NOTICE,
                      "unpackXmlCharToOutPtr: required len %d != %d from input",
                      len, inLen );
-            if ( ( int ) inLen > len ) {
+            if ( inLen > len ) {
                 return ( USER_PACKSTRUCT_INPUT_ERR );
             }
         }
