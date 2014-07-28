@@ -229,22 +229,13 @@ int
 apiTableLookup( int apiNumber ) {
 #ifndef RODS_SERVER
     return apiNumber;
-#endif
-#if 0
-    int i;
-
-    for ( i = 0; i < NumOfApi; i++ ) {
-        if ( RcApiTable[i].apiNumber == apiNumber ) {
-            return ( i );
-        }
-    }
 #else
     irods::api_entry_table& RcApiTable = irods::get_client_api_table();
     if ( RcApiTable.find( apiNumber ) != RcApiTable.end() ) {
         return apiNumber;
     }
-#endif
     return ( SYS_UNMATCHED_API_NUM );
+#endif
 }
 
 int
