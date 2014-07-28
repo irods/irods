@@ -37,7 +37,7 @@ void
 printGenQueryResults( rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
                       char *descriptions[] ) {
     int i, j;
-    char localTime[20];
+    char localTime[TIME_LEN];
     lastCommandStatus = status;
     if ( status == CAT_NO_ROWS_FOUND ) {
         lastCommandStatus = 0;
