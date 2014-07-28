@@ -161,28 +161,7 @@ error load_plugin( PluginType*&       _plugin,
     // =-=-=-=-=-=-=-
     // using the factory pointer create the plugin
     _plugin = factory( _instance_name, _context );
-    if ( _plugin ) {
-        // =-=-=-=-=-=-=-
-        // notify world of success
-        // TODO :: add hash checking and provide hash value for log also
-#ifdef DEBUG
-        std::cout << "load_plugin :: loaded [" << clean_plugin_name << "]" << std::endl;
-#endif
-
-        // =-=-=-=-=-=-=-
-        // call the delayed loader to load any other symbols this plugin may need.
-        error ret = _plugin->delay_load( handle );
-        if ( !ret.ok() ) {
-            std::stringstream msg;
-            msg << "failed on delayed load for [" << _plugin_name << "]";
-            dlclose( handle );
-            return ERROR( PLUGIN_ERROR, msg.str() );
-        }
-
-        return SUCCESS();;
-
-    }
-    else {
+    if ( !_plugin ) {
         std::stringstream msg;
         msg << "failed to create plugin object for [" << _plugin_name << "]";
         dlclose( handle );
@@ -190,9 +169,23 @@ error load_plugin( PluginType*&       _plugin,
     }
 
     // =-=-=-=-=-=-=-
-    // the code should never get here
-    dlclose( handle );
-    return ERROR( INVALID_LOCATION, "this shouldnt happen." );
+    // notify world of success
+    // TODO :: add hash checking and provide hash value for log also
+#ifdef DEBUG
+    std::cout << "load_plugin :: loaded [" << clean_plugin_name << "]" << std::endl;
+#endif
+
+    // =-=-=-=-=-=-=-
+    // call the delayed loader to load any other symbols this plugin may need.
+    error ret = _plugin->delay_load( handle );
+    if ( !ret.ok() ) {
+        std::stringstream msg;
+        msg << "failed on delayed load for [" << _plugin_name << "]";
+        dlclose( handle );
+        return ERROR( PLUGIN_ERROR, msg.str() );
+    }
+
+    return SUCCESS();;
 
 } // load_plugin
 
