@@ -358,18 +358,6 @@ _rsDataObjRepl(
                 status = 0;
             }
 
-            // =-=-=-=-=-=-=-
-            // JMC - backport 4494
-            if ( backupFlag == 0 && myRescGrpInfo != NULL        &&
-                    ( allFlag == 1 || myRescGrpInfo->next == NULL ) &&
-                    ( myRescGrpInfo->status < 0 ) ) {
-                status = myRescGrpInfo->status;
-                // =-=-=-=-=-=-=-
-            }
-            else {
-                status = 0;
-            }
-
             freeAllDataObjInfo( dataObjInfoHead );
             freeAllDataObjInfo( oldDataObjInfoHead );
             freeAllDataObjInfo( destDataObjInfo ); // JMC - backport 4494
