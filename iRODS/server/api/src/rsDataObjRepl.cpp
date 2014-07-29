@@ -119,6 +119,15 @@ rsDataObjRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     }
 
     // =-=-=-=-=-=-=-
+    // make sure tmp_dest_resc exists and is available
+    rescInfo_t resc_info;
+    irods::error resc_err = irods::get_resc_info( tmp_dest_resc, resc_info );
+    if ( !resc_err.ok() ) {
+    	irods::log(resc_err);
+    	return resc_err.code();
+    }
+
+    // =-=-=-=-=-=-=-
     // call redirect for our operation of choice to request the hier string appropriately
     std::string hier;
     char*       tmp_hier  = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
