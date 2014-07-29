@@ -171,6 +171,9 @@ Note: A default system PostgreSQL installation does not listen on a TCP port, it
 
 Note: Installing the MySQL database plugin will also require `Installing lib_mysqludf_preg`_.  These functions are required for the internal iRODS SQL which uses regular expressions.
 
+Note: When running iRODS on pre 8.4 PostgreSQL, it is necessary to remove an optimized specific query which was not yet available::
+
+ irods@hostname:~/ $ iadmin rsq DataObjInCollReCur 
 
 Database Setup Example
 **********************
