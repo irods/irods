@@ -26,7 +26,7 @@ main( int argc, char **argv ) {
     int reconnFlag;
 
 
-    optStr = "aBG:QMhrvVn:PR:S:TX:UZ"; // JMC - backport 4549
+    optStr = "aBG:QMN:hrvVn:PR:S:TX:UZ"; // JMC - backport 4549
 
     status = parseCmdLineOpt( argc, argv, optStr, 1, &myRodsArgs ); // JMC - backport 4549
 
