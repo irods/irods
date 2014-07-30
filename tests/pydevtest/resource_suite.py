@@ -706,7 +706,7 @@ class ResourceSuite(ResourceBase):
         assertiCmd(s.adminsession,"iput "+filename)                                 # put file
         assertiCmd(s.adminsession,"ils -L "+filename,"STDOUT",filename)             # for debugging
         assertiCmd(s.adminsession,"irepl -R "+self.testresc+" -N 3 "+filename)      # replicate to test resource
-        assertiCmd(s.adminsession,"ils -l "+filename,"STDOUT","1 "+self.testresc)   # replica 1 on test resource should be listed
+        assertiCmd(s.adminsession,"ils -l "+filename,"STDOUT",self.testresc)        # test resource should be listed
         assertiCmd(s.adminsession,"irm -f "+filename)                               # cleanup file
         # local cleanup
         os.remove(filepath)
