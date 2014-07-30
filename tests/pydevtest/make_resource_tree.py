@@ -90,7 +90,7 @@ def main(width, max_depth):
 		#print args
 	
 		# run command
-		subprocess.Popen(args).communicate()
+		subprocess.Popen(args, stdout=subprocess.PIPE).communicate()
 	
 	
 	
