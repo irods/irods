@@ -4,7 +4,7 @@ if (sys.version_info >= (2,7)):
 else:
     import unittest2 as unittest
 from resource_suite import ResourceBase
-from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, get_hostname, create_directory_of_small_files
+from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, getiCmdOutput, get_hostname, create_directory_of_small_files
 import pydevtest_sessions as s
 import commands
 import os
@@ -338,29 +338,42 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
     # REBALANCE
 
     def test_rebalance_for_object_count(self):
-       # =-=-=-=-=-=-=-
-       # read server.config and .odbc.ini
-       cfg = Server_Config() 
+        # =-=-=-=-=-=-=-
+        # read server.config and .odbc.ini
+        cfg = Server_Config()
  
-       root_dir = "/tmp/irods/big_dir"
-       if os.path.exists( root_dir ):
-           shutil.rmtree( root_dir )
-       os.makedirs( root_dir )
+        root_dir = "/tmp/irods/big_dir"
+        if os.path.exists( root_dir ):
+            shutil.rmtree( root_dir )
+        os.makedirs( root_dir )
 
-       for i in range(30):
-           path = root_dir + "/file_"+str(i)
-           output = commands.getstatusoutput( 'dd if=/dev/zero of='+path+' bs=1M count=1' )
-           print output[1]
-           assert output[0] == 0, "dd did not successfully exit"
+        for i in range(30):
+            path = root_dir + "/rebalance_testfile_"+str(i)
+            output = commands.getstatusoutput( 'dd if=/dev/zero of='+path+' bs=1M count=1' )
+            print output[1]
+            assert output[0] == 0, "dd did not successfully exit"
 
-       assertiCmd( s.adminsession,"iput -r "+root_dir )
-       
-       # =-=-=-=-=-=-=-
-       # drop several rows from the R_DATA_MAIN table to jkjjq:q
-       cfg.exec_sql_cmd( "delete from R_DATA_MAIN where data_name like 'file_1%'");
 
-       assertiCmd(s.adminsession,"iadmin modresc demoResc rebalance");
-       assertiCmd(s.adminsession,"iadmin lr demoResc", "LIST", "resc_objcount: 21");
+        # get initial object count
+        initial_output = getiCmdOutput(s.adminsession, "iadmin lr demoResc")
+        objcount_line = initial_output[0].splitlines()[-1]
+        initial_objcount = int(objcount_line.split(":")[-1].strip())
+        print "initial: "+str(initial_objcount)
+
+        # put the new files
+        assertiCmd( s.adminsession,"iput -r "+root_dir )
+
+        # =-=-=-=-=-=-=-
+        # drop several rows from the R_DATA_MAIN table to jkjjq:q
+        cfg.exec_sql_cmd( "delete from R_DATA_MAIN where data_name like 'rebalance_testfile_1%'")
+
+        # rebalance
+        assertiCmd(s.adminsession,"iadmin modresc demoResc rebalance")
+
+        # expected object count
+        expected_objcount = initial_objcount + 19;  # 19 = 30 initial - 11 (1 and 10 through 19) deleted files
+        print "expected: "+str(expected_objcount)
+        assertiCmd(s.adminsession,"iadmin lr demoResc", "LIST", "resc_objcount: "+str(expected_objcount))
 
     def test_rebalance_for_repl_node(self):
         output = commands.getstatusoutput("hostname")
