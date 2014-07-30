@@ -3,7 +3,7 @@ if (sys.version_info >= (2,7)):
     import unittest
 else:
     import unittest2 as unittest
-from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, create_local_testfile, get_hostname, RUN_IN_TOPOLOGY, get_irods_top_level_dir, get_irods_config_dir
+from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, create_local_testfile, create_local_largefile, get_hostname, RUN_IN_TOPOLOGY, get_irods_top_level_dir, get_irods_config_dir
 import pydevtest_sessions as s
 import commands
 import os
@@ -683,6 +683,35 @@ class ResourceSuite(ResourceBase):
     # irepl
     ###################
     
+    def test_irepl_invalid_input(self):
+        # local setup
+        filename = "somefile.txt"
+        filepath = create_local_testfile(filename)
+        # assertions
+        assertiCmd(s.adminsession,"ils -L "+filename,"STDERR","does not exist")                     # should not be listed
+        assertiCmd(s.adminsession,"iput "+filename)                                                 # put file
+        assertiCmd(s.adminsession,"ils -L "+filename,"STDOUT",filename)                             # for debugging
+        assertiCmd(s.adminsession,"irepl -R nonresc "+filename,"STDERR","SYS_INVALID_INPUT_PARAM")  # replicate to bad resource
+        assertiCmd(s.adminsession,"irm -f "+filename)                                               # cleanup file
+        # local cleanup
+        os.remove(filepath)
+
+        
+    def test_irepl_multithreaded(self):
+        # local setup
+        filename = "largefile.txt"
+        filepath = create_local_largefile(filename)
+        # assertions
+        assertiCmd(s.adminsession,"ils -L "+filename,"STDERR","does not exist")     # should not be listed
+        assertiCmd(s.adminsession,"iput "+filename)                                 # put file
+        assertiCmd(s.adminsession,"ils -L "+filename,"STDOUT",filename)             # for debugging
+        assertiCmd(s.adminsession,"irepl -R "+self.testresc+" -N 3 "+filename)      # replicate to test resource
+        assertiCmd(s.adminsession,"ils -l "+filename,"STDOUT","1 "+self.testresc)   # replica 1 on test resource should be listed
+        assertiCmd(s.adminsession,"irm -f "+filename)                               # cleanup file
+        # local cleanup
+        os.remove(filepath)
+
+            
     def test_irepl_update_replicas(self):
         # local setup
         filename = "updatereplicasfile.txt"

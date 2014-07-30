@@ -77,6 +77,11 @@ def create_local_testfile(filename):
     f.close()
     return filepath
 
+def create_local_largefile(filename):
+    filepath = os.path.abspath(filename)
+    os.system('dd if=/dev/zero of='+filepath+' bs=1M count=64')
+    return filepath
+
 def check_icmd_outputtype(fullcmd,outputtype):
     allowed_outputtypes = ["LIST","EMPTY","ERROR","",'STDOUT', 'STDERR', 'STDOUT_MULTILINE', 'STDERR_MULTILINE']
     if outputtype not in allowed_outputtypes:
