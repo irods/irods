@@ -1,43 +1,13 @@
 #!/bin/bash
 
-SEARCHPATHS="/usr $HOME"
-
-# =-=-=-=-=-=-=-
-# count only binary ELF files for psql hits
-ctr=0
-for file in `find $SEARCHPATHS -name "psql" -print 2> /dev/null`
-do
-	elfstatus=`file -h $file | grep 'ELF\|Mach-O' | grep 64 | wc -l | tr -d ' '`
-	if [ "$elfstatus" == "1" ]; then
-		elf_links[$ctr]=$file
-		ctr=$ctr+1
-	fi
-done
-
-# prepopulate the return variable with the proper values,
-# in the case of a failure this will be overwritten with
-# the error message
-ret=${elf_links[0]}
-
-
-# =-=-=-=-=-=-=-
-# if there are no candidates, there is no psql on this machine.
-# set return value accordingly
+# find whatever psql is in the current user's path
+ret=`which psql`
+# if none found report a failure, do not exit 1
 if [ "$ret" == "" ]; then
     echo "No postgres [psql] found.  Aborting." 1>&2
     ret="FAIL/FAIL"
 fi
-
-# =-=-=-=-=-=-=-
-# if there is still more than one candidate, we cannot continue.
-# set return value accordingly
-if [ ${#elf_links[@]} -gt 1 ]; then
-	echo "Multiple versions of postgres found, aborting installation" 1>&2
-	echo -e `find $SEARCHPATHS -name "psql" -print 2> /dev/null ` 1>&2
-	ret="FAIL/FAIL"
-fi
-
-
-# =-=-=-=-=-=-=-
-# if all is well, return the path to postgres binaries
+# return the bin directory holding psql
 echo `dirname $ret`
+# exit cleanly
+exit 0
