@@ -9,22 +9,17 @@ namespace irods {
 const std::string MD5_NAME( "md5" );
 class MD5Strategy : public HashStrategy {
 public:
-    MD5Strategy( void );
-    virtual ~MD5Strategy( void );
+    MD5Strategy() {};
+    virtual ~MD5Strategy() {};
 
-    virtual std::string name( void ) const {
-        return _name;
+    virtual std::string name() const {
+        return MD5_NAME;
     }
-    virtual unsigned int init( void );
-    virtual unsigned int update( char const* data, unsigned int size );
-    virtual unsigned int digest( std::string& messageDigest );
+    virtual error init( boost::any& context ) const;
+    virtual error update( const std::string&, boost::any& context ) const;
+    virtual error digest( std::string& messageDigest, boost::any& context ) const;
+    virtual bool isChecksum( const std::string& ) const;
 
-private:
-    static std::string _name;
-
-    MD5_CTX _context;
-    bool _finalized;
-    std::string _digest;
 };
 }; // namespace irods
 

@@ -1,135 +1,46 @@
 #include "Hasher.hpp"
 #include <iostream>
 #include <algorithm>
+#include <boost/algorithm/string.hpp>
+#include <rodsErrorTable.hpp>
 
 #include "irods_stacktrace.hpp"
 
 namespace irods {
 
-Hasher::
-Hasher( void ) {
-    // empty
+error
+Hasher::init( const HashStrategy* _strategy_in ) {
+    _strategy = _strategy_in;
+    _stored_error = SUCCESS();
+    _stored_digest.clear();
+
+    return PASS( _strategy->init( _context ) );
 }
 
-Hasher::
-~Hasher( void ) {
-    for ( std::vector<HashStrategy*>::iterator it = _strategies.begin(); it != _strategies.end(); ++it ) {
-        HashStrategy* strategy = *it;
-        delete strategy;
+error
+Hasher::update( const std::string& _data ) {
+    if ( NULL == _strategy ) {
+        return ERROR( SYS_UNINITIALIZED, "Update called on a hasher that has not been initialized" );
     }
+    if ( !_stored_digest.empty() ) {
+        return ERROR( SYS_HASH_IMMUTABLE, "Update called on a hasher that has already generated a digest" );
+    }
+    error ret = _strategy->update( _data, _context );
+
+    return PASS( ret );
 }
 
-unsigned int Hasher::
-listStrategies(
-    std::vector<std::string>& strategies ) const {
-    unsigned int result = 0;
-    for ( std::vector<HashStrategy*>::const_iterator it = _strategies.begin();
-            it != _strategies.end(); ++it ) {
-        HashStrategy* strategy = *it;
-        strategies.push_back( strategy->name() );
+error
+Hasher::digest( std::string& _messageDigest ) {
+    if ( NULL == _strategy ) {
+        return ERROR( SYS_UNINITIALIZED, "Digest called on a hasher that has not been initialized" );
     }
-    return result;
-}
-
-unsigned int Hasher::
-init( const std::string& _hasher ) {
-    unsigned int result = 0;
-    _requested_hasher.clear();
-
-    std::string scheme = _hasher;
-    std::transform(
-        scheme.begin(),
-        scheme.end(),
-        scheme.begin(),
-        ::tolower );
-
-    for ( std::vector<HashStrategy*>::iterator it = _strategies.begin();
-            result == 0 && it != _strategies.end();
-            ++it ) {
-        if ( scheme == ( *it )->name() ) {
-            _requested_hasher = scheme;
-            HashStrategy* strategy = *it;
-            result = strategy->init();
-            break;
-        }
-    }
-    if ( _requested_hasher.empty() ) {
-        std::cout << "Hasher::init - strategy not found ["
-                  << scheme
-                  << "]"
-                  << std::endl;
-
-        return -1;
-    }
-    else {
-
-        return result;
-    }
-}
-
-unsigned int Hasher::
-update(
-    char const* data,
-    unsigned int size ) {
-    if ( _requested_hasher.empty() ) {
-        std::cout << "Hasher::update - not initialized" << std::endl;
-        return -1;
+    if( _stored_digest.empty() ) {
+        _stored_error = _strategy->digest( _stored_digest, _context );
     }
 
-    bool found = false;
-    unsigned int result = 0;
-    for ( std::vector<HashStrategy*>::iterator it = _strategies.begin();
-            result == 0 && it != _strategies.end();
-            ++it ) {
-        if ( _requested_hasher == ( *it )->name() ) {
-            HashStrategy* strategy = *it;
-            result = strategy->update( data, size );
-            found = true;
-            break;
-        }
-    }
-    if ( !found ) {
-        std::cout << "Hasher::init - strategy not found ["
-                  << _requested_hasher
-                  << "]"
-                  << std::endl;
-
-        result = -1;             // TODO - should be an enum or string
-        // table value here
-    }
-    return result;
-}
-
-unsigned int Hasher::
-digest(
-    std::string& messageDigest ) {
-    if ( _requested_hasher.empty() ) {
-        std::cout << "Hasher::update - not initialized" << std::endl;
-        return -1;
-    }
-
-    unsigned result = 0;
-    bool found = false;
-    for ( std::vector<HashStrategy*>::iterator it = _strategies.begin();
-            !found && it != _strategies.end();
-            ++it ) {
-        HashStrategy* strategy = *it;
-        if ( _requested_hasher == strategy->name() ) {
-            found = true;
-            result = strategy->digest( messageDigest );
-            break;
-        }
-    }
-    if ( !found ) {
-        std::cout << "Hasher::init - strategy not found ["
-                  << _requested_hasher
-                  << "]"
-                  << std::endl;
-
-        result = -1;             // TODO - should be an enum or string
-        // table value here
-    }
-    return result;
+    _messageDigest = _stored_digest;
+    return PASS( _stored_error );
 }
 
 }; //namespace irods

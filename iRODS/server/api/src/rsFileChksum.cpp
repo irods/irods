@@ -202,9 +202,9 @@ int fileChksum(
     // create a hasher object and init given a scheme
     // if it is unsupported then default to md5
     irods::Hasher hasher;
-    ret = irods::hasher_factory( hasher );
-    if ( hasher.init( final_scheme ) < 0 ) {
-        hasher.init( irods::MD5_NAME );
+    ret = irods::getHasher( final_scheme, hasher );
+    if ( !ret.ok() ) {
+        irods::getHasher( irods::MD5_NAME, hasher );
     }
 
     // =-=-=-=-=-=-=-
@@ -231,7 +231,7 @@ int fileChksum(
 
         // =-=-=-=-=-=-=-
         // update hasher
-        hasher.update( buffer, bytes_read );
+        hasher.update( std::string( buffer, bytes_read ) );
 
         // =-=-=-=-=-=-=-
         // read some more

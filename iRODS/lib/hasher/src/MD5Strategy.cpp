@@ -9,58 +9,33 @@
 
 namespace irods {
 
-std::string MD5Strategy::_name = MD5_NAME;
-
-MD5Strategy::
-MD5Strategy( void ) {
-    _finalized = false;
+error
+MD5Strategy::init( boost::any& _context ) const {
+    _context = MD5_CTX();
+    MD5Init( boost::any_cast<MD5_CTX>( &_context ) );
+    return SUCCESS();
 }
 
-MD5Strategy::
-~MD5Strategy() {
-    // TODO - stub
+error
+MD5Strategy::update( const std::string& data, boost::any& _context ) const {
+    MD5Update( boost::any_cast<MD5_CTX>( &_context ), ( const unsigned char * )data.c_str(), data.size() );
+    return SUCCESS();
 }
 
-unsigned int MD5Strategy::
-init( void ) {
-    unsigned int result = 0;
-    MD5Init( &_context );
-    _finalized = false;
-    return result;
-}
-
-unsigned int MD5Strategy::
-update(
-    char const* data,
-    unsigned int size ) {
-    unsigned int result = 0;
-    if ( !_finalized ) {
-        unsigned char* charData = new unsigned char[size]; // overkill?
-        memcpy( charData, data, size );
-        MD5Update( &_context, charData, size );
-        delete [] charData;
+error
+MD5Strategy::digest( std::string& messageDigest, boost::any& _context ) const {
+    unsigned char buffer[17];
+    MD5Final( buffer, boost::any_cast<MD5_CTX>( &_context ) );
+    std::stringstream ins;
+    for ( int i = 0; i < 16; ++i ) {
+        ins << std::setfill( '0' ) << std::setw( 2 ) << std::hex << ( int )buffer[i];
     }
-    else {
-        result = 1;             // TODO - should be an enum or string
-        // table value here
-    }
-    return result;
+    messageDigest = ins.str();
+    return SUCCESS();
 }
 
-unsigned int MD5Strategy::
-digest(
-    std::string& messageDigest ) {
-    unsigned int result = 0;
-    if ( !_finalized ) {
-        unsigned char buffer[17];
-        MD5Final( buffer, &_context );
-        std::stringstream ins;
-        for ( int i = 0; i < 16; ++i ) {
-            ins << std::setfill( '0' ) << std::setw( 2 ) << std::hex << ( int )buffer[i];
-        }
-        _digest = ins.str();
-    }
-    messageDigest = _digest;
-    return result;
+bool
+MD5Strategy::isChecksum( const std::string& _chksum) const {
+   return std::string::npos == _chksum.find_first_not_of( "0123456789abcdefABCDEF" );
 }
 }; //namespace irods

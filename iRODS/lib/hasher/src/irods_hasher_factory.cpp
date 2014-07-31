@@ -1,11 +1,38 @@
 #include "irods_hasher_factory.hpp"
+#include "md5Checksum.hpp"
 #include "MD5Strategy.hpp"
 #include "SHA256Strategy.hpp"
-#include "md5Checksum.hpp"
+#include <sstream>
+#include <boost/unordered_map.hpp>
 
 namespace irods {
 
-error get_hash_scheme_from_checksum(
+    namespace {
+        boost::unordered_map<const std::string, const HashStrategy*>
+        make_map() {
+            boost::unordered_map<const std::string, const HashStrategy*> map;
+            map[ SHA256_NAME ] = new SHA256Strategy();
+            map[ MD5_NAME ] = new MD5Strategy();
+            return map;
+        }
+
+        const boost::unordered_map<const std::string, const HashStrategy*> _strategies( make_map() );
+    };
+
+error
+getHasher( const std::string& _name, Hasher& _hasher) {
+    boost::unordered_map<const std::string, const HashStrategy*>::const_iterator it = _strategies.find( _name );
+    if ( _strategies.end() == it ) {
+        std::stringstream msg;
+        msg << "Unknown hashing scheme [" << _name << "]";
+        return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
+    }
+    _hasher.init(it->second);
+    return SUCCESS();
+}
+
+error
+get_hash_scheme_from_checksum(
     const std::string& _chksum,
     std::string&       _scheme ) {
     if ( _chksum.empty() ) {
@@ -13,31 +40,18 @@ error get_hash_scheme_from_checksum(
                    SYS_INVALID_INPUT_PARAM,
                    "empty chksum string" );
     }
-
-    if ( std::string::npos != _chksum.find( SHA256_CHKSUM_PREFIX ) ) {
-        _scheme = SHA256_NAME;
-        return SUCCESS();
+    for ( boost::unordered_map<const std::string, const HashStrategy*>::const_iterator it = _strategies.begin();
+            _strategies.end() != it; ++it ) {
+        if( it->second->isChecksum( _chksum ) ) {
+            _scheme = it->second->name();
+            return SUCCESS();
+        }
     }
-    else if ( std::string::npos == _chksum.find_first_not_of( "0123456789abcdefABCDEF" ) ) {
-        _scheme = MD5_NAME;
-        return SUCCESS();
-    }
-
     return ERROR(
                SYS_INVALID_INPUT_PARAM,
                "hash scheme not found" );
 
 } // get_hasher_scheme_from_checksum
-
-error hasher_factory( Hasher& _hasher ) {
-    _hasher.addStrategy( new MD5Strategy() );
-
-#ifdef SHA256_FILE_HASH
-    _hasher.addStrategy( new SHA256Strategy() );
-#endif
-    return SUCCESS();
-
-} // hasher_factory
 
 }; // namespace irods
 

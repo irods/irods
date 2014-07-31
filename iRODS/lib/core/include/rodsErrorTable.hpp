@@ -162,8 +162,8 @@
 #define SYS_RULE_NOT_FOUND                          -144000 // JMC
 #define SYS_NOT_IMPLEMENTED                         -146000 // JMC
 #define SYS_SIGNED_SID_NOT_MATCHED                  -147000 // JMC
-
-
+#define SYS_HASH_IMMUTABLE                          -148000
+#define SYS_UNINITIALIZED                           -149000
 
 /* 300,000 - 499,000 - user input type error */
 #define USER_AUTH_SCHEME_ERR                        -300000

@@ -177,7 +177,7 @@ error load_plugin( PluginType*&       _plugin,
 
     // =-=-=-=-=-=-=-
     // call the delayed loader to load any other symbols this plugin may need.
-    error ret = _plugin->delay_load( handle );
+    ret = _plugin->delay_load( handle );
     if ( !ret.ok() ) {
         std::stringstream msg;
         msg << "failed on delayed load for [" << _plugin_name << "]";

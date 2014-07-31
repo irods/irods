@@ -53,9 +53,8 @@ error sign_server_sid(
     // =-=-=-=-=-=-=-
     // hash the encrypted sid
     Hasher hasher;
-    err = hasher_factory( hasher );
-    hasher.init( irods::MD5_NAME );
-    hasher.update( reinterpret_cast<char*>( out_buf.data() ), out_buf.size() );
+    err = getHasher( MD5_NAME, hasher );
+    hasher.update( std::string ( reinterpret_cast<char*>( out_buf.data() ), out_buf.size() ) );
     hasher.digest( _signed_sid );
 
     return SUCCESS();

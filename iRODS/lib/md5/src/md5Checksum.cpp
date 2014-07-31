@@ -100,11 +100,10 @@ chksumLocFile( char *fileName, char *chksumStr, const char* scheme ) {
     // =-=-=-=-=-=-=-
     // init the hasher object
     irods::Hasher hasher;
-    irods::error ret = irods::hasher_factory( hasher );
+    irods::error ret = irods::getHasher( final_scheme, hasher );
 
-    hasher.init( final_scheme );
     while ( ( len = fread( buffer, 1, MD5_BUF_SZ, file ) ) > 0 ) {
-        hasher.update( buffer, len );
+        hasher.update( std::string( buffer, len ) );
     }
     fclose( file );
 

@@ -2,30 +2,28 @@
 #define _Hasher_H_
 
 #include "HashStrategy.hpp"
+#include "irods_error.hpp"
 
 #include <string>
-#include <vector>
+#include <boost/any.hpp>
 
 namespace irods {
 
+const std::string STRICT_HASH_POLICY( "strict" );
+const std::string COMPATIBLE_HASH_POLICY( "compatible" );
+
 class Hasher {
 public:
-    Hasher( void );
-    virtual ~Hasher( void );
 
-    unsigned int addStrategy( HashStrategy* strategy ) {
-        _strategies.push_back( strategy );
-        return 0;
-    }
-    unsigned int listStrategies( std::vector<std::string>& strategies ) const;
-
-    unsigned int init( const std::string& );
-    unsigned int update( char const* data, unsigned int size );
-    unsigned int digest( std::string& messageDigest );
+    error init( const HashStrategy* );
+    error update( const std::string& );
+    error digest( std::string& messageDigest );
 
 private:
-    std::vector<HashStrategy*> _strategies;
-    std::string                _requested_hasher;
+    const HashStrategy* _strategy = NULL;
+    boost::any          _context;
+    error               _stored_error;
+    std::string         _stored_digest;
 };
 
 }; // namespace irods
