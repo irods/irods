@@ -1,6 +1,7 @@
-#include "Hasher.h"
-#include "MD5Strategy.h"
-#include "SHA256Strategy.h"
+#include "Hasher.hpp"
+#include "MD5Strategy.hpp"
+#include "SHA256Strategy.hpp"
+#include "irods_hasher_factory.hpp"
 
 #include <string>
 #include <iostream>
@@ -13,27 +14,26 @@ void
 generateHash(
     const char* filename ) {
     // Create hasher
-    Hasher hasher;
-    MD5Strategy* md5Strategy = new MD5Strategy();
-    hasher.addStrategy( md5Strategy );
-    SHA256Strategy* sha256Strategy = new SHA256Strategy();
-    hasher.addStrategy( sha256Strategy );
+    Hasher md5_hasher;
+    Hasher sha_hasher;
+    getHasher( MD5_NAME, md5_hasher );
+    getHasher( SHA256_NAME, sha_hasher );
 
     // Read the file and hash it
     ifstream input( filename, ios_base::in | ios_base::binary );
     if ( input.is_open() ) {
         char buffer[1024];
-        hasher.init();
         while ( !input.eof() ) {
             input.read( buffer, 1023 );
             int numRead = input.gcount();
-            hasher.update( buffer, numRead );
+            md5_hasher.update( std::string( buffer, numRead ) );
+            sha_hasher.update( std::string( buffer, numRead ) );
         }
         input.close();
         string messageDigest;
-        hasher.digest( "MD5", messageDigest );
-        cout << messageDigest << " ";
-        hasher.digest( "SHA256", messageDigest );
+        md5_hasher.digest( messageDigest );
+        cout << messageDigest << endl;
+        sha_hasher.digest( messageDigest );
         cout << messageDigest << endl;
     }
     else {
