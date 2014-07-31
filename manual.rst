@@ -426,7 +426,7 @@ The following error will be logged if an agent_key is missing::
 
  ERROR: client_server_negotiation_for_server - sent SID is empty
 
-The following error will be logged when the agent_key values to not align and/or are not exactly 32 bytes long::
+The following error will be logged when the agent_key values do not align and/or are not exactly 32 bytes long::
 
  ERROR: client-server negotiation SID mismatch
 
@@ -523,9 +523,9 @@ Upgrading from iRODS 3.3.x to iRODS 4.0+ is not supported with an automatic scri
 #. Patch database with provided upgrade SQL file ( psql ICAT < `packaging/upgrade-3.3.xto4.0.0.sql` )
 #. If necessary, migrate 3.3.x in-place iCAT database to the system database installation.  It is recommended to dump and restore your database into the system installation.  This will allow the original database to be uninstalled completely, once the iRODS upgrade is confirmed.
 #. Provide a database user 'irods', database password, and owner permissions for that database user to the new system-installed iCAT.
-#. Confirm all local at-rest data (any local iRODS Vault paths) has read and write permissions for the new 'irods' unix service account.
 #. Manually update any changes to 'core.re' and 'server.config'.  Keep in mind immediate replication rules (``acPostProcForPut``, etc.) may be superceded by your new resource composition.
-#. Run ``./packaging/setup_irods_database.sh`` (recommended) OR Manually update all 4.0+ configuration files given previous 3.3.x configuration (.irodsEnv, .odbc.ini DSN needs to be set to either 'postgres', 'mysql', or 'oracle').  The automatic ``./packaging/setup_irods_database.sh`` script will work only with the system-installed database server.
+#. Run ``./packaging/setup_irods.sh`` (recommended) OR Manually update all 4.0+ configuration files given previous 3.3.x configuration (.irodsEnv, .odbc.ini DSN needs to be set to either 'postgres', 'mysql', or 'oracle').  The automatic ``./packaging/setup_irods.sh`` script will work only with the system-installed database server.
+#. Confirm all local at-rest data (any local iRODS Vault paths) has read and write permissions for the new 'irods' unix service account.
 #. Start new 4.0+ iCAT server
 #. On all resource servers in the same Zone, install and setup 4.0+.  Existing configuration details should be ported as well ('server.config', 'core.re', Vault permissions).
 #. Rebuild Resource Hierarchies from previous Resource Group configurations (``iadmin addchildtoresc``) (See `Composable Resources`_)

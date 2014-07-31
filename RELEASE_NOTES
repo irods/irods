@@ -8,6 +8,7 @@ Development of this release has focused on the following features and efforts:
 - Bug fixes
 - Impostor resource plugin removes need for installation of plugins across entire grid
 - Better support for block-storage operations
+- More flexible installation options (service account name/group)
 
 Ongoing efforts include:
 
@@ -17,6 +18,7 @@ Ongoing efforts include:
 - Certified against full Jargon test suite
 - Continuous integration testing via hudson
 - Continuous static analysis via cppcheck
+- Static analysis via coverity
 - Optimized builds with "-O3" and "-Werror"
 - Code coverage over 57%
 - Topology testing
