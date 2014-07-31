@@ -33,7 +33,7 @@ typedef struct {
     int mode;
     keyValPair_t condInput;
     char in_pdmo[MAX_NAME_LEN];
-    rodsLong_t dataSize;
+    rodsLong_t dataSize; /* must be on the end because packing instructions do not handle doubles correctly on MacOSX"
 } fileOpenInp_t;
 
 #define fileOpenInp_PI "str resc_name_[MAX_NAME_LEN]; str resc_hier_[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN]; int otherFlags; struct RHostAddr_PI; str fileName[MAX_NAME_LEN]; int flags; int mode; struct KeyValPair_PI; str in_pdmo[MAX_NAME_LEN]; double dataSize;"
@@ -41,28 +41,28 @@ typedef struct {
 #if defined(RODS_SERVER)
 #define RS_FILE_OPEN rsFileOpen
 /* prototype for the server handler */
-int
-rsFileOpen( rsComm_t *rsComm, fileOpenInp_t *fileOpenInp );
-int
-rsFileOpenByHost( rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
-                  rodsServerHost_t *rodsServerHost );
-int
-_rsFileOpen( rsComm_t *rsComm, fileOpenInp_t *fileOpenInp );
-int
-remoteFileOpen( rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
-                rodsServerHost_t *rodsServerHost );
+    int
+    rsFileOpen( rsComm_t *rsComm, fileOpenInp_t *fileOpenInp );
+    int
+    rsFileOpenByHost( rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
+                      rodsServerHost_t *rodsServerHost );
+    int
+    _rsFileOpen( rsComm_t *rsComm, fileOpenInp_t *fileOpenInp );
+    int
+    remoteFileOpen( rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
+                    rodsServerHost_t *rodsServerHost );
 #else
 #define RS_FILE_OPEN NULL
 #endif
 
-/* prototype for the client call */
+    /* prototype for the client call */
 #ifdef __cplusplus
-extern "C" {
+    extern "C" {
 #endif
-    int
-    rcFileOpen( rcComm_t *conn, fileOpenInp_t *fileOpenInp );
+        int
+        rcFileOpen( rcComm_t *conn, fileOpenInp_t *fileOpenInp );
 #ifdef __cplusplus
-}
+    }
 #endif
 
 #endif  /* FILE_OPEN_H */
