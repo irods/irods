@@ -21,5 +21,5 @@ myTestRule {
   msiDataObjRepl(*SourceFile,"destRescName=*Resource",*Status);
   writeLine("stdout","The file *SourceFile is replicated onto resource *Resource");
 }
-INPUT *SourceFile="/tempZone/home/rods/sub1/foo3", *Resource="testResc" 
+INPUT *SourceFile="/tempZone/home/rods/sub1/foo3", *Resource="testallrulesResc" 
 OUTPUT ruleExecOut
