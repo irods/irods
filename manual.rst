@@ -1323,6 +1323,17 @@ This will prompt for the user's GSI password.  If the user is successfully authe
 
 In addition, if users want to authenticate the server, they can set 'irodsServerDn' in their user environment. This will cause the system to do mutual authentication instead of just authenticating the client user to the server.
 
+Limitations
+***********
+
+The iRODS administrator will see two limitations when using GSI authentication:
+
+#. The 'clientUserName' environment variable will fail (the admin cannot alias as another user)
+#. The ``iadmin moduser password`` will fail (cannot update the user's password)
+
+The workaround is to use iRODS native password authentication when using these.
+
+``ipasswd`` for rodsusers will also fail, but it is not an issue as it would be trying to update their (unused) iRODS native password.  They should not be updating their GSI passwords via iCommands.
 
 Kerberos
 --------
@@ -1344,18 +1355,6 @@ Configuration of Kerberos is out of scope for this document, but consists of the
 A new keytab file can be created with the following command::
 
  kadmin ktadd -k /var/lib/irods/irods.keytab irodsserver/serverhost.example.org@EXAMPLE.ORG
-
-Limitations
-###########
-
-The iRODS administrator will see two limitations when using GSI authentication:
-
-#. The 'clientUserName' environment variable will fail (the admin cannot alias as another user)
-#. The ``iadmin moduser password`` will fail (cannot update the user's password)
-
-The workaround is to use iRODS native password authentication when using these.
-
-``ipasswd`` for rodsusers will also fail, but it is not an issue as it would be trying to update their (unused) iRODS native password.  They should not be updating their GSI passwords via iCommands.
 
 iRODS Configuration
 *******************
@@ -1390,7 +1389,7 @@ Then, to initialize the Kerberos session ticket and authenticate::
 
 
 Limitations
-###########
+***********
 
 The iRODS administrator will see two limitations when using Kerberos authentication:
 
@@ -1718,7 +1717,7 @@ Routing issue and/or an accidental use of localhost
 
 :Error Code: SYS_EXCEED_CONNECT_CNT -9000
 
-This error occurs when one of the iRODS servers is trying to connect to another server but is actually being routed back to itself.  This usually occurs because of a configuration error in /etc/hosts possibly due to:
+This error occurs when one of the iRODS servers fails to recognize itself as localhost (and probably the target of the request) and subsequently routes the request to another server (with its hostname).  This usually occurs because of a configuration error in /etc/hosts possibly due to:
 
 #. DHCP lease renewal
 
