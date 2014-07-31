@@ -10,6 +10,10 @@ Building and running iRODS on MacOSX is currently only supported with a locally 
  cd external/postgresql-9.3.4
  
  # =-=-=-=-=-=-=-
+ # update $PATH to use this local psql
+ export PATH=`pwd`/pgsql/bin:$PATH
+
+ # =-=-=-=-=-=-=-
  # initialize the database
  ./pgsql/bin/initdb -D `pwd`/pgsql/data
  
@@ -29,10 +33,6 @@ Building and running iRODS on MacOSX is currently only supported with a locally 
  ./pgsql/bin/psql ICAT -c "GRANT ALL PRIVILEGES ON DATABASE \"ICAT\" TO irods"
  
  # =-=-=-=-=-=-=-
- # switch back to top level, update to use this local postgresql installation
+ # switch back to top level and run setup_irods_database.sh
  cd ../../
- sed -i '' 's/^SEARCHPATHS=.*$/SEARCHPATHS="$HOME"/' ./plugins/database/packaging/find_bin_postgres.sh
-
- # =-=-=-=-=-=-=-
- # run setup_irods_database.sh
  ./plugins/database/packaging/setup_irods_database.sh
