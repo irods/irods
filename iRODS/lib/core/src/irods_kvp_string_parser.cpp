@@ -2,6 +2,7 @@
 
 // =-=-=-=-=-=-=-
 #include "irods_kvp_string_parser.hpp"
+#include "irods_stacktrace.hpp"
 
 // =-=-=-=-=-=-=-
 // rods includes
@@ -67,8 +68,11 @@ error parse_kvp_string(
         if ( std::string::npos == pos ) {
             // =-=-=-=-=-=-=-
             // no association, just add to the map
-            _kvp[ _string ] = _string;
-            return SUCCESS();
+            rodsLog( 
+                LOG_DEBUG, 
+                "parse_kvp_string :: no kvp found [%s]",
+                _string.c_str() );
+            return ERROR( -1, "" );
 
         }
         else {

@@ -60,7 +60,11 @@ rsAuthCheck( rsComm_t *rsComm, authCheckInp_t *authCheckInp,
             }
 
         }
+    } else {
+        response.assign( authCheckInp->response, RESPONSE_LEN + 2 );
+
     }
+
     status = chlCheckAuth(
                  rsComm,
                  scheme.c_str(),
