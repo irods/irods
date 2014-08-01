@@ -41,6 +41,8 @@ network::~network( ) {
 network::network(
     const network& _rhs ) :
     plugin_base( _rhs ) {
+    start_operation_    = _rhs.start_operation_;
+    stop_operation_     = _rhs.stop_operation_;
     operations_         = _rhs.operations_;
     ops_for_delay_load_ = _rhs.ops_for_delay_load_;
 
