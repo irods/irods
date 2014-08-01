@@ -39,12 +39,12 @@ class Test_RulebaseSuite(unittest.TestCase, ResourceBase):
         # add new rule to end of core.re
         newrule = """
 
-                        # delayed multiple replication rule
+                        # multiple replication rule
                         replicateMultiple(*destRgStr) {
                             *destRgList = split(*destRgStr, ',');
-                                writeLine("serverLog", " acPostProcForPut delayed multiple replicate $objPath $filePath -> *destRgStr");
+                                writeLine("serverLog", " acPostProcForPut multiple replicate $objPath $filePath -> *destRgStr");
                             foreach (*destRg in *destRgList) {
-                                writeLine("serverLog", " acPostProcForPut delayed replicate $objPath $filePath -> *destRg");
+                                writeLine("serverLog", " acPostProcForPut replicate $objPath $filePath -> *destRg");
                                 *e = errorcode(msiSysReplDataObj(*destRg,"null"));
                                 if (*e != 0) {
                                 if(*e == -808000) {
