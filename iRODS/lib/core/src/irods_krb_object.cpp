@@ -7,7 +7,9 @@
 namespace irods {
 
 krb_auth_object::krb_auth_object(
-    rError_t* _r_error ) : auth_object( _r_error ) {
+    rError_t* _r_error ) :
+    auth_object( _r_error ),
+    sock_( 0 ) {
     creds_ = GSS_C_NO_CREDENTIAL;
 }
 
