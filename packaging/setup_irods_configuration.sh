@@ -29,7 +29,7 @@ else
 fi
 
 # detect server type being installed
-if [ -f $DETECTEDDIR/setup_database.sh ] ; then
+if [ -f $DETECTEDDIR/setup_irods_database.sh ] ; then
     # icat enabled server
     ICAT_SERVER=1
 else
@@ -44,10 +44,10 @@ fi
     mkdir -p /tmp/$USER
     if [ -f $SETUP_IRODS_CONFIGURATION_FLAG ] ; then
         # have run this before, read the existing config files
-        MYPORT=`grep "IRODS_PORT =" $MYIRODSCONFIG | awk -F\' '{print $2}'`
         if [ $ICAT_SERVER -eq 1 ] ; then
             MYZONE=`grep "ZONE_NAME =" $MYIRODSCONFIG | awk -F\' '{print $2}'`
         fi
+        MYPORT=`grep "IRODS_PORT =" $MYIRODSCONFIG | awk -F\' '{print $2}'`
         MYRANGESTART=`grep "SVR_PORT_RANGE_START =" $MYIRODSCONFIG | awk -F\' '{print $2}'`
         MYRANGEEND=`grep "SVR_PORT_RANGE_END =" $MYIRODSCONFIG | awk -F\' '{print $2}'`
         MYRESOURCEDIR=`grep "RESOURCE_DIR =" $MYIRODSCONFIG | awk -F\' '{print $2}'`
@@ -75,8 +75,8 @@ fi
 
       # set default values from an earlier loop
       if [ "$STATUS" != "firstpass" ] ; then
-        LASTMYPORT=$MYPORT
         LASTMYZONE=$MYZONE
+        LASTMYPORT=$MYPORT
         LASTMYRANGESTART=$MYRANGESTART
         LASTMYRANGEEND=$MYRANGEEND
         LASTMYRESOURCEDIR=$MYRESOURCEDIR
@@ -84,26 +84,6 @@ fi
         LASTMYLOCALZONESID=$MYLOCALZONESID
         LASTMYAGENTKEY=$MYAGENTKEY
       fi
-
-      # get port
-      echo -n "iRODS server's port"
-      if [ "$LASTMYPORT" ] ; then
-        echo -n " [$LASTMYPORT]"
-      else
-        echo -n " [1247]"
-      fi
-      echo -n ": "
-      read MYPORT
-      if [ "$MYPORT" == "" ] ; then
-        if [ "$LASTMYPORT" ] ; then
-          MYPORT=$LASTMYPORT
-        else
-          MYPORT="1247"
-        fi
-      fi
-      # strip all forward slashes
-      MYPORT=`echo "${MYPORT}" | sed -e "s/\///g"`
-      echo ""
 
       if [ $ICAT_SERVER -eq 1 ] ; then
         # get zone
@@ -126,6 +106,26 @@ fi
         MYZONE=`echo "${MYZONE}" | sed -e "s/\///g"`
         echo ""
       fi
+
+      # get port
+      echo -n "iRODS server's port"
+      if [ "$LASTMYPORT" ] ; then
+        echo -n " [$LASTMYPORT]"
+      else
+        echo -n " [1247]"
+      fi
+      echo -n ": "
+      read MYPORT
+      if [ "$MYPORT" == "" ] ; then
+        if [ "$LASTMYPORT" ] ; then
+          MYPORT=$LASTMYPORT
+        else
+          MYPORT="1247"
+        fi
+      fi
+      # strip all forward slashes
+      MYPORT=`echo "${MYPORT}" | sed -e "s/\///g"`
+      echo ""
 
       # get the db name
       echo -n "iRODS port range (begin)"
@@ -267,10 +267,10 @@ fi
 
       # confirm
       echo "-------------------------------------------"
-      echo "iRODS Port:             $MYPORT"
       if [ $ICAT_SERVER -eq 1 ] ; then
         echo "iRODS Zone:             $MYZONE"
       fi
+      echo "iRODS Port:             $MYPORT"
       echo "Range (Begin):          $MYRANGESTART"
       echo "Range (End):            $MYRANGEEND"
       echo "Vault Directory:        $MYRESOURCEDIR"
@@ -298,10 +298,10 @@ fi
     # update existing irods.config
     TMPFILE="/tmp/$USER/setupirodsconfig.txt"
     echo "Updating $MYIRODSCONFIG..."
-    sed -e "/^\$IRODS_PORT/s/^.*$/\$IRODS_PORT = '$MYPORT';/" $MYIRODSCONFIG > $TMPFILE ; mv $TMPFILE $MYIRODSCONFIG
     if [ $ICAT_SERVER -eq 1 ] ; then
       sed -e "/^\$ZONE_NAME/s/^.*$/\$ZONE_NAME = '$MYZONE';/" $MYIRODSCONFIG > $TMPFILE ; mv $TMPFILE $MYIRODSCONFIG
     fi
+    sed -e "/^\$IRODS_PORT/s/^.*$/\$IRODS_PORT = '$MYPORT';/" $MYIRODSCONFIG > $TMPFILE ; mv $TMPFILE $MYIRODSCONFIG
     sed -e "/^\$SVR_PORT_RANGE_START/s/^.*$/\$SVR_PORT_RANGE_START = '$MYRANGESTART';/" $MYIRODSCONFIG > $TMPFILE ; mv $TMPFILE $MYIRODSCONFIG
     sed -e "/^\$SVR_PORT_RANGE_END/s/^.*$/\$SVR_PORT_RANGE_END = '$MYRANGEEND';/" $MYIRODSCONFIG > $TMPFILE ; mv $TMPFILE $MYIRODSCONFIG
     sed -e "s,^\$RESOURCE_DIR =.*$,\$RESOURCE_DIR = '$MYRESOURCEDIR';," $MYIRODSCONFIG > $TMPFILE ; mv $TMPFILE $MYIRODSCONFIG

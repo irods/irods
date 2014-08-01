@@ -130,18 +130,20 @@ Repositories, issue trackers, and source code are available on GitHub.
 Installation
 ------------
 
-iRODS is provided in binary form in a collection of interdependent packages.  There are two types of iRODS server, iCAT and Resource.  A resource server connects to an existing data grid (Zone) and can provide additional `Storage Resources`_.  An iCAT server, consisting of an iRODS server plus an iCAT metadata catalog, provide the central point of coordination for a data grid.
+iRODS is provided in binary form in a collection of interdependent packages.  There are two types of iRODS server, iCAT and Resource.  A resource server connects to an existing data grid (Zone) and can provide additional `Storage Resources`_.  An iCAT server, consisting of an iRODS server, storage resource(s), and an iCAT metadata catalog, provide the central point of coordination for a single data grid (Zone).
 
 iCAT Server
 -----------
 
-The irods-icat package installs a local unix service account and group named 'irods' and the iRODS binaries.
+The irods-icat package installs the iRODS binaries and management scripts.
 
-An additional database plugin is required which installs the dependencies for database connections and a short setup script that will prompt for database connection information and then configure the iCAT Server.  Database connection information about an existing database is expected to be provided to iRODS (see `Database Setup Example`_).  iRODS does not create or manage a database instance itself, just the tables within the database.
+An additional database plugin is required which installs the dependencies for database connections.  Database connection information about an existing database is expected to be provided to iRODS (see `Database Setup Example`_).  iRODS does not create or manage a database instance itself, just the tables within the database.
+
+The `setup_irods.sh` script below will prompt for, and then create if necessary, a service account and service group which will own and operate the iRODS server.
 
 Installation of the iCAT DEB and PostgreSQL plugin DEB::
 
- $ (sudo) dpkg -i irods-icat-TEMPLATE_IRODSVERSION-64bit.deb irods-database-plugin-postgres-1.2.deb
+ $ (sudo) dpkg -i irods-icat-TEMPLATE_IRODSVERSION-64bit.deb irods-database-plugin-postgres-1.3.deb
  $ (sudo) apt-get -f install
  $ (sudo) /var/lib/irods/packaging/setup_irods.sh
 
@@ -150,8 +152,8 @@ The `setup_irods.sh` script will ask for the following sixteen pieces of informa
 1) Service Account Name
 2) Service Account Group
 
-3) iCAT Port
-4) iCAT Zone
+3) iCAT Zone
+4) iCAT Port
 5) Parallel Port Range (Begin)
 6) Parallel Port Range (End)
 7) Vault Directory
@@ -166,11 +168,13 @@ The `setup_irods.sh` script will ask for the following sixteen pieces of informa
 15) Database User
 16) Database Password
 
-Note: A default system PostgreSQL installation does not listen on a TCP port, it only listens on a local socket.  If your PostgreSQL server is localhost, use 'localhost' for 10) above.
+Note: A default system PostgreSQL installation does not listen on a TCP port, it only listens on a local socket.  If your PostgreSQL server is localhost, use 'localhost' for 12) above.
+
+Note: A default system PostgreSQL installation is configured for ident-based authentication which means the unix service account name must match the database user name.  iRODS currently assumes this is the case.
 
 Note: Installing the MySQL database plugin will also require `Installing lib_mysqludf_preg`_.  These functions are required for the internal iRODS SQL which uses regular expressions.
 
-Note: When running iRODS on pre 8.4 PostgreSQL, it is necessary to remove an optimized specific query which was not yet available::
+Note: When running iRODS on pre-8.4 PostgreSQL, it is necessary to remove an optimized specific query which was not yet available::
 
  irods@hostname:~/ $ iadmin rsq DataObjInCollReCur 
 
@@ -189,7 +193,7 @@ Once the PostgreSQL database plugin has been installed, the following text will 
   - permissions for existing user on existing database
 
  Please run the following setup script:
-   /var/lib/irods/packaging/setup_irods.sh
+   sudo /var/lib/irods/packaging/setup_irods.sh
 
  =======================================================================
 
@@ -219,29 +223,35 @@ Confirmation of the permissions can be viewed with ``\l`` within the ``psql`` co
 Resource Server
 ---------------
 
-The irods-resource package installs a local unix service account and group named 'irods' and the iRODS binaries.
+The irods-resource package installs the iRODS binaries and management scripts.
 
 There are no required additional packages, but the administrator will need to run a short setup script that will prompt for iRODS connection information and configure the server.
+
+The `setup_irods.sh` script below will prompt for, and then create if necessary, a service account and service group which will own and operate the iRODS server.
 
 Installation of the Resource RPM::
 
  - Make sure to read ./packaging/RPM_INSTALLATION_HOWTO.txt before trying to install the RPM package.
  $ (sudo) rpm -i irods-resource-TEMPLATE_IRODSVERSION-64bit-centos6.rpm
- $ (sudo) su - irods
+ $ (sudo) /var/lib/irods/packaging/setup_irods.sh
 
-And then as the irods user::
+The `setup_irods.sh` script will ask for the following twelve pieces of information about the existing data grid that the iRODS resource server will need in order to stand up and then connect to its configured iCAT Zone:
 
- irods@hostname:~/ $ ./packaging/setup_resource.sh
+1) Service Account Name
+2) Service Account Group
 
-The `./packaging/setup_resource.sh` script will ask for the following seven pieces of information about the existing data grid that the iRODS resource server will need in order to stand up and then connect to its configured iCAT Zone:
+3) iCAT Port
+4) Parallel Port Range (Begin)
+5) Parallel Port Range (End)
+6) Vault Directory
+7) LocalZoneSID
+8) agent_key
+9) iRODS Administrator Username
 
-1) iCAT Hostname or IP
-2) iCAT Port
-3) iCAT Zone 
-4) LocalZoneSID
-5) agent_key
-6) iRODS Administrator Username
-7) iRODS Administrator Password
+10) iCAT Hostname or IP
+11) iCAT Zone
+
+12) iRODS Administrator Password
 
 Default Environment
 -------------------
@@ -420,7 +430,7 @@ iRODS 4.0+ servers use the Server Identifiers (SIDs) to mutually authenticate.  
  # advanced client-server negotiation
  agent_key temp_32_byte_key_for_agent__conn
 
-The 'LocalZoneSID' can be up to 50 alphanumeric characters long.  The 'agent_key' must be exactly 32 alphanumeric bytes long.  These values need to be the same on all servers in the same Zone, or they will not be able to authenticate (see `Server Authentication`_ for more information).
+The 'LocalZoneSID' can be up to 50 alphanumeric characters long and cannot include a hyphen.  The 'agent_key' must be exactly 32 alphanumeric bytes long.  These values need to be the same on all servers in the same Zone, or they will not be able to authenticate (see `Server Authentication`_ for more information).
 
 The following error will be logged if an agent_key is missing::
 
@@ -525,7 +535,7 @@ Upgrading from iRODS 3.3.x to iRODS 4.0+ is not supported with an automatic scri
 #. Provide a database user 'irods', database password, and owner permissions for that database user to the new system-installed iCAT.
 #. Manually update any changes to 'core.re' and 'server.config'.  Keep in mind immediate replication rules (``acPostProcForPut``, etc.) may be superceded by your new resource composition.
 #. Run ``./packaging/setup_irods.sh`` (recommended) OR Manually update all 4.0+ configuration files given previous 3.3.x configuration (.irodsEnv, .odbc.ini DSN needs to be set to either 'postgres', 'mysql', or 'oracle').  The automatic ``./packaging/setup_irods.sh`` script will work only with the system-installed database server.
-#. Confirm all local at-rest data (any local iRODS Vault paths) has read and write permissions for the new 'irods' unix service account.
+#. Confirm all local at-rest data (any local iRODS Vault paths) has read and write permissions for the new (default) 'irods' unix service account.
 #. Start new 4.0+ iCAT server
 #. On all resource servers in the same Zone, install and setup 4.0+.  Existing configuration details should be ported as well ('server.config', 'core.re', Vault permissions).
 #. Rebuild Resource Hierarchies from previous Resource Group configurations (``iadmin addchildtoresc``) (See `Composable Resources`_)
@@ -1288,7 +1298,7 @@ GSI Configuration
 Configuration of GSI is out of scope for this document, but consists of the following three main steps:
 
 #. Install GSI (most easily done via package manager)
-#. Confirm the irods service account has a certificate in good standing (signed)
+#. Confirm the (default) irods service account has a certificate in good standing (signed)
 #. Confirm the local system account for client "newuser" account has a certificate in good standing (signed)
 
 iRODS Configuration
@@ -1304,7 +1314,7 @@ Then that user must be configured so its Distiguished Name (DN) matches its cert
 
  iadmin aua newuser '/DC=org/DC=example/O=Example/OU=People/CN=New User/CN=UID:drexample'
 
-NOTE: The comma characters (,) in the Distiguished Name (DN) must be replaced with forward slash characters (/).
+Note: The comma characters (,) in the Distiguished Name (DN) must be replaced with forward slash characters (/).
 
 On the client side, the user's 'irodsAuthScheme' must be set to 'GSI'.  This can be done via environment variable::
 
@@ -1348,7 +1358,7 @@ Kerberos Configuration
 Configuration of Kerberos is out of scope for this document, but consists of the following four main steps:
 
 #. Set up Kerberos (Key Distribution Center (KDC) and Kerberos Admin Server)
-#. Confirm the irods service account has a service principal in KDC (with the hostname of the rodsServer) (e.g. irodsserver/serverhost.example.org@EXAMPLE.ORG)
+#. Confirm the (default) irods service account has a service principal in KDC (with the hostname of the rodsServer) (e.g. irodsserver/serverhost.example.org@EXAMPLE.ORG)
 #. Confirm the local system account for client "newuser" account has principal in KDC (e.g. newuser@EXAMPLE.ORG)
 #. Create an appropriate keytab entry (adding to an existing file or creating a new one)
 

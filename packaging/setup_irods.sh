@@ -21,5 +21,13 @@ sudo su - $IRODS_SERVICE_ACCOUNT_NAME -c "$DETECTEDDIR/setup_irods_configuration
 if [ -e "$DETECTEDDIR/setup_irods_database.sh" ] ; then
   sudo su - $IRODS_SERVICE_ACCOUNT_NAME -c "$DETECTEDDIR/setup_irods_database.sh"
 else
-  sudo su - $IRODS_SERVICE_ACCOUNT_NAME -c "$DETECTEDDIR/setup_resource.sh"
+  if [ -e "$DETECTEDDIR/setup_resource.sh" ] ; then
+    sudo su - $IRODS_SERVICE_ACCOUNT_NAME -c "$DETECTEDDIR/setup_resource.sh"
+  else
+    echo "" 1>&2
+    echo "ERROR:" 1>&2
+    echo "  Please install an iRODS Database Plugin" 1>&2
+    echo "  and re-run ${BASH_SOURCE[0]}" 1>&2
+    exit 1
+  fi
 fi
