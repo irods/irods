@@ -39,8 +39,6 @@ public:
         int,           // line number
         std::string ); // function
     error(
-        bool,           // status
-        long long,      // error code
         std::string,    // message
         std::string,    // file name
         int,            // line number
@@ -60,8 +58,8 @@ public:
     // Members
     bool        status() const;
     long long   code() const;
-    std::string result();
-    bool        ok();
+    std::string result() const;
+    bool        ok() const;
 
     // =-=-=-=-=-=-=-
     // Mutators
@@ -90,22 +88,20 @@ private:
 }; // class error
 
 error assert_error( bool expr_, long long code_, const std::string& file_, const std::string& function_, int line_, const std::string& format_, ... );
-error assert_pass( bool expr_, const error& _error, const std::string& _file, const std::string& _function, int _line, const std::string& _format, ... );
-error assert_pass_msg( bool expr_, const error& _error, const std::string& _file, const std::string& _function, int _line, const std::string& _format, ... );
+error assert_pass( const error& _error, const std::string& _file, const std::string& _function, int _line, const std::string& _format, ... );
 
 }; // namespace irods
 
 
 
 #define ERROR( code_, message_ ) ( irods::error( false, code_, message_, __FILE__, __LINE__, __FUNCTION__ ) )
-#define PASS( prev_error_ ) (irods::error( prev_error_.status(), prev_error_.code(), "", __FILE__, __LINE__, __FUNCTION__, prev_error_ ) )
-#define PASSMSG( message_, prev_error_ ) (irods::error( prev_error_.status(), prev_error_.code(), message_, __FILE__, __LINE__, __FUNCTION__, prev_error_ ) )
+#define PASS( prev_error_ ) (irods::error( "", __FILE__, __LINE__, __FUNCTION__, prev_error_ ) )
+#define PASSMSG( message_, prev_error_ ) (irods::error( message_, __FILE__, __LINE__, __FUNCTION__, prev_error_ ) )
 #define CODE( code_ ) ( irods::error( true, code_, "", __FILE__, __LINE__, __FUNCTION__ ) )
 #define SUCCESS( ) ( irods::error( true, 0, "", __FILE__, __LINE__, __FUNCTION__ ) )
 
 #define ASSERT_ERROR(expr_, code_, format_, ...)  (irods::assert_error(expr_, code_, __FILE__, __FUNCTION__, __LINE__, format_, ##__VA_ARGS__))
-#define ASSERT_PASS(prev_error_, format_, ...) (irods::assert_pass(prev_error_.ok(), prev_error_, __FILE__, __FUNCTION__, __LINE__, format_, ##__VA_ARGS__))
-#define ASSERT_PASS_MSG(prev_error_, format_, ...) (irods::assert_pass_msg(prev_error_.ok(), prev_error_, __FILE__, __FUNCTION__, __LINE__, format_, ##__VA_ARGS__))
+#define ASSERT_PASS(prev_error_, format_, ...) (irods::assert_pass(prev_error_, __FILE__, __FUNCTION__, __LINE__, format_, ##__VA_ARGS__))
 
 #endif // __IRODS_ERROR_HPP__
 

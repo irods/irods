@@ -177,7 +177,7 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // call open operation on the child
             err = resc->call( _ctx.comm(), irods::RESOURCE_OP_OPEN, _ctx.fco() );
-            result = ASSERT_PASS_MSG( err, "Failed calling open on the child." );
+            result = ASSERT_PASS( err, "Failed calling open on the child." );
         }
 
         return result;
@@ -200,7 +200,7 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // call read on the child
             err = resc->call< void*, int >( _ctx.comm(), irods::RESOURCE_OP_READ, _ctx.fco(), _buf, _len );
-            result = ASSERT_PASS_MSG( err, "Failed calling operation on child resource." );
+            result = ASSERT_PASS( err, "Failed calling operation on child resource." );
         }
 
         return result;
@@ -224,7 +224,7 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // call write on the child
             err = resc->call< void*, int >( _ctx.comm(), irods::RESOURCE_OP_WRITE, _ctx.fco(), _buf, _len );
-            result = ASSERT_PASS_MSG( err, "Failed calling operation on child resource." );
+            result = ASSERT_PASS( err, "Failed calling operation on child resource." );
         }
 
         return result;
@@ -245,7 +245,7 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // call close on the child
             err = resc->call( _ctx.comm(), irods::RESOURCE_OP_CLOSE, _ctx.fco() );
-            result = ASSERT_PASS_MSG( err, "Failed calling operation in child." );
+            result = ASSERT_PASS( err, "Failed calling operation in child." );
         }
 
         return result;
@@ -266,7 +266,7 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // call unlink on the child
             err = resc->call( _ctx.comm(), irods::RESOURCE_OP_UNLINK, _ctx.fco() );
-            result = ASSERT_PASS_MSG( err, "Failed during call to child operation." );
+            result = ASSERT_PASS( err, "Failed during call to child operation." );
         }
 
         return result;
@@ -288,7 +288,7 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // call stat on the child
             err = resc->call< struct stat* >( _ctx.comm(), irods::RESOURCE_OP_STAT, _ctx.fco(), _statbuf );
-            result = ASSERT_PASS_MSG( err, "Failed in call to child operation." );
+            result = ASSERT_PASS( err, "Failed in call to child operation." );
         }
 
         return result;
@@ -311,7 +311,7 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // call lseek on the child
             err = resc->call< long long, int >( _ctx.comm(), irods::RESOURCE_OP_LSEEK, _ctx.fco(), _offset, _whence );
-            result = ASSERT_PASS_MSG( err, "Failed calling child operation." );
+            result = ASSERT_PASS( err, "Failed calling child operation." );
         }
 
         return result;
@@ -332,7 +332,7 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // call mkdir on the child
             err = resc->call( _ctx.comm(), irods::RESOURCE_OP_MKDIR, _ctx.fco() );
-            result = ASSERT_PASS_MSG( err, "Failed calling child operation." );
+            result = ASSERT_PASS( err, "Failed calling child operation." );
         }
 
         return result;
@@ -353,7 +353,7 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // call rmdir on the child
             err = resc->call( _ctx.comm(), irods::RESOURCE_OP_RMDIR, _ctx.fco() );
-            result = ASSERT_PASS_MSG( err, "Failed calling child operation." );
+            result = ASSERT_PASS( err, "Failed calling child operation." );
         }
 
         return result;
@@ -374,7 +374,7 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // call opendir on the child
             err = resc->call( _ctx.comm(), irods::RESOURCE_OP_OPENDIR, _ctx.fco() );
-            result = ASSERT_PASS_MSG( err, "Failed calling child operation." );
+            result = ASSERT_PASS( err, "Failed calling child operation." );
         }
 
         return result;
@@ -395,7 +395,7 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // call closedir on the child
             err = resc->call( _ctx.comm(), irods::RESOURCE_OP_CLOSEDIR, _ctx.fco() );
-            result = ASSERT_PASS_MSG( err, "Failed calling child operation." );
+            result = ASSERT_PASS( err, "Failed calling child operation." );
         }
 
         return result;
@@ -417,7 +417,7 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // call readdir on the child
             err = resc->call< struct rodsDirent** >( _ctx.comm(), irods::RESOURCE_OP_READDIR, _ctx.fco(), _dirent_ptr );
-            result = ASSERT_PASS_MSG( err, "Failed calling child operation." );
+            result = ASSERT_PASS( err, "Failed calling child operation." );
         }
 
         return result;
@@ -439,7 +439,7 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // call rename on the child
             err = resc->call< const char* >( _ctx.comm(), irods::RESOURCE_OP_RENAME, _ctx.fco(), _new_file_name );
-            result = ASSERT_PASS_MSG( err, "Failed calling child operation." );
+            result = ASSERT_PASS( err, "Failed calling child operation." );
         }
 
         return result;
@@ -460,7 +460,7 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // call freespace on the child
             err = resc->call( _ctx.comm(), irods::RESOURCE_OP_FREESPACE, _ctx.fco() );
-            result = ASSERT_PASS_MSG( err, "Failed calling child operation." );
+            result = ASSERT_PASS( err, "Failed calling child operation." );
         }
 
         return result;
@@ -482,7 +482,7 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // call stage on the child
             err = resc->call< const char* >( _ctx.comm(), irods::RESOURCE_OP_STAGETOCACHE, _ctx.fco(), _cache_file_name );
-            result = ASSERT_PASS_MSG( err, "Failed calling child operation." );
+            result = ASSERT_PASS( err, "Failed calling child operation." );
         }
 
         return result;
@@ -506,7 +506,7 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // call synctoarch on the child
             err = resc->call< const char* >( _ctx.comm(), irods::RESOURCE_OP_SYNCTOARCH, _ctx.fco(), _cache_file_name );
-            result = ASSERT_PASS_MSG( err, "Failed calling child operation." );
+            result = ASSERT_PASS( err, "Failed calling child operation." );
         }
 
         return result;
@@ -527,7 +527,7 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // call rename on the child
             err = resc->call( _ctx.comm(), irods::RESOURCE_OP_REGISTERED, _ctx.fco() );
-            result = ASSERT_PASS_MSG( err, "Failed calling child operation." );
+            result = ASSERT_PASS( err, "Failed calling child operation." );
         }
 
         return result;
@@ -548,7 +548,7 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // call rename on the child
             err = resc->call( _ctx.comm(), irods::RESOURCE_OP_UNREGISTERED, _ctx.fco() );
-            result = ASSERT_PASS_MSG( err, "Failed calling child operation." );
+            result = ASSERT_PASS( err, "Failed calling child operation." );
         }
 
         return result;
@@ -569,7 +569,7 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // call rename on the child
             err = resc->call( _ctx.comm(), irods::RESOURCE_OP_MODIFIED, _ctx.fco() );
-            result = ASSERT_PASS_MSG( err, "Failed calling child operation." );
+            result = ASSERT_PASS( err, "Failed calling child operation." );
         }
 
         return result;
@@ -591,7 +591,7 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // call rename on the child
             err = resc->call( _ctx.comm(), irods::RESOURCE_OP_NOTIFY, _ctx.fco(), _opr );
-            result = ASSERT_PASS_MSG( err, "Failed calling child operation." );
+            result = ASSERT_PASS( err, "Failed calling child operation." );
         }
 
         return result;

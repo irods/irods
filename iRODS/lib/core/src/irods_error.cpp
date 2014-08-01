@@ -82,15 +82,13 @@ error::error(
 // =-=-=-=-=-=-=-
 // public - useful constructor
 error::error(
-    bool         _status,
-    long long    _code,
     std::string  _msg,
     std::string  _file,
     int          _line,
     std::string  _fcn,
     const error& _rhs ) :
-    status_( _status ),
-    code_( _code ),
+    status_( _rhs.status() ),
+    code_( _rhs.code() ),
     message_( _msg ) {
     // =-=-=-=-=-=-=-
     // cache RHS vector into our vector first
@@ -142,49 +140,31 @@ long long error::code( ) const {
 
 // =-=-=-=-=-=-=-
 // public - return the composite result for logging, etc.
-std::string error::result( ) {
-    // =-=-=-=-=-=-=-
-    // tack on tabs based on stack depth
-    for ( size_t i = 0; i < result_stack_.size(); ++i ) {
+std::string error::result() const {
 
-        std::string tabs = "";
-        for ( size_t j = i + 1; j < result_stack_.size(); ++j ) {
-            tabs += "\t";
-
-        } // for j
-
-        result_stack_[i] = tabs + result_stack_[i];
-
-    } // for i
-
-    // =-=-=-=-=-=-=-
-    // tack on newlines
-    for ( size_t i = 0; i < result_stack_.size(); ++i ) {
-        result_stack_[i] = "\n" + result_stack_[i];
-
-    } // for i
-
-    // =-=-=-=-=-=-=-
     // compose single string of the result stack for print out
     std::string result;
-    for ( int i = static_cast<int>( result_stack_.size() ) - 1; i >= 0; --i ) {
-        result += result_stack_[ i ];
+    std::string tabs = "";
+    for ( size_t i = 0; i < result_stack_.size(); ++i ) {
+        if ( i != 0 ) {
+            result += "\n";
+        }
+        result += tabs;
+        result += result_stack_[ result_stack_.size() - 1 - i ];
+        tabs += "\t";
 
     } // for i
 
-    // =-=-=-=-=-=-=-
     // add extra newline for formatting
     result += "\n\n";
-
     return result;
 
 } // result
 
 // =-=-=-=-=-=-=-
 // public - return the status_
-bool error::ok( ) {
+bool error::ok() const {
     return status_;
-
 } // ok
 
 
@@ -212,7 +192,6 @@ error assert_error(
 }
 
 error assert_pass(
-    bool _expr,
     const error& _prev_error,
     const std::string& _file,
     const std::string& _function,
@@ -220,7 +199,7 @@ error assert_pass(
     const std::string& _format,
     ... ) {
     error result = SUCCESS();
-    if ( !_expr ) {
+    if ( !_prev_error.ok() ) {
         va_list ap;
         va_start( ap, _format );
         const int buffer_size = 4096;
@@ -229,29 +208,8 @@ error assert_pass(
         va_end( ap );
         std::stringstream msg;
         msg << buffer;
-        result = error( _prev_error.status(), _prev_error.code(), msg.str(), _file, _line, _function, _prev_error );
+        result = error( msg.str(), _file, _line, _function, _prev_error );
     }
-    return result;
-}
-
-error assert_pass_msg(
-    bool expr_,
-    const error& prev_error_,
-    const std::string& file_,
-    const std::string& function_,
-    int line_,
-    const std::string& format_,
-    ... ) {
-    error result = SUCCESS();
-    va_list ap;
-    va_start( ap, format_ );
-    const int buffer_size = 4096;
-    char buffer[buffer_size];
-    vsnprintf( buffer, buffer_size, format_.c_str(), ap );
-    va_end( ap );
-    std::stringstream msg;
-    msg << buffer;
-    result = error( prev_error_.status(), prev_error_.code(), msg.str(), file_, line_, function_, prev_error_ );
     return result;
 }
 
