@@ -120,6 +120,7 @@ else
     $PYTHONCMD $OPTS test_resource_types.Test_MultiLayered_Resource
     $PYTHONCMD $OPTS iadmin_suite
     $PYTHONCMD $OPTS catalog_suite
+    $PYTHONCMD $OPTS rulebase_suite
     $PYTHONCMD $OPTS test_workflow_suite
     $PYTHONCMD $OPTS test_mso_suite
     $PYTHONCMD $OPTS test_resource_tree
