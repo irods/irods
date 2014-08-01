@@ -281,6 +281,7 @@ typedef struct startupPack {
 #define SP_OPTION	"spOption"
 #define SP_LOG_SQL	"spLogSql"
 #define SP_LOG_LEVEL	"spLogLevel"
+#define SP_RE_CACHE_SALT "reCacheSalt"
 #define SERVER_BOOT_TIME "serverBootTime"
 
 // =-=-=-=-=-=-=-

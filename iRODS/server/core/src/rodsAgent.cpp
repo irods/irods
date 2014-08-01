@@ -42,7 +42,6 @@ main( int argc, char *argv[] ) {
     char *tmpStr;
     bool run_server_as_root = false;
 
-    irods::error ret;
     ProcessType = AGENT_PT;
 
     // capture server properties
@@ -52,6 +51,7 @@ main( int argc, char *argv[] ) {
     }
 
     irods::server_properties::getInstance().get_property<bool>( RUN_SERVER_AS_ROOT_KW, run_server_as_root );
+
 
 #ifndef windows_platform
     if ( run_server_as_root ) {
@@ -101,7 +101,7 @@ main( int argc, char *argv[] ) {
     // =-=-=-=-=-=-=-
     // manufacture a network object for comms
     irods::network_object_ptr net_obj;
-    ret = irods::network_factory( &rsComm, net_obj );
+    irods::error ret = irods::network_factory( &rsComm, net_obj );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
@@ -145,6 +145,12 @@ main( int argc, char *argv[] ) {
         sendVersion( net_obj, SYS_AGENT_INIT_ERR, 0, NULL, 0 );
         unregister_handlers();
         cleanupAndExit( status );
+    }
+
+    ret = setRECacheSaltFromEnv();
+    if ( !ret.ok() ) {
+        rodsLog( LOG_ERROR, "rodsAgent::main: Failed to set RE cache mutex name\n%s", ret.result().c_str() );
+        exit( 1 );
     }
 
     // =-=-=-=-=-=-=-

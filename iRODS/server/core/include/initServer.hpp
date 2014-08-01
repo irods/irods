@@ -10,6 +10,7 @@
 #define INIT_SERVER_HPP
 
 #include "rods.hpp"
+#include "irods_error.hpp"
 //#include "sockComm.hpp"
 #include "rsLog.hpp"
 
@@ -42,6 +43,7 @@
 #define RE_RULESET_KW           "reRuleSet"
 #define RE_FUNCMAPSET_KW        "reFuncMapSet"
 #define RE_VARIABLEMAPSET_KW    "reVariableMapSet"
+#define RE_CACHE_SALT_KW    "reCacheSalt"
 
 /* Keywords for Kerberos initialization */
 #define KERBEROS_NAME_KW "KerberosServicePrincipal"
@@ -265,5 +267,7 @@ queAgentProc( agentProc_t *agentPorc, agentProc_t **agentPorcHead,
               irodsPosition_t position );
 int
 purgeLockFileDir( int chkLockFlag ); // JMC - backport 4612
+irods::error
+setRECacheSaltFromEnv();
 
 #endif	/* INIT_SERVER_H */

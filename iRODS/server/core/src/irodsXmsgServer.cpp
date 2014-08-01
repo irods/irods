@@ -100,6 +100,12 @@ main( int argc, char **argv ) {
         exit( 1 );
     }
 
+    irods::error ret = setRECacheSaltFromEnv();
+    if ( !ret.ok() ) {
+        rodsLog( LOG_ERROR, "irodsXmsgServer::main: Failed to set RE cache mutex name\n%s", ret.result().c_str() );
+        exit( 1 );
+    }
+
     daemonize( runMode, logFd );
 
     xmsgServerMain();

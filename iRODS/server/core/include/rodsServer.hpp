@@ -48,6 +48,8 @@ extern int optind, opterr, optopt;
 
 #define NUM_READ_WORKER_THR	5
 
+#define RE_CACHE_SALT_NUM_RANDOM_BYTES 40
+
 #define AGENT_QUE_CHK_INT	600	/* check the agent queue every 600 sec
 * for consistence */
 int serverize( char *logDir );

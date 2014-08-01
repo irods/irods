@@ -135,6 +135,12 @@ main( int argc, char **argv ) {
 
     daemonize( runMode, logFd );
 
+    irods::error ret = setRECacheSaltFromEnv();
+    if ( !ret.ok() ) {
+        rodsLog( LOG_ERROR, "irodsReServer::main: Failed to set RE cache mutex name\n%s", ret.result().c_str() );
+        exit( 1 );
+    }
+
     status = initAgent( RULE_ENGINE_INIT_CACHE, &rsComm );
     if ( status < 0 ) {
         cleanupAndExit( status );

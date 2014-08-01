@@ -26,16 +26,13 @@ char *getRuleBasePath( char *ruleBaseName, char rulesFileName[MAX_NAME_LEN] ) {
     return rulesFileName;
 
 }
-void getResourceName( char buf[1024], char *rname ) {
-    snprintf( buf, 1024, "%s/%s", getConfigDir(), rname );
-    char *ch = buf;
-    while ( *ch != '\0' ) {
-        if ( *ch == '\\' || *ch == '/' ) {
-            *ch = '_';
-        }
-        ch++;
-    }
 
+void getResourceName( std::string &_out_str, const char *rname ) {
+    std::stringstream ss;
+    ss << getConfigDir() << "_" << rname;
+    _out_str = ss.str();
+    std::replace( _out_str.begin(), _out_str.end(), '\\', '_' );
+    std::replace( _out_str.begin(), _out_str.end(), '/', '_' );
 }
 
 int getModifiedTime( char *fn, time_type *timestamp ) {

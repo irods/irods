@@ -49,7 +49,7 @@ public:
     }
 
     template< typename T >
-    error set_property( const std::string& _key, T& _val ) {
+    error set_property( const std::string& _key, const T& _val ) {
         error ret = properties.set< T >( _key, _val );
         return PASS( ret );
     }

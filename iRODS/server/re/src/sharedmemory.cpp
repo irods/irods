@@ -6,16 +6,21 @@
 #include "sharedmemory.hpp"
 #include "utils.hpp"
 #include "filesystem.hpp"
-
+#include "irods_server_properties.hpp"
 
 static boost::interprocess::shared_memory_object *shm_obj = NULL;
 static boost::interprocess::mapped_region *mapped = NULL;
 
 unsigned char *prepareServerSharedMemory() {
+    std::string shared_memory_name;
+    irods::error ret = getSharedMemoryName( shared_memory_name );
+    if ( !ret.ok() ) {
+        rodsLog( LOG_ERROR, "prepareServerSharedMemory: failed to get shared memory name" );
+        return NULL;
+    }
+
     try {
-        char shm_name[1024];
-        getResourceName( shm_name, shm_rname );
-        shm_obj = new boost::interprocess::shared_memory_object( boost::interprocess::open_or_create, shm_name, boost::interprocess::read_write );
+        shm_obj = new boost::interprocess::shared_memory_object( boost::interprocess::open_or_create, shared_memory_name.c_str(), boost::interprocess::read_write );
         boost::interprocess::offset_t size;
         if ( shm_obj->get_size( size ) && size == 0 ) {
             shm_obj->truncate( SHMMAX );
@@ -25,6 +30,7 @@ unsigned char *prepareServerSharedMemory() {
         return shmBuf;
     }
     catch ( boost::interprocess::interprocess_exception e ) {
+        rodsLog( LOG_ERROR, "prepareServerSharedMemory: failed to prepare shared memory" );
         return NULL;
     }
 }
@@ -35,24 +41,50 @@ void detachSharedMemory() {
 }
 
 int removeSharedMemory() {
-    char shm_name[1024];
-    getResourceName( shm_name, shm_rname );
-    if ( !boost::interprocess::shared_memory_object::remove( shm_name ) ) {
+    std::string shared_memory_name;
+    irods::error ret = getSharedMemoryName( shared_memory_name );
+    if ( !ret.ok() ) {
+        rodsLog( LOG_ERROR, "removeSharedMemory: failed to get shared memory name" );
+        return RE_SHM_UNLINK_ERROR;
+    }
+
+    if ( !boost::interprocess::shared_memory_object::remove( shared_memory_name.c_str() ) ) {
+        rodsLog( LOG_ERROR, "removeSharedMemory: failed to remove shared memory" );
         return RE_SHM_UNLINK_ERROR;
     }
     return 0;
 }
 
 unsigned char *prepareNonServerSharedMemory() {
-    char shm_name[1024];
-    getResourceName( shm_name, shm_rname );
+    std::string shared_memory_name;
+    irods::error ret = getSharedMemoryName( shared_memory_name );
+    if ( !ret.ok() ) {
+        rodsLog( LOG_ERROR, "prepareNonServerSharedMemory: failed to get shared memory name" );
+        return NULL;
+    }
+        
     try {
-        shm_obj = new boost::interprocess::shared_memory_object( boost::interprocess::open_only, shm_name, boost::interprocess::read_only );
+        shm_obj = new boost::interprocess::shared_memory_object( boost::interprocess::open_only, shared_memory_name.c_str(), boost::interprocess::read_only );
         mapped = new boost::interprocess::mapped_region( *shm_obj, boost::interprocess::read_only );
         unsigned char *buf = ( unsigned char * ) mapped->get_address();
         return buf;
     }
     catch ( boost::interprocess::interprocess_exception e ) {
+        rodsLog( LOG_ERROR, "prepareNonServerSharedMemory: failed to get shared memory" );
         return NULL;
     }
+}
+
+irods::error getSharedMemoryName( std::string &shared_memory_name ) {
+    std::string shared_memory_name_salt;
+    irods::error ret = irods::server_properties::getInstance().get_property<std::string>( RE_CACHE_SALT_KW, shared_memory_name_salt );
+    if ( !ret.ok() ) {
+        rodsLog( LOG_ERROR, "getSharedMemoryName: failed to retrieve re cache salt from server_properties\n%s", ret.result().c_str() );
+        return PASS( ret );
+    }
+
+    getResourceName( shared_memory_name, shared_memory_name_salt.c_str() );
+    shared_memory_name = "re_cache_shared_memory_" + shared_memory_name;
+
+    return SUCCESS();
 }

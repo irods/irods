@@ -107,6 +107,21 @@ irods::error buffer_crypt::generate_key(
 } // buffer_crypt::generate_key
 
 // =-=-=-=-=-=-=-
+// public static - hex encode byte array
+irods::error buffer_crypt::hex_encode(
+    const array_t& _in_buf,
+    std::string& _out_str) {
+    std::stringstream ss;
+    for ( irods::buffer_crypt::array_t::size_type i = 0; i < _in_buf.size(); ++i ) {
+        ss << std::setfill( '0' ) << std::setw( 2 ) << std::hex << static_cast<unsigned int>( _in_buf[i] );
+    }
+
+    _out_str = ss.str();
+
+    return SUCCESS();
+} // buffer_crypt::hex_encode
+
+// =-=-=-=-=-=-=-
 // public - create a hashed key and initialization vector
 irods::error buffer_crypt::initialization_vector(
     array_t& _out_iv ) {
