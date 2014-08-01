@@ -113,17 +113,6 @@ ln -fs    /usr/bin/iuserinfo               ${IRODS_HOME}/clients/icommands/bin/i
 ln -fs    /usr/bin/ixmsg                   ${IRODS_HOME}/clients/icommands/bin/ixmsg             
 
 
-
-# =-=-=-=-=-=-=-
-# set permissions on iRODS authentication mechanisms
-if [ "$DETECTEDOS" == "MacOSX" ] ; then
-    chown root:wheel $IRODS_HOME/server/bin/PamAuthCheck
-else
-    chown root:root $IRODS_HOME/server/bin/PamAuthCheck
-fi
-chmod 4755 $IRODS_HOME/server/bin/PamAuthCheck
-chmod 4755 /usr/bin/genOSAuth
-
 # =-=-=-=-=-=-=-
 # display helpful information
 if [ "$UPGRADE_FLAG" == "true" ] ; then

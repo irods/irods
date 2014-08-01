@@ -76,3 +76,15 @@ echo "IRODS_SERVICE_GROUP_NAME=$MYGROUPNAME " >> $SERVICE_ACCOUNT_CONFIG_FILE
 mkdir -p $IRODS_HOME_DIR
 chown -R $MYACCTNAME:$MYGROUPNAME $IRODS_HOME_DIR
 chown -R $MYACCTNAME:$MYGROUPNAME /etc/irods
+
+# =-=-=-=-=-=-=-
+# set permissions on iRODS authentication mechanisms
+SCRIPTPATH=$( cd $(dirname $0) ; pwd -P )
+DETECTEDOS=`$SCRIPTPATH/find_os.sh`
+if [ "$DETECTEDOS" == "MacOSX" ] ; then
+    chown root:wheel $IRODS_HOME_DIR/iRODS/server/bin/PamAuthCheck
+else
+    chown root:root $IRODS_HOME_DIR/iRODS/server/bin/PamAuthCheck
+fi
+chmod 4755 $IRODS_HOME_DIR/iRODS/server/bin/PamAuthCheck
+chmod 4755 /usr/bin/genOSAuth
