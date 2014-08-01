@@ -21,7 +21,7 @@ namespace irods {
 // =-=-=-=-=-=-=-
 // public - ctor
 file_object::file_object() :
-    data_object(),
+    comm_( NULL ),
     file_descriptor_( -1 ),
     l1_desc_idx_( -1 ),
     size_( 0 ),
