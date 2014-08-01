@@ -516,13 +516,6 @@ chkAndHandleOrphanFile( rsComm_t *rsComm, char* objPath, char* rescHier, char *f
     int status;
     dataObjInfo_t myDataObjInfo;
 
-    int category = FILE_CAT; // only supporting file resources, not DB
-    // JMC - legacy resource  - if (RescTypeDef[rescTypeInx].rescCat != FILE_CAT) {
-    if ( FILE_CAT != category ) {
-        /* can't do anything with non file type */
-        return ( -1 );
-    }
-
     if ( strlen( filePath ) + 17 >= MAX_NAME_LEN ) {
         /* the new path name will be too long to add "/orphan + random" */
         return ( -1 );
