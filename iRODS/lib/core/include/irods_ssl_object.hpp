@@ -57,29 +57,29 @@ public:
 
     // =-=-=-=-=-=-=-
     // Accessors
-    virtual SSL_CTX*              ssl_ctx()       {
+    virtual SSL_CTX*              ssl_ctx()       const {
         return ssl_ctx_;
     }
-    virtual SSL*                  ssl()           {
+    virtual SSL*                  ssl()           const {
         return ssl_;
     }
-    virtual std::string           host()          {
+    virtual std::string           host()          const {
         return host_;
     }
-    virtual buffer_crypt::array_t shared_secret() {
+    virtual buffer_crypt::array_t shared_secret() const {
         return shared_secret_;
     }
 
-    virtual int         key_size()             {
+    virtual int         key_size()             const {
         return key_size_;
     }
-    virtual int         salt_size()            {
+    virtual int         salt_size()            const {
         return salt_size_;
     }
-    virtual int         num_hash_rounds()      {
+    virtual int         num_hash_rounds()      const {
         return num_hash_rounds_;
     }
-    virtual std::string encryption_algorithm() {
+    virtual std::string encryption_algorithm() const {
         return encryption_algorithm_;
     }
 

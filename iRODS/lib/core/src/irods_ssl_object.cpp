@@ -6,9 +6,11 @@ namespace irods {
 // =-=-=-=-=-=-=-
 // public - ctor
 ssl_object::ssl_object() :
-    network_object(),
     ssl_ctx_( 0 ),
-    ssl_( 0 ) {
+    ssl_( 0 ),
+    key_size_( 0 ),
+    salt_size_( 0 ),
+    num_hash_rounds_( 0 ) {
 
 } // ctor
 
@@ -19,7 +21,11 @@ ssl_object::ssl_object(
     network_object( _comm ),
     ssl_ctx_( _comm.ssl_ctx ),
     ssl_( _comm.ssl ),
-    host_( _comm.host ) {
+    host_( _comm.host ),
+    key_size_( _comm.key_size ),
+    salt_size_( _comm.salt_size ),
+    num_hash_rounds_( _comm.num_hash_rounds ),
+    encryption_algorithm_( _comm.encryption_algorithm ) {
 } // ctor
 
 // =-=-=-=-=-=-=-
@@ -29,17 +35,25 @@ ssl_object::ssl_object(
     network_object( _comm ),
     ssl_ctx_( _comm.ssl_ctx ),
     ssl_( _comm.ssl ),
-    host_( "" ) {
+    host_( "" ),
+    key_size_( _comm.key_size ),
+    salt_size_( _comm.salt_size ),
+    num_hash_rounds_( _comm.num_hash_rounds ),
+    encryption_algorithm_( _comm.encryption_algorithm ) {
 } // ctor
 
 // =-=-=-=-=-=-=-
 // public - cctor
 ssl_object::ssl_object(
     const ssl_object& _rhs ) :
-    network_object( _rhs ) {
-    ssl_ctx_ = _rhs.ssl_ctx_;
-    ssl_     = _rhs.ssl_;
-
+    network_object( _rhs ),
+    ssl_ctx_( _rhs.ssl_ctx() ),
+    ssl_( _rhs.ssl() ),
+    host_( _rhs.host() ),
+    key_size_( _rhs.key_size() ),
+    salt_size_( _rhs.salt_size() ),
+    num_hash_rounds_( _rhs.num_hash_rounds() ),
+    encryption_algorithm_( _rhs.encryption_algorithm() ) {
 } // cctor
 
 // =-=-=-=-=-=-=-
@@ -52,20 +66,32 @@ ssl_object::~ssl_object() {
 ssl_object& ssl_object::operator=(
     const ssl_object& _rhs ) {
     network_object::operator=( _rhs );
-    ssl_ctx_ = _rhs.ssl_ctx_;
-    ssl_     = _rhs.ssl_;
+    ssl_ctx_                = _rhs.ssl_ctx();
+    ssl_                    = _rhs.ssl();
+    host_                   = _rhs.host();
+    key_size_               = _rhs.key_size();
+    salt_size_              = _rhs.salt_size();
+    num_hash_rounds_        = _rhs.num_hash_rounds();
+    encryption_algorithm_   = _rhs.encryption_algorithm();
 
     return *this;
 
 } // operator=
 
 // =-=-=-=-=-=-=-
-// public - assignment operator
+// public - equality operator
 bool ssl_object::operator==(
     const ssl_object& _rhs ) const {
+
     bool ret = network_object::operator==( _rhs );
-    ret &= ( ssl_ctx_ == _rhs.ssl_ctx_ );
-    ret &= ( ssl_     == _rhs.ssl_ );
+
+    ret &= ( ssl_ctx_               == _rhs.ssl_ctx() );
+    ret &= ( ssl_                   == _rhs.ssl() );
+    ret &= ( host_                  == _rhs.host() );
+    ret &= ( key_size_              == _rhs.key_size() );
+    ret &= ( salt_size_             == _rhs.salt_size() );
+    ret &= ( num_hash_rounds_       == _rhs.num_hash_rounds() );
+    ret &= ( encryption_algorithm_  == _rhs.encryption_algorithm() );
 
     return ret;
 
@@ -156,7 +182,7 @@ error ssl_object::get_re_vars(
 } // get_re_vars
 
 // =-=-=-=-=-=-=-
-// convertion to client comm ptr
+// conversion to client comm ptr
 error ssl_object::to_client( rcComm_t* _comm ) {
     if ( !_comm ) {
         return ERROR( SYS_INVALID_INPUT_PARAM, "null comm ptr" );
