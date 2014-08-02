@@ -650,7 +650,7 @@ _rsDataObjReplS(
     int status, status1;
     int l1descInx;
     openedDataObjInp_t dataObjCloseInp;
-    dataObjInfo_t *myDestDataObjInfo;
+    dataObjInfo_t *myDestDataObjInfo = NULL;
 
     l1descInx = dataObjOpenForRepl( rsComm, dataObjInp, srcDataObjInfo, destRescInfo,
                                     rescGroupName, destDataObjInfo, updateFlag );
@@ -924,6 +924,11 @@ dataObjOpenForRepl(
     if ( inpDestDataObjInfo != NULL && updateFlag == 0 ) {
         /* a new replica */
         *inpDestDataObjInfo = *myDestDataObjInfo;
+
+        // deep copy of rescInfo
+        inpDestDataObjInfo->rescInfo = (rescInfo_t*)calloc(1, sizeof(rescInfo_t));
+        memcpy(inpDestDataObjInfo->rescInfo, myDestDataObjInfo->rescInfo, sizeof(rescInfo_t));
+
         // =-=-=-=-=-=-=-
         // JMC :: deep copy of condInput - necessary for preventing a double-free
         //     :: after an irsDataObjClose is called and then a freeDataObjInfo

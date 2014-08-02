@@ -689,7 +689,7 @@ msiStageDataObj( msParam_t *xcacheResc, ruleExecInfo_t *rei ) {
 int
 msiSysReplDataObj( msParam_t *xcacheResc, msParam_t *xflag,
                    ruleExecInfo_t *rei ) {
-    int writeFlag;
+//    int writeFlag;
     dataObjInfo_t *dataObjInfoHead;
     char *cacheResc;
     char *flag = NULL;
@@ -714,14 +714,14 @@ msiSysReplDataObj( msParam_t *xcacheResc, msParam_t *xflag,
         return ( rei->status );
     }
 
-    writeFlag = getWriteFlag( rei->doinp->openFlags );
+//    writeFlag = getWriteFlag( rei->doinp->openFlags );
 
-    if ( requeDataObjInfoByResc( &dataObjInfoHead, cacheResc, writeFlag, 1 )
-            >= 0 ) {
-        /* we have a good copy on cache */
-        rei->status = 1;
-        return ( rei->status );
-    }
+//    if ( requeDataObjInfoByResc( &dataObjInfoHead, cacheResc, writeFlag, 1 )
+//            >= 0 ) {
+//        /* we have a good copy on cache */
+//        rei->status = 1;
+//        return ( rei->status );
+//    }
 
     rei->status = rsReplAndRequeDataObjInfo( rei->rsComm, &dataObjInfoHead,
                   cacheResc, flag );
