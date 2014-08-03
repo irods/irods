@@ -10,7 +10,7 @@ namespace irods {
 // =-=-=-=-=-=-=-
 // public - ctor
 structured_object::structured_object() :
-    file_object(),
+    addr_(),
     sub_file_path_( "" ),
     offset_( 0 ),
     spec_coll_( 0 ),
@@ -22,7 +22,6 @@ structured_object::structured_object() :
 // =-=-=-=-=-=-=-
 // public - ctor
 structured_object::structured_object( subFile_t& _sub ) :
-    file_object(),
     sub_file_path_( "" ),
     offset_( 0 ),
     spec_coll_( 0 ),
