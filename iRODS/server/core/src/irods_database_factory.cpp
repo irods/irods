@@ -18,40 +18,15 @@ irods::error database_factory(
                    "empty type string" );
     }
 
-    // =-=-=-=-=-=-=-
     // given the incoming type request, create the given database object
     if ( irods::POSTGRES_DATABASE_PLUGIN == _type ) {
-        irods::postgres_object* pgsql = new irods::postgres_object;
-        if ( !pgsql ) {
-            return ERROR(
-                       SYS_INVALID_INPUT_PARAM,
-                       "postgresql allocation failed" );
-        }
-
-        _ptr.reset( dynamic_cast< irods::database_object* >( pgsql ) );
-
+        _ptr.reset( new irods::postgres_object );
     }
     else if ( irods::MYSQL_DATABASE_PLUGIN == _type ) {
-        irods::mysql_object* mysql = new irods::mysql_object;
-        if ( !mysql ) {
-            return ERROR(
-                       SYS_INVALID_INPUT_PARAM,
-                       "mysql allocation failed" );
-        }
-
-        _ptr.reset( dynamic_cast< irods::database_object* >( mysql ) );
-
+        _ptr.reset( new irods::mysql_object );
     }
     else if ( irods::ORACLE_DATABASE_PLUGIN == _type ) {
-        irods::oracle_object* oracle = new irods::oracle_object;
-        if ( !oracle ) {
-            return ERROR(
-                       SYS_INVALID_INPUT_PARAM,
-                       "oracle allocation failed" );
-        }
-
-        _ptr.reset( dynamic_cast< irods::database_object* >( oracle ) );
-
+        _ptr.reset( new irods::oracle_object );
     }
     else {
         std::string msg( "database type not recognized [" );
