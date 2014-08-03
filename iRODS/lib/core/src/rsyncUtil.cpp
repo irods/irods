@@ -674,8 +674,6 @@ int
 rsyncDirToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
                     rodsPath_t *targPath, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                     dataObjInp_t *dataObjOprInp ) {
-    int status = 0;
-    int savedStatus = 0;
     char *srcDir, *targColl;
     rodsPath_t mySrcPath, myTargPath;
 
@@ -717,6 +715,7 @@ rsyncDirToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
     mySrcPath.objType  = LOCAL_FILE_T;
 
     directory_iterator end_itr; // default construction yields past-the-end
+    int savedStatus = 0;
     for ( directory_iterator itr( srcDirPath );
             itr != end_itr;
             ++itr ) {
@@ -756,6 +755,7 @@ rsyncDirToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
             p = path( mySrcPath.outPath );
         }
         dataObjOprInp->createMode = getPathStMode( p.c_str() );
+        int status = 0;
         if ( is_regular_file( p ) ) {
             myTargPath.objType = DATA_OBJ_T;
             mySrcPath.objType = LOCAL_FILE_T;
@@ -772,7 +772,6 @@ rsyncDirToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
             }
         }
         else if ( is_directory( p ) ) {
-            status = 0;
             /* only do the sync if no -l option specified */
             if ( rodsArgs->longOption != True ) {
                 status = mkCollRWithDirMeta( conn, targColl,
@@ -804,7 +803,9 @@ rsyncDirToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
             status = USER_INPUT_PATH_ERR;
         }
 
-        if ( status < 0 ) {
+        if ( status < 0 &&
+                status != CAT_NO_ROWS_FOUND &&
+                status != SYS_SPEC_COLL_OBJ_NOT_EXIST ) {
             savedStatus = status;
             rodsLogError( LOG_ERROR, status,
                           "rsyncDirToCollUtil: put %s failed. status = %d",
@@ -812,16 +813,7 @@ rsyncDirToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
         }
     }
 
-    if ( savedStatus < 0 ) {
-        return ( savedStatus );
-    }
-    else if ( status == CAT_NO_ROWS_FOUND ||
-              status == SYS_SPEC_COLL_OBJ_NOT_EXIST ) {
-        return ( 0 );
-    }
-    else {
-        return ( status );
-    }
+    return ( savedStatus );
 
 }
 
