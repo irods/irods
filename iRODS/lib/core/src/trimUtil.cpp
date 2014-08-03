@@ -15,23 +15,18 @@ int TotalTrimmed = 0;
 int
 trimUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
           rodsPathInp_t *rodsPathInp ) {
-    int i = 0;
-    int status = 0;
-    int savedStatus = 0;
-    dataObjInp_t dataObjInp;
-    int collCnt = 0;
-
-
     if ( rodsPathInp == NULL ) {
         return ( USER__NULL_INPUT_ERR );
     }
 
+    dataObjInp_t dataObjInp;
     initCondForTrim( myRodsEnv, myRodsArgs, &dataObjInp );
 
     if ( myRodsArgs->dryrun == True ) {
         printf( "====== This is a DRYRUN ======\n" );
     }
-    for ( i = 0; i < rodsPathInp->numSrc; i++ ) {
+    int savedStatus = 0, collCnt = 0;
+    for ( int i = 0; i < rodsPathInp->numSrc; i++ ) {
         if ( rodsPathInp->srcPath[i].objType == UNKNOWN_OBJ_T ) {
             getRodsObjType( conn, &rodsPathInp->srcPath[i] );
             if ( rodsPathInp->srcPath[i].objState == NOT_EXIST_ST ) {
@@ -42,7 +37,7 @@ trimUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
                 continue;
             }
         }
-
+        int status = 0;
         if ( rodsPathInp->srcPath[i].objType == DATA_OBJ_T ) {
             rmKeyVal( &dataObjInp.condInput, TRANSLATED_PATH_KW );
             status = trimDataObjUtil( conn, rodsPathInp->srcPath[i].outPath,
@@ -62,7 +57,8 @@ trimUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
             return ( USER_INPUT_PATH_ERR );
         }
         /* XXXX may need to return a global status */
-        if ( status < 0 ) {
+        if ( status < 0 &&
+                status != CAT_NO_ROWS_FOUND ) {
             rodsLogError( LOG_ERROR, status,
                           "trimUtil: trim error for %s, status = %d",
                           rodsPathInp->srcPath[i].outPath, status );
@@ -74,15 +70,7 @@ trimUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
             "Total size trimmed = %-.3f MB. Number of files trimmed = %d.\n",
             ( float ) TotalSizeTrimmed / 1048600.0, TotalTrimmed );
     }
-    if ( savedStatus < 0 ) {
-        return ( savedStatus );
-    }
-    else if ( status == CAT_NO_ROWS_FOUND ) {
-        return ( 0 );
-    }
-    else {
-        return ( status );
-    }
+    return savedStatus;
 }
 
 int
