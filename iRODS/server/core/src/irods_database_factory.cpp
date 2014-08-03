@@ -28,14 +28,7 @@ irods::error database_factory(
                        "postgresql allocation failed" );
         }
 
-        irods::database_object* dobj = dynamic_cast< irods::database_object* >( pgsql );
-        if ( !dobj ) {
-            return ERROR(
-                       SYS_INVALID_INPUT_PARAM,
-                       "postgresql dynamic cast failed" );
-        }
-
-        _ptr.reset( dobj );
+        _ptr.reset( dynamic_cast< irods::database_object* >( pgsql ) );
 
     }
     else if ( irods::MYSQL_DATABASE_PLUGIN == _type ) {
@@ -46,14 +39,7 @@ irods::error database_factory(
                        "mysql allocation failed" );
         }
 
-        irods::database_object* dobj = dynamic_cast< irods::database_object* >( mysql );
-        if ( !dobj ) {
-            return ERROR(
-                       SYS_INVALID_INPUT_PARAM,
-                       "mysql dynamic cast failed" );
-        }
-
-        _ptr.reset( dobj );
+        _ptr.reset( dynamic_cast< irods::database_object* >( mysql ) );
 
     }
     else if ( irods::ORACLE_DATABASE_PLUGIN == _type ) {
@@ -64,14 +50,7 @@ irods::error database_factory(
                        "oracle allocation failed" );
         }
 
-        irods::database_object* dobj = dynamic_cast< irods::database_object* >( oracle );
-        if ( !dobj ) {
-            return ERROR(
-                       SYS_INVALID_INPUT_PARAM,
-                       "oracle dynamic cast failed" );
-        }
-
-        _ptr.reset( dobj );
+        _ptr.reset( dynamic_cast< irods::database_object* >( oracle ) );
 
     }
     else {
@@ -89,6 +68,3 @@ irods::error database_factory(
 } // database_factory
 
 }; // namespace irods
-
-
-
