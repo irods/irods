@@ -968,28 +968,11 @@ void CALLBACK my_timeout_handler( UINT uID, UINT uMsg, DWORD dwUser, DWORD dw1, 
 int
 connectToRhostWithTout( int sock, struct sockaddr *sin ) {
     int timeoutCnt = 0;
-    int status;
-    long arg;
-    fd_set myset;
-    struct timeval tv;
 
 #ifdef _WIN32
-    /* A Windows console app has very limited timeout functionality.
-     * An pseudo timeout is implemented.
-     */
-    /*
-      int connectCnt;
-      int win_connect_timeout_cb;
-      int win_connect_timeout = 0;
-      int win_connect_timer_id;
-      win_connect_timeout_cb = 0;
-      win_connect_timer_id =
-      timeSetEvent(CONNECT_TIMEOUT*1000, 0, my_timeout_handler, 0,
-      TIME_ONESHOT);
-      connectCnt = 0;
-    */
-
-    status = 0;
+    // A Windows console app has very limited timeout functionality.
+    // An pseudo timeout is implemented.
+    int status = 0;
 
     while ( ( timeoutCnt < MAX_CONN_RETRY_CNT ) && ( !win_connect_timeout ) ) {
         if ( ( status = connect( sock, sin, sizeof( struct sockaddr ) ) ) < 0 ) {
@@ -1006,20 +989,11 @@ connectToRhostWithTout( int sock, struct sockaddr *sin ) {
 
     return 0;
 
-    /*
-      if(win_connect_timeout) {
-      fprintf(stderr,
-      "portalConnect: connect msg timed out for pid %d\n", getpid ());
-      status = USER_SOCK_CONNECT_ERR;
-      } else {
-      timeKillEvent(win_connect_timer_id);
-      }
-    */
-
 #else
     /* redo the timeout using select */
     /* Set non-blocking */
-    if ( ( arg = fcntl( sock, F_GETFL, NULL ) ) < 0 ) {
+    long arg = fcntl( sock, F_GETFL, NULL );
+    if ( arg < 0 ) {
         rodsLog( LOG_ERROR,
                  "connectToRhostWithTout: fcntl F_GETFL error, errno = %d", errno );
         return ( USER_SOCK_CONNECT_ERR );
@@ -1031,6 +1005,7 @@ connectToRhostWithTout( int sock, struct sockaddr *sin ) {
         return ( USER_SOCK_CONNECT_ERR );
     }
 
+    int status = 0;
     while ( timeoutCnt < MAX_CONN_RETRY_CNT ) {
         status = connect( sock, sin, sizeof( struct sockaddr ) );
         if ( status >= 0 ) {
@@ -1042,8 +1017,10 @@ connectToRhostWithTout( int sock, struct sockaddr *sin ) {
             break;
         }
         if ( errno == EINPROGRESS || errno == EINTR ) {
+            struct timeval tv;
             tv.tv_sec = CONNECT_TIMEOUT_TIME;
             tv.tv_usec = 0;
+            fd_set myset;
             FD_ZERO( &myset );
             FD_SET( sock, &myset );
             status = select( sock + 1, NULL, &myset, NULL, &tv );
@@ -1120,15 +1097,9 @@ connectToRhostWithTout( int sock, struct sockaddr *sin ) {
                  "connectToRhostWithTout: fcntl F_SETFL error, errno = %d", errno );
         return ( USER_SOCK_CONNECT_ERR );
     }
+    return status;
 
 #endif
-    if ( status < 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "connectToRhostWithTout: connect failed. errno = %d \n",
-                 errno );
-        status = USER_SOCK_CONNECT_ERR - errno;
-    }
-    return ( status );
 }
 
 int
