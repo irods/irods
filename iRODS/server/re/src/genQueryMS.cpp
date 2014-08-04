@@ -165,7 +165,7 @@ int msiExecStrCondQueryWithOptions( msParam_t* queryParam,
                                     msParam_t* genQueryOutParam,
                                     ruleExecInfo_t *rei ) {
     genQueryInp_t genQueryInp;
-    int i;
+    int status;
     genQueryOut_t *genQueryOut = NULL;
     char *query;
     char *maxReturnedRowsStr;
@@ -175,9 +175,9 @@ int msiExecStrCondQueryWithOptions( msParam_t* queryParam,
     strcpy( query, ( const char* ) queryParam->inOutStruct );
 
     memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
-    i = fillGenQueryInpFromStrCond( query, &genQueryInp );
-    if ( i < 0 ) {
-        return( i );
+    status = fillGenQueryInpFromStrCond( query, &genQueryInp );
+    if ( status < 0 ) {
+        return( status );
     }
 
     if ( maxReturnedRowsParam != NULL ) {
@@ -196,27 +196,18 @@ int msiExecStrCondQueryWithOptions( msParam_t* queryParam,
 
     genQueryInp.continueInx = 0;
 
-    i = rsGenQuery( rei->rsComm, &genQueryInp, &genQueryOut );
-    if ( zeroResultsIsOK != NULL &&
+    status = rsGenQuery( rei->rsComm, &genQueryInp, &genQueryOut );
+    if ( status == CAT_NO_ROWS_FOUND &&
+            zeroResultsIsOK != NULL &&
             strcmp( ( const char* )zeroResultsIsOK->inOutStruct, "zeroOK" ) == 0 ) {
-        if ( i < 0 && i != CAT_NO_ROWS_FOUND ) {
-            return( i );
-        }
-        else if ( i == CAT_NO_ROWS_FOUND ) {
-            genQueryOutParam->type = strdup( STR_MS_T );
-            fillStrInMsParam( genQueryOutParam, "emptySet" );
+        genQueryOutParam->type = strdup( STR_MS_T );
+        fillStrInMsParam( genQueryOutParam, "emptySet" );
+        return( 0 );
+    }
+    else if ( status < 0 ) {
+        return status;
+    }
 
-            return( 0 );
-        }
-    }
-    else {
-        if ( i < 0 ) {
-            return( i );
-        }
-    }
-    if ( i < 0 ) {
-        return( i );
-    }
     genQueryOutParam->type = strdup( GenQueryOut_MS_T );
     genQueryOutParam->inOutStruct = genQueryOut;
     return( 0 );
