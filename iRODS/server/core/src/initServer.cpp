@@ -1029,28 +1029,19 @@ disconnRcatHost( rsComm_t *rsComm, int rcatType, char *rcatZoneHint ) {
 
 int
 resetRcatHost( rsComm_t *rsComm, int rcatType, char *rcatZoneHint ) {
-    int status;
     rodsServerHost_t *rodsServerHost = NULL;
-
-    status = getRcatHost( rcatType, rcatZoneHint, &rodsServerHost );
+    int status = getRcatHost( rcatType, rcatZoneHint, &rodsServerHost );
 
     if ( status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
-        return ( status );
+        return status;
     }
 
-    if ( ( rodsServerHost )->localFlag == LOCAL_HOST ) {
-        return ( LOCAL_HOST );
+    if ( rodsServerHost->localFlag == LOCAL_HOST ) {
+        return LOCAL_HOST;
     }
 
-    if ( rodsServerHost->conn != NULL ) { /* a connection exists */
-        rodsServerHost->conn = NULL;
-    }
-    if ( status >= 0 ) {
-        return ( REMOTE_HOST );
-    }
-    else {
-        return ( status );
-    }
+    rodsServerHost->conn = NULL;
+    return REMOTE_HOST;
 }
 
 int
