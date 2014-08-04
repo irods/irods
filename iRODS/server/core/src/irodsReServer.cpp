@@ -246,16 +246,15 @@ reServerMain( rsComm_t *rsComm, char* logDir ) {
 
 int
 reSvrSleep( rsComm_t *rsComm ) {
-    int status;
     rodsServerHost_t *rodsServerHost = NULL;
 
-    if ( ( status = disconnRcatHost( rsComm, MASTER_RCAT,
-                                     rsComm->myEnv.rodsZone ) ) == LOCAL_HOST ) {
+    int status = disconnRcatHost( rsComm, MASTER_RCAT, rsComm->myEnv.rodsZone );
+    if ( status == LOCAL_HOST ) {
 #ifdef RODS_CAT
 #ifndef ORA_ICAT
         /* For Oracle, we don't disconnect.  This is to avoid a
            memory leak in the OCI library */
-        disconnectRcat( rsComm );
+        status = disconnectRcat( rsComm );
         if ( status < 0 ) {
             rodsLog( LOG_ERROR,
                      "reSvrSleep: disconnectRcat error. status = %d", status );
@@ -265,8 +264,8 @@ reSvrSleep( rsComm_t *rsComm ) {
     }
     rodsSleep( RE_SERVER_SLEEP_TIME, 0 );
 
-    if ( ( status = getAndConnRcatHost( rsComm, MASTER_RCAT,
-                                        rsComm->myEnv.rodsZone, &rodsServerHost ) ) == LOCAL_HOST ) {
+    status = getAndConnRcatHost( rsComm, MASTER_RCAT, rsComm->myEnv.rodsZone, &rodsServerHost );
+    if ( status == LOCAL_HOST ) {
 #ifdef RODS_CAT
         status = connectRcat( rsComm );
         if ( status < 0 ) {
@@ -275,7 +274,7 @@ reSvrSleep( rsComm_t *rsComm ) {
         }
 #endif
     }
-    return ( status );
+    return status;
 }
 
 int
