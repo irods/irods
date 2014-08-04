@@ -1583,7 +1583,7 @@ msiSetReplComment( msParam_t *inpParam1, msParam_t *inpParam2,
         strncpy( dataObjInfo.objPath, parseMspForStr( inpParam2 ), MAX_NAME_LEN );
     }
     /* make sure to have at least data ID or path */
-    if ( !( dataIdStr || dataObjInfo.objPath ) ) {
+    if ( !( dataIdStr || strlen( dataObjInfo.objPath) > 0 ) ) {
         rodsLog( LOG_ERROR, "msiSetReplComment: No data object ID or path provided." );
         return ( USER__NULL_INPUT_ERR );
     }
@@ -1609,7 +1609,7 @@ msiSetReplComment( msParam_t *inpParam1, msParam_t *inpParam2,
 
     /* failure? */
     if ( rei->status < 0 ) {
-        if ( dataObjInfo.objPath ) {
+        if ( strlen( dataObjInfo.objPath ) > 0 ) {
             rodsLog( LOG_ERROR,
                      "msiSetReplComment: rsModDataObjMeta failed for object %s, status = %d",
                      dataObjInfo.objPath, rei->status );
