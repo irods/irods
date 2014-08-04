@@ -1367,10 +1367,6 @@ initAgent( int processType, rsComm_t *rsComm ) {
         rsComm->thread_ctx->lock      = new boost::mutex;
         rsComm->thread_ctx->cond      = new boost::condition_variable;
         rsComm->thread_ctx->reconnThr = new boost::thread( reconnManager, rsComm );
-        if ( status < 0 ) {
-            rodsLog( LOG_ERROR, "initAgent: pthread_create failed, stat=%d",
-                     status );
-        }
     }
     initExecCmdMutex();
 #endif
