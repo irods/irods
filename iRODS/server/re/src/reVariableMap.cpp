@@ -412,19 +412,17 @@ getAllSessionVarValue( char *action, ruleExecInfo_t *rei,
 int
 getSessionVarValue( char *action, char *varName, ruleExecInfo_t *rei,
                     char **varValue ) {
-    char *varMap;
-    int i, vinx;
-    Res *res;
-
     Region *r = make_region( 0, NULL );
-    vinx = getVarMap( action, varName, &varMap, 0 );
+    char *varMap;
+    int vinx = getVarMap( action, varName, &varMap, 0 );
     while ( vinx >= 0 ) {
-        i = getVarValue( varMap, rei, &res, r );
+        Res *res;
+        int i = getVarValue( varMap, rei, &res, r );
         if ( i >= 0 ) {
             free( varMap );
             *varValue = convertResToString( res );
             region_free( r );
-            return( i );
+            return i;
         }
         else if ( i == NULL_VALUE_ERR ) {
             free( varMap );
@@ -433,14 +431,11 @@ getSessionVarValue( char *action, char *varName, ruleExecInfo_t *rei,
         else {
             free( varMap );
             region_free( r );
-            return( i );
+            return i;
         }
     }
     region_free( r );
-    if ( vinx < 0 ) {
-        return( vinx );
-    }
-    return( i );
+    return vinx;
 }
 
 
