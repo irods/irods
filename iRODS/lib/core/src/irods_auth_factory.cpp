@@ -27,14 +27,7 @@ error auth_factory(
             return ERROR( SYS_INVALID_INPUT_PARAM, "native auth allocation failed" );
         }
 
-        auth_object* auth_obj = dynamic_cast< auth_object* >( nat_obj );
-        if ( !auth_obj ) {
-            return ERROR(
-                       SYS_INVALID_INPUT_PARAM,
-                       "native auth dynamic cast failed" );
-        }
-
-        _ptr.reset( auth_obj );
+        _ptr.reset( dynamic_cast< auth_object* >( nat_obj ) );
 
     }
     else if ( AUTH_PAM_SCHEME == scheme ) {
@@ -45,14 +38,7 @@ error auth_factory(
                        "pam auth allocation failed" );
         }
 
-        auth_object* auth_obj = dynamic_cast< auth_object* >( pam_obj );
-        if ( !auth_obj ) {
-            return ERROR(
-                       SYS_INVALID_INPUT_PARAM,
-                       "pam auth dynamic cast failed" );
-        }
-
-        _ptr.reset( auth_obj );
+        _ptr.reset( dynamic_cast< auth_object* >( pam_obj ) );
 
     }
     else if ( AUTH_OSAUTH_SCHEME == scheme ) {
@@ -63,14 +49,7 @@ error auth_factory(
                        "osauth auth allocation failed" );
         }
 
-        auth_object* auth_obj = dynamic_cast< auth_object* >( osauth_obj );
-        if ( !auth_obj ) {
-            return ERROR(
-                       SYS_INVALID_INPUT_PARAM,
-                       "osauth auth dynamic cast failed" );
-        }
-
-        _ptr.reset( auth_obj );
+        _ptr.reset( dynamic_cast< auth_object* >( osauth_obj ) );
 
     }
     else if ( AUTH_GSI_SCHEME == scheme ) {
@@ -79,12 +58,7 @@ error auth_factory(
             return ERROR( SYS_INVALID_INPUT_PARAM, "gsi auth allocation failed" );
         }
 
-        auth_object* auth_obj = dynamic_cast< auth_object* >( gsi_obj );
-        if ( !auth_obj ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "gsi auth dynamic cast failed" );
-        }
-
-        _ptr.reset( auth_obj );
+        _ptr.reset( dynamic_cast< auth_object* >( gsi_obj ) );
 
     }
     else if ( AUTH_KRB_SCHEME == scheme ) {
@@ -93,12 +67,7 @@ error auth_factory(
             return ERROR( SYS_INVALID_INPUT_PARAM, "krb auth allocation failed" );
         }
 
-        auth_object* auth_obj = dynamic_cast< auth_object* >( krb_obj );
-        if ( !auth_obj ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "krb auth dynamic cast failed" );
-        }
-
-        _ptr.reset( auth_obj );
+        _ptr.reset( dynamic_cast< auth_object* >( krb_obj ) );
 
     }
     else {
