@@ -12,50 +12,37 @@
 int
 mvUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         rodsPathInp_t *rodsPathInp ) {
-    int i;
-    int status;
-    int savedStatus = 0;
-    rodsPath_t *targPath;
-    dataObjCopyInp_t dataObjRenameInp;
-
     if ( rodsPathInp == NULL ) {
         return ( USER__NULL_INPUT_ERR );
     }
 
+    dataObjCopyInp_t dataObjRenameInp;
     initCondForMv( myRodsEnv, myRodsArgs, &dataObjRenameInp );
 
-    status = resolveRodsTarget( conn, myRodsEnv, rodsPathInp, MOVE_OPR );
-    if ( status < 0 ) {
-        rodsLogError( LOG_ERROR, status,
-                      "mvUtil: resolveRodsTarget error, status = %d", status );
-        return ( status );
+    int savedStatus = resolveRodsTarget( conn, myRodsEnv, rodsPathInp, MOVE_OPR );
+    if ( savedStatus < 0 ) {
+        rodsLogError( LOG_ERROR, savedStatus,
+                      "mvUtil: resolveRodsTarget error, status = %d", savedStatus );
+        return savedStatus;
     }
 
-    for ( i = 0; i < rodsPathInp->numSrc; i++ ) {
-        targPath = &rodsPathInp->targPath[i];
+    for ( int i = 0; i < rodsPathInp->numSrc; i++ ) {
+        rodsPath_t * targPath = &rodsPathInp->targPath[i];
 
-        status = mvObjUtil( conn, rodsPathInp->srcPath[i].outPath,
+        int status = mvObjUtil( conn, rodsPathInp->srcPath[i].outPath,
                             targPath->outPath, targPath->objType, myRodsEnv, myRodsArgs,
                             &dataObjRenameInp );
 
         /* XXXX may need to return a global status */
-        if ( status < 0 ) {
+        if ( status < 0 &&
+                status != CAT_NO_ROWS_FOUND ) {
             rodsLogError( LOG_ERROR, status,
                           "mvUtil: mv error for %s, status = %d",
                           targPath->outPath, status );
             savedStatus = status;
         }
     }
-
-    if ( savedStatus < 0 ) {
-        return ( savedStatus );
-    }
-    else if ( status == CAT_NO_ROWS_FOUND ) {
-        return ( 0 );
-    }
-    else {
-        return ( status );
-    }
+    return savedStatus;
 }
 
 int
