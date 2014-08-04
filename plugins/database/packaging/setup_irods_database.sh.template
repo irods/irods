@@ -8,6 +8,13 @@ DEFAULT_DATABASEPORT="TEMPLATE_DEFAULT_DATABASEPORT"
 IRODS_CONFIG_FILE="TEMPLATE_DEFAULT_IRODSCONFIG"
 SETUP_DATABASE_FLAG="/tmp/$USER/setup_irods_database.flag"
 
+DATABASEHOSTORIP="DEFAULTHOST"
+DATABASEPORT="DEFAULTPORT"
+DATABASEUSER="DEFAULTUSER"
+DATABASEPASSWORD="DEFAULTPASSWORD"
+
+
+
 # get into the top level directory
 # detect run-in-place installation
 DETECTEDDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -53,6 +60,28 @@ while [ "$STATUS" != "complete" ] ; do
     LASTDATABASEUSER=$DATABASEUSER
   fi
 
+
+if [ "$DATABASETYPE" == "oracle" ] ; then
+  # get database user
+  echo -n "Database Connection String User@TNS"
+  if [ "$LASTDATABASEUSER" ] ; then
+    echo -n " [$LASTDATABASEUSER]"
+  else
+    echo -n " [irods]"
+  fi
+  echo -n ": "
+  read DATABASEUSER
+  if [ "$DATABASEUSER" == "" ] ; then
+    if [ "$LASTDATABASEUSER" ] ; then
+      DATABASEUSER=$LASTDATABASEUSER
+    else
+      DATABASEUSER=irods
+    fi
+  fi
+  # strip all forward slashes
+  DATABASEUSER=`echo "${DATABASEUSER}" | sed -e "s/\///g"`
+
+else
   # get host
   echo -n "Database server's hostname or IP address"
   if [ "$LASTDATABASEHOSTORIP" ] ; then echo -n " [$LASTDATABASEHOSTORIP]"; fi
@@ -124,6 +153,8 @@ while [ "$STATUS" != "complete" ] ; do
   # strip all forward slashes
   ADMINUSER=`echo "${DATABASEUSER}" | sed -e "s/\///g"`
   echo ""
+fi # else not oracle
+
 
   echo -n "Database password: "
   # get db password, without showing on screen
@@ -158,14 +189,21 @@ IRODS_CONFIG_TEMPFILE="/tmp/$USER/tmp.irods.config"
 echo "Updating irods.config..."
 sed -e "/^\$DATABASE_TYPE/s/^.*$/\$DATABASE_TYPE = '$DATABASETYPE';/" $IRODS_CONFIG_FILE > $IRODS_CONFIG_TEMPFILE
 mv $IRODS_CONFIG_TEMPFILE $IRODS_CONFIG_FILE
-sed -e "/^\$DATABASE_HOST/s/^.*$/\$DATABASE_HOST = '$DATABASEHOSTORIP';/" $IRODS_CONFIG_FILE > $IRODS_CONFIG_TEMPFILE
-mv $IRODS_CONFIG_TEMPFILE $IRODS_CONFIG_FILE
-sed -e "/^\$DATABASE_PORT/s/^.*$/\$DATABASE_PORT = '$DATABASEPORT';/" $IRODS_CONFIG_FILE > $IRODS_CONFIG_TEMPFILE
-mv $IRODS_CONFIG_TEMPFILE $IRODS_CONFIG_FILE
 sed -e "/^\$DATABASE_ADMIN_NAME/s/^.*$/\$DATABASE_ADMIN_NAME = '$DATABASEUSER';/" $IRODS_CONFIG_FILE > $IRODS_CONFIG_TEMPFILE
 mv $IRODS_CONFIG_TEMPFILE $IRODS_CONFIG_FILE
-sed -e "/^\$DB_NAME/s/^.*$/\$DB_NAME = '$DATABASENAME';/" $IRODS_CONFIG_FILE > $IRODS_CONFIG_TEMPFILE
-mv $IRODS_CONFIG_TEMPFILE $IRODS_CONFIG_FILE
+
+if [ "$DATABASETYPE" != "oracle" ] ; then
+    sed -e "/^\$DATABASE_HOST/s/^.*$/\$DATABASE_HOST = '$DATABASEHOSTORIP';/" $IRODS_CONFIG_FILE > $IRODS_CONFIG_TEMPFILE
+    mv $IRODS_CONFIG_TEMPFILE $IRODS_CONFIG_FILE
+    sed -e "/^\$DATABASE_PORT/s/^.*$/\$DATABASE_PORT = '$DATABASEPORT';/" $IRODS_CONFIG_FILE > $IRODS_CONFIG_TEMPFILE
+    mv $IRODS_CONFIG_TEMPFILE $IRODS_CONFIG_FILE
+    sed -e "/^\$DB_NAME/s/^.*$/\$DB_NAME = '$DATABASENAME';/" $IRODS_CONFIG_FILE > $IRODS_CONFIG_TEMPFILE
+    mv $IRODS_CONFIG_TEMPFILE $IRODS_CONFIG_FILE
+else
+    # port can get repaved to empty string which causes positional
+    # issues on the irods_setup.pl command line, we need it to have a value
+    DATABASEPORT="DEFAULTPORT"
+fi
 
 # =-=-=-=-=-=-=-
 # update database flavor

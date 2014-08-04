@@ -193,15 +193,14 @@ class Server_Config:
             print("find_bin_oracle.sh failed")
             return
 
-        db_host = self.values['Servername']
         db_port = self.values['Port']
         db_user = self.values['DBUsername'].split("@")[0]
+        db_host = self.values['DBUsername'].split("@")[1]
         db_pass = self.get_db_pass()
         run_str = sqlclient + \
             " " + db_user + \
             "/" + db_pass + \
             "@" + db_host + \
-            ":" + db_port + \
             " < " + sql
 
         p = subprocess.Popen(

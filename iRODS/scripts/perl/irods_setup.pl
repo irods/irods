@@ -3749,28 +3749,20 @@ sub Postgres_sql($$)
 #
 sub Oracle_sql($$)
 {
-	my ($databaseName,$sqlFilename) = @_;
-	my $connectArg, $i;
-	$i = index($DATABASE_ADMIN_NAME, "@");
+    my ($databaseName,$sqlFilename) = @_;
+    my $connectArg, $i;
+    $i = index($DATABASE_ADMIN_NAME, "@");
 
-        $dbadmin = substr($DATABASE_ADMIN_NAME, 0, $i);
-        $connectArg = $dbadmin . "/" . 
-                  $DATABASE_ADMIN_PASSWORD . "@" . 
-                  $DATABASE_HOST . ":" . $DATABASE_PORT . '/' . $databaseName;
+    $dbadmin = substr($DATABASE_ADMIN_NAME, 0, $i);
+    $tnsname = substr($DATABASE_ADMIN_NAME, $i+1 );
+    $connectArg = $dbadmin . "/" . 
+              $DATABASE_ADMIN_PASSWORD . "@" . 
+              $tnsname;
+    $sqlplus = "sqlplus";
+    $exec_str = "$sqlplus '$connectArg' < $sqlFilename";
+    ($code,$output) = run( "$exec_str" );
 
-        $sqlplus = "sqlplus";
-        $exec_str = "$sqlplus '$connectArg' < $sqlFilename";
-	($code,$output) = run( "$exec_str" );
-        if( $output =~ "listener does not currently know of service requested in connect" ){
-	    $connectArg = $dbadmin . "/" . 
-			  $DATABASE_ADMIN_PASSWORD . "@" . 
-			  $DATABASE_HOST . ":" . $DATABASE_PORT; 
-            $exec_str = "$sqlplus '$connectArg' < $sqlFilename";
-
-	    ($code,$output) = run( "$exec_str" );
-        } 
-
-        return ($code,$output);
+    return ($code,$output);
 }
 
 #
