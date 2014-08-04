@@ -324,10 +324,6 @@ initCondForPut( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
 
     dataObjOprInp->oprType = PUT_OPR;
 
-    if ( rodsArgs == NULL ) {
-        return ( 0 );
-    }
-
     if ( rodsArgs->all == True ) {
         addKeyVal( &dataObjOprInp->condInput, ALL_KW, "" );
     }
