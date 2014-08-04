@@ -12,31 +12,26 @@
 int
 cpUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         rodsPathInp_t *rodsPathInp ) {
-    int i;
-    int status;
-    int savedStatus = 0;
-    rodsPath_t *targPath;
-    dataObjCopyInp_t dataObjCopyInp;
-    rodsRestart_t rodsRestart;
-
     if ( rodsPathInp == NULL ) {
         return ( USER__NULL_INPUT_ERR );
     }
 
-    status = resolveRodsTarget( conn, myRodsEnv, rodsPathInp, 1 );
-    if ( status < 0 ) {
-        rodsLogError( LOG_ERROR, status,
-                      "cpUtil: resolveRodsTarget error, status = %d", status );
-        return ( status );
+    int savedStatus = resolveRodsTarget( conn, myRodsEnv, rodsPathInp, 1 );
+    if ( savedStatus < 0 ) {
+        rodsLogError( LOG_ERROR, savedStatus,
+                      "cpUtil: resolveRodsTarget error, status = %d", savedStatus );
+        return savedStatus;
     }
 
+    dataObjCopyInp_t dataObjCopyInp;
+    rodsRestart_t rodsRestart;
     initCondForCp( myRodsEnv, myRodsArgs, &dataObjCopyInp, &rodsRestart );
 
     /* initialize the progress struct */
     if ( gGuiProgressCB != NULL ) {
         bzero( &conn->operProgress, sizeof( conn->operProgress ) );
-        for ( i = 0; i < rodsPathInp->numSrc; i++ ) {
-            targPath = &rodsPathInp->targPath[i];
+        for ( int i = 0; i < rodsPathInp->numSrc; i++ ) {
+            rodsPath_t * targPath = &rodsPathInp->targPath[i];
             if ( targPath->objType == DATA_OBJ_T ) {
                 conn->operProgress.totalNumFiles++;
                 if ( rodsPathInp->srcPath[i].size > 0 ) {
@@ -51,8 +46,8 @@ cpUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         }
     }
 
-    for ( i = 0; i < rodsPathInp->numSrc; i++ ) {
-        targPath = &rodsPathInp->targPath[i];
+    for ( int i = 0; i < rodsPathInp->numSrc; i++ ) {
+        rodsPath_t * targPath = &rodsPathInp->targPath[i];
 
         if ( rodsPathInp->srcPath[i].rodsObjStat != NULL &&
                 rodsPathInp->srcPath[i].rodsObjStat->specColl != NULL ) {
@@ -60,6 +55,7 @@ cpUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
                 rodsPathInp->srcPath[i].rodsObjStat->specColl;
         }
 
+        int status = 0;
         if ( targPath->objType == DATA_OBJ_T ) {
             rmKeyVal( &dataObjCopyInp.srcDataObjInp.condInput,
                       TRANSLATED_PATH_KW );
@@ -94,7 +90,9 @@ cpUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
             return ( USER_INPUT_PATH_ERR );
         }
         /* XXXX may need to return a global status */
-        if ( status < 0 ) {
+        if ( status < 0 &&
+                status != CAT_NO_ROWS_FOUND &&
+                status != SYS_SPEC_COLL_OBJ_NOT_EXIST ) {
             rodsLogError( LOG_ERROR, status,
                           "cpUtil: cp error for %s, status = %d",
                           targPath->outPath, status );
@@ -105,17 +103,7 @@ cpUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
     if ( rodsRestart.fd > 0 ) {
         close( rodsRestart.fd );
     }
-
-    if ( savedStatus < 0 ) {
-        return ( savedStatus );
-    }
-    else if ( status == CAT_NO_ROWS_FOUND ||
-              status == SYS_SPEC_COLL_OBJ_NOT_EXIST ) {
-        return ( 0 );
-    }
-    else {
-        return ( status );
-    }
+    return savedStatus;
 }
 
 int
