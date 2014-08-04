@@ -9,9 +9,6 @@
 int
 bunUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
          rodsPathInp_t *rodsPathInp ) {
-    int i;
-    int status;
-    int savedStatus = 0;
     rodsPath_t *collPath, *structFilePath;
     structFileExtAndRegInp_t structFileExtAndRegInp;
 
@@ -19,14 +16,13 @@ bunUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         return ( USER__NULL_INPUT_ERR );
     }
 
-    status = initCondForBunOpr( myRodsEnv, myRodsArgs, &structFileExtAndRegInp,
+    int savedStatus = initCondForBunOpr( myRodsEnv, myRodsArgs, &structFileExtAndRegInp,
                                 rodsPathInp );
-
-    if ( status < 0 ) {
-        return status;
+    if ( savedStatus < 0 ) {
+        return savedStatus;
     }
 
-    for ( i = 0; i < rodsPathInp->numSrc; i++ ) {
+    for ( int i = 0; i < rodsPathInp->numSrc; i++ ) {
         collPath = &rodsPathInp->destPath[i];	/* iRODS Collection */
         structFilePath = &rodsPathInp->srcPath[i];	/* iRODS StructFile */
 
@@ -37,6 +33,7 @@ bunUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         rstrcpy( structFileExtAndRegInp.objPath, structFilePath->outPath,
                  MAX_NAME_LEN );
 
+        int status = 0;
         if ( myRodsArgs->extract == True ) {		/* -x */
             if ( myRodsArgs->condition == True ) {
                 rodsLog( LOG_ERROR, "bunUtil: cannot use -x and -c at the same time" );
@@ -57,7 +54,8 @@ bunUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         }
 
         /* XXXX may need to return a global status */
-        if ( status < 0 ) {
+        if ( status < 0 &&
+                status != CAT_NO_ROWS_FOUND ) {
             if ( status == SYS_CACHE_STRUCT_FILE_RESC_ERR &&
                     myRodsArgs->condition == True ) {
                 rodsLogError( LOG_ERROR, status,
@@ -71,16 +69,7 @@ bunUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
             }
         }
     }
-
-    if ( savedStatus < 0 ) {
-        return ( savedStatus );
-    }
-    else if ( status == CAT_NO_ROWS_FOUND ) {
-        return ( 0 );
-    }
-    else {
-        return ( status );
-    }
+    return savedStatus;
 }
 
 int
