@@ -24,7 +24,7 @@ extern "C" {
     int
     copyStrFromBuf( char **buf, char *outStr, int maxOutLen );
     int
-    isAllDigit( char *myStr );
+    isAllDigit( const char *myStr );
     int
     splitPathByKey( const char *srcPath, char *dir, size_t maxDirLen, char *file, size_t maxFileLen, char key );
     int

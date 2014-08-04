@@ -13,6 +13,7 @@
 
 #include "irods_pack_table.hpp"
 #include <iostream>
+#include <string>
 
 int
 packStruct( void *inStruct, bytesBuf_t **packedResult, const char *packInstName,
@@ -632,7 +633,7 @@ resolveIntDepItem( packItem_t *myPackedItem, packInstructArray_t *myPackTable ) 
 }
 
 int
-resolveIntInItem( char *name, packItem_t *myPackedItem,
+resolveIntInItem( const char *name, packItem_t *myPackedItem,
                   packInstructArray_t *myPackTable ) {
     packItem_t *tmpPackedItem;
     int i;
@@ -762,144 +763,57 @@ matchPackInstruct( char *name, packInstructArray_t *myPackTable ) {
 
 int
 resolveDepInArray( packItem_t *myPackedItem, packInstructArray_t *myPackTable ) {
-    int c;
-    char buf[MAX_PI_LEN];
-    char *inPtr, *bufPtr;
-    int gotOpenBrack = 0;       /* whether we got an open bracket */
-    int gotOpenParen = 0;      /* whether we got an open parenthesis */
-    int outLen = 0;
-    int myDim;
-
     myPackedItem->dim = myPackedItem->hintDim = 0;
-    bufPtr = buf;
-    inPtr = myPackedItem->name;
+    char openSymbol = '\0';         // either '(', '[', or '\0' depending on whether we are
+                                    // in a parenthetical or bracketed expression, or not
 
-    while ( ( c = *inPtr ) != '\0' ) {
-        if ( c == '[' ) {
-            if ( gotOpenBrack > 0 ) {
-                rodsLog( LOG_ERROR,
-                         "resolveDepInArray: double [ for %s",
-                         myPackedItem->name );
+    std::string buffer;
+    for ( size_t nameIndex = 0; '\0' != myPackedItem->name[ nameIndex ]; nameIndex++ ) {
+        char c = myPackedItem->name[ nameIndex ];
+        if ( '[' == c || '(' == c ) {
+            if ( openSymbol ) {
+                rodsLog( LOG_ERROR, "resolveDepInArray: got %c inside %c for %s",
+                        c, openSymbol, myPackedItem->name );
                 return ( SYS_PACK_INSTRUCT_FORMAT_ERR );
             }
-            else if ( gotOpenParen > 0 ) {
-                rodsLog( LOG_ERROR,
-                         "resolveDepInArray: got ( inside [ for %s",
-                         myPackedItem->name );
+            else if ( ( '[' == c && myPackedItem->dim >= MAX_PACK_DIM ) ||
+                    ( '(' == c && myPackedItem->hintDim >= MAX_PACK_DIM ) ) {
+                rodsLog( LOG_ERROR, "resolveDepInArray: dimension of %s larger than %d",
+                        myPackedItem->name, MAX_PACK_DIM );
                 return ( SYS_PACK_INSTRUCT_FORMAT_ERR );
             }
-            else if ( myPackedItem->dim >= MAX_PACK_DIM ) {
-                rodsLog( LOG_ERROR,
-                         "resolveDepInArray: dimension of %s larger than %d",
-                         myPackedItem->name, MAX_PACK_DIM );
+            openSymbol = c;
+            myPackedItem->name[ nameIndex ] = '\0';  // isolate the name. may be used later
+            buffer.clear();
+        }
+        else if ( ']' == c || ')' == c ) {
+            if ( ( ']' == c && '[' != openSymbol ) ||
+                    ( ')' == c && '(' != openSymbol ) ) {
+                rodsLog( LOG_ERROR, "resolveDepInArray: Got %c without %c for %s",
+                        c, ( ']' == c ) ? '[' : '(', myPackedItem->name );
                 return ( SYS_PACK_INSTRUCT_FORMAT_ERR );
             }
-            else {
-                gotOpenBrack = 1;
-                *inPtr = '\0';  /* isolate the name. may be used later */
-                inPtr ++;
-                continue;
+            else if ( buffer.empty() ) {
+                rodsLog( LOG_ERROR, "resolveDepInArray: Empty %c%c in %s",
+                        ( ']' == c ) ? '[' : '(', c, myPackedItem->name );
+                return ( SYS_PACK_INSTRUCT_FORMAT_ERR );
+            }
+            openSymbol = '\0';
+
+            int& dimSize = ( ']' == c ) ?
+                myPackedItem->dimSize[myPackedItem->dim++] :
+                myPackedItem->hintDimSize[myPackedItem->hintDim++];
+            if ( ( dimSize = resolveIntInItem( buffer.c_str(), myPackedItem, myPackTable ) ) < 0 ) {
+                rodsLog( LOG_ERROR, "resolveDepInArray:resolveIntInItem error for %s, intName=%s",
+                         myPackedItem->name, buffer.c_str() );
+                return ( SYS_PACK_INSTRUCT_FORMAT_ERR );
             }
         }
-        else if ( c == ']' ) {
-            if ( gotOpenBrack == 0 || outLen <= 0 ) {
-                rodsLog( LOG_ERROR,
-                         "resolveDepInArray: Got } without [ for %s",
-                         myPackedItem->name );
-                return ( SYS_PACK_INSTRUCT_FORMAT_ERR );
-            }
-            else if ( gotOpenParen > 0 ) {
-                rodsLog( LOG_ERROR,
-                         "resolveDepInArray: got ( inside ] for %s",
-                         myPackedItem->name );
-                return ( SYS_PACK_INSTRUCT_FORMAT_ERR );
-            }
-            *bufPtr = '\0';
-            myDim = myPackedItem->dim;
-            myPackedItem->dimSize[myDim] = resolveIntInItem( buf, myPackedItem,
-                                           myPackTable );
-            if ( myPackedItem->dimSize[myDim] < 0 ) {
-                rodsLog( LOG_ERROR,
-                         "resolveDepInArray:resolveIntInItem error for %s, intName=%s",
-                         myPackedItem->name, buf );
-                return ( SYS_PACK_INSTRUCT_FORMAT_ERR );
-            }
-            myPackedItem->dim++;
-            /* reset parameters */
-            bufPtr = buf;
-            outLen = 0;
-            gotOpenBrack = 0;
-            inPtr ++;
-            continue;
-        }
-        else if ( c == '(' ) {
-            if ( gotOpenBrack > 0 || outLen > 0 ) {
-                rodsLog( LOG_ERROR,
-                         "resolveDepInArray: Got } without [ for %s",
-                         myPackedItem->name );
-                return ( SYS_PACK_INSTRUCT_FORMAT_ERR );
-            }
-            else if ( gotOpenParen > 0 ) {
-                rodsLog( LOG_ERROR,
-                         "resolveDepInArray: got double ( for %s",
-                         myPackedItem->name );
-                return ( SYS_PACK_INSTRUCT_FORMAT_ERR );
-            }
-            else if ( myPackedItem->hintDim >= MAX_PACK_DIM ) {
-                rodsLog( LOG_ERROR,
-                         "resolveDepInArray: dimension of %s larger than %d",
-                         myPackedItem->name, MAX_PACK_DIM );
-                return ( SYS_PACK_INSTRUCT_FORMAT_ERR );
-            }
-            else {
-                gotOpenParen = 1;
-                *inPtr = '\0';  /* isolate the name. may be used later */
-                inPtr ++;
-                continue;
-            }
-        }
-        else if ( c == ')' ) {
-            if ( gotOpenParen == 0 || outLen <= 0 ) {
-                rodsLog( LOG_ERROR,
-                         "resolveDepInArray: Got ) without ( for %s",
-                         myPackedItem->name );
-                return ( SYS_PACK_INSTRUCT_FORMAT_ERR );
-            }
-            else if ( gotOpenBrack > 0 ) {
-                rodsLog( LOG_ERROR,
-                         "resolveDepInArray: got [ inside ) for %s",
-                         myPackedItem->name );
-                return ( SYS_PACK_INSTRUCT_FORMAT_ERR );
-            }
-            *bufPtr = '\0';
-            myDim = myPackedItem->hintDim;
-            myPackedItem->hintDimSize[myDim] = resolveIntInItem( buf,
-                                               myPackedItem, myPackTable );
-            if ( myPackedItem->hintDimSize[myDim] < 0 ) {
-                rodsLog( LOG_ERROR,
-                         "resolveDepInArray: resolveIntInItem error for %s",
-                         myPackedItem->name );
-                return ( SYS_PACK_INSTRUCT_FORMAT_ERR );
-            }
-            myPackedItem->hintDim++;
-            /* reset parameters */
-            bufPtr = buf;
-            outLen = 0;
-            gotOpenParen = 0;
-            inPtr ++;
-            continue;
-        }
-        else {
-            if ( gotOpenBrack > 0 || gotOpenParen > 0 ) {
-                *bufPtr = *inPtr;
-                bufPtr ++;
-                outLen ++;
-            }
-            inPtr ++;
-            continue;
+        else if ( openSymbol ) {
+            buffer += c;
         }
     }
-    return ( 0 );
+    return 0;
 }
 
 int

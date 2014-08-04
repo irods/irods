@@ -217,8 +217,8 @@ copyStrFromBuf( char **buf, char *outStr, int maxOutLen ) {
 }
 
 int
-isAllDigit( char * myStr ) {
-    int c;
+isAllDigit( const char * myStr ) {
+    char c;
 
     while ( ( c = *myStr ) != '\0' ) {
         if ( isdigit( c ) == 0 ) {

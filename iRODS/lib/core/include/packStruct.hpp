@@ -143,7 +143,7 @@ struct */
     int
     resolveIntDepItem( packItem_t *myPackedItem, packInstructArray_t *myPackTable );
     int
-    resolveIntInItem( char *name, packItem_t *myPackedItem,
+    resolveIntInItem( const char *name, packItem_t *myPackedItem,
                       packInstructArray_t *myPackTable );
     void *
     matchPackInstruct( char *name, packInstructArray_t *myPackTable );
