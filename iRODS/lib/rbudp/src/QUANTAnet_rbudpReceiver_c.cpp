@@ -260,7 +260,7 @@ int  getstream( rbudpReceiver_t *rbudpReceiver, int tofd, int packetSize ) {
             fprintf( stderr, "accepting %lld byte chunk\n", bufSize );
         }
 
-        if ( buf == 0 && bufSize != curSize ) {
+        if ( buf == NULL || bufSize != curSize ) {
             if ( buf ) {
                 free( buf );
             }
