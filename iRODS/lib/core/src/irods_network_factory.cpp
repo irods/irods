@@ -3,13 +3,11 @@
 #include "irods_client_server_negotiation.hpp"
 
 namespace irods {
-// =-=-=-=-=-=-=-
 // super basic free factory function to create either a tcp
-// object or an ssl object based on wether ssl has been enabled
+// object or an ssl object based on whether ssl has been enabled
 irods::error network_factory(
     rcComm_t*                   _comm,
     irods::network_object_ptr& _ptr ) {
-    // =-=-=-=-=-=-=-
     // param check
     if ( !_comm ) {
         return ERROR( SYS_INVALID_INPUT_PARAM, "null comm ptr" );
@@ -20,23 +18,11 @@ irods::error network_factory(
     // want an ssl object which will resolve to an ssl
     // network plugin
     if ( irods::CS_NEG_USE_SSL == _comm->negotiation_results ) {
-        irods::ssl_object* ssl = new irods::ssl_object( *_comm );
-        if ( !ssl ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "ssl allocation failed" );
-        }
-
-        _ptr.reset( dynamic_cast< irods::network_object* >( ssl ) );
-
+        _ptr.reset( new irods::ssl_object( *_comm ) );
     }
+    // otherwise we just need a tcp object
     else {
-        // otherwise we just need a tcp object
-        irods::tcp_object* tcp = new irods::tcp_object( *_comm );
-        if ( !tcp ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "tcp allocation failed" );
-        }
-
-        _ptr.reset( dynamic_cast< irods::network_object* >( tcp ) );
-
+        _ptr.reset( new irods::tcp_object( *_comm ) );
     }
 
     return SUCCESS();
@@ -55,27 +41,15 @@ irods::error network_factory(
     }
 
     // currently our only criteria on the network object
-    // is wether SSL has been enabled.  if it has then we
+    // is whether SSL has been enabled.  if it has then we
     // want an ssl object which will resolve to an ssl
     // network plugin
     if ( irods::CS_NEG_USE_SSL == _comm->negotiation_results ) {
-        irods::ssl_object* ssl = new irods::ssl_object( *_comm );
-        if ( !ssl ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "ssl allocation failed" );
-        }
-
-        _ptr.reset( ssl );
-
+        _ptr.reset( new irods::ssl_object( *_comm ) );
     }
+    // otherwise we just need a tcp object
     else {
-        // otherwise we just need a tcp object
-        irods::tcp_object* tcp = new irods::tcp_object( *_comm );
-        if ( !tcp ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "tcp allocation failed" );
-        }
-
-        _ptr.reset( tcp );
-
+        _ptr.reset( new irods::tcp_object( *_comm ) );
     }
 
     return SUCCESS();
