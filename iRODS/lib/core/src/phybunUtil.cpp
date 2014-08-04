@@ -9,27 +9,22 @@
 int
 phybunUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
             rodsPathInp_t *rodsPathInp ) {
-    int i;
-    int status;
-    int savedStatus = 0;
-    rodsPath_t *collPath;
-    structFileExtAndRegInp_t phyBundleCollInp;
-
     if ( rodsPathInp == NULL ) {
         return ( USER__NULL_INPUT_ERR );
     }
 
-    status = initCondForPhybunOpr( myRodsEnv, myRodsArgs, &phyBundleCollInp,
+    rodsPath_t *collPath;
+    structFileExtAndRegInp_t phyBundleCollInp;
+    int savedStatus = initCondForPhybunOpr( myRodsEnv, myRodsArgs, &phyBundleCollInp,
                                    rodsPathInp );
-
-    if ( status < 0 ) {
-        return status;
+    if ( savedStatus < 0 ) {
+        return savedStatus;
     }
 
-    for ( i = 0; i < rodsPathInp->numSrc; i++ ) {
+    for ( int i = 0; i < rodsPathInp->numSrc; i++ ) {
         collPath = &rodsPathInp->srcPath[i];	/* iRODS Collection */
 
-        getRodsObjType( conn, collPath );
+        int status = getRodsObjType( conn, collPath );
 
         if ( collPath->objType !=  COLL_OBJ_T ) {
             rodsLogError( LOG_ERROR, status,
@@ -41,24 +36,15 @@ phybunUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         rstrcpy( phyBundleCollInp.collection, collPath->outPath, MAX_NAME_LEN );
 
         status = rcPhyBundleColl( conn, &phyBundleCollInp );
-
-        if ( status < 0 ) {
+        if ( status < 0 &&
+                status != CAT_NO_ROWS_FOUND ) {
             rodsLogError( LOG_ERROR, status,
                           "phybunUtil: opr error for %s, status = %d",
                           collPath->outPath, status );
             savedStatus = status;
         }
     }
-
-    if ( savedStatus < 0 ) {
-        return ( savedStatus );
-    }
-    else if ( status == CAT_NO_ROWS_FOUND ) {
-        return ( 0 );
-    }
-    else {
-        return ( status );
-    }
+    return savedStatus;
 }
 
 int
