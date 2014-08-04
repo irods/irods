@@ -676,7 +676,6 @@ int
 resolveStrInItem( packItem_t *myPackedItem, packInstructArray_t *myPackTable ) {
     packItem_t *tmpPackedItem;
     char *name;
-    int aPointer = 0;
 
     name = myPackedItem->strValue;
     /* check the current item chain first */
@@ -706,9 +705,6 @@ resolveStrInItem( packItem_t *myPackedItem, packInstructArray_t *myPackTable ) {
     myPackedItem->typeInx = PACK_STRUCT_TYPE;
     free( myPackedItem->name );
     myPackedItem->name = strdup( tmpPackedItem->strValue );
-    if ( aPointer > 0 ) {
-        myPackedItem->pointerType = 1;
-    }
 
     return ( 0 );
 }
