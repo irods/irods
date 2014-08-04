@@ -603,9 +603,6 @@ fillSubmitConditions( char *action, char *inDelayCondition,
         }
         getOffsetTimeStr( ruleSubmitInfo->exeTime, kwp );
     }
-    if ( i != 0 && i != UNMATCHED_KEY_OR_INDEX ) {
-        return( i );
-    }
     i = copyTaggedValue( delayCondition, "KVALPR", kwp, NAME_LEN * 2 );
     while ( i >= 0 ) {
         if ( ( t = strstr( kwp, "=" ) ) == NULL ) {
