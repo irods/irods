@@ -14,24 +14,19 @@ static int FailedChksumCnt = 0;
 int
 chksumUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
             rodsPathInp_t *rodsPathInp ) {
-    int i;
-    int status;
-    int savedStatus = 0;
-    collInp_t collInp;
-    dataObjInp_t dataObjInp;
-
-
     if ( rodsPathInp == NULL ) {
         return ( USER__NULL_INPUT_ERR );
     }
 
-    status = initCondForChksum( myRodsEnv, myRodsArgs, &dataObjInp, &collInp );
+    collInp_t collInp;
+    dataObjInp_t dataObjInp;
+    int savedStatus = initCondForChksum( myRodsEnv, myRodsArgs, &dataObjInp, &collInp );
 
-    if ( status < 0 ) {
-        return ( status );
+    if ( savedStatus < 0 ) {
+        return savedStatus;
     }
 
-    for ( i = 0; i < rodsPathInp->numSrc; i++ ) {
+    for ( int i = 0; i < rodsPathInp->numSrc; i++ ) {
         if ( rodsPathInp->srcPath[i].objType == UNKNOWN_OBJ_T ) {
             getRodsObjType( conn, &rodsPathInp->srcPath[i] );
             if ( rodsPathInp->srcPath[i].objState == NOT_EXIST_ST ) {
@@ -41,16 +36,17 @@ chksumUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
             }
         }
 
+        int status = 0;
         if ( rodsPathInp->srcPath[i].objType == DATA_OBJ_T ) {
             rmKeyVal( &dataObjInp.condInput, TRANSLATED_PATH_KW );
             status = chksumDataObjUtil( conn, rodsPathInp->srcPath[i].outPath, myRodsEnv, myRodsArgs, &dataObjInp );
-
         }
+
         else if ( rodsPathInp->srcPath[i].objType ==  COLL_OBJ_T ) {
             addKeyVal( &dataObjInp.condInput, TRANSLATED_PATH_KW, "" );
             status = chksumCollUtil( conn, rodsPathInp->srcPath[i].outPath, myRodsEnv, myRodsArgs, &dataObjInp, &collInp );
-
         }
+
         else {
             /* should not be here */
             rodsLog( LOG_ERROR, "chksumUtil: invalid chksum objType %d for %s",
@@ -58,7 +54,8 @@ chksumUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
             return ( USER_INPUT_PATH_ERR );
         }
         /* XXXX may need to return a global status */
-        if ( status < 0 ) {
+        if ( status < 0 &&
+                status != CAT_NO_ROWS_FOUND ) {
             rodsLogError( LOG_ERROR, status, "chksumUtil: chksum error for %s, status = %d",
                           rodsPathInp->srcPath[i].outPath, status );
             savedStatus = status;
@@ -68,15 +65,7 @@ chksumUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
     printf( "Total checksum performed = %d, Failed checksum = %d\n",
             ChksumCnt, FailedChksumCnt );
 
-    if ( savedStatus < 0 ) {
-        return ( savedStatus );
-    }
-    else if ( status == CAT_NO_ROWS_FOUND ) {
-        return ( 0 );
-    }
-    else {
-        return ( status );
-    }
+    return savedStatus;
 }
 
 int
