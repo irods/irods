@@ -9,21 +9,17 @@
 int
 regUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
          rodsPathInp_t *rodsPathInp ) {
-    int i = 0;
-    int status = 0;
-    int savedStatus = 0;
-    rodsPath_t *destPath, *srcPath;
-    dataObjInp_t dataObjOprInp;
-
     if ( rodsPathInp == NULL ) {
         return ( USER__NULL_INPUT_ERR );
     }
 
+    dataObjInp_t dataObjOprInp;
     initCondForReg( myRodsEnv, myRodsArgs, &dataObjOprInp, rodsPathInp );
 
-    for ( i = 0; i < rodsPathInp->numSrc; i++ ) {
-        destPath = &rodsPathInp->destPath[i];	/* iRODS path */
-        srcPath = &rodsPathInp->srcPath[i];	/* file Path */
+    int savedStatus = 0;
+    for ( int i = 0; i < rodsPathInp->numSrc; i++ ) {
+        rodsPath_t * destPath = &rodsPathInp->destPath[i];	/* iRODS path */
+        rodsPath_t * srcPath = &rodsPathInp->srcPath[i];	/* file Path */
 
         getRodsObjType( conn, destPath );
 
@@ -36,6 +32,7 @@ regUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
             return ( CAT_NAME_EXISTS_AS_DATAOBJ );
         }
 
+        int status = 0;
         if ( myRodsArgs->collection == False && myRodsArgs->checksum == True ) {
             status = rcChksumLocFile( srcPath->outPath,
                                       REG_CHKSUM_KW,
@@ -58,23 +55,15 @@ regUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         status = rcPhyPathReg( conn, &dataObjOprInp );
 
         /* XXXX may need to return a global status */
-        if ( status < 0 ) {
+        if ( status < 0 &&
+                status != CAT_NO_ROWS_FOUND ) {
             rodsLogError( LOG_ERROR, status,
                           "regUtil: reg error for %s, status = %d",
                           destPath->outPath, status );
             savedStatus = status;
         }
     }
-
-    if ( savedStatus < 0 ) {
-        return ( savedStatus );
-    }
-    else if ( status == CAT_NO_ROWS_FOUND ) {
-        return ( 0 );
-    }
-    else {
-        return ( status );
-    }
+    return savedStatus;
 }
 
 int
