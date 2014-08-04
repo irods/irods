@@ -15,9 +15,8 @@ irods::error network_factory(
         return ERROR( SYS_INVALID_INPUT_PARAM, "null comm ptr" );
     }
 
-    // =-=-=-=-=-=-=-
     // currently our only criteria on the network object
-    // is wether SSL has been enabled.  if it has then we
+    // is whether SSL has been enabled. if it has then we
     // want an ssl object which will resolve to an ssl
     // network plugin
     if ( irods::CS_NEG_USE_SSL == _comm->negotiation_results ) {
@@ -26,29 +25,17 @@ irods::error network_factory(
             return ERROR( SYS_INVALID_INPUT_PARAM, "ssl allocation failed" );
         }
 
-        irods::network_object* nobj = dynamic_cast< irods::network_object* >( ssl );
-        if ( !nobj ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "ssl dynamic cast failed" );
-        }
-
-        _ptr.reset( nobj );
+        _ptr.reset( dynamic_cast< irods::network_object* >( ssl ) );
 
     }
     else {
-        // =-=-=-=-=-=-=-
-        // otherwise we just need an plain ol' tcp object
-        // which resolves to a plain ol' tcp network plugin
+        // otherwise we just need a tcp object
         irods::tcp_object* tcp = new irods::tcp_object( *_comm );
         if ( !tcp ) {
             return ERROR( SYS_INVALID_INPUT_PARAM, "tcp allocation failed" );
         }
 
-        irods::network_object* nobj = dynamic_cast< irods::network_object* >( tcp );
-        if ( !nobj ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "tcp dynamic cast failed" );
-        }
-
-        _ptr.reset( nobj );
+        _ptr.reset( dynamic_cast< irods::network_object* >( tcp ) );
 
     }
 
@@ -62,13 +49,11 @@ irods::error network_factory(
     rsComm_t*                   _comm,
     irods::network_object_ptr& _ptr ) {
 
-    // =-=-=-=-=-=-=-
     // param check
     if ( !_comm ) {
         return ERROR( SYS_INVALID_INPUT_PARAM, "null comm ptr" );
     }
 
-    // =-=-=-=-=-=-=-
     // currently our only criteria on the network object
     // is wether SSL has been enabled.  if it has then we
     // want an ssl object which will resolve to an ssl
@@ -79,29 +64,17 @@ irods::error network_factory(
             return ERROR( SYS_INVALID_INPUT_PARAM, "ssl allocation failed" );
         }
 
-        irods::network_object* nobj = dynamic_cast< irods::network_object* >( ssl );
-        if ( !nobj ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "ssl dynamic cast failed" );
-        }
-
-        _ptr.reset( nobj );
+        _ptr.reset( ssl );
 
     }
     else {
-        // =-=-=-=-=-=-=-
-        // otherwise we just need an plain ol' tcp object
-        // which resolves to a plain ol' tcp network plugin
+        // otherwise we just need a tcp object
         irods::tcp_object* tcp = new irods::tcp_object( *_comm );
         if ( !tcp ) {
             return ERROR( SYS_INVALID_INPUT_PARAM, "tcp allocation failed" );
         }
 
-        irods::network_object* nobj = dynamic_cast< irods::network_object* >( tcp );
-        if ( !nobj ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "tcp dynamic cast failed" );
-        }
-
-        _ptr.reset( nobj );
+        _ptr.reset( tcp );
 
     }
 
@@ -110,6 +83,3 @@ irods::error network_factory(
 } // network_factory
 
 }; // namespace irods
-
-
-
