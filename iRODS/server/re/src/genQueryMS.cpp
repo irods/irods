@@ -92,28 +92,16 @@ int msiExecStrCondQueryWithOptionsNew( msParam_t* queryParam,
     genQueryInp.continueInx = 0;
 
     i = rsGenQuery( rei->rsComm, &genQueryInp, &genQueryOut );
-    if ( zeroResultsIsOK != NULL &&
+    if ( i == CAT_NO_ROWS_FOUND && zeroResultsIsOK != NULL &&
             strcmp( ( const char* )zeroResultsIsOK->inOutStruct, "zeroOK" ) == 0 ) {
-        if ( i < 0 && i != CAT_NO_ROWS_FOUND ) {
-            return( i );
-        }
-        else if ( i == CAT_NO_ROWS_FOUND ) {
-            /* genQueryOutParam->type = strdup(STR_MS_T);
-            fillStrInMsParam (genQueryOutParam,"emptySet"); */
-            genQueryOutParam->type = strdup( GenQueryOut_MS_T );
-            genQueryOut = ( genQueryOut_t * ) malloc( sizeof( genQueryOut_t ) );
-            memset( genQueryOut, 0, sizeof( genQueryOut_t ) );
-            genQueryOutParam->inOutStruct = genQueryOut;
+        genQueryOutParam->type = strdup( GenQueryOut_MS_T );
+        genQueryOut = ( genQueryOut_t * ) malloc( sizeof( genQueryOut_t ) );
+        memset( genQueryOut, 0, sizeof( genQueryOut_t ) );
+        genQueryOutParam->inOutStruct = genQueryOut;
 
-            return( 0 );
-        }
+        return( 0 );
     }
-    else {
-        if ( i < 0 ) {
-            return( i );
-        }
-    }
-    if ( i < 0 ) {
+    else if ( i < 0 ) {
         return( i );
     }
     genQueryOutParam->type = strdup( GenQueryOut_MS_T );
