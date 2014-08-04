@@ -766,7 +766,7 @@ resolveDepInArray( packItem_t *myPackedItem, packInstructArray_t *myPackTable ) 
     char buf[MAX_PI_LEN];
     char *inPtr, *bufPtr;
     int gotOpenBrack = 0;       /* whether we got an open bracket */
-    int gotOpenPraren = 0;      /* whether we got an open parenthesis */
+    int gotOpenParen = 0;      /* whether we got an open parenthesis */
     int outLen = 0;
     int myDim;
 
@@ -782,7 +782,7 @@ resolveDepInArray( packItem_t *myPackedItem, packInstructArray_t *myPackTable ) 
                          myPackedItem->name );
                 return ( SYS_PACK_INSTRUCT_FORMAT_ERR );
             }
-            else if ( gotOpenPraren > 0 ) {
+            else if ( gotOpenParen > 0 ) {
                 rodsLog( LOG_ERROR,
                          "resolveDepInArray: got ( inside [ for %s",
                          myPackedItem->name );
@@ -808,7 +808,7 @@ resolveDepInArray( packItem_t *myPackedItem, packInstructArray_t *myPackTable ) 
                          myPackedItem->name );
                 return ( SYS_PACK_INSTRUCT_FORMAT_ERR );
             }
-            else if ( gotOpenPraren > 0 ) {
+            else if ( gotOpenParen > 0 ) {
                 rodsLog( LOG_ERROR,
                          "resolveDepInArray: got ( inside ] for %s",
                          myPackedItem->name );
@@ -839,7 +839,7 @@ resolveDepInArray( packItem_t *myPackedItem, packInstructArray_t *myPackTable ) 
                          myPackedItem->name );
                 return ( SYS_PACK_INSTRUCT_FORMAT_ERR );
             }
-            else if ( gotOpenPraren > 0 ) {
+            else if ( gotOpenParen > 0 ) {
                 rodsLog( LOG_ERROR,
                          "resolveDepInArray: got double ( for %s",
                          myPackedItem->name );
@@ -852,14 +852,14 @@ resolveDepInArray( packItem_t *myPackedItem, packInstructArray_t *myPackTable ) 
                 return ( SYS_PACK_INSTRUCT_FORMAT_ERR );
             }
             else {
-                gotOpenPraren = 1;
+                gotOpenParen = 1;
                 *inPtr = '\0';  /* isolate the name. may be used later */
                 inPtr ++;
                 continue;
             }
         }
         else if ( c == ')' ) {
-            if ( gotOpenPraren == 0 || outLen <= 0 ) {
+            if ( gotOpenParen == 0 || outLen <= 0 ) {
                 rodsLog( LOG_ERROR,
                          "resolveDepInArray: Got ) without ( for %s",
                          myPackedItem->name );
@@ -885,12 +885,12 @@ resolveDepInArray( packItem_t *myPackedItem, packInstructArray_t *myPackTable ) 
             /* reset parameters */
             bufPtr = buf;
             outLen = 0;
-            gotOpenPraren = 0;
+            gotOpenParen = 0;
             inPtr ++;
             continue;
         }
         else {
-            if ( gotOpenBrack > 0 || gotOpenPraren > 0 ) {
+            if ( gotOpenBrack > 0 || gotOpenParen > 0 ) {
                 *bufPtr = *inPtr;
                 bufPtr ++;
                 outLen ++;
