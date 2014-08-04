@@ -5,6 +5,7 @@
 #include "irods_osauth_auth_object.hpp"
 #include "irods_gsi_object.hpp"
 #include "irods_krb_object.hpp"
+#include <boost/algorithm/string.hpp>
 
 namespace irods {
 /// =-=-=-=-=-=-=-
@@ -14,61 +15,23 @@ error auth_factory(
     const std::string& _scheme,
     rError_t*          _r_error,
     auth_object_ptr&   _ptr ) {
-    // =-=-=-=-=-=-=-
     // ensure scheme is lower case for comparison
-    std::string scheme = _scheme;
-    std::transform( scheme.begin(), scheme.end(), scheme.begin(), ::tolower );
+    std::string scheme = boost::algorithm::to_lower_copy( _scheme );
 
-    // =-=-=-=-=-=-=-
-    // currently just support the native scheme
     if ( scheme.empty() || AUTH_NATIVE_SCHEME == scheme ) {
-        native_auth_object* nat_obj = new native_auth_object( _r_error );
-        if ( !nat_obj ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "native auth allocation failed" );
-        }
-
-        _ptr.reset( dynamic_cast< auth_object* >( nat_obj ) );
-
+        _ptr.reset( new native_auth_object( _r_error ) );
     }
     else if ( AUTH_PAM_SCHEME == scheme ) {
-        pam_auth_object* pam_obj = new pam_auth_object( _r_error );
-        if ( !pam_obj ) {
-            return ERROR(
-                       SYS_INVALID_INPUT_PARAM,
-                       "pam auth allocation failed" );
-        }
-
-        _ptr.reset( dynamic_cast< auth_object* >( pam_obj ) );
-
+        _ptr.reset( new pam_auth_object( _r_error ) );
     }
     else if ( AUTH_OSAUTH_SCHEME == scheme ) {
-        osauth_auth_object* osauth_obj = new osauth_auth_object( _r_error );
-        if ( !osauth_obj ) {
-            return ERROR(
-                       SYS_INVALID_INPUT_PARAM,
-                       "osauth auth allocation failed" );
-        }
-
-        _ptr.reset( dynamic_cast< auth_object* >( osauth_obj ) );
-
+        _ptr.reset( new osauth_auth_object( _r_error ) );
     }
     else if ( AUTH_GSI_SCHEME == scheme ) {
-        gsi_auth_object* gsi_obj = new gsi_auth_object( _r_error );
-        if ( !gsi_obj ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "gsi auth allocation failed" );
-        }
-
-        _ptr.reset( dynamic_cast< auth_object* >( gsi_obj ) );
-
+        _ptr.reset( new gsi_auth_object( _r_error ) );
     }
     else if ( AUTH_KRB_SCHEME == scheme ) {
-        krb_auth_object* krb_obj = new krb_auth_object( _r_error );
-        if ( !krb_obj ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "krb auth allocation failed" );
-        }
-
-        _ptr.reset( dynamic_cast< auth_object* >( krb_obj ) );
-
+        _ptr.reset( new krb_auth_object( _r_error ) );
     }
     else {
         std::string msg( "auth scheme not supported [" );
