@@ -314,7 +314,7 @@ irodsMknod( const char *path, mode_t mode, dev_t rdev ) {
     }
 
 
-    getAndUseIFuseConn( &iFuseConn, &MyRodsEnv );
+    status = getAndUseIFuseConn( &iFuseConn, &MyRodsEnv );
     if ( status < 0 ) {
         status = dataObjCreateByFusePath( iFuseConn->conn, ( char * ) path,
                                           mode, objPath );
@@ -335,21 +335,10 @@ irodsMknod( const char *path, mode_t mode, dev_t rdev ) {
     fileCache = addFileCache( localFd, objPath, ( char * ) path, cachePath, mode, 0, HAVE_NEWLY_CREATED_CACHE );
     stbuf.st_mode = mode;
     pathExist( ( char * ) path, fileCache, &stbuf, &tmpPathCache );
-    /* desc = newIFuseDesc (objPath, (char *) path, fileCache, &status); */
-
-    if ( status < 0 ) {
-        rodsLogError( LOG_ERROR, status,
-                      "irodsMknod: allocIFuseDesc of %s error", path );
-        closeIrodsFd( iFuseConn->conn, status );
-        unuseIFuseConn( iFuseConn );
-        return 0;
-    }
-
-    /*    rodsLog (LOG_ERROR, "irodsMknod: %s conn: %p", path, iFuseConn);*/
 
     unuseIFuseConn( iFuseConn );
 
-    return ( 0 );
+    return 0;
 }
 
 int
