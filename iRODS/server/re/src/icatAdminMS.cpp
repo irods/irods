@@ -602,7 +602,10 @@ msiSetQuota( msParam_t *type, msParam_t *name, msParam_t *resource, msParam_t *v
     generalAdminInp.arg0 = "set-quota";
 
     /* Parse type */
-    generalAdminInp.arg1 = parseMspForStr( type );
+    if ( ( generalAdminInp.arg1 = parseMspForStr( type ) ) == NULL ) {
+        rodsLog( LOG_ERROR, "msiSetQuota: Null user or group type provided." );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
+    }
     if ( strcmp( generalAdminInp.arg1, "user" ) && strcmp( generalAdminInp.arg1, "group" ) ) {
         status = USER_BAD_KEYWORD_ERR;
         rodsLog( LOG_ERROR, "msiSetQuota: Invalid user type: %s. Valid types are \"user\" and \"group\"",
@@ -611,7 +614,10 @@ msiSetQuota( msParam_t *type, msParam_t *name, msParam_t *resource, msParam_t *v
     }
 
     /* Parse user/group name */
-    generalAdminInp.arg2 = parseMspForStr( name );
+    if ( ( generalAdminInp.arg2 = parseMspForStr( name ) ) == NULL ) {
+        rodsLog( LOG_ERROR, "msiSetQuota: Null user or group name provided." );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
+    }
 
     /* parse resource name */
     if ( ( generalAdminInp.arg3 = parseMspForStr( resource ) ) == NULL ) {

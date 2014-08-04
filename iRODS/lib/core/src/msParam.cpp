@@ -923,6 +923,7 @@ parseMspForStr( msParam_t * inpParam ) {
         rodsLog( LOG_ERROR,
                  "parseMspForStr: inpParam type %s is not STR_MS_T",
                  inpParam->type );
+        return NULL;
     }
 
     if ( strcmp( ( char * ) inpParam->inOutStruct, "null" ) == 0 ) {
