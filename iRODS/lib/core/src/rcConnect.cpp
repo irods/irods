@@ -148,10 +148,6 @@ _rcConnect( char *rodsHost, int rodsPort,
         conn->thread_ctx->lock      = new boost::mutex;
         conn->thread_ctx->cond      = new boost::condition_variable;
         conn->thread_ctx->reconnThr = new boost::thread( cliReconnManager, conn );
-        if ( status < 0 ) {
-            rodsLog( LOG_ERROR, "_rcConnect: pthread_create failed, stat=%d",
-                     status );
-        }
     }
 #endif
 
