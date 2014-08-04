@@ -25,26 +25,19 @@ ageExceeded( int ageLimit, int myTime, int verbose, char *objPath,
 int
 rsyncUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
            rodsPathInp_t *rodsPathInp ) {
-    int i;
-    int status;
-    int savedStatus = 0;
-    rodsPath_t *srcPath, *targPath;
+    if ( rodsPathInp == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
+
+    int savedStatus = resolveRodsTarget( conn, myRodsEnv, rodsPathInp, RSYNC_OPR );
+    if ( savedStatus < 0 ) {
+        rodsLogError( LOG_ERROR, savedStatus,
+                      "rsyncUtil: resolveRodsTarget" );
+        return savedStatus;
+    }
+
     dataObjInp_t dataObjOprInp;
     dataObjCopyInp_t dataObjCopyInp;
-
-
-    if ( rodsPathInp == NULL ) {
-        return ( USER__NULL_INPUT_ERR );
-    }
-
-
-    status = resolveRodsTarget( conn, myRodsEnv, rodsPathInp, RSYNC_OPR );
-    if ( status < 0 ) {
-        rodsLogError( LOG_ERROR, status,
-                      "rsyncUtil: resolveRodsTarget" );
-        return ( status );
-    }
-
     if ( rodsPathInp->srcPath[0].objType <= COLL_OBJ_T &&
             rodsPathInp->targPath[0].objType <= COLL_OBJ_T ) {
         initCondForIrodsToIrodsRsync( myRodsEnv, myRodsArgs, &dataObjCopyInp );
@@ -53,13 +46,12 @@ rsyncUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         initCondForRsync( myRodsEnv, myRodsArgs, &dataObjOprInp );
     }
 
-    for ( i = 0; i < rodsPathInp->numSrc; i++ ) {
-        int srcType, targType;
+    for ( int i = 0; i < rodsPathInp->numSrc; i++ ) {
 
-        targPath = &rodsPathInp->targPath[i];
-        srcPath = &rodsPathInp->srcPath[i];
-        srcType = srcPath->objType;
-        targType = targPath->objType;
+        rodsPath_t * targPath = &rodsPathInp->targPath[i];
+        rodsPath_t * srcPath = &rodsPathInp->srcPath[i];
+        int srcType = srcPath->objType;
+        int targType = targPath->objType;
 
         if ( srcPath->objState != EXIST_ST ) {
             rodsLog( LOG_ERROR,
@@ -77,6 +69,7 @@ rsyncUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
                 dataObjCopyInp.srcDataObjInp.specColl = NULL;
         }
 
+        int status = 0;
         if ( srcType == DATA_OBJ_T && targType == LOCAL_FILE_T ) {
             rmKeyVal( &dataObjOprInp.condInput, TRANSLATED_PATH_KW );
             status = rsyncDataToFileUtil( conn, srcPath, targPath,
@@ -137,23 +130,16 @@ rsyncUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
             return ( USER_INPUT_PATH_ERR );
         }
         /* XXXX may need to return a global status */
-        if ( status < 0 ) {
+        if ( status < 0 &&
+                status != CAT_NO_ROWS_FOUND &&
+                status != SYS_SPEC_COLL_OBJ_NOT_EXIST ) {
             rodsLogError( LOG_ERROR, status,
                           "rsyncUtil: rsync error for %s",
                           targPath->outPath );
             savedStatus = status;
         }
     }
-    if ( savedStatus < 0 ) {
-        return ( savedStatus );
-    }
-    else if ( status == CAT_NO_ROWS_FOUND ||
-              status == SYS_SPEC_COLL_OBJ_NOT_EXIST ) {
-        return ( 0 );
-    }
-    else {
-        return ( status );
-    }
+    return savedStatus;
 }
 
 int
