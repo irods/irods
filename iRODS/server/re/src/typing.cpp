@@ -3,8 +3,8 @@
 
 #include "typing.hpp"
 #include "functions.hpp"
-#define RE_ERROR(x) if(x) {goto error;}
-#define RE_ERROR2(x,y) if(x) {localErrorMsg=(y);goto error;}
+#define RE_ERROR(x); if(x) {goto error;}
+#define RE_ERROR2(x,y); if(x) {localErrorMsg=(y);goto error;}
 #define N_BASE_TYPES 7
 NodeType baseTypes[N_BASE_TYPES] = {
     T_INT,
@@ -943,7 +943,7 @@ ExprType* typeFunction3( Node* node, int dynamictyping, Env* funcDesc, Hashtable
         int ret = typeFuncParam( node->subtrees[1], argType, t, var_type_table, typingConstraints, errmsg, r );
         if ( ret != 0 ) {
             *errnode = node->subtrees[1];
-            RE_ERROR2( ret != 0, "parameter type error" );
+            RE_ERROR2( true, "parameter type error" );
         }
         int i;
         for ( i = 0; i < node->subtrees[1]->degree; i++ ) {
