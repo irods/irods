@@ -12,9 +12,6 @@
 int
 mcollUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
            rodsPathInp_t *rodsPathInp ) {
-    int i;
-    int status;
-    int savedStatus = 0;
     rodsPath_t *destPath, *srcPath;
     dataObjInp_t dataObjOprInp;
 
@@ -22,14 +19,15 @@ mcollUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         return ( USER__NULL_INPUT_ERR );
     }
 
-    status = initCondForMcoll( myRodsEnv, myRodsArgs, &dataObjOprInp,
+    int savedStatus = initCondForMcoll( myRodsEnv, myRodsArgs, &dataObjOprInp,
                                rodsPathInp );
 
-    if ( status < 0 ) {
-        return status;
+    if ( savedStatus < 0 ) {
+        return savedStatus;
     }
 
-    for ( i = 0; i < rodsPathInp->numSrc; i++ ) {
+    for ( int i = 0; i < rodsPathInp->numSrc; i++ ) {
+        int status;
         if ( myRodsArgs->mountCollection == True ) {
             destPath = &rodsPathInp->destPath[i];	/* iRODS path */
             srcPath = &rodsPathInp->srcPath[i];	/* file Path */
@@ -63,22 +61,14 @@ mcollUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         }
 
         /* XXXX may need to return a global status */
-        if ( status < 0 ) {
+        if ( status < 0 &&
+                status != CAT_NO_ROWS_FOUND ) {
             rodsLogError( LOG_ERROR, status,
                           "imcoll error" );
             savedStatus = status;
         }
     }
-
-    if ( savedStatus < 0 ) {
-        return ( savedStatus );
-    }
-    else if ( status == CAT_NO_ROWS_FOUND ) {
-        return ( 0 );
-    }
-    else {
-        return ( status );
-    }
+    return savedStatus;
 }
 
 int
