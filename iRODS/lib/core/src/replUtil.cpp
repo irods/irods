@@ -12,20 +12,18 @@
 int
 replUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
           rodsPathInp_t *rodsPathInp ) {
-    int i = 0;
-    int status = 0;
-    int savedStatus = 0;
-    dataObjInp_t dataObjInp;
-    rodsRestart_t rodsRestart;
 
 
     if ( rodsPathInp == NULL ) {
         return ( USER__NULL_INPUT_ERR );
     }
 
+    dataObjInp_t dataObjInp;
+    rodsRestart_t rodsRestart;
     initCondForRepl( myRodsEnv, myRodsArgs, &dataObjInp, &rodsRestart );
 
-    for ( i = 0; i < rodsPathInp->numSrc; i++ ) {
+    int savedStatus = 0;
+    for ( int i = 0; i < rodsPathInp->numSrc; i++ ) {
         if ( rodsPathInp->srcPath[i].objType == UNKNOWN_OBJ_T ) {
             getRodsObjType( conn, &rodsPathInp->srcPath[i] );
             if ( rodsPathInp->srcPath[i].objState == NOT_EXIST_ST ) {
@@ -41,7 +39,7 @@ replUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
     /* initialize the progress struct */
     if ( gGuiProgressCB != NULL ) {
         bzero( &conn->operProgress, sizeof( conn->operProgress ) );
-        for ( i = 0; i < rodsPathInp->numSrc; i++ ) {
+        for ( int i = 0; i < rodsPathInp->numSrc; i++ ) {
             if ( rodsPathInp->srcPath[i].objType == DATA_OBJ_T ) {
                 conn->operProgress.totalNumFiles++;
                 if ( rodsPathInp->srcPath[i].size > 0 ) {
@@ -56,7 +54,8 @@ replUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         }
     }
 
-    for ( i = 0; i < rodsPathInp->numSrc; i++ ) {
+    for ( int i = 0; i < rodsPathInp->numSrc; i++ ) {
+        int status = 0;
         if ( rodsPathInp->srcPath[i].objType == DATA_OBJ_T ) {
             rmKeyVal( &dataObjInp.condInput, TRANSLATED_PATH_KW );
             status = replDataObjUtil( conn, rodsPathInp->srcPath[i].outPath,
@@ -70,7 +69,7 @@ replUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
                                    myRodsEnv, myRodsArgs, &dataObjInp, &rodsRestart );
             if ( rodsRestart.fd > 0 && status < 0 ) {
                 close( rodsRestart.fd );
-                return ( status );
+                return status;
             }
         }
         else {
@@ -81,22 +80,15 @@ replUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
             return ( USER_INPUT_PATH_ERR );
         }
         /* XXXX may need to return a global status */
-        if ( status < 0 ) {
+        if ( status < 0 &&
+                status != CAT_NO_ROWS_FOUND ) {
             rodsLogError( LOG_ERROR, status,
                           "replUtil: repl error for %s, status = %d",
                           rodsPathInp->srcPath[i].outPath, status );
             savedStatus = status;
         }
     }
-    if ( savedStatus < 0 ) {
-        return ( savedStatus );
-    }
-    else if ( status == CAT_NO_ROWS_FOUND ) {
-        return ( 0 );
-    }
-    else {
-        return ( status );
-    }
+    return savedStatus;
 }
 
 int
