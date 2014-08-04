@@ -1037,9 +1037,6 @@ dataObjCopy( rsComm_t * rsComm, int l1descInx ) {
         L1desc[l1descInx].dataObjInp->numThreads = 0;
         dataCopyInp.portalOprOut.l1descInx = l1descInx;
         status = singleL1Copy( rsComm, &dataCopyInp );
-        if ( portalOprOut != NULL ) {
-            free( portalOprOut );
-        }
         clearKeyVal( &dataOprInp->condInput );
         return ( status );
     }
@@ -1146,7 +1143,7 @@ dataObjCopy( rsComm_t * rsComm, int l1descInx ) {
     }
     clearKeyVal( &dataOprInp->condInput );
 
-    return ( status );
+    return status;
 }
 
 int
