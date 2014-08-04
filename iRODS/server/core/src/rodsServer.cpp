@@ -954,21 +954,13 @@ getConnReqFromQue() {
 
 int
 startProcConnReqThreads() {
-    int status = 0;
-    int i;
-
     initConnThreadEnv();
-    for ( i = 0; i < NUM_READ_WORKER_THR; i++ ) {
+    for ( int i = 0; i < NUM_READ_WORKER_THR; i++ ) {
         ReadWorkerThread[i] = new boost::thread( readWorkerTask );
-        if ( status < 0 ) {
-            rodsLog( LOG_ERROR,
-                     "pthread_create of readWorker %d failed, errno = %d",
-                     i, errno );
-        }
     }
     SpawnManagerThread = new boost::thread( spawnManagerTask );
 
-    return ( status );
+    return 0;
 }
 
 void
