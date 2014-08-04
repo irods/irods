@@ -272,10 +272,6 @@ _rsDataObjRepl(
     // if a resc is specified and it has a stale copy then we should just treat this as an update
     // also consider the 'update' keyword as that might also have some bearing on updates
     if ( ( !multiCopyFlag && oldDataObjInfoHead ) || getValByKey( &dataObjInp->condInput, UPDATE_REPL_KW ) != NULL ) {
-        if ( status < 0 ) {
-            rodsLog( LOG_NOTICE, "%s - Failed to sort objects for replication update.", __FUNCTION__ );
-            return status;
-        }
 
         /* update old repl to new repl */
         status = _rsDataObjReplUpdate( rsComm, dataObjInp, dataObjInfoHead, oldDataObjInfoHead, transStat, NULL );
