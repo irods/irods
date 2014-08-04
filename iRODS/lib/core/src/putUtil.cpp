@@ -527,13 +527,7 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
             rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, dataObjInp_t *dataObjOprInp,
             bulkOprInp_t *bulkOprInp, rodsRestart_t *rodsRestart,
             bulkOprInfo_t *bulkOprInfo ) {
-    int status = 0;
-    int savedStatus = 0;
     char srcChildPath[MAX_NAME_LEN], targChildPath[MAX_NAME_LEN];
-    objType_t childObjType;
-    rcComm_t *conn;
-    int bulkFlag = 0;
-    rodsLong_t dataSize = 0;
 
     if ( srcDir == NULL || targColl == NULL ) {
         rodsLog( LOG_ERROR,
@@ -566,7 +560,7 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
         rodsArgs->redirectConn = 0;    /* only do it once */
     }
 
-    conn = *myConn;
+    rcComm_t *conn = *myConn;
     path srcDirPath( srcDir );
     if ( !exists( srcDirPath ) || !is_directory( srcDirPath ) ) {
         rodsLog( LOG_ERROR,
@@ -579,14 +573,12 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
         fprintf( stdout, "C- %s:\n", targColl );
     }
 
-    if ( bulkOprInfo == NULL ) {
-        bulkFlag = NON_BULK_OPR;
-    }
-    else {
+    int bulkFlag = NON_BULK_OPR;
+    if ( bulkOprInfo != NULL ) {
         bulkFlag = bulkOprInfo->flags;
     }
 
-
+    int savedStatus = 0;
     directory_iterator end_itr; // default construction yields past-the-end
     for ( directory_iterator itr( srcDirPath ); itr != end_itr; ++itr ) {
         path p = itr->path();
@@ -600,7 +592,7 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
             rodsLog( LOG_ERROR,
                      "putDirUtil: stat error for %s, errno = %d\n",
                      srcChildPath, errno );
-            return ( USER_INPUT_PATH_ERR );
+            return USER_INPUT_PATH_ERR;
         }
 
         if ( is_symlink( p ) ) {
@@ -609,7 +601,9 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
                       srcDir, cp.c_str() );
             p = path( srcChildPath );
         }
+        rodsLong_t dataSize = 0;
         dataObjOprInp->createMode = getPathStMode( p.c_str() );
+        objType_t childObjType;
         if ( is_regular_file( p ) ) {
             childObjType = DATA_OBJ_T;
             dataSize = file_size( p );
@@ -639,12 +633,12 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
             }
         }
 
-        status = chkStateForResume( conn, rodsRestart, targChildPath,
+        int status = chkStateForResume( conn, rodsRestart, targChildPath,
                                     rodsArgs, childObjType, &dataObjOprInp->condInput, 1 );
 
         if ( status < 0 ) {
             /* restart failed */
-            return ( status );
+            return status;
         }
         else if ( status == 0 ) {
             if ( bulkFlag == BULK_OPR_SMALL_FILES &&
@@ -696,7 +690,8 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
 
         }
 
-        if ( status < 0 ) {
+        if ( status < 0 &&
+                status != CAT_NO_ROWS_FOUND ) {
             rodsLogError( LOG_ERROR, status,
                           "putDirUtil: put %s failed. status = %d",
                           srcChildPath, status );
@@ -706,16 +701,7 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
             }
         }
     }
-
-    if ( savedStatus < 0 ) {
-        return ( savedStatus );
-    }
-    else if ( status == CAT_NO_ROWS_FOUND ) {
-        return ( 0 );
-    }
-    else {
-        return ( status );
-    }
+    return savedStatus;
 }
 
 int
