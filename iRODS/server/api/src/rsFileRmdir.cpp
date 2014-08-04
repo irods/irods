@@ -79,7 +79,6 @@ int _rsFileRmdir(
     rsComm_t*       _comm,
     fileRmdirInp_t* _rmdir_inp ) {
 
-    int status = 0;
     irods::collection_object_ptr coll_obj(
         new irods::collection_object(
             _rmdir_inp->dirName,
@@ -87,14 +86,12 @@ int _rsFileRmdir(
             0, 0 ) );
 
     if ( ( _rmdir_inp->flags & RMDIR_RECUR ) != 0 ) {
-        // =-=-=-=-=-=-=-
         // FIXME :: revisit this after moving to First class Objects
         // recursive. This is a very dangerous operation. curently
         // it is only used to remove cache directory of structured
         // files
         struct rodsDirent* myFileDirent = 0;
 
-        // =-=-=-=-=-=-=-
         // if it is not a cache dir, return an error as we only do this
         // for cache dirs at the moment.
         if ( strstr( _rmdir_inp->dirName, CACHE_DIR_STR ) == NULL ) {
@@ -103,11 +100,9 @@ int _rsFileRmdir(
             return ( SYS_INVALID_FILE_PATH );
         }
 
-        // =-=-=-=-=-=-=-
         // call opendir via resource plugin
         irods::error opendir_err = fileOpendir( _comm, coll_obj );
 
-        // =-=-=-=-=-=-=-
         // log an error, if any
         if ( !opendir_err.ok() ) {
             std::stringstream msg;
@@ -116,17 +111,15 @@ int _rsFileRmdir(
             msg << "]";
             irods::error err = PASSMSG( msg.str(), opendir_err );
             irods::log( err );
-            return ( status );
+            return ( opendir_err.code() );
         }
 
-        // =-=-=-=-=-=-=-
         // read the directory via resource plugin and either handle files or recurse into another directory
         irods::error readdir_err = fileReaddir( _comm, coll_obj, &myFileDirent );
         while ( readdir_err.ok() && 0 == readdir_err.code() ) {
             struct stat statbuf;
             char myPath[MAX_NAME_LEN];
 
-            // =-=-=-=-=-=-=-
             // handle relative paths
             if ( strcmp( myFileDirent->d_name, "." ) == 0 ||
                     strcmp( myFileDirent->d_name, ".." ) == 0 ) {
@@ -134,7 +127,6 @@ int _rsFileRmdir(
                 continue;
             }
 
-            // =-=-=-=-=-=-=-
             // cache path name
             snprintf( myPath, MAX_NAME_LEN, "%s/%s", &_rmdir_inp->dirName[0], &myFileDirent->d_name[0] );
 
@@ -154,7 +146,6 @@ int _rsFileRmdir(
                 irods::error log_err = PASSMSG( msg.str(), stat_err );
                 irods::log( log_err );
 
-                // =-=-=-=-=-=-=-
                 // call closedir via resource plugin, handle errors
                 irods::error closedir_err = fileClosedir( _comm, myPath_obj );
                 if ( !closedir_err.ok() ) {
@@ -166,24 +157,22 @@ int _rsFileRmdir(
                     irods::log( log_err );
                 }
 
-                return ( status );
+                return ( stat_err.code() );
 
             }  // if !stat_err.ok()
 
-            // =-=-=-=-=-=-=-
             // filter based on stat results: file, dir, or error
+            int status = 0;
             if ( ( statbuf.st_mode & S_IFREG ) != 0 ) {
-                // =-=-=-=-=-=-=-
                 // handle case where file is found
                 irods::error unlink_err = fileUnlink( _comm, myPath_obj );
+                status = unlink_err.code();
                 if ( !unlink_err.ok() ) {
                     irods::error log_err = PASSMSG( "error during unlink.", unlink_err );
                     irods::log( log_err );
                 }
-
             }
             else if ( ( statbuf.st_mode & S_IFDIR ) != 0 ) {
-                // =-=-=-=-=-=-=-
                 // handle case where directory is found
                 fileRmdirInp_t myRmdirInp;
                 memset( &myRmdirInp, 0, sizeof( myRmdirInp ) );
@@ -192,21 +181,19 @@ int _rsFileRmdir(
                 rstrcpy( myRmdirInp.dirName, myPath, MAX_NAME_LEN );
                 rstrcpy( myRmdirInp.rescHier, _rmdir_inp->rescHier, MAX_NAME_LEN );
 
-                // =-=-=-=-=-=-=-
                 // RECURSE - call _rsFileRmdir on this new found directory
                 status = _rsFileRmdir( _comm, &myRmdirInp );
 
             }
             else {
+                status = SYS_INVALID_FILE_PATH;
                 rodsLog( LOG_NOTICE, "_rsFileRmdir:  for %s, status = %d", myPath, status );
             }
 
-            // =-=-=-=-=-=-=-
             // handle error condition on the above three cases
             if ( status < 0 ) {
                 rodsLog( LOG_NOTICE, "_rsFileRmdir:  rm of %s failed, status = %d", myPath, status );
 
-                // =-=-=-=-=-=-=-
                 // call closedir via resource plugin, handle errors
                 irods::error closedir_err = fileClosedir( _comm, myPath_obj );
                 if ( !closedir_err.ok() ) {
@@ -218,7 +205,7 @@ int _rsFileRmdir(
                     irods::log( log_err );
                 }
 
-                return closedir_err.code();
+                return status;
 
             } // if status < 0
 
@@ -238,10 +225,6 @@ int _rsFileRmdir(
             msg << "]";
             irods::error log_err = PASSMSG( msg.str(), closedir_err );
             irods::log( log_err );
-        }
-
-        if ( status < 0 && status != -1 ) {     /* end of file */
-            return ( status );
         }
 
     } // if RMDIR_RECUR ( recursive delete )
