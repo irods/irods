@@ -333,7 +333,7 @@ error get_source_data_object_attributes(
     // =-=-=-=-=-=-=-
     // get its value
     char* data_mode_ptr = &data_mode_result->value[ 0 ];//data_mode_result->len ];
-    if ( !resc_hier_ptr ) {
+    if ( !data_mode_ptr ) {
         return ERROR(
                    SYS_INTERNAL_NULL_INPUT_ERR,
                    "null data_mode_ptr result" );
