@@ -14,6 +14,7 @@
 #include "irodsFs.hpp"
 #include "iFuseOper.hpp"
 #include "iFuseLib.hpp"
+#include "rodsVersion.hpp"
 
 /* some global variables */
 
@@ -138,9 +139,9 @@ main( int argc, char **argv ) {
     irodsOper.fsync = irodsFsync;
     irodsOper.flush = irodsFlush;
 #endif
-    optStr = "hdo:";
+    optStr = "Zhdo:";
 
-    status = parseCmdLineOpt( argc, argv, optStr, 0, &myRodsArgs );
+    status = parseCmdLineOpt( argc, argv, optStr, 1, &myRodsArgs );
 
     if ( status < 0 ) {
         printf( "Use -h for help.\n" );
@@ -150,6 +151,11 @@ main( int argc, char **argv ) {
         usage();
         exit( 0 );
     }
+    if ( myRodsArgs.version == True ) {
+        printf( "Version: %s", RODS_REL_VERSION );
+        exit( 0 );
+    }
+
 
     status = getRodsEnv( &MyRodsEnv );
 
@@ -189,9 +195,10 @@ usage() {
         "Usage : irodsFs [-hd] [-o opt,[opt...]]",
         "Single user iRODS/Fuse server",
         "Options are:",
-        " -h  this help",
-        " -d  FUSE debug mode",
-        " -o  opt,[opt...]  FUSE mount options",
+        " -h        this help",
+        " -d        FUSE debug mode",
+        " -o        opt,[opt...]  FUSE mount options",
+        " --version print version information",
         ""
     };
     int i;
