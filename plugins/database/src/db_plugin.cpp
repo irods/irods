@@ -16175,10 +16175,6 @@ checkLevel:
         postgres_database_plugin* pg = new postgres_database_plugin(
             _inst_name,
             _context );
-        if ( !pg ) {
-            rodsLog( LOG_ERROR, "plugin_factory - failed to alloc postgres_database_plugin" );
-            return 0;
-        }
 
         // =-=-=-=-=-=-=-
         // fill in the operation table mapping call
@@ -16272,14 +16268,7 @@ checkLevel:
         pg->add_operation( irods::DATABASE_OP_GET_DISTINCT_DATA_OBJS_MISSING_FROM_CHILD_GIVEN_PARENT,
                            "db_get_distinct_data_objs_missing_from_child_given_parent_op" );
 
-        // =-=-=-=-=-=-=-
-        // upcast for return
-        irods::database* db = dynamic_cast< irods::database* >( pg );
-        if ( !db ) {
-            rodsLog( LOG_ERROR, "failed to dynamic cast to irods::database" );
-        }
-
-        return db;
+        return pg;
 
     } // plugin_factory
 
