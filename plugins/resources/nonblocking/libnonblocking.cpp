@@ -1068,14 +1068,6 @@ extern "C" {
                     msg << status;
 
                     return ERROR( status, msg.str() );
-
-                    // =-=-=-=-=-=-=-
-                    // handle error cases
-                    int err_status = UNIX_FILE_RENAME_ERR - errno;
-                    if ( ( result = ASSERT_ERROR( status >= 0, err_status, "Rename error for \"%s\" to \"%s\", errno = \"%s\", status = %d.",
-                                                  fco->physical_path().c_str(), new_full_path.c_str(), strerror( errno ), err_status ) ).ok() ) {
-                        result.code( status );
-                    }
                 }
             }
         }
