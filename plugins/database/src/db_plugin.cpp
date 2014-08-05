@@ -10126,10 +10126,6 @@ checkLevel:
             return ERROR( status, "commit failure" );
         }
 
-        if ( status != 0 ) {
-            return ERROR( status, "commit failed" );
-        }
-
         return CODE( numObjects );
 
     } // db_add_avu_metadata_wild_op
