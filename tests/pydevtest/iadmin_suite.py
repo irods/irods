@@ -624,6 +624,38 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         assertiCmd(s.adminsession,"iadmin rmresc %s" % "replA")
         assertiCmd(s.adminsession,"iadmin rmresc %s" % "pt")
 
+ 
+    def test_irodsFs_issue_2252(self):
+        # =-=-=-=-=-=-=-
+        # set up a fuse mount
+        mount_point = "fuse_mount_point" 
+
+        if not os.path.isdir( mount_point ):
+            os.mkdir( mount_point )
+        os.system( "irodsFs "+mount_point )
+
+        largefilename = "big_file.txt"
+        output = commands.getstatusoutput( 'dd if=/dev/zero of='+largefilename+' bs=1M count=100' )
+
+        # =-=-=-=-=-=-=-
+        # use system copy to put some data into the mount mount
+        # and verify that it shows up in the ils
+        cmd = "cp ./"+largefilename+" ./"+mount_point+"; ls ./"+mount_point+"/"+largefilename
+        output = commands.getstatusoutput( cmd )
+        out_str = str( output )
+        print( "results["+out_str+"]" )
+
+        os.system( "rm ./"+largefilename )
+        os.system( "rm ./"+mount_point+"/"+largefilename )
+
+        # tear down the fuse mount
+        os.system( "fusermount -uz "+mount_point )
+        if os.path.isdir( mount_point ):
+            os.rmdir( mount_point )
+
+        assert( -1 !=  out_str.find( largefilename ) )
+
+
     
     def test_irodsFs(self):
         # =-=-=-=-=-=-=-
