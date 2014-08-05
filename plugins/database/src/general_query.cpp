@@ -1493,25 +1493,14 @@ insertWhere( char *condition, int option ) {
 int
 genqAppendAccessCheck() {
     int doCheck = 0;
-    int ACDebug = 0;
     int addedTicketCheck = 0;
-
-    if ( ACDebug ) {
-        printf( "genqAC 1\n" );
-    }
 
     if ( accessControlPriv == LOCAL_PRIV_USER_AUTH ) {
         return( 0 );
     }
 
-    if ( ACDebug ) printf( "genqAC 2 accessControlControlFlag=%d\n",
-                               accessControlControlFlag );
     if ( accessControlControlFlag > 1 ) {
         doCheck = 1;
-    }
-
-    if ( ACDebug ) {
-        printf( "genqAC 3\n" );
     }
 
     if ( doCheck == 0 ) {
@@ -1528,8 +1517,7 @@ genqAppendAccessCheck() {
     /* First, in all cases (non-admin), check on ticket_string
        and, if present, restrict to the owner */
     if ( strstr( selectSQL, "ticket_string" ) != NULL &&
-            strstr( selectSQL, "R_TICKET_MAIN" ) != NULL
-       ) {
+            strstr( selectSQL, "R_TICKET_MAIN" ) != NULL ) {
         if ( strlen( whereSQL ) > 6 ) {
             rstrcat( whereSQL, " AND ", MAX_SQL_SIZE_GQ );
         }
@@ -1540,10 +1528,6 @@ genqAppendAccessCheck() {
 
     if ( doCheck == 0 ) {
         return( 0 );
-    }
-
-    if ( ACDebug ) {
-        printf( "genqAC 4\n" );
     }
 
     /* if an item in R_DATA_MAIN is being accessed, add a
