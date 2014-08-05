@@ -198,7 +198,7 @@ error assert_pass(
     int _line,
     const std::string& _format,
     ... ) {
-    error result = SUCCESS();
+    std::stringstream msg;
     if ( !_prev_error.ok() ) {
         va_list ap;
         va_start( ap, _format );
@@ -206,11 +206,9 @@ error assert_pass(
         char buffer[buffer_size];
         vsnprintf( buffer, buffer_size, _format.c_str(), ap );
         va_end( ap );
-        std::stringstream msg;
         msg << buffer;
-        result = error( msg.str(), _file, _line, _function, _prev_error );
     }
-    return result;
+    return error( msg.str(), _file, _line, _function, _prev_error );
 }
 
 }; // namespace irods
