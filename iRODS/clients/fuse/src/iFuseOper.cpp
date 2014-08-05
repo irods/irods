@@ -735,7 +735,7 @@ irodsTruncate( const char *path, off_t size ) {
             if ( tmpPathCache->fileCache->state == HAVE_NEWLY_CREATED_CACHE ) {
                 status = truncate( tmpPathCache->fileCache->fileCachePath, size );
                 if ( status >= 0 ) {
-                    updatePathCacheStatFromFileCache( tmpPathCache );
+                    _updatePathCacheStatFromFileCache( tmpPathCache );
                     UNLOCK_STRUCT( *( tmpPathCache->fileCache ) );
                     UNLOCK_STRUCT( *tmpPathCache );
                     return ( 0 );
