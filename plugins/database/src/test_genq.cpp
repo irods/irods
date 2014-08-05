@@ -655,23 +655,22 @@ doTest12( char *userName, char *rodsZone, char *accessPerm, char *collection ) {
     char condStr2[MAX_NAME_LEN];
     int status;
     char accStr[LONG_NAME_LEN];
-    int doAccessControlToQuery = 0;
 
     printf( "dotest12\n" );
     rodsLogSqlReq( 1 );
 
     memset( &genQueryInp, 0, sizeof( genQueryInp ) );
 
-    if ( doAccessControlToQuery ) {
-        snprintf( accStr, LONG_NAME_LEN, "%s", userName );
-        addKeyVal( &genQueryInp.condInput, USER_NAME_CLIENT_KW, accStr );
+    //doAccessControlToQuery
+    snprintf( accStr, LONG_NAME_LEN, "%s", userName );
+    addKeyVal( &genQueryInp.condInput, USER_NAME_CLIENT_KW, accStr );
 
-        snprintf( accStr, LONG_NAME_LEN, "%s", rodsZone );
-        addKeyVal( &genQueryInp.condInput, RODS_ZONE_CLIENT_KW, accStr );
+    snprintf( accStr, LONG_NAME_LEN, "%s", rodsZone );
+    addKeyVal( &genQueryInp.condInput, RODS_ZONE_CLIENT_KW, accStr );
 
-        snprintf( accStr, LONG_NAME_LEN, "%s", accessPerm );
-        addKeyVal( &genQueryInp.condInput, ACCESS_PERMISSION_KW, accStr );
-    }
+    snprintf( accStr, LONG_NAME_LEN, "%s", accessPerm );
+    addKeyVal( &genQueryInp.condInput, ACCESS_PERMISSION_KW, accStr );
+
 
     snprintf( condStr, MAX_NAME_LEN, "='%s'", collection );
     addInxVal( &genQueryInp.sqlCondInp, COL_COLL_NAME, condStr );
@@ -711,23 +710,22 @@ doTest13( char *userName, char *rodsZone, char *accessPerm, char *collection,
     char condStr2[MAX_NAME_LEN];
     int status;
     char accStr[LONG_NAME_LEN];
-    int doAccessControlToQuery = 0;
 
     printf( "dotest13\n" );
     rodsLogSqlReq( 1 );
 
     memset( &genQueryInp, 0, sizeof( genQueryInp ) );
 
-    if ( doAccessControlToQuery ) {
-        snprintf( accStr, LONG_NAME_LEN, "%s", userName );
-        addKeyVal( &genQueryInp.condInput, USER_NAME_CLIENT_KW, accStr );
+    //doAccessControlToQuery
+    snprintf( accStr, LONG_NAME_LEN, "%s", userName );
+    addKeyVal( &genQueryInp.condInput, USER_NAME_CLIENT_KW, accStr );
 
-        snprintf( accStr, LONG_NAME_LEN, "%s", rodsZone );
-        addKeyVal( &genQueryInp.condInput, RODS_ZONE_CLIENT_KW, accStr );
+    snprintf( accStr, LONG_NAME_LEN, "%s", rodsZone );
+    addKeyVal( &genQueryInp.condInput, RODS_ZONE_CLIENT_KW, accStr );
 
-        snprintf( accStr, LONG_NAME_LEN, "%s", accessPerm );
-        addKeyVal( &genQueryInp.condInput, ACCESS_PERMISSION_KW, accStr );
-    }
+    snprintf( accStr, LONG_NAME_LEN, "%s", accessPerm );
+    addKeyVal( &genQueryInp.condInput, ACCESS_PERMISSION_KW, accStr );
+
 
     snprintf( condStr, MAX_NAME_LEN, "='%s'", collection );
     addInxVal( &genQueryInp.sqlCondInp, COL_COLL_NAME, condStr );
