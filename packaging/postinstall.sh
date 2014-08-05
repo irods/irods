@@ -119,8 +119,16 @@ if [ "$UPGRADE_FLAG" == "true" ] ; then
     # get service account information
     source /etc/irods/service_account.config 2> /dev/null
 
-    # make sure the service acount owns everything, once again
+    # make sure the service acount owns everything except the PAM executable, once again
     chown -R $IRODS_SERVICE_ACCOUNT_NAME:$IRODS_SERVICE_GROUP_NAME $IRODS_HOME_DIR
+    if [ "$DETECTEDOS" == "MacOSX" ] ; then
+        chown root:wheel $IRODS_HOME_DIR/iRODS/server/bin/PamAuthCheck
+    else
+        chown root:root $IRODS_HOME_DIR/iRODS/server/bin/PamAuthCheck
+    fi
+    chmod 4755 $IRODS_HOME_DIR/iRODS/server/bin/PamAuthCheck
+    chmod 4755 /usr/bin/genOSAuth
+
 
     # stop server
     su - $IRODS_SERVICE_ACCOUNT_NAME -c "$IRODS_HOME_DIR/iRODS/irodsctl stop"
