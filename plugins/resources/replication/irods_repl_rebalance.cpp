@@ -172,14 +172,6 @@ error gather_dirty_replicas_for_child(
         // =-=-=-=-=-=-=-
         // get its value
         char* data_id_ptr = &data_id_results->value[ data_id_results->len * i ];
-        if ( !data_id_ptr ) {
-            std::stringstream msg;
-            msg << "data_id_ptr null for result index " << i;
-            return ERROR(
-                       SYS_INTERNAL_NULL_INPUT_ERR,
-                       msg.str() );
-        }
-
         int data_id = atoi( data_id_ptr );
 
         // =-=-=-=-=-=-=-
