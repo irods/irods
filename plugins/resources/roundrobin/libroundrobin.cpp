@@ -1093,15 +1093,6 @@ extern "C" {
                        _curr_host,
                        _out_parser,
                        _out_vote );
-
-            std::string hier;
-            _out_parser->str( hier );
-            rodsLog(
-                LOG_DEBUG,
-                "open :: resc hier [%s] vote [%f]",
-                hier.c_str(),
-                _out_vote );
-
         }
         else if ( irods::CREATE_OPERATION == ( *_opr ) ) {
             // =-=-=-=-=-=-=-
