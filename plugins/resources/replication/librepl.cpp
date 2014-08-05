@@ -1650,10 +1650,6 @@ extern "C" {
             }
         }
         return result;
-
-
-
-        return result;
     }
 
     // =-=-=-=-=-=-=-
