@@ -5611,6 +5611,11 @@ extern "C" {
         }
         status =  cmlExecuteNoAnswerSql( tSQL,
                                          &icss );
+        if ( status != 0 ) {
+            rodsLog( LOG_NOTICE,
+                     "chlModColl cmlExecuteNoAnswerSQL(update) failure %d", status );
+            return ERROR( status, "cmlExecuteNoAnswerSQL(update) failure" );
+        }
 
         /* Audit */
         snprintf( iValStr, sizeof iValStr, "%lld", iVal );
@@ -5625,13 +5630,6 @@ extern "C" {
                      "chlModColl cmlAudit3 failure %d",
                      status );
             return ERROR( status, "cmlAudit3 failure" );
-        }
-
-
-        if ( status != 0 ) {
-            rodsLog( LOG_NOTICE,
-                     "chlModColl cmlExecuteNoAnswerSQL(update) failure %d", status );
-            return ERROR( status, "cmlExecuteNoAnswerSQL(update) failure" );
         }
 
         return SUCCESS();
