@@ -523,64 +523,32 @@ extern "C" {
         int              structFileInx,
         irods::structured_object_ptr _fco ) {
 
-        FILE *fptr;
-        int len, i, j, status;
-        int gotRule = 0;
-        char buf[META_STR_LEN * 3];
-        char *inParamName[1024];
-        char *tmpPtr, *tmpPtr2;
-        msParam_t *mP;
-
-        i = pushOnStackInfo();
-        if ( i < 0 ) {
-            rodsLog( LOG_ERROR, "PushOnStackInfo Error:%i\n", i );
-            return( i );
+        int status = pushOnStackInfo();
+        if ( status < 0 ) {
+            rodsLog( LOG_ERROR, "PushOnStackInfo Error:%i\n", status );
+            return( status );
         }
 
-
-        stinCnt = 0;
-        stoutCnt = 0;
-        cpoutCnt = 0;
-        cfcCnt = 0;
-        clnoutCnt = 0;
-        stageArea[0] = '\0';
-        noVersions = 0;
 
         memset( execMyRuleInp, 0, sizeof( execMyRuleInp_t ) );
         memset( msParamArray, 0, sizeof( msParamArray_t ) );
         execMyRuleInp->inpParamArray = msParamArray;
         execMyRuleInp->condInput.len = 0;
         strcpy( execMyRuleInp->outParamDesc, "ruleExecOut" );
-        fptr = fopen( inRuleFile, "r" );
+        FILE *fptr = fopen( inRuleFile, "r" );
         if ( fptr == NULL ) {
             rodsLog( LOG_ERROR,
                      "Cannot open rule file %s. ernro = %d\n", inRuleFile, errno );
             return( FILE_OPEN_ERR );
         }
+        size_t len;
+        char buf[META_STR_LEN * 3];
         while ( ( len = getLine( fptr, buf, META_STR_LEN ) ) > 0 ) {
-            gotRule = 0;
             if ( buf[0] == '#' ) {
                 continue;
             }
             if ( startsWith( buf, "INPUT" ) || startsWith( buf, "input" ) ) {
-                gotRule = 1;
                 trimSpaces( trimPrefix( buf ) );
-            }
-            else if ( startsWith( buf, "OUTPUT" ) || startsWith( buf, "output" ) ) {
-                gotRule = 2;
-                trimSpaces( trimPrefix( buf ) );
-            }
-            else if ( startsWith( buf, "SHOW" ) || startsWith( buf, "show" ) ) {
-                gotRule = 3;
-            }
-
-            if ( gotRule == 0 ) {
-                /*      snprintf (execMyRuleInp->myRule + strlen(execMyRuleInp->myRule),
-                        META_STR_LEN - strlen(execMyRuleInp->myRule), "%s in file %s\n", buf, inRuleFile); */
-                snprintf( execMyRuleInp->myRule + strlen( execMyRuleInp->myRule ),
-                          META_STR_LEN - strlen( execMyRuleInp->myRule ), "%s", buf );
-            }
-            else if ( gotRule == 1 ) {
                 if ( convertListToMultiString( buf, 1 ) != 0 ) {
                     rodsLog( LOG_ERROR,
                              "Input parameter list format error for %s\n", buf );
@@ -588,7 +556,8 @@ extern "C" {
                 }
                 parseMsParamFromIRFile( msParamArray, buf );
             }
-            else if ( gotRule == 2 ) {
+            else if ( startsWith( buf, "OUTPUT" ) || startsWith( buf, "output" ) ) {
+                trimSpaces( trimPrefix( buf ) );
                 /*      if(convertListToMultiString(buf, 0)!=0) {
                         rodsLog (LOG_ERROR,
                         "Output parameter list format error for %s\n", myRodsArgs.fileString);
@@ -600,12 +569,15 @@ extern "C" {
                  */
                 continue;
             }
-            else if ( gotRule == 3 ) { /* SHOW */
+            else if ( startsWith( buf, "SHOW" ) || startsWith( buf, "show" ) ) {
                 trimSpaces( trimPrefix( buf + 4 ) );
                 rstrcpy( showFiles, buf + 4, MAX_NAME_LEN );
             }
             else {
-                break;
+                /*      snprintf (execMyRuleInp->myRule + strlen(execMyRuleInp->myRule),
+                        META_STR_LEN - strlen(execMyRuleInp->myRule), "%s in file %s\n", buf, inRuleFile); */
+                snprintf( execMyRuleInp->myRule + strlen( execMyRuleInp->myRule ),
+                          META_STR_LEN - strlen( execMyRuleInp->myRule ), "%s", buf );
             }
         }
         fclose( fptr );
@@ -616,14 +588,25 @@ extern "C" {
                      "Cannot open param file %s. ernro = %d\n", inParamFile, errno );
             return( FILE_OPEN_ERR );
         }
-        j = 0;
+
+        size_t paramCount = 0;
+        char *inParamName[1024];
+        stinCnt = 0;
+        stoutCnt = 0;
+        cpoutCnt = 0;
+        cfcCnt = 0;
+        clnoutCnt = 0;
+        stageArea[0] = '\0';
+        noVersions = 0;
+
         while ( ( len = getLine( fptr, buf, META_STR_LEN ) ) > 0 )     {
             if ( startsWith( buf, "INPARAM " ) || startsWith( buf, "inparam" ) )   {
                 trimSpaces( trimPrefix( buf ) );
+                char * tmpPtr;
                 if ( ( tmpPtr = strstr( buf, "=" ) ) != NULL ) {
                     *tmpPtr = '\0';
                     tmpPtr++;
-                    if ( ( mP = getMsParamByLabel( execMyRuleInp->inpParamArray, buf ) ) != NULL ) {
+                    if ( msParam_t * mP = getMsParamByLabel( execMyRuleInp->inpParamArray, buf ) ) {
                         if ( mP->inOutStruct != NULL ) {
                             free( mP->inOutStruct );
                         }
@@ -638,8 +621,8 @@ extern "C" {
             else if ( startsWith( buf, "FILEPARAM" ) || startsWith( buf, "DIRPARAM" ) ||
                       startsWith( buf, "fileparam" ) || startsWith( buf, "dirparam" ) ) {
                 trimSpaces( trimPrefix( buf ) );
-                inParamName[j] = strdup( buf );
-                j++;
+                inParamName[paramCount] = strdup( buf );
+                paramCount++;
             }
             else if ( startsWith( buf, "STAGEIN" ) || startsWith( buf, "stagein" ) ) {
                 trimSpaces( trimPrefix( buf ) );
@@ -678,27 +661,27 @@ extern "C" {
 
         status = mkMssoMpfRunDir( structFileInx, _fco, runDir );
         if ( status < 0 ) {
-            return( status );
+            return status;
         }
 
 
         /* prefix  file and directory names with  physical pathnames */
-        for ( i = 0; i < j ; i++ ) {
-            if ( ( mP = getMsParamByLabel( execMyRuleInp->inpParamArray, inParamName[i] ) ) != NULL ) {
+        for ( size_t i = 0; i < paramCount ; i++ ) {
+            if ( msParam_t * mP = getMsParamByLabel( execMyRuleInp->inpParamArray, inParamName[i] ) ) {
                 if ( mP->inOutStruct != NULL ) {
 
-                    tmpPtr2 = ( char * ) mP->inOutStruct;
+                    char * tmpPtr2 = ( char * ) mP->inOutStruct;
 
                     /* check for sefaty onlu  if this a fullpath value file. no prefixing needed */
                     if ( ( *tmpPtr2 == '\"' &&  *( tmpPtr2 + 1 ) == '/' ) || *tmpPtr2 == '/' ) {
                         status = checkSafety( tmpPtr2 );
                         if ( status < 0 )  {
-                            return( status );
+                            return status;
                         }
                         continue;
                     }
                     len = strlen( tmpPtr2 );
-                    tmpPtr = ( char * ) malloc( len + strlen( runDir ) + 10 );
+                    char * tmpPtr = ( char * ) malloc( len + strlen( runDir ) + 10 );
                     if ( len != 0 ) {
                         tmpPtr2++;  /* skipping the leading double-quote */
                         sprintf( tmpPtr, "\"%s/%s", runDir, tmpPtr2 );
@@ -710,7 +693,7 @@ extern "C" {
                     mP->inOutStruct = tmpPtr;
                 }
                 else {
-                    tmpPtr = ( char * ) malloc( strlen( runDir ) + 10 );
+                    char * tmpPtr = ( char * ) malloc( strlen( runDir ) + 10 );
                     sprintf( tmpPtr, "\"%s\"", runDir );
                     mP->inOutStruct = tmpPtr;
                 }
@@ -718,7 +701,7 @@ extern "C" {
             /* removing truncation of inParamFile name */
             free( inParamName[i] );
         }
-        return( 0 );
+        return 0;
     }
 
     int extractMssoFile(
