@@ -1,5 +1,8 @@
 #!/bin/bash
 
+IRODS_HOME_DIR="DEFAULTHOMEDIR"
+SERVER_TYPE="DEFAULTSERVERTYPE"
+
 #echo "parameter count = [$#]"
 if [ $# -gt 7 ] ; then
   # new icat
@@ -17,8 +20,11 @@ elif [ $# -eq 3 ] ; then
 elif [ $# -eq 2 ] ; then
   # old resource
   PACKAGER_COMMAND="upgrade"
+elif [ $# -eq 4 ] ; then
+  # upgrade from 4.0.2 
+  PACKAGER_COMMAND="upgrade"
 else
-  echo "ERROR: Unspecified state for preremove.sh"
+  echo "ERROR: Unspecified state for preremove.sh - [$#]"
   exit 1
 fi
 
