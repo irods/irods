@@ -1130,47 +1130,21 @@ cllExecSqlWithResultBV(
 */
 int
 cllGetRow( icatSessionStruct *icss, int statementNumber ) {
-    HSTMT hstmt;
-    RETCODE stat;
-    int nCols, i;
-    icatStmtStrct *myStatement;
-    int logGetRows = 0; /* Another handy debug flag.  When set and if
-                         spLogSql is set, this function will log each
-                         time a row is gotten, the number of columns ,
-                         and the contents of the first column.  */
+    icatStmtStrct *myStatement = icss->stmtPtr[statementNumber];
 
-    myStatement = icss->stmtPtr[statementNumber];
-    hstmt = myStatement->stmtPtr;
-    nCols = myStatement->numOfCols;
-
-    for ( i = 0; i < nCols; i++ ) {
+    for ( int i = 0; i < myStatement->numOfCols; i++ ) {
         strcpy( ( char * )myStatement->resultValue[i], "" );
     }
-    stat =  SQLFetch( hstmt );
+    RETCODE stat =  SQLFetch( myStatement->stmtPtr );
     if ( stat != SQL_SUCCESS && stat != SQL_NO_DATA_FOUND ) {
         rodsLog( LOG_ERROR, "cllGetRow: SQLFetch failed: %d", stat );
-        return( -1 );
+        return -1;
     }
     if ( stat == SQL_NO_DATA_FOUND ) {
-        if ( logGetRows ) {
-            rodsLogSql( "cllGetRow: NO DATA FOUND" );
-            // JMC - backport 4468
-            char tmpstr[210];
-            snprintf( tmpstr, 200, "cllGetRow: NO DATA FOUND, statement:%d", statementNumber );
-        }
         _cllFreeStatementColumns( icss, statementNumber );
         myStatement->numOfCols = 0;
     }
-    else {
-        if ( logGetRows ) {
-            char tmpstr[210];
-            // JMC - backport 4468
-            snprintf( tmpstr, 200, "cllGetRow statement:%d columns:%d first column: %s", statementNumber, nCols, myStatement->resultValue[0] );
-
-            rodsLogSql( tmpstr );
-        }
-    }
-    return( 0 );
+    return 0;
 }
 
 /*
