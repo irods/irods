@@ -5110,24 +5110,9 @@ extern "C" {
         else {
             cllBindVars[cllBindVarCount++] = zoneName;
         }
-        if ( _coll_info->collType != NULL ) {
-            cllBindVars[cllBindVarCount++] = _coll_info->collType;
-        }
-        else {
-            cllBindVars[cllBindVarCount++] = "";
-        }
-        if ( _coll_info->collInfo1 != NULL ) {
-            cllBindVars[cllBindVarCount++] = _coll_info->collInfo1;
-        }
-        else {
-            cllBindVars[cllBindVarCount++] = "";
-        }
-        if ( _coll_info->collInfo2 != NULL ) {
-            cllBindVars[cllBindVarCount++] = _coll_info->collInfo2;
-        }
-        else {
-            cllBindVars[cllBindVarCount++] = "";
-        }
+        cllBindVars[cllBindVarCount++] = _coll_info->collType;
+        cllBindVars[cllBindVarCount++] = _coll_info->collInfo1;
+        cllBindVars[cllBindVarCount++] = _coll_info->collInfo2;
         cllBindVars[cllBindVarCount++] = myTime;
         cllBindVars[cllBindVarCount++] = myTime;
         if ( logSQL != 0 ) {
