@@ -4219,7 +4219,7 @@ extern "C" {
 
         }
 
-        if ( _resc_info->zoneName != NULL && strlen( _resc_info->zoneName ) > 0 ) {
+        if ( strlen( _resc_info->zoneName ) > 0 ) {
             if ( strcmp( _resc_info->zoneName, zone.c_str() ) != 0 ) {
                 addRErrorMsg( &_comm->rError, 0,
                               "Currently, resources must be in the local zone" );
