@@ -8655,18 +8655,7 @@ checkLevel:
         if ( strcmp( _option, "host" ) == 0 ) {
             // =-=-=-=-=-=-=-
             // JMC - backport 4597
-            myHostEnt = gethostbyname( _option_value );
-            if ( myHostEnt <= 0 ) {
-                char errMsg[155];
-                snprintf( errMsg, 150,
-                          "Warning, resource host address '%s' is not a valid DNS entry, gethostbyname failed.",
-                          _option_value );
-                addRErrorMsg( &_comm->rError, 0, errMsg );
-            }
-            if ( strcmp( _option_value, "localhost" ) == 0 ) { // JMC - backport 4650
-                addRErrorMsg( &_comm->rError, 0,
-                              "Warning, resource host address 'localhost' will not work properly as it maps to the local host from each client." );
-            }
+            _resolveHostName( _comm, _option_value, myHostEnt );
 
             // =-=-=-=-=-=-=-
             cllBindVars[cllBindVarCount++] = _option_value;
