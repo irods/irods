@@ -626,11 +626,11 @@ fillSubmitConditions( char *action, char *inDelayCondition,
     }
     ruleSubmitInfo->condInput.len = j;
     ruleSubmitInfo->packedReiAndArgBBuf = packedReiAndArgBBuf;
-    if ( ruleSubmitInfo->userName == NULL || strlen( ruleSubmitInfo->userName ) == 0 ) {
-        if ( rei->uoic->userName  != NULL ) {
+    if ( strlen( ruleSubmitInfo->userName ) == 0 ) {
+        if ( strlen( rei->uoic->userName ) != 0 ) {
             strncpy( ruleSubmitInfo->userName, rei->uoic->userName, NAME_LEN );
         }
-        else if ( rei->rsComm->clientUser.userName != NULL ) {
+        else if ( strlen( rei->rsComm->clientUser.userName ) != 0 ) {
             strncpy( rei->rsComm->clientUser.userName, rei->uoic->userName, NAME_LEN );
         }
     }
