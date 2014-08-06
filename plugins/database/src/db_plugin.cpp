@@ -4236,35 +4236,8 @@ extern "C" {
         if ( irods::EMPTY_RESC_HOST != _resc_info->rescLoc ) {
             // =-=-=-=-=-=-=-
             // JMC - backport 4597
-            myHostEnt = gethostbyname( _resc_info->rescLoc );
-            if ( myHostEnt <= 0 ) {
-                char errMsg[155];
-                snprintf( errMsg, 150,
-                          "Warning, resource host address '%s' is not a valid DNS entry, gethostbyname failed.",
-                          _resc_info->rescLoc );
-                addRErrorMsg( &_comm->rError, 0, errMsg );
-            }
-            if ( strcmp( _resc_info->rescLoc, "localhost" ) == 0 ) { // JMC - backport 4650
-                addRErrorMsg( &_comm->rError, 0,
-                              "Warning, resource host address 'localhost' will not work properly as it maps to the local host from each client." );
-            }
-
+            _resolveHostName( _comm, _resc_info->rescLoc, myHostEnt );
         }
-#if 0
-        if ( false &&               // hcj - disable checking for vault path. this needs to be checked from the plugins
-                ( strcmp( _resc_info->rescType, "database" ) != 0 ) &&
-                ( strcmp( _resc_info->rescType, "mso" ) != 0 ) ) {
-            if ( strlen( _resc_info->rescVaultPath ) < 1 ) {
-                return( CAT_INVALID_RESOURCE_VAULT_PATH );
-            }
-        }
-#endif
-        // =-=-=-=-=-=-=-
-        // JMC :: we do this above, not sure why were doing this again
-        //status = getLocalZone();
-        //if ( status != 0 ) {
-        //    return( status );
-        //}
 
         getNowStr( myTime );
 
