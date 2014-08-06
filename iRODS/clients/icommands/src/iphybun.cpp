@@ -106,14 +106,14 @@ usage() {
         "is accessed, the tar file is untarred and staged automatically to the ",
         "'cache' resource. Each extracted file is registered as a replica of its",
         "corresponding subfiles.",
-        " ",
+        "",
         "A tar bundle file can be replicated or trimmed independently from its",
         "corresponding subfiles. But it cannot be renamed or moved to trash.",
         "It can be removed with the 'irm -f' command. But this  will trigger the ",
         "staging of the subfiles before the tar file is removed.",
         "The -R flag specifies the resource of the bundle tar file. This input is",
-        "mandatory. The input resource must be a 'cache' type resource."
-
+        "mandatory. The input resource must be a 'cache' type resource.",
+        "",
         "Options are:",
         " -D  dataType - the target struct file dataType. Valid dataTypes are -",
         "     t|tar|'tar file' for tar file, g|gzip|gzipTar for gziped tar file,",
