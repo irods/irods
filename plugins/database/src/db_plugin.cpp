@@ -5739,8 +5739,8 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // check the params
         if ( !_comm   ||
-                !_zone_name,
-                !_option,
+                !_zone_name ||
+                !_option ||
                 !_option_value ) {
             return ERROR(
                        CAT_INVALID_ARGUMENT,
