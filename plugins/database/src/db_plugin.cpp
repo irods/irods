@@ -5939,7 +5939,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // check the params
         if ( !_comm   ||
-                !_old_coll,
+                !_old_coll ||
                 !_new_coll ) {
             return ERROR(
                        CAT_INVALID_ARGUMENT,
