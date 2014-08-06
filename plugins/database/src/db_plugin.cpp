@@ -11092,14 +11092,9 @@ checkLevel:
         char userIdStr[MAX_NAME_LEN];
         char myTime[50];
         rodsLong_t iVal;
-        int debug = 0;
 
         strncpy( myAccessStr, _access_level + strlen( MOD_RESC_PREFIX ), LONG_NAME_LEN );
         myAccessStr[ LONG_NAME_LEN - 1 ] = '\0'; // JMC cppcheck - dangerous use of strncpy
-        if ( debug > 0 ) {
-            printf( "accessLevel: %s\n", _access_level );
-            printf( "rescName: %s\n", _resc_name );
-        }
 
         if ( strcmp( myAccessStr, AP_NULL ) == 0 ) {
             myAccessLev = ACCESS_NULL;
