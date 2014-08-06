@@ -221,9 +221,9 @@ extern "C" {
                 try {
                     // =-=-=-=-=-=-=-
                     // cast std::string to int index
-                    size_t idx = boost::lexical_cast<int>( ctx );
-                    if ( idx < 0 || idx >= list_size ) {
-                        irods::log( ERROR( -1, "build_sorted_child_vector - index < 0" ) );
+                    size_t idx = boost::lexical_cast<size_t>( ctx );
+                    if ( idx >= list_size ) {
+                        irods::log( ERROR( -1, "build_sorted_child_vector - index out of bounds" ) );
                         continue;
                     }
 
@@ -254,7 +254,7 @@ extern "C" {
 
                 }
                 catch ( boost::bad_lexical_cast const& ) {
-                    irods::log( ERROR( -1, "build_sorted_child_vector - lexical cast failed" ) );
+                    irods::log( ERROR( -1, "build_sorted_child_vector - lexical cast to size_t failed" ) );
                 }
 
             } // if ctx != empty
