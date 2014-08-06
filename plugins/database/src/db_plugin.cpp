@@ -3235,7 +3235,7 @@ extern "C" {
             return ERROR( status, "_updateObjCountOfResources failed" );
         }
 
-        cmlFreeStatement( statementNumber, &icss );
+        status = cmlFreeStatement( statementNumber, &icss );
         if ( status < 0 ) {
             rodsLog( LOG_NOTICE, "chlRegReplica cmlFreeStatement failure %d", status );
             return ERROR( status, "cmlFreeStatement failure" );
