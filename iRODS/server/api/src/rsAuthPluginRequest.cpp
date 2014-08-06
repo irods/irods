@@ -35,8 +35,7 @@ int rsAuthPluginRequest(
     // =-=-=-=-=-=-=-
     // check the auth scheme
     std::string auth_scheme = irods::AUTH_NATIVE_SCHEME;
-    if ( _req_inp->auth_scheme_ &&
-            strlen( _req_inp->auth_scheme_ ) > 0 ) {
+    if ( strlen( _req_inp->auth_scheme_ ) > 0 ) {
         auth_scheme = _req_inp->auth_scheme_;
     }
 
@@ -66,9 +65,7 @@ int rsAuthPluginRequest(
     // =-=-=-=-=-=-=-
     // set the context of the auth object for communication
     // to the plugin itself
-    if ( _req_inp->context_ ) {
-        auth_obj->context( _req_inp->context_ );
-    }
+    auth_obj->context( _req_inp->context_ );
 
     // =-=-=-=-=-=-=-
     // resolve an auth plugin given the auth object
