@@ -3409,7 +3409,7 @@ extern "C" {
 
         // Get the resource name so we can update its data object count later
         std::string resc_hier;
-        if ( !_data_obj_info->rescHier || strlen( _data_obj_info->rescHier ) == 0 ) {
+        if ( strlen( _data_obj_info->rescHier ) == 0 ) {
             if ( _data_obj_info->replNum >= 0 ) {
                 snprintf( replNumber, sizeof replNumber, "%d", _data_obj_info->replNum );
                 if ( ( status = cmlGetStringValueFromSql( "select resc_hier from R_DATA_MAIN where data_id=? and data_repl_num=?",
