@@ -2561,8 +2561,8 @@ extern "C" {
 
             if ( status != 0 ) {
                 theVal = getValByKey( _reg_param, ACL_COLLECTION_KW );
-                if ( theVal != NULL && _data_obj_info->objPath != NULL &&
-                        upCols == 1 && strcmp( updateCols[0], "data_path" ) == 0 ) {
+                if ( theVal != NULL && upCols == 1 &&
+                        strcmp( updateCols[0], "data_path" ) == 0 ) {
                     int len, iVal = 0; // JMC cppcheck - uninit var ( shadows prev decl? )
                     /*
                      In this case, the user is doing a 'imv' of a collection but one of
