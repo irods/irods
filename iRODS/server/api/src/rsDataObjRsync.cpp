@@ -240,7 +240,7 @@ rsRsyncDataToData( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         rodsLog( LOG_ERROR,
                  "rsRsyncDataToData: _rsDataObjChksum error for %s, status = %d",
                  dataObjCopyInp.srcDataObjInp.objPath, status );
-        clearKeyVal( &dataObjCopyInp.destDataObjInp.condInput );
+        clearKeyVal( &dataObjCopyInp.srcDataObjInp.condInput );
         return ( status );
     }
 
