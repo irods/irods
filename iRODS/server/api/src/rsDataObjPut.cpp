@@ -242,8 +242,7 @@ preProcParaPut( rsComm_t *rsComm, int l1descInx,
 
     initDataOprInp( &dataOprInp, l1descInx, PUT_OPR );
     /* add RESC_HIER_STR_KW for getNumThreads */
-    if ( L1desc[l1descInx].dataObjInfo != NULL &&
-            L1desc[l1descInx].dataObjInfo->rescHier != NULL ) {
+    if ( L1desc[l1descInx].dataObjInfo != NULL ) {
         //addKeyVal (&dataOprInp.condInput, RESC_NAME_KW,
         //           L1desc[l1descInx].dataObjInfo->rescInfo->rescName);
         addKeyVal( &dataOprInp.condInput, RESC_HIER_STR_KW,
