@@ -2333,7 +2333,7 @@ reconnManager( rsComm_t *rsComm ) {
         }
 
         rsComm->reconnThrState = PROCESSING_STATE;
-        bzero( reconnMsg, sizeof( procState_t ) );
+        bzero( reconnMsg, sizeof( reconnMsg_t ) );
         reconnMsg->procState = rsComm->agentState;
         ret = sendReconnMsg( net_obj, reconnMsg );
         free( reconnMsg );
