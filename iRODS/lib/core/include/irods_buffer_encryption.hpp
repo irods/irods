@@ -61,8 +61,9 @@ public:
 
     /// =-=-=-=-=-=-=-
     /// @brief generate a random byte key
-    irods::error generate_key(
-        array_t& ); // random byte key
+    static irods::error generate_key(
+        array_t&,       // random byte key
+        int   );        // key size in bytes
 
     /// =-=-=-=-=-=-=-
     /// @brief accessors for attributes

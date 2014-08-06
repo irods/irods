@@ -728,7 +728,7 @@ extern "C" {
                                     _env->rodsEncryptionSaltSize,
                                     _env->rodsEncryptionNumHashRounds,
                                     _env->rodsEncryptionAlgorithm );
-                                crypt.generate_key( key );
+                                irods::buffer_crypt::generate_key( key, crypt.key_size() );
                                 ret = _ctx.prop_map().set< irods::buffer_crypt::array_t >( SHARED_KEY, key );
                                 if ( !ret.ok() ) {
                                     irods::log( PASS( ret ) );

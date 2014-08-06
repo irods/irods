@@ -86,30 +86,21 @@ buffer_crypt::~buffer_crypt() {
 } // dtor
 
 // =-=-=-=-=-=-=-
-// public - generate a random 32 byte key
+// public static - generate a random key
 irods::error buffer_crypt::generate_key(
-    array_t& _out_key ) {
+    array_t& _out_key,
+    int _key_size
+ ) {
     // =-=-=-=-=-=-=-
-    // generate 32 random bytes
-    unsigned char* key = new unsigned char[ key_size_ ];
-    int rnd_err = RAND_bytes( key, key_size_ );
+    // generate random bytes
+    _out_key.resize( _key_size );
+    const int rnd_err = RAND_bytes( &_out_key[0], _key_size );
     if ( 1 != rnd_err ) {
-        delete [] key;
         char err[ 256 ];
-        ERR_error_string_n( ERR_get_error(), err, 256 );
-        std::string msg( "failed in RAND_bytes - " );
-        msg += err;
+        ERR_error_string_n( ERR_get_error(), err, sizeof( err ) );
+        const std::string msg = std::string( "failed in RAND_bytes - " ) + err;
         return ERROR( ERR_get_error(), msg );
-
     }
-
-    // =-=-=-=-=-=-=-
-    // copy the key to the out variable
-    _out_key.assign(
-        &key[0],
-        &key[ key_size_ ] );
-
-    delete [] key;
 
     return SUCCESS();
 
