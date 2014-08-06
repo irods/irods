@@ -211,31 +211,19 @@ parseRodsPath( rodsPath_t *rodsPath, rodsEnv *myRodsEnv ) {
 
 int
 parseLocalPath( rodsPath_t *rodsPath ) {
-    int len;
-    int status;
-
     if ( rodsPath == NULL ) {
         fprintf( stderr, "parseLocalPath: NULL rodsPath input\n" );
         return ( USER__NULL_INPUT_ERR );
     }
 
-    if ( rodsPath->inPath == NULL ) {
-        fprintf( stderr, "parseLocalPath: NULL rodsPath->inPath input\n" );
-        return ( USER__NULL_INPUT_ERR );
-    }
-
-    len = strlen( rodsPath->inPath );
-
-    if ( len == 0 ) {
+    if ( strlen( rodsPath->inPath ) == 0 ) {
         rstrcpy( rodsPath->outPath, ".", MAX_NAME_LEN );
     }
     else {
         rstrcpy( rodsPath->outPath, rodsPath->inPath, MAX_NAME_LEN );
     }
 
-    status = getFileType( rodsPath );
-
-    return ( status );
+    return getFileType( rodsPath );
 }
 
 int
