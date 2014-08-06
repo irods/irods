@@ -6007,8 +6007,8 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // check the params
         if ( !_comm   ||
-                !_access_level,
-                !_user_name,
+                !_access_level ||
+                !_user_name ||
                 !_path_name ) {
             return ERROR(
                        CAT_INVALID_ARGUMENT,
