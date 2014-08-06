@@ -484,12 +484,12 @@ usage( char *subOpt ) {
     char *mkuserMsgs[] = {
         " mkuser Name Group Password (make user by a group-admin)",
         "Create a new iRODS user in the ICAT database",
-        " ",
+        "",
         "Name is the user name to create",
         "Group is the group to also add the user to",
         "Password is the user's initial password",
-        " ",
-        "The user type will be automatically set to 'rodsuser' and the zone local."
+        "",
+        "The user type will be automatically set to 'rodsuser' and the zone local.",
         ""
     };
 
