@@ -1256,14 +1256,6 @@ convertTypeOption( char *typeStr ) {
     if ( strcmp( typeStr, "-U" ) == 0 ) {
         return( 4 );    /* user */
     }
-#ifdef RESC_GROUP
-    if ( strcmp( typeStr, "-g" ) == 0 ) {
-        return( 5 );    /* resource group */
-    }
-    if ( strcmp( typeStr, "-G" ) == 0 ) {
-        return( 5 );    /* resource group */
-    }
-#endif
     return ( 0 );
 }
 
