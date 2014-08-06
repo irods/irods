@@ -874,10 +874,6 @@ dataObjOpenForRepl(
     else if ( sync_kw ) {
         L1desc[destL1descInx].stageFlag = SYNC_DEST;
     }
-    else {
-
-
-    }
 
     char* src_hier_str = 0;
     if ( srcDataObjInfo->rescHier != NULL ) {
