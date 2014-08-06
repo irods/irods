@@ -2311,9 +2311,7 @@ matchAllowedUser( char *userName, char *rodsZone,
 
     tmpAllowedUser = allowedUserHead;
     while ( tmpAllowedUser != NULL ) {
-        if ( tmpAllowedUser->userName != NULL &&
-                strcmp( tmpAllowedUser->userName, userName ) == 0 &&
-                tmpAllowedUser->rodsZone != NULL &&
+        if ( strcmp( tmpAllowedUser->userName, userName ) == 0 &&
                 strcmp( tmpAllowedUser->rodsZone, rodsZone ) == 0 ) {
             /* we have a match */
             break;
