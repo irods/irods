@@ -689,39 +689,39 @@ reDebug( RuleEngineEvent label, int flag, RuleEngineEventParam *param, Node *nod
     snprintf( seActionStr, MAX_NAME_LEN + 10, "%s", buf );
     if ( GlobalREAuditFlag > 0 ) {
         if ( flag == -4 ) {
-            if ( rei->uoic != NULL && rei->uoic->userName != NULL && rei->uoic->rodsZone != NULL ) {
+            if ( rei->uoic != NULL && strlen( rei->uoic->userName ) > 0 && strlen( rei->uoic->rodsZone ) > 0 ) {
                 snprintf( myActionStr[aNum], MAX_NAME_LEN + 10 , "  USER:%s@%s", rei->uoic->userName, rei->uoic->rodsZone );
                 aNum++;
             }
-            if ( rei->doi != NULL && rei->doi->objPath != NULL && strlen( rei->doi->objPath ) > 0 ) {
+            if ( rei->doi != NULL && strlen( rei->doi->objPath ) > 0 ) {
                 snprintf( myActionStr[aNum], MAX_NAME_LEN + 10 , "  DATA:%s", rei->doi->objPath );
                 aNum++;
             }
-            if ( rei->doi != NULL && rei->doi->filePath != NULL && strlen( rei->doi->filePath ) > 0 ) {
+            if ( rei->doi != NULL && strlen( rei->doi->filePath ) > 0 ) {
                 snprintf( myActionStr[aNum], MAX_NAME_LEN + 10 , "  FILE:%s", rei->doi->filePath );
                 aNum++;
             }
-            if ( rei->doinp != NULL && rei->doinp->objPath != NULL && strlen( rei->doinp->objPath ) > 0 ) {
+            if ( rei->doinp != NULL && strlen( rei->doinp->objPath ) > 0 ) {
                 snprintf( myActionStr[aNum], MAX_NAME_LEN + 10 , "  DATAIN:%s", rei->doinp->objPath );
                 aNum++;
             }
-            if ( rei->doi != NULL && rei->doi->rescName != NULL && strlen( rei->doi->rescName ) > 0 ) {
+            if ( rei->doi != NULL && strlen( rei->doi->rescName ) > 0 ) {
                 snprintf( myActionStr[aNum], MAX_NAME_LEN + 10 , "  RESC:%s", rei->doi->rescName );
                 aNum++;
             }
-            if ( rei->rgi != NULL && rei->rgi->rescInfo->rescName != NULL && strlen( rei->rgi->rescInfo->rescName ) > 0 ) {
+            if ( rei->rgi != NULL && strlen( rei->rgi->rescInfo->rescName ) > 0 ) {
                 snprintf( myActionStr[aNum], MAX_NAME_LEN + 10 , "  RESC:%s", rei->rgi->rescInfo->rescName );
                 aNum++;
             }
-            if ( rei->doi != NULL && rei->doi->rescGroupName != NULL && strlen( rei->doi->rescGroupName ) > 0 ) {
+            if ( rei->doi != NULL && strlen( rei->doi->rescGroupName ) > 0 ) {
                 snprintf( myActionStr[aNum], MAX_NAME_LEN + 10 , "  RESCGRP:%s", rei->doi->rescGroupName );
                 aNum++;
             }
-            if ( rei->rgi != NULL && rei->rgi->rescGroupName != NULL && strlen( rei->rgi->rescGroupName ) > 0 ) {
+            if ( rei->rgi != NULL && strlen( rei->rgi->rescGroupName ) > 0 ) {
                 snprintf( myActionStr[aNum], MAX_NAME_LEN + 10 , "  RESCGRP:%s", rei->rgi->rescGroupName );
                 aNum++;
             }
-            if ( rei->coi != NULL && rei->coi->collName != NULL ) {
+            if ( rei->coi != NULL && strlen( rei->coi->collName ) > 0) {
                 snprintf( myActionStr[aNum], MAX_NAME_LEN + 10 , "  COLL:%s", rei->coi->collName );
                 aNum++;
             }
