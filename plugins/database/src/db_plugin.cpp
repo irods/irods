@@ -14627,8 +14627,6 @@ checkLevel:
         char *tResult, *tResult2;
         char tsCreateTime[50];
 
-        int debug = 0;
-
         if ( logSQL != 0 ) {
             rodsLog( LOG_SQL, "chlSpecificQuery" );
         }
@@ -14638,16 +14636,6 @@ checkLevel:
         _result->totalRowCount = 0;
 
         currentMaxColSize = 0;
-
-#if defined(_LP64) || defined(__LP64__)
-        if ( debug ) {
-            printf( "icss=%ld\n", ( long int )&icss );
-        }
-#else
-        if ( debug ) {
-            printf( "icss=%d\n", ( uint )&icss );
-        }
-#endif
 
         if ( _spec_query_inp->continueInx == 0 ) {
             if ( _spec_query_inp->sql == NULL ) {
@@ -14706,9 +14694,6 @@ checkLevel:
             }
 
             _result->continueInx = statementNum + 1;
-            if ( debug ) {
-                printf( "statement number =%d\n", statementNum );
-            }
             needToGetNextRow = 0;
         }
         else {
@@ -14743,13 +14728,7 @@ checkLevel:
             needToGetNextRow = 1;
 
             _result->rowCnt++;
-            if ( debug ) {
-                printf( "result->rowCnt=%d\n", _result->rowCnt );
-            }
             numOfCols = icss.stmtPtr[statementNum]->numOfCols;
-            if ( debug ) {
-                printf( "numOfCols=%d\n", numOfCols );
-            }
             _result->attriCnt = numOfCols;
             _result->continueInx = statementNum + 1;
 
@@ -14765,15 +14744,9 @@ checkLevel:
             if ( maxColSize < MINIMUM_COL_SIZE ) {
                 maxColSize = MINIMUM_COL_SIZE; /* make it a reasonable size */
             }
-            if ( debug ) {
-                printf( "maxColSize=%d\n", maxColSize );
-            }
 
             if ( i == 0 ) { /* first time thru, allocate and initialize */
                 attriTextLen = numOfCols * maxColSize;
-                if ( debug ) {
-                    printf( "attriTextLen=%d\n", attriTextLen );
-                }
                 totalLen = attriTextLen * _spec_query_inp->maxRows;
                 for ( j = 0; j < numOfCols; j++ ) {
                     tResult = ( char * ) malloc( totalLen );
@@ -14798,12 +14771,7 @@ checkLevel:
             if ( maxColSize > currentMaxColSize ) {
                 maxColSize += MINIMUM_COL_SIZE; /* bump it up to try to avoid
                                                    some multiple resizes */
-                if ( debug ) printf( "Bumping %d to %d\n",
-                                         currentMaxColSize, maxColSize );
                 attriTextLen = numOfCols * maxColSize;
-                if ( debug ) {
-                    printf( "attriTextLen=%d\n", attriTextLen );
-                }
                 totalLen = attriTextLen * _spec_query_inp->maxRows;
                 for ( j = 0; j < numOfCols; j++ ) {
                     char *cp1, *cp2;
