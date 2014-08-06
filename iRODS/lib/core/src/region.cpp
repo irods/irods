@@ -63,7 +63,7 @@ size_t region_size( Region *r ) {
 #else
 /* utility function */
 struct region_node *make_region_node( size_t is ) {
-    struct region_node *node = ( struct region_node * )malloc( sizeof( Region ) );
+    struct region_node *node = ( struct region_node * )malloc( sizeof( *node ) );
     if ( node == NULL ) {
         return NULL;
     }
