@@ -389,24 +389,23 @@ _canConnectToCatalog(
 int
 _resolveHostName(
     rsComm_t* _rsComm,
-    rescInfo_t* _rescInfo ) {
-    int result = 0;
-    struct hostent *myHostEnt;
+    const char* _hostAddress,
+    struct hostent *& _hostEnt ) {
 
-    myHostEnt = gethostbyname( _rescInfo->rescLoc );
-    if ( myHostEnt <= 0 ) {
+    _hostEnt = gethostbyname( _hostAddress );
+    if ( !_hostEnt ) {
         char errMsg[155];
         snprintf( errMsg, 150,
                   "Warning, resource host address '%s' is not a valid DNS entry, gethostbyname failed.",
-                  _rescInfo->rescLoc );
+                  _hostAddress );
         addRErrorMsg( &_rsComm->rError, 0, errMsg );
     }
-    if ( strcmp( _rescInfo->rescLoc, "localhost" ) == 0 ) {
+    if ( strcmp( _hostAddress, "localhost" ) == 0 ) {
         addRErrorMsg( &_rsComm->rError, 0,
                       "Warning, resource host address 'localhost' will not work properly as it maps to the local host from each client." );
     }
 
-    return result;
+    return 0;
 }
 
 // =-=-=-=-=-=-=-
