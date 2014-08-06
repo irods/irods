@@ -1303,8 +1303,6 @@ Res *smsi_arity( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiS
     return newIntRes( r, RULE_NODE_NUM_PARAMS( rd->node ) );
 }
 Res *smsi_str( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
-    char errbuf[ERR_MSG_LEN];
-    char errmsgbuf[ERR_MSG_LEN];
     Res *val = params[0], *res;
     if ( TYPE( val ) == T_INT
             || TYPE( val ) == T_DOUBLE
@@ -1320,6 +1318,7 @@ Res *smsi_str( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSav
         }
         else {
             res = newErrorRes( r, RE_UNSUPPORTED_OP_OR_TYPE );
+            char errbuf[ERR_MSG_LEN];
             snprintf( errbuf, ERR_MSG_LEN, "error: converting value of type %s to string.", typeName_Res( val ) );
             generateAndAddErrMsg( errbuf, node, RE_UNSUPPORTED_OP_OR_TYPE, errmsg );
 
@@ -1361,7 +1360,8 @@ Res *smsi_str( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSav
     }
     else {
         res = newErrorRes( r, RE_UNSUPPORTED_OP_OR_TYPE );
-        snprintf( errmsgbuf, ERR_MSG_LEN, "error: unsupported type. can not convert %s to string.", typeName_Res( val ) );
+        char errbuf[ERR_MSG_LEN];
+        snprintf( errbuf, ERR_MSG_LEN, "error: unsupported type. can not convert %s to string.", typeName_Res( val ) );
         generateAndAddErrMsg( errbuf, node, RE_UNSUPPORTED_OP_OR_TYPE, errmsg );
     }
     return res;
