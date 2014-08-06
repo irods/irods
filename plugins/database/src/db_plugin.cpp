@@ -3944,8 +3944,7 @@ extern "C" {
                 result = ret.code();
 
             }
-            else if ( _resc_info->zoneName != NULL &&
-                      strlen( _resc_info->zoneName ) > 0 &&
+            else if ( strlen( _resc_info->zoneName ) > 0 &&
                       strcmp( _resc_info->zoneName, zone.c_str() ) != 0 ) {
                 addRErrorMsg( &_comm->rError, 0,
                               "Currently, resources must be in the local zone" );
