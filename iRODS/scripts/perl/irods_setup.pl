@@ -2522,7 +2522,7 @@ sub imkdir($)
 	}
 
 	# The directory doesn't exist.  Create it.
-	return runIcommand( "$iadmin mkdir $directory" );
+	return runIcommand( "$iadmin mkdir -f $directory" );
 }
 
 

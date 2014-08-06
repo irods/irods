@@ -982,8 +982,16 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         return ( 0 );
     }
     if ( strcmp( cmdToken[0], "mkdir" ) == 0 ) {
-        generalAdmin( 0, "add", "dir", cmdToken[1], cmdToken[2],
-                      cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6], "", "" );
+        if( _rodsArgs->force == True ) {
+            generalAdmin( 0, "add", "dir", 
+                          cmdToken[1], cmdToken[2],
+                          cmdToken[3], cmdToken[4], 
+                          cmdToken[5], cmdToken[6], 
+                          "", "" );
+        } else {
+            usage( "mkdir" );
+        } 
+
         return ( 0 );
     }
 
@@ -1351,10 +1359,7 @@ main( int argc, char **argv ) {
     int keepGoing;
     int firstTime;
 
-    // JMC - turn on 'includeLong' for dryrun & add Z to the options
-    // status = parseCmdLineOpt (argc, argv, "vVh", 0, &myRodsArgs);
-
-    status = parseCmdLineOpt( argc, argv, "vVhZ", 1, &myRodsArgs );
+    status = parseCmdLineOpt( argc, argv, "fvVhZ", 1, &myRodsArgs );
 
     if ( status ) {
         printf( "Use -h for help.\n" );
@@ -1523,7 +1528,6 @@ void usageMain() {
         " rua Name[#Zone] Auth-Name (remove user authentication name (GSI/Kerberos)",
         " rpp Name  (remove PAM-derived Password for user Name)",
         " rmuser Name[#Zone] (remove user, where userName: name[@department][#zone])",
-        " mkdir Name [username] (make directory(collection))",
         " rmdir Name (remove directory) ",
         " mkresc Name Type [Host:Path] [ContextString] (make Resource)",
         " modresc Name [name, type, host, path, status, comment, info, freespace, rebalance] Value (mod Resc)",
@@ -1740,10 +1744,10 @@ usage( char *subOpt ) {
     };
 
     char *mkdirMsgs[] = {
-        " mkdir Name (make directory(collection))",
-        "This is similar to imkdir but is used during the installation process.",
-        "There is also a form 'mkdir Name Username' which makes a collection",
-        "that is owned by user Username.",
+        "***************************** WARNING ********************************",
+        "This command is intended for installation purposes and should never be",
+        "called directly by a user.  In order to make a collection please use",
+        "the 'imkdir' icommand.",
         ""
     };
 
