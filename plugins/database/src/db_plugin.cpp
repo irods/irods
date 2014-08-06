@@ -5518,7 +5518,7 @@ extern "C" {
 
         strncpy( tSQL, "update R_COLL_MAIN set ", MAX_SQL_SIZE );
         count = 0;
-        if ( _coll_info->collType != NULL && strlen( _coll_info->collType ) > 0 ) {
+        if ( strlen( _coll_info->collType ) > 0 ) {
             if ( strcmp( _coll_info->collType, "NULL_SPECIAL_VALUE" ) == 0 ) {
                 /* A special value to indicate NULL */
                 cllBindVars[cllBindVarCount++] = "";
@@ -5529,7 +5529,7 @@ extern "C" {
             strncat( tSQL, "coll_type=? ", MAX_SQL_SIZE );
             count++;
         }
-        if ( _coll_info->collInfo1 != NULL && strlen( _coll_info->collInfo1 ) > 0 ) {
+        if ( strlen( _coll_info->collInfo1 ) > 0 ) {
             if ( strcmp( _coll_info->collInfo1, "NULL_SPECIAL_VALUE" ) == 0 ) {
                 /* A special value to indicate NULL */
                 cllBindVars[cllBindVarCount++] = "";
@@ -5543,7 +5543,7 @@ extern "C" {
             strncat( tSQL, "coll_info1=? ", MAX_SQL_SIZE );
             count++;
         }
-        if ( _coll_info->collInfo2 != NULL && strlen( _coll_info->collInfo2 ) > 0 ) {
+        if ( strlen( _coll_info->collInfo2 ) > 0 ) {
             if ( strcmp( _coll_info->collInfo2, "NULL_SPECIAL_VALUE" ) == 0 ) {
                 /* A special value to indicate NULL */
                 cllBindVars[cllBindVarCount++] = "";
