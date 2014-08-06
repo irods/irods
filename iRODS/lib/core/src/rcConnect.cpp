@@ -413,7 +413,7 @@ cliReconnManager( rcComm_t *conn ) {
             continue;
         }
 
-        bzero( &reconnMsg, sizeof( procState_t ) );
+        bzero( &reconnMsg, sizeof( reconnMsg_t ) );
         reconnMsg.procState = conn->clientState;
         reconnMsg.cookie    = conn->svrVersion->cookie;
 
