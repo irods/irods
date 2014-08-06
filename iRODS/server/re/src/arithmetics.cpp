@@ -1502,38 +1502,9 @@ error:
 }
 
 Res *setVariableValue( char *varName, Res *val, Node *node, ruleExecInfo_t *rei, Env *env, rError_t *errmsg, Region *r ) {
-    int i;
-    char *varMap;
     char errbuf[ERR_MSG_LEN];
     if ( varName[0] == '$' ) {
-    	char *arg = varName+1;
-    	if((i = applyRuleArg("acPreProcForWriteSessionVariable", &arg, 1, rei, 0)) < 0) {
-    		return newErrorRes(r, i);
-    	}
-        i = getVarMap( "", varName, &varMap, 0 );
-        if ( i < 0 ) {
-            snprintf( errbuf, ERR_MSG_LEN, "error: unsupported session variable \"%s\".", varName );
-            addRErrorMsg( errmsg, RE_UNSUPPORTED_SESSION_VAR, errbuf );
-            return newErrorRes( r, RE_UNSUPPORTED_SESSION_VAR );
-        }
-        FunctionDesc *fd = ( FunctionDesc * ) lookupFromEnv( ruleEngineConfig.extFuncDescIndex, varMap );
-        Hashtable *tvarEnv = newHashTable2( 10, r );
-        if ( fd != NULL ) {
-            ExprType *type = fd->exprType->subtrees[0]; /* get var type from varMap */
-            val = processCoercion( node, val, type, tvarEnv, errmsg, r );
-            if ( getNodeType( val ) == N_ERROR ) {
-                free( varMap );
-                return val;
-            }
-        }
-        ExprType *varType = getVarType( varMap, r );
-        val = processCoercion( node, val, varType, tvarEnv, errmsg, r );
-        if ( getNodeType( val ) == N_ERROR ) {
-            free( varMap );
-            return val;
-        }
-        setVarValue( varMap, rei, val );
-        free( varMap );
+        /* Setting $-variables is disabled */
         return newIntRes( r, 0 );
     }
     else if ( varName[0] == '*' ) {
