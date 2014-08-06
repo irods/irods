@@ -6036,7 +6036,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // check the params
         if ( !_comm   ||
-                !_old_zone,
+                !_old_zone ||
                 !_new_zone ) {
             return ERROR(
                        CAT_INVALID_ARGUMENT,
