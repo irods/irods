@@ -92,34 +92,6 @@ static rodsLong_t MAX_PASSWORDS = 40;
 #define TEMP_PASSWORD_TIME 120
 #define TEMP_PASSWORD_MAX_TIME 1000
 
-
-#if 0
-/* PAM_PASSWORD_DEFAULT_TIME (the default iRODS-PAM password
-   lifetime) PAM_PASSWORD_MIN_TIME must be greater than
-   TEMP_PASSWORD_TIME to avoid the possibility that the logic for
-   temporary passwords would be applied.  This should be fine as
-   IRODS-PAM passwords will typically be valid on the order of a
-   couple weeks compared to a couple minutes for temporary one-time
-   passwords.
- */
-#define PAM_PASSWORD_LEN 20
-
-/* The PAM_PASSWORD_MIN_TIME must be greater than
-   TEMP_PASSWORD_TIME so the logic can deal with each password type
-   differently.  If they overlap, SQL errors can result */
-#define PAM_PASSWORD_MIN_TIME "121"  /* must be > TEMP_PASSWORD_TIME */
-#define PAM_PASSWORD_MAX_TIME "1209600"    /* two weeks in seconds */
-#define TTL_PASSWORD_MIN_TIME 121  /* must be > TEMP_PASSWORD_TIME */
-#define TTL_PASSWORD_MAX_TIME 1209600    /* two weeks in seconds */
-/* For batch jobs that should run "forever", TTL_PASSWORD_MAX_TIME
-   can be set very large, for example to 2147483647 to allow 68 years TTL. */
-#ifdef PAM_AUTH_NO_EXTEND
-#define PAM_PASSWORD_DEFAULT_TIME "28800"  /* 8 hours in seconds */
-#else
-#define PAM_PASSWORD_DEFAULT_TIME "1209600" /* two weeks in seconds */
-#endif
-#endif
-
 #define PASSWORD_SCRAMBLE_PREFIX ".E_"
 #define PASSWORD_KEY_ENV_VAR "irodsPKey"
 #define PASSWORD_DEFAULT_KEY "a9_3fker"
@@ -2021,19 +1993,9 @@ extern "C" {
         // if mode contains 'sql' then turn SQL logging on
         if ( mode.find( "sql" ) != std::string::npos ) {
             logSQL = 1;
-#if 0 // FIXME
-            chlDebugGenQuery( 1 );
-            chlDebugGenUpdate( 1 );
-            cmlDebug( 2 );
-#endif
         }
         else {
             logSQL = 0;
-#if 0 // FIXME
-            chlDebugGenQuery( 0 );
-            chlDebugGenUpdate( 0 );
-            cmlDebug( 0 );
-#endif
         }
 
         return SUCCESS();
@@ -7952,25 +7914,6 @@ checkLevel:
             return ERROR( CAT_INVALID_ARGUMENT, "parseUserName failed" );
         }
 
-#if 0
-        /* no longer allow modifying the user's name since it would
-           require moving the home and trash/home collections too */
-        if ( strcmp( _option, "name" ) == 0 ||
-                strcmp( _option, "user_name" ) == 0 ) {
-            snprintf( tSQL, MAX_SQL_SIZE, form1,
-                      "user_name" );
-            cllBindVars[cllBindVarCount++] = _new_value;
-            cllBindVars[cllBindVarCount++] = myTime;
-            cllBindVars[cllBindVarCount++] = userName2;
-            cllBindVars[cllBindVarCount++] = zoneName;
-            if ( logSQL != 0 ) {
-                rodsLog( LOG_SQL, "chlModUserSQLxx1x" );
-            }
-            auditId = AU_MOD_USER_NAME;
-            strncpy( auditComment, _user_name, 100 );
-            strncpy( auditUserName, _new_value, 100 );
-        }
-#endif
         if ( strcmp( _option, "type" ) == 0 ||
                 strcmp( _option, "user_type_name" ) == 0 ) {
             char tsubSQL[MAX_SQL_SIZE];
