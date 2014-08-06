@@ -3720,10 +3720,6 @@ extern "C" {
             rodsLog( LOG_SQL, "chlModRuleExec" );
         }
 
-        if ( _reg_param == NULL || _re_id == NULL ) {
-            return ERROR( CAT_INVALID_ARGUMENT, "invalid argument" );
-        }
-
         snprintf( tSQL, MAX_SQL_SIZE, "update R_RULE_EXEC set " );
 
         for ( i = 0, j = 0; i < maxCols; i++ ) {
