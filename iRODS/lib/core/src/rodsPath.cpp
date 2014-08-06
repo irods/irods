@@ -61,11 +61,6 @@ parseRodsPath( rodsPath_t *rodsPath, rodsEnv *myRodsEnv ) {
     rodsPath->objType = UNKNOWN_OBJ_T;
     rodsPath->objState = UNKNOWN_ST;
 
-    if ( rodsPath->inPath == NULL ) {
-        fprintf( stderr, "parseRodsPath: NULL rodsPath->inPath input\n" );
-        return ( USER__NULL_INPUT_ERR );
-    }
-
     if ( myRodsEnv == NULL && rodsPath->inPath[0] != '/' ) {
         fprintf( stderr, "parseRodsPath: NULL myRodsEnv input\n" );
         return ( USER__NULL_INPUT_ERR );
