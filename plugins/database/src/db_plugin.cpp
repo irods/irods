@@ -5644,9 +5644,9 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // check the params
         if ( !_comm   ||
-                !_zone_name,
-                !_zone_type,
-                !_zone_conn_info,
+                !_zone_name ||
+                !_zone_type ||
+                !_zone_conn_info ||
                 !_zone_comment ) {
             return ERROR(
                        CAT_INVALID_ARGUMENT,
