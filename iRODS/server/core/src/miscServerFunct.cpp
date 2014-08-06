@@ -1609,7 +1609,7 @@ sameHostCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
             in_fd = l3OpenByHost( rsComm, dataOprInp->srcRescTypeInx,
                                   dataOprInp->srcL3descInx, O_RDONLY );
             if ( in_fd < 0 ) {  /* error */
-                retVal = out_fd;
+                retVal = in_fd;
                 rodsLog( LOG_NOTICE,
                          "sameHostCopy: cannot open src file, status = %d", in_fd );
                 continue;
