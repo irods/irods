@@ -2398,12 +2398,6 @@ extern "C" {
             rodsLog( LOG_SQL, "chlModDataObjMeta" );
         }
 
-        if ( _reg_param == NULL || _data_obj_info == NULL ) {
-            return ERROR(
-                       CAT_INVALID_ARGUMENT,
-                       "_reg_param or _data_obj_info are null" );
-        }
-
         adminMode = 0;
         theVal = getValByKey( _reg_param, ADMIN_KW );
         if ( theVal != NULL ) {
