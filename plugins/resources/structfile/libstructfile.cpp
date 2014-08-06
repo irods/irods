@@ -1154,13 +1154,7 @@ extern "C" {
         free_tar_sub_file_desc( fco->file_descriptor() );
         fco->file_descriptor( 0 );
 
-        if ( status < 0 ) {
-            return ERROR( status, "rsFileClose failed" );
-        }
-        else {
-            return CODE( status );
-        }
-
+        return CODE( status );
     } // tar_file_close_plugin
 
     // =-=-=-=-=-=-=-
