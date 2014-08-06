@@ -2446,13 +2446,7 @@ extern "C" {
         }
 
         free_struct_file_desc( structFileInx );
-        if ( status < 0 ) {
-            return ERROR( status, "msso_file_sync_plugin failed" );
-        }
-        else {
-            return CODE( status );
-        }
-
+        return CODE( status );
     } // msso_file_sync_plugin
 
     // =-=-=-=-=-=-=-
