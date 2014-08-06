@@ -7997,10 +7997,6 @@ checkLevel:
                 }
                 groupAdminSettingPassword = 1;
             }
-            // =-=-=-=-=-=-=-
-            if ( userSettingOwnPassword == 0 && groupAdminSettingPassword == 0 ) {
-                return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
-            }
         }
 
         std::string zone;
