@@ -195,7 +195,7 @@ main( int argc, char **argv ) {
         rstrcat( updateText, "\n", UPDATE_TEXT_LEN );
         strncpy( myEnv.rodsUserName, ttybuf, NAME_LEN );
     }
-    if ( myEnv.rodsZone == NULL || strlen( myEnv.rodsZone ) == 0 ) {
+    if ( strlen( myEnv.rodsZone ) == 0 ) {
         if ( doingEnvFileUpdate == 0 ) {
             doingEnvFileUpdate = 1;
             printUpdateMsg();
