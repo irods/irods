@@ -2489,6 +2489,8 @@ extern "C" {
         }
 
         int status = extractMssoFile( structFileInx, fco, NULL, NULL );
+        free_struct_file_desc( structFileInx );
+
         if ( status < 0 ) {
             std::stringstream msg;
             msg << "error for [" << specColl->objPath << "] in cacheDir ["
@@ -2498,14 +2500,7 @@ extern "C" {
             return ERROR( status, msg.str() );
         }
 
-        free_struct_file_desc( structFileInx );
-
-        if ( status < 0 ) {
-            return ERROR( status, "extractMssoFile failed" );
-        }
-        else {
-            return CODE( status );
-        }
+        return CODE( status );
 
     } // msso_file_extract_plugin
 
