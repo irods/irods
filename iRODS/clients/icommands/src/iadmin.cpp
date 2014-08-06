@@ -1944,7 +1944,7 @@ usage( char *subOpt ) {
     };
 
     char *mkgroupMsgs[] = {
-        " mkgroup Name (make group)"
+        " mkgroup Name (make group)",
         "Create a user group.",
         "Also see atg, rfg, and rmgroup.",
         ""
