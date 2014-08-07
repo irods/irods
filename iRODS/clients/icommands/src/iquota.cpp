@@ -166,6 +166,9 @@ showQuotas( char *userName, int userOrGroup, int rescOrGlobal ) {
     genQueryInp.sqlCondInp.len = 0;
     if ( userName[0] != '\0' ) {
         status = parseUserName( userName, userName2, userZone );
+        if ( status < 0 ) {
+            rodsLog( LOG_ERROR, "parseUserName error in showQuotas with status %d", status );
+        }
         if ( userZone[0] == '\0' ) {
             inputCond[0] = COL_QUOTA_USER_NAME;
             sprintf( v1, "='%s'", userName );
