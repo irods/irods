@@ -1215,6 +1215,9 @@ readCollection( collHandle_t *collHandle, collEnt_t *collEnt ) {
         /* recursive - coll first, dataObj second */
         if ( collHandle->state == COLL_OPENED ) {
             status = genCollResInColl( queryHandle, collHandle );
+            if( status < 0 ) {
+                rodsLog( LOG_ERROR, "genCollResInColl in readCollection failed with status %d", status );
+            }
         }
 
         if ( collHandle->state == COLL_COLL_OBJ_QUERIED ) {
@@ -1234,6 +1237,9 @@ readCollection( collHandle_t *collHandle, collEnt_t *collEnt ) {
                 }
             }
             status = genDataResInColl( queryHandle, collHandle );
+            if( status < 0 ) {
+                rodsLog( LOG_ERROR, "genDataResInColl in readCollection failed with status %d", status );
+            }
         }
         if ( collHandle->state == COLL_DATA_OBJ_QUERIED ) {
             memset( &dataObjMetaInfo, 0, sizeof( dataObjMetaInfo ) );
