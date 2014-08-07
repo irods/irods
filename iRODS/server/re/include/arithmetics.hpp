@@ -42,7 +42,7 @@ Res* matchPattern( Node *pattern, Node *val, Env *env, ruleExecInfo_t *rei, int 
 
 Res* getSessionVar( char *action,  Node *node, char *varName,  ruleExecInfo_t *rei, Env *env, rError_t *errmsg, Region *r );
 Res* processCoercion( Node *node, Res *res, ExprType *type, Hashtable *tvarEnv, rError_t *errmsg, Region *r );
-
+int definitelyEq(Res *a, Res *b);
 /** utilities */
 char* getVariableName( Node *node );
 void copyFromEnv( Res**params, char **paramNames, int paramsCount, Hashtable *env, Region *r );
