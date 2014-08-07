@@ -6921,8 +6921,11 @@ extern "C" {
 
         if ( nPasswords == MAX_PASSWORDS ) {
             // There are more than MAX_PASSWORDS in the database take the extra time to get them all.
-            status = cmlGetIntegerValueFromSql( "select count(UP.user_id) from R_USER_PASSWORD UP, R_USER_MAIN where user_name=?", &MAX_PASSWORDS, userName2, 0, 0, 0, 0,
-                                                &icss );
+            status = cmlGetIntegerValueFromSql( "select count(UP.user_id) from R_USER_PASSWORD UP, R_USER_MAIN where user_name=?",
+                    &MAX_PASSWORDS, userName2, 0, 0, 0, 0, &icss );
+            if ( status < 0 ) {
+                rodsLog( LOG_ERROR, "cmlGetIntegerValueFromSql failed in db_check_auth_op with status %d", status);
+            }
             nPasswords = MAX_PASSWORDS;
             pwInfoArray.resize( MAX_PASSWORD_LEN * MAX_PASSWORDS * 4 );
 
@@ -6931,6 +6934,9 @@ extern "C" {
                      pwInfoArray.data(), MAX_PASSWORD_LEN,
                      MAX_PASSWORDS * 4, /* four strings per password returned */
                      userName2, myUserZone, 0, &icss );
+            if ( status < 0 ) {
+                rodsLog( LOG_ERROR, "cmlGetMultiRowStringValuesFromSql failed in db_check_auth_op with status %d", status);
+            }
         }
 
         cpw = pwInfoArray.data();
