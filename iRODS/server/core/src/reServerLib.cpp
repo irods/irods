@@ -405,6 +405,9 @@ runQueuedRuleExec( rsComm_t *rsComm, reExec_t *reExec,
         if ( reExec->doFork == 0 ) {
             /* single thread. Just call runRuleExec */
             status = execRuleExec( &reExec->reExecProc[thrInx] );
+            if ( status < 0 ) {
+                rodsLog( LOG_ERROR, "execRuleExec failed in runQueuedRuleExec with status %d", status );
+            }
             postProcRunRuleExec( rsComm, &reExec->reExecProc[thrInx] );
             freeReThr( reExec, thrInx );
             continue;
