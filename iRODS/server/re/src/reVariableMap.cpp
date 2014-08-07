@@ -176,19 +176,12 @@ int
 setVarValue( char *varMap, ruleExecInfo_t *rei, Res *newVarValue ) {
     char varName[NAME_LEN];
     char *varMapCPtr;
-    void *varValue =  NULL;
-    int i;
-
-    i = getVarNameFromVarMap( varMap, varName, &varMapCPtr );
-    if ( i != 0 ) {
-        return i;
+    int status = getVarNameFromVarMap( varMap, varName, &varMapCPtr );
+    if ( status != 0 ) {
+        return status;
     }
     if ( !strcmp( varName, "rei" ) ) {
-        i = setValFromRuleExecInfo( varMapCPtr, &rei, newVarValue );
-        if ( varValue != NULL ) {
-            free( varValue );
-        }
-        return i;
+        return setValFromRuleExecInfo( varMapCPtr, &rei, newVarValue );
     }
     else {
         return UNDEFINED_VARIABLE_MAP_ERR;
