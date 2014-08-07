@@ -462,27 +462,23 @@ rmLinkedFilesInUnixDir( char *phyBunDir ) {
 
 int // JMC - backport 4657
 rmUnlinkedFilesInUnixDir( char *phyBunDir ) {
-    DIR *dirPtr;
-    struct dirent *myDirent;
-    struct stat statbuf;
-    int status;
-    char subfilePath[MAX_NAME_LEN];
     time_t myTime = time( 0 ) - UNLINK_FILE_AGE; // JMC - backport 4666
 
-    dirPtr = opendir( phyBunDir );
+    DIR *dirPtr = opendir( phyBunDir );
     if ( dirPtr == NULL ) {
         return 0;
     }
-    while ( ( myDirent = readdir( dirPtr ) ) != NULL ) {
+    while ( struct dirent *myDirent = readdir( dirPtr ) ) {
         if ( strcmp( myDirent->d_name, "." ) == 0 ||
                 strcmp( myDirent->d_name, ".." ) == 0 ) {
             continue;
         }
+        char subfilePath[MAX_NAME_LEN];
         snprintf( subfilePath, MAX_NAME_LEN, "%s/%s",
                   phyBunDir, myDirent->d_name );
-        status = stat( subfilePath, &statbuf );
 
-        if ( status != 0 ) {
+        struct stat statbuf;
+        if ( stat( subfilePath, &statbuf ) != 0 ) {
             continue;
         }
 
@@ -494,7 +490,7 @@ rmUnlinkedFilesInUnixDir( char *phyBunDir ) {
             }
         }
         else {          /* a directory */
-            status = rmUnlinkedFilesInUnixDir( subfilePath );
+            rmUnlinkedFilesInUnixDir( subfilePath );
             /* rm subfilePath but not phyBunDir */
             rmdir( subfilePath );
         }
