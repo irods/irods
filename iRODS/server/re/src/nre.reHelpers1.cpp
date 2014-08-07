@@ -261,6 +261,7 @@ int processXMsg( int streamId, int *msgNum, int *seqNum,
             snprintf( myhdr, HEADER_TYPE_LEN - 1,   "idbug: Level %3i", iLevel );
             char msg[HEADER_TYPE_LEN - 1];
             RuleEngineEventParam param;
+            param.ruleIndex = 0;
             param.actionName = reDebugStackCurr[i].step;
             printRuleEngineEventLabel( msg, HEADER_TYPE_LEN - 1, ( RuleEngineEvent ) reDebugStackCurr[i].label, &param );
             _writeXMsg( streamId,  myhdr, msg );
