@@ -119,8 +119,8 @@ addRErrorMsg( rError_t *myError, int status, const char *msg ) {
 
     if ( ( myError->len % PTR_ARRAY_MALLOC_LEN ) == 0 ) {
         newLen = myError->len + PTR_ARRAY_MALLOC_LEN;
-        newErrMsg = ( rErrMsg_t ** ) malloc( newLen * sizeof( newErrMsg ) );
-        memset( newErrMsg, 0, newLen * sizeof( newErrMsg ) );
+        newErrMsg = ( rErrMsg_t ** ) malloc( newLen * sizeof( *newErrMsg ) );
+        memset( newErrMsg, 0, newLen * sizeof( *newErrMsg ) );
         for ( i = 0; i < myError->len; i++ ) {
             newErrMsg[i] = myError->errMsg[i];
         }
@@ -135,7 +135,7 @@ addRErrorMsg( rError_t *myError, int status, const char *msg ) {
     myError->errMsg[myError->len]->status = status;
     myError->len++;
 
-    return ( 0 );
+    return 0;
 }
 
 int
