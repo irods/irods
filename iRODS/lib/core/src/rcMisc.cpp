@@ -841,10 +841,10 @@ addKeyVal( keyValPair_t *condInput, const char *keyWord, const char *value ) {
 
     if ( ( condInput->len % PTR_ARRAY_MALLOC_LEN ) == 0 ) {
         newLen = condInput->len + PTR_ARRAY_MALLOC_LEN;
-        newKeyWord = ( char ** ) malloc( newLen * sizeof( newKeyWord ) );
-        newValue = ( char ** ) malloc( newLen * sizeof( newValue ) );
-        memset( newKeyWord, 0, newLen * sizeof( newKeyWord ) );
-        memset( newValue, 0, newLen * sizeof( newValue ) );
+        newKeyWord = ( char ** ) malloc( newLen * sizeof( *newKeyWord ) );
+        newValue = ( char ** ) malloc( newLen * sizeof( *newValue ) );
+        memset( newKeyWord, 0, newLen * sizeof( *newKeyWord ) );
+        memset( newValue, 0, newLen * sizeof( *newValue ) );
         for ( i = 0; i < condInput->len; i++ ) {
             newKeyWord[i] = condInput->keyWord[i];
             newValue[i] = condInput->value[i];
