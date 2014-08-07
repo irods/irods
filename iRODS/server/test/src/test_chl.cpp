@@ -622,19 +622,21 @@ int testModRuleMeta( rsComm_t *rsComm, char *id,
 
 int testModResourceFreeSpace( rsComm_t *rsComm, char *rescName,
                               char *numberString, char *option ) {
-    int number, status;
     if ( *numberString == '\\' ) {
         numberString++;
     }
-    number = atoi( numberString );
+    int number = atoi( numberString );
     rsComm->clientUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
     rsComm->proxyUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
-    status = chlModRescFreeSpace( rsComm, rescName, number );
+    int status = chlModRescFreeSpace( rsComm, rescName, number );
     if ( status != 0 ) {
         return status;
     }
     if ( option != NULL && strcmp( option, "rollback" ) == 0 ) {
         status = chlRollback( rsComm );
+        if ( status < 0 ) {
+            rodsLog( LOG_ERROR, "chlRollback failed in testModResourceFreeSpace %d", status );
+        }
     }
     if ( option != NULL && strcmp( option, "close" ) == 0 ) {
         status = chlClose();
