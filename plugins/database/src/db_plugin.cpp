@@ -3448,7 +3448,7 @@ extern "C" {
                 }
                 status = cmlExecuteNoAnswerSql(
                              "delete from R_OBJT_FILESYSTEM_META where object_id=?", &icss );
-                if ( status < 0 ) {
+                if ( status < 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
                     rodsLog( LOG_ERROR, "cmlExecuteNoAnswerSql failed in db_unreg_replica_op with status %d", status );
                 }
             }

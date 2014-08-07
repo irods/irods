@@ -1215,7 +1215,7 @@ readCollection( collHandle_t *collHandle, collEnt_t *collEnt ) {
         /* recursive - coll first, dataObj second */
         if ( collHandle->state == COLL_OPENED ) {
             status = genCollResInColl( queryHandle, collHandle );
-            if( status < 0 ) {
+            if( status < 0 && status != CAT_NO_ROWS_FOUND ) {
                 rodsLog( LOG_ERROR, "genCollResInColl in readCollection failed with status %d", status );
             }
         }
