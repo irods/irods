@@ -672,7 +672,8 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             char *args[2];
             memset( ( char* )&rei, 0, sizeof( rei ) );
             rei.rsComm = rsComm;
-            userInfo_t userInfo = {0};
+            userInfo_t userInfo;
+            memset( &userInfo, 0, sizeof( userInfo ) );
             strncpy( userInfo.userName, generalAdminInp->arg2,
                      sizeof( userInfo.userName ) );
             if ( userInfo.userName[sizeof( userInfo.userName ) - 1] ) {
