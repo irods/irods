@@ -1436,6 +1436,9 @@ extern "C" {
         float*                              _out_vote ) {
         // =-=-=-=-=-=-=-
         // check the context validity
+
+        ( *_out_vote ) = 0.0f;
+
         irods::error ret = _ctx.valid< irods::file_object >();
         if ( !ret.ok() ) {
             std::stringstream msg;
