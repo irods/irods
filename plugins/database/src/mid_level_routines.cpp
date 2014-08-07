@@ -167,7 +167,7 @@ int cmlGetOneRowFromSqlBV( char *sql,
                            const char *bindVar4,
                            const char *bindVar5,
                            icatSessionStruct *icss ) {
-    int i, j, stmtNum;
+    int stmtNum;
     char updatedSql[MAX_SQL_SIZE + 1];
 
 //TODO: this should be a function, probably inside low-level icat
@@ -184,31 +184,31 @@ int cmlGetOneRowFromSqlBV( char *sql,
         rodsLog( LOG_DEBUG1, "cmlGetOneRowFromSqlBV %s", updatedSql );
     }
 #endif
-    i = cllExecSqlWithResultBV( icss, &stmtNum, updatedSql,
+    int status = cllExecSqlWithResultBV( icss, &stmtNum, updatedSql,
                                 bindVar1, bindVar2, bindVar3, bindVar4,
                                 bindVar5, 0 );
-    if ( i != 0 ) {
-        if ( i <= CAT_ENV_ERR ) {
-            return( i );    /* already an iRODS error code */
+    if ( status != 0 ) {
+        if ( status <= CAT_ENV_ERR ) {
+            return status;    /* already an iRODS error code */
         }
-        return ( CAT_SQL_ERR );
+        return CAT_SQL_ERR;
     }
 
-    i = cllGetRow( icss, stmtNum );
-    if ( i != 0 )  {
+    if ( cllGetRow( icss, stmtNum ) != 0 )  {
         cllFreeStatement( icss, stmtNum );
-        return( CAT_GET_ROW_ERR );
+        return CAT_GET_ROW_ERR;
     }
     if ( icss->stmtPtr[stmtNum]->numOfCols == 0 ) {
         cllFreeStatement( icss, stmtNum );
-        return( CAT_NO_ROWS_FOUND );
+        return CAT_NO_ROWS_FOUND;
     }
-    for ( j = 0; j < numOfCols && j < icss->stmtPtr[stmtNum]->numOfCols ; j++ ) {
+    int numCVal = std::min( numOfCols, icss->stmtPtr[stmtNum]->numOfCols );
+    for ( int j = 0; j < numCVal ; j++ ) {
         rstrcpy( cVal[j], icss->stmtPtr[stmtNum]->resultValue[j], cValSize[j] );
     }
 
-    i = cllFreeStatement( icss, stmtNum );
-    return( j );
+    cllFreeStatement( icss, stmtNum );
+    return numCVal;
 
 }
 
@@ -478,20 +478,20 @@ int cmlGetStringValueFromSql( char *sql,
                               const char *bindVar2,
                               const char *bindVar3,
                               icatSessionStruct *icss ) {
-    int i;
+    int status;
     char *cVals[2];
     int iVals[2];
 
     cVals[0] = cVal;
     iVals[0] = cValSize;
 
-    i = cmlGetOneRowFromSqlBV( sql, cVals, iVals, 1,
+    status = cmlGetOneRowFromSqlBV( sql, cVals, iVals, 1,
                                bindVar1, bindVar2, bindVar3, 0, 0, icss );
-    if ( i == 1 ) {
-        return( 0 );
+    if ( status == 1 ) {
+        return 0;
     }
     else {
-        return( i );
+        return status;
     }
 
 }
