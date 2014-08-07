@@ -3772,7 +3772,6 @@ extern "C" {
         // extract the icss property
 //        icatSessionStruct icss;
 //        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
-        int status;
         char userName[MAX_NAME_LEN + 2];
 
         if ( logSQL != 0 ) {
@@ -3788,10 +3787,10 @@ extern "C" {
                 if ( logSQL != 0 ) {
                     rodsLog( LOG_SQL, "chlDelRuleExec SQL 1 " );
                 }
-                status = cmlGetStringValueFromSql(
+                int status = cmlGetStringValueFromSql(
                              "select user_name from R_RULE_EXEC where rule_exec_id=?",
                              userName, MAX_NAME_LEN, _re_id, 0, 0, &icss );
-                if ( strncmp( userName, _comm->clientUser.userName, MAX_NAME_LEN )
+                if ( status != 0 || strncmp( userName, _comm->clientUser.userName, MAX_NAME_LEN )
                         != 0 ) {
                     return ERROR( CAT_NO_ACCESS_PERMISSION, "no access permission" );
                 }
@@ -3805,7 +3804,7 @@ extern "C" {
         if ( logSQL != 0 ) {
             rodsLog( LOG_SQL, "chlDelRuleExec SQL 2 " );
         }
-        status =  cmlExecuteNoAnswerSql(
+        int status =  cmlExecuteNoAnswerSql(
                       "delete from R_RULE_EXEC where rule_exec_id=?",
                       &icss );
         if ( status != 0 ) {
