@@ -886,11 +886,12 @@ bulkPutFileUtil( rcComm_t *conn, char *srcPath, char *targPath,
     if ( status != srcSize ) {
         if ( status >= 0 ) {
             status = SYS_COPY_LEN_ERR - errno;
+            rodsLogError( LOG_ERROR, status, "bulkPutFileUtil: bytesRead %ju does not match srcSize %ju for %s",
+                    ( uintmax_t )bytesRead, ( uintmax_t )srcSize, srcPath );
         }
-        status = USER_INPUT_PATH_ERR - errno;
-        rodsLog( LOG_ERROR,
-                 "bulkPutFileUtil: Bytes read %d does not match size %d for %s",
-                 status, srcSize, srcPath );
+        else {
+            status = USER_INPUT_PATH_ERR - errno;
+        }
         return status;
     }
     close( in_fd );
