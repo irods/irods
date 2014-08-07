@@ -50,7 +50,6 @@ addMsParamToArray( msParamArray_t *msParamArray, char *label,
                    const char *type, void *inOutStruct, bytesBuf_t *inpOutBuf, int replFlag ) {
     msParam_t **newParam;
     int len, newLen;
-    int i;
 
     if ( msParamArray == NULL || label == NULL ) {
         rodsLog( LOG_ERROR,
@@ -60,7 +59,7 @@ addMsParamToArray( msParamArray_t *msParamArray, char *label,
 
     len = msParamArray->len;
 
-    for ( i = 0; i < len; i++ ) {
+    for ( int i = 0; i < len; i++ ) {
         if ( msParamArray->msParam[i]->label == NULL ) {
             continue;
         }
@@ -92,9 +91,9 @@ addMsParamToArray( msParamArray_t *msParamArray, char *label,
 
     if ( ( msParamArray->len % PTR_ARRAY_MALLOC_LEN ) == 0 ) {
         newLen = msParamArray->len + PTR_ARRAY_MALLOC_LEN;
-        newParam = ( msParam_t ** ) malloc( newLen * sizeof( newParam ) );
-        memset( newParam, 0, newLen * sizeof( newParam ) );
-        for ( i = 0; i < len; i++ ) {
+        newParam = ( msParam_t ** ) malloc( newLen * sizeof( *newParam ) );
+        memset( newParam, 0, newLen * sizeof( *newParam ) );
+        for ( int i = 0; i < len; i++ ) {
             newParam[i] = msParamArray->msParam[i];
         }
         if ( msParamArray->msParam != NULL ) {
@@ -119,28 +118,26 @@ addMsParamToArray( msParamArray_t *msParamArray, char *label,
     }
     msParamArray->len++;
 
-    return ( 0 );
+    return 0;
 }
 
 int
 replMsParamArray( msParamArray_t *msParamArray,
                   msParamArray_t *outMsParamArray ) {
-    int newLen;
-    int i;
     int status = 0;
 
     memset( outMsParamArray, 0, sizeof( msParamArray_t ) );
 
-    newLen = ( msParamArray->len / PTR_ARRAY_MALLOC_LEN + 1 ) *
+    int newLen = ( msParamArray->len / PTR_ARRAY_MALLOC_LEN + 1 ) *
              PTR_ARRAY_MALLOC_LEN;
 
     outMsParamArray->msParam =
-        ( msParam_t ** ) malloc( newLen * sizeof( outMsParamArray->msParam ) );
+        ( msParam_t ** ) malloc( newLen * sizeof( *outMsParamArray->msParam ) );
     memset( outMsParamArray->msParam, 0,
-            newLen * sizeof( outMsParamArray->msParam ) );
+            newLen * sizeof( *outMsParamArray->msParam ) );
 
     outMsParamArray->len = msParamArray->len;
-    for ( i = 0; i < msParamArray->len; i++ ) {
+    for ( int i = 0; i < msParamArray->len; i++ ) {
         memset( outMsParamArray->msParam[i], 0, sizeof( msParam_t ) );
         status = replMsParam( msParamArray->msParam[i],
                               outMsParamArray->msParam[i] );
